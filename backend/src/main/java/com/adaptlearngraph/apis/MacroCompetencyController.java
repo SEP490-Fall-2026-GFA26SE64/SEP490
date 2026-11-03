@@ -3,7 +3,7 @@ package com.adaptlearngraph.apis;
 import com.adaptlearngraph.endpoints.ApiEndpoints;
 import com.adaptlearngraph.responseDto.MacroCompetencyResponse;
 import com.adaptlearngraph.services.GetMacroCompetenciesUseCase;
-import com.adaptlearngraph.entities.MacroCompetency;
+import com.adaptlearngraph.entities.domain.MacroCompetency;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;

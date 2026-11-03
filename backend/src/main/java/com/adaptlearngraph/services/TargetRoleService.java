@@ -5,9 +5,9 @@ import com.adaptlearngraph.dtos.CreateTargetRoleCommand;
 import com.adaptlearngraph.dtos.TargetRoleFilter;
 import com.adaptlearngraph.dtos.UpdateTargetRoleCommand;
 import com.adaptlearngraph.repository.TargetRoleRepository;
-import com.adaptlearngraph.entities.RoleStatus;
-import com.adaptlearngraph.entities.TargetRole;
-import com.adaptlearngraph.entities.TargetRoleId;
+import com.adaptlearngraph.entities.domain.RoleStatus;
+import com.adaptlearngraph.entities.domain.TargetRole;
+import com.adaptlearngraph.entities.domain.TargetRoleId;
 
 import java.util.List;
 import java.util.Objects;

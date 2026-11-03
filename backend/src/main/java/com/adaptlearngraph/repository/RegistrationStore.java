@@ -1,7 +1,7 @@
 package com.adaptlearngraph.repository;
 
-import com.adaptlearngraph.entities.Registration;
-import com.adaptlearngraph.entities.RegistrationFields;
+import com.adaptlearngraph.entities.domain.Registration;
+import com.adaptlearngraph.entities.domain.RegistrationFields;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;

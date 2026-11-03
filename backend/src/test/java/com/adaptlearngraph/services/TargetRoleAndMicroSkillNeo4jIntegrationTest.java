@@ -1,13 +1,13 @@
 package com.adaptlearngraph.services;
 
 import com.adaptlearngraph.dtos.TargetRoleFilter;
-import com.adaptlearngraph.entities.RoleStatus;
-import com.adaptlearngraph.entities.RoleTrack;
-import com.adaptlearngraph.entities.TargetRole;
+import com.adaptlearngraph.entities.domain.RoleStatus;
+import com.adaptlearngraph.entities.domain.RoleTrack;
+import com.adaptlearngraph.entities.domain.TargetRole;
 import com.adaptlearngraph.repository.GraphSchemaMigrator;
 import com.adaptlearngraph.repository.Neo4jTargetRoleRepository;
-import com.adaptlearngraph.entities.MicroSkill;
-import com.adaptlearngraph.entities.SkillStatus;
+import com.adaptlearngraph.entities.domain.MicroSkill;
+import com.adaptlearngraph.entities.domain.SkillStatus;
 import com.adaptlearngraph.repository.Neo4jMicroSkillRepository;
 import com.adaptlearngraph.repository.MicroSkillNodeRepository;
 import com.adaptlearngraph.repository.TargetRoleNodeRepository;

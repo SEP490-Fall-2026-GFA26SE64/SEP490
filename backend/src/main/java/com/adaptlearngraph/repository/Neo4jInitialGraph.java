@@ -4,7 +4,7 @@ import com.adaptlearngraph.helper.InitialCatalogMetadata;
 import com.adaptlearngraph.repository.InitialPathwayPorts.*;
 import com.adaptlearngraph.repository.InitialPlanningPorts.*;
 import com.adaptlearngraph.repository.InitialCatalogPort.RoleReference;
-import com.adaptlearngraph.entities.InitialPlanning.*;
+import com.adaptlearngraph.entities.domain.InitialPlanning.*;
 import java.util.*;
 import org.neo4j.driver.exceptions.Neo4jException;
 import org.springframework.dao.DataAccessException;

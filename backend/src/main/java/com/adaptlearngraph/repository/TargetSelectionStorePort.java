@@ -1,6 +1,6 @@
 package com.adaptlearngraph.repository;
 
-import com.adaptlearngraph.entities.TargetRoleSelection;
+import com.adaptlearngraph.entities.domain.TargetRoleSelection;
 import java.time.Instant;
 import java.util.Objects;
 import java.util.Optional;

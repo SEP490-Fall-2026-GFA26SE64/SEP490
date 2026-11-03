@@ -2,8 +2,8 @@ package com.adaptlearngraph.services;
 
 import com.adaptlearngraph.repository.InitialPathwayPorts.*;
 import com.adaptlearngraph.repository.InitialPlanningPorts.*;
-import com.adaptlearngraph.entities.InitialPlanning.*;
-import com.adaptlearngraph.entities.InitialSuitability;
+import com.adaptlearngraph.entities.domain.InitialPlanning.*;
+import com.adaptlearngraph.entities.domain.InitialSuitability;
 
 /** Application policy, independent of graph driver/persistence/other owners' DTOs. */
 public final class MasterySuitabilityPolicy implements SuitabilityPolicy {

@@ -7,7 +7,7 @@ import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.read.ListAppender;
-import com.adaptlearngraph.entities.Occupation;
+import com.adaptlearngraph.entities.domain.Occupation;
 import com.adaptlearngraph.exception.CrossTenantWriteException;
 import com.adaptlearngraph.services.PlatformCatalogService;
 import com.adaptlearngraph.services.WorkspaceCatalogImportWorker;

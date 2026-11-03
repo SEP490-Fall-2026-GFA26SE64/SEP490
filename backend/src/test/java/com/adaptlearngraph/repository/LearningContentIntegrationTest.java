@@ -1,9 +1,9 @@
 package com.adaptlearngraph.repository;
 
-import com.adaptlearngraph.entities.LearningContent;
+import com.adaptlearngraph.entities.domain.LearningContent;
 import static org.junit.jupiter.api.Assertions.*;
 
-import com.adaptlearngraph.entities.LearningResources.*;
+import com.adaptlearngraph.entities.domain.LearningResources.*;
 import com.adaptlearngraph.support.JpaTestContext;
 import com.fasterxml.jackson.databind.ObjectMapper;
 

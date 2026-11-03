@@ -1,11 +1,11 @@
 package com.adaptlearngraph.repository;
 
-import com.adaptlearngraph.entities.TargetRoleSummary;
-import com.adaptlearngraph.entities.TargetRoleSnapshot;
-import com.adaptlearngraph.entities.TargetRoleSelection;
-import com.adaptlearngraph.entities.TargetRoleRequirement;
-import com.adaptlearngraph.entities.TargetRoleDetail;
-import com.adaptlearngraph.entities.CareerTrack;
+import com.adaptlearngraph.entities.domain.TargetRoleSummary;
+import com.adaptlearngraph.entities.domain.TargetRoleSnapshot;
+import com.adaptlearngraph.entities.domain.TargetRoleSelection;
+import com.adaptlearngraph.entities.domain.TargetRoleRequirement;
+import com.adaptlearngraph.entities.domain.TargetRoleDetail;
+import com.adaptlearngraph.entities.domain.CareerTrack;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;

@@ -5,7 +5,7 @@ import com.adaptlearngraph.dtos.CompetencyDto.CompetencyResponse;
 import com.adaptlearngraph.dtos.CompetencyDto.CreateCompetencyRequest;
 import com.adaptlearngraph.dtos.CompetencyDto.UpdateCompetencyRequest;
 import com.adaptlearngraph.services.ManageCompetencyUseCase;
-import com.adaptlearngraph.entities.CompetencyRecord;
+import com.adaptlearngraph.entities.domain.CompetencyRecord;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;

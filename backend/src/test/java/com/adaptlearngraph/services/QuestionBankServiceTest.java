@@ -2,8 +2,8 @@ package com.adaptlearngraph.services;
 
 import com.adaptlearngraph.services.QuestionBankUseCase.*;
 import com.adaptlearngraph.repository.QuestionBankPorts.*;
-import com.adaptlearngraph.entities.QuestionBank;
-import com.adaptlearngraph.entities.QuestionBank.*;
+import com.adaptlearngraph.entities.domain.QuestionBank;
+import com.adaptlearngraph.entities.domain.QuestionBank.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.*;
 import java.util.*;

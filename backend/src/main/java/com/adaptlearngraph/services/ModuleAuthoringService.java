@@ -2,9 +2,9 @@ package com.adaptlearngraph.services;
 
 import com.adaptlearngraph.repository.ModuleAuthoringPort;
 import com.adaptlearngraph.repository.LearningContentPort;
-import com.adaptlearngraph.entities.LearningContent;
-import com.adaptlearngraph.entities.ModuleAuthoring;
-import com.adaptlearngraph.entities.ModuleAuthoring.*;
+import com.adaptlearngraph.entities.domain.LearningContent;
+import com.adaptlearngraph.entities.domain.ModuleAuthoring;
+import com.adaptlearngraph.entities.domain.ModuleAuthoring.*;
 import java.util.*;
 
 public final class ModuleAuthoringService {

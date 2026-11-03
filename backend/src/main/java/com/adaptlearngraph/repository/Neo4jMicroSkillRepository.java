@@ -1,9 +1,9 @@
 package com.adaptlearngraph.repository;
 
-import com.adaptlearngraph.entities.MicroSkill;
-import com.adaptlearngraph.entities.MicroSkillId;
+import com.adaptlearngraph.entities.domain.MicroSkill;
+import com.adaptlearngraph.entities.domain.MicroSkillId;
 import com.adaptlearngraph.entities.MicroSkillNode;
-import com.adaptlearngraph.entities.SkillStatus;
+import com.adaptlearngraph.entities.domain.SkillStatus;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;

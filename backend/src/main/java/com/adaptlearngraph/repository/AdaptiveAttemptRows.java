@@ -1,10 +1,10 @@
 package com.adaptlearngraph.repository;
 
-import com.adaptlearngraph.entities.AdaptiveAttempt;
-import com.adaptlearngraph.entities.AdaptiveAttemptSnapshot;
-import com.adaptlearngraph.entities.AdaptiveBlueprint;
+import com.adaptlearngraph.entities.domain.AdaptiveAttempt;
+import com.adaptlearngraph.entities.domain.AdaptiveAttemptSnapshot;
+import com.adaptlearngraph.entities.domain.AdaptiveBlueprint;
 import com.adaptlearngraph.entities.BaselineAdaptiveAttemptEntity;
-import com.adaptlearngraph.entities.OrganizationAssessmentPolicy;
+import com.adaptlearngraph.entities.domain.OrganizationAssessmentPolicy;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;

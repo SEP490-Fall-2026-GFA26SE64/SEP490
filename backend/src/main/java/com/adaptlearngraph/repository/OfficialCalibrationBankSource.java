@@ -2,8 +2,8 @@ package com.adaptlearngraph.repository;
 
 import com.adaptlearngraph.dtos.OfficialQuestionBankManifest;
 import com.adaptlearngraph.helper.OfficialQuestionBankCatalog;
-import com.adaptlearngraph.entities.Calibration;
-import com.adaptlearngraph.entities.Calibration.*;
+import com.adaptlearngraph.entities.domain.Calibration;
+import com.adaptlearngraph.entities.domain.Calibration.*;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;

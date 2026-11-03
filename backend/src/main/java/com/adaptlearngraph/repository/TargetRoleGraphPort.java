@@ -1,6 +1,6 @@
 package com.adaptlearngraph.repository;
 
-import com.adaptlearngraph.entities.TargetRoleGraph;
+import com.adaptlearngraph.entities.domain.TargetRoleGraph;
 import java.util.Optional;
 
 public interface TargetRoleGraphPort {

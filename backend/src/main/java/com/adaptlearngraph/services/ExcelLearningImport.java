@@ -1,15 +1,15 @@
 package com.adaptlearngraph.services;
 
-import com.adaptlearngraph.entities.LearningContent;
+import com.adaptlearngraph.entities.domain.LearningContent;
 import com.adaptlearngraph.entities.LearningImportEntity;
-import com.adaptlearngraph.entities.ModuleAuthoring;
+import com.adaptlearngraph.entities.domain.ModuleAuthoring;
 import com.adaptlearngraph.repository.LearningAssetPort;
 import com.adaptlearngraph.repository.LearningContentPort;
 import com.adaptlearngraph.repository.LearningImportJpaRepository;
 import com.adaptlearngraph.repository.ModuleAuthoringPort;
 import com.adaptlearngraph.services.ModuleAuthoringService.Failure;
-import com.adaptlearngraph.entities.LearningContent.Lesson;
-import com.adaptlearngraph.entities.ModuleAuthoring.*;
+import com.adaptlearngraph.entities.domain.LearningContent.Lesson;
+import com.adaptlearngraph.entities.domain.ModuleAuthoring.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.apache.poi.ss.usermodel.*;

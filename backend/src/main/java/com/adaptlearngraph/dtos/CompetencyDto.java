@@ -1,6 +1,6 @@
 package com.adaptlearngraph.dtos;
 
-import com.adaptlearngraph.entities.CompetencyRecord;
+import com.adaptlearngraph.entities.domain.CompetencyRecord;
 import java.util.List;
 
 public class CompetencyDto {

@@ -2,7 +2,7 @@ package com.adaptlearngraph.apis;
 
 import com.adaptlearngraph.jwt.WorkspaceSessions;
 import com.adaptlearngraph.services.WorkspaceAuthenticationUseCase;
-import com.adaptlearngraph.entities.RegistrationActor;
+import com.adaptlearngraph.entities.domain.RegistrationActor;
 import com.adaptlearngraph.exception.RegistrationFailure;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;

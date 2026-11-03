@@ -1,6 +1,6 @@
 package com.adaptlearngraph.repository;
 
-import com.adaptlearngraph.entities.Occupation;
+import com.adaptlearngraph.entities.domain.Occupation;
 import java.util.List;
 import java.util.Optional;
 

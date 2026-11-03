@@ -1,7 +1,7 @@
 package com.adaptlearngraph.development;
 
 import com.adaptlearngraph.services.ModuleAuthoringService;
-import com.adaptlearngraph.entities.ModuleAuthoring.*;
+import com.adaptlearngraph.entities.domain.ModuleAuthoring.*;
 import com.adaptlearngraph.repository.JpaModuleAuthoringAdapter;
 import com.adaptlearngraph.repository.LearningModuleNodeRepository;
 import com.adaptlearngraph.repository.Neo4jModuleCatalogGraph;

@@ -1,7 +1,7 @@
 package com.adaptlearngraph.repository;
 
-import com.adaptlearngraph.entities.LearningContent.Lesson;
-import com.adaptlearngraph.entities.LearningResources.*;
+import com.adaptlearngraph.entities.domain.LearningContent.Lesson;
+import com.adaptlearngraph.entities.domain.LearningResources.*;
 
 import java.util.*;
 

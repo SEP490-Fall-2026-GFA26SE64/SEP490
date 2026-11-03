@@ -1,15 +1,15 @@
 package com.adaptlearngraph.services;
 
-import com.adaptlearngraph.entities.InitialIdentity;
-import com.adaptlearngraph.entities.InitialPlanning;
-import com.adaptlearngraph.entities.RoleGap;
+import com.adaptlearngraph.entities.domain.InitialIdentity;
+import com.adaptlearngraph.entities.domain.InitialPlanning;
+import com.adaptlearngraph.entities.domain.RoleGap;
 import com.adaptlearngraph.repository.InitialPathwayPorts;
 import com.adaptlearngraph.repository.InitialPathwayStore;
 import com.adaptlearngraph.repository.InitialPathwayPorts.*;
 import com.adaptlearngraph.repository.InitialPathwayStore.*;
 import com.adaptlearngraph.repository.InitialPlanningPorts.Limits;
-import com.adaptlearngraph.entities.InitialPathwayState.*;
-import com.adaptlearngraph.entities.InitialPlanning.*;
+import com.adaptlearngraph.entities.domain.InitialPathwayState.*;
+import com.adaptlearngraph.entities.domain.InitialPlanning.*;
 import java.util.*;
 import java.util.function.Supplier;
 

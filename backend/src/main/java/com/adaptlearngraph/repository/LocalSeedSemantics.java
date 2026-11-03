@@ -70,7 +70,7 @@ public final class LocalSeedSemantics implements Semantics {
                 || !VERSION.equals(binding.versions().get("compatibility")))throw new Failure(503,"SEMANTIC_SOURCE_NOT_SUPPORTED",false);
         var original=originalSkills.get(profile.catalogFingerprint());
         if(original==null)throw new Failure(503,"PROFILE_CATALOG_NOT_SUPPORTED",false);
-        var compatible=new TreeMap<String,com.adaptlearngraph.entities.RoleGap.Evidence>();
+        var compatible=new TreeMap<String,com.adaptlearngraph.entities.domain.RoleGap.Evidence>();
         for(var entry:profile.evidence().entrySet()) {
             String id=entry.getKey();
             if(!original.containsKey(id))throw new Failure(503,"PROFILE_INTEGRITY_FAILURE",false);

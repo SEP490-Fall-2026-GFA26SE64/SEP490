@@ -1,14 +1,14 @@
 package com.adaptlearngraph.repository;
 
 import com.adaptlearngraph.repository.InitialPathwayPorts.*;
-import com.adaptlearngraph.entities.RoleGap;
+import com.adaptlearngraph.entities.domain.RoleGap;
 import java.util.*;
 
 /** Trusted catalog release and explicit Role+Level reference; names/requirements come from Neo4j. */
 public interface InitialCatalogPort {
     static String choiceId(String roleId,String levelId) {
         RoleGap.text(roleId);RoleGap.text(levelId);
-        return "role-level-v1:"+com.adaptlearngraph.entities.InitialIdentity.hash("role-level-choice",List.of(roleId,levelId));
+        return "role-level-v1:"+com.adaptlearngraph.entities.domain.InitialIdentity.hash("role-level-choice",List.of(roleId,levelId));
     }
     record RoleReference(UUID organizationId,String businessRoleId,String roleId,String levelId,String occupationId,
                          String catalogFingerprint,String releaseToken,Map<String,String> versions) {

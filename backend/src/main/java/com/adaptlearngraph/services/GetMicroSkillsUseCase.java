@@ -1,7 +1,7 @@
 package com.adaptlearngraph.services;
 
-import com.adaptlearngraph.entities.MicroSkill;
-import com.adaptlearngraph.entities.SkillStatus;
+import com.adaptlearngraph.entities.domain.MicroSkill;
+import com.adaptlearngraph.entities.domain.SkillStatus;
 import java.util.List;
 import java.util.Optional;
 

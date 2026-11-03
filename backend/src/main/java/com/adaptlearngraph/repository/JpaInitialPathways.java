@@ -1,8 +1,8 @@
 package com.adaptlearngraph.repository;
 
 import com.adaptlearngraph.repository.InitialPathwayPorts.*;
-import com.adaptlearngraph.entities.InitialPathwayState.Generation;
-import com.adaptlearngraph.entities.InitialPlanning.Plan;
+import com.adaptlearngraph.entities.domain.InitialPathwayState.Generation;
+import com.adaptlearngraph.entities.domain.InitialPlanning.Plan;
 import java.time.Duration;
 import java.util.*;
 import org.springframework.transaction.support.TransactionTemplate;

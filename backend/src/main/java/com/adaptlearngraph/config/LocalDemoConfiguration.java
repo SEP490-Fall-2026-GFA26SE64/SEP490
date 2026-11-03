@@ -19,7 +19,7 @@ import com.adaptlearngraph.repository.JpaAdaptiveBlueprintEligibilityAdapter;
 import com.adaptlearngraph.repository.JpaAdaptiveBlueprintPreviewAdapter;
 import com.adaptlearngraph.repository.LocalAdaptiveAttemptContext;
 import com.adaptlearngraph.repository.Neo4jAdaptiveBaselineCatalogAdapter;
-import com.adaptlearngraph.entities.AdaptiveBlueprint.VersionPins;
+import com.adaptlearngraph.entities.domain.AdaptiveBlueprint.VersionPins;
 import com.adaptlearngraph.services.AdaptiveAttemptSnapshotResolver;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import javax.sql.DataSource;

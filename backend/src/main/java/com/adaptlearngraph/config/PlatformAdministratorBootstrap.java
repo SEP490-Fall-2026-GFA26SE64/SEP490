@@ -30,11 +30,11 @@ public final class PlatformAdministratorBootstrap implements ApplicationRunner {
         if(email==null || email.isBlank() || password==null || password.isBlank()) {
             throw new IllegalStateException("Configure PLATFORM_ADMIN_SEED_EMAIL and PLATFORM_ADMIN_SEED_PASSWORD outside source control.");
         }
-        String normalized=com.adaptlearngraph.entities.RegistrationFields.normalizeEmail(email);
+        String normalized=com.adaptlearngraph.entities.domain.RegistrationFields.normalizeEmail(email);
         if(normalized.length()>254 || !normalized.matches("[^\\s@]+@[^\\s@]+\\.[^\\s@]+")) {
             throw new IllegalArgumentException("Platform seed email is invalid.");
         }
-        com.adaptlearngraph.entities.RegistrationFields.validatePassword(password);
+        com.adaptlearngraph.entities.domain.RegistrationFields.validatePassword(password);
         var passwords=new RegistrationCryptography("", "");
         transactions.executeWithoutResult(tx->{
             seeds.lock(normalized);

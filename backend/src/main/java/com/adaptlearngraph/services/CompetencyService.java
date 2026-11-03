@@ -1,7 +1,7 @@
 package com.adaptlearngraph.services;
 
 import com.adaptlearngraph.repository.CompetencyRepository;
-import com.adaptlearngraph.entities.CompetencyRecord;
+import com.adaptlearngraph.entities.domain.CompetencyRecord;
 
 import java.util.List;
 import java.util.Objects;

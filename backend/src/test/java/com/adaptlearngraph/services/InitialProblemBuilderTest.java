@@ -5,7 +5,7 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import com.adaptlearngraph.repository.InitialPathwayPorts.*;
 import com.adaptlearngraph.repository.InitialPlanningPorts.*;
-import com.adaptlearngraph.entities.InitialPlanning.*;
+import com.adaptlearngraph.entities.domain.InitialPlanning.*;
 import java.math.BigDecimal;
 import java.util.*;
 import org.junit.jupiter.api.*;

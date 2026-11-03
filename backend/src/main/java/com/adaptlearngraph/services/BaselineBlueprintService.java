@@ -8,7 +8,7 @@ import com.adaptlearngraph.repository.BaselineBlueprintStore.Actor;
 import com.adaptlearngraph.repository.BaselineBlueprintStore.ActorPort;
 import com.adaptlearngraph.repository.BaselineBlueprintStore.WriteConflict;
 import com.adaptlearngraph.repository.BaselineBlueprintValidationPort;
-import com.adaptlearngraph.entities.BaselineBlueprint;
+import com.adaptlearngraph.entities.domain.BaselineBlueprint;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;

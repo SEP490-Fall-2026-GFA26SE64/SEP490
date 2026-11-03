@@ -1,7 +1,7 @@
 package com.adaptlearngraph.repository;
 
 import com.adaptlearngraph.repository.CalibrationPorts.WorkerLease;
-import com.adaptlearngraph.entities.Calibration.*;
+import com.adaptlearngraph.entities.domain.Calibration.*;
 import java.sql.Connection;
 import javax.sql.DataSource;
 

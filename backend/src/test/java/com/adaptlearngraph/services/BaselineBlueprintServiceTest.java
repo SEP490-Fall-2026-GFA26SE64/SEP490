@@ -14,9 +14,9 @@ import com.adaptlearngraph.repository.BaselineBlueprintValidationPort.CatalogRol
 import com.adaptlearngraph.repository.BaselineBlueprintValidationPort.CatalogSkill;
 import com.adaptlearngraph.repository.BaselineBlueprintValidationPort.CoverageKey;
 import com.adaptlearngraph.repository.BaselineBlueprintValidationPort.Difficulty;
-import com.adaptlearngraph.entities.BaselineBlueprint;
-import com.adaptlearngraph.entities.BaselineBlueprint.RoleConfig;
-import com.adaptlearngraph.entities.BaselineBlueprint.SkillConfig;
+import com.adaptlearngraph.entities.domain.BaselineBlueprint;
+import com.adaptlearngraph.entities.domain.BaselineBlueprint.RoleConfig;
+import com.adaptlearngraph.entities.domain.BaselineBlueprint.SkillConfig;
 import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.Instant;

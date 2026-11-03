@@ -3,7 +3,7 @@ package com.adaptlearngraph.apis;
 import com.adaptlearngraph.endpoints.ApiEndpoints;
 import com.adaptlearngraph.services.ModuleAuthoringService;
 import com.adaptlearngraph.services.ModuleAuthoringService.Failure;
-import com.adaptlearngraph.entities.ModuleAuthoring.*;
+import com.adaptlearngraph.entities.domain.ModuleAuthoring.*;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
@@ -31,7 +31,7 @@ public class ModuleAuthoringController {
     @PostMapping("/contents") public ResponseEntity<Content> content(@RequestBody ContentInput input) {
         return ResponseEntity.status(201).body(service.content(input.title(), input.markdown(), input.occupationIds()));
     }
-    public record LessonsInput(String title, List<com.adaptlearngraph.entities.LearningContent.Lesson> lessons, List<String> occupationIds) {}
+    public record LessonsInput(String title, List<com.adaptlearngraph.entities.domain.LearningContent.Lesson> lessons, List<String> occupationIds) {}
     @PostMapping("/contents/lessons") public ResponseEntity<Content> lessons(@RequestBody LessonsInput input) {
         return ResponseEntity.status(201).body(service.lessons(input.title(), input.lessons(), input.occupationIds()));
     }

@@ -2,8 +2,8 @@ package com.adaptlearngraph.repository;
 
 import com.adaptlearngraph.helper.CalibrationJson;
 import com.adaptlearngraph.repository.CalibrationPorts.*;
-import com.adaptlearngraph.entities.Calibration;
-import com.adaptlearngraph.entities.Calibration.*;
+import com.adaptlearngraph.entities.domain.Calibration;
+import com.adaptlearngraph.entities.domain.Calibration.*;
 import com.adaptlearngraph.entities.IrtCalibrationRunEntity;
 import java.time.Instant;
 import java.util.Map;

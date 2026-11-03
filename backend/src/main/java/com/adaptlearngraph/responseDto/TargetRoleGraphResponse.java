@@ -1,6 +1,6 @@
 package com.adaptlearngraph.responseDto;
 
-import com.adaptlearngraph.entities.TargetRoleGraph;
+import com.adaptlearngraph.entities.domain.TargetRoleGraph;
 import java.util.List;
 
 public record TargetRoleGraphResponse(

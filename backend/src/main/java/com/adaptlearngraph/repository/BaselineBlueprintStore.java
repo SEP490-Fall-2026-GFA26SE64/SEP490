@@ -1,6 +1,6 @@
 package com.adaptlearngraph.repository;
 
-import com.adaptlearngraph.entities.BaselineBlueprint;
+import com.adaptlearngraph.entities.domain.BaselineBlueprint;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;

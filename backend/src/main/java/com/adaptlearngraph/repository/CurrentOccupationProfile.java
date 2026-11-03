@@ -2,8 +2,8 @@ package com.adaptlearngraph.repository;
 
 import com.adaptlearngraph.entities.AuditEventEntity;
 import com.adaptlearngraph.services.RoleBaselineFlow.*;
-import com.adaptlearngraph.entities.AdaptiveBlueprint;
-import com.adaptlearngraph.entities.AdaptiveAttempt;
+import com.adaptlearngraph.entities.domain.AdaptiveBlueprint;
+import com.adaptlearngraph.entities.domain.AdaptiveAttempt;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.math.BigDecimal;
 import java.util.*;

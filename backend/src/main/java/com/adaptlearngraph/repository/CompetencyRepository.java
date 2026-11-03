@@ -1,6 +1,6 @@
 package com.adaptlearngraph.repository;
 
-import com.adaptlearngraph.entities.CompetencyRecord;
+import com.adaptlearngraph.entities.domain.CompetencyRecord;
 import java.util.List;
 import java.util.Optional;
 

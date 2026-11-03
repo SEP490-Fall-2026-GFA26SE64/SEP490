@@ -1,6 +1,6 @@
 package com.adaptlearngraph.responseDto;
 
-import com.adaptlearngraph.entities.TargetRole;
+import com.adaptlearngraph.entities.domain.TargetRole;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 

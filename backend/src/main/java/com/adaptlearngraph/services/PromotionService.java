@@ -3,7 +3,7 @@ package com.adaptlearngraph.services;
 import com.adaptlearngraph.repository.PromotionPorts;
 import com.adaptlearngraph.repository.CalibrationPorts.*;
 import com.adaptlearngraph.repository.PromotionPorts.*;
-import com.adaptlearngraph.entities.Calibration.*;
+import com.adaptlearngraph.entities.domain.Calibration.*;
 import java.util.Map;
 import java.util.Objects;
 

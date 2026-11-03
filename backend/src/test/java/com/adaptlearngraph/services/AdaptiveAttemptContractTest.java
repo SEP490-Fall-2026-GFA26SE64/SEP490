@@ -1,6 +1,6 @@
 package com.adaptlearngraph.services;
-import com.adaptlearngraph.entities.AdaptiveAttemptSnapshot;
-import com.adaptlearngraph.entities.AdaptiveAttempt;
+import com.adaptlearngraph.entities.domain.AdaptiveAttemptSnapshot;
+import com.adaptlearngraph.entities.domain.AdaptiveAttempt;
 import com.adaptlearngraph.repository.AdaptiveAttemptOutcomePort;
 import com.adaptlearngraph.repository.AdaptiveAttemptPolicyPort;
 import com.adaptlearngraph.repository.AdaptiveAttemptStore;
@@ -20,9 +20,9 @@ class AdaptiveAttemptContractTest {
   var b=new AdaptiveAttemptSnapshot(version(),a.purpose(),Optional.of("role-b"),Optional.of(2L),pool());
   assertThat(a.microSkillIds()).containsExactlyInAnyOrder("s1","s2","s3");
   assertThat(b.microSkillIds()).isEqualTo(a.microSkillIds());assertThat(b.bounds()).isEqualTo(a.bounds());
-  var v=version();var legacy=new com.adaptlearngraph.entities.AdaptiveBlueprint.Version(v.scope(),v.id(),
-   new com.adaptlearngraph.entities.AdaptiveBlueprint.Configuration("Legacy",new com.adaptlearngraph.entities.AdaptiveBlueprint.Bounds(6,360),
-    Map.of("role-a",new com.adaptlearngraph.entities.AdaptiveBlueprint.Bounds(6,360),"role-b",new com.adaptlearngraph.entities.AdaptiveBlueprint.Bounds(6,360))),
+  var v=version();var legacy=new com.adaptlearngraph.entities.domain.AdaptiveBlueprint.Version(v.scope(),v.id(),
+   new com.adaptlearngraph.entities.domain.AdaptiveBlueprint.Configuration("Legacy",new com.adaptlearngraph.entities.domain.AdaptiveBlueprint.Bounds(6,360),
+    Map.of("role-a",new com.adaptlearngraph.entities.domain.AdaptiveBlueprint.Bounds(6,360),"role-b",new com.adaptlearngraph.entities.domain.AdaptiveBlueprint.Bounds(6,360))),
    v.occupationNameSnapshot(),v.catalogFingerprint(),v.pins(),v.roles(),v.createdBy(),v.createdAt());
   var oldPool=new TreeMap<UUID,String>(pool());oldPool.values().removeIf(s->s.equals("s3"));
   var old=new AdaptiveAttemptSnapshot(legacy,a.purpose(),Optional.of("role-a"),Optional.of(1L),oldPool);

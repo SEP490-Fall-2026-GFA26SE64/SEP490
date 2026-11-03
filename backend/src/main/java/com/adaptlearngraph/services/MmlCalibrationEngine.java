@@ -1,9 +1,9 @@
 package com.adaptlearngraph.services;
 
-import com.adaptlearngraph.entities.Calibration;
-import com.adaptlearngraph.entities.CalibrationBudget;
-import com.adaptlearngraph.entities.CalibrationPolicy;
-import com.adaptlearngraph.entities.Calibration.*;
+import com.adaptlearngraph.entities.domain.Calibration;
+import com.adaptlearngraph.entities.domain.CalibrationBudget;
+import com.adaptlearngraph.entities.domain.CalibrationPolicy;
+import com.adaptlearngraph.entities.domain.Calibration.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;

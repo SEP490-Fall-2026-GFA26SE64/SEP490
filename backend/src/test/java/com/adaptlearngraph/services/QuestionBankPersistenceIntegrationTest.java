@@ -2,7 +2,7 @@ package com.adaptlearngraph.services;
 
 import com.adaptlearngraph.services.QuestionBankUseCase.*;
 import com.adaptlearngraph.repository.QuestionBankPorts.*;
-import com.adaptlearngraph.entities.QuestionBank.*;
+import com.adaptlearngraph.entities.domain.QuestionBank.*;
 import com.adaptlearngraph.repository.JpaQuestionBankStore;
 import com.adaptlearngraph.repository.Neo4jQuestionBankSkillReader;
 import com.adaptlearngraph.repository.JpaBaselineAssessmentDraftStore;

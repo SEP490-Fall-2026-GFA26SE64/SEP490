@@ -1,7 +1,7 @@
 package com.adaptlearngraph.config;
 
-import com.adaptlearngraph.entities.Calibration;
-import com.adaptlearngraph.entities.CalibrationPolicy;
+import com.adaptlearngraph.entities.domain.Calibration;
+import com.adaptlearngraph.entities.domain.CalibrationPolicy;
 import com.adaptlearngraph.helper.CalibrationJson;
 import com.adaptlearngraph.repository.CalibrationPorts;
 import com.adaptlearngraph.repository.AuditEventJpaRepository;

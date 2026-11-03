@@ -1,10 +1,10 @@
 package com.adaptlearngraph.repository;
 
-import com.adaptlearngraph.entities.AdaptiveBlueprint.Activation;
-import com.adaptlearngraph.entities.AdaptiveBlueprint.Scope;
-import com.adaptlearngraph.entities.AdaptiveBlueprint.Version;
-import com.adaptlearngraph.entities.AdaptiveBlueprint.VersionId;
-import com.adaptlearngraph.entities.AdaptiveBlueprint.WorkingRevision;
+import com.adaptlearngraph.entities.domain.AdaptiveBlueprint.Activation;
+import com.adaptlearngraph.entities.domain.AdaptiveBlueprint.Scope;
+import com.adaptlearngraph.entities.domain.AdaptiveBlueprint.Version;
+import com.adaptlearngraph.entities.domain.AdaptiveBlueprint.VersionId;
+import com.adaptlearngraph.entities.domain.AdaptiveBlueprint.WorkingRevision;
 import java.time.Instant;
 import java.util.Objects;
 import java.util.Optional;

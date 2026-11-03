@@ -4,7 +4,7 @@ import com.adaptlearngraph.endpoints.ApiEndpoints;
 import com.adaptlearngraph.dtos.LearningModuleDto.LearningModuleResponse;
 import com.adaptlearngraph.dtos.LearningModuleDto.SaveLearningModuleRequest;
 import com.adaptlearngraph.services.ManageLearningModuleUseCase;
-import com.adaptlearngraph.entities.LearningModuleRecord;
+import com.adaptlearngraph.entities.domain.LearningModuleRecord;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;

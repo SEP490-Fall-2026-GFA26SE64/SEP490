@@ -56,7 +56,7 @@ public class SubscriptionLifecycleController {
     }
     @PutMapping("/api/v1/organizations/{organizationId}/subscription/members/{membershipId}/profile")
     Member profile(@PathVariable UUID organizationId,@PathVariable UUID membershipId,@Valid @RequestBody ProfileInput input) {
-        return lifecycle.updateMember(organizationId,membershipId,new com.adaptlearngraph.entities.MemberProfileUpdate(
+        return lifecycle.updateMember(organizationId,membershipId,new com.adaptlearngraph.entities.domain.MemberProfileUpdate(
                 input.fullName(),input.roles(),input.departmentId(),input.occupationReferenceId(),input.revision()));
     }
     record OrderInput(@NotNull UUID planId,@NotNull UUID expectedVersionId,@NotNull UUID idempotencyKey,UUID replacesOrderId) {

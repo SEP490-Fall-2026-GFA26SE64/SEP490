@@ -6,7 +6,7 @@ import com.adaptlearngraph.services.BaselineBlueprintUseCase.Failure;
 import com.adaptlearngraph.services.BaselineBlueprintUseCase.RoleCoverageRequirement;
 import com.adaptlearngraph.repository.BaselineAssessmentDraftStore.CandidateItem;
 import com.adaptlearngraph.repository.BaselineAssessmentDraftStore.Difficulty;
-import com.adaptlearngraph.entities.BaselineBlueprint;
+import com.adaptlearngraph.entities.domain.BaselineBlueprint;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;

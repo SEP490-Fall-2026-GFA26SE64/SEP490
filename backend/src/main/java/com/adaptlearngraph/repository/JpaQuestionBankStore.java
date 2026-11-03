@@ -1,8 +1,8 @@
 package com.adaptlearngraph.repository;
 
 import com.adaptlearngraph.entities.ItemVersionEntity;
-import com.adaptlearngraph.entities.QuestionBank;
-import com.adaptlearngraph.entities.QuestionBank.*;
+import com.adaptlearngraph.entities.domain.QuestionBank;
+import com.adaptlearngraph.entities.domain.QuestionBank.*;
 import com.adaptlearngraph.entities.QuestionBankEntity;
 import com.adaptlearngraph.repository.QuestionBankPorts.Store;
 import com.fasterxml.jackson.databind.ObjectMapper;

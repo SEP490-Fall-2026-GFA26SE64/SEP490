@@ -1,6 +1,6 @@
 package com.adaptlearngraph.repository;
 
-import com.adaptlearngraph.entities.TargetRoleSnapshot;
+import com.adaptlearngraph.entities.domain.TargetRoleSnapshot;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;

@@ -1,12 +1,12 @@
 package com.adaptlearngraph.repository;
 
-import com.adaptlearngraph.entities.AdaptiveAttempt;
-import com.adaptlearngraph.entities.AdaptiveAttemptSnapshot;
+import com.adaptlearngraph.entities.domain.AdaptiveAttempt;
+import com.adaptlearngraph.entities.domain.AdaptiveAttemptSnapshot;
 import com.adaptlearngraph.services.AdaptiveAttemptAnswerService;
 import com.adaptlearngraph.services.AdaptiveAttemptFinalizationService;
 import com.adaptlearngraph.services.AdaptiveAttemptStartService;
 import static com.adaptlearngraph.services.AdaptiveFixture.*;
-import com.adaptlearngraph.entities.AdaptiveBlueprint.*;
+import com.adaptlearngraph.entities.domain.AdaptiveBlueprint.*;
 import com.adaptlearngraph.services.AdaptiveAttemptUseCase;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.*;

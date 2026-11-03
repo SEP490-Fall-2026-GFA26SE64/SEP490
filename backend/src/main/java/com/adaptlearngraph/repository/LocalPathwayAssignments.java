@@ -1,7 +1,7 @@
 package com.adaptlearngraph.repository;
 
 import com.adaptlearngraph.repository.InitialPathwayPorts.*;
-import com.adaptlearngraph.entities.InitialIdentity;
+import com.adaptlearngraph.entities.domain.InitialIdentity;
 import java.util.*;
 
 /** TMP-REQ001-09. Configured local scope only; never creates assignments or approvals in storage. */

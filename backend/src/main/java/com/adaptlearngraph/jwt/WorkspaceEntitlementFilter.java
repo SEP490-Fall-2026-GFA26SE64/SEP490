@@ -3,8 +3,8 @@ package com.adaptlearngraph.jwt;
 import com.adaptlearngraph.exception.RegistrationFailure;
 import com.adaptlearngraph.repository.SubscriptionIdentity;
 import com.adaptlearngraph.repository.SubscriptionWorkspaceStore;
-import com.adaptlearngraph.entities.SubscriptionAccessPolicy.Action;
-import com.adaptlearngraph.entities.SubscriptionAccessPolicy.Role;
+import com.adaptlearngraph.entities.domain.SubscriptionAccessPolicy.Action;
+import com.adaptlearngraph.entities.domain.SubscriptionAccessPolicy.Role;
 import com.adaptlearngraph.exception.SubscriptionFailure;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
@@ -68,7 +68,7 @@ public final class WorkspaceEntitlementFilter extends OncePerRequestFilter {
                 if(expert && !manager && path.contains("/target-roles/")) {
                     String id=path.substring(path.indexOf("/target-roles/")+"/target-roles/".length()).split("/",2)[0];
                     var targetOpt=targetRoles.findById(organization.toString(),
-                            com.adaptlearngraph.entities.TargetRoleId.fromString(id));
+                            com.adaptlearngraph.entities.domain.TargetRoleId.fromString(id));
                     if(targetOpt.isPresent()) {
                         var target=targetOpt.get();
                         if(target.getAssignedExpertId() != null && !target.getAssignedExpertId().isBlank()

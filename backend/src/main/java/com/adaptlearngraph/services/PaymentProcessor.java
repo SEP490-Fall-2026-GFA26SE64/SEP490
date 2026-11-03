@@ -10,14 +10,14 @@ public final class PaymentProcessor {
     private final PaymentGateway gateway;
     private final Clock clock;
     private final String publicUrl;
-    private final com.adaptlearngraph.entities.IntegrationPolicy policy;
+    private final com.adaptlearngraph.entities.domain.IntegrationPolicy policy;
 
     public PaymentProcessor(PaymentProcessingStore store, PaymentGateway gateway, Clock clock, String publicUrl) {
-        this(store, gateway, clock, publicUrl, com.adaptlearngraph.entities.IntegrationPolicy.ENABLED);
+        this(store, gateway, clock, publicUrl, com.adaptlearngraph.entities.domain.IntegrationPolicy.ENABLED);
     }
 
     public PaymentProcessor(PaymentProcessingStore store, PaymentGateway gateway, Clock clock, String publicUrl,
-            com.adaptlearngraph.entities.IntegrationPolicy policy) {
+            com.adaptlearngraph.entities.domain.IntegrationPolicy policy) {
         this.store = store;
         this.gateway = gateway;
         this.clock = clock;

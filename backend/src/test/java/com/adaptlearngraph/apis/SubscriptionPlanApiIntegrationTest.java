@@ -150,7 +150,7 @@ class SubscriptionPlanApiIntegrationTest {
         UUID registration=jdbc.queryForObject("SELECT registration_id FROM platform.organization_registration WHERE account_id=?",UUID.class,account.id());
         var terms=jdbc.queryForMap("SELECT plan_id,current_version_id FROM platform.subscription_plan WHERE code='starter'");
         var context=new com.adaptlearngraph.repository.SubscriptionIdentity.Context(
-                new com.adaptlearngraph.entities.SubscriptionAccessPolicy.Actor(account.id(),null,true,false,java.util.Set.of(),true),registration);
+                new com.adaptlearngraph.entities.domain.SubscriptionAccessPolicy.Actor(account.id(),null,true,false,java.util.Set.of(),true),registration);
         var now=Instant.now();
         var order=orders.create(context,new com.adaptlearngraph.repository.PaymentOrderStore.Command(
                 null,(UUID)terms.get("plan_id"),(UUID)terms.get("current_version_id"),UUID.randomUUID(),null),now);

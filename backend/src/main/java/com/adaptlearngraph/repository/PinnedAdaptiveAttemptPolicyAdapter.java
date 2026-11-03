@@ -1,7 +1,7 @@
 package com.adaptlearngraph.repository;
 
 import com.adaptlearngraph.services.AdaptiveBlueprintUseCase;
-import com.adaptlearngraph.entities.AdaptiveBlueprint.VersionPins;
+import com.adaptlearngraph.entities.domain.AdaptiveBlueprint.VersionPins;
 import com.adaptlearngraph.utility.AdaptiveIrtPolicy;
 import com.adaptlearngraph.utility.AdaptiveIrtPolicy.Mapping;
 import com.adaptlearngraph.utility.AdaptiveIrtPolicy.Model;

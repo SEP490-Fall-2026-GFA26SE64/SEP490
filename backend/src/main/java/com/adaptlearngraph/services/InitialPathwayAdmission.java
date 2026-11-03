@@ -5,7 +5,7 @@ import com.adaptlearngraph.repository.InitialPathwayStore;
 import com.adaptlearngraph.repository.InitialPathwayPorts.*;
 import com.adaptlearngraph.repository.InitialPathwayStore.*;
 import com.adaptlearngraph.repository.InitialPlanningPorts.Limits;
-import com.adaptlearngraph.entities.InitialIdentity;
+import com.adaptlearngraph.entities.domain.InitialIdentity;
 import java.util.*;
 import java.util.function.Supplier;
 
@@ -34,7 +34,7 @@ public final class InitialPathwayAdmission {
         var replay=coordination.transaction(scope,()->replay(actor,key,bodyHash));
         if(replay.isPresent())return replay.get();
         var input=preview.prepare(actor,command.roleId(),command.levelId());
-        if(input.preview().result().need()==com.adaptlearngraph.entities.RoleGap.Need.LEARNING_REQUIRED)
+        if(input.preview().result().need()==com.adaptlearngraph.entities.domain.RoleGap.Need.LEARNING_REQUIRED)
             requirePlanningVersions(input.binding());
         var preparedSelection=coordination.prepare(scope,input.binding());
         var config=settings.get(); String configHash=configurationHash(config);
@@ -53,7 +53,7 @@ public final class InitialPathwayAdmission {
             var request=store.equivalent(scope,selected,planningHash).orElseGet(()->store.create(scope,
                     new Frozen(input,selected,planningHash,configHash),ALGORITHM,config.version()));
             var response=new Accepted(request.id(),selected.id(),selected.revision(),planningHash,
-                    com.adaptlearngraph.entities.InitialPathwayState.display(request.generation(),request.review(),request.validation()));
+                    com.adaptlearngraph.entities.domain.InitialPathwayState.display(request.generation(),request.review(),request.validation()));
             var result=new Receipt(202,bodyHash,codec.encode(response));
             receipts.save(actor,"CONFIRM_ROLE","ROLE_CONFIRMATION",key,result);return result;
         });

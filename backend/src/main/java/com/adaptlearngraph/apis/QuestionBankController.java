@@ -3,7 +3,7 @@ package com.adaptlearngraph.apis;
 import com.adaptlearngraph.endpoints.ApiEndpoints;
 import com.adaptlearngraph.services.QuestionBankUseCase;
 import com.adaptlearngraph.services.QuestionBankUseCase.*;
-import com.adaptlearngraph.entities.QuestionBank.*;
+import com.adaptlearngraph.entities.domain.QuestionBank.*;
 import java.util.*;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Profile;

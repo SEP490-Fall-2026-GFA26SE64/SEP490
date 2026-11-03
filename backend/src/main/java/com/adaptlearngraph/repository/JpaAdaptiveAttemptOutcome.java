@@ -1,6 +1,6 @@
 package com.adaptlearngraph.repository;
 
-import com.adaptlearngraph.entities.AdaptiveAttempt;
+import com.adaptlearngraph.entities.domain.AdaptiveAttempt;
 import com.adaptlearngraph.entities.AuditEventEntity;
 import com.adaptlearngraph.entities.BaselineAttemptResultEntity;
 import com.adaptlearngraph.entities.BaselineAttemptSkillResultEntity;

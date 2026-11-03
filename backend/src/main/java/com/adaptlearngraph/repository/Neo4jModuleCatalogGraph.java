@@ -1,12 +1,12 @@
 package com.adaptlearngraph.repository;
 
-import com.adaptlearngraph.entities.ModuleAuthoring.CatalogModule;
-import com.adaptlearngraph.entities.ModuleAuthoring.CatalogTeaching;
-import com.adaptlearngraph.entities.ModuleAuthoring.Choice;
-import com.adaptlearngraph.entities.ModuleAuthoring.Document;
-import com.adaptlearngraph.entities.ModuleAuthoring.Metadata;
-import com.adaptlearngraph.entities.ModuleAuthoring.Revision;
-import com.adaptlearngraph.entities.ModuleAuthoring.Teaching;
+import com.adaptlearngraph.entities.domain.ModuleAuthoring.CatalogModule;
+import com.adaptlearngraph.entities.domain.ModuleAuthoring.CatalogTeaching;
+import com.adaptlearngraph.entities.domain.ModuleAuthoring.Choice;
+import com.adaptlearngraph.entities.domain.ModuleAuthoring.Document;
+import com.adaptlearngraph.entities.domain.ModuleAuthoring.Metadata;
+import com.adaptlearngraph.entities.domain.ModuleAuthoring.Revision;
+import com.adaptlearngraph.entities.domain.ModuleAuthoring.Teaching;
 import com.adaptlearngraph.services.ModuleAuthoringService.Failure;
 import java.util.ArrayList;
 import java.util.HashMap;

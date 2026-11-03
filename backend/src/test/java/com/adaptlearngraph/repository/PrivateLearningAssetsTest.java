@@ -6,8 +6,8 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import com.adaptlearngraph.services.ModuleAuthoringService;
-import com.adaptlearngraph.entities.LearningResources.Limits;
-import com.adaptlearngraph.entities.ModuleAuthoring.Actor;
+import com.adaptlearngraph.entities.domain.LearningResources.Limits;
+import com.adaptlearngraph.entities.domain.ModuleAuthoring.Actor;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.junit.jupiter.api.Test;

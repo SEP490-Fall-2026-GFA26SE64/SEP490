@@ -1,8 +1,8 @@
 package com.adaptlearngraph.services;
 
-import com.adaptlearngraph.entities.InitialPlanning;
+import com.adaptlearngraph.entities.domain.InitialPlanning;
 import static org.assertj.core.api.Assertions.*;
-import com.adaptlearngraph.entities.InitialPlanning.*;
+import com.adaptlearngraph.entities.domain.InitialPlanning.*;
 import java.math.BigDecimal;
 import java.util.*;
 import org.junit.jupiter.api.Test;

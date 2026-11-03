@@ -1,9 +1,9 @@
 package com.adaptlearngraph.repository;
 
 import com.adaptlearngraph.entities.LearningAssetEntity;
-import com.adaptlearngraph.entities.LearningContent;
-import com.adaptlearngraph.entities.LearningContent.Lesson;
-import com.adaptlearngraph.entities.LearningResources.*;
+import com.adaptlearngraph.entities.domain.LearningContent;
+import com.adaptlearngraph.entities.domain.LearningContent.Lesson;
+import com.adaptlearngraph.entities.domain.LearningResources.*;
 import com.adaptlearngraph.entities.LearningSettingsAuditEntity;
 import com.adaptlearngraph.entities.LearningVersionSwitchEntity;
 import com.adaptlearngraph.entities.ManualLearningPathwayEntity;

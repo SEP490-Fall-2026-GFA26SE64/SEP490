@@ -5,7 +5,7 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import com.adaptlearngraph.repository.InitialPathwayPorts.*;
 import com.adaptlearngraph.repository.InitialPathwayStore.*;
-import com.adaptlearngraph.entities.InitialPathwayState.*;
+import com.adaptlearngraph.entities.domain.InitialPathwayState.*;
 import java.util.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,7 +26,7 @@ class InitialPathwayViewTest {
     void E02_generationWithoutDraftExposesOnlySafeLifecycleAndNeverApprovesOrCompletes(Generation generation) {
         var frozen=f.frozen;
         if(generation==Generation.NO_LEARNING_REQUIRED) {
-            var noGap=com.adaptlearngraph.entities.RoleGap.calculate(f.binding.requirements(),Map.of("S",new com.adaptlearngraph.entities.RoleGap.Evidence(new java.math.BigDecimal("0.9"),"known")),Map.of());
+            var noGap=com.adaptlearngraph.entities.domain.RoleGap.calculate(f.binding.requirements(),Map.of("S",new com.adaptlearngraph.entities.domain.RoleGap.Evidence(new java.math.BigDecimal("0.9"),"known")),Map.of());
             var p=f.frozen.input().preview();
             var preview=new RoleGapPreview.Preview(p.businessRoleId(),p.roleId(),p.levelId(),p.roleName(),p.levelName(),p.expectedSelectionId(),p.expectedSelectionRevision(),p.gapInputHash(),p.versions(),noGap);
             frozen=new Frozen(new RoleGapPreview.Prepared(f.binding,null,preview),f.selection,f.frozen.planningHash(),f.frozen.configurationHash());

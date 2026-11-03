@@ -1,9 +1,9 @@
 package com.adaptlearngraph.services;
 
 
-import com.adaptlearngraph.entities.Calibration;
-import com.adaptlearngraph.entities.CalibrationBudget;
-import com.adaptlearngraph.entities.CalibrationPolicy;
+import com.adaptlearngraph.entities.domain.Calibration;
+import com.adaptlearngraph.entities.domain.CalibrationBudget;
+import com.adaptlearngraph.entities.domain.CalibrationPolicy;
 /** Exact response-pattern aggregation for the selected complete nine-item unidimensional design. */
 public final class CalibrationExpectation {
     record Pattern(String answers,int count){}

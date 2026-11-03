@@ -3,7 +3,7 @@ package com.adaptlearngraph.repository;
 import com.adaptlearngraph.entities.AssessmentPolicyActivationEventEntity;
 import com.adaptlearngraph.entities.AssessmentPolicyCommandEntity;
 import com.adaptlearngraph.entities.AssessmentPolicyVersionEntity;
-import com.adaptlearngraph.entities.OrganizationAssessmentPolicy.*;
+import com.adaptlearngraph.entities.domain.OrganizationAssessmentPolicy.*;
 import com.adaptlearngraph.helper.AssessmentPolicyJson;
 import com.adaptlearngraph.services.AssessmentPolicyService.Failure;
 import java.util.Optional;

@@ -1,7 +1,7 @@
 package com.adaptlearngraph.services;
 
-import com.adaptlearngraph.entities.InitialIdentity;
-import com.adaptlearngraph.entities.RoleGap;
+import com.adaptlearngraph.entities.domain.InitialIdentity;
+import com.adaptlearngraph.entities.domain.RoleGap;
 import com.adaptlearngraph.repository.InitialCatalogPort;
 import com.adaptlearngraph.repository.InitialPathwayPorts;
 import com.adaptlearngraph.repository.InitialPathwayPorts.*;

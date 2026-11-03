@@ -1,8 +1,8 @@
 package com.adaptlearngraph.services;
 
 import com.adaptlearngraph.repository.QuestionBankPorts.*;
-import com.adaptlearngraph.entities.QuestionBank;
-import com.adaptlearngraph.entities.QuestionBank.*;
+import com.adaptlearngraph.entities.domain.QuestionBank;
+import com.adaptlearngraph.entities.domain.QuestionBank.*;
 import java.time.*;
 import java.util.*;
 import java.util.function.Function;

@@ -1,7 +1,7 @@
 package com.adaptlearngraph.repository;
 
 import com.adaptlearngraph.repository.AdaptiveAttemptStore.*;
-import com.adaptlearngraph.entities.AdaptiveAttempt.Scope;
+import com.adaptlearngraph.entities.domain.AdaptiveAttempt.Scope;
 import jakarta.persistence.PersistenceException;
 import java.util.Objects;
 import java.util.UUID;

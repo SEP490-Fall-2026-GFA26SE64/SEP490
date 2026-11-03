@@ -5,7 +5,7 @@ import com.adaptlearngraph.utility.RegistrationCryptography;
 import com.adaptlearngraph.helper.PaymentGateway;
 import com.adaptlearngraph.repository.PaymentOrderStore;
 import com.adaptlearngraph.repository.SubscriptionIdentity;
-import com.adaptlearngraph.entities.SubscriptionAccessPolicy.Actor;
+import com.adaptlearngraph.entities.domain.SubscriptionAccessPolicy.Actor;
 import com.adaptlearngraph.repository.JpaPaymentOrderStore;
 import com.adaptlearngraph.repository.JpaPaymentProcessingStore;
 import java.nio.charset.StandardCharsets;

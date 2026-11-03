@@ -13,7 +13,7 @@ import com.adaptlearngraph.repository.TargetSelectionActorPort;
 import com.adaptlearngraph.repository.TargetSelectionActorPort.SelectionActor;
 import com.adaptlearngraph.repository.TargetSelectionStorePort;
 import com.adaptlearngraph.repository.TargetSelectionStorePort.StoredSelectionRequest;
-import com.adaptlearngraph.entities.TargetRoleSelection;
+import com.adaptlearngraph.entities.domain.TargetRoleSelection;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;

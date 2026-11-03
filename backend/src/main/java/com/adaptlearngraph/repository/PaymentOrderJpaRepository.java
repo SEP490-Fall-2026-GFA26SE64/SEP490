@@ -1,9 +1,9 @@
 package com.adaptlearngraph.repository;
 
 import com.adaptlearngraph.constants.TransactionManagers;
-import com.adaptlearngraph.entities.PaymentOrder;
+import com.adaptlearngraph.entities.domain.PaymentOrder;
 import com.adaptlearngraph.entities.PaymentOrderEntity;
-import com.adaptlearngraph.entities.PlanTerms;
+import com.adaptlearngraph.entities.domain.PlanTerms;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;

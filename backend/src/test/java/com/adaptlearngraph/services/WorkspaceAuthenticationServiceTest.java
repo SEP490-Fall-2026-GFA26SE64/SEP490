@@ -9,8 +9,8 @@ import com.adaptlearngraph.repository.RegistrationStore;
 import com.adaptlearngraph.repository.WorkspaceIdentityStore;
 import com.adaptlearngraph.repository.WorkspaceIdentityStore.Credential;
 import com.adaptlearngraph.exception.RegistrationFailure;
-import com.adaptlearngraph.entities.WorkspacePrincipal;
-import com.adaptlearngraph.entities.WorkspacePrincipal.Scope;
+import com.adaptlearngraph.entities.domain.WorkspacePrincipal;
+import com.adaptlearngraph.entities.domain.WorkspacePrincipal.Scope;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
@@ -56,7 +56,7 @@ class WorkspaceAuthenticationServiceTest {
     void disabledMfaAllowsAdminWithoutFalselyClaimingMfaAndReenableRejectsThatSession() {
         account(credential(Set.of("ORGANIZATION_ADMINISTRATOR"), 0, true));
         var development = new WorkspaceAuthenticationService(identities, security, secrets, registration,
-                Clock.fixed(now, ZoneOffset.UTC), new com.adaptlearngraph.entities.IntegrationPolicy(true, true, false));
+                Clock.fixed(now, ZoneOffset.UTC), new com.adaptlearngraph.entities.domain.IntegrationPolicy(true, true, false));
         var principal = development.signIn("employee@example.test", "correct-password", "test-address");
         assertEquals(Scope.FULL, principal.scope());
         assertFalse(principal.mfaVerified());
@@ -72,7 +72,7 @@ class WorkspaceAuthenticationServiceTest {
         account(new Credential(source.accountId(), source.organizationId(), source.email(), source.fullName(),
                 source.passwordHash(), true, true, source.roles(), null, 0, false, false, true));
         var development = new WorkspaceAuthenticationService(identities, security, secrets, registration,
-                Clock.fixed(now, ZoneOffset.UTC), new com.adaptlearngraph.entities.IntegrationPolicy(true, false, true));
+                Clock.fixed(now, ZoneOffset.UTC), new com.adaptlearngraph.entities.domain.IntegrationPolicy(true, false, true));
         var principal = development.signIn("employee@example.test", "correct-password", "test-address");
         assertEquals("COMPLETE", development.current(principal).stage());
         assertThrows(RegistrationFailure.class, () -> service.current(principal));

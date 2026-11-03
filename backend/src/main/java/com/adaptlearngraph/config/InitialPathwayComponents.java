@@ -115,13 +115,13 @@ public abstract class InitialPathwayComponents {
         if(localFixtures(env) && env.getProperty("pathway.initial.local-planning.enabled",Boolean.class,false)) {
             var policy=localPlanning(json,profiles,semantics,env);
             return new ReadinessDefinitions() {
-                public PrerequisiteNeed prerequisite(Scope s,Binding b,com.adaptlearngraph.entities.InitialPlanning.Edge e){return policy.prerequisite(s,b,e);}
-                public Optional<com.adaptlearngraph.entities.InitialPlanning.GateDefinition> gate(Scope s,Binding b,Provider p,com.adaptlearngraph.entities.InitialPlanning.Edge e){return policy.gate(s,b,p,e);}
+                public PrerequisiteNeed prerequisite(Scope s,Binding b,com.adaptlearngraph.entities.domain.InitialPlanning.Edge e){return policy.prerequisite(s,b,e);}
+                public Optional<com.adaptlearngraph.entities.domain.InitialPlanning.GateDefinition> gate(Scope s,Binding b,Provider p,com.adaptlearngraph.entities.domain.InitialPlanning.Edge e){return policy.gate(s,b,p,e);}
             };
         }
         return new ReadinessDefinitions(){
-            public PrerequisiteNeed prerequisite(Scope s,Binding b,com.adaptlearngraph.entities.InitialPlanning.Edge e){throw missing("READINESS_DEFINITIONS_NOT_CONFIGURED");}
-            public Optional<com.adaptlearngraph.entities.InitialPlanning.GateDefinition> gate(Scope s,Binding b,Provider p,com.adaptlearngraph.entities.InitialPlanning.Edge e){throw missing("READINESS_DEFINITIONS_NOT_CONFIGURED");}
+            public PrerequisiteNeed prerequisite(Scope s,Binding b,com.adaptlearngraph.entities.domain.InitialPlanning.Edge e){throw missing("READINESS_DEFINITIONS_NOT_CONFIGURED");}
+            public Optional<com.adaptlearngraph.entities.domain.InitialPlanning.GateDefinition> gate(Scope s,Binding b,Provider p,com.adaptlearngraph.entities.domain.InitialPlanning.Edge e){throw missing("READINESS_DEFINITIONS_NOT_CONFIGURED");}
         };
     }
     @Bean @ConditionalOnMissingBean(ReviewAssignments.class) ReviewAssignments initialAssignments(InitialPathwayRepositories data,Environment env){

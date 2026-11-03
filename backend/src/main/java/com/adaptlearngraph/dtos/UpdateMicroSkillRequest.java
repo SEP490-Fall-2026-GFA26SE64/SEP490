@@ -1,6 +1,6 @@
 package com.adaptlearngraph.dtos;
 
-import com.adaptlearngraph.entities.SkillStatus;
+import com.adaptlearngraph.entities.domain.SkillStatus;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 

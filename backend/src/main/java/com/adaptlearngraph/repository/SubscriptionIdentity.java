@@ -1,6 +1,6 @@
 package com.adaptlearngraph.repository;
 
-import com.adaptlearngraph.entities.SubscriptionAccessPolicy.Actor;
+import com.adaptlearngraph.entities.domain.SubscriptionAccessPolicy.Actor;
 import java.util.UUID;
 
 public interface SubscriptionIdentity {

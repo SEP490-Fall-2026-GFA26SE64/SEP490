@@ -1,6 +1,6 @@
 package com.adaptlearngraph.responseDto;
 
-import com.adaptlearngraph.entities.PrerequisiteEdge;
+import com.adaptlearngraph.entities.domain.PrerequisiteEdge;
 
 public record PrerequisiteResponse(
         String sourceSkillId,

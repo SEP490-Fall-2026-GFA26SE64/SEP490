@@ -1,6 +1,6 @@
 package com.adaptlearngraph.services;
 
-import com.adaptlearngraph.entities.CompetencyRecord;
+import com.adaptlearngraph.entities.domain.CompetencyRecord;
 import java.util.List;
 
 public interface ManageCompetencyUseCase {

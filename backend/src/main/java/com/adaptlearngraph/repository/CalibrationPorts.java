@@ -1,7 +1,7 @@
 package com.adaptlearngraph.repository;
 
-import com.adaptlearngraph.entities.Calibration.*;
-import com.adaptlearngraph.entities.Calibration;
+import com.adaptlearngraph.entities.domain.Calibration.*;
+import com.adaptlearngraph.entities.domain.Calibration;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
@@ -11,7 +11,7 @@ public final class CalibrationPorts {
     public enum Action { CALIBRATE, READ, PROMOTE }
     /** Owner-supplied trusted identity and exact bank/model grants. Never constructed from request principal fields. */
     public record Grant(UUID actorId, Scope scope) {
-        public Grant { com.adaptlearngraph.entities.Calibration.id(actorId); java.util.Objects.requireNonNull(scope); }
+        public Grant { com.adaptlearngraph.entities.domain.Calibration.id(actorId); java.util.Objects.requireNonNull(scope); }
     }
     public interface Authorization {
         /** All actions require the owner's trusted System Administrator permission, not legacy role aliases. */
@@ -38,9 +38,9 @@ public final class CalibrationPorts {
     public interface Encoding {
         String hash(Object value);
         String algorithmHash();
-        default com.adaptlearngraph.entities.CalibrationPolicy policyFor(String hash){
+        default com.adaptlearngraph.entities.domain.CalibrationPolicy policyFor(String hash){
             Calibration.require(algorithmHash().equals(hash));
-            return com.adaptlearngraph.entities.CalibrationPolicy.syntheticV1();
+            return com.adaptlearngraph.entities.domain.CalibrationPolicy.syntheticV1();
         }
     }
     public interface Decoding { <T> T read(String body,Class<T> type); }

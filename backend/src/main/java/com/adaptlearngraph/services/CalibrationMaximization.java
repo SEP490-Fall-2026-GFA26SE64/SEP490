@@ -1,9 +1,9 @@
 package com.adaptlearngraph.services;
 
 
-import com.adaptlearngraph.entities.Calibration;
-import com.adaptlearngraph.entities.CalibrationBudget;
-import com.adaptlearngraph.entities.CalibrationPolicy;
+import com.adaptlearngraph.entities.domain.Calibration;
+import com.adaptlearngraph.entities.domain.CalibrationBudget;
+import com.adaptlearngraph.entities.domain.CalibrationPolicy;
 /** Bounded generalized M-step. Every accepted Newton/gradient step increases the expected log likelihood. */
 public final class CalibrationMaximization {
     record Parameters(double a,double b) {}

@@ -1,9 +1,9 @@
 package com.adaptlearngraph.services;
 import com.adaptlearngraph.utility.Irt3pl;
 import com.adaptlearngraph.utility.AdaptiveIrtPolicy;
-import com.adaptlearngraph.entities.AdaptiveAttempt;
-import com.adaptlearngraph.entities.AdaptiveAttemptSnapshot;
-import com.adaptlearngraph.entities.AdaptiveBlueprint.*;
+import com.adaptlearngraph.entities.domain.AdaptiveAttempt;
+import com.adaptlearngraph.entities.domain.AdaptiveAttemptSnapshot;
+import com.adaptlearngraph.entities.domain.AdaptiveBlueprint.*;
 import com.adaptlearngraph.repository.AdaptiveBlueprintEligibilityPort.*;
 import java.time.Instant;
 import java.util.*;

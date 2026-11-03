@@ -1,7 +1,7 @@
 package com.adaptlearngraph.repository;
 
 import com.adaptlearngraph.constants.LocalDemoIdentity;
-import com.adaptlearngraph.entities.AdaptiveBlueprint.VersionPins;
+import com.adaptlearngraph.entities.domain.AdaptiveBlueprint.VersionPins;
 import com.adaptlearngraph.constants.DevelopmentWorkspace;
 import java.util.*;
 

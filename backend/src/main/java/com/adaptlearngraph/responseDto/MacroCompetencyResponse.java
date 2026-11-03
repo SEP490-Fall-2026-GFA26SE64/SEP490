@@ -1,6 +1,6 @@
 package com.adaptlearngraph.responseDto;
 
-import com.adaptlearngraph.entities.MacroCompetency;
+import com.adaptlearngraph.entities.domain.MacroCompetency;
 
 import java.time.Instant;
 

@@ -5,7 +5,7 @@ import com.adaptlearngraph.repository.AdaptiveAttemptContextPort;
 import com.adaptlearngraph.repository.AdaptiveAttemptFinalizationPort;
 import com.adaptlearngraph.repository.AdaptiveAttemptStore;
 import com.adaptlearngraph.services.AdaptiveAttemptUseCase.*;
-import com.adaptlearngraph.entities.AdaptiveAttempt;
+import com.adaptlearngraph.entities.domain.AdaptiveAttempt;
 import java.nio.CharBuffer;
 import java.nio.charset.*;
 import java.security.*;

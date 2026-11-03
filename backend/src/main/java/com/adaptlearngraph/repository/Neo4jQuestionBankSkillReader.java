@@ -1,7 +1,7 @@
 package com.adaptlearngraph.repository;
 
-import com.adaptlearngraph.entities.QuestionBank.Choice;
-import com.adaptlearngraph.entities.QuestionBank.Failure;
+import com.adaptlearngraph.entities.domain.QuestionBank.Choice;
+import com.adaptlearngraph.entities.domain.QuestionBank.Failure;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;

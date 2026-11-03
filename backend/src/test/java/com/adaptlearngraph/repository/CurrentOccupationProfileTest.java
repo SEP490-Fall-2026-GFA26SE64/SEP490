@@ -3,7 +3,7 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import static org.mockito.ArgumentMatchers.*;
 import static com.adaptlearngraph.services.AdaptiveFixture.*;
-import com.adaptlearngraph.entities.AdaptiveBlueprint.*;
+import com.adaptlearngraph.entities.domain.AdaptiveBlueprint.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.math.BigDecimal;
 import java.util.*;

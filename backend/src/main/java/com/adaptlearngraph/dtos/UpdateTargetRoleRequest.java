@@ -1,6 +1,6 @@
 package com.adaptlearngraph.dtos;
 
-import com.adaptlearngraph.entities.RoleTrack;
+import com.adaptlearngraph.entities.domain.RoleTrack;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 

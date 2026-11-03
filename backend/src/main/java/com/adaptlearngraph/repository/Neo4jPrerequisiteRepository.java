@@ -1,8 +1,8 @@
 package com.adaptlearngraph.repository;
 
 import com.adaptlearngraph.entities.MicroSkillNode;
-import com.adaptlearngraph.entities.PrerequisiteEdge;
-import com.adaptlearngraph.entities.SkillStatus;
+import com.adaptlearngraph.entities.domain.PrerequisiteEdge;
+import com.adaptlearngraph.entities.domain.SkillStatus;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;

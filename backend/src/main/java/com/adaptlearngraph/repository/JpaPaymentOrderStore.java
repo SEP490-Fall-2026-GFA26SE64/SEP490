@@ -1,12 +1,12 @@
 package com.adaptlearngraph.repository;
 
-import com.adaptlearngraph.entities.BillingCalendar;
+import com.adaptlearngraph.entities.domain.BillingCalendar;
 import com.adaptlearngraph.entities.OutboxEventEntity;
-import com.adaptlearngraph.entities.PaymentOrder;
+import com.adaptlearngraph.entities.domain.PaymentOrder;
 import com.adaptlearngraph.entities.PaymentOrderEntity;
-import com.adaptlearngraph.entities.PlanTerms;
+import com.adaptlearngraph.entities.domain.PlanTerms;
 import com.adaptlearngraph.entities.ProcessingJobEntity;
-import com.adaptlearngraph.entities.SubscriptionAccessPolicy.Role;
+import com.adaptlearngraph.entities.domain.SubscriptionAccessPolicy.Role;
 import com.adaptlearngraph.entities.SubscriptionIntentEntity;
 import com.adaptlearngraph.exception.SubscriptionFailure;
 import java.nio.charset.StandardCharsets;
@@ -122,7 +122,7 @@ public final class JpaPaymentOrderStore implements PaymentOrderStore {
             if (status.isEmpty() || !"ACTIVE".equals(status.get())) throw forbidden();
             if (!data.workspaces().ready(organizationId)) throw forbidden();
             workspaces.require(context.actor(), organizationId,
-                    com.adaptlearngraph.entities.SubscriptionAccessPolicy.Action.RENEW, now);
+                    com.adaptlearngraph.entities.domain.SubscriptionAccessPolicy.Action.RENEW, now);
         }
     }
 

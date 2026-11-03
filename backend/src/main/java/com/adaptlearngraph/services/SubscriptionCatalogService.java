@@ -2,11 +2,11 @@ package com.adaptlearngraph.services;
 
 import com.adaptlearngraph.repository.SubscriptionIdentity;
 import com.adaptlearngraph.repository.SubscriptionPlanStore;
-import com.adaptlearngraph.entities.BillingCalendar;
-import com.adaptlearngraph.entities.PlanTerms;
-import com.adaptlearngraph.entities.SubscriptionAccessPolicy.Role;
+import com.adaptlearngraph.entities.domain.BillingCalendar;
+import com.adaptlearngraph.entities.domain.PlanTerms;
+import com.adaptlearngraph.entities.domain.SubscriptionAccessPolicy.Role;
 import com.adaptlearngraph.exception.SubscriptionFailure;
-import com.adaptlearngraph.entities.SubscriptionPlan;
+import com.adaptlearngraph.entities.domain.SubscriptionPlan;
 import java.time.Clock;
 import java.util.List;
 import java.util.UUID;

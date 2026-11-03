@@ -5,8 +5,8 @@ import com.adaptlearngraph.repository.InitialPathwayStore;
 import com.adaptlearngraph.repository.InitialPathwayPorts.*;
 import com.adaptlearngraph.repository.InitialPlanningPorts.*;
 import com.adaptlearngraph.repository.InitialPathwayStore.*;
-import com.adaptlearngraph.entities.InitialPathwayState.*;
-import com.adaptlearngraph.entities.InitialPlanning.Dependency;
+import com.adaptlearngraph.entities.domain.InitialPathwayState.*;
+import com.adaptlearngraph.entities.domain.InitialPlanning.Dependency;
 import java.util.*;
 
 /** Reusable content/start/segment hook; actual owner routes must call it on each protected access. */

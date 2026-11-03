@@ -1,6 +1,6 @@
 package com.adaptlearngraph.repository;
 
-import com.adaptlearngraph.entities.AdaptiveAttempt;
+import com.adaptlearngraph.entities.domain.AdaptiveAttempt;
 import com.adaptlearngraph.utility.AdaptiveItemSelector.Outcome;
 import java.time.Instant;
 

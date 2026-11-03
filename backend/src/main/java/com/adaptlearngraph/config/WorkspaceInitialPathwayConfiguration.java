@@ -98,13 +98,13 @@ public class WorkspaceInitialPathwayConfiguration extends InitialPathwayComponen
         if(mainPlanningEnabled(env)) {
             var planning=mainPlanning(json,profiles,semantics,env);
             return new ReadinessDefinitions() {
-                public PrerequisiteNeed prerequisite(Scope scope,Binding binding,com.adaptlearngraph.entities.InitialPlanning.Edge edge){return planning.prerequisite(scope,binding,edge);}
-                public java.util.Optional<com.adaptlearngraph.entities.InitialPlanning.GateDefinition> gate(Scope scope,Binding binding,Provider provider,com.adaptlearngraph.entities.InitialPlanning.Edge edge){return planning.gate(scope,binding,provider,edge);}
+                public PrerequisiteNeed prerequisite(Scope scope,Binding binding,com.adaptlearngraph.entities.domain.InitialPlanning.Edge edge){return planning.prerequisite(scope,binding,edge);}
+                public java.util.Optional<com.adaptlearngraph.entities.domain.InitialPlanning.GateDefinition> gate(Scope scope,Binding binding,Provider provider,com.adaptlearngraph.entities.domain.InitialPlanning.Edge edge){return planning.gate(scope,binding,provider,edge);}
             };
         }
         return new ReadinessDefinitions(){
-            public PrerequisiteNeed prerequisite(Scope scope,Binding binding,com.adaptlearngraph.entities.InitialPlanning.Edge edge){throw missing("READINESS_DEFINITIONS_NOT_CONFIGURED");}
-            public java.util.Optional<com.adaptlearngraph.entities.InitialPlanning.GateDefinition> gate(Scope scope,Binding binding,Provider provider,com.adaptlearngraph.entities.InitialPlanning.Edge edge){throw missing("READINESS_DEFINITIONS_NOT_CONFIGURED");}
+            public PrerequisiteNeed prerequisite(Scope scope,Binding binding,com.adaptlearngraph.entities.domain.InitialPlanning.Edge edge){throw missing("READINESS_DEFINITIONS_NOT_CONFIGURED");}
+            public java.util.Optional<com.adaptlearngraph.entities.domain.InitialPlanning.GateDefinition> gate(Scope scope,Binding binding,Provider provider,com.adaptlearngraph.entities.domain.InitialPlanning.Edge edge){throw missing("READINESS_DEFINITIONS_NOT_CONFIGURED");}
         };
     }
     @Bean @Override @ConditionalOnMissingBean(Availability.class)

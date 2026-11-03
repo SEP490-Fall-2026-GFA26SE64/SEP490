@@ -1,7 +1,7 @@
 package com.adaptlearngraph.services;
 
-import com.adaptlearngraph.entities.BaselineBlueprint;
-import com.adaptlearngraph.entities.BaselineBlueprint.RoleConfig;
+import com.adaptlearngraph.entities.domain.BaselineBlueprint;
+import com.adaptlearngraph.entities.domain.BaselineBlueprint.RoleConfig;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;

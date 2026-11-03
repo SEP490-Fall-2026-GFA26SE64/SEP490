@@ -2,7 +2,7 @@ package com.adaptlearngraph.services;
 
 import com.adaptlearngraph.services.AdaptiveBlueprintUseCase.*;
 import com.adaptlearngraph.repository.AdaptiveBlueprintEligibilityPort.Snapshot;
-import com.adaptlearngraph.entities.AdaptiveBlueprint.Configuration;
+import com.adaptlearngraph.entities.domain.AdaptiveBlueprint.Configuration;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -52,7 +52,7 @@ public final class AdaptiveBlueprintValidator {
         }
         var skills = eligible.roles().values().stream().flatMap(role -> role.role().skills().keySet().stream())
                 .collect(Collectors.toCollection(java.util.TreeSet::new));
-        var snapshots = new java.util.HashMap<String, com.adaptlearngraph.entities.AdaptiveBlueprint.SkillSnapshot>();
+        var snapshots = new java.util.HashMap<String, com.adaptlearngraph.entities.domain.AdaptiveBlueprint.SkillSnapshot>();
         eligible.roles().values().forEach(role -> role.role().skills().forEach((id, snapshot) -> {
             var previous = snapshots.putIfAbsent(id, snapshot);
             if (previous != null && !previous.equals(snapshot)) {

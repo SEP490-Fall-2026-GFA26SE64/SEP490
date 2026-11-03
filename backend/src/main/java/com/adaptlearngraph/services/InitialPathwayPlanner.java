@@ -1,8 +1,8 @@
 package com.adaptlearngraph.services;
 
-import com.adaptlearngraph.entities.InitialPlanObjective;
-import com.adaptlearngraph.entities.InitialPlanning;
-import com.adaptlearngraph.entities.InitialPlanning.*;
+import com.adaptlearngraph.entities.domain.InitialPlanObjective;
+import com.adaptlearngraph.entities.domain.InitialPlanning;
+import com.adaptlearngraph.entities.domain.InitialPlanning.*;
 import java.util.*;
 
 /** Prove Primary availability, then bounded branch-and-bound over legal complete paths. */

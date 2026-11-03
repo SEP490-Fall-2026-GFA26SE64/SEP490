@@ -1,7 +1,7 @@
 package com.adaptlearngraph.repository;
 
-import com.adaptlearngraph.entities.RegistrationFields;
-import com.adaptlearngraph.entities.RegistrationActor;
+import com.adaptlearngraph.entities.domain.RegistrationFields;
+import com.adaptlearngraph.entities.domain.RegistrationActor;
 import com.adaptlearngraph.helper.RegistrationMailDelivery;
 import com.adaptlearngraph.services.RegistrationMailWorker;
 import com.adaptlearngraph.utility.RegistrationCryptography;
@@ -99,7 +99,7 @@ class RegistrationPostgresIntegrationTest {
             for (boolean mfaRequired : new boolean[] {false, true}) {
                 var development = new RegistrationService(store, crypto,
                         () -> { if (!emailRequired) throw new AssertionError("SMTP must not be required"); },
-                        clock, new com.adaptlearngraph.entities.IntegrationPolicy(true, emailRequired, mfaRequired));
+                        clock, new com.adaptlearngraph.entities.domain.IntegrationPolicy(true, emailRequired, mfaRequired));
                 var actor = development.register(fields(email(), null), PASSWORD, UUID.randomUUID().toString());
                 assertThat(development.current(actor).stage()).isEqualTo(
                         emailRequired ? "VERIFY_EMAIL" : mfaRequired ? "SETUP_MFA" : "COMPLETE");
@@ -117,7 +117,7 @@ class RegistrationPostgresIntegrationTest {
     @Test
     void disabledEmailStillRequiresRealMfaEnrollmentAndPreservesNullEmailProof() throws Exception {
         var development = new RegistrationService(store, crypto, () -> { throw new AssertionError("No SMTP"); }, clock,
-                new com.adaptlearngraph.entities.IntegrationPolicy(true, false, true));
+                new com.adaptlearngraph.entities.domain.IntegrationPolicy(true, false, true));
         var initial = development.register(fields(email(), null), PASSWORD, address);
         assertThat(development.current(initial).stage()).isEqualTo("SETUP_MFA");
         var enrollment = development.prepareEnrollment(initial, null);
@@ -136,7 +136,7 @@ class RegistrationPostgresIntegrationTest {
     @Test
     void disabledMfaCompletesAfterRealEmailProofWithoutCreatingAuthenticator() {
         var development = new RegistrationService(store, crypto, () -> {}, clock,
-                new com.adaptlearngraph.entities.IntegrationPolicy(true, true, false));
+                new com.adaptlearngraph.entities.domain.IntegrationPolicy(true, true, false));
         var initial = development.register(fields(email(), null), PASSWORD, address);
         var completed = development.verifyEmail(initial, emailCode(initial), address);
         assertThat(development.current(completed).stage()).isEqualTo("COMPLETE");
@@ -148,7 +148,7 @@ class RegistrationPostgresIntegrationTest {
     @Test
     void reenablingRequiresRealEmailAndMfaEvenForAnExistingFullBypassSession() throws Exception {
         var development = new RegistrationService(store, crypto, () -> { throw new AssertionError("No SMTP"); }, clock,
-                new com.adaptlearngraph.entities.IntegrationPolicy(false, false, false));
+                new com.adaptlearngraph.entities.domain.IntegrationPolicy(false, false, false));
         var bypass = development.register(fields(email(), null), PASSWORD, address);
         assertThat(development.current(bypass).stage()).isEqualTo("COMPLETE");
         assertThat(service.current(bypass).stage()).isEqualTo("VERIFY_EMAIL");
@@ -173,7 +173,7 @@ class RegistrationPostgresIntegrationTest {
         }
         var catalog = new com.adaptlearngraph.services.PlatformCatalogService(() -> java.util.Optional.of(template));
         var selecting = new RegistrationService(store, crypto, () -> {}, clock,
-                com.adaptlearngraph.entities.IntegrationPolicy.ENABLED, catalog);
+                com.adaptlearngraph.entities.domain.IntegrationPolicy.ENABLED, catalog);
         var actor = selecting.register(fields(email(), null), PASSWORD, address, java.util.List.of("ROLE-A", "MOD-X", "ROLE-A"));
         var row = jdbc.queryForMap("""
                 SELECT s.template_version, s.template_sha256, array_to_string(s.selected_node_ids, ',') AS ids

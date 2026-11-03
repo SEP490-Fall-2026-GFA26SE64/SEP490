@@ -1,6 +1,6 @@
 package com.adaptlearngraph.services;
 
-import com.adaptlearngraph.entities.BaselineAssessmentDraft;
+import com.adaptlearngraph.entities.domain.BaselineAssessmentDraft;
 import java.util.UUID;
 
 public interface BaselineAssessmentDraftUseCase {

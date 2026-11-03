@@ -87,7 +87,7 @@ public final class MainDevelopmentCatalogRelease implements ReleaseAuthority {
         };
     }
     private String snapshot(String occupation) {
-        return catalog.findAvailable(new com.adaptlearngraph.entities.AdaptiveBlueprint.Scope(MainDevelopmentBankSeed.ORGANIZATION,occupation))
+        return catalog.findAvailable(new com.adaptlearngraph.entities.domain.AdaptiveBlueprint.Scope(MainDevelopmentBankSeed.ORGANIZATION,occupation))
                 .orElseThrow(()->new Failure(503,"CATALOG_RELEASE_NOT_CONFIGURED",false)).fingerprint();
     }
     private static Map<String,Map<String,Object>> metadata(Neo4jCypher graph,ObjectMapper json,byte[] seed)throws java.io.IOException {

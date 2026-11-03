@@ -1,6 +1,6 @@
 package com.adaptlearngraph.services;
-import com.adaptlearngraph.entities.AdaptiveAttempt;
-import com.adaptlearngraph.entities.AdaptiveAttemptSnapshot;
+import com.adaptlearngraph.entities.domain.AdaptiveAttempt;
+import com.adaptlearngraph.entities.domain.AdaptiveAttemptSnapshot;
 import com.adaptlearngraph.repository.AdaptiveAttemptContextPort;
 import com.adaptlearngraph.repository.AdaptiveAttemptStore;
 import com.adaptlearngraph.repository.AdaptiveBaselineCatalogPort;
@@ -27,7 +27,7 @@ import static org.mockito.Mockito.*;
 import static org.mockito.ArgumentMatchers.*;
 import static com.adaptlearngraph.services.AdaptiveFixture.*;
 import com.adaptlearngraph.services.AdaptiveBlueprintUseCase.*;
-import com.adaptlearngraph.entities.AdaptiveBlueprint.*;
+import com.adaptlearngraph.entities.domain.AdaptiveBlueprint.*;
 import com.adaptlearngraph.repository.CurrentOccupationProfile;
 import com.adaptlearngraph.repository.CurrentRoleSelectionStore;
 import com.fasterxml.jackson.databind.ObjectMapper;

@@ -1,7 +1,7 @@
 package com.adaptlearngraph.repository;
 
-import com.adaptlearngraph.entities.InitialIdentity;
-import com.adaptlearngraph.entities.RoleGap;
+import com.adaptlearngraph.entities.domain.InitialIdentity;
+import com.adaptlearngraph.entities.domain.RoleGap;
 import com.adaptlearngraph.repository.EmployeeOccupationProfileJpaRepository.OriginRow;
 import com.adaptlearngraph.repository.InitialPathwayPorts.*;
 import com.fasterxml.jackson.databind.ObjectMapper;

@@ -1,7 +1,7 @@
 package com.adaptlearngraph.repository;
 
 import com.adaptlearngraph.helper.AdaptiveBlueprintJson;
-import com.adaptlearngraph.entities.AdaptiveBlueprint.*;
+import com.adaptlearngraph.entities.domain.AdaptiveBlueprint.*;
 import com.adaptlearngraph.utility.AdaptiveIrtPolicy.Model;
 import com.adaptlearngraph.utility.Irt3pl;
 import com.fasterxml.jackson.databind.DeserializationFeature;

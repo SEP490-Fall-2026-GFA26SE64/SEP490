@@ -1,6 +1,6 @@
 package com.adaptlearngraph.repository;
 
-import com.adaptlearngraph.entities.PlanTerms;
+import com.adaptlearngraph.entities.domain.PlanTerms;
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.adaptlearngraph.exception.SubscriptionFailure;

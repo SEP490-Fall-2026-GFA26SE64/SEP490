@@ -1,8 +1,8 @@
 package com.adaptlearngraph.dtos;
 
-import com.adaptlearngraph.entities.RoleStatus;
-import com.adaptlearngraph.entities.RoleTrack;
-import com.adaptlearngraph.entities.TargetRoleId;
+import com.adaptlearngraph.entities.domain.RoleStatus;
+import com.adaptlearngraph.entities.domain.RoleTrack;
+import com.adaptlearngraph.entities.domain.TargetRoleId;
 
 import java.util.List;
 

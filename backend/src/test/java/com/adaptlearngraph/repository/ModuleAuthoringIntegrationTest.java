@@ -1,8 +1,8 @@
 package com.adaptlearngraph.repository;
 
-import com.adaptlearngraph.entities.MicroSkill;
+import com.adaptlearngraph.entities.domain.MicroSkill;
 import com.adaptlearngraph.services.ModuleAuthoringService;
-import com.adaptlearngraph.entities.ModuleAuthoring.*;
+import com.adaptlearngraph.entities.domain.ModuleAuthoring.*;
 import com.adaptlearngraph.support.JpaTestContext;
 import com.adaptlearngraph.support.Neo4jTestContext;
 import com.fasterxml.jackson.databind.ObjectMapper;

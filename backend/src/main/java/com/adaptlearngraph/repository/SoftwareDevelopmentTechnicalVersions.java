@@ -1,6 +1,6 @@
 package com.adaptlearngraph.repository;
 
-import com.adaptlearngraph.entities.AdaptiveBlueprint.VersionPins;
+import com.adaptlearngraph.entities.domain.AdaptiveBlueprint.VersionPins;
 import com.adaptlearngraph.utility.AdaptiveIrtPolicy;
 import com.adaptlearngraph.config.SoftwareDevelopmentSeed;
 import com.adaptlearngraph.constants.DevelopmentWorkspace;

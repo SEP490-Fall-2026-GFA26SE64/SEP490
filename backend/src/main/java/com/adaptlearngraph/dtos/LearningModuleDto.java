@@ -1,6 +1,6 @@
 package com.adaptlearngraph.dtos;
 
-import com.adaptlearngraph.entities.LearningModuleRecord;
+import com.adaptlearngraph.entities.domain.LearningModuleRecord;
 import java.util.List;
 
 public class LearningModuleDto {

@@ -1,6 +1,6 @@
 package com.adaptlearngraph.repository;
 
-import com.adaptlearngraph.entities.AdaptiveBlueprint.*;
+import com.adaptlearngraph.entities.domain.AdaptiveBlueprint.*;
 import java.util.*;
 
 /** One authored projection for configuration/union and Role/Level selection; legacy authority stays intact. */

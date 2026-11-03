@@ -1,7 +1,7 @@
 package com.adaptlearngraph.services;
 
-import com.adaptlearngraph.entities.RegistrationActor;
-import com.adaptlearngraph.entities.WorkspacePrincipal;
+import com.adaptlearngraph.entities.domain.RegistrationActor;
+import com.adaptlearngraph.entities.domain.WorkspacePrincipal;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;

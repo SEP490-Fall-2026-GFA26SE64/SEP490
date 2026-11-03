@@ -14,15 +14,15 @@ import com.adaptlearngraph.repository.BaselineOccupationCatalogPort.CatalogRole;
 import com.adaptlearngraph.repository.BaselineOccupationCatalogPort.CatalogSkill;
 import com.adaptlearngraph.services.BaselineBlueprintUseCase.Code;
 import com.adaptlearngraph.services.BaselineBlueprintUseCase.Failure;
-import com.adaptlearngraph.entities.BaselineAssessmentDraft.PublicationState;
-import com.adaptlearngraph.entities.BaselineAssessmentDraft;
-import com.adaptlearngraph.entities.BaselineAssessmentSeries.ActiveRelease;
-import com.adaptlearngraph.entities.BaselineAssessmentSeries.AssessmentVersionRef;
-import com.adaptlearngraph.entities.BaselineAssessmentSeries.BlueprintVersionRef;
-import com.adaptlearngraph.entities.BaselineAssessmentSeries.CandidateState;
-import com.adaptlearngraph.entities.BaselineAssessmentSeries.OpenCandidate;
-import com.adaptlearngraph.entities.BaselineAssessmentSeries.Scope;
-import com.adaptlearngraph.entities.BaselineAssessmentSeries.SeriesSnapshot;
+import com.adaptlearngraph.entities.domain.BaselineAssessmentDraft.PublicationState;
+import com.adaptlearngraph.entities.domain.BaselineAssessmentDraft;
+import com.adaptlearngraph.entities.domain.BaselineAssessmentSeries.ActiveRelease;
+import com.adaptlearngraph.entities.domain.BaselineAssessmentSeries.AssessmentVersionRef;
+import com.adaptlearngraph.entities.domain.BaselineAssessmentSeries.BlueprintVersionRef;
+import com.adaptlearngraph.entities.domain.BaselineAssessmentSeries.CandidateState;
+import com.adaptlearngraph.entities.domain.BaselineAssessmentSeries.OpenCandidate;
+import com.adaptlearngraph.entities.domain.BaselineAssessmentSeries.Scope;
+import com.adaptlearngraph.entities.domain.BaselineAssessmentSeries.SeriesSnapshot;
 import com.adaptlearngraph.repository.BaselineAssessmentDraftStore.CloneCandidate;
 import com.adaptlearngraph.repository.BaselineAssessmentDraftStore.NewDraft;
 import com.adaptlearngraph.repository.BaselineAssessmentManagementStore.AssessmentVersionRecord;
@@ -39,12 +39,12 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.function.Supplier;
-import com.adaptlearngraph.entities.BaselineBlueprint.RoleConfig;
-import com.adaptlearngraph.entities.BaselineBlueprint.SkillConfig;
-import com.adaptlearngraph.entities.CareerTrack;
-import com.adaptlearngraph.entities.TargetRoleDetail;
-import com.adaptlearngraph.entities.TargetRoleRequirement;
-import com.adaptlearngraph.entities.TargetRoleSummary;
+import com.adaptlearngraph.entities.domain.BaselineBlueprint.RoleConfig;
+import com.adaptlearngraph.entities.domain.BaselineBlueprint.SkillConfig;
+import com.adaptlearngraph.entities.domain.CareerTrack;
+import com.adaptlearngraph.entities.domain.TargetRoleDetail;
+import com.adaptlearngraph.entities.domain.TargetRoleRequirement;
+import com.adaptlearngraph.entities.domain.TargetRoleSummary;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
@@ -743,30 +743,30 @@ class BaselineAssessmentPostgresIntegrationTest {
         }
 
         @Override
-        public Optional<com.adaptlearngraph.entities.BaselineBlueprint> findLatest(UUID blueprintId) {
+        public Optional<com.adaptlearngraph.entities.domain.BaselineBlueprint> findLatest(UUID blueprintId) {
             return delegate.findLatest(blueprintId);
         }
 
         @Override
-        public Optional<com.adaptlearngraph.entities.BaselineBlueprint> findVersion(
+        public Optional<com.adaptlearngraph.entities.domain.BaselineBlueprint> findVersion(
                 UUID blueprintId, int version) {
             return delegate.findVersion(blueprintId, version);
         }
 
         @Override
-        public Optional<com.adaptlearngraph.entities.BaselineBlueprint> findLatestByOccupation(
+        public Optional<com.adaptlearngraph.entities.domain.BaselineBlueprint> findLatestByOccupation(
                 String occupationId) {
             return delegate.findLatestByOccupation(occupationId);
         }
 
         @Override
-        public Optional<com.adaptlearngraph.entities.BaselineBlueprint> findByRequest(
+        public Optional<com.adaptlearngraph.entities.domain.BaselineBlueprint> findByRequest(
                 UUID actorId, String idempotencyKey) {
             return delegate.findByRequest(actorId, idempotencyKey);
         }
 
         @Override
-        public void insert(com.adaptlearngraph.entities.BaselineBlueprint blueprint) {
+        public void insert(com.adaptlearngraph.entities.domain.BaselineBlueprint blueprint) {
             transactions.executeWithoutResult(status -> delegate.insert(blueprint));
         }
     }
@@ -786,19 +786,19 @@ class BaselineAssessmentPostgresIntegrationTest {
         }
 
         @Override
-        public Optional<com.adaptlearngraph.entities.BaselineAssessmentDraft>
+        public Optional<com.adaptlearngraph.entities.domain.BaselineAssessmentDraft>
                 findByGenerationRequest(UUID actorId, String idempotencyKey) {
             return delegate.findByGenerationRequest(actorId, idempotencyKey);
         }
 
         @Override
-        public Optional<com.adaptlearngraph.entities.BaselineAssessmentDraft>
+        public Optional<com.adaptlearngraph.entities.domain.BaselineAssessmentDraft>
                 findByVersionId(UUID assessmentVersionId) {
             return delegate.findByVersionId(assessmentVersionId);
         }
 
         @Override
-        public com.adaptlearngraph.entities.BaselineAssessmentDraft insertNextVersion(NewDraft draft) {
+        public com.adaptlearngraph.entities.domain.BaselineAssessmentDraft insertNextVersion(NewDraft draft) {
             return transactions.execute(status -> delegate.insertNextVersion(draft));
         }
 
@@ -816,7 +816,7 @@ class BaselineAssessmentPostgresIntegrationTest {
         }
 
         @Override
-        public com.adaptlearngraph.entities.BaselineAssessmentDraft updateManifest(
+        public com.adaptlearngraph.entities.domain.BaselineAssessmentDraft updateManifest(
                 String organizationId, UUID assessmentVersionId, long expectedDraftRevision,
                 String title, List<UUID> orderedItemVersionIds) {
             return transactions.execute(status -> delegate.updateManifest(
@@ -829,7 +829,7 @@ class BaselineAssessmentPostgresIntegrationTest {
         }
 
         @Override
-        public com.adaptlearngraph.entities.BaselineAssessmentDraft cloneAsOpenCandidate(
+        public com.adaptlearngraph.entities.domain.BaselineAssessmentDraft cloneAsOpenCandidate(
                 CloneCandidate candidate) {
             return transactions.execute(status -> delegate.cloneAsOpenCandidate(candidate));
         }

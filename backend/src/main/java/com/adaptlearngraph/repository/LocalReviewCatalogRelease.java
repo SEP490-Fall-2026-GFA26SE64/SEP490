@@ -22,7 +22,7 @@ public final class LocalReviewCatalogRelease implements ReleaseAuthority {
         var versions=new TreeMap<>(Map.of(
                 "catalog",LocalCatalogBootstrap.VERSION,"publication","LOCAL_REVIEW_EXCEPTION_V1",
                 "requirements",LocalCatalogBootstrap.SOURCE_HASH,"compatibility",LocalSeedSemantics.VERSION,
-                "suitability",com.adaptlearngraph.entities.InitialSuitability.VERSION));
+                "suitability",com.adaptlearngraph.entities.domain.InitialSuitability.VERSION));
         if(readinessVersion!=null && !readinessVersion.isBlank())versions.put("readiness",readinessVersion);
         release=new Release(organization,"local-review:"+LocalCatalogBootstrap.SOURCE_HASH,versions);
     }

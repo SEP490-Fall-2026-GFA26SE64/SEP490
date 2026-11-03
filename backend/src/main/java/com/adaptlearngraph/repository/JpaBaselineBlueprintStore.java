@@ -1,9 +1,9 @@
 package com.adaptlearngraph.repository;
 
 import com.adaptlearngraph.constants.TransactionManagers;
-import com.adaptlearngraph.entities.BaselineBlueprint;
-import com.adaptlearngraph.entities.BaselineBlueprint.RoleConfig;
-import com.adaptlearngraph.entities.BaselineBlueprint.SkillConfig;
+import com.adaptlearngraph.entities.domain.BaselineBlueprint;
+import com.adaptlearngraph.entities.domain.BaselineBlueprint.RoleConfig;
+import com.adaptlearngraph.entities.domain.BaselineBlueprint.SkillConfig;
 import com.adaptlearngraph.entities.BaselineBlueprintRoleEntity;
 import com.adaptlearngraph.entities.BaselineBlueprintSkillEntity;
 import com.adaptlearngraph.entities.BaselineBlueprintVersionEntity;

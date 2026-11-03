@@ -1,6 +1,6 @@
 package com.adaptlearngraph.repository;
 
-import com.adaptlearngraph.entities.LearningResources.Asset;
+import com.adaptlearngraph.entities.domain.LearningResources.Asset;
 
 import java.io.InputStream;
 

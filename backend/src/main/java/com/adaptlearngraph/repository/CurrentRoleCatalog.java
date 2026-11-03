@@ -1,7 +1,7 @@
 package com.adaptlearngraph.repository;
 
 import com.adaptlearngraph.services.RoleBaselineFlow.*;
-import com.adaptlearngraph.entities.AdaptiveBlueprint.Scope;
+import com.adaptlearngraph.entities.domain.AdaptiveBlueprint.Scope;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.*;
 

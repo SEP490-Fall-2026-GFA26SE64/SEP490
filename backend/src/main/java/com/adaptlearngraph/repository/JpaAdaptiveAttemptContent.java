@@ -1,7 +1,7 @@
 package com.adaptlearngraph.repository;
 
 import com.adaptlearngraph.services.AdaptiveAttemptUseCase.*;
-import com.adaptlearngraph.entities.AdaptiveAttempt.Scope;
+import com.adaptlearngraph.entities.domain.AdaptiveAttempt.Scope;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.*;

@@ -10,8 +10,8 @@ import com.adaptlearngraph.repository.BaselineBlueprintValidationPort.CatalogRol
 import com.adaptlearngraph.repository.BaselineBlueprintValidationPort.CatalogSkill;
 import com.adaptlearngraph.repository.BaselineBlueprintValidationPort.DependencyUnavailable;
 import com.adaptlearngraph.repository.BaselineBlueprintValidationPort.Difficulty;
-import com.adaptlearngraph.entities.BaselineBlueprint.RoleConfig;
-import com.adaptlearngraph.entities.BaselineBlueprint.SkillConfig;
+import com.adaptlearngraph.entities.domain.BaselineBlueprint.RoleConfig;
+import com.adaptlearngraph.entities.domain.BaselineBlueprint.SkillConfig;
 import java.math.BigDecimal;
 import java.util.Comparator;
 import java.util.EnumMap;

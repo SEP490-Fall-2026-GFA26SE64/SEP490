@@ -1,17 +1,17 @@
 package com.adaptlearngraph.services;
 
-import com.adaptlearngraph.entities.LearningContent;
-import com.adaptlearngraph.entities.LearningResources;
-import com.adaptlearngraph.entities.ModuleAuthoring;
+import com.adaptlearngraph.entities.domain.LearningContent;
+import com.adaptlearngraph.entities.domain.LearningResources;
+import com.adaptlearngraph.entities.domain.ModuleAuthoring;
 import com.adaptlearngraph.repository.LearningContentPort;
 import com.adaptlearngraph.repository.ModuleAuthoringPort;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
-import com.adaptlearngraph.entities.LearningContent.Lesson;
-import com.adaptlearngraph.entities.LearningResources.*;
-import com.adaptlearngraph.entities.ModuleAuthoring.*;
+import com.adaptlearngraph.entities.domain.LearningContent.Lesson;
+import com.adaptlearngraph.entities.domain.LearningResources.*;
+import com.adaptlearngraph.entities.domain.ModuleAuthoring.*;
 
 import org.junit.jupiter.api.*;
 

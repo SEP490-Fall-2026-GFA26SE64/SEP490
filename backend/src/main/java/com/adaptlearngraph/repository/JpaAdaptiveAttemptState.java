@@ -1,7 +1,7 @@
 package com.adaptlearngraph.repository;
 
-import com.adaptlearngraph.entities.AdaptiveAttempt;
-import com.adaptlearngraph.entities.AdaptiveAttempt.Scope;
+import com.adaptlearngraph.entities.domain.AdaptiveAttempt;
+import com.adaptlearngraph.entities.domain.AdaptiveAttempt.Scope;
 import com.adaptlearngraph.entities.BaselineAttemptItemEntity;
 import com.adaptlearngraph.entities.BaselineAttemptPoolItemEntity;
 import com.adaptlearngraph.entities.BaselineAttemptResponseEntity;

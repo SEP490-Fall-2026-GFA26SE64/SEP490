@@ -1,7 +1,7 @@
 package com.adaptlearngraph.repository;
 
 import com.adaptlearngraph.repository.InitialPathwayPorts.*;
-import com.adaptlearngraph.entities.InitialIdentity;
+import com.adaptlearngraph.entities.domain.InitialIdentity;
 import java.util.*;
 
 /** Reads current owner responsibility; never creates assignments or grants every Expert a tenant queue. */

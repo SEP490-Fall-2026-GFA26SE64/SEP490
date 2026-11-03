@@ -1,7 +1,7 @@
 package com.adaptlearngraph.config;
 
 import com.adaptlearngraph.repository.QuestionBankPorts.Actors;
-import com.adaptlearngraph.entities.QuestionBank.Failure;
+import com.adaptlearngraph.entities.domain.QuestionBank.Failure;
 import com.adaptlearngraph.exception.SubscriptionFailure;
 import com.adaptlearngraph.exception.RegistrationFailure;
 import com.fasterxml.jackson.databind.ObjectMapper;

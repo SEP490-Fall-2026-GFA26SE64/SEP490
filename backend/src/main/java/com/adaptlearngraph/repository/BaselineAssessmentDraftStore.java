@@ -1,6 +1,6 @@
 package com.adaptlearngraph.repository;
 
-import com.adaptlearngraph.entities.BaselineAssessmentDraft;
+import com.adaptlearngraph.entities.domain.BaselineAssessmentDraft;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;

@@ -1,8 +1,8 @@
 package com.adaptlearngraph.repository;
 
 import com.adaptlearngraph.exception.TargetRoleQueryException;
-import com.adaptlearngraph.entities.TargetRoleDetail;
-import com.adaptlearngraph.entities.TargetRoleSnapshot;
+import com.adaptlearngraph.entities.domain.TargetRoleDetail;
+import com.adaptlearngraph.entities.domain.TargetRoleSnapshot;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;

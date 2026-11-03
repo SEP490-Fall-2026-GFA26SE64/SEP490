@@ -1,8 +1,8 @@
 package com.adaptlearngraph.repository;
 
 import com.adaptlearngraph.services.AdaptiveAttemptUseCase.StartTarget;
-import com.adaptlearngraph.entities.AdaptiveAttempt.Scope;
-import com.adaptlearngraph.entities.AdaptiveAttemptSnapshot;
+import com.adaptlearngraph.entities.domain.AdaptiveAttempt.Scope;
+import com.adaptlearngraph.entities.domain.AdaptiveAttemptSnapshot;
 import java.util.UUID;
 
 /** Identity/selection/Catalog anti-corruption boundary; no dependency on another owner's DTOs. */

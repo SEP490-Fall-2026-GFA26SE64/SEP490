@@ -19,9 +19,9 @@ import com.adaptlearngraph.repository.TargetSelectionStorePort.LearnerTargetStat
 import com.adaptlearngraph.repository.TargetSelectionStorePort.PendingSelectionRequest;
 import com.adaptlearngraph.repository.TargetSelectionStorePort.RequestStatus;
 import com.adaptlearngraph.repository.TargetSelectionStorePort.StoredSelectionRequest;
-import com.adaptlearngraph.entities.TargetRoleSelection;
-import com.adaptlearngraph.entities.TargetSelectionDecision;
-import com.adaptlearngraph.entities.TargetSelectionDecision.Kind;
+import com.adaptlearngraph.entities.domain.TargetRoleSelection;
+import com.adaptlearngraph.entities.domain.TargetSelectionDecision;
+import com.adaptlearngraph.entities.domain.TargetSelectionDecision.Kind;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.Objects;

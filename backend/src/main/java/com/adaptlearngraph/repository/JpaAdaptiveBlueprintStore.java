@@ -3,7 +3,7 @@ package com.adaptlearngraph.repository;
 import com.adaptlearngraph.helper.AdaptiveBlueprintJson;
 import com.adaptlearngraph.services.AdaptiveBlueprintUseCase.Code;
 import com.adaptlearngraph.services.AdaptiveBlueprintUseCase.Failure;
-import com.adaptlearngraph.entities.AdaptiveBlueprint.*;
+import com.adaptlearngraph.entities.domain.AdaptiveBlueprint.*;
 import com.adaptlearngraph.entities.BaselineAdaptiveBlueprintRoleEntity;
 import com.adaptlearngraph.entities.BaselineAdaptiveBlueprintSkillEntity;
 import com.adaptlearngraph.entities.BaselineAdaptiveBlueprintVersionEntity;

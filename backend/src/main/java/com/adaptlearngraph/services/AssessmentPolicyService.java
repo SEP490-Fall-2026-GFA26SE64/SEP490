@@ -2,8 +2,8 @@ package com.adaptlearngraph.services;
 
 import com.adaptlearngraph.repository.AssessmentPolicyStore;
 import com.adaptlearngraph.repository.AdaptiveBlueprintActorPort;
-import com.adaptlearngraph.entities.OrganizationAssessmentPolicy;
-import com.adaptlearngraph.entities.OrganizationAssessmentPolicy.*;
+import com.adaptlearngraph.entities.domain.OrganizationAssessmentPolicy;
+import com.adaptlearngraph.entities.domain.OrganizationAssessmentPolicy.*;
 import java.util.UUID;
 
 /** Own-organization configuration independent of Occupation/resource readiness. */

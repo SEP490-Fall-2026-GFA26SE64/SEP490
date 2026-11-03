@@ -3,7 +3,7 @@ package com.adaptlearngraph.repository;
 import com.adaptlearngraph.entities.ModuleAuthoringContentEntity;
 import com.adaptlearngraph.entities.ModuleGrantAuditEntity;
 import com.adaptlearngraph.services.ModuleAuthoringService.Failure;
-import com.adaptlearngraph.entities.ModuleAuthoring.*;
+import com.adaptlearngraph.entities.domain.ModuleAuthoring.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.security.core.Authentication;

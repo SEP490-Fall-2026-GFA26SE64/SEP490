@@ -1,9 +1,9 @@
 package com.adaptlearngraph.repository;
 
-import com.adaptlearngraph.entities.PrerequisiteEdge;
-import com.adaptlearngraph.entities.RoleGraphSkill;
-import com.adaptlearngraph.entities.SkillStatus;
-import com.adaptlearngraph.entities.TargetRoleGraph;
+import com.adaptlearngraph.entities.domain.PrerequisiteEdge;
+import com.adaptlearngraph.entities.domain.RoleGraphSkill;
+import com.adaptlearngraph.entities.domain.SkillStatus;
+import com.adaptlearngraph.entities.domain.TargetRoleGraph;
 import org.neo4j.driver.Record;
 import org.neo4j.driver.types.Node;
 import org.neo4j.driver.types.Relationship;

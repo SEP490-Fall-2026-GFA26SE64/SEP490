@@ -1,6 +1,6 @@
 package com.adaptlearngraph.repository;
 
-import com.adaptlearngraph.entities.AdaptiveAttempt.Scope;
+import com.adaptlearngraph.entities.domain.AdaptiveAttempt.Scope;
 import java.util.List;
 import java.util.UUID;
 

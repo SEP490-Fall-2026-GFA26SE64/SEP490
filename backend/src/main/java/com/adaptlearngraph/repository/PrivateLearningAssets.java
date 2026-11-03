@@ -2,8 +2,8 @@ package com.adaptlearngraph.repository;
 
 import com.adaptlearngraph.helper.ExternalLearningVideo;
 import com.adaptlearngraph.services.ModuleAuthoringService.Failure;
-import com.adaptlearngraph.entities.LearningContent;
-import com.adaptlearngraph.entities.LearningResources.Asset;
+import com.adaptlearngraph.entities.domain.LearningContent;
+import com.adaptlearngraph.entities.domain.LearningResources.Asset;
 
 import io.minio.*;
 

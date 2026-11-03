@@ -2,7 +2,7 @@ package com.adaptlearngraph.repository;
 
 import com.adaptlearngraph.helper.AdaptiveBlueprintJson;
 import com.adaptlearngraph.repository.AdaptiveBlueprintEligibilityPort.DependencyUnavailable;
-import com.adaptlearngraph.entities.AdaptiveBlueprint.*;
+import com.adaptlearngraph.entities.domain.AdaptiveBlueprint.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.OffsetDateTime;
 import java.util.HashMap;

@@ -1,7 +1,7 @@
 package com.adaptlearngraph.repository;
 
 import com.adaptlearngraph.helper.PaymentGateway;
-import com.adaptlearngraph.entities.PaymentOrder;
+import com.adaptlearngraph.entities.domain.PaymentOrder;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;

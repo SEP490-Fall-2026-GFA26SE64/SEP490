@@ -1,6 +1,6 @@
 package com.adaptlearngraph.repository;
 
-import com.adaptlearngraph.entities.AdaptiveBlueprint.VersionPins;
+import com.adaptlearngraph.entities.domain.AdaptiveBlueprint.VersionPins;
 import com.adaptlearngraph.utility.AdaptiveIrtPolicy.Versions;
 import com.adaptlearngraph.utility.Irt3pl.Item;
 import java.util.List;
@@ -14,7 +14,7 @@ import java.util.UUID;
 public interface AdaptiveAttemptPolicyPort {
     Policy load(VersionPins pins, Map<UUID, String> authorizedItemSkills);
 
-    default Policy load(com.adaptlearngraph.entities.AdaptiveAttemptSnapshot snapshot) {
+    default Policy load(com.adaptlearngraph.entities.domain.AdaptiveAttemptSnapshot snapshot) {
         var base=load(snapshot.blueprint().pins(),snapshot.itemSkills());
         if(snapshot.assessmentPolicy().isEmpty())return base;
         var pin=snapshot.assessmentPolicy().orElseThrow();var v=base.versions();

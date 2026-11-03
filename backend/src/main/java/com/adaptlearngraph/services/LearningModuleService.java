@@ -1,7 +1,7 @@
 package com.adaptlearngraph.services;
 
 import com.adaptlearngraph.repository.LearningModuleRepository;
-import com.adaptlearngraph.entities.LearningModuleRecord;
+import com.adaptlearngraph.entities.domain.LearningModuleRecord;
 
 import java.util.List;
 import java.util.Objects;

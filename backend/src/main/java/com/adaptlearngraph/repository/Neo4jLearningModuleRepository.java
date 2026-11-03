@@ -1,6 +1,6 @@
 package com.adaptlearngraph.repository;
 
-import com.adaptlearngraph.entities.LearningModuleRecord;
+import com.adaptlearngraph.entities.domain.LearningModuleRecord;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;

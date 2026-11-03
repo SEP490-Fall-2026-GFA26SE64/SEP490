@@ -7,9 +7,9 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import java.util.*;
 import org.junit.jupiter.api.Test;
-import com.adaptlearngraph.entities.ModuleAuthoring;
-import com.adaptlearngraph.entities.LearningContent;
-import com.adaptlearngraph.entities.InitialPlanning.Dependency;
+import com.adaptlearngraph.entities.domain.ModuleAuthoring;
+import com.adaptlearngraph.entities.domain.LearningContent;
+import com.adaptlearngraph.entities.domain.InitialPlanning.Dependency;
 
 class GeneratedModuleContentAccessTest {
     @Test void entryRequiresExactContentVersionAndNoUnsupportedInternalGates() {

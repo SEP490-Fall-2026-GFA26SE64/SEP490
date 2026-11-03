@@ -1,7 +1,7 @@
 package com.adaptlearngraph.repository;
 
 import com.adaptlearngraph.services.AdaptiveBlueprintListing.*;
-import com.adaptlearngraph.entities.AdaptiveBlueprint.VersionId;
+import com.adaptlearngraph.entities.domain.AdaptiveBlueprint.VersionId;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;

@@ -1,8 +1,8 @@
 package com.adaptlearngraph.repository;
 
 import com.adaptlearngraph.dtos.TargetRoleFilter;
-import com.adaptlearngraph.entities.TargetRole;
-import com.adaptlearngraph.entities.TargetRoleId;
+import com.adaptlearngraph.entities.domain.TargetRole;
+import com.adaptlearngraph.entities.domain.TargetRoleId;
 
 import java.util.List;
 import java.util.Optional;

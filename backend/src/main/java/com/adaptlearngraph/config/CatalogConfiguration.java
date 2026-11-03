@@ -13,8 +13,8 @@ import com.adaptlearngraph.dtos.TargetRoleFilter;
 import com.adaptlearngraph.services.ViewTargetRolesUseCase;
 import com.adaptlearngraph.repository.TargetRoleCatalogPort;
 import com.adaptlearngraph.repository.TargetRoleRepository;
-import com.adaptlearngraph.entities.TargetRole;
-import com.adaptlearngraph.entities.TargetRoleId;
+import com.adaptlearngraph.entities.domain.TargetRole;
+import com.adaptlearngraph.entities.domain.TargetRoleId;
 import com.adaptlearngraph.constants.TransactionManagers;
 import com.adaptlearngraph.repository.CompetencyNodeRepository;
 import com.adaptlearngraph.repository.OccupationNodeRepository;
@@ -87,9 +87,9 @@ public class CatalogConfiguration {
             return new Neo4jOccupationRepository(occupations.getObject(), client.getObject(), transactions.getObject());
         }
         return new com.adaptlearngraph.repository.OccupationRepository() {
-            @Override public java.util.List<com.adaptlearngraph.entities.Occupation> findAllOccupations(String organizationId) { return java.util.List.of(); }
-            @Override public java.util.Optional<com.adaptlearngraph.entities.Occupation> findByIdOrCode(String organizationId, String idOrCode) { return java.util.Optional.empty(); }
-            @Override public com.adaptlearngraph.entities.Occupation save(String organizationId, com.adaptlearngraph.entities.Occupation occupation) { return occupation; }
+            @Override public java.util.List<com.adaptlearngraph.entities.domain.Occupation> findAllOccupations(String organizationId) { return java.util.List.of(); }
+            @Override public java.util.Optional<com.adaptlearngraph.entities.domain.Occupation> findByIdOrCode(String organizationId, String idOrCode) { return java.util.Optional.empty(); }
+            @Override public com.adaptlearngraph.entities.domain.Occupation save(String organizationId, com.adaptlearngraph.entities.domain.Occupation occupation) { return occupation; }
             @Override public void delete(String organizationId, String idOrCode) {}
         };
     }
@@ -109,9 +109,9 @@ public class CatalogConfiguration {
             return new Neo4jCompetencyRepository(competencies.getObject(), client.getObject(), transactions.getObject());
         }
         return new com.adaptlearngraph.repository.CompetencyRepository() {
-            @Override public java.util.List<com.adaptlearngraph.entities.CompetencyRecord> findAllCompetencies(String organizationId, String search) { return java.util.List.of(); }
-            @Override public java.util.Optional<com.adaptlearngraph.entities.CompetencyRecord> findById(String organizationId, String id) { return java.util.Optional.empty(); }
-            @Override public com.adaptlearngraph.entities.CompetencyRecord save(String organizationId, com.adaptlearngraph.entities.CompetencyRecord record, java.util.List<String> skillIds, String levelId) { return record; }
+            @Override public java.util.List<com.adaptlearngraph.entities.domain.CompetencyRecord> findAllCompetencies(String organizationId, String search) { return java.util.List.of(); }
+            @Override public java.util.Optional<com.adaptlearngraph.entities.domain.CompetencyRecord> findById(String organizationId, String id) { return java.util.Optional.empty(); }
+            @Override public com.adaptlearngraph.entities.domain.CompetencyRecord save(String organizationId, com.adaptlearngraph.entities.domain.CompetencyRecord record, java.util.List<String> skillIds, String levelId) { return record; }
             @Override public void deleteById(String organizationId, String id) {}
         };
     }
@@ -131,9 +131,9 @@ public class CatalogConfiguration {
             return new Neo4jLearningModuleRepository(modules.getObject(), client.getObject(), transactions.getObject());
         }
         return new com.adaptlearngraph.repository.LearningModuleRepository() {
-            @Override public java.util.List<com.adaptlearngraph.entities.LearningModuleRecord> findAll(String organizationId) { return java.util.List.of(); }
-            @Override public java.util.Optional<com.adaptlearngraph.entities.LearningModuleRecord> findById(String organizationId, String id) { return java.util.Optional.empty(); }
-            @Override public com.adaptlearngraph.entities.LearningModuleRecord save(String organizationId, com.adaptlearngraph.entities.LearningModuleRecord module) { return module; }
+            @Override public java.util.List<com.adaptlearngraph.entities.domain.LearningModuleRecord> findAll(String organizationId) { return java.util.List.of(); }
+            @Override public java.util.Optional<com.adaptlearngraph.entities.domain.LearningModuleRecord> findById(String organizationId, String id) { return java.util.Optional.empty(); }
+            @Override public com.adaptlearngraph.entities.domain.LearningModuleRecord save(String organizationId, com.adaptlearngraph.entities.domain.LearningModuleRecord module) { return module; }
             @Override public void delete(String organizationId, String id) {}
         };
     }

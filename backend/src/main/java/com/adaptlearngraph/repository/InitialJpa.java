@@ -4,7 +4,7 @@ import com.adaptlearngraph.entities.AuditEventEntity;
 import com.adaptlearngraph.entities.OutboxEventEntity;
 import com.adaptlearngraph.repository.InitialPathwayPorts.*;
 import com.adaptlearngraph.repository.InitialPathwayStore.*;
-import com.adaptlearngraph.entities.InitialPathwayState.*;
+import com.adaptlearngraph.entities.domain.InitialPathwayState.*;
 import java.util.*;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 

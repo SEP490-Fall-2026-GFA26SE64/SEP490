@@ -1,7 +1,7 @@
 package com.adaptlearngraph.helper;
 
 import com.adaptlearngraph.repository.AdaptiveBlueprintStore.*;
-import com.adaptlearngraph.entities.AdaptiveBlueprint.*;
+import com.adaptlearngraph.entities.domain.AdaptiveBlueprint.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;

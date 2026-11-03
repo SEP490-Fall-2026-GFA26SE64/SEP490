@@ -1,7 +1,7 @@
 package com.adaptlearngraph.services;
 
 import com.adaptlearngraph.repository.MacroCompetencyRepository;
-import com.adaptlearngraph.entities.MacroCompetency;
+import com.adaptlearngraph.entities.domain.MacroCompetency;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

@@ -1,8 +1,8 @@
 package com.adaptlearngraph.apis;
 
 import com.adaptlearngraph.services.SubscriptionCatalogUseCase;
-import com.adaptlearngraph.entities.PlanTerms;
-import com.adaptlearngraph.entities.SubscriptionPlan;
+import com.adaptlearngraph.entities.domain.PlanTerms;
+import com.adaptlearngraph.entities.domain.SubscriptionPlan;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

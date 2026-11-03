@@ -1,12 +1,12 @@
 package com.adaptlearngraph.services;
 
-import com.adaptlearngraph.entities.InitialIdentity;
-import com.adaptlearngraph.entities.InitialPlanning;
-import com.adaptlearngraph.entities.InitialSuitability;
-import com.adaptlearngraph.entities.RoleGap;
+import com.adaptlearngraph.entities.domain.InitialIdentity;
+import com.adaptlearngraph.entities.domain.InitialPlanning;
+import com.adaptlearngraph.entities.domain.InitialSuitability;
+import com.adaptlearngraph.entities.domain.RoleGap;
 import com.adaptlearngraph.repository.InitialPathwayPorts.*;
 import com.adaptlearngraph.repository.InitialPlanningPorts.*;
-import com.adaptlearngraph.entities.InitialPlanning.*;
+import com.adaptlearngraph.entities.domain.InitialPlanning.*;
 import java.util.*;
 
 /** Orchestrates real catalog/policy ports. No policy/readiness/eligibility fallback. */

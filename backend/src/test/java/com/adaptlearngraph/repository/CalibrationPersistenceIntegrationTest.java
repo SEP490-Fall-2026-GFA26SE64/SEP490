@@ -3,8 +3,8 @@ package com.adaptlearngraph.repository;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.adaptlearngraph.entities.Calibration.*;
-import com.adaptlearngraph.entities.CalibrationPolicy;
+import com.adaptlearngraph.entities.domain.Calibration.*;
+import com.adaptlearngraph.entities.domain.CalibrationPolicy;
 import com.adaptlearngraph.helper.CalibrationJson;
 import com.adaptlearngraph.repository.CalibrationPorts.Grant;
 import com.adaptlearngraph.repository.PromotionPorts.Command;

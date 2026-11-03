@@ -1,11 +1,11 @@
 package com.adaptlearngraph.repository;
 
-import com.adaptlearngraph.entities.Calibration;
-import com.adaptlearngraph.entities.CalibrationAdmission;
+import com.adaptlearngraph.entities.domain.Calibration;
+import com.adaptlearngraph.entities.domain.CalibrationAdmission;
 import com.adaptlearngraph.entities.IrtItemParameterEntity;
 import com.adaptlearngraph.entities.IrtParameterSetEntity;
 import com.adaptlearngraph.helper.CalibrationJson;
-import com.adaptlearngraph.entities.Calibration.*;
+import com.adaptlearngraph.entities.domain.Calibration.*;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;

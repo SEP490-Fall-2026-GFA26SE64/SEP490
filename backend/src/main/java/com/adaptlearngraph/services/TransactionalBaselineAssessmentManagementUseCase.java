@@ -1,8 +1,8 @@
 package com.adaptlearngraph.services;
 
 import com.adaptlearngraph.services.BaselineBlueprintUseCase.BlueprintDraft;
-import com.adaptlearngraph.entities.BaselineAssessmentDraft;
-import com.adaptlearngraph.entities.BaselineBlueprint;
+import com.adaptlearngraph.entities.domain.BaselineAssessmentDraft;
+import com.adaptlearngraph.entities.domain.BaselineBlueprint;
 import java.util.UUID;
 import java.util.function.Supplier;
 import org.springframework.transaction.PlatformTransactionManager;

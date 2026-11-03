@@ -1,7 +1,7 @@
 package com.adaptlearngraph.helper;
 
 import com.adaptlearngraph.services.ModuleAuthoringService.Failure;
-import com.adaptlearngraph.entities.LearningContent;
+import com.adaptlearngraph.entities.domain.LearningContent;
 
 import java.net.*;
 import java.net.http.*;

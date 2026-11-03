@@ -1,14 +1,14 @@
 package com.adaptlearngraph.apis;
 
 import com.adaptlearngraph.endpoints.ApiEndpoints;
-import com.adaptlearngraph.entities.LearningResources;
-import com.adaptlearngraph.entities.ModuleAuthoring;
+import com.adaptlearngraph.entities.domain.LearningResources;
+import com.adaptlearngraph.entities.domain.ModuleAuthoring;
 import com.adaptlearngraph.repository.LearningAssetPort;
 import com.adaptlearngraph.repository.ModuleAuthoringPort;
 import com.adaptlearngraph.services.LearningContentService;
 import com.adaptlearngraph.services.ModuleAuthoringService;
 import com.adaptlearngraph.services.ModuleAuthoringService.Failure;
-import com.adaptlearngraph.entities.LearningResources.*;
+import com.adaptlearngraph.entities.domain.LearningResources.*;
 import com.adaptlearngraph.model.dtos.file.response.FileDownloadResponse;
 
 import org.springframework.context.annotation.Profile;

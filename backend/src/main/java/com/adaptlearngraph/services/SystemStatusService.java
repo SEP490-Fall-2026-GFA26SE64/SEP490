@@ -1,7 +1,7 @@
 package com.adaptlearngraph.services;
 
 import com.adaptlearngraph.repository.BuildInformationPort;
-import com.adaptlearngraph.entities.SystemStatus;
+import com.adaptlearngraph.entities.domain.SystemStatus;
 
 public final class SystemStatusService {
     private final BuildInformationPort buildInformation;

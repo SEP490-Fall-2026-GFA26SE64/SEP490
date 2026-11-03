@@ -3,7 +3,7 @@ package com.adaptlearngraph.services;
 import com.adaptlearngraph.repository.AdaptiveBlueprintActorPort;
 import com.adaptlearngraph.repository.AdaptiveBlueprintEligibilityPort;
 import com.adaptlearngraph.repository.WorkspaceBaselineResourcePort;
-import com.adaptlearngraph.entities.AdaptiveBlueprint.Scope;
+import com.adaptlearngraph.entities.domain.AdaptiveBlueprint.Scope;
 import java.util.Set;
 import java.util.stream.Collectors;
 

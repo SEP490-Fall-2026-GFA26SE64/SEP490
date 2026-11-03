@@ -5,9 +5,9 @@ import static org.mockito.Mockito.*;
 
 import com.adaptlearngraph.repository.SubscriptionIdentity;
 import com.adaptlearngraph.repository.SubscriptionPlanStore;
-import com.adaptlearngraph.entities.PlanTerms;
-import com.adaptlearngraph.entities.SubscriptionAccessPolicy.Actor;
-import com.adaptlearngraph.entities.SubscriptionAccessPolicy.Role;
+import com.adaptlearngraph.entities.domain.PlanTerms;
+import com.adaptlearngraph.entities.domain.SubscriptionAccessPolicy.Actor;
+import com.adaptlearngraph.entities.domain.SubscriptionAccessPolicy.Role;
 import com.adaptlearngraph.exception.SubscriptionFailure;
 import java.time.Clock;
 import java.time.Instant;

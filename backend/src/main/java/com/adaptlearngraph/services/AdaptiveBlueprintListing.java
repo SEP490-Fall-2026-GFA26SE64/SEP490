@@ -1,6 +1,6 @@
 package com.adaptlearngraph.services;
 
-import com.adaptlearngraph.entities.AdaptiveBlueprint.VersionId;
+import com.adaptlearngraph.entities.domain.AdaptiveBlueprint.VersionId;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;

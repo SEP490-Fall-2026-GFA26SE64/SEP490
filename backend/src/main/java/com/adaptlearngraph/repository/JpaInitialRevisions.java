@@ -9,7 +9,7 @@ import com.adaptlearngraph.entities.InitialPathwayTargetEntity;
 import com.adaptlearngraph.entities.InitialPathwayTeachingV2Entity;
 import com.adaptlearngraph.repository.InitialPathwayPorts.*;
 import com.adaptlearngraph.repository.InitialPathwayStore.*;
-import com.adaptlearngraph.entities.InitialPathwayState.Validation;
+import com.adaptlearngraph.entities.domain.InitialPathwayState.Validation;
 import java.util.*;
 
 public final class JpaInitialRevisions {
@@ -38,7 +38,7 @@ public final class JpaInitialRevisions {
                     module.durationMinutes(),module.priceVnd()));
             for(var target:module.targets()) {
                 if(value.plan().formatVersion()!=null) {
-                    Short rank=target.coverageRole()==com.adaptlearngraph.entities.InitialPlanning.CoverageRole.COVERAGE?(short)target.preference():null;
+                    Short rank=target.coverageRole()==com.adaptlearngraph.entities.domain.InitialPlanning.CoverageRole.COVERAGE?(short)target.preference():null;
                     db.data.teaching().insert(new InitialPathwayTeachingV2Entity(id,revision,null,org,learner,selection.id(),selection.revision(),
                             module.id(),target.skillId(),target.teachingFocus().name(),target.difficultyLevel().name(),target.coverageRole().name(),
                             target.preferredDifficulty()==null?null:target.preferredDifficulty().name(),rank,target.expertAttention(),

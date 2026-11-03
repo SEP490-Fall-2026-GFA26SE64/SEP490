@@ -1,7 +1,7 @@
 package com.adaptlearngraph.helper;
 
-import com.adaptlearngraph.entities.OrganizationAssessmentPolicy;
-import com.adaptlearngraph.entities.OrganizationAssessmentPolicy.*;
+import com.adaptlearngraph.entities.domain.OrganizationAssessmentPolicy;
+import com.adaptlearngraph.entities.domain.OrganizationAssessmentPolicy.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.*;
 

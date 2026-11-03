@@ -1,11 +1,11 @@
 package com.adaptlearngraph.repository;
 
-import com.adaptlearngraph.entities.BaselineAssessmentSeries.ActiveRelease;
-import com.adaptlearngraph.entities.BaselineAssessmentSeries.BlueprintVersionRef;
-import com.adaptlearngraph.entities.BaselineAssessmentSeries.OpenCandidate;
-import com.adaptlearngraph.entities.BaselineAssessmentSeries.Scope;
-import com.adaptlearngraph.entities.BaselineAssessmentSeries.SeriesSnapshot;
-import com.adaptlearngraph.entities.BaselineBlueprint.RoleConfig;
+import com.adaptlearngraph.entities.domain.BaselineAssessmentSeries.ActiveRelease;
+import com.adaptlearngraph.entities.domain.BaselineAssessmentSeries.BlueprintVersionRef;
+import com.adaptlearngraph.entities.domain.BaselineAssessmentSeries.OpenCandidate;
+import com.adaptlearngraph.entities.domain.BaselineAssessmentSeries.Scope;
+import com.adaptlearngraph.entities.domain.BaselineAssessmentSeries.SeriesSnapshot;
+import com.adaptlearngraph.entities.domain.BaselineBlueprint.RoleConfig;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;

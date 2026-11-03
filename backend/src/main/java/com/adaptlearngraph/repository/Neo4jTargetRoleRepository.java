@@ -1,10 +1,10 @@
 package com.adaptlearngraph.repository;
 
 import com.adaptlearngraph.dtos.TargetRoleFilter;
-import com.adaptlearngraph.entities.RoleStatus;
-import com.adaptlearngraph.entities.RoleTrack;
-import com.adaptlearngraph.entities.TargetRole;
-import com.adaptlearngraph.entities.TargetRoleId;
+import com.adaptlearngraph.entities.domain.RoleStatus;
+import com.adaptlearngraph.entities.domain.RoleTrack;
+import com.adaptlearngraph.entities.domain.TargetRole;
+import com.adaptlearngraph.entities.domain.TargetRoleId;
 import com.adaptlearngraph.entities.TargetRoleNode;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;

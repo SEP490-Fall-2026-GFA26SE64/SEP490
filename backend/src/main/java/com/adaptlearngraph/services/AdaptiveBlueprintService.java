@@ -8,7 +8,7 @@ import com.adaptlearngraph.repository.AdaptiveBlueprintEligibilityPort.Snapshot;
 import com.adaptlearngraph.repository.AdaptiveBlueprintPreviewPort;
 import com.adaptlearngraph.repository.AdaptiveBlueprintStore;
 import com.adaptlearngraph.repository.AdaptiveBlueprintStore.*;
-import com.adaptlearngraph.entities.AdaptiveBlueprint.*;
+import com.adaptlearngraph.entities.domain.AdaptiveBlueprint.*;
 import java.nio.CharBuffer;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.StandardCharsets;

@@ -4,7 +4,7 @@ import com.adaptlearngraph.entities.TargetSelectionEntity;
 import com.adaptlearngraph.repository.TargetSelectionStorePort.LearnerTargetState;
 import com.adaptlearngraph.repository.TargetSelectionStorePort.PendingSelectionRequest;
 import com.adaptlearngraph.repository.TargetSelectionStorePort.StoredSelectionRequest;
-import com.adaptlearngraph.entities.TargetRoleSelection;
+import com.adaptlearngraph.entities.domain.TargetRoleSelection;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.Instant;

@@ -5,8 +5,8 @@ import static org.mockito.Mockito.*;
 
 import com.adaptlearngraph.helper.PaymentGateway;
 import com.adaptlearngraph.repository.PaymentProcessingStore;
-import com.adaptlearngraph.entities.PaymentOrder;
-import com.adaptlearngraph.entities.PlanTerms;
+import com.adaptlearngraph.entities.domain.PaymentOrder;
+import com.adaptlearngraph.entities.domain.PlanTerms;
 import com.adaptlearngraph.exception.SubscriptionFailure;
 import java.time.Clock;
 import java.time.Instant;
@@ -28,7 +28,7 @@ class PaymentProcessorTest {
     @Test
     void disabledPayosNeverQueriesCreatesOrAcceptsProviderObservations() {
         var development = new PaymentProcessor(store, gateway, Clock.fixed(now, ZoneOffset.UTC),
-                "https://example.test", new com.adaptlearngraph.entities.IntegrationPolicy(false, true, true));
+                "https://example.test", new com.adaptlearngraph.entities.domain.IntegrationPolicy(false, true, true));
         var order = order(now.plusSeconds(1800));
         var work = new PaymentProcessingStore.Work(UUID.randomUUID(), "lease", "PAYMENT_CREATE", 1, order);
         when(store.claim(now)).thenReturn(Optional.of(work));
@@ -43,7 +43,7 @@ class PaymentProcessorTest {
     @Test
     void disablingPayosPreservesPreviouslyPaidOrdersAndFinishesTheirCreateWork() {
         var development = new PaymentProcessor(store, gateway, Clock.fixed(now, ZoneOffset.UTC),
-                "https://example.test", new com.adaptlearngraph.entities.IntegrationPolicy(false, true, true));
+                "https://example.test", new com.adaptlearngraph.entities.domain.IntegrationPolicy(false, true, true));
         var source = order(now.plusSeconds(1800));
         var paid = new PaymentOrder(source.orderId(), source.intentId(), source.kind(), source.registrationId(),
                 source.organizationId(), source.ownerAccountId(), source.planId(), source.planVersionId(), source.terms(),

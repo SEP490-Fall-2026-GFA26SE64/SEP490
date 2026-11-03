@@ -17,10 +17,10 @@ public interface ModuleOccupationGrantJpaRepository
             + " where g.organizationId = :organization and g.expertId = :expert and g.active = true")
     List<String> activeOccupations(@Param("organization") String organizationId, @Param("expert") String expertId);
 
-    @Query("select new com.adaptlearngraph.entities.ModuleAuthoring$Grant(g.expertId, g.occupationId)"
+    @Query("select new com.adaptlearngraph.entities.domain.ModuleAuthoring$Grant(g.expertId, g.occupationId)"
             + " from ModuleOccupationGrantEntity g where g.organizationId = :organization and g.active = true"
             + " order by g.expertId, g.occupationId")
-    List<com.adaptlearngraph.entities.ModuleAuthoring.Grant> activeGrants(@Param("organization") String organizationId);
+    List<com.adaptlearngraph.entities.domain.ModuleAuthoring.Grant> activeGrants(@Param("organization") String organizationId);
 
     // Native: INSERT ... ON CONFLICT DO UPDATE upsert of the grant flag.
     @Modifying(flushAutomatically = true, clearAutomatically = true)

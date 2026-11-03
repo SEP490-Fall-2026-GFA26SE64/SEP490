@@ -6,7 +6,7 @@ import com.adaptlearngraph.repository.AdaptiveAttemptContextPort;
 import com.adaptlearngraph.repository.AdaptiveAttemptPolicyPort;
 import com.adaptlearngraph.repository.AdaptiveAttemptStore;
 import com.adaptlearngraph.services.AdaptiveAttemptUseCase.*;
-import com.adaptlearngraph.entities.AdaptiveAttempt;
+import com.adaptlearngraph.entities.domain.AdaptiveAttempt;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.nio.CharBuffer;

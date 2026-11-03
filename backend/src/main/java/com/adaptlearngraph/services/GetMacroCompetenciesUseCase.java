@@ -1,6 +1,6 @@
 package com.adaptlearngraph.services;
 
-import com.adaptlearngraph.entities.MacroCompetency;
+import com.adaptlearngraph.entities.domain.MacroCompetency;
 
 import java.util.List;
 

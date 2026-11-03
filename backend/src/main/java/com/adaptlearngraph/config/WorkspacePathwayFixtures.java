@@ -7,7 +7,7 @@ import com.adaptlearngraph.repository.LocalSeedSemantics;
 import com.adaptlearngraph.repository.InitialCatalogPort.ReleaseAuthority;
 import com.adaptlearngraph.repository.InitialPathwayPorts.*;
 import com.adaptlearngraph.repository.InitialPlanningPorts.*;
-import com.adaptlearngraph.entities.InitialPlanning.*;
+import com.adaptlearngraph.entities.domain.InitialPlanning.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.nio.file.*;
 import java.util.*;

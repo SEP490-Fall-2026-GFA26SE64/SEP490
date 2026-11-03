@@ -1,6 +1,6 @@
 package com.adaptlearngraph.repository;
 
-import com.adaptlearngraph.entities.AdaptiveBlueprint.VersionPins;
+import com.adaptlearngraph.entities.domain.AdaptiveBlueprint.VersionPins;
 import com.adaptlearngraph.services.AdaptiveBlueprintUseCase.Code;
 import com.adaptlearngraph.services.AdaptiveBlueprintUseCase.Failure;
 import java.math.BigDecimal;

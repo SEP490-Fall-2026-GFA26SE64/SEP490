@@ -1,7 +1,7 @@
 package com.adaptlearngraph.repository;
 
-import com.adaptlearngraph.entities.PlanTerms;
-import com.adaptlearngraph.entities.SubscriptionPlan;
+import com.adaptlearngraph.entities.domain.PlanTerms;
+import com.adaptlearngraph.entities.domain.SubscriptionPlan;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;

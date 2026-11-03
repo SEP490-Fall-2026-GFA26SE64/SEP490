@@ -7,8 +7,8 @@ import com.adaptlearngraph.services.BaselineBlueprintUseCase.RoleCoverageRequire
 import com.adaptlearngraph.repository.BaselineBlueprintValidationPort;
 import com.adaptlearngraph.repository.BaselineBlueprintValidationPort.CoverageKey;
 import com.adaptlearngraph.repository.BaselineBlueprintValidationPort.Difficulty;
-import com.adaptlearngraph.entities.BaselineBlueprint.RoleConfig;
-import com.adaptlearngraph.entities.BaselineBlueprint.SkillConfig;
+import com.adaptlearngraph.entities.domain.BaselineBlueprint.RoleConfig;
+import com.adaptlearngraph.entities.domain.BaselineBlueprint.SkillConfig;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashSet;

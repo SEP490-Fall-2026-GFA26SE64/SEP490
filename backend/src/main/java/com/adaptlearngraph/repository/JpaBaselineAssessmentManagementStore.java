@@ -1,16 +1,16 @@
 package com.adaptlearngraph.repository;
 
 import com.adaptlearngraph.constants.TransactionManagers;
-import com.adaptlearngraph.entities.BaselineAssessmentSeries.ActiveRelease;
-import com.adaptlearngraph.entities.BaselineAssessmentSeries.AssessmentVersionRef;
-import com.adaptlearngraph.entities.BaselineAssessmentSeries.BlueprintVersionRef;
-import com.adaptlearngraph.entities.BaselineAssessmentSeries.CandidateState;
-import com.adaptlearngraph.entities.BaselineAssessmentSeries.OpenCandidate;
-import com.adaptlearngraph.entities.BaselineAssessmentSeries.PendingStage;
-import com.adaptlearngraph.entities.BaselineAssessmentSeries.Scope;
-import com.adaptlearngraph.entities.BaselineAssessmentSeries.SeriesSnapshot;
+import com.adaptlearngraph.entities.domain.BaselineAssessmentSeries.ActiveRelease;
+import com.adaptlearngraph.entities.domain.BaselineAssessmentSeries.AssessmentVersionRef;
+import com.adaptlearngraph.entities.domain.BaselineAssessmentSeries.BlueprintVersionRef;
+import com.adaptlearngraph.entities.domain.BaselineAssessmentSeries.CandidateState;
+import com.adaptlearngraph.entities.domain.BaselineAssessmentSeries.OpenCandidate;
+import com.adaptlearngraph.entities.domain.BaselineAssessmentSeries.PendingStage;
+import com.adaptlearngraph.entities.domain.BaselineAssessmentSeries.Scope;
+import com.adaptlearngraph.entities.domain.BaselineAssessmentSeries.SeriesSnapshot;
 import com.adaptlearngraph.entities.BaselineAssessmentTransitionEntity;
-import com.adaptlearngraph.entities.BaselineBlueprint.RoleConfig;
+import com.adaptlearngraph.entities.domain.BaselineBlueprint.RoleConfig;
 import com.adaptlearngraph.entities.BaselineBlueprintWorkingRevisionEntity;
 import com.adaptlearngraph.entities.BaselineManagementCommandEntity;
 import com.fasterxml.jackson.core.JsonProcessingException;

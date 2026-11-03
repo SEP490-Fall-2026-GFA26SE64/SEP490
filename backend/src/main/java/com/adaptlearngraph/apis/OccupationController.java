@@ -2,7 +2,7 @@ package com.adaptlearngraph.apis;
 
 import com.adaptlearngraph.responseDto.OccupationResponse;
 import com.adaptlearngraph.services.GetOccupationsUseCase;
-import com.adaptlearngraph.entities.Occupation;
+import com.adaptlearngraph.entities.domain.Occupation;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

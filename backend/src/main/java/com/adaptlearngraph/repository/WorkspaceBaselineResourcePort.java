@@ -1,7 +1,7 @@
 package com.adaptlearngraph.repository;
 
 import com.adaptlearngraph.services.WorkspaceBaselineResourceUseCase.Tuple;
-import com.adaptlearngraph.entities.AdaptiveBlueprint.Scope;
+import com.adaptlearngraph.entities.domain.AdaptiveBlueprint.Scope;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;

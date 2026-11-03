@@ -1,11 +1,11 @@
 package com.adaptlearngraph.services;
 
-import com.adaptlearngraph.entities.AdaptiveAttempt;
-import com.adaptlearngraph.entities.AdaptiveAttemptSnapshot;
+import com.adaptlearngraph.entities.domain.AdaptiveAttempt;
+import com.adaptlearngraph.entities.domain.AdaptiveAttemptSnapshot;
 import com.adaptlearngraph.repository.AdaptiveBlueprintEligibilityPort;
 import com.adaptlearngraph.repository.AdaptiveBlueprintStore;
 import com.adaptlearngraph.repository.AdaptiveTechnicalVersionPort;
-import com.adaptlearngraph.entities.AdaptiveBlueprint;
+import com.adaptlearngraph.entities.domain.AdaptiveBlueprint;
 import com.adaptlearngraph.services.AdaptiveAttemptUseCase.*;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -15,13 +15,13 @@ public final class AdaptiveAttemptSnapshotResolver {
     private final AdaptiveBlueprintStore blueprints;
     private final AdaptiveBlueprintEligibilityPort eligibility;
     private final AdaptiveTechnicalVersionPort technical;
-    private final java.util.function.Function<UUID,com.adaptlearngraph.entities.OrganizationAssessmentPolicy.Pin> policies;
+    private final java.util.function.Function<UUID,com.adaptlearngraph.entities.domain.OrganizationAssessmentPolicy.Pin> policies;
     public AdaptiveAttemptSnapshotResolver(AdaptiveBlueprintStore blueprints, AdaptiveBlueprintEligibilityPort eligibility,
                                             AdaptiveTechnicalVersionPort technical) {
         this(blueprints,eligibility,technical,org->null);
     }
     public AdaptiveAttemptSnapshotResolver(AdaptiveBlueprintStore blueprints,AdaptiveBlueprintEligibilityPort eligibility,
-            AdaptiveTechnicalVersionPort technical,java.util.function.Function<UUID,com.adaptlearngraph.entities.OrganizationAssessmentPolicy.Pin> policies) {
+            AdaptiveTechnicalVersionPort technical,java.util.function.Function<UUID,com.adaptlearngraph.entities.domain.OrganizationAssessmentPolicy.Pin> policies) {
         this.blueprints=blueprints;this.eligibility=eligibility;this.technical=technical;this.policies=Objects.requireNonNull(policies);
     }
     public AdaptiveAttemptSnapshot resolve(AdaptiveAttempt.Scope scope, Optional<String> role, Optional<Long> selectionRevision) {

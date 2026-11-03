@@ -2,8 +2,8 @@ package com.adaptlearngraph.config;
 
 import com.adaptlearngraph.repository.SubscriptionWorkspaceStore;
 import com.adaptlearngraph.repository.SubscriptionIdentity;
-import com.adaptlearngraph.entities.SubscriptionAccessPolicy.Actor;
-import com.adaptlearngraph.entities.SubscriptionAccessPolicy.Role;
+import com.adaptlearngraph.entities.domain.SubscriptionAccessPolicy.Actor;
+import com.adaptlearngraph.entities.domain.SubscriptionAccessPolicy.Role;
 import com.adaptlearngraph.exception.SubscriptionFailure;
 import jakarta.servlet.http.Cookie;
 import java.util.Map;

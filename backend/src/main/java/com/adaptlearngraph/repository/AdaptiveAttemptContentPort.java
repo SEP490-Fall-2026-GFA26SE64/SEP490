@@ -1,6 +1,6 @@
 package com.adaptlearngraph.repository;
 
-import com.adaptlearngraph.entities.AdaptiveAttempt.Scope;
+import com.adaptlearngraph.entities.domain.AdaptiveAttempt.Scope;
 import java.util.*;
 
 /** Caller authorizes scope and supplies only items from an owned/authorized immutable pool. */

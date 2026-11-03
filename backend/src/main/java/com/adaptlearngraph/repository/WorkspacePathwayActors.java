@@ -1,7 +1,7 @@
 package com.adaptlearngraph.repository;
 
 import com.adaptlearngraph.repository.InitialPathwayPorts.*;
-import com.adaptlearngraph.entities.SubscriptionAccessPolicy;
+import com.adaptlearngraph.entities.domain.SubscriptionAccessPolicy;
 import com.adaptlearngraph.exception.SubscriptionFailure;
 import com.adaptlearngraph.exception.RegistrationFailure;
 import java.time.Clock;

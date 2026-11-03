@@ -10,10 +10,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.adaptlearngraph.exception.TargetRoleQueryException;
 import com.adaptlearngraph.exception.TargetRoleQueryException.Code;
 import com.adaptlearngraph.services.TargetRoleQueryUseCase;
-import com.adaptlearngraph.entities.CareerTrack;
-import com.adaptlearngraph.entities.TargetRoleDetail;
-import com.adaptlearngraph.entities.TargetRoleRequirement;
-import com.adaptlearngraph.entities.TargetRoleSummary;
+import com.adaptlearngraph.entities.domain.CareerTrack;
+import com.adaptlearngraph.entities.domain.TargetRoleDetail;
+import com.adaptlearngraph.entities.domain.TargetRoleRequirement;
+import com.adaptlearngraph.entities.domain.TargetRoleSummary;
 import com.adaptlearngraph.config.LocalCatalogSecurityConfiguration;
 import java.util.List;
 import org.junit.jupiter.api.Test;

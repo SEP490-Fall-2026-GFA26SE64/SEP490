@@ -1,6 +1,6 @@
 package com.adaptlearngraph.repository;
 
-import com.adaptlearngraph.entities.MacroCompetency;
+import com.adaptlearngraph.entities.domain.MacroCompetency;
 import com.adaptlearngraph.entities.MacroCompetencyNode;
 import java.time.Instant;
 import java.util.ArrayList;

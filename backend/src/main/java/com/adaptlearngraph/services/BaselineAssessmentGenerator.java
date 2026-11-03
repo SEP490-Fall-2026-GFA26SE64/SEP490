@@ -6,7 +6,7 @@ import com.adaptlearngraph.services.BaselineBlueprintUseCase.Failure;
 import com.adaptlearngraph.repository.BaselineAssessmentDraftStore.CandidateItem;
 import com.adaptlearngraph.repository.BaselineAssessmentDraftStore.Difficulty;
 import com.adaptlearngraph.repository.BaselineAssessmentDraftStore.NewItem;
-import com.adaptlearngraph.entities.BaselineBlueprint;
+import com.adaptlearngraph.entities.domain.BaselineBlueprint;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.nio.charset.StandardCharsets;

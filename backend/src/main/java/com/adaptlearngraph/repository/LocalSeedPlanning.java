@@ -4,8 +4,8 @@ import com.adaptlearngraph.constants.LocalDemoIdentity;
 import com.adaptlearngraph.config.LocalCatalogBootstrap;
 import com.adaptlearngraph.repository.InitialPathwayPorts.*;
 import com.adaptlearngraph.repository.InitialPlanningPorts.*;
-import com.adaptlearngraph.entities.InitialIdentity;
-import com.adaptlearngraph.entities.InitialPlanning.*;
+import com.adaptlearngraph.entities.domain.InitialIdentity;
+import com.adaptlearngraph.entities.domain.InitialPlanning.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.*;
 

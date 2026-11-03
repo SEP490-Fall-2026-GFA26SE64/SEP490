@@ -1,6 +1,6 @@
 package com.adaptlearngraph.repository;
 
-import com.adaptlearngraph.entities.ModuleAuthoring.*;
+import com.adaptlearngraph.entities.domain.ModuleAuthoring.*;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;

@@ -1,6 +1,6 @@
 package com.adaptlearngraph.repository;
 
-import com.adaptlearngraph.entities.OrganizationAssessmentPolicy.*;
+import com.adaptlearngraph.entities.domain.OrganizationAssessmentPolicy.*;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;

@@ -2,9 +2,9 @@ package com.adaptlearngraph.repository;
 
 import com.adaptlearngraph.repository.TargetSelectionStorePort.RequestStatus;
 import com.adaptlearngraph.repository.TargetSelectionStorePort.StoredSelectionRequest;
-import com.adaptlearngraph.entities.TargetRoleSelection;
-import com.adaptlearngraph.entities.TargetRoleSnapshot;
-import com.adaptlearngraph.entities.TargetRoleSnapshot.CareerTrack;
+import com.adaptlearngraph.entities.domain.TargetRoleSelection;
+import com.adaptlearngraph.entities.domain.TargetRoleSnapshot;
+import com.adaptlearngraph.entities.domain.TargetRoleSnapshot.CareerTrack;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;

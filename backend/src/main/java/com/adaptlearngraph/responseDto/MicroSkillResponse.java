@@ -1,6 +1,6 @@
 package com.adaptlearngraph.responseDto;
 
-import com.adaptlearngraph.entities.MicroSkill;
+import com.adaptlearngraph.entities.domain.MicroSkill;
 
 import java.time.Instant;
 

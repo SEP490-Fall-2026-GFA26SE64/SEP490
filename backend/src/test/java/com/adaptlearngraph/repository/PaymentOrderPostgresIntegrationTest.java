@@ -2,14 +2,14 @@ package com.adaptlearngraph.repository;
 
 import java.util.List;
 
-import com.adaptlearngraph.entities.PaymentOrder;
+import com.adaptlearngraph.entities.domain.PaymentOrder;
 import com.adaptlearngraph.services.PaymentConfirmationMailWorker;
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.adaptlearngraph.repository.PaymentOrderStore.Command;
 import com.adaptlearngraph.repository.SubscriptionIdentity.Context;
 import com.adaptlearngraph.helper.PaymentGateway.Observation;
-import com.adaptlearngraph.entities.SubscriptionAccessPolicy.Actor;
+import com.adaptlearngraph.entities.domain.SubscriptionAccessPolicy.Actor;
 import com.adaptlearngraph.exception.SubscriptionFailure;
 import java.time.Instant;
 import java.util.Set;
@@ -59,7 +59,7 @@ class PaymentOrderPostgresIntegrationTest {
         var context = registrant();
         var order = orders.create(context, command(UUID.randomUUID(), null), NOW);
         var development = new JpaPaymentProcessingStore(IdentityTestFixtures.subscriptionRepositories(persistence), IdentityTestFixtures.jpaTransactions(persistence), orders,
-                new com.adaptlearngraph.entities.IntegrationPolicy(false, true, true));
+                new com.adaptlearngraph.entities.domain.IntegrationPolicy(false, true, true));
         development.bypassForDevelopment(order.orderId(), NOW);
         development.apply(order.orderId(), NOW);
         development.bypassForDevelopment(order.orderId(), NOW.plusSeconds(1));
@@ -86,7 +86,7 @@ class PaymentOrderPostgresIntegrationTest {
     @Test
     void developmentBypassCannotOverwriteAnExternallyPendingOrPaidOrder() {
         var development = new JpaPaymentProcessingStore(IdentityTestFixtures.subscriptionRepositories(persistence), IdentityTestFixtures.jpaTransactions(persistence), orders,
-                new com.adaptlearngraph.entities.IntegrationPolicy(false, true, true));
+                new com.adaptlearngraph.entities.domain.IntegrationPolicy(false, true, true));
         var order = orders.create(registrant(), command(UUID.randomUUID(), null), NOW);
         processing.record(observation(order, "PENDING", 0L, "VND", "QUERY"), NOW);
         assertThrows(SubscriptionFailure.class, () -> development.bypassForDevelopment(order.orderId(), NOW));
@@ -268,7 +268,7 @@ class PaymentOrderPostgresIntegrationTest {
         workspaces.changeMember(context.actor(),org,id,true,Set.of("DOMAIN_EXPERT"),0,NOW);
         var member=workspaces.members(org).stream().filter(m->m.membershipId().equals(id)).findFirst().orElseThrow();
         assertEquals(SubscriptionFailure.Code.CAPACITY_EXCEEDED,assertThrows(SubscriptionFailure.class,()->
-                workspaces.updateMember(context.actor(),org,id,new com.adaptlearngraph.entities.MemberProfileUpdate(
+                workspaces.updateMember(context.actor(),org,id,new com.adaptlearngraph.entities.domain.MemberProfileUpdate(
                     "Must roll back",Set.of("EMPLOYEE"),member.departmentId(),member.occupationReferenceId(),member.revision()),NOW)).code());
         var unchanged=workspaces.members(org).stream().filter(m->m.membershipId().equals(id)).findFirst().orElseThrow();
         assertEquals(member.fullName(),unchanged.fullName());
@@ -286,7 +286,7 @@ class PaymentOrderPostgresIntegrationTest {
                 String.class,member.accountId());
         String password=jdbc.queryForObject("SELECT password_hash FROM platform.account WHERE account_id=?",String.class,member.accountId());
         var edited=workspaces.updateMember(context.actor(),org,member.membershipId(),
-                new com.adaptlearngraph.entities.MemberProfileUpdate("Updated Administrator",member.roles(),null,null,member.revision()),NOW);
+                new com.adaptlearngraph.entities.domain.MemberProfileUpdate("Updated Administrator",member.roles(),null,null,member.revision()),NOW);
         assertEquals("Updated Administrator",edited.fullName());
         assertEquals(member.email(),edited.email());
         assertEquals(member.revision()+1,edited.revision());
@@ -303,7 +303,7 @@ class PaymentOrderPostgresIntegrationTest {
         assertEquals("Updated Administrator",identityStore.findByEmail(member.email()).orElseThrow().fullName());
         assertEquals(SubscriptionFailure.Code.CONFLICT,assertThrows(SubscriptionFailure.class,()->
                 workspaces.updateMember(context.actor(),org,member.membershipId(),
-                    new com.adaptlearngraph.entities.MemberProfileUpdate("Stale",member.roles(),null,null,member.revision()),NOW)).code());
+                    new com.adaptlearngraph.entities.domain.MemberProfileUpdate("Stale",member.roles(),null,null,member.revision()),NOW)).code());
     }
 
     @Test
@@ -313,7 +313,7 @@ class PaymentOrderPostgresIntegrationTest {
         var member=workspaces.members(org).stream().filter(m->m.membershipId().equals(memberId)).findFirst().orElseThrow();
         jdbc.update("UPDATE platform.department_reference SET active=false WHERE department_id=?",member.departmentId());
         jdbc.update("UPDATE platform.occupation_department_reference SET active=false WHERE occupation_reference_id=?",member.occupationReferenceId());
-        var updated=workspaces.updateMember(context.actor(),org,memberId,new com.adaptlearngraph.entities.MemberProfileUpdate(
+        var updated=workspaces.updateMember(context.actor(),org,memberId,new com.adaptlearngraph.entities.domain.MemberProfileUpdate(
                 "Historical Employee",Set.of("EMPLOYEE"),member.departmentId(),member.occupationReferenceId(),0),NOW);
         assertEquals("Test department",updated.departmentName());
         assertEquals("Test occupation",updated.occupationName());
@@ -321,14 +321,14 @@ class PaymentOrderPostgresIntegrationTest {
         UUID foreignId=employee(other.actor().organizationId(),true);
         var foreign=workspaces.members(other.actor().organizationId()).stream().filter(m->m.membershipId().equals(foreignId)).findFirst().orElseThrow();
         assertEquals(SubscriptionFailure.Code.REFERENCE_DATA_REQUIRED,assertThrows(SubscriptionFailure.class,()->
-                workspaces.updateMember(context.actor(),org,memberId,new com.adaptlearngraph.entities.MemberProfileUpdate(
+                workspaces.updateMember(context.actor(),org,memberId,new com.adaptlearngraph.entities.domain.MemberProfileUpdate(
                     "Invalid",Set.of("EMPLOYEE"),foreign.departmentId(),foreign.occupationReferenceId(),1),NOW)).code());
         assertEquals(SubscriptionFailure.Code.FORBIDDEN,assertThrows(SubscriptionFailure.class,()->
-                workspaces.updateMember(other.actor(),org,memberId,new com.adaptlearngraph.entities.MemberProfileUpdate(
+                workspaces.updateMember(other.actor(),org,memberId,new com.adaptlearngraph.entities.domain.MemberProfileUpdate(
                     "Forbidden",Set.of("EMPLOYEE"),member.departmentId(),member.occupationReferenceId(),1),NOW)).code());
         var admin=workspaces.members(org).stream().filter(m->m.accountId().equals(context.actor().accountId())).findFirst().orElseThrow();
         assertEquals(SubscriptionFailure.Code.CONFLICT,assertThrows(SubscriptionFailure.class,()->
-                workspaces.updateMember(context.actor(),org,admin.membershipId(),new com.adaptlearngraph.entities.MemberProfileUpdate(
+                workspaces.updateMember(context.actor(),org,admin.membershipId(),new com.adaptlearngraph.entities.domain.MemberProfileUpdate(
                     "Cannot remove last admin",Set.of("LD_MANAGER"),null,null,admin.revision()),NOW)).code());
         assertEquals("Historical Employee",workspaces.members(org).stream().filter(m->m.membershipId().equals(memberId)).findFirst().orElseThrow().fullName());
     }
@@ -339,9 +339,9 @@ class PaymentOrderPostgresIntegrationTest {
         UUID org=context.actor().organizationId(),id=employee(org,true);
         var member=workspaces.members(org).stream().filter(m->m.membershipId().equals(id)).findFirst().orElseThrow();
         assertEquals(SubscriptionFailure.Code.REFERENCE_DATA_REQUIRED,assertThrows(SubscriptionFailure.class,()->
-                workspaces.updateMember(context.actor(),org,id,new com.adaptlearngraph.entities.MemberProfileUpdate(
+                workspaces.updateMember(context.actor(),org,id,new com.adaptlearngraph.entities.domain.MemberProfileUpdate(
                     "No references",Set.of("EMPLOYEE"),null,null,0),NOW)).code());
-        var update=new com.adaptlearngraph.entities.MemberProfileUpdate("Not permitted",Set.of("EMPLOYEE"),
+        var update=new com.adaptlearngraph.entities.domain.MemberProfileUpdate("Not permitted",Set.of("EMPLOYEE"),
                 member.departmentId(),member.occupationReferenceId(),0);
         Instant end=workspaces.summary(org,NOW).current().endsAt();
         assertEquals(SubscriptionFailure.Code.FORBIDDEN,assertThrows(SubscriptionFailure.class,()->
@@ -464,12 +464,12 @@ class PaymentOrderPostgresIntegrationTest {
         assertEquals(20,workspaces.summary(org,NOW.plusSeconds(1)).usedSeats());
         var end=workspaces.summary(org,NOW.plusSeconds(1)).current().endsAt();
         assertThrows(SubscriptionFailure.class,()->workspaces.require(context.actor(),org,
-                com.adaptlearngraph.entities.SubscriptionAccessPolicy.Action.WORKSPACE,end));
-        workspaces.require(context.actor(),org,com.adaptlearngraph.entities.SubscriptionAccessPolicy.Action.RENEW,end);
+                com.adaptlearngraph.entities.domain.SubscriptionAccessPolicy.Action.WORKSPACE,end));
+        workspaces.require(context.actor(),org,com.adaptlearngraph.entities.domain.SubscriptionAccessPolicy.Action.RENEW,end);
         jdbc.update("UPDATE platform.organization SET status='SUSPENDED' WHERE organization_id=?",org);
-        workspaces.require(context.actor(),org,com.adaptlearngraph.entities.SubscriptionAccessPolicy.Action.BILLING_READ,end);
+        workspaces.require(context.actor(),org,com.adaptlearngraph.entities.domain.SubscriptionAccessPolicy.Action.BILLING_READ,end);
         assertThrows(SubscriptionFailure.class,()->workspaces.require(context.actor(),org,
-                com.adaptlearngraph.entities.SubscriptionAccessPolicy.Action.RENEW,end));
+                com.adaptlearngraph.entities.domain.SubscriptionAccessPolicy.Action.RENEW,end));
     }
 
     @Test
@@ -667,7 +667,7 @@ class PaymentOrderPostgresIntegrationTest {
         processing.apply(order.orderId(),NOW);
         var org=workspaces.setup(owner.registrationId()).organizationId();
         return new Context(new Actor(owner.actor().accountId(),org,true,true,
-                Set.of(com.adaptlearngraph.entities.SubscriptionAccessPolicy.Role.ORGANIZATION_ADMINISTRATOR),true),null);
+                Set.of(com.adaptlearngraph.entities.domain.SubscriptionAccessPolicy.Role.ORGANIZATION_ADMINISTRATOR),true),null);
     }
     private static UUID employee(UUID org,boolean active) {
         UUID account=UUID.randomUUID(),member=UUID.randomUUID(),department=UUID.randomUUID(),occupation=UUID.randomUUID();
@@ -733,7 +733,7 @@ class PaymentOrderPostgresIntegrationTest {
         assertThrows(org.springframework.dao.DataIntegrityViolationException.class,()->
                 jdbc.update("INSERT INTO platform.platform_administrator(account_id,granted_at,grant_source) VALUES (?,now(),'OPERATOR')",
                         owner.actor().accountId()));
-        assertThrows(SubscriptionFailure.class,()->new com.adaptlearngraph.entities.MemberProfileUpdate(
+        assertThrows(SubscriptionFailure.class,()->new com.adaptlearngraph.entities.domain.MemberProfileUpdate(
                 "Invalid roles",Set.of("EMPLOYEE","DOMAIN_EXPERT"),null,null,0));
     }
 

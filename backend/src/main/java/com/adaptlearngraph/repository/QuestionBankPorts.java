@@ -1,7 +1,7 @@
 package com.adaptlearngraph.repository;
 
-import com.adaptlearngraph.entities.QuestionBank;
-import com.adaptlearngraph.entities.QuestionBank.*;
+import com.adaptlearngraph.entities.domain.QuestionBank;
+import com.adaptlearngraph.entities.domain.QuestionBank.*;
 import java.util.*;
 import java.util.function.Function;
 

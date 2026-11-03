@@ -4,12 +4,12 @@ import com.adaptlearngraph.repository.RegistrationSecrets;
 import com.adaptlearngraph.repository.RegistrationStore;
 import com.adaptlearngraph.repository.WorkspaceIdentityStore;
 import com.adaptlearngraph.repository.WorkspaceIdentityStore.Credential;
-import com.adaptlearngraph.entities.RegistrationActor;
+import com.adaptlearngraph.entities.domain.RegistrationActor;
 import com.adaptlearngraph.exception.RegistrationFailure;
 import com.adaptlearngraph.exception.RegistrationFailure.Code;
-import com.adaptlearngraph.entities.RegistrationFields;
-import com.adaptlearngraph.entities.WorkspacePrincipal;
-import com.adaptlearngraph.entities.WorkspacePrincipal.Scope;
+import com.adaptlearngraph.entities.domain.RegistrationFields;
+import com.adaptlearngraph.entities.domain.WorkspacePrincipal;
+import com.adaptlearngraph.entities.domain.WorkspacePrincipal.Scope;
 import java.time.Clock;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -27,14 +27,14 @@ public final class WorkspaceAuthenticationService implements WorkspaceAuthentica
 
     public WorkspaceAuthenticationService(WorkspaceIdentityStore identities, RegistrationStore security,
             RegistrationSecrets secrets, RegistrationUseCase registration, Clock clock) {
-        this(identities, security, secrets, registration, clock, com.adaptlearngraph.entities.IntegrationPolicy.ENABLED);
+        this(identities, security, secrets, registration, clock, com.adaptlearngraph.entities.domain.IntegrationPolicy.ENABLED);
     }
 
-    private final com.adaptlearngraph.entities.IntegrationPolicy policy;
+    private final com.adaptlearngraph.entities.domain.IntegrationPolicy policy;
 
     public WorkspaceAuthenticationService(WorkspaceIdentityStore identities, RegistrationStore security,
             RegistrationSecrets secrets, RegistrationUseCase registration, Clock clock,
-            com.adaptlearngraph.entities.IntegrationPolicy policy) {
+            com.adaptlearngraph.entities.domain.IntegrationPolicy policy) {
         this.identities = identities;
         this.security = security;
         this.secrets = secrets;

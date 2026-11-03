@@ -6,8 +6,8 @@ import com.adaptlearngraph.repository.PaymentProcessingStore;
 import com.adaptlearngraph.repository.SubscriptionIdentity;
 import com.adaptlearngraph.repository.SubscriptionWorkspaceStore;
 import com.adaptlearngraph.repository.SubscriptionWorkspaceStore.*;
-import com.adaptlearngraph.entities.PaymentOrder;
-import com.adaptlearngraph.entities.SubscriptionAccessPolicy.Action;
+import com.adaptlearngraph.entities.domain.PaymentOrder;
+import com.adaptlearngraph.entities.domain.SubscriptionAccessPolicy.Action;
 import com.adaptlearngraph.exception.SubscriptionFailure;
 import java.time.Clock;
 import java.util.List;
@@ -21,16 +21,16 @@ public final class SubscriptionLifecycleService implements SubscriptionLifecycle
     private final SubscriptionWorkspaceStore workspaces;
     private final PaymentGateway gateway;
     private final Clock clock;
-    private final com.adaptlearngraph.entities.IntegrationPolicy policy;
+    private final com.adaptlearngraph.entities.domain.IntegrationPolicy policy;
 
     public SubscriptionLifecycleService(SubscriptionIdentity identity, PaymentOrderStore orders, PaymentProcessingStore processing,
             SubscriptionWorkspaceStore workspaces, PaymentGateway gateway, Clock clock) {
-        this(identity, orders, processing, workspaces, gateway, clock, com.adaptlearngraph.entities.IntegrationPolicy.ENABLED);
+        this(identity, orders, processing, workspaces, gateway, clock, com.adaptlearngraph.entities.domain.IntegrationPolicy.ENABLED);
     }
 
     public SubscriptionLifecycleService(SubscriptionIdentity identity, PaymentOrderStore orders, PaymentProcessingStore processing,
             SubscriptionWorkspaceStore workspaces, PaymentGateway gateway, Clock clock,
-            com.adaptlearngraph.entities.IntegrationPolicy policy) {
+            com.adaptlearngraph.entities.domain.IntegrationPolicy policy) {
         this.identity=identity; this.orders=orders; this.processing=processing; this.workspaces=workspaces; this.gateway=gateway; this.clock=clock;
         this.policy=policy;
     }
@@ -92,7 +92,7 @@ public final class SubscriptionLifecycleService implements SubscriptionLifecycle
         workspaces.changeMember(identity.current().actor(),organizationId,member,active,roles,revision,clock.instant());
     }
     @Override
-    public Member updateMember(UUID organizationId,UUID member,com.adaptlearngraph.entities.MemberProfileUpdate update) {
+    public Member updateMember(UUID organizationId,UUID member,com.adaptlearngraph.entities.domain.MemberProfileUpdate update) {
         return workspaces.updateMember(identity.current().actor(),organizationId,member,update,clock.instant());
     }
     private PaymentOrder authorized(UUID orderId) {

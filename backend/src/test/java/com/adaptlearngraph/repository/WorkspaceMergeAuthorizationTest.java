@@ -5,10 +5,10 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
-import com.adaptlearngraph.entities.TargetRole;
-import com.adaptlearngraph.entities.TargetRoleId;
-import com.adaptlearngraph.entities.SubscriptionAccessPolicy.Actor;
-import com.adaptlearngraph.entities.SubscriptionAccessPolicy.Role;
+import com.adaptlearngraph.entities.domain.TargetRole;
+import com.adaptlearngraph.entities.domain.TargetRoleId;
+import com.adaptlearngraph.entities.domain.SubscriptionAccessPolicy.Actor;
+import com.adaptlearngraph.entities.domain.SubscriptionAccessPolicy.Role;
 import com.adaptlearngraph.exception.SubscriptionFailure;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;

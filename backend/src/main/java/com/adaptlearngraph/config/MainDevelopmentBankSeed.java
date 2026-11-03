@@ -77,25 +77,25 @@ public final class MainDevelopmentBankSeed {
         }catch(java.io.IOException invalid){throw new IllegalStateException(invalid);}
         return List.copyOf(result);
     }
-    public static com.adaptlearngraph.entities.Calibration.Bank calibrationBank(
+    public static com.adaptlearngraph.entities.domain.Calibration.Bank calibrationBank(
             com.adaptlearngraph.repository.CalibrationPorts.Grant grant,
-            com.adaptlearngraph.entities.Calibration.Source expected){
-        if(!ORGANIZATION.equals(grant.scope().organizationId()))throw new com.adaptlearngraph.entities.Calibration.Failure(
-                com.adaptlearngraph.entities.Calibration.Code.FORBIDDEN);
+            com.adaptlearngraph.entities.domain.Calibration.Source expected){
+        if(!ORGANIZATION.equals(grant.scope().organizationId()))throw new com.adaptlearngraph.entities.domain.Calibration.Failure(
+                com.adaptlearngraph.entities.domain.Calibration.Code.FORBIDDEN);
         String occupation=List.of(LocalDemoIdentity.OCC,SoftwareDevelopmentSeed.OCCUPATION).stream()
-                .filter(o->bank(o).equals(grant.scope().bankId())).findFirst().orElseThrow(()->new com.adaptlearngraph.entities.Calibration.Failure(
-                        com.adaptlearngraph.entities.Calibration.Code.NOT_READY));
+                .filter(o->bank(o).equals(grant.scope().bankId())).findFirst().orElseThrow(()->new com.adaptlearngraph.entities.domain.Calibration.Failure(
+                        com.adaptlearngraph.entities.domain.Calibration.Code.NOT_READY));
         try{
             var original=LocalDemoIdentity.OCC.equals(occupation)?securitySource():parse(SoftwareDevelopmentSeed.bankBytes(),OfficialQuestionBankManifest.class);
             var projected=project(original);
-            var source=new com.adaptlearngraph.entities.Calibration.Source(projected.questionBank().id(),projected.manifestVersion(),
+            var source=new com.adaptlearngraph.entities.domain.Calibration.Source(projected.questionBank().id(),projected.manifestVersion(),
                     hash(JSON.valueToTree(projected)),projected.scopeSha256(),projected.sourceSha256());
             if(!source.equals(expected))throw new IllegalStateException("Development calibration source drift");
-            var items=projected.items().stream().map(i->new com.adaptlearngraph.entities.Calibration.Item(
-                    new com.adaptlearngraph.entities.Calibration.ItemPin(i.itemVersionId(),i.itemId(),i.version(),i.microSkillId(),i.contentHash()),
+            var items=projected.items().stream().map(i->new com.adaptlearngraph.entities.domain.Calibration.Item(
+                    new com.adaptlearngraph.entities.domain.Calibration.ItemPin(i.itemVersionId(),i.itemId(),i.version(),i.microSkillId(),i.contentHash()),
                     java.util.stream.StreamSupport.stream(i.responseSchema().path("options").spliterator(),false).map(o->o.path("id").asText()).toList(),i.protectedKey().path("correctOptionId").asText()))
-                    .sorted(java.util.Comparator.comparing((com.adaptlearngraph.entities.Calibration.Item i)->i.pin().skillId()).thenComparing(i->i.pin().itemVersionId().toString())).toList();
-            return new com.adaptlearngraph.entities.Calibration.Bank(source,items);
+                    .sorted(java.util.Comparator.comparing((com.adaptlearngraph.entities.domain.Calibration.Item i)->i.pin().skillId()).thenComparing(i->i.pin().itemVersionId().toString())).toList();
+            return new com.adaptlearngraph.entities.domain.Calibration.Bank(source,items);
         }catch(java.io.IOException invalid){throw new IllegalStateException(invalid);}
     }
     public static String seTechnicalHash(){return sha256((SoftwareDevelopmentSeed.technicalHash()+":"+projectionHash(SoftwareDevelopmentSeed.OCCUPATION)).getBytes(StandardCharsets.UTF_8));}

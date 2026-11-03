@@ -1,11 +1,11 @@
 package com.adaptlearngraph.services;
 
-import com.adaptlearngraph.entities.Calibration;
-import com.adaptlearngraph.entities.CalibrationAdmission;
-import com.adaptlearngraph.entities.CalibrationBudget;
+import com.adaptlearngraph.entities.domain.Calibration;
+import com.adaptlearngraph.entities.domain.CalibrationAdmission;
+import com.adaptlearngraph.entities.domain.CalibrationBudget;
 import com.adaptlearngraph.repository.CalibrationEnginePort;
 import com.adaptlearngraph.repository.CalibrationPorts.*;
-import com.adaptlearngraph.entities.Calibration.*;
+import com.adaptlearngraph.entities.domain.Calibration.*;
 import java.util.Map;
 import java.util.UUID;
 

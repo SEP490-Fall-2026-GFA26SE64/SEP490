@@ -1,7 +1,7 @@
 package com.adaptlearngraph.helper;
 
 import com.adaptlearngraph.exception.SubscriptionFailure;
-import com.adaptlearngraph.entities.BillingCalendar;
+import com.adaptlearngraph.entities.domain.BillingCalendar;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.net.URI;

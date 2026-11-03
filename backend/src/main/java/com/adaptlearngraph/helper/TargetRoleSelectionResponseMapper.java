@@ -1,8 +1,8 @@
 package com.adaptlearngraph.helper;
 
 import com.adaptlearngraph.dtos.TargetRoleSelectionResult;
-import com.adaptlearngraph.entities.TargetRoleSelection;
-import com.adaptlearngraph.entities.TargetRoleSnapshot;
+import com.adaptlearngraph.entities.domain.TargetRoleSelection;
+import com.adaptlearngraph.entities.domain.TargetRoleSnapshot;
 import java.time.Instant;
 import java.util.UUID;
 

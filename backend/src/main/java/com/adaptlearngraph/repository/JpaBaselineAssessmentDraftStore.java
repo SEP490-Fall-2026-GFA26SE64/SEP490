@@ -3,7 +3,7 @@ package com.adaptlearngraph.repository;
 import com.adaptlearngraph.constants.TransactionManagers;
 import com.adaptlearngraph.entities.AssessmentItemEntity;
 import com.adaptlearngraph.entities.AssessmentVersionEntity;
-import com.adaptlearngraph.entities.BaselineAssessmentDraft;
+import com.adaptlearngraph.entities.domain.BaselineAssessmentDraft;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;

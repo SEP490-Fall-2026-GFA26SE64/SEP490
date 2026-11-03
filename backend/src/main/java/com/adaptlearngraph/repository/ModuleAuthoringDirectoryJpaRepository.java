@@ -1,7 +1,7 @@
 package com.adaptlearngraph.repository;
 
 import com.adaptlearngraph.entities.AccountEntity;
-import com.adaptlearngraph.entities.ModuleAuthoring.Choice;
+import com.adaptlearngraph.entities.domain.ModuleAuthoring.Choice;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.Query;
@@ -15,7 +15,7 @@ import org.springframework.data.repository.query.Param;
 public interface ModuleAuthoringDirectoryJpaRepository extends Repository<AccountEntity, UUID> {
 
     @Query("""
-            select new com.adaptlearngraph.entities.ModuleAuthoring$Choice(cast(a.accountId as String), coalesce(p.fullName, a.identifier))
+            select new com.adaptlearngraph.entities.domain.ModuleAuthoring$Choice(cast(a.accountId as String), coalesce(p.fullName, a.identifier))
             from AccountEntity a left join WorkspaceAccountProfileEntity p on p.accountId = a.accountId
             where cast(a.organizationId as String) = :organization
             order by a.identifier
@@ -23,7 +23,7 @@ public interface ModuleAuthoringDirectoryJpaRepository extends Repository<Accoun
     List<Choice> staff(@Param("organization") String organizationId);
 
     @Query("""
-            select new com.adaptlearngraph.entities.ModuleAuthoring$Choice(cast(a.accountId as String), coalesce(p.fullName, a.identifier))
+            select new com.adaptlearngraph.entities.domain.ModuleAuthoring$Choice(cast(a.accountId as String), coalesce(p.fullName, a.identifier))
             from AccountEntity a
             join OrganizationMembershipEntity m on m.accountId = a.accountId
             join OrganizationMembershipRoleEntity r on r.membershipId = m.membershipId
@@ -34,7 +34,7 @@ public interface ModuleAuthoringDirectoryJpaRepository extends Repository<Accoun
     List<Choice> employees(@Param("organization") String organizationId);
 
     @Query("""
-            select new com.adaptlearngraph.entities.ModuleAuthoring$Choice(cast(a.accountId as String), a.identifier)
+            select new com.adaptlearngraph.entities.domain.ModuleAuthoring$Choice(cast(a.accountId as String), a.identifier)
             from AccountEntity a
             join OrganizationMembershipEntity m on m.accountId = a.accountId and m.organizationId = a.organizationId
             join OrganizationMembershipRoleEntity r on r.membershipId = m.membershipId

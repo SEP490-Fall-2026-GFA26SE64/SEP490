@@ -1,6 +1,6 @@
 package com.adaptlearngraph.dtos;
 
-import com.adaptlearngraph.entities.TargetRoleSelection;
+import com.adaptlearngraph.entities.domain.TargetRoleSelection;
 import java.util.Objects;
 
 /** Observable result of one target-role selection invocation. */

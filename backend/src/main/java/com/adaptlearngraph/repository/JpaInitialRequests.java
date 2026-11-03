@@ -5,8 +5,8 @@ import com.adaptlearngraph.entities.InitialPathwayCurrentEntity;
 import com.adaptlearngraph.entities.InitialPathwayRequestEntity;
 import com.adaptlearngraph.repository.InitialPathwayPorts.*;
 import com.adaptlearngraph.repository.InitialPathwayStore.*;
-import com.adaptlearngraph.entities.InitialPathwayState.Review;
-import com.adaptlearngraph.entities.InitialIdentity;
+import com.adaptlearngraph.entities.domain.InitialPathwayState.Review;
+import com.adaptlearngraph.entities.domain.InitialIdentity;
 import java.util.*;
 
 public final class JpaInitialRequests {

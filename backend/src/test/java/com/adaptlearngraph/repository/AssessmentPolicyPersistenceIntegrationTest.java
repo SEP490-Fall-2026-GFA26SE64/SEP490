@@ -3,7 +3,7 @@ package com.adaptlearngraph.repository;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.adaptlearngraph.entities.OrganizationAssessmentPolicy.Values;
+import com.adaptlearngraph.entities.domain.OrganizationAssessmentPolicy.Values;
 import com.adaptlearngraph.helper.AssessmentPolicyJson;
 import com.adaptlearngraph.services.AssessmentPolicyService.Failure;
 import com.adaptlearngraph.support.JpaTestContext;
@@ -115,7 +115,7 @@ class AssessmentPolicyPersistenceIntegrationTest {
     }
 
     /** As AssessmentPolicyService: the activation and its exact ACTIVATE receipt commit together. */
-    private static com.adaptlearngraph.entities.OrganizationAssessmentPolicy.State activate(UUID org, UUID actor, UUID version, long revision) {
+    private static com.adaptlearngraph.entities.domain.OrganizationAssessmentPolicy.State activate(UUID org, UUID actor, UUID version, long revision) {
         UUID key = UUID.randomUUID();
         return store.locked(org, () -> {
             var result = store.activate(org, actor, key, version, revision);

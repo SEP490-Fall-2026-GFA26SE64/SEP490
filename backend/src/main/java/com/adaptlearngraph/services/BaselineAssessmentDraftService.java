@@ -9,8 +9,8 @@ import com.adaptlearngraph.repository.BaselineAssessmentDraftStore.WriteConflict
 import com.adaptlearngraph.repository.BaselineBlueprintStore;
 import com.adaptlearngraph.repository.BaselineBlueprintStore.Actor;
 import com.adaptlearngraph.repository.BaselineBlueprintStore.ActorPort;
-import com.adaptlearngraph.entities.BaselineAssessmentDraft;
-import com.adaptlearngraph.entities.BaselineBlueprint;
+import com.adaptlearngraph.entities.domain.BaselineAssessmentDraft;
+import com.adaptlearngraph.entities.domain.BaselineBlueprint;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;

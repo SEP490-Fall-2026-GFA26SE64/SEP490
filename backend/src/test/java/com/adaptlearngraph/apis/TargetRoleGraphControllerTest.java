@@ -1,10 +1,10 @@
 package com.adaptlearngraph.apis;
 
 import com.adaptlearngraph.services.GetTargetRoleGraphUseCase;
-import com.adaptlearngraph.entities.PrerequisiteEdge;
-import com.adaptlearngraph.entities.RoleGraphSkill;
-import com.adaptlearngraph.entities.SkillStatus;
-import com.adaptlearngraph.entities.TargetRoleGraph;
+import com.adaptlearngraph.entities.domain.PrerequisiteEdge;
+import com.adaptlearngraph.entities.domain.RoleGraphSkill;
+import com.adaptlearngraph.entities.domain.SkillStatus;
+import com.adaptlearngraph.entities.domain.TargetRoleGraph;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

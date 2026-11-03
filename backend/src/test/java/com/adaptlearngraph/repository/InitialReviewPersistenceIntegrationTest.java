@@ -1,8 +1,8 @@
 package com.adaptlearngraph.repository;
 
-import com.adaptlearngraph.entities.InitialIdentity;
-import com.adaptlearngraph.entities.InitialPlanning;
-import com.adaptlearngraph.entities.InitialSuitability;
+import com.adaptlearngraph.entities.domain.InitialIdentity;
+import com.adaptlearngraph.entities.domain.InitialPlanning;
+import com.adaptlearngraph.entities.domain.InitialSuitability;
 import com.adaptlearngraph.helper.InitialRevisionCodec;
 import com.adaptlearngraph.services.InitialPathwayAccess;
 import com.adaptlearngraph.services.InitialPathwayAdmission;
@@ -21,8 +21,8 @@ import com.adaptlearngraph.repository.InitialPathwayPorts.*;
 import com.adaptlearngraph.repository.InitialPathwayStore.*;
 import com.adaptlearngraph.repository.InitialPlanningPorts.*;
 import com.adaptlearngraph.repository.InitialCatalogPort.*;
-import com.adaptlearngraph.entities.InitialPathwayState.*;
-import com.adaptlearngraph.entities.InitialPlanning.*;
+import com.adaptlearngraph.entities.domain.InitialPathwayState.*;
+import com.adaptlearngraph.entities.domain.InitialPlanning.*;
 import com.adaptlearngraph.services.RoleBaselineFlow;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.math.BigDecimal;

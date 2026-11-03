@@ -4,7 +4,7 @@ import com.adaptlearngraph.endpoints.ApiEndpoints;
 import com.adaptlearngraph.services.AssessmentPolicyService;
 import com.adaptlearngraph.services.AssessmentPolicyUseCase;
 import com.adaptlearngraph.services.AssessmentPolicyService.Failure;
-import com.adaptlearngraph.entities.OrganizationAssessmentPolicy.*;
+import com.adaptlearngraph.entities.domain.OrganizationAssessmentPolicy.*;
 import com.adaptlearngraph.services.AssessmentPolicyService.Encoding;
 import java.nio.charset.StandardCharsets;
 import java.util.*;

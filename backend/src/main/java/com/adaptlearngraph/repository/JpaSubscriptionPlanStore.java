@@ -1,8 +1,8 @@
 package com.adaptlearngraph.repository;
 
 import com.adaptlearngraph.entities.AuditEventEntity;
-import com.adaptlearngraph.entities.PlanTerms;
-import com.adaptlearngraph.entities.SubscriptionPlan;
+import com.adaptlearngraph.entities.domain.PlanTerms;
+import com.adaptlearngraph.entities.domain.SubscriptionPlan;
 import com.adaptlearngraph.entities.SubscriptionPlanVersionEntity;
 import com.adaptlearngraph.exception.SubscriptionFailure;
 import java.time.Instant;

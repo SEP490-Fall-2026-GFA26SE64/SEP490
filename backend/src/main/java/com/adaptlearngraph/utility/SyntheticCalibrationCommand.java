@@ -1,11 +1,11 @@
 package com.adaptlearngraph.utility;
 
-import com.adaptlearngraph.entities.Calibration;
-import com.adaptlearngraph.entities.CalibrationBudget;
-import com.adaptlearngraph.entities.CalibrationPolicy;
+import com.adaptlearngraph.entities.domain.Calibration;
+import com.adaptlearngraph.entities.domain.CalibrationBudget;
+import com.adaptlearngraph.entities.domain.CalibrationPolicy;
 import com.adaptlearngraph.helper.CalibrationJson;
 import com.adaptlearngraph.services.MmlCalibrationEngine;
-import com.adaptlearngraph.entities.Calibration.*;
+import com.adaptlearngraph.entities.domain.Calibration.*;
 import com.adaptlearngraph.repository.OfficialCalibrationBankSource;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;

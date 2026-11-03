@@ -45,7 +45,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 public class SubscriptionConfiguration {
     @Bean
     SubscriptionIdentity subscriptionIdentity(RegistrationUseCase registration, WorkspaceAuthenticationUseCase workspace,
-            com.adaptlearngraph.entities.IntegrationPolicy policy) {
+            com.adaptlearngraph.entities.domain.IntegrationPolicy policy) {
         return new ServletSubscriptionIdentity(registration, workspace, policy);
     }
 
@@ -71,7 +71,7 @@ public class SubscriptionConfiguration {
     PaymentProcessingStore paymentProcessing(SubscriptionRepositories data,
             @org.springframework.beans.factory.annotation.Qualifier(com.adaptlearngraph.constants.TransactionManagers.JPA)
             PlatformTransactionManager manager,PaymentOrderStore orders,
-            com.adaptlearngraph.entities.IntegrationPolicy policy) {
+            com.adaptlearngraph.entities.domain.IntegrationPolicy policy) {
         return new JpaPaymentProcessingStore(data,new TransactionTemplate(manager),orders,policy);
     }
     @Bean
@@ -85,14 +85,14 @@ public class SubscriptionConfiguration {
     @ConditionalOnMissingBean(PaymentGateway.class)
     PayOsPaymentGateway paymentGateway(@Value("${payos.client-id:}") String clientId,@Value("${payos.api-key:}") String key,
             @Value("${payos.checksum-key:}") String checksum,ObjectMapper mapper,
-            com.adaptlearngraph.entities.IntegrationPolicy policy) {
+            com.adaptlearngraph.entities.domain.IntegrationPolicy policy) {
         return new PayOsPaymentGateway(policy.payosEnabled() ? clientId : "",
                 policy.payosEnabled() ? key : "", policy.payosEnabled() ? checksum : "",mapper);
     }
     @Bean
     PaymentProcessor paymentProcessor(PaymentProcessingStore store,PaymentGateway gateway,
             @Value("${subscription.public-url:http://127.0.0.1:8088}") String publicUrl,
-            com.adaptlearngraph.entities.IntegrationPolicy policy) {
+            com.adaptlearngraph.entities.domain.IntegrationPolicy policy) {
         var uri=java.net.URI.create(publicUrl);
         if(uri.getHost()==null || uri.getUserInfo()!=null || uri.getQuery()!=null || uri.getFragment()!=null
                 || !("https".equals(uri.getScheme()) || ("http".equals(uri.getScheme())
@@ -104,7 +104,7 @@ public class SubscriptionConfiguration {
     @Bean
     SubscriptionLifecycleUseCase subscriptionLifecycle(SubscriptionIdentity identity,PaymentOrderStore orders,
             PaymentProcessingStore processing,SubscriptionWorkspaceStore workspaces,PaymentGateway gateway,
-            com.adaptlearngraph.entities.IntegrationPolicy policy) {
+            com.adaptlearngraph.entities.domain.IntegrationPolicy policy) {
         return new SubscriptionLifecycleService(identity,orders,processing,workspaces,gateway,Clock.systemUTC(),policy);
     }
     @Bean

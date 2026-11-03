@@ -1,7 +1,7 @@
 package com.adaptlearngraph.repository;
 
 import com.adaptlearngraph.services.WorkspaceBaselineResourceUseCase.*;
-import com.adaptlearngraph.entities.AdaptiveBlueprint.Scope;
+import com.adaptlearngraph.entities.domain.AdaptiveBlueprint.Scope;
 import com.adaptlearngraph.entities.AuditEventEntity;
 import com.adaptlearngraph.entities.WorkspaceBaselineResourceEntity;
 import com.fasterxml.jackson.databind.ObjectMapper;

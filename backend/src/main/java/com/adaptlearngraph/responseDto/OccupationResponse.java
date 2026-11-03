@@ -1,6 +1,6 @@
 package com.adaptlearngraph.responseDto;
 
-import com.adaptlearngraph.entities.Occupation;
+import com.adaptlearngraph.entities.domain.Occupation;
 
 public record OccupationResponse(
         String id,

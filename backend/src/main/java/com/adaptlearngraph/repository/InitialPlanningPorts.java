@@ -1,8 +1,8 @@
 package com.adaptlearngraph.repository;
 
 import com.adaptlearngraph.repository.InitialPathwayPorts.*;
-import com.adaptlearngraph.entities.InitialPlanning.*;
-import com.adaptlearngraph.entities.RoleGap;
+import com.adaptlearngraph.entities.domain.InitialPlanning.*;
+import com.adaptlearngraph.entities.domain.RoleGap;
 import java.math.BigDecimal;
 import java.util.*;
 

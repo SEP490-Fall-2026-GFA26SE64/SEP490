@@ -1,7 +1,7 @@
 package com.adaptlearngraph.services;
 
-import com.adaptlearngraph.entities.LearningContent.Lesson;
-import com.adaptlearngraph.entities.ModuleAuthoring.*;
+import com.adaptlearngraph.entities.domain.LearningContent.Lesson;
+import com.adaptlearngraph.entities.domain.ModuleAuthoring.*;
 
 import java.io.InputStream;
 import java.util.*;

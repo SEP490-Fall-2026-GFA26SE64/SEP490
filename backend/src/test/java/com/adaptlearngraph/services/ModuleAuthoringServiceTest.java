@@ -1,8 +1,8 @@
 package com.adaptlearngraph.services;
 
 import com.adaptlearngraph.repository.ModuleAuthoringPort;
-import com.adaptlearngraph.entities.ModuleAuthoring;
-import com.adaptlearngraph.entities.ModuleAuthoring.*;
+import com.adaptlearngraph.entities.domain.ModuleAuthoring;
+import com.adaptlearngraph.entities.domain.ModuleAuthoring.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import java.math.BigDecimal;

@@ -2,8 +2,8 @@ package com.adaptlearngraph.services;
 
 import com.adaptlearngraph.repository.PaymentOrderStore.Command;
 import com.adaptlearngraph.repository.SubscriptionWorkspaceStore.*;
-import com.adaptlearngraph.entities.PaymentOrder;
-import com.adaptlearngraph.entities.MemberProfileUpdate;
+import com.adaptlearngraph.entities.domain.PaymentOrder;
+import com.adaptlearngraph.entities.domain.MemberProfileUpdate;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;

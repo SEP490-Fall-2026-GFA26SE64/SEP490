@@ -1,8 +1,8 @@
 package com.adaptlearngraph.repository;
 
 import com.adaptlearngraph.repository.CalibrationPorts.Grant;
-import com.adaptlearngraph.entities.Calibration;
-import com.adaptlearngraph.entities.Calibration.*;
+import com.adaptlearngraph.entities.domain.Calibration;
+import com.adaptlearngraph.entities.domain.Calibration.*;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;

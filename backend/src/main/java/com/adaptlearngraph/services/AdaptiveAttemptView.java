@@ -3,7 +3,7 @@ package com.adaptlearngraph.services;
 import com.adaptlearngraph.services.AdaptiveAttemptUseCase.*;
 import com.adaptlearngraph.repository.AdaptiveAttemptContentPort;
 import com.adaptlearngraph.repository.AdaptiveAttemptStore.Progress;
-import com.adaptlearngraph.entities.AdaptiveAttempt;
+import com.adaptlearngraph.entities.domain.AdaptiveAttempt;
 import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;

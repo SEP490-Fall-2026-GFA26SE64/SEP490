@@ -3,7 +3,7 @@ package com.adaptlearngraph.repository;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
-import com.adaptlearngraph.entities.SubscriptionAccessPolicy.*;
+import com.adaptlearngraph.entities.domain.SubscriptionAccessPolicy.*;
 import com.adaptlearngraph.exception.SubscriptionFailure;
 import java.util.*;
 import org.junit.jupiter.api.*;

@@ -1,7 +1,7 @@
 package com.adaptlearngraph.repository;
 
 import com.adaptlearngraph.helper.PaymentGateway;
-import com.adaptlearngraph.entities.SubscriptionAccessPolicy.Actor;
+import com.adaptlearngraph.entities.domain.SubscriptionAccessPolicy.Actor;
 import java.time.Instant;
 import java.util.Map;
 import java.util.Set;

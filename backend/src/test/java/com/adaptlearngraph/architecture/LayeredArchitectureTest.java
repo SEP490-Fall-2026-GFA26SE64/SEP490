@@ -79,6 +79,12 @@ class LayeredArchitectureTest {
             .and(DescribedPredicate.not(JPA_MAPPED))
             .should().dependOnClassesThat().resideInAnyPackage("jakarta.persistence..", "org.hibernate..");
 
+    /** Immutable domain models live in {@code entities.domain} and never touch persistence APIs. */
+    @ArchTest
+    static final ArchRule domainPackageIsPersistenceFree = noClasses().that().resideInAPackage("com.adaptlearngraph.entities.domain..")
+            .should().dependOnClassesThat().resideInAnyPackage(
+                    "jakarta.persistence..", "org.hibernate..", "org.springframework.data..");
+
     @ArchTest
     static final ArchRule dataDoesNotUseControllers = noClasses().that().resideInAnyPackage(DATA)
             .should().dependOnClassesThat().resideInAnyPackage(CONTROLLER);

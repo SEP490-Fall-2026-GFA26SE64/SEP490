@@ -2,11 +2,11 @@ package com.adaptlearngraph.jwt;
 
 import com.adaptlearngraph.services.RegistrationUseCase;
 import com.adaptlearngraph.services.WorkspaceAuthenticationUseCase;
-import com.adaptlearngraph.entities.RegistrationActor;
-import com.adaptlearngraph.entities.WorkspacePrincipal;
+import com.adaptlearngraph.entities.domain.RegistrationActor;
+import com.adaptlearngraph.entities.domain.WorkspacePrincipal;
 import com.adaptlearngraph.repository.SubscriptionIdentity;
-import com.adaptlearngraph.entities.SubscriptionAccessPolicy.Actor;
-import com.adaptlearngraph.entities.SubscriptionAccessPolicy.Role;
+import com.adaptlearngraph.entities.domain.SubscriptionAccessPolicy.Actor;
+import com.adaptlearngraph.entities.domain.SubscriptionAccessPolicy.Role;
 import com.adaptlearngraph.exception.SubscriptionFailure;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -16,14 +16,14 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 public final class ServletSubscriptionIdentity implements SubscriptionIdentity {
     private final RegistrationUseCase registration;
     private final WorkspaceAuthenticationUseCase workspace;
-    private final com.adaptlearngraph.entities.IntegrationPolicy policy;
+    private final com.adaptlearngraph.entities.domain.IntegrationPolicy policy;
 
     public ServletSubscriptionIdentity(RegistrationUseCase registration, WorkspaceAuthenticationUseCase workspace) {
-        this(registration, workspace, com.adaptlearngraph.entities.IntegrationPolicy.ENABLED);
+        this(registration, workspace, com.adaptlearngraph.entities.domain.IntegrationPolicy.ENABLED);
     }
 
     public ServletSubscriptionIdentity(RegistrationUseCase registration, WorkspaceAuthenticationUseCase workspace,
-            com.adaptlearngraph.entities.IntegrationPolicy policy) {
+            com.adaptlearngraph.entities.domain.IntegrationPolicy policy) {
         this.registration = registration;
         this.workspace = workspace;
         this.policy = policy;

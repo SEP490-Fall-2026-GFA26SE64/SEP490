@@ -2,7 +2,7 @@ package com.adaptlearngraph.apis;
 
 import com.adaptlearngraph.endpoints.ApiEndpoints;
 import com.adaptlearngraph.services.SystemStatusService;
-import com.adaptlearngraph.entities.SystemStatus;
+import com.adaptlearngraph.entities.domain.SystemStatus;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;

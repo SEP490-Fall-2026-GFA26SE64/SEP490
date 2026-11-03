@@ -1,6 +1,6 @@
 package com.adaptlearngraph.repository;
 
-import com.adaptlearngraph.entities.RoleGap;
+import com.adaptlearngraph.entities.domain.RoleGap;
 import java.time.Instant;
 import java.util.*;
 import java.util.function.Supplier;

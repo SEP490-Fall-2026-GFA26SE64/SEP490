@@ -1,7 +1,7 @@
 package com.adaptlearngraph.apis;
 
 import com.adaptlearngraph.services.ModuleAuthoringService;
-import com.adaptlearngraph.entities.ModuleAuthoring.Page;
+import com.adaptlearngraph.entities.domain.ModuleAuthoring.Page;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import java.util.List;

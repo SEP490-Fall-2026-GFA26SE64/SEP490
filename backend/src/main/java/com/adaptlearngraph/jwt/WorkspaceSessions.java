@@ -1,7 +1,7 @@
 package com.adaptlearngraph.jwt;
 
 import com.adaptlearngraph.exception.RegistrationFailure;
-import com.adaptlearngraph.entities.WorkspacePrincipal;
+import com.adaptlearngraph.entities.domain.WorkspacePrincipal;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.session.FindByIndexNameSessionRepository;
 

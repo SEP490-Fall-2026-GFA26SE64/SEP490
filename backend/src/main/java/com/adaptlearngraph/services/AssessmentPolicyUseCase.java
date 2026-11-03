@@ -1,6 +1,6 @@
 package com.adaptlearngraph.services;
 
-import com.adaptlearngraph.entities.OrganizationAssessmentPolicy.*;
+import com.adaptlearngraph.entities.domain.OrganizationAssessmentPolicy.*;
 import java.util.UUID;
 
 /** Trusted own-organization inbound capabilities, independent of catalog readiness. */

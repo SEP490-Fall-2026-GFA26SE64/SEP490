@@ -3,11 +3,11 @@ package com.adaptlearngraph.services;
 import com.adaptlearngraph.repository.InitialPathwayStore;
 import com.adaptlearngraph.repository.InitialPathwayPorts.*;
 import com.adaptlearngraph.repository.InitialPathwayStore.*;
-import com.adaptlearngraph.entities.InitialPathwayState;
-import com.adaptlearngraph.entities.InitialPathwayState.*;
-import com.adaptlearngraph.entities.InitialPlanning.Module;
-import com.adaptlearngraph.entities.InitialPlanning.*;
-import com.adaptlearngraph.entities.RoleGap;
+import com.adaptlearngraph.entities.domain.InitialPathwayState;
+import com.adaptlearngraph.entities.domain.InitialPathwayState.*;
+import com.adaptlearngraph.entities.domain.InitialPlanning.Module;
+import com.adaptlearngraph.entities.domain.InitialPlanning.*;
+import com.adaptlearngraph.entities.domain.RoleGap;
 import java.util.*;
 
 /** Employee DTOs never serialize frozen worker input or unapproved module/candidate details. */

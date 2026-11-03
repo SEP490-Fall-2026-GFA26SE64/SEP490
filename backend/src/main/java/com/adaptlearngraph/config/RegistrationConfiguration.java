@@ -79,7 +79,7 @@ public class RegistrationConfiguration {
     @Bean
     RegistrationUseCase registrationUseCase(RegistrationStore store, RegistrationSecrets secrets,
                                            RegistrationMailDelivery delivery,
-                                           com.adaptlearngraph.entities.IntegrationPolicy policy,
+                                           com.adaptlearngraph.entities.domain.IntegrationPolicy policy,
                                            org.springframework.beans.factory.ObjectProvider<com.adaptlearngraph.services.PlatformCatalogService> catalog) {
         return new RegistrationService(store, secrets, delivery, Clock.systemUTC(), policy, catalog.getIfAvailable());
     }

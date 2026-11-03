@@ -4,9 +4,9 @@ import com.adaptlearngraph.repository.InitialPathwayStore;
 import com.adaptlearngraph.repository.InitialPathwayPorts.*;
 import com.adaptlearngraph.repository.InitialPathwayStore.*;
 import com.adaptlearngraph.repository.InitialPlanningPorts.Limits;
-import com.adaptlearngraph.entities.InitialPathwayState.Generation;
-import com.adaptlearngraph.entities.InitialPlanning.Plan;
-import com.adaptlearngraph.entities.RoleGap.Need;
+import com.adaptlearngraph.entities.domain.InitialPathwayState.Generation;
+import com.adaptlearngraph.entities.domain.InitialPlanning.Plan;
+import com.adaptlearngraph.entities.domain.RoleGap.Need;
 import java.time.Duration;
 import java.util.*;
 
@@ -14,7 +14,7 @@ import java.util.*;
 public final class InitialPathwayDispatch {
     public record Settings(String version,Limits limits,Duration lease,int maxAttempts,Duration minimumBackoff,Duration maximumBackoff) {
         public Settings {
-            com.adaptlearngraph.entities.RoleGap.text(version);Objects.requireNonNull(limits);
+            com.adaptlearngraph.entities.domain.RoleGap.text(version);Objects.requireNonNull(limits);
             if(lease==null || lease.isZero() || lease.isNegative() || maxAttempts<1 || minimumBackoff==null || minimumBackoff.isZero()
                     || minimumBackoff.isNegative() || maximumBackoff==null || maximumBackoff.compareTo(minimumBackoff)<0)
                 throw new IllegalArgumentException("Explicit bounded worker settings required");
@@ -24,7 +24,7 @@ public final class InitialPathwayDispatch {
             for(int i=1;i<attempt && value<cap;i++)value=value>cap/2?cap:value*2;
             return Duration.ofMillis(Math.min(value,cap));
         }
-        String identity() { return version+":"+com.adaptlearngraph.entities.InitialIdentity.hash("worker-configuration",
+        String identity() { return version+":"+com.adaptlearngraph.entities.domain.InitialIdentity.hash("worker-configuration",
                 List.of(version,lease.toMillis(),maxAttempts,minimumBackoff.toMillis(),maximumBackoff.toMillis())); }
     }
     private final InitialPathwayStore store;private final Coordination coordination;private final Bindings bindings;

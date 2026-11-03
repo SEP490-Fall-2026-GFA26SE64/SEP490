@@ -48,16 +48,16 @@ import com.adaptlearngraph.services.AdaptiveBlueprintService;
 import com.adaptlearngraph.services.AdaptiveBlueprintUseCase;
 import com.adaptlearngraph.services.WorkspaceBaselineCatalogUseCase;
 import com.adaptlearngraph.services.AdaptiveAttemptUseCase;
-import com.adaptlearngraph.entities.AdaptiveAttempt;
-import com.adaptlearngraph.entities.AdaptiveAttemptSnapshot;
+import com.adaptlearngraph.entities.domain.AdaptiveAttempt;
+import com.adaptlearngraph.entities.domain.AdaptiveAttemptSnapshot;
 import com.adaptlearngraph.repository.CurrentOccupationProfile;
-import com.adaptlearngraph.entities.AdaptiveBlueprint;
+import com.adaptlearngraph.entities.domain.AdaptiveBlueprint;
 import com.adaptlearngraph.services.RoleBaselineFlow;
 import com.adaptlearngraph.repository.CurrentRoleCatalog;
 import com.adaptlearngraph.repository.CurrentRoleSelectionStore;
 import com.adaptlearngraph.repository.SubscriptionIdentity;
 import com.adaptlearngraph.repository.SubscriptionWorkspaceStore;
-import com.adaptlearngraph.entities.SubscriptionAccessPolicy;
+import com.adaptlearngraph.entities.domain.SubscriptionAccessPolicy;
 import com.adaptlearngraph.exception.SubscriptionFailure;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.Clock;
@@ -82,8 +82,8 @@ public class WorkspaceBaselineConfiguration {
     @org.springframework.boot.autoconfigure.condition.ConditionalOnProperty(name="workspace.development-fixtures.enabled",havingValue="true")
     com.adaptlearngraph.repository.CalibrationPorts.BankSource developmentCalibrationBanks(Environment environment) {
         return (grant,source)->{
-            if(!enabled(environment))throw new com.adaptlearngraph.entities.Calibration.Failure(
-                    com.adaptlearngraph.entities.Calibration.Code.NOT_READY);
+            if(!enabled(environment))throw new com.adaptlearngraph.entities.domain.Calibration.Failure(
+                    com.adaptlearngraph.entities.domain.Calibration.Code.NOT_READY);
             return com.adaptlearngraph.config.MainDevelopmentBankSeed.calibrationBank(grant,source);
         };
     }

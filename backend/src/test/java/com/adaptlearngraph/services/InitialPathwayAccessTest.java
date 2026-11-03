@@ -5,7 +5,7 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import com.adaptlearngraph.repository.InitialPathwayPorts.*;
 import com.adaptlearngraph.repository.InitialPlanningPorts.*;
-import com.adaptlearngraph.entities.InitialPathwayState.Review;
+import com.adaptlearngraph.entities.domain.InitialPathwayState.Review;
 import org.junit.jupiter.api.*;
 
 /** Hook policy only. No mounted content/start/segment production route is claimed. */

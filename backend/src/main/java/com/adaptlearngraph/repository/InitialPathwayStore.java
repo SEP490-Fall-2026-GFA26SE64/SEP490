@@ -2,8 +2,8 @@ package com.adaptlearngraph.repository;
 
 import com.adaptlearngraph.services.RoleGapPreview;
 import com.adaptlearngraph.repository.InitialPathwayPorts.*;
-import com.adaptlearngraph.entities.InitialPathwayState.*;
-import com.adaptlearngraph.entities.InitialPlanning.*;
+import com.adaptlearngraph.entities.domain.InitialPathwayState.*;
+import com.adaptlearngraph.entities.domain.InitialPlanning.*;
 import java.time.Duration;
 import java.util.*;
 
@@ -15,7 +15,7 @@ public interface InitialPathwayStore {
                     List<List<String>> overrides,String contentHash,Validation validation) {
         public Revision { selectedModules=Set.copyOf(selectedModules); overrides=overrides.stream().map(List::copyOf).toList(); }
         public static String identity(Plan plan,Set<String> selected,List<List<String>> overrides) {
-            return com.adaptlearngraph.entities.InitialIdentity.hash(plan.formatVersion()==null?"revision":"revision-v2",
+            return com.adaptlearngraph.entities.domain.InitialIdentity.hash(plan.formatVersion()==null?"revision":"revision-v2",
                     List.of(plan.contentHash(overrides),new TreeSet<>(selected).stream().toList()));
         }
     }

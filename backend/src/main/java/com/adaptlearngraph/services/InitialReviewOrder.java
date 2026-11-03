@@ -2,8 +2,8 @@ package com.adaptlearngraph.services;
 
 import com.adaptlearngraph.repository.InitialPathwayPorts;
 import com.adaptlearngraph.repository.InitialPathwayStore.Revision;
-import com.adaptlearngraph.entities.InitialPlanning.*;
-import com.adaptlearngraph.entities.InitialPlanning.Module;
+import com.adaptlearngraph.entities.domain.InitialPlanning.*;
+import com.adaptlearngraph.entities.domain.InitialPlanning.Module;
 import java.util.*;
 
 /** Expert presentation order only; generation/provider selection remains owned by the planner. */

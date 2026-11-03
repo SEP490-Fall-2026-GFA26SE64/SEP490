@@ -1,8 +1,8 @@
 package com.adaptlearngraph.utility;
 
 import com.adaptlearngraph.helper.CalibrationJson;
-import com.adaptlearngraph.entities.Calibration.*;
-import com.adaptlearngraph.entities.CalibrationBudget;
+import com.adaptlearngraph.entities.domain.Calibration.*;
+import com.adaptlearngraph.entities.domain.CalibrationBudget;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.SplittableRandom;

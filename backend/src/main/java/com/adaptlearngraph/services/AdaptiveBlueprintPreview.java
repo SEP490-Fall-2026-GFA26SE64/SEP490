@@ -4,7 +4,7 @@ import com.adaptlearngraph.services.AdaptiveBlueprintUseCase.*;
 import com.adaptlearngraph.repository.AdaptiveBlueprintEligibilityPort.Snapshot;
 import com.adaptlearngraph.repository.AdaptiveBlueprintPreviewPort;
 import com.adaptlearngraph.repository.AdaptiveBlueprintPreviewPort.Item;
-import com.adaptlearngraph.entities.AdaptiveBlueprint.Configuration;
+import com.adaptlearngraph.entities.domain.AdaptiveBlueprint.Configuration;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Comparator;

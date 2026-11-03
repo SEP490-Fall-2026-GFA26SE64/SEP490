@@ -1,7 +1,7 @@
 package com.adaptlearngraph.responseDto;
 
 import com.adaptlearngraph.services.AdaptiveBlueprintUseCase.*;
-import com.adaptlearngraph.entities.AdaptiveBlueprint.*;
+import com.adaptlearngraph.entities.domain.AdaptiveBlueprint.*;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;

@@ -2,7 +2,7 @@ package com.adaptlearngraph.repository;
 
 import com.adaptlearngraph.repository.InitialCatalogPort.*;
 import com.adaptlearngraph.repository.InitialPathwayPorts.*;
-import com.adaptlearngraph.entities.RoleGap;
+import com.adaptlearngraph.entities.domain.RoleGap;
 import java.util.*;
 import java.util.function.IntSupplier;
 import static com.adaptlearngraph.helper.InitialCatalogMetadata.*;

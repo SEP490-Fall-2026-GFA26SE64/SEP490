@@ -1,13 +1,13 @@
 package com.adaptlearngraph.services;
 
-import com.adaptlearngraph.entities.LearningContent;
-import com.adaptlearngraph.entities.LearningResources;
-import com.adaptlearngraph.entities.ModuleAuthoring;
+import com.adaptlearngraph.entities.domain.LearningContent;
+import com.adaptlearngraph.entities.domain.LearningResources;
+import com.adaptlearngraph.entities.domain.ModuleAuthoring;
 import com.adaptlearngraph.repository.LearningContentPort;
 import com.adaptlearngraph.repository.ModuleAuthoringPort;
 import com.adaptlearngraph.services.ModuleAuthoringService.Failure;
-import com.adaptlearngraph.entities.LearningResources.*;
-import com.adaptlearngraph.entities.ModuleAuthoring.*;
+import com.adaptlearngraph.entities.domain.LearningResources.*;
+import com.adaptlearngraph.entities.domain.ModuleAuthoring.*;
 
 import java.time.Instant;
 import java.util.*;

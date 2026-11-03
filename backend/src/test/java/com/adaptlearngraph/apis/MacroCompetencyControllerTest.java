@@ -1,7 +1,7 @@
 package com.adaptlearngraph.apis;
 
 import com.adaptlearngraph.services.GetMacroCompetenciesUseCase;
-import com.adaptlearngraph.entities.MacroCompetency;
+import com.adaptlearngraph.entities.domain.MacroCompetency;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,12 +1,12 @@
 package com.adaptlearngraph.services;
 
-import com.adaptlearngraph.entities.AdaptiveBlueprint.Activation;
-import com.adaptlearngraph.entities.AdaptiveBlueprint.Configuration;
-import com.adaptlearngraph.entities.AdaptiveBlueprint.RoleSnapshot;
-import com.adaptlearngraph.entities.AdaptiveBlueprint.Scope;
-import com.adaptlearngraph.entities.AdaptiveBlueprint.Version;
-import com.adaptlearngraph.entities.AdaptiveBlueprint.VersionId;
-import com.adaptlearngraph.entities.AdaptiveBlueprint.WorkingRevision;
+import com.adaptlearngraph.entities.domain.AdaptiveBlueprint.Activation;
+import com.adaptlearngraph.entities.domain.AdaptiveBlueprint.Configuration;
+import com.adaptlearngraph.entities.domain.AdaptiveBlueprint.RoleSnapshot;
+import com.adaptlearngraph.entities.domain.AdaptiveBlueprint.Scope;
+import com.adaptlearngraph.entities.domain.AdaptiveBlueprint.Version;
+import com.adaptlearngraph.entities.domain.AdaptiveBlueprint.VersionId;
+import com.adaptlearngraph.entities.domain.AdaptiveBlueprint.WorkingRevision;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;

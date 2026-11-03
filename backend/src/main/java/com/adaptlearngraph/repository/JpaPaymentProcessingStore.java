@@ -1,14 +1,14 @@
 package com.adaptlearngraph.repository;
 
 import com.adaptlearngraph.entities.AuditEventEntity;
-import com.adaptlearngraph.entities.BillingCalendar;
-import com.adaptlearngraph.entities.IntegrationPolicy;
+import com.adaptlearngraph.entities.domain.BillingCalendar;
+import com.adaptlearngraph.entities.domain.IntegrationPolicy;
 import com.adaptlearngraph.entities.OrganizationEntity;
 import com.adaptlearngraph.entities.OrganizationMembershipEntity;
 import com.adaptlearngraph.entities.OrganizationMembershipRoleEntity;
 import com.adaptlearngraph.entities.OrganizationWorkspaceEntity;
 import com.adaptlearngraph.entities.OutboxEventEntity;
-import com.adaptlearngraph.entities.PaymentOrder;
+import com.adaptlearngraph.entities.domain.PaymentOrder;
 import com.adaptlearngraph.entities.ProcessingJobEntity;
 import com.adaptlearngraph.entities.SubscriptionEntity;
 import com.adaptlearngraph.entities.SubscriptionPeriodEntity;

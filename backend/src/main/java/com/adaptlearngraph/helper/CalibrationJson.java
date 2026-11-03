@@ -1,8 +1,8 @@
 package com.adaptlearngraph.helper;
 
 import com.adaptlearngraph.repository.CalibrationPorts.Encoding;
-import com.adaptlearngraph.entities.Calibration.*;
-import com.adaptlearngraph.entities.CalibrationPolicy;
+import com.adaptlearngraph.entities.domain.Calibration.*;
+import com.adaptlearngraph.entities.domain.CalibrationPolicy;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;

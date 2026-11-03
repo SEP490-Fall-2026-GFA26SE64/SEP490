@@ -1,13 +1,13 @@
 package com.adaptlearngraph.repository;
 
 import com.adaptlearngraph.entities.AuditEventEntity;
-import com.adaptlearngraph.entities.MemberProfileUpdate;
+import com.adaptlearngraph.entities.domain.MemberProfileUpdate;
 import com.adaptlearngraph.entities.OrganizationMembershipRoleEntity;
-import com.adaptlearngraph.entities.PlanTerms;
-import com.adaptlearngraph.entities.SubscriptionAccessPolicy;
-import com.adaptlearngraph.entities.SubscriptionAccessPolicy.Action;
-import com.adaptlearngraph.entities.SubscriptionAccessPolicy.Actor;
-import com.adaptlearngraph.entities.SubscriptionAccessPolicy.Role;
+import com.adaptlearngraph.entities.domain.PlanTerms;
+import com.adaptlearngraph.entities.domain.SubscriptionAccessPolicy;
+import com.adaptlearngraph.entities.domain.SubscriptionAccessPolicy.Action;
+import com.adaptlearngraph.entities.domain.SubscriptionAccessPolicy.Actor;
+import com.adaptlearngraph.entities.domain.SubscriptionAccessPolicy.Role;
 import com.adaptlearngraph.exception.SubscriptionFailure;
 import java.time.Instant;
 import java.util.HashMap;

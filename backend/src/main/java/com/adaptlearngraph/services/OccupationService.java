@@ -1,7 +1,7 @@
 package com.adaptlearngraph.services;
 
 import com.adaptlearngraph.repository.OccupationRepository;
-import com.adaptlearngraph.entities.Occupation;
+import com.adaptlearngraph.entities.domain.Occupation;
 
 import java.util.List;
 import java.util.Objects;

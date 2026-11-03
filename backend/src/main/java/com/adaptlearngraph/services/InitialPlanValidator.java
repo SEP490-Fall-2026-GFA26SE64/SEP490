@@ -1,8 +1,8 @@
 package com.adaptlearngraph.services;
 
-import com.adaptlearngraph.entities.InitialPlanObjective;
-import com.adaptlearngraph.entities.InitialPlanning.*;
-import com.adaptlearngraph.entities.InitialPlanning.Module;
+import com.adaptlearngraph.entities.domain.InitialPlanObjective;
+import com.adaptlearngraph.entities.domain.InitialPlanning.*;
+import com.adaptlearngraph.entities.domain.InitialPlanning.Module;
 import java.util.*;
 
 /** Shared generator/review validation. Missing providers/gates/cycles remain explicit diagnostics. */

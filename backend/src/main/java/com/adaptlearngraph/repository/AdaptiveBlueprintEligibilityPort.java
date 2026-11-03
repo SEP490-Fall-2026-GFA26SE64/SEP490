@@ -1,8 +1,8 @@
 package com.adaptlearngraph.repository;
 
-import com.adaptlearngraph.entities.AdaptiveBlueprint.RoleSnapshot;
-import com.adaptlearngraph.entities.AdaptiveBlueprint.Scope;
-import com.adaptlearngraph.entities.AdaptiveBlueprint.VersionPins;
+import com.adaptlearngraph.entities.domain.AdaptiveBlueprint.RoleSnapshot;
+import com.adaptlearngraph.entities.domain.AdaptiveBlueprint.Scope;
+import com.adaptlearngraph.entities.domain.AdaptiveBlueprint.VersionPins;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
