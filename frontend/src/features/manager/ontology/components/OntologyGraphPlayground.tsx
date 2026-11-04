@@ -1557,11 +1557,6 @@ function OntologyGraphPlaygroundInner({
     connectSourceNodeRef.current = sourceNode
     // Restore all nodes to full opacity so every potential target is crisp and clearly visible
     clearNeighborDimming()
-    toast({
-      title: 'Connecting Mode Active',
-      description: `Step 1/2: Selected ${sourceNode.code}. Now click another node on the canvas to link them!`,
-      variant: 'default',
-    })
   }
 
   const handleNodeClickForConnect = async (targetNode: PlaygroundCustomNode) => {
