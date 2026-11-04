@@ -11,7 +11,7 @@ public interface AdaptiveAttemptContextPort {
     Employee requireEmployee();
     /** Reauthorize a persisted scope without re-resolving current Catalog/selection/Blueprint. */
     void authorizeScope(Employee employee, Scope scope);
-    /** Authorize chosen Occupation or derive it from the persisted selected active role. */
+    /** Authorize chosen JobPosition or derive it from the persisted selected active role. */
     Scope resolveScope(Employee employee, StartTarget target);
     /** New starts only: current Blueprint, fingerprint, role/union pool, exact parameter coverage.
      * Use A1/A3/A4 ports; fail closed on drift/unavailability. Never call for resume/receipt replay.

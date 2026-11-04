@@ -6,7 +6,7 @@ Date: 2026-10-29. Canonical local URL: **http://localhost:8088/login**. Vite pro
 
 Final Playwright run: **6 passed in1.1m**, real APIs/databases, no HTTP mocks:
 
-- REQ-013-single-expert.spec.ts: owner signs in, creates content and Module, edits, submits; real L&D account approves/releases. A second real Expert in the same organization with no occupation grants sees the creator/editor/reviewer names/history and View only status, with no Edit/Submit/Delete/Archive controls. Direct authenticated PUT/DELETE/submit requests return403. Reload retains read-only state. Test reader accounts are deactivated during cleanup; the original five accounts remain active.
+- REQ-013-single-expert.spec.ts: owner signs in, creates content and Module, edits, submits; real L&D account approves/releases. A second real Expert in the same organization with no job position grants sees the creator/editor/reviewer names/history and View only status, with no Edit/Submit/Delete/Archive controls. Direct authenticated PUT/DELETE/submit requests return403. Reload retains read-only state. Test reader accounts are deactivated during cleanup; the original five accounts remain active.
 - REQ-037-dev-accounts.spec.ts: all five roles sign in through the existing page and reach their correct destination on localhost8088; Organization Administrator still stops at actual MFA enrollment, which is deliberately not bypassed.
 
 An early browser attempt was interrupted to fix the test's missing Add skill interaction. After correction the ownership journey passed, and the final combined run passed all six. A temporary frontend unit timeout under concurrent work was followed by a successful serial10-test run. Failed/interrupted attempts are not counted as passes.

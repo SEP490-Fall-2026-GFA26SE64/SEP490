@@ -37,7 +37,7 @@ export function BaselineAttemptPanel({ attempt, seconds, locked, busy = false, r
   const expired = attempt.expired || seconds <= 0
   return <div className="min-w-0 space-y-5">
     <Card><CardContent className="flex flex-wrap items-center justify-between gap-4 p-5">
-      <div className="min-w-0 space-y-2"><Badge variant="outline">{tr(`scopes.${attempt.assessmentScope}`)}</Badge><Heading level={2} size="card">{attempt.occupationName}</Heading>
+      <div className="min-w-0 space-y-2"><Badge variant="outline">{tr(`scopes.${attempt.assessmentScope}`)}</Badge><Heading level={2} size="card">{attempt.jobPositionName}</Heading>
         </div>
       <div className="flex items-center gap-3 rounded-lg border border-border bg-secondary p-4"><Clock className="text-primary" size={20} />
         <div><Text variant="caption">{tr('remaining')}</Text><span role="timer" className="block font-mono font-semibold">{Math.floor(Math.max(0, seconds) / 60)}:{String(Math.max(0, seconds) % 60).padStart(2, '0')}</span></div></div>

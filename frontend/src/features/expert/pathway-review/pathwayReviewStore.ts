@@ -11,8 +11,8 @@ export interface InitialPathwayItem {
   id: string
   employeeId: string
   employeeName: string
-  occupationCode: string
-  occupationTitle: string
+  jobPositionCode: string
+  jobPositionTitle: string
   targetRoleCode: string
   targetRoleTitle: string
   generatedAt: string
@@ -119,8 +119,8 @@ export const DEFAULT_INITIAL_PATHWAYS: InitialPathwayItem[] = [
     id: 'pathway-rev-01',
     employeeId: 'emp-alex',
     employeeName: 'Alex Chen',
-    occupationCode: '15-1252.00',
-    occupationTitle: 'Software Developers',
+    jobPositionCode: '15-1252.00',
+    jobPositionTitle: 'Software Developers',
     targetRoleCode: 'TR-001',
     targetRoleTitle: 'AI Knowledge Architect',
     generatedAt: '2026-10-15 09:30',
@@ -132,7 +132,7 @@ export const DEFAULT_INITIAL_PATHWAYS: InitialPathwayItem[] = [
         title: 'Foundations of Knowledge Graphs & Cypher Querying',
         estimatedHours: 8,
         domain: 'Graph Database',
-        reason: 'Essential prerequisite baseline for graph querying in assigned occupation.',
+        reason: 'Essential prerequisite baseline for graph querying in assigned jobPosition.',
       },
       {
         id: 'mod-2',
@@ -166,8 +166,8 @@ export const DEFAULT_INITIAL_PATHWAYS: InitialPathwayItem[] = [
     id: 'pathway-rev-02',
     employeeId: 'emp-liam',
     employeeName: "Liam O'Connor",
-    occupationCode: '15-1252.00',
-    occupationTitle: 'Software Developers',
+    jobPositionCode: '15-1252.00',
+    jobPositionTitle: 'Software Developers',
     targetRoleCode: 'TR-002',
     targetRoleTitle: 'Senior Machine Learning Engineer',
     generatedAt: '2026-10-15 08:45',
@@ -204,8 +204,8 @@ export const DEFAULT_INITIAL_PATHWAYS: InitialPathwayItem[] = [
     id: 'pathway-rev-03',
     employeeId: 'emp-zoe',
     employeeName: 'Zoe Martinez',
-    occupationCode: '15-1243.00',
-    occupationTitle: 'Database Architects',
+    jobPositionCode: '15-1243.00',
+    jobPositionTitle: 'Database Architects',
     targetRoleCode: 'TR-003',
     targetRoleTitle: 'Full-Stack Knowledge Engineer',
     generatedAt: '2026-10-14 14:20',
@@ -251,8 +251,8 @@ export const DEFAULT_INITIAL_PATHWAYS: InitialPathwayItem[] = [
     id: 'pathway-rev-04',
     employeeId: 'emp-marcus',
     employeeName: 'Marcus Vance',
-    occupationCode: '15-1252.00',
-    occupationTitle: 'Software Developers',
+    jobPositionCode: '15-1252.00',
+    jobPositionTitle: 'Software Developers',
     targetRoleCode: 'TR-004',
     targetRoleTitle: 'Senior Cognitive Systems Specialist',
     generatedAt: '2026-10-13 11:15',

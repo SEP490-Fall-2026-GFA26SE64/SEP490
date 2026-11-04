@@ -12,14 +12,14 @@ config:
 erDiagram
   C03_User["User"]
   C03_Department["Department"]
-  C03_Occupation["Occupation"]
+  C03_Job Position["Job Position"]
   C03_Role["Target Role"]
   C03_Level["Level"]
   C03_Competency["Competency"]
   C03_Skill["Skill"]
   C03_Module["Learning Module"]
-  C03_Department }o--o{ C03_Occupation : "covers"
-  C03_Occupation ||--o{ C03_Role : "contains"
+  C03_Department }o--o{ C03_Job Position : "covers"
+  C03_Job Position ||--o{ C03_Role : "contains"
   C03_Role |o--o{ C03_User : "selected by"
   C03_Role ||--o{ C03_Level : "defines"
   C03_Level ||--o{ C03_Competency : "requires"

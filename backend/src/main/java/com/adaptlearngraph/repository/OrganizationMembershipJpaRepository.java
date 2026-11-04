@@ -19,7 +19,7 @@ public interface OrganizationMembershipJpaRepository
     record ActorAccount(Boolean accountActive, UUID organizationId, Boolean membershipActive, UUID membershipId) {}
 
     record Listed(UUID membershipId, UUID accountId, String fullName, String email, Boolean active, UUID departmentId,
-                  UUID occupationReferenceId, Long revision, String departmentName, String occupationName,
+                  UUID jobPositionReferenceId, Long revision, String departmentName, String jobPositionName,
                   Boolean accountActive) {}
 
     @Query("""
@@ -32,13 +32,13 @@ public interface OrganizationMembershipJpaRepository
 
     @Query("""
             select new com.adaptlearngraph.repository.OrganizationMembershipJpaRepository$Listed(m.membershipId, m.accountId,
-                coalesce(p.fullName, r.adminName), a.identifier, m.active, m.departmentId, m.occupationReferenceId, m.revision,
+                coalesce(p.fullName, r.adminName), a.identifier, m.active, m.departmentId, m.jobPositionReferenceId, m.revision,
                 d.name, o.name, a.active)
             from OrganizationMembershipEntity m join AccountEntity a on a.accountId = m.accountId
             left join OrganizationRegistrationEntity r on r.accountId = m.accountId
             left join WorkspaceAccountProfileEntity p on p.accountId = m.accountId
             left join DepartmentReferenceEntity d on d.departmentId = m.departmentId and d.organizationId = m.organizationId
-            left join OccupationDepartmentReferenceEntity o on o.occupationReferenceId = m.occupationReferenceId
+            left join JobPositionDepartmentReferenceEntity o on o.jobPositionReferenceId = m.jobPositionReferenceId
                 and o.organizationId = m.organizationId and o.departmentId = m.departmentId
             where m.organizationId = :organization order by a.identifier
             """)
@@ -70,11 +70,11 @@ public interface OrganizationMembershipJpaRepository
     @Modifying(flushAutomatically = true, clearAutomatically = true)
     @Transactional(TransactionManagers.JPA)
     @Query("""
-            update OrganizationMembershipEntity m set m.departmentId = :department, m.occupationReferenceId = :occupation
+            update OrganizationMembershipEntity m set m.departmentId = :department, m.jobPositionReferenceId = :jobPosition
             where m.membershipId = :member and m.organizationId = :organization
             """)
     int assignReferences(@Param("organization") UUID organizationId, @Param("member") UUID membershipId,
-            @Param("department") UUID departmentId, @Param("occupation") UUID occupationReferenceId);
+            @Param("department") UUID departmentId, @Param("jobPosition") UUID jobPositionReferenceId);
 
     @Modifying(flushAutomatically = true, clearAutomatically = true)
     @Transactional(TransactionManagers.JPA)

@@ -12,7 +12,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 /**
- * Persistence boundary for the organization + Occupation lifecycle coordination row. Commands
+ * Persistence boundary for the organization + JobPosition lifecycle coordination row. Commands
  * that change a child record and a series pointer must invoke both operations in one surrounding
  * transaction.
  */
@@ -35,7 +35,7 @@ public interface BaselineAssessmentManagementStore {
 
     /**
      * Bootstraps a new Blueprint identity and series under a scope advisory lock, then returns the
-     * locked coordination row. Used only when the Occupation has no existing Blueprint identity.
+     * locked coordination row. Used only when the JobPosition has no existing Blueprint identity.
      */
     SeriesSnapshot createAndLock(
             Scope scope, UUID blueprintId, UUID actorId, Instant createdAt);
@@ -77,7 +77,7 @@ public interface BaselineAssessmentManagementStore {
             Integer baseVersion,
             long revision,
             String name,
-            String occupationNameSnapshot,
+            String jobPositionNameSnapshot,
             List<RoleConfig> roles,
             WorkingRevisionState state,
             Instant createdAt,
@@ -93,7 +93,7 @@ public interface BaselineAssessmentManagementStore {
                 throw new IllegalArgumentException("revision must be positive");
             }
             name = requireText(name, "name");
-            occupationNameSnapshot = requireText(occupationNameSnapshot, "occupationNameSnapshot");
+            jobPositionNameSnapshot = requireText(jobPositionNameSnapshot, "jobPositionNameSnapshot");
             roles = List.copyOf(java.util.Objects.requireNonNull(roles, "roles must not be null"));
             java.util.Objects.requireNonNull(state, "state must not be null");
             java.util.Objects.requireNonNull(createdAt, "createdAt must not be null");
@@ -107,7 +107,7 @@ public interface BaselineAssessmentManagementStore {
             UUID blueprintId,
             Integer baseVersion,
             String name,
-            String occupationNameSnapshot,
+            String jobPositionNameSnapshot,
             List<RoleConfig> roles,
             UUID actorId,
             Instant occurredAt) {
@@ -119,7 +119,7 @@ public interface BaselineAssessmentManagementStore {
                 throw new IllegalArgumentException("baseVersion must be positive");
             }
             name = requireText(name, "name");
-            occupationNameSnapshot = requireText(occupationNameSnapshot, "occupationNameSnapshot");
+            jobPositionNameSnapshot = requireText(jobPositionNameSnapshot, "jobPositionNameSnapshot");
             roles = List.copyOf(java.util.Objects.requireNonNull(roles, "roles must not be null"));
             java.util.Objects.requireNonNull(actorId, "actorId must not be null");
             java.util.Objects.requireNonNull(occurredAt, "occurredAt must not be null");
@@ -131,7 +131,7 @@ public interface BaselineAssessmentManagementStore {
             UUID workingRevisionId,
             long expectedRevision,
             String name,
-            String occupationNameSnapshot,
+            String jobPositionNameSnapshot,
             List<RoleConfig> roles,
             UUID actorId,
             Instant occurredAt) {
@@ -142,7 +142,7 @@ public interface BaselineAssessmentManagementStore {
                 throw new IllegalArgumentException("expectedRevision must be positive");
             }
             name = requireText(name, "name");
-            occupationNameSnapshot = requireText(occupationNameSnapshot, "occupationNameSnapshot");
+            jobPositionNameSnapshot = requireText(jobPositionNameSnapshot, "jobPositionNameSnapshot");
             roles = List.copyOf(java.util.Objects.requireNonNull(roles, "roles must not be null"));
             java.util.Objects.requireNonNull(actorId, "actorId must not be null");
             java.util.Objects.requireNonNull(occurredAt, "occurredAt must not be null");

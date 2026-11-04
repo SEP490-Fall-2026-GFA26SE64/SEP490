@@ -29,8 +29,8 @@ public class OrganizationMembershipEntity {
     private Boolean active;
     @Column(name = "department_id")
     private UUID departmentId;
-    @Column(name = "occupation_reference_id")
-    private UUID occupationReferenceId;
+    @Column(name = "job_position_reference_id")
+    private UUID jobPositionReferenceId;
     @Column(name = "revision")
     private Long revision;
     @Column(name = "created_at", nullable = false)
@@ -42,13 +42,13 @@ public class OrganizationMembershipEntity {
     }
 
     public OrganizationMembershipEntity(UUID membershipId, UUID accountId, UUID organizationId, boolean active,
-            UUID departmentId, UUID occupationReferenceId, Instant now) {
+            UUID departmentId, UUID jobPositionReferenceId, Instant now) {
         this.membershipId = membershipId;
         this.accountId = accountId;
         this.organizationId = organizationId;
         this.active = active;
         this.departmentId = departmentId;
-        this.occupationReferenceId = occupationReferenceId;
+        this.jobPositionReferenceId = jobPositionReferenceId;
         this.createdAt = now;
         this.updatedAt = now;
     }
@@ -58,7 +58,7 @@ public class OrganizationMembershipEntity {
     public UUID getOrganizationId() { return organizationId; }
     public Boolean getActive() { return active; }
     public UUID getDepartmentId() { return departmentId; }
-    public UUID getOccupationReferenceId() { return occupationReferenceId; }
+    public UUID getJobPositionReferenceId() { return jobPositionReferenceId; }
     public Long getRevision() { return revision; }
     public Instant getCreatedAt() { return createdAt; }
     public Instant getUpdatedAt() { return updatedAt; }

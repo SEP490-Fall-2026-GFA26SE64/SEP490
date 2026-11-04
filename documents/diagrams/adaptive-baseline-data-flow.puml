@@ -6,7 +6,7 @@ title Adaptive baseline data ownership flow
 rectangle "Authorized catalog requirements" as C
 rectangle "Role selection" as S
 rectangle "Authoritative profile coverage" as P
-rectangle "Occupation baseline availability" as D
+rectangle "Job Position baseline availability" as D
 rectangle "Immutable Blueprint version" as V
 rectangle "Pinned individual attempt" as A
 rectangle "Final result and mastery evidence" as R

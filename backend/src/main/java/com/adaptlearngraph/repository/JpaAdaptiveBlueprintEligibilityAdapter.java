@@ -22,9 +22,9 @@ import org.springframework.dao.DataAccessException;
 /** TMP-REQ002-03/05/07: read-only local integration, pending the owner's tenant/release/item-availability contract. */
 public final class JpaAdaptiveBlueprintEligibilityAdapter implements AdaptiveBlueprintEligibilityPort {
     @ConfigurationProperties("assessment.baseline.adaptive.eligibility")
-    public record Properties(boolean enabled, UUID organizationId, Set<String> occupationIds, UUID questionBankId,
+    public record Properties(boolean enabled, UUID organizationId, Set<String> jobPositionIds, UUID questionBankId,
                              UUID modelVersionId, UUID masteryMappingVersionId) {
-        public Properties { if (occupationIds != null) occupationIds = Set.copyOf(occupationIds); }
+        public Properties { if (jobPositionIds != null) jobPositionIds = Set.copyOf(jobPositionIds); }
     }
 
     private final boolean demoDraft;
@@ -54,9 +54,9 @@ public final class JpaAdaptiveBlueprintEligibilityAdapter implements AdaptiveBlu
         Objects.requireNonNull(settings.questionBankId(), "Explicit local question bank required");
         Objects.requireNonNull(settings.modelVersionId(), "Explicit model version required");
         Objects.requireNonNull(settings.masteryMappingVersionId(), "Explicit mapping version required");
-        if (settings.occupationIds() == null || settings.occupationIds().isEmpty()
-                || settings.occupationIds().stream().anyMatch(id -> id == null || id.isBlank() || !id.equals(id.strip()))) {
-            throw new IllegalArgumentException("Explicit canonical Occupation allowlist required");
+        if (settings.jobPositionIds() == null || settings.jobPositionIds().isEmpty()
+                || settings.jobPositionIds().stream().anyMatch(id -> id == null || id.isBlank() || !id.equals(id.strip()))) {
+            throw new IllegalArgumentException("Explicit canonical JobPosition allowlist required");
         }
     }
 
@@ -67,7 +67,7 @@ public final class JpaAdaptiveBlueprintEligibilityAdapter implements AdaptiveBlu
     }
 
     private Optional<Snapshot> resolve(Scope scope, Optional<VersionPins> pins) {
-        if (!settings.organizationId().equals(scope.organizationId()) || !settings.occupationIds().contains(scope.occupationId())) {
+        if (!settings.organizationId().equals(scope.organizationId()) || !settings.jobPositionIds().contains(scope.jobPositionId())) {
             return Optional.empty();
         }
         try {
@@ -107,10 +107,10 @@ public final class JpaAdaptiveBlueprintEligibilityAdapter implements AdaptiveBlu
             var manifest = new TreeSet<String>();
             items.forEach(item -> manifest.add(json.write(List.of(item.id(), item.skill(), item.hash()))));
             String fingerprint = AdaptiveBlueprintJson.hash("AB-ELIGIBILITY-V1:" + snapshot.fingerprint() + ":"
-                    + scope.organizationId() + ":" + scope.occupationId() + ":" + settings.questionBankId() + ":" + json.write(manifest));
+                    + scope.organizationId() + ":" + scope.jobPositionId() + ":" + settings.questionBankId() + ":" + json.write(manifest));
             var coverage = new Coverage(model.minimumPerSkill(), model.maxResponses(),
                     items.stream().collect(Collectors.toMap(Item::id, Item::skill)));
-            return Optional.of(new Snapshot(scope, snapshot.occupationName(), fingerprint, selected, roles, coverage));
+            return Optional.of(new Snapshot(scope, snapshot.jobPositionName(), fingerprint, selected, roles, coverage));
         } catch (DataAccessException | com.adaptlearngraph.services.AdaptiveBlueprintUseCase.Failure
                  | com.fasterxml.jackson.core.JsonProcessingException
                  | com.adaptlearngraph.utility.AdaptiveIrtPolicy.Failure

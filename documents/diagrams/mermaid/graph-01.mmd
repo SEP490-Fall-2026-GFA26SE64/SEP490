@@ -3,7 +3,7 @@ title: "GRAPH-01 - Current review ontology structure"
 config: {"theme":"base","fontFamily":"Segoe UI, Arial, sans-serif","themeVariables":{"fontFamily":"Segoe UI, Arial, sans-serif","fontSize":"16px","primaryColor":"#ffffff","primaryTextColor":"#0f1729","primaryBorderColor":"#64748b","secondaryColor":"#fef3eb","tertiaryColor":"#ffffff","lineColor":"#64748b","textColor":"#0f1729","mainBkg":"#ffffff","background":"#ffffff","clusterBkg":"#ffffff","clusterBorder":"#64748b","edgeLabelBackground":"#ffffff","titleColor":"#0f1729","noteBkgColor":"#fef3eb","noteTextColor":"#0f1729","noteBorderColor":"#e6650f","attributeBackgroundColorOdd":"#ffffff","attributeBackgroundColorEven":"#ffffff","secondaryBorderColor":"#64748b","tertiaryBorderColor":"#64748b","secondaryTextColor":"#0f1729","tertiaryTextColor":"#0f1729"},"layout":"elk","er":{"layoutDirection":"LR","nodeSpacing":36,"rankSpacing":74,"entityPadding":16,"fontSize":16,"minEntityWidth":140,"diagramPadding":24}}
 ---
 erDiagram
-  SDD_GRAPH_01_Occupation["Occupation"] {
+  SDD_GRAPH_01_Job Position["Job Position"] {
     string id PK
     string code
     string name
@@ -17,7 +17,7 @@ erDiagram
   }
   SDD_GRAPH_01_TargetRole["TargetRole"] {
     string id PK
-    string occupationId
+    string job positionId
     string code
     string name
     string scope
@@ -51,7 +51,7 @@ erDiagram
     review_estimate duration
     review_estimate price
   }
-  SDD_GRAPH_01_Occupation ||--o{ SDD_GRAPH_01_TargetRole : "HAS_ROLE"
+  SDD_GRAPH_01_Job Position ||--o{ SDD_GRAPH_01_TargetRole : "HAS_ROLE"
   SDD_GRAPH_01_TargetRole ||--o{ SDD_GRAPH_01_Level : "HAS_LEVEL"
   SDD_GRAPH_01_Level ||--o{ SDD_GRAPH_01_Competency : "HAS_COMPETENCY"
   SDD_GRAPH_01_Competency }o--o{ SDD_GRAPH_01_MicroSkill : "HAS_SKILL"

@@ -73,8 +73,8 @@ public final class SubscriptionMappings implements ModelMapperRegistrar {
         mapper.typeMap(Member.class, MemberResponse.class).setConverter(context -> {
             Member source = context.getSource();
             return new MemberResponse(source.membershipId(), source.accountId(), source.fullName(), source.email(),
-                    source.active(), source.roles(), source.departmentId(), source.occupationReferenceId(),
-                    source.revision(), source.departmentName(), source.occupationName(), source.accountActive());
+                    source.active(), source.roles(), source.departmentId(), source.jobPositionReferenceId(),
+                    source.revision(), source.departmentName(), source.jobPositionName(), source.accountActive());
         });
     }
 

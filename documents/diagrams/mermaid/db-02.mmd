@@ -67,7 +67,7 @@ classDiagram
     uuid account_id FK_REQUIRED
     uuid organization_id FK_REQUIRED
     uuid department_id FK_NULLABLE
-    uuid occupation_reference_id FK_NULLABLE
+    uuid job position_reference_id FK_NULLABLE
   }
   class SDD_DB_02_t_organization_membership_role["organization_membership_role"] {
     <<table>>
@@ -85,7 +85,7 @@ classDiagram
     uuid organization_id FK_REQUIRED
     uuid created_by FK_REQUIRED
     uuid department_id FK_NULLABLE
-    uuid occupation_reference_id FK_NULLABLE
+    uuid job position_reference_id FK_NULLABLE
     uuid account_id FK_NULLABLE
   }
   class SDD_DB_02_t_department_reference["department_reference"] {
@@ -93,9 +93,9 @@ classDiagram
     uuid department_id PK_REQUIRED
     uuid organization_id FK_REQUIRED
   }
-  class SDD_DB_02_t_occupation_department_reference["occupation_department_reference"] {
+  class SDD_DB_02_t_job position_department_reference["job position_department_reference"] {
     <<table>>
-    uuid occupation_reference_id PK_REQUIRED
+    uuid job position_reference_id PK_REQUIRED
     uuid organization_id FK_REQUIRED
     uuid department_id FK_REQUIRED
   }
@@ -116,13 +116,13 @@ classDiagram
     uuid registration_id PK_REQUIRED
   }
   SDD_DB_02_t_organization ..> SDD_DB_02_t_department_reference : FK109
-  SDD_DB_02_t_department_reference --> SDD_DB_02_t_occupation_department_reference : FK157
-  SDD_DB_02_t_organization ..> SDD_DB_02_t_occupation_department_reference : FK158
+  SDD_DB_02_t_department_reference --> SDD_DB_02_t_job position_department_reference : FK157
+  SDD_DB_02_t_organization ..> SDD_DB_02_t_job position_department_reference : FK158
   SDD_DB_02_t_organization_membership --> SDD_DB_02_t_organization_membership_role : FK159
   SDD_DB_02_t_account ..> SDD_DB_02_t_organization_membership : FK160
   SDD_DB_02_t_account ..> SDD_DB_02_t_organization_membership : FK161
   SDD_DB_02_t_department_reference --> SDD_DB_02_t_organization_membership : FK162
-  SDD_DB_02_t_occupation_department_reference --> SDD_DB_02_t_organization_membership : FK163
+  SDD_DB_02_t_job position_department_reference --> SDD_DB_02_t_organization_membership : FK163
   SDD_DB_02_t_organization ..> SDD_DB_02_t_organization_membership : FK164
   SDD_DB_02_t_organization ..> SDD_DB_02_t_organization_workspace : FK166
   SDD_DB_02_t_organization_registration ..> SDD_DB_02_t_organization_workspace : FK167
@@ -151,7 +151,7 @@ classDiagram
   SDD_DB_02_t_account ..> SDD_DB_02_t_workspace_activation : FK228
   SDD_DB_02_t_account ..> SDD_DB_02_t_workspace_activation : FK229
   SDD_DB_02_t_department_reference --> SDD_DB_02_t_workspace_activation : FK230
-  SDD_DB_02_t_occupation_department_reference --> SDD_DB_02_t_workspace_activation : FK231
+  SDD_DB_02_t_job position_department_reference --> SDD_DB_02_t_workspace_activation : FK231
   SDD_DB_02_t_organization ..> SDD_DB_02_t_workspace_activation : FK232
 
   style SDD_DB_02_t_account fill:#ffffff,stroke:#64748b,color:#0f1729,stroke-dasharray:5 4

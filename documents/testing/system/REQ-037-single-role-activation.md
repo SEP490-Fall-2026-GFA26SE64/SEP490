@@ -27,8 +27,8 @@ npm.cmd run test:system:f02 -- REQ-037-single-role-activation REQ-022-admin-page
 
 1. Actual seed implementation creates a Platform Admin twice idempotently. Incorrect password fails; correct password completes without email/MFA, platform APIs succeed and organization workspace access is denied.
 2. Organization Administrator creates an Expert invitation with exactly one radio selection. Actual mail activation/password setting persists DOMAIN_EXPERT; login enters `/expert/target-roles`, reload retains the role and shared header uses the real identity.
-3. Equivalent L&D Manager flow persists LD_MANAGER and enters `/ld-manager/occupations`.
-4. Equivalent Employee flow requires real same-organization department/occupation and an available seat, persists EMPLOYEE and enters `/employee/overview`.
+3. Equivalent L&D Manager flow persists LD_MANAGER and enters `/ld-manager/job positions`.
+4. Equivalent Employee flow requires real same-organization department/job position and an available seat, persists EMPLOYEE and enters `/employee/overview`.
 5. All three flows reject direct multi-role invitation requests, consumed-token replay, administrative/platform API access and wrong-role pages. None prompts for MFA. Desktop/mobile screenshots include role layouts and EN/VI activation/error states.
 6. Full Administrator directory/create/detail/edit/deactivate/reactivate regression passes with single-role replacement: Employee -> Expert releases the seat, replacement back to Employee reacquires it, and deactivation/reactivation preserves history. The singular Users alias, sidebar, filters, real identity/logout and navigation-only demo links remain covered.
 7. Captured payment email contains real MIME CID logo attachment and the shared HTML references it. Mobile preview resolves that CID to the identical bundled image bytes; screenshot inspected for the supplied orange icon/dark wordmark and responsive layout. Unit MIME checks establish the shared sender includes the image for all current transactional messages.
@@ -55,13 +55,13 @@ Actual updated development URL: `http://localhost:8088/login`.
 2. After migrations, run `docker compose -f compose.dev.yml run --rm --no-deps platform-seed`. It does not expose a public seed API. Matching reruns do not duplicate or reset the account; conflicting email/password configuration fails explicitly.
 3. Sign in with that Platform Admin. Expect no email/MFA step, platform landing and authorized platform APIs. Organization membership is not granted.
 4. Sign in as an Organization Administrator using the existing email/MFA flow. Open `/admin/users` (`/admin/user` redirects).
-5. Create one Expert, one L&D Manager and one Employee. Select one role only. Employee needs real department/occupation references and free capacity; missing reference data is an upstream prerequisite, not fabricated by this change.
+5. Create one Expert, one L&D Manager and one Employee. Select one role only. Employee needs real department/job position references and free capacity; missing reference data is an upstream prerequisite, not fabricated by this change.
 6. Activate from each recipient's email, choose a password and sign in. Use the existing Continue action: expect Expert, L&D and Employee layouts respectively and the actual user's header identity.
 7. Refresh; verify persisted role and denied access to other role/organization surfaces. Edit a role as administrator: it replaces, rather than adds to, the old role. Confirm relevant seat changes.
 8. Inspect verification/activation/payment mail in the isolated inbox: supplied brand icon/wordmark, plaintext alternative and readable content. No remote image fetch is required.
 9. Exercise missing/invalid/reused activation token and mismatched/short password; verify explicit errors, field focus and no unintended account creation. Repeat at 390px and in VI.
 
-No live email inbox/provider acceptance is certified. No unrelated role-page redesign, department/occupation CRUD or production deployment is included.
+No live email inbox/provider acceptance is certified. No unrelated role-page redesign, department/job position CRUD or production deployment is included.
 
 After verification the identity-test stack was stopped with volumes retained. Updated dev web/API/PostgreSQL/Neo4j remain running; final API health was UP and `/activate` returned HTTP 200. The pre-V12 PostgreSQL backup is retained privately outside the repository. No credentials were committed or included in browser traces.
 

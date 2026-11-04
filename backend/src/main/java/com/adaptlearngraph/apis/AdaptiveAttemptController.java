@@ -47,9 +47,9 @@ public final class AdaptiveAttemptController {
                     if (root.size() != 1) throw new Failure(Code.INVALID_REQUEST);
                     yield new SelectedRole();
                 }
-                case "OCCUPATION_EXPLORATION" -> {
-                    if (root.size() != 2 || !root.path("occupationId").isTextual()) throw new Failure(Code.INVALID_REQUEST);
-                    yield new Exploration(root.get("occupationId").textValue());
+                case "JOB_POSITION_EXPLORATION" -> {
+                    if (root.size() != 2 || !root.path("jobPositionId").isTextual()) throw new Failure(Code.INVALID_REQUEST);
+                    yield new Exploration(root.get("jobPositionId").textValue());
                 }
                 default -> throw new Failure(Code.INVALID_REQUEST);
             };
@@ -77,7 +77,7 @@ public final class AdaptiveAttemptController {
             default -> HttpStatus.CONFLICT;
         };
         String message = code == Code.CONFIGURATION_UPDATE_REQUIRED
-                ? "This baseline needs an updated Occupation configuration before new starts. Contact your L&D Manager."
+                ? "This baseline needs an updated JobPosition configuration before new starts. Contact your L&D Manager."
                 : "Adaptive baseline request: " + code;
         return ResponseEntity.status(status).cacheControl(CacheControl.noStore()).body(new Error(code.name(), message));
     }

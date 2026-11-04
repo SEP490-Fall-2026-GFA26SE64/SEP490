@@ -26,10 +26,10 @@ public class BaselineBlueprintVersionEntity {
     private Integer version;
     @Column(name = "name", nullable = false)
     private String name;
-    @Column(name = "occupation_id")
-    private String occupationId;
-    @Column(name = "occupation_name_snapshot")
-    private String occupationNameSnapshot;
+    @Column(name = "job_position_id")
+    private String jobPositionId;
+    @Column(name = "job_position_name_snapshot")
+    private String jobPositionNameSnapshot;
     @Column(name = "created_by", nullable = false)
     private UUID createdBy;
     @Column(name = "created_at", nullable = false)
@@ -43,12 +43,12 @@ public class BaselineBlueprintVersionEntity {
     }
 
     @SuppressWarnings("java:S107")
-    public BaselineBlueprintVersionEntity(UUID blueprintId, Integer version, String name, String occupationId, String occupationNameSnapshot, UUID createdBy, Instant createdAt, String idempotencyKey, String requestHash) {
+    public BaselineBlueprintVersionEntity(UUID blueprintId, Integer version, String name, String jobPositionId, String jobPositionNameSnapshot, UUID createdBy, Instant createdAt, String idempotencyKey, String requestHash) {
         this.blueprintId = blueprintId;
         this.version = version;
         this.name = name;
-        this.occupationId = occupationId;
-        this.occupationNameSnapshot = occupationNameSnapshot;
+        this.jobPositionId = jobPositionId;
+        this.jobPositionNameSnapshot = jobPositionNameSnapshot;
         this.createdBy = createdBy;
         this.createdAt = createdAt;
         this.idempotencyKey = idempotencyKey;
@@ -58,8 +58,8 @@ public class BaselineBlueprintVersionEntity {
     public UUID getBlueprintId() { return blueprintId; }
     public Integer getVersion() { return version; }
     public String getName() { return name; }
-    public String getOccupationId() { return occupationId; }
-    public String getOccupationNameSnapshot() { return occupationNameSnapshot; }
+    public String getJobPositionId() { return jobPositionId; }
+    public String getJobPositionNameSnapshot() { return jobPositionNameSnapshot; }
     public UUID getCreatedBy() { return createdBy; }
     public Instant getCreatedAt() { return createdAt; }
     public String getIdempotencyKey() { return idempotencyKey; }

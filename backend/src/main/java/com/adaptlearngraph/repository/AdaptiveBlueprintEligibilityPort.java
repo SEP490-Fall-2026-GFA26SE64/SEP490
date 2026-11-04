@@ -12,10 +12,10 @@ import java.util.UUID;
 /** Server-only catalog/item boundary; no protected answer data crosses this port. */
 public interface AdaptiveBlueprintEligibilityPort {
     /**
-     * Empty means Occupation unavailable to this scope. Snapshot includes only active roles and
+     * Empty means JobPosition unavailable to this scope. Snapshot includes only active roles and
      * active/complete/validly-mapped items. Pins identify a compatible model/mapping and a promoted
      * parameter set. Fail closed when dependencies or approved technical versions are unavailable.
-     * Fingerprint must cover membership/eligibility drift, not merely an Occupation version label.
+     * Fingerprint must cover membership/eligibility drift, not merely an JobPosition version label.
      */
     Optional<Snapshot> resolve(Scope scope);
 
@@ -26,15 +26,15 @@ public interface AdaptiveBlueprintEligibilityPort {
      */
     Optional<Snapshot> resolvePinned(Scope scope, VersionPins pins);
 
-    record Snapshot(Scope scope, String occupationName, String catalogFingerprint,
+    record Snapshot(Scope scope, String jobPositionName, String catalogFingerprint,
                     VersionPins pins, Map<String, RolePool> roles, Coverage coverage) {
-        /** Historical callers do not assert full-Occupation feasibility. */
+        /** Historical callers do not assert full-JobPosition feasibility. */
         public Snapshot(Scope scope, String name, String fingerprint, VersionPins pins, Map<String, RolePool> roles) {
             this(scope, name, fingerprint, pins, roles, null);
         }
         public Snapshot {
             Objects.requireNonNull(scope, "scope");
-            if (occupationName == null || occupationName.isBlank()
+            if (jobPositionName == null || jobPositionName.isBlank()
                     || catalogFingerprint == null || catalogFingerprint.isBlank()) {
                 throw new IllegalArgumentException("Catalog name and fingerprint are required");
             }

@@ -9,7 +9,7 @@ classDiagram
     uuid attempt_id PK_REQUIRED
     uuid organization_id FK_REQUIRED
     uuid learner_id FK_REQUIRED
-    text occupation_id FK_REQUIRED
+    text job position_id FK_REQUIRED
     text target_role_id FK_NULLABLE
     uuid blueprint_id FK_REQUIRED
     integer blueprint_version FK_REQUIRED
@@ -49,7 +49,7 @@ classDiagram
     uuid actor_id PK_FK_REQUIRED
     text idempotency_key PK_REQUIRED
     uuid attempt_id FK_REQUIRED
-    text occupation_id FK_REQUIRED
+    text job position_id FK_REQUIRED
   }
   class SDD_DB_05_t_baseline_attempt_result["baseline_attempt_result"] {
     <<table>>
@@ -69,7 +69,7 @@ classDiagram
     uuid attempt_id PK_FK_REQUIRED
     uuid organization_id FK_REQUIRED
     uuid learner_id FK_REQUIRED
-    text occupation_id FK_REQUIRED
+    text job position_id FK_REQUIRED
     text micro_skill_id PK_FK_REQUIRED
     uuid model_version_id FK_REQUIRED
     uuid mastery_mapping_version_id FK_REQUIRED

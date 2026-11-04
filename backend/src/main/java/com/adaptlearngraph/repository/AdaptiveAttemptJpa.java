@@ -37,7 +37,7 @@ public final class AdaptiveAttemptJpa {
     <T> T scoped(Scope expected, Supplier<T> work) {
         return transaction(true, () -> {
             data.locks().lock("AB-ATTEMPT-ACTOR-V1\n" + expected.organizationId() + "\n" + expected.learnerId());
-            data.attempts().lockInProgress(expected.organizationId(), expected.learnerId(), expected.occupationId());
+            data.attempts().lockInProgress(expected.organizationId(), expected.learnerId(), expected.jobPositionId());
             return inScope(expected, work);
         });
     }
@@ -65,7 +65,7 @@ public final class AdaptiveAttemptJpa {
     /** Requires the scoped transaction and row-locks this exact owned parent. */
     void owned(Scope expected, UUID id) {
         require(expected);
-        if (data.attempts().lockOwned(expected.organizationId(), expected.learnerId(), expected.occupationId(), id).isEmpty()) {
+        if (data.attempts().lockOwned(expected.organizationId(), expected.learnerId(), expected.jobPositionId(), id).isEmpty()) {
             throw new Failure(Code.FORBIDDEN);
         }
     }

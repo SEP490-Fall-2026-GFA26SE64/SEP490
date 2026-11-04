@@ -10,7 +10,7 @@ import com.adaptlearngraph.entities.domain.BaselineAssessmentSeries.SeriesSnapsh
 import java.util.Objects;
 import java.util.UUID;
 
-/** Pure policy for one organization and Occupation baseline release line. */
+/** Pure policy for one organization and JobPosition baseline release line. */
 public final class BaselineAssessmentLifecycle {
     private BaselineAssessmentLifecycle() {}
 

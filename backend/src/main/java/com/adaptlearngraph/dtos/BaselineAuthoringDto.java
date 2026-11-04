@@ -41,21 +41,21 @@ public final class BaselineAuthoringDto {
     public record SaveWorkingRequest(
             @Min(1) long expectedRevision,
             @NotBlank String name,
-            @NotBlank String occupationId,
-            @NotBlank String occupationNameSnapshot,
+            @NotBlank String jobPositionId,
+            @NotBlank String jobPositionNameSnapshot,
             @NotEmpty List<@Valid RoleRequest> roles) {}
 
     public record CreateRequest(
             @NotBlank String name,
-            String occupationId,
-            String occupationNameSnapshot,
+            String jobPositionId,
+            String jobPositionNameSnapshot,
             @NotEmpty List<@Valid RoleRequest> roles) {}
 
     public record ReviseRequest(
             @Min(1) int expectedLatestVersion,
             @NotBlank String name,
-            String occupationId,
-            String occupationNameSnapshot,
+            String jobPositionId,
+            String jobPositionNameSnapshot,
             @NotEmpty List<@Valid RoleRequest> roles) {}
 
     public record ExpectedRevisionRequest(@Min(1) long expectedRevision) {}
@@ -102,8 +102,8 @@ public final class BaselineAuthoringDto {
             UUID blueprintId,
             int version,
             String name,
-            String occupationId,
-            String occupationNameSnapshot,
+            String jobPositionId,
+            String jobPositionNameSnapshot,
             Instant createdAt,
             List<RoleResponse> roles) {}
 
@@ -112,8 +112,8 @@ public final class BaselineAuthoringDto {
             UUID blueprintId,
             int version,
             String name,
-            String occupationId,
-            String occupationNameSnapshot,
+            String jobPositionId,
+            String jobPositionNameSnapshot,
             Instant createdAt,
             List<RoleConfigResponse> roles) {}
 
@@ -164,8 +164,8 @@ public final class BaselineAuthoringDto {
 
     public record BlueprintDraftResponse(
             String name,
-            String occupationId,
-            String occupationNameSnapshot,
+            String jobPositionId,
+            String jobPositionNameSnapshot,
             List<RoleConfigResponse> roles) {}
 
     public record WorkingRevisionResponse(
@@ -176,7 +176,7 @@ public final class BaselineAuthoringDto {
             BlueprintDraftResponse draft,
             Instant updatedAt) {}
 
-    public record SeriesScopeResponse(UUID organizationId, String occupationId) {}
+    public record SeriesScopeResponse(UUID organizationId, String jobPositionId) {}
 
     public record BlueprintVersionRefResponse(UUID blueprintId, int version) {}
 
@@ -209,8 +209,8 @@ public final class BaselineAuthoringDto {
             Instant createdAt) {}
 
     public record WorkspaceResponse(
-            String occupationId,
-            String occupationName,
+            String jobPositionId,
+            String jobPositionName,
             SeriesSnapshotResponse lifecycle,
             WorkingRevisionResponse workingRevision,
             List<BlueprintVersionSummaryResponse> blueprintVersions,

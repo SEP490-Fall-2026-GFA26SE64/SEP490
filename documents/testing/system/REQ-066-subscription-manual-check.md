@@ -47,8 +47,8 @@ The specs create independent synthetic verified registrants/admins; secrets are 
 1. At `/admin/subscription`, inspect current/scheduled paid periods, allocated/used seats, effective admission ceiling and payment history.
 2. Renew through the same verified lifecycle. Active renewal appends, expired renewal begins at application, and at most one paid future period is allowed.
 3. Lower-seat renewal requires current use to fit. Its unresolved/scheduled commitment constrains new activations; no Employee is automatically deactivated.
-4. Supply real same-organization department/occupation reference records through the owning upstream process. Their absence must show the explicit prerequisite message, not demo options.
-5. Open `/admin/users`, choose **Create User**, enter Employee name/email/role/department/occupation and send activation. Inspect Mailpit, open the single-use link, set a password and sign in without Employee MFA. W2 (2026-10-26) moves all user management off Subscription; the Users page also provides list/detail/filter/pagination/edit and membership confirmation actions.
+4. Supply real same-organization department/job position reference records through the owning upstream process. Their absence must show the explicit prerequisite message, not demo options.
+5. Open `/admin/users`, choose **Create User**, enter Employee name/email/role/department/job position and send activation. Inspect Mailpit, open the single-use link, set a password and sign in without Employee MFA. W2 (2026-10-26) moves all user management off Subscription; the Users page also provides list/detail/filter/pagination/edit and membership confirmation actions.
 6. Verify the stored fields and seat count. Deactivate/reactivate membership, including concurrent final-seat attempts; only one may acquire the last seat.
 7. With a second organization/registrant, attempt cross-organization/order/resource access and forged role headers. Expect denial and no mutation.
 

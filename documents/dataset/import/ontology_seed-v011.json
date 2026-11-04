@@ -1,5 +1,5 @@
 {
-  "Occupations": [
+  "JobPositions": [
     {
       "id": "OCC-15-1252.00",
       "version": "0.11.0",
@@ -97,7 +97,7 @@
       "code": "APPLICATION_DEVELOPER",
       "name": "Application Developer",
       "scope": "Implement and maintain application software from defined user requirements.",
-      "occupationId": "OCC-15-1252.00"
+      "jobPositionId": "OCC-15-1252.00"
     },
     {
       "id": "ROLE-58B047D9053E",
@@ -109,7 +109,7 @@
       "code": "APPLICATION_INTEGRATION_ENGINEER",
       "name": "Application Integration Engineer",
       "scope": "Implement and verify application interfaces and cross-system data exchange.",
-      "occupationId": "OCC-15-1252.00"
+      "jobPositionId": "OCC-15-1252.00"
     },
     {
       "id": "ROLE-88FA0D759F84",
@@ -121,7 +121,7 @@
       "code": "DEVELOPER",
       "name": "Developer",
       "scope": "Implement and maintain application software from defined user requirements.",
-      "occupationId": "OCC-15-1252.00"
+      "jobPositionId": "OCC-15-1252.00"
     },
     {
       "id": "ROLE-2F3EE4DCB9A3",
@@ -133,7 +133,7 @@
       "code": "DEVOPS_ENGINEER_DEVELOPMENT_OPERATIONS_ENGINEER",
       "name": "DevOps Engineer (Development Operations Engineer)",
       "scope": "Automate software delivery and operate the supporting service infrastructure.",
-      "occupationId": "OCC-15-1252.00"
+      "jobPositionId": "OCC-15-1252.00"
     },
     {
       "id": "ROLE-8C851BC1DBAC-15125200",
@@ -145,7 +145,7 @@
       "code": "INFRASTRUCTURE_ENGINEER-15125200",
       "name": "Infrastructure Engineer",
       "scope": "Provision, maintain and recover infrastructure and network services.",
-      "occupationId": "OCC-15-1252.00"
+      "jobPositionId": "OCC-15-1252.00"
     },
     {
       "id": "ROLE-8C851BC1DBAC-15129908",
@@ -157,7 +157,7 @@
       "code": "INFRASTRUCTURE_ENGINEER-15129908",
       "name": "Infrastructure Engineer",
       "scope": "Provision, maintain and recover infrastructure and network services.",
-      "occupationId": "OCC-15-1299.08"
+      "jobPositionId": "OCC-15-1299.08"
     },
     {
       "id": "ROLE-DC8BCD8CC9FA",
@@ -169,7 +169,7 @@
       "code": "SOFTWARE_ARCHITECT",
       "name": "Software Architect",
       "scope": "Develop and explain software architecture decisions and integration quality constraints.",
-      "occupationId": "OCC-15-1252.00"
+      "jobPositionId": "OCC-15-1252.00"
     },
     {
       "id": "ROLE-15F02B2EC48A",
@@ -181,7 +181,7 @@
       "code": "SOFTWARE_DEVELOPER",
       "name": "Software Developer",
       "scope": "Implement and maintain application software from defined user requirements.",
-      "occupationId": "OCC-15-1252.00"
+      "jobPositionId": "OCC-15-1252.00"
     },
     {
       "id": "ROLE-7838A77B1320",
@@ -193,7 +193,7 @@
       "code": "SOFTWARE_DEVELOPMENT_ENGINEER",
       "name": "Software Development Engineer",
       "scope": "Implement and maintain application software from defined user requirements.",
-      "occupationId": "OCC-15-1252.00"
+      "jobPositionId": "OCC-15-1252.00"
     },
     {
       "id": "ROLE-CBAF88DF6DE7",
@@ -205,7 +205,7 @@
       "code": "SOFTWARE_ENGINEER",
       "name": "Software Engineer",
       "scope": "Implement and maintain application software from defined user requirements.",
-      "occupationId": "OCC-15-1252.00"
+      "jobPositionId": "OCC-15-1252.00"
     },
     {
       "id": "ROLE-6B89F39CA50C-15125200",
@@ -217,7 +217,7 @@
       "code": "SYSTEMS_ENGINEER-15125200",
       "name": "Systems Engineer",
       "scope": "Design system boundaries, infrastructure choices and secure integration approaches.",
-      "occupationId": "OCC-15-1252.00"
+      "jobPositionId": "OCC-15-1252.00"
     },
     {
       "id": "ROLE-6B89F39CA50C-15129908",
@@ -229,7 +229,7 @@
       "code": "SYSTEMS_ENGINEER-15129908",
       "name": "Systems Engineer",
       "scope": "Design system boundaries, infrastructure choices and secure integration approaches.",
-      "occupationId": "OCC-15-1299.08"
+      "jobPositionId": "OCC-15-1299.08"
     },
     {
       "id": "ROLE-84156EF4FF37",
@@ -241,7 +241,7 @@
       "code": "DATA_ARCHITECT",
       "name": "Data Architect",
       "scope": "Design data structures, warehouse boundaries and data governance decisions.",
-      "occupationId": "OCC-15-1243.00"
+      "jobPositionId": "OCC-15-1243.00"
     },
     {
       "id": "ROLE-DE",
@@ -253,7 +253,7 @@
       "code": "DE",
       "name": "Data Engineer",
       "scope": "Build and operate data pipelines, warehouse structures and data quality checks.",
-      "occupationId": "OCC-15-1243.00"
+      "jobPositionId": "OCC-15-1243.00"
     },
     {
       "id": "ROLE-677AE5E25939",
@@ -265,7 +265,7 @@
       "code": "DATA_OFFICER",
       "name": "Data Officer",
       "scope": "Maintain data ownership, governance rules and evidence of compliant handling.",
-      "occupationId": "OCC-15-1243.00"
+      "jobPositionId": "OCC-15-1243.00"
     },
     {
       "id": "ROLE-262E99D33528",
@@ -277,7 +277,7 @@
       "code": "DATABASE_ANALYST",
       "name": "Database Analyst",
       "scope": "Analyse data structures, quality, metadata and database change consequences.",
-      "occupationId": "OCC-15-1243.00"
+      "jobPositionId": "OCC-15-1243.00"
     },
     {
       "id": "ROLE-5A07C8E3F89B",
@@ -289,7 +289,7 @@
       "code": "DATABASE_ARCHITECT",
       "name": "Database Architect",
       "scope": "Design data structures, warehouse boundaries and data governance decisions.",
-      "occupationId": "OCC-15-1243.00"
+      "jobPositionId": "OCC-15-1243.00"
     },
     {
       "id": "ROLE-683035F817DC",
@@ -301,7 +301,7 @@
       "code": "DATABASE_CONSULTANT",
       "name": "Database Consultant",
       "scope": "Analyse data structures, quality, metadata and database change consequences.",
-      "occupationId": "OCC-15-1243.00"
+      "jobPositionId": "OCC-15-1243.00"
     },
     {
       "id": "ROLE-826EF8FFB24A",
@@ -313,7 +313,7 @@
       "code": "DATABASE_DEVELOPER",
       "name": "Database Developer",
       "scope": "Implement and verify database structures, queries and processing logic.",
-      "occupationId": "OCC-15-1243.00"
+      "jobPositionId": "OCC-15-1243.00"
     },
     {
       "id": "ROLE-6C905B8EE52A",
@@ -325,7 +325,7 @@
       "code": "DATABASE_PROGRAMMER",
       "name": "Database Programmer",
       "scope": "Implement and verify database structures, queries and processing logic.",
-      "occupationId": "OCC-15-1243.00"
+      "jobPositionId": "OCC-15-1243.00"
     },
     {
       "id": "ROLE-B0C017CA7D49",
@@ -337,7 +337,7 @@
       "code": "ENTERPRISE_ARCHITECT",
       "name": "Enterprise Architect",
       "scope": "Align enterprise system and data architecture with governance and service constraints.",
-      "occupationId": "OCC-15-1243.00"
+      "jobPositionId": "OCC-15-1243.00"
     },
     {
       "id": "ROLE-D4665145D9A0",
@@ -349,7 +349,7 @@
       "code": "INFORMATION_ARCHITECT",
       "name": "Information Architect",
       "scope": "Design data structures, warehouse boundaries and data governance decisions.",
-      "occupationId": "OCC-15-1243.00"
+      "jobPositionId": "OCC-15-1243.00"
     },
     {
       "id": "ROLE-3594A031F678",
@@ -361,7 +361,7 @@
       "code": "AUTOMATION_TESTER",
       "name": "Automation Tester",
       "scope": "Implement, integrate and maintain repeatable automated software tests.",
-      "occupationId": "OCC-15-1253.00"
+      "jobPositionId": "OCC-15-1253.00"
     },
     {
       "id": "ROLE-39F74565946B",
@@ -373,7 +373,7 @@
       "code": "INFORMATION_TECHNOLOGY_ANALYST_IT_ANALYST",
       "name": "Information Technology Analyst (IT Analyst)",
       "scope": "Analyse test needs, plan and execute tests, and communicate software defects.",
-      "occupationId": "OCC-15-1253.00"
+      "jobPositionId": "OCC-15-1253.00"
     },
     {
       "id": "ROLE-B94440938DCB",
@@ -385,7 +385,7 @@
       "code": "QUALITY_ASSURANCE_ANALYST_QA_ANALYST",
       "name": "Quality Assurance Analyst (QA Analyst)",
       "scope": "Analyse test needs, plan and execute tests, and communicate software defects.",
-      "occupationId": "OCC-15-1253.00"
+      "jobPositionId": "OCC-15-1253.00"
     },
     {
       "id": "ROLE-1947F95DA9EB",
@@ -397,7 +397,7 @@
       "code": "QUALITY_ASSURANCE_ENGINEER_QA_ENGINEER",
       "name": "Quality Assurance Engineer (QA Engineer)",
       "scope": "Engineer and maintain reliable manual, automated and non-functional software tests.",
-      "occupationId": "OCC-15-1253.00"
+      "jobPositionId": "OCC-15-1253.00"
     },
     {
       "id": "ROLE-140C2EA5BCFA",
@@ -409,7 +409,7 @@
       "code": "QUALITY_ENGINEER",
       "name": "Quality Engineer",
       "scope": "Engineer and maintain reliable manual, automated and non-functional software tests.",
-      "occupationId": "OCC-15-1253.00"
+      "jobPositionId": "OCC-15-1253.00"
     },
     {
       "id": "ROLE-600114606368",
@@ -421,7 +421,7 @@
       "code": "SOFTWARE_QUALITY_ASSURANCE_ANALYST_SQA_ANALYST",
       "name": "Software Quality Assurance Analyst (SQA Analyst)",
       "scope": "Analyse test needs, plan and execute tests, and communicate software defects.",
-      "occupationId": "OCC-15-1253.00"
+      "jobPositionId": "OCC-15-1253.00"
     },
     {
       "id": "ROLE-6E51A03B5F7F",
@@ -433,7 +433,7 @@
       "code": "SOFTWARE_QUALITY_ASSURANCE_ENGINEER_SQA_ENGINEER",
       "name": "Software Quality Assurance Engineer (SQA Engineer)",
       "scope": "Engineer and maintain reliable manual, automated and non-functional software tests.",
-      "occupationId": "OCC-15-1253.00"
+      "jobPositionId": "OCC-15-1253.00"
     },
     {
       "id": "ROLE-B2B4EB364379",
@@ -445,7 +445,7 @@
       "code": "SOFTWARE_QUALITY_ENGINEER",
       "name": "Software Quality Engineer",
       "scope": "Engineer and maintain reliable manual, automated and non-functional software tests.",
-      "occupationId": "OCC-15-1253.00"
+      "jobPositionId": "OCC-15-1253.00"
     },
     {
       "id": "ROLE-B0E1A3444426",
@@ -457,7 +457,7 @@
       "code": "SOFTWARE_TEST_ENGINEER",
       "name": "Software Test Engineer",
       "scope": "Engineer and maintain reliable manual, automated and non-functional software tests.",
-      "occupationId": "OCC-15-1253.00"
+      "jobPositionId": "OCC-15-1253.00"
     },
     {
       "id": "ROLE-6A2A26EB8380",
@@ -469,7 +469,7 @@
       "code": "TEST_ENGINEER",
       "name": "Test Engineer",
       "scope": "Engineer and maintain reliable manual, automated and non-functional software tests.",
-      "occupationId": "OCC-15-1253.00"
+      "jobPositionId": "OCC-15-1253.00"
     },
     {
       "id": "ROLE-56B826705119",
@@ -481,7 +481,7 @@
       "code": "IT_ARCHITECT_INFORMATION_TECHNOLOGY_ARCHITECT",
       "name": "IT Architect (Information Technology Architect)",
       "scope": "Design system boundaries, infrastructure choices and secure integration approaches.",
-      "occupationId": "OCC-15-1299.08"
+      "jobPositionId": "OCC-15-1299.08"
     },
     {
       "id": "ROLE-BE3E290AD0CA",
@@ -493,7 +493,7 @@
       "code": "IT_ENGINEER_INFORMATION_TECHNOLOGY_ENGINEER",
       "name": "IT Engineer (Information Technology Engineer)",
       "scope": "Provision, maintain and recover infrastructure and network services.",
-      "occupationId": "OCC-15-1299.08"
+      "jobPositionId": "OCC-15-1299.08"
     },
     {
       "id": "ROLE-919BDC0216B4",
@@ -505,7 +505,7 @@
       "code": "NETWORK_AND_INFRASTRUCTURE_ENGINEER",
       "name": "Network and Infrastructure Engineer",
       "scope": "Provision, maintain and recover infrastructure and network services.",
-      "occupationId": "OCC-15-1299.08"
+      "jobPositionId": "OCC-15-1299.08"
     },
     {
       "id": "ROLE-B01510AF5F34",
@@ -517,7 +517,7 @@
       "code": "SOLUTIONS_ARCHITECT",
       "name": "Solutions Architect",
       "scope": "Design system boundaries, infrastructure choices and secure integration approaches.",
-      "occupationId": "OCC-15-1299.08"
+      "jobPositionId": "OCC-15-1299.08"
     },
     {
       "id": "ROLE-D047DF7D12BA",
@@ -529,7 +529,7 @@
       "code": "SYSTEMS_APPLICATION_ENGINEER",
       "name": "Systems Application Engineer",
       "scope": "Implement and verify application interfaces and cross-system data exchange.",
-      "occupationId": "OCC-15-1299.08"
+      "jobPositionId": "OCC-15-1299.08"
     },
     {
       "id": "ROLE-7A06376BE513",
@@ -541,7 +541,7 @@
       "code": "SYSTEMS_ARCHITECT",
       "name": "Systems Architect",
       "scope": "Design system boundaries, infrastructure choices and secure integration approaches.",
-      "occupationId": "OCC-15-1299.08"
+      "jobPositionId": "OCC-15-1299.08"
     },
     {
       "id": "ROLE-4C23110A9ACE",
@@ -553,7 +553,7 @@
       "code": "SYSTEMS_CONSULTANT",
       "name": "Systems Consultant",
       "scope": "Analyse system requirements, operating problems and proposed technical changes.",
-      "occupationId": "OCC-15-1299.08"
+      "jobPositionId": "OCC-15-1299.08"
     },
     {
       "id": "ROLE-E53C178E5BA6",
@@ -565,7 +565,7 @@
       "code": "WEB_ARCHITECT",
       "name": "Web Architect",
       "scope": "Design web-facing system structure, interfaces and quality constraints.",
-      "occupationId": "OCC-15-1299.08"
+      "jobPositionId": "OCC-15-1299.08"
     },
     {
       "id": "ROLE-BC681F40F67B",
@@ -577,7 +577,7 @@
       "code": "INFORMATION_SECURITY_OFFICER",
       "name": "Information Security Officer",
       "scope": "Maintain security governance, risk decisions, policy procedures and assurance evidence.",
-      "occupationId": "OCC-15-1212.00"
+      "jobPositionId": "OCC-15-1212.00"
     },
     {
       "id": "ROLE-9E24DD1E0AE6",
@@ -589,7 +589,7 @@
       "code": "INFORMATION_SECURITY_SPECIALIST",
       "name": "Information Security Specialist",
       "scope": "Investigate security risks, controls, findings and incident evidence.",
-      "occupationId": "OCC-15-1212.00"
+      "jobPositionId": "OCC-15-1212.00"
     },
     {
       "id": "ROLE-AF49BFEFFAE0",
@@ -601,7 +601,7 @@
       "code": "INFORMATION_SYSTEMS_SECURITY_ANALYST",
       "name": "Information Systems Security Analyst",
       "scope": "Investigate security risks, controls, findings and incident evidence.",
-      "occupationId": "OCC-15-1212.00"
+      "jobPositionId": "OCC-15-1212.00"
     },
     {
       "id": "ROLE-AAF660DA34D9",
@@ -613,7 +613,7 @@
       "code": "INFORMATION_SYSTEMS_SECURITY_OFFICER_ISSO",
       "name": "Information Systems Security Officer (ISSO)",
       "scope": "Maintain security governance, risk decisions, policy procedures and assurance evidence.",
-      "occupationId": "OCC-15-1212.00"
+      "jobPositionId": "OCC-15-1212.00"
     },
     {
       "id": "ROLE-AC875FDD2CC1",
@@ -625,7 +625,7 @@
       "code": "INFORMATION_TECHNOLOGY_SECURITY_ANALYST_IT_SECURITY_ANALYST",
       "name": "Information Technology Security Analyst (IT Security Analyst)",
       "scope": "Investigate security risks, controls, findings and incident evidence.",
-      "occupationId": "OCC-15-1212.00"
+      "jobPositionId": "OCC-15-1212.00"
     },
     {
       "id": "ROLE-39DE5AAEA190",
@@ -637,7 +637,7 @@
       "code": "NETWORK_SECURITY_ANALYST",
       "name": "Network Security Analyst",
       "scope": "Analyse and protect network access, configuration, alerts and vulnerabilities.",
-      "occupationId": "OCC-15-1212.00"
+      "jobPositionId": "OCC-15-1212.00"
     },
     {
       "id": "ROLE-FE0775936B97",
@@ -649,7 +649,7 @@
       "code": "SECURITY_ANALYST",
       "name": "Security Analyst",
       "scope": "Investigate security risks, controls, findings and incident evidence.",
-      "occupationId": "OCC-15-1212.00"
+      "jobPositionId": "OCC-15-1212.00"
     },
     {
       "id": "ROLE-410E150F21A9",
@@ -661,7 +661,7 @@
       "code": "SYSTEMS_ANALYST",
       "name": "Systems Analyst",
       "scope": "Investigate security risks, controls, findings and incident evidence.",
-      "occupationId": "OCC-15-1212.00"
+      "jobPositionId": "OCC-15-1212.00"
     }
   ],
   "Levels": [

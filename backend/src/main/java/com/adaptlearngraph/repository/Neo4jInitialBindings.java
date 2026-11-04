@@ -29,14 +29,14 @@ public final class Neo4jInitialBindings implements Bindings {
                 || !ref.businessRoleId().equals(com.adaptlearngraph.repository.InitialCatalogPort.choiceId(roleId,levelId)))throw new Failure(503,"INVALID_ROLE_BINDING",false);
         int maximum=maximumRows.getAsInt();if(maximum<1 || maximum==Integer.MAX_VALUE)throw new Failure(503,"CATALOG_READ_LIMIT_NOT_CONFIGURED",false);
         if("authored-role-level-member-v1".equals(ref.versions().get("binding"))) {
-            var p=com.adaptlearngraph.repository.AuthoredCatalogPort.scoped(authored.find(scope.organizationId(),ref.occupationId()).orElseThrow(()->new Failure(503,"CATALOG_BINDING_UNAVAILABLE",false)),scope.organizationId(),ref.occupationId());
+            var p=com.adaptlearngraph.repository.AuthoredCatalogPort.scoped(authored.find(scope.organizationId(),ref.jobPositionId()).orElseThrow(()->new Failure(503,"CATALOG_BINDING_UNAVAILABLE",false)),scope.organizationId(),ref.jobPositionId());
             if(!p.fingerprint().equals(ref.catalogFingerprint()) || !p.bindingRevision().equals(ref.versions().get("catalogBinding")))throw new Failure(409,"CATALOG_SOURCE_CHANGED",false);
             var role=p.roles().stream().filter(r->r.id().equals(roleId)).findFirst().orElseThrow(()->new Failure(404,"ROLE_NOT_AVAILABLE",false));
             var level=role.levels().stream().filter(l->l.id().equals(levelId)).findFirst().orElseThrow(()->new Failure(404,"LEVEL_NOT_AVAILABLE",false));
             if(level.skills().size()>maximum)throw new Failure(422,"CATALOG_REQUIREMENTS_LIMIT",false);
             var requirements=level.skills().stream().map(s->new RoleGap.Requirement(s.id(),s.name(),java.math.BigDecimal.valueOf(s.requiredScore()),true)).toList();
             references.assertCurrent(scope,ref);
-            return new Binding(ref.businessRoleId(),roleId,levelId,ref.occupationId(),role.name(),level.name(),ref.catalogFingerprint(),ref.releaseToken(),ref.versions(),requirements);
+            return new Binding(ref.businessRoleId(),roleId,levelId,ref.jobPositionId(),role.name(),level.name(),ref.catalogFingerprint(),ref.releaseToken(),ref.versions(),requirements);
         }
         try {
             var graph=sessions.open(scope,ref);
@@ -53,9 +53,8 @@ public final class Neo4jInitialBindings implements Bindings {
     // Neo4jClient: bound Role/Level rows with ownership subqueries, raw properties and elementIds validated field by field.
     private Binding read(Neo4jCypher.Statements tx,Scope scope,RoleReference ref,int maximum) {
         var rows=tx.list("""
-                MATCH (o:Occupation {id:$occupation})-[membership:HAS_ROLE]->(r:TargetRole {id:$role})
-                    -[roleLevel:HAS_LEVEL]->(l:Level {id:$level})
-                CALL { WITH r MATCH (parent:Occupation)-[e:HAS_ROLE]->(r)
+                MATCH (o:JobPosition {id:$jobPosition})-[membership:HAS_ROLE]->(r:TargetRole {id:$role})-[roleLevel:HAS_LEVEL]->(l:Level {id:$level})
+                CALL { WITH r MATCH (parent:JobPosition)-[e:HAS_ROLE]->(r)
                     WHERE parent.status='ACTIVE' AND e.status='ACTIVE'
                     WITH parent,e LIMIT 2
                     RETURN collect({id:parent.id,node:elementId(parent),edge:elementId(e)}) AS roleOwners }
@@ -70,13 +69,13 @@ public final class Neo4jInitialBindings implements Bindings {
                     elementId(o) AS oi,elementId(membership) AS mi,elementId(r) AS ri,
                     elementId(roleLevel) AS hi,elementId(l) AS li,elementId(q) AS qi,roleOwners,levelOwners
                 ORDER BY s.id,qi LIMIT $maximum
-                """,Map.of("occupation",ref.occupationId(),"role",ref.roleId(),"level",ref.levelId(),"maximum",maximum+1));
+                """,Map.of("jobPosition",ref.jobPositionId(),"role",ref.roleId(),"level",ref.levelId(),"maximum",maximum+1));
         if(rows.isEmpty())throw new Failure(422,"BOUND_ROLE_LEVEL_UNAVAILABLE",false);
         if(rows.size()>maximum)throw new Failure(422,"CATALOG_REQUIREMENTS_LIMIT",false);
         var first=rows.getFirst();String version=ref.versions().get("catalog");
         var root=List.of("oi","mi","ri","hi","li").stream().map(k->first.get(k).asString()).toList();
         if(first.get("roleOwners").size()!=1 || first.get("levelOwners").size()!=1
-                || !first.get("roleOwners").get(0).get("id").asString().equals(ref.occupationId())
+                || !first.get("roleOwners").get(0).get("id").asString().equals(ref.jobPositionId())
                 || !first.get("levelOwners").get(0).get("id").asString().equals(ref.roleId()))throw new Failure(503,"CATALOG_OWNERSHIP_AMBIGUOUS",false);
         if(!"ALL_MANDATORY_SKILLS".equals(text(first.get("l"),"attainmentRule")))throw new Failure(503,"ATTAINMENT_RULE_UNSUPPORTED",false);
         var requirements=new TreeMap<String,RoleGap.Requirement>();var edges=new HashSet<String>();
@@ -90,7 +89,7 @@ public final class Neo4jInitialBindings implements Bindings {
             if(!edges.add(text(q,"id")) || requirements.putIfAbsent(requirement.skillId(),requirement)!=null)throw new Failure(503,"DUPLICATE_REQUIREMENT",false);
         }
         if(requirements.values().stream().noneMatch(RoleGap.Requirement::mandatory))throw new Failure(422,"MANDATORY_REQUIREMENTS_MISSING",false);
-        return new Binding(ref.businessRoleId(),ref.roleId(),ref.levelId(),ref.occupationId(),text(first.get("r"),"name"),text(first.get("l"),"name"),
+        return new Binding(ref.businessRoleId(),ref.roleId(),ref.levelId(),ref.jobPositionId(),text(first.get("r"),"name"),text(first.get("l"),"name"),
                 ref.catalogFingerprint(),ref.releaseToken(),ref.versions(),List.copyOf(requirements.values()));
     }
 }

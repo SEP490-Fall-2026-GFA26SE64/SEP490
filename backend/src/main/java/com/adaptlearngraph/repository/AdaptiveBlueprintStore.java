@@ -15,7 +15,7 @@ import java.util.function.Supplier;
 public interface AdaptiveBlueprintStore {
     /** One read-only consistent snapshot, authorized/filtered before totals and pagination. */
     com.adaptlearngraph.services.AdaptiveBlueprintListing.Page list(
-            UUID organizationId, java.util.Set<String> occupations,
+            UUID organizationId, java.util.Set<String> jobPositions,
             com.adaptlearngraph.services.AdaptiveBlueprintListing.Query query);
     /**
      * Runs atomically, serializing scope coordination before child reads/writes.
@@ -36,8 +36,8 @@ public interface AdaptiveBlueprintStore {
     com.adaptlearngraph.services.AdaptiveBlueprintListing.Status versionStatus(Scope scope, VersionId versionId);
 
     /**
-     * Tenant + actor + key identity, including reuse across Occupations. Check receipt.scope and
-     * request hash before replay; another Occupation must conflict rather than create a new command.
+     * Tenant + actor + key identity, including reuse across JobPositions. Check receipt.scope and
+     * request hash before replay; another JobPosition must conflict rather than create a new command.
      * Lookup happens after actor authorization and before any mutation.
      */
     Optional<Receipt> findReceipt(UUID organizationId, UUID actorId, String idempotencyKey);
@@ -75,7 +75,7 @@ public interface AdaptiveBlueprintStore {
             Objects.requireNonNull(original, "original"); Objects.requireNonNull(working, "working");
             if (!original.scope().equals(working.scope()) || !original.blueprintId().equals(working.blueprintId())
                     || original.workingRevisionId().equals(working.workingRevisionId())
-                    || original.configuration().occupationBounds() != null || working.configuration().occupationBounds() == null
+                    || original.configuration().jobPositionBounds() != null || working.configuration().jobPositionBounds() == null
                     || working.revision() != 1) {
                 throw new IllegalArgumentException("Conversion requires an archived legacy Draft and a new common Draft");
             }

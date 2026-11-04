@@ -40,4 +40,5 @@ class ManyToManyCatalogContractTest {
         assertEquals(135, bank.items().size());
         assertEquals(OfficialCalibrationBankSource.PIN, bank.source());
     }
+
 }

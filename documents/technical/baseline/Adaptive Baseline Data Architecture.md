@@ -10,7 +10,7 @@ Java 21/Spring Boot 3.5 implements application/domain rules behind ports. Neo4j 
 
 [Diagram source](../../diagrams/adaptive-baseline-data-flow.puml)
 
-[Role-to-baseline contract](Role%20Selection%20and%20Occupation%20Baseline.md) defines visible flow. [Lifecycle/API contract](Occupation%20Baseline%20Lifecycle%20and%20Transition.md) defines exact revision/retry/lock semantics. [Schema catalog and drawings](../../diagrams/README.md) inventory actual storage; [synchronization review](../../testing/system/REQ-001-002-final-synchronization-review.md) records implementation limits separately from required behavior.
+[Role-to-baseline contract](Role%20Selection%20and%20Job Position%20Baseline.md) defines visible flow. [Lifecycle/API contract](Job Position%20Baseline%20Lifecycle%20and%20Transition.md) defines exact revision/retry/lock semantics. [Schema catalog and drawings](../../diagrams/README.md) inventory actual storage; [synchronization review](../../testing/system/REQ-001-002-final-synchronization-review.md) records implementation limits separately from required behavior.
 
 ## Version identities
 
@@ -18,7 +18,7 @@ Java 21/Spring Boot 3.5 implements application/domain rules behind ports. Neo4j 
 | --- | --- |
 | Ontology/catalog version and fingerprint | Catalog schema/release membership; Neo4j/source metadata; not a Flyway number |
 | Flyway V1–V26 | PostgreSQL structural evolution, source checksum and application status |
-| Blueprint ID + released version | Immutable Occupation assessment settings/scope/pins allocated at activation |
+| Blueprint ID + released version | Immutable Job Position assessment settings/scope/pins allocated at activation |
 | Draft ID + revision | Sole mutable working configuration; revision is not a release number |
 | Model/mapping/parameter set | Exact immutable numerical configuration/formulas/item tuples; scoped effective selection affects future versions only |
 | Selection/profile provenance | Employee's committed revision and applicable skill set/attempt/version; newer releases do not rewrite it |
@@ -27,7 +27,7 @@ No lookup uses a global latest version to replace a historical pin.
 
 ## Planned authored-source provenance — revision19
 
-The [authored consumer contract](../Workspace%20Adaptive%20Integration.md#authored-catalog-consumer-alignment--revision19) proposes source-format-aware projections, not a PostgreSQL catalog replica. Neo4j/source owner retains Role/Skill facts; a trusted versioned integration binding supplies missing Role→Occupation mapping through normal server configuration/owner port. This C1 creates no configuration values, table, SQL migration, backfill or graph mutation. Existing workspace_baseline_resource remains the exact org+Occupation bank/model/mapping tuple; its readiness is not catalog membership or publication authority.
+The [authored consumer contract](../Workspace%20Adaptive%20Integration.md#authored-catalog-consumer-alignment--revision19) proposes source-format-aware projections, not a PostgreSQL catalog replica. Neo4j/source owner retains Role/Skill facts; a trusted versioned integration binding supplies missing Role→Job Position mapping through normal server configuration/owner port. This C1 creates no configuration values, table, SQL migration, backfill or graph mutation. Existing workspace_baseline_resource remains the exact org+Job Position bank/model/mapping tuple; its readiness is not catalog membership or publication authority.
 
 New own snapshots may record a versioned `catalogSource` object containing `format`, `projectionHash`, `bindingRevision`, exact scoped binding identity and actual publication/version provenance. The proposed source object belongs to existing selection/Blueprint/frozen-input JSON; historical absent provenance selects the exact legacy reader/hash branch. In revised authored mode levelId is the exact stored member value scoped by roleId, never a synthetic graph-node FK/hash. Source format/projection provenance distinguishes its semantics from legacy real Level IDs. Retain original IDs, serialized receipts, profile/evidence/policy/technical pins and frozen approvals unchanged. Do not backfill old rows with today's mapping/hash or translate old Level IDs by label; missing expected provenance is integrity/unavailable, not permission to guess. Temporary server bindings are the user-selected integration source, not a new PostgreSQL catalog table.
 
@@ -35,17 +35,17 @@ Projection/schema versions differ from Flyway versions and owner Role.version. N
 
 ## Organization resource identity
 
-The shared workspace lineage stores `platform.workspace_baseline_resource` in V32, keyed by organization_id+graph_occupation_id and linked to the same-tenant Occupation reference. Its nullable question_bank_id/model_version_id/mastery_mapping_version_id form the configured resource tuple; null means unconfigured, not permission to select a default. The bank-owner guard checks the creator's organization. Technical eligibility must still validate the exact model/mapping/parameter provenance; the row and non-null pins alone do not certify readiness. Legacy V18–V26 version labels below refer to the retained baseline lineage, not equivalent workspace migration numbers or a live DB inspection.
+The shared workspace lineage stores `platform.workspace_baseline_resource` in V32, keyed by organization_id+graph_job position_id and linked to the same-tenant Job Position reference. Its nullable question_bank_id/model_version_id/mastery_mapping_version_id form the configured resource tuple; null means unconfigured, not permission to select a default. The bank-owner guard checks the creator's organization. Technical eligibility must still validate the exact model/mapping/parameter provenance; the row and non-null pins alone do not certify readiness. Legacy V18–V26 version labels below refer to the retained baseline lineage, not equivalent workspace migration numbers or a live DB inspection.
 
-Use the trusted organization and exact graph Occupation ID consistently from catalog grant through configuration, eligibility and new admission. Authorized Role discovery does not require the tuple to be assessment-ready or a Blueprint to be Active. Existing attempt/profile readers use their original scoped pins rather than today's tuple. This is the [organization integration contract](../Workspace%20Adaptive%20Integration.md#organization-scoped-source-and-operation-contract); no new table, migration, backfill or schema application is specified here.
+Use the trusted organization and exact graph Job Position ID consistently from catalog grant through configuration, eligibility and new admission. Authorized Role discovery does not require the tuple to be assessment-ready or a Blueprint to be Active. Existing attempt/profile readers use their original scoped pins rather than today's tuple. This is the [organization integration contract](../Workspace%20Adaptive%20Integration.md#organization-scoped-source-and-operation-contract); no new table, migration, backfill or schema application is specified here.
 
 ## Configuration and compatibility storage
 
 | Original V18 structure | Historical representation | Implemented V20-V22 compatibility |
 | --- | --- | --- |
-| baseline_blueprint | Stable organization+Occupation identity | Keep identity/cardinality and existing scope FK/registry |
-| baseline_adaptive_blueprint_working_revision | OPEN/FINALIZED/ABANDONED; configuration JSON requires exploration+roles | Dual shape reader/validator; new configuration contains name+one occupationBounds pair; only one OPEN per scope |
-| baseline_adaptive_blueprint_version | Immutable name/Occupation/fingerprint, exploration maximum/duration, technical pins | Add server-owned scope_policy and occupation_max_questions/occupation_time_limit_seconds; old values untouched |
+| baseline_blueprint | Stable organization+Job Position identity | Keep identity/cardinality and existing scope FK/registry |
+| baseline_adaptive_blueprint_working_revision | OPEN/FINALIZED/ABANDONED; configuration JSON requires exploration+roles | Dual shape reader/validator; new configuration contains name+one job positionBounds pair; only one OPEN per scope |
+| baseline_adaptive_blueprint_version | Immutable name/Job Position/fingerprint, exploration maximum/duration, technical pins | Add server-owned scope_policy and job position_max_questions/job position_time_limit_seconds; old values untouched |
 | baseline_adaptive_blueprint_role | Immutable active Role snapshot plus per-Role maximum/duration | Keep membership/provenance; new format has no Role assessment bounds |
 | baseline_adaptive_blueprint_skill | Role-to-skill snapshots, including shared skill memberships | Keep membership edges; derive one deduplicated skill set for new versions and validate shared ID/name/version consistency |
 | baseline_blueprint_activation | Serialized scope/current version/revision/actor/time | Keep sole pointer; expected replacement target validated under lock |
@@ -53,15 +53,15 @@ Use the trusted organization and exact graph Occupation ID consistently from cat
 | baseline_blueprint_command | Actor/tenant/key/request hash/outcome | Preserve legacy namespace/decoding; new commands/no-op/conversion receipts explicitly versioned |
 | baseline_blueprint_version_registry / baseline_blueprint_working_registry | Existing FIXED/ADAPTIVE version/working identity routing | Keep collision/history guarantees; ADAPTIVE alone does not distinguish old scope from new |
 
-V20 conditional full/legacy representation uses explicit FULL_OCCUPATION_V2 for new versions; null historical policy retains original meaning. Full-format common bounds are positive/non-null; old per-Role/exploration bounds remain only for historical readers. Parent/child integrity, version/working registries and immutable-history triggers must remain coherent. V21 constrains new names/durations; V22 adds explicit conversion receipts; V24 extends command operations with DISCARD. Draft discard closes history, never deletes released versions or learner evidence.
+V20 conditional full/legacy representation uses explicit FULL_JOB_POSITION_V2 for new versions; null historical policy retains original meaning. Full-format common bounds are positive/non-null; old per-Role/exploration bounds remain only for historical readers. Parent/child integrity, version/working registries and immutable-history triggers must remain coherent. V21 constrains new names/durations; V22 adds explicit conversion receipts; V24 extends command operations with DISCARD. Draft discard closes history, never deletes released versions or learner evidence.
 
 ## Selection and profile persistence
 
 | V25 structure | Actual fields and structural guarantees |
 | --- | --- |
-| employee_role_selection | UUID selection_id PK; organization_id; learner_id FK; string role_id/occupation_id; role_snapshot JSON object; positive target_revision; selected_at/ended_at; unique org+learner+revision; partial unique org+learner current row |
+| employee_role_selection | UUID selection_id PK; organization_id; learner_id FK; string role_id/job position_id; role_snapshot JSON object; positive target_revision; selected_at/ended_at; unique org+learner+revision; partial unique org+learner current row |
 | employee_role_selection_request | Org+learner+retry_key PK; request_hash; selection_id FK; response JSON object; created_at; immutable receipt trigger |
-| employee_occupation_profile | Org+learner+Occupation PK; unique attempt_id; tenant/learner/Occupation composite attempt FK; Blueprint/version FK; catalog_fingerprint; nonempty required_skills array/mastery object; initialized_at; immutable initialization trigger |
+| employee_job position_profile | Org+learner+Job Position PK; unique attempt_id; tenant/learner/Job Position composite attempt FK; Blueprint/version FK; catalog_fingerprint; nonempty required_skills array/mastery object; initialized_at; immutable initialization trigger |
 
 Required production behavior reads authoritative profiles and preserves original version/skill provenance. The current physical profile table represents initialization records; later-learning profile ownership and updates are separate integration work recorded in the synchronization review. JSON checks enforce shape/nonemptiness; domain validation must additionally check numeric range, required-skill equality and sufficient genuine evidence. Selection/receipt FKs alone do not prove organization membership: account/learner joins and trusted org/actor predicates are required at every boundary.
 
@@ -71,7 +71,7 @@ V18 model_version/mastery_mapping_version/irt_calibration_run/irt_parameter_set/
 
 | Actual V19 structure with V20 compatibility | Retained invariant / implemented extension |
 | --- | --- |
-| baseline_adaptive_attempt | Trusted organization/learner/Occupation, one IN_PROGRESS and one mastery-producing completion per Employee+Occupation, server time/revision, purpose/role provenance and replacement link. V20 adds immutable scope policy for new attempts; common bounds are compared against the pinned version |
+| baseline_adaptive_attempt | Trusted organization/learner/Job Position, one IN_PROGRESS and one mastery-producing completion per Employee+Job Position, server time/revision, purpose/role provenance and replacement link. V20 adds immutable scope policy for new attempts; common bounds are compared against the pinned version |
 | baseline_attempt_pool_item | Exact eligible item-version/skill/parameter-set pool stored at start; new full-union pool never reconstructed from current Catalog |
 | baseline_attempt_skill_state | Provisional theta/SE/information and minimum evidence for every pinned union skill; no unanswered prior becomes mastery |
 | baseline_attempt_item / baseline_attempt_response | Unique nonrepeating presented sequence, fixed option order, accepted server correctness and exact request identity; immutable audit preserved |
@@ -83,7 +83,7 @@ V26 preserves terminal timing/immutability checks while allowing INVALIDATED/MAN
 
 ## Transaction order and consistency
 
-1. Management serializes org+Occupation, checks authorization/replay/expected Draft ID+revision; unchanged Save preserves revision and returns immutable receipt. Preview is read-only.
+1. Management serializes org+Job Position, checks authorization/replay/expected Draft ID+revision; unchanged Save preserves revision and returns immutable receipt. Preview is read-only.
 2. Activate/Deactivate use exclusive scope coordination and activation locking; verify confirmed current pair/revisions, then atomically commit version/pointer/closed Draft/event/receipt. Counts never require learner/attempt locks.
 3. Selection/start first serialize the trusted learner and check replay/allowance/activity. New start alone holds shared scope/activation locks through exact pool/skill/first-item/receipt insertion. Missing activation rows require scope serialization; locking an absent row is insufficient.
 4. Catalog fingerprints/version rechecks detect cross-store drift; no distributed ACID claim. Conflict/dependency failure rolls back rather than trimming scope.

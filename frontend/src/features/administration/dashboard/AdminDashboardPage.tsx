@@ -54,7 +54,7 @@ const INITIAL_AUDIT_LOGS: AuditLogRecord[] = [
     targetEntity: 'User: Zoe Martinez (Employee -> Expert)',
     severity: 'security',
     ipAddress: '10.0.4.12',
-    details: 'Elevated domain authority for occupation "Software Developers (15-1252.00)".',
+    details: 'Elevated domain authority for job position "Software Developers (15-1252.00)".',
   },
   {
     id: 'AUD-8920',

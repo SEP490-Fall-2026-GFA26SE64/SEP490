@@ -1,11 +1,11 @@
 {
   "retrievedAt": "2026-10-12",
   "requestedVersion": "v1.2.1",
-  "sourceUrl": "https://ec.europa.eu/esco/api/resource/occupation?uri=http%3A%2F%2Fdata.europa.eu%2Fesco%2Foccupation%2F2079755f-d809-49e6-8037-4de6180e54c0&language=en&selectedVersion=v1.2.1",
+  "sourceUrl": "https://ec.europa.eu/esco/api/resource/job position?uri=http%3A%2F%2Fdata.europa.eu%2Fesco%2Fjob position%2F2079755f-d809-49e6-8037-4de6180e54c0&language=en&selectedVersion=v1.2.1",
   "data": {
-    "className": "Occupation",
-    "classId": "http://data.europa.eu/esco/model#Occupation",
-    "uri": "http://data.europa.eu/esco/occupation/2079755f-d809-49e6-8037-4de6180e54c0",
+    "className": "Job Position",
+    "classId": "http://data.europa.eu/esco/model#Job Position",
+    "uri": "http://data.europa.eu/esco/job position/2079755f-d809-49e6-8037-4de6180e54c0",
     "title": "data engineer",
     "referenceLanguage": [
       "en"
@@ -897,33 +897,33 @@
     ],
     "_links": {
       "self": {
-        "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/2079755f-d809-49e6-8037-4de6180e54c0&language=en",
-        "uri": "http://data.europa.eu/esco/occupation/2079755f-d809-49e6-8037-4de6180e54c0",
+        "href": "https://ec.europa.eu/esco/api/resource/job position?uri=http://data.europa.eu/esco/job position/2079755f-d809-49e6-8037-4de6180e54c0&language=en",
+        "uri": "http://data.europa.eu/esco/job position/2079755f-d809-49e6-8037-4de6180e54c0",
         "title": "data engineer"
       },
       "isTopConceptInScheme": [
         {
-          "href": "https://ec.europa.eu/esco/api/resource/taxonomy?uri=http://data.europa.eu/esco/concept-scheme/member-occupations&language=en",
-          "uri": "http://data.europa.eu/esco/concept-scheme/member-occupations",
-          "title": "ESCO member occupations"
+          "href": "https://ec.europa.eu/esco/api/resource/taxonomy?uri=http://data.europa.eu/esco/concept-scheme/member-job positions&language=en",
+          "uri": "http://data.europa.eu/esco/concept-scheme/member-job positions",
+          "title": "ESCO member job positions"
         }
       ],
       "isInScheme": [
         {
-          "href": "https://ec.europa.eu/esco/api/resource/taxonomy?uri=http://data.europa.eu/esco/concept-scheme/member-occupations&language=en",
-          "uri": "http://data.europa.eu/esco/concept-scheme/member-occupations",
-          "title": "ESCO member occupations"
+          "href": "https://ec.europa.eu/esco/api/resource/taxonomy?uri=http://data.europa.eu/esco/concept-scheme/member-job positions&language=en",
+          "uri": "http://data.europa.eu/esco/concept-scheme/member-job positions",
+          "title": "ESCO member job positions"
         },
         {
-          "href": "https://ec.europa.eu/esco/api/resource/taxonomy?uri=http://data.europa.eu/esco/concept-scheme/occupations&language=en",
-          "uri": "http://data.europa.eu/esco/concept-scheme/occupations",
-          "title": "ESCO Occupations"
+          "href": "https://ec.europa.eu/esco/api/resource/taxonomy?uri=http://data.europa.eu/esco/concept-scheme/job positions&language=en",
+          "uri": "http://data.europa.eu/esco/concept-scheme/job positions",
+          "title": "ESCO Job Positions"
         }
       ],
       "regulatedProfessionNote": {
         "href": "https://ec.europa.eu/esco/api/resource/concept?uri=http://data.europa.eu/esco/regulated-professions/unregulated&language=en",
         "uri": "http://data.europa.eu/esco/regulated-professions/unregulated",
-        "title": "To see if and how this occupation is regulated in EU Member States, EEA countries or Switzerland please consult the Regulated Professions Database of the Commission. Regulated Professions Database: http://ec.europa.eu/growth/single-market/services/free-movement-professionals/qualifications-recognition_en"
+        "title": "To see if and how this job position is regulated in EU Member States, EEA countries or Switzerland please consult the Regulated Professions Database of the Commission. Regulated Professions Database: http://ec.europa.eu/growth/single-market/services/free-movement-professionals/qualifications-recognition_en"
       },
       "broaderIscoGroup": [
         {
@@ -1125,8 +1125,8 @@
           "title": "data engineer",
           "_links": {
             "self": {
-              "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/2079755f-d809-49e6-8037-4de6180e54c0&language=en",
-              "uri": "http://data.europa.eu/esco/occupation/2079755f-d809-49e6-8037-4de6180e54c0"
+              "href": "https://ec.europa.eu/esco/api/resource/job position?uri=http://data.europa.eu/esco/job position/2079755f-d809-49e6-8037-4de6180e54c0&language=en",
+              "uri": "http://data.europa.eu/esco/job position/2079755f-d809-49e6-8037-4de6180e54c0"
             }
           },
           "parents": [
@@ -1137,7 +1137,7 @@
           "title": "Systems analysts",
           "_links": {
             "self": {
-              "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/isco/C2511&language=en",
+              "href": "https://ec.europa.eu/esco/api/resource/job position?uri=http://data.europa.eu/esco/isco/C2511&language=en",
               "uri": "http://data.europa.eu/esco/isco/C2511"
             }
           },
@@ -1149,7 +1149,7 @@
           "title": "Software and applications developers and analysts",
           "_links": {
             "self": {
-              "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/isco/C251&language=en",
+              "href": "https://ec.europa.eu/esco/api/resource/job position?uri=http://data.europa.eu/esco/isco/C251&language=en",
               "uri": "http://data.europa.eu/esco/isco/C251"
             }
           },
@@ -1161,7 +1161,7 @@
           "title": "Information and communications technology professionals",
           "_links": {
             "self": {
-              "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/isco/C25&language=en",
+              "href": "https://ec.europa.eu/esco/api/resource/job position?uri=http://data.europa.eu/esco/isco/C25&language=en",
               "uri": "http://data.europa.eu/esco/isco/C25"
             }
           },
@@ -1173,7 +1173,7 @@
           "title": "Professionals",
           "_links": {
             "self": {
-              "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/isco/C2&language=en",
+              "href": "https://ec.europa.eu/esco/api/resource/job position?uri=http://data.europa.eu/esco/isco/C2&language=en",
               "uri": "http://data.europa.eu/esco/isco/C2"
             }
           },

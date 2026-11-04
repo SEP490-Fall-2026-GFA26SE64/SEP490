@@ -36,13 +36,13 @@ test('REQ-013/016: real-stack authoring, shared edit history, review, pin preser
   await expect.poll(() => request.get('/api/v1/system/status').then(response => response.ok()).catch(() => false), { timeout: 90_000, intervals: [1000, 3000, 5000] }).toBeTruthy()
   await page.addInitScript(() => localStorage.setItem('app_language', 'en'))
   expect((await request.get(`${root}/session`)).status()).toBe(401)
-  const choices = await request.get(`${root}/catalog/Occupation`, { headers: headers('ld-reviewer') })
+  const choices = await request.get(`${root}/catalog/JobPosition`, { headers: headers('ld-reviewer') })
   expect(choices.ok(), await choices.text()).toBeTruthy()
-  const occupations = await choices.json() as { id: string; name: string }[]
-  expect(occupations.length).toBeGreaterThan(0)
-  const occupation = occupations[0]
+  const jobPositions = await choices.json() as { id: string; name: string }[]
+  expect(jobPositions.length).toBeGreaterThan(0)
+  const jobPosition = jobPositions[0]
   for (const expertId of ['expert-a', 'expert-b']) {
-    expect((await request.put(`${root}/grants`, { headers: headers('ld-reviewer'), data: { expertId: accountId(expertId), occupationId: occupation.id, active: true } })).status()).toBe(204)
+    expect((await request.put(`${root}/grants`, { headers: headers('ld-reviewer'), data: { expertId: accountId(expertId), jobPositionId: jobPosition.id, active: true } })).status()).toBe(204)
   }
   const catalog = await request.get(`${root}/catalog/MicroSkill`, { headers: headers('expert-a') })
   const skills = await catalog.json() as { id: string; name: string }[]
@@ -53,7 +53,7 @@ test('REQ-013/016: real-stack authoring, shared edit history, review, pin preser
   await page.getByRole('button', { name: 'Create content', exact: true }).click()
   const studio = page.getByRole('dialog', { name: 'Create content', exact: true })
   await studio.getByLabel('Title', { exact: true }).fill(title)
-  await studio.getByLabel('Occupations', { exact: true }).selectOption(occupation.id)
+  await studio.getByLabel('JobPositions', { exact: true }).selectOption(jobPosition.id)
   await studio.getByLabel('Lesson text (Markdown)', { exact: true }).fill('# A complete lesson\nPractice safely, verify the result and reflect on your work.\n[video](https://example.org/lesson.mp4)')
   await studio.getByRole('button', { name: 'Save content', exact: true }).click()
   await expect(studio).not.toBeVisible()
@@ -61,7 +61,7 @@ test('REQ-013/016: real-stack authoring, shared edit history, review, pin preser
   await page.getByRole('button', { name: 'Create module', exact: true }).click()
   const editor = page.getByRole('dialog', { name: 'Module editor' })
   await editor.getByLabel('Title', { exact: true }).fill(title)
-  await editor.getByLabel('Occupations (hold Ctrl / Cmd to select several)', { exact: true }).selectOption(occupation.id)
+  await editor.getByLabel('JobPositions (hold Ctrl / Cmd to select several)', { exact: true }).selectOption(jobPosition.id)
   await editor.getByLabel('Learning content', { exact: true }).selectOption({ label: title })
   await editor.getByLabel('Duration (minutes)', { exact: true }).fill('120')
   await editor.getByLabel('Package price (VND)', { exact: true }).fill('150000')
@@ -76,7 +76,7 @@ test('REQ-013/016: real-stack authoring, shared edit history, review, pin preser
   expect(doc.createdBy).toBe(accountId('expert-a'))
   const contents = await (await request.get(`${root}/contents`, { headers: headers('expert-a') })).json() as { id: string; title: string }[]
   const contentId = contents.find(c => c.title === title)!.id
-  const input = { title, moduleType: 'LESSON_AND_PRACTICE', contentId, duration: 120, price: 150000, occupationIds: [occupation.id], teachings: [{ skillId: skill.id, teachingFocus: 'PRIMARY', difficultyLevel: 'LOW' }] }
+  const input = { title, moduleType: 'LESSON_AND_PRACTICE', contentId, duration: 120, price: 150000, jobPositionIds: [jobPosition.id], teachings: [{ skillId: skill.id, teachingFocus: 'PRIMARY', difficultyLevel: 'LOW' }] }
   const invalid = await request.post(`${root}/modules`, { headers: headers('expert-a'), data: { ...input, teachings: [] } })
   expect(invalid.status()).toBe(400)
   let response = await request.put(`${root}/modules/${doc.id}`, { headers: headers('expert-b'), data: { expectedVersion: doc.lockVersion, value: { ...input, title: `${title} revised` } } })
@@ -138,14 +138,14 @@ test('REQ-013/016: real-stack authoring, shared edit history, review, pin preser
 test('REQ-013: cancel/delete an unused draft and submit/approve through the UI', async ({ page, request }) => {
   test.setTimeout(120_000)
   await page.addInitScript(() => localStorage.setItem('app_language', 'en'))
-  const occupations = await (await request.get(`${root}/catalog/Occupation`, { headers: headers('ld-reviewer') })).json() as { id: string }[]
-  const occupationId = occupations[0].id
-  await request.put(`${root}/grants`, { headers: headers('ld-reviewer'), data: { expertId: accountId('expert-a'), occupationId, active: true } })
+  const jobPositions = await (await request.get(`${root}/catalog/JobPosition`, { headers: headers('ld-reviewer') })).json() as { id: string }[]
+  const jobPositionId = jobPositions[0].id
+  await request.put(`${root}/grants`, { headers: headers('ld-reviewer'), data: { expertId: accountId('expert-a'), jobPositionId, active: true } })
   const skills = await (await request.get(`${root}/catalog/MicroSkill`, { headers: headers('expert-a') })).json() as { id: string }[]
-  const contentResponse = await request.post(`${root}/contents`, { headers: headers('expert-a'), data: { title: 'Draft lifecycle lesson', markdown: '# Practice\nVerify the result.', occupationIds: [occupationId] } })
+  const contentResponse = await request.post(`${root}/contents`, { headers: headers('expert-a'), data: { title: 'Draft lifecycle lesson', markdown: '# Practice\nVerify the result.', jobPositionIds: [jobPositionId] } })
   expect(contentResponse.status()).toBe(201)
   const content = await contentResponse.json() as { id: string }
-  const input = { title: `Draft to delete ${Date.now()}`, moduleType: 'LESSON_AND_PRACTICE', contentId: content.id, duration: 60, price: 100000, occupationIds: [occupationId], teachings: [{ skillId: skills[0].id, teachingFocus: 'PRIMARY', difficultyLevel: 'MEDIUM' }] }
+  const input = { title: `Draft to delete ${Date.now()}`, moduleType: 'LESSON_AND_PRACTICE', contentId: content.id, duration: 60, price: 100000, jobPositionIds: [jobPositionId], teachings: [{ skillId: skills[0].id, teachingFocus: 'PRIMARY', difficultyLevel: 'MEDIUM' }] }
   let response = await request.post(`${root}/modules`, { headers: headers('expert-a'), data: input })
   expect(response.status()).toBe(201); const draft = await response.json() as Doc
   await signIn(page, '/expert/modules', 'expert-a')

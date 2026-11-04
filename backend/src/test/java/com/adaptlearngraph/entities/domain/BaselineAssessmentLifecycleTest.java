@@ -91,7 +91,7 @@ class BaselineAssessmentLifecycleTest {
     private static SeriesSnapshot snapshot(
             UUID workingRevisionId, BlueprintVersionRef pendingBlueprint, OpenCandidate openCandidate) {
         AssessmentVersionRef active = new AssessmentVersionRef(ACTIVE_ID, 1, ACTIVE_BLUEPRINT);
-        return new SeriesSnapshot(new Scope(ORGANIZATION_ID, "occupation-engineering"), BLUEPRINT_ID, 11,
+        return new SeriesSnapshot(new Scope(ORGANIZATION_ID, "jobPosition-engineering"), BLUEPRINT_ID, 11,
                 workingRevisionId, pendingBlueprint, openCandidate, new ActiveRelease(active));
     }
 

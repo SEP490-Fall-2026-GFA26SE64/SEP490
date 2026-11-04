@@ -25,7 +25,7 @@ Before and after were measured back to back on the same machine. "Data statement
 | `/api/v1/platform-catalog` | 200 | 20.6 / 20.4 | 33.4 / 27.2 | 3 → 3 |
 | `/api/v1/module-management/modules` | 200 | 28.0 / 34.5 | 49.3 / 51.2 | 12 → 13 |
 | `/api/v1/module-management/module-list` | 200 | 55.6 / 59.3 | 76 / 93.9 | 14 → 15 |
-| `/api/v1/organizations/{org}/occupations` | 200 | 50.2 / 52.4 | 148.4 / 131.4 | 11 → 13 |
+| `/api/v1/organizations/{org}/job positions` | 200 | 50.2 / 52.4 | 148.4 / 131.4 | 11 → 13 |
 | `/api/v1/organizations/{org}/target-roles` | 200 | 40.6 / 41.7 | 59.3 / 87.1 | 11 → 12 |
 | `/api/v1/organizations/{org}/micro-skills` | 200 | 45.8 / 48.1 | 80.5 / 72.3 | 11 → 13 |
 | `/api/v1/organizations/{org}/modules` | 200 | 47.1 / 49.6 | 113 / 70.3 | 11 → 13 |

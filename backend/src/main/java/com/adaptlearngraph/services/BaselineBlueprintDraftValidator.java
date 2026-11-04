@@ -5,7 +5,7 @@ import com.adaptlearngraph.services.BaselineBlueprintUseCase.Code;
 import com.adaptlearngraph.services.BaselineBlueprintUseCase.Failure;
 import com.adaptlearngraph.repository.BaselineBlueprintStore.Actor;
 import com.adaptlearngraph.repository.BaselineBlueprintValidationPort;
-import com.adaptlearngraph.repository.BaselineBlueprintValidationPort.CatalogOccupation;
+import com.adaptlearngraph.repository.BaselineBlueprintValidationPort.CatalogJobPosition;
 import com.adaptlearngraph.repository.BaselineBlueprintValidationPort.CatalogRole;
 import com.adaptlearngraph.repository.BaselineBlueprintValidationPort.CatalogSkill;
 import com.adaptlearngraph.repository.BaselineBlueprintValidationPort.DependencyUnavailable;
@@ -35,24 +35,24 @@ public final class BaselineBlueprintDraftValidator {
 
     BlueprintDraft validateAndNormalize(Actor actor, BlueprintDraft draft) {
         try {
-            String occupationId = requireText(draft.occupationId(), "occupationId");
-            CatalogOccupation occupation = validation.findAvailableOccupation(actor.organizationId(), occupationId)
-                    .orElseThrow(() -> failure("Occupation is unavailable: " + occupationId));
-            List<RoleConfig> roles = normalizeRoles(draft.roles(), occupation);
+            String jobPositionId = requireText(draft.jobPositionId(), "jobPositionId");
+            CatalogJobPosition jobPosition = validation.findAvailableJobPosition(actor.organizationId(), jobPositionId)
+                    .orElseThrow(() -> failure("JobPosition is unavailable: " + jobPositionId));
+            List<RoleConfig> roles = normalizeRoles(draft.roles(), jobPosition);
             if (roles.stream().noneMatch(RoleConfig::participates)) {
-                throw invalid("At least one Occupation role must have questions");
+                throw invalid("At least one JobPosition role must have questions");
             }
             coverage.validate(roles);
-            return new BlueprintDraft(draft.name(), occupation.id(), occupation.name(), roles);
+            return new BlueprintDraft(draft.name(), jobPosition.id(), jobPosition.name(), roles);
         } catch (DependencyUnavailable failure) {
             throw new Failure(Code.DEPENDENCY_UNAVAILABLE, failure.getMessage());
         }
     }
 
-    private List<RoleConfig> normalizeRoles(List<RoleConfig> submitted, CatalogOccupation occupation) {
-        Map<String, CatalogRole> catalogRoles = uniqueById(occupation.roles(), CatalogRole::id, "catalog roles");
+    private List<RoleConfig> normalizeRoles(List<RoleConfig> submitted, CatalogJobPosition jobPosition) {
+        Map<String, CatalogRole> catalogRoles = uniqueById(jobPosition.roles(), CatalogRole::id, "catalog roles");
         if (catalogRoles.isEmpty()) {
-            throw failure("Occupation has no available roles: " + occupation.id());
+            throw failure("JobPosition has no available roles: " + jobPosition.id());
         }
         Map<String, RoleConfig> submittedRoles = uniqueById(submitted, RoleConfig::roleId, "submitted roles");
         requireExactIds("role", catalogRoles.keySet(), submittedRoles.keySet());

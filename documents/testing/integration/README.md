@@ -7,7 +7,7 @@
 
 ## Current Scope Alignment
 
-Follow [current test scope](../README.md#current-scope-alignment) and [Version 2 contracts](../../features/README.md). Test organization/department/occupation/role boundaries, purchased plan versions and seat accounting, recoverable provisioning, L&D publication/approval, many-to-many learning coverage, private-content metadata, direct guidance, independent evidence, ROI inputs and idempotent processing against disposable stores. Assert every agreed architectural field after round-trip; do not invent fields from preview datasets.
+Follow [current test scope](../README.md#current-scope-alignment) and [Version 2 contracts](../../features/README.md). Test organization/department/job position/role boundaries, purchased plan versions and seat accounting, recoverable provisioning, L&D publication/approval, many-to-many learning coverage, private-content metadata, direct guidance, independent evidence, ROI inputs and idempotent processing against disposable stores. Assert every agreed architectural field after round-trip; do not invent fields from preview datasets.
 Existing isolation fixtures and legacy actor checks remain baseline evidence; new registration, entitlement and access contracts need their own tests. PASSED labels below refer to prior contracts only.
 
 ## Existing Execution Guides and Historical Evidence

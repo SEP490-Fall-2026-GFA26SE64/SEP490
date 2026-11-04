@@ -20,8 +20,8 @@ public class BaselineAssessmentTransitionEntity {
     private UUID transitionId;
     @Column(name = "organization_id", nullable = false)
     private UUID organizationId;
-    @Column(name = "occupation_id", nullable = false)
-    private String occupationId;
+    @Column(name = "job_position_id", nullable = false)
+    private String jobPositionId;
     @Column(name = "series_revision", nullable = false)
     private Long seriesRevision;
     @Column(name = "transition", nullable = false)
@@ -57,10 +57,10 @@ public class BaselineAssessmentTransitionEntity {
     }
 
     @SuppressWarnings("java:S107")
-    public BaselineAssessmentTransitionEntity(UUID transitionId, UUID organizationId, String occupationId, Long seriesRevision, String transition, UUID actorId, Instant occurredAt, String reason, UUID previousWorkingRevisionId, UUID previousPendingBlueprintId, Integer previousPendingBlueprintVersion, UUID previousOpenAssessmentVersionId, UUID previousActiveAssessmentVersionId, UUID workingRevisionId, UUID pendingBlueprintId, Integer pendingBlueprintVersion, UUID openAssessmentVersionId, UUID activeAssessmentVersionId) {
+    public BaselineAssessmentTransitionEntity(UUID transitionId, UUID organizationId, String jobPositionId, Long seriesRevision, String transition, UUID actorId, Instant occurredAt, String reason, UUID previousWorkingRevisionId, UUID previousPendingBlueprintId, Integer previousPendingBlueprintVersion, UUID previousOpenAssessmentVersionId, UUID previousActiveAssessmentVersionId, UUID workingRevisionId, UUID pendingBlueprintId, Integer pendingBlueprintVersion, UUID openAssessmentVersionId, UUID activeAssessmentVersionId) {
         this.transitionId = transitionId;
         this.organizationId = organizationId;
-        this.occupationId = occupationId;
+        this.jobPositionId = jobPositionId;
         this.seriesRevision = seriesRevision;
         this.transition = transition;
         this.actorId = actorId;
@@ -80,7 +80,7 @@ public class BaselineAssessmentTransitionEntity {
 
     public UUID getTransitionId() { return transitionId; }
     public UUID getOrganizationId() { return organizationId; }
-    public String getOccupationId() { return occupationId; }
+    public String getJobPositionId() { return jobPositionId; }
     public Long getSeriesRevision() { return seriesRevision; }
     public String getTransition() { return transition; }
     public UUID getActorId() { return actorId; }

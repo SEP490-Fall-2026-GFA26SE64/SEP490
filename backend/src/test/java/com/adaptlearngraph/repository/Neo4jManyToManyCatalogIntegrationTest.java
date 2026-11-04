@@ -19,7 +19,7 @@ import static com.adaptlearngraph.dtos.OfficialQuestionBankManifest.*;
 class Neo4jManyToManyCatalogIntegrationTest {
     @Test void persistsEveryFieldAndSupportsBothTeachingDirectionsWithoutWeakeningSnapshotChecks() throws Exception {
         var data = JSON.readTree(Files.readAllBytes(Path.of("../documents/dataset/import/ontology_seed.json")));
-        var labels = Map.of("Occupations", "Occupation", "TargetRoles", "TargetRole", "Levels", "Level",
+        var labels = Map.of("JobPositions", "JobPosition", "TargetRoles", "TargetRole", "Levels", "Level",
                 "Competencies", "Competency", "MicroSkills", "MicroSkill", "LearningModules", "LearningModule");
         try (var neo4j = new Neo4jContainer<>("neo4j:5.26-community")
                 .withEnv("NEO4J_server_memory_heap_initial__size", "256m")
@@ -32,7 +32,7 @@ class Neo4jManyToManyCatalogIntegrationTest {
                     List<Map<String, Object>> rows = new ArrayList<>();
                     for (var node : data.path(entry.getKey())) {
                         Map<String, Object> props = JSON.convertValue(node, new TypeReference<>() {});
-                        props.keySet().removeAll(List.of("occupationId", "targetRoleId", "levelId"));
+                        props.keySet().removeAll(List.of("jobPositionId", "targetRoleId", "levelId"));
                         props.values().removeIf(Objects::isNull);
                         rows.add(props);
                     }

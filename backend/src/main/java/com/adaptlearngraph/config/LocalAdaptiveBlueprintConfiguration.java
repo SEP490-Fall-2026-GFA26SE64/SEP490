@@ -39,7 +39,7 @@ public class LocalAdaptiveBlueprintConfiguration {
     @Bean
     @ConditionalOnProperty(prefix = "assessment.baseline.adaptive.eligibility", name = "enabled", havingValue = "true")
     AdaptiveBaselineCatalogPort adaptiveBaselineCatalogPort(Neo4jCypher graph, ObjectMapper mapper, JpaAdaptiveBlueprintEligibilityAdapter.Properties settings) {
-        return new Neo4jAdaptiveBaselineCatalogAdapter(graph, mapper, settings.organizationId(), settings.occupationIds());
+        return new Neo4jAdaptiveBaselineCatalogAdapter(graph, mapper, settings.organizationId(), settings.jobPositionIds());
     }
 
     @Bean

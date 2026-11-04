@@ -1,6 +1,6 @@
 package com.adaptlearngraph.repository;
 
-import com.adaptlearngraph.repository.BaselineBlueprintValidationPort.CatalogOccupation;
+import com.adaptlearngraph.repository.BaselineBlueprintValidationPort.CatalogJobPosition;
 import com.adaptlearngraph.repository.BaselineBlueprintValidationPort.CatalogRole;
 import com.adaptlearngraph.repository.BaselineBlueprintValidationPort.CatalogSkill;
 import com.adaptlearngraph.repository.BaselineBlueprintValidationPort.CoverageKey;
@@ -15,7 +15,7 @@ import org.springframework.dao.DataAccessException;
 
 public final class BaselineBlueprintValidationAdapter implements BaselineBlueprintValidationPort {
     private final TargetRoleCatalogPort catalog;
-    private final BaselineOccupationCatalogPort occupationCatalog;
+    private final BaselineJobPositionCatalogPort jobPositionCatalog;
     private final ItemVersionJpaRepository items;
 
     public BaselineBlueprintValidationAdapter(TargetRoleCatalogPort catalog, ItemVersionJpaRepository items) {
@@ -24,10 +24,10 @@ public final class BaselineBlueprintValidationAdapter implements BaselineBluepri
 
     public BaselineBlueprintValidationAdapter(
             TargetRoleCatalogPort catalog,
-            BaselineOccupationCatalogPort occupationCatalog,
+            BaselineJobPositionCatalogPort jobPositionCatalog,
             ItemVersionJpaRepository items) {
         this.catalog = catalog;
-        this.occupationCatalog = occupationCatalog;
+        this.jobPositionCatalog = jobPositionCatalog;
         this.items = items;
     }
 
@@ -44,21 +44,21 @@ public final class BaselineBlueprintValidationAdapter implements BaselineBluepri
     }
 
     @Override
-    public Optional<CatalogOccupation> findAvailableOccupation(
-            String organizationId, String occupationId) {
-        if (occupationCatalog == null) {
-            throw new DependencyUnavailable("Occupation catalog is not enabled");
+    public Optional<CatalogJobPosition> findAvailableJobPosition(
+            String organizationId, String jobPositionId) {
+        if (jobPositionCatalog == null) {
+            throw new DependencyUnavailable("JobPosition catalog is not enabled");
         }
         try {
-            return occupationCatalog.findAvailableOccupation(organizationId, occupationId)
-                    .map(occupation -> new CatalogOccupation(
-                            occupation.id(), occupation.name(), occupation.roles().stream()
+            return jobPositionCatalog.findAvailableJobPosition(organizationId, jobPositionId)
+                    .map(jobPosition -> new CatalogJobPosition(
+                            jobPosition.id(), jobPosition.name(), jobPosition.roles().stream()
                                     .map(role -> new CatalogRole(
                                             role.id(), role.name(), role.skills().stream()
                                                     .map(skill -> new CatalogSkill(skill.id(), skill.name()))
                                                     .toList()))
                                     .toList()));
-        } catch (BaselineOccupationCatalogPort.DependencyUnavailable failure) {
+        } catch (BaselineJobPositionCatalogPort.DependencyUnavailable failure) {
             throw new DependencyUnavailable(failure.getMessage(), failure);
         }
     }

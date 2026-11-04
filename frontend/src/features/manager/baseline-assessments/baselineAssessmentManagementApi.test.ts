@@ -5,7 +5,7 @@ import {
   saveBlueprintWorkingRevision,
   finalizeBlueprintWorkingRevision,
   generateAssessmentCandidate,
-  listBaselineAssessmentOccupations,
+  listBaselineAssessmentJobPositions,
   revealProtectedAssessmentAnswers,
 } from './baselineAssessmentManagementApi'
 
@@ -15,8 +15,8 @@ describe('baselineAssessmentManagementApi', () => {
   it('encodes landing filters and parses the management read model', async () => {
     const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(response({
       items: [{
-        occupationId: 'occ/java',
-        occupationName: 'Java Engineer',
+        jobPositionId: 'occ/java',
+        jobPositionName: 'Java Engineer',
         latestBlueprintVersion: 2,
         pendingStage: 'ASSESSMENT_DRAFT',
         openAssessmentVersion: 3,
@@ -29,11 +29,11 @@ describe('baselineAssessmentManagementApi', () => {
       total: 1,
     }))
 
-    const result = await listBaselineAssessmentOccupations({
+    const result = await listBaselineAssessmentJobPositions({
       search: ' Java ', status: 'ASSESSMENT_DRAFT', sort: 'name_desc', size: 10,
     })
 
-    expect(result.items[0]).toMatchObject({ occupationId: 'occ/java', activeAssessmentVersion: 2 })
+    expect(result.items[0]).toMatchObject({ jobPositionId: 'occ/java', activeAssessmentVersion: 2 })
     expect(fetchMock).toHaveBeenCalledWith(
       '/api/v1/ld/baseline-assessments?search=Java&status=ASSESSMENT_DRAFT&sort=name_desc&page=0&size=10',
       expect.objectContaining({ method: 'GET', credentials: 'same-origin' }),
@@ -63,7 +63,7 @@ describe('baselineAssessmentManagementApi', () => {
       { code: 'STALE_ASSESSMENT_REVISION', message: 'Reload the draft' }, 409,
     ))
 
-    await expect(listBaselineAssessmentOccupations()).rejects.toMatchObject({
+    await expect(listBaselineAssessmentJobPositions()).rejects.toMatchObject({
       name: 'BaselineAssessmentManagementApiError',
       status: 409,
       code: 'STALE_ASSESSMENT_REVISION',
@@ -90,7 +90,7 @@ describe('baselineAssessmentManagementApi', () => {
     const fetchMock = vi.spyOn(globalThis, 'fetch')
       .mockResolvedValueOnce(response({ ...current, revision: 3 }))
       .mockResolvedValueOnce(response({ blueprintId: 'blueprint-1', version: 1,
-        name: current.draft.name, occupationId: 'occ/java', occupationNameSnapshot: 'Java Engineer',
+        name: current.draft.name, jobPositionId: 'occ/java', jobPositionNameSnapshot: 'Java Engineer',
         createdAt: '2026-10-19T08:01:00Z', roles: current.draft.roles }))
       .mockResolvedValueOnce(response({ assessmentVersionId: 'assessment-1', assessmentId: 'series-1',
         version: 1, title: 'Java assessment', blueprintId: 'blueprint-1', blueprintVersion: 1,
@@ -101,9 +101,9 @@ describe('baselineAssessmentManagementApi', () => {
     await generateAssessmentCandidate('occ/java', 'generate-key')
     const [, save] = fetchMock.mock.calls[0]
     expect(fetchMock.mock.calls.map(([url]) => url)).toEqual([
-      '/api/v1/ld/baseline-assessments/occupations/occ%2Fjava/blueprint-working-revisions/working-1',
-      '/api/v1/ld/baseline-assessments/occupations/occ%2Fjava/blueprint-working-revisions/working-1/finalize',
-      '/api/v1/ld/baseline-assessments/occupations/occ%2Fjava/assessment-drafts',
+      '/api/v1/ld/baseline-assessments/job-positions/occ%2Fjava/blueprint-working-revisions/working-1',
+      '/api/v1/ld/baseline-assessments/job-positions/occ%2Fjava/blueprint-working-revisions/working-1/finalize',
+      '/api/v1/ld/baseline-assessments/job-positions/occ%2Fjava/assessment-drafts',
     ])
     expect(save).toEqual(expect.objectContaining({ method: 'PUT',
       headers: expect.objectContaining({ 'Idempotency-Key': 'save-key' }) }))
@@ -118,11 +118,11 @@ describe('baselineAssessmentManagementApi', () => {
 
 function workspace() {
   return {
-    occupationId: 'occ/java', occupationName: 'Java Engineer',
+    jobPositionId: 'occ/java', jobPositionName: 'Java Engineer',
     workingRevision: {
       workingRevisionId: 'working-1', blueprintId: 'blueprint-1', baseVersion: null,
       revision: 2, updatedAt: '2026-10-19T08:00:00Z',
-      draft: { name: 'Java baseline', occupationId: 'occ/java', occupationNameSnapshot: 'Java Engineer', roles: [{
+      draft: { name: 'Java baseline', jobPositionId: 'occ/java', jobPositionNameSnapshot: 'Java Engineer', roles: [{
         roleId: 'role-1', roleNameSnapshot: 'Developer', enabled: true,
         easyScoreWeight: 0.2, mediumScoreWeight: 0.3, hardScoreWeight: 0.5,
         skills: [{ microSkillId: 'skill-1', microSkillNameSnapshot: 'Java Core',

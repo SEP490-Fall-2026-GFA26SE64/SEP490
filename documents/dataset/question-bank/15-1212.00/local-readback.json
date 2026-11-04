@@ -178,10 +178,10 @@
         ]
       },
       {
-        "name": "ontology_v08_occupation_id",
+        "name": "ontology_v08_job position_id",
         "type": "UNIQUENESS",
         "labelsOrTypes": [
-          "Occupation"
+          "Job Position"
         ],
         "properties": [
           "id"

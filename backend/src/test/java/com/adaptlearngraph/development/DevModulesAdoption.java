@@ -48,9 +48,9 @@ public final class DevModulesAdoption {
                 history.add(new Event(0, doc.current().number(), "HISTORY_RESTORED", manager, java.time.Instant.now().toString(), "Retained the original pending intake assignment history from the source snapshot"));
                 var intakeHistory = new ArrayList<>(old.history()); intakeHistory.addAll(doc.intake().history());
                 Intake current = doc.intake();
-                Intake intake = new Intake(current.moduleId(), organization, current.occupationIds(), current.assignedBy(), current.assignedAt(), current.source(), current.acceptedBy(), current.acceptedAt(), resequence(intakeHistory), current.expertId());
+                Intake intake = new Intake(current.moduleId(), organization, current.jobPositionIds(), current.assignedBy(), current.assignedAt(), current.source(), current.acceptedBy(), current.acceptedAt(), resequence(intakeHistory), current.expertId());
                 port.saveIntake(intake);
-                port.save(new Document(doc.id(), organization, doc.occupationIds(), doc.createdBy(), doc.createdAt(), doc.lockVersion()+1, doc.everReleased(), doc.archived(), doc.releasedRevision(), doc.revisions(), resequence(history), intake));
+                port.save(new Document(doc.id(), organization, doc.jobPositionIds(), doc.createdBy(), doc.createdAt(), doc.lockVersion()+1, doc.everReleased(), doc.archived(), doc.releasedRevision(), doc.revisions(), resequence(history), intake));
             } catch (Exception e) { throw new IllegalStateException("Could not retain original pending assignment history", e); }
         }
     }
@@ -88,17 +88,17 @@ public final class DevModulesAdoption {
                         var history = new ArrayList<>(old.history());
                         history.add(new Event(history.size()+1, old.current().number(), "OWNER_ASSIGNED", manager, now,
                                 "Local migration: responsible Expert assigned to expert@example.test; previous createdBy=" + old.createdBy() + "; earlier revisions and decisions preserved"));
-                        Intake intake = old.intake() == null ? null : new Intake(old.id(), org, old.intake().occupationIds(), old.intake().assignedBy(), old.intake().assignedAt(), old.intake().source(), old.intake().acceptedBy(), old.intake().acceptedAt(), old.intake().history(), expert);
-                        Document doc = new Document(old.id(), org, old.occupationIds(), expert, old.createdAt(), old.lockVersion()+1,
+                        Intake intake = old.intake() == null ? null : new Intake(old.id(), org, old.intake().jobPositionIds(), old.intake().assignedBy(), old.intake().assignedAt(), old.intake().source(), old.intake().acceptedBy(), old.intake().acceptedAt(), old.intake().history(), expert);
+                        Document doc = new Document(old.id(), org, old.jobPositionIds(), expert, old.createdAt(), old.lockVersion()+1,
                                 old.everReleased(), old.archived(), old.releasedRevision(), old.revisions(), history, intake);
                         port.save(doc); if (intake != null) port.saveIntake(intake);
                     } catch (Exception e) { throw new IllegalStateException("Invalid saved module", e); }
                 }
             });
             actor(manager, org, "LD_MANAGER");
-            for (Choice occupation : port.catalog("Occupation")) service.grant(expert, occupation.id(), true);
-            List<String> occupations = port.catalog("Occupation").stream().map(Choice::id).toList();
-            if (occupations.isEmpty()) throw new IllegalStateException("Source catalog has no Occupation");
+            for (Choice jobPosition : port.catalog("JobPosition")) service.grant(expert, jobPosition.id(), true);
+            List<String> jobPositions = port.catalog("JobPosition").stream().map(Choice::id).toList();
+            if (jobPositions.isEmpty()) throw new IllegalStateException("Source catalog has no JobPosition");
             // All source catalog modules are handed to the selected Expert, never auto-approved or graph-rewritten.
             int imported = 0;
             for (CatalogModule module : port.graphModules(org)) {
@@ -106,7 +106,7 @@ public final class DevModulesAdoption {
                 actor(manager, org, "LD_MANAGER");
                 List<String> relevant;
                 try (var session = driver.session()) {
-                    relevant = session.run("MATCH (m:LearningModule {id:$id})-[:TEACHES]->(:MicroSkill)<-[:REQUIRES_SKILL]-(:Level)<-[:HAS_LEVEL]-(:TargetRole)<-[:HAS_ROLE]-(o:Occupation) RETURN DISTINCT o.id AS id ORDER BY id", Map.of("id", module.metadata().id())).list(row -> row.get("id").asString());
+                    relevant = session.run("MATCH (m:LearningModule {id:$id})-[:TEACHES]->(:MicroSkill)<-[:REQUIRES_SKILL]-(:Level)<-[:HAS_LEVEL]-(:TargetRole)<-[:HAS_ROLE]-(o:JobPosition) RETURN DISTINCT o.id AS id ORDER BY id", Map.of("id", module.metadata().id())).list(row -> row.get("id").asString());
                 }
                 if (relevant.isEmpty()) throw new IllegalStateException("Cannot infer catalog scope for " + module.metadata().id());
                 service.assignIntake(module.metadata().id(), relevant, null, expert);

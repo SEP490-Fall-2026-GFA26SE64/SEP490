@@ -45,7 +45,7 @@ class AdaptiveAttemptControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(header().string("Cache-Control", "no-store"))
                 .andExpect(jsonPath("$.id").value(ATTEMPT.toString()))
-                .andExpect(jsonPath("$.assessmentScope").value("OCCUPATION"));
+                .andExpect(jsonPath("$.assessmentScope").value("JOB_POSITION"));
     }
 
     @Test
@@ -106,7 +106,7 @@ class AdaptiveAttemptControllerTest {
 
     private static View view() {
         Instant now = Instant.parse("2026-10-20T08:00:00Z");
-        return new View(ATTEMPT, "occupation-java", "Java Engineer", "BASELINE", "role-java", "IN_PROGRESS", 1, now,
-                now.plusSeconds(3600), now, false, 20, 0, List.of(), AssessmentScope.OCCUPATION);
+        return new View(ATTEMPT, "jobPosition-java", "Java Engineer", "BASELINE", "role-java", "IN_PROGRESS", 1, now,
+                now.plusSeconds(3600), now, false, 20, 0, List.of(), AssessmentScope.JOB_POSITION);
     }
 }

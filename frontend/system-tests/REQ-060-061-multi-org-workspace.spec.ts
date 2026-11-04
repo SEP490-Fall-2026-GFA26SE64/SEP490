@@ -121,11 +121,11 @@ for (const viewport of VIEWPORTS) {
     await technova.page.goto('/workspace/no-such-workspace/admin/users')
     await expect(technova.page.getByRole('heading', { name: 'Workspace not found' })).toBeVisible()
 
-    for (const path of [`/api/v1/organizations/${tenantB.organizationId}/subscription`, `/api/v1/organizations/${tenantB.organizationId}/occupations`,
+    for (const path of [`/api/v1/organizations/${tenantB.organizationId}/subscription`, `/api/v1/organizations/${tenantB.organizationId}/job-positions`,
       `/api/v1/organizations/${tenantB.organizationId}/micro-skills`]) {
       expect((await technova.page.request.get(path)).status(), path).toBe(403)
     }
-    expect((await technova.page.request.get('/api/v1/organizations/comp-technova/occupations')).status()).toBe(400)
+    expect((await technova.page.request.get('/api/v1/organizations/comp-technova/job-positions')).status()).toBe(400)
 
     const b = await signIn(browser, tenantB, viewport)
     const seenB = watch(b.page)
@@ -168,7 +168,7 @@ test('a signed-out deep link signs in and returns only to the same workspace pat
 })
 
 for (const [email, home] of [['admin@technova.com', '/admin/subscription'], ['expert@technova.com', '/expert/target-roles'],
-  ['manager@technova.com', '/ld-manager/occupations'], ['employee@technova.com', '/employee/overview']] as const) {
+  ['manager@technova.com', '/ld-manager/job-positions'], ['employee@technova.com', '/employee/overview']] as const) {
   test(`${email} signs in to its workspace home and every navigation link stays in the workspace`, async ({ browser }) => {
     expect(slugA, 'the isolation test resolves the seeded workspace slug').toBeTruthy()
     const context = await browser.newContext({ baseURL: BASE })

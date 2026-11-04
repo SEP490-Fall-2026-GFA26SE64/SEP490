@@ -10,7 +10,7 @@ Playwright `frontend/system-tests/REQ-037-dev-accounts.spec.ts`, Chromium, one w
 |---|---|
 | Platform Administrator | Login → Continue → `/platform-admin/subscriptions`; actual plan configuration and Sign out visible. Passed. |
 | Organization Administrator | Login → Set up authenticator; Continue unavailable before MFA. Passed. |
-| L&D Manager | Login → Continue → `/ld-manager/occupations`; account menu visible. Passed. |
+| L&D Manager | Login → Continue → `/ld-manager/job positions`; account menu visible. Passed. |
 | Expert | Login → Continue → `/expert/target-roles`; account menu visible. Passed. |
 | Employee | Login → Continue → `/employee/overview`; account menu visible. Passed. |
 
@@ -32,4 +32,4 @@ Prerequisites: dedicated Compose running, frontend dev server on28188, private c
 
 ## Boundaries
 
-Credentials and encryption keys are private, outside Git. Email verification and subscription activation are synthetic development fixtures; no real email/payment. New Neo4j graph is empty: legacy modules/skills/question banks are not transferred by account seeding. Employee occupation reference is an activation fixture, not an ontology import. Organization Admin MFA still needs first-time user enrollment. No source schema or production auth policy changed; old28088 runtime/database remain separate. No commit or deployment to the old environment.
+Credentials and encryption keys are private, outside Git. Email verification and subscription activation are synthetic development fixtures; no real email/payment. New Neo4j graph is empty: legacy modules/skills/question banks are not transferred by account seeding. Employee job position reference is an activation fixture, not an ontology import. Organization Admin MFA still needs first-time user enrollment. No source schema or production auth policy changed; old28088 runtime/database remain separate. No commit or deployment to the old environment.

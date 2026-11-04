@@ -364,7 +364,7 @@ export const RiasecAssessmentPage: React.FC = () => {
                   <span>AI Recommended Target Roles (Calibrated to {hollandCode})</span>
                 </CardTitle>
                 <CardDescription className="text-xs text-muted-foreground">
-                  Roles in your organization that maximize your occupational interest strengths and problem-solving drivers.
+                  Roles in your organization that maximize your jobPositional interest strengths and problem-solving drivers.
                 </CardDescription>
               </CardHeader>
               <CardContent className="p-6">
@@ -470,7 +470,7 @@ export const RiasecAssessmentPage: React.FC = () => {
                   </span>
                 </div>
                 <p className="text-xs text-muted-foreground leading-relaxed">
-                  Evaluates your engagement with {currentQuestion.dimensionName.toLowerCase()} activities to determine your occupational interest profile.
+                  Evaluates your engagement with {currentQuestion.dimensionName.toLowerCase()} activities to determine your jobPositional interest profile.
                 </p>
               </div>
             </div>
@@ -490,7 +490,7 @@ export const RiasecAssessmentPage: React.FC = () => {
                         </Badge>
                       </div>
                       <h3 className="text-sm font-bold text-foreground mt-1">
-                        Occupational Interest Assessment Statement
+                        JobPositional Interest Assessment Statement
                       </h3>
                     </div>
                     <div className="text-xs text-muted-foreground font-mono">

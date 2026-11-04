@@ -20,11 +20,11 @@ public final class InitialPathwayPorts {
         public Selection(UUID id,long revision,String roleId){this(id,revision,roleId,null);}
         public Selection { Objects.requireNonNull(id); RoleGap.text(roleId); if(levelId!=null)RoleGap.text(levelId); if (revision < 1) throw new IllegalArgumentException("Invalid selection revision"); }
     }
-    public record Binding(String businessRoleId, String roleId, String levelId, String occupationId,
+    public record Binding(String businessRoleId, String roleId, String levelId, String jobPositionId,
                           String roleName, String levelName, String catalogFingerprint,
                           String releaseToken, Map<String,String> versions, List<RoleGap.Requirement> requirements) {
         public Binding {
-            for (String value : List.of(businessRoleId,roleId,levelId,occupationId,roleName,levelName,catalogFingerprint,releaseToken)) RoleGap.text(value);
+            for (String value : List.of(businessRoleId,roleId,levelId,jobPositionId,roleName,levelName,catalogFingerprint,releaseToken)) RoleGap.text(value);
             versions = Map.copyOf(versions); requirements = List.copyOf(requirements);
             for (String key : List.of("catalog","binding","publication","requirements","compatibility")) RoleGap.text(versions.get(key));
         }
@@ -49,7 +49,7 @@ public final class InitialPathwayPorts {
         /** Must verify authoritative owner token, not infer freshness from a PostgreSQL learner lock. */
         void assertCurrent(Scope scope, Binding binding);
     }
-    public interface Profiles { Profile require(Scope scope, String occupationId); }
+    public interface Profiles { Profile require(Scope scope, String jobPositionId); }
     public interface Semantics {
         Compatibility resolve(Binding binding, Profile profile);
         /** Trusted request/stored scope for workspace adapters; legacy implementations keep their exact behavior. */

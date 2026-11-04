@@ -31,8 +31,8 @@ export interface TargetRoleModel {
   skillTargets: SkillTargetConfig[]
   levelCompetencies?: Record<string, string[]>
   activeEnrollments: number
-  occupationCode?: string
-  occupationTitle?: string
+  jobPositionCode?: string
+  jobPositionTitle?: string
   scope?: string
   levels?: string[]
   levelThresholds?: RoleLevelThresholds
@@ -40,7 +40,7 @@ export interface TargetRoleModel {
   updatedAt: string
 }
 
-export interface OnetOccupation {
+export interface JobPosition {
   code: string // e.g. '15-1252.00'
   name: string // e.g. 'Software Developers'
   description: string
@@ -49,12 +49,15 @@ export interface OnetOccupation {
   assignedExpertIds: string[]
 }
 
+/** Backward compatibility alias */
+export type OnetJobPosition = JobPosition;
+
 export const EXPERT_SARAH_CHEN_ID = 'a0000000-0000-0000-0000-000000000002'
 export const EXPERT_MARCUS_VANCE_ID = 'a0000000-0000-0000-0000-000000000005'
 export const EXPERT_ALEX_RIVERA_ID = 'a0000000-0000-0000-0000-000000000006'
 export const EXPERT_LINH_NGUYEN_ID = 'a0000000-0000-0000-0000-000000000007'
 
-export const ONET_OCCUPATIONS: OnetOccupation[] = [
+export const JOB_POSITIONS: JobPosition[] = [
   {
     code: '15-1252.00',
     name: 'Software Developers',
@@ -97,6 +100,9 @@ export const ONET_OCCUPATIONS: OnetOccupation[] = [
   },
 ]
 
+/** Backward compatibility alias */
+export const ONET_JOB_POSITIONS = JOB_POSITIONS;
+
 export interface OntologyLevel {
   code: 'J' | 'M' | 'S'
   name: 'Junior' | 'Middle' | 'Senior'
@@ -111,18 +117,18 @@ export const ONTOLOGY_LEVELS: OntologyLevel[] = [
   { code: 'S', name: 'Senior', rank: 3, threshold: 0.90, context: 'Complex solution architecture, system review, and governance' },
 ]
 
-export function resolveOccupationForRole(
+export function resolveJobPositionForRole(
   role: {
     code?: string
     title?: string
     familyCode?: string
-    occupationCode?: string
+    jobPositionCode?: string
   },
   organizationId?: string
-): OnetOccupation {
-  const occupations = getAvailableOccupations(organizationId)
-  if (role.occupationCode) {
-    const found = occupations.find((o) => o.code === role.occupationCode)
+): JobPosition {
+  const jobPositions = getAvailableJobPositions(organizationId)
+  if (role.jobPositionCode) {
+    const found = jobPositions.find((o) => o.code === role.jobPositionCode)
     if (found) return found
   }
 
@@ -132,31 +138,31 @@ export function resolveOccupationForRole(
 
   // Match by keyword in title, code, or family
   if (title.includes('security') || title.includes('cyber') || title.includes('sec') || code.includes('SEC') || family.includes('SEC')) {
-    const match = occupations.find((o) => o.code === '15-1212.00')
+    const match = jobPositions.find((o) => o.code === '15-1212.00')
     if (match) return match
   }
   if (title.includes('test') || title.includes('quality') || title.includes('qa') || code.includes('QA') || family.includes('QA')) {
-    const match = occupations.find((o) => o.code === '15-1253.00')
+    const match = jobPositions.find((o) => o.code === '15-1253.00')
     if (match) return match
   }
   if (title.includes('data') || title.includes('database') || title.includes('analytics') || code.includes('DATA') || family.includes('DATA')) {
-    const match = occupations.find((o) => o.code === '15-1243.00')
+    const match = jobPositions.find((o) => o.code === '15-1243.00')
     if (match) return match
   }
   if (title.includes('system') || title.includes('network') || title.includes('cloud') || title.includes('infrastructure') || (title.includes('architect') && !title.includes('software')) || code.includes('SYS') || code.includes('INFRA')) {
-    const match = occupations.find((o) => o.code === '15-1299.08')
+    const match = jobPositions.find((o) => o.code === '15-1299.08')
     if (match) return match
   }
 
-  const defaultMatch = occupations.find((o) => o.code === '15-1252.00')
+  const defaultMatch = jobPositions.find((o) => o.code === '15-1252.00')
   if (defaultMatch) return defaultMatch
 
-  if (occupations.length > 0) return occupations[0]
+  if (jobPositions.length > 0) return jobPositions[0]
 
   return {
-    code: role.occupationCode || 'GEN-0000.00',
-    name: 'Unassigned Occupation',
-    description: 'No occupation aligned yet for this role.',
+    code: role.jobPositionCode || 'GEN-0000.00',
+    name: 'Unassigned Job Position',
+    description: 'No job position aligned yet for this role.',
     jobZone: 4,
     profiles: ['DEV'],
     assignedExpertIds: [],
@@ -422,8 +428,8 @@ export function findEligibleExpert(id?: string | null, organizationId?: string):
   return ELIGIBLE_EXPERTS.find((e) => normalizeExpertId(e.id) === normalized);
 }
 
-export function getAvailableOccupations(organizationId?: string): OnetOccupation[] {
-  const codeMap = new Map<string, OnetOccupation>();
+export function getAvailableJobPositions(organizationId?: string): JobPosition[] {
+  const codeMap = new Map<string, JobPosition>();
 
   const effectiveOrg = organizationId && organizationId !== 'comp-technova' && organizationId !== 'default-org'
     ? organizationId
@@ -432,34 +438,53 @@ export function getAvailableOccupations(organizationId?: string): OnetOccupation
   const isTechnova = effectiveOrg === 'e0000000-0000-0000-0000-000000000001' || effectiveOrg === 'comp-technova' || effectiveOrg === 'default-org';
 
   if (isTechnova) {
-    for (const o of ONET_OCCUPATIONS) {
+    for (const o of JOB_POSITIONS) {
       codeMap.set(o.code, { ...o });
     }
   }
 
   try {
     if (typeof localStorage !== 'undefined') {
-      const raw = localStorage.getItem('adaptlearn_occupations_v2_' + effectiveOrg) ||
-        (isTechnova ? localStorage.getItem('adaptlearn_occupations_v2_e0000000-0000-0000-0000-000000000001') : null) ||
-        (isTechnova ? localStorage.getItem('adaptlearn_occupations_v2_comp-technova') : null);
-      if (raw) {
-        const stored = JSON.parse(raw);
-        if (Array.isArray(stored)) {
-          for (const item of stored) {
-            if (item.code) {
-              const existing = codeMap.get(item.code);
-              codeMap.set(item.code, {
-                code: item.code,
-                name: item.name || existing?.name || item.code,
-                description: item.description || existing?.description || '',
-                jobZone: item.jobZone || existing?.jobZone || 4,
-                profiles: existing?.profiles || ['DEV'],
-                assignedExpertIds: Array.isArray(item.assignedExperts)
-                  ? item.assignedExperts.map((ae: any) => normalizeExpertId(ae.id || ae))
-                  : existing?.assignedExpertIds || [],
-              });
+      const storageKeys = [
+        'adaptlearn_jobPositions_v2_' + effectiveOrg,
+        'adaptlearn_job_positions_v2_' + effectiveOrg,
+        'adaptlearn_jobPositions_v2_e0000000-0000-0000-0000-000000000001',
+        'adaptlearn_job_positions_v2_e0000000-0000-0000-0000-000000000001',
+        'adaptlearn_jobPositions_v2_comp-technova',
+        'adaptlearn_job_positions_v2_comp-technova',
+        'adaptlearn_jobPositions_v2_',
+        'adaptlearn_job_positions_v2_',
+      ];
+      const keySet = new Set<string>(storageKeys);
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (k && /adaptlearn_job.*positions/i.test(k)) {
+          keySet.add(k);
+        }
+      }
+      for (const key of keySet) {
+        const raw = localStorage.getItem(key);
+        if (raw) {
+          try {
+            const stored = JSON.parse(raw);
+            if (Array.isArray(stored)) {
+              for (const item of stored) {
+                if (item.code) {
+                  const existing = codeMap.get(item.code);
+                  codeMap.set(item.code, {
+                    code: item.code,
+                    name: item.name || existing?.name || item.code,
+                    description: item.description || existing?.description || '',
+                    jobZone: item.jobZone || existing?.jobZone || 4,
+                    profiles: existing?.profiles || ['DEV'],
+                    assignedExpertIds: Array.isArray(item.assignedExperts)
+                      ? item.assignedExperts.map((ae: any) => normalizeExpertId(ae.id || ae))
+                      : existing?.assignedExpertIds || [],
+                  });
+                }
+              }
             }
-          }
+          } catch {}
         }
       }
     }
@@ -469,15 +494,15 @@ export function getAvailableOccupations(organizationId?: string): OnetOccupation
 }
 
 /**
- * Returns domain experts who are specifically assigned and certified for a given O*NET occupation,
+ * Returns domain experts who are specifically assigned and certified for a given job position,
  * or all experts available to this organization if none are specifically restricted.
  */
-export function getEligibleExpertsForOccupation(occupationCode?: string, organizationId?: string): EligibleExpert[] {
+export function getEligibleExpertsForJobPosition(jobPositionCode?: string, organizationId?: string): EligibleExpert[] {
   const orgExperts = getOrganizationExperts(organizationId);
-  if (!occupationCode) return orgExperts;
+  if (!jobPositionCode) return orgExperts;
 
-  const occupations = getAvailableOccupations(organizationId);
-  const occ = occupations.find((o) => o.code === occupationCode);
+  const jobPositions = getAvailableJobPositions(organizationId);
+  const occ = jobPositions.find((o) => o.code === jobPositionCode);
   if (!occ || !occ.assignedExpertIds || occ.assignedExpertIds.length === 0) {
     return orgExperts;
   }

@@ -8,8 +8,8 @@ import { moduleRequest } from '../../../shared/api/moduleAuthoringApi'
 
 vi.mock('../../../shared/layouts/WorkspaceLayout', () => ({ WorkspaceLayout: ({ children }: { children: ReactNode }) => <>{children}</> }))
 vi.mock('../../../shared/i18n/LanguageContext', () => ({ useTranslation: () => ({ language: 'en' }) }))
-const occupation = { id: 'occ', name: 'Software Developers' }
-const content = { id: 'content', title: 'Lesson', markdown: '# Learn', occupationIds: ['occ'], createdBy: 'expert-a', createdAt: '2026-10-28T00:00:00Z', contentType: 'text/markdown', contentVersion: '1.0' }
+const jobPosition = { id: 'occ', name: 'Software Developers' }
+const content = { id: 'content', title: 'Lesson', markdown: '# Learn', jobPositionIds: ['occ'], createdBy: 'expert-a', createdAt: '2026-10-28T00:00:00Z', contentType: 'text/markdown', contentVersion: '1.0' }
 function LocationProbe() { return <output aria-label="Current route">{useLocation().pathname}</output> }
 let saved: unknown
 beforeEach(() => {
@@ -19,7 +19,7 @@ beforeEach(() => {
     if (path.endsWith('/session')) return Response.json({ id: 'expert-a', organizationId: 'org', roles: ['EXPERT'] })
     if (path.includes('/modules?') || path.includes('/module-list?')) return Response.json({ items: [], total: 0, page: 1, pageSize: 10 })
     if (path.endsWith('/catalog/Staff')) return Response.json([{ id: 'expert-a', name: 'expert-a' }])
-    if (path.endsWith('/catalog/Occupation')) return Response.json([])
+    if (path.endsWith('/catalog/JobPosition')) return Response.json([])
     if (path.endsWith('/catalog/MicroSkill')) return Response.json([{ id: 'skill', name: 'SQL' }])
     if (path.endsWith('/contents')) return Response.json([content])
     if (path.endsWith('/contents/lessons') && init?.method === 'POST') return Response.json(content)
@@ -43,7 +43,7 @@ describe('REQ-013 module workspace', () => {
       { id: 'three', title: 'Summary', type: 'TEXT', body: '<p>Last review body</p>', bodyFormat: 'HTML', durationSeconds: 180 },
     ] }
     const metadata = { id: 'review-module', version: '0.11.0', status: 'DRAFT', reviewStatus: 'NEEDS_EXPERT_REVIEW', reviewedBy: null, reviewedAt: null }
-    const doc = { id: 'review-module', organizationId: 'org', occupationIds: ['occ'], createdBy: 'expert-a', createdAt: '2026-10-28T00:00:00Z', lockVersion: 2, everReleased: false, archived: false, releasedRevision: null, history: [], revisions: [{ number: 1, state: 'SUBMITTED', editedBy: 'expert-a', editedAt: '2026-10-28T00:00:00Z', decidedBy: null, decidedAt: null, feedback: null, payload: { metadata, title: 'Submitted lesson', moduleType: 'LESSON_AND_PRACTICE', contentUri: 'module-content:content', contentType: 'text/markdown', contentVersion: '1.0', duration: 30, price: 100000, teachings: [], content: reviewContent } }] }
+    const doc = { id: 'review-module', organizationId: 'org', jobPositionIds: ['occ'], createdBy: 'expert-a', createdAt: '2026-10-28T00:00:00Z', lockVersion: 2, everReleased: false, archived: false, releasedRevision: null, history: [], revisions: [{ number: 1, state: 'SUBMITTED', editedBy: 'expert-a', editedAt: '2026-10-28T00:00:00Z', decidedBy: null, decidedAt: null, feedback: null, payload: { metadata, title: 'Submitted lesson', moduleType: 'LESSON_AND_PRACTICE', contentUri: 'module-content:content', contentType: 'text/markdown', contentVersion: '1.0', duration: 30, price: 100000, teachings: [], content: reviewContent } }] }
     vi.mocked(fetch).mockImplementation(async (path, init) => {
       const url = String(path)
       if (url.endsWith('/text/preview')) return Response.json({ html: (JSON.parse(String(init?.body)) as { body: string }).body })
@@ -92,7 +92,7 @@ describe('REQ-013 module workspace', () => {
   it('shows another Expert module and history without edit, submit or delete controls', async () => {
     const original = vi.mocked(fetch).getMockImplementation()!
     const metadata = { id: 'read-only', version: '0.11.0', status: 'DRAFT', reviewStatus: 'NEEDS_EXPERT_REVIEW', reviewedBy: null, reviewedAt: null }
-    const doc = { id: 'read-only', organizationId: 'org', occupationIds: ['occ'], createdBy: 'expert-b', createdAt: '2026-10-28T00:00:00Z', lockVersion: 1, everReleased: false, archived: false, releasedRevision: null, history: [], revisions: [{ number: 1, state: 'DRAFT', editedBy: 'expert-b', editedAt: '2026-10-28T00:00:00Z', decidedBy: null, decidedAt: null, feedback: null, payload: { metadata, title: 'Another Expert lesson', moduleType: 'LESSON_AND_PRACTICE', contentUri: 'module-content:content', contentType: 'text/markdown', contentVersion: '1.0', duration: 30, price: 100000, teachings: [], content } }] }
+    const doc = { id: 'read-only', organizationId: 'org', jobPositionIds: ['occ'], createdBy: 'expert-b', createdAt: '2026-10-28T00:00:00Z', lockVersion: 1, everReleased: false, archived: false, releasedRevision: null, history: [], revisions: [{ number: 1, state: 'DRAFT', editedBy: 'expert-b', editedAt: '2026-10-28T00:00:00Z', decidedBy: null, decidedAt: null, feedback: null, payload: { metadata, title: 'Another Expert lesson', moduleType: 'LESSON_AND_PRACTICE', contentUri: 'module-content:content', contentType: 'text/markdown', contentVersion: '1.0', duration: 30, price: 100000, teachings: [], content } }] }
     vi.mocked(fetch).mockImplementation(async (path, init) => {
       if (String(path).includes('/module-list?')) return Response.json({ items: [{ module: doc.revisions[0].payload, authoring: doc }], total: 1, page: 1, pageSize: 10 })
       return original(path, init)
@@ -109,7 +109,7 @@ describe('REQ-013 module workspace', () => {
       const url = String(path)
       if (url.endsWith('/session')) return Response.json({ id: 'reviewer', organizationId: 'org', roles: ['LD_MANAGER'] })
       if (url.endsWith('/catalog/Expert')) return Response.json([{ id: 'expert-a', name: 'Expert A' }])
-      if (url.endsWith('/catalog/Occupation')) return Response.json([occupation])
+      if (url.endsWith('/catalog/JobPosition')) return Response.json([jobPosition])
       if (url.endsWith('/grants')) return Response.json([])
       if (url.includes('/module-list?')) return Response.json({ items: [{ module, authoring: null, intake: null }], total: 1, page: 1, pageSize: 10 })
       if (url.endsWith('/assignment')) return Response.json({ message: 'Assignment changed. Reload the catalog.' }, { status: 409 })
@@ -120,7 +120,7 @@ describe('REQ-013 module workspace', () => {
     fireEvent.click(await screen.findByRole('button', { name: 'Assign for intake' }))
     let dialog = screen.getByRole('dialog', { name: 'Assign for intake' })
     await within(dialog).findByRole('option', { name: 'Software Developers' })
-    expect(within(dialog).getByLabelText('Related occupations').hasAttribute('required')).toBe(true)
+    expect(within(dialog).getByLabelText('Related jobPositions').hasAttribute('required')).toBe(true)
     fireEvent.click(within(dialog).getByRole('button', { name: 'Cancel' }))
     expect(screen.queryByRole('dialog')).toBeNull()
     fireEvent.click(screen.getByRole('button', { name: 'View module' }))
@@ -128,11 +128,11 @@ describe('REQ-013 module workspace', () => {
     dialog = screen.getByRole('dialog', { name: 'Assign for intake' })
     await within(dialog).findByRole('option', { name: 'Expert A' })
     fireEvent.change(within(dialog).getByLabelText('Responsible Expert'), { target: { value: 'expert-a' } })
-    fireEvent.change(within(dialog).getByLabelText('Related occupations'), { target: { value: 'occ' } })
+    fireEvent.change(within(dialog).getByLabelText('Related jobPositions'), { target: { value: 'occ' } })
     fireEvent.submit(within(dialog).getByRole('button', { name: /^Assign$/ }).closest('form')!)
     expect(await within(dialog).findByRole('alert')).toHaveProperty('textContent', 'Assignment changed. Reload the catalog.')
     const request = vi.mocked(fetch).mock.calls.find(([path]) => String(path).endsWith('/assignment'))
-    expect(JSON.parse(String(request?.[1]?.body))).toEqual({ expertId: 'expert-a', occupationIds: ['occ'], expectedAssignedAt: null })
+    expect(JSON.parse(String(request?.[1]?.body))).toEqual({ expertId: 'expert-a', jobPositionIds: ['occ'], expectedAssignedAt: null })
     expect(screen.queryByRole('button', { name: 'Approve and release' })).toBeNull()
   })
   it('loads real scoped choices and provides a useful empty state', async () => {
@@ -180,7 +180,7 @@ describe('REQ-013 module workspace', () => {
     expect(screen.queryByLabelText(/Copy lessons from existing content/)).toBeNull()
     const dialog = screen.getByRole('dialog', { name: 'Module editor' })
     fireEvent.change(within(dialog).getByLabelText('Title'), { target: { value: 'SQL practice' } })
-    expect(within(dialog).queryByLabelText(/Occupations/)).toBeNull()
+    expect(within(dialog).queryByLabelText(/JobPositions/)).toBeNull()
     expect(within(dialog).getByLabelText('Lesson title')).toBeTruthy()
     fireEvent.submit(dialog.querySelector('form')!)
     expect(await within(dialog).findByText('Choose exactly one primary skill.')).toBeTruthy(); expect(saved).toBeNull()
@@ -188,7 +188,7 @@ describe('REQ-013 module workspace', () => {
     fireEvent.change(within(dialog).getByLabelText('Skill'), { target: { value: 'skill' } })
     fireEvent.submit(dialog.querySelector('form')!)
     await waitFor(() => expect(saved).not.toBeNull())
-    expect(saved).not.toHaveProperty('occupationIds')
+    expect(saved).not.toHaveProperty('jobPositionIds')
     expect(await within(dialog).findByText(/Module changed/)).toBeTruthy()
     expect((within(dialog).getByLabelText('Title') as HTMLInputElement).value).toBe('SQL practice')
     fireEvent.click(within(dialog).getByRole('button', { name: 'Cancel' }))

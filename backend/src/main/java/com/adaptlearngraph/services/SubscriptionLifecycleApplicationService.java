@@ -73,7 +73,7 @@ public class SubscriptionLifecycleApplicationService {
 
     public MemberResponse updateMember(UUID organizationId, UUID membershipId, MemberProfileRequest input) {
         var update = new MemberProfileUpdate(input.fullName(), input.roles(), input.departmentId(),
-                input.occupationReferenceId(), input.revision());
+                input.occupationReferenceId(), input.revision(), input.departmentName(), input.occupationName());
         var member = lifecycle.updateMember(organizationId, membershipId, update);
         return member == null ? null : mapper.map(member, MemberResponse.class);
     }

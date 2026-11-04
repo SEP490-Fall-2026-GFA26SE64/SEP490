@@ -49,7 +49,7 @@ class ExistingQuestionBankBootstrapIntegrationTest {
                         missing ? original.prompt() : original.prompt() + " changed", original.responseSchema(), original.protectedKey(),
                         original.publicationState(), original.contentHash()));
                 var changed = new OfficialQuestionBankManifest(manifest.formatVersion(), manifest.manifestVersion(), manifest.catalogVersion(),
-                        manifest.sourceSha256(), manifest.scopeSha256(), manifest.occupationId(), manifest.questionBank(), items);
+                        manifest.sourceSha256(), manifest.scopeSha256(), manifest.jobPositionId(), manifest.questionBank(), items);
                 assertThrows(IllegalStateException.class, () -> importer.verifyExistingManifest(changed, owner, OfficialQuestionBankImporter.Mode.LOCAL_SEED));
                 assertEquals(before, fingerprint(jdbc));
             }

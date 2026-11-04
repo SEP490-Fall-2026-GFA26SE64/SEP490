@@ -46,9 +46,9 @@ test('R03/R06/R07/R09/R14 E02/E03 real session baseline → repair/order → exa
     // Prerequisite input setup through the actual owner API; no direct baseline/mastery outcomes.
     const managerIdentity = await signIn(manager.request, 'C3_MANAGER')
     expect(managerIdentity.roles).toEqual(['LD_MANAGER']); expect(managerIdentity.organizationId).toBe(employeeIdentity.organizationId)
-    const blueprintPath = '/api/v1/ld/adaptive-baseline-blueprints/occupations/' + encodeURIComponent(required('C3_OCCUPATION_ID'))
+    const blueprintPath = '/api/v1/ld/adaptive-baseline-blueprints/job-positions/' + encodeURIComponent(required('C3_JOB_POSITION_ID'))
     const workspace = await body<{ current: { configuration: unknown } | null; working: unknown; activation: { revision: number } | null }>(await manager.request.get(blueprintPath))
-    const configuration = { name: 'C3 review prerequisite input', occupationBounds: { maxQuestions: 120, timeLimitSeconds: 3600 } }
+    const configuration = { name: 'C3 review prerequisite input', jobPositionBounds: { maxQuestions: 120, timeLimitSeconds: 3600 } }
     expect(workspace.working).toBeNull()
     if (workspace.current) expect(workspace.current.configuration).toEqual(configuration) // retain this run's input after a pre-attempt harness failure
     else {

@@ -4,7 +4,7 @@ Session1 Q1–Q5, 2026-10-22, followed by explicit user-authorized local cleanup
 
 ## Source, scope and sizing
 
-Select OCC-15-1212.00, Information Security Analysts, catalog 0.8.0: eight active Roles, 24 active Levels, 15 deduplicated required MicroSkills. Include every active HAS_ROLE/HAS_LEVEL/REQUIRES_SKILL path; retain Competencies/HAS_SKILL and teaching Modules as trace. No tenant permission inferred from global nodes. Original Session1 was graph-read-only; the later explicit cleanup replaced the exact backed-up legacy main graph using the existing official importer. The question-bank importer itself remains graph-read-only. NEEDS_EXPERT_REVIEW/null reviewer stays unchanged. Other four Occupations receive no bank.
+Select OCC-15-1212.00, Information Security Analysts, catalog 0.8.0: eight active Roles, 24 active Levels, 15 deduplicated required MicroSkills. Include every active HAS_ROLE/HAS_LEVEL/REQUIRES_SKILL path; retain Competencies/HAS_SKILL and teaching Modules as trace. No tenant permission inferred from global nodes. Original Session1 was graph-read-only; the later explicit cleanup replaced the exact backed-up legacy main graph using the existing official importer. The question-bank importer itself remains graph-read-only. NEEDS_EXPERT_REVIEW/null reviewer stays unchanged. Other four Job Positions receive no bank.
 
 Author 135 original English four-option/one-answer items: three EASY, three MEDIUM, three HARD per skill. Nine is release sizing, not a scoring policy, model minimum, level rank or IRT parameter. MCQ coverage does not certify practical competence. With a future model minimum m, a feasible maximum needs at least 15*m plus the model's own limits/eligible parameter supply. No numerical policy is selected here.
 
@@ -36,7 +36,7 @@ Bank has no organization/version column. Tenant enforcement uses its creator's o
 
 ## Ordered operation and failures
 
-Separate offline `question-bank-import` profile, explicit enabled property, no web/Flyway. Normal/migrate startup cannot import. Operator config must supply manifest resource/version/byte SHA256, scope resource/byte SHA256, original ontology SHA256, Occupation ID, bank UUID, real owner/organization UUIDs and exact PostgreSQL JDBC URL. Resources restricted to file:/classpath:. No credentials/default owner bundled.
+Separate offline `question-bank-import` profile, explicit enabled property, no web/Flyway. Normal/migrate startup cannot import. Operator config must supply manifest resource/version/byte SHA256, scope resource/byte SHA256, original ontology SHA256, Job Position ID, bank UUID, real owner/organization UUIDs and exact PostgreSQL JDBC URL. Resources restricted to file:/classpath:. No credentials/default owner bundled.
 
 Strict JSON parsing rejects duplicate keys/unknown fields. Validate hashes, exact identities and all 135 shapes/full 15-skill coverage before writes. Read the flat official subset snapshot; compare all selected graph node/relationship properties, excluding export-only/null fields. Verify complete active membership and ownership, not only existence of skill names, inside one read-only transaction in configured database. Missing/unreachable/drifted/ambiguous graph fails; review metadata is compared, never promoted. Offline authoring can finish without live parity; import cannot skip parity.
 

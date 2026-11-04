@@ -22,8 +22,8 @@ public class BaselineAdaptiveBlueprintWorkingRevisionEntity {
     private UUID workingRevisionId;
     @Column(name = "organization_id", nullable = false, updatable = false)
     private UUID organizationId;
-    @Column(name = "occupation_id", nullable = false, updatable = false)
-    private String occupationId;
+    @Column(name = "job_position_id", nullable = false, updatable = false)
+    private String jobPositionId;
     @Column(name = "blueprint_id", nullable = false, updatable = false)
     private UUID blueprintId;
     @Column(name = "revision", nullable = false)
@@ -48,10 +48,10 @@ public class BaselineAdaptiveBlueprintWorkingRevisionEntity {
     }
 
     @SuppressWarnings("java:S107")
-    public BaselineAdaptiveBlueprintWorkingRevisionEntity(UUID workingRevisionId, UUID organizationId, String occupationId, UUID blueprintId, Long revision, String configuration, String state, UUID createdBy, Instant createdAt, UUID updatedBy, Instant updatedAt, Instant closedAt) {
+    public BaselineAdaptiveBlueprintWorkingRevisionEntity(UUID workingRevisionId, UUID organizationId, String jobPositionId, UUID blueprintId, Long revision, String configuration, String state, UUID createdBy, Instant createdAt, UUID updatedBy, Instant updatedAt, Instant closedAt) {
         this.workingRevisionId = workingRevisionId;
         this.organizationId = organizationId;
-        this.occupationId = occupationId;
+        this.jobPositionId = jobPositionId;
         this.blueprintId = blueprintId;
         this.revision = revision;
         this.configuration = configuration;
@@ -65,7 +65,7 @@ public class BaselineAdaptiveBlueprintWorkingRevisionEntity {
 
     public UUID getWorkingRevisionId() { return workingRevisionId; }
     public UUID getOrganizationId() { return organizationId; }
-    public String getOccupationId() { return occupationId; }
+    public String getJobPositionId() { return jobPositionId; }
     public UUID getBlueprintId() { return blueprintId; }
     public Long getRevision() { return revision; }
     public String getConfiguration() { return configuration; }

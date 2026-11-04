@@ -13,11 +13,11 @@ public interface BaselineManagementCommandJpaRepository
         extends Repository<BaselineManagementCommandEntity, BaselineManagementCommandEntity.Key>,
         InsertOnlyRepository<BaselineManagementCommandEntity> {
 
-    record Row(UUID organizationId, String occupationId, UUID actorId, String idempotencyKey, String operation,
+    record Row(UUID organizationId, String jobPositionId, UUID actorId, String idempotencyKey, String operation,
                String requestHash, String responseJson, Instant createdAt) {}
 
     @Query("""
-            select new com.adaptlearngraph.repository.BaselineManagementCommandJpaRepository$Row(c.organizationId, c.occupationId,
+            select new com.adaptlearngraph.repository.BaselineManagementCommandJpaRepository$Row(c.organizationId, c.jobPositionId,
                 c.actorId, c.idempotencyKey, c.operation, c.requestHash, c.responseJson, c.createdAt)
             from BaselineManagementCommandEntity c
             where c.actorId = :actor and c.idempotencyKey = :retry

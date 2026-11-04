@@ -3,13 +3,13 @@ title: "LERD-03 - Competency ontology (six labels and seven relationship types)"
 config: {"theme":"base","fontFamily":"Segoe UI, Arial, sans-serif","themeVariables":{"fontFamily":"Segoe UI, Arial, sans-serif","fontSize":"16px","primaryColor":"#ffffff","primaryTextColor":"#0f1729","primaryBorderColor":"#64748b","secondaryColor":"#fef3eb","tertiaryColor":"#ffffff","lineColor":"#64748b","textColor":"#0f1729","mainBkg":"#ffffff","background":"#ffffff","clusterBkg":"#ffffff","clusterBorder":"#64748b","edgeLabelBackground":"#ffffff","titleColor":"#0f1729","noteBkgColor":"#fef3eb","noteTextColor":"#0f1729","noteBorderColor":"#e6650f","attributeBackgroundColorOdd":"#ffffff","attributeBackgroundColorEven":"#ffffff","secondaryBorderColor":"#64748b","tertiaryBorderColor":"#64748b","secondaryTextColor":"#0f1729","tertiaryTextColor":"#0f1729"},"layout":"elk","er":{"layoutDirection":"LR","nodeSpacing":36,"rankSpacing":74,"entityPadding":16,"fontSize":16,"minEntityWidth":140,"diagramPadding":24}}
 ---
 erDiagram
-  SRS_LERD_03_Occupation["Occupation"]
+  SRS_LERD_03_Job Position["Job Position"]
   SRS_LERD_03_TargetRole["TargetRole"]
   SRS_LERD_03_Level["Level"]
   SRS_LERD_03_Competency["Competency"]
   SRS_LERD_03_MicroSkill["MicroSkill"]
   SRS_LERD_03_LearningModule["LearningModule"]
-  SRS_LERD_03_Occupation ||--o{ SRS_LERD_03_TargetRole : "HAS_ROLE"
+  SRS_LERD_03_Job Position ||--o{ SRS_LERD_03_TargetRole : "HAS_ROLE"
   SRS_LERD_03_TargetRole ||--o{ SRS_LERD_03_Level : "HAS_LEVEL"
   SRS_LERD_03_Level ||--o{ SRS_LERD_03_Competency : "HAS_COMPETENCY"
   SRS_LERD_03_Competency }o--o{ SRS_LERD_03_MicroSkill : "HAS_SKILL"

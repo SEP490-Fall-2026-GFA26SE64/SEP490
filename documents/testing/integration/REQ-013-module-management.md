@@ -2,7 +2,7 @@
 
 Historical run before shared-login correction (2026-10-28): `ModuleAuthoringIntegrationTest` passed **one complete real-store journey, 0 failures/errors/skips**, in 133.556 seconds. It additionally asserts that real Neo4j coverage prevents archiving the last required primary provider before an alternative is approved. Initial execution also passed (436.533 seconds during concurrent Docker builds); the final fixture bounds Neo4j heap/pagecache for the small Docker VM.
 
-Fixture: disposable `postgres:17.6-alpine` and `neo4j:5.26-community` Testcontainers. Applies V27 to an isolated platform schema; does not claim testing the complete V1–V27 upgrade chain in this test. Uses one Occupation, two MicroSkills, Expert A/B, L&D reviewer, existing/new learner and a foreign organization query boundary. No development database is used.
+Fixture: disposable `postgres:17.6-alpine` and `neo4j:5.26-community` Testcontainers. Applies V27 to an isolated platform schema; does not claim testing the complete V1–V27 upgrade chain in this test. Uses one Job Position, two MicroSkills, Expert A/B, L&D reviewer, existing/new learner and a foreign organization query boundary. No development database is used.
 
 Assertions cover durable grants and grant audit, content storage, complete document round-trip, a different editor with unchanged creator, submission/approval, all 13 node properties and all 8 relationship properties on real Neo4j records, an alternative primary provider, pinned learning after archive, blocked unpinned learning after archive, restore-to-draft and revoked Expert access. Publication updates are real graph transactions, not repository mocks.
 

@@ -13,7 +13,7 @@ class InitialPathwayCatalogIntegrationTest {
     static final Neo4jContainer<?> GRAPH=new Neo4jContainer<>("neo4j:5.26-community");
     static final UUID ORG=new UUID(0,101);
     static final Scope SCOPE=new Scope(ORG,new UUID(0,102));
-    static final Binding BINDING=new Binding("choice-test","role-test","level-test","occupation-test","Test Role","Test Level","catalog-test","release-test",
+    static final Binding BINDING=new Binding("choice-test","role-test","level-test","jobPosition-test","Test Role","Test Level","catalog-test","release-test",
             Map.of("catalog","v1","binding","v1","publication","v1","requirements","v1","compatibility","v1"),List.of());
     static final Limits LIMITS=new Limits("test-limits",20,20,20,10,10000);
     static Driver driver;

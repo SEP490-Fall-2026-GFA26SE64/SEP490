@@ -65,7 +65,7 @@ test('Employee activation uses captured email, requires assignments, consumes a 
   const email = `${crypto.randomUUID()}@example.test`
   await page.getByLabel('Email', { exact: true }).fill(email)
   await page.getByLabel('Department', { exact: true }).selectOption({ label: 'Test Department' })
-  await page.getByLabel('Occupation', { exact: true }).selectOption({ label: 'Test Occupation' })
+  await page.getByLabel('JobPosition', { exact: true }).selectOption({ label: 'Test JobPosition' })
   await page.getByRole('button', { name: 'Send activation link' }).click()
   await expect(page.getByText('Activation email queued. Inbox delivery is not yet confirmed.', { exact: true })).toBeVisible()
   const link = await activationLink(page.request, email)
@@ -108,7 +108,7 @@ test('Employee activation uses captured email, requires assignments, consumes a 
   expect(saved?.fullName).toBe('Isolated Employee')
   expect(saved?.roles).toEqual(['EMPLOYEE'])
   expect(saved?.departmentId).toBe(assignedReference.departmentId)
-  expect(saved?.occupationReferenceId).toBe(assignedReference.occupationReferenceId)
+  expect(saved?.jobPositionReferenceId).toBe(assignedReference.jobPositionReferenceId)
   expect(saved?.active).toBe(true)
   await employee.screenshot({ path: testInfo.outputPath('employee-password-only.png'), fullPage: true })
   await otherContext.close()

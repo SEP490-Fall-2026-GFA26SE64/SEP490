@@ -66,7 +66,7 @@ The plan uses the following project references:
 The delivery scope includes:
 
 - Self-service organization registration, account verification, subscription selection and payment, workspace provisioning, renewal, and Employee-seat enforcement.
-- Platform and organization administration, accounts, roles, permissions, departments, occupations, and Expert assignments.
+- Platform and organization administration, accounts, roles, permissions, departments, job positions, and Expert assignments.
 - Expert configuration of target-role requirements, L&D publication, learning-module/content authoring, assessment question banks, and offering approval.
 - Baseline and module assessments, RIASEC interest assessment, assessment results and history, and AI-assisted target-role guidance.
 - Competency estimation, gap analysis, prerequisite-aware initial pathway generation, Expert initial review, and assessment-driven adaptation.
@@ -114,8 +114,8 @@ AI role guidance is directly available to Employees; an additional Expert approv
 | 1.19 | Shared account, payment, and workflow email delivery - FR-07.10 | Medium | 3 |
 | 1.20 | Shared activity recording and sensitive-data-safe audit integration - FR-07.11 | Medium | 3 |
 | **2** | **Catalog, knowledge content, and L&D workflows - Member 2** | | **54** |
-| 2.1 | Occupations and department links - FR-04.01 | Medium | 4 |
-| 2.2 | Occupation/role Expert assignments and authorization references - FR-04.02 | Medium | 3 |
+| 2.1 | Job Positions and department links - FR-04.01 | Medium | 4 |
+| 2.2 | Job Position/role Expert assignments and authorization references - FR-04.02 | Medium | 3 |
 | 2.3 | Target-role creation, maintenance, and assignment - FR-04.03 | Medium | 4 |
 | 2.4 | L&D target-role publication, withdrawal, and revision handoff - FR-04.04 | Complex | 4 |
 | 2.5 | L&D offering review, approval, and return for revision - FR-04.06 | Complex | 5 |
@@ -277,7 +277,7 @@ Each sprint follows these steps:
 | Gate | Primary handoff | Required outcome |
 | --- | --- | --- |
 | G1 - Identity and workspace access | Member 1 to Members 2-4 | Trusted sessions, organization scope, role/seat controls, and authorized workspace entry. |
-| G2 - Available catalog | Member 2 to Members 3-4 | Valid occupation/role assignments, published roles, Expert requirements, prerequisites, and approved offerings with reproducible mappings. |
+| G2 - Available catalog | Member 2 to Members 3-4 | Valid job position/role assignments, published roles, Expert requirements, prerequisites, and approved offerings with reproducible mappings. |
 | G3 - Assessment and guidance | Member 3 using Member 2's inputs | Agreed baseline/module rules, valid evidence, results/RIASEC profiles, AI guidance, and target-role selection with explicit readiness states. |
 | G4 - Initial pathway | Member 3 to Member 4 | Gaps, ordered recommendations, explanations, and a reviewable initial draft; authorized Expert confirmation before learning. |
 | G5 - Learning and adaptation | Member 4 to Member 3 | Learning activity and assessment evidence update progress/mastery and remaining pathways without duplicate evidence or invalid override loss. |
@@ -313,7 +313,7 @@ Use applicable Testcontainers/real-adapter tests to verify PostgreSQL persistenc
 Run applicable Docker Compose and Playwright journeys against the integrated application. The minimum release-critical coverage includes:
 
 - Register/verify -> select/pay -> provision -> access/renew workspace.
-- Manage accounts/departments -> occupations/Expert assignments -> configure/submit target role -> L&D publication.
+- Manage accounts/departments -> job positions/Expert assignments -> configure/submit target role -> L&D publication.
 - Author module/content/assessment -> submit -> approve or return for revision.
 - Complete the agreed baseline/RIASEC and role-entry flow -> gaps -> initial pathway -> Expert review/confirmation -> learning/assessment -> adaptation.
 - Learn an individual skill without replacing the selected role pathway.
@@ -362,7 +362,7 @@ Dates below are proposed checkpoints using the reference sprint windows, not cla
 | # | Deliverable | Due Date | Notes |
 | --- | --- | --- | --- |
 | 1 | Project introduction, initial scope, actor/access matrix, and planning baseline | 04/10/2026 - reference checkpoint | Member 1 coordinates; all members reconcile actual coverage and changes. |
-| 2 | Organization/department/occupation model, Expert assignments, and API/data contracts | 11/10/2026 - reference checkpoint | Members 1-2 lead; historical dates do not certify current scope. |
+| 2 | Organization/department/job position model, Expert assignments, and API/data contracts | 11/10/2026 - reference checkpoint | Members 1-2 lead; historical dates do not certify current scope. |
 | 3 | Target-role configuration/submission/publication design and baseline-configuration contracts | 18/10/2026 - reference checkpoint | Members 2-3 lead; resolve L&D/Expert boundaries. |
 | 4 | Module/content/question-bank mappings, assessment rules, and approval contracts | 25/10/2026 - reference checkpoint | Member 2 leads content; Member 3 owns assessment rules; Member 1 supplies private-storage infrastructure. |
 | 5 | Assessment evidence/results readiness and Review 2 management report | 01/11/2026 - planned checkpoint | Member 3 leads assessment status; this report is a document deliverable, not application acceptance. |
@@ -393,7 +393,7 @@ Each responsibility row has one D. All members may contribute across layers, but
 | Member | Primary ownership | Main delivery responsibilities |
 | --- | --- | --- |
 | Member 1 | Identity, security, profile, technical administration, and shared platform services | Authentication/permissions, organization and account lifecycle, departments, subscriptions/payments/provisioning/seats, profile, configuration, audit, shared email/private-storage infrastructure, backend integration, and deployment coordination. |
-| Member 2 | Catalog, graph content, and L&D content/role workflows | Occupations, Expert assignments, role requirements/submission/publication, skills/prerequisites, modules/content, question banks/mappings, approved offerings, and reproducible catalog projections. |
+| Member 2 | Catalog, graph content, and L&D content/role workflows | Job Positions, Expert assignments, role requirements/submission/publication, skills/prerequisites, modules/content, question banks/mappings, approved offerings, and reproducible catalog projections. |
 | Member 3 | Assessments, guidance, knowledge tracing, adaptive engine, and monitoring | L&D baseline configuration, Expert module-assessment configuration, delivery/scoring/results/RIASEC, AI guidance/role selection, estimates/gaps/recommendations/adaptation/recovery, development summaries, and ROI calculations. |
 | Member 4 | Employee learning experience and Expert pathway review | Pathway/explanation/competency visualization, approved learning access, initial review/include/exclude/confirmation, revision/progress presentation, independent-skill learning, and research execution/evidence coordination. |
 
@@ -414,7 +414,7 @@ The functional split retains the requested identity/catalog/engine/learning grou
 | Scoring/tracing/recommendation model and algorithm design | R | R | D | S |
 | Learning/review interface and visualization design | R | S | R | D |
 | Identity, platform/subscription APIs, departments, and shared infrastructure | D | R | S | S |
-| Catalog, role/occupation, question-bank, and approval APIs | R | D | R | S |
+| Catalog, role/job position, question-bank, and approval APIs | R | D | R | S |
 | Assessment, guidance, adaptive-engine, development, and ROI APIs | R | S | D | R |
 | Initial-pathway review commands and learning-experience integration | R | S | R | D |
 | Platform/account/subscription UI slices | D | I | S | R |

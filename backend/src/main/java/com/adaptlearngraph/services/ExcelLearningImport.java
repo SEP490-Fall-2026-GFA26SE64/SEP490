@@ -257,8 +257,8 @@ public final class ExcelLearningImport implements LearningImportUseCase {
                 // Accept the old optional column as inert historical input; never infer membership.
                 if (moduleSheet != null
                         && moduleSheet.getRow(0) != null
-                        && text(moduleSheet.getRow(0), 5).equals("occupationIds"))
-                    moduleColumns.add(5, "occupationIds");
+                        && text(moduleSheet.getRow(0), 5).equals("jobPositionIds"))
+                    moduleColumns.add(5, "jobPositionIds");
                 checkHeader(moduleSheet, moduleColumns);
                 checkHeader(lessonSheet, LESSON_COLUMNS);
                 for (int i = 1; i <= lessonSheet.getLastRowNum(); i++) {
@@ -651,7 +651,7 @@ public final class ExcelLearningImport implements LearningImportUseCase {
                                 modules.lessons(
                                         row.module().title(),
                                         row.lessons(),
-                                        row.module().occupationIds());
+                                        row.module().jobPositionIds());
                         Save m = row.module();
                         result.add(
                                 modules.importModule(
@@ -662,7 +662,7 @@ public final class ExcelLearningImport implements LearningImportUseCase {
                                                 c.id(),
                                                 m.duration(),
                                                 m.price(),
-                                                m.occupationIds(),
+                                                m.jobPositionIds(),
                                                 m.teachings()),
                                         confirm,
                                         row.expectedVersion()));

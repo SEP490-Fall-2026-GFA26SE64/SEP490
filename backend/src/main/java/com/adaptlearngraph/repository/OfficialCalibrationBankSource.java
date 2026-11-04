@@ -14,9 +14,10 @@ import java.util.UUID;
 /** Reuses the official import validator without importing, publishing, connecting to Neo4j or creating a model. */
 public final class OfficialCalibrationBankSource {
     public static final Source PIN=new Source(UUID.fromString("2f79de6b-dc62-51a1-982d-0be9d6f588dc"),
-            "information-security-analysts-en-v1","52d065a031aa9adca51808c59a7682872b7436343f0c300db84cfe1beb2fe882",
-            "c2454bde23764d061b6b25b54d434141715326d75eaa3201026618e7e4136231",
-            "0006bb11ac5c20687eb90be4807289ecea309a5657781543792e18f556eb5125");
+            "information-security-analysts-en-v1",
+            "73e2d1a1a97ae52ff240988a33e18bfe1108f45c830df6fa3469f93c39166836",
+            "3e8ea204ebd2ea08d622e4a5c35c38185f1dbaa922fc5c6cce9566ed3382ee60",
+            "65e5351b47352ea1bcf4298e0c0dcf93e9fba757c8298e8e509700721cabb010");
     private final Path root;
     public OfficialCalibrationBankSource(Path repositoryRoot) { root=repositoryRoot.toAbsolutePath().normalize(); }
     public Bank load() {
@@ -28,7 +29,7 @@ public final class OfficialCalibrationBankSource {
             var parsed=OfficialQuestionBankManifest.parse(manifest,OfficialQuestionBankManifest.class);
             parsed.validate(OfficialQuestionBankManifest.parse(scope,OfficialQuestionBankCatalog.Scope.class));
             Calibration.require(parsed.questionBank().id().equals(PIN.bankId()) && parsed.manifestVersion().equals(PIN.manifestVersion())
-                    && parsed.scopeSha256().equals(PIN.scopeHash()) && parsed.occupationId().equals("OCC-15-1212.00"));
+                    && parsed.scopeSha256().equals(PIN.scopeHash()) && parsed.jobPositionId().equals("OCC-15-1212.00"));
             List<Item> items=parsed.items().stream().map(i->new Item(new ItemPin(i.itemVersionId(),i.itemId(),i.version(),
                     i.microSkillId(),i.contentHash()),List.of("A","B","C","D"),i.protectedKey().get("correctOptionId").asText()))
                     .sorted(Comparator.comparing((Item i)->i.pin().skillId()).thenComparing(i->i.pin().itemVersionId().toString())).toList();

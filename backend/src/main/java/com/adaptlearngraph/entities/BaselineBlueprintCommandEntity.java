@@ -29,8 +29,8 @@ public class BaselineBlueprintCommandEntity {
     @Id
     @Column(name = "idempotency_key")
     private String idempotencyKey;
-    @Column(name = "occupation_id", nullable = false)
-    private String occupationId;
+    @Column(name = "job_position_id", nullable = false)
+    private String jobPositionId;
     @Column(name = "blueprint_id", nullable = false)
     private UUID blueprintId;
     @Column(name = "operation", nullable = false)
@@ -47,11 +47,11 @@ public class BaselineBlueprintCommandEntity {
     }
 
     @SuppressWarnings("java:S107")
-    public BaselineBlueprintCommandEntity(UUID organizationId, UUID actorId, String idempotencyKey, String occupationId, UUID blueprintId, String operation, String requestHash, String responsePayload, Instant createdAt) {
+    public BaselineBlueprintCommandEntity(UUID organizationId, UUID actorId, String idempotencyKey, String jobPositionId, UUID blueprintId, String operation, String requestHash, String responsePayload, Instant createdAt) {
         this.organizationId = organizationId;
         this.actorId = actorId;
         this.idempotencyKey = idempotencyKey;
-        this.occupationId = occupationId;
+        this.jobPositionId = jobPositionId;
         this.blueprintId = blueprintId;
         this.operation = operation;
         this.requestHash = requestHash;
@@ -62,7 +62,7 @@ public class BaselineBlueprintCommandEntity {
     public UUID getOrganizationId() { return organizationId; }
     public UUID getActorId() { return actorId; }
     public String getIdempotencyKey() { return idempotencyKey; }
-    public String getOccupationId() { return occupationId; }
+    public String getJobPositionId() { return jobPositionId; }
     public UUID getBlueprintId() { return blueprintId; }
     public String getOperation() { return operation; }
     public String getRequestHash() { return requestHash; }

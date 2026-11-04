@@ -6,7 +6,7 @@ erDiagram
   SRS_LERD_04_Account["Account"]
   SRS_LERD_04_LearnerState["LearnerState"]
   SRS_LERD_04_EmployeeRoleSelection["EmployeeRoleSelection"]
-  SRS_LERD_04_OccupationProfile["OccupationProfile"]
+  SRS_LERD_04_Job PositionProfile["Job PositionProfile"]
   SRS_LERD_04_InitialGapSnapshot["InitialGapSnapshot"]
   SRS_LERD_04_InitialPathwayRequest["InitialPathwayRequest"]
   SRS_LERD_04_InitialPathwayRun["InitialPathwayRun"]
@@ -36,7 +36,7 @@ erDiagram
   SRS_LERD_04_Account ||--o| SRS_LERD_04_LearnerState : "learner state"
   SRS_LERD_04_LearnerState ||--o{ SRS_LERD_04_EmployeeRoleSelection : "role selections"
   SRS_LERD_04_EmployeeRoleSelection ||--o{ SRS_LERD_04_InitialGapSnapshot : "role gap snapshots"
-  SRS_LERD_04_OccupationProfile ||--o{ SRS_LERD_04_InitialGapSnapshot : "baseline mastery source"
+  SRS_LERD_04_Job PositionProfile ||--o{ SRS_LERD_04_InitialGapSnapshot : "baseline mastery source"
   SRS_LERD_04_InitialGapSnapshot ||--o{ SRS_LERD_04_InitialPathwayRequest : "frozen planning input"
   SRS_LERD_04_InitialPathwayRequest ||--o{ SRS_LERD_04_InitialPathwayRun : "generation runs"
   SRS_LERD_04_InitialPathwayRequest ||--o{ SRS_LERD_04_InitialPathwayRevision : "content revisions"

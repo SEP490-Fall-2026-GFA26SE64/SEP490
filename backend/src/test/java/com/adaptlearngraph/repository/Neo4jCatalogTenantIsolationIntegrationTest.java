@@ -17,7 +17,7 @@ import com.adaptlearngraph.entities.domain.ModuleAuthoring.Document;
 import com.adaptlearngraph.entities.domain.ModuleAuthoring.Metadata;
 import com.adaptlearngraph.entities.domain.ModuleAuthoring.Revision;
 import com.adaptlearngraph.entities.domain.ModuleAuthoring.Teaching;
-import com.adaptlearngraph.entities.domain.Occupation;
+import com.adaptlearngraph.entities.domain.JobPosition;
 import com.adaptlearngraph.entities.domain.RoleStatus;
 import com.adaptlearngraph.entities.domain.RoleTrack;
 import com.adaptlearngraph.entities.domain.SkillStatus;
@@ -49,8 +49,8 @@ class Neo4jCatalogTenantIsolationIntegrationTest {
     private static final String A = "org-a";
     private static final String B = "org-b";
     private static final String FIXTURE = """
-            CREATE (occ:Occupation {id: 'occ-a', organizationId: $a, code: 'OCC_A', name: 'Occupation A', jobZone: 4})
-            CREATE (occ2:Occupation {id: 'occ-a2', organizationId: $a, code: 'OCC_A2', name: 'Occupation A2', jobZone: 3})
+            CREATE (occ:JobPosition {id: 'occ-a', organizationId: $a, code: 'OCC_A', name: 'JobPosition A', jobZone: 4})
+            CREATE (occ2:JobPosition {id: 'occ-a2', organizationId: $a, code: 'OCC_A2', name: 'JobPosition A2', jobZone: 3})
             CREATE (role:TargetRole {id: 'role-a', organizationId: $a, code: 'ROLE_A', baseCode: 'ROLE_A', name: 'Role A',
                                      status: 'ACTIVE', version: '1.0', track: 'PROFESSIONAL'})
             CREATE (role2:TargetRole {id: 'role-a2', organizationId: $a, code: 'ROLE_A2', baseCode: 'ROLE_A2', name: 'Role A2',
@@ -80,7 +80,7 @@ class Neo4jCatalogTenantIsolationIntegrationTest {
 
     private final Neo4jContainer<?> graph = new Neo4jContainer<>("neo4j:5.26-community");
     private Neo4jTestContext persistence;
-    private Neo4jOccupationRepository occupations;
+    private Neo4jJobPositionRepository jobPositions;
     private Neo4jMicroSkillRepository skills;
     private Neo4jCompetencyRepository competencies;
     private Neo4jTargetRoleRepository roles;
@@ -96,7 +96,7 @@ class Neo4jCatalogTenantIsolationIntegrationTest {
         var client = persistence.client();
         var mapping = persistence.mappingContext();
         var transactions = persistence.transactionManager();
-        occupations = new Neo4jOccupationRepository(persistence.bean(OccupationNodeRepository.class), client, transactions);
+        jobPositions = new Neo4jJobPositionRepository(persistence.bean(JobPositionNodeRepository.class), client, transactions);
         skills = new Neo4jMicroSkillRepository(persistence.bean(MicroSkillNodeRepository.class), client, mapping, transactions);
         competencies = new Neo4jCompetencyRepository(persistence.bean(CompetencyNodeRepository.class), client, transactions);
         roles = new Neo4jTargetRoleRepository(persistence.bean(TargetRoleNodeRepository.class), client, mapping, transactions);
@@ -124,8 +124,8 @@ class Neo4jCatalogTenantIsolationIntegrationTest {
         var before = snapshot(A);
         Instant now = Instant.parse("2026-11-03T00:00:00Z");
 
-        assertThatThrownBy(() -> occupations.save(B,
-                new Occupation("occ-a", "OCC_B", "Hijacked", 2, 1, 1, 1, 1, 1, 1, "ACTIVE", "1.0", 0, 0)))
+        assertThatThrownBy(() -> jobPositions.save(B,
+                new JobPosition("occ-a", "OCC_B", "Hijacked", 2, 1, 1, 1, 1, 1, 1, "ACTIVE", "1.0", 0, 0)))
                 .isInstanceOf(CrossTenantWriteException.class);
         assertThatThrownBy(() -> skills.save(new MicroSkill(MicroSkillId.fromString("skill-a1"), B, "SKILL_A1", "Hijacked",
                 "hijacked", "COMMUNICATION", SkillStatus.ACTIVE, now, now)))
@@ -234,7 +234,7 @@ class Neo4jCatalogTenantIsolationIntegrationTest {
             assertThat(statements(appender, () -> persistence.client().query("RETURN 1").run()))
                     .as("cypher log events for one statement").hasSize(1);
 
-            assertThat(statements(appender, () -> assertThat(occupations.findAllOccupations(A)).hasSize(2))).hasSize(1);
+            assertThat(statements(appender, () -> assertThat(jobPositions.findAllJobPositions(A)).hasSize(2))).hasSize(1);
             assertThat(statements(appender, () -> assertThat(roles.findByOrganizationId(A, TargetRoleFilter.empty())).hasSize(2)))
                     .hasSize(1);
             assertThat(statements(appender, () -> assertThat(skills.findAll(A)).hasSize(3))).hasSize(1);

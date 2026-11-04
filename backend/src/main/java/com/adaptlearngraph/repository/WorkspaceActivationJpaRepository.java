@@ -18,11 +18,11 @@ public interface WorkspaceActivationJpaRepository
 
     record Pending(UUID activationId, UUID organizationId, Instant lastSentAt) {}
 
-    record Terms(String fullName, String email, List<String> roles, UUID departmentId, UUID occupationReferenceId,
+    record Terms(String fullName, String email, List<String> roles, UUID departmentId, UUID jobPositionReferenceId,
                  Instant expiresAt, Instant consumedAt) {}
 
     record Listed(UUID activationId, String fullName, String email, List<String> roles, UUID departmentId,
-                  String departmentName, UUID occupationReferenceId, String occupationName, Instant createdAt,
+                  String departmentName, UUID jobPositionReferenceId, String jobPositionName, Instant createdAt,
                   Instant expiresAt, String jobStatus) {}
 
     @Query(value = "SELECT activation_id FROM platform.workspace_activation WHERE email = :email AND consumed_at IS NULL FOR UPDATE",
@@ -51,10 +51,10 @@ public interface WorkspaceActivationJpaRepository
 
     @Query("""
             select new com.adaptlearngraph.repository.WorkspaceActivationJpaRepository$Listed(a.activationId, a.fullName, a.email,
-                a.roles, a.departmentId, d.name, a.occupationReferenceId, o.name, a.createdAt, a.expiresAt, j.status)
+                a.roles, a.departmentId, d.name, a.jobPositionReferenceId, o.name, a.createdAt, a.expiresAt, j.status)
             from WorkspaceActivationEntity a
             left join DepartmentReferenceEntity d on d.departmentId = a.departmentId and d.organizationId = a.organizationId
-            left join OccupationDepartmentReferenceEntity o on o.occupationReferenceId = a.occupationReferenceId
+            left join JobPositionDepartmentReferenceEntity o on o.jobPositionReferenceId = a.jobPositionReferenceId
                 and o.departmentId = a.departmentId and o.organizationId = a.organizationId
             left join OutboxEventEntity e on e.aggregateId = a.activationId and e.eventType = 'MEMBER_ACTIVATION'
                 and e.sourceRevision = a.generation
@@ -78,7 +78,7 @@ public interface WorkspaceActivationJpaRepository
 
     @Query("""
             select new com.adaptlearngraph.repository.WorkspaceActivationJpaRepository$Terms(a.fullName, a.email, a.roles,
-                a.departmentId, a.occupationReferenceId, a.expiresAt, a.consumedAt)
+                a.departmentId, a.jobPositionReferenceId, a.expiresAt, a.consumedAt)
             from WorkspaceActivationEntity a where a.activationId = :id and a.organizationId = :organization
             """)
     Optional<Terms> terms(@Param("organization") UUID organization, @Param("id") UUID activationId);

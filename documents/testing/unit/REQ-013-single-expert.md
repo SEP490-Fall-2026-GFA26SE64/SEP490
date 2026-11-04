@@ -4,7 +4,7 @@ Date: 2026-10-29. FR-05.05/FR-05.08/FR-04.06, bounded local Module ownership cha
 
 ## Passed
 
-- ModuleAuthoringServiceTest:13 passed. Existing complete-field/version/release/pin/coverage assertions retained. Updated the superseded shared-edit policy: a peer Expert can read but receives403 for edit/delete/submit despite occupation access; owner edits preserve creator and prior payloads. Intake selects one active Expert and refuses another Expert's acceptance. Owner scope is independent of peer read visibility.
+- ModuleAuthoringServiceTest:13 passed. Existing complete-field/version/release/pin/coverage assertions retained. Updated the superseded shared-edit policy: a peer Expert can read but receives403 for edit/delete/submit despite job position access; owner edits preserve creator and prior payloads. Intake selects one active Expert and refuses another Expert's acceptance. Owner scope is independent of peer read visibility.
 - HexagonalArchitectureTest:3 passed.
 - ModuleManagementWorkspace.test.tsx:10 passed, including peer read-only controls, L&D routing/history, one-Expert intake selection and mutation errors/CSRF.
 - TypeScript `tsc -b`: passed. Vite production build: passed, with existing large-bundle warning.

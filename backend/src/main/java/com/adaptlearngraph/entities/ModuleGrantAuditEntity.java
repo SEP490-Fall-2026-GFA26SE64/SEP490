@@ -24,8 +24,8 @@ public class ModuleGrantAuditEntity {
     private String organizationId;
     @Column(name = "expert_id", nullable = false)
     private String expertId;
-    @Column(name = "occupation_id", nullable = false)
-    private String occupationId;
+    @Column(name = "job_position_id", nullable = false)
+    private String jobPositionId;
     @Column(name = "active", nullable = false)
     private Boolean active;
     @Column(name = "changed_by", nullable = false)
@@ -37,11 +37,11 @@ public class ModuleGrantAuditEntity {
     }
 
     @SuppressWarnings("java:S107")
-    public ModuleGrantAuditEntity(Long eventId, String organizationId, String expertId, String occupationId, Boolean active, String changedBy, Instant changedAt) {
+    public ModuleGrantAuditEntity(Long eventId, String organizationId, String expertId, String jobPositionId, Boolean active, String changedBy, Instant changedAt) {
         this.eventId = eventId;
         this.organizationId = organizationId;
         this.expertId = expertId;
-        this.occupationId = occupationId;
+        this.jobPositionId = jobPositionId;
         this.active = active;
         this.changedBy = changedBy;
         this.changedAt = changedAt;
@@ -50,7 +50,7 @@ public class ModuleGrantAuditEntity {
     public Long getEventId() { return eventId; }
     public String getOrganizationId() { return organizationId; }
     public String getExpertId() { return expertId; }
-    public String getOccupationId() { return occupationId; }
+    public String getJobPositionId() { return jobPositionId; }
     public Boolean getActive() { return active; }
     public String getChangedBy() { return changedBy; }
     public Instant getChangedAt() { return changedAt; }

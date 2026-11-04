@@ -34,8 +34,8 @@ public class WorkspaceActivationEntity {
     private List<String> roles;
     @Column(name = "department_id", updatable = false)
     private UUID departmentId;
-    @Column(name = "occupation_reference_id", updatable = false)
-    private UUID occupationReferenceId;
+    @Column(name = "job_position_reference_id", updatable = false)
+    private UUID jobPositionReferenceId;
     @Column(name = "proof_hash", nullable = false, columnDefinition = PostgresColumnTypes.CONTENT_HASH)
     private String proofHash;
     @Column(name = "generation", nullable = false)
@@ -55,7 +55,7 @@ public class WorkspaceActivationEntity {
     }
 
     public WorkspaceActivationEntity(UUID activationId, UUID organizationId, UUID createdBy, String fullName, String email,
-            List<String> roles, UUID departmentId, UUID occupationReferenceId, String proofHash, Instant expiresAt, Instant now) {
+            List<String> roles, UUID departmentId, UUID jobPositionReferenceId, String proofHash, Instant expiresAt, Instant now) {
         this.activationId = activationId;
         this.organizationId = organizationId;
         this.createdBy = createdBy;
@@ -63,7 +63,7 @@ public class WorkspaceActivationEntity {
         this.email = email;
         this.roles = List.copyOf(roles);
         this.departmentId = departmentId;
-        this.occupationReferenceId = occupationReferenceId;
+        this.jobPositionReferenceId = jobPositionReferenceId;
         this.proofHash = proofHash;
         this.generation = 1L;
         this.expiresAt = expiresAt;
@@ -78,7 +78,7 @@ public class WorkspaceActivationEntity {
     public String getEmail() { return email; }
     public List<String> getRoles() { return roles; }
     public UUID getDepartmentId() { return departmentId; }
-    public UUID getOccupationReferenceId() { return occupationReferenceId; }
+    public UUID getJobPositionReferenceId() { return jobPositionReferenceId; }
     public String getProofHash() { return proofHash; }
     public Long getGeneration() { return generation; }
     public Instant getExpiresAt() { return expiresAt; }

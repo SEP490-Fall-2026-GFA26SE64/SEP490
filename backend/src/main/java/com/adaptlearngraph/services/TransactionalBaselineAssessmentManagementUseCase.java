@@ -22,18 +22,18 @@ public final class TransactionalBaselineAssessmentManagementUseCase
     }
 
     @Override
-    public OccupationPage listOccupations(OccupationQuery query) {
-        return delegate.listOccupations(query);
+    public JobPositionPage listJobPositions(JobPositionQuery query) {
+        return delegate.listJobPositions(query);
     }
 
     @Override
-    public Workspace getWorkspace(String occupationId) {
-        return delegate.getWorkspace(occupationId);
+    public Workspace getWorkspace(String jobPositionId) {
+        return delegate.getWorkspace(jobPositionId);
     }
 
     @Override
-    public WorkingRevision startBlueprintRevision(String occupationId, String idempotencyKey) {
-        return write(() -> delegate.startBlueprintRevision(occupationId, idempotencyKey));
+    public WorkingRevision startBlueprintRevision(String jobPositionId, String idempotencyKey) {
+        return write(() -> delegate.startBlueprintRevision(jobPositionId, idempotencyKey));
     }
 
     @Override
@@ -51,8 +51,8 @@ public final class TransactionalBaselineAssessmentManagementUseCase
     }
 
     @Override
-    public BaselineAssessmentDraft generateAssessmentDraft(String occupationId, String idempotencyKey) {
-        return write(() -> delegate.generateAssessmentDraft(occupationId, idempotencyKey));
+    public BaselineAssessmentDraft generateAssessmentDraft(String jobPositionId, String idempotencyKey) {
+        return write(() -> delegate.generateAssessmentDraft(jobPositionId, idempotencyKey));
     }
 
     @Override
@@ -97,8 +97,8 @@ public final class TransactionalBaselineAssessmentManagementUseCase
     }
 
     @Override
-    public Workspace abandonPendingChange(String occupationId, String reason) {
-        return write(() -> delegate.abandonPendingChange(occupationId, reason));
+    public Workspace abandonPendingChange(String jobPositionId, String reason) {
+        return write(() -> delegate.abandonPendingChange(jobPositionId, reason));
     }
 
     private <T> T write(Supplier<T> operation) {

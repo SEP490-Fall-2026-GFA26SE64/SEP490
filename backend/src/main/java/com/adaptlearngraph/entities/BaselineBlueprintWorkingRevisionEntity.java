@@ -11,7 +11,7 @@ import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
-/** platform.baseline_blueprint_working_revision: fixed Blueprint working revision of one organization Occupation series; closed revisions are frozen by trigger. */
+/** platform.baseline_blueprint_working_revision: fixed Blueprint working revision of one organization JobPosition series; closed revisions are frozen by trigger. */
 @Entity
 @Table(schema = "platform", name = "baseline_blueprint_working_revision")
 @DynamicInsert
@@ -22,8 +22,8 @@ public class BaselineBlueprintWorkingRevisionEntity {
     private UUID workingRevisionId;
     @Column(name = "organization_id", nullable = false, updatable = false)
     private UUID organizationId;
-    @Column(name = "occupation_id", nullable = false, updatable = false)
-    private String occupationId;
+    @Column(name = "job_position_id", nullable = false, updatable = false)
+    private String jobPositionId;
     @Column(name = "blueprint_id", nullable = false, updatable = false)
     private UUID blueprintId;
     @Column(name = "base_version")
@@ -32,8 +32,8 @@ public class BaselineBlueprintWorkingRevisionEntity {
     private Long revision;
     @Column(name = "name", nullable = false)
     private String name;
-    @Column(name = "occupation_name_snapshot", nullable = false)
-    private String occupationNameSnapshot;
+    @Column(name = "job_position_name_snapshot", nullable = false)
+    private String jobPositionNameSnapshot;
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "roles", nullable = false, columnDefinition = "jsonb")
     private String roles;
@@ -54,15 +54,15 @@ public class BaselineBlueprintWorkingRevisionEntity {
     }
 
     @SuppressWarnings("java:S107")
-    public BaselineBlueprintWorkingRevisionEntity(UUID workingRevisionId, UUID organizationId, String occupationId, UUID blueprintId, Integer baseVersion, Long revision, String name, String occupationNameSnapshot, String roles, String state, UUID createdBy, Instant createdAt, UUID updatedBy, Instant updatedAt, Instant closedAt) {
+    public BaselineBlueprintWorkingRevisionEntity(UUID workingRevisionId, UUID organizationId, String jobPositionId, UUID blueprintId, Integer baseVersion, Long revision, String name, String jobPositionNameSnapshot, String roles, String state, UUID createdBy, Instant createdAt, UUID updatedBy, Instant updatedAt, Instant closedAt) {
         this.workingRevisionId = workingRevisionId;
         this.organizationId = organizationId;
-        this.occupationId = occupationId;
+        this.jobPositionId = jobPositionId;
         this.blueprintId = blueprintId;
         this.baseVersion = baseVersion;
         this.revision = revision;
         this.name = name;
-        this.occupationNameSnapshot = occupationNameSnapshot;
+        this.jobPositionNameSnapshot = jobPositionNameSnapshot;
         this.roles = roles;
         this.state = state;
         this.createdBy = createdBy;
@@ -74,12 +74,12 @@ public class BaselineBlueprintWorkingRevisionEntity {
 
     public UUID getWorkingRevisionId() { return workingRevisionId; }
     public UUID getOrganizationId() { return organizationId; }
-    public String getOccupationId() { return occupationId; }
+    public String getJobPositionId() { return jobPositionId; }
     public UUID getBlueprintId() { return blueprintId; }
     public Integer getBaseVersion() { return baseVersion; }
     public Long getRevision() { return revision; }
     public String getName() { return name; }
-    public String getOccupationNameSnapshot() { return occupationNameSnapshot; }
+    public String getJobPositionNameSnapshot() { return jobPositionNameSnapshot; }
     public String getRoles() { return roles; }
     public String getState() { return state; }
     public UUID getCreatedBy() { return createdBy; }

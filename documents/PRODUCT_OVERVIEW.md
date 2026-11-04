@@ -2,7 +2,7 @@
 
 ## Shared workspace adaptive integration
 
-Real workspace identity/CSRF now composes the retained initial-pathway source. The [integration contract](technical/Workspace%20Adaptive%20Integration.md) records actor/tenant boundaries, portable development seed gates, separate migration lineage/volumes and view-only limits. Detailed Function rules are retained in [technical contracts](technical/initial-pathway/Initial%20pathway%20generation/Initial%20Pathway%20Flow%20and%20Data%20Design.md); domain REQ/FR anchors remain reserved. Current Role-first entry resolves the full-Occupation baseline before gap/confirmation; SRS discussion of another ordering does not silently change this accepted flow. Source/build checks are distinct from [new runtime verification still Not run](testing/system/REQ-002-041-042-workspace-integration.md).
+Real workspace identity/CSRF now composes the retained initial-pathway source. The [integration contract](technical/Workspace%20Adaptive%20Integration.md) records actor/tenant boundaries, portable development seed gates, separate migration lineage/volumes and view-only limits. Detailed Function rules are retained in [technical contracts](technical/initial-pathway/Initial%20pathway%20generation/Initial%20Pathway%20Flow%20and%20Data%20Design.md); domain REQ/FR anchors remain reserved. Current Role-first entry resolves the full-Job Position baseline before gap/confirmation; SRS discussion of another ordering does not silently change this accepted flow. Source/build checks are distinct from [new runtime verification still Not run](testing/system/REQ-002-041-042-workspace-integration.md).
 
 **Functional scope source:** [Capstone Register Version 2](./FA26SE267_KNOWLEDGE_GRAPH_BASED_ADAPTIVE_LEARNING__haht43_Version_2.md), section 3.2(c).
 
@@ -19,7 +19,7 @@ Adapt-Learn-Graph connects organization onboarding and subscriptions, workspace 
 | Guest | 4 | Register an organization; select and pay for a subscription; track onboarding and access the workspace. |
 | Platform Administrator | 3 | Manage organizations; configure existing subscriptions; monitor platform activity. |
 | System Administrator | 6 | Manage accounts, departments, roles, permissions, organization settings, workspace activity and organization subscriptions. |
-| L&D Manager | 7 | Manage occupations and Expert assignments, target roles and publication, baseline configuration, offering approval and employee development. |
+| L&D Manager | 7 | Manage job positions and Expert assignments, target roles and publication, baseline configuration, offering approval and employee development. |
 | Expert | 8 | Manage micro-skills, role competency requirements and submissions, prerequisites, modules, module assessments, initial pathway review and content submissions. |
 | Employee | 9 | Manage a profile, complete assessments, review role guidance and competency gaps, follow pathways, learn individual skills and track progress. |
 | System | 11 | Authenticate/authorize; process payments; provision workspaces; maintain entitlements; evaluate assessments; update competencies/gaps; generate guidance and pathways; aggregate development/ROI; send emails; record activity. |
@@ -50,13 +50,13 @@ Each link resolves to one nine-field requirement record. A requirement spanning 
 | [FR-02.02](features/Subscription%20lifecycle/README.md#fr-02-02) | Platform Administrator | Configure subscriptions | Subscription lifecycle |
 | [FR-02.03](features/Platform%20administration/README.md#fr-02-03) | Platform Administrator | Monitor platform activity | Platform administration |
 | [FR-03.01](features/Workspace%20administration/README.md#fr-03-01) | System Administrator | Manage user accounts | Workspace administration |
-| [FR-03.02](features/Departments%20and%20occupations/README.md#fr-03-02) | System Administrator | Manage departments | Departments and occupations |
+| [FR-03.02](features/Departments%20and%20job positions/README.md#fr-03-02) | System Administrator | Manage departments | Departments and job positions |
 | [FR-03.03](features/Workspace%20administration/README.md#fr-03-03) | System Administrator | Manage roles and permissions | Workspace administration |
 | [FR-03.04](features/Workspace%20administration/README.md#fr-03-04) | System Administrator | Manage system configuration | Workspace administration |
 | [FR-03.05](features/Workspace%20administration/README.md#fr-03-05) | System Administrator | Monitor system activity | Workspace administration |
 | [FR-03.06](features/Subscription%20lifecycle/README.md#fr-03-06) | System Administrator | Manage organization subscription | Subscription lifecycle |
-| [FR-04.01](features/Departments%20and%20occupations/README.md#fr-04-01) | L&D Manager | Manage occupations | Departments and occupations |
-| [FR-04.02](features/Departments%20and%20occupations/README.md#fr-04-02) | L&D Manager | Assign Experts | Departments and occupations |
+| [FR-04.01](features/Departments%20and%20job positions/README.md#fr-04-01) | L&D Manager | Manage job positions | Departments and job positions |
+| [FR-04.02](features/Departments%20and%20job positions/README.md#fr-04-02) | L&D Manager | Assign Experts | Departments and job positions |
 | [FR-04.03](features/Role%20catalog/README.md#fr-04-03) | L&D Manager | Manage target roles | Role catalog |
 | [FR-04.04](features/Role%20catalog/README.md#fr-04-04) | L&D Manager | Manage target role publication | Role catalog |
 | [FR-04.05](features/Assessment%20workflows/README.md#fr-04-05) | L&D Manager | Manage baseline assessment configuration | Assessment workflows |

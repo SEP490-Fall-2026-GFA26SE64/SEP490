@@ -108,7 +108,7 @@
     },
     {
       "method": "GET",
-      "url": "http://127.0.0.1:18080/api/v1/ld/baseline-blueprint-catalog/occupations",
+      "url": "http://127.0.0.1:18080/api/v1/ld/baseline-blueprint-catalog/job positions",
       "status": 401,
       "body": "",
       "cacheControl": "no-cache, no-store, max-age=0, must-revalidate"
@@ -129,7 +129,7 @@
     },
     {
       "method": "POST",
-      "url": "http://127.0.0.1:18080/api/v1/ld/adaptive-baseline-blueprints/occupations/OCC-15-1212.00/working",
+      "url": "http://127.0.0.1:18080/api/v1/ld/adaptive-baseline-blueprints/job positions/OCC-15-1212.00/working",
       "status": 401,
       "body": "",
       "cacheControl": "no-cache, no-store, max-age=0, must-revalidate"

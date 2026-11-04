@@ -6,7 +6,7 @@ hide circle
 skinparam classAttributeIconSize 0
 skinparam defaultFontName SansSerif
 skinparam defaultFontSize 12
-title PostgreSQL 17.6 / platform / V1-V26\nCurrent Role selection and initial Occupation profile (3 tables)
+title PostgreSQL 17.6 / platform / V1-V26\nCurrent Role selection and initial Job Position profile (3 tables)
 legend top left
 PK = primary key; FK = foreign-key column; ? = nullable
 Arrows: referenced parent -> referencing child; no cardinality inference.
@@ -17,7 +17,7 @@ class employee_role_selection {
   organization_id : uuid
   learner_id : uuid [FK]
   role_id : text
-  occupation_id : text
+  job position_id : text
   role_snapshot : jsonb
   target_revision : bigint
   selected_at : timestamp with time zone
@@ -32,10 +32,10 @@ class employee_role_selection_request {
   response : jsonb
   created_at : timestamp with time zone
 }
-class employee_occupation_profile {
+class employee_job position_profile {
   organization_id : uuid [PK, FK]
   learner_id : uuid [PK, FK]
-  occupation_id : text [PK, FK]
+  job position_id : text [PK, FK]
   attempt_id : uuid [FK]
   blueprint_id : uuid [FK]
   blueprint_version : integer [FK]
@@ -47,8 +47,8 @@ class employee_occupation_profile {
 class baseline_adaptive_attempt <<external>> #F1F5F9
 class baseline_adaptive_blueprint_version <<external>> #F1F5F9
 class learner_state <<external>> #F1F5F9
-baseline_adaptive_attempt --> employee_occupation_profile
-baseline_adaptive_blueprint_version --> employee_occupation_profile
+baseline_adaptive_attempt --> employee_job position_profile
+baseline_adaptive_blueprint_version --> employee_job position_profile
 employee_role_selection --> employee_role_selection_request
 learner_state --> employee_role_selection
 @enduml

@@ -14,7 +14,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.ObjectProvider;
 
 /**
- * DTO boundary of the legacy baseline blueprint API. When the Occupation-scoped management capability is present,
+ * DTO boundary of the legacy baseline blueprint API. When the JobPosition-scoped management capability is present,
  * legacy writes are routed through its working revision lifecycle; otherwise the legacy use cases are used directly.
  */
 public class BaselineBlueprintApplicationService {
@@ -36,9 +36,9 @@ public class BaselineBlueprintApplicationService {
             if (management == null) {
                 return blueprint(blueprints.create(idempotencyKey, draft(request)));
             }
-            if (!management.getWorkspace(request.occupationId()).blueprintVersions().isEmpty()) {
+            if (!management.getWorkspace(request.jobPositionId()).blueprintVersions().isEmpty()) {
                 throw new Failure(BaselineBlueprintUseCase.Code.VERSION_CONFLICT,
-                        "This Occupation already has a baseline blueprint");
+                        "This JobPosition already has a baseline blueprint");
             }
             return blueprint(finalizeLegacyDraft(idempotencyKey, draft(request)));
         });
@@ -47,8 +47,8 @@ public class BaselineBlueprintApplicationService {
     public BlueprintResponse revise(UUID blueprintId, String idempotencyKey, ReviseRequest request) {
         return call(() -> {
             if (management == null) {
-                var draft = BaselineAuthoringRequests.draft(request.name(), request.occupationId(),
-                        request.occupationNameSnapshot(), request.roles());
+                var draft = BaselineAuthoringRequests.draft(request.name(), request.jobPositionId(),
+                        request.jobPositionNameSnapshot(), request.roles());
                 return blueprint(blueprints.revise(blueprintId, request.expectedLatestVersion(), idempotencyKey, draft));
             }
             BaselineBlueprint latest = blueprints.getLatest(blueprintId);
@@ -56,7 +56,7 @@ public class BaselineBlueprintApplicationService {
                 throw new Failure(BaselineBlueprintUseCase.Code.VERSION_CONFLICT, "Baseline blueprint has a newer version");
             }
             return blueprint(finalizeLegacyDraft(idempotencyKey, BaselineAuthoringRequests.draft(request.name(),
-                    request.occupationId(), request.occupationNameSnapshot(), request.roles())));
+                    request.jobPositionId(), request.jobPositionNameSnapshot(), request.roles())));
         });
     }
 
@@ -64,8 +64,8 @@ public class BaselineBlueprintApplicationService {
         return call(() -> blueprint(blueprints.getLatest(blueprintId)));
     }
 
-    public BlueprintResponse latestByOccupation(String occupationId) {
-        return call(() -> blueprint(blueprints.getLatestByOccupation(occupationId)));
+    public BlueprintResponse latestByJobPosition(String jobPositionId) {
+        return call(() -> blueprint(blueprints.getLatestByJobPosition(jobPositionId)));
     }
 
     public BlueprintResponse version(UUID blueprintId, int version) {
@@ -78,7 +78,7 @@ public class BaselineBlueprintApplicationService {
                 return assessment(drafts.generate(blueprintId, blueprintVersion, idempotencyKey));
             }
             BaselineBlueprint blueprint = blueprints.getVersion(blueprintId, blueprintVersion);
-            return assessment(management.generateAssessmentDraft(blueprint.occupationId(), idempotencyKey));
+            return assessment(management.generateAssessmentDraft(blueprint.jobPositionId(), idempotencyKey));
         });
     }
 
@@ -101,12 +101,12 @@ public class BaselineBlueprintApplicationService {
     }
 
     private static BlueprintDraft draft(CreateRequest request) {
-        return BaselineAuthoringRequests.draft(request.name(), request.occupationId(), request.occupationNameSnapshot(),
+        return BaselineAuthoringRequests.draft(request.name(), request.jobPositionId(), request.jobPositionNameSnapshot(),
                 request.roles());
     }
 
     private BaselineBlueprint finalizeLegacyDraft(String idempotencyKey, BlueprintDraft draft) {
-        var working = management.startBlueprintRevision(draft.occupationId(), idempotencyKey + ":start");
+        var working = management.startBlueprintRevision(draft.jobPositionId(), idempotencyKey + ":start");
         var saved = management.saveBlueprintRevision(working.workingRevisionId(), working.revision(),
                 idempotencyKey + ":save", draft);
         return management.finalizeBlueprintRevision(saved.workingRevisionId(), saved.revision(), idempotencyKey);

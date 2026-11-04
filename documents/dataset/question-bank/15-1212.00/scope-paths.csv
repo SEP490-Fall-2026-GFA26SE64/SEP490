@@ -1,4 +1,4 @@
-occupationId,roleId,roleName,levelId,levelName,levelRank,microSkillId,microSkillName,requirementId,requiredScore,isMandatory
+job positionId,roleId,roleName,levelId,levelName,levelRank,microSkillId,microSkillName,requirementId,requiredScore,isMandatory
 OCC-15-1212.00,ROLE-BC681F40F67B,Information Security Officer,LV-BC681F40F67B-J,Junior,1,MS-INF08,Apply infrastructure hardening and updates,REL-C1FD07CFA41B0262F5,0.65,True
 OCC-15-1212.00,ROLE-BC681F40F67B,Information Security Officer,LV-BC681F40F67B-J,Junior,1,MS-SEC02,Select and verify security controls,REL-9F7E4FCCC552F8E27D,0.65,True
 OCC-15-1212.00,ROLE-BC681F40F67B,Information Security Officer,LV-BC681F40F67B-J,Junior,1,MS-SEC09,Communicate security recommendations,REL-BE580F045DFFB19EE6,0.65,True

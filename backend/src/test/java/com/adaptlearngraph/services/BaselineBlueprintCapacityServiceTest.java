@@ -9,11 +9,11 @@ import com.adaptlearngraph.repository.BaselineBlueprintStore.Actor;
 import com.adaptlearngraph.repository.BaselineBlueprintValidationPort;
 import com.adaptlearngraph.repository.BaselineBlueprintValidationPort.CoverageKey;
 import com.adaptlearngraph.repository.BaselineBlueprintValidationPort.Difficulty;
-import com.adaptlearngraph.repository.BaselineOccupationCatalogPort;
-import com.adaptlearngraph.repository.BaselineOccupationCatalogPort.CatalogOccupation;
-import com.adaptlearngraph.repository.BaselineOccupationCatalogPort.CatalogOccupationSummary;
-import com.adaptlearngraph.repository.BaselineOccupationCatalogPort.CatalogRole;
-import com.adaptlearngraph.repository.BaselineOccupationCatalogPort.CatalogSkill;
+import com.adaptlearngraph.repository.BaselineJobPositionCatalogPort;
+import com.adaptlearngraph.repository.BaselineJobPositionCatalogPort.CatalogJobPosition;
+import com.adaptlearngraph.repository.BaselineJobPositionCatalogPort.CatalogJobPositionSummary;
+import com.adaptlearngraph.repository.BaselineJobPositionCatalogPort.CatalogRole;
+import com.adaptlearngraph.repository.BaselineJobPositionCatalogPort.CatalogSkill;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
@@ -27,16 +27,16 @@ import org.junit.jupiter.api.Test;
 /** REQ-002-F02 capacity query policy; fakes are unit evidence only. */
 class BaselineBlueprintCapacityServiceTest {
     private static final String ORGANIZATION_ID = "org-alpha";
-    private static final String OCCUPATION_ID = "occupation-engineering";
+    private static final String JOB_POSITION_ID = "jobPosition-engineering";
     private static final Instant NOW = Instant.parse("2026-10-16T08:00:00Z");
 
     @Test
-    void returnsSortedCapacityForUniqueOccupationSkillsAndTrustedTenant() {
+    void returnsSortedCapacityForUniqueJobPositionSkillsAndTrustedTenant() {
         var fixture = new Fixture();
 
-        var result = fixture.service.getAvailableCapacity("  " + OCCUPATION_ID + "  ");
+        var result = fixture.service.getAvailableCapacity("  " + JOB_POSITION_ID + "  ");
 
-        assertThat(result.occupationId()).isEqualTo(OCCUPATION_ID);
+        assertThat(result.jobPositionId()).isEqualTo(JOB_POSITION_ID);
         assertThat(result.catalogVersion()).isEqualTo("catalog-v7");
         assertThat(result.coverageAsOf()).isEqualTo(NOW);
         assertThat(result.roles()).extracting(role -> role.roleId())
@@ -57,28 +57,28 @@ class BaselineBlueprintCapacityServiceTest {
     void rejectsMissingInactiveOrWrongRoleActorBeforeReadingCatalog() {
         var fixture = new Fixture();
         fixture.actor = Optional.empty();
-        assertCode(Code.UNAUTHENTICATED, () -> fixture.service.getAvailableCapacity(OCCUPATION_ID));
+        assertCode(Code.UNAUTHENTICATED, () -> fixture.service.getAvailableCapacity(JOB_POSITION_ID));
 
         fixture.actor = Optional.of(actor(false, "LD_MANAGER"));
-        assertCode(Code.FORBIDDEN, () -> fixture.service.getAvailableCapacity(OCCUPATION_ID));
+        assertCode(Code.FORBIDDEN, () -> fixture.service.getAvailableCapacity(JOB_POSITION_ID));
 
         fixture.actor = Optional.of(actor(true, "EMPLOYEE"));
-        assertCode(Code.FORBIDDEN, () -> fixture.service.getAvailableCapacity(OCCUPATION_ID));
+        assertCode(Code.FORBIDDEN, () -> fixture.service.getAvailableCapacity(JOB_POSITION_ID));
 
         assertThat(fixture.catalog.calls).isZero();
         assertThat(fixture.validation.calls).isZero();
     }
 
     @Test
-    void mapsMissingOccupationAndCatalogFailureWithoutReadingCoverage() {
+    void mapsMissingJobPositionAndCatalogFailureWithoutReadingCoverage() {
         var fixture = new Fixture();
-        fixture.catalog.occupation = Optional.empty();
-        assertCode(Code.NOT_FOUND, () -> fixture.service.getAvailableCapacity(OCCUPATION_ID));
+        fixture.catalog.jobPosition = Optional.empty();
+        assertCode(Code.NOT_FOUND, () -> fixture.service.getAvailableCapacity(JOB_POSITION_ID));
 
-        fixture.catalog.failure = new BaselineOccupationCatalogPort.DependencyUnavailable(
+        fixture.catalog.failure = new BaselineJobPositionCatalogPort.DependencyUnavailable(
                 "catalog offline", new IllegalStateException("offline"));
         assertCode(Code.DEPENDENCY_UNAVAILABLE,
-                () -> fixture.service.getAvailableCapacity(OCCUPATION_ID));
+                () -> fixture.service.getAvailableCapacity(JOB_POSITION_ID));
 
         assertThat(fixture.validation.calls).isZero();
     }
@@ -90,7 +90,7 @@ class BaselineBlueprintCapacityServiceTest {
                 "question bank offline", new IllegalStateException("offline"));
 
         assertCode(Code.DEPENDENCY_UNAVAILABLE,
-                () -> fixture.service.getAvailableCapacity(OCCUPATION_ID));
+                () -> fixture.service.getAvailableCapacity(JOB_POSITION_ID));
     }
 
     private static Actor actor(boolean active, String role) {
@@ -117,9 +117,9 @@ class BaselineBlueprintCapacityServiceTest {
                 () -> actor, catalog, validation, Clock.fixed(NOW, ZoneOffset.UTC));
     }
 
-    private static final class FakeCatalog implements BaselineOccupationCatalogPort {
-        private Optional<CatalogOccupation> occupation = Optional.of(new CatalogOccupation(
-                OCCUPATION_ID, "Software Engineering", "catalog-v7",
+    private static final class FakeCatalog implements BaselineJobPositionCatalogPort {
+        private Optional<CatalogJobPosition> jobPosition = Optional.of(new CatalogJobPosition(
+                JOB_POSITION_ID, "Software Engineering", "catalog-v7",
                 List.of(
                         new CatalogRole("role-z", "Z role", "v7",
                                 List.of(new CatalogSkill("skill-z", "Z skill", "v7"),
@@ -131,17 +131,17 @@ class BaselineBlueprintCapacityServiceTest {
         private int calls;
 
         @Override
-        public List<CatalogOccupationSummary> findAvailableOccupations(String organizationId) {
+        public List<CatalogJobPositionSummary> findAvailableJobPositions(String organizationId) {
             throw new UnsupportedOperationException();
         }
 
         @Override
-        public Optional<CatalogOccupation> findAvailableOccupation(
-                String organizationId, String occupationId) {
+        public Optional<CatalogJobPosition> findAvailableJobPosition(
+                String organizationId, String jobPositionId) {
             calls++;
             requestedOrganizationId = organizationId;
             if (failure != null) throw failure;
-            return OCCUPATION_ID.equals(occupationId) ? occupation : Optional.empty();
+            return JOB_POSITION_ID.equals(jobPositionId) ? jobPosition : Optional.empty();
         }
     }
 
@@ -162,8 +162,8 @@ class BaselineBlueprintCapacityServiceTest {
         }
 
         @Override
-        public Optional<BaselineBlueprintValidationPort.CatalogOccupation> findAvailableOccupation(
-                String organizationId, String occupationId) {
+        public Optional<BaselineBlueprintValidationPort.CatalogJobPosition> findAvailableJobPosition(
+                String organizationId, String jobPositionId) {
             throw new UnsupportedOperationException();
         }
 

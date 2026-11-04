@@ -269,7 +269,7 @@ class PaymentOrderPostgresIntegrationTest {
         var member=workspaces.members(org).stream().filter(m->m.membershipId().equals(id)).findFirst().orElseThrow();
         assertEquals(SubscriptionFailure.Code.CAPACITY_EXCEEDED,assertThrows(SubscriptionFailure.class,()->
                 workspaces.updateMember(context.actor(),org,id,new com.adaptlearngraph.entities.domain.MemberProfileUpdate(
-                    "Must roll back",Set.of("EMPLOYEE"),member.departmentId(),member.occupationReferenceId(),member.revision()),NOW)).code());
+                    "Must roll back",Set.of("EMPLOYEE"),member.departmentId(),member.jobPositionReferenceId(),member.revision()),NOW)).code());
         var unchanged=workspaces.members(org).stream().filter(m->m.membershipId().equals(id)).findFirst().orElseThrow();
         assertEquals(member.fullName(),unchanged.fullName());
         assertEquals(member.roles(),unchanged.roles());
@@ -291,7 +291,7 @@ class PaymentOrderPostgresIntegrationTest {
         assertEquals(member.email(),edited.email());
         assertEquals(member.revision()+1,edited.revision());
         assertNull(edited.departmentId());
-        assertNull(edited.occupationReferenceId());
+        assertNull(edited.jobPositionReferenceId());
         assertNull(edited.departmentName());
         assertEquals(registeredName,jdbc.queryForObject("SELECT admin_name FROM platform.organization_registration WHERE account_id=?",String.class,member.accountId()));
         assertEquals(password,jdbc.queryForObject("SELECT password_hash FROM platform.account WHERE account_id=?",String.class,member.accountId()));
@@ -312,20 +312,20 @@ class PaymentOrderPostgresIntegrationTest {
         UUID org=context.actor().organizationId(),memberId=employee(org,true);
         var member=workspaces.members(org).stream().filter(m->m.membershipId().equals(memberId)).findFirst().orElseThrow();
         jdbc.update("UPDATE platform.department_reference SET active=false WHERE department_id=?",member.departmentId());
-        jdbc.update("UPDATE platform.occupation_department_reference SET active=false WHERE occupation_reference_id=?",member.occupationReferenceId());
+        jdbc.update("UPDATE platform.job_position_department_reference SET active=false WHERE job_position_reference_id=?",member.jobPositionReferenceId());
         var updated=workspaces.updateMember(context.actor(),org,memberId,new com.adaptlearngraph.entities.domain.MemberProfileUpdate(
-                "Historical Employee",Set.of("EMPLOYEE"),member.departmentId(),member.occupationReferenceId(),0),NOW);
+                "Historical Employee",Set.of("EMPLOYEE"),member.departmentId(),member.jobPositionReferenceId(),0),NOW);
         assertEquals("Test department",updated.departmentName());
-        assertEquals("Test occupation",updated.occupationName());
+        assertEquals("Test jobPosition",updated.jobPositionName());
         var other=provisioned();
         UUID foreignId=employee(other.actor().organizationId(),true);
         var foreign=workspaces.members(other.actor().organizationId()).stream().filter(m->m.membershipId().equals(foreignId)).findFirst().orElseThrow();
         assertEquals(SubscriptionFailure.Code.REFERENCE_DATA_REQUIRED,assertThrows(SubscriptionFailure.class,()->
                 workspaces.updateMember(context.actor(),org,memberId,new com.adaptlearngraph.entities.domain.MemberProfileUpdate(
-                    "Invalid",Set.of("EMPLOYEE"),foreign.departmentId(),foreign.occupationReferenceId(),1),NOW)).code());
+                    "Invalid",Set.of("EMPLOYEE"),foreign.departmentId(),foreign.jobPositionReferenceId(),1),NOW)).code());
         assertEquals(SubscriptionFailure.Code.FORBIDDEN,assertThrows(SubscriptionFailure.class,()->
                 workspaces.updateMember(other.actor(),org,memberId,new com.adaptlearngraph.entities.domain.MemberProfileUpdate(
-                    "Forbidden",Set.of("EMPLOYEE"),member.departmentId(),member.occupationReferenceId(),1),NOW)).code());
+                    "Forbidden",Set.of("EMPLOYEE"),member.departmentId(),member.jobPositionReferenceId(),1),NOW)).code());
         var admin=workspaces.members(org).stream().filter(m->m.accountId().equals(context.actor().accountId())).findFirst().orElseThrow();
         assertEquals(SubscriptionFailure.Code.CONFLICT,assertThrows(SubscriptionFailure.class,()->
                 workspaces.updateMember(context.actor(),org,admin.membershipId(),new com.adaptlearngraph.entities.domain.MemberProfileUpdate(
@@ -342,7 +342,7 @@ class PaymentOrderPostgresIntegrationTest {
                 workspaces.updateMember(context.actor(),org,id,new com.adaptlearngraph.entities.domain.MemberProfileUpdate(
                     "No references",Set.of("EMPLOYEE"),null,null,0),NOW)).code());
         var update=new com.adaptlearngraph.entities.domain.MemberProfileUpdate("Not permitted",Set.of("EMPLOYEE"),
-                member.departmentId(),member.occupationReferenceId(),0);
+                member.departmentId(),member.jobPositionReferenceId(),0);
         Instant end=workspaces.summary(org,NOW).current().endsAt();
         assertEquals(SubscriptionFailure.Code.FORBIDDEN,assertThrows(SubscriptionFailure.class,()->
                 workspaces.updateMember(context.actor(),org,id,update,end)).code());
@@ -582,10 +582,10 @@ class PaymentOrderPostgresIntegrationTest {
         UUID orgA = ownerA.actor().organizationId();
         UUID orgB = ownerB.actor().organizationId();
         UUID department = UUID.randomUUID();
-        UUID occupation = UUID.randomUUID();
+        UUID jobPosition = UUID.randomUUID();
         jdbc.update("INSERT INTO platform.department_reference VALUES (?,?,'Activation department',true)", department, orgA);
-        jdbc.update("INSERT INTO platform.occupation_department_reference VALUES (?,?,?,?,'Activation occupation',true)",
-                occupation, UUID.randomUUID(), orgA, department);
+        jdbc.update("INSERT INTO platform.job_position_department_reference VALUES (?,?,?,?,'Activation jobPosition',true)",
+                jobPosition, UUID.randomUUID(), orgA, department);
         var crypto = new com.adaptlearngraph.utility.RegistrationCryptography(
                 java.util.Base64.getEncoder().encodeToString("e".repeat(32).getBytes(java.nio.charset.StandardCharsets.UTF_8)),
                 java.util.Base64.getEncoder().encodeToString("h".repeat(32).getBytes(java.nio.charset.StandardCharsets.UTF_8)));
@@ -603,7 +603,7 @@ class PaymentOrderPostgresIntegrationTest {
         String email = "member-" + UUID.randomUUID() + "@example.test";
 
         var invitation = activation.invite(orgA, new com.adaptlearngraph.services.MemberActivationUseCase.Input(
-                "Invited Member", email, Set.of("EMPLOYEE"), department, occupation));
+                "Invited Member", email, Set.of("EMPLOYEE"), department, jobPosition));
         assertEquals("PENDING", invitation.deliveryStatus());
         assertEquals(List.of(invitation.activationId()),
                 activation.pending(orgA).stream().map(com.adaptlearngraph.services.MemberActivationUseCase.PendingActivation::activationId).toList());
@@ -613,7 +613,7 @@ class PaymentOrderPostgresIntegrationTest {
         assertThrows(SubscriptionFailure.class, () -> activation.pending(orgA));
         assertEquals(SubscriptionFailure.Code.REFERENCE_DATA_REQUIRED, assertThrows(SubscriptionFailure.class, () ->
                 activation.invite(orgB, new com.adaptlearngraph.services.MemberActivationUseCase.Input(
-                        "Foreign Reference", "b-" + email, Set.of("EMPLOYEE"), department, occupation))).code());
+                        "Foreign Reference", "b-" + email, Set.of("EMPLOYEE"), department, jobPosition))).code());
 
         String encrypted = jdbc.queryForObject("""
                 SELECT payload->>'encryptedToken' FROM platform.outbox_event
@@ -670,17 +670,17 @@ class PaymentOrderPostgresIntegrationTest {
                 Set.of(com.adaptlearngraph.entities.domain.SubscriptionAccessPolicy.Role.ORGANIZATION_ADMINISTRATOR),true),null);
     }
     private static UUID employee(UUID org,boolean active) {
-        UUID account=UUID.randomUUID(),member=UUID.randomUUID(),department=UUID.randomUUID(),occupation=UUID.randomUUID();
+        UUID account=UUID.randomUUID(),member=UUID.randomUUID(),department=UUID.randomUUID(),jobPosition=UUID.randomUUID();
         jdbc.update("INSERT INTO platform.department_reference VALUES (?,?,'Test department',true)",department,org);
-        jdbc.update("INSERT INTO platform.occupation_department_reference VALUES (?,?,?,?,'Test occupation',true)",occupation,UUID.randomUUID(),org,department);
+        jdbc.update("INSERT INTO platform.job_position_department_reference VALUES (?,?,?,?,'Test jobPosition',true)",jobPosition,UUID.randomUUID(),org,department);
         jdbc.update("INSERT INTO platform.account(account_id,organization_id,identifier,normalized_identifier,password_hash) VALUES (?,?,?,?,?)",
                 account,org,account+"@example.test",account+"@example.test","isolated-unusable");
         jdbc.update("INSERT INTO platform.workspace_account_profile(account_id,full_name,email_verified_at) VALUES (?,'Test Employee',now())",account);
         transactions.executeWithoutResult(tx -> {
             jdbc.update("""
-                    INSERT INTO platform.organization_membership(membership_id,account_id,organization_id,active,department_id,occupation_reference_id,created_at,updated_at)
+                    INSERT INTO platform.organization_membership(membership_id,account_id,organization_id,active,department_id,job_position_reference_id,created_at,updated_at)
                     VALUES (?,?,?,?,?,?,now(),now())
-                    """,member,account,org,active,department,occupation);
+                    """,member,account,org,active,department,jobPosition);
             jdbc.update("INSERT INTO platform.organization_membership_role VALUES (?,'EMPLOYEE')",member);
         });
         return member;

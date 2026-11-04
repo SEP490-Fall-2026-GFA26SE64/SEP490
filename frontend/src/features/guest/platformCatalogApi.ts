@@ -1,6 +1,6 @@
 import { RegistrationApiError } from './registrationApi'
 
-export type CatalogNodeLabel = 'Occupation' | 'TargetRole' | 'MicroSkill' | 'LearningModule'
+export type CatalogNodeLabel = 'JobPosition' | 'TargetRole' | 'MicroSkill' | 'LearningModule'
 export interface CatalogNode { id: string; label: CatalogNodeLabel; name: string; code: string | null }
 export interface CatalogEdge { from: string; to: string; type: 'HAS_ROLE' | 'REQUIRES' | 'PREREQUISITE' | 'TEACHES' }
 export interface PlatformCatalog { version: string; nodes: CatalogNode[]; edges: CatalogEdge[] }
@@ -12,7 +12,7 @@ export interface CatalogClosure {
   nodesByLabel: Record<string, number>
 }
 
-const LABELS = new Set<CatalogNodeLabel>(['Occupation', 'TargetRole', 'MicroSkill', 'LearningModule'])
+const LABELS = new Set<CatalogNodeLabel>(['JobPosition', 'TargetRole', 'MicroSkill', 'LearningModule'])
 const EDGE_TYPES = new Set(['HAS_ROLE', 'REQUIRES', 'PREREQUISITE', 'TEACHES'])
 
 function record(value: unknown): Record<string, unknown> {

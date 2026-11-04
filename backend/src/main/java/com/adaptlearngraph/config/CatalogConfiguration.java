@@ -3,17 +3,30 @@ package com.adaptlearngraph.config;
 import com.adaptlearngraph.repository.Neo4jCompetencyRepository;
 import com.adaptlearngraph.repository.LearningModuleNodeRepository;
 import com.adaptlearngraph.repository.Neo4jLearningModuleRepository;
-import com.adaptlearngraph.repository.Neo4jOccupationRepository;
+import com.adaptlearngraph.repository.Neo4jJobPositionRepository;
 import com.adaptlearngraph.repository.Neo4jTargetRoleCatalogAdapter;
 import com.adaptlearngraph.repository.Neo4jTargetRoleRepository;
 import com.adaptlearngraph.helper.CompetencyMappings;
 import com.adaptlearngraph.helper.LearningModuleMappings;
 import com.adaptlearngraph.helper.ModelMapperRegistrar;
-import com.adaptlearngraph.helper.OccupationMappings;
+import com.adaptlearngraph.helper.JobPositionMappings;
+import com.adaptlearngraph.helper.DepartmentMappings;
+import com.adaptlearngraph.services.JobPositionApplicationService;
+import com.adaptlearngraph.services.DepartmentApplicationService;
+import com.adaptlearngraph.services.JobPositionService;
+import com.adaptlearngraph.services.DepartmentService;
+import com.adaptlearngraph.services.GetJobPositionsUseCase;
+import com.adaptlearngraph.services.GetDepartmentsUseCase;
+import com.adaptlearngraph.repository.JobPositionRepository;
+import com.adaptlearngraph.repository.DepartmentRepository;
+import com.adaptlearngraph.repository.JobPositionNodeRepository;
+import com.adaptlearngraph.repository.DepartmentNodeRepository;
+import com.adaptlearngraph.repository.Neo4jJobPositionRepository;
+import com.adaptlearngraph.repository.Neo4jDepartmentRepository;
 import com.adaptlearngraph.helper.TargetRoleMappings;
 import com.adaptlearngraph.services.CompetencyApplicationService;
 import com.adaptlearngraph.services.LearningModuleApplicationService;
-import com.adaptlearngraph.services.OccupationApplicationService;
+import com.adaptlearngraph.services.JobPositionApplicationService;
 import com.adaptlearngraph.services.OrganizationTargetRoleApplicationService;
 import com.adaptlearngraph.services.TargetRoleService;
 import org.modelmapper.ModelMapper;
@@ -28,7 +41,7 @@ import com.adaptlearngraph.entities.domain.TargetRole;
 import com.adaptlearngraph.entities.domain.TargetRoleId;
 import com.adaptlearngraph.constants.TransactionManagers;
 import com.adaptlearngraph.repository.CompetencyNodeRepository;
-import com.adaptlearngraph.repository.OccupationNodeRepository;
+import com.adaptlearngraph.repository.JobPositionNodeRepository;
 import com.adaptlearngraph.repository.TargetRoleNodeRepository;
 import org.neo4j.driver.Driver;
 import org.springframework.beans.factory.ObjectProvider;
@@ -56,8 +69,13 @@ public class CatalogConfiguration {
     }
 
     @Bean
-    public ModelMapperRegistrar occupationMappings() {
-        return new OccupationMappings();
+    public ModelMapperRegistrar jobPositionMappings() {
+        return new JobPositionMappings();
+    }
+
+    @Bean
+    public ModelMapperRegistrar departmentMappings() {
+        return new DepartmentMappings();
     }
 
     @Bean
@@ -79,9 +97,15 @@ public class CatalogConfiguration {
     }
 
     @Bean
-    public OccupationApplicationService occupationApplicationService(
-            com.adaptlearngraph.services.GetOccupationsUseCase getOccupationsUseCase, ModelMapper modelMapper) {
-        return new OccupationApplicationService(getOccupationsUseCase, modelMapper);
+    public JobPositionApplicationService jobPositionApplicationService(
+            GetJobPositionsUseCase getJobPositionsUseCase, ModelMapper modelMapper) {
+        return new JobPositionApplicationService(getJobPositionsUseCase, modelMapper);
+    }
+
+    @Bean
+    public DepartmentApplicationService departmentApplicationService(
+            GetDepartmentsUseCase getDepartmentsUseCase, ModelMapper modelMapper) {
+        return new DepartmentApplicationService(getDepartmentsUseCase, modelMapper);
     }
 
     @Bean
@@ -137,25 +161,51 @@ public class CatalogConfiguration {
     }
 
     @Bean
-    public com.adaptlearngraph.repository.OccupationRepository occupationRepository(ObjectProvider<Driver> driverProvider,
-            ObjectProvider<OccupationNodeRepository> occupations, ObjectProvider<Neo4jClient> client,
+    public com.adaptlearngraph.repository.JobPositionRepository jobPositionRepository(ObjectProvider<Driver> driverProvider,
+            ObjectProvider<JobPositionNodeRepository> jobPositions, ObjectProvider<Neo4jClient> client,
             @Qualifier(TransactionManagers.NEO4J) ObjectProvider<PlatformTransactionManager> transactions) {
         Driver driver = driverProvider.getIfAvailable();
         if (driver != null) {
-            return new Neo4jOccupationRepository(occupations.getObject(), client.getObject(), transactions.getObject());
+            return new Neo4jJobPositionRepository(jobPositions.getObject(), client.getObject(), transactions.getObject());
         }
-        return new com.adaptlearngraph.repository.OccupationRepository() {
-            @Override public java.util.List<com.adaptlearngraph.entities.domain.Occupation> findAllOccupations(String organizationId) { return java.util.List.of(); }
-            @Override public java.util.Optional<com.adaptlearngraph.entities.domain.Occupation> findByIdOrCode(String organizationId, String idOrCode) { return java.util.Optional.empty(); }
-            @Override public com.adaptlearngraph.entities.domain.Occupation save(String organizationId, com.adaptlearngraph.entities.domain.Occupation occupation) { return occupation; }
+        return new com.adaptlearngraph.repository.JobPositionRepository() {
+            @Override public java.util.List<com.adaptlearngraph.entities.domain.JobPosition> findAllJobPositions(String organizationId) { return java.util.List.of(); }
+            @Override public java.util.Optional<com.adaptlearngraph.entities.domain.JobPosition> findByIdOrCode(String organizationId, String idOrCode) { return java.util.Optional.empty(); }
+            @Override public com.adaptlearngraph.entities.domain.JobPosition save(String organizationId, com.adaptlearngraph.entities.domain.JobPosition jobPosition) { return jobPosition; }
             @Override public void delete(String organizationId, String idOrCode) {}
         };
     }
 
+
+
+
+
     @Bean
-    public com.adaptlearngraph.services.GetOccupationsUseCase getOccupationsUseCase(
-            com.adaptlearngraph.repository.OccupationRepository occupationRepository) {
-        return new com.adaptlearngraph.services.OccupationService(occupationRepository);
+    public GetJobPositionsUseCase getJobPositionsUseCase(JobPositionRepository jobPositionRepository) {
+        return new JobPositionService(jobPositionRepository);
+    }
+
+    @Bean
+    public com.adaptlearngraph.repository.DepartmentRepository departmentRepository(ObjectProvider<Driver> driverProvider,
+            ObjectProvider<DepartmentNodeRepository> departments, ObjectProvider<Neo4jClient> client,
+            @Qualifier(TransactionManagers.NEO4J) ObjectProvider<PlatformTransactionManager> transactions) {
+        Driver driver = driverProvider.getIfAvailable();
+        if (driver != null) {
+            return new Neo4jDepartmentRepository(departments.getObject(), client.getObject(), transactions.getObject());
+        }
+        return new com.adaptlearngraph.repository.DepartmentRepository() {
+            @Override public java.util.List<com.adaptlearngraph.entities.domain.Department> findAllDepartments(String organizationId) { return java.util.List.of(); }
+            @Override public java.util.Optional<com.adaptlearngraph.entities.domain.Department> findByIdOrCode(String organizationId, String idOrCode) { return java.util.Optional.empty(); }
+            @Override public com.adaptlearngraph.entities.domain.Department save(String organizationId, com.adaptlearngraph.entities.domain.Department department) { return department; }
+            @Override public void delete(String organizationId, String idOrCode) {}
+            @Override public void linkJobPosition(String organizationId, String departmentIdOrCode, String jobPositionIdOrCode) {}
+            @Override public void unlinkJobPosition(String organizationId, String departmentIdOrCode, String jobPositionIdOrCode) {}
+        };
+    }
+
+    @Bean
+    public GetDepartmentsUseCase getDepartmentsUseCase(DepartmentRepository departmentRepository) {
+        return new DepartmentService(departmentRepository);
     }
 
     @Bean

@@ -6,29 +6,29 @@
     {
       "file": "esco_AI.json",
       "sha256": "b09d718480acd92a51c35b4bf602984b80d6ad39911a9100a8b012caf1032592",
-      "sourceUrl": "https://ec.europa.eu/esco/api/resource/occupation?uri=http%3A%2F%2Fdata.europa.eu%2Fesco%2Foccupation%2F35553663-deab-4d9a-bf22-15c1625d28e8&language=en&selectedVersion=v1.2.1",
-      "conceptUri": "http://data.europa.eu/esco/occupation/35553663-deab-4d9a-bf22-15c1625d28e8",
+      "sourceUrl": "https://ec.europa.eu/esco/api/resource/job position?uri=http%3A%2F%2Fdata.europa.eu%2Fesco%2Fjob position%2F35553663-deab-4d9a-bf22-15c1625d28e8&language=en&selectedVersion=v1.2.1",
+      "conceptUri": "http://data.europa.eu/esco/job position/35553663-deab-4d9a-bf22-15c1625d28e8",
       "label": "artificial intelligence engineer"
     },
     {
       "file": "esco_DE.json",
       "sha256": "368b1073138b6b8aed4dfa0136d25461123bb6bdd4d87a1b045766f2da7d112a",
-      "sourceUrl": "https://ec.europa.eu/esco/api/resource/occupation?uri=http%3A%2F%2Fdata.europa.eu%2Fesco%2Foccupation%2F2079755f-d809-49e6-8037-4de6180e54c0&language=en&selectedVersion=v1.2.1",
-      "conceptUri": "http://data.europa.eu/esco/occupation/2079755f-d809-49e6-8037-4de6180e54c0",
+      "sourceUrl": "https://ec.europa.eu/esco/api/resource/job position?uri=http%3A%2F%2Fdata.europa.eu%2Fesco%2Fjob position%2F2079755f-d809-49e6-8037-4de6180e54c0&language=en&selectedVersion=v1.2.1",
+      "conceptUri": "http://data.europa.eu/esco/job position/2079755f-d809-49e6-8037-4de6180e54c0",
       "label": "data engineer"
     },
     {
       "file": "esco_FS.json",
       "sha256": "f601f2dd4817fa33ce7e31b1b9dcdd6c28bd07c3e400a2602842ccabc9fee2cb",
-      "sourceUrl": "https://ec.europa.eu/esco/api/resource/occupation?uri=http%3A%2F%2Fdata.europa.eu%2Fesco%2Foccupation%2Ff2b15a0e-e65a-438a-affb-29b9d50b77d1&language=en&selectedVersion=v1.2.1",
-      "conceptUri": "http://data.europa.eu/esco/occupation/f2b15a0e-e65a-438a-affb-29b9d50b77d1",
+      "sourceUrl": "https://ec.europa.eu/esco/api/resource/job position?uri=http%3A%2F%2Fdata.europa.eu%2Fesco%2Fjob position%2Ff2b15a0e-e65a-438a-affb-29b9d50b77d1&language=en&selectedVersion=v1.2.1",
+      "conceptUri": "http://data.europa.eu/esco/job position/f2b15a0e-e65a-438a-affb-29b9d50b77d1",
       "label": "software developer"
     },
     {
       "file": "esco_QA.json",
       "sha256": "015997c7f61b32941d84c93e752270b3e329b8acc7077246d2f8ccaaf9e1782c",
-      "sourceUrl": "https://ec.europa.eu/esco/api/resource/occupation?uri=http%3A%2F%2Fdata.europa.eu%2Fesco%2Foccupation%2F106f79e4-6264-45f1-9e7a-297435cd684b&language=en&selectedVersion=v1.2.1",
-      "conceptUri": "http://data.europa.eu/esco/occupation/106f79e4-6264-45f1-9e7a-297435cd684b",
+      "sourceUrl": "https://ec.europa.eu/esco/api/resource/job position?uri=http%3A%2F%2Fdata.europa.eu%2Fesco%2Fjob position%2F106f79e4-6264-45f1-9e7a-297435cd684b&language=en&selectedVersion=v1.2.1",
+      "conceptUri": "http://data.europa.eu/esco/job position/106f79e4-6264-45f1-9e7a-297435cd684b",
       "label": "software tester"
     },
     {

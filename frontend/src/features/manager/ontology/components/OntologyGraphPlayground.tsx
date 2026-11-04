@@ -27,7 +27,8 @@ import { Button } from '../../../../shared/components/ui/Button'
 import { Dialog, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '../../../../shared/components/ui/Dialog'
 import { useToast } from '../../../../shared/hooks/useToast'
 import { cn } from '../../../../shared/lib/utils'
-import { type CompetencyModel, type MicroSkillModel, type PrerequisiteEdge } from '../../data/ldManagerMockData'
+import { type CompetencyModel, type MicroSkillModel, type PrerequisiteEdge, type TargetRoleModel } from '../../data/ldManagerMockData'
+import { updateActiveCompany } from '../../../../shared/stores/companyStore'
 import { createPrerequisite, deletePrerequisite } from '../../../../shared/api/prerequisiteApi'
 import { updateCompetency } from '../../../../shared/api/competencyApi'
 
@@ -35,6 +36,8 @@ export interface OntologyGraphPlaygroundProps {
   microSkills: MicroSkillModel[]
   competencies: CompetencyModel[]
   prerequisites: PrerequisiteEdge[]
+  targetRoles?: TargetRoleModel[]
+  onUpdateTargetRole?: (role: TargetRoleModel) => Promise<void> | void
   organizationId: string
   activeTab?: string
   onRefreshData?: () => Promise<void>
@@ -42,11 +45,13 @@ export interface OntologyGraphPlaygroundProps {
 
 export interface PlaygroundCustomNode extends Node {
   id: string
-  nodeType: 'competency' | 'skill'
+  nodeType: 'targetRole' | 'level' | 'competency' | 'skill'
   code: string
   name: string
   definition?: string
   status?: string
+  targetRoleId?: string
+  levelName?: string
 }
 
 class PlaygroundErrorBoundary extends React.Component<
@@ -104,6 +109,8 @@ function OntologyGraphPlaygroundInner({
   microSkills,
   competencies,
   prerequisites,
+  targetRoles = [],
+  onUpdateTargetRole,
   organizationId,
   activeTab,
   onRefreshData,
@@ -116,9 +123,13 @@ function OntologyGraphPlaygroundInner({
   const microSkillsRef = React.useRef(microSkills)
   const competenciesRef = React.useRef(competencies)
   const prerequisitesRef = React.useRef(prerequisites)
+  const targetRolesRef = React.useRef(targetRoles)
+  const onUpdateTargetRoleRef = React.useRef(onUpdateTargetRole)
   microSkillsRef.current = microSkills
   competenciesRef.current = competencies
   prerequisitesRef.current = prerequisites
+  targetRolesRef.current = targetRoles
+  onUpdateTargetRoleRef.current = onUpdateTargetRole
 
   // Fast vis-data DataSets for 60fps graph manipulation
   const nodesDataSetRef = React.useRef<DataSet<PlaygroundCustomNode>>(new DataSet<PlaygroundCustomNode>([]))
@@ -157,9 +168,105 @@ function OntologyGraphPlaygroundInner({
   // Palette & Filter State
   const [isPaletteOpen, setIsPaletteOpen] = React.useState(true)
   const [searchQuery, setSearchQuery] = React.useState('')
-  const [filterType, setFilterType] = React.useState<'all' | 'competency' | 'skill'>('all')
+  const [filterType, setFilterType] = React.useState<'all' | 'targetRole' | 'competency' | 'skill'>('all')
 
-  // Helper builders
+  function buildTargetRoleNode(r: TargetRoleModel, pos?: { x: number; y: number }): PlaygroundCustomNode {
+    const isCompact = isCompactViewRef.current
+    return {
+      id: r.id,
+      nodeType: 'targetRole',
+      code: r.code || r.id,
+      name: r.title,
+      definition: r.description,
+      status: r.status,
+      targetRoleId: r.id,
+      label: isCompact ? (r.code || r.id) : `<b>${r.code || r.id}</b>`,
+      shape: 'box',
+      shapeProperties: { borderRadius: 8 },
+      margin: isCompact ? { top: 6, right: 10, bottom: 6, left: 10 } : { top: 12, right: 16, bottom: 12, left: 16 },
+      widthConstraint: isCompact ? { maximum: 130 } : { maximum: 200 },
+      color: {
+        background: '#FFF7ED',
+        border: '#EA580C',
+        highlight: { background: '#FFEDD5', border: '#C2410C' },
+        hover: { background: '#FFEDD5', border: '#EA580C' },
+      },
+      font: {
+        multi: 'html',
+        color: '#0F172A',
+        size: isCompact ? 9.5 : 13,
+        face: 'IBM Plex Sans, sans-serif',
+      },
+      borderWidth: 2,
+      x: pos?.x,
+      y: pos?.y,
+    }
+  }
+
+  function buildLevelNode(role: TargetRoleModel, levelName: string, pos?: { x: number; y: number }): PlaygroundCustomNode {
+    const isCompact = isCompactViewRef.current
+    const levelId = `level-${role.id}-${levelName.toLowerCase().replace(/[^a-z0-9]/g, '-')}`
+    return {
+      id: levelId,
+      nodeType: 'level',
+      code: levelName,
+      name: `${levelName} Level (${role.code})`,
+      definition: `Target proficiency tier ${levelName} for ${role.title}`,
+      targetRoleId: role.id,
+      levelName: levelName,
+      label: isCompact ? levelName : `<b>${levelName}</b>`,
+      shape: 'box',
+      shapeProperties: { borderRadius: 10 },
+      margin: isCompact ? { top: 4, right: 8, bottom: 4, left: 8 } : { top: 8, right: 14, bottom: 8, left: 14 },
+      widthConstraint: isCompact ? { maximum: 100 } : { maximum: 160 },
+      color: {
+        background: '#EEF2FF',
+        border: '#4F46E5',
+        highlight: { background: '#E0E7FF', border: '#4338CA' },
+        hover: { background: '#E0E7FF', border: '#4F46E5' },
+      },
+      font: {
+        multi: 'html',
+        color: '#1E1B4B',
+        size: isCompact ? 9 : 11,
+        face: 'IBM Plex Sans, sans-serif',
+      },
+      borderWidth: 1.5,
+      x: pos?.x,
+      y: pos?.y,
+    }
+  }
+
+  function buildHasLevelEdge(roleId: string, levelId: string): Edge {
+    return {
+      id: `has-level-${roleId}-${levelId}`,
+      from: roleId,
+      to: levelId,
+      label: 'HAS_LEVEL',
+      title: 'HAS_LEVEL: Target Role contains proficiency level',
+      font: { size: 9, color: '#4F46E5', strokeWidth: 0, align: 'horizontal' },
+      color: { color: '#818CF8', highlight: '#4F46E5', hover: '#4338CA' },
+      arrows: { to: { enabled: true, scaleFactor: 0.6 } },
+      width: 1.5,
+      dashes: false,
+    }
+  }
+
+  function buildRequiresCompetencyEdge(levelId: string, compId: string): Edge {
+    return {
+      id: `requires-comp-${levelId}-${compId}`,
+      from: levelId,
+      to: compId,
+      label: 'HAS_COMPETENCY',
+      title: 'HAS_COMPETENCY: Target Role level requires competency',
+      font: { size: 8, color: '#9333EA', strokeWidth: 0, align: 'horizontal' },
+      color: { color: '#C084FC', highlight: '#9333EA', hover: '#7E22CE' },
+      arrows: { to: { enabled: true, scaleFactor: 0.6 } },
+      width: 1.5,
+      dashes: false,
+    }
+  }
+
   function buildCompetencyNode(c: CompetencyModel, pos?: { x: number; y: number }): PlaygroundCustomNode {
     const isCompact = isCompactViewRef.current
     return {
@@ -171,22 +278,22 @@ function OntologyGraphPlaygroundInner({
       status: c.status || 'ACTIVE',
       label: isCompact ? (c.code || c.id) : `<b>${c.code || c.id}</b>\n${c.name}`,
       shape: 'box',
-      shapeProperties: { borderRadius: 8 },
-      margin: isCompact ? { top: 4, right: 8, bottom: 4, left: 8 } : { top: 10, right: 14, bottom: 10, left: 14 },
-      widthConstraint: isCompact ? { maximum: 110 } : { maximum: 200 },
+      shapeProperties: { borderRadius: 10 },
+      margin: isCompact ? { top: 4, right: 8, bottom: 4, left: 8 } : { top: 8, right: 14, bottom: 8, left: 14 },
+      widthConstraint: isCompact ? { maximum: 110 } : { maximum: 220 },
       color: {
-        background: '#FFF7ED',
-        border: '#EA580C',
-        highlight: { background: '#FFEDD5', border: '#C2410C' },
-        hover: { background: '#FFEDD5', border: '#EA580C' },
+        background: '#FAF5FF',
+        border: '#9333EA',
+        highlight: { background: '#F3E8FF', border: '#7E22CE' },
+        hover: { background: '#F3E8FF', border: '#9333EA' },
       },
       font: {
         multi: 'html',
-        color: '#0F172A',
-        size: isCompact ? 9 : 11.5,
+        color: '#581C87',
+        size: isCompact ? 9 : 11,
         face: 'IBM Plex Sans, sans-serif',
       },
-      borderWidth: 2,
+      borderWidth: 1.5,
       x: pos?.x,
       y: pos?.y,
     }
@@ -203,9 +310,9 @@ function OntologyGraphPlaygroundInner({
       status: s.status || 'ACTIVE',
       label: isCompact ? s.code : `<b>${s.code}</b>\n${s.name}`,
       shape: 'box',
-      shapeProperties: { borderRadius: 18 },
-      margin: isCompact ? { top: 4, right: 8, bottom: 4, left: 8 } : { top: 8, right: 12, bottom: 8, left: 12 },
-      widthConstraint: isCompact ? { maximum: 100 } : { maximum: 160 },
+      shapeProperties: { borderRadius: 14 },
+      margin: isCompact ? { top: 4, right: 8, bottom: 4, left: 8 } : { top: 8, right: 14, bottom: 8, left: 14 },
+      widthConstraint: isCompact ? { maximum: 100 } : { maximum: 200 },
       color: {
         background: '#F0FDF4',
         border: '#16A34A',
@@ -215,7 +322,7 @@ function OntologyGraphPlaygroundInner({
       font: {
         multi: 'html',
         color: '#0F172A',
-        size: isCompact ? 9 : 10.5,
+        size: isCompact ? 9 : 11,
         face: 'IBM Plex Sans, sans-serif',
       },
       borderWidth: 1.5,
@@ -229,9 +336,11 @@ function OntologyGraphPlaygroundInner({
       id: `has-skill-${compId}-${skillId}`,
       from: compId,
       to: skillId,
+      label: 'HAS_SKILL',
       title: 'HAS_SKILL: Competency contains Micro-skill',
-      color: { color: '#94A3B8', highlight: '#EA580C', hover: '#64748B' },
-      arrows: { to: { enabled: true, scaleFactor: 0.7 } },
+      font: { size: 8, color: '#16A34A', strokeWidth: 0, align: 'horizontal' },
+      color: { color: '#86EFAC', highlight: '#16A34A', hover: '#15803D' },
+      arrows: { to: { enabled: true, scaleFactor: 0.6 } },
       width: 1.5,
       dashes: false,
     }
@@ -259,21 +368,127 @@ function OntologyGraphPlaygroundInner({
     }
   }
 
+  function getNodeTheme(n: PlaygroundCustomNode, isCompact: boolean) {
+    if (n.nodeType === 'targetRole') {
+      return {
+        color: {
+          background: '#FFF7ED',
+          border: '#EA580C',
+          highlight: { background: '#FFEDD5', border: '#C2410C' },
+          hover: { background: '#FFEDD5', border: '#EA580C' },
+        },
+        fontColor: '#0F172A',
+        fontSize: isCompact ? 9.5 : 13,
+        label: isCompact ? (n.code || n.id) : `<b>${n.code || n.id}</b>`,
+        margin: isCompact ? { top: 6, right: 10, bottom: 6, left: 10 } : { top: 12, right: 16, bottom: 12, left: 16 },
+        widthConstraint: isCompact ? { maximum: 130 } : { maximum: 200 },
+      }
+    }
+    if (n.nodeType === 'level') {
+      const lvl = n.levelName || n.code
+      return {
+        color: {
+          background: '#EEF2FF',
+          border: '#4F46E5',
+          highlight: { background: '#E0E7FF', border: '#4338CA' },
+          hover: { background: '#E0E7FF', border: '#4F46E5' },
+        },
+        fontColor: '#1E1B4B',
+        fontSize: isCompact ? 9 : 11,
+        label: isCompact ? lvl : `<b>${lvl}</b>`,
+        margin: isCompact ? { top: 4, right: 8, bottom: 4, left: 8 } : { top: 8, right: 14, bottom: 8, left: 14 },
+        widthConstraint: isCompact ? { maximum: 100 } : { maximum: 160 },
+      }
+    }
+    if (n.nodeType === 'competency') {
+      return {
+        color: {
+          background: '#FAF5FF',
+          border: '#9333EA',
+          highlight: { background: '#F3E8FF', border: '#7E22CE' },
+          hover: { background: '#F3E8FF', border: '#9333EA' },
+        },
+        fontColor: '#581C87',
+        fontSize: isCompact ? 9 : 11,
+        label: isCompact ? (n.code || n.id) : `<b>${n.code || n.id}</b>\n${n.name}`,
+        margin: isCompact ? { top: 4, right: 8, bottom: 4, left: 8 } : { top: 8, right: 14, bottom: 8, left: 14 },
+        widthConstraint: isCompact ? { maximum: 110 } : { maximum: 220 },
+      }
+    }
+    // skill
+    return {
+      color: {
+        background: '#F0FDF4',
+        border: '#16A34A',
+        highlight: { background: '#DCFCE7', border: '#15803D' },
+        hover: { background: '#DCFCE7', border: '#16A34A' },
+      },
+      fontColor: '#0F172A',
+      fontSize: isCompact ? 9 : 11,
+      label: isCompact ? n.code : `<b>${n.code}</b>\n${n.name}`,
+      margin: isCompact ? { top: 4, right: 8, bottom: 4, left: 8 } : { top: 8, right: 14, bottom: 8, left: 14 },
+      widthConstraint: isCompact ? { maximum: 100 } : { maximum: 200 },
+    }
+  }
+
+  function getEdgeTheme(e: Edge) {
+    const idStr = String(e.id || '')
+    if (idStr.startsWith('has-level-')) {
+      return {
+        color: { color: '#818CF8', highlight: '#4F46E5', hover: '#4338CA' },
+        activeColor: { color: '#4F46E5', highlight: '#4F46E5', hover: '#4338CA' },
+        width: 1.5,
+        activeWidth: 2,
+    }
+  }
+    if (idStr.startsWith('requires-comp-') || idStr.startsWith('has-comp-')) {
+      return {
+        color: { color: '#C084FC', highlight: '#9333EA', hover: '#7E22CE' },
+        activeColor: { color: '#9333EA', highlight: '#9333EA', hover: '#7E22CE' },
+        width: 1.5,
+        activeWidth: 2,
+      }
+    }
+    if (idStr.startsWith('has-skill-')) {
+      return {
+        color: { color: '#86EFAC', highlight: '#16A34A', hover: '#15803D' },
+        activeColor: { color: '#16A34A', highlight: '#16A34A', hover: '#15803D' },
+        width: 1.5,
+        activeWidth: 2,
+      }
+    }
+    if (idStr.startsWith('prereq-')) {
+      return {
+        color: { color: '#F87171', highlight: '#DC2626', hover: '#DC2626' },
+        activeColor: { color: '#DC2626', highlight: '#DC2626', hover: '#DC2626' },
+        width: 2,
+        activeWidth: 2.5,
+      }
+    }
+    return {
+      color: { color: '#94A3B8', highlight: '#EA580C', hover: '#64748B' },
+      activeColor: { color: '#EA580C', highlight: '#EA580C', hover: '#EA580C' },
+      width: 1.5,
+      activeWidth: 2,
+    }
+  }
+
   // Level-of-Detail (LOD): Semantic Zooming updates node labels
   const applyLOD = React.useCallback((isCompact: boolean) => {
     const all = nodesDataSetRef.current.get()
     const updates = all.map((n) => {
-      const isComp = n.nodeType === 'competency'
+      const theme = getNodeTheme(n, isCompact)
       return {
         id: n.id,
-        label: isCompact ? n.code : (isComp ? `<b>${n.code}</b>\n${n.name}` : `<b>${n.code}</b>\n${n.name}`),
+        label: theme.label,
         font: {
-          size: isCompact ? 9 : (isComp ? 11.5 : 10.5),
+          size: theme.fontSize,
           multi: 'html' as const,
           face: 'IBM Plex Sans, sans-serif',
+          color: theme.fontColor,
         },
-        margin: isCompact ? { top: 4, right: 8, bottom: 4, left: 8 } : (isComp ? { top: 10, right: 14, bottom: 10, left: 14 } : { top: 8, right: 12, bottom: 8, left: 12 }),
-        widthConstraint: isCompact ? { maximum: 110 } : (isComp ? { maximum: 200 } : { maximum: 160 }),
+        margin: theme.margin,
+        widthConstraint: theme.widthConstraint,
       }
     })
     nodesDataSetRef.current.update(updates)
@@ -290,27 +505,15 @@ function OntologyGraphPlaygroundInner({
     const allNodes = nodesDataSetRef.current.get()
     const nodeUpdates = allNodes.map((n) => {
       const isConnected = connectedNodeIds.has(n.id)
-      const isComp = n.nodeType === 'competency'
+      const theme = getNodeTheme(n, isCompact)
       if (isConnected) {
         return {
           id: n.id,
           opacity: 1,
-          color: isComp
-            ? {
-                background: '#FFF7ED',
-                border: '#EA580C',
-                highlight: { background: '#FFEDD5', border: '#C2410C' },
-                hover: { background: '#FFEDD5', border: '#EA580C' },
-              }
-            : {
-                background: '#F0FDF4',
-                border: '#16A34A',
-                highlight: { background: '#DCFCE7', border: '#15803D' },
-                hover: { background: '#DCFCE7', border: '#16A34A' },
-              },
+          color: theme.color,
           font: {
-            color: '#0F172A',
-            size: isCompact ? 9 : (isComp ? 11.5 : 10.5),
+            color: theme.fontColor,
+            size: theme.fontSize,
             multi: 'html' as const,
             face: 'IBM Plex Sans, sans-serif',
           },
@@ -327,7 +530,7 @@ function OntologyGraphPlaygroundInner({
           },
           font: {
             color: 'rgba(148, 163, 184, 0.35)',
-            size: isCompact ? 9 : (isComp ? 11.5 : 10.5),
+            size: theme.fontSize,
             multi: 'html' as const,
             face: 'IBM Plex Sans, sans-serif',
           },
@@ -339,17 +542,15 @@ function OntologyGraphPlaygroundInner({
     const allEdges = edgesDataSetRef.current.get()
     const edgeUpdates = allEdges.map((e) => {
       const isConnected = connectedEdgeIds.has(String(e.id))
-      const isPrereq = String(e.id).startsWith('prereq-')
+      const edgeTheme = getEdgeTheme(e)
       if (isConnected) {
         return {
           id: e.id,
           color: {
-            color: isPrereq ? '#DC2626' : '#EA580C',
-            highlight: isPrereq ? '#DC2626' : '#EA580C',
-            hover: isPrereq ? '#DC2626' : '#EA580C',
+            ...edgeTheme.activeColor,
             opacity: 1,
           },
-          width: isPrereq ? 2.5 : 2,
+          width: edgeTheme.activeWidth,
         }
       } else {
         return {
@@ -369,26 +570,14 @@ function OntologyGraphPlaygroundInner({
     const isCompact = isCompactViewRef.current
     const allNodes = nodesDataSetRef.current.get()
     const nodeUpdates = allNodes.map((n) => {
-      const isComp = n.nodeType === 'competency'
+      const theme = getNodeTheme(n, isCompact)
       return {
         id: n.id,
         opacity: 1,
-        color: isComp
-          ? {
-              background: '#FFF7ED',
-              border: '#EA580C',
-              highlight: { background: '#FFEDD5', border: '#C2410C' },
-              hover: { background: '#FFEDD5', border: '#EA580C' },
-            }
-          : {
-              background: '#F0FDF4',
-              border: '#16A34A',
-              highlight: { background: '#DCFCE7', border: '#15803D' },
-              hover: { background: '#DCFCE7', border: '#16A34A' },
-            },
+        color: theme.color,
         font: {
-          color: '#0F172A',
-          size: isCompact ? 9 : (isComp ? 11.5 : 10.5),
+          color: theme.fontColor,
+          size: theme.fontSize,
           multi: 'html' as const,
           face: 'IBM Plex Sans, sans-serif',
         },
@@ -398,16 +587,14 @@ function OntologyGraphPlaygroundInner({
 
     const allEdges = edgesDataSetRef.current.get()
     const edgeUpdates = allEdges.map((e) => {
-      const isPrereq = String(e.id).startsWith('prereq-')
+      const edgeTheme = getEdgeTheme(e)
       return {
         id: e.id,
         color: {
-          color: isPrereq ? '#F87171' : '#94A3B8',
-          highlight: isPrereq ? '#DC2626' : '#EA580C',
-          hover: isPrereq ? '#DC2626' : '#64748B',
+          ...edgeTheme.color,
           opacity: 1,
         },
-        width: isPrereq ? 2 : 1.5,
+        width: edgeTheme.width,
       }
     })
     edgesDataSetRef.current.update(edgeUpdates)
@@ -473,13 +660,13 @@ function OntologyGraphPlaygroundInner({
   const findClearSlot = React.useCallback(
     (
       basePos: { x: number; y: number },
-      nodeType: 'competency' | 'skill'
+      nodeType: 'targetRole' | 'level' | 'competency' | 'skill'
     ): { x: number; y: number } => {
       const positions = networkRef.current ? networkRef.current.getPositions() : {}
       const existing = canvasNodesRef.current
       if (existing.length === 0) return basePos
 
-      const isComp = nodeType === 'competency'
+      const isComp = nodeType === 'competency' || nodeType === 'targetRole' || nodeType === 'level'
 
       const isCollisionFree = (candidate: { x: number; y: number }) => {
         for (const other of existing) {
@@ -526,11 +713,123 @@ function OntologyGraphPlaygroundInner({
 
     const centerPos = networkRef.current?.getPosition(nodeId) || { x: 0, y: 0 }
     const existingNodeIds = new Set(canvasNodesRef.current.map((n) => n.id))
+    const existingEdgeIds = new Set<string>(canvasEdgesRef.current.map((e) => String(e.id || '')))
 
     const nodesToAdd: PlaygroundCustomNode[] = []
     const edgesToAdd: Edge[] = []
 
-    if (current.nodeType === 'competency') {
+    if (current.nodeType === 'targetRole') {
+      const role = (targetRolesRef.current || targetRoles || []).find((r) => r.id === current.id || r.code === current.code)
+      if (role) {
+        const levelNamesFromComps = Object.keys(role.levelCompetencies || {})
+        const levelNamesFromSkills = (role.skillTargets || []).map((st) => st.level).filter(Boolean) as string[]
+        const combinedLevels = Array.from(new Set([...levelNamesFromComps, ...levelNamesFromSkills]))
+        const effectiveLevels = combinedLevels.length > 0 ? combinedLevels : ['Junior', 'Middle', 'Senior']
+
+        const levelSpacing = 200
+        const totalWidth = (effectiveLevels.length - 1) * levelSpacing
+        const startX = centerPos.x - totalWidth / 2
+        const levelY = centerPos.y + 140
+
+        effectiveLevels.forEach((lvl, lIdx) => {
+          const rawPos = {
+            x: Math.round(startX + lIdx * levelSpacing),
+            y: levelY,
+          }
+          const pos = findClearSlot(rawPos, 'level')
+          const lvlNode = buildLevelNode(role, lvl, pos)
+          if (!existingNodeIds.has(lvlNode.id)) {
+            nodesToAdd.push(lvlNode)
+            existingNodeIds.add(lvlNode.id)
+          }
+          const levelEdge = buildHasLevelEdge(role.id, lvlNode.id)
+          if (!existingEdgeIds.has(String(levelEdge.id))) {
+            existingEdgeIds.add(String(levelEdge.id))
+            edgesToAdd.push(levelEdge)
+          }
+
+          const assignedCompIds = (role.levelCompetencies?.[lvl] || []).concat(role.competencyIds || [])
+          const uniqueCompIds = Array.from(new Set(assignedCompIds))
+          const matchingComps = competenciesRef.current.filter((c) =>
+            uniqueCompIds.includes(c.id) || uniqueCompIds.includes(c.code)
+          )
+
+          const compY = levelY + 160
+          const compSpacing = 220
+          const compTotalWidth = (matchingComps.length - 1) * compSpacing
+          const compStartX = rawPos.x - compTotalWidth / 2
+
+          matchingComps.forEach((comp, cIdx) => {
+            if (!existingNodeIds.has(comp.id)) {
+              const rawCompPos = {
+                x: Math.round(compStartX + cIdx * compSpacing),
+                y: compY,
+              }
+              const compSlot = findClearSlot(rawCompPos, 'competency')
+              nodesToAdd.push(buildCompetencyNode(comp, compSlot))
+              existingNodeIds.add(comp.id)
+            }
+            const reqEdge = buildRequiresCompetencyEdge(lvlNode.id, comp.id)
+            if (!existingEdgeIds.has(String(reqEdge.id))) {
+              existingEdgeIds.add(String(reqEdge.id))
+              edgesToAdd.push(reqEdge)
+            }
+
+            const skillY = compY + 160
+            const memberSkills = (comp.skillIds || []).map((sId) =>
+              microSkillsRef.current.find((s) => s.id === sId || s.code === sId)
+            ).filter(Boolean) as MicroSkillModel[]
+
+            const skillSpacing = 200
+            const skillTotalWidth = (memberSkills.length - 1) * skillSpacing
+            const skillStartX = (matchingComps.length > 0 ? (compStartX + cIdx * compSpacing) : rawPos.x) - skillTotalWidth / 2
+
+            memberSkills.forEach((skill, sIdx) => {
+              if (!existingNodeIds.has(skill.id)) {
+                const rawSkillPos = {
+                  x: Math.round(skillStartX + sIdx * skillSpacing),
+                  y: skillY,
+                }
+                const skillSlot = findClearSlot(rawSkillPos, 'skill')
+                nodesToAdd.push(buildSkillNode(skill, skillSlot))
+                existingNodeIds.add(skill.id)
+              }
+              const hasSkillEdge = buildHasSkillEdge(comp.id, skill.id)
+              if (!existingEdgeIds.has(String(hasSkillEdge.id))) {
+                existingEdgeIds.add(String(hasSkillEdge.id))
+                edgesToAdd.push(hasSkillEdge)
+              }
+            })
+          })
+        })
+      }
+    } else if (current.nodeType === 'level') {
+      const roleId = current.targetRoleId
+      const role = (targetRolesRef.current || targetRoles || []).find((r) => r.id === roleId)
+      if (role && current.levelName) {
+        const assignedCompIds = (role.levelCompetencies?.[current.levelName] || []).concat(role.competencyIds || [])
+        const uniqueCompIds = Array.from(new Set(assignedCompIds))
+        const matchingComps = competenciesRef.current.filter((c) =>
+          uniqueCompIds.includes(c.id) || uniqueCompIds.includes(c.code)
+        )
+        matchingComps.forEach((comp, idx) => {
+          if (!existingNodeIds.has(comp.id)) {
+            const angle = (idx / Math.max(matchingComps.length, 1)) * 2 * Math.PI
+            const pos = findClearSlot({
+              x: Math.round(centerPos.x + 220 * Math.cos(angle)),
+              y: Math.round(centerPos.y + 220 * Math.sin(angle)),
+            }, 'competency')
+            nodesToAdd.push(buildCompetencyNode(comp, pos))
+            existingNodeIds.add(comp.id)
+          }
+          const reqEdge = buildRequiresCompetencyEdge(current.id, comp.id)
+          if (!existingEdgeIds.has(String(reqEdge.id || ''))) {
+            existingEdgeIds.add(String(reqEdge.id || ''))
+            edgesToAdd.push(reqEdge)
+          }
+        })
+      }
+    } else if (current.nodeType === 'competency') {
       const comp = competenciesRef.current.find((c) => c.id === current.id)
       if (comp) {
         const memberSkillIds = comp.skillIds || []
@@ -599,7 +898,6 @@ function OntologyGraphPlaygroundInner({
 
     // Connect any missing edges between all nodes that will now be visible
     const allFutureNodeIds = existingNodeIds
-    const existingEdgeIds = new Set(canvasEdgesRef.current.map((e) => e.id))
 
     competenciesRef.current.forEach((c) => {
       if (allFutureNodeIds.has(c.id)) {
@@ -977,7 +1275,7 @@ function OntologyGraphPlaygroundInner({
   }
 
   // Add Item to Canvas (via click or drag)
-  const handleAddItemToCanvas = (item: { id: string; type: 'competency' | 'skill'; code: string; name: string }, specificPos?: { x: number; y: number }) => {
+  const handleAddItemToCanvas = (item: { id: string; type: 'targetRole' | 'level' | 'competency' | 'skill'; code: string; name: string }, specificPos?: { x: number; y: number }) => {
     const existing = canvasNodesRef.current.find((n) => n.id === item.id || n.code === item.code)
     if (existing) {
       networkRef.current?.selectNodes([existing.id])
@@ -1004,7 +1302,26 @@ function OntologyGraphPlaygroundInner({
     }
 
     let newNode: PlaygroundCustomNode
-    if (item.type === 'competency') {
+    if (item.type === 'targetRole') {
+      const fullRole = (targetRolesRef.current || targetRoles || []).find((r) => r.id === item.id || r.code === item.code)
+      if (fullRole) {
+        newNode = buildTargetRoleNode(fullRole, pos)
+      } else {
+        newNode = buildTargetRoleNode({
+          id: item.id,
+          stableId: item.code,
+          code: item.code,
+          title: item.name,
+          version: '1.0',
+          status: 'draft',
+          competencyIds: [],
+          skillTargets: [],
+          activeEnrollments: 0,
+          description: '',
+          updatedAt: new Date().toISOString(),
+        }, pos)
+      }
+    } else if (item.type === 'competency') {
       const fullComp = competencies.find((c) => c.id === item.id) || {
         id: item.id,
         code: item.code,
@@ -1059,6 +1376,7 @@ function OntologyGraphPlaygroundInner({
 
     setCanvasNodes((prev) => [...prev, newNode])
     if (newEdges.length > 0) setCanvasEdges((prev) => [...prev, ...newEdges])
+    setSelectedNode(newNode)
 
     toast({
       title: 'Node Added to Canvas',
@@ -1081,7 +1399,7 @@ function OntologyGraphPlaygroundInner({
   }
 
   // Drag and Drop from Palette to Canvas
-  const handleDragStart = (e: React.DragEvent, item: { id: string; type: 'competency' | 'skill'; code: string; name: string }) => {
+  const handleDragStart = (e: React.DragEvent, item: { id: string; type: 'targetRole' | 'level' | 'competency' | 'skill'; code: string; name: string }) => {
     e.dataTransfer.setData('application/json', JSON.stringify(item))
     e.dataTransfer.effectAllowed = 'copy'
   }
@@ -1094,7 +1412,7 @@ function OntologyGraphPlaygroundInner({
     if (!rawData) return
 
     try {
-      const data = JSON.parse(rawData) as { id: string; type: 'competency' | 'skill'; code: string; name: string }
+      const data = JSON.parse(rawData) as { id: string; type: 'targetRole' | 'level' | 'competency' | 'skill'; code: string; name: string }
       const rect = containerRef.current.getBoundingClientRect()
       const canvasPos = networkRef.current.DOMtoCanvas({
         x: e.clientX - rect.left,
@@ -1138,6 +1456,91 @@ function OntologyGraphPlaygroundInner({
         description: 'A node cannot form a prerequisite or membership relationship with itself.',
         variant: 'destructive',
       })
+      handleCancelConnect()
+      return
+    }
+
+    // Branch 0: Level + Competency (REQUIRES_COMPETENCY) with auto-save to Edit Target Role
+    if (
+      (sourceNode.nodeType === 'level' && targetNode.nodeType === 'competency') ||
+      (sourceNode.nodeType === 'competency' && targetNode.nodeType === 'level')
+    ) {
+      const levelNode = sourceNode.nodeType === 'level' ? sourceNode : targetNode
+      const compNode = sourceNode.nodeType === 'competency' ? sourceNode : targetNode
+
+      const roleId = levelNode.targetRoleId
+      const levelName = levelNode.levelName || levelNode.code
+      const role = (targetRolesRef.current || targetRoles || []).find((r) => r.id === roleId)
+
+      if (!role) {
+        toast({
+          title: 'Target Role Not Found',
+          description: 'Could not resolve the parent Target Role for this level.',
+          variant: 'destructive',
+        })
+        handleCancelConnect()
+        return
+      }
+
+      const currentLvlComps = role.levelCompetencies?.[levelName] || []
+      const compIdToAdd = compNode.code || compNode.id
+
+      if (currentLvlComps.includes(compIdToAdd) || currentLvlComps.includes(compNode.id)) {
+        toast({
+          title: 'Competency Already Connected',
+          description: `${compNode.code} is already assigned to ${levelName} level in ${role.code}.`,
+          variant: 'default',
+        })
+        handleCancelConnect()
+        return
+      }
+
+      const updatedLevelCompetencies = {
+        ...(role.levelCompetencies || {}),
+        [levelName]: [...currentLvlComps, compIdToAdd],
+      }
+      const updatedCompetencyIds = Array.from(
+        new Set([...(role.competencyIds || []), compIdToAdd, compNode.id])
+      )
+
+      const updatedRole: TargetRoleModel = {
+        ...role,
+        levelCompetencies: updatedLevelCompetencies,
+        competencyIds: updatedCompetencyIds,
+      }
+
+      const newEdge = buildRequiresCompetencyEdge(levelNode.id, compNode.id)
+      edgesDataSetRef.current.add(newEdge)
+      setCanvasEdges((prev) => [...prev, newEdge])
+
+      if (onUpdateTargetRoleRef.current) {
+        onUpdateTargetRoleRef.current(updatedRole)
+      }
+
+      updateActiveCompany((comp) => ({
+        ...comp,
+        targetRoles: (comp.targetRoles || []).map((r) => (r.id === role.id ? updatedRole : r)),
+      }))
+
+      try {
+        await fetch(`/api/v1/organizations/${organizationId}/target-roles/${role.id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-User-Role': 'DOMAIN_EXPERT',
+          },
+          body: JSON.stringify(updatedRole),
+        })
+      } catch (err) {
+        console.warn('API update target role background error:', err)
+      }
+
+      toast({
+        title: 'Competency Linked & Saved',
+        description: `Connected "${compNode.code}" to ${levelName} level for "${role.code}". Saved automatically.`,
+        variant: 'success',
+      })
+
       handleCancelConnect()
       return
     }
@@ -1326,6 +1729,39 @@ function OntologyGraphPlaygroundInner({
           description: 'Deleted prerequisite relationship from Neo4j.',
           variant: 'success',
         })
+      } else if (String(edgeId).startsWith('requires-comp-')) {
+        const levelNode = canvasNodesRef.current.find((n) => n.id === fromStr && n.nodeType === 'level')
+        const compNode = canvasNodesRef.current.find((n) => n.id === toStr && n.nodeType === 'competency')
+        if (levelNode && compNode) {
+          const roleId = levelNode.targetRoleId
+          const levelName = levelNode.levelName || levelNode.code
+          const role = (targetRolesRef.current || targetRoles || []).find((r) => r.id === roleId)
+          if (role) {
+            const currentLvlComps = role.levelCompetencies?.[levelName] || []
+            const updatedLvlComps = currentLvlComps.filter(
+              (cid) => cid !== compNode.id && cid !== compNode.code
+            )
+            const updatedRole: TargetRoleModel = {
+              ...role,
+              levelCompetencies: {
+                ...(role.levelCompetencies || {}),
+                [levelName]: updatedLvlComps,
+              },
+            }
+            if (onUpdateTargetRoleRef.current) onUpdateTargetRoleRef.current(updatedRole)
+            updateActiveCompany((comp) => ({
+              ...comp,
+              targetRoles: (comp.targetRoles || []).map((r) => (r.id === role.id ? updatedRole : r)),
+            }))
+            edgesDataSetRef.current.remove(edgeId)
+            setCanvasEdges((prev) => prev.filter((e) => e.id !== edgeId))
+            toast({
+              title: 'Requirement Removed',
+              description: `Unlinked ${compNode.code} from ${levelName} level for ${role.code}.`,
+              variant: 'success',
+            })
+          }
+        }
       } else if (String(edgeId).startsWith('has-skill-')) {
         const comp = competencies.find((c) => c.id === fromStr)
         if (comp) {
@@ -1361,11 +1797,30 @@ function OntologyGraphPlaygroundInner({
     const q = searchQuery.toLowerCase().trim()
     const items: Array<{
       id: string
-      type: 'competency' | 'skill'
+      type: 'targetRole' | 'competency' | 'skill'
       code: string
       name: string
       description?: string
+      status?: string
     }> = []
+
+    if (filterType === 'all' || filterType === 'targetRole') {
+      (targetRolesRef.current || targetRoles || []).forEach((r) => {
+        const s = String(r.status || '').toLowerCase()
+        if (s === 'draft' || s === 'rejected') {
+          if (!q || r.code.toLowerCase().includes(q) || r.title.toLowerCase().includes(q)) {
+            items.push({
+              id: r.id,
+              type: 'targetRole',
+              code: r.code || r.id,
+              name: r.title,
+              description: r.description,
+              status: (r.status || 'DRAFT').toUpperCase(),
+            })
+          }
+        }
+      })
+    }
 
     if (filterType === 'all' || filterType === 'competency') {
       competencies.forEach((c) => {
@@ -1396,7 +1851,7 @@ function OntologyGraphPlaygroundInner({
     }
 
     return items
-  }, [competencies, microSkills, searchQuery, filterType])
+  }, [competencies, microSkills, targetRoles, searchQuery, filterType])
 
   const nodesOnCanvasIds = React.useMemo(() => {
     return new Set(canvasNodes.map((n) => n.id))
@@ -1575,19 +2030,19 @@ function OntologyGraphPlaygroundInner({
               </div>
 
               <div className="flex items-center gap-1">
-                {(['all', 'competency', 'skill'] as const).map((type) => (
+                {(['all', 'targetRole', 'competency', 'skill'] as const).map((type) => (
                   <button
                     key={type}
                     type="button"
                     onClick={() => setFilterType(type)}
                     className={cn(
-                      'flex-1 py-1 px-2 rounded text-[11px] font-semibold capitalize transition-colors',
+                      'flex-1 py-1 px-1 rounded text-[10.5px] font-semibold capitalize transition-colors',
                       filterType === type
                         ? 'bg-primary text-primary-foreground shadow-2xs'
                         : 'bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground'
                     )}
                   >
-                    {type === 'all' ? 'All' : type === 'competency' ? 'Competencies' : 'Skills'}
+                    {type === 'all' ? 'All' : type === 'targetRole' ? 'Roles' : type === 'competency' ? 'Comps' : 'Skills'}
                   </button>
                 ))}
               </div>
@@ -1643,11 +2098,20 @@ function OntologyGraphPlaygroundInner({
                           <span
                             className={cn(
                               'font-mono text-[10px] font-bold px-1.5 py-0.5 rounded',
-                              isComp ? 'bg-orange-500/10 text-orange-600' : 'bg-emerald-500/10 text-emerald-600'
+                              item.type === 'targetRole'
+                                ? 'bg-orange-500/10 text-orange-600'
+                                : isComp
+                                ? 'bg-purple-500/10 text-purple-700'
+                                : 'bg-emerald-500/10 text-emerald-600'
                             )}
                           >
                             {item.code}
                           </span>
+                          {item.status && item.type === 'targetRole' && (
+                            <span className="text-[9px] font-bold px-1 py-0.5 rounded bg-warning/15 text-warning font-mono">
+                              {item.status}
+                            </span>
+                          )}
                           {isOnCanvas ? (
                             <span className="text-[10px] text-muted-foreground italic font-medium ml-auto flex items-center gap-1">
                               <Check className="h-3 w-3 text-emerald-600" />
@@ -1763,15 +2227,19 @@ function OntologyGraphPlaygroundInner({
                     <span
                       className={cn(
                         'font-mono text-xs font-bold px-1.5 py-0.5 rounded',
-                        selectedNode.nodeType === 'competency'
+                        selectedNode.nodeType === 'targetRole'
                           ? 'bg-orange-500/10 text-orange-600'
+                          : selectedNode.nodeType === 'level'
+                          ? 'bg-indigo-500/10 text-indigo-700'
+                          : selectedNode.nodeType === 'competency'
+                          ? 'bg-purple-500/10 text-purple-700'
                           : 'bg-emerald-500/10 text-emerald-600'
                       )}
                     >
                       {selectedNode.code}
                     </span>
                     <Badge variant="outline" className="text-[10px] capitalize">
-                      {selectedNode.nodeType}
+                      {selectedNode.nodeType === 'targetRole' ? 'Target Role' : selectedNode.nodeType === 'level' ? 'Level' : selectedNode.nodeType}
                     </Badge>
                   </div>
                   <h4 className="font-semibold text-foreground text-xs mt-1 truncate">{selectedNode.name}</h4>

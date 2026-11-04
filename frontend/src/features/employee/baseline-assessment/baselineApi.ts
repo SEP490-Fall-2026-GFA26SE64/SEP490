@@ -1,13 +1,13 @@
 export type AttemptState = 'IN_PROGRESS' | 'SUBMITTED' | 'AUTO_SUBMITTED' | 'INVALIDATED'
-export type BaselineScope = 'OCCUPATION' | 'EARLIER_ROLE' | 'EARLIER_OCCUPATION'
+export type BaselineScope = 'JOB_POSITION' | 'EARLIER_ROLE' | 'EARLIER_JOB_POSITION'
 export interface PresentedItem { position: number; itemVersionId: string; prompt: string; options: { id: string; text: string }[]; selectedOptionId: string | null }
 export interface BaselineAttempt {
-  id: string; occupationId: string; occupationName: string; purpose: string; roleId: string | null; assessmentScope: BaselineScope
+  id: string; jobPositionId: string; jobPositionName: string; purpose: string; roleId: string | null; assessmentScope: BaselineScope
   state: AttemptState; revision: number; startedAt: string; deadlineAt: string; observedAt: string
   expired: boolean; maxQuestions: number; answeredCount: number; items: PresentedItem[]
 }
 export interface BaselineResult {
-  attemptId: string; occupationId: string; occupationName: string; purpose: string; roleId: string | null; roleName: string | null; assessmentScope: BaselineScope
+  attemptId: string; jobPositionId: string; jobPositionName: string; purpose: string; roleId: string | null; roleName: string | null; assessmentScope: BaselineScope
   state: Exclude<AttemptState, 'IN_PROGRESS'>; completionReason: string; startedAt: string; completedAt: string
   replacesAttemptId: string | null; replacementAttemptId: string | null; rawScore: number | null
   skills: { microSkillId: string; microSkillName: string; mastery: number; confidence: 'LOW' | 'MEDIUM' | 'HIGH' }[]
@@ -22,8 +22,8 @@ export class BaselineError extends Error {
 const base = '/api/v1/employee/baseline-attempts'
 export const employeeBaselineEnabled = import.meta.env.VITE_EMPLOYEE_ADAPTIVE_BASELINE_ENABLED === 'true'
 export const attemptPath = (id: string) => `/employee/baseline-assessment/${encodeURIComponent(id)}`
-export function startCommand(occupationId?: string): BaselineCommand {
-  return command('', occupationId === undefined ? { entry: 'SELECTED_ROLE' } : { entry: 'OCCUPATION_EXPLORATION', occupationId: occupationId.trim() })
+export function startCommand(jobPositionId?: string): BaselineCommand {
+  return command('', jobPositionId === undefined ? { entry: 'SELECTED_ROLE' } : { entry: 'JOB_POSITION_EXPLORATION', jobPositionId: jobPositionId.trim() })
 }
 export function answerCommand(attempt: BaselineAttempt, item: PresentedItem, selectedOptionId: string) {
   return command(`/${encodeURIComponent(attempt.id)}/answers`, {
@@ -69,13 +69,13 @@ function state(value: unknown): AttemptState {
   return value as AttemptState
 }
 function scope(value: unknown): BaselineScope {
-  if (value !== 'OCCUPATION' && value !== 'EARLIER_ROLE' && value !== 'EARLIER_OCCUPATION') throw new Error('Invalid assessment scope')
+  if (value !== 'JOB_POSITION' && value !== 'EARLIER_ROLE' && value !== 'EARLIER_JOB_POSITION') throw new Error('Invalid assessment scope')
   return value
 }
 function parseAttempt(value: unknown): BaselineAttempt {
   const v = object(value)
   if (typeof v.expired !== 'boolean') throw new Error('Invalid expiry')
-  return { id: text(v.id), occupationId: text(v.occupationId), occupationName: text(v.occupationName), purpose: text(v.purpose), roleId: nullable(v.roleId), assessmentScope: scope(v.assessmentScope),
+  return { id: text(v.id), jobPositionId: text(v.jobPositionId), jobPositionName: text(v.jobPositionName), purpose: text(v.purpose), roleId: nullable(v.roleId), assessmentScope: scope(v.assessmentScope),
     state: state(v.state), revision: integer(v.revision, 1), startedAt: date(v.startedAt), deadlineAt: date(v.deadlineAt), observedAt: date(v.observedAt),
     expired: v.expired, maxQuestions: integer(v.maxQuestions, 1), answeredCount: integer(v.answeredCount), items: list(v.items, item => {
       const i = object(item)
@@ -86,7 +86,7 @@ function parseAttempt(value: unknown): BaselineAttempt {
 function parseResult(value: unknown): BaselineResult {
   const v = object(value), terminal = state(v.state)
   if (terminal === 'IN_PROGRESS') throw new Error('Invalid terminal state')
-  const result: BaselineResult = { attemptId: text(v.attemptId), occupationId: text(v.occupationId), occupationName: text(v.occupationName), purpose: text(v.purpose),
+  const result: BaselineResult = { attemptId: text(v.attemptId), jobPositionId: text(v.jobPositionId), jobPositionName: text(v.jobPositionName), purpose: text(v.purpose),
     roleId: nullable(v.roleId), roleName: nullable(v.roleName), assessmentScope: scope(v.assessmentScope), state: terminal, completionReason: text(v.completionReason), startedAt: date(v.startedAt), completedAt: date(v.completedAt),
     replacesAttemptId: nullable(v.replacesAttemptId), replacementAttemptId: nullable(v.replacementAttemptId), rawScore: v.rawScore === null ? null : ratio(v.rawScore),
     skills: list(v.skills, skill => { const s = object(skill), confidence = text(s.confidence)

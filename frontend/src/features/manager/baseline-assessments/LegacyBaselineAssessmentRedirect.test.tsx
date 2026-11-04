@@ -6,14 +6,14 @@ import { LegacyBaselineAssessmentRedirect } from './LegacyBaselineAssessmentRedi
 describe('LegacyBaselineAssessmentRedirect', () => {
   afterEach(cleanup)
 
-  it('opens the selected Occupation Blueprint workspace and safely encodes its identity', async () => {
-    renderRoute('/ld-manager/assessment-bank?occupationId=software%2Fengineering')
+  it('opens the selected JobPosition Blueprint workspace and safely encodes its identity', async () => {
+    renderRoute('/ld-manager/assessment-bank?jobPositionId=software%2Fengineering')
     expect((await screen.findByTestId('location')).textContent).toBe(
       '/ld-manager/baseline-assessments/software%2Fengineering/blueprints',
     )
   })
 
-  it('falls back to the management landing when no Occupation is supplied', async () => {
+  it('falls back to the management landing when no JobPosition is supplied', async () => {
     renderRoute('/manager/assessment-bank')
     expect((await screen.findByTestId('location')).textContent).toBe('/ld-manager/baseline-assessments')
   })

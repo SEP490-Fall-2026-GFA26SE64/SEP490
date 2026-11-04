@@ -8,7 +8,7 @@ This provisions five real-password identities in a dedicated **local-only** data
 | Organization Administrator | org.admin@example.test | SEP490 Development Workspace; enroll MFA on first login |
 | L&D Manager | ld.manager@example.test | Same development workspace |
 | Domain Expert | expert@example.test | Same development workspace |
-| Employee | employee@example.test | Same workspace; required department/occupation reference and learner state |
+| Employee | employee@example.test | Same workspace; required department/job position reference and learner state |
 
 Passwords are independently generated once in ignored `local/dev-accounts/private.env`. The private sheet is `local/dev-accounts/ACCOUNTS.md`. Never commit either file; preserve them when restarting so encryption keys and credentials remain valid. Repeated seeding verifies matching credentials/roles without resetting passwords, MFA, subscription or history. Conflicting/partial accounts fail without overwrite. Existing synthetic subscription terms expire normally and are not renewed by rerunning seed.
 
@@ -38,17 +38,17 @@ Organization Administrator must use the normal Set up authenticator/Confirm auth
 
 ## Scope and limitations
 
-This creates account, membership, profile, learner-state, department/occupation reference, registration, workspace, subscription/payment snapshot and audit records using current schema and existing password/payment persistence. The seed class lives only under backend test sources and is not in the application JAR. It requires an explicit flag and the exact dedicated loopback database name; production/legacy URLs are rejected. No public test fixture API is enabled in the running application.
+This creates account, membership, profile, learner-state, department/job position reference, registration, workspace, subscription/payment snapshot and audit records using current schema and existing password/payment persistence. The seed class lives only under backend test sources and is not in the application JAR. It requires an explicit flag and the exact dedicated loopback database name; production/legacy URLs are rejected. No public test fixture API is enabled in the running application.
 
-The occupation reference is an activation fixture, not a Neo4j catalog import. The local Module handover copied the legacy catalog graph and Module workflow snapshots; other PostgreSQL feature stores such as question banks were not migrated. Future catalog imports and feature-specific test data remain separate tasks. Startup uses the normal application with real workspace login, not SubscriptionTestRuntime. This environment does not make unfinished feature pages production ready.
+The job position reference is an activation fixture, not a Neo4j catalog import. The local Module handover copied the legacy catalog graph and Module workflow snapshots; other PostgreSQL feature stores such as question banks were not migrated. Future catalog imports and feature-specific test data remain separate tasks. Startup uses the normal application with real workspace login, not SubscriptionTestRuntime. This environment does not make unfinished feature pages production ready.
 
 [Verification/manual checklist](../../documents/testing/system/REQ-037-dev-accounts.md).
 
 ## Existing Module handover
 
-The user-approved local snapshot is kept privately as legacy-graph-snapshot.json and legacy-module-snapshot.json. copy_catalog_snapshot.py accepts only an empty or exactly matching dev graph and compares every property/edge; it refuses to overwrite later changes. adopt_modules.py runs the test-source DevModulesAdoption CLI on the exact dedicated database. It preserves source revisions/decisions, assigns existing Module documents to expert@example.test, and records migration events; new catalog drafts are received using the existing service with source-derived occupation coverage through Occupation→TargetRole→Level→MicroSkill. One PostgreSQL transaction protects the first handover; a receipt prevents overwriting subsequent work. Repeating adoption only restores missing original pending-assignment history if needed. These are explicit operational commands, never startup jobs/public endpoints.
+The user-approved local snapshot is kept privately as legacy-graph-snapshot.json and legacy-module-snapshot.json. copy_catalog_snapshot.py accepts only an empty or exactly matching dev graph and compares every property/edge; it refuses to overwrite later changes. adopt_modules.py runs the test-source DevModulesAdoption CLI on the exact dedicated database. It preserves source revisions/decisions, assigns existing Module documents to expert@example.test, and records migration events; new catalog drafts are received using the existing service with source-derived job position coverage through Job Position→TargetRole→Level→MicroSkill. One PostgreSQL transaction protects the first handover; a receipt prevents overwriting subsequent work. Repeating adoption only restores missing original pending-assignment history if needed. These are explicit operational commands, never startup jobs/public endpoints.
 
-The canonical frontend is now http://localhost:8088. The five credentials stay the same; sign in again on the new host. Module ownership uses real sessions and createdBy; peers have read-only access and the same-occupation grant does not authorize edits.
+The canonical frontend is now http://localhost:8088. The five credentials stay the same; sign in again on the new host. Module ownership uses real sessions and createdBy; peers have read-only access and the same-job position grant does not authorize edits.
 
 ## Learning Content local services
 
@@ -67,4 +67,4 @@ This fallback is for local development. It retains the binary, license and build
 
 Expert module management reuses the current workspace and adds expandable import/confirmed-pathway sections. Employees use `/employee/pathway` and `/employee/modules/:moduleId` with persisted assignments and progress. Module assessments/AI pathway generation remain separate. Unconfirmed-upload assets are currently retained: no automatic deletion policy is enabled.
 
-R4 keeps the same accounts/services: new Module/content authoring and Excel/ZIP import do not require Occupation grants. Legacy catalog intake remains a separate workflow. L&D revision details show numbered lessons, and the existing session adapter revalidates async private-media dispatch. [Current manual checks](../../documents/testing/system/REQ-013-learning-content-R4.md).
+R4 keeps the same accounts/services: new Module/content authoring and Excel/ZIP import do not require Job Position grants. Legacy catalog intake remains a separate workflow. L&D revision details show numbered lessons, and the existing session adapter revalidates async private-media dispatch. [Current manual checks](../../documents/testing/system/REQ-013-learning-content-R4.md).

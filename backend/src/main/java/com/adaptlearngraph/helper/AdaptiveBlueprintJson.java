@@ -23,8 +23,8 @@ public final class AdaptiveBlueprintJson {
 
     public String write(Object value) {
         if (value instanceof Configuration config) {
-            value = config.scopePolicy() == ScopePolicy.FULL_OCCUPATION_V2
-                    ? Map.of("name", config.name(), "occupationBounds", config.occupationBounds())
+            value = config.scopePolicy() == ScopePolicy.FULL_JOB_POSITION_V2
+                    ? Map.of("name", config.name(), "jobPositionBounds", config.jobPositionBounds())
                     : Map.of("name", config.name(), "exploration", config.exploration(), "roles", config.roles());
         }
         try { return mapper.writeValueAsString(value); }

@@ -41,9 +41,9 @@ public class DevelopmentWorkspaceSeedConfiguration {
                 seeds.insertAccountIfAbsent(provisioner,org,"development-provisioner.invalid","development-provisioner.invalid","DEVELOPMENT_NO_LOGIN");
                 seeds.insertRegistrationIfAbsent(registration,provisioner,"Shared development fixture","workspace-development","Development fixture",now);
                 seeds.insertReadyWorkspaceIfAbsent(MainDevelopmentBankSeed.id("workspace"),org,registration,"workspace-development",now);
-                UUID department=MainDevelopmentBankSeed.id("department"),reference=MainDevelopmentBankSeed.id("occupation-reference");
+                UUID department=MainDevelopmentBankSeed.id("department"),reference=MainDevelopmentBankSeed.id("jobPosition-reference");
                 seeds.insertDepartmentIfAbsent(department,org,"Development Security");
-                seeds.insertOccupationReferenceIfAbsent(reference,MainDevelopmentBankSeed.id("occupation"),org,department,"Information Security Analysts");
+                seeds.insertJobPositionReferenceIfAbsent(reference,MainDevelopmentBankSeed.id("jobPosition"),org,department,"Information Security Analysts");
                 for(var pair:Map.of("ld","LD_MANAGER","employee","EMPLOYEE","expert","DOMAIN_EXPERT").entrySet()) {
                     UUID account=MainDevelopmentBankSeed.id(pair.getKey()),membership=MainDevelopmentBankSeed.id("membership:"+pair.getKey());
                     String email=pair.getKey()+"@workspace.dev.invalid";
@@ -61,13 +61,13 @@ public class DevelopmentWorkspaceSeedConfiguration {
                     var roles=seeds.activeMembershipRoles(membership,account,org);
                     if(!roles.equals(List.of(pair.getValue()))) throw new IllegalStateException("Development membership drift");
                 }
-                resources.seedBankIfAbsent(org,reference,DevelopmentWorkspace.OCCUPATION,MainDevelopmentBankSeed.securityBank());
+                resources.seedBankIfAbsent(org,reference,DevelopmentWorkspace.JOB_POSITION,MainDevelopmentBankSeed.securityBank());
             });
             // Reuse the exact validated synthetic artifact, without provisioning persona accounts or learner state.
             new LocalDemoProvisioning(repositories,json,transactionManager,false,MainDevelopmentBankSeed.id("ld"),MainDevelopmentBankSeed.securityProjection()).run(args);
-            resources.bindUnsetVersions(MainDevelopmentBankSeed.ORGANIZATION,DevelopmentWorkspace.OCCUPATION,MainDevelopmentBankSeed.securityBank(),
+            resources.bindUnsetVersions(MainDevelopmentBankSeed.ORGANIZATION,DevelopmentWorkspace.JOB_POSITION,MainDevelopmentBankSeed.securityBank(),
                     MainDevelopmentBankSeed.securityId("model-v1"),MainDevelopmentBankSeed.securityId("mapping-v1"));
-            if(!resources.bound(MainDevelopmentBankSeed.ORGANIZATION,DevelopmentWorkspace.OCCUPATION,MainDevelopmentBankSeed.securityBank(),
+            if(!resources.bound(MainDevelopmentBankSeed.ORGANIZATION,DevelopmentWorkspace.JOB_POSITION,MainDevelopmentBankSeed.securityBank(),
                     MainDevelopmentBankSeed.securityId("model-v1"),MainDevelopmentBankSeed.securityId("mapping-v1")))
                 throw new IllegalStateException("Development baseline resource drift");
             context.close();

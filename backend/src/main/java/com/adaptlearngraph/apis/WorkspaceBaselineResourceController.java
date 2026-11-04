@@ -26,16 +26,16 @@ public final class WorkspaceBaselineResourceController {
         this.requests=json.copy().enable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,DeserializationFeature.FAIL_ON_TRAILING_TOKENS)
                 .enable(com.fasterxml.jackson.core.JsonParser.Feature.STRICT_DUPLICATE_DETECTION);
     }
-    @GetMapping public ResponseEntity<Tuple> read(@PathVariable String occupationId) {
-        return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(AdaptiveBaselineFailures.resources(() -> resources.read(occupationId)));
+    @GetMapping public ResponseEntity<Tuple> read(@PathVariable String jobPositionId) {
+        return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(AdaptiveBaselineFailures.resources(() -> resources.read(jobPositionId)));
     }
-    @PutMapping(consumes="application/json") public ResponseEntity<Tuple> configure(@PathVariable String occupationId,@RequestBody String body) {
+    @PutMapping(consumes="application/json") public ResponseEntity<Tuple> configure(@PathVariable String jobPositionId,@RequestBody String body) {
         Configure request;
         if (body.length()>4096) throw new Failure(400,"INVALID_REQUEST");
         try { request=requests.readValue(body,Configure.class); }
         catch(Exception invalid) { throw new Failure(400,"INVALID_REQUEST"); }
         if (request==null) throw new Failure(400,"INVALID_REQUEST");
-        return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(AdaptiveBaselineFailures.resources(() -> resources.configure(occupationId,request.expected(),request.desired())));
+        return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(AdaptiveBaselineFailures.resources(() -> resources.configure(jobPositionId,request.expected(),request.desired())));
     }
     @ExceptionHandler(Failure.class) ResponseEntity<Map<String,String>> failure(Failure failure) {
         return ResponseEntity.status(failure.status).cacheControl(CacheControl.noStore()).body(Map.of("code",failure.code));

@@ -74,7 +74,7 @@ public final class BaselineAssessmentDraftService implements BaselineAssessmentD
                     .filter(BaselineBlueprint.RoleConfig::participates)
                     .toList();
             if (participatingRoles.isEmpty()) {
-                throw failure(Code.INVALID_REQUEST, "At least one Occupation role with questions is required");
+                throw failure(Code.INVALID_REQUEST, "At least one JobPosition role with questions is required");
             }
 
             Set<String> skillIds = participatingRoles.stream()

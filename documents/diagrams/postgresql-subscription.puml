@@ -119,9 +119,9 @@ class department_reference {
     name : text
     active : boolean
 }
-class occupation_department_reference {
-    occupation_reference_id : uuid [PK]
-    occupation_id : uuid
+class job position_department_reference {
+    job position_reference_id : uuid [PK]
+    job position_id : uuid
     organization_id : uuid [FK]
     department_id : uuid [FK]
     name : text
@@ -133,7 +133,7 @@ class organization_membership {
     organization_id : uuid [FK]
     active : boolean
     department_id? : uuid [FK]
-    occupation_reference_id? : uuid [FK]
+    job position_reference_id? : uuid [FK]
     revision : bigint
     created_at : timestamp with time zone
     updated_at : timestamp with time zone
@@ -163,7 +163,7 @@ class workspace_activation {
     email : character varying(254)
     roles : text[]
     department_id? : uuid [FK]
-    occupation_reference_id? : uuid [FK]
+    job position_reference_id? : uuid [FK]
     proof_hash : platform.content_hash
     generation : bigint
     expires_at : timestamp with time zone
@@ -172,11 +172,11 @@ class workspace_activation {
     consumed_at? : timestamp with time zone
     account_id? : uuid [FK]
 }
-department_reference --> occupation_department_reference
+department_reference --> job position_department_reference
 department_reference --> organization_membership
 department_reference --> workspace_activation
-occupation_department_reference --> organization_membership
-occupation_department_reference --> workspace_activation
+job position_department_reference --> organization_membership
+job position_department_reference --> workspace_activation
 organization_membership --> organization_membership_role
 payment_order --> payment_application
 payment_order --> payment_observation

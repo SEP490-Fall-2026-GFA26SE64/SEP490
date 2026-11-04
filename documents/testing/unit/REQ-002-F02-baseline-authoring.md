@@ -1,12 +1,12 @@
 # REQ-002-F02 — Unit, API and frontend evidence
 
-**Slices1–5 source checkpoint,2026-10-22:** user accepted2–3 and authorized4–5. Java main compile, production-only FE type/lint and flag-off/on builds passed; bounded live-client/HTTP/SQL observations are in [slice4–5 evidence](../system/REQ-002-F02-REQ-009-occupation-ui-results.md). No executable test source, test compilation, runner or acceptance execution was created/run. All revised acceptance IDs remain Planned/Not run. Browser interaction remains unverified; historical results below retain their original scope.
+**Slices1–5 source checkpoint,2026-10-22:** user accepted2–3 and authorized4–5. Java main compile, production-only FE type/lint and flag-off/on builds passed; bounded live-client/HTTP/SQL observations are in [slice4–5 evidence](../system/REQ-002-F02-REQ-009-job position-ui-results.md). No executable test source, test compilation, runner or acceptance execution was created/run. All revised acceptance IDs remain Planned/Not run. Browser interaction remains unverified; historical results below retain their original scope.
 
 > **Historical V17 evidence:** the cases below target the superseded counts/weights and shared-assessment lifecycle, not the adaptive REQ-002 contract.
 
-## Occupation-scoped cases — executed 2026-10-15
+## Job Position-scoped cases — executed 2026-10-15
 
-Executable cases now cover one blueprint per Occupation, exact full-role membership, zero-question role retention/exclusion, minimum Easy/Medium/Hard coverage per skill, strict linked weights, current capacity reads, aggregate shared-skill coverage, unique generated questions and Occupation-first UI behavior. Neo4j Level-union traversal is recorded in the integration evidence.
+Executable cases now cover one blueprint per Job Position, exact full-role membership, zero-question role retention/exclusion, minimum Easy/Medium/Hard coverage per skill, strict linked weights, current capacity reads, aggregate shared-skill coverage, unique generated questions and Job Position-first UI behavior. Neo4j Level-union traversal is recorded in the integration evidence.
 
 ## Fixtures and scope
 
@@ -19,14 +19,14 @@ Executable cases now cover one blueprint per Occupation, exact full-role members
 | Test file | Cases | Rules |
 | :--- | :--- | :--- |
 | `BaselineBlueprintServiceTest` | trusted actor/catalog snapshot normalization; unauthenticated/inactive/wrong-role rejection; complete shortage reporting/no persist; participating per-skill difficulty minimum; `hard > medium > easy` rejection; idempotent replay/conflict; immutable successor/stale conflict; dependency failure mapping | R1–R3, CW1–CW2 |
-| `BaselineBlueprintCapacityServiceTest` | trusted actor/organization scope; unique Occupation skill lookup; sorted capacity response; missing bucket as zero; unauthenticated/forbidden/not-found/dependency mapping | CW3 |
-| `OccupationBaselineBlueprintPolicyTest` | exact all-and-only role/skill membership; canonical snapshots; zero-role retention; all-zero rejection; aggregate shared-skill demand; one logical Occupation identity across revisions | R9–R13 |
+| `BaselineBlueprintCapacityServiceTest` | trusted actor/organization scope; unique Job Position skill lookup; sorted capacity response; missing bucket as zero; unauthenticated/forbidden/not-found/dependency mapping | CW3 |
+| `Job PositionBaselineBlueprintPolicyTest` | exact all-and-only role/skill membership; canonical snapshots; zero-role retention; all-zero rejection; aggregate shared-skill demand; one logical Job Position identity across revisions | R9–R13 |
 | `BaselineAssessmentDraftServiceTest` | exact manifest/weights/pinned metadata; replay and successor generation; idempotency conflict; changed coverage/no partial persist; exact-hash review/publish and retry; invalid hash/missing draft; authorization before dependencies | R1, R4–R6 |
-| `BaselineAssessmentGeneratorOccupationTest` | zero roles do not produce items; shared question versions are unique across role allocations; aggregate shortage retains per-role contributions | R11, R13 |
+| `BaselineAssessmentGeneratorJob PositionTest` | zero roles do not produce items; shared question versions are unique across role allocations; aggregate shortage retains per-role contributions | R11, R13 |
 | `BaselineBlueprintControllerTest` | local create contract; 422 structured shortage; generated response excludes protected answer material | R1, R2, R4 |
-| `BaselineOccupationCatalogControllerTest` | capacity HTTP response contains metadata/counts without answer material; stable failure-to-status mapping | CW3 |
+| `BaselineJob PositionCatalogControllerTest` | capacity HTTP response contains metadata/counts without answer material; stable failure-to-status mapping | CW3 |
 | `BaselineBlueprintProductionBoundaryTest` | starter profile rejects a CSRF-valid unauthenticated authoring POST with 401 | R1 |
-| `baselineBlueprintApi.test.ts` | Occupation list/detail/latest/capacity parsing; malformed timestamp/count rejection; idempotency/expected-version requests; aggregate shortage parsing; safe manifest parsing; distinct review/publish endpoints | R2–R6, R9, R13–R14, CW3 |
+| `baselineBlueprintApi.test.ts` | Job Position list/detail/latest/capacity parsing; malformed timestamp/count rejection; idempotency/expected-version requests; aggregate shortage parsing; safe manifest parsing; distinct review/publish endpoints | R2–R6, R9, R13–R14, CW3 |
 | `baselineBlueprintForm.test.ts` | deterministic role-total distribution; balanced skill/difficulty cells; exact percentage/decimal sums; total-zero clearing and `40%` ↔ `0.4` conversion | UX1–UX3 |
 | `baselineBlueprintCapacity.test.ts` | minimum `3 × N`; feasible maximum after shared demand; deterministic minimum-first allocation; zero clearing; per-cell and aggregate shared-pool issues | CW2–CW4 |
 | `baselineBlueprintWeights.test.ts` | whole-integer parsing; Hard 40 then Medium 35 derives Easy 25; invalid hierarchy rejected | CW1 — PASS 2026-10-19 |
@@ -39,7 +39,7 @@ Executable cases now cover one blueprint per Occupation, exact full-role members
 
 ```powershell
 cd backend
-.\mvnw.cmd -q "-Dtest=BaselineOccupationCatalogControllerTest,BaselineBlueprintServiceTest,BaselineBlueprintCapacityServiceTest,OccupationBaselineBlueprintPolicyTest" test
+.\mvnw.cmd -q "-Dtest=BaselineJob PositionCatalogControllerTest,BaselineBlueprintServiceTest,BaselineBlueprintCapacityServiceTest,Job PositionBaselineBlueprintPolicyTest" test
 
 cd ..\frontend
 npm.cmd test -- --run
@@ -62,7 +62,7 @@ Results: scoped **16 passed** across 3 files; full regression **46 passed** acro
 Backend scoped command (executed in the Maven build-stage image because a Windows process held the host `backend/target` output):
 
 ```powershell
-docker run --rm adapt-learn-graph-backend-teststage:local mvn -B -ntp test "-Dtest=BaselineBlueprintServiceTest,OccupationBaselineBlueprintPolicyTest,BaselineAssessmentDraftServiceTest,BaselineAssessmentGeneratorOccupationTest,BaselineBlueprintControllerTest,BaselineBlueprintProductionBoundaryTest"
+docker run --rm adapt-learn-graph-backend-teststage:local mvn -B -ntp test "-Dtest=BaselineBlueprintServiceTest,Job PositionBaselineBlueprintPolicyTest,BaselineAssessmentDraftServiceTest,BaselineAssessmentGeneratorJob PositionTest,BaselineBlueprintControllerTest,BaselineBlueprintProductionBoundaryTest"
 ```
 
 Result: **24 passed**, 0 failures/errors/skips.

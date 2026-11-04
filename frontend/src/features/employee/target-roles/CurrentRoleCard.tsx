@@ -16,7 +16,7 @@ export function CurrentRoleCard({ role, active, disabled, onDetails, onChoose, o
   return <Card className={`flex min-w-0 flex-col transition-all duration-150 hover:shadow-md ${active ? 'border-primary ring-1 ring-primary/15' : 'hover:border-primary/40'}`}>
     <CardContent className="flex-1 space-y-3 p-5">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <Badge variant="secondary" className="max-w-full whitespace-normal break-words">{role.occupationName}</Badge>
+        <Badge variant="secondary" className="max-w-full whitespace-normal break-words">{role.jobPositionName}</Badge>
         {active && <Badge variant="secondary" className="border-primary/20 text-primary">{t('roleFlow.selected')}</Badge>}
       </div>
       <Heading level={3} size="card" className="break-words">{role.name}</Heading>

@@ -41,22 +41,22 @@ public interface AdaptiveAttemptUseCase {
     }
 
     sealed interface StartTarget permits SelectedRole, Exploration {}
-    /** The active selection and its Occupation are read from trusted server context. */
+    /** The active selection and its JobPosition are read from trusted server context. */
     record SelectedRole() implements StartTarget {}
     record Option(String id, String text) {}
     record Presented(int position, UUID itemVersionId, String prompt, List<Option> options, String selectedOptionId) {
         public Presented { options = List.copyOf(options); }
     }
-    record View(UUID id, String occupationId, String occupationName, String purpose, String roleId,
+    record View(UUID id, String jobPositionId, String jobPositionName, String purpose, String roleId,
                 String state, long revision, Instant startedAt, Instant deadlineAt, Instant observedAt,
                 boolean expired, int maxQuestions, int answeredCount, List<Presented> items, AssessmentScope assessmentScope) {
         public View { items = List.copyOf(items); }
     }
     /** Public assessment scope, independent of internal format/version names and entry provenance. */
-    enum AssessmentScope { OCCUPATION, EARLIER_ROLE, EARLIER_OCCUPATION }
+    enum AssessmentScope { JOB_POSITION, EARLIER_ROLE, EARLIER_JOB_POSITION }
     record SkillResult(String microSkillId, String microSkillName, BigDecimal mastery, String confidence) {}
     /** Deliberately excludes theta/SE, answers, scoring keys, item parameters and evidence/receipt data. */
-    record Result(UUID attemptId, String occupationId, String occupationName, String purpose,
+    record Result(UUID attemptId, String jobPositionId, String jobPositionName, String purpose,
                   String roleId, String roleName, String state, String completionReason,
                   Instant startedAt, Instant completedAt, UUID replacesAttemptId,
                   UUID replacementAttemptId, BigDecimal rawScore, List<SkillResult> skills, AssessmentScope assessmentScope) {
@@ -71,10 +71,10 @@ public interface AdaptiveAttemptUseCase {
         public Failure(Code code) { super("Adaptive baseline: " + code); this.code = code; }
         public Code code() { return code; }
     }
-    record Exploration(String occupationId) implements StartTarget {
+    record Exploration(String jobPositionId) implements StartTarget {
         public Exploration {
-            if (occupationId == null || occupationId.isBlank() || !occupationId.equals(occupationId.strip())) {
-                throw new IllegalArgumentException("Canonical Occupation required");
+            if (jobPositionId == null || jobPositionId.isBlank() || !jobPositionId.equals(jobPositionId.strip())) {
+                throw new IllegalArgumentException("Canonical JobPosition required");
             }
         }
     }

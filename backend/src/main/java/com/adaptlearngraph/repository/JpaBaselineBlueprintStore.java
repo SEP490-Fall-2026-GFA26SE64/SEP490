@@ -42,15 +42,15 @@ public class JpaBaselineBlueprintStore implements BaselineBlueprintStore {
     }
 
     @Override
-    public Optional<BaselineBlueprint> findLatestByOccupation(String occupationId) {
-        List<UUID> blueprintIds = identities.byOccupation(requireText(occupationId, "occupationId"));
+    public Optional<BaselineBlueprint> findLatestByJobPosition(String jobPositionId) {
+        List<UUID> blueprintIds = identities.byJobPosition(requireText(jobPositionId, "jobPositionId"));
         return blueprintIds.isEmpty() ? Optional.empty() : findLatest(blueprintIds.getFirst());
     }
 
     @Override
-    public Optional<BaselineBlueprint> findLatestByOccupation(
-            String organizationId, String occupationId) {
-        List<UUID> blueprintIds = identities.identity(organization(organizationId), requireText(occupationId, "occupationId"));
+    public Optional<BaselineBlueprint> findLatestByJobPosition(
+            String organizationId, String jobPositionId) {
+        List<UUID> blueprintIds = identities.identity(organization(organizationId), requireText(jobPositionId, "jobPositionId"));
         return blueprintIds.isEmpty()
                 ? Optional.empty()
                 : findLatest(organizationId, blueprintIds.getFirst());
@@ -75,8 +75,8 @@ public class JpaBaselineBlueprintStore implements BaselineBlueprintStore {
                 role.roleId(), role.roleNameSnapshot(), Boolean.TRUE.equals(role.enabled()), role.easyScoreWeight(),
                 role.mediumScoreWeight(), role.hardScoreWeight(), readSkills(blueprintId, version, role.roleId()))).toList();
         return Optional.of(new BaselineBlueprint(
-                header.blueprintId(), header.version(), header.name(), header.occupationId(),
-                header.occupationNameSnapshot(), header.createdBy(), header.idempotencyKey(),
+                header.blueprintId(), header.version(), header.name(), header.jobPositionId(),
+                header.jobPositionNameSnapshot(), header.createdBy(), header.idempotencyKey(),
                 header.requestHash(), header.createdAt(), configured));
     }
 
@@ -110,7 +110,7 @@ public class JpaBaselineBlueprintStore implements BaselineBlueprintStore {
                 insertIdentity(organizationId, blueprint);
             }
             versions.insert(new BaselineBlueprintVersionEntity(blueprint.blueprintId(), blueprint.version(), blueprint.name(),
-                    blueprint.occupationId(), blueprint.occupationNameSnapshot(), blueprint.createdBy(),
+                    blueprint.jobPositionId(), blueprint.jobPositionNameSnapshot(), blueprint.createdBy(),
                     blueprint.createdAt(), blueprint.idempotencyKey(), blueprint.requestHash()));
             for (RoleConfig role : blueprint.roles()) {
                 roles.insert(new BaselineBlueprintRoleEntity(blueprint.blueprintId(), blueprint.version(), role.roleId(),
@@ -133,11 +133,11 @@ public class JpaBaselineBlueprintStore implements BaselineBlueprintStore {
 
     private void insertIdentity(String organizationId, BaselineBlueprint blueprint) {
         UUID organization = organization(organizationId);
-        identities.ensureFixed(blueprint.blueprintId(), organization, blueprint.occupationId(), blueprint.createdBy(),
+        identities.ensureFixed(blueprint.blueprintId(), organization, blueprint.jobPositionId(), blueprint.createdBy(),
                 blueprint.createdAt());
-        long matching = blueprint.occupationId() == null
-                ? identities.countMatchingWithoutOccupation(blueprint.blueprintId(), organization)
-                : identities.countMatching(blueprint.blueprintId(), organization, blueprint.occupationId());
+        long matching = blueprint.jobPositionId() == null
+                ? identities.countMatchingWithoutJobPosition(blueprint.blueprintId(), organization)
+                : identities.countMatching(blueprint.blueprintId(), organization, blueprint.jobPositionId());
         if (matching != 1) {
             throw new IllegalStateException("Blueprint actor is outside the trusted organization");
         }

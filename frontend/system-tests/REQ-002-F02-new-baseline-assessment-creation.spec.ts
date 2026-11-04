@@ -4,24 +4,26 @@ test.describe('REQ-002-F02 Baseline Assessment Creation & Activation Lifecycle',
   test('L&D Manager configures, saves, previews, and activates an adaptive baseline assessment', async ({ page }) => {
     // 1. Authenticate as L&D Manager
     await page.goto('/login')
-    await page.getByRole('button', { name: 'L&D Manager' }).click()
-    await page.getByRole('button', { name: 'Sign in' }).click()
-    await expect(page).toHaveURL(/.*\/ld-manager\/dashboard/)
+    await page.getByPlaceholder('Enter your email').fill('manager@technova.com')
+    await page.locator('input[type="password"]').fill('Password123!')
+    await page.getByRole('button', { name: 'Sign in', exact: true }).click()
+    await page.getByRole('button', { name: 'Continue to workspace', exact: true }).click()
+    await expect(page).toHaveURL(/.*\/ld-manager\/(dashboard|job-positions)/)
 
     // 2. Navigate to Baseline Assessments Management Directory
     await page.goto('/ld-manager/baseline-assessments')
     await expect(page).toHaveURL(/.*\/ld-manager\/baseline-assessments/)
 
     // Verify directory controls
-    const chooseBtn = page.getByRole('button', { name: /Choose Occupation|Chọn/i }).first()
+    const chooseBtn = page.getByRole('button', { name: /Choose Job\s*Position|Chọn/i }).first()
     await expect(chooseBtn).toBeVisible()
 
-    // 3. Open Occupation Picker Dialog
+    // 3. Open JobPosition Picker Dialog
     await chooseBtn.click()
-    const occupationDialog = page.getByRole('dialog', { name: /Choose Occupation|Chọn/i })
-    await expect(occupationDialog).toBeVisible()
+    const jobPositionDialog = page.getByRole('dialog', { name: /Choose Job\s*Position|Chọn/i })
+    await expect(jobPositionDialog).toBeVisible()
 
-    const occOption = occupationDialog.getByRole('button', { name: /Information Security Analysts/i })
+    const occOption = jobPositionDialog.getByRole('button', { name: /Information Security Analysts/i })
     await expect(occOption).toBeVisible()
     await occOption.click()
 
@@ -33,6 +35,32 @@ test.describe('REQ-002-F02 Baseline Assessment Creation & Activation Lifecycle',
     await expect(page.getByRole('heading', { name: '135' })).toBeVisible() // capacity
     await expect(page.getByRole('heading', { name: '15' })).toBeVisible()  // skillCount
     await expect(page.getByRole('heading', { name: '45' })).toBeVisible()  // minimumQuestions
+
+    // If organization has no active Assessment Policy yet, activate one first via Configure Assessment Policy
+    const configPolicyBtn = page.getByRole('button', { name: /Configure Assessment Policy|Cấu hình chính sách/i })
+    if (await configPolicyBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await configPolicyBtn.click()
+      await expect(page).toHaveURL(/.*\/ld-manager\/baseline-assessments\?.*tab=policy/)
+
+      const savePolicyBtn = page.getByRole('button', { name: /Save policy version|Lưu phiên bản/i })
+      await expect(savePolicyBtn).toBeVisible()
+      await savePolicyBtn.click()
+
+      const activatePolicyBtn = page.getByRole('button', { name: /^Activate$|^Kích hoạt$/i }).first()
+      await expect(activatePolicyBtn).toBeVisible()
+      await activatePolicyBtn.click()
+
+      const confirmPolicyModal = page.getByRole('dialog')
+      await expect(confirmPolicyModal).toBeVisible()
+      await confirmPolicyModal.getByRole('button', { name: /^Activate$|^Kích hoạt$/i }).click()
+      await expect(confirmPolicyModal).not.toBeVisible()
+
+      // Return to baseline configuration
+      const returnBtn = page.getByRole('button', { name: /Return to baseline|Quay lại/i })
+      await expect(returnBtn).toBeEnabled()
+      await returnBtn.click()
+      await expect(page).toHaveURL(/.*\/ld-manager\/baseline-assessments\/OCC-15-1212\.00/)
+    }
 
     // Check if there is an existing draft, discard it to test fresh creation
     const deleteDraftBtn = page.getByRole('button', { name: /Delete draft|Xóa bản nháp/i })
@@ -62,7 +90,7 @@ test.describe('REQ-002-F02 Baseline Assessment Creation & Activation Lifecycle',
 
     // 6. Save Draft
     const savePromise = page.waitForResponse(response =>
-      response.url().includes('/adaptive-baseline-blueprints/occupations/OCC-15-1212.00/working')
+      response.url().includes('/adaptive-baseline-blueprints/job-positions/OCC-15-1212.00/working')
       && (response.request().method() === 'PUT' || response.request().method() === 'POST')
       && response.status() === 200,
     )
@@ -76,7 +104,7 @@ test.describe('REQ-002-F02 Baseline Assessment Creation & Activation Lifecycle',
 
     // 7. Test Blueprint / Preview Assessment
     const testPromise = page.waitForResponse(response =>
-      response.url().includes('/adaptive-baseline-blueprints/occupations/OCC-15-1212.00/test')
+      response.url().includes('/adaptive-baseline-blueprints/job-positions/OCC-15-1212.00/test')
       && response.request().method() === 'POST'
       && response.status() === 200,
     )
@@ -115,7 +143,7 @@ test.describe('REQ-002-F02 Baseline Assessment Creation & Activation Lifecycle',
     await expect(confirmModal).toBeVisible()
 
     const finalizePromise = page.waitForResponse(response =>
-      response.url().includes('/adaptive-baseline-blueprints/occupations/OCC-15-1212.00/finalize')
+      response.url().includes('/adaptive-baseline-blueprints/job-positions/OCC-15-1212.00/finalize')
       && response.request().method() === 'POST'
       && response.status() === 200,
     )

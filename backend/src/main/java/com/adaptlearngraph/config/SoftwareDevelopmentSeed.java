@@ -10,9 +10,9 @@ import static com.adaptlearngraph.dtos.OfficialQuestionBankManifest.*;
 
 /** Exact shared-development inputs. No catalog/schema version, learner outcome or publication change. */
 public final class SoftwareDevelopmentSeed {
-    public static final String OCCUPATION="OCC-15-1252.00";
-    public static final String MODULES_HASH="3ece80a4a63043b5044ad46f82e9503da12bf9fa1a8eaeee3378034817bb1a1a";
-    public static final String BANK_HASH="8922129d2d67ec8ec9736ae1aa560e2af992fe82633464aebeea6c09ad034552";
+    public static final String JOB_POSITION="OCC-15-1252.00";
+    public static final String MODULES_HASH="df23c817d39f33f2bd9979300e950397faeec0b1b9bbfb731800146faabfc23a";
+    public static final String BANK_HASH="4303304a529f4bc0b74e7772f21f2aba7cbd1560f66e5300f0e28a4f55045b75";
     private SoftwareDevelopmentSeed() {}
     public static UUID id(String name) { return UUID.nameUUIDFromBytes(("WORKSPACE_SE:"+name).getBytes(StandardCharsets.UTF_8)); }
     public static byte[] modules() throws IOException { return resource("se-modules.json",MODULES_HASH); }
@@ -29,7 +29,7 @@ public final class SoftwareDevelopmentSeed {
     static OfficialQuestionBankManifest bank(byte[] graph) throws IOException {
         var root=JSON.readTree(graph);var edges=root.path("relationships");
         var roles=new HashSet<String>();var levels=new HashSet<String>();var skills=new TreeSet<String>();
-        for(var e:edges)if("HAS_ROLE".equals(e.path("type").asText()) && OCCUPATION.equals(e.path("fromId").asText()))roles.add(e.path("toId").asText());
+        for(var e:edges)if("HAS_ROLE".equals(e.path("type").asText()) && JOB_POSITION.equals(e.path("fromId").asText()))roles.add(e.path("toId").asText());
         for(var e:edges)if("HAS_LEVEL".equals(e.path("type").asText()) && roles.contains(e.path("fromId").asText()))levels.add(e.path("toId").asText());
         for(var e:edges)if("REQUIRES_SKILL".equals(e.path("type").asText()) && levels.contains(e.path("fromId").asText()))skills.add(e.path("toId").asText());
         var nodes=new ArrayList<OfficialQuestionBankCatalog.Node>();
@@ -38,8 +38,8 @@ public final class SoftwareDevelopmentSeed {
             nodes.add(new OfficialQuestionBankCatalog.Node("MicroSkill",props));
         }
         var bank=parse(bankBytes(),OfficialQuestionBankManifest.class);
-        require(bank.questionBank().id().equals(id("bank")) && OCCUPATION.equals(bank.occupationId()),"SE bank identity drift");
-        bank.validate(new OfficialQuestionBankCatalog.Scope(LocalCatalogBootstrap.LEGACY_SOURCE_HASH,OCCUPATION,LocalCatalogBootstrap.VERSION,nodes,List.of()),40);
+        require(bank.questionBank().id().equals(id("bank")) && JOB_POSITION.equals(bank.jobPositionId()),"SE bank identity drift");
+        bank.validate(new OfficialQuestionBankCatalog.Scope(LocalCatalogBootstrap.LEGACY_SOURCE_HASH,JOB_POSITION,LocalCatalogBootstrap.VERSION,nodes,List.of()),40);
         return bank;
     }
     public static String technicalHash() {

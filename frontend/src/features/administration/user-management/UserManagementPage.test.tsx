@@ -18,9 +18,9 @@ const summary = { organizationId: 'organization', organizationName: 'Actual Orga
   scheduled: null, usedSeats: 1, allocatedSeats: 20, admissionLimit: 20, paymentHistory: [] }
 const member = { membershipId: 'member', accountId: 'employee', fullName: 'Actual Employee', email: 'employee@example.test',
   active: true, accountActive: true, roles: ['EMPLOYEE'], revision: 1, departmentId: 'department', departmentName: 'Engineering',
-  occupationReferenceId: 'occupation', occupationName: 'Developer' }
+  jobPositionReferenceId: 'jobPosition', jobPositionName: 'Developer' }
 const invitation = { activationId: 'invitation', fullName: 'Pending Person', email: 'pending@example.test', roles: ['LD_MANAGER'],
-  departmentId: null, departmentName: null, occupationReferenceId: null, occupationName: null,
+  departmentId: null, departmentName: null, jobPositionReferenceId: null, jobPositionName: null,
   createdAt: '2026-10-26T00:00:00Z', expiresAt: '2026-10-26T00:10:00Z', state: 'PENDING', deliveryStatus: 'PENDING' }
 let expired = false
 let suspended = false
@@ -34,7 +34,7 @@ const fetcher = vi.fn(async (path: string, init?: RequestInit) => {
     ...member, membershipId: `member-${index}`, email: `employee-${index}@example.test`, fullName: `Employee ${index + 1}`,
   })) : [member]
   else if (path.endsWith('/activations')) value = [invitation]
-  else if (path.endsWith('/member-references')) value = [{ departmentId: 'department', departmentName: 'Engineering', occupationReferenceId: 'occupation', occupationName: 'Developer' }]
+  else if (path.endsWith('/member-references')) value = [{ departmentId: 'department', departmentName: 'Engineering', jobPositionReferenceId: 'jobPosition', jobPositionName: 'Developer' }]
   else if (path.endsWith('/current-order')) value = { order: null, applicationState: 'NOT_APPLIED', workspace: null }
   else if (path.endsWith('/profile') && init?.method === 'PUT') value = { ...member, fullName: 'Updated Employee', revision: 2 }
   else if (path.endsWith('/sign-out')) return new Response(null, { status: 204 })
@@ -107,7 +107,7 @@ describe('Administrator page ownership', () => {
     expect(fetcher).toHaveBeenCalledWith('/api/v1/organizations/organization/subscription/members/member/profile',
       expect.objectContaining({ method: 'PUT', headers: expect.objectContaining({ 'X-CSRF-TOKEN': 'fixture' }),
         body: JSON.stringify({ fullName: 'Updated Employee', roles: ['EMPLOYEE'], departmentId: 'department',
-          occupationReferenceId: 'occupation', revision: 1 }) }))
+          jobPositionReferenceId: 'jobPosition', revision: 1 }) }))
   })
 
   it('keeps deactivation but disables creation and edits for expired subscriptions', async () => {

@@ -263,7 +263,7 @@ export function EmployeeRoleGuidancePage() {
           <StatCard
             variant="gradient"
             icon={<Compass className="h-4 w-4 text-primary" />}
-            title="Assigned Occupation"
+            title="Assigned Job Position"
             value="15-1252.00"
             description="Software Developers (O*NET-SOC)"
           />
@@ -305,7 +305,7 @@ export function EmployeeRoleGuidancePage() {
                   <span>AI Career Guidance & Role Matching</span>
                 </CardTitle>
                 <CardDescription className="text-xs text-muted-foreground mt-0.5">
-                  Combine your occupation baseline assessment with the optional Holland RIASEC interest assessment to receive AI-powered role recommendations.
+                  Combine your jobPosition baseline assessment with the optional Holland RIASEC interest assessment to receive AI-powered role recommendations.
                 </CardDescription>
               </div>
 

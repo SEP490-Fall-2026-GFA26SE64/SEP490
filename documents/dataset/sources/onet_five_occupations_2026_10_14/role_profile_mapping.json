@@ -2,7 +2,7 @@
   {
     "roleId": "ROLE-F72E5464F9B3",
     "reportedTitle": "Application Developer",
-    "occupationIds": [
+    "job positionIds": [
       "OCC-15-1252.00"
     ],
     "profileKey": "DEV",
@@ -16,7 +16,7 @@
   {
     "roleId": "ROLE-58B047D9053E",
     "reportedTitle": "Application Integration Engineer",
-    "occupationIds": [
+    "job positionIds": [
       "OCC-15-1252.00"
     ],
     "profileKey": "INTEGRATION",
@@ -31,7 +31,7 @@
   {
     "roleId": "ROLE-88FA0D759F84",
     "reportedTitle": "Developer",
-    "occupationIds": [
+    "job positionIds": [
       "OCC-15-1252.00"
     ],
     "profileKey": "DEV",
@@ -45,7 +45,7 @@
   {
     "roleId": "ROLE-2F3EE4DCB9A3",
     "reportedTitle": "DevOps Engineer (Development Operations Engineer)",
-    "occupationIds": [
+    "job positionIds": [
       "OCC-15-1252.00"
     ],
     "profileKey": "DEVOPS",
@@ -59,7 +59,7 @@
   {
     "roleId": "ROLE-8C851BC1DBAC",
     "reportedTitle": "Infrastructure Engineer",
-    "occupationIds": [
+    "job positionIds": [
       "OCC-15-1252.00",
       "OCC-15-1299.08"
     ],
@@ -75,7 +75,7 @@
   {
     "roleId": "ROLE-DC8BCD8CC9FA",
     "reportedTitle": "Software Architect",
-    "occupationIds": [
+    "job positionIds": [
       "OCC-15-1252.00"
     ],
     "profileKey": "SWARCH",
@@ -90,7 +90,7 @@
   {
     "roleId": "ROLE-15F02B2EC48A",
     "reportedTitle": "Software Developer",
-    "occupationIds": [
+    "job positionIds": [
       "OCC-15-1252.00"
     ],
     "profileKey": "DEV",
@@ -104,7 +104,7 @@
   {
     "roleId": "ROLE-7838A77B1320",
     "reportedTitle": "Software Development Engineer",
-    "occupationIds": [
+    "job positionIds": [
       "OCC-15-1252.00"
     ],
     "profileKey": "DEV",
@@ -118,7 +118,7 @@
   {
     "roleId": "ROLE-CBAF88DF6DE7",
     "reportedTitle": "Software Engineer",
-    "occupationIds": [
+    "job positionIds": [
       "OCC-15-1252.00"
     ],
     "profileKey": "DEV",
@@ -132,7 +132,7 @@
   {
     "roleId": "ROLE-6B89F39CA50C",
     "reportedTitle": "Systems Engineer",
-    "occupationIds": [
+    "job positionIds": [
       "OCC-15-1252.00",
       "OCC-15-1299.08"
     ],
@@ -148,7 +148,7 @@
   {
     "roleId": "ROLE-84156EF4FF37",
     "reportedTitle": "Data Architect",
-    "occupationIds": [
+    "job positionIds": [
       "OCC-15-1243.00"
     ],
     "profileKey": "DATARCH",
@@ -163,7 +163,7 @@
   {
     "roleId": "ROLE-DE",
     "reportedTitle": "Data Engineer",
-    "occupationIds": [
+    "job positionIds": [
       "OCC-15-1243.00"
     ],
     "profileKey": "DATAENG",
@@ -177,7 +177,7 @@
   {
     "roleId": "ROLE-677AE5E25939",
     "reportedTitle": "Data Officer",
-    "occupationIds": [
+    "job positionIds": [
       "OCC-15-1243.00"
     ],
     "profileKey": "DATAGOV",
@@ -191,7 +191,7 @@
   {
     "roleId": "ROLE-262E99D33528",
     "reportedTitle": "Database Analyst",
-    "occupationIds": [
+    "job positionIds": [
       "OCC-15-1243.00"
     ],
     "profileKey": "DBANALYSIS",
@@ -206,7 +206,7 @@
   {
     "roleId": "ROLE-5A07C8E3F89B",
     "reportedTitle": "Database Architect",
-    "occupationIds": [
+    "job positionIds": [
       "OCC-15-1243.00"
     ],
     "profileKey": "DATARCH",
@@ -221,7 +221,7 @@
   {
     "roleId": "ROLE-683035F817DC",
     "reportedTitle": "Database Consultant",
-    "occupationIds": [
+    "job positionIds": [
       "OCC-15-1243.00"
     ],
     "profileKey": "DBANALYSIS",
@@ -236,7 +236,7 @@
   {
     "roleId": "ROLE-826EF8FFB24A",
     "reportedTitle": "Database Developer",
-    "occupationIds": [
+    "job positionIds": [
       "OCC-15-1243.00"
     ],
     "profileKey": "DBDEV",
@@ -251,7 +251,7 @@
   {
     "roleId": "ROLE-6C905B8EE52A",
     "reportedTitle": "Database Programmer",
-    "occupationIds": [
+    "job positionIds": [
       "OCC-15-1243.00"
     ],
     "profileKey": "DBDEV",
@@ -266,7 +266,7 @@
   {
     "roleId": "ROLE-B0C017CA7D49",
     "reportedTitle": "Enterprise Architect",
-    "occupationIds": [
+    "job positionIds": [
       "OCC-15-1243.00"
     ],
     "profileKey": "ENTERPRISE",
@@ -282,7 +282,7 @@
   {
     "roleId": "ROLE-D4665145D9A0",
     "reportedTitle": "Information Architect",
-    "occupationIds": [
+    "job positionIds": [
       "OCC-15-1243.00"
     ],
     "profileKey": "DATARCH",
@@ -297,7 +297,7 @@
   {
     "roleId": "ROLE-3594A031F678",
     "reportedTitle": "Automation Tester",
-    "occupationIds": [
+    "job positionIds": [
       "OCC-15-1253.00"
     ],
     "profileKey": "QAAUTO",
@@ -311,7 +311,7 @@
   {
     "roleId": "ROLE-39F74565946B",
     "reportedTitle": "Information Technology Analyst (IT Analyst)",
-    "occupationIds": [
+    "job positionIds": [
       "OCC-15-1253.00"
     ],
     "profileKey": "QAA",
@@ -325,7 +325,7 @@
   {
     "roleId": "ROLE-B94440938DCB",
     "reportedTitle": "Quality Assurance Analyst (QA Analyst)",
-    "occupationIds": [
+    "job positionIds": [
       "OCC-15-1253.00"
     ],
     "profileKey": "QAA",
@@ -339,7 +339,7 @@
   {
     "roleId": "ROLE-1947F95DA9EB",
     "reportedTitle": "Quality Assurance Engineer (QA Engineer)",
-    "occupationIds": [
+    "job positionIds": [
       "OCC-15-1253.00"
     ],
     "profileKey": "QAENG",
@@ -353,7 +353,7 @@
   {
     "roleId": "ROLE-140C2EA5BCFA",
     "reportedTitle": "Quality Engineer",
-    "occupationIds": [
+    "job positionIds": [
       "OCC-15-1253.00"
     ],
     "profileKey": "QAENG",
@@ -367,7 +367,7 @@
   {
     "roleId": "ROLE-600114606368",
     "reportedTitle": "Software Quality Assurance Analyst (SQA Analyst)",
-    "occupationIds": [
+    "job positionIds": [
       "OCC-15-1253.00"
     ],
     "profileKey": "QAA",
@@ -381,7 +381,7 @@
   {
     "roleId": "ROLE-6E51A03B5F7F",
     "reportedTitle": "Software Quality Assurance Engineer (SQA Engineer)",
-    "occupationIds": [
+    "job positionIds": [
       "OCC-15-1253.00"
     ],
     "profileKey": "QAENG",
@@ -395,7 +395,7 @@
   {
     "roleId": "ROLE-B2B4EB364379",
     "reportedTitle": "Software Quality Engineer",
-    "occupationIds": [
+    "job positionIds": [
       "OCC-15-1253.00"
     ],
     "profileKey": "QAENG",
@@ -409,7 +409,7 @@
   {
     "roleId": "ROLE-B0E1A3444426",
     "reportedTitle": "Software Test Engineer",
-    "occupationIds": [
+    "job positionIds": [
       "OCC-15-1253.00"
     ],
     "profileKey": "QAENG",
@@ -423,7 +423,7 @@
   {
     "roleId": "ROLE-6A2A26EB8380",
     "reportedTitle": "Test Engineer",
-    "occupationIds": [
+    "job positionIds": [
       "OCC-15-1253.00"
     ],
     "profileKey": "QAENG",
@@ -437,7 +437,7 @@
   {
     "roleId": "ROLE-56B826705119",
     "reportedTitle": "IT Architect (Information Technology Architect)",
-    "occupationIds": [
+    "job positionIds": [
       "OCC-15-1299.08"
     ],
     "profileKey": "SYSARCH",
@@ -452,7 +452,7 @@
   {
     "roleId": "ROLE-BE3E290AD0CA",
     "reportedTitle": "IT Engineer (Information Technology Engineer)",
-    "occupationIds": [
+    "job positionIds": [
       "OCC-15-1299.08"
     ],
     "profileKey": "INFRA",
@@ -467,7 +467,7 @@
   {
     "roleId": "ROLE-919BDC0216B4",
     "reportedTitle": "Network and Infrastructure Engineer",
-    "occupationIds": [
+    "job positionIds": [
       "OCC-15-1299.08"
     ],
     "profileKey": "INFRA",
@@ -482,7 +482,7 @@
   {
     "roleId": "ROLE-B01510AF5F34",
     "reportedTitle": "Solutions Architect",
-    "occupationIds": [
+    "job positionIds": [
       "OCC-15-1299.08"
     ],
     "profileKey": "SYSARCH",
@@ -497,7 +497,7 @@
   {
     "roleId": "ROLE-D047DF7D12BA",
     "reportedTitle": "Systems Application Engineer",
-    "occupationIds": [
+    "job positionIds": [
       "OCC-15-1299.08"
     ],
     "profileKey": "INTEGRATION",
@@ -512,7 +512,7 @@
   {
     "roleId": "ROLE-7A06376BE513",
     "reportedTitle": "Systems Architect",
-    "occupationIds": [
+    "job positionIds": [
       "OCC-15-1299.08"
     ],
     "profileKey": "SYSARCH",
@@ -527,7 +527,7 @@
   {
     "roleId": "ROLE-4C23110A9ACE",
     "reportedTitle": "Systems Consultant",
-    "occupationIds": [
+    "job positionIds": [
       "OCC-15-1299.08"
     ],
     "profileKey": "SYSANALYSIS",
@@ -542,7 +542,7 @@
   {
     "roleId": "ROLE-E53C178E5BA6",
     "reportedTitle": "Web Architect",
-    "occupationIds": [
+    "job positionIds": [
       "OCC-15-1299.08"
     ],
     "profileKey": "WEBARCH",
@@ -557,7 +557,7 @@
   {
     "roleId": "ROLE-BC681F40F67B",
     "reportedTitle": "Information Security Officer",
-    "occupationIds": [
+    "job positionIds": [
       "OCC-15-1212.00"
     ],
     "profileKey": "SECOFFICER",
@@ -571,7 +571,7 @@
   {
     "roleId": "ROLE-9E24DD1E0AE6",
     "reportedTitle": "Information Security Specialist",
-    "occupationIds": [
+    "job positionIds": [
       "OCC-15-1212.00"
     ],
     "profileKey": "SECANALYSIS",
@@ -587,7 +587,7 @@
   {
     "roleId": "ROLE-AF49BFEFFAE0",
     "reportedTitle": "Information Systems Security Analyst",
-    "occupationIds": [
+    "job positionIds": [
       "OCC-15-1212.00"
     ],
     "profileKey": "SECANALYSIS",
@@ -603,7 +603,7 @@
   {
     "roleId": "ROLE-AAF660DA34D9",
     "reportedTitle": "Information Systems Security Officer (ISSO)",
-    "occupationIds": [
+    "job positionIds": [
       "OCC-15-1212.00"
     ],
     "profileKey": "SECOFFICER",
@@ -617,7 +617,7 @@
   {
     "roleId": "ROLE-AC875FDD2CC1",
     "reportedTitle": "Information Technology Security Analyst (IT Security Analyst)",
-    "occupationIds": [
+    "job positionIds": [
       "OCC-15-1212.00"
     ],
     "profileKey": "SECANALYSIS",
@@ -633,7 +633,7 @@
   {
     "roleId": "ROLE-39DE5AAEA190",
     "reportedTitle": "Network Security Analyst",
-    "occupationIds": [
+    "job positionIds": [
       "OCC-15-1212.00"
     ],
     "profileKey": "NETSEC",
@@ -649,7 +649,7 @@
   {
     "roleId": "ROLE-FE0775936B97",
     "reportedTitle": "Security Analyst",
-    "occupationIds": [
+    "job positionIds": [
       "OCC-15-1212.00"
     ],
     "profileKey": "SECANALYSIS",
@@ -665,7 +665,7 @@
   {
     "roleId": "ROLE-410E150F21A9",
     "reportedTitle": "Systems Analyst",
-    "occupationIds": [
+    "job positionIds": [
       "OCC-15-1212.00"
     ],
     "profileKey": "SECANALYSIS",

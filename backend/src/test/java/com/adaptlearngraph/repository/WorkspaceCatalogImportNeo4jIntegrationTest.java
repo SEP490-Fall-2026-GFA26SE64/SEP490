@@ -7,7 +7,7 @@ import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.read.ListAppender;
-import com.adaptlearngraph.entities.domain.Occupation;
+import com.adaptlearngraph.entities.domain.JobPosition;
 import com.adaptlearngraph.exception.CrossTenantWriteException;
 import com.adaptlearngraph.services.PlatformCatalogService;
 import com.adaptlearngraph.services.WorkspaceCatalogImportWorker;
@@ -46,7 +46,7 @@ class WorkspaceCatalogImportNeo4jIntegrationTest {
         graph.start();
         driver = GraphDatabase.driver(graph.getBoltUrl(), AuthTokens.basic("neo4j", graph.getAdminPassword()));
         try (var session = driver.session()) {
-            for (String label : List.of("Occupation", "TargetRole", "Level", "Competency", "MicroSkill", "LearningModule"))
+            for (String label : List.of("JobPosition", "TargetRole", "Level", "Competency", "MicroSkill", "LearningModule"))
                 session.run("CREATE CONSTRAINT IF NOT EXISTS FOR (n:" + label + ") REQUIRE n.id IS UNIQUE").consume();
         }
         try (var input = getClass().getResourceAsStream("/platform-catalog/template-fixture.json")) {
@@ -99,21 +99,21 @@ class WorkspaceCatalogImportNeo4jIntegrationTest {
             assertThat(role.get("code").asString()).isEqualTo("ROLE_A");
         }
 
-        var occupations = new Neo4jOccupationRepository(persistence.bean(OccupationNodeRepository.class),
+        var jobPositions = new Neo4jJobPositionRepository(persistence.bean(JobPositionNodeRepository.class),
                 persistence.client(), persistence.transactionManager());
-        assertThat(occupations.findAllOccupations(a)).extracting(Occupation::id).containsExactly(Neo4jWorkspaceCatalogWriter.copiedId(a, "OCC-1"));
-        assertThat(occupations.findAllOccupations(b)).extracting(Occupation::id).containsExactly(Neo4jWorkspaceCatalogWriter.copiedId(b, "OCC-1"));
-        assertThat(occupations.findAllOccupations("")).isEmpty();
+        assertThat(jobPositions.findAllJobPositions(a)).extracting(JobPosition::id).containsExactly(Neo4jWorkspaceCatalogWriter.copiedId(a, "OCC-1"));
+        assertThat(jobPositions.findAllJobPositions(b)).extracting(JobPosition::id).containsExactly(Neo4jWorkspaceCatalogWriter.copiedId(b, "OCC-1"));
+        assertThat(jobPositions.findAllJobPositions("")).isEmpty();
         var skills = persistence.bean(MicroSkillNodeRepository.class);
         assertThat(new Neo4jMicroSkillRepository(skills, persistence.client(), persistence.mappingContext(),
                 persistence.transactionManager()).findAll(b)).hasSize(3);
         assertThat(new Neo4jPrerequisiteRepository(skills, persistence.client(), persistence.mappingContext(),
                 persistence.transactionManager()).findAll(a)).hasSize(1);
 
-        var foreign = occupations.findAllOccupations(a).getFirst();
-        assertThatThrownBy(() -> occupations.save(b, foreign)).isInstanceOf(CrossTenantWriteException.class);
-        assertThat(occupations.findByIdOrCode(a, foreign.id())).get().extracting(Occupation::name).isEqualTo("Occupation One");
-        assertThat(occupations.findByIdOrCode(b, foreign.id())).isEmpty();
+        var foreign = jobPositions.findAllJobPositions(a).getFirst();
+        assertThatThrownBy(() -> jobPositions.save(b, foreign)).isInstanceOf(CrossTenantWriteException.class);
+        assertThat(jobPositions.findByIdOrCode(a, foreign.id())).get().extracting(JobPosition::name).isEqualTo("JobPosition One");
+        assertThat(jobPositions.findByIdOrCode(b, foreign.id())).isEmpty();
     }
 
     @Test
@@ -132,7 +132,7 @@ class WorkspaceCatalogImportNeo4jIntegrationTest {
         // A node owned by A that already carries C's deterministic copy id: the whole copy into C is rejected and rolled back.
         String collision = Neo4jWorkspaceCatalogWriter.copiedId(c, "OCC-1");
         try (var session = driver.session()) {
-            session.run("CREATE (:Occupation {id:$id, organizationId:$a, name:'Owned by A'})", Map.of("id", collision, "a", a)).consume();
+            session.run("CREATE (:JobPosition {id:$id, organizationId:$a, name:'Owned by A'})", Map.of("id", collision, "a", a)).consume();
         }
         var withCollision = snapshot(a);
         assertThatThrownBy(() -> copy(c, List.of("ROLE-A"))).isInstanceOf(CrossTenantWriteException.class);

@@ -14,14 +14,14 @@ public interface BaselineBlueprintUseCase {
 
     BaselineBlueprint getLatest(UUID blueprintId);
 
-    BaselineBlueprint getLatestByOccupation(String occupationId);
+    BaselineBlueprint getLatestByJobPosition(String jobPositionId);
 
     BaselineBlueprint getVersion(UUID blueprintId, int version);
 
     record BlueprintDraft(
             String name,
-            String occupationId,
-            String occupationNameSnapshot,
+            String jobPositionId,
+            String jobPositionNameSnapshot,
             List<RoleConfig> roles) {
         public BlueprintDraft {
             roles = List.copyOf(Objects.requireNonNull(roles, "roles must not be null"));

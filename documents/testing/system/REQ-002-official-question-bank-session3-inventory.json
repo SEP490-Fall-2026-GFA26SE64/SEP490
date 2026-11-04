@@ -1032,7 +1032,7 @@
         },
         {
           "kind": "column",
-          "name": "occupation_id",
+          "name": "job position_id",
           "table": "baseline_adaptive_attempt",
           "default": null,
           "ordinal": 4,
@@ -1237,7 +1237,7 @@
           "kind": "constraint",
           "name": "baseline_adaptive_attempt_attempt_id_organization_id_learne_key",
           "table": "platform.baseline_adaptive_attempt",
-          "definition": "UNIQUE (attempt_id, organization_id, learner_id, occupation_id)",
+          "definition": "UNIQUE (attempt_id, organization_id, learner_id, job position_id)",
           "referencesTable": null
         },
         {
@@ -1251,7 +1251,7 @@
           "kind": "constraint",
           "name": "baseline_adaptive_attempt_attempt_purpose_check",
           "table": "platform.baseline_adaptive_attempt",
-          "definition": "CHECK ((attempt_purpose = ANY (ARRAY['ROLE_REQUIREMENT'::text, 'OCCUPATION_EXPLORATION'::text])))",
+          "definition": "CHECK ((attempt_purpose = ANY (ARRAY['ROLE_REQUIREMENT'::text, 'JOB_POSITION_EXPLORATION'::text])))",
           "referencesTable": null
         },
         {
@@ -1272,7 +1272,7 @@
           "kind": "constraint",
           "name": "baseline_adaptive_attempt_check",
           "table": "platform.baseline_adaptive_attempt",
-          "definition": "CHECK ((((attempt_purpose = 'ROLE_REQUIREMENT'::text) AND (target_role_id IS NOT NULL)) OR ((attempt_purpose = 'OCCUPATION_EXPLORATION'::text) AND (target_role_id IS NULL) AND (target_selection_revision IS NULL))))",
+          "definition": "CHECK ((((attempt_purpose = 'ROLE_REQUIREMENT'::text) AND (target_role_id IS NOT NULL)) OR ((attempt_purpose = 'JOB_POSITION_EXPLORATION'::text) AND (target_role_id IS NULL) AND (target_selection_revision IS NULL))))",
           "referencesTable": null
         },
         {
@@ -1326,16 +1326,16 @@
         },
         {
           "kind": "constraint",
-          "name": "baseline_adaptive_attempt_occupation_id_check",
+          "name": "baseline_adaptive_attempt_job position_id_check",
           "table": "platform.baseline_adaptive_attempt",
-          "definition": "CHECK (((occupation_id <> ''::text) AND (occupation_id = btrim(occupation_id))))",
+          "definition": "CHECK (((job position_id <> ''::text) AND (job position_id = btrim(job position_id))))",
           "referencesTable": null
         },
         {
           "kind": "constraint",
-          "name": "baseline_adaptive_attempt_organization_id_occupation_id_bl_fkey",
+          "name": "baseline_adaptive_attempt_organization_id_job position_id_bl_fkey",
           "table": "platform.baseline_adaptive_attempt",
-          "definition": "FOREIGN KEY (organization_id, occupation_id, blueprint_id, blueprint_version) REFERENCES platform.baseline_adaptive_blueprint_version(organization_id, occupation_id, blueprint_id, version)",
+          "definition": "FOREIGN KEY (organization_id, job position_id, blueprint_id, blueprint_version) REFERENCES platform.baseline_adaptive_blueprint_version(organization_id, job position_id, blueprint_id, version)",
           "referencesTable": "platform.baseline_adaptive_blueprint_version"
         },
         {
@@ -1356,7 +1356,7 @@
           "kind": "constraint",
           "name": "baseline_adaptive_attempt_replaces_attempt_id_organization_fkey",
           "table": "platform.baseline_adaptive_attempt",
-          "definition": "FOREIGN KEY (replaces_attempt_id, organization_id, learner_id, occupation_id) REFERENCES platform.baseline_adaptive_attempt(attempt_id, organization_id, learner_id, occupation_id)",
+          "definition": "FOREIGN KEY (replaces_attempt_id, organization_id, learner_id, job position_id) REFERENCES platform.baseline_adaptive_attempt(attempt_id, organization_id, learner_id, job position_id)",
           "referencesTable": "platform.baseline_adaptive_attempt"
         },
         {
@@ -1370,7 +1370,7 @@
           "kind": "constraint",
           "name": "baseline_adaptive_attempt_scope_policy_check",
           "table": "platform.baseline_adaptive_attempt",
-          "definition": "CHECK (((scope_policy IS NULL) OR (scope_policy = 'FULL_OCCUPATION_V2'::text)))",
+          "definition": "CHECK (((scope_policy IS NULL) OR (scope_policy = 'FULL_JOB_POSITION_V2'::text)))",
           "referencesTable": null
         },
         {
@@ -1414,7 +1414,7 @@
           "kind": "foreignReference",
           "name": "baseline_adaptive_attempt_replaces_attempt_id_organization_fkey",
           "table": "platform.baseline_adaptive_attempt",
-          "definition": "FOREIGN KEY (replaces_attempt_id, organization_id, learner_id, occupation_id) REFERENCES platform.baseline_adaptive_attempt(attempt_id, organization_id, learner_id, occupation_id)",
+          "definition": "FOREIGN KEY (replaces_attempt_id, organization_id, learner_id, job position_id) REFERENCES platform.baseline_adaptive_attempt(attempt_id, organization_id, learner_id, job position_id)",
           "referencesTable": "platform.baseline_adaptive_attempt"
         },
         {
@@ -1442,14 +1442,14 @@
           "kind": "foreignReference",
           "name": "baseline_mastery_evidence_attempt_id_organization_id_learn_fkey",
           "table": "platform.baseline_mastery_evidence",
-          "definition": "FOREIGN KEY (attempt_id, organization_id, learner_id, occupation_id) REFERENCES platform.baseline_adaptive_attempt(attempt_id, organization_id, learner_id, occupation_id)",
+          "definition": "FOREIGN KEY (attempt_id, organization_id, learner_id, job position_id) REFERENCES platform.baseline_adaptive_attempt(attempt_id, organization_id, learner_id, job position_id)",
           "referencesTable": "platform.baseline_adaptive_attempt"
         },
         {
           "kind": "foreignReference",
           "name": "baseline_attempt_command_attempt_id_organization_id_actor__fkey",
           "table": "platform.baseline_attempt_command",
-          "definition": "FOREIGN KEY (attempt_id, organization_id, actor_id, occupation_id) REFERENCES platform.baseline_adaptive_attempt(attempt_id, organization_id, learner_id, occupation_id)",
+          "definition": "FOREIGN KEY (attempt_id, organization_id, actor_id, job position_id) REFERENCES platform.baseline_adaptive_attempt(attempt_id, organization_id, learner_id, job position_id)",
           "referencesTable": "platform.baseline_adaptive_attempt"
         }
       ],
@@ -1464,7 +1464,7 @@
         ],
         "configuration": [
           "backend/src/main/resources/db/migration/V19__adaptive_baseline_attempt.sql",
-          "backend/src/main/resources/db/migration/V20__occupation_baseline_scope_compatibility.sql"
+          "backend/src/main/resources/db/migration/V20__job position_baseline_scope_compatibility.sql"
         ],
         "tests": [],
         "documents": [
@@ -1635,7 +1635,7 @@
         "configuration": [
           "backend/src/main/resources/db/migration/V18__adaptive_baseline_blueprint_and_irt_versions.sql",
           "backend/src/main/resources/db/migration/V19__adaptive_baseline_attempt.sql",
-          "backend/src/main/resources/db/migration/V20__occupation_baseline_scope_compatibility.sql"
+          "backend/src/main/resources/db/migration/V20__job position_baseline_scope_compatibility.sql"
         ],
         "tests": [],
         "documents": [
@@ -1766,7 +1766,7 @@
         "configuration": [
           "backend/src/main/resources/db/migration/V18__adaptive_baseline_blueprint_and_irt_versions.sql",
           "backend/src/main/resources/db/migration/V19__adaptive_baseline_attempt.sql",
-          "backend/src/main/resources/db/migration/V20__occupation_baseline_scope_compatibility.sql"
+          "backend/src/main/resources/db/migration/V20__job position_baseline_scope_compatibility.sql"
         ],
         "tests": [],
         "documents": [
@@ -1810,7 +1810,7 @@
         },
         {
           "kind": "column",
-          "name": "occupation_id",
+          "name": "job position_id",
           "table": "baseline_adaptive_blueprint_version",
           "default": null,
           "ordinal": 4,
@@ -1828,7 +1828,7 @@
         },
         {
           "kind": "column",
-          "name": "occupation_name_snapshot",
+          "name": "job position_name_snapshot",
           "table": "baseline_adaptive_blueprint_version",
           "default": null,
           "ordinal": 6,
@@ -1918,7 +1918,7 @@
         },
         {
           "kind": "column",
-          "name": "occupation_max_questions",
+          "name": "job position_max_questions",
           "table": "baseline_adaptive_blueprint_version",
           "default": null,
           "ordinal": 16,
@@ -1927,7 +1927,7 @@
         },
         {
           "kind": "column",
-          "name": "occupation_time_limit_seconds",
+          "name": "job position_time_limit_seconds",
           "table": "baseline_adaptive_blueprint_version",
           "default": null,
           "ordinal": 17,
@@ -1947,7 +1947,7 @@
           "kind": "constraint",
           "name": "adaptive_blueprint_scope_bounds",
           "table": "platform.baseline_adaptive_blueprint_version",
-          "definition": "CHECK ((((scope_policy IS NULL) AND (occupation_max_questions IS NULL) AND (occupation_time_limit_seconds IS NULL) AND (exploration_max_questions IS NOT NULL) AND (exploration_time_limit_seconds IS NOT NULL)) OR ((scope_policy IS NOT NULL) AND (scope_policy = 'FULL_OCCUPATION_V2'::text) AND (occupation_max_questions IS NOT NULL) AND (occupation_max_questions > 0) AND (occupation_time_limit_seconds IS NOT NULL) AND (occupation_time_limit_seconds > 0) AND (exploration_max_questions IS NULL) AND (exploration_time_limit_seconds IS NULL))))",
+          "definition": "CHECK ((((scope_policy IS NULL) AND (job position_max_questions IS NULL) AND (job position_time_limit_seconds IS NULL) AND (exploration_max_questions IS NOT NULL) AND (exploration_time_limit_seconds IS NOT NULL)) OR ((scope_policy IS NOT NULL) AND (scope_policy = 'FULL_JOB_POSITION_V2'::text) AND (job position_max_questions IS NOT NULL) AND (job position_max_questions > 0) AND (job position_time_limit_seconds IS NOT NULL) AND (job position_time_limit_seconds > 0) AND (exploration_max_questions IS NULL) AND (exploration_time_limit_seconds IS NULL))))",
           "referencesTable": null
         },
         {
@@ -1961,14 +1961,14 @@
           "kind": "constraint",
           "name": "baseline_adaptive_blueprint_v_blueprint_id_organization_id_fkey",
           "table": "platform.baseline_adaptive_blueprint_version",
-          "definition": "FOREIGN KEY (blueprint_id, organization_id, occupation_id) REFERENCES platform.baseline_blueprint(blueprint_id, organization_id, occupation_id)",
+          "definition": "FOREIGN KEY (blueprint_id, organization_id, job position_id) REFERENCES platform.baseline_blueprint(blueprint_id, organization_id, job position_id)",
           "referencesTable": "platform.baseline_blueprint"
         },
         {
           "kind": "constraint",
-          "name": "baseline_adaptive_blueprint_v_organization_id_occupation_id_key",
+          "name": "baseline_adaptive_blueprint_v_organization_id_job position_id_key",
           "table": "platform.baseline_adaptive_blueprint_version",
-          "definition": "UNIQUE (organization_id, occupation_id, blueprint_id, version)",
+          "definition": "UNIQUE (organization_id, job position_id, blueprint_id, version)",
           "referencesTable": null
         },
         {
@@ -2001,9 +2001,9 @@
         },
         {
           "kind": "constraint",
-          "name": "baseline_adaptive_blueprint_vers_occupation_name_snapshot_check",
+          "name": "baseline_adaptive_blueprint_vers_job position_name_snapshot_check",
           "table": "platform.baseline_adaptive_blueprint_version",
-          "definition": "CHECK ((btrim(occupation_name_snapshot) <> ''::text))",
+          "definition": "CHECK ((btrim(job position_name_snapshot) <> ''::text))",
           "referencesTable": null
         },
         {
@@ -2043,9 +2043,9 @@
         },
         {
           "kind": "constraint",
-          "name": "occupation_baseline_name_time_limits",
+          "name": "job position_baseline_name_time_limits",
           "table": "platform.baseline_adaptive_blueprint_version",
-          "definition": "CHECK (\nCASE\n    WHEN (scope_policy = 'FULL_OCCUPATION_V2'::text) THEN ((char_length(btrim(name)) <= 100) AND (((occupation_time_limit_seconds)::bigint >= ((occupation_max_questions)::bigint * 30)) AND ((occupation_time_limit_seconds)::bigint <= ((occupation_max_questions)::bigint * 120))))\n    ELSE true\nEND) NOT VALID",
+          "definition": "CHECK (\nCASE\n    WHEN (scope_policy = 'FULL_JOB_POSITION_V2'::text) THEN ((char_length(btrim(name)) <= 100) AND (((job position_time_limit_seconds)::bigint >= ((job position_max_questions)::bigint * 30)) AND ((job position_time_limit_seconds)::bigint <= ((job position_max_questions)::bigint * 120))))\n    ELSE true\nEND) NOT VALID",
           "referencesTable": null
         }
       ],
@@ -2079,23 +2079,23 @@
         },
         {
           "kind": "foreignReference",
-          "name": "baseline_blueprint_activation_organization_id_occupation_i_fkey",
+          "name": "baseline_blueprint_activation_organization_id_job position_i_fkey",
           "table": "platform.baseline_blueprint_activation",
-          "definition": "FOREIGN KEY (organization_id, occupation_id, blueprint_id, blueprint_version) REFERENCES platform.baseline_adaptive_blueprint_version(organization_id, occupation_id, blueprint_id, version)",
+          "definition": "FOREIGN KEY (organization_id, job position_id, blueprint_id, blueprint_version) REFERENCES platform.baseline_adaptive_blueprint_version(organization_id, job position_id, blueprint_id, version)",
           "referencesTable": "platform.baseline_adaptive_blueprint_version"
         },
         {
           "kind": "foreignReference",
-          "name": "baseline_blueprint_activatio_organization_id_occupation_i_fkey2",
+          "name": "baseline_blueprint_activatio_organization_id_job position_i_fkey2",
           "table": "platform.baseline_blueprint_activation_event",
-          "definition": "FOREIGN KEY (organization_id, occupation_id, blueprint_id, blueprint_version) REFERENCES platform.baseline_adaptive_blueprint_version(organization_id, occupation_id, blueprint_id, version)",
+          "definition": "FOREIGN KEY (organization_id, job position_id, blueprint_id, blueprint_version) REFERENCES platform.baseline_adaptive_blueprint_version(organization_id, job position_id, blueprint_id, version)",
           "referencesTable": "platform.baseline_adaptive_blueprint_version"
         },
         {
           "kind": "foreignReference",
-          "name": "baseline_adaptive_attempt_organization_id_occupation_id_bl_fkey",
+          "name": "baseline_adaptive_attempt_organization_id_job position_id_bl_fkey",
           "table": "platform.baseline_adaptive_attempt",
-          "definition": "FOREIGN KEY (organization_id, occupation_id, blueprint_id, blueprint_version) REFERENCES platform.baseline_adaptive_blueprint_version(organization_id, occupation_id, blueprint_id, version)",
+          "definition": "FOREIGN KEY (organization_id, job position_id, blueprint_id, blueprint_version) REFERENCES platform.baseline_adaptive_blueprint_version(organization_id, job position_id, blueprint_id, version)",
           "referencesTable": "platform.baseline_adaptive_blueprint_version"
         }
       ],
@@ -2109,8 +2109,8 @@
         "configuration": [
           "backend/src/main/resources/db/migration/V18__adaptive_baseline_blueprint_and_irt_versions.sql",
           "backend/src/main/resources/db/migration/V19__adaptive_baseline_attempt.sql",
-          "backend/src/main/resources/db/migration/V20__occupation_baseline_scope_compatibility.sql",
-          "backend/src/main/resources/db/migration/V21__occupation_baseline_name_and_time_limits.sql"
+          "backend/src/main/resources/db/migration/V20__job position_baseline_scope_compatibility.sql",
+          "backend/src/main/resources/db/migration/V21__job position_baseline_name_and_time_limits.sql"
         ],
         "tests": [],
         "documents": [
@@ -2145,7 +2145,7 @@
         },
         {
           "kind": "column",
-          "name": "occupation_id",
+          "name": "job position_id",
           "table": "baseline_adaptive_blueprint_working_revision",
           "default": null,
           "ordinal": 3,
@@ -2239,7 +2239,7 @@
           "kind": "constraint",
           "name": "baseline_adaptive_blueprint_w_blueprint_id_organization_id_fkey",
           "table": "platform.baseline_adaptive_blueprint_working_revision",
-          "definition": "FOREIGN KEY (blueprint_id, organization_id, occupation_id) REFERENCES platform.baseline_blueprint(blueprint_id, organization_id, occupation_id)",
+          "definition": "FOREIGN KEY (blueprint_id, organization_id, job position_id) REFERENCES platform.baseline_blueprint(blueprint_id, organization_id, job position_id)",
           "referencesTable": "platform.baseline_blueprint"
         },
         {
@@ -2315,7 +2315,7 @@
         ],
         "configuration": [
           "backend/src/main/resources/db/migration/V18__adaptive_baseline_blueprint_and_irt_versions.sql",
-          "backend/src/main/resources/db/migration/V20__occupation_baseline_scope_compatibility.sql"
+          "backend/src/main/resources/db/migration/V20__job position_baseline_scope_compatibility.sql"
         ],
         "tests": [],
         "documents": [
@@ -2461,7 +2461,7 @@
         },
         {
           "kind": "column",
-          "name": "occupation_id",
+          "name": "job position_id",
           "table": "baseline_assessment_series",
           "default": null,
           "ordinal": 2,
@@ -2560,7 +2560,7 @@
           "kind": "constraint",
           "name": "baseline_assessment_series_blueprint_id_organization_id_oc_fkey",
           "table": "platform.baseline_assessment_series",
-          "definition": "FOREIGN KEY (blueprint_id, organization_id, occupation_id) REFERENCES platform.baseline_blueprint(blueprint_id, organization_id, occupation_id)",
+          "definition": "FOREIGN KEY (blueprint_id, organization_id, job position_id) REFERENCES platform.baseline_blueprint(blueprint_id, organization_id, job position_id)",
           "referencesTable": "platform.baseline_blueprint"
         },
         {
@@ -2586,9 +2586,9 @@
         },
         {
           "kind": "constraint",
-          "name": "baseline_assessment_series_occupation_id_check",
+          "name": "baseline_assessment_series_job position_id_check",
           "table": "platform.baseline_assessment_series",
-          "definition": "CHECK ((btrim(occupation_id) <> ''::text))",
+          "definition": "CHECK ((btrim(job position_id) <> ''::text))",
           "referencesTable": null
         },
         {
@@ -2616,7 +2616,7 @@
           "kind": "constraint",
           "name": "baseline_assessment_series_pkey",
           "table": "platform.baseline_assessment_series",
-          "definition": "PRIMARY KEY (organization_id, occupation_id)",
+          "definition": "PRIMARY KEY (organization_id, job position_id)",
           "referencesTable": null
         },
         {
@@ -2645,23 +2645,23 @@
       "incomingForeignKeys": [
         {
           "kind": "foreignReference",
-          "name": "baseline_blueprint_working_re_organization_id_occupation_i_fkey",
+          "name": "baseline_blueprint_working_re_organization_id_job position_i_fkey",
           "table": "platform.baseline_blueprint_working_revision",
-          "definition": "FOREIGN KEY (organization_id, occupation_id) REFERENCES platform.baseline_assessment_series(organization_id, occupation_id)",
+          "definition": "FOREIGN KEY (organization_id, job position_id) REFERENCES platform.baseline_assessment_series(organization_id, job position_id)",
           "referencesTable": "platform.baseline_assessment_series"
         },
         {
           "kind": "foreignReference",
-          "name": "baseline_assessment_transitio_organization_id_occupation_i_fkey",
+          "name": "baseline_assessment_transitio_organization_id_job position_i_fkey",
           "table": "platform.baseline_assessment_transition",
-          "definition": "FOREIGN KEY (organization_id, occupation_id) REFERENCES platform.baseline_assessment_series(organization_id, occupation_id)",
+          "definition": "FOREIGN KEY (organization_id, job position_id) REFERENCES platform.baseline_assessment_series(organization_id, job position_id)",
           "referencesTable": "platform.baseline_assessment_series"
         },
         {
           "kind": "foreignReference",
-          "name": "baseline_management_command_organization_id_occupation_id_fkey",
+          "name": "baseline_management_command_organization_id_job position_id_fkey",
           "table": "platform.baseline_management_command",
-          "definition": "FOREIGN KEY (organization_id, occupation_id) REFERENCES platform.baseline_assessment_series(organization_id, occupation_id)",
+          "definition": "FOREIGN KEY (organization_id, job position_id) REFERENCES platform.baseline_assessment_series(organization_id, job position_id)",
           "referencesTable": "platform.baseline_assessment_series"
         }
       ],
@@ -2714,7 +2714,7 @@
         },
         {
           "kind": "column",
-          "name": "occupation_id",
+          "name": "job position_id",
           "table": "baseline_assessment_transition",
           "default": null,
           "ordinal": 3,
@@ -2867,16 +2867,16 @@
         },
         {
           "kind": "constraint",
-          "name": "baseline_assessment_transitio_organization_id_occupation_i_fkey",
+          "name": "baseline_assessment_transitio_organization_id_job position_i_fkey",
           "table": "platform.baseline_assessment_transition",
-          "definition": "FOREIGN KEY (organization_id, occupation_id) REFERENCES platform.baseline_assessment_series(organization_id, occupation_id)",
+          "definition": "FOREIGN KEY (organization_id, job position_id) REFERENCES platform.baseline_assessment_series(organization_id, job position_id)",
           "referencesTable": "platform.baseline_assessment_series"
         },
         {
           "kind": "constraint",
-          "name": "baseline_assessment_transitio_organization_id_occupation_id_key",
+          "name": "baseline_assessment_transitio_organization_id_job position_id_key",
           "table": "platform.baseline_assessment_transition",
-          "definition": "UNIQUE (organization_id, occupation_id, series_revision)",
+          "definition": "UNIQUE (organization_id, job position_id, series_revision)",
           "referencesTable": null
         },
         {
@@ -3058,7 +3058,7 @@
         },
         {
           "kind": "column",
-          "name": "occupation_id",
+          "name": "job position_id",
           "table": "baseline_attempt_command",
           "default": null,
           "ordinal": 5,
@@ -3107,7 +3107,7 @@
           "kind": "constraint",
           "name": "baseline_attempt_command_attempt_id_organization_id_actor__fkey",
           "table": "platform.baseline_attempt_command",
-          "definition": "FOREIGN KEY (attempt_id, organization_id, actor_id, occupation_id) REFERENCES platform.baseline_adaptive_attempt(attempt_id, organization_id, learner_id, occupation_id)",
+          "definition": "FOREIGN KEY (attempt_id, organization_id, actor_id, job position_id) REFERENCES platform.baseline_adaptive_attempt(attempt_id, organization_id, learner_id, job position_id)",
           "referencesTable": "platform.baseline_adaptive_attempt"
         },
         {
@@ -3332,7 +3332,7 @@
         ],
         "configuration": [
           "backend/src/main/resources/db/migration/V19__adaptive_baseline_attempt.sql",
-          "backend/src/main/resources/db/migration/V20__occupation_baseline_scope_compatibility.sql"
+          "backend/src/main/resources/db/migration/V20__job position_baseline_scope_compatibility.sql"
         ],
         "tests": [],
         "documents": [
@@ -3457,7 +3457,7 @@
         ],
         "configuration": [
           "backend/src/main/resources/db/migration/V19__adaptive_baseline_attempt.sql",
-          "backend/src/main/resources/db/migration/V20__occupation_baseline_scope_compatibility.sql"
+          "backend/src/main/resources/db/migration/V20__job position_baseline_scope_compatibility.sql"
         ],
         "tests": [],
         "documents": [
@@ -3595,7 +3595,7 @@
         ],
         "configuration": [
           "backend/src/main/resources/db/migration/V19__adaptive_baseline_attempt.sql",
-          "backend/src/main/resources/db/migration/V20__occupation_baseline_scope_compatibility.sql"
+          "backend/src/main/resources/db/migration/V20__job position_baseline_scope_compatibility.sql"
         ],
         "tests": [],
         "documents": [
@@ -3783,7 +3783,7 @@
         ],
         "configuration": [
           "backend/src/main/resources/db/migration/V19__adaptive_baseline_attempt.sql",
-          "backend/src/main/resources/db/migration/V20__occupation_baseline_scope_compatibility.sql"
+          "backend/src/main/resources/db/migration/V20__job position_baseline_scope_compatibility.sql"
         ],
         "tests": [],
         "documents": [
@@ -3987,7 +3987,7 @@
         ],
         "configuration": [
           "backend/src/main/resources/db/migration/V19__adaptive_baseline_attempt.sql",
-          "backend/src/main/resources/db/migration/V20__occupation_baseline_scope_compatibility.sql"
+          "backend/src/main/resources/db/migration/V20__job position_baseline_scope_compatibility.sql"
         ],
         "tests": [],
         "documents": [
@@ -4195,7 +4195,7 @@
         ],
         "configuration": [
           "backend/src/main/resources/db/migration/V19__adaptive_baseline_attempt.sql",
-          "backend/src/main/resources/db/migration/V20__occupation_baseline_scope_compatibility.sql"
+          "backend/src/main/resources/db/migration/V20__job position_baseline_scope_compatibility.sql"
         ],
         "tests": [],
         "documents": [
@@ -4223,7 +4223,7 @@
         },
         {
           "kind": "column",
-          "name": "occupation_id",
+          "name": "job position_id",
           "table": "baseline_blueprint",
           "default": null,
           "ordinal": 2,
@@ -4268,16 +4268,16 @@
         },
         {
           "kind": "constraint",
-          "name": "baseline_blueprint_occupation_id_check",
+          "name": "baseline_blueprint_job position_id_check",
           "table": "platform.baseline_blueprint",
-          "definition": "CHECK (((occupation_id IS NULL) OR (btrim(occupation_id) <> ''::text)))",
+          "definition": "CHECK (((job position_id IS NULL) OR (btrim(job position_id) <> ''::text)))",
           "referencesTable": null
         },
         {
           "kind": "constraint",
           "name": "baseline_blueprint_org_identity_key",
           "table": "platform.baseline_blueprint",
-          "definition": "UNIQUE (blueprint_id, organization_id, occupation_id)",
+          "definition": "UNIQUE (blueprint_id, organization_id, job position_id)",
           "referencesTable": null
         },
         {
@@ -4291,7 +4291,7 @@
           "kind": "constraint",
           "name": "baseline_blueprint_organization_required",
           "table": "platform.baseline_blueprint",
-          "definition": "CHECK (((occupation_id IS NULL) OR (organization_id IS NOT NULL)))",
+          "definition": "CHECK (((job position_id IS NULL) OR (organization_id IS NOT NULL)))",
           "referencesTable": null
         },
         {
@@ -4322,42 +4322,42 @@
           "kind": "foreignReference",
           "name": "baseline_assessment_series_blueprint_id_organization_id_oc_fkey",
           "table": "platform.baseline_assessment_series",
-          "definition": "FOREIGN KEY (blueprint_id, organization_id, occupation_id) REFERENCES platform.baseline_blueprint(blueprint_id, organization_id, occupation_id)",
+          "definition": "FOREIGN KEY (blueprint_id, organization_id, job position_id) REFERENCES platform.baseline_blueprint(blueprint_id, organization_id, job position_id)",
           "referencesTable": "platform.baseline_blueprint"
         },
         {
           "kind": "foreignReference",
           "name": "baseline_adaptive_blueprint_w_blueprint_id_organization_id_fkey",
           "table": "platform.baseline_adaptive_blueprint_working_revision",
-          "definition": "FOREIGN KEY (blueprint_id, organization_id, occupation_id) REFERENCES platform.baseline_blueprint(blueprint_id, organization_id, occupation_id)",
+          "definition": "FOREIGN KEY (blueprint_id, organization_id, job position_id) REFERENCES platform.baseline_blueprint(blueprint_id, organization_id, job position_id)",
           "referencesTable": "platform.baseline_blueprint"
         },
         {
           "kind": "foreignReference",
           "name": "baseline_adaptive_blueprint_v_blueprint_id_organization_id_fkey",
           "table": "platform.baseline_adaptive_blueprint_version",
-          "definition": "FOREIGN KEY (blueprint_id, organization_id, occupation_id) REFERENCES platform.baseline_blueprint(blueprint_id, organization_id, occupation_id)",
+          "definition": "FOREIGN KEY (blueprint_id, organization_id, job position_id) REFERENCES platform.baseline_blueprint(blueprint_id, organization_id, job position_id)",
           "referencesTable": "platform.baseline_blueprint"
         },
         {
           "kind": "foreignReference",
           "name": "baseline_blueprint_activation_blueprint_id_organization_id_fkey",
           "table": "platform.baseline_blueprint_activation",
-          "definition": "FOREIGN KEY (blueprint_id, organization_id, occupation_id) REFERENCES platform.baseline_blueprint(blueprint_id, organization_id, occupation_id)",
+          "definition": "FOREIGN KEY (blueprint_id, organization_id, job position_id) REFERENCES platform.baseline_blueprint(blueprint_id, organization_id, job position_id)",
           "referencesTable": "platform.baseline_blueprint"
         },
         {
           "kind": "foreignReference",
           "name": "baseline_blueprint_activatio_blueprint_id_organization_id_fkey1",
           "table": "platform.baseline_blueprint_activation_event",
-          "definition": "FOREIGN KEY (blueprint_id, organization_id, occupation_id) REFERENCES platform.baseline_blueprint(blueprint_id, organization_id, occupation_id)",
+          "definition": "FOREIGN KEY (blueprint_id, organization_id, job position_id) REFERENCES platform.baseline_blueprint(blueprint_id, organization_id, job position_id)",
           "referencesTable": "platform.baseline_blueprint"
         },
         {
           "kind": "foreignReference",
           "name": "baseline_blueprint_command_blueprint_id_organization_id_oc_fkey",
           "table": "platform.baseline_blueprint_command",
-          "definition": "FOREIGN KEY (blueprint_id, organization_id, occupation_id) REFERENCES platform.baseline_blueprint(blueprint_id, organization_id, occupation_id)",
+          "definition": "FOREIGN KEY (blueprint_id, organization_id, job position_id) REFERENCES platform.baseline_blueprint(blueprint_id, organization_id, job position_id)",
           "referencesTable": "platform.baseline_blueprint"
         },
         {
@@ -4388,12 +4388,12 @@
         "configuration": [
           "backend/src/main/resources/db/migration/V10__baseline_blueprint_write_idempotency.sql",
           "backend/src/main/resources/db/migration/V11__baseline_assessment_generation.sql",
-          "backend/src/main/resources/db/migration/V13__occupation_blueprint_identity.sql",
+          "backend/src/main/resources/db/migration/V13__job position_blueprint_identity.sql",
           "backend/src/main/resources/db/migration/V14__baseline_assessment_management.sql",
           "backend/src/main/resources/db/migration/V17__fix_baseline_management_actor_trigger.sql",
           "backend/src/main/resources/db/migration/V18__adaptive_baseline_blueprint_and_irt_versions.sql",
-          "backend/src/main/resources/db/migration/V20__occupation_baseline_scope_compatibility.sql",
-          "backend/src/main/resources/db/migration/V22__occupation_baseline_draft_conversion_receipt.sql",
+          "backend/src/main/resources/db/migration/V20__job position_baseline_scope_compatibility.sql",
+          "backend/src/main/resources/db/migration/V22__job position_baseline_draft_conversion_receipt.sql",
           "backend/src/main/resources/db/migration/V9__baseline_blueprint.sql"
         ],
         "tests": [
@@ -4429,7 +4429,7 @@
         },
         {
           "kind": "column",
-          "name": "occupation_id",
+          "name": "job position_id",
           "table": "baseline_blueprint_activation",
           "default": null,
           "ordinal": 2,
@@ -4517,21 +4517,21 @@
           "kind": "constraint",
           "name": "baseline_blueprint_activation_blueprint_id_organization_id_fkey",
           "table": "platform.baseline_blueprint_activation",
-          "definition": "FOREIGN KEY (blueprint_id, organization_id, occupation_id) REFERENCES platform.baseline_blueprint(blueprint_id, organization_id, occupation_id)",
+          "definition": "FOREIGN KEY (blueprint_id, organization_id, job position_id) REFERENCES platform.baseline_blueprint(blueprint_id, organization_id, job position_id)",
           "referencesTable": "platform.baseline_blueprint"
         },
         {
           "kind": "constraint",
-          "name": "baseline_blueprint_activation_organization_id_occupation_i_fkey",
+          "name": "baseline_blueprint_activation_organization_id_job position_i_fkey",
           "table": "platform.baseline_blueprint_activation",
-          "definition": "FOREIGN KEY (organization_id, occupation_id, blueprint_id, blueprint_version) REFERENCES platform.baseline_adaptive_blueprint_version(organization_id, occupation_id, blueprint_id, version)",
+          "definition": "FOREIGN KEY (organization_id, job position_id, blueprint_id, blueprint_version) REFERENCES platform.baseline_adaptive_blueprint_version(organization_id, job position_id, blueprint_id, version)",
           "referencesTable": "platform.baseline_adaptive_blueprint_version"
         },
         {
           "kind": "constraint",
           "name": "baseline_blueprint_activation_pkey",
           "table": "platform.baseline_blueprint_activation",
-          "definition": "PRIMARY KEY (organization_id, occupation_id)",
+          "definition": "PRIMARY KEY (organization_id, job position_id)",
           "referencesTable": null
         }
       ],
@@ -4552,9 +4552,9 @@
       "incomingForeignKeys": [
         {
           "kind": "foreignReference",
-          "name": "baseline_blueprint_activatio_organization_id_occupation_i_fkey1",
+          "name": "baseline_blueprint_activatio_organization_id_job position_i_fkey1",
           "table": "platform.baseline_blueprint_activation_event",
-          "definition": "FOREIGN KEY (organization_id, occupation_id) REFERENCES platform.baseline_blueprint_activation(organization_id, occupation_id)",
+          "definition": "FOREIGN KEY (organization_id, job position_id) REFERENCES platform.baseline_blueprint_activation(organization_id, job position_id)",
           "referencesTable": "platform.baseline_blueprint_activation"
         }
       ],
@@ -4567,7 +4567,7 @@
         ],
         "configuration": [
           "backend/src/main/resources/db/migration/V18__adaptive_baseline_blueprint_and_irt_versions.sql",
-          "backend/src/main/resources/db/migration/V20__occupation_baseline_scope_compatibility.sql"
+          "backend/src/main/resources/db/migration/V20__job position_baseline_scope_compatibility.sql"
         ],
         "tests": [],
         "documents": [
@@ -4604,7 +4604,7 @@
         },
         {
           "kind": "column",
-          "name": "occupation_id",
+          "name": "job position_id",
           "table": "baseline_blueprint_activation_event",
           "default": null,
           "ordinal": 3,
@@ -4680,21 +4680,21 @@
           "kind": "constraint",
           "name": "baseline_blueprint_activatio_blueprint_id_organization_id_fkey1",
           "table": "platform.baseline_blueprint_activation_event",
-          "definition": "FOREIGN KEY (blueprint_id, organization_id, occupation_id) REFERENCES platform.baseline_blueprint(blueprint_id, organization_id, occupation_id)",
+          "definition": "FOREIGN KEY (blueprint_id, organization_id, job position_id) REFERENCES platform.baseline_blueprint(blueprint_id, organization_id, job position_id)",
           "referencesTable": "platform.baseline_blueprint"
         },
         {
           "kind": "constraint",
-          "name": "baseline_blueprint_activatio_organization_id_occupation_i_fkey1",
+          "name": "baseline_blueprint_activatio_organization_id_job position_i_fkey1",
           "table": "platform.baseline_blueprint_activation_event",
-          "definition": "FOREIGN KEY (organization_id, occupation_id) REFERENCES platform.baseline_blueprint_activation(organization_id, occupation_id)",
+          "definition": "FOREIGN KEY (organization_id, job position_id) REFERENCES platform.baseline_blueprint_activation(organization_id, job position_id)",
           "referencesTable": "platform.baseline_blueprint_activation"
         },
         {
           "kind": "constraint",
-          "name": "baseline_blueprint_activatio_organization_id_occupation_i_fkey2",
+          "name": "baseline_blueprint_activatio_organization_id_job position_i_fkey2",
           "table": "platform.baseline_blueprint_activation_event",
-          "definition": "FOREIGN KEY (organization_id, occupation_id, blueprint_id, blueprint_version) REFERENCES platform.baseline_adaptive_blueprint_version(organization_id, occupation_id, blueprint_id, version)",
+          "definition": "FOREIGN KEY (organization_id, job position_id, blueprint_id, blueprint_version) REFERENCES platform.baseline_adaptive_blueprint_version(organization_id, job position_id, blueprint_id, version)",
           "referencesTable": "platform.baseline_adaptive_blueprint_version"
         },
         {
@@ -4734,9 +4734,9 @@
         },
         {
           "kind": "constraint",
-          "name": "baseline_blueprint_activation_organization_id_occupation_id_key",
+          "name": "baseline_blueprint_activation_organization_id_job position_id_key",
           "table": "platform.baseline_blueprint_activation_event",
-          "definition": "UNIQUE (organization_id, occupation_id, activation_revision)",
+          "definition": "UNIQUE (organization_id, job position_id, activation_revision)",
           "referencesTable": null
         }
       ],
@@ -4762,7 +4762,7 @@
         ],
         "configuration": [
           "backend/src/main/resources/db/migration/V18__adaptive_baseline_blueprint_and_irt_versions.sql",
-          "backend/src/main/resources/db/migration/V20__occupation_baseline_scope_compatibility.sql"
+          "backend/src/main/resources/db/migration/V20__job position_baseline_scope_compatibility.sql"
         ],
         "tests": [],
         "documents": [
@@ -4808,7 +4808,7 @@
         },
         {
           "kind": "column",
-          "name": "occupation_id",
+          "name": "job position_id",
           "table": "baseline_blueprint_command",
           "default": null,
           "ordinal": 4,
@@ -4873,7 +4873,7 @@
           "kind": "constraint",
           "name": "baseline_blueprint_command_blueprint_id_organization_id_oc_fkey",
           "table": "platform.baseline_blueprint_command",
-          "definition": "FOREIGN KEY (blueprint_id, organization_id, occupation_id) REFERENCES platform.baseline_blueprint(blueprint_id, organization_id, occupation_id)",
+          "definition": "FOREIGN KEY (blueprint_id, organization_id, job position_id) REFERENCES platform.baseline_blueprint(blueprint_id, organization_id, job position_id)",
           "referencesTable": "platform.baseline_blueprint"
         },
         {
@@ -4921,7 +4921,7 @@
         ],
         "configuration": [
           "backend/src/main/resources/db/migration/V18__adaptive_baseline_blueprint_and_irt_versions.sql",
-          "backend/src/main/resources/db/migration/V22__occupation_baseline_draft_conversion_receipt.sql"
+          "backend/src/main/resources/db/migration/V22__job position_baseline_draft_conversion_receipt.sql"
         ],
         "tests": [],
         "documents": [
@@ -5326,7 +5326,7 @@
         },
         {
           "kind": "column",
-          "name": "occupation_id",
+          "name": "job position_id",
           "table": "baseline_blueprint_version",
           "default": null,
           "ordinal": 4,
@@ -5335,7 +5335,7 @@
         },
         {
           "kind": "column",
-          "name": "occupation_name_snapshot",
+          "name": "job position_name_snapshot",
           "table": "baseline_blueprint_version",
           "default": null,
           "ordinal": 5,
@@ -5398,7 +5398,7 @@
           "kind": "constraint",
           "name": "baseline_blueprint_version_check",
           "table": "platform.baseline_blueprint_version",
-          "definition": "CHECK ((((occupation_id IS NULL) AND (occupation_name_snapshot IS NULL)) OR ((occupation_id IS NOT NULL) AND (btrim(occupation_id) <> ''::text) AND (occupation_name_snapshot IS NOT NULL) AND (btrim(occupation_name_snapshot) <> ''::text))))",
+          "definition": "CHECK ((((job position_id IS NULL) AND (job position_name_snapshot IS NULL)) OR ((job position_id IS NOT NULL) AND (btrim(job position_id) <> ''::text) AND (job position_name_snapshot IS NOT NULL) AND (btrim(job position_name_snapshot) <> ''::text))))",
           "referencesTable": null
         },
         {
@@ -5440,9 +5440,9 @@
       "triggers": [
         {
           "kind": "trigger",
-          "name": "baseline_blueprint_occupation_identity",
+          "name": "baseline_blueprint_job position_identity",
           "table": "platform.baseline_blueprint_version",
-          "definition": "CREATE TRIGGER baseline_blueprint_occupation_identity BEFORE INSERT ON platform.baseline_blueprint_version FOR EACH ROW EXECUTE FUNCTION platform.validate_baseline_blueprint_occupation_identity()"
+          "definition": "CREATE TRIGGER baseline_blueprint_job position_identity BEFORE INSERT ON platform.baseline_blueprint_version FOR EACH ROW EXECUTE FUNCTION platform.validate_baseline_blueprint_job position_identity()"
         },
         {
           "kind": "trigger",
@@ -5512,7 +5512,7 @@
         "configuration": [
           "backend/src/main/resources/db/migration/V10__baseline_blueprint_write_idempotency.sql",
           "backend/src/main/resources/db/migration/V11__baseline_assessment_generation.sql",
-          "backend/src/main/resources/db/migration/V13__occupation_blueprint_identity.sql",
+          "backend/src/main/resources/db/migration/V13__job position_blueprint_identity.sql",
           "backend/src/main/resources/db/migration/V14__baseline_assessment_management.sql",
           "backend/src/main/resources/db/migration/V18__adaptive_baseline_blueprint_and_irt_versions.sql",
           "backend/src/main/resources/db/migration/V9__baseline_blueprint.sql"
@@ -5725,7 +5725,7 @@
         },
         {
           "kind": "column",
-          "name": "occupation_id",
+          "name": "job position_id",
           "table": "baseline_blueprint_working_revision",
           "default": null,
           "ordinal": 3,
@@ -5770,7 +5770,7 @@
         },
         {
           "kind": "column",
-          "name": "occupation_name_snapshot",
+          "name": "job position_name_snapshot",
           "table": "baseline_blueprint_working_revision",
           "default": null,
           "ordinal": 8,
@@ -5844,9 +5844,9 @@
       "constraints": [
         {
           "kind": "constraint",
-          "name": "baseline_blueprint_working_re_organization_id_occupation_i_fkey",
+          "name": "baseline_blueprint_working_re_organization_id_job position_i_fkey",
           "table": "platform.baseline_blueprint_working_revision",
-          "definition": "FOREIGN KEY (organization_id, occupation_id) REFERENCES platform.baseline_assessment_series(organization_id, occupation_id)",
+          "definition": "FOREIGN KEY (organization_id, job position_id) REFERENCES platform.baseline_assessment_series(organization_id, job position_id)",
           "referencesTable": "platform.baseline_assessment_series"
         },
         {
@@ -5858,9 +5858,9 @@
         },
         {
           "kind": "constraint",
-          "name": "baseline_blueprint_working_revis_occupation_name_snapshot_check",
+          "name": "baseline_blueprint_working_revis_job position_name_snapshot_check",
           "table": "platform.baseline_blueprint_working_revision",
-          "definition": "CHECK ((btrim(occupation_name_snapshot) <> ''::text))",
+          "definition": "CHECK ((btrim(job position_name_snapshot) <> ''::text))",
           "referencesTable": null
         },
         {
@@ -6029,7 +6029,7 @@
         },
         {
           "kind": "column",
-          "name": "occupation_id",
+          "name": "job position_id",
           "table": "baseline_management_command",
           "default": null,
           "ordinal": 4,
@@ -6097,9 +6097,9 @@
         },
         {
           "kind": "constraint",
-          "name": "baseline_management_command_organization_id_occupation_id_fkey",
+          "name": "baseline_management_command_organization_id_job position_id_fkey",
           "table": "platform.baseline_management_command",
-          "definition": "FOREIGN KEY (organization_id, occupation_id) REFERENCES platform.baseline_assessment_series(organization_id, occupation_id)",
+          "definition": "FOREIGN KEY (organization_id, job position_id) REFERENCES platform.baseline_assessment_series(organization_id, job position_id)",
           "referencesTable": "platform.baseline_assessment_series"
         },
         {
@@ -6185,7 +6185,7 @@
         },
         {
           "kind": "column",
-          "name": "occupation_id",
+          "name": "job position_id",
           "table": "baseline_mastery_evidence",
           "default": null,
           "ordinal": 4,
@@ -6304,7 +6304,7 @@
           "kind": "constraint",
           "name": "baseline_mastery_evidence_attempt_id_organization_id_learn_fkey",
           "table": "platform.baseline_mastery_evidence",
-          "definition": "FOREIGN KEY (attempt_id, organization_id, learner_id, occupation_id) REFERENCES platform.baseline_adaptive_attempt(attempt_id, organization_id, learner_id, occupation_id)",
+          "definition": "FOREIGN KEY (attempt_id, organization_id, learner_id, job position_id) REFERENCES platform.baseline_adaptive_attempt(attempt_id, organization_id, learner_id, job position_id)",
           "referencesTable": "platform.baseline_adaptive_attempt"
         },
         {
@@ -6372,7 +6372,7 @@
         ],
         "configuration": [
           "backend/src/main/resources/db/migration/V19__adaptive_baseline_attempt.sql",
-          "backend/src/main/resources/db/migration/V20__occupation_baseline_scope_compatibility.sql"
+          "backend/src/main/resources/db/migration/V20__job position_baseline_scope_compatibility.sql"
         ],
         "tests": [],
         "documents": [
@@ -7885,7 +7885,7 @@
         "configuration": [
           "backend/src/main/resources/db/migration/V18__adaptive_baseline_blueprint_and_irt_versions.sql",
           "backend/src/main/resources/db/migration/V19__adaptive_baseline_attempt.sql",
-          "backend/src/main/resources/db/migration/V20__occupation_baseline_scope_compatibility.sql"
+          "backend/src/main/resources/db/migration/V20__job position_baseline_scope_compatibility.sql"
         ],
         "tests": [],
         "documents": [
@@ -8095,7 +8095,7 @@
         "configuration": [
           "backend/src/main/resources/db/migration/V18__adaptive_baseline_blueprint_and_irt_versions.sql",
           "backend/src/main/resources/db/migration/V19__adaptive_baseline_attempt.sql",
-          "backend/src/main/resources/db/migration/V20__occupation_baseline_scope_compatibility.sql",
+          "backend/src/main/resources/db/migration/V20__job position_baseline_scope_compatibility.sql",
           "backend/src/main/resources/db/migration/V23__irt_scoped_parameter_promotion.sql",
           "backend/src/main/resources/db/migration/V3__assessment_evidence_and_learning.sql",
           "backend/src/main/resources/db/migration/V4__pathway_analytics_and_evaluation.sql",

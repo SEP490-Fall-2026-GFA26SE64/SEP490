@@ -62,7 +62,7 @@ $groups = @(
         Tables = @('subscription_plan', 'subscription_plan_version', 'subscription_intent',
             'payment_order', 'payment_observation', 'payment_application', 'subscription',
             'subscription_period', 'organization_workspace', 'department_reference',
-            'occupation_department_reference', 'organization_membership', 'organization_membership_role',
+            'job position_department_reference', 'organization_membership', 'organization_membership_role',
             'platform_administrator', 'workspace_account_profile', 'workspace_activation')
     },
     @{
@@ -85,7 +85,7 @@ $groups = @(
             'baseline_blueprint_activation_event', 'baseline_blueprint_command', 'baseline_blueprint_role',
             'baseline_blueprint_skill', 'baseline_blueprint_version', 'baseline_blueprint_version_registry',
             'baseline_blueprint_working_registry', 'baseline_blueprint_working_revision', 'baseline_management_command',
-            'baseline_mastery_evidence', 'employee_occupation_profile', 'employee_role_selection',
+            'baseline_mastery_evidence', 'employee_job position_profile', 'employee_role_selection',
             'employee_role_selection_request', 'irt_calibration_run', 'irt_effective_parameter_selection',
             'irt_item_parameter', 'irt_parameter_promotion_command', 'irt_parameter_set')
     },

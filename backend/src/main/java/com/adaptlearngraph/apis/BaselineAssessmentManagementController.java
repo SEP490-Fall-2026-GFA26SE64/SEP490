@@ -12,7 +12,7 @@ import com.adaptlearngraph.dtos.BaselineAuthoringDto.WorkspaceResponse;
 import com.adaptlearngraph.endpoints.ApiEndpoints;
 import com.adaptlearngraph.services.BaselineAssessmentManagementApplicationService;
 import com.adaptlearngraph.services.BaselineAssessmentManagementUseCase.Failure;
-import com.adaptlearngraph.services.BaselineAssessmentManagementUseCase.OccupationPage;
+import com.adaptlearngraph.services.BaselineAssessmentManagementUseCase.JobPositionPage;
 import com.adaptlearngraph.services.BaselineStoreFailures;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
@@ -41,7 +41,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Profile("local")
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 @ConditionalOnProperty(
-        prefix = "assessment.baseline.occupation-catalog", name = "enabled", havingValue = "true")
+        prefix = "assessment.baseline.jobPosition-catalog", name = "enabled", havingValue = "true")
 @ConditionalOnProperty(prefix = "catalog.local-actor", name = "enabled", havingValue = "true")
 @ConditionalOnProperty(prefix = "assessment.baseline.legacy-authoring", name = "enabled", havingValue = "true")
 @RequestMapping(ApiEndpoints.BASELINE_ASSESSMENT_MANAGEMENT)
@@ -53,7 +53,7 @@ public class BaselineAssessmentManagementController {
     }
 
     @GetMapping
-    OccupationPage list(
+    JobPositionPage list(
             @RequestParam(defaultValue = "") String search,
             @RequestParam(defaultValue = "") String status,
             @RequestParam(defaultValue = "name_asc") String sort,
@@ -62,32 +62,32 @@ public class BaselineAssessmentManagementController {
         return management.list(search, status, sort, page, size);
     }
 
-    @GetMapping("/occupations/{occupationId}")
-    WorkspaceResponse workspace(@PathVariable String occupationId) {
-        return management.workspace(occupationId);
+    @GetMapping("/job-positions/{jobPositionId}")
+    WorkspaceResponse workspace(@PathVariable String jobPositionId) {
+        return management.workspace(jobPositionId);
     }
 
-    @PostMapping("/occupations/{occupationId}/blueprint-working-revisions")
+    @PostMapping("/job-positions/{jobPositionId}/blueprint-working-revisions")
     ResponseEntity<WorkingRevisionResponse> startRevision(
-            @PathVariable String occupationId,
+            @PathVariable String jobPositionId,
             @RequestHeader("Idempotency-Key") @NotBlank String idempotencyKey) {
-        WorkingRevisionResponse created = management.startRevision(occupationId, idempotencyKey);
-        return ResponseEntity.created(workingLocation(occupationId, created.workingRevisionId()))
+        WorkingRevisionResponse created = management.startRevision(jobPositionId, idempotencyKey);
+        return ResponseEntity.created(workingLocation(jobPositionId, created.workingRevisionId()))
                 .body(created);
     }
 
-    @PutMapping("/occupations/{occupationId}/blueprint-working-revisions/{workingRevisionId}")
+    @PutMapping("/job-positions/{jobPositionId}/blueprint-working-revisions/{workingRevisionId}")
     WorkingRevisionResponse saveRevision(
-            @PathVariable String occupationId,
+            @PathVariable String jobPositionId,
             @PathVariable UUID workingRevisionId,
             @RequestHeader("Idempotency-Key") @NotBlank String idempotencyKey,
             @Valid @RequestBody SaveWorkingRequest request) {
-        return management.saveRevision(occupationId, workingRevisionId, idempotencyKey, request);
+        return management.saveRevision(jobPositionId, workingRevisionId, idempotencyKey, request);
     }
 
-    @PostMapping("/occupations/{occupationId}/blueprint-working-revisions/{workingRevisionId}/finalize")
+    @PostMapping("/job-positions/{jobPositionId}/blueprint-working-revisions/{workingRevisionId}/finalize")
     ResponseEntity<ManagedBlueprintResponse> finalizeRevision(
-            @PathVariable String occupationId,
+            @PathVariable String jobPositionId,
             @PathVariable UUID workingRevisionId,
             @RequestHeader("Idempotency-Key") @NotBlank String idempotencyKey,
             @Valid @RequestBody ExpectedRevisionRequest request) {
@@ -98,11 +98,11 @@ public class BaselineAssessmentManagementController {
                 .body(created);
     }
 
-    @PostMapping("/occupations/{occupationId}/assessment-drafts")
+    @PostMapping("/job-positions/{jobPositionId}/assessment-drafts")
     ResponseEntity<ManagedAssessmentResponse> generate(
-            @PathVariable String occupationId,
+            @PathVariable String jobPositionId,
             @RequestHeader("Idempotency-Key") @NotBlank String idempotencyKey) {
-        ManagedAssessmentResponse created = management.generate(occupationId, idempotencyKey);
+        ManagedAssessmentResponse created = management.generate(jobPositionId, idempotencyKey);
         return ResponseEntity.created(assessmentLocation(created.assessmentVersionId()))
                 .body(created);
     }
@@ -159,11 +159,11 @@ public class BaselineAssessmentManagementController {
         return management.disable(assessmentVersionId, request.reason());
     }
 
-    @PostMapping("/occupations/{occupationId}/abandon-pending-change")
+    @PostMapping("/job-positions/{jobPositionId}/abandon-pending-change")
     WorkspaceResponse abandon(
-            @PathVariable String occupationId,
+            @PathVariable String jobPositionId,
             @Valid @RequestBody ReasonRequest request) {
-        return management.abandon(occupationId, request.reason());
+        return management.abandon(jobPositionId, request.reason());
     }
 
     @ExceptionHandler(Failure.class)
@@ -218,8 +218,8 @@ public class BaselineAssessmentManagementController {
                 new ApiError("INVALID_REQUEST", failure.getMessage(), null));
     }
 
-    private static URI workingLocation(String occupationId, UUID workingId) {
-        return URI.create("/api/v1/ld/baseline-assessments/occupations/" + occupationId
+    private static URI workingLocation(String jobPositionId, UUID workingId) {
+        return URI.create("/api/v1/ld/baseline-assessments/job-positions/" + jobPositionId
                 + "/blueprint-working-revisions/" + workingId);
     }
 

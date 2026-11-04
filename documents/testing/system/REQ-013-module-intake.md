@@ -6,13 +6,13 @@ Environment: Compose project `module-authoring-test`; web28088, API28080, Neo4jH
 
 ## Manual checklist
 
-Prerequisites: local Compose running; existing L&D account; an Expert granted at least one responsible Occupation. Choose a graph-only Module with bundled Markdown.
+Prerequisites: local Compose running; existing L&D account; an Expert granted at least one responsible Job Position. Choose a graph-only Module with bundled Markdown.
 
 | URL / steps | Expected |
 | --- | --- |
-| http://127.0.0.1:28088/ld-manager/approvals — assign Expert to occupation if needed | Expert receives the occupation scope. |
+| http://127.0.0.1:28088/ld-manager/approvals — assign Expert to job position if needed | Expert receives the job position scope. |
 | http://127.0.0.1:28088/ld-manager/modules — search module, Phân công tiếp nhận → Hủy | No assignment/data change; L&D shell remains. |
-| Phân công tiếp nhận → select one or more occupations → confirm | Chờ Expert tiếp nhận; no approval action and no graph change. |
+| Phân công tiếp nhận → select one or more job positions → confirm | Chờ Expert tiếp nhận; no approval action and no graph change. |
 | Cập nhật phân công tiếp nhận before acceptance | Scope/source snapshot updated with concurrency token and assignment history. |
 | http://127.0.0.1:28088/expert/modules — same module → Tiếp nhận chỉnh sửa → confirm | Existing ID becomes draft; title/type/duration/price/skills/focus/difficulty/content populated; no duplicate graph node. |
 | Edit, save, Chi tiết và lịch sử | Original creator unknown; actual receiver/editor and timestamps visible; source snapshot can be inspected. |
@@ -21,6 +21,6 @@ Prerequisites: local Compose running; existing L&D account; an Expert granted at
 | Repeat intake / use unassigned Expert / missing source / external source drift | Useful conflict/authorization/validation response; no partial writes or silent overwrite. |
 | Imported draft | No Delete draft action; archive flow applies after publication. |
 
-Interactive Vietnamese UI check: verified Chưa tiếp nhận, Phân công tiếp nhận, responsible-occupation selector and cancel retaining the module without a write.
+Interactive Vietnamese UI check: verified Chưa tiếp nhận, Phân công tiếp nhận, responsible-job position selector and cancel retaining the module without a write.
 
 Interactive browser verification after deployment confirmed Released/Approved, null original creator shown as unknown, actual assignment/receiver/editor/reviewer timestamps, both preserved revisions, assignment/intake/edit/submit/approve/release events and the unchanged original catalog snapshot. The L&D Modules tab remains available for walkthrough.

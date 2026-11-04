@@ -52,13 +52,13 @@ public final class JpaAdaptiveBlueprintStore implements AdaptiveBlueprintStore {
 
     @Override public com.adaptlearngraph.services.AdaptiveBlueprintListing.Status versionStatus(Scope scope, VersionId id) {
         return com.adaptlearngraph.services.AdaptiveBlueprintListing.Status.valueOf(data.versions().status(
-                scope.organizationId(), scope.occupationId(), id.blueprintId(), id.version()));
+                scope.organizationId(), scope.jobPositionId(), id.blueprintId(), id.version()));
     }
 
     @Override public com.adaptlearngraph.services.AdaptiveBlueprintListing.Page list(
-            UUID organizationId, java.util.Set<String> occupations,
+            UUID organizationId, java.util.Set<String> jobPositions,
             com.adaptlearngraph.services.AdaptiveBlueprintListing.Query query) {
-        return read(() -> listing.list(organizationId, occupations, query));
+        return read(() -> listing.list(organizationId, jobPositions, query));
     }
 
     @Override
@@ -72,9 +72,9 @@ public final class JpaAdaptiveBlueprintStore implements AdaptiveBlueprintStore {
         transactionScope.set(scope);
         try {
             return transactions.execute(status -> {
-                data.locks().lock(scope.organizationId() + "\n" + scope.occupationId());
-                data.identities().lockIdentity(scope.organizationId(), scope.occupationId());
-                data.activations().lock(scope.organizationId(), scope.occupationId());
+                data.locks().lock(scope.organizationId() + "\n" + scope.jobPositionId());
+                data.identities().lockIdentity(scope.organizationId(), scope.jobPositionId());
+                data.activations().lock(scope.organizationId(), scope.jobPositionId());
                 return work.get();
             });
         } catch (DataAccessException | TransactionException | PersistenceException failure) {
@@ -88,7 +88,7 @@ public final class JpaAdaptiveBlueprintStore implements AdaptiveBlueprintStore {
         if (!data.identities().activeActor(scope.organizationId(), actorId)) {
             throw failure(Code.FORBIDDEN, "Actor is outside the active organization");
         }
-        data.identities().ensureAdaptive(UUID.randomUUID(), scope.organizationId(), scope.occupationId(), actorId);
+        data.identities().ensureAdaptive(UUID.randomUUID(), scope.organizationId(), scope.jobPositionId(), actorId);
         return identity(scope);
     }
 
@@ -96,13 +96,13 @@ public final class JpaAdaptiveBlueprintStore implements AdaptiveBlueprintStore {
     public VersionId nextVersion(Scope scope) {
         requireTransaction(scope);
         UUID id = identity(scope);
-        Integer version = data.identities().nextVersion(scope.organizationId(), scope.occupationId());
+        Integer version = data.identities().nextVersion(scope.organizationId(), scope.jobPositionId());
         return new VersionId(id, Objects.requireNonNull(version));
     }
 
     @Override
     public Optional<WorkingRevision> findWorking(Scope scope) {
-        return read(() -> data.workings().open(scope.organizationId(), scope.occupationId()).stream()
+        return read(() -> data.workings().open(scope.organizationId(), scope.jobPositionId()).stream()
                 .map(row -> new WorkingRevision(scope, row.blueprintId(), row.workingRevisionId(), row.revision(),
                         json.read(row.configuration(), Configuration.class), row.updatedBy(), row.updatedAt()))
                 .toList().stream().findFirst());
@@ -110,7 +110,7 @@ public final class JpaAdaptiveBlueprintStore implements AdaptiveBlueprintStore {
 
     @Override
     public Optional<Activation> findActivation(Scope scope) {
-        return read(() -> data.activations().current(scope.organizationId(), scope.occupationId()).stream()
+        return read(() -> data.activations().current(scope.organizationId(), scope.jobPositionId()).stream()
                 .map(row -> new Activation(scope, row.activationRevision(),
                         row.blueprintVersion() == null ? Optional.empty()
                                 : Optional.of(new VersionId(row.blueprintId(), row.blueprintVersion())),
@@ -120,9 +120,9 @@ public final class JpaAdaptiveBlueprintStore implements AdaptiveBlueprintStore {
 
     @Override
     public Optional<Version> findVersion(Scope scope, VersionId versionId) {
-        return read(() -> data.versions().header(scope.organizationId(), scope.occupationId(), versionId.blueprintId(),
+        return read(() -> data.versions().header(scope.organizationId(), scope.jobPositionId(), versionId.blueprintId(),
                         versionId.version()).stream()
-                .map(header -> version(header, scope, data.versions().members(scope.organizationId(), scope.occupationId(),
+                .map(header -> version(header, scope, data.versions().members(scope.organizationId(), scope.jobPositionId(),
                         versionId.blueprintId(), versionId.version())))
                 .toList().stream().findFirst());
     }
@@ -132,7 +132,7 @@ public final class JpaAdaptiveBlueprintStore implements AdaptiveBlueprintStore {
         return read(() -> data.commands().receipt(organizationId, actorId, idempotencyKey).stream()
                 .map(row -> {
                     Operation operation = Operation.valueOf(row.operation());
-                    return new Receipt(new Scope(organizationId, row.occupationId()), actorId, idempotencyKey,
+                    return new Receipt(new Scope(organizationId, row.jobPositionId()), actorId, idempotencyKey,
                             operation, row.requestHash(), json.readOutcome(operation, row.responsePayload()), row.createdAt());
                 }).toList().stream().findFirst());
     }
@@ -146,47 +146,47 @@ public final class JpaAdaptiveBlueprintStore implements AdaptiveBlueprintStore {
         String configuration = json.write(next.configuration());
         if (expectedRevision == 0) {
             data.workings().insert(new BaselineAdaptiveBlueprintWorkingRevisionEntity(next.workingRevisionId(),
-                    scope.organizationId(), scope.occupationId(), next.blueprintId(), next.revision(), configuration, "OPEN",
+                    scope.organizationId(), scope.jobPositionId(), next.blueprintId(), next.revision(), configuration, "OPEN",
                     next.updatedBy(), null, next.updatedBy(), next.updatedAt(), null));
             return;
         }
-        changedOne(data.workings().save(scope.organizationId(), scope.occupationId(), next.workingRevisionId(),
+        changedOne(data.workings().save(scope.organizationId(), scope.jobPositionId(), next.workingRevisionId(),
                 next.blueprintId(), expectedRevision, next.revision(), configuration, next.updatedBy(), next.updatedAt()));
     }
 
     @Override
     public void closeWorking(Scope scope, UUID workingRevisionId, long expectedRevision, UUID actorId, Instant closedAt) {
         requireTransaction(scope);
-        changedOne(data.workings().close(scope.organizationId(), scope.occupationId(), workingRevisionId, expectedRevision,
+        changedOne(data.workings().close(scope.organizationId(), scope.jobPositionId(), workingRevisionId, expectedRevision,
                 "FINALIZED", actorId, closedAt));
     }
 
     @Override
     public void archiveLegacyWorking(Scope scope, UUID workingRevisionId, long expectedRevision, UUID actorId, Instant closedAt) {
         requireTransaction(scope);
-        changedOne(data.workings().archiveLegacy(scope.organizationId(), scope.occupationId(), workingRevisionId,
+        changedOne(data.workings().archiveLegacy(scope.organizationId(), scope.jobPositionId(), workingRevisionId,
                 expectedRevision, actorId, closedAt));
     }
 
     @Override public void discardWorking(Scope scope, UUID id, long revision, UUID actor, Instant time) {
         requireTransaction(scope);
-        changedOne(data.workings().close(scope.organizationId(), scope.occupationId(), id, revision, "ABANDONED", actor, time));
+        changedOne(data.workings().close(scope.organizationId(), scope.jobPositionId(), id, revision, "ABANDONED", actor, time));
     }
 
     @Override
     public void insertVersion(Scope scope, Version version) {
         requireTransaction(scope); sameScope(scope, version.scope());
-        boolean full = version.configuration().scopePolicy() == ScopePolicy.FULL_OCCUPATION_V2;
-        Bounds occupation = version.configuration().occupationBounds();
+        boolean full = version.configuration().scopePolicy() == ScopePolicy.FULL_JOB_POSITION_V2;
+        Bounds jobPosition = version.configuration().jobPositionBounds();
         Bounds exploration = version.configuration().exploration();
         UUID id = version.id().blueprintId();
         int number = version.id().version();
-        data.versions().insert(new BaselineAdaptiveBlueprintVersionEntity(id, number, scope.organizationId(), scope.occupationId(),
-                version.configuration().name(), version.occupationNameSnapshot(), version.catalogFingerprint(),
+        data.versions().insert(new BaselineAdaptiveBlueprintVersionEntity(id, number, scope.organizationId(), scope.jobPositionId(),
+                version.configuration().name(), version.jobPositionNameSnapshot(), version.catalogFingerprint(),
                 full ? null : exploration.maxQuestions(), full ? null : exploration.timeLimitSeconds(),
                 version.pins().modelVersionId(), version.pins().masteryMappingVersionId(), version.pins().parameterSetId(),
-                version.createdBy(), version.createdAt(), full ? ScopePolicy.FULL_OCCUPATION_V2.name() : null,
-                full ? occupation.maxQuestions() : null, full ? occupation.timeLimitSeconds() : null));
+                version.createdBy(), version.createdAt(), full ? ScopePolicy.FULL_JOB_POSITION_V2.name() : null,
+                full ? jobPosition.maxQuestions() : null, full ? jobPosition.timeLimitSeconds() : null));
         version.roles().forEach((roleId, role) -> {
             Bounds bounds = version.configuration().roles().get(roleId);
             data.roles().insert(new BaselineAdaptiveBlueprintRoleEntity(id, number, roleId, role.name(), role.catalogVersion(),
@@ -206,11 +206,11 @@ public final class JpaAdaptiveBlueprintStore implements AdaptiveBlueprintStore {
         }
         Integer version = next.current().map(VersionId::version).orElse(null);
         if (expectedRevision == 0) {
-            data.activations().insert(new BaselineBlueprintActivationEntity(scope.organizationId(), scope.occupationId(), blueprint,
+            data.activations().insert(new BaselineBlueprintActivationEntity(scope.organizationId(), scope.jobPositionId(), blueprint,
                     version, next.revision(), next.changedBy(), next.changedAt()));
             return;
         }
-        changedOne(data.activations().activate(scope.organizationId(), scope.occupationId(), blueprint, expectedRevision, version,
+        changedOne(data.activations().activate(scope.organizationId(), scope.jobPositionId(), blueprint, expectedRevision, version,
                 next.revision(), next.changedBy(), next.changedAt()));
     }
 
@@ -218,7 +218,7 @@ public final class JpaAdaptiveBlueprintStore implements AdaptiveBlueprintStore {
     public void appendActivationEvent(Scope scope, Activation next, Operation operation, String reason) {
         requireTransaction(scope); sameScope(scope, next.scope());
         data.events().insert(new BaselineBlueprintActivationEventEntity(UUID.randomUUID(), scope.organizationId(),
-                scope.occupationId(), next.revision(), identity(scope), next.current().map(VersionId::version).orElse(null),
+                scope.jobPositionId(), next.revision(), identity(scope), next.current().map(VersionId::version).orElse(null),
                 operation.name(), next.changedBy(), reason, next.changedAt()));
     }
 
@@ -236,7 +236,7 @@ public final class JpaAdaptiveBlueprintStore implements AdaptiveBlueprintStore {
         if (!blueprintId.equals(outcomeBlueprint)) throw failure(Code.VERSION_CONFLICT, "Receipt identity mismatch");
         try {
             data.commands().insert(new BaselineBlueprintCommandEntity(scope.organizationId(), receipt.actorId(),
-                    receipt.idempotencyKey(), scope.occupationId(), blueprintId, receipt.operation().name(), receipt.requestHash(),
+                    receipt.idempotencyKey(), scope.jobPositionId(), blueprintId, receipt.operation().name(), receipt.requestHash(),
                     json.writeOutcome(receipt.outcome()), receipt.createdAt()));
         } catch (DataIntegrityViolationException cause) {
             if (!PostgresErrors.isUniqueViolation(cause)) throw cause;
@@ -247,7 +247,7 @@ public final class JpaAdaptiveBlueprintStore implements AdaptiveBlueprintStore {
     }
 
     private UUID identity(Scope scope) {
-        return data.identities().identity(scope.organizationId(), scope.occupationId()).stream().findFirst()
+        return data.identities().identity(scope.organizationId(), scope.jobPositionId()).stream().findFirst()
                 .orElseThrow(() -> failure(Code.NOT_FOUND, "Blueprint identity not found"));
     }
 
@@ -261,7 +261,7 @@ public final class JpaAdaptiveBlueprintStore implements AdaptiveBlueprintStore {
     private static Version version(BaselineAdaptiveBlueprintVersionJpaRepository.Header header, Scope scope,
                                    List<BaselineAdaptiveBlueprintVersionJpaRepository.Member> rows) {
         String policy = header.scopePolicy();
-        boolean full = ScopePolicy.FULL_OCCUPATION_V2.name().equals(policy);
+        boolean full = ScopePolicy.FULL_JOB_POSITION_V2.name().equals(policy);
         if (policy != null && !full) throw new IllegalStateException("Unknown Blueprint scope policy");
         Map<String, Bounds> bounds = new LinkedHashMap<>();
         Map<String, RoleSnapshot> roles = new LinkedHashMap<>();
@@ -275,10 +275,10 @@ public final class JpaAdaptiveBlueprintStore implements AdaptiveBlueprintStore {
             roles.putIfAbsent(row.roleId(), new RoleSnapshot(row.roleNameSnapshot(), row.roleVersion(), skills.get(row.roleId())));
         }
         return new Version(scope, new VersionId(header.blueprintId(), header.version()),
-                full ? Configuration.occupation(header.name(), new Bounds(orZero(header.occupationMaxQuestions()),
-                        orZero(header.occupationTimeLimitSeconds())))
+                full ? Configuration.jobPosition(header.name(), new Bounds(orZero(header.jobPositionMaxQuestions()),
+                        orZero(header.jobPositionTimeLimitSeconds())))
                      : new Configuration(header.name(), new Bounds(orZero(header.explorationMaxQuestions()),
-                        orZero(header.explorationTimeLimitSeconds())), bounds), header.occupationNameSnapshot(),
+                        orZero(header.explorationTimeLimitSeconds())), bounds), header.jobPositionNameSnapshot(),
                 header.catalogFingerprint(), new VersionPins(header.modelVersionId(), header.masteryMappingVersionId(),
                         header.parameterSetId()), roles, header.createdBy(), header.createdAt());
     }

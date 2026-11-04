@@ -13,7 +13,7 @@ import static com.adaptlearngraph.dtos.OfficialQuestionBankManifest.*;
 public final class OfficialQuestionBankCatalog {
     public record Node(String label, Map<String, Object> properties) {}
     public record Edge(String type, String fromId, String toId, Map<String, Object> properties) {}
-    public record Scope(String sourceSha256, String occupationId, String catalogVersion, List<Node> nodes,
+    public record Scope(String sourceSha256, String jobPositionId, String catalogVersion, List<Node> nodes,
                  List<Edge> relationships) {
         public Map<String, String> skills() {
             Map<String, String> result = new TreeMap<>();
@@ -30,7 +30,7 @@ public final class OfficialQuestionBankCatalog {
         Set<String> ids = new HashSet<>();
         Set<String> edges = new HashSet<>();
         for (Node node : scope.nodes()) {
-            require(Set.of("Occupation", "TargetRole", "Level", "Competency", "MicroSkill", "LearningModule")
+            require(Set.of("JobPosition", "TargetRole", "Level", "Competency", "MicroSkill", "LearningModule")
                     .contains(node.label()), "Unknown catalog label");
             require(ids.add((String) node.properties().get("id")), "Duplicate scope node");
             activeVersion(node.properties(), scope.catalogVersion());
@@ -41,9 +41,9 @@ public final class OfficialQuestionBankCatalog {
             require(edges.add((String) edge.properties().get("id")), "Duplicate scope relationship");
             activeVersion(edge.properties(), scope.catalogVersion());
         }
-        require(scope.nodes().stream().filter(n -> n.label().equals("Occupation")).count() == 1
-                && scope.nodes().stream().anyMatch(n -> n.label().equals("Occupation")
-                    && scope.occupationId().equals(n.properties().get("id"))), "Invalid Occupation scope");
+        require(scope.nodes().stream().filter(n -> n.label().equals("JobPosition")).count() == 1
+                && scope.nodes().stream().anyMatch(n -> n.label().equals("JobPosition")
+                    && scope.jobPositionId().equals(n.properties().get("id"))), "Invalid JobPosition scope");
         var snapshot = graph.read(List.copyOf(ids));
         var actualNodes = snapshot.nodes();
         require(actualNodes.size() == ids.size(), "Missing/ambiguous catalog node");

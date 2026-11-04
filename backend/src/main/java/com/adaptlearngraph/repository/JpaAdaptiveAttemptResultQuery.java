@@ -7,7 +7,7 @@ import java.util.*;
 
 /** TMP-REQ002-08: own-Employee result/history read model with an explicit safe projection. */
 public final class JpaAdaptiveAttemptResultQuery implements Results {
-    private static final int ATTEMPT_ID = 0, ORGANIZATION_ID = 1, OCCUPATION_ID = 2, OCCUPATION_NAME = 3, POLICY_MODE = 4,
+    private static final int ATTEMPT_ID = 0, ORGANIZATION_ID = 1, JOB_POSITION_ID = 2, JOB_POSITION_NAME = 3, POLICY_MODE = 4,
             POLICY_VERSION = 5, POLICY_HASH = 6, POLICY_SNAPSHOT = 7, SKILL_POLICY_VERSION = 8, SKILL_POLICY_HASH = 9, PURPOSE = 10,
             TARGET_ROLE_ID = 11, ROLE_NAME = 12, STATE = 13, SCOPE_POLICY = 14, BLUEPRINT_SCOPE_POLICY = 15, COMPLETION_REASON = 16,
             STARTED_AT = 17, FINISHED_AT = 18, REPLACES_ATTEMPT_ID = 19, REPLACEMENT_ATTEMPT_ID = 20, RAW_SCORE = 21, MICRO_SKILL_ID = 22,
@@ -63,7 +63,7 @@ public final class JpaAdaptiveAttemptResultQuery implements Results {
             if (skillId != null) {
                 String name = (String) result[MICRO_SKILL_NAME];
                 long variants = result[SNAPSHOT_VARIANTS] == null ? 0 : ((Number) result[SNAPSHOT_VARIANTS]).longValue();
-                if (name == null || name.isBlank() || view.header.assessmentScope() == AssessmentScope.OCCUPATION
+                if (name == null || name.isBlank() || view.header.assessmentScope() == AssessmentScope.JOB_POSITION
                         && variants != 1) throw new Failure(Code.DEPENDENCY_UNAVAILABLE);
                 view.skills.add(new SkillResult(skillId, name, (BigDecimal) result[MASTERY], (String) result[CONFIDENCE_LABEL]));
             }
@@ -74,23 +74,23 @@ public final class JpaAdaptiveAttemptResultQuery implements Results {
     private static Header header(Object[] result) {
         String policy = (String) result[SCOPE_POLICY];
         if (!Objects.equals(policy, result[BLUEPRINT_SCOPE_POLICY])
-                || policy != null && !policy.equals("FULL_OCCUPATION_V2")) throw new Failure(Code.DEPENDENCY_UNAVAILABLE);
-        AssessmentScope publicScope = policy != null ? AssessmentScope.OCCUPATION
-                : result[TARGET_ROLE_ID] == null ? AssessmentScope.EARLIER_OCCUPATION : AssessmentScope.EARLIER_ROLE;
-        return new Header((UUID) result[ATTEMPT_ID], (String) result[OCCUPATION_ID],
-                (String) result[OCCUPATION_NAME], (String) result[PURPOSE],
+                || policy != null && !policy.equals("FULL_JOB_POSITION_V2")) throw new Failure(Code.DEPENDENCY_UNAVAILABLE);
+        AssessmentScope publicScope = policy != null ? AssessmentScope.JOB_POSITION
+                : result[TARGET_ROLE_ID] == null ? AssessmentScope.EARLIER_JOB_POSITION : AssessmentScope.EARLIER_ROLE;
+        return new Header((UUID) result[ATTEMPT_ID], (String) result[JOB_POSITION_ID],
+                (String) result[JOB_POSITION_NAME], (String) result[PURPOSE],
                 (String) result[TARGET_ROLE_ID], (String) result[ROLE_NAME], (String) result[STATE],
                 (String) result[COMPLETION_REASON], AdaptiveAttemptRows.instant(result[STARTED_AT]),
                 Objects.requireNonNull(AdaptiveAttemptRows.instant(result[FINISHED_AT])), (UUID) result[REPLACES_ATTEMPT_ID],
                 (UUID) result[REPLACEMENT_ATTEMPT_ID], (BigDecimal) result[RAW_SCORE], publicScope);
     }
 
-    private record Header(UUID attemptId, String occupationId, String occupationName, String purpose,
+    private record Header(UUID attemptId, String jobPositionId, String jobPositionName, String purpose,
                           String roleId, String roleName, String state, String completionReason,
                           Instant startedAt, Instant completedAt, UUID replacesAttemptId,
                           UUID replacementAttemptId, BigDecimal rawScore, AssessmentScope assessmentScope) {
         Result view(List<SkillResult> skills) {
-            return new Result(attemptId, occupationId, occupationName, purpose, roleId, roleName, state,
+            return new Result(attemptId, jobPositionId, jobPositionName, purpose, roleId, roleName, state,
                     completionReason, startedAt, completedAt, replacesAttemptId, replacementAttemptId, rawScore, skills, assessmentScope);
         }
     }

@@ -15,7 +15,7 @@ export function AdaptiveBaselineForm({ value, capacity, onChange, disabled, unch
   const [touched, setTouched] = useState<Partial<Record<AdaptiveField, boolean>>>({})
   const summary = useRef<HTMLDivElement>(null), errors = adaptiveErrors(value, capacity)
   const visible = (field: AdaptiveField) => (submitted || touched[field]) && errors[field]
-  const limits = capacity.occupation
+  const limits = capacity.jobPosition
   const fields: { field: AdaptiveTimeField; label: string; min?: number; max?: number; step: string }[] = [
     { field: 'maxQuestions', label: tr('maximum'), min: limits?.minimumQuestions, max: limits ? Math.min(limits.eligibleCapacity, limits.modelMaxQuestions) : undefined, step: '1' },
     { field: 'totalMinutes', label: tr('totalMinutes'), step: '1' },
@@ -41,21 +41,21 @@ export function AdaptiveBaselineForm({ value, capacity, onChange, disabled, unch
           <Text id={`${id}-name-help`} variant="caption" tone={visible('name') ? 'destructive' : 'muted'}>{visible('name') ? tr(`validation.${errors.name}`) : `${Array.from(value.name.trim()).length}/100 · ${tr('nameHint')}`}</Text>
         </div>
         <fieldset disabled={disabled} className="grid min-w-0 gap-4 md:grid-cols-3">
-          <legend className="sr-only">{tr('occupationBounds')}</legend>
+          <legend className="sr-only">{tr('jobPositionBounds')}</legend>
           {fields.map(({ field, label, min, max, step }) => <div key={field} className="min-w-0 space-y-2 break-words">
-            <label htmlFor={`${id}-${field}`} className="text-body-sm font-semibold">{label}{value.occupation[field] && Number.isFinite(Number(value.occupation[field])) && !Number.isInteger(Number(value.occupation[field])) ? ' ≈' : ''}</label>
-            <Input id={`${id}-${field}`} type="number" inputMode="numeric" min={min} max={max} step={step} required value={value.occupation[field] && Number.isFinite(Number(value.occupation[field])) ? Math.round(Number(value.occupation[field])) : value.occupation[field]}
+            <label htmlFor={`${id}-${field}`} className="text-body-sm font-semibold">{label}{value.jobPosition[field] && Number.isFinite(Number(value.jobPosition[field])) && !Number.isInteger(Number(value.jobPosition[field])) ? ' ≈' : ''}</label>
+            <Input id={`${id}-${field}`} type="number" inputMode="numeric" min={min} max={max} step={step} required value={value.jobPosition[field] && Number.isFinite(Number(value.jobPosition[field])) ? Math.round(Number(value.jobPosition[field])) : value.jobPosition[field]}
               aria-invalid={Boolean(visible(field))} aria-describedby={`${id}-${field}-help`}
               onBlur={() => setTouched(previous => ({ ...previous, [field]: true }))}
-              onChange={event => { if (/^\d*$/.test(event.target.value)) onChange({ ...value, occupation: editAdaptiveBounds(value.occupation, field, event.target.value) }) }} />
+              onChange={event => { if (/^\d*$/.test(event.target.value)) onChange({ ...value, jobPosition: editAdaptiveBounds(value.jobPosition, field, event.target.value) }) }} />
             <Text id={`${id}-${field}-help`} variant="caption" tone={visible(field) ? 'destructive' : 'muted'}>
               {visible(field) ? tr(`validation.${errors[field]}`) : field === 'maxQuestions' ? limits && limits.minimumQuestions <= Math.min(limits.eligibleCapacity, limits.modelMaxQuestions) ? `${tr('coverageRange')}: ${limits.minimumQuestions}–${Math.min(limits.eligibleCapacity, limits.modelMaxQuestions)}` : tr('infeasible') : tr(field === 'totalMinutes' ? 'totalHint' : 'rateHint')}
             </Text>
-            {value.occupation[field] && Number.isFinite(Number(value.occupation[field])) && !Number.isInteger(Number(value.occupation[field])) && <Text variant="caption" className="text-muted-foreground">{t('baselineUi.approxHint')}</Text>}
+            {value.jobPosition[field] && Number.isFinite(Number(value.jobPosition[field])) && !Number.isInteger(Number(value.jobPosition[field])) && <Text variant="caption" className="text-muted-foreground">{t('baselineUi.approxHint')}</Text>}
           </div>)}
         </fieldset>
         <Text variant="body-sm" className="text-muted-foreground">{tr('timeHint')}</Text>
-        {value.occupation.totalSeconds && <Text variant="body-sm" tone="foreground" className="rounded-lg border border-primary/20 bg-secondary/40 px-3 py-2">{tr('savedSeconds')}: <strong>{value.occupation.totalSeconds}</strong></Text>}
+        {value.jobPosition.totalSeconds && <Text variant="body-sm" tone="foreground" className="rounded-lg border border-primary/20 bg-secondary/40 px-3 py-2">{tr('savedSeconds')}: <strong>{value.jobPosition.totalSeconds}</strong></Text>}
         <Button size="sm" className="h-auto min-h-8 min-w-0 max-w-full whitespace-normal [overflow-wrap:anywhere] [&>span]:whitespace-normal" type="submit" disabled={disabled || unchanged}>{tr(converting ? 'convert' : 'save')}</Button>
       </CardContent>
     </Card>

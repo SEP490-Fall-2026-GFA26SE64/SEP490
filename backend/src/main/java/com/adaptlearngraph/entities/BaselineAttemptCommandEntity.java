@@ -31,8 +31,8 @@ public class BaselineAttemptCommandEntity {
     private String idempotencyKey;
     @Column(name = "attempt_id", nullable = false)
     private UUID attemptId;
-    @Column(name = "occupation_id", nullable = false)
-    private String occupationId;
+    @Column(name = "job_position_id", nullable = false)
+    private String jobPositionId;
     @Column(name = "operation", nullable = false)
     private String operation;
     @Column(name = "request_hash", nullable = false, columnDefinition = PostgresColumnTypes.CONTENT_HASH)
@@ -47,12 +47,12 @@ public class BaselineAttemptCommandEntity {
     }
 
     @SuppressWarnings("java:S107")
-    public BaselineAttemptCommandEntity(UUID organizationId, UUID actorId, String idempotencyKey, UUID attemptId, String occupationId, String operation, String requestHash, String responsePayload, Instant createdAt) {
+    public BaselineAttemptCommandEntity(UUID organizationId, UUID actorId, String idempotencyKey, UUID attemptId, String jobPositionId, String operation, String requestHash, String responsePayload, Instant createdAt) {
         this.organizationId = organizationId;
         this.actorId = actorId;
         this.idempotencyKey = idempotencyKey;
         this.attemptId = attemptId;
-        this.occupationId = occupationId;
+        this.jobPositionId = jobPositionId;
         this.operation = operation;
         this.requestHash = requestHash;
         this.responsePayload = responsePayload;
@@ -63,7 +63,7 @@ public class BaselineAttemptCommandEntity {
     public UUID getActorId() { return actorId; }
     public String getIdempotencyKey() { return idempotencyKey; }
     public UUID getAttemptId() { return attemptId; }
-    public String getOccupationId() { return occupationId; }
+    public String getJobPositionId() { return jobPositionId; }
     public String getOperation() { return operation; }
     public String getRequestHash() { return requestHash; }
     public String getResponsePayload() { return responsePayload; }

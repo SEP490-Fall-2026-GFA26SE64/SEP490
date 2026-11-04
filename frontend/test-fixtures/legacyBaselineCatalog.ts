@@ -1,7 +1,7 @@
 import type {
   BlueprintRole,
-  OccupationDetail,
-  OccupationSummary,
+  JobPositionDetail,
+  JobPositionSummary,
 } from '../src/features/manager/baseline-blueprints/baselineBlueprintApi'
 
 type CatalogRole = Omit<BlueprintRole, 'totalQuestionCount'>
@@ -46,7 +46,7 @@ const developmentRoles: CatalogRole[] = [
   ]),
 ]
 
-const developmentOccupation: OccupationDetail = {
+const developmentJobPosition: JobPositionDetail = {
   id: '10000000-0000-0000-0000-000000000001',
   name: 'Software Engineering',
   catalogVersion: 'development-fixture-v1',
@@ -62,19 +62,19 @@ const developmentOccupation: OccupationDetail = {
   })),
 }
 
-export function developmentBaselineOccupations(): OccupationSummary[] {
+export function developmentBaselineJobPositions(): JobPositionSummary[] {
   if (!import.meta.env.DEV) return []
   return [{
-    id: developmentOccupation.id,
-    name: developmentOccupation.name,
-    catalogVersion: developmentOccupation.catalogVersion,
-    roleCount: developmentOccupation.roles.length,
+    id: developmentJobPosition.id,
+    name: developmentJobPosition.name,
+    catalogVersion: developmentJobPosition.catalogVersion,
+    roleCount: developmentJobPosition.roles.length,
   }]
 }
 
-export function developmentBaselineOccupation(occupationId: string): OccupationDetail | null {
-  if (!import.meta.env.DEV || occupationId !== developmentOccupation.id) return null
-  return structuredClone(developmentOccupation)
+export function developmentBaselineJobPosition(jobPositionId: string): JobPositionDetail | null {
+  if (!import.meta.env.DEV || jobPositionId !== developmentJobPosition.id) return null
+  return structuredClone(developmentJobPosition)
 }
 
 /** Compatibility export for the executable tests of the previous role-scoped contract. */

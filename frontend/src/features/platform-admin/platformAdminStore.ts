@@ -74,7 +74,7 @@ export const DEFAULT_PLANS: PlatformSubscriptionPlan[] = [
       'Up to 50 Employee seats',
       'All Starter features included',
       'Multiple L&D Managers & Domain Experts',
-      'O*NET Discipline & Occupation Mapping',
+      'Industry Discipline & Job Position Mapping',
       'Team Competency Heatmaps & ROI Telemetry',
       'Custom Assessment Question Banks & Blueprints',
       'Priority Support & Dedicated Onboarding',

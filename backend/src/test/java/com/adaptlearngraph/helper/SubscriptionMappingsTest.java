@@ -104,7 +104,7 @@ class SubscriptionMappingsTest {
                 Set.of("EMPLOYEE"), UUID.randomUUID(), UUID.randomUUID(), 4, "Engineering", "Backend Engineer", true);
         MemberResponse mapped = mapper.map(member, MemberResponse.class);
         assertThat(mapped).isEqualTo(new MemberResponse(member.membershipId(), member.accountId(), "Ada Lovelace",
-                "ada@example.test", true, Set.of("EMPLOYEE"), member.departmentId(), member.occupationReferenceId(), 4,
+                "ada@example.test", true, Set.of("EMPLOYEE"), member.departmentId(), member.jobPositionReferenceId(), 4,
                 "Engineering", "Backend Engineer", true));
         assertNoSensitiveComponents(MemberResponse.class);
         assertThat(json.writeValueAsString(mapped)).doesNotContainIgnoringCase("password").doesNotContainIgnoringCase("totp");

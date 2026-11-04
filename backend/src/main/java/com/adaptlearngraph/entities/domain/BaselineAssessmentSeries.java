@@ -7,10 +7,10 @@ import java.util.UUID;
 public final class BaselineAssessmentSeries {
     private BaselineAssessmentSeries() {}
 
-    public record Scope(UUID organizationId, String occupationId) {
+    public record Scope(UUID organizationId, String jobPositionId) {
         public Scope {
             Objects.requireNonNull(organizationId, "organizationId must not be null");
-            occupationId = requireText(occupationId, "occupationId");
+            jobPositionId = requireText(jobPositionId, "jobPositionId");
         }
     }
 

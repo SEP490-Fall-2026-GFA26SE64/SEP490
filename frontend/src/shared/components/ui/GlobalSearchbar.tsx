@@ -78,7 +78,7 @@ export function GlobalSearchbar({ className }: { className?: string }) {
       .filter((r) =>
         r.name.toLowerCase().includes(trimmedQuery) ||
         r.scope.toLowerCase().includes(trimmedQuery) ||
-        r.occupationName.toLowerCase().includes(trimmedQuery)
+        r.jobPositionName.toLowerCase().includes(trimmedQuery)
       )
       .slice(0, 5)
   }, [roles, trimmedQuery])
@@ -206,7 +206,7 @@ export function GlobalSearchbar({ className }: { className?: string }) {
                           </div>
                           <div className="text-[11px] text-muted-foreground flex items-center gap-1.5">
                             <span className="font-mono">{role.code}</span>
-                            {role.occupationName && <span>• {role.occupationName}</span>}
+                            {role.jobPositionName && <span>• {role.jobPositionName}</span>}
                           </div>
                         </div>
                         {role.catalogVersion ? (

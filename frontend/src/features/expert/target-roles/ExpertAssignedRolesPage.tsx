@@ -61,7 +61,7 @@ import {
   findEligibleExpert,
   getOrganizationExperts,
   type EligibleExpert,
-  resolveOccupationForRole,
+  resolveJobPositionForRole,
   compareRoleVersions,
   formatDate,
   sortTargetRolesWithDraftsBelowPublished,
@@ -140,7 +140,7 @@ export function ExpertAssignedRolesPage() {
           const mapped: EligibleExpert[] = expertMembers.map((m) => ({
             id: m.accountId,
             name: m.fullName || m.email,
-            title: m.occupationName || m.departmentName || 'Domain Expert',
+            title: m.jobPositionName || m.departmentName || 'Domain Expert',
             email: m.email,
           }))
           if (typeof localStorage !== 'undefined') {
@@ -308,7 +308,7 @@ export function ExpertAssignedRolesPage() {
                 : '') ||
               String(r.assignedExpertId || ''),
             department:
-              resolveOccupationForRole({ title: String(r.name || ''), code: String(r.code || ''), familyCode: String(r.familyCode || '') }, orgId)?.name ||
+              resolveJobPositionForRole({ title: String(r.name || ''), code: String(r.code || ''), familyCode: String(r.familyCode || '') }, orgId)?.name ||
               'Software Engineering',
             description: String(r.description || ''),
             responsibilities: Array.isArray(r.responsibilities)
@@ -515,7 +515,7 @@ export function ExpertAssignedRolesPage() {
 
     return sorted.filter((role) => {
       const effStatus = getExpertEffectiveStatus(role)
-      const occ = resolveOccupationForRole(role)
+      const occ = resolveJobPositionForRole(role)
       const matchesSearch =
         !q ||
         role.title.toLowerCase().includes(q) ||
@@ -1979,7 +1979,7 @@ export function ExpertAssignedRolesPage() {
                       <tr className="border-b border-border bg-muted/40 text-muted-foreground uppercase text-[11px] font-semibold">
                         <th className="py-2.5 px-3">Role Code</th>
                         <th className="py-2.5 px-3">Title &amp; Version</th>
-                        <th className="py-2.5 px-3">Occupation</th>
+                        <th className="py-2.5 px-3">Job Position</th>
                         <th className="py-2.5 px-3 text-center whitespace-nowrap">
                           Levels
                         </th>
@@ -2186,11 +2186,11 @@ export function ExpertAssignedRolesPage() {
 
                             <td className="py-3 px-3">
                               {(() => {
-                                const occ = resolveOccupationForRole(role)
+                                const occ = resolveJobPositionForRole(role)
 
                                 return (
                                   <span className="text-xs font-medium text-foreground">
-                                    {role.occupationTitle || occ.name}
+                                    {role.jobPositionTitle || occ.name}
                                   </span>
                                 )
                               })()}
@@ -2534,22 +2534,22 @@ export function ExpertAssignedRolesPage() {
 
                     <div className="p-2 rounded bg-card border border-border col-span-2 sm:col-span-3">
                       <span className="text-[10px] text-muted-foreground uppercase font-bold block">
-                        Occupation
+                        Job Position
                       </span>
 
                       {(() => {
-                        const occ = resolveOccupationForRole(authoringRole)
+                        const occ = resolveJobPositionForRole(authoringRole)
 
                         return (
                           <div className="flex items-center gap-2 mt-0.5">
                             <span className="font-semibold text-foreground truncate">
-                              {authoringRole.occupationTitle || occ.name}
+                              {authoringRole.jobPositionTitle || occ.name}
                             </span>
                             <Badge
                               variant="outline"
                               className="font-mono text-[10px] font-semibold text-primary border-primary/30 shrink-0"
                             >
-                              {authoringRole.occupationCode || occ.code}
+                              {authoringRole.jobPositionCode || occ.code}
                             </Badge>
                           </div>
                         )
@@ -3712,27 +3712,27 @@ export function ExpertAssignedRolesPage() {
               </div>
             </div>
 
-            {/* O*NET Occupation Banner */}
+            {/* Job Position Banner */}
 
             {(() => {
-              const occ = resolveOccupationForRole(viewingDetailsRole)
+              const occ = resolveJobPositionForRole(viewingDetailsRole)
 
               return (
                 <div className="p-3.5 rounded-lg border border-primary/20 bg-primary/5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div>
                     <div className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">
-                      Occupation
+                      Job Position
                     </div>
 
                     <div className="text-sm font-bold text-foreground flex items-center gap-2 mt-0.5">
                       <span>
-                        {viewingDetailsRole.occupationTitle || occ.name}
+                        {viewingDetailsRole.jobPositionTitle || occ.name}
                       </span>
                       <Badge
                         variant="outline"
                         className="font-mono text-xs font-semibold text-primary border-primary/30"
                       >
-                        {viewingDetailsRole.occupationCode || occ.code}
+                        {viewingDetailsRole.jobPositionCode || occ.code}
                       </Badge>
                     </div>
 

@@ -1,6 +1,6 @@
 {
-  "sourceSha256": "0006bb11ac5c20687eb90be4807289ecea309a5657781543792e18f556eb5125",
-  "occupationId": "OCC-15-1212.00",
+  "sourceSha256": "65e5351b47352ea1bcf4298e0c0dcf93e9fba757c8298e8e509700721cabb010",
+  "jobPositionId": "OCC-15-1212.00",
   "catalogVersion": "0.8.0",
   "nodes": [
     {
@@ -1615,7 +1615,7 @@
       }
     },
     {
-      "label": "Occupation",
+      "label": "JobPosition",
       "properties": {
         "id": "OCC-15-1212.00",
         "version": "0.8.0",

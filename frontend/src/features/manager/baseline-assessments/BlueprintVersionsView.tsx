@@ -36,7 +36,7 @@ import {
 } from './baselineAssessmentManagementApi'
 
 export function BlueprintVersionsView() {
-  const { occupationId = '', blueprintId, version } = useParams()
+  const { jobPositionId = '', blueprintId, version } = useParams()
   const navigate = useNavigate()
   const { toast } = useToast()
   const { language, t } = useTranslation()
@@ -59,7 +59,7 @@ export function BlueprintVersionsView() {
     const detail = blueprintId && Number.isInteger(blueprintVersion) && blueprintVersion > 0
       ? getBlueprintVersion(blueprintId, blueprintVersion)
       : Promise.resolve(null)
-    void Promise.all([getBaselineAssessmentWorkspace(occupationId, controller.signal), detail])
+    void Promise.all([getBaselineAssessmentWorkspace(jobPositionId, controller.signal), detail])
       .then(([loadedWorkspace, loadedBlueprint]) => {
         setWorkspace(loadedWorkspace)
         setBlueprint(loadedBlueprint)
@@ -72,9 +72,9 @@ export function BlueprintVersionsView() {
         if (!controller.signal.aborted) setLoading(false)
       })
     return () => controller.abort()
-  }, [blueprintId, occupationId, reloadRevision, t, version])
+  }, [blueprintId, jobPositionId, reloadRevision, t, version])
 
-  const basePath = `/ld-manager/baseline-assessments/${encodeURIComponent(occupationId)}`
+  const basePath = `/ld-manager/baseline-assessments/${encodeURIComponent(jobPositionId)}`
   const hasAssessmentPending = workspace?.assessmentVersions.some((item) =>
     item.effectiveState === 'DRAFT' || item.effectiveState === 'REVIEWED') ?? false
   const candidateBlueprint = workspace?.blueprintVersions.find((item) => item.projection === 'CANDIDATE')
@@ -89,7 +89,7 @@ export function BlueprintVersionsView() {
     setBusy('start')
     try {
       startKey.current ??= crypto.randomUUID()
-      await startBlueprintWorkingRevision(occupationId, startKey.current)
+      await startBlueprintWorkingRevision(jobPositionId, startKey.current)
       startKey.current = null
       navigate(`${basePath}/blueprints/revision`)
     } catch (cause) {
@@ -103,7 +103,7 @@ export function BlueprintVersionsView() {
     if (!abandonReason.trim()) return
     setBusy('abandon')
     try {
-      const updated = await abandonPendingBlueprintChange(occupationId, abandonReason.trim())
+      const updated = await abandonPendingBlueprintChange(jobPositionId, abandonReason.trim())
       setWorkspace(updated)
       setAbandonOpen(false)
       setAbandonReason('')
@@ -119,7 +119,7 @@ export function BlueprintVersionsView() {
     setBusy('generate')
     try {
       generateKey.current ??= crypto.randomUUID()
-      const created = await generateAssessmentCandidate(occupationId, generateKey.current)
+      const created = await generateAssessmentCandidate(jobPositionId, generateKey.current)
       generateKey.current = null
       toast({ title: t('baselineAssessmentManagement.assessmentActions.generated').replace('{version}', String(created.version)), description: t('baselineAssessmentManagement.assessmentActions.generatedDescription'), variant: 'success' })
       navigate(`${basePath}/assessments/${created.assessmentVersionId}`)
@@ -135,9 +135,9 @@ export function BlueprintVersionsView() {
       <div className="space-y-6 pb-16">
         <PageHeader
           icon={<ClipboardList className="h-7 w-7" />}
-          title={workspace?.occupationName ?? t('baselineAssessmentManagement.workspaceTitle')}
+          title={workspace?.jobPositionName ?? t('baselineAssessmentManagement.workspaceTitle')}
           description={t('baselineAssessmentManagement.workspaceDescription')}
-          actions={<Button variant="outline" size="sm" leftIcon={<ArrowLeft className="h-4 w-4" />} onClick={() => navigate('/ld-manager/baseline-assessments')}>{t('baselineAssessmentManagement.backToOccupations')}</Button>}
+          actions={<Button variant="outline" size="sm" leftIcon={<ArrowLeft className="h-4 w-4" />} onClick={() => navigate('/ld-manager/baseline-assessments')}>{t('baselineAssessmentManagement.backToJobPositions')}</Button>}
         />
 
         {error ? (
@@ -210,7 +210,7 @@ function BlueprintDetail({ blueprint, t, language, onBack }: { blueprint: Baseli
   return <div className="space-y-4">
     <Button variant="ghost" size="sm" leftIcon={<ArrowLeft className="h-4 w-4" />} onClick={onBack}>{t('baselineAssessmentManagement.blueprints.backToVersions')}</Button>
     <Card><CardHeader><div className="flex flex-wrap items-start justify-between gap-3"><div><CardTitle>{blueprint.name}</CardTitle><CardDescription className="mt-1">{t('baselineAssessmentManagement.blueprints.immutableDescription')}</CardDescription></div><Badge variant="outline">v{blueprint.version}</Badge></div></CardHeader><CardContent className="space-y-5">
-      <dl className="grid gap-3 text-sm sm:grid-cols-3"><Info label={t('baselineAssessmentManagement.columns.occupation')} value={blueprint.occupationNameSnapshot ?? blueprint.occupationId ?? '—'} /><Info label={t('baselineAssessmentManagement.blueprints.created')} value={formatDate(blueprint.createdAt, language)} /><Info label={t('baselineAssessmentManagement.blueprints.roles')} value={String(blueprint.roles.length)} /></dl>
+      <dl className="grid gap-3 text-sm sm:grid-cols-3"><Info label={t('baselineAssessmentManagement.columns.jobPosition')} value={blueprint.jobPositionNameSnapshot ?? blueprint.jobPositionId ?? '—'} /><Info label={t('baselineAssessmentManagement.blueprints.created')} value={formatDate(blueprint.createdAt, language)} /><Info label={t('baselineAssessmentManagement.blueprints.roles')} value={String(blueprint.roles.length)} /></dl>
       <div className="space-y-3">{blueprint.roles.map((role) => <details key={role.roleId} className="group rounded-md border border-border bg-background" open>
         <summary className="flex cursor-pointer list-none items-center justify-between gap-3 p-4"><div><p className="font-semibold text-foreground">{role.roleNameSnapshot}</p><p className="mt-1 text-xs text-muted-foreground">{role.skills.length} {t('baselineAssessmentManagement.blueprints.skills')} · {t('baselineAssessmentManagement.blueprints.weights').replace('{easy}', String(Math.round(role.easyScoreWeight * 100))).replace('{medium}', String(Math.round(role.mediumScoreWeight * 100))).replace('{hard}', String(Math.round(role.hardScoreWeight * 100)))}</p></div><Badge variant={roleQuestionTotal(role) > 0 ? 'primary' : 'secondary'}>{roleQuestionTotal(role)} {t('baselineAssessmentManagement.blueprints.questions')}</Badge></summary>
         <div className="border-t border-border p-4"><div className="grid gap-2">{role.skills.map((skill) => <div key={skill.microSkillId} className="grid gap-2 rounded-md bg-muted/40 px-3 py-2 text-sm sm:grid-cols-[1fr_auto_auto_auto]"><span className="font-medium text-foreground">{skill.microSkillNameSnapshot}</span><span className="text-muted-foreground">{t('baselineBlueprint.difficulty.easy')}: {skill.easyQuestionCount}</span><span className="text-muted-foreground">{t('baselineBlueprint.difficulty.medium')}: {skill.mediumQuestionCount}</span><span className="text-muted-foreground">{t('baselineBlueprint.difficulty.hard')}: {skill.hardQuestionCount}</span></div>)}</div></div>

@@ -15,7 +15,7 @@ import org.springframework.core.env.Environment;
 
 /** Temporary owner inputs selected by trusted tenant. No planner, scores, approvals or learner state are fabricated. */
 public final class WorkspacePathwayFixtures {
-    private record Key(UUID organization,String occupation) {}
+    private record Key(UUID organization,String jobPosition) {}
     private final WorkspaceCatalogFixture fixture;
     private final ReleaseAuthority releases;
     private final Map<Key,List<Semantics>> semantics;
@@ -30,21 +30,21 @@ public final class WorkspacePathwayFixtures {
             byte[] seed=Files.readAllBytes(Path.of(env.getProperty("pathway.initial.catalog.seed-file","/seed/ontology_seed.json")));
             var root=json.readTree(seed);
             for(var bank:fixture.banks()) {
-                boolean se="OCC-15-1252.00".equals(bank.occupationId());
+                boolean se="OCC-15-1252.00".equals(bank.jobPositionId());
                 byte[] original=se?seed:Files.readAllBytes(Path.of(env.getProperty("pathway.initial.catalog.history-v08-file","/seed/baseline-history-v08.json")));
                 byte[] questions=se?com.adaptlearngraph.config.SoftwareDevelopmentSeed.bankBytes():Files.readAllBytes(Path.of(env.getProperty("pathway.initial.catalog.bank-v08-file","/seed/baseline-bank-v08.json")));
                 byte[] previous=se?seed:Files.readAllBytes(Path.of(env.getProperty("pathway.initial.catalog.history-v010-file","/seed/baseline-history-v010.json")));
                 var metadata=fixture.workspaces().get(bank.organizationId()).nodeMetadata();
                 var ownSource=LocalSeedSemantics.workspace(json,bank.organizationId(),seed,original,questions,previous,se,bank.bankId(),metadata);
-                if(!fixture.matches(bank.organizationId(),bank.occupationId(),ownSource.fingerprint()))throw new IllegalStateException("Fixture provenance fingerprint mismatch");
+                if(!fixture.matches(bank.organizationId(),bank.jobPositionId(),ownSource.fingerprint()))throw new IllegalStateException("Fixture provenance fingerprint mismatch");
                 Semantics originalSource=LocalSeedSemantics.workspace(json,bank.organizationId(),seed,original,questions,previous,se,null,metadata);
-                semantics.put(new Key(bank.organizationId(),bank.occupationId()),List.of(
+                semantics.put(new Key(bank.organizationId(),bank.jobPositionId()),List.of(
                         ownSource,originalSource));
             }
             this.semantics=Map.copyOf(semantics);
             for(var entry:fixture.workspaces().entrySet()) {
                 UUID org=entry.getKey();var roleIds=new HashSet<String>();
-                for(var role:root.path("TargetRoles"))if(fixture.permits(org,role.path("occupationId").asText()))roleIds.add(role.path("id").asText());
+                for(var role:root.path("TargetRoles"))if(fixture.permits(org,role.path("jobPositionId").asText()))roleIds.add(role.path("id").asText());
                 if(roleIds.isEmpty())throw new IllegalStateException("Workspace fixture has no exact Role membership");
                 assignments.put(org,new LocalPathwayAssignments(data,org,entry.getValue().expertId(),roleIds,
                         InitialPathwayComponents.integer(env,"local-assignment.max-pathways"),true));
@@ -55,13 +55,13 @@ public final class WorkspacePathwayFixtures {
     }
     private void require(Scope scope,Binding binding) {
         releases.assertCurrent(scope,com.adaptlearngraph.repository.InitialCatalogPort.RoleReference.from(scope,binding));
-        if(!fixture.permits(scope.organizationId(),binding.occupationId()))throw new Failure(403,"FORBIDDEN",false);
+        if(!fixture.permits(scope.organizationId(),binding.jobPositionId()))throw new Failure(403,"FORBIDDEN",false);
     }
     Semantics semantics() {
         return new Semantics() {
             public Compatibility resolve(Binding b,Profile p){throw new Failure(503,"TRUSTED_SEMANTIC_SCOPE_REQUIRED",false);}
             @Override public Compatibility resolve(Scope scope,Binding b,Profile p) {
-                require(scope,b);var source=semantics.get(new Key(scope.organizationId(),b.occupationId()));
+                require(scope,b);var source=semantics.get(new Key(scope.organizationId(),b.jobPositionId()));
                 if(source==null)throw new Failure(503,"SEMANTIC_COMPATIBILITY_NOT_CONFIGURED",false);
                 for(var candidate:source) {
                     try{return candidate.resolve(b,p);}

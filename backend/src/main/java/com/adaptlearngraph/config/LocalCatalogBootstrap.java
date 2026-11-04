@@ -10,8 +10,8 @@ import static com.adaptlearngraph.dtos.OfficialQuestionBankManifest.*;
 public final class LocalCatalogBootstrap {
     public static final String VERSION="0.11.0";
     public static final String SOURCE_HASH="a4f3165fa0ce6762651f59130c67e7c98f9a1b739f58d86e6b3e1b4fb58d3ddd";
-    public static final String LEGACY_SOURCE_HASH="f7325462f0e8810624c05141798a3ca330b6ae8fb3844fc6e1437951e79832f7";
-    private static final Map<String,String> LABELS=Map.of("Occupations","Occupation","TargetRoles","TargetRole","Levels","Level",
+    public static final String LEGACY_SOURCE_HASH="585eae81565deb7f3d0e40eeea10e583dd526cd4569077babfda6d5b22e9602c";
+    private static final Map<String,String> LABELS=Map.of("JobPositions","JobPosition","TargetRoles","TargetRole","Levels","Level",
             "Competencies","Competency","MicroSkills","MicroSkill","LearningModules","LearningModule");
     private static final Set<String> TYPES=Set.of("HAS_ROLE","HAS_LEVEL","HAS_COMPETENCY","HAS_SKILL","REQUIRES_SKILL","TEACHES","HAS_SKILL_PREREQUISITE");
     private final Map<String,List<Map<String,Object>>> nodes=new TreeMap<>();
@@ -56,7 +56,7 @@ public final class LocalCatalogBootstrap {
         require(SOURCE_HASH.equals(sha256(bytes)) || LEGACY_SOURCE_HASH.equals(sha256(bytes)),"Latest catalog source drift");
         var data=JSON.readTree(bytes);
         for(var label:LABELS.entrySet())for(var row:data.path(label.getKey())) {
-            var props=properties(row);props.remove(switch(label.getValue()){case "TargetRole"->"occupationId";case "Level"->"targetRoleId";case "Competency"->"levelId";default->"__exportOnly";});
+            var props=properties(row);props.remove(switch(label.getValue()){case "TargetRole"->"jobPositionId";case "Level"->"targetRoleId";case "Competency"->"levelId";default->"__exportOnly";});
             require(VERSION.equals(props.get("version")),"Catalog version drift");
             String id=(String)props.get("id");
             expectedNodeKeys.put(id,Set.copyOf(props.keySet()));

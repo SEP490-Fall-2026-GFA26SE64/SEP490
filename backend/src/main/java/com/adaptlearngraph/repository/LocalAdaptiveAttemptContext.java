@@ -13,7 +13,7 @@ public final class LocalAdaptiveAttemptContext implements AdaptiveAttemptContext
     private final AdaptiveAttemptContextJpaRepository identities;
     private final java.util.function.Supplier<UUID> actor;
     private final UUID organizationId;
-    private final Set<String> occupations;
+    private final Set<String> jobPositions;
     private final AdaptiveBaselineCatalogPort catalog;
     private final AdaptiveAttemptSnapshotResolver snapshots;
     private com.adaptlearngraph.repository.AdaptiveSelectedRolePort currentRoles;
@@ -21,20 +21,20 @@ public final class LocalAdaptiveAttemptContext implements AdaptiveAttemptContext
     private java.util.function.Predicate<AdaptiveAttempt.Scope> profileExists;
     private java.util.function.Supplier<Employee> authenticatedEmployee;
     public LocalAdaptiveAttemptContext(AdaptiveAttemptContextJpaRepository identities, UUID actorId, UUID organizationId,
-            Set<String> occupations, AdaptiveBaselineCatalogPort catalog, AdaptiveAttemptSnapshotResolver snapshots) {
-        this(() -> actorId, identities, organizationId, occupations, catalog, snapshots);
+            Set<String> jobPositions, AdaptiveBaselineCatalogPort catalog, AdaptiveAttemptSnapshotResolver snapshots) {
+        this(() -> actorId, identities, organizationId, jobPositions, catalog, snapshots);
     }
     public LocalAdaptiveAttemptContext(java.util.function.Supplier<UUID> actor, AdaptiveAttemptContextJpaRepository identities, UUID organizationId,
-            Set<String> occupations, AdaptiveBaselineCatalogPort catalog, AdaptiveAttemptSnapshotResolver snapshots) {
+            Set<String> jobPositions, AdaptiveBaselineCatalogPort catalog, AdaptiveAttemptSnapshotResolver snapshots) {
         this.identities = identities; this.actor = actor; this.organizationId = Objects.requireNonNull(organizationId);
-        this.occupations = Set.copyOf(occupations); this.catalog = catalog; this.snapshots = snapshots;
+        this.jobPositions = Set.copyOf(jobPositions); this.catalog = catalog; this.snapshots = snapshots;
     }
     public LocalAdaptiveAttemptContext(java.util.function.Supplier<UUID> actor, AdaptiveAttemptContextJpaRepository identities, UUID organizationId,
-            Set<String> occupations, AdaptiveBaselineCatalogPort catalog, AdaptiveAttemptSnapshotResolver snapshots,
+            Set<String> jobPositions, AdaptiveBaselineCatalogPort catalog, AdaptiveAttemptSnapshotResolver snapshots,
             com.adaptlearngraph.repository.AdaptiveSelectedRolePort currentRoles,
             com.adaptlearngraph.repository.AdaptiveAttemptStore priorAttempts,
             java.util.function.Predicate<AdaptiveAttempt.Scope> profileExists) {
-        this(actor,identities,organizationId,occupations,catalog,snapshots);
+        this(actor,identities,organizationId,jobPositions,catalog,snapshots);
         this.currentRoles=Objects.requireNonNull(currentRoles);this.priorAttempts=Objects.requireNonNull(priorAttempts);
         this.profileExists=Objects.requireNonNull(profileExists);
     }
@@ -54,29 +54,29 @@ public final class LocalAdaptiveAttemptContext implements AdaptiveAttemptContext
         return new Employee(organizationId, actorId);
     }
     public static LocalAdaptiveAttemptContext authenticated(java.util.function.Supplier<Employee> identity,
-            AdaptiveAttemptContextJpaRepository identities, UUID organization, Set<String> occupations,
+            AdaptiveAttemptContextJpaRepository identities, UUID organization, Set<String> jobPositions,
             AdaptiveBaselineCatalogPort catalog, AdaptiveAttemptSnapshotResolver snapshots,
             com.adaptlearngraph.repository.AdaptiveSelectedRolePort roles,
             com.adaptlearngraph.repository.AdaptiveAttemptStore attempts,
             java.util.function.Predicate<AdaptiveAttempt.Scope> profileExists) {
         var context = new LocalAdaptiveAttemptContext(() -> identity.get().learnerId(), identities, organization,
-                occupations, catalog, snapshots, roles, attempts, profileExists);
+                jobPositions, catalog, snapshots, roles, attempts, profileExists);
         context.authenticatedEmployee = Objects.requireNonNull(identity);
         return context;
     }
     @Override public void authorizeScope(Employee employee, AdaptiveAttempt.Scope scope) {
         if (!organizationId.equals(employee.organizationId()) || !employee.organizationId().equals(scope.organizationId())
-                || !employee.learnerId().equals(scope.learnerId()) || !occupations.contains(scope.occupationId())) throw new Failure(Code.FORBIDDEN);
+                || !employee.learnerId().equals(scope.learnerId()) || !jobPositions.contains(scope.jobPositionId())) throw new Failure(Code.FORBIDDEN);
     }
     @Override public AdaptiveAttempt.Scope resolveScope(Employee employee, StartTarget target) {
         if(currentRoles!=null) {
             if(!(target instanceof SelectedRole)) throw new Failure(Code.INVALID_REQUEST);
             var selected=currentRoles.current(employee.organizationId(),employee.learnerId());
-            var scope=new AdaptiveAttempt.Scope(employee.organizationId(),employee.learnerId(),selected.occupationId());
+            var scope=new AdaptiveAttempt.Scope(employee.organizationId(),employee.learnerId(),selected.jobPositionId());
             authorizeScope(employee,scope);return scope;
         }
-        String occupation = target instanceof Exploration exploration ? exploration.occupationId() : occupation(selection(employee).role());
-        var scope = new AdaptiveAttempt.Scope(employee.organizationId(), employee.learnerId(), occupation);
+        String jobPosition = target instanceof Exploration exploration ? exploration.jobPositionId() : jobPosition(selection(employee).role());
+        var scope = new AdaptiveAttempt.Scope(employee.organizationId(), employee.learnerId(), jobPosition);
         authorizeScope(employee, scope);
         return scope;
     }
@@ -88,7 +88,7 @@ public final class LocalAdaptiveAttemptContext implements AdaptiveAttemptContext
         if (learners.isEmpty()) throw new Failure(Code.SELECTION_UNAVAILABLE);
         if(currentRoles!=null) {
             var selected=currentRoles.current(scope.organizationId(),scope.learnerId());
-            if(!scope.occupationId().equals(selected.occupationId())) throw new Failure(Code.SELECTION_UNAVAILABLE);
+            if(!scope.jobPositionId().equals(selected.jobPositionId())) throw new Failure(Code.SELECTION_UNAVAILABLE);
             if(profileExists.test(scope)) throw new Failure(Code.ALLOWANCE_CLOSED);
             // Existing learners/replacement chains keep the original version and pool; never repin to a new activation.
             var prior=priorAttempts.findLatest(scope);
@@ -97,13 +97,13 @@ public final class LocalAdaptiveAttemptContext implements AdaptiveAttemptContext
         Optional<String> role = Optional.empty(); Optional<Long> revision = Optional.empty();
         if (target instanceof SelectedRole) {
             var selected = selection(new Employee(scope.organizationId(), scope.learnerId()));
-            if (!scope.occupationId().equals(occupation(selected.role()))) throw new Failure(Code.SELECTION_UNAVAILABLE);
+            if (!scope.jobPositionId().equals(jobPosition(selected.role()))) throw new Failure(Code.SELECTION_UNAVAILABLE);
             role = Optional.of(selected.role()); revision = Optional.of(selected.revision());
         }
         // Same scope key as management, shared until attempt/pool/first item/receipt commit.
         // Advisory coordination also covers an absent identity/activation row.
-        identities.shareLockScope(scope.organizationId() + "\n" + scope.occupationId());
-        identities.shareLockActivation(scope.organizationId(), scope.occupationId());
+        identities.shareLockScope(scope.organizationId() + "\n" + scope.jobPositionId());
+        identities.shareLockActivation(scope.organizationId(), scope.jobPositionId());
         return snapshots.resolve(scope, role, revision);
     }
     private Selection selection(Employee employee) {
@@ -115,8 +115,8 @@ public final class LocalAdaptiveAttemptContext implements AdaptiveAttemptContext
         if (rows.size() != 1 || rows.getFirst().revision() < 1) throw new Failure(Code.SELECTION_UNAVAILABLE);
         return rows.getFirst();
     }
-    private String occupation(String role) {
-        var owners = occupations.stream().filter(id -> catalog.findAvailable(new AdaptiveBlueprint.Scope(organizationId, id))
+    private String jobPosition(String role) {
+        var owners = jobPositions.stream().filter(id -> catalog.findAvailable(new AdaptiveBlueprint.Scope(organizationId, id))
                 .filter(snapshot -> snapshot.roles().containsKey(role)).isPresent()).toList();
         if (owners.size() != 1) throw new Failure(Code.SELECTION_UNAVAILABLE);
         return owners.getFirst();

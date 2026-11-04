@@ -12,7 +12,7 @@ import com.adaptlearngraph.repository.AdaptiveBlueprintPreviewPort;
 import com.adaptlearngraph.repository.AdaptiveBlueprintStore;
 import com.adaptlearngraph.repository.AdaptiveSelectedRolePort;
 import com.adaptlearngraph.repository.AdaptiveTechnicalVersionPort;
-import com.adaptlearngraph.repository.CurrentOccupationProfile;
+import com.adaptlearngraph.repository.CurrentJobPositionProfile;
 import com.adaptlearngraph.repository.JpaAdaptiveAttemptContent;
 import com.adaptlearngraph.repository.JpaAdaptiveAttemptScoring;
 import com.adaptlearngraph.repository.JpaAdaptiveBlueprintEligibilityAdapter;
@@ -47,7 +47,7 @@ public class LocalDemoConfiguration {
     @Bean @Primary AdaptiveBlueprintActorPort demoBlueprintActor(LocalDemoIdentity identity) {
         return new AdaptiveBlueprintActorPort() {
             public Optional<Actor> currentActor() { return Optional.of(new Actor(identity.actor(),LocalDemoIdentity.ORG,true,Set.of(identity.role()))); }
-            public Set<String> authorizedOccupations(Actor actor) { return actor.isActiveLdManager() && actor.organizationId().equals(LocalDemoIdentity.ORG) ? Set.of(LocalDemoIdentity.OCC) : Set.of(); }
+            public Set<String> authorizedJobPositions(Actor actor) { return actor.isActiveLdManager() && actor.organizationId().equals(LocalDemoIdentity.ORG) ? Set.of(LocalDemoIdentity.OCC) : Set.of(); }
         };
     }
     @Bean @Primary AdaptiveBaselineCatalogPort demoCatalog(com.adaptlearngraph.repository.Neo4jCypher graph,ObjectMapper json) {
@@ -72,7 +72,7 @@ public class LocalDemoConfiguration {
     @Bean @Primary AdaptiveAttemptContentPort demoContent(com.adaptlearngraph.repository.ItemVersionJpaRepository itemVersions) { return new JpaAdaptiveAttemptContent(itemVersions,LocalDemoIdentity.BANK,true); }
     @Bean @Primary AdaptiveAttemptScoringPort demoScoring(com.adaptlearngraph.repository.ItemVersionJpaRepository itemVersions) { return new JpaAdaptiveAttemptScoring(itemVersions,LocalDemoIdentity.BANK,true); }
     @Bean @Primary AdaptiveAttemptContextPort demoContext(com.adaptlearngraph.repository.AdaptiveAttemptContextJpaRepository identities,LocalDemoIdentity identity,AdaptiveBlueprintStore store,AdaptiveBlueprintEligibilityPort eligibility,AdaptiveTechnicalVersionPort technical,AdaptiveBaselineCatalogPort catalog,
-            AdaptiveSelectedRolePort selected,AdaptiveAttemptStore attempts,CurrentOccupationProfile profiles) {
+            AdaptiveSelectedRolePort selected,AdaptiveAttemptStore attempts,CurrentJobPositionProfile profiles) {
         return new LocalAdaptiveAttemptContext(identity::actor,identities,LocalDemoIdentity.ORG,Set.of(LocalDemoIdentity.OCC),catalog,new AdaptiveAttemptSnapshotResolver(store,eligibility,technical),selected,attempts,profiles::exists);
     }
 }

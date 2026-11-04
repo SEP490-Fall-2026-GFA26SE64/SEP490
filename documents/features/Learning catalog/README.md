@@ -13,7 +13,7 @@ Each record below corresponds to one source bullet. Unspecified fields are inten
 | Requirement | Status | Current behavior | Remaining boundary |
 | --- | --- | --- | --- |
 | [FR-04.06](#fr-04-06) | API-backed module/content slice | L&D reads submitted immutable Module revisions, inspects numbered lessons/history, returns with feedback or approves publication to Neo4j; pending projection can be retried. | Module assessment construction/review and full production learning acceptance remain separate. |
-| [FR-05.01](#fr-05-01) | Partial | Micro-skill APIs and Neo4j persistence support search, create, update/status and guarded deletion. The ontology page loads skills and macro competencies and calls skill mutations. | The authoring model covers code/name/description/macro category/status, not complete assigned-occupation proficiency-level management. Legacy actor headers/browser company context remain. |
+| [FR-05.01](#fr-05-01) | Partial | Micro-skill APIs and Neo4j persistence support search, create, update/status and guarded deletion. The ontology page loads skills and macro competencies and calls skill mutations. | The authoring model covers code/name/description/macro category/status, not complete assigned-job position proficiency-level management. Legacy actor headers/browser company context remain. |
 | [FR-05.04](#fr-05-04) | Partial | Prerequisite APIs list, save and remove graph edges with minimum mastery/status; the service rejects self-edges, cycles and mastery outside 0..1. The ontology UI uses those APIs. | Trusted assignment-scoped authorization and complete update UX remain unestablished. Local import/browser data is not equivalent to a persisted prerequisite operation. |
 | [FR-05.05](#fr-05-05) | API-backed module/content slice | The responsible Expert authors skill-mapped Modules and ordered Text/Video lessons through authenticated APIs; PostgreSQL owns versions/history and MinIO owns private assets. Excel/ZIP preview and atomic confirmation preserve ownership. | Vimeo live-provider acceptance and production delivery remain limited as recorded in dedicated evidence. |
 | [FR-05.08](#fr-05-08) | API-backed module/content slice | Owner-only submit/withdraw and L&D return/approval operate on exact persisted Module/content revisions; peers can inspect history. | This does not construct or submit a complete module assessment bundle. Question Bank has its own review workflow. |
@@ -48,7 +48,7 @@ Each record below corresponds to one source bullet. Unspecified fields are inten
 | --- | --- |
 | 1. Requirement ID | FR-05.01 |
 | 2. Requirement Name | Manage micro-skills |
-| 3. Description | The Expert shall create, view, update, and deactivate micro-skills within assigned occupations, including descriptions and proficiency levels. |
+| 3. Description | The Expert shall create, view, update, and deactivate micro-skills within assigned job positions, including descriptions and proficiency levels. |
 | 4. Actor | Expert |
 | 5. Preconditions |  |
 | 6. Main Flow |  |
@@ -149,18 +149,18 @@ Manual test assignment was retired on 2026-10-30. Employee lesson access now req
 
 ## R4 local refinement — 2026-10-29
 
-Module and content creation now require the responsible Expert's real organization/session, valid skill mappings and the existing content rules; no Occupation selection or grant is required. Content reuse is not filtered by Occupation. New records have no occupation membership; old snapshot tags/history remain intact. Excel/ZIP templates omit occupationIds, and the optional old column is ignored. Owner and cross-organization protections remain enforced.
+Module and content creation now require the responsible Expert's real organization/session, valid skill mappings and the existing content rules; no Job Position selection or grant is required. Content reuse is not filtered by Job Position. New records have no job position membership; old snapshot tags/history remain intact. Excel/ZIP templates omit job positionIds, and the optional old column is ignored. Owner and cross-organization protections remain enforced.
 
 L&D Details & history displays each revision's **Lesson 1, Lesson 2, Lesson 3…** as individual cards with title, Reading/Video, duration and actual content/player. The combined “Preview this content version” expander is removed. Review still approves or returns the complete Module revision, not individual lessons. Shared preview components use the same numbered presentation.
 
 Private media also revalidates the trusted session/workspace on async servlet redispatch, fixing an actual AccessDenied stream failure without public access or fake identities. The pre-existing catalog intake permission controls remain explicitly labeled intake-only.
 
-Verified locally: creation without Occupation, three-lesson desktop/mobile L&D reading/playback/release, Excel new/legacy compatibility, organization/owner isolation, Employee private video 90%/reload, 43 backend unit/API checks, 12 frontend checks and 2 affected store-integration scenarios across focused runs. [Evidence and manual checklist](../../testing/system/REQ-013-learning-content-R4.md). This refinement does not certify the separate Vimeo/live-provider or complete module-assessment boundaries.
+Verified locally: creation without Job Position, three-lesson desktop/mobile L&D reading/playback/release, Excel new/legacy compatibility, organization/owner isolation, Employee private video 90%/reload, 43 backend unit/API checks, 12 frontend checks and 2 affected store-integration scenarios across focused runs. [Evidence and manual checklist](../../testing/system/REQ-013-learning-content-R4.md). This refinement does not certify the separate Vimeo/live-provider or complete module-assessment boundaries.
 
 
 ## Module responsibility and peer visibility
 
-For the implemented local FR-05.05/FR-05.08 slice, each Module has one responsible Expert. A new Module is owned by its authenticated creator. Only that Expert may edit, submit, delete an eligible draft, request archiving or restore a Module. Other Experts in the same organization may inspect content, creator, edit dates and review history; sharing an Occupation grants no editing permission. Organization isolation and existing deletion/archive safeguards remain in effect.
+For the implemented local FR-05.05/FR-05.08 slice, each Module has one responsible Expert. A new Module is owned by its authenticated creator. Only that Expert may edit, submit, delete an eligible draft, request archiving or restore a Module. Other Experts in the same organization may inspect content, creator, edit dates and review history; sharing an Job Position grants no editing permission. Organization isolation and existing deletion/archive safeguards remain in effect.
 
 L&D selects exactly one Expert when assigning a catalog Module for intake; only that Expert can receive it. L&D continues approving or returning submitted revisions under FR-04.06. The local existing-data handover assigns modules to the selected development Expert with an audit event, preserves previous versions/decisions and does not auto-approve imported content. Creator/editor/reviewer names and dates are shown separately.
 

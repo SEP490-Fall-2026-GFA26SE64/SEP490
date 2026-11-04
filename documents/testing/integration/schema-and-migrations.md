@@ -8,9 +8,9 @@ Follow [current integration criteria](README.md#current-scope-alignment). Postgr
 | Component | Executable evidence | Result |
 | :--- | :--- | :--- |
 | PostgreSQL V1–V13 | `DatabaseSchemaTest` on disposable PostgreSQL 17.6 | **PASS** — clean migration and no-op rerun. |
-| Occupation blueprint persistence | `BaselineAssessmentPostgresIntegrationTest` | **PASS 4/4** — V13 identity/uniqueness, immutable versions, UTC timestamps, review/publication guards. |
+| Job Position blueprint persistence | `BaselineAssessmentPostgresIntegrationTest` | **PASS 4/4** — V13 identity/uniqueness, immutable versions, UTC timestamps, review/publication guards. |
 | Neo4j constraints V1–V4 | `GraphSchemaTest` on Neo4j 5.26 Community | **PASS 1/1** — 15 constraints and four migration records. |
-| Neo4j Occupation catalog adapter | `Neo4jBaselineOccupationCatalogAdapterIntegrationTest` | **PASS 3/3** — list/detail, multi-Level skill union, inactive/empty/malformed boundaries. |
+| Neo4j Job Position catalog adapter | `Neo4jBaselineJob PositionCatalogAdapterIntegrationTest` | **PASS 3/3** — list/detail, multi-Level skill union, inactive/empty/malformed boundaries. |
 
 The complete backend regression passed 174/174 on 2026-10-15. The earlier graph-count failure was a stale seed assertion and is retained only in Git history, not as current evidence. Detailed commands and behavior mapping are in [REQ-002-F02](REQ-002-F02-baseline-authoring.md).
 

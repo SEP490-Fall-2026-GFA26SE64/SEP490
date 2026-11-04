@@ -28,10 +28,10 @@ const role = { roleId: 'role-1', roleNameSnapshot: 'Java Developer', enabled: tr
   skills: [{ microSkillId: 'skill-1', microSkillNameSnapshot: 'Java Core',
     easyQuestionCount: 1, mediumQuestionCount: 1, hardQuestionCount: 1 }] }
 const blueprint: BaselineBlueprint = { blueprintId: 'blueprint-1', version: 1,
-  name: 'Java baseline', occupationId: 'occ-java', occupationNameSnapshot: 'Java Engineer',
+  name: 'Java baseline', jobPositionId: 'occ-java', jobPositionNameSnapshot: 'Java Engineer',
   createdAt: '2026-10-19T08:00:00Z', roles: [role] }
-const baseWorkspace: BaselineAssessmentWorkspace = { occupationId: 'occ-java',
-  occupationName: 'Java Engineer', workingRevision: null, blueprintVersions: [], assessmentVersions: [] }
+const baseWorkspace: BaselineAssessmentWorkspace = { jobPositionId: 'occ-java',
+  jobPositionName: 'Java Engineer', workingRevision: null, blueprintVersions: [], assessmentVersions: [] }
 
 describe('BlueprintVersionsView', () => {
   beforeEach(() => {
@@ -45,8 +45,8 @@ describe('BlueprintVersionsView', () => {
     vi.mocked(getBaselineAssessmentWorkspace).mockResolvedValue({ ...baseWorkspace,
       workingRevision: { workingRevisionId: 'working-1', blueprintId: 'blueprint-1',
         baseVersion: null, revision: 2, updatedAt: '2026-10-19T08:00:00Z',
-        draft: { name: 'Java baseline', occupationId: 'occ-java',
-          occupationNameSnapshot: 'Java Engineer', roles: [role] } },
+        draft: { name: 'Java baseline', jobPositionId: 'occ-java',
+          jobPositionNameSnapshot: 'Java Engineer', roles: [role] } },
     })
     renderRoute(`${root}/blueprints`)
     expect(await screen.findByText('Saved revision #2', { exact: false })).toBeTruthy()
@@ -89,8 +89,8 @@ describe('BlueprintVersionsView', () => {
 
 function renderRoute(path: string) {
   render(<LanguageProvider><MemoryRouter initialEntries={[path]}><Routes>
-    <Route path="/ld-manager/baseline-assessments/:occupationId/blueprints" element={<BlueprintVersionsView />} />
-    <Route path="/ld-manager/baseline-assessments/:occupationId/blueprints/:blueprintId/versions/:version" element={<BlueprintVersionsView />} />
+    <Route path="/ld-manager/baseline-assessments/:jobPositionId/blueprints" element={<BlueprintVersionsView />} />
+    <Route path="/ld-manager/baseline-assessments/:jobPositionId/blueprints/:blueprintId/versions/:version" element={<BlueprintVersionsView />} />
     <Route path="*" element={<LocationProbe />} />
   </Routes></MemoryRouter></LanguageProvider>)
 }

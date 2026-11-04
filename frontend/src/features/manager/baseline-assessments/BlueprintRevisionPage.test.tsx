@@ -4,7 +4,7 @@ import type { ReactNode } from 'react'
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { LanguageProvider } from '../../../shared/i18n/LanguageContext'
-import { getOccupationCapacity, type BaselineBlueprint } from '../baseline-blueprints/baselineBlueprintApi'
+import { getJobPositionCapacity, type BaselineBlueprint } from '../baseline-blueprints/baselineBlueprintApi'
 import { BlueprintRevisionPage } from './BlueprintRevisionPage'
 import { finalizeBlueprintWorkingRevision, generateAssessmentCandidate,
   getBaselineAssessmentWorkspace, saveBlueprintWorkingRevision,
@@ -19,7 +19,7 @@ vi.mock('../baseline-blueprints/BaselineRoleConfiguration', () => ({
 }))
 vi.mock('../baseline-blueprints/baselineBlueprintApi', async (importOriginal) => ({
   ...await importOriginal<typeof import('../baseline-blueprints/baselineBlueprintApi')>(),
-  getOccupationCapacity: vi.fn(),
+  getJobPositionCapacity: vi.fn(),
 }))
 vi.mock('./baselineAssessmentManagementApi', async (importOriginal) => ({
   ...await importOriginal<typeof import('./baselineAssessmentManagementApi')>(),
@@ -28,7 +28,7 @@ vi.mock('./baselineAssessmentManagementApi', async (importOriginal) => ({
 }))
 
 const root = '/ld-manager/baseline-assessments/occ-java'
-const draft = { name: 'Java baseline', occupationId: 'occ-java', occupationNameSnapshot: 'Java Engineer',
+const draft = { name: 'Java baseline', jobPositionId: 'occ-java', jobPositionNameSnapshot: 'Java Engineer',
   roles: [{ roleId: 'role-1', roleNameSnapshot: 'Java Developer', enabled: true,
     easyScoreWeight: 0.2, mediumScoreWeight: 0.3, hardScoreWeight: 0.5,
     skills: [{ microSkillId: 'skill-1', microSkillNameSnapshot: 'Java Core',
@@ -40,10 +40,10 @@ describe('BlueprintRevisionPage', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     localStorage.setItem('app_language', 'en')
-    vi.mocked(getBaselineAssessmentWorkspace).mockResolvedValue({ occupationId: 'occ-java',
-      occupationName: 'Java Engineer', workingRevision: working,
+    vi.mocked(getBaselineAssessmentWorkspace).mockResolvedValue({ jobPositionId: 'occ-java',
+      jobPositionName: 'Java Engineer', workingRevision: working,
       blueprintVersions: [], assessmentVersions: [] } satisfies BaselineAssessmentWorkspace)
-    vi.mocked(getOccupationCapacity).mockResolvedValue({ occupationId: 'occ-java',
+    vi.mocked(getJobPositionCapacity).mockResolvedValue({ jobPositionId: 'occ-java',
       catalogVersion: 'v1', coverageAsOf: '2026-10-19T08:00:00Z',
       roles: [{ roleId: 'role-1', skills: [{ microSkillId: 'skill-1',
         availableEasy: 2, availableMedium: 2, availableHard: 2 }] }] })
@@ -62,7 +62,7 @@ describe('BlueprintRevisionPage', () => {
       assessmentVersionId: 'assessment-1', version: 1,
     } as ManagedAssessmentVersion)
     render(<LanguageProvider><MemoryRouter initialEntries={[`${root}/blueprints/revision`]}><Routes>
-      <Route path="/ld-manager/baseline-assessments/:occupationId/blueprints/revision" element={<BlueprintRevisionPage />} />
+      <Route path="/ld-manager/baseline-assessments/:jobPositionId/blueprints/revision" element={<BlueprintRevisionPage />} />
       <Route path="*" element={<LocationProbe />} />
     </Routes></MemoryRouter></LanguageProvider>)
 

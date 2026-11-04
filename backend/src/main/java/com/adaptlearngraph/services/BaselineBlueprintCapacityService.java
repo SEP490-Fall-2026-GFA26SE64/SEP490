@@ -10,8 +10,8 @@ import com.adaptlearngraph.repository.BaselineBlueprintStore.ActorPort;
 import com.adaptlearngraph.repository.BaselineBlueprintValidationPort;
 import com.adaptlearngraph.repository.BaselineBlueprintValidationPort.CoverageKey;
 import com.adaptlearngraph.repository.BaselineBlueprintValidationPort.Difficulty;
-import com.adaptlearngraph.repository.BaselineOccupationCatalogPort;
-import com.adaptlearngraph.repository.BaselineOccupationCatalogPort.CatalogOccupation;
+import com.adaptlearngraph.repository.BaselineJobPositionCatalogPort;
+import com.adaptlearngraph.repository.BaselineJobPositionCatalogPort.CatalogJobPosition;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.Map;
@@ -21,20 +21,20 @@ import java.util.stream.Collectors;
 
 public final class BaselineBlueprintCapacityService implements BaselineBlueprintCapacityUseCase {
     private final ActorPort actors;
-    private final BaselineOccupationCatalogPort catalog;
+    private final BaselineJobPositionCatalogPort catalog;
     private final BaselineBlueprintValidationPort validation;
     private final Clock clock;
 
     public BaselineBlueprintCapacityService(
             ActorPort actors,
-            BaselineOccupationCatalogPort catalog,
+            BaselineJobPositionCatalogPort catalog,
             BaselineBlueprintValidationPort validation) {
         this(actors, catalog, validation, Clock.systemUTC());
     }
 
     public BaselineBlueprintCapacityService(
             ActorPort actors,
-            BaselineOccupationCatalogPort catalog,
+            BaselineJobPositionCatalogPort catalog,
             BaselineBlueprintValidationPort validation,
             Clock clock) {
         this.actors = Objects.requireNonNull(actors, "actors must not be null");
@@ -44,21 +44,21 @@ public final class BaselineBlueprintCapacityService implements BaselineBlueprint
     }
 
     @Override
-    public CapacityDetail getAvailableCapacity(String occupationId) {
+    public CapacityDetail getAvailableCapacity(String jobPositionId) {
         Actor actor = requireActor();
-        String id = requireText(occupationId, "occupationId");
-        CatalogOccupation occupation = findOccupation(actor.organizationId(), id);
-        Set<String> skillIds = occupation.roles().stream()
+        String id = requireText(jobPositionId, "jobPositionId");
+        CatalogJobPosition jobPosition = findJobPosition(actor.organizationId(), id);
+        Set<String> skillIds = jobPosition.roles().stream()
                 .flatMap(role -> role.skills().stream())
-                .map(BaselineOccupationCatalogPort.CatalogSkill::id)
+                .map(BaselineJobPositionCatalogPort.CatalogSkill::id)
                 .collect(Collectors.toUnmodifiableSet());
         Map<CoverageKey, Integer> coverage = findCoverage(skillIds);
 
         return new CapacityDetail(
-                occupation.id(),
-                occupation.version(),
+                jobPosition.id(),
+                jobPosition.version(),
                 Instant.now(clock),
-                occupation.roles().stream()
+                jobPosition.roles().stream()
                         .map(role -> new RoleCapacity(
                                 role.id(),
                                 role.skills().stream()
@@ -71,11 +71,11 @@ public final class BaselineBlueprintCapacityService implements BaselineBlueprint
                         .toList());
     }
 
-    private CatalogOccupation findOccupation(String organizationId, String occupationId) {
+    private CatalogJobPosition findJobPosition(String organizationId, String jobPositionId) {
         try {
-            return catalog.findAvailableOccupation(organizationId, occupationId)
-                    .orElseThrow(() -> new Failure(Code.NOT_FOUND, "Occupation is unavailable"));
-        } catch (BaselineOccupationCatalogPort.DependencyUnavailable failure) {
+            return catalog.findAvailableJobPosition(organizationId, jobPositionId)
+                    .orElseThrow(() -> new Failure(Code.NOT_FOUND, "JobPosition is unavailable"));
+        } catch (BaselineJobPositionCatalogPort.DependencyUnavailable failure) {
             throw new Failure(Code.DEPENDENCY_UNAVAILABLE, failure.getMessage());
         }
     }

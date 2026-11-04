@@ -1,4 +1,4 @@
-> **Current R4 behavior (2026-10-29):** new Module/content creation, reuse and Excel/ZIP import are based on skills and do not require an Occupation selection/grant. Historical occupation tags and the separate catalog intake workflow remain intact. L&D revision details show individually numbered Text/Video lesson cards. See the [current catalog refinement](../../../../features/Learning%20catalog/README.md#r4-local-refinement--2026-10-29) and [tested UI/manual checklist](../../../../testing/system/REQ-013-learning-content-R4.md). Older dated rules below are retained for traceability.
+> **Current R4 behavior (2026-10-29):** new Module/content creation, reuse and Excel/ZIP import are based on skills and do not require an Job Position selection/grant. Historical job position tags and the separate catalog intake workflow remain intact. L&D revision details show individually numbered Text/Video lesson cards. See the [current catalog refinement](../../../../features/Learning%20catalog/README.md#r4-local-refinement--2026-10-29) and [tested UI/manual checklist](../../../../testing/system/REQ-013-learning-content-R4.md). Older dated rules below are retained for traceability.
 
 > **Historical implementation record — retained during merge on 2026-10-29.** The current product contract is the [consolidated domain README](../../../../features/Learning%20catalog/README.md). This record preserves the previously implemented local slice, user decisions and dated evidence; it does not override Version 2 or the authenticated workspace integration. V27/V28 below refer to the historical Module migration lineage; merged source uses V33/V34.
 
@@ -30,7 +30,7 @@ Cập nhật Module trong scope được phép; bảo toàn tham chiếu nội d
 
 ## Confirmed Decisions — 2026-10-28
 
-- Expert có grant ở ít nhất một Occupation sở hữu Module được sửa Module, bao gồm Module của Expert khác. Không được đổi membership qua request sửa.
+- Expert có grant ở ít nhất một Job Position sở hữu Module được sửa Module, bao gồm Module của Expert khác. Không được đổi membership qua request sửa.
 - Chỉnh sửa phải được L&D duyệt trước khi phát hành. Với Module đã duyệt, tạo revision của gói Module/content/mapping; bản đang phát hành giữ nguyên cho tới khi revision mới được duyệt và phát hành.
 - Learner đang học tiếp tục bản đã bắt đầu; lượt học mới dùng bản phát hành mới. Bảo toàn content, mapping và historical pins tương ứng.
 - Có lịch sử ai sửa, khi nào, revision nào và thay đổi gì. Danh tính lấy từ actor đã xác thực; không cho client giả mạo và không dùng reviewedBy làm người sửa.
@@ -89,4 +89,4 @@ Application Developer currently has 11 required skills at Junior, 14 at Middle a
 
 ### Imported module intake — 2026-10-28
 
-[Explicit per-module intake](../../../../features/Learning%20module%20management/Receive%20Imported%20Module.md) adds a separate entry point: L&D assigns responsible Occupations; an assigned Expert receives the existing ID and bundled Markdown into a draft. `createdBy` remains null for unknown original authorship; assignment/acceptance identities and times are recorded separately. Only submitted drafts can be reviewed; first approval updates the existing graph identity. Imported drafts cannot be hard-deleted. Native creation retains generated ID/actual creator behavior. Source snapshots and edit/decision history remain separate.
+[Explicit per-module intake](../../../../features/Learning%20module%20management/Receive%20Imported%20Module.md) adds a separate entry point: L&D assigns responsible Job Positions; an assigned Expert receives the existing ID and bundled Markdown into a draft. `createdBy` remains null for unknown original authorship; assignment/acceptance identities and times are recorded separately. Only submitted drafts can be reviewed; first approval updates the existing graph identity. Imported drafts cannot be hard-deleted. Native creation retains generated ID/actual creator behavior. Source snapshots and edit/decision history remain separate.

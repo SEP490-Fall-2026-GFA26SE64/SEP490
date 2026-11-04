@@ -23,14 +23,15 @@ public class MemberActivationController {
     List<MemberActivationUseCase.PendingActivation> pending(@PathVariable UUID organizationId) { return activation.pending(organizationId); }
     @PostMapping("/api/v1/organizations/{organizationId}/subscription/activations")
     MemberActivationUseCase.Invitation invite(@PathVariable UUID organizationId,@Valid @RequestBody Invite input) {
-        return activation.invite(organizationId,new MemberActivationUseCase.Input(input.fullName(),input.email(),input.roles(),input.departmentId(),input.occupationReferenceId()));
+        return activation.invite(organizationId,new MemberActivationUseCase.Input(input.fullName(),input.email(),input.roles(),input.departmentId(),input.jobPositionReferenceId(),input.departmentName(),input.jobPositionName()));
     }
     @GetMapping("/api/v1/organizations/{organizationId}/subscription/member-references")
     List<MemberActivationUseCase.Reference> references(@PathVariable UUID organizationId) { return activation.references(organizationId); }
     @PostMapping("/api/v1/workspace-auth/activate")
     void activate(@Valid @RequestBody Activate input,HttpServletRequest request) { activation.activate(input.token(),input.password(),request.getRemoteAddr()); }
     record Invite(@NotBlank @Size(max=120) String fullName,@NotBlank @Size(max=254) String email,@NotEmpty Set<String> roles,
-                  UUID departmentId,UUID occupationReferenceId) {}
+                  @com.fasterxml.jackson.databind.annotation.JsonDeserialize(using = com.adaptlearngraph.dtos.SubscriptionDto.FlexibleUuidDeserializer.class) UUID departmentId,
+                  @com.fasterxml.jackson.databind.annotation.JsonDeserialize(using = com.adaptlearngraph.dtos.SubscriptionDto.FlexibleUuidDeserializer.class) UUID jobPositionReferenceId, String departmentName, String jobPositionName) {}
     record Activate(@NotBlank @Size(max=64) String token,@NotBlank @Size(max=256) String password) {
         @Override public String toString() { return "Activation[redacted]"; }
     }

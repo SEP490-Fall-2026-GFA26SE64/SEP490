@@ -38,7 +38,7 @@ import static com.adaptlearngraph.dtos.OfficialQuestionBankManifest.*;
 public class OfficialQuestionBankImportConfiguration {
     @ConfigurationProperties("question-bank.import")
     public record Properties(boolean enabled, String manifestResource, String manifestVersion, String expectedManifestSha256,
-            String scopeResource, String expectedScopeSha256, String expectedSourceSha256, String occupationId,
+            String scopeResource, String expectedScopeSha256, String expectedSourceSha256, String jobPositionId,
             UUID bankId, UUID ownerAccountId, UUID organizationId, String expectedJdbcUrl, boolean localSeed) {}
 
     @Bean
@@ -53,7 +53,7 @@ public class OfficialQuestionBankImportConfiguration {
                     "Local seeding requires explicit local/demo and excludes prod");
             require(settings.enabled() && settings.bankId() != null && settings.ownerAccountId() != null
                     && settings.organizationId() != null, "Explicit bank/owner/tenant required");
-            text(settings.expectedJdbcUrl()); text(settings.manifestVersion()); text(settings.occupationId());
+            text(settings.expectedJdbcUrl()); text(settings.manifestVersion()); text(settings.jobPositionId());
             for (String hash : new String[]{settings.expectedManifestSha256(), settings.expectedScopeSha256(), settings.expectedSourceSha256()}) {
                 require(hash != null && hash.matches("[0-9a-f]{64}"), "Explicit SHA256 pins required");
             }
@@ -64,7 +64,7 @@ public class OfficialQuestionBankImportConfiguration {
             var manifest = parse(manifestBytes, OfficialQuestionBankManifest.class);
             var scope = parse(scopeBytes, OfficialQuestionBankCatalog.Scope.class);
             require(settings.bankId().equals(manifest.questionBank().id())
-                    && settings.occupationId().equals(manifest.occupationId())
+                    && settings.jobPositionId().equals(manifest.jobPositionId())
                     && settings.manifestVersion().equals(manifest.manifestVersion())
                     && settings.expectedSourceSha256().equals(manifest.sourceSha256())
                     && settings.expectedScopeSha256().equals(manifest.scopeSha256()), "Configured import scope mismatch");

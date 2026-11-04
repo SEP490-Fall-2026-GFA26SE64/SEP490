@@ -40,9 +40,9 @@ The 2026-10-28 main/workspace integration updates the role-selection and baselin
 | [Subscription lifecycle](Subscription%20lifecycle/README.md#current-implementation) | API-backed plan selection/versioning, purchase, renewal, payment processing, periods and seats. Currency is currently VND-only. |
 | [Platform administration](Platform%20administration/README.md#current-implementation) | Real workspace listing/suspension; full organization administration and activity monitoring remain incomplete/prototype. |
 | [Workspace administration](Workspace%20administration/README.md#current-implementation) | Real account activation, member edits, single-role identity and billing access controls; settings/audit screens remain prototypes and catalog authorization is not fully integrated. |
-| [Departments and occupations](Departments%20and%20occupations/README.md#current-implementation) | Real member assignment to stored references; department CRUD, occupation management and occupation Expert assignments remain browser-only. |
+| [Departments and job positions](Departments%20and%20job positions/README.md#current-implementation) | Real member assignment to stored references; department CRUD, job position management and job position Expert assignments remain browser-only. |
 | [Role catalog](Role%20catalog/README.md#current-implementation) | Neo4j-backed roles and skill requirements with partial UI integration. Existing Expert publication conflicts with the required Expert-submit/L&D-publish workflow. |
-| [Learning catalog](Learning%20catalog/README.md#current-implementation) | Real micro-skill/prerequisite operations; assigned-occupation boundaries are incomplete. Modules/content/approval are prototypes. |
+| [Learning catalog](Learning%20catalog/README.md#current-implementation) | Real micro-skill/prerequisite operations; assigned-job position boundaries are incomplete. Modules/content/approval are prototypes. |
 | [Assessment workflows](Assessment%20workflows/README.md#current-implementation) | Real-session baseline configuration, attempts/scoring/results with tenant resource/readiness guards. Module/RIASEC slices and content/model provisioning remain incomplete. |
 | [Role guidance](Role%20guidance/README.md#current-implementation) | Authenticated organization-scoped role selection connected to baseline readiness/results; AI-generated guidance remains unimplemented. |
 | [Employee experience](Employee%20experience/README.md#current-implementation) | Real skill browsing mixed with local profile, tracking, gaps, progress and pathway demonstrations. |
@@ -81,7 +81,7 @@ The 2026-10-28 main/workspace integration updates the role-selection and baselin
 | [Subscription lifecycle](Subscription%20lifecycle/README.md) | 6 |
 | [Platform administration](Platform%20administration/README.md) | 2 |
 | [Workspace administration](Workspace%20administration/README.md) | 5 |
-| [Departments and occupations](Departments%20and%20occupations/README.md) | 3 |
+| [Departments and job positions](Departments%20and%20job positions/README.md) | 3 |
 | [Role catalog](Role%20catalog/README.md) | 4 |
 | [Learning catalog](Learning%20catalog/README.md) | 5 |
 | [Assessment workflows](Assessment%20workflows/README.md) | 6 |
@@ -105,13 +105,13 @@ The 2026-10-28 main/workspace integration updates the role-selection and baselin
 | [FR-02.02](Subscription%20lifecycle/README.md#fr-02-02) | Platform Administrator | Configure subscriptions | Subscription lifecycle |
 | [FR-02.03](Platform%20administration/README.md#fr-02-03) | Platform Administrator | Monitor platform activity | Platform administration |
 | [FR-03.01](Workspace%20administration/README.md#fr-03-01) | System Administrator | Manage user accounts | Workspace administration |
-| [FR-03.02](Departments%20and%20occupations/README.md#fr-03-02) | System Administrator | Manage departments | Departments and occupations |
+| [FR-03.02](Departments%20and%20job positions/README.md#fr-03-02) | System Administrator | Manage departments | Departments and job positions |
 | [FR-03.03](Workspace%20administration/README.md#fr-03-03) | System Administrator | Manage roles and permissions | Workspace administration |
 | [FR-03.04](Workspace%20administration/README.md#fr-03-04) | System Administrator | Manage system configuration | Workspace administration |
 | [FR-03.05](Workspace%20administration/README.md#fr-03-05) | System Administrator | Monitor system activity | Workspace administration |
 | [FR-03.06](Subscription%20lifecycle/README.md#fr-03-06) | System Administrator | Manage organization subscription | Subscription lifecycle |
-| [FR-04.01](Departments%20and%20occupations/README.md#fr-04-01) | L&D Manager | Manage occupations | Departments and occupations |
-| [FR-04.02](Departments%20and%20occupations/README.md#fr-04-02) | L&D Manager | Assign Experts | Departments and occupations |
+| [FR-04.01](Departments%20and%20job positions/README.md#fr-04-01) | L&D Manager | Manage job positions | Departments and job positions |
+| [FR-04.02](Departments%20and%20job positions/README.md#fr-04-02) | L&D Manager | Assign Experts | Departments and job positions |
 | [FR-04.03](Role%20catalog/README.md#fr-04-03) | L&D Manager | Manage target roles | Role catalog |
 | [FR-04.04](Role%20catalog/README.md#fr-04-04) | L&D Manager | Manage target role publication | Role catalog |
 | [FR-04.05](Assessment%20workflows/README.md#fr-04-05) | L&D Manager | Manage baseline assessment configuration | Assessment workflows |

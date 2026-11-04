@@ -8,7 +8,7 @@ import com.adaptlearngraph.repository.InitialCatalogPort;
 import com.adaptlearngraph.repository.InitialPathwayPorts;
 import com.adaptlearngraph.repository.InitialPathwayStore;
 import com.adaptlearngraph.repository.InitialPlanningPorts;
-import com.adaptlearngraph.repository.EmployeeOccupationProfileJpaRepository;
+import com.adaptlearngraph.repository.EmployeeJobPositionProfileJpaRepository;
 import com.adaptlearngraph.repository.InitialPathwayReceiptJpaRepository;
 import com.adaptlearngraph.repository.InitialPathwayRepositories;
 import com.adaptlearngraph.repository.JpaInitialPathways;
@@ -51,7 +51,7 @@ public abstract class InitialPathwayComponents {
     }
     @Bean Coordination initialCoordination(CurrentRoleSelectionStore store,com.adaptlearngraph.services.RoleBaselineFlow.Catalog catalog) { return new CurrentSelectionCoordination(store,catalog); }
     @Bean InitialPathwayRepositories initialPathwayRepositories(BeanFactory beans) { return InitialPathwayRepositories.from(beans::getBean); }
-    @Bean Profiles initialProfiles(EmployeeOccupationProfileJpaRepository profiles,ObjectMapper mapper) { return new JpaInitialProfiles(profiles,mapper); }
+    @Bean Profiles initialProfiles(EmployeeJobPositionProfileJpaRepository profiles,ObjectMapper mapper) { return new JpaInitialProfiles(profiles,mapper); }
     @Bean InitialPathwayStore initialStore(InitialPathwayRepositories data,Codec codec,PlatformTransactionManager manager,Environment environment) {
         return new JpaInitialPathways(data,codec,new TransactionTemplate(manager),
                 environment.acceptsProfiles(org.springframework.core.env.Profiles.of("workspace-baseline & !local-baseline-demo & !prod")));
@@ -95,7 +95,7 @@ public abstract class InitialPathwayComponents {
                     java.nio.file.Files.readAllBytes(java.nio.file.Path.of(env.getProperty("pathway.initial.catalog.history-v010-file","/seed/baseline-history-v010.json"))));
                 if(!com.adaptlearngraph.constants.DevelopmentWorkspace.enabled(env))return original;
                 var se=LocalSeedSemantics.softwareDevelopment(json,LocalDemoIdentity.ORG,java.nio.file.Files.readAllBytes(java.nio.file.Path.of(env.getProperty("pathway.initial.catalog.seed-file","/seed/ontology_seed.json"))));
-                return (binding,profile)->com.adaptlearngraph.config.SoftwareDevelopmentSeed.OCCUPATION.equals(binding.occupationId())
+                return (binding,profile)->com.adaptlearngraph.config.SoftwareDevelopmentSeed.JOB_POSITION.equals(binding.jobPositionId())
                         ? se.resolve(binding,profile) : original.resolve(binding,profile);
             }
             catch(java.io.IOException invalid){throw new IllegalStateException("Local compatibility source unavailable",invalid);}

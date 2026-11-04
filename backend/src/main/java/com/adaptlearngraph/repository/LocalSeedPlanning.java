@@ -56,7 +56,7 @@ public final class LocalSeedPlanning implements ReadinessDefinitions, Availabili
     }
     @Override public PrerequisiteNeed prerequisite(Scope scope,Binding binding,Edge edge) {
         require(scope,binding,edge);
-        var profile=profiles.require(scope,binding.occupationId());var compatible=semantics.resolve(scope,binding,profile);
+        var profile=profiles.require(scope,binding.jobPositionId());var compatible=semantics.resolve(scope,binding,profile);
         var evidence=compatible.compatible().get(edge.prerequisiteSkillId());
         var mastery=evidence==null?null:evidence.mastery();
         String reason=mastery==null?compatible.unknownReasons().getOrDefault(edge.prerequisiteSkillId(),"NOT_IN_ORIGINAL_PROFILE"):null;

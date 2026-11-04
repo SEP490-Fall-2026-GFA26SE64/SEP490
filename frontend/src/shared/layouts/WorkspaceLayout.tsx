@@ -251,8 +251,8 @@ export function WorkspaceLayout({ children, identity: suppliedIdentity, onSignOu
   } else if (isLdManager) {
     actorTabs = [
       {
-        label: t('nav.occupations', 'Occupations'),
-        href: '/ld-manager/occupations',
+        label: t('nav.jobPositions', 'Job Positions'),
+        href: '/ld-manager/job-positions',
         icon: <FolderTree size={15} />,
       },
       {
@@ -455,8 +455,8 @@ export function WorkspaceLayout({ children, identity: suppliedIdentity, onSignOu
         path === '/manager'
       )
     }
-    if (itemHref === '/ld-manager/occupations') {
-      return path === '/ld-manager/occupations' || path === '/ld-manager/disciplines'
+    if (itemHref === '/ld-manager/job-positions' || itemHref === '/ld-manager/job-positions') {
+      return path === '/ld-manager/job-positions' || path === '/ld-manager/job-positions' || path === '/ld-manager/disciplines'
     }
     if (itemHref === '/ld-manager/approvals') {
       return ['/ld-manager/approvals', '/ld-manager/modules', '/ld-manager/learning-content'].includes(path)

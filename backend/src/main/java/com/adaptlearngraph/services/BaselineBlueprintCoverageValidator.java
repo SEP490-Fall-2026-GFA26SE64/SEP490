@@ -40,7 +40,7 @@ public final class BaselineBlueprintCoverageValidator {
         if (!shortages.isEmpty()) {
             throw new Failure(
                     Code.INSUFFICIENT_QUESTION_COVERAGE,
-                    "Published question coverage is insufficient for aggregate Occupation demand", shortages);
+                    "Published question coverage is insufficient for aggregate JobPosition demand", shortages);
         }
     }
 

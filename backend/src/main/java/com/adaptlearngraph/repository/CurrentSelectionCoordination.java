@@ -18,7 +18,7 @@ public final class CurrentSelectionCoordination implements Coordination {
         // Remote preparation precedes the short PostgreSQL transaction. Binding owner revalidates the token at commit.
         var role=catalog.roles(scope.organizationId()).stream().filter(r -> r.id().equals(binding.roleId())).findFirst()
                 .orElseThrow(()->new Failure(404,"ROLE_NOT_AVAILABLE"));
-        if (!role.occupationId().equals(binding.occupationId()) || !role.fingerprint().equals(binding.catalogFingerprint())
+        if (!role.jobPositionId().equals(binding.jobPositionId()) || !role.fingerprint().equals(binding.catalogFingerprint())
                 || role.levels().stream().noneMatch(l->l.id().equals(binding.levelId()))) throw new Failure(503,"INCOHERENT_ROLE_BINDING");
         var level=role.levels().stream().filter(l->l.id().equals(binding.levelId())).findFirst().orElseThrow();
         if(!role.name().equals(binding.roleName()) || !level.name().equals(binding.levelName()) || level.skills().size()!=binding.requirements().size())

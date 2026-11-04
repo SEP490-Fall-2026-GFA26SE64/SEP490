@@ -22,7 +22,7 @@ import java.util.UUID;
 
 /** Import envelope only. Source/review/rationale metadata does not extend public item DTOs. */
 public record OfficialQuestionBankManifest(String formatVersion, String manifestVersion, String catalogVersion,
-        String sourceSha256, String scopeSha256, String occupationId, Bank questionBank, List<Item> items) {
+        String sourceSha256, String scopeSha256, String jobPositionId, Bank questionBank, List<Item> items) {
     public static final ObjectMapper JSON = JsonMapper.builder()
             .addModule(new com.fasterxml.jackson.datatype.jsr310.JavaTimeModule())
             .enable(JsonParser.Feature.STRICT_DUPLICATE_DETECTION)
@@ -42,10 +42,10 @@ public record OfficialQuestionBankManifest(String formatVersion, String manifest
         require("official-question-bank-v1".equals(formatVersion), "Unsupported manifest format");
         text(manifestVersion); text(questionBank.name());
         require(questionBank.id() != null && items != null && items.size() == expectedSkills*9, "Incomplete question-bank item scope");
-        require(sourceSha256.equals(scope.sourceSha256()) && occupationId.equals(scope.occupationId())
+        require(sourceSha256.equals(scope.sourceSha256()) && jobPositionId.equals(scope.jobPositionId())
                 && catalogVersion.equals(scope.catalogVersion()), "Manifest/snapshot mismatch");
         Map<String, String> skills = scope.skills();
-        require(skills.size() == expectedSkills, "Incomplete Occupation skill scope");
+        require(skills.size() == expectedSkills, "Incomplete JobPosition skill scope");
         Set<UUID> versionIds = new HashSet<>();
         Set<String> identities = new HashSet<>();
         Set<String> prompts = new HashSet<>();

@@ -41,7 +41,7 @@ class BaselineBlueprintProductionBoundaryTest {
     void managementReadAndWriteRemainDeniedOutsideLocalProfile() throws Exception {
         mvc.perform(get("/api/v1/ld/baseline-assessments"))
                 .andExpect(status().isUnauthorized());
-        mvc.perform(post("/api/v1/ld/baseline-assessments/occupations/occ/blueprint-working-revisions")
+        mvc.perform(post("/api/v1/ld/baseline-assessments/job-positions/occ/blueprint-working-revisions")
                         .with(csrf()))
                 .andExpect(status().isUnauthorized());
     }

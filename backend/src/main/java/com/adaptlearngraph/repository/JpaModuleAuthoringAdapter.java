@@ -37,15 +37,15 @@ public final class JpaModuleAuthoringAdapter implements ModuleAuthoringPort {
             return work.get();
         });
     }
-    @Override public List<String> occupations(Actor actor) {
-        return repositories.grants().activeOccupations(actor.organizationId(), actor.id());
+    @Override public List<String> jobPositions(Actor actor) {
+        return repositories.grants().activeJobPositions(actor.organizationId(), actor.id());
     }
     @Override public List<Grant> grants(String org) {
         return repositories.grants().activeGrants(org);
     }
-    @Override public void grant(String org, String expert, String occupation, boolean active) {
-        repositories.grants().save(org, expert, occupation, active);
-        repositories.grantAudit().insert(new ModuleGrantAuditEntity(null, org, expert, occupation, active, actor().id(), null));
+    @Override public void grant(String org, String expert, String jobPosition, boolean active) {
+        repositories.grants().save(org, expert, jobPosition, active);
+        repositories.grantAudit().insert(new ModuleGrantAuditEntity(null, org, expert, jobPosition, active, actor().id(), null));
     }
     private String json(Object value) {
         try { return mapper.writeValueAsString(value); } catch (JsonProcessingException e) { throw new IllegalStateException("Cannot encode authoring package", e); }

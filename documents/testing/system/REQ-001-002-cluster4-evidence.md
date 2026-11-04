@@ -4,7 +4,7 @@
 
 Date: 2026-10-23, Asia/Bangkok. Product HEAD: 480b890352e26612d1991aab4e098724ce68ac41 plus uncommitted scoped changes. The user approved Cluster 4 and the C3-UI-01 shared-header repair. The runtime repair was compiled/built before the affected previously approved executable scope was rerun; evidence synchronization followed. Cluster 5, commit and push remain unapproved.
 
-The visible flow remains Role selection → full Occupation baseline when required → PostgreSQL result/profile/history → safe Employee views. This update records executed behavior and limitations; it changes no business contract.
+The visible flow remains Role selection → full Job Position baseline when required → PostgreSQL result/profile/history → safe Employee views. This update records executed behavior and limitations; it changes no business contract.
 
 ## Current executable result
 
@@ -77,7 +77,7 @@ The 39 older adaptive-plan IDs require the following bounded interpretation. “
 | AB-A04 | Pass for I concurrent answer winner, stale/replay/body conflict | Reference technical fixture only |
 | AB-A05 | Partial — U boundary and I expired-answer/worker invalidation race | Every sufficient-evidence deadline completion branch unrun |
 | AB-A06 | Pass for U/I/S early MANUAL invalidation, no mastery, linked replacement | Confirmed behavior supersedes old reject-and-continue wording |
-| AB-A07 | Partial — I/S no same-Occupation retake; independent profiles | Every second-Occupation start/catalog change combination unrun |
+| AB-A07 | Partial — I/S no same-Job Position retake; independent profiles | Every second-Job Position start/catalog change combination unrun |
 | AB-A08 | Pass for I deactivate/start race and S existing pins after v2/deactivation | Production publication admission remains an owner dependency |
 | AB-A09 | Partial — U legacy scope; I original legacy result subset | Full legacy in-progress resume/answer/finalize upgrade journey unrun |
 | AB-A10 | Not run — legacy-current admission cutover/replay matrix | Separate upgrade fixture required |

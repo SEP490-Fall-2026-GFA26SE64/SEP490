@@ -97,7 +97,7 @@ class SubscriptionPlanApiIntegrationTest {
         assertEquals("Updated by real API",body(updated).path("fullName").asText());
         assertEquals(owner.email(),body(updated).path("email").asText());
         assertTrue(body(updated).path("departmentId").isNull());
-        assertTrue(body(updated).path("occupationName").isNull());
+        assertTrue(body(updated).path("jobPositionName").isNull());
         assertEquals(1,body(updated).path("revision").asInt());
         assertEquals("Updated by real API",body(get(browser,"/api/v1/workspace-auth/current")).path("fullName").asText());
         assertEquals(409,send(browser,"PUT",path,input).statusCode());

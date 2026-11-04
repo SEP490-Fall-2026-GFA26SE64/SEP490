@@ -71,7 +71,7 @@ const view: LearningView = {
         markdown: '',
         contentType: 'application/vnd.adapt-learning.lessons+json',
         contentVersion: '1',
-        occupationIds: [],
+        jobPositionIds: [],
         createdBy: 'expert',
         createdAt: '2026-10-29T00:00:00Z',
         lessons: [

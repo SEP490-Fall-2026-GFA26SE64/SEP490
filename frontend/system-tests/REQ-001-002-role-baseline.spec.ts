@@ -2,8 +2,8 @@ import { randomUUID } from 'node:crypto'
 import { expect, test, type APIRequestContext, type APIResponse } from '@playwright/test'
 const occ='OCC-15-1212.00'
 const root='/api/v1/employee'
-const manager='/api/v1/ld/adaptive-baseline-blueprints/occupations/'+occ
-type Role={id:string;name:string;occupationId:string}
+const manager='/api/v1/ld/adaptive-baseline-blueprints/job-positions/'+occ
+type Role={id:string;name:string;jobPositionId:string}
 type Attempt={id:string;revision:number;state:string;deadlineAt:string;items:{position:number;itemVersionId:string;options:{id:string;text:string}[];selectedOptionId:string|null}[]}
 async function json<T>(response:APIResponse):Promise<T>{expect(response.status(),await response.text()).toBe(200);return await response.json() as T}
 async function persona(request:APIRequestContext,who:string){expect((await request.post('/api/v1/local-baseline-demo/session',{data:{persona:who}})).status()).toBe(204)}
@@ -13,18 +13,18 @@ async function choose(request:APIRequestContext,id:string){
 }
 async function roles(request:APIRequestContext){return json<Role[]>(await request.get(root+'/target-roles'))}
 async function start(request:APIRequestContext,key=randomUUID()){return json<Attempt>(await request.post(root+'/baseline-attempts',{headers:{'Idempotency-Key':key},data:{entry:'SELECTED_ROLE'}}))}
-async function workspace(request:APIRequestContext){return json<{working:null|{workingRevisionId:string;revision:number;configuration:{name:string;occupationBounds:{maxQuestions:number;timeLimitSeconds:number}}};current:null|{id:{blueprintId:string;version:number};configuration:{name:string;occupationBounds:{maxQuestions:number;timeLimitSeconds:number}}};activation:{revision:number;current:{blueprintId:string;version:number}|null}|null}>(await request.get(manager))}
+async function workspace(request:APIRequestContext){return json<{working:null|{workingRevisionId:string;revision:number;configuration:{name:string;jobPositionBounds:{maxQuestions:number;timeLimitSeconds:number}}};current:null|{id:{blueprintId:string;version:number};configuration:{name:string;jobPositionBounds:{maxQuestions:number;timeLimitSeconds:number}}};activation:{revision:number;current:{blueprintId:string;version:number}|null}|null}>(await request.get(manager))}
 test.beforeAll(async({playwright})=>{
  const request=await playwright.request.newContext({baseURL:'http://127.0.0.1:28088'})
  await persona(request,'ld')
  const before=await workspace(request)
  if (before.current) {
-  expect(before.current.configuration).toEqual({name:'C3 isolated baseline v1',occupationBounds:{maxQuestions:45,timeLimitSeconds:3000}})
+  expect(before.current.configuration).toEqual({name:'C3 isolated baseline v1',jobPositionBounds:{maxQuestions:45,timeLimitSeconds:3000}})
   expect(before.current.id.version).toBe(1)
   await request.dispose();return // Worker restart: recognize this run's immutable fixture; never reset it.
  }
  expect(before.working).toBeNull()
- const draft=await json<{workingRevisionId:string;revision:number}>(await request.put(manager+'/working',{headers:{'Idempotency-Key':'c3-fixture-save-v1'},data:{expectedRevision:0,expectedWorkingRevisionId:null,configuration:{name:'C3 isolated baseline v1',occupationBounds:{maxQuestions:45,timeLimitSeconds:3000}}}}))
+ const draft=await json<{workingRevisionId:string;revision:number}>(await request.put(manager+'/working',{headers:{'Idempotency-Key':'c3-fixture-save-v1'},data:{expectedRevision:0,expectedWorkingRevisionId:null,configuration:{name:'C3 isolated baseline v1',jobPositionBounds:{maxQuestions:45,timeLimitSeconds:3000}}}}))
  await json(await request.post(manager+'/finalize',{headers:{'Idempotency-Key':'c3-fixture-activate-v1'},data:{workingRevisionId:draft.workingRevisionId,expectedWorkingRevision:draft.revision,expectedActivationRevision:0,expectedCurrent:null}}))
  await request.dispose()
 })
@@ -61,7 +61,7 @@ test('VB01/02/03/MM04 version-specific settings, sole Draft, confirmed discard',
  await page.getByRole('button',{name:'Save draft',exact:true}).click()
  await expect(page).toHaveURL(/draft=/)
  const saved=await workspace(page.request)
- expect(saved.working!.configuration.occupationBounds).toEqual({maxQuestions:100,timeLimitSeconds:6600})
+ expect(saved.working!.configuration.jobPositionBounds).toEqual({maxQuestions:100,timeLimitSeconds:6600})
  expect(saved.current).toEqual(before.current)
  await page.getByRole('button',{name:'Create new',exact:true}).click()
  await expect(page.getByText('A draft already exists. Continue editing it, or delete it before creating a new draft.',{exact:true})).toBeVisible()
@@ -74,9 +74,9 @@ test('VB01/02/03/MM04 version-specific settings, sole Draft, confirmed discard',
  await expect.poll(async()=> (await workspace(page.request)).working).toBeNull()
  expect((await workspace(page.request)).current).toEqual(before.current)
 })
-test('RB04/09/10/16 empty other-Occupation baseline and actor boundaries',async({page,playwright})=>{
+test('RB04/09/10/16 empty other-JobPosition baseline and actor boundaries',async({page,playwright})=>{
  await persona(page.request,'employee-b')
- const list=await roles(page.request);const other=list.find(r=>r.occupationId!==occ)!
+ const list=await roles(page.request);const other=list.find(r=>r.jobPositionId!==occ)!
  await choose(page.request,other.id)
  const view=await json<{progress:{state:string}}>(await page.request.get(root+'/target-role-selection'))
  expect(view.progress.state).toBe('NO_BASELINE')
@@ -90,14 +90,14 @@ test('RB04/09/10/16 empty other-Occupation baseline and actor boundaries',async(
  await denied.dispose()
 })
 test('RB13/15/MM05 answer review, early invalidation, no profile and linked replacement',async({page})=>{
- await persona(page.request,'employee-c');const role=(await roles(page.request)).find(r=>r.occupationId===occ)!
+ await persona(page.request,'employee-c');const role=(await roles(page.request)).find(r=>r.jobPositionId===occ)!
  await choose(page.request,role.id);await page.goto('/employee/target-roles')
  await page.getByRole('button',{name:'Take required baseline',exact:true}).click()
  await expect(page).toHaveURL(/baseline-assessment\//)
  const id=page.url().split('/').at(-1)!
  const attempt=await json<Attempt>(await page.request.get(root+'/baseline-attempts/'+id))
  const selection=await json<{selection:{selectionId:string}}>(await page.request.get(root+'/target-role-selection'))
- const another=(await roles(page.request)).find(r=>r.occupationId===occ&&r.id!==role.id)!
+ const another=(await roles(page.request)).find(r=>r.jobPositionId===occ&&r.id!==role.id)!
  expect((await page.request.put(root+'/target-role-selection',{headers:{'Idempotency-Key':randomUUID()},data:{roleId:another.id,expectedCurrentSelectionId:selection.selection.selectionId}})).status()).toBe(409)
  await page.getByRole('radio').first().check()
  await page.getByRole('button',{name:'Save answer and continue',exact:true}).click()
@@ -115,7 +115,7 @@ test('RB13/15/MM05 answer review, early invalidation, no profile and linked repl
  expect(result.state).toBe('INVALIDATED');expect(result.completionReason).toBe('MANUAL');expect(result.replacementAttemptId).toBe(replacement.id)
 })
 test('RB07/14/MM01/03 result/history/profile preserve full scope and sufficient evidence',async({page,playwright})=>{
- await persona(page.request,'employee-a');const role=(await roles(page.request)).find(r=>r.occupationId===occ)!
+ await persona(page.request,'employee-a');const role=(await roles(page.request)).find(r=>r.jobPositionId===occ)!
  await choose(page.request,role.id);let attempt=await start(page.request)
  for(let i=0;i<45&&attempt.state==='IN_PROGRESS';i++){
   const item=attempt.items.at(-1)!
@@ -146,7 +146,7 @@ test('RB14/VB04 replacement v2 affects new learner, old profile and attempts sta
  expect(prior.progress.baselineVersion).toBe(1)
  const pinned=await json<Attempt>(await request.get(root+'/baseline-attempts/'+prior.progress.attemptId))
  await persona(request,'ld');const previous=await workspace(request)
- const draft=await json<{workingRevisionId:string;revision:number}>(await request.put(manager+'/working',{headers:{'Idempotency-Key':'c3-v2-save'},data:{expectedRevision:0,expectedWorkingRevisionId:null,configuration:{name:'C3 isolated baseline v2',occupationBounds:{maxQuestions:50,timeLimitSeconds:3000}}}}))
+ const draft=await json<{workingRevisionId:string;revision:number}>(await request.put(manager+'/working',{headers:{'Idempotency-Key':'c3-v2-save'},data:{expectedRevision:0,expectedWorkingRevisionId:null,configuration:{name:'C3 isolated baseline v2',jobPositionBounds:{maxQuestions:50,timeLimitSeconds:3000}}}}))
  const v2=await json<{id:{blueprintId:string;version:number}}>(await request.post(manager+'/finalize',{headers:{'Idempotency-Key':'c3-v2-activate'},data:{workingRevisionId:draft.workingRevisionId,expectedWorkingRevision:draft.revision,expectedActivationRevision:previous.activation!.revision,expectedCurrent:previous.current!.id}}))
  expect(v2.id.version).toBe(2)
  await persona(request,'employee-c')
@@ -156,7 +156,7 @@ test('RB14/VB04 replacement v2 affects new learner, old profile and attempts sta
  await persona(request,'employee-a')
  expect(await json(await request.get(root+'/target-role-selection/mastery'))).toEqual(profilesBefore)
  expect((await json<{progress:{state:string;baselineVersion:number}}>(await request.get(root+'/target-role-selection'))).progress).toMatchObject({state:'COMPLETE',baselineVersion:1})
- await persona(request,'employee-b');const security=(await roles(request)).find(r=>r.occupationId===occ)!
+ await persona(request,'employee-b');const security=(await roles(request)).find(r=>r.jobPositionId===occ)!
  await choose(request,security.id);const fresh=await start(request)
  expect((await json<{progress:{baselineVersion:number}}>(await request.get(root+'/target-role-selection'))).progress.baselineVersion).toBe(2)
  await persona(request,'ld');const active=await workspace(request)

@@ -1,16 +1,16 @@
-import type { BlueprintDraft, BlueprintRole, OccupationDetail } from './baselineBlueprintApi'
+import type { BlueprintDraft, BlueprintRole, JobPositionDetail } from './baselineBlueprintApi'
 import { difficultyQuestionTotal, roleQuestionTotal } from './baselineBlueprintForm'
 import { defaultScoreWeights, isValidScoreWeights, weightsFromRole } from './baselineBlueprintWeights'
 
 export function toBlueprintDraft(
   name: string,
-  occupation: Pick<OccupationDetail, 'id' | 'name'>,
+  jobPosition: Pick<JobPositionDetail, 'id' | 'name'>,
   roles: BlueprintRole[],
 ): BlueprintDraft {
   return {
     name: name.trim(),
-    occupationId: occupation.id,
-    occupationNameSnapshot: occupation.name,
+    jobPositionId: jobPosition.id,
+    jobPositionNameSnapshot: jobPosition.name,
     roles: roles.map(({ totalQuestionCount: _ignored, ...role }) => {
       const participates = roleQuestionTotal(role) > 0
       return {

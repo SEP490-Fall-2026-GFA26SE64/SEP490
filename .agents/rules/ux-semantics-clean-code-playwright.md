@@ -22,7 +22,7 @@ The evaluation committee judges the system through the eyes of an enterprise use
 
 | Context | ❌ Anti-Pattern (Developer / Spec Dump) | ✅ Evaluation-Grade User Copy (Human-Centric & Actionable) |
 | :--- | :--- | :--- |
-| **Page Header Description** | *"Structure internal business units, assign department leadership, align O\*NET occupations, and manage workforce capacity (5 units in TechNova Cognitive Labs)."* | *"Organize company departments, assign leadership, and track team competency coverage across your business units."* |
+| **Page Header Description** | *"Structure internal business units, assign department leadership, align O\*NET job positions, and manage workforce capacity (5 units in TechNova Cognitive Labs)."* | *"Organize company departments, assign leadership, and track team competency coverage across your business units."* |
 | **Target Roles Catalog** | *"Configure micro-skill prerequisites, proficiency thresholds (1–100%), and weighting."* | *"Define target job roles, customize required skills, and establish benchmark proficiency targets for your workforce."* |
 | **Pathway Approval Queue** | *"Review initial pathways generated from employee baseline assessments, customize module inclusions, request system replanning, and approve for learning."* | *"Review adaptive learning pathways tailored for your team members, adjust recommended modules, and approve personalized study plans."* |
 | **Empty State** | *"No records in table departments."* | *"No departments created yet. Add your first department to start structuring teams and assigning managers."* |

@@ -1,3 +1,4 @@
+import { workspaceFetch as fetch } from '../../../shared/api/workspaceFetch'
 import { OntologyGraphPlayground } from './components/OntologyGraphPlayground'
 import {
   AlertCircle,
@@ -68,6 +69,7 @@ import {
   type CompetencyModel,
   type MicroSkillModel,
   type PrerequisiteEdge,
+  type TargetRoleModel,
 } from '../data/ldManagerMockData'
 
 const ONTOLOGY_PRESETS: ImportPreset[] = [
@@ -185,7 +187,42 @@ export function CompetencyOntologyPage() {
   const effectiveOrgId = resolveWorkspaceOrgId(session?.identity?.organizationId || activeCompany?.id)
 
   // State for active tab
-  const [activeTab, setActiveTab] = React.useState('skills')
+  const [activeTab, setActiveTab] = React.useState('graph')
+  // Target Roles State for Explore Graph Authoring
+  const [targetRoles, setTargetRoles] = React.useState<TargetRoleModel[]>(() => {
+    const active = getActiveCompany()
+    return active?.targetRoles ?? []
+  })
+
+  const handleUpdateTargetRole = React.useCallback(async (updatedRole: TargetRoleModel) => {
+    setTargetRoles((prev) => prev.map((r) => (r.id === updatedRole.id ? updatedRole : r)))
+    updateActiveCompany((comp) => ({
+      ...comp,
+      targetRoles: (comp.targetRoles || []).map((r) => (r.id === updatedRole.id ? updatedRole : r)),
+    }))
+    try {
+      await fetch(`/api/v1/organizations/${effectiveOrgId}/target-roles/${updatedRole.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-User-Role': 'DOMAIN_EXPERT',
+          'X-User-Id': session?.identity?.accountId || '',
+        },
+        body: JSON.stringify({
+          name: updatedRole.title,
+          description: updatedRole.description,
+          levels: updatedRole.levels || ['Junior', 'Middle', 'Senior'],
+          levelCompetencies: updatedRole.levelCompetencies || {},
+          competencyIds: updatedRole.competencyIds || [],
+          skillTargets: updatedRole.skillTargets || [],
+        }),
+      })
+    } catch (err) {
+      console.error('Failed to sync updated target role:', err)
+    }
+    window.dispatchEvent(new CustomEvent('target_roles_updated', { detail: updatedRole }))
+  }, [effectiveOrgId, session?.identity?.accountId])
+
 
   // Search, filter, and pagination states for Tab 1 (Micro-skills)
   const [skillSearchQuery, setSkillSearchQuery] = React.useState('')
@@ -271,10 +308,16 @@ export function CompetencyOntologyPage() {
       const orgId = effectiveOrgId
 
       try {
-        const [liveSkills, liveComps, livePrereqs] = await Promise.all([
+        const [liveSkills, liveComps, livePrereqs, liveRolesRes] = await Promise.all([
           fetchMicroSkills(orgId).catch(() => []),
           fetchCompetencies(orgId).catch(() => []),
           fetchPrerequisites(orgId).catch(() => []),
+          fetch(`/api/v1/organizations/${orgId}/target-roles`, {
+            headers: {
+              'X-User-Role': 'DOMAIN_EXPERT',
+              'X-User-Id': session?.identity?.accountId || '',
+            },
+          }).catch(() => null),
         ])
 
         let resolvedSkills: MicroSkillModel[] = active?.microSkills ?? []
@@ -335,6 +378,35 @@ export function CompetencyOntologyPage() {
           setPrerequisites(mappedPrereqs)
         } else {
           setPrerequisites(active?.prerequisites ?? [])
+        }
+
+        if (liveRolesRes && liveRolesRes.ok) {
+          const rolesData = await liveRolesRes.json()
+          if (Array.isArray(rolesData)) {
+            const mappedRoles: TargetRoleModel[] = rolesData.map((r: any) => ({
+              id: String(r.id || ''),
+              stableId: String(r.code || ''),
+              code: String(r.code || ''),
+              title: String(r.name || ''),
+              familyCode: String(r.familyCode || ''),
+              track: r.track || 'PROFESSIONAL',
+              assignedExpertId: r.assignedExpertId ? String(r.assignedExpertId) : undefined,
+              description: String(r.description || ''),
+              responsibilities: Array.isArray(r.responsibilities) ? r.responsibilities : [],
+              version: String(r.version || '1.0'),
+              status: (String(r.status || '').toLowerCase() === 'active'
+                ? 'published'
+                : String(r.status || 'draft').toLowerCase()) as TargetRoleModel['status'],
+              rejectionReason: String(r.rejectionReason || ''),
+              levels: Array.isArray(r.levels) && r.levels.length > 0 ? r.levels : ['Junior', 'Middle', 'Senior'],
+              levelCompetencies: (r.levelCompetencies as Record<string, string[]>) || {},
+              competencyIds: Array.isArray(r.competencyIds) ? r.competencyIds : [],
+              skillTargets: Array.isArray(r.skillTargets) ? r.skillTargets : [],
+              activeEnrollments: 0,
+              updatedAt: String(r.updatedAt || new Date().toISOString()),
+            }))
+            setTargetRoles(mappedRoles)
+          }
         }
       } catch {
         setMicroSkills(active?.microSkills ?? [])
@@ -1144,17 +1216,17 @@ export function CompetencyOntologyPage() {
         {/* Tabbed Console - Natural flex-wrap width prevents overlap */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
           <TabsList className="inline-flex flex-wrap h-auto p-1 bg-muted/80 rounded-lg gap-1 border border-border">
-            <TabsTrigger value="skills" className="px-3.5 py-1.5 text-xs font-semibold whitespace-nowrap">
-              Micro-skills
+            <TabsTrigger value="graph" className="px-3.5 py-1.5 text-xs font-semibold whitespace-nowrap">
+              Explore Graph
             </TabsTrigger>
             <TabsTrigger value="competencies" className="px-3.5 py-1.5 text-xs font-semibold whitespace-nowrap">
               Competencies
             </TabsTrigger>
+            <TabsTrigger value="skills" className="px-3.5 py-1.5 text-xs font-semibold whitespace-nowrap">
+              Micro-skills
+            </TabsTrigger>
             <TabsTrigger value="prerequisites" className="px-3.5 py-1.5 text-xs font-semibold whitespace-nowrap">
               Skill Prerequisites
-            </TabsTrigger>
-            <TabsTrigger value="graph" className="px-3.5 py-1.5 text-xs font-semibold whitespace-nowrap">
-              Explore Graph
             </TabsTrigger>
           </TabsList>
 
@@ -1573,6 +1645,8 @@ export function CompetencyOntologyPage() {
               microSkills={microSkills}
               competencies={competencies}
               prerequisites={prerequisites}
+              targetRoles={targetRoles}
+              onUpdateTargetRole={handleUpdateTargetRole}
               organizationId={effectiveOrgId}
               activeTab={activeTab}
               onRefreshData={handleSync}

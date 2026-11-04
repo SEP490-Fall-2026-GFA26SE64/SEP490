@@ -33,16 +33,18 @@ export interface Workspace { organizationId: string; name: string; status: strin
 export interface Member {
   membershipId: string; fullName: string | null; email: string; active: boolean; roles: string[]; revision: number
   accountId: string; accountActive: boolean; departmentId: string | null; departmentName: string | null
-  occupationReferenceId: string | null; occupationName: string | null
+  jobPositionReferenceId: string | null; jobPositionName: string | null
 }
 export interface PendingActivation {
   activationId: string; fullName: string; email: string; roles: string[]; departmentId: string | null; departmentName: string | null
-  occupationReferenceId: string | null; occupationName: string | null; createdAt: string; expiresAt: string; state: string; deliveryStatus: string
+  jobPositionReferenceId: string | null; jobPositionName: string | null; createdAt: string; expiresAt: string; state: string; deliveryStatus: string
 }
 export interface MemberProfileInput {
-  fullName: string; roles: string[]; departmentId: string | null; occupationReferenceId: string | null; revision: number
+  fullName: string; roles: string[]; departmentId: string | null; jobPositionReferenceId: string | null; revision: number
+  departmentName?: string | null
+  jobPositionName?: string | null
 }
-export interface Reference { departmentId: string; departmentName: string; occupationReferenceId: string; occupationName: string }
+export interface Reference { departmentId: string; departmentName: string; jobPositionReferenceId: string; jobPositionName: string }
 export class SubscriptionApiError extends Error {
   readonly status: number
   readonly code: string
@@ -191,7 +193,7 @@ function parseMember(value: unknown): Member {
   return { membershipId: text(v.membershipId), accountId: text(v.accountId), fullName: nullable(v.fullName, text), email: text(v.email),
     active: boolean(v.active), accountActive: boolean(v.accountActive), roles: list(v.roles, text), revision: number(v.revision),
     departmentId: nullable(v.departmentId, text), departmentName: nullable(v.departmentName, text),
-    occupationReferenceId: nullable(v.occupationReferenceId, text), occupationName: nullable(v.occupationName, text) }
+    jobPositionReferenceId: nullable(v.jobPositionReferenceId, text), jobPositionName: nullable(v.jobPositionName, text) }
 }
 export async function updateMemberProfile(organization: string, memberId: string, input: MemberProfileInput): Promise<Member> {
   return parseMember(await request(`/api/v1/organizations/${organization}/subscription/members/${memberId}/profile`, 'PUT', input))
@@ -201,7 +203,7 @@ export async function getPendingActivations(organization: string): Promise<Pendi
     const v = object(value)
     return { activationId: text(v.activationId), fullName: text(v.fullName), email: text(v.email), roles: list(v.roles, text),
       departmentId: nullable(v.departmentId, text), departmentName: nullable(v.departmentName, text),
-      occupationReferenceId: nullable(v.occupationReferenceId, text), occupationName: nullable(v.occupationName, text),
+      jobPositionReferenceId: nullable(v.jobPositionReferenceId, text), jobPositionName: nullable(v.jobPositionName, text),
       createdAt: text(v.createdAt), expiresAt: text(v.expiresAt), state: text(v.state), deliveryStatus: text(v.deliveryStatus) }
   })
 }
@@ -209,6 +211,6 @@ export async function getReferences(organization: string): Promise<Reference[]> 
   return list(await request(`/api/v1/organizations/${organization}/subscription/member-references`), value => {
     const v = object(value)
     return { departmentId: text(v.departmentId), departmentName: text(v.departmentName),
-      occupationReferenceId: text(v.occupationReferenceId), occupationName: text(v.occupationName) }
+      jobPositionReferenceId: text(v.jobPositionReferenceId), jobPositionName: text(v.jobPositionName) }
   })
 }

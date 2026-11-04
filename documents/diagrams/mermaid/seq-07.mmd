@@ -1,5 +1,5 @@
 ---
-title: "SEQ-07 - Occupation baseline activation with preserved history"
+title: "SEQ-07 - Job Position baseline activation with preserved history"
 config: {"theme":"base","fontFamily":"Segoe UI, Arial, sans-serif","themeVariables":{"fontFamily":"Segoe UI, Arial, sans-serif","fontSize":"16px","primaryColor":"#ffffff","primaryTextColor":"#0f1729","primaryBorderColor":"#64748b","secondaryColor":"#fef3eb","tertiaryColor":"#ffffff","lineColor":"#64748b","textColor":"#0f1729","mainBkg":"#ffffff","background":"#ffffff","clusterBkg":"#ffffff","clusterBorder":"#64748b","edgeLabelBackground":"#ffffff","titleColor":"#0f1729","noteBkgColor":"#fef3eb","noteTextColor":"#0f1729","noteBorderColor":"#e6650f","actorBkg":"#fef3eb","actorBorder":"#e6650f","actorTextColor":"#0f1729","actorLineColor":"#64748b","signalColor":"#64748b","signalTextColor":"#0f1729","labelBoxBkgColor":"#ffffff","labelBoxBorderColor":"#64748b","labelTextColor":"#0f1729","loopTextColor":"#0f1729","activationBkgColor":"#fef3eb","activationBorderColor":"#e6650f","sequenceNumberColor":"#ffffff","secondaryBorderColor":"#64748b","tertiaryBorderColor":"#64748b","secondaryTextColor":"#0f1729","tertiaryTextColor":"#0f1729"},"sequence":{"actorMargin":40,"width":170,"height":56,"diagramMarginX":24,"diagramMarginY":24,"boxMargin":12,"boxTextMargin":8,"noteMargin":16,"messageMargin":38,"mirrorActors":false,"wrap":true,"wrapPadding":12,"actorFontSize":15,"messageFontSize":14,"noteFontSize":14,"actorFontFamily":"Segoe UI, Arial, sans-serif","messageFontFamily":"Segoe UI, Arial, sans-serif","noteFontFamily":"Segoe UI, Arial, sans-serif"},"themeCSS":".actor-line { stroke-width: 1px; }"}
 ---
 sequenceDiagram
@@ -12,7 +12,7 @@ sequenceDiagram
   participant SDD_SEQ_07_Ready as Eligibility/catalog/model<br/>ports
   SDD_SEQ_07_LD->>SDD_SEQ_07_UI: save configuration
   SDD_SEQ_07_UI->>SDD_SEQ_07_Service: working ID + expected revision + key/body
-  SDD_SEQ_07_Service->>SDD_SEQ_07_Auth: require L and D, tenant, occupation and entitlement
+  SDD_SEQ_07_Service->>SDD_SEQ_07_Auth: require L and D, tenant, job position and entitlement
   SDD_SEQ_07_Service->>SDD_SEQ_07_DB: coordinate scope, compare Draft identity/revision
   SDD_SEQ_07_Service->>SDD_SEQ_07_DB: save Draft and immutable command receipt
   SDD_SEQ_07_Service-->>SDD_SEQ_07_UI: saved Draft/revision

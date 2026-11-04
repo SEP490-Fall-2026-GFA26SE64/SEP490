@@ -7,7 +7,7 @@ import com.adaptlearngraph.dtos.CompetencyDto.MemberSkillResponse;
 import com.adaptlearngraph.dtos.LearningModuleDto.LearningModuleResponse;
 import com.adaptlearngraph.dtos.MacroCompetencyResponse;
 import com.adaptlearngraph.dtos.MicroSkillResponse;
-import com.adaptlearngraph.dtos.OccupationResponse;
+import com.adaptlearngraph.dtos.JobPositionResponse;
 import com.adaptlearngraph.dtos.PrerequisiteResponse;
 import com.adaptlearngraph.dtos.SystemStatusResponse;
 import com.adaptlearngraph.dtos.TargetRoleResponse;
@@ -16,7 +16,7 @@ import com.adaptlearngraph.entities.domain.LearningModuleRecord;
 import com.adaptlearngraph.entities.domain.MacroCompetency;
 import com.adaptlearngraph.entities.domain.MicroSkill;
 import com.adaptlearngraph.entities.domain.MicroSkillId;
-import com.adaptlearngraph.entities.domain.Occupation;
+import com.adaptlearngraph.entities.domain.JobPosition;
 import com.adaptlearngraph.entities.domain.PrerequisiteEdge;
 import com.adaptlearngraph.entities.domain.RoleStatus;
 import com.adaptlearngraph.entities.domain.RoleTrack;
@@ -41,7 +41,7 @@ class CatalogMappingsTest {
 
     @Test
     void allCatalogRegistrarsValidateTogether() {
-        ModelMapper mapper = ModelMapperFactory.create(List.of(new OccupationMappings(), new CompetencyMappings(),
+        ModelMapper mapper = ModelMapperFactory.create(List.of(new JobPositionMappings(), new CompetencyMappings(),
                 new MacroCompetencyMappings(), new MicroSkillMappings(), new TargetRoleMappings(),
                 new LearningModuleMappings(), new SystemStatusMappings()));
 
@@ -51,12 +51,12 @@ class CatalogMappingsTest {
     }
 
     @Test
-    void mapsOccupations() {
-        ModelMapper mapper = ModelMapperFactory.create(List.of(new OccupationMappings()));
-        var occupation = new Occupation("occ-1", "15-1252.00", "Software Developer", 4, 0.1, 0.9, 0.3, 0.2, 0.4, 0.5,
+    void mapsJobPositions() {
+        ModelMapper mapper = ModelMapperFactory.create(List.of(new JobPositionMappings()));
+        var jobPosition = new JobPosition("occ-1", "15-1252.00", "Software Developer", 4, 0.1, 0.9, 0.3, 0.2, 0.4, 0.5,
                 "ACTIVE", "1.0.0", 3, 12);
 
-        assertThat(mapper.map(occupation, OccupationResponse.class)).isEqualTo(new OccupationResponse("occ-1",
+        assertThat(mapper.map(jobPosition, JobPositionResponse.class)).isEqualTo(new JobPositionResponse("occ-1",
                 "15-1252.00", "Software Developer", 4, 0.1, 0.9, 0.3, 0.2, 0.4, 0.5, "ACTIVE", "1.0.0", 3, 12));
     }
 

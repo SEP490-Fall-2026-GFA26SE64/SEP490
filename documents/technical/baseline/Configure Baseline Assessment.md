@@ -6,36 +6,36 @@
 
 ## Goal and position
 
-Manage one stable baseline Blueprint per authorized organization + Occupation. Every new Employee attempt assesses the entire Occupation through an individual adaptive sequence. There are no separate Role tests, Role question/time settings or exploration settings.
+Manage one stable baseline Blueprint per authorized organization + Job Position. Every new Employee attempt assesses the entire Job Position through an individual adaptive sequence. There are no separate Role tests, Role question/time settings or exploration settings.
 
 ~~~text
-trusted L&D + authorized Occupation
- -> read active-role catalog and deduplicated Occupation skills/items
+trusted L&D + authorized Job Position
+ -> read active-role catalog and deduplicated Job Position skills/items
  -> open/resume the sole Draft
- -> set name and one Occupation maximum-question/total-duration pair
+ -> set name and one Job Position maximum-question/total-duration pair
  -> Save draft -> Preview assessment -> Activate version
  -> atomically replace current, or Deactivate directly
  -> new Employee attempts pin the Active version
 ~~~
 
-Save never activates. Activate creates an immutable version and switches availability atomically; no Expert review or shared generated assessment/Publish step exists. Preview creates no Employee attempt. A shared Occupation configuration does not mean an identical fixed question sequence for everyone. Role selection, scoring, calibration, gap and pathway generation are dependencies, not owned by this Function.
+Save never activates. Activate creates an immutable version and switches availability atomically; no Expert review or shared generated assessment/Publish step exists. Preview creates no Employee attempt. A shared Job Position configuration does not mean an identical fixed question sequence for everyone. Role selection, scoring, calibration, gap and pathway generation are dependencies, not owned by this Function.
 
 ### Actor, context, source and input ownership
 
-- Server authentication supplies actor, organization and L&D permission. Every read/list/write/preview reauthorizes Occupation visibility.
-- Catalog ports supply the authorized Occupation, all active Role/skill memberships and publication/version information. Deduplicate MicroSkill IDs and eligible item-version IDs across the whole Occupation. Draft/inactive/archived/removed Roles and ineligible questions never enter a new snapshot.
+- Server authentication supplies actor, organization and L&D permission. Every read/list/write/preview reauthorizes Job Position visibility.
+- Catalog ports supply the authorized Job Position, all active Role/skill memberships and publication/version information. Deduplicate MicroSkill IDs and eligible item-version IDs across the whole Job Position. Draft/inactive/archived/removed Roles and ineligible questions never enter a new snapshot.
 - PostgreSQL supplies eligible published item/parameter data, configuration, revisions, history and attempts. Neo4j supplies catalog relationships, never learner state.
-- Client sends name, the single bounds pair, expected working/activation revisions, command key and deactivation reason. Server owns identity/version, scope policy, actor/tenant, pins, fingerprints, timestamps, status and attempt counts. Confirmed design DTO/list semantics are in [Lifecycle and transition design](Occupation%20Baseline%20Lifecycle%20and%20Transition.md).
+- Client sends name, the single bounds pair, expected working/activation revisions, command key and deactivation reason. Server owns identity/version, scope policy, actor/tenant, pins, fingerprints, timestamps, status and attempt counts. Confirmed design DTO/list semantics are in [Lifecycle and transition design](Job Position%20Baseline%20Lifecycle%20and%20Transition.md).
 
-Resolve the bank/model/mapping tuple from the exact trusted organization+graph Occupation ID for new feasibility, Preview and activation. Validate bank ownership and technical eligibility; neither a non-null resource ID nor a browser-selected organization establishes readiness. Missing resources return an explicit unavailable reason without borrowing another tenant's tuple, creating resources or narrowing full-Occupation coverage. Historical reads and Deactivate retain their existing independence from fresh catalog readiness. [Organization integration contract](../Workspace%20Adaptive%20Integration.md#organization-scoped-source-and-operation-contract).
+Resolve the bank/model/mapping tuple from the exact trusted organization+graph Job Position ID for new feasibility, Preview and activation. Validate bank ownership and technical eligibility; neither a non-null resource ID nor a browser-selected organization establishes readiness. Missing resources return an explicit unavailable reason without borrowing another tenant's tuple, creating resources or narrowing full-Job Position coverage. Historical reads and Deactivate retain their existing independence from fresh catalog readiness. [Organization integration contract](../Workspace%20Adaptive%20Integration.md#organization-scoped-source-and-operation-contract).
 
 ### Configuration and form contract
 
 | Field/rule | Meaning | Status |
 | --- | --- | --- |
-| Occupation | One stable Blueprint per organization+Occupation; at most one open Draft and one Active version | Confirmed |
+| Job Position | One stable Blueprint per organization+Job Position; at most one open Draft and one Active version | Confirmed |
 | Name | Required nonblank display name with required marker; maximum 100 Unicode characters | Confirmed |
-| Maximum questions | One required positive integer for the full Occupation, at most its authoritative deduplicated eligible capacity; maximum does not promise an exact question count | Confirmed |
+| Maximum questions | One required positive integer for the full Job Position, at most its authoritative deduplicated eligible capacity; maximum does not promise an exact question count | Confirmed |
 | Minimum feasible maximum | Cover every union skill under the pinned minimum-evidence policy and stay within the pinned model response limit; reject infeasible coverage rather than omit skills | Confirmed design |
 | Total time | One required whole-second duration between 30 * maxQuestions and 120 * maxQuestions; understandable time/minutes in UI, no blank-field default | Confirmed |
 | Estimated time per question | Calculator aid, not an item timeout or separately persisted field; initial explicit suggestion 60 seconds, bidirectional total/rate calculation; persist only final total duration | Confirmed |
@@ -59,7 +59,7 @@ Save remains actionable when fields are missing: show field-specific errors and 
 ### Ordered reads and writes
 
 1. **Read/list:** authorize scope, query only allowed records, return safe configuration/availability; write no Draft/pointer/receipt/attempt. Confirmed design historical list remains readable without Catalog.
-2. **Save:** authorize; serialize stable organization/Occupation scope; check exact replay and expected working revision; normalize/validate the single configuration against authoritative feasibility; create/update sole Draft and receipt atomically. Confirmed design no-op semantics never overwrite newer edits.
+2. **Save:** authorize; serialize stable organization/Job Position scope; check exact replay and expected working revision; normalize/validate the single configuration against authoritative feasibility; create/update sole Draft and receipt atomically. Confirmed design no-op semantics never overwrite newer edits.
 3. **Preview:** read saved Draft/revision, resolve/compare Catalog and technical pins, validate whole-union feasibility and return safe sample/shortages. No version, receipt, activation, learner state or preview-history write. Confirmed design local preview binding is in the linked design.
 4. **Activate:** authorize; lock activation scope; verify Draft ID/revision, activation revision and confirmed replacement target; revalidate full union/items/parameters/technical policy; allocate and insert immutable version/membership; close Draft, switch current and append transition/receipt in one transaction. Roll back everything on failure.
 5. **Deactivate:** authorize; lock same scope; verify confirmed current version/revision, reason and replay identity; clear current and append event/receipt atomically. Do not mutate learners. This command does not require fresh Catalog/items.
@@ -86,9 +86,9 @@ Return only safe working/version/readiness and authorized aggregate lifecycle me
 
 ## Planned catalog source alignment — revision19
 
-L&D discovery, Save, Preview and Activate must read the same [normalized catalog contract](../Workspace%20Adaptive%20Integration.md#authored-catalog-consumer-alignment--revision19) used by Employee selection and exact-Level gap. Authored mode requires explicit own Role→Occupation binding and member Levels/requirements; neither a name/family match nor a non-null resource tuple supplies these facts. Display authoritative source readiness separately from a saved policy/Blueprint; missing binding/publication/resources never causes automatic provisioning or activation.
+L&D discovery, Save, Preview and Activate must read the same [normalized catalog contract](../Workspace%20Adaptive%20Integration.md#authored-catalog-consumer-alignment--revision19) used by Employee selection and exact-Level gap. Authored mode requires explicit own Role→Job Position binding and member Levels/requirements; neither a name/family match nor a non-null resource tuple supplies these facts. Display authoritative source readiness separately from a saved policy/Blueprint; missing binding/publication/resources never causes automatic provisioning or activation.
 
-The existing full-Occupation union remains mandatory across every admitted Role/explicit Level. Shared Skill IDs require coherent source identity/version; incomplete/malformed membership is unavailable rather than a smaller successful bank coverage set. Save/Preview/Activate revalidate complete fingerprint/binding revision and genuine publication with existing CAS/replay rules. Revision18 org policy and technical pins are unchanged; old active versions/attempts use original snapshots. Source and binding changes require refresh/new explicit configuration, not silent rescore/repin. No owner Catalog Management/Expert UI, new mapping editor or SQL is implemented by this C1. [CA19-06–08](../../testing/REQ-002-adaptive-baseline-test-plan.md#authored-catalog-alignment--revision19) is planned verification only.
+The existing full-Job Position union remains mandatory across every admitted Role/explicit Level. Shared Skill IDs require coherent source identity/version; incomplete/malformed membership is unavailable rather than a smaller successful bank coverage set. Save/Preview/Activate revalidate complete fingerprint/binding revision and genuine publication with existing CAS/replay rules. Revision18 org policy and technical pins are unchanged; old active versions/attempts use original snapshots. Source and binding changes require refresh/new explicit configuration, not silent rescore/repin. No owner Catalog Management/Expert UI, new mapping editor or SQL is implemented by this C1. [CA19-06–08](../../testing/REQ-002-adaptive-baseline-test-plan.md#authored-catalog-alignment--revision19) is planned verification only.
 
 ## Version identity and Draft discard
 
@@ -106,7 +106,7 @@ Confirmed | Provisional: existing model numerical constants | Open: external own
 
 ## Organization Assessment Policy — planned
 
-Trusted L&D session/organization/membership/entitlement → validate four values → save an immutable PostgreSQL version → explicitly activate for future new attempts → return own version/activation feedback. One policy applies across the org's Occupations; Blueprint question/time bounds remain per Occupation. No new Function ID or owner Role/Skill/publication/assignment CRUD.
+Trusted L&D session/organization/membership/entitlement → validate four values → save an immutable PostgreSQL version → explicitly activate for future new attempts → return own version/activation feedback. One policy applies across the org's Job Positions; Blueprint question/time bounds remain per Job Position. No new Function ID or owner Role/Skill/publication/assignment CRUD.
 
 | Client field | Planned validation and behavior |
 | --- | --- |
@@ -128,12 +128,12 @@ Proposed base `/api/v1/ld/adaptive-baseline-policy`; trusted session, CSRF mutat
 
 Server owns actor/org/IDs/version/hash/timestamps/revision. Multiple inactive versions allowed; no mutable policy Draft, deactivate or delete endpoint. Save identical canonical own values reuses the version with a receipt. Same actor/org/key/body replays its original response after fresh authorization; different operation/body conflicts. Unknown outcomes retain key/body for reconciliation; replay cannot reapply an old activation. Errors:400 validation;401 unauthenticated;403 wrong-role/membership/entitlement;404 absent/foreign version via scoped query;409 stale revision/key conflict;503 dependency unavailable. Empty policy differs from unavailable storage. No partial command or learner state.
 
-UI reuses active `/ld-manager/baseline-assessments` root (Baseline Config redirects here): Assessment Policy / Chính sách đánh giá tab alongside Blueprint management, independent of Occupation/bank/Blueprint readiness. Reuse established tokens/font/typography/Tabs/Input/Button/Card/Dialog and EN/VI. Show saved versus active version, explicit Activate confirmation, loading/empty/error/pending/stale/retry/reload. Save validates/focuses errors without invalid requests; identity changes clear prior-scope forms/pending commands. Explain precision/confidence/conservatism without technical IDs or item parameter editors. Platform Admin UI excluded.
+UI reuses active `/ld-manager/baseline-assessments` root (Baseline Config redirects here): Assessment Policy / Chính sách đánh giá tab alongside Blueprint management, independent of Job Position/bank/Blueprint readiness. Reuse established tokens/font/typography/Tabs/Input/Button/Card/Dialog and EN/VI. Show saved versus active version, explicit Activate confirmation, loading/empty/error/pending/stale/retry/reload. Save validates/focuses errors without invalid requests; identity changes clear prior-scope forms/pending commands. Explain precision/confidence/conservatism without technical IDs or item parameter editors. Platform Admin UI excluded.
 
 ### Confirmed activation prerequisite —2026-11-01
 
-New Blueprint Activate/FINALIZE requires an active Assessment Policy belonging to the trusted L&D organization. Authorize actor/Occupation and replay an existing exact receipt first; only a new command checks the effective policy inside the Blueprint transaction, before allocating/inserting versions, closing Draft, changing activation or writing events/receipts. Use the existing organization policy coordination lock/current activation. Blueprint does not pin a policy: each new learner attempt still pins the then-effective policy. A saved inactive policy does not satisfy the gate. Verified absence returns422 `ASSESSMENT_POLICY_REQUIRED` with no write; storage/integrity outages remain503. Deactivate, historical reads/replay and existing attempts retain their prior behavior. No policy is implicitly seeded or activated.
+New Blueprint Activate/FINALIZE requires an active Assessment Policy belonging to the trusted L&D organization. Authorize actor/Job Position and replay an existing exact receipt first; only a new command checks the effective policy inside the Blueprint transaction, before allocating/inserting versions, closing Draft, changing activation or writing events/receipts. Use the existing organization policy coordination lock/current activation. Blueprint does not pin a policy: each new learner attempt still pins the then-effective policy. A saved inactive policy does not satisfy the gate. Verified absence returns422 `ASSESSMENT_POLICY_REQUIRED` with no write; storage/integrity outages remain503. Deactivate, historical reads/replay and existing attempts retain their prior behavior. No policy is implicitly seeded or activated.
 
-Baseline Config exposes addressable `?tab=policy`. On Activate, FE checks current own policy; absent policy directs L&D there with only known Occupation/Draft/version return fields. Backend repeats the gate. Policy Save and Activate remain explicit; once an active policy is confirmed, a return action opens the same baseline/Draft for refreshed Preview and explicit Activate confirmation/CAS. Never auto-activate on return. Missing-policy notices also cover previously active baselines; retain existing activation/history and tell L&D to configure policy. Unknown mutation outcomes must be reconciled before navigation. Do not accept an arbitrary external return URL, client organization, automatic default policy or unsaved Draft loss. Apply EN/VI feedback and preserve the existing shared components. C2 source/build proof is separate from planned executable acceptance.
+Baseline Config exposes addressable `?tab=policy`. On Activate, FE checks current own policy; absent policy directs L&D there with only known Job Position/Draft/version return fields. Backend repeats the gate. Policy Save and Activate remain explicit; once an active policy is confirmed, a return action opens the same baseline/Draft for refreshed Preview and explicit Activate confirmation/CAS. Never auto-activate on return. Missing-policy notices also cover previously active baselines; retain existing activation/history and tell L&D to configure policy. Unknown mutation outcomes must be reconciled before navigation. Do not accept an arbitrary external return URL, client organization, automatic default policy or unsaved Draft loss. Apply EN/VI feedback and preserve the existing shared components. C2 source/build proof is separate from planned executable acceptance.
 
 [Data design](Adaptive%20Baseline%20Data%20Architecture.md#planned-organization-policy-storage-and-admission) owns exact schema/first-write locks/pins/legacy rollout; [AP01–AP09](../../testing/REQ-002-adaptive-baseline-test-plan.md#organization-policy-and-calibration-amendment--2026-11-01) owns planned verification. **Confirmed:** L&D tab/four-value tenant target. **Proposed:** API/validation/storage/activation above, pending C2. **Provisional:** existing technical defaults. **Open:** production readiness/executable verification. **Rejected:** client org/actor, implicit activation/default policy, global JSON mutation, historical reset/rescore/repin.

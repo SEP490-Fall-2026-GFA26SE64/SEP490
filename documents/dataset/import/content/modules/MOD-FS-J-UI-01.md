@@ -23,7 +23,7 @@ Read [the local lesson: Connecting interface meaning and behaviour](../topics/FS
 
 - Before MS-FS09, demonstrate MS-FS01: Identify the intended interface structure before adapting its layout.
 
-Prerequisites taught within this module are studied first. Cross-module prerequisites are scheduled by the pathway engine. These are pending local learning-order decisions, not claims of universal occupational dependency.
+Prerequisites taught within this module are studied first. Cross-module prerequisites are scheduled by the pathway engine. These are pending local learning-order decisions, not claims of universal job positional dependency.
 
 ## Assigned tasks and submission evidence
 

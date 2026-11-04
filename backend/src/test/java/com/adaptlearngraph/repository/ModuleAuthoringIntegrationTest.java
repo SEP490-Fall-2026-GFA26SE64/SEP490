@@ -88,7 +88,7 @@ class ModuleAuthoringIntegrationTest {
                 assertNull(incomplete.metadata().reviewStatus()); assertTrue(incomplete.teachings().isEmpty());
                 assertEquals(0, jdbc.queryForObject("SELECT count(*) FROM platform.module_authoring", Integer.class));
                 try (var session = driver.session()) {
-                    session.run("CREATE (:Occupation {id:'occ',name:'Occupation',status:'ACTIVE'})").consume();
+                    session.run("CREATE (:JobPosition {id:'occ',name:'JobPosition',status:'ACTIVE'})").consume();
                     session.run("MATCH (m:LearningModule {id:'legacy'}) SET m.contentUri='content/modules/MOD-FOCUS-SEC01-HIGH.md'").consume();
                 }
                 actor("reviewer", "LD_MANAGER");
@@ -155,18 +155,18 @@ class ModuleAuthoringIntegrationTest {
             try (var driver = GraphDatabase.driver(graph.getBoltUrl(), AuthTokens.basic("neo4j", graph.getAdminPassword()));
                     var persistence = JpaTestContext.startUnvalidated(ds); var graphContext = Neo4jTestContext.start(driver)) {
                 try (var session = driver.session()) {
-                    session.run("CREATE (:Occupation {id:'occ',name:'Occupation',status:'ACTIVE'}), (:MicroSkill {id:'skill',name:'Skill',status:'ACTIVE',organizationId:'org'}), (:MicroSkill {id:'support',name:'Support',status:'ACTIVE',organizationId:'org'})").consume();
+                    session.run("CREATE (:JobPosition {id:'occ',name:'JobPosition',status:'ACTIVE'}), (:MicroSkill {id:'skill',name:'Skill',status:'ACTIVE',organizationId:'org'}), (:MicroSkill {id:'support',name:'Support',status:'ACTIVE',organizationId:'org'})").consume();
                 }
                 var adapter = adapter(persistence, graphContext, "org");
                 var service = new ModuleAuthoringService(adapter);
                 actor("reviewer", "LD_MANAGER"); assertEquals(Set.of("expert-a", "expert-b"), new HashSet<>(adapter.catalog("Expert").stream().map(Choice::id).toList())); service.grant("expert-a", "occ", true); service.grant("expert-b", "occ", true);
                 actor("expert-a", "EXPERT");
                 Content content = service.content("Lesson", "# A lesson\n[video](https://example.org/lesson.mp4)", null);
-                assertTrue(content.occupationIds().isEmpty());
+                assertTrue(content.jobPositionIds().isEmpty());
                 Save input = new Save("Module", "LESSON_AND_PRACTICE", content.id(), 120, new BigDecimal("150000"), null, List.of(
                         new TeachingInput("skill", "PRIMARY", "HIGH"), new TeachingInput("support", "SUPPORTING", "LOW")));
                 Document doc = service.create(input);
-                assertTrue(doc.occupationIds().isEmpty());
+                assertTrue(doc.jobPositionIds().isEmpty());
                 assertEquals(doc, service.detail(doc.id()));
                 actor("expert-b", "EXPERT");
                 Document protectedDoc = doc;
@@ -224,7 +224,7 @@ class ModuleAuthoringIntegrationTest {
                 assertTrue(foreign.pinned("foreign-org", "learner", ownedId).isEmpty());
                 assertEquals(List.of("foreign-expert"), foreign.catalog("Expert").stream().map(Choice::id).toList());
                 Document owned = adapter.lock("org", ownedId).orElseThrow();
-                Document hijack = new Document(owned.id(), "foreign-org", owned.occupationIds(), "foreign-expert", owned.createdAt(),
+                Document hijack = new Document(owned.id(), "foreign-org", owned.jobPositionIds(), "foreign-expert", owned.createdAt(),
                         owned.lockVersion() + 1, owned.everReleased(), owned.archived(), owned.releasedRevision(), owned.revisions(),
                         owned.history(), owned.intake());
                 assertThrows(org.springframework.dao.DataAccessException.class, () -> foreign.save(hijack));

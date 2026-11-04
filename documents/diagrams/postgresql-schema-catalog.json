@@ -101,8 +101,8 @@
     {
       "installed_rank": 13,
       "version": "13",
-      "description": "occupation blueprint identity",
-      "script": "V13__occupation_blueprint_identity.sql",
+      "description": "job position blueprint identity",
+      "script": "V13__job position_blueprint_identity.sql",
       "checksum": -1992663521,
       "success": true
     },
@@ -157,24 +157,24 @@
     {
       "installed_rank": 20,
       "version": "20",
-      "description": "occupation baseline scope compatibility",
-      "script": "V20__occupation_baseline_scope_compatibility.sql",
+      "description": "job position baseline scope compatibility",
+      "script": "V20__job position_baseline_scope_compatibility.sql",
       "checksum": 2137365147,
       "success": true
     },
     {
       "installed_rank": 21,
       "version": "21",
-      "description": "occupation baseline name and time limits",
-      "script": "V21__occupation_baseline_name_and_time_limits.sql",
+      "description": "job position baseline name and time limits",
+      "script": "V21__job position_baseline_name_and_time_limits.sql",
       "checksum": -935442136,
       "success": true
     },
     {
       "installed_rank": 22,
       "version": "22",
-      "description": "occupation baseline draft conversion receipt",
-      "script": "V22__occupation_baseline_draft_conversion_receipt.sql",
+      "description": "job position baseline draft conversion receipt",
+      "script": "V22__job position_baseline_draft_conversion_receipt.sql",
       "checksum": 859223100,
       "success": true
     },
@@ -197,8 +197,8 @@
     {
       "installed_rank": 25,
       "version": "25",
-      "description": "current role selection and occupation profile",
-      "script": "V25__current_role_selection_and_occupation_profile.sql",
+      "description": "current role selection and job position profile",
+      "script": "V25__current_role_selection_and_job position_profile.sql",
       "checksum": 1717114679,
       "success": true
     },
@@ -1225,7 +1225,7 @@
     {
       "table": "baseline_adaptive_attempt",
       "position": 4,
-      "name": "occupation_id",
+      "name": "job position_id",
       "type": "text",
       "required": true,
       "default": null,
@@ -1585,7 +1585,7 @@
     {
       "table": "baseline_adaptive_blueprint_version",
       "position": 4,
-      "name": "occupation_id",
+      "name": "job position_id",
       "type": "text",
       "required": true,
       "default": null,
@@ -1605,7 +1605,7 @@
     {
       "table": "baseline_adaptive_blueprint_version",
       "position": 6,
-      "name": "occupation_name_snapshot",
+      "name": "job position_name_snapshot",
       "type": "text",
       "required": true,
       "default": null,
@@ -1705,7 +1705,7 @@
     {
       "table": "baseline_adaptive_blueprint_version",
       "position": 16,
-      "name": "occupation_max_questions",
+      "name": "job position_max_questions",
       "type": "integer",
       "required": false,
       "default": null,
@@ -1715,7 +1715,7 @@
     {
       "table": "baseline_adaptive_blueprint_version",
       "position": 17,
-      "name": "occupation_time_limit_seconds",
+      "name": "job position_time_limit_seconds",
       "type": "integer",
       "required": false,
       "default": null,
@@ -1745,7 +1745,7 @@
     {
       "table": "baseline_adaptive_blueprint_working_revision",
       "position": 3,
-      "name": "occupation_id",
+      "name": "job position_id",
       "type": "text",
       "required": true,
       "default": null,
@@ -1915,7 +1915,7 @@
     {
       "table": "baseline_assessment_series",
       "position": 2,
-      "name": "occupation_id",
+      "name": "job position_id",
       "type": "text",
       "required": true,
       "default": null,
@@ -2025,7 +2025,7 @@
     {
       "table": "baseline_assessment_transition",
       "position": 3,
-      "name": "occupation_id",
+      "name": "job position_id",
       "type": "text",
       "required": true,
       "default": null,
@@ -2225,7 +2225,7 @@
     {
       "table": "baseline_attempt_command",
       "position": 5,
-      "name": "occupation_id",
+      "name": "job position_id",
       "type": "text",
       "required": true,
       "default": null,
@@ -2755,7 +2755,7 @@
     {
       "table": "baseline_blueprint",
       "position": 2,
-      "name": "occupation_id",
+      "name": "job position_id",
       "type": "text",
       "required": false,
       "default": null,
@@ -2805,7 +2805,7 @@
     {
       "table": "baseline_blueprint_activation",
       "position": 2,
-      "name": "occupation_id",
+      "name": "job position_id",
       "type": "text",
       "required": true,
       "default": null,
@@ -2895,7 +2895,7 @@
     {
       "table": "baseline_blueprint_activation_event",
       "position": 3,
-      "name": "occupation_id",
+      "name": "job position_id",
       "type": "text",
       "required": true,
       "default": null,
@@ -3005,7 +3005,7 @@
     {
       "table": "baseline_blueprint_command",
       "position": 4,
-      "name": "occupation_id",
+      "name": "job position_id",
       "type": "text",
       "required": true,
       "default": null,
@@ -3265,7 +3265,7 @@
     {
       "table": "baseline_blueprint_version",
       "position": 4,
-      "name": "occupation_id",
+      "name": "job position_id",
       "type": "text",
       "required": false,
       "default": null,
@@ -3275,7 +3275,7 @@
     {
       "table": "baseline_blueprint_version",
       "position": 5,
-      "name": "occupation_name_snapshot",
+      "name": "job position_name_snapshot",
       "type": "text",
       "required": false,
       "default": null,
@@ -3405,7 +3405,7 @@
     {
       "table": "baseline_blueprint_working_revision",
       "position": 3,
-      "name": "occupation_id",
+      "name": "job position_id",
       "type": "text",
       "required": true,
       "default": null,
@@ -3455,7 +3455,7 @@
     {
       "table": "baseline_blueprint_working_revision",
       "position": 8,
-      "name": "occupation_name_snapshot",
+      "name": "job position_name_snapshot",
       "type": "text",
       "required": true,
       "default": null,
@@ -3565,7 +3565,7 @@
     {
       "table": "baseline_management_command",
       "position": 4,
-      "name": "occupation_id",
+      "name": "job position_id",
       "type": "text",
       "required": true,
       "default": null,
@@ -3645,7 +3645,7 @@
     {
       "table": "baseline_mastery_evidence",
       "position": 4,
-      "name": "occupation_id",
+      "name": "job position_id",
       "type": "text",
       "required": true,
       "default": null,
@@ -4153,7 +4153,7 @@
       "fk": true
     },
     {
-      "table": "employee_occupation_profile",
+      "table": "employee_job position_profile",
       "position": 1,
       "name": "organization_id",
       "type": "uuid",
@@ -4163,7 +4163,7 @@
       "fk": true
     },
     {
-      "table": "employee_occupation_profile",
+      "table": "employee_job position_profile",
       "position": 2,
       "name": "learner_id",
       "type": "uuid",
@@ -4173,9 +4173,9 @@
       "fk": true
     },
     {
-      "table": "employee_occupation_profile",
+      "table": "employee_job position_profile",
       "position": 3,
-      "name": "occupation_id",
+      "name": "job position_id",
       "type": "text",
       "required": true,
       "default": null,
@@ -4183,7 +4183,7 @@
       "fk": true
     },
     {
-      "table": "employee_occupation_profile",
+      "table": "employee_job position_profile",
       "position": 4,
       "name": "attempt_id",
       "type": "uuid",
@@ -4193,7 +4193,7 @@
       "fk": true
     },
     {
-      "table": "employee_occupation_profile",
+      "table": "employee_job position_profile",
       "position": 5,
       "name": "blueprint_id",
       "type": "uuid",
@@ -4203,7 +4203,7 @@
       "fk": true
     },
     {
-      "table": "employee_occupation_profile",
+      "table": "employee_job position_profile",
       "position": 6,
       "name": "blueprint_version",
       "type": "integer",
@@ -4213,7 +4213,7 @@
       "fk": true
     },
     {
-      "table": "employee_occupation_profile",
+      "table": "employee_job position_profile",
       "position": 7,
       "name": "catalog_fingerprint",
       "type": "text",
@@ -4223,7 +4223,7 @@
       "fk": false
     },
     {
-      "table": "employee_occupation_profile",
+      "table": "employee_job position_profile",
       "position": 8,
       "name": "required_skills",
       "type": "jsonb",
@@ -4233,7 +4233,7 @@
       "fk": false
     },
     {
-      "table": "employee_occupation_profile",
+      "table": "employee_job position_profile",
       "position": 9,
       "name": "mastery",
       "type": "jsonb",
@@ -4243,7 +4243,7 @@
       "fk": false
     },
     {
-      "table": "employee_occupation_profile",
+      "table": "employee_job position_profile",
       "position": 10,
       "name": "initialized_at",
       "type": "timestamp with time zone",
@@ -4295,7 +4295,7 @@
     {
       "table": "employee_role_selection",
       "position": 5,
-      "name": "occupation_id",
+      "name": "job position_id",
       "type": "text",
       "required": true,
       "default": null,
@@ -8134,7 +8134,7 @@
       "kind": "u",
       "parent": null,
       "validated": true,
-      "definition": "UNIQUE (attempt_id, organization_id, learner_id, occupation_id)"
+      "definition": "UNIQUE (attempt_id, organization_id, learner_id, job position_id)"
     },
     {
       "table": "baseline_adaptive_attempt",
@@ -8150,7 +8150,7 @@
       "kind": "c",
       "parent": null,
       "validated": true,
-      "definition": "CHECK (attempt_purpose = ANY (ARRAY['ROLE_REQUIREMENT'::text, 'OCCUPATION_EXPLORATION'::text]))"
+      "definition": "CHECK (attempt_purpose = ANY (ARRAY['ROLE_REQUIREMENT'::text, 'JOB_POSITION_EXPLORATION'::text]))"
     },
     {
       "table": "baseline_adaptive_attempt",
@@ -8174,7 +8174,7 @@
       "kind": "c",
       "parent": null,
       "validated": true,
-      "definition": "CHECK (attempt_purpose = 'ROLE_REQUIREMENT'::text AND target_role_id IS NOT NULL OR attempt_purpose = 'OCCUPATION_EXPLORATION'::text AND target_role_id IS NULL AND target_selection_revision IS NULL)"
+      "definition": "CHECK (attempt_purpose = 'ROLE_REQUIREMENT'::text AND target_role_id IS NOT NULL OR attempt_purpose = 'JOB_POSITION_EXPLORATION'::text AND target_role_id IS NULL AND target_selection_revision IS NULL)"
     },
     {
       "table": "baseline_adaptive_attempt",
@@ -8226,19 +8226,19 @@
     },
     {
       "table": "baseline_adaptive_attempt",
-      "name": "baseline_adaptive_attempt_occupation_id_check",
+      "name": "baseline_adaptive_attempt_job position_id_check",
       "kind": "c",
       "parent": null,
       "validated": true,
-      "definition": "CHECK (occupation_id <> ''::text AND occupation_id = btrim(occupation_id))"
+      "definition": "CHECK (job position_id <> ''::text AND job position_id = btrim(job position_id))"
     },
     {
       "table": "baseline_adaptive_attempt",
-      "name": "baseline_adaptive_attempt_organization_id_occupation_id_bl_fkey",
+      "name": "baseline_adaptive_attempt_organization_id_job position_id_bl_fkey",
       "kind": "f",
       "parent": "baseline_adaptive_blueprint_version",
       "validated": true,
-      "definition": "FOREIGN KEY (organization_id, occupation_id, blueprint_id, blueprint_version) REFERENCES platform.baseline_adaptive_blueprint_version(organization_id, occupation_id, blueprint_id, version)"
+      "definition": "FOREIGN KEY (organization_id, job position_id, blueprint_id, blueprint_version) REFERENCES platform.baseline_adaptive_blueprint_version(organization_id, job position_id, blueprint_id, version)"
     },
     {
       "table": "baseline_adaptive_attempt",
@@ -8262,7 +8262,7 @@
       "kind": "f",
       "parent": "baseline_adaptive_attempt",
       "validated": true,
-      "definition": "FOREIGN KEY (replaces_attempt_id, organization_id, learner_id, occupation_id) REFERENCES platform.baseline_adaptive_attempt(attempt_id, organization_id, learner_id, occupation_id)"
+      "definition": "FOREIGN KEY (replaces_attempt_id, organization_id, learner_id, job position_id) REFERENCES platform.baseline_adaptive_attempt(attempt_id, organization_id, learner_id, job position_id)"
     },
     {
       "table": "baseline_adaptive_attempt",
@@ -8278,7 +8278,7 @@
       "kind": "c",
       "parent": null,
       "validated": true,
-      "definition": "CHECK (scope_policy IS NULL OR scope_policy = 'FULL_OCCUPATION_V2'::text)"
+      "definition": "CHECK (scope_policy IS NULL OR scope_policy = 'FULL_JOB_POSITION_V2'::text)"
     },
     {
       "table": "baseline_adaptive_attempt",
@@ -8422,7 +8422,7 @@
       "kind": "c",
       "parent": null,
       "validated": true,
-      "definition": "CHECK (scope_policy IS NULL AND occupation_max_questions IS NULL AND occupation_time_limit_seconds IS NULL AND exploration_max_questions IS NOT NULL AND exploration_time_limit_seconds IS NOT NULL OR scope_policy IS NOT NULL AND scope_policy = 'FULL_OCCUPATION_V2'::text AND occupation_max_questions IS NOT NULL AND occupation_max_questions > 0 AND occupation_time_limit_seconds IS NOT NULL AND occupation_time_limit_seconds > 0 AND exploration_max_questions IS NULL AND exploration_time_limit_seconds IS NULL)"
+      "definition": "CHECK (scope_policy IS NULL AND job position_max_questions IS NULL AND job position_time_limit_seconds IS NULL AND exploration_max_questions IS NOT NULL AND exploration_time_limit_seconds IS NOT NULL OR scope_policy IS NOT NULL AND scope_policy = 'FULL_JOB_POSITION_V2'::text AND job position_max_questions IS NOT NULL AND job position_max_questions > 0 AND job position_time_limit_seconds IS NOT NULL AND job position_time_limit_seconds > 0 AND exploration_max_questions IS NULL AND exploration_time_limit_seconds IS NULL)"
     },
     {
       "table": "baseline_adaptive_blueprint_version",
@@ -8438,15 +8438,15 @@
       "kind": "f",
       "parent": "baseline_blueprint",
       "validated": true,
-      "definition": "FOREIGN KEY (blueprint_id, organization_id, occupation_id) REFERENCES platform.baseline_blueprint(blueprint_id, organization_id, occupation_id)"
+      "definition": "FOREIGN KEY (blueprint_id, organization_id, job position_id) REFERENCES platform.baseline_blueprint(blueprint_id, organization_id, job position_id)"
     },
     {
       "table": "baseline_adaptive_blueprint_version",
-      "name": "baseline_adaptive_blueprint_v_organization_id_occupation_id_key",
+      "name": "baseline_adaptive_blueprint_v_organization_id_job position_id_key",
       "kind": "u",
       "parent": null,
       "validated": true,
-      "definition": "UNIQUE (organization_id, occupation_id, blueprint_id, version)"
+      "definition": "UNIQUE (organization_id, job position_id, blueprint_id, version)"
     },
     {
       "table": "baseline_adaptive_blueprint_version",
@@ -8482,11 +8482,11 @@
     },
     {
       "table": "baseline_adaptive_blueprint_version",
-      "name": "baseline_adaptive_blueprint_vers_occupation_name_snapshot_check",
+      "name": "baseline_adaptive_blueprint_vers_job position_name_snapshot_check",
       "kind": "c",
       "parent": null,
       "validated": true,
-      "definition": "CHECK (btrim(occupation_name_snapshot) <> ''::text)"
+      "definition": "CHECK (btrim(job position_name_snapshot) <> ''::text)"
     },
     {
       "table": "baseline_adaptive_blueprint_version",
@@ -8530,11 +8530,11 @@
     },
     {
       "table": "baseline_adaptive_blueprint_version",
-      "name": "occupation_baseline_name_time_limits",
+      "name": "job position_baseline_name_time_limits",
       "kind": "c",
       "parent": null,
       "validated": false,
-      "definition": "CHECK (\nCASE\n    WHEN scope_policy = 'FULL_OCCUPATION_V2'::text THEN char_length(btrim(name)) <= 100 AND occupation_time_limit_seconds::bigint >= (occupation_max_questions::bigint * 30) AND occupation_time_limit_seconds::bigint <= (occupation_max_questions::bigint * 120)\n    ELSE true\nEND) NOT VALID"
+      "definition": "CHECK (\nCASE\n    WHEN scope_policy = 'FULL_JOB_POSITION_V2'::text THEN char_length(btrim(name)) <= 100 AND job position_time_limit_seconds::bigint >= (job position_max_questions::bigint * 30) AND job position_time_limit_seconds::bigint <= (job position_max_questions::bigint * 120)\n    ELSE true\nEND) NOT VALID"
     },
     {
       "table": "baseline_adaptive_blueprint_working_revision",
@@ -8542,7 +8542,7 @@
       "kind": "f",
       "parent": "baseline_blueprint",
       "validated": true,
-      "definition": "FOREIGN KEY (blueprint_id, organization_id, occupation_id) REFERENCES platform.baseline_blueprint(blueprint_id, organization_id, occupation_id)"
+      "definition": "FOREIGN KEY (blueprint_id, organization_id, job position_id) REFERENCES platform.baseline_blueprint(blueprint_id, organization_id, job position_id)"
     },
     {
       "table": "baseline_adaptive_blueprint_working_revision",
@@ -8662,7 +8662,7 @@
       "kind": "f",
       "parent": "baseline_blueprint",
       "validated": true,
-      "definition": "FOREIGN KEY (blueprint_id, organization_id, occupation_id) REFERENCES platform.baseline_blueprint(blueprint_id, organization_id, occupation_id)"
+      "definition": "FOREIGN KEY (blueprint_id, organization_id, job position_id) REFERENCES platform.baseline_blueprint(blueprint_id, organization_id, job position_id)"
     },
     {
       "table": "baseline_assessment_series",
@@ -8690,11 +8690,11 @@
     },
     {
       "table": "baseline_assessment_series",
-      "name": "baseline_assessment_series_occupation_id_check",
+      "name": "baseline_assessment_series_job position_id_check",
       "kind": "c",
       "parent": null,
       "validated": true,
-      "definition": "CHECK (btrim(occupation_id) <> ''::text)"
+      "definition": "CHECK (btrim(job position_id) <> ''::text)"
     },
     {
       "table": "baseline_assessment_series",
@@ -8726,7 +8726,7 @@
       "kind": "p",
       "parent": null,
       "validated": true,
-      "definition": "PRIMARY KEY (organization_id, occupation_id)"
+      "definition": "PRIMARY KEY (organization_id, job position_id)"
     },
     {
       "table": "baseline_assessment_series",
@@ -8754,19 +8754,19 @@
     },
     {
       "table": "baseline_assessment_transition",
-      "name": "baseline_assessment_transitio_organization_id_occupation_i_fkey",
+      "name": "baseline_assessment_transitio_organization_id_job position_i_fkey",
       "kind": "f",
       "parent": "baseline_assessment_series",
       "validated": true,
-      "definition": "FOREIGN KEY (organization_id, occupation_id) REFERENCES platform.baseline_assessment_series(organization_id, occupation_id)"
+      "definition": "FOREIGN KEY (organization_id, job position_id) REFERENCES platform.baseline_assessment_series(organization_id, job position_id)"
     },
     {
       "table": "baseline_assessment_transition",
-      "name": "baseline_assessment_transitio_organization_id_occupation_id_key",
+      "name": "baseline_assessment_transitio_organization_id_job position_id_key",
       "kind": "u",
       "parent": null,
       "validated": true,
-      "definition": "UNIQUE (organization_id, occupation_id, series_revision)"
+      "definition": "UNIQUE (organization_id, job position_id, series_revision)"
     },
     {
       "table": "baseline_assessment_transition",
@@ -8886,7 +8886,7 @@
       "kind": "f",
       "parent": "baseline_adaptive_attempt",
       "validated": true,
-      "definition": "FOREIGN KEY (attempt_id, organization_id, actor_id, occupation_id) REFERENCES platform.baseline_adaptive_attempt(attempt_id, organization_id, learner_id, occupation_id)"
+      "definition": "FOREIGN KEY (attempt_id, organization_id, actor_id, job position_id) REFERENCES platform.baseline_adaptive_attempt(attempt_id, organization_id, learner_id, job position_id)"
     },
     {
       "table": "baseline_attempt_command",
@@ -9298,11 +9298,11 @@
     },
     {
       "table": "baseline_blueprint",
-      "name": "baseline_blueprint_occupation_id_check",
+      "name": "baseline_blueprint_job position_id_check",
       "kind": "c",
       "parent": null,
       "validated": true,
-      "definition": "CHECK (occupation_id IS NULL OR btrim(occupation_id) <> ''::text)"
+      "definition": "CHECK (job position_id IS NULL OR btrim(job position_id) <> ''::text)"
     },
     {
       "table": "baseline_blueprint",
@@ -9310,7 +9310,7 @@
       "kind": "u",
       "parent": null,
       "validated": true,
-      "definition": "UNIQUE (blueprint_id, organization_id, occupation_id)"
+      "definition": "UNIQUE (blueprint_id, organization_id, job position_id)"
     },
     {
       "table": "baseline_blueprint",
@@ -9326,7 +9326,7 @@
       "kind": "c",
       "parent": null,
       "validated": true,
-      "definition": "CHECK (occupation_id IS NULL OR organization_id IS NOT NULL)"
+      "definition": "CHECK (job position_id IS NULL OR organization_id IS NOT NULL)"
     },
     {
       "table": "baseline_blueprint",
@@ -9366,15 +9366,15 @@
       "kind": "f",
       "parent": "baseline_blueprint",
       "validated": true,
-      "definition": "FOREIGN KEY (blueprint_id, organization_id, occupation_id) REFERENCES platform.baseline_blueprint(blueprint_id, organization_id, occupation_id)"
+      "definition": "FOREIGN KEY (blueprint_id, organization_id, job position_id) REFERENCES platform.baseline_blueprint(blueprint_id, organization_id, job position_id)"
     },
     {
       "table": "baseline_blueprint_activation",
-      "name": "baseline_blueprint_activation_organization_id_occupation_i_fkey",
+      "name": "baseline_blueprint_activation_organization_id_job position_i_fkey",
       "kind": "f",
       "parent": "baseline_adaptive_blueprint_version",
       "validated": true,
-      "definition": "FOREIGN KEY (organization_id, occupation_id, blueprint_id, blueprint_version) REFERENCES platform.baseline_adaptive_blueprint_version(organization_id, occupation_id, blueprint_id, version)"
+      "definition": "FOREIGN KEY (organization_id, job position_id, blueprint_id, blueprint_version) REFERENCES platform.baseline_adaptive_blueprint_version(organization_id, job position_id, blueprint_id, version)"
     },
     {
       "table": "baseline_blueprint_activation",
@@ -9382,7 +9382,7 @@
       "kind": "p",
       "parent": null,
       "validated": true,
-      "definition": "PRIMARY KEY (organization_id, occupation_id)"
+      "definition": "PRIMARY KEY (organization_id, job position_id)"
     },
     {
       "table": "baseline_blueprint_activation_event",
@@ -9390,23 +9390,23 @@
       "kind": "f",
       "parent": "baseline_blueprint",
       "validated": true,
-      "definition": "FOREIGN KEY (blueprint_id, organization_id, occupation_id) REFERENCES platform.baseline_blueprint(blueprint_id, organization_id, occupation_id)"
+      "definition": "FOREIGN KEY (blueprint_id, organization_id, job position_id) REFERENCES platform.baseline_blueprint(blueprint_id, organization_id, job position_id)"
     },
     {
       "table": "baseline_blueprint_activation_event",
-      "name": "baseline_blueprint_activatio_organization_id_occupation_i_fkey1",
+      "name": "baseline_blueprint_activatio_organization_id_job position_i_fkey1",
       "kind": "f",
       "parent": "baseline_blueprint_activation",
       "validated": true,
-      "definition": "FOREIGN KEY (organization_id, occupation_id) REFERENCES platform.baseline_blueprint_activation(organization_id, occupation_id)"
+      "definition": "FOREIGN KEY (organization_id, job position_id) REFERENCES platform.baseline_blueprint_activation(organization_id, job position_id)"
     },
     {
       "table": "baseline_blueprint_activation_event",
-      "name": "baseline_blueprint_activatio_organization_id_occupation_i_fkey2",
+      "name": "baseline_blueprint_activatio_organization_id_job position_i_fkey2",
       "kind": "f",
       "parent": "baseline_adaptive_blueprint_version",
       "validated": true,
-      "definition": "FOREIGN KEY (organization_id, occupation_id, blueprint_id, blueprint_version) REFERENCES platform.baseline_adaptive_blueprint_version(organization_id, occupation_id, blueprint_id, version)"
+      "definition": "FOREIGN KEY (organization_id, job position_id, blueprint_id, blueprint_version) REFERENCES platform.baseline_adaptive_blueprint_version(organization_id, job position_id, blueprint_id, version)"
     },
     {
       "table": "baseline_blueprint_activation_event",
@@ -9450,11 +9450,11 @@
     },
     {
       "table": "baseline_blueprint_activation_event",
-      "name": "baseline_blueprint_activation_organization_id_occupation_id_key",
+      "name": "baseline_blueprint_activation_organization_id_job position_id_key",
       "kind": "u",
       "parent": null,
       "validated": true,
-      "definition": "UNIQUE (organization_id, occupation_id, activation_revision)"
+      "definition": "UNIQUE (organization_id, job position_id, activation_revision)"
     },
     {
       "table": "baseline_blueprint_command",
@@ -9470,7 +9470,7 @@
       "kind": "f",
       "parent": "baseline_blueprint",
       "validated": true,
-      "definition": "FOREIGN KEY (blueprint_id, organization_id, occupation_id) REFERENCES platform.baseline_blueprint(blueprint_id, organization_id, occupation_id)"
+      "definition": "FOREIGN KEY (blueprint_id, organization_id, job position_id) REFERENCES platform.baseline_blueprint(blueprint_id, organization_id, job position_id)"
     },
     {
       "table": "baseline_blueprint_command",
@@ -9646,7 +9646,7 @@
       "kind": "c",
       "parent": null,
       "validated": true,
-      "definition": "CHECK (occupation_id IS NULL AND occupation_name_snapshot IS NULL OR occupation_id IS NOT NULL AND btrim(occupation_id) <> ''::text AND occupation_name_snapshot IS NOT NULL AND btrim(occupation_name_snapshot) <> ''::text)"
+      "definition": "CHECK (job position_id IS NULL AND job position_name_snapshot IS NULL OR job position_id IS NOT NULL AND btrim(job position_id) <> ''::text AND job position_name_snapshot IS NOT NULL AND btrim(job position_name_snapshot) <> ''::text)"
     },
     {
       "table": "baseline_blueprint_version",
@@ -9754,11 +9754,11 @@
     },
     {
       "table": "baseline_blueprint_working_revision",
-      "name": "baseline_blueprint_working_re_organization_id_occupation_i_fkey",
+      "name": "baseline_blueprint_working_re_organization_id_job position_i_fkey",
       "kind": "f",
       "parent": "baseline_assessment_series",
       "validated": true,
-      "definition": "FOREIGN KEY (organization_id, occupation_id) REFERENCES platform.baseline_assessment_series(organization_id, occupation_id)"
+      "definition": "FOREIGN KEY (organization_id, job position_id) REFERENCES platform.baseline_assessment_series(organization_id, job position_id)"
     },
     {
       "table": "baseline_blueprint_working_revision",
@@ -9770,11 +9770,11 @@
     },
     {
       "table": "baseline_blueprint_working_revision",
-      "name": "baseline_blueprint_working_revis_occupation_name_snapshot_check",
+      "name": "baseline_blueprint_working_revis_job position_name_snapshot_check",
       "kind": "c",
       "parent": null,
       "validated": true,
-      "definition": "CHECK (btrim(occupation_name_snapshot) <> ''::text)"
+      "definition": "CHECK (btrim(job position_name_snapshot) <> ''::text)"
     },
     {
       "table": "baseline_blueprint_working_revision",
@@ -9874,11 +9874,11 @@
     },
     {
       "table": "baseline_management_command",
-      "name": "baseline_management_command_organization_id_occupation_id_fkey",
+      "name": "baseline_management_command_organization_id_job position_id_fkey",
       "kind": "f",
       "parent": "baseline_assessment_series",
       "validated": true,
-      "definition": "FOREIGN KEY (organization_id, occupation_id) REFERENCES platform.baseline_assessment_series(organization_id, occupation_id)"
+      "definition": "FOREIGN KEY (organization_id, job position_id) REFERENCES platform.baseline_assessment_series(organization_id, job position_id)"
     },
     {
       "table": "baseline_management_command",
@@ -9910,7 +9910,7 @@
       "kind": "f",
       "parent": "baseline_adaptive_attempt",
       "validated": true,
-      "definition": "FOREIGN KEY (attempt_id, organization_id, learner_id, occupation_id) REFERENCES platform.baseline_adaptive_attempt(attempt_id, organization_id, learner_id, occupation_id)"
+      "definition": "FOREIGN KEY (attempt_id, organization_id, learner_id, job position_id) REFERENCES platform.baseline_adaptive_attempt(attempt_id, organization_id, learner_id, job position_id)"
     },
     {
       "table": "baseline_mastery_evidence",
@@ -10217,56 +10217,56 @@
       "definition": "PRIMARY KEY (activity_id, assessment_version_id)"
     },
     {
-      "table": "employee_occupation_profile",
-      "name": "employee_occupation_profile_attempt_id_key",
+      "table": "employee_job position_profile",
+      "name": "employee_job position_profile_attempt_id_key",
       "kind": "u",
       "parent": null,
       "validated": true,
       "definition": "UNIQUE (attempt_id)"
     },
     {
-      "table": "employee_occupation_profile",
-      "name": "employee_occupation_profile_attempt_id_organization_id_lea_fkey",
+      "table": "employee_job position_profile",
+      "name": "employee_job position_profile_attempt_id_organization_id_lea_fkey",
       "kind": "f",
       "parent": "baseline_adaptive_attempt",
       "validated": true,
-      "definition": "FOREIGN KEY (attempt_id, organization_id, learner_id, occupation_id) REFERENCES platform.baseline_adaptive_attempt(attempt_id, organization_id, learner_id, occupation_id)"
+      "definition": "FOREIGN KEY (attempt_id, organization_id, learner_id, job position_id) REFERENCES platform.baseline_adaptive_attempt(attempt_id, organization_id, learner_id, job position_id)"
     },
     {
-      "table": "employee_occupation_profile",
-      "name": "employee_occupation_profile_blueprint_id_blueprint_version_fkey",
+      "table": "employee_job position_profile",
+      "name": "employee_job position_profile_blueprint_id_blueprint_version_fkey",
       "kind": "f",
       "parent": "baseline_adaptive_blueprint_version",
       "validated": true,
       "definition": "FOREIGN KEY (blueprint_id, blueprint_version) REFERENCES platform.baseline_adaptive_blueprint_version(blueprint_id, version)"
     },
     {
-      "table": "employee_occupation_profile",
-      "name": "employee_occupation_profile_blueprint_version_check",
+      "table": "employee_job position_profile",
+      "name": "employee_job position_profile_blueprint_version_check",
       "kind": "c",
       "parent": null,
       "validated": true,
       "definition": "CHECK (blueprint_version > 0)"
     },
     {
-      "table": "employee_occupation_profile",
-      "name": "employee_occupation_profile_mastery_check",
+      "table": "employee_job position_profile",
+      "name": "employee_job position_profile_mastery_check",
       "kind": "c",
       "parent": null,
       "validated": true,
       "definition": "CHECK (jsonb_typeof(mastery) = 'object'::text AND mastery <> '{}'::jsonb)"
     },
     {
-      "table": "employee_occupation_profile",
-      "name": "employee_occupation_profile_pkey",
+      "table": "employee_job position_profile",
+      "name": "employee_job position_profile_pkey",
       "kind": "p",
       "parent": null,
       "validated": true,
-      "definition": "PRIMARY KEY (organization_id, learner_id, occupation_id)"
+      "definition": "PRIMARY KEY (organization_id, learner_id, job position_id)"
     },
     {
-      "table": "employee_occupation_profile",
-      "name": "employee_occupation_profile_required_skills_check",
+      "table": "employee_job position_profile",
+      "name": "employee_job position_profile_required_skills_check",
       "kind": "c",
       "parent": null,
       "validated": true,
@@ -10290,11 +10290,11 @@
     },
     {
       "table": "employee_role_selection",
-      "name": "employee_role_selection_occupation_id_check",
+      "name": "employee_role_selection_job position_id_check",
       "kind": "c",
       "parent": null,
       "validated": true,
-      "definition": "CHECK (btrim(occupation_id) <> ''::text)"
+      "definition": "CHECK (btrim(job position_id) <> ''::text)"
     },
     {
       "table": "employee_role_selection",
@@ -12693,7 +12693,7 @@
     {
       "tablename": "baseline_adaptive_attempt",
       "indexname": "baseline_adaptive_attempt_attempt_id_organization_id_learne_key",
-      "indexdef": "CREATE UNIQUE INDEX baseline_adaptive_attempt_attempt_id_organization_id_learne_key ON platform.baseline_adaptive_attempt USING btree (attempt_id, organization_id, learner_id, occupation_id)"
+      "indexdef": "CREATE UNIQUE INDEX baseline_adaptive_attempt_attempt_id_organization_id_learne_key ON platform.baseline_adaptive_attempt USING btree (attempt_id, organization_id, learner_id, job position_id)"
     },
     {
       "tablename": "baseline_adaptive_attempt",
@@ -12723,27 +12723,27 @@
     {
       "tablename": "baseline_adaptive_attempt",
       "indexname": "baseline_attempt_history_idx",
-      "indexdef": "CREATE INDEX baseline_attempt_history_idx ON platform.baseline_adaptive_attempt USING btree (organization_id, learner_id, occupation_id, started_at DESC, attempt_id)"
+      "indexdef": "CREATE INDEX baseline_attempt_history_idx ON platform.baseline_adaptive_attempt USING btree (organization_id, learner_id, job position_id, started_at DESC, attempt_id)"
     },
     {
       "tablename": "baseline_adaptive_attempt",
       "indexname": "baseline_attempt_one_active_idx",
-      "indexdef": "CREATE UNIQUE INDEX baseline_attempt_one_active_idx ON platform.baseline_adaptive_attempt USING btree (organization_id, learner_id, occupation_id) WHERE (state = 'IN_PROGRESS'::text)"
+      "indexdef": "CREATE UNIQUE INDEX baseline_attempt_one_active_idx ON platform.baseline_adaptive_attempt USING btree (organization_id, learner_id, job position_id) WHERE (state = 'IN_PROGRESS'::text)"
     },
     {
       "tablename": "baseline_adaptive_attempt",
       "indexname": "baseline_attempt_one_root_idx",
-      "indexdef": "CREATE UNIQUE INDEX baseline_attempt_one_root_idx ON platform.baseline_adaptive_attempt USING btree (organization_id, learner_id, occupation_id) WHERE (replaces_attempt_id IS NULL)"
+      "indexdef": "CREATE UNIQUE INDEX baseline_attempt_one_root_idx ON platform.baseline_adaptive_attempt USING btree (organization_id, learner_id, job position_id) WHERE (replaces_attempt_id IS NULL)"
     },
     {
       "tablename": "baseline_adaptive_attempt",
       "indexname": "baseline_attempt_one_success_idx",
-      "indexdef": "CREATE UNIQUE INDEX baseline_attempt_one_success_idx ON platform.baseline_adaptive_attempt USING btree (organization_id, learner_id, occupation_id) WHERE (state = ANY (ARRAY['SUBMITTED'::text, 'AUTO_SUBMITTED'::text]))"
+      "indexdef": "CREATE UNIQUE INDEX baseline_attempt_one_success_idx ON platform.baseline_adaptive_attempt USING btree (organization_id, learner_id, job position_id) WHERE (state = ANY (ARRAY['SUBMITTED'::text, 'AUTO_SUBMITTED'::text]))"
     },
     {
       "tablename": "baseline_adaptive_attempt",
-      "indexname": "baseline_occupation_retiring_idx",
-      "indexdef": "CREATE INDEX baseline_occupation_retiring_idx ON platform.baseline_adaptive_attempt USING btree (organization_id, blueprint_id, blueprint_version) WHERE (state = 'IN_PROGRESS'::text)"
+      "indexname": "baseline_job position_retiring_idx",
+      "indexdef": "CREATE INDEX baseline_job position_retiring_idx ON platform.baseline_adaptive_attempt USING btree (organization_id, blueprint_id, blueprint_version) WHERE (state = 'IN_PROGRESS'::text)"
     },
     {
       "tablename": "baseline_adaptive_blueprint_role",
@@ -12757,8 +12757,8 @@
     },
     {
       "tablename": "baseline_adaptive_blueprint_version",
-      "indexname": "baseline_adaptive_blueprint_v_organization_id_occupation_id_key",
-      "indexdef": "CREATE UNIQUE INDEX baseline_adaptive_blueprint_v_organization_id_occupation_id_key ON platform.baseline_adaptive_blueprint_version USING btree (organization_id, occupation_id, blueprint_id, version)"
+      "indexname": "baseline_adaptive_blueprint_v_organization_id_job position_id_key",
+      "indexdef": "CREATE UNIQUE INDEX baseline_adaptive_blueprint_v_organization_id_job position_id_key ON platform.baseline_adaptive_blueprint_version USING btree (organization_id, job position_id, blueprint_id, version)"
     },
     {
       "tablename": "baseline_adaptive_blueprint_version",
@@ -12767,13 +12767,13 @@
     },
     {
       "tablename": "baseline_adaptive_blueprint_version",
-      "indexname": "baseline_occupation_version_list_idx",
-      "indexdef": "CREATE INDEX baseline_occupation_version_list_idx ON platform.baseline_adaptive_blueprint_version USING btree (organization_id, created_at DESC, blueprint_id, version)"
+      "indexname": "baseline_job position_version_list_idx",
+      "indexdef": "CREATE INDEX baseline_job position_version_list_idx ON platform.baseline_adaptive_blueprint_version USING btree (organization_id, created_at DESC, blueprint_id, version)"
     },
     {
       "tablename": "baseline_adaptive_blueprint_working_revision",
       "indexname": "baseline_adaptive_blueprint_one_working_idx",
-      "indexdef": "CREATE UNIQUE INDEX baseline_adaptive_blueprint_one_working_idx ON platform.baseline_adaptive_blueprint_working_revision USING btree (organization_id, occupation_id) WHERE (state = 'OPEN'::text)"
+      "indexdef": "CREATE UNIQUE INDEX baseline_adaptive_blueprint_one_working_idx ON platform.baseline_adaptive_blueprint_working_revision USING btree (organization_id, job position_id) WHERE (state = 'OPEN'::text)"
     },
     {
       "tablename": "baseline_adaptive_blueprint_working_revision",
@@ -12782,8 +12782,8 @@
     },
     {
       "tablename": "baseline_adaptive_blueprint_working_revision",
-      "indexname": "baseline_occupation_draft_list_idx",
-      "indexdef": "CREATE INDEX baseline_occupation_draft_list_idx ON platform.baseline_adaptive_blueprint_working_revision USING btree (organization_id, updated_at DESC, working_revision_id) WHERE (state = 'OPEN'::text)"
+      "indexname": "baseline_job position_draft_list_idx",
+      "indexdef": "CREATE INDEX baseline_job position_draft_list_idx ON platform.baseline_adaptive_blueprint_working_revision USING btree (organization_id, updated_at DESC, working_revision_id) WHERE (state = 'OPEN'::text)"
     },
     {
       "tablename": "baseline_answer_reveal_audit",
@@ -12813,12 +12813,12 @@
     {
       "tablename": "baseline_assessment_series",
       "indexname": "baseline_assessment_series_pkey",
-      "indexdef": "CREATE UNIQUE INDEX baseline_assessment_series_pkey ON platform.baseline_assessment_series USING btree (organization_id, occupation_id)"
+      "indexdef": "CREATE UNIQUE INDEX baseline_assessment_series_pkey ON platform.baseline_assessment_series USING btree (organization_id, job position_id)"
     },
     {
       "tablename": "baseline_assessment_transition",
-      "indexname": "baseline_assessment_transitio_organization_id_occupation_id_key",
-      "indexdef": "CREATE UNIQUE INDEX baseline_assessment_transitio_organization_id_occupation_id_key ON platform.baseline_assessment_transition USING btree (organization_id, occupation_id, series_revision)"
+      "indexname": "baseline_assessment_transitio_organization_id_job position_id_key",
+      "indexdef": "CREATE UNIQUE INDEX baseline_assessment_transitio_organization_id_job position_id_key ON platform.baseline_assessment_transition USING btree (organization_id, job position_id, series_revision)"
     },
     {
       "tablename": "baseline_assessment_transition",
@@ -12828,7 +12828,7 @@
     {
       "tablename": "baseline_assessment_transition",
       "indexname": "baseline_assessment_transition_scope_time_idx",
-      "indexdef": "CREATE INDEX baseline_assessment_transition_scope_time_idx ON platform.baseline_assessment_transition USING btree (organization_id, occupation_id, occurred_at DESC)"
+      "indexdef": "CREATE INDEX baseline_assessment_transition_scope_time_idx ON platform.baseline_assessment_transition USING btree (organization_id, job position_id, occurred_at DESC)"
     },
     {
       "tablename": "baseline_attempt_command",
@@ -12913,12 +12913,12 @@
     {
       "tablename": "baseline_blueprint",
       "indexname": "baseline_blueprint_org_identity_key",
-      "indexdef": "CREATE UNIQUE INDEX baseline_blueprint_org_identity_key ON platform.baseline_blueprint USING btree (blueprint_id, organization_id, occupation_id)"
+      "indexdef": "CREATE UNIQUE INDEX baseline_blueprint_org_identity_key ON platform.baseline_blueprint USING btree (blueprint_id, organization_id, job position_id)"
     },
     {
       "tablename": "baseline_blueprint",
-      "indexname": "baseline_blueprint_organization_occupation_unique",
-      "indexdef": "CREATE UNIQUE INDEX baseline_blueprint_organization_occupation_unique ON platform.baseline_blueprint USING btree (organization_id, occupation_id) WHERE ((organization_id IS NOT NULL) AND (occupation_id IS NOT NULL))"
+      "indexname": "baseline_blueprint_organization_job position_unique",
+      "indexdef": "CREATE UNIQUE INDEX baseline_blueprint_organization_job position_unique ON platform.baseline_blueprint USING btree (organization_id, job position_id) WHERE ((organization_id IS NOT NULL) AND (job position_id IS NOT NULL))"
     },
     {
       "tablename": "baseline_blueprint",
@@ -12928,7 +12928,7 @@
     {
       "tablename": "baseline_blueprint_activation",
       "indexname": "baseline_blueprint_activation_pkey",
-      "indexdef": "CREATE UNIQUE INDEX baseline_blueprint_activation_pkey ON platform.baseline_blueprint_activation USING btree (organization_id, occupation_id)"
+      "indexdef": "CREATE UNIQUE INDEX baseline_blueprint_activation_pkey ON platform.baseline_blueprint_activation USING btree (organization_id, job position_id)"
     },
     {
       "tablename": "baseline_blueprint_activation_event",
@@ -12938,12 +12938,12 @@
     {
       "tablename": "baseline_blueprint_activation_event",
       "indexname": "baseline_blueprint_activation_event_time_idx",
-      "indexdef": "CREATE INDEX baseline_blueprint_activation_event_time_idx ON platform.baseline_blueprint_activation_event USING btree (organization_id, occupation_id, occurred_at DESC)"
+      "indexdef": "CREATE INDEX baseline_blueprint_activation_event_time_idx ON platform.baseline_blueprint_activation_event USING btree (organization_id, job position_id, occurred_at DESC)"
     },
     {
       "tablename": "baseline_blueprint_activation_event",
-      "indexname": "baseline_blueprint_activation_organization_id_occupation_id_key",
-      "indexdef": "CREATE UNIQUE INDEX baseline_blueprint_activation_organization_id_occupation_id_key ON platform.baseline_blueprint_activation_event USING btree (organization_id, occupation_id, activation_revision)"
+      "indexname": "baseline_blueprint_activation_organization_id_job position_id_key",
+      "indexdef": "CREATE UNIQUE INDEX baseline_blueprint_activation_organization_id_job position_id_key ON platform.baseline_blueprint_activation_event USING btree (organization_id, job position_id, activation_revision)"
     },
     {
       "tablename": "baseline_blueprint_activation_event",
@@ -12993,7 +12993,7 @@
     {
       "tablename": "baseline_blueprint_working_revision",
       "indexname": "baseline_blueprint_one_open_working_revision",
-      "indexdef": "CREATE UNIQUE INDEX baseline_blueprint_one_open_working_revision ON platform.baseline_blueprint_working_revision USING btree (organization_id, occupation_id) WHERE (state = 'OPEN'::text)"
+      "indexdef": "CREATE UNIQUE INDEX baseline_blueprint_one_open_working_revision ON platform.baseline_blueprint_working_revision USING btree (organization_id, job position_id) WHERE (state = 'OPEN'::text)"
     },
     {
       "tablename": "baseline_blueprint_working_revision",
@@ -13008,7 +13008,7 @@
     {
       "tablename": "baseline_mastery_evidence",
       "indexname": "baseline_mastery_evidence_learner_idx",
-      "indexdef": "CREATE INDEX baseline_mastery_evidence_learner_idx ON platform.baseline_mastery_evidence USING btree (organization_id, learner_id, occupation_id)"
+      "indexdef": "CREATE INDEX baseline_mastery_evidence_learner_idx ON platform.baseline_mastery_evidence USING btree (organization_id, learner_id, job position_id)"
     },
     {
       "tablename": "baseline_mastery_evidence",
@@ -13076,14 +13076,14 @@
       "indexdef": "CREATE UNIQUE INDEX completion_pass_pkey ON platform.completion_pass USING btree (activity_id, assessment_version_id)"
     },
     {
-      "tablename": "employee_occupation_profile",
-      "indexname": "employee_occupation_profile_attempt_id_key",
-      "indexdef": "CREATE UNIQUE INDEX employee_occupation_profile_attempt_id_key ON platform.employee_occupation_profile USING btree (attempt_id)"
+      "tablename": "employee_job position_profile",
+      "indexname": "employee_job position_profile_attempt_id_key",
+      "indexdef": "CREATE UNIQUE INDEX employee_job position_profile_attempt_id_key ON platform.employee_job position_profile USING btree (attempt_id)"
     },
     {
-      "tablename": "employee_occupation_profile",
-      "indexname": "employee_occupation_profile_pkey",
-      "indexdef": "CREATE UNIQUE INDEX employee_occupation_profile_pkey ON platform.employee_occupation_profile USING btree (organization_id, learner_id, occupation_id)"
+      "tablename": "employee_job position_profile",
+      "indexname": "employee_job position_profile_pkey",
+      "indexdef": "CREATE UNIQUE INDEX employee_job position_profile_pkey ON platform.employee_job position_profile USING btree (organization_id, learner_id, job position_id)"
     },
     {
       "tablename": "employee_role_selection",
@@ -13887,9 +13887,9 @@
     },
     {
       "table": "baseline_blueprint_version",
-      "name": "baseline_blueprint_occupation_identity",
+      "name": "baseline_blueprint_job position_identity",
       "enabled": "O",
-      "definition": "CREATE TRIGGER baseline_blueprint_occupation_identity BEFORE INSERT ON platform.baseline_blueprint_version FOR EACH ROW EXECUTE FUNCTION platform.validate_baseline_blueprint_occupation_identity()"
+      "definition": "CREATE TRIGGER baseline_blueprint_job position_identity BEFORE INSERT ON platform.baseline_blueprint_version FOR EACH ROW EXECUTE FUNCTION platform.validate_baseline_blueprint_job position_identity()"
     },
     {
       "table": "baseline_blueprint_version",
@@ -13982,10 +13982,10 @@
       "definition": "CREATE TRIGGER immutable_history BEFORE DELETE OR UPDATE ON platform.completion_pass FOR EACH ROW EXECUTE FUNCTION platform.reject_history_mutation()"
     },
     {
-      "table": "employee_occupation_profile",
-      "name": "employee_occupation_profile_initial_immutable",
+      "table": "employee_job position_profile",
+      "name": "employee_job position_profile_initial_immutable",
       "enabled": "O",
-      "definition": "CREATE TRIGGER employee_occupation_profile_initial_immutable BEFORE DELETE OR UPDATE ON platform.employee_occupation_profile FOR EACH ROW EXECUTE FUNCTION platform.reject_history_mutation()"
+      "definition": "CREATE TRIGGER employee_job position_profile_initial_immutable BEFORE DELETE OR UPDATE ON platform.employee_job position_profile FOR EACH ROW EXECUTE FUNCTION platform.reject_history_mutation()"
     },
     {
       "table": "employee_role_selection_request",
@@ -14201,27 +14201,27 @@
     {
       "name": "guard_adaptive_attempt_header",
       "arguments": "",
-      "definition": "CREATE OR REPLACE FUNCTION platform.guard_adaptive_attempt_header()\n RETURNS trigger\n LANGUAGE plpgsql\nAS $function$\nDECLARE blueprint platform.baseline_adaptive_blueprint_version%ROWTYPE;\nDECLARE prior platform.baseline_adaptive_attempt%ROWTYPE;\nDECLARE bounds record;\nBEGIN\n    IF TG_OP = 'DELETE' THEN\n        RAISE EXCEPTION 'Adaptive attempt history cannot be deleted' USING ERRCODE = '23514';\n    ELSIF TG_OP = 'UPDATE' THEN\n        IF OLD.state <> 'IN_PROGRESS' OR NEW.revision <> OLD.revision + 1\n            OR (to_jsonb(NEW) - ARRAY['state','revision','finished_at','completion_reason'])\n                IS DISTINCT FROM (to_jsonb(OLD) - ARRAY['state','revision','finished_at','completion_reason']) THEN\n            RAISE EXCEPTION 'Attempt is terminal, stale or pinned inputs changed' USING ERRCODE = '23514';\n        END IF;\n        RETURN NEW;\n    END IF;\n    IF NEW.state <> 'IN_PROGRESS' OR NEW.revision <> 1 THEN\n        RAISE EXCEPTION 'Attempts must start in progress at revision one' USING ERRCODE = '23514';\n    END IF;\n    SELECT * INTO STRICT blueprint FROM platform.baseline_adaptive_blueprint_version\n        WHERE blueprint_id = NEW.blueprint_id AND version = NEW.blueprint_version;\n    IF ROW(NEW.model_version_id, NEW.mastery_mapping_version_id, NEW.parameter_set_id, NEW.catalog_fingerprint)\n        IS DISTINCT FROM ROW(blueprint.model_version_id, blueprint.mastery_mapping_version_id,\n            blueprint.parameter_set_id, blueprint.catalog_fingerprint) THEN\n        RAISE EXCEPTION 'Attempt technical/catalog pins must match Blueprint' USING ERRCODE = '23514';\n    END IF;\n    IF NEW.scope_policy IS DISTINCT FROM blueprint.scope_policy THEN\n        RAISE EXCEPTION 'Attempt scope policy must match its immutable Blueprint' USING ERRCODE = '23514';\n    END IF;\n    IF blueprint.scope_policy = 'FULL_OCCUPATION_V2' THEN\n        SELECT blueprint.occupation_max_questions AS maximum,\n            blueprint.occupation_time_limit_seconds AS duration INTO bounds;\n    ELSIF NEW.target_role_id IS NULL THEN\n        SELECT blueprint.exploration_max_questions AS maximum,\n            blueprint.exploration_time_limit_seconds AS duration INTO bounds;\n    ELSE\n        SELECT max_questions AS maximum, time_limit_seconds AS duration INTO STRICT bounds\n            FROM platform.baseline_adaptive_blueprint_role WHERE blueprint_id = NEW.blueprint_id\n                AND blueprint_version = NEW.blueprint_version AND role_id = NEW.target_role_id;\n    END IF;\n    IF ROW(NEW.max_questions, NEW.time_limit_seconds) IS DISTINCT FROM ROW(bounds.maximum, bounds.duration) THEN\n        RAISE EXCEPTION 'Attempt bounds must match its pinned purpose/role' USING ERRCODE = '23514';\n    END IF;\n    IF NEW.replaces_attempt_id IS NOT NULL THEN\n        SELECT * INTO STRICT prior FROM platform.baseline_adaptive_attempt\n            WHERE attempt_id = NEW.replaces_attempt_id FOR UPDATE;\n        IF prior.state <> 'INVALIDATED' OR prior.finished_at > NEW.started_at\n            OR ROW(prior.organization_id, prior.learner_id, prior.occupation_id)\n                IS DISTINCT FROM ROW(NEW.organization_id, NEW.learner_id, NEW.occupation_id) THEN\n            RAISE EXCEPTION 'Only same-scope invalidated history may be replaced' USING ERRCODE = '23514';\n        END IF;\n    END IF;\n    RETURN NEW;\nEND;\n$function$\n"
+      "definition": "CREATE OR REPLACE FUNCTION platform.guard_adaptive_attempt_header()\n RETURNS trigger\n LANGUAGE plpgsql\nAS $function$\nDECLARE blueprint platform.baseline_adaptive_blueprint_version%ROWTYPE;\nDECLARE prior platform.baseline_adaptive_attempt%ROWTYPE;\nDECLARE bounds record;\nBEGIN\n    IF TG_OP = 'DELETE' THEN\n        RAISE EXCEPTION 'Adaptive attempt history cannot be deleted' USING ERRCODE = '23514';\n    ELSIF TG_OP = 'UPDATE' THEN\n        IF OLD.state <> 'IN_PROGRESS' OR NEW.revision <> OLD.revision + 1\n            OR (to_jsonb(NEW) - ARRAY['state','revision','finished_at','completion_reason'])\n                IS DISTINCT FROM (to_jsonb(OLD) - ARRAY['state','revision','finished_at','completion_reason']) THEN\n            RAISE EXCEPTION 'Attempt is terminal, stale or pinned inputs changed' USING ERRCODE = '23514';\n        END IF;\n        RETURN NEW;\n    END IF;\n    IF NEW.state <> 'IN_PROGRESS' OR NEW.revision <> 1 THEN\n        RAISE EXCEPTION 'Attempts must start in progress at revision one' USING ERRCODE = '23514';\n    END IF;\n    SELECT * INTO STRICT blueprint FROM platform.baseline_adaptive_blueprint_version\n        WHERE blueprint_id = NEW.blueprint_id AND version = NEW.blueprint_version;\n    IF ROW(NEW.model_version_id, NEW.mastery_mapping_version_id, NEW.parameter_set_id, NEW.catalog_fingerprint)\n        IS DISTINCT FROM ROW(blueprint.model_version_id, blueprint.mastery_mapping_version_id,\n            blueprint.parameter_set_id, blueprint.catalog_fingerprint) THEN\n        RAISE EXCEPTION 'Attempt technical/catalog pins must match Blueprint' USING ERRCODE = '23514';\n    END IF;\n    IF NEW.scope_policy IS DISTINCT FROM blueprint.scope_policy THEN\n        RAISE EXCEPTION 'Attempt scope policy must match its immutable Blueprint' USING ERRCODE = '23514';\n    END IF;\n    IF blueprint.scope_policy = 'FULL_JOB_POSITION_V2' THEN\n        SELECT blueprint.job position_max_questions AS maximum,\n            blueprint.job position_time_limit_seconds AS duration INTO bounds;\n    ELSIF NEW.target_role_id IS NULL THEN\n        SELECT blueprint.exploration_max_questions AS maximum,\n            blueprint.exploration_time_limit_seconds AS duration INTO bounds;\n    ELSE\n        SELECT max_questions AS maximum, time_limit_seconds AS duration INTO STRICT bounds\n            FROM platform.baseline_adaptive_blueprint_role WHERE blueprint_id = NEW.blueprint_id\n                AND blueprint_version = NEW.blueprint_version AND role_id = NEW.target_role_id;\n    END IF;\n    IF ROW(NEW.max_questions, NEW.time_limit_seconds) IS DISTINCT FROM ROW(bounds.maximum, bounds.duration) THEN\n        RAISE EXCEPTION 'Attempt bounds must match its pinned purpose/role' USING ERRCODE = '23514';\n    END IF;\n    IF NEW.replaces_attempt_id IS NOT NULL THEN\n        SELECT * INTO STRICT prior FROM platform.baseline_adaptive_attempt\n            WHERE attempt_id = NEW.replaces_attempt_id FOR UPDATE;\n        IF prior.state <> 'INVALIDATED' OR prior.finished_at > NEW.started_at\n            OR ROW(prior.organization_id, prior.learner_id, prior.job position_id)\n                IS DISTINCT FROM ROW(NEW.organization_id, NEW.learner_id, NEW.job position_id) THEN\n            RAISE EXCEPTION 'Only same-scope invalidated history may be replaced' USING ERRCODE = '23514';\n        END IF;\n    END IF;\n    RETURN NEW;\nEND;\n$function$\n"
     },
     {
       "name": "guard_adaptive_membership_insert",
       "arguments": "",
-      "definition": "CREATE OR REPLACE FUNCTION platform.guard_adaptive_membership_insert()\n RETURNS trigger\n LANGUAGE plpgsql\nAS $function$\nBEGIN\n    PERFORM 1 FROM platform.baseline_adaptive_blueprint_version\n    WHERE blueprint_id = NEW.blueprint_id AND version = NEW.blueprint_version FOR UPDATE;\n    IF NOT FOUND THEN\n        RAISE EXCEPTION 'Adaptive parent version must be visible before membership' USING ERRCODE = '23503';\n    END IF;\n    IF EXISTS (SELECT 1 FROM platform.baseline_blueprint_activation_event\n        WHERE blueprint_id = NEW.blueprint_id AND blueprint_version = NEW.blueprint_version) THEN\n        RAISE EXCEPTION 'Finalized Blueprint membership is immutable' USING ERRCODE = '23514';\n    END IF;\n    IF TG_TABLE_NAME = 'baseline_adaptive_blueprint_role' THEN\n        IF EXISTS (SELECT 1 FROM platform.baseline_adaptive_blueprint_version parent\n            WHERE parent.blueprint_id = NEW.blueprint_id AND parent.version = NEW.blueprint_version\n              AND ((parent.scope_policy IS NULL AND (NEW.max_questions IS NULL OR NEW.time_limit_seconds IS NULL))\n                OR (parent.scope_policy = 'FULL_OCCUPATION_V2' AND (NEW.max_questions IS NOT NULL OR NEW.time_limit_seconds IS NOT NULL)))) THEN\n            RAISE EXCEPTION 'Role bounds must match the pinned Blueprint scope policy' USING ERRCODE = '23514';\n        END IF;\n    END IF;\n    RETURN NEW;\nEND;\n$function$\n"
+      "definition": "CREATE OR REPLACE FUNCTION platform.guard_adaptive_membership_insert()\n RETURNS trigger\n LANGUAGE plpgsql\nAS $function$\nBEGIN\n    PERFORM 1 FROM platform.baseline_adaptive_blueprint_version\n    WHERE blueprint_id = NEW.blueprint_id AND version = NEW.blueprint_version FOR UPDATE;\n    IF NOT FOUND THEN\n        RAISE EXCEPTION 'Adaptive parent version must be visible before membership' USING ERRCODE = '23503';\n    END IF;\n    IF EXISTS (SELECT 1 FROM platform.baseline_blueprint_activation_event\n        WHERE blueprint_id = NEW.blueprint_id AND blueprint_version = NEW.blueprint_version) THEN\n        RAISE EXCEPTION 'Finalized Blueprint membership is immutable' USING ERRCODE = '23514';\n    END IF;\n    IF TG_TABLE_NAME = 'baseline_adaptive_blueprint_role' THEN\n        IF EXISTS (SELECT 1 FROM platform.baseline_adaptive_blueprint_version parent\n            WHERE parent.blueprint_id = NEW.blueprint_id AND parent.version = NEW.blueprint_version\n              AND ((parent.scope_policy IS NULL AND (NEW.max_questions IS NULL OR NEW.time_limit_seconds IS NULL))\n                OR (parent.scope_policy = 'FULL_JOB_POSITION_V2' AND (NEW.max_questions IS NOT NULL OR NEW.time_limit_seconds IS NOT NULL)))) THEN\n            RAISE EXCEPTION 'Role bounds must match the pinned Blueprint scope policy' USING ERRCODE = '23514';\n        END IF;\n    END IF;\n    RETURN NEW;\nEND;\n$function$\n"
     },
     {
       "name": "guard_adaptive_working_revision",
       "arguments": "",
-      "definition": "CREATE OR REPLACE FUNCTION platform.guard_adaptive_working_revision()\n RETURNS trigger\n LANGUAGE plpgsql\nAS $function$\nBEGIN\n    IF TG_OP = 'DELETE' OR OLD.state <> 'OPEN' THEN\n        RAISE EXCEPTION 'Closed adaptive working revision is immutable' USING ERRCODE = '23514';\n    END IF;\n    IF (to_jsonb(NEW) - ARRAY['revision', 'configuration', 'state', 'updated_by', 'updated_at', 'closed_at'])\n        IS DISTINCT FROM (to_jsonb(OLD) - ARRAY['revision', 'configuration', 'state', 'updated_by', 'updated_at', 'closed_at'])\n        OR NEW.revision <> OLD.revision + 1 THEN\n        RAISE EXCEPTION 'Adaptive revision requires stable identity and next revision' USING ERRCODE = '23514';\n    END IF;\n    IF (OLD.configuration ? 'occupationBounds') IS DISTINCT FROM (NEW.configuration ? 'occupationBounds') THEN\n        RAISE EXCEPTION 'Archive the legacy Draft before creating a new-format Draft' USING ERRCODE = '23514';\n    END IF;\n    RETURN NEW;\nEND;\n$function$\n"
+      "definition": "CREATE OR REPLACE FUNCTION platform.guard_adaptive_working_revision()\n RETURNS trigger\n LANGUAGE plpgsql\nAS $function$\nBEGIN\n    IF TG_OP = 'DELETE' OR OLD.state <> 'OPEN' THEN\n        RAISE EXCEPTION 'Closed adaptive working revision is immutable' USING ERRCODE = '23514';\n    END IF;\n    IF (to_jsonb(NEW) - ARRAY['revision', 'configuration', 'state', 'updated_by', 'updated_at', 'closed_at'])\n        IS DISTINCT FROM (to_jsonb(OLD) - ARRAY['revision', 'configuration', 'state', 'updated_by', 'updated_at', 'closed_at'])\n        OR NEW.revision <> OLD.revision + 1 THEN\n        RAISE EXCEPTION 'Adaptive revision requires stable identity and next revision' USING ERRCODE = '23514';\n    END IF;\n    IF (OLD.configuration ? 'job positionBounds') IS DISTINCT FROM (NEW.configuration ? 'job positionBounds') THEN\n        RAISE EXCEPTION 'Archive the legacy Draft before creating a new-format Draft' USING ERRCODE = '23514';\n    END IF;\n    RETURN NEW;\nEND;\n$function$\n"
     },
     {
       "name": "guard_baseline_activation",
       "arguments": "",
-      "definition": "CREATE OR REPLACE FUNCTION platform.guard_baseline_activation()\n RETURNS trigger\n LANGUAGE plpgsql\nAS $function$\nBEGIN\n    IF TG_OP = 'DELETE' THEN\n        RAISE EXCEPTION 'Disable availability rather than deleting the pointer' USING ERRCODE = '23514';\n    ELSIF TG_OP = 'INSERT' THEN\n        IF NEW.activation_revision <> 1 OR NEW.blueprint_version IS NULL THEN\n            RAISE EXCEPTION 'First activation requires version and revision one' USING ERRCODE = '23514';\n        END IF;\n    ELSIF NEW.organization_id <> OLD.organization_id OR NEW.occupation_id <> OLD.occupation_id\n        OR NEW.blueprint_id <> OLD.blueprint_id OR NEW.activation_revision <> OLD.activation_revision + 1 THEN\n        RAISE EXCEPTION 'Activation requires stable scope and next revision' USING ERRCODE = '23514';\n    END IF;\n    RETURN NEW;\nEND;\n$function$\n"
+      "definition": "CREATE OR REPLACE FUNCTION platform.guard_baseline_activation()\n RETURNS trigger\n LANGUAGE plpgsql\nAS $function$\nBEGIN\n    IF TG_OP = 'DELETE' THEN\n        RAISE EXCEPTION 'Disable availability rather than deleting the pointer' USING ERRCODE = '23514';\n    ELSIF TG_OP = 'INSERT' THEN\n        IF NEW.activation_revision <> 1 OR NEW.blueprint_version IS NULL THEN\n            RAISE EXCEPTION 'First activation requires version and revision one' USING ERRCODE = '23514';\n        END IF;\n    ELSIF NEW.organization_id <> OLD.organization_id OR NEW.job position_id <> OLD.job position_id\n        OR NEW.blueprint_id <> OLD.blueprint_id OR NEW.activation_revision <> OLD.activation_revision + 1 THEN\n        RAISE EXCEPTION 'Activation requires stable scope and next revision' USING ERRCODE = '23514';\n    END IF;\n    RETURN NEW;\nEND;\n$function$\n"
     },
     {
       "name": "guard_baseline_activation_event",
       "arguments": "",
-      "definition": "CREATE OR REPLACE FUNCTION platform.guard_baseline_activation_event()\n RETURNS trigger\n LANGUAGE plpgsql\nAS $function$\nBEGIN\n    IF NOT EXISTS (SELECT 1 FROM platform.baseline_blueprint_activation current_pointer\n        WHERE current_pointer.organization_id = NEW.organization_id AND current_pointer.occupation_id = NEW.occupation_id\n          AND current_pointer.activation_revision = NEW.activation_revision AND current_pointer.blueprint_id = NEW.blueprint_id\n          AND current_pointer.blueprint_version IS NOT DISTINCT FROM NEW.blueprint_version\n          AND current_pointer.activated_by = NEW.actor_id AND current_pointer.activated_at = NEW.occurred_at) THEN\n        RAISE EXCEPTION 'Activation event must describe the current transaction pointer' USING ERRCODE = '23514';\n    END IF;\n    RETURN NEW;\nEND;\n$function$\n"
+      "definition": "CREATE OR REPLACE FUNCTION platform.guard_baseline_activation_event()\n RETURNS trigger\n LANGUAGE plpgsql\nAS $function$\nBEGIN\n    IF NOT EXISTS (SELECT 1 FROM platform.baseline_blueprint_activation current_pointer\n        WHERE current_pointer.organization_id = NEW.organization_id AND current_pointer.job position_id = NEW.job position_id\n          AND current_pointer.activation_revision = NEW.activation_revision AND current_pointer.blueprint_id = NEW.blueprint_id\n          AND current_pointer.blueprint_version IS NOT DISTINCT FROM NEW.blueprint_version\n          AND current_pointer.activated_by = NEW.actor_id AND current_pointer.activated_at = NEW.occurred_at) THEN\n        RAISE EXCEPTION 'Activation event must describe the current transaction pointer' USING ERRCODE = '23514';\n    END IF;\n    RETURN NEW;\nEND;\n$function$\n"
     },
     {
       "name": "guard_baseline_version_namespace",
@@ -14231,7 +14231,7 @@
     {
       "name": "guard_baseline_working_namespace",
       "arguments": "",
-      "definition": "CREATE OR REPLACE FUNCTION platform.guard_baseline_working_namespace()\n RETURNS trigger\n LANGUAGE plpgsql\nAS $function$\nBEGIN\n    PERFORM 1 FROM platform.baseline_blueprint WHERE blueprint_id = NEW.blueprint_id FOR UPDATE;\n    IF TG_OP = 'INSERT' THEN\n        IF TG_TABLE_NAME = 'baseline_adaptive_blueprint_working_revision'\n            AND (NEW.state <> 'OPEN' OR NEW.revision <> 1) THEN\n            RAISE EXCEPTION 'Adaptive working revision must start open at revision one' USING ERRCODE = '23514';\n        END IF;\n        IF NEW.state = 'OPEN' THEN\n            INSERT INTO platform.baseline_blueprint_working_registry(blueprint_id, working_revision_id, contract_family)\n            VALUES (NEW.blueprint_id, NEW.working_revision_id,\n                CASE WHEN TG_TABLE_NAME = 'baseline_blueprint_working_revision' THEN 'FIXED' ELSE 'ADAPTIVE' END);\n        END IF;\n    ELSE\n        IF NEW.blueprint_id <> OLD.blueprint_id OR NEW.working_revision_id <> OLD.working_revision_id\n            OR NEW.organization_id <> OLD.organization_id OR NEW.occupation_id <> OLD.occupation_id THEN\n            RAISE EXCEPTION 'Working revision scope is immutable' USING ERRCODE = '23514';\n        END IF;\n        IF OLD.state = 'OPEN' AND NEW.state <> 'OPEN' THEN\n            DELETE FROM platform.baseline_blueprint_working_registry\n            WHERE blueprint_id = OLD.blueprint_id AND working_revision_id = OLD.working_revision_id;\n        END IF;\n    END IF;\n    RETURN NEW;\nEND;\n$function$\n"
+      "definition": "CREATE OR REPLACE FUNCTION platform.guard_baseline_working_namespace()\n RETURNS trigger\n LANGUAGE plpgsql\nAS $function$\nBEGIN\n    PERFORM 1 FROM platform.baseline_blueprint WHERE blueprint_id = NEW.blueprint_id FOR UPDATE;\n    IF TG_OP = 'INSERT' THEN\n        IF TG_TABLE_NAME = 'baseline_adaptive_blueprint_working_revision'\n            AND (NEW.state <> 'OPEN' OR NEW.revision <> 1) THEN\n            RAISE EXCEPTION 'Adaptive working revision must start open at revision one' USING ERRCODE = '23514';\n        END IF;\n        IF NEW.state = 'OPEN' THEN\n            INSERT INTO platform.baseline_blueprint_working_registry(blueprint_id, working_revision_id, contract_family)\n            VALUES (NEW.blueprint_id, NEW.working_revision_id,\n                CASE WHEN TG_TABLE_NAME = 'baseline_blueprint_working_revision' THEN 'FIXED' ELSE 'ADAPTIVE' END);\n        END IF;\n    ELSE\n        IF NEW.blueprint_id <> OLD.blueprint_id OR NEW.working_revision_id <> OLD.working_revision_id\n            OR NEW.organization_id <> OLD.organization_id OR NEW.job position_id <> OLD.job position_id THEN\n            RAISE EXCEPTION 'Working revision scope is immutable' USING ERRCODE = '23514';\n        END IF;\n        IF OLD.state = 'OPEN' AND NEW.state <> 'OPEN' THEN\n            DELETE FROM platform.baseline_blueprint_working_registry\n            WHERE blueprint_id = OLD.blueprint_id AND working_revision_id = OLD.working_revision_id;\n        END IF;\n    END IF;\n    RETURN NEW;\nEND;\n$function$\n"
     },
     {
       "name": "guard_closed_baseline_working_revision",
@@ -14301,7 +14301,7 @@
     {
       "name": "valid_adaptive_blueprint_configuration",
       "arguments": "config jsonb",
-      "definition": "CREATE OR REPLACE FUNCTION platform.valid_adaptive_blueprint_configuration(config jsonb)\n RETURNS boolean\n LANGUAGE plpgsql\n IMMUTABLE\nAS $function$\nDECLARE bound jsonb; role_key text;\nBEGIN\n    IF jsonb_typeof(config) IS DISTINCT FROM 'object' THEN RETURN false; END IF;\n    IF config ? 'occupationBounds' THEN\n        IF NOT config ?& ARRAY['name','occupationBounds']\n            OR config - ARRAY['name','occupationBounds'] <> '{}'::jsonb\n            OR jsonb_typeof(config -> 'name') IS DISTINCT FROM 'string'\n            OR btrim(config ->> 'name') = '' THEN RETURN false; END IF;\n        bound := config -> 'occupationBounds';\n        IF jsonb_typeof(bound) IS DISTINCT FROM 'object'\n            OR NOT bound ?& ARRAY['maxQuestions','timeLimitSeconds']\n            OR bound - ARRAY['maxQuestions','timeLimitSeconds'] <> '{}'::jsonb\n            OR jsonb_typeof(bound -> 'maxQuestions') IS DISTINCT FROM 'number'\n            OR jsonb_typeof(bound -> 'timeLimitSeconds') IS DISTINCT FROM 'number' THEN RETURN false; END IF;\n        IF (bound ->> 'maxQuestions') !~ '^[0-9]+$' OR (bound ->> 'timeLimitSeconds') !~ '^[0-9]+$'\n            OR (bound ->> 'maxQuestions')::numeric NOT BETWEEN 1 AND 2147483647\n            OR (bound ->> 'timeLimitSeconds')::numeric NOT BETWEEN 1 AND 2147483647 THEN RETURN false; END IF;\n        IF char_length(btrim(config ->> 'name')) > 100\n            OR (bound ->> 'timeLimitSeconds')::numeric < 30 * (bound ->> 'maxQuestions')::numeric\n            OR (bound ->> 'timeLimitSeconds')::numeric > 120 * (bound ->> 'maxQuestions')::numeric THEN RETURN false; END IF;\n        RETURN true;\n    END IF;\n    IF jsonb_typeof(config) IS DISTINCT FROM 'object'\n        OR NOT config ?& ARRAY['name', 'exploration', 'roles']\n        OR config - ARRAY['name', 'exploration', 'roles'] <> '{}'::jsonb\n        OR jsonb_typeof(config -> 'name') IS DISTINCT FROM 'string'\n        OR btrim(config ->> 'name') = ''\n        OR jsonb_typeof(config -> 'roles') IS DISTINCT FROM 'object'\n        OR config -> 'roles' = '{}'::jsonb THEN RETURN false; END IF;\n    FOR role_key IN SELECT jsonb_object_keys(config -> 'roles') LOOP\n        IF btrim(role_key) = '' OR role_key <> btrim(role_key) THEN RETURN false; END IF;\n    END LOOP;\n    FOR bound IN SELECT config -> 'exploration' UNION ALL SELECT value FROM jsonb_each(config -> 'roles') LOOP\n        IF jsonb_typeof(bound) IS DISTINCT FROM 'object'\n            OR NOT bound ?& ARRAY['maxQuestions', 'timeLimitSeconds']\n            OR bound - ARRAY['maxQuestions', 'timeLimitSeconds'] <> '{}'::jsonb\n            OR jsonb_typeof(bound -> 'maxQuestions') IS DISTINCT FROM 'number'\n            OR jsonb_typeof(bound -> 'timeLimitSeconds') IS DISTINCT FROM 'number' THEN RETURN false; END IF;\n        IF (bound ->> 'maxQuestions') !~ '^[0-9]+$' OR (bound ->> 'timeLimitSeconds') !~ '^[0-9]+$'\n            OR (bound ->> 'maxQuestions')::numeric NOT BETWEEN 1 AND 2147483647\n            OR (bound ->> 'timeLimitSeconds')::numeric NOT BETWEEN 1 AND 2147483647 THEN RETURN false; END IF;\n    END LOOP;\n    RETURN true;\nEND;\n$function$\n"
+      "definition": "CREATE OR REPLACE FUNCTION platform.valid_adaptive_blueprint_configuration(config jsonb)\n RETURNS boolean\n LANGUAGE plpgsql\n IMMUTABLE\nAS $function$\nDECLARE bound jsonb; role_key text;\nBEGIN\n    IF jsonb_typeof(config) IS DISTINCT FROM 'object' THEN RETURN false; END IF;\n    IF config ? 'job positionBounds' THEN\n        IF NOT config ?& ARRAY['name','job positionBounds']\n            OR config - ARRAY['name','job positionBounds'] <> '{}'::jsonb\n            OR jsonb_typeof(config -> 'name') IS DISTINCT FROM 'string'\n            OR btrim(config ->> 'name') = '' THEN RETURN false; END IF;\n        bound := config -> 'job positionBounds';\n        IF jsonb_typeof(bound) IS DISTINCT FROM 'object'\n            OR NOT bound ?& ARRAY['maxQuestions','timeLimitSeconds']\n            OR bound - ARRAY['maxQuestions','timeLimitSeconds'] <> '{}'::jsonb\n            OR jsonb_typeof(bound -> 'maxQuestions') IS DISTINCT FROM 'number'\n            OR jsonb_typeof(bound -> 'timeLimitSeconds') IS DISTINCT FROM 'number' THEN RETURN false; END IF;\n        IF (bound ->> 'maxQuestions') !~ '^[0-9]+$' OR (bound ->> 'timeLimitSeconds') !~ '^[0-9]+$'\n            OR (bound ->> 'maxQuestions')::numeric NOT BETWEEN 1 AND 2147483647\n            OR (bound ->> 'timeLimitSeconds')::numeric NOT BETWEEN 1 AND 2147483647 THEN RETURN false; END IF;\n        IF char_length(btrim(config ->> 'name')) > 100\n            OR (bound ->> 'timeLimitSeconds')::numeric < 30 * (bound ->> 'maxQuestions')::numeric\n            OR (bound ->> 'timeLimitSeconds')::numeric > 120 * (bound ->> 'maxQuestions')::numeric THEN RETURN false; END IF;\n        RETURN true;\n    END IF;\n    IF jsonb_typeof(config) IS DISTINCT FROM 'object'\n        OR NOT config ?& ARRAY['name', 'exploration', 'roles']\n        OR config - ARRAY['name', 'exploration', 'roles'] <> '{}'::jsonb\n        OR jsonb_typeof(config -> 'name') IS DISTINCT FROM 'string'\n        OR btrim(config ->> 'name') = ''\n        OR jsonb_typeof(config -> 'roles') IS DISTINCT FROM 'object'\n        OR config -> 'roles' = '{}'::jsonb THEN RETURN false; END IF;\n    FOR role_key IN SELECT jsonb_object_keys(config -> 'roles') LOOP\n        IF btrim(role_key) = '' OR role_key <> btrim(role_key) THEN RETURN false; END IF;\n    END LOOP;\n    FOR bound IN SELECT config -> 'exploration' UNION ALL SELECT value FROM jsonb_each(config -> 'roles') LOOP\n        IF jsonb_typeof(bound) IS DISTINCT FROM 'object'\n            OR NOT bound ?& ARRAY['maxQuestions', 'timeLimitSeconds']\n            OR bound - ARRAY['maxQuestions', 'timeLimitSeconds'] <> '{}'::jsonb\n            OR jsonb_typeof(bound -> 'maxQuestions') IS DISTINCT FROM 'number'\n            OR jsonb_typeof(bound -> 'timeLimitSeconds') IS DISTINCT FROM 'number' THEN RETURN false; END IF;\n        IF (bound ->> 'maxQuestions') !~ '^[0-9]+$' OR (bound ->> 'timeLimitSeconds') !~ '^[0-9]+$'\n            OR (bound ->> 'maxQuestions')::numeric NOT BETWEEN 1 AND 2147483647\n            OR (bound ->> 'timeLimitSeconds')::numeric NOT BETWEEN 1 AND 2147483647 THEN RETURN false; END IF;\n    END LOOP;\n    RETURN true;\nEND;\n$function$\n"
     },
     {
       "name": "valid_baseline_option_order",
@@ -14316,7 +14316,7 @@
     {
       "name": "validate_adaptive_attempt_aggregate",
       "arguments": "",
-      "definition": "CREATE OR REPLACE FUNCTION platform.validate_adaptive_attempt_aggregate()\n RETURNS trigger\n LANGUAGE plpgsql\nAS $function$\nDECLARE attempt platform.baseline_adaptive_attempt%ROWTYPE;\nDECLARE answered integer;\nDECLARE correct integer;\nBEGIN\n    SELECT * INTO STRICT attempt FROM platform.baseline_adaptive_attempt WHERE attempt_id = NEW.attempt_id;\n    SELECT count(*), count(*) FILTER (WHERE is_correct) INTO answered, correct\n        FROM platform.baseline_attempt_response WHERE attempt_id = attempt.attempt_id;\n    IF (SELECT count(*) FROM platform.baseline_attempt_pool_item WHERE attempt_id = attempt.attempt_id) < attempt.max_questions\n        OR NOT EXISTS (SELECT 1 FROM platform.baseline_attempt_item WHERE attempt_id = attempt.attempt_id AND position = 1)\n        OR attempt.revision < answered::bigint + 1 THEN\n        RAISE EXCEPTION 'Attempt requires pinned capacity, first item and response revision' USING ERRCODE = '23514';\n    END IF;\n    IF EXISTS (\n        WITH expected AS (SELECT DISTINCT micro_skill_id FROM platform.baseline_adaptive_blueprint_skill\n            WHERE blueprint_id = attempt.blueprint_id AND blueprint_version = attempt.blueprint_version\n                AND (attempt.scope_policy = 'FULL_OCCUPATION_V2' OR attempt.target_role_id IS NULL OR role_id = attempt.target_role_id)),\n        actual AS (SELECT micro_skill_id FROM platform.baseline_attempt_skill_state WHERE attempt_id = attempt.attempt_id)\n        (SELECT * FROM expected EXCEPT SELECT * FROM actual) UNION ALL\n        (SELECT * FROM actual EXCEPT SELECT * FROM expected)) THEN\n        RAISE EXCEPTION 'Attempt skill scope must equal pinned role or deduplicated role union' USING ERRCODE = '23514';\n    END IF;\n    IF EXISTS (SELECT 1 FROM platform.baseline_attempt_skill_state skill\n        WHERE skill.attempt_id = attempt.attempt_id AND (skill.answered_count <> (\n            SELECT count(*) FROM platform.baseline_attempt_response response JOIN platform.baseline_attempt_item item\n                USING (attempt_id, position) WHERE response.attempt_id = skill.attempt_id AND item.micro_skill_id = skill.micro_skill_id)\n            OR skill.updated_at < attempt.started_at OR skill.updated_at >= attempt.deadline_at)) THEN\n        RAISE EXCEPTION 'Provisional state must match accepted responses and server timing' USING ERRCODE = '23514';\n    END IF;\n    IF attempt.finished_at IS NOT NULL AND EXISTS (SELECT 1 FROM platform.baseline_attempt_response\n        WHERE attempt_id = attempt.attempt_id AND accepted_at > attempt.finished_at) THEN\n        RAISE EXCEPTION 'Completion cannot precede accepted responses' USING ERRCODE = '23514';\n    END IF;\n    IF attempt.state NOT IN ('SUBMITTED', 'AUTO_SUBMITTED') THEN\n        IF EXISTS (SELECT 1 FROM platform.baseline_attempt_result WHERE attempt_id = attempt.attempt_id)\n            OR EXISTS (SELECT 1 FROM platform.baseline_attempt_skill_result WHERE attempt_id = attempt.attempt_id)\n            OR EXISTS (SELECT 1 FROM platform.baseline_mastery_evidence WHERE attempt_id = attempt.attempt_id) THEN\n            RAISE EXCEPTION 'Only successful completion may produce results/mastery' USING ERRCODE = '23514';\n        END IF;\n        RETURN NEW;\n    END IF;\n    IF NOT EXISTS (SELECT 1 FROM platform.baseline_attempt_result result JOIN platform.outbox_event event\n            ON event.event_id = result.mastery_event_id WHERE result.attempt_id = attempt.attempt_id\n            AND result.result_status = attempt.state AND result.answered_count = answered AND result.correct_count = correct\n            AND result.scored_at = attempt.finished_at AND event.aggregate_id = attempt.attempt_id)\n        OR EXISTS (SELECT 1 FROM platform.baseline_attempt_skill_state state\n            LEFT JOIN platform.baseline_attempt_skill_result result USING (attempt_id, micro_skill_id)\n            LEFT JOIN platform.baseline_mastery_evidence evidence USING (attempt_id, micro_skill_id)\n            WHERE state.attempt_id = attempt.attempt_id AND (result.attempt_id IS NULL OR evidence.attempt_id IS NULL\n                OR result.mastery_mapping_version_id <> attempt.mastery_mapping_version_id\n                OR result.finalized_at <> attempt.finished_at\n                OR ROW(result.theta, result.standard_error) IS DISTINCT FROM ROW(state.theta, state.standard_error)\n                OR ROW(evidence.theta, evidence.standard_error, evidence.estimated_mastery, evidence.mastery,\n                    evidence.confidence_label, evidence.model_version_id, evidence.mastery_mapping_version_id,\n                    evidence.parameter_set_id, evidence.emitted_at)\n                    IS DISTINCT FROM ROW(result.theta, result.standard_error, result.estimated_mastery, result.mastery,\n                        result.confidence_label, attempt.model_version_id, attempt.mastery_mapping_version_id,\n                        attempt.parameter_set_id, attempt.finished_at))) THEN\n        RAISE EXCEPTION 'Completion requires consistent immutable result, every skill and one mastery event' USING ERRCODE = '23514';\n    END IF;\n    RETURN NEW;\nEND;\n$function$\n"
+      "definition": "CREATE OR REPLACE FUNCTION platform.validate_adaptive_attempt_aggregate()\n RETURNS trigger\n LANGUAGE plpgsql\nAS $function$\nDECLARE attempt platform.baseline_adaptive_attempt%ROWTYPE;\nDECLARE answered integer;\nDECLARE correct integer;\nBEGIN\n    SELECT * INTO STRICT attempt FROM platform.baseline_adaptive_attempt WHERE attempt_id = NEW.attempt_id;\n    SELECT count(*), count(*) FILTER (WHERE is_correct) INTO answered, correct\n        FROM platform.baseline_attempt_response WHERE attempt_id = attempt.attempt_id;\n    IF (SELECT count(*) FROM platform.baseline_attempt_pool_item WHERE attempt_id = attempt.attempt_id) < attempt.max_questions\n        OR NOT EXISTS (SELECT 1 FROM platform.baseline_attempt_item WHERE attempt_id = attempt.attempt_id AND position = 1)\n        OR attempt.revision < answered::bigint + 1 THEN\n        RAISE EXCEPTION 'Attempt requires pinned capacity, first item and response revision' USING ERRCODE = '23514';\n    END IF;\n    IF EXISTS (\n        WITH expected AS (SELECT DISTINCT micro_skill_id FROM platform.baseline_adaptive_blueprint_skill\n            WHERE blueprint_id = attempt.blueprint_id AND blueprint_version = attempt.blueprint_version\n                AND (attempt.scope_policy = 'FULL_JOB_POSITION_V2' OR attempt.target_role_id IS NULL OR role_id = attempt.target_role_id)),\n        actual AS (SELECT micro_skill_id FROM platform.baseline_attempt_skill_state WHERE attempt_id = attempt.attempt_id)\n        (SELECT * FROM expected EXCEPT SELECT * FROM actual) UNION ALL\n        (SELECT * FROM actual EXCEPT SELECT * FROM expected)) THEN\n        RAISE EXCEPTION 'Attempt skill scope must equal pinned role or deduplicated role union' USING ERRCODE = '23514';\n    END IF;\n    IF EXISTS (SELECT 1 FROM platform.baseline_attempt_skill_state skill\n        WHERE skill.attempt_id = attempt.attempt_id AND (skill.answered_count <> (\n            SELECT count(*) FROM platform.baseline_attempt_response response JOIN platform.baseline_attempt_item item\n                USING (attempt_id, position) WHERE response.attempt_id = skill.attempt_id AND item.micro_skill_id = skill.micro_skill_id)\n            OR skill.updated_at < attempt.started_at OR skill.updated_at >= attempt.deadline_at)) THEN\n        RAISE EXCEPTION 'Provisional state must match accepted responses and server timing' USING ERRCODE = '23514';\n    END IF;\n    IF attempt.finished_at IS NOT NULL AND EXISTS (SELECT 1 FROM platform.baseline_attempt_response\n        WHERE attempt_id = attempt.attempt_id AND accepted_at > attempt.finished_at) THEN\n        RAISE EXCEPTION 'Completion cannot precede accepted responses' USING ERRCODE = '23514';\n    END IF;\n    IF attempt.state NOT IN ('SUBMITTED', 'AUTO_SUBMITTED') THEN\n        IF EXISTS (SELECT 1 FROM platform.baseline_attempt_result WHERE attempt_id = attempt.attempt_id)\n            OR EXISTS (SELECT 1 FROM platform.baseline_attempt_skill_result WHERE attempt_id = attempt.attempt_id)\n            OR EXISTS (SELECT 1 FROM platform.baseline_mastery_evidence WHERE attempt_id = attempt.attempt_id) THEN\n            RAISE EXCEPTION 'Only successful completion may produce results/mastery' USING ERRCODE = '23514';\n        END IF;\n        RETURN NEW;\n    END IF;\n    IF NOT EXISTS (SELECT 1 FROM platform.baseline_attempt_result result JOIN platform.outbox_event event\n            ON event.event_id = result.mastery_event_id WHERE result.attempt_id = attempt.attempt_id\n            AND result.result_status = attempt.state AND result.answered_count = answered AND result.correct_count = correct\n            AND result.scored_at = attempt.finished_at AND event.aggregate_id = attempt.attempt_id)\n        OR EXISTS (SELECT 1 FROM platform.baseline_attempt_skill_state state\n            LEFT JOIN platform.baseline_attempt_skill_result result USING (attempt_id, micro_skill_id)\n            LEFT JOIN platform.baseline_mastery_evidence evidence USING (attempt_id, micro_skill_id)\n            WHERE state.attempt_id = attempt.attempt_id AND (result.attempt_id IS NULL OR evidence.attempt_id IS NULL\n                OR result.mastery_mapping_version_id <> attempt.mastery_mapping_version_id\n                OR result.finalized_at <> attempt.finished_at\n                OR ROW(result.theta, result.standard_error) IS DISTINCT FROM ROW(state.theta, state.standard_error)\n                OR ROW(evidence.theta, evidence.standard_error, evidence.estimated_mastery, evidence.mastery,\n                    evidence.confidence_label, evidence.model_version_id, evidence.mastery_mapping_version_id,\n                    evidence.parameter_set_id, evidence.emitted_at)\n                    IS DISTINCT FROM ROW(result.theta, result.standard_error, result.estimated_mastery, result.mastery,\n                        result.confidence_label, attempt.model_version_id, attempt.mastery_mapping_version_id,\n                        attempt.parameter_set_id, attempt.finished_at))) THEN\n        RAISE EXCEPTION 'Completion requires consistent immutable result, every skill and one mastery event' USING ERRCODE = '23514';\n    END IF;\n    RETURN NEW;\nEND;\n$function$\n"
     },
     {
       "name": "validate_adaptive_blueprint_finalization",
@@ -14331,12 +14331,12 @@
     {
       "name": "validate_baseline_activation_event",
       "arguments": "",
-      "definition": "CREATE OR REPLACE FUNCTION platform.validate_baseline_activation_event()\n RETURNS trigger\n LANGUAGE plpgsql\nAS $function$\nBEGIN\n    IF NOT EXISTS (SELECT 1 FROM platform.baseline_blueprint_activation_event event\n        WHERE event.organization_id = NEW.organization_id AND event.occupation_id = NEW.occupation_id\n          AND event.activation_revision = NEW.activation_revision AND event.blueprint_id = NEW.blueprint_id\n          AND event.blueprint_version IS NOT DISTINCT FROM NEW.blueprint_version\n          AND event.actor_id = NEW.activated_by AND event.occurred_at = NEW.activated_at) THEN\n        RAISE EXCEPTION 'Activation requires matching append-only audit event' USING ERRCODE = '23514';\n    END IF;\n    RETURN NEW;\nEND;\n$function$\n"
+      "definition": "CREATE OR REPLACE FUNCTION platform.validate_baseline_activation_event()\n RETURNS trigger\n LANGUAGE plpgsql\nAS $function$\nBEGIN\n    IF NOT EXISTS (SELECT 1 FROM platform.baseline_blueprint_activation_event event\n        WHERE event.organization_id = NEW.organization_id AND event.job position_id = NEW.job position_id\n          AND event.activation_revision = NEW.activation_revision AND event.blueprint_id = NEW.blueprint_id\n          AND event.blueprint_version IS NOT DISTINCT FROM NEW.blueprint_version\n          AND event.actor_id = NEW.activated_by AND event.occurred_at = NEW.activated_at) THEN\n        RAISE EXCEPTION 'Activation requires matching append-only audit event' USING ERRCODE = '23514';\n    END IF;\n    RETURN NEW;\nEND;\n$function$\n"
     },
     {
       "name": "validate_baseline_assessment_series",
       "arguments": "",
-      "definition": "CREATE OR REPLACE FUNCTION platform.validate_baseline_assessment_series()\n RETURNS trigger\n LANGUAGE plpgsql\nAS $function$\nDECLARE\n    candidate record;\n    active record;\n    working record;\nBEGIN\n    IF NEW.working_revision_id IS NOT NULL THEN\n        SELECT organization_id, occupation_id, blueprint_id, state\n        INTO working\n        FROM platform.baseline_blueprint_working_revision\n        WHERE working_revision_id = NEW.working_revision_id;\n        IF NOT FOUND OR working.organization_id <> NEW.organization_id\n            OR working.occupation_id <> NEW.occupation_id\n            OR working.blueprint_id <> NEW.blueprint_id\n            OR working.state <> 'OPEN' THEN\n            RAISE EXCEPTION 'Working revision does not belong to the open baseline series'\n                USING ERRCODE = '23514';\n        END IF;\n    END IF;\n\n    IF NEW.open_assessment_version_id IS NOT NULL THEN\n        SELECT blueprint_id, blueprint_version, publication_state,\n               baseline_candidate_state, reviewed_content_hash\n        INTO candidate\n        FROM platform.assessment_version\n        WHERE assessment_version_id = NEW.open_assessment_version_id\n          AND purpose = 'BASELINE';\n        IF NOT FOUND OR candidate.blueprint_id <> NEW.blueprint_id\n            OR candidate.blueprint_version IS DISTINCT FROM NEW.pending_blueprint_version\n            OR candidate.publication_state <> 'DRAFT'\n            OR candidate.baseline_candidate_state <> 'OPEN' THEN\n            RAISE EXCEPTION 'Open assessment candidate does not match its pending blueprint'\n                USING ERRCODE = '23514';\n        END IF;\n    END IF;\n\n    IF NEW.active_assessment_version_id IS NOT NULL THEN\n        SELECT blueprint_id, publication_state INTO active\n        FROM platform.assessment_version\n        WHERE assessment_version_id = NEW.active_assessment_version_id\n          AND purpose = 'BASELINE';\n        IF NOT FOUND OR active.blueprint_id <> NEW.blueprint_id\n            OR active.publication_state <> 'PUBLISHED' THEN\n            RAISE EXCEPTION 'Active assessment does not belong to this baseline series'\n                USING ERRCODE = '23514';\n        END IF;\n    END IF;\n    RETURN NEW;\nEND;\n$function$\n"
+      "definition": "CREATE OR REPLACE FUNCTION platform.validate_baseline_assessment_series()\n RETURNS trigger\n LANGUAGE plpgsql\nAS $function$\nDECLARE\n    candidate record;\n    active record;\n    working record;\nBEGIN\n    IF NEW.working_revision_id IS NOT NULL THEN\n        SELECT organization_id, job position_id, blueprint_id, state\n        INTO working\n        FROM platform.baseline_blueprint_working_revision\n        WHERE working_revision_id = NEW.working_revision_id;\n        IF NOT FOUND OR working.organization_id <> NEW.organization_id\n            OR working.job position_id <> NEW.job position_id\n            OR working.blueprint_id <> NEW.blueprint_id\n            OR working.state <> 'OPEN' THEN\n            RAISE EXCEPTION 'Working revision does not belong to the open baseline series'\n                USING ERRCODE = '23514';\n        END IF;\n    END IF;\n\n    IF NEW.open_assessment_version_id IS NOT NULL THEN\n        SELECT blueprint_id, blueprint_version, publication_state,\n               baseline_candidate_state, reviewed_content_hash\n        INTO candidate\n        FROM platform.assessment_version\n        WHERE assessment_version_id = NEW.open_assessment_version_id\n          AND purpose = 'BASELINE';\n        IF NOT FOUND OR candidate.blueprint_id <> NEW.blueprint_id\n            OR candidate.blueprint_version IS DISTINCT FROM NEW.pending_blueprint_version\n            OR candidate.publication_state <> 'DRAFT'\n            OR candidate.baseline_candidate_state <> 'OPEN' THEN\n            RAISE EXCEPTION 'Open assessment candidate does not match its pending blueprint'\n                USING ERRCODE = '23514';\n        END IF;\n    END IF;\n\n    IF NEW.active_assessment_version_id IS NOT NULL THEN\n        SELECT blueprint_id, publication_state INTO active\n        FROM platform.assessment_version\n        WHERE assessment_version_id = NEW.active_assessment_version_id\n          AND purpose = 'BASELINE';\n        IF NOT FOUND OR active.blueprint_id <> NEW.blueprint_id\n            OR active.publication_state <> 'PUBLISHED' THEN\n            RAISE EXCEPTION 'Active assessment does not belong to this baseline series'\n                USING ERRCODE = '23514';\n        END IF;\n    END IF;\n    RETURN NEW;\nEND;\n$function$\n"
     },
     {
       "name": "validate_baseline_assessment_tenant",
@@ -14344,9 +14344,9 @@
       "definition": "CREATE OR REPLACE FUNCTION platform.validate_baseline_assessment_tenant()\n RETURNS trigger\n LANGUAGE plpgsql\nAS $function$\nDECLARE\n    blueprint_organization_id uuid;\n    creator_organization_id uuid;\n    reviewer_organization_id uuid;\nBEGIN\n    IF NEW.purpose <> 'BASELINE' OR NEW.blueprint_id IS NULL THEN\n        RETURN NEW;\n    END IF;\n    SELECT organization_id INTO blueprint_organization_id\n    FROM platform.baseline_blueprint\n    WHERE blueprint_id = NEW.blueprint_id;\n    SELECT organization_id INTO creator_organization_id\n    FROM platform.account\n    WHERE account_id = NEW.created_by;\n    IF blueprint_organization_id IS NULL\n        OR blueprint_organization_id IS DISTINCT FROM creator_organization_id THEN\n        RAISE EXCEPTION 'Baseline assessment creator is outside the blueprint organization'\n            USING ERRCODE = '23514';\n    END IF;\n    IF NEW.reviewed_by IS NOT NULL THEN\n        SELECT organization_id INTO reviewer_organization_id\n        FROM platform.account\n        WHERE account_id = NEW.reviewed_by;\n        IF blueprint_organization_id IS DISTINCT FROM reviewer_organization_id THEN\n            RAISE EXCEPTION 'Baseline assessment reviewer is outside the blueprint organization'\n                USING ERRCODE = '23514';\n        END IF;\n    END IF;\n    RETURN NEW;\nEND;\n$function$\n"
     },
     {
-      "name": "validate_baseline_blueprint_occupation_identity",
+      "name": "validate_baseline_blueprint_job position_identity",
       "arguments": "",
-      "definition": "CREATE OR REPLACE FUNCTION platform.validate_baseline_blueprint_occupation_identity()\n RETURNS trigger\n LANGUAGE plpgsql\nAS $function$\nDECLARE\n    identity_record record;\n    creator_organization_id uuid;\nBEGIN\n    SELECT identity.occupation_id, identity.organization_id\n    INTO identity_record\n    FROM platform.baseline_blueprint identity\n    WHERE identity.blueprint_id = NEW.blueprint_id;\n\n    IF NOT FOUND THEN\n        RAISE EXCEPTION 'Baseline blueprint identity is missing'\n            USING ERRCODE = '23503';\n    END IF;\n\n    IF identity_record.occupation_id IS DISTINCT FROM NEW.occupation_id THEN\n        RAISE EXCEPTION 'Blueprint version occupation does not match its logical identity'\n            USING ERRCODE = '23514';\n    END IF;\n\n    SELECT organization_id INTO creator_organization_id\n    FROM platform.account\n    WHERE account_id = NEW.created_by;\n\n    IF identity_record.organization_id IS DISTINCT FROM creator_organization_id THEN\n        RAISE EXCEPTION 'Blueprint version creator is outside the blueprint organization'\n            USING ERRCODE = '23514';\n    END IF;\n\n    RETURN NEW;\nEND;\n$function$\n"
+      "definition": "CREATE OR REPLACE FUNCTION platform.validate_baseline_blueprint_job position_identity()\n RETURNS trigger\n LANGUAGE plpgsql\nAS $function$\nDECLARE\n    identity_record record;\n    creator_organization_id uuid;\nBEGIN\n    SELECT identity.job position_id, identity.organization_id\n    INTO identity_record\n    FROM platform.baseline_blueprint identity\n    WHERE identity.blueprint_id = NEW.blueprint_id;\n\n    IF NOT FOUND THEN\n        RAISE EXCEPTION 'Baseline blueprint identity is missing'\n            USING ERRCODE = '23503';\n    END IF;\n\n    IF identity_record.job position_id IS DISTINCT FROM NEW.job position_id THEN\n        RAISE EXCEPTION 'Blueprint version job position does not match its logical identity'\n            USING ERRCODE = '23514';\n    END IF;\n\n    SELECT organization_id INTO creator_organization_id\n    FROM platform.account\n    WHERE account_id = NEW.created_by;\n\n    IF identity_record.organization_id IS DISTINCT FROM creator_organization_id THEN\n        RAISE EXCEPTION 'Blueprint version creator is outside the blueprint organization'\n            USING ERRCODE = '23514';\n    END IF;\n\n    RETURN NEW;\nEND;\n$function$\n"
     },
     {
       "name": "validate_baseline_blueprint_role_total",
@@ -14407,7 +14407,7 @@
       "checksum": 1670694760
     },
     {
-      "file": "V13__occupation_blueprint_identity.sql",
+      "file": "V13__job position_blueprint_identity.sql",
       "sha256": "2023f61e9b14bdb55882d47acfc3d150af720810ef32b08ba5cdbc123d5b9b6f",
       "checksum": -1992663521
     },
@@ -14447,17 +14447,17 @@
       "checksum": -996555326
     },
     {
-      "file": "V20__occupation_baseline_scope_compatibility.sql",
+      "file": "V20__job position_baseline_scope_compatibility.sql",
       "sha256": "1d4a67b1b99b790c09e3e50d5c5cce2163c975eec290122f1e9b0fc4e894d380",
       "checksum": 2137365147
     },
     {
-      "file": "V21__occupation_baseline_name_and_time_limits.sql",
+      "file": "V21__job position_baseline_name_and_time_limits.sql",
       "sha256": "5506aabbaf4f82ade778b16d5675b1f1dd658d7b0afcc251172fac3b4c22ba9c",
       "checksum": -935442136
     },
     {
-      "file": "V22__occupation_baseline_draft_conversion_receipt.sql",
+      "file": "V22__job position_baseline_draft_conversion_receipt.sql",
       "sha256": "848c7faf08e7d5707ca1b43e186f7b8f5f1df12bb0d634dc104a7c6ceb1e03da",
       "checksum": 859223100
     },
@@ -14472,7 +14472,7 @@
       "checksum": -71600753
     },
     {
-      "file": "V25__current_role_selection_and_occupation_profile.sql",
+      "file": "V25__current_role_selection_and_job position_profile.sql",
       "sha256": "6cd5aca9906be91e833c11c9db1df062b5e0d03fe6879445e987e442d5cfdbea",
       "checksum": 1717114679
     },
@@ -14657,11 +14657,11 @@
     },
     {
       "file": "postgresql-role-profile",
-      "name": "Current Role selection and initial Occupation profile",
+      "name": "Current Role selection and initial Job Position profile",
       "tables": [
         "employee_role_selection",
         "employee_role_selection_request",
-        "employee_occupation_profile"
+        "employee_job position_profile"
       ]
     }
   ]

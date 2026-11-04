@@ -12,16 +12,16 @@ import org.springframework.data.repository.query.Param;
 public interface BaselineAttemptCommandJpaRepository
         extends Repository<BaselineAttemptCommandEntity, BaselineAttemptCommandEntity.Key>, InsertOnlyRepository<BaselineAttemptCommandEntity> {
 
-    record Row(String occupationId, String operation, String requestHash, UUID attemptId, String responsePayload, Instant createdAt) {}
+    record Row(String jobPositionId, String operation, String requestHash, UUID attemptId, String responsePayload, Instant createdAt) {}
 
     @Query("""
-            select c.occupationId from BaselineAttemptCommandEntity c
+            select c.jobPositionId from BaselineAttemptCommandEntity c
             where c.organizationId = :org and c.actorId = :actor and c.idempotencyKey = :key
             """)
-    List<String> occupation(@Param("org") UUID organizationId, @Param("actor") UUID actorId, @Param("key") String idempotencyKey);
+    List<String> jobPosition(@Param("org") UUID organizationId, @Param("actor") UUID actorId, @Param("key") String idempotencyKey);
 
     @Query("""
-            select new com.adaptlearngraph.repository.BaselineAttemptCommandJpaRepository$Row(c.occupationId, c.operation, c.requestHash,
+            select new com.adaptlearngraph.repository.BaselineAttemptCommandJpaRepository$Row(c.jobPositionId, c.operation, c.requestHash,
                 c.attemptId, c.responsePayload, c.createdAt)
             from BaselineAttemptCommandEntity c where c.organizationId = :org and c.actorId = :actor and c.idempotencyKey = :key
             """)

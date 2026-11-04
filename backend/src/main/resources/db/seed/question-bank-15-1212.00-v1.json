@@ -2,9 +2,9 @@
   "formatVersion": "official-question-bank-v1",
   "manifestVersion": "information-security-analysts-en-v1",
   "catalogVersion": "0.8.0",
-  "sourceSha256": "0006bb11ac5c20687eb90be4807289ecea309a5657781543792e18f556eb5125",
-  "scopeSha256": "c2454bde23764d061b6b25b54d434141715326d75eaa3201026618e7e4136231",
-  "occupationId": "OCC-15-1212.00",
+  "sourceSha256": "65e5351b47352ea1bcf4298e0c0dcf93e9fba757c8298e8e509700721cabb010",
+  "scopeSha256": "3e8ea204ebd2ea08d622e4a5c35c38185f1dbaa922fc5c6cce9566ed3382ee60",
+  "jobPositionId": "OCC-15-1212.00",
   "questionBank": {
     "id": "2f79de6b-dc62-51a1-982d-0be9d6f588dc",
     "name": "Information Security Analysts - English bank v1"

@@ -167,7 +167,7 @@ class BaselineAssessmentDraftServiceTest {
 
     private static BaselineBlueprint blueprint(int version) {
         return new BaselineBlueprint(
-                BLUEPRINT_ID, version, "Java baseline", "occupation-engineering",
+                BLUEPRINT_ID, version, "Java baseline", "jobPosition-engineering",
                 "Software Engineering", ACTOR_ID,
                 "blueprint-key-" + version, "request-hash-" + version, NOW.minusSeconds(60),
                 List.of(new RoleConfig(

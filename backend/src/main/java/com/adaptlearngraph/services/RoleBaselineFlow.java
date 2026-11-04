@@ -9,8 +9,8 @@ public final class RoleBaselineFlow {
     public record Skill(String id, String code, String name, double requiredScore, boolean mandatory) {}
     public record Level(String id, String code, String name, int rank, String context,
                         String attainmentRule, List<Skill> skills) {}
-    public record Role(String id, String code, String name, String scope, String occupationId,
-                       String occupationName, String catalogVersion, String fingerprint, List<Level> levels) {}
+    public record Role(String id, String code, String name, String scope, String jobPositionId,
+                       String jobPositionName, String catalogVersion, String fingerprint, List<Level> levels) {}
     public record Selection(UUID selectionId, Role role, long revision, Instant selectedAt, boolean available,String levelId) {
         public Selection(UUID id,Role role,long revision,Instant selectedAt,boolean available){this(id,role,revision,selectedAt,available,null);}
     }
@@ -18,7 +18,7 @@ public final class RoleBaselineFlow {
                            Integer baselineVersion) {}
     public record View(Selection selection, Progress progress) {}
     public record MasterySkill(String id, String name, double mastery, String confidence) {}
-    public record MasteryProfile(String occupationId, String occupationName, UUID attemptId,
+    public record MasteryProfile(String jobPositionId, String jobPositionName, UUID attemptId,
                                  int baselineVersion, Instant initializedAt, List<MasterySkill> skills) {}
     public List<MasteryProfile> mastery() { return baseline.mastery(identity.requireEmployee()); }
     public interface Identity { Actor requireEmployee(); }
@@ -53,7 +53,7 @@ public final class RoleBaselineFlow {
         String term=search == null ? "" : search.strip().toLowerCase(Locale.ROOT);
         if (term.length()>100) throw new Failure(400,"INVALID_REQUEST");
         return catalog.roles(actor.organizationId()).stream()
-                .filter(r -> (r.name()+" "+r.occupationName()+" "+r.scope()).toLowerCase(Locale.ROOT).contains(term)).toList();
+                .filter(r -> (r.name()+" "+r.jobPositionName()+" "+r.scope()).toLowerCase(Locale.ROOT).contains(term)).toList();
     }
     public View view() {
         var actor=identity.requireEmployee(); var selected=store.current(actor);
@@ -65,7 +65,7 @@ public final class RoleBaselineFlow {
         if (current.isEmpty() || old.levelId()!=null && current.get().levels().stream().noneMatch(l->l.id().equals(old.levelId()))) return new View(new Selection(old.selectionId(),old.role(),old.revision(),old.selectedAt(),false,old.levelId()),
                 new Progress("ROLE_UNAVAILABLE",0,0,null,null));
         var role=current.get();
-        var required=roles.stream().filter(r->r.occupationId().equals(role.occupationId())).flatMap(r->r.levels().stream())
+        var required=roles.stream().filter(r->r.jobPositionId().equals(role.jobPositionId())).flatMap(r->r.levels().stream())
                 .flatMap(l->l.skills().stream()).map(Skill::id).collect(java.util.stream.Collectors.toSet());
         if(required.isEmpty()) throw new Failure(503,"DEPENDENCY_UNAVAILABLE");
         return new View(new Selection(old.selectionId(),role,old.revision(),old.selectedAt(),true,old.levelId()),baseline.progress(actor,role,required));

@@ -15,14 +15,14 @@ const DRAG_TYPE = 'application/x-adapt-catalog-node'
 const MIN_GRAPH_SCALE = 0.6
 
 const LABEL_COPY: Record<CatalogNodeLabel, [string, string]> = {
-  Occupation: ['Occupation', 'Nghề nghiệp'],
+  JobPosition: ['Job position', 'Vị trí công việc'],
   TargetRole: ['Target role', 'Vai trò mục tiêu'],
   MicroSkill: ['Micro-skill', 'Kỹ năng nhỏ'],
   LearningModule: ['Learning module', 'Học phần'],
 }
 
 const FILTERS: { value: 'roles' | 'skills' | 'modules'; labels: CatalogNodeLabel[]; copy: [string, string] }[] = [
-  { value: 'roles', labels: ['Occupation', 'TargetRole'], copy: ['Occupations & roles', 'Nghề & vai trò'] },
+  { value: 'roles', labels: ['JobPosition', 'TargetRole'], copy: ['Job positions & roles', 'Vị trí công việc & vai trò'] },
   { value: 'skills', labels: ['MicroSkill'], copy: ['Micro-skills', 'Kỹ năng nhỏ'] },
   { value: 'modules', labels: ['LearningModule'], copy: ['Learning modules', 'Học phần'] },
 ]
@@ -190,7 +190,7 @@ function CatalogGraph({ catalog, labels, selected, dropRef, onDrop, ariaLabel }:
         interaction: { hover: true, dragNodes: true, tooltipDelay: 200 },
         edges: { color: { color: token('--border'), highlight: token('--primary') }, arrows: { to: { enabled: true, scaleFactor: 0.4 } }, smooth: false },
         groups: {
-          Occupation: { shape: 'box', font, color: { background: token('--secondary'), border: token('--primary') } },
+          JobPosition: { shape: 'box', font, color: { background: token('--secondary'), border: token('--primary') } },
           TargetRole: { shape: 'box', font, color: { background: token('--card'), border: token('--primary') } },
           MicroSkill: { shape: 'dot', size: 10, font, color: { background: token('--success'), border: token('--success') } },
           LearningModule: { shape: 'diamond', size: 10, font, color: { background: token('--warning'), border: token('--warning') } },

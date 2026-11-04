@@ -35,10 +35,10 @@ test('one responsible Expert manages a module; another can only view its creator
   try {
     await page.addInitScript(() => localStorage.setItem('app_language', 'en'))
     await login(page, 'expert@example.test', password, '/expert/modules')
-    const occupations = await (await page.request.get(root + '/catalog/Occupation')).json() as { id: string }[]
+    const jobPositions = await (await page.request.get(root + '/catalog/JobPosition')).json() as { id: string }[]
     const skills = await (await page.request.get(root + '/catalog/MicroSkill')).json() as { id: string }[]
     const title = 'Single Expert verification ' + randomUUID().slice(0, 8)
-    const contentResponse = await mutate(page.request, root + '/contents', 'POST', { title, markdown: '# Ownership verification\nPractice the skill.', occupationIds: [occupations[0].id] })
+    const contentResponse = await mutate(page.request, root + '/contents', 'POST', { title, markdown: '# Ownership verification\nPractice the skill.', jobPositionIds: [jobPositions[0].id] })
     expect(contentResponse.status()).toBe(201)
     const content = await contentResponse.json() as { id: string }
     await page.reload()
@@ -46,7 +46,7 @@ test('one responsible Expert manages a module; another can only view its creator
     await expect(create).toBeEnabled({ timeout: 30_000 }); await create.click()
     let editor = page.getByRole('dialog', { name: 'Module editor' })
     await editor.getByLabel('Title', { exact: true }).fill(title)
-    await editor.getByLabel('Occupations (hold Ctrl / Cmd to select several)', { exact: true }).selectOption(occupations[0].id)
+    await editor.getByLabel('JobPositions (hold Ctrl / Cmd to select several)', { exact: true }).selectOption(jobPositions[0].id)
     await editor.getByLabel('Learning content', { exact: true }).selectOption(content.id)
     await editor.getByLabel('Duration (minutes)', { exact: true }).fill('30')
     await editor.getByLabel('Package price (VND)', { exact: true }).fill('120000')

@@ -11,7 +11,7 @@ import java.util.UUID;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
 
-/** platform.baseline_assessment_series: per organization occupation pointer to open/active assessment versions. */
+/** platform.baseline_assessment_series: per organization jobPosition pointer to open/active assessment versions. */
 @Entity
 @Table(schema = "platform", name = "baseline_assessment_series")
 @IdClass(BaselineAssessmentSeriesEntity.Key.class)
@@ -22,8 +22,8 @@ public class BaselineAssessmentSeriesEntity {
     @Column(name = "organization_id")
     private UUID organizationId;
     @Id
-    @Column(name = "occupation_id")
-    private String occupationId;
+    @Column(name = "job_position_id")
+    private String jobPositionId;
     @Column(name = "blueprint_id", nullable = false)
     private UUID blueprintId;
     @Column(name = "series_revision", nullable = false)
@@ -45,9 +45,9 @@ public class BaselineAssessmentSeriesEntity {
     }
 
     @SuppressWarnings("java:S107")
-    public BaselineAssessmentSeriesEntity(UUID organizationId, String occupationId, UUID blueprintId, Long seriesRevision, UUID workingRevisionId, Integer pendingBlueprintVersion, UUID openAssessmentVersionId, UUID activeAssessmentVersionId, Instant createdAt, Instant updatedAt) {
+    public BaselineAssessmentSeriesEntity(UUID organizationId, String jobPositionId, UUID blueprintId, Long seriesRevision, UUID workingRevisionId, Integer pendingBlueprintVersion, UUID openAssessmentVersionId, UUID activeAssessmentVersionId, Instant createdAt, Instant updatedAt) {
         this.organizationId = organizationId;
-        this.occupationId = occupationId;
+        this.jobPositionId = jobPositionId;
         this.blueprintId = blueprintId;
         this.seriesRevision = seriesRevision;
         this.workingRevisionId = workingRevisionId;
@@ -59,7 +59,7 @@ public class BaselineAssessmentSeriesEntity {
     }
 
     public UUID getOrganizationId() { return organizationId; }
-    public String getOccupationId() { return occupationId; }
+    public String getJobPositionId() { return jobPositionId; }
     public UUID getBlueprintId() { return blueprintId; }
     public Long getSeriesRevision() { return seriesRevision; }
     public UUID getWorkingRevisionId() { return workingRevisionId; }
@@ -69,7 +69,7 @@ public class BaselineAssessmentSeriesEntity {
     public Instant getCreatedAt() { return createdAt; }
     public Instant getUpdatedAt() { return updatedAt; }
 
-    public record Key(UUID organizationId, String occupationId) implements Serializable {
+    public record Key(UUID organizationId, String jobPositionId) implements Serializable {
         public Key() {
             this(null, null);
         }

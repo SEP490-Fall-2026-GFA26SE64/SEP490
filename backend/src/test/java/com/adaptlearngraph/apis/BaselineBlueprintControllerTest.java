@@ -72,25 +72,25 @@ class BaselineBlueprintControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(Map.of(
                                 "name", "Java baseline",
-                                "occupationId", "occupation-engineering",
-                                "occupationNameSnapshot", "Software Engineering",
+                                "jobPositionId", "jobPosition-engineering",
+                                "jobPositionNameSnapshot", "Software Engineering",
                                 "roles", List.of(roleRequest(1, 1, 1))))))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.blueprintId").value(BLUEPRINT_ID.toString()))
                 .andExpect(jsonPath("$.version").value(1))
-                .andExpect(jsonPath("$.occupationId").value("occupation-engineering"))
+                .andExpect(jsonPath("$.jobPositionId").value("jobPosition-engineering"))
                 .andExpect(jsonPath("$.roles[0].totalQuestionCount").value(3));
     }
 
     @Test
-    void getsLatestBlueprintByOccupation() throws Exception {
-        when(blueprints.getLatestByOccupation("occupation-engineering")).thenReturn(blueprint());
+    void getsLatestBlueprintByJobPosition() throws Exception {
+        when(blueprints.getLatestByJobPosition("jobPosition-engineering")).thenReturn(blueprint());
 
-        mvc.perform(get("/api/v1/ld/baseline-blueprints/occupations/{occupationId}",
-                        "occupation-engineering"))
+        mvc.perform(get("/api/v1/ld/baseline-blueprints/job-positions/{jobPositionId}",
+                        "jobPosition-engineering"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.blueprintId").value(BLUEPRINT_ID.toString()))
-                .andExpect(jsonPath("$.occupationNameSnapshot").value("Software Engineering"));
+                .andExpect(jsonPath("$.jobPositionNameSnapshot").value("Software Engineering"));
     }
 
     @Test
@@ -107,8 +107,8 @@ class BaselineBlueprintControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(Map.of(
                                 "name", "Java baseline",
-                                "occupationId", "occupation-engineering",
-                                "occupationNameSnapshot", "Software Engineering",
+                                "jobPositionId", "jobPosition-engineering",
+                                "jobPositionNameSnapshot", "Software Engineering",
                                 "roles", List.of(roleRequest(1, 1, 3))))))
                 .andExpect(status().isUnprocessableEntity())
                 .andExpect(jsonPath("$.code").value("INSUFFICIENT_QUESTION_COVERAGE"))
@@ -136,7 +136,7 @@ class BaselineBlueprintControllerTest {
 
     private static BaselineBlueprint blueprint() {
         return new BaselineBlueprint(
-                BLUEPRINT_ID, 1, "Java baseline", "occupation-engineering",
+                BLUEPRINT_ID, 1, "Java baseline", "jobPosition-engineering",
                 "Software Engineering", ACTOR_ID,
                 "create-key", HASH, NOW, List.of(role()));
     }

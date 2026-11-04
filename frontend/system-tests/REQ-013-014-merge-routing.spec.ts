@@ -87,9 +87,9 @@ test('L&D catalog assignment is in details and approval actions stay in the pend
   await fixture(page, 'LD_MANAGER')
   const errors: string[] = []; page.on('pageerror', e => errors.push(e.message))
   const metadata = { id: 'submitted', version: '1.0', status: 'DRAFT', reviewStatus: 'NEEDS_EXPERT_REVIEW', reviewedBy: null, reviewedAt: null }
-  const content = { id: 'content', title: 'Lessons', markdown: '# Lesson', contentType: 'text/markdown', contentVersion: '1.0', occupationIds: [], createdBy: 'expert', createdAt: '2026-11-01T00:00:00Z' }
+  const content = { id: 'content', title: 'Lessons', markdown: '# Lesson', contentType: 'text/markdown', contentVersion: '1.0', jobPositionIds: [], createdBy: 'expert', createdAt: '2026-11-01T00:00:00Z' }
   const payload = { metadata, title: 'Submitted module', moduleType: 'LESSON_AND_PRACTICE', contentUri: 'module-content:content', contentType: 'text/markdown', contentVersion: '1.0', duration: 5, price: 1000, teachings: [], content }
-  const doc = { id: 'submitted', organizationId: 'org', occupationIds: [], createdBy: 'expert', createdAt: '2026-11-01T00:00:00Z', lockVersion: 1, everReleased: false, archived: false, releasedRevision: null, history: [], revisions: [{ number: 1, state: 'SUBMITTED', payload, editedBy: 'expert', editedAt: '2026-11-01T00:00:00Z', decidedBy: null, decidedAt: null, feedback: null }] }
+  const doc = { id: 'submitted', organizationId: 'org', jobPositionIds: [], createdBy: 'expert', createdAt: '2026-11-01T00:00:00Z', lockVersion: 1, everReleased: false, archived: false, releasedRevision: null, history: [], revisions: [{ number: 1, state: 'SUBMITTED', payload, editedBy: 'expert', editedAt: '2026-11-01T00:00:00Z', decidedBy: null, decidedAt: null, feedback: null }] }
   const unmanaged = { ...payload, metadata: { ...metadata, id: 'catalog-only', status: 'ACTIVE' }, title: 'Catalog intake module' }
   const writes: string[] = []; let pendingRequested = false
   await page.route('**/api/v1/module-management/**', async route => {
@@ -98,7 +98,7 @@ test('L&D catalog assignment is in details and approval actions stay in the pend
     if (path.endsWith('/module-list')) return route.fulfill({ json: { items: [{ module: unmanaged, authoring: null, intake: null }, { module: payload, authoring: doc }], total: 2, page: 1, pageSize: 10 } })
     if (path.endsWith('/modules')) { pendingRequested = url.searchParams.get('pendingOnly') === 'true'; return route.fulfill({ json: { items: [doc], total: 1, page: 1, pageSize: 10 } }) }
     if (path.endsWith('/catalog/Expert')) return route.fulfill({ json: [{ id: 'expert', name: 'Expert A' }] })
-    if (path.endsWith('/catalog/Occupation')) return route.fulfill({ json: [{ id: 'occupation', name: 'Software Developers' }] })
+    if (path.endsWith('/catalog/JobPosition')) return route.fulfill({ json: [{ id: 'jobPosition', name: 'Software Developers' }] })
     return route.fallback()
   })
   await page.goto('/ld-manager/modules')

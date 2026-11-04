@@ -56,29 +56,29 @@ public final class AdaptiveBlueprintService implements AdaptiveBlueprintUseCase 
 
     @Override public AdaptiveBlueprintListing.Page list(AdaptiveBlueprintListing.Query query) {
         Actor actor = requireActor();
-        var granted = actors.authorizedOccupations(actor);
-        if (query.occupationId() != null && !granted.contains(query.occupationId())) throw failure(Code.FORBIDDEN, "Occupation unavailable to actor scope");
+        var granted = actors.authorizedJobPositions(actor);
+        if (query.jobPositionId() != null && !granted.contains(query.jobPositionId())) throw failure(Code.FORBIDDEN, "JobPosition unavailable to actor scope");
         return store.list(actor.organizationId(), granted, query);
     }
 
-    @Override public Workspace getWorkspace(String occupationId) {
-        Scope scope = scope(requireActor(), occupationId);
+    @Override public Workspace getWorkspace(String jobPositionId) {
+        Scope scope = scope(requireActor(), jobPositionId);
         return store.inTransaction(scope, () -> {
             Snapshot eligible = resolve(scope);
             var activation = store.findActivation(scope);
             var current = activation.flatMap(Activation::current).map(id -> store.findVersion(scope, id)
                     .orElseThrow(() -> failure(Code.DEPENDENCY_UNAVAILABLE, "Current Blueprint version is unavailable")));
             int missing = (int) eligible.roles().values().stream().flatMap(role -> role.missingParameterItemVersionIds().stream()).distinct().count();
-            var capacity = new CatalogCapacity(eligible.occupationName(), eligible.catalogFingerprint(), eligible.explorationItemVersionIds().size(),
+            var capacity = new CatalogCapacity(eligible.jobPositionName(), eligible.catalogFingerprint(), eligible.explorationItemVersionIds().size(),
                     missing, eligible.roles().entrySet().stream().collect(Collectors.toMap(entry -> entry.getKey(),
                             entry -> new RoleCapacity(entry.getValue().role(), entry.getValue().itemVersionIds().size(), entry.getValue().missingParameterItemVersionIds().size()))),
-                    occupationCapacity(eligible));
+                    jobPositionCapacity(eligible));
             return new Workspace(scope, capacity, store.findWorking(scope), current, activation, readiness(scope, current));
         });
     }
 
-    @Override public VersionDetails getVersion(String occupationId, VersionId id) {
-        Scope scope = scope(requireActor(), occupationId);
+    @Override public VersionDetails getVersion(String jobPositionId, VersionId id) {
+        Scope scope = scope(requireActor(), jobPositionId);
         Version version = store.findVersion(scope, Objects.requireNonNull(id))
                 .orElseThrow(() -> failure(Code.NOT_FOUND, "Blueprint version unavailable"));
         return new VersionDetails(version, store.versionStatus(scope, id));
@@ -87,7 +87,7 @@ public final class AdaptiveBlueprintService implements AdaptiveBlueprintUseCase 
     private AdmissionReadiness readiness(Scope scope, Optional<Version> current) {
         if (current.isEmpty()) return AdmissionReadiness.NO_ACTIVE;
         Version version = current.orElseThrow();
-        if (version.configuration().occupationBounds() == null) return AdmissionReadiness.CONFIGURATION_UPDATE_REQUIRED;
+        if (version.configuration().jobPositionBounds() == null) return AdmissionReadiness.CONFIGURATION_UPDATE_REQUIRED;
         var pinned = dependency(() -> eligibility.resolvePinned(scope, version.pins()));
         if (pinned.isEmpty()) return AdmissionReadiness.BLUEPRINT_STALE;
         Snapshot eligible = pinned.orElseThrow();
@@ -100,7 +100,7 @@ public final class AdaptiveBlueprintService implements AdaptiveBlueprintUseCase 
     @Override public WorkingRevision save(Save command) { return saveResult(command).working(); }
 
     @Override public WorkingRevision discard(PreviewSaved command, String key) {
-        Discarded result = (Discarded) execute(command.occupationId(), key, Operation.DISCARD,
+        Discarded result = (Discarded) execute(command.jobPositionId(), key, Operation.DISCARD,
                 List.of(command.workingRevisionId().toString(), Long.toString(command.expectedWorkingRevision())), (actor, scope) -> {
                     WorkingRevision working = requireWorking(scope, command.workingRevisionId(), command.expectedWorkingRevision());
                     store.discardWorking(scope, working.workingRevisionId(), working.revision(), actor.accountId(), now());
@@ -115,7 +115,7 @@ public final class AdaptiveBlueprintService implements AdaptiveBlueprintUseCase 
         if (command.expectedWorkingRevisionId() != null) {
             fields.add("DRAFT-IDENTITY-CAS-V2"); fields.add(command.expectedWorkingRevisionId().toString());
         }
-        Saved saved = (Saved) execute(command.occupationId(), command.idempotencyKey(), Operation.SAVE, fields, (actor, scope) -> {
+        Saved saved = (Saved) execute(command.jobPositionId(), command.idempotencyKey(), Operation.SAVE, fields, (actor, scope) -> {
             var working = store.findWorking(scope);
             if (working.map(WorkingRevision::revision).orElse(0L) != command.expectedRevision()) {
                 throw failure(Code.VERSION_CONFLICT, "Working revision changed or was closed");
@@ -126,7 +126,7 @@ public final class AdaptiveBlueprintService implements AdaptiveBlueprintUseCase 
                     || command.expectedRevision() == 0 && command.expectedWorkingRevisionId() != null) {
                 throw failure(Code.VERSION_CONFLICT, "Draft identity changed; refresh before saving");
             }
-            if (working.filter(value -> value.configuration().occupationBounds() == null).isPresent()) {
+            if (working.filter(value -> value.configuration().jobPositionBounds() == null).isPresent()) {
                 throw failure(Code.VERSION_CONFLICT, "Confirm conversion of the legacy Draft before saving common bounds");
             }
             if (working.filter(value -> value.configuration().equals(command.configuration())).isPresent()) {
@@ -147,10 +147,10 @@ public final class AdaptiveBlueprintService implements AdaptiveBlueprintUseCase 
     @Override public WorkingRevision convertLegacyDraft(ConvertLegacyDraft command) {
         var fields = new ArrayList<>(List.of(command.workingRevisionId().toString(), Long.toString(command.expectedWorkingRevision())));
         fields.addAll(configurationFields(command.configuration()));
-        return ((Converted) execute(command.occupationId(), command.idempotencyKey(), Operation.CONVERT, fields, (actor, scope) -> {
+        return ((Converted) execute(command.jobPositionId(), command.idempotencyKey(), Operation.CONVERT, fields, (actor, scope) -> {
             Snapshot eligible = resolve(scope);
             WorkingRevision original = requireWorking(scope, command.workingRevisionId(), command.expectedWorkingRevision());
-            if (original.configuration().occupationBounds() != null) {
+            if (original.configuration().jobPositionBounds() != null) {
                 throw failure(Code.VERSION_CONFLICT, "Only a legacy Draft can be converted");
             }
             requireCommon(command.configuration());
@@ -166,7 +166,7 @@ public final class AdaptiveBlueprintService implements AdaptiveBlueprintUseCase 
     }
 
     @Override public Preview previewSaved(PreviewSaved command) {
-        Scope scope = scope(requireActor(), command.occupationId());
+        Scope scope = scope(requireActor(), command.jobPositionId());
         return store.inTransaction(scope, () -> {
             Snapshot eligible = resolve(scope);
             WorkingRevision working = requireWorking(scope, command.workingRevisionId(), command.expectedWorkingRevision());
@@ -175,8 +175,8 @@ public final class AdaptiveBlueprintService implements AdaptiveBlueprintUseCase 
         });
     }
 
-    @Override public Preview testBlueprint(String occupationId, Configuration configuration) {
-        Scope scope = scope(requireActor(), occupationId);
+    @Override public Preview testBlueprint(String jobPositionId, Configuration configuration) {
+        Scope scope = scope(requireActor(), jobPositionId);
         Snapshot eligible = resolve(scope);
         return preview(eligible, Objects.requireNonNull(configuration));
     }
@@ -199,7 +199,7 @@ public final class AdaptiveBlueprintService implements AdaptiveBlueprintUseCase 
         var fields = new ArrayList<>(List.of(command.workingRevisionId().toString(), Long.toString(command.expectedWorkingRevision()),
                 Long.toString(command.expectedActivationRevision())));
         confirmationFields(fields, command.currentConfirmed(), command.expectedCurrent());
-        return ((Finalized) execute(command.occupationId(), command.idempotencyKey(), Operation.FINALIZE, fields, (actor, scope) -> {
+        return ((Finalized) execute(command.jobPositionId(), command.idempotencyKey(), Operation.FINALIZE, fields, (actor, scope) -> {
             var working = store.findWorking(scope).orElseThrow(() -> failure(Code.VERSION_CONFLICT, "Working revision closed or missing"));
             if (!working.workingRevisionId().equals(command.workingRevisionId()) || working.revision() != command.expectedWorkingRevision()) {
                 throw failure(Code.VERSION_CONFLICT, "Working revision changed");
@@ -213,7 +213,7 @@ public final class AdaptiveBlueprintService implements AdaptiveBlueprintUseCase 
             requireUnchanged(eligible);
             Instant time = now();
             var roles = eligible.roles().entrySet().stream().collect(Collectors.toMap(entry -> entry.getKey(), entry -> entry.getValue().role()));
-            Version version = new Version(scope, store.nextVersion(scope), working.configuration(), eligible.occupationName(),
+            Version version = new Version(scope, store.nextVersion(scope), working.configuration(), eligible.jobPositionName(),
                     eligible.catalogFingerprint(), eligible.pins(), roles, actor.accountId(), time);
             store.insertVersion(scope, version);
             var activation = new Activation(scope, Math.addExact(command.expectedActivationRevision(), 1), Optional.of(version.id()), actor.accountId(), time);
@@ -227,7 +227,7 @@ public final class AdaptiveBlueprintService implements AdaptiveBlueprintUseCase 
     @Override public Activation disable(Disable command) {
         var fields = new ArrayList<>(List.of(Long.toString(command.expectedActivationRevision()), command.reason()));
         confirmationFields(fields, command.currentConfirmed(), command.expectedCurrent());
-        return ((Disabled) execute(command.occupationId(), command.idempotencyKey(), Operation.DISABLE, fields, (actor, scope) -> {
+        return ((Disabled) execute(command.jobPositionId(), command.idempotencyKey(), Operation.DISABLE, fields, (actor, scope) -> {
             var current = requireActivationRevision(scope, command.expectedActivationRevision());
             requireConfirmedCurrent(current, command.currentConfirmed(), command.expectedCurrent());
             if (current.flatMap(Activation::current).isEmpty()) throw failure(Code.VERSION_CONFLICT, "Blueprint is not active");
@@ -238,14 +238,14 @@ public final class AdaptiveBlueprintService implements AdaptiveBlueprintUseCase 
         })).activation();
     }
 
-    private Outcome execute(String occupationId, String key, Operation operation, List<String> fields, BiFunction<Actor, Scope, Outcome> action) {
+    private Outcome execute(String jobPositionId, String key, Operation operation, List<String> fields, BiFunction<Actor, Scope, Outcome> action) {
         Actor actor = requireActor();
-        Scope scope = scope(actor, occupationId);
+        Scope scope = scope(actor, jobPositionId);
         String hash = hash(scope, operation, fields);
         return store.inTransaction(scope, () -> {
             // Reauthorize persisted actor and server scope grants even on immutable receipt replay.
             Actor refreshed = requireActor();
-            if (!actor.accountId().equals(refreshed.accountId()) || !scope.equals(scope(refreshed, occupationId))) {
+            if (!actor.accountId().equals(refreshed.accountId()) || !scope.equals(scope(refreshed, jobPositionId))) {
                 throw failure(Code.FORBIDDEN, "Actor scope changed");
             }
             var receipt = store.findReceipt(scope.organizationId(), actor.accountId(), key);
@@ -265,7 +265,7 @@ public final class AdaptiveBlueprintService implements AdaptiveBlueprintUseCase 
 
     private static void confirmationFields(List<String> fields, boolean confirmed, VersionId expected) {
         if (confirmed) {
-            fields.add("OCCUPATION-LIFECYCLE-V2");
+            fields.add("JOB_POSITION-LIFECYCLE-V2");
             fields.add(expected == null ? "NONE" : expected.blueprintId() + ":" + expected.version());
         }
     }
@@ -292,23 +292,23 @@ public final class AdaptiveBlueprintService implements AdaptiveBlueprintUseCase 
     }
 
     private static void requireCommon(Configuration configuration) {
-        if (configuration.occupationBounds() == null) {
-            throw failure(Code.INVALID_REQUEST, "New commands require explicit common Occupation bounds; convert the legacy Draft");
+        if (configuration.jobPositionBounds() == null) {
+            throw failure(Code.INVALID_REQUEST, "New commands require explicit common JobPosition bounds; convert the legacy Draft");
         }
     }
 
-    private static OccupationCapacity occupationCapacity(Snapshot eligible) {
+    private static JobPositionCapacity jobPositionCapacity(Snapshot eligible) {
         var coverage = eligible.coverage();
         if (coverage == null) return null;
         int skills = (int) eligible.roles().values().stream().flatMap(role -> role.role().skills().keySet().stream()).distinct().count();
-        return new OccupationCapacity(eligible.explorationItemVersionIds().size(), skills, coverage.minimumPerSkill(),
+        return new JobPositionCapacity(eligible.explorationItemVersionIds().size(), skills, coverage.minimumPerSkill(),
                 (long) skills * coverage.minimumPerSkill(), coverage.modelMaxResponses());
     }
 
     private static List<String> configurationFields(Configuration configuration) {
-        if (configuration.occupationBounds() != null) {
-            return List.of("FULL-OCCUPATION-COMMAND-V2", configuration.name(),
-                    configuration.occupationBounds().maxQuestions() + ":" + configuration.occupationBounds().timeLimitSeconds());
+        if (configuration.jobPositionBounds() != null) {
+            return List.of("FULL-JOB_POSITION-COMMAND-V2", configuration.name(),
+                    configuration.jobPositionBounds().maxQuestions() + ":" + configuration.jobPositionBounds().timeLimitSeconds());
         }
         // Preserve the original V1 canonical fields exactly for authorized legacy receipt replay.
         var fields = new ArrayList<>(List.of(configuration.name(),
@@ -325,10 +325,10 @@ public final class AdaptiveBlueprintService implements AdaptiveBlueprintUseCase 
         return actor;
     }
 
-    private Scope scope(Actor actor, String occupation) {
-        if (occupation == null || occupation.isBlank() || !occupation.equals(occupation.strip())) throw failure(Code.INVALID_REQUEST, "Canonical Occupation required");
-        if (!actors.authorizedOccupations(actor).contains(occupation)) throw failure(Code.FORBIDDEN, "Occupation unavailable to actor scope");
-        return new Scope(actor.organizationId(), occupation);
+    private Scope scope(Actor actor, String jobPosition) {
+        if (jobPosition == null || jobPosition.isBlank() || !jobPosition.equals(jobPosition.strip())) throw failure(Code.INVALID_REQUEST, "Canonical JobPosition required");
+        if (!actors.authorizedJobPositions(actor).contains(jobPosition)) throw failure(Code.FORBIDDEN, "JobPosition unavailable to actor scope");
+        return new Scope(actor.organizationId(), jobPosition);
     }
 
     private Snapshot resolve(Scope scope) {
@@ -351,7 +351,7 @@ public final class AdaptiveBlueprintService implements AdaptiveBlueprintUseCase 
 
     /** Versioned, length-prefixed UTF-8 canonical fields; unordered role maps are sorted before hashing. */
     private static String hash(Scope scope, Operation operation, List<String> fields) {
-        var values = new ArrayList<>(List.of("AB-COMMAND-V1", scope.organizationId().toString(), scope.occupationId(), operation.name()));
+        var values = new ArrayList<>(List.of("AB-COMMAND-V1", scope.organizationId().toString(), scope.jobPositionId(), operation.name()));
         values.addAll(fields);
         var canonical = new StringBuilder();
         values.forEach(value -> canonical.append(value.length()).append(':').append(value));

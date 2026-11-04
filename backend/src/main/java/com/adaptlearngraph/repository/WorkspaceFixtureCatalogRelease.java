@@ -30,16 +30,16 @@ public final class WorkspaceFixtureCatalogRelease implements ReleaseAuthority {
     }
     @Override public void assertCurrent(Scope scope,RoleReference ref) {
         var release=require(scope);
-        if(!scope.organizationId().equals(ref.organizationId()) || !fixture.permits(scope.organizationId(),ref.occupationId()))
+        if(!scope.organizationId().equals(ref.organizationId()) || !fixture.permits(scope.organizationId(),ref.jobPositionId()))
             throw new Failure(403,"FORBIDDEN",false);
-        if(!fixture.matches(scope.organizationId(),ref.occupationId(),ref.catalogFingerprint())
+        if(!fixture.matches(scope.organizationId(),ref.jobPositionId(),ref.catalogFingerprint())
                 || !release.token().equals(ref.releaseToken()) || release.versions().entrySet().stream()
                 .anyMatch(entry->!entry.getValue().equals(ref.versions().get(entry.getKey()))))
             throw new Failure(409,"CATALOG_RELEASE_CHANGED",false);
         source(scope).assertCurrent(scope,original(scope,ref));
     }
     private RoleReference original(Scope scope,RoleReference ref) {
-        return new RoleReference(ref.organizationId(),ref.businessRoleId(),ref.roleId(),ref.levelId(),ref.occupationId(),
+        return new RoleReference(ref.organizationId(),ref.businessRoleId(),ref.roleId(),ref.levelId(),ref.jobPositionId(),
                 ref.catalogFingerprint(),source(scope).require(scope).token(),ref.versions());
     }
     public Neo4jCypher open(Scope scope,RoleReference ref) {

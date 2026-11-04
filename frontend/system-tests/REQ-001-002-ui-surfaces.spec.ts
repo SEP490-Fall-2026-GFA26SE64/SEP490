@@ -14,7 +14,7 @@ async function setup(page: Page, lang: string) {
     else if (path.endsWith('/baseline-attempts/history')) body = [result]
     else if (path.endsWith('/attempt-v1/result')) body = result
     else if (path.endsWith('/baseline-attempts/attempt-v1')) body = attempt
-    else if (path.endsWith('/occupations/occ-a')) body = workspace
+    else if (path.endsWith('/job-positions/occ-a')) body = workspace
     else if (path.includes('/versions/')) body = { version: workspace.current, status: 'ACTIVE' }
     else if (path.endsWith('/ld/adaptive-baseline-blueprints')) body = { rows: [], total: 0, page: 0, size: 12 }
     else if (path.endsWith('/micro-skills')) body = [{ id: 's1', code: 'S1', name: 'Unique Search Skill' }]
@@ -48,7 +48,7 @@ for (const language of ['en', 'vi']) for (const [width, height] of [[320, 640], 
     await page.keyboard.press('End'); await expect(rolesTab).toHaveAttribute('aria-selected', 'true')
     await page.goto('/employee/my-mastery'); await expect(page.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '0'); await layout(page)
     await page.goto('/employee/baseline-assessment/attempt-v1'); await expect(page.getByText('100.0%', { exact: true })).toBeVisible(); await expect(page.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '0'); await layout(page)
-    await page.goto('/employee/baseline-assessment'); await expect(page.getByRole('link', { name: role.occupationName, exact: true })).toHaveAttribute('href', '/employee/baseline-assessment/attempt-v1'); await layout(page)
+    await page.goto('/employee/baseline-assessment'); await expect(page.getByRole('link', { name: role.jobPositionName, exact: true })).toHaveAttribute('href', '/employee/baseline-assessment/attempt-v1'); await layout(page)
     expect(writes).toEqual([])
   })
   test(`VB02/MM04/MM05 exact version and Draft form ${language} ${width}x${height}`, async ({ page }) => {

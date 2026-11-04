@@ -4,7 +4,7 @@ Date: 2026-10-23, Asia/Bangkok. User approved the scoped document/workspace/sche
 
 ## Outcome and scope
 
-The official contracts now describe Role-first selection, full Occupation baseline, profile-authoritative coverage, retained learner versions, evidence-sufficient initialization without a score threshold, early no-mastery invalidation, exact version/Draft presentation and protected result/history/My Mastery reads. Operational substitutes have been removed from those contracts and consolidated under workspace `.project/temporary/REQ-001.md` and `REQ-002-003-009.md` (stable IDs12/13 and related records). The old Local Demo Flow path is a navigation pointer only.
+The official contracts now describe Role-first selection, full Job Position baseline, profile-authoritative coverage, retained learner versions, evidence-sufficient initialization without a score threshold, early no-mastery invalidation, exact version/Draft presentation and protected result/history/My Mastery reads. Operational substitutes have been removed from those contracts and consolidated under workspace `.project/temporary/REQ-001.md` and `REQ-002-003-009.md` (stable IDs12/13 and related records). The old Local Demo Flow path is a navigation pointer only.
 
 No backend/frontend runtime source, migration, configuration, seed, estimator, BKT/gap/pathway algorithm or executable test was changed by this review. Pre-existing implementation changes remain unstaged and byte-preserved. Product documents describe required behavior; this report/registry describe actual readiness. Calibration simulation/operational C and other owners' contracts were dependencies, not rewritten into new scope.
 
@@ -12,7 +12,7 @@ No backend/frontend runtime source, migration, configuration, seed, estimator, B
 
 Current user confirmations take precedence, followed by the scoped feature documents, Product Overview and architecture/schema. Source/migrations/tests describe implementation, not requirements. The older repository AGENTS architecture-first/automatic-test instructions conflict with the workspace/current user's gates; current explicit authority governs. Temporary SRSv2 actor/SaaS/S2–S4 differences remain unresolved and were not adopted. Open/Proposed/Provisional items were not promoted to confirmed behavior.
 
-Read-only source review followed controller → use case/ports → JDBC/Neo4j adapters → migrations, and FE route/API → Role gate/configuration/results/profile consumers. Existing historical UUID/fixed/module readers remain intentional compatibility paths; current demo controllers are profile-exclusive. [Contracts](../../technical/baseline/Role%20Selection%20and%20Occupation%20Baseline.md), [architecture](../../ARCHITECTURE.md), [schema/diagrams](../../diagrams/README.md).
+Read-only source review followed controller → use case/ports → JDBC/Neo4j adapters → migrations, and FE route/API → Role gate/configuration/results/profile consumers. Existing historical UUID/fixed/module readers remain intentional compatibility paths; current demo controllers are profile-exclusive. [Contracts](../../technical/baseline/Role%20Selection%20and%20Job Position%20Baseline.md), [architecture](../../ARCHITECTURE.md), [schema/diagrams](../../diagrams/README.md).
 
 ## Verified stores and distinct versions
 
@@ -20,8 +20,8 @@ Read-only source review followed controller → use case/ports → JDBC/Neo4j ad
 | --- | --- | --- |
 | PostgreSQL engine/schema |17.6;26 successful Flyway migrations, all source checksums match;89 tables/729 columns/628 constraints/189 FKs/213 indexes/99 triggers/39 functions | Metadata, not runtime correctness or executable acceptance |
 | Neo4j engine/catalog |5.26.31 Community; ontology0.8.0;827 nodes,4536 relationships;6 ID uniqueness constraints/8 online indexes including2 lookup | Metadata/key/type/ownership checks, not proof of reviewed publication/production visibility |
-| Catalog labels/relationships |5 Occupations,48 Roles,144 Levels,472 Competencies,79 MicroSkills,79 Modules; seven relationship types | All48 Roles have exactly one Occupation owner; constraints alone do not enforce all business cardinality |
-| Blueprint |One released FULL_OCCUPATION_V2 version1; maximum45,total3000 seconds | Current live state differs from earlier observations; no v2/Draft assumption |
+| Catalog labels/relationships |5 Job Positions,48 Roles,144 Levels,472 Competencies,79 MicroSkills,79 Modules; seven relationship types | All48 Roles have exactly one Job Position owner; constraints alone do not enforce all business cardinality |
+| Blueprint |One released FULL_JOB_POSITION_V2 version1; maximum45,total3000 seconds | Current live state differs from earlier observations; no v2/Draft assumption |
 | Model |IRT_3PL, version LOCAL_DEMO_SYNTHETIC_V1, ID8f18ca82-cb9a-3452-95d9-6b52b10904c8 | Reference model, not approved actual-pilot calibration |
 | Mapping |LOGISTIC_CONSERVATIVE_V1, ID891b1dc7-13b8-3f8a-ad0d-6d8eb1747274; configuration hash c6d39bbc9338b750fa492eae9fbecd0a135100d07ef9a2dc4f3e36673c5c5b4f | Distinct mapping identity, not a schema/Blueprint version |
 | Parameter set |e676b9d9-ecb3-34d5-8a4e-8e695b50c870; source SEEDED,status PROMOTED; hash089ecd096815fe6e41fce47bfed53ec655f774132ddf486c811cc90bf55bf70e | SYNTHETIC provenance; storage tags are not real approval or operational promotion |
@@ -30,7 +30,7 @@ Current live learner state is one AUTO_SUBMITTED attempt and one A profile (v1/1
 
 Additional read-only graph checks found144 Levels with unique Role ownership,79 Modules/79 skills with one-to-one TEACHES,0 invalid requiredScore edges and0 prerequisite cycles. All827 nodes remain NEEDS_EXPERT_REVIEW; no node has explicit organizationId, so production tenant visibility requires the owning catalog boundary. A profile/result read compared all15 mastery/confidence pairs exactly equal at baseline v1; no write was used. These are bounded manual observations, not executable acceptance.
 
-V24 expands DISCARD receipts; V25 adds three current selection/receipt/profile tables; V26 adds terminal manual-insufficiency compatibility. V1–V26 source bytes were preserved. One constraint remains NOT VALID: occupation_baseline_name_time_limits, inherited from V21; it was not validated or altered. JSON shape/nonempty checks do not prove numeric mastery or tenant authorization; application validation and actor/org query predicates remain necessary.
+V24 expands DISCARD receipts; V25 adds three current selection/receipt/profile tables; V26 adds terminal manual-insufficiency compatibility. V1–V26 source bytes were preserved. One constraint remains NOT VALID: job position_baseline_name_time_limits, inherited from V21; it was not validated or altered. JSON shape/nonempty checks do not prove numeric mastery or tenant authorization; application validation and actor/org query predicates remain necessary.
 
 ## Contract-to-runtime findings
 
@@ -42,11 +42,11 @@ Categories: A=document drift; B=implementation gap against required behavior; C=
 | Retired menu/panel, hidden portal and unused-persona assumptions remained in registry/guides | A, resolved | Current WorkspaceLayout/useLocalDemoSession consumers recorded; original portals/profile metadata retained |
 | PostgreSQL drawings/catalog and topology were V23/stale | A, resolved | Fresh V26 snapshot, new3-table group and recreated exports, visual review; old target kept historical |
 | Identity uses gated server personas/static manager grants; graph/content visibility accepts the exact unreviewed snapshot/DRAFT bank | C, open | Person1 Identity/session/grants/revocation; Person2/content publication/release/visibility; TMP12 |
-| CurrentOccupationProfile is immutable baseline initialization, not later-learning profile processing/REQ-041 delivery | C, open | Profile/evidence owner replaces behind ports; retain genuine outcome/provenance; TMP13 |
+| CurrentJob PositionProfile is immutable baseline initialization, not later-learning profile processing/REQ-041 delivery | C, open | Profile/evidence owner replaces behind ports; retain genuine outcome/provenance; TMP13 |
 | CurrentRoleSelectionStore activity query checks only adaptive baseline attempts, while confirmed selection guard also covers other assessment families | B/C, open | Assessment owners compose lifecycle guard; no behavior change in this review |
 | Existing published pathway causes PATHWAY_REQUIRES_OWNER rather than an implemented owning archive operation | B/C, open | Pathway owner supplies archive/history/locking contract; fail-closed behavior retained |
 | Same-role select uses the stored Selection returned with changed=true; no-op does not change target revision/events but change indicator appears inconsistent | B, source-derived minor follow-up | Person3 to confirm/fix in separately scoped implementation; not runtime-exercised here |
-| Current selection outbox payloadVersion2 adds Occupation/string-ID context to retained legacy envelope | C/D, compatibility unverified | Consumer owners verify versioned decoder/REQ-041 compatibility; no delivered receipt fabricated |
+| Current selection outbox payloadVersion2 adds Job Position/string-ID context to retained legacy envelope | C/D, compatibility unverified | Consumer owners verify versioned decoder/REQ-041 compatibility; no delivered receipt fabricated |
 | Model constants/estimator precision/calibration/stopping/performance and synthetic-data exclusion remain unvalidated | C/D, open | Model/content/downstream owners; no IRT/mastery/confidence/BKT change |
 | Valid old outcome without authoritative profile | D, retained preservation rule | Pending/review-needed; no generalized import/reset/retake remediation approved |
 | Numeric gap plus low-confidence reinforcement | D, discussion only | No new accepted policy or implementation inferred |

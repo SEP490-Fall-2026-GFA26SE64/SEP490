@@ -21,23 +21,23 @@ import org.springframework.transaction.TransactionException;
 public final class Neo4jAdaptiveBaselineCatalogAdapter implements AdaptiveBaselineCatalogPort {
     // Neo4jClient: tenant/shared-scoped optional-path snapshot with raw properties and elementIds for fingerprinting.
     private static final String QUERY = """
-            MATCH (occupation:Occupation {id:$occupation}) WHERE occupation.status='ACTIVE'
-              AND (occupation.organizationId IS NULL OR occupation.organizationId=$organization)
-            OPTIONAL MATCH (occupation)-[membership:HAS_ROLE]->(role:TargetRole)
+            MATCH (jobPosition:JobPosition {id:$jobPosition}) WHERE jobPosition.status='ACTIVE'
+              AND (jobPosition.organizationId IS NULL OR jobPosition.organizationId=$organization)
+            OPTIONAL MATCH (jobPosition)-[membership:HAS_ROLE]->(role:TargetRole)
             WHERE membership.status='ACTIVE' AND role.status='ACTIVE'
               AND (role.organizationId IS NULL OR role.organizationId=$organization)
               AND (membership.organizationId IS NULL OR membership.organizationId=$organization)
-            OPTIONAL MATCH (owner:Occupation)-[ownership:HAS_ROLE]->(role)
+            OPTIONAL MATCH (owner:JobPosition)-[ownership:HAS_ROLE]->(role)
             WHERE owner.status='ACTIVE' AND ownership.status='ACTIVE'
-            WITH occupation,membership,role,collect(DISTINCT owner.id) AS owners
+            WITH jobPosition,membership,role,collect(DISTINCT owner.id) AS owners
             OPTIONAL MATCH (role)-[roleLevel:HAS_LEVEL]->(level:Level)-[requirement:REQUIRES_SKILL]->(skill:MicroSkill)
             WHERE roleLevel.status='ACTIVE' AND level.status='ACTIVE' AND requirement.status='ACTIVE' AND skill.status='ACTIVE'
               AND (roleLevel.organizationId IS NULL OR roleLevel.organizationId=$organization)
               AND (level.organizationId IS NULL OR level.organizationId=$organization)
               AND (requirement.organizationId IS NULL OR requirement.organizationId=$organization)
               AND (skill.organizationId IS NULL OR skill.organizationId=$organization)
-            RETURN elementId(occupation) AS occupationNode,elementId(role) AS roleNode,elementId(level) AS levelNode,elementId(skill) AS skillNode,
-                   properties(occupation) AS occupation,properties(membership) AS membership,properties(role) AS role,
+            RETURN elementId(jobPosition) AS jobPositionNode,elementId(role) AS roleNode,elementId(level) AS levelNode,elementId(skill) AS skillNode,
+                   properties(jobPosition) AS jobPosition,properties(membership) AS membership,properties(role) AS role,
                    owners,properties(roleLevel) AS roleLevel,properties(level) AS level,
                    properties(requirement) AS requirement,properties(skill) AS skill
             """;
@@ -45,41 +45,41 @@ public final class Neo4jAdaptiveBaselineCatalogAdapter implements AdaptiveBaseli
     private final Neo4jCypher graph;
     private final AdaptiveBlueprintJson json;
     private final UUID organizationId;
-    private final Set<String> occupations;
+    private final Set<String> jobPositions;
 
-    public Neo4jAdaptiveBaselineCatalogAdapter(Neo4jCypher graph, ObjectMapper mapper, UUID organizationId, Set<String> occupations) {
-        this(graph, mapper, organizationId, occupations, false);
+    public Neo4jAdaptiveBaselineCatalogAdapter(Neo4jCypher graph, ObjectMapper mapper, UUID organizationId, Set<String> jobPositions) {
+        this(graph, mapper, organizationId, jobPositions, false);
     }
-    public Neo4jAdaptiveBaselineCatalogAdapter(Neo4jCypher graph, ObjectMapper mapper, UUID organizationId, Set<String> occupations, boolean demoReview) {
+    public Neo4jAdaptiveBaselineCatalogAdapter(Neo4jCypher graph, ObjectMapper mapper, UUID organizationId, Set<String> jobPositions, boolean demoReview) {
         this.demoReview = demoReview;
         this.graph = Objects.requireNonNull(graph);
         this.json = new AdaptiveBlueprintJson(mapper);
         this.organizationId = Objects.requireNonNull(organizationId, "Explicit local organization required");
-        this.occupations = Set.copyOf(occupations);
-        if (this.occupations.isEmpty() || this.occupations.stream().anyMatch(id -> id.isBlank() || !id.equals(id.strip()))) {
-            throw new IllegalArgumentException("Explicit local Occupation allowlist required");
+        this.jobPositions = Set.copyOf(jobPositions);
+        if (this.jobPositions.isEmpty() || this.jobPositions.stream().anyMatch(id -> id.isBlank() || !id.equals(id.strip()))) {
+            throw new IllegalArgumentException("Explicit local JobPosition allowlist required");
         }
     }
 
     @Override
     public Optional<CatalogSnapshot> findAvailable(Scope scope) {
-        if (!organizationId.equals(scope.organizationId()) || !occupations.contains(scope.occupationId())) return Optional.empty();
+        if (!organizationId.equals(scope.organizationId()) || !jobPositions.contains(scope.jobPositionId())) return Optional.empty();
         try {
             return graph.read(tx -> {
-                var rows = tx.list(QUERY, Map.of("occupation", scope.occupationId(), "organization", organizationId.toString()));
+                var rows = tx.list(QUERY, Map.of("jobPosition", scope.jobPositionId(), "organization", organizationId.toString()));
                 if (rows.isEmpty()) return Optional.empty();
-                if (rows.stream().map(row -> row.get("occupationNode").asString()).distinct().count() != 1) {
-                    throw new IllegalArgumentException("Ambiguous Occupation identity");
+                if (rows.stream().map(row -> row.get("jobPositionNode").asString()).distinct().count() != 1) {
+                    throw new IllegalArgumentException("Ambiguous JobPosition identity");
                 }
-                Map<String, Object> occupation = rows.getFirst().get("occupation").asMap();
-                if (!published(occupation)) return Optional.empty();
-                String name = text(occupation, "name");
-                text(occupation, "id"); text(occupation, "version");
+                Map<String, Object> jobPosition = rows.getFirst().get("jobPosition").asMap();
+                if (!published(jobPosition)) return Optional.empty();
+                String name = text(jobPosition, "name");
+                text(jobPosition, "id"); text(jobPosition, "version");
                 var roleDefinitions = new LinkedHashMap<String, Map<String, Object>>();
                 var skills = new LinkedHashMap<String, Map<String, SkillSnapshot>>();
                 var nodeIdentities = new HashMap<String, String>();
                 var paths = new TreeSet<String>();
-                paths.add(json.canonicalObject(json.write(Map.of("occupation", occupation))));
+                paths.add(json.canonicalObject(json.write(Map.of("jobPosition", jobPosition))));
                 for (var row : rows) {
                     if (row.get("role").isNull()) continue;
                     Map<String, Object> role = row.get("role").asMap();
@@ -87,8 +87,8 @@ public final class Neo4jAdaptiveBaselineCatalogAdapter implements AdaptiveBaseli
                     if (!published(role) || !published(membership)) continue;
                     String roleId = text(role, "id");
                     uniqueNode(nodeIdentities, "role:" + roleId, row.get("roleNode").asString());
-                    if (!Set.copyOf(row.get("owners").asList(value -> value.asString())).equals(Set.of(scope.occupationId()))) {
-                        throw new IllegalArgumentException("Active role has ambiguous Occupation ownership");
+                    if (!Set.copyOf(row.get("owners").asList(value -> value.asString())).equals(Set.of(scope.jobPositionId()))) {
+                        throw new IllegalArgumentException("Active role has ambiguous JobPosition ownership");
                     }
                     text(role, "name"); text(role, "version"); text(membership, "id"); text(membership, "version");
                     roleDefinitions.put(roleId, role);
@@ -116,7 +116,7 @@ public final class Neo4jAdaptiveBaselineCatalogAdapter implements AdaptiveBaseli
             });
         } catch (Neo4jException | DataAccessException | TransactionException | IllegalArgumentException | IllegalStateException
                  | java.time.DateTimeException failure) {
-            throw new DependencyUnavailable("Published Occupation catalog is unavailable or inconsistent", failure);
+            throw new DependencyUnavailable("Published JobPosition catalog is unavailable or inconsistent", failure);
         }
     }
 

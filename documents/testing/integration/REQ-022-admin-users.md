@@ -15,9 +15,9 @@ All selectors use `.\backend\mvnw.cmd -f .\backend\pom.xml "-Dtest=..." test`. C
 
 ## Verified Behavior
 
-- Administrator updates name/organization roles/department/occupation under a real same-organization membership. Expected revision must match; stale edits return 409.
+- Administrator updates name/organization roles/department/job position under a real same-organization membership. Expected revision must match; stale edits return 409.
 - Email, password hash and original registration name/verification history remain unchanged. Workspace reads prefer the mutable workspace profile while registration resume retains its original snapshot. A newly required profile row copies only the actual established verification timestamp.
-- Unchanged historical inactive assignment references are preserved and their real labels remain visible. New foreign-organization or invalid department/occupation references are rejected.
+- Unchanged historical inactive assignment references are preserved and their real labels remain visible. New foreign-organization or invalid department/job position references are rejected.
 - Employee assignments remain mandatory. Adding Employee through the edit operation cannot exceed capacity; the failed transaction preserves name, roles, assignment and revision.
 - Last active Administrator cannot be removed. Existing account/membership activation and concurrent final-seat tests continue passing.
 - Expired subscription rejects ordinary profile edits but permits the prior bounded membership deactivation remedy. Suspension denies Users directory/invitation/reference reads while still permitting authorized billing reads.
@@ -28,8 +28,8 @@ All selectors use `.\backend\mvnw.cmd -f .\backend\pom.xml "-Dtest=..." test`. C
 
 | Operation | Contract |
 | --- | --- |
-| GET `/api/v1/organizations/{org}/subscription/members` | Existing owner-scoped list extended with `departmentName`, `occupationName`, `accountActive`; preserves existing IDs, roles, references, active flag and revision. |
-| PUT `/api/v1/organizations/{org}/subscription/members/{member}/profile` | `{fullName, roles, departmentId, occupationReferenceId, revision}`. Returns the persisted authorized member projection. No email/password/MFA/platform-role input is accepted as an update. |
+| GET `/api/v1/organizations/{org}/subscription/members` | Existing owner-scoped list extended with `departmentName`, `job positionName`, `accountActive`; preserves existing IDs, roles, references, active flag and revision. |
+| PUT `/api/v1/organizations/{org}/subscription/members/{member}/profile` | `{fullName, roles, departmentId, job positionReferenceId, revision}`. Returns the persisted authorized member projection. No email/password/MFA/platform-role input is accepted as an update. |
 | PUT `/api/v1/organizations/{org}/subscription/members/{member}` | Existing membership active/roles/revision operation; no hard deletion. |
 | GET `/api/v1/organizations/{org}/subscription/activations` | Unconsumed activation requests with PENDING/EXPIRED state and truthful delivery status. Missing delivery work is NOT_REQUESTED, not fabricated success. |
 | POST `/api/v1/organizations/{org}/subscription/activations` | Existing activation/resend workflow and cooldown/limits preserved. |

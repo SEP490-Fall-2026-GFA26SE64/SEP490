@@ -1,7 +1,7 @@
 {
-  "occupationId": "OCC-15-1252.00",
+  "jobPositionId": "OCC-15-1252.00",
   "catalogVersion": "0.11.0",
-  "baseSha256": "f7325462f0e8810624c05141798a3ca330b6ae8fb3844fc6e1437951e79832f7",
+  "baseSha256": "585eae81565deb7f3d0e40eeea10e583dd526cd4569077babfda6d5b22e9602c",
   "reusedModules": [
     {
       "id": "MOD-READ-CORE01",

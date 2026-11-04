@@ -13,7 +13,7 @@ public final class ApiEndpoints {
     public static final String BASELINE_ANSWER_REVIEW = API_V1 + "/ld/baseline-assessments";
     public static final String BASELINE_ASSESSMENT_MANAGEMENT = API_V1 + "/ld/baseline-assessments";
     public static final String BASELINE_BLUEPRINT = API_V1 + "/ld/baseline-blueprints";
-    public static final String BASELINE_OCCUPATION_CATALOG = API_V1 + "/ld/baseline-blueprint-catalog/occupations";
+    public static final String BASELINE_JOB_POSITION_CATALOG = API_V1 + "/ld/baseline-blueprint-catalog/job-positions";
     public static final String COMPETENCY = API_V1 + "/organizations/{organizationId}/competencies";
     public static final String CURRENT_ROLE_FLOW = API_V1 + "/employee";
     public static final String INITIAL_PATHWAY = API_V1;
@@ -35,7 +35,7 @@ public final class ApiEndpoints {
     public static final String TARGET_ROLE_GRAPH = API_V1 + "/organizations/{organizationId}/target-roles/{roleId}/graph";
     public static final String TARGET_ROLE_SELECTION = API_V1 + "/employee/target-role-selection";
     public static final String WORKSPACE_AUTHENTICATION = API_V1 + "/workspace-auth";
-    public static final String WORKSPACE_BASELINE_RESOURCE = API_V1 + "/ld/adaptive-baseline-resources/occupations/{occupationId}";
+    public static final String WORKSPACE_BASELINE_RESOURCE = API_V1 + "/ld/adaptive-baseline-resources/job-positions/{jobPositionId}";
 
     private ApiEndpoints() {
     }

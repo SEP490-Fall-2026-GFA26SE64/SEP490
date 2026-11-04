@@ -7,15 +7,15 @@ type Doc = { id: string; lockVersion: number; revisions: { state: string; decide
 test('REQ-053: L&D can navigate, inspect, cancel and approve without entering Expert', async ({ page, request }) => {
   test.setTimeout(240_000)
   const actor = await (await request.get(`${root}/session`, { headers: expert })).json() as { id: string }
-  const occupations = await (await request.get(`${root}/catalog/Occupation`, { headers: ld })).json() as { id: string }[]
-  const occupationId = occupations[0].id
-  expect((await request.put(`${root}/grants`, { headers: ld, data: { expertId: actor.id, occupationId, active: true } })).status()).toBe(204)
+  const jobPositions = await (await request.get(`${root}/catalog/JobPosition`, { headers: ld })).json() as { id: string }[]
+  const jobPositionId = jobPositions[0].id
+  expect((await request.put(`${root}/grants`, { headers: ld, data: { expertId: actor.id, jobPositionId, active: true } })).status()).toBe(204)
   const skills = await (await request.get(`${root}/catalog/MicroSkill`, { headers: expert })).json() as { id: string }[]
   const title = `L&D navigation review ${Date.now()}`
-  const contentResponse = await request.post(`${root}/contents`, { headers: expert, data: { title, markdown: '# Review lesson\nPractice and verify the outcome.', occupationIds: [occupationId] } })
+  const contentResponse = await request.post(`${root}/contents`, { headers: expert, data: { title, markdown: '# Review lesson\nPractice and verify the outcome.', jobPositionIds: [jobPositionId] } })
   expect(contentResponse.status()).toBe(201)
   const content = await contentResponse.json() as { id: string }
-  const created = await request.post(`${root}/modules`, { headers: expert, data: { title, moduleType: 'LESSON_AND_PRACTICE', contentId: content.id, duration: 60, price: 100000, occupationIds: [occupationId], teachings: [{ skillId: skills[0].id, teachingFocus: 'PRIMARY', difficultyLevel: 'MEDIUM' }] } })
+  const created = await request.post(`${root}/modules`, { headers: expert, data: { title, moduleType: 'LESSON_AND_PRACTICE', contentId: content.id, duration: 60, price: 100000, jobPositionIds: [jobPositionId], teachings: [{ skillId: skills[0].id, teachingFocus: 'PRIMARY', difficultyLevel: 'MEDIUM' }] } })
   expect(created.status()).toBe(201)
   let doc = await created.json() as Doc
   const submitted = await request.post(`${root}/modules/${doc.id}/actions`, { headers: expert, data: { expectedVersion: doc.lockVersion, action: 'submit' } })

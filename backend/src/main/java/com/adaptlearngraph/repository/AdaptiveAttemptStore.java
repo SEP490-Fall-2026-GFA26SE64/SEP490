@@ -14,13 +14,13 @@ import java.util.function.Consumer;
 
 /** Persistence contract only; B3 supplies adapters and presented-item/response/estimate storage. */
 public interface AdaptiveAttemptStore {
-    /** Serialize Employee+Occupation even before its first row; all calls in work share one transaction.
+    /** Serialize Employee+JobPosition even before its first row; all calls in work share one transaction.
      * Reauthorize before entering; exceptions roll back header, items, responses, receipts and evidence.
      */
     <T> T inTransaction(Scope scope, Supplier<T> work);
     /** Authoritative PostgreSQL observation time under the mutation lock, not client/JVM start time. */
     Instant observedAt(Scope scope);
-    /** Owned lookup before Occupation is known; lock/reload by returned scope before any mutation. */
+    /** Owned lookup before JobPosition is known; lock/reload by returned scope before any mutation. */
     Optional<AdaptiveAttempt> findOwned(UUID organizationId, UUID learnerId, UUID attemptId);
     /** Owned metadata prelookup only; reauthorize and reload the receipt under request coordination. */
     Optional<Scope> findReceiptScope(UUID organizationId, UUID learnerId, String idempotencyKey);
@@ -29,7 +29,7 @@ public interface AdaptiveAttemptStore {
     /** Latest chain member; reject a second successor, cross-scope link or cyclic replacement. */
     Optional<AdaptiveAttempt> findLatest(Scope scope);
     boolean hasMasteryProducingCompletion(Scope scope);
-    /** Reauthorize first; key identity spans all this Employee's Occupations and operations.
+    /** Reauthorize first; key identity spans all this Employee's JobPositions and operations.
      * Compare operation/scope/canonical request hash before exact replay, even after terminal state.
      */
     Optional<Receipt> findReceipt(UUID organizationId, UUID learnerId, String idempotencyKey);

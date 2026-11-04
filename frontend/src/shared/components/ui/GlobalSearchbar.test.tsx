@@ -2,7 +2,7 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { MemoryRouter, useLocation } from 'react-router-dom'
 import { afterEach, expect, it, vi } from 'vitest'
 import { GlobalSearchbar } from './GlobalSearchbar'
-vi.mock('../../../features/employee/target-roles/currentRoleFlowApi', () => ({ currentRoles: vi.fn(async () => [{ id: 'role-a', name: 'Security Role', scope: 'Secure', occupationName: 'Security', catalogVersion: 'f1' }]) }))
+vi.mock('../../../features/employee/target-roles/currentRoleFlowApi', () => ({ currentRoles: vi.fn(async () => [{ id: 'role-a', name: 'Security Role', scope: 'Secure', jobPositionName: 'Security', catalogVersion: 'f1' }]) }))
 vi.mock('../../api/microSkillApi', () => ({ fetchMicroSkills: vi.fn(async () => [{ id: 'skill-a', name: 'Unicode Skill', description: 'Learn' }]) }))
 function Location() { const location = useLocation(); return <output>{location.pathname + location.search}</output> }
 afterEach(cleanup)

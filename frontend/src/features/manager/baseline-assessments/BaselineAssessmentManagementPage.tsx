@@ -20,10 +20,10 @@ import { useTranslation } from '../../../shared/i18n/LanguageContext'
 import { WorkspaceLayout } from '../../../shared/layouts/WorkspaceLayout'
 import {
   BaselineAssessmentManagementApiError,
-  type BaselineAssessmentOccupation,
+  type BaselineAssessmentJobPosition,
   type BaselineAssessmentStatus,
   type PendingStage,
-  listBaselineAssessmentOccupations,
+  listBaselineAssessmentJobPositions,
 } from './baselineAssessmentManagementApi'
 
 const PAGE_SIZE = 12
@@ -37,7 +37,7 @@ export function BaselineAssessmentManagementPage() {
   const [sort, setSort] = React.useState<'name_asc' | 'name_desc'>('name_asc')
   const [page, setPage] = React.useState(0)
   const [reloadRevision, setReloadRevision] = React.useState(0)
-  const [result, setResult] = React.useState({ items: [] as BaselineAssessmentOccupation[], total: 0 })
+  const [result, setResult] = React.useState({ items: [] as BaselineAssessmentJobPosition[], total: 0 })
   const [loading, setLoading] = React.useState(true)
   const [error, setError] = React.useState<string | null>(null)
 
@@ -53,7 +53,7 @@ export function BaselineAssessmentManagementPage() {
     const controller = new AbortController()
     setLoading(true)
     setError(null)
-    void listBaselineAssessmentOccupations({ search, status, sort, page, size: PAGE_SIZE, signal: controller.signal })
+    void listBaselineAssessmentJobPositions({ search, status, sort, page, size: PAGE_SIZE, signal: controller.signal })
       .then((response) => setResult({ items: response.items, total: response.total }))
       .catch((cause: unknown) => {
         if (cause instanceof DOMException && cause.name === 'AbortError') return
@@ -66,8 +66,8 @@ export function BaselineAssessmentManagementPage() {
   }, [page, reloadRevision, search, sort, status, t])
 
   const totalPages = Math.max(1, Math.ceil(result.total / PAGE_SIZE))
-  const openWorkspace = (occupationId: string) => {
-    navigate(`/ld-manager/baseline-assessments/${encodeURIComponent(occupationId)}`)
+  const openWorkspace = (jobPositionId: string) => {
+    navigate(`/ld-manager/baseline-assessments/${encodeURIComponent(jobPositionId)}`)
   }
 
   return (
@@ -161,7 +161,7 @@ export function BaselineAssessmentManagementPage() {
                   <table className="w-full border-collapse text-left text-xs">
                     <thead>
                       <tr className="border-b border-border bg-muted/40 text-[11px] font-semibold uppercase text-muted-foreground">
-                        <th className="px-4 py-3">{t('baselineAssessmentManagement.columns.occupation')}</th>
+                        <th className="px-4 py-3">{t('baselineAssessmentManagement.columns.jobPosition')}</th>
                         <th className="px-4 py-3">{t('baselineAssessmentManagement.columns.blueprint')}</th>
                         <th className="px-4 py-3">{t('baselineAssessmentManagement.columns.pending')}</th>
                         <th className="px-4 py-3">{t('baselineAssessmentManagement.columns.candidate')}</th>
@@ -170,19 +170,19 @@ export function BaselineAssessmentManagementPage() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-border">
-                      {result.items.map((occupation) => (
-                        <tr key={occupation.occupationId} className="transition-colors hover:bg-muted/20">
+                      {result.items.map((jobPosition) => (
+                        <tr key={jobPosition.jobPositionId} className="transition-colors hover:bg-muted/20">
                           <td className="px-4 py-4">
-                            <div className="font-semibold text-foreground">{occupation.occupationName}</div>
-                            <div className="mt-1 font-mono text-[11px] text-muted-foreground">{occupation.occupationId}</div>
+                            <div className="font-semibold text-foreground">{jobPosition.jobPositionName}</div>
+                            <div className="mt-1 font-mono text-[11px] text-muted-foreground">{jobPosition.jobPositionId}</div>
                           </td>
-                          <td className="px-4 py-4">{versionLabel(occupation.latestBlueprintVersion, t)}</td>
-                          <td className="px-4 py-4"><PendingBadge stage={occupation.pendingStage} t={t} /></td>
-                          <td className="px-4 py-4"><CandidateBadge occupation={occupation} t={t} /></td>
-                          <td className="px-4 py-4"><ActiveBadge version={occupation.activeAssessmentVersion} t={t} /></td>
+                          <td className="px-4 py-4">{versionLabel(jobPosition.latestBlueprintVersion, t)}</td>
+                          <td className="px-4 py-4"><PendingBadge stage={jobPosition.pendingStage} t={t} /></td>
+                          <td className="px-4 py-4"><CandidateBadge jobPosition={jobPosition} t={t} /></td>
+                          <td className="px-4 py-4"><ActiveBadge version={jobPosition.activeAssessmentVersion} t={t} /></td>
                           <td className="px-4 py-4 text-right">
-                            <Button size="sm" variant="outline" rightIcon={<ArrowRight className="h-3.5 w-3.5" />} onClick={() => openWorkspace(occupation.occupationId)}>
-                              {primaryAction(occupation, t)}
+                            <Button size="sm" variant="outline" rightIcon={<ArrowRight className="h-3.5 w-3.5" />} onClick={() => openWorkspace(jobPosition.jobPositionId)}>
+                              {primaryAction(jobPosition, t)}
                             </Button>
                           </td>
                         </tr>
@@ -192,23 +192,23 @@ export function BaselineAssessmentManagementPage() {
                 </div>
 
                 <div className="grid gap-3 p-3 md:hidden">
-                  {result.items.map((occupation) => (
-                    <article key={occupation.occupationId} className="rounded-lg border border-border bg-card p-4 shadow-2xs">
+                  {result.items.map((jobPosition) => (
+                    <article key={jobPosition.jobPositionId} className="rounded-lg border border-border bg-card p-4 shadow-2xs">
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0">
-                          <h3 className="font-semibold text-foreground">{occupation.occupationName}</h3>
-                          <p className="mt-1 truncate font-mono text-[11px] text-muted-foreground">{occupation.occupationId}</p>
+                          <h3 className="font-semibold text-foreground">{jobPosition.jobPositionName}</h3>
+                          <p className="mt-1 truncate font-mono text-[11px] text-muted-foreground">{jobPosition.jobPositionId}</p>
                         </div>
-                        <ActiveBadge version={occupation.activeAssessmentVersion} t={t} />
+                        <ActiveBadge version={jobPosition.activeAssessmentVersion} t={t} />
                       </div>
                       <dl className="mt-4 grid grid-cols-2 gap-3 text-xs">
-                        <LifecycleField label={t('baselineAssessmentManagement.columns.blueprint')} value={versionLabel(occupation.latestBlueprintVersion, t)} />
-                        <LifecycleField label={t('baselineAssessmentManagement.columns.pending')} value={<PendingBadge stage={occupation.pendingStage} t={t} />} />
-                        <LifecycleField label={t('baselineAssessmentManagement.columns.candidate')} value={<CandidateBadge occupation={occupation} t={t} />} />
-                        <LifecycleField label={t('baselineAssessmentManagement.updated')} value={formatDate(occupation.lastUpdatedAt, language, t)} />
+                        <LifecycleField label={t('baselineAssessmentManagement.columns.blueprint')} value={versionLabel(jobPosition.latestBlueprintVersion, t)} />
+                        <LifecycleField label={t('baselineAssessmentManagement.columns.pending')} value={<PendingBadge stage={jobPosition.pendingStage} t={t} />} />
+                        <LifecycleField label={t('baselineAssessmentManagement.columns.candidate')} value={<CandidateBadge jobPosition={jobPosition} t={t} />} />
+                        <LifecycleField label={t('baselineAssessmentManagement.updated')} value={formatDate(jobPosition.lastUpdatedAt, language, t)} />
                       </dl>
-                      <Button className="mt-4 w-full" size="sm" rightIcon={<ArrowRight className="h-3.5 w-3.5" />} onClick={() => openWorkspace(occupation.occupationId)}>
-                        {primaryAction(occupation, t)}
+                      <Button className="mt-4 w-full" size="sm" rightIcon={<ArrowRight className="h-3.5 w-3.5" />} onClick={() => openWorkspace(jobPosition.jobPositionId)}>
+                        {primaryAction(jobPosition, t)}
                       </Button>
                     </article>
                   ))}
@@ -219,7 +219,7 @@ export function BaselineAssessmentManagementPage() {
                   totalPages={totalPages}
                   totalItems={result.total}
                   pageSize={PAGE_SIZE}
-                  itemLabel={t('baselineAssessmentManagement.occupationItems')}
+                  itemLabel={t('baselineAssessmentManagement.jobPositionItems')}
                   onPageChange={(nextPage) => setPage(nextPage - 1)}
                 />
               </>
@@ -238,16 +238,16 @@ function PendingBadge({ stage, t }: { stage: PendingStage; t: Translate }) {
   return <Badge variant="warning">{t(`baselineAssessmentManagement.status.${pendingKey(stage)}`)}</Badge>
 }
 
-function CandidateBadge({ occupation, t }: { occupation: BaselineAssessmentOccupation; t: Translate }) {
-  if (occupation.openAssessmentVersion === null || occupation.openAssessmentState === null) {
+function CandidateBadge({ jobPosition, t }: { jobPosition: BaselineAssessmentJobPosition; t: Translate }) {
+  if (jobPosition.openAssessmentVersion === null || jobPosition.openAssessmentState === null) {
     return <span className="text-muted-foreground">{t('baselineAssessmentManagement.none')}</span>
   }
   return (
     <div className="flex flex-col items-start gap-1">
-      <Badge variant={occupation.openAssessmentState === 'REVIEWED' ? 'success' : 'warning'}>
-        {t(`baselineAssessmentManagement.status.${occupation.openAssessmentState === 'REVIEWED' ? 'reviewed' : 'draft'}`)}
+      <Badge variant={jobPosition.openAssessmentState === 'REVIEWED' ? 'success' : 'warning'}>
+        {t(`baselineAssessmentManagement.status.${jobPosition.openAssessmentState === 'REVIEWED' ? 'reviewed' : 'draft'}`)}
       </Badge>
-      <span className="text-[11px] text-muted-foreground">v{occupation.openAssessmentVersion}</span>
+      <span className="text-[11px] text-muted-foreground">v{jobPosition.openAssessmentVersion}</span>
     </div>
   )
 }
@@ -276,11 +276,11 @@ function pendingKey(stage: PendingStage) {
   }[stage]
 }
 
-function primaryAction(occupation: BaselineAssessmentOccupation, t: Translate) {
-  if (occupation.pendingStage !== 'NONE' || occupation.openAssessmentVersion !== null) {
+function primaryAction(jobPosition: BaselineAssessmentJobPosition, t: Translate) {
+  if (jobPosition.pendingStage !== 'NONE' || jobPosition.openAssessmentVersion !== null) {
     return t('baselineAssessmentManagement.continueAction')
   }
-  if (occupation.activeAssessmentVersion !== null) return t('baselineAssessmentManagement.manageAction')
+  if (jobPosition.activeAssessmentVersion !== null) return t('baselineAssessmentManagement.manageAction')
   return t('baselineAssessmentManagement.configureAction')
 }
 

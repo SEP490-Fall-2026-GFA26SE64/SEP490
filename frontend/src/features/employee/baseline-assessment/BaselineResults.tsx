@@ -20,7 +20,7 @@ export function BaselineResultPanel({ result }: { result: BaselineResult; locked
   const invalidated = result.state === 'INVALIDATED'
   const profile = useQuery({ queryKey: ['my-mastery'], queryFn: ({ signal }) => readMyMastery(signal), enabled: !invalidated, retry: false })
   return <Card className={invalidated ? "overflow-hidden border-warning/50" : "overflow-hidden border-success/40"}>
-    <CardHeader className={invalidated ? "border-b border-warning/30 bg-warning/5 p-5" : "border-b border-success/20 bg-success/5 p-5"}><div className="flex items-start justify-between gap-3"><Heading level={2} size="subsection" className="break-words">{tr('result')}: {result.occupationName}</Heading><MasteryHelp /></div>
+    <CardHeader className={invalidated ? "border-b border-warning/30 bg-warning/5 p-5" : "border-b border-success/20 bg-success/5 p-5"}><div className="flex items-start justify-between gap-3"><Heading level={2} size="subsection" className="break-words">{tr('result')}: {result.jobPositionName}</Heading><MasteryHelp /></div>
       <div className="flex flex-wrap gap-2"><Badge variant="outline" className="max-w-full whitespace-normal">{tr(`scopes.${result.assessmentScope}`)}</Badge><Badge variant={invalidated ? 'warning' : 'success'}>{tr(result.state)}</Badge></div>
     </CardHeader>
     <CardContent className="space-y-4 p-5">
@@ -63,7 +63,7 @@ export function BaselineHistory() {
     {loading ? <LoadingCard label={tr('loading')} /> : error ? <Text variant="body-sm" tone="destructive" role="alert" className="text-destructive">{tr('historyError')}</Text> : items.length === 0 ? <EmptyState bordered={false} title={tr('emptyHistory')} description={tr('historyEmptyHint')}
       action={<Link className={buttonVariants({ variant: 'outline', size: 'sm' })} to="/employee/upskilling?tab=roles">{tr('backToStart')}</Link>} />
       : <ul className="space-y-3">{items.map(item => <li key={item.attemptId} className="space-y-2 rounded-lg border border-border bg-muted/20 p-4">
-        <Link className="break-words font-semibold text-primary underline" to={attemptPath(item.attemptId)}>{item.occupationName}</Link>
+        <Link className="break-words font-semibold text-primary underline" to={attemptPath(item.attemptId)}>{item.jobPositionName}</Link>
         <div className="flex flex-wrap gap-2"><Badge variant="outline" className="max-w-full whitespace-normal">{tr(`scopes.${item.assessmentScope}`)}</Badge><Badge variant={item.state === 'INVALIDATED' ? 'warning' : 'success'}>{tr(item.state)}</Badge></div>
         {item.roleName && <Text variant="body-sm" className="break-words">{tr('originalRole')}: {item.roleName}</Text>}
         <Text variant="caption" className="text-muted-foreground">{tr('completedDate')}: <time dateTime={item.completedAt}>{new Date(item.completedAt).toLocaleString(language)}</time></Text>

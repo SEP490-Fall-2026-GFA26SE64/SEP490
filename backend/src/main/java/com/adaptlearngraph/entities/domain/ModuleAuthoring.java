@@ -32,15 +32,15 @@ public final class ModuleAuthoring {
         }
     }
     public record Content(String id, String title, String markdown, String contentType,
-                          String contentVersion, List<String> occupationIds, String createdBy, String createdAt,
+                          String contentVersion, List<String> jobPositionIds, String createdBy, String createdAt,
                           List<LearningContent.Lesson> lessons) {
         public Content(String id, String title, String markdown, String contentType, String contentVersion,
-                       List<String> occupationIds, String createdBy, String createdAt) {
-            this(id, title, markdown, contentType, contentVersion, occupationIds, createdBy, createdAt, null);
+                       List<String> jobPositionIds, String createdBy, String createdAt) {
+            this(id, title, markdown, contentType, contentVersion, jobPositionIds, createdBy, createdAt, null);
         }
         public Content {
             text(title, "title", 240);
-            occupationIds = List.copyOf(occupationIds);
+            jobPositionIds = List.copyOf(jobPositionIds);
             if (lessons == null) {
                 text(markdown, "markdown", 200_000);
                 if (markdown.matches("(?is).*(javascript\\s*:|data\\s*:|<\\s*(script|iframe|object)\\b).*"))
@@ -84,16 +84,16 @@ public final class ModuleAuthoring {
     public record Revision(int number, String state, Package payload, String editedBy, String editedAt,
                            String decidedBy, String decidedAt, String feedback) {}
     public record Event(int sequence, int revision, String action, String actorId, String occurredAt, String detail) {}
-    public record Document(String id, String organizationId, List<String> occupationIds,
+    public record Document(String id, String organizationId, List<String> jobPositionIds,
                            String createdBy, String createdAt, long lockVersion, boolean everReleased,
                            boolean archived, Integer releasedRevision, List<Revision> revisions, List<Event> history, Intake intake) {
-        public Document(String id, String organizationId, List<String> occupationIds, String createdBy, String createdAt,
+        public Document(String id, String organizationId, List<String> jobPositionIds, String createdBy, String createdAt,
                         long lockVersion, boolean everReleased, boolean archived, Integer releasedRevision,
                         List<Revision> revisions, List<Event> history) {
-            this(id, organizationId, occupationIds, createdBy, createdAt, lockVersion, everReleased, archived, releasedRevision, revisions, history, null);
+            this(id, organizationId, jobPositionIds, createdBy, createdAt, lockVersion, everReleased, archived, releasedRevision, revisions, history, null);
         }
         public Document {
-            occupationIds = List.copyOf(occupationIds); revisions = List.copyOf(revisions); history = List.copyOf(history);
+            jobPositionIds = List.copyOf(jobPositionIds); revisions = List.copyOf(revisions); history = List.copyOf(history);
         }
         public Revision current() { return revisions.get(revisions.size() - 1); }
         public Revision released() {
@@ -101,9 +101,9 @@ public final class ModuleAuthoring {
         }
     }
     public record TeachingInput(String skillId, String teachingFocus, String difficultyLevel) {}
-    // occupationIds is accepted for legacy clients only; new authoring is skill-based.
+    // jobPositionIds is accepted for legacy clients only; new authoring is skill-based.
     public record Save(String title, String moduleType, String contentId, int duration, BigDecimal price,
-                       List<String> occupationIds, List<TeachingInput> teachings) {}
+                       List<String> jobPositionIds, List<TeachingInput> teachings) {}
     public record Page(List<Document> items, int total, int page, int pageSize) {}
     /** Read catalog values as stored, including absent historical metadata; never invent audit history. */
     public record CatalogTeaching(Metadata metadata, String skillId, String skillName,
@@ -113,19 +113,19 @@ public final class ModuleAuthoring {
                                 List<CatalogTeaching> teachings) {
         public CatalogModule { teachings = List.copyOf(teachings); }
     }
-    public record Intake(String moduleId, String organizationId, List<String> occupationIds, String assignedBy,
+    public record Intake(String moduleId, String organizationId, List<String> jobPositionIds, String assignedBy,
                          String assignedAt, CatalogModule source, String acceptedBy, String acceptedAt, List<Event> history, String expertId) {
-        public Intake(String moduleId, String organizationId, List<String> occupationIds, String assignedBy,
+        public Intake(String moduleId, String organizationId, List<String> jobPositionIds, String assignedBy,
                       String assignedAt, CatalogModule source, String acceptedBy, String acceptedAt, List<Event> history) {
-            this(moduleId, organizationId, occupationIds, assignedBy, assignedAt, source, acceptedBy, acceptedAt, history, null);
+            this(moduleId, organizationId, jobPositionIds, assignedBy, assignedAt, source, acceptedBy, acceptedAt, history, null);
         }
-        public Intake { occupationIds = List.copyOf(occupationIds); history = List.copyOf(history); }
+        public Intake { jobPositionIds = List.copyOf(jobPositionIds); history = List.copyOf(history); }
     }
     public record CatalogItem(CatalogModule module, Document authoring, Intake intake) {
         public CatalogItem(CatalogModule module, Document authoring) { this(module, authoring, authoring == null ? null : authoring.intake()); }
     }
     public record CatalogPage(List<CatalogItem> items, int total, int page, int pageSize) {}
-    public record Grant(String expertId, String occupationId) {}
+    public record Grant(String expertId, String jobPositionId) {}
     public static String now() { return Instant.now().toString(); }
     public static void text(String value, String name, int max) {
         if (value == null || value.isBlank() || value.length() > max) throw new IllegalArgumentException("Invalid " + name);

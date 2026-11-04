@@ -63,7 +63,7 @@ public class LocalAdaptiveAttemptConfiguration {
             JpaAdaptiveBlueprintEligibilityAdapter.Properties settings,
             @Value("${assessment.baseline.adaptive.attempts.local-employee-id:#{null}}") UUID employeeId) {
         return new LocalAdaptiveAttemptContext(identities, employeeId, settings.organizationId(),
-                settings.occupationIds(), catalog, new AdaptiveAttemptSnapshotResolver(blueprints, eligibility, technical));
+                settings.jobPositionIds(), catalog, new AdaptiveAttemptSnapshotResolver(blueprints, eligibility, technical));
     }
     @Bean
     StartRead adaptiveAttemptStartRead(AdaptiveAttemptContextPort context, AdaptiveAttemptStore store,

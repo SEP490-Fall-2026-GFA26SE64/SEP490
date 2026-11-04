@@ -31,15 +31,15 @@ export function CurrentRolePanel() {
   const [gapRole, setGapRole] = useState<CurrentRole | null>(null)
   const [command, setCommand] = useState<RoleChoiceCommand | null>(null)
   const [busy, setBusy] = useState(false), [error, setError] = useState<RoleFlowError | null>(null)
-  const [occupation, setOccupation] = useState(''), [sort, setSort] = useState('occupation'), [page, setPage] = useState(1)
+  const [jobPosition, setJobPosition] = useState(''), [sort, setSort] = useState('jobPosition'), [page, setPage] = useState(1)
   const [status, setStatus] = useState('all')
   const lock = useRef(false), committed = useRef(false)
   const search = params.get('search') ?? ''
-  const filtered = (roles.data ?? []).filter(role => (status !== 'selected' || role.id === view.data?.selection?.role.id) && (!occupation || role.occupationId === occupation) && (role.name + ' ' + role.occupationName).toLowerCase().includes(search.toLowerCase()))
-    .sort((a, b) => (sort === 'occupation' ? a.occupationName.localeCompare(b.occupationName, language) : 0) || a.name.localeCompare(b.name, language))
+  const filtered = (roles.data ?? []).filter(role => (status !== 'selected' || role.id === view.data?.selection?.role.id) && (!jobPosition || role.jobPositionId === jobPosition) && (role.name + ' ' + role.jobPositionName).toLowerCase().includes(search.toLowerCase()))
+    .sort((a, b) => (sort === 'jobPosition' ? a.jobPositionName.localeCompare(b.jobPositionName, language) : 0) || a.name.localeCompare(b.name, language))
   const pageCount = Math.max(1, Math.ceil(filtered.length / 12)), currentPage = Math.min(page, pageCount)
   const visible = filtered.slice((currentPage - 1) * 12, currentPage * 12)
-  const occupations = [...new Map((roles.data ?? []).map(role => [role.occupationId, { value: role.occupationId, label: role.occupationName }])).values()]
+  const jobPositions = [...new Map((roles.data ?? []).map(role => [role.jobPositionId, { value: role.jobPositionId, label: role.jobPositionName }])).values()]
   const blocked = busy || Boolean(command)
   const assessmentActive = view.data?.progress.state === 'RESUME'
   async function refresh() { await Promise.all([roles.refetch(), view.refetch()]) }
@@ -78,15 +78,15 @@ export function CurrentRolePanel() {
           onChange={e => { setPage(1); const q = new URLSearchParams(params); q.set('search', e.target.value); setParams(q, { replace: true }) }} />
       </div>
       <div className="grid min-w-0 gap-2 sm:grid-cols-3 lg:flex lg:items-center">
-        <div role="group" aria-label={tr('occupation')} className="min-w-0 lg:w-40">
-          <Combobox size="sm" wrapOptions clearable={false} disabled={blocked} value={occupation || 'ALL'}
-            options={[{ value: 'ALL', label: tr('allOccupations') }, ...occupations]}
-            onChange={value => { setOccupation(value === 'ALL' ? '' : value); setPage(1) }}
+        <div role="group" aria-label={tr('jobPosition')} className="min-w-0 lg:w-40">
+          <Combobox size="sm" wrapOptions clearable={false} disabled={blocked} value={jobPosition || 'ALL'}
+            options={[{ value: 'ALL', label: tr('allJobPositions') }, ...jobPositions]}
+            onChange={value => { setJobPosition(value === 'ALL' ? '' : value); setPage(1) }}
             searchPlaceholder={tr('search')} emptyMessage={tr('empty')} />
         </div>
         <div role="group" aria-label={tr('sort')} className="min-w-0 lg:w-40">
           <Combobox size="sm" clearable={false} disabled={blocked} value={sort}
-            options={[{ value: 'occupation', label: tr('occupation') }, { value: 'role', label: tr('roleName') }]}
+            options={[{ value: 'jobPosition', label: tr('jobPosition') }, { value: 'role', label: tr('roleName') }]}
             onChange={value => { setSort(value); setPage(1) }} searchPlaceholder={tr('search')} emptyMessage={tr('empty')} />
         </div>
         <div role="group" aria-label={t('upskillingUi.status')} className="min-w-0 lg:w-40">
@@ -96,9 +96,9 @@ export function CurrentRolePanel() {
         </div>
       </div>
       <div className="flex items-center gap-2">
-        {(search || occupation || status !== 'all' || sort !== 'occupation') && <Button size="sm" variant="ghost" disabled={blocked} onClick={() => {
+        {(search || jobPosition || status !== 'all' || sort !== 'jobPosition') && <Button size="sm" variant="ghost" disabled={blocked} onClick={() => {
           const query = new URLSearchParams(params); query.delete('search'); setParams(query, { replace: true })
-          setOccupation(''); setSort('occupation'); setStatus('all'); setPage(1)
+          setJobPosition(''); setSort('jobPosition'); setStatus('all'); setPage(1)
         }}>{t('upskillingUi.clearFilters')}</Button>}
         <Button size="icon" variant="ghost" className="h-9 w-9" aria-label={tr('refresh')} title={tr('refresh')} disabled={blocked} onClick={() => void refresh()}><RefreshCw size={16} /></Button>
       </div>

@@ -21,7 +21,7 @@ Write-Output ('C3 artifacts: '+$env:C3_ARTIFACT_DIR)
 $env:C3_EXPERT_EMAIL='expert@workspace.dev.invalid'
 $env:C3_EMPLOYEE_EMAIL='employee-se@workspace.dev.invalid'
 $env:C3_MANAGER_EMAIL='ld@workspace.dev.invalid'
-$env:C3_OCCUPATION_ID='OCC-15-1252.00'
+$env:C3_JOB_POSITION_ID='OCC-15-1252.00'
 # Fixture inputs from published local catalog metadata; expected order/hash are independently asserted.
 $env:C3_ROLE_ID='ROLE-CBAF88DF6DE7'
 $env:C3_LEVEL_ID='LV-CBAF88DF6DE7-M'

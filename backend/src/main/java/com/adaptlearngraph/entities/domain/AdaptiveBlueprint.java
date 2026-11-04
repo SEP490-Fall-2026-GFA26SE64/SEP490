@@ -10,10 +10,10 @@ import java.util.UUID;
 public final class AdaptiveBlueprint {
     private AdaptiveBlueprint() {}
 
-    public record Scope(UUID organizationId, String occupationId) {
+    public record Scope(UUID organizationId, String jobPositionId) {
         public Scope {
             organizationId = id(organizationId);
-            occupationId = text(occupationId);
+            jobPositionId = text(jobPositionId);
         }
     }
 
@@ -25,27 +25,27 @@ public final class AdaptiveBlueprint {
         }
     }
 
-    public enum ScopePolicy { LEGACY_ROLE_OR_EXPLORATION, FULL_OCCUPATION_V2 }
+    public enum ScopePolicy { LEGACY_ROLE_OR_EXPLORATION, FULL_JOB_POSITION_V2 }
 
     /** Dual-format value. Legacy limits are retained only for their original snapshots/receipts. */
-    public record Configuration(String name, Bounds exploration, Map<String, Bounds> roles, Bounds occupationBounds) {
+    public record Configuration(String name, Bounds exploration, Map<String, Bounds> roles, Bounds jobPositionBounds) {
         public Configuration(String name, Bounds exploration, Map<String, Bounds> roles) {
             this(name, exploration, roles, null);
         }
 
-        public static Configuration occupation(String name, Bounds bounds) {
+        public static Configuration jobPosition(String name, Bounds bounds) {
             return new Configuration(name, null, Map.of(), Objects.requireNonNull(bounds));
         }
 
         public Configuration {
             name = text(name);
-            roles = roles == null && occupationBounds != null ? Map.of() : Map.copyOf(Objects.requireNonNull(roles));
+            roles = roles == null && jobPositionBounds != null ? Map.of() : Map.copyOf(Objects.requireNonNull(roles));
             roles.keySet().forEach(AdaptiveBlueprint::identifier);
-            if (occupationBounds != null) {
+            if (jobPositionBounds != null) {
                 if (exploration != null || !roles.isEmpty()) throw new IllegalArgumentException("Mixed Blueprint scopes");
                 if (name.codePointCount(0, name.length()) > 100) throw new IllegalArgumentException("Blueprint name exceeds 100 characters");
-                long seconds = occupationBounds.timeLimitSeconds();
-                long maximum = occupationBounds.maxQuestions();
+                long seconds = jobPositionBounds.timeLimitSeconds();
+                long maximum = jobPositionBounds.maxQuestions();
                 if (seconds < maximum * 30 || seconds > maximum * 120) {
                     throw new IllegalArgumentException("Total duration must allow 30 to 120 seconds per maximum question");
                 }
@@ -56,11 +56,11 @@ public final class AdaptiveBlueprint {
         }
 
         public ScopePolicy scopePolicy() {
-            return occupationBounds == null ? ScopePolicy.LEGACY_ROLE_OR_EXPLORATION : ScopePolicy.FULL_OCCUPATION_V2;
+            return jobPositionBounds == null ? ScopePolicy.LEGACY_ROLE_OR_EXPLORATION : ScopePolicy.FULL_JOB_POSITION_V2;
         }
 
         public Bounds bounds(Optional<String> originalRole) {
-            if (occupationBounds != null) return occupationBounds;
+            if (jobPositionBounds != null) return jobPositionBounds;
             return originalRole.map(id -> Objects.requireNonNull(roles.get(id), "Unknown pinned Role")).orElse(exploration);
         }
     }
@@ -100,13 +100,13 @@ public final class AdaptiveBlueprint {
     }
 
     public record Version(Scope scope, VersionId id, Configuration configuration,
-                          String occupationNameSnapshot, String catalogFingerprint, VersionPins pins,
+                          String jobPositionNameSnapshot, String catalogFingerprint, VersionPins pins,
                           Map<String, RoleSnapshot> roles, UUID createdBy, Instant createdAt) {
         public Version {
             Objects.requireNonNull(scope, "scope");
             Objects.requireNonNull(id, "id");
             Objects.requireNonNull(configuration, "configuration");
-            occupationNameSnapshot = text(occupationNameSnapshot);
+            jobPositionNameSnapshot = text(jobPositionNameSnapshot);
             catalogFingerprint = text(catalogFingerprint);
             Objects.requireNonNull(pins, "pins");
             roles = Map.copyOf(roles);

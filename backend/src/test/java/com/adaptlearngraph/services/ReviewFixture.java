@@ -40,7 +40,7 @@ public class ReviewFixture {
     public final Map<String,Receipt> savedReceipts=new HashMap<>();
     public final InitialPathwayReview review;
     public ReviewFixture() {
-        binding=new Binding("choice-test","role-test","level-test","occupation-test","Test Role","Test Level","catalog-test","release-test",
+        binding=new Binding("choice-test","role-test","level-test","jobPosition-test","Test Role","Test Level","catalog-test","release-test",
                 Map.of("catalog","v1","binding","v1","publication","v1","requirements","v1","compatibility","v1","suitability","v1","readiness","v1"),
                 List.of(new RoleGap.Requirement("S","Skill S",new BigDecimal("0.8"),true)));
         gaps=RoleGap.calculate(binding.requirements(),Map.of("S",new RoleGap.Evidence(new BigDecimal("0.2"),"known")),Map.of());

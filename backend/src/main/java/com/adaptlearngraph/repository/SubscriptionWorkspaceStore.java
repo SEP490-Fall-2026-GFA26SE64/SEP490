@@ -25,6 +25,6 @@ public interface SubscriptionWorkspaceStore {
     record Setup(UUID organizationId, String state, Instant readyAt, String failureCode) {}
     record Workspace(UUID organizationId, String name, String status, String setupState) {}
     record Member(UUID membershipId, UUID accountId, String fullName, String email, boolean active,
-                  Set<String> roles, UUID departmentId, UUID occupationReferenceId, long revision,
-                  String departmentName, String occupationName, boolean accountActive) {}
+                  Set<String> roles, UUID departmentId, UUID jobPositionReferenceId, long revision,
+                  String departmentName, String jobPositionName, boolean accountActive) {}
 }

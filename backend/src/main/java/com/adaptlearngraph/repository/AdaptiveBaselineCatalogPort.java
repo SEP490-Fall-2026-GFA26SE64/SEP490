@@ -10,12 +10,12 @@ import java.util.Optional;
 public interface AdaptiveBaselineCatalogPort {
     Optional<CatalogSnapshot> findAvailable(Scope scope);
 
-    /** Fingerprint includes active membership paths, not merely the Occupation version label. */
-    record CatalogSnapshot(Scope scope, String occupationName, String fingerprint,
+    /** Fingerprint includes active membership paths, not merely the JobPosition version label. */
+    record CatalogSnapshot(Scope scope, String jobPositionName, String fingerprint,
                            Map<String, RoleSnapshot> roles) {
         public CatalogSnapshot {
             Objects.requireNonNull(scope, "scope");
-            if (occupationName == null || occupationName.isBlank() || fingerprint == null || fingerprint.isBlank()) {
+            if (jobPositionName == null || jobPositionName.isBlank() || fingerprint == null || fingerprint.isBlank()) {
                 throw new IllegalArgumentException("Catalog name and fingerprint required");
             }
             roles = Map.copyOf(roles);

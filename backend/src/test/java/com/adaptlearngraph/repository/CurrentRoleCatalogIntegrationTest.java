@@ -17,11 +17,11 @@ class CurrentRoleCatalogIntegrationTest {
  @BeforeEach void fixture(){
   try(var session=driver.session()){
    session.run("MATCH (n) DETACH DELETE n").consume();
-   session.run("CREATE (:Occupation {id:'occ-a',code:'O',name:'Occupation A',version:'fixture-v1',status:'ACTIVE',organizationId:$org})",Map.of("org",ORG.toString())).consume();
+   session.run("CREATE (:JobPosition {id:'occ-a',code:'O',name:'JobPosition A',version:'fixture-v1',status:'ACTIVE',organizationId:$org})",Map.of("org",ORG.toString())).consume();
    for(int r=0;r<3;r++){
     String role="role-"+r,level="level-"+r;
     session.run("""
-      MATCH (o:Occupation {id:'occ-a'})
+      MATCH (o:JobPosition {id:'occ-a'})
       CREATE (o)-[:HAS_ROLE {id:$membership,version:'fixture-v1',status:'ACTIVE'}]->
       (r:TargetRole {id:$role,code:$role,name:$role,scope:'Scope',version:'fixture-v1',status:'ACTIVE'})
       -[:HAS_LEVEL {id:$edge,version:'fixture-v1',status:'ACTIVE'}]->
@@ -31,7 +31,7 @@ class CurrentRoleCatalogIntegrationTest {
     if(r>0)skill(session,level,"skill-0");
    }
    session.run("""
-    CREATE (:Occupation {id:'foreign',code:'FOREIGN',name:'Foreign',version:'fixture-v1',status:'ACTIVE',organizationId:$foreign})
+    CREATE (:JobPosition {id:'foreign',code:'FOREIGN',name:'Foreign',version:'fixture-v1',status:'ACTIVE',organizationId:$foreign})
       -[:HAS_ROLE {id:'foreign-membership',version:'fixture-v1',status:'ACTIVE'}]->
     (:TargetRole {id:'foreign-role',code:'F',name:'Foreign Role',scope:'Secret',version:'fixture-v1',status:'ACTIVE'})
       -[:HAS_LEVEL {id:'foreign-level-edge',version:'fixture-v1',status:'ACTIVE'}]->
@@ -59,14 +59,14 @@ class CurrentRoleCatalogIntegrationTest {
   assertThat(roles).extracting(RoleBaselineFlow.Role::id).containsExactly("role-0","role-1","role-2");
   var skills=roles.stream().flatMap(r->r.levels().stream()).flatMap(l->l.skills().stream()).map(RoleBaselineFlow.Skill::id).collect(java.util.stream.Collectors.toSet());
   assertThat(skills).hasSize(15);
-  roles.forEach(r->{assertThat(r.occupationId()).isEqualTo("occ-a");assertThat(r.fingerprint()).isNotBlank();assertThat(r.levels().getFirst().context()).isEqualTo("Context");});
+  roles.forEach(r->{assertThat(r.jobPositionId()).isEqualTo("occ-a");assertThat(r.fingerprint()).isNotBlank();assertThat(r.levels().getFirst().context()).isEqualTo("Context");});
  }
  @Test void rb04ForeignOrganizationDeniedBeforeDataAndForeignNodesExcluded(){
   assertThat(catalog.roles(ORG)).noneMatch(r->r.id().equals("foreign-role"));
   assertThatThrownBy(()->catalog.roles(FOREIGN)).isInstanceOfSatisfying(RoleBaselineFlow.Failure.class,e->assertThat(e.status).isEqualTo(403));
  }
  @Test void rb08AmbiguousOwnershipFailsClosed(){
-  try(var s=driver.session()){s.run("MATCH (r:TargetRole {id:'role-0'}) CREATE (:Occupation {id:'duplicate-owner',name:'Other',status:'ACTIVE',version:'fixture-v1'})-[:HAS_ROLE {id:'bad-owner',status:'ACTIVE',version:'fixture-v1'}]->(r)").consume();}
+  try(var s=driver.session()){s.run("MATCH (r:TargetRole {id:'role-0'}) CREATE (:JobPosition {id:'duplicate-owner',name:'Other',status:'ACTIVE',version:'fixture-v1'})-[:HAS_ROLE {id:'bad-owner',status:'ACTIVE',version:'fixture-v1'}]->(r)").consume();}
   assertThatThrownBy(()->catalog.roles(ORG)).isInstanceOf(IllegalStateException.class);
  }
  @Test void rb17RepeatedReadsDoNotWriteCatalog(){

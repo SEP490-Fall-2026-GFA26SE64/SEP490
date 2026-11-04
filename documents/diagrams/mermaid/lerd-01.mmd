@@ -25,15 +25,15 @@ erDiagram
   SRS_LERD_01_RegistrationEmailVerification["RegistrationEmailVerification"]
   SRS_LERD_01_Session["Session"]
   SRS_LERD_01_Department["Department"]
-  SRS_LERD_01_OccupationDepartmentReference["OccupationDepartmentReference"]
+  SRS_LERD_01_Job PositionDepartmentReference["Job PositionDepartmentReference"]
   %% Selected direct PostgreSQL FKs. Nullable assignments do not imply missing Employee assignment requirements.
   SRS_LERD_01_Organization ||--o| SRS_LERD_01_Workspace : "has workspace"
   SRS_LERD_01_Organization ||--o{ SRS_LERD_01_Membership : "contains"
   SRS_LERD_01_Organization ||--o{ SRS_LERD_01_Department : "owns departments"
-  SRS_LERD_01_Department ||--o{ SRS_LERD_01_OccupationDepartmentReference : "contains occupation references"
-  SRS_LERD_01_Organization ||--o{ SRS_LERD_01_OccupationDepartmentReference : "scopes references"
+  SRS_LERD_01_Department ||--o{ SRS_LERD_01_Job PositionDepartmentReference : "contains job position references"
+  SRS_LERD_01_Organization ||--o{ SRS_LERD_01_Job PositionDepartmentReference : "scopes references"
   SRS_LERD_01_Department |o--o{ SRS_LERD_01_Membership : "current department"
-  SRS_LERD_01_OccupationDepartmentReference |o--o{ SRS_LERD_01_Membership : "current occupation assignment"
+  SRS_LERD_01_Job PositionDepartmentReference |o--o{ SRS_LERD_01_Membership : "current job position assignment"
   SRS_LERD_01_Account ||--o| SRS_LERD_01_Membership : "holds organization membership"
   SRS_LERD_01_Account ||--o| SRS_LERD_01_Registration : "initiates"
   SRS_LERD_01_Registration ||--o| SRS_LERD_01_Workspace : "provisions"
@@ -42,7 +42,7 @@ erDiagram
   SRS_LERD_01_Account ||--o{ SRS_LERD_01_WorkspaceActivation : "creates invitations"
   SRS_LERD_01_Account |o--o{ SRS_LERD_01_WorkspaceActivation : "activated recipient"
   SRS_LERD_01_Department |o--o{ SRS_LERD_01_WorkspaceActivation : "invited department"
-  SRS_LERD_01_OccupationDepartmentReference |o--o{ SRS_LERD_01_WorkspaceActivation : "invited occupation"
+  SRS_LERD_01_Job PositionDepartmentReference |o--o{ SRS_LERD_01_WorkspaceActivation : "invited job position"
   SRS_LERD_01_Account ||--o| SRS_LERD_01_WorkspaceAccountProfile : "workspace profile"
   SRS_LERD_01_Account ||--o| SRS_LERD_01_PlatformAdministrator : "platform role grant"
   SRS_LERD_01_Account ||--o| SRS_LERD_01_AccountTotp : "authenticator"

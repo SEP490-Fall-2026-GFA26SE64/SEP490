@@ -51,7 +51,7 @@ class ModuleAuthoringControllerTest {
     void createTranslatesTheModuleDraft() throws Exception {
         mvc.perform(post(PATH + "/modules").contentType("application/json")
                         .content("{\"title\":\"Intro\",\"moduleType\":\"LESSON_AND_PRACTICE\",\"contentId\":\"content-1\","
-                                + "\"duration\":30,\"price\":150000.50,\"occupationIds\":[\"occ-1\"],"
+                                + "\"duration\":30,\"price\":150000.50,\"jobPositionIds\":[\"occ-1\"],"
                                 + "\"teachings\":[{\"skillId\":\"skill-1\",\"teachingFocus\":\"PRIMARY\",\"difficultyLevel\":\"LOW\"}]}"))
                 .andExpect(status().isCreated());
         verify(service).create(new Save("Intro", "LESSON_AND_PRACTICE", "content-1", 30, new BigDecimal("150000.50"),
@@ -65,7 +65,7 @@ class ModuleAuthoringControllerTest {
                 "text/markdown", "1.0.0", List.of(), "expert-1", "2026-10-01T00:00:00Z", List.of(lesson)));
 
         mvc.perform(post(PATH + "/contents/lessons").contentType("application/json")
-                        .content("{\"title\":\"Intro\",\"occupationIds\":[],\"lessons\":[{\"id\":\"lesson-1\",\"title\":\"Intro\","
+                        .content("{\"title\":\"Intro\",\"jobPositionIds\":[],\"lessons\":[{\"id\":\"lesson-1\",\"title\":\"Intro\","
                                 + "\"type\":\"TEXT\",\"body\":\"Body\",\"bodyFormat\":\"MARKDOWN\",\"durationSeconds\":60,"
                                 + "\"durationSource\":\"ESTIMATED\"}]}"))
                 .andExpect(status().isCreated())

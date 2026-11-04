@@ -9,15 +9,15 @@ import static org.mockito.Mockito.when;
 
 import com.adaptlearngraph.services.BaselineAssessmentManagementUseCase.Code;
 import com.adaptlearngraph.services.BaselineAssessmentManagementUseCase.Failure;
-import com.adaptlearngraph.services.BaselineAssessmentManagementUseCase.OccupationQuery;
+import com.adaptlearngraph.services.BaselineAssessmentManagementUseCase.JobPositionQuery;
 import com.adaptlearngraph.repository.BaselineAssessmentDraftStore;
 import com.adaptlearngraph.repository.BaselineAssessmentManagementStore;
 import com.adaptlearngraph.repository.BaselineBlueprintStore;
 import com.adaptlearngraph.repository.BaselineBlueprintStore.Actor;
 import com.adaptlearngraph.repository.BaselineBlueprintStore.ActorPort;
 import com.adaptlearngraph.repository.BaselineBlueprintValidationPort;
-import com.adaptlearngraph.repository.BaselineOccupationCatalogPort;
-import com.adaptlearngraph.repository.BaselineOccupationCatalogPort.CatalogOccupationSummary;
+import com.adaptlearngraph.repository.BaselineJobPositionCatalogPort;
+import com.adaptlearngraph.repository.BaselineJobPositionCatalogPort.CatalogJobPositionSummary;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
 import java.util.Optional;
@@ -34,26 +34,26 @@ class BaselineAssessmentManagementServiceTest {
     void unauthenticatedInactiveAndWrongRoleActorsAreRejectedBeforeCatalogAccess() {
         Fixture fixture = new Fixture();
         assertFailure(Code.UNAUTHENTICATED,
-                () -> fixture.service(Optional.empty()).listOccupations(query()));
+                () -> fixture.service(Optional.empty()).listJobPositions(query()));
         assertFailure(Code.FORBIDDEN,
-                () -> fixture.service(Optional.of(actor(false, "LD_MANAGER"))).listOccupations(query()));
+                () -> fixture.service(Optional.of(actor(false, "LD_MANAGER"))).listJobPositions(query()));
         assertFailure(Code.FORBIDDEN,
-                () -> fixture.service(Optional.of(actor(true, "EXPERT"))).listOccupations(query()));
-        verify(fixture.catalog, never()).findAvailableOccupations(ORGANIZATION_ID.toString());
+                () -> fixture.service(Optional.of(actor(true, "EXPERT"))).listJobPositions(query()));
+        verify(fixture.catalog, never()).findAvailableJobPositions(ORGANIZATION_ID.toString());
     }
 
     @Test
     void landingUsesOnlyTheTrustedActorOrganization() {
         Fixture fixture = new Fixture();
-        when(fixture.catalog.findAvailableOccupations(ORGANIZATION_ID.toString())).thenReturn(List.of(
-                new CatalogOccupationSummary("occupation-java", "Java Engineer", "release-1", 0)));
+        when(fixture.catalog.findAvailableJobPositions(ORGANIZATION_ID.toString())).thenReturn(List.of(
+                new CatalogJobPositionSummary("jobPosition-java", "Java Engineer", "release-1", 0)));
 
         var page = fixture.service(Optional.of(actor(true, "LD_MANAGER")))
-                .listOccupations(query());
+                .listJobPositions(query());
 
-        assertThat(page.items()).extracting(item -> item.occupationId())
-                .containsExactly("occupation-java");
-        verify(fixture.catalog).findAvailableOccupations(ORGANIZATION_ID.toString());
+        assertThat(page.items()).extracting(item -> item.jobPositionId())
+                .containsExactly("jobPosition-java");
+        verify(fixture.catalog).findAvailableJobPositions(ORGANIZATION_ID.toString());
     }
 
     @Test
@@ -69,8 +69,8 @@ class BaselineAssessmentManagementServiceTest {
         verify(fixture.draftUseCase, never()).get(ASSESSMENT_ID);
     }
 
-    private static OccupationQuery query() {
-        return new OccupationQuery("", "", "name_asc", 0, 20);
+    private static JobPositionQuery query() {
+        return new JobPositionQuery("", "", "name_asc", 0, 20);
     }
 
     private static Actor actor(boolean active, String role) {
@@ -83,7 +83,7 @@ class BaselineAssessmentManagementServiceTest {
     }
 
     private static final class Fixture {
-        private final BaselineOccupationCatalogPort catalog = mock(BaselineOccupationCatalogPort.class);
+        private final BaselineJobPositionCatalogPort catalog = mock(BaselineJobPositionCatalogPort.class);
         private final BaselineBlueprintStore blueprints = mock(BaselineBlueprintStore.class);
         private final BaselineBlueprintValidationPort validation = mock(BaselineBlueprintValidationPort.class);
         private final BaselineAssessmentDraftUseCase draftUseCase = mock(BaselineAssessmentDraftUseCase.class);

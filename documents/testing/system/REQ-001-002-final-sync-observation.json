@@ -152,7 +152,7 @@
       "unchanged": true
     },
     {
-      "path": "backend/src/main/java/com/adaptlearngraph/assessment/adaptive/demo/CurrentOccupationProfile.java",
+      "path": "backend/src/main/java/com/adaptlearngraph/assessment/adaptive/demo/CurrentJob PositionProfile.java",
       "unchanged": true
     },
     {
@@ -208,7 +208,7 @@
       "unchanged": true
     },
     {
-      "path": "backend/src/main/resources/db/migration/V25__current_role_selection_and_occupation_profile.sql",
+      "path": "backend/src/main/resources/db/migration/V25__current_role_selection_and_job position_profile.sql",
       "unchanged": true
     },
     {
@@ -322,7 +322,7 @@
       "unchanged": true
     },
     {
-      "path": "V13__occupation_blueprint_identity.sql",
+      "path": "V13__job position_blueprint_identity.sql",
       "unchanged": true
     },
     {
@@ -354,15 +354,15 @@
       "unchanged": true
     },
     {
-      "path": "V20__occupation_baseline_scope_compatibility.sql",
+      "path": "V20__job position_baseline_scope_compatibility.sql",
       "unchanged": true
     },
     {
-      "path": "V21__occupation_baseline_name_and_time_limits.sql",
+      "path": "V21__job position_baseline_name_and_time_limits.sql",
       "unchanged": true
     },
     {
-      "path": "V22__occupation_baseline_draft_conversion_receipt.sql",
+      "path": "V22__job position_baseline_draft_conversion_receipt.sql",
       "unchanged": true
     },
     {
@@ -443,12 +443,12 @@
     "project/SEP490/documents/features/Baseline knowledge assessment/Complete Baseline Assessment.md",
     "project/SEP490/documents/features/Baseline knowledge assessment/Configure Baseline Assessment.md",
     "project/SEP490/documents/features/Baseline knowledge assessment/Local Demo Flow.md",
-    "project/SEP490/documents/features/Baseline knowledge assessment/Occupation Baseline Lifecycle and Transition.md",
+    "project/SEP490/documents/features/Baseline knowledge assessment/Job Position Baseline Lifecycle and Transition.md",
     "project/SEP490/documents/features/Baseline knowledge assessment/README.md",
     "project/SEP490/documents/features/README.md",
     "project/SEP490/documents/features/Target role selection/Choose Target Role.md",
     "project/SEP490/documents/features/Target role selection/README.md",
-    "project/SEP490/documents/features/Target role selection/Role Selection and Occupation Baseline.md",
+    "project/SEP490/documents/features/Target role selection/Role Selection and Job Position Baseline.md",
     "project/SEP490/documents/features/Target role selection/View Target Roles.md",
     "project/SEP490/documents/neo4j_schema.md",
     "project/SEP490/documents/PRODUCT_OVERVIEW.md",
@@ -458,8 +458,8 @@
     "s2 work/Test Guides/REQ-002-F02-full-walkthrough-test-guide.md",
     "project/SEP490/documents/features/Assessment results/View Assessment Result.md",
     "project/SEP490/documents/features/Assessment results/View Assessment History.md",
-    "project/SEP490/documents/testing/system/REQ-002-F01-F02-occupation-admission-management.md",
-    "project/SEP490/documents/testing/system/REQ-002-F02-REQ-009-occupation-ui-results.md",
+    "project/SEP490/documents/testing/system/REQ-002-F01-F02-job position-admission-management.md",
+    "project/SEP490/documents/testing/system/REQ-002-F02-REQ-009-job position-ui-results.md",
     "project/SEP490/documents/testing/system/REQ-002-official-question-bank-session3.md",
     "project/SEP490/documents/features/Assessment results/README.md"
   ],
@@ -506,20 +506,20 @@
     "documents/features/Baseline knowledge assessment/Complete Baseline Assessment.md",
     "documents/features/Baseline knowledge assessment/Configure Baseline Assessment.md",
     "documents/features/Baseline knowledge assessment/Local Demo Flow.md",
-    "documents/features/Baseline knowledge assessment/Occupation Baseline Lifecycle and Transition.md",
+    "documents/features/Baseline knowledge assessment/Job Position Baseline Lifecycle and Transition.md",
     "documents/features/Baseline knowledge assessment/README.md",
     "documents/features/README.md",
     "documents/features/Target role selection/Choose Target Role.md",
     "documents/features/Target role selection/README.md",
-    "documents/features/Target role selection/Role Selection and Occupation Baseline.md",
+    "documents/features/Target role selection/Role Selection and Job Position Baseline.md",
     "documents/features/Target role selection/View Target Roles.md",
     "documents/neo4j_schema.md",
     "documents/PRODUCT_OVERVIEW.md",
     "documents/testing/REQ-001-002-role-baseline-flow-test-plan.md",
     "documents/testing/system/REQ-001-002-cluster2-progress.md",
     "documents/testing/system/REQ-001-002-final-synchronization-review.md",
-    "documents/testing/system/REQ-002-F01-F02-occupation-admission-management.md",
-    "documents/testing/system/REQ-002-F02-REQ-009-occupation-ui-results.md",
+    "documents/testing/system/REQ-002-F01-F02-job position-admission-management.md",
+    "documents/testing/system/REQ-002-F02-REQ-009-job position-ui-results.md",
     "documents/testing/system/REQ-002-official-question-bank-session3.md"
   ],
   "missingLinks": [],
@@ -571,20 +571,20 @@
     "documents/features/Baseline knowledge assessment/Complete Baseline Assessment.md": "e3e3ad78b94836578b0e7fb0933505bdcc3c5dc8d5ffa7aa805b0ca05fb3bd37",
     "documents/features/Baseline knowledge assessment/Configure Baseline Assessment.md": "4cbf664c945272104601541f8365342d961f60bb5d959ac8156b4fc1ce0d7d58",
     "documents/features/Baseline knowledge assessment/Local Demo Flow.md": "ff9005814a86eb4cd506b7b46aca533ce6ce1f56ea5ead9c71f20a43ee949fbc",
-    "documents/features/Baseline knowledge assessment/Occupation Baseline Lifecycle and Transition.md": "97cd7939470996c8b469add9bc5fbf8cefc19e86f891ee7039759ff4803a752b",
+    "documents/features/Baseline knowledge assessment/Job Position Baseline Lifecycle and Transition.md": "97cd7939470996c8b469add9bc5fbf8cefc19e86f891ee7039759ff4803a752b",
     "documents/features/Baseline knowledge assessment/README.md": "fcdc4609bee3e2c39e6e06351e718d0b0fde4dd81b4243ea2d4819ece785b95a",
     "documents/features/README.md": "d05d56255df621f51d4c7854dc66478f249816823650610ec31c44fdb123a33a",
     "documents/features/Target role selection/Choose Target Role.md": "fa2f4847367a4f5967a62fa047ffd7c3c60a6af213bd680f5ae9c2bd321bf503",
     "documents/features/Target role selection/README.md": "b75e00262dfc9b731cf052939be3ee7126c4126425a7c7027e2611f2db35d055",
-    "documents/features/Target role selection/Role Selection and Occupation Baseline.md": "8d38d0481eab81b109a26d1177ae1503b95aad6e0df6d94225aea8da8334f548",
+    "documents/features/Target role selection/Role Selection and Job Position Baseline.md": "8d38d0481eab81b109a26d1177ae1503b95aad6e0df6d94225aea8da8334f548",
     "documents/features/Target role selection/View Target Roles.md": "12a59d59f8e3cb2d5b8d44bb92c2f5aad1e8112263f5507ab06a1aaec34ef82e",
     "documents/neo4j_schema.md": "550ecbcf9f66c715a95717375d853baa625450ea9347d319716f335ee8595e72",
     "documents/PRODUCT_OVERVIEW.md": "2342495dce48139d59cd98bef50842fc8cafd0724d09dab51bc9e4be49311ff7",
     "documents/testing/REQ-001-002-role-baseline-flow-test-plan.md": "49f2b434e57ecb7a2ecad15077d8c2b48923ae17d1139a86528e04adbc10be4f",
     "documents/testing/system/REQ-001-002-cluster2-progress.md": "34e0ced22397a78effe635a5bf67761a53198df1e9baa724a7c39c01850ebb27",
     "documents/testing/system/REQ-001-002-final-synchronization-review.md": "ce3016ecdee0e874c11714e57e2ec664eb71caa172da7050dcf66236eca8b29c",
-    "documents/testing/system/REQ-002-F01-F02-occupation-admission-management.md": "0a6c283fc43920fcf599623f61a9d3cb652a9681c3fc7372b8d39ed3708bd1c7",
-    "documents/testing/system/REQ-002-F02-REQ-009-occupation-ui-results.md": "65ce2f7a2d39a060992577aefea7e273cbe456012e5412456d9c501b2165f343",
+    "documents/testing/system/REQ-002-F01-F02-job position-admission-management.md": "0a6c283fc43920fcf599623f61a9d3cb652a9681c3fc7372b8d39ed3708bd1c7",
+    "documents/testing/system/REQ-002-F02-REQ-009-job position-ui-results.md": "65ce2f7a2d39a060992577aefea7e273cbe456012e5412456d9c501b2165f343",
     "documents/testing/system/REQ-002-official-question-bank-session3.md": "fd6910a468638b2cb94e5bad9e556a4c875bdf061b5e1ff6f52ffe904e3416d5"
   }
 }

@@ -12,7 +12,7 @@ vi.mock('../../../shared/layouts/WorkspaceLayout', () => ({ WorkspaceLayout: ({ 
 vi.mock('./ActiveSkillSummary', () => ({ ActiveSkillSummary: () => <div>Existing skill summary</div> }))
 vi.mock('./UpskillSkillsPanel', () => ({ UpskillSkillsPanel: () => <div>Existing skills flow</div> }))
 vi.mock('../../../shared/i18n/LanguageContext', () => ({ useTranslation: () => ({ language: 'en', t: (key: string) => key }) }))
-const role: CurrentRole = { id: 'role-a', code: 'A', name: 'Role A', scope: 'Original scope', occupationId: 'occ-a', occupationName: 'Occupation A', catalogVersion: 'f1', fingerprint: 'f1', levels: [] }
+const role: CurrentRole = { id: 'role-a', code: 'A', name: 'Role A', scope: 'Original scope', jobPositionId: 'occ-a', jobPositionName: 'JobPosition A', catalogVersion: 'f1', fingerprint: 'f1', levels: [] }
 const empty: RoleFlowView = { selection: null, progress: { state: 'SELECT_ROLE', requiredCount: 0, coveredCount: 0, attemptId: null, baselineVersion: null } }
 const selected: RoleFlowView = { selection: { selectionId: 'sel-1', role, revision: 1, selectedAt: '2026-10-24T00:00:00Z', available: true }, progress: { state: 'BASELINE_REQUIRED', requiredCount: 15, coveredCount: 0, attemptId: null, baselineVersion: 1 } }
 function show(query = '') { render(<QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } })}><MemoryRouter initialEntries={['/employee/upskilling' + query]}><EmployeeUpskillingPage /></MemoryRouter></QueryClientProvider>) }

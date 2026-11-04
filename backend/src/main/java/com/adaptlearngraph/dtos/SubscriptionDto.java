@@ -1,5 +1,7 @@
 package com.adaptlearngraph.dtos;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.DeserializationContext;
@@ -46,8 +48,15 @@ public final class SubscriptionDto {
     public record WorkspaceResponse(UUID organizationId, String name, String status, String setupState) {}
 
     public record MemberResponse(UUID membershipId, UUID accountId, String fullName, String email, boolean active,
-                                 Set<String> roles, UUID departmentId, UUID occupationReferenceId, long revision,
-                                 String departmentName, String occupationName, boolean accountActive) {}
+                                 Set<String> roles, UUID departmentId,
+                                 @JsonProperty("jobPositionReferenceId") UUID occupationReferenceId,
+                                 long revision,
+                                 String departmentName,
+                                 @JsonProperty("jobPositionName") String occupationName,
+                                 boolean accountActive) {
+        public UUID jobPositionReferenceId() { return occupationReferenceId; }
+        public String jobPositionName() { return occupationName; }
+    }
 
     public record OrderRequest(@NotNull UUID planId, @NotNull UUID expectedVersionId, @NotNull UUID idempotencyKey,
                                UUID replacesOrderId) {}
@@ -57,7 +66,29 @@ public final class SubscriptionDto {
     public record MemberAccessRequest(boolean active, @NotNull Set<String> roles, long revision) {}
 
     public record MemberProfileRequest(@NotBlank @Size(max = 120) String fullName, @NotNull Set<String> roles,
-                                       UUID departmentId, UUID occupationReferenceId, long revision) {}
+                                       @JsonDeserialize(using = FlexibleUuidDeserializer.class) UUID departmentId,
+                                       @JsonDeserialize(using = FlexibleUuidDeserializer.class)
+                                       @JsonAlias("jobPositionReferenceId") UUID occupationReferenceId,
+                                       long revision,
+                                       String departmentName,
+                                       @JsonAlias("jobPositionName") String occupationName) {
+        public UUID jobPositionReferenceId() { return occupationReferenceId; }
+        public String jobPositionName() { return occupationName; }
+    }
+
+    public static final class FlexibleUuidDeserializer extends JsonDeserializer<UUID> {
+        @Override
+        public UUID deserialize(JsonParser parser, DeserializationContext context) throws IOException {
+            String text = parser.getValueAsString();
+            if (text == null || text.isBlank()) return null;
+            text = text.trim();
+            try {
+                return UUID.fromString(text);
+            } catch (IllegalArgumentException ex) {
+                return UUID.nameUUIDFromBytes(text.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            }
+        }
+    }
 
     public record UpdatePlanRequest(@NotNull UUID expectedVersionId, @NotBlank String name, @NotBlank String description,
                                     @JsonDeserialize(using = WholeLong.class) @Positive long priceVnd,

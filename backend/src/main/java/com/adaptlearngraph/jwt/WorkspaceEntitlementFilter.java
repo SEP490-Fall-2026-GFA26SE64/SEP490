@@ -57,7 +57,7 @@ public final class WorkspaceEntitlementFilter extends OncePerRequestFilter {
                         || path.contains("/prerequisites")
                         || path.contains("/target-roles")
                         || path.contains("/modules")
-                        || path.contains("/occupations");
+                        || path.contains("/job-positions") || path.contains("/job-positions");
                 boolean employeeCatalogRead=isGetOrHead && isCatalogPath && actor.roles().contains(Role.EMPLOYEE);
                 if(!manager && !expert && !admin && !employeeCatalogRead) throw forbidden();
                 role=manager?"LD_MANAGER":expert?"DOMAIN_EXPERT":admin?"ORGANIZATION_ADMINISTRATOR":"EMPLOYEE";

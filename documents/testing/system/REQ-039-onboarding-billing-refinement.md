@@ -82,7 +82,7 @@ Registration secrets are masked or excluded from screenshots/traces. Rendered re
 
 ## Manual checklist
 
-Prerequisites: start the isolated test stack, use a synthetic registering administrator with access to Mailpit and an authenticator. Never substitute live payments or actual recipients. User-management Employee creation additionally requires real same-organization department/occupation fixtures.
+Prerequisites: start the isolated test stack, use a synthetic registering administrator with access to Mailpit and an authenticator. Never substitute live payments or actual recipients. User-management Employee creation additionally requires real same-organization department/job position fixtures.
 
 1. Open `http://127.0.0.1:8092/guest/register` for the full fixture stack, or `http://127.0.0.1:8089/guest/register` for registration-only checks. Only organization fields appear. Submit empty input: inline messages and a focused summary appear. Complete organization details, continue to account, go Back: values remain.
 2. Complete the administrator step and inspect captured verification mail at `http://127.0.0.1:8029`. Verify branded HTML, readable code, expiry/security guidance and plaintext content. Complete email/MFA and save recovery codes privately.

@@ -13,7 +13,7 @@ import { useTranslation } from '../../../shared/i18n/LanguageContext'
 import { WorkspaceLayout } from '../../../shared/layouts/WorkspaceLayout'
 import { BaselineRoleConfiguration, type CountField } from '../baseline-blueprints/BaselineRoleConfiguration'
 import type { BaselineBlueprint, BlueprintCapacity, BlueprintRole } from '../baseline-blueprints/baselineBlueprintApi'
-import { getOccupationCapacity } from '../baseline-blueprints/baselineBlueprintApi'
+import { getJobPositionCapacity } from '../baseline-blueprints/baselineBlueprintApi'
 import { allocateRoleQuestionTotal, CapacityAllocationError, validateBlueprintCapacity } from '../baseline-blueprints/baselineBlueprintCapacity'
 import { hasWeightWithoutQuestions, rolesForBlueprintEditor, toBlueprintDraft } from '../baseline-blueprints/baselineBlueprintDraft'
 import { roleQuestionTotal } from '../baseline-blueprints/baselineBlueprintForm'
@@ -31,13 +31,13 @@ import {
 type BusyAction = 'save' | 'finalize' | 'generate' | 'abandon' | null
 
 export function BlueprintRevisionPage() {
-  const { occupationId = '' } = useParams()
+  const { jobPositionId = '' } = useParams()
   const navigate = useNavigate()
   const { toast } = useToast()
   const { t } = useTranslation()
-  const basePath = `/ld-manager/baseline-assessments/${encodeURIComponent(occupationId)}`
+  const basePath = `/ld-manager/baseline-assessments/${encodeURIComponent(jobPositionId)}`
   const [working, setWorking] = React.useState<BlueprintWorkingRevision | null>(null)
-  const [occupationName, setOccupationName] = React.useState('')
+  const [jobPositionName, setJobPositionName] = React.useState('')
   const [name, setName] = React.useState('')
   const [roles, setRoles] = React.useState<BlueprintRole[]>([])
   const [capacity, setCapacity] = React.useState<BlueprintCapacity | null>(null)
@@ -57,8 +57,8 @@ export function BlueprintRevisionPage() {
     let active = true
     setLoading(true)
     void Promise.all([
-      getBaselineAssessmentWorkspace(occupationId),
-      getOccupationCapacity(occupationId),
+      getBaselineAssessmentWorkspace(jobPositionId),
+      getJobPositionCapacity(jobPositionId),
     ]).then(([workspace, loadedCapacity]) => {
       if (!active) return
       if (!workspace.workingRevision) {
@@ -66,7 +66,7 @@ export function BlueprintRevisionPage() {
         return
       }
       setWorking(workspace.workingRevision)
-      setOccupationName(workspace.occupationName)
+      setJobPositionName(workspace.jobPositionName)
       setName(workspace.workingRevision.draft.name)
       setRoles(rolesForBlueprintEditor(workspace.workingRevision.draft.roles))
       setCapacity(loadedCapacity)
@@ -77,7 +77,7 @@ export function BlueprintRevisionPage() {
       if (active) setLoading(false)
     })
     return () => { active = false }
-  }, [occupationId, t])
+  }, [jobPositionId, t])
 
   const capacityIssues = React.useMemo(() => capacity ? validateBlueprintCapacity(roles, capacity) : [], [capacity, roles])
   const hasInvalidWeights = roles.some((role) => roleQuestionTotal(role) > 0 && !isValidScoreWeights(weightsFromRole(role)))
@@ -127,10 +127,10 @@ export function BlueprintRevisionPage() {
     try {
       saveKey.current ??= crypto.randomUUID()
       const saved = await saveBlueprintWorkingRevision(
-        occupationId,
+        jobPositionId,
         working.workingRevisionId,
         working.revision,
-        toBlueprintDraft(name, { id: occupationId, name: occupationName }, roles),
+        toBlueprintDraft(name, { id: jobPositionId, name: jobPositionName }, roles),
         saveKey.current,
       )
       setWorking(saved)
@@ -151,7 +151,7 @@ export function BlueprintRevisionPage() {
     setBusy('finalize')
     try {
       finalizeKey.current ??= crypto.randomUUID()
-      const finalized = await finalizeBlueprintWorkingRevision(occupationId, working.workingRevisionId, working.revision, finalizeKey.current)
+      const finalized = await finalizeBlueprintWorkingRevision(jobPositionId, working.workingRevisionId, working.revision, finalizeKey.current)
       finalizeKey.current = null
       toast({ title: t('baselineAssessmentManagement.revision.finalized').replace('{version}', String(finalized.version)), description: t('baselineAssessmentManagement.revision.finalizedDescription'), variant: 'success' })
       setFinalized(finalized)
@@ -167,7 +167,7 @@ export function BlueprintRevisionPage() {
     setBusy('generate')
     try {
       generateKey.current ??= crypto.randomUUID()
-      const created = await generateAssessmentCandidate(occupationId, generateKey.current)
+      const created = await generateAssessmentCandidate(jobPositionId, generateKey.current)
       generateKey.current = null
       toast({ title: t('baselineAssessmentManagement.assessmentActions.generated').replace('{version}', String(created.version)), description: t('baselineAssessmentManagement.assessmentActions.generatedDescription'), variant: 'success' })
       navigate(`${basePath}/assessments/${created.assessmentVersionId}`)
@@ -182,7 +182,7 @@ export function BlueprintRevisionPage() {
     if (!abandonReason.trim()) return
     setBusy('abandon')
     try {
-      await abandonPendingBlueprintChange(occupationId, abandonReason.trim())
+      await abandonPendingBlueprintChange(jobPositionId, abandonReason.trim())
       toast({ title: t('baselineAssessmentManagement.blueprints.abandoned'), description: t('baselineAssessmentManagement.blueprints.abandonedDescription'), variant: 'success' })
       navigate(`${basePath}/blueprints`)
     } catch (cause) {
@@ -193,7 +193,7 @@ export function BlueprintRevisionPage() {
   }
 
   return <WorkspaceLayout><div className="space-y-6 pb-16">
-    <PageHeader icon={<FileEdit className="h-7 w-7" />} title={t('baselineAssessmentManagement.revision.title')} description={occupationName || t('baselineAssessmentManagement.revision.description')} actions={<Button variant="outline" size="sm" leftIcon={<ArrowLeft className="h-4 w-4" />} onClick={() => navigate(`${basePath}/blueprints`)}>{t('baselineAssessmentManagement.blueprints.backToVersions')}</Button>} />
+    <PageHeader icon={<FileEdit className="h-7 w-7" />} title={t('baselineAssessmentManagement.revision.title')} description={jobPositionName || t('baselineAssessmentManagement.revision.description')} actions={<Button variant="outline" size="sm" leftIcon={<ArrowLeft className="h-4 w-4" />} onClick={() => navigate(`${basePath}/blueprints`)}>{t('baselineAssessmentManagement.blueprints.backToVersions')}</Button>} />
     {loading ? <div className="h-72 animate-pulse rounded-lg bg-muted/60" aria-busy="true" /> : error || !working ? <EmptyState icon={<AlertTriangle className="h-7 w-7" />} title={t('baselineAssessmentManagement.revision.unavailable')} description={error ?? t('baselineAssessmentManagement.revision.notFound')} /> : <>
       <Card><CardHeader><div className="flex flex-wrap items-start justify-between gap-3"><div><CardTitle>{t('baselineAssessmentManagement.revision.details')}</CardTitle><CardDescription>{t('baselineAssessmentManagement.revision.saveSemantics')}</CardDescription></div><div className="flex gap-2"><Badge variant="outline">{t('baselineAssessmentManagement.revision.revision').replace('{revision}', String(working.revision))}</Badge>{dirty && <Badge variant="warning">{t('baselineAssessmentManagement.revision.unsaved')}</Badge>}</div></div></CardHeader><CardContent><label className="block max-w-xl space-y-1 text-sm font-medium">{t('baselineBlueprint.blueprintName')}<Input value={name} disabled={busy !== null} onChange={(event) => { markEdited(); setName(event.target.value) }} /></label></CardContent></Card>
       {!capacity && <Card className="border-warning/50"><CardContent className="flex gap-3 pt-6 text-sm"><AlertTriangle className="h-5 w-5 shrink-0 text-warning" />{t('baselineBlueprint.capacityLoading')}</CardContent></Card>}

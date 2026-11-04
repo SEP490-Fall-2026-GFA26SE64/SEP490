@@ -18,13 +18,13 @@ public final class WorkspaceFixtureTechnicalVersions implements AdaptiveTechnica
     }
     private static VersionPins pins(Bank bank){return new VersionPins(bank.modelId(),bank.mappingId(),bank.parameterSetId());}
     private static VersionPins original(Bank bank) {
-        return SoftwareDevelopmentSeed.OCCUPATION.equals(bank.occupationId())
+        return SoftwareDevelopmentSeed.JOB_POSITION.equals(bank.jobPositionId())
                 ?new VersionPins(SoftwareDevelopmentSeed.id("model"),SoftwareDevelopmentSeed.id("mapping"),SoftwareDevelopmentSeed.id("parameters"))
                 :new VersionPins(LocalDemoIdentity.id("model-v1"),LocalDemoIdentity.id("mapping-v1"),LocalDemoIdentity.id("fitted-v1"));
     }
     static String hash(Bank bank) {
         try{return HexFormat.of().formatHex(java.security.MessageDigest.getInstance("SHA-256").digest(
-                ("WORKSPACE_PLATFORM_SYNTHETIC:"+bank.organizationId()+":"+bank.occupationId()).getBytes(java.nio.charset.StandardCharsets.UTF_8)));}
+                ("WORKSPACE_PLATFORM_SYNTHETIC:"+bank.organizationId()+":"+bank.jobPositionId()).getBytes(java.nio.charset.StandardCharsets.UTF_8)));}
         catch(java.security.NoSuchAlgorithmException impossible){throw new IllegalStateException(impossible);}
     }
     @Override public Optional<TechnicalVersions> findPromoted(UUID model,UUID mapping) {

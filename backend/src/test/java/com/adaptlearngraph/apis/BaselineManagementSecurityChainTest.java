@@ -30,9 +30,9 @@ class BaselineManagementSecurityChainTest {
     void localManagementGetPostAndPutReachTheirControllerWithoutCsrfToken() throws Exception {
         mvc.perform(get("/api/v1/ld/baseline-assessments"))
                 .andExpect(status().isOk());
-        mvc.perform(post("/api/v1/ld/baseline-assessments/occupations/occ/blueprint-working-revisions"))
+        mvc.perform(post("/api/v1/ld/baseline-assessments/job-positions/occ/blueprint-working-revisions"))
                 .andExpect(status().isOk());
-        mvc.perform(put("/api/v1/ld/baseline-assessments/occupations/occ/blueprint-working-revisions/working"))
+        mvc.perform(put("/api/v1/ld/baseline-assessments/job-positions/occ/blueprint-working-revisions/working"))
                 .andExpect(status().isOk());
     }
 
@@ -41,10 +41,10 @@ class BaselineManagementSecurityChainTest {
         @GetMapping("/api/v1/ld/baseline-assessments")
         String list() { return "reachable"; }
 
-        @PostMapping("/api/v1/ld/baseline-assessments/occupations/{occupationId}/blueprint-working-revisions")
+        @PostMapping("/api/v1/ld/baseline-assessments/job-positions/{jobPositionId}/blueprint-working-revisions")
         String create() { return "reachable"; }
 
-        @PutMapping("/api/v1/ld/baseline-assessments/occupations/{occupationId}/blueprint-working-revisions/{workingId}")
+        @PutMapping("/api/v1/ld/baseline-assessments/job-positions/{jobPositionId}/blueprint-working-revisions/{workingId}")
         String save() { return "reachable"; }
     }
 }

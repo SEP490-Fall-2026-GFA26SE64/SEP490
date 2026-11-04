@@ -26,8 +26,8 @@ public class BaselineMasteryEvidenceEntity {
     private UUID organizationId;
     @Column(name = "learner_id", nullable = false)
     private UUID learnerId;
-    @Column(name = "occupation_id", nullable = false)
-    private String occupationId;
+    @Column(name = "job_position_id", nullable = false)
+    private String jobPositionId;
     @Id
     @Column(name = "micro_skill_id")
     private String microSkillId;
@@ -60,11 +60,11 @@ public class BaselineMasteryEvidenceEntity {
     }
 
     @SuppressWarnings("java:S107")
-    public BaselineMasteryEvidenceEntity(UUID attemptId, UUID organizationId, UUID learnerId, String occupationId, String microSkillId, UUID modelVersionId, UUID masteryMappingVersionId, UUID parameterSetId, BigDecimal theta, BigDecimal standardError, BigDecimal estimatedMastery, BigDecimal mastery, String confidenceLabel, UUID masteryEventId, Instant emittedAt, UUID policyVersionId, String policyHash) {
+    public BaselineMasteryEvidenceEntity(UUID attemptId, UUID organizationId, UUID learnerId, String jobPositionId, String microSkillId, UUID modelVersionId, UUID masteryMappingVersionId, UUID parameterSetId, BigDecimal theta, BigDecimal standardError, BigDecimal estimatedMastery, BigDecimal mastery, String confidenceLabel, UUID masteryEventId, Instant emittedAt, UUID policyVersionId, String policyHash) {
         this.attemptId = attemptId;
         this.organizationId = organizationId;
         this.learnerId = learnerId;
-        this.occupationId = occupationId;
+        this.jobPositionId = jobPositionId;
         this.microSkillId = microSkillId;
         this.modelVersionId = modelVersionId;
         this.masteryMappingVersionId = masteryMappingVersionId;
@@ -83,7 +83,7 @@ public class BaselineMasteryEvidenceEntity {
     public UUID getAttemptId() { return attemptId; }
     public UUID getOrganizationId() { return organizationId; }
     public UUID getLearnerId() { return learnerId; }
-    public String getOccupationId() { return occupationId; }
+    public String getJobPositionId() { return jobPositionId; }
     public String getMicroSkillId() { return microSkillId; }
     public UUID getModelVersionId() { return modelVersionId; }
     public UUID getMasteryMappingVersionId() { return masteryMappingVersionId; }

@@ -12,11 +12,11 @@ public record AdaptiveAttempt(UUID id, Scope scope, AdaptiveAttemptSnapshot snap
     public enum Status { IN_PROGRESS, SUBMITTED, AUTO_SUBMITTED, INVALIDATED }
     public enum CompletionReason { MANUAL, ADAPTIVE_STOP, DEADLINE, TECHNICAL_FAILURE }
 
-    public record Scope(UUID organizationId, UUID learnerId, String occupationId) {
+    public record Scope(UUID organizationId, UUID learnerId, String jobPositionId) {
         public Scope {
             requiredId(organizationId); requiredId(learnerId);
-            new AdaptiveBlueprint.Scope(organizationId, occupationId);
-            if (!occupationId.equals(occupationId.strip())) throw new IllegalArgumentException("Canonical Occupation required");
+            new AdaptiveBlueprint.Scope(organizationId, jobPositionId);
+            if (!jobPositionId.equals(jobPositionId.strip())) throw new IllegalArgumentException("Canonical JobPosition required");
         }
     }
 
@@ -26,7 +26,7 @@ public record AdaptiveAttempt(UUID id, Scope scope, AdaptiveAttemptSnapshot snap
         Objects.requireNonNull(finishedAt); Objects.requireNonNull(replacesAttemptId);
         Objects.requireNonNull(completionReason); replacesAttemptId.ifPresent(AdaptiveAttempt::requiredId);
         if (revision < 1 || !scope.organizationId().equals(snapshot.blueprint().scope().organizationId())
-                || !scope.occupationId().equals(snapshot.blueprint().scope().occupationId())
+                || !scope.jobPositionId().equals(snapshot.blueprint().scope().jobPositionId())
                 || !deadlineAt.equals(startedAt.plusSeconds(snapshot.bounds().timeLimitSeconds()))
                 || replacesAttemptId.filter(id::equals).isPresent()
                 || (status == Status.IN_PROGRESS) != finishedAt.isEmpty()
@@ -51,7 +51,7 @@ public record AdaptiveAttempt(UUID id, Scope scope, AdaptiveAttemptSnapshot snap
         if (!validCompletion) throw new IllegalArgumentException("Completion reason does not match state/deadline");
     }
 
-    /** Under the Employee+Occupation lock, after reauthorization/receipt lookup and before any write.
+    /** Under the Employee+JobPosition lock, after reauthorization/receipt lookup and before any write.
      * previous is the latest attempt, with no replacement already linked; the store enforces uniqueness.
      */
     public static AdaptiveAttempt start(UUID id, Scope scope, AdaptiveAttemptSnapshot snapshot, Instant now,

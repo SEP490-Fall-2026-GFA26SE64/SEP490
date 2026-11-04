@@ -23,7 +23,7 @@ Read [the local lesson: Selecting informative test cases](../topics/QA-DESIGN.md
 
 - Before MS-QA10, demonstrate MS-QA09: Identify ordered input partitions before testing their boundaries.
 
-Prerequisites taught within this module are studied first. Cross-module prerequisites are scheduled by the pathway engine. These are pending local learning-order decisions, not claims of universal occupational dependency.
+Prerequisites taught within this module are studied first. Cross-module prerequisites are scheduled by the pathway engine. These are pending local learning-order decisions, not claims of universal job positional dependency.
 
 ## Assigned tasks and submission evidence
 

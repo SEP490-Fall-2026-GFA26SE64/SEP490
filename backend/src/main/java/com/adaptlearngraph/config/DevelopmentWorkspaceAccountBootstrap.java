@@ -98,8 +98,8 @@ public final class DevelopmentWorkspaceAccountBootstrap implements ApplicationRu
         // 2. Department Reference
         seeds.upsertActiveDepartment(TECHNOVA_DEPT_ID, TECHNOVA_ORG_ID, "Engineering & Cognitive Systems");
 
-        // 3. Occupation Department Reference
-        seeds.upsertActiveOccupationReference(TECHNOVA_OCC_REF_ID, TECHNOVA_OCC_ID, TECHNOVA_ORG_ID, TECHNOVA_DEPT_ID, "Software Developers");
+        // 3. JobPosition Department Reference
+        seeds.upsertActiveJobPositionReference(TECHNOVA_OCC_REF_ID, TECHNOVA_OCC_ID, TECHNOVA_ORG_ID, TECHNOVA_DEPT_ID, "Software Developers");
 
         // 4. Seed Member Accounts (Admin, Manager, Expert, Employee)
         String passwordHash = secrets.hashPassword(DEFAULT_PASSWORD);
@@ -134,11 +134,11 @@ public final class DevelopmentWorkspaceAccountBootstrap implements ApplicationRu
         }
 
         // 7. Workspace Baseline Resource
-        resources.seedOccupationIfAbsent(TECHNOVA_ORG_ID, TECHNOVA_OCC_REF_ID, "OCC-15-1252.00");
+        resources.seedJobPositionIfAbsent(TECHNOVA_ORG_ID, TECHNOVA_OCC_REF_ID, "OCC-15-1252.00");
     }
 
     private void seedMember(UUID accountId, String email, String fullName, String role, String passwordHash,
-                            UUID departmentId, UUID occupationRefId) {
+                            UUID departmentId, UUID jobPositionRefId) {
         String normalized = email.toLowerCase().trim();
 
         // Account
@@ -149,10 +149,10 @@ public final class DevelopmentWorkspaceAccountBootstrap implements ApplicationRu
 
         // Membership
         UUID membershipId = UUID.nameUUIDFromBytes(("membership:" + accountId).getBytes());
-        if (departmentId == null && occupationRefId == null) {
+        if (departmentId == null && jobPositionRefId == null) {
             seeds.upsertActiveStaffMembership(membershipId, accountId, TECHNOVA_ORG_ID);
         } else {
-            seeds.upsertActiveEmployeeMembership(membershipId, accountId, TECHNOVA_ORG_ID, departmentId, occupationRefId);
+            seeds.upsertActiveEmployeeMembership(membershipId, accountId, TECHNOVA_ORG_ID, departmentId, jobPositionRefId);
         }
 
         // Single Role
@@ -166,7 +166,7 @@ public final class DevelopmentWorkspaceAccountBootstrap implements ApplicationRu
                 // Align all catalog nodes for TechNova organization and assign Dr. Sarah Chen
                 tx.execute("""
                     MATCH (n)
-                    WHERE (n:Occupation OR n:TargetRole OR n:Level OR n:Competency OR n:MicroSkill OR n:LearningModule)
+                    WHERE (n:JobPosition OR n:TargetRole OR n:Level OR n:Competency OR n:MicroSkill OR n:LearningModule)
                       AND (n.organizationId IS NULL OR n.organizationId = 'comp-technova')
                     SET n.organizationId = $orgId
                     """, Map.of("orgId", TECHNOVA_ORG_ID.toString()));

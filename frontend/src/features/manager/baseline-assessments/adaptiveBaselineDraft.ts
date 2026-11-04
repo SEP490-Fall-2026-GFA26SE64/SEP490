@@ -1,7 +1,7 @@
 import { isCommonConfiguration, type AdaptiveBounds, type AdaptiveCapacity, type AdaptiveCommonConfiguration, type AdaptiveWorkspace } from './adaptiveBaselineApi'
 
 export interface AdaptiveBoundsDraft { maxQuestions: string; totalMinutes: string; totalSeconds: string; secondsPerQuestion: string; durationMode: 'rate' | 'total' }
-export interface AdaptiveDraft { name: string; occupation: AdaptiveBoundsDraft }
+export interface AdaptiveDraft { name: string; jobPosition: AdaptiveBoundsDraft }
 export type AdaptiveTimeField = 'maxQuestions' | 'totalMinutes' | 'secondsPerQuestion'
 export type AdaptiveField = 'name' | AdaptiveTimeField
 export type AdaptiveFieldErrors = Partial<Record<AdaptiveField, string>>
@@ -18,7 +18,7 @@ export function boundsDraft(saved?: AdaptiveBounds): AdaptiveBoundsDraft {
 export function createAdaptiveDraft(workspace: AdaptiveWorkspace): AdaptiveDraft {
   const source = workspace.working?.configuration ?? workspace.current?.configuration
   // Never aggregate or adopt legacy Role/exploration bounds as the new common pair.
-  return { name: source?.name ?? '', occupation: boundsDraft(source && isCommonConfiguration(source) ? source.occupationBounds : undefined) }
+  return { name: source?.name ?? '', jobPosition: boundsDraft(source && isCommonConfiguration(source) ? source.jobPositionBounds : undefined) }
 }
 export function editAdaptiveBounds(value: AdaptiveBoundsDraft, field: AdaptiveTimeField, raw: string): AdaptiveBoundsDraft {
   const next = { ...value, [field]: raw }
@@ -34,7 +34,7 @@ export function editAdaptiveBounds(value: AdaptiveBoundsDraft, field: AdaptiveTi
 }
 /** Client feedback mirrors common configuration limits; server feasibility stays authoritative. */
 export function adaptiveErrors(value: AdaptiveDraft, capacity: AdaptiveCapacity): AdaptiveFieldErrors {
-  const errors: AdaptiveFieldErrors = {}, bounds = value.occupation, limits = capacity.occupation
+  const errors: AdaptiveFieldErrors = {}, bounds = value.jobPosition, limits = capacity.jobPosition
   if (!value.name.trim()) errors.name = 'nameRequired'
   else if (Array.from(value.name.trim()).length > 100) errors.name = 'nameLength'
   if (!bounds.maxQuestions.trim()) errors.maxQuestions = 'maximumRequired'
@@ -51,7 +51,7 @@ export function adaptiveErrors(value: AdaptiveDraft, capacity: AdaptiveCapacity)
 }
 export function adaptiveConfiguration(value: AdaptiveDraft, capacity: AdaptiveCapacity): AdaptiveCommonConfiguration | null {
   if (Object.keys(adaptiveErrors(value, capacity)).length) return null
-  return { name: value.name.trim(), occupationBounds: { maxQuestions: Number(value.occupation.maxQuestions), timeLimitSeconds: Number(value.occupation.totalSeconds) } }
+  return { name: value.name.trim(), jobPositionBounds: { maxQuestions: Number(value.jobPosition.maxQuestions), timeLimitSeconds: Number(value.jobPosition.totalSeconds) } }
 }
 export const sameAdaptiveConfiguration = (left: AdaptiveCommonConfiguration, right: AdaptiveCommonConfiguration) =>
-  left.name === right.name && left.occupationBounds.maxQuestions === right.occupationBounds.maxQuestions && left.occupationBounds.timeLimitSeconds === right.occupationBounds.timeLimitSeconds
+  left.name === right.name && left.jobPositionBounds.maxQuestions === right.jobPositionBounds.maxQuestions && left.jobPositionBounds.timeLimitSeconds === right.jobPositionBounds.timeLimitSeconds

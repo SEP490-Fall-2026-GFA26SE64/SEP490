@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 /** Feasibility over server-owned eligibility and pinned limits; never shrinks the union to fit a budget. */
 public final class AdaptiveBlueprintValidator {
     public List<Shortage> shortages(Configuration configuration, Snapshot eligible) {
-        boolean full = configuration.occupationBounds() != null;
+        boolean full = configuration.jobPositionBounds() != null;
         if (eligible.roles().isEmpty() || (!full && !configuration.roles().keySet().equals(eligible.roles().keySet()))) {
             throw new Failure(Code.BLUEPRINT_STALE, "Configuration must contain exactly the current active roles", List.of());
         }
