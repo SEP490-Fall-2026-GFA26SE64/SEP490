@@ -1687,6 +1687,26 @@ function OntologyGraphPlaygroundInner({
         return
       }
 
+      // Check whether this level is connected to a competency that owns this skill
+      const currentLvlComps = role.levelCompetencies?.[levelName] || []
+      const assignedCompObjs = competenciesRef.current.filter((c) =>
+        currentLvlComps.includes(c.id) || (c.code && currentLvlComps.includes(c.code))
+      )
+      const parentComp = assignedCompObjs.find((c) =>
+        c.skillIds?.includes(skillNode.id) ||
+        (skillNode.code && c.skillIds?.includes(skillNode.code))
+      )
+
+      if (!parentComp) {
+        toast({
+          title: 'Competency Required First',
+          description: `You must connect "${levelName}" level to a Competency first before selecting its micro-skills. Micro-skills cannot be connected directly without an assigned parent competency.`,
+          variant: 'destructive',
+        })
+        handleCancelConnect()
+        return
+      }
+
       const existingTargets: SkillTargetConfig[] = role.skillTargets || []
       const alreadyLinked = existingTargets.some(
         (st: SkillTargetConfig) =>
@@ -1712,6 +1732,7 @@ function OntologyGraphPlaygroundInner({
           skillName: skillNode.name,
           level: levelName,
           threshold: 80,
+          macroCompetencyCode: parentComp.code || parentComp.id,
         },
       ]
 

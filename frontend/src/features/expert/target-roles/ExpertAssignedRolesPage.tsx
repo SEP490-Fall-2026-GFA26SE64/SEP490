@@ -835,6 +835,7 @@ export function ExpertAssignedRolesPage() {
 
   const [newSkillId, setNewSkillId] = React.useState('')
   const [newThreshold, setNewThreshold] = React.useState(80)
+  const [selectedParentCompId, setSelectedParentCompId] = React.useState<string>('')
 
   // Inline edit state for configured micro-skill target mastery
 
@@ -918,17 +919,26 @@ export function ExpertAssignedRolesPage() {
     if (!authoringRole || selectedAuthoringLevels.length === 0) return []
 
     const list: { compId: string; level: string }[] = []
+    const seenPerLevel: Record<string, Set<string>> = {}
 
     selectedAuthoringLevels.forEach((lvl) => {
       const lvlComps = authoringRole.levelCompetencies?.[lvl] || []
+      if (!seenPerLevel[lvl]) seenPerLevel[lvl] = new Set()
 
       lvlComps.forEach((compId) => {
-        list.push({ compId, level: lvl })
+        const compObj = realCompetencies.find(
+          (c) => c.id === compId || c.code === compId,
+        )
+        const key = compObj?.code || compObj?.id || compId
+        if (!seenPerLevel[lvl].has(key)) {
+          seenPerLevel[lvl].add(key)
+          list.push({ compId, level: lvl })
+        }
       })
     })
 
     return list
-  }, [authoringRole, selectedAuthoringLevels])
+  }, [authoringRole, selectedAuthoringLevels, realCompetencies])
 
   // Flatten configured micro-skills across selected levels for table presentation
 
@@ -945,32 +955,33 @@ export function ExpertAssignedRolesPage() {
   const commonCompObjects = React.useMemo(() => {
     const compIds = new Set(commonCompetencyIds)
 
-    return realCompetencies.filter(
+    const list = realCompetencies.filter(
       (c) => compIds.has(c.id) || (c.code && compIds.has(c.code)),
     )
+    const seen = new Set<string>()
+    return list.filter((c) => {
+      const key = c.code || c.id
+      if (seen.has(key)) return false
+      seen.add(key)
+      return true
+    })
   }, [realCompetencies, commonCompetencyIds])
 
-  const commonSkillIdSet = React.useMemo(() => {
-    const ids = new Set<string>()
-
-    commonCompObjects.forEach((c) => {
-      ;(c.skillIds || []).forEach((sid) => ids.add(sid))
-    })
-
-    return ids
-  }, [commonCompObjects])
-
-  const commonCompCodes = React.useMemo(() => {
-    const codes = new Set<string>()
-
-    commonCompObjects.forEach((c) => {
-      if (c.code) codes.add(c.code)
-
-      if (c.id) codes.add(c.id)
-    })
-
-    return codes
-  }, [commonCompObjects])
+  // Auto-select first common competency if current selection is invalid
+  React.useEffect(() => {
+    if (commonCompObjects.length > 0) {
+      if (
+        !selectedParentCompId ||
+        !commonCompObjects.some(
+          (c) => c.id === selectedParentCompId || c.code === selectedParentCompId,
+        )
+      ) {
+        setSelectedParentCompId(commonCompObjects[0].id)
+      }
+    } else {
+      setSelectedParentCompId('')
+    }
+  }, [commonCompObjects, selectedParentCompId])
 
   // Two-step confirmation state for unassigned prerequisites
 
@@ -980,33 +991,48 @@ export function ExpertAssignedRolesPage() {
     typeof setTimeout
   > | null>(null)
 
-  // Cascading: Expert can only select micro-skills that belong to competencies common to all selected levels
-
+  // Cascading: Expert MUST choose from micro-skills inside the selected assigned competency
   const availableSkills = React.useMemo(() => {
     if (
       !authoringRole ||
       commonCompetencyIds.length === 0 ||
-      selectedAuthoringLevels.length === 0
-    )
+      selectedAuthoringLevels.length === 0 ||
+      !selectedParentCompId
+    ) {
       return []
+    }
+
+    const parentComp = commonCompObjects.find(
+      (c) => c.id === selectedParentCompId || c.code === selectedParentCompId,
+    )
+    if (!parentComp) return []
+
+    const compSkillIds = new Set<string>()
+    ;(parentComp.skillIds || []).forEach((sid) => compSkillIds.add(sid))
+    if (parentComp.memberSkills) {
+      parentComp.memberSkills.forEach((ms) => {
+        if (ms.id) compSkillIds.add(ms.id)
+        if (ms.code) compSkillIds.add(ms.code)
+      })
+    }
 
     return companyMicroSkills.filter((s) => {
       const belongs =
-        commonSkillIdSet.has(s.id) ||
-        (s.macroCompetencyCode && commonCompCodes.has(s.macroCompetencyCode))
+        compSkillIds.has(s.id) ||
+        compSkillIds.has(s.code) ||
+        (s.macroCompetencyCode &&
+          (s.macroCompetencyCode === parentComp.code ||
+            s.macroCompetencyCode === parentComp.id))
 
-      const isMapped =
-        commonSkillIdSet.size > 0 || commonCompCodes.size > 0 ? belongs : true
-
-      if (!isMapped) return false
+      if (!belongs) return false
 
       // Exclude if already assigned to all selected levels
-
       const alreadyAssignedToAllSelected = selectedAuthoringLevels.every(
         (lvl) =>
           authoringRole.skillTargets.some(
             (st) =>
-              st.skillId === s.id && (st.level || currentRoleLevels[0]) === lvl,
+              (st.skillId === s.id || st.skillCode === s.code) &&
+              (st.level || currentRoleLevels[0]) === lvl,
           ),
       )
 
@@ -1018,8 +1044,8 @@ export function ExpertAssignedRolesPage() {
     commonCompetencyIds,
     selectedAuthoringLevels,
     currentRoleLevels,
-    commonSkillIdSet,
-    commonCompCodes,
+    selectedParentCompId,
+    commonCompObjects,
   ])
 
   // Missing prerequisites across configured levels in authoring role
@@ -1401,40 +1427,21 @@ export function ExpertAssignedRolesPage() {
         : []
     })
 
-    // Auto-heal: Ensure all levels that have skillTargets also have the corresponding competencies in initialLevelComps
-
-    if (cloned.skillTargets && cloned.skillTargets.length > 0) {
-      cloned.skillTargets.forEach((st) => {
-        const lvl = st.level || initLevel
-
-        if (!initialLevelComps[lvl]) {
-          initialLevelComps[lvl] = []
-        }
-
-        const skillObj = companyMicroSkills.find(
-          (s) =>
-            s.id === st.skillId || (st.skillCode && s.code === st.skillCode),
-        )
-
-        if (skillObj) {
-          const comp = realCompetencies.find(
-            (c) =>
-              (c.skillIds && c.skillIds.includes(skillObj.id)) ||
-              (c.memberSkills &&
-                c.memberSkills.some(
-                  (ms) => ms.id === skillObj.id || ms.code === skillObj.code,
-                )) ||
-              (skillObj.macroCompetencyCode &&
-                (skillObj.macroCompetencyCode === c.code ||
-                  skillObj.macroCompetencyCode === c.id)),
-          )
-
-          if (comp && !initialLevelComps[lvl].includes(comp.id)) {
-            initialLevelComps[lvl].push(comp.id)
-          }
+    // Strictly initialize levelCompetencies map without auto-adding competencies from skills (clean user-controlled mappings)
+    roleLevels.forEach((lvl: string) => {
+      const raw = initialLevelComps[lvl] || []
+      const seen = new Set<string>()
+      const uniqueComps: string[] = []
+      raw.forEach((cid: string) => {
+        const compObj = realCompetencies.find((c) => c.id === cid || c.code === cid)
+        const key = compObj?.code || compObj?.id || cid
+        if (!seen.has(key)) {
+          seen.add(key)
+          uniqueComps.push(compObj?.id || cid)
         }
       })
-    }
+      initialLevelComps[lvl] = uniqueComps
+    })
 
     // If completely unassigned, seed only the first level with legacy competencyIds
 
@@ -1497,12 +1504,16 @@ export function ExpertAssignedRolesPage() {
       )
 
       if (!alreadyExists) {
+        const parentCompObj = commonCompObjects.find(
+          (c) => c.id === selectedParentCompId || c.code === selectedParentCompId,
+        )
         newTargets.push({
           skillId: skillObj.id,
           skillCode: skillObj.code,
           skillName: skillObj.name,
           threshold: Number(newThreshold) || 80,
           level: lvl,
+          macroCompetencyCode: parentCompObj?.code || parentCompObj?.id,
         })
       }
     })
@@ -3047,28 +3058,38 @@ export function ExpertAssignedRolesPage() {
                         </div>
                       ) : (
                         <div className="grid grid-cols-1 sm:grid-cols-12 gap-2.5 items-end">
-                          <div className="sm:col-span-7">
+                          <div className="sm:col-span-4">
                             <label className="text-[11px] font-semibold text-foreground block mb-1">
-                              Micro-skill for {selectedLevelNamesLabel}{' '}
-                              <span className="text-destructive">*</span>
+                              From Competency <span className="text-destructive">*</span>
+                            </label>
+
+                            <select
+                              value={selectedParentCompId}
+                              onChange={(e) => setSelectedParentCompId(e.target.value)}
+                              className="w-full px-2.5 py-1.5 rounded-md bg-background border border-border text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-primary truncate"
+                            >
+                              {commonCompObjects.map((c) => (
+                                <option key={c.id} value={c.id}>
+                                  {c.code} — {c.name}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+
+                          <div className="sm:col-span-4">
+                            <label className="text-[11px] font-semibold text-foreground block mb-1">
+                              Micro-skill <span className="text-destructive">*</span>
                             </label>
 
                             <Combobox
                               size="sm"
-
                               clearable={false}
-
                               options={skillOptions}
-
                               value={newSkillId}
-
                               onChange={(val) => setNewSkillId(val)}
-
-                              placeholder={`Search & select micro-skill for ${selectedLevelNamesLabel}...`}
-
+                              placeholder={`Select skill in ${commonCompObjects.find((c) => c.id === selectedParentCompId)?.code || 'competency'}...`}
                               searchPlaceholder="Search by skill code or title..."
-
-                              emptyMessage={`All member skills for ${selectedLevelNamesLabel} are already assigned`}
+                              emptyMessage="All member skills in this competency are already assigned"
                             />
                           </div>
 
@@ -3079,37 +3100,25 @@ export function ExpertAssignedRolesPage() {
 
                             <input
                               type="number"
-
                               min={1}
-
                               max={100}
-
                               step={5}
-
                               value={newThreshold}
-
                               onChange={(e) =>
                                 setNewThreshold(Number(e.target.value))
                               }
-
                               className="w-full px-2.5 py-1.5 rounded-md bg-background border border-border text-foreground text-xs font-mono focus:outline-none focus:ring-1 focus:ring-primary text-center"
                             />
                           </div>
 
-                          <div className="sm:col-span-3">
+                          <div className="sm:col-span-2">
                             <Button
                               type="button"
-
                               variant="primary"
-
                               size="sm"
-
                               disabled={!newSkillId}
-
                               onClick={handleAddSkillTarget}
-
                               className="w-full font-semibold shadow-2xs whitespace-nowrap px-3 text-xs justify-center"
-
                               leftIcon={
                                 <Plus className="h-3.5 w-3.5 shrink-0" />
                               }
