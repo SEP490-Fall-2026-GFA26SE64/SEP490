@@ -19,11 +19,11 @@ import java.util.function.Supplier;
 
 /**
  * Read-only access to the platform template and the dependency closure copied into a new organization.
- * Occupation selects its subtree; TargetRole also includes its parent Occupation; skills bring their prerequisite
+ * JobPosition selects its subtree; TargetRole also includes its parent JobPosition; skills bring their prerequisite
  * closure and the modules teaching them; a selected module brings the skills it teaches and their prerequisites.
  */
 public final class PlatformCatalogService {
-    public static final Set<String> SELECTABLE = Set.of("Occupation", "TargetRole", "MicroSkill", "LearningModule");
+    public static final Set<String> SELECTABLE = Set.of("JobPosition", "TargetRole", "MicroSkill", "LearningModule");
     public static final int MAX_SELECTION = 300;
 
     public record GraphNode(String id, String label, String name, String code) {}
@@ -79,7 +79,7 @@ public final class PlatformCatalogService {
         var skills = new SkillWalk(current, nodes);
         for (String id : selected) {
             switch (current.template.nodes().get(id).label()) {
-                case "Occupation" -> addOccupation(current, id, nodes, skills);
+                case "JobPosition" -> addJobPosition(current, id, nodes, skills);
                 case "TargetRole" -> {
                     nodes.addAll(current.in("HAS_ROLE", id));
                     addRole(current, id, nodes, skills);
@@ -118,9 +118,9 @@ public final class PlatformCatalogService {
         return List.copyOf(unique);
     }
 
-    private static void addOccupation(Index index, String occupation, Set<String> nodes, SkillWalk skills) {
-        nodes.add(occupation);
-        index.out("HAS_ROLE", occupation).forEach(role -> addRole(index, role, nodes, skills));
+    private static void addJobPosition(Index index, String jobPosition, Set<String> nodes, SkillWalk skills) {
+        nodes.add(jobPosition);
+        index.out("HAS_ROLE", jobPosition).forEach(role -> addRole(index, role, nodes, skills));
     }
 
     private static void addRole(Index index, String role, Set<String> nodes, SkillWalk skills) {

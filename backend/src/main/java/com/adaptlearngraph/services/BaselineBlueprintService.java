@@ -48,14 +48,14 @@ public final class BaselineBlueprintService implements BaselineBlueprintUseCase 
         String hash = hash("CREATE", null, 0, draft);
         return replay(actor, key, hash).orElseGet(() -> {
             BlueprintDraft validated = validator.validateAndNormalize(actor, draft);
-            if (store.findLatestByOccupation(actor.organizationId(), validated.occupationId()).isPresent()) {
+            if (store.findLatestByJobPosition(actor.organizationId(), validated.jobPositionId()).isPresent()) {
                 throw failure(
                         Code.VERSION_CONFLICT,
-                        "This Occupation already has a baseline blueprint; revise its latest version");
+                        "This JobPosition already has a baseline blueprint; revise its latest version");
             }
             return insert(new BaselineBlueprint(
-                    UUID.randomUUID(), 1, validated.name(), validated.occupationId(),
-                    validated.occupationNameSnapshot(), actor.accountId(), key, hash, now(), validated.roles()),
+                    UUID.randomUUID(), 1, validated.name(), validated.jobPositionId(),
+                    validated.jobPositionNameSnapshot(), actor.accountId(), key, hash, now(), validated.roles()),
                     actor, key, hash);
         });
     }
@@ -80,12 +80,12 @@ public final class BaselineBlueprintService implements BaselineBlueprintUseCase 
             throw failure(Code.VERSION_CONFLICT, "Baseline blueprint has a newer version");
         }
         BlueprintDraft validated = validator.validateAndNormalize(actor, draft);
-        if (!Objects.equals(latest.occupationId(), validated.occupationId())) {
-            throw failure(Code.INVALID_REQUEST, "A baseline blueprint cannot change Occupation");
+        if (!Objects.equals(latest.jobPositionId(), validated.jobPositionId())) {
+            throw failure(Code.INVALID_REQUEST, "A baseline blueprint cannot change JobPosition");
         }
         return insert(new BaselineBlueprint(
-                blueprintId, Math.addExact(expectedLatestVersion, 1), validated.name(), validated.occupationId(),
-                validated.occupationNameSnapshot(), actor.accountId(), key, hash, now(), validated.roles()),
+                blueprintId, Math.addExact(expectedLatestVersion, 1), validated.name(), validated.jobPositionId(),
+                validated.jobPositionNameSnapshot(), actor.accountId(), key, hash, now(), validated.roles()),
                 actor, key, hash);
     }
 
@@ -98,12 +98,12 @@ public final class BaselineBlueprintService implements BaselineBlueprintUseCase 
     }
 
     @Override
-    public BaselineBlueprint getLatestByOccupation(String occupationId) {
+    public BaselineBlueprint getLatestByJobPosition(String jobPositionId) {
         Actor actor = requireActor();
-        return store.findLatestByOccupation(
-                        actor.organizationId(), requireText(occupationId, "occupationId"))
+        return store.findLatestByJobPosition(
+                        actor.organizationId(), requireText(jobPositionId, "jobPositionId"))
                 .orElseThrow(() -> failure(
-                        Code.NOT_FOUND, "Baseline blueprint was not found for this Occupation"));
+                        Code.NOT_FOUND, "Baseline blueprint was not found for this JobPosition"));
     }
 
     @Override
@@ -156,8 +156,8 @@ public final class BaselineBlueprintService implements BaselineBlueprintUseCase 
         append(canonical, blueprintId == null ? "" : blueprintId.toString());
         append(canonical, Integer.toString(expectedVersion));
         append(canonical, draft.name());
-        append(canonical, draft.occupationId());
-        append(canonical, draft.occupationNameSnapshot());
+        append(canonical, draft.jobPositionId());
+        append(canonical, draft.jobPositionNameSnapshot());
         draft.roles().stream().sorted(Comparator.comparing(BaselineBlueprint.RoleConfig::roleId)).forEach(role -> {
             append(canonical, role.roleId());
             append(canonical, role.roleNameSnapshot());

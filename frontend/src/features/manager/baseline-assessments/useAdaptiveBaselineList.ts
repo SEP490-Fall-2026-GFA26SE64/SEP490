@@ -36,14 +36,14 @@ export function useAdaptiveBaselineList() {
   }
   function deactivate(row: AdaptiveListRow, reason: string) {
     if (busy || lock.current || retry.current || row.status !== 'ACTIVE' || !row.current || !reason.trim()) return
-    const key = crypto.randomUUID(), confirmed = { ...row.current }, revision = row.revision, occupation = row.occupationId
+    const key = crypto.randomUUID(), confirmed = { ...row.current }, revision = row.revision, jobPosition = row.jobPositionId
     const reconcile = async () => {
       const value = await listAdaptiveBlueprints(query)
       if (!alive.current) return
       setResult(value); setPending(false); setNotice(true); retry.current = null
     }
     retry.current = async () => {
-      await disableAdaptiveBlueprint(occupation, revision, confirmed, reason.trim(), key)
+      await disableAdaptiveBlueprint(jobPosition, revision, confirmed, reason.trim(), key)
       if (!alive.current) return
       retry.current = reconcile // Known success: retry GET only, even if reconciliation fails.
       await reconcile()

@@ -144,9 +144,9 @@ public final class SubscriptionTestRuntime {
         }
         @PostMapping("/api/v1/__subscription-test/references/{organization}")
         void references(@PathVariable UUID organization) {
-            UUID department=UUID.randomUUID(),occupation=UUID.randomUUID();
+            UUID department=UUID.randomUUID(),jobPosition=UUID.randomUUID();
             jdbc.update("INSERT INTO platform.department_reference VALUES (?,?,'Test Department',true)",department,organization);
-            jdbc.update("INSERT INTO platform.occupation_department_reference VALUES (?,?,?,?,'Test Occupation',true)",occupation,UUID.randomUUID(),organization,department);
+            jdbc.update("INSERT INTO platform.job_position_department_reference VALUES (?,?,?,?,'Test JobPosition',true)",jobPosition,UUID.randomUUID(),organization,department);
         }
         @PostMapping("/api/v1/__subscription-test/expire/{orderId}")
         void expire(@PathVariable UUID orderId) {

@@ -23,7 +23,7 @@ Read [the local lesson: Making service boundaries explicit](../topics/FS-SERVICE
 
 - Before MS-FS05, demonstrate MS-FS03: Understand the component contract before connecting components.
 
-Prerequisites taught within this module are studied first. Cross-module prerequisites are scheduled by the pathway engine. These are pending local learning-order decisions, not claims of universal occupational dependency.
+Prerequisites taught within this module are studied first. Cross-module prerequisites are scheduled by the pathway engine. These are pending local learning-order decisions, not claims of universal job positional dependency.
 
 ## Assigned tasks and submission evidence
 

@@ -29,8 +29,8 @@ public class LocalDemoSeedConfiguration {
             byte[] scope=Files.readAllBytes(Path.of(environment.getProperty("assessment.baseline.local-demo.bank-scope-file","/seed/catalog-scope.json")));
             byte[] manifest;
             try(var in=new org.springframework.core.io.ClassPathResource("db/seed/question-bank-15-1212.00-v1-ontology-v09.json").getInputStream()){manifest=in.readAllBytes();}
-            require(sha256(scope).equals("454b5531a43dba70c29597d866cb29f5e614a02de5e6e596c379bb2712c667a6"),"Scope seed drift");
-            require(sha256(manifest).equals("ca4fb71cc4a167e9d37d7133d9fe62a0cf8e9400ca9a5faeb22b4264a51b0bb6"),"Bank seed drift");
+            require(sha256(scope).equals("56b831ca0594d93ed89b62bec6d7d95c332d632e9ca2439ec7bd316c89961c20"),"Scope seed drift");
+            require(sha256(manifest).equals("08349b4cf50c4e12ff5700cb428606c09377298516c968f3c5fc42d23aaaf221"),"Bank seed drift");
             var bank=parse(manifest,OfficialQuestionBankManifest.class);var catalog=parse(scope,OfficialQuestionBankCatalog.Scope.class);
             bank.validate(catalog);
             var latest=com.adaptlearngraph.constants.DevelopmentWorkspace.enabled(environment)

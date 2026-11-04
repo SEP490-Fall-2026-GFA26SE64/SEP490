@@ -28,8 +28,8 @@ public class InitialGapSnapshotEntity {
     private UUID selectionId;
     @Column(name = "selection_revision", nullable = false)
     private Long selectionRevision;
-    @Column(name = "occupation_id", nullable = false)
-    private String occupationId;
+    @Column(name = "job_position_id", nullable = false)
+    private String jobPositionId;
     @Column(name = "baseline_attempt_id", nullable = false)
     private UUID baselineAttemptId;
     @Column(name = "gap_input_hash", nullable = false, columnDefinition = PostgresColumnTypes.CONTENT_HASH)
@@ -46,13 +46,13 @@ public class InitialGapSnapshotEntity {
     }
 
     @SuppressWarnings("java:S107")
-    public InitialGapSnapshotEntity(UUID gapSnapshotId, UUID organizationId, UUID learnerId, UUID selectionId, Long selectionRevision, String occupationId, UUID baselineAttemptId, String gapInputHash, String contentHash, String snapshot, Instant createdAt) {
+    public InitialGapSnapshotEntity(UUID gapSnapshotId, UUID organizationId, UUID learnerId, UUID selectionId, Long selectionRevision, String jobPositionId, UUID baselineAttemptId, String gapInputHash, String contentHash, String snapshot, Instant createdAt) {
         this.gapSnapshotId = gapSnapshotId;
         this.organizationId = organizationId;
         this.learnerId = learnerId;
         this.selectionId = selectionId;
         this.selectionRevision = selectionRevision;
-        this.occupationId = occupationId;
+        this.jobPositionId = jobPositionId;
         this.baselineAttemptId = baselineAttemptId;
         this.gapInputHash = gapInputHash;
         this.contentHash = contentHash;
@@ -65,7 +65,7 @@ public class InitialGapSnapshotEntity {
     public UUID getLearnerId() { return learnerId; }
     public UUID getSelectionId() { return selectionId; }
     public Long getSelectionRevision() { return selectionRevision; }
-    public String getOccupationId() { return occupationId; }
+    public String getJobPositionId() { return jobPositionId; }
     public UUID getBaselineAttemptId() { return baselineAttemptId; }
     public String getGapInputHash() { return gapInputHash; }
     public String getContentHash() { return contentHash; }

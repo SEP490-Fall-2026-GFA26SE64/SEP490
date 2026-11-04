@@ -2,9 +2,9 @@
   "formatVersion": "official-question-bank-v1",
   "manifestVersion": "1",
   "catalogVersion": "0.11.0",
-  "sourceSha256": "f7325462f0e8810624c05141798a3ca330b6ae8fb3844fc6e1437951e79832f7",
+  "sourceSha256": "585eae81565deb7f3d0e40eeea10e583dd526cd4569077babfda6d5b22e9602c",
   "scopeSha256": "468fc18de90f323bf32d6c8564c198aaa518edbe4ade3fdb9857247497c9f31b",
-  "occupationId": "OCC-15-1252.00",
+  "jobPositionId": "OCC-15-1252.00",
   "questionBank": {
     "id": "4ad4254f-2a39-3738-8c04-f196b07f550b",
     "name": "Software Developers - development question bank"

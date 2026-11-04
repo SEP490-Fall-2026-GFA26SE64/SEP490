@@ -61,9 +61,9 @@ public class LocalAdaptiveBlueprintApiConfiguration {
         };
         return new AdaptiveBlueprintActorPort() {
             @Override public Optional<Actor> currentActor() { return identity.currentActor(); }
-            @Override public java.util.Set<String> authorizedOccupations(Actor actor) {
+            @Override public java.util.Set<String> authorizedJobPositions(Actor actor) {
                 return actor.isActiveLdManager() && settings.organizationId().equals(actor.organizationId())
-                        ? settings.occupationIds() : java.util.Set.of();
+                        ? settings.jobPositionIds() : java.util.Set.of();
             }
         };
     }

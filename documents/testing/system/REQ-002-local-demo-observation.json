@@ -10,7 +10,7 @@
         "revision": 1,
         "configuration": {
           "name": "Information Security baseline demo",
-          "occupationBounds": {
+          "job positionBounds": {
             "maxQuestions": 45,
             "timeLimitSeconds": 2700
           }
@@ -77,9 +77,9 @@
   "attemptId": "5fb3d1b4-7e0e-4420-bdcd-71b3f0a3c53f",
   "result": {
     "attemptId": "5fb3d1b4-7e0e-4420-bdcd-71b3f0a3c53f",
-    "occupationId": "OCC-15-1212.00",
-    "occupationName": "Information Security Analysts",
-    "purpose": "OCCUPATION_EXPLORATION",
+    "job positionId": "OCC-15-1212.00",
+    "job positionName": "Information Security Analysts",
+    "purpose": "JOB_POSITION_EXPLORATION",
     "roleId": null,
     "roleName": null,
     "state": "AUTO_SUBMITTED",
@@ -181,7 +181,7 @@
         "confidence": "MEDIUM"
       }
     ],
-    "assessmentScope": "OCCUPATION"
+    "assessmentScope": "JOB_POSITION"
   },
   "userPersonasUntouched": [
     "employee-a",

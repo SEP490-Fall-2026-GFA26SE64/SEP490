@@ -1,4 +1,4 @@
-> **Current R4 behavior (2026-10-29):** new Module/content creation, reuse and Excel/ZIP import are based on skills and do not require an Occupation selection/grant. Historical occupation tags and the separate catalog intake workflow remain intact. L&D revision details show individually numbered Text/Video lesson cards. See the [current catalog refinement](../Learning%20catalog/README.md#r4-local-refinement--2026-10-29) and [tested UI/manual checklist](../../testing/system/REQ-013-learning-content-R4.md). Older dated rules below are retained for traceability.
+> **Current R4 behavior (2026-10-29):** new Module/content creation, reuse and Excel/ZIP import are based on skills and do not require an Job Position selection/grant. Historical job position tags and the separate catalog intake workflow remain intact. L&D revision details show individually numbered Text/Video lesson cards. See the [current catalog refinement](../Learning%20catalog/README.md#r4-local-refinement--2026-10-29) and [tested UI/manual checklist](../../testing/system/REQ-013-learning-content-R4.md). Older dated rules below are retained for traceability.
 
 > **Current Learning Content runtime (2026-10-29):** ordered Text/Video, private uploads, Excel/ZIP import, full revision preview and persisted learner progress are described in the [current catalog delivery record](../Learning%20catalog/README.md#learning-content-local-delivery--2026-10-29). See [verification limits and manual checklist](../../testing/system/REQ-013-learning-content.md), including the Vimeo provider blocker. The dated historical details below remain for traceability.
 
@@ -60,7 +60,7 @@ Bảng này là inventory đầy đủ: 6 field metadata chung và 7 field nghi�
 - INCIDENTAL không đóng skill gap; hoàn thành Module không chứng minh learner đã đạt mọi skill liên quan.
 - Không có cạnh trực tiếp Level–Module. Module được tìm qua skill gap; không gán một difficulty toàn cục cho Module hoặc suy difficulty từ tên Level.
 - Điều kiện publication theo schema: `status=ACTIVE`, `reviewStatus=APPROVED`, `reviewedBy` và `reviewedAt` hợp lệ. Đây là điều kiện catalog cần có; quyền L&D và quy trình release/version vẫn cần thiết kế, không coi ACTIVE là đã được duyệt.
-- Không thêm `code`, `description`, `occupationId`, `targetRoleId`, `levelId`, `teachesSkillId`, `durationMinutes`, `instructionLevel`, `coverage`, `outcomeCoverage`, `expectedOutcome` hoặc rubric/readiness reference thành property LearningModule theo UI cũ. Scope organization/discipline vẫn bắt buộc tại biên authorization; cách lưu membership cần thiết kế riêng.
+- Không thêm `code`, `description`, `job positionId`, `targetRoleId`, `levelId`, `teachesSkillId`, `durationMinutes`, `instructionLevel`, `coverage`, `outcomeCoverage`, `expectedOutcome` hoặc rubric/readiness reference thành property LearningModule theo UI cũ. Scope organization/discipline vẫn bắt buộc tại biên authorization; cách lưu membership cần thiết kế riêng.
 - Nội dung, câu hỏi, rubric, learner progress và lịch sử assessment không lưu thành property Module/TEACHES. Không ghi đè hoặc repin lịch sử khi đổi catalog/nội dung.
 - Không tự nâng runtime lên v0.11.0 chỉ bằng sửa tài liệu hoặc gán version. API legacy cần mapping/migration rõ ràng; không xóa rồi tạo lại TEACHES làm mất metadata.
 
@@ -85,9 +85,9 @@ Bảng này là inventory đầy đủ: 6 field metadata chung và 7 field nghi�
 | 12A / 13A | Chỉ xóa vật lý draft chưa có tham chiếu. Các trường hợp khác archive; Module đã duyệt cần Expert yêu cầu và L&D phê duyệt archive. |
 | 14A | Hỗ trợ khôi phục về draft, duyệt lại trước khi sử dụng. |
 
-### Occupation scope and revision boundaries
+### Job Position scope and revision boundaries
 
-Người dùng chốt Occupation làm phạm vi phân công trong feature này. L&D phân công Expert trực tiếp theo Occupation; membership Module được lưu riêng trong PostgreSQL, không suy từ skill overlap hoặc assignment TargetRole cũ. Expert có grant ở ít nhất một Occupation sở hữu Module được xem/sửa Module dùng chung. Khi tạo content/Module hoặc thêm scope, Expert phải có grant ở mọi Occupation được khai báo để tránh tự mở rộng phạm vi. Membership Module không được thay đổi qua API chỉnh sửa thông thường. Quyết định này không tự thay mọi discipline contract của REQ-050/051; không thêm occupationId hoặc cạnh mới lên graph.
+Người dùng chốt Job Position làm phạm vi phân công trong feature này. L&D phân công Expert trực tiếp theo Job Position; membership Module được lưu riêng trong PostgreSQL, không suy từ skill overlap hoặc assignment TargetRole cũ. Expert có grant ở ít nhất một Job Position sở hữu Module được xem/sửa Module dùng chung. Khi tạo content/Module hoặc thêm scope, Expert phải có grant ở mọi Job Position được khai báo để tránh tự mở rộng phạm vi. Membership Module không được thay đổi qua API chỉnh sửa thông thường. Quyết định này không tự thay mọi discipline contract của REQ-050/051; không thêm job positionId hoặc cạnh mới lên graph.
 
 Revision giữ gói Module/content/mapping mà learner đã bắt đầu. Người tạo Module và thời điểm tạo được giữ nguyên trên aggregate; mỗi revision ghi người sửa, thời điểm, payload và các field thay đổi. Lịch sử action ghi người gửi/duyệt/return/archive/restore. Người sửa khác người duyệt; không dùng reviewedBy/reviewedAt thay audit. Archive chặn lượt học mới, learner đã pin tiếp tục bản cũ. Restore về draft và duyệt lại; không coi version catalog là revision.
 
@@ -101,7 +101,7 @@ Không tự import hoặc nâng các Module legacy/review dataset sang workflow 
 
 [Implementation design](Implementation%20design.md) ghi phương án persistence, revision, authorization, Content Studio/approval integration và các quyết định còn cần chốt trước khi sửa code.
 
-1. Production identity/Occupation assignment owner integration; migration có kiểm chứng từ catalog legacy và bridge pathway/learning_activity cũ.
+1. Production identity/Job Position assignment owner integration; migration có kiểm chứng từ catalog legacy và bridge pathway/learning_activity cũ.
 2. Mở rộng media ngoài HTTPS video trực tiếp, validation nguồn/quyền truy cập bên ngoài. Renderer hiển thị link nguồn khi file không phát được; backend không fetch URL bên ngoài.
 3. Đã chọn giới hạn title 240, ID UUID do server sinh, page size 10, sort theo thời điểm tạo giảm dần; draft đầy đủ → submitted → return/release, khóa sửa khi submitted. Có revision token và giao diện so sánh khi xung đột. Đây là chi tiết implementation cho các lựa chọn đã chốt.
 4. Lý do archive bắt buộc, provider replacement tự động và thống kê sử dụng mở rộng chưa thuộc implementation hiện tại. Archive bị chặn khi mất provider PRIMARY được duyệt cuối cùng của skill.
@@ -165,8 +165,8 @@ The user's requested v0.11 import is executed. The shared catalog has 246 Module
 
 ### Per-module catalog intake — 2026-10-28
 
-Option A is now the implementation scope: explicit L&D Occupation assignment → assigned Expert acceptance → draft/edit/submit → L&D decision → existing graph publication. See [intake contract](../Learning%20module%20management/Receive%20Imported%20Module.md). Earlier statements that imported entries remain permanently read-only are superseded by this explicit intake route; listing alone never creates history.
+Option A is now the implementation scope: explicit L&D Job Position assignment → assigned Expert acceptance → draft/edit/submit → L&D decision → existing graph publication. See [intake contract](../Learning%20module%20management/Receive%20Imported%20Module.md). Earlier statements that imported entries remain permanently read-only are superseded by this explicit intake route; listing alone never creates history.
 
 ## Current single-Expert responsibility
 
-The current [Learning Catalog contract](../Learning%20catalog/README.md#module-responsibility-and-peer-visibility) supersedes historical shared-occupation editing rules: one creator/responsible Expert manages each Module; peer Experts can view content and history within the organization, and L&D retains review decisions. Existing development modules are handed to expert@example.test with an audit trail; earlier revisions/reviewers are preserved.
+The current [Learning Catalog contract](../Learning%20catalog/README.md#module-responsibility-and-peer-visibility) supersedes historical shared-job position editing rules: one creator/responsible Expert manages each Module; peer Experts can view content and history within the organization, and L&D retains review decisions. Existing development modules are handed to expert@example.test with an audit trail; earlier revisions/reviewers are preserved.

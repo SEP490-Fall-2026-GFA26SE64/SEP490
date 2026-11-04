@@ -23,7 +23,7 @@ Read [the local lesson: Making service boundaries explicit](../topics/FS-SERVICE
 
 - Before MS-FS14, demonstrate MS-FS04: Understand data-changing operations before grouping them in a transaction.
 
-Prerequisites taught within this module are studied first. Cross-module prerequisites are scheduled by the pathway engine. These are pending local learning-order decisions, not claims of universal occupational dependency.
+Prerequisites taught within this module are studied first. Cross-module prerequisites are scheduled by the pathway engine. These are pending local learning-order decisions, not claims of universal job positional dependency.
 
 ## Assigned tasks and submission evidence
 

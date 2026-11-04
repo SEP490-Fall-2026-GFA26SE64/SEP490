@@ -16,7 +16,7 @@ import com.adaptlearngraph.repository.BaselineBlueprintStore;
 import com.adaptlearngraph.repository.BaselineBlueprintStore.Actor;
 import com.adaptlearngraph.repository.BaselineBlueprintStore.ActorPort;
 import com.adaptlearngraph.repository.BaselineBlueprintValidationPort;
-import com.adaptlearngraph.repository.BaselineOccupationCatalogPort;
+import com.adaptlearngraph.repository.BaselineJobPositionCatalogPort;
 import com.adaptlearngraph.entities.domain.BaselineAssessmentDraft;
 import com.adaptlearngraph.entities.domain.BaselineAssessmentLifecycle;
 import com.adaptlearngraph.entities.domain.BaselineAssessmentLifecycle.PolicyViolation;
@@ -53,7 +53,7 @@ public class BaselineAssessmentManagementService implements BaselineAssessmentMa
     private static final BigDecimal ZERO_HARD = new BigDecimal("0.3333");
 
     private final ActorPort actors;
-    private final BaselineOccupationCatalogPort catalog;
+    private final BaselineJobPositionCatalogPort catalog;
     private final BaselineBlueprintStore blueprints;
     private final BaselineBlueprintDraftValidator validator;
     private final BaselineAssessmentDraftUseCase draftUseCase;
@@ -64,7 +64,7 @@ public class BaselineAssessmentManagementService implements BaselineAssessmentMa
 
     public BaselineAssessmentManagementService(
             ActorPort actors,
-            BaselineOccupationCatalogPort catalog,
+            BaselineJobPositionCatalogPort catalog,
             BaselineBlueprintStore blueprints,
             BaselineBlueprintValidationPort validation,
             BaselineAssessmentDraftUseCase draftUseCase,
@@ -76,7 +76,7 @@ public class BaselineAssessmentManagementService implements BaselineAssessmentMa
     }
 
     BaselineAssessmentManagementService(
-            ActorPort actors, BaselineOccupationCatalogPort catalog,
+            ActorPort actors, BaselineJobPositionCatalogPort catalog,
             BaselineBlueprintStore blueprints, BaselineBlueprintValidationPort validation,
             BaselineAssessmentDraftUseCase draftUseCase, BaselineAssessmentDraftStore drafts,
             BaselineAssessmentManagementStore management, ObjectMapper json, Clock clock) {
@@ -92,42 +92,42 @@ public class BaselineAssessmentManagementService implements BaselineAssessmentMa
     }
 
     @Override
-    public OccupationPage listOccupations(OccupationQuery query) {
+    public JobPositionPage listJobPositions(JobPositionQuery query) {
         Actor actor = requireActor();
         try {
             UUID organizationId = organizationId(actor);
-            var filtered = catalog.findAvailableOccupations(actor.organizationId()).stream()
+            var filtered = catalog.findAvailableJobPositions(actor.organizationId()).stream()
                     .map(item -> toSummary(organizationId, item))
                     .filter(item -> query.search().isEmpty()
-                            || item.occupationId().toLowerCase().contains(query.search().toLowerCase())
-                            || item.occupationName().toLowerCase().contains(query.search().toLowerCase()))
+                            || item.jobPositionId().toLowerCase().contains(query.search().toLowerCase())
+                            || item.jobPositionName().toLowerCase().contains(query.search().toLowerCase()))
                     .filter(item -> query.status().isEmpty()
                             || query.status().equalsIgnoreCase(status(item)))
                     .sorted(summaryComparator(query.sort()))
                     .toList();
             int from = (int) Math.min((long) query.page() * query.size(), filtered.size());
             int to = Math.min(from + query.size(), filtered.size());
-            return new OccupationPage(filtered.subList(from, to), query.page(), query.size(), filtered.size());
-        } catch (BaselineOccupationCatalogPort.DependencyUnavailable failure) {
+            return new JobPositionPage(filtered.subList(from, to), query.page(), query.size(), filtered.size());
+        } catch (BaselineJobPositionCatalogPort.DependencyUnavailable failure) {
             throw failure(Code.DEPENDENCY_UNAVAILABLE, failure.getMessage());
         }
     }
 
     @Override
-    public Workspace getWorkspace(String occupationId) {
+    public Workspace getWorkspace(String jobPositionId) {
         Actor actor = requireActor();
-        Scope scope = scope(actor, occupationId);
-        var occupation = catalog.findAvailableOccupation(actor.organizationId(), scope.occupationId())
-                .orElseThrow(() -> failure(Code.NOT_FOUND, "Occupation is unavailable"));
+        Scope scope = scope(actor, jobPositionId);
+        var jobPosition = catalog.findAvailableJobPosition(actor.organizationId(), scope.jobPositionId())
+                .orElseThrow(() -> failure(Code.NOT_FOUND, "JobPosition is unavailable"));
         Optional<SeriesSnapshot> snapshot = management.findByScope(scope);
         if (snapshot.isEmpty()) {
-            return new Workspace(scope.occupationId(), occupation.name(), null, null, List.of(), List.of());
+            return new Workspace(scope.jobPositionId(), jobPosition.name(), null, null, List.of(), List.of());
         }
         SeriesSnapshot series = snapshot.orElseThrow();
         WorkingRevision working = series.workingRevisionId() == null ? null
                 : management.findWorkingRevision(scope, series.workingRevisionId())
                         .map(this::toWorking).orElse(null);
-        return new Workspace(scope.occupationId(), occupation.name(), series, working,
+        return new Workspace(scope.jobPositionId(), jobPosition.name(), series, working,
                 management.findBlueprintVersions(scope).stream()
                         .map(value -> new BlueprintVersionSummary(
                                 value.blueprintId(), value.version(), value.name(),
@@ -145,21 +145,21 @@ public class BaselineAssessmentManagementService implements BaselineAssessmentMa
     }
 
     @Override
-    public WorkingRevision startBlueprintRevision(String occupationId, String idempotencyKey) {
+    public WorkingRevision startBlueprintRevision(String jobPositionId, String idempotencyKey) {
         Actor actor = requireActor();
-        Scope scope = scope(actor, occupationId);
+        Scope scope = scope(actor, jobPositionId);
         String key = requireText(idempotencyKey, "idempotencyKey");
-        String requestHash = hash("START_REVISION", scope.occupationId());
+        String requestHash = hash("START_REVISION", scope.jobPositionId());
         Optional<WorkingRevision> replay = replay(scope, actor, key, "START_REVISION",
                 requestHash, WorkingRevision.class);
         if (replay.isPresent()) return replay.orElseThrow();
 
-        var occupation = catalog.findAvailableOccupation(actor.organizationId(), scope.occupationId())
-                .orElseThrow(() -> failure(Code.NOT_FOUND, "Occupation is unavailable"));
-        Optional<BaselineBlueprint> latest = blueprints.findLatestByOccupation(
-                actor.organizationId(), scope.occupationId());
+        var jobPosition = catalog.findAvailableJobPosition(actor.organizationId(), scope.jobPositionId())
+                .orElseThrow(() -> failure(Code.NOT_FOUND, "JobPosition is unavailable"));
+        Optional<BaselineBlueprint> latest = blueprints.findLatestByJobPosition(
+                actor.organizationId(), scope.jobPositionId());
         UUID blueprintId = latest.map(BaselineBlueprint::blueprintId).orElseGet(() ->
-                UUID.nameUUIDFromBytes((scope.organizationId() + ":" + scope.occupationId())
+                UUID.nameUUIDFromBytes((scope.organizationId() + ":" + scope.jobPositionId())
                         .getBytes(StandardCharsets.UTF_8)));
         SeriesSnapshot series = latest.isPresent()
                 ? management.lockOrCreate(scope, blueprintId)
@@ -171,10 +171,10 @@ public class BaselineAssessmentManagementService implements BaselineAssessmentMa
         UUID workingId = UUID.nameUUIDFromBytes(
                 (actor.accountId() + ":" + key).getBytes(StandardCharsets.UTF_8));
         BlueprintDraft initial = latest.map(this::toDraft)
-                .orElseGet(() -> emptyDraft(occupation));
+                .orElseGet(() -> emptyDraft(jobPosition));
         WorkingRevisionRecord stored = management.insertWorkingRevision(new NewWorkingRevision(
                 workingId, scope, blueprintId, latest.map(BaselineBlueprint::version).orElse(null),
-                initial.name(), initial.occupationNameSnapshot(), initial.roles(),
+                initial.name(), initial.jobPositionNameSnapshot(), initial.roles(),
                 actor.accountId(), now()));
         management.update(new Update(scope, series.seriesRevision(), workingId, null, null,
                 series.activeRelease(), Transition.WORKING_REVISION_STARTED,
@@ -201,12 +201,12 @@ public class BaselineAssessmentManagementService implements BaselineAssessmentMa
         if (replay.isPresent()) return replay.orElseThrow();
         applyPolicy(() -> BaselineAssessmentLifecycle.saveBlueprintRevision(
                 series, workingRevisionId, expectedRevision));
-        if (!scope.occupationId().equals(draft.occupationId())) {
-            throw failure(Code.INVALID_REQUEST, "Working Blueprint cannot change Occupation");
+        if (!scope.jobPositionId().equals(draft.jobPositionId())) {
+            throw failure(Code.INVALID_REQUEST, "Working Blueprint cannot change JobPosition");
         }
         WorkingRevisionRecord saved = management.saveWorkingRevision(new SaveWorkingRevision(
                 scope, workingRevisionId, expectedRevision, draft.name(),
-                draft.occupationNameSnapshot(), draft.roles(), actor.accountId(), now()));
+                draft.jobPositionNameSnapshot(), draft.roles(), actor.accountId(), now()));
         management.update(new Update(scope, series.seriesRevision(), workingRevisionId,
                 null, null, series.activeRelease(), Transition.WORKING_REVISION_SAVED,
                 actor.accountId(), now(), null));
@@ -237,11 +237,11 @@ public class BaselineAssessmentManagementService implements BaselineAssessmentMa
             throw failure(Code.STALE_WORKING_REVISION, "Working Blueprint revision is stale");
         }
         BlueprintDraft validated = validate(actor, new BlueprintDraft(
-                working.name(), scope.occupationId(), working.occupationNameSnapshot(), working.roles()));
+                working.name(), scope.jobPositionId(), working.jobPositionNameSnapshot(), working.roles()));
         int version = working.baseVersion() == null ? 1 : Math.addExact(working.baseVersion(), 1);
         BaselineBlueprint blueprint = new BaselineBlueprint(
-                working.blueprintId(), version, validated.name(), validated.occupationId(),
-                validated.occupationNameSnapshot(), actor.accountId(), key, requestHash,
+                working.blueprintId(), version, validated.name(), validated.jobPositionId(),
+                validated.jobPositionNameSnapshot(), actor.accountId(), key, requestHash,
                 now(), validated.roles());
         blueprints.insert(actor.organizationId(), blueprint);
         management.update(new Update(scope, series.seriesRevision(), null,
@@ -257,9 +257,9 @@ public class BaselineAssessmentManagementService implements BaselineAssessmentMa
 
     @Override
     public BaselineAssessmentDraft generateAssessmentDraft(
-            String occupationId, String idempotencyKey) {
+            String jobPositionId, String idempotencyKey) {
         Actor actor = requireActor();
-        Scope scope = scope(actor, occupationId);
+        Scope scope = scope(actor, jobPositionId);
         String key = requireText(idempotencyKey, "idempotencyKey");
         SeriesSnapshot series = lock(scope);
         if (series.pendingBlueprint() == null) {
@@ -389,13 +389,13 @@ public class BaselineAssessmentManagementService implements BaselineAssessmentMa
         management.update(new Update(scope, series.seriesRevision(), series.workingRevisionId(),
                 series.pendingBlueprint(), series.openCandidate(), null,
                 Transition.ACTIVE_ASSESSMENT_DISABLED, actor.accountId(), now(), requireReason(reason)));
-        return getWorkspace(scope.occupationId());
+        return getWorkspace(scope.jobPositionId());
     }
 
     @Override
-    public Workspace abandonPendingChange(String occupationId, String reason) {
+    public Workspace abandonPendingChange(String jobPositionId, String reason) {
         Actor actor = requireActor();
-        Scope scope = scope(actor, occupationId);
+        Scope scope = scope(actor, jobPositionId);
         SeriesSnapshot series = lock(scope);
         applyPolicy(() -> BaselineAssessmentLifecycle.abandonPendingChange(series));
         management.update(new Update(scope, series.seriesRevision(), null, null, null,
@@ -412,7 +412,7 @@ public class BaselineAssessmentManagementService implements BaselineAssessmentMa
             drafts.closeCandidate(actor.organizationId(),
                     series.openCandidate().assessment().assessmentVersionId());
         }
-        return getWorkspace(scope.occupationId());
+        return getWorkspace(scope.jobPositionId());
     }
 
     private BaselineAssessmentDraft cloneCandidate(
@@ -466,11 +466,11 @@ public class BaselineAssessmentManagementService implements BaselineAssessmentMa
                 .orElseThrow(() -> failure(Code.NOT_FOUND, "Baseline assessment version was not found"));
     }
 
-    private OccupationSummary toSummary(
-            UUID organizationId, BaselineOccupationCatalogPort.CatalogOccupationSummary occupation) {
+    private JobPositionSummary toSummary(
+            UUID organizationId, BaselineJobPositionCatalogPort.CatalogJobPositionSummary jobPosition) {
         Optional<SeriesSnapshot> series = management.findByScope(
-                new Scope(organizationId, occupation.id()));
-        return new OccupationSummary(occupation.id(), occupation.name(),
+                new Scope(organizationId, jobPosition.id()));
+        return new JobPositionSummary(jobPosition.id(), jobPosition.name(),
                 series.flatMap(value -> management.findBlueprintVersions(value.scope()).stream().findFirst())
                         .map(BaselineAssessmentManagementStore.BlueprintVersionRecord::version).orElse(null),
                 series.map(value -> value.pendingStage().name()).orElse("NONE"),
@@ -482,14 +482,14 @@ public class BaselineAssessmentManagementService implements BaselineAssessmentMa
                         .map(value -> value.assessment().version()).orElse(null), null);
     }
 
-    private static Comparator<OccupationSummary> summaryComparator(String sort) {
-        Comparator<OccupationSummary> byName = Comparator.comparing(
-                OccupationSummary::occupationName, String.CASE_INSENSITIVE_ORDER)
-                .thenComparing(OccupationSummary::occupationId);
+    private static Comparator<JobPositionSummary> summaryComparator(String sort) {
+        Comparator<JobPositionSummary> byName = Comparator.comparing(
+                JobPositionSummary::jobPositionName, String.CASE_INSENSITIVE_ORDER)
+                .thenComparing(JobPositionSummary::jobPositionId);
         return "name_desc".equalsIgnoreCase(sort) ? byName.reversed() : byName;
     }
 
-    private static String status(OccupationSummary value) {
+    private static String status(JobPositionSummary value) {
         if (value.openAssessmentVersion() != null) return value.openAssessmentState();
         if (value.pendingStage() != null && !"NONE".equals(value.pendingStage())) return value.pendingStage();
         if (value.activeAssessmentVersion() != null) return "ACTIVE";
@@ -510,25 +510,25 @@ public class BaselineAssessmentManagementService implements BaselineAssessmentMa
         return "CLOSED".equals(candidateState) ? "ABANDONED" : publicationState;
     }
 
-    private BlueprintDraft emptyDraft(BaselineOccupationCatalogPort.CatalogOccupation occupation) {
-        List<RoleConfig> roles = occupation.roles().stream().map(role -> new RoleConfig(
+    private BlueprintDraft emptyDraft(BaselineJobPositionCatalogPort.CatalogJobPosition jobPosition) {
+        List<RoleConfig> roles = jobPosition.roles().stream().map(role -> new RoleConfig(
                 role.id(), role.name(), false, ZERO_EASY, ZERO_MEDIUM, ZERO_HARD,
                 role.skills().stream().map(skill -> new SkillConfig(
                         skill.id(), skill.name(), 0, 0, 0)).toList())).toList();
-        return new BlueprintDraft("Baseline assessment - " + occupation.name(),
-                occupation.id(), occupation.name(), roles);
+        return new BlueprintDraft("Baseline assessment - " + jobPosition.name(),
+                jobPosition.id(), jobPosition.name(), roles);
     }
 
     private BlueprintDraft toDraft(BaselineBlueprint value) {
-        return new BlueprintDraft(value.name(), value.occupationId(),
-                value.occupationNameSnapshot(), value.roles());
+        return new BlueprintDraft(value.name(), value.jobPositionId(),
+                value.jobPositionNameSnapshot(), value.roles());
     }
 
     private WorkingRevision toWorking(WorkingRevisionRecord value) {
         return new WorkingRevision(value.workingRevisionId(), value.blueprintId(),
                 value.baseVersion(), value.revision(), new BlueprintDraft(
-                        value.name(), value.scope().occupationId(),
-                        value.occupationNameSnapshot(), value.roles()), value.updatedAt());
+                        value.name(), value.scope().jobPositionId(),
+                        value.jobPositionNameSnapshot(), value.roles()), value.updatedAt());
     }
 
     private BlueprintDraft validate(Actor actor, BlueprintDraft draft) {
@@ -566,8 +566,8 @@ public class BaselineAssessmentManagementService implements BaselineAssessmentMa
         return actor;
     }
 
-    private Scope scope(Actor actor, String occupationId) {
-        return new Scope(organizationId(actor), requireText(occupationId, "occupationId"));
+    private Scope scope(Actor actor, String jobPositionId) {
+        return new Scope(organizationId(actor), requireText(jobPositionId, "jobPositionId"));
     }
 
     private static UUID organizationId(Actor actor) {

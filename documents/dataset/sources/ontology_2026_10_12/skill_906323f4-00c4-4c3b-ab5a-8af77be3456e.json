@@ -243,32 +243,32 @@
           "skillType": "http://data.europa.eu/esco/skill-type/skill"
         }
       ],
-      "isEssentialForOccupation": [
+      "isEssentialForJob Position": [
         {
-          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/35553663-deab-4d9a-bf22-15c1625d28e8&language=en",
-          "uri": "http://data.europa.eu/esco/occupation/35553663-deab-4d9a-bf22-15c1625d28e8",
+          "href": "https://ec.europa.eu/esco/api/resource/job position?uri=http://data.europa.eu/esco/job position/35553663-deab-4d9a-bf22-15c1625d28e8&language=en",
+          "uri": "http://data.europa.eu/esco/job position/35553663-deab-4d9a-bf22-15c1625d28e8",
           "title": "artificial intelligence engineer"
         },
         {
-          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/1562c7a3-c7d9-419d-b9b6-db26610bcf84&language=en",
-          "uri": "http://data.europa.eu/esco/occupation/1562c7a3-c7d9-419d-b9b6-db26610bcf84",
+          "href": "https://ec.europa.eu/esco/api/resource/job position?uri=http://data.europa.eu/esco/job position/1562c7a3-c7d9-419d-b9b6-db26610bcf84&language=en",
+          "uri": "http://data.europa.eu/esco/job position/1562c7a3-c7d9-419d-b9b6-db26610bcf84",
           "title": "data warehouse designer"
         },
         {
-          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/2079755f-d809-49e6-8037-4de6180e54c0&language=en",
-          "uri": "http://data.europa.eu/esco/occupation/2079755f-d809-49e6-8037-4de6180e54c0",
+          "href": "https://ec.europa.eu/esco/api/resource/job position?uri=http://data.europa.eu/esco/job position/2079755f-d809-49e6-8037-4de6180e54c0&language=en",
+          "uri": "http://data.europa.eu/esco/job position/2079755f-d809-49e6-8037-4de6180e54c0",
           "title": "data engineer"
         },
         {
-          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/8d9ec84d-cf2d-4179-87bc-335cda54a427&language=en",
-          "uri": "http://data.europa.eu/esco/occupation/8d9ec84d-cf2d-4179-87bc-335cda54a427",
+          "href": "https://ec.europa.eu/esco/api/resource/job position?uri=http://data.europa.eu/esco/job position/8d9ec84d-cf2d-4179-87bc-335cda54a427&language=en",
+          "uri": "http://data.europa.eu/esco/job position/8d9ec84d-cf2d-4179-87bc-335cda54a427",
           "title": "database designer"
         }
       ],
-      "isOptionalForOccupation": [
+      "isOptionalForJob Position": [
         {
-          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/8213b4bc-60ce-4ffc-9e00-9758fb2003c6&language=en",
-          "uri": "http://data.europa.eu/esco/occupation/8213b4bc-60ce-4ffc-9e00-9758fb2003c6",
+          "href": "https://ec.europa.eu/esco/api/resource/job position?uri=http://data.europa.eu/esco/job position/8213b4bc-60ce-4ffc-9e00-9758fb2003c6&language=en",
+          "uri": "http://data.europa.eu/esco/job position/8213b4bc-60ce-4ffc-9e00-9758fb2003c6",
           "title": "monitoring and evaluation officer"
         }
       ]

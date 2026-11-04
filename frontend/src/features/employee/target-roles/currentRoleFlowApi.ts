@@ -1,6 +1,6 @@
 export interface CurrentSkill { id: string; code: string | null; name: string; requiredScore: number; mandatory: boolean }
 export interface CurrentLevel { id: string; code: string; name: string; rank: number; context: string; attainmentRule: string; skills: CurrentSkill[] }
-export interface CurrentRole { id: string; code: string; name: string; scope: string; occupationId: string; occupationName: string; catalogVersion: string; fingerprint: string; levels: CurrentLevel[] }
+export interface CurrentRole { id: string; code: string; name: string; scope: string; jobPositionId: string; jobPositionName: string; catalogVersion: string; fingerprint: string; levels: CurrentLevel[] }
 export interface CurrentSelection { selectionId: string; role: CurrentRole; revision: number; selectedAt: string; available: boolean; levelId?: string | null }
 export interface RoleProgress { state: string; requiredCount: number; coveredCount: number; attemptId: string | null; baselineVersion: number | null }
 export interface RoleFlowView { selection: CurrentSelection | null; progress: RoleProgress }
@@ -17,7 +17,7 @@ const bool = (v: unknown) => { if (typeof v !== 'boolean') throw Error(); return
 const array = <T>(v: unknown, parse: (x: unknown) => T) => { if (!Array.isArray(v)) throw Error(); return v.map(parse) }
 function role(value: unknown): CurrentRole {
   const r = object(value)
-  return { id: text(r.id), code: text(r.code), name: text(r.name), scope: text(r.scope), occupationId: text(r.occupationId), occupationName: text(r.occupationName), catalogVersion: text(r.catalogVersion), fingerprint: text(r.fingerprint),
+  return { id: text(r.id), code: text(r.code), name: text(r.name), scope: text(r.scope), jobPositionId: text(r.jobPositionId), jobPositionName: text(r.jobPositionName), catalogVersion: text(r.catalogVersion), fingerprint: text(r.fingerprint),
     levels: array(r.levels, value => { const l = object(value); return { id: text(l.id), code: text(l.code), name: text(l.name), rank: num(l.rank), context: text(l.context), attainmentRule: text(l.attainmentRule),
       skills: array(l.skills, value => { const s = object(value); return { id: text(s.id), code: s.code === null || s.code === undefined ? null : text(s.code), name: text(s.name), requiredScore: num(s.requiredScore), mandatory: bool(s.mandatory) } }) } }) }
 }
@@ -40,10 +40,10 @@ export const readRoleFlow = (signal?: AbortSignal) => request('target-role-selec
   return { selection: data.selection === null ? null : selection(data.selection), progress: { state: text(p.state), requiredCount: num(p.requiredCount), coveredCount: num(p.coveredCount), attemptId: p.attemptId === null ? null : text(p.attemptId), baselineVersion: p.baselineVersion === null ? null : num(p.baselineVersion) } } satisfies RoleFlowView
 })
 export interface RoleChoiceCommand { body: string; key: string }
-export interface MasteryProfile { occupationId: string; occupationName: string; attemptId: string; baselineVersion: number; initializedAt: string; skills: { id: string; name: string; mastery: number; confidence: string }[] }
+export interface MasteryProfile { jobPositionId: string; jobPositionName: string; attemptId: string; baselineVersion: number; initializedAt: string; skills: { id: string; name: string; mastery: number; confidence: string }[] }
 export const readMyMastery = (signal?: AbortSignal) => request('target-role-selection/mastery', { method: 'GET', signal }, value => array(value, value => {
   const p = object(value)
-  return { occupationId: text(p.occupationId), occupationName: text(p.occupationName), attemptId: text(p.attemptId), baselineVersion: num(p.baselineVersion), initializedAt: text(p.initializedAt),
+  return { jobPositionId: text(p.jobPositionId), jobPositionName: text(p.jobPositionName), attemptId: text(p.attemptId), baselineVersion: num(p.baselineVersion), initializedAt: text(p.initializedAt),
     skills: array(p.skills, value => { const s = object(value), mastery = num(s.mastery), confidence = text(s.confidence)
       if (mastery < 0 || mastery > 1 || !['LOW', 'MEDIUM', 'HIGH'].includes(confidence)) throw Error()
       return { id: text(s.id), name: text(s.name), mastery, confidence }

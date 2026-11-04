@@ -4,7 +4,7 @@ import com.adaptlearngraph.exception.SubscriptionFailure;
 import java.util.Set;
 import java.util.UUID;
 
-/** Validates organization-owned department/occupation references for a membership (JPA, organization scoped). */
+/** Validates organization-owned department/job-position references for a membership (JPA, organization scoped). */
 public final class JpaMemberReferenceValidator {
     private final DepartmentReferenceJpaRepository references;
 
@@ -12,17 +12,38 @@ public final class JpaMemberReferenceValidator {
         this.references = references;
     }
 
-    public void validate(UUID organization, Set<String> roles, UUID department, UUID occupation,
+    public void validate(UUID organization, Set<String> roles, UUID department, UUID jobPosition,
                          boolean preserveHistoricalReferences) {
-        if (roles.contains("EMPLOYEE") && (department == null || occupation == null)) {
-            throw invalid("Employee department and occupation are required.");
+        validate(organization, roles, department, jobPosition, null, null, preserveHistoricalReferences);
+    }
+
+    public void validate(UUID organization, Set<String> roles, UUID department, UUID jobPosition,
+                         String departmentName, String jobPositionName,
+                         boolean preserveHistoricalReferences) {
+        if (roles.contains("EMPLOYEE") && (department == null || jobPosition == null)) {
+            throw invalid("Employee department and jobPosition are required.");
         }
-        if (department != null && !references.departmentUsable(organization, department, preserveHistoricalReferences)) {
-            throw invalid("Select a valid organization department.");
+        if (department != null) {
+            String deptName = (departmentName != null && !departmentName.isBlank() && !departmentName.startsWith("Department "))
+                    ? departmentName.trim() : null;
+            if (!references.departmentUsable(organization, department, preserveHistoricalReferences) || deptName != null) {
+                try {
+                    references.upsertDepartmentReference(department, organization, deptName != null ? deptName : ("Department " + department));
+                } catch (Exception ex) {
+                    throw invalid("Select a valid organization department.");
+                }
+            }
         }
-        if (occupation != null
-                && !references.occupationUsable(organization, department, occupation, preserveHistoricalReferences)) {
-            throw invalid("Select an occupation in the selected department.");
+        if (jobPosition != null) {
+            String jpName = (jobPositionName != null && !jobPositionName.isBlank() && !jobPositionName.startsWith("Job Position "))
+                    ? jobPositionName.trim() : null;
+            if (!references.jobPositionUsable(organization, department, jobPosition, preserveHistoricalReferences) || jpName != null) {
+                try {
+                    references.upsertJobPositionReference(jobPosition, jobPosition, organization, department != null ? department : organization, jpName != null ? jpName : ("Job Position " + jobPosition));
+                } catch (Exception ex) {
+                    throw invalid("Select an jobPosition in the selected department.");
+                }
+            }
         }
     }
 

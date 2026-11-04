@@ -4,7 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.adaptlearngraph.constants.TransactionManagers;
 import com.adaptlearngraph.entities.MicroSkillNode;
-import com.adaptlearngraph.entities.OccupationNode;
+import com.adaptlearngraph.entities.JobPositionNode;
 import com.adaptlearngraph.repository.MicroSkillNodeRepository;
 import jakarta.persistence.EntityManager;
 import java.util.UUID;
@@ -117,7 +117,7 @@ class PersistenceConfigurationIntegrationTest {
     @Test
     void graphRepositoriesAreScannedForNodeClassesAndJoinTheGraphTransaction() {
         assertThat(graphMapping.hasPersistentEntityFor(MicroSkillNode.class)).isTrue();
-        assertThat(graphMapping.hasPersistentEntityFor(OccupationNode.class)).isTrue();
+        assertThat(graphMapping.hasPersistentEntityFor(JobPositionNode.class)).isTrue();
         String organization = UUID.randomUUID().toString();
         new TransactionTemplate(graph).executeWithoutResult(status -> {
             neo4j.query("CREATE (:MicroSkill {id: $id, organizationId: $organization, code: 'PROBE'})")

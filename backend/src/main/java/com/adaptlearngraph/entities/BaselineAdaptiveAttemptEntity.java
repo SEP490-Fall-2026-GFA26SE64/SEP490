@@ -24,8 +24,8 @@ public class BaselineAdaptiveAttemptEntity {
     private UUID organizationId;
     @Column(name = "learner_id", nullable = false)
     private UUID learnerId;
-    @Column(name = "occupation_id", nullable = false)
-    private String occupationId;
+    @Column(name = "job_position_id", nullable = false)
+    private String jobPositionId;
     @Column(name = "attempt_purpose", nullable = false)
     private String attemptPurpose;
     @Column(name = "target_role_id")
@@ -78,11 +78,11 @@ public class BaselineAdaptiveAttemptEntity {
     }
 
     @SuppressWarnings("java:S107")
-    public BaselineAdaptiveAttemptEntity(UUID attemptId, UUID organizationId, UUID learnerId, String occupationId, String attemptPurpose, String targetRoleId, Long targetSelectionRevision, UUID blueprintId, Integer blueprintVersion, UUID modelVersionId, UUID masteryMappingVersionId, UUID parameterSetId, String catalogFingerprint, Integer maxQuestions, Integer timeLimitSeconds, String state, Long revision, Instant startedAt, Instant deadlineAt, Instant finishedAt, String completionReason, UUID replacesAttemptId, String scopePolicy, String assessmentPolicyMode, UUID assessmentPolicyVersionId, String assessmentPolicyHash, String assessmentPolicySnapshot) {
+    public BaselineAdaptiveAttemptEntity(UUID attemptId, UUID organizationId, UUID learnerId, String jobPositionId, String attemptPurpose, String targetRoleId, Long targetSelectionRevision, UUID blueprintId, Integer blueprintVersion, UUID modelVersionId, UUID masteryMappingVersionId, UUID parameterSetId, String catalogFingerprint, Integer maxQuestions, Integer timeLimitSeconds, String state, Long revision, Instant startedAt, Instant deadlineAt, Instant finishedAt, String completionReason, UUID replacesAttemptId, String scopePolicy, String assessmentPolicyMode, UUID assessmentPolicyVersionId, String assessmentPolicyHash, String assessmentPolicySnapshot) {
         this.attemptId = attemptId;
         this.organizationId = organizationId;
         this.learnerId = learnerId;
-        this.occupationId = occupationId;
+        this.jobPositionId = jobPositionId;
         this.attemptPurpose = attemptPurpose;
         this.targetRoleId = targetRoleId;
         this.targetSelectionRevision = targetSelectionRevision;
@@ -111,7 +111,7 @@ public class BaselineAdaptiveAttemptEntity {
     public UUID getAttemptId() { return attemptId; }
     public UUID getOrganizationId() { return organizationId; }
     public UUID getLearnerId() { return learnerId; }
-    public String getOccupationId() { return occupationId; }
+    public String getJobPositionId() { return jobPositionId; }
     public String getAttemptPurpose() { return attemptPurpose; }
     public String getTargetRoleId() { return targetRoleId; }
     public Long getTargetSelectionRevision() { return targetSelectionRevision; }

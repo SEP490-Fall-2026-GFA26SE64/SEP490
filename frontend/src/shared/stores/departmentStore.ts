@@ -7,84 +7,101 @@ export interface DepartmentRecord {
   description: string
   headOfDepartment: string
   headEmail: string
-  targetHeadcount: number
-  linkedOccupations: string[]
+  status: 'active' | 'inactive'
+  targetHeadcount?: number
+  linkedJobPositions: string[]
   organizationId: string
   createdAt: string
+  updatedAt?: string
 }
 
-const STORAGE_KEY_DEPARTMENTS = 'adaptlearn_departments_v1'
+const STORAGE_KEY_DEPARTMENTS = 'adaptlearn_departments_v2'
+const STORAGE_KEY_DEPARTMENTS_LEGACY = 'adaptlearn_departments_v1'
 
 export const INITIAL_DEPARTMENTS: DepartmentRecord[] = [
   {
-    id: 'dept-ml',
-    code: 'ML-CA',
-    name: 'Machine Learning & Cognitive Architecture',
-    description: 'Specializes in graph neural networks, knowledge tracing algorithms, and generative AI systems.',
-    headOfDepartment: 'Dr. Sarah Chen',
-    headEmail: 'expert-chen@adaptlearn.internal',
-    targetHeadcount: 15,
-    linkedOccupations: ['15-1252.00 (Software Developers)', '15-1221.00 (Computer and Information Research Scientists)'],
-    organizationId: 'comp-technova',
-    createdAt: '2026-01-15',
-  },
-  {
-    id: 'dept-talent',
-    code: 'ETD',
-    name: 'Enterprise Talent Development',
-    description: 'Designs competency matrices, organizational upskilling roadmaps, and training ROI evaluations.',
-    headOfDepartment: 'Sarah Connor',
-    headEmail: 'sarah.connor@adaptlearn.internal',
-    targetHeadcount: 10,
-    linkedOccupations: ['11-3131.00 (Training and Development Managers)'],
-    organizationId: 'comp-technova',
-    createdAt: '2026-01-15',
-  },
-  {
-    id: 'dept-backend',
-    code: 'BE-ENG',
-    name: 'Backend Engineering',
-    description: 'Builds scalable Spring Boot distributed microservices, PostgreSQL transactions, and Neo4j graph storage.',
+    id: 'dept-eng-swe',
+    code: 'ENG-SWE',
+    name: 'Software Engineering',
+    description: 'Core distributed systems, hexagonal microservices, and web applications.',
     headOfDepartment: 'Marcus Vance',
-    headEmail: 'marcus.vance@adaptlearn.internal',
-    targetHeadcount: 20,
-    linkedOccupations: ['15-1252.00 (Software Developers)'],
-    organizationId: 'comp-technova',
-    createdAt: '2026-01-20',
+    headEmail: 'marcus.vance@technova.com',
+    status: 'active',
+    linkedJobPositions: ['15-1252.00'],
+    organizationId: 'e0000000-0000-0000-0000-000000000001',
+    createdAt: '2026-11-04',
   },
   {
-    id: 'dept-data',
-    code: 'DATA-ANA',
-    name: 'Data & Analytics',
-    description: 'Manages ETL data ingestion, reporting cubes, and organizational skill telemetry metrics.',
-    headOfDepartment: 'Chloe Bennett',
-    headEmail: 'chloe.bennett@adaptlearn.internal',
-    targetHeadcount: 12,
-    linkedOccupations: ['15-2051.00 (Data Scientists)'],
-    organizationId: 'comp-technova',
-    createdAt: '2026-02-01',
+    id: 'dept-eng-data',
+    code: 'ENG-DATA',
+    name: 'Data & Artificial Intelligence',
+    description: 'Data pipelines, analytics warehouses, and cognitive knowledge models.',
+    headOfDepartment: 'Marcus Vance',
+    headEmail: 'marcus.vance@technova.com',
+    status: 'active',
+    linkedJobPositions: ['15-1243.00'],
+    organizationId: 'e0000000-0000-0000-0000-000000000001',
+    createdAt: '2026-11-04',
   },
   {
-    id: 'dept-cloud',
-    code: 'CLOUD-SRE',
-    name: 'Cloud Infrastructure & SRE',
-    description: 'Docker Compose orchestration, MinIO storage quotas, and platform high availability.',
-    headOfDepartment: 'Jordan Parker',
-    headEmail: 'jordan.parker@adaptlearn.internal',
-    targetHeadcount: 10,
-    linkedOccupations: ['15-1244.00 (Network and Computer Systems Administrators)'],
-    organizationId: 'comp-technova',
-    createdAt: '2026-02-10',
+    id: 'dept-eng-qa',
+    code: 'ENG-QA',
+    name: 'Quality Engineering & Assurance',
+    description: 'Automated test suites, Playwright verification, and quality gates.',
+    headOfDepartment: 'Dr. Sarah Chen',
+    headEmail: 'sarah.chen@technova.com',
+    status: 'active',
+    linkedJobPositions: ['15-1253.00'],
+    organizationId: 'e0000000-0000-0000-0000-000000000001',
+    createdAt: '2026-11-04',
+  },
+  {
+    id: 'dept-eng-cloud',
+    code: 'ENG-CLOUD',
+    name: 'Cloud Infrastructure & DevOps',
+    description: 'Cloud systems architecture, container orchestration, and CI/CD pipelines.',
+    headOfDepartment: 'Alex Rivera',
+    headEmail: 'alex.rivera@technova.com',
+    status: 'active',
+    linkedJobPositions: ['15-1299.08'],
+    organizationId: 'e0000000-0000-0000-0000-000000000001',
+    createdAt: '2026-11-04',
+  },
+  {
+    id: 'dept-eng-sec',
+    code: 'ENG-SEC',
+    name: 'Cybersecurity & Compliance',
+    description: 'Zero-trust architecture, security auditing, and compliance governance.',
+    headOfDepartment: 'Dr. Sarah Chen',
+    headEmail: 'sarah.chen@technova.com',
+    status: 'active',
+    linkedJobPositions: ['15-1212.00'],
+    organizationId: 'e0000000-0000-0000-0000-000000000001',
+    createdAt: '2026-11-04',
   },
 ]
 
 export function loadDepartments(): DepartmentRecord[] {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY_DEPARTMENTS)
+    const raw =
+      localStorage.getItem(STORAGE_KEY_DEPARTMENTS) ||
+      localStorage.getItem(STORAGE_KEY_DEPARTMENTS_LEGACY)
     if (raw) {
       const parsed = JSON.parse(raw)
       if (Array.isArray(parsed) && parsed.length > 0) {
-        return parsed
+        return parsed.map((d: Partial<DepartmentRecord>) => ({
+          id: d.id || `dept-${d.code?.toLowerCase() || 'item'}`,
+          code: d.code || '',
+          name: d.name || '',
+          description: d.description || '',
+          headOfDepartment: d.headOfDepartment || '',
+          headEmail: d.headEmail || '',
+          status: d.status === 'inactive' ? 'inactive' : 'active',
+          linkedJobPositions: Array.isArray(d.linkedJobPositions) ? d.linkedJobPositions : [],
+          organizationId: d.organizationId || 'e0000000-0000-0000-0000-000000000001',
+          createdAt: d.createdAt || '2026-11-04',
+          updatedAt: d.updatedAt,
+        }))
       }
     }
   } catch (e) {
@@ -96,7 +113,9 @@ export function loadDepartments(): DepartmentRecord[] {
 
 export function saveDepartments(departments: DepartmentRecord[]) {
   try {
-    localStorage.setItem(STORAGE_KEY_DEPARTMENTS, JSON.stringify(departments))
+    const serialized = JSON.stringify(departments)
+    localStorage.setItem(STORAGE_KEY_DEPARTMENTS, serialized)
+    localStorage.setItem(STORAGE_KEY_DEPARTMENTS_LEGACY, serialized)
     window.dispatchEvent(new Event('departments_updated'))
   } catch (e) {
     console.error('Failed to save departments:', e)
@@ -108,10 +127,13 @@ export function createDepartment(
 ): DepartmentRecord {
   const current = loadDepartments()
   const activeComp = getActiveCompany()
+  const codeClean = data.code.trim().toUpperCase()
   const newDept: DepartmentRecord = {
     ...data,
-    id: `dept-${Date.now().toString(36)}`,
-    organizationId: activeComp.id,
+    code: codeClean,
+    id: `dept-${codeClean.toLowerCase().replace(/[^a-z0-9]/g, '-')}`,
+    organizationId: activeComp.id || 'e0000000-0000-0000-0000-000000000001',
+    status: data.status || 'active',
     createdAt: new Date().toISOString().slice(0, 10),
   }
   saveDepartments([newDept, ...current])
@@ -120,13 +142,22 @@ export function createDepartment(
 
 export function updateDepartment(id: string, updates: Partial<DepartmentRecord>) {
   const current = loadDepartments()
-  const updated = current.map((d) => (d.id === id ? { ...d, ...updates } : d))
+  const updated = current.map((d) =>
+    d.id === id || d.code === id
+      ? {
+          ...d,
+          ...updates,
+          code: updates.code ? updates.code.trim().toUpperCase() : d.code,
+          updatedAt: new Date().toISOString(),
+        }
+      : d
+  )
   saveDepartments(updated)
 }
 
 export function deleteDepartment(id: string) {
   const current = loadDepartments()
-  const updated = current.filter((d) => d.id !== id)
+  const updated = current.filter((d) => d.id !== id && d.code !== id)
   saveDepartments(updated)
 }
 

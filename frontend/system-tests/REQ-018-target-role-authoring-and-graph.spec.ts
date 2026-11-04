@@ -59,9 +59,9 @@ test.describe('Capstone Standard: REQ-017 & REQ-018 Target Roles & Competency On
     await closeBtn.first().click()
     await expect(detailsDialog).toHaveCount(0)
 
-    // Navigate to Occupations Management
-    await page.goto('/ld-manager/occupations')
-    await expect(page.getByText('Occupations Directory')).toBeVisible()
+    // Navigate to JobPositions Management
+    await page.goto('/ld-manager/job-positions')
+    await expect(page.getByText('JobPositions Directory')).toBeVisible()
 
     // Check Assign Experts modal
     const manageExpertsBtn = page.locator('button[title*="Assign Domain Experts"]').first()

@@ -12,20 +12,20 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Fixed Blueprint working revisions of one organization Occupation series. Saves and closes are scoped revision
+ * Fixed Blueprint working revisions of one organization JobPosition series. Saves and closes are scoped revision
  * compare-and-set updates returning their exact row count; the closed-revision trigger stays authoritative.
  */
 public interface BaselineBlueprintWorkingRevisionJpaRepository
         extends Repository<BaselineBlueprintWorkingRevisionEntity, UUID>,
         InsertOnlyRepository<BaselineBlueprintWorkingRevisionEntity> {
 
-    record Row(UUID workingRevisionId, UUID organizationId, String occupationId, UUID blueprintId, Integer baseVersion,
-               Long revision, String name, String occupationNameSnapshot, String roles, String state, Instant createdAt,
+    record Row(UUID workingRevisionId, UUID organizationId, String jobPositionId, UUID blueprintId, Integer baseVersion,
+               Long revision, String name, String jobPositionNameSnapshot, String roles, String state, Instant createdAt,
                Instant updatedAt) {}
 
     @Query("""
             select new com.adaptlearngraph.repository.BaselineAssessmentSeriesJpaRepository$ScopeRow(w.organizationId,
-                w.occupationId)
+                w.jobPositionId)
             from BaselineBlueprintWorkingRevisionEntity w
             where w.organizationId = :org and w.workingRevisionId = :working
             """)
@@ -34,26 +34,26 @@ public interface BaselineBlueprintWorkingRevisionJpaRepository
 
     @Query("""
             select new com.adaptlearngraph.repository.BaselineBlueprintWorkingRevisionJpaRepository$Row(w.workingRevisionId,
-                w.organizationId, w.occupationId, w.blueprintId, w.baseVersion, w.revision, w.name, w.occupationNameSnapshot,
+                w.organizationId, w.jobPositionId, w.blueprintId, w.baseVersion, w.revision, w.name, w.jobPositionNameSnapshot,
                 w.roles, w.state, w.createdAt, w.updatedAt)
             from BaselineBlueprintWorkingRevisionEntity w
-            where w.organizationId = :org and w.occupationId = :occupation and w.workingRevisionId = :working
+            where w.organizationId = :org and w.jobPositionId = :jobPosition and w.workingRevisionId = :working
             """)
-    List<Row> find(@Param("org") UUID organizationId, @Param("occupation") String occupationId,
+    List<Row> find(@Param("org") UUID organizationId, @Param("jobPosition") String jobPositionId,
             @Param("working") UUID workingRevisionId);
 
     @Modifying(flushAutomatically = true, clearAutomatically = true)
     @Transactional(TransactionManagers.JPA)
     @Query("""
             update BaselineBlueprintWorkingRevisionEntity w
-            set w.revision = w.revision + 1, w.name = :name, w.occupationNameSnapshot = :occupationName, w.roles = :roles,
+            set w.revision = w.revision + 1, w.name = :name, w.jobPositionNameSnapshot = :jobPositionName, w.roles = :roles,
                 w.updatedBy = :actor, w.updatedAt = :time
-            where w.organizationId = :org and w.occupationId = :occupation and w.workingRevisionId = :working
+            where w.organizationId = :org and w.jobPositionId = :jobPosition and w.workingRevisionId = :working
               and w.revision = :expected and w.state = 'OPEN'
             """)
-    int save(@Param("org") UUID organizationId, @Param("occupation") String occupationId,
+    int save(@Param("org") UUID organizationId, @Param("jobPosition") String jobPositionId,
             @Param("working") UUID workingRevisionId, @Param("expected") long expectedRevision, @Param("name") String name,
-            @Param("occupationName") String occupationNameSnapshot, @Param("roles") String roles, @Param("actor") UUID actorId,
+            @Param("jobPositionName") String jobPositionNameSnapshot, @Param("roles") String roles, @Param("actor") UUID actorId,
             @Param("time") Instant time);
 
     @Modifying(flushAutomatically = true, clearAutomatically = true)
@@ -61,10 +61,10 @@ public interface BaselineBlueprintWorkingRevisionJpaRepository
     @Query("""
             update BaselineBlueprintWorkingRevisionEntity w
             set w.revision = w.revision + 1, w.state = :state, w.updatedBy = :actor, w.updatedAt = :time, w.closedAt = :time
-            where w.organizationId = :org and w.occupationId = :occupation and w.workingRevisionId = :working
+            where w.organizationId = :org and w.jobPositionId = :jobPosition and w.workingRevisionId = :working
               and w.revision = :expected and w.state = 'OPEN'
             """)
-    int close(@Param("org") UUID organizationId, @Param("occupation") String occupationId,
+    int close(@Param("org") UUID organizationId, @Param("jobPosition") String jobPositionId,
             @Param("working") UUID workingRevisionId, @Param("expected") long expectedRevision, @Param("state") String state,
             @Param("actor") UUID actorId, @Param("time") Instant time);
 }

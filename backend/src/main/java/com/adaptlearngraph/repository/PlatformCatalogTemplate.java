@@ -17,7 +17,7 @@ import java.util.Map;
 /** Immutable platform ontology template (the pinned seed file) that organizations may copy from. */
 public final class PlatformCatalogTemplate {
     public static final Map<String, String> GROUP_LABELS = Map.of(
-            "Occupations", "Occupation",
+            "JobPositions", "JobPosition",
             "TargetRoles", "TargetRole",
             "Levels", "Level",
             "Competencies", "Competency",

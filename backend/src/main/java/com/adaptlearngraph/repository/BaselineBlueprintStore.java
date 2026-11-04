@@ -12,13 +12,13 @@ public interface BaselineBlueprintStore {
         return findLatest(blueprintId);
     }
 
-    default Optional<BaselineBlueprint> findLatestByOccupation(String occupationId) {
+    default Optional<BaselineBlueprint> findLatestByJobPosition(String jobPositionId) {
         return Optional.empty();
     }
 
-    default Optional<BaselineBlueprint> findLatestByOccupation(
-            String organizationId, String occupationId) {
-        return findLatestByOccupation(occupationId);
+    default Optional<BaselineBlueprint> findLatestByJobPosition(
+            String organizationId, String jobPositionId) {
+        return findLatestByJobPosition(jobPositionId);
     }
 
     Optional<BaselineBlueprint> findVersion(UUID blueprintId, int version);

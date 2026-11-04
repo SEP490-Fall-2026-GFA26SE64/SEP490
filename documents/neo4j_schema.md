@@ -12,7 +12,7 @@
 
 [File PlantUML](diagrams/neo4j.puml) · [Khung và nguồn dữ liệu](dataset/ONTOLOGY.md) · [Hướng dẫn import](dataset/NEO4J_IMPORT_GUIDE.md)
 
-Catalog uses stable string Role/Occupation IDs and separate Levels. PostgreSQL owns learner selection, profiles, assessment evidence and pathway state; Neo4j owns catalog only. Existing attempts retain their original catalog/model pins. The source v0.11 release does not prove an existing database has been upgraded.
+Catalog uses stable string Role/Job Position IDs and separate Levels. PostgreSQL owns learner selection, profiles, assessment evidence and pathway state; Neo4j owns catalog only. Existing attempts retain their original catalog/model pins. The source v0.11 release does not prove an existing database has been upgraded.
 
 
 
@@ -20,11 +20,11 @@ Catalog uses stable string Role/Occupation IDs and separate Levels. PostgreSQL o
 
 
 
-**Ranh giới baseline đã chốt22/10/2026:** baseline mới đánh giá hợp MicroSkill của tất cả Role đang hoạt động trong Occupation, khử trùng theo ID; không tạo bài/pool riêng theo Role. Catalog adapter phải trả membership/version được phép qua port và phát hiện drift; quy tắc publication authoritative còn phụ thuộc chủ Catalog. PostgreSQL giữ Blueprint, snapshot đã pin, attempt, deadline, kết quả, mastery và lifecycle projection; không thêm learner/Retiring/pathway state vào Neo4j. Đây là đồng bộ contract, không sửa node/relationship/property hay import dữ liệu. Xem [thiết kế dữ liệu baseline](technical/baseline/Adaptive%20Baseline%20Data%20Architecture.md).
+**Ranh giới baseline đã chốt22/10/2026:** baseline mới đánh giá hợp MicroSkill của tất cả Role đang hoạt động trong Job Position, khử trùng theo ID; không tạo bài/pool riêng theo Role. Catalog adapter phải trả membership/version được phép qua port và phát hiện drift; quy tắc publication authoritative còn phụ thuộc chủ Catalog. PostgreSQL giữ Blueprint, snapshot đã pin, attempt, deadline, kết quả, mastery và lifecycle projection; không thêm learner/Retiring/pathway state vào Neo4j. Đây là đồng bộ contract, không sửa node/relationship/property hay import dữ liệu. Xem [thiết kế dữ liệu baseline](technical/baseline/Adaptive%20Baseline%20Data%20Architecture.md).
 
 
 
-Schema gồm **6 loại node và 7 loại relationship**. Course được loại khỏi schema; LearningModule là đơn vị nội dung được chọn vào pathway. Dataset Excel, JSON và bộ import đã đồng bộ sang v0.11.0.
+Schema gồm **7 loại node và 8 loại relationship**. Course được loại khỏi schema; LearningModule là đơn vị nội dung được chọn vào pathway. Dataset Excel, JSON và bộ import đã đồng bộ sang v0.11.0.
 
 
 
@@ -32,7 +32,9 @@ Schema gồm **6 loại node và 7 loại relationship**. Course được loại
 
 flowchart LR
 
- O[Occupation] -->|HAS_ROLE| R[TargetRole]
+ D[Department] -->|HAS_JOB_POSITION| JP[JobPosition]
+
+ JP[JobPosition] -->|HAS_ROLE| R[TargetRole]
 
  R -->|HAS_LEVEL| L[Level]
 
@@ -54,7 +56,9 @@ flowchart LR
 
 |---|---|---|
 
-| `HAS_ROLE` | Occupation → TargetRole | Một nghề có nhiều chức danh; mỗi TargetRole thuộc đúng một Occupation. |
+| `HAS_JOB_POSITION` | Department → JobPosition | Một phòng ban có nhiều vị trí công việc; mỗi vị trí công việc thuộc về một phòng ban chủ quản. |
+
+| `HAS_ROLE` | JobPosition → TargetRole | Một vị trí công việc có nhiều chức danh; mỗi TargetRole thuộc đúng một JobPosition. |
 
 | `HAS_LEVEL` | TargetRole → Level | Một role có nhiều cấp độ; mỗi Level thuộc đúng một role. Dataset hiện có Junior, Middle, Senior cho mỗi role. |
 
@@ -112,11 +116,30 @@ Neo4j không lưu property có giá trị null; bộ import bỏ các field null
 
 
 
-### 3.1. Occupation — Nghề nghiệp
+### 3.0. Department — Phòng ban
+
+Department là đơn vị tổ chức/phòng ban trong doanh nghiệp (node label :Department), ví dụ `Software Engineering`, mã `ENG-SWE`. Phòng ban quản lý tập hợp các vị trí công việc (Job Positions) và hỗ trợ phân nhóm năng lực, nhân sự cũng như theo dõi báo cáo ROI đào tạo theo phòng ban.
+
+| Field | Kiểu | Ý nghĩa |
+|---|---|---|
+| `id` | String | Mã định danh duy nhất (UUID), ví dụ `dept-eng-swe`. Unique toàn hệ thống. |
+| `code` | String | Mã viết tắt của phòng ban, ví dụ `ENG-SWE`, `ENG-DATA`, `ENG-SEC`. Unique theo `organizationId`. |
+| `name` | String | Tên đầy đủ của phòng ban, ví dụ `Software Engineering`. |
+| `description` | String | Tóm tắt mục tiêu, phạm vi hoạt động chuyên môn của phòng ban. |
+| `headOfDepartment` | String | Tên trưởng phòng / lãnh đạo phụ trách phòng ban. |
+| `headEmail` | String | Email của lãnh đạo phòng ban. |
+| `organizationId` | String | Định danh tổ chức sở hữu phòng ban (đảm bảo multi-tenancy). |
+| `status` | String | Trạng thái hoạt động (`ACTIVE` hoặc `INACTIVE`). |
+| `createdAt` | String | Thời gian tạo (ISO-8601). |
+| `updatedAt` | String | Thời gian cập nhật gần nhất (ISO-8601). |
 
 
 
-Occupation là nghề theo O*NET, ví dụ `Software Developers`, mã `15-1252.00`. Nó là điểm neo để truy nguyên các reported job title và hồ sơ sở thích nghề nghiệp.
+### 3.1. JobPosition — Vị trí công việc (Refactored from Job Position)
+
+
+
+JobPosition là vị trí công việc theo O*NET hoặc chuẩn tổ chức (node label :JobPosition, tương thích :Job Position), ví dụ `Software Developers`, mã `15-1252.00`. Nó là điểm neo để truy nguyên các reported job title và hồ sơ sở thích nghề nghiệp.
 
 
 
@@ -156,7 +179,7 @@ Kết quả RIASEC của learner phải lưu riêng theo learner, công cụ/phi
 
 
 
-TargetRole biểu diễn chức danh người học hướng tới trong một Occupation, ví dụ `Application Developer`.
+TargetRole biểu diễn chức danh người học hướng tới trong một Job Position, ví dụ `Application Developer`.
 
 
 
@@ -164,7 +187,7 @@ TargetRole biểu diễn chức danh người học hướng tới trong một O
 
 |---|---|---|
 
-| `code` | String | Mã role ổn định và duy nhất trong catalog. Các role cùng tên thuộc hai Occupation có mã riêng. |
+| `code` | String | Mã role ổn định và duy nhất trong catalog. Các role cùng tên thuộc hai Job Position có mã riêng. |
 
 | `name` | String | Tên chức danh, hiện lấy từ “Sample of reported job titles” của O*NET. |
 
@@ -174,7 +197,7 @@ TargetRole biểu diễn chức danh người học hướng tới trong một O
 
 
 
-`occupationId` xuất hiện trong Excel/JSON để nối dữ liệu. Sau import, quan hệ `Occupation → HAS_ROLE → TargetRole` biểu diễn ownership; `occupationId` không được lưu trên node.
+`job positionId` xuất hiện trong Excel/JSON để nối dữ liệu. Sau import, quan hệ `Job Position → HAS_ROLE → TargetRole` biểu diễn ownership; `job positionId` không được lưu trên node.
 
 
 
@@ -414,7 +437,7 @@ Xem [quy tắc assessment và minh chứng](dataset/ONTOLOGY.md#assessment-calcu
 
 |---|---|---|
 
-| `TargetRoles.occupationId` | Occupation → HAS_ROLE → TargetRole | Bỏ field khỏi node; dùng cạnh để truy vấn nghề sở hữu. |
+| `TargetRoles.job positionId` | Job Position → HAS_ROLE → TargetRole | Bỏ field khỏi node; dùng cạnh để truy vấn nghề sở hữu. |
 
 | `Levels.targetRoleId` | TargetRole → HAS_LEVEL → Level | Bỏ field khỏi node; dùng cạnh để truy vấn role sở hữu. |
 
@@ -422,7 +445,7 @@ Xem [quy tắc assessment và minh chứng](dataset/ONTOLOGY.md#assessment-calcu
 
 
 
-Importer từ chối liên kết thiếu/sai thay vì tự suy đoán. Sau import, quan hệ graph là nguồn chính thức cho truy vấn cấu trúc. Sáu field RIASEC là property nghiệp vụ thực sự trên Occupation.
+Importer từ chối liên kết thiếu/sai thay vì tự suy đoán. Sau import, quan hệ graph là nguồn chính thức cho truy vấn cấu trúc. Sáu field RIASEC là property nghiệp vụ thực sự trên Job Position.
 
 
 
@@ -430,9 +453,9 @@ Importer từ chối liên kết thiếu/sai thay vì tự suy đoán. Sau impor
 
 
 
-- Mỗi TargetRole thuộc đúng một Occupation; mỗi Level thuộc một role; mỗi Competency thuộc một Level.
+- Mỗi TargetRole thuộc đúng một Job Position; mỗi Level thuộc một role; mỗi Competency thuộc một Level.
 
-- Role cùng tên trong các Occupation khác nhau có ID/code riêng. Không đặt ràng buộc tên role duy nhất toàn hệ thống.
+- Role cùng tên trong các Job Position khác nhau có ID/code riêng. Không đặt ràng buộc tên role duy nhất toàn hệ thống.
 
 - Mỗi Competency hiện có ít nhất hai skill; mọi skill thành viên có requirement tại Level sở hữu. Tập skill bắt buộc để đạt Level phải có ít nhất một phần tử.
 
@@ -474,11 +497,11 @@ Importer từ chối liên kết thiếu/sai thay vì tự suy đoán. Sau impor
 
 
 
-O*NET cung cấp Occupation, sample job titles và điểm sở thích nghề nghiệp. ESCO hỗ trợ đối chiếu định nghĩa skill; SFIA và UK hỗ trợ phạm vi công việc và mức tự chủ. Các grouping, tier, task, prerequisite và ngưỡng điểm là đề xuất của nhóm cần chuyên gia xác nhận.
+O*NET cung cấp Job Position, sample job titles và điểm sở thích nghề nghiệp. ESCO hỗ trợ đối chiếu định nghĩa skill; SFIA và UK hỗ trợ phạm vi công việc và mức tự chủ. Các grouping, tier, task, prerequisite và ngưỡng điểm là đề xuất của nhóm cần chuyên gia xác nhận.
 
 
 
-[JSON seed](dataset/import/ontology_seed-v011.json) và [Excel review](dataset/ontology_dataset.xlsx) có **994 node, 5.121 relationship**: 5 Occupation, 48 TargetRole, 144 Level, 472 Competency, 79 MicroSkill, 246 LearningModule. Có 11 prerequisite skill; không còn Course. Schema, dataset và import đã đồng bộ v0.11. Backend legacy API và database đang chạy chưa được chuyển dữ liệu; xem ranh giới runtime trong [ARCHITECTURE.md](ARCHITECTURE.md). Learner assessment trong quá khứ giữ ngữ cảnh catalog và rubric gốc.
+[JSON seed](dataset/import/ontology_seed-v011.json) và [Excel review](dataset/ontology_dataset.xlsx) có **994 node, 5.121 relationship**: 5 Job Position, 48 TargetRole, 144 Level, 472 Competency, 79 MicroSkill, 246 LearningModule. Có 11 prerequisite skill; không còn Course. Schema, dataset và import đã đồng bộ v0.11. Backend legacy API và database đang chạy chưa được chuyển dữ liệu; xem ranh giới runtime trong [ARCHITECTURE.md](ARCHITECTURE.md). Learner assessment trong quá khứ giữ ngữ cảnh catalog và rubric gốc.
 
 
 
@@ -498,7 +521,7 @@ Mọi node và relationship đều có metadata chung: `id`, `version`, `status`
 
 |---|---|
 
-| Occupation | code, name, jobZone, interestRealistic, interestInvestigative, interestArtistic, interestSocial, interestEnterprising, interestConventional |
+| Job Position | code, name, jobZone, interestRealistic, interestInvestigative, interestArtistic, interestSocial, interestEnterprising, interestConventional |
 
 | TargetRole | code, name, scope |
 
@@ -588,7 +611,7 @@ Expected: no rows. This is a manual procedure; no live runtime database is chang
 
 ### Question Bank authoring boundary — 2026-10-30
 
-Question banks, question versions, protected answers, review/assignment history, import receipts and notifications are PostgreSQL-owned. No QuestionBank/Question graph node or new relation is introduced. Authoring resolves exactly one currently active approved MicroSkill and snapshots its name per version. It does not attach exclusive Occupation ownership or infer IRT calibration/mastery. Existing Module/assessment/baseline references are preserved. See ARCHITECTURE.md, Question Bank authoring R2; actual verification remains in dedicated REQ-014 evidence.
+Question banks, question versions, protected answers, review/assignment history, import receipts and notifications are PostgreSQL-owned. No QuestionBank/Question graph node or new relation is introduced. Authoring resolves exactly one currently active approved MicroSkill and snapshots its name per version. It does not attach exclusive Job Position ownership or infer IRT calibration/mastery. Existing Module/assessment/baseline references are preserved. See ARCHITECTURE.md, Question Bank authoring R2; actual verification remains in dedicated REQ-014 evidence.
 
 
 Question Bank bulk-approval feedback (2026-10-30) is a frontend-only change. No Neo4j labels, properties, relationships, or catalog eligibility rules were changed.
@@ -597,7 +620,7 @@ Question Bank automatic codes (2026-11-01): Q-UUID generation and creation-only 
 
 ## Merged Module and content boundary — 2026-11-01
 
-The v0.11 catalog remains authoritative: six node types, seven relationship types, thirteen LearningModule properties and eight TEACHES properties. Module-to-skill coverage remains many-to-many with exactly one PRIMARY skill per Module. No Occupation relationship or new graph field is introduced. PostgreSQL owns the responsible Expert, intake, immutable revisions, numbered Text/Video lessons, review history, content-version pins and progress; MinIO owns private bytes. Mixed lesson manifests use `module-content:<content-id>`, `application/vnd.adapt-learning.lessons+json` and their immutable contentVersion. Legacy Markdown remains readable. New creation/import is skill-based; historical occupation tags confer no editing rights. Manual test assignment is retired; actual generated-pathway approval and live entry/version/prerequisite checks authorize learning.
+The v0.11 catalog remains authoritative: six node types, seven relationship types, thirteen LearningModule properties and eight TEACHES properties. Module-to-skill coverage remains many-to-many with exactly one PRIMARY skill per Module. No Job Position relationship or new graph field is introduced. PostgreSQL owns the responsible Expert, intake, immutable revisions, numbered Text/Video lessons, review history, content-version pins and progress; MinIO owns private bytes. Mixed lesson manifests use `module-content:<content-id>`, `application/vnd.adapt-learning.lessons+json` and their immutable contentVersion. Legacy Markdown remains readable. New creation/import is skill-based; historical job position tags confer no editing rights. Manual test assignment is retired; actual generated-pathway approval and live entry/version/prerequisite checks authorize learning.
 
 [Historical runtime/import notes](technical/module-management-history/neo4j-runtime-notes.md) retain earlier environment counts and dated refinements. [Current merge verification](testing/integration/REQ-013-014-merge-resolution.md) distinguishes disposable-store tests from the existing8088 deployment. No graph import or schema change was performed in this merge. The first full-artifact startup unexpectedly ran main's local bootstrap and changed48 TargetRole ownership/assignment properties. The user-authorized recovery restored only the three seed assignment properties from the verified historical snapshot; all other properties were unchanged. API restarted with both seeds disabled;48/48 Role property maps remained matched after restart. See [recovery evidence](testing/system/REQ-013-014-merge-resolution.md#authorized-seed-recovery-and-restart--2026-11-01).
 

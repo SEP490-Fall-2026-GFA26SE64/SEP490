@@ -20,11 +20,11 @@ public final class AdaptiveAttemptView {
             var options = presented.optionOrder().stream().map(id -> new Option(id, item.options().get(id))).toList();
             return new Presented(presented.position(), item.id(), item.prompt(), options, responses.get(presented.position()));
         }).toList();
-        return new View(attempt.id(), attempt.scope().occupationId(), attempt.snapshot().blueprint().occupationNameSnapshot(),
+        return new View(attempt.id(), attempt.scope().jobPositionId(), attempt.snapshot().blueprint().jobPositionNameSnapshot(),
                 attempt.snapshot().purpose().name(), attempt.snapshot().roleId().orElse(null), attempt.status().name(),
                 attempt.revision(), attempt.startedAt(), attempt.deadlineAt(), observedAt, !observedAt.isBefore(attempt.deadlineAt()),
                 attempt.snapshot().bounds().maxQuestions(), progress.responses().size(), items,
-                attempt.snapshot().blueprint().configuration().occupationBounds() != null ? AssessmentScope.OCCUPATION
-                        : attempt.snapshot().roleId().isPresent() ? AssessmentScope.EARLIER_ROLE : AssessmentScope.EARLIER_OCCUPATION);
+                attempt.snapshot().blueprint().configuration().jobPositionBounds() != null ? AssessmentScope.JOB_POSITION
+                        : attempt.snapshot().roleId().isPresent() ? AssessmentScope.EARLIER_ROLE : AssessmentScope.EARLIER_JOB_POSITION);
     }
 }

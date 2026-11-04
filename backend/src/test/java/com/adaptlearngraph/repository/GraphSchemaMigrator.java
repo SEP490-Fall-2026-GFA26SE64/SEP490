@@ -27,8 +27,9 @@ public final class GraphSchemaMigrator {
             for (String filename : List.of(
                     "V1__catalog_constraints.cypher",
                     "V2__role_centred_ontology_constraints.cypher",
-                    "V3__occupation_constraints.cypher",
-                    "V4__module_centred_ontology_constraints.cypher")) {
+                    "V3__job_position_constraints.cypher",
+                    "V4__module_centred_ontology_constraints.cypher",
+                    "V5__job_position_constraints.cypher")) {
                 String script;
                 try (var stream = new ClassPathResource("db/neo4j/" + filename).getInputStream()) {
                     script = new String(stream.readAllBytes(), StandardCharsets.UTF_8).replace("\r\n", "\n");

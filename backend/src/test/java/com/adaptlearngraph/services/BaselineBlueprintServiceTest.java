@@ -9,7 +9,7 @@ import com.adaptlearngraph.services.BaselineBlueprintUseCase.Failure;
 import com.adaptlearngraph.repository.BaselineBlueprintStore;
 import com.adaptlearngraph.repository.BaselineBlueprintStore.Actor;
 import com.adaptlearngraph.repository.BaselineBlueprintValidationPort;
-import com.adaptlearngraph.repository.BaselineBlueprintValidationPort.CatalogOccupation;
+import com.adaptlearngraph.repository.BaselineBlueprintValidationPort.CatalogJobPosition;
 import com.adaptlearngraph.repository.BaselineBlueprintValidationPort.CatalogRole;
 import com.adaptlearngraph.repository.BaselineBlueprintValidationPort.CatalogSkill;
 import com.adaptlearngraph.repository.BaselineBlueprintValidationPort.CoverageKey;
@@ -33,7 +33,7 @@ import org.junit.jupiter.api.Test;
 class BaselineBlueprintServiceTest {
     private static final UUID ACTOR_ID = UUID.fromString("00000000-0000-0000-0000-000000000101");
     private static final String ORGANIZATION_ID = "org-alpha";
-    private static final String OCCUPATION_ID = "occupation-engineering";
+    private static final String JOB_POSITION_ID = "jobPosition-engineering";
     private static final String ROLE_ID = "role-java";
     private static final String SKILL_ID = "skill-java";
     private static final Instant NOW = Instant.parse("2026-10-14T15:00:00Z");
@@ -91,7 +91,7 @@ class BaselineBlueprintServiceTest {
     }
 
     @Test
-    void rejectsAllZeroOccupationBeforeCoverageLookup() {
+    void rejectsAllZeroJobPositionBeforeCoverageLookup() {
         var fixture = new Fixture();
 
         assertCode(Code.INVALID_REQUEST, () -> fixture.service.create(
@@ -168,12 +168,12 @@ class BaselineBlueprintServiceTest {
     }
 
     private static BlueprintDraft draft(String name, int easy, int medium, int hard) {
-        return new BlueprintDraft(name, OCCUPATION_ID, "Client occupation",
+        return new BlueprintDraft(name, JOB_POSITION_ID, "Client jobPosition",
                 List.of(role(true, "Client snapshot", easy, medium, hard)));
     }
 
     private static BlueprintDraft draftWithWeights(String easy, String medium, String hard) {
-        return new BlueprintDraft("Weighted role", OCCUPATION_ID, "Client occupation",
+        return new BlueprintDraft("Weighted role", JOB_POSITION_ID, "Client jobPosition",
                 List.of(roleWithWeights(true, "Client snapshot", 1, 1, 1, easy, medium, hard)));
     }
 
@@ -227,9 +227,9 @@ class BaselineBlueprintServiceTest {
         }
 
         @Override
-        public Optional<BaselineBlueprint> findLatestByOccupation(String occupationId) {
+        public Optional<BaselineBlueprint> findLatestByJobPosition(String jobPositionId) {
             return inserted.stream()
-                    .filter(item -> occupationId.equals(item.occupationId()))
+                    .filter(item -> jobPositionId.equals(item.jobPositionId()))
                     .max(java.util.Comparator.comparingInt(BaselineBlueprint::version));
         }
 
@@ -275,15 +275,15 @@ class BaselineBlueprintServiceTest {
         }
 
         @Override
-        public Optional<CatalogOccupation> findAvailableOccupation(String organizationId, String occupationId) {
+        public Optional<CatalogJobPosition> findAvailableJobPosition(String organizationId, String jobPositionId) {
             catalogCalls++;
             requestedOrganizationId = organizationId;
             if (failure != null) {
                 throw failure;
             }
-            return OCCUPATION_ID.equals(occupationId)
-                    ? Optional.of(new CatalogOccupation(
-                            OCCUPATION_ID, "Software Engineering", List.copyOf(roles.values())))
+            return JOB_POSITION_ID.equals(jobPositionId)
+                    ? Optional.of(new CatalogJobPosition(
+                            JOB_POSITION_ID, "Software Engineering", List.copyOf(roles.values())))
                     : Optional.empty();
         }
 

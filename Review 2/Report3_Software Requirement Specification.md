@@ -32,7 +32,7 @@
     - [3.3 Subscription Lifecycle](#33-subscription-lifecycle)
     - [3.4 Platform Administration](#34-platform-administration)
     - [3.5 Workspace Administration](#35-workspace-administration)
-    - [3.6 Departments and Occupations](#36-departments-and-occupations)
+    - [3.6 Departments and Job Positions](#36-departments-and-job positions)
     - [3.7 Role Catalog](#37-role-catalog)
     - [3.8 Learning Catalog](#38-learning-catalog)
     - [3.9 Assessment Workflows](#39-assessment-workflows)
@@ -115,7 +115,7 @@ The product addresses static course sequences, disconnected assessment and learn
 The release scope includes:
 
 1. Self-service organization registration, verification, subscription purchase and workspace provisioning.
-2. Platform oversight, organization membership and permissions, departments, occupations and Expert assignments.
+2. Platform oversight, organization membership and permissions, departments, job positions and Expert assignments.
 3. L&D-created roles, Expert-configured requirements, L&D publication, and learning-offering approval.
 4. Baseline and module assessments, RIASEC, competency profiles, role guidance and Employee role selection.
 5. Initial pathway review, adaptive learning, independent skill learning and progress tracking.
@@ -143,7 +143,7 @@ The System is the automated performer within the application boundary, not a sev
 | --- | --- | --- |
 | Onboarding and subscriptions | Purchase, provision, renew and enforce paid access | Connected API/persistence slices exist; live payment/inbox acceptance is not established by this report. |
 | Identity and membership | Trusted authentication and organization permissions | Real sessions, single-role membership, activation, seats and administrator MFA exist. General permission editing and all-feature authorization are incomplete. |
-| Department/occupation management | Persisted administration and Expert assignments | Member assignment uses stored references; management screens remain browser-oriented prototypes. |
+| Department/job position management | Persisted administration and Expert assignments | Member assignment uses stored references; management screens remain browser-oriented prototypes. |
 | Role/skill catalog | Assigned authoring followed by L&D publication | Legacy CRUD code exists but is gated by `catalog.legacy-api.enabled=true`; it is not the default production-safe authoring service. Existing Expert publication conflicts with Version 2. |
 | Baseline | Authorized configuration, delivery, scoring and results | Real workspace-baseline integration is explicitly local-profile-only and needs reviewed graph content, question bank and promoted model resources. |
 | Other learning and AI | Module/RIASEC evidence, guidance, mastery updates and adaptive pathways | Prototype screens and schema foundations do not constitute the complete learning engine. |
@@ -161,7 +161,7 @@ Evidence precedence is Version 2 for intended scope, later approved decisions fo
 | 1 | Guest | Registers an organization and initial administrator, compares plans, pays and tracks onboarding before workspace access. |
 | 2 | Platform Administrator | Manages platform organizations and existing subscription plans; monitors authorized platform-level activity. Not implicitly entitled to private employee answers or files. |
 | 3 | System Administrator | Organization administrator: manages accounts/memberships, roles, departments, workspace settings, subscription and permitted audit views. The current backend role code is `ORGANIZATION_ADMINISTRATOR`. |
-| 4 | L&D Manager | Manages occupations and Expert assignments, role creation/publication, baseline configuration, offering approval and development/ROI reporting. |
+| 4 | L&D Manager | Manages job positions and Expert assignments, role creation/publication, baseline configuration, offering approval and development/ROI reporting. |
 | 5 | Expert | Authors skills, requirements, prerequisites, modules and assessments in assigned scope; submits work to L&D and confirms initial learning pathways. |
 | 6 | Employee | Manages own profile, completes assessments, reviews guidance and gaps, chooses a role, learns and tracks own progress. |
 | 7 | System | Internal automated performer: authentication, payments, provisioning, entitlements, assessment evaluation, competency/guidance/pathway/report generation, email and audit. |
@@ -191,7 +191,7 @@ Evidence precedence is Version 2 for intended scope, later approved decisions fo
 - System Administrator participates in MFA authentication, which has an `«extend»` arrow toward Login. Its extension point is after primary credential verification and before establishing a fully authenticated session. Condition: the account is a System Administrator subject to the MFA policy. MFA is mandatory whenever that condition is true; this is not a user-selectable bypass. No MFA association is added to Authenticated User or Platform Administrator.
 - Login and Logout elaborate authentication behavior; Edit profile extends common self-service participation as requested on 1 November 2026. Change password is a user-requested diagram-level requirement and has not been implementation-verified by this documentation change. No new FR identifier or backend feature is introduced here.
 - Manage organization subscription does not unconditionally include payment: viewing details/history is distinct from its payment specialization. Authentication remains a precondition for protected business goals.
-- Department deletion is present because the source requires it. Account, occupation and micro-skill hard deletion is not invented: their specified deactivate operations remain distinct. All constraints and implementation limitations in the SRS still apply.
+- Department deletion is present because the source requires it. Account, job position and micro-skill hard deletion is not invented: their specified deactivate operations remain distinct. All constraints and implementation limitations in the SRS still apply.
 - PNG export uses the compact validated layout and a maximum of 8,192 pixels per side; the oversized 4x image was replaced. The image was decoded in a browser and checked for complete opaque output before publication. With 116 use cases on one overview, open the image at its original size for readable text; the SVG remains the best format for unlimited zoom.
 - Mermaid 12+ native `usecase-beta` syntax is used (currently beta). Hidden layout edges have no business meaning. The image contains 116 use-case ellipses, so use the full-size PNG/SVG for readable detail.
 - FR references remain in source comments and the specification catalog for traceability, not in displayed labels. The historical UC-A/UC-B/UC-C files are retained but are not the current overview. No information was copied from the reference image.
@@ -223,7 +223,7 @@ Evidence precedence is Version 2 for intended scope, later approved decisions fo
 
 ![ACT-05 - Main Flow for Adaptive Learning Pathway Generation and Recalculation](../documents/diagrams/mermaid/act-05.png)
 
-**Ordering boundary:** ACT-06 expresses the Version 2 guidance journey. The currently connected ACT-05 slice asks for a role selection to establish Occupation scope before baseline admission. It does not yet generate AI guidance or require an initial RIASEC result. A future guidance integration must reconcile these entry paths without rewriting existing selections or assessment history.
+**Ordering boundary:** ACT-06 expresses the Version 2 guidance journey. The currently connected ACT-05 slice asks for a role selection to establish Job Position scope before baseline admission. It does not yet generate AI guidance or require an initial RIASEC result. A future guidance integration must reconcile these entry paths without rewriting existing selections or assessment history.
 
 [Mermaid source: ACT-07](../documents/diagrams/mermaid/act-07.mmd)
 
@@ -286,7 +286,7 @@ Evidence precedence is Version 2 for intended scope, later approved decisions fo
 | 25 | Update Department | System Administrator | Save permitted department-detail changes without breaking existing references. | `UC0302Action3`; [FR-03.02](#fr-03-02); specializes `UC0302` |
 | 26 | Delete Department | System Administrator | Delete a department only under an approved policy that preserves or resolves existing references. | `UC0302Action4`; [FR-03.02](#fr-03-02); specializes `UC0302` |
 | 27 | Assign Employee to Department | System Administrator | Assign an organization Employee to a valid same-organization department. | `UC0302Action5`; [FR-03.02](#fr-03-02); specializes `UC0302` |
-| 28 | Reassign Employee Department | System Administrator | Move an Employee’s department assignment while preserving valid occupation links and history. | `UC0302Action6`; [FR-03.02](#fr-03-02); specializes `UC0302` |
+| 28 | Reassign Employee Department | System Administrator | Move an Employee’s department assignment while preserving valid job position links and history. | `UC0302Action6`; [FR-03.02](#fr-03-02); specializes `UC0302` |
 | 29 | Manage roles and permissions | System Administrator | Assign organization roles and manage permitted workspace access. | `UC0303`; [FR-03.03](#fr-03-03) |
 | 30 | Assign Organization Role | System Administrator | Assign the permitted organization-side role under the current single-role account policy. | `UC0303Action1`; [FR-03.03](#fr-03-03); specializes `UC0303` |
 | 31 | Remove Organization Role | System Administrator | Remove or replace a role assignment without violating the required administrator and single-role safeguards. | `UC0303Action2`; [FR-03.03](#fr-03-03); specializes `UC0303` |
@@ -303,15 +303,15 @@ Evidence precedence is Version 2 for intended scope, later approved decisions fo
 | 42 | View Payment History | System Administrator | Display payment orders and verified outcomes owned by the organization. | `UC0306Action3`; [FR-03.06](#fr-03-06); specializes `UC0306` |
 | 43 | Select Renewal Plan | System Administrator | Choose an existing subscription plan/version for the organization’s renewal. | `UC0306Action4`; [FR-03.06](#fr-03-06); specializes `UC0306` |
 | 44 | Pay for Subscription Renewal | System Administrator | Pay for selected renewal terms; apply verified payment only when period and capacity conditions permit. | `UC0306Action5`; [FR-03.06](#fr-03-06); specializes `UC0306` |
-| 45 | Manage occupations | L&D Manager | Manage occupation details, department associations and active availability within the organization. | `UC0401`; [FR-04.01](#fr-04-01) |
-| 46 | Create Occupation | L&D Manager | Create an organization occupation with its required valid department association. | `UC0401Action1`; [FR-04.01](#fr-04-01); specializes `UC0401` |
-| 47 | View Occupations | L&D Manager | Display occupations, department associations and availability within the permitted organization. | `UC0401Action2`; [FR-04.01](#fr-04-01); specializes `UC0401` |
-| 48 | Update Occupation | L&D Manager | Save authorized occupation-detail changes while preserving catalog and historical references. | `UC0401Action3`; [FR-04.01](#fr-04-01); specializes `UC0401` |
-| 49 | Deactivate Occupation | L&D Manager | Stop new occupation availability while retaining historical assignments, role selections and assessment evidence. | `UC0401Action4`; [FR-04.01](#fr-04-01); specializes `UC0401` |
-| 50 | Change Occupation Department | L&D Manager | Update an occupation’s association to a valid same-organization department. | `UC0401Action5`; [FR-04.01](#fr-04-01); specializes `UC0401` |
-| 51 | Assign Experts | L&D Manager | Assign or remove eligible Experts from occupations and view their current assignments. | `UC0402`; [FR-04.02](#fr-04-02) |
-| 52 | Manage target roles | L&D Manager | Create and update occupation target roles, assign Experts and monitor configuration status. | `UC0403`; [FR-04.03](#fr-04-03) |
-| 53 | Create Target Role | L&D Manager | Create a target-role draft within an authorized occupation; it is not selectable until published. | `UC0403Action1`; [FR-04.03](#fr-04-03); specializes `UC0403` |
+| 45 | Manage job positions | L&D Manager | Manage job position details, department associations and active availability within the organization. | `UC0401`; [FR-04.01](#fr-04-01) |
+| 46 | Create Job Position | L&D Manager | Create an organization job position with its required valid department association. | `UC0401Action1`; [FR-04.01](#fr-04-01); specializes `UC0401` |
+| 47 | View Job Positions | L&D Manager | Display job positions, department associations and availability within the permitted organization. | `UC0401Action2`; [FR-04.01](#fr-04-01); specializes `UC0401` |
+| 48 | Update Job Position | L&D Manager | Save authorized job position-detail changes while preserving catalog and historical references. | `UC0401Action3`; [FR-04.01](#fr-04-01); specializes `UC0401` |
+| 49 | Deactivate Job Position | L&D Manager | Stop new job position availability while retaining historical assignments, role selections and assessment evidence. | `UC0401Action4`; [FR-04.01](#fr-04-01); specializes `UC0401` |
+| 50 | Change Job Position Department | L&D Manager | Update an job position’s association to a valid same-organization department. | `UC0401Action5`; [FR-04.01](#fr-04-01); specializes `UC0401` |
+| 51 | Assign Experts | L&D Manager | Assign or remove eligible Experts from job positions and view their current assignments. | `UC0402`; [FR-04.02](#fr-04-02) |
+| 52 | Manage target roles | L&D Manager | Create and update job position target roles, assign Experts and monitor configuration status. | `UC0403`; [FR-04.03](#fr-04-03) |
+| 53 | Create Target Role | L&D Manager | Create a target-role draft within an authorized job position; it is not selectable until published. | `UC0403Action1`; [FR-04.03](#fr-04-03); specializes `UC0403` |
 | 54 | Update Target Role | L&D Manager | Save permitted role-detail changes without silently overwriting submitted requirements or historical selections. | `UC0403Action2`; [FR-04.03](#fr-04-03); specializes `UC0403` |
 | 55 | Assign Target Role to Expert | L&D Manager | Assign configuration responsibility to an eligible Expert within the authorized scope. | `UC0403Action3`; [FR-04.03](#fr-04-03); specializes `UC0403` |
 | 56 | Monitor Role Configuration Status | L&D Manager | Display the assigned role’s configuration and submission progress. | `UC0403Action4`; [FR-04.03](#fr-04-03); specializes `UC0403` |
@@ -321,12 +321,12 @@ Evidence precedence is Version 2 for intended scope, later approved decisions fo
 | 60 | Unpublish Target Role | L&D Manager | Remove a role’s current availability while preserving previous configurations and learner-selection history. | `UC0404Action3`; [FR-04.04](#fr-04-04); specializes `UC0404` |
 | 61 | Return Role Configuration for Revision | L&D Manager | Send a submitted configuration back to its Expert with actionable revision feedback. | `UC0404Action4`; [FR-04.04](#fr-04-04); specializes `UC0404` |
 | 62 | Manage baseline assessment configuration | L&D Manager | Configure baseline competency coverage, question selection and scoring rules. | `UC0405`; [FR-04.05](#fr-04-05) |
-| 63 | Configure Baseline Competency Coverage | L&D Manager | Choose the permitted Occupation competency/skill coverage for baseline assessment. | `UC0405Action1`; [FR-04.05](#fr-04-05); specializes `UC0405` |
+| 63 | Configure Baseline Competency Coverage | L&D Manager | Choose the permitted Job Position competency/skill coverage for baseline assessment. | `UC0405Action1`; [FR-04.05](#fr-04-05); specializes `UC0405` |
 | 64 | Configure Baseline Question Selection | L&D Manager | Save feasible baseline selection rules and question/time bounds without changing released attempt versions. | `UC0405Action2`; [FR-04.05](#fr-04-05); specializes `UC0405` |
 | 65 | Configure Baseline Scoring Rules | L&D Manager | Define validated baseline evaluation rules under the applicable versioned policy. | `UC0405Action3`; [FR-04.05](#fr-04-05); specializes `UC0405` |
 | 66 | Approve learning offerings | L&D Manager | Review a submitted module, content and assessment bundle, then approve or return it for revision. | `UC0406`; [FR-04.06](#fr-04-06) |
 | 67 | Monitor employee development | L&D Manager | View development and ROI summaries, filter reporting scope and maintain training cost/benefit records. | `UC0407`; [FR-04.07](#fr-04-07) |
-| 68 | Manage micro-skills | Expert | Manage micro-skill definitions, proficiency information and availability within assigned occupations. | `UC0501`; [FR-05.01](#fr-05-01) |
+| 68 | Manage micro-skills | Expert | Manage micro-skill definitions, proficiency information and availability within assigned job positions. | `UC0501`; [FR-05.01](#fr-05-01) |
 | 69 | Create Micro-skill | Expert | Create a stable skill definition and proficiency information in the Expert’s assigned scope. | `UC0501Action1`; [FR-05.01](#fr-05-01); specializes `UC0501` |
 | 70 | View Micro-skills | Expert | Browse permitted skill identities, definitions, proficiency information and availability. | `UC0501Action2`; [FR-05.01](#fr-05-01); specializes `UC0501` |
 | 71 | Update Micro-skill | Expert | Save authorized changes to a skill definition while preserving assessment references. | `UC0501Action3`; [FR-05.01](#fr-05-01); specializes `UC0501` |
@@ -397,14 +397,14 @@ Evidence precedence is Version 2 for intended scope, later approved decisions fo
 | [FR-03.04](#fr-03-04) | Manage system configuration | System Administrator | The System Administrator shall view and update organization profile details and workspace settings. |
 | [FR-03.05](#fr-03-05) | Monitor system activity | System Administrator | The System Administrator shall view workspace activity and audit records, including role and content changes, approvals, publications, assessment submissions, and pathway reviews. |
 | [FR-03.06](#fr-03-06) | Manage organization subscription | System Administrator | The System Administrator shall view subscription details, the paid period, allocated and used Employee seats, and payment history; select an existing plan for renewal; and pay to renew the subscription. |
-| [FR-04.01](#fr-04-01) | Manage occupations | L&D Manager | The L&D Manager shall create, view, update, and deactivate occupations, attach an occupation to a department during creation, and update its department association. |
-| [FR-04.02](#fr-04-02) | Assign Experts | L&D Manager | The L&D Manager shall assign or remove Experts from occupations and view their current assignments. |
-| [FR-04.03](#fr-04-03) | Manage target roles | L&D Manager | The L&D Manager shall create and update target role details within occupations, assign target roles to Experts, and monitor configuration status. |
+| [FR-04.01](#fr-04-01) | Manage job positions | L&D Manager | The L&D Manager shall create, view, update, and deactivate job positions, attach an job position to a department during creation, and update its department association. |
+| [FR-04.02](#fr-04-02) | Assign Experts | L&D Manager | The L&D Manager shall assign or remove Experts from job positions and view their current assignments. |
+| [FR-04.03](#fr-04-03) | Manage target roles | L&D Manager | The L&D Manager shall create and update target role details within job positions, assign target roles to Experts, and monitor configuration status. |
 | [FR-04.04](#fr-04-04) | Manage target role publication | L&D Manager | The L&D Manager shall review submitted target role configurations, publish or unpublish target roles, and return configurations to Experts for revision. |
 | [FR-04.05](#fr-04-05) | Manage baseline assessment configuration | L&D Manager | The L&D Manager shall configure baseline competency coverage, question-selection rules, and scoring rules. |
 | [FR-04.06](#fr-04-06) | Approve learning offerings | L&D Manager | The L&D Manager shall review submitted learning modules, learning content, and module assessments; approve them; or return them to Experts for revision. |
-| [FR-04.07](#fr-04-07) | Monitor employee development | L&D Manager | The L&D Manager shall view employee competency profiles, skill gaps, assessment outcomes, learning progress, training ROI, and department development summaries; filter results by department, occupation, and reporting period; and record or update training costs and monetary benefits with their period, currency, and supporting basis. |
-| [FR-05.01](#fr-05-01) | Manage micro-skills | Expert | The Expert shall create, view, update, and deactivate micro-skills within assigned occupations, including descriptions and proficiency levels. |
+| [FR-04.07](#fr-04-07) | Monitor employee development | L&D Manager | The L&D Manager shall view employee competency profiles, skill gaps, assessment outcomes, learning progress, training ROI, and department development summaries; filter results by department, job position, and reporting period; and record or update training costs and monetary benefits with their period, currency, and supporting basis. |
+| [FR-05.01](#fr-05-01) | Manage micro-skills | Expert | The Expert shall create, view, update, and deactivate micro-skills within assigned job positions, including descriptions and proficiency levels. |
 | [FR-05.02](#fr-05-02) | Manage role competency requirements | Expert | The Expert shall add or remove required competencies and micro-skills for assigned target roles and set required proficiency levels and relative importance. |
 | [FR-05.03](#fr-05-03) | Submit completed target role configurations | Expert | The Expert shall submit completed target role competency configurations to the L&D Manager and revise returned configurations. |
 | [FR-05.04](#fr-05-04) | Manage skill prerequisites | Expert | The Expert shall define, update, and remove prerequisite relationships between micro-skills. |
@@ -450,7 +450,7 @@ The five flows below reflect the current [router](../frontend/src/app/App.tsx), 
 - Diagram nodes and Screen Descriptions use **short screen names**, without URLs. Page/dialog shapes carry the notation rather than repeated "Dialog" labels. Route definitions remain in the linked router; in routing notes, `W` means `/workspace/:workspaceSlug`, as defined by [workspace paths](../frontend/src/shared/auth/workspacePaths.ts).
 - Sidebar choices are drawn once from the actor's default home for readability. They are sibling destinations, **not a required business sequence**. Actor-scoped pages using `WorkspaceLayout` share that navigation; dialog close/cancel returns to its owner page.
 - Registration steps, sign-in MFA/recovery, tabs, filters, profile forms and inline renewal/status panels remain inside their page. Aliases and Draft/version query parameters are not counted as new screens. Selected core dialogs are shown, not every import, metadata or warning overlay.
-- Default homes follow [role-home routing](../frontend/src/shared/auth/workspaceRole.ts): Expert target roles, L&D occupations, System Administrator subscription and Platform Administrator subscriptions. A validated `returnTo` can override the default after sign-in.
+- Default homes follow [role-home routing](../frontend/src/shared/auth/workspaceRole.ts): Expert target roles, L&D job positions, System Administrator subscription and Platform Administrator subscriptions. A validated `returnTo` can override the default after sign-in.
 - Route visibility is not an authorization grant. Trusted role, workspace, assignment, feature and entitlement guards can show blocked/unavailable states instead of page content.
 
 **Guest**
@@ -475,7 +475,7 @@ Pathway details are a routed page; role details/configuration and pathway checks
 
 ![SCREEN-LD-MANAGER - L&D Manager page and dialog flow](../documents/diagrams/mermaid/screen-flow-ld-manager.png)
 
-The Baseline Config menu alias leads to the baseline directory. Managing a selected Occupation opens its configuration page; Draft/released versions are page states, while baseline preview and lifecycle confirmations are real dialogs. `/ld-manager/dashboard` and `/ld-manager/learning-outcomes` render the same dashboard component. Legacy redirects to account administration or Expert authoring do not create L&D permissions.
+The Baseline Config menu alias leads to the baseline directory. Managing a selected Job Position opens its configuration page; Draft/released versions are page states, while baseline preview and lifecycle confirmations are real dialogs. `/ld-manager/dashboard` and `/ld-manager/learning-outcomes` render the same dashboard component. Legacy redirects to account administration or Expert authoring do not create L&D permissions.
 
 **System Administrator**
 
@@ -501,7 +501,7 @@ The active Organizations route uses `PlatformWorkspacePage`, not the older `Plat
 | Shared sidebar/profile/sign-out controls | [WorkspaceLayout](../frontend/src/shared/layouts/WorkspaceLayout.tsx), [SubscriptionShell](../frontend/src/shared/components/ui/SubscriptionShell.tsx). |
 | Guest steps, graph dialog and checkout/status actions | [GuestRegisterPage](../frontend/src/features/guest/GuestRegisterPage.tsx), [GuestCatalogPicker](../frontend/src/features/guest/GuestCatalogPicker.tsx), [GuestSubscriptionPage](../frontend/src/features/subscription/GuestSubscriptionPage.tsx), [PaymentStatusPanel](../frontend/src/features/subscription/PaymentStatusPanel.tsx). |
 | Expert page/detail and core dialogs | [Assigned roles](../frontend/src/features/expert/target-roles/ExpertAssignedRolesPage.tsx), [pathway details](../frontend/src/features/expert/pathway-review/ExpertPathwayDetailPage.tsx), [content authoring](../frontend/src/features/expert/content/LearningContentAuthoringPage.tsx), [modules](../frontend/src/features/manager/modules/LearningModulesPage.tsx), [assessment bank](../frontend/src/features/manager/assessment-bank/AssessmentBankPage.tsx), [ontology](../frontend/src/features/manager/ontology/CompetencyOntologyPage.tsx). |
-| L&D list/configuration and dialogs | [Occupations](../frontend/src/features/manager/occupations/OccupationsManagementPage.tsx), [target roles](../frontend/src/features/manager/target-roles/TargetRolesPage.tsx), [baseline directory](../frontend/src/features/manager/baseline-assessments/AdaptiveBaselineDirectory.tsx), [baseline configuration](../frontend/src/features/manager/baseline-assessments/AdaptiveBaselinePage.tsx), [baseline preview](../frontend/src/features/manager/baseline-assessments/AdaptiveAssessmentPreview.tsx), [approvals](../frontend/src/features/manager/approvals/ContentApprovalQueuePage.tsx). |
+| L&D list/configuration and dialogs | [Job Positions](../frontend/src/features/manager/job positions/Job PositionsManagementPage.tsx), [target roles](../frontend/src/features/manager/target-roles/TargetRolesPage.tsx), [baseline directory](../frontend/src/features/manager/baseline-assessments/AdaptiveBaselineDirectory.tsx), [baseline configuration](../frontend/src/features/manager/baseline-assessments/AdaptiveBaselinePage.tsx), [baseline preview](../frontend/src/features/manager/baseline-assessments/AdaptiveAssessmentPreview.tsx), [approvals](../frontend/src/features/manager/approvals/ContentApprovalQueuePage.tsx). |
 | Administrator member/department/billing screens | [User management](../frontend/src/features/administration/user-management/UserManagementPage.tsx), [departments](../frontend/src/features/administration/departments/DepartmentsManagementPage.tsx), [subscription](../frontend/src/features/administration/subscription/OrganizationSubscriptionPage.tsx). |
 | Active platform screens and plan dialog | [Platform workspace controls](../frontend/src/features/subscription/PlatformWorkspaceControls.tsx), [platform plans](../frontend/src/features/subscription/PlatformPlansPage.tsx), [platform activity](../frontend/src/features/platform-admin/PlatformActivityMonitoringPage.tsx). |
 
@@ -516,11 +516,11 @@ The layout codes below are schematic wireframes, not screenshots or proof of com
 | WF-01 Authentication/onboarding | Public header / step indicator / organization or account form / field errors / primary Continue action / resume link / pending-delivery panel. |
 | WF-02 Plans/billing | Page header / subscription or status summary / comparable plan cards or order receipt / immutable terms / action footer / explicit waiting and failure panel. |
 | WF-03 Administration | Workspace sidebar / page header / filter and search toolbar / paged table / detail or edit dialog / status confirmation / toast. |
-| WF-04 Catalog authoring | Workspace sidebar / occupation-role selector / catalog list or graph / editable detail pane / save-submit controls / revision feedback. |
+| WF-04 Catalog authoring | Workspace sidebar / job position-role selector / catalog list or graph / editable detail pane / save-submit controls / revision feedback. |
 | WF-05 Assessment | Scope and assessment title / server-bound progress and timer / question and options / save or submit controls / confirmation dialog / terminal result and recovery. |
 | WF-06 Employee development | Sidebar / role and readiness header / competency or gap cards / graph or module list / pathway version and next action / empty/unavailable state. |
 | WF-07 Review | Submission queue / selected version / requirements or content preview / comments / Approve, Return or Confirm controls / decision history. |
-| WF-08 Reporting | Page header / department-occupation-period filters / summary cards / table/chart / financial input editor / missing-data and currency explanation. |
+| WF-08 Reporting | Page header / department-job position-period filters / summary cards / table/chart / financial input editor / missing-data and currency explanation. |
 
 ```text
 WF-03 example
@@ -575,17 +575,17 @@ The Screen column uses the exact names shown in the five screen-flow diagrams in
 | 34 | Content Authoring | Learning Content | Browse learning content packages and access editing, deletion and submission for L&D review. |
 | 35 | Content Authoring | Content Editor | Open a dialog to create or edit a learning content package and its lesson content. |
 | 36 | Content Authoring | Submit Content | Open a confirmation dialog before submitting the selected content package to the L&D approval queue. |
-| 37 | Occupation Management | Occupations | Browse occupations and access occupation editing, Expert assignment, import and deactivation actions. |
-| 38 | Occupation Management | Occupation Editor | Open a dialog to create or edit an occupation and its associated attributes. |
-| 39 | Occupation Management | Expert Assignment | Open a dialog to assign and manage the Experts responsible for an occupation. |
+| 37 | Job Position Management | Job Positions | Browse job positions and access job position editing, Expert assignment, import and deactivation actions. |
+| 38 | Job Position Management | Job Position Editor | Open a dialog to create or edit an job position and its associated attributes. |
+| 39 | Job Position Management | Expert Assignment | Open a dialog to assign and manage the Experts responsible for an job position. |
 | 40 | Target Role Management | Target Roles | Browse organization target roles and manage role attributes, Expert assignments and publication actions. |
-| 41 | Target Role Management | Create Role | Open a dialog to define a new target role within the selected occupation. |
+| 41 | Target Role Management | Create Role | Open a dialog to define a new target role within the selected job position. |
 | 42 | Target Role Management | Edit Role | Open a dialog to update a target role's attributes and assigned Expert. |
 | 43 | Target Role Management | Role Publication | Open a dialog to review the selected target role before confirming its publication action. |
-| 44 | Baseline Management | Baseline List | List baseline drafts and released versions by occupation, with controls to manage configurations or deactivate active versions. |
-| 45 | Baseline Management | Occupation Selection | Open a dialog to choose an occupation and enter its baseline configuration page. |
+| 44 | Baseline Management | Baseline List | List baseline drafts and released versions by job position, with controls to manage configurations or deactivate active versions. |
+| 45 | Baseline Management | Job Position Selection | Open a dialog to choose an job position and enter its baseline configuration page. |
 | 46 | Baseline Management | Deactivate Baseline | Open a confirmation dialog requiring a reason before deactivating an active baseline version. |
-| 47 | Baseline Management | Baseline Configuration | Configure an occupation's baseline draft or released version, with save, preview and lifecycle actions. |
+| 47 | Baseline Management | Baseline Configuration | Configure an job position's baseline draft or released version, with save, preview and lifecycle actions. |
 | 48 | Baseline Management | Baseline Preview | Open a dialog to preview the saved baseline draft without starting an Employee assessment attempt. |
 | 49 | Baseline Management | Action Confirmation | Open a dialog to confirm baseline lifecycle actions or navigation that would leave unsaved changes. |
 | 50 | Content Approval | Content Approvals | Display learning offering submissions and provide review, approval and revision-feedback actions. |
@@ -690,23 +690,23 @@ Guests may use public entry screens, valid invitation links and their own regist
 | &nbsp;&nbsp;Create or update content in assigned scope |  |  |  |  | X |  |
 | **Submit Content** |  |  |  |  | X |  |
 | &nbsp;&nbsp;Submit assigned content for L&D approval |  |  |  |  | X |  |
-| **Occupations** |  |  |  | X |  |  |
-| &nbsp;&nbsp;Query and manage organization occupations |  |  |  | X |  |  |
-| **Occupation Editor** |  |  |  | X |  |  |
-| &nbsp;&nbsp;Create or update managed occupations |  |  |  | X |  |  |
+| **Job Positions** |  |  |  | X |  |  |
+| &nbsp;&nbsp;Query and manage organization job positions |  |  |  | X |  |  |
+| **Job Position Editor** |  |  |  | X |  |  |
+| &nbsp;&nbsp;Create or update managed job positions |  |  |  | X |  |  |
 | **Expert Assignment** |  |  |  | X |  |  |
-| &nbsp;&nbsp;Assign Experts to managed occupations |  |  |  | X |  |  |
+| &nbsp;&nbsp;Assign Experts to managed job positions |  |  |  | X |  |  |
 | **Target Roles** |  |  |  | X |  |  |
 | &nbsp;&nbsp;Query managed target roles |  |  |  | X |  |  |
 | **Create Role** |  |  |  | X |  |  |
-| &nbsp;&nbsp;Create a role in a managed occupation |  |  |  | X |  |  |
+| &nbsp;&nbsp;Create a role in a managed job position |  |  |  | X |  |  |
 | **Edit Role** |  |  |  | X |  |  |
 | &nbsp;&nbsp;Update managed role attributes and Expert assignment |  |  |  | X |  |  |
 | **Role Publication** |  |  |  | X |  |  |
 | &nbsp;&nbsp;Publish, unpublish or return managed role configurations |  |  |  | X |  |  |
 | **Baseline List** |  |  |  | X |  |  |
 | &nbsp;&nbsp;Query organization baseline drafts and versions |  |  |  | X |  |  |
-| **Occupation Selection** |  |  |  | X |  |  |
+| **Job Position Selection** |  |  |  | X |  |  |
 | **Deactivate Baseline** |  |  |  | X |  |  |
 | &nbsp;&nbsp;Deactivate a managed active baseline with a reason |  |  |  | X |  |  |
 | **Baseline Configuration** |  |  |  | X |  |  |
@@ -801,7 +801,7 @@ Assessment and Question summarize assessment design and question content. Answer
 
 ![CERD-03 - Competency Ontology](../documents/diagrams/mermaid/cerd-03.png)
 
-Occupation, Target Role, Level, Competency and Skill describe professional requirements. Users select a target role; Skill generalizes granular micro-skills, and Learning Module represents the content that develops them. Occupation coverage can be shared across departments in different organizations.
+Job Position, Target Role, Level, Competency and Skill describe professional requirements. Users select a target role; Skill generalizes granular micro-skills, and Learning Module represents the content that develops them. Job Position coverage can be shared across departments in different organizations.
 
 **4. Pathways & Reporting**
 
@@ -820,7 +820,7 @@ Each row describes **one core business entity** shown in the conceptual overview
 | 1 | Organization | Represents an organization using the platform, including its identity and operational status. |
 | 2 | User | Represents an account holder, including personal identity, organization access and assigned system role. |
 | 3 | Role | Defines a user's system permissions and responsibilities, distinct from a professional target role. |
-| 4 | Department | Represents an organizational unit that groups members and their occupation assignments. |
+| 4 | Department | Represents an organizational unit that groups members and their job position assignments. |
 | 5 | Registration | Represents an organization's onboarding application and completion of required verification. |
 | 6 | Subscription Plan | Defines an available subscription offering and its commercial terms. |
 | 7 | Subscription | Represents an organization's agreement and paid entitlement to use the platform. |
@@ -831,8 +831,8 @@ Each row describes **one core business entity** shown in the conceptual overview
 | 12 | Assessment Result | Summarizes an Employee's assessment outcome and score. |
 | 13 | Mastery Profile | Summarizes an Employee's assessed skill mastery and supporting evidence. |
 | 14 | Skill | Represents a granular professional capability that can be assessed and developed. |
-| 15 | Occupation | Represents a career occupation and its professional and interest characteristics. |
-| 16 | Target Role | Defines a target job role within an occupation and its expected capabilities. |
+| 15 | Job Position | Represents a career job position and its professional and interest characteristics. |
+| 16 | Target Role | Defines a target job role within an job position and its expected capabilities. |
 | 17 | Level | Defines a target role's proficiency level and associated requirements. |
 | 18 | Competency | Groups related skills into a professional capability required at a role level. |
 | 19 | Learning Module | Represents a unit of learning content that develops specified skills. |
@@ -1211,7 +1211,7 @@ Each row describes **one core business entity** shown in the conceptual overview
   - Email
   - Organization Role
   - Employee Department
-  - Employee Occupation
+  - Employee Job Position
   - Membership Status
   - Invitation Status
   - Activation Proof
@@ -1222,7 +1222,7 @@ Each row describes **one core business entity** shown in the conceptual overview
   - Invite members and resend activation invitations.
   - Edit member profile, role and assignment details.
   - Activate or deactivate memberships with seat and last-administrator checks.
-  - Validate that Employee occupation belongs to the selected organization department.
+  - Validate that Employee job position belongs to the selected organization department.
   - Let recipients activate once and choose their own password.
 
 <a id="fr-03-03"></a>
@@ -1343,7 +1343,7 @@ Each row describes **one core business entity** shown in the conceptual overview
   - Reject expired sessions, inactive memberships and unauthorized requests.
   - Do not treat browser-selected roles or company IDs as authority.
 
-### 3.6 Departments and Occupations
+### 3.6 Departments and Job Positions
 
 <a id="fr-03-02"></a>
 
@@ -1375,53 +1375,53 @@ Each row describes **one core business entity** shown in the conceptual overview
 
 <a id="fr-04-01"></a>
 
-#### 3.6.2 Manage occupations - FR-04.01
+#### 3.6.2 Manage job positions - FR-04.01
 
-**Function Trigger:** L&D Manager opens Occupations.
+**Function Trigger:** L&D Manager opens Job Positions.
 
 **Function Description:**
 
-- **Purpose:** Allow L&D Manager to manage organization occupations.
-- **Interface:** Occupation List and Details screens
+- **Purpose:** Allow L&D Manager to manage organization job positions.
+- **Interface:** Job Position List and Details screens
 - **Screen layout:**
 
 **Function Detail:**
 
 - **Data:**
-  - Occupation
-  - Occupation Details
+  - Job Position
+  - Job Position Details
   - Organization Department
   - Active Status
 
 - **Functionalities:**
-  - Create and view occupations.
-  - Attach a valid department when creating an occupation.
-  - Update occupation details and department association.
-  - Deactivate occupations while preserving historical records.
+  - Create and view job positions.
+  - Attach a valid department when creating an job position.
+  - Update job position details and department association.
+  - Deactivate job positions while preserving historical records.
   - Reject cross-organization department references.
 
 <a id="fr-04-02"></a>
 
 #### 3.6.3 Assign Experts - FR-04.02
 
-**Function Trigger:** L&D Manager opens an occupation and selects Expert assignments.
+**Function Trigger:** L&D Manager opens an job position and selects Expert assignments.
 
 **Function Description:**
 
-- **Purpose:** Allow L&D Manager to assign Experts to occupations.
-- **Interface:** Occupation Expert Assignment screen
+- **Purpose:** Allow L&D Manager to assign Experts to job positions.
+- **Interface:** Job Position Expert Assignment screen
 - **Screen layout:**
 
 **Function Detail:**
 
 - **Data:**
-  - Occupation
+  - Job Position
   - Eligible Expert
   - Organization
   - Assignment Status
 
 - **Functionalities:**
-  - Display current occupation Expert assignments.
+  - Display current job position Expert assignments.
   - Assign eligible active Experts from the same organization.
   - Remove assignments and restrict further authoring.
   - Preserve previous submissions and assignment history.
@@ -1446,13 +1446,13 @@ Each row describes **one core business entity** shown in the conceptual overview
 - **Data:**
   - Role Identity
   - Role Details
-  - Occupation
+  - Job Position
   - Assigned Expert
   - Configuration Version
   - Configuration Status
 
 - **Functionalities:**
-  - Create and update roles within an occupation.
+  - Create and update roles within an job position.
   - Assign target roles to Experts.
   - View role details and configuration progress.
   - Reject duplicate identities and stale edits.
@@ -1582,7 +1582,7 @@ Each row describes **one core business entity** shown in the conceptual overview
 
 #### 3.8.2 Manage micro-skills - FR-05.01
 
-**Function Trigger:** Expert opens the assigned occupation ontology.
+**Function Trigger:** Expert opens the assigned job position ontology.
 
 **Function Description:**
 
@@ -1597,7 +1597,7 @@ Each row describes **one core business entity** shown in the conceptual overview
   - Name
   - Definition
   - Proficiency Information
-  - Assigned Occupation
+  - Assigned Job Position
   - Active Status
 
 - **Functionalities:**
@@ -1699,7 +1699,7 @@ Each row describes **one core business entity** shown in the conceptual overview
 
 #### 3.9.1 Manage baseline assessment configuration - FR-04.05
 
-**Function Trigger:** L&D Manager opens Baseline Assessments and selects an Occupation.
+**Function Trigger:** L&D Manager opens Baseline Assessments and selects an Job Position.
 
 **Function Description:**
 
@@ -1710,7 +1710,7 @@ Each row describes **one core business entity** shown in the conceptual overview
 **Function Detail:**
 
 - **Data:**
-  - Occupation
+  - Job Position
   - Baseline Name
   - Competency Coverage
   - Question-selection Rules
@@ -1722,7 +1722,7 @@ Each row describes **one core business entity** shown in the conceptual overview
 
 - **Functionalities:**
   - View Drafts, active versions and history.
-  - Create or continue the single Occupation Draft.
+  - Create or continue the single Job Position Draft.
   - Save coverage and valid question/time settings.
   - Preview the saved Draft and resolve readiness issues.
   - Activate, replace or deactivate a version after confirmation.
@@ -1771,7 +1771,7 @@ Each row describes **one core business entity** shown in the conceptual overview
 
 **Function Description:**
 
-- **Purpose:** Allow Employee to complete the required Occupation baseline.
+- **Purpose:** Allow Employee to complete the required Job Position baseline.
 - **Interface:** Baseline Assessment and Result screens
 - **Screen layout:**
 
@@ -1779,7 +1779,7 @@ Each row describes **one core business entity** shown in the conceptual overview
 
 - **Data:**
   - Selected Role
-  - Occupation
+  - Job Position
   - Attempt Reference
   - Question and Options
   - Answers
@@ -1922,7 +1922,7 @@ Each row describes **one core business entity** shown in the conceptual overview
   - Explicitly select or confirm a target role.
   - Show the applicable baseline or learning next step.
   - Reject unavailable roles and changes during an active assessment.
-  - Retain previous selections and applicable Occupation coverage.
+  - Retain previous selections and applicable Job Position coverage.
 
 <a id="fr-07-07"></a>
 
@@ -2120,7 +2120,7 @@ Each row describes **one core business entity** shown in the conceptual overview
 
 - **Data:**
   - Employee
-  - Occupation
+  - Job Position
   - Pathway Version
   - Suggested Modules
   - Include or Exclude Decision
@@ -2219,7 +2219,7 @@ Each row describes **one core business entity** shown in the conceptual overview
 - **Data:**
   - Employee
   - Department
-  - Occupation
+  - Job Position
   - Reporting Period
   - Competency Profile and Gaps
   - Assessment Outcomes
@@ -2232,7 +2232,7 @@ Each row describes **one core business entity** shown in the conceptual overview
 
 - **Functionalities:**
   - View employee profiles, gaps, outcomes and progress.
-  - Filter reports by department, occupation and period.
+  - Filter reports by department, job position and period.
   - View department development summaries and ROI.
   - Record or update actual training costs and monetary benefits.
   - Validate period, currency and supporting basis.
@@ -2255,7 +2255,7 @@ Each row describes **one core business entity** shown in the conceptual overview
 - **Data:**
   - Reporting Scope
   - Department
-  - Occupation
+  - Job Position
   - Reporting Period
   - Development Records
   - Training Costs
@@ -2411,15 +2411,15 @@ These are **targets**, not measurements from this documentation task. Distinct p
 | BR-08 | V2/Current: duplicate payment observations and retries cannot duplicate paid application, workspace or period. |
 | BR-09 | Current: paid periods do not overlap; suspension does not create or remove purchased payment evidence. |
 | BR-10 | V2/Current: Employee admission respects serialized seat allocation; reduced-capacity renewal may wait for explicit remediation. |
-| BR-11 | V2: occupation belongs to an organization department; Expert authoring is limited to assignment. |
+| BR-11 | V2: job position belongs to an organization department; Expert authoring is limited to assignment. |
 | BR-12 | V2: Expert submits completed role requirements; L&D publishes/unpublishes or returns for revision. Expert direct publication is not the target policy. |
 | BR-13 | V2: module, content and module assessment form the submitted offering; L&D approves or returns it. |
 | BR-14 | V2: module/skill learning coverage is many-to-many. One module addressing several gaps is not multiple independent purchases or completions. |
 | BR-15 | V2/Current catalog validation: prerequisites are directed and acyclic; self-prerequisites are invalid. |
 | BR-16 | V2: RIASEC is interest evidence, never proof of skill mastery. |
 | BR-17 | V2: Employee sees AI guidance directly and explicitly chooses a published organization role; no Expert guidance-approval gate. |
-| BR-18 | Current baseline: one stable Occupation blueprint, one open Draft and one active version; released versions are immutable. |
-| BR-19 | Current baseline: selection commits separately from assessment start. Same-Occupation role changes reuse applicable coverage; in-progress assessment blocks role change. |
+| BR-18 | Current baseline: one stable Job Position blueprint, one open Draft and one active version; released versions are immutable. |
+| BR-19 | Current baseline: selection commits separately from assessment start. Same-Job Position role changes reuse applicable coverage; in-progress assessment blocks role change. |
 | BR-20 | Current baseline: valid low/zero mastery is present evidence; missing/unknown/null or invalid evidence is not complete coverage. |
 | BR-21 | Current baseline: new attempts pin pool, content, policy, model/mapping and deadline; resume/history does not repin to current configuration. |
 | BR-22 | Current baseline: insufficient manual submission can invalidate without mastery; replacement uses approved retained context rather than rewriting the attempt. |
@@ -2510,8 +2510,8 @@ Manual review procedure:
 | [Feature catalog](../documents/features/README.md) | Stable FR IDs and domain ownership; follow domain links for exact source descriptions. |
 | [Current architecture](../documents/ARCHITECTURE.md) | Target/current distinction and integration history; older embedded snapshots require current-source reconciliation. |
 | [Router](../frontend/src/app/App.tsx) | Reachable screens and redirects. |
-| [Role/baseline contract](../documents/technical/baseline/Role%20Selection%20and%20Occupation%20Baseline.md) | Selection, profile coverage, admission and history rules. |
-| [Baseline lifecycle contract](../documents/technical/baseline/Occupation%20Baseline%20Lifecycle%20and%20Transition.md) | Draft/version states, bounds and concurrency semantics. |
+| [Role/baseline contract](../documents/technical/baseline/Role%20Selection%20and%20Job Position%20Baseline.md) | Selection, profile coverage, admission and history rules. |
+| [Baseline lifecycle contract](../documents/technical/baseline/Job Position%20Baseline%20Lifecycle%20and%20Transition.md) | Draft/version states, bounds and concurrency semantics. |
 | [Current ontology review](../documents/dataset/ONTOLOGY.md) | v0.11 review package and many-to-many coverage; not live deployment proof. |
 | [Testing guide](../documents/testing/README.md) | Verification tiers and historical per-REQ evidence. |
 | [Report 4 - SDD](Report4_Software%20Design%20Document.md) | System/packages, technology declarations, complete physical schema, detailed classes/sequences and state machines. |

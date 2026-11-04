@@ -16,11 +16,11 @@ public record WorkspaceCatalogFixture(String id,String fingerprint,Map<UUID,Map<
             var copy=new HashMap<String,Map<String,Object>>();nodeMetadata.forEach((label,values)->copy.put(label,Map.copyOf(values)));nodeMetadata=Map.copyOf(copy);
         }
     }
-    public record Bank(UUID organizationId,String occupationId,UUID ldId,UUID bankId,UUID modelId,UUID mappingId,UUID parameterSetId) {}
+    public record Bank(UUID organizationId,String jobPositionId,UUID ldId,UUID bankId,UUID modelId,UUID mappingId,UUID parameterSetId) {}
     public WorkspaceCatalogFixture(String id,String fingerprint,Map<UUID,Map<String,String>> organizations) {this(id,fingerprint,organizations,Map.of());}
     public WorkspaceCatalogFixture {
         var copy=new HashMap<UUID,Map<String,String>>();
-        organizations.forEach((org,occupations)->copy.put(Objects.requireNonNull(org),Map.copyOf(occupations)));
+        organizations.forEach((org,jobPositions)->copy.put(Objects.requireNonNull(org),Map.copyOf(jobPositions)));
         organizations=Map.copyOf(copy);
         workspaces=Map.copyOf(workspaces);
         if(!organizations.keySet().containsAll(workspaces.keySet()))throw new IllegalArgumentException("Fixture workspace has no catalog scope");
@@ -42,17 +42,17 @@ public record WorkspaceCatalogFixture(String id,String fingerprint,Map<UUID,Map<
             var scopes=new HashMap<UUID,Map<String,String>>();
             var entries=root.path("organizations").fields();
             while(entries.hasNext()) {
-                var entry=entries.next();var occupations=new HashMap<String,String>();
-                if(!entry.getValue().isObject())throw new IllegalArgumentException("Invalid fixture occupations");
+                var entry=entries.next();var jobPositions=new HashMap<String,String>();
+                if(!entry.getValue().isObject())throw new IllegalArgumentException("Invalid fixture jobPositions");
                 var values=entry.getValue().fields();
                 while(values.hasNext()) {
                     var value=values.next();
                     if(!value.getKey().matches("OCC-[0-9]{2}-[0-9]{4}\\.[0-9]{2}")
                             || !value.getValue().isTextual() || !value.getValue().asText().matches("[0-9a-f]{64}")
-                            || occupations.put(value.getKey(),value.getValue().asText())!=null)
-                        throw new IllegalArgumentException("Invalid fixture occupation/fingerprint");
+                            || jobPositions.put(value.getKey(),value.getValue().asText())!=null)
+                        throw new IllegalArgumentException("Invalid fixture jobPosition/fingerprint");
                 }
-                if(occupations.isEmpty() || scopes.put(UUID.fromString(entry.getKey()),occupations)!=null)
+                if(jobPositions.isEmpty() || scopes.put(UUID.fromString(entry.getKey()),jobPositions)!=null)
                     throw new IllegalArgumentException("Invalid fixture organization");
             }
             if(scopes.isEmpty())throw new IllegalArgumentException("Empty workspace fixture");
@@ -64,7 +64,7 @@ public record WorkspaceCatalogFixture(String id,String fingerprint,Map<UUID,Map<
                 var metadata=new HashMap<String,Map<String,Object>>();var labels=value.path("nodeMetadata").fields();
                 while(labels.hasNext()) {
                     var label=labels.next();
-                    if(!Set.of("Occupation","TargetRole","Level","MicroSkill").contains(label.getKey()) || !label.getValue().isObject())
+                    if(!Set.of("JobPosition","TargetRole","Level","MicroSkill").contains(label.getKey()) || !label.getValue().isObject())
                         throw new IllegalArgumentException("Unsupported fixture metadata label");
                     Map<String,Object> properties=json.convertValue(label.getValue(),new com.fasterxml.jackson.core.type.TypeReference<Map<String,Object>>(){});
                     if(!Set.of("organizationId","assignedExpertId","assignedExpertName").containsAll(properties.keySet())
@@ -79,19 +79,19 @@ public record WorkspaceCatalogFixture(String id,String fingerprint,Map<UUID,Map<
         }catch(Exception invalid){throw new IllegalStateException("Workspace catalog fixture unavailable",invalid);}
     }
     public boolean active(){return !organizations.isEmpty();}
-    public boolean permits(UUID org,String occupation){return organizations.getOrDefault(org,Map.of()).containsKey(occupation);}
-    public boolean matches(UUID org,String occupation,String catalogFingerprint){return catalogFingerprint!=null && catalogFingerprint.equals(organizations.getOrDefault(org,Map.of()).get(occupation));}
-    public boolean covers(UUID org,Set<String> occupations){return !occupations.isEmpty() && organizations.getOrDefault(org,Map.of()).keySet().containsAll(occupations);}
+    public boolean permits(UUID org,String jobPosition){return organizations.getOrDefault(org,Map.of()).containsKey(jobPosition);}
+    public boolean matches(UUID org,String jobPosition,String catalogFingerprint){return catalogFingerprint!=null && catalogFingerprint.equals(organizations.getOrDefault(org,Map.of()).get(jobPosition));}
+    public boolean covers(UUID org,Set<String> jobPositions){return !jobPositions.isEmpty() && organizations.getOrDefault(org,Map.of()).keySet().containsAll(jobPositions);}
     public static UUID identity(UUID org,String name) {
         return UUID.nameUUIDFromBytes(("WORKSPACE_PLATFORM_FIXTURE:"+org+":"+name).getBytes(java.nio.charset.StandardCharsets.UTF_8));
     }
-    public Optional<Bank> bank(UUID org,String occupation) {
-        if(!permits(org,occupation) || !workspaces.containsKey(org))return Optional.empty();
-        if(!Set.of("OCC-15-1212.00","OCC-15-1252.00").contains(occupation))throw new IllegalStateException("Unsupported baseline fixture artifact");
-        return Optional.of(new Bank(org,occupation,workspaces.get(org).ldId(),identity(org,"bank:"+occupation),identity(org,"model:"+occupation),
-                identity(org,"mapping:"+occupation),identity(org,"parameters:"+occupation)));
+    public Optional<Bank> bank(UUID org,String jobPosition) {
+        if(!permits(org,jobPosition) || !workspaces.containsKey(org))return Optional.empty();
+        if(!Set.of("OCC-15-1212.00","OCC-15-1252.00").contains(jobPosition))throw new IllegalStateException("Unsupported baseline fixture artifact");
+        return Optional.of(new Bank(org,jobPosition,workspaces.get(org).ldId(),identity(org,"bank:"+jobPosition),identity(org,"model:"+jobPosition),
+                identity(org,"mapping:"+jobPosition),identity(org,"parameters:"+jobPosition)));
     }
     public List<Bank> banks() {
-        return workspaces.keySet().stream().flatMap(org->organizations.get(org).keySet().stream().map(occupation->bank(org,occupation).orElseThrow())).toList();
+        return workspaces.keySet().stream().flatMap(org->organizations.get(org).keySet().stream().map(jobPosition->bank(org,jobPosition).orElseThrow())).toList();
     }
 }

@@ -10,16 +10,16 @@ public interface InitialCatalogPort {
         RoleGap.text(roleId);RoleGap.text(levelId);
         return "role-level-v1:"+com.adaptlearngraph.entities.domain.InitialIdentity.hash("role-level-choice",List.of(roleId,levelId));
     }
-    record RoleReference(UUID organizationId,String businessRoleId,String roleId,String levelId,String occupationId,
+    record RoleReference(UUID organizationId,String businessRoleId,String roleId,String levelId,String jobPositionId,
                          String catalogFingerprint,String releaseToken,Map<String,String> versions) {
         public RoleReference {
             Objects.requireNonNull(organizationId);
-            for(String value:List.of(businessRoleId,roleId,levelId,occupationId,catalogFingerprint,releaseToken))RoleGap.text(value);
+            for(String value:List.of(businessRoleId,roleId,levelId,jobPositionId,catalogFingerprint,releaseToken))RoleGap.text(value);
             versions=Map.copyOf(versions);
             for(String key:List.of("catalog","binding","publication","requirements","compatibility"))RoleGap.text(versions.get(key));
         }
         public static RoleReference from(Scope scope,Binding binding) {
-            return new RoleReference(scope.organizationId(),binding.businessRoleId(),binding.roleId(),binding.levelId(),binding.occupationId(),
+            return new RoleReference(scope.organizationId(),binding.businessRoleId(),binding.roleId(),binding.levelId(),binding.jobPositionId(),
                     binding.catalogFingerprint(),binding.releaseToken(),binding.versions());
         }
     }

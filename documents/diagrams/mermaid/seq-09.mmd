@@ -12,7 +12,7 @@ sequenceDiagram
   participant SDD_SEQ_09_Baseline as Baseline port
   SDD_SEQ_09_Employee->>SDD_SEQ_09_API: choose role + expected selection + idempotency key
   SDD_SEQ_09_API->>SDD_SEQ_09_Flow: choose(...)
-  SDD_SEQ_09_Flow->>SDD_SEQ_09_Guard: require Employee, tenant and visible role/Occupation
+  SDD_SEQ_09_Flow->>SDD_SEQ_09_Guard: require Employee, tenant and visible role/Job Position
   SDD_SEQ_09_Flow->>SDD_SEQ_09_DB: learner lock, replay and expected-selection checks
   SDD_SEQ_09_Flow->>SDD_SEQ_09_DB: check in-progress assessment guard under learner<br/>coordination
   SDD_SEQ_09_Flow->>SDD_SEQ_09_DB: end previous selection, save<br/>snapshot/revision/receipt/event

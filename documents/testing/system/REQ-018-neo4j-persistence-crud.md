@@ -15,7 +15,7 @@
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | **1** | `MicroSkill` | Create & Read | `POST /api/v1/organizations/{orgId}/micro-skills` | Verified in graph and table across hard page reload | **PASS** |
 | **2** | `LearningModule` | Create & Read | `POST /api/v1/organizations/{orgId}/learning-modules` | Verified in graph and table across hard page reload | **PASS** |
-| **3** | `Occupation` | Create & Read | `POST /api/v1/organizations/{orgId}/occupations` | Verified in graph and table across hard page reload | **PASS** |
+| **3** | `Job Position` | Create & Read | `POST /api/v1/organizations/{orgId}/job positions` | Verified in graph and table across hard page reload | **PASS** |
 | **4** | `TargetRole` | Create & Read | `POST /api/v1/organizations/{orgId}/target-roles` | Verified in graph and table across hard page reload | **PASS** |
 
 ---
@@ -25,7 +25,7 @@
 ```
 Running 1 test using 1 worker
 
-  ok 1 [system-chrome] › system-tests\REQ-018-neo4j-persistence-crud.spec.ts:6:3 › REQ-018 Complete Neo4j Schema Persistence & Zero-Mock Reload Verification › MicroSkill, LearningModule, Occupation, TargetRole, and Competency persist across page reloads (15.7s)
+  ok 1 [system-chrome] › system-tests\REQ-018-neo4j-persistence-crud.spec.ts:6:3 › REQ-018 Complete Neo4j Schema Persistence & Zero-Mock Reload Verification › MicroSkill, LearningModule, Job Position, TargetRole, and Competency persist across page reloads (15.7s)
 
   1 passed (18.5s)
 ```
@@ -34,21 +34,21 @@ Running 1 test using 1 worker
 
 ## 4. Key Implementation Changes
 
-1. **Backend Occupation CRUD Endpoints & Cypher Repository**:
-   - `backend/src/main/java/com/adaptlearngraph/repository/OccupationRepository.java`: Added `findByIdOrCode`, `save`, and `delete`.
-   - `backend/src/main/java/com/adaptlearngraph/repository/Neo4jOccupationRepository.java`: Implemented Cypher `MERGE (o:Occupation {code: $code})` persisting RIASEC profile weights (`realistic`, `investigative`, `artistic`, `social`, `enterprising`, `conventional`), `name`, `jobZone`, and `status`.
-   - `backend/src/main/java/com/adaptlearngraph/apis/OccupationController.java`: Added `POST`, `PUT`, `DELETE` endpoints under `/api/v1/organizations/{orgId}/occupations`.
+1. **Backend Job Position CRUD Endpoints & Cypher Repository**:
+   - `backend/src/main/java/com/adaptlearngraph/repository/Job PositionRepository.java`: Added `findByIdOrCode`, `save`, and `delete`.
+   - `backend/src/main/java/com/adaptlearngraph/repository/Neo4jJob PositionRepository.java`: Implemented Cypher `MERGE (o:Job Position {code: $code})` persisting RIASEC profile weights (`realistic`, `investigative`, `artistic`, `social`, `enterprising`, `conventional`), `name`, `jobZone`, and `status`.
+   - `backend/src/main/java/com/adaptlearngraph/apis/Job PositionController.java`: Added `POST`, `PUT`, `DELETE` endpoints under `/api/v1/organizations/{orgId}/job positions`.
 2. **Backend MicroSkill & Competency Repository Alignment**:
    - `Neo4jMicroSkillRepository.java`: Updated Cypher `MERGE` to set `s.definition = $description` and `s.version = '0.9.0'` per `neo4j_schema.md` Section 3.5.
    - `Neo4jCompetencyRepository.java`: Added `c.attainmentRule = $attainmentRule` to Cypher `ON MATCH SET`.
 3. **Frontend Live API Wiring**:
-   - `frontend/src/shared/api/occupationApi.ts`: Created typed API client for Occupation CRUD.
-   - `frontend/src/features/manager/occupations/OccupationsManagementPage.tsx`: Wired `handleSaveOccupation` and `handleToggleStatus` directly to `occupationApi`.
+   - `frontend/src/shared/api/job positionApi.ts`: Created typed API client for Job Position CRUD.
+   - `frontend/src/features/manager/job positions/Job PositionsManagementPage.tsx`: Wired `handleSaveJob Position` and `handleToggleStatus` directly to `job positionApi`.
    - `frontend/src/features/manager/modules/LearningModulesPage.tsx`: Wired `handleSaveModule`, `handleCreateSuccessorDraft`, `handleDeleteDraftModule`, `handleToggleTeachesSkill`, `handlePublishModule`, and `handleConfirmArchive` directly to `learningModuleApi.ts`.
 4. **Mock Data Purge**:
    - `frontend/src/shared/stores/companyStore.ts`: Bumped cache key to `adaptlearn_companies_v4` and cleared initial mock arrays (`competencies: []`, `microSkills: []`, `prerequisites: []`, `modules: []`, `targetRoles: []`).
    - `frontend/src/features/manager/data/ldManagerMockData.ts`: Cleared legacy mock arrays (`INITIAL_PREREQUISITES`, `INITIAL_COMPETENCIES`, `INITIAL_MICRO_SKILLS`, `INITIAL_MODULES`).
-   - `frontend/src/app/App.tsx`: Added redirect `/manager/occupations` $\rightarrow$ `/ld-manager/occupations`.
+   - `frontend/src/app/App.tsx`: Added redirect `/manager/job positions` $\rightarrow$ `/ld-manager/job positions`.
 
 ---
 
@@ -75,17 +75,17 @@ Running 1 test using 1 worker
    - Click **Create Module**.
    - Perform a hard browser reload (`Ctrl + F5`).
    - Search for `MOD-CYP-TEST` $\rightarrow$ Verify module persists with version `1.0` and draft status.
-3. **Occupation Creation & Persistence**:
-   - Navigate to `http://localhost:8088/ld-manager/occupations` (or `/manager/occupations`).
+3. **Job Position Creation & Persistence**:
+   - Navigate to `http://localhost:8088/ld-manager/job positions` (or `/manager/job positions`).
    - Click **Create**.
    - Enter O*NET Code (e.g. `15-9999.00`), Title, and Summary.
-   - Click **Create Occupation**.
+   - Click **Create Job Position**.
    - Perform a hard browser reload (`Ctrl + F5`).
-   - Search for `15-9999.00` $\rightarrow$ Verify occupation persists in Neo4j and renders in the directory table.
+   - Search for `15-9999.00` $\rightarrow$ Verify job position persists in Neo4j and renders in the directory table.
 4. **Target Role Creation & Persistence**:
    - Navigate to `http://localhost:8088/ld-manager/target-roles` (or `/manager/target-roles`).
    - Click **Create**.
-   - Enter Role Code (e.g. `ROLE-ARCH-TEST`), Title, and select Occupation.
+   - Enter Role Code (e.g. `ROLE-ARCH-TEST`), Title, and select Job Position.
    - Click **Save as Draft**.
    - Perform a hard browser reload (`Ctrl + F5`).
    - Search for `ROLE-ARCH-TEST` $\rightarrow$ Verify target role persists and is displayed with status `DRAFT`.

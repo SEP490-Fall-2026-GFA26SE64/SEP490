@@ -113,7 +113,7 @@ public final class JpaSubscriptionWorkspaceStore implements SubscriptionWorkspac
         }
         return data.memberships().members(organizationId).stream().map(row -> new Member(row.membershipId(), row.accountId(),
                 row.fullName(), row.email(), Boolean.TRUE.equals(row.active()), roles.getOrDefault(row.membershipId(), Set.of()),
-                row.departmentId(), row.occupationReferenceId(), row.revision(), row.departmentName(), row.occupationName(),
+                row.departmentId(), row.jobPositionReferenceId(), row.revision(), row.departmentName(), row.jobPositionName(),
                 Boolean.TRUE.equals(row.accountActive()))).toList();
     }
 
@@ -128,10 +128,10 @@ public final class JpaSubscriptionWorkspaceStore implements SubscriptionWorkspac
             if (member.revision() != update.revision()) throw new SubscriptionFailure(SubscriptionFailure.Code.CONFLICT,
                     "Membership changed. Refresh and retry.");
             boolean historical = java.util.Objects.equals(member.departmentId(), update.departmentId())
-                    && java.util.Objects.equals(member.occupationReferenceId(), update.occupationReferenceId())
+                    && java.util.Objects.equals(member.jobPositionReferenceId(), update.jobPositionReferenceId())
                     && (!update.roles().contains("EMPLOYEE") || member.roles().contains("EMPLOYEE"));
-            references.validate(organizationId, update.roles(), update.departmentId(), update.occupationReferenceId(), historical);
-            data.memberships().assignReferences(organizationId, memberId, update.departmentId(), update.occupationReferenceId());
+            references.validate(organizationId, update.roles(), update.departmentId(), update.jobPositionReferenceId(), update.departmentName(), update.jobPositionName(), historical);
+            data.memberships().assignReferences(organizationId, memberId, update.departmentId(), update.jobPositionReferenceId());
             // Reuse the serialized role, last-administrator, revision and capacity checks in the same transaction.
             changeMember(actor, organizationId, memberId, member.active(), update.roles(), update.revision(), now);
             if (data.profiles().upsertFullName(member.accountId(), update.fullName()) != 1) {
@@ -163,8 +163,8 @@ public final class JpaSubscriptionWorkspaceStore implements SubscriptionWorkspac
                     throw new SubscriptionFailure(SubscriptionFailure.Code.CONFLICT, "The last active System Administrator cannot be removed.");
                 }
             }
-            if (roles.contains("EMPLOYEE") && (member.departmentId() == null || member.occupationReferenceId() == null)) {
-                throw new SubscriptionFailure(SubscriptionFailure.Code.REFERENCE_DATA_REQUIRED, "Employee department and occupation are required.");
+            if (roles.contains("EMPLOYEE") && (member.departmentId() == null || member.jobPositionReferenceId() == null)) {
+                throw new SubscriptionFailure(SubscriptionFailure.Code.REFERENCE_DATA_REQUIRED, "Employee department and jobPosition are required.");
             }
             boolean accountActive = data.accounts().active(member.accountId()).orElse(false);
             boolean wasSeat = accountActive && member.active() && member.roles().contains("EMPLOYEE");

@@ -6,9 +6,9 @@ import { Navigate, useSearchParams } from 'react-router-dom'
  */
 export function LegacyBaselineAssessmentRedirect() {
   const [searchParams] = useSearchParams()
-  const occupationId = searchParams.get('occupationId')?.trim()
-  const destination = occupationId
-    ? `/ld-manager/baseline-assessments/${encodeURIComponent(occupationId)}/blueprints`
+  const jobPositionId = searchParams.get('jobPositionId')?.trim()
+  const destination = jobPositionId
+    ? `/ld-manager/baseline-assessments/${encodeURIComponent(jobPositionId)}/blueprints`
     : '/ld-manager/baseline-assessments'
 
   return <Navigate to={destination} replace />

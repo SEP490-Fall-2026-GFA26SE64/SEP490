@@ -28,8 +28,8 @@ public class BaselineManagementCommandEntity {
     private String idempotencyKey;
     @Column(name = "organization_id", nullable = false)
     private UUID organizationId;
-    @Column(name = "occupation_id", nullable = false)
-    private String occupationId;
+    @Column(name = "job_position_id", nullable = false)
+    private String jobPositionId;
     @Column(name = "operation", nullable = false)
     private String operation;
     @Column(name = "request_hash", nullable = false, columnDefinition = PostgresColumnTypes.CONTENT_HASH)
@@ -44,11 +44,11 @@ public class BaselineManagementCommandEntity {
     }
 
     @SuppressWarnings("java:S107")
-    public BaselineManagementCommandEntity(UUID actorId, String idempotencyKey, UUID organizationId, String occupationId, String operation, String requestHash, String responseJson, Instant createdAt) {
+    public BaselineManagementCommandEntity(UUID actorId, String idempotencyKey, UUID organizationId, String jobPositionId, String operation, String requestHash, String responseJson, Instant createdAt) {
         this.actorId = actorId;
         this.idempotencyKey = idempotencyKey;
         this.organizationId = organizationId;
-        this.occupationId = occupationId;
+        this.jobPositionId = jobPositionId;
         this.operation = operation;
         this.requestHash = requestHash;
         this.responseJson = responseJson;
@@ -58,7 +58,7 @@ public class BaselineManagementCommandEntity {
     public UUID getActorId() { return actorId; }
     public String getIdempotencyKey() { return idempotencyKey; }
     public UUID getOrganizationId() { return organizationId; }
-    public String getOccupationId() { return occupationId; }
+    public String getJobPositionId() { return jobPositionId; }
     public String getOperation() { return operation; }
     public String getRequestHash() { return requestHash; }
     public String getResponseJson() { return responseJson; }

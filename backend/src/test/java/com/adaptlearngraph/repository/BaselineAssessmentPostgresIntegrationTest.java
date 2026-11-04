@@ -9,9 +9,9 @@ import com.adaptlearngraph.services.BaselineBlueprintCapacityService;
 import com.adaptlearngraph.services.BaselineBlueprintService;
 import com.adaptlearngraph.services.BaselineBlueprintUseCase.BlueprintDraft;
 import com.adaptlearngraph.repository.BaselineBlueprintStore.Actor;
-import com.adaptlearngraph.repository.BaselineOccupationCatalogPort.CatalogOccupation;
-import com.adaptlearngraph.repository.BaselineOccupationCatalogPort.CatalogRole;
-import com.adaptlearngraph.repository.BaselineOccupationCatalogPort.CatalogSkill;
+import com.adaptlearngraph.repository.BaselineJobPositionCatalogPort.CatalogJobPosition;
+import com.adaptlearngraph.repository.BaselineJobPositionCatalogPort.CatalogRole;
+import com.adaptlearngraph.repository.BaselineJobPositionCatalogPort.CatalogSkill;
 import com.adaptlearngraph.services.BaselineBlueprintUseCase.Code;
 import com.adaptlearngraph.services.BaselineBlueprintUseCase.Failure;
 import com.adaptlearngraph.entities.domain.BaselineAssessmentDraft.PublicationState;
@@ -75,7 +75,7 @@ class BaselineAssessmentPostgresIntegrationTest {
     private static final String ZERO_ROLE_ID = uuid(13).toString();
     private static final String SKILL_ID = uuid(12).toString();
     private static final String ZERO_SKILL_ID = uuid(14).toString();
-    private static final String OCCUPATION_ID = uuid(15).toString();
+    private static final String JOB_POSITION_ID = uuid(15).toString();
     private static boolean dockerAvailable;
 
     private Flyway flyway;
@@ -147,11 +147,11 @@ class BaselineAssessmentPostgresIntegrationTest {
                 persistence.bean(BaselineAnswerRevealAuditJpaRepository.class));
         var actor = (BaselineBlueprintStore.ActorPort) () -> Optional.of(
                 new Actor(ACTOR_ID, ORGANIZATION_ID.toString(), true, Set.of("LD_MANAGER")));
-        var validation = new BaselineBlueprintValidationAdapter(catalog(), occupationCatalog(),
+        var validation = new BaselineBlueprintValidationAdapter(catalog(), jobPositionCatalog(),
                 persistence.bean(ItemVersionJpaRepository.class));
         blueprintService = new BaselineBlueprintService(actor, blueprints, validation);
         capacityService = new BaselineBlueprintCapacityService(
-                actor, occupationCatalog(), validation);
+                actor, jobPositionCatalog(), validation);
         draftService = new BaselineAssessmentDraftService(actor, blueprints, drafts);
         seedIdentityAndQuestionBank();
     }
@@ -169,23 +169,23 @@ class BaselineAssessmentPostgresIntegrationTest {
         var blueprint = blueprintService.create("trigger-blueprint", blueprintDraft("Trigger blueprint"));
         jdbc.update("""
                 INSERT INTO platform.baseline_assessment_series(
-                    organization_id, occupation_id, blueprint_id)
+                    organization_id, job_position_id, blueprint_id)
                 VALUES (?, ?, ?)
-                """, ORGANIZATION_ID, OCCUPATION_ID, blueprint.blueprintId());
+                """, ORGANIZATION_ID, JOB_POSITION_ID, blueprint.blueprintId());
 
         UUID workingId = uuid(902);
         jdbc.update("""
                 INSERT INTO platform.baseline_blueprint_working_revision(
-                    working_revision_id, organization_id, occupation_id, blueprint_id,
-                    name, occupation_name_snapshot, roles, created_by, updated_by)
+                    working_revision_id, organization_id, job_position_id, blueprint_id,
+                    name, job_position_name_snapshot, roles, created_by, updated_by)
                 VALUES (?, ?, ?, ?, 'Working', 'Software Engineering', '[]'::jsonb, ?, ?)
-                """, workingId, ORGANIZATION_ID, OCCUPATION_ID, blueprint.blueprintId(), ACTOR_ID, ACTOR_ID);
+                """, workingId, ORGANIZATION_ID, JOB_POSITION_ID, blueprint.blueprintId(), ACTOR_ID, ACTOR_ID);
         jdbc.update("""
                 INSERT INTO platform.baseline_assessment_transition(
-                    organization_id, occupation_id, series_revision, transition, actor_id, occurred_at,
+                    organization_id, job_position_id, series_revision, transition, actor_id, occurred_at,
                     working_revision_id)
                 VALUES (?, ?, 2, 'WORKING_REVISION_STARTED', ?, now(), ?)
-                """, ORGANIZATION_ID, OCCUPATION_ID, ACTOR_ID, workingId);
+                """, ORGANIZATION_ID, JOB_POSITION_ID, ACTOR_ID, workingId);
 
         assertThat(jdbc.queryForObject("""
                 SELECT count(*) FROM platform.baseline_blueprint_working_revision
@@ -222,10 +222,10 @@ class BaselineAssessmentPostgresIntegrationTest {
         var assessment = draftService.generate(blueprint.blueprintId(), 1, "answer-assessment");
         jdbc.update("""
                 INSERT INTO platform.baseline_assessment_series(
-                    organization_id, occupation_id, blueprint_id, pending_blueprint_version,
+                    organization_id, job_position_id, blueprint_id, pending_blueprint_version,
                     open_assessment_version_id)
                 VALUES (?, ?, ?, 1, ?)
-                """, ORGANIZATION_ID, OCCUPATION_ID, blueprint.blueprintId(), assessment.assessmentVersionId());
+                """, ORGANIZATION_ID, JOB_POSITION_ID, blueprint.blueprintId(), assessment.assessmentVersionId());
 
         UUID otherOrganizationId = uuid(901);
         jdbc.update("""
@@ -267,7 +267,7 @@ class BaselineAssessmentPostgresIntegrationTest {
                 "SELECT count(*) FROM platform.baseline_blueprint_version", Long.class)).isEqualTo(2L);
         assertThat(jdbc.queryForObject(
                 "SELECT count(*) FROM platform.baseline_blueprint", Long.class)).isOne();
-        assertThat(blueprints.findLatestByOccupation(OCCUPATION_ID)).contains(second);
+        assertThat(blueprints.findLatestByJobPosition(JOB_POSITION_ID)).contains(second);
         assertThat(jdbc.queryForObject("""
                 SELECT total_question_count
                 FROM platform.baseline_blueprint_role
@@ -294,7 +294,7 @@ class BaselineAssessmentPostgresIntegrationTest {
     }
 
     @Test
-    void databaseAndServiceRejectSecondLogicalBlueprintForOccupation() {
+    void databaseAndServiceRejectSecondLogicalBlueprintForJobPosition() {
         var first = blueprintService.create("create-one", blueprintDraft("Baseline one"));
 
         assertThatThrownBy(() -> blueprintService.create("create-two", blueprintDraft("Baseline two")))
@@ -302,12 +302,12 @@ class BaselineAssessmentPostgresIntegrationTest {
                         failure -> assertThat(failure.code()).isEqualTo(Code.VERSION_CONFLICT));
         assertThat(jdbc.queryForObject(
                 "SELECT count(*) FROM platform.baseline_blueprint", Long.class)).isOne();
-        assertThat(blueprints.findLatestByOccupation(OCCUPATION_ID)).contains(first);
+        assertThat(blueprints.findLatestByJobPosition(JOB_POSITION_ID)).contains(first);
     }
 
     @Test
     void readsCurrentPublishedCapacityWithoutCountingSupersededItemVersions() {
-        var capacity = capacityService.getAvailableCapacity(OCCUPATION_ID);
+        var capacity = capacityService.getAvailableCapacity(JOB_POSITION_ID);
 
         assertThat(capacity.catalogVersion()).isEqualTo("test-v1");
         assertThat(capacity.roles()).hasSize(2);
@@ -366,7 +366,7 @@ class BaselineAssessmentPostgresIntegrationTest {
     void managementStorePersistsScopedLifecycleWithCompareAndSetTransitionsAndReceipts() {
         var blueprint = blueprintService.create("management-blueprint", blueprintDraft("Managed blueprint"));
         UUID blueprintId = blueprint.blueprintId();
-        var scope = new Scope(ORGANIZATION_ID, OCCUPATION_ID);
+        var scope = new Scope(ORGANIZATION_ID, JOB_POSITION_ID);
         UUID otherOrganization = uuid(905);
         UUID otherActor = uuid(906);
         jdbc.update("INSERT INTO platform.organization(organization_id, code, name) VALUES (?, 'ORG_MANAGE', 'Other')",
@@ -386,7 +386,7 @@ class BaselineAssessmentPostgresIntegrationTest {
                 .isInstanceOf(BaselineAssessmentManagementStore.WriteConflict.class)
                 .hasMessageContaining("another blueprint identity");
         assertThatThrownBy(() -> tx(() -> management.lockOrCreate(
-                new Scope(otherOrganization, OCCUPATION_ID), blueprintId)))
+                new Scope(otherOrganization, JOB_POSITION_ID), blueprintId)))
                 .isInstanceOf(BaselineAssessmentManagementStore.WriteConflict.class)
                 .hasMessageContaining("does not belong");
         assertThat(management.findBlueprintVersions(scope)).singleElement().satisfies(version -> {
@@ -395,7 +395,7 @@ class BaselineAssessmentPostgresIntegrationTest {
             assertThat(version.name()).isEqualTo("Managed blueprint");
             assertThat(version.createdAt()).isNotNull();
         });
-        assertThat(management.findBlueprintVersions(new Scope(otherOrganization, OCCUPATION_ID))).isEmpty();
+        assertThat(management.findBlueprintVersions(new Scope(otherOrganization, JOB_POSITION_ID))).isEmpty();
 
         Instant started = Instant.parse("2026-10-17T08:00:00.123456Z");
         UUID workingId = uuid(910);
@@ -436,7 +436,7 @@ class BaselineAssessmentPostgresIntegrationTest {
         assertThat(management.findScopeByWorkingRevision(ORGANIZATION_ID, workingId)).contains(scope);
         assertThat(management.findScopeByWorkingRevision(otherOrganization, workingId)).isEmpty();
         assertThat(management.findWorkingRevision(scope, workingId)).contains(savedRecord);
-        assertThat(management.findWorkingRevision(new Scope(ORGANIZATION_ID, "other-occupation"), workingId)).isEmpty();
+        assertThat(management.findWorkingRevision(new Scope(ORGANIZATION_ID, "other-jobPosition"), workingId)).isEmpty();
         assertThatThrownBy(() -> txRun(() -> management.closeWorkingRevision(new CloseWorkingRevision(
                 scope, workingId, 2, WorkingRevisionState.ABANDONED, ACTOR_ID, saved))))
                 .isInstanceOf(BaselineAssessmentManagementStore.WriteConflict.class)
@@ -485,7 +485,7 @@ class BaselineAssessmentPostgresIntegrationTest {
                 Transition.ACTIVE_ASSESSMENT_DISABLED, ACTOR_ID, abandoned, "Retired")));
         assertThat(management.findAssessmentVersions(scope)).singleElement()
                 .extracting(AssessmentVersionRecord::disabled).isEqualTo(true);
-        assertThat(management.findAssessmentVersions(new Scope(otherOrganization, OCCUPATION_ID))).isEmpty();
+        assertThat(management.findAssessmentVersions(new Scope(otherOrganization, JOB_POSITION_ID))).isEmpty();
         assertThat(jdbc.queryForList("""
                 SELECT series_revision || ':' || transition || ':' || coalesce(reason, '-') || ':'
                        || coalesce(previous_working_revision_id::text, '-') || ':' || coalesce(working_revision_id::text, '-')
@@ -495,9 +495,9 @@ class BaselineAssessmentPostgresIntegrationTest {
                        || coalesce(active_assessment_version_id::text, '-') || ':' || actor_id || ':'
                        || to_char(occurred_at AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.US')
                 FROM platform.baseline_assessment_transition
-                WHERE organization_id = ? AND occupation_id = ?
+                WHERE organization_id = ? AND job_position_id = ?
                 ORDER BY series_revision
-                """, String.class, ORGANIZATION_ID, OCCUPATION_ID)).containsExactly(
+                """, String.class, ORGANIZATION_ID, JOB_POSITION_ID)).containsExactly(
                 "2:WORKING_REVISION_STARTED:-:-:" + workingId + ":-:-:-:-:" + ACTOR_ID + ":2026-10-17T08:00:00.123456",
                 "3:PENDING_CHANGE_ABANDONED:Replaced:" + workingId + ":-:-:-:-:-:" + ACTOR_ID
                         + ":2026-10-17T08:02:00.123456",
@@ -638,7 +638,7 @@ class BaselineAssessmentPostgresIntegrationTest {
     }
 
     private BlueprintDraft blueprintDraft(String name) {
-        return new BlueprintDraft(name, OCCUPATION_ID, "Client occupation", List.of(
+        return new BlueprintDraft(name, JOB_POSITION_ID, "Client jobPosition", List.of(
                 new RoleConfig(
                         ROLE_ID, "Client role snapshot", true,
                         new BigDecimal("0.2"), new BigDecimal("0.3"), new BigDecimal("0.5"),
@@ -669,23 +669,23 @@ class BaselineAssessmentPostgresIntegrationTest {
         };
     }
 
-    private BaselineOccupationCatalogPort occupationCatalog() {
-        return new BaselineOccupationCatalogPort() {
+    private BaselineJobPositionCatalogPort jobPositionCatalog() {
+        return new BaselineJobPositionCatalogPort() {
             @Override
-            public List<CatalogOccupationSummary> findAvailableOccupations(String organizationId) {
-                return List.of(new CatalogOccupationSummary(
-                        OCCUPATION_ID, "Software Engineering", "test-v1", 2));
+            public List<CatalogJobPositionSummary> findAvailableJobPositions(String organizationId) {
+                return List.of(new CatalogJobPositionSummary(
+                        JOB_POSITION_ID, "Software Engineering", "test-v1", 2));
             }
 
             @Override
-            public Optional<CatalogOccupation> findAvailableOccupation(
-                    String organizationId, String occupationId) {
+            public Optional<CatalogJobPosition> findAvailableJobPosition(
+                    String organizationId, String jobPositionId) {
                 if (!ORGANIZATION_ID.toString().equals(organizationId)
-                        || !OCCUPATION_ID.equals(occupationId)) {
+                        || !JOB_POSITION_ID.equals(jobPositionId)) {
                     return Optional.empty();
                 }
-                return Optional.of(new CatalogOccupation(
-                        OCCUPATION_ID, "Software Engineering", "test-v1", List.of(
+                return Optional.of(new CatalogJobPosition(
+                        JOB_POSITION_ID, "Software Engineering", "test-v1", List.of(
                                 new CatalogRole(ROLE_ID, "Java Backend Engineer", "role-v1",
                                         List.of(new CatalogSkill(SKILL_ID, "Java Core", "skill-v1"))),
                                 new CatalogRole(ZERO_ROLE_ID, "Platform Engineer", "role-v1",
@@ -754,9 +754,9 @@ class BaselineAssessmentPostgresIntegrationTest {
         }
 
         @Override
-        public Optional<com.adaptlearngraph.entities.domain.BaselineBlueprint> findLatestByOccupation(
-                String occupationId) {
-            return delegate.findLatestByOccupation(occupationId);
+        public Optional<com.adaptlearngraph.entities.domain.BaselineBlueprint> findLatestByJobPosition(
+                String jobPositionId) {
+            return delegate.findLatestByJobPosition(jobPositionId);
         }
 
         @Override

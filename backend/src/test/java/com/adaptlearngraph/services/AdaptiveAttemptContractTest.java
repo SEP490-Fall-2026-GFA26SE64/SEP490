@@ -23,7 +23,7 @@ class AdaptiveAttemptContractTest {
   var v=version();var legacy=new com.adaptlearngraph.entities.domain.AdaptiveBlueprint.Version(v.scope(),v.id(),
    new com.adaptlearngraph.entities.domain.AdaptiveBlueprint.Configuration("Legacy",new com.adaptlearngraph.entities.domain.AdaptiveBlueprint.Bounds(6,360),
     Map.of("role-a",new com.adaptlearngraph.entities.domain.AdaptiveBlueprint.Bounds(6,360),"role-b",new com.adaptlearngraph.entities.domain.AdaptiveBlueprint.Bounds(6,360))),
-   v.occupationNameSnapshot(),v.catalogFingerprint(),v.pins(),v.roles(),v.createdBy(),v.createdAt());
+   v.jobPositionNameSnapshot(),v.catalogFingerprint(),v.pins(),v.roles(),v.createdBy(),v.createdAt());
   var oldPool=new TreeMap<UUID,String>(pool());oldPool.values().removeIf(s->s.equals("s3"));
   var old=new AdaptiveAttemptSnapshot(legacy,a.purpose(),Optional.of("role-a"),Optional.of(1L),oldPool);
   assertThat(old.microSkillIds()).containsExactlyInAnyOrder("s1","s2");assertThat(old.bounds().timeLimitSeconds()).isEqualTo(360);

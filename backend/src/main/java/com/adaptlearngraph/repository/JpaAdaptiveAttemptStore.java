@@ -35,21 +35,21 @@ public final class JpaAdaptiveAttemptStore extends JpaAdaptiveAttemptState {
         return found.stream().map(rows::header).toList().stream().findFirst();
     }
     @Override public Optional<Scope> findReceiptScope(UUID org, UUID learner, String key) {
-        return AdaptiveAttemptJpa.read(() -> db.data.commands().occupation(org, learner, key).stream()
-                .map(occupation -> new Scope(org, learner, occupation)).toList().stream().findFirst());
+        return AdaptiveAttemptJpa.read(() -> db.data.commands().jobPosition(org, learner, key).stream()
+                .map(jobPosition -> new Scope(org, learner, jobPosition)).toList().stream().findFirst());
     }
     @Override public Optional<AdaptiveAttempt> find(Scope scope, UUID id) {
-        return AdaptiveAttemptJpa.read(() -> first(db.data.attempts().find(scope.organizationId(), scope.learnerId(), scope.occupationId(), id)));
+        return AdaptiveAttemptJpa.read(() -> first(db.data.attempts().find(scope.organizationId(), scope.learnerId(), scope.jobPositionId(), id)));
     }
     @Override public Optional<AdaptiveAttempt> findInProgress(Scope scope) {
-        return AdaptiveAttemptJpa.read(() -> first(db.data.attempts().inProgress(scope.organizationId(), scope.learnerId(), scope.occupationId())));
+        return AdaptiveAttemptJpa.read(() -> first(db.data.attempts().inProgress(scope.organizationId(), scope.learnerId(), scope.jobPositionId())));
     }
     @Override public Optional<AdaptiveAttempt> findLatest(Scope scope) {
-        return AdaptiveAttemptJpa.read(() -> first(db.data.attempts().latest(scope.organizationId(), scope.learnerId(), scope.occupationId())));
+        return AdaptiveAttemptJpa.read(() -> first(db.data.attempts().latest(scope.organizationId(), scope.learnerId(), scope.jobPositionId())));
     }
     @Override public boolean hasMasteryProducingCompletion(Scope scope) {
         return AdaptiveAttemptJpa.read(() -> db.data.attempts().hasMasteryProducingCompletion(scope.organizationId(), scope.learnerId(),
-                scope.occupationId()));
+                scope.jobPositionId()));
     }
 
     @Override public void insert(Scope scope, AdaptiveAttempt attempt, List<SkillState> skills, PresentedItem first) {
@@ -65,7 +65,7 @@ public final class JpaAdaptiveAttemptStore extends JpaAdaptiveAttemptState {
                 current.startedAt(), current.deadlineAt(), next.finishedAt(), current.replacesAttemptId(), next.completionReason());
         if (!intended.equals(next) || next.revision() != Math.incrementExact(expectedRevision)) throw new Failure(Code.VERSION_CONFLICT);
         AdaptiveAttemptJpa.changed(db.data.attempts().transition(next.scope().organizationId(), next.scope().learnerId(),
-                next.scope().occupationId(), next.id(), expectedRevision, next.status().name(), next.revision(),
+                next.scope().jobPositionId(), next.id(), expectedRevision, next.status().name(), next.revision(),
                 next.finishedAt().orElse(null), next.completionReason().map(Enum::name).orElse(null)));
     }
 
@@ -73,7 +73,7 @@ public final class JpaAdaptiveAttemptStore extends JpaAdaptiveAttemptState {
         db.requireReceipt(org, learner);
         return db.data.commands().receipt(org, learner, key).stream().map(row -> {
             Receipt receipt = rows.read(row.responsePayload(), Receipt.class);
-            if (!receipt.scope().equals(new Scope(org, learner, row.occupationId())) || !receipt.idempotencyKey().equals(key)
+            if (!receipt.scope().equals(new Scope(org, learner, row.jobPositionId())) || !receipt.idempotencyKey().equals(key)
                     || receipt.operation() != Operation.valueOf(row.operation()) || !receipt.requestHash().equals(row.requestHash())
                     || !receipt.outcome().id().equals(row.attemptId()) || !receipt.createdAt().equals(row.createdAt())) {
                 throw new IllegalStateException("Stored attempt receipt metadata mismatch");
@@ -88,7 +88,7 @@ public final class JpaAdaptiveAttemptStore extends JpaAdaptiveAttemptState {
                 || !progress(scope, receipt.outcome().id()).equals(receipt.progress())) throw new Failure(Code.VERSION_CONFLICT);
         try {
             db.data.commands().insert(new BaselineAttemptCommandEntity(scope.organizationId(), scope.learnerId(), receipt.idempotencyKey(),
-                    receipt.outcome().id(), scope.occupationId(), receipt.operation().name(), receipt.requestHash(), rows.write(receipt),
+                    receipt.outcome().id(), scope.jobPositionId(), receipt.operation().name(), receipt.requestHash(), rows.write(receipt),
                     receipt.createdAt()));
         } catch (DataIntegrityViolationException cause) {
             if (!PostgresErrors.isUniqueViolation(cause)) throw cause;

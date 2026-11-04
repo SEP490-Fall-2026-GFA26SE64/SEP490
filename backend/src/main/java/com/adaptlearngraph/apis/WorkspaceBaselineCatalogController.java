@@ -15,9 +15,9 @@ import java.util.Map;
 public final class WorkspaceBaselineCatalogController {
     private final WorkspaceBaselineCatalogUseCase catalog;
     public WorkspaceBaselineCatalogController(WorkspaceBaselineCatalogUseCase catalog) { this.catalog = catalog; }
-    @GetMapping("/api/v1/ld/baseline-blueprint-catalog/occupations")
-    public ResponseEntity<List<WorkspaceBaselineCatalogUseCase.Occupation>> occupations() {
-        return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(catalog.occupations());
+    @GetMapping("/api/v1/ld/baseline-blueprint-catalog/job-positions")
+    public ResponseEntity<List<WorkspaceBaselineCatalogUseCase.JobPosition>> jobPositions() {
+        return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(catalog.jobPositions());
     }
     @ExceptionHandler({IllegalStateException.class,org.springframework.dao.DataAccessException.class})
     public ResponseEntity<Map<String,String>> unavailable(Exception failure) {

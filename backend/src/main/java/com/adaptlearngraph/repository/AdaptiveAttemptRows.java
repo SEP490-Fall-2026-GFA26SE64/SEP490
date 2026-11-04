@@ -35,16 +35,16 @@ public final class AdaptiveAttemptRows {
     }
 
     AdaptiveAttempt header(AdaptiveAttemptJpaRepository.Row row) {
-        var scope = new AdaptiveAttempt.Scope(row.organizationId(), row.learnerId(), row.occupationId());
+        var scope = new AdaptiveAttempt.Scope(row.organizationId(), row.learnerId(), row.jobPositionId());
         UUID id = row.attemptId();
-        var blueprint = blueprints.findVersion(new AdaptiveBlueprint.Scope(scope.organizationId(), scope.occupationId()),
+        var blueprint = blueprints.findVersion(new AdaptiveBlueprint.Scope(scope.organizationId(), scope.jobPositionId()),
                 new AdaptiveBlueprint.VersionId(row.blueprintId(), row.blueprintVersion())).orElseThrow();
         Map<UUID, String> pool = new LinkedHashMap<>();
         data.pool().pool(scope.organizationId(), id).forEach(item -> pool.put(item.itemVersionId(), item.microSkillId()));
         var snapshot = new AdaptiveAttemptSnapshot(blueprint, AdaptiveAttemptSnapshot.Purpose.valueOf(row.attemptPurpose()),
                 Optional.ofNullable(row.targetRoleId()), Optional.ofNullable(row.targetSelectionRevision()), pool,
                 policy(row, scope.organizationId()));
-        String expectedPolicy = blueprint.configuration().occupationBounds() == null ? null : AdaptiveBlueprint.ScopePolicy.FULL_OCCUPATION_V2.name();
+        String expectedPolicy = blueprint.configuration().jobPositionBounds() == null ? null : AdaptiveBlueprint.ScopePolicy.FULL_JOB_POSITION_V2.name();
         if (!Objects.equals(expectedPolicy, row.scopePolicy())) throw new IllegalStateException("Attempt scope pin mismatch");
         if (!blueprint.pins().modelVersionId().equals(row.modelVersionId())
                 || !blueprint.pins().masteryMappingVersionId().equals(row.masteryMappingVersionId())
@@ -63,13 +63,13 @@ public final class AdaptiveAttemptRows {
         var blueprint = attempt.snapshot().blueprint();
         var policy = attempt.snapshot().assessmentPolicy();
         return new BaselineAdaptiveAttemptEntity(attempt.id(), attempt.scope().organizationId(), attempt.scope().learnerId(),
-                attempt.scope().occupationId(), attempt.snapshot().purpose().name(), attempt.snapshot().roleId().orElse(null),
+                attempt.scope().jobPositionId(), attempt.snapshot().purpose().name(), attempt.snapshot().roleId().orElse(null),
                 attempt.snapshot().selectionRevision().orElse(null), blueprint.id().blueprintId(), blueprint.id().version(),
                 blueprint.pins().modelVersionId(), blueprint.pins().masteryMappingVersionId(), blueprint.pins().parameterSetId(),
                 blueprint.catalogFingerprint(), attempt.snapshot().bounds().maxQuestions(), attempt.snapshot().bounds().timeLimitSeconds(),
                 attempt.status().name(), attempt.revision(), attempt.startedAt(), attempt.deadlineAt(), attempt.finishedAt().orElse(null),
                 attempt.completionReason().map(Enum::name).orElse(null), attempt.replacesAttemptId().orElse(null),
-                blueprint.configuration().occupationBounds() == null ? null : AdaptiveBlueprint.ScopePolicy.FULL_OCCUPATION_V2.name(),
+                blueprint.configuration().jobPositionBounds() == null ? null : AdaptiveBlueprint.ScopePolicy.FULL_JOB_POSITION_V2.name(),
                 policy.isPresent() ? OrganizationAssessmentPolicy.SCHEMA : null, policy.map(p -> p.versionId()).orElse(null),
                 policy.map(p -> p.hash()).orElse(null), policy.map(p -> write(p.values())).orElse(null));
     }

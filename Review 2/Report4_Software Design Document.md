@@ -102,7 +102,7 @@ The target adds complete private content, local inference, workflow approvals, a
 | 02 | Identity and Access Service | Handles authentication, MFA, account profiles, sessions, roles and access checks. |
 | 03 | Organization and Workspace Service | Handles organization onboarding, workspace provisioning, departments, members and organization administration. |
 | 04 | Subscription and Payment Service | Handles subscription plans, purchases, renewals, payment verification, seat allocation and entitlement enforcement. |
-| 05 | Competency Catalog Service | Manages occupation, target-role, level, competency, skill and prerequisite relationships. |
+| 05 | Competency Catalog Service | Manages job position, target-role, level, competency, skill and prerequisite relationships. |
 | 06 | Learning Content and Approval Service | Handles learning modules, materials, teaching mappings and offering submission/approval. |
 | 07 | Assessment and Mastery Service | Handles baseline/module assessments, question selection, scoring, RIASEC and mastery estimation. |
 | 08 | Guidance and Adaptive Pathways Service | Coordinates role suggestions, gap-based pathway generation, Expert review and pathway updates. |
@@ -124,7 +124,7 @@ The eight Service names describe logical functional groups, not independently de
 | --- | --- | --- |
 | Credentials, proofs, sessions, memberships, roles | Identity / PostgreSQL | Do not put secrets or authority in client storage or graph nodes. |
 | Plans, purchased snapshots, provider observations, paid periods | Subscription / PostgreSQL | Provider signature and immutable terms govern application; payment redirects are hints only. |
-| Organization/department/occupation grants | PostgreSQL references and approved organization contracts | A catalog ID alone does not grant tenant access. V32 binds organization to explicit graph Occupation resources. |
+| Organization/department/job position grants | PostgreSQL references and approved organization contracts | A catalog ID alone does not grant tenant access. V32 binds organization to explicit graph Job Position resources. |
 | Role/skill/prerequisite/teaching relationships | Neo4j | Stable string IDs and versioned snapshot context; tenant/review eligibility must be checked by trusted adapters. |
 | Question content, answer keys, attempts and results | Assessment / PostgreSQL | Immutable pins and safe DTO projections; correct answers are not ordinary Employee fields. |
 | Baseline mastery/profile | PostgreSQL result/evidence/profile tables | Valid low/zero values differ from missing evidence; no automatic reinterpretation under new models. |
@@ -346,19 +346,19 @@ The checksum column is the full signed Flyway CRC32 verified against the running
 | V15 | [V15__baseline_blueprint_write_idempotency.sql](../backend/src/main/resources/db/migration/V15__baseline_blueprint_write_idempotency.sql) | -406452938 | 6efecb2360fa1d06 |
 | V16 | [V16__baseline_assessment_generation.sql](../backend/src/main/resources/db/migration/V16__baseline_assessment_generation.sql) | 305115675 | 11a39e745f08e1c5 |
 | V17 | [V17__baseline_assessment_review_publish.sql](../backend/src/main/resources/db/migration/V17__baseline_assessment_review_publish.sql) | 1670694760 | 90fe26d114b4f527 |
-| V18 | [V18__occupation_blueprint_identity.sql](../backend/src/main/resources/db/migration/V18__occupation_blueprint_identity.sql) | -1992663521 | a9135f5534eb1c4a |
+| V18 | [V18__job position_blueprint_identity.sql](../backend/src/main/resources/db/migration/V18__job position_blueprint_identity.sql) | -1992663521 | a9135f5534eb1c4a |
 | V19 | [V19__baseline_assessment_management.sql](../backend/src/main/resources/db/migration/V19__baseline_assessment_management.sql) | 1966272887 | ba913205f765353d |
 | V20 | [V20__baseline_management_command_idempotency.sql](../backend/src/main/resources/db/migration/V20__baseline_management_command_idempotency.sql) | -489468397 | c237a3c5cb67b86a |
 | V21 | [V21__baseline_answer_reveal_audit.sql](../backend/src/main/resources/db/migration/V21__baseline_answer_reveal_audit.sql) | 919091195 | b7735c744556dd39 |
 | V22 | [V22__fix_baseline_management_actor_trigger.sql](../backend/src/main/resources/db/migration/V22__fix_baseline_management_actor_trigger.sql) | -913315742 | 0bc2811a14571502 |
 | V23 | [V23__adaptive_baseline_blueprint_and_irt_versions.sql](../backend/src/main/resources/db/migration/V23__adaptive_baseline_blueprint_and_irt_versions.sql) | 242615654 | abbc0686648eadeb |
 | V24 | [V24__adaptive_baseline_attempt.sql](../backend/src/main/resources/db/migration/V24__adaptive_baseline_attempt.sql) | 975611633 | bb2562cd01f25781 |
-| V25 | [V25__occupation_baseline_scope_compatibility.sql](../backend/src/main/resources/db/migration/V25__occupation_baseline_scope_compatibility.sql) | 2137365147 | 6dfec5d2fd4fe6da |
-| V26 | [V26__occupation_baseline_name_and_time_limits.sql](../backend/src/main/resources/db/migration/V26__occupation_baseline_name_and_time_limits.sql) | -935442136 | c1b2cb79b6140bdf |
-| V27 | [V27__occupation_baseline_draft_conversion_receipt.sql](../backend/src/main/resources/db/migration/V27__occupation_baseline_draft_conversion_receipt.sql) | 859223100 | 65f04ae3c2e873b2 |
+| V25 | [V25__job position_baseline_scope_compatibility.sql](../backend/src/main/resources/db/migration/V25__job position_baseline_scope_compatibility.sql) | 2137365147 | 6dfec5d2fd4fe6da |
+| V26 | [V26__job position_baseline_name_and_time_limits.sql](../backend/src/main/resources/db/migration/V26__job position_baseline_name_and_time_limits.sql) | -935442136 | c1b2cb79b6140bdf |
+| V27 | [V27__job position_baseline_draft_conversion_receipt.sql](../backend/src/main/resources/db/migration/V27__job position_baseline_draft_conversion_receipt.sql) | 859223100 | 65f04ae3c2e873b2 |
 | V28 | [V28__irt_scoped_parameter_promotion.sql](../backend/src/main/resources/db/migration/V28__irt_scoped_parameter_promotion.sql) | -1125147424 | 4f5c8b69db4a7d42 |
 | V29 | [V29__baseline_draft_discard_receipt.sql](../backend/src/main/resources/db/migration/V29__baseline_draft_discard_receipt.sql) | -71600753 | 4d21100bd1d5d989 |
-| V30 | [V30__current_role_selection_and_occupation_profile.sql](../backend/src/main/resources/db/migration/V30__current_role_selection_and_occupation_profile.sql) | 1717114679 | 6107ba3e440cdc92 |
+| V30 | [V30__current_role_selection_and_job position_profile.sql](../backend/src/main/resources/db/migration/V30__current_role_selection_and_job position_profile.sql) | 1717114679 | 6107ba3e440cdc92 |
 | V31 | [V31__insufficient_evidence_manual_submission.sql](../backend/src/main/resources/db/migration/V31__insufficient_evidence_manual_submission.sql) | -738341887 | 521dcb12b37df11f |
 | V32 | [V32__workspace_baseline_resources.sql](../backend/src/main/resources/db/migration/V32__workspace_baseline_resources.sql) | 608834404 | 9d406120924ef06f |
 
@@ -402,7 +402,7 @@ These views retain the 76 distinct entities previously expanded in the SRS. They
 | --- | --- |
 | Single role | V12 membership/account triggers and unique rules enforce the current one-role identity policy and platform/organization separation. |
 | Paid periods | V11 interval guards prevent overlapping subscription periods; paid terms remain immutable. |
-| Tenant resource binding | V32 `workspace_baseline_resource` has PK `(organization_id, graph_occupation_id)`, unique `(organization_id, occupation_reference_id)` and composite FK to the same-organization occupation reference. |
+| Tenant resource binding | V32 `workspace_baseline_resource` has PK `(organization_id, graph_job position_id)`, unique `(organization_id, job position_reference_id)` and composite FK to the same-organization job position reference. |
 | Optional baseline resource pins | V32 `question_bank_id`, `model_version_id`, `mastery_mapping_version_id` are nullable: null means unconfigured, not default/demo approved resource. |
 | Question-bank owner | V32 trigger checks the bank creator account's organization; the FK alone does not establish tenant ownership. |
 | Registration | State/email/completion timestamp consistency is checked; account secrets/proofs are stored separately from public registration DTOs. |
@@ -411,7 +411,7 @@ These views retain the 76 distinct entities previously expanded in the SRS. They
 | Adaptive attempt | `IN_PROGRESS` has no terminal time/reason; terminal states have consistent actual finish time, completion reason and deadline rules. |
 | Mastery | UNKNOWN is not numerical zero; valid estimated/effective values and evidence status are constrained separately. |
 | Released baseline | Draft state/identity, version registry and activation pointer have distinct keys; closing a draft does not mutate a released version. |
-| Current role | V30 persists string-based current Role selections and Occupation profiles without rewriting legacy UUID selections. |
+| Current role | V30 persists string-based current Role selections and Job Position profiles without rewriting legacy UUID selections. |
 | Invalidation | V31 supports insufficient manual finalization without fabricated mastery/profile. |
 | PostgreSQL schema history | `public.flyway_schema_history` is migration bookkeeping, outside the 113 `platform` business/support tables. |
 
@@ -485,11 +485,11 @@ These are key-focused physical views; they do not invent relationships for match
 
 - PK = primary key; FK = foreign key; REQUIRED = NOT NULL; NULLABLE = nullable. Parent -> child. FK IDs resolve to exact definitions in the dictionary. External entities belong to another diagram; no reverse cardinality is inferred.
 
-**DB-07: Current role, Occupation profile and tenant resource binding** - 4 owned tables, 9 foreign keys.
+**DB-07: Current role, Job Position profile and tenant resource binding** - 4 owned tables, 9 foreign keys.
 
 [Mermaid source: DB-07](../documents/diagrams/mermaid/db-07.mmd)
 
-![DB-07 - Current role, Occupation profile and tenant resource binding V1-V32 key-focused physical ERD](../documents/diagrams/mermaid/db-07.png)
+![DB-07 - Current role, Job Position profile and tenant resource binding V1-V32 key-focused physical ERD](../documents/diagrams/mermaid/db-07.png)
 
 **Diagram notes (DB-07):**
 
@@ -532,10 +532,10 @@ Every table is listed below with purpose and its real primary/foreign keys. “F
 | 15 | [baseline_adaptive_attempt](#table-baseline-adaptive-attempt) | Current pinned adaptive attempt, deadline and terminal reason. | `attempt_id` | FK025 to `baseline_adaptive_blueprint_role`; FK026 to `learner_state`; FK027 to `account`; FK028 to `baseline_adaptive_blueprint_version`; FK029 to `baseline_adaptive_attempt` |
 | 16 | [baseline_adaptive_blueprint_role](#table-baseline-adaptive-blueprint-role) | Pinned role requirement snapshot in adaptive version. | `blueprint_id`, `blueprint_version`, `role_id` | FK030 to `baseline_adaptive_blueprint_version` |
 | 17 | [baseline_adaptive_blueprint_skill](#table-baseline-adaptive-blueprint-skill) | Pinned role-skill union input in adaptive version. | `blueprint_id`, `blueprint_version`, `role_id`, `micro_skill_id` | FK031 to `baseline_adaptive_blueprint_role` |
-| 18 | [baseline_adaptive_blueprint_version](#table-baseline-adaptive-blueprint-version) | Immutable adaptive configuration, resource pins and full-Occupation policy. | `blueprint_id`, `version` | FK032 to `baseline_blueprint`; FK033 to `irt_parameter_set`; FK034 to `account`; FK035 to `mastery_mapping_version`; FK036 to `model_version` |
+| 18 | [baseline_adaptive_blueprint_version](#table-baseline-adaptive-blueprint-version) | Immutable adaptive configuration, resource pins and full-Job Position policy. | `blueprint_id`, `version` | FK032 to `baseline_blueprint`; FK033 to `irt_parameter_set`; FK034 to `account`; FK035 to `mastery_mapping_version`; FK036 to `model_version` |
 | 19 | [baseline_adaptive_blueprint_working_revision](#table-baseline-adaptive-blueprint-working-revision) | Current adaptive editable Draft identity/settings/state. | `working_revision_id` | FK037 to `baseline_blueprint`; FK038 to `account`; FK039 to `account` |
 | 20 | [baseline_answer_reveal_audit](#table-baseline-answer-reveal-audit) | Protected answer-review access audit. | `answer_reveal_audit_id` | FK040 to `account`; FK041 to `assessment_version`; FK042 to `organization` |
-| 21 | [baseline_assessment_series](#table-baseline-assessment-series) | Legacy Occupation assessment series/current working state. | `organization_id`, `occupation_id` | FK043 to `assessment_version`; FK044 to `baseline_blueprint`; FK045 to `baseline_blueprint_version`; FK046 to `assessment_version`; FK047 to `organization`; FK048 to `baseline_blueprint_working_revision` |
+| 21 | [baseline_assessment_series](#table-baseline-assessment-series) | Legacy Job Position assessment series/current working state. | `organization_id`, `job position_id` | FK043 to `assessment_version`; FK044 to `baseline_blueprint`; FK045 to `baseline_blueprint_version`; FK046 to `assessment_version`; FK047 to `organization`; FK048 to `baseline_blueprint_working_revision` |
 | 22 | [baseline_assessment_transition](#table-baseline-assessment-transition) | Legacy management transition history. | `transition_id` | FK049 to `assessment_version`; FK050 to `baseline_assessment_series`; FK051 to `baseline_blueprint_version`; FK052 to `assessment_version`; FK053 to `assessment_version`; FK054 to `baseline_blueprint_version`; FK055 to `baseline_blueprint_working_revision`; FK056 to `account`; FK057 to `assessment_version`; FK058 to `baseline_blueprint_working_revision` |
 | 23 | [baseline_attempt_command](#table-baseline-attempt-command) | Attempt operation idempotency receipt scoped to tenant and actor. | `organization_id`, `actor_id`, `idempotency_key` | FK059 to `baseline_adaptive_attempt` |
 | 24 | [baseline_attempt_item](#table-baseline-attempt-item) | Delivered item sequence and content snapshot. | `attempt_id`, `position` | FK060 to `baseline_attempt_pool_item` |
@@ -544,8 +544,8 @@ Every table is listed below with purpose and its real primary/foreign keys. “F
 | 27 | [baseline_attempt_result](#table-baseline-attempt-result) | Valid terminal adaptive result summary. | `attempt_id` | FK065 to `baseline_adaptive_attempt`; FK066 to `outbox_event` |
 | 28 | [baseline_attempt_skill_result](#table-baseline-attempt-skill-result) | Terminal per-skill result and confidence. | `attempt_id`, `micro_skill_id` | FK067 to `baseline_attempt_skill_state`; FK068 to `mastery_mapping_version` |
 | 29 | [baseline_attempt_skill_state](#table-baseline-attempt-skill-state) | Internal per-skill adaptive progress, theta and uncertainty. | `attempt_id`, `micro_skill_id` | FK069 to `baseline_adaptive_attempt` |
-| 30 | [baseline_blueprint](#table-baseline-blueprint) | Stable organization/Occupation baseline identity. | `blueprint_id` | FK089 to `account`; FK090 to `organization` |
-| 31 | [baseline_blueprint_activation](#table-baseline-blueprint-activation) | Current active baseline pointer for organization/Occupation. | `organization_id`, `occupation_id` | FK074 to `account`; FK075 to `baseline_blueprint`; FK076 to `baseline_adaptive_blueprint_version` |
+| 30 | [baseline_blueprint](#table-baseline-blueprint) | Stable organization/Job Position baseline identity. | `blueprint_id` | FK089 to `account`; FK090 to `organization` |
+| 31 | [baseline_blueprint_activation](#table-baseline-blueprint-activation) | Current active baseline pointer for organization/Job Position. | `organization_id`, `job position_id` | FK074 to `account`; FK075 to `baseline_blueprint`; FK076 to `baseline_adaptive_blueprint_version` |
 | 32 | [baseline_blueprint_activation_event](#table-baseline-blueprint-activation-event) | Activation/deactivation/replacement history. | `activation_event_id` | FK070 to `baseline_blueprint`; FK071 to `baseline_blueprint_activation`; FK072 to `baseline_adaptive_blueprint_version`; FK073 to `account` |
 | 33 | [baseline_blueprint_command](#table-baseline-blueprint-command) | Adaptive management exact replay receipt. | `organization_id`, `actor_id`, `idempotency_key` | FK077 to `account`; FK078 to `baseline_blueprint` |
 | 34 | [baseline_blueprint_role](#table-baseline-blueprint-role) | Legacy blueprint role coverage and bounds. | `blueprint_id`, `blueprint_version`, `role_id` | FK079 to `baseline_blueprint_version` |
@@ -563,7 +563,7 @@ Every table is listed below with purpose and its real primary/foreign keys. “F
 | 46 | [cohort_snapshot](#table-cohort-snapshot) | Frozen reporting population and filter context. | `cohort_snapshot_id` | FK104 to `account`; FK105 to `catalog_reference` |
 | 47 | [completion_pass](#table-completion-pass) | Satisfied assessment requirement for activity completion. | `activity_id`, `assessment_version_id` | FK106 to `activity_requirement`; FK107 to `module_completion`; FK108 to `assessment_result` |
 | 48 | [department_reference](#table-department-reference) | Stored same-organization department lookup for member assignment. | `department_id` | FK109 to `organization` |
-| 49 | [employee_occupation_profile](#table-employee-occupation-profile) | Applicable Occupation mastery/profile initialization binding. | `organization_id`, `learner_id`, `occupation_id` | FK110 to `baseline_adaptive_attempt`; FK111 to `baseline_adaptive_blueprint_version` |
+| 49 | [employee_job position_profile](#table-employee-job position-profile) | Applicable Job Position mastery/profile initialization binding. | `organization_id`, `learner_id`, `job position_id` | FK110 to `baseline_adaptive_attempt`; FK111 to `baseline_adaptive_blueprint_version` |
 | 50 | [employee_role_selection](#table-employee-role-selection) | Current string-ID Role selection history and immutable snapshot. | `selection_id` | FK113 to `learner_state` |
 | 51 | [employee_role_selection_request](#table-employee-role-selection-request) | Current Role selection retry receipt. | `organization_id`, `learner_id`, `retry_key` | FK112 to `employee_role_selection` |
 | 52 | [evaluation_artifact](#table-evaluation-artifact) | Retained evaluation output artifact metadata. | `artifact_id` | FK114 to `evaluation_run` |
@@ -587,9 +587,9 @@ Every table is listed below with purpose and its real primary/foreign keys. “F
 | 70 | [model_version](#table-model-version) | Versioned assessment/mastery model configuration. | `model_version_id` | FK152 to `account` |
 | 71 | [module_assessment_binding](#table-module-assessment-binding) | Versioned catalog module-to-assessment binding foundation. | `module_ref_id`, `assessment_version_id` | FK153 to `assessment_version`; FK154 to `catalog_reference` |
 | 72 | [module_completion](#table-module-completion) | Activity-level module completion fact. | `activity_id` | FK155 to `learning_activity`; FK156 to `progress_revision` |
-| 73 | [occupation_department_reference](#table-occupation-department-reference) | Stored occupation-to-department association for assignment and baseline grants. | `occupation_reference_id` | FK157 to `department_reference`; FK158 to `organization` |
+| 73 | [job position_department_reference](#table-job position-department-reference) | Stored job position-to-department association for assignment and baseline grants. | `job position_reference_id` | FK157 to `department_reference`; FK158 to `organization` |
 | 74 | [organization](#table-organization) | Organization tenant identity and administrative availability. | `organization_id` | None |
-| 75 | [organization_membership](#table-organization-membership) | Account membership, access state, revision and assignment references. | `membership_id` | FK160 to `account`; FK161 to `account`; FK162 to `department_reference`; FK163 to `occupation_department_reference`; FK164 to `organization` |
+| 75 | [organization_membership](#table-organization-membership) | Account membership, access state, revision and assignment references. | `membership_id` | FK160 to `account`; FK161 to `account`; FK162 to `department_reference`; FK163 to `job position_department_reference`; FK164 to `organization` |
 | 76 | [organization_membership_role](#table-organization-membership-role) | Exactly-one organization membership role under V12 guards. | `membership_id`, `role_code` | FK159 to `organization_membership` |
 | 77 | [organization_registration](#table-organization-registration) | Resumable organization and initial administrator onboarding. | `registration_id` | FK165 to `account` |
 | 78 | [organization_workspace](#table-organization-workspace) | Logical organization workspace setup and readiness. | `workspace_id` | FK166 to `organization`; FK167 to `organization_registration` |
@@ -626,8 +626,8 @@ Every table is listed below with purpose and its real primary/foreign keys. “F
 | 109 | [target_selection](#table-target-selection) | Legacy learner target-role selection history. | `selection_id` | FK225 to `learner_state`; FK226 to `catalog_reference` |
 | 110 | [target_selection_request](#table-target-selection-request) | Legacy selection command replay and rejected/successful outcome. | `request_id` | FK223 to `account`; FK224 to `target_selection` |
 | 111 | [workspace_account_profile](#table-workspace-account-profile) | Current workspace name/profile projection separate from registration snapshot. | `account_id` | FK227 to `account` |
-| 112 | [workspace_activation](#table-workspace-activation) | Pending member invitation/activation and single-use proof lifecycle. | `activation_id` | FK228 to `account`; FK229 to `account`; FK230 to `department_reference`; FK231 to `occupation_department_reference`; FK232 to `organization` |
-| 113 | [workspace_baseline_resource](#table-workspace-baseline-resource) | Explicit organization/graph-Occupation grant and nullable bank/model/mapping pins. | `organization_id`, `graph_occupation_id` | FK233 to `mastery_mapping_version`; FK234 to `model_version`; FK235 to `occupation_department_reference`; FK236 to `organization`; FK237 to `question_bank` |
+| 112 | [workspace_activation](#table-workspace-activation) | Pending member invitation/activation and single-use proof lifecycle. | `activation_id` | FK228 to `account`; FK229 to `account`; FK230 to `department_reference`; FK231 to `job position_department_reference`; FK232 to `organization` |
+| 113 | [workspace_baseline_resource](#table-workspace-baseline-resource) | Explicit organization/graph-Job Position grant and nullable bank/model/mapping pins. | `organization_id`, `graph_job position_id` | FK233 to `mastery_mapping_version`; FK234 to `model_version`; FK235 to `job position_department_reference`; FK236 to `organization`; FK237 to `question_bank` |
 
 <!-- TABLE_DESCRIPTIONS:END -->
 
@@ -1237,7 +1237,7 @@ Current pinned adaptive attempt, deadline and terminal reason.
 | `attempt_id` | `uuid` | Yes | PK | None |
 | `organization_id` | `uuid` | Yes | FK | None |
 | `learner_id` | `uuid` | Yes | FK | None |
-| `occupation_id` | `text` | Yes | FK | None |
+| `job position_id` | `text` | Yes | FK | None |
 | `attempt_purpose` | `text` | Yes | - | None |
 | `target_role_id` | `text` | No | FK | None |
 | `target_selection_revision` | `bigint` | No | - | None |
@@ -1265,25 +1265,25 @@ Current pinned adaptive attempt, deadline and terminal reason.
 | `adaptive_attempt_complete` | t | `TRIGGER DEFERRABLE INITIALLY DEFERRED` |
 | `baseline_adaptive_attempt_attempt_id_check` | Check | `CHECK (attempt_id <> '00000000-0000-0000-0000-000000000000'::uuid)` |
 | `baseline_adaptive_attempt_attempt_id_organization_id_key` | Unique | `UNIQUE (attempt_id, organization_id)` |
-| `baseline_adaptive_attempt_attempt_id_organization_id_learne_key` | Unique | `UNIQUE (attempt_id, organization_id, learner_id, occupation_id)` |
+| `baseline_adaptive_attempt_attempt_id_organization_id_learne_key` | Unique | `UNIQUE (attempt_id, organization_id, learner_id, job position_id)` |
 | `baseline_adaptive_attempt_attempt_id_parameter_set_id_key` | Unique | `UNIQUE (attempt_id, parameter_set_id)` |
-| `baseline_adaptive_attempt_attempt_purpose_check` | Check | `CHECK (attempt_purpose = ANY (ARRAY['ROLE_REQUIREMENT'::text, 'OCCUPATION_EXPLORATION'::text]))` |
+| `baseline_adaptive_attempt_attempt_purpose_check` | Check | `CHECK (attempt_purpose = ANY (ARRAY['ROLE_REQUIREMENT'::text, 'JOB_POSITION_EXPLORATION'::text]))` |
 | FK025 / `baseline_adaptive_attempt_blueprint_id_blueprint_version_t_fkey` | Foreign key | `FOREIGN KEY (blueprint_id, blueprint_version, target_role_id) REFERENCES platform.baseline_adaptive_blueprint_role(blueprint_id, blueprint_version, role_id)` |
 | `baseline_adaptive_attempt_catalog_fingerprint_check` | Check | `CHECK (btrim(catalog_fingerprint) <> ''::text)` |
-| `baseline_adaptive_attempt_check` | Check | `CHECK (attempt_purpose = 'ROLE_REQUIREMENT'::text AND target_role_id IS NOT NULL OR attempt_purpose = 'OCCUPATION_EXPLORATION'::text AND target_role_id IS NULL AND target_selection_revision IS NULL)` |
+| `baseline_adaptive_attempt_check` | Check | `CHECK (attempt_purpose = 'ROLE_REQUIREMENT'::text AND target_role_id IS NOT NULL OR attempt_purpose = 'JOB_POSITION_EXPLORATION'::text AND target_role_id IS NULL AND target_selection_revision IS NULL)` |
 | `baseline_adaptive_attempt_check1` | Check | `CHECK (deadline_at = (started_at + time_limit_seconds::double precision * '00:00:01'::interval))` |
 | `baseline_adaptive_attempt_check2` | Check | `CHECK (isfinite(started_at) AND isfinite(deadline_at))` |
 | `baseline_adaptive_attempt_check3` | Check | `CHECK (replaces_attempt_id IS NULL OR replaces_attempt_id <> attempt_id)` |
 | FK026 / `baseline_adaptive_attempt_learner_id_fkey` | Foreign key | `FOREIGN KEY (learner_id) REFERENCES platform.learner_state(learner_id)` |
 | FK027 / `baseline_adaptive_attempt_learner_id_organization_id_fkey` | Foreign key | `FOREIGN KEY (learner_id, organization_id) REFERENCES platform.account(account_id, organization_id)` |
 | `baseline_adaptive_attempt_max_questions_check` | Check | `CHECK (max_questions > 0)` |
-| `baseline_adaptive_attempt_occupation_id_check` | Check | `CHECK (occupation_id <> ''::text AND occupation_id = btrim(occupation_id))` |
-| FK028 / `baseline_adaptive_attempt_organization_id_occupation_id_bl_fkey` | Foreign key | `FOREIGN KEY (organization_id, occupation_id, blueprint_id, blueprint_version) REFERENCES platform.baseline_adaptive_blueprint_version(organization_id, occupation_id, blueprint_id, version)` |
+| `baseline_adaptive_attempt_job position_id_check` | Check | `CHECK (job position_id <> ''::text AND job position_id = btrim(job position_id))` |
+| FK028 / `baseline_adaptive_attempt_organization_id_job position_id_bl_fkey` | Foreign key | `FOREIGN KEY (organization_id, job position_id, blueprint_id, blueprint_version) REFERENCES platform.baseline_adaptive_blueprint_version(organization_id, job position_id, blueprint_id, version)` |
 | `baseline_adaptive_attempt_pkey` | Primary key | `PRIMARY KEY (attempt_id)` |
 | `baseline_adaptive_attempt_replaces_attempt_id_key` | Unique | `UNIQUE (replaces_attempt_id)` |
-| FK029 / `baseline_adaptive_attempt_replaces_attempt_id_organization_fkey` | Foreign key | `FOREIGN KEY (replaces_attempt_id, organization_id, learner_id, occupation_id) REFERENCES platform.baseline_adaptive_attempt(attempt_id, organization_id, learner_id, occupation_id)` |
+| FK029 / `baseline_adaptive_attempt_replaces_attempt_id_organization_fkey` | Foreign key | `FOREIGN KEY (replaces_attempt_id, organization_id, learner_id, job position_id) REFERENCES platform.baseline_adaptive_attempt(attempt_id, organization_id, learner_id, job position_id)` |
 | `baseline_adaptive_attempt_revision_check` | Check | `CHECK (revision > 0)` |
-| `baseline_adaptive_attempt_scope_policy_check` | Check | `CHECK (scope_policy IS NULL OR scope_policy = 'FULL_OCCUPATION_V2'::text)` |
+| `baseline_adaptive_attempt_scope_policy_check` | Check | `CHECK (scope_policy IS NULL OR scope_policy = 'FULL_JOB_POSITION_V2'::text)` |
 | `baseline_adaptive_attempt_state_check` | Check | `CHECK (state = ANY (ARRAY['IN_PROGRESS'::text, 'SUBMITTED'::text, 'AUTO_SUBMITTED'::text, 'INVALIDATED'::text]))` |
 | `baseline_adaptive_attempt_target_selection_revision_check` | Check | `CHECK (target_selection_revision > 0)` |
 | `baseline_adaptive_attempt_terminal_check` | Check | `CHECK (state = 'IN_PROGRESS'::text AND finished_at IS NULL AND completion_reason IS NULL OR finished_at IS NOT NULL AND completion_reason IS NOT NULL AND isfinite(finished_at) AND finished_at >= started_at AND (state = 'SUBMITTED'::text AND completion_reason = 'MANUAL'::text AND finished_at < deadline_at OR state = 'AUTO_SUBMITTED'::text AND (completion_reason = 'ADAPTIVE_STOP'::text AND finished_at < deadline_at OR completion_reason = 'DEADLINE'::text AND finished_at >= deadline_at) OR state = 'INVALIDATED'::text AND (completion_reason = 'TECHNICAL_FAILURE'::text OR completion_reason = 'MANUAL'::text AND finished_at < deadline_at OR completion_reason = 'DEADLINE'::text AND finished_at >= deadline_at)))` |
@@ -1294,17 +1294,17 @@ Current pinned adaptive attempt, deadline and terminal reason.
 | Index | Definition |
 | --- | --- |
 | `baseline_adaptive_attempt_attempt_id_organization_id_key` | `CREATE UNIQUE INDEX baseline_adaptive_attempt_attempt_id_organization_id_key ON platform.baseline_adaptive_attempt USING btree (attempt_id, organization_id)` |
-| `baseline_adaptive_attempt_attempt_id_organization_id_learne_key` | `CREATE UNIQUE INDEX baseline_adaptive_attempt_attempt_id_organization_id_learne_key ON platform.baseline_adaptive_attempt USING btree (attempt_id, organization_id, learner_id, occupation_id)` |
+| `baseline_adaptive_attempt_attempt_id_organization_id_learne_key` | `CREATE UNIQUE INDEX baseline_adaptive_attempt_attempt_id_organization_id_learne_key ON platform.baseline_adaptive_attempt USING btree (attempt_id, organization_id, learner_id, job position_id)` |
 | `baseline_adaptive_attempt_attempt_id_parameter_set_id_key` | `CREATE UNIQUE INDEX baseline_adaptive_attempt_attempt_id_parameter_set_id_key ON platform.baseline_adaptive_attempt USING btree (attempt_id, parameter_set_id)` |
 | `baseline_adaptive_attempt_pkey` | `CREATE UNIQUE INDEX baseline_adaptive_attempt_pkey ON platform.baseline_adaptive_attempt USING btree (attempt_id)` |
 | `baseline_adaptive_attempt_replaces_attempt_id_key` | `CREATE UNIQUE INDEX baseline_adaptive_attempt_replaces_attempt_id_key ON platform.baseline_adaptive_attempt USING btree (replaces_attempt_id)` |
 | `baseline_attempt_blueprint_idx` | `CREATE INDEX baseline_attempt_blueprint_idx ON platform.baseline_adaptive_attempt USING btree (blueprint_id, blueprint_version)` |
 | `baseline_attempt_deadline_idx` | `CREATE INDEX baseline_attempt_deadline_idx ON platform.baseline_adaptive_attempt USING btree (deadline_at, attempt_id) WHERE (state = 'IN_PROGRESS'::text)` |
-| `baseline_attempt_history_idx` | `CREATE INDEX baseline_attempt_history_idx ON platform.baseline_adaptive_attempt USING btree (organization_id, learner_id, occupation_id, started_at DESC, attempt_id)` |
-| `baseline_attempt_one_active_idx` | `CREATE UNIQUE INDEX baseline_attempt_one_active_idx ON platform.baseline_adaptive_attempt USING btree (organization_id, learner_id, occupation_id) WHERE (state = 'IN_PROGRESS'::text)` |
-| `baseline_attempt_one_root_idx` | `CREATE UNIQUE INDEX baseline_attempt_one_root_idx ON platform.baseline_adaptive_attempt USING btree (organization_id, learner_id, occupation_id) WHERE (replaces_attempt_id IS NULL)` |
-| `baseline_attempt_one_success_idx` | `CREATE UNIQUE INDEX baseline_attempt_one_success_idx ON platform.baseline_adaptive_attempt USING btree (organization_id, learner_id, occupation_id) WHERE (state = ANY (ARRAY['SUBMITTED'::text, 'AUTO_SUBMITTED'::text]))` |
-| `baseline_occupation_retiring_idx` | `CREATE INDEX baseline_occupation_retiring_idx ON platform.baseline_adaptive_attempt USING btree (organization_id, blueprint_id, blueprint_version) WHERE (state = 'IN_PROGRESS'::text)` |
+| `baseline_attempt_history_idx` | `CREATE INDEX baseline_attempt_history_idx ON platform.baseline_adaptive_attempt USING btree (organization_id, learner_id, job position_id, started_at DESC, attempt_id)` |
+| `baseline_attempt_one_active_idx` | `CREATE UNIQUE INDEX baseline_attempt_one_active_idx ON platform.baseline_adaptive_attempt USING btree (organization_id, learner_id, job position_id) WHERE (state = 'IN_PROGRESS'::text)` |
+| `baseline_attempt_one_root_idx` | `CREATE UNIQUE INDEX baseline_attempt_one_root_idx ON platform.baseline_adaptive_attempt USING btree (organization_id, learner_id, job position_id) WHERE (replaces_attempt_id IS NULL)` |
+| `baseline_attempt_one_success_idx` | `CREATE UNIQUE INDEX baseline_attempt_one_success_idx ON platform.baseline_adaptive_attempt USING btree (organization_id, learner_id, job position_id) WHERE (state = ANY (ARRAY['SUBMITTED'::text, 'AUTO_SUBMITTED'::text]))` |
+| `baseline_job position_retiring_idx` | `CREATE INDEX baseline_job position_retiring_idx ON platform.baseline_adaptive_attempt USING btree (organization_id, blueprint_id, blueprint_version) WHERE (state = 'IN_PROGRESS'::text)` |
 
 **Non-internal triggers**
 
@@ -1405,16 +1405,16 @@ Pinned role-skill union input in adaptive version.
 <details>
 <summary>18. baseline_adaptive_blueprint_version - 17 columns; 5 foreign keys</summary>
 
-Immutable adaptive configuration, resource pins and full-Occupation policy.
+Immutable adaptive configuration, resource pins and full-Job Position policy.
 
 | Column | PostgreSQL type | Required | Key participation | Default |
 | --- | --- | --- | --- | --- |
 | `blueprint_id` | `uuid` | Yes | PK, FK | None |
 | `version` | `integer` | Yes | PK | None |
 | `organization_id` | `uuid` | Yes | FK | None |
-| `occupation_id` | `text` | Yes | FK | None |
+| `job position_id` | `text` | Yes | FK | None |
 | `name` | `text` | Yes | - | None |
-| `occupation_name_snapshot` | `text` | Yes | - | None |
+| `job position_name_snapshot` | `text` | Yes | - | None |
 | `catalog_fingerprint` | `text` | Yes | - | None |
 | `exploration_max_questions` | `integer` | No | - | None |
 | `exploration_time_limit_seconds` | `integer` | No | - | None |
@@ -1424,37 +1424,37 @@ Immutable adaptive configuration, resource pins and full-Occupation policy.
 | `created_by` | `uuid` | Yes | FK | None |
 | `created_at` | `timestamp with time zone` | Yes | - | `now()` |
 | `scope_policy` | `text` | No | - | None |
-| `occupation_max_questions` | `integer` | No | - | None |
-| `occupation_time_limit_seconds` | `integer` | No | - | None |
+| `job position_max_questions` | `integer` | No | - | None |
+| `job position_time_limit_seconds` | `integer` | No | - | None |
 
 **Constraints**
 
 | ID / name | Kind | Exact database definition |
 | --- | --- | --- |
 | `adaptive_blueprint_finalized` | t | `TRIGGER DEFERRABLE INITIALLY DEFERRED` |
-| `adaptive_blueprint_scope_bounds` | Check | `CHECK (scope_policy IS NULL AND occupation_max_questions IS NULL AND occupation_time_limit_seconds IS NULL AND exploration_max_questions IS NOT NULL AND exploration_time_limit_seconds IS NOT NULL OR scope_policy IS NOT NULL AND scope_policy = 'FULL_OCCUPATION_V2'::text AND occupation_max_questions IS NOT NULL AND occupation_max_questions > 0 AND occupation_time_limit_seconds IS NOT NULL AND occupation_time_limit_seconds > 0 AND exploration_max_questions IS NULL AND exploration_time_limit_seconds IS NULL)` |
+| `adaptive_blueprint_scope_bounds` | Check | `CHECK (scope_policy IS NULL AND job position_max_questions IS NULL AND job position_time_limit_seconds IS NULL AND exploration_max_questions IS NOT NULL AND exploration_time_limit_seconds IS NOT NULL OR scope_policy IS NOT NULL AND scope_policy = 'FULL_JOB_POSITION_V2'::text AND job position_max_questions IS NOT NULL AND job position_max_questions > 0 AND job position_time_limit_seconds IS NOT NULL AND job position_time_limit_seconds > 0 AND exploration_max_questions IS NULL AND exploration_time_limit_seconds IS NULL)` |
 | `baseline_adaptive_blueprint__exploration_time_limit_secon_check` | Check | `CHECK (exploration_time_limit_seconds > 0)` |
-| FK032 / `baseline_adaptive_blueprint_v_blueprint_id_organization_id_fkey` | Foreign key | `FOREIGN KEY (blueprint_id, organization_id, occupation_id) REFERENCES platform.baseline_blueprint(blueprint_id, organization_id, occupation_id)` |
-| `baseline_adaptive_blueprint_v_organization_id_occupation_id_key` | Unique | `UNIQUE (organization_id, occupation_id, blueprint_id, version)` |
+| FK032 / `baseline_adaptive_blueprint_v_blueprint_id_organization_id_fkey` | Foreign key | `FOREIGN KEY (blueprint_id, organization_id, job position_id) REFERENCES platform.baseline_blueprint(blueprint_id, organization_id, job position_id)` |
+| `baseline_adaptive_blueprint_v_organization_id_job position_id_key` | Unique | `UNIQUE (organization_id, job position_id, blueprint_id, version)` |
 | FK033 / `baseline_adaptive_blueprint_v_parameter_set_id_model_versi_fkey` | Foreign key | `FOREIGN KEY (parameter_set_id, model_version_id) REFERENCES platform.irt_parameter_set(parameter_set_id, model_version_id)` |
 | FK034 / `baseline_adaptive_blueprint_ver_created_by_organization_id_fkey` | Foreign key | `FOREIGN KEY (created_by, organization_id) REFERENCES platform.account(account_id, organization_id)` |
 | `baseline_adaptive_blueprint_ver_exploration_max_questions_check` | Check | `CHECK (exploration_max_questions > 0)` |
 | FK035 / `baseline_adaptive_blueprint_ver_mastery_mapping_version_id_fkey` | Foreign key | `FOREIGN KEY (mastery_mapping_version_id) REFERENCES platform.mastery_mapping_version(mastery_mapping_version_id)` |
-| `baseline_adaptive_blueprint_vers_occupation_name_snapshot_check` | Check | `CHECK (btrim(occupation_name_snapshot) <> ''::text)` |
+| `baseline_adaptive_blueprint_vers_job position_name_snapshot_check` | Check | `CHECK (btrim(job position_name_snapshot) <> ''::text)` |
 | `baseline_adaptive_blueprint_version_catalog_fingerprint_check` | Check | `CHECK (btrim(catalog_fingerprint) <> ''::text)` |
 | FK036 / `baseline_adaptive_blueprint_version_model_version_id_fkey` | Foreign key | `FOREIGN KEY (model_version_id) REFERENCES platform.model_version(model_version_id)` |
 | `baseline_adaptive_blueprint_version_name_check` | Check | `CHECK (btrim(name) <> ''::text)` |
 | `baseline_adaptive_blueprint_version_pkey` | Primary key | `PRIMARY KEY (blueprint_id, version)` |
 | `baseline_adaptive_blueprint_version_version_check` | Check | `CHECK (version > 0)` |
-| `occupation_baseline_name_time_limits` | Check (not validated) | `CHECK (<br>CASE<br>    WHEN scope_policy = 'FULL_OCCUPATION_V2'::text THEN char_length(btrim(name)) <= 100 AND occupation_time_limit_seconds::bigint >= (occupation_max_questions::bigint * 30) AND occupation_time_limit_seconds::bigint <= (occupation_max_questions::bigint * 120)<br>    ELSE true<br>END) NOT VALID` |
+| `job position_baseline_name_time_limits` | Check (not validated) | `CHECK (<br>CASE<br>    WHEN scope_policy = 'FULL_JOB_POSITION_V2'::text THEN char_length(btrim(name)) <= 100 AND job position_time_limit_seconds::bigint >= (job position_max_questions::bigint * 30) AND job position_time_limit_seconds::bigint <= (job position_max_questions::bigint * 120)<br>    ELSE true<br>END) NOT VALID` |
 
 **Indexes (including constraint-backed indexes)**
 
 | Index | Definition |
 | --- | --- |
-| `baseline_adaptive_blueprint_v_organization_id_occupation_id_key` | `CREATE UNIQUE INDEX baseline_adaptive_blueprint_v_organization_id_occupation_id_key ON platform.baseline_adaptive_blueprint_version USING btree (organization_id, occupation_id, blueprint_id, version)` |
+| `baseline_adaptive_blueprint_v_organization_id_job position_id_key` | `CREATE UNIQUE INDEX baseline_adaptive_blueprint_v_organization_id_job position_id_key ON platform.baseline_adaptive_blueprint_version USING btree (organization_id, job position_id, blueprint_id, version)` |
 | `baseline_adaptive_blueprint_version_pkey` | `CREATE UNIQUE INDEX baseline_adaptive_blueprint_version_pkey ON platform.baseline_adaptive_blueprint_version USING btree (blueprint_id, version)` |
-| `baseline_occupation_version_list_idx` | `CREATE INDEX baseline_occupation_version_list_idx ON platform.baseline_adaptive_blueprint_version USING btree (organization_id, created_at DESC, blueprint_id, version)` |
+| `baseline_job position_version_list_idx` | `CREATE INDEX baseline_job position_version_list_idx ON platform.baseline_adaptive_blueprint_version USING btree (organization_id, created_at DESC, blueprint_id, version)` |
 
 **Non-internal triggers**
 
@@ -1477,7 +1477,7 @@ Current adaptive editable Draft identity/settings/state.
 | --- | --- | --- | --- | --- |
 | `working_revision_id` | `uuid` | Yes | PK | None |
 | `organization_id` | `uuid` | Yes | FK | None |
-| `occupation_id` | `text` | Yes | FK | None |
+| `job position_id` | `text` | Yes | FK | None |
 | `blueprint_id` | `uuid` | Yes | FK | None |
 | `revision` | `bigint` | Yes | - | None |
 | `configuration` | `jsonb` | Yes | - | None |
@@ -1492,7 +1492,7 @@ Current adaptive editable Draft identity/settings/state.
 
 | ID / name | Kind | Exact database definition |
 | --- | --- | --- |
-| FK037 / `baseline_adaptive_blueprint_w_blueprint_id_organization_id_fkey` | Foreign key | `FOREIGN KEY (blueprint_id, organization_id, occupation_id) REFERENCES platform.baseline_blueprint(blueprint_id, organization_id, occupation_id)` |
+| FK037 / `baseline_adaptive_blueprint_w_blueprint_id_organization_id_fkey` | Foreign key | `FOREIGN KEY (blueprint_id, organization_id, job position_id) REFERENCES platform.baseline_blueprint(blueprint_id, organization_id, job position_id)` |
 | FK038 / `baseline_adaptive_blueprint_wor_created_by_organization_id_fkey` | Foreign key | `FOREIGN KEY (created_by, organization_id) REFERENCES platform.account(account_id, organization_id)` |
 | FK039 / `baseline_adaptive_blueprint_wor_updated_by_organization_id_fkey` | Foreign key | `FOREIGN KEY (updated_by, organization_id) REFERENCES platform.account(account_id, organization_id)` |
 | `baseline_adaptive_blueprint_working_revisio_configuration_check` | Check | `CHECK (platform.valid_adaptive_blueprint_configuration(configuration))` |
@@ -1505,9 +1505,9 @@ Current adaptive editable Draft identity/settings/state.
 
 | Index | Definition |
 | --- | --- |
-| `baseline_adaptive_blueprint_one_working_idx` | `CREATE UNIQUE INDEX baseline_adaptive_blueprint_one_working_idx ON platform.baseline_adaptive_blueprint_working_revision USING btree (organization_id, occupation_id) WHERE (state = 'OPEN'::text)` |
+| `baseline_adaptive_blueprint_one_working_idx` | `CREATE UNIQUE INDEX baseline_adaptive_blueprint_one_working_idx ON platform.baseline_adaptive_blueprint_working_revision USING btree (organization_id, job position_id) WHERE (state = 'OPEN'::text)` |
 | `baseline_adaptive_blueprint_working_revision_pkey` | `CREATE UNIQUE INDEX baseline_adaptive_blueprint_working_revision_pkey ON platform.baseline_adaptive_blueprint_working_revision USING btree (working_revision_id)` |
-| `baseline_occupation_draft_list_idx` | `CREATE INDEX baseline_occupation_draft_list_idx ON platform.baseline_adaptive_blueprint_working_revision USING btree (organization_id, updated_at DESC, working_revision_id) WHERE (state = 'OPEN'::text)` |
+| `baseline_job position_draft_list_idx` | `CREATE INDEX baseline_job position_draft_list_idx ON platform.baseline_adaptive_blueprint_working_revision USING btree (organization_id, updated_at DESC, working_revision_id) WHERE (state = 'OPEN'::text)` |
 
 **Non-internal triggers**
 
@@ -1558,12 +1558,12 @@ Protected answer-review access audit.
 <details>
 <summary>21. baseline_assessment_series - 10 columns; 6 foreign keys</summary>
 
-Legacy Occupation assessment series/current working state.
+Legacy Job Position assessment series/current working state.
 
 | Column | PostgreSQL type | Required | Key participation | Default |
 | --- | --- | --- | --- | --- |
 | `organization_id` | `uuid` | Yes | PK, FK | None |
-| `occupation_id` | `text` | Yes | PK, FK | None |
+| `job position_id` | `text` | Yes | PK, FK | None |
 | `blueprint_id` | `uuid` | Yes | FK | None |
 | `series_revision` | `bigint` | Yes | - | `1` |
 | `working_revision_id` | `uuid` | No | FK | None |
@@ -1579,15 +1579,15 @@ Legacy Occupation assessment series/current working state.
 | --- | --- | --- |
 | FK043 / `baseline_assessment_series_active_assessment_version_id_fkey` | Foreign key | `FOREIGN KEY (active_assessment_version_id) REFERENCES platform.assessment_version(assessment_version_id)` |
 | `baseline_assessment_series_blueprint_id_key` | Unique | `UNIQUE (blueprint_id)` |
-| FK044 / `baseline_assessment_series_blueprint_id_organization_id_oc_fkey` | Foreign key | `FOREIGN KEY (blueprint_id, organization_id, occupation_id) REFERENCES platform.baseline_blueprint(blueprint_id, organization_id, occupation_id)` |
+| FK044 / `baseline_assessment_series_blueprint_id_organization_id_oc_fkey` | Foreign key | `FOREIGN KEY (blueprint_id, organization_id, job position_id) REFERENCES platform.baseline_blueprint(blueprint_id, organization_id, job position_id)` |
 | FK045 / `baseline_assessment_series_blueprint_id_pending_blueprint__fkey` | Foreign key | `FOREIGN KEY (blueprint_id, pending_blueprint_version) REFERENCES platform.baseline_blueprint_version(blueprint_id, version)` |
 | `baseline_assessment_series_check` | Check | `CHECK (working_revision_id IS NULL OR pending_blueprint_version IS NULL)` |
 | `baseline_assessment_series_check1` | Check | `CHECK (open_assessment_version_id IS NULL OR open_assessment_version_id IS DISTINCT FROM active_assessment_version_id)` |
-| `baseline_assessment_series_occupation_id_check` | Check | `CHECK (btrim(occupation_id) <> ''::text)` |
+| `baseline_assessment_series_job position_id_check` | Check | `CHECK (btrim(job position_id) <> ''::text)` |
 | FK046 / `baseline_assessment_series_open_assessment_version_id_fkey` | Foreign key | `FOREIGN KEY (open_assessment_version_id) REFERENCES platform.assessment_version(assessment_version_id)` |
 | FK047 / `baseline_assessment_series_organization_id_fkey` | Foreign key | `FOREIGN KEY (organization_id) REFERENCES platform.organization(organization_id)` |
 | `baseline_assessment_series_pending_blueprint_version_check` | Check | `CHECK (pending_blueprint_version > 0)` |
-| `baseline_assessment_series_pkey` | Primary key | `PRIMARY KEY (organization_id, occupation_id)` |
+| `baseline_assessment_series_pkey` | Primary key | `PRIMARY KEY (organization_id, job position_id)` |
 | `baseline_assessment_series_series_revision_check` | Check | `CHECK (series_revision > 0)` |
 | FK048 / `baseline_assessment_series_working_revision_fk` | Foreign key | `FOREIGN KEY (working_revision_id) REFERENCES platform.baseline_blueprint_working_revision(working_revision_id)` |
 
@@ -1598,7 +1598,7 @@ Legacy Occupation assessment series/current working state.
 | `baseline_assessment_series_active_release_unique` | `CREATE UNIQUE INDEX baseline_assessment_series_active_release_unique ON platform.baseline_assessment_series USING btree (active_assessment_version_id) WHERE (active_assessment_version_id IS NOT NULL)` |
 | `baseline_assessment_series_blueprint_id_key` | `CREATE UNIQUE INDEX baseline_assessment_series_blueprint_id_key ON platform.baseline_assessment_series USING btree (blueprint_id)` |
 | `baseline_assessment_series_open_candidate_unique` | `CREATE UNIQUE INDEX baseline_assessment_series_open_candidate_unique ON platform.baseline_assessment_series USING btree (open_assessment_version_id) WHERE (open_assessment_version_id IS NOT NULL)` |
-| `baseline_assessment_series_pkey` | `CREATE UNIQUE INDEX baseline_assessment_series_pkey ON platform.baseline_assessment_series USING btree (organization_id, occupation_id)` |
+| `baseline_assessment_series_pkey` | `CREATE UNIQUE INDEX baseline_assessment_series_pkey ON platform.baseline_assessment_series USING btree (organization_id, job position_id)` |
 
 **Non-internal triggers**
 
@@ -1619,7 +1619,7 @@ Legacy management transition history.
 | --- | --- | --- | --- | --- |
 | `transition_id` | `uuid` | Yes | PK | `gen_random_uuid()` |
 | `organization_id` | `uuid` | Yes | FK | None |
-| `occupation_id` | `text` | Yes | FK | None |
+| `job position_id` | `text` | Yes | FK | None |
 | `series_revision` | `bigint` | Yes | - | None |
 | `transition` | `text` | Yes | - | None |
 | `actor_id` | `uuid` | Yes | FK | None |
@@ -1641,8 +1641,8 @@ Legacy management transition history.
 | ID / name | Kind | Exact database definition |
 | --- | --- | --- |
 | FK049 / `baseline_assessment_transitio_active_assessment_version_id_fkey` | Foreign key | `FOREIGN KEY (active_assessment_version_id) REFERENCES platform.assessment_version(assessment_version_id)` |
-| FK050 / `baseline_assessment_transitio_organization_id_occupation_i_fkey` | Foreign key | `FOREIGN KEY (organization_id, occupation_id) REFERENCES platform.baseline_assessment_series(organization_id, occupation_id)` |
-| `baseline_assessment_transitio_organization_id_occupation_id_key` | Unique | `UNIQUE (organization_id, occupation_id, series_revision)` |
+| FK050 / `baseline_assessment_transitio_organization_id_job position_i_fkey` | Foreign key | `FOREIGN KEY (organization_id, job position_id) REFERENCES platform.baseline_assessment_series(organization_id, job position_id)` |
+| `baseline_assessment_transitio_organization_id_job position_id_key` | Unique | `UNIQUE (organization_id, job position_id, series_revision)` |
 | FK051 / `baseline_assessment_transitio_pending_blueprint_id_pending_fkey` | Foreign key | `FOREIGN KEY (pending_blueprint_id, pending_blueprint_version) REFERENCES platform.baseline_blueprint_version(blueprint_id, version)` |
 | FK052 / `baseline_assessment_transitio_previous_active_assessment_v_fkey` | Foreign key | `FOREIGN KEY (previous_active_assessment_version_id) REFERENCES platform.assessment_version(assessment_version_id)` |
 | FK053 / `baseline_assessment_transitio_previous_open_assessment_ver_fkey` | Foreign key | `FOREIGN KEY (previous_open_assessment_version_id) REFERENCES platform.assessment_version(assessment_version_id)` |
@@ -1662,9 +1662,9 @@ Legacy management transition history.
 
 | Index | Definition |
 | --- | --- |
-| `baseline_assessment_transitio_organization_id_occupation_id_key` | `CREATE UNIQUE INDEX baseline_assessment_transitio_organization_id_occupation_id_key ON platform.baseline_assessment_transition USING btree (organization_id, occupation_id, series_revision)` |
+| `baseline_assessment_transitio_organization_id_job position_id_key` | `CREATE UNIQUE INDEX baseline_assessment_transitio_organization_id_job position_id_key ON platform.baseline_assessment_transition USING btree (organization_id, job position_id, series_revision)` |
 | `baseline_assessment_transition_pkey` | `CREATE UNIQUE INDEX baseline_assessment_transition_pkey ON platform.baseline_assessment_transition USING btree (transition_id)` |
-| `baseline_assessment_transition_scope_time_idx` | `CREATE INDEX baseline_assessment_transition_scope_time_idx ON platform.baseline_assessment_transition USING btree (organization_id, occupation_id, occurred_at DESC)` |
+| `baseline_assessment_transition_scope_time_idx` | `CREATE INDEX baseline_assessment_transition_scope_time_idx ON platform.baseline_assessment_transition USING btree (organization_id, job position_id, occurred_at DESC)` |
 
 **Non-internal triggers**
 
@@ -1688,7 +1688,7 @@ Attempt operation idempotency receipt scoped to tenant and actor.
 | `actor_id` | `uuid` | Yes | PK, FK | None |
 | `idempotency_key` | `text` | Yes | PK | None |
 | `attempt_id` | `uuid` | Yes | FK | None |
-| `occupation_id` | `text` | Yes | FK | None |
+| `job position_id` | `text` | Yes | FK | None |
 | `operation` | `text` | Yes | - | None |
 | `request_hash` | `platform.content_hash` | Yes | - | None |
 | `response_payload` | `jsonb` | Yes | - | None |
@@ -1698,7 +1698,7 @@ Attempt operation idempotency receipt scoped to tenant and actor.
 
 | ID / name | Kind | Exact database definition |
 | --- | --- | --- |
-| FK059 / `baseline_attempt_command_attempt_id_organization_id_actor__fkey` | Foreign key | `FOREIGN KEY (attempt_id, organization_id, actor_id, occupation_id) REFERENCES platform.baseline_adaptive_attempt(attempt_id, organization_id, learner_id, occupation_id)` |
+| FK059 / `baseline_attempt_command_attempt_id_organization_id_actor__fkey` | Foreign key | `FOREIGN KEY (attempt_id, organization_id, actor_id, job position_id) REFERENCES platform.baseline_adaptive_attempt(attempt_id, organization_id, learner_id, job position_id)` |
 | `baseline_attempt_command_idempotency_key_check` | Check | `CHECK (idempotency_key <> ''::text AND idempotency_key = btrim(idempotency_key) AND char_length(idempotency_key) <= 200)` |
 | `baseline_attempt_command_operation_check` | Check | `CHECK (operation = ANY (ARRAY['START'::text, 'ANSWER'::text, 'SUBMIT'::text]))` |
 | `baseline_attempt_command_pkey` | Primary key | `PRIMARY KEY (organization_id, actor_id, idempotency_key)` |
@@ -2004,12 +2004,12 @@ Internal per-skill adaptive progress, theta and uncertainty.
 <details>
 <summary>30. baseline_blueprint - 5 columns; 2 foreign keys</summary>
 
-Stable organization/Occupation baseline identity.
+Stable organization/Job Position baseline identity.
 
 | Column | PostgreSQL type | Required | Key participation | Default |
 | --- | --- | --- | --- | --- |
 | `blueprint_id` | `uuid` | Yes | PK | None |
-| `occupation_id` | `text` | No | - | None |
+| `job position_id` | `text` | No | - | None |
 | `created_by` | `uuid` | Yes | FK | None |
 | `created_at` | `timestamp with time zone` | Yes | - | `now()` |
 | `organization_id` | `uuid` | No | FK | None |
@@ -2019,18 +2019,18 @@ Stable organization/Occupation baseline identity.
 | ID / name | Kind | Exact database definition |
 | --- | --- | --- |
 | FK089 / `baseline_blueprint_created_by_fkey` | Foreign key | `FOREIGN KEY (created_by) REFERENCES platform.account(account_id)` |
-| `baseline_blueprint_occupation_id_check` | Check | `CHECK (occupation_id IS NULL OR btrim(occupation_id) <> ''::text)` |
-| `baseline_blueprint_org_identity_key` | Unique | `UNIQUE (blueprint_id, organization_id, occupation_id)` |
+| `baseline_blueprint_job position_id_check` | Check | `CHECK (job position_id IS NULL OR btrim(job position_id) <> ''::text)` |
+| `baseline_blueprint_org_identity_key` | Unique | `UNIQUE (blueprint_id, organization_id, job position_id)` |
 | FK090 / `baseline_blueprint_organization_id_fkey` | Foreign key | `FOREIGN KEY (organization_id) REFERENCES platform.organization(organization_id)` |
-| `baseline_blueprint_organization_required` | Check | `CHECK (occupation_id IS NULL OR organization_id IS NOT NULL)` |
+| `baseline_blueprint_organization_required` | Check | `CHECK (job position_id IS NULL OR organization_id IS NOT NULL)` |
 | `baseline_blueprint_pkey` | Primary key | `PRIMARY KEY (blueprint_id)` |
 
 **Indexes (including constraint-backed indexes)**
 
 | Index | Definition |
 | --- | --- |
-| `baseline_blueprint_org_identity_key` | `CREATE UNIQUE INDEX baseline_blueprint_org_identity_key ON platform.baseline_blueprint USING btree (blueprint_id, organization_id, occupation_id)` |
-| `baseline_blueprint_organization_occupation_unique` | `CREATE UNIQUE INDEX baseline_blueprint_organization_occupation_unique ON platform.baseline_blueprint USING btree (organization_id, occupation_id) WHERE ((organization_id IS NOT NULL) AND (occupation_id IS NOT NULL))` |
+| `baseline_blueprint_org_identity_key` | `CREATE UNIQUE INDEX baseline_blueprint_org_identity_key ON platform.baseline_blueprint USING btree (blueprint_id, organization_id, job position_id)` |
+| `baseline_blueprint_organization_job position_unique` | `CREATE UNIQUE INDEX baseline_blueprint_organization_job position_unique ON platform.baseline_blueprint USING btree (organization_id, job position_id) WHERE ((organization_id IS NOT NULL) AND (job position_id IS NOT NULL))` |
 | `baseline_blueprint_pkey` | `CREATE UNIQUE INDEX baseline_blueprint_pkey ON platform.baseline_blueprint USING btree (blueprint_id)` |
 
 **Non-internal triggers**
@@ -2046,12 +2046,12 @@ Stable organization/Occupation baseline identity.
 <details>
 <summary>31. baseline_blueprint_activation - 8 columns; 3 foreign keys</summary>
 
-Current active baseline pointer for organization/Occupation.
+Current active baseline pointer for organization/Job Position.
 
 | Column | PostgreSQL type | Required | Key participation | Default |
 | --- | --- | --- | --- | --- |
 | `organization_id` | `uuid` | Yes | PK, FK | None |
-| `occupation_id` | `text` | Yes | PK, FK | None |
+| `job position_id` | `text` | Yes | PK, FK | None |
 | `blueprint_id` | `uuid` | Yes | FK | None |
 | `blueprint_version` | `integer` | No | FK | None |
 | `activation_revision` | `bigint` | Yes | - | None |
@@ -2066,15 +2066,15 @@ Current active baseline pointer for organization/Occupation.
 | `baseline_activation_audited` | t | `TRIGGER DEFERRABLE INITIALLY DEFERRED` |
 | FK074 / `baseline_blueprint_activation_activated_by_organization_id_fkey` | Foreign key | `FOREIGN KEY (activated_by, organization_id) REFERENCES platform.account(account_id, organization_id)` |
 | `baseline_blueprint_activation_activation_revision_check` | Check | `CHECK (activation_revision > 0)` |
-| FK075 / `baseline_blueprint_activation_blueprint_id_organization_id_fkey` | Foreign key | `FOREIGN KEY (blueprint_id, organization_id, occupation_id) REFERENCES platform.baseline_blueprint(blueprint_id, organization_id, occupation_id)` |
-| FK076 / `baseline_blueprint_activation_organization_id_occupation_i_fkey` | Foreign key | `FOREIGN KEY (organization_id, occupation_id, blueprint_id, blueprint_version) REFERENCES platform.baseline_adaptive_blueprint_version(organization_id, occupation_id, blueprint_id, version)` |
-| `baseline_blueprint_activation_pkey` | Primary key | `PRIMARY KEY (organization_id, occupation_id)` |
+| FK075 / `baseline_blueprint_activation_blueprint_id_organization_id_fkey` | Foreign key | `FOREIGN KEY (blueprint_id, organization_id, job position_id) REFERENCES platform.baseline_blueprint(blueprint_id, organization_id, job position_id)` |
+| FK076 / `baseline_blueprint_activation_organization_id_job position_i_fkey` | Foreign key | `FOREIGN KEY (organization_id, job position_id, blueprint_id, blueprint_version) REFERENCES platform.baseline_adaptive_blueprint_version(organization_id, job position_id, blueprint_id, version)` |
+| `baseline_blueprint_activation_pkey` | Primary key | `PRIMARY KEY (organization_id, job position_id)` |
 
 **Indexes (including constraint-backed indexes)**
 
 | Index | Definition |
 | --- | --- |
-| `baseline_blueprint_activation_pkey` | `CREATE UNIQUE INDEX baseline_blueprint_activation_pkey ON platform.baseline_blueprint_activation USING btree (organization_id, occupation_id)` |
+| `baseline_blueprint_activation_pkey` | `CREATE UNIQUE INDEX baseline_blueprint_activation_pkey ON platform.baseline_blueprint_activation USING btree (organization_id, job position_id)` |
 
 **Non-internal triggers**
 
@@ -2096,7 +2096,7 @@ Activation/deactivation/replacement history.
 | --- | --- | --- | --- | --- |
 | `activation_event_id` | `uuid` | Yes | PK | `gen_random_uuid()` |
 | `organization_id` | `uuid` | Yes | FK | None |
-| `occupation_id` | `text` | Yes | FK | None |
+| `job position_id` | `text` | Yes | FK | None |
 | `activation_revision` | `bigint` | Yes | - | None |
 | `blueprint_id` | `uuid` | Yes | FK | None |
 | `blueprint_version` | `integer` | No | FK | None |
@@ -2109,23 +2109,23 @@ Activation/deactivation/replacement history.
 
 | ID / name | Kind | Exact database definition |
 | --- | --- | --- |
-| FK070 / `baseline_blueprint_activatio_blueprint_id_organization_id_fkey1` | Foreign key | `FOREIGN KEY (blueprint_id, organization_id, occupation_id) REFERENCES platform.baseline_blueprint(blueprint_id, organization_id, occupation_id)` |
-| FK071 / `baseline_blueprint_activatio_organization_id_occupation_i_fkey1` | Foreign key | `FOREIGN KEY (organization_id, occupation_id) REFERENCES platform.baseline_blueprint_activation(organization_id, occupation_id)` |
-| FK072 / `baseline_blueprint_activatio_organization_id_occupation_i_fkey2` | Foreign key | `FOREIGN KEY (organization_id, occupation_id, blueprint_id, blueprint_version) REFERENCES platform.baseline_adaptive_blueprint_version(organization_id, occupation_id, blueprint_id, version)` |
+| FK070 / `baseline_blueprint_activatio_blueprint_id_organization_id_fkey1` | Foreign key | `FOREIGN KEY (blueprint_id, organization_id, job position_id) REFERENCES platform.baseline_blueprint(blueprint_id, organization_id, job position_id)` |
+| FK071 / `baseline_blueprint_activatio_organization_id_job position_i_fkey1` | Foreign key | `FOREIGN KEY (organization_id, job position_id) REFERENCES platform.baseline_blueprint_activation(organization_id, job position_id)` |
+| FK072 / `baseline_blueprint_activatio_organization_id_job position_i_fkey2` | Foreign key | `FOREIGN KEY (organization_id, job position_id, blueprint_id, blueprint_version) REFERENCES platform.baseline_adaptive_blueprint_version(organization_id, job position_id, blueprint_id, version)` |
 | FK073 / `baseline_blueprint_activation_eve_actor_id_organization_id_fkey` | Foreign key | `FOREIGN KEY (actor_id, organization_id) REFERENCES platform.account(account_id, organization_id)` |
 | `baseline_blueprint_activation_event_activation_revision_check` | Check | `CHECK (activation_revision > 0)` |
 | `baseline_blueprint_activation_event_check` | Check | `CHECK (operation = 'FINALIZE'::text AND blueprint_version IS NOT NULL OR operation = 'DISABLE'::text AND blueprint_version IS NULL AND reason IS NOT NULL AND btrim(reason) <> ''::text)` |
 | `baseline_blueprint_activation_event_operation_check` | Check | `CHECK (operation = ANY (ARRAY['FINALIZE'::text, 'DISABLE'::text]))` |
 | `baseline_blueprint_activation_event_pkey` | Primary key | `PRIMARY KEY (activation_event_id)` |
-| `baseline_blueprint_activation_organization_id_occupation_id_key` | Unique | `UNIQUE (organization_id, occupation_id, activation_revision)` |
+| `baseline_blueprint_activation_organization_id_job position_id_key` | Unique | `UNIQUE (organization_id, job position_id, activation_revision)` |
 
 **Indexes (including constraint-backed indexes)**
 
 | Index | Definition |
 | --- | --- |
 | `baseline_blueprint_activation_event_pkey` | `CREATE UNIQUE INDEX baseline_blueprint_activation_event_pkey ON platform.baseline_blueprint_activation_event USING btree (activation_event_id)` |
-| `baseline_blueprint_activation_event_time_idx` | `CREATE INDEX baseline_blueprint_activation_event_time_idx ON platform.baseline_blueprint_activation_event USING btree (organization_id, occupation_id, occurred_at DESC)` |
-| `baseline_blueprint_activation_organization_id_occupation_id_key` | `CREATE UNIQUE INDEX baseline_blueprint_activation_organization_id_occupation_id_key ON platform.baseline_blueprint_activation_event USING btree (organization_id, occupation_id, activation_revision)` |
+| `baseline_blueprint_activation_event_time_idx` | `CREATE INDEX baseline_blueprint_activation_event_time_idx ON platform.baseline_blueprint_activation_event USING btree (organization_id, job position_id, occurred_at DESC)` |
+| `baseline_blueprint_activation_organization_id_job position_id_key` | `CREATE UNIQUE INDEX baseline_blueprint_activation_organization_id_job position_id_key ON platform.baseline_blueprint_activation_event USING btree (organization_id, job position_id, activation_revision)` |
 | `baseline_blueprint_finalization_version_idx` | `CREATE UNIQUE INDEX baseline_blueprint_finalization_version_idx ON platform.baseline_blueprint_activation_event USING btree (blueprint_id, blueprint_version) WHERE (operation = 'FINALIZE'::text)` |
 
 **Non-internal triggers**
@@ -2149,7 +2149,7 @@ Adaptive management exact replay receipt.
 | `organization_id` | `uuid` | Yes | PK, FK | None |
 | `actor_id` | `uuid` | Yes | PK, FK | None |
 | `idempotency_key` | `text` | Yes | PK | None |
-| `occupation_id` | `text` | Yes | FK | None |
+| `job position_id` | `text` | Yes | FK | None |
 | `blueprint_id` | `uuid` | Yes | FK | None |
 | `operation` | `text` | Yes | - | None |
 | `request_hash` | `platform.content_hash` | Yes | - | None |
@@ -2161,7 +2161,7 @@ Adaptive management exact replay receipt.
 | ID / name | Kind | Exact database definition |
 | --- | --- | --- |
 | FK077 / `baseline_blueprint_command_actor_id_organization_id_fkey` | Foreign key | `FOREIGN KEY (actor_id, organization_id) REFERENCES platform.account(account_id, organization_id)` |
-| FK078 / `baseline_blueprint_command_blueprint_id_organization_id_oc_fkey` | Foreign key | `FOREIGN KEY (blueprint_id, organization_id, occupation_id) REFERENCES platform.baseline_blueprint(blueprint_id, organization_id, occupation_id)` |
+| FK078 / `baseline_blueprint_command_blueprint_id_organization_id_oc_fkey` | Foreign key | `FOREIGN KEY (blueprint_id, organization_id, job position_id) REFERENCES platform.baseline_blueprint(blueprint_id, organization_id, job position_id)` |
 | `baseline_blueprint_command_idempotency_key_check` | Check | `CHECK (btrim(idempotency_key) <> ''::text)` |
 | `baseline_blueprint_command_operation_check` | Check | `CHECK (operation = ANY (ARRAY['SAVE'::text, 'CONVERT'::text, 'FINALIZE'::text, 'DISABLE'::text, 'DISCARD'::text]))` |
 | `baseline_blueprint_command_pkey` | Primary key | `PRIMARY KEY (organization_id, actor_id, idempotency_key)` |
@@ -2285,8 +2285,8 @@ Legacy immutable baseline blueprint settings.
 | `blueprint_id` | `uuid` | Yes | PK, FK | None |
 | `version` | `integer` | Yes | PK | None |
 | `name` | `text` | Yes | - | None |
-| `occupation_id` | `text` | No | - | None |
-| `occupation_name_snapshot` | `text` | No | - | None |
+| `job position_id` | `text` | No | - | None |
+| `job position_name_snapshot` | `text` | No | - | None |
 | `created_by` | `uuid` | Yes | FK | None |
 | `created_at` | `timestamp with time zone` | Yes | - | `now()` |
 | `idempotency_key` | `text` | Yes | - | None |
@@ -2298,7 +2298,7 @@ Legacy immutable baseline blueprint settings.
 | --- | --- | --- |
 | `baseline_blueprint_actor_request_unique` | Unique | `UNIQUE (created_by, idempotency_key)` |
 | `baseline_blueprint_idempotency_key_not_blank` | Check | `CHECK (btrim(idempotency_key) <> ''::text)` |
-| `baseline_blueprint_version_check` | Check | `CHECK (occupation_id IS NULL AND occupation_name_snapshot IS NULL OR occupation_id IS NOT NULL AND btrim(occupation_id) <> ''::text AND occupation_name_snapshot IS NOT NULL AND btrim(occupation_name_snapshot) <> ''::text)` |
+| `baseline_blueprint_version_check` | Check | `CHECK (job position_id IS NULL AND job position_name_snapshot IS NULL OR job position_id IS NOT NULL AND btrim(job position_id) <> ''::text AND job position_name_snapshot IS NOT NULL AND btrim(job position_name_snapshot) <> ''::text)` |
 | FK082 / `baseline_blueprint_version_created_by_fkey` | Foreign key | `FOREIGN KEY (created_by) REFERENCES platform.account(account_id)` |
 | FK083 / `baseline_blueprint_version_identity_fk` | Foreign key | `FOREIGN KEY (blueprint_id) REFERENCES platform.baseline_blueprint(blueprint_id)` |
 | `baseline_blueprint_version_name_check` | Check | `CHECK (btrim(name) <> ''::text)` |
@@ -2316,7 +2316,7 @@ Legacy immutable baseline blueprint settings.
 
 | Trigger | Enabled mode | Definition |
 | --- | --- | --- |
-| `baseline_blueprint_occupation_identity` | O | `CREATE TRIGGER baseline_blueprint_occupation_identity BEFORE INSERT ON platform.baseline_blueprint_version FOR EACH ROW EXECUTE FUNCTION platform.validate_baseline_blueprint_occupation_identity()` |
+| `baseline_blueprint_job position_identity` | O | `CREATE TRIGGER baseline_blueprint_job position_identity BEFORE INSERT ON platform.baseline_blueprint_version FOR EACH ROW EXECUTE FUNCTION platform.validate_baseline_blueprint_job position_identity()` |
 | `baseline_fixed_version_namespace` | O | `CREATE TRIGGER baseline_fixed_version_namespace BEFORE INSERT ON platform.baseline_blueprint_version FOR EACH ROW EXECUTE FUNCTION platform.guard_baseline_version_namespace()` |
 | `immutable_history` | O | `CREATE TRIGGER immutable_history BEFORE DELETE OR UPDATE ON platform.baseline_blueprint_version FOR EACH ROW EXECUTE FUNCTION platform.reject_history_mutation()` |
 
@@ -2400,12 +2400,12 @@ Legacy mutable Draft with revision and close state.
 | --- | --- | --- | --- | --- |
 | `working_revision_id` | `uuid` | Yes | PK | None |
 | `organization_id` | `uuid` | Yes | FK | None |
-| `occupation_id` | `text` | Yes | FK | None |
+| `job position_id` | `text` | Yes | FK | None |
 | `blueprint_id` | `uuid` | Yes | FK | None |
 | `base_version` | `integer` | No | FK | None |
 | `revision` | `bigint` | Yes | - | `1` |
 | `name` | `text` | Yes | - | None |
-| `occupation_name_snapshot` | `text` | Yes | - | None |
+| `job position_name_snapshot` | `text` | Yes | - | None |
 | `roles` | `jsonb` | Yes | - | None |
 | `state` | `text` | Yes | - | `'OPEN'::text` |
 | `created_by` | `uuid` | Yes | FK | None |
@@ -2418,9 +2418,9 @@ Legacy mutable Draft with revision and close state.
 
 | ID / name | Kind | Exact database definition |
 | --- | --- | --- |
-| FK085 / `baseline_blueprint_working_re_organization_id_occupation_i_fkey` | Foreign key | `FOREIGN KEY (organization_id, occupation_id) REFERENCES platform.baseline_assessment_series(organization_id, occupation_id)` |
+| FK085 / `baseline_blueprint_working_re_organization_id_job position_i_fkey` | Foreign key | `FOREIGN KEY (organization_id, job position_id) REFERENCES platform.baseline_assessment_series(organization_id, job position_id)` |
 | FK086 / `baseline_blueprint_working_revis_blueprint_id_base_version_fkey` | Foreign key | `FOREIGN KEY (blueprint_id, base_version) REFERENCES platform.baseline_blueprint_version(blueprint_id, version)` |
-| `baseline_blueprint_working_revis_occupation_name_snapshot_check` | Check | `CHECK (btrim(occupation_name_snapshot) <> ''::text)` |
+| `baseline_blueprint_working_revis_job position_name_snapshot_check` | Check | `CHECK (btrim(job position_name_snapshot) <> ''::text)` |
 | `baseline_blueprint_working_revision_base_version_check` | Check | `CHECK (base_version > 0)` |
 | `baseline_blueprint_working_revision_check` | Check | `CHECK (state = 'OPEN'::text AND closed_at IS NULL OR state <> 'OPEN'::text AND closed_at IS NOT NULL)` |
 | FK087 / `baseline_blueprint_working_revision_created_by_fkey` | Foreign key | `FOREIGN KEY (created_by) REFERENCES platform.account(account_id)` |
@@ -2435,7 +2435,7 @@ Legacy mutable Draft with revision and close state.
 
 | Index | Definition |
 | --- | --- |
-| `baseline_blueprint_one_open_working_revision` | `CREATE UNIQUE INDEX baseline_blueprint_one_open_working_revision ON platform.baseline_blueprint_working_revision USING btree (organization_id, occupation_id) WHERE (state = 'OPEN'::text)` |
+| `baseline_blueprint_one_open_working_revision` | `CREATE UNIQUE INDEX baseline_blueprint_one_open_working_revision ON platform.baseline_blueprint_working_revision USING btree (organization_id, job position_id) WHERE (state = 'OPEN'::text)` |
 | `baseline_blueprint_working_revision_pkey` | `CREATE UNIQUE INDEX baseline_blueprint_working_revision_pkey ON platform.baseline_blueprint_working_revision USING btree (working_revision_id)` |
 
 **Non-internal triggers**
@@ -2460,7 +2460,7 @@ Legacy management command idempotency receipt.
 | `actor_id` | `uuid` | Yes | PK, FK | None |
 | `idempotency_key` | `text` | Yes | PK | None |
 | `organization_id` | `uuid` | Yes | FK | None |
-| `occupation_id` | `text` | Yes | FK | None |
+| `job position_id` | `text` | Yes | FK | None |
 | `operation` | `text` | Yes | - | None |
 | `request_hash` | `platform.content_hash` | Yes | - | None |
 | `response_json` | `jsonb` | Yes | - | None |
@@ -2473,7 +2473,7 @@ Legacy management command idempotency receipt.
 | FK091 / `baseline_management_command_actor_id_fkey` | Foreign key | `FOREIGN KEY (actor_id) REFERENCES platform.account(account_id)` |
 | `baseline_management_command_idempotency_key_check` | Check | `CHECK (btrim(idempotency_key) <> ''::text)` |
 | `baseline_management_command_operation_check` | Check | `CHECK (btrim(operation) <> ''::text)` |
-| FK092 / `baseline_management_command_organization_id_occupation_id_fkey` | Foreign key | `FOREIGN KEY (organization_id, occupation_id) REFERENCES platform.baseline_assessment_series(organization_id, occupation_id)` |
+| FK092 / `baseline_management_command_organization_id_job position_id_fkey` | Foreign key | `FOREIGN KEY (organization_id, job position_id) REFERENCES platform.baseline_assessment_series(organization_id, job position_id)` |
 | `baseline_management_command_pkey` | Primary key | `PRIMARY KEY (actor_id, idempotency_key)` |
 | `baseline_management_command_response_json_check` | Check | `CHECK (jsonb_typeof(response_json) = 'object'::text)` |
 
@@ -2504,7 +2504,7 @@ Valid pinned baseline mastery evidence and provenance.
 | `attempt_id` | `uuid` | Yes | PK, FK | None |
 | `organization_id` | `uuid` | Yes | FK | None |
 | `learner_id` | `uuid` | Yes | FK | None |
-| `occupation_id` | `text` | Yes | FK | None |
+| `job position_id` | `text` | Yes | FK | None |
 | `micro_skill_id` | `text` | Yes | PK, FK | None |
 | `model_version_id` | `uuid` | Yes | FK | None |
 | `mastery_mapping_version_id` | `uuid` | Yes | FK | None |
@@ -2522,7 +2522,7 @@ Valid pinned baseline mastery evidence and provenance.
 | ID / name | Kind | Exact database definition |
 | --- | --- | --- |
 | `adaptive_attempt_complete` | t | `TRIGGER DEFERRABLE INITIALLY DEFERRED` |
-| FK093 / `baseline_mastery_evidence_attempt_id_organization_id_learn_fkey` | Foreign key | `FOREIGN KEY (attempt_id, organization_id, learner_id, occupation_id) REFERENCES platform.baseline_adaptive_attempt(attempt_id, organization_id, learner_id, occupation_id)` |
+| FK093 / `baseline_mastery_evidence_attempt_id_organization_id_learn_fkey` | Foreign key | `FOREIGN KEY (attempt_id, organization_id, learner_id, job position_id) REFERENCES platform.baseline_adaptive_attempt(attempt_id, organization_id, learner_id, job position_id)` |
 | FK094 / `baseline_mastery_evidence_attempt_id_organization_id_maste_fkey` | Foreign key | `FOREIGN KEY (attempt_id, organization_id, mastery_event_id) REFERENCES platform.baseline_attempt_result(attempt_id, organization_id, mastery_event_id)` |
 | FK095 / `baseline_mastery_evidence_attempt_id_organization_id_micro_fkey` | Foreign key | `FOREIGN KEY (attempt_id, organization_id, micro_skill_id) REFERENCES platform.baseline_attempt_skill_result(attempt_id, organization_id, micro_skill_id)` |
 | FK096 / `baseline_mastery_evidence_mastery_mapping_version_id_fkey` | Foreign key | `FOREIGN KEY (mastery_mapping_version_id) REFERENCES platform.mastery_mapping_version(mastery_mapping_version_id)` |
@@ -2534,7 +2534,7 @@ Valid pinned baseline mastery evidence and provenance.
 
 | Index | Definition |
 | --- | --- |
-| `baseline_mastery_evidence_learner_idx` | `CREATE INDEX baseline_mastery_evidence_learner_idx ON platform.baseline_mastery_evidence USING btree (organization_id, learner_id, occupation_id)` |
+| `baseline_mastery_evidence_learner_idx` | `CREATE INDEX baseline_mastery_evidence_learner_idx ON platform.baseline_mastery_evidence USING btree (organization_id, learner_id, job position_id)` |
 | `baseline_mastery_evidence_pkey` | `CREATE UNIQUE INDEX baseline_mastery_evidence_pkey ON platform.baseline_mastery_evidence USING btree (attempt_id, micro_skill_id)` |
 
 **Non-internal triggers**
@@ -2823,18 +2823,18 @@ Stored same-organization department lookup for member assignment.
 
 </details>
 
-<a id="table-employee-occupation-profile"></a>
+<a id="table-employee-job position-profile"></a>
 
 <details>
-<summary>49. employee_occupation_profile - 10 columns; 2 foreign keys</summary>
+<summary>49. employee_job position_profile - 10 columns; 2 foreign keys</summary>
 
-Applicable Occupation mastery/profile initialization binding.
+Applicable Job Position mastery/profile initialization binding.
 
 | Column | PostgreSQL type | Required | Key participation | Default |
 | --- | --- | --- | --- | --- |
 | `organization_id` | `uuid` | Yes | PK, FK | None |
 | `learner_id` | `uuid` | Yes | PK, FK | None |
-| `occupation_id` | `text` | Yes | PK, FK | None |
+| `job position_id` | `text` | Yes | PK, FK | None |
 | `attempt_id` | `uuid` | Yes | FK | None |
 | `blueprint_id` | `uuid` | Yes | FK | None |
 | `blueprint_version` | `integer` | Yes | FK | None |
@@ -2847,26 +2847,26 @@ Applicable Occupation mastery/profile initialization binding.
 
 | ID / name | Kind | Exact database definition |
 | --- | --- | --- |
-| `employee_occupation_profile_attempt_id_key` | Unique | `UNIQUE (attempt_id)` |
-| FK110 / `employee_occupation_profile_attempt_id_organization_id_lea_fkey` | Foreign key | `FOREIGN KEY (attempt_id, organization_id, learner_id, occupation_id) REFERENCES platform.baseline_adaptive_attempt(attempt_id, organization_id, learner_id, occupation_id)` |
-| FK111 / `employee_occupation_profile_blueprint_id_blueprint_version_fkey` | Foreign key | `FOREIGN KEY (blueprint_id, blueprint_version) REFERENCES platform.baseline_adaptive_blueprint_version(blueprint_id, version)` |
-| `employee_occupation_profile_blueprint_version_check` | Check | `CHECK (blueprint_version > 0)` |
-| `employee_occupation_profile_mastery_check` | Check | `CHECK (jsonb_typeof(mastery) = 'object'::text AND mastery <> '{}'::jsonb)` |
-| `employee_occupation_profile_pkey` | Primary key | `PRIMARY KEY (organization_id, learner_id, occupation_id)` |
-| `employee_occupation_profile_required_skills_check` | Check | `CHECK (jsonb_typeof(required_skills) = 'array'::text AND jsonb_array_length(required_skills) > 0)` |
+| `employee_job position_profile_attempt_id_key` | Unique | `UNIQUE (attempt_id)` |
+| FK110 / `employee_job position_profile_attempt_id_organization_id_lea_fkey` | Foreign key | `FOREIGN KEY (attempt_id, organization_id, learner_id, job position_id) REFERENCES platform.baseline_adaptive_attempt(attempt_id, organization_id, learner_id, job position_id)` |
+| FK111 / `employee_job position_profile_blueprint_id_blueprint_version_fkey` | Foreign key | `FOREIGN KEY (blueprint_id, blueprint_version) REFERENCES platform.baseline_adaptive_blueprint_version(blueprint_id, version)` |
+| `employee_job position_profile_blueprint_version_check` | Check | `CHECK (blueprint_version > 0)` |
+| `employee_job position_profile_mastery_check` | Check | `CHECK (jsonb_typeof(mastery) = 'object'::text AND mastery <> '{}'::jsonb)` |
+| `employee_job position_profile_pkey` | Primary key | `PRIMARY KEY (organization_id, learner_id, job position_id)` |
+| `employee_job position_profile_required_skills_check` | Check | `CHECK (jsonb_typeof(required_skills) = 'array'::text AND jsonb_array_length(required_skills) > 0)` |
 
 **Indexes (including constraint-backed indexes)**
 
 | Index | Definition |
 | --- | --- |
-| `employee_occupation_profile_attempt_id_key` | `CREATE UNIQUE INDEX employee_occupation_profile_attempt_id_key ON platform.employee_occupation_profile USING btree (attempt_id)` |
-| `employee_occupation_profile_pkey` | `CREATE UNIQUE INDEX employee_occupation_profile_pkey ON platform.employee_occupation_profile USING btree (organization_id, learner_id, occupation_id)` |
+| `employee_job position_profile_attempt_id_key` | `CREATE UNIQUE INDEX employee_job position_profile_attempt_id_key ON platform.employee_job position_profile USING btree (attempt_id)` |
+| `employee_job position_profile_pkey` | `CREATE UNIQUE INDEX employee_job position_profile_pkey ON platform.employee_job position_profile USING btree (organization_id, learner_id, job position_id)` |
 
 **Non-internal triggers**
 
 | Trigger | Enabled mode | Definition |
 | --- | --- | --- |
-| `employee_occupation_profile_initial_immutable` | O | `CREATE TRIGGER employee_occupation_profile_initial_immutable BEFORE DELETE OR UPDATE ON platform.employee_occupation_profile FOR EACH ROW EXECUTE FUNCTION platform.reject_history_mutation()` |
+| `employee_job position_profile_initial_immutable` | O | `CREATE TRIGGER employee_job position_profile_initial_immutable BEFORE DELETE OR UPDATE ON platform.employee_job position_profile FOR EACH ROW EXECUTE FUNCTION platform.reject_history_mutation()` |
 
 </details>
 
@@ -2883,7 +2883,7 @@ Current string-ID Role selection history and immutable snapshot.
 | `organization_id` | `uuid` | Yes | - | None |
 | `learner_id` | `uuid` | Yes | FK | None |
 | `role_id` | `text` | Yes | - | None |
-| `occupation_id` | `text` | Yes | - | None |
+| `job position_id` | `text` | Yes | - | None |
 | `role_snapshot` | `jsonb` | Yes | - | None |
 | `target_revision` | `bigint` | Yes | - | None |
 | `selected_at` | `timestamp with time zone` | Yes | - | None |
@@ -2895,7 +2895,7 @@ Current string-ID Role selection history and immutable snapshot.
 | --- | --- | --- |
 | `employee_role_selection_check` | Check | `CHECK (ended_at IS NULL OR ended_at >= selected_at)` |
 | FK113 / `employee_role_selection_learner_id_fkey` | Foreign key | `FOREIGN KEY (learner_id) REFERENCES platform.learner_state(learner_id)` |
-| `employee_role_selection_occupation_id_check` | Check | `CHECK (btrim(occupation_id) <> ''::text)` |
+| `employee_role_selection_job position_id_check` | Check | `CHECK (btrim(job position_id) <> ''::text)` |
 | `employee_role_selection_organization_id_learner_id_target_r_key` | Unique | `UNIQUE (organization_id, learner_id, target_revision)` |
 | `employee_role_selection_pkey` | Primary key | `PRIMARY KEY (selection_id)` |
 | `employee_role_selection_role_id_check` | Check | `CHECK (btrim(role_id) <> ''::text)` |
@@ -3858,17 +3858,17 @@ Activity-level module completion fact.
 
 </details>
 
-<a id="table-occupation-department-reference"></a>
+<a id="table-job position-department-reference"></a>
 
 <details>
-<summary>73. occupation_department_reference - 6 columns; 2 foreign keys</summary>
+<summary>73. job position_department_reference - 6 columns; 2 foreign keys</summary>
 
-Stored occupation-to-department association for assignment and baseline grants.
+Stored job position-to-department association for assignment and baseline grants.
 
 | Column | PostgreSQL type | Required | Key participation | Default |
 | --- | --- | --- | --- | --- |
-| `occupation_reference_id` | `uuid` | Yes | PK | None |
-| `occupation_id` | `uuid` | Yes | - | None |
+| `job position_reference_id` | `uuid` | Yes | PK | None |
+| `job position_id` | `uuid` | Yes | - | None |
 | `organization_id` | `uuid` | Yes | FK | None |
 | `department_id` | `uuid` | Yes | FK | None |
 | `name` | `text` | Yes | - | None |
@@ -3878,22 +3878,22 @@ Stored occupation-to-department association for assignment and baseline grants.
 
 | ID / name | Kind | Exact database definition |
 | --- | --- | --- |
-| FK157 / `occupation_department_referen_department_id_organization_i_fkey` | Foreign key | `FOREIGN KEY (department_id, organization_id) REFERENCES platform.department_reference(department_id, organization_id)` |
-| `occupation_department_referen_occupation_id_organization_id_key` | Unique | `UNIQUE (occupation_id, organization_id)` |
-| `occupation_department_referen_occupation_reference_id_depar_key` | Unique | `UNIQUE (occupation_reference_id, department_id, organization_id)` |
-| `occupation_department_reference_name_check` | Check | `CHECK (btrim(name) <> ''::text)` |
-| FK158 / `occupation_department_reference_organization_id_fkey` | Foreign key | `FOREIGN KEY (organization_id) REFERENCES platform.organization(organization_id)` |
-| `occupation_department_reference_pkey` | Primary key | `PRIMARY KEY (occupation_reference_id)` |
-| `occupation_reference_tenant_key` | Unique | `UNIQUE (occupation_reference_id, organization_id)` |
+| FK157 / `job position_department_referen_department_id_organization_i_fkey` | Foreign key | `FOREIGN KEY (department_id, organization_id) REFERENCES platform.department_reference(department_id, organization_id)` |
+| `job position_department_referen_job position_id_organization_id_key` | Unique | `UNIQUE (job position_id, organization_id)` |
+| `job position_department_referen_job position_reference_id_depar_key` | Unique | `UNIQUE (job position_reference_id, department_id, organization_id)` |
+| `job position_department_reference_name_check` | Check | `CHECK (btrim(name) <> ''::text)` |
+| FK158 / `job position_department_reference_organization_id_fkey` | Foreign key | `FOREIGN KEY (organization_id) REFERENCES platform.organization(organization_id)` |
+| `job position_department_reference_pkey` | Primary key | `PRIMARY KEY (job position_reference_id)` |
+| `job position_reference_tenant_key` | Unique | `UNIQUE (job position_reference_id, organization_id)` |
 
 **Indexes (including constraint-backed indexes)**
 
 | Index | Definition |
 | --- | --- |
-| `occupation_department_referen_occupation_id_organization_id_key` | `CREATE UNIQUE INDEX occupation_department_referen_occupation_id_organization_id_key ON platform.occupation_department_reference USING btree (occupation_id, organization_id)` |
-| `occupation_department_referen_occupation_reference_id_depar_key` | `CREATE UNIQUE INDEX occupation_department_referen_occupation_reference_id_depar_key ON platform.occupation_department_reference USING btree (occupation_reference_id, department_id, organization_id)` |
-| `occupation_department_reference_pkey` | `CREATE UNIQUE INDEX occupation_department_reference_pkey ON platform.occupation_department_reference USING btree (occupation_reference_id)` |
-| `occupation_reference_tenant_key` | `CREATE UNIQUE INDEX occupation_reference_tenant_key ON platform.occupation_department_reference USING btree (occupation_reference_id, organization_id)` |
+| `job position_department_referen_job position_id_organization_id_key` | `CREATE UNIQUE INDEX job position_department_referen_job position_id_organization_id_key ON platform.job position_department_reference USING btree (job position_id, organization_id)` |
+| `job position_department_referen_job position_reference_id_depar_key` | `CREATE UNIQUE INDEX job position_department_referen_job position_reference_id_depar_key ON platform.job position_department_reference USING btree (job position_reference_id, department_id, organization_id)` |
+| `job position_department_reference_pkey` | `CREATE UNIQUE INDEX job position_department_reference_pkey ON platform.job position_department_reference USING btree (job position_reference_id)` |
+| `job position_reference_tenant_key` | `CREATE UNIQUE INDEX job position_reference_tenant_key ON platform.job position_department_reference USING btree (job position_reference_id, organization_id)` |
 
 </details>
 
@@ -3945,7 +3945,7 @@ Account membership, access state, revision and assignment references.
 | `organization_id` | `uuid` | Yes | FK | None |
 | `active` | `boolean` | Yes | - | None |
 | `department_id` | `uuid` | No | FK | None |
-| `occupation_reference_id` | `uuid` | No | FK | None |
+| `job position_reference_id` | `uuid` | No | FK | None |
 | `revision` | `bigint` | Yes | - | `0` |
 | `created_at` | `timestamp with time zone` | Yes | - | None |
 | `updated_at` | `timestamp with time zone` | Yes | - | None |
@@ -3959,10 +3959,10 @@ Account membership, access state, revision and assignment references.
 | FK160 / `organization_membership_account_id_fkey` | Foreign key | `FOREIGN KEY (account_id) REFERENCES platform.account(account_id)` |
 | `organization_membership_account_id_key` | Unique | `UNIQUE (account_id)` |
 | FK161 / `organization_membership_account_id_organization_id_fkey` | Foreign key | `FOREIGN KEY (account_id, organization_id) REFERENCES platform.account(account_id, organization_id)` |
-| `organization_membership_check` | Check | `CHECK (occupation_reference_id IS NULL OR department_id IS NOT NULL)` |
+| `organization_membership_check` | Check | `CHECK (job position_reference_id IS NULL OR department_id IS NOT NULL)` |
 | FK162 / `organization_membership_department_id_organization_id_fkey` | Foreign key | `FOREIGN KEY (department_id, organization_id) REFERENCES platform.department_reference(department_id, organization_id)` |
 | `organization_membership_membership_id_organization_id_key` | Unique | `UNIQUE (membership_id, organization_id)` |
-| FK163 / `organization_membership_occupation_reference_id_department_fkey` | Foreign key | `FOREIGN KEY (occupation_reference_id, department_id, organization_id) REFERENCES platform.occupation_department_reference(occupation_reference_id, department_id, organization_id)` |
+| FK163 / `organization_membership_job position_reference_id_department_fkey` | Foreign key | `FOREIGN KEY (job position_reference_id, department_id, organization_id) REFERENCES platform.job position_department_reference(job position_reference_id, department_id, organization_id)` |
 | FK164 / `organization_membership_organization_id_fkey` | Foreign key | `FOREIGN KEY (organization_id) REFERENCES platform.organization(organization_id)` |
 | `organization_membership_pkey` | Primary key | `PRIMARY KEY (membership_id)` |
 | `organization_membership_revision_check` | Check | `CHECK (revision >= 0)` |
@@ -5523,7 +5523,7 @@ Pending member invitation/activation and single-use proof lifecycle.
 | `email` | `character varying(254)` | Yes | - | None |
 | `roles` | `text[]` | Yes | - | None |
 | `department_id` | `uuid` | No | FK | None |
-| `occupation_reference_id` | `uuid` | No | FK | None |
+| `job position_reference_id` | `uuid` | No | FK | None |
 | `proof_hash` | `platform.content_hash` | Yes | - | None |
 | `generation` | `bigint` | Yes | - | None |
 | `expires_at` | `timestamp with time zone` | Yes | - | None |
@@ -5538,8 +5538,8 @@ Pending member invitation/activation and single-use proof lifecycle.
 | --- | --- | --- |
 | `pending_activation_single_role` | Check | `CHECK (consumed_at IS NOT NULL OR cardinality(roles) = 1)` |
 | FK228 / `workspace_activation_account_id_fkey` | Foreign key | `FOREIGN KEY (account_id) REFERENCES platform.account(account_id)` |
-| `workspace_activation_check` | Check | `CHECK (occupation_reference_id IS NULL OR department_id IS NOT NULL)` |
-| `workspace_activation_check1` | Check | `CHECK (NOT ('EMPLOYEE'::text = ANY (roles)) OR department_id IS NOT NULL AND occupation_reference_id IS NOT NULL)` |
+| `workspace_activation_check` | Check | `CHECK (job position_reference_id IS NULL OR department_id IS NOT NULL)` |
+| `workspace_activation_check1` | Check | `CHECK (NOT ('EMPLOYEE'::text = ANY (roles)) OR department_id IS NOT NULL AND job position_reference_id IS NOT NULL)` |
 | `workspace_activation_check2` | Check | `CHECK ((consumed_at IS NULL) = (account_id IS NULL))` |
 | `workspace_activation_check3` | Check | `CHECK (expires_at = (last_sent_at + '00:10:00'::interval))` |
 | FK229 / `workspace_activation_created_by_fkey` | Foreign key | `FOREIGN KEY (created_by) REFERENCES platform.account(account_id)` |
@@ -5547,7 +5547,7 @@ Pending member invitation/activation and single-use proof lifecycle.
 | `workspace_activation_email_check` | Check | `CHECK (email::text = lower(btrim(email::text)) AND email::text <> ''::text)` |
 | `workspace_activation_full_name_check` | Check | `CHECK (btrim(full_name::text) <> ''::text)` |
 | `workspace_activation_generation_check` | Check | `CHECK (generation > 0)` |
-| FK231 / `workspace_activation_occupation_reference_id_department_id_fkey` | Foreign key | `FOREIGN KEY (occupation_reference_id, department_id, organization_id) REFERENCES platform.occupation_department_reference(occupation_reference_id, department_id, organization_id)` |
+| FK231 / `workspace_activation_job position_reference_id_department_id_fkey` | Foreign key | `FOREIGN KEY (job position_reference_id, department_id, organization_id) REFERENCES platform.job position_department_reference(job position_reference_id, department_id, organization_id)` |
 | FK232 / `workspace_activation_organization_id_fkey` | Foreign key | `FOREIGN KEY (organization_id) REFERENCES platform.organization(organization_id)` |
 | `workspace_activation_pkey` | Primary key | `PRIMARY KEY (activation_id)` |
 | `workspace_activation_proof_hash_key` | Unique | `UNIQUE (proof_hash)` |
@@ -5568,13 +5568,13 @@ Pending member invitation/activation and single-use proof lifecycle.
 <details>
 <summary>113. workspace_baseline_resource - 6 columns; 5 foreign keys</summary>
 
-Explicit organization/graph-Occupation grant and nullable bank/model/mapping pins.
+Explicit organization/graph-Job Position grant and nullable bank/model/mapping pins.
 
 | Column | PostgreSQL type | Required | Key participation | Default |
 | --- | --- | --- | --- | --- |
 | `organization_id` | `uuid` | Yes | PK, FK | None |
-| `occupation_reference_id` | `uuid` | Yes | FK | None |
-| `graph_occupation_id` | `text` | Yes | PK | None |
+| `job position_reference_id` | `uuid` | Yes | FK | None |
+| `graph_job position_id` | `text` | Yes | PK | None |
 | `question_bank_id` | `uuid` | No | FK | None |
 | `model_version_id` | `uuid` | No | FK | None |
 | `mastery_mapping_version_id` | `uuid` | No | FK | None |
@@ -5583,21 +5583,21 @@ Explicit organization/graph-Occupation grant and nullable bank/model/mapping pin
 
 | ID / name | Kind | Exact database definition |
 | --- | --- | --- |
-| `workspace_baseline_resource_graph_occupation_id_check` | Check | `CHECK (graph_occupation_id <> ''::text AND graph_occupation_id = btrim(graph_occupation_id))` |
+| `workspace_baseline_resource_graph_job position_id_check` | Check | `CHECK (graph_job position_id <> ''::text AND graph_job position_id = btrim(graph_job position_id))` |
 | FK233 / `workspace_baseline_resource_mastery_mapping_version_id_fkey` | Foreign key | `FOREIGN KEY (mastery_mapping_version_id) REFERENCES platform.mastery_mapping_version(mastery_mapping_version_id)` |
 | FK234 / `workspace_baseline_resource_model_version_id_fkey` | Foreign key | `FOREIGN KEY (model_version_id) REFERENCES platform.model_version(model_version_id)` |
-| FK235 / `workspace_baseline_resource_occupation_reference_id_organi_fkey` | Foreign key | `FOREIGN KEY (occupation_reference_id, organization_id) REFERENCES platform.occupation_department_reference(occupation_reference_id, organization_id)` |
+| FK235 / `workspace_baseline_resource_job position_reference_id_organi_fkey` | Foreign key | `FOREIGN KEY (job position_reference_id, organization_id) REFERENCES platform.job position_department_reference(job position_reference_id, organization_id)` |
 | FK236 / `workspace_baseline_resource_organization_id_fkey` | Foreign key | `FOREIGN KEY (organization_id) REFERENCES platform.organization(organization_id)` |
-| `workspace_baseline_resource_organization_id_occupation_refe_key` | Unique | `UNIQUE (organization_id, occupation_reference_id)` |
-| `workspace_baseline_resource_pkey` | Primary key | `PRIMARY KEY (organization_id, graph_occupation_id)` |
+| `workspace_baseline_resource_organization_id_job position_refe_key` | Unique | `UNIQUE (organization_id, job position_reference_id)` |
+| `workspace_baseline_resource_pkey` | Primary key | `PRIMARY KEY (organization_id, graph_job position_id)` |
 | FK237 / `workspace_baseline_resource_question_bank_id_fkey` | Foreign key | `FOREIGN KEY (question_bank_id) REFERENCES platform.question_bank(question_bank_id)` |
 
 **Indexes (including constraint-backed indexes)**
 
 | Index | Definition |
 | --- | --- |
-| `workspace_baseline_resource_organization_id_occupation_refe_key` | `CREATE UNIQUE INDEX workspace_baseline_resource_organization_id_occupation_refe_key ON platform.workspace_baseline_resource USING btree (organization_id, occupation_reference_id)` |
-| `workspace_baseline_resource_pkey` | `CREATE UNIQUE INDEX workspace_baseline_resource_pkey ON platform.workspace_baseline_resource USING btree (organization_id, graph_occupation_id)` |
+| `workspace_baseline_resource_organization_id_job position_refe_key` | `CREATE UNIQUE INDEX workspace_baseline_resource_organization_id_job position_refe_key ON platform.workspace_baseline_resource USING btree (organization_id, job position_reference_id)` |
+| `workspace_baseline_resource_pkey` | `CREATE UNIQUE INDEX workspace_baseline_resource_pkey ON platform.workspace_baseline_resource USING btree (organization_id, graph_job position_id)` |
 
 **Non-internal triggers**
 
@@ -5618,7 +5618,7 @@ Explicit organization/graph-Occupation grant and nullable bank/model/mapping pin
 | `ontology_seed.json` v0.9 | 833 | 4,638 | 85 modules / 181 TEACHES pairs | Runtime-input artifact; schema metadata inspection did not certify the live graph's exact snapshot. |
 | `ontology_seed-v011.json` v0.11 | 994 | 5,121 | 246 modules / 664 TEACHES pairs | Separate review package; all module review statuses remain NEEDS_EXPERT_REVIEW. No deployment/import performed. |
 
-Both packages have five Occupations, 48 TargetRoles, 144 Levels, 472 Competencies and 79 MicroSkills. v0.11 adds teaching focus/difficulty and review duration/price fields without changing the six labels/seven relationship types. Old [neo4j_schema.md](../documents/neo4j_schema.md) descriptions of v0.8 one-to-one TEACHES are historical, not the current many-to-many rule.
+Both packages have five Job Positions, 48 TargetRoles, 144 Levels, 472 Competencies and 79 MicroSkills. v0.11 adds teaching focus/difficulty and review duration/price fields without changing the six labels/seven relationship types. Old [neo4j_schema.md](../documents/neo4j_schema.md) descriptions of v0.8 one-to-one TEACHES are historical, not the current many-to-many rule.
 
 [Mermaid source: GRAPH-01](../documents/diagrams/mermaid/graph-01.mmd)
 
@@ -5634,8 +5634,8 @@ Both packages have five Occupations, 48 TargetRoles, 144 Levels, 472 Competencie
 | --- | --- |
 | Common identity | Stable string `id`; version/status/review metadata on nodes and relationships. Import validates IDs/endpoints and snapshot integrity. |
 | Review metadata | `NEEDS_EXPERT_REVIEW`, `APPROVED`, `REJECTED`; reviewer/time remain absent/null until real review. Dataset review is not interchangeable with L&D business publication. |
-| Occupation interests | Six normalized O*NET OI dimensions in [0,1], computed from source 1..7 scale as `(value - 1) / 6`. This is occupational interest data, not Employee mastery. |
-| Role/Level | Each TargetRole has one owning Occupation; current package has three Levels per role. Level-specific skill sets may differ/overlap without being nested. |
+| Job Position interests | Six normalized O*NET OI dimensions in [0,1], computed from source 1..7 scale as `(value - 1) / 6`. This is job positional interest data, not Employee mastery. |
+| Role/Level | Each TargetRole has one owning Job Position; current package has three Levels per role. Level-specific skill sets may differ/overlap without being nested. |
 | Competency | Group of required skills for its owning Level; no independent RIASEC or competency score is added. |
 | REQUIRES_SKILL | Requirement belongs to the Level-Skill pair; `requiredScore` and applicable metadata are not global Module difficulty. |
 | TEACHES | Many-to-many. v0.11 pair has `teachingFocus = PRIMARY/SUPPORTING/INCIDENTAL` and `difficultyLevel = LOW/MEDIUM/HIGH`. Incidental exposure must not be treated as closing a gap. |
@@ -5655,10 +5655,10 @@ A controlled import must pin the chosen dataset path/version and compare counts/
 
 | Target area | Current physical support | Proposed next design, not current DDL |
 | --- | --- | --- |
-| Full department/occupation/Expert lifecycle | Reference tables and baseline resource binding | Approved organization-owned aggregates and assignment history; forward migration preserving member/attempt references. |
+| Full department/job position/Expert lifecycle | Reference tables and baseline resource binding | Approved organization-owned aggregates and assignment history; forward migration preserving member/attempt references. |
 | Role submission and L&D publication | Legacy graph state and catalog references | Separate content/configuration version, submission, decision and publication identity; no fabricated mapping from legacy ACTIVE. |
 | Private learning offering | Graph module identity/content URI and assessment bindings | Module/content metadata, ordered content versions, object version locator and offering approval aggregate; MinIO private objects. |
-| RIASEC/guidance | Prototype UI and occupation interest vector | Versioned instrument result, minimized inference input/output provenance and authorized role recommendations. |
+| RIASEC/guidance | Prototype UI and job position interest vector | Versioned instrument result, minimized inference input/output provenance and authorized role recommendations. |
 | Ongoing tracing/adaptation | Evidence/profile/pathway foundations | Idempotent evidence application, versioned gaps, override-preserving recalculation and initial confirmation. |
 | Realized ROI | Analytics/cohort and `roi_scenario` foundation | Actual costs/benefits ledger with period/currency/basis and versioned report calculation. |
 | Audit readers | Durable `audit_event` and selected events | Scoped administrator query contract, retention and privacy policy. |
@@ -5673,7 +5673,7 @@ Sensitive fields (password hashes, encrypted MFA material, HMAC proofs, provider
 | --- | --- | --- |
 | Organization onboarding; workspace administration: FR-01.01/01.04/07.03, FR-03.01/03.03/03.04/03.05/07.01 | 3.1, with commercial provisioning in 3.2 | Verification, sessions, membership, setting/audit gaps. |
 | Subscription lifecycle; platform administration: FR-01.02/01.03/02.01/02.02/02.03/03.06/07.02/07.04 | 3.2 | Immutable terms, verified payment, access and seats. |
-| Departments/occupations; role catalog; learning catalog; module authoring: FR-03.02, FR-04.01..04.04/04.06, FR-05.01..05.06/05.08 | 3.3 | Assignment, Expert authoring, L&D publication/approval. |
+| Departments/job positions; role catalog; learning catalog; module authoring: FR-03.02, FR-04.01..04.04/04.06, FR-05.01..05.06/05.08 | 3.3 | Assignment, Expert authoring, L&D publication/approval. |
 | Assessment workflows: FR-04.05/06.02/06.03/06.08/07.05 | 3.4 | Blueprint/version, pinned attempt, scoring and RIASEC/module gaps. |
 | Role guidance; Employee experience; pathway review; adaptive engine: FR-05.07, FR-06.01/06.04..06.07/06.09, FR-07.06..07.08 | 3.5 | Selection/profile flow, guidance, initial review and adaptation. |
 | Development reporting: FR-04.07/07.09 | 3.6 | Actual finance inputs, reporting and ROI. |
@@ -5830,7 +5830,7 @@ Plan versions are immutable value snapshots with a current-plan pointer, not an 
 | [OrganizationTargetRoleController](../backend/src/main/java/com/adaptlearngraph/apis/OrganizationTargetRoleController.java) | Current legacy controller behind explicit property gate; old role/domain/track/status model. Its client role-header handling is not the target trusted assignment contract. |
 | `TargetRoleService`, `Neo4jTargetRoleRepository` | Existing legacy creation/query/update/versioning machinery. Reuse requires schema/authorization reconciliation, not direct enabling against review data. |
 | `MicroSkillService`, `PrerequisiteService` | Existing skill and directed-cycle validation code; associated write APIs are legacy-gated. |
-| Planned `OccupationAdministration` / `ExpertAssignment` | Persist organization/department ownership, active references and assignment history; reject foreign or inactive grants. |
+| Planned `Job PositionAdministration` / `ExpertAssignment` | Persist organization/department ownership, active references and assignment history; reject foreign or inactive grants. |
 | Planned `RoleConfigurationWorkflow` | Draft configuration version, submission and L&D decision; separate authored requirements from publication authority. |
 | Planned `OfferingWorkflow` | Coordinates a versioned module/content/assessment bundle, return/resubmit and approval. |
 | Planned authorization/repository/projection/content ports | Derive trusted scope; preserve relational workflow history; publish recoverable graph projections; authorize private object access. |
@@ -5853,7 +5853,7 @@ The frontend WF-04/WF-07 layouts and SRS field rules apply. Additional target co
 
 [Mermaid source: ST-09](../documents/diagrams/mermaid/st-09.mmd)
 
-![ST-09 - Department, Occupation and assignment (target business lifecycle)](../documents/diagrams/mermaid/st-09.png)
+![ST-09 - Department, Job Position and assignment (target business lifecycle)](../documents/diagrams/mermaid/st-09.png)
 
 **Diagram notes (ST-09):**
 
@@ -5897,9 +5897,9 @@ The frontend WF-04/WF-07 layouts and SRS field rules apply. Additional target co
 | `AdaptiveBlueprintService` | Authorized Draft/save/preview/finalize/disable/discard with exact identity/revision/current-pointer checks and idempotent receipts. |
 | `AdaptiveBlueprintStore` / JDBC implementation | Transactional blueprint/registry/activation persistence; read-only history/list queries and coordinated writes. |
 | `AdaptiveBlueprintEligibilityPort` | Resolve current or pinned available pool from permitted catalog, bank and technical versions; no fabricated default bank/model. |
-| [WorkspaceBaselineResources](../backend/src/main/java/com/adaptlearngraph/repository/WorkspaceBaselineResources.java) | Read explicit V32 tenant/Occupation/resource binding; null pins mean not ready. |
+| [WorkspaceBaselineResources](../backend/src/main/java/com/adaptlearngraph/repository/WorkspaceBaselineResources.java) | Read explicit V32 tenant/Job Position/resource binding; null pins mean not ready. |
 | [WorkspaceBaselineConfiguration](../backend/src/main/java/com/adaptlearngraph/config/WorkspaceBaselineConfiguration.java) | Composition root for trusted session/entitlement adapters, JDBC stores, Neo4j catalog and attempt services. Profile: `workspace-baseline & local & !local-baseline-demo & !prod`. |
-| `AdaptiveAttemptStartService` | New admission, resume and replay under trusted learner/selection/current configuration; pins full Occupation scope, content and timing. |
+| `AdaptiveAttemptStartService` | New admission, resume and replay under trusted learner/selection/current configuration; pins full Job Position scope, content and timing. |
 | `AdaptiveAttemptAnswerService` | Revision/position-bound response acceptance, server correctness and adaptive next-item/finalization. |
 | `AdaptiveAttemptSubmitService` | Explicit manual submission, idempotency and shared terminal policy. |
 | [AdaptiveAttemptFinalizationService](../backend/src/main/java/com/adaptlearngraph/services/AdaptiveAttemptFinalizationService.java) | Shared answer/manual/deadline terminal policy; checks actual progress against pinned IRT outcomes; invalidates inconsistent/insufficient attempts without invented mastery. |
@@ -5911,7 +5911,7 @@ The frontend WF-04/WF-07 layouts and SRS field rules apply. Additional target co
 
 [Mermaid source: SEQ-07](../documents/diagrams/mermaid/seq-07.mmd)
 
-![SEQ-07 - Occupation baseline activation with preserved history](../documents/diagrams/mermaid/seq-07.png)
+![SEQ-07 - Job Position baseline activation with preserved history](../documents/diagrams/mermaid/seq-07.png)
 
 **Diagram notes (SEQ-07):**
 
@@ -5978,9 +5978,9 @@ Legacy `assessment_assignment` has ACTIVE/REVOKED/CLOSED and legacy blueprint wo
 | --- | --- |
 | [CurrentRoleFlowController](../backend/src/main/java/com/adaptlearngraph/apis/CurrentRoleFlowController.java) | Employee roles/details, current selection/next step, selection command and mastery routes. |
 | [RoleBaselineFlow](../backend/src/main/java/com/adaptlearngraph/services/RoleBaselineFlow.java) | Trusted role choice, replay/CAS coordination and baseline/profile next-step orchestration. Selection is not itself assessment admission. |
-| `CurrentRoleCatalog` | Reads current string-ID Occupation/Role/Level requirements through graph adapter. |
+| `CurrentRoleCatalog` | Reads current string-ID Job Position/Role/Level requirements through graph adapter. |
 | `CurrentRoleSelectionStore` | Selection history, expected selection comparison, retry receipt, audit/outbox and learner coordination. |
-| Applicable Occupation profile | Stable required skill set and applicable baseline binding; newer catalog requirements do not retroactively alter initialized profiles. |
+| Applicable Job Position profile | Stable required skill set and applicable baseline binding; newer catalog requirements do not retroactively alter initialized profiles. |
 | Planned `GuidanceService` | Minimized evidence/interest context, authorized candidates, validated LLM output and provenance; Employee retains choice. |
 | Planned `CompetencyUpdateService` | Versioned evidence-to-mastery updates and role gaps; idempotent source observation consumption. |
 | Planned `PathwayGenerationService` | Prerequisite-aware approved coverage, module deduplication, initial reviewable pathway and remaining-step recalculation. |
@@ -6020,7 +6020,7 @@ Logical database arrows from actors stand for authorized use-case calls, not dir
 
 **Diagram notes (ST-18):**
 
-- Current baseline initializes its own applicable Occupation profile. General continuous tracing remains a planned service. Evidence states describe provenance, not low/medium/high score. Historical COMPLETE revisions stay immutable; updates create successors.
+- Current baseline initializes its own applicable Job Position profile. General continuous tracing remains a planned service. Evidence states describe provenance, not low/medium/high score. Historical COMPLETE revisions stay immutable; updates create successors.
 
 [Mermaid source: ST-19](../documents/diagrams/mermaid/st-19.mmd)
 
@@ -6127,7 +6127,7 @@ Actual financial record approval/locking/retention is not specified by Version 2
 | Payment application / subscription intent | ST-06 | Separate persisted aggregates. |
 | Workspace / organization | ST-07 | Setup readiness versus administrative suspension. |
 | Subscription period | ST-08 | Time-derived availability; immutable period record. |
-| Department/Occupation / Expert assignment | ST-09 | Target business lifecycle, incomplete implementation. |
+| Department/Job Position / Expert assignment | ST-09 | Target business lifecycle, incomplete implementation. |
 | Target role | ST-10 | Required target publication workflow, not legacy enum equivalence. |
 | Module and Learning Content | ST-11 | Current authoring/review/publication states; whole-Module lesson review. Complete module-assessment bundle remains separate. |
 | MicroSkill and other graph definitions | ST-12 | Orthogonal review/availability vocabularies; no automatic approval. |
@@ -6160,9 +6160,9 @@ This is a route-family inventory, not a replacement for controller DTO contracts
 | `/api/v1/employee/target-roles`, `/target-roles/{id}` | Current Employee catalog reads | Trusted tenant and available current-schema Role. |
 | `/api/v1/employee/target-role-selection`, `/next-step`, `/mastery` | Role selection/readiness/profile | Idempotency key, expected selection and safe own profile output. |
 | `/api/v1/ld/adaptive-baseline-blueprints` | L&D paged versions/Drafts | Authorized filters/counts first; default page size 20, max 100 in documented contract. |
-| `/api/v1/ld/adaptive-baseline-blueprints/occupations/{occupationId}/working` | Save Draft | Expected working identity/revision and exact replay semantics. |
-| Same occupation family: `/test`, `/finalize`, `/disable`, `/working/discard`, `/working/convert` | Preview, activation/deactivation, explicit discard/conversion | Expected current pair for fresh lifecycle writes; server revalidation; no invented preview token. |
-| `/api/v1/employee/baseline-attempts` and `/{attemptId}` | Start/read/resume | Derived Occupation scope and pinned resources; no client-owned score/timing. |
+| `/api/v1/ld/adaptive-baseline-blueprints/job positions/{job positionId}/working` | Save Draft | Expected working identity/revision and exact replay semantics. |
+| Same job position family: `/test`, `/finalize`, `/disable`, `/working/discard`, `/working/convert` | Preview, activation/deactivation, explicit discard/conversion | Expected current pair for fresh lifecycle writes; server revalidation; no invented preview token. |
+| `/api/v1/employee/baseline-attempts` and `/{attemptId}` | Start/read/resume | Derived Job Position scope and pinned resources; no client-owned score/timing. |
 | Attempt `/{attemptId}/answers`, `/submit`, `/result`, plus `/history` | Answers, finalization and own results | Idempotency/revision/ownership; answer-key/internal-parameter filtering. |
 | Legacy organization target-role/skill/prerequisite routes | Retained older authoring model | Explicit property gates; not default current-ontology write support. |
 | `/api/v1/system/status`, `/actuator/health` | Technical state | Health is not full readiness/acceptance and exposes no detailed secrets. |
@@ -6234,8 +6234,8 @@ Follow [testing guides](../documents/testing/README.md). Existing successful rec
 | [Feature catalog](../documents/features/README.md) | Stable FR-domain mapping and source-inspected snapshots. |
 | [Architecture](../documents/ARCHITECTURE.md) | Target/technical baseline and integration lineage, reconciled with current source. |
 | [PostgreSQL migrations](../backend/src/main/resources/db/migration) | Executable current DDL; verified V1-V32. |
-| [Baseline lifecycle](../documents/technical/baseline/Occupation%20Baseline%20Lifecycle%20and%20Transition.md) | Current version/availability/retry design. |
-| [Role/baseline flow](../documents/technical/baseline/Role%20Selection%20and%20Occupation%20Baseline.md) | Selection, coverage and admission boundaries. |
+| [Baseline lifecycle](../documents/technical/baseline/Job Position%20Baseline%20Lifecycle%20and%20Transition.md) | Current version/availability/retry design. |
+| [Role/baseline flow](../documents/technical/baseline/Role%20Selection%20and%20Job Position%20Baseline.md) | Selection, coverage and admission boundaries. |
 | [Ontology review](../documents/dataset/ONTOLOGY.md) | Latest v0.11 review data, metadata and provenance. |
 | [Neo4j import guide](../documents/dataset/NEO4J_IMPORT_GUIDE.md) | Controlled snapshot import and non-destructive boundaries. |
 | [Testing evidence index](../documents/testing/README.md) | Actual historical test scopes and exclusions. |

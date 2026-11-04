@@ -232,232 +232,232 @@
           "skillType": "http://data.europa.eu/esco/skill-type/skill"
         }
       ],
-      "isEssentialForOccupation": [
+      "isEssentialForJob Position": [
         {
-          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/50af07f0-7a75-424e-a66d-5a9deea10f4c&language=en",
-          "uri": "http://data.europa.eu/esco/occupation/50af07f0-7a75-424e-a66d-5a9deea10f4c",
+          "href": "https://ec.europa.eu/esco/api/resource/job position?uri=http://data.europa.eu/esco/job position/50af07f0-7a75-424e-a66d-5a9deea10f4c&language=en",
+          "uri": "http://data.europa.eu/esco/job position/50af07f0-7a75-424e-a66d-5a9deea10f4c",
           "title": "ICT accessibility tester"
         },
         {
-          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/3594efa8-cd69-411e-a345-d88ba756b758&language=en",
-          "uri": "http://data.europa.eu/esco/occupation/3594efa8-cd69-411e-a345-d88ba756b758",
+          "href": "https://ec.europa.eu/esco/api/resource/job position?uri=http://data.europa.eu/esco/job position/3594efa8-cd69-411e-a345-d88ba756b758&language=en",
+          "uri": "http://data.europa.eu/esco/job position/3594efa8-cd69-411e-a345-d88ba756b758",
           "title": "pulp grader"
         },
         {
-          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/33e4f026-a823-4ffc-99e4-60d3fe597a1e&language=en",
-          "uri": "http://data.europa.eu/esco/occupation/33e4f026-a823-4ffc-99e4-60d3fe597a1e",
+          "href": "https://ec.europa.eu/esco/api/resource/job position?uri=http://data.europa.eu/esco/job position/33e4f026-a823-4ffc-99e4-60d3fe597a1e&language=en",
+          "uri": "http://data.europa.eu/esco/job position/33e4f026-a823-4ffc-99e4-60d3fe597a1e",
           "title": "digital games tester"
         },
         {
-          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/82d75f3b-644a-4582-ad6b-a2a1833e44cb&language=en",
-          "uri": "http://data.europa.eu/esco/occupation/82d75f3b-644a-4582-ad6b-a2a1833e44cb",
+          "href": "https://ec.europa.eu/esco/api/resource/job position?uri=http://data.europa.eu/esco/job position/82d75f3b-644a-4582-ad6b-a2a1833e44cb&language=en",
+          "uri": "http://data.europa.eu/esco/job position/82d75f3b-644a-4582-ad6b-a2a1833e44cb",
           "title": "non-destructive testing specialist"
         },
         {
-          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/ad7bbc92-d5cb-4b64-a1a3-efc593afd437&language=en",
-          "uri": "http://data.europa.eu/esco/occupation/ad7bbc92-d5cb-4b64-a1a3-efc593afd437",
+          "href": "https://ec.europa.eu/esco/api/resource/job position?uri=http://data.europa.eu/esco/job position/ad7bbc92-d5cb-4b64-a1a3-efc593afd437&language=en",
+          "uri": "http://data.europa.eu/esco/job position/ad7bbc92-d5cb-4b64-a1a3-efc593afd437",
           "title": "lumber grader"
         },
         {
-          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/3027abf6-bc54-4709-8dc1-4f20b772ac70&language=en",
-          "uri": "http://data.europa.eu/esco/occupation/3027abf6-bc54-4709-8dc1-4f20b772ac70",
+          "href": "https://ec.europa.eu/esco/api/resource/job position?uri=http://data.europa.eu/esco/job position/3027abf6-bc54-4709-8dc1-4f20b772ac70&language=en",
+          "uri": "http://data.europa.eu/esco/job position/3027abf6-bc54-4709-8dc1-4f20b772ac70",
           "title": "engineered wood board grader"
         },
         {
-          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/30c0943c-caa1-411d-b273-26f475971273&language=en",
-          "uri": "http://data.europa.eu/esco/occupation/30c0943c-caa1-411d-b273-26f475971273",
+          "href": "https://ec.europa.eu/esco/api/resource/job position?uri=http://data.europa.eu/esco/job position/30c0943c-caa1-411d-b273-26f475971273&language=en",
+          "uri": "http://data.europa.eu/esco/job position/30c0943c-caa1-411d-b273-26f475971273",
           "title": "quality engineer"
         },
         {
-          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/33fe4c90-c4fd-4860-bdc5-24fcab16f45a&language=en",
-          "uri": "http://data.europa.eu/esco/occupation/33fe4c90-c4fd-4860-bdc5-24fcab16f45a",
+          "href": "https://ec.europa.eu/esco/api/resource/job position?uri=http://data.europa.eu/esco/job position/33fe4c90-c4fd-4860-bdc5-24fcab16f45a&language=en",
+          "uri": "http://data.europa.eu/esco/job position/33fe4c90-c4fd-4860-bdc5-24fcab16f45a",
           "title": "food analyst"
         },
         {
-          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/b9c80d74-97b6-4a4b-849e-a3908ba57ae1&language=en",
-          "uri": "http://data.europa.eu/esco/occupation/b9c80d74-97b6-4a4b-849e-a3908ba57ae1",
+          "href": "https://ec.europa.eu/esco/api/resource/job position?uri=http://data.europa.eu/esco/job position/b9c80d74-97b6-4a4b-849e-a3908ba57ae1&language=en",
+          "uri": "http://data.europa.eu/esco/job position/b9c80d74-97b6-4a4b-849e-a3908ba57ae1",
           "title": "veneer grader"
         },
         {
-          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/998a0bf4-b1be-42ab-aee5-0096c9be3319&language=en",
-          "uri": "http://data.europa.eu/esco/occupation/998a0bf4-b1be-42ab-aee5-0096c9be3319",
+          "href": "https://ec.europa.eu/esco/api/resource/job position?uri=http://data.europa.eu/esco/job position/998a0bf4-b1be-42ab-aee5-0096c9be3319&language=en",
+          "uri": "http://data.europa.eu/esco/job position/998a0bf4-b1be-42ab-aee5-0096c9be3319",
           "title": "quality engineering technician"
         },
         {
-          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/0ab5c12c-c1c1-4772-8345-aa287d0e391d&language=en",
-          "uri": "http://data.europa.eu/esco/occupation/0ab5c12c-c1c1-4772-8345-aa287d0e391d",
+          "href": "https://ec.europa.eu/esco/api/resource/job position?uri=http://data.europa.eu/esco/job position/0ab5c12c-c1c1-4772-8345-aa287d0e391d&language=en",
+          "uri": "http://data.europa.eu/esco/job position/0ab5c12c-c1c1-4772-8345-aa287d0e391d",
           "title": "ICT test analyst"
         },
         {
-          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/d99e2022-cbe1-4aaa-8f9d-7db129d61f0c&language=en",
-          "uri": "http://data.europa.eu/esco/occupation/d99e2022-cbe1-4aaa-8f9d-7db129d61f0c",
+          "href": "https://ec.europa.eu/esco/api/resource/job position?uri=http://data.europa.eu/esco/job position/d99e2022-cbe1-4aaa-8f9d-7db129d61f0c&language=en",
+          "uri": "http://data.europa.eu/esco/job position/d99e2022-cbe1-4aaa-8f9d-7db129d61f0c",
           "title": "wastewater treatment technician"
         },
         {
-          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/eb00745b-9abb-4bd8-8291-aade48af029d&language=en",
-          "uri": "http://data.europa.eu/esco/occupation/eb00745b-9abb-4bd8-8291-aade48af029d",
+          "href": "https://ec.europa.eu/esco/api/resource/job position?uri=http://data.europa.eu/esco/job position/eb00745b-9abb-4bd8-8291-aade48af029d&language=en",
+          "uri": "http://data.europa.eu/esco/job position/eb00745b-9abb-4bd8-8291-aade48af029d",
           "title": "material testing technician"
         },
         {
-          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/1c5a896a-e010-4217-a29a-c44db26e25da&language=en",
-          "uri": "http://data.europa.eu/esco/occupation/1c5a896a-e010-4217-a29a-c44db26e25da",
+          "href": "https://ec.europa.eu/esco/api/resource/job position?uri=http://data.europa.eu/esco/job position/1c5a896a-e010-4217-a29a-c44db26e25da&language=en",
+          "uri": "http://data.europa.eu/esco/job position/1c5a896a-e010-4217-a29a-c44db26e25da",
           "title": "embedded systems security engineer"
         },
         {
-          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/52d5edc9-7902-4cd3-8b06-6bd77c98d440&language=en",
-          "uri": "http://data.europa.eu/esco/occupation/52d5edc9-7902-4cd3-8b06-6bd77c98d440",
+          "href": "https://ec.europa.eu/esco/api/resource/job position?uri=http://data.europa.eu/esco/job position/52d5edc9-7902-4cd3-8b06-6bd77c98d440&language=en",
+          "uri": "http://data.europa.eu/esco/job position/52d5edc9-7902-4cd3-8b06-6bd77c98d440",
           "title": "ICT system tester"
         },
         {
-          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/ba490796-46f7-45b7-827b-db6882fca3e1&language=en",
-          "uri": "http://data.europa.eu/esco/occupation/ba490796-46f7-45b7-827b-db6882fca3e1",
+          "href": "https://ec.europa.eu/esco/api/resource/job position?uri=http://data.europa.eu/esco/job position/ba490796-46f7-45b7-827b-db6882fca3e1&language=en",
+          "uri": "http://data.europa.eu/esco/job position/ba490796-46f7-45b7-827b-db6882fca3e1",
           "title": "onshore wind energy engineer"
         },
         {
-          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/5f50290d-f520-4a69-85c7-1390d2a4a8b6&language=en",
-          "uri": "http://data.europa.eu/esco/occupation/5f50290d-f520-4a69-85c7-1390d2a4a8b6",
+          "href": "https://ec.europa.eu/esco/api/resource/job position?uri=http://data.europa.eu/esco/job position/5f50290d-f520-4a69-85c7-1390d2a4a8b6&language=en",
+          "uri": "http://data.europa.eu/esco/job position/5f50290d-f520-4a69-85c7-1390d2a4a8b6",
           "title": "ICT usability tester"
         },
         {
-          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/106f79e4-6264-45f1-9e7a-297435cd684b&language=en",
-          "uri": "http://data.europa.eu/esco/occupation/106f79e4-6264-45f1-9e7a-297435cd684b",
+          "href": "https://ec.europa.eu/esco/api/resource/job position?uri=http://data.europa.eu/esco/job position/106f79e4-6264-45f1-9e7a-297435cd684b&language=en",
+          "uri": "http://data.europa.eu/esco/job position/106f79e4-6264-45f1-9e7a-297435cd684b",
           "title": "software tester"
         },
         {
-          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/adf9257e-78cb-467d-b259-59ed65bd7aed&language=en",
-          "uri": "http://data.europa.eu/esco/occupation/adf9257e-78cb-467d-b259-59ed65bd7aed",
+          "href": "https://ec.europa.eu/esco/api/resource/job position?uri=http://data.europa.eu/esco/job position/adf9257e-78cb-467d-b259-59ed65bd7aed&language=en",
+          "uri": "http://data.europa.eu/esco/job position/adf9257e-78cb-467d-b259-59ed65bd7aed",
           "title": "fire safety tester"
         },
         {
-          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/731f38f1-b08f-4dd5-a25e-f8627c038273&language=en",
-          "uri": "http://data.europa.eu/esco/occupation/731f38f1-b08f-4dd5-a25e-f8627c038273",
+          "href": "https://ec.europa.eu/esco/api/resource/job position?uri=http://data.europa.eu/esco/job position/731f38f1-b08f-4dd5-a25e-f8627c038273&language=en",
+          "uri": "http://data.europa.eu/esco/job position/731f38f1-b08f-4dd5-a25e-f8627c038273",
           "title": "ICT integration tester"
         },
         {
-          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/ec5a067f-6278-4e35-990f-c9b7205a9ff4&language=en",
-          "uri": "http://data.europa.eu/esco/occupation/ec5a067f-6278-4e35-990f-c9b7205a9ff4",
+          "href": "https://ec.europa.eu/esco/api/resource/job position?uri=http://data.europa.eu/esco/job position/ec5a067f-6278-4e35-990f-c9b7205a9ff4&language=en",
+          "uri": "http://data.europa.eu/esco/job position/ec5a067f-6278-4e35-990f-c9b7205a9ff4",
           "title": "homologation engineer"
         },
         {
-          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/757da94f-d1f3-48ad-ac61-74e22bc18cca&language=en",
-          "uri": "http://data.europa.eu/esco/occupation/757da94f-d1f3-48ad-ac61-74e22bc18cca",
+          "href": "https://ec.europa.eu/esco/api/resource/job position?uri=http://data.europa.eu/esco/job position/757da94f-d1f3-48ad-ac61-74e22bc18cca&language=en",
+          "uri": "http://data.europa.eu/esco/job position/757da94f-d1f3-48ad-ac61-74e22bc18cca",
           "title": "graphologist"
         },
         {
-          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/c44c37a2-88c3-4ac2-9cf9-959f42deb02b&language=en",
-          "uri": "http://data.europa.eu/esco/occupation/c44c37a2-88c3-4ac2-9cf9-959f42deb02b",
+          "href": "https://ec.europa.eu/esco/api/resource/job position?uri=http://data.europa.eu/esco/job position/c44c37a2-88c3-4ac2-9cf9-959f42deb02b&language=en",
+          "uri": "http://data.europa.eu/esco/job position/c44c37a2-88c3-4ac2-9cf9-959f42deb02b",
           "title": "offshore renewable energy engineer"
         }
       ],
-      "isOptionalForOccupation": [
+      "isOptionalForJob Position": [
         {
-          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/c262bb96-03bb-4c97-a45b-0cf36db5b048&language=en",
-          "uri": "http://data.europa.eu/esco/occupation/c262bb96-03bb-4c97-a45b-0cf36db5b048",
+          "href": "https://ec.europa.eu/esco/api/resource/job position?uri=http://data.europa.eu/esco/job position/c262bb96-03bb-4c97-a45b-0cf36db5b048&language=en",
+          "uri": "http://data.europa.eu/esco/job position/c262bb96-03bb-4c97-a45b-0cf36db5b048",
           "title": "assistant lecturer"
         },
         {
-          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/28742973-c452-4996-b070-440e437306dc&language=en",
-          "uri": "http://data.europa.eu/esco/occupation/28742973-c452-4996-b070-440e437306dc",
+          "href": "https://ec.europa.eu/esco/api/resource/job position?uri=http://data.europa.eu/esco/job position/28742973-c452-4996-b070-440e437306dc&language=en",
+          "uri": "http://data.europa.eu/esco/job position/28742973-c452-4996-b070-440e437306dc",
           "title": "water quality analyst"
         },
         {
-          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/7af81505-6681-49b5-b65e-401884a71f1f&language=en",
-          "uri": "http://data.europa.eu/esco/occupation/7af81505-6681-49b5-b65e-401884a71f1f",
+          "href": "https://ec.europa.eu/esco/api/resource/job position?uri=http://data.europa.eu/esco/job position/7af81505-6681-49b5-b65e-401884a71f1f&language=en",
+          "uri": "http://data.europa.eu/esco/job position/7af81505-6681-49b5-b65e-401884a71f1f",
           "title": "groundwater monitoring technician"
         },
         {
-          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/237e21f1-a7fa-4273-91eb-28e7b5d72f60&language=en",
-          "uri": "http://data.europa.eu/esco/occupation/237e21f1-a7fa-4273-91eb-28e7b5d72f60",
+          "href": "https://ec.europa.eu/esco/api/resource/job position?uri=http://data.europa.eu/esco/job position/237e21f1-a7fa-4273-91eb-28e7b5d72f60&language=en",
+          "uri": "http://data.europa.eu/esco/job position/237e21f1-a7fa-4273-91eb-28e7b5d72f60",
           "title": "lacquer maker"
         },
         {
-          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/ab4dd4f9-ee6c-41cc-8b72-42ad0b13d1e2&language=en",
-          "uri": "http://data.europa.eu/esco/occupation/ab4dd4f9-ee6c-41cc-8b72-42ad0b13d1e2",
+          "href": "https://ec.europa.eu/esco/api/resource/job position?uri=http://data.europa.eu/esco/job position/ab4dd4f9-ee6c-41cc-8b72-42ad0b13d1e2&language=en",
+          "uri": "http://data.europa.eu/esco/job position/ab4dd4f9-ee6c-41cc-8b72-42ad0b13d1e2",
           "title": "waste treatment engineer"
         },
         {
-          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/b0c6f284-f3ed-4820-a62e-4e87869f5a3e&language=en",
-          "uri": "http://data.europa.eu/esco/occupation/b0c6f284-f3ed-4820-a62e-4e87869f5a3e",
+          "href": "https://ec.europa.eu/esco/api/resource/job position?uri=http://data.europa.eu/esco/job position/b0c6f284-f3ed-4820-a62e-4e87869f5a3e&language=en",
+          "uri": "http://data.europa.eu/esco/job position/b0c6f284-f3ed-4820-a62e-4e87869f5a3e",
           "title": "rubber products machine operator"
         },
         {
-          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/86da9311-1f7a-40bb-af65-ed2a7178fcae&language=en",
-          "uri": "http://data.europa.eu/esco/occupation/86da9311-1f7a-40bb-af65-ed2a7178fcae",
+          "href": "https://ec.europa.eu/esco/api/resource/job position?uri=http://data.europa.eu/esco/job position/86da9311-1f7a-40bb-af65-ed2a7178fcae&language=en",
+          "uri": "http://data.europa.eu/esco/job position/86da9311-1f7a-40bb-af65-ed2a7178fcae",
           "title": "concrete products machine operator"
         },
         {
-          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/574f3232-1d07-4034-8cac-c57ddbfff192&language=en",
-          "uri": "http://data.europa.eu/esco/occupation/574f3232-1d07-4034-8cac-c57ddbfff192",
+          "href": "https://ec.europa.eu/esco/api/resource/job position?uri=http://data.europa.eu/esco/job position/574f3232-1d07-4034-8cac-c57ddbfff192&language=en",
+          "uri": "http://data.europa.eu/esco/job position/574f3232-1d07-4034-8cac-c57ddbfff192",
           "title": "analytical chemist"
         },
         {
-          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/555235ce-8c45-409b-a6c9-83e69c2d2bce&language=en",
-          "uri": "http://data.europa.eu/esco/occupation/555235ce-8c45-409b-a6c9-83e69c2d2bce",
+          "href": "https://ec.europa.eu/esco/api/resource/job position?uri=http://data.europa.eu/esco/job position/555235ce-8c45-409b-a6c9-83e69c2d2bce&language=en",
+          "uri": "http://data.europa.eu/esco/job position/555235ce-8c45-409b-a6c9-83e69c2d2bce",
           "title": "military engineer"
         },
         {
-          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/1a165cb5-99ff-4a4e-9e08-97a0fb7ed6f8&language=en",
-          "uri": "http://data.europa.eu/esco/occupation/1a165cb5-99ff-4a4e-9e08-97a0fb7ed6f8",
+          "href": "https://ec.europa.eu/esco/api/resource/job position?uri=http://data.europa.eu/esco/job position/1a165cb5-99ff-4a4e-9e08-97a0fb7ed6f8&language=en",
+          "uri": "http://data.europa.eu/esco/job position/1a165cb5-99ff-4a4e-9e08-97a0fb7ed6f8",
           "title": "offshore renewable energy technician"
         },
         {
-          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/4fef1907-cf82-413b-841a-02ef57e299a6&language=en",
-          "uri": "http://data.europa.eu/esco/occupation/4fef1907-cf82-413b-841a-02ef57e299a6",
+          "href": "https://ec.europa.eu/esco/api/resource/job position?uri=http://data.europa.eu/esco/job position/4fef1907-cf82-413b-841a-02ef57e299a6&language=en",
+          "uri": "http://data.europa.eu/esco/job position/4fef1907-cf82-413b-841a-02ef57e299a6",
           "title": "scientific laboratory technician"
         },
         {
-          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/5979893a-0a30-447b-8f33-1ea405600583&language=en",
-          "uri": "http://data.europa.eu/esco/occupation/5979893a-0a30-447b-8f33-1ea405600583",
+          "href": "https://ec.europa.eu/esco/api/resource/job position?uri=http://data.europa.eu/esco/job position/5979893a-0a30-447b-8f33-1ea405600583&language=en",
+          "uri": "http://data.europa.eu/esco/job position/5979893a-0a30-447b-8f33-1ea405600583",
           "title": "powertrain engineer"
         },
         {
-          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/55167849-82cf-484e-b818-fa702a4e69e9&language=en",
-          "uri": "http://data.europa.eu/esco/occupation/55167849-82cf-484e-b818-fa702a4e69e9",
+          "href": "https://ec.europa.eu/esco/api/resource/job position?uri=http://data.europa.eu/esco/job position/55167849-82cf-484e-b818-fa702a4e69e9&language=en",
+          "uri": "http://data.europa.eu/esco/job position/55167849-82cf-484e-b818-fa702a4e69e9",
           "title": "hydrologist"
         },
         {
-          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/0e99c929-364f-4b0a-8a64-2aab42420f00&language=en",
-          "uri": "http://data.europa.eu/esco/occupation/0e99c929-364f-4b0a-8a64-2aab42420f00",
+          "href": "https://ec.europa.eu/esco/api/resource/job position?uri=http://data.europa.eu/esco/job position/0e99c929-364f-4b0a-8a64-2aab42420f00&language=en",
+          "uri": "http://data.europa.eu/esco/job position/0e99c929-364f-4b0a-8a64-2aab42420f00",
           "title": "renewable energy engineer"
         },
         {
-          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/5ac65daa-0896-4193-9f0e-8b00746b78a1&language=en",
-          "uri": "http://data.europa.eu/esco/occupation/5ac65daa-0896-4193-9f0e-8b00746b78a1",
+          "href": "https://ec.europa.eu/esco/api/resource/job position?uri=http://data.europa.eu/esco/job position/5ac65daa-0896-4193-9f0e-8b00746b78a1&language=en",
+          "uri": "http://data.europa.eu/esco/job position/5ac65daa-0896-4193-9f0e-8b00746b78a1",
           "title": "university research assistant"
         },
         {
-          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/40260ee8-c94a-4dc8-a562-f9fbc2fe13b1&language=en",
-          "uri": "http://data.europa.eu/esco/occupation/40260ee8-c94a-4dc8-a562-f9fbc2fe13b1",
+          "href": "https://ec.europa.eu/esco/api/resource/job position?uri=http://data.europa.eu/esco/job position/40260ee8-c94a-4dc8-a562-f9fbc2fe13b1&language=en",
+          "uri": "http://data.europa.eu/esco/job position/40260ee8-c94a-4dc8-a562-f9fbc2fe13b1",
           "title": "sewerage maintenance technician"
         },
         {
-          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/a32187fa-bc37-4fc2-8e89-296632bfc271&language=en",
-          "uri": "http://data.europa.eu/esco/occupation/a32187fa-bc37-4fc2-8e89-296632bfc271",
+          "href": "https://ec.europa.eu/esco/api/resource/job position?uri=http://data.europa.eu/esco/job position/a32187fa-bc37-4fc2-8e89-296632bfc271&language=en",
+          "uri": "http://data.europa.eu/esco/job position/a32187fa-bc37-4fc2-8e89-296632bfc271",
           "title": "onshore wind farm technician"
         },
         {
-          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/afbe50b0-6634-4677-a3e7-0aada10cb9a7&language=en",
-          "uri": "http://data.europa.eu/esco/occupation/afbe50b0-6634-4677-a3e7-0aada10cb9a7",
+          "href": "https://ec.europa.eu/esco/api/resource/job position?uri=http://data.europa.eu/esco/job position/afbe50b0-6634-4677-a3e7-0aada10cb9a7&language=en",
+          "uri": "http://data.europa.eu/esco/job position/afbe50b0-6634-4677-a3e7-0aada10cb9a7",
           "title": "thermal engineer"
         },
         {
-          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/58c30193-d29f-4d22-8bf0-fd87346b91dd&language=en",
-          "uri": "http://data.europa.eu/esco/occupation/58c30193-d29f-4d22-8bf0-fd87346b91dd",
+          "href": "https://ec.europa.eu/esco/api/resource/job position?uri=http://data.europa.eu/esco/job position/58c30193-d29f-4d22-8bf0-fd87346b91dd&language=en",
+          "uri": "http://data.europa.eu/esco/job position/58c30193-d29f-4d22-8bf0-fd87346b91dd",
           "title": "installation engineer"
         },
         {
-          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/cb60beab-7afb-4e99-8162-221abea68e6d&language=en",
-          "uri": "http://data.europa.eu/esco/occupation/cb60beab-7afb-4e99-8162-221abea68e6d",
+          "href": "https://ec.europa.eu/esco/api/resource/job position?uri=http://data.europa.eu/esco/job position/cb60beab-7afb-4e99-8162-221abea68e6d&language=en",
+          "uri": "http://data.europa.eu/esco/job position/cb60beab-7afb-4e99-8162-221abea68e6d",
           "title": "consumer rights advisor"
         },
         {
-          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/c76566f1-97a1-43e9-a7d8-155db0e56987&language=en",
-          "uri": "http://data.europa.eu/esco/occupation/c76566f1-97a1-43e9-a7d8-155db0e56987",
+          "href": "https://ec.europa.eu/esco/api/resource/job position?uri=http://data.europa.eu/esco/job position/c76566f1-97a1-43e9-a7d8-155db0e56987&language=en",
+          "uri": "http://data.europa.eu/esco/job position/c76566f1-97a1-43e9-a7d8-155db0e56987",
           "title": "varnish maker"
         },
         {
-          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/808b5940-8092-4f08-bc37-9b60ee5761d8&language=en",
-          "uri": "http://data.europa.eu/esco/occupation/808b5940-8092-4f08-bc37-9b60ee5761d8",
+          "href": "https://ec.europa.eu/esco/api/resource/job position?uri=http://data.europa.eu/esco/job position/808b5940-8092-4f08-bc37-9b60ee5761d8&language=en",
+          "uri": "http://data.europa.eu/esco/job position/808b5940-8092-4f08-bc37-9b60ee5761d8",
           "title": "assayer"
         }
       ]

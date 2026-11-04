@@ -7,8 +7,8 @@ classDiagram
   class SDD_CLS_03_LegacyAPI["OrganizationTargetRoleController<br/>legacy flag required"]
   class SDD_CLS_03_LegacyService["TargetRoleService legacy model"]
   class SDD_CLS_03_LegacyRepo["Neo4jTargetRoleRepository legacy<br/>model"]
-  class SDD_CLS_03_Occupations["OccupationAdministration"]
-  <<planned>> SDD_CLS_03_Occupations
+  class SDD_CLS_03_Job Positions["Job PositionAdministration"]
+  <<planned>> SDD_CLS_03_Job Positions
   class SDD_CLS_03_Assignment["ExpertAssignment"]
   <<planned>> SDD_CLS_03_Assignment
   class SDD_CLS_03_RoleWorkflow["RoleConfigurationWorkflow"]
@@ -25,7 +25,7 @@ classDiagram
   <<planned>> SDD_CLS_03_Files
   SDD_CLS_03_LegacyAPI --> SDD_CLS_03_LegacyService
   SDD_CLS_03_LegacyService --> SDD_CLS_03_LegacyRepo
-  SDD_CLS_03_Occupations --> SDD_CLS_03_Authz
+  SDD_CLS_03_Job Positions --> SDD_CLS_03_Authz
   SDD_CLS_03_Assignment --> SDD_CLS_03_Authz
   SDD_CLS_03_RoleWorkflow --> SDD_CLS_03_Authz
   SDD_CLS_03_Offering --> SDD_CLS_03_Authz
@@ -35,7 +35,7 @@ classDiagram
   SDD_CLS_03_Offering --> SDD_CLS_03_Graph
   SDD_CLS_03_Offering --> SDD_CLS_03_Files
 
-  style SDD_CLS_03_Occupations fill:#fef3eb,stroke:#e6650f,color:#0f1729,stroke-dasharray:5 4
+  style SDD_CLS_03_Job Positions fill:#fef3eb,stroke:#e6650f,color:#0f1729,stroke-dasharray:5 4
   style SDD_CLS_03_Assignment fill:#fef3eb,stroke:#e6650f,color:#0f1729,stroke-dasharray:5 4
   style SDD_CLS_03_RoleWorkflow fill:#fef3eb,stroke:#e6650f,color:#0f1729,stroke-dasharray:5 4
   style SDD_CLS_03_Offering fill:#fef3eb,stroke:#e6650f,color:#0f1729,stroke-dasharray:5 4

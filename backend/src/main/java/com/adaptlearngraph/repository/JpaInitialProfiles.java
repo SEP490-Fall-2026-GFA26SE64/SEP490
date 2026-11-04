@@ -2,22 +2,22 @@ package com.adaptlearngraph.repository;
 
 import com.adaptlearngraph.entities.domain.InitialIdentity;
 import com.adaptlearngraph.entities.domain.RoleGap;
-import com.adaptlearngraph.repository.EmployeeOccupationProfileJpaRepository.OriginRow;
+import com.adaptlearngraph.repository.EmployeeJobPositionProfileJpaRepository.OriginRow;
 import com.adaptlearngraph.repository.InitialPathwayPorts.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.*;
 
 /** Read-only V25 origin. Corruption/missing original results never become UNKNOWN. */
 public final class JpaInitialProfiles implements Profiles {
-    private final EmployeeOccupationProfileJpaRepository profiles; private final ObjectMapper json;
-    public JpaInitialProfiles(EmployeeOccupationProfileJpaRepository profiles,ObjectMapper json) { this.profiles=profiles; this.json=json; }
-    @Override public Profile require(Scope scope,String occupation) {
-        var found=profiles.origin(scope.organizationId(),scope.learnerId(),occupation).stream().map(row->profile(scope,occupation,row)).toList();
+    private final EmployeeJobPositionProfileJpaRepository profiles; private final ObjectMapper json;
+    public JpaInitialProfiles(EmployeeJobPositionProfileJpaRepository profiles,ObjectMapper json) { this.profiles=profiles; this.json=json; }
+    @Override public Profile require(Scope scope,String jobPosition) {
+        var found=profiles.origin(scope.organizationId(),scope.learnerId(),jobPosition).stream().map(row->profile(scope,jobPosition,row)).toList();
         if (found.size()==1) return found.getFirst();
-        boolean expected=profiles.hasSubmittedAttempt(scope.organizationId(),scope.learnerId(),occupation);
+        boolean expected=profiles.hasSubmittedAttempt(scope.organizationId(),scope.learnerId(),jobPosition);
         throw new Failure(expected?503:422,expected?"PROFILE_UNAVAILABLE":"BASELINE_REQUIRED");
     }
-    private Profile profile(Scope scope,String occupation,OriginRow row) {
+    private Profile profile(Scope scope,String jobPosition,OriginRow row) {
         try {
             if (!Set.of("SUBMITTED","AUTO_SUBMITTED").contains(Objects.toString(row.state(),""))
                     || !row.catalogFingerprint().equals(row.attemptFingerprint())
@@ -50,7 +50,7 @@ public final class JpaInitialProfiles implements Profiles {
             policy.ifPresent(p->{pins.put("assessmentPolicy",p.versionId().toString());pins.put("assessmentPolicyHash",p.hash());});
             var values=new TreeMap<String,Object>(); evidence.forEach((id,e)->values.put(id,e.mastery()));
             String fingerprint=row.catalogFingerprint();
-            String hash=InitialIdentity.hash("profile",List.of(scope.organizationId(),scope.learnerId(),occupation,attempt,fingerprint,pins,values));
+            String hash=InitialIdentity.hash("profile",List.of(scope.organizationId(),scope.learnerId(),jobPosition,attempt,fingerprint,pins,values));
             return new Profile(attempt,hash,fingerprint,pins,evidence);
         } catch (Failure failure) { throw failure; }
         catch (Exception invalid) { throw new Failure(503,"PROFILE_INTEGRITY_FAILURE"); }

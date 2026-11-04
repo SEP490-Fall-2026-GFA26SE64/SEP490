@@ -26,12 +26,12 @@ public class BaselineAdaptiveBlueprintVersionEntity {
     private Integer version;
     @Column(name = "organization_id", nullable = false)
     private UUID organizationId;
-    @Column(name = "occupation_id", nullable = false)
-    private String occupationId;
+    @Column(name = "job_position_id", nullable = false)
+    private String jobPositionId;
     @Column(name = "name", nullable = false)
     private String name;
-    @Column(name = "occupation_name_snapshot", nullable = false)
-    private String occupationNameSnapshot;
+    @Column(name = "job_position_name_snapshot", nullable = false)
+    private String jobPositionNameSnapshot;
     @Column(name = "catalog_fingerprint", nullable = false)
     private String catalogFingerprint;
     @Column(name = "exploration_max_questions")
@@ -50,22 +50,22 @@ public class BaselineAdaptiveBlueprintVersionEntity {
     private Instant createdAt;
     @Column(name = "scope_policy")
     private String scopePolicy;
-    @Column(name = "occupation_max_questions")
-    private Integer occupationMaxQuestions;
-    @Column(name = "occupation_time_limit_seconds")
-    private Integer occupationTimeLimitSeconds;
+    @Column(name = "job_position_max_questions")
+    private Integer jobPositionMaxQuestions;
+    @Column(name = "job_position_time_limit_seconds")
+    private Integer jobPositionTimeLimitSeconds;
 
     protected BaselineAdaptiveBlueprintVersionEntity() {
     }
 
     @SuppressWarnings("java:S107")
-    public BaselineAdaptiveBlueprintVersionEntity(UUID blueprintId, Integer version, UUID organizationId, String occupationId, String name, String occupationNameSnapshot, String catalogFingerprint, Integer explorationMaxQuestions, Integer explorationTimeLimitSeconds, UUID modelVersionId, UUID masteryMappingVersionId, UUID parameterSetId, UUID createdBy, Instant createdAt, String scopePolicy, Integer occupationMaxQuestions, Integer occupationTimeLimitSeconds) {
+    public BaselineAdaptiveBlueprintVersionEntity(UUID blueprintId, Integer version, UUID organizationId, String jobPositionId, String name, String jobPositionNameSnapshot, String catalogFingerprint, Integer explorationMaxQuestions, Integer explorationTimeLimitSeconds, UUID modelVersionId, UUID masteryMappingVersionId, UUID parameterSetId, UUID createdBy, Instant createdAt, String scopePolicy, Integer jobPositionMaxQuestions, Integer jobPositionTimeLimitSeconds) {
         this.blueprintId = blueprintId;
         this.version = version;
         this.organizationId = organizationId;
-        this.occupationId = occupationId;
+        this.jobPositionId = jobPositionId;
         this.name = name;
-        this.occupationNameSnapshot = occupationNameSnapshot;
+        this.jobPositionNameSnapshot = jobPositionNameSnapshot;
         this.catalogFingerprint = catalogFingerprint;
         this.explorationMaxQuestions = explorationMaxQuestions;
         this.explorationTimeLimitSeconds = explorationTimeLimitSeconds;
@@ -75,16 +75,16 @@ public class BaselineAdaptiveBlueprintVersionEntity {
         this.createdBy = createdBy;
         this.createdAt = createdAt;
         this.scopePolicy = scopePolicy;
-        this.occupationMaxQuestions = occupationMaxQuestions;
-        this.occupationTimeLimitSeconds = occupationTimeLimitSeconds;
+        this.jobPositionMaxQuestions = jobPositionMaxQuestions;
+        this.jobPositionTimeLimitSeconds = jobPositionTimeLimitSeconds;
     }
 
     public UUID getBlueprintId() { return blueprintId; }
     public Integer getVersion() { return version; }
     public UUID getOrganizationId() { return organizationId; }
-    public String getOccupationId() { return occupationId; }
+    public String getJobPositionId() { return jobPositionId; }
     public String getName() { return name; }
-    public String getOccupationNameSnapshot() { return occupationNameSnapshot; }
+    public String getJobPositionNameSnapshot() { return jobPositionNameSnapshot; }
     public String getCatalogFingerprint() { return catalogFingerprint; }
     public Integer getExplorationMaxQuestions() { return explorationMaxQuestions; }
     public Integer getExplorationTimeLimitSeconds() { return explorationTimeLimitSeconds; }
@@ -94,8 +94,8 @@ public class BaselineAdaptiveBlueprintVersionEntity {
     public UUID getCreatedBy() { return createdBy; }
     public Instant getCreatedAt() { return createdAt; }
     public String getScopePolicy() { return scopePolicy; }
-    public Integer getOccupationMaxQuestions() { return occupationMaxQuestions; }
-    public Integer getOccupationTimeLimitSeconds() { return occupationTimeLimitSeconds; }
+    public Integer getJobPositionMaxQuestions() { return jobPositionMaxQuestions; }
+    public Integer getJobPositionTimeLimitSeconds() { return jobPositionTimeLimitSeconds; }
 
     public record Key(UUID blueprintId, Integer version) implements Serializable {
         public Key() {

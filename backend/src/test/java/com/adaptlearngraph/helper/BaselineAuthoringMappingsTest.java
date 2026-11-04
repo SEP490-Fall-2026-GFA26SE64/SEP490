@@ -73,7 +73,7 @@ class BaselineAuthoringMappingsTest {
     void legacyBlueprintIncludesTotalsButNoAuditIdentity() throws Exception {
         var response = mapper.map(blueprint(), BlueprintResponse.class);
 
-        assertThat(response).isEqualTo(new BlueprintResponse(BLUEPRINT, 3, "Java baseline", "occupation-java",
+        assertThat(response).isEqualTo(new BlueprintResponse(BLUEPRINT, 3, "Java baseline", "jobPosition-java",
                 "Java Engineer", CREATED, List.of(new RoleResponse("role-java", "Java Backend Engineer", true, 6,
                         new BigDecimal("0.3"), new BigDecimal("0.4"), new BigDecimal("0.3"), List.of(skill())))));
         assertNoAuditIdentity(BlueprintResponse.class, json.writeValueAsString(response));
@@ -83,7 +83,7 @@ class BaselineAuthoringMappingsTest {
     void managedBlueprintKeepsRoleConfigurationShapeWithoutAuditIdentity() throws Exception {
         var response = mapper.map(blueprint(), ManagedBlueprintResponse.class);
 
-        assertThat(response).isEqualTo(new ManagedBlueprintResponse(BLUEPRINT, 3, "Java baseline", "occupation-java",
+        assertThat(response).isEqualTo(new ManagedBlueprintResponse(BLUEPRINT, 3, "Java baseline", "jobPosition-java",
                 "Java Engineer", CREATED, List.of(role())));
         String body = json.writeValueAsString(response);
         assertNoAuditIdentity(ManagedBlueprintResponse.class, body);
@@ -120,11 +120,11 @@ class BaselineAuthoringMappingsTest {
         UUID working = uuid(7);
         UUID openVersion = uuid(8);
         var pending = new BlueprintVersionRef(BLUEPRINT, 4);
-        var lifecycle = new SeriesSnapshot(new Scope(ORGANIZATION, "occupation-java"), BLUEPRINT, 9, null, pending,
+        var lifecycle = new SeriesSnapshot(new Scope(ORGANIZATION, "jobPosition-java"), BLUEPRINT, 9, null, pending,
                 new OpenCandidate(new AssessmentVersionRef(openVersion, 3, pending), CandidateState.REVIEWED, 5, CONTENT_HASH),
                 new ActiveRelease(new AssessmentVersionRef(ASSESSMENT_VERSION, 2, new BlueprintVersionRef(BLUEPRINT, 3))));
-        var draft = new BlueprintDraft("Java baseline", "occupation-java", "Java Engineer", List.of(roleConfig()));
-        var workspace = new Workspace("occupation-java", "Java Engineer", lifecycle,
+        var draft = new BlueprintDraft("Java baseline", "jobPosition-java", "Java Engineer", List.of(roleConfig()));
+        var workspace = new Workspace("jobPosition-java", "Java Engineer", lifecycle,
                 new WorkingRevision(working, BLUEPRINT, 3, 6, draft, REVIEWED),
                 List.of(new BlueprintVersionSummary(BLUEPRINT, 3, "Java baseline", "ACTIVE_SOURCE", CREATED)),
                 List.of(new AssessmentVersionSummary(ASSESSMENT_VERSION, 2, 3, "ACTIVE", CONTENT_HASH, CREATED)));
@@ -132,15 +132,15 @@ class BaselineAuthoringMappingsTest {
         var response = mapper.map(workspace, WorkspaceResponse.class);
 
         var pendingRef = new BlueprintVersionRefResponse(BLUEPRINT, 4);
-        assertThat(response).isEqualTo(new WorkspaceResponse("occupation-java", "Java Engineer",
-                new SeriesSnapshotResponse(new SeriesScopeResponse(ORGANIZATION, "occupation-java"), BLUEPRINT, 9, null,
+        assertThat(response).isEqualTo(new WorkspaceResponse("jobPosition-java", "Java Engineer",
+                new SeriesSnapshotResponse(new SeriesScopeResponse(ORGANIZATION, "jobPosition-java"), BLUEPRINT, 9, null,
                         pendingRef,
                         new OpenCandidateResponse(new AssessmentVersionRefResponse(openVersion, 3, pendingRef), "REVIEWED", 5,
                                 CONTENT_HASH),
                         new ActiveReleaseResponse(new AssessmentVersionRefResponse(ASSESSMENT_VERSION, 2,
                                 new BlueprintVersionRefResponse(BLUEPRINT, 3)))),
                 new WorkingRevisionResponse(working, BLUEPRINT, 3, 6,
-                        new BlueprintDraftResponse("Java baseline", "occupation-java", "Java Engineer", List.of(role())),
+                        new BlueprintDraftResponse("Java baseline", "jobPosition-java", "Java Engineer", List.of(role())),
                         REVIEWED),
                 List.of(new BlueprintVersionSummaryResponse(BLUEPRINT, 3, "Java baseline", "ACTIVE_SOURCE", CREATED)),
                 List.of(new AssessmentVersionSummaryResponse(ASSESSMENT_VERSION, 2, 3, "ACTIVE", CONTENT_HASH, CREATED))));
@@ -157,7 +157,7 @@ class BaselineAuthoringMappingsTest {
     }
 
     private static BaselineBlueprint blueprint() {
-        return new BaselineBlueprint(BLUEPRINT, 3, "Java baseline", "occupation-java", "Java Engineer", CREATOR,
+        return new BaselineBlueprint(BLUEPRINT, 3, "Java baseline", "jobPosition-java", "Java Engineer", CREATOR,
                 IDEMPOTENCY_KEY, REQUEST_HASH, CREATED, List.of(roleConfig()));
     }
 

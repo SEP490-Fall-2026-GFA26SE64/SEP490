@@ -48,7 +48,7 @@ Browser scenarios use real application APIs/stores/session security and syntheti
 
 - Live payOS acceptance: Not Run, explicitly excluded from local DoD.
 - Historical Gmail AC-09: Blocked, unchanged; Mailpit acceptance is not Gmail delivery.
-- Non-test Employee onboarding requires legitimate upstream department/occupation references. Their CRUD/import remains outside scope; missing data yields an explicit prerequisite state.
+- Non-test Employee onboarding requires legitimate upstream department/job position references. Their CRUD/import remains outside scope; missing data yields an explicit prerequisite state.
 - Existing large frontend bundle warning and a non-fatal Fast Refresh mixed-export lint warning remain. Lint exited 0; no production readiness/performance certification is implied.
 - Retained development database remains V8. No retained/live administrator bootstrap, real payment/email, commit, push, deployment or destructive reset occurred.
 

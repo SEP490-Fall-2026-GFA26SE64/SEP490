@@ -9,7 +9,7 @@ After exact Expert confirmation, the Employee reads the same approved revision, 
 
 Require trusted active Employee/org/entitlement. GET current accepts no learner/tenant input; GET archived accepts only own opaque pathway ID. Server resolves selection, current request, exact revision/hash and approval. Never accept client approval, progress, readiness or mastery.
 
-Safe approved output contains status, archived flag, frozen Role/Level/Occupation context, frozen RoleGap.Result, unique module IDs/ordinals/content versions/duration/price and per-skill legacy or current teaching metadata. Dependencies expose module/provider/dependentSkill/prerequisiteSkill/internal flag. Access fields are AVAILABLE/LOCKED/UNAVAILABLE/ARCHIVED, reasonCode and nullable entry. Exclude worker candidates, draft detail, answer keys, theta/SE and foreign data.
+Safe approved output contains status, archived flag, frozen Role/Level/Job Position context, frozen RoleGap.Result, unique module IDs/ordinals/content versions/duration/price and per-skill legacy or current teaching metadata. Dependencies expose module/provider/dependentSkill/prerequisiteSkill/internal flag. Access fields are AVAILABLE/LOCKED/UNAVAILABLE/ARCHIVED, reasonCode and nullable entry. Exclude worker candidates, draft detail, answer keys, theta/SE and foreign data.
 
 ## Visible lifecycle and ordered reads
 

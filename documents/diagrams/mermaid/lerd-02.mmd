@@ -5,7 +5,7 @@ config: {"theme":"base","fontFamily":"Segoe UI, Arial, sans-serif","themeVariabl
 erDiagram
   SRS_LERD_02_Account["Account"]
   SRS_LERD_02_EmployeeRoleSelection["EmployeeRoleSelection"]
-  SRS_LERD_02_OccupationProfile["OccupationProfile"]
+  SRS_LERD_02_Job PositionProfile["Job PositionProfile"]
   SRS_LERD_02_AdaptiveBlueprintVersion["AdaptiveBlueprintVersion"]
   SRS_LERD_02_BaselineAttempt["BaselineAttempt"]
   SRS_LERD_02_AttemptItem["AttemptItem"]
@@ -27,14 +27,14 @@ erDiagram
   SRS_LERD_02_AttemptPoolItem["AttemptPoolItem"]
   SRS_LERD_02_OutboxEvent["OutboxEvent"]
   SRS_LERD_02_WorkspaceBaselineResource["WorkspaceBaselineResource"]
-  SRS_LERD_02_OccupationDepartmentReference["OccupationDepartmentReference"]
+  SRS_LERD_02_Job PositionDepartmentReference["Job PositionDepartmentReference"]
   %% LearnerState is an account-backed state row, not a separate human actor.
   SRS_LERD_02_Account ||--o| SRS_LERD_02_LearnerState : "learner state"
   SRS_LERD_02_LearnerState ||--o{ SRS_LERD_02_EmployeeRoleSelection : "selection history"
   SRS_LERD_02_Account ||--o{ SRS_LERD_02_BaselineAttempt : "takes"
   SRS_LERD_02_BaselineBlueprint ||--o{ SRS_LERD_02_AdaptiveBlueprintDraft : "working drafts"
   SRS_LERD_02_BaselineBlueprint ||--o{ SRS_LERD_02_AdaptiveBlueprintVersion : "released versions"
-  SRS_LERD_02_BaselineBlueprint ||--o| SRS_LERD_02_BlueprintActivation : "occupation activation pointer"
+  SRS_LERD_02_BaselineBlueprint ||--o| SRS_LERD_02_BlueprintActivation : "job position activation pointer"
   SRS_LERD_02_AdaptiveBlueprintVersion |o--o| SRS_LERD_02_BlueprintActivation : "selected active version"
   SRS_LERD_02_ModelVersion ||--o{ SRS_LERD_02_IrtParameterSet : "parameter sets"
   SRS_LERD_02_MasteryMappingVersion ||--o{ SRS_LERD_02_AdaptiveBlueprintVersion : "mastery interpretation"
@@ -53,12 +53,12 @@ erDiagram
   SRS_LERD_02_AttemptSkillResult ||--o| SRS_LERD_02_MasteryEvidence : "evidence for skill outcome"
   SRS_LERD_02_AttemptResult ||--o{ SRS_LERD_02_MasteryEvidence : "terminal evidence"
   SRS_LERD_02_OutboxEvent ||--o| SRS_LERD_02_AttemptResult : "mastery event"
-  SRS_LERD_02_BaselineAttempt ||--o| SRS_LERD_02_OccupationProfile : "initialization source"
-  SRS_LERD_02_AdaptiveBlueprintVersion ||--o{ SRS_LERD_02_OccupationProfile : "profile version pin"
+  SRS_LERD_02_BaselineAttempt ||--o| SRS_LERD_02_Job PositionProfile : "initialization source"
+  SRS_LERD_02_AdaptiveBlueprintVersion ||--o{ SRS_LERD_02_Job PositionProfile : "profile version pin"
   SRS_LERD_02_QuestionBank ||--o{ SRS_LERD_02_ItemVersion : "versioned questions"
   SRS_LERD_02_IrtParameterSet ||--o{ SRS_LERD_02_IrtItemParameter : "fitted parameters"
   SRS_LERD_02_ItemVersion ||--o{ SRS_LERD_02_IrtItemParameter : "parameterized item"
-  SRS_LERD_02_OccupationDepartmentReference ||--o| SRS_LERD_02_WorkspaceBaselineResource : "tenant resource binding"
+  SRS_LERD_02_Job PositionDepartmentReference ||--o| SRS_LERD_02_WorkspaceBaselineResource : "tenant resource binding"
   SRS_LERD_02_QuestionBank |o--o{ SRS_LERD_02_WorkspaceBaselineResource : "configured question bank"
   SRS_LERD_02_ModelVersion |o--o{ SRS_LERD_02_WorkspaceBaselineResource : "configured model"
   SRS_LERD_02_MasteryMappingVersion |o--o{ SRS_LERD_02_WorkspaceBaselineResource : "configured mastery mapping"

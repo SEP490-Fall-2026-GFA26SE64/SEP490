@@ -27,14 +27,14 @@ public final class QuestionBankTestRuntime {
             tx.executeWithoutResult(status->{for(String orgName:List.of("A","B")) {
                 UUID org=id(orgName);if(jdbc.queryForObject("SELECT count(*) FROM platform.organization WHERE organization_id=?",Integer.class,org)>0)continue;
                 jdbc.update("INSERT INTO platform.organization(organization_id,code,name) VALUES (?,?,?)",org,"QB_TEST_"+orgName,"Question Bank Test "+orgName);
-                UUID department=id(orgName+"department"),occupation=id(orgName+"occupation");
+                UUID department=id(orgName+"department"),jobPosition=id(orgName+"jobPosition");
                 jdbc.update("INSERT INTO platform.department_reference VALUES (?,?,'Test Department',true)",department,org);
-                jdbc.update("INSERT INTO platform.occupation_department_reference VALUES (?,?,?,?,'Test Occupation',true)",occupation,id(orgName+"occupation-id"),org,department);
+                jdbc.update("INSERT INTO platform.job_position_department_reference VALUES (?,?,?,?,'Test JobPosition',true)",jobPosition,id(orgName+"jobPosition-id"),org,department);
                 for(String role:List.of("admin","expert","peer","ld","employee")){
                     String roleCode=switch(role){case "admin"->"ORGANIZATION_ADMINISTRATOR";case "ld"->"LD_MANAGER";case "employee"->"EMPLOYEE";default->"DOMAIN_EXPERT";};UUID account=id(orgName+role),membership=id(orgName+role+"membership");String email=role+orgName.toLowerCase(Locale.ROOT)+"@question-bank.test";
                     jdbc.update("INSERT INTO platform.account(account_id,organization_id,identifier,normalized_identifier,password_hash) VALUES (?,?,?,?,?)",account,org,email,email,secrets.hashPassword(PASSWORD));
                     jdbc.update("INSERT INTO platform.workspace_account_profile(account_id,full_name,email_verified_at) VALUES (?,?,now())",account,"Test "+orgName+" "+role);
-                    jdbc.update("INSERT INTO platform.organization_membership(membership_id,account_id,organization_id,active,department_id,occupation_reference_id,created_at,updated_at) VALUES (?,?,?,true,?,?,now(),now())",membership,account,org,department,occupation);jdbc.update("INSERT INTO platform.organization_membership_role VALUES (?,?)",membership,roleCode);
+                    jdbc.update("INSERT INTO platform.organization_membership(membership_id,account_id,organization_id,active,department_id,job_position_reference_id,created_at,updated_at) VALUES (?,?,?,true,?,?,now(),now())",membership,account,org,department,jobPosition);jdbc.update("INSERT INTO platform.organization_membership_role VALUES (?,?)",membership,roleCode);
                     if(role.equals("employee"))jdbc.update("INSERT INTO platform.learner_state(learner_id) VALUES (?)",account);
                 }
                 UUID admin=id(orgName+"admin"),registration=id(orgName+"registration"),intent=id(orgName+"intent"),order=id(orgName+"order"),subscription=id(orgName+"subscription");

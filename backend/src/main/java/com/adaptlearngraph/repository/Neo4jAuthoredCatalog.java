@@ -22,7 +22,7 @@ public final class Neo4jAuthoredCatalog implements AuthoredCatalogPort {
         if(bindings.isEmpty() || bindings.size()>1000 || maximum<1 || maximum>100000)throw invalid();
         var scopes=new HashSet<String>();var roles=new HashSet<String>();
         for(var b:bindings) {
-            if(!scopes.add(b.organizationId()+"\n"+b.occupationId()))throw invalid();
+            if(!scopes.add(b.organizationId()+"\n"+b.jobPositionId()))throw invalid();
             for(var id:b.roleIds())if(!roles.add(b.organizationId()+"\n"+id))throw invalid();
         }
     }
@@ -32,26 +32,26 @@ public final class Neo4jAuthoredCatalog implements AuthoredCatalogPort {
         var bindings=Binder.get(env).bind(PREFIX+".entries",Bindable.listOf(Binding.class)).orElse(List.of());
         return new Neo4jAuthoredCatalog(graph,json,bindings,env.getProperty(PREFIX+".max-requirements",Integer.class,10000));
     }
-    @Override public Set<String> occupations(UUID org) {
-        var result=new HashSet<String>();bindings.stream().filter(b->b.organizationId().equals(org)).forEach(b->result.add(b.occupationId()));return Set.copyOf(result);
+    @Override public Set<String> jobPositions(UUID org) {
+        var result=new HashSet<String>();bindings.stream().filter(b->b.organizationId().equals(org)).forEach(b->result.add(b.jobPositionId()));return Set.copyOf(result);
     }
-    @Override public Optional<Projection> find(UUID org,String occupation) {
-        var found=bindings.stream().filter(b->b.organizationId().equals(org) && b.occupationId().equals(occupation)).findFirst();
+    @Override public Optional<Projection> find(UUID org,String jobPosition) {
+        var found=bindings.stream().filter(b->b.organizationId().equals(org) && b.jobPositionId().equals(jobPosition)).findFirst();
         if(found.isEmpty())return Optional.empty();var binding=found.get();
         // Neo4jClient: one bounded projection over exact configured identities, validated field by field.
         try {
             return Optional.of(graph.read(tx->{
                 var rows=tx.list("""
-                        MATCH (o:Occupation {id:$occupation}), (r:TargetRole)
+                        MATCH (o:JobPosition {id:$jobPosition}), (r:TargetRole)
                         WHERE r.id IN $roles AND r.organizationId IN $owners
-                        OPTIONAL MATCH (parent:Occupation)-[m:HAS_ROLE]->(r)
+                        OPTIONAL MATCH (parent:JobPosition)-[m:HAS_ROLE]->(r)
                         WHERE m.status='ACTIVE' AND parent.status='ACTIVE'
                         WITH o,r,collect(DISTINCT parent.id) AS parents
                         OPTIONAL MATCH (r)-[q:REQUIRES_SKILL]->(s:MicroSkill)
                         RETURN properties(o) AS o,elementId(o) AS oi,properties(r) AS r,elementId(r) AS ri,
                                parents,properties(q) AS q,properties(s) AS s
                         ORDER BY r.id,q.level,s.id LIMIT $maximum
-                        """,Map.of("occupation",occupation,"roles",binding.roleIds(),"owners",List.copyOf(binding.sourceOwners()),"maximum",maximum+1));
+                        """,Map.of("jobPosition",jobPosition,"roles",binding.roleIds(),"owners",List.copyOf(binding.sourceOwners()),"maximum",maximum+1));
                 if(rows.isEmpty() || rows.size()>maximum)throw invalid();
                 var first=rows.getFirst().get("o");owned(first,binding);active(first);
                 var node=rows.getFirst().get("oi").asString();String name=text(first,"name"),catalogVersion=text(first,"version");
@@ -60,9 +60,9 @@ public final class Neo4jAuthoredCatalog implements AuthoredCatalogPort {
                 var roleVersions=new TreeMap<String,String>();var skillVersions=new TreeMap<String,String>();var skillFacts=new HashMap<String,List<String>>();
                 var canonical=new CanonicalFacts();
                 canonical.add(write(Map.of("format",binding.sourceFormat(),"policy","ALL_LISTED_REQUIREMENTS_V1","org",org.toString(),
-                        "occupation",occupation,"name",name,"version",catalogVersion,"binding",binding.bindingRevision(),
+                        "jobPosition",jobPosition,"name",name,"version",catalogVersion,"binding",binding.bindingRevision(),
                         "provenance",binding.provenanceRef(),"roles",binding.roleIds().stream().sorted().toList(),"owners",binding.sourceOwners().stream().sorted().toList())));
-                canonical.add(write(Map.of("occupationOwner",text(first,"organizationId"),"occupationStatus",text(first,"status"))));
+                canonical.add(write(Map.of("jobPositionOwner",text(first,"organizationId"),"jobPositionStatus",text(first,"status"))));
                 for(var row:rows) {
                     if(!node.equals(row.get("oi").asString()))throw invalid();
                     var r=row.get("r");owned(r,binding);String status=text(r,"status");
@@ -70,7 +70,7 @@ public final class Neo4jAuthoredCatalog implements AuthoredCatalogPort {
                     String id=text(r,"id");String identity=row.get("ri").asString();
                     if(roleNodes.putIfAbsent(id,identity)!=null && !roleNodes.get(id).equals(identity))throw invalid();
                     var parents=row.get("parents").asList(Value::asString);
-                    if(parents.size()>1 || parents.size()==1 && !parents.getFirst().equals(occupation))throw invalid();
+                    if(parents.size()>1 || parents.size()==1 && !parents.getFirst().equals(jobPosition))throw invalid();
                     sourceRoles.put(id,r);roleVersions.put(id,text(r,"version"));
                     var levels=r.get("levels").asList(Value::asString);
                     if(levels.isEmpty() || levels.size()>100 || new HashSet<>(levels).size()!=levels.size())throw invalid();
@@ -104,9 +104,9 @@ public final class Neo4jAuthoredCatalog implements AuthoredCatalogPort {
                         var skills=requirements.getOrDefault(entry.getKey(),Map.of()).getOrDefault(label,Map.of());
                         levels.add(new Level(label,label,label,++rank,"","ALL_MANDATORY_SKILLS",List.copyOf(skills.values())));
                     }
-                    result.add(new Role(entry.getKey(),text(r,"code"),text(r,"name"),r.get("description").asString(""),occupation,name,catalogVersion,fingerprint,levels));
+                    result.add(new Role(entry.getKey(),text(r,"code"),text(r,"name"),r.get("description").asString(""),jobPosition,name,catalogVersion,fingerprint,levels));
                 }
-                return new Projection(org,occupation,name,fingerprint,binding.bindingRevision(),result,roleVersions,skillVersions);
+                return new Projection(org,jobPosition,name,fingerprint,binding.bindingRevision(),result,roleVersions,skillVersions);
             }));
         } catch(IllegalStateException failure){throw failure;}catch(RuntimeException failure){throw new IllegalStateException("Authored catalog unavailable or inconsistent",failure);}
     }

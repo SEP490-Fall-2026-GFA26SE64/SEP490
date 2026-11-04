@@ -64,7 +64,7 @@ public class JpaBaselineAssessmentManagementStore
             UUID organizationId, UUID assessmentVersionId) {
         try {
             return series.scopeByAssessment(organizationId, assessmentVersionId).stream()
-                    .map(row -> new Scope(row.organizationId(), row.occupationId())).findFirst();
+                    .map(row -> new Scope(row.organizationId(), row.jobPositionId())).findFirst();
         } catch (DataAccessException failure) {
             throw unavailable("Baseline assessment scope is unavailable", failure);
         }
@@ -75,7 +75,7 @@ public class JpaBaselineAssessmentManagementStore
             UUID organizationId, UUID workingRevisionId) {
         try {
             return workings.scope(organizationId, workingRevisionId).stream()
-                    .map(row -> new Scope(row.organizationId(), row.occupationId())).findFirst();
+                    .map(row -> new Scope(row.organizationId(), row.jobPositionId())).findFirst();
         } catch (DataAccessException failure) {
             throw unavailable("Baseline working revision scope is unavailable", failure);
         }
@@ -84,7 +84,7 @@ public class JpaBaselineAssessmentManagementStore
     @Override
     public List<BlueprintVersionRecord> findBlueprintVersions(Scope scope) {
         try {
-            return series.blueprintVersions(scope.organizationId(), scope.occupationId()).stream()
+            return series.blueprintVersions(scope.organizationId(), scope.jobPositionId()).stream()
                     .map(row -> new BlueprintVersionRecord(row.blueprintId(), intValue(row.version()), row.name(),
                             row.createdAt()))
                     .toList();
@@ -96,7 +96,7 @@ public class JpaBaselineAssessmentManagementStore
     @Override
     public List<AssessmentVersionRecord> findAssessmentVersions(Scope scope) {
         try {
-            return series.assessmentVersions(scope.organizationId(), scope.occupationId()).stream()
+            return series.assessmentVersions(scope.organizationId(), scope.jobPositionId()).stream()
                     .map(row -> new AssessmentVersionRecord(row.assessmentVersionId(), intValue(row.version()),
                             intValue(row.blueprintVersion()), row.publicationState(), row.candidateState(),
                             Boolean.TRUE.equals(row.disabled()), row.contentHash(), row.createdAt()))
@@ -110,13 +110,13 @@ public class JpaBaselineAssessmentManagementStore
     @Transactional(TransactionManagers.JPA)
     public SeriesSnapshot lockOrCreate(Scope scope, UUID blueprintId) {
         try {
-            series.ensure(scope.organizationId(), scope.occupationId(), blueprintId);
+            series.ensure(scope.organizationId(), scope.jobPositionId(), blueprintId);
             SeriesSnapshot locked = readSeries(scope, true)
                     .orElseThrow(() -> new WriteConflict(
-                            "Blueprint does not belong to the requested organization and Occupation", null));
+                            "Blueprint does not belong to the requested organization and JobPosition", null));
             if (!locked.blueprintId().equals(blueprintId)) {
                 throw new WriteConflict(
-                        "The organization and Occupation already use another blueprint identity", null);
+                        "The organization and JobPosition already use another blueprint identity", null);
             }
             return locked;
         } catch (DataAccessException failure) {
@@ -133,12 +133,12 @@ public class JpaBaselineAssessmentManagementStore
             Scope scope, UUID blueprintId, UUID actorId, Instant createdAt) {
         try {
             lockScope(scope);
-            identities.ensureFixed(blueprintId, scope.organizationId(), scope.occupationId(), actorId, createdAt);
+            identities.ensureFixed(blueprintId, scope.organizationId(), scope.jobPositionId(), actorId, createdAt);
             return lockOrCreate(scope, blueprintId);
         } catch (DataAccessException failure) {
             if (PostgresErrors.isUniqueViolation(failure)) {
                 throw new WriteConflict(
-                        "The organization and Occupation already have a blueprint identity", failure);
+                        "The organization and JobPosition already have a blueprint identity", failure);
             }
             throw unavailable("Baseline assessment series could not be created", failure);
         }
@@ -154,7 +154,7 @@ public class JpaBaselineAssessmentManagementStore
                 throw new WriteConflict("Baseline assessment series revision is stale", null);
             }
             long nextRevision = Math.addExact(update.expectedSeriesRevision(), 1);
-            int changed = series.compareAndSet(update.scope().organizationId(), update.scope().occupationId(),
+            int changed = series.compareAndSet(update.scope().organizationId(), update.scope().jobPositionId(),
                     update.expectedSeriesRevision(), nextRevision, update.workingRevisionId(),
                     update.pendingBlueprint() == null ? null : update.pendingBlueprint().version(),
                     openAssessmentVersionId(update.openCandidate()), activeAssessmentVersionId(update.activeRelease()),
@@ -178,7 +178,7 @@ public class JpaBaselineAssessmentManagementStore
     public Optional<WorkingRevisionRecord> findWorkingRevision(
             Scope scope, UUID workingRevisionId) {
         try {
-            return workings.find(scope.organizationId(), scope.occupationId(), workingRevisionId).stream()
+            return workings.find(scope.organizationId(), scope.jobPositionId(), workingRevisionId).stream()
                     .map(this::mapWorkingRevision).findFirst();
         } catch (DataAccessException failure) {
             throw unavailable("Baseline blueprint working revision is unavailable", failure);
@@ -194,8 +194,8 @@ public class JpaBaselineAssessmentManagementStore
                 throw new WriteConflict("A pending baseline change already exists", null);
             }
             workings.insert(new BaselineBlueprintWorkingRevisionEntity(revision.workingRevisionId(),
-                    revision.scope().organizationId(), revision.scope().occupationId(), revision.blueprintId(),
-                    revision.baseVersion(), 1L, revision.name(), revision.occupationNameSnapshot(),
+                    revision.scope().organizationId(), revision.scope().jobPositionId(), revision.blueprintId(),
+                    revision.baseVersion(), 1L, revision.name(), revision.jobPositionNameSnapshot(),
                     writeRoles(revision.roles()), "OPEN", revision.actorId(), revision.occurredAt(), revision.actorId(),
                     revision.occurredAt(), null));
             return requireWorkingRevision(revision.scope(), revision.workingRevisionId());
@@ -216,9 +216,9 @@ public class JpaBaselineAssessmentManagementStore
                 throw new WriteConflict(
                         "Working revision is not the series pending change", null);
             }
-            int changed = workings.save(revision.scope().organizationId(), revision.scope().occupationId(),
+            int changed = workings.save(revision.scope().organizationId(), revision.scope().jobPositionId(),
                     revision.workingRevisionId(), revision.expectedRevision(), revision.name(),
-                    revision.occupationNameSnapshot(), writeRoles(revision.roles()), revision.actorId(),
+                    revision.jobPositionNameSnapshot(), writeRoles(revision.roles()), revision.actorId(),
                     revision.occurredAt());
             if (changed != 1) {
                 throw new WriteConflict("Baseline blueprint working revision is stale or closed", null);
@@ -238,7 +238,7 @@ public class JpaBaselineAssessmentManagementStore
                 throw new WriteConflict(
                         "Clear the series working pointer before closing its revision", null);
             }
-            int changed = workings.close(revision.scope().organizationId(), revision.scope().occupationId(),
+            int changed = workings.close(revision.scope().organizationId(), revision.scope().jobPositionId(),
                     revision.workingRevisionId(), revision.expectedRevision(), revision.state().name(),
                     revision.actorId(), revision.occurredAt());
             if (changed != 1) {
@@ -253,7 +253,7 @@ public class JpaBaselineAssessmentManagementStore
     public Optional<CommandReceipt> findCommand(UUID actorId, String idempotencyKey) {
         try {
             return commands.receipt(actorId, idempotencyKey).stream()
-                    .map(row -> new CommandReceipt(new Scope(row.organizationId(), row.occupationId()), row.actorId(),
+                    .map(row -> new CommandReceipt(new Scope(row.organizationId(), row.jobPositionId()), row.actorId(),
                             row.idempotencyKey(), row.operation(), row.requestHash(), row.responseJson(), row.createdAt()))
                     .findFirst();
         } catch (DataAccessException failure) {
@@ -265,7 +265,7 @@ public class JpaBaselineAssessmentManagementStore
     public void insertCommand(CommandReceipt receipt) {
         try {
             commands.insert(new BaselineManagementCommandEntity(receipt.actorId(), receipt.idempotencyKey(),
-                    receipt.scope().organizationId(), receipt.scope().occupationId(), receipt.operation(),
+                    receipt.scope().organizationId(), receipt.scope().jobPositionId(), receipt.operation(),
                     receipt.requestHash(), receipt.responseJson(), receipt.createdAt()));
         } catch (DataAccessException failure) {
             if (PostgresErrors.isUniqueViolation(failure)) {
@@ -275,10 +275,10 @@ public class JpaBaselineAssessmentManagementStore
         }
     }
 
-    /** Former {@code pg_advisory_xact_lock(hashtextextended(organization_id::text || ':' || occupation_id, 0))}. */
+    /** Former {@code pg_advisory_xact_lock(hashtextextended(organization_id::text || ':' || job_position_id, 0))}. */
     private void lockScope(Scope scope) {
         try {
-            locks.lock(scope.organizationId() + ":" + scope.occupationId());
+            locks.lock(scope.organizationId() + ":" + scope.jobPositionId());
         } catch (RuntimeException failure) {
             DataAccessException translated = EntityManagerFactoryUtils.convertJpaAccessExceptionIfPossible(failure);
             throw translated == null ? failure : translated;
@@ -287,10 +287,10 @@ public class JpaBaselineAssessmentManagementStore
 
     /** Locked reads take the series row lock first, then read the snapshot projection (never a cached entity). */
     private Optional<SeriesSnapshot> readSeries(Scope scope, boolean lock) {
-        if (lock && series.lock(scope.organizationId(), scope.occupationId()).isEmpty()) {
+        if (lock && series.lock(scope.organizationId(), scope.jobPositionId()).isEmpty()) {
             return Optional.empty();
         }
-        return series.snapshot(scope.organizationId(), scope.occupationId()).stream().map(this::mapSeries).findFirst();
+        return series.snapshot(scope.organizationId(), scope.jobPositionId()).stream().map(this::mapSeries).findFirst();
     }
 
     private SeriesSnapshot lockRequiredSeries(Scope scope) {
@@ -299,7 +299,7 @@ public class JpaBaselineAssessmentManagementStore
     }
 
     private SeriesSnapshot mapSeries(BaselineAssessmentSeriesJpaRepository.SnapshotRow row) {
-        Scope scope = new Scope(row.organizationId(), row.occupationId());
+        Scope scope = new Scope(row.organizationId(), row.jobPositionId());
         UUID blueprintId = row.blueprintId();
         Integer pendingVersion = row.pendingBlueprintVersion();
         BlueprintVersionRef pending = pendingVersion == null
@@ -331,11 +331,11 @@ public class JpaBaselineAssessmentManagementStore
         try {
             return new WorkingRevisionRecord(
                     row.workingRevisionId(),
-                    new Scope(row.organizationId(), row.occupationId()),
+                    new Scope(row.organizationId(), row.jobPositionId()),
                     row.blueprintId(),
                     row.baseVersion(),
                     longValue(row.revision()), row.name(),
-                    row.occupationNameSnapshot(),
+                    row.jobPositionNameSnapshot(),
                     Arrays.asList(json.readValue(row.roles(), RoleConfig[].class)),
                     WorkingRevisionState.valueOf(row.state()),
                     row.createdAt(),
@@ -354,7 +354,7 @@ public class JpaBaselineAssessmentManagementStore
     private void insertTransition(
             SeriesSnapshot previous, Update update, long nextRevision) {
         transitions.insert(new BaselineAssessmentTransitionEntity(UUID.randomUUID(), update.scope().organizationId(),
-                update.scope().occupationId(), nextRevision, update.transition().name(), update.actorId(),
+                update.scope().jobPositionId(), nextRevision, update.transition().name(), update.actorId(),
                 update.occurredAt(), update.reason(),
                 previous.workingRevisionId(),
                 previous.pendingBlueprint() == null ? null : previous.pendingBlueprint().blueprintId(),

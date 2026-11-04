@@ -276,102 +276,102 @@
           "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
         }
       ],
-      "isEssentialForOccupation": [
+      "isEssentialForJob Position": [
         {
-          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/96e20037-0a25-4bf6-a25e-808d1605d890&language=en",
-          "uri": "http://data.europa.eu/esco/occupation/96e20037-0a25-4bf6-a25e-808d1605d890",
+          "href": "https://ec.europa.eu/esco/api/resource/job position?uri=http://data.europa.eu/esco/job position/96e20037-0a25-4bf6-a25e-808d1605d890&language=en",
+          "uri": "http://data.europa.eu/esco/job position/96e20037-0a25-4bf6-a25e-808d1605d890",
           "title": "user interface designer"
         },
         {
-          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/866c7813-2c03-47d7-9bdc-192cfbace57c&language=en",
-          "uri": "http://data.europa.eu/esco/occupation/866c7813-2c03-47d7-9bdc-192cfbace57c",
+          "href": "https://ec.europa.eu/esco/api/resource/job position?uri=http://data.europa.eu/esco/job position/866c7813-2c03-47d7-9bdc-192cfbace57c&language=en",
+          "uri": "http://data.europa.eu/esco/job position/866c7813-2c03-47d7-9bdc-192cfbace57c",
           "title": "user interface developer"
         }
       ],
-      "isOptionalForOccupation": [
+      "isOptionalForJob Position": [
         {
-          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/1c5a896a-e010-4217-a29a-c44db26e25da&language=en",
-          "uri": "http://data.europa.eu/esco/occupation/1c5a896a-e010-4217-a29a-c44db26e25da",
+          "href": "https://ec.europa.eu/esco/api/resource/job position?uri=http://data.europa.eu/esco/job position/1c5a896a-e010-4217-a29a-c44db26e25da&language=en",
+          "uri": "http://data.europa.eu/esco/job position/1c5a896a-e010-4217-a29a-c44db26e25da",
           "title": "embedded systems security engineer"
         },
         {
-          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/86ca306c-ab99-420a-9e2a-aa73c5c4de22&language=en",
-          "uri": "http://data.europa.eu/esco/occupation/86ca306c-ab99-420a-9e2a-aa73c5c4de22",
+          "href": "https://ec.europa.eu/esco/api/resource/job position?uri=http://data.europa.eu/esco/job position/86ca306c-ab99-420a-9e2a-aa73c5c4de22&language=en",
+          "uri": "http://data.europa.eu/esco/job position/86ca306c-ab99-420a-9e2a-aa73c5c4de22",
           "title": "electrical engineer"
         },
         {
-          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/9ebaf3f0-0be0-47b7-b2b1-b3b04130fa81&language=en",
-          "uri": "http://data.europa.eu/esco/occupation/9ebaf3f0-0be0-47b7-b2b1-b3b04130fa81",
+          "href": "https://ec.europa.eu/esco/api/resource/job position?uri=http://data.europa.eu/esco/job position/9ebaf3f0-0be0-47b7-b2b1-b3b04130fa81&language=en",
+          "uri": "http://data.europa.eu/esco/job position/9ebaf3f0-0be0-47b7-b2b1-b3b04130fa81",
           "title": "digital games developer"
         },
         {
-          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/bd272aee-adc9-4a06-a15c-a73b4b4a46a7&language=en",
-          "uri": "http://data.europa.eu/esco/occupation/bd272aee-adc9-4a06-a15c-a73b4b4a46a7",
+          "href": "https://ec.europa.eu/esco/api/resource/job position?uri=http://data.europa.eu/esco/job position/bd272aee-adc9-4a06-a15c-a73b4b4a46a7&language=en",
+          "uri": "http://data.europa.eu/esco/job position/bd272aee-adc9-4a06-a15c-a73b4b4a46a7",
           "title": "ICT application developer"
         },
         {
-          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/5f50290d-f520-4a69-85c7-1390d2a4a8b6&language=en",
-          "uri": "http://data.europa.eu/esco/occupation/5f50290d-f520-4a69-85c7-1390d2a4a8b6",
+          "href": "https://ec.europa.eu/esco/api/resource/job position?uri=http://data.europa.eu/esco/job position/5f50290d-f520-4a69-85c7-1390d2a4a8b6&language=en",
+          "uri": "http://data.europa.eu/esco/job position/5f50290d-f520-4a69-85c7-1390d2a4a8b6",
           "title": "ICT usability tester"
         },
         {
-          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/f2b15a0e-e65a-438a-affb-29b9d50b77d1&language=en",
-          "uri": "http://data.europa.eu/esco/occupation/f2b15a0e-e65a-438a-affb-29b9d50b77d1",
+          "href": "https://ec.europa.eu/esco/api/resource/job position?uri=http://data.europa.eu/esco/job position/f2b15a0e-e65a-438a-affb-29b9d50b77d1&language=en",
+          "uri": "http://data.europa.eu/esco/job position/f2b15a0e-e65a-438a-affb-29b9d50b77d1",
           "title": "software developer"
         },
         {
-          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/57af9090-55b4-4911-b2d0-86db01c00b02&language=en",
-          "uri": "http://data.europa.eu/esco/occupation/57af9090-55b4-4911-b2d0-86db01c00b02",
+          "href": "https://ec.europa.eu/esco/api/resource/job position?uri=http://data.europa.eu/esco/job position/57af9090-55b4-4911-b2d0-86db01c00b02&language=en",
+          "uri": "http://data.europa.eu/esco/job position/57af9090-55b4-4911-b2d0-86db01c00b02",
           "title": "embedded systems software developer"
         },
         {
-          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/a7c1d23d-aeca-4bee-9a08-5993ed98b135&language=en",
-          "uri": "http://data.europa.eu/esco/occupation/a7c1d23d-aeca-4bee-9a08-5993ed98b135",
+          "href": "https://ec.europa.eu/esco/api/resource/job position?uri=http://data.europa.eu/esco/job position/a7c1d23d-aeca-4bee-9a08-5993ed98b135&language=en",
+          "uri": "http://data.europa.eu/esco/job position/a7c1d23d-aeca-4bee-9a08-5993ed98b135",
           "title": "ICT system developer"
         },
         {
-          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/bb6198c4-1d3e-40b9-9cc4-ad2dd9d7c74b&language=en",
-          "uri": "http://data.europa.eu/esco/occupation/bb6198c4-1d3e-40b9-9cc4-ad2dd9d7c74b",
+          "href": "https://ec.europa.eu/esco/api/resource/job position?uri=http://data.europa.eu/esco/job position/bb6198c4-1d3e-40b9-9cc4-ad2dd9d7c74b&language=en",
+          "uri": "http://data.europa.eu/esco/job position/bb6198c4-1d3e-40b9-9cc4-ad2dd9d7c74b",
           "title": "industrial mobile devices software developer"
         },
         {
-          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/50af07f0-7a75-424e-a66d-5a9deea10f4c&language=en",
-          "uri": "http://data.europa.eu/esco/occupation/50af07f0-7a75-424e-a66d-5a9deea10f4c",
+          "href": "https://ec.europa.eu/esco/api/resource/job position?uri=http://data.europa.eu/esco/job position/50af07f0-7a75-424e-a66d-5a9deea10f4c&language=en",
+          "uri": "http://data.europa.eu/esco/job position/50af07f0-7a75-424e-a66d-5a9deea10f4c",
           "title": "ICT accessibility tester"
         },
         {
-          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/c40a2919-48a9-40ea-b506-1f34f693496d&language=en",
-          "uri": "http://data.europa.eu/esco/occupation/c40a2919-48a9-40ea-b506-1f34f693496d",
+          "href": "https://ec.europa.eu/esco/api/resource/job position?uri=http://data.europa.eu/esco/job position/c40a2919-48a9-40ea-b506-1f34f693496d&language=en",
+          "uri": "http://data.europa.eu/esco/job position/c40a2919-48a9-40ea-b506-1f34f693496d",
           "title": "web developer"
         },
         {
-          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/1562c7a3-c7d9-419d-b9b6-db26610bcf84&language=en",
-          "uri": "http://data.europa.eu/esco/occupation/1562c7a3-c7d9-419d-b9b6-db26610bcf84",
+          "href": "https://ec.europa.eu/esco/api/resource/job position?uri=http://data.europa.eu/esco/job position/1562c7a3-c7d9-419d-b9b6-db26610bcf84&language=en",
+          "uri": "http://data.europa.eu/esco/job position/1562c7a3-c7d9-419d-b9b6-db26610bcf84",
           "title": "data warehouse designer"
         },
         {
-          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/4d34a9ee-2653-4da0-bef7-f59294577224&language=en",
-          "uri": "http://data.europa.eu/esco/occupation/4d34a9ee-2653-4da0-bef7-f59294577224",
+          "href": "https://ec.europa.eu/esco/api/resource/job position?uri=http://data.europa.eu/esco/job position/4d34a9ee-2653-4da0-bef7-f59294577224&language=en",
+          "uri": "http://data.europa.eu/esco/job position/4d34a9ee-2653-4da0-bef7-f59294577224",
           "title": "electronics engineer"
         },
         {
-          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/fde4372d-8293-42de-afbb-8b5a9b274fe7&language=en",
-          "uri": "http://data.europa.eu/esco/occupation/fde4372d-8293-42de-afbb-8b5a9b274fe7",
+          "href": "https://ec.europa.eu/esco/api/resource/job position?uri=http://data.europa.eu/esco/job position/fde4372d-8293-42de-afbb-8b5a9b274fe7&language=en",
+          "uri": "http://data.europa.eu/esco/job position/fde4372d-8293-42de-afbb-8b5a9b274fe7",
           "title": "application engineer"
         },
         {
-          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/24135b84-cbdd-4d42-9ed2-02fd982d15b2&language=en",
-          "uri": "http://data.europa.eu/esco/occupation/24135b84-cbdd-4d42-9ed2-02fd982d15b2",
+          "href": "https://ec.europa.eu/esco/api/resource/job position?uri=http://data.europa.eu/esco/job position/24135b84-cbdd-4d42-9ed2-02fd982d15b2&language=en",
+          "uri": "http://data.europa.eu/esco/job position/24135b84-cbdd-4d42-9ed2-02fd982d15b2",
           "title": "blockchain developer"
         },
         {
-          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/2ed56c3f-61d6-4f7e-9ef8-8849eb102e4c&language=en",
-          "uri": "http://data.europa.eu/esco/occupation/2ed56c3f-61d6-4f7e-9ef8-8849eb102e4c",
+          "href": "https://ec.europa.eu/esco/api/resource/job position?uri=http://data.europa.eu/esco/job position/2ed56c3f-61d6-4f7e-9ef8-8849eb102e4c&language=en",
+          "uri": "http://data.europa.eu/esco/job position/2ed56c3f-61d6-4f7e-9ef8-8849eb102e4c",
           "title": "mobile application developer"
         },
         {
-          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/1c5a45b9-440e-4726-b565-16a952abd341&language=en",
-          "uri": "http://data.europa.eu/esco/occupation/1c5a45b9-440e-4726-b565-16a952abd341",
+          "href": "https://ec.europa.eu/esco/api/resource/job position?uri=http://data.europa.eu/esco/job position/1c5a45b9-440e-4726-b565-16a952abd341&language=en",
+          "uri": "http://data.europa.eu/esco/job position/1c5a45b9-440e-4726-b565-16a952abd341",
           "title": "computer vision engineer"
         }
       ]

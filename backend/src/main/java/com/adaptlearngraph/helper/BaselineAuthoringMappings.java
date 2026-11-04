@@ -75,13 +75,13 @@ public final class BaselineAuthoringMappings implements ModelMapperRegistrar {
         });
         mapper.typeMap(BaselineBlueprint.class, BlueprintResponse.class).setConverter(context -> {
             BaselineBlueprint source = context.getSource();
-            return new BlueprintResponse(source.blueprintId(), source.version(), source.name(), source.occupationId(),
-                    source.occupationNameSnapshot(), source.createdAt(), list(context, source.roles(), RoleResponse.class));
+            return new BlueprintResponse(source.blueprintId(), source.version(), source.name(), source.jobPositionId(),
+                    source.jobPositionNameSnapshot(), source.createdAt(), list(context, source.roles(), RoleResponse.class));
         });
         mapper.typeMap(BaselineBlueprint.class, ManagedBlueprintResponse.class).setConverter(context -> {
             BaselineBlueprint source = context.getSource();
-            return new ManagedBlueprintResponse(source.blueprintId(), source.version(), source.name(), source.occupationId(),
-                    source.occupationNameSnapshot(), source.createdAt(), list(context, source.roles(), RoleConfigResponse.class));
+            return new ManagedBlueprintResponse(source.blueprintId(), source.version(), source.name(), source.jobPositionId(),
+                    source.jobPositionNameSnapshot(), source.createdAt(), list(context, source.roles(), RoleConfigResponse.class));
         });
         mapper.typeMap(BaselineAssessmentDraft.Item.class, AssessmentItemResponse.class).setConverter(context -> {
             BaselineAssessmentDraft.Item source = context.getSource();
@@ -106,7 +106,7 @@ public final class BaselineAuthoringMappings implements ModelMapperRegistrar {
         });
         mapper.typeMap(BlueprintDraft.class, BlueprintDraftResponse.class).setConverter(context -> {
             BlueprintDraft source = context.getSource();
-            return new BlueprintDraftResponse(source.name(), source.occupationId(), source.occupationNameSnapshot(),
+            return new BlueprintDraftResponse(source.name(), source.jobPositionId(), source.jobPositionNameSnapshot(),
                     list(context, source.roles(), RoleConfigResponse.class));
         });
         mapper.typeMap(WorkingRevision.class, WorkingRevisionResponse.class).setConverter(context -> {
@@ -115,7 +115,7 @@ public final class BaselineAuthoringMappings implements ModelMapperRegistrar {
                     source.revision(), nested(context, source.draft(), BlueprintDraftResponse.class), source.updatedAt());
         });
         mapper.typeMap(Scope.class, SeriesScopeResponse.class).setConverter(context ->
-                new SeriesScopeResponse(context.getSource().organizationId(), context.getSource().occupationId()));
+                new SeriesScopeResponse(context.getSource().organizationId(), context.getSource().jobPositionId()));
         mapper.typeMap(BlueprintVersionRef.class, BlueprintVersionRefResponse.class).setConverter(context ->
                 new BlueprintVersionRefResponse(context.getSource().blueprintId(), context.getSource().version()));
         mapper.typeMap(AssessmentVersionRef.class, AssessmentVersionRefResponse.class).setConverter(context -> {
@@ -150,7 +150,7 @@ public final class BaselineAuthoringMappings implements ModelMapperRegistrar {
         });
         mapper.typeMap(Workspace.class, WorkspaceResponse.class).setConverter(context -> {
             Workspace source = context.getSource();
-            return new WorkspaceResponse(source.occupationId(), source.occupationName(),
+            return new WorkspaceResponse(source.jobPositionId(), source.jobPositionName(),
                     nested(context, source.lifecycle(), SeriesSnapshotResponse.class),
                     nested(context, source.workingRevision(), WorkingRevisionResponse.class),
                     list(context, source.blueprintVersions(), BlueprintVersionSummaryResponse.class),

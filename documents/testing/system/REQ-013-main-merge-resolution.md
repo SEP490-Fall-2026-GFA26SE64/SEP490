@@ -51,10 +51,10 @@ Git confirms zero unmerged entries and no conflict markers in application/tests/
 
 ## Manual checklist
 
-URL: http://127.0.0.1:28188 (isolated verification frontend; API28180). The temporary verification runtime is stopped after testing to release resources; restart its isolated services before manual verification. Checklist below is provided for the user; it is not a claim that all manual steps passed. Prerequisites: verification Compose services and Vite running; verified Expert and L&D accounts with active memberships and an activated workspace; an imported Module plus the existing occupation grant/intake policy. Test-only fixture creates these in the isolated database, never the old database.
+URL: http://127.0.0.1:28188 (isolated verification frontend; API28180). The temporary verification runtime is stopped after testing to release resources; restart its isolated services before manual verification. Checklist below is provided for the user; it is not a claim that all manual steps passed. Prerequisites: verification Compose services and Vite running; verified Expert and L&D accounts with active memberships and an activated workspace; an imported Module plus the existing job position grant/intake policy. Test-only fixture creates these in the isolated database, never the old database.
 
 1. Sign in through `/login` as L&D; verify actual account name and Manager navigation.
-2. Open Modules, find an imported Module, cancel Assign for intake and confirm no change; then assign its responsible occupation.
+2. Open Modules, find an imported Module, cancel Assign for intake and confirm no change; then assign its responsible job position.
 3. Sign out; sign in as assigned Expert; receive the Module, edit title, save and submit. Expected: persisted revisions and editor history, original creator remains unknown for an imported source.
 4. Sign in as L&D; open Modules from approval navigation. Expected: stay under `/ld-manager`, view history, approve and release.
 5. Reload. Expected: Released state persists; reviewer identity is recorded separately from creator/editor.

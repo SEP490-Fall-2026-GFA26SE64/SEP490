@@ -21,7 +21,7 @@ class CatalogContractTest(unittest.TestCase):
     def test_valid_payload_has_no_export_join_fields(self):
         nodes,edges,_=build_payload(self.data)
         self.assertEqual((len(nodes),len(edges)),(994,5121))
-        for _,props in nodes.values():self.assertFalse({'occupationId','targetRoleId','levelId','levelIds'} & props.keys())
+        for _,props in nodes.values():self.assertFalse({'job positionId','targetRoleId','levelId','levelIds'} & props.keys())
 
     def test_many_to_many_teaching_is_accepted(self):
         from collections import Counter
@@ -38,8 +38,8 @@ class CatalogContractTest(unittest.TestCase):
     def test_all_architecture_fields_are_present_and_populated(self):
         common={'id','version','status','reviewStatus','reviewedBy','reviewedAt'}
         fields={
-            'Occupations':{'code','name','jobZone',*('interest'+n for n in ['Realistic','Investigative','Artistic','Social','Enterprising','Conventional'])},
-            'TargetRoles':{'code','name','scope','occupationId'},
+            'Job Positions':{'code','name','jobZone',*('interest'+n for n in ['Realistic','Investigative','Artistic','Social','Enterprising','Conventional'])},
+            'TargetRoles':{'code','name','scope','job positionId'},
             'Levels':{'code','name','rank','attainmentRule','targetRoleId'},
             'Competencies':{'name','description','attainmentRule','levelId'},
             'MicroSkills':{'name','definition'},
@@ -63,7 +63,7 @@ class CatalogContractTest(unittest.TestCase):
 
     def test_nonmodule_catalog_business_data_is_preserved(self):
         previous=json.loads((SEED.parent.parent/'question-bank/15-1212.00/historical/ontology_seed-v08.json').read_text())
-        for section in ['Occupations','TargetRoles','Levels','Competencies','MicroSkills']:
+        for section in ['Job Positions','TargetRoles','Levels','Competencies','MicroSkills']:
             without_version=lambda rows:sorted(({k:v for k,v in r.items() if k not in {'version','context'}} for r in rows),key=lambda r:r['id'])
             self.assertEqual(without_version(previous[section]),without_version(self.data[section]))
 
@@ -201,7 +201,7 @@ class CatalogContractTest(unittest.TestCase):
     def test_v010_catalog_and_all_non_teaching_relationships_preserved(self):
         old=json.loads(SEED.with_name('ontology_seed-v010.json').read_text())
         strip=lambda row:{k:v for k,v in row.items() if k!='version'}
-        for section in ['Occupations','TargetRoles','Levels','Competencies','MicroSkills']:
+        for section in ['Job Positions','TargetRoles','Levels','Competencies','MicroSkills']:
             self.assertEqual([strip(r) for r in old[section]],[strip(r) for r in self.data[section]])
         new_modules={m['id']:m for m in self.data['LearningModules']}
         manifest=json.loads((SEED.parent.parent/'sources/local_review/teaching_focus_difficulty_v011.json').read_text())

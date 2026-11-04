@@ -118,7 +118,7 @@
     },
     {
       "scale_id": "IH",
-      "scale_name": "Occupational Interest High-Point",
+      "scale_name": "Job Positional Interest High-Point",
       "minimum": 0,
       "maximum": 6
     },
@@ -154,7 +154,7 @@
     },
     {
       "scale_id": "OI",
-      "scale_name": "Occupational Interests",
+      "scale_name": "Job Positional Interests",
       "minimum": 1,
       "maximum": 7
     },

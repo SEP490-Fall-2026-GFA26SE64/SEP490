@@ -10,7 +10,7 @@ import org.springframework.data.repository.query.Param;
 /**
  * Immutable scored attempt results (insert-only) and the own-Employee result/history read model. The read model stays
  * native: it needs a LEFT JOIN LATERAL with count(DISTINCT row-constructor) over Blueprint snapshot tables. Rows are
- * [attempt_id, organization_id, occupation_id, occupation_name_snapshot, assessment_policy_mode,
+ * [attempt_id, organization_id, job_position_id, job_position_name_snapshot, assessment_policy_mode,
  * assessment_policy_version_id, assessment_policy_hash, assessment_policy_snapshot(text), skill_policy_version_id,
  * skill_policy_hash, attempt_purpose, target_role_id, role_name_snapshot, state, scope_policy, blueprint_scope_policy,
  * completion_reason, started_at, finished_at, replaces_attempt_id, replacement_attempt_id, raw_score, micro_skill_id,
@@ -19,7 +19,7 @@ import org.springframework.data.repository.query.Param;
 public interface BaselineAttemptResultJpaRepository
         extends Repository<BaselineAttemptResultEntity, UUID>, InsertOnlyRepository<BaselineAttemptResultEntity> {
     String RESULTS = """
-            SELECT attempt.attempt_id,attempt.organization_id,attempt.occupation_id,version.occupation_name_snapshot,
+            SELECT attempt.attempt_id,attempt.organization_id,attempt.job_position_id,version.job_position_name_snapshot,
                 attempt.assessment_policy_mode,attempt.assessment_policy_version_id,attempt.assessment_policy_hash,
                 attempt.assessment_policy_snapshot::text AS assessment_policy_snapshot,
                 skill.policy_version_id AS skill_policy_version_id,skill.policy_hash AS skill_policy_hash,
@@ -34,7 +34,7 @@ public interface BaselineAttemptResultJpaRepository
              AND employee.active
             JOIN platform.baseline_adaptive_blueprint_version version
               ON version.blueprint_id=attempt.blueprint_id AND version.version=attempt.blueprint_version
-             AND version.organization_id=attempt.organization_id AND version.occupation_id=attempt.occupation_id
+             AND version.organization_id=attempt.organization_id AND version.job_position_id=attempt.job_position_id
             LEFT JOIN platform.baseline_adaptive_blueprint_role role
               ON role.blueprint_id=attempt.blueprint_id AND role.blueprint_version=attempt.blueprint_version
              AND role.role_id=attempt.target_role_id
@@ -52,7 +52,7 @@ public interface BaselineAttemptResultJpaRepository
                 WHERE snapshot.blueprint_id=attempt.blueprint_id
                   AND snapshot.blueprint_version=attempt.blueprint_version
                   AND snapshot.micro_skill_id=skill.micro_skill_id
-                  AND (attempt.scope_policy='FULL_OCCUPATION_V2' OR attempt.target_role_id IS NULL OR snapshot.role_id=attempt.target_role_id)
+                  AND (attempt.scope_policy='FULL_JOB_POSITION_V2' OR attempt.target_role_id IS NULL OR snapshot.role_id=attempt.target_role_id)
             ) skill_name ON skill.micro_skill_id IS NOT NULL
             WHERE attempt.organization_id=:org AND attempt.learner_id=:learner
               AND ((:workspaceIdentity AND EXISTS(

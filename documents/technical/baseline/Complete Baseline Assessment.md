@@ -2,27 +2,27 @@
 
 **Function:** REQ-002-F01. **Actor:** Employee.
 
-**2026-11-01 C1/C2 status:** workspace source now adds the own active [Assessment Policy](Configure%20Baseline%20Assessment.md#organization-assessment-policy--planned) pin for new roots and uses original pins on continuation/replacement; result/evidence/V2 event/profile readers compile. Legacy technical JSON/V1 remains supported. SQL is not applied and runtime/numerical/executable preservation is Not run; full-Occupation/allowance/evidence/history rules remain the contract.
+**2026-11-01 C1/C2 status:** workspace source now adds the own active [Assessment Policy](Configure%20Baseline%20Assessment.md#organization-assessment-policy--planned) pin for new roots and uses original pins on continuation/replacement; result/evidence/V2 event/profile readers compile. Legacy technical JSON/V1 remains supported. SQL is not applied and runtime/numerical/executable preservation is Not run; full-Job Position/allowance/evidence/history rules remain the contract.
 
 ## Goal and position
 
-Estimate initial mastery for MicroSkills covered by the applicable Occupation Blueprint. The same baseline must distinguish limited evidence from reliable evidence for Intern, Junior and Senior Employees; a strong result is not capped merely because it came from a baseline.
+Estimate initial mastery for MicroSkills covered by the applicable Job Position Blueprint. The same baseline must distinguish limited evidence from reliable evidence for Intern, Junior and Senior Employees; a strong result is not capped merely because it came from a baseline.
 
-**One baseline per Occupation:** every new attempt assesses the deduplicated union of all active-role skills/items using one Occupation question maximum and total duration. Selected Role A or Role B changes entry/provenance, never the pool, bounds, allowance or a separate assessment section. “Full baseline” means the entire Occupation skill scope with the pinned minimum-evidence coverage; it does not mean answering every item in the bank or an identical fixed sequence for all Employees. Adaptive early stopping remains valid only after all required skill evidence conditions are satisfied.
+**One baseline per Job Position:** every new attempt assesses the deduplicated union of all active-role skills/items using one Job Position question maximum and total duration. Selected Role A or Role B changes entry/provenance, never the pool, bounds, allowance or a separate assessment section. “Full baseline” means the entire Job Position skill scope with the pinned minimum-evidence coverage; it does not mean answering every item in the bank or an identical fixed sequence for all Employees. Adaptive early stopping remains valid only after all required skill evidence conditions are satisfied.
 
 ```text
 trusted Employee selects Role
- -> resolve Occupation and authoritative profile coverage
+ -> resolve Job Position and authoritative profile coverage
  -> resume pinned attempt, or require baseline if incomplete
- -> pin full Occupation scope, versions, content and deadline
+ -> pin full Job Position scope, versions, content and deadline
  -> accept responses and select next items idempotently
  -> finalize result/evidence and initialize mastery profile
  -> read result/history/My Mastery
 ```
 
-Role selection is not blocked by baseline. Existing initialized profiles retain their original skill set/version; complete coverage counts low/zero valid mastery and does not certify target proficiency. No independent Occupation-exploration entry exists. Missing configuration is distinct from dependency failure. A completed result without an authoritative profile is pending/review-needed, never automatic repeat or fabricated coverage.
+Role selection is not blocked by baseline. Existing initialized profiles retain their original skill set/version; complete coverage counts low/zero valid mastery and does not certify target proficiency. No independent Job Position-exploration entry exists. Missing configuration is distinct from dependency failure. A completed result without an authoritative profile is pending/review-needed, never automatic repeat or fabricated coverage.
 
-The allowance is one successful mastery-producing baseline per Employee + Occupation, regardless of entry path. A completed result cannot be retaken because a role, Blueprint or catalog later changes. A replacement is allowed only when the earlier attempt was invalidated and emitted no mastery; deleting an account follows the separate retention/deletion policy and is not a reset command.
+The allowance is one successful mastery-producing baseline per Employee + Job Position, regardless of entry path. A completed result cannot be retaken because a role, Blueprint or catalog later changes. A replacement is allowed only when the earlier attempt was invalidated and emitted no mastery; deleting an account follows the separate retention/deletion policy and is not a reset command.
 
 The Employee cannot choose parameters, submit correctness/mastery, see protected answers or change the server deadline. Gap calculation, pathway generation/review and `a/b/c` calibration belong to dependent Functions.
 
@@ -36,9 +36,9 @@ The Employee cannot choose parameters, submit correctness/mastery, see protected
 | Selected option/response payload | Correctness, raw counts, theta, SE, point/conservative mastery and confidence label |
 | Manual-submit confirmation | Start/deadline, remaining time and timeout outcome |
 
-Server derives Occupation from the trusted selected Role; client cannot substitute scope or supply pool/budget/pins. Draft/inactive/removed Roles and ineligible questions are excluded from new snapshots. Role/selection revision is provenance, never a separate pool or allowance. Role-specific proficiency thresholds belong to later gap processing.
+Server derives Job Position from the trusted selected Role; client cannot substitute scope or supply pool/budget/pins. Draft/inactive/removed Roles and ineligible questions are excluded from new snapshots. Role/selection revision is provenance, never a separate pool or allowance. Role-specific proficiency thresholds belong to later gap processing.
 
-New entry uses the explicit Role+member Level under the session's organization. Resolve new-start resources by that organization+exact graph Occupation ID; identical catalog IDs in another organization do not authorize reuse of its bank, attempt, result or profile. Every follow-up read/command rechecks trusted learner/tenant ownership. Deadline workers use the stored tenant/attempt context. Resume and linked replacement preserve original pins; changing Role/Level or a current resource binding never resets/rescores/repins existing evidence or reopens the completed allowance. [Organization integration contract](../Workspace%20Adaptive%20Integration.md#organization-scoped-source-and-operation-contract).
+New entry uses the explicit Role+member Level under the session's organization. Resolve new-start resources by that organization+exact graph Job Position ID; identical catalog IDs in another organization do not authorize reuse of its bank, attempt, result or profile. Every follow-up read/command rechecks trusted learner/tenant ownership. Deadline workers use the stored tenant/attempt context. Resume and linked replacement preserve original pins; changing Role/Level or a current resource binding never resets/rescores/repins existing evidence or reopens the completed allowance. [Organization integration contract](../Workspace%20Adaptive%20Integration.md#organization-scoped-source-and-operation-contract).
 
 ### IRT 3PL behavior
 
@@ -60,12 +60,12 @@ Estimation/prior/minimum-evidence/technical validity stay system-managed/version
 
 #### Start or resume
 
-1. Authorize the Employee and derive Occupation from the committed selected Role and check authoritative profile coverage.
-2. Check the Employee + Occupation allowance. A prior completed baseline that emitted mastery closes it; an invalidated/no-mastery attempt does not.
-3. Lock/check the unique active-attempt key for Employee + Occupation.
+1. Authorize the Employee and derive Job Position from the committed selected Role and check authoritative profile coverage.
+2. Check the Employee + Job Position allowance. A prior completed baseline that emitted mastery closes it; an invalidated/no-mastery attempt does not.
+3. Lock/check the unique active-attempt key for Employee + Job Position.
 4. Return an existing `IN_PROGRESS` attempt for retries/resume.
-5. Otherwise validate current availability, explicit full-Occupation format, active-role/catalog fingerprint, full union skill/item capacity, exact parameter coverage and feasibility under the pinned model. Never omit a skill to fit a small maximum. Current membership drift blocks new starts until L&D activates a refreshed version. A legacy-format current requires the confirmed explicit configuration transition; it is never silently interpreted as the new scope.
-6. Under the implemented shared activation-scope lock, recheck current/version/readiness and create the attempt. Use selected-Role provenance for new entry; preserve original provenance for historical readers; pin full-Occupation scope policy, common bounds, complete deduplicated pool, skill snapshots and all versions. Set server `startedAt/deadlineAt`; initialize every union skill and persist the first item/receipt atomically. Exact lock/schema design is approved in the linked transition document.
+5. Otherwise validate current availability, explicit full-Job Position format, active-role/catalog fingerprint, full union skill/item capacity, exact parameter coverage and feasibility under the pinned model. Never omit a skill to fit a small maximum. Current membership drift blocks new starts until L&D activates a refreshed version. A legacy-format current requires the confirmed explicit configuration transition; it is never silently interpreted as the new scope.
+6. Under the implemented shared activation-scope lock, recheck current/version/readiness and create the attempt. Use selected-Role provenance for new entry; preserve original provenance for historical readers; pin full-Job Position scope policy, common bounds, complete deduplicated pool, skill snapshots and all versions. Set server `startedAt/deadlineAt`; initialize every union skill and persist the first item/receipt atomically. Exact lock/schema design is approved in the linked transition document.
 
 #### Answer and select next
 
@@ -105,9 +105,9 @@ Answer/manual/precision/deadline finalization and recovery use persisted inputs 
 - Presented items never change after question/Blueprint/parameter updates.
 - New selection remains inside the attempt's pinned eligible versions; calibration never changes an active/past attempt.
 - Replacing or disabling the current Blueprint affects only new starts. An `IN_PROGRESS` attempt continues/resumes with its pinned snapshot.
-- Final results are immutable and retain original target/Occupation/Blueprint/model provenance.
+- Final results are immutable and retain original target/Job Position/Blueprint/model provenance.
 - REQ-001 blocks target-role change while an assessment is `IN_PROGRESS`.
-- Legacy role-scoped/exploration attempts continue with their original pool, bounds, purpose, deadline and numerical pins, even after configuration replacement or cutover. A previously completed Role A result still consumes the same Employee+Occupation allowance; never relabel it full-Occupation, rescore it, add fabricated skill evidence or reset it to satisfy the new definition.
+- Legacy role-scoped/exploration attempts continue with their original pool, bounds, purpose, deadline and numerical pins, even after configuration replacement or cutover. A previously completed Role A result still consumes the same Employee+Job Position allowance; never relabel it full-Job Position, rescore it, add fabricated skill evidence or reset it to satisfy the new definition.
 - New-format attempts/results retain an explicit server-owned scope discriminator and full union; REQ-009 reads the recorded scope rather than deriving it from the Employee's current Role or today's Blueprint. A linked replacement reauthorizes ownership and retains the invalidated chain's original version, pool and snapshot; it does not adopt a newer Active version or mutate its predecessor.
 
 ### Failure and concurrency branches
@@ -125,7 +125,7 @@ Answer/manual/precision/deadline finalization and recovery use persisted inputs 
 | Manual submit before minimum evidence | Finalize INVALIDATED/MANUAL without mastery/profile and retain linked replacement eligibility. |
 | Estimator/technical failure preventing mastery | Preserve audit data, invalidate with no mastery, and allow a replacement linked by `replacesAttemptId`. |
 | Auto-submit retry | Finalize and emit evidence once. |
-| Completed Employee + Occupation requests another baseline | Reject; role/Blueprint/catalog changes do not reopen the allowance. |
+| Completed Employee + Job Position requests another baseline | Reject; role/Blueprint/catalog changes do not reopen the allowance. |
 | Legacy-format current version after revised admission cutover | Actionable configuration-update requirement; no new attempt, allowance consumption or silent role/exploration fallback. |
 | Union skill has insufficient eligible/parameterized items or maximum cannot cover minimum evidence | Reject activation/start with structured readiness failure; do not narrow scope or create partial state. |
 | Activate/Deactivate races new start | Serialize admission against current switch; pin the version that wins the agreed transaction ordering, or reject unavailable/stale configuration. Existing pinned attempts remain valid. |
@@ -148,13 +148,13 @@ REQ-001 selection/identity; authorized catalog publication/release; REQ-002-F02 
 | High-SE evidence above the minimum finalizes through conservative mastery | Deterministic unit/vector and API result test |
 | Tenant/learner isolation holds | Authorization/isolation tests |
 | Baseline initializes mastery once without BKT double count | REQ-002/REQ-041 integration test |
-| Save draft → Preview assessment → Activate → full-Occupation start → answer/reload → submit → result | Disposable-adapter system test |
-| Different selected Roles in the same Occupation use the same full scope/pair with skill/item deduplication | AB-A02 selector/API/integration/system plan |
-| Legacy attempts/history/allowance survive forward transition; new starts require explicit full-Occupation config | AB-A09–A11 and AB-R02–R03 compatibility plan |
+| Save draft → Preview assessment → Activate → full-Job Position start → answer/reload → submit → result | Disposable-adapter system test |
+| Different selected Roles in the same Job Position use the same full scope/pair with skill/item deduplication | AB-A02 selector/API/integration/system plan |
+| Legacy attempts/history/allowance survive forward transition; new starts require explicit full-Job Position config | AB-A09–A11 and AB-R02–R03 compatibility plan |
 
 ### Decision status
 
-- **Confirmed:** immediate Role choice; selected-Role entry with one whole-Occupation baseline/pair; required skill coverage with no role sections; one mastery-producing completion per Employee+Occupation; invalidated/no-mastery linked replacement; unchanged history/pins/allowance; individual adaptive 3PL, raw explanatory score and conservative mastery; no confidence/mastery cap; PostgreSQL authority/reload/deadline/idempotency/security/evidence boundaries above.
+- **Confirmed:** immediate Role choice; selected-Role entry with one whole-Job Position baseline/pair; required skill coverage with no role sections; one mastery-producing completion per Employee+Job Position; invalidated/no-mastery linked replacement; unchanged history/pins/allowance; individual adaptive 3PL, raw explanatory score and conservative mastery; no confidence/mastery cap; PostgreSQL authority/reload/deadline/idempotency/security/evidence boundaries above.
 - **Provisional technical configuration:** estimator/prior/minimum-evidence constants remain system-managed/versioned. **Confirmed target:** L&D org policy supplies stop SE/confidence/k. **Proposed:** new policy schema/admission/provenance design; source still uses original technical JSON until separately approved C2.
 - **Confirmed design:** dual-format schema/readers, legacy-configuration admission gate, explicit conversion and transaction protocol in the linked design.
 - **Open:** authoritative external production contracts and numerical/executable/browser validation. Numerical calibration remains outside this alignment.

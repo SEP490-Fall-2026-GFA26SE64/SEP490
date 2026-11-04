@@ -14,22 +14,22 @@ public final class WorkspaceBaselineResourceService implements WorkspaceBaseline
     public WorkspaceBaselineResourceService(AdaptiveBlueprintActorPort actors, WorkspaceBaselineResourcePort resources) {
         this.actors=actors; this.resources=resources;
     }
-    private AdaptiveBlueprintActorPort.Actor authorize(String occupation) {
+    private AdaptiveBlueprintActorPort.Actor authorize(String jobPosition) {
         var actor=actors.currentActor().orElseThrow(()->new Failure(401,"UNAUTHENTICATED"));
-        if (!actor.isActiveLdManager() || !actors.authorizedOccupations(actor).contains(occupation))
+        if (!actor.isActiveLdManager() || !actors.authorizedJobPositions(actor).contains(jobPosition))
             throw new Failure(403,"FORBIDDEN");
         return actor;
     }
-    @Override public Tuple read(String occupation) {
-        var actor=authorize(occupation);
-        return resources.read(new Scope(actor.organizationId(),occupation));
+    @Override public Tuple read(String jobPosition) {
+        var actor=authorize(jobPosition);
+        return resources.read(new Scope(actor.organizationId(),jobPosition));
     }
-    @Override public Tuple configure(String occupation, Tuple expected, Tuple desired) {
-        var actor=authorize(occupation);
+    @Override public Tuple configure(String jobPosition, Tuple expected, Tuple desired) {
+        var actor=authorize(jobPosition);
         if (expected==null || desired==null || !desired.complete()) throw new Failure(400,"INVALID_REQUEST");
-        var scope=new Scope(actor.organizationId(),occupation);
+        var scope=new Scope(actor.organizationId(),jobPosition);
         return resources.locked(scope,()-> {
-            if (!actor.equals(authorize(occupation))) throw new Failure(403,"FORBIDDEN");
+            if (!actor.equals(authorize(jobPosition))) throw new Failure(403,"FORBIDDEN");
             var current=resources.read(scope);
             if (current.equals(desired)) return current; // Idempotent PUT; never repins a learner artifact.
             if (!current.equals(expected)) throw new Failure(409,"STALE_RESOURCE_BINDING");

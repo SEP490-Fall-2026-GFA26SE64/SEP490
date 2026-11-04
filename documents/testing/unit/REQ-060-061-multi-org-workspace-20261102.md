@@ -8,7 +8,7 @@ Run inside the full `.\mvnw.cmd -B clean verify` from `backend` (final run: **65
 
 | Test class | Result | Covers |
 | --- | --- | --- |
-| `PlatformCatalogServiceTest` (new) | 7 passed | Closure rules for Occupation, TargetRole, MicroSkill and Module selections; edges only with both ends; empty selection copies nothing; non-selectable (Level), unknown, blank and more than 300 ids rejected on `catalogSelection`; a missing template allows only an empty selection. |
+| `PlatformCatalogServiceTest` (new) | 7 passed | Closure rules for Job Position, TargetRole, MicroSkill and Module selections; edges only with both ends; empty selection copies nothing; non-selectable (Level), unknown, blank and more than 300 ids rejected on `catalogSelection`; a missing template allows only an empty selection. |
 | `PlatformCatalogControllerTest` (new) | 4 passed | Public catalog exposes only selectable labels without organization fields and is publicly cacheable; closure preview returns server-computed counts with `no-store`; unknown nodes are field errors; missing template is 503. |
 | `ScopedSessionCookieSerializerTest` | 4 passed | Added: the guest closure preview reads the registration session that issued its CSRF token, while the public catalog uses the workspace cookie. |
 | `WorkspaceLinksTest` (new) | 2 passed | Email/callback paths are built as `/workspace/{slug}/...`; without a usable slug the legacy path is kept (it then redirects in the browser); relative paths are refused. |

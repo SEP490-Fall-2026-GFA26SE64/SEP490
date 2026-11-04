@@ -1,4 +1,4 @@
-> **Current R4 behavior (2026-10-29):** new Module/content creation, reuse and Excel/ZIP import are based on skills and do not require an Occupation selection/grant. Historical occupation tags and the separate catalog intake workflow remain intact. L&D revision details show individually numbered Text/Video lesson cards. See the [current catalog refinement](../../../../features/Learning%20catalog/README.md#r4-local-refinement--2026-10-29) and [tested UI/manual checklist](../../../../testing/system/REQ-013-learning-content-R4.md). Older dated rules below are retained for traceability.
+> **Current R4 behavior (2026-10-29):** new Module/content creation, reuse and Excel/ZIP import are based on skills and do not require an Job Position selection/grant. Historical job position tags and the separate catalog intake workflow remain intact. L&D revision details show individually numbered Text/Video lesson cards. See the [current catalog refinement](../../../../features/Learning%20catalog/README.md#r4-local-refinement--2026-10-29) and [tested UI/manual checklist](../../../../testing/system/REQ-013-learning-content-R4.md). Older dated rules below are retained for traceability.
 
 > **Historical implementation record — retained during merge on 2026-10-29.** The current product contract is the [consolidated domain README](../../../../features/Learning%20catalog/README.md). This record preserves the previously implemented local slice, user decisions and dated evidence; it does not override Version 2 or the authenticated workspace integration. V27/V28 below refer to the historical Module migration lineage; merged source uses V33/V34.
 
@@ -34,7 +34,7 @@ Tạo Module trong phạm vi Expert được phép và chuẩn bị nộp L&D du
 - Chỉ lưu Module khi đầy đủ field bắt buộc và mapping có đúng một PRIMARY. Không hỗ trợ lưu draft thiếu content/mapping; review metadata chưa phát sinh được null đúng schema.
 - Expert chọn nội dung từ Content Studio. Module, phiên bản nội dung và mapping được nộp chung cho L&D duyệt.
 - Nội dung là Markdown với video HTTPS trực tiếp nhúng qua `[video](https://host/lesson.mp4)`; contentType của gói vẫn là text/markdown.
-- Expert được L&D phân công theo Occupation; tạo Module/content chỉ trong các Occupation được cấp quyền. Membership PostgreSQL và quy tắc sửa chung được mô tả tại [quyết định chung](README.md#occupation-scope-and-revision-boundaries).
+- Expert được L&D phân công theo Job Position; tạo Module/content chỉ trong các Job Position được cấp quyền. Membership PostgreSQL và quy tắc sửa chung được mô tả tại [quyết định chung](README.md#job position-scope-and-revision-boundaries).
 
 ## Implementation choices and remaining integration
 
@@ -88,4 +88,4 @@ Application Developer currently has 11 required skills at Junior, 14 at Middle a
 
 ### Imported module intake — 2026-10-28
 
-[Explicit per-module intake](../../../../features/Learning%20module%20management/Receive%20Imported%20Module.md) adds a separate entry point: L&D assigns responsible Occupations; an assigned Expert receives the existing ID and bundled Markdown into a draft. `createdBy` remains null for unknown original authorship; assignment/acceptance identities and times are recorded separately. Only submitted drafts can be reviewed; first approval updates the existing graph identity. Imported drafts cannot be hard-deleted. Native creation retains generated ID/actual creator behavior. Source snapshots and edit/decision history remain separate.
+[Explicit per-module intake](../../../../features/Learning%20module%20management/Receive%20Imported%20Module.md) adds a separate entry point: L&D assigns responsible Job Positions; an assigned Expert receives the existing ID and bundled Markdown into a draft. `createdBy` remains null for unknown original authorship; assignment/acceptance identities and times are recorded separately. Only submitted drafts can be reviewed; first approval updates the existing graph identity. Imported drafts cannot be hard-deleted. Native creation retains generated ID/actual creator behavior. Source snapshots and edit/decision history remain separate.

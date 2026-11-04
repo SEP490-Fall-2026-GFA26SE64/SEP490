@@ -44,61 +44,61 @@ public final class AdaptiveBlueprintController {
     @GetMapping
     ResponseEntity<Page> list(@RequestParam(defaultValue = "") String search, @RequestParam(required = false) Status status,
             @RequestParam(defaultValue = "NEWEST") Direction direction, @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size, @RequestParam(required = false) String occupationId) {
-        return ok(blueprints.list(new Query(search, status, direction, page, size, occupationId)));
+            @RequestParam(defaultValue = "20") int size, @RequestParam(required = false) String jobPositionId) {
+        return ok(blueprints.list(new Query(search, status, direction, page, size, jobPositionId)));
     }
 
-    @GetMapping("/occupations/{occupationId}")
-    ResponseEntity<WorkspaceResponse> workspace(@PathVariable String occupationId) {
-        return ok(WorkspaceResponse.from(blueprints.getWorkspace(occupationId)));
+    @GetMapping("/job-positions/{jobPositionId}")
+    ResponseEntity<WorkspaceResponse> workspace(@PathVariable String jobPositionId) {
+        return ok(WorkspaceResponse.from(blueprints.getWorkspace(jobPositionId)));
     }
 
-    @PutMapping(value = "/occupations/{occupationId}/working", consumes = "application/json")
-    ResponseEntity<WorkingResponse> save(@PathVariable String occupationId, @RequestHeader("Idempotency-Key") String key, @RequestBody String body) {
+    @PutMapping(value = "/job-positions/{jobPositionId}/working", consumes = "application/json")
+    ResponseEntity<WorkingResponse> save(@PathVariable String jobPositionId, @RequestHeader("Idempotency-Key") String key, @RequestBody String body) {
         SaveRequest request = decode(body, SaveRequest.class);
-        return ok(WorkingResponse.from(blueprints.saveResult(new Save(occupationId, request.expectedRevision(), key(key),
+        return ok(WorkingResponse.from(blueprints.saveResult(new Save(jobPositionId, request.expectedRevision(), key(key),
                 request.configuration().domain(), request.expectedWorkingRevisionId()))));
     }
 
-    @GetMapping("/occupations/{occupationId}/versions/{blueprintId}/{version}")
-    ResponseEntity<VersionDetailsResponse> version(@PathVariable String occupationId, @PathVariable java.util.UUID blueprintId,
+    @GetMapping("/job-positions/{jobPositionId}/versions/{blueprintId}/{version}")
+    ResponseEntity<VersionDetailsResponse> version(@PathVariable String jobPositionId, @PathVariable java.util.UUID blueprintId,
             @PathVariable int version) {
-        var value = blueprints.getVersion(occupationId, blueprintId, version);
+        var value = blueprints.getVersion(jobPositionId, blueprintId, version);
         return ok(new VersionDetailsResponse(VersionResponse.from(value.version()), value.status().name()));
     }
     record VersionDetailsResponse(VersionResponse version, String status) {}
 
-    @PostMapping(value = "/occupations/{occupationId}/test", consumes = "application/json")
-    ResponseEntity<PreviewResponse> test(@PathVariable String occupationId, @RequestBody String body) {
+    @PostMapping(value = "/job-positions/{jobPositionId}/test", consumes = "application/json")
+    ResponseEntity<PreviewResponse> test(@PathVariable String jobPositionId, @RequestBody String body) {
         TestRequest request = decode(body, TestRequest.class);
-        return ok(PreviewResponse.from(blueprints.previewSaved(new PreviewSaved(occupationId, request.workingRevisionId(), request.expectedWorkingRevision()))));
+        return ok(PreviewResponse.from(blueprints.previewSaved(new PreviewSaved(jobPositionId, request.workingRevisionId(), request.expectedWorkingRevision()))));
     }
 
-    @PostMapping(value = "/occupations/{occupationId}/working/discard", consumes = "application/json")
-    ResponseEntity<WorkingResponse> discard(@PathVariable String occupationId, @RequestHeader("Idempotency-Key") String key, @RequestBody String body) {
+    @PostMapping(value = "/job-positions/{jobPositionId}/working/discard", consumes = "application/json")
+    ResponseEntity<WorkingResponse> discard(@PathVariable String jobPositionId, @RequestHeader("Idempotency-Key") String key, @RequestBody String body) {
         TestRequest request = decode(body, TestRequest.class);
-        return ok(WorkingResponse.from(blueprints.discard(new PreviewSaved(occupationId,
+        return ok(WorkingResponse.from(blueprints.discard(new PreviewSaved(jobPositionId,
                 request.workingRevisionId(), request.expectedWorkingRevision()), key(key))));
     }
 
-    @PostMapping(value = "/occupations/{occupationId}/working/convert", consumes = "application/json")
-    ResponseEntity<WorkingResponse> convert(@PathVariable String occupationId, @RequestHeader("Idempotency-Key") String key, @RequestBody String body) {
+    @PostMapping(value = "/job-positions/{jobPositionId}/working/convert", consumes = "application/json")
+    ResponseEntity<WorkingResponse> convert(@PathVariable String jobPositionId, @RequestHeader("Idempotency-Key") String key, @RequestBody String body) {
         ConvertRequest request = decode(body, ConvertRequest.class);
-        return ok(WorkingResponse.from(blueprints.convertLegacyDraft(new ConvertLegacyDraft(occupationId, request.workingRevisionId(),
+        return ok(WorkingResponse.from(blueprints.convertLegacyDraft(new ConvertLegacyDraft(jobPositionId, request.workingRevisionId(),
                 request.expectedWorkingRevision(), key(key), request.configuration().domain()))));
     }
 
-    @PostMapping(value = "/occupations/{occupationId}/finalize", consumes = "application/json")
-    ResponseEntity<VersionResponse> finalizeBlueprint(@PathVariable String occupationId, @RequestHeader("Idempotency-Key") String key, @RequestBody String body) {
+    @PostMapping(value = "/job-positions/{jobPositionId}/finalize", consumes = "application/json")
+    ResponseEntity<VersionResponse> finalizeBlueprint(@PathVariable String jobPositionId, @RequestHeader("Idempotency-Key") String key, @RequestBody String body) {
         FinalizeRequest request = decode(body, FinalizeRequest.class);
-        return ok(VersionResponse.from(blueprints.finalizeBlueprint(new Finalize(occupationId, request.workingRevisionId(),
+        return ok(VersionResponse.from(blueprints.finalizeBlueprint(new Finalize(jobPositionId, request.workingRevisionId(),
                 request.expectedWorkingRevision(), request.expectedActivationRevision(), key(key), request.expectedCurrent(), confirmsCurrent(body)))));
     }
 
-    @PostMapping(value = "/occupations/{occupationId}/disable", consumes = "application/json")
-    ResponseEntity<ActivationResponse> disable(@PathVariable String occupationId, @RequestHeader("Idempotency-Key") String key, @RequestBody String body) {
+    @PostMapping(value = "/job-positions/{jobPositionId}/disable", consumes = "application/json")
+    ResponseEntity<ActivationResponse> disable(@PathVariable String jobPositionId, @RequestHeader("Idempotency-Key") String key, @RequestBody String body) {
         DisableRequest request = decode(body, DisableRequest.class);
-        return ok(ActivationResponse.from(blueprints.disable(new Disable(occupationId, request.expectedActivationRevision(), key(key), request.reason(),
+        return ok(ActivationResponse.from(blueprints.disable(new Disable(jobPositionId, request.expectedActivationRevision(), key(key), request.reason(),
                 request.expectedCurrent(), confirmsCurrent(body)))));
     }
 
@@ -132,7 +132,7 @@ public final class AdaptiveBlueprintController {
         try {
             var tree = requests.readTree(body);
             var configuration = tree == null ? null : tree.get("configuration");
-            if (configuration != null && configuration.has("occupationBounds")
+            if (configuration != null && configuration.has("jobPositionBounds")
                     && (configuration.has("exploration") || configuration.has("roles"))) {
                 throw new IllegalArgumentException("Mixed configuration scopes");
             }

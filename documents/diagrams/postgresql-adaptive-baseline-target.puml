@@ -25,7 +25,7 @@ package "Trusted context / catalog snapshots" #F3F4F6 {
     +learner_id : uuid <<PK>>
     organization_id : uuid
     target_role_id : varchar
-    occupation_id : varchar
+    job position_id : varchar
     target_revision : bigint
   }
   class item_version {
@@ -42,13 +42,13 @@ package "Blueprint configuration" #E8F1FB {
   class baseline_blueprint {
     +blueprint_id : uuid <<PK>>
     organization_id : uuid
-    occupation_id : varchar
+    job position_id : varchar
   }
   class baseline_blueprint_working_revision {
     +working_revision_id : uuid <<PK>>
     blueprint_id : uuid
     organization_id : uuid
-    occupation_id : varchar
+    job position_id : varchar
     revision : bigint
     configuration : jsonb
     state : varchar
@@ -84,7 +84,7 @@ package "Blueprint configuration" #E8F1FB {
   }
   class baseline_blueprint_activation {
     +organization_id : uuid <<PK>>
-    +occupation_id : varchar <<PK>>
+    +job position_id : varchar <<PK>>
     blueprint_id : uuid
     blueprint_version : bigint
     activation_revision : bigint
@@ -95,7 +95,7 @@ package "Blueprint configuration" #E8F1FB {
   class baseline_blueprint_activation_event {
     +activation_event_id : uuid <<PK>>
     organization_id : uuid
-    occupation_id : varchar
+    job position_id : varchar
     activation_revision : bigint
     blueprint_id : uuid
     blueprint_version : bigint
@@ -174,7 +174,7 @@ package "Adaptive Employee attempt" #E8F8EE {
     attempt_purpose : varchar
     target_selection_revision : bigint?
     target_role_id : varchar?
-    occupation_id : varchar
+    job position_id : varchar
     blueprint_id : uuid
     blueprint_version : bigint
     model_version_id : uuid
@@ -245,7 +245,7 @@ package "Adaptive Employee attempt" #E8F8EE {
   }
   note right of baseline_adaptive_attempt
     One server deadline; client timer is display-only.
-    Identity scope is Employee + Occupation.
+    Identity scope is Employee + Job Position.
     Role provenance is optional for exploration.
     Attempt pins all immutable input versions.
     Active rows are claimed with revision checks/row locks.

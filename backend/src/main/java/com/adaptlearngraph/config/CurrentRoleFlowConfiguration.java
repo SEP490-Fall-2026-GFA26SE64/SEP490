@@ -7,7 +7,7 @@ import com.adaptlearngraph.repository.AdaptiveAttemptStore;
 import com.adaptlearngraph.repository.AdaptiveBlueprintEligibilityPort;
 import com.adaptlearngraph.repository.AdaptiveBlueprintStore;
 import com.adaptlearngraph.repository.AdaptiveSelectedRolePort;
-import com.adaptlearngraph.repository.CurrentOccupationProfile;
+import com.adaptlearngraph.repository.CurrentJobPositionProfile;
 import com.adaptlearngraph.repository.CurrentRoleCatalog;
 import com.adaptlearngraph.repository.CurrentRoleSelectionStore;
 import com.adaptlearngraph.repository.JpaAdaptiveAttemptOutcome;
@@ -32,9 +32,9 @@ public class CurrentRoleFlowConfiguration {
             com.adaptlearngraph.repository.PostgresAdvisoryLocks locks,ObjectMapper json,PlatformTransactionManager manager) {
         return new CurrentRoleSelectionStore(com.adaptlearngraph.repository.RoleSelectionRepositories.from(beans::getBean,locks),json,new TransactionTemplate(manager));
     }
-    @Bean CurrentOccupationProfile currentOccupationProfile(com.adaptlearngraph.repository.EmployeeOccupationProfileJpaRepository profiles,
+    @Bean CurrentJobPositionProfile currentJobPositionProfile(com.adaptlearngraph.repository.EmployeeJobPositionProfileJpaRepository profiles,
             com.adaptlearngraph.repository.AuditEventJpaRepository audit,ObjectMapper json,AdaptiveAttemptStore attempts,AdaptiveBlueprintStore blueprints,AdaptiveBlueprintEligibilityPort eligibility) {
-        return new CurrentOccupationProfile(profiles,audit,json,attempts,blueprints,eligibility);
+        return new CurrentJobPositionProfile(profiles,audit,json,attempts,blueprints,eligibility);
     }
     @Bean AdaptiveSelectedRolePort currentAdaptiveSelectedRole(CurrentRoleSelectionStore store,CurrentRoleCatalog catalog) {
         return (org,learner)-> {
@@ -42,16 +42,16 @@ public class CurrentRoleFlowConfiguration {
             try {
                 var role=catalog.roles(org).stream().filter(r->r.id().equals(selection.role().id())).findFirst()
                         .orElseThrow(()->new Failure(Code.SELECTION_UNAVAILABLE));
-                return new AdaptiveSelectedRolePort.Selected(role.id(),role.occupationId(),selection.revision());
+                return new AdaptiveSelectedRolePort.Selected(role.id(),role.jobPositionId(),selection.revision());
             }catch(Failure e){throw e;}catch(RuntimeException e){throw new Failure(Code.DEPENDENCY_UNAVAILABLE);}
         };
     }
     @Bean RoleBaselineFlow currentRoleBaselineFlow(AdaptiveAttemptContextPort context,CurrentRoleCatalog catalog,
-            CurrentRoleSelectionStore store,CurrentOccupationProfile profile) {
+            CurrentRoleSelectionStore store,CurrentJobPositionProfile profile) {
         return new RoleBaselineFlow(()-> { var a=context.requireEmployee();return new RoleBaselineFlow.Actor(a.organizationId(),a.learnerId()); },catalog,store,profile);
     }
     @Bean @Primary AdaptiveAttemptOutcomePort demoProfileOutcome(org.springframework.beans.factory.BeanFactory beans,
-            com.adaptlearngraph.repository.PostgresAdvisoryLocks locks,ObjectMapper json,AdaptiveAttemptStore store,CurrentOccupationProfile profiles) {
+            com.adaptlearngraph.repository.PostgresAdvisoryLocks locks,ObjectMapper json,AdaptiveAttemptStore store,CurrentJobPositionProfile profiles) {
         var delegate=new JpaAdaptiveAttemptOutcome(com.adaptlearngraph.repository.AdaptiveAttemptRepositories.from(beans::getBean,locks),json,store);
         return completion->{delegate.persist(completion);profiles.initialize(completion);};
     }

@@ -9,8 +9,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.adaptlearngraph.services.BaselineAssessmentManagementUseCase;
 import com.adaptlearngraph.services.BaselineAssessmentManagementUseCase.Code;
 import com.adaptlearngraph.services.BaselineAssessmentManagementUseCase.Failure;
-import com.adaptlearngraph.services.BaselineAssessmentManagementUseCase.OccupationPage;
-import com.adaptlearngraph.services.BaselineAssessmentManagementUseCase.OccupationSummary;
+import com.adaptlearngraph.services.BaselineAssessmentManagementUseCase.JobPositionPage;
+import com.adaptlearngraph.services.BaselineAssessmentManagementUseCase.JobPositionSummary;
 import com.adaptlearngraph.entities.domain.BaselineAssessmentDraft;
 import com.adaptlearngraph.entities.domain.BaselineAssessmentDraft.Item;
 import com.adaptlearngraph.entities.domain.BaselineAssessmentDraft.PublicationState;
@@ -29,7 +29,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest(controllers = BaselineAssessmentManagementController.class, properties = {
         "catalog.local-actor.enabled=true",
-        "assessment.baseline.occupation-catalog.enabled=true",
+        "assessment.baseline.jobPosition-catalog.enabled=true",
         "assessment.baseline.legacy-authoring.enabled=true"
 })
 @Import({LocalCatalogSecurityConfiguration.class, com.adaptlearngraph.config.ModelMapperConfiguration.class,
@@ -44,11 +44,11 @@ class BaselineAssessmentManagementControllerTest {
 
     @Test
     void listPassesServerSideQueryAndReturnsLifecycleSummary() throws Exception {
-        when(management.listOccupations(argThat(query ->
+        when(management.listJobPositions(argThat(query ->
                 query.search().equals("java") && query.status().equals("ACTIVE")
                         && query.sort().equals("name_desc") && query.page() == 1 && query.size() == 10)))
-                .thenReturn(new OccupationPage(List.of(new OccupationSummary(
-                        "occupation-java", "Java Engineer", 3, "NONE", null, null, 2,
+                .thenReturn(new JobPositionPage(List.of(new JobPositionSummary(
+                        "jobPosition-java", "Java Engineer", 3, "NONE", null, null, 2,
                         Instant.parse("2026-10-17T08:00:00Z"))), 1, 10, 11));
 
         mvc.perform(get("/api/v1/ld/baseline-assessments")
@@ -58,7 +58,7 @@ class BaselineAssessmentManagementControllerTest {
                         .queryParam("page", "1")
                         .queryParam("size", "10"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.items[0].occupationId").value("occupation-java"))
+                .andExpect(jsonPath("$.items[0].jobPositionId").value("jobPosition-java"))
                 .andExpect(jsonPath("$.items[0].activeAssessmentVersion").value(2))
                 .andExpect(jsonPath("$.total").value(11));
     }

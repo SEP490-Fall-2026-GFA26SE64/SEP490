@@ -69,7 +69,7 @@ class InitialReviewPersistenceIntegrationTest {
     }
     @AfterAll void stop(){if(graphContext!=null)graphContext.close();if(driver!=null)driver.close();if(graph.isRunning())graph.stop();if(pg.isRunning())pg.stop();}
     void seedGraph(){try(var session=driver.session()){session.executeWrite(t->{t.run("""
-        CREATE (o:Occupation {id:$occupation,name:'Fixture Occupation'}),(r:TargetRole {id:'role-a',name:'Role A'}),(l:Level {id:'level-a',name:'Fixture Level',attainmentRule:'ALL_MANDATORY_SKILLS'})
+        CREATE (o:JobPosition {id:$jobPosition,name:'Fixture JobPosition'}),(r:TargetRole {id:'role-a',name:'Role A'}),(l:Level {id:'level-a',name:'Fixture Level',attainmentRule:'ALL_MANDATORY_SKILLS'})
         CREATE (o)-[:HAS_ROLE {id:'owns-role'}]->(r),(r)-[:HAS_LEVEL {id:'owns-level'}]->(l)
         CREATE (s1:MicroSkill {id:'s1',name:'Skill s1'}),(s2:MicroSkill {id:'s2',name:'Skill s2'}),(s3:MicroSkill {id:'s3',name:'Skill s3'})
         CREATE (l)-[:REQUIRES_SKILL {id:'need-s1',requiredScore:1.0,isMandatory:true}]->(s1),(l)-[:REQUIRES_SKILL {id:'need-s2',requiredScore:1.0,isMandatory:true}]->(s2)
@@ -83,7 +83,7 @@ class InitialReviewPersistenceIntegrationTest {
         CREATE (r2:TargetRole {id:'role-b',name:'Role B'}),(l2:Level {id:'level-b',name:'Other Level',attainmentRule:'ALL_MANDATORY_SKILLS'}),
           (o)-[:HAS_ROLE {id:'owns-role-b'}]->(r2),(r2)-[:HAS_LEVEL {id:'owns-level-b'}]->(l2),
           (l2)-[:REQUIRES_SKILL {id:'need-b-s2',requiredScore:1.0,isMandatory:true}]->(s2),(l2)-[:REQUIRES_SKILL {id:'need-b-s3',requiredScore:1.0,isMandatory:true}]->(s3)
-        """,Map.of("occupation",OCC)).consume();
+        """,Map.of("jobPosition",OCC)).consume();
         t.run("MATCH (n) SET n.status='ACTIVE',n.version='fixture-v1',n.organizationId=$org,n.reviewStatus='APPROVED',n.reviewedBy='fixture-expert',n.reviewedAt='2026-10-29T00:00:00Z'",Map.of("org",ORG.toString())).consume();
         t.run("MATCH ()-[e]->() SET e.status='ACTIVE',e.version='fixture-v1',e.organizationId=$org,e.reviewStatus='APPROVED',e.reviewedBy='fixture-expert',e.reviewedAt='2026-10-29T00:00:00Z'",Map.of("org",ORG.toString())).consume();return null;});}}
     final class Fixture {
@@ -94,13 +94,13 @@ class InitialReviewPersistenceIntegrationTest {
         Fixture(boolean publish){this(publish,"level-a");}
         Fixture(boolean publish,String selectedLevel){
             scope=new Scope(ORG,baseline.learner());actor.set(new Actor(ORG,scope.learnerId(),Role.EMPLOYEE));
-            var profiles=new JpaInitialProfiles(baseline.persistence.bean(EmployeeOccupationProfileJpaRepository.class),json);
+            var profiles=new JpaInitialProfiles(baseline.persistence.bean(EmployeeJobPositionProfileJpaRepository.class),json);
             var references=new RoleReferences(){public RoleReference require(Actor a,String role,String level){if(!ORG.equals(a.organizationId()) || !role.equals("role-a") || !Set.of("level-a","level-no-gap").contains(level))throw new Failure(404,"ROLE_NOT_AVAILABLE");return new RoleReference(ORG,InitialCatalogPort.choiceId(role,level),role,level,OCC,"fixture-f3-v1","fixture-release",versions);}
                 public void assertCurrent(Scope s,RoleReference r){if(!sourceCurrent.get() || !ORG.equals(s.organizationId()) || !r.releaseToken().equals("fixture-release"))throw new Failure(503,"FIXTURE_SOURCE_DRIFT");}};
             bindings=new Neo4jInitialBindings(references,(s,r)->graphCypher,()->20);
             var skills=List.of(new RoleBaselineFlow.Skill("s1","s1","Skill s1",1,true),new RoleBaselineFlow.Skill("s2","s2","Skill s2",1,true));
             var zero=List.of(new RoleBaselineFlow.Skill("s1","s1","Skill s1",0,true),new RoleBaselineFlow.Skill("s2","s2","Skill s2",0,true));
-            var role=new RoleBaselineFlow.Role("role-a","role-a","Role A","Fixture",OCC,"Fixture Occupation","fixture-v1","fixture-f3-v1",List.of(new RoleBaselineFlow.Level("level-a","level-a","Fixture Level",1,"Fixture","ALL_MANDATORY_SKILLS",skills),new RoleBaselineFlow.Level("level-no-gap","level-no-gap","Fixture no-gap",2,"Fixture","ALL_MANDATORY_SKILLS",zero)));
+            var role=new RoleBaselineFlow.Role("role-a","role-a","Role A","Fixture",OCC,"Fixture JobPosition","fixture-v1","fixture-f3-v1",List.of(new RoleBaselineFlow.Level("level-a","level-a","Fixture Level",1,"Fixture","ALL_MANDATORY_SKILLS",skills),new RoleBaselineFlow.Level("level-no-gap","level-no-gap","Fixture no-gap",2,"Fixture","ALL_MANDATORY_SKILLS",zero)));
             coordination=new CurrentSelectionCoordination(selections,org->org.equals(ORG)?List.of(role):List.of());
             definitions=new ReadinessDefinitions(){public PrerequisiteNeed prerequisite(Scope s,Binding b,Edge e){var profile=profiles.require(s,OCC);var evidence=profile.evidence().get(e.prerequisiteSkillId());return new PrerequisiteNeed(evidence.mastery().compareTo(e.requiredScore())<0,false,InitialIdentity.hash("fixture-evidence",List.of(profile.profileHash(),e.prerequisiteSkillId(),e.requiredScore())),evidence.mastery(),null);}
                 public Optional<GateDefinition> gate(Scope s,Binding b,Provider p,Edge e){return Optional.of(new GateDefinition(p.moduleId(),e.dependentSkillId(),e.prerequisiteSkillId(),"fixture-gate:"+p.moduleId(),versions.get("readiness"),null));}};
@@ -121,7 +121,7 @@ class InitialReviewPersistenceIntegrationTest {
         InitialPathwayReview.Edit edit(String module){var r=current();return new InitialPathwayReview.Edit(module,r.revision(),r.contentHash(),"fixture");}
         InitialPathwayReview.Expected expected(){var r=current();return new InitialPathwayReview.Expected(r.revision(),r.contentHash());}
     }
-    Map<String,String> digest(){var result=new TreeMap<String,String>();for(String table:sql.queryForList("SELECT tablename FROM pg_tables WHERE schemaname='platform' AND (tablename LIKE 'initial_%' OR tablename IN ('audit_event','outbox_event','employee_role_selection','employee_occupation_profile','baseline_attempt_response','baseline_attempt_skill_result')) ORDER BY tablename",String.class))result.put(table,sql.queryForObject("SELECT md5(coalesce(string_agg(to_jsonb(t)::text,',' ORDER BY to_jsonb(t)::text),'')) FROM platform."+table+" t",String.class));return result;}
+    Map<String,String> digest(){var result=new TreeMap<String,String>();for(String table:sql.queryForList("SELECT tablename FROM pg_tables WHERE schemaname='platform' AND (tablename LIKE 'initial_%' OR tablename IN ('audit_event','outbox_event','employee_role_selection','employee_job_position_profile','baseline_attempt_response','baseline_attempt_skill_result')) ORDER BY tablename",String.class))result.put(table,sql.queryForObject("SELECT md5(coalesce(string_agg(to_jsonb(t)::text,',' ORDER BY to_jsonb(t)::text),'')) FROM platform."+table+" t",String.class));return result;}
     @Test void P19_v44ToLatestPreservesFullExistingApprovedAggregateAndChecksums(){assertThat(after35).isEqualTo(before35);assertThat(sql.queryForList("SELECT version,checksum FROM public.flyway_schema_history WHERE success AND version::int<=44 ORDER BY installed_rank")).isEqualTo(oldChecksums);flyway.validate();assertThat(flyway.migrate().migrationsExecuted).isZero();assertThat(store.approved(retained.scope,retained.id,retained.current().revision(),retained.current().contentHash())).isTrue();}
     @Test void R03_R14_realMoveCheckRepairAndExactApprovalRetainOrdinalsAndHistory(){
         var f=new Fixture(true);assertThat(f.revision().plan().modules()).extracting(InitialPlanning.Module::id).containsExactly("B","P","A");
@@ -276,7 +276,7 @@ class InitialReviewPersistenceIntegrationTest {
         var f=new Fixture(false,"level-no-gap");var access=access(f);f.actor.set(new Actor(ORG,f.scope.learnerId(),Role.EMPLOYEE));var view=new InitialPathwayView(f.actor::get,store,f.coordination,access);var before=digest();
         assertThat(view.current().status().generationStatus()).isEqualTo(Generation.PENDING);assertThat(view.current().modules()).isEmpty();assertThat(digest()).isEqualTo(before);
         f.dispatch(f.coordination).runOne();var after=digest();var result=view.current();assertThat(result.status().displayState()).isEqualTo("NO_LEARNING_REQUIRED");assertThat(result.status().reviewStatus()).isEqualTo(Review.NONE);assertThat(result.modules()).isEmpty();assertThat(result.baseline()).isNull();assertThat(count("initial_pathway_approval",f.id)).isZero();assertThat(count("initial_pathway_revision",f.id)).isZero();assertThat(digest()).isEqualTo(after);
-        assertThat(after.get("employee_occupation_profile")).isEqualTo(before.get("employee_occupation_profile"));assertThat(after.get("baseline_attempt_skill_result")).isEqualTo(before.get("baseline_attempt_skill_result"));
+        assertThat(after.get("employee_job_position_profile")).isEqualTo(before.get("employee_job_position_profile"));assertThat(after.get("baseline_attempt_skill_result")).isEqualTo(before.get("baseline_attempt_skill_result"));
     }
     @Test void R13_catalogOwnerAssignmentsApprovalAndLearnerLabelStayInsideTrustedTenant(){
         var f=new Fixture(true);var foreignOrg=new UUID(0,2);var membership=UUID.randomUUID();var revision=f.revision();
@@ -310,7 +310,7 @@ class InitialReviewPersistenceIntegrationTest {
     InitialPathwayAccess access(Fixture f){return new InitialPathwayAccess(f.actor::get,f.coordination,store,new LocalPathwayAssignments(repos,ORG,expert,Set.of("role-a"),1000),f.bindings,f.availability,(s,g)->{throw new Failure(503,"LIVE_READINESS_NOT_CONFIGURED");},(s,m,v,g)->{throw new Failure(503,"CONTENT_ACCESS_NOT_CONFIGURED");});}
     Coordination beforeSecondTransaction(Fixture f,Runnable change){return beforeTransaction(f,2,change);}
     Coordination beforeTransaction(Fixture f,int index,Runnable change){return new Coordination(){final AtomicInteger calls=new AtomicInteger();public <T>T transaction(Scope s,Supplier<T> work){if(calls.incrementAndGet()==index)change.run();return f.coordination.transaction(s,work);}public Optional<Selection> current(Scope s){return f.coordination.current(s);}public boolean assessmentActive(Scope s){return f.coordination.assessmentActive(s);}public PreparedSelection prepare(Scope s,Binding b){return f.coordination.prepare(s,b);}};}
-    void changeSelection(Fixture f){var actor=new RoleBaselineFlow.Actor(ORG,f.scope.learnerId());var role=new RoleBaselineFlow.Role("role-b","role-b","Role B","Fixture",OCC,"Fixture Occupation","fixture-v1","fixture-f3-v1",List.of(new RoleBaselineFlow.Level("level-b","level-b","Other Level",1,"Fixture","ALL_MANDATORY_SKILLS",List.of(new RoleBaselineFlow.Skill("s2","s2","Skill s2",1,true),new RoleBaselineFlow.Skill("s3","s3","Skill s3",1,true)))));selections.transaction(actor,()->selections.selectForPathway(actor,role,"level-b"));}
+    void changeSelection(Fixture f){var actor=new RoleBaselineFlow.Actor(ORG,f.scope.learnerId());var role=new RoleBaselineFlow.Role("role-b","role-b","Role B","Fixture",OCC,"Fixture JobPosition","fixture-v1","fixture-f3-v1",List.of(new RoleBaselineFlow.Level("level-b","level-b","Other Level",1,"Fixture","ALL_MANDATORY_SKILLS",List.of(new RoleBaselineFlow.Skill("s2","s2","Skill s2",1,true),new RoleBaselineFlow.Skill("s3","s3","Skill s3",1,true)))));selections.transaction(actor,()->selections.selectForPathway(actor,role,"level-b"));}
     long count(String table,UUID id){return sql.queryForObject("SELECT count(*) FROM platform."+table+" WHERE request_id=?",Long.class,id);}
     long receiptCount(UUID id){return sql.queryForObject("SELECT count(*) FROM platform.initial_pathway_receipt WHERE resource=?",Long.class,id.toString());}
     static String outcome(Supplier<Receipt> action){try{action.get();return "committed";}catch(Failure failure){return failure.code();}}

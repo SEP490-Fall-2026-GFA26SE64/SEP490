@@ -12,8 +12,8 @@ final class BaselineAuthoringRequests {
     private BaselineAuthoringRequests() {
     }
 
-    static BlueprintDraft draft(String name, String occupationId, String occupationNameSnapshot, List<RoleRequest> roles) {
-        return new BlueprintDraft(name, occupationId, occupationNameSnapshot,
+    static BlueprintDraft draft(String name, String jobPositionId, String jobPositionNameSnapshot, List<RoleRequest> roles) {
+        return new BlueprintDraft(name, jobPositionId, jobPositionNameSnapshot,
                 roles.stream().map(BaselineAuthoringRequests::role).toList());
     }
 

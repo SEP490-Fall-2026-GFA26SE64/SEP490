@@ -16,11 +16,11 @@ import java.util.UUID;
 /** REQ-002-F02. Actor/organization and technical versions are always resolved by the server. */
 public interface AdaptiveBlueprintUseCase {
     AdaptiveBlueprintListing.Page list(AdaptiveBlueprintListing.Query query);
-    Workspace getWorkspace(String occupationId);
-    VersionDetails getVersion(String occupationId, VersionId id);
+    Workspace getWorkspace(String jobPositionId);
+    VersionDetails getVersion(String jobPositionId, VersionId id);
     /** HTTP-facing variant: the version identity is built from path values inside the business layer. */
-    default VersionDetails getVersion(String occupationId, UUID blueprintId, int version) {
-        return getVersion(occupationId, new VersionId(blueprintId, version));
+    default VersionDetails getVersion(String jobPositionId, UUID blueprintId, int version) {
+        return getVersion(jobPositionId, new VersionId(blueprintId, version));
     }
     record VersionDetails(Version version, AdaptiveBlueprintListing.Status status) {}
 
@@ -34,7 +34,7 @@ public interface AdaptiveBlueprintUseCase {
     Preview previewSaved(PreviewSaved command);
 
     /** Historical internal compatibility only; HTTP preview uses previewSaved. No writes. */
-    Preview testBlueprint(String occupationId, Configuration configuration);
+    Preview testBlueprint(String jobPositionId, Configuration configuration);
 
     /** Version, current pointer, activation event and command receipt commit atomically. */
     Version finalizeBlueprint(Finalize command);
@@ -43,87 +43,87 @@ public interface AdaptiveBlueprintUseCase {
     WorkingRevision discard(PreviewSaved command, String idempotencyKey);
 
     /** expectedRevision=0 creates the sole working revision; positive revisions update it. */
-    record Save(String occupationId, long expectedRevision, String idempotencyKey,
+    record Save(String jobPositionId, long expectedRevision, String idempotencyKey,
                 Configuration configuration, UUID expectedWorkingRevisionId) {
         /** Original hash shape remains available for immutable receipt replay. */
-        public Save(String occupationId, long expectedRevision, String key, Configuration configuration) {
-            this(occupationId, expectedRevision, key, configuration, null);
+        public Save(String jobPositionId, long expectedRevision, String key, Configuration configuration) {
+            this(jobPositionId, expectedRevision, key, configuration, null);
         }
         public Save {
-            validateCommand(occupationId, idempotencyKey, expectedRevision);
+            validateCommand(jobPositionId, idempotencyKey, expectedRevision);
             Objects.requireNonNull(configuration, "configuration");
         }
     }
 
-    record ConvertLegacyDraft(String occupationId, UUID workingRevisionId, long expectedWorkingRevision,
+    record ConvertLegacyDraft(String jobPositionId, UUID workingRevisionId, long expectedWorkingRevision,
                               String idempotencyKey, Configuration configuration) {
         public ConvertLegacyDraft {
-            validateCommand(occupationId, idempotencyKey, expectedWorkingRevision);
+            validateCommand(jobPositionId, idempotencyKey, expectedWorkingRevision);
             Objects.requireNonNull(workingRevisionId, "workingRevisionId");
             Objects.requireNonNull(configuration, "configuration");
-            if (expectedWorkingRevision < 1 || configuration.occupationBounds() == null) {
-                throw new IllegalArgumentException("Legacy Draft revision and explicit Occupation bounds required");
+            if (expectedWorkingRevision < 1 || configuration.jobPositionBounds() == null) {
+                throw new IllegalArgumentException("Legacy Draft revision and explicit JobPosition bounds required");
             }
         }
     }
 
-    record PreviewSaved(String occupationId, UUID workingRevisionId, long expectedWorkingRevision) {
+    record PreviewSaved(String jobPositionId, UUID workingRevisionId, long expectedWorkingRevision) {
         public PreviewSaved {
-            validateCommand(occupationId, "preview", expectedWorkingRevision);
+            validateCommand(jobPositionId, "preview", expectedWorkingRevision);
             Objects.requireNonNull(workingRevisionId, "workingRevisionId");
             if (expectedWorkingRevision < 1) throw new IllegalArgumentException("Saved revision required");
         }
     }
 
     /** expectedActivationRevision=0 means no activation row exists yet. */
-    record Finalize(String occupationId, UUID workingRevisionId, long expectedWorkingRevision,
+    record Finalize(String jobPositionId, UUID workingRevisionId, long expectedWorkingRevision,
                     long expectedActivationRevision, String idempotencyKey, VersionId expectedCurrent, boolean currentConfirmed) {
         /** Replay-only legacy contract. Fresh activation requires explicit current/none confirmation. */
-        public Finalize(String occupationId, UUID workingRevisionId, long workingRevision, long activationRevision, String key) {
-            this(occupationId, workingRevisionId, workingRevision, activationRevision, key, null, false);
+        public Finalize(String jobPositionId, UUID workingRevisionId, long workingRevision, long activationRevision, String key) {
+            this(jobPositionId, workingRevisionId, workingRevision, activationRevision, key, null, false);
         }
         public Finalize {
-            validateCommand(occupationId, idempotencyKey, expectedActivationRevision);
+            validateCommand(jobPositionId, idempotencyKey, expectedActivationRevision);
             Objects.requireNonNull(workingRevisionId, "workingRevisionId");
             if (expectedWorkingRevision < 1) throw new IllegalArgumentException("Working revision required");
         }
     }
 
-    record Disable(String occupationId, long expectedActivationRevision,
+    record Disable(String jobPositionId, long expectedActivationRevision,
                    String idempotencyKey, String reason, VersionId expectedCurrent, boolean currentConfirmed) {
-        public Disable(String occupationId, long revision, String key, String reason) {
-            this(occupationId, revision, key, reason, null, false);
+        public Disable(String jobPositionId, long revision, String key, String reason) {
+            this(jobPositionId, revision, key, reason, null, false);
         }
         public Disable {
-            validateCommand(occupationId, idempotencyKey, expectedActivationRevision);
+            validateCommand(jobPositionId, idempotencyKey, expectedActivationRevision);
             if (expectedActivationRevision < 1) throw new IllegalArgumentException("Activation required");
             if (reason == null || reason.isBlank()) throw new IllegalArgumentException("Reason required");
         }
     }
 
-    private static void validateCommand(String occupationId, String key, long revision) {
-        if (occupationId == null || occupationId.isBlank() || !occupationId.equals(occupationId.strip())
+    private static void validateCommand(String jobPositionId, String key, long revision) {
+        if (jobPositionId == null || jobPositionId.isBlank() || !jobPositionId.equals(jobPositionId.strip())
                 || key == null || key.isBlank() || revision < 0) {
-            throw new IllegalArgumentException("Occupation, idempotency key and valid revision required");
+            throw new IllegalArgumentException("JobPosition, idempotency key and valid revision required");
         }
     }
 
     /** Capacity is authorized with the workspace; no raw eligibility/item IDs are exposed. */
-    record CatalogCapacity(String occupationName, String catalogFingerprint, int explorationCapacity,
+    record CatalogCapacity(String jobPositionName, String catalogFingerprint, int explorationCapacity,
                            int explorationMissingParameterCount, Map<String, RoleCapacity> roles,
-                           OccupationCapacity occupation) {
+                           JobPositionCapacity jobPosition) {
         public CatalogCapacity(String name, String fingerprint, int capacity, int missing, Map<String, RoleCapacity> roles) {
             this(name, fingerprint, capacity, missing, roles, null);
         }
         public CatalogCapacity {
-            Objects.requireNonNull(occupationName); Objects.requireNonNull(catalogFingerprint);
+            Objects.requireNonNull(jobPositionName); Objects.requireNonNull(catalogFingerprint);
             roles = Map.copyOf(roles);
             if (explorationCapacity < 0 || explorationMissingParameterCount < 0) throw new IllegalArgumentException("Invalid capacity");
         }
     }
 
     /** Derived from the current pinned model and union; no example limits or protected parameters. */
-    record OccupationCapacity(int eligibleCapacity, int skillCount, int minimumPerSkill,
+    record JobPositionCapacity(int eligibleCapacity, int skillCount, int minimumPerSkill,
                               long minimumQuestions, int modelMaxQuestions) {}
 
     record RoleCapacity(RoleSnapshot snapshot, int eligibleCapacity, int missingParameterCount) {
@@ -155,7 +155,7 @@ public interface AdaptiveBlueprintUseCase {
         }
     }
 
-    /** Empty roleId means the Occupation union (or historical exploration). */
+    /** Empty roleId means the JobPosition union (or historical exploration). */
     record Shortage(Optional<String> roleId, ShortageKind kind, int required, int available,
                     Optional<String> microSkillId) {
         public Shortage(Optional<String> roleId, ShortageKind kind, int required, int available) {

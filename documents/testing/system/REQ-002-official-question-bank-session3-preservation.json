@@ -72,7 +72,7 @@
       "afterSha256": "f10bab6e1a5d01c4f07bc7520f6859433ee9b1734770dd15c6c30a830cfe780a"
     },
     {
-      "path": "backend/src/main/java/com/adaptlearngraph/assessment/api/BaselineOccupationCatalogController.java",
+      "path": "backend/src/main/java/com/adaptlearngraph/assessment/api/BaselineJob PositionCatalogController.java",
       "beforeSha256": "9be37726329e3b85e32eb16bb99ebb860ca33bce902045f2fda1da21f476a5b6",
       "afterSha256": "03cb5daa883a6ca6609de1911ce954d62adfc9c4c187288c9559d59b77e648ba"
     },

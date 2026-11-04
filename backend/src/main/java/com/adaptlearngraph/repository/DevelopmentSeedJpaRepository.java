@@ -149,11 +149,11 @@ public interface DevelopmentSeedJpaRepository extends Repository<OrganizationEnt
             """, nativeQuery = true)
     int upsertVerifiedProfile(@Param("account") UUID accountId, @Param("name") String fullName);
 
-    // Native: idempotent seed of a staff membership without department/occupation (ON CONFLICT (account_id) DO NOTHING).
+    // Native: idempotent seed of a staff membership without department/job-position (ON CONFLICT (account_id) DO NOTHING).
     @Modifying(flushAutomatically = true, clearAutomatically = true)
     @Transactional(TransactionManagers.JPA)
     @Query(value = """
-            INSERT INTO platform.organization_membership(membership_id,account_id,organization_id,active,department_id,occupation_reference_id,created_at,updated_at)
+            INSERT INTO platform.organization_membership(membership_id,account_id,organization_id,active,department_id,job_position_reference_id,created_at,updated_at)
             VALUES(:membership,:account,:org,true,NULL,NULL,:at,:at) ON CONFLICT(account_id) DO NOTHING
             """, nativeQuery = true)
     int insertStaffMembershipIfAbsent(@Param("membership") UUID membershipId, @Param("account") UUID accountId,
@@ -163,31 +163,31 @@ public interface DevelopmentSeedJpaRepository extends Repository<OrganizationEnt
     @Modifying(flushAutomatically = true, clearAutomatically = true)
     @Transactional(TransactionManagers.JPA)
     @Query(value = """
-            INSERT INTO platform.organization_membership(membership_id,account_id,organization_id,active,department_id,occupation_reference_id,created_at,updated_at)
+            INSERT INTO platform.organization_membership(membership_id,account_id,organization_id,active,department_id,job_position_reference_id,created_at,updated_at)
             VALUES(:membership,:account,:org,true,:department,:reference,:at,:at) ON CONFLICT(account_id) DO NOTHING
             """, nativeQuery = true)
     int insertEmployeeMembershipIfAbsent(@Param("membership") UUID membershipId, @Param("account") UUID accountId,
-            @Param("org") UUID organizationId, @Param("department") UUID departmentId, @Param("reference") UUID occupationReferenceId,
+            @Param("org") UUID organizationId, @Param("department") UUID departmentId, @Param("reference") UUID jobPositionReferenceId,
             @Param("at") Instant at);
 
     // Native: idempotent seed of an employee membership (ON CONFLICT DO NOTHING on any unique key).
     @Modifying(flushAutomatically = true, clearAutomatically = true)
     @Transactional(TransactionManagers.JPA)
     @Query(value = """
-            INSERT INTO platform.organization_membership(membership_id,account_id,organization_id,active,department_id,occupation_reference_id,created_at,updated_at)
+            INSERT INTO platform.organization_membership(membership_id,account_id,organization_id,active,department_id,job_position_reference_id,created_at,updated_at)
             VALUES(:membership,:account,:org,true,:department,:reference,:at,:at) ON CONFLICT DO NOTHING
             """, nativeQuery = true)
     int insertEmployeeMembershipIgnoringConflicts(@Param("membership") UUID membershipId, @Param("account") UUID accountId,
-            @Param("org") UUID organizationId, @Param("department") UUID departmentId, @Param("reference") UUID occupationReferenceId,
+            @Param("org") UUID organizationId, @Param("department") UUID departmentId, @Param("reference") UUID jobPositionReferenceId,
             @Param("at") Instant at);
 
-    // Native: idempotent upsert re-activating a staff membership and clearing department/occupation (ON CONFLICT ... DO UPDATE).
+    // Native: idempotent upsert re-activating a staff membership and clearing department/job-position (ON CONFLICT ... DO UPDATE).
     @Modifying(flushAutomatically = true, clearAutomatically = true)
     @Transactional(TransactionManagers.JPA)
     @Query(value = """
-            INSERT INTO platform.organization_membership(membership_id, account_id, organization_id, active, department_id, occupation_reference_id, created_at, updated_at)
+            INSERT INTO platform.organization_membership(membership_id, account_id, organization_id, active, department_id, job_position_reference_id, created_at, updated_at)
             VALUES (:membership, :account, :org, true, NULL, NULL, now(), now())
-            ON CONFLICT (account_id) DO UPDATE SET active = true, department_id = EXCLUDED.department_id, occupation_reference_id = EXCLUDED.occupation_reference_id
+            ON CONFLICT (account_id) DO UPDATE SET active = true, department_id = EXCLUDED.department_id, job_position_reference_id = EXCLUDED.job_position_reference_id
             """, nativeQuery = true)
     int upsertActiveStaffMembership(@Param("membership") UUID membershipId, @Param("account") UUID accountId,
             @Param("org") UUID organizationId);
@@ -196,12 +196,12 @@ public interface DevelopmentSeedJpaRepository extends Repository<OrganizationEnt
     @Modifying(flushAutomatically = true, clearAutomatically = true)
     @Transactional(TransactionManagers.JPA)
     @Query(value = """
-            INSERT INTO platform.organization_membership(membership_id, account_id, organization_id, active, department_id, occupation_reference_id, created_at, updated_at)
+            INSERT INTO platform.organization_membership(membership_id, account_id, organization_id, active, department_id, job_position_reference_id, created_at, updated_at)
             VALUES (:membership, :account, :org, true, :department, :reference, now(), now())
-            ON CONFLICT (account_id) DO UPDATE SET active = true, department_id = EXCLUDED.department_id, occupation_reference_id = EXCLUDED.occupation_reference_id
+            ON CONFLICT (account_id) DO UPDATE SET active = true, department_id = EXCLUDED.department_id, job_position_reference_id = EXCLUDED.job_position_reference_id
             """, nativeQuery = true)
     int upsertActiveEmployeeMembership(@Param("membership") UUID membershipId, @Param("account") UUID accountId,
-            @Param("org") UUID organizationId, @Param("department") UUID departmentId, @Param("reference") UUID occupationReferenceId);
+            @Param("org") UUID organizationId, @Param("department") UUID departmentId, @Param("reference") UUID jobPositionReferenceId);
 
     // Native: idempotent seed (ON CONFLICT DO NOTHING).
     @Modifying(flushAutomatically = true, clearAutomatically = true)
@@ -231,10 +231,10 @@ public interface DevelopmentSeedJpaRepository extends Repository<OrganizationEnt
     @Query("""
             select r.roleCode from OrganizationMembershipEntity m, OrganizationMembershipRoleEntity r
             where r.membershipId = m.membershipId and m.membershipId = :membership and m.accountId = :account
-              and m.organizationId = :org and m.active = true and m.departmentId = :department and m.occupationReferenceId = :reference
+              and m.organizationId = :org and m.active = true and m.departmentId = :department and m.jobPositionReferenceId = :reference
             """)
     List<String> activeEmployeeMembershipRoles(@Param("membership") UUID membershipId, @Param("account") UUID accountId,
-            @Param("org") UUID organizationId, @Param("department") UUID departmentId, @Param("reference") UUID occupationReferenceId);
+            @Param("org") UUID organizationId, @Param("department") UUID departmentId, @Param("reference") UUID jobPositionReferenceId);
 
     @Query("""
             select case when count(a) > 0 then true else false end
@@ -245,7 +245,7 @@ public interface DevelopmentSeedJpaRepository extends Repository<OrganizationEnt
             """)
     boolean activeMemberWithRole(@Param("account") UUID accountId, @Param("org") UUID organizationId, @Param("role") String roleCode);
 
-    // ---- departments and occupation references ----
+    // ---- departments and jobPosition references ----
 
     // Native: idempotent seed (ON CONFLICT (department_id) DO NOTHING).
     @Modifying(flushAutomatically = true, clearAutomatically = true)
@@ -276,45 +276,45 @@ public interface DevelopmentSeedJpaRepository extends Repository<OrganizationEnt
             """, nativeQuery = true)
     int upsertActiveDepartment(@Param("department") UUID departmentId, @Param("org") UUID organizationId, @Param("name") String name);
 
-    // Native: idempotent seed (ON CONFLICT (occupation_reference_id) DO NOTHING).
+    // Native: idempotent seed (ON CONFLICT (job_position_reference_id) DO NOTHING).
     @Modifying(flushAutomatically = true, clearAutomatically = true)
     @Transactional(TransactionManagers.JPA)
     @Query(value = """
-            INSERT INTO platform.occupation_department_reference(occupation_reference_id,occupation_id,organization_id,department_id,name,active)
-            VALUES(:reference,:occupation,:org,:department,:name,true) ON CONFLICT(occupation_reference_id) DO NOTHING
+            INSERT INTO platform.job_position_department_reference(job_position_reference_id,job_position_id,organization_id,department_id,name,active)
+            VALUES(:reference,:jobPosition,:org,:department,:name,true) ON CONFLICT(job_position_reference_id) DO NOTHING
             """, nativeQuery = true)
-    int insertOccupationReferenceIfAbsent(@Param("reference") UUID occupationReferenceId, @Param("occupation") UUID occupationId,
+    int insertJobPositionReferenceIfAbsent(@Param("reference") UUID jobPositionReferenceId, @Param("jobPosition") UUID jobPositionId,
             @Param("org") UUID organizationId, @Param("department") UUID departmentId, @Param("name") String name);
 
     // Native: idempotent seed (ON CONFLICT DO NOTHING on any unique key).
     @Modifying(flushAutomatically = true, clearAutomatically = true)
     @Transactional(TransactionManagers.JPA)
     @Query(value = """
-            INSERT INTO platform.occupation_department_reference(occupation_reference_id,occupation_id,organization_id,department_id,name,active)
-            VALUES(:reference,:occupation,:org,:department,:name,true) ON CONFLICT DO NOTHING
+            INSERT INTO platform.job_position_department_reference(job_position_reference_id,job_position_id,organization_id,department_id,name,active)
+            VALUES(:reference,:jobPosition,:org,:department,:name,true) ON CONFLICT DO NOTHING
             """, nativeQuery = true)
-    int insertOccupationReferenceIgnoringConflicts(@Param("reference") UUID occupationReferenceId, @Param("occupation") UUID occupationId,
+    int insertJobPositionReferenceIgnoringConflicts(@Param("reference") UUID jobPositionReferenceId, @Param("jobPosition") UUID jobPositionId,
             @Param("org") UUID organizationId, @Param("department") UUID departmentId, @Param("name") String name);
 
-    // Native: idempotent upsert re-activating the occupation reference (ON CONFLICT ... DO UPDATE).
+    // Native: idempotent upsert re-activating the jobPosition reference (ON CONFLICT ... DO UPDATE).
     @Modifying(flushAutomatically = true, clearAutomatically = true)
     @Transactional(TransactionManagers.JPA)
     @Query(value = """
-            INSERT INTO platform.occupation_department_reference(occupation_reference_id, occupation_id, organization_id, department_id, name, active)
-            VALUES (:reference, :occupation, :org, :department, :name, true)
-            ON CONFLICT (occupation_reference_id) DO UPDATE SET active = true
+            INSERT INTO platform.job_position_department_reference(job_position_reference_id, job_position_id, organization_id, department_id, name, active)
+            VALUES (:reference, :jobPosition, :org, :department, :name, true)
+            ON CONFLICT (job_position_reference_id) DO UPDATE SET active = true
             """, nativeQuery = true)
-    int upsertActiveOccupationReference(@Param("reference") UUID occupationReferenceId, @Param("occupation") UUID occupationId,
+    int upsertActiveJobPositionReference(@Param("reference") UUID jobPositionReferenceId, @Param("jobPosition") UUID jobPositionId,
             @Param("org") UUID organizationId, @Param("department") UUID departmentId, @Param("name") String name);
 
     @Query("""
             select case when count(r) > 0 then true else false end
-            from OccupationDepartmentReferenceEntity r, DepartmentReferenceEntity d
+            from JobPositionDepartmentReferenceEntity r, DepartmentReferenceEntity d
             where d.departmentId = r.departmentId and d.organizationId = r.organizationId
-              and r.occupationReferenceId = :reference and r.occupationId = :occupation and r.organizationId = :org
+              and r.jobPositionReferenceId = :reference and r.jobPositionId = :jobPosition and r.organizationId = :org
               and r.departmentId = :department and r.name = :name and r.active = true and d.name = :departmentName and d.active = true
             """)
-    boolean activeOccupationReference(@Param("reference") UUID occupationReferenceId, @Param("occupation") UUID occupationId,
+    boolean activeJobPositionReference(@Param("reference") UUID jobPositionReferenceId, @Param("jobPosition") UUID jobPositionId,
             @Param("org") UUID organizationId, @Param("department") UUID departmentId, @Param("name") String name,
             @Param("departmentName") String departmentName);
 

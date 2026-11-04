@@ -6,7 +6,7 @@ test('RB07/14/VB02/MM04/MM05 final repair reads original history and EN/VI mobil
   page.on('request', request => {
     if (new URL(request.url()).pathname.startsWith('/api/') && !['GET', 'HEAD', 'OPTIONS'].includes(request.method()) && !request.url().endsWith('/local-baseline-demo/session')) writes.push(request.method() + ' ' + request.url())
   })
-  const manager = '/api/v1/ld/adaptive-baseline-blueprints/occupations/OCC-15-1212.00'
+  const manager = '/api/v1/ld/adaptive-baseline-blueprints/job-positions/OCC-15-1212.00'
   expect((await page.request.post('/api/v1/local-baseline-demo/session', { data: { persona: 'ld' } })).status()).toBe(204)
   const beforeResponse = await page.request.get(manager)
   expect(beforeResponse.status()).toBe(200)
@@ -16,8 +16,8 @@ test('RB07/14/VB02/MM04/MM05 final repair reads original history and EN/VI mobil
   expect(before.working).toBeNull()
   const listed = await page.request.get('/api/v1/ld/adaptive-baseline-blueprints?search=C3&direction=NEWEST&page=0&size=20')
   expect(listed.status()).toBe(200)
-  const rows = await listed.json() as { rows: { blueprintId: string; occupationId: string; version: number | null }[] }
-  const original = rows.rows.find(row => row.occupationId === 'OCC-15-1212.00' && row.version === 1)
+  const rows = await listed.json() as { rows: { blueprintId: string; jobPositionId: string; version: number | null }[] }
+  const original = rows.rows.find(row => row.jobPositionId === 'OCC-15-1212.00' && row.version === 1)
   expect(original).toBeDefined()
   for (const language of ['en', 'vi']) for (const width of [320, 390]) {
     await page.setViewportSize({ width, height: 844 })

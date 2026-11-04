@@ -19,7 +19,7 @@ import java.util.UUID;
  * UNWIND MERGE per (type, source label, target label) relationship group.
  */
 public final class Neo4jWorkspaceCatalogWriter implements WorkspaceCatalogGraphWriter {
-    private static final Set<String> LABELS = Set.of("Occupation", "TargetRole", "Level", "Competency", "MicroSkill", "LearningModule");
+    private static final Set<String> LABELS = Set.of("JobPosition", "TargetRole", "Level", "Competency", "MicroSkill", "LearningModule");
     private final java.util.function.Supplier<Neo4jCypher> graph;
 
     /** The graph is resolved lazily so the worker bean can be created before Neo4j is reachable. */

@@ -28,7 +28,7 @@ import static org.mockito.ArgumentMatchers.*;
 import static com.adaptlearngraph.services.AdaptiveFixture.*;
 import com.adaptlearngraph.services.AdaptiveBlueprintUseCase.*;
 import com.adaptlearngraph.entities.domain.AdaptiveBlueprint.*;
-import com.adaptlearngraph.repository.CurrentOccupationProfile;
+import com.adaptlearngraph.repository.CurrentJobPositionProfile;
 import com.adaptlearngraph.repository.CurrentRoleSelectionStore;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.*;
@@ -48,7 +48,7 @@ class RoleBaselinePostgresIntegrationTest {
  static final PostgreSQLContainer<?> PG=new PostgreSQLContainer<>("postgres:17.6-alpine");
  static final ObjectMapper JSON=new ObjectMapper().findAndRegisterModules();
  JdbcTemplate sql; NamedParameterJdbcTemplate jdbc; DataSourceTransactionManager manager;
- JpaAdaptiveBlueprintStore blueprints; JpaAdaptiveAttemptStore attempts; CurrentOccupationProfile profiles;
+ JpaAdaptiveBlueprintStore blueprints; JpaAdaptiveAttemptStore attempts; CurrentJobPositionProfile profiles;
  AdaptiveBlueprintEligibilityPort eligibility; AdaptiveBlueprintService authoring; Version version;
  AdaptiveAttemptContextPort context; AdaptiveAttemptStartService starts; AdaptiveAttemptSubmitService submits;
  AdaptiveAttemptAnswerService answers; JpaAdaptiveAttemptResultQuery results; CurrentRoleSelectionStore selections;
@@ -90,7 +90,7 @@ class RoleBaselinePostgresIntegrationTest {
   when(eligibility.resolvePinned(SCOPE,PINS)).thenReturn(Optional.of(eligible()));
   var actors=new AdaptiveBlueprintActorPort(){
    public Optional<Actor> currentActor(){return Optional.of(new Actor(MANAGER,ORG,true,Set.of("LD_MANAGER")));}
-   public Set<String> authorizedOccupations(Actor a){return Set.of(OCC);}
+   public Set<String> authorizedJobPositions(Actor a){return Set.of(OCC);}
   };
   var preview=new JpaAdaptiveBlueprintPreviewAdapter(items,JSON,id(50));
   // Organization Assessment Policy enforcement is covered separately; this fixture models an active policy.
@@ -98,7 +98,7 @@ class RoleBaselinePostgresIntegrationTest {
   var draft=authoring.save(new Save(OCC,0,"fixture-save",config()));
   version=authoring.finalizeBlueprint(new Finalize(OCC,draft.workingRevisionId(),draft.revision(),0,"fixture-activate",null,true));
   attempts=new JpaAdaptiveAttemptStore(repos,JSON,persistence.transactionManager(),blueprints);
-  profiles=new CurrentOccupationProfile(persistence.bean(com.adaptlearngraph.repository.EmployeeOccupationProfileJpaRepository.class),persistence.bean(com.adaptlearngraph.repository.AuditEventJpaRepository.class),JSON,attempts,blueprints,eligibility);
+  profiles=new CurrentJobPositionProfile(persistence.bean(com.adaptlearngraph.repository.EmployeeJobPositionProfileJpaRepository.class),persistence.bean(com.adaptlearngraph.repository.AuditEventJpaRepository.class),JSON,attempts,blueprints,eligibility);
   context=mock(AdaptiveAttemptContextPort.class);
   when(context.requireEmployee()).thenReturn(new AdaptiveAttemptContextPort.Employee(ORG,EMP));
   when(context.resolveScope(any(),any())).thenReturn(new AdaptiveAttempt.Scope(ORG,EMP,OCC));
@@ -127,7 +127,7 @@ class RoleBaselinePostgresIntegrationTest {
   tables.forEach(t->all.append(t).append(sql.queryForObject("SELECT md5(coalesce(string_agg(row_json,',' ORDER BY row_json),'')) FROM (SELECT to_jsonb(t)::text row_json FROM platform."+t+" t) x",String.class)));
   return RoleBaselineFlow.hash(all.toString());
  }
- RoleBaselineFlow.Role role(String id,String occupation){return new RoleBaselineFlow.Role(id,id,id,"Scope",occupation,"Fixture Occupation","fixture-v1","fixture-f3-v1",List.of());}
+ RoleBaselineFlow.Role role(String id,String jobPosition){return new RoleBaselineFlow.Role(id,id,id,"Scope",jobPosition,"Fixture JobPosition","fixture-v1","fixture-f3-v1",List.of());}
  RoleBaselineFlow selectionFlow(UUID org,UUID learner){
   return new RoleBaselineFlow(()->new RoleBaselineFlow.Actor(org,learner),o->List.of(role("role-a",OCC),role("role-b",OCC),role("other","other-occ")),selections,mock(RoleBaselineFlow.Baseline.class));
  }
@@ -165,7 +165,7 @@ class RoleBaselinePostgresIntegrationTest {
   assertThatThrownBy(()->selectionFlow(ORG,EMP).choose("role-b",first.selectionId(),"inactive")).hasMessage("FORBIDDEN");
  }
  @Test void vb01And04SaveOnlyDraftPreviewReadOnlyDiscardReplayAndStaleIdentity(){
-  var original=version;var draft=authoring.save(new Save(OCC,0,"new-draft",Configuration.occupation("Edited",new Bounds(9,600))));
+  var original=version;var draft=authoring.save(new Save(OCC,0,"new-draft",Configuration.jobPosition("Edited",new Bounds(9,600))));
   assertThat(blueprints.findVersion(SCOPE,original.id())).contains(original);
   assertThat(count("baseline_adaptive_blueprint_version")).isOne();
   var noop=authoring.saveResult(new Save(OCC,draft.revision(),"noop",draft.configuration(),draft.workingRevisionId()));
@@ -221,7 +221,7 @@ class RoleBaselinePostgresIntegrationTest {
   var v=start();var terminal=submits.submit(new AdaptiveAttemptUseCase.Submit(v.id(),v.revision(),"early"));
   assertThat(terminal.state()).isEqualTo("INVALIDATED");
   assertThat(results.result(v.id()).completionReason()).isEqualTo("MANUAL");
-  assertThat(count("baseline_attempt_skill_result")).isZero();assertThat(count("employee_occupation_profile")).isZero();
+  assertThat(count("baseline_attempt_skill_result")).isZero();assertThat(count("employee_job_position_profile")).isZero();
   assertThat(submits.submit(new AdaptiveAttemptUseCase.Submit(v.id(),v.revision(),"early"))).isEqualTo(terminal);
   var replacement=starts.startOrResume(new AdaptiveAttemptUseCase.SelectedRole(),"replacement");
   assertThat(results.result(v.id()).replacementAttemptId()).isEqualTo(replacement.id());
@@ -229,7 +229,7 @@ class RoleBaselinePostgresIntegrationTest {
  }
  @Test void rb07And14Mm01And03SufficientWrongAnswersInitializeOriginalProfileNoScoreThreshold(){
   var terminal=finish();assertThat(terminal.state()).isEqualTo("AUTO_SUBMITTED");
-  assertThat(count("employee_occupation_profile")).isOne();assertThat(count("baseline_mastery_evidence")).isEqualTo(3);
+  assertThat(count("employee_job_position_profile")).isOne();assertThat(count("baseline_mastery_evidence")).isEqualTo(3);
   var result=results.result(terminal.id());assertThat(result.rawScore()).isZero();assertThat(result.skills()).hasSize(3);
   var actor=new RoleBaselineFlow.Actor(ORG,EMP);var profile=profiles.mastery(actor).getFirst();
   assertThat(profile.attemptId()).isEqualTo(terminal.id());assertThat(profile.baselineVersion()).isEqualTo(1);
@@ -258,15 +258,15 @@ class RoleBaselinePostgresIntegrationTest {
  @Test void rb15AtomicProfileFailureRollsBackTerminalResponseEvidenceAndReceipt(){
   var v=start();for(int i=0;i<8;i++)v=answer(v,"answer-"+i);
   sql.execute("CREATE FUNCTION platform.test_profile_failure() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION 'injected profile outage'; END $$");
-  sql.execute("CREATE TRIGGER test_profile_failure BEFORE INSERT ON platform.employee_occupation_profile FOR EACH ROW EXECUTE FUNCTION platform.test_profile_failure()");
+  sql.execute("CREATE TRIGGER test_profile_failure BEFORE INSERT ON platform.employee_job_position_profile FOR EACH ROW EXECUTE FUNCTION platform.test_profile_failure()");
   var last=v;var before=digest();
   assertThatThrownBy(()->answer(last,"last")).isInstanceOf(RuntimeException.class);
   assertThat(digest()).isEqualTo(before);
   assertThat(attempts.findOwned(ORG,EMP,v.id()).orElseThrow().status()).isEqualTo(AdaptiveAttempt.Status.IN_PROGRESS);
   assertThat(count("baseline_attempt_result")).isZero();assertThat(count("baseline_mastery_evidence")).isZero();
-  sql.execute("DROP TRIGGER test_profile_failure ON platform.employee_occupation_profile");
+  sql.execute("DROP TRIGGER test_profile_failure ON platform.employee_job_position_profile");
   var terminal=answer(last,"last");assertThat(terminal.state()).isEqualTo("AUTO_SUBMITTED");
-  assertThat(count("employee_occupation_profile")).isOne();
+  assertThat(count("employee_job_position_profile")).isOne();
  }
  @Test void rb10MissingActiveAndInfeasibleAreDistinctAndNoWrite(){
   var actor=new RoleBaselineFlow.Actor(ORG,EMP);
@@ -315,7 +315,7 @@ class RoleBaselinePostgresIntegrationTest {
   }
   assertThat(results.result(old.id()).completionReason()).isEqualTo("DEADLINE");
   assertThat(sql.queryForObject("SELECT count(*) FROM platform.audit_event WHERE action='ADAPTIVE_BASELINE_INVALIDATED'",Long.class)).isOne();
-  assertThat(count("baseline_mastery_evidence")).isZero();assertThat(count("employee_occupation_profile")).isZero();
+  assertThat(count("baseline_mastery_evidence")).isZero();assertThat(count("employee_job_position_profile")).isZero();
  }
  @Test void rb15ValidHistoricalOutcomeWithoutProfileRemainsPendingAndDoesNotUnlockRetake(){
   var policy=new PinnedAdaptiveAttemptPolicyAdapter(new com.adaptlearngraph.repository.JpaAdaptiveTechnicalVersionStore(persistence.bean(com.adaptlearngraph.repository.IrtTechnicalVersionJpaRepository.class)));
@@ -335,10 +335,10 @@ class RoleBaselinePostgresIntegrationTest {
   var resolver=new AdaptiveAttemptSnapshotResolver(blueprints,eligibility,technical);
   AdaptiveSelectedRolePort selected=(org,learner)->{
    var current=selections.current(new RoleBaselineFlow.Actor(org,learner)).orElseThrow();
-   return new AdaptiveSelectedRolePort.Selected(current.role().id(),current.role().occupationId(),current.revision());};
-  return new LocalAdaptiveAttemptContext(()->employee,persistence.bean(AdaptiveAttemptContextJpaRepository.class),ORG,Set.of(OCC),scope->Optional.of(new AdaptiveBaselineCatalogPort.CatalogSnapshot(scope,"Fixture Occupation","fixture-f3-v1",roles())),resolver,selected,attempts,profiles::exists);
+   return new AdaptiveSelectedRolePort.Selected(current.role().id(),current.role().jobPositionId(),current.revision());};
+  return new LocalAdaptiveAttemptContext(()->employee,persistence.bean(AdaptiveAttemptContextJpaRepository.class),ORG,Set.of(OCC),scope->Optional.of(new AdaptiveBaselineCatalogPort.CatalogSnapshot(scope,"Fixture JobPosition","fixture-f3-v1",roles())),resolver,selected,attempts,profiles::exists);
  }
- @Test void rb12StaleSelectionBetweenPrecheckAndStartCannotStartWrongOccupation(){
+ @Test void rb12StaleSelectionBetweenPrecheckAndStartCannotStartWrongJobPosition(){
   var flow=selectionFlow(ORG,EMP);var first=flow.choose("role-a",null,"initial");
   var real=trustedContext(EMP);var stale=org.mockito.Mockito.spy(real);
   org.mockito.Mockito.doAnswer(i->{var scope=real.resolveScope(i.getArgument(0),i.getArgument(1));flow.choose("other",first.selectionId(),"changed-before-start");return scope;})
@@ -346,7 +346,7 @@ class RoleBaselinePostgresIntegrationTest {
   var usecase=new AdaptiveAttemptStartService(stale,attempts,new PinnedAdaptiveAttemptPolicyAdapter(new com.adaptlearngraph.repository.JpaAdaptiveTechnicalVersionStore(persistence.bean(com.adaptlearngraph.repository.IrtTechnicalVersionJpaRepository.class))),new JpaAdaptiveAttemptContent(items,id(50)));
   assertThatThrownBy(()->usecase.startOrResume(new AdaptiveAttemptUseCase.SelectedRole(),"stale-start")).isInstanceOfSatisfying(AdaptiveAttemptUseCase.Failure.class,e->assertThat(e.code()).isEqualTo(AdaptiveAttemptUseCase.Code.SELECTION_UNAVAILABLE));
   assertThat(count("baseline_adaptive_attempt")).isZero();assertThat(count("baseline_attempt_command")).isZero();
-  assertThat(selections.current(new RoleBaselineFlow.Actor(ORG,EMP)).orElseThrow().role().occupationId()).isEqualTo("other-occ");
+  assertThat(selections.current(new RoleBaselineFlow.Actor(ORG,EMP)).orElseThrow().role().jobPositionId()).isEqualTo("other-occ");
  }
  @Test void abA08DeactivateStartRacePreservesExistingPinsAndDeniesLaterNewStart() throws Exception {
   selectionFlow(ORG,EMP).choose("role-a",null,"role");
@@ -377,21 +377,21 @@ class RoleBaselinePostgresIntegrationTest {
   assertThatThrownBy(identity::requireEmployee).isInstanceOf(AdaptiveAttemptUseCase.Failure.class);
  }
 
- @Test void mm01MultipleOccupationProfilesKeepIndependentSourceVersions(){
+ @Test void mm01MultipleJobPositionProfilesKeepIndependentSourceVersions(){
   var first=finish();var original=profiles.mastery(new RoleBaselineFlow.Actor(ORG,EMP)).getFirst();
-  var otherScope=new Scope(ORG,"other-occupation");
+  var otherScope=new Scope(ORG,"other-jobPosition");
   version=blueprints.inTransaction(otherScope,()->{
    var identity=blueprints.ensureIdentity(otherScope,MANAGER);
-   var next=new Version(otherScope,new VersionId(identity,1),config(),"Other Occupation","fixture-f3-other",PINS,roles(),MANAGER,NOW);
+   var next=new Version(otherScope,new VersionId(identity,1),config(),"Other JobPosition","fixture-f3-other",PINS,roles(),MANAGER,NOW);
    blueprints.insertVersion(otherScope,next);
    var active=new Activation(otherScope,1,Optional.of(next.id()),MANAGER,NOW);
    blueprints.saveActivation(otherScope,0,active);blueprints.appendActivationEvent(otherScope,active,AdaptiveBlueprintStore.Operation.FINALIZE,"");return next;});
-  when(context.resolveScope(any(),any())).thenReturn(new AdaptiveAttempt.Scope(ORG,EMP,"other-occupation"));
-  var second=starts.startOrResume(new AdaptiveAttemptUseCase.SelectedRole(),"second-occupation");
+  when(context.resolveScope(any(),any())).thenReturn(new AdaptiveAttempt.Scope(ORG,EMP,"other-jobPosition"));
+  var second=starts.startOrResume(new AdaptiveAttemptUseCase.SelectedRole(),"second-jobPosition");
   while(second.state().equals("IN_PROGRESS"))second=answer(second,"other-answer-"+second.revision());
   var own=profiles.mastery(new RoleBaselineFlow.Actor(ORG,EMP));
   assertThat(own).hasSize(2);assertThat(own).contains(original);
-  assertThat(own).extracting(RoleBaselineFlow.MasteryProfile::occupationId).containsExactlyInAnyOrder(OCC,"other-occupation");
+  assertThat(own).extracting(RoleBaselineFlow.MasteryProfile::jobPositionId).containsExactlyInAnyOrder(OCC,"other-jobPosition");
   assertThat(own).extracting(RoleBaselineFlow.MasteryProfile::attemptId).containsExactlyInAnyOrder(first.id(),second.id());
   assertThat(profiles.mastery(new RoleBaselineFlow.Actor(id(2),EMP))).isEmpty();
   assertThat(profiles.exists(new AdaptiveAttempt.Scope(ORG,EMP,OCC))).isTrue();
@@ -399,7 +399,7 @@ class RoleBaselinePostgresIntegrationTest {
   assertThat(profiles.exists(new AdaptiveAttempt.Scope(ORG,OTHER,OCC))).isFalse();
  }
  @Test void abC15ListBoundsLiteralWildcardTenantAndNoWriteDuringCatalogOutage(){
-  var draft=authoring.save(new Save(OCC,0,"search-draft",Configuration.occupation("Tên %_ fixture",new Bounds(9,540))));
+  var draft=authoring.save(new Save(OCC,0,"search-draft",Configuration.jobPosition("Tên %_ fixture",new Bounds(9,540))));
   when(eligibility.resolve(SCOPE)).thenThrow(new AdaptiveBlueprintEligibilityPort.DependencyUnavailable("outage",null));
   var before=digest();
   var literal=authoring.list(new AdaptiveBlueprintListing.Query("%_",null,AdaptiveBlueprintListing.Direction.NEWEST,0,1,OCC));
@@ -416,7 +416,7 @@ class RoleBaselinePostgresIntegrationTest {
   broken.put("role-b",new AdaptiveBlueprintEligibilityPort.RolePool(roles().get("role-b"),pool().entrySet().stream().filter(e->e.getValue().equals("s2")).map(Map.Entry::getKey).collect(java.util.stream.Collectors.toSet()),Set.of()));
   var published=pool().entrySet().stream().filter(e->!e.getValue().equals("s3")).collect(java.util.stream.Collectors.toMap(Map.Entry::getKey,Map.Entry::getValue));
   var coverage=new AdaptiveBlueprintEligibilityPort.Coverage(3,4096,published);
-  var snapshot=new AdaptiveBlueprintEligibilityPort.Snapshot(SCOPE,eligible.occupationName(),eligible.catalogFingerprint(),PINS,broken,coverage);
+  var snapshot=new AdaptiveBlueprintEligibilityPort.Snapshot(SCOPE,eligible.jobPositionName(),eligible.catalogFingerprint(),PINS,broken,coverage);
   when(eligibility.resolvePinned(SCOPE,PINS)).thenReturn(Optional.of(snapshot));
   var before=digest();
   assertThat(profiles.progress(new RoleBaselineFlow.Actor(ORG,EMP),role("role-a",OCC),Set.of("s1","s2","s3")).state()).isEqualTo("BASELINE_UNAVAILABLE");
@@ -435,11 +435,11 @@ class RoleBaselinePostgresIntegrationTest {
  }
 
  @Test void abA09AndR02LegacyRoleResultReaderRetainsOriginalSubsetWithoutCatalog(){
-  var scope=new Scope(ORG,"legacy-occupation");
+  var scope=new Scope(ORG,"legacy-jobPosition");
   var legacy=blueprints.inTransaction(scope,()->{
    var identity=blueprints.ensureIdentity(scope,MANAGER);
    var configuration=new Configuration("Historical role baseline",new Bounds(9,540),Map.of("role-a",new Bounds(6,360),"role-b",new Bounds(6,360)));
-   var old=new Version(scope,new VersionId(identity,1),configuration,"Historical Occupation","legacy-fixture-v1",PINS,roles(),MANAGER,NOW);
+   var old=new Version(scope,new VersionId(identity,1),configuration,"Historical JobPosition","legacy-fixture-v1",PINS,roles(),MANAGER,NOW);
    blueprints.insertVersion(scope,old);
    var activation=new Activation(scope,1,Optional.of(old.id()),MANAGER,NOW);
    blueprints.saveActivation(scope,0,activation);blueprints.appendActivationEvent(scope,activation,AdaptiveBlueprintStore.Operation.FINALIZE,"");
@@ -447,14 +447,14 @@ class RoleBaselinePostgresIntegrationTest {
   var originalPool=pool().entrySet().stream().filter(e->!e.getValue().equals("s3")).collect(java.util.stream.Collectors.toMap(Map.Entry::getKey,Map.Entry::getValue));
   var snapshot=new AdaptiveAttemptSnapshot(legacy,AdaptiveAttemptSnapshot.Purpose.ROLE_REQUIREMENT,Optional.of("role-a"),Optional.of(1L),originalPool);
   var now=Instant.now().truncatedTo(java.time.temporal.ChronoUnit.MICROS);
-  var old=AdaptiveAttempt.start(id(700),new AdaptiveAttempt.Scope(ORG,EMP,scope.occupationId()),snapshot,now,false,Optional.empty());
+  var old=AdaptiveAttempt.start(id(700),new AdaptiveAttempt.Scope(ORG,EMP,scope.jobPositionId()),snapshot,now,false,Optional.empty());
   attempts.inTransaction(old.scope(),()->{attempts.insert(old.scope(),old,List.of("s1","s2").stream().map(skill->new AdaptiveAttemptStore.SkillState(skill,java.math.BigDecimal.ZERO,java.math.BigDecimal.ONE,java.math.BigDecimal.ZERO,0,1,now)).toList(),new AdaptiveAttemptStore.PresentedItem(1,id(100),"s1",List.of("a","b"),Map.of("reason","COVERAGE"),now));return null;});
   var view=starts.resume(old.id());while(view.state().equals("IN_PROGRESS"))view=answer(view,"legacy-answer-"+view.revision());
   when(eligibility.resolve(any())).thenThrow(new AdaptiveBlueprintEligibilityPort.DependencyUnavailable("current catalog outage",null));
   var before=digest();var result=results.result(old.id());
   assertThat(result.assessmentScope()).isEqualTo(AdaptiveAttemptUseCase.AssessmentScope.EARLIER_ROLE);
   assertThat(result.skills()).extracting(AdaptiveAttemptUseCase.SkillResult::microSkillId).containsExactly("s1","s2");
-  assertThat(result.roleName()).isEqualTo("Role A");assertThat(result.occupationName()).isEqualTo("Historical Occupation");
+  assertThat(result.roleName()).isEqualTo("Role A");assertThat(result.jobPositionName()).isEqualTo("Historical JobPosition");
   assertThat(results.history()).hasSize(1);assertThat(digest()).isEqualTo(before);
  }
 
@@ -467,7 +467,7 @@ class RoleBaselinePostgresIntegrationTest {
   answers=new AdaptiveAttemptAnswerService(context,attempts,policy,new JpaAdaptiveAttemptContent(items,id(50)),new JpaAdaptiveAttemptScoring(items,id(50)),Optional.of(finalizer));
   var terminal=finish();
   // Explicit incomplete owner-profile fixture, not a runtime importer or a retake/remediation policy.
-  sql.update("INSERT INTO platform.employee_occupation_profile(organization_id,learner_id,occupation_id,attempt_id,blueprint_id,blueprint_version,catalog_fingerprint,required_skills,mastery,initialized_at) SELECT organization_id,learner_id,occupation_id,attempt_id,blueprint_id,blueprint_version,catalog_fingerprint,'[\"s1\",\"s2\",\"s3\"]'::jsonb,CAST(? AS jsonb),finished_at FROM platform.baseline_adaptive_attempt WHERE attempt_id=?",mastery,terminal.id());
+  sql.update("INSERT INTO platform.employee_job_position_profile(organization_id,learner_id,job_position_id,attempt_id,blueprint_id,blueprint_version,catalog_fingerprint,required_skills,mastery,initialized_at) SELECT organization_id,learner_id,job_position_id,attempt_id,blueprint_id,blueprint_version,catalog_fingerprint,'[\"s1\",\"s2\",\"s3\"]'::jsonb,CAST(? AS jsonb),finished_at FROM platform.baseline_adaptive_attempt WHERE attempt_id=?",mastery,terminal.id());
   var actor=new RoleBaselineFlow.Actor(ORG,EMP);var before=digest();
   var progress=profiles.progress(actor,role("role-a",OCC),Set.of("s1","s2","s3"));
   assertThat(progress.state()).isEqualTo("PROFILE_INCOMPLETE");assertThat(progress.requiredCount()).isEqualTo(3);

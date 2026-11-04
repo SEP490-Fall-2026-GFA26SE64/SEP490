@@ -22,7 +22,7 @@ Read [the local lesson: Building a repeatable change check](../topics/FS-QUALITY
 
 - Before MS-FS16, demonstrate MS-FS07: Provide a meaningful automated check before wiring the test stage of this CI pathway.
 
-Prerequisites taught within this module are studied first. Cross-module prerequisites are scheduled by the pathway engine. These are pending local learning-order decisions, not claims of universal occupational dependency.
+Prerequisites taught within this module are studied first. Cross-module prerequisites are scheduled by the pathway engine. These are pending local learning-order decisions, not claims of universal job positional dependency.
 
 ## Assigned tasks and submission evidence
 

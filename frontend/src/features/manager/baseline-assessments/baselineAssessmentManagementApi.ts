@@ -21,9 +21,9 @@ export type BaselineAssessmentStatus =
   | 'ACTIVE'
   | 'NOT_CONFIGURED'
 
-export interface BaselineAssessmentOccupation {
-  occupationId: string
-  occupationName: string
+export interface BaselineAssessmentJobPosition {
+  jobPositionId: string
+  jobPositionName: string
   latestBlueprintVersion: number | null
   pendingStage: PendingStage
   openAssessmentVersion: number | null
@@ -32,14 +32,14 @@ export interface BaselineAssessmentOccupation {
   lastUpdatedAt: string | null
 }
 
-export interface BaselineAssessmentOccupationPage {
-  items: BaselineAssessmentOccupation[]
+export interface BaselineAssessmentJobPositionPage {
+  items: BaselineAssessmentJobPosition[]
   page: number
   size: number
   total: number
 }
 
-export interface ListBaselineAssessmentOccupationsQuery {
+export interface ListBaselineAssessmentJobPositionsQuery {
   search?: string
   status?: BaselineAssessmentStatus
   sort?: 'name_asc' | 'name_desc'
@@ -49,8 +49,8 @@ export interface ListBaselineAssessmentOccupationsQuery {
 }
 
 export interface BaselineAssessmentWorkspace {
-  occupationId: string
-  occupationName: string
+  jobPositionId: string
+  jobPositionName: string
   workingRevision: BlueprintWorkingRevision | null
   blueprintVersions: BlueprintVersionSummary[]
   assessmentVersions: AssessmentVersionSummary[]
@@ -129,9 +129,9 @@ export class BaselineAssessmentManagementApiError extends Error {
 
 const BASE_URL = '/api/v1/ld/baseline-assessments'
 
-export async function listBaselineAssessmentOccupations(
-  query: ListBaselineAssessmentOccupationsQuery = {},
-): Promise<BaselineAssessmentOccupationPage> {
+export async function listBaselineAssessmentJobPositions(
+  query: ListBaselineAssessmentJobPositionsQuery = {},
+): Promise<BaselineAssessmentJobPositionPage> {
   const parameters = new URLSearchParams({
     search: query.search?.trim() ?? '',
     status: query.status ?? '',
@@ -157,34 +157,34 @@ export async function listBaselineAssessmentOccupations(
 }
 
 export async function getBaselineAssessmentWorkspace(
-  occupationId: string,
+  jobPositionId: string,
   signal?: AbortSignal,
 ): Promise<BaselineAssessmentWorkspace> {
   return parseWorkspace(await requestJson(
-    `${BASE_URL}/occupations/${encodeURIComponent(occupationId)}`,
+    `${BASE_URL}/job-positions/${encodeURIComponent(jobPositionId)}`,
     { method: 'GET', signal },
   ))
 }
 
 export async function startBlueprintWorkingRevision(
-  occupationId: string,
+  jobPositionId: string,
   idempotencyKey: string,
 ): Promise<BlueprintWorkingRevision> {
   return parseWorkingRevision(await requestJson(
-    `${BASE_URL}/occupations/${encodeURIComponent(occupationId)}/blueprint-working-revisions`,
+    `${BASE_URL}/job-positions/${encodeURIComponent(jobPositionId)}/blueprint-working-revisions`,
     { method: 'POST', headers: { 'Idempotency-Key': idempotencyKey } },
   ))
 }
 
 export async function saveBlueprintWorkingRevision(
-  occupationId: string,
+  jobPositionId: string,
   workingRevisionId: string,
   expectedRevision: number,
   draft: BlueprintDraft,
   idempotencyKey: string,
 ): Promise<BlueprintWorkingRevision> {
   return parseWorkingRevision(await requestJson(
-    `${BASE_URL}/occupations/${encodeURIComponent(occupationId)}/blueprint-working-revisions/${encodeURIComponent(workingRevisionId)}`,
+    `${BASE_URL}/job-positions/${encodeURIComponent(jobPositionId)}/blueprint-working-revisions/${encodeURIComponent(workingRevisionId)}`,
     {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json', 'Idempotency-Key': idempotencyKey },
@@ -194,13 +194,13 @@ export async function saveBlueprintWorkingRevision(
 }
 
 export async function finalizeBlueprintWorkingRevision(
-  occupationId: string,
+  jobPositionId: string,
   workingRevisionId: string,
   expectedRevision: number,
   idempotencyKey: string,
 ): Promise<BaselineBlueprint> {
   return parseBlueprint(await requestJson(
-    `${BASE_URL}/occupations/${encodeURIComponent(occupationId)}/blueprint-working-revisions/${encodeURIComponent(workingRevisionId)}/finalize`,
+    `${BASE_URL}/job-positions/${encodeURIComponent(jobPositionId)}/blueprint-working-revisions/${encodeURIComponent(workingRevisionId)}/finalize`,
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Idempotency-Key': idempotencyKey },
@@ -210,11 +210,11 @@ export async function finalizeBlueprintWorkingRevision(
 }
 
 export async function abandonPendingBlueprintChange(
-  occupationId: string,
+  jobPositionId: string,
   reason: string,
 ): Promise<BaselineAssessmentWorkspace> {
   return parseWorkspace(await requestJson(
-    `${BASE_URL}/occupations/${encodeURIComponent(occupationId)}/abandon-pending-change`,
+    `${BASE_URL}/job-positions/${encodeURIComponent(jobPositionId)}/abandon-pending-change`,
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -224,11 +224,11 @@ export async function abandonPendingBlueprintChange(
 }
 
 export async function generateAssessmentCandidate(
-  occupationId: string,
+  jobPositionId: string,
   idempotencyKey: string,
 ): Promise<ManagedAssessmentVersion> {
   return parseManagedAssessment(await requestJson(
-    `${BASE_URL}/occupations/${encodeURIComponent(occupationId)}/assessment-drafts`,
+    `${BASE_URL}/job-positions/${encodeURIComponent(jobPositionId)}/assessment-drafts`,
     { method: 'POST', headers: { 'Idempotency-Key': idempotencyKey } },
   ))
 }
@@ -353,10 +353,10 @@ async function requestJson(url: string, init: RequestInit): Promise<unknown> {
   return payload
 }
 
-function parsePage(value: unknown): BaselineAssessmentOccupationPage {
+function parsePage(value: unknown): BaselineAssessmentJobPositionPage {
   const page = record(value)
   return {
-    items: array(page.items, 'items').map(parseOccupation),
+    items: array(page.items, 'items').map(parseJobPosition),
     page: nonNegativeInteger(page.page, 'page'),
     size: positiveInteger(page.size, 'size'),
     total: nonNegativeInteger(page.total, 'total'),
@@ -366,8 +366,8 @@ function parsePage(value: unknown): BaselineAssessmentOccupationPage {
 function parseWorkspace(value: unknown): BaselineAssessmentWorkspace {
   const workspace = record(value)
   return {
-    occupationId: requiredString(workspace.occupationId, 'occupationId'),
-    occupationName: requiredString(workspace.occupationName, 'occupationName'),
+    jobPositionId: requiredString(workspace.jobPositionId, 'jobPositionId'),
+    jobPositionName: requiredString(workspace.jobPositionName, 'jobPositionName'),
     workingRevision: workspace.workingRevision === null
       ? null
       : parseWorkingRevision(workspace.workingRevision),
@@ -409,8 +409,8 @@ function parseWorkingRevision(value: unknown): BlueprintWorkingRevision {
     revision: positiveInteger(working.revision, 'revision'),
     draft: {
       name: requiredString(draft.name, 'draft.name'),
-      occupationId: optionalString(draft.occupationId, 'draft.occupationId'),
-      occupationNameSnapshot: optionalString(draft.occupationNameSnapshot, 'draft.occupationNameSnapshot'),
+      jobPositionId: optionalString(draft.jobPositionId, 'draft.jobPositionId'),
+      jobPositionNameSnapshot: optionalString(draft.jobPositionNameSnapshot, 'draft.jobPositionNameSnapshot'),
       roles: array(draft.roles, 'draft.roles').map(parseBlueprintRole),
     },
     updatedAt: requiredInstant(working.updatedAt, 'updatedAt'),
@@ -455,7 +455,7 @@ function parseManagedAssessment(value: unknown): ManagedAssessmentVersion {
   }
 }
 
-function parseOccupation(value: unknown): BaselineAssessmentOccupation {
+function parseJobPosition(value: unknown): BaselineAssessmentJobPosition {
   const item = record(value)
   const pendingStage = requiredString(item.pendingStage, 'pendingStage')
   const openAssessmentState = optionalString(item.openAssessmentState, 'openAssessmentState')
@@ -466,8 +466,8 @@ function parseOccupation(value: unknown): BaselineAssessmentOccupation {
     throw new Error('Invalid openAssessmentState')
   }
   return {
-    occupationId: requiredString(item.occupationId, 'occupationId'),
-    occupationName: requiredString(item.occupationName, 'occupationName'),
+    jobPositionId: requiredString(item.jobPositionId, 'jobPositionId'),
+    jobPositionName: requiredString(item.jobPositionName, 'jobPositionName'),
     latestBlueprintVersion: optionalPositiveInteger(item.latestBlueprintVersion, 'latestBlueprintVersion'),
     pendingStage: pendingStage as PendingStage,
     openAssessmentVersion: optionalPositiveInteger(item.openAssessmentVersion, 'openAssessmentVersion'),

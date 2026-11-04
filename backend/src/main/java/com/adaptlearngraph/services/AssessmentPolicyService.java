@@ -6,7 +6,7 @@ import com.adaptlearngraph.entities.domain.OrganizationAssessmentPolicy;
 import com.adaptlearngraph.entities.domain.OrganizationAssessmentPolicy.*;
 import java.util.UUID;
 
-/** Own-organization configuration independent of Occupation/resource readiness. */
+/** Own-organization configuration independent of JobPosition/resource readiness. */
 public final class AssessmentPolicyService implements AssessmentPolicyUseCase {
     public static final class Failure extends RuntimeException {
         public final int status;public final String code;

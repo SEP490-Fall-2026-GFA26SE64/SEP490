@@ -3,7 +3,7 @@ import { expect, test } from '@playwright/test'
 interface BlueprintResponse {
   blueprintId: string
   version: number
-  occupationId: string
+  jobPositionId: string
   roles: Array<{
     roleId: string
     totalQuestionCount: number
@@ -77,7 +77,7 @@ test('L&D saves, generates, retries, reloads, reviews and publishes a baseline a
     hardScoreWeight: 0.5,
   })
   expect(blueprint.version).toBe(1)
-  expect(blueprint.occupationId).toBe('10000000-0000-0000-0000-000000000001')
+  expect(blueprint.jobPositionId).toBe('10000000-0000-0000-0000-000000000001')
   expect(blueprint.roles).toHaveLength(2)
   expect(blueprint.roles.find((role) => role.roleId === '20000000-0000-0000-0000-000000000002')
     ?.totalQuestionCount).toBe(0)
@@ -89,7 +89,7 @@ test('L&D saves, generates, retries, reloads, reviews and publishes a baseline a
   await expect(page.getByText('Catalog and coverage validated')).toBeVisible()
 
   const reloadedBlueprintResponse = await request.get(
-    `/api/v1/ld/baseline-blueprints/occupations/${blueprint.occupationId}`,
+    `/api/v1/ld/baseline-blueprints/job-positions/${blueprint.jobPositionId}`,
   )
   expect(reloadedBlueprintResponse.ok()).toBeTruthy()
   const reloadedBlueprint = await reloadedBlueprintResponse.json() as BlueprintResponse

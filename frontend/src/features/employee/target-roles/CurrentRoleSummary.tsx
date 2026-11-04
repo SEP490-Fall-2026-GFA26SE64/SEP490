@@ -24,7 +24,7 @@ export function CurrentRoleSummary({ view, onReviewGaps, disabled = false }: { v
             <Heading level={2} size="card">{t(selection ? selection.available ? 'upskillingUi.activeRole' : 'roleFlow.previousUnavailable' : 'employeeBaseline.title')}</Heading>
             {selection && <Badge variant={selection.available ? 'secondary' : 'warning'} className={`max-w-full whitespace-normal break-words ${selection.available ? 'border-primary/20 text-primary' : ''}`}>{selection.role.name}{selection.levelId ? ` · ${selection.role.levels.find(level => level.id === selection.levelId)?.name ?? t('initialPathway.state.UNAVAILABLE')}` : ''}</Badge>}
           </div>
-          {selection && <Text variant="caption">{selection.role.occupationName}</Text>}
+          {selection && <Text variant="caption">{selection.role.jobPositionName}</Text>}
         </div>
       </div>
       {selection && <Button variant="primary" className="h-auto min-h-10 whitespace-normal [&>span]:whitespace-normal" disabled={disabled || !selection.available} onClick={onReviewGaps}>{t('initialPathway.gaps')}</Button>}

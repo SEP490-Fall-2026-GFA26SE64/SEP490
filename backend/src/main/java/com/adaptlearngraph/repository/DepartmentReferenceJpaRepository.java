@@ -4,12 +4,16 @@ import com.adaptlearngraph.entities.DepartmentReferenceEntity;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.transaction.annotation.Transactional;
+import com.adaptlearngraph.constants.TransactionManagers;
+
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.query.Param;
 
 /** Organization reference data; every query is scoped by organization. */
 public interface DepartmentReferenceJpaRepository extends Repository<DepartmentReferenceEntity, UUID> {
-    record Choice(UUID departmentId, String departmentName, UUID occupationReferenceId, String occupationName) {}
+    record Choice(UUID departmentId, String departmentName, UUID jobPositionReferenceId, String jobPositionName) {}
 
     @Query("""
             select count(d) > 0 from DepartmentReferenceEntity d
@@ -19,20 +23,44 @@ public interface DepartmentReferenceJpaRepository extends Repository<DepartmentR
             @Param("historical") boolean preserveHistoricalReferences);
 
     @Query("""
-            select count(o) > 0 from OccupationDepartmentReferenceEntity o
-            where o.occupationReferenceId = :occupation and o.departmentId = :department and o.organizationId = :organization
+            select count(o) > 0 from JobPositionDepartmentReferenceEntity o
+            where o.jobPositionReferenceId = :jobPosition and o.departmentId = :department and o.organizationId = :organization
               and (o.active = true or :historical = true)
             """)
-    boolean occupationUsable(@Param("organization") UUID organization, @Param("department") UUID department,
-            @Param("occupation") UUID occupation, @Param("historical") boolean preserveHistoricalReferences);
+    boolean jobPositionUsable(@Param("organization") UUID organization, @Param("department") UUID department,
+            @Param("jobPosition") UUID jobPosition, @Param("historical") boolean preserveHistoricalReferences);
 
     @Query("""
             select new com.adaptlearngraph.repository.DepartmentReferenceJpaRepository$Choice(d.departmentId, d.name,
-                o.occupationReferenceId, o.name)
+                o.jobPositionReferenceId, o.name)
             from DepartmentReferenceEntity d
-            join OccupationDepartmentReferenceEntity o on o.departmentId = d.departmentId and o.organizationId = d.organizationId
+            join JobPositionDepartmentReferenceEntity o on o.departmentId = d.departmentId and o.organizationId = d.organizationId
             where d.organizationId = :organization and d.active = true and o.active = true
             order by d.name, o.name
             """)
     List<Choice> activeChoices(@Param("organization") UUID organization);
+
+    @Modifying(flushAutomatically = true, clearAutomatically = true)
+    @Transactional(TransactionManagers.JPA)
+    @Query(value = """
+            INSERT INTO platform.department_reference(department_id, organization_id, name, active)
+            VALUES (:departmentId, :organizationId, :name, true)
+            ON CONFLICT (department_id) DO UPDATE SET name = :name, active = true
+            """, nativeQuery = true)
+    int upsertDepartmentReference(@Param("departmentId") UUID departmentId,
+                                  @Param("organizationId") UUID organizationId,
+                                  @Param("name") String name);
+
+    @Modifying(flushAutomatically = true, clearAutomatically = true)
+    @Transactional(TransactionManagers.JPA)
+    @Query(value = """
+            INSERT INTO platform.job_position_department_reference(job_position_reference_id, job_position_id, organization_id, department_id, name, active)
+            VALUES (:jobPositionReferenceId, :jobPositionId, :organizationId, :departmentId, :name, true)
+            ON CONFLICT (job_position_reference_id) DO UPDATE SET name = :name, active = true
+            """, nativeQuery = true)
+    int upsertJobPositionReference(@Param("jobPositionReferenceId") UUID jobPositionReferenceId,
+                                   @Param("jobPositionId") UUID jobPositionId,
+                                   @Param("organizationId") UUID organizationId,
+                                   @Param("departmentId") UUID departmentId,
+                                   @Param("name") String name);
 }

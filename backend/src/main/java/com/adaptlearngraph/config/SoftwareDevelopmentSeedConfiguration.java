@@ -55,10 +55,10 @@ public class SoftwareDevelopmentSeedConfiguration {
         var seeds=repositories.identities();var technical=repositories.technical();
         var org=MainDevelopmentBankSeed.ORGANIZATION;
         var now=Instant.parse("2026-01-01T00:00:00Z");
-        UUID department=MainDevelopmentBankSeed.seId("department"),reference=MainDevelopmentBankSeed.seId("reference"),occupation=MainDevelopmentBankSeed.seId("occupation");
+        UUID department=MainDevelopmentBankSeed.seId("department"),reference=MainDevelopmentBankSeed.seId("reference"),jobPosition=MainDevelopmentBankSeed.seId("jobPosition");
         seeds.insertDepartmentIgnoringConflicts(department,org,"Development Software Engineering");
-        seeds.insertOccupationReferenceIgnoringConflicts(reference,occupation,org,department,"Software Developers");
-        require(seeds.activeOccupationReference(reference,occupation,org,department,"Software Developers","Development Software Engineering"),"SE department/occupation drift");
+        seeds.insertJobPositionReferenceIgnoringConflicts(reference,jobPosition,org,department,"Software Developers");
+        require(seeds.activeJobPositionReference(reference,jobPosition,org,department,"Software Developers","Development Software Engineering"),"SE department/job-position drift");
         var account=MainDevelopmentBankSeed.id("employee-se");var membership=MainDevelopmentBankSeed.id("membership:employee-se");
         var crypto=new RegistrationCryptography("","");
         seeds.insertAccountIgnoringConflicts(account,org,"employee-se@workspace.dev.invalid","employee-se@workspace.dev.invalid",crypto.hashPassword(password));
@@ -97,7 +97,7 @@ public class SoftwareDevelopmentSeedConfiguration {
             technical.promoteSeededCandidate(parameters,ld,hash);
             require(technical.seededSetPromoted(parameters,modelId,hash,ld),"SE fixture promotion incomplete");
         } catch(RuntimeException invalid) { throw invalid; }
-        repositories.resources().seedIfAbsent(org,reference,OCCUPATION,MainDevelopmentBankSeed.seId("bank"),MainDevelopmentBankSeed.seId("model"),MainDevelopmentBankSeed.seId("mapping"));
-        require(repositories.resources().boundReference(org,reference,OCCUPATION,MainDevelopmentBankSeed.seId("bank"),MainDevelopmentBankSeed.seId("model"),MainDevelopmentBankSeed.seId("mapping")),"SE resource binding drift");
+        repositories.resources().seedIfAbsent(org,reference,JOB_POSITION,MainDevelopmentBankSeed.seId("bank"),MainDevelopmentBankSeed.seId("model"),MainDevelopmentBankSeed.seId("mapping"));
+        require(repositories.resources().boundReference(org,reference,JOB_POSITION,MainDevelopmentBankSeed.seId("bank"),MainDevelopmentBankSeed.seId("model"),MainDevelopmentBankSeed.seId("mapping")),"SE resource binding drift");
     }
 }

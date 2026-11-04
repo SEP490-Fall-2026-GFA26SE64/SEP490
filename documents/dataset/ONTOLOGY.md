@@ -6,11 +6,11 @@ Updated 28 October 2026. English catalog; all catalog definitions remain NEEDS_E
 
 [ontology_dataset.xlsx](ontology_dataset.xlsx) and [import/ontology_seed-v011.json](import/ontology_seed-v011.json) describe the same catalog: **994 nodes and 5,121 relationships**. The workbook contains six entity sheets, seven relationship sheets and expert review inputs. [Neo4j import instructions](NEO4J_IMPORT_GUIDE.md) describe validation and isolated import. [Vietnamese field reference](../neo4j_schema.md) explains every graph field.
 
-O*NET supplies Occupations, sample reported titles and occupation RIASEC. ESCO supports concept alignment for retained skills; SFIA 9 and UK Government Digital and Data support skills, scope and autonomy. SKOS informs concept alignment, not numeric scoring. The model is a local application ontology informed by these sources, not an official ESCO/O*NET ontology or certified equivalence. Competency grouping, local Junior/Middle/Senior tiers, thresholds, mandatory flags and prerequisites remain local proposals.
+O*NET supplies Job Positions, sample reported titles and job position RIASEC. ESCO supports concept alignment for retained skills; SFIA 9 and UK Government Digital and Data support skills, scope and autonomy. SKOS informs concept alignment, not numeric scoring. The model is a local application ontology informed by these sources, not an official ESCO/O*NET ontology or certified equivalence. Competency grouping, local Junior/Middle/Senior tiers, thresholds, mandatory flags and prerequisites remain local proposals.
 
 ```mermaid
 flowchart LR
- O[Occupation] -->|HAS_ROLE| R[TargetRole]
+ O[Job Position] -->|HAS_ROLE| R[TargetRole]
  R -->|HAS_LEVEL| L[Level]
  L -->|HAS_COMPETENCY| C[Competency]
  C -->|HAS_SKILL| S[MicroSkill]
@@ -62,7 +62,7 @@ Application Developer currently has 11 required skills at Junior, 14 at Middle a
 
 | Entity | Records |
 |---|---:|
-| Occupation | 5 |
+| Job Position | 5 |
 | TargetRole | 48 |
 | Level | 144 |
 | Competency | 472 |
@@ -79,17 +79,17 @@ Application Developer currently has 11 required skills at Junior, 14 at Middle a
 | TEACHES | 664 |
 | HAS_SKILL_PREREQUISITE | 11 |
 
-## Occupation Interests / RIASEC
+## Job Position Interests / RIASEC
 
-[O*NET 31.0 Career Interest Types](https://www.onetcenter.org/dictionary/31.0/json/career_interest_types.html) supplies six numeric OI ratings per occupation. [Scales Reference](https://www.onetcenter.org/dictionary/31.0/json/scales_reference.html) defines OI minimum 1 and maximum 7. IH values are high-point category codes, not numeric interest scores; they are not used as the six ratings.
+[O*NET 31.0 Career Interest Types](https://www.onetcenter.org/dictionary/31.0/json/career_interest_types.html) supplies six numeric OI ratings per job position. [Scales Reference](https://www.onetcenter.org/dictionary/31.0/json/scales_reference.html) defines OI minimum 1 and maximum 7. IH values are high-point category codes, not numeric interest scores; they are not used as the six ratings.
 
-Database fields are interestRealistic, interestInvestigative, interestArtistic, interestSocial, interestEnterprising, interestConventional. Each is a numeric value in [0,1], computed as (raw OI value − 1)/6 and stored to six decimals. Compare/use the same transformation when handling another OI occupation vector. Do not assume a learner questionnaire uses this scale; convert its scores using that instrument's documented method first.
+Database fields are interestRealistic, interestInvestigative, interestArtistic, interestSocial, interestEnterprising, interestConventional. Each is a numeric value in [0,1], computed as (raw OI value − 1)/6 and stored to six decimals. Compare/use the same transformation when handling another OI job position vector. Do not assume a learner questionnaire uses this scale; convert its scores using that instrument's documented method first.
 
-These fields describe occupational interests, not learner competence or skill/Level passing thresholds. Keep interests out of proficiency assessment. Source rows were updated in February 2026 and retrieved on 14 October 2026. The retained title/Job Zone evidence comes from the previous occupation collection; this release does not claim every source artifact was extracted from one database snapshot.
+These fields describe job positional interests, not learner competence or skill/Level passing thresholds. Keep interests out of proficiency assessment. Source rows were updated in February 2026 and retrieved on 14 October 2026. The retained title/Job Zone evidence comes from the previous job position collection; this release does not claim every source artifact was extracted from one database snapshot.
 
 Raw source values (1–7):
 
-| Occupation code | R | I | A | S | E | C |
+| Job Position code | R | I | A | S | E | C |
 |---|---:|---:|---:|---:|---:|---:|
 | 15-1252.00 | 3.61 | 6.05 | 2.37 | 1.81 | 1.87 | 5.62 |
 | 15-1243.00 | 2.63 | 5.63 | 2.16 | 1.91 | 2.68 | 6.12 |
@@ -97,11 +97,11 @@ Raw source values (1–7):
 | 15-1299.08 | 4.10 | 5.46 | 1.88 | 2.10 | 3.03 | 5.76 |
 | 15-1212.00 | 3.56 | 5.40 | 1.34 | 2.11 | 2.85 | 6.08 |
 
-Normalized values (0–1) appear in the Occupations sheet and JSON. [Selected source rows and scale](sources/onet_interests_31_0_2026_10_14/selected_interests.json), full downloaded source files and SHA256 manifest are included in the release.
+Normalized values (0–1) appear in the Job Positions sheet and JSON. [Selected source rows and scale](sources/onet_interests_31_0_2026_10_14/selected_interests.json), full downloaded source files and SHA256 manifest are included in the release.
 
 ## Role inventory and proposed source mapping
 
-| Role ID | Reported title | Occupation | Local profile | Scope references |
+| Role ID | Reported title | Job Position | Local profile | Scope references |
 |---|---|---|---|---|
 | ROLE-F72E5464F9B3 | Application Developer | 15-1252.00 | DEV | [reference 1](https://understand-digital-data-roles-skills.service.gov.uk/role/software-developer/); [reference 2](https://sfia-online.org/en/sfia-9/skills/systems-integration-and-build) |
 | ROLE-58B047D9053E | Application Integration Engineer | 15-1252.00 | INTEGRATION | [reference 1](https://understand-digital-data-roles-skills.service.gov.uk/role/software-developer/); [reference 2](https://understand-digital-data-roles-skills.service.gov.uk/role/technical-architect/); [reference 3](https://sfia-online.org/en/sfia-9/skills/systems-integration-and-build) |
@@ -208,7 +208,7 @@ Thirty-one new outcomes extend the 48 retained non-AI skill definitions. They ar
 | MS-GOV02 | Document data governance rules | Record agreed rules for data handling, sharing and quality within a defined scope. | [source](https://understand-digital-data-roles-skills.service.gov.uk/role/data-governance-manager/) — Data governance |
 | MS-GOV03 | Check data lifecycle compliance | Check evidence of data handling against agreed lifecycle and governance rules. | [source](https://understand-digital-data-roles-skills.service.gov.uk/role/data-governance-manager/) — Data governance; data compliance |
 
-[New skill evidence](sources/onet_five_occupations_2026_10_14/new_skill_evidence.json) identifies the local derivation and source verification. The original retained skill evidence below is unchanged; the old AI subset is outside this five-occupation snapshot.
+[New skill evidence](sources/onet_five_job positions_2026_10_14/new_skill_evidence.json) identifies the local derivation and source verification. The original retained skill evidence below is unchanged; the old AI subset is outside this five-job position snapshot.
 
 ## Skill catalogue and evidence
 
@@ -310,10 +310,10 @@ Source evidence is documentation-only. Date for this review: 12 October 2026. ES
 | [UK-FS][UK-FS] | GOV_UK | Role responsibilities and skill descriptions |
 | [UK-FE][UK-FE] | GOV_UK | Role responsibilities and skill descriptions |
 | [UK-QA][UK-QA] | GOV_UK | Role responsibilities and skill descriptions |
-| [ON-DE][ON-DE] | ONET | Occupation-specific tasks |
-| [ON-AI][ON-AI] | ONET | Occupation-specific tasks |
-| [ON-FS][ON-FS] | ONET | Occupation-specific tasks |
-| [ON-QA][ON-QA] | ONET | Occupation-specific tasks |
+| [ON-DE][ON-DE] | ONET | Job Position-specific tasks |
+| [ON-AI][ON-AI] | ONET | Job Position-specific tasks |
+| [ON-FS][ON-FS] | ONET | Job Position-specific tasks |
+| [ON-QA][ON-QA] | ONET | Job Position-specific tasks |
 | [SF-DENG][SF-DENG] | SFIA | SFIA 9 skill description and responsibility levels |
 | [SF-DTAN][SF-DTAN] | SFIA | SFIA 9 skill description and responsibility levels |
 | [SF-MLNG][SF-MLNG] | SFIA | SFIA 9 skill description and responsibility levels |
@@ -435,7 +435,7 @@ Common fields: id, version, status, reviewStatus, reviewedBy, reviewedAt. Node b
 - TEACHES: teachingFocus (PRIMARY/SUPPORTING/INCIDENTAL) and difficultyLevel (LOW/MEDIUM/HIGH), both required and independent per Module–Skill pair. instructionLevel is retired.
 - Other relationships: common metadata only.
 - expectedOutcome, rubricId, rubricVersion, readinessOutcome, readinessAssessmentId and readinessAssessmentVersion are absent from graph records.
-- TargetRoles.occupationId, Levels.targetRoleId and Competencies.levelId are export join fields only; the importer validates their corresponding ownership edges and omits them from graph properties.
+- TargetRoles.job positionId, Levels.targetRoleId and Competencies.levelId are export join fields only; the importer validates their corresponding ownership edges and omits them from graph properties.
 - Sources/provenance, rubric definitions, assessment prompts, results and learner state stay outside Neo4j. The seed now contains only six node sections and relationships.
 
 ID uniqueness does not enforce teaching coverage. The import validator permits multiple providers and multiple taught skills, and rejects orphan modules/skills, duplicate teaching pairs, wrong endpoints, unknown types, retired fields, cycles and invalid thresholds. Future catalog write APIs must enforce the same invariants transactionally.

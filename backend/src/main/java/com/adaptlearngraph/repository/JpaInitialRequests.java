@@ -37,7 +37,7 @@ public final class JpaInitialRequests {
         }
         UUID id=UUID.randomUUID(),gap=UUID.randomUUID(); var input=frozen.input();var selection=frozen.selection();
         String snapshotHash=InitialIdentity.hash("gap-snapshot",List.of(input.preview().gapInputHash(),selection.id(),selection.revision()));
-        db.data.gaps().insert(new InitialGapSnapshotEntity(gap,org,learner,selection.id(),selection.revision(),input.binding().occupationId(),
+        db.data.gaps().insert(new InitialGapSnapshotEntity(gap,org,learner,selection.id(),selection.revision(),input.binding().jobPositionId(),
                 input.profile().attemptId(),input.preview().gapInputHash(),snapshotHash,db.codec.encode(input),null));
         requests().insert(new InitialPathwayRequestEntity(id,org,learner,selection.id(),selection.revision(),gap,frozen.planningHash(),
                 algorithm,configuration,db.codec.encode(frozen),"PENDING",null,null,null,null,null,null,null));

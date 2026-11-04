@@ -18,7 +18,7 @@ Source responses and pinned bank/model inputs → bounded estimator → PostgreS
 
 | Input | Exact retained pin |
 | --- | --- |
-| Occupation / catalog | OCC-15-1212.00 Information Security Analysts / 0.8.0 |
+| Job Position / catalog | OCC-15-1212.00 Information Security Analysts / 0.8.0 |
 | Bank / manifest version | 2f79de6b-dc62-51a1-982d-0be9d6f588dc / information-security-analysts-en-v1 |
 | Manifest byte SHA256 | 52d065a031aa9adca51808c59a7682872b7436343f0c300db84cfe1beb2fe882 |
 | Scope byte SHA256 | c2454bde23764d061b6b25b54d434141715326d75eaa3201026618e7e4136231 |

@@ -14,7 +14,7 @@ public final class LocalSeedSemantics implements Semantics {
     private static final String HISTORY_HASH="0006bb11ac5c20687eb90be4807289ecea309a5657781543792e18f556eb5125";
     private static final String BANK_HASH="52d065a031aa9adca51808c59a7682872b7436343f0c300db84cfe1beb2fe882";
     private final ObjectMapper json;
-    private final String occupation,currentFingerprint;
+    private final String jobPosition,currentFingerprint;
     private final Map<String,String> currentSkills;
     private final Map<String,Map<String,String>> originalSkills;
     private record Edge(String kind,String from,String to,Map<String,Object> properties) {}
@@ -42,11 +42,11 @@ public final class LocalSeedSemantics implements Semantics {
         requireHash(current,com.adaptlearngraph.config.LocalCatalogBootstrap.SOURCE_HASH);
         if(softwareDevelopment)requireHash(bank,com.adaptlearngraph.config.SoftwareDevelopmentSeed.BANK_HASH);
         else {requireHash(historical,HISTORY_HASH);requireHash(bank,BANK_HASH);requireHash(previous,V010_HASH);}
-        var manifest=json.readTree(bank);occupation=manifest.path("occupationId").asText();
+        var manifest=json.readTree(bank);jobPosition=manifest.path("jobPositionId").asText();
         if(mainDevelopment) {
             if(!com.adaptlearngraph.config.MainDevelopmentBankSeed.ORGANIZATION.equals(organization) || ownedBank!=null)
                 throw new IllegalStateException("Main development semantic scope mismatch");
-            manifest=com.adaptlearngraph.config.MainDevelopmentBankSeed.projectedManifest(occupation);
+            manifest=com.adaptlearngraph.config.MainDevelopmentBankSeed.projectedManifest(jobPosition);
         }
         if(ownedBank!=null) {
             ((ObjectNode)manifest.path("questionBank")).put("id",ownedBank.toString());
@@ -66,7 +66,7 @@ public final class LocalSeedSemantics implements Semantics {
     }
     public String fingerprint(){return currentFingerprint;}
     @Override public Compatibility resolve(Binding binding,Profile profile) {
-        if(!occupation.equals(binding.occupationId()) || !currentFingerprint.equals(binding.catalogFingerprint())
+        if(!jobPosition.equals(binding.jobPositionId()) || !currentFingerprint.equals(binding.catalogFingerprint())
                 || !VERSION.equals(binding.versions().get("compatibility")))throw new Failure(503,"SEMANTIC_SOURCE_NOT_SUPPORTED",false);
         var original=originalSkills.get(profile.catalogFingerprint());
         if(original==null)throw new Failure(503,"PROFILE_CATALOG_NOT_SUPPORTED",false);
@@ -92,8 +92,8 @@ public final class LocalSeedSemantics implements Semantics {
     private Snapshot snapshot(byte[] bytes,UUID organization,Map<String,Map<String,Object>> metadata)throws java.io.IOException {
         var data=json.readTree(bytes);var nodes=new HashMap<String,Map<String,Object>>();
         var fingerprintNodes=new HashMap<String,Map<String,Object>>();
-        for(String group:List.of("Occupations","TargetRoles","Levels","MicroSkills"))for(var row:data.path(group)) {
-            var properties=properties(row);properties.remove("occupationId");properties.remove("targetRoleId");properties.remove("levelId");
+        for(String group:List.of("JobPositions","TargetRoles","Levels","MicroSkills"))for(var row:data.path(group)) {
+            var properties=properties(row);properties.remove("jobPositionId");properties.remove("targetRoleId");properties.remove("levelId");
             if(nodes.put((String)properties.get("id"),properties)!=null)throw new IllegalStateException("Duplicate source identity");
             var fingerprintProperties=new TreeMap<>(properties);
             fingerprintProperties.putAll(metadata.getOrDefault(group.substring(0,group.length()-1),Map.of()));
@@ -105,8 +105,8 @@ public final class LocalSeedSemantics implements Semantics {
             edges.add(new Edge((String)properties.remove("type"),(String)properties.remove("fromId"),(String)properties.remove("toId"),properties));
         }
         var paths=new TreeSet<String>();var skills=new TreeMap<String,String>();
-        paths.add(encode(Map.of("occupation",fingerprintNodes.get(occupation))));
-        for(var membership:edges)if(membership.kind().equals("HAS_ROLE") && membership.from().equals(occupation)) {
+        paths.add(encode(Map.of("jobPosition",fingerprintNodes.get(jobPosition))));
+        for(var membership:edges)if(membership.kind().equals("HAS_ROLE") && membership.from().equals(jobPosition)) {
             String role=membership.to();paths.add(encode(Map.of("role",fingerprintNodes.get(role),"membership",membership.properties())));
             for(var roleLevel:edges)if(roleLevel.kind().equals("HAS_LEVEL") && roleLevel.from().equals(role))
                 for(var requirement:edges)if(requirement.kind().equals("REQUIRES_SKILL") && requirement.from().equals(roleLevel.to())) {
@@ -123,7 +123,7 @@ public final class LocalSeedSemantics implements Semantics {
         var items=new TreeSet<String>();
         for(var item:manifest.path("items"))items.add(encode(List.of(item.path("itemVersionId").asText(),
                 item.path("microSkillId").asText(),item.path("contentHash").asText())));
-        return hash("AB-ELIGIBILITY-V1:"+catalog+":"+organization+":"+occupation+":"+manifest.path("questionBank").path("id").asText()+":"+encode(items));
+        return hash("AB-ELIGIBILITY-V1:"+catalog+":"+organization+":"+jobPosition+":"+manifest.path("questionBank").path("id").asText()+":"+encode(items));
     }
     private Map<String,Object> properties(JsonNode node) {
         Map<String,Object> result=json.convertValue(node,new com.fasterxml.jackson.core.type.TypeReference<Map<String,Object>>(){});

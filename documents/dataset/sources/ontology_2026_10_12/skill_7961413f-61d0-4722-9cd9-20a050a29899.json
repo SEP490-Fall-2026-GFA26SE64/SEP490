@@ -259,22 +259,22 @@
           "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
         }
       ],
-      "isEssentialForOccupation": [
+      "isEssentialForJob Position": [
         {
-          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/106f79e4-6264-45f1-9e7a-297435cd684b&language=en",
-          "uri": "http://data.europa.eu/esco/occupation/106f79e4-6264-45f1-9e7a-297435cd684b",
+          "href": "https://ec.europa.eu/esco/api/resource/job position?uri=http://data.europa.eu/esco/job position/106f79e4-6264-45f1-9e7a-297435cd684b&language=en",
+          "uri": "http://data.europa.eu/esco/job position/106f79e4-6264-45f1-9e7a-297435cd684b",
           "title": "software tester"
         }
       ],
-      "isOptionalForOccupation": [
+      "isOptionalForJob Position": [
         {
-          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/c0c1364d-f784-4e76-8d3f-1e998dc6545d&language=en",
-          "uri": "http://data.europa.eu/esco/occupation/c0c1364d-f784-4e76-8d3f-1e998dc6545d",
+          "href": "https://ec.europa.eu/esco/api/resource/job position?uri=http://data.europa.eu/esco/job position/c0c1364d-f784-4e76-8d3f-1e998dc6545d&language=en",
+          "uri": "http://data.europa.eu/esco/job position/c0c1364d-f784-4e76-8d3f-1e998dc6545d",
           "title": "security alarm technician"
         },
         {
-          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/3b1ea27c-781c-41eb-821f-214285260dd2&language=en",
-          "uri": "http://data.europa.eu/esco/occupation/3b1ea27c-781c-41eb-821f-214285260dd2",
+          "href": "https://ec.europa.eu/esco/api/resource/job position?uri=http://data.europa.eu/esco/job position/3b1ea27c-781c-41eb-821f-214285260dd2&language=en",
+          "uri": "http://data.europa.eu/esco/job position/3b1ea27c-781c-41eb-821f-214285260dd2",
           "title": "ICT change and configuration manager"
         }
       ]

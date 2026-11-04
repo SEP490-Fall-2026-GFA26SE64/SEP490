@@ -33,18 +33,18 @@ class PlatformCatalogServiceTest {
         return closure.edges().stream().map(Edge::id).collect(Collectors.toSet());
     }
 
-    @Test void roleBringsParentOccupationSubtreePrerequisitesAndTeachingModules() {
+    @Test void roleBringsParentJobPositionSubtreePrerequisitesAndTeachingModules() {
         var closure = service.closure(List.of("ROLE-A"));
         assertThat(closure.nodeIds()).containsExactlyInAnyOrder(
                 "OCC-1", "ROLE-A", "LV-A1", "CMP-A1", "MS-A", "MS-B", "MS-P", "MOD-A", "MOD-P", "MOD-X");
         assertThat(edges(closure)).containsExactlyInAnyOrder(
                 "REL-1", "REL-3", "REL-5", "REL-6", "REL-7", "REL-8", "REL-10", "REL-11", "REL-12", "REL-14");
-        assertThat(closure.nodesByLabel()).containsEntry("MicroSkill", 3).containsEntry("LearningModule", 3).containsEntry("Occupation", 1);
+        assertThat(closure.nodesByLabel()).containsEntry("MicroSkill", 3).containsEntry("LearningModule", 3).containsEntry("JobPosition", 1);
         assertThat(closure.templateVersion()).isEqualTo("fixture-1");
         assertThat(closure.templateSha256()).matches("[0-9a-f]{64}");
     }
 
-    @Test void occupationCopiesItsWholeSubtreeOnly() {
+    @Test void jobPositionCopiesItsWholeSubtreeOnly() {
         var closure = service.closure(List.of("OCC-2"));
         assertThat(closure.nodeIds()).containsExactlyInAnyOrder("OCC-2", "ROLE-B", "LV-B1", "MS-X", "MOD-X");
         assertThat(edges(closure)).containsExactlyInAnyOrder("REL-2", "REL-4", "REL-9", "REL-13");

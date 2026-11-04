@@ -15,10 +15,10 @@ import org.springframework.transaction.annotation.Transactional;
 public interface EmployeeRoleSelectionJpaRepository
         extends Repository<EmployeeRoleSelectionEntity, UUID>, InsertOnlyRepository<EmployeeRoleSelectionEntity> {
 
-    record Row(UUID selectionId, String roleId, String occupationId, String roleSnapshot, Long targetRevision, Instant selectedAt) {}
+    record Row(UUID selectionId, String roleId, String jobPositionId, String roleSnapshot, Long targetRevision, Instant selectedAt) {}
 
     @Query("""
-            select new com.adaptlearngraph.repository.EmployeeRoleSelectionJpaRepository$Row(s.selectionId, s.roleId, s.occupationId,
+            select new com.adaptlearngraph.repository.EmployeeRoleSelectionJpaRepository$Row(s.selectionId, s.roleId, s.jobPositionId,
                 s.roleSnapshot, s.targetRevision, s.selectedAt)
             from EmployeeRoleSelectionEntity s
             where s.organizationId = :org and s.learnerId = :learner and s.endedAt is null

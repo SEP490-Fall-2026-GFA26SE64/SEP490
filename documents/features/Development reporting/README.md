@@ -12,7 +12,7 @@ Each record below corresponds to one source bullet. Unspecified fields are inten
 
 | Requirement | Status | Current behavior | Remaining boundary |
 | --- | --- | --- | --- |
-| [FR-04.07](#fr-04-07) | Prototype | Team matrix/outcomes screens show employee readiness, gaps, progress and cohort summaries with local filtering/drill-down. Their inputs are browser-company data, fixed telemetry and synthetic fallback metrics. | No real employee-development aggregation or complete department/occupation/reporting-period filtering is connected. Recording/updating costs and monetary benefits with period, currency and supporting basis is not implemented. |
+| [FR-04.07](#fr-04-07) | Prototype | Team matrix/outcomes screens show employee readiness, gaps, progress and cohort summaries with local filtering/drill-down. Their inputs are browser-company data, fixed telemetry and synthetic fallback metrics. | No real employee-development aggregation or complete department/job position/reporting-period filtering is connected. Recording/updating costs and monetary benefits with period, currency and supporting basis is not implemented. |
 | [FR-07.09](#fr-07-09) | Foundation only | Analytics snapshots and ROI-scenario schema exist; the UI presents sample metrics and projections. | No backend cost/benefit ledger or use case calculates actual training ROI and department summaries from persisted source records. Forecast/demo values are not measured benefits. |
 
 **Entry points:** `/ld-manager/team-matrix`, `/ld-manager/learning-outcomes`. `/ld-manager/roi-forecast` redirects to the team matrix; the standalone ROI forecast page is not the active route. Prototype export controls do not introduce a new Version 2 requirement.
@@ -29,7 +29,7 @@ Each record below corresponds to one source bullet. Unspecified fields are inten
 | --- | --- |
 | 1. Requirement ID | FR-04.07 |
 | 2. Requirement Name | Monitor employee development |
-| 3. Description | The L&D Manager shall view employee competency profiles, skill gaps, assessment outcomes, learning progress, training ROI, and department development summaries; filter results by department, occupation, and reporting period; and record or update training costs and monetary benefits with their period, currency, and supporting basis. |
+| 3. Description | The L&D Manager shall view employee competency profiles, skill gaps, assessment outcomes, learning progress, training ROI, and department development summaries; filter results by department, job position, and reporting period; and record or update training costs and monetary benefits with their period, currency, and supporting basis. |
 | 4. Actor | L&D Manager |
 | 5. Preconditions |  |
 | 6. Main Flow |  |

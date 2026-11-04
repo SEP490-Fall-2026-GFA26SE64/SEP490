@@ -26,6 +26,7 @@ export function Tabs({ value, onValueChange, className, children, ...props }: Ta
 export function TabsList({ className, children, ...props }: React.HTMLAttributes<HTMLDivElement>) {
   return (
     <div
+      role="tablist"
       className={cn(
         'inline-flex h-10 w-full items-center justify-start rounded-lg bg-muted p-1 text-muted-foreground',
         className,
@@ -50,6 +51,9 @@ export function TabsTrigger({ value, className, children, ...props }: TabsTrigge
   return (
     <button
       type="button"
+      role="tab"
+      aria-selected={isSelected}
+      data-state={isSelected ? 'active' : 'inactive'}
       onClick={() => context.onValueChange(value)}
       className={cn(
         'inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-all focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 cursor-pointer',

@@ -40,7 +40,7 @@ class PlatformCatalogControllerTest {
                 .andExpect(header().string("Cache-Control", containsString("public")))
                 .andExpect(jsonPath("$.version").value("fixture-1"))
                 .andExpect(jsonPath("$.nodes[*].label", everyItem(org.hamcrest.Matchers.in(
-                        new String[] {"Occupation", "TargetRole", "MicroSkill", "LearningModule"}))))
+                        new String[] {"JobPosition", "TargetRole", "MicroSkill", "LearningModule"}))))
                 .andExpect(jsonPath("$.nodes[*].id", hasItem("ROLE-A")))
                 .andExpect(jsonPath("$.nodes[*]", everyItem(not(org.hamcrest.Matchers.hasKey("organizationId")))));
     }

@@ -419,32 +419,32 @@
           "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
         }
       ],
-      "isEssentialForOccupation": [
+      "isEssentialForJob Position": [
         {
-          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/716df735-77eb-47c8-8c06-d86e46903989&language=en",
-          "uri": "http://data.europa.eu/esco/occupation/716df735-77eb-47c8-8c06-d86e46903989",
+          "href": "https://ec.europa.eu/esco/api/resource/job position?uri=http://data.europa.eu/esco/job position/716df735-77eb-47c8-8c06-d86e46903989&language=en",
+          "uri": "http://data.europa.eu/esco/job position/716df735-77eb-47c8-8c06-d86e46903989",
           "title": "smart home engineer"
         },
         {
-          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/bb6198c4-1d3e-40b9-9cc4-ad2dd9d7c74b&language=en",
-          "uri": "http://data.europa.eu/esco/occupation/bb6198c4-1d3e-40b9-9cc4-ad2dd9d7c74b",
+          "href": "https://ec.europa.eu/esco/api/resource/job position?uri=http://data.europa.eu/esco/job position/bb6198c4-1d3e-40b9-9cc4-ad2dd9d7c74b&language=en",
+          "uri": "http://data.europa.eu/esco/job position/bb6198c4-1d3e-40b9-9cc4-ad2dd9d7c74b",
           "title": "industrial mobile devices software developer"
         }
       ],
-      "isOptionalForOccupation": [
+      "isOptionalForJob Position": [
         {
-          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/812c217d-32b7-4f6a-9faf-993d3577ac7f&language=en",
-          "uri": "http://data.europa.eu/esco/occupation/812c217d-32b7-4f6a-9faf-993d3577ac7f",
+          "href": "https://ec.europa.eu/esco/api/resource/job position?uri=http://data.europa.eu/esco/job position/812c217d-32b7-4f6a-9faf-993d3577ac7f&language=en",
+          "uri": "http://data.europa.eu/esco/job position/812c217d-32b7-4f6a-9faf-993d3577ac7f",
           "title": "knowledge engineer"
         },
         {
-          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/35553663-deab-4d9a-bf22-15c1625d28e8&language=en",
-          "uri": "http://data.europa.eu/esco/occupation/35553663-deab-4d9a-bf22-15c1625d28e8",
+          "href": "https://ec.europa.eu/esco/api/resource/job position?uri=http://data.europa.eu/esco/job position/35553663-deab-4d9a-bf22-15c1625d28e8&language=en",
+          "uri": "http://data.europa.eu/esco/job position/35553663-deab-4d9a-bf22-15c1625d28e8",
           "title": "artificial intelligence engineer"
         },
         {
-          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/3d190639-90f8-4402-b1b3-a104a17e0d67&language=en",
-          "uri": "http://data.europa.eu/esco/occupation/3d190639-90f8-4402-b1b3-a104a17e0d67",
+          "href": "https://ec.europa.eu/esco/api/resource/job position?uri=http://data.europa.eu/esco/job position/3d190639-90f8-4402-b1b3-a104a17e0d67&language=en",
+          "uri": "http://data.europa.eu/esco/job position/3d190639-90f8-4402-b1b3-a104a17e0d67",
           "title": "database integrator"
         }
       ]

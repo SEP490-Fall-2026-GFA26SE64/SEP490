@@ -59,7 +59,7 @@ public final class DevAccountsSeed {
             new PlatformAdministratorBootstrap(com.adaptlearngraph.repository.IdentityTestFixtures.platformSeeds(persistence), manager, EMAILS.getFirst(), env("DEV_ACCOUNT_PASSWORD_0")).run(null);
             jdbc.update("INSERT INTO platform.organization(organization_id,code,name) VALUES (?,'SEP490_DEV_ACCOUNTS','SEP490 Development Workspace')", organization);
             jdbc.update("INSERT INTO platform.department_reference VALUES (?,?,'Development',true)", id("department"), organization);
-            jdbc.update("INSERT INTO platform.occupation_department_reference VALUES (?,?,?,?,'Development occupation fixture',true)", id("occupation-reference"), id("occupation"), organization, id("department"));
+            jdbc.update("INSERT INTO platform.job_position_department_reference VALUES (?,?,?,?,'Development jobPosition fixture',true)", id("jobPosition-reference"), id("jobPosition"), organization, id("department"));
             for (int i = 1; i < EMAILS.size(); i++) {
                 UUID account = id(EMAILS.get(i)), member = id("member:" + EMAILS.get(i));
                 jdbc.update("INSERT INTO platform.account(account_id,organization_id,identifier,normalized_identifier,password_hash) VALUES (?,?,?,?,?)", account, organization, EMAILS.get(i), EMAILS.get(i), secrets.hashPassword(env("DEV_ACCOUNT_PASSWORD_" + i)));
@@ -67,7 +67,7 @@ public final class DevAccountsSeed {
                 jdbc.update("INSERT INTO platform.workspace_account_profile(account_id,full_name,email_verified_at) VALUES (?,?,now())", account, "Dev " + ROLES.get(i));
                 jdbc.update("INSERT INTO platform.organization_membership(membership_id,account_id,organization_id,active,created_at,updated_at) VALUES (?,?,?,true,now(),now())", member, account, organization);
                 jdbc.update("INSERT INTO platform.organization_membership_role VALUES (?,?)", member, ROLES.get(i));
-                if (i == 4) jdbc.update("UPDATE platform.organization_membership SET department_id=?,occupation_reference_id=? WHERE membership_id=?", id("department"), id("occupation-reference"), member);
+                if (i == 4) jdbc.update("UPDATE platform.organization_membership SET department_id=?,job_position_reference_id=? WHERE membership_id=?", id("department"), id("jobPosition-reference"), member);
                 if (i == 4) jdbc.update("INSERT INTO platform.learner_state(learner_id) VALUES (?)", account);
             }
             jdbc.update("""

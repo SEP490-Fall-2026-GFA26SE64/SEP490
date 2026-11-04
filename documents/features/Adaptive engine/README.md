@@ -20,7 +20,7 @@ Each record below corresponds to one source bullet. Unspecified fields are inten
 ### Confirmed initial-pathway rules
 
 - Preview uses original persisted conservative mastery on a 0..1 scale: known gap is max(0, requiredScore − mastery); confidence is explanatory, not another penalty. Genuinely absent compatible evidence remains UNKNOWN/null with a reason; corrupt/unavailable expected evidence is an error. Preview changes no selection, profile or pathway.
-- Explicit confirmation binds the Role and its chosen member Level, expected selection/input identity and retry key. Full-Occupation baseline evidence is reused; a Role/Level change never resets baseline history or reopens the completed allowance.
+- Explicit confirmation binds the Role and its chosen member Level, expected selection/input identity and retry key. Full-Job Position baseline evidence is reused; a Role/Level change never resets baseline history or reopens the completed allowance.
 - Planning retains per-TEACHES PRIMARY/SUPPORTING/INCIDENTAL and LOW/MEDIUM/HIGH, exact feasibility/prerequisites/version/tenant checks, bounded whole-path proof and the confirmed objective. A search limit does not publish a successful approximate proposal.
 - Expert Include/Exclude/neutral Remove validate the fixed selected set. Adjacent Move Up/Down saves prerequisite-valid order; Check, membership changes, preview and exact final approval preserve that order wherever dependencies allow. Invalid membership edits stay repairable and cannot approve. Keep receipts, CAS/claim fencing, immutable format1/2 readers and archived history. Learning execution and later recalculation are separate scope.
 

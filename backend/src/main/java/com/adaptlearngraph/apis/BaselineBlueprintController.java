@@ -67,9 +67,9 @@ public class BaselineBlueprintController {
         return blueprints.latest(blueprintId);
     }
 
-    @GetMapping("/occupations/{occupationId}")
-    BlueprintResponse latestByOccupation(@PathVariable String occupationId) {
-        return blueprints.latestByOccupation(occupationId);
+    @GetMapping("/job-positions/{jobPositionId}")
+    BlueprintResponse latestByJobPosition(@PathVariable String jobPositionId) {
+        return blueprints.latestByJobPosition(jobPositionId);
     }
 
     @GetMapping("/{blueprintId}/versions/{version}")

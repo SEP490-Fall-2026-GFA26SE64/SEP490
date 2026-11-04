@@ -30,7 +30,7 @@ public final class CurrentRoleSelectionStore implements Store {
     @Override public Optional<Selection> current(Actor a) {
         return data.selections().current(a.organizationId(),a.learnerId()).stream().map(row->{
                     Snapshot snapshot=snapshot(row.roleSnapshot());
-                    if(!snapshot.role().id().equals(row.roleId()) || !snapshot.role().occupationId().equals(row.occupationId()))throw new IllegalStateException("Selection identity mismatch");
+                    if(!snapshot.role().id().equals(row.roleId()) || !snapshot.role().jobPositionId().equals(row.jobPositionId()))throw new IllegalStateException("Selection identity mismatch");
                     return new Selection(row.selectionId(),snapshot.role(),row.targetRevision(),row.selectedAt(),true,snapshot.levelId());
                 }).toList()
                 .stream().findFirst();
@@ -82,12 +82,12 @@ public final class CurrentRoleSelectionStore implements Store {
             Long revision=data.learners().targetRevision(a.learnerId()).getFirst();
             selected=new Selection(UUID.randomUUID(),role,Objects.requireNonNull(revision),now,true,levelId);
             data.selections().insert(new EmployeeRoleSelectionEntity(selected.selectionId(),a.organizationId(),a.learnerId(),role.id(),
-                    role.occupationId(),write(new Snapshot(1,role,levelId)),revision,now,null));
+                    role.jobPositionId(),write(new Snapshot(1,role,levelId)),revision,now,null));
             String event=old.isPresent()?"TARGET_ROLE_CHANGED":"TARGET_ROLE_SELECTED";
             var payload=new LinkedHashMap<String,Object>();
             payload.put("payloadVersion",2); payload.put("organizationId",a.organizationId()); payload.put("learnerId",a.learnerId());
             payload.put("selectionId",selected.selectionId()); payload.put("previousSelectionId",old.map(Selection::selectionId).orElse(null));
-            payload.put("roleId",role.id());payload.put("occupationId",role.occupationId());payload.put("targetRevision",revision);payload.put("occurredAt",now);
+            payload.put("roleId",role.id());payload.put("jobPositionId",role.jobPositionId());payload.put("targetRevision",revision);payload.put("occurredAt",now);
             payload.put("levelId",levelId);payload.put("previousLevelId",old.map(Selection::levelId).orElse(null));
             data.outbox().insert(new OutboxEventEntity(UUID.randomUUID(),event,a.learnerId(),revision,PersistenceValues.document(write(payload)),
                     selected.selectionId(),now));

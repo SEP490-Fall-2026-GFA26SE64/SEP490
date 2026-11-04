@@ -3,7 +3,7 @@ import { expect, test } from '@playwright/test'
 test.describe('REQ-018 Complete Neo4j Schema Persistence & Zero-Mock Reload Verification', () => {
   test.setTimeout(180_000)
 
-  test('MicroSkill, LearningModule, Occupation, TargetRole, and Competency persist across page reloads', async ({ page }) => {
+  test('MicroSkill, LearningModule, JobPosition, TargetRole, and Competency persist across page reloads', async ({ page }) => {
     // 1. Establish Manager session
     await page.request.post('/api/v1/local-baseline-demo/session', {
       data: { persona: 'ld' },
@@ -93,16 +93,16 @@ test.describe('REQ-018 Complete Neo4j Schema Persistence & Zero-Mock Reload Veri
     await expect(page.getByRole('table').getByText(testModTitle, { exact: true })).toBeVisible()
 
     // =========================================================================
-    // STEP 3: Occupation Persistence & Reload Verification
+    // STEP 3: JobPosition Persistence & Reload Verification
     // =========================================================================
-    await page.goto('/ld-manager/occupations')
+    await page.goto('/ld-manager/job-positions')
     await expect(page.locator('main')).toBeVisible({ timeout: 15_000 })
 
     const uniqueOccSuffix = Math.floor(Math.random() * 900 + 100)
     const testOccCode = `15-88${uniqueOccSuffix}.00`
     const testOccName = `Autonomous AI Systems Architect ${uniqueOccSuffix}`
 
-    // Open Create Occupation
+    // Open Create JobPosition
     await page.getByRole('button', { name: 'Create', exact: true }).click()
     await expect(page.getByRole('dialog')).toBeVisible()
 
@@ -110,13 +110,13 @@ test.describe('REQ-018 Complete Neo4j Schema Persistence & Zero-Mock Reload Veri
     await page.getByPlaceholder(/e.g. Software Developers/i).fill(testOccName)
     await page.getByPlaceholder(/Provide a comprehensive summary/i).fill('Responsible for architecting graph-based autonomous agents.')
 
-    await page.getByRole('dialog').getByRole('button', { name: 'Create Occupation' }).click()
+    await page.getByRole('dialog').getByRole('button', { name: 'Create JobPosition' }).click()
     await expect(page.getByRole('dialog')).toHaveCount(0, { timeout: 15_000 })
 
     // RELOAD and verify survival from Neo4j
     await page.reload()
     await expect(page.locator('main')).toBeVisible()
-    const occSearch = page.getByPlaceholder('Search occupations...')
+    const occSearch = page.getByPlaceholder('Search jobPositions...')
     await occSearch.fill(testOccCode)
     await expect(page.getByRole('table').getByText(testOccCode, { exact: true })).toBeVisible({ timeout: 15_000 })
     await expect(page.getByRole('table').getByText(testOccName, { exact: true })).toBeVisible()

@@ -11,18 +11,18 @@ public final class AdaptiveBlueprintListing {
     public enum Status { DRAFT, ACTIVE, RETIRING, INACTIVE }
     public enum Type { DRAFT, VERSION }
     public enum Direction { NEWEST, OLDEST }
-    public record Query(String search, Status status, Direction direction, int page, int size, String occupationId) {
+    public record Query(String search, Status status, Direction direction, int page, int size, String jobPositionId) {
         public Query {
             search = search == null ? "" : search.strip();
             if (direction == null || page < 0 || size < 1 || size > 100 || search.length() > 1000
-                    || occupationId != null && (occupationId.isBlank() || !occupationId.equals(occupationId.strip()))) {
+                    || jobPositionId != null && (jobPositionId.isBlank() || !jobPositionId.equals(jobPositionId.strip()))) {
                 throw new IllegalArgumentException("Invalid Blueprint list query");
             }
         }
     }
-    /** Draft ID or version pair are stable row identities; blueprintId groups an Occupation's rows. */
+    /** Draft ID or version pair are stable row identities; blueprintId groups an JobPosition's rows. */
     public record Row(UUID blueprintId, UUID workingRevisionId, Integer version, String name,
-                      String occupationId, String occupationName, Type type, Status status,
+                      String jobPositionId, String jobPositionName, Type type, Status status,
                       String dateLabel, Instant date, long inProgressCount, boolean configurationUpdateRequired,
                       long revision, VersionId current) {}
     public record Page(List<Row> rows, long total, int page, int size) {

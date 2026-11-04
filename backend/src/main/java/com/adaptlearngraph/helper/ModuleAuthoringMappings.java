@@ -53,7 +53,7 @@ public final class ModuleAuthoringMappings implements ModelMapperRegistrar {
         mapper.typeMap(Choice.class, ChoiceResponse.class).setConverter(context ->
                 new ChoiceResponse(context.getSource().id(), context.getSource().name()));
         mapper.typeMap(Grant.class, GrantResponse.class).setConverter(context ->
-                new GrantResponse(context.getSource().expertId(), context.getSource().occupationId()));
+                new GrantResponse(context.getSource().expertId(), context.getSource().jobPositionId()));
         mapper.typeMap(Lesson.class, LessonResponse.class).setConverter(context -> {
             Lesson source = context.getSource();
             return new LessonResponse(source.id(), source.title(), source.type(), source.body(), source.bodyFormat(),
@@ -63,7 +63,7 @@ public final class ModuleAuthoringMappings implements ModelMapperRegistrar {
         mapper.typeMap(Content.class, ContentResponse.class).setConverter(context -> {
             Content source = context.getSource();
             return new ContentResponse(source.id(), source.title(), source.markdown(), source.contentType(),
-                    source.contentVersion(), source.occupationIds(), source.createdBy(), source.createdAt(),
+                    source.contentVersion(), source.jobPositionIds(), source.createdBy(), source.createdAt(),
                     list(context, source.lessons(), LessonResponse.class));
         });
         mapper.typeMap(Metadata.class, MetadataResponse.class).setConverter(context -> {
@@ -106,14 +106,14 @@ public final class ModuleAuthoringMappings implements ModelMapperRegistrar {
         });
         mapper.typeMap(Intake.class, IntakeResponse.class).setConverter(context -> {
             Intake source = context.getSource();
-            return new IntakeResponse(source.moduleId(), source.organizationId(), source.occupationIds(),
+            return new IntakeResponse(source.moduleId(), source.organizationId(), source.jobPositionIds(),
                     source.assignedBy(), source.assignedAt(), nested(context, source.source(), CatalogModuleResponse.class),
                     source.acceptedBy(), source.acceptedAt(), list(context, source.history(), EventResponse.class),
                     source.expertId());
         });
         mapper.typeMap(Document.class, DocumentResponse.class).setConverter(context -> {
             Document source = context.getSource();
-            return new DocumentResponse(source.id(), source.organizationId(), source.occupationIds(), source.createdBy(),
+            return new DocumentResponse(source.id(), source.organizationId(), source.jobPositionIds(), source.createdBy(),
                     source.createdAt(), source.lockVersion(), source.everReleased(), source.archived(),
                     source.releasedRevision(), list(context, source.revisions(), RevisionResponse.class),
                     list(context, source.history(), EventResponse.class), nested(context, source.intake(), IntakeResponse.class));
@@ -141,7 +141,7 @@ public final class ModuleAuthoringMappings implements ModelMapperRegistrar {
         mapper.typeMap(Save.class, ModuleInput.class).setConverter(context -> {
             Save source = context.getSource();
             return new ModuleInput(source.title(), source.moduleType(), source.contentId(), source.duration(), source.price(),
-                    source.occupationIds(), list(context, source.teachings(), TeachingSelection.class));
+                    source.jobPositionIds(), list(context, source.teachings(), TeachingSelection.class));
         });
     }
 

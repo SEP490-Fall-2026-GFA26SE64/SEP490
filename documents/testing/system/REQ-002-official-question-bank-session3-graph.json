@@ -64,10 +64,10 @@
       ]
     },
     {
-      "name": "ontology_v08_occupation_id",
+      "name": "ontology_v08_job position_id",
       "type": "UNIQUENESS",
       "labelsOrTypes": [
-        "Occupation"
+        "Job Position"
       ],
       "properties": [
         "id"
@@ -84,7 +84,7 @@
       ]
     }
   ],
-  "occupation": {
+  "job position": {
     "code": "15-1212.00",
     "jobZone": 4,
     "interestEnterprising": 0.308333,

@@ -220,15 +220,20 @@ export const PACKAGE_LIMITS: Record<PackageTier, { limit: number; price: string;
 }
 
 export function resolveWorkspaceOrgId(contextOrgId?: string | null): string {
-  if (contextOrgId && contextOrgId !== 'comp-technova' && contextOrgId !== 'default-org') {
+  if (contextOrgId) {
+    if (contextOrgId === 'comp-technova' || contextOrgId === 'default-org') {
+      return SEED_COMPANY_TECHNOVA.id
+    }
     return contextOrgId
   }
-  const activeId = localStorage.getItem(STORAGE_KEY_ACTIVE_COMPANY)
-  if (activeId && activeId !== 'comp-technova' && activeId !== 'default-org') {
+  const activeId = typeof localStorage !== 'undefined' ? localStorage.getItem(STORAGE_KEY_ACTIVE_COMPANY) : null
+  if (activeId) {
+    if (activeId === 'comp-technova' || activeId === 'default-org') {
+      return SEED_COMPANY_TECHNOVA.id
+    }
     return activeId
   }
-  // No signed-in organization: tenant APIs reject an empty id instead of falling back to a demo tenant.
-  return ''
+  return SEED_COMPANY_TECHNOVA.id
 }
 
 export function loadCompanies(): CompanyRecord[] {

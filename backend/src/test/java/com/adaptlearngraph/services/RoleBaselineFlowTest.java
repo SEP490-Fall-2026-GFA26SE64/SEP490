@@ -29,7 +29,7 @@ class RoleBaselineFlowTest {
   assertThat(role.levels().getFirst().skills()).hasSize(6);
   verifyNoInteractions(store,baseline);
  }
- @Test void rb06And08FullOccupationUnionDeduplicatesSharedSkill() {
+ @Test void rb06And08FullJobPositionUnionDeduplicatesSharedSkill() {
   var expected=new HashSet<String>();for(int i=0;i<15;i++)expected.add("skill-"+i);
   when(baseline.progress(actor,role,expected)).thenReturn(new Progress("BASELINE_REQUIRED",15,14,null,1));
   assertThat(flow.view().progress()).isEqualTo(new Progress("BASELINE_REQUIRED",15,14,null,1));
@@ -45,7 +45,7 @@ class RoleBaselineFlowTest {
   verifyNoInteractions(baseline);
  }
  @Test void rb08EmptyUnionFailsClosed() {
-  when(catalog.roles(actor.organizationId())).thenReturn(List.of(new Role("role-a","A","A","scope","occupation-a","A","v1","f",List.of())));
+  when(catalog.roles(actor.organizationId())).thenReturn(List.of(new Role("role-a","A","A","scope","jobPosition-a","A","v1","f",List.of())));
   failure(503,"DEPENDENCY_UNAVAILABLE",flow::view);verifyNoInteractions(baseline);
  }
  @Test void rb05ReplayPrecedesCatalogAndStaleChecks() {
@@ -85,7 +85,7 @@ class RoleBaselineFlowTest {
   var skills=new ArrayList<Skill>();
   for(int i=start;i<end;i++)skills.add(new Skill("skill-"+i,"S"+i,"Skill "+i,.7,true));
   skills.add(new Skill("skill-0","S0","Skill 0",.7,true));
-  return new Role(id,id,id,"Scope","occupation-a","Occupation A","v1","fixture-f15-v1",
+  return new Role(id,id,id,"Scope","jobPosition-a","JobPosition A","v1","fixture-f15-v1",
    List.of(new Level("level-"+id,"L1","Junior",1,"Context","ALL",skills)));
  }
  static void failure(int status,String code,Runnable call) {

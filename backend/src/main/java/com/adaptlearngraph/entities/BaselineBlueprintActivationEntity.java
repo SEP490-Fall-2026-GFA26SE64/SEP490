@@ -12,7 +12,7 @@ import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
 
 /**
- * platform.baseline_blueprint_activation: compare-and-set current Blueprint pointer per organization and Occupation; the
+ * platform.baseline_blueprint_activation: compare-and-set current Blueprint pointer per organization and JobPosition; the
  * generated {@code state} column is derived by PostgreSQL and the revision rules are enforced by a trigger.
  */
 @Entity
@@ -25,8 +25,8 @@ public class BaselineBlueprintActivationEntity {
     @Column(name = "organization_id", updatable = false)
     private UUID organizationId;
     @Id
-    @Column(name = "occupation_id", updatable = false)
-    private String occupationId;
+    @Column(name = "job_position_id", updatable = false)
+    private String jobPositionId;
     @Column(name = "blueprint_id", nullable = false, updatable = false)
     private UUID blueprintId;
     @Column(name = "blueprint_version")
@@ -43,10 +43,10 @@ public class BaselineBlueprintActivationEntity {
     protected BaselineBlueprintActivationEntity() {
     }
 
-    public BaselineBlueprintActivationEntity(UUID organizationId, String occupationId, UUID blueprintId, Integer blueprintVersion,
+    public BaselineBlueprintActivationEntity(UUID organizationId, String jobPositionId, UUID blueprintId, Integer blueprintVersion,
             Long activationRevision, UUID activatedBy, Instant activatedAt) {
         this.organizationId = organizationId;
-        this.occupationId = occupationId;
+        this.jobPositionId = jobPositionId;
         this.blueprintId = blueprintId;
         this.blueprintVersion = blueprintVersion;
         this.activationRevision = activationRevision;
@@ -55,7 +55,7 @@ public class BaselineBlueprintActivationEntity {
     }
 
     public UUID getOrganizationId() { return organizationId; }
-    public String getOccupationId() { return occupationId; }
+    public String getJobPositionId() { return jobPositionId; }
     public UUID getBlueprintId() { return blueprintId; }
     public Integer getBlueprintVersion() { return blueprintVersion; }
     public Long getActivationRevision() { return activationRevision; }
@@ -63,7 +63,7 @@ public class BaselineBlueprintActivationEntity {
     public UUID getActivatedBy() { return activatedBy; }
     public Instant getActivatedAt() { return activatedAt; }
 
-    public record Key(UUID organizationId, String occupationId) implements Serializable {
+    public record Key(UUID organizationId, String jobPositionId) implements Serializable {
         public Key() {
             this(null, null);
         }

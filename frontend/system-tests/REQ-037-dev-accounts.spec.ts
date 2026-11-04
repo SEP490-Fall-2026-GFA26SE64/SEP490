@@ -5,7 +5,7 @@ import { expect, test } from '@playwright/test'
 const accounts = [
   ['platform.admin@example.test', '/platform-admin/subscriptions'],
   ['org.admin@example.test', 'MFA'],
-  ['ld.manager@example.test', '/ld-manager/occupations'],
+  ['ld.manager@example.test', '/ld-manager/job-positions'],
   ['expert@example.test', '/expert/target-roles'],
   ['employee@example.test', '/employee/overview'],
 ] as const

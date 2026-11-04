@@ -17,7 +17,7 @@ At 21:18 +07:00: **17 passed** (5 plan/calendar, 5 access/seat policy, 4 catalog
 | SL-AC09 | Admission limit is the minimum current/pending/scheduled allocation; expired allocation zero admits none | Passed at domain level |
 | SL-AC10 | Employee needs paid, ready, unsuspended same-organization membership; administrators require MFA | Passed at domain level |
 | SL-AC10 | Expired administrator retains billing/renewal/seat reduction; suspension prevents renewal/reduction; platform authority does not grant private workspace access | Passed at domain level |
-| SL-AC15 | V9 membership cross-organization FK and mandatory Employee department/occupation references | Passed in disposable PostgreSQL schema tests at 21:13 |
+| SL-AC15 | V9 membership cross-organization FK and mandatory Employee department/job position references | Passed in disposable PostgreSQL schema tests at 21:13 |
 
 ## Not Yet Verified
 

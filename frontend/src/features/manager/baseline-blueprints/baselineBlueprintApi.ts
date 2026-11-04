@@ -18,8 +18,8 @@ export interface BlueprintRole {
 
 export interface BlueprintDraft {
   name: string
-  occupationId: string | null
-  occupationNameSnapshot: string | null
+  jobPositionId: string | null
+  jobPositionNameSnapshot: string | null
   roles: BlueprintRole[]
 }
 
@@ -44,32 +44,32 @@ export interface RoleCoverageRequirement {
   required: number
 }
 
-export interface OccupationSummary {
+export interface JobPositionSummary {
   id: string
   name: string
   catalogVersion: string
   roleCount: number
 }
 
-export interface OccupationDetail extends Omit<OccupationSummary, 'roleCount'> {
-  roles: OccupationRole[]
+export interface JobPositionDetail extends Omit<JobPositionSummary, 'roleCount'> {
+  roles: JobPositionRole[]
 }
 
-export interface OccupationRole {
+export interface JobPositionRole {
   id: string
   name: string
   catalogVersion: string
-  skills: OccupationSkill[]
+  skills: JobPositionSkill[]
 }
 
-export interface OccupationSkill {
+export interface JobPositionSkill {
   id: string
   name: string
   catalogVersion: string
 }
 
 export interface BlueprintCapacity {
-  occupationId: string
+  jobPositionId: string
   catalogVersion: string
   coverageAsOf: string
   roles: RoleCapacity[]
@@ -137,30 +137,30 @@ export class BaselineBlueprintApiError extends Error {
 }
 
 const BASE_URL = '/api/v1/ld/baseline-blueprints'
-const CATALOG_URL = '/api/v1/ld/baseline-blueprint-catalog/occupations'
+const CATALOG_URL = '/api/v1/ld/baseline-blueprint-catalog/job-positions'
 
-export async function listOccupations(): Promise<OccupationSummary[]> {
+export async function listJobPositions(): Promise<JobPositionSummary[]> {
   const payload = await requestJson(CATALOG_URL, { method: 'GET' })
-  return requiredArray(payload, 'occupations').map(parseOccupationSummary)
+  return requiredArray(payload, 'jobPositions').map(parseJobPositionSummary)
 }
 
-export async function getOccupation(occupationId: string): Promise<OccupationDetail> {
-  return parseOccupation(await requestJson(
-    `${CATALOG_URL}/${encodeURIComponent(occupationId)}`,
+export async function getJobPosition(jobPositionId: string): Promise<JobPositionDetail> {
+  return parseJobPosition(await requestJson(
+    `${CATALOG_URL}/${encodeURIComponent(jobPositionId)}`,
     { method: 'GET' },
   ))
 }
 
-export async function getOccupationCapacity(occupationId: string): Promise<BlueprintCapacity> {
+export async function getJobPositionCapacity(jobPositionId: string): Promise<BlueprintCapacity> {
   return parseCapacity(await requestJson(
-    `${CATALOG_URL}/${encodeURIComponent(occupationId)}/capacity`,
+    `${CATALOG_URL}/${encodeURIComponent(jobPositionId)}/capacity`,
     { method: 'GET' },
   ))
 }
 
-export async function getLatestBlueprintByOccupation(occupationId: string): Promise<BaselineBlueprint> {
+export async function getLatestBlueprintByJobPosition(jobPositionId: string): Promise<BaselineBlueprint> {
   return parseBlueprint(await requestJson(
-    `${BASE_URL}/occupations/${encodeURIComponent(occupationId)}`,
+    `${BASE_URL}/job-positions/${encodeURIComponent(jobPositionId)}`,
     { method: 'GET' },
   ))
 }
@@ -252,8 +252,8 @@ export function parseBlueprint(value: unknown): BaselineBlueprint {
     blueprintId: requiredString(item.blueprintId, 'blueprintId'),
     version: positiveInteger(item.version, 'version'),
     name: requiredString(item.name, 'name'),
-    occupationId: optionalString(item.occupationId, 'occupationId'),
-    occupationNameSnapshot: optionalString(item.occupationNameSnapshot, 'occupationNameSnapshot'),
+    jobPositionId: optionalString(item.jobPositionId, 'jobPositionId'),
+    jobPositionNameSnapshot: optionalString(item.jobPositionNameSnapshot, 'jobPositionNameSnapshot'),
     createdAt: requiredString(item.createdAt, 'createdAt'),
     roles: requiredArray(item.roles, 'roles').map(parseBlueprintRole),
   }
@@ -328,7 +328,7 @@ function parseAssessment(value: unknown): AssessmentDraft {
   }
 }
 
-function parseOccupationSummary(value: unknown): OccupationSummary {
+function parseJobPositionSummary(value: unknown): JobPositionSummary {
   const item = record(value)
   return {
     id: requiredString(item.id, 'id'),
@@ -338,7 +338,7 @@ function parseOccupationSummary(value: unknown): OccupationSummary {
   }
 }
 
-function parseOccupation(value: unknown): OccupationDetail {
+function parseJobPosition(value: unknown): JobPositionDetail {
   const item = record(value)
   return {
     id: requiredString(item.id, 'id'),
@@ -366,7 +366,7 @@ function parseOccupation(value: unknown): OccupationDetail {
 function parseCapacity(value: unknown): BlueprintCapacity {
   const item = record(value)
   return {
-    occupationId: requiredString(item.occupationId, 'occupationId'),
+    jobPositionId: requiredString(item.jobPositionId, 'jobPositionId'),
     catalogVersion: requiredString(item.catalogVersion, 'catalogVersion'),
     coverageAsOf: requiredInstant(item.coverageAsOf, 'coverageAsOf'),
     roles: requiredArray(item.roles, 'roles').map((role) => {

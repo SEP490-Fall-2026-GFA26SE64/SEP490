@@ -43,21 +43,21 @@ public class ModuleAuthoringApplicationService {
         return list(modules.grants(), GrantResponse.class);
     }
 
-    public void grant(String expertId, String occupationId, boolean active) {
-        modules.grant(expertId, occupationId, active);
+    public void grant(String expertId, String jobPositionId, boolean active) {
+        modules.grant(expertId, jobPositionId, active);
     }
 
     public List<ContentResponse> contents() {
         return list(modules.contents(), ContentResponse.class);
     }
 
-    public ContentResponse content(String title, String markdown, List<String> occupationIds) {
-        return map(modules.content(title, markdown, occupationIds), ContentResponse.class);
+    public ContentResponse content(String title, String markdown, List<String> jobPositionIds) {
+        return map(modules.content(title, markdown, jobPositionIds), ContentResponse.class);
     }
 
-    public ContentResponse lessons(String title, List<LessonRequest> lessons, List<String> occupationIds) {
+    public ContentResponse lessons(String title, List<LessonRequest> lessons, List<String> jobPositionIds) {
         List<Lesson> values = lessons == null ? null : lessons.stream().map(ModuleAuthoringApplicationService::lesson).toList();
-        return map(modules.lessons(title, values, occupationIds), ContentResponse.class);
+        return map(modules.lessons(title, values, jobPositionIds), ContentResponse.class);
     }
 
     public PageResponse list(String search, String status, String review, String type, String skill, int page,
@@ -73,8 +73,8 @@ public class ModuleAuthoringApplicationService {
         return map(modules.catalogList(search, status, review, type, skill, page), CatalogPageResponse.class);
     }
 
-    public IntakeResponse assignIntake(String id, List<String> occupationIds, String expectedAssignedAt, String expertId) {
-        return map(modules.assignIntake(id, occupationIds, expectedAssignedAt, expertId), IntakeResponse.class);
+    public IntakeResponse assignIntake(String id, List<String> jobPositionIds, String expectedAssignedAt, String expertId) {
+        return map(modules.assignIntake(id, jobPositionIds, expectedAssignedAt, expertId), IntakeResponse.class);
     }
 
     public DocumentResponse acceptIntake(String id) {
@@ -109,7 +109,7 @@ public class ModuleAuthoringApplicationService {
                         : new TeachingInput(teaching.skillId(), teaching.teachingFocus(), teaching.difficultyLevel()))
                 .toList();
         return new Save(input.title(), input.moduleType(), input.contentId(), input.duration(), input.price(),
-                input.occupationIds(), teachings);
+                input.jobPositionIds(), teachings);
     }
 
     private static Lesson lesson(LessonRequest lesson) {

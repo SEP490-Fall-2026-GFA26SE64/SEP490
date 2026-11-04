@@ -19,7 +19,7 @@ vi.mock('./platformCatalogApi', async importOriginal => ({
 const catalog: PlatformCatalog = {
   version: 'v1',
   nodes: [
-    { id: 'occ', label: 'Occupation', name: 'Software Engineering', code: 'SWE' },
+    { id: 'occ', label: 'JobPosition', name: 'Software Engineering', code: 'SWE' },
     { id: 'role', label: 'TargetRole', name: 'Backend Developer', code: 'BE' },
     { id: 'skill', label: 'MicroSkill', name: 'SQL Joins', code: 'SQL' },
     { id: 'module', label: 'LearningModule', name: 'Relational Queries', code: null },

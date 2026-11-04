@@ -41,7 +41,7 @@ test('Seeded Platform Admin uses password only, real platform APIs and no organi
 
 for (const [role, label, destination] of [
   ['DOMAIN_EXPERT', 'Expert', '/expert/target-roles'],
-  ['LD_MANAGER', 'L&D Manager', '/ld-manager/occupations'],
+  ['LD_MANAGER', 'L&D Manager', '/ld-manager/job-positions'],
   ['EMPLOYEE', 'Employee', '/employee/overview'],
 ] as const) {
   test(`${label} invitation activates one role and enters its existing layout without MFA`, async ({ page, browser }, testInfo) => {
@@ -56,7 +56,7 @@ for (const [role, label, destination] of [
     expect((await page.request.post(`/api/v1/__subscription-test/references/${organization}`)).ok()).toBeTruthy()
     const rejected = await mutate(page.request, `${base}/activations`, {
       fullName: 'Rejected multi-role', email: `multi-${crypto.randomUUID()}@example.test`,
-      roles: ['LD_MANAGER', 'DOMAIN_EXPERT'], departmentId: null, occupationReferenceId: null,
+      roles: ['LD_MANAGER', 'DOMAIN_EXPERT'], departmentId: null, jobPositionReferenceId: null,
     })
     expect(rejected.status()).toBe(400)
     await page.goto('/admin/users')
@@ -69,7 +69,7 @@ for (const [role, label, destination] of [
     await expect(dialog.getByRole('radio', { checked: true })).toHaveCount(1)
     if (role === 'EMPLOYEE') {
       await dialog.getByLabel('Department', { exact: true }).selectOption({ label: 'Test Department' })
-      await dialog.getByLabel('Occupation', { exact: true }).selectOption({ label: 'Test Occupation' })
+      await dialog.getByLabel('JobPosition', { exact: true }).selectOption({ label: 'Test JobPosition' })
     }
     await dialog.getByRole('button', { name: 'Send activation link', exact: true }).click()
     await expect(dialog).toHaveCount(0)

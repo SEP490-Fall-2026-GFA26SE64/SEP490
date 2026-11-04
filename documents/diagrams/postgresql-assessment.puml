@@ -234,8 +234,8 @@ class mastery_mapping_version {
 }
 class workspace_baseline_resource {
     organization_id : uuid [PK, FK]
-    occupation_reference_id : uuid [FK]
-    graph_occupation_id : text [PK]
+    job position_reference_id : uuid [FK]
+    graph_job position_id : text [PK]
     question_bank_id? : uuid [FK]
     model_version_id? : uuid [FK]
     mastery_mapping_version_id? : uuid [FK]
@@ -244,7 +244,7 @@ class baseline_adaptive_attempt {
     attempt_id : uuid [PK]
     organization_id : uuid [FK]
     learner_id : uuid [FK]
-    occupation_id : text [FK]
+    job position_id : text [FK]
     attempt_purpose : text
     target_role_id? : text [FK]
     target_selection_revision? : bigint
@@ -286,9 +286,9 @@ class baseline_adaptive_blueprint_version {
     blueprint_id : uuid [PK, FK]
     version : integer [PK]
     organization_id : uuid [FK]
-    occupation_id : text [FK]
+    job position_id : text [FK]
     name : text
-    occupation_name_snapshot : text
+    job position_name_snapshot : text
     catalog_fingerprint : text
     exploration_max_questions? : integer
     exploration_time_limit_seconds? : integer
@@ -298,13 +298,13 @@ class baseline_adaptive_blueprint_version {
     created_by : uuid [FK]
     created_at : timestamp with time zone
     scope_policy? : text
-    occupation_max_questions? : integer
-    occupation_time_limit_seconds? : integer
+    job position_max_questions? : integer
+    job position_time_limit_seconds? : integer
 }
 class baseline_adaptive_blueprint_working_revision {
     working_revision_id : uuid [PK]
     organization_id : uuid [FK]
-    occupation_id : text [FK]
+    job position_id : text [FK]
     blueprint_id : uuid [FK]
     revision : bigint
     configuration : jsonb
@@ -325,7 +325,7 @@ class baseline_answer_reveal_audit {
 }
 class baseline_assessment_series {
     organization_id : uuid [PK, FK]
-    occupation_id : text [PK, FK]
+    job position_id : text [PK, FK]
     blueprint_id : uuid [FK]
     series_revision : bigint
     working_revision_id? : uuid [FK]
@@ -338,7 +338,7 @@ class baseline_assessment_series {
 class baseline_assessment_transition {
     transition_id : uuid [PK]
     organization_id : uuid [FK]
-    occupation_id : text [FK]
+    job position_id : text [FK]
     series_revision : bigint
     transition : text
     actor_id : uuid [FK]
@@ -360,7 +360,7 @@ class baseline_attempt_command {
     actor_id : uuid [PK, FK]
     idempotency_key : text [PK]
     attempt_id : uuid [FK]
-    occupation_id : text [FK]
+    job position_id : text [FK]
     operation : text
     request_hash : platform.content_hash
     response_payload : jsonb
@@ -427,14 +427,14 @@ class baseline_attempt_skill_state {
 }
 class baseline_blueprint {
     blueprint_id : uuid [PK]
-    occupation_id? : text
+    job position_id? : text
     created_by : uuid [FK]
     created_at : timestamp with time zone
     organization_id? : uuid [FK]
 }
 class baseline_blueprint_activation {
     organization_id : uuid [PK, FK]
-    occupation_id : text [PK, FK]
+    job position_id : text [PK, FK]
     blueprint_id : uuid [FK]
     blueprint_version? : integer [FK]
     activation_revision : bigint
@@ -445,7 +445,7 @@ class baseline_blueprint_activation {
 class baseline_blueprint_activation_event {
     activation_event_id : uuid [PK]
     organization_id : uuid [FK]
-    occupation_id : text [FK]
+    job position_id : text [FK]
     activation_revision : bigint
     blueprint_id : uuid [FK]
     blueprint_version? : integer [FK]
@@ -458,7 +458,7 @@ class baseline_blueprint_command {
     organization_id : uuid [PK, FK]
     actor_id : uuid [PK, FK]
     idempotency_key : text [PK]
-    occupation_id : text [FK]
+    job position_id : text [FK]
     blueprint_id : uuid [FK]
     operation : text
     request_hash : platform.content_hash
@@ -490,8 +490,8 @@ class baseline_blueprint_version {
     blueprint_id : uuid [PK, FK]
     version : integer [PK]
     name : text
-    occupation_id? : text
-    occupation_name_snapshot? : text
+    job position_id? : text
+    job position_name_snapshot? : text
     created_by : uuid [FK]
     created_at : timestamp with time zone
     idempotency_key : text
@@ -510,12 +510,12 @@ class baseline_blueprint_working_registry {
 class baseline_blueprint_working_revision {
     working_revision_id : uuid [PK]
     organization_id : uuid [FK]
-    occupation_id : text [FK]
+    job position_id : text [FK]
     blueprint_id : uuid [FK]
     base_version? : integer [FK]
     revision : bigint
     name : text
-    occupation_name_snapshot : text
+    job position_name_snapshot : text
     roles : jsonb
     state : text
     created_by : uuid [FK]
@@ -528,7 +528,7 @@ class baseline_management_command {
     actor_id : uuid [PK, FK]
     idempotency_key : text [PK]
     organization_id : uuid [FK]
-    occupation_id : text [FK]
+    job position_id : text [FK]
     operation : text
     request_hash : platform.content_hash
     response_json : jsonb
@@ -538,7 +538,7 @@ class baseline_mastery_evidence {
     attempt_id : uuid [PK, FK]
     organization_id : uuid [FK]
     learner_id : uuid [FK]
-    occupation_id : text [FK]
+    job position_id : text [FK]
     micro_skill_id : text [PK, FK]
     model_version_id : uuid [FK]
     mastery_mapping_version_id : uuid [FK]
@@ -551,10 +551,10 @@ class baseline_mastery_evidence {
     mastery_event_id : uuid [FK]
     emitted_at : timestamp with time zone
 }
-class employee_occupation_profile {
+class employee_job position_profile {
     organization_id : uuid [PK, FK]
     learner_id : uuid [PK, FK]
-    occupation_id : text [PK, FK]
+    job position_id : text [PK, FK]
     attempt_id : uuid [FK]
     blueprint_id : uuid [FK]
     blueprint_version : integer [FK]
@@ -568,7 +568,7 @@ class employee_role_selection {
     organization_id : uuid
     learner_id : uuid [FK]
     role_id : text
-    occupation_id : text
+    job position_id : text
     role_snapshot : jsonb
     target_revision : bigint
     selected_at : timestamp with time zone
@@ -659,14 +659,14 @@ baseline_adaptive_attempt --> baseline_attempt_pool_item
 baseline_adaptive_attempt --> baseline_attempt_result
 baseline_adaptive_attempt --> baseline_attempt_skill_state
 baseline_adaptive_attempt --> baseline_mastery_evidence
-baseline_adaptive_attempt --> employee_occupation_profile
+baseline_adaptive_attempt --> employee_job position_profile
 baseline_adaptive_blueprint_role --> baseline_adaptive_attempt
 baseline_adaptive_blueprint_role --> baseline_adaptive_blueprint_skill
 baseline_adaptive_blueprint_version --> baseline_adaptive_attempt
 baseline_adaptive_blueprint_version --> baseline_adaptive_blueprint_role
 baseline_adaptive_blueprint_version --> baseline_blueprint_activation
 baseline_adaptive_blueprint_version --> baseline_blueprint_activation_event
-baseline_adaptive_blueprint_version --> employee_occupation_profile
+baseline_adaptive_blueprint_version --> employee_job position_profile
 baseline_assessment_series --> baseline_assessment_transition
 baseline_assessment_series --> baseline_blueprint_working_revision
 baseline_assessment_series --> baseline_management_command

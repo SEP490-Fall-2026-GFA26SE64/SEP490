@@ -110,10 +110,10 @@ class "IRT calibration and scoped selection\n6 tables" as postgresql_irt {
   irt_effective_parameter_selection
   irt_parameter_promotion_command
 }
-class "Current Role selection and initial Occupation profile\n3 tables" as postgresql_role_profile {
+class "Current Role selection and initial Job Position profile\n3 tables" as postgresql_role_profile {
   employee_role_selection
   employee_role_selection_request
-  employee_occupation_profile
+  employee_job position_profile
 }
 postgresql --> postgresql_adaptive_attempt : 3 FK constraints
 postgresql --> postgresql_adaptive_blueprint : 6 FK constraints

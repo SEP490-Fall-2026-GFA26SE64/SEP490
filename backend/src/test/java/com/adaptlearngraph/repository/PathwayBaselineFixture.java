@@ -41,7 +41,7 @@ final class PathwayBaselineFixture {
         });
         blueprints=new JpaAdaptiveBlueprintStore(AdaptiveBlueprintRepositories.from(persistence::bean,new PostgresAdvisoryLocks(persistence.bean(jakarta.persistence.EntityManager.class))),json,persistence.transactionManager());
         version=blueprints.inTransaction(SCOPE,()->{
-            blueprints.ensureIdentity(SCOPE,MANAGER);var v=new Version(SCOPE,blueprints.nextVersion(SCOPE),config(),"Fixture Occupation","fixture-f3-v1",PINS,roles(),MANAGER,NOW);
+            blueprints.ensureIdentity(SCOPE,MANAGER);var v=new Version(SCOPE,blueprints.nextVersion(SCOPE),config(),"Fixture JobPosition","fixture-f3-v1",PINS,roles(),MANAGER,NOW);
             blueprints.insertVersion(SCOPE,v);
             var activation=new Activation(SCOPE,1,Optional.of(v.id()),MANAGER,NOW);
             blueprints.saveActivation(SCOPE,0,activation);blueprints.appendActivationEvent(SCOPE,activation,com.adaptlearngraph.repository.AdaptiveBlueprintStore.Operation.FINALIZE,"C3 fixture input");return v;
@@ -51,7 +51,7 @@ final class PathwayBaselineFixture {
         UUID learner=UUID.randomUUID();sql.update("INSERT INTO platform.account(account_id,organization_id,identifier,normalized_identifier,password_hash) VALUES (?,?,?,?,'test-only')",learner,ORG,"c3-"+learner,"c3-"+learner);
         sql.update("INSERT INTO platform.learner_state(learner_id) VALUES (?)",learner);
         var scope=new AdaptiveAttempt.Scope(ORG,learner,OCC);
-        var snapshot=new AdaptiveAttemptSnapshot(version,AdaptiveAttemptSnapshot.Purpose.OCCUPATION_EXPLORATION,Optional.empty(),Optional.empty(),pool());
+        var snapshot=new AdaptiveAttemptSnapshot(version,AdaptiveAttemptSnapshot.Purpose.JOB_POSITION_EXPLORATION,Optional.empty(),Optional.empty(),pool());
         var context=new AdaptiveAttemptContextPort() {
             public Employee requireEmployee(){return new Employee(ORG,learner);}
             public void authorizeScope(Employee e,AdaptiveAttempt.Scope s){if(!e.equals(requireEmployee()) || !s.equals(scope))throw new IllegalStateException("foreign fixture scope");}
@@ -73,7 +73,7 @@ final class PathwayBaselineFixture {
         var mastery=new TreeMap<String,Object>();
         for(var row:sql.queryForList("SELECT micro_skill_id,mastery FROM platform.baseline_attempt_skill_result WHERE attempt_id=?",view.id()))mastery.put(row.get("micro_skill_id").toString(),row.get("mastery"));
         // Owner-profile fixture is an exact copy of real immutable outcomes, never fabricated scores.
-        sql.update("INSERT INTO platform.employee_occupation_profile(organization_id,learner_id,occupation_id,attempt_id,blueprint_id,blueprint_version,catalog_fingerprint,required_skills,mastery,initialized_at) SELECT organization_id,learner_id,occupation_id,attempt_id,blueprint_id,blueprint_version,catalog_fingerprint,'[\"s1\",\"s2\",\"s3\"]'::jsonb,CAST(? AS jsonb),finished_at FROM platform.baseline_adaptive_attempt WHERE attempt_id=?",write(mastery),view.id());
+        sql.update("INSERT INTO platform.employee_job_position_profile(organization_id,learner_id,job_position_id,attempt_id,blueprint_id,blueprint_version,catalog_fingerprint,required_skills,mastery,initialized_at) SELECT organization_id,learner_id,job_position_id,attempt_id,blueprint_id,blueprint_version,catalog_fingerprint,'[\"s1\",\"s2\",\"s3\"]'::jsonb,CAST(? AS jsonb),finished_at FROM platform.baseline_adaptive_attempt WHERE attempt_id=?",write(mastery),view.id());
         return learner;
     }
     String write(Object value){try{return json.writeValueAsString(value);}catch(Exception invalid){throw new IllegalStateException(invalid);}}

@@ -7,15 +7,15 @@ import java.util.Objects;
 
 /** Reads the currently published question capacity available to baseline authoring. */
 public interface BaselineBlueprintCapacityUseCase {
-    CapacityDetail getAvailableCapacity(String occupationId);
+    CapacityDetail getAvailableCapacity(String jobPositionId);
 
     record CapacityDetail(
-            String occupationId,
+            String jobPositionId,
             String catalogVersion,
             Instant coverageAsOf,
             List<RoleCapacity> roles) {
         public CapacityDetail {
-            occupationId = requireText(occupationId, "occupationId");
+            jobPositionId = requireText(jobPositionId, "jobPositionId");
             catalogVersion = requireText(catalogVersion, "catalogVersion");
             coverageAsOf = Objects.requireNonNull(coverageAsOf, "coverageAsOf must not be null");
             roles = List.copyOf(Objects.requireNonNull(roles, "roles must not be null")).stream()

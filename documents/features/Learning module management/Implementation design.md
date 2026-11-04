@@ -1,4 +1,4 @@
-> **Current R4 behavior (2026-10-29):** new Module/content creation, reuse and Excel/ZIP import are based on skills and do not require an Occupation selection/grant. Historical occupation tags and the separate catalog intake workflow remain intact. L&D revision details show individually numbered Text/Video lesson cards. See the [current catalog refinement](../Learning%20catalog/README.md#r4-local-refinement--2026-10-29) and [tested UI/manual checklist](../../testing/system/REQ-013-learning-content-R4.md). Older dated rules below are retained for traceability.
+> **Current R4 behavior (2026-10-29):** new Module/content creation, reuse and Excel/ZIP import are based on skills and do not require an Job Position selection/grant. Historical job position tags and the separate catalog intake workflow remain intact. L&D revision details show individually numbered Text/Video lesson cards. See the [current catalog refinement](../Learning%20catalog/README.md#r4-local-refinement--2026-10-29) and [tested UI/manual checklist](../../testing/system/REQ-013-learning-content-R4.md). Older dated rules below are retained for traceability.
 
 > **Historical local implementation:** Current source requirements are in [Learning Catalog](../Learning%20catalog/README.md). Pre-merge V27/V28 references describe the old database; combined-source migrations are V33/V34. See [architecture](../../ARCHITECTURE.md#merge-migration-boundary--2026-10-29).
 
@@ -9,9 +9,9 @@
 ## Implementation mapping
 
 - Creator is immutable at Module level. Each edit creates a payload revision with its actual editor/time; lifecycle decisions append actor/time events. Review metadata remains separate from edit identity.
-- Occupation membership is explicit on the PostgreSQL aggregate. Any owning Occupation grant permits shared editing; creating membership requires all declared scopes. L&D manages grants for active Expert accounts in the shared workspace organization.
+- Job Position membership is explicit on the PostgreSQL aggregate. Any owning Job Position grant permits shared editing; creating membership requires all declared scopes. L&D manages grants for active Expert accounts in the shared workspace organization.
 - Markdown includes direct HTTPS video via `[video](https://host/file.mp4)`. The renderer supports headings, text, fenced-code lines and video; it does not execute raw HTML, iframe code or arbitrary Markdown links.
-- V27 implements `module_authoring`, `module_authoring_content`, `module_occupation_grant`, `module_grant_audit`, `module_learning_pin`. The aggregate contains the durable pending projection state and confirmation events; there is no separate outbox worker/table. L&D triggers idempotent retry explicitly.
+- V27 implements `module_authoring`, `module_authoring_content`, `module_job position_grant`, `module_grant_audit`, `module_learning_pin`. The aggregate contains the durable pending projection state and confirmation events; there is no separate outbox worker/table. L&D triggers idempotent retry explicitly.
 - Authentication uses the existing main login and its same-origin workspace cookie. There is no Module-specific login, Basic password or account list. The local identity bridge requires an explicit allowlisted cookie and an active PostgreSQL account; organization and roles come from that account, with DOMAIN_EXPERT mapped to EXPERT. Missing cookies return 401 instead of defaulting to L&D. This reuses the existing local demo identity mechanism, not production authentication. Production remains closed.
 - Only Modules created through this workflow are managed here. Existing graph/catalog and legacy learning_activity records are not silently migrated or repinned. Pin preservation is implemented for the new workflow; pathway/legacy-activity admission integration remains separate work.
 - Archive blocks new starts and preserves existing learner pins. Restore creates a new complete draft requiring approval.
@@ -25,7 +25,7 @@ Use [the feature contract](README.md#user-decisions--2026-10-28) for the user's 
 - LearningModuleRecord/API omit price and review identity/time, use durationMinutes, and represent mapping as skill IDs without relationship metadata or teachingFocus/difficultyLevel.
 - Neo4jLearningModuleRepository.save deletes and recreates TEACHES; delete does not enforce organization scope. LearningModuleService currently delegates without lifecycle rules.
 - LearningContentAuthoringPage and approval packages use learningContentStore/localStorage. Selecting a package there cannot yet create a durable, server-verifiable content reference.
-- The local organization-management security chain permits all organization endpoints. OrganizationTargetRoleController accepts a client role header. Neither is a trusted Expert/Occupation grant source for the new workflow.
+- The local organization-management security chain permits all organization endpoints. OrganizationTargetRoleController accepts a client role header. Neither is a trusted Expert/Job Position grant source for the new workflow.
 - No existing Module revision/approval/audit persistence was found. The existing learner learning_activity/module-assessment structures are historical UUID-reference structures; a compatible string-ID revision bridge must be designed, not assumed.
 
 ## Proposed storage responsibilities
@@ -35,8 +35,8 @@ Names below are design concepts, not approved SQL definitions or graph additions
 | Store | Proposed responsibility |
 |---|---|
 | Neo4j | Current catalog LearningModule and TEACHES, using only properties in ontology v0.11.0. |
-| PostgreSQL: occupation authoring grants | Organization + Expert account + Occupation assignment, active/revoked state and assignment history. L&D manages assignments. |
-| PostgreSQL: Module scope membership | Explicit organization/Module/Occupation membership, independent of skill overlap or legacy TargetRole assignments. No occupationId property or new edge is silently added to Neo4j. |
+| PostgreSQL: job position authoring grants | Organization + Expert account + Job Position assignment, active/revoked state and assignment history. L&D manages assignments. |
+| PostgreSQL: Module scope membership | Explicit organization/Module/Job Position membership, independent of skill overlap or legacy TargetRole assignments. No job positionId property or new edge is silently added to Neo4j. |
 | PostgreSQL: content versions | Immutable content bodies/manifests selected from Content Studio; Markdown and linked-video representation pending user clarification. Persist a stable reference used by contentUri/contentVersion. |
 | PostgreSQL: Module revisions | Validated Module/content/TEACHES package snapshots, revision identity, concurrency token, submission/decision state, actors and timestamps. A draft/submission must not replace the released graph. |
 | PostgreSQL: audit | Authenticated editor identity, timestamp, revision and change details, separate from review metadata. |
@@ -46,11 +46,11 @@ All records require organization boundaries. Preserve all prior content/mapping 
 
 ## Proposed authorization
 
-Resolve actor identity, organization and active roles server-side. Never trust X-User-Role, a body actor ID, browser active-company state or selected occupation as authorization.
+Resolve actor identity, organization and active roles server-side. Never trust X-User-Role, a body actor ID, browser active-company state or selected job position as authorization.
 
-L&D grants an Expert access to one or more Occupations. Experts may read/edit Modules assigned to an authorized scope. **Pending decision:** for a shared Module, whether a grant to any owning Occupation suffices for editing, or grants to all owning Occupations are required. Enforce the chosen rule on commands, content selection, listing/counts, detail, audit and lifecycle endpoints. Membership changes must not grant access accidentally through adding a skill.
+L&D grants an Expert access to one or more Job Positions. Experts may read/edit Modules assigned to an authorized scope. **Pending decision:** for a shared Module, whether a grant to any owning Job Position suffices for editing, or grants to all owning Job Positions are required. Enforce the chosen rule on commands, content selection, listing/counts, detail, audit and lifecycle endpoints. Membership changes must not grant access accidentally through adding a skill.
 
-The existing main login establishes the local workspace persona cookie for Employee, Expert, L&D and Admin. The Module chain resolves an active PostgreSQL account, organization and roles, while L&D persists Occupation grants. Main logout clears this shared cookie. LocalStorage and role headers grant no backend access. This bridge is limited to local + local-baseline-demo with its explicit enable flag and excludes prod.
+The existing main login establishes the local workspace persona cookie for Employee, Expert, L&D and Admin. The Module chain resolves an active PostgreSQL account, organization and roles, while L&D persists Job Position grants. Main logout clears this shared cookie. LocalStorage and role headers grant no backend access. This bridge is limited to local + local-baseline-demo with its explicit enable flag and excludes prod.
 
 ## Proposed lifecycle
 
@@ -84,13 +84,13 @@ No new lifecycle enum is silently added to graph status/reviewStatus. Pending su
 
 ## Confirmed follow-up decisions
 
-1. Occupation scope, editing allowed with a grant in any owning Occupation, with visible creator and subsequent editors/revisions.
+1. Job Position scope, editing allowed with a grant in any owning Job Position, with visible creator and subsequent editors/revisions.
 2. Minimal durable Content Studio/approval support; linked video embedded within Markdown rather than separate lesson records.
 3. Existing learners continue pinned content after archive; new starts are blocked. No automatic replacement or historical repinning.
 
 ## Neo4j catalog list — user-requested correction (2026-10-28)
 
-`ModuleAuthoringPort.graphModules` maps the complete stored graph schema into nullable catalog read DTOs, separate from validated authoring payloads. `/module-list` combines these with authorized authoring documents, excludes private managed IDs, filters before paging and sorts title/ID. Existing `/modules` authoring/review commands retain their contract. Frontend shows catalog details plus authorized workflow actions; no history is synthesized. Shared catalog browse access is explicitly distinct from Occupation authoring grants. [Read contract](View%20Learning%20Modules.md#neo4j-catalog-list--user-requested-correction-2026-10-28).
+`ModuleAuthoringPort.graphModules` maps the complete stored graph schema into nullable catalog read DTOs, separate from validated authoring payloads. `/module-list` combines these with authorized authoring documents, excludes private managed IDs, filters before paging and sorts title/ID. Existing `/modules` authoring/review commands retain their contract. Frontend shows catalog details plus authorized workflow actions; no history is synthesized. Shared catalog browse access is explicitly distinct from Job Position authoring grants. [Read contract](View%20Learning%20Modules.md#neo4j-catalog-list--user-requested-correction-2026-10-28).
 
 ## Executed v0.11 data upgrade
 
@@ -98,4 +98,4 @@ The shared catalog has now been upgraded in the existing application database un
 
 ### Per-module catalog intake — 2026-10-28
 
-Option A is now the implementation scope: explicit L&D Occupation assignment → assigned Expert acceptance → draft/edit/submit → L&D decision → existing graph publication. See [intake contract](../Learning%20module%20management/Receive%20Imported%20Module.md). Earlier statements that imported entries remain permanently read-only are superseded by this explicit intake route; listing alone never creates history.
+Option A is now the implementation scope: explicit L&D Job Position assignment → assigned Expert acceptance → draft/edit/submit → L&D decision → existing graph publication. See [intake contract](../Learning%20module%20management/Receive%20Imported%20Module.md). Earlier statements that imported entries remain permanently read-only are superseded by this explicit intake route; listing alone never creates history.

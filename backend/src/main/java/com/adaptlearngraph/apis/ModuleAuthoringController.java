@@ -26,24 +26,24 @@ import java.util.Map;
 public class ModuleAuthoringController {
     private final ModuleAuthoringApplicationService service;
     public ModuleAuthoringController(ModuleAuthoringApplicationService service) { this.service = service; }
-    // Occupation hints from legacy clients are ignored for new content.
-    public record ContentInput(String title, String markdown, List<String> occupationIds) {}
-    public record GrantInput(String expertId, String occupationId, boolean active) {}
+    // JobPosition hints from legacy clients are ignored for new content.
+    public record ContentInput(String title, String markdown, List<String> jobPositionIds) {}
+    public record GrantInput(String expertId, String jobPositionId, boolean active) {}
     public record UpdateInput(long expectedVersion, ModuleInput value) {}
     public record ActionInput(long expectedVersion, String action, String feedback) {}
     @GetMapping("/session") public ActorResponse session() { return service.session(); }
     @GetMapping("/catalog/{kind}") public List<ChoiceResponse> catalog(@PathVariable String kind) { return service.catalog(kind); }
     @GetMapping("/grants") public List<GrantResponse> grants() { return service.grants(); }
     @PutMapping("/grants") public ResponseEntity<Void> grant(@RequestBody GrantInput input) {
-        service.grant(input.expertId(), input.occupationId(), input.active()); return ResponseEntity.noContent().build();
+        service.grant(input.expertId(), input.jobPositionId(), input.active()); return ResponseEntity.noContent().build();
     }
     @GetMapping("/contents") public List<ContentResponse> contents() { return service.contents(); }
     @PostMapping("/contents") public ResponseEntity<ContentResponse> content(@RequestBody ContentInput input) {
-        return ResponseEntity.status(201).body(service.content(input.title(), input.markdown(), input.occupationIds()));
+        return ResponseEntity.status(201).body(service.content(input.title(), input.markdown(), input.jobPositionIds()));
     }
-    public record LessonsInput(String title, List<LessonRequest> lessons, List<String> occupationIds) {}
+    public record LessonsInput(String title, List<LessonRequest> lessons, List<String> jobPositionIds) {}
     @PostMapping("/contents/lessons") public ResponseEntity<ContentResponse> lessons(@RequestBody LessonsInput input) {
-        return ResponseEntity.status(201).body(service.lessons(input.title(), input.lessons(), input.occupationIds()));
+        return ResponseEntity.status(201).body(service.lessons(input.title(), input.lessons(), input.jobPositionIds()));
     }
     @GetMapping("/modules") public PageResponse list(@RequestParam(defaultValue="") String search,
             @RequestParam(defaultValue="") String status, @RequestParam(defaultValue="") String review,
@@ -54,9 +54,9 @@ public class ModuleAuthoringController {
             @RequestParam(defaultValue="") String status, @RequestParam(defaultValue="") String review,
             @RequestParam(defaultValue="") String type, @RequestParam(defaultValue="") String skill,
             @RequestParam(defaultValue="1") int page) { return service.catalogList(search, status, review, type, skill, page); }
-    public record IntakeInput(List<String> occupationIds, String expectedAssignedAt, String expertId) {}
+    public record IntakeInput(List<String> jobPositionIds, String expectedAssignedAt, String expertId) {}
     @PostMapping("/catalog-modules/{id}/assignment") public ResponseEntity<IntakeResponse> assign(@PathVariable String id, @RequestBody IntakeInput input) {
-        return ResponseEntity.status(201).body(service.assignIntake(id, input.occupationIds(), input.expectedAssignedAt(), input.expertId()));
+        return ResponseEntity.status(201).body(service.assignIntake(id, input.jobPositionIds(), input.expectedAssignedAt(), input.expertId()));
     }
     @PostMapping("/catalog-modules/{id}/accept") public ResponseEntity<DocumentResponse> accept(@PathVariable String id) {
         return ResponseEntity.status(201).body(service.acceptIntake(id));

@@ -13,14 +13,14 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Immutable fixed Blueprint versions with their role and micro-skill quotas. The Occupation-only and identity-only reads
+ * Immutable fixed Blueprint versions with their role and micro-skill quotas. The JobPosition-only and identity-only reads
  * are legacy port methods; organization-scoped variants join the identity's organization.
  */
 public interface BaselineBlueprintVersionJpaRepository
         extends Repository<BaselineBlueprintVersionEntity, BaselineBlueprintVersionEntity.Key>,
         InsertOnlyRepository<BaselineBlueprintVersionEntity> {
 
-    record Header(UUID blueprintId, Integer version, String name, String occupationId, String occupationNameSnapshot,
+    record Header(UUID blueprintId, Integer version, String name, String jobPositionId, String jobPositionNameSnapshot,
                   UUID createdBy, String idempotencyKey, String requestHash, Instant createdAt) {}
 
     record Role(String roleId, String roleNameSnapshot, Boolean enabled, BigDecimal easyScoreWeight,
@@ -33,7 +33,7 @@ public interface BaselineBlueprintVersionJpaRepository
 
     String HEADER = """
             select new com.adaptlearngraph.repository.BaselineBlueprintVersionJpaRepository$Header(version.blueprintId,
-                version.version, version.name, version.occupationId, version.occupationNameSnapshot, version.createdBy,
+                version.version, version.name, version.jobPositionId, version.jobPositionNameSnapshot, version.createdBy,
                 version.idempotencyKey, version.requestHash, version.createdAt)
             from BaselineBlueprintVersionEntity version
             join BaselineBlueprintEntity identity on identity.blueprintId = version.blueprintId

@@ -1,4 +1,4 @@
-# Departments and Occupations
+# Departments and Job Positions
 
 **Source:** [Version 2](../../FA26SE267_KNOWLEDGE_GRAPH_BASED_ADAPTIVE_LEARNING__haht43_Version_2.md), section 3.2(c), Functional Requirements.
 
@@ -12,13 +12,13 @@ Each record below corresponds to one source bullet. Unspecified fields are inten
 
 | Requirement | Status | Current behavior | Remaining boundary |
 | --- | --- | --- | --- |
-| [FR-03.02](#fr-03-02) | Partial | Department CRUD/employee-assignment demonstrations use a browser store. Separately, the real administrator member editor persists department/occupation assignment against existing organization references. | Browser-created departments are not backend reference records. End-to-end department create/update/delete and synchronization with the real member editor are missing. |
-| [FR-04.01](#fr-04-01) | Prototype | The occupations page lists sample O*NET-style records and supports local create/edit/deactivate/import interactions, including name, code, job zone, description and interest values. | The page uses component state; its occupation model lacks the required department association. It does not manage the backend occupation-department references. |
-| [FR-04.02](#fr-04-02) | Prototype | L&D Managers can add/remove sample Experts on the local occupation records and inspect assigned lists. | There is no persisted occupation-Expert assignment workflow or downstream authorization based on those changes. Target-role assignment is a separate partial slice, not a substitute. |
+| [FR-03.02](#fr-03-02) | Partial | Department CRUD/employee-assignment demonstrations use a browser store. Separately, the real administrator member editor persists department/job position assignment against existing organization references. | Browser-created departments are not backend reference records. End-to-end department create/update/delete and synchronization with the real member editor are missing. |
+| [FR-04.01](#fr-04-01) | Prototype | The job positions page lists sample O*NET-style records and supports local create/edit/deactivate/import interactions, including name, code, job zone, description and interest values. | The page uses component state; its job position model lacks the required department association. It does not manage the backend job position-department references. |
+| [FR-04.02](#fr-04-02) | Prototype | L&D Managers can add/remove sample Experts on the local job position records and inspect assigned lists. | There is no persisted job position-Expert assignment workflow or downstream authorization based on those changes. Target-role assignment is a separate partial slice, not a substitute. |
 
-**Entry points:** `/admin/departments`, `/ld-manager/occupations`; real member assignment is at `/admin/users`.
+**Entry points:** `/admin/departments`, `/ld-manager/job positions`; real member assignment is at `/admin/users`.
 
-**Code references:** [department store](../../../frontend/src/shared/stores/departmentStore.ts), [occupation page](../../../frontend/src/features/manager/occupations/OccupationsManagementPage.tsx), [real member editor](../../../frontend/src/features/administration/user-management/UserManagementPage.tsx), [backend reference validation](../../../backend/src/main/java/com/adaptlearngraph/repository/JdbcMemberReferenceValidator.java). Account-reference storage must not be mistaken for a completed department/occupation management API.
+**Code references:** [department store](../../../frontend/src/shared/stores/departmentStore.ts), [job position page](../../../frontend/src/features/manager/job positions/Job PositionsManagementPage.tsx), [real member editor](../../../frontend/src/features/administration/user-management/UserManagementPage.tsx), [backend reference validation](../../../backend/src/main/java/com/adaptlearngraph/repository/JdbcMemberReferenceValidator.java). Account-reference storage must not be mistaken for a completed department/job position management API.
 
 ## Requirements
 
@@ -40,13 +40,13 @@ Each record below corresponds to one source bullet. Unspecified fields are inten
 
 <a id="fr-04-01"></a>
 
-### FR-04.01: Manage occupations
+### FR-04.01: Manage job positions
 
 | Field | Description |
 | --- | --- |
 | 1. Requirement ID | FR-04.01 |
-| 2. Requirement Name | Manage occupations |
-| 3. Description | The L&D Manager shall create, view, update, and deactivate occupations, attach an occupation to a department during creation, and update its department association. |
+| 2. Requirement Name | Manage job positions |
+| 3. Description | The L&D Manager shall create, view, update, and deactivate job positions, attach an job position to a department during creation, and update its department association. |
 | 4. Actor | L&D Manager |
 | 5. Preconditions |  |
 | 6. Main Flow |  |
@@ -62,7 +62,7 @@ Each record below corresponds to one source bullet. Unspecified fields are inten
 | --- | --- |
 | 1. Requirement ID | FR-04.02 |
 | 2. Requirement Name | Assign Experts |
-| 3. Description | The L&D Manager shall assign or remove Experts from occupations and view their current assignments. |
+| 3. Description | The L&D Manager shall assign or remove Experts from job positions and view their current assignments. |
 | 4. Actor | L&D Manager |
 | 5. Preconditions |  |
 | 6. Main Flow |  |

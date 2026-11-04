@@ -8,7 +8,7 @@ classDiagram
     <<table>>
     uuid working_revision_id PK_REQUIRED
     uuid organization_id FK_REQUIRED
-    text occupation_id FK_REQUIRED
+    text job position_id FK_REQUIRED
     uuid blueprint_id FK_REQUIRED
     uuid created_by FK_REQUIRED
     uuid updated_by FK_REQUIRED
@@ -18,7 +18,7 @@ classDiagram
     uuid blueprint_id PK_FK_REQUIRED
     integer version PK_REQUIRED
     uuid organization_id FK_REQUIRED
-    text occupation_id FK_REQUIRED
+    text job position_id FK_REQUIRED
     uuid model_version_id FK_REQUIRED
     uuid mastery_mapping_version_id FK_REQUIRED
     uuid parameter_set_id FK_REQUIRED
@@ -49,7 +49,7 @@ classDiagram
   class SDD_DB_04_t_baseline_blueprint_activation["baseline_blueprint_activation"] {
     <<table>>
     uuid organization_id PK_FK_REQUIRED
-    text occupation_id PK_FK_REQUIRED
+    text job position_id PK_FK_REQUIRED
     uuid blueprint_id FK_REQUIRED
     integer blueprint_version FK_NULLABLE
     uuid activated_by FK_REQUIRED
@@ -58,7 +58,7 @@ classDiagram
     <<table>>
     uuid activation_event_id PK_REQUIRED
     uuid organization_id FK_REQUIRED
-    text occupation_id FK_REQUIRED
+    text job position_id FK_REQUIRED
     uuid blueprint_id FK_REQUIRED
     integer blueprint_version FK_NULLABLE
     uuid actor_id FK_REQUIRED
@@ -68,7 +68,7 @@ classDiagram
     uuid organization_id PK_FK_REQUIRED
     uuid actor_id PK_FK_REQUIRED
     text idempotency_key PK_REQUIRED
-    text occupation_id FK_REQUIRED
+    text job position_id FK_REQUIRED
     uuid blueprint_id FK_REQUIRED
   }
   class SDD_DB_04_t_account["account"] {

@@ -15,7 +15,7 @@ skinparam noteBorderColor #D97706
 skinparam defaultFontName Arial
 skinparam defaultFontSize 14
 title Ontology v0.11 — Module–Skill teaching focus and difficulty
-class Occupation {
+class Job Position {
  code : String
  name : String
  jobZone : Integer
@@ -55,7 +55,7 @@ class LearningModule {
  duration : Integer (minutes > 0)
  price : Float (VND > 0)
 }
-Occupation "1" --> "1..*" TargetRole : HAS_ROLE
+Job Position "1" --> "1..*" TargetRole : HAS_ROLE
 TargetRole "1" --> "1..*" Level : HAS_LEVEL
 Level "1" -up-> "1..*" Competency : HAS_COMPETENCY
 Competency "0..*" --> "1..*" MicroSkill : HAS_SKILL
@@ -102,9 +102,9 @@ Check content depth against the selected Level.
 Skill prerequisites determine learning readiness.
 Module completion does not automatically prove skill mastery.
 end note
-note top of Occupation
-Each TargetRole has one owning Occupation.
-Repeated reported titles use distinct role IDs per Occupation.
+note top of Job Position
+Each TargetRole has one owning Job Position.
+Repeated reported titles use distinct role IDs per Job Position.
 Shared metadata: id, version, status, reviewStatus,
 reviewedBy?, reviewedAt?
 end note

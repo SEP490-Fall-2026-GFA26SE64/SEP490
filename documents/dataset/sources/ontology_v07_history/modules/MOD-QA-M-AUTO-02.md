@@ -22,7 +22,7 @@ Read [the local lesson: Making automated checks reliable](../topics/QA-AUTO.md).
 
 - Before MS-QA16, demonstrate MS-QA06: Understand automated setup and assertions before diagnosing flaky outcomes.
 
-Prerequisites taught within this module are studied first. Cross-module prerequisites are scheduled by the pathway engine. These are pending local learning-order decisions, not claims of universal occupational dependency.
+Prerequisites taught within this module are studied first. Cross-module prerequisites are scheduled by the pathway engine. These are pending local learning-order decisions, not claims of universal job positional dependency.
 
 ## Assigned tasks and submission evidence
 

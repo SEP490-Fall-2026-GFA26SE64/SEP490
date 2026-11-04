@@ -4,9 +4,9 @@
 
 ## Authorship and coverage
 
-135 original English scenario questions, 540 option texts and 540 individual option explanations, one assessed MicroSkill per item, four options/one key. All 15 required skills have 3 EASY/3 MEDIUM/3 HARD. Correct positions: A30/B28/C40/D37. Exact prompt duplicates: zero. Difficulty is editorial; no observed difficulty, Bloom field, 3PL b, role rank or requiredScore inference. Coverage is full union across all eight Roles and 24 Levels, not a demonstration subset. No bank for the other four Occupations.
+135 original English scenario questions, 540 option texts and 540 individual option explanations, one assessed MicroSkill per item, four options/one key. All 15 required skills have 3 EASY/3 MEDIUM/3 HARD. Correct positions: A30/B28/C40/D37. Exact prompt duplicates: zero. Difficulty is editorial; no observed difficulty, Bloom field, 3PL b, role rank or requiredScore inference. Coverage is full union across all eight Roles and 24 Levels, not a demonstration subset. No bank for the other four Job Positions.
 
-The small complete scope was selected after comparing all five Occupations (40/36/20/44/15 union skills) and reading definitions/modules. It includes authorization, networks, configuration, monitoring, hardening and security operations/governance. Its 135-item authoring/review workload is smaller than 180/324/360/396 items for the other full scopes; scope was not trimmed. Workload is content/scenario/source review, not a claimed monetary quote. No external paid authoring service was invoked.
+The small complete scope was selected after comparing all five Job Positions (40/36/20/44/15 union skills) and reading definitions/modules. It includes authorization, networks, configuration, monitoring, hardening and security operations/governance. Its 135-item authoring/review workload is smaller than 180/324/360/396 items for the other full scopes; scope was not trimmed. Workload is content/scenario/source review, not a claimed monetary quote. No external paid authoring service was invoked.
 
 ## Technical primary sources
 

@@ -16,14 +16,14 @@ import {
   type BlueprintCapacity,
   type BlueprintRole,
   type CoverageShortage,
-  type OccupationDetail,
-  type OccupationSummary,
+  type JobPositionDetail,
+  type JobPositionSummary,
   createBlueprint,
   generateAssessment,
-  getLatestBlueprintByOccupation,
-  getOccupation,
-  getOccupationCapacity,
-  listOccupations,
+  getLatestBlueprintByJobPosition,
+  getJobPosition,
+  getJobPositionCapacity,
+  listJobPositions,
   publishAssessment,
   reviewAssessment,
   reviseBlueprint,
@@ -65,9 +65,9 @@ export function BaselineBlueprintPage() {
     title: translationRef.current('baselineBlueprint.actionFailed'), description, variant: 'destructive',
   }), [toast])
   const [name, setName] = React.useState('')
-  const [occupations, setOccupations] = React.useState<OccupationSummary[]>([])
-  const [selectedOccupationId, setSelectedOccupationId] = React.useState('')
-  const [selectedOccupation, setSelectedOccupation] = React.useState<OccupationDetail | null>(null)
+  const [jobPositions, setJobPositions] = React.useState<JobPositionSummary[]>([])
+  const [selectedJobPositionId, setSelectedJobPositionId] = React.useState('')
+  const [selectedJobPosition, setSelectedJobPosition] = React.useState<JobPositionDetail | null>(null)
   const [capacity, setCapacity] = React.useState<BlueprintCapacity | null>(null)
   const [capacityBusy, setCapacityBusy] = React.useState(false)
   const [capacityError, setCapacityError] = React.useState<string | null>(null)
@@ -83,34 +83,34 @@ export function BaselineBlueprintPage() {
   const saveKey = React.useRef<string | undefined>(undefined)
   const generationKey = React.useRef<string | undefined>(undefined)
 
-  const chooseOccupation = React.useCallback((occupationId: string) => {
+  const chooseJobPosition = React.useCallback((jobPositionId: string) => {
     saveKey.current = undefined
     generationKey.current = undefined
     setName('')
-    setSelectedOccupation(null)
+    setSelectedJobPosition(null)
     setCapacity(null)
     setCapacityError(null)
-    setCapacityBusy(Boolean(occupationId))
+    setCapacityBusy(Boolean(jobPositionId))
     setRoles([])
     setPendingInputRoleIds([])
     setBlueprint(null)
     setAssessment(null)
     setShortages([])
     setCoverageValidated(false)
-    setCatalogBusy(Boolean(occupationId))
-    setSelectedOccupationId(occupationId)
+    setCatalogBusy(Boolean(jobPositionId))
+    setSelectedJobPositionId(jobPositionId)
   }, [])
 
   React.useEffect(() => {
     let active = true
-    void loadOccupationSummaries().then((available) => {
+    void loadJobPositionSummaries().then((available) => {
       if (!active) return
-      setOccupations(available)
-      const requestedOccupationId = searchParams.get('occupationId')
-      const initialOccupationId = available.some((occupation) => occupation.id === requestedOccupationId)
-        ? requestedOccupationId ?? ''
+      setJobPositions(available)
+      const requestedJobPositionId = searchParams.get('jobPositionId')
+      const initialJobPositionId = available.some((jobPosition) => jobPosition.id === requestedJobPositionId)
+        ? requestedJobPositionId ?? ''
         : available[0]?.id ?? ''
-      chooseOccupation(initialOccupationId)
+      chooseJobPosition(initialJobPositionId)
       if (available.length === 0) setCatalogBusy(false)
     }).catch((error: unknown) => {
       if (!active) return
@@ -118,24 +118,24 @@ export function BaselineBlueprintPage() {
       showError(errorMessage(error, translationRef.current))
     })
     return () => { active = false }
-  }, [chooseOccupation, searchParams, showError])
+  }, [chooseJobPosition, searchParams, showError])
 
   React.useEffect(() => {
-    if (!selectedOccupationId) return
+    if (!selectedJobPositionId) return
 
     let active = true
     void Promise.all([
-      loadOccupationDetail(selectedOccupationId),
-      loadLatestBlueprint(selectedOccupationId),
-    ]).then(([occupation, saved]) => {
+      loadJobPositionDetail(selectedJobPositionId),
+      loadLatestBlueprint(selectedJobPositionId),
+    ]).then(([jobPosition, saved]) => {
       if (!active) return
       const requiresWeightRevision = saved?.roles.some((role) => roleTotal(role) > 0
         && !isValidScoreWeights(weightsFromRole(role))) ?? false
-      setSelectedOccupation(occupation)
+      setSelectedJobPosition(jobPosition)
       setName(saved?.name ?? formatMessage(translationRef.current('baselineBlueprint.defaultName'), {
-        occupation: occupation.name,
+        jobPosition: jobPosition.name,
       }))
-      setRoles(saved ? rolesForBlueprintEditor(saved.roles) : rolesFromOccupation(occupation))
+      setRoles(saved ? rolesForBlueprintEditor(saved.roles) : rolesFromJobPosition(jobPosition))
       setBlueprint(saved)
       setCoverageValidated(saved !== null && !requiresWeightRevision)
     }).catch((error: unknown) => {
@@ -144,16 +144,16 @@ export function BaselineBlueprintPage() {
       if (active) setCatalogBusy(false)
     })
     return () => { active = false }
-  }, [selectedOccupationId, showError])
+  }, [selectedJobPositionId, showError])
 
   React.useEffect(() => {
-    if (!selectedOccupationId) return
+    if (!selectedJobPositionId) return
 
     let active = true
-    void getOccupationCapacity(selectedOccupationId).then((loaded) => {
+    void getJobPositionCapacity(selectedJobPositionId).then((loaded) => {
       if (!active) return
-      if (loaded.occupationId !== selectedOccupationId) {
-        throw new Error('Capacity response does not match the selected Occupation')
+      if (loaded.jobPositionId !== selectedJobPositionId) {
+        throw new Error('Capacity response does not match the selected JobPosition')
       }
       setCapacity(loaded)
     }).catch((error: unknown) => {
@@ -162,7 +162,7 @@ export function BaselineBlueprintPage() {
       if (active) setCapacityBusy(false)
     })
     return () => { active = false }
-  }, [capacityRefresh, selectedOccupationId])
+  }, [capacityRefresh, selectedJobPositionId])
 
   const retryCapacity = React.useCallback(() => {
     setCapacityBusy(true)
@@ -170,8 +170,8 @@ export function BaselineBlueprintPage() {
     setCapacityRefresh((value) => value + 1)
   }, [])
 
-  const capacityStale = capacity !== null && selectedOccupation !== null
-    && capacity.catalogVersion !== selectedOccupation.catalogVersion
+  const capacityStale = capacity !== null && selectedJobPosition !== null
+    && capacity.catalogVersion !== selectedJobPosition.catalogVersion
   const capacityReady = capacity !== null && !capacityBusy && capacityError === null && !capacityStale
   const capacityIssues = React.useMemo(() => capacityReady && capacity
     ? validateBlueprintCapacity(roles, capacity)
@@ -222,7 +222,7 @@ export function BaselineBlueprintPage() {
   }
 
   const handleSave = async () => {
-    if (!selectedOccupation || !name.trim() || roles.length === 0 || !roles.some((role) => roleTotal(role) > 0)) {
+    if (!selectedJobPosition || !name.trim() || roles.length === 0 || !roles.some((role) => roleTotal(role) > 0)) {
       showError(t('baselineBlueprint.validation.required'))
       return
     }
@@ -241,7 +241,7 @@ export function BaselineBlueprintPage() {
     setBusy('save')
     setShortages([])
     try {
-      const payload = toBlueprintDraft(name, selectedOccupation, roles)
+      const payload = toBlueprintDraft(name, selectedJobPosition, roles)
       saveKey.current ??= crypto.randomUUID()
       const saved = blueprint
         ? await reviseBlueprint(blueprint.blueprintId, blueprint.version, payload, saveKey.current)
@@ -344,7 +344,7 @@ export function BaselineBlueprintPage() {
           </Badge>}
         />
 
-        {!catalogBusy && occupations.length === 0 && (
+        {!catalogBusy && jobPositions.length === 0 && (
           <Card className="border-warning/50">
             <CardContent className="flex gap-3 pt-6 text-sm">
               <AlertTriangle className="mt-0.5 shrink-0 text-warning" size={18} />
@@ -359,37 +359,37 @@ export function BaselineBlueprintPage() {
           </CardHeader>
           <CardContent className="space-y-3">
             <label className="block max-w-xl space-y-1 text-sm font-medium">
-              {t('baselineBlueprint.occupation')}
+              {t('baselineBlueprint.jobPosition')}
               <select
                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                value={selectedOccupationId}
+                value={selectedJobPositionId}
                 disabled={catalogBusy || busy !== null}
-                onChange={(event) => chooseOccupation(event.target.value)}
+                onChange={(event) => chooseJobPosition(event.target.value)}
               >
-                <option value="">{t('baselineBlueprint.selectOccupation')}</option>
-                {occupations.map((occupation) => (
-                  <option key={occupation.id} value={occupation.id}>
-                    {occupation.name} ({formatMessage(t(occupation.roleCount === 1
+                <option value="">{t('baselineBlueprint.selectJobPosition')}</option>
+                {jobPositions.map((jobPosition) => (
+                  <option key={jobPosition.id} value={jobPosition.id}>
+                    {jobPosition.name} ({formatMessage(t(jobPosition.roleCount === 1
                       ? 'baselineBlueprint.roleCountOne'
-                      : 'baselineBlueprint.roleCountMany'), { count: occupation.roleCount })})
+                      : 'baselineBlueprint.roleCountMany'), { count: jobPosition.roleCount })})
                   </option>
                 ))}
               </select>
             </label>
-            {selectedOccupation && (
+            {selectedJobPosition && (
               <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
-                <Badge variant="outline">{formatMessage(t(selectedOccupation.roles.length === 1
+                <Badge variant="outline">{formatMessage(t(selectedJobPosition.roles.length === 1
                   ? 'baselineBlueprint.roleCountOne'
-                  : 'baselineBlueprint.roleCountMany'), { count: selectedOccupation.roles.length })}</Badge>
+                  : 'baselineBlueprint.roleCountMany'), { count: selectedJobPosition.roles.length })}</Badge>
                 <span>{formatMessage(t('baselineBlueprint.catalogVersion'), {
-                  version: selectedOccupation.catalogVersion,
+                  version: selectedJobPosition.catalogVersion,
                 })}</span>
                 <span>{t('baselineBlueprint.allRolesVisible')}</span>
                 {capacityBusy && <Badge variant="outline">{t('baselineBlueprint.capacityLoading')}</Badge>}
                 {capacityReady && <Badge variant="success">{t('baselineBlueprint.capacityReady')}</Badge>}
               </div>
             )}
-            {selectedOccupation && !capacityBusy && (capacityError || capacityStale) && (
+            {selectedJobPosition && !capacityBusy && (capacityError || capacityStale) && (
               <div className="flex flex-wrap items-center gap-3 rounded-md border border-warning/50 bg-warning/5 p-3 text-sm">
                 <AlertTriangle className="shrink-0 text-warning" size={17} />
                 <span className="min-w-0 flex-1">
@@ -410,14 +410,14 @@ export function BaselineBlueprintPage() {
           <CardContent className="space-y-5">
             <label className="block max-w-xl space-y-1 text-sm font-medium">
               {t('baselineBlueprint.blueprintName')}
-              <Input value={name} disabled={catalogBusy || busy !== null || !selectedOccupation} onChange={(event) => {
+              <Input value={name} disabled={catalogBusy || busy !== null || !selectedJobPosition} onChange={(event) => {
                 markEdited()
                 setName(event.target.value)
               }} />
             </label>
 
             <BaselineRoleConfiguration
-              key={`${selectedOccupationId}-${roles[0]?.roleId ?? 'loading'}`}
+              key={`${selectedJobPositionId}-${roles[0]?.roleId ?? 'loading'}`}
               roles={roles}
               capacity={capacityReady ? capacity : null}
               capacityIssues={capacityIssues}
@@ -431,7 +431,7 @@ export function BaselineBlueprintPage() {
             <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border pt-4">
               <CoverageStatus validated={coverageValidated} shortages={shortages} />
               <div className="flex flex-wrap gap-2">
-                <Button variant="outline" leftIcon={<Save size={15} />} isLoading={busy === 'save'} disabled={catalogBusy || busy !== null || !selectedOccupation || !capacityReady || capacityIssues.length > 0 || pendingInputRoleIds.length > 0 || hasInvalidWeights || roles.length === 0} onClick={() => void handleSave()}>
+                <Button variant="outline" leftIcon={<Save size={15} />} isLoading={busy === 'save'} disabled={catalogBusy || busy !== null || !selectedJobPosition || !capacityReady || capacityIssues.length > 0 || pendingInputRoleIds.length > 0 || hasInvalidWeights || roles.length === 0} onClick={() => void handleSave()}>
                   {blueprint ? t('baselineBlueprint.saveNewVersion') : t('baselineBlueprint.saveBlueprint')}
                 </Button>
                 <Button leftIcon={<FileQuestion size={15} />} isLoading={busy === 'generate'} disabled={busy !== null || !blueprint || !coverageValidated || !capacityReady || assessment !== null} onClick={() => void handleGenerate()}>
@@ -519,25 +519,25 @@ function AssessmentReview({ assessment, busy, onReview, onPublish }: {
   </CardContent></Card>
 }
 
-async function loadOccupationSummaries(): Promise<OccupationSummary[]> {
-  return listOccupations()
+async function loadJobPositionSummaries(): Promise<JobPositionSummary[]> {
+  return listJobPositions()
 }
 
-async function loadOccupationDetail(occupationId: string): Promise<OccupationDetail> {
-  return getOccupation(occupationId)
+async function loadJobPositionDetail(jobPositionId: string): Promise<JobPositionDetail> {
+  return getJobPosition(jobPositionId)
 }
 
-async function loadLatestBlueprint(occupationId: string): Promise<BaselineBlueprint | null> {
+async function loadLatestBlueprint(jobPositionId: string): Promise<BaselineBlueprint | null> {
   try {
-    return await getLatestBlueprintByOccupation(occupationId)
+    return await getLatestBlueprintByJobPosition(jobPositionId)
   } catch (error) {
     if (error instanceof BaselineBlueprintApiError && error.status === 404) return null
     throw error
   }
 }
 
-function rolesFromOccupation(occupation: OccupationDetail): BlueprintRole[] {
-  return occupation.roles.map((role) => ({
+function rolesFromJobPosition(jobPosition: JobPositionDetail): BlueprintRole[] {
+  return jobPosition.roles.map((role) => ({
     roleId: role.id,
     roleNameSnapshot: role.name,
     enabled: true,

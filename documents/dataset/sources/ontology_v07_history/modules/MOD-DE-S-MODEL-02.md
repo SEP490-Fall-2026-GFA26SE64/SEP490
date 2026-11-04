@@ -22,7 +22,7 @@ Read [the local lesson: Modelling data before optimizing it](../topics/DE-MODEL.
 
 - Before MS-DE13, demonstrate MS-DE03: Establish a working warehouse before measuring changes to its workloads.
 
-Prerequisites taught within this module are studied first. Cross-module prerequisites are scheduled by the pathway engine. These are pending local learning-order decisions, not claims of universal occupational dependency.
+Prerequisites taught within this module are studied first. Cross-module prerequisites are scheduled by the pathway engine. These are pending local learning-order decisions, not claims of universal job positional dependency.
 
 ## Assigned tasks and submission evidence
 

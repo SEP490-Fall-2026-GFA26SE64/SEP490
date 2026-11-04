@@ -30,19 +30,19 @@ public final class WorkspaceBaselineTestFixtures {
     @PostMapping("/api/v1/__subscription-test/baseline/{organization}")
     public Map<String,Object> create(@PathVariable UUID organization, @RequestParam(defaultValue="true") boolean ready) {
         UUID manager=UUID.randomUUID(), employee=UUID.randomUUID(), department=UUID.randomUUID(), reference=UUID.randomUUID();
-        String occupation="test-occupation-"+organization, role="test-role-"+organization;
+        String jobPosition="test-jobPosition-"+organization, role="test-role-"+organization;
         var now=Timestamp.from(Instant.now());
         tx.executeWithoutResult(status -> {
             jdbc.update("INSERT INTO platform.department_reference(department_id,organization_id,name,active) VALUES (?,?,?,true)",
                     department,organization,"Baseline fixture department");
             jdbc.update("""
-                    INSERT INTO platform.occupation_department_reference(occupation_reference_id,occupation_id,organization_id,department_id,name,active)
+                    INSERT INTO platform.job_position_department_reference(job_position_reference_id,job_position_id,organization_id,department_id,name,active)
                     VALUES (?,?,?,?,?,true)
-                    """,reference,UUID.randomUUID(),organization,department,"Baseline fixture occupation");
+                    """,reference,UUID.randomUUID(),organization,department,"Baseline fixture jobPosition");
             member(manager,organization,"LD_MANAGER",null,null);
             member(employee,organization,"EMPLOYEE",department,reference);
-            jdbc.update("INSERT INTO platform.workspace_baseline_resource(organization_id,occupation_reference_id,graph_occupation_id) VALUES (?,?,?)",
-                    organization,reference,occupation);
+            jdbc.update("INSERT INTO platform.workspace_baseline_resource(organization_id,job_position_reference_id,graph_job_position_id) VALUES (?,?,?)",
+                    organization,reference,jobPosition);
         });
         if (ready) {
             UUID bank=UUID.randomUUID(), model=UUID.randomUUID(), mapping=UUID.randomUUID(), parameters=UUID.randomUUID(), run=UUID.randomUUID();
@@ -50,7 +50,7 @@ public final class WorkspaceBaselineTestFixtures {
             try (var session=graph.session()) {
                 session.executeWrite(transaction -> {
                     transaction.run("""
-                            CREATE (o:Occupation {id:$occupation,code:$occupation,name:'Baseline fixture occupation',status:'ACTIVE',
+                            CREATE (o:JobPosition {id:$jobPosition,code:$jobPosition,name:'Baseline fixture jobPosition',status:'ACTIVE',
                               version:'synthetic-v1',organizationId:$org,reviewStatus:'APPROVED',reviewedBy:$reviewer,reviewedAt:$now})
                             CREATE (r:TargetRole {id:$role,code:$role,name:'Synthetic target role',scope:'Isolated test only',status:'ACTIVE',
                               version:'synthetic-v1',organizationId:$org,reviewStatus:'APPROVED',reviewedBy:$reviewer,reviewedAt:$now})
@@ -66,7 +66,7 @@ public final class WorkspaceBaselineTestFixtures {
                             CREATE (l)-[:REQUIRES_SKILL {id:'requires-'+skill,status:'ACTIVE',version:'synthetic-v1',
                               requiredScore:0.7,isMandatory:true,organizationId:$org,reviewStatus:'APPROVED',
                               reviewedBy:$reviewer,reviewedAt:$now}]->(s)
-                            """,Map.of("occupation",occupation,"role",role,"level","level-"+organization,
+                            """,Map.of("jobPosition",jobPosition,"role",role,"level","level-"+organization,
                             "membership","has-role-"+organization,"roleLevel","has-level-"+organization,
                             "org",organization.toString(),"reviewer",manager.toString(),"now",now.toInstant().toString(),"skills",skills)).consume();
                     return null;
@@ -124,13 +124,13 @@ public final class WorkspaceBaselineTestFixtures {
                         """,organization,manager,bank,model,"e".repeat(64),parameters,"c".repeat(64),now);
                 jdbc.update("""
                         UPDATE platform.workspace_baseline_resource SET question_bank_id=?,model_version_id=?,mastery_mapping_version_id=?
-                        WHERE organization_id=? AND graph_occupation_id=?
-                        """,bank,model,mapping,organization,occupation);
+                        WHERE organization_id=? AND graph_job_position_id=?
+                        """,bank,model,mapping,organization,jobPosition);
             });
         }
         return Map.of("manager",Map.of("email",manager+"@example.test","password",PASSWORD),
                 "employee",Map.of("email",employee+"@example.test","password",PASSWORD),
-                "occupationId",occupation,"roleId",role,"organizationId",organization);
+                "jobPositionId",jobPosition,"roleId",role,"organizationId",organization);
     }
     private void member(UUID account,UUID org,String role,UUID department,UUID reference) {
         UUID membership=UUID.randomUUID();
@@ -141,7 +141,7 @@ public final class WorkspaceBaselineTestFixtures {
         jdbc.update("INSERT INTO platform.workspace_account_profile(account_id,full_name,email_verified_at) VALUES (?,?,now())",account,"Synthetic "+role);
         jdbc.update("""
                 INSERT INTO platform.organization_membership(membership_id,account_id,organization_id,active,department_id,
-                  occupation_reference_id,created_at,updated_at) VALUES (?,?,?,true,?,?,now(),now())
+                  job_position_reference_id,created_at,updated_at) VALUES (?,?,?,true,?,?,now(),now())
                 """,membership,account,org,department,reference);
         jdbc.update("INSERT INTO platform.organization_membership_role VALUES (?,?)",membership,role);
     }

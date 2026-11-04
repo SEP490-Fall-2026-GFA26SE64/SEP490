@@ -6,7 +6,13 @@ import java.util.Set;
 import java.util.UUID;
 
 public record MemberProfileUpdate(String fullName, Set<String> roles, UUID departmentId,
-                                  UUID occupationReferenceId, long revision) {
+                                  UUID jobPositionReferenceId, long revision,
+                                  String departmentName, String jobPositionName) {
+    public MemberProfileUpdate(String fullName, Set<String> roles, UUID departmentId,
+                               UUID jobPositionReferenceId, long revision) {
+        this(fullName, roles, departmentId, jobPositionReferenceId, revision, null, null);
+    }
+
     public MemberProfileUpdate {
         if (fullName == null || fullName.isBlank() || fullName.strip().length() > 120) {
             throw new SubscriptionFailure(SubscriptionFailure.Code.INVALID_INPUT,

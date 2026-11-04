@@ -2,10 +2,10 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
   createBlueprint,
   generateAssessment,
-  getLatestBlueprintByOccupation,
-  getOccupation,
-  getOccupationCapacity,
-  listOccupations,
+  getLatestBlueprintByJobPosition,
+  getJobPosition,
+  getJobPositionCapacity,
+  listJobPositions,
   publishAssessment,
   reviewAssessment,
   reviseBlueprint,
@@ -14,8 +14,8 @@ import {
 
 const DRAFT: BlueprintDraft = {
   name: 'Java baseline',
-  occupationId: 'occupation-engineering',
-  occupationNameSnapshot: 'Software Engineering',
+  jobPositionId: 'job-position-engineering',
+  jobPositionNameSnapshot: 'Software Engineering',
   roles: [{
     roleId: 'role-java',
     roleNameSnapshot: 'Java Backend Engineer',
@@ -61,14 +61,14 @@ describe('baselineBlueprintApi', () => {
     expect(JSON.parse(second[1].body)).toMatchObject({ expectedLatestVersion: 1, name: 'Revised' })
   })
 
-  it('lists and resolves Occupations then loads the latest logical blueprint', async () => {
+  it('lists and resolves JobPositions then loads the latest logical blueprint', async () => {
     const fetchMock = vi.fn()
       .mockResolvedValueOnce(response([{
-        id: 'occupation-engineering', name: 'Software Engineering',
+        id: 'job-position-engineering', name: 'Software Engineering',
         catalogVersion: 'v1', roleCount: 2,
       }]))
       .mockResolvedValueOnce(response({
-        id: 'occupation-engineering', name: 'Software Engineering', catalogVersion: 'v1',
+        id: 'job-position-engineering', name: 'Software Engineering', catalogVersion: 'v1',
         roles: [{
           id: 'role-java', name: 'Java Engineer', catalogVersion: 'v1',
           skills: [{ id: 'skill-java', name: 'Java Core', catalogVersion: 'v1' }],
@@ -77,22 +77,22 @@ describe('baselineBlueprintApi', () => {
       .mockResolvedValueOnce(response(blueprintPayload(2)))
     vi.stubGlobal('fetch', fetchMock)
 
-    expect(await listOccupations()).toEqual([expect.objectContaining({ roleCount: 2 })])
-    expect(await getOccupation('occupation-engineering')).toEqual(expect.objectContaining({
+    expect(await listJobPositions()).toEqual([expect.objectContaining({ roleCount: 2 })])
+    expect(await getJobPosition('job-position-engineering')).toEqual(expect.objectContaining({
       roles: [expect.objectContaining({ id: 'role-java' })],
     }))
-    expect(await getLatestBlueprintByOccupation('occupation-engineering'))
-      .toEqual(expect.objectContaining({ version: 2, occupationId: 'occupation-engineering' }))
+    expect(await getLatestBlueprintByJobPosition('job-position-engineering'))
+      .toEqual(expect.objectContaining({ version: 2, jobPositionId: 'job-position-engineering' }))
     expect(fetchMock.mock.calls.map(([url]) => url)).toEqual([
-      '/api/v1/ld/baseline-blueprint-catalog/occupations',
-      '/api/v1/ld/baseline-blueprint-catalog/occupations/occupation-engineering',
-      '/api/v1/ld/baseline-blueprints/occupations/occupation-engineering',
+      '/api/v1/ld/baseline-blueprint-catalog/job-positions',
+      '/api/v1/ld/baseline-blueprint-catalog/job-positions/job-position-engineering',
+      '/api/v1/ld/baseline-blueprints/job-positions/job-position-engineering',
     ])
   })
 
   it('loads and validates the published capacity snapshot', async () => {
     const fetchMock = vi.fn().mockResolvedValue(response({
-      occupationId: 'occupation-engineering',
+      jobPositionId: 'job-position-engineering',
       catalogVersion: 'v1',
       coverageAsOf: '2026-10-16T08:00:00Z',
       roles: [{
@@ -107,34 +107,34 @@ describe('baselineBlueprintApi', () => {
     }))
     vi.stubGlobal('fetch', fetchMock)
 
-    await expect(getOccupationCapacity('occupation/engineering')).resolves.toEqual(
+    await expect(getJobPositionCapacity('job-position/engineering')).resolves.toEqual(
       expect.objectContaining({
         catalogVersion: 'v1',
         roles: [expect.objectContaining({ roleId: 'role-java' })],
       }),
     )
     expect(fetchMock).toHaveBeenCalledWith(
-      '/api/v1/ld/baseline-blueprint-catalog/occupations/occupation%2Fengineering/capacity',
+      '/api/v1/ld/baseline-blueprint-catalog/job-positions/job-position%2Fengineering/capacity',
       expect.objectContaining({ method: 'GET', credentials: 'same-origin' }),
     )
   })
 
   it('rejects malformed capacity instead of hiding stale or impossible limits', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(response({
-      occupationId: 'occupation-engineering', catalogVersion: 'v1',
+      jobPositionId: 'job-position-engineering', catalogVersion: 'v1',
       coverageAsOf: 'not-an-instant', roles: [],
     })))
-    await expect(getOccupationCapacity('occupation-engineering'))
+    await expect(getJobPositionCapacity('job-position-engineering'))
       .rejects.toThrow('Invalid coverageAsOf')
 
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(response({
-      occupationId: 'occupation-engineering', catalogVersion: 'v1',
+      jobPositionId: 'job-position-engineering', catalogVersion: 'v1',
       coverageAsOf: '2026-10-16T08:00:00Z',
       roles: [{ roleId: 'role-java', skills: [{
         microSkillId: 'skill-java', availableEasy: -1, availableMedium: 1, availableHard: 1,
       }] }],
     })))
-    await expect(getOccupationCapacity('occupation-engineering'))
+    await expect(getJobPositionCapacity('job-position-engineering'))
       .rejects.toThrow('Invalid skill.availableEasy')
   })
 
@@ -214,7 +214,7 @@ describe('baselineBlueprintApi', () => {
 function blueprintPayload(version: number) {
   return {
     blueprintId: 'blueprint-1', version, name: DRAFT.name,
-    occupationId: DRAFT.occupationId, occupationNameSnapshot: DRAFT.occupationNameSnapshot,
+    jobPositionId: DRAFT.jobPositionId, jobPositionNameSnapshot: DRAFT.jobPositionNameSnapshot,
     createdAt: '2026-10-14T15:00:00Z',
     roles: DRAFT.roles.map((role) => ({ ...role, totalQuestionCount: 3 })),
   }

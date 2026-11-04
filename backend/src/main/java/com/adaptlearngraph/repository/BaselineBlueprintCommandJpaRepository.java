@@ -13,10 +13,10 @@ public interface BaselineBlueprintCommandJpaRepository
         extends Repository<BaselineBlueprintCommandEntity, BaselineBlueprintCommandEntity.Key>,
         InsertOnlyRepository<BaselineBlueprintCommandEntity> {
 
-    record Row(String occupationId, String operation, String requestHash, String responsePayload, Instant createdAt) {}
+    record Row(String jobPositionId, String operation, String requestHash, String responsePayload, Instant createdAt) {}
 
     @Query("""
-            select new com.adaptlearngraph.repository.BaselineBlueprintCommandJpaRepository$Row(c.occupationId, c.operation,
+            select new com.adaptlearngraph.repository.BaselineBlueprintCommandJpaRepository$Row(c.jobPositionId, c.operation,
                 c.requestHash, c.responsePayload, c.createdAt)
             from BaselineBlueprintCommandEntity c
             where c.organizationId = :org and c.actorId = :actor and c.idempotencyKey = :retry

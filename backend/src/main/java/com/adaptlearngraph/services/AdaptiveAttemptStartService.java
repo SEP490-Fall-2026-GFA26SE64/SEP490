@@ -81,7 +81,7 @@ public final class AdaptiveAttemptStartService implements StartRead {
         });
     }
     private static String hash(StartTarget target) {
-        String value = target instanceof Exploration exploration ? "EXPLORATION\n" + exploration.occupationId() : "SELECTED_ROLE";
+        String value = target instanceof Exploration exploration ? "EXPLORATION\n" + exploration.jobPositionId() : "SELECTED_ROLE";
         try {
             var digest = MessageDigest.getInstance("SHA-256");
             digest.update(StandardCharsets.UTF_8.newEncoder().encode(CharBuffer.wrap("AB-ATTEMPT-START-V1\n" + value)));

@@ -25,10 +25,10 @@ public final class AdaptiveAttemptSnapshotResolver {
         this.blueprints=blueprints;this.eligibility=eligibility;this.technical=technical;this.policies=Objects.requireNonNull(policies);
     }
     public AdaptiveAttemptSnapshot resolve(AdaptiveAttempt.Scope scope, Optional<String> role, Optional<Long> selectionRevision) {
-        var catalogScope = new AdaptiveBlueprint.Scope(scope.organizationId(), scope.occupationId());
+        var catalogScope = new AdaptiveBlueprint.Scope(scope.organizationId(), scope.jobPositionId());
         var current = blueprints.findActivation(catalogScope).flatMap(AdaptiveBlueprint.Activation::current)
                 .flatMap(id -> blueprints.findVersion(catalogScope, id)).orElseThrow(() -> new Failure(Code.BLUEPRINT_UNAVAILABLE));
-        if (current.configuration().scopePolicy() != AdaptiveBlueprint.ScopePolicy.FULL_OCCUPATION_V2) {
+        if (current.configuration().scopePolicy() != AdaptiveBlueprint.ScopePolicy.FULL_JOB_POSITION_V2) {
             throw new Failure(Code.CONFIGURATION_UPDATE_REQUIRED);
         }
         var eligible = eligibility.resolvePinned(catalogScope, current.pins()).orElseThrow(() -> new Failure(Code.FORBIDDEN));
@@ -54,11 +54,11 @@ public final class AdaptiveAttemptSnapshotResolver {
                 throw new Failure(Code.POLICY_UNAVAILABLE);
             }
         }
-        int maximum = current.configuration().occupationBounds().maxQuestions();
+        int maximum = current.configuration().jobPositionBounds().maxQuestions();
         if (!pool.keySet().equals(ids) || pool.size() < maximum || skills.isEmpty()) throw new Failure(Code.INFEASIBLE_SCOPE);
         if (!eligible.equals(eligibility.resolvePinned(catalogScope, current.pins()).orElse(null))) throw new Failure(Code.BLUEPRINT_STALE);
         return new AdaptiveAttemptSnapshot(current, role.isPresent() ? AdaptiveAttemptSnapshot.Purpose.ROLE_REQUIREMENT
-                : AdaptiveAttemptSnapshot.Purpose.OCCUPATION_EXPLORATION, role, selectionRevision, pool,
+                : AdaptiveAttemptSnapshot.Purpose.JOB_POSITION_EXPLORATION, role, selectionRevision, pool,
                 Optional.ofNullable(policies.apply(scope.organizationId())));
     }
 }

@@ -2,7 +2,7 @@ import { expect as baseExpect, test, type APIRequestContext, type Page } from '@
 const expect = baseExpect.configure({ timeout: 60_000 })
 const root = '/api/v1/module-management'
 type Member = { accountId: string; email: string; password: string }
-type Fixture = { organizationId: string; occupationId: string; moduleId: string; expert: Member; manager: Member }
+type Fixture = { organizationId: string; jobPositionId: string; moduleId: string; expert: Member; manager: Member }
 async function mutation(request: APIRequestContext, path: string, data: unknown, method = 'POST') {
   const csrf = await (await request.get('/api/v1/workspace-auth/csrf')).json() as { headerName: string; token: string }
   return request.fetch(path, { method, data, headers: { [csrf.headerName]: csrf.token } })
@@ -27,14 +27,14 @@ test('merge: real role login, scoped module intake, CSRF, approval, reload and s
   await page.addInitScript(() => localStorage.setItem('app_language', 'en'))
   await login(page, fixture.manager, '/ld-manager/modules')
   expect((await page.request.put(root + '/grants', { data: {} })).status()).toBe(403)
-  expect((await mutation(page.request, root + '/grants', { expertId: fixture.expert.accountId, occupationId: fixture.occupationId, active: true }, 'PUT')).status()).toBe(204)
+  expect((await mutation(page.request, root + '/grants', { expertId: fixture.expert.accountId, jobPositionId: fixture.jobPositionId, active: true }, 'PUT')).status()).toBe(204)
   await page.getByLabel('Search name or ID', { exact: true }).fill(fixture.moduleId)
   await moduleCard.getByRole('button', { name: 'Assign for intake', exact: true }).click()
   let dialog = page.getByRole('dialog', { name: 'Assign for intake' })
   await dialog.getByRole('button', { name: 'Cancel', exact: true }).click()
   await moduleCard.getByRole('button', { name: 'Assign for intake', exact: true }).click()
   dialog = page.getByRole('dialog', { name: 'Assign for intake' })
-  await dialog.getByLabel('Related occupations', { exact: true }).selectOption(fixture.occupationId)
+  await dialog.getByLabel('Related jobPositions', { exact: true }).selectOption(fixture.jobPositionId)
   await dialog.getByRole('button', { name: 'Assign', exact: true }).click()
   await expect(dialog).not.toBeVisible()
   await expect(moduleCard.getByText('Awaiting Expert intake', { exact: true })).toBeVisible()

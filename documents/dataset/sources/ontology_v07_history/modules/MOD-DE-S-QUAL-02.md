@@ -23,7 +23,7 @@ Read [the local lesson: Using explicit data quality rules](../topics/DE-QUAL.md)
 
 - Before MS-DE15, demonstrate MS-DE02: Understand the transformation input/output behaviour before testing a data pipeline.
 
-Prerequisites taught within this module are studied first. Cross-module prerequisites are scheduled by the pathway engine. These are pending local learning-order decisions, not claims of universal occupational dependency.
+Prerequisites taught within this module are studied first. Cross-module prerequisites are scheduled by the pathway engine. These are pending local learning-order decisions, not claims of universal job positional dependency.
 
 ## Assigned tasks and submission evidence
 

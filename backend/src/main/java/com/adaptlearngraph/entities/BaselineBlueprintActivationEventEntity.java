@@ -20,8 +20,8 @@ public class BaselineBlueprintActivationEventEntity {
     private UUID activationEventId;
     @Column(name = "organization_id", nullable = false)
     private UUID organizationId;
-    @Column(name = "occupation_id", nullable = false)
-    private String occupationId;
+    @Column(name = "job_position_id", nullable = false)
+    private String jobPositionId;
     @Column(name = "activation_revision", nullable = false)
     private Long activationRevision;
     @Column(name = "blueprint_id", nullable = false)
@@ -41,10 +41,10 @@ public class BaselineBlueprintActivationEventEntity {
     }
 
     @SuppressWarnings("java:S107")
-    public BaselineBlueprintActivationEventEntity(UUID activationEventId, UUID organizationId, String occupationId, Long activationRevision, UUID blueprintId, Integer blueprintVersion, String operation, UUID actorId, String reason, Instant occurredAt) {
+    public BaselineBlueprintActivationEventEntity(UUID activationEventId, UUID organizationId, String jobPositionId, Long activationRevision, UUID blueprintId, Integer blueprintVersion, String operation, UUID actorId, String reason, Instant occurredAt) {
         this.activationEventId = activationEventId;
         this.organizationId = organizationId;
-        this.occupationId = occupationId;
+        this.jobPositionId = jobPositionId;
         this.activationRevision = activationRevision;
         this.blueprintId = blueprintId;
         this.blueprintVersion = blueprintVersion;
@@ -56,7 +56,7 @@ public class BaselineBlueprintActivationEventEntity {
 
     public UUID getActivationEventId() { return activationEventId; }
     public UUID getOrganizationId() { return organizationId; }
-    public String getOccupationId() { return occupationId; }
+    public String getJobPositionId() { return jobPositionId; }
     public Long getActivationRevision() { return activationRevision; }
     public UUID getBlueprintId() { return blueprintId; }
     public Integer getBlueprintVersion() { return blueprintVersion; }

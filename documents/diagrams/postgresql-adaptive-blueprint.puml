@@ -15,7 +15,7 @@ endlegend
 class baseline_adaptive_blueprint_working_revision {
   working_revision_id : uuid [PK]
   organization_id : uuid [FK]
-  occupation_id : text [FK]
+  job position_id : text [FK]
   blueprint_id : uuid [FK]
   revision : bigint
   configuration : jsonb
@@ -30,9 +30,9 @@ class baseline_adaptive_blueprint_version {
   blueprint_id : uuid [PK, FK]
   version : integer [PK]
   organization_id : uuid [FK]
-  occupation_id : text [FK]
+  job position_id : text [FK]
   name : text
-  occupation_name_snapshot : text
+  job position_name_snapshot : text
   catalog_fingerprint : text
   exploration_max_questions? : integer
   exploration_time_limit_seconds? : integer
@@ -42,8 +42,8 @@ class baseline_adaptive_blueprint_version {
   created_by : uuid [FK]
   created_at : timestamp with time zone
   scope_policy? : text
-  occupation_max_questions? : integer
-  occupation_time_limit_seconds? : integer
+  job position_max_questions? : integer
+  job position_time_limit_seconds? : integer
 }
 class baseline_adaptive_blueprint_role {
   blueprint_id : uuid [PK, FK]
@@ -74,7 +74,7 @@ class baseline_blueprint_version_registry {
 }
 class baseline_blueprint_activation {
   organization_id : uuid [PK, FK]
-  occupation_id : text [PK, FK]
+  job position_id : text [PK, FK]
   blueprint_id : uuid [FK]
   blueprint_version? : integer [FK]
   activation_revision : bigint
@@ -85,7 +85,7 @@ class baseline_blueprint_activation {
 class baseline_blueprint_activation_event {
   activation_event_id : uuid [PK]
   organization_id : uuid [FK]
-  occupation_id : text [FK]
+  job position_id : text [FK]
   activation_revision : bigint
   blueprint_id : uuid [FK]
   blueprint_version? : integer [FK]
@@ -98,7 +98,7 @@ class baseline_blueprint_command {
   organization_id : uuid [PK, FK]
   actor_id : uuid [PK, FK]
   idempotency_key : text [PK]
-  occupation_id : text [FK]
+  job position_id : text [FK]
   blueprint_id : uuid [FK]
   operation : text
   request_hash : platform.content_hash

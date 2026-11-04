@@ -8,7 +8,7 @@ import {
 } from './baselineBlueprintCapacity'
 
 const CAPACITY: BlueprintCapacity = {
-  occupationId: 'occupation-1',
+  jobPositionId: 'jobPosition-1',
   catalogVersion: 'v1',
   coverageAsOf: '2026-10-16T08:00:00Z',
   roles: [

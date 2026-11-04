@@ -2,7 +2,7 @@
 
 2026-10-22 latest local cutover: official graph imported and fully matched; main PostgreSQL migrated to V22 and135 DRAFT items imported/read back. Exact graph/bank reruns make no changes. Expert/publication/model/runtime readiness remains open; C was not implemented. See [local cutover](LOCAL_CUTOVER.md) and [readback](local-readback.json). Earlier Session1 blockers are superseded by this user-authorized follow-up.
 
-- Occupation: **OCC-15-1212.00 — Information Security Analysts**, code **15-1212.00**, catalog **0.8.0**.
+- Job Position: **OCC-15-1212.00 — Information Security Analysts**, code **15-1212.00**, catalog **0.8.0**.
 - Full scope: **8 active Roles / 24 active Levels / 15 deduplicated MicroSkills / 135 DRAFT item versions**.
 - 3 EASY + 3 MEDIUM + 3 HARD per skill; 45 per label. Correct answer positions A30/B28/C40/D37.
 - Source/review are distinct: official package, NEEDS_EXPERT_REVIEW/null reviewer, no published content or calibrated parameters.
@@ -31,7 +31,7 @@
 
 ## Survey and selection
 
-| Occupation | Roles | Levels | Full union skills | Items at 9/skill |
+| Job Position | Roles | Levels | Full union skills | Items at 9/skill |
 | --- | --- | --- | --- | --- |
 | OCC-15-1252.00 — Software Developers | 10 | 30 | 40 | 360 |
 | OCC-15-1243.00 — Database Architects | 10 | 30 | 36 | 324 |
@@ -39,7 +39,7 @@
 | OCC-15-1299.08 — Computer Systems Engineers/Architects | 10 | 30 | 44 | 396 |
 | OCC-15-1212.00 — Information Security Analysts | 8 | 24 | 15 | 135 |
 
-The selected scope has usable definitions/module references for all 15 skills and permits complete bounded authorship. Choosing it reduces workload without reducing the required union. Other Occupations were surveyed only. Nine is sizing; actual feasibility still depends on the future approved model minimum/limits and eligible parameters.
+The selected scope has usable definitions/module references for all 15 skills and permits complete bounded authorship. Choosing it reduces workload without reducing the required union. Other Job Positions were surveyed only. Nine is sizing; actual feasibility still depends on the future approved model minimum/limits and eligible parameters.
 
 ## Exact Roles and Levels
 

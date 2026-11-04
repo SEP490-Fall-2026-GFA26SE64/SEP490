@@ -3,7 +3,7 @@ package com.adaptlearngraph.services;
 import com.adaptlearngraph.repository.BaselineAssessmentDraftStore;
 import com.adaptlearngraph.repository.BaselineAssessmentManagementStore;
 import com.adaptlearngraph.repository.BaselineBlueprintStore;
-import com.adaptlearngraph.repository.BaselineOccupationCatalogPort;
+import com.adaptlearngraph.repository.BaselineJobPositionCatalogPort;
 import java.util.function.Supplier;
 
 /**
@@ -29,7 +29,7 @@ public final class BaselineStoreFailures {
         }
     }
 
-    /** Baseline assessment management: management, draft and blueprint stores plus the Occupation catalog. */
+    /** Baseline assessment management: management, draft and blueprint stores plus the JobPosition catalog. */
     public static <T> T management(Supplier<T> work) {
         try {
             return work.get();
@@ -37,7 +37,7 @@ public final class BaselineStoreFailures {
                  | BaselineBlueprintStore.WriteConflict conflict) {
             throw new WriteConflict(conflict.getMessage(), conflict);
         } catch (BaselineAssessmentManagementStore.DependencyUnavailable | BaselineAssessmentDraftStore.DependencyUnavailable
-                 | BaselineOccupationCatalogPort.DependencyUnavailable unavailable) {
+                 | BaselineJobPositionCatalogPort.DependencyUnavailable unavailable) {
             throw new DependencyUnavailable(unavailable.getMessage(), unavailable);
         }
     }

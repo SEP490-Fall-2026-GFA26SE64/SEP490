@@ -18,18 +18,18 @@ import org.springframework.transaction.annotation.Transactional;
 public interface BaselineBlueprintJpaRepository
         extends Repository<BaselineBlueprintEntity, UUID>, InsertOnlyRepository<BaselineBlueprintEntity> {
 
-    @Query("select b.blueprintId from BaselineBlueprintEntity b where b.organizationId = :org and b.occupationId = :occupation")
-    List<UUID> identity(@Param("org") UUID organizationId, @Param("occupation") String occupationId);
+    @Query("select b.blueprintId from BaselineBlueprintEntity b where b.organizationId = :org and b.jobPositionId = :jobPosition")
+    List<UUID> identity(@Param("org") UUID organizationId, @Param("jobPosition") String jobPositionId);
 
-    /** Legacy unscoped fixed-Blueprint lookup kept for the {@link BaselineBlueprintStore} port's Occupation-only method. */
-    @Query("select b.blueprintId from BaselineBlueprintEntity b where b.occupationId = :occupation")
-    List<UUID> byOccupation(@Param("occupation") String occupationId);
+    /** Legacy unscoped fixed-Blueprint lookup kept for the {@link BaselineBlueprintStore} port's JobPosition-only method. */
+    @Query("select b.blueprintId from BaselineBlueprintEntity b where b.jobPositionId = :jobPosition")
+    List<UUID> byJobPosition(@Param("jobPosition") String jobPositionId);
 
     // Native: row lock (FOR UPDATE) on the scope's Blueprint identity.
     @Query(value = """
-            SELECT blueprint_id FROM platform.baseline_blueprint WHERE organization_id=:org AND occupation_id=:occupation FOR UPDATE
+            SELECT blueprint_id FROM platform.baseline_blueprint WHERE organization_id=:org AND job_position_id=:jobPosition FOR UPDATE
             """, nativeQuery = true)
-    List<UUID> lockIdentity(@Param("org") UUID organizationId, @Param("occupation") String occupationId);
+    List<UUID> lockIdentity(@Param("org") UUID organizationId, @Param("jobPosition") String jobPositionId);
 
     /** Locks a Blueprint identity for assessment generation, scoped to the generating actor's organization. */
     // Native: row lock (FOR UPDATE OF identity) joined to the actor account row.
@@ -57,10 +57,10 @@ public interface BaselineBlueprintJpaRepository
     @Modifying(flushAutomatically = true)
     @Transactional(TransactionManagers.JPA)
     @Query(value = """
-            INSERT INTO platform.baseline_blueprint(blueprint_id,organization_id,occupation_id,created_by)
-            VALUES (:id,:org,:occupation,:actor) ON CONFLICT DO NOTHING
+            INSERT INTO platform.baseline_blueprint(blueprint_id,organization_id,job_position_id,created_by)
+            VALUES (:id,:org,:jobPosition,:actor) ON CONFLICT DO NOTHING
             """, nativeQuery = true)
-    int ensureAdaptive(@Param("id") UUID blueprintId, @Param("org") UUID organizationId, @Param("occupation") String occupationId,
+    int ensureAdaptive(@Param("id") UUID blueprintId, @Param("org") UUID organizationId, @Param("jobPosition") String jobPositionId,
             @Param("actor") UUID actorId);
 
     // Native: idempotent fixed identity creation (INSERT ... SELECT ... ON CONFLICT (blueprint_id) DO NOTHING).
@@ -68,34 +68,34 @@ public interface BaselineBlueprintJpaRepository
     @Transactional(TransactionManagers.JPA)
     @Query(value = """
             INSERT INTO platform.baseline_blueprint (
-                blueprint_id, organization_id, occupation_id, created_by, created_at)
-            SELECT :blueprintId, account.organization_id, CAST(:occupationId AS text), :createdBy, :createdAt
+                blueprint_id, organization_id, job_position_id, created_by, created_at)
+            SELECT :blueprintId, account.organization_id, CAST(:jobPositionId AS text), :createdBy, :createdAt
             FROM platform.account account
             WHERE account.account_id = :createdBy
               AND account.organization_id = :organizationId
             ON CONFLICT (blueprint_id) DO NOTHING
             """, nativeQuery = true)
     int ensureFixed(@Param("blueprintId") UUID blueprintId, @Param("organizationId") UUID organizationId,
-            @Param("occupationId") String occupationId, @Param("createdBy") UUID createdBy, @Param("createdAt") Instant createdAt);
+            @Param("jobPositionId") String jobPositionId, @Param("createdBy") UUID createdBy, @Param("createdAt") Instant createdAt);
 
     @Query("""
             select count(b) from BaselineBlueprintEntity b
-            where b.blueprintId = :blueprintId and b.organizationId = :organizationId and b.occupationId = :occupationId
+            where b.blueprintId = :blueprintId and b.organizationId = :organizationId and b.jobPositionId = :jobPositionId
             """)
     long countMatching(@Param("blueprintId") UUID blueprintId, @Param("organizationId") UUID organizationId,
-            @Param("occupationId") String occupationId);
+            @Param("jobPositionId") String jobPositionId);
 
     @Query("""
             select count(b) from BaselineBlueprintEntity b
-            where b.blueprintId = :blueprintId and b.organizationId = :organizationId and b.occupationId is null
+            where b.blueprintId = :blueprintId and b.organizationId = :organizationId and b.jobPositionId is null
             """)
-    long countMatchingWithoutOccupation(@Param("blueprintId") UUID blueprintId, @Param("organizationId") UUID organizationId);
+    long countMatchingWithoutJobPosition(@Param("blueprintId") UUID blueprintId, @Param("organizationId") UUID organizationId);
 
     /** Next version in the namespace shared by fixed and adaptive versions of the scope's identity. */
     @Query("""
             select coalesce(max(registry.version), 0) + 1 from BaselineBlueprintVersionRegistryEntity registry
             join BaselineBlueprintEntity identity on identity.blueprintId = registry.blueprintId
-            where identity.organizationId = :org and identity.occupationId = :occupation
+            where identity.organizationId = :org and identity.jobPositionId = :jobPosition
             """)
-    Integer nextVersion(@Param("org") UUID organizationId, @Param("occupation") String occupationId);
+    Integer nextVersion(@Param("org") UUID organizationId, @Param("jobPosition") String jobPositionId);
 }

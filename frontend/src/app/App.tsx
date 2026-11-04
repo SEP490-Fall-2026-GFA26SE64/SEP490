@@ -23,7 +23,7 @@ import { LearningContentAuthoringPage } from '../features/expert/content/Learnin
 import { ExpertAssignedRolesPage } from '../features/expert/target-roles/ExpertAssignedRolesPage'
 import { ExpertPathwayReviewPage } from '../features/expert/guidance-review/ExpertGuidanceReviewPage'
 import { ExpertPathwayDetailPage } from '../features/expert/pathway-review/ExpertPathwayDetailPage'
-import { OccupationsManagementPage } from '../features/manager/occupations/OccupationsManagementPage'
+import { JobPositionsManagementPage } from '../features/manager/job-positions/JobPositionsManagementPage'
 import { Dashboard } from '../features/manager/learning-outcomes/Dashboard'
 import { TargetRolesPage } from '../features/manager/target-roles/TargetRolesPage'
 import { TeamMatrixPage } from '../features/manager/team-matrix/TeamMatrixPage'
@@ -131,10 +131,11 @@ export default function App() {
             <Route path="/expert/modules" element={<LearningModulesPage />} />
             <Route path="/expert/assessment-bank" element={<AssessmentBankPage />} />
 
-            {/* 3. L&D Manager routes (Occupations, Target Roles, Approvals, Team Matrix, Outcomes, Users) */}
+            {/* 3. L&D Manager routes (JobPositions, Target Roles, Approvals, Team Matrix, Outcomes, Users) */}
             <Route path="/ld-manager" element={<Navigate to="/ld-manager/dashboard" replace />} />
-            <Route path="/ld-manager/occupations" element={<OccupationsManagementPage />} />
-            <Route path="/ld-manager/disciplines" element={<Navigate to="/ld-manager/occupations" replace />} />
+            <Route path="/ld-manager/job-positions" element={<JobPositionsManagementPage />} />
+            <Route path="/ld-manager/job-positions" element={<JobPositionsManagementPage />} />
+            <Route path="/ld-manager/disciplines" element={<Navigate to="/ld-manager/job-positions" replace />} />
             <Route path="/ld-manager/target-roles" element={<TargetRolesPage />} />
             <Route element={<LdModuleWorkspaceRoute />}>
               <Route path="/ld-manager/approvals" />
@@ -144,7 +145,7 @@ export default function App() {
             <Route path="/ld-manager/team-matrix" element={<TeamMatrixPage />} />
             <Route path="/ld-manager/dashboard" element={<Dashboard />} />
             <Route path="/ld-manager/baseline-assessments" element={<AdaptiveBaselineRoute />} />
-            <Route path="/ld-manager/baseline-assessments/:occupationId/*" element={<AdaptiveBaselineRoute />} />
+            <Route path="/ld-manager/baseline-assessments/:jobPositionId/*" element={<AdaptiveBaselineRoute />} />
             <Route path="/ld-manager/question-bank" element={<AssessmentBankPage />} />
             <Route path="/ld-manager/assessment-bank" element={<LegacyBaselineAssessmentRedirect />} />
             <Route path="/ld-manager/learning-outcomes" element={<Dashboard />} />
@@ -159,7 +160,8 @@ export default function App() {
             <Route path="/manager/ontology" element={<Navigate to="/expert/ontology" replace />} />
             <Route path="/manager/modules" element={<Navigate to="/ld-manager/modules" replace />} />
             <Route path="/manager/assessment-bank" element={<LegacyBaselineAssessmentRedirect />} />
-            <Route path="/manager/occupations" element={<Navigate to="/ld-manager/occupations" replace />} />
+            <Route path="/manager/job-positions" element={<Navigate to="/ld-manager/job-positions" replace />} />
+            <Route path="/manager/job-positions" element={<Navigate to="/ld-manager/job-positions" replace />} />
             <Route path="/manager" element={<Navigate to="/ld-manager/dashboard" replace />} />
             <Route path="/manager/learning-outcomes" element={<Navigate to="/ld-manager/dashboard" replace />} />
             <Route path="/manager/target-roles" element={<Navigate to="/ld-manager/target-roles" replace />} />

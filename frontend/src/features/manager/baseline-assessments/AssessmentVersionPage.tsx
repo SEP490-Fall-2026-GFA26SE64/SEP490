@@ -32,11 +32,11 @@ type BusyAction = 'save' | 'review' | 'publish' | 'replace' | 'restore' | 'disab
 type ReasonAction = 'disable' | 'abandon' | null
 
 export function AssessmentVersionPage() {
-  const { occupationId = '', assessmentVersionId = '' } = useParams()
+  const { jobPositionId = '', assessmentVersionId = '' } = useParams()
   const navigate = useNavigate()
   const { toast } = useToast()
   const { language, t } = useTranslation()
-  const basePath = `/ld-manager/baseline-assessments/${encodeURIComponent(occupationId)}`
+  const basePath = `/ld-manager/baseline-assessments/${encodeURIComponent(jobPositionId)}`
   const [assessment, setAssessment] = React.useState<ManagedAssessmentVersion | null>(null)
   const [effectiveState, setEffectiveState] = React.useState('')
   const [hasPendingChange, setHasPendingChange] = React.useState(false)
@@ -59,10 +59,10 @@ export function AssessmentVersionPage() {
     try {
       const [detail, workspace] = await Promise.all([
         getManagedAssessmentVersion(assessmentVersionId),
-        getBaselineAssessmentWorkspace(occupationId),
+        getBaselineAssessmentWorkspace(jobPositionId),
       ])
       const summary = workspace.assessmentVersions.find((item) => item.assessmentVersionId === assessmentVersionId)
-      if (!summary) throw new Error('Assessment version is outside this Occupation workspace')
+      if (!summary) throw new Error('Assessment version is outside this JobPosition workspace')
       setAssessment(detail)
       setEffectiveState(summary.effectiveState)
       setHasPendingChange(Boolean(
@@ -77,7 +77,7 @@ export function AssessmentVersionPage() {
     } catch (cause) {
       setError(errorMessage(cause, t))
     } finally { setLoading(false) }
-  }, [assessmentVersionId, occupationId, t])
+  }, [assessmentVersionId, jobPositionId, t])
 
   React.useEffect(() => { void load() }, [load])
 
@@ -154,7 +154,7 @@ export function AssessmentVersionPage() {
         setHasPendingChange(false)
         toast({ title: t('baselineAssessmentManagement.assessmentActions.disabled'), description: t('baselineAssessmentManagement.assessmentActions.disabledDescription'), variant: 'success' })
       } else {
-        await abandonPendingBlueprintChange(occupationId, reason.trim())
+        await abandonPendingBlueprintChange(jobPositionId, reason.trim())
         setEffectiveState('ABANDONED')
         setHasPendingChange(false)
         toast({ title: t('baselineAssessmentManagement.assessmentActions.abandoned'), description: t('baselineAssessmentManagement.assessmentActions.abandonedDescription'), variant: 'success' })

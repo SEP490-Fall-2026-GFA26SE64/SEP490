@@ -5,7 +5,7 @@ import json
 from urllib.request import Request, urlopen
 from accounts import STATE, settings
 
-LABELS = {'Competency', 'LearningModule', 'Level', 'MicroSkill', 'Occupation', 'TargetRole'}
+LABELS = {'Competency', 'LearningModule', 'Level', 'MicroSkill', 'Job Position', 'TargetRole'}
 TYPES = {'HAS_COMPETENCY', 'HAS_LEVEL', 'HAS_ROLE', 'HAS_SKILL', 'HAS_SKILL_PREREQUISITE', 'REQUIRES_SKILL', 'TEACHES'}
 values = settings()
 snapshot = json.loads((STATE / 'legacy-graph-snapshot.json').read_text())

@@ -1512,7 +1512,7 @@ export function AssessmentPage() {
                         RIASEC Vocational Profiler
                       </Badge>
                       <Badge variant="secondary" className="text-xs font-normal">
-                        Holland Occupational Themes
+                        Holland JobPositional Themes
                       </Badge>
                     </div>
                     <h1 className="text-2xl font-bold tracking-tight text-foreground">
@@ -3605,7 +3605,7 @@ export function AssessmentPage() {
                     Finish RIASEC Assessment?
                   </DialogTitle>
                   <DialogDescription className="text-xs text-muted-foreground mt-0.5">
-                    Ready to finalize your answers and generate your calibrated Holland occupational profile?
+                    Ready to finalize your answers and generate your calibrated Holland jobPositional profile?
                   </DialogDescription>
                 </div>
               </div>
@@ -3712,7 +3712,7 @@ export function AssessmentPage() {
               <div className="flex items-center gap-2 mb-1.5">
                 <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-secondary text-primary border border-primary/20">
                   <Compass className="h-3.5 w-3.5" />
-                  Holland Occupational Themes
+                  Holland JobPositional Themes
                 </span>
                 <Badge variant="success" className="text-xs font-bold">
                   Calibrated &amp; Locked
@@ -3722,7 +3722,7 @@ export function AssessmentPage() {
                 RIASEC Vocational Orientation Report
               </DialogTitle>
               <DialogDescription className="text-xs sm:text-sm text-muted-foreground mt-1">
-                Holland Occupational Code calibration for self-directed engineering pathways.
+                Holland JobPositional Code calibration for self-directed engineering pathways.
               </DialogDescription>
             </DialogHeader>
 

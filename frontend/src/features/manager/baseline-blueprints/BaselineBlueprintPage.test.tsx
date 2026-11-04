@@ -10,10 +10,10 @@ import {
   BaselineBlueprintApiError,
   createBlueprint,
   generateAssessment,
-  getLatestBlueprintByOccupation,
-  getOccupation,
-  getOccupationCapacity,
-  listOccupations,
+  getLatestBlueprintByJobPosition,
+  getJobPosition,
+  getJobPositionCapacity,
+  listJobPositions,
   publishAssessment,
   reviewAssessment,
   reviseBlueprint,
@@ -22,8 +22,8 @@ import {
   type BlueprintCapacity,
 } from './baselineBlueprintApi'
 import {
-  developmentBaselineOccupation,
-  developmentBaselineOccupations,
+  developmentBaselineJobPosition,
+  developmentBaselineJobPositions,
   developmentBaselineRoles,
 } from '../../../../test-fixtures/legacyBaselineCatalog'
 
@@ -43,10 +43,10 @@ vi.mock('./baselineBlueprintApi', async (importOriginal) => {
     ...original,
     createBlueprint: vi.fn(),
     reviseBlueprint: vi.fn(),
-    listOccupations: vi.fn(),
-    getOccupation: vi.fn(),
-    getOccupationCapacity: vi.fn(),
-    getLatestBlueprintByOccupation: vi.fn(),
+    listJobPositions: vi.fn(),
+    getJobPosition: vi.fn(),
+    getJobPositionCapacity: vi.fn(),
+    getLatestBlueprintByJobPosition: vi.fn(),
     generateAssessment: vi.fn(),
     reviewAssessment: vi.fn(),
     publishAssessment: vi.fn(),
@@ -60,12 +60,12 @@ describe('BaselineBlueprintPage', () => {
     vi.spyOn(globalThis.crypto, 'randomUUID').mockReturnValue(
       '00000000-0000-0000-0000-000000000901',
     )
-    vi.mocked(listOccupations).mockResolvedValue(developmentBaselineOccupations())
-    vi.mocked(getOccupation).mockResolvedValue(
-      developmentBaselineOccupation('10000000-0000-0000-0000-000000000001')!,
+    vi.mocked(listJobPositions).mockResolvedValue(developmentBaselineJobPositions())
+    vi.mocked(getJobPosition).mockResolvedValue(
+      developmentBaselineJobPosition('10000000-0000-0000-0000-000000000001')!,
     )
-    vi.mocked(getOccupationCapacity).mockResolvedValue(capacityPayload())
-    vi.mocked(getLatestBlueprintByOccupation).mockRejectedValue(
+    vi.mocked(getJobPositionCapacity).mockResolvedValue(capacityPayload())
+    vi.mocked(getLatestBlueprintByJobPosition).mockRejectedValue(
       new BaselineBlueprintApiError(404, 'NOT_FOUND', 'No blueprint'),
     )
   })
@@ -102,8 +102,8 @@ describe('BaselineBlueprintPage', () => {
     await user.click(screen.getByRole('button', { name: 'Save blueprint' }))
     await waitFor(() => expect(createBlueprint).toHaveBeenCalledOnce())
     expect(createBlueprint).toHaveBeenCalledWith(expect.objectContaining({
-      occupationId: '10000000-0000-0000-0000-000000000001',
-      occupationNameSnapshot: 'Software Engineering',
+      jobPositionId: '10000000-0000-0000-0000-000000000001',
+      jobPositionNameSnapshot: 'Software Engineering',
       roles: expect.arrayContaining([
         expect.objectContaining({
           roleId: '20000000-0000-0000-0000-000000000001',
@@ -169,7 +169,7 @@ describe('BaselineBlueprintPage', () => {
 
   it('keeps the unsaved draft while capacity loading is retried', async () => {
     const user = userEvent.setup()
-    vi.mocked(getOccupationCapacity)
+    vi.mocked(getJobPositionCapacity)
       .mockRejectedValueOnce(new Error('capacity offline'))
       .mockResolvedValueOnce(capacityPayload())
 
@@ -187,10 +187,10 @@ describe('BaselineBlueprintPage', () => {
     expect(await screen.findByText('Question capacity loaded')).toBeTruthy()
     expect((screen.getByLabelText('Blueprint name') as HTMLInputElement).value)
       .toBe('Draft retained across retry')
-    expect(getOccupationCapacity).toHaveBeenCalledTimes(2)
+    expect(getJobPositionCapacity).toHaveBeenCalledTimes(2)
   })
 
-  it('shows every Occupation role without include checkboxes and marks zero roles excluded', async () => {
+  it('shows every JobPosition role without include checkboxes and marks zero roles excluded', async () => {
     renderPage()
 
     expect(await screen.findByText('Java Backend Developer P3')).toBeTruthy()
@@ -243,7 +243,7 @@ describe('BaselineBlueprintPage', () => {
 
   it('loads valid decimal weights as percentages', async () => {
     const saved = blueprintPayload()
-    vi.mocked(getLatestBlueprintByOccupation).mockResolvedValue(saved)
+    vi.mocked(getLatestBlueprintByJobPosition).mockResolvedValue(saved)
 
     renderPage()
 
@@ -267,16 +267,16 @@ describe('BaselineBlueprintPage', () => {
     await user.type(total, '8')
 
     await user.click(screen.getByRole('button', { name: 'VI' }))
-    expect(screen.getByRole('heading', { name: '1. Chọn nghề nghiệp' })).toBeTruthy()
+    expect(screen.getByRole('heading', { name: '1. Chọn vị trí công việc' })).toBeTruthy()
     expect((screen.getByLabelText('Tên cấu hình') as HTMLInputElement).value)
       .toBe('Unsaved custom blueprint')
     expect((within(roleContainer('Java Backend Developer P3'))
       .getByLabelText('Tổng số câu cho vai trò này') as HTMLInputElement).value).toBe('8')
-    expect(vi.mocked(listOccupations)).toHaveBeenCalledTimes(1)
-    expect(vi.mocked(getOccupation)).toHaveBeenCalledTimes(1)
+    expect(vi.mocked(listJobPositions)).toHaveBeenCalledTimes(1)
+    expect(vi.mocked(getJobPosition)).toHaveBeenCalledTimes(1)
 
     await user.click(screen.getByRole('button', { name: 'EN' }))
-    expect(screen.getByRole('heading', { name: '1. Select Occupation' })).toBeTruthy()
+    expect(screen.getByRole('heading', { name: '1. Select Job Position' })).toBeTruthy()
   })
 
   it('keeps multiple role panels open and collapses them independently', async () => {
@@ -332,7 +332,7 @@ function blueprintPayload(): BaselineBlueprint {
     easyScoreWeight: roleIndex === 0 ? 0.2 : 0.3334,
     mediumScoreWeight: roleIndex === 0 ? 0.3 : 0.3333,
     hardScoreWeight: roleIndex === 0 ? 0.5 : 0.3333,
-    skills: role.skills.map((skill) => ({
+    skills: role.skills.map((skill: any) => ({
       ...skill,
       easyQuestionCount: roleIndex === 0 ? 1 : 0,
       mediumQuestionCount: roleIndex === 0 ? 1 : 0,
@@ -343,22 +343,22 @@ function blueprintPayload(): BaselineBlueprint {
     blueprintId: 'blueprint-1',
     version: 1,
     name: 'Development baseline assessment',
-    occupationId: '10000000-0000-0000-0000-000000000001',
-    occupationNameSnapshot: 'Software Engineering',
+    jobPositionId: '10000000-0000-0000-0000-000000000001',
+    jobPositionNameSnapshot: 'Software Engineering',
     createdAt: '2026-10-14T15:00:00Z',
     roles,
   }
 }
 
 function capacityPayload(): BlueprintCapacity {
-  const occupation = developmentBaselineOccupation('10000000-0000-0000-0000-000000000001')!
+  const jobPosition = developmentBaselineJobPosition('10000000-0000-0000-0000-000000000001')!
   return {
-    occupationId: occupation.id,
-    catalogVersion: occupation.catalogVersion,
+    jobPositionId: jobPosition.id,
+    catalogVersion: jobPosition.catalogVersion,
     coverageAsOf: '2026-10-16T08:00:00Z',
-    roles: occupation.roles.map((role) => ({
+    roles: jobPosition.roles.map((role: any) => ({
       roleId: role.id,
-      skills: role.skills.map((skill) => ({
+      skills: role.skills.map((skill: any) => ({
         microSkillId: skill.id,
         availableEasy: 10,
         availableMedium: 10,

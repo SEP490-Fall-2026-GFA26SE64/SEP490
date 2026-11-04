@@ -10,11 +10,11 @@ import java.util.UUID;
 
 /** L&D management boundary. Actor and organization are always obtained from trusted context. */
 public interface BaselineAssessmentManagementUseCase {
-    OccupationPage listOccupations(OccupationQuery query);
+    JobPositionPage listJobPositions(JobPositionQuery query);
 
-    Workspace getWorkspace(String occupationId);
+    Workspace getWorkspace(String jobPositionId);
 
-    WorkingRevision startBlueprintRevision(String occupationId, String idempotencyKey);
+    WorkingRevision startBlueprintRevision(String jobPositionId, String idempotencyKey);
 
     WorkingRevision saveBlueprintRevision(
             UUID workingRevisionId,
@@ -26,7 +26,7 @@ public interface BaselineAssessmentManagementUseCase {
             UUID workingRevisionId, long expectedRevision, String idempotencyKey);
 
     BaselineAssessmentDraft generateAssessmentDraft(
-            String occupationId, String idempotencyKey);
+            String jobPositionId, String idempotencyKey);
 
     BaselineAssessmentDraft getAssessmentVersion(UUID assessmentVersionId);
 
@@ -50,11 +50,11 @@ public interface BaselineAssessmentManagementUseCase {
 
     Workspace disableActiveAssessment(UUID assessmentVersionId, String reason);
 
-    Workspace abandonPendingChange(String occupationId, String reason);
+    Workspace abandonPendingChange(String jobPositionId, String reason);
 
-    record OccupationQuery(
+    record JobPositionQuery(
             String search, String status, String sort, int page, int size) {
-        public OccupationQuery {
+        public JobPositionQuery {
             search = normalize(search);
             status = normalize(status);
             sort = normalize(sort);
@@ -64,8 +64,8 @@ public interface BaselineAssessmentManagementUseCase {
         }
     }
 
-    record OccupationPage(List<OccupationSummary> items, int page, int size, long total) {
-        public OccupationPage {
+    record JobPositionPage(List<JobPositionSummary> items, int page, int size, long total) {
+        public JobPositionPage {
             items = List.copyOf(Objects.requireNonNull(items, "items must not be null"));
             if (page < 0 || size < 1 || total < 0) {
                 throw new IllegalArgumentException("page metadata is invalid");
@@ -73,9 +73,9 @@ public interface BaselineAssessmentManagementUseCase {
         }
     }
 
-    record OccupationSummary(
-            String occupationId,
-            String occupationName,
+    record JobPositionSummary(
+            String jobPositionId,
+            String jobPositionName,
             Integer latestBlueprintVersion,
             String pendingStage,
             Integer openAssessmentVersion,
@@ -84,8 +84,8 @@ public interface BaselineAssessmentManagementUseCase {
             java.time.Instant lastUpdatedAt) {}
 
     record Workspace(
-            String occupationId,
-            String occupationName,
+            String jobPositionId,
+            String jobPositionName,
             SeriesSnapshot lifecycle,
             WorkingRevision workingRevision,
             List<BlueprintVersionSummary> blueprintVersions,

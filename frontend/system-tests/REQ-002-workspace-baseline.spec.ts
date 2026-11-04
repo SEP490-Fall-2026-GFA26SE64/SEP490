@@ -2,7 +2,7 @@ import { expect, test, type APIRequestContext, type Page } from '@playwright/tes
 import { confirmPayment, fixture, mutate, observe, purchase, record, registrationSession, text } from './subscriptionHelpers'
 
 type Member = { email: string; password: string }
-type Tenant = { manager: Member; employee: Member; occupationId: string; roleId: string; organizationId: string }
+type Tenant = { manager: Member; employee: Member; jobPositionId: string; roleId: string; organizationId: string }
 let ready: Tenant
 let unready: Tenant
 let completedAttempt = ''
@@ -23,7 +23,7 @@ async function provision(page: Page, complete: boolean): Promise<Tenant> {
     const account = record(value[key])
     return { email: text(account.email), password: text(account.password) }
   }
-  return { manager: member('manager'), employee: member('employee'), occupationId: text(value.occupationId),
+  return { manager: member('manager'), employee: member('employee'), jobPositionId: text(value.jobPositionId),
     roleId: text(value.roleId), organizationId: text(value.organizationId) }
 }
 async function login(page: Page, member: Member) {
@@ -63,13 +63,13 @@ test.beforeEach(async ({ page }) => {
 test('real manager session configures baseline and real employee persists answers/results', async ({ page }, info) => {
   const observed = observe(page)
   await login(page, ready.manager)
-  const manager = `/api/v1/ld/adaptive-baseline-blueprints/occupations/${ready.occupationId}`
+  const manager = `/api/v1/ld/adaptive-baseline-blueprints/job-positions/${ready.jobPositionId}`
   expect((await page.request.get('/api/v1/employee/target-roles')).status()).toBe(403)
   const draft = await successful(await command(page.request, manager + '/working', {
     expectedRevision: 0, expectedWorkingRevisionId: null,
-    configuration: { name: 'Authenticated synthetic baseline', occupationBounds: { maxQuestions: 9, timeLimitSeconds: 540 } },
+    configuration: { name: 'Authenticated synthetic baseline', jobPositionBounds: { maxQuestions: 9, timeLimitSeconds: 540 } },
   }, 'PUT'))
-  await page.goto(`/ld-manager/baseline-assessments/${ready.occupationId}?draft=${text(draft.workingRevisionId)}`)
+  await page.goto(`/ld-manager/baseline-assessments/${ready.jobPositionId}?draft=${text(draft.workingRevisionId)}`)
   await expect(page.getByLabel('Baseline name', { exact: true })).toHaveValue('Authenticated synthetic baseline')
   await successful(await command(page.request, manager + '/finalize', {
     workingRevisionId: draft.workingRevisionId, expectedWorkingRevision: draft.revision,
@@ -104,7 +104,7 @@ test('real manager session configures baseline and real employee persists answer
   expect(mastery.status()).toBe(200)
   expect(await mastery.json()).toHaveLength(1)
   await page.goto('/employee/my-mastery')
-  await expect(page.getByText('Baseline fixture occupation', { exact: true }).first()).toBeVisible()
+  await expect(page.getByText('Baseline fixture jobPosition', { exact: true }).first()).toBeVisible()
   await page.screenshot({ path: info.outputPath('authenticated-baseline-result.png'), fullPage: true })
   expect(observed.errors).toEqual([])
   expect(observed.network).toEqual([])
@@ -140,7 +140,7 @@ test('tenant isolation, CSRF and no-resource readiness never start a false-succe
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390)
   await mutate(page.request, '/api/v1/workspace-auth/sign-out', {})
   await login(page, unready.manager)
-  const foreign = `/api/v1/ld/adaptive-baseline-blueprints/occupations/${ready.occupationId}`
+  const foreign = `/api/v1/ld/adaptive-baseline-blueprints/job-positions/${ready.jobPositionId}`
   expect((await page.request.get(foreign)).status()).toBe(403)
   await page.goto('/ld-manager/baseline-assessments')
   await expect(page.getByText(/Baseline is not ready/)).toBeVisible({ timeout: 15000 })

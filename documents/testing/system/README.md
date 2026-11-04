@@ -18,7 +18,7 @@ Local baseline manual history: [demo contract](../../technical/baseline/Local%20
 
 ## Current Scope Alignment
 
-Follow [current test scope](../README.md#current-scope-alignment) and [Version 2 contracts](../../features/README.md). End-to-end gates cover Guest registration/verification/payment/setup, platform administration, renewal/seats/access, departments/occupations/assignments/publication/approval, baseline/RIASEC -> direct AI guidance -> Employee selection, initial pathway -> Expert confirmation -> learning/adaptation, independent learning and development/ROI reporting. Verify isolation with at least two organizations, private files, notifications and audit. Product benchmark screens, cancellation and exports are not required.
+Follow [current test scope](../README.md#current-scope-alignment) and [Version 2 contracts](../../features/README.md). End-to-end gates cover Guest registration/verification/payment/setup, platform administration, renewal/seats/access, departments/job positions/assignments/publication/approval, baseline/RIASEC -> direct AI guidance -> Employee selection, initial pathway -> Expert confirmation -> learning/adaptation, independent learning and development/ROI reporting. Verify isolation with at least two organizations, private files, notifications and audit. Product benchmark screens, cancellation and exports are not required.
 Older browser checklists and PASSED labels below retain their original scope and require revision before they certify new workflows. No new runtime/browser result is claimed by this documentation-only update.
 
 ## Existing Execution Guides and Historical Evidence

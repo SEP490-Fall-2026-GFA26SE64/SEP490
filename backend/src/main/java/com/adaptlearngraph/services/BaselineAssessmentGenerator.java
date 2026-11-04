@@ -108,9 +108,9 @@ public final class BaselineAssessmentGenerator {
         append(canonical, blueprint.blueprintId());
         append(canonical, blueprint.version());
         append(canonical, blueprint.name());
-        if (blueprint.occupationId() != null) {
-            append(canonical, blueprint.occupationId());
-            append(canonical, blueprint.occupationNameSnapshot());
+        if (blueprint.jobPositionId() != null) {
+            append(canonical, blueprint.jobPositionId());
+            append(canonical, blueprint.jobPositionNameSnapshot());
         }
         append(canonical, "BASELINE_BLUEPRINT_WEIGHT_V1");
         int position = 1;

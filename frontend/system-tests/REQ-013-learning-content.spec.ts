@@ -97,7 +97,7 @@ test('real authoring, L&D preview/approval, confirmed pathway, explicit text com
   await page.getByRole('button', { name: 'Create module', exact: true }).click()
   const editor = page.getByRole('dialog', { name: 'Module editor' })
   await editor.getByLabel('Title', { exact: true }).fill(title)
-  await expect(editor.getByLabel(/Occupations/)).toHaveCount(0)
+  await expect(editor.getByLabel(/JobPositions/)).toHaveCount(0)
   await editor.getByLabel('Lesson title', { exact: true }).fill('Reading one')
   await editor
     .locator('[contenteditable=true]')
@@ -221,7 +221,7 @@ test('real authoring, L&D preview/approval, confirmed pathway, explicit text com
   const content = (await (
     await mutate(page.request, root + '/contents/lessons', 'POST', {
       title: title + ' updated',
-      occupationIds: doc.occupationIds,
+      jobPositionIds: doc.jobPositionIds,
       lessons: old.content.lessons,
     })
   ).json()) as ModuleContent
@@ -234,7 +234,7 @@ test('real authoring, L&D preview/approval, confirmed pathway, explicit text com
         contentId: content.id,
         duration: old.duration,
         price: old.price,
-        occupationIds: doc.occupationIds,
+        jobPositionIds: doc.jobPositionIds,
         teachings: old.teachings.map((t) => ({
           skillId: t.skillId,
           teachingFocus: t.teachingFocus,
@@ -501,7 +501,7 @@ test('private MP4 upload, L&D approval, assignment admission, byte ranges and ac
 })
 function workbook(
   code: string,
-  _occupation: string,
+  _job_position: string,
   skill: string,
   title: string,
 ) {
@@ -571,8 +571,8 @@ test('Excel import validates, blocks unresolved drafts and requires explicit con
   test.setTimeout(240000)
   test.skip(baseURL !== 'http://localhost:8088', 'Dedicated dev stack required')
   await login(page, 3, '/expert/modules')
-  const occupations = (await (
-    await page.request.get(root + '/catalog/Occupation')
+  const jobPositions = (await (
+    await page.request.get(root + '/catalog/JobPosition')
   ).json()) as CatalogChoice[]
   const skills = (await (
     await page.request.get(root + '/catalog/MicroSkill')
@@ -580,7 +580,7 @@ test('Excel import validates, blocks unresolved drafts and requires explicit con
   const code = 'LC-' + randomUUID().slice(0, 8)
   const file = workbook(
     code,
-    occupations[0].id,
+    jobPositions[0].id,
     skills[0].id,
     'Excel import ' + code,
   )
@@ -591,7 +591,7 @@ test('Excel import validates, blocks unresolved drafts and requires explicit con
     templateBook.Sheets.Modules,
     { header: 1 },
   )
-  expect(templateRows[0]).not.toContain('occupationIds')
+  expect(templateRows[0]).not.toContain('jobPositionIds')
   await page.getByText('Import Excel / ZIP', { exact: true }).click()
   await page.getByLabel('Module import file', { exact: true }).setInputFiles({
     name: 'modules.xlsx',
@@ -658,7 +658,7 @@ test('Excel import validates, blocks unresolved drafts and requires explicit con
       page.request,
       '/imports',
       'modules.xlsx',
-      workbook(code, occupations[0].id, skills[0].id, 'Revised ' + code),
+      workbook(code, jobPositions[0].id, skills[0].id, 'Revised ' + code),
     )
   ).json()) as ImportPreview
   expect(preview.errors).toEqual([])
@@ -684,14 +684,14 @@ test('Excel import validates, blocks unresolved drafts and requires explicit con
   expect(revised.releasedRevision).toBe(1)
   expect(revised.revisions.at(-1)?.state).toBe('DRAFT')
   expect(revised.createdBy).toBe(doc.createdBy)
-  expect(revised.occupationIds).toEqual([])
+  expect(revised.jobPositionIds).toEqual([])
   const legacyBook = XLSX.read(file, { type: 'buffer' })
   const legacyRows = XLSX.utils.sheet_to_json<unknown[]>(
     legacyBook.Sheets.Modules,
     { header: 1 },
   )
-  legacyRows[0].splice(5, 0, 'occupationIds')
-  legacyRows[1].splice(5, 0, 'obsolete-occupation-not-an-access-grant')
+  legacyRows[0].splice(5, 0, 'jobPositionIds')
+  legacyRows[1].splice(5, 0, 'obsolete-jobPosition-not-an-access-grant')
   legacyRows[1][0] = 'LEGACY-' + randomUUID().slice(0, 8)
   const legacyLessons = XLSX.utils.sheet_to_json<unknown[]>(
     legacyBook.Sheets.Lessons,
@@ -709,7 +709,7 @@ test('Excel import validates, blocks unresolved drafts and requires explicit con
     )
   ).json()) as ImportPreview
   expect(legacyPreview.errors).toEqual([])
-  expect(legacyPreview.modules[0].module.occupationIds).toEqual([])
+  expect(legacyPreview.modules[0].module.jobPositionIds).toEqual([])
 })
 test('Platform Administrator upload settings are audited and other roles cannot edit them', async ({
   page,
@@ -815,8 +815,8 @@ test('real second organization cannot read private content; peer cannot import a
       },
     ],
   )
-  const occupations = (await (
-    await page.request.get(root + '/catalog/Occupation')
+  const jobPositions = (await (
+    await page.request.get(root + '/catalog/JobPosition')
   ).json()) as CatalogChoice[]
   const skills = (await (
     await page.request.get(root + '/catalog/MicroSkill')
@@ -912,7 +912,7 @@ test('real second organization cannot read private content; peer cannot import a
         'modules.xlsx',
         workbook(
           doc.id,
-          occupations[0].id,
+          jobPositions[0].id,
           skills[0].id,
           'Forbidden peer edit',
         ),
@@ -949,15 +949,15 @@ test('ZIP includes Markdown, private images and MP4; missing assets block the wh
     '/tmp/sep490-learning-content/fixtures/flower.mp4'
   test.skip(!existsSync(videoPath), 'Provide the CC0 MP4 fixture')
   await login(page, 3, '/expert/modules')
-  const occupations = (await (
-    await page.request.get(root + '/catalog/Occupation')
+  const jobPositions = (await (
+    await page.request.get(root + '/catalog/JobPosition')
   ).json()) as CatalogChoice[]
   const skills = (await (
     await page.request.get(root + '/catalog/MicroSkill')
   ).json()) as CatalogChoice[]
   const code = 'ZIP-' + randomUUID().slice(0, 8)
   const book = XLSX.read(
-    workbook(code, occupations[0].id, skills[0].id, 'ZIP import ' + code),
+    workbook(code, jobPositions[0].id, skills[0].id, 'ZIP import ' + code),
     { type: 'buffer' },
   )
   const rows = XLSX.utils.sheet_to_json<unknown[]>(book.Sheets.Lessons, {
@@ -1182,7 +1182,7 @@ for (const provider of [
   })
 }
 
-test('R4 creates without occupation and L&D reviews three numbered lessons directly', async ({
+test('R4 creates without jobPosition and L&D reviews three numbered lessons directly', async ({
   page,
   baseURL,
 }) => {
@@ -1201,7 +1201,7 @@ test('R4 creates without occupation and L&D reviews three numbered lessons direc
     name: 'Module editor',
     exact: true,
   })
-  await expect(editor.getByLabel(/Occupation|Nghề/)).toHaveCount(0)
+  await expect(editor.getByLabel(/JobPosition|Nghề/)).toHaveCount(0)
   await editor.getByLabel('Title', { exact: true }).fill(title)
   await editor.getByLabel('Lesson title', { exact: true }).fill('Introduction')
   await editor
@@ -1253,8 +1253,8 @@ test('R4 creates without occupation and L&D reviews three numbered lessons direc
   const response = await created
   expect(response.status()).toBe(201)
   const doc = (await response.json()) as ModuleDocument
-  expect(doc.occupationIds).toEqual([])
-  expect(doc.revisions[0].payload.content.occupationIds).toEqual([])
+  expect(doc.jobPositionIds).toEqual([])
+  expect(doc.revisions[0].payload.content.jobPositionIds).toEqual([])
   expect(doc.revisions[0].payload.content.lessons).toHaveLength(3)
   expect(
     (

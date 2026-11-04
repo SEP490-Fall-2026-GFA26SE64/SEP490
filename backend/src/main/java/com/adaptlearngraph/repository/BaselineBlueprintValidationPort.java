@@ -8,8 +8,8 @@ import java.util.Set;
 public interface BaselineBlueprintValidationPort {
     Optional<CatalogRole> findAvailableRole(String organizationId, String roleId);
 
-    default Optional<CatalogOccupation> findAvailableOccupation(
-            String organizationId, String occupationId) {
+    default Optional<CatalogJobPosition> findAvailableJobPosition(
+            String organizationId, String jobPositionId) {
         return Optional.empty();
     }
 
@@ -21,8 +21,8 @@ public interface BaselineBlueprintValidationPort {
         }
     }
 
-    record CatalogOccupation(String id, String name, List<CatalogRole> roles) {
-        public CatalogOccupation {
+    record CatalogJobPosition(String id, String name, List<CatalogRole> roles) {
+        public CatalogJobPosition {
             roles = List.copyOf(roles);
         }
     }

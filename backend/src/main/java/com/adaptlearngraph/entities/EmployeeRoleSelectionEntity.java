@@ -26,8 +26,8 @@ public class EmployeeRoleSelectionEntity {
     private UUID learnerId;
     @Column(name = "role_id", nullable = false)
     private String roleId;
-    @Column(name = "occupation_id", nullable = false)
-    private String occupationId;
+    @Column(name = "job_position_id", nullable = false)
+    private String jobPositionId;
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "role_snapshot", nullable = false, columnDefinition = "jsonb")
     private String roleSnapshot;
@@ -42,12 +42,12 @@ public class EmployeeRoleSelectionEntity {
     }
 
     @SuppressWarnings("java:S107")
-    public EmployeeRoleSelectionEntity(UUID selectionId, UUID organizationId, UUID learnerId, String roleId, String occupationId, String roleSnapshot, Long targetRevision, Instant selectedAt, Instant endedAt) {
+    public EmployeeRoleSelectionEntity(UUID selectionId, UUID organizationId, UUID learnerId, String roleId, String jobPositionId, String roleSnapshot, Long targetRevision, Instant selectedAt, Instant endedAt) {
         this.selectionId = selectionId;
         this.organizationId = organizationId;
         this.learnerId = learnerId;
         this.roleId = roleId;
-        this.occupationId = occupationId;
+        this.jobPositionId = jobPositionId;
         this.roleSnapshot = roleSnapshot;
         this.targetRevision = targetRevision;
         this.selectedAt = selectedAt;
@@ -58,7 +58,7 @@ public class EmployeeRoleSelectionEntity {
     public UUID getOrganizationId() { return organizationId; }
     public UUID getLearnerId() { return learnerId; }
     public String getRoleId() { return roleId; }
-    public String getOccupationId() { return occupationId; }
+    public String getJobPositionId() { return jobPositionId; }
     public String getRoleSnapshot() { return roleSnapshot; }
     public Long getTargetRevision() { return targetRevision; }
     public Instant getSelectedAt() { return selectedAt; }

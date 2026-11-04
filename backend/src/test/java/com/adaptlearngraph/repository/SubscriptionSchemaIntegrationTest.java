@@ -148,7 +148,7 @@ class SubscriptionSchemaIntegrationTest {
             connection.setAutoCommit(true);
             assertEquals("23514", assertThrows(SQLException.class, () -> statement.execute(
                     "UPDATE platform.organization_membership_role SET role_code='EMPLOYEE' WHERE membership_id='" + membership + "'")).getSQLState());
-            try (var row = statement.executeQuery("SELECT department_id, occupation_reference_id FROM "
+            try (var row = statement.executeQuery("SELECT department_id, job_position_reference_id FROM "
                     + "platform.organization_membership WHERE membership_id = '" + membership + "'")) {
                 assertTrue(row.next());
                 assertNull(row.getObject(1));

@@ -235,9 +235,9 @@
       ],
       "hasReuseLevel": [
         {
-          "href": "https://ec.europa.eu/esco/api/resource/concept?uri=http://data.europa.eu/esco/skill-reuse-level/occupation-specific&language=en",
-          "uri": "http://data.europa.eu/esco/skill-reuse-level/occupation-specific",
-          "title": "occupation specific skills and competences",
+          "href": "https://ec.europa.eu/esco/api/resource/concept?uri=http://data.europa.eu/esco/skill-reuse-level/job position-specific&language=en",
+          "uri": "http://data.europa.eu/esco/skill-reuse-level/job position-specific",
+          "title": "job position specific skills and competences",
           "code": "Level 4"
         }
       ],
@@ -249,25 +249,25 @@
           "code": "S5.1.0"
         }
       ],
-      "isEssentialForOccupation": [
+      "isEssentialForJob Position": [
         {
-          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/2079755f-d809-49e6-8037-4de6180e54c0&language=en",
-          "uri": "http://data.europa.eu/esco/occupation/2079755f-d809-49e6-8037-4de6180e54c0",
+          "href": "https://ec.europa.eu/esco/api/resource/job position?uri=http://data.europa.eu/esco/job position/2079755f-d809-49e6-8037-4de6180e54c0&language=en",
+          "uri": "http://data.europa.eu/esco/job position/2079755f-d809-49e6-8037-4de6180e54c0",
           "title": "data engineer"
         },
         {
-          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/1c5a45b9-440e-4726-b565-16a952abd341&language=en",
-          "uri": "http://data.europa.eu/esco/occupation/1c5a45b9-440e-4726-b565-16a952abd341",
+          "href": "https://ec.europa.eu/esco/api/resource/job position?uri=http://data.europa.eu/esco/job position/1c5a45b9-440e-4726-b565-16a952abd341&language=en",
+          "uri": "http://data.europa.eu/esco/job position/1c5a45b9-440e-4726-b565-16a952abd341",
           "title": "computer vision engineer"
         },
         {
-          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/258e46f9-0075-4a2e-adae-1ff0477e0f30&language=en",
-          "uri": "http://data.europa.eu/esco/occupation/258e46f9-0075-4a2e-adae-1ff0477e0f30",
+          "href": "https://ec.europa.eu/esco/api/resource/job position?uri=http://data.europa.eu/esco/job position/258e46f9-0075-4a2e-adae-1ff0477e0f30&language=en",
+          "uri": "http://data.europa.eu/esco/job position/258e46f9-0075-4a2e-adae-1ff0477e0f30",
           "title": "data scientist"
         },
         {
-          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/8edd8bff-cb59-4c9c-ab0f-59e77d18be48&language=en",
-          "uri": "http://data.europa.eu/esco/occupation/8edd8bff-cb59-4c9c-ab0f-59e77d18be48",
+          "href": "https://ec.europa.eu/esco/api/resource/job position?uri=http://data.europa.eu/esco/job position/8edd8bff-cb59-4c9c-ab0f-59e77d18be48&language=en",
+          "uri": "http://data.europa.eu/esco/job position/8edd8bff-cb59-4c9c-ab0f-59e77d18be48",
           "title": "predictive maintenance expert"
         }
       ]

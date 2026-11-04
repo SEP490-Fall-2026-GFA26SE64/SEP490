@@ -265,37 +265,37 @@
           "skillType": "http://data.europa.eu/esco/skill-type/knowledge"
         }
       ],
-      "isEssentialForOccupation": [
+      "isEssentialForJob Position": [
         {
-          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/2079755f-d809-49e6-8037-4de6180e54c0&language=en",
-          "uri": "http://data.europa.eu/esco/occupation/2079755f-d809-49e6-8037-4de6180e54c0",
+          "href": "https://ec.europa.eu/esco/api/resource/job position?uri=http://data.europa.eu/esco/job position/2079755f-d809-49e6-8037-4de6180e54c0&language=en",
+          "uri": "http://data.europa.eu/esco/job position/2079755f-d809-49e6-8037-4de6180e54c0",
           "title": "data engineer"
         },
         {
-          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/3d190639-90f8-4402-b1b3-a104a17e0d67&language=en",
-          "uri": "http://data.europa.eu/esco/occupation/3d190639-90f8-4402-b1b3-a104a17e0d67",
+          "href": "https://ec.europa.eu/esco/api/resource/job position?uri=http://data.europa.eu/esco/job position/3d190639-90f8-4402-b1b3-a104a17e0d67&language=en",
+          "uri": "http://data.europa.eu/esco/job position/3d190639-90f8-4402-b1b3-a104a17e0d67",
           "title": "database integrator"
         }
       ],
-      "isOptionalForOccupation": [
+      "isOptionalForJob Position": [
         {
-          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/af355ac4-dd89-44df-99a6-bba70202d6fe&language=en",
-          "uri": "http://data.europa.eu/esco/occupation/af355ac4-dd89-44df-99a6-bba70202d6fe",
+          "href": "https://ec.europa.eu/esco/api/resource/job position?uri=http://data.europa.eu/esco/job position/af355ac4-dd89-44df-99a6-bba70202d6fe&language=en",
+          "uri": "http://data.europa.eu/esco/job position/af355ac4-dd89-44df-99a6-bba70202d6fe",
           "title": "data entry supervisor"
         },
         {
-          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/6353b3e8-e8f2-4ecb-b230-186927139892&language=en",
-          "uri": "http://data.europa.eu/esco/occupation/6353b3e8-e8f2-4ecb-b230-186927139892",
+          "href": "https://ec.europa.eu/esco/api/resource/job position?uri=http://data.europa.eu/esco/job position/6353b3e8-e8f2-4ecb-b230-186927139892&language=en",
+          "uri": "http://data.europa.eu/esco/job position/6353b3e8-e8f2-4ecb-b230-186927139892",
           "title": "data entry clerk"
         },
         {
-          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/d0aa0792-4345-474b-9365-686cf4869d2e&language=en",
-          "uri": "http://data.europa.eu/esco/occupation/d0aa0792-4345-474b-9365-686cf4869d2e",
+          "href": "https://ec.europa.eu/esco/api/resource/job position?uri=http://data.europa.eu/esco/job position/d0aa0792-4345-474b-9365-686cf4869d2e&language=en",
+          "uri": "http://data.europa.eu/esco/job position/d0aa0792-4345-474b-9365-686cf4869d2e",
           "title": "software architect"
         },
         {
-          "href": "https://ec.europa.eu/esco/api/resource/occupation?uri=http://data.europa.eu/esco/occupation/810e5e67-acd5-499a-b307-cf5bea330859&language=en",
-          "uri": "http://data.europa.eu/esco/occupation/810e5e67-acd5-499a-b307-cf5bea330859",
+          "href": "https://ec.europa.eu/esco/api/resource/job position?uri=http://data.europa.eu/esco/job position/810e5e67-acd5-499a-b307-cf5bea330859&language=en",
+          "uri": "http://data.europa.eu/esco/job position/810e5e67-acd5-499a-b307-cf5bea330859",
           "title": "ICT information and knowledge manager"
         }
       ]

@@ -2,7 +2,7 @@
 
 **Subsequent authorized follow-up:** main graph replacement, PostgreSQLV22 migration and135-item DRAFT import/readback are now recorded in [local cutover observations](REQ-002-official-local-cutover.md). The original Session1 Not run/blocked results below retain their original phase; they are not the latest DB state.
 
-2026-10-22, Asia/Bangkok. Authorized scope: Q1–Q5 source inventory, one full-Occupation official-source DRAFT bank, importer/minimum seed wiring and document synchronization. This is **not executable-test evidence**. No unit/integration/system/Playwright runner, test compilation, application startup, migration or DB import ran. Existing 39 adaptive acceptance IDs remain Planned/Not run.
+2026-10-22, Asia/Bangkok. Authorized scope: Q1–Q5 source inventory, one full-Job Position official-source DRAFT bank, importer/minimum seed wiring and document synchronization. This is **not executable-test evidence**. No unit/integration/system/Playwright runner, test compilation, application startup, migration or DB import ran. Existing 39 adaptive acceptance IDs remain Planned/Not run.
 
 ## Artifacts and identity
 

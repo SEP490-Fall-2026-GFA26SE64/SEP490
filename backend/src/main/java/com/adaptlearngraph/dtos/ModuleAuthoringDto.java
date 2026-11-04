@@ -14,7 +14,7 @@ public final class ModuleAuthoringDto {
 
     public record ChoiceResponse(String id, String name) {}
 
-    public record GrantResponse(String expertId, String occupationId) {}
+    public record GrantResponse(String expertId, String jobPositionId) {}
 
     /** Lesson body; rejected while reading the request with the same rules as the stored lesson. */
     public record LessonRequest(String id, String title, String type, String body, String bodyFormat, double durationSeconds,
@@ -29,7 +29,7 @@ public final class ModuleAuthoringDto {
                                  String durationSource, String videoSource, String assetId, String videoUrl) {}
 
     public record ContentResponse(String id, String title, String markdown, String contentType, String contentVersion,
-                                  List<String> occupationIds, String createdBy, String createdAt, List<LessonResponse> lessons) {}
+                                  List<String> jobPositionIds, String createdBy, String createdAt, List<LessonResponse> lessons) {}
 
     public record MetadataResponse(String id, String version, String status, String reviewStatus, String reviewedBy,
                                    String reviewedAt) {}
@@ -53,11 +53,11 @@ public final class ModuleAuthoringDto {
                                         String contentType, String contentVersion, Integer duration, BigDecimal price,
                                         List<CatalogTeachingResponse> teachings) {}
 
-    public record IntakeResponse(String moduleId, String organizationId, List<String> occupationIds, String assignedBy,
+    public record IntakeResponse(String moduleId, String organizationId, List<String> jobPositionIds, String assignedBy,
                                  String assignedAt, CatalogModuleResponse source, String acceptedBy, String acceptedAt,
                                  List<EventResponse> history, String expertId) {}
 
-    public record DocumentResponse(String id, String organizationId, List<String> occupationIds, String createdBy,
+    public record DocumentResponse(String id, String organizationId, List<String> jobPositionIds, String createdBy,
                                    String createdAt, long lockVersion, boolean everReleased, boolean archived,
                                    Integer releasedRevision, List<RevisionResponse> revisions, List<EventResponse> history,
                                    IntakeResponse intake) {}
@@ -71,7 +71,7 @@ public final class ModuleAuthoringDto {
     /** Skill selection of a module draft (request and import preview). */
     public record TeachingSelection(String skillId, String teachingFocus, String difficultyLevel) {}
 
-    /** Module draft values (request and import preview); occupationIds is accepted for legacy clients only. */
+    /** Module draft values (request and import preview); jobPositionIds is accepted for legacy clients only. */
     public record ModuleInput(String title, String moduleType, String contentId, int duration, BigDecimal price,
-                              List<String> occupationIds, List<TeachingSelection> teachings) {}
+                              List<String> jobPositionIds, List<TeachingSelection> teachings) {}
 }

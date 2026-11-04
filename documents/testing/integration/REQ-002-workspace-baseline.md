@@ -19,7 +19,7 @@ The final combined backend selection passed 78 tests, including these persistenc
 
 ## Stored field and trust boundaries
 
-- `workspace_baseline_resource` requires organization, same-tenant occupation reference and canonical graph occupation ID. Bank/model/mastery-mapping UUIDs may legitimately be null until configured.
+- `workspace_baseline_resource` requires organization, same-tenant job position reference and canonical graph job position ID. Bank/model/mastery-mapping UUIDs may legitimately be null until configured.
 - A foreign bank is rejected by the database owner guard; runtime also rechecks bank creator organization, published item versions and promoted model scope.
 - Graph access is an explicit organization binding, not a grant inferred from an unowned graph node. Real review metadata is required; integration never generates reviewer identity/timestamps.
 - Attempt ownership is the authenticated Employee account plus organization. Existing snapshots and permitted null result/profile fields remain intact.

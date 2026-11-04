@@ -74,7 +74,7 @@ public final class JpaMemberActivationAdapter implements MemberActivationUseCase
             lock(organization);
             workspaces.require(actor, organization, Action.BILLING_READ, clock.instant());
             workspaces.require(actor, organization, Action.WORKSPACE, clock.instant());
-            validator.validate(organization, input.roles(), input.departmentId(), input.occupationReferenceId(), false);
+            validator.validate(organization, input.roles(), input.departmentId(), input.jobPositionReferenceId(), input.departmentName(), input.jobPositionName(), false);
             security.lockEmail(email);
             if (security.accountExists(email)) throw new SubscriptionFailure(SubscriptionFailure.Code.CONFLICT, "An account already exists for this email.");
             var existing = data.activations().lockPendingByEmail(email).stream().findFirst()
@@ -95,7 +95,7 @@ public final class JpaMemberActivationAdapter implements MemberActivationUseCase
             long generation;
             if (existing.isEmpty()) {
                 data.activations().insert(new WorkspaceActivationEntity(id, organization, actor.accountId(), input.fullName().strip(),
-                        email, input.roles().stream().sorted().toList(), input.departmentId(), input.occupationReferenceId(),
+                        email, input.roles().stream().sorted().toList(), input.departmentId(), input.jobPositionReferenceId(),
                         proof, now.plusSeconds(600), now));
                 generation = 1;
             } else {
@@ -120,7 +120,7 @@ public final class JpaMemberActivationAdapter implements MemberActivationUseCase
             String delivery = job == null ? "NOT_REQUESTED" : "SUCCEEDED".equals(job) ? "SENT"
                     : ("FAILED".equals(job) || "BLOCKED".equals(job)) ? "FAILED" : "PENDING";
             return new PendingActivation(row.activationId(), row.fullName(), row.email(), Set.copyOf(row.roles()),
-                    row.departmentId(), row.departmentName(), row.occupationReferenceId(), row.occupationName(), row.createdAt(),
+                    row.departmentId(), row.departmentName(), row.jobPositionReferenceId(), row.jobPositionName(), row.createdAt(),
                     row.expiresAt(), clock.instant().isBefore(row.expiresAt()) ? "PENDING" : "EXPIRED", delivery);
         }).toList();
     }
@@ -129,7 +129,7 @@ public final class JpaMemberActivationAdapter implements MemberActivationUseCase
     public List<Reference> references(UUID organization) {
         workspaces.require(identity.current().actor(), organization, Action.MEMBER_READ, clock.instant());
         return data.references().activeChoices(organization).stream().map(choice -> new Reference(choice.departmentId(),
-                choice.departmentName(), choice.occupationReferenceId(), choice.occupationName())).toList();
+                choice.departmentName(), choice.jobPositionReferenceId(), choice.jobPositionName())).toList();
     }
 
     @Override
@@ -151,7 +151,7 @@ public final class JpaMemberActivationAdapter implements MemberActivationUseCase
             String status = data.organizations().status(organization).orElseThrow();
             var summary = workspaces.summary(organization, now);
             if (!"ACTIVE".equals(status) || !"ACTIVE".equals(summary.subscriptionStatus())) throw new SubscriptionFailure(SubscriptionFailure.Code.FORBIDDEN, "Workspace activation is unavailable while expired or suspended.");
-            validator.validate(organization, roles, activation.departmentId(), activation.occupationReferenceId(), false);
+            validator.validate(organization, roles, activation.departmentId(), activation.jobPositionReferenceId(), false);
             if (roles.contains("EMPLOYEE") && summary.usedSeats() >= summary.admissionLimit()) throw new SubscriptionFailure(SubscriptionFailure.Code.CAPACITY_EXCEEDED, "No Employee seat is available. Contact your administrator.");
             security.lockEmail(activation.email());
             if (security.accountExists(activation.email())) throw new SubscriptionFailure(SubscriptionFailure.Code.CONFLICT, "The account already exists.");
@@ -160,7 +160,7 @@ public final class JpaMemberActivationAdapter implements MemberActivationUseCase
             data.accounts().insert(new AccountEntity(account, organization, activation.email(), activation.email(), hash, now));
             data.profiles().insert(new WorkspaceAccountProfileEntity(account, activation.fullName(), now));
             data.memberships().insert(new OrganizationMembershipEntity(member, account, organization, true,
-                    activation.departmentId(), activation.occupationReferenceId(), now));
+                    activation.departmentId(), activation.jobPositionReferenceId(), now));
             data.roles().insertAll(roles.stream().map(role -> new OrganizationMembershipRoleEntity(member, role)).toList());
             if (roles.contains("EMPLOYEE")) data.learners().insert(new LearnerStateEntity(account));
             data.activations().consume(organization, owner.activationId(), account, now);

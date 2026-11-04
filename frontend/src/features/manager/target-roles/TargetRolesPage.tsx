@@ -1,4 +1,5 @@
 import { workspaceFetch as fetch } from '../../../shared/api/workspaceFetch'
+import { fetchJobPositions } from '../../../shared/api/jobPositionApi'
 import {
   fetchCompetencies,
   type CompetencyDto,
@@ -65,15 +66,16 @@ import {
 import {
   ELIGIBLE_EXPERTS,
   findEligibleExpert,
-  ONET_OCCUPATIONS,
+  JOB_POSITIONS,
+  type JobPosition,
   compareRoleVersions,
   formatDate,
-  getAvailableOccupations,
+  getAvailableJobPositions,
   normalizeExpertId,
-  getEligibleExpertsForOccupation,
+  getEligibleExpertsForJobPosition,
   getOrganizationExperts,
   type EligibleExpert,
-  resolveOccupationForRole,
+  resolveJobPositionForRole,
   sortTargetRolesWithDraftsBelowPublished,
   type RoleLevelThresholds,
   type CompetencyModel,
@@ -84,12 +86,12 @@ import {
   type ComboboxOption,
 } from '../../../shared/components/ui/Combobox'
 
-export const getExpertOptionsForOccupation = (
-  occupationCode?: string,
+export const getExpertOptionsForJobPosition = (
+  jobPositionCode?: string,
   organizationId?: string,
 ): ComboboxOption[] => {
-  const eligible = getEligibleExpertsForOccupation(
-    occupationCode,
+  const eligible = getEligibleExpertsForJobPosition(
+    jobPositionCode,
     organizationId,
   )
 
@@ -156,9 +158,54 @@ export function TargetRolesPage() {
   const orgId = resolveWorkspaceOrgId(
     session?.identity?.organizationId || activeComp?.id,
   )
-  const availableOccupations = React.useMemo(() => {
-    return getAvailableOccupations(orgId)
+  const [availableJobPositions, setAvailableJobPositions] = React.useState<JobPosition[]>(() =>
+    getAvailableJobPositions(orgId)
+  )
+
+  const refreshAvailableJobPositions = React.useCallback(async () => {
+    const localPositions = getAvailableJobPositions(orgId)
+    setAvailableJobPositions(localPositions)
+
+    try {
+      const apiPositions = await fetchJobPositions(orgId)
+      if (Array.isArray(apiPositions) && apiPositions.length > 0) {
+        const mergedMap = new Map<string, JobPosition>()
+        for (const p of localPositions) {
+          mergedMap.set(p.code, p)
+        }
+        for (const ap of apiPositions) {
+          const code = ap.code || ap.id || ''
+          if (code) {
+            const existing = mergedMap.get(code)
+            mergedMap.set(code, {
+              code,
+              name: ap.name || existing?.name || code,
+              description: existing?.description || '',
+              jobZone: ap.jobZone || existing?.jobZone || 4,
+              profiles: existing?.profiles || ['DEV'],
+              assignedExpertIds: existing?.assignedExpertIds || [],
+            })
+          }
+        }
+        setAvailableJobPositions(Array.from(mergedMap.values()))
+      }
+    } catch {
+      // localStorage fallback is already active
+    }
   }, [orgId])
+
+  React.useEffect(() => {
+    refreshAvailableJobPositions()
+    const handleJobPositionsUpdated = () => {
+      refreshAvailableJobPositions()
+    }
+    window.addEventListener('storage', handleJobPositionsUpdated)
+    window.addEventListener('adaptlearn_job_positions_updated', handleJobPositionsUpdated)
+    return () => {
+      window.removeEventListener('storage', handleJobPositionsUpdated)
+      window.removeEventListener('adaptlearn_job_positions_updated', handleJobPositionsUpdated)
+    }
+  }, [refreshAvailableJobPositions])
 
   const [orgExperts, setOrgExperts] = React.useState<EligibleExpert[]>(() =>
     getOrganizationExperts(orgId),
@@ -178,7 +225,7 @@ export function TargetRolesPage() {
           const mapped: EligibleExpert[] = expertMembers.map((m) => ({
             id: m.accountId,
             name: m.fullName || m.email,
-            title: m.occupationName || m.departmentName || 'Domain Expert',
+            title: m.jobPositionName || m.departmentName || 'Domain Expert',
             email: m.email,
           }))
           if (typeof localStorage !== 'undefined') {
@@ -205,13 +252,13 @@ export function TargetRolesPage() {
     }
   }, [orgId])
 
-  const occupationOptions: ComboboxOption[] = React.useMemo(() => {
-    return availableOccupations.map((occ) => ({
+  const jobPositionOptions: ComboboxOption[] = React.useMemo(() => {
+    return availableJobPositions.map((occ) => ({
       value: occ.code,
       label: `${occ.code} — ${occ.name}`,
       description: occ.description,
     }))
-  }, [availableOccupations])
+  }, [availableJobPositions])
 
   const fetchRoles = React.useCallback(async () => {
     try {
@@ -226,23 +273,23 @@ export function TargetRolesPage() {
         const mapped: TargetRoleModel[] = (
           data as Record<string, unknown>[]
         ).map((r) => {
-          const occ = resolveOccupationForRole({
+          const occ = resolveJobPositionForRole({
             code: String(r.code || ''),
             title: String(r.name || ''),
             familyCode: String(r.familyCode || ''),
-            occupationCode:
-              typeof r.occupationCode === 'string'
-                ? r.occupationCode
+            jobPositionCode:
+              typeof r.jobPositionCode === 'string'
+                ? r.jobPositionCode
                 : undefined,
-          })
+          }, orgId)
 
           return {
             id: String(r.id || ''),
             stableId: String(r.code || ''),
             code: String(r.code || ''),
             title: String(r.name || ''),
-            occupationCode: occ.code,
-            occupationTitle: occ.name,
+            jobPositionCode: occ.code,
+            jobPositionTitle: occ.name,
             scope: String(r.scope || r.description || occ.description),
             levels:
               Array.isArray(r.levels) && (r.levels as string[]).length > 0
@@ -548,7 +595,7 @@ export function TargetRolesPage() {
   const [roleForm, setRoleForm] = React.useState({
     code: '',
     title: '',
-    occupationCode: '15-1252.00',
+    jobPositionCode: '15-1252.00',
     scope:
       'Design, code, and test applications, systems software, and infrastructure pipelines.',
     familyCode: 'DEV',
@@ -562,7 +609,7 @@ export function TargetRolesPage() {
 
   const [editRoleForm, setEditRoleForm] = React.useState({
     title: '',
-    occupationCode: '15-1252.00',
+    jobPositionCode: '15-1252.00',
     scope: '',
     familyCode: 'DEV',
     track: 'PROFESSIONAL' as 'PROFESSIONAL' | 'MANAGEMENT',
@@ -571,20 +618,20 @@ export function TargetRolesPage() {
     description: '',
   })
 
-  // Dynamic expert options filtered to experts certified for the selected occupation
+  // Dynamic expert options filtered to experts certified for the selected jobPosition
 
   const createExpertOptions: ComboboxOption[] = React.useMemo(() => {
-    const list = getEligibleExpertsForOccupation(roleForm.occupationCode, orgId)
+    const list = getEligibleExpertsForJobPosition(roleForm.jobPositionCode, orgId)
     return list.map((exp) => ({
       value: exp.id,
       label: exp.name,
       description: exp.title,
     }))
-  }, [roleForm.occupationCode, orgId])
+  }, [roleForm.jobPositionCode, orgId])
 
   const editExpertOptions: ComboboxOption[] = React.useMemo(() => {
-    const list = getEligibleExpertsForOccupation(
-      editRoleForm.occupationCode,
+    const list = getEligibleExpertsForJobPosition(
+      editRoleForm.jobPositionCode,
       orgId,
     )
     return list.map((exp) => ({
@@ -592,7 +639,7 @@ export function TargetRolesPage() {
       label: exp.name,
       description: exp.title,
     }))
-  }, [editRoleForm.occupationCode, orgId])
+  }, [editRoleForm.jobPositionCode, orgId])
 
   // Sort criteria: defaults to 'latest' so newly created or updated roles go to the top
 
@@ -709,15 +756,18 @@ export function TargetRolesPage() {
   // Handlers
 
   const handleOpenCreateRole = () => {
-    const defaultOcc = availableOccupations[0] || ONET_OCCUPATIONS[0]
-    const eligibleExperts = getEligibleExpertsForOccupation(
+    refreshAvailableJobPositions()
+    const latestPositions = getAvailableJobPositions(orgId)
+    setAvailableJobPositions(latestPositions)
+    const defaultOcc = latestPositions[0] || availableJobPositions[0] || JOB_POSITIONS[0]
+    const eligibleExperts = getEligibleExpertsForJobPosition(
       defaultOcc.code,
       orgId,
     )
     setRoleForm({
       code: `ROLE-${Math.random().toString(36).substring(2, 6).toUpperCase()}`,
       title: '',
-      occupationCode: defaultOcc.code,
+      jobPositionCode: defaultOcc.code,
       scope: defaultOcc.description,
       familyCode: defaultOcc.profiles?.[0] || 'DEV',
       track: 'PROFESSIONAL',
@@ -763,8 +813,9 @@ export function TargetRolesPage() {
     )
     let generatedId = `role-${Date.now()}`
     const selectedOcc =
-      ONET_OCCUPATIONS.find((o) => o.code === roleForm.occupationCode) ||
-      ONET_OCCUPATIONS[0]
+      availableJobPositions.find((o) => o.code === roleForm.jobPositionCode) ||
+      JOB_POSITIONS.find((o) => o.code === roleForm.jobPositionCode) ||
+      JOB_POSITIONS[0]
     const roleCode = roleForm.code.trim().toUpperCase()
     const backendStatus = targetStatus === 'sent' ? 'SENT' : 'DRAFT'
     const assignedExpert =
@@ -833,8 +884,8 @@ export function TargetRolesPage() {
       stableId: `role-uuid-${Date.now()}`,
       code: roleCode,
       title: roleForm.title.trim(),
-      occupationCode: selectedOcc.code,
-      occupationTitle: selectedOcc.name,
+      jobPositionCode: selectedOcc.code,
+      jobPositionTitle: selectedOcc.name,
       scope: roleForm.scope || selectedOcc.description,
       levels: roleForm.levelNames,
       familyCode: roleForm.familyCode || selectedOcc.profiles[0] || 'DEV',
@@ -930,9 +981,12 @@ export function TargetRolesPage() {
   // Open edit role modal (L&D Manager scope: edit attributes & assigned expert)
 
   const handleOpenEditRole = (role: TargetRoleModel) => {
-    const occ = resolveOccupationForRole(role, orgId)
-    const occCode = role.occupationCode || occ.code
-    const eligibleExperts = getEligibleExpertsForOccupation(occCode, orgId)
+    refreshAvailableJobPositions()
+    const latestPositions = getAvailableJobPositions(orgId)
+    setAvailableJobPositions(latestPositions)
+    const occ = resolveJobPositionForRole(role, orgId)
+    const occCode = role.jobPositionCode || occ.code
+    const eligibleExperts = getEligibleExpertsForJobPosition(occCode, orgId)
     const isCurrentEligible = eligibleExperts.some(
       (e) =>
         normalizeExpertId(e.id) === normalizeExpertId(role.assignedExpertId),
@@ -945,7 +999,7 @@ export function TargetRolesPage() {
 
     setEditRoleForm({
       title: role.title,
-      occupationCode: occCode,
+      jobPositionCode: occCode,
       scope: role.scope || role.description || occ.description,
       familyCode: role.familyCode || occ.profiles[0] || 'DEV',
       track: (role.track || 'PROFESSIONAL') as 'PROFESSIONAL' | 'MANAGEMENT',
@@ -984,8 +1038,9 @@ export function TargetRolesPage() {
       ELIGIBLE_EXPERTS.find((e) => e.id === editRoleForm.assignedExpertId)
     const expertName = assignedExpert?.name || 'Assigned Expert'
     const selectedOcc =
-      ONET_OCCUPATIONS.find((o) => o.code === editRoleForm.occupationCode) ||
-      ONET_OCCUPATIONS[0]
+      availableJobPositions.find((o) => o.code === editRoleForm.jobPositionCode) ||
+      JOB_POSITIONS.find((o) => o.code === editRoleForm.jobPositionCode) ||
+      JOB_POSITIONS[0]
     const newStatus =
       targetStatus === 'sent'
         ? 'SENT'
@@ -1036,8 +1091,8 @@ export function TargetRolesPage() {
     const updatedRole: TargetRoleModel = {
       ...selectedRole,
       title: editRoleForm.title.trim(),
-      occupationCode: selectedOcc.code,
-      occupationTitle: selectedOcc.name,
+      jobPositionCode: selectedOcc.code,
+      jobPositionTitle: selectedOcc.name,
       scope:
         editRoleForm.scope ||
         editRoleForm.description ||
@@ -1577,7 +1632,7 @@ export function TargetRolesPage() {
                       <tr className="border-b border-border bg-muted/40 text-muted-foreground uppercase text-[11px] font-semibold">
                         <th className="py-2.5 px-3">Role Code</th>
                         <th className="py-2.5 px-3">Title &amp; Version</th>
-                        <th className="py-2.5 px-3">Occupation</th>
+                        <th className="py-2.5 px-3">Job Position</th>
                         <th className="py-2.5 px-3 text-center whitespace-nowrap">
                           Levels
                         </th>
@@ -1794,11 +1849,11 @@ export function TargetRolesPage() {
 
                               <td className="py-3 px-3">
                                 {(() => {
-                                  const occ = resolveOccupationForRole(role)
+                                  const occ = resolveJobPositionForRole(role, orgId)
 
                                   return (
                                     <span className="text-xs font-medium text-foreground">
-                                      {role.occupationTitle || occ.name}
+                                      {role.jobPositionTitle || occ.name}
                                     </span>
                                   )
                                 })()}
@@ -2096,17 +2151,17 @@ export function TargetRolesPage() {
             </div>
           </div>
 
-          {/* Card 2: Industry Occupation Alignment */}
+          {/* Card 2: Industry Job Position Alignment */}
 
           <div className="p-3.5 rounded-lg border border-primary/20 bg-primary/5 space-y-3">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <div>
                 <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider block">
-                  Industry Occupation Alignment
+                  Industry Job Position Alignment
                 </span>
 
                 <p className="text-[11px] text-muted-foreground mt-0.5">
-                  Align this role with a recognized O*NET industry occupation
+                  Align this role with a recognized industry job position
                   and benchmark standard.
                 </p>
               </div>
@@ -2121,7 +2176,7 @@ export function TargetRolesPage() {
 
             <div className="pt-1">
               <label className="text-[11px] font-semibold text-foreground block mb-1">
-                Occupation <span className="text-destructive">*</span>
+                Job Position <span className="text-destructive">*</span>
               </label>
 
               <Combobox
@@ -2129,17 +2184,17 @@ export function TargetRolesPage() {
 
                 clearable={false}
 
-                options={occupationOptions}
+                options={jobPositionOptions}
 
-                value={roleForm.occupationCode}
+                value={roleForm.jobPositionCode}
 
                 onChange={(val) => {
                   if (!val) return
 
                   const occ =
-                    availableOccupations.find((o) => o.code === val) ||
-                    ONET_OCCUPATIONS.find((o) => o.code === val)
-                  const eligible = getEligibleExpertsForOccupation(val, orgId)
+                    availableJobPositions.find((o) => o.code === val) ||
+                    JOB_POSITIONS.find((o) => o.code === val)
+                  const eligible = getEligibleExpertsForJobPosition(val, orgId)
                   const isCurrentEligible = eligible.some(
                     (e) =>
                       normalizeExpertId(e.id) ===
@@ -2151,23 +2206,23 @@ export function TargetRolesPage() {
 
                   setRoleForm((prev) => ({
                     ...prev,
-                    occupationCode: val,
+                    jobPositionCode: val,
                     assignedExpertId: newExpertId,
                     scope: prev.scope || occ?.description || '',
                     description: prev.description || occ?.description || '',
                   }))
                 }}
 
-                placeholder="Select Occupation..."
+                placeholder="Select Job Position..."
 
-                searchPlaceholder="Search occupation..."
+                searchPlaceholder="Search job position..."
               />
             </div>
 
             {(() => {
-              const selectedOcc = ONET_OCCUPATIONS.find(
-                (o) => o.code === roleForm.occupationCode,
-              )
+              const selectedOcc =
+                availableJobPositions.find((o) => o.code === roleForm.jobPositionCode) ||
+                JOB_POSITIONS.find((o) => o.code === roleForm.jobPositionCode)
 
               if (!selectedOcc) return null
 
@@ -2291,7 +2346,7 @@ export function TargetRolesPage() {
               <span className="text-[10px] text-primary font-medium">
                 {createExpertOptions.length} eligible expert
                 {createExpertOptions.length !== 1 ? 's' : ''} available for this
-                occupation
+                job position
               </span>
             </div>
 
@@ -2311,7 +2366,7 @@ export function TargetRolesPage() {
 
                 placeholder="Select assigned domain expert..."
 
-                searchPlaceholder="Search eligible expert for this occupation..."
+                searchPlaceholder="Search eligible expert for this job position..."
               />
 
               <span className="text-[10px] text-muted-foreground mt-1 block">
@@ -2770,18 +2825,18 @@ export function TargetRolesPage() {
                   </div>
                 </div>
 
-                {/* Card 2: Industry Occupation Alignment */}
+                {/* Card 2: Industry Job Position Alignment */}
 
                 <div className="p-3.5 rounded-lg border border-primary/20 bg-primary/5 space-y-3">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                     <div>
                       <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider block">
-                        Industry Occupation Alignment
+                        Industry Job Position Alignment
                       </span>
 
                       <p className="text-[11px] text-muted-foreground mt-0.5">
-                        Align this role with a recognized O*NET industry
-                        occupation and benchmark standard.
+                        Align this role with a recognized industry
+                        job position and benchmark standard.
                       </p>
                     </div>
 
@@ -2795,7 +2850,7 @@ export function TargetRolesPage() {
 
                   <div className="pt-1">
                     <label className="text-[11px] font-semibold text-foreground block mb-1">
-                      Occupation <span className="text-destructive">*</span>
+                      Job Position <span className="text-destructive">*</span>
                     </label>
 
                     <Combobox
@@ -2805,17 +2860,17 @@ export function TargetRolesPage() {
 
                       disabled={isSubmittedRole || isPublishedRole}
 
-                      options={occupationOptions}
+                      options={jobPositionOptions}
 
-                      value={editRoleForm.occupationCode}
+                      value={editRoleForm.jobPositionCode}
 
                       onChange={(val) => {
                         if (!val) return
 
                         const occ =
-                          availableOccupations.find((o) => o.code === val) ||
-                          ONET_OCCUPATIONS.find((o) => o.code === val)
-                        const eligible = getEligibleExpertsForOccupation(
+                          availableJobPositions.find((o) => o.code === val) ||
+                          JOB_POSITIONS.find((o) => o.code === val)
+                        const eligible = getEligibleExpertsForJobPosition(
                           val,
                           orgId,
                         )
@@ -2830,7 +2885,7 @@ export function TargetRolesPage() {
 
                         setEditRoleForm((prev) => ({
                           ...prev,
-                          occupationCode: val,
+                          jobPositionCode: val,
                           assignedExpertId: newExpertId,
                           scope: prev.scope || occ?.description || '',
                           description:
@@ -2838,16 +2893,16 @@ export function TargetRolesPage() {
                         }))
                       }}
 
-                      placeholder="Select Occupation..."
+                      placeholder="Select Job Position..."
 
-                      searchPlaceholder="Search occupation..."
+                      searchPlaceholder="Search job position..."
                     />
                   </div>
 
                   {(() => {
-                    const selectedOcc = ONET_OCCUPATIONS.find(
-                      (o) => o.code === editRoleForm.occupationCode,
-                    )
+                    const selectedOcc =
+                      availableJobPositions.find((o) => o.code === editRoleForm.jobPositionCode) ||
+                      JOB_POSITIONS.find((o) => o.code === editRoleForm.jobPositionCode)
 
                     if (!selectedOcc) return null
 
@@ -2987,7 +3042,7 @@ export function TargetRolesPage() {
                     <span className="text-[10px] text-primary font-medium">
                       {editExpertOptions.length} eligible expert
                       {editExpertOptions.length !== 1 ? 's' : ''} available for
-                      this occupation
+                      this job position
                     </span>
                   </div>
 
@@ -3013,7 +3068,7 @@ export function TargetRolesPage() {
 
                       placeholder="Select assigned domain expert..."
 
-                      searchPlaceholder="Search eligible expert for this occupation..."
+                      searchPlaceholder="Search eligible expert for this job position..."
                     />
 
                     <span className="text-[10px] text-muted-foreground mt-1 block">
@@ -3511,28 +3566,28 @@ export function TargetRolesPage() {
               return null
             })()}
 
-            {/* O*NET Occupation & Ontology Levels Banner */}
+            {/* Job Position & Ontology Levels Banner */}
 
             {(() => {
-              const occ = resolveOccupationForRole(viewingDetailsRole)
+              const occ = resolveJobPositionForRole(viewingDetailsRole, orgId)
 
               return (
                 <div className="space-y-3">
                   <div className="p-3.5 rounded-lg border border-primary/20 bg-primary/5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div>
                       <div className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">
-                        Occupation
+                        Job Position
                       </div>
 
                       <div className="text-sm font-bold text-foreground flex items-center gap-2 mt-0.5">
                         <span>
-                          {viewingDetailsRole.occupationTitle || occ.name}
+                          {viewingDetailsRole.jobPositionTitle || occ.name}
                         </span>
                         <Badge
                           variant="outline"
                           className="font-mono text-xs font-semibold text-primary border-primary/30"
                         >
-                          {viewingDetailsRole.occupationCode || occ.code}
+                          {viewingDetailsRole.jobPositionCode || occ.code}
                         </Badge>
                       </div>
 

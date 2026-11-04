@@ -108,10 +108,10 @@ Expected:
 
 ---
 
-## 7. Check Imported Occupations on `/ld-manager/occupations`
+## 7. Check Imported Job Positions on `/ld-manager/job positions`
 
-1. Open <http://127.0.0.1:8088/ld-manager/occupations>.
-2. Confirm the 5 standard O*NET occupations imported from `ontology_dataset.xlsx` render live from Neo4j:
+1. Open <http://127.0.0.1:8088/ld-manager/job positions>.
+2. Confirm the 5 standard job positions imported from `ontology_dataset.xlsx` render live from Neo4j:
    - `15-1212.00` — Information Security Analysts
    - `15-1243.00` — Database Architects
    - `15-1252.00` — Software Developers

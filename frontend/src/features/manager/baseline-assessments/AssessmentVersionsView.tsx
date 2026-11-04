@@ -25,7 +25,7 @@ import {
 type Filter = 'ALL' | 'OPEN' | 'ACTIVE' | 'HISTORY'
 
 export function AssessmentVersionsView() {
-  const { occupationId = '' } = useParams()
+  const { jobPositionId = '' } = useParams()
   const navigate = useNavigate()
   const { toast } = useToast()
   const { language, t } = useTranslation()
@@ -38,19 +38,19 @@ export function AssessmentVersionsView() {
   const [abandonReason, setAbandonReason] = React.useState('')
   const generateKey = React.useRef<string | null>(null)
   const restoreKeys = React.useRef<Record<string, string>>({})
-  const basePath = `/ld-manager/baseline-assessments/${encodeURIComponent(occupationId)}`
+  const basePath = `/ld-manager/baseline-assessments/${encodeURIComponent(jobPositionId)}`
 
   const load = React.useCallback(async () => {
     setLoading(true)
     setError(null)
     try {
-      setWorkspace(await getBaselineAssessmentWorkspace(occupationId))
+      setWorkspace(await getBaselineAssessmentWorkspace(jobPositionId))
     } catch (cause) {
       setError(errorMessage(cause, t))
     } finally {
       setLoading(false)
     }
-  }, [occupationId, t])
+  }, [jobPositionId, t])
 
   React.useEffect(() => { void load() }, [load])
 
@@ -63,7 +63,7 @@ export function AssessmentVersionsView() {
     setBusy('generate')
     try {
       generateKey.current ??= crypto.randomUUID()
-      const created = await generateAssessmentCandidate(occupationId, generateKey.current)
+      const created = await generateAssessmentCandidate(jobPositionId, generateKey.current)
       generateKey.current = null
       toast({ title: t('baselineAssessmentManagement.assessmentActions.generated').replace('{version}', String(created.version)), description: t('baselineAssessmentManagement.assessmentActions.generatedDescription'), variant: 'success' })
       navigate(`${basePath}/assessments/${created.assessmentVersionId}`)
@@ -89,7 +89,7 @@ export function AssessmentVersionsView() {
     if (!abandonReason.trim()) return
     setBusy('abandon')
     try {
-      const updated = await abandonPendingBlueprintChange(occupationId, abandonReason.trim())
+      const updated = await abandonPendingBlueprintChange(jobPositionId, abandonReason.trim())
       setWorkspace(updated)
       setAbandonOpen(false)
       setAbandonReason('')
@@ -102,7 +102,7 @@ export function AssessmentVersionsView() {
   const changeTab = (tab: string) => navigate(`${basePath}/${tab}`)
 
   return <WorkspaceLayout><div className="space-y-6 pb-16">
-    <PageHeader icon={<ClipboardCheck className="h-7 w-7" />} title={workspace?.occupationName ?? t('baselineAssessmentManagement.workspaceTitle')} description={t('baselineAssessmentManagement.workspaceDescription')} actions={<Button variant="outline" size="sm" leftIcon={<ArrowLeft className="h-4 w-4" />} onClick={() => navigate('/ld-manager/baseline-assessments')}>{t('baselineAssessmentManagement.backToOccupations')}</Button>} />
+    <PageHeader icon={<ClipboardCheck className="h-7 w-7" />} title={workspace?.jobPositionName ?? t('baselineAssessmentManagement.workspaceTitle')} description={t('baselineAssessmentManagement.workspaceDescription')} actions={<Button variant="outline" size="sm" leftIcon={<ArrowLeft className="h-4 w-4" />} onClick={() => navigate('/ld-manager/baseline-assessments')}>{t('baselineAssessmentManagement.backToJobPositions')}</Button>} />
     {error ? <EmptyState icon={<AlertCircle className="h-7 w-7" />} title={t('baselineAssessmentManagement.workspaceLoadFailed')} description={error} action={<Button size="sm" onClick={() => void load()}>{t('common.refresh')}</Button>} /> : loading || !workspace ? <div className="h-64 animate-pulse rounded-lg bg-muted/60" aria-busy="true" /> : <>
       <Tabs value="assessments" onValueChange={changeTab}><TabsList className="h-auto flex-wrap justify-start gap-1"><TabsTrigger value="blueprints">{t('baselineAssessmentManagement.tabs.blueprints')}</TabsTrigger><TabsTrigger value="assessments">{t('baselineAssessmentManagement.tabs.assessments')}</TabsTrigger></TabsList></Tabs>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between"><div><h2 className="text-lg font-semibold text-foreground">{t('baselineAssessmentManagement.assessments.title')}</h2><p className="text-sm text-muted-foreground">{t('baselineAssessmentManagement.assessments.description')}</p></div><div className="flex flex-wrap gap-2">{openCandidate && <Button variant="outline" size="sm" leftIcon={<Trash2 className="h-4 w-4" />} onClick={() => setAbandonOpen(true)}>{t('baselineAssessmentManagement.assessmentActions.abandon')}</Button>}<Button size="sm" leftIcon={<FilePlus2 className="h-4 w-4" />} disabled={!pendingBlueprint || Boolean(openCandidate) || Boolean(workspace.workingRevision)} isLoading={busy === 'generate'} onClick={() => void generate()}>{t('baselineAssessmentManagement.assessmentActions.generate')}</Button></div></div>

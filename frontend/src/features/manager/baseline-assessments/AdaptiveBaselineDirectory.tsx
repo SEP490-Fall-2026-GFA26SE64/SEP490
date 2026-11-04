@@ -12,7 +12,7 @@ import { ClipboardList, RefreshCw, Search } from 'lucide-react'
 import { Pagination } from '../../../shared/components/ui/Pagination'
 import { Text } from '../../../shared/components/typography/Text'
 import { useTranslation } from '../../../shared/i18n/LanguageContext'
-import { AdaptiveBaselineApiError, listAdaptiveOccupations, type AdaptiveListRow, type AdaptiveListQuery } from './adaptiveBaselineApi'
+import { AdaptiveBaselineApiError, listAdaptiveJobPositions, type AdaptiveListRow, type AdaptiveListQuery } from './adaptiveBaselineApi'
 import { AdaptiveErrorNotice, AdaptiveLoading } from './AdaptiveBaselineFeedback'
 import { useAdaptiveBaselineList } from './useAdaptiveBaselineList'
 
@@ -21,18 +21,18 @@ export function AdaptiveBaselineDirectory({ embedded = false }: { embedded?: boo
   const state = useAdaptiveBaselineList(), locked = state.busy || state.pending
   const [selected, setSelected] = useState<AdaptiveListRow | null>(null), [reason, setReason] = useState('')
   const [choosing, setChoosing] = useState(false), [catalogRetry, setCatalogRetry] = useState(0)
-  const [occupations, setOccupations] = useState<{ id: string; name: string }[]>([]), [catalogBusy, setCatalogBusy] = useState(false)
+  const [jobPositions, setJobPositions] = useState<{ id: string; name: string }[]>([]), [catalogBusy, setCatalogBusy] = useState(false)
   const [catalogError, setCatalogError] = useState<AdaptiveBaselineApiError | null>(null)
   useEffect(() => {
     if (!choosing) return
     const controller = new AbortController()
-    void listAdaptiveOccupations(controller.signal).then(value => { if (!controller.signal.aborted) setOccupations(value) })
+    void listAdaptiveJobPositions(controller.signal).then(value => { if (!controller.signal.aborted) setJobPositions(value) })
       .catch(cause => { if (!controller.signal.aborted) setCatalogError(cause instanceof AdaptiveBaselineApiError ? cause : new AdaptiveBaselineApiError(0, 'NETWORK_ERROR')) })
       .finally(() => { if (!controller.signal.aborted) setCatalogBusy(false) })
     return () => controller.abort()
   }, [choosing, catalogRetry])
-  function openPicker() { setCatalogBusy(true); setCatalogError(null); setOccupations([]); setChoosing(true) }
-  const open = (occupation: string) => navigate(`/ld-manager/baseline-assessments/${encodeURIComponent(occupation)}`)
+  function openPicker() { setCatalogBusy(true); setCatalogError(null); setJobPositions([]); setChoosing(true) }
+  const open = (jobPosition: string) => navigate(`/ld-manager/baseline-assessments/${encodeURIComponent(jobPosition)}`)
   const statuses = ['DRAFT', 'ACTIVE', 'RETIRING', 'INACTIVE'] as const
   return <div className="min-w-0 space-y-5 pb-8">
     {!embedded && <Heading level={1} className="sr-only">{tr('title')}</Heading>}
@@ -58,29 +58,29 @@ export function AdaptiveBaselineDirectory({ embedded = false }: { embedded?: boo
       {state.result.rows.length === 0 ? <EmptyState icon={<ClipboardList size={28} className="text-primary" aria-hidden="true" />} title={tr('emptyList')} description={tr('emptyListHint')}
         action={<Button variant="secondary" disabled={state.pending} onClick={() => state.query.search || state.query.status ? (state.setSearch(''), state.changeQuery({ search: '', status: '', page: 0 })) : openPicker()}>{tr(state.query.search || state.query.status ? 'clearFilters' : 'choose')}</Button>} />
         : <Card className="overflow-hidden"><div className="overflow-x-auto"><table className="w-full text-left text-body-sm">
-          <thead className="border-b border-border bg-muted/50"><tr>{['name', 'occupation', 'status', 'date', 'actions'].map(key => <th className="px-4 py-3 font-semibold" scope="col" key={key}>{tr(key)}</th>)}</tr></thead>
+          <thead className="border-b border-border bg-muted/50"><tr>{['name', 'jobPosition', 'status', 'date', 'actions'].map(key => <th className="px-4 py-3 font-semibold" scope="col" key={key}>{tr(key)}</th>)}</tr></thead>
           <tbody className="divide-y divide-border">{state.result.rows.map(row => <tr className="transition-colors hover:bg-muted/30" key={row.workingRevisionId ?? `${row.blueprintId}:${row.version}`}>
             <td className="max-w-xs px-4 py-3"><Text variant="body-sm" tone="foreground" className="break-words font-semibold">{row.name}</Text><Text variant="caption" className="text-muted-foreground">{tr(row.type === 'DRAFT' ? 'draftType' : 'versionType')}{row.version === null ? '' : ` ${row.version}`}</Text></td>
-            <td className="max-w-xs break-words px-4 py-3">{row.occupationName}</td>
+            <td className="max-w-xs break-words px-4 py-3">{row.jobPositionName}</td>
             <td className="px-4 py-3"><Badge variant={row.status === 'ACTIVE' ? 'success' : row.status === 'RETIRING' ? 'warning' : row.status === 'DRAFT' ? 'secondary' : 'outline'}>{tr(`statuses.${row.status}`)}</Badge>
               {row.status === 'RETIRING' && <Text variant="caption" className="mt-1">{row.inProgressCount} {tr('continuing')}</Text>}
               {row.configurationUpdateRequired && row.status === 'ACTIVE' && <Text variant="caption" className="mt-1 text-muted-foreground">{tr('updateRequired')}</Text>}</td>
             <td className="px-4 py-3"><Text variant="caption">{tr(`dates.${row.dateLabel}`)}</Text><time dateTime={row.date}>{new Date(row.date).toLocaleString(language)}</time></td>
-            <td className="px-4 py-3"><div className="flex flex-wrap gap-2"><Button variant="outline" size="sm" disabled={state.pending} onClick={() => navigate(`/ld-manager/baseline-assessments/${encodeURIComponent(row.occupationId)}?${new URLSearchParams(row.type === 'DRAFT' ? { draft: row.workingRevisionId! } : { blueprint: row.blueprintId, version: String(row.version) })}`)}>{tr('manage')}</Button>
+            <td className="px-4 py-3"><div className="flex flex-wrap gap-2"><Button variant="outline" size="sm" disabled={state.pending} onClick={() => navigate(`/ld-manager/baseline-assessments/${encodeURIComponent(row.jobPositionId)}?${new URLSearchParams(row.type === 'DRAFT' ? { draft: row.workingRevisionId! } : { blueprint: row.blueprintId, version: String(row.version) })}`)}>{tr('manage')}</Button>
               {row.status === 'ACTIVE' && <Button variant="ghost" size="sm" disabled={state.pending} onClick={() => { setReason(''); setSelected(row) }}>{tr('disable')}</Button>}</div></td>
           </tr>)}</tbody>
         </table></div><Pagination currentPage={state.query.page + 1} totalPages={Math.ceil(state.result.total / state.query.size)} totalItems={state.result.total} pageSize={state.query.size} itemLabel={tr('rows')} labels={{ navigation: tr('paging.navigation'), first: tr('paging.first'), previous: tr('paging.previous'), next: tr('paging.next'), last: tr('paging.last'), showing: tr('paging.showing'), of: tr('paging.of') }} disabled={locked} onPageChange={page => state.changeQuery({ page: page - 1 })} /></Card>}
     </>}
     <Dialog open={selected !== null} onOpenChange={value => { if (!value) setSelected(null) }} closeLabel={tr('cancel')} ariaLabel={tr('disable')}>
       <DialogHeader><DialogTitle>{tr('disable')}</DialogTitle><DialogDescription>{tr('disableNotice')}</DialogDescription></DialogHeader>
-      <Text variant="body-sm" className="break-words">{selected?.name} · {selected?.occupationName} · v{selected?.version}</Text>
+      <Text variant="body-sm" className="break-words">{selected?.name} · {selected?.jobPositionName} · v{selected?.version}</Text>
       <label className="mt-3 space-y-2 text-body-sm">{tr('reason')}<Input value={reason} maxLength={1000} onChange={event => setReason(event.target.value)} /></label>
       <DialogFooter><Button variant="outline" onClick={() => setSelected(null)}>{tr('cancel')}</Button><Button variant="destructive" disabled={!reason.trim() || locked} onClick={() => { if (selected) state.deactivate(selected, reason); setSelected(null) }}>{tr('confirm')}</Button></DialogFooter>
     </Dialog>
     <Dialog open={choosing} onOpenChange={setChoosing} closeLabel={tr('cancel')} ariaLabel={tr('choose')}>
       <DialogHeader><DialogTitle>{tr('choose')}</DialogTitle><DialogDescription>{tr('chooseHint')}</DialogDescription></DialogHeader>
       <div className="min-h-0 space-y-3 overflow-y-auto">{catalogBusy ? <AdaptiveLoading /> : catalogError ? <><AdaptiveErrorNotice error={catalogError} /><Button variant="outline" onClick={() => { setCatalogBusy(true); setCatalogError(null); setCatalogRetry(value => value + 1) }}>{tr('refresh')}</Button></>
-        : occupations.length === 0 ? <Text>{tr('empty')}</Text> : occupations.map(item => <Button className="h-auto w-full justify-start whitespace-normal text-left" key={item.id} variant="outline" onClick={() => open(item.id)}>{item.name}</Button>)}</div>
+        : jobPositions.length === 0 ? <Text>{tr('empty')}</Text> : jobPositions.map(item => <Button className="h-auto w-full justify-start whitespace-normal text-left" key={item.id} variant="outline" onClick={() => open(item.id)}>{item.name}</Button>)}</div>
       <DialogFooter><Button variant="outline" onClick={() => setChoosing(false)}>{tr('cancel')}</Button></DialogFooter>
     </Dialog>
   </div>

@@ -7,8 +7,8 @@ import com.adaptlearngraph.dtos.BaselineAuthoringDto.SaveWorkingRequest;
 import com.adaptlearngraph.dtos.BaselineAuthoringDto.WorkingRevisionResponse;
 import com.adaptlearngraph.dtos.BaselineAuthoringDto.WorkspaceResponse;
 import com.adaptlearngraph.services.BaselineAssessmentManagementUseCase.ManifestEdit;
-import com.adaptlearngraph.services.BaselineAssessmentManagementUseCase.OccupationPage;
-import com.adaptlearngraph.services.BaselineAssessmentManagementUseCase.OccupationQuery;
+import com.adaptlearngraph.services.BaselineAssessmentManagementUseCase.JobPositionPage;
+import com.adaptlearngraph.services.BaselineAssessmentManagementUseCase.JobPositionQuery;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.function.Supplier;
@@ -16,7 +16,7 @@ import org.modelmapper.ModelMapper;
 
 /**
  * DTO boundary of the L&amp;D baseline assessment management API. Actor and organization come from trusted context;
- * Occupation, working revision and assessment version ids come from the request path.
+ * JobPosition, working revision and assessment version ids come from the request path.
  */
 public class BaselineAssessmentManagementApplicationService {
     private final BaselineAssessmentManagementUseCase management;
@@ -27,26 +27,26 @@ public class BaselineAssessmentManagementApplicationService {
         this.mapper = Objects.requireNonNull(mapper, "mapper");
     }
 
-    public OccupationPage list(String search, String status, String sort, int page, int size) {
-        var query = new OccupationQuery(search, status, sort, page, size);
-        return call(() -> management.listOccupations(query));
+    public JobPositionPage list(String search, String status, String sort, int page, int size) {
+        var query = new JobPositionQuery(search, status, sort, page, size);
+        return call(() -> management.listJobPositions(query));
     }
 
-    public WorkspaceResponse workspace(String occupationId) {
-        return map(call(() -> management.getWorkspace(occupationId)), WorkspaceResponse.class);
+    public WorkspaceResponse workspace(String jobPositionId) {
+        return map(call(() -> management.getWorkspace(jobPositionId)), WorkspaceResponse.class);
     }
 
-    public WorkingRevisionResponse startRevision(String occupationId, String idempotencyKey) {
-        return map(call(() -> management.startBlueprintRevision(occupationId, idempotencyKey)), WorkingRevisionResponse.class);
+    public WorkingRevisionResponse startRevision(String jobPositionId, String idempotencyKey) {
+        return map(call(() -> management.startBlueprintRevision(jobPositionId, idempotencyKey)), WorkingRevisionResponse.class);
     }
 
     public WorkingRevisionResponse saveRevision(
-            String occupationId, UUID workingRevisionId, String idempotencyKey, SaveWorkingRequest request) {
-        if (!occupationId.equals(request.occupationId())) {
-            throw new IllegalArgumentException("Path and body Occupation must match");
+            String jobPositionId, UUID workingRevisionId, String idempotencyKey, SaveWorkingRequest request) {
+        if (!jobPositionId.equals(request.jobPositionId())) {
+            throw new IllegalArgumentException("Path and body JobPosition must match");
         }
-        var draft = BaselineAuthoringRequests.draft(request.name(), request.occupationId(),
-                request.occupationNameSnapshot(), request.roles());
+        var draft = BaselineAuthoringRequests.draft(request.name(), request.jobPositionId(),
+                request.jobPositionNameSnapshot(), request.roles());
         return map(call(() -> management.saveBlueprintRevision(workingRevisionId, request.expectedRevision(),
                 idempotencyKey, draft)), WorkingRevisionResponse.class);
     }
@@ -56,8 +56,8 @@ public class BaselineAssessmentManagementApplicationService {
                 ManagedBlueprintResponse.class);
     }
 
-    public ManagedAssessmentResponse generate(String occupationId, String idempotencyKey) {
-        return assessment(call(() -> management.generateAssessmentDraft(occupationId, idempotencyKey)));
+    public ManagedAssessmentResponse generate(String jobPositionId, String idempotencyKey) {
+        return assessment(call(() -> management.generateAssessmentDraft(jobPositionId, idempotencyKey)));
     }
 
     public ManagedAssessmentResponse assessment(UUID assessmentVersionId) {
@@ -90,8 +90,8 @@ public class BaselineAssessmentManagementApplicationService {
         return map(call(() -> management.disableActiveAssessment(assessmentVersionId, reason)), WorkspaceResponse.class);
     }
 
-    public WorkspaceResponse abandon(String occupationId, String reason) {
-        return map(call(() -> management.abandonPendingChange(occupationId, reason)), WorkspaceResponse.class);
+    public WorkspaceResponse abandon(String jobPositionId, String reason) {
+        return map(call(() -> management.abandonPendingChange(jobPositionId, reason)), WorkspaceResponse.class);
     }
 
     private ManagedAssessmentResponse assessment(Object draft) {

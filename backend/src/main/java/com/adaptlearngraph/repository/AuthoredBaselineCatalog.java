@@ -8,9 +8,9 @@ public final class AuthoredBaselineCatalog implements AdaptiveBaselineCatalogPor
     private final AuthoredCatalogPort authored;private final AdaptiveBaselineCatalogPort legacy;
     public AuthoredBaselineCatalog(AuthoredCatalogPort authored,AdaptiveBaselineCatalogPort legacy){this.authored=authored;this.legacy=legacy;}
     @Override public Optional<CatalogSnapshot> findAvailable(Scope scope) {
-        if(!authored.occupations(scope.organizationId()).contains(scope.occupationId()))return legacy.findAvailable(scope);
-        var projection=AuthoredCatalogPort.scoped(authored.findPublished(scope.organizationId(),scope.occupationId())
-                .orElseThrow(()->new IllegalStateException("Authored catalog publication unavailable")),scope.organizationId(),scope.occupationId());
+        if(!authored.jobPositions(scope.organizationId()).contains(scope.jobPositionId()))return legacy.findAvailable(scope);
+        var projection=AuthoredCatalogPort.scoped(authored.findPublished(scope.organizationId(),scope.jobPositionId())
+                .orElseThrow(()->new IllegalStateException("Authored catalog publication unavailable")),scope.organizationId(),scope.jobPositionId());
         return Optional.of(projection).map(p->{
             var roles=new TreeMap<String,RoleSnapshot>();
             for(var role:p.roles()) {

@@ -1,4 +1,4 @@
 ﻿services:
   api:
     environment:
-      BASELINE_OCCUPATION_CATALOG_ENABLED: "true"
+      BASELINE_JOB_POSITION_CATALOG_ENABLED: "true"

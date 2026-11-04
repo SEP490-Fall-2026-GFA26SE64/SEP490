@@ -3,7 +3,7 @@
   "sourceUrl": "https://www.onetcenter.org/dl_files/database/db_31_0_json/career_interest_types.json",
   "scale": {
     "scale_id": "OI",
-    "scale_name": "Occupational Interests",
+    "scale_name": "Job Positional Interests",
     "minimum": 1,
     "maximum": 7
   },
@@ -15,7 +15,7 @@
       "element_id": "1.B.1.a",
       "element_name": "Realistic",
       "scale_id": "OI",
-      "scale_name": "Occupational Interests",
+      "scale_name": "Job Positional Interests",
       "data_value": 3.56,
       "date_updated": "2026-02-01",
       "domain_source": "Machine Learning/Expert"
@@ -26,7 +26,7 @@
       "element_id": "1.B.1.b",
       "element_name": "Investigative",
       "scale_id": "OI",
-      "scale_name": "Occupational Interests",
+      "scale_name": "Job Positional Interests",
       "data_value": 5.4,
       "date_updated": "2026-02-01",
       "domain_source": "Machine Learning/Expert"
@@ -37,7 +37,7 @@
       "element_id": "1.B.1.c",
       "element_name": "Artistic",
       "scale_id": "OI",
-      "scale_name": "Occupational Interests",
+      "scale_name": "Job Positional Interests",
       "data_value": 1.34,
       "date_updated": "2026-02-01",
       "domain_source": "Machine Learning/Expert"
@@ -48,7 +48,7 @@
       "element_id": "1.B.1.d",
       "element_name": "Social",
       "scale_id": "OI",
-      "scale_name": "Occupational Interests",
+      "scale_name": "Job Positional Interests",
       "data_value": 2.11,
       "date_updated": "2026-02-01",
       "domain_source": "Machine Learning/Expert"
@@ -59,7 +59,7 @@
       "element_id": "1.B.1.e",
       "element_name": "Enterprising",
       "scale_id": "OI",
-      "scale_name": "Occupational Interests",
+      "scale_name": "Job Positional Interests",
       "data_value": 2.85,
       "date_updated": "2026-02-01",
       "domain_source": "Machine Learning/Expert"
@@ -70,7 +70,7 @@
       "element_id": "1.B.1.f",
       "element_name": "Conventional",
       "scale_id": "OI",
-      "scale_name": "Occupational Interests",
+      "scale_name": "Job Positional Interests",
       "data_value": 6.08,
       "date_updated": "2026-02-01",
       "domain_source": "Machine Learning/Expert"
@@ -81,7 +81,7 @@
       "element_id": "1.B.1.a",
       "element_name": "Realistic",
       "scale_id": "OI",
-      "scale_name": "Occupational Interests",
+      "scale_name": "Job Positional Interests",
       "data_value": 2.63,
       "date_updated": "2026-02-01",
       "domain_source": "Machine Learning/Expert"
@@ -92,7 +92,7 @@
       "element_id": "1.B.1.b",
       "element_name": "Investigative",
       "scale_id": "OI",
-      "scale_name": "Occupational Interests",
+      "scale_name": "Job Positional Interests",
       "data_value": 5.63,
       "date_updated": "2026-02-01",
       "domain_source": "Machine Learning/Expert"
@@ -103,7 +103,7 @@
       "element_id": "1.B.1.c",
       "element_name": "Artistic",
       "scale_id": "OI",
-      "scale_name": "Occupational Interests",
+      "scale_name": "Job Positional Interests",
       "data_value": 2.16,
       "date_updated": "2026-02-01",
       "domain_source": "Machine Learning/Expert"
@@ -114,7 +114,7 @@
       "element_id": "1.B.1.d",
       "element_name": "Social",
       "scale_id": "OI",
-      "scale_name": "Occupational Interests",
+      "scale_name": "Job Positional Interests",
       "data_value": 1.91,
       "date_updated": "2026-02-01",
       "domain_source": "Machine Learning/Expert"
@@ -125,7 +125,7 @@
       "element_id": "1.B.1.e",
       "element_name": "Enterprising",
       "scale_id": "OI",
-      "scale_name": "Occupational Interests",
+      "scale_name": "Job Positional Interests",
       "data_value": 2.68,
       "date_updated": "2026-02-01",
       "domain_source": "Machine Learning/Expert"
@@ -136,7 +136,7 @@
       "element_id": "1.B.1.f",
       "element_name": "Conventional",
       "scale_id": "OI",
-      "scale_name": "Occupational Interests",
+      "scale_name": "Job Positional Interests",
       "data_value": 6.12,
       "date_updated": "2026-02-01",
       "domain_source": "Machine Learning/Expert"
@@ -147,7 +147,7 @@
       "element_id": "1.B.1.a",
       "element_name": "Realistic",
       "scale_id": "OI",
-      "scale_name": "Occupational Interests",
+      "scale_name": "Job Positional Interests",
       "data_value": 3.61,
       "date_updated": "2026-02-01",
       "domain_source": "Machine Learning/Expert"
@@ -158,7 +158,7 @@
       "element_id": "1.B.1.b",
       "element_name": "Investigative",
       "scale_id": "OI",
-      "scale_name": "Occupational Interests",
+      "scale_name": "Job Positional Interests",
       "data_value": 6.05,
       "date_updated": "2026-02-01",
       "domain_source": "Machine Learning/Expert"
@@ -169,7 +169,7 @@
       "element_id": "1.B.1.c",
       "element_name": "Artistic",
       "scale_id": "OI",
-      "scale_name": "Occupational Interests",
+      "scale_name": "Job Positional Interests",
       "data_value": 2.37,
       "date_updated": "2026-02-01",
       "domain_source": "Machine Learning/Expert"
@@ -180,7 +180,7 @@
       "element_id": "1.B.1.d",
       "element_name": "Social",
       "scale_id": "OI",
-      "scale_name": "Occupational Interests",
+      "scale_name": "Job Positional Interests",
       "data_value": 1.81,
       "date_updated": "2026-02-01",
       "domain_source": "Machine Learning/Expert"
@@ -191,7 +191,7 @@
       "element_id": "1.B.1.e",
       "element_name": "Enterprising",
       "scale_id": "OI",
-      "scale_name": "Occupational Interests",
+      "scale_name": "Job Positional Interests",
       "data_value": 1.87,
       "date_updated": "2026-02-01",
       "domain_source": "Machine Learning/Expert"
@@ -202,7 +202,7 @@
       "element_id": "1.B.1.f",
       "element_name": "Conventional",
       "scale_id": "OI",
-      "scale_name": "Occupational Interests",
+      "scale_name": "Job Positional Interests",
       "data_value": 5.62,
       "date_updated": "2026-02-01",
       "domain_source": "Machine Learning/Expert"
@@ -213,7 +213,7 @@
       "element_id": "1.B.1.a",
       "element_name": "Realistic",
       "scale_id": "OI",
-      "scale_name": "Occupational Interests",
+      "scale_name": "Job Positional Interests",
       "data_value": 3.8,
       "date_updated": "2026-02-01",
       "domain_source": "Machine Learning/Expert"
@@ -224,7 +224,7 @@
       "element_id": "1.B.1.b",
       "element_name": "Investigative",
       "scale_id": "OI",
-      "scale_name": "Occupational Interests",
+      "scale_name": "Job Positional Interests",
       "data_value": 5.76,
       "date_updated": "2026-02-01",
       "domain_source": "Machine Learning/Expert"
@@ -235,7 +235,7 @@
       "element_id": "1.B.1.c",
       "element_name": "Artistic",
       "scale_id": "OI",
-      "scale_name": "Occupational Interests",
+      "scale_name": "Job Positional Interests",
       "data_value": 1.69,
       "date_updated": "2026-02-01",
       "domain_source": "Machine Learning/Expert"
@@ -246,7 +246,7 @@
       "element_id": "1.B.1.d",
       "element_name": "Social",
       "scale_id": "OI",
-      "scale_name": "Occupational Interests",
+      "scale_name": "Job Positional Interests",
       "data_value": 1.53,
       "date_updated": "2026-02-01",
       "domain_source": "Machine Learning/Expert"
@@ -257,7 +257,7 @@
       "element_id": "1.B.1.e",
       "element_name": "Enterprising",
       "scale_id": "OI",
-      "scale_name": "Occupational Interests",
+      "scale_name": "Job Positional Interests",
       "data_value": 1.57,
       "date_updated": "2026-02-01",
       "domain_source": "Machine Learning/Expert"
@@ -268,7 +268,7 @@
       "element_id": "1.B.1.f",
       "element_name": "Conventional",
       "scale_id": "OI",
-      "scale_name": "Occupational Interests",
+      "scale_name": "Job Positional Interests",
       "data_value": 5.67,
       "date_updated": "2026-02-01",
       "domain_source": "Machine Learning/Expert"
@@ -279,7 +279,7 @@
       "element_id": "1.B.1.a",
       "element_name": "Realistic",
       "scale_id": "OI",
-      "scale_name": "Occupational Interests",
+      "scale_name": "Job Positional Interests",
       "data_value": 4.1,
       "date_updated": "2026-02-01",
       "domain_source": "Machine Learning/Expert"
@@ -290,7 +290,7 @@
       "element_id": "1.B.1.b",
       "element_name": "Investigative",
       "scale_id": "OI",
-      "scale_name": "Occupational Interests",
+      "scale_name": "Job Positional Interests",
       "data_value": 5.46,
       "date_updated": "2026-02-01",
       "domain_source": "Machine Learning/Expert"
@@ -301,7 +301,7 @@
       "element_id": "1.B.1.c",
       "element_name": "Artistic",
       "scale_id": "OI",
-      "scale_name": "Occupational Interests",
+      "scale_name": "Job Positional Interests",
       "data_value": 1.88,
       "date_updated": "2026-02-01",
       "domain_source": "Machine Learning/Expert"
@@ -312,7 +312,7 @@
       "element_id": "1.B.1.d",
       "element_name": "Social",
       "scale_id": "OI",
-      "scale_name": "Occupational Interests",
+      "scale_name": "Job Positional Interests",
       "data_value": 2.1,
       "date_updated": "2026-02-01",
       "domain_source": "Machine Learning/Expert"
@@ -323,7 +323,7 @@
       "element_id": "1.B.1.e",
       "element_name": "Enterprising",
       "scale_id": "OI",
-      "scale_name": "Occupational Interests",
+      "scale_name": "Job Positional Interests",
       "data_value": 3.03,
       "date_updated": "2026-02-01",
       "domain_source": "Machine Learning/Expert"
@@ -334,7 +334,7 @@
       "element_id": "1.B.1.f",
       "element_name": "Conventional",
       "scale_id": "OI",
-      "scale_name": "Occupational Interests",
+      "scale_name": "Job Positional Interests",
       "data_value": 5.76,
       "date_updated": "2026-02-01",
       "domain_source": "Machine Learning/Expert"

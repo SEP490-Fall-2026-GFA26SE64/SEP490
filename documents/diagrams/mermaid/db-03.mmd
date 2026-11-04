@@ -79,7 +79,7 @@ classDiagram
   class SDD_DB_03_t_baseline_assessment_series["baseline_assessment_series"] {
     <<table>>
     uuid organization_id PK_FK_REQUIRED
-    text occupation_id PK_FK_REQUIRED
+    text job position_id PK_FK_REQUIRED
     uuid blueprint_id FK_REQUIRED
     uuid working_revision_id FK_NULLABLE
     integer pending_blueprint_version FK_NULLABLE
@@ -90,7 +90,7 @@ classDiagram
     <<table>>
     uuid working_revision_id PK_REQUIRED
     uuid organization_id FK_REQUIRED
-    text occupation_id FK_REQUIRED
+    text job position_id FK_REQUIRED
     uuid blueprint_id FK_REQUIRED
     integer base_version FK_NULLABLE
     uuid created_by FK_REQUIRED
@@ -100,7 +100,7 @@ classDiagram
     <<table>>
     uuid transition_id PK_REQUIRED
     uuid organization_id FK_REQUIRED
-    text occupation_id FK_REQUIRED
+    text job position_id FK_REQUIRED
     uuid actor_id FK_REQUIRED
     uuid previous_working_revision_id FK_NULLABLE
     uuid previous_pending_blueprint_id FK_NULLABLE
@@ -118,7 +118,7 @@ classDiagram
     uuid actor_id PK_FK_REQUIRED
     text idempotency_key PK_REQUIRED
     uuid organization_id FK_REQUIRED
-    text occupation_id FK_REQUIRED
+    text job position_id FK_REQUIRED
   }
   class SDD_DB_03_t_baseline_answer_reveal_audit["baseline_answer_reveal_audit"] {
     <<table>>

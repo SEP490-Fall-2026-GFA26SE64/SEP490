@@ -12,6 +12,8 @@ export interface ComboboxOption {
 export interface ComboboxProps {
   options: ComboboxOption[]
   value?: string
+  values?: string[]
+  customTriggerLabel?: string
   onChange?: (value: string) => void
   placeholder?: string
   searchPlaceholder?: string
@@ -27,6 +29,8 @@ export interface ComboboxProps {
 export function Combobox({
   options,
   value,
+  values,
+  customTriggerLabel,
   onChange,
   placeholder = 'Select an option...',
   searchPlaceholder = 'Search options...',
@@ -54,7 +58,20 @@ export function Combobox({
   const [searchQuery, setSearchQuery] = React.useState('')
   const containerRef = React.useRef<HTMLDivElement>(null)
 
+  const isMulti = Array.isArray(values)
   const selectedOption = options.find((opt) => opt.value === value)
+  const isSelected = (optVal: string) => (isMulti ? values.includes(optVal) : optVal === value)
+
+  const hasSelection = isMulti ? values.length > 0 : Boolean(selectedOption)
+  const triggerLabel =
+    customTriggerLabel ||
+    (isMulti && values.length > 0
+      ? values.length === 1
+        ? options.find((opt) => opt.value === values[0])?.label || values[0]
+        : `${values.length} Selected`
+      : selectedOption
+        ? selectedOption.label
+        : placeholder)
 
   const filteredOptions = React.useMemo(() => {
     if (!searchQuery.trim()) return options
@@ -77,8 +94,10 @@ export function Combobox({
   const handleSelect = (optionValue: string, optionDisabled?: boolean) => {
     if (optionDisabled) return
     onChange?.(optionValue)
-    setIsOpen(false)
-    setSearchQuery('')
+    if (!isMulti) {
+      setIsOpen(false)
+      setSearchQuery('')
+    }
   }
 
   const handleClear = (e: React.MouseEvent) => {
@@ -100,11 +119,11 @@ export function Combobox({
         )}
         aria-expanded={isOpen}
       >
-        <span className={cn('truncate', !selectedOption && 'text-muted-foreground')}>
-          {selectedOption ? selectedOption.label : placeholder}
+        <span className={cn('truncate', !hasSelection && 'text-muted-foreground')}>
+          {triggerLabel}
         </span>
         <div className="flex items-center space-x-1 shrink-0 ml-1.5">
-          {clearable && selectedOption && !disabled && (
+          {clearable && hasSelection && !disabled && (
             <span
               role="button"
               onClick={handleClear}
@@ -113,7 +132,13 @@ export function Combobox({
               <X className={size === 'sm' ? 'h-3 w-3' : 'h-3.5 w-3.5'} />
             </span>
           )}
-          <ChevronDown className={cn(size === 'sm' ? 'h-3.5 w-3.5' : 'h-4 w-4', 'text-muted-foreground transition-transform duration-200', isOpen && 'rotate-180')} />
+          <ChevronDown
+            className={cn(
+              size === 'sm' ? 'h-3.5 w-3.5' : 'h-4 w-4',
+              'text-muted-foreground transition-transform duration-200',
+              isOpen && 'rotate-180',
+            )}
+          />
         </div>
       </button>
 
@@ -126,35 +151,42 @@ export function Combobox({
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder={searchPlaceholder}
-              className={cn('w-full bg-transparent text-foreground placeholder:text-muted-foreground focus:outline-none', size === 'sm' ? 'text-xs' : 'text-sm')}
+              className={cn(
+                'w-full bg-transparent text-foreground placeholder:text-muted-foreground focus:outline-none',
+                size === 'sm' ? 'text-xs' : 'text-sm',
+              )}
               autoFocus
             />
           </div>
 
           <div className="max-h-48 overflow-y-auto p-1">
             {filteredOptions.length === 0 ? (
-              <div className={cn('py-3 text-center text-muted-foreground', size === 'sm' ? 'text-xs' : 'text-sm')}>{emptyMessage}</div>
+              <div className={cn('py-3 text-center text-muted-foreground', size === 'sm' ? 'text-xs' : 'text-sm')}>
+                {emptyMessage}
+              </div>
             ) : (
               filteredOptions.map((option) => {
-                const isSelected = option.value === value
+                const selected = isSelected(option.value)
                 return (
                   <div
                     key={option.value}
+                    role="option"
+                    aria-selected={selected}
                     onClick={() => handleSelect(option.value, option.disabled)}
                     className={cn(
                       'relative flex cursor-pointer select-none items-center justify-between rounded-sm transition-colors',
                       size === 'sm' ? 'px-2.5 py-1.5 text-xs' : 'px-3 py-2 text-sm',
                       option.disabled ? 'cursor-not-allowed opacity-50' : 'hover:bg-secondary hover:text-secondary-foreground',
-                      isSelected && 'bg-secondary/70 font-medium text-secondary-foreground',
+                      selected && 'bg-secondary/70 font-medium text-secondary-foreground',
                     )}
                   >
                     <div className="flex flex-col min-w-0 pr-2">
-                      <span className={wrapOptions ? "whitespace-normal break-words" : "truncate"}>{option.label}</span>
+                      <span className={wrapOptions ? 'whitespace-normal break-words' : 'truncate'}>{option.label}</span>
                       {option.description && (
                         <span className="text-[11px] text-muted-foreground truncate">{option.description}</span>
                       )}
                     </div>
-                    {isSelected && <Check className={cn(size === 'sm' ? 'h-3.5 w-3.5' : 'h-4 w-4', 'text-primary shrink-0')} />}
+                    {selected && <Check className={cn(size === 'sm' ? 'h-3.5 w-3.5' : 'h-4 w-4', 'text-primary shrink-0')} />}
                   </div>
                 )
               })

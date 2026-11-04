@@ -8,43 +8,43 @@ import java.util.*;
 /** Local-only current-schema catalog. Reuses full union validation; never invents legacy track/seniority. */
 public final class CurrentRoleCatalog implements Catalog {
     private final Neo4jCypher graph; private final ObjectMapper mapper; private final UUID organization;
-    private final Set<String> allowedOccupations;
+    private final Set<String> allowedJobPositions;
     private final boolean demoReview;
     private final com.adaptlearngraph.repository.AuthoredCatalogPort authored;
     public CurrentRoleCatalog(Neo4jCypher graph,ObjectMapper mapper,UUID organization) {
         this(graph,mapper,organization,null,true);
     }
-    public CurrentRoleCatalog(Neo4jCypher graph,ObjectMapper mapper,UUID organization,Set<String> allowedOccupations,boolean demoReview) {
-        this(graph,mapper,organization,allowedOccupations,demoReview,com.adaptlearngraph.repository.AuthoredCatalogPort.NONE);
+    public CurrentRoleCatalog(Neo4jCypher graph,ObjectMapper mapper,UUID organization,Set<String> allowedJobPositions,boolean demoReview) {
+        this(graph,mapper,organization,allowedJobPositions,demoReview,com.adaptlearngraph.repository.AuthoredCatalogPort.NONE);
     }
-    public CurrentRoleCatalog(Neo4jCypher graph,ObjectMapper mapper,UUID organization,Set<String> allowedOccupations,boolean demoReview,
+    public CurrentRoleCatalog(Neo4jCypher graph,ObjectMapper mapper,UUID organization,Set<String> allowedJobPositions,boolean demoReview,
                               com.adaptlearngraph.repository.AuthoredCatalogPort authored) {
         this.graph=graph;this.mapper=mapper;this.organization=organization;
-        this.allowedOccupations=allowedOccupations==null?null:Set.copyOf(allowedOccupations);this.demoReview=demoReview;
+        this.allowedJobPositions=allowedJobPositions==null?null:Set.copyOf(allowedJobPositions);this.demoReview=demoReview;
         this.authored=Objects.requireNonNull(authored);
     }
     @Override public List<Role> roles(UUID org) {
         if(!organization.equals(org)) throw new Failure(403,"FORBIDDEN");
-        var authoredScopes=new HashSet<>(authored.occupations(org));
-        if(allowedOccupations!=null)authoredScopes.retainAll(allowedOccupations);
+        var authoredScopes=new HashSet<>(authored.jobPositions(org));
+        if(allowedJobPositions!=null)authoredScopes.retainAll(allowedJobPositions);
         Set<String> legacyScopes=null;
-        if(allowedOccupations!=null){var scopes=new HashSet<>(allowedOccupations);scopes.removeAll(authoredScopes);legacyScopes=Set.copyOf(scopes);}
+        if(allowedJobPositions!=null){var scopes=new HashSet<>(allowedJobPositions);scopes.removeAll(authoredScopes);legacyScopes=Set.copyOf(scopes);}
         var result=new ArrayList<>(legacyRoles(org,legacyScopes,authoredScopes));
-        for(String occupation:new TreeSet<>(authoredScopes))result.addAll(com.adaptlearngraph.repository.AuthoredCatalogPort.scoped(authored.find(org,occupation)
-                .orElseThrow(()->new IllegalStateException("Explicit authored source unavailable")),org,occupation).roles());
+        for(String jobPosition:new TreeSet<>(authoredScopes))result.addAll(com.adaptlearngraph.repository.AuthoredCatalogPort.scoped(authored.find(org,jobPosition)
+                .orElseThrow(()->new IllegalStateException("Explicit authored source unavailable")),org,jobPosition).roles());
         var ids=new HashSet<String>();for(var role:result)if(!ids.add(role.id()))throw new IllegalStateException("Ambiguous catalog Role");
         return List.copyOf(result);
     }
-    private List<Role> legacyRoles(UUID org,Set<String> allowedOccupations,Set<String> excluded) {
-        if(allowedOccupations!=null && allowedOccupations.isEmpty())return List.of();
+    private List<Role> legacyRoles(UUID org,Set<String> allowedJobPositions,Set<String> excluded) {
+        if(allowedJobPositions!=null && allowedJobPositions.isEmpty())return List.of();
         // Neo4jClient: role/level rows with collected skill maps under tenant/shared and review filters.
         try {
             return graph.read(tx -> {
                 var rows=tx.list("""
-                        MATCH (o:Occupation)-[m:HAS_ROLE]->(r:TargetRole)-[h:HAS_LEVEL]->(l:Level)
+                        MATCH (o:JobPosition)-[m:HAS_ROLE]->(r:TargetRole)-[h:HAS_LEVEL]->(l:Level)
                         WHERE o.status='ACTIVE' AND r.status='ACTIVE' AND m.status='ACTIVE' AND h.status='ACTIVE' AND l.status='ACTIVE'
                           AND all(n IN [o,r,l,m,h] WHERE n.organizationId IS NULL OR n.organizationId=$org)
-                          AND ($unrestricted OR o.id IN $occupations)
+                          AND ($unrestricted OR o.id IN $jobPositions)
                           AND NOT o.id IN $excluded
                           AND ($demoReview OR all(n IN [o,r,l,m,h] WHERE n.reviewStatus='APPROVED'))
                         OPTIONAL MATCH (l)-[q:REQUIRES_SKILL]->(s:MicroSkill)
@@ -55,16 +55,16 @@ public final class CurrentRoleCatalog implements Catalog {
                             collect(DISTINCT CASE WHEN s IS NULL THEN null ELSE {
                               id:s.id,code:s.code,name:s.name,requiredScore:q.requiredScore,mandatory:q.isMandatory} END) AS skills
                         ORDER BY o.name,r.name,l.rank
-                        """,Map.of("org",org.toString(),"unrestricted",allowedOccupations==null,
-                                "occupations",allowedOccupations==null?List.of():List.copyOf(allowedOccupations),"demoReview",demoReview,"excluded",List.copyOf(excluded)));
+                        """,Map.of("org",org.toString(),"unrestricted",allowedJobPositions==null,
+                                "jobPositions",allowedJobPositions==null?List.of():List.copyOf(allowedJobPositions),"demoReview",demoReview,"excluded",List.copyOf(excluded)));
                 Set<String> ids=new HashSet<>();
-                if(allowedOccupations!=null) ids.addAll(allowedOccupations);
+                if(allowedJobPositions!=null) ids.addAll(allowedJobPositions);
                 else rows.forEach(r->ids.add(r.get("o").get("id").asString()));
                 if(ids.isEmpty()) return List.<Role>of();
                 var adapter=new Neo4jAdaptiveBaselineCatalogAdapter(graph,mapper,org,ids,demoReview);
                 var validated=new HashMap<String,com.adaptlearngraph.repository.AdaptiveBaselineCatalogPort.CatalogSnapshot>();
                 for(String id:ids) validated.put(id,adapter.findAvailable(new Scope(org,id))
-                        .orElseThrow(()->new IllegalStateException("Granted Occupation catalog unavailable")));
+                        .orElseThrow(()->new IllegalStateException("Granted JobPosition catalog unavailable")));
                 var result=new LinkedHashMap<String,Role>();
                 for(var row:rows) {
                     var o=row.get("o");var r=row.get("r");var l=row.get("l");String occ=o.get("id").asString(),id=r.get("id").asString();
@@ -79,7 +79,7 @@ public final class CurrentRoleCatalog implements Catalog {
                 }
                 for(var entry:validated.entrySet()) {
                     var projected=new HashMap<String,Set<String>>();
-                    result.values().stream().filter(role->role.occupationId().equals(entry.getKey())).forEach(role-> {
+                    result.values().stream().filter(role->role.jobPositionId().equals(entry.getKey())).forEach(role-> {
                         var skills=new HashSet<String>();
                         role.levels().forEach(level->level.skills().forEach(skill->skills.add(skill.id())));
                         projected.put(role.id(),skills);

@@ -5,19 +5,19 @@ import com.adaptlearngraph.repository.JpaBaselineAnswerReviewStore;
 import com.adaptlearngraph.repository.JpaBaselineAssessmentDraftStore;
 import com.adaptlearngraph.repository.JpaBaselineAssessmentManagementStore;
 import com.adaptlearngraph.repository.JpaBaselineBlueprintStore;
-import com.adaptlearngraph.repository.Neo4jBaselineOccupationCatalogAdapter;
+import com.adaptlearngraph.repository.Neo4jBaselineJobPositionCatalogAdapter;
 import com.adaptlearngraph.services.TransactionalBaselineAssessmentManagementUseCase;
 import com.adaptlearngraph.services.BaselineAssessmentDraftService;
 import com.adaptlearngraph.services.BaselineAnswerReviewService;
 import com.adaptlearngraph.services.BaselineAssessmentManagementService;
 import com.adaptlearngraph.services.BaselineBlueprintCapacityService;
-import com.adaptlearngraph.services.BaselineOccupationCatalogService;
+import com.adaptlearngraph.services.BaselineJobPositionCatalogService;
 import com.adaptlearngraph.services.BaselineBlueprintService;
 import com.adaptlearngraph.services.BaselineAssessmentDraftUseCase;
 import com.adaptlearngraph.services.BaselineAnswerReviewUseCase;
 import com.adaptlearngraph.services.BaselineAssessmentManagementUseCase;
 import com.adaptlearngraph.services.BaselineBlueprintCapacityUseCase;
-import com.adaptlearngraph.services.BaselineOccupationCatalogUseCase;
+import com.adaptlearngraph.services.BaselineJobPositionCatalogUseCase;
 import com.adaptlearngraph.services.BaselineBlueprintUseCase;
 import com.adaptlearngraph.repository.BaselineAssessmentDraftStore;
 import com.adaptlearngraph.repository.BaselineAnswerReviewAuthorizer;
@@ -27,7 +27,7 @@ import com.adaptlearngraph.repository.BaselineBlueprintStore;
 import com.adaptlearngraph.repository.BaselineBlueprintStore.Actor;
 import com.adaptlearngraph.repository.BaselineBlueprintStore.ActorPort;
 import com.adaptlearngraph.repository.BaselineBlueprintValidationPort;
-import com.adaptlearngraph.repository.BaselineOccupationCatalogPort;
+import com.adaptlearngraph.repository.BaselineJobPositionCatalogPort;
 import com.adaptlearngraph.repository.TargetRoleCatalogPort;
 import java.util.Optional;
 import java.util.Set;
@@ -60,7 +60,7 @@ public class LocalBaselineBlueprintConfiguration {
 
     @Bean
     @ConditionalOnProperty(
-            prefix = "assessment.baseline.occupation-catalog", name = "enabled", havingValue = "true")
+            prefix = "assessment.baseline.jobPosition-catalog", name = "enabled", havingValue = "true")
     com.adaptlearngraph.services.BaselineAssessmentManagementApplicationService baselineAssessmentManagementApplicationService(
             BaselineAssessmentManagementUseCase management, org.modelmapper.ModelMapper modelMapper) {
         return new com.adaptlearngraph.services.BaselineAssessmentManagementApplicationService(management, modelMapper);
@@ -131,9 +131,9 @@ public class LocalBaselineBlueprintConfiguration {
     @Bean
     BaselineBlueprintValidationPort baselineBlueprintValidation(
             TargetRoleCatalogPort catalog,
-            ObjectProvider<BaselineOccupationCatalogPort> occupationCatalog,
+            ObjectProvider<BaselineJobPositionCatalogPort> jobPositionCatalog,
             com.adaptlearngraph.repository.ItemVersionJpaRepository items) {
-        return new BaselineBlueprintValidationAdapter(catalog, occupationCatalog.getIfAvailable(), items);
+        return new BaselineBlueprintValidationAdapter(catalog, jobPositionCatalog.getIfAvailable(), items);
     }
 
     @Bean
@@ -150,10 +150,10 @@ public class LocalBaselineBlueprintConfiguration {
 
     @Bean
     @ConditionalOnProperty(
-            prefix = "assessment.baseline.occupation-catalog", name = "enabled", havingValue = "true")
+            prefix = "assessment.baseline.jobPosition-catalog", name = "enabled", havingValue = "true")
     BaselineAssessmentManagementUseCase baselineAssessmentManagementUseCase(
             ActorPort actor,
-            BaselineOccupationCatalogPort catalog,
+            BaselineJobPositionCatalogPort catalog,
             BaselineBlueprintStore blueprints,
             BaselineBlueprintValidationPort validation,
             BaselineAssessmentDraftUseCase draftUseCase,
@@ -168,27 +168,27 @@ public class LocalBaselineBlueprintConfiguration {
 
     @Bean
     @ConditionalOnProperty(
-            prefix = "assessment.baseline.occupation-catalog", name = "enabled", havingValue = "true")
-    BaselineOccupationCatalogPort baselineOccupationCatalog(org.springframework.data.neo4j.core.Neo4jClient client,
+            prefix = "assessment.baseline.jobPosition-catalog", name = "enabled", havingValue = "true")
+    BaselineJobPositionCatalogPort baselineJobPositionCatalog(org.springframework.data.neo4j.core.Neo4jClient client,
             @org.springframework.beans.factory.annotation.Qualifier(com.adaptlearngraph.constants.TransactionManagers.NEO4J)
             PlatformTransactionManager graphTransactions) {
-        return new Neo4jBaselineOccupationCatalogAdapter(client, graphTransactions);
+        return new Neo4jBaselineJobPositionCatalogAdapter(client, graphTransactions);
     }
 
     @Bean
     @ConditionalOnProperty(
-            prefix = "assessment.baseline.occupation-catalog", name = "enabled", havingValue = "true")
-    BaselineOccupationCatalogUseCase baselineOccupationCatalogUseCase(
-            ActorPort actor, BaselineOccupationCatalogPort catalog) {
-        return new BaselineOccupationCatalogService(actor, catalog);
+            prefix = "assessment.baseline.jobPosition-catalog", name = "enabled", havingValue = "true")
+    BaselineJobPositionCatalogUseCase baselineJobPositionCatalogUseCase(
+            ActorPort actor, BaselineJobPositionCatalogPort catalog) {
+        return new BaselineJobPositionCatalogService(actor, catalog);
     }
 
     @Bean
     @ConditionalOnProperty(
-            prefix = "assessment.baseline.occupation-catalog", name = "enabled", havingValue = "true")
+            prefix = "assessment.baseline.jobPosition-catalog", name = "enabled", havingValue = "true")
     BaselineBlueprintCapacityUseCase baselineBlueprintCapacityUseCase(
             ActorPort actor,
-            BaselineOccupationCatalogPort catalog,
+            BaselineJobPositionCatalogPort catalog,
             BaselineBlueprintValidationPort validation) {
         return new BaselineBlueprintCapacityService(actor, catalog, validation);
     }

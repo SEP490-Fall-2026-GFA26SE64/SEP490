@@ -15,10 +15,10 @@ async function login(page: Page, email: string, path: string) {
 test('REQ-013/053: assign one imported module, receive, edit, submit and approve with source attribution', async ({ page, request }) => {
   test.setTimeout(360_000)
   await expect.poll(() => request.get('/api/v1/system/status').then(response => response.ok()).catch(() => false), { timeout: 90_000 }).toBeTruthy()
-  const occupations = await (await request.get(`${root}/catalog/Occupation`, { headers: ld })).json() as { id: string }[]
-  const occupationId = occupations[0].id
+  const jobPositions = await (await request.get(`${root}/catalog/JobPosition`, { headers: ld })).json() as { id: string }[]
+  const jobPositionId = jobPositions[0].id
   const actor = await (await request.get(`${root}/session`, { headers: expert })).json() as { id: string }
-  expect((await request.put(`${root}/grants`, { headers: ld, data: { expertId: actor.id, occupationId, active: true } })).status()).toBe(204)
+  expect((await request.put(`${root}/grants`, { headers: ld, data: { expertId: actor.id, jobPositionId, active: true } })).status()).toBe(204)
   const skills = await (await request.get(`${root}/catalog/MicroSkill`, { headers: expert })).json() as { id: string }[]
   const id = `MOD-INTAKE-E2E-${Date.now()}`
   const title = `Imported intake ${id}`
@@ -35,7 +35,7 @@ test('REQ-013/053: assign one imported module, receive, edit, submit and approve
   await dialog.getByRole('button', { name: 'Cancel', exact: true }).click()
   await page.getByRole('button', { name: 'Assign for intake', exact: true }).click()
   dialog = page.getByRole('dialog', { name: 'Assign for intake', exact: true })
-  await dialog.getByLabel('Responsible occupations', { exact: true }).selectOption(occupationId)
+  await dialog.getByLabel('Responsible jobPositions', { exact: true }).selectOption(jobPositionId)
   await dialog.getByRole('button', { name: 'Assign', exact: true }).click()
   await expect(dialog).not.toBeVisible()
   await expect(page.getByText('Awaiting Expert intake', { exact: true })).toBeVisible()

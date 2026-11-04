@@ -20,11 +20,11 @@ public final class AdaptiveBlueprintPayloads {
     }
     /** Legacy fields are decode-only for exact receipt replay, never a new write contract. */
     public record ConfigurationRequest(@NotBlank String name, @Valid BoundsRequest exploration,
-            Map<@NotBlank String, @NotNull @Valid BoundsRequest> roles, @Valid BoundsRequest occupationBounds) {
+            Map<@NotBlank String, @NotNull @Valid BoundsRequest> roles, @Valid BoundsRequest jobPositionBounds) {
         public Configuration domain() {
-            if (occupationBounds != null) {
+            if (jobPositionBounds != null) {
                 if (exploration != null || roles != null) throw new IllegalArgumentException("Mixed configuration scopes");
-                return Configuration.occupation(name, occupationBounds.domain());
+                return Configuration.jobPosition(name, jobPositionBounds.domain());
             }
             if (exploration == null || roles == null) throw new IllegalArgumentException("Configuration bounds required");
             return new Configuration(name, exploration.domain(), roles.entrySet().stream()
@@ -45,10 +45,10 @@ public final class AdaptiveBlueprintPayloads {
                                  @NotBlank String reason, VersionId expectedCurrent) {}
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    public record ConfigurationResponse(String name, Bounds occupationBounds, Bounds exploration, Map<String, Bounds> roles) {
+    public record ConfigurationResponse(String name, Bounds jobPositionBounds, Bounds exploration, Map<String, Bounds> roles) {
         static ConfigurationResponse from(Configuration configuration) {
-            return configuration.occupationBounds() != null
-                    ? new ConfigurationResponse(configuration.name(), configuration.occupationBounds(), null, null)
+            return configuration.jobPositionBounds() != null
+                    ? new ConfigurationResponse(configuration.name(), configuration.jobPositionBounds(), null, null)
                     : new ConfigurationResponse(configuration.name(), null, configuration.exploration(), configuration.roles());
         }
     }
@@ -62,10 +62,10 @@ public final class AdaptiveBlueprintPayloads {
                     ConfigurationResponse.from(working.configuration()), working.updatedAt(), saved.noOp());
         }
     }
-    public record VersionResponse(VersionId id, ConfigurationResponse configuration, String occupationName,
+    public record VersionResponse(VersionId id, ConfigurationResponse configuration, String jobPositionName,
             String catalogFingerprint, VersionPins pins, Map<String, RoleSnapshot> roles, Instant createdAt) {
         public static VersionResponse from(Version version) {
-            return new VersionResponse(version.id(), ConfigurationResponse.from(version.configuration()), version.occupationNameSnapshot(),
+            return new VersionResponse(version.id(), ConfigurationResponse.from(version.configuration()), version.jobPositionNameSnapshot(),
                     version.catalogFingerprint(), version.pins(), version.roles(), version.createdAt());
         }
     }
@@ -74,10 +74,10 @@ public final class AdaptiveBlueprintPayloads {
             return new ActivationResponse(activation.revision(), activation.current().orElse(null), activation.changedAt());
         }
     }
-    public record WorkspaceResponse(String occupationId, CatalogCapacity capacity, WorkingResponse working,
+    public record WorkspaceResponse(String jobPositionId, CatalogCapacity capacity, WorkingResponse working,
                                     VersionResponse current, ActivationResponse activation, AdmissionReadiness admissionReadiness) {
         public static WorkspaceResponse from(Workspace workspace) {
-            return new WorkspaceResponse(workspace.scope().occupationId(), workspace.capacity(), workspace.working().map(WorkingResponse::from).orElse(null),
+            return new WorkspaceResponse(workspace.scope().jobPositionId(), workspace.capacity(), workspace.working().map(WorkingResponse::from).orElse(null),
                     workspace.current().map(VersionResponse::from).orElse(null), workspace.activation().map(ActivationResponse::from).orElse(null), workspace.admissionReadiness());
         }
     }

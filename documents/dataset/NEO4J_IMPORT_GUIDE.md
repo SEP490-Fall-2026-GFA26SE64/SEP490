@@ -1,6 +1,6 @@
 # Import ontology 0.11.0 into Neo4j
 
-The current seed has **994 nodes and 5,121 relationships**. It contains occupation RIASEC, Level-owned competencies, 246 Modules, 79 Skills, 664 many-to-many TEACHES mappings and HAS_SKILL_PREREQUISITE. The standard importer accepts an empty/identical isolated graph. The explicitly authorized existing-local v09 upgrade uses the separately guarded procedure below; it is not an unrestricted release overlay.
+The current seed has **994 nodes and 5,121 relationships**. It contains job position RIASEC, Level-owned competencies, 246 Modules, 79 Skills, 664 many-to-many TEACHES mappings and HAS_SKILL_PREREQUISITE. The standard importer accepts an empty/identical isolated graph. The explicitly authorized existing-local v09 upgrade uses the separately guarded procedure below; it is not an unrestricted release overlay.
 
 ## 1. Validate the local package
 
@@ -53,7 +53,7 @@ If running from this dataset folder, use `python3 import/import_neo4j.py --dry-r
 
 The importer supports an empty graph or an exact repeat of this snapshot. It refuses any different graph, including one with changed reviewer decisions. It creates six node-ID uniqueness constraints and imports all records in one managed data transaction; DDL commits separately. Stop other writers during review import. No deletion, overwrite migration, concurrent production ingestion or backend adapter migration is performed.
 
-Parent convenience fields (occupationId, targetRoleId and competency levelId) become graph edges and are omitted from node properties. The six interest fields remain on Occupation as Float [0,1]. Rubric configuration, learner results, source evidence and lesson bodies remain outside the graph. All definitions await expert review.
+Parent convenience fields (job positionId, targetRoleId and competency levelId) become graph edges and are omitted from node properties. The six interest fields remain on Job Position as Float [0,1]. Rubric configuration, learner results, source evidence and lesson bodies remain outside the graph. All definitions await expert review.
 
 ## 4. Inspect the result
 
@@ -68,14 +68,14 @@ MATCH ()-[r]->() RETURN type(r) AS relationship, count(r) AS records ORDER BY re
 ```
 
 ```cypher
-MATCH (o:Occupation)
+MATCH (o:Job Position)
 RETURN o.code, o.name, o.interestRealistic AS R, o.interestInvestigative AS I,
        o.interestArtistic AS A, o.interestSocial AS S,
        o.interestEnterprising AS E, o.interestConventional AS C;
 ```
 
 ```cypher
-MATCH p = (:Occupation {code:'15-1252.00'})-[:HAS_ROLE]->(:TargetRole)
+MATCH p = (:Job Position {code:'15-1252.00'})-[:HAS_ROLE]->(:TargetRole)
           -[:HAS_LEVEL]->(:Level)-[:HAS_COMPETENCY]->(:Competency)
 RETURN p;
 ```
@@ -124,7 +124,7 @@ Browser can limit displayed records/visual graph size. Use scoped queries for re
 
 ## Current import boundary
 
-Graph payload generation is in import/graph_payload.py. The validator compares all three export-only join fields to the supplied relationship records before creating the graph payload, and dry-run also validates property serialization. Export-only join fields are not stored. The six occupation interest fields remain actual graph properties. TargetRole has no profile-grouping property.
+Graph payload generation is in import/graph_payload.py. The validator compares all three export-only join fields to the supplied relationship records before creating the graph payload, and dry-run also validates property serialization. Export-only join fields are not stored. The six job position interest fields remain actual graph properties. TargetRole has no profile-grouping property.
 
 The current seed has no assessment configuration sections. Earlier rubric/task proposals are preserved only in sources/ontology_v07_history/assessment_reference.json. The assessment service must define an explicit external mapping; Neo4j contains no rubric or readiness-assessment references.
 
@@ -136,7 +136,7 @@ ORDER BY r.name, r.id;
 
 ```cypher
 MATCH (n)
-WHERE n.occupationId IS NOT NULL OR n.targetRoleId IS NOT NULL
+WHERE n.job positionId IS NOT NULL OR n.targetRoleId IS NOT NULL
    OR n.levelId IS NOT NULL OR n.levelIds IS NOT NULL
 RETURN count(n) AS unexpectedExportOnlyProperties;
 ```

@@ -14,8 +14,8 @@ public record BaselineBlueprint(
         UUID blueprintId,
         int version,
         String name,
-        String occupationId,
-        String occupationNameSnapshot,
+        String jobPositionId,
+        String jobPositionNameSnapshot,
         UUID createdBy,
         String idempotencyKey,
         String requestHash,
@@ -28,10 +28,10 @@ public record BaselineBlueprint(
             throw new IllegalArgumentException("version must be positive");
         }
         name = requireText(name, "name");
-        occupationId = optionalText(occupationId);
-        occupationNameSnapshot = optionalText(occupationNameSnapshot);
-        if ((occupationId == null) != (occupationNameSnapshot == null)) {
-            throw new IllegalArgumentException("occupation ID and name must both be present or absent");
+        jobPositionId = optionalText(jobPositionId);
+        jobPositionNameSnapshot = optionalText(jobPositionNameSnapshot);
+        if ((jobPositionId == null) != (jobPositionNameSnapshot == null)) {
+            throw new IllegalArgumentException("jobPosition ID and name must both be present or absent");
         }
         Objects.requireNonNull(createdBy, "createdBy must not be null");
         idempotencyKey = requireText(idempotencyKey, "idempotencyKey");
@@ -76,7 +76,7 @@ public record BaselineBlueprint(
             return Math.toIntExact(skills.stream().mapToLong(SkillConfig::totalQuestionCount).sum());
         }
 
-        /** New Occupation-scoped participation rule; enabled remains a persisted compatibility field. */
+        /** New JobPosition-scoped participation rule; enabled remains a persisted compatibility field. */
         public boolean participates() {
             return totalQuestionCount() > 0;
         }

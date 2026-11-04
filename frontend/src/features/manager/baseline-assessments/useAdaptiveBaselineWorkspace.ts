@@ -12,20 +12,20 @@ export interface AdaptiveApproval { workingId: string | null; workingRevision: n
 export const adaptiveApproval = (value: AdaptiveWorkspace): AdaptiveApproval => ({ workingId: value.working?.workingRevisionId ?? null, workingRevision: value.working?.revision ?? 0, activationRevision: value.activation?.revision ?? 0, current: value.activation?.current ?? null })
 const failure = (cause: unknown) => cause instanceof AdaptiveBaselineApiError ? cause : new AdaptiveBaselineApiError(0, 'NETWORK_ERROR')
 
-/** The route keys this hook's owner by Occupation; language changes never reload it. */
-export function useAdaptiveBaselineWorkspace(occupationId: string | undefined) {
+/** The route keys this hook's owner by JobPosition; language changes never reload it. */
+export function useAdaptiveBaselineWorkspace(jobPositionId: string | undefined) {
   const [workspace, setWorkspace] = useState<AdaptiveWorkspace | null>(null)
   const [draft, setDraft] = useState<AdaptiveDraft | null>(null)
   const [preview, setPreview] = useState<AdaptivePreview | null>(null)
   const [error, setError] = useState<AdaptiveBaselineApiError | null>(null)
-  const [busy, setBusy] = useState(Boolean(occupationId))
+  const [busy, setBusy] = useState(Boolean(jobPositionId))
   const [pending, setPending] = useState(false)
   const [writeCommitted, setWriteCommitted] = useState(false)
   const [needsRefresh, setNeedsRefresh] = useState(false)
   const [notice, setNotice] = useState<AdaptiveAction | 'noop' | null>(null)
   const [previewBinding, setPreviewBinding] = useState<string | null>(null)
   const generation = useRef(0)
-  const locked = useRef(Boolean(occupationId))
+  const locked = useRef(Boolean(jobPositionId))
   const retry = useRef<(() => Promise<void>) | null>(null)
   const needsRead = useRef(false)
   const configuration = workspace && draft ? adaptiveConfiguration(draft, workspace.capacity) : null
@@ -44,12 +44,12 @@ export function useAdaptiveBaselineWorkspace(occupationId: string | undefined) {
   useEffect(() => {
     const token = ++generation.current
     const controller = new AbortController()
-    if (occupationId) void getAdaptiveWorkspace(occupationId, controller.signal)
+    if (jobPositionId) void getAdaptiveWorkspace(jobPositionId, controller.signal)
       .then(value => { if (generation.current === token) accept(value) })
       .catch(cause => { if (generation.current === token && !controller.signal.aborted) setError(failure(cause)) })
       .finally(() => { if (generation.current === token) { locked.current = false; setBusy(false) } })
     return () => { generation.current = token + 1; controller.abort() }
-  }, [occupationId, accept])
+  }, [jobPositionId, accept])
 
   useEffect(() => {
     const warn = (event: BeforeUnloadEvent) => { event.preventDefault(); event.returnValue = '' }
@@ -58,10 +58,10 @@ export function useAdaptiveBaselineWorkspace(occupationId: string | undefined) {
   }, [dirty, pending])
 
   async function refresh() {
-    if (!occupationId || locked.current || retry.current) return
+    if (!jobPositionId || locked.current || retry.current) return
     const token = generation.current
     locked.current = true; setBusy(true); setError(null)
-    try { const value = await getAdaptiveWorkspace(occupationId); if (token === generation.current) { accept(value); setNotice(null) } }
+    try { const value = await getAdaptiveWorkspace(jobPositionId); if (token === generation.current) { accept(value); setNotice(null) } }
     catch (cause) { if (token === generation.current) setError(failure(cause)) }
     finally { if (token === generation.current) { locked.current = false; setBusy(false) } }
   }
@@ -72,10 +72,10 @@ export function useAdaptiveBaselineWorkspace(occupationId: string | undefined) {
   }
 
   async function test() {
-    if (!occupationId || !saved || !working || locked.current || retry.current || needsRefresh) return
+    if (!jobPositionId || !saved || !working || locked.current || retry.current || needsRefresh) return
     const token = generation.current
     locked.current = true; setBusy(true); setError(null); setPreview(null); setPreviewBinding(null); setNotice(null)
-    try { const value = await testAdaptiveBlueprint(occupationId, working.workingRevisionId, working.revision); if (token === generation.current) { setPreview(value); setPreviewBinding(binding) } }
+    try { const value = await testAdaptiveBlueprint(jobPositionId, working.workingRevisionId, working.revision); if (token === generation.current) { setPreview(value); setPreviewBinding(binding) } }
     catch (cause) {
       if (token === generation.current) { const value = failure(cause); setError(value); if ([401, 403, 409].includes(value.status)) setNeedsRefresh(true) }
     } finally { if (token === generation.current) { locked.current = false; setBusy(false) } }
@@ -102,7 +102,7 @@ export function useAdaptiveBaselineWorkspace(occupationId: string | undefined) {
   }
 
   function command(action: AdaptiveAction, reason = '', confirmed?: AdaptiveApproval) {
-    if (!occupationId || !workspace || locked.current || retry.current || needsRefresh) return
+    if (!jobPositionId || !workspace || locked.current || retry.current || needsRefresh) return
     if (action === 'save' && (!configuration || saved || legacy)) return
     if (action === 'convert' && (!configuration || !legacy || !working)) return
     if (action === 'finalize' && !canActivate) return
@@ -113,13 +113,13 @@ export function useAdaptiveBaselineWorkspace(occupationId: string | undefined) {
       setError(new AdaptiveBaselineApiError(409, 'VERSION_CONFLICT')); setNeedsRefresh(true); return
     }
     const key = crypto.randomUUID(), token = generation.current
-    const write = action === 'discard' ? () => discardAdaptiveWorking(occupationId, confirmed!.workingId!, confirmed!.workingRevision, key)
-      : action === 'save' ? () => saveAdaptiveWorking(occupationId, working?.revision ?? 0, working?.workingRevisionId ?? null, configuration!, key)
-      : action === 'convert' ? () => convertAdaptiveWorking(occupationId, confirmed!.workingId!, confirmed!.workingRevision, configuration!, key)
-      : action === 'finalize' ? () => finalizeAdaptiveBlueprint(occupationId, confirmed!.workingId!, confirmed!.workingRevision, confirmed!.activationRevision, confirmed!.current, key)
-      : () => disableAdaptiveBlueprint(occupationId, confirmed!.activationRevision, confirmed!.current!, reason.trim(), key)
+    const write = action === 'discard' ? () => discardAdaptiveWorking(jobPositionId, confirmed!.workingId!, confirmed!.workingRevision, key)
+      : action === 'save' ? () => saveAdaptiveWorking(jobPositionId, working?.revision ?? 0, working?.workingRevisionId ?? null, configuration!, key)
+      : action === 'convert' ? () => convertAdaptiveWorking(jobPositionId, confirmed!.workingId!, confirmed!.workingRevision, configuration!, key)
+      : action === 'finalize' ? () => finalizeAdaptiveBlueprint(jobPositionId, confirmed!.workingId!, confirmed!.workingRevision, confirmed!.activationRevision, confirmed!.current, key)
+      : () => disableAdaptiveBlueprint(jobPositionId, confirmed!.activationRevision, confirmed!.current!, reason.trim(), key)
     const reconcile = async () => {
-      const value = await getAdaptiveWorkspace(occupationId)
+      const value = await getAdaptiveWorkspace(jobPositionId)
       if (token !== generation.current) return
       accept(value); retry.current = null; needsRead.current = false; setPending(false); setWriteCommitted(false); setNotice(action)
     }

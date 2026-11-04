@@ -43,9 +43,9 @@ public interface AdaptiveAttemptContextJpaRepository extends Repository<AccountR
     @Query(value = "SELECT 1 FROM (SELECT pg_advisory_xact_lock_shared(hashtextextended(:coordination,0))) l", nativeQuery = true)
     List<Integer> shareLockScope(@Param("coordination") String coordination);
 
-    // Native: FOR SHARE row lock on the Occupation's Blueprint activation.
+    // Native: FOR SHARE row lock on the JobPosition's Blueprint activation.
     @Query(value = """
-            SELECT blueprint_id FROM platform.baseline_blueprint_activation WHERE organization_id=:org AND occupation_id=:occupation FOR SHARE
+            SELECT blueprint_id FROM platform.baseline_blueprint_activation WHERE organization_id=:org AND job_position_id=:jobPosition FOR SHARE
             """, nativeQuery = true)
-    List<UUID> shareLockActivation(@Param("org") UUID organizationId, @Param("occupation") String occupationId);
+    List<UUID> shareLockActivation(@Param("org") UUID organizationId, @Param("jobPosition") String jobPositionId);
 }

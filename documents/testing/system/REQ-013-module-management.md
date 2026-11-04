@@ -22,12 +22,12 @@ Module routes reuse the main `/login` workspace cookie. There are no module-spec
 
 ## Manual checklist
 
-Prerequisites: stack healthy, V27 applied, graph has Occupation/MicroSkill records. URL: `http://127.0.0.1:28088` for this isolated test project, or configured development web URL.
+Prerequisites: stack healthy, V27 applied, graph has Job Position/MicroSkill records. URL: `http://127.0.0.1:28088` for this isolated test project, or configured development web URL.
 
 | Step | Action | Expected result |
 |---|---|---|
-| 1 | Use `/login` → L&D Manager preset → Sign in, open `/ld-manager/approvals`, assign the Chen and Vance Expert accounts to the same Occupation. | Active assignments are listed; manager cannot author Modules. |
-| 2 | Use `/login` → Expert preset → Sign in, open `/expert/learning-content`, create Markdown with `[video](https://host/lesson.mp4)` in the assigned Occupation. | Content persists across reload/sign-in; preview renders text and video controls, with source-link fallback on failed playback. |
+| 1 | Use `/login` → L&D Manager preset → Sign in, open `/ld-manager/approvals`, assign the Chen and Vance Expert accounts to the same Job Position. | Active assignments are listed; manager cannot author Modules. |
+| 2 | Use `/login` → Expert preset → Sign in, open `/expert/learning-content`, create Markdown with `[video](https://host/lesson.mp4)` in the assigned Job Position. | Content persists across reload/sign-in; preview renders text and video controls, with source-link fallback on failed playback. |
 | 3 | Open `/expert/modules`, create a Module selecting content, positive duration/price and exactly one PRIMARY. | Draft persists with system ID; duplicate titles are permitted. |
 | 4 | Try zero/two PRIMARY mappings, duplicate skills and nonpositive price/duration. Cancel the form. | Invalid input is rejected; cancellation makes no write. |
 | 5 | Sign in through `/login` with `expert-vance@adaptlearn.internal` and edit Module. Open details/history. | Creator remains the Chen account ID; new revision shows the Vance account ID, timestamp and changed fields; previous payload remains inspectable. |

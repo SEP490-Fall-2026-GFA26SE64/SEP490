@@ -191,7 +191,7 @@ The initial application and evaluation are bounded to Software Engineering compe
 
 4. **FE-04: Organization workspace administration.** Allow the System Administrator to manage user accounts and memberships, roles and permissions, departments, organization profile details, workspace settings, and relevant activity records.
 
-5. **FE-05: Occupation and Expert assignment management.** Allow the L&D Manager to organize occupations within departments and assign Experts responsible for the relevant competency and learning content.
+5. **FE-05: Job Position and Expert assignment management.** Allow the L&D Manager to organize job positions within departments and assign Experts responsible for the relevant competency and learning content.
 
 6. **FE-06: Target role definition and publication.** Allow the L&D Manager to create and assign target roles, Experts to configure their competency requirements and submit them, and the L&D Manager to publish approved roles or return them for revision.
 
@@ -209,7 +209,7 @@ The initial application and evaluation are bounded to Software Engineering compe
 
 13. **FE-13: Pathway learning, independent skill learning, and progress tracking.** Allow Employees to access approved learning materials through their pathways or by selecting individual skills, complete module assessments, and review completed activities, assessment outcomes, competency progress, and pathway status.
 
-14. **FE-14: Employee and department development reporting.** Allow the L&D Manager to review competency profiles, gaps, assessment outcomes, and learning progress, with department, occupation, and reporting-period filters. Support recorded training costs and monetary benefits as the basis for training ROI summaries.
+14. **FE-14: Employee and department development reporting.** Allow the L&D Manager to review competency profiles, gaps, assessment outcomes, and learning progress, with department, job position, and reporting-period filters. Support recorded training costs and monetary benefits as the basis for training ROI summaries.
 
 15. **FE-15: Protected workspaces, notifications, and activity history.** Restrict functions and learning content to authorized users in the appropriate organization. Send verification, payment, and workflow emails, and record important administrative, payment, assessment, content, and pathway events.
 
@@ -217,7 +217,7 @@ Together, these features summarize the registration's 48 functional requirements
 
 #### 6.2 Limitations & Exclusions
 
-1. **LI-01: A bounded proof of concept, not a complete commercial LMS.** The capstone demonstrates learning and competency workflows with an initial Software Engineering focus. It is not intended to immediately replace a fully featured commercial learning platform or claim coverage of every industry and occupation.
+1. **LI-01: A bounded proof of concept, not a complete commercial LMS.** The capstone demonstrates learning and competency workflows with an initial Software Engineering focus. It is not intended to immediately replace a fully featured commercial learning platform or claim coverage of every industry and job position.
 
 2. **LI-02: Representative content rather than a production course library.** Sample documents, text materials, learning modules, and assessment questions are included to demonstrate the workflows. Producing a comprehensive curriculum, professionally recorded courses, or detailed commercial course syllabi is outside scope.
 

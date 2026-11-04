@@ -25,7 +25,7 @@ Commands, dates, actors/tenant/fixtures, expected/actual, counts and artifacts a
 2. **Parallel Interactive Tables**: "Pathway Learning Modules" vs "Excluded Modules" side-by-side with bi-directional drag-and-drop and button toggling.
 3. **Regeneration Spinning Indicator & Interaction Locking**: Spinning icon, disabled modifications, and progress banner during regeneration.
 4. **Persistent Exclusions**: Excluded modules are remembered and bypassed during regeneration, and remain in the Excluded list after regeneration for reconsidering.
-5. **Expert Target Roles Search & Filter**: Comprehensive multi-field search (title, code, occupation, micro-skills, track, seniority), status filter with dynamic counts, and clear filter button.
+5. **Expert Target Roles Search & Filter**: Comprehensive multi-field search (title, code, job position, micro-skills, track, seniority), status filter with dynamic counts, and clear filter button.
 
 ---
 
@@ -105,8 +105,8 @@ Commands, dates, actors/tenant/fixtures, expected/actual, counts and artifacts a
      - Observe clear button `(X)` appears on the right of the search input.
    - Click `(X)`:
      - Verify search input clears and all assigned roles re-appear.
-   - Type `Software Developers` (the Occupation name):
-     - Verify roles matching that occupation appear.
+   - Type `Software Developers` (the Job Position name):
+     - Verify roles matching that job position appear.
    - Type `ROLE-GENAI`:
      - Verify `ROLE-GENAI-01` appears.
 3. **Test Status Dropdown**:

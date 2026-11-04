@@ -32,7 +32,7 @@ public final class ModuleWorkspaceTestFixtures {
         UUID org = UUID.randomUUID(), owner = UUID.randomUUID(), registration = UUID.randomUUID();
         UUID expert = UUID.randomUUID(), reviewer = UUID.randomUUID();
         String password = UUID.randomUUID().toString();
-        String occupation = "occ-merge-" + org, skill = "skill-merge-" + org, module = "MOD-MERGE-" + org;
+        String jobPosition = "occ-merge-" + org, skill = "skill-merge-" + org, module = "MOD-MERGE-" + org;
         tx.executeWithoutResult(status -> {
             jdbc.update("INSERT INTO platform.organization(organization_id,code,name) VALUES (?,?,?)", org, "MERGE_" + org.toString().replace("-", "").toUpperCase(java.util.Locale.ROOT), "Merge verification workspace");
             member(owner, org, "ORGANIZATION_ADMINISTRATOR", password);
@@ -60,15 +60,15 @@ public final class ModuleWorkspaceTestFixtures {
         payments.apply(order.orderId(), now);
         try (var session = graph.session()) {
             session.run("""
-                    CREATE (:Occupation {id:$occupation,name:'Merge verification occupation',status:'ACTIVE',version:'0.11.0',reviewStatus:'NEEDS_EXPERT_REVIEW'})
+                    CREATE (:JobPosition {id:$jobPosition,name:'Merge verification jobPosition',status:'ACTIVE',version:'0.11.0',reviewStatus:'NEEDS_EXPERT_REVIEW'})
                     CREATE (s:MicroSkill {id:$skill,name:'Merge verification skill',status:'ACTIVE',version:'0.11.0',reviewStatus:'NEEDS_EXPERT_REVIEW'})
                     CREATE (m:LearningModule {id:$module,title:'Imported merge verification module',moduleType:'LESSON_AND_PRACTICE',
                         contentUri:'content/modules/MOD-FOCUS-SEC01-HIGH.md',contentType:'text/markdown',contentVersion:'1.0',duration:60,price:100000,
                         status:'ACTIVE',version:'0.11.0',reviewStatus:'NEEDS_EXPERT_REVIEW'})
                     CREATE (m)-[:TEACHES {id:$edge,status:'ACTIVE',version:'0.11.0',reviewStatus:'NEEDS_EXPERT_REVIEW',teachingFocus:'PRIMARY',difficultyLevel:'HIGH'}]->(s)
-                    """, Map.of("occupation", occupation, "skill", skill, "module", module, "edge", "edge-" + module)).consume();
+                    """, Map.of("jobPosition", jobPosition, "skill", skill, "module", module, "edge", "edge-" + module)).consume();
         }
-        return Map.of("organizationId", org, "occupationId", occupation, "skillId", skill, "moduleId", module,
+        return Map.of("organizationId", org, "jobPositionId", jobPosition, "skillId", skill, "moduleId", module,
                 "expert", Map.of("accountId", expert, "email", expert + "@example.test", "password", password),
                 "manager", Map.of("accountId", reviewer, "email", reviewer + "@example.test", "password", password));
     }

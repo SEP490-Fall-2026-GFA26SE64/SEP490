@@ -8,9 +8,9 @@ import java.util.function.Supplier;
 public interface ModuleAuthoringPort {
     Actor actor();
     <T> T transaction(Supplier<T> work);
-    List<String> occupations(Actor actor);
+    List<String> jobPositions(Actor actor);
     List<Grant> grants(String organizationId);
-    void grant(String organizationId, String expertId, String occupationId, boolean active);
+    void grant(String organizationId, String expertId, String jobPositionId, boolean active);
     List<Document> documents(String organizationId);
     List<CatalogModule> graphModules(String organizationId);
     List<String> managedModuleIds();

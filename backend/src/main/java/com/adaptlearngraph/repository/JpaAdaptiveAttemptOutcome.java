@@ -43,7 +43,7 @@ public final class JpaAdaptiveAttemptOutcome implements AdaptiveAttemptOutcomePo
                 var pins = next.snapshot().blueprint().pins();
                 var payload = new TreeMap<String, Object>();
                 payload.put("attemptId", next.id()); payload.put("organizationId", next.scope().organizationId());
-                payload.put("learnerId", next.scope().learnerId()); payload.put("occupationId", next.scope().occupationId());
+                payload.put("learnerId", next.scope().learnerId()); payload.put("jobPositionId", next.scope().jobPositionId());
                 payload.put("sourceRevision", next.revision()); payload.put("completedAt", next.finishedAt().orElseThrow());
                 payload.put("pins", pins); payload.put("initializationOnly", true);
                 var policy=next.snapshot().assessmentPolicy();
@@ -61,7 +61,7 @@ public final class JpaAdaptiveAttemptOutcome implements AdaptiveAttemptOutcomePo
                             value.standardError(), value.estimatedMastery(), value.mastery(), value.confidence(),
                             pins.masteryMappingVersionId(), time, policyVersion, policyHash));
                     data.evidence().insert(new BaselineMasteryEvidenceEntity(id, scope.organizationId(), scope.learnerId(),
-                            scope.occupationId(), skill, pins.modelVersionId(), pins.masteryMappingVersionId(), pins.parameterSetId(),
+                            scope.jobPositionId(), skill, pins.modelVersionId(), pins.masteryMappingVersionId(), pins.parameterSetId(),
                             value.theta(), value.standardError(), value.estimatedMastery(), value.mastery(), value.confidence(), event, time,
                             policyVersion, policyHash));
                 });

@@ -23,7 +23,7 @@ public final class WorkspaceBaselineProgress implements Baseline {
     @Override public Progress progress(Actor actor, Role role, Set<String> requiredSkills) {
         var progress = profiles.progress(actor, role, requiredSkills);
         if (!"NO_BASELINE".equals(progress.state())) return progress;
-        var scope = new Scope(actor.organizationId(), role.occupationId());
+        var scope = new Scope(actor.organizationId(), role.jobPositionId());
         try {
             if (eligibility.resolve(scope).filter(snapshot -> usable(snapshot, scope, role.id(), requiredSkills)).isPresent()) {
                 return progress;

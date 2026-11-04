@@ -17,7 +17,7 @@ public final class ModuleAuthoringService {
     private final LearningContentPort learningContent;
     public ModuleAuthoringService(ModuleAuthoringPort port) { this(port, null); }
     public ModuleAuthoringService(ModuleAuthoringPort port, LearningContentPort learningContent) { this.port = port; this.learningContent = learningContent; }
-    public Content lessons(String title, List<LearningContent.Lesson> lessons, List<String> occupations) {
+    public Content lessons(String title, List<LearningContent.Lesson> lessons, List<String> jobPositions) {
         Actor actor = staff(); expert(actor);
         if (learningContent == null) throw new Failure(503, "Learning content is not configured");
         var prepared = learningContent.prepare(actor.organizationId(), actor.id(), lessons, false);
@@ -45,41 +45,41 @@ public final class ModuleAuthoringService {
     }
     private Document require(Actor actor, String id) {
         Document doc = port.lock(actor.organizationId(), id).orElseThrow(() -> new Failure(404, "Module not found"));
-        if (!visible(actor, doc.occupationIds())) throw new Failure(404, "Module not found");
+        if (!visible(actor, doc.jobPositionIds())) throw new Failure(404, "Module not found");
         return doc;
     }
     public Actor session() { return port.actor(); }
     public List<Choice> choices(String kind) {
         Actor actor = staff();
-        if (!Set.of("Occupation", "MicroSkill", "Expert", "Staff", "Employee", "ReleasedModule").contains(kind)) throw new Failure(400, "Invalid catalog");
+        if (!Set.of("JobPosition", "MicroSkill", "Expert", "Staff", "Employee", "ReleasedModule").contains(kind)) throw new Failure(400, "Invalid catalog");
         if (kind.equals("Expert")) manager(actor);
-        return port.catalog(kind).stream().filter(c -> !kind.equals("Occupation") || actor.manager()
-                || port.occupations(actor).contains(c.id())).toList();
+        return port.catalog(kind).stream().filter(c -> !kind.equals("JobPosition") || actor.manager()
+                || port.jobPositions(actor).contains(c.id())).toList();
     }
     public List<Grant> grants() { Actor actor = staff(); manager(actor); return port.grants(actor.organizationId()); }
-    public void grant(String expertId, String occupationId, boolean active) {
+    public void grant(String expertId, String jobPositionId, boolean active) {
         Actor actor = staff(); manager(actor); ModuleAuthoring.text(expertId, "expertId", 200);
         if (port.catalog("Expert").stream().noneMatch(c -> c.id().equals(expertId))) throw new Failure(400, "Select an active Expert account");
-        if (port.catalog("Occupation").stream().noneMatch(c -> c.id().equals(occupationId))) throw new Failure(400, "Unknown occupation");
-        port.transaction(() -> { port.grant(actor.organizationId(), expertId, occupationId, active); return null; });
+        if (port.catalog("JobPosition").stream().noneMatch(c -> c.id().equals(jobPositionId))) throw new Failure(400, "Unknown jobPosition");
+        port.transaction(() -> { port.grant(actor.organizationId(), expertId, jobPositionId, active); return null; });
     }
     public List<Content> contents() {
-        Actor actor = staff(); return port.contents(actor.organizationId()).stream().filter(c -> visible(actor, c.occupationIds())).toList();
+        Actor actor = staff(); return port.contents(actor.organizationId()).stream().filter(c -> visible(actor, c.jobPositionIds())).toList();
     }
-    public Content content(String title, String markdown, List<String> occupations) {
+    public Content content(String title, String markdown, List<String> jobPositions) {
         Actor actor = staff(); expert(actor);
         ModuleAuthoring.text(title, "title", 240);
         Content content = new Content(UUID.randomUUID().toString(), title.strip(), markdown, "text/markdown", "1.0",
                 List.of(), actor.id(), ModuleAuthoring.now());
         return port.transaction(() -> { port.saveContent(actor.organizationId(), content); return content; });
     }
-    private void scope(Actor actor, List<String> occupations) {
-        if (occupations == null || occupations.isEmpty() || new HashSet<>(occupations).size() != occupations.size()
-                || !visible(actor, occupations)) throw new Failure(403, "An assigned occupation is required");
-        Set<String> known = new HashSet<>(port.catalog("Occupation").stream().map(Choice::id).toList());
-        if (!known.containsAll(occupations)) throw new Failure(400, "Unknown occupation");
-        // Occupation grants constrain creation scope; only createdBy authorizes Module mutations.
-        if (!actor.manager() && !port.occupations(actor).containsAll(occupations)) throw new Failure(403, "Cannot create membership outside assigned occupations");
+    private void scope(Actor actor, List<String> jobPositions) {
+        if (jobPositions == null || jobPositions.isEmpty() || new HashSet<>(jobPositions).size() != jobPositions.size()
+                || !visible(actor, jobPositions)) throw new Failure(403, "An assigned jobPosition is required");
+        Set<String> known = new HashSet<>(port.catalog("JobPosition").stream().map(Choice::id).toList());
+        if (!known.containsAll(jobPositions)) throw new Failure(400, "Unknown jobPosition");
+        // JobPosition grants constrain creation scope; only createdBy authorizes Module mutations.
+        if (!actor.manager() && !port.jobPositions(actor).containsAll(jobPositions)) throw new Failure(403, "Cannot create membership outside assigned jobPositions");
     }
     public Page list(String search, String status, String review, String type, String skill, int page) {
         return list(search, status, review, type, skill, page, false);
@@ -88,7 +88,7 @@ public final class ModuleAuthoringService {
         Actor actor = staff();
         if (pendingOnly) manager(actor);
         String query = search == null ? "" : search.strip().toLowerCase(Locale.ROOT);
-        List<Document> all = port.documents(actor.organizationId()).stream().filter(d -> visible(actor, d.occupationIds()))
+        List<Document> all = port.documents(actor.organizationId()).stream().filter(d -> visible(actor, d.jobPositionIds()))
                 .filter(d -> !pendingOnly || Set.of("SUBMITTED", "ARCHIVE_REQUESTED", "PUBLISH_PENDING", "ARCHIVE_PENDING").contains(d.current().state()))
                 .filter(d -> d.id().toLowerCase(Locale.ROOT).contains(query) || d.current().payload().title().toLowerCase(Locale.ROOT).contains(query))
                 .filter(d -> status == null || status.isBlank() || (d.current().state().equals("ARCHIVED") ? "ARCHIVED" : d.current().payload().metadata().status()).equals(status))
@@ -108,7 +108,7 @@ public final class ModuleAuthoringService {
         }
         Set<String> managed = new HashSet<>(port.managedModuleIds());
         Map<String, Intake> intakes = new HashMap<>();
-        for (Intake intake : port.intakes(actor.organizationId())) if (visible(actor, intake.occupationIds())) intakes.put(intake.moduleId(), intake);
+        for (Intake intake : port.intakes(actor.organizationId())) if (visible(actor, intake.jobPositionIds())) intakes.put(intake.moduleId(), intake);
         Map<String, CatalogItem> combined = new HashMap<>();
         for (CatalogModule module : port.graphModules(actor.organizationId())) {
             String id = module.metadata().id();
@@ -141,12 +141,12 @@ public final class ModuleAuthoringService {
         return port.graphModules(actor.organizationId()).stream().filter(m -> m.metadata().id().equals(id))
                 .findFirst().orElseThrow(() -> new Failure(404, "Catalog module not found"));
     }
-    public Intake assignIntake(String id, List<String> occupations) { return assignIntake(id, occupations, null); }
-    public Intake assignIntake(String id, List<String> occupations, String expectedAssignedAt) {
-        return assignIntake(id, occupations, expectedAssignedAt, null);
+    public Intake assignIntake(String id, List<String> jobPositions) { return assignIntake(id, jobPositions, null); }
+    public Intake assignIntake(String id, List<String> jobPositions, String expectedAssignedAt) {
+        return assignIntake(id, jobPositions, expectedAssignedAt, null);
     }
-    public Intake assignIntake(String id, List<String> occupations, String expectedAssignedAt, String expertId) {
-        Actor actor = staff(); manager(actor); scope(actor, occupations);
+    public Intake assignIntake(String id, List<String> jobPositions, String expectedAssignedAt, String expertId) {
+        Actor actor = staff(); manager(actor); scope(actor, jobPositions);
         List<Choice> experts = port.catalog("Expert");
         String responsible = expertId == null && experts.size() == 1 ? experts.getFirst().id() : expertId;
         if (responsible == null || experts.stream().noneMatch(e -> e.id().equals(responsible))) {
@@ -161,8 +161,8 @@ public final class ModuleAuthoringService {
             if (!"ACTIVE".equals(source.metadata().status())) throw new Failure(409, "Only active catalog modules can be received");
             String now = ModuleAuthoring.now();
             List<Event> history = previous == null ? new ArrayList<>() : new ArrayList<>(previous.history());
-            history.add(new Event(history.size() + 1, 1, "ASSIGN_INTAKE", actor.id(), now, "Responsible Expert: " + responsible + "; occupations: " + String.join(", ", occupations)));
-            Intake intake = new Intake(id, actor.organizationId(), occupations, actor.id(), now, source, null, null, history, responsible);
+            history.add(new Event(history.size() + 1, 1, "ASSIGN_INTAKE", actor.id(), now, "Responsible Expert: " + responsible + "; jobPositions: " + String.join(", ", jobPositions)));
+            Intake intake = new Intake(id, actor.organizationId(), jobPositions, actor.id(), now, source, null, null, history, responsible);
             port.saveIntake(intake); return intake;
         });
     }
@@ -178,15 +178,15 @@ public final class ModuleAuthoringService {
             if (!source.equals(assigned.source())) throw new Failure(409, "Catalog changed since assignment. Ask L&D to refresh the assignment.");
             String now = ModuleAuthoring.now();
             Content content = new Content(UUID.randomUUID().toString(), source.title(), port.importedMarkdown(source.contentUri()),
-                    source.contentType(), source.contentVersion(), assigned.occupationIds(), null, now);
+                    source.contentType(), source.contentVersion(), assigned.jobPositionIds(), null, now);
             var teachings = source.teachings().stream().map(t -> new Teaching(draftMetadata(t.metadata()), t.skillId(), t.skillName(), t.teachingFocus(), t.difficultyLevel())).toList();
             var payload = new ModuleAuthoring.Package(draftMetadata(source.metadata()), source.title(), source.moduleType(), source.contentUri(),
                     source.contentType(), source.contentVersion(), source.duration() == null ? 0 : source.duration(), source.price(), teachings, content);
-            Intake accepted = new Intake(id, actor.organizationId(), assigned.occupationIds(), assigned.assignedBy(), assigned.assignedAt(), source, actor.id(), now, assigned.history(), assigned.expertId());
+            Intake accepted = new Intake(id, actor.organizationId(), assigned.jobPositionIds(), assigned.assignedBy(), assigned.assignedAt(), source, actor.id(), now, assigned.history(), assigned.expertId());
             Revision revision = new Revision(1, "DRAFT", payload, actor.id(), now, null, null, null);
             List<Event> history = new ArrayList<>(assigned.history());
             history.add(new Event(history.size() + 1, 1, "INTAKE", actor.id(), now, "Received imported catalog module; original creator unknown"));
-            Document doc = new Document(id, actor.organizationId(), assigned.occupationIds(), actor.id(), now, 1, false, false, null,
+            Document doc = new Document(id, actor.organizationId(), assigned.jobPositionIds(), actor.id(), now, 1, false, false, null,
                     List.of(revision), history, accepted);
             port.saveContent(actor.organizationId(), content); port.saveIntake(accepted); port.save(doc); return doc;
         });
@@ -230,7 +230,7 @@ public final class ModuleAuthoringService {
     }
     private ModuleAuthoring.Package payload(Actor actor, String id, Save input, ModuleAuthoring.Package previous) {
         Content content = port.contents(actor.organizationId()).stream().filter(c -> c.id().equals(input.contentId())
-                && visible(actor, c.occupationIds()))
+                && visible(actor, c.jobPositionIds()))
                 .findFirst().orElseThrow(() -> new Failure(400, "Select available learning content"));
         Map<String, String> skills = new HashMap<>(); port.catalog("MicroSkill").forEach(c -> skills.put(c.id(), c.name()));
         if (input.teachings() == null) throw new Failure(400, "Skills are required");
@@ -283,7 +283,7 @@ public final class ModuleAuthoringService {
                 case "restore" -> {
                     expert(actor); if (!archived) throw new Failure(409, "Module is not archived");
                     ModuleAuthoring.Package p = old.payload();
-                    Save input = new Save(p.title(), p.moduleType(), p.content().id(), p.duration(), p.price(), doc.occupationIds(), p.teachings().stream().map(t -> new TeachingInput(t.skillId(), t.teachingFocus(), t.difficultyLevel())).toList());
+                    Save input = new Save(p.title(), p.moduleType(), p.content().id(), p.duration(), p.price(), doc.jobPositionIds(), p.teachings().stream().map(t -> new TeachingInput(t.skillId(), t.teachingFocus(), t.difficultyLevel())).toList());
                     Revision fresh = new Revision(old.number() + 1, "DRAFT", payload(actor, id, input, p), actor.id(), now, null, null, null);
                     return changed(doc, fresh, actor, "RESTORE", "Restored to draft; approval required", true, released);
                 }
@@ -320,7 +320,7 @@ public final class ModuleAuthoringService {
         List<Revision> revisions = new ArrayList<>(doc.revisions());
         if (revision.number() == doc.current().number()) revisions.set(revisions.size() - 1, revision); else revisions.add(revision);
         List<Event> history = new ArrayList<>(doc.history()); history.add(new Event(history.size() + 1, revision.number(), action, actor.id(), ModuleAuthoring.now(), detail));
-        Document result = new Document(doc.id(), doc.organizationId(), doc.occupationIds(), doc.createdBy(), doc.createdAt(), doc.lockVersion() + 1,
+        Document result = new Document(doc.id(), doc.organizationId(), doc.jobPositionIds(), doc.createdBy(), doc.createdAt(), doc.lockVersion() + 1,
                 doc.everReleased() || released != null, archived, released, revisions, history, doc.intake());
         port.save(result); return result;
     }

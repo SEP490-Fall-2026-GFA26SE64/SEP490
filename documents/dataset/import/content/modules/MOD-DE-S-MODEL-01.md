@@ -23,7 +23,7 @@ Read [the local lesson: Modelling data before optimizing it](../topics/DE-MODEL.
 
 - Before MS-DE03, demonstrate MS-DE01: Represent keys, relationships and record grain before implementing warehouse structures.
 
-Prerequisites taught within this module are studied first. Cross-module prerequisites are scheduled by the pathway engine. These are pending local learning-order decisions, not claims of universal occupational dependency.
+Prerequisites taught within this module are studied first. Cross-module prerequisites are scheduled by the pathway engine. These are pending local learning-order decisions, not claims of universal job positional dependency.
 
 ## Assigned tasks and submission evidence
 

@@ -26,22 +26,22 @@ type Confirmation = { action: 'finalize' | 'disable' | 'discard' | 'convert' | '
 // Actions must also fit the narrow content area beside an expanded mobile sidebar.
 const compactAction = 'h-auto min-h-8 min-w-0 max-w-full whitespace-normal [overflow-wrap:anywhere] [&>span]:whitespace-normal'
 const regularAction = 'h-auto min-h-10 min-w-0 max-w-full whitespace-normal [overflow-wrap:anywhere] [&>span]:whitespace-normal'
-/** Remount by Occupation so drafts, local preview and pending keys never cross scopes. */
+/** Remount by JobPosition so drafts, local preview and pending keys never cross scopes. */
 export function AdaptiveBaselineRoute() {
-  const { occupationId, '*': legacyPath } = useParams<{ occupationId: string; '*': string }>()
+  const { jobPositionId, '*': legacyPath } = useParams<{ jobPositionId: string; '*': string }>()
   const { t } = useTranslation()
-  if (occupationId && legacyPath) return <Navigate to={`/ld-manager/baseline-assessments/${encodeURIComponent(occupationId)}`} replace />
+  if (jobPositionId && legacyPath) return <Navigate to={`/ld-manager/baseline-assessments/${encodeURIComponent(jobPositionId)}`} replace />
   if (import.meta.env.VITE_ADAPTIVE_BASELINE_ENABLED !== 'true') return <WorkspaceLayout><div className="space-y-4">
     <Heading level={1} className="sr-only">{t('adaptiveBaseline.title')}</Heading>
     <Card><CardContent className="p-6"><Text role="status">{t('adaptiveBaseline.unavailable')}</Text></CardContent></Card>
   </div></WorkspaceLayout>
-  return <WorkspaceLayout>{occupationId ? <AdaptiveBaselineWorkspace key={occupationId} occupationId={occupationId} /> : <AdaptiveBaselineHome />}</WorkspaceLayout>
+  return <WorkspaceLayout>{jobPositionId ? <AdaptiveBaselineWorkspace key={jobPositionId} jobPositionId={jobPositionId} /> : <AdaptiveBaselineHome />}</WorkspaceLayout>
 }
 export const AdaptiveBaselinePage = AdaptiveBaselineRoute
 
-function AdaptiveBaselineWorkspace({ occupationId }: { occupationId: string }) {
+function AdaptiveBaselineWorkspace({ jobPositionId }: { jobPositionId: string }) {
   const navigate = useNavigate(), { t, language } = useTranslation(), tr = (key: string) => t(`adaptiveBaseline.${key}`)
-  const state = useAdaptiveBaselineWorkspace(occupationId)
+  const state = useAdaptiveBaselineWorkspace(jobPositionId)
   const policyCheck = useRef<AbortController | null>(null)
   const [checkingPolicy, setCheckingPolicy] = useState(false), [policyError, setPolicyError] = useState<AdaptiveBaselineApiError | null>(null)
   useEffect(() => () => policyCheck.current?.abort(), [])
@@ -58,11 +58,11 @@ function AdaptiveBaselineWorkspace({ occupationId }: { occupationId: string }) {
   useEffect(() => {
     if (!blueprint || !version) return
     const controller = new AbortController()
-    void getAdaptiveVersion(occupationId, { blueprintId: blueprint, version: Number(version) }, controller.signal)
+    void getAdaptiveVersion(jobPositionId, { blueprintId: blueprint, version: Number(version) }, controller.signal)
       .then(value => { if (!controller.signal.aborted) setVersionState({ key: versionKey, value, error: false }) })
       .catch(() => { if (!controller.signal.aborted) setVersionState({ key: versionKey, value: null, error: true }) })
     return () => controller.abort()
-  }, [occupationId, blueprint, version, versionKey])
+  }, [jobPositionId, blueprint, version, versionKey])
   const currentWorkingId = state.workspace?.working?.workingRevisionId
   useEffect(() => {
     if (state.notice === 'save' && currentWorkingId) {
@@ -96,7 +96,7 @@ function AdaptiveBaselineWorkspace({ occupationId }: { occupationId: string }) {
       if (!policy.active) {
         const context = new URLSearchParams(params)
         if (workspace.working) context.set('draft', workspace.working.workingRevisionId)
-        navigate(assessmentPolicyPath(occupationId, context)); return
+        navigate(assessmentPolicyPath(jobPositionId, context)); return
       }
       setReason(''); setConfirmation({ action: 'finalize', snapshot })
     } catch (cause: unknown) {
@@ -116,22 +116,22 @@ function AdaptiveBaselineWorkspace({ occupationId }: { occupationId: string }) {
   return <div className="min-w-0 space-y-5 pb-8 [overflow-wrap:anywhere]">
     <Heading level={1} className="sr-only">{tr('workspaceTitle')}</Heading>
     <div className="flex flex-wrap items-center justify-between gap-3">
-      <Text variant="body-sm" tone="foreground" className="min-w-0 break-words font-semibold">{workspace?.capacity.occupationName}</Text>
+      <Text variant="body-sm" tone="foreground" className="min-w-0 break-words font-semibold">{workspace?.capacity.jobPositionName}</Text>
       <div className="flex min-w-0 max-w-full flex-wrap gap-2">
       <Button size="sm" className={compactAction} variant="ghost" disabled={checkingPolicy || state.busy || state.pending && !state.writeCommitted} onClick={() => state.dirty && !state.writeCommitted ? ask('leave') : navigate('/ld-manager/baseline-assessments')}>{tr('back')}</Button>
       <Button size="sm" className={compactAction} variant="outline" disabled={checkingPolicy || state.busy || state.pending} onClick={() => { if (state.dirty) ask('refresh'); else { setVersionReload(value => value + 1); void state.refresh() } }}>{tr('refresh')}</Button>
       <Button size="sm" className={compactAction} disabled={!workspace || locked || state.dirty} onClick={() => {
         if (workspace?.working) { setDraftExistsNotice(true); return }
-        setDraftExistsNotice(false); setParams({}); state.edit({ name: '', occupation: boundsDraft() }); setEditing(null)
+        setDraftExistsNotice(false); setParams({}); state.edit({ name: '', jobPosition: boundsDraft() }); setEditing(null)
       }}>{tr('createNew')}</Button>
     </div></div>
     {state.busy && <AdaptiveLoading />}
     {state.error && <AdaptiveErrorNotice error={state.error} />}
     {policyError && <AdaptiveErrorNotice error={policyError} />}
-    {!denied && <AssessmentPolicyNotice occupationId={occupationId} disabled={locked || state.dirty} required={state.error?.code === 'ASSESSMENT_POLICY_REQUIRED'} />}
+    {!denied && <AssessmentPolicyNotice jobPositionId={jobPositionId} disabled={locked || state.dirty} required={state.error?.code === 'ASSESSMENT_POLICY_REQUIRED'} />}
     {!denied && !workspace && selectedVersion && <Card><CardHeader className="p-5 pb-4"><Heading level={2} size="card">{selectedVersion.configuration.name} · v{selectedVersion.id.version}</Heading></CardHeader><CardContent className="space-y-2 px-5 pb-5">
       <Badge variant="outline">{tr(`statuses.${selectedVersion.status}`)}</Badge>
-      {isCommonConfiguration(selectedVersion.configuration) && <Text variant="body-sm">{selectedVersion.configuration.occupationBounds.maxQuestions} · {selectedVersion.configuration.occupationBounds.timeLimitSeconds % 60 !== 0 ? '≈ ' : ''}{Math.round(selectedVersion.configuration.occupationBounds.timeLimitSeconds / 60)} {tr('totalMinutes')}</Text>}
+      {isCommonConfiguration(selectedVersion.configuration) && <Text variant="body-sm">{selectedVersion.configuration.jobPositionBounds.maxQuestions} · {selectedVersion.configuration.jobPositionBounds.timeLimitSeconds % 60 !== 0 ? '≈ ' : ''}{Math.round(selectedVersion.configuration.jobPositionBounds.timeLimitSeconds / 60)} {tr('totalMinutes')}</Text>}
     </CardContent></Card>}
     {draftMismatch && <Card><CardContent className="space-y-3 p-5"><Text role="alert">{tr('refreshRequired')}</Text>
       <Button disabled={state.busy || state.pending} onClick={() => setParams(workspace?.working ? { draft: workspace.working.workingRevisionId } : {})}>{tr(workspace?.working ? 'continueDraft' : 'refresh')}</Button>
@@ -156,9 +156,9 @@ function AdaptiveBaselineWorkspace({ occupationId }: { occupationId: string }) {
         </CardContent>
       </Card>
       <div className="grid min-w-0 gap-3 sm:grid-cols-3 [&>*]:min-w-0 [&_*]:break-words [&_span]:min-w-0">
-        <StatCard variant="gradient" icon={<ClipboardList size={16} />} valueClassName="text-primary" title={tr('capacity')} value={workspace.capacity.occupation?.eligibleCapacity ?? '—'} />
-        <StatCard variant="gradient" icon={<Layers size={16} />} valueClassName="text-primary" title={tr('skillCount')} value={workspace.capacity.occupation?.skillCount ?? '—'} />
-        <StatCard variant="gradient" icon={<Target size={16} />} valueClassName="text-primary" title={tr('minimumCoverage')} value={workspace.capacity.occupation?.minimumQuestions ?? '—'} description={tr('minimumHint')} />
+        <StatCard variant="gradient" icon={<ClipboardList size={16} />} valueClassName="text-primary" title={tr('capacity')} value={workspace.capacity.jobPosition?.eligibleCapacity ?? '—'} />
+        <StatCard variant="gradient" icon={<Layers size={16} />} valueClassName="text-primary" title={tr('skillCount')} value={workspace.capacity.jobPosition?.skillCount ?? '—'} />
+        <StatCard variant="gradient" icon={<Target size={16} />} valueClassName="text-primary" title={tr('minimumCoverage')} value={workspace.capacity.jobPosition?.minimumQuestions ?? '—'} description={tr('minimumHint')} />
       </div>
       {!viewingVersion && <div className="flex flex-wrap items-center gap-3">
         <Badge variant="secondary">{tr('statuses.DRAFT')}</Badge>
@@ -201,7 +201,7 @@ function AdaptiveBaselineWorkspace({ occupationId }: { occupationId: string }) {
     <Dialog open={confirmation !== null} onOpenChange={open => { if (!open) setConfirmation(null) }} closeLabel={tr('cancel')} ariaLabel={tr('confirm')}>
       <DialogHeader><DialogTitle>{tr('confirm')}</DialogTitle><DialogDescription>{tr(confirmation?.action === 'discard' ? 'deleteDraftNotice' : confirmation?.action === 'finalize' ? 'finalizeNotice' : confirmation?.action === 'disable' ? 'disableNotice' : confirmation?.action === 'convert' ? 'convertNotice' : 'discardNotice')}</DialogDescription></DialogHeader>
       {(confirmation?.action === 'finalize' || confirmation?.action === 'disable') && <div className="space-y-2">
-        <Text variant="body-sm" className="break-words">{tr('occupation')}: {workspace?.capacity.occupationName}</Text>
+        <Text variant="body-sm" className="break-words">{tr('jobPosition')}: {workspace?.capacity.jobPositionName}</Text>
         <Text variant="body-sm" className="break-words">{tr('current')}: {workspace?.current?.configuration.name ?? tr('none')}{confirmation.snapshot.current ? ` · v${confirmation.snapshot.current.version}` : ''}</Text>
         {confirmation.action === 'finalize' && <Text variant="body-sm" className="break-words">{tr('replacementName')}: {state.draft?.name.trim()}</Text>}
       </div>}

@@ -12,12 +12,12 @@ Each record below corresponds to one source bullet. Unspecified fields are inten
 
 | Requirement | Status | Current behavior | Remaining boundary |
 | --- | --- | --- | --- |
-| [FR-04.03](#fr-04-03) | Partial | Organization role APIs and Neo4j persistence support listing/filtering, creation, details, updates, versions and assigned Expert IDs. The L&D page calls those APIs and displays configuration status. | The UI still uses browser-company context and a sample eligible-Expert list; role domain/family fields are not a complete occupation/department relationship. Some local import/fallback operations are not durable API writes. |
+| [FR-04.03](#fr-04-03) | Partial | Organization role APIs and Neo4j persistence support listing/filtering, creation, details, updates, versions and assigned Expert IDs. The L&D page calls those APIs and displays configuration status. | The UI still uses browser-company context and a sample eligible-Expert list; role domain/family fields are not a complete job position/department relationship. Some local import/fallback operations are not durable API writes. |
 | [FR-04.04](#fr-04-04) | Partial | L&D publication controls update role state; the model carries DRAFT, SENT, REJECTED and ACTIVE values. | ACTIVE is displayed as published, but there is no complete L&D-only submitted-configuration review/unpublish/return lifecycle. The Expert screen can publish directly, conflicting with the required responsibility split. |
-| [FR-05.02](#fr-05-02) | Partial | The Expert screen loads assigned roles and micro-skills, adds/removes skill targets and saves proficiency thresholds. Stored targets are projected into graph requirement relationships; role graphs/prerequisites can be viewed. | The saved skill-target model carries a threshold, not a complete relative-importance configuration despite UI wording about weights. Trusted Expert/occupation scope and complete competency-level authoring remain gaps. |
+| [FR-05.02](#fr-05-02) | Partial | The Expert screen loads assigned roles and micro-skills, adds/removes skill targets and saves proficiency thresholds. Stored targets are projected into graph requirement relationships; role graphs/prerequisites can be viewed. | The saved skill-target model carries a threshold, not a complete relative-importance configuration despite UI wording about weights. Trusted Expert/job position scope and complete competency-level authoring remain gaps. |
 | [FR-05.03](#fr-05-03) | Partial | Assigned-role authoring persists configuration edits and status changes. | The observed flow sends work from L&D to Experts; Experts can reject it back or publish ACTIVE directly. This does not implement Expert submission to L&D followed by return/revision and L&D approval. |
 
-**Current inputs/rules:** roles carry code/name, domain/family, track/seniority, description, responsibilities, version, status and assigned Expert ID. Duplicate code/version is checked within an organization; track and seniority are validated. Skill targets carry skill identity and a percentage threshold. These fields do not establish all Version 2 occupation, approval or importance semantics.
+**Current inputs/rules:** roles carry code/name, domain/family, track/seniority, description, responsibilities, version, status and assigned Expert ID. Duplicate code/version is checked within an organization; track and seniority are validated. Skill targets carry skill identity and a percentage threshold. These fields do not establish all Version 2 job position, approval or importance semantics.
 
 **Entry points:** `/ld-manager/target-roles`, `/expert/target-roles` (also `/expert/assigned-roles`). Employee catalog selection is documented under [Role guidance](../Role%20guidance/README.md#current-implementation).
 
@@ -35,7 +35,7 @@ Historical verification remains scoped to its original behavior: [target-role ma
 | --- | --- |
 | 1. Requirement ID | FR-04.03 |
 | 2. Requirement Name | Manage target roles |
-| 3. Description | The L&D Manager shall create and update target role details within occupations, assign target roles to Experts, and monitor configuration status. |
+| 3. Description | The L&D Manager shall create and update target role details within job positions, assign target roles to Experts, and monitor configuration status. |
 | 4. Actor | L&D Manager |
 | 5. Preconditions |  |
 | 6. Main Flow |  |

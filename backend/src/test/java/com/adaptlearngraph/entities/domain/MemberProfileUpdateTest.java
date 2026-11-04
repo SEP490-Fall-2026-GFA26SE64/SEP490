@@ -13,7 +13,7 @@ class MemberProfileUpdateTest {
         var update=new MemberProfileUpdate("  Administrator  ",Set.of("ORGANIZATION_ADMINISTRATOR"),null,null,3);
         assertEquals("Administrator",update.fullName());
         assertNull(update.departmentId());
-        assertNull(update.occupationReferenceId());
+        assertNull(update.jobPositionReferenceId());
         assertEquals(3,update.revision());
     }
     @Test

@@ -57,13 +57,13 @@ After the separately authorized development update, open:
 - `http://127.0.0.1:8088/admin/users`
 - `http://127.0.0.1:8088/admin/subscription`
 
-Use an authenticated organization Administrator with MFA. Real department/occupation references are prerequisites for Employee creation/assignment; do not substitute prototype data.
+Use an authenticated organization Administrator with MFA. Real department/job position references are prerequisites for Employee creation/assignment; do not substitute prototype data.
 
 1. Verify both pages share the existing Administrator header/sidebar and the selected sidebar item.
 2. Open account menu: actual identity/organization, retained demo role links and real logout. Demo navigation must not grant missing roles.
-3. On Users, search/filter/page through the list; inspect a user's roles, department, occupation and state.
+3. On Users, search/filter/page through the list; inspect a user's roles, department, job position and state.
 4. Create a synthetic test user only in the isolated environment. Verify pending/delivery/expiry state, activation and persisted list entry.
-5. Edit name/roles/department/occupation; email remains read-only. Reload to verify. Invalid references, stale revision, capacity overflow and last-admin removal must fail explicitly.
+5. Edit name/roles/department/job position; email remains read-only. Reload to verify. Invalid references, stale revision, capacity overflow and last-admin removal must fail explicitly.
 6. Deactivate/reactivate with confirmation; preserve account/history and check used seats.
 7. On Subscription, verify no Create User/member table, correct paid period/seat summary/history and the link to User Accounts. Renewal still uses the verified payment lifecycle.
 8. In the isolated fixture environment, verify expired read/deactivate-only Users behavior and suspended denial; repeat desktop/mobile, keyboard and EN/VI.

@@ -20,7 +20,7 @@ public final class InitialPathwayView {
                                 java.math.BigDecimal priceVnd,List<Target> targets) {}
     public record ModuleView(ModuleSummary module,String accessState,String reasonCode,String entry) {}
     public record DependencyView(String moduleId,String providerModuleId,String dependentSkillId,String prerequisiteSkillId,boolean internal) {}
-    public record Context(String roleId,String levelId,String occupationId) {}
+    public record Context(String roleId,String levelId,String jobPositionId) {}
     public record View(Status status,List<ModuleView> modules,List<DependencyView> dependencies,boolean archived,
                        Context context,RoleGap.Result baseline) {
         public View(Status status,List<ModuleView> modules,List<DependencyView> dependencies,boolean archived) {
@@ -65,7 +65,7 @@ public final class InitialPathwayView {
                 d.prerequisiteSkillId(),d.moduleId().equals(d.providerModuleId()))).toList();
         var binding=request.frozen().input().binding();
         return new View(status(request),List.copyOf(modules),dependencies,archived,
-                new Context(binding.roleId(),binding.levelId(),binding.occupationId()),request.frozen().input().preview().result());
+                new Context(binding.roleId(),binding.levelId(),binding.jobPositionId()),request.frozen().input().preview().result());
     }
     private Status status(Request r) {
         var binding=r.frozen().input().binding();return new Status(r.id(),r.generation(),r.review(),r.validation(),

@@ -16,7 +16,7 @@ The dedicated local database migrated from V37 to V38 without resetting accounts
 
 ## Manual checklist
 
-Prerequisites: approved local stack, private MinIO available, existing five role accounts, active same-organization Employee, at least one MicroSkill (new authoring no longer requires an Occupation grant). Use a second isolated organization to verify denials. Module assessments/AI pathway generation are outside this slice.
+Prerequisites: approved local stack, private MinIO available, existing five role accounts, active same-organization Employee, at least one MicroSkill (new authoring no longer requires an Job Position grant). Use a second isolated organization to verify denials. Module assessments/AI pathway generation are outside this slice.
 
 | Actor / URL | Steps | Expected result |
 |---|---|---|
@@ -44,4 +44,4 @@ Post-login captures only: [reader](artifacts/REQ-013-learning-content/REQ-013-le
 
 Final aggregate across current relevant runs: **7 core flows passed + YouTube live passed; Vimeo live blocked**. This is not a claim that all9 live-provider checks passed in one green run. The latest MP4 and YouTube run passed2/2 after V38; the other6 core flows passed in the preceding broad run (notification assertion additionally passed a focused rerun).
 
-R4 supersedes the old Occupation creation requirement and the combined revision-preview expander. See [R4 current browser/integration results and manual checklist](REQ-013-learning-content-R4.md).
+R4 supersedes the old Job Position creation requirement and the combined revision-preview expander. See [R4 current browser/integration results and manual checklist](REQ-013-learning-content-R4.md).

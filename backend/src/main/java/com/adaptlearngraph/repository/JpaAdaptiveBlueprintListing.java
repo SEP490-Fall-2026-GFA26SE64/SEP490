@@ -35,13 +35,13 @@ public final class JpaAdaptiveBlueprintListing {
         boolean newest = query.direction() == Direction.NEWEST;
         return Objects.requireNonNull(reads.execute(transaction -> {
             long total = workspaceNames
-                    ? rows.countByWorkspaceName(org, grants, query.search(), status, query.occupationId())
-                    : rows.countBySnapshotName(org, grants, query.search(), status, query.occupationId());
+                    ? rows.countByWorkspaceName(org, grants, query.search(), status, query.jobPositionId())
+                    : rows.countBySnapshotName(org, grants, query.search(), status, query.jobPositionId());
             List<Object[]> found = workspaceNames
-                    ? newest ? rows.newestByWorkspaceName(org, grants, query.search(), status, query.occupationId(), query.size(), offset)
-                             : rows.oldestByWorkspaceName(org, grants, query.search(), status, query.occupationId(), query.size(), offset)
-                    : newest ? rows.newestBySnapshotName(org, grants, query.search(), status, query.occupationId(), query.size(), offset)
-                             : rows.oldestBySnapshotName(org, grants, query.search(), status, query.occupationId(), query.size(), offset);
+                    ? newest ? rows.newestByWorkspaceName(org, grants, query.search(), status, query.jobPositionId(), query.size(), offset)
+                             : rows.oldestByWorkspaceName(org, grants, query.search(), status, query.jobPositionId(), query.size(), offset)
+                    : newest ? rows.newestBySnapshotName(org, grants, query.search(), status, query.jobPositionId(), query.size(), offset)
+                             : rows.oldestBySnapshotName(org, grants, query.search(), status, query.jobPositionId(), query.size(), offset);
             return new Page(found.stream().map(JpaAdaptiveBlueprintListing::row).toList(), total, query.page(), query.size());
         }));
     }

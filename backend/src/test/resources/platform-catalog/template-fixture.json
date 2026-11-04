@@ -1,7 +1,7 @@
 {
-  "Occupations": [
-    {"id": "OCC-1", "version": "fixture-1", "status": "ACTIVE", "reviewStatus": "NEEDS_EXPERT_REVIEW", "code": "11-0000.00", "name": "Occupation One"},
-    {"id": "OCC-2", "version": "fixture-1", "status": "ACTIVE", "reviewStatus": "NEEDS_EXPERT_REVIEW", "code": "22-0000.00", "name": "Occupation Two"}
+  "JobPositions": [
+    {"id": "OCC-1", "version": "fixture-1", "status": "ACTIVE", "reviewStatus": "NEEDS_EXPERT_REVIEW", "code": "11-0000.00", "name": "JobPosition One"},
+    {"id": "OCC-2", "version": "fixture-1", "status": "ACTIVE", "reviewStatus": "NEEDS_EXPERT_REVIEW", "code": "22-0000.00", "name": "JobPosition Two"}
   ],
   "TargetRoles": [
     {"id": "ROLE-A", "version": "fixture-1", "status": "ACTIVE", "reviewStatus": "NEEDS_EXPERT_REVIEW", "code": "ROLE_A", "name": "Role A"},
