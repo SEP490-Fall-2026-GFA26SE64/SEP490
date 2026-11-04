@@ -779,7 +779,36 @@ function OntologyGraphPlaygroundInner({
           }
 
           const assignedCompIds = (role.levelCompetencies?.[lvl] || []).concat(role.competencyIds || [])
-          const uniqueCompIds = Array.from(new Set(assignedCompIds))
+          let uniqueCompIds = Array.from(new Set(assignedCompIds))
+
+          // Fallback if uniqueCompIds is empty: resolve competencies from this level's skillTargets or predecessor role
+          if (uniqueCompIds.length === 0) {
+            const levelSkills = (role.skillTargets || []).filter(
+              (st: SkillTargetConfig) => !st.level || st.level.toLowerCase() === lvl.toLowerCase()
+            )
+            const derivedComps = competenciesRef.current.filter((c) =>
+              levelSkills.some(
+                (st: SkillTargetConfig) =>
+                  c.skillIds?.includes(st.skillId) ||
+                  (st.skillCode && c.skillIds?.includes(st.skillCode)) ||
+                  (st.macroCompetencyCode && (st.macroCompetencyCode === c.code || st.macroCompetencyCode === c.id))
+              )
+            )
+            if (derivedComps.length > 0) {
+              uniqueCompIds = derivedComps.map((c) => c.id)
+            } else {
+              const allRoles = (targetRolesRef.current || targetRoles || [])
+              const sameCodeRoles = allRoles.filter((r: TargetRoleModel) => r.code === role.code && r.id !== role.id)
+              for (const otherRole of sameCodeRoles) {
+                const otherComps = otherRole.levelCompetencies?.[lvl] || []
+                if (otherComps.length > 0) {
+                  uniqueCompIds = [...otherComps]
+                  break
+                }
+              }
+            }
+          }
+
           const matchingComps = competenciesRef.current.filter((c) =>
             uniqueCompIds.includes(c.id) || uniqueCompIds.includes(c.code)
           )
@@ -806,9 +835,17 @@ function OntologyGraphPlaygroundInner({
             }
 
             const skillY = compY + 160
-            const memberSkills = (comp.skillIds || []).map((sId) =>
+            const roleSkillIds = new Set(
+              (role.skillTargets || []).map((st: SkillTargetConfig) => st.skillId || st.skillCode)
+            )
+            const allMemberSkills = (comp.skillIds || []).map((sId) =>
               microSkillsRef.current.find((s) => s.id === sId || s.code === sId)
             ).filter(Boolean) as MicroSkillModel[]
+
+            const relevantSkills = allMemberSkills.filter(
+              (s) => roleSkillIds.has(s.id) || (s.code && roleSkillIds.has(s.code))
+            )
+            const memberSkills = relevantSkills.length > 0 ? relevantSkills : allMemberSkills
 
             const skillSpacing = 200
             const skillTotalWidth = (memberSkills.length - 1) * skillSpacing
@@ -861,6 +898,21 @@ function OntologyGraphPlaygroundInner({
                 existingEdgeIds.add(String(reqSkillEdge.id))
                 edgesToAdd.push(reqSkillEdge)
               }
+
+              // Also link to parent competency via HAS_SKILL if that competency is on canvas or was added
+              const parentComp = competenciesRef.current.find(
+                (c) =>
+                  c.skillIds?.includes(targetSkill.id) ||
+                  (targetSkill.code && c.skillIds?.includes(targetSkill.code)) ||
+                  (st.macroCompetencyCode && (c.id === st.macroCompetencyCode || c.code === st.macroCompetencyCode))
+              )
+              if (parentComp && (existingNodeIds.has(parentComp.id) || nodesToAdd.some((n) => n.id === parentComp.id))) {
+                const hasSkillEdge = buildHasSkillEdge(parentComp.id, targetSkill.id)
+                if (!existingEdgeIds.has(String(hasSkillEdge.id))) {
+                  existingEdgeIds.add(String(hasSkillEdge.id))
+                  edgesToAdd.push(hasSkillEdge)
+                }
+              }
             }
           }
         })
@@ -870,7 +922,35 @@ function OntologyGraphPlaygroundInner({
       const role = (targetRolesRef.current || targetRoles || []).find((r) => r.id === roleId)
       if (role && current.levelName) {
         const assignedCompIds = (role.levelCompetencies?.[current.levelName] || []).concat(role.competencyIds || [])
-        const uniqueCompIds = Array.from(new Set(assignedCompIds))
+        let uniqueCompIds = Array.from(new Set(assignedCompIds))
+
+        if (uniqueCompIds.length === 0) {
+          const levelSkills = (role.skillTargets || []).filter(
+            (st: SkillTargetConfig) => !st.level || st.level.toLowerCase() === current.levelName?.toLowerCase()
+          )
+          const derivedComps = competenciesRef.current.filter((c) =>
+            levelSkills.some(
+              (st: SkillTargetConfig) =>
+                c.skillIds?.includes(st.skillId) ||
+                (st.skillCode && c.skillIds?.includes(st.skillCode)) ||
+                (st.macroCompetencyCode && (st.macroCompetencyCode === c.code || st.macroCompetencyCode === c.id))
+            )
+          )
+          if (derivedComps.length > 0) {
+            uniqueCompIds = derivedComps.map((c) => c.id)
+          } else {
+            const allRoles = (targetRolesRef.current || targetRoles || [])
+            const sameCodeRoles = allRoles.filter((r: TargetRoleModel) => r.code === role.code && r.id !== role.id)
+            for (const otherRole of sameCodeRoles) {
+              const otherComps = otherRole.levelCompetencies?.[current.levelName] || []
+              if (otherComps.length > 0) {
+                uniqueCompIds = [...otherComps]
+                break
+              }
+            }
+          }
+        }
+
         const matchingComps = competenciesRef.current.filter((c) =>
           uniqueCompIds.includes(c.id) || uniqueCompIds.includes(c.code)
         )

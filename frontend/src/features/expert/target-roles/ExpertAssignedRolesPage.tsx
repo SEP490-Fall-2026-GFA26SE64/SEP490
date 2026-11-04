@@ -698,6 +698,11 @@ export function ExpertAssignedRolesPage() {
     const inheritedSkillTargets = role.skillTargets
       ? JSON.parse(JSON.stringify(role.skillTargets))
       : []
+    const derivedInheritedCompIds =
+      inheritedCompetencyIds.length > 0
+        ? inheritedCompetencyIds
+        : Array.from(new Set(Object.values(inheritedLevelCompetencies).flat() as string[]))
+
     const successorPayload = {
       code: role.code,
       name: role.title,
@@ -709,6 +714,8 @@ export function ExpertAssignedRolesPage() {
       version: nextVersion,
       status: 'DRAFT',
       levels: inheritedLevels,
+      levelCompetencies: inheritedLevelCompetencies,
+      competencyIds: derivedInheritedCompIds,
       skillTargets: inheritedSkillTargets,
     }
 
