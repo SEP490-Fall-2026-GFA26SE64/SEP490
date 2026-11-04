@@ -27,8 +27,8 @@ import { Button } from '../../../../shared/components/ui/Button'
 import { Dialog, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '../../../../shared/components/ui/Dialog'
 import { useToast } from '../../../../shared/hooks/useToast'
 import { cn } from '../../../../shared/lib/utils'
-import { type CompetencyModel, type MicroSkillModel, type PrerequisiteEdge, type TargetRoleModel } from '../../data/ldManagerMockData'
-import { updateActiveCompany } from '../../../../shared/stores/companyStore'
+import { type CompetencyModel, type MicroSkillModel, type PrerequisiteEdge, type TargetRoleModel, type SkillTargetConfig } from '../../data/ldManagerMockData'
+import { getActiveCompany, updateActiveCompany } from '../../../../shared/stores/companyStore'
 import { createPrerequisite, deletePrerequisite } from '../../../../shared/api/prerequisiteApi'
 import { updateCompetency } from '../../../../shared/api/competencyApi'
 
@@ -267,6 +267,21 @@ function OntologyGraphPlaygroundInner({
     }
   }
 
+  function buildRequiresSkillEdge(levelId: string, skillId: string, minMastery: number = 80): Edge {
+    return {
+      id: `requires-skill-${levelId}-${skillId}`,
+      from: levelId,
+      to: skillId,
+      title: `Level Requirement: REQUIRES_SKILL (Target Mastery: ${minMastery}%)`,
+      label: 'REQUIRES_SKILL',
+      font: { size: 7, color: '#64748B', strokeWidth: 0, align: 'horizontal' },
+      color: { color: '#CBD5E1', highlight: '#64748B', hover: '#475569' },
+      arrows: { to: { enabled: true, scaleFactor: 0.5 } },
+      dashes: [4, 4],
+      width: 1,
+    }
+  }
+
   function buildCompetencyNode(c: CompetencyModel, pos?: { x: number; y: number }): PlaygroundCustomNode {
     const isCompact = isCompactViewRef.current
     return {
@@ -447,6 +462,14 @@ function OntologyGraphPlaygroundInner({
         activeColor: { color: '#9333EA', highlight: '#9333EA', hover: '#7E22CE' },
         width: 1.5,
         activeWidth: 2,
+      }
+    }
+    if (idStr.startsWith('requires-skill-')) {
+      return {
+        color: { color: '#CBD5E1', highlight: '#64748B', hover: '#475569' },
+        activeColor: { color: '#64748B', highlight: '#64748B', hover: '#475569' },
+        width: 1,
+        activeWidth: 1.5,
       }
     }
     if (idStr.startsWith('has-skill-')) {
@@ -719,17 +742,23 @@ function OntologyGraphPlaygroundInner({
     const edgesToAdd: Edge[] = []
 
     if (current.nodeType === 'targetRole') {
-      const role = (targetRolesRef.current || targetRoles || []).find((r) => r.id === current.id || r.code === current.code)
+      const activeComp = getActiveCompany()
+      const role =
+        (targetRolesRef.current || targetRoles || []).find((r: TargetRoleModel) => r.id === current.id || r.code === current.code) ||
+        activeComp?.targetRoles?.find((r: TargetRoleModel) => r.id === current.id || r.code === current.code)
       if (role) {
+        const configuredLevels = Array.isArray(role.levels) && role.levels.length > 0 ? role.levels : []
         const levelNamesFromComps = Object.keys(role.levelCompetencies || {})
-        const levelNamesFromSkills = (role.skillTargets || []).map((st) => st.level).filter(Boolean) as string[]
-        const combinedLevels = Array.from(new Set([...levelNamesFromComps, ...levelNamesFromSkills]))
-        const effectiveLevels = combinedLevels.length > 0 ? combinedLevels : ['Junior', 'Middle', 'Senior']
+        const levelNamesFromSkills = (role.skillTargets || []).map((st: SkillTargetConfig) => st.level).filter(Boolean) as string[]
+        const combinedLevels = Array.from(new Set([...configuredLevels, ...levelNamesFromComps, ...levelNamesFromSkills]))
+        const effectiveLevels = combinedLevels.length > 0 ? combinedLevels : ['Junior', 'Middle', 'Senior', 'Fresher']
 
         const levelSpacing = 200
         const totalWidth = (effectiveLevels.length - 1) * levelSpacing
         const startX = centerPos.x - totalWidth / 2
         const levelY = centerPos.y + 140
+
+        const levelNodeMap: Record<string, PlaygroundCustomNode> = {}
 
         effectiveLevels.forEach((lvl, lIdx) => {
           const rawPos = {
@@ -738,6 +767,7 @@ function OntologyGraphPlaygroundInner({
           }
           const pos = findClearSlot(rawPos, 'level')
           const lvlNode = buildLevelNode(role, lvl, pos)
+          levelNodeMap[lvl.toLowerCase()] = lvlNode
           if (!existingNodeIds.has(lvlNode.id)) {
             nodesToAdd.push(lvlNode)
             existingNodeIds.add(lvlNode.id)
@@ -799,8 +829,40 @@ function OntologyGraphPlaygroundInner({
                 existingEdgeIds.add(String(hasSkillEdge.id))
                 edgesToAdd.push(hasSkillEdge)
               }
+
+              // Relationship from level to micro-skill as required skill (REQUIRES_SKILL)
+              const reqSkillEdge = buildRequiresSkillEdge(lvlNode.id, skill.id)
+              if (!existingEdgeIds.has(String(reqSkillEdge.id))) {
+                existingEdgeIds.add(String(reqSkillEdge.id))
+                edgesToAdd.push(reqSkillEdge)
+              }
             })
           })
+        })
+
+        // Also add and link skills explicitly listed in role.skillTargets to their corresponding level
+        ;(role.skillTargets || []).forEach((st: SkillTargetConfig) => {
+          const targetSkill = microSkillsRef.current.find(
+            (s) => s.id === st.skillId || s.code === st.skillCode || s.code === st.skillId
+          )
+          if (targetSkill) {
+            const targetLvlNode = st.level
+              ? levelNodeMap[st.level.toLowerCase()]
+              : Object.values(levelNodeMap)[0]
+
+            if (targetLvlNode) {
+              if (!existingNodeIds.has(targetSkill.id)) {
+                const skillSlot = findClearSlot({ x: targetLvlNode.x || 0, y: (targetLvlNode.y || 0) + 260 }, 'skill')
+                nodesToAdd.push(buildSkillNode(targetSkill, skillSlot))
+                existingNodeIds.add(targetSkill.id)
+              }
+              const reqSkillEdge = buildRequiresSkillEdge(targetLvlNode.id, targetSkill.id, st.threshold || 80)
+              if (!existingEdgeIds.has(String(reqSkillEdge.id))) {
+                existingEdgeIds.add(String(reqSkillEdge.id))
+                edgesToAdd.push(reqSkillEdge)
+              }
+            }
+          }
         })
       }
     } else if (current.nodeType === 'level') {
@@ -1545,6 +1607,99 @@ function OntologyGraphPlaygroundInner({
       return
     }
 
+    // Branch 0b: Level + MicroSkill (REQUIRES_SKILL) with auto-save to Edit Target Role
+    if (
+      (sourceNode.nodeType === 'level' && targetNode.nodeType === 'skill') ||
+      (sourceNode.nodeType === 'skill' && targetNode.nodeType === 'level')
+    ) {
+      const levelNode = sourceNode.nodeType === 'level' ? sourceNode : targetNode
+      const skillNode = sourceNode.nodeType === 'skill' ? sourceNode : targetNode
+
+      const roleId = levelNode.targetRoleId
+      const levelName = levelNode.levelName || levelNode.code
+      const role =
+        (targetRolesRef.current || targetRoles || []).find((r: TargetRoleModel) => r.id === roleId) ||
+        getActiveCompany()?.targetRoles?.find((r: TargetRoleModel) => r.id === roleId)
+
+      if (!role) {
+        toast({
+          title: 'Target Role Not Found',
+          description: 'Could not resolve the parent Target Role for this level.',
+          variant: 'destructive',
+        })
+        handleCancelConnect()
+        return
+      }
+
+      const existingTargets: SkillTargetConfig[] = role.skillTargets || []
+      const alreadyLinked = existingTargets.some(
+        (st: SkillTargetConfig) =>
+          (st.skillId === skillNode.id || st.skillCode === skillNode.code) &&
+          st.level?.toLowerCase() === levelName.toLowerCase()
+      )
+
+      if (alreadyLinked) {
+        toast({
+          title: 'Skill Requirement Already Connected',
+          description: `${skillNode.code} is already configured as a required skill for ${levelName} level in ${role.code}.`,
+          variant: 'default',
+        })
+        handleCancelConnect()
+        return
+      }
+
+      const updatedSkillTargets: SkillTargetConfig[] = [
+        ...existingTargets,
+        {
+          skillId: skillNode.id,
+          skillCode: skillNode.code,
+          skillName: skillNode.name,
+          level: levelName,
+          threshold: 80,
+        },
+      ]
+
+      const updatedRole: TargetRoleModel = {
+        ...role,
+        skillTargets: updatedSkillTargets,
+      }
+
+      const newEdge = buildRequiresSkillEdge(levelNode.id, skillNode.id, 80)
+      edgesDataSetRef.current.add(newEdge)
+      setCanvasEdges((prev) => [...prev, newEdge])
+
+      if (onUpdateTargetRoleRef.current) {
+        onUpdateTargetRoleRef.current(updatedRole)
+      }
+
+      updateActiveCompany((comp) => ({
+        ...comp,
+        targetRoles: (comp.targetRoles || []).map((r) => (r.id === role.id ? updatedRole : r)),
+      }))
+
+      try {
+        await fetch(`/api/v1/organizations/${organizationId}/target-roles/${role.id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-User-Role': 'DOMAIN_EXPERT',
+          },
+          body: JSON.stringify(updatedRole),
+        })
+      } catch (err) {
+        console.warn('API update target role skill targets error:', err)
+      }
+
+      toast({
+        title: 'Required Skill Linked & Saved',
+        description: `Linked "${skillNode.code}" as required skill for ${levelName} level in "${role.code}". Saved automatically.`,
+        variant: 'success',
+      })
+
+      handleCancelConnect()
+      return
+    }
+
     // Branch 1: Competency + MicroSkill (HAS_SKILL)
     if (
       (sourceNode.nodeType === 'competency' && targetNode.nodeType === 'skill') ||
@@ -1758,6 +1913,41 @@ function OntologyGraphPlaygroundInner({
             toast({
               title: 'Requirement Removed',
               description: `Unlinked ${compNode.code} from ${levelName} level for ${role.code}.`,
+              variant: 'success',
+            })
+          }
+        }
+      } else if (String(edgeId).startsWith('requires-skill-')) {
+        const levelNode = canvasNodesRef.current.find((n) => n.id === fromStr && n.nodeType === 'level')
+        const skillNode = canvasNodesRef.current.find((n) => n.id === toStr && n.nodeType === 'skill')
+        if (levelNode && skillNode) {
+          const roleId = levelNode.targetRoleId
+          const levelName = levelNode.levelName || levelNode.code
+          const role =
+            (targetRolesRef.current || targetRoles || []).find((r: TargetRoleModel) => r.id === roleId) ||
+            getActiveCompany()?.targetRoles?.find((r: TargetRoleModel) => r.id === roleId)
+          if (role) {
+            const updatedSkillTargets = (role.skillTargets || []).filter(
+              (st: SkillTargetConfig) =>
+                !(
+                  (st.skillId === skillNode.id || st.skillCode === skillNode.code) &&
+                  st.level?.toLowerCase() === levelName.toLowerCase()
+                )
+            )
+            const updatedRole: TargetRoleModel = {
+              ...role,
+              skillTargets: updatedSkillTargets,
+            }
+            if (onUpdateTargetRoleRef.current) onUpdateTargetRoleRef.current(updatedRole)
+            updateActiveCompany((comp) => ({
+              ...comp,
+              targetRoles: (comp.targetRoles || []).map((r) => (r.id === role.id ? updatedRole : r)),
+            }))
+            edgesDataSetRef.current.remove(edgeId)
+            setCanvasEdges((prev) => prev.filter((e) => e.id !== edgeId))
+            toast({
+              title: 'Requirement Removed',
+              description: `Unlinked required skill ${skillNode.code} from ${levelName} level for ${role.code}.`,
               variant: 'success',
             })
           }
@@ -2343,6 +2533,29 @@ function OntologyGraphPlaygroundInner({
               </div>
             </div>
           )}
+          {/* Bottom Right Legend similar to Target Role explore graph */}
+          <div className="absolute bottom-4 right-4 z-20 hidden md:flex items-center gap-3 px-3 py-1.5 rounded-lg bg-card/90 backdrop-blur-xs border border-border text-[11px] font-medium text-muted-foreground shadow-xs select-none">
+            <span className="flex items-center gap-1.5">
+              <span className="h-2.5 w-2.5 rounded-full bg-orange-500" />
+              <span>Target Role</span>
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="h-2.5 w-2.5 rounded-full bg-indigo-500" />
+              <span>Proficiency Level</span>
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="h-2.5 w-2.5 rounded-full bg-purple-500" />
+              <span>Competency</span>
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="h-2.5 w-2.5 rounded-full bg-emerald-500" />
+              <span>Required Skill</span>
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="h-0.5 w-3 bg-destructive border-t border-dashed border-destructive" />
+              <span>Prerequisite (≥ %)</span>
+            </span>
+          </div>
         </div>
       </div>
 
