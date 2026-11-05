@@ -54,7 +54,19 @@ public final class MainDevelopmentBankSeed {
         try{
             var source=LocalDemoIdentity.OCC.equals(jobPosition)?securitySource():parse(SoftwareDevelopmentSeed.bankBytes(),OfficialQuestionBankManifest.class);
             require(catalog(ORGANIZATION,jobPosition) && jobPosition.equals(source.jobPositionId()),"Unsupported seed scope");
-            return hash(JSON.valueToTree(Map.of("namespace","workspace-seed:v2","organization",ORGANIZATION,"source",source,"projected",project(source))));
+            // Historical technical pins used the original wire field. A Java/API rename must not
+            // change immutable fitted/model provenance or force existing seeded versions to be replaced.
+            var provenance=JSON.valueToTree(Map.of("namespace","workspace-seed:v2","organization",ORGANIZATION,"source",source,"projected",project(source)));
+            for(String part:List.of("source","projected")) {
+                var manifest=(com.fasterxml.jackson.databind.node.ObjectNode)provenance.path(part);
+                manifest.set("occupationId",manifest.remove("jobPositionId"));
+                // These are the original, pinned catalog/scope bytes before the terminology-only refactor.
+                if(LocalDemoIdentity.OCC.equals(jobPosition)) {
+                    manifest.put("sourceSha256","6bb30de3dea6afa5aa306246b74ae696c896338991949bb9f392fd79f51a9b02");
+                    manifest.put("scopeSha256","454b5531a43dba70c29597d866cb29f5e614a02de5e6e596c379bb2712c667a6");
+                } else manifest.put("sourceSha256","f7325462f0e8810624c05141798a3ca330b6ae8fb3844fc6e1437951e79832f7");
+            }
+            return hash(provenance);
         }catch(java.io.IOException invalid){throw new IllegalStateException(invalid);}
     }
     public static java.util.List<com.adaptlearngraph.repository.AdaptiveTechnicalVersionPort.ItemParameter> parameters(String jobPosition){

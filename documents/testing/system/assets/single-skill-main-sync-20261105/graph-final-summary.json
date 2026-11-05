@@ -1,0 +1,11 @@
+{
+  "beforeDigest": "f50e815b849ea91643359224184a37efcd9533180d3e53657a0baf67961826b3",
+  "afterDigest": "f50e815b849ea91643359224184a37efcd9533180d3e53657a0baf67961826b3",
+  "nodes": 994,
+  "teaches": 246,
+  "relationships": 4706,
+  "alreadyApplied": true,
+  "preservedOrganizationId": "e0000000-0000-0000-0000-000000000001",
+  "renamedOccupationNodes": 5,
+  "preservedSePrerequisites": 3
+}
