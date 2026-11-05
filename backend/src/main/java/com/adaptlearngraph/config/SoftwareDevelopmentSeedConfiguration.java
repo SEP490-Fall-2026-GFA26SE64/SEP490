@@ -55,7 +55,8 @@ public class SoftwareDevelopmentSeedConfiguration {
         var seeds=repositories.identities();var technical=repositories.technical();
         var org=MainDevelopmentBankSeed.ORGANIZATION;
         var now=Instant.parse("2026-01-01T00:00:00Z");
-        UUID department=MainDevelopmentBankSeed.seId("department"),reference=MainDevelopmentBankSeed.seId("reference"),jobPosition=MainDevelopmentBankSeed.seId("jobPosition");
+        // Fixture UUID namespace is immutable even though the domain term is now Job Position.
+        UUID department=MainDevelopmentBankSeed.seId("department"),reference=MainDevelopmentBankSeed.seId("reference"),jobPosition=MainDevelopmentBankSeed.seId("occupation");
         seeds.insertDepartmentIgnoringConflicts(department,org,"Development Software Engineering");
         seeds.insertJobPositionReferenceIgnoringConflicts(reference,jobPosition,org,department,"Software Developers");
         require(seeds.activeJobPositionReference(reference,jobPosition,org,department,"Software Developers","Development Software Engineering"),"SE department/job-position drift");

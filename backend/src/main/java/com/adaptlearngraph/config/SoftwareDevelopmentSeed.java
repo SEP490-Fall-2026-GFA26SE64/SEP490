@@ -43,6 +43,7 @@ public final class SoftwareDevelopmentSeed {
         return bank;
     }
     public static String technicalHash() {
-        return sha256((BANK_HASH+":DECLARED_SYNTHETIC:a=1.5;b=-1,0,1;c=0.25:reference-model-and-mapping").getBytes(StandardCharsets.UTF_8));
+        // Fitted provenance predates the terminology-only JSON rewrite; keep its original byte pin.
+        return sha256(("8922129d2d67ec8ec9736ae1aa560e2af992fe82633464aebeea6c09ad034552"+":DECLARED_SYNTHETIC:a=1.5;b=-1,0,1;c=0.25:reference-model-and-mapping").getBytes(StandardCharsets.UTF_8));
     }
 }

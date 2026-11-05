@@ -41,9 +41,10 @@ public class DevelopmentWorkspaceSeedConfiguration {
                 seeds.insertAccountIfAbsent(provisioner,org,"development-provisioner.invalid","development-provisioner.invalid","DEVELOPMENT_NO_LOGIN");
                 seeds.insertRegistrationIfAbsent(registration,provisioner,"Shared development fixture","workspace-development","Development fixture",now);
                 seeds.insertReadyWorkspaceIfAbsent(MainDevelopmentBankSeed.id("workspace"),org,registration,"workspace-development",now);
-                UUID department=MainDevelopmentBankSeed.id("department"),reference=MainDevelopmentBankSeed.id("jobPosition-reference");
+                // Retain the original fixture UUID namespace across the Job Position terminology rename.
+                UUID department=MainDevelopmentBankSeed.id("department"),reference=MainDevelopmentBankSeed.id("occupation-reference");
                 seeds.insertDepartmentIfAbsent(department,org,"Development Security");
-                seeds.insertJobPositionReferenceIfAbsent(reference,MainDevelopmentBankSeed.id("jobPosition"),org,department,"Information Security Analysts");
+                seeds.insertJobPositionReferenceIfAbsent(reference,MainDevelopmentBankSeed.id("occupation"),org,department,"Information Security Analysts");
                 for(var pair:Map.of("ld","LD_MANAGER","employee","EMPLOYEE","expert","DOMAIN_EXPERT").entrySet()) {
                     UUID account=MainDevelopmentBankSeed.id(pair.getKey()),membership=MainDevelopmentBankSeed.id("membership:"+pair.getKey());
                     String email=pair.getKey()+"@workspace.dev.invalid";

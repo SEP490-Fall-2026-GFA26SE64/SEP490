@@ -23,4 +23,32 @@ class SingleSkillCatalogTest(unittest.TestCase):
         drift=copy.deepcopy(old);next(iter(drift['nodes'].values()))['properties']['name']='Edited by user'
         with self.assertRaises(ValueError):plan_upgrade(drift,old,new)
         self.assertNotEqual(old,drift)
+class WorkspaceCutoverTest(unittest.TestCase):
+    def fixture(self):
+        from upgrade_workspace_v012 import ORG, expected
+        base=snapshot(json.loads((ROOT/'ontology_seed-v011.json').read_text()))
+        for n in base['nodes'].values():n['properties']['organizationId']=ORG
+        old,new=expected(base)
+        return old,new
+    def test_workspace_preserves_tenant_metadata_and_supplement(self):
+        from upgrade_workspace_v012 import plan, ORG
+        old,new=self.fixture();_,target,result=plan(old)
+        self.assertEqual(new,target);self.assertEqual(418,len(result['retiredTeaches']))
+        self.assertTrue(all(n['properties']['organizationId']==ORG for n in target['nodes'].values()))
+        self.assertEqual(4706,len(target['relationships']))
+        self.assertEqual(5,sum(n['labels']==['JobPosition'] for n in target['nodes'].values()))
+        self.assertTrue(plan(new)[2]['alreadyApplied'])
+    def test_workspace_rejects_foreign_or_content_drift(self):
+        from upgrade_workspace_v012 import plan
+        old,_=self.fixture()
+        for field,value in [('organizationId','foreign'),('name','User edited')]:
+            drift=copy.deepcopy(old);next(iter(drift['nodes'].values()))['properties'][field]=value
+            with self.assertRaises(ValueError):plan(drift)
+    def test_workspace_preserves_assigned_expert(self):
+        from upgrade_workspace_v012 import plan
+        old,_=self.fixture();key=next(k for k,n in old['nodes'].items() if n['labels']==['TargetRole'])
+        meta={'assignedExpertId':'00000000-0000-0000-0000-000000000123','assignedExpertName':'Existing expert'}
+        old['nodes'][key]['properties'].update(meta)
+        _,new,_=plan(old)
+        for k,v in meta.items():self.assertEqual(v,new['nodes'][key]['properties'][k])
 if __name__=='__main__':unittest.main()
