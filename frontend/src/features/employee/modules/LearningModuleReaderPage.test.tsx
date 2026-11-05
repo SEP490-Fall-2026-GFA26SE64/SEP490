@@ -61,8 +61,6 @@ const view: LearningView = {
           },
           skillId: 'skill',
           skillName: 'Actual skill',
-          teachingFocus: 'PRIMARY',
-          difficultyLevel: 'LOW',
         },
       ],
       content: {
@@ -194,13 +192,8 @@ describe('R6 original lesson reader frame', () => {
     await within(
       screen.getByRole('region', { name: 'Lesson content' }),
     ).findByText('Actual reading body')
-    expect(
-      (
-        screen.getByRole('button', {
-          name: 'Take Module Exam',
-        }) as HTMLButtonElement
-      ).disabled,
-    ).toBe(true)
+    expect(screen.queryByRole('button', { name: 'Take Module Exam' })).toBeNull()
+    expect(screen.getByRole('button', { name: 'Skill learning status' })).toBeTruthy()
     expect(
       screen
         .getByRole('link', { name: 'Back to Pathway' })
@@ -228,11 +221,7 @@ describe('R6 original lesson reader frame', () => {
       ).disabled,
     ).toBe(true)
     expect(screen.getByText(/Watched 0%/)).toBeTruthy()
-    expect(
-      screen
-        .getAllByRole('button', { name: 'Take Module Exam' })
-        .every((button) => (button as HTMLButtonElement).disabled),
-    ).toBe(true)
+    expect(screen.queryByRole('button', { name: 'Take Module Exam' })).toBeNull()
   })
   it('resumes the server-selected lesson instead of a sample lesson', async () => {
     const implementation = vi.mocked(moduleRequest).getMockImplementation()!

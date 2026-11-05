@@ -1,4 +1,27 @@
-# Schema Neo4j — Ontology v0.11.0
+# Schema Neo4j — Single-Skill Module contract v0.12.0
+
+## Current contract — 2026-11-05
+
+```mermaid
+flowchart LR
+  JP[JobPosition] -->|HAS_ROLE| R[TargetRole]
+  R -->|HAS_LEVEL| L[Level]
+  L -->|HAS_COMPETENCY| C[Competency]
+  C -->|HAS_SKILL| S[MicroSkill]
+  L -->|REQUIRES_SKILL| S
+  M[LearningModule] -->|TEACHES: exactly one Skill per Module| S
+  S -->|HAS_SKILL_PREREQUISITE| S
+```
+
+Một Module dạy **đúng một MicroSkill**; một MicroSkill có thể có nhiều Module thay thế/bổ sung. Bỏ `teachingFocus` và `difficultyLevel` khỏi Module/TEACHES của release mới. Metadata chung của cạnh (`id`, `version`, lifecycle/review và reviewer/timestamp nullable hợp lệ) vẫn được giữ. Độ khó câu hỏi, requirement theo Role/Level và ngưỡng prerequisite không bị đổi.
+
+Release [v0.12](dataset/import/ontology_seed-v012.json) có 994 node, 4.703 cạnh, 246 Module/246 TEACHES, 71 Skill có Module và 8 Skill thiếu Module được ghi trong [audit nội dung](dataset/import/single-skill-v012-audit.json). Không tạo nội dung hoặc phê duyệt giả để lấp chỗ thiếu. Ràng buộc số cạnh được kiểm tra tại writer/import/publication và preflight; unique constraint Neo4j không tự bảo đảm cardinality này.
+
+Neo4j chỉ sở hữu catalog. PostgreSQL lưu tiến độ, bằng chứng hoàn thành bất biến theo org/learner/Module/revision/Skill và quyền tự học. Hoàn thành mọi lesson của một Module mở **điều kiện học tập** để thi Skill; không ghi nhận điểm/mastery, không khóa Module khác, không chuyển bằng chứng sang Skill mới khi Module đổi mapping. [Contract và bàn giao API](technical/Skill-Learning-Eligibility.md).
+
+Đây là thay đổi source/dataset được kiểm chứng trên môi trường riêng. Chưa migration dev chính/accounts-dev. Các phần v0.11 bên dưới mô tả dữ liệu/hành vi lịch sử; không dùng phân loại/difficulty cũ làm contract authoring mới. Hình SVG/PNG cũ được giữ làm tài liệu lịch sử; [PlantUML source](diagrams/neo4j.puml) và Mermaid trên mô tả contract mới.
+
+## Historical v0.11 reference
 
 
 
@@ -6,7 +29,7 @@
 
 
 
-![Sơ đồ ontology](diagrams/neo4j.svg)
+![Sơ đồ ontology lịch sử v0.11](diagrams/neo4j.svg)
 
 
 
@@ -44,7 +67,7 @@ flowchart LR
 
  L -->|REQUIRES_SKILL| S
 
- M[LearningModule] -->|TEACHES N–N| S
+ M[LearningModule] -->|TEACHES: one Skill per Module| S
 
  S -->|HAS_SKILL_PREREQUISITE| S
 

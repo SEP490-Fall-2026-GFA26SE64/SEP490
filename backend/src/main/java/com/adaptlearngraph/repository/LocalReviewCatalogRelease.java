@@ -20,11 +20,11 @@ public final class LocalReviewCatalogRelease implements ReleaseAuthority {
         try {source=softwareDevelopment ? LocalCatalogBootstrap.forExistingDevelopment(graph,seed) : new LocalCatalogBootstrap(seed);source.verifySealed(graph);}
         catch(Exception invalid){throw new IllegalStateException("Local review catalog is not the exact sealed source release",invalid);}
         var versions=new TreeMap<>(Map.of(
-                "catalog",LocalCatalogBootstrap.VERSION,"publication","LOCAL_REVIEW_EXCEPTION_V1",
-                "requirements",LocalCatalogBootstrap.SOURCE_HASH,"compatibility",LocalSeedSemantics.VERSION,
-                "suitability",com.adaptlearngraph.entities.domain.InitialSuitability.VERSION));
+                "catalog",source.version(),"publication","LOCAL_REVIEW_EXCEPTION_V1",
+                "requirements",source.sourceHash(),"compatibility",LocalSeedSemantics.VERSION,
+                "suitability",LocalCatalogBootstrap.SINGLE_SKILL_VERSION.equals(source.version())?com.adaptlearngraph.entities.domain.InitialSuitability.SINGLE_SKILL_VERSION:com.adaptlearngraph.entities.domain.InitialSuitability.VERSION));
         if(readinessVersion!=null && !readinessVersion.isBlank())versions.put("readiness",readinessVersion);
-        release=new Release(organization,"local-review:"+LocalCatalogBootstrap.SOURCE_HASH,versions);
+        release=new Release(organization,"local-review:"+source.sourceHash(),versions);
     }
     public boolean hasSoftwareDevelopment() { return source.hasSoftwareDevelopment(); }
     @Override public Release require(Scope scope){check(scope);return release;}

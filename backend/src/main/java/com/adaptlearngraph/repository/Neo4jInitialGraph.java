@@ -93,12 +93,15 @@ public final class Neo4jInitialGraph implements Graphs {
                 boolean modulePublished=InitialCatalogMetadata.published(module,scope,version,localReview);
                 boolean mappingPublished=InitialCatalogMetadata.published(row.get("t"),scope,version,localReview);
                 if(!modulePublished || !mappingPublished){unusable.add(id);continue;}
-                TeachingFocus focus;Difficulty difficulty;
+                TeachingFocus focus=null;Difficulty difficulty=null;
                 try {
-                    focus=TeachingFocus.valueOf(row.get("t").get("teachingFocus").asString());
-                    difficulty=Difficulty.valueOf(row.get("t").get("difficultyLevel").asString());
+                    if (!"0.12.0".equals(version)) {
+                        focus=TeachingFocus.valueOf(row.get("t").get("teachingFocus").asString());
+                        difficulty=Difficulty.valueOf(row.get("t").get("difficultyLevel").asString());
+                    } else if(!row.get("t").get("teachingFocus").isNull() || !row.get("t").get("difficultyLevel").isNull())
+                        throw new Failure(503,"SINGLE_SKILL_METADATA_REQUIRED",false);
                 }catch(RuntimeException invalid){throw new Failure(503,"TEACHING_CONTRACT_REQUIRED",false);}
-                primaryCounts.merge(id,focus==TeachingFocus.PRIMARY?1:0,Integer::sum);
+                primaryCounts.merge(id,"0.12.0".equals(version) || focus==TeachingFocus.PRIMARY?1:0,Integer::sum);
                 var duration=InitialCatalogMetadata.decimal(module,"duration");var price=InitialCatalogMetadata.decimal(module,"price");
                 if(duration.signum()<=0 || duration.stripTrailingZeros().scale()>0 || price.signum()<=0)throw new Failure(503,"CATALOG_MODULE_METADATA_INVALID",false);
                 providers.add(new Provider(id,InitialCatalogMetadata.text(module,"title"),InitialCatalogMetadata.text(module,"contentVersion"),duration,price,skill,focus,difficulty));

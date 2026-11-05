@@ -174,3 +174,7 @@ Question Bank header alignment (2026-11-01): existing authorized Expert Create/I
 Question Bank statistics reuse the Target Roles gradient StatCard treatment, with semantic icons/value colors and concise English/Vietnamese descriptions. Total Bank Items, Published Questions, Awaiting review and Micro-Skills Assessed retain their existing calculations and organization scope.
 
 Question Bank list rows place state, version/difficulty and any pending availability request together at the right end of the question-code header. The code stays left; badges wrap right-aligned on narrow screens. Prompt, responsible Expert and actions remain below. Existing shared Badge colors, values, filtering and action permissions are unchanged.
+
+### Skill Assessment learning prerequisite — 2026-11-05
+
+For the FR-06.08 learning subset, completing every lesson in any one Module teaching a Skill records the Employee’s learning prerequisite for that Skill. Original Skill, Module, revision, content version and completion time remain immutable through later edits or reassignment. The reader displays this status and replaces its Module Exam actions; it does not award mastery. Historical ambiguous multi-Skill completions require reconciliation. Skill Assessment construction, execution, scoring and its remaining admission rules belong to the separate assessment implementation. [Handoff API](../../technical/Skill-Learning-Eligibility.md), [local acceptance evidence](../../testing/system/REQ-013-016-single-skill-eligibility-20261105.md).

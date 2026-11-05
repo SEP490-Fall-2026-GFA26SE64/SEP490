@@ -100,5 +100,11 @@ public class ModuleAuthoringConfiguration {
         };
     }
     @Bean ModuleAuthoringService moduleAuthoringService(ModuleAuthoringPort port, LearningContentPort content) { return new ModuleAuthoringService(port, content); }
+    @Bean com.adaptlearngraph.services.SkillLearningApplicationService skillLearningApplicationService(com.adaptlearngraph.services.SkillLearningService learning) {
+        return new com.adaptlearngraph.services.SkillLearningApplicationService(learning);
+    }
+    @Bean com.adaptlearngraph.services.SkillLearningService skillLearningService(ModuleAuthoringPort modules, LearningContentPort learning) {
+        return new com.adaptlearngraph.services.SkillLearningService(modules,learning);
+    }
     @Bean LearningContentService learningContentService(ModuleAuthoringPort port, LearningContentPort content, ModuleAuthoringService modules) { return new LearningContentService(port, content, modules); }
 }

@@ -1,0 +1,2937 @@
+{
+  "catalogVersion": "0.12.0",
+  "sourceSha256": "c49ee17ae3826952fd8e66c211bd3da60d5b2530dda3e8688148fbb736ec10a1",
+  "releaseSha256": "3ccdb02789af0d2560b77c477f9e2fe84f6818943a12479cce8d6580273f1702",
+  "modules": [
+    {
+      "moduleId": "MOD-DE-J-MODEL-01",
+      "skillId": "MS-DE01",
+      "sourceContentUri": "content/modules/MOD-DE-J-MODEL-01-single-primary.md",
+      "sourceContentSha256": "069d11a52907bcfb9d77ce9d1f9f3fd266839c56e213833496c0d8b8a75fde4d",
+      "contentUri": "content/modules/MOD-DE-J-MODEL-01-single-skill-v012.md",
+      "reason": "The explicit objective in the lesson body names exactly this Skill.",
+      "retiredSkillMappings": [
+        "MS-DE03",
+        "MS-DE06"
+      ]
+    },
+    {
+      "moduleId": "MOD-DE-J-MODEL-02",
+      "skillId": "MS-DE13",
+      "sourceContentUri": "content/modules/MOD-DE-J-MODEL-02.md",
+      "sourceContentSha256": "de335f11c072a24c5a08c7f9bbbfbf9cad6f95b80252aed520a81c4314d7fb13",
+      "contentUri": "content/modules/MOD-DE-J-MODEL-02-single-skill-v012.md",
+      "reason": "The local warehouse query measurement/optimisation task and before/after reconciliation are the selected outcome.",
+      "retiredSkillMappings": [
+        "MS-DE16"
+      ]
+    },
+    {
+      "moduleId": "MOD-DE-J-PIPE-01",
+      "skillId": "MS-DE02",
+      "sourceContentUri": "content/modules/MOD-DE-J-PIPE-01.md",
+      "sourceContentSha256": "ea2a4f5e0df6a60c2431f7fb8fd49d9c3eb28a03aed5668645bda08bd65d73ef",
+      "contentUri": "content/modules/MOD-DE-J-PIPE-01-single-skill-v012.md",
+      "reason": "The runnable transformation application and input/output fixtures are the implementation outcome.",
+      "retiredSkillMappings": [
+        "MS-DE04",
+        "MS-DE08"
+      ]
+    },
+    {
+      "moduleId": "MOD-DE-J-PIPE-02",
+      "skillId": "MS-DE11",
+      "sourceContentUri": "content/modules/MOD-DE-J-PIPE-02.md",
+      "sourceContentSha256": "468a4432055423097373a03727bd6064fd3d322420012ba22ace3d644b4cff52",
+      "contentUri": "content/modules/MOD-DE-J-PIPE-02-single-skill-v012.md",
+      "reason": "Transformation-rule validation and expected outputs define the retained guided validation task.",
+      "retiredSkillMappings": [
+        "MS-DE10",
+        "MS-DE12"
+      ]
+    },
+    {
+      "moduleId": "MOD-DE-J-QUAL-01",
+      "skillId": "MS-DE05",
+      "sourceContentUri": "content/modules/MOD-DE-J-QUAL-01.md",
+      "sourceContentSha256": "a59846707c7d3430d51837e16dc5f9d9953eaa995140cf40a0175234d25bbf67",
+      "contentUri": "content/modules/MOD-DE-J-QUAL-01-single-skill-v012.md",
+      "reason": "The quality checks and validation report are the unit outcome; metadata/monitoring remain context.",
+      "retiredSkillMappings": [
+        "MS-DE06",
+        "MS-DE07"
+      ]
+    },
+    {
+      "moduleId": "MOD-DE-J-QUAL-02",
+      "skillId": "MS-DE15",
+      "sourceContentUri": "content/modules/MOD-DE-J-QUAL-02.md",
+      "sourceContentSha256": "a11628dfb43d6368c546f58501fca72f833ea19aa9337404875cd92724d0c1ba",
+      "contentUri": "content/modules/MOD-DE-J-QUAL-02-single-skill-v012.md",
+      "reason": "The pipeline test cases and verification results are retained as the validation outcome.",
+      "retiredSkillMappings": [
+        "MS-DE09",
+        "MS-DE14"
+      ]
+    },
+    {
+      "moduleId": "MOD-DE-M-MODEL-01",
+      "skillId": "MS-DE01",
+      "sourceContentUri": "content/modules/MOD-DE-M-MODEL-01-single-primary.md",
+      "sourceContentSha256": "01fc4e71f417e1f1d58f7f7c855f38511b0841f3437e7e093dc577c705fbe66b",
+      "contentUri": "content/modules/MOD-DE-M-MODEL-01-single-skill-v012.md",
+      "reason": "The explicit objective in the lesson body names exactly this Skill.",
+      "retiredSkillMappings": [
+        "MS-DE03",
+        "MS-DE06"
+      ]
+    },
+    {
+      "moduleId": "MOD-DE-M-MODEL-02",
+      "skillId": "MS-DE13",
+      "sourceContentUri": "content/modules/MOD-DE-M-MODEL-02.md",
+      "sourceContentSha256": "c5a7651f9225c74746977278b54b0c5ec9170c00f9f9cf6ec02587e67569fea7",
+      "contentUri": "content/modules/MOD-DE-M-MODEL-02-single-skill-v012.md",
+      "reason": "The local warehouse query measurement/optimisation task and before/after reconciliation are the selected outcome.",
+      "retiredSkillMappings": [
+        "MS-DE16"
+      ]
+    },
+    {
+      "moduleId": "MOD-DE-M-PIPE-01",
+      "skillId": "MS-DE02",
+      "sourceContentUri": "content/modules/MOD-DE-M-PIPE-01.md",
+      "sourceContentSha256": "b008e86ff2c1615f4d91bd26b4d462e015a35d86a37681828eb4cd714ce1ba58",
+      "contentUri": "content/modules/MOD-DE-M-PIPE-01-single-skill-v012.md",
+      "reason": "The runnable transformation application and input/output fixtures are the implementation outcome.",
+      "retiredSkillMappings": [
+        "MS-DE04",
+        "MS-DE08"
+      ]
+    },
+    {
+      "moduleId": "MOD-DE-M-PIPE-02",
+      "skillId": "MS-DE11",
+      "sourceContentUri": "content/modules/MOD-DE-M-PIPE-02.md",
+      "sourceContentSha256": "c870ed0713b8e59f854541e7a6bc8df8a8354e46367d148318399cb58996479e",
+      "contentUri": "content/modules/MOD-DE-M-PIPE-02-single-skill-v012.md",
+      "reason": "Transformation-rule validation and expected outputs define the retained guided validation task.",
+      "retiredSkillMappings": [
+        "MS-DE10",
+        "MS-DE12"
+      ]
+    },
+    {
+      "moduleId": "MOD-DE-M-QUAL-01",
+      "skillId": "MS-DE05",
+      "sourceContentUri": "content/modules/MOD-DE-M-QUAL-01.md",
+      "sourceContentSha256": "b253f676561f337410b3b13f0d816a466ea5303f84ef0e1ccc20818619a7b510",
+      "contentUri": "content/modules/MOD-DE-M-QUAL-01-single-skill-v012.md",
+      "reason": "The quality checks and validation report are the unit outcome; metadata/monitoring remain context.",
+      "retiredSkillMappings": [
+        "MS-DE06",
+        "MS-DE07"
+      ]
+    },
+    {
+      "moduleId": "MOD-DE-M-QUAL-02",
+      "skillId": "MS-DE15",
+      "sourceContentUri": "content/modules/MOD-DE-M-QUAL-02.md",
+      "sourceContentSha256": "38c94d214b15a78cc20b988aaf08d523795d20f247395a66203161709c07cdf0",
+      "contentUri": "content/modules/MOD-DE-M-QUAL-02-single-skill-v012.md",
+      "reason": "The pipeline test cases and verification results are retained as the validation outcome.",
+      "retiredSkillMappings": [
+        "MS-DE09",
+        "MS-DE14"
+      ]
+    },
+    {
+      "moduleId": "MOD-DE-S-MODEL-01",
+      "skillId": "MS-DE01",
+      "sourceContentUri": "content/modules/MOD-DE-S-MODEL-01-single-primary.md",
+      "sourceContentSha256": "cf0fc78f0d227fa45326c1146a78eeb84a5d0e6f4674b1e2bac2be7985b0f8c0",
+      "contentUri": "content/modules/MOD-DE-S-MODEL-01-single-skill-v012.md",
+      "reason": "The explicit objective in the lesson body names exactly this Skill.",
+      "retiredSkillMappings": [
+        "MS-DE03",
+        "MS-DE06"
+      ]
+    },
+    {
+      "moduleId": "MOD-DE-S-MODEL-02",
+      "skillId": "MS-DE13",
+      "sourceContentUri": "content/modules/MOD-DE-S-MODEL-02.md",
+      "sourceContentSha256": "a3d6ba9fd01b9545b20bf1879143bc39421341eb8d18a0f98a782dfdc0b7a0f3",
+      "contentUri": "content/modules/MOD-DE-S-MODEL-02-single-skill-v012.md",
+      "reason": "The local warehouse query measurement/optimisation task and before/after reconciliation are the selected outcome.",
+      "retiredSkillMappings": [
+        "MS-DE16"
+      ]
+    },
+    {
+      "moduleId": "MOD-DE-S-PIPE-01",
+      "skillId": "MS-DE02",
+      "sourceContentUri": "content/modules/MOD-DE-S-PIPE-01.md",
+      "sourceContentSha256": "1e445d21f4ba6629f54de888d373d8c7287b731d11d3321f0c89a9d23f3c4c8b",
+      "contentUri": "content/modules/MOD-DE-S-PIPE-01-single-skill-v012.md",
+      "reason": "The runnable transformation application and input/output fixtures are the implementation outcome.",
+      "retiredSkillMappings": [
+        "MS-DE04",
+        "MS-DE08"
+      ]
+    },
+    {
+      "moduleId": "MOD-DE-S-PIPE-02",
+      "skillId": "MS-DE11",
+      "sourceContentUri": "content/modules/MOD-DE-S-PIPE-02.md",
+      "sourceContentSha256": "01e31d6961330917507ee23a3c3123bc52df77037c0efef7889e0f86809feaba",
+      "contentUri": "content/modules/MOD-DE-S-PIPE-02-single-skill-v012.md",
+      "reason": "Transformation-rule validation and expected outputs define the retained guided validation task.",
+      "retiredSkillMappings": [
+        "MS-DE10",
+        "MS-DE12"
+      ]
+    },
+    {
+      "moduleId": "MOD-DE-S-QUAL-01",
+      "skillId": "MS-DE05",
+      "sourceContentUri": "content/modules/MOD-DE-S-QUAL-01.md",
+      "sourceContentSha256": "850f05257b9c10c74c2124388b00c6cb2ca455ea3e2fcc752f06145426dca043",
+      "contentUri": "content/modules/MOD-DE-S-QUAL-01-single-skill-v012.md",
+      "reason": "The quality checks and validation report are the unit outcome; metadata/monitoring remain context.",
+      "retiredSkillMappings": [
+        "MS-DE06",
+        "MS-DE07"
+      ]
+    },
+    {
+      "moduleId": "MOD-DE-S-QUAL-02",
+      "skillId": "MS-DE15",
+      "sourceContentUri": "content/modules/MOD-DE-S-QUAL-02.md",
+      "sourceContentSha256": "bf425ded93f0f404b101ca34883527864e5345d1712fdfc654b52232c3b23439",
+      "contentUri": "content/modules/MOD-DE-S-QUAL-02-single-skill-v012.md",
+      "reason": "The pipeline test cases and verification results are retained as the validation outcome.",
+      "retiredSkillMappings": [
+        "MS-DE09",
+        "MS-DE14"
+      ]
+    },
+    {
+      "moduleId": "MOD-FS-J-UI-01",
+      "skillId": "MS-FS02",
+      "sourceContentUri": "content/modules/MOD-FS-J-UI-01.md",
+      "sourceContentSha256": "d523b6013ea021800413fc4394f03f626dcbf4de43ef2ecc6d070a54c8d5a81f",
+      "contentUri": "content/modules/MOD-FS-J-UI-01-single-skill-v012.md",
+      "reason": "The accessible interface implementation and accessibility checks define the implementation task.",
+      "retiredSkillMappings": [
+        "MS-FS01",
+        "MS-FS09"
+      ]
+    },
+    {
+      "moduleId": "MOD-FS-J-UI-02",
+      "skillId": "MS-FS11",
+      "sourceContentUri": "content/modules/MOD-FS-J-UI-02.md",
+      "sourceContentSha256": "cbfd5df907b18ac9dfaa8e35459551d7741fdb62416bf8eb77217ec363d5d6cb",
+      "contentUri": "content/modules/MOD-FS-J-UI-02-single-skill-v012.md",
+      "reason": "Asynchronous request handling and response/error checks are the selected validation activity.",
+      "retiredSkillMappings": [
+        "MS-FS10"
+      ]
+    },
+    {
+      "moduleId": "MOD-FS-J-SERVICE-01",
+      "skillId": "MS-FS03",
+      "sourceContentUri": "content/modules/MOD-FS-J-SERVICE-01-single-primary.md",
+      "sourceContentSha256": "11869bd0d4dfd64b7fe8ed5394860703f81b043829b2dd14f2528c56afae953d",
+      "contentUri": "content/modules/MOD-FS-J-SERVICE-01-single-skill-v012.md",
+      "reason": "The explicit objective in the lesson body names exactly this Skill.",
+      "retiredSkillMappings": [
+        "MS-FS04",
+        "MS-FS05"
+      ]
+    },
+    {
+      "moduleId": "MOD-FS-J-SERVICE-02",
+      "skillId": "MS-FS12",
+      "sourceContentUri": "content/modules/MOD-FS-J-SERVICE-02.md",
+      "sourceContentSha256": "696c77c29f95a2d2c4a064b7256b02dffd62be80210417a164c8c63e041157ca",
+      "contentUri": "content/modules/MOD-FS-J-SERVICE-02-single-skill-v012.md",
+      "reason": "The input-validation task and invalid-input checks define this validation unit.",
+      "retiredSkillMappings": [
+        "MS-FS13",
+        "MS-FS14"
+      ]
+    },
+    {
+      "moduleId": "MOD-FS-J-QUALITY-01",
+      "skillId": "MS-FS06",
+      "sourceContentUri": "content/modules/MOD-FS-J-QUALITY-01.md",
+      "sourceContentSha256": "5bc8c64d8a69dbdbd58da41303d10ece9da733ffdc5214b83be811c3d9dfde02",
+      "contentUri": "content/modules/MOD-FS-J-QUALITY-01-single-skill-v012.md",
+      "reason": "Reproducing and correcting the defect with verification is the retained debugging task.",
+      "retiredSkillMappings": [
+        "MS-FS07",
+        "MS-FS08"
+      ]
+    },
+    {
+      "moduleId": "MOD-FS-J-QUALITY-02",
+      "skillId": "MS-FS16",
+      "sourceContentUri": "content/modules/MOD-FS-J-QUALITY-02.md",
+      "sourceContentSha256": "58af9e3f3d38141055c782dc036a2d411acb39141ce127a029397356e9497d57",
+      "contentUri": "content/modules/MOD-FS-J-QUALITY-02-single-skill-v012.md",
+      "reason": "The continuous-integration configuration and execution evidence are the selected outcome.",
+      "retiredSkillMappings": [
+        "MS-FS15"
+      ]
+    },
+    {
+      "moduleId": "MOD-FS-M-UI-01",
+      "skillId": "MS-FS02",
+      "sourceContentUri": "content/modules/MOD-FS-M-UI-01.md",
+      "sourceContentSha256": "52611f9ec2a5ccc71d94d052c558c9221eb11404980f3d03881687700eda8ec8",
+      "contentUri": "content/modules/MOD-FS-M-UI-01-single-skill-v012.md",
+      "reason": "The accessible interface implementation and accessibility checks define the implementation task.",
+      "retiredSkillMappings": [
+        "MS-FS01",
+        "MS-FS09"
+      ]
+    },
+    {
+      "moduleId": "MOD-FS-M-UI-02",
+      "skillId": "MS-FS11",
+      "sourceContentUri": "content/modules/MOD-FS-M-UI-02.md",
+      "sourceContentSha256": "68662dfb8d605b3fa5aeac3b8a55170e6b457b44663b469c4f42321584d12e3c",
+      "contentUri": "content/modules/MOD-FS-M-UI-02-single-skill-v012.md",
+      "reason": "Asynchronous request handling and response/error checks are the selected validation activity.",
+      "retiredSkillMappings": [
+        "MS-FS10"
+      ]
+    },
+    {
+      "moduleId": "MOD-FS-M-SERVICE-01",
+      "skillId": "MS-FS03",
+      "sourceContentUri": "content/modules/MOD-FS-M-SERVICE-01-single-primary.md",
+      "sourceContentSha256": "230468fd4b1236e6816a38b54600ee9ef9c7c8611066b5452f0a3d3e3a0e84af",
+      "contentUri": "content/modules/MOD-FS-M-SERVICE-01-single-skill-v012.md",
+      "reason": "The explicit objective in the lesson body names exactly this Skill.",
+      "retiredSkillMappings": [
+        "MS-FS04",
+        "MS-FS05"
+      ]
+    },
+    {
+      "moduleId": "MOD-FS-M-SERVICE-02",
+      "skillId": "MS-FS12",
+      "sourceContentUri": "content/modules/MOD-FS-M-SERVICE-02.md",
+      "sourceContentSha256": "13b9e0a78dd53fbed294f96e2c21b90d606cffb61ea64c2e98ba2d7dfb177dbd",
+      "contentUri": "content/modules/MOD-FS-M-SERVICE-02-single-skill-v012.md",
+      "reason": "The input-validation task and invalid-input checks define this validation unit.",
+      "retiredSkillMappings": [
+        "MS-FS13",
+        "MS-FS14"
+      ]
+    },
+    {
+      "moduleId": "MOD-FS-M-QUALITY-01",
+      "skillId": "MS-FS06",
+      "sourceContentUri": "content/modules/MOD-FS-M-QUALITY-01.md",
+      "sourceContentSha256": "f556faaea92ea4e28fd76c74be3f3503838bccedb63151ca9dc44d165d5bf8e2",
+      "contentUri": "content/modules/MOD-FS-M-QUALITY-01-single-skill-v012.md",
+      "reason": "Reproducing and correcting the defect with verification is the retained debugging task.",
+      "retiredSkillMappings": [
+        "MS-FS07",
+        "MS-FS08"
+      ]
+    },
+    {
+      "moduleId": "MOD-FS-M-QUALITY-02",
+      "skillId": "MS-FS16",
+      "sourceContentUri": "content/modules/MOD-FS-M-QUALITY-02.md",
+      "sourceContentSha256": "899ef04d86e14e255a2d8b8e601ef65d6419b0f40097d01d2aac44049dcfd70d",
+      "contentUri": "content/modules/MOD-FS-M-QUALITY-02-single-skill-v012.md",
+      "reason": "The continuous-integration configuration and execution evidence are the selected outcome.",
+      "retiredSkillMappings": [
+        "MS-FS15"
+      ]
+    },
+    {
+      "moduleId": "MOD-FS-S-UI-01",
+      "skillId": "MS-FS02",
+      "sourceContentUri": "content/modules/MOD-FS-S-UI-01.md",
+      "sourceContentSha256": "791f1e08f06722f3793afbfa0bb70e78811e846b74fafd8354501e73c31cabc6",
+      "contentUri": "content/modules/MOD-FS-S-UI-01-single-skill-v012.md",
+      "reason": "The accessible interface implementation and accessibility checks define the implementation task.",
+      "retiredSkillMappings": [
+        "MS-FS01",
+        "MS-FS09"
+      ]
+    },
+    {
+      "moduleId": "MOD-FS-S-UI-02",
+      "skillId": "MS-FS11",
+      "sourceContentUri": "content/modules/MOD-FS-S-UI-02.md",
+      "sourceContentSha256": "89843e9c88e2f37a7a6890992c23d8fa829b389bb3f34be1b3edab47df623aa0",
+      "contentUri": "content/modules/MOD-FS-S-UI-02-single-skill-v012.md",
+      "reason": "Asynchronous request handling and response/error checks are the selected validation activity.",
+      "retiredSkillMappings": [
+        "MS-FS10"
+      ]
+    },
+    {
+      "moduleId": "MOD-FS-S-SERVICE-01",
+      "skillId": "MS-FS03",
+      "sourceContentUri": "content/modules/MOD-FS-S-SERVICE-01-single-primary.md",
+      "sourceContentSha256": "4c2111b0313fa92fd448f5f3d53c9fbe8725ba01f09ebb6f602f6713c12768a6",
+      "contentUri": "content/modules/MOD-FS-S-SERVICE-01-single-skill-v012.md",
+      "reason": "The explicit objective in the lesson body names exactly this Skill.",
+      "retiredSkillMappings": [
+        "MS-FS04",
+        "MS-FS05"
+      ]
+    },
+    {
+      "moduleId": "MOD-FS-S-SERVICE-02",
+      "skillId": "MS-FS12",
+      "sourceContentUri": "content/modules/MOD-FS-S-SERVICE-02.md",
+      "sourceContentSha256": "6872a2234e0fa58ed74aa4b47123b180eb4bd3e5ab8abb99986704d89d199abf",
+      "contentUri": "content/modules/MOD-FS-S-SERVICE-02-single-skill-v012.md",
+      "reason": "The input-validation task and invalid-input checks define this validation unit.",
+      "retiredSkillMappings": [
+        "MS-FS13",
+        "MS-FS14"
+      ]
+    },
+    {
+      "moduleId": "MOD-FS-S-QUALITY-01",
+      "skillId": "MS-FS06",
+      "sourceContentUri": "content/modules/MOD-FS-S-QUALITY-01.md",
+      "sourceContentSha256": "91215914ab638f1384c302e9a0ab88aea354e9f74c673ae29ccf89dd42fc72a0",
+      "contentUri": "content/modules/MOD-FS-S-QUALITY-01-single-skill-v012.md",
+      "reason": "Reproducing and correcting the defect with verification is the retained debugging task.",
+      "retiredSkillMappings": [
+        "MS-FS07",
+        "MS-FS08"
+      ]
+    },
+    {
+      "moduleId": "MOD-FS-S-QUALITY-02",
+      "skillId": "MS-FS16",
+      "sourceContentUri": "content/modules/MOD-FS-S-QUALITY-02.md",
+      "sourceContentSha256": "6bd6cae00c7b2d4bfe3d3876366f20e05e22af03022111a36d14400959d110b6",
+      "contentUri": "content/modules/MOD-FS-S-QUALITY-02-single-skill-v012.md",
+      "reason": "The continuous-integration configuration and execution evidence are the selected outcome.",
+      "retiredSkillMappings": [
+        "MS-FS15"
+      ]
+    },
+    {
+      "moduleId": "MOD-QA-J-DESIGN-01",
+      "skillId": "MS-QA01",
+      "sourceContentUri": "content/modules/MOD-QA-J-DESIGN-01.md",
+      "sourceContentSha256": "49a557d509b92fbdee97e0e45315f23058c9d0ee1542e894bc4568428bced69f",
+      "contentUri": "content/modules/MOD-QA-J-DESIGN-01-single-skill-v012.md",
+      "reason": "The test-plan task and plan artifact are the selected design outcome.",
+      "retiredSkillMappings": [
+        "MS-QA02",
+        "MS-QA08"
+      ]
+    },
+    {
+      "moduleId": "MOD-QA-J-DESIGN-02",
+      "skillId": "MS-QA10",
+      "sourceContentUri": "content/modules/MOD-QA-J-DESIGN-02.md",
+      "sourceContentSha256": "f2ee3492ea31b2777490662265ffb42671d50b7b5970cb9e2adff23c039ded9a",
+      "contentUri": "content/modules/MOD-QA-J-DESIGN-02-single-skill-v012.md",
+      "reason": "Boundary cases and their expected-result evidence are the selected validation technique.",
+      "retiredSkillMappings": [
+        "MS-QA09",
+        "MS-QA11"
+      ]
+    },
+    {
+      "moduleId": "MOD-QA-J-EXEC-01",
+      "skillId": "MS-QA03",
+      "sourceContentUri": "content/modules/MOD-QA-J-EXEC-01.md",
+      "sourceContentSha256": "a7171c70729529cf1b07ac9b12d89551998f335780daa0f68cbd455da8a9357b",
+      "contentUri": "content/modules/MOD-QA-J-EXEC-01-single-skill-v012.md",
+      "reason": "Executing the supplied tests and preserving observed results define this execution unit.",
+      "retiredSkillMappings": [
+        "MS-QA04",
+        "MS-QA05"
+      ]
+    },
+    {
+      "moduleId": "MOD-QA-J-EXEC-02",
+      "skillId": "MS-QA14",
+      "sourceContentUri": "content/modules/MOD-QA-J-EXEC-02.md",
+      "sourceContentSha256": "575987863a344dbe489ed352a5f10d3beb89c1db8b0ce9adee24593223125b90",
+      "contentUri": "content/modules/MOD-QA-J-EXEC-02-single-skill-v012.md",
+      "reason": "The regression task and execution results are the selected validation activity.",
+      "retiredSkillMappings": [
+        "MS-QA12",
+        "MS-QA13"
+      ]
+    },
+    {
+      "moduleId": "MOD-QA-J-AUTO-01",
+      "skillId": "MS-FS07",
+      "sourceContentUri": "content/modules/MOD-QA-J-AUTO-01-single-primary.md",
+      "sourceContentSha256": "8fa1f8c382575d80c595d985769541393f7894fc754063c28ab77d0106615768",
+      "contentUri": "content/modules/MOD-QA-J-AUTO-01-single-skill-v012.md",
+      "reason": "The explicit objective in the lesson body names exactly this Skill.",
+      "retiredSkillMappings": [
+        "MS-QA06",
+        "MS-QA07"
+      ]
+    },
+    {
+      "moduleId": "MOD-QA-J-AUTO-02",
+      "skillId": "MS-QA16",
+      "sourceContentUri": "content/modules/MOD-QA-J-AUTO-02.md",
+      "sourceContentSha256": "7d8ad0e41b57b18db2625372fc8c99fda366588dd85cdba1778b09bd49f0f9fe",
+      "contentUri": "content/modules/MOD-QA-J-AUTO-02-single-skill-v012.md",
+      "reason": "Investigation of flaky automated tests and reproducibility evidence define this validation unit.",
+      "retiredSkillMappings": [
+        "MS-QA15"
+      ]
+    },
+    {
+      "moduleId": "MOD-QA-M-DESIGN-01",
+      "skillId": "MS-QA01",
+      "sourceContentUri": "content/modules/MOD-QA-M-DESIGN-01.md",
+      "sourceContentSha256": "33bda35305d890681aa26cb5a51ea92ec831581fa287d7afe028c615dd151971",
+      "contentUri": "content/modules/MOD-QA-M-DESIGN-01-single-skill-v012.md",
+      "reason": "The test-plan task and plan artifact are the selected design outcome.",
+      "retiredSkillMappings": [
+        "MS-QA02",
+        "MS-QA08"
+      ]
+    },
+    {
+      "moduleId": "MOD-QA-M-DESIGN-02",
+      "skillId": "MS-QA10",
+      "sourceContentUri": "content/modules/MOD-QA-M-DESIGN-02.md",
+      "sourceContentSha256": "1b4384d5c2d013167260c2f8f314ccfb25df1de32b258eed0a7c34197aa25b7a",
+      "contentUri": "content/modules/MOD-QA-M-DESIGN-02-single-skill-v012.md",
+      "reason": "Boundary cases and their expected-result evidence are the selected validation technique.",
+      "retiredSkillMappings": [
+        "MS-QA09",
+        "MS-QA11"
+      ]
+    },
+    {
+      "moduleId": "MOD-QA-M-EXEC-01",
+      "skillId": "MS-QA03",
+      "sourceContentUri": "content/modules/MOD-QA-M-EXEC-01.md",
+      "sourceContentSha256": "ea07e443ae37b5d621e0816cf22319287285d2d8ae315f916dccb2697ea6954c",
+      "contentUri": "content/modules/MOD-QA-M-EXEC-01-single-skill-v012.md",
+      "reason": "Executing the supplied tests and preserving observed results define this execution unit.",
+      "retiredSkillMappings": [
+        "MS-QA04",
+        "MS-QA05"
+      ]
+    },
+    {
+      "moduleId": "MOD-QA-M-EXEC-02",
+      "skillId": "MS-QA14",
+      "sourceContentUri": "content/modules/MOD-QA-M-EXEC-02.md",
+      "sourceContentSha256": "326179278322bfc697d3771dd6adb209193d35cca409fcb1e29d944fb3dbee18",
+      "contentUri": "content/modules/MOD-QA-M-EXEC-02-single-skill-v012.md",
+      "reason": "The regression task and execution results are the selected validation activity.",
+      "retiredSkillMappings": [
+        "MS-QA12",
+        "MS-QA13"
+      ]
+    },
+    {
+      "moduleId": "MOD-QA-M-AUTO-01",
+      "skillId": "MS-FS07",
+      "sourceContentUri": "content/modules/MOD-QA-M-AUTO-01-single-primary.md",
+      "sourceContentSha256": "491011b7b87568797878c7c74a3c3c194b1d2ea2c82a8a8cc31056a3078e8fc4",
+      "contentUri": "content/modules/MOD-QA-M-AUTO-01-single-skill-v012.md",
+      "reason": "The explicit objective in the lesson body names exactly this Skill.",
+      "retiredSkillMappings": [
+        "MS-QA06",
+        "MS-QA07"
+      ]
+    },
+    {
+      "moduleId": "MOD-QA-M-AUTO-02",
+      "skillId": "MS-QA16",
+      "sourceContentUri": "content/modules/MOD-QA-M-AUTO-02.md",
+      "sourceContentSha256": "07de6068384dba6afcc6d979df7aacb69beb018a52962381af2b6c7d815993c5",
+      "contentUri": "content/modules/MOD-QA-M-AUTO-02-single-skill-v012.md",
+      "reason": "Investigation of flaky automated tests and reproducibility evidence define this validation unit.",
+      "retiredSkillMappings": [
+        "MS-QA15"
+      ]
+    },
+    {
+      "moduleId": "MOD-QA-S-DESIGN-01",
+      "skillId": "MS-QA01",
+      "sourceContentUri": "content/modules/MOD-QA-S-DESIGN-01.md",
+      "sourceContentSha256": "99ab8011dd46a12d1ce9a38a772bc96eec5373d47febdbb370c860af4b322a2c",
+      "contentUri": "content/modules/MOD-QA-S-DESIGN-01-single-skill-v012.md",
+      "reason": "The test-plan task and plan artifact are the selected design outcome.",
+      "retiredSkillMappings": [
+        "MS-QA02",
+        "MS-QA08"
+      ]
+    },
+    {
+      "moduleId": "MOD-QA-S-DESIGN-02",
+      "skillId": "MS-QA10",
+      "sourceContentUri": "content/modules/MOD-QA-S-DESIGN-02.md",
+      "sourceContentSha256": "10312c01b3b919ec5901e85caf78b2374452181886b04f6f2a47064f3f7a74b7",
+      "contentUri": "content/modules/MOD-QA-S-DESIGN-02-single-skill-v012.md",
+      "reason": "Boundary cases and their expected-result evidence are the selected validation technique.",
+      "retiredSkillMappings": [
+        "MS-QA09",
+        "MS-QA11"
+      ]
+    },
+    {
+      "moduleId": "MOD-QA-S-EXEC-01",
+      "skillId": "MS-QA03",
+      "sourceContentUri": "content/modules/MOD-QA-S-EXEC-01.md",
+      "sourceContentSha256": "c832788581f3ed9eb8568d0aad86b0465a8c92aa2f9b246c31fbcf26700557a5",
+      "contentUri": "content/modules/MOD-QA-S-EXEC-01-single-skill-v012.md",
+      "reason": "Executing the supplied tests and preserving observed results define this execution unit.",
+      "retiredSkillMappings": [
+        "MS-QA04",
+        "MS-QA05"
+      ]
+    },
+    {
+      "moduleId": "MOD-QA-S-EXEC-02",
+      "skillId": "MS-QA14",
+      "sourceContentUri": "content/modules/MOD-QA-S-EXEC-02.md",
+      "sourceContentSha256": "aaca59d2d16309d3ca37818c3650aa644327cb7e8e4f2f90eef7a8c2a62f654c",
+      "contentUri": "content/modules/MOD-QA-S-EXEC-02-single-skill-v012.md",
+      "reason": "The regression task and execution results are the selected validation activity.",
+      "retiredSkillMappings": [
+        "MS-QA12",
+        "MS-QA13"
+      ]
+    },
+    {
+      "moduleId": "MOD-QA-S-AUTO-01",
+      "skillId": "MS-FS07",
+      "sourceContentUri": "content/modules/MOD-QA-S-AUTO-01-single-primary.md",
+      "sourceContentSha256": "94e2dd98507a3bcf9fa511e8273ed7e617a7ba17526790213f3dae62fe65f6d7",
+      "contentUri": "content/modules/MOD-QA-S-AUTO-01-single-skill-v012.md",
+      "reason": "The explicit objective in the lesson body names exactly this Skill.",
+      "retiredSkillMappings": [
+        "MS-QA06",
+        "MS-QA07"
+      ]
+    },
+    {
+      "moduleId": "MOD-QA-S-AUTO-02",
+      "skillId": "MS-QA16",
+      "sourceContentUri": "content/modules/MOD-QA-S-AUTO-02.md",
+      "sourceContentSha256": "9e32064fe052ce1ff836f0c5fa3131150504f829c66dc342bcbda748f58f5f86",
+      "contentUri": "content/modules/MOD-QA-S-AUTO-02-single-skill-v012.md",
+      "reason": "Investigation of flaky automated tests and reproducibility evidence define this validation unit.",
+      "retiredSkillMappings": [
+        "MS-QA15"
+      ]
+    },
+    {
+      "moduleId": "MOD-READ-ARC01",
+      "skillId": "MS-ARC01",
+      "sourceContentUri": "content/modules/MOD-READ-ARC01.md",
+      "sourceContentSha256": "a32b6cd4221adabe9389ddb6b86fc9abd50b3ac7abe6e636ee3c0410192a7d36",
+      "contentUri": "content/modules/MOD-READ-ARC01-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": []
+    },
+    {
+      "moduleId": "MOD-READ-ARC02",
+      "skillId": "MS-ARC02",
+      "sourceContentUri": "content/modules/MOD-READ-ARC02.md",
+      "sourceContentSha256": "60cd4a50c6e072649b31f1556fee84aa8c821e7b971a1b47fcaf45ffe93c0358",
+      "contentUri": "content/modules/MOD-READ-ARC02-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": []
+    },
+    {
+      "moduleId": "MOD-READ-ARC03",
+      "skillId": "MS-ARC03",
+      "sourceContentUri": "content/modules/MOD-READ-ARC03.md",
+      "sourceContentSha256": "2f4dcdf15300807a0592be8d73193287a69627968663ed65833c3f53f4b29b46",
+      "contentUri": "content/modules/MOD-READ-ARC03-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": []
+    },
+    {
+      "moduleId": "MOD-READ-ARC04",
+      "skillId": "MS-ARC04",
+      "sourceContentUri": "content/modules/MOD-READ-ARC04.md",
+      "sourceContentSha256": "4db33f6c527ae8fe3922ddcae2ed92550746401a0173526276dc14c29c846a11",
+      "contentUri": "content/modules/MOD-READ-ARC04-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": []
+    },
+    {
+      "moduleId": "MOD-READ-ARC05",
+      "skillId": "MS-ARC05",
+      "sourceContentUri": "content/modules/MOD-READ-ARC05.md",
+      "sourceContentSha256": "6fda578dc27f6cb073182b4a853ccde43ba51f4451b58b57381487d05c79db2f",
+      "contentUri": "content/modules/MOD-READ-ARC05-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": []
+    },
+    {
+      "moduleId": "MOD-READ-ARC06",
+      "skillId": "MS-ARC06",
+      "sourceContentUri": "content/modules/MOD-READ-ARC06.md",
+      "sourceContentSha256": "a6d3febd5fe034b9b5ada5bf8eed7ea828bd5fb850aa747a0378691fd19b18a4",
+      "contentUri": "content/modules/MOD-READ-ARC06-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": []
+    },
+    {
+      "moduleId": "MOD-READ-CORE01",
+      "skillId": "MS-CORE01",
+      "sourceContentUri": "content/modules/MOD-READ-CORE01.md",
+      "sourceContentSha256": "a38ce06cbee5ddc6f8b8b7325e6ba2f2f201b1c26cf687f68c796f864ba51cb9",
+      "contentUri": "content/modules/MOD-READ-CORE01-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": []
+    },
+    {
+      "moduleId": "MOD-READ-CORE02",
+      "skillId": "MS-CORE02",
+      "sourceContentUri": "content/modules/MOD-READ-CORE02.md",
+      "sourceContentSha256": "4aab9b42b37e22b994f560c529737b7e3a7490aedb9a9bf43d082a624501918c",
+      "contentUri": "content/modules/MOD-READ-CORE02-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": []
+    },
+    {
+      "moduleId": "MOD-READ-CORE03",
+      "skillId": "MS-CORE03",
+      "sourceContentUri": "content/modules/MOD-READ-CORE03.md",
+      "sourceContentSha256": "59402f8674eb8f4bc80d4e262405ea3dfd085ef24966a0bfa40ce58385f97ab0",
+      "contentUri": "content/modules/MOD-READ-CORE03-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": []
+    },
+    {
+      "moduleId": "MOD-READ-CORE04",
+      "skillId": "MS-CORE04",
+      "sourceContentUri": "content/modules/MOD-READ-CORE04.md",
+      "sourceContentSha256": "c69677ae9c1dd59166836595f8b8fe97dd983b6a6db2762ee81e5a630dd16baa",
+      "contentUri": "content/modules/MOD-READ-CORE04-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": []
+    },
+    {
+      "moduleId": "MOD-READ-GOV01",
+      "skillId": "MS-GOV01",
+      "sourceContentUri": "content/modules/MOD-READ-GOV01.md",
+      "sourceContentSha256": "8f9dbf52735a6bd57d324a2dafcfb5902a347c808618d686251045589ad830f2",
+      "contentUri": "content/modules/MOD-READ-GOV01-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": []
+    },
+    {
+      "moduleId": "MOD-READ-GOV02",
+      "skillId": "MS-GOV02",
+      "sourceContentUri": "content/modules/MOD-READ-GOV02.md",
+      "sourceContentSha256": "b877a95dcc5bc7eba923920a1b407c28f2a578e0389d691d9dedba34f3895511",
+      "contentUri": "content/modules/MOD-READ-GOV02-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": []
+    },
+    {
+      "moduleId": "MOD-READ-GOV03",
+      "skillId": "MS-GOV03",
+      "sourceContentUri": "content/modules/MOD-READ-GOV03.md",
+      "sourceContentSha256": "50361812da8745b104237e87a11c66e59ce7a817f2e7179a9254d1729757ace1",
+      "contentUri": "content/modules/MOD-READ-GOV03-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": []
+    },
+    {
+      "moduleId": "MOD-READ-INF01",
+      "skillId": "MS-INF01",
+      "sourceContentUri": "content/modules/MOD-READ-INF01.md",
+      "sourceContentSha256": "7438a48557fb9e39e791b0c15d879d8824ebc42b9b3176b36d0a9b334fc7dfcc",
+      "contentUri": "content/modules/MOD-READ-INF01-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": []
+    },
+    {
+      "moduleId": "MOD-READ-INF02",
+      "skillId": "MS-INF02",
+      "sourceContentUri": "content/modules/MOD-READ-INF02.md",
+      "sourceContentSha256": "c5f3d3917f499ef96074b3b2a9df88bd38ac06854441557864877cf9ed4d08d8",
+      "contentUri": "content/modules/MOD-READ-INF02-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": []
+    },
+    {
+      "moduleId": "MOD-READ-INF03",
+      "skillId": "MS-INF03",
+      "sourceContentUri": "content/modules/MOD-READ-INF03.md",
+      "sourceContentSha256": "68441bb18d870a93fcd53cbe5a8641e0d9e5d9d1a12661b5981e52bf143099c3",
+      "contentUri": "content/modules/MOD-READ-INF03-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": []
+    },
+    {
+      "moduleId": "MOD-READ-INF04",
+      "skillId": "MS-INF04",
+      "sourceContentUri": "content/modules/MOD-READ-INF04.md",
+      "sourceContentSha256": "d0c83645db3187532303f668740475482162646ac0ae537904e5cf03bc0b2e69",
+      "contentUri": "content/modules/MOD-READ-INF04-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": []
+    },
+    {
+      "moduleId": "MOD-READ-INF05",
+      "skillId": "MS-INF05",
+      "sourceContentUri": "content/modules/MOD-READ-INF05.md",
+      "sourceContentSha256": "e744547e15e1ed361863352d47dd1587e0306b45dd210074002e489f29627392",
+      "contentUri": "content/modules/MOD-READ-INF05-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": []
+    },
+    {
+      "moduleId": "MOD-READ-INF06",
+      "skillId": "MS-INF06",
+      "sourceContentUri": "content/modules/MOD-READ-INF06.md",
+      "sourceContentSha256": "931f45235b1562b2cebf016b687f83a6cb87ec7507d8468822a32e96771b4dd6",
+      "contentUri": "content/modules/MOD-READ-INF06-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": []
+    },
+    {
+      "moduleId": "MOD-READ-INF07",
+      "skillId": "MS-INF07",
+      "sourceContentUri": "content/modules/MOD-READ-INF07.md",
+      "sourceContentSha256": "f1ebbafb4fe14911543677a7d958b25263075219c209e3fe545ac24f6ff6ca63",
+      "contentUri": "content/modules/MOD-READ-INF07-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": []
+    },
+    {
+      "moduleId": "MOD-READ-INF08",
+      "skillId": "MS-INF08",
+      "sourceContentUri": "content/modules/MOD-READ-INF08.md",
+      "sourceContentSha256": "7f6d0d2310b72a3b3500544676b651b494d3ca1156ca858f00d4cadd00dfe38c",
+      "contentUri": "content/modules/MOD-READ-INF08-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": []
+    },
+    {
+      "moduleId": "MOD-READ-SEC01",
+      "skillId": "MS-SEC01",
+      "sourceContentUri": "content/modules/MOD-READ-SEC01.md",
+      "sourceContentSha256": "8ebd8c8e27d142d8a8e8c8d60d1722b850aa48c31fa58cd0082a89fa791a26ce",
+      "contentUri": "content/modules/MOD-READ-SEC01-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": []
+    },
+    {
+      "moduleId": "MOD-READ-SEC02",
+      "skillId": "MS-SEC02",
+      "sourceContentUri": "content/modules/MOD-READ-SEC02.md",
+      "sourceContentSha256": "8c44b74bbab907223d8f8b1fa3faebd2d98338e2e5dfb1aa64afe0d1726b3bb1",
+      "contentUri": "content/modules/MOD-READ-SEC02-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": []
+    },
+    {
+      "moduleId": "MOD-READ-SEC03",
+      "skillId": "MS-SEC03",
+      "sourceContentUri": "content/modules/MOD-READ-SEC03.md",
+      "sourceContentSha256": "779be02079b57cf71e2ac11d97802c78aa5fe7e37b448111d5c43cf0d2368df8",
+      "contentUri": "content/modules/MOD-READ-SEC03-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": []
+    },
+    {
+      "moduleId": "MOD-READ-SEC04",
+      "skillId": "MS-SEC04",
+      "sourceContentUri": "content/modules/MOD-READ-SEC04.md",
+      "sourceContentSha256": "2625debc7db92141906969518d758e86f53fd95eabd082088a1e0739f92b5e05",
+      "contentUri": "content/modules/MOD-READ-SEC04-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": []
+    },
+    {
+      "moduleId": "MOD-READ-SEC05",
+      "skillId": "MS-SEC05",
+      "sourceContentUri": "content/modules/MOD-READ-SEC05.md",
+      "sourceContentSha256": "00fb52f7e49579611cf5f96cbaae4b6c2d2203264cb7e36d32b4d9607be25f77",
+      "contentUri": "content/modules/MOD-READ-SEC05-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": []
+    },
+    {
+      "moduleId": "MOD-READ-SEC06",
+      "skillId": "MS-SEC06",
+      "sourceContentUri": "content/modules/MOD-READ-SEC06.md",
+      "sourceContentSha256": "527fd6d125b9331ea5ed951b451d7ea1dc755440411c28712acb95f8195b2775",
+      "contentUri": "content/modules/MOD-READ-SEC06-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": []
+    },
+    {
+      "moduleId": "MOD-READ-SEC07",
+      "skillId": "MS-SEC07",
+      "sourceContentUri": "content/modules/MOD-READ-SEC07.md",
+      "sourceContentSha256": "3171d745c78ef03138f63c022b7f38e0d9888746c2dae32afab24f44e7848570",
+      "contentUri": "content/modules/MOD-READ-SEC07-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": []
+    },
+    {
+      "moduleId": "MOD-READ-SEC08",
+      "skillId": "MS-SEC08",
+      "sourceContentUri": "content/modules/MOD-READ-SEC08.md",
+      "sourceContentSha256": "618dd7b27caac33e092bb4e9d274428c738b4f330e8649d0ba24e64773136735",
+      "contentUri": "content/modules/MOD-READ-SEC08-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": []
+    },
+    {
+      "moduleId": "MOD-READ-SEC09",
+      "skillId": "MS-SEC09",
+      "sourceContentUri": "content/modules/MOD-READ-SEC09.md",
+      "sourceContentSha256": "5cba9e07cc3b221f5d1c94b52013cad00fced4415c4a6ecc64a741b4e7dcee97",
+      "contentUri": "content/modules/MOD-READ-SEC09-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": []
+    },
+    {
+      "moduleId": "MOD-READ-SEC10",
+      "skillId": "MS-SEC10",
+      "sourceContentUri": "content/modules/MOD-READ-SEC10.md",
+      "sourceContentSha256": "4c0cf3e17f383b71c6377c59bf0d7b817eb310eb08b5d79de70d228a703cd8f0",
+      "contentUri": "content/modules/MOD-READ-SEC10-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": []
+    },
+    {
+      "moduleId": "MOD-FOCUS-ARC01-MEDIUM",
+      "skillId": "MS-ARC01",
+      "sourceContentUri": "content/modules/MOD-FOCUS-ARC01-MEDIUM.md",
+      "sourceContentSha256": "1a4f20e82df18ae612f32d11744a6437d471da99ceffc4be7b8b54ef37fc5303",
+      "contentUri": "content/modules/MOD-FOCUS-ARC01-MEDIUM-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-ARC05",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-ARC01-HIGH",
+      "skillId": "MS-ARC01",
+      "sourceContentUri": "content/modules/MOD-FOCUS-ARC01-HIGH.md",
+      "sourceContentSha256": "5702207ed6b5a9f4ccdbba9764f410d479821b9e7d287177aebe449491687054",
+      "contentUri": "content/modules/MOD-FOCUS-ARC01-HIGH-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-ARC05",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-ARC02-MEDIUM",
+      "skillId": "MS-ARC02",
+      "sourceContentUri": "content/modules/MOD-FOCUS-ARC02-MEDIUM.md",
+      "sourceContentSha256": "c26198ec814a132acdef6d856870035ba515d4267c5c5bd8b8f4896830f57bcd",
+      "contentUri": "content/modules/MOD-FOCUS-ARC02-MEDIUM-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-ARC05",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-ARC02-HIGH",
+      "skillId": "MS-ARC02",
+      "sourceContentUri": "content/modules/MOD-FOCUS-ARC02-HIGH.md",
+      "sourceContentSha256": "c7143a8f601e36ac3eda461ee6fe8b8907b877fb75438388784bf53c8ca9c35b",
+      "contentUri": "content/modules/MOD-FOCUS-ARC02-HIGH-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-ARC05",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-ARC03-MEDIUM",
+      "skillId": "MS-ARC03",
+      "sourceContentUri": "content/modules/MOD-FOCUS-ARC03-MEDIUM.md",
+      "sourceContentSha256": "d061cb08e6b8406f53e20bf20e5b060593c8c33167ca301a415e4a83d784f079",
+      "contentUri": "content/modules/MOD-FOCUS-ARC03-MEDIUM-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-ARC05",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-ARC03-HIGH",
+      "skillId": "MS-ARC03",
+      "sourceContentUri": "content/modules/MOD-FOCUS-ARC03-HIGH.md",
+      "sourceContentSha256": "a62ab6bfdad5b9d7b12c0b3b2aba3b5fcd01ec58535ad3a60cdac3b29ff1b91a",
+      "contentUri": "content/modules/MOD-FOCUS-ARC03-HIGH-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-ARC05",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-ARC04-MEDIUM",
+      "skillId": "MS-ARC04",
+      "sourceContentUri": "content/modules/MOD-FOCUS-ARC04-MEDIUM.md",
+      "sourceContentSha256": "12818e5a9e25a305a7b0d11e916aecb5a6e9434d2093e92c672fdfd45f10184e",
+      "contentUri": "content/modules/MOD-FOCUS-ARC04-MEDIUM-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-ARC05",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-ARC04-HIGH",
+      "skillId": "MS-ARC04",
+      "sourceContentUri": "content/modules/MOD-FOCUS-ARC04-HIGH.md",
+      "sourceContentSha256": "08e778e871c6e37b34334f3413a241ee91afa3b440e5d92a6ba45364b9cf10b5",
+      "contentUri": "content/modules/MOD-FOCUS-ARC04-HIGH-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-ARC05",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-ARC05-MEDIUM",
+      "skillId": "MS-ARC05",
+      "sourceContentUri": "content/modules/MOD-FOCUS-ARC05-MEDIUM.md",
+      "sourceContentSha256": "981fc9d5a9a6b1ef07674ffb1ffe0d5e42cf3ee510154e1fa954c5fa62343469",
+      "contentUri": "content/modules/MOD-FOCUS-ARC05-MEDIUM-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-ARC01",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-ARC05-HIGH",
+      "skillId": "MS-ARC05",
+      "sourceContentUri": "content/modules/MOD-FOCUS-ARC05-HIGH.md",
+      "sourceContentSha256": "2f29e77cfcb2912dbe16d8a2641eeced63484a01a572c64b1d33154fabe523aa",
+      "contentUri": "content/modules/MOD-FOCUS-ARC05-HIGH-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-ARC01",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-ARC06-MEDIUM",
+      "skillId": "MS-ARC06",
+      "sourceContentUri": "content/modules/MOD-FOCUS-ARC06-MEDIUM.md",
+      "sourceContentSha256": "951f70d4c77452a63e6a67cb6dd96ed8d35f388960b0cc500890ba57b2449a17",
+      "contentUri": "content/modules/MOD-FOCUS-ARC06-MEDIUM-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-ARC05",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-ARC06-HIGH",
+      "skillId": "MS-ARC06",
+      "sourceContentUri": "content/modules/MOD-FOCUS-ARC06-HIGH.md",
+      "sourceContentSha256": "784605de4d3203069a536a9b8f20ba7ac0db6feb05b4772147a52da381f7faf0",
+      "contentUri": "content/modules/MOD-FOCUS-ARC06-HIGH-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-ARC05",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-CORE01-MEDIUM",
+      "skillId": "MS-CORE01",
+      "sourceContentUri": "content/modules/MOD-FOCUS-CORE01-MEDIUM.md",
+      "sourceContentSha256": "dfdef66c32666605ad55b2f3d3669629fd5cc737298ddb37348f63b99326ee9d",
+      "contentUri": "content/modules/MOD-FOCUS-CORE01-MEDIUM-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-CORE02",
+        "MS-CORE03"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-CORE01-HIGH",
+      "skillId": "MS-CORE01",
+      "sourceContentUri": "content/modules/MOD-FOCUS-CORE01-HIGH.md",
+      "sourceContentSha256": "57fcc51b02cd366c89a87e6c9fdff6c6ed9e4478d27bdd086832d0f22d183f65",
+      "contentUri": "content/modules/MOD-FOCUS-CORE01-HIGH-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-CORE02",
+        "MS-CORE03"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-CORE02-MEDIUM",
+      "skillId": "MS-CORE02",
+      "sourceContentUri": "content/modules/MOD-FOCUS-CORE02-MEDIUM.md",
+      "sourceContentSha256": "6c366d3091bc6ce7f730c42ba597d5633b389ae2704f557a33b6e6f6e2f7c027",
+      "contentUri": "content/modules/MOD-FOCUS-CORE02-MEDIUM-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-CORE03",
+        "MS-CORE01"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-CORE02-HIGH",
+      "skillId": "MS-CORE02",
+      "sourceContentUri": "content/modules/MOD-FOCUS-CORE02-HIGH.md",
+      "sourceContentSha256": "405413f810ba0960a2d38cafa98fd0f24c96994fefc570009a65d520d40a293a",
+      "contentUri": "content/modules/MOD-FOCUS-CORE02-HIGH-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-CORE03",
+        "MS-CORE01"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-CORE03-MEDIUM",
+      "skillId": "MS-CORE03",
+      "sourceContentUri": "content/modules/MOD-FOCUS-CORE03-MEDIUM.md",
+      "sourceContentSha256": "10d43e66f8c21aa9de6768272b0286b9c66871e2f9b86263c7d280b2778d50b3",
+      "contentUri": "content/modules/MOD-FOCUS-CORE03-MEDIUM-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-CORE02",
+        "MS-CORE01"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-CORE03-HIGH",
+      "skillId": "MS-CORE03",
+      "sourceContentUri": "content/modules/MOD-FOCUS-CORE03-HIGH.md",
+      "sourceContentSha256": "33172bbe69b673a0cc8d1ecb913fd61c8cacc8e84e668537b25b4a8a0eceeb35",
+      "contentUri": "content/modules/MOD-FOCUS-CORE03-HIGH-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-CORE02",
+        "MS-CORE01"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-CORE04-MEDIUM",
+      "skillId": "MS-CORE04",
+      "sourceContentUri": "content/modules/MOD-FOCUS-CORE04-MEDIUM.md",
+      "sourceContentSha256": "647dbc7e7a8bb24f215d30068fa047455d6c2b120ecd7e457715031abf672665",
+      "contentUri": "content/modules/MOD-FOCUS-CORE04-MEDIUM-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-CORE02",
+        "MS-CORE03"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-CORE04-HIGH",
+      "skillId": "MS-CORE04",
+      "sourceContentUri": "content/modules/MOD-FOCUS-CORE04-HIGH.md",
+      "sourceContentSha256": "1686d03fdc418b9545a22abd2c8dc69ac3f8f67c144741ceda6ce5db5d94ce09",
+      "contentUri": "content/modules/MOD-FOCUS-CORE04-HIGH-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-CORE02",
+        "MS-CORE03"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-DE01-LOW-ALT",
+      "skillId": "MS-DE01",
+      "sourceContentUri": "content/modules/MOD-FOCUS-DE01-LOW-ALT.md",
+      "sourceContentSha256": "8f4f222e6c41d777240ced9ae88385475a9d707327d534bb1a792de0bbf1a201",
+      "contentUri": "content/modules/MOD-FOCUS-DE01-LOW-ALT-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-DE05",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-DE01-MEDIUM-ALT",
+      "skillId": "MS-DE01",
+      "sourceContentUri": "content/modules/MOD-FOCUS-DE01-MEDIUM-ALT.md",
+      "sourceContentSha256": "14daa3c7ff19e1e51730de0066fa8a66ada9ed9659ad7424572e2d96585912f4",
+      "contentUri": "content/modules/MOD-FOCUS-DE01-MEDIUM-ALT-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-DE05",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-DE01-HIGH-ALT",
+      "skillId": "MS-DE01",
+      "sourceContentUri": "content/modules/MOD-FOCUS-DE01-HIGH-ALT.md",
+      "sourceContentSha256": "2f40b1455032c9b7a73c970583fd3ceb974bac350ca9b47ab0d9b3cc118ffefc",
+      "contentUri": "content/modules/MOD-FOCUS-DE01-HIGH-ALT-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-DE05",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-DE03-LOW",
+      "skillId": "MS-DE03",
+      "sourceContentUri": "content/modules/MOD-FOCUS-DE03-LOW.md",
+      "sourceContentSha256": "ecd73bd32f9aa25e9fa37bbdf0e74b27bd78d4ab73fdbb37285ed487e2fbad1e",
+      "contentUri": "content/modules/MOD-FOCUS-DE03-LOW-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-DE06",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-DE03-MEDIUM",
+      "skillId": "MS-DE03",
+      "sourceContentUri": "content/modules/MOD-FOCUS-DE03-MEDIUM.md",
+      "sourceContentSha256": "67be70d80c60f5432f4c4a05828e8a2f274a31e742683ab28a8f602ace9b5950",
+      "contentUri": "content/modules/MOD-FOCUS-DE03-MEDIUM-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-DE06",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-DE03-HIGH",
+      "skillId": "MS-DE03",
+      "sourceContentUri": "content/modules/MOD-FOCUS-DE03-HIGH.md",
+      "sourceContentSha256": "ad6bdae9ca92f2eeb1ba9f4a71f85a4b880dfe43e269b6484e9d2edc88e24e2d",
+      "contentUri": "content/modules/MOD-FOCUS-DE03-HIGH-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-DE06",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-DE04-LOW",
+      "skillId": "MS-DE04",
+      "sourceContentUri": "content/modules/MOD-FOCUS-DE04-LOW.md",
+      "sourceContentSha256": "82a293b6b243a674cb146b4a46d6c9ebed80928fb75ce7adfdc0efa480dbb7b1",
+      "contentUri": "content/modules/MOD-FOCUS-DE04-LOW-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-DE06",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-DE04-MEDIUM",
+      "skillId": "MS-DE04",
+      "sourceContentUri": "content/modules/MOD-FOCUS-DE04-MEDIUM.md",
+      "sourceContentSha256": "17f335077582bfa1ed495073a60be4b7e880af9f41f972a1650bc95ff29fefb8",
+      "contentUri": "content/modules/MOD-FOCUS-DE04-MEDIUM-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-DE06",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-DE04-HIGH",
+      "skillId": "MS-DE04",
+      "sourceContentUri": "content/modules/MOD-FOCUS-DE04-HIGH.md",
+      "sourceContentSha256": "95f6ca0719ad55585f13446d636a976db9c9af7632db5ead3476972e0af870bd",
+      "contentUri": "content/modules/MOD-FOCUS-DE04-HIGH-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-DE06",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-DE06-LOW",
+      "skillId": "MS-DE06",
+      "sourceContentUri": "content/modules/MOD-FOCUS-DE06-LOW.md",
+      "sourceContentSha256": "528bb9b9b1b81639d81908a334fb9a339c3e68cc51cb4bbed93bb335b3b6b0df",
+      "contentUri": "content/modules/MOD-FOCUS-DE06-LOW-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-DE01",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-DE06-MEDIUM",
+      "skillId": "MS-DE06",
+      "sourceContentUri": "content/modules/MOD-FOCUS-DE06-MEDIUM.md",
+      "sourceContentSha256": "7dfc64321a10dd6da0f072a73181110b928704d06818b0174d2c107fc50ae659",
+      "contentUri": "content/modules/MOD-FOCUS-DE06-MEDIUM-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-DE01",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-DE06-HIGH",
+      "skillId": "MS-DE06",
+      "sourceContentUri": "content/modules/MOD-FOCUS-DE06-HIGH.md",
+      "sourceContentSha256": "704bb6b2439b5618c8dbad4f3d24575d3c0198f218f3b9e72d267b00245992aa",
+      "contentUri": "content/modules/MOD-FOCUS-DE06-HIGH-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-DE01",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-DE07-LOW",
+      "skillId": "MS-DE07",
+      "sourceContentUri": "content/modules/MOD-FOCUS-DE07-LOW.md",
+      "sourceContentSha256": "13f682ff35c3d72a33e8c4b7ec63a64a709e5126e570bf9fd04636925a9325a1",
+      "contentUri": "content/modules/MOD-FOCUS-DE07-LOW-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-DE06",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-DE07-MEDIUM",
+      "skillId": "MS-DE07",
+      "sourceContentUri": "content/modules/MOD-FOCUS-DE07-MEDIUM.md",
+      "sourceContentSha256": "727aa334afe5de98409b027dd7eb679fa58a6282375bed3e916609efa56c0c69",
+      "contentUri": "content/modules/MOD-FOCUS-DE07-MEDIUM-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-DE06",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-DE07-HIGH",
+      "skillId": "MS-DE07",
+      "sourceContentUri": "content/modules/MOD-FOCUS-DE07-HIGH.md",
+      "sourceContentSha256": "60f204727dac3c7e97c174e9fffebf4758dc8dfe3572e9e2408cc0bd544c6c92",
+      "contentUri": "content/modules/MOD-FOCUS-DE07-HIGH-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-DE06",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-DE08-LOW",
+      "skillId": "MS-DE08",
+      "sourceContentUri": "content/modules/MOD-FOCUS-DE08-LOW.md",
+      "sourceContentSha256": "b00fa485d3b84afca4c5a53e01b0b055dda63f6fe4d3c6b259ebe90f62a8f533",
+      "contentUri": "content/modules/MOD-FOCUS-DE08-LOW-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-DE06",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-DE08-MEDIUM",
+      "skillId": "MS-DE08",
+      "sourceContentUri": "content/modules/MOD-FOCUS-DE08-MEDIUM.md",
+      "sourceContentSha256": "7ac4a6ce180937e69f0d31e71f16403ba4300626deb51c77cc685fc51521801c",
+      "contentUri": "content/modules/MOD-FOCUS-DE08-MEDIUM-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-DE06",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-DE08-HIGH",
+      "skillId": "MS-DE08",
+      "sourceContentUri": "content/modules/MOD-FOCUS-DE08-HIGH.md",
+      "sourceContentSha256": "39fb8d8007ace1f7841696399f096920450f09892a492c995c4b4137343d264b",
+      "contentUri": "content/modules/MOD-FOCUS-DE08-HIGH-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-DE06",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-DE11-LOW",
+      "skillId": "MS-DE11",
+      "sourceContentUri": "content/modules/MOD-FOCUS-DE11-LOW.md",
+      "sourceContentSha256": "09e104de4878cedb51801e4e02f7e5d5c1626901d931dac5ef06f3579097b78c",
+      "contentUri": "content/modules/MOD-FOCUS-DE11-LOW-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-DE06",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-DE11-MEDIUM",
+      "skillId": "MS-DE11",
+      "sourceContentUri": "content/modules/MOD-FOCUS-DE11-MEDIUM.md",
+      "sourceContentSha256": "e5e0fefd11d92fbeca4aa9ca3989ea42a4b410edd2a4915d83c36a38439111ea",
+      "contentUri": "content/modules/MOD-FOCUS-DE11-MEDIUM-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-DE06",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-DE11-HIGH",
+      "skillId": "MS-DE11",
+      "sourceContentUri": "content/modules/MOD-FOCUS-DE11-HIGH.md",
+      "sourceContentSha256": "6722a8813529dcc5fa8cbd73090f3af6b5e59f13617ed8254ca54a56d89222dd",
+      "contentUri": "content/modules/MOD-FOCUS-DE11-HIGH-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-DE06",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-DE12-LOW",
+      "skillId": "MS-DE12",
+      "sourceContentUri": "content/modules/MOD-FOCUS-DE12-LOW.md",
+      "sourceContentSha256": "7fa863edf774ccdfc93815de333eedf1e15a1d9921875bdab281c09558d885a4",
+      "contentUri": "content/modules/MOD-FOCUS-DE12-LOW-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-DE06",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-DE12-MEDIUM",
+      "skillId": "MS-DE12",
+      "sourceContentUri": "content/modules/MOD-FOCUS-DE12-MEDIUM.md",
+      "sourceContentSha256": "02000ea36f4fd9d44beef884824a38048901d8e3c0190ed7b170c05c1d0d83e5",
+      "contentUri": "content/modules/MOD-FOCUS-DE12-MEDIUM-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-DE06",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-DE12-HIGH",
+      "skillId": "MS-DE12",
+      "sourceContentUri": "content/modules/MOD-FOCUS-DE12-HIGH.md",
+      "sourceContentSha256": "eebe2218ced2e32afc5850789dddea9fe990d69793124c4b76252e7ef94fbd07",
+      "contentUri": "content/modules/MOD-FOCUS-DE12-HIGH-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-DE06",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-DE14-LOW",
+      "skillId": "MS-DE14",
+      "sourceContentUri": "content/modules/MOD-FOCUS-DE14-LOW.md",
+      "sourceContentSha256": "2a1463d318025c8d2eda4f273f30201158e684d60760c6f8791fefaf24f246da",
+      "contentUri": "content/modules/MOD-FOCUS-DE14-LOW-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-DE06",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-DE14-MEDIUM",
+      "skillId": "MS-DE14",
+      "sourceContentUri": "content/modules/MOD-FOCUS-DE14-MEDIUM.md",
+      "sourceContentSha256": "7e980a4ec94d23df179c2ae2e1e71333c24cb5ed281487c59a3fedaf0e3adc15",
+      "contentUri": "content/modules/MOD-FOCUS-DE14-MEDIUM-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-DE06",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-DE14-HIGH",
+      "skillId": "MS-DE14",
+      "sourceContentUri": "content/modules/MOD-FOCUS-DE14-HIGH.md",
+      "sourceContentSha256": "f341b4c8c4626341fe8e8cc51a7b8bda05a90d2772abf9f01195dee0e590fe25",
+      "contentUri": "content/modules/MOD-FOCUS-DE14-HIGH-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-DE06",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-DE15-LOW",
+      "skillId": "MS-DE15",
+      "sourceContentUri": "content/modules/MOD-FOCUS-DE15-LOW.md",
+      "sourceContentSha256": "45cee998155b8ee4cd09c25b03d884f77a0ed6c42be034e7aefc9b45c0de7ae4",
+      "contentUri": "content/modules/MOD-FOCUS-DE15-LOW-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-DE06",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-DE15-MEDIUM",
+      "skillId": "MS-DE15",
+      "sourceContentUri": "content/modules/MOD-FOCUS-DE15-MEDIUM.md",
+      "sourceContentSha256": "c4ebb410c25b7e7d73f5d7ca43f5fd17aae48c7ba58afbaf9600ef816122a3f2",
+      "contentUri": "content/modules/MOD-FOCUS-DE15-MEDIUM-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-DE06",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-DE15-HIGH",
+      "skillId": "MS-DE15",
+      "sourceContentUri": "content/modules/MOD-FOCUS-DE15-HIGH.md",
+      "sourceContentSha256": "e97d2585c86bd3a043389d6a54af7234670ddf62ea0015aea51c233774d0311b",
+      "contentUri": "content/modules/MOD-FOCUS-DE15-HIGH-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-DE06",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-DE16-LOW",
+      "skillId": "MS-DE16",
+      "sourceContentUri": "content/modules/MOD-FOCUS-DE16-LOW.md",
+      "sourceContentSha256": "2e2679b1ea6b65a66c0223e8ccb6bfb77ae9375a4650daa884c68dc5c9913a60",
+      "contentUri": "content/modules/MOD-FOCUS-DE16-LOW-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-DE06",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-DE16-MEDIUM",
+      "skillId": "MS-DE16",
+      "sourceContentUri": "content/modules/MOD-FOCUS-DE16-MEDIUM.md",
+      "sourceContentSha256": "93ca0c854739e77ab90ac3d30add1e208ae40fb16434e3edab3db92785cd58bd",
+      "contentUri": "content/modules/MOD-FOCUS-DE16-MEDIUM-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-DE06",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-DE16-HIGH",
+      "skillId": "MS-DE16",
+      "sourceContentUri": "content/modules/MOD-FOCUS-DE16-HIGH.md",
+      "sourceContentSha256": "3c08704ca441065b66338ac65693e7d28cc52aa25f4f96ae9293c44b541060bd",
+      "contentUri": "content/modules/MOD-FOCUS-DE16-HIGH-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-DE06",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-FS02-LOW",
+      "skillId": "MS-FS02",
+      "sourceContentUri": "content/modules/MOD-FOCUS-FS02-LOW.md",
+      "sourceContentSha256": "1fd19a2c5f8cbabca056a845288458699237c56e89cbd73421372d26c217a22f",
+      "contentUri": "content/modules/MOD-FOCUS-FS02-LOW-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-FS07",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-FS02-MEDIUM",
+      "skillId": "MS-FS02",
+      "sourceContentUri": "content/modules/MOD-FOCUS-FS02-MEDIUM.md",
+      "sourceContentSha256": "9029fc39378ad0f9e086df1e8fe5b8fee3846566de20f6f76a50c2992d7ed4de",
+      "contentUri": "content/modules/MOD-FOCUS-FS02-MEDIUM-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-FS07",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-FS02-HIGH",
+      "skillId": "MS-FS02",
+      "sourceContentUri": "content/modules/MOD-FOCUS-FS02-HIGH.md",
+      "sourceContentSha256": "d3055e4e1facf8cb01d597a9ef1ee2f11191ab036029797a224d6a674999fcf2",
+      "contentUri": "content/modules/MOD-FOCUS-FS02-HIGH-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-FS07",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-FS03-LOW-ALT",
+      "skillId": "MS-FS03",
+      "sourceContentUri": "content/modules/MOD-FOCUS-FS03-LOW-ALT.md",
+      "sourceContentSha256": "76a69c79506d757d2b70d0451e4a78a7cb2311ec001fd6b3285fc36391d8d0d0",
+      "contentUri": "content/modules/MOD-FOCUS-FS03-LOW-ALT-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-FS12",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-FS03-MEDIUM-ALT",
+      "skillId": "MS-FS03",
+      "sourceContentUri": "content/modules/MOD-FOCUS-FS03-MEDIUM-ALT.md",
+      "sourceContentSha256": "686c59a7b39d65e3afead5bdf0ca1a273139c5b50cb212e8d8261d2488a38665",
+      "contentUri": "content/modules/MOD-FOCUS-FS03-MEDIUM-ALT-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-FS12",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-FS03-HIGH-ALT",
+      "skillId": "MS-FS03",
+      "sourceContentUri": "content/modules/MOD-FOCUS-FS03-HIGH-ALT.md",
+      "sourceContentSha256": "b118dfe3c8bfb6d2d96b27814b4b9b62c6416e5bb02d970eabfc09bcea41bd6a",
+      "contentUri": "content/modules/MOD-FOCUS-FS03-HIGH-ALT-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-FS12",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-FS04-LOW",
+      "skillId": "MS-FS04",
+      "sourceContentUri": "content/modules/MOD-FOCUS-FS04-LOW.md",
+      "sourceContentSha256": "18450dc8272832cf2d8d78854000a30039f91a6869666d26bf6c9cf46389bbad",
+      "contentUri": "content/modules/MOD-FOCUS-FS04-LOW-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-FS07",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-FS04-MEDIUM",
+      "skillId": "MS-FS04",
+      "sourceContentUri": "content/modules/MOD-FOCUS-FS04-MEDIUM.md",
+      "sourceContentSha256": "5cebbbe30adbbdedf32abcc201ef4675f3783c553452af3a67915bb0f89a9a13",
+      "contentUri": "content/modules/MOD-FOCUS-FS04-MEDIUM-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-FS07",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-FS04-HIGH",
+      "skillId": "MS-FS04",
+      "sourceContentUri": "content/modules/MOD-FOCUS-FS04-HIGH.md",
+      "sourceContentSha256": "0c21f6ee8fc21d4cb20780285ead8bf892f00cae6da8dbff0edea63af465087a",
+      "contentUri": "content/modules/MOD-FOCUS-FS04-HIGH-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-FS07",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-FS05-LOW",
+      "skillId": "MS-FS05",
+      "sourceContentUri": "content/modules/MOD-FOCUS-FS05-LOW.md",
+      "sourceContentSha256": "5ed14e925872a66ce5481ef9bd7151e2279abe3db9b9319a7fc41ffa6d32bf89",
+      "contentUri": "content/modules/MOD-FOCUS-FS05-LOW-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-FS07",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-FS05-MEDIUM",
+      "skillId": "MS-FS05",
+      "sourceContentUri": "content/modules/MOD-FOCUS-FS05-MEDIUM.md",
+      "sourceContentSha256": "f9de5f86730d69ef8823ca17aff64b9bd1825bdd36d7ff57245746ce90073ba8",
+      "contentUri": "content/modules/MOD-FOCUS-FS05-MEDIUM-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-FS07",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-FS05-HIGH",
+      "skillId": "MS-FS05",
+      "sourceContentUri": "content/modules/MOD-FOCUS-FS05-HIGH.md",
+      "sourceContentSha256": "3f15a81be421df035a6057ca18ef629da2ae66d55398797b19773bcb1ed8d58e",
+      "contentUri": "content/modules/MOD-FOCUS-FS05-HIGH-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-FS07",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-FS07-LOW-ALT",
+      "skillId": "MS-FS07",
+      "sourceContentUri": "content/modules/MOD-FOCUS-FS07-LOW-ALT.md",
+      "sourceContentSha256": "312ccb128eefbb0a46ebfb3175bedaa8045f2fd7f60f18a48d489c7c263253a8",
+      "contentUri": "content/modules/MOD-FOCUS-FS07-LOW-ALT-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-FS06",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-FS07-MEDIUM-ALT",
+      "skillId": "MS-FS07",
+      "sourceContentUri": "content/modules/MOD-FOCUS-FS07-MEDIUM-ALT.md",
+      "sourceContentSha256": "889fd83f0f3ca8e27668bb8e23979a76cdf54c449096497025a4977b1b306f9e",
+      "contentUri": "content/modules/MOD-FOCUS-FS07-MEDIUM-ALT-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-FS06",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-FS07-HIGH-ALT",
+      "skillId": "MS-FS07",
+      "sourceContentUri": "content/modules/MOD-FOCUS-FS07-HIGH-ALT.md",
+      "sourceContentSha256": "d39da764fdfc4846466f19a6728206bf390183f3ca0b2cc9dbf64f2e3d009024",
+      "contentUri": "content/modules/MOD-FOCUS-FS07-HIGH-ALT-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-FS06",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-FS08-LOW",
+      "skillId": "MS-FS08",
+      "sourceContentUri": "content/modules/MOD-FOCUS-FS08-LOW.md",
+      "sourceContentSha256": "74f90ccfcf48eaf7e2c274a55b70274ea1d3af8e79e7e80df5b1c2740b5fbc3c",
+      "contentUri": "content/modules/MOD-FOCUS-FS08-LOW-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-FS07",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-FS08-MEDIUM",
+      "skillId": "MS-FS08",
+      "sourceContentUri": "content/modules/MOD-FOCUS-FS08-MEDIUM.md",
+      "sourceContentSha256": "313b66e1785d8720c0e700619a4998c830f7fc14da97b6a2cffd8663f63de979",
+      "contentUri": "content/modules/MOD-FOCUS-FS08-MEDIUM-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-FS07",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-FS08-HIGH",
+      "skillId": "MS-FS08",
+      "sourceContentUri": "content/modules/MOD-FOCUS-FS08-HIGH.md",
+      "sourceContentSha256": "84a2e14d86a555fcc005c7e5f4a10cd330295d24307da0d39263ae033501a93d",
+      "contentUri": "content/modules/MOD-FOCUS-FS08-HIGH-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-FS07",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-FS09-LOW",
+      "skillId": "MS-FS09",
+      "sourceContentUri": "content/modules/MOD-FOCUS-FS09-LOW.md",
+      "sourceContentSha256": "eed10b8a31e8a984d9a67930701bb64f1002fe6f596f8df5f4991e0388fce87f",
+      "contentUri": "content/modules/MOD-FOCUS-FS09-LOW-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-FS07",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-FS09-MEDIUM",
+      "skillId": "MS-FS09",
+      "sourceContentUri": "content/modules/MOD-FOCUS-FS09-MEDIUM.md",
+      "sourceContentSha256": "2a206b95ccc8d7a1d16ffca594b3244a8d4d2d873048ada9b6ae30a6fd4bdef6",
+      "contentUri": "content/modules/MOD-FOCUS-FS09-MEDIUM-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-FS07",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-FS09-HIGH",
+      "skillId": "MS-FS09",
+      "sourceContentUri": "content/modules/MOD-FOCUS-FS09-HIGH.md",
+      "sourceContentSha256": "31b65171bf53eae9141ca202b49fe8b26bd3d61bc8182f03434d1a0c32b5a573",
+      "contentUri": "content/modules/MOD-FOCUS-FS09-HIGH-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-FS07",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-FS11-LOW",
+      "skillId": "MS-FS11",
+      "sourceContentUri": "content/modules/MOD-FOCUS-FS11-LOW.md",
+      "sourceContentSha256": "35eee5c21ea6c4d23a0f51aa0df1e850aec90b7e9f1f0eb086edaf61bd5be945",
+      "contentUri": "content/modules/MOD-FOCUS-FS11-LOW-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-FS07",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-FS11-MEDIUM",
+      "skillId": "MS-FS11",
+      "sourceContentUri": "content/modules/MOD-FOCUS-FS11-MEDIUM.md",
+      "sourceContentSha256": "2f4dfa8280173b6b7b4b9348ac7d5af994fcbcef0364a42c142e10a8c80ade82",
+      "contentUri": "content/modules/MOD-FOCUS-FS11-MEDIUM-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-FS07",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-FS11-HIGH",
+      "skillId": "MS-FS11",
+      "sourceContentUri": "content/modules/MOD-FOCUS-FS11-HIGH.md",
+      "sourceContentSha256": "9674f89c3937ee69a3c400dd5f40738f29f64330bc243c01551cd245d8b3d071",
+      "contentUri": "content/modules/MOD-FOCUS-FS11-HIGH-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-FS07",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-FS13-LOW",
+      "skillId": "MS-FS13",
+      "sourceContentUri": "content/modules/MOD-FOCUS-FS13-LOW.md",
+      "sourceContentSha256": "213db8115f670e12733eba138881a078f264d11255bba2b9332106dd0954504b",
+      "contentUri": "content/modules/MOD-FOCUS-FS13-LOW-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-FS07",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-FS13-MEDIUM",
+      "skillId": "MS-FS13",
+      "sourceContentUri": "content/modules/MOD-FOCUS-FS13-MEDIUM.md",
+      "sourceContentSha256": "3157186f2c9b79a80144bc869f9fdb98743d56466aaf5de8770be2c3d995e73b",
+      "contentUri": "content/modules/MOD-FOCUS-FS13-MEDIUM-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-FS07",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-FS13-HIGH",
+      "skillId": "MS-FS13",
+      "sourceContentUri": "content/modules/MOD-FOCUS-FS13-HIGH.md",
+      "sourceContentSha256": "0d90e5f9e729fb408f51016bcd2d2b38bc55057162b64faa0dfed17dbdca3286",
+      "contentUri": "content/modules/MOD-FOCUS-FS13-HIGH-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-FS07",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-FS14-LOW",
+      "skillId": "MS-FS14",
+      "sourceContentUri": "content/modules/MOD-FOCUS-FS14-LOW.md",
+      "sourceContentSha256": "2a0eaaa7661fc364191bd28e3e400d033179d16aa983d36a6c6bca592c22e4d6",
+      "contentUri": "content/modules/MOD-FOCUS-FS14-LOW-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-FS07",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-FS14-MEDIUM",
+      "skillId": "MS-FS14",
+      "sourceContentUri": "content/modules/MOD-FOCUS-FS14-MEDIUM.md",
+      "sourceContentSha256": "ea6632df013a7985e4dbddc387aa6aca9ab0902ca1c389fbbdf94903c56b41a9",
+      "contentUri": "content/modules/MOD-FOCUS-FS14-MEDIUM-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-FS07",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-FS14-HIGH",
+      "skillId": "MS-FS14",
+      "sourceContentUri": "content/modules/MOD-FOCUS-FS14-HIGH.md",
+      "sourceContentSha256": "a362a28d334eee72451dc6ba64974f8619416976ae0bb4dbf49de5e909100083",
+      "contentUri": "content/modules/MOD-FOCUS-FS14-HIGH-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-FS07",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-FS16-LOW",
+      "skillId": "MS-FS16",
+      "sourceContentUri": "content/modules/MOD-FOCUS-FS16-LOW.md",
+      "sourceContentSha256": "ad33c5893809503ab5173788c0e4ce308fb83247752181a2a5f4142eac13755d",
+      "contentUri": "content/modules/MOD-FOCUS-FS16-LOW-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-FS07",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-FS16-MEDIUM",
+      "skillId": "MS-FS16",
+      "sourceContentUri": "content/modules/MOD-FOCUS-FS16-MEDIUM.md",
+      "sourceContentSha256": "309f5dac2225eee527e62130475cc328e33f7879c21d844574f166a5733b1d8e",
+      "contentUri": "content/modules/MOD-FOCUS-FS16-MEDIUM-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-FS07",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-FS16-HIGH",
+      "skillId": "MS-FS16",
+      "sourceContentUri": "content/modules/MOD-FOCUS-FS16-HIGH.md",
+      "sourceContentSha256": "80a6b284eb5d86cfad8ae8a72a306876e61d93ab6f64ebbb42910a38a82de6e1",
+      "contentUri": "content/modules/MOD-FOCUS-FS16-HIGH-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-FS07",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-GOV01-MEDIUM",
+      "skillId": "MS-GOV01",
+      "sourceContentUri": "content/modules/MOD-FOCUS-GOV01-MEDIUM.md",
+      "sourceContentSha256": "259a65e87b7a174b14ca6cdb6c1defb1c7cb580bf61976922aa8325698148711",
+      "contentUri": "content/modules/MOD-FOCUS-GOV01-MEDIUM-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-GOV02",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-GOV01-HIGH",
+      "skillId": "MS-GOV01",
+      "sourceContentUri": "content/modules/MOD-FOCUS-GOV01-HIGH.md",
+      "sourceContentSha256": "15aca045e7eb56bf2725946db27e135a93c51aaa7023069bd97c95f83ba74759",
+      "contentUri": "content/modules/MOD-FOCUS-GOV01-HIGH-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-GOV02",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-GOV02-MEDIUM",
+      "skillId": "MS-GOV02",
+      "sourceContentUri": "content/modules/MOD-FOCUS-GOV02-MEDIUM.md",
+      "sourceContentSha256": "f17da2f6bb7fddfaa438272071f2461cace9d874530551e8ceb78705d51290aa",
+      "contentUri": "content/modules/MOD-FOCUS-GOV02-MEDIUM-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-GOV01",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-GOV02-HIGH",
+      "skillId": "MS-GOV02",
+      "sourceContentUri": "content/modules/MOD-FOCUS-GOV02-HIGH.md",
+      "sourceContentSha256": "e6c3e7192d1e88c17536f9091e1420f1bfa2579a7ae7d77a05e9dae3e8abe9c9",
+      "contentUri": "content/modules/MOD-FOCUS-GOV02-HIGH-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-GOV01",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-GOV03-MEDIUM",
+      "skillId": "MS-GOV03",
+      "sourceContentUri": "content/modules/MOD-FOCUS-GOV03-MEDIUM.md",
+      "sourceContentSha256": "b5409656e454302076e7ef48916dd554404bcc0185aca6dcc478773d2157d25f",
+      "contentUri": "content/modules/MOD-FOCUS-GOV03-MEDIUM-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-GOV01",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-GOV03-HIGH",
+      "skillId": "MS-GOV03",
+      "sourceContentUri": "content/modules/MOD-FOCUS-GOV03-HIGH.md",
+      "sourceContentSha256": "256e9c02e3328dc7ab64e4498fa03375e070f6e324d64e40250957b16a9c8246",
+      "contentUri": "content/modules/MOD-FOCUS-GOV03-HIGH-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-GOV01",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-INF01-MEDIUM",
+      "skillId": "MS-INF01",
+      "sourceContentUri": "content/modules/MOD-FOCUS-INF01-MEDIUM.md",
+      "sourceContentSha256": "815979159141e7ef9630ca315c37c809c3a359d39f06c3754ddceb77c05aeaa5",
+      "contentUri": "content/modules/MOD-FOCUS-INF01-MEDIUM-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-INF04",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-INF01-HIGH",
+      "skillId": "MS-INF01",
+      "sourceContentUri": "content/modules/MOD-FOCUS-INF01-HIGH.md",
+      "sourceContentSha256": "3468e61c3e303edc054fcf89213c4eb431e3518121345756e9812320ff5e2475",
+      "contentUri": "content/modules/MOD-FOCUS-INF01-HIGH-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-INF04",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-INF02-MEDIUM",
+      "skillId": "MS-INF02",
+      "sourceContentUri": "content/modules/MOD-FOCUS-INF02-MEDIUM.md",
+      "sourceContentSha256": "f80b99512e1b72e789fed393da54d1cd0b5f33a85efc142c510f9a672c9063d4",
+      "contentUri": "content/modules/MOD-FOCUS-INF02-MEDIUM-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-INF04",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-INF02-HIGH",
+      "skillId": "MS-INF02",
+      "sourceContentUri": "content/modules/MOD-FOCUS-INF02-HIGH.md",
+      "sourceContentSha256": "43e6a2aca005480ca4e32729a96ed5191d92f4ddbf3b9aa5cddb970dc900a522",
+      "contentUri": "content/modules/MOD-FOCUS-INF02-HIGH-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-INF04",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-INF03-MEDIUM",
+      "skillId": "MS-INF03",
+      "sourceContentUri": "content/modules/MOD-FOCUS-INF03-MEDIUM.md",
+      "sourceContentSha256": "1b3399e3dca920f9b838e2d1412c9cf7025afa2751bf9ff41606f5cf079ca98a",
+      "contentUri": "content/modules/MOD-FOCUS-INF03-MEDIUM-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-INF04",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-INF03-HIGH",
+      "skillId": "MS-INF03",
+      "sourceContentUri": "content/modules/MOD-FOCUS-INF03-HIGH.md",
+      "sourceContentSha256": "fdf6c1b071b46637fcfb8e7ce7059526ade541de63930378fe3ba5e39c836024",
+      "contentUri": "content/modules/MOD-FOCUS-INF03-HIGH-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-INF04",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-INF04-MEDIUM",
+      "skillId": "MS-INF04",
+      "sourceContentUri": "content/modules/MOD-FOCUS-INF04-MEDIUM.md",
+      "sourceContentSha256": "75b67ee1f5ee1272919b80d99ff2c17588781de971c4e02398b59eccdbce57eb",
+      "contentUri": "content/modules/MOD-FOCUS-INF04-MEDIUM-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-INF05",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-INF04-HIGH",
+      "skillId": "MS-INF04",
+      "sourceContentUri": "content/modules/MOD-FOCUS-INF04-HIGH.md",
+      "sourceContentSha256": "9839ae4549d7a1d0343f06e41814e21be7fef9f9d5575e1632468c2aa3a73e05",
+      "contentUri": "content/modules/MOD-FOCUS-INF04-HIGH-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-INF05",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-INF05-MEDIUM",
+      "skillId": "MS-INF05",
+      "sourceContentUri": "content/modules/MOD-FOCUS-INF05-MEDIUM.md",
+      "sourceContentSha256": "90c0c0eaf46beb9c9e15fe38b988ec665870996bdfa669cf58d8d2127d11f0dc",
+      "contentUri": "content/modules/MOD-FOCUS-INF05-MEDIUM-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-INF04",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-INF05-HIGH",
+      "skillId": "MS-INF05",
+      "sourceContentUri": "content/modules/MOD-FOCUS-INF05-HIGH.md",
+      "sourceContentSha256": "667f00598b100ebffb7b942abdbc5fbf4f59a756c0f4622124eb36a43e42064f",
+      "contentUri": "content/modules/MOD-FOCUS-INF05-HIGH-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-INF04",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-INF06-MEDIUM",
+      "skillId": "MS-INF06",
+      "sourceContentUri": "content/modules/MOD-FOCUS-INF06-MEDIUM.md",
+      "sourceContentSha256": "f1175bda8b859ac1605403d9a074aa834cbb9133c3f81add3e01659eca807268",
+      "contentUri": "content/modules/MOD-FOCUS-INF06-MEDIUM-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-INF04",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-INF06-HIGH",
+      "skillId": "MS-INF06",
+      "sourceContentUri": "content/modules/MOD-FOCUS-INF06-HIGH.md",
+      "sourceContentSha256": "bf400e4b7ae312d25f289fd28bfa4cc8e7c1ee9852cab8ba89cd1f81bb909538",
+      "contentUri": "content/modules/MOD-FOCUS-INF06-HIGH-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-INF04",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-INF07-MEDIUM",
+      "skillId": "MS-INF07",
+      "sourceContentUri": "content/modules/MOD-FOCUS-INF07-MEDIUM.md",
+      "sourceContentSha256": "13279dea5c2d3873004e73c8ddd570cff825ea1b62d9ae204c276e9e5c9788ee",
+      "contentUri": "content/modules/MOD-FOCUS-INF07-MEDIUM-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-INF04",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-INF07-HIGH",
+      "skillId": "MS-INF07",
+      "sourceContentUri": "content/modules/MOD-FOCUS-INF07-HIGH.md",
+      "sourceContentSha256": "d8947920494179d1e4be81df02b4fdc27454f2620dcb7a4c5fe2cc80284fd3c1",
+      "contentUri": "content/modules/MOD-FOCUS-INF07-HIGH-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-INF04",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-INF08-MEDIUM",
+      "skillId": "MS-INF08",
+      "sourceContentUri": "content/modules/MOD-FOCUS-INF08-MEDIUM.md",
+      "sourceContentSha256": "7a893b1e042780280cb40120eddceef22006e1e6638d8b5bbd5ae3eb56652cec",
+      "contentUri": "content/modules/MOD-FOCUS-INF08-MEDIUM-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-INF04",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-INF08-HIGH",
+      "skillId": "MS-INF08",
+      "sourceContentUri": "content/modules/MOD-FOCUS-INF08-HIGH.md",
+      "sourceContentSha256": "8175b18f1f28d67e1e77e0e0d22ac03b9f39eac17119ee1d83a4b30edce7265d",
+      "contentUri": "content/modules/MOD-FOCUS-INF08-HIGH-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-INF04",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-QA02-LOW",
+      "skillId": "MS-QA02",
+      "sourceContentUri": "content/modules/MOD-FOCUS-QA02-LOW.md",
+      "sourceContentSha256": "6039d1995e1d9fbb6ffd0a7c7ca07514e61db0e8635bba6a9724355813b3c9d3",
+      "contentUri": "content/modules/MOD-FOCUS-QA02-LOW-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-QA04",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-QA02-MEDIUM",
+      "skillId": "MS-QA02",
+      "sourceContentUri": "content/modules/MOD-FOCUS-QA02-MEDIUM.md",
+      "sourceContentSha256": "688ed7c08979909bb256e5c5fcb870125b7ad87bfe9c62b3a0ee0d865f7a98b6",
+      "contentUri": "content/modules/MOD-FOCUS-QA02-MEDIUM-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-QA04",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-QA02-HIGH",
+      "skillId": "MS-QA02",
+      "sourceContentUri": "content/modules/MOD-FOCUS-QA02-HIGH.md",
+      "sourceContentSha256": "c3bdc90547bfb8e3ced56e171b1bc739d8e2c440616c50f19a846208fafb599b",
+      "contentUri": "content/modules/MOD-FOCUS-QA02-HIGH-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-QA04",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-QA04-LOW",
+      "skillId": "MS-QA04",
+      "sourceContentUri": "content/modules/MOD-FOCUS-QA04-LOW.md",
+      "sourceContentSha256": "741744582a6de4ac3f262da2c1830da4da64e99981611bf8ec11652ed6d2907d",
+      "contentUri": "content/modules/MOD-FOCUS-QA04-LOW-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-QA03",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-QA04-MEDIUM",
+      "skillId": "MS-QA04",
+      "sourceContentUri": "content/modules/MOD-FOCUS-QA04-MEDIUM.md",
+      "sourceContentSha256": "064e79dfd46cc152b1753a9f6ab5a392f5dc0c9455ca1eb7dbe8289085b678b6",
+      "contentUri": "content/modules/MOD-FOCUS-QA04-MEDIUM-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-QA03",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-QA04-HIGH",
+      "skillId": "MS-QA04",
+      "sourceContentUri": "content/modules/MOD-FOCUS-QA04-HIGH.md",
+      "sourceContentSha256": "1d63b93852ea33d0613e3cff395ba96915f550f2657aa52a5660a89a675c4027",
+      "contentUri": "content/modules/MOD-FOCUS-QA04-HIGH-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-QA03",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-QA05-LOW",
+      "skillId": "MS-QA05",
+      "sourceContentUri": "content/modules/MOD-FOCUS-QA05-LOW.md",
+      "sourceContentSha256": "3a4e4aa9bd149a28cd12f8fc1c124e51ec64755cabfef2e1003f95c4c86b2f30",
+      "contentUri": "content/modules/MOD-FOCUS-QA05-LOW-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-QA04",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-QA05-MEDIUM",
+      "skillId": "MS-QA05",
+      "sourceContentUri": "content/modules/MOD-FOCUS-QA05-MEDIUM.md",
+      "sourceContentSha256": "5d15396b60baf0406e924955be511a8de9e21c9c92de67fbabfe2baf7ecb3bfe",
+      "contentUri": "content/modules/MOD-FOCUS-QA05-MEDIUM-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-QA04",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-QA05-HIGH",
+      "skillId": "MS-QA05",
+      "sourceContentUri": "content/modules/MOD-FOCUS-QA05-HIGH.md",
+      "sourceContentSha256": "e5937c7d9de1c3bc5988d76f99faf3495b1c883eb6141729a26d03befa6a486b",
+      "contentUri": "content/modules/MOD-FOCUS-QA05-HIGH-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-QA04",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-QA06-LOW",
+      "skillId": "MS-QA06",
+      "sourceContentUri": "content/modules/MOD-FOCUS-QA06-LOW.md",
+      "sourceContentSha256": "229e2e62fc5d74ed54704b367ab9380708ec1572d9ce1f5b9740de39fa1cdb0d",
+      "contentUri": "content/modules/MOD-FOCUS-QA06-LOW-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-QA04",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-QA06-MEDIUM",
+      "skillId": "MS-QA06",
+      "sourceContentUri": "content/modules/MOD-FOCUS-QA06-MEDIUM.md",
+      "sourceContentSha256": "a0fccd6e6fa41aebb9c84f6ddc4d9155dad5a63651c748bd1a826b16bd502077",
+      "contentUri": "content/modules/MOD-FOCUS-QA06-MEDIUM-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-QA04",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-QA06-HIGH",
+      "skillId": "MS-QA06",
+      "sourceContentUri": "content/modules/MOD-FOCUS-QA06-HIGH.md",
+      "sourceContentSha256": "d7851f49adc4c9fa191b15a9943e7e2f35515600966b42def29085a3e131132c",
+      "contentUri": "content/modules/MOD-FOCUS-QA06-HIGH-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-QA04",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-QA07-LOW",
+      "skillId": "MS-QA07",
+      "sourceContentUri": "content/modules/MOD-FOCUS-QA07-LOW.md",
+      "sourceContentSha256": "3f8b6791a1c2501ba51f505ef5a09d802a405ab3d62a253b4ec26381c5df56bf",
+      "contentUri": "content/modules/MOD-FOCUS-QA07-LOW-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-QA04",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-QA07-MEDIUM",
+      "skillId": "MS-QA07",
+      "sourceContentUri": "content/modules/MOD-FOCUS-QA07-MEDIUM.md",
+      "sourceContentSha256": "552412852cead44832009dc71d3aaaabea19640bc69f74dc0b647151759259b9",
+      "contentUri": "content/modules/MOD-FOCUS-QA07-MEDIUM-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-QA04",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-QA07-HIGH",
+      "skillId": "MS-QA07",
+      "sourceContentUri": "content/modules/MOD-FOCUS-QA07-HIGH.md",
+      "sourceContentSha256": "1be4bcb64cf43511bc8344e84b288cb80f2a76a07d36b467a147a6bbfde312f5",
+      "contentUri": "content/modules/MOD-FOCUS-QA07-HIGH-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-QA04",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-QA08-LOW",
+      "skillId": "MS-QA08",
+      "sourceContentUri": "content/modules/MOD-FOCUS-QA08-LOW.md",
+      "sourceContentSha256": "e55c0039686c20beb611f376f53ac16514f24be4ecc05041e5d4c76db4f74ba5",
+      "contentUri": "content/modules/MOD-FOCUS-QA08-LOW-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-QA04",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-QA08-MEDIUM",
+      "skillId": "MS-QA08",
+      "sourceContentUri": "content/modules/MOD-FOCUS-QA08-MEDIUM.md",
+      "sourceContentSha256": "3bcc859f29c04c19f2f9aeb2416c7881c588d4d7f4df2278c77171284d145784",
+      "contentUri": "content/modules/MOD-FOCUS-QA08-MEDIUM-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-QA04",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-QA08-HIGH",
+      "skillId": "MS-QA08",
+      "sourceContentUri": "content/modules/MOD-FOCUS-QA08-HIGH.md",
+      "sourceContentSha256": "2c7611cc33bda0905da899c0e3793dd5b5dde851073aeec00c1a4c2e1ada2ebf",
+      "contentUri": "content/modules/MOD-FOCUS-QA08-HIGH-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-QA04",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-QA10-LOW",
+      "skillId": "MS-QA10",
+      "sourceContentUri": "content/modules/MOD-FOCUS-QA10-LOW.md",
+      "sourceContentSha256": "fba0b364b70c506316f5906006cc4cf0fbd501d72d5c02cff8db0b09c2e7d100",
+      "contentUri": "content/modules/MOD-FOCUS-QA10-LOW-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-QA04",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-QA10-MEDIUM",
+      "skillId": "MS-QA10",
+      "sourceContentUri": "content/modules/MOD-FOCUS-QA10-MEDIUM.md",
+      "sourceContentSha256": "b80307bf576e192c273de31caf70cfea5ef59d4d3bde7294707dd424a4b8bacd",
+      "contentUri": "content/modules/MOD-FOCUS-QA10-MEDIUM-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-QA04",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-QA10-HIGH",
+      "skillId": "MS-QA10",
+      "sourceContentUri": "content/modules/MOD-FOCUS-QA10-HIGH.md",
+      "sourceContentSha256": "35302289bc16dca89a30d2c2cead0c185cc4ae44d2137eb176684ba46ad25442",
+      "contentUri": "content/modules/MOD-FOCUS-QA10-HIGH-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-QA04",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-QA11-LOW",
+      "skillId": "MS-QA11",
+      "sourceContentUri": "content/modules/MOD-FOCUS-QA11-LOW.md",
+      "sourceContentSha256": "98bb5310a61da463a553f3366c2ac0c817a27c74b6e4905b7fa67b0b8ec1f20e",
+      "contentUri": "content/modules/MOD-FOCUS-QA11-LOW-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-QA04",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-QA11-MEDIUM",
+      "skillId": "MS-QA11",
+      "sourceContentUri": "content/modules/MOD-FOCUS-QA11-MEDIUM.md",
+      "sourceContentSha256": "de4fbb54cc7c07646465f0c07d76087a102134d7fee3546ff177249235e2a27c",
+      "contentUri": "content/modules/MOD-FOCUS-QA11-MEDIUM-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-QA04",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-QA11-HIGH",
+      "skillId": "MS-QA11",
+      "sourceContentUri": "content/modules/MOD-FOCUS-QA11-HIGH.md",
+      "sourceContentSha256": "1532869e8d5ea6b9344b9ce07fc549d0f0966932001f28d8fd9060ffc862167c",
+      "contentUri": "content/modules/MOD-FOCUS-QA11-HIGH-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-QA04",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-QA13-LOW",
+      "skillId": "MS-QA13",
+      "sourceContentUri": "content/modules/MOD-FOCUS-QA13-LOW.md",
+      "sourceContentSha256": "2f2b2a825f552085ef848b459a0795a78a78b49702e3459de6d3663f1a6979a2",
+      "contentUri": "content/modules/MOD-FOCUS-QA13-LOW-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-QA04",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-QA13-MEDIUM",
+      "skillId": "MS-QA13",
+      "sourceContentUri": "content/modules/MOD-FOCUS-QA13-MEDIUM.md",
+      "sourceContentSha256": "48334ab208c32bca21323790b390d1ecb8ab0f5c4a146bffcc4d7de4984ca63f",
+      "contentUri": "content/modules/MOD-FOCUS-QA13-MEDIUM-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-QA04",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-QA13-HIGH",
+      "skillId": "MS-QA13",
+      "sourceContentUri": "content/modules/MOD-FOCUS-QA13-HIGH.md",
+      "sourceContentSha256": "d805f76574f563538f71dbd3a87a8191bba821afaaaa9769f2c8735202544825",
+      "contentUri": "content/modules/MOD-FOCUS-QA13-HIGH-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-QA04",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-QA14-LOW",
+      "skillId": "MS-QA14",
+      "sourceContentUri": "content/modules/MOD-FOCUS-QA14-LOW.md",
+      "sourceContentSha256": "f2a4bc658090785096025a2bd25e83c04bebe5ebf76f802deb72622ab07f3fc8",
+      "contentUri": "content/modules/MOD-FOCUS-QA14-LOW-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-QA04",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-QA14-MEDIUM",
+      "skillId": "MS-QA14",
+      "sourceContentUri": "content/modules/MOD-FOCUS-QA14-MEDIUM.md",
+      "sourceContentSha256": "52f88aa2758aa7b9d1bdffcbc744d53cbdaf791f445b363232a68311b521fabf",
+      "contentUri": "content/modules/MOD-FOCUS-QA14-MEDIUM-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-QA04",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-QA14-HIGH",
+      "skillId": "MS-QA14",
+      "sourceContentUri": "content/modules/MOD-FOCUS-QA14-HIGH.md",
+      "sourceContentSha256": "b3e4661d32395316dddda8ce104ae2640fd3d02aeccb416f48b01ef07f79ab19",
+      "contentUri": "content/modules/MOD-FOCUS-QA14-HIGH-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-QA04",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-QA16-LOW",
+      "skillId": "MS-QA16",
+      "sourceContentUri": "content/modules/MOD-FOCUS-QA16-LOW.md",
+      "sourceContentSha256": "797c96813978bdb4bd2b730116b209b56003239e1ab9f660b93d56544b5ce074",
+      "contentUri": "content/modules/MOD-FOCUS-QA16-LOW-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-QA04",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-QA16-MEDIUM",
+      "skillId": "MS-QA16",
+      "sourceContentUri": "content/modules/MOD-FOCUS-QA16-MEDIUM.md",
+      "sourceContentSha256": "7edbc55cc5354833c8d675315ae8125f59c004e4818f90b9a5fcc2f2baf2826d",
+      "contentUri": "content/modules/MOD-FOCUS-QA16-MEDIUM-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-QA04",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-QA16-HIGH",
+      "skillId": "MS-QA16",
+      "sourceContentUri": "content/modules/MOD-FOCUS-QA16-HIGH.md",
+      "sourceContentSha256": "56c05372c856d9fc7f1d70085cacf0d01237264ea105d5b160779ced36537c59",
+      "contentUri": "content/modules/MOD-FOCUS-QA16-HIGH-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-QA04",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-SEC01-MEDIUM",
+      "skillId": "MS-SEC01",
+      "sourceContentUri": "content/modules/MOD-FOCUS-SEC01-MEDIUM.md",
+      "sourceContentSha256": "f3c4ad277b1630dfdd40f127ccb908bcc41574993e051fe06b16ccce27f7bfe9",
+      "contentUri": "content/modules/MOD-FOCUS-SEC01-MEDIUM-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-SEC09",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-SEC01-HIGH",
+      "skillId": "MS-SEC01",
+      "sourceContentUri": "content/modules/MOD-FOCUS-SEC01-HIGH.md",
+      "sourceContentSha256": "554e7c6c9028f260c242986424bfe784d70afb77f62ad53bd39dd8ed5909bf66",
+      "contentUri": "content/modules/MOD-FOCUS-SEC01-HIGH-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-SEC09",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-SEC02-MEDIUM",
+      "skillId": "MS-SEC02",
+      "sourceContentUri": "content/modules/MOD-FOCUS-SEC02-MEDIUM.md",
+      "sourceContentSha256": "178ef627577c2b03fd8935e289598747982338cd54e3f56e1cbefaac15af884e",
+      "contentUri": "content/modules/MOD-FOCUS-SEC02-MEDIUM-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-SEC09",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-SEC02-HIGH",
+      "skillId": "MS-SEC02",
+      "sourceContentUri": "content/modules/MOD-FOCUS-SEC02-HIGH.md",
+      "sourceContentSha256": "e1f3d4dca5fff30b6615db5a1c549e5b0a7f96e3f26da8961266d17e1498cfcd",
+      "contentUri": "content/modules/MOD-FOCUS-SEC02-HIGH-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-SEC09",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-SEC03-MEDIUM",
+      "skillId": "MS-SEC03",
+      "sourceContentUri": "content/modules/MOD-FOCUS-SEC03-MEDIUM.md",
+      "sourceContentSha256": "92b105fcc41fd5dd40765cb25bf52c37c2615e7514fc41c122cca3536e574217",
+      "contentUri": "content/modules/MOD-FOCUS-SEC03-MEDIUM-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-SEC09",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-SEC03-HIGH",
+      "skillId": "MS-SEC03",
+      "sourceContentUri": "content/modules/MOD-FOCUS-SEC03-HIGH.md",
+      "sourceContentSha256": "42f8d9fdba856cb89d9ffd4ed4500ce645c2644358e294cb79d943b70e7c38eb",
+      "contentUri": "content/modules/MOD-FOCUS-SEC03-HIGH-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-SEC09",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-SEC04-MEDIUM",
+      "skillId": "MS-SEC04",
+      "sourceContentUri": "content/modules/MOD-FOCUS-SEC04-MEDIUM.md",
+      "sourceContentSha256": "f46fa34b4a4a80a4080523462c54603176f83e29ac2b22933a0c051ae29c9ea5",
+      "contentUri": "content/modules/MOD-FOCUS-SEC04-MEDIUM-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-SEC09",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-SEC04-HIGH",
+      "skillId": "MS-SEC04",
+      "sourceContentUri": "content/modules/MOD-FOCUS-SEC04-HIGH.md",
+      "sourceContentSha256": "9b15e1aa5c2835edfda713b2fb6c9e6534becf2b56f50150d51c9d5d1b02efbe",
+      "contentUri": "content/modules/MOD-FOCUS-SEC04-HIGH-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-SEC09",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-SEC05-MEDIUM",
+      "skillId": "MS-SEC05",
+      "sourceContentUri": "content/modules/MOD-FOCUS-SEC05-MEDIUM.md",
+      "sourceContentSha256": "d52632ef62308c617fe35dbec5e756de7ba30fa6586b517bb9b56fb827d78a33",
+      "contentUri": "content/modules/MOD-FOCUS-SEC05-MEDIUM-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-SEC09",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-SEC05-HIGH",
+      "skillId": "MS-SEC05",
+      "sourceContentUri": "content/modules/MOD-FOCUS-SEC05-HIGH.md",
+      "sourceContentSha256": "3da3fc4bf4f8567835f736bf113159d6b0e1f9e5c379f6db0f0c4ca7c155c88a",
+      "contentUri": "content/modules/MOD-FOCUS-SEC05-HIGH-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-SEC09",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-SEC06-MEDIUM",
+      "skillId": "MS-SEC06",
+      "sourceContentUri": "content/modules/MOD-FOCUS-SEC06-MEDIUM.md",
+      "sourceContentSha256": "63598c921ae47c6b92cfb329255f872366477e3656d8109c8e451edc1e515503",
+      "contentUri": "content/modules/MOD-FOCUS-SEC06-MEDIUM-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-SEC09",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-SEC06-HIGH",
+      "skillId": "MS-SEC06",
+      "sourceContentUri": "content/modules/MOD-FOCUS-SEC06-HIGH.md",
+      "sourceContentSha256": "df25c8b1a7af11a0da7d599eeb359a382704343e0deb5c99934b1f5910742b37",
+      "contentUri": "content/modules/MOD-FOCUS-SEC06-HIGH-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-SEC09",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-SEC07-MEDIUM",
+      "skillId": "MS-SEC07",
+      "sourceContentUri": "content/modules/MOD-FOCUS-SEC07-MEDIUM.md",
+      "sourceContentSha256": "fcfe2247aa60ae9c3b990d0ef5438cd0eef48aefc9b8dcdaea3b924e7e04742e",
+      "contentUri": "content/modules/MOD-FOCUS-SEC07-MEDIUM-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-SEC09",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-SEC07-HIGH",
+      "skillId": "MS-SEC07",
+      "sourceContentUri": "content/modules/MOD-FOCUS-SEC07-HIGH.md",
+      "sourceContentSha256": "9d32c298448cf01c2302f43d5dbce5ea06aefb75a41b4bb3839e8a456512e3a8",
+      "contentUri": "content/modules/MOD-FOCUS-SEC07-HIGH-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-SEC09",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-SEC08-MEDIUM",
+      "skillId": "MS-SEC08",
+      "sourceContentUri": "content/modules/MOD-FOCUS-SEC08-MEDIUM.md",
+      "sourceContentSha256": "9c13e3686acf4f3a4d3f6286acfbaee3e6f3a1121aa404464c5de4073d3c1c9b",
+      "contentUri": "content/modules/MOD-FOCUS-SEC08-MEDIUM-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-SEC09",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-SEC08-HIGH",
+      "skillId": "MS-SEC08",
+      "sourceContentUri": "content/modules/MOD-FOCUS-SEC08-HIGH.md",
+      "sourceContentSha256": "52f53a0f00079bcbdf352644bee0b3a2c8f9c804354d2b79cea9f0e7acc8f72a",
+      "contentUri": "content/modules/MOD-FOCUS-SEC08-HIGH-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-SEC09",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-SEC09-MEDIUM",
+      "skillId": "MS-SEC09",
+      "sourceContentUri": "content/modules/MOD-FOCUS-SEC09-MEDIUM.md",
+      "sourceContentSha256": "2f0b7c21348a04a8f3944e3767ab628c52c0a51c05a703b786ad41f71975c013",
+      "contentUri": "content/modules/MOD-FOCUS-SEC09-MEDIUM-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-SEC01",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-SEC09-HIGH",
+      "skillId": "MS-SEC09",
+      "sourceContentUri": "content/modules/MOD-FOCUS-SEC09-HIGH.md",
+      "sourceContentSha256": "cb501e34a391252dd2acba4ec0af57bb059c6c180a8c4cd127242fc7686ab498",
+      "contentUri": "content/modules/MOD-FOCUS-SEC09-HIGH-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-SEC01",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-SEC10-MEDIUM",
+      "skillId": "MS-SEC10",
+      "sourceContentUri": "content/modules/MOD-FOCUS-SEC10-MEDIUM.md",
+      "sourceContentSha256": "61e9cf1219154461e2f1732940b422a67e4ed7b941519181fa32fe5febb95375",
+      "contentUri": "content/modules/MOD-FOCUS-SEC10-MEDIUM-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-SEC09",
+        "MS-CORE02"
+      ]
+    },
+    {
+      "moduleId": "MOD-FOCUS-SEC10-HIGH",
+      "skillId": "MS-SEC10",
+      "sourceContentUri": "content/modules/MOD-FOCUS-SEC10-HIGH.md",
+      "sourceContentSha256": "f92f01ececa38572cebca533f2d132b88351b725cfbe608968d35d2529bb337f",
+      "contentUri": "content/modules/MOD-FOCUS-SEC10-HIGH-single-skill-v012.md",
+      "reason": "The content heading names this Skill and the unit contains its existing practice activity.",
+      "retiredSkillMappings": [
+        "MS-SEC09",
+        "MS-CORE02"
+      ]
+    }
+  ],
+  "uncoveredSkills": [
+    "MS-DE09",
+    "MS-DE10",
+    "MS-FS01",
+    "MS-FS10",
+    "MS-FS15",
+    "MS-QA09",
+    "MS-QA12",
+    "MS-QA15"
+  ],
+  "providerCounts": {
+    "MS-ARC01": 3,
+    "MS-ARC02": 3,
+    "MS-ARC03": 3,
+    "MS-ARC04": 3,
+    "MS-ARC05": 3,
+    "MS-ARC06": 3,
+    "MS-CORE01": 3,
+    "MS-CORE02": 3,
+    "MS-CORE03": 3,
+    "MS-CORE04": 3,
+    "MS-DE01": 6,
+    "MS-DE02": 3,
+    "MS-DE03": 3,
+    "MS-DE04": 3,
+    "MS-DE05": 3,
+    "MS-DE06": 3,
+    "MS-DE07": 3,
+    "MS-DE08": 3,
+    "MS-DE11": 6,
+    "MS-DE12": 3,
+    "MS-DE13": 3,
+    "MS-DE14": 3,
+    "MS-DE15": 6,
+    "MS-DE16": 3,
+    "MS-FS02": 6,
+    "MS-FS03": 6,
+    "MS-FS04": 3,
+    "MS-FS05": 3,
+    "MS-FS06": 3,
+    "MS-FS07": 6,
+    "MS-FS08": 3,
+    "MS-FS09": 3,
+    "MS-FS11": 6,
+    "MS-FS12": 3,
+    "MS-FS13": 3,
+    "MS-FS14": 3,
+    "MS-FS16": 6,
+    "MS-GOV01": 3,
+    "MS-GOV02": 3,
+    "MS-GOV03": 3,
+    "MS-INF01": 3,
+    "MS-INF02": 3,
+    "MS-INF03": 3,
+    "MS-INF04": 3,
+    "MS-INF05": 3,
+    "MS-INF06": 3,
+    "MS-INF07": 3,
+    "MS-INF08": 3,
+    "MS-QA01": 3,
+    "MS-QA02": 3,
+    "MS-QA03": 3,
+    "MS-QA04": 3,
+    "MS-QA05": 3,
+    "MS-QA06": 3,
+    "MS-QA07": 3,
+    "MS-QA08": 3,
+    "MS-QA10": 6,
+    "MS-QA11": 3,
+    "MS-QA13": 3,
+    "MS-QA14": 6,
+    "MS-QA16": 6,
+    "MS-SEC01": 3,
+    "MS-SEC02": 3,
+    "MS-SEC03": 3,
+    "MS-SEC04": 3,
+    "MS-SEC05": 3,
+    "MS-SEC06": 3,
+    "MS-SEC07": 3,
+    "MS-SEC08": 3,
+    "MS-SEC09": 3,
+    "MS-SEC10": 3
+  }
+}

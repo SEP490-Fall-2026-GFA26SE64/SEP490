@@ -1,3 +1,4 @@
+import { SkillLearningPanel } from './SkillLearningPanel'
 import { useCallback, useEffect, useEffectEvent, useRef, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import {
@@ -236,19 +237,9 @@ function LearningModuleReader({ moduleId }: { moduleId: string }) {
               </span>
               <Progress value={percent} variant="success" className="w-24" />
             </div>
-            <Button
-              variant="primary"
-              size="sm"
-              disabled
-              title={
-                vi
-                  ? 'Bài thi module chưa khả dụng'
-                  : 'Module exam is not available yet'
-              }
-              className="gap-1.5 font-bold shadow-xs"
-            >
+            <Button variant="outline" size="sm" disabled={!view || view.revision.payload.teachings.length !== 1} onClick={() => document.getElementById('skill-learning-status')?.focus()} className="gap-1.5">
               <Award size={15} aria-hidden="true" />
-              {vi ? 'Làm bài thi module' : 'Take Module Exam'}
+              {vi ? 'Trạng thái học kỹ năng' : 'Skill learning status'}
             </Button>
           </div>
         </header>
@@ -544,21 +535,11 @@ function LearningModuleReader({ moduleId }: { moduleId: string }) {
                               : 'Go to next item'}
                           </Button>
                         ) : (
-                          <Button
-                            variant="primary"
-                            disabled
-                            title={
-                              vi
-                                ? 'Bài thi module chưa khả dụng'
-                                : 'Module exam is not available yet'
-                            }
-                            rightIcon={<Award size={16} />}
-                            className="self-start px-6 font-bold sm:self-auto"
-                          >
-                            {vi ? 'Làm bài thi module' : 'Take Module Exam'}
-                          </Button>
+                          <p className="text-body-sm text-muted-foreground" role="status">{vi ? 'Điều kiện thi kỹ năng được hiển thị bên dưới.' : 'Skill learning eligibility is shown below.'}</p>
                         )}
                       </div>
+                      {view.revision.payload.teachings.length === 1 && <SkillLearningPanel skillId={view.revision.payload.teachings[0].skillId} skillName={view.revision.payload.teachings[0].skillName} moduleId={moduleId} completedLessons={view.progress.filter(p => p.completedAt !== null).length} />}
+                      {view.revision.payload.teachings.length !== 1 && <p role="status" className="text-body-sm text-muted-foreground">{vi ? 'Liên kết kỹ năng của phiên bản này cần được đối soát trước khi xác định điều kiện thi.' : 'This historical version needs skill mapping reconciliation before learning eligibility can be determined.'}</p>}
                       <div className="flex justify-end">
                         <Button
                           variant="ghost"

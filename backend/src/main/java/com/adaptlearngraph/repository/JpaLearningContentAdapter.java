@@ -67,6 +67,20 @@ public final class JpaLearningContentAdapter implements LearningContentPort {
         }
     }
 
+    @Override public List<SkillCompletion> completions(String org,String learner,String skill) {
+        return repositories.completions().find(org,learner,skill).stream().map(r ->
+                new SkillCompletion(r.skillId(),r.moduleId(),r.revision(),r.contentVersion(),time(r.completedAt()))).toList();
+    }
+    @Override public void complete(String org,String learner,SkillCompletion proof) {
+        repositories.completions().insert(org,learner,proof.moduleId(),proof.revision(),proof.skillId(),proof.contentVersion(),proof.completedAt());
+    }
+    @Override public boolean selfStudy(String org,String learner,String module) {
+        return repositories.selfStudies().admitted(org,learner,module);
+    }
+    @Override public void admitSelfStudy(String org,String learner,String module,int revision,String skill) {
+        repositories.selfStudies().admit(org,learner,module,revision,skill);
+    }
+
     @Override
     public Limits limits() {
         var rows = repositories.settings().current();
@@ -300,7 +314,7 @@ public final class JpaLearningContentAdapter implements LearningContentPort {
 
     @Override
     public boolean assigned(String org, String learner, String module) {
-        return generated.permits(org, learner, module);
+        return generated.permits(org, learner, module) || selfStudy(org, learner, module);
     }
 
     @Override

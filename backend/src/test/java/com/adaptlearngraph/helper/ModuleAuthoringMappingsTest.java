@@ -135,7 +135,7 @@ class ModuleAuthoringMappingsTest {
                 List.of(new Problem("module-2", 3, "Missing title")), List.of("module-1"), false);
         assertThat(mapper.map(preview, ImportPreviewResponse.class)).isEqualTo(new ImportPreviewResponse("import-1",
                 List.of(new ImportRowResponse("module-1", 2, new ModuleInput("Intro", "LESSON_AND_PRACTICE", "content-1", 30,
-                        new BigDecimal("150000.50"), List.of("occ-1"), List.of(new TeachingSelection("skill-1", "PRIMARY", "LOW"))),
+                        new BigDecimal("150000.50"), List.of("occ-1"), List.of(new TeachingSelection("skill-1"))),
                         List.of(lessonResponse()), 4L)),
                 List.of(new ImportProblemResponse("module-2", 3, "Missing title")), List.of("module-1"), false));
     }
@@ -177,7 +177,7 @@ class ModuleAuthoringMappingsTest {
                 "expert-1", "2026-10-01T00:00:00Z", List.of(lessonResponse()));
         var pack = new PackageResponse(metadataResponse(), "Intro", "LESSON_AND_PRACTICE", "content://content-1",
                 "text/markdown", "1.0.0", 30, new BigDecimal("150000.50"),
-                List.of(new TeachingResponse(metadataResponse(), "skill-1", "Java", "PRIMARY", "LOW")), content);
+                List.of(new TeachingResponse(metadataResponse(), "skill-1", "Java")), content);
         return new RevisionResponse(2, "RELEASED", pack, "expert-1", "2026-10-02T00:00:00Z", "manager-1",
                 "2026-10-03T00:00:00Z", "ok");
     }
@@ -198,7 +198,7 @@ class ModuleAuthoringMappingsTest {
     private static CatalogModuleResponse catalogModuleResponse() {
         return new CatalogModuleResponse(metadataResponse(), "Intro", "LESSON_AND_PRACTICE", "content://content-1",
                 "text/markdown", "1.0.0", 30, new BigDecimal("150000.50"),
-                List.of(new CatalogTeachingResponse(metadataResponse(), "skill-1", "Java", "PRIMARY", "LOW")));
+                List.of(new CatalogTeachingResponse(metadataResponse(), "skill-1", "Java")));
     }
 
     private static Intake intake() {

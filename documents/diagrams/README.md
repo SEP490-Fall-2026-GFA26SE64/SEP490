@@ -1,5 +1,10 @@
 # Architecture Diagrams
 
+
+## Single-Skill Module contract — 2026-11-05
+
+[Current schema and Mermaid](../neo4j_schema.md#current-contract--2026-11-05) and [PlantUML source](neo4j.puml) describe Module → TEACHES → exactly one MicroSkill, with multiple alternative Modules per Skill and no teaching focus/difficulty properties. PostgreSQL owns original-version completion and optional-learning admission. Existing `neo4j.svg`/`neo4j.png` are retained historical v0.11 renders; they were not regenerated or represented as current. No PlantUML renderer was installed for this source change. [Runtime/API contract](../technical/Skill-Learning-Eligibility.md).
+
 ## Current Scope Alignment
 
 ## Learning and Question Bank state machines — 2026-11-02

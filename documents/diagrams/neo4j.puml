@@ -14,8 +14,8 @@ skinparam noteBackgroundColor #FFF7ED
 skinparam noteBorderColor #D97706
 skinparam defaultFontName Arial
 skinparam defaultFontSize 14
-title Ontology v0.11 — Module–Skill teaching focus and difficulty
-class Job Position {
+title Ontology v0.12 — one Skill per Module
+class JobPosition {
  code : String
  name : String
  jobZone : Integer
@@ -55,22 +55,16 @@ class LearningModule {
  duration : Integer (minutes > 0)
  price : Float (VND > 0)
 }
-Job Position "1" --> "1..*" TargetRole : HAS_ROLE
+JobPosition "1" --> "1..*" TargetRole : HAS_ROLE
 TargetRole "1" --> "1..*" Level : HAS_LEVEL
 Level "1" -up-> "1..*" Competency : HAS_COMPETENCY
 Competency "0..*" --> "1..*" MicroSkill : HAS_SKILL
 Level "0..*" --> "1..*" MicroSkill : REQUIRES_SKILL
-LearningModule "1..*" -up-> "1..*" MicroSkill : TEACHES
+LearningModule "0..*" -up-> "1" MicroSkill : TEACHES
 note on link
-TEACHES relationship properties (both required):
-teachingFocus: PRIMARY | SUPPORTING | INCIDENTAL
-difficultyLevel: LOW | MEDIUM | HIGH
-Independent per Module-Skill pair, not node fields.
-Example MOD-FOCUS-CORE01-HIGH:
-MS-CORE01: PRIMARY / HIGH
-MS-CORE02: SUPPORTING / MEDIUM
-MS-CORE03: INCIDENTAL / LOW (no gap-closure credit)
-Difficulty does not follow numeric gap or role title.
+Each Module teaches exactly one Skill.
+No teachingFocus or difficultyLevel properties.
+A Skill may have multiple alternative Modules.
 end note
 MicroSkill --> MicroSkill : HAS_SKILL_PREREQUISITE
 note bottom of MicroSkill
@@ -89,22 +83,16 @@ Skill sets may differ across Levels of the same role.
 A Competency member must be required by its owning Level.
 end note
 note bottom of LearningModule
-TEACHES stores teachingFocus + difficultyLevel.
-Each Module has exactly ONE PRIMARY skill.
-Other links may be SUPPORTING or INCIDENTAL.
-INCIDENTAL is context, not a taught outcome.
-Neither enum proves learner mastery.
-A Module teaches one or more Skills.
-A Skill can have several teaching Modules.
-Providers are alternatives, not all mandatory.
-Select learning content through missing skills.
-Check content depth against the selected Level.
-Skill prerequisites determine learning readiness.
-Module completion does not automatically prove skill mastery.
+Complete every lesson in any one Module
+=> learning prerequisite met for that Skill assessment.
+Other Modules remain optional and independently learnable.
+PostgreSQL owns completion/version/Skill evidence.
+Module edits do not move historical evidence to another Skill.
+Completion is not an assessment result or mastery.
 end note
-note top of Job Position
-Each TargetRole has one owning Job Position.
-Repeated reported titles use distinct role IDs per Job Position.
+note top of JobPosition
+Each TargetRole has one owning JobPosition.
+Repeated reported titles use distinct role IDs per JobPosition.
 Shared metadata: id, version, status, reviewStatus,
 reviewedBy?, reviewedAt?
 end note

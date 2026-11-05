@@ -9,6 +9,12 @@ import static com.adaptlearngraph.dtos.OfficialQuestionBankManifest.*;
 /** Development-only exact release bootstrap. Existing different graphs are never overwritten. */
 public final class LocalCatalogBootstrap {
     public static final String VERSION="0.11.0";
+    public static final String SINGLE_SKILL_VERSION="0.12.0";
+    public static final String SINGLE_SKILL_HASH="3ccdb02789af0d2560b77c477f9e2fe84f6818943a12479cce8d6580273f1702";
+    private final String catalogVersion;
+    private final String sourceHash;
+    public String version() { return catalogVersion; }
+    public String sourceHash() { return sourceHash; }
     public static final String SOURCE_HASH="a4f3165fa0ce6762651f59130c67e7c98f9a1b739f58d86e6b3e1b4fb58d3ddd";
     public static final String LEGACY_SOURCE_HASH="585eae81565deb7f3d0e40eeea10e583dd526cd4569077babfda6d5b22e9602c";
     private static final Map<String,String> LABELS=Map.of("JobPositions","JobPosition","TargetRoles","TargetRole","Levels","Level",
@@ -34,16 +40,17 @@ public final class LocalCatalogBootstrap {
         require(SoftwareDevelopmentSeed.MODULES_HASH.equals(sha256(bytes)),"SE module seed drift");
         var manifest=JSON.readTree(bytes);
         require((SOURCE_HASH.equals(manifest.path("baseSha256").asText()) || LEGACY_SOURCE_HASH.equals(manifest.path("baseSha256").asText())) && VERSION.equals(manifest.path("catalogVersion").asText()),"SE base pin drift");
-        for(var module:manifest.path("reusedModules")) {
+        if(!SINGLE_SKILL_VERSION.equals(catalogVersion)) for(var module:manifest.path("reusedModules")) {
             var props=properties(module);
             require(canonical(JSON.valueToTree(Map.of("label","LearningModule","props",props))).equals(expectedNodes.get(props.get("id"))),"SE reused module drift");
         }
-        for(var row:manifest.path("reusedTeaching")) {
+        if(!SINGLE_SKILL_VERSION.equals(catalogVersion)) for(var row:manifest.path("reusedTeaching")) {
             var props=properties(row);var type=props.remove("type");var from=props.remove("fromId");var to=props.remove("toId");
             require(canonical(JSON.valueToTree(Map.of("type",type,"from",from,"to",to,"props",props))).equals(expectedEdges.get(props.get("id"))),"SE reused teaching drift");
         }
         for(var row:manifest.path("relationships")) {
             var props=properties(row);var type=props.remove("type");var from=props.remove("fromId");var to=props.remove("toId");
+            props.put("version",catalogVersion);
             require("HAS_SKILL_PREREQUISITE".equals(type) && expectedNodes.containsKey(from) && expectedNodes.containsKey(to),"Invalid SE prerequisite");
             var edge=Map.<String,Object>of("type",type,"from",from,"to",to,"props",props);
             String edgeId=(String)props.get("id");
@@ -53,11 +60,13 @@ public final class LocalCatalogBootstrap {
         }
     }
     public LocalCatalogBootstrap(byte[] bytes)throws java.io.IOException {
-        require(SOURCE_HASH.equals(sha256(bytes)) || LEGACY_SOURCE_HASH.equals(sha256(bytes)),"Latest catalog source drift");
+        sourceHash=sha256(bytes);
+        catalogVersion=SINGLE_SKILL_HASH.equals(sourceHash)?SINGLE_SKILL_VERSION:VERSION;
+        require(SINGLE_SKILL_HASH.equals(sourceHash) || SOURCE_HASH.equals(sourceHash) || LEGACY_SOURCE_HASH.equals(sourceHash),"Latest catalog source drift");
         var data=JSON.readTree(bytes);
         for(var label:LABELS.entrySet())for(var row:data.path(label.getKey())) {
             var props=properties(row);props.remove(switch(label.getValue()){case "TargetRole"->"jobPositionId";case "Level"->"targetRoleId";case "Competency"->"levelId";default->"__exportOnly";});
-            require(VERSION.equals(props.get("version")),"Catalog version drift");
+            require(catalogVersion.equals(props.get("version")),"Catalog version drift");
             String id=(String)props.get("id");
             expectedNodeKeys.put(id,Set.copyOf(props.keySet()));
             require(expectedNodes.put(id,canonical(JSON.valueToTree(Map.of("label",label.getValue(),"props",props))))==null,"Duplicate catalog node");
@@ -65,14 +74,23 @@ public final class LocalCatalogBootstrap {
         }
         for(var row:data.path("relationships")) {
             var props=properties(row);String type=(String)props.remove("type");Object from=props.remove("fromId"),to=props.remove("toId");
-            require(TYPES.contains(type) && VERSION.equals(props.get("version")) && expectedNodes.containsKey(from) && expectedNodes.containsKey(to),"Catalog edge drift");
+            require(TYPES.contains(type) && catalogVersion.equals(props.get("version")) && expectedNodes.containsKey(from) && expectedNodes.containsKey(to),"Catalog edge drift");
             var edge=Map.<String,Object>of("type",type,"from",from,"to",to,"props",props);
             String edgeId=(String)props.get("id");
             expectedEdgeKeys.put(edgeId,Set.copyOf(props.keySet()));
             require(expectedEdges.put(edgeId,canonical(JSON.valueToTree(edge)))==null,"Duplicate catalog edge");
             edges.computeIfAbsent(type,k->new ArrayList<>()).add(edge);
         }
-        require(expectedNodes.size()==994 && expectedEdges.size()==5121,"Incomplete latest catalog");
+        require(expectedNodes.size()==994 && expectedEdges.size()==(SINGLE_SKILL_VERSION.equals(catalogVersion)?4703:5121),"Incomplete latest catalog");
+        if(SINGLE_SKILL_VERSION.equals(catalogVersion)) {
+            var counts=new HashMap<String,Integer>();
+            for(var edge:edges.getOrDefault("TEACHES",List.of())) {
+                var props=(Map<?,?>)edge.get("props");
+                require(!props.containsKey("teachingFocus") && !props.containsKey("difficultyLevel"),"Retired teaching metadata");
+                counts.merge((String)edge.get("from"),1,Integer::sum);
+            }
+            for(var module:nodes.get("LearningModule"))require(counts.getOrDefault(module.get("id"),0)==1,"Each Module must teach exactly one Skill");
+        }
     }
     private static Map<String,Object> properties(JsonNode row) {
         Map<String,Object> props=JSON.convertValue(row,new com.fasterxml.jackson.core.type.TypeReference<Map<String,Object>>(){});
@@ -95,6 +113,12 @@ public final class LocalCatalogBootstrap {
         graph.read(tx->{verify(tx,false);return true;});
     }
     private void verify(Neo4jCypher.Statements tx,boolean allowBase) {
+        if(SINGLE_SKILL_VERSION.equals(catalogVersion)) {
+            long invalid=tx.single("MATCH (m:LearningModule) WHERE m.id IN $ids OPTIONAL MATCH (m)-[t:TEACHES]->() WITH m,collect(t) AS mappings WHERE size(mappings)<>1 OR any(t IN mappings WHERE t.teachingFocus IS NOT NULL OR t.difficultyLevel IS NOT NULL) RETURN count(m) AS invalid",
+                    Map.of("ids",nodes.get("LearningModule").stream().map(m->m.get("id")).toList())).get("invalid").asLong();
+            require(invalid==0,"Single-Skill catalog cardinality/metadata drift");
+        }
+
         var actualNodes=new TreeMap<String,String>();var actualEdges=new TreeMap<String,String>();
         for(var row:tx.list("MATCH (n) WHERE n.id IN $ids RETURN labels(n) AS labels,properties(n) AS props",Map.of("ids",List.copyOf(expectedNodes.keySet())))) {
             var labels=row.get("labels").asList(v->v.asString());require(labels.size()==1,"Unexpected catalog label");

@@ -175,3 +175,7 @@ The default pathway view uses main's server-generated initial role pathway and E
 ## Manual test pathway retired — 2026-10-30
 
 This supersedes the manual selector/assignment and blank-empty-state behavior in R5–R7 and the integration notes above. Employee uses the real initial pathway; no R4 sample selector or Assigned modules entry is shown. Without an initial pathway, the page retains its roadmap/timeline frame and offers Review Roles guidance. The old assigned query does not open test mode. Historical assignments/progress remain stored but manual assignments no longer grant lesson access. Generated pathway approval/version/prerequisite checks and the existing lesson reader remain in place. [Verification and manual checklist](../../testing/system/REQ-013-retire-manual-pathway.md).
+
+### Optional Modules for the same Skill — 2026-11-05
+
+An Employee with an authorized Module or original completion evidence for a Skill can study other approved, active Modules teaching that same Skill within their organization. Each Module retains its own pinned content and progress; optional study does not change pathway membership/order. Completing one Module leaves the others available. Loading, empty, retry and access-denial states use real APIs. [Learning contract](../../technical/Skill-Learning-Eligibility.md).

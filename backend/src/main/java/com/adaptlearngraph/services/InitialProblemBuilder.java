@@ -76,7 +76,7 @@ public final class InitialProblemBuilder {
             offers.add(new Offer(provider.moduleId(),provider.title(),provider.contentVersion(),provider.durationMinutes(),provider.priceVnd(),
                     provider.skillId(),null,result==null?0:result.preference(),true,binding.versions().get("suitability"),
                     result==null?"ANCILLARY_TEACHING":result.reason(),provider.teachingFocus(),provider.difficultyLevel(),
-                    result==null?null:InitialSuitability.preferred(need),CoverageRole.ANCILLARY,false,null));
+                    result==null || provider.difficultyLevel()==null?null:InitialSuitability.preferred(need),CoverageRole.ANCILLARY,false,null));
             gates.addAll(providerGates);
         }
         offers.removeIf(o->unavailableModules.contains(o.moduleId()));gates.removeIf(g->unavailableModules.contains(g.moduleId()));

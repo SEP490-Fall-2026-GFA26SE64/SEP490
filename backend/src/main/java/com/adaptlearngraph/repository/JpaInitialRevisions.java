@@ -40,7 +40,7 @@ public final class JpaInitialRevisions {
                 if(value.plan().formatVersion()!=null) {
                     Short rank=target.coverageRole()==com.adaptlearngraph.entities.domain.InitialPlanning.CoverageRole.COVERAGE?(short)target.preference():null;
                     db.data.teaching().insert(new InitialPathwayTeachingV2Entity(id,revision,null,org,learner,selection.id(),selection.revision(),
-                            module.id(),target.skillId(),target.teachingFocus().name(),target.difficultyLevel().name(),target.coverageRole().name(),
+                            module.id(),target.skillId(),target.teachingFocus()==null?null:target.teachingFocus().name(),target.difficultyLevel()==null?null:target.difficultyLevel().name(),target.coverageRole().name(),
                             target.preferredDifficulty()==null?null:target.preferredDifficulty().name(),rank,target.expertAttention(),
                             target.attentionReason(),target.suitabilityVersion(),target.reason()));
                     continue;

@@ -19,14 +19,14 @@ import { FormField as Field } from '../../../shared/components/ui/FormField'
 import { Heading } from '../../../shared/components/typography/Heading'
 import { WorkspaceLayout } from '../../../shared/layouts/WorkspaceLayout'
 import { useTranslation } from '../../../shared/i18n/LanguageContext'
-import { moduleRequest, type CatalogChoice, type ModuleActor, type ModuleCatalogItem, type ModuleCatalogPage, type ModuleContent, type ModuleDocument, type ModulePage, type ModuleRevision, type ModuleSave, type TeachingInput } from '../../../shared/api/moduleAuthoringApi'
+import { moduleRequest, type CatalogChoice, type ModuleActor, type ModuleCatalogItem, type ModuleCatalogPage, type ModuleContent, type ModuleDocument, type ModulePage, type ModuleRevision, type ModuleSave } from '../../../shared/api/moduleAuthoringApi'
 
 import { CatalogModuleDetails } from './CatalogModuleDetails'
 
 type Mode = 'modules' | 'content' | 'approvals' | 'learning'
 const control = 'min-h-10 w-full rounded-lg border border-border bg-card px-3 py-2 text-[length:var(--text-body-sm)] text-foreground focus:outline-none focus:ring-2 focus:ring-primary'
 const latest = (doc: ModuleDocument) => doc.revisions[doc.revisions.length - 1]
-const initialForm = (): ModuleSave => ({ title: '', moduleType: 'LESSON_AND_PRACTICE', contentId: '', duration: 1, price: 1, teachings: [] })
+const initialForm = (): ModuleSave => ({ title: '', moduleType: 'LESSON_AND_PRACTICE', contentId: '', duration: 1, price: 1, teachings: [{ skillId: '' }] })
 const statusVariant = (state: string | null | undefined): BadgeProps['variant'] => {
   if (['APPROVED', 'ACTIVE', 'RELEASED'].includes(state ?? '')) return 'success'
   if (['SUBMITTED', 'NEEDS_EXPERT_REVIEW', 'PUBLISH_PENDING', 'ARCHIVE_PENDING', 'ARCHIVE_REQUESTED'].includes(state ?? '')) return 'warning'
@@ -157,7 +157,7 @@ export function ModuleManagementWorkspace({ mode = 'modules' }: { mode?: Mode })
     if (doc) {
       const p = latest(doc).payload
       setForm({ title: p.title, moduleType: p.moduleType, contentId: p.content.id, duration: p.duration, price: p.price,
-        teachings: p.teachings.map(t => ({ skillId: t.skillId, teachingFocus: t.teachingFocus, difficultyLevel: t.difficultyLevel })) })
+        teachings: p.teachings.length === 1 ? [{ skillId: p.teachings[0].skillId }] : [{ skillId: '' }] })
     } else setForm(initialForm())
     setModuleLessons(doc ? latest(doc).payload.content.lessons ?? [] : [newLesson('TEXT')])
     setEditing(true)
@@ -311,7 +311,7 @@ export function ModuleManagementWorkspace({ mode = 'modules' }: { mode?: Mode })
     <Dialog open={editing} onOpenChange={open => { if (!busy && !contentBusy) { setEditing(open); if (!open) setSelected(null) } }} className="max-w-3xl" ariaLabel={copy('Module editor', 'Chỉnh sửa module')}>
       <DialogHeader><DialogTitle>{selected ? copy('Create a revised package', 'Chỉnh sửa gói học') : copy('Create module', 'Tạo module')}</DialogTitle></DialogHeader>
       <form className="space-y-4 overflow-y-auto px-1" onSubmit={event => { event.preventDefault(); void run(async () => {
-        if (form.teachings.filter(t => t.teachingFocus === 'PRIMARY').length !== 1) throw new Error(copy('Choose exactly one primary skill.', 'Chọn đúng một kỹ năng chính.'))
+        if (form.teachings.length !== 1 || !form.teachings[0].skillId) throw new Error(copy('Choose exactly one skill.', 'Chọn đúng một kỹ năng.'))
         const prepared = await moduleRequest<ModuleContent>('/contents/lessons', 'POST', { title: form.title, lessons: moduleLessons })
         const savedForm = { ...form, contentId: prepared.id }
         await moduleRequest<ModuleDocument>(selected ? `/modules/${selected.id}` : '/modules', selected ? 'PUT' : 'POST', selected ? { expectedVersion: selected.lockVersion, value: savedForm } : savedForm)
@@ -323,7 +323,7 @@ export function ModuleManagementWorkspace({ mode = 'modules' }: { mode?: Mode })
           <p className="font-semibold">{copy('Latest saved revision', 'Phiên bản đã lưu mới nhất')}: {latest(conflict).number} · {latest(conflict).editedBy}</p>
           <p>{latest(conflict).payload.title} · {latest(conflict).payload.duration} {copy('minutes', 'phút')} · {latest(conflict).payload.price} VND</p>
           <p>{latest(conflict).payload.content.title} · {stateLabels[latest(conflict).payload.moduleType]}</p>
-          {latest(conflict).payload.teachings.map(t => <p key={t.skillId}>{t.skillName} · {stateLabels[t.teachingFocus]} · {stateLabels[t.difficultyLevel]}</p>)}
+          {latest(conflict).payload.teachings.map(t => <p key={t.skillId}>{t.skillName}</p>)}
           <div className="flex flex-wrap gap-2"><Button type="button" variant="outline" onClick={() => { setSelected(conflict); setConflict(null); setNotice(copy('Your edits are retained. Review them before saving against the latest revision.', 'Đã giữ nội dung bạn nhập. Hãy kiểm tra trước khi lưu trên phiên bản mới nhất.')) }}>{copy('Keep my edits on this revision', 'Giữ nội dung tôi sửa trên phiên bản này')}</Button>
           <Button type="button" variant="outline" onClick={() => openEditor(conflict)}>{copy('Replace form with latest values', 'Điền lại bằng dữ liệu mới nhất')}</Button></div>
         </div>}
@@ -331,16 +331,10 @@ export function ModuleManagementWorkspace({ mode = 'modules' }: { mode?: Mode })
           <Field label={copy('Module type', 'Loại module')}><select className={control} value={form.moduleType} onChange={e => setForm({ ...form, moduleType: e.target.value })}><option value="LESSON_AND_PRACTICE">{copy('Lesson and practice', 'Bài học và thực hành')}</option><option value="RESOURCE_GUIDED_PRACTICE">{copy('Resource-guided practice', 'Thực hành theo tài liệu')}</option></select></Field>
           <Field label={copy('Duration (minutes)', 'Thời lượng (phút)')}><Input required type="number" min={1} step={1} value={form.duration} onChange={e => setForm({ ...form, duration: Number(e.target.value) })} /></Field>
           <Field label={copy('Package price (VND)', 'Giá gói học (VND)')}><Input required type="number" min={1} step={1} value={form.price} onChange={e => setForm({ ...form, price: Number(e.target.value) })} /></Field></div>
+        <Heading level={3}>{copy('Skill taught', 'Kỹ năng được dạy')}</Heading>
+        <p className="text-body-sm text-muted-foreground">{copy('Each module teaches one skill. A skill may have several modules.', 'Mỗi module dạy một kỹ năng. Một kỹ năng có thể có nhiều module.')}</p>
+        <Field label={copy('Skill', 'Kỹ năng')}><select required className={control} value={form.teachings[0]?.skillId ?? ''} onChange={e => setForm({ ...form, teachings: [{ skillId: e.target.value }] })}><option value="">{copy('Select skill', 'Chọn kỹ năng')}</option>{skills.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}</select></Field>
         <LearningLessonsEditor onBusyChange={setContentBusy} disabled={busy || contentBusy} lessons={moduleLessons} onChange={setModuleLessons} />
-        <Heading level={3}>{copy('Skills taught', 'Kỹ năng được dạy')}</Heading>
-        <p className="text-[length:var(--text-body-sm)] text-muted-foreground">{copy('Choose one primary skill. Add supporting practice or contextual skills as needed.', 'Chọn một kỹ năng chính. Có thể thêm kỹ năng hỗ trợ hoặc kỹ năng xuất hiện trong ngữ cảnh.')}</p>
-        {form.teachings.map((teaching, index) => <div className="grid gap-2 rounded-lg border border-border p-3 sm:grid-cols-4" key={index}>
-          <Field label={copy('Skill', 'Kỹ năng')}><select required className={control} value={teaching.skillId} onChange={e => setForm({ ...form, teachings: form.teachings.map((t, i) => i === index ? { ...t, skillId: e.target.value } : t) })}><option value="">{copy('Select skill', 'Chọn kỹ năng')}</option>{skills.filter(s => s.id === teaching.skillId || !form.teachings.some(t => t.skillId === s.id)).map(s => <option key={s.id} value={s.id}>{s.name}</option>)}</select></Field>
-          <Field label={copy('Teaching focus', 'Vai trò giảng dạy')}><select className={control} value={teaching.teachingFocus} onChange={e => setForm({ ...form, teachings: form.teachings.map((t, i) => i === index ? { ...t, teachingFocus: e.target.value as TeachingInput['teachingFocus'] } : t) })}>{['PRIMARY', 'SUPPORTING', 'INCIDENTAL'].map(v => <option key={v} value={v}>{v === 'PRIMARY' ? copy('Primary', 'Chính') : v === 'SUPPORTING' ? copy('Supporting', 'Hỗ trợ') : copy('Incidental', 'Ngữ cảnh')}</option>)}</select></Field>
-          <Field label={copy('Difficulty', 'Độ khó')}><select className={control} value={teaching.difficultyLevel} onChange={e => setForm({ ...form, teachings: form.teachings.map((t, i) => i === index ? { ...t, difficultyLevel: e.target.value as TeachingInput['difficultyLevel'] } : t) })}>{['LOW', 'MEDIUM', 'HIGH'].map(v => <option key={v} value={v}>{v === 'LOW' ? copy('Low', 'Thấp') : v === 'MEDIUM' ? copy('Medium', 'Trung bình') : copy('High', 'Cao')}</option>)}</select></Field>
-          <Button type="button" variant="outline" className="self-end" onClick={() => setForm({ ...form, teachings: form.teachings.filter((_, i) => i !== index) })}>{copy('Remove skill', 'Gỡ kỹ năng')}</Button>
-        </div>)}
-        <Button type="button" variant="outline" onClick={() => setForm({ ...form, teachings: [...form.teachings, { skillId: '', teachingFocus: form.teachings.length ? 'SUPPORTING' : 'PRIMARY', difficultyLevel: 'LOW' }] })}>{copy('Add skill', 'Thêm kỹ năng')}</Button>
         </fieldset>
         <DialogFooter><Button type="button" variant="outline" disabled={busy || contentBusy} onClick={() => { setEditing(false); setSelected(null) }}>{copy('Cancel', 'Hủy')}</Button><Button type="submit" disabled={busy || contentBusy}>{copy('Save draft', 'Lưu bản nháp')}</Button></DialogFooter>
       </form>
@@ -359,7 +353,7 @@ export function ModuleManagementWorkspace({ mode = 'modules' }: { mode?: Mode })
         {selected.revisions.map(revision => <section key={revision.number} className="space-y-3 rounded-lg border border-border p-3"><Heading level={3} size="card">{copy('Revision', 'Phiên bản')} {revision.number} · {stateLabels[revision.state] ?? revision.state}</Heading>
           <p>{copy('Edited by', 'Người sửa')}: {person(revision.editedBy)} · {formatTime(revision.editedAt)}</p><p>{copy('Decision by', 'Người quyết định')}: {revision.decidedBy ? person(revision.decidedBy) : '—'} · {formatTime(revision.decidedAt)}</p>{revision.feedback && <p>{revision.feedback}</p>}
           <dl className="grid gap-2 sm:grid-cols-2">{Object.entries({ ...revision.payload.metadata, title: revision.payload.title, moduleType: revision.payload.moduleType, contentUri: revision.payload.contentUri, contentType: revision.payload.contentType, contentVersion: revision.payload.contentVersion, duration: revision.payload.duration, price: revision.payload.price }).map(([key, value]) => <div key={key}><dt className="text-muted-foreground">{fieldLabels[key] ?? key}</dt><dd className="break-all">{typeof value === 'string' ? stateLabels[value] ?? value : value ?? copy('Not reviewed', 'Chưa duyệt')}</dd></div>)}</dl>
-          {revision.payload.teachings.map(t => <details key={t.skillId} className="rounded bg-muted p-3"><summary>{t.skillName} · {stateLabels[t.teachingFocus]} · {stateLabels[t.difficultyLevel]}</summary><dl className="mt-2 space-y-1">{Object.entries(t.metadata).map(([key, value]) => <div key={key} className="break-all">{fieldLabels[key] ?? key}: {value ? stateLabels[value] ?? value : '—'}</div>)}</dl></details>)}
+          {revision.payload.teachings.map(t => <details key={t.skillId} className="rounded bg-muted p-3"><summary>{t.skillName}</summary><dl className="mt-2 space-y-1">{Object.entries(t.metadata).map(([key, value]) => <div key={key} className="break-all">{fieldLabels[key] ?? key}: {value ? stateLabels[value] ?? value : '—'}</div>)}</dl></details>)}
           <LearningLessonList lessons={revision.payload.content.lessons} headingLevel={4} />
         </section>)}
         <Heading level={3}>{copy('Change history', 'Lịch sử thay đổi')}</Heading>{selected.history.map(e => <div key={e.sequence} className="border-l-2 border-border pl-3"><p>{person(e.actorId)} · {eventLabels[e.action] ?? e.action} · {copy('Revision', 'Phiên bản')} {e.revision}</p><p className="text-muted-foreground">{formatTime(e.occurredAt)}</p>{e.action === 'EDIT' && e.detail?.startsWith('Changed: ') && <p>{copy('Changed', 'Đã thay đổi')}: {e.detail.slice(9).split(', ').map(field => fieldLabels[field] ?? field).join(', ')}</p>}{['RETURN', 'OWNER_ASSIGNED'].includes(e.action) && e.detail && <p>{e.detail}</p>}</div>)}

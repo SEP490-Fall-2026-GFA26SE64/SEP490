@@ -8,13 +8,15 @@ public record LearningContentRepositories(LearningUploadSettingsJpaRepository se
         LearningVideoVerificationJpaRepository verifications, ManualLearningPathwayJpaRepository pathways,
         ModuleAuthoringDirectoryJpaRepository directory, LearningLessonProgressJpaRepository progress,
         LearningResumeJpaRepository resumes, ModuleLearningPinJpaRepository pins,
-        LearningVersionSwitchJpaRepository switches, LearningNotificationJpaRepository notifications) {
+        LearningVersionSwitchJpaRepository switches, LearningNotificationJpaRepository notifications,
+        LearningModuleCompletionJpaRepository completions, LearningSelfStudyJpaRepository selfStudies) {
 
     public LearningContentRepositories {
         Objects.requireNonNull(settings); Objects.requireNonNull(settingsAudit); Objects.requireNonNull(assets);
         Objects.requireNonNull(verifications); Objects.requireNonNull(pathways); Objects.requireNonNull(directory);
         Objects.requireNonNull(progress); Objects.requireNonNull(resumes); Objects.requireNonNull(pins);
         Objects.requireNonNull(switches); Objects.requireNonNull(notifications);
+        Objects.requireNonNull(completions); Objects.requireNonNull(selfStudies);
     }
 
     public static LearningContentRepositories from(AdaptiveAttemptRepositories.Lookup beans) {
@@ -23,6 +25,7 @@ public record LearningContentRepositories(LearningUploadSettingsJpaRepository se
                 beans.bean(LearningVideoVerificationJpaRepository.class), beans.bean(ManualLearningPathwayJpaRepository.class),
                 beans.bean(ModuleAuthoringDirectoryJpaRepository.class), beans.bean(LearningLessonProgressJpaRepository.class),
                 beans.bean(LearningResumeJpaRepository.class), beans.bean(ModuleLearningPinJpaRepository.class),
-                beans.bean(LearningVersionSwitchJpaRepository.class), beans.bean(LearningNotificationJpaRepository.class));
+                beans.bean(LearningVersionSwitchJpaRepository.class), beans.bean(LearningNotificationJpaRepository.class),
+                beans.bean(LearningModuleCompletionJpaRepository.class), beans.bean(LearningSelfStudyJpaRepository.class));
     }
 }

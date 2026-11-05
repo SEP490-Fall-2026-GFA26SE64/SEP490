@@ -6,6 +6,7 @@ import java.util.List;
 
 /** Confirmed initial heuristic; no gap-size arithmetic or expected mastery gain. */
 public final class InitialSuitability {
+    public static final String SINGLE_SKILL_VERSION="single-skill-v1";
     public static final String VERSION="mastery-thirds-focus-v1";
     public static Difficulty preferred(Need need) {
         if(need.mastery()==null) {

@@ -80,8 +80,7 @@ public final class ExcelLearningImport implements LearningImportUseCase {
                         + " rows before importing.",
                 "moduleId: new code or your released module code. Existing drafts/reviews block the"
                         + " entire batch.",
-                "teachings: JSON array with skillId,"
-                        + " teachingFocus, difficultyLevel. Exactly one PRIMARY.",
+                "teachings: JSON array with exactly one object containing skillId. No focus or difficulty.",
                 "TEXT: inline text (Markdown), or markdownPath inside ZIP. VIDEO: UPLOAD plus"
                         + " videoPath, or YOUTUBE/VIMEO plus videoUrl.",
                 "lessonId: stable ID (letters/numbers/hyphens/underscores); preserve it when"
@@ -102,7 +101,7 @@ public final class ExcelLearningImport implements LearningImportUseCase {
                 "LESSON_AND_PRACTICE",
                 "10",
                 "100000",
-                "[{\"skillId\":\"REPLACE_SKILL_ID\",\"teachingFocus\":\"PRIMARY\",\"difficultyLevel\":\"LOW\"}]"
+                "[{\"skillId\":\"REPLACE_SKILL_ID\"}]"
             };
             for (int i = 0; i < m.length; i++) sample.createCell(i).setCellValue(m[i]);
             var lesson = workbook.getSheet("Lessons").createRow(1);
@@ -308,9 +307,11 @@ public final class ExcelLearningImport implements LearningImportUseCase {
                                         v.get("teachings"),
                                         json.getTypeFactory()
                                                 .constructCollectionType(
-                                                        List.class, TeachingInput.class));
+                                                        List.class, com.adaptlearngraph.dtos.ModuleAuthoringDto.TeachingSelection.class));
                         @SuppressWarnings("unchecked")
-                        List<TeachingInput> skills = (List<TeachingInput>) teaching;
+                        List<com.adaptlearngraph.dtos.ModuleAuthoringDto.TeachingSelection> selections = (List<com.adaptlearngraph.dtos.ModuleAuthoringDto.TeachingSelection>) teaching;
+                        List<TeachingInput> skills = selections.stream().map(t -> new TeachingInput(t.skillId())).toList();
+                        if (skills.size() != 1) throw new Failure(400, "Select exactly one skill per module");
                         Save save =
                                 new Save(
                                         v.get("title"),
@@ -609,21 +610,13 @@ public final class ExcelLearningImport implements LearningImportUseCase {
                         || !Double.isFinite(row.module().price().doubleValue()))
                     throw new Failure(400, "Invalid module type/duration/price");
                 var skills = row.module().teachings();
-                if (skills.isEmpty()
-                        || skills.size() > 200
-                        || skills.stream().filter(t -> t.teachingFocus().equals("PRIMARY")).count()
-                                != 1
-                        || skills.stream().map(TeachingInput::skillId).distinct().count()
-                                != skills.size())
-                    throw new Failure(400, "Select unique skills and exactly one PRIMARY");
+                if (skills.size()!=1) throw new Failure(400,"Select exactly one skill per module");
                 for (var t : skills) {
                     new Teaching(
                             new Metadata(
                                     "validation", "1", "DRAFT", "NEEDS_EXPERT_REVIEW", null, null),
                             t.skillId(),
-                            "",
-                            t.teachingFocus(),
-                            t.difficultyLevel());
+                            "");
                     if (!available.contains(t.skillId()))
                         throw new Failure(400, "Unknown skill: " + t.skillId());
                 }

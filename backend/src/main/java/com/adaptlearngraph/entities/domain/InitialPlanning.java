@@ -27,10 +27,12 @@ public final class InitialPlanning {
         public Offer {
             for(String v:List.of(moduleId,title,contentVersion,skillId,suitabilityVersion,reason)) RoleGap.text(v);
             if(instructionLevel==null) {
-                Objects.requireNonNull(teachingFocus);Objects.requireNonNull(difficultyLevel);Objects.requireNonNull(coverageRole);
+                Objects.requireNonNull(coverageRole);
+                if (!singleSkill(suitabilityVersion, teachingFocus, difficultyLevel)
+                        && (teachingFocus==null || difficultyLevel==null)) throw new IllegalArgumentException("Incomplete historical teaching metadata");
                 if(preference>2 || expertAttention==null || expertAttention && (attentionReason==null || attentionReason.isBlank()))
                     throw new IllegalArgumentException("Invalid teaching suitability");
-                if(coverageRole==CoverageRole.COVERAGE && (preferredDifficulty==null || teachingFocus==TeachingFocus.INCIDENTAL))
+                if(!singleSkill(suitabilityVersion,teachingFocus,difficultyLevel) && coverageRole==CoverageRole.COVERAGE && (preferredDifficulty==null || teachingFocus==TeachingFocus.INCIDENTAL))
                     throw new IllegalArgumentException("Invalid coverage assignment");
             }else if(teachingFocus!=null || difficultyLevel!=null)throw new IllegalArgumentException("Mixed teaching formats");
             if(durationMinutes==null || durationMinutes.signum()<=0 || priceVnd==null || priceVnd.signum()<=0 || preference<0)
@@ -41,8 +43,14 @@ public final class InitialPlanning {
             this(moduleId,title,contentVersion,durationMinutes,priceVnd,skillId,instructionLevel,preference,foundationalSuitable,
                     suitabilityVersion,reason,null,null,null,null,null,null);
         }
-        public boolean canCover(){return teachingFocus!=null && teachingFocus!=TeachingFocus.INCIDENTAL && preferredDifficulty!=null;}
+        public boolean singleSkill(){return singleSkill(suitabilityVersion,teachingFocus,difficultyLevel);}
+        private static boolean singleSkill(String policy,TeachingFocus focus,Difficulty difficulty) {
+            return InitialSuitability.SINGLE_SKILL_VERSION.equals(policy) && focus==null && difficulty==null;
+        }
+        public boolean canCover(){return singleSkill() || teachingFocus!=null && teachingFocus!=TeachingFocus.INCIDENTAL && preferredDifficulty!=null;}
         public Offer assigned(boolean coverage) {
+            if(singleSkill()) return new Offer(moduleId,title,contentVersion,durationMinutes,priceVnd,skillId,null,0,true,
+                    suitabilityVersion,reason,null,null,null,coverage?CoverageRole.COVERAGE:CoverageRole.ANCILLARY,false,null);
             boolean attention=coverage && (teachingFocus==TeachingFocus.SUPPORTING || preference>0);
             String note=attention?(teachingFocus==TeachingFocus.SUPPORTING?"SUPPORTING_COVERAGE_FALLBACK":"DIFFICULTY_FALLBACK")
                     +":"+preferredDifficulty+"->"+difficultyLevel:null;

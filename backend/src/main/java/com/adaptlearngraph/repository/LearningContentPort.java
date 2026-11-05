@@ -6,6 +6,11 @@ import com.adaptlearngraph.entities.domain.LearningResources.*;
 import java.util.*;
 
 public interface LearningContentPort {
+    List<SkillCompletion> completions(String organizationId, String learnerId, String skillId);
+    void complete(String organizationId, String learnerId, SkillCompletion completion);
+    boolean selfStudy(String organizationId, String learnerId, String moduleId);
+    void admitSelfStudy(String organizationId, String learnerId, String moduleId, int revision, String skillId);
+
     Limits limits();
 
     Limits limits(Limits input, String actorId);

@@ -89,8 +89,6 @@ export function AssignedPathwayPresentation({
   const [skill, setSkill] = useState<{
     name: string
     moduleTitle: string
-    focus: string
-    difficulty: string
   } | null>(null)
   function skillNodes(item: AssignedModule, side: 'left' | 'right') {
     return item.view?.revision.payload.teachings
@@ -108,26 +106,12 @@ export function AssignedPathwayPresentation({
               setSkill({
                 name: teaching.skillName,
                 moduleTitle: item.view!.revision.payload.title,
-                focus: teaching.teachingFocus,
-                difficulty: teaching.difficultyLevel,
               })
             }
             className={`roadmap-skill-box is-not-achieved h-auto w-full whitespace-normal text-left ${search && !teaching.skillName.toLocaleLowerCase().includes(search.toLocaleLowerCase()) ? 'opacity-30' : ''}`}
           >
             <span className="flex min-w-0 items-center gap-2">
-              <span className="shrink-0 rounded bg-primary/15 px-1 py-0.5 font-mono text-[length:var(--text-eyebrow)] text-primary">
-                {teaching.teachingFocus === 'PRIMARY'
-                  ? vi
-                    ? 'Chính'
-                    : 'Primary'
-                  : teaching.teachingFocus === 'SUPPORTING'
-                    ? vi
-                      ? 'Hỗ trợ'
-                      : 'Supporting'
-                    : vi
-                      ? 'Bổ sung'
-                      : 'Incidental'}
-              </span>
+
               <span className="min-w-0 break-words">{teaching.skillName}</span>
             </span>
           </Button>
@@ -422,8 +406,6 @@ export function AssignedPathwayPresentation({
                       setSkill({
                         name: teaching.skillName,
                         moduleTitle: detail.view!.revision.payload.title,
-                        focus: teaching.teachingFocus,
-                        difficulty: teaching.difficultyLevel,
                       })
                     }}
                   >
@@ -485,40 +467,7 @@ export function AssignedPathwayPresentation({
               <p className="text-body-sm">
                 {vi ? 'Được dạy trong' : 'Taught in'}: {skill.moduleTitle}
               </p>
-              <dl className="grid grid-cols-1 gap-3 text-body-sm sm:grid-cols-2">
-                <div>
-                  <dt className="font-semibold text-muted-foreground">
-                    {vi ? 'Mức độ bao phủ' : 'Teaching focus'}
-                  </dt>
-                  <dd>
-                    {
-                      (
-                        {
-                          PRIMARY: vi ? 'Chính' : 'Primary',
-                          SUPPORTING: vi ? 'Hỗ trợ' : 'Supporting',
-                          INCIDENTAL: vi ? 'Bổ sung' : 'Incidental',
-                        } as Record<string, string>
-                      )[skill.focus]
-                    }
-                  </dd>
-                </div>
-                <div>
-                  <dt className="font-semibold text-muted-foreground">
-                    {vi ? 'Độ khó' : 'Difficulty'}
-                  </dt>
-                  <dd>
-                    {
-                      (
-                        {
-                          LOW: vi ? 'Thấp' : 'Low',
-                          MEDIUM: vi ? 'Trung bình' : 'Medium',
-                          HIGH: vi ? 'Cao' : 'High',
-                        } as Record<string, string>
-                      )[skill.difficulty]
-                    }
-                  </dd>
-                </div>
-              </dl>
+
             </div>
           </>
         )}
