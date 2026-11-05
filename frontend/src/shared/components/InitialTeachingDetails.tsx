@@ -11,7 +11,7 @@ export function InitialTeachingDetails({ targets, skillNames }: { targets: Teach
     {targets.map(target => <li key={target.skillId} className="space-y-1">
       <div className="flex flex-wrap items-center gap-2">
         <Text as="span" variant="body-sm">{skillNames?.get(target.skillId) ?? target.skillId}</Text>
-        {target.teachingFocus ? <><Badge variant="outline">{tr('focus.' + target.teachingFocus)}</Badge><Badge variant="secondary">{tr('difficulty.' + target.difficultyLevel)}</Badge></> : <Text as="span" variant="caption">{tr('historicalTeaching')}</Text>}
+        {target.teachingFocus ? <><Badge variant="outline">{tr('focus.' + target.teachingFocus)}</Badge><Badge variant="secondary">{tr('difficulty.' + target.difficultyLevel)}</Badge></> : target.instructionLevel ? <Text as="span" variant="caption">{tr('historicalTeaching')}</Text> : null}
         {target.coverageRole === 'COVERAGE' && <Text as="span" variant="caption">{tr('coversNeed')}</Text>}
       </div>
       {target.expertAttention && <div className="space-y-1" role="note"><Badge variant="warning">{tr('expertAttention')}</Badge><Text variant="caption">{pathwayAttention(target.attentionReason, t)}</Text></div>}

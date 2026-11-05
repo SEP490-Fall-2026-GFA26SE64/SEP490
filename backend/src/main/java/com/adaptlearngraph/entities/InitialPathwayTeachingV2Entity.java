@@ -39,9 +39,9 @@ public class InitialPathwayTeachingV2Entity {
     @Id
     @Column(name = "skill_id")
     private String skillId;
-    @Column(name = "teaching_focus", nullable = false)
+    @Column(name = "teaching_focus")
     private String teachingFocus;
-    @Column(name = "difficulty_level", nullable = false)
+    @Column(name = "difficulty_level")
     private String difficultyLevel;
     @Column(name = "coverage_role", nullable = false)
     private String coverageRole;

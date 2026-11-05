@@ -3,7 +3,7 @@ import { workspaceFetch } from './workspaceFetch'
 export interface ModuleActor { id: string; organizationId: string; roles: string[] }
 export interface CatalogChoice { id: string; name: string }
 export interface ModuleMetadata { id: string; version: string; status: string; reviewStatus: string; reviewedBy: string | null; reviewedAt: string | null }
-export interface TeachingInput { skillId: string; teachingFocus: 'PRIMARY' | 'SUPPORTING' | 'INCIDENTAL'; difficultyLevel: 'LOW' | 'MEDIUM' | 'HIGH' }
+export interface TeachingInput { skillId: string }
 export interface ModuleTeaching extends TeachingInput { metadata: ModuleMetadata; skillName: string }
 export interface LearningLesson { id: string; title: string; type: 'TEXT' | 'VIDEO'; body: string | null; bodyFormat: 'HTML' | 'MARKDOWN' | null; durationSeconds: number; durationSource: 'ESTIMATED' | 'MANUAL' | 'MEDIA'; videoSource: 'UPLOAD' | 'YOUTUBE' | 'VIMEO' | null; assetId: string | null; videoUrl: string | null }
 export interface LearningAsset { id: string; filename: string; mediaType: string; byteSize: number; durationSeconds: number | null }
@@ -27,7 +27,7 @@ export interface ModuleDocument { id: string; organizationId: string; jobPositio
 export interface ModuleSave { title: string; moduleType: string; contentId: string; duration: number; price: number; jobPositionIds?: string[]; teachings: TeachingInput[] }
 export interface ModulePage { items: ModuleDocument[]; total: number; page: number; pageSize: number }
 export type CatalogMetadata = { [Key in keyof ModuleMetadata]: ModuleMetadata[Key] | null }
-export interface CatalogTeaching { metadata: CatalogMetadata; skillId: string; skillName: string | null; teachingFocus: string | null; difficultyLevel: string | null }
+export interface CatalogTeaching { metadata: CatalogMetadata; skillId: string; skillName: string | null }
 export interface CatalogModule { metadata: CatalogMetadata & { id: string }; title: string | null; moduleType: string | null; contentUri: string | null; contentType: string | null; contentVersion: string | null; duration: number | null; price: number | null; teachings: CatalogTeaching[] }
 export interface ModuleCatalogItem { module: CatalogModule; authoring: ModuleDocument | null; intake?: ModuleIntake | null }
 export interface ModuleIntake { expertId?: string | null; moduleId: string; organizationId: string; jobPositionIds: string[]; assignedBy: string; assignedAt: string; source: CatalogModule; acceptedBy: string | null; acceptedAt: string | null; history: ModuleEvent[] }

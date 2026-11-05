@@ -106,7 +106,7 @@ public class ModuleAuthoringApplicationService {
         if (input == null) return null;
         List<TeachingInput> teachings = input.teachings() == null ? null : input.teachings().stream()
                 .map(teaching -> teaching == null ? null
-                        : new TeachingInput(teaching.skillId(), teaching.teachingFocus(), teaching.difficultyLevel()))
+                        : new TeachingInput(teaching.skillId()))
                 .toList();
         return new Save(input.title(), input.moduleType(), input.contentId(), input.duration(), input.price(),
                 input.jobPositionIds(), teachings);

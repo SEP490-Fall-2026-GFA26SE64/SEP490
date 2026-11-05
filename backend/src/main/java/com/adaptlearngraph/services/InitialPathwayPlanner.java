@@ -30,7 +30,7 @@ public final class InitialPathwayPlanner {
         var order=topo.stream().filter(needs::containsKey).toList();var all=new ArrayList<List<Offer>>();
         for(String skill:order) {
             var candidates=p.offers().stream().filter(o->skill.equals(o.skillId()) && o.canCover())
-                    .sorted(Comparator.comparing((Offer o)->o.teachingFocus()!=TeachingFocus.PRIMARY).thenComparing(InitialPlanning.RANK)).toList();
+                    .sorted(Comparator.comparing((Offer o)->!o.singleSkill() && o.teachingFocus()!=TeachingFocus.PRIMARY).thenComparing(InitialPlanning.RANK)).toList();
             if(candidates.isEmpty())return failure(p,"MISSING_PROVIDER:"+skill,fixed,0);all.add(candidates);
         }
         if(order.isEmpty())return validator.validate(p,Map.of(),fixed==null?Set.of():fixed)
@@ -39,14 +39,14 @@ public final class InitialPathwayPlanner {
         // Search the source universe, not the Expert subset. Exclusion cannot fabricate Primary absence.
         boolean proved=enumerate(p,order,all,null,budget,null,(assignment,plan)->{
             feasible[0]=true;
-            assignment.forEach((skill,offer)->{if(offer.teachingFocus()==TeachingFocus.PRIMARY)primary.add(skill);});
+            assignment.forEach((skill,offer)->{if(offer.singleSkill() || offer.teachingFocus()==TeachingFocus.PRIMARY)primary.add(skill);});
             return primary.size()<order.size();
         });
         if(!proved)return failure(p,"SEARCH_LIMIT",fixed,budget.visited);
         if(!feasible[0])return failure(p,"NO_FEASIBLE_PROVIDER_COMBINATION",fixed,budget.visited);
         var legal=new ArrayList<List<Offer>>();
         for(int i=0;i<order.size();i++) {
-            String skill=order.get(i);var candidates=all.get(i).stream().filter(o->o.teachingFocus()==(primary.contains(skill)?TeachingFocus.PRIMARY:TeachingFocus.SUPPORTING)
+            String skill=order.get(i);var candidates=all.get(i).stream().filter(o->(o.singleSkill() || o.teachingFocus()==(primary.contains(skill)?TeachingFocus.PRIMARY:TeachingFocus.SUPPORTING))
                     && (fixed==null || fixed.contains(o.moduleId()))).toList();
             if(candidates.isEmpty())return failure(p,"MISSING_PROVIDER:"+skill,fixed,budget.visited,primary);legal.add(candidates);
         }

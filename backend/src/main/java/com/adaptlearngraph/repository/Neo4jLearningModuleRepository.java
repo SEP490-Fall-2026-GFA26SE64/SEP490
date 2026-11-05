@@ -71,7 +71,13 @@ public class Neo4jLearningModuleRepository implements LearningModuleRepository {
     @Override
     public LearningModuleRecord save(String organizationId, LearningModuleRecord m) {
         String organization = Neo4jTenantGuard.requireOrganization(organizationId);
+        if (m.teachesSkillIds()==null || m.teachesSkillIds().size()!=1 || m.teachesSkillIds().getFirst()==null)
+            throw new com.adaptlearngraph.services.ModuleAuthoringService.Failure(400,"Select exactly one skill");
         writes.executeWithoutResult(status -> {
+            long endpoints=client.query("MATCH (s:MicroSkill {id:$skill}) WHERE s.organizationId=$org RETURN count(s) AS n")
+                .bindAll(Map.of("skill",m.teachesSkillIds().getFirst(),"org",organization)).fetchAs(Long.class)
+                .mappedBy((types,row)->row.get("n").asLong()).one().orElseThrow();
+            if(endpoints!=1)throw new com.adaptlearngraph.services.ModuleAuthoringService.Failure(400,"Unknown skill");
             Neo4jTenantGuard.requireOwnedOrAbsent(client, "LearningModule", m.id(), organizationId);
             modules.merge(m.id(), organization,
                     m.title() != null ? m.title() : m.id(),

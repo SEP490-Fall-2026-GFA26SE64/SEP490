@@ -62,8 +62,6 @@ const view: LearningView = {
           },
           skillId: 'skill',
           skillName: 'Actual skill',
-          teachingFocus: 'PRIMARY',
-          difficultyLevel: 'LOW',
         },
       ],
       content: {
@@ -164,7 +162,7 @@ describe('R6 original pathway UI with actual assignments', () => {
       within(dialog).getByRole('heading', { name: 'Micro-skills taught' }),
     ).toBeTruthy()
     fireEvent.keyDown(dialog, { key: 'Escape' })
-    fireEvent.click(screen.getByRole('button', { name: 'Learning timeline' }))
+    fireEvent.click(screen.getByRole('tab', { name: 'Learning timeline' }))
     expect(screen.getByTestId('original-timeline')).toBeTruthy()
     expect(
       screen.getByRole('heading', { name: 'Actual approved module' }),
@@ -253,7 +251,7 @@ describe('R6 original pathway UI with actual assignments', () => {
     expect(screen.queryByRole('link')).toBeNull()
     expect(screen.queryByRole('combobox')).toBeNull()
     expect(screen.queryByText(/No assigned|Contact your Expert/)).toBeNull()
-    fireEvent.click(screen.getByRole('button', { name: 'Learning timeline' }))
+    fireEvent.click(screen.getByRole('tab', { name: 'Learning timeline' }))
     expect(screen.getByTestId('empty-pathway').childElementCount).toBe(0)
   })
   it('offers retry for request failure and recovers', async () => {
@@ -289,7 +287,7 @@ describe('R6 original pathway UI with actual assignments', () => {
     expect(
       within(dialog).getByRole('heading', { name: 'Actual skill' }),
     ).toBeTruthy()
-    expect(within(dialog).getByText('Primary')).toBeTruthy()
+    expect(within(dialog).queryByText('Primary')).toBeNull()
     expect(within(dialog).queryByText(/mastery|achieved/i)).toBeNull()
   })
   it('uses Vietnamese labels and shows loading before the real response', async () => {
@@ -300,7 +298,7 @@ describe('R6 original pathway UI with actual assignments', () => {
       await screen.findByRole('button', { name: /Actual approved module/ }),
     )
     expect(
-      screen.getByRole('button', { name: 'Tiến trình học tập' }),
+      screen.getByRole('tab', { name: 'Tiến trình học tập' }),
     ).toBeTruthy()
     expect(
       screen.getByRole('link', { name: 'Mở bài học trong module' }),
@@ -319,8 +317,8 @@ describe('R7 original component integration', () => {
       within(dialog).getByRole('button', { name: 'Actual skill' }),
     )
     const skill = screen.getByRole('dialog', { name: 'Skill details' })
-    expect(within(skill).getByText('Primary')).toBeTruthy()
-    expect(within(skill).getByText('Low')).toBeTruthy()
+    expect(within(skill).queryByText('Primary')).toBeNull()
+    expect(within(skill).queryByText('Low')).toBeNull()
     expect(
       screen.queryByText(/Skills Mastery|Production Readiness|Certified|90%/),
     ).toBeNull()

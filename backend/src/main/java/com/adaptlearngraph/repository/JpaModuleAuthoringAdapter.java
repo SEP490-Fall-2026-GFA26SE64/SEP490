@@ -102,7 +102,7 @@ public final class JpaModuleAuthoringAdapter implements ModuleAuthoringPort {
         if (kind.equals("Staff")) return repositories.directory().staff(actor().organizationId());
         if (kind.equals("Employee")) return repositories.directory().employees(actor().organizationId());
         if (kind.equals("Expert")) return repositories.directory().experts(actor().organizationId());
-        return graph.choices(kind);
+        return graph.choices(kind, actor().organizationId());
     }
     @Override public void project(Document doc, Revision revision, boolean archived) {
         graph.project(doc, revision, archived);

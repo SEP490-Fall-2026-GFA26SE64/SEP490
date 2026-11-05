@@ -74,7 +74,7 @@ public final class ModuleAuthoringMappings implements ModelMapperRegistrar {
         mapper.typeMap(Teaching.class, TeachingResponse.class).setConverter(context -> {
             Teaching source = context.getSource();
             return new TeachingResponse(nested(context, source.metadata(), MetadataResponse.class), source.skillId(),
-                    source.skillName(), source.teachingFocus(), source.difficultyLevel());
+                    source.skillName());
         });
         mapper.typeMap(Package.class, PackageResponse.class).setConverter(context -> {
             Package source = context.getSource();
@@ -96,7 +96,7 @@ public final class ModuleAuthoringMappings implements ModelMapperRegistrar {
         mapper.typeMap(CatalogTeaching.class, CatalogTeachingResponse.class).setConverter(context -> {
             CatalogTeaching source = context.getSource();
             return new CatalogTeachingResponse(nested(context, source.metadata(), MetadataResponse.class), source.skillId(),
-                    source.skillName(), source.teachingFocus(), source.difficultyLevel());
+                    source.skillName());
         });
         mapper.typeMap(CatalogModule.class, CatalogModuleResponse.class).setConverter(context -> {
             CatalogModule source = context.getSource();
@@ -136,7 +136,7 @@ public final class ModuleAuthoringMappings implements ModelMapperRegistrar {
         });
         mapper.typeMap(TeachingInput.class, TeachingSelection.class).setConverter(context -> {
             TeachingInput source = context.getSource();
-            return new TeachingSelection(source.skillId(), source.teachingFocus(), source.difficultyLevel());
+            return new TeachingSelection(source.skillId());
         });
         mapper.typeMap(Save.class, ModuleInput.class).setConverter(context -> {
             Save source = context.getSource();

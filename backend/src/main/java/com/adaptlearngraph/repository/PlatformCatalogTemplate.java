@@ -79,6 +79,15 @@ public final class PlatformCatalogTemplate {
                 properties.keySet().removeAll(List.of("id", "type", "fromId", "toId"));
                 relationships.add(new Edge(text(row.get("id")), type, from, to, properties));
             }
+            if ("0.12.0".equals(detected)) {
+                for (Node node : indexed.values()) if (node.label().equals("LearningModule")) {
+                    long mappings=relationships.stream().filter(e->e.type().equals("TEACHES") && e.fromId().equals(node.id())).count();
+                    if(mappings!=1)throw new IllegalArgumentException("Each Module must teach exactly one Skill");
+                }
+                for(Edge edge:relationships) if(edge.type().equals("TEACHES") &&
+                        (edge.properties().containsKey("teachingFocus") || edge.properties().containsKey("difficultyLevel")))
+                    throw new IllegalArgumentException("Retired teaching metadata in single-Skill template");
+            }
             nodes = Collections.unmodifiableMap(indexed);
             edges = List.copyOf(relationships);
             version = detected == null ? "unknown" : detected;

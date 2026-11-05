@@ -51,18 +51,17 @@ public final class Neo4jModuleCatalogGraph {
     // Neo4jClient: existential subquery over other approved primary providers.
     private static final String REMOVES_PROVIDER = """
             MATCH (m:LearningModule {id:$id})-[t:TEACHES]->(s:MicroSkill)
-            WHERE t.teachingFocus='PRIMARY' AND NOT s.id IN $primary
+            WHERE NOT s.id IN $primary
             AND NOT EXISTS { MATCH (other:LearningModule)-[provider:TEACHES]->(s)
               WHERE other.id<>$id AND other.status='ACTIVE' AND other.reviewStatus='APPROVED'
-                AND provider.status='ACTIVE' AND provider.reviewStatus='APPROVED' AND provider.teachingFocus='PRIMARY' }
+                AND provider.status='ACTIVE' AND provider.reviewStatus='APPROVED' }
             RETURN count(s)>0 AS missing
             """;
     private static final String RETAINS_COVERAGE = """
             MATCH (m:LearningModule {id:$id})-[t:TEACHES]->(s:MicroSkill)
-            WHERE t.teachingFocus='PRIMARY'
-            AND NOT EXISTS { MATCH (other:LearningModule)-[provider:TEACHES]->(s)
+            WHERE NOT EXISTS { MATCH (other:LearningModule)-[provider:TEACHES]->(s)
               WHERE other.id<>$id AND other.status='ACTIVE' AND other.reviewStatus='APPROVED'
-                AND provider.status='ACTIVE' AND provider.reviewStatus='APPROVED' AND provider.teachingFocus='PRIMARY' }
+                AND provider.status='ACTIVE' AND provider.reviewStatus='APPROVED' }
             RETURN count(s)=0 AS safe
             """;
     private static final String EXISTS = "MATCH (m:LearningModule {id:$id}) RETURN count(m)>0 AS found";
@@ -94,19 +93,21 @@ public final class Neo4jModuleCatalogGraph {
     }
 
     /** Active {@code JobPosition}/{@code MicroSkill} choices; the label is interpolated only after the allow-list check. */
-    public List<Choice> choices(String kind) {
+    public List<Choice> choices(String kind, String organization) {
         if (!Set.of("JobPosition", "MicroSkill").contains(kind)) throw new IllegalArgumentException("Unknown catalog");
         return reads.execute(status -> new ArrayList<>(client.query("MATCH (n:" + kind
-                        + ") WHERE n.status <> 'ARCHIVED' AND n.id IS NOT NULL AND n.name IS NOT NULL RETURN n.id AS id,n.name AS name ORDER BY name")
-                .fetchAs(Choice.class).mappedBy((types, r) -> new Choice(r.get("id").asString(), r.get("name").asString())).all()));
+                        + ") WHERE n.organizationId=$organization AND n.status <> 'ARCHIVED' AND n.id IS NOT NULL AND n.name IS NOT NULL RETURN n.id AS id,n.name AS name ORDER BY name")
+                .bind(organization).to("organization").fetchAs(Choice.class).mappedBy((types, r) -> new Choice(r.get("id").asString(), r.get("name").asString())).all()));
     }
 
     public void project(Document doc, Revision revision, boolean archived) {
-        var p = revision.payload(); Map<String, Object> properties = metadata(p.metadata());
+        var p = revision.payload();
+        if (p.teachings().size() != 1) throw new Failure(409, "Publication requires exactly one skill");
+        Map<String, Object> properties = metadata(p.metadata());
         properties.putAll(Map.of("title", p.title(), "moduleType", p.moduleType(), "contentUri", p.contentUri(),
                 "contentType", p.contentType(), "contentVersion", p.contentVersion(), "duration", p.duration(), "price", p.price().doubleValue()));
         List<Map<String, Object>> teachings = p.teachings().stream().map(t -> {
-            Map<String, Object> props = metadata(t.metadata()); props.put("teachingFocus", t.teachingFocus()); props.put("difficultyLevel", t.difficultyLevel());
+            Map<String, Object> props = metadata(t.metadata());
             return Map.<String, Object>of("skillId", t.skillId(), "props", props);
         }).toList();
         writes.executeWithoutResult(status -> {
@@ -118,7 +119,7 @@ public final class Neo4jModuleCatalogGraph {
                 expected.putAll(Map.of("title", source.title(), "moduleType", source.moduleType(), "contentUri", source.contentUri(),
                         "contentType", source.contentType(), "contentVersion", source.contentVersion(), "duration", source.duration(), "price", source.price().doubleValue()));
                 var originalTeachings = source.teachings().stream().map(t -> {
-                    Map<String, Object> props = metadata(t.metadata()); props.put("teachingFocus", t.teachingFocus()); props.put("difficultyLevel", t.difficultyLevel());
+                    Map<String, Object> props = metadata(t.metadata());
                     return Map.<String, Object>of("skillId", t.skillId(), "props", props);
                 }).toList();
                 boolean original = matchesSnapshot(doc.id(), doc.organizationId(), expected, originalTeachings);
@@ -131,9 +132,9 @@ public final class Neo4jModuleCatalogGraph {
             if (endpoints != teachings.size()) throw new Failure(409, "A mapped skill no longer exists");
             if (!archived) {
                 boolean removesProvider = client.query(REMOVES_PROVIDER).bindAll(Map.of("id", doc.id(), "primary",
-                                p.teachings().stream().filter(t -> t.teachingFocus().equals("PRIMARY")).map(Teaching::skillId).toList()))
+                                p.teachings().stream().map(Teaching::skillId).toList()))
                         .fetchAs(Boolean.class).mappedBy((types, row) -> row.get("missing").asBoolean()).one().orElseThrow();
-                if (removesProvider) throw new Failure(409, "Revision would remove a required primary skill provider");
+                if (removesProvider) throw new Failure(409, "Revision would remove a required skill provider");
             }
             // Graph and PostgreSQL snapshots deliberately keep independent revision identities.
             modules.replaceProperties(doc.id(), properties, doc.organizationId());

@@ -8,6 +8,10 @@ import com.adaptlearngraph.entities.domain.InitialSuitability;
 /** Application policy, independent of graph driver/persistence/other owners' DTOs. */
 public final class MasterySuitabilityPolicy implements SuitabilityPolicy {
     @Override public Suitability evaluate(Scope scope,Binding binding,Need need,Provider provider) {
+        if(provider.teachingFocus()==null && provider.difficultyLevel()==null) {
+            if(!InitialSuitability.SINGLE_SKILL_VERSION.equals(binding.versions().get("suitability"))) throw new Failure(503,"SUITABILITY_VERSION_UNAVAILABLE",false);
+            return new Suitability(true,0,true,InitialSuitability.SINGLE_SKILL_VERSION,"SINGLE_SKILL_COVERAGE");
+        }
         if(!InitialSuitability.VERSION.equals(binding.versions().get("suitability")))throw new Failure(503,"SUITABILITY_VERSION_UNAVAILABLE",false);
         var preferred=InitialSuitability.preferred(need);int rank=InitialSuitability.rank(preferred,provider.difficultyLevel());
         String origin=need.mastery()==null?"UNKNOWN:"+need.unknownReason():"MASTERY:"+need.mastery().toPlainString();

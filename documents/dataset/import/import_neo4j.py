@@ -1,16 +1,26 @@
-"""Import catalog 0.11.0 into an empty or identical isolated Neo4j graph."""
+"""Import the current catalog into an empty or identical isolated Neo4j graph."""
 import argparse,getpass,json,os
 from pathlib import Path
 from collections import defaultdict
 from validate_dataset import validate,require,LABELS,TYPES
 parser=argparse.ArgumentParser()
-parser.add_argument('--file',type=Path,default=Path(__file__).resolve().parent/'ontology_seed-v011.json')
+parser.add_argument('--file',type=Path,default=Path(__file__).resolve().parent/'ontology_seed-v012.json')
 parser.add_argument('--dry-run',action='store_true')
 args=parser.parse_args()
-data,report=validate(args.file)
-from graph_payload import build_payload
-nodes,edges,batches=build_payload(data)
-print(f"Local checks passed: {report['totalNodes']} nodes, {report['totalRelationships']} relationships, 30 source RIASEC ratings.")
+if json.loads(args.file.read_text())['LearningModules'][0]['version']=='0.12.0':
+    from validate_single_skill_catalog import validate as validate_new, snapshot as payload_snapshot, LABELS, TYPES as ENDPOINTS
+    data,report=validate_new(args.file)
+    payload=payload_snapshot(data)
+    nodes={key:(value['labels'],value['properties']) for key,value in payload['nodes'].items()}
+    edges={key:(value['type'],value['from'],value['to'],value['properties']) for key,value in payload['relationships'].items()}
+    batches=defaultdict(list)
+    for labels,props in nodes.values():batches[labels[0]].append(props)
+    TYPES={kind:{pair} for kind,pair in ENDPOINTS.items()}
+else:
+    data,report=validate(args.file)
+    from graph_payload import build_payload
+    nodes,edges,batches=build_payload(data)
+print(f"Local checks passed: {len(nodes)} nodes, {len(edges)} relationships.")
 if args.dry_run:raise SystemExit(0)
 
 from neo4j import GraphDatabase
@@ -48,7 +58,7 @@ def import_graph(tx):
                      f"MATCH (b:{end} {{id: row.toId}}) CREATE (a)-[r:{kind}]->(b) SET r = row.props")
             tx.run(query, rows=rows).consume()
     require(snapshot(tx) == (nodes, edges), "Graph differs from input; transaction rolled back")
-    return "Imported and verified: 994 nodes and 5121 relationships."
+    return f"Imported and verified: {len(nodes)} nodes and {len(edges)} relationships."
 
 with GraphDatabase.driver(uri, auth=(user, password)) as driver:
     driver.verify_connectivity()

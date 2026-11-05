@@ -59,6 +59,11 @@ function teaching(v: unknown): TeachingTarget {
     if (!['FOUNDATIONAL', 'INTERMEDIATE', 'ADVANCED'].includes(legacy) || s.teachingFocus != null || s.difficultyLevel != null) throw Error()
     return { skillId: str(s.skillId), instructionLevel: legacy, teachingFocus: null, difficultyLevel: null, coverageRole: null, expertAttention: false, attentionReason: null }
   }
+  if (s.teachingFocus == null && s.difficultyLevel == null && s.coverageRole != null) {
+    const coverage = str(s.coverageRole)
+    if (!['COVERAGE', 'ANCILLARY'].includes(coverage) || s.expertAttention !== false || s.attentionReason !== null) throw Error()
+    return { skillId: str(s.skillId), instructionLevel: null, teachingFocus: null, difficultyLevel: null, coverageRole: coverage as 'COVERAGE' | 'ANCILLARY', expertAttention: false, attentionReason: null }
+  }
   const focus = str(s.teachingFocus), difficulty = str(s.difficultyLevel), coverage = str(s.coverageRole)
   if (!['PRIMARY', 'SUPPORTING', 'INCIDENTAL'].includes(focus) || !['LOW', 'MEDIUM', 'HIGH'].includes(difficulty) || !['COVERAGE', 'ANCILLARY'].includes(coverage)) throw Error()
   const attention = bool(s.expertAttention), reason = nullable(s.attentionReason, str)

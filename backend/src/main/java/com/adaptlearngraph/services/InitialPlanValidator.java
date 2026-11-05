@@ -21,15 +21,15 @@ public final class InitialPlanValidator {
             var targets=problem.offers().stream().filter(o->id.equals(o.moduleId())).sorted(Comparator.comparing(Offer::skillId))
                     .map(o->o.assigned(o.equals(assignments.get(o.skillId())))).toList();
             if(targets.isEmpty()) errors.add("UNMATCHED_MODULE:"+id); else byModule.put(id,targets);
-            if(targets.stream().filter(o->o.teachingFocus()==TeachingFocus.PRIMARY).count()!=1)errors.add("MODULE_PRIMARY_CARDINALITY_INVALID:"+id);
-            if(!targets.isEmpty() && targets.stream().noneMatch(o->o.preferredDifficulty()!=null && o.teachingFocus()!=TeachingFocus.INCIDENTAL))
+            if(targets.stream().allMatch(Offer::singleSkill) ? targets.size()!=1 : targets.stream().filter(o->o.teachingFocus()==TeachingFocus.PRIMARY).count()!=1)errors.add("MODULE_SKILL_CARDINALITY_INVALID:"+id);
+            if(!targets.isEmpty() && targets.stream().noneMatch(Offer::canCover))
                 errors.add("UNMATCHED_MODULE:"+id);
         }
         var dependencies=new ArrayList<Dependency>(); var arcs=new TreeMap<String,Set<String>>();
         byModule.keySet().forEach(id->arcs.put(id,new TreeSet<>()));
         for(var edge:problem.edges()) {
             for(var target:byModule.values().stream().flatMap(List::stream).filter(o->o.skillId().equals(edge.dependentSkillId())
-                    && o.preferredDifficulty()!=null && o.teachingFocus()!=TeachingFocus.INCIDENTAL).toList()) {
+                    && o.canCover()).toList()) {
             var provider=assignments.get(edge.prerequisiteSkillId());
             if(provider==null && !problem.externallyReadySkills().contains(edge.prerequisiteSkillId())) {
                 errors.add("UNPLANNED_PREREQUISITE:"+edge.prerequisiteSkillId()); continue;

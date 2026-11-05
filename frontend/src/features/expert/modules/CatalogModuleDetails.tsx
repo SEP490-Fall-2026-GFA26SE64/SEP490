@@ -36,7 +36,7 @@ export function CatalogModuleDetails({ module, hasHistory, onClose, actions }: {
       {module.teachings.map((teaching, index) => <section key={`${teaching.skillId}:${index}`} className="space-y-3 rounded-lg border border-border p-3">
         <Heading level={4} size="card" className="break-words">{teaching.skillName ?? teaching.skillId}</Heading>
         <p className="break-all text-muted-foreground">{teaching.skillId}</p>
-        {fields(Object.entries({ ...teaching.metadata, teachingFocus: teaching.teachingFocus, difficultyLevel: teaching.difficultyLevel }))}
+        {fields(Object.entries({ ...teaching.metadata }))}
       </section>)}
     </div>}
     {actions && <DialogFooter>{actions}</DialogFooter>}

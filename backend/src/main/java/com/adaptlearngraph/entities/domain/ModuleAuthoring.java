@@ -24,11 +24,16 @@ public final class ModuleAuthoring {
         }
     }
     public record Teaching(Metadata metadata, String skillId, String skillName,
-                           String teachingFocus, String difficultyLevel) {
+                           @com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL) String teachingFocus,
+                           @com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL) String difficultyLevel) {
+        public Teaching(Metadata metadata, String skillId, String skillName) {
+            this(metadata, skillId, skillName, null, null);
+        }
         public Teaching {
             text(skillId, "skillId", 200);
-            oneOf(teachingFocus, Set.of("PRIMARY", "SUPPORTING", "INCIDENTAL"), "teachingFocus");
-            oneOf(difficultyLevel, Set.of("LOW", "MEDIUM", "HIGH"), "difficultyLevel");
+            // Retained only to decode and preserve immutable pre-0.12 snapshots.
+            if (teachingFocus != null) oneOf(teachingFocus, Set.of("PRIMARY", "SUPPORTING", "INCIDENTAL"), "teachingFocus");
+            if (difficultyLevel != null) oneOf(difficultyLevel, Set.of("LOW", "MEDIUM", "HIGH"), "difficultyLevel");
         }
     }
     public record Content(String id, String title, String markdown, String contentType,
@@ -65,9 +70,12 @@ public final class ModuleAuthoring {
             }
             teachings = List.copyOf(teachings);
             if (teachings.isEmpty() || teachings.size() > 200
-                    || teachings.stream().filter(t -> "PRIMARY".equals(t.teachingFocus())).count() != 1
                     || teachings.stream().map(Teaching::skillId).distinct().count() != teachings.size()) {
-                throw new IllegalArgumentException("Select unique skills with exactly one primary skill");
+                throw new IllegalArgumentException("Select unique skills");
+            }
+            if ("0.12.0".equals(metadata.version()) && (teachings.size() != 1
+                    || teachings.getFirst().teachingFocus() != null || teachings.getFirst().difficultyLevel() != null)) {
+                throw new IllegalArgumentException("Select exactly one skill without teaching focus or difficulty");
             }
         }
         public Package approved(String actor, String time, String lifecycle) {
@@ -100,7 +108,9 @@ public final class ModuleAuthoring {
             return releasedRevision == null ? null : revisions.stream().filter(r -> r.number() == releasedRevision).findFirst().orElseThrow();
         }
     }
-    public record TeachingInput(String skillId, String teachingFocus, String difficultyLevel) {}
+    public record TeachingInput(String skillId, String teachingFocus, String difficultyLevel) {
+        public TeachingInput(String skillId) { this(skillId, null, null); }
+    }
     // jobPositionIds is accepted for legacy clients only; new authoring is skill-based.
     public record Save(String title, String moduleType, String contentId, int duration, BigDecimal price,
                        List<String> jobPositionIds, List<TeachingInput> teachings) {}

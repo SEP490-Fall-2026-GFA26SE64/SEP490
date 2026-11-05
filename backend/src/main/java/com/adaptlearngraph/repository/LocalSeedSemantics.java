@@ -39,7 +39,9 @@ public final class LocalSeedSemantics implements Semantics {
     }
     private LocalSeedSemantics(ObjectMapper json,UUID organization,byte[] current,byte[] historical,byte[] bank,byte[] previous,boolean softwareDevelopment,UUID ownedBank,Map<String,Map<String,Object>> metadata,boolean mainDevelopment) throws java.io.IOException {
         this.json=json;
-        requireHash(current,com.adaptlearngraph.config.LocalCatalogBootstrap.SOURCE_HASH);
+        String currentHash=com.adaptlearngraph.dtos.OfficialQuestionBankManifest.sha256(current);
+        if(!com.adaptlearngraph.config.LocalCatalogBootstrap.SINGLE_SKILL_HASH.equals(currentHash))
+            requireHash(current,com.adaptlearngraph.config.LocalCatalogBootstrap.SOURCE_HASH);
         if(softwareDevelopment)requireHash(bank,com.adaptlearngraph.config.SoftwareDevelopmentSeed.BANK_HASH);
         else {requireHash(historical,HISTORY_HASH);requireHash(bank,BANK_HASH);requireHash(previous,V010_HASH);}
         var manifest=json.readTree(bank);jobPosition=manifest.path("jobPositionId").asText();

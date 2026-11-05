@@ -34,8 +34,7 @@ public final class ModuleAuthoringDto {
     public record MetadataResponse(String id, String version, String status, String reviewStatus, String reviewedBy,
                                    String reviewedAt) {}
 
-    public record TeachingResponse(MetadataResponse metadata, String skillId, String skillName, String teachingFocus,
-                                   String difficultyLevel) {}
+    public record TeachingResponse(MetadataResponse metadata, String skillId, String skillName) {}
 
     public record PackageResponse(MetadataResponse metadata, String title, String moduleType, String contentUri,
                                   String contentType, String contentVersion, int duration, BigDecimal price,
@@ -46,8 +45,7 @@ public final class ModuleAuthoringDto {
 
     public record EventResponse(int sequence, int revision, String action, String actorId, String occurredAt, String detail) {}
 
-    public record CatalogTeachingResponse(MetadataResponse metadata, String skillId, String skillName, String teachingFocus,
-                                          String difficultyLevel) {}
+    public record CatalogTeachingResponse(MetadataResponse metadata, String skillId, String skillName) {}
 
     public record CatalogModuleResponse(MetadataResponse metadata, String title, String moduleType, String contentUri,
                                         String contentType, String contentVersion, Integer duration, BigDecimal price,
@@ -69,7 +67,7 @@ public final class ModuleAuthoringDto {
     public record CatalogPageResponse(List<CatalogItemResponse> items, int total, int page, int pageSize) {}
 
     /** Skill selection of a module draft (request and import preview). */
-    public record TeachingSelection(String skillId, String teachingFocus, String difficultyLevel) {}
+    public record TeachingSelection(String skillId) {}
 
     /** Module draft values (request and import preview); jobPositionIds is accepted for legacy clients only. */
     public record ModuleInput(String title, String moduleType, String contentId, int duration, BigDecimal price,

@@ -163,6 +163,7 @@ public final class LearningContentService {
                                             ? Instant.now().toString()
                                             : old.coverageUpdatedAt());
                     content.progress(a.organizationId(), a.id(), id, revision.number(), next);
+                    SkillLearningService.recordCompletion(a, id, revision, content);
                     return next;
                 });
     }
@@ -179,6 +180,9 @@ public final class LearningContentService {
                     Revision next = d.released();
                     if (d.archived() || next == null || next.number() <= old.number())
                         throw new Failure(409, "No newer approved version");
+                    if (old.payload().teachings().size()!=1 || next.payload().teachings().size()!=1
+                            || !old.payload().teachings().getFirst().skillId().equals(next.payload().teachings().getFirst().skillId()))
+                        throw new Failure(409,"Skill changed. Keep the completed version or start through the new skill.");
                     for (Progress p :
                             content.progress(a.organizationId(), a.id(), id, old.number())) {
                         var prior =

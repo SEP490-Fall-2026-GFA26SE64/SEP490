@@ -4,6 +4,7 @@ import com.adaptlearngraph.repository.ModuleAuthoringPort;
 import com.adaptlearngraph.entities.domain.ModuleAuthoring;
 import com.adaptlearngraph.entities.domain.ModuleAuthoring.*;
 import org.junit.jupiter.api.BeforeEach;
+import com.adaptlearngraph.services.ModuleAuthoringService.Failure;
 import org.junit.jupiter.api.Test;
 import java.math.BigDecimal;
 import java.util.*;
@@ -39,7 +40,7 @@ class ModuleAuthoringServiceTest {
         doAnswer(call -> { pins.put(call.getArgument(1) + ":" + call.getArgument(2), call.getArgument(3)); return null; }).when(port).pin(anyString(), anyString(), anyString(), anyInt());
     }
     Save input(String title) { return new Save(title, "LESSON_AND_PRACTICE", "content", 90, new BigDecimal("200000"), List.of("occ"),
-            List.of(new TeachingInput("skill", "PRIMARY", "LOW"), new TeachingInput("support", "SUPPORTING", "MEDIUM"))); }
+            List.of(new TeachingInput("skill"))); }
     CatalogModule graph(String id, String title) {
         return new CatalogModule(new Metadata(id, "0.11.0", "ACTIVE", "NEEDS_EXPERT_REVIEW", null, null), title,
                 "RESOURCE_GUIDED_PRACTICE", "https://example.org/lesson", "text/markdown", "1.3", 37,
@@ -152,23 +153,23 @@ class ModuleAuthoringServiceTest {
         assertEquals("Second", second.current().payload().title()); assertEquals(2, second.revisions().size());
         var p = second.current().payload(); assertEquals(90, p.duration()); assertEquals(new BigDecimal("200000"), p.price());
         assertEquals("module-content:content", p.contentUri()); assertEquals("text/markdown", p.contentType()); assertEquals("1.0", p.contentVersion());
-        assertEquals("0.11.0", p.metadata().version()); assertEquals("DRAFT", p.metadata().status());
+        assertEquals("0.12.0", p.metadata().version()); assertEquals("DRAFT", p.metadata().status());
         assertEquals("NEEDS_EXPERT_REVIEW", p.metadata().reviewStatus()); assertNull(p.metadata().reviewedBy()); assertNull(p.metadata().reviewedAt());
         for (Teaching t : p.teachings()) {
-            assertFalse(t.metadata().id().isBlank()); assertEquals("0.11.0", t.metadata().version());
+            assertFalse(t.metadata().id().isBlank()); assertEquals("0.12.0", t.metadata().version());
             assertEquals("DRAFT", t.metadata().status()); assertEquals("NEEDS_EXPERT_REVIEW", t.metadata().reviewStatus());
-            assertNull(t.metadata().reviewedBy()); assertNull(t.metadata().reviewedAt()); assertFalse(t.skillName().isBlank());
+            assertNull(t.metadata().reviewedBy()); assertNull(t.metadata().reviewedAt()); assertFalse(t.skillName().isBlank()); assertNull(t.teachingFocus()); assertNull(t.difficultyLevel());
             assertEquals(first.current().payload().teachings().stream().filter(old -> old.skillId().equals(t.skillId())).findFirst().orElseThrow().metadata().id(), t.metadata().id());
         }
         assertEquals("expert-a", second.history().getLast().actorId());
         assertThrows(ModuleAuthoringService.Failure.class, () -> service.update(first.id(), first.lockVersion(), input("Stale")));
     }
-    @Test void rejectsMissingMultipleAndDuplicatePrimaryAndNonpositivePrice() {
+    @Test void rejectsMissingMultipleAndDuplicateSkillsAndNonpositivePrice() {
         Save valid = input("Test");
-        for (List<TeachingInput> mappings : List.of(List.<TeachingInput>of(), List.of(new TeachingInput("skill", "SUPPORTING", "LOW")),
+        for (List<TeachingInput> mappings : List.of(List.<TeachingInput>of(),
                 List.of(new TeachingInput("skill", "PRIMARY", "LOW"), new TeachingInput("support", "PRIMARY", "LOW")),
                 List.of(new TeachingInput("skill", "PRIMARY", "LOW"), new TeachingInput("skill", "SUPPORTING", "LOW")))) {
-            assertThrows(IllegalArgumentException.class, () -> service.create(new Save(valid.title(), valid.moduleType(), valid.contentId(), valid.duration(), valid.price(), valid.jobPositionIds(), mappings)));
+            assertThrows(Failure.class, () -> service.create(new Save(valid.title(), valid.moduleType(), valid.contentId(), valid.duration(), valid.price(), valid.jobPositionIds(), mappings)));
         }
         assertThrows(IllegalArgumentException.class, () -> service.create(new Save("T", valid.moduleType(), valid.contentId(), 1, BigDecimal.ZERO, valid.jobPositionIds(), valid.teachings())));
     }

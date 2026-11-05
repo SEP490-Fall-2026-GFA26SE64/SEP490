@@ -233,15 +233,16 @@ public final class ModuleAuthoringService {
                 && visible(actor, c.jobPositionIds()))
                 .findFirst().orElseThrow(() -> new Failure(400, "Select available learning content"));
         Map<String, String> skills = new HashMap<>(); port.catalog("MicroSkill").forEach(c -> skills.put(c.id(), c.name()));
-        if (input.teachings() == null) throw new Failure(400, "Skills are required");
+        if (input.teachings() == null || input.teachings().size() != 1 || input.teachings().getFirst() == null)
+            throw new Failure(400, "Select exactly one skill");
         List<Teaching> mappings = input.teachings().stream().map(t -> {
             if (!skills.containsKey(t.skillId())) throw new Failure(400, "Unknown skill");
             String relationId = previous == null ? UUID.randomUUID().toString() : previous.teachings().stream()
                     .filter(old -> old.skillId().equals(t.skillId())).map(old -> old.metadata().id()).findFirst().orElseGet(() -> UUID.randomUUID().toString());
-            return new Teaching(new Metadata(relationId, "0.11.0", "DRAFT", "NEEDS_EXPERT_REVIEW", null, null),
-                    t.skillId(), skills.get(t.skillId()), t.teachingFocus(), t.difficultyLevel());
+            return new Teaching(new Metadata(relationId, "0.12.0", "DRAFT", "NEEDS_EXPERT_REVIEW", null, null),
+                    t.skillId(), skills.get(t.skillId()));
         }).toList();
-        return new ModuleAuthoring.Package(new Metadata(id, "0.11.0", "DRAFT", "NEEDS_EXPERT_REVIEW", null, null),
+        return new ModuleAuthoring.Package(new Metadata(id, "0.12.0", "DRAFT", "NEEDS_EXPERT_REVIEW", null, null),
                 input.title(), input.moduleType(), "module-content:" + content.id(), content.contentType(), content.contentVersion(),
                 input.duration(), input.price(), mappings, content);
     }

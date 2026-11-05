@@ -77,6 +77,14 @@ public final class LearningResources {
         }
     }
 
+    /** Immutable completion-time provenance; never resolved through today's graph mapping. */
+    public record SkillCompletion(String skillId, String moduleId, int revision,
+            String contentVersion, String completedAt) {}
+    public record SkillEligibility(String skillId, boolean eligible, String reason,
+            SkillCompletion qualifyingCompletion) {}
+    public record OptionalModule(String moduleId, String title, String contentVersion,
+            boolean started, boolean completed) {}
+
     public record LearningView(
             ModuleAuthoring.Revision revision,
             Integer latestRevision,
