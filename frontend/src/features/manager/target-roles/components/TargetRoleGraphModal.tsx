@@ -170,7 +170,7 @@ export function TargetRoleGraphModal({
       ? propLevels
       : currentRole?.levels && currentRole.levels.length > 0
       ? currentRole.levels
-      : ['Junior', 'Middle', 'Senior']
+      : ['Senior', 'Middle', 'Junior']
 
   const handleSearchFocus = React.useCallback(() => {
     if (!networkRef.current || !searchQuery.trim()) return
@@ -353,7 +353,7 @@ export function TargetRoleGraphModal({
         ? propLevels
         : currentRole?.levels && currentRole.levels.length > 0
         ? currentRole.levels
-        : ['Junior', 'Middle', 'Senior']
+        : ['Senior', 'Middle', 'Junior']
 
     const isLevelFiltered = selectedLevelFilter !== 'ALL' && selectedLevelFilter !== ''
     const displayedLevels = isLevelFiltered

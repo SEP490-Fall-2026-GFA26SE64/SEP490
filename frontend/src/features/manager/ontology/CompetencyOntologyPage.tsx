@@ -211,7 +211,7 @@ export function CompetencyOntologyPage() {
         body: JSON.stringify({
           name: updatedRole.title,
           description: updatedRole.description,
-          levels: updatedRole.levels || ['Junior', 'Middle', 'Senior'],
+          levels: updatedRole.levels || ['Senior', 'Middle', 'Junior'],
           levelCompetencies: updatedRole.levelCompetencies || {},
           competencyIds: updatedRole.competencyIds || [],
           skillTargets: updatedRole.skillTargets || [],
@@ -227,7 +227,6 @@ export function CompetencyOntologyPage() {
   // Search, filter, and pagination states for Tab 1 (Micro-skills)
   const [skillSearchQuery, setSkillSearchQuery] = React.useState('')
   const [skillMacroFilter, setSkillMacroFilter] = React.useState('all')
-  const [skillStatusFilter, setSkillStatusFilter] = React.useState('all')
   const [skillSortBy, setSkillSortBy] = React.useState<'latest' | 'title' | 'code'>('latest')
   const [skillCurrentPage, setSkillCurrentPage] = React.useState(1)
   const [skillPageSize] = React.useState(10)
@@ -244,11 +243,10 @@ export function CompetencyOntologyPage() {
 
   React.useEffect(() => {
     setSkillCurrentPage(1)
-  }, [skillSearchQuery, skillMacroFilter, skillStatusFilter, skillSortBy])
+  }, [skillSearchQuery, skillMacroFilter, skillSortBy])
 
   // Search, filter, and pagination states for Tab: Competencies
   const [competencySearchQuery, setCompetencySearchQuery] = React.useState('')
-  const [competencyStatusFilter, setCompetencyStatusFilter] = React.useState('all')
   const [competencySortBy, setCompetencySortBy] = React.useState<'latest' | 'title' | 'code'>('latest')
   const [competencyCurrentPage, setCompetencyCurrentPage] = React.useState(1)
   const [competencyPageSize] = React.useState(10)
@@ -398,7 +396,7 @@ export function CompetencyOntologyPage() {
                 ? 'published'
                 : String(r.status || 'draft').toLowerCase()) as TargetRoleModel['status'],
               rejectionReason: String(r.rejectionReason || ''),
-              levels: Array.isArray(r.levels) && r.levels.length > 0 ? r.levels : ['Junior', 'Middle', 'Senior'],
+              levels: Array.isArray(r.levels) && r.levels.length > 0 ? r.levels : ['Senior', 'Middle', 'Junior'],
               levelCompetencies: (r.levelCompetencies as Record<string, string[]>) || {},
               competencyIds: Array.isArray(r.competencyIds) ? r.competencyIds : [],
               skillTargets: Array.isArray(r.skillTargets) ? r.skillTargets : [],
@@ -933,10 +931,7 @@ export function CompetencyOntologyPage() {
           c.name.toLowerCase().includes(q) ||
           c.code.toLowerCase().includes(q) ||
           (c.description && c.description.toLowerCase().includes(q))
-        const matchesStatus =
-          competencyStatusFilter === 'all' ||
-          (c.status || 'ACTIVE').toUpperCase() === competencyStatusFilter.toUpperCase()
-        return matchesSearch && matchesStatus
+        return matchesSearch
       })
       .sort((a, b) => {
         if (competencySortBy === 'title') return a.name.localeCompare(b.name)
@@ -952,7 +947,7 @@ export function CompetencyOntologyPage() {
         if (timeA !== timeB) return timeB - timeA
         return (b.code || b.id || '').localeCompare(a.code || a.id || '')
       })
-  }, [competencies, competencySearchQuery, competencyStatusFilter, competencySortBy])
+  }, [competencies, competencySearchQuery, competencySortBy])
 
   const competencyTotalPages = Math.max(1, Math.ceil(filteredCompetencies.length / competencyPageSize))
   const paginatedCompetencies = React.useMemo(() => {
@@ -993,10 +988,34 @@ export function CompetencyOntologyPage() {
   }
 
   const handleSaveCompetency = async () => {
+    const normalizedCode = competencyForm.code.trim().toUpperCase()
+    if (!normalizedCode) {
+      toast({
+        title: 'Validation Error',
+        description: 'Competency code is strictly required.',
+        variant: 'destructive',
+      })
+      return
+    }
+
     if (!competencyForm.name.trim()) {
       toast({
         title: 'Validation Error',
         description: 'Competency name is strictly required.',
+        variant: 'destructive',
+      })
+      return
+    }
+
+    const isDuplicate = competencies.some(
+      (c) =>
+        c.code?.trim().toUpperCase() === normalizedCode &&
+        (!selectedCompetency || c.id !== selectedCompetency.id)
+    )
+    if (isDuplicate) {
+      toast({
+        title: 'Duplicate Competency Code',
+        description: `A competency with code "${normalizedCode}" already exists. Competency codes must be unique.`,
         variant: 'destructive',
       })
       return
@@ -1282,22 +1301,6 @@ export function CompetencyOntologyPage() {
                     </div>
 
                     <div className="flex items-center gap-1.5 bg-background border border-border rounded-lg px-2.5 py-1.5 shadow-2xs shrink-0">
-                      <span className="text-[11px] text-muted-foreground font-medium">Status:</span>
-                      <select
-                        value={skillStatusFilter}
-                        onChange={(e) => {
-                          setSkillStatusFilter(e.target.value)
-                          setSkillCurrentPage(1)
-                        }}
-                        className="text-xs bg-transparent text-foreground border-0 focus:outline-none cursor-pointer font-medium"
-                      >
-                        <option value="all">All</option>
-                        <option value="ACTIVE">Active</option>
-                        <option value="DRAFT">Draft</option>
-                      </select>
-                    </div>
-
-                    <div className="flex items-center gap-1.5 bg-background border border-border rounded-lg px-2.5 py-1.5 shadow-2xs shrink-0">
                       <span className="text-[11px] text-muted-foreground font-medium">Sort:</span>
                       <select
                         value={skillSortBy}
@@ -1324,7 +1327,6 @@ export function CompetencyOntologyPage() {
                       onClick={() => {
                         setSkillSearchQuery('')
                         setSkillMacroFilter('all')
-                        setSkillStatusFilter('all')
                         setSkillCurrentPage(1)
                       }}
                     >
@@ -1685,22 +1687,6 @@ export function CompetencyOntologyPage() {
                     </div>
 
                     <div className="flex items-center gap-1.5 bg-background border border-border rounded-lg px-2.5 py-1.5 shadow-2xs shrink-0">
-                      <span className="text-[11px] text-muted-foreground font-medium">Status:</span>
-                      <select
-                        value={competencyStatusFilter}
-                        onChange={(e) => {
-                          setCompetencyStatusFilter(e.target.value)
-                          setCompetencyCurrentPage(1)
-                        }}
-                        className="text-xs bg-transparent text-foreground border-0 focus:outline-none cursor-pointer font-medium"
-                      >
-                        <option value="all">All ({competencies.length})</option>
-                        <option value="ACTIVE">Active</option>
-                        <option value="DRAFT">Draft</option>
-                      </select>
-                    </div>
-
-                    <div className="flex items-center gap-1.5 bg-background border border-border rounded-lg px-2.5 py-1.5 shadow-2xs shrink-0">
                       <span className="text-[11px] text-muted-foreground font-medium">Sort:</span>
                       <select
                         value={competencySortBy}
@@ -1720,18 +1706,17 @@ export function CompetencyOntologyPage() {
                 {filteredCompetencies.length === 0 ? (
                   <div className="text-center py-16 text-muted-foreground">
                     <AlertCircle className="h-8 w-8 mx-auto mb-2 text-muted-foreground/60" />
-                    <p className="text-sm font-semibold">No competencies match your search or filter.</p>
+                    <p className="text-sm font-semibold">No competencies match your search.</p>
                     <Button
                       variant="outline"
                       size="sm"
                       className="mt-3"
                       onClick={() => {
                         setCompetencySearchQuery('')
-                        setCompetencyStatusFilter('all')
                         setCompetencyCurrentPage(1)
                       }}
                     >
-                      Reset Filters
+                      Clear Search
                     </Button>
                   </div>
                 ) : (

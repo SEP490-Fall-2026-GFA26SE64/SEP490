@@ -49,7 +49,7 @@ public record CreateTargetRoleCommand(
             String version,
             RoleStatus status,
             String skillTargets) {
-        this(organizationId, code, name, familyCode, track, assignedExpertId, description, responsibilities, version, status, skillTargets, List.of("Junior", "Middle", "Senior"));
+        this(organizationId, code, name, familyCode, track, assignedExpertId, description, responsibilities, version, status, skillTargets, List.of("Senior", "Middle", "Junior"));
     }
 
     public CreateTargetRoleCommand(

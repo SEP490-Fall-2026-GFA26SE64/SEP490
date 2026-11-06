@@ -58,7 +58,7 @@ public final class TargetRole {
         this.createdAt = Objects.requireNonNullElseGet(createdAt, Instant::now);
         this.updatedAt = Objects.requireNonNullElseGet(updatedAt, Instant::now);
         this.rejectionReason = (rejectionReason != null && !rejectionReason.isBlank()) ? rejectionReason.trim() : null;
-        this.levels = (levels != null && !levels.isEmpty()) ? List.copyOf(levels) : List.of("Junior", "Middle", "Senior");
+        this.levels = (levels != null && !levels.isEmpty()) ? List.copyOf(levels) : List.of("Senior", "Middle", "Junior");
         this.levelCompetencies = (levelCompetencies != null && !levelCompetencies.isBlank()) ? levelCompetencies.trim() : "{}";
         this.competencyIds = (competencyIds != null && !competencyIds.isEmpty()) ? List.copyOf(competencyIds) : List.of();
     }
@@ -99,7 +99,7 @@ public final class TargetRole {
             Instant createdAt,
             Instant updatedAt,
             String rejectionReason) {
-        this(id, organizationId, code, name, familyCode, track, assignedExpertId, description, responsibilities, status, version, skillTargets, createdAt, updatedAt, rejectionReason, List.of("Junior", "Middle", "Senior"));
+        this(id, organizationId, code, name, familyCode, track, assignedExpertId, description, responsibilities, status, version, skillTargets, createdAt, updatedAt, rejectionReason, List.of("Senior", "Middle", "Junior"));
     }
 
     public TargetRole(
@@ -213,7 +213,7 @@ public final class TargetRole {
             String version,
             RoleStatus status,
             String skillTargets) {
-        return createNew(organizationId, code, name, familyCode, track, assignedExpertId, description, responsibilities, version, status, skillTargets, List.of("Junior", "Middle", "Senior"));
+        return createNew(organizationId, code, name, familyCode, track, assignedExpertId, description, responsibilities, version, status, skillTargets, List.of("Senior", "Middle", "Junior"));
     }
 
     public static TargetRole createNew(
@@ -420,6 +420,28 @@ public final class TargetRole {
                 this.description,
                 this.responsibilities,
                 RoleStatus.ACTIVE,
+                this.version,
+                this.skillTargets,
+                this.createdAt,
+                Instant.now(),
+                this.rejectionReason,
+                this.levels,
+                this.levelCompetencies,
+                this.competencyIds);
+    }
+
+    public TargetRole unpublish() {
+        return new TargetRole(
+                this.id,
+                this.organizationId,
+                this.code,
+                this.name,
+                this.familyCode,
+                this.track,
+                this.assignedExpertId,
+                this.description,
+                this.responsibilities,
+                RoleStatus.UNPUBLISHED,
                 this.version,
                 this.skillTargets,
                 this.createdAt,

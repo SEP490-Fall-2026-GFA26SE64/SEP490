@@ -10,10 +10,8 @@ import {
   Plus,
   Power,
   Search,
-  Trash2,
   Upload,
   UserCheck,
-  UserPlus,
 } from 'lucide-react'
 import { Badge } from '../../../shared/components/ui/Badge'
 import { Button } from '../../../shared/components/ui/Button'
@@ -464,14 +462,6 @@ export function JobPositionsManagementPage() {
   // Deactivate Confirmation Modal
   const [jobPositionToDeactivate, setJobPositionToDeactivate] = React.useState<JobPositionRecord | null>(null)
 
-  // Assign Expert Modal State
-  const [isAssignModalOpen, setIsAssignModalOpen] = React.useState(false)
-  const [selectedJobPositionForAssign, setSelectedJobPositionForAssign] = React.useState<JobPositionRecord | null>(null)
-  const [newlyAssignedIds, setNewlyAssignedIds] = React.useState<Set<string>>(new Set())
-  const [assignedFilter, setAssignedFilter] = React.useState<'ALL' | 'NEW'>('ALL')
-  const [selectedAvailableIds, setSelectedAvailableIds] = React.useState<Set<string>>(new Set())
-  const [availableExpertSearch, setAvailableExpertSearch] = React.useState('')
-
   // Filtered List
   const filteredJobPositions = React.useMemo(() => {
     return jobPositions
@@ -659,189 +649,6 @@ export function JobPositionsManagementPage() {
     }
   }
 
-  // Open Assign Expert Modal
-  const handleOpenAssignExpert = (occ: JobPositionRecord) => {
-    setSelectedJobPositionForAssign(occ)
-    setNewlyAssignedIds(new Set())
-    setSelectedAvailableIds(new Set())
-    setAvailableExpertSearch('')
-    setAssignedFilter('ALL')
-    setIsAssignModalOpen(true)
-  }
-
-  // Active jobPosition instance in assign modal
-  const activeJobPositionInModal = React.useMemo(() => {
-    if (!selectedJobPositionForAssign) return null
-    return jobPositions.find((o) => o.id === selectedJobPositionForAssign.id) || selectedJobPositionForAssign
-  }, [jobPositions, selectedJobPositionForAssign])
-
-  const assignedExpertsInModal = activeJobPositionInModal?.assignedExperts || []
-
-  // Filter assigned experts in modal
-  const displayedAssignedExperts = React.useMemo(() => {
-    if (assignedFilter === 'NEW') {
-      return assignedExpertsInModal.filter((e) => newlyAssignedIds.has(e.id))
-    }
-    return assignedExpertsInModal
-  }, [assignedExpertsInModal, assignedFilter, newlyAssignedIds])
-
-  // Available experts for this organization (synced with real workspace members)
-  const [orgExperts, setOrgExperts] = React.useState<EligibleExpert[]>(() => getOrganizationExperts(orgId))
-
-  React.useEffect(() => {
-    let isMounted = true
-    const loadOrgMembers = async () => {
-      try {
-        const members = await getMembers(orgId).catch(() => [])
-        const expertMembers = (members || []).filter(
-          (m) => m.active && (m.roles.includes("DOMAIN_EXPERT") || m.roles.includes("EXPERT"))
-        )
-        if (expertMembers.length > 0) {
-          const mapped: EligibleExpert[] = expertMembers.map((m) => ({
-            id: m.accountId,
-            name: m.fullName || m.email,
-            title: m.jobPositionName || m.departmentName || "Domain Expert",
-            email: m.email,
-          }))
-          if (typeof localStorage !== "undefined") {
-            localStorage.setItem("adaptlearn_org_experts_" + orgId, JSON.stringify(mapped))
-          }
-          if (isMounted) {
-            setOrgExperts(mapped)
-          }
-        } else {
-          const fallback = getOrganizationExperts(orgId)
-          if (isMounted) setOrgExperts(fallback)
-        }
-      } catch {
-        const fallback = getOrganizationExperts(orgId)
-        if (isMounted) setOrgExperts(fallback)
-      }
-    }
-    loadOrgMembers()
-    return () => { isMounted = false }
-  }, [orgId])
-
-  // Available experts not yet assigned to this job position
-  const availableExperts = React.useMemo(() => {
-    const assignedIds = new Set(assignedExpertsInModal.map((ae) => normalizeExpertId(ae.id)))
-    return orgExperts.filter((exp) => !assignedIds.has(normalizeExpertId(exp.id))).filter((exp) => {
-      if (!availableExpertSearch.trim()) return true
-      const q = availableExpertSearch.toLowerCase()
-      return exp.name.toLowerCase().includes(q) || exp.title.toLowerCase().includes(q)
-    })
-  }, [orgExperts, assignedExpertsInModal, availableExpertSearch])
-
-  // Toggle select all available
-  const handleToggleSelectAllAvailable = () => {
-    if (availableExperts.length === 0) return
-    const allSelected = availableExperts.every((exp) => selectedAvailableIds.has(exp.id))
-    if (allSelected) {
-      setSelectedAvailableIds(new Set())
-    } else {
-      setSelectedAvailableIds(new Set(availableExperts.map((exp) => exp.id)))
-    }
-  }
-
-  // Toggle individual available expert selection
-  const handleToggleSelectAvailable = (id: string) => {
-    setSelectedAvailableIds((prev) => {
-      const next = new Set(prev)
-      if (next.has(id)) {
-        next.delete(id)
-      } else {
-        next.add(id)
-      }
-      return next
-    })
-  }
-
-  // Add single expert
-  const handleAddSingleExpert = (expert: EligibleExpert) => {
-    if (!selectedJobPositionForAssign) return
-    setAndSaveJobPositions((prev) =>
-      prev.map((o) => {
-        if (o.id !== selectedJobPositionForAssign.id) return o
-        if (o.assignedExperts.some((ae) => normalizeExpertId(ae.id) === normalizeExpertId(expert.id))) return o
-        return {
-          ...o,
-          assignedExperts: [
-            ...o.assignedExperts,
-            {
-              id: expert.id,
-              name: expert.name,
-              email: expert.email || `${expert.id}@adaptlearn.internal`,
-              title: expert.title,
-            },
-          ],
-        }
-      })
-    )
-    setNewlyAssignedIds((prev) => new Set([...prev, expert.id]))
-    setSelectedAvailableIds((prev) => {
-      const next = new Set(prev)
-      next.delete(expert.id)
-      return next
-    })
-    toast({
-      title: 'Expert Assigned',
-      description: `${expert.name} assigned to ${selectedJobPositionForAssign.name}.`,
-      variant: 'success',
-    })
-  }
-
-  // Add selected experts
-  const handleAddSelectedAvailable = () => {
-    if (!selectedJobPositionForAssign || selectedAvailableIds.size === 0) return
-    const expertsToAdd = availableExperts.filter((exp) => selectedAvailableIds.has(exp.id))
-    const newlyAdded = expertsToAdd.map((exp) => ({
-      id: exp.id,
-      name: exp.name,
-      email: exp.email || `${exp.id}@adaptlearn.internal`,
-      title: exp.title,
-    }))
-
-    setAndSaveJobPositions((prev) =>
-      prev.map((o) => {
-        if (o.id !== selectedJobPositionForAssign.id) return o
-        return {
-          ...o,
-          assignedExperts: [...o.assignedExperts, ...newlyAdded],
-        }
-      })
-    )
-    setNewlyAssignedIds((prev) => new Set([...prev, ...expertsToAdd.map((e) => e.id)]))
-    setSelectedAvailableIds(new Set())
-    toast({
-      title: 'Selected Experts Assigned',
-      description: `Added ${newlyAdded.length} expert(s) to ${selectedJobPositionForAssign.name}.`,
-      variant: 'success',
-    })
-  }
-
-  // Remove Expert from Job Position
-  const handleRemoveExpert = (occId: string, expertId: string, expertName: string) => {
-    setAndSaveJobPositions((prev) =>
-      prev.map((o) => {
-        if (o.id !== occId) return o
-        return {
-          ...o,
-          assignedExperts: o.assignedExperts.filter((ae) => normalizeExpertId(ae.id) !== normalizeExpertId(expertId)),
-        }
-      })
-    )
-    setNewlyAssignedIds((prev) => {
-      const next = new Set(prev)
-      next.delete(expertId)
-      return next
-    })
-    toast({
-      title: 'Expert Removed',
-      description: `Removed ${expertName} from jobPosition.`,
-      variant: 'info',
-    })
-  }
-
   // Import handler
   const handleImportJobPositions = (importedData: unknown, _source: 'preset' | 'custom') => {
     const rawList: unknown[] = Array.isArray(importedData)
@@ -897,14 +704,9 @@ export function JobPositionsManagementPage() {
 
   // Aggregate Metrics
   const totalJobPositions = jobPositions.length
-  const totalAssignedExperts = new Set(jobPositions.flatMap((o) => o.assignedExperts.map((ae) => ae.id))).size
   const totalMicroSkills = jobPositions.reduce((acc, o) => acc + o.microSkillCount, 0)
-  const unassignedCount = jobPositions.filter((o) => o.assignedExperts.length === 0).length
-
   const activeCount = jobPositions.filter((o) => o.status === 'active').length
   const inactiveCount = jobPositions.filter((o) => o.status === 'inactive').length
-
-  const newlyAssignedCount = assignedExpertsInModal.filter((e) => newlyAssignedIds.has(e.id)).length
 
   return (
     <WorkspaceLayout>
@@ -943,16 +745,16 @@ export function JobPositionsManagementPage() {
             title="Job Positions"
             value={`${totalJobPositions} Job Positions`}
             valueClassName="text-primary"
-            description="Active industry classifications"
+            description="Industry classifications"
           />
 
           <StatCard
             variant="gradient"
             icon={<UserCheck className="h-4 w-4 text-success" />}
-            title="Active SMEs Assigned"
-            value={`${totalAssignedExperts} Experts`}
+            title="Active Positions"
+            value={`${activeCount} Active`}
             valueClassName="text-success"
-            description="Guiding domain competencies"
+            description="Governed in organization"
           />
 
           <StatCard
@@ -966,11 +768,11 @@ export function JobPositionsManagementPage() {
 
           <StatCard
             variant="gradient"
-            icon={<AlertTriangle className="h-4 w-4 text-destructive" />}
-            title="Unassigned Job Positions"
-            value={`${unassignedCount} Job Positions`}
-            valueClassName="text-destructive"
-            description="Awaiting expert assignment"
+            icon={<AlertTriangle className="h-4 w-4 text-muted-foreground" />}
+            title="Inactive Positions"
+            value={`${inactiveCount} Inactive`}
+            valueClassName="text-muted-foreground"
+            description="Suspended classifications"
           />
         </div>
 
@@ -984,7 +786,7 @@ export function JobPositionsManagementPage() {
                   Job Positions Directory
                 </CardTitle>
                 <CardDescription>
-                  Browse and govern knowledge domains, track SME coverage, and assign domain leads.
+                  Browse and govern job position classifications, skill footprints, and competency scopes across departments.
                 </CardDescription>
               </div>
 
@@ -1048,7 +850,6 @@ export function JobPositionsManagementPage() {
                       <th className="py-2.5 px-3">JOB POSITION &amp; SCOPE</th>
                       <th className="py-2.5 px-3 text-center">MICRO-SKILLS</th>
                       <th className="py-2.5 px-3 text-center">MODULES</th>
-                      <th className="py-2.5 px-3">ASSIGNED EXPERTS</th>
                       <th className="py-2.5 px-3">STATUS</th>
                       <th className="py-2.5 px-3 text-right">ACTIONS</th>
                     </tr>
@@ -1072,36 +873,6 @@ export function JobPositionsManagementPage() {
                           <span className="font-semibold text-foreground">{occ.moduleCount}</span> modules
                         </td>
                         <td className="py-3 px-3">
-                          {occ.assignedExperts.length > 0 ? (
-                            <div className="flex items-center gap-1.5 flex-wrap">
-                              <div className="flex items-center gap-1.5">
-                                <div className="h-6 w-6 rounded-full bg-primary/10 text-primary font-bold text-[10px] flex items-center justify-center shrink-0">
-                                  {occ.assignedExperts[0].name.slice(0, 2).toUpperCase()}
-                                </div>
-                                <span className="text-xs font-medium text-foreground">
-                                  {occ.assignedExperts[0].name}
-                                </span>
-                              </div>
-
-                              {occ.assignedExperts.length > 1 && (
-                                <button
-                                  type="button"
-                                  onClick={() => handleOpenAssignExpert(occ)}
-                                  className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-secondary text-primary font-semibold text-[10px] border border-primary/20 cursor-pointer hover:bg-secondary-hover transition-colors"
-                                  title={`+${occ.assignedExperts.length - 1} more: ${occ.assignedExperts
-                                    .slice(1)
-                                    .map((e) => e.name)
-                                    .join(', ')}`}
-                                >
-                                  +{occ.assignedExperts.length - 1}
-                                </button>
-                              )}
-                            </div>
-                          ) : (
-                            <span className="text-[11px] text-muted-foreground italic">Unassigned</span>
-                          )}
-                        </td>
-                        <td className="py-3 px-3">
                           {occ.status === 'active' ? (
                             <Badge variant="success">ACTIVE</Badge>
                           ) : (
@@ -1120,18 +891,6 @@ export function JobPositionsManagementPage() {
                               aria-label="View Details & RIASEC"
                             >
                               <Eye className="h-4 w-4 text-primary" />
-                            </Button>
-
-                            {/* Assign Experts */}
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="h-8 w-8 p-0"
-                              onClick={() => handleOpenAssignExpert(occ)}
-                              title="Assign Experts"
-                              aria-label="Assign Experts"
-                            >
-                              <UserPlus className="h-4 w-4 text-foreground" />
                             </Button>
 
                             {/* Edit Job Position */}
@@ -1330,36 +1089,6 @@ export function JobPositionsManagementPage() {
                     <Progress value={(viewingDetailsJobPosition.interests?.conventional || 0) * 100} variant="primary" className="h-1.5" />
                   </div>
                 </div>
-              </div>
-
-              {/* Assigned Experts List */}
-              <div>
-                <span className="text-[11px] font-bold text-foreground uppercase tracking-wider block mb-1.5">
-                  Assigned Subject Matter Experts ({viewingDetailsJobPosition.assignedExperts.length})
-                </span>
-                {viewingDetailsJobPosition.assignedExperts.length === 0 ? (
-                  <p className="text-xs text-muted-foreground italic">No experts assigned yet.</p>
-                ) : (
-                  <div className="space-y-1.5">
-                    {viewingDetailsJobPosition.assignedExperts.map((exp) => (
-                      <div
-                        key={exp.id}
-                        className="p-2 rounded-lg border border-border bg-background flex items-center justify-between"
-                      >
-                        <div className="flex items-center gap-2">
-                          <div className="h-6 w-6 rounded-full bg-primary/10 text-primary font-bold text-[10px] flex items-center justify-center">
-                            {exp.name.slice(0, 2).toUpperCase()}
-                          </div>
-                          <div>
-                            <div className="font-semibold text-foreground text-xs">{exp.name}</div>
-                            <div className="text-[11px] text-muted-foreground">{exp.title}</div>
-                          </div>
-                        </div>
-                        <span className="font-mono text-[10px] text-muted-foreground">{exp.email}</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
               </div>
             </div>
 
@@ -1648,15 +1377,13 @@ export function JobPositionsManagementPage() {
                 <span>{jobPositionToDeactivate.microSkillCount} Skills</span>
                 <span>•</span>
                 <span>{jobPositionToDeactivate.moduleCount} Modules</span>
-                <span>•</span>
-                <span>{jobPositionToDeactivate.assignedExperts.length} Assigned Experts</span>
               </div>
             </div>
 
             <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/25 text-xs flex items-start gap-2.5">
               <AlertTriangle className="h-4 w-4 shrink-0 text-destructive mt-0.5" />
               <div className="text-[11.5px] leading-relaxed text-foreground">
-                <strong className="text-destructive font-semibold">Operational Impact:</strong> Deactivating this job position will suspend new module and pathway associations. Existing Subject Matter Expert assignments and historical learning data will be preserved.
+                <strong className="text-destructive font-semibold">Operational Impact:</strong> Deactivating this job position will suspend new module and pathway associations. Historical learning data will be preserved.
               </div>
             </div>
           </div>
@@ -1682,223 +1409,6 @@ export function JobPositionsManagementPage() {
         </DialogFooter>
       </Dialog>
 
-      {/* ASSIGN EXPERTS MODAL (DUAL TABLE DESIGN WITH SELECTION, ADD ALL, AND NEW BADGE/FILTER) */}
-      <Dialog open={isAssignModalOpen} onOpenChange={setIsAssignModalOpen} className="max-w-3xl">
-        <DialogHeader>
-          <DialogTitle className="text-base font-bold flex items-center gap-2">
-            <UserPlus className="h-5 w-5 text-primary" />
-            {activeJobPositionInModal?.name}
-          </DialogTitle>
-          <DialogDescription className="text-xs text-muted-foreground">
-            Assign and manage domain experts responsible for reviewing skills within this job position.
-          </DialogDescription>
-        </DialogHeader>
-
-        <div className="space-y-6 py-3 max-h-[70vh] overflow-y-auto pr-1">
-          {/* Table 1: Currently Assigned Experts */}
-          <div className="space-y-2.5">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                  Currently Assigned Experts ({assignedExpertsInModal.length})
-                </h3>
-                {newlyAssignedCount > 0 && (
-                  <Badge
-                    variant="outline"
-                    className="text-[10px] font-semibold bg-primary/10 text-primary border-primary/25 hover:bg-primary hover:text-white transition-colors"
-                  >
-                    +{newlyAssignedCount} Added This Session
-                  </Badge>
-                )}
-              </div>
-
-              {/* Filter: All vs New Only */}
-              <div className="flex items-center gap-1.5 bg-muted/40 border border-border rounded-md px-2 py-0.5 text-xs">
-                <span className="text-[11px] text-muted-foreground font-medium">Filter:</span>
-                <select
-                  value={assignedFilter}
-                  onChange={(e) => setAssignedFilter(e.target.value as 'ALL' | 'NEW')}
-                  className="text-xs bg-transparent text-foreground border-0 focus:outline-none cursor-pointer font-medium"
-                >
-                  <option value="ALL">All ({assignedExpertsInModal.length})</option>
-                  <option value="NEW">New ({newlyAssignedCount})</option>
-                </select>
-              </div>
-            </div>
-
-            {displayedAssignedExperts.length === 0 ? (
-              <div className="p-4 text-center text-xs text-muted-foreground border border-dashed border-border rounded-lg bg-muted/10">
-                {assignedFilter === 'NEW'
-                  ? 'No newly added experts in this session. Add experts from the table below.'
-                  : 'No experts currently assigned to this job position. Use the table below to add experts.'}
-              </div>
-            ) : (
-              <div className="border border-border rounded-lg overflow-hidden bg-card">
-                <table className="w-full text-left text-xs border-collapse">
-                  <thead>
-                    <tr className="border-b border-border bg-muted/40 text-muted-foreground uppercase text-[11px] font-semibold">
-                      <th className="py-2 px-3">Expert</th>
-                      <th className="py-2 px-3">Professional Title</th>
-                      <th className="py-2 px-3 text-right">Remove</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-border">
-                    {displayedAssignedExperts.map((exp) => (
-                      <tr key={exp.id} className="hover:bg-muted/20 transition-colors">
-                        <td className="py-2 px-3">
-                          <div className="flex items-center gap-2">
-                            <div className="h-6 w-6 rounded-full bg-primary/10 text-primary font-bold text-[10px] flex items-center justify-center shrink-0">
-                              {exp.name.slice(0, 2).toUpperCase()}
-                            </div>
-                            <div className="flex items-center gap-1.5">
-                              <div>
-                                <div className="font-semibold text-foreground flex items-center gap-1.5">
-                                  <span>{exp.name}</span>
-                                  {newlyAssignedIds.has(exp.id) && (
-                                    <Badge
-                                      variant="primary"
-                                      className="bg-primary/10 text-primary text-[10px] font-bold py-0 px-1.5 border border-primary/25"
-                                    >
-                                      NEW
-                                    </Badge>
-                                  )}
-                                </div>
-                                <div className="text-[11px] text-muted-foreground">{exp.email}</div>
-                              </div>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="py-2 px-3 text-muted-foreground">
-                          {exp.title}
-                        </td>
-                        <td className="py-2 px-3 text-right">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-                            onClick={() => handleRemoveExpert(activeJobPositionInModal!.id, exp.id, exp.name)}
-                            title={`Remove ${exp.name}`}
-                          >
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </Button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
-
-          {/* Table 2: Available Experts to Add */}
-          <div className="space-y-2.5">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                Available Experts to Add ({availableExperts.length})
-              </h3>
-
-              <div className="flex items-center gap-2 flex-wrap">
-                <div className="relative w-44">
-                  <Search className="absolute left-2.5 top-2 h-3 w-3 text-muted-foreground" />
-                  <input
-                    type="text"
-                    placeholder="Filter available..."
-                    value={availableExpertSearch}
-                    onChange={(e) => setAvailableExpertSearch(e.target.value)}
-                    className="w-full pl-7 pr-2.5 py-1 text-xs rounded-md bg-background border border-border text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
-                  />
-                </div>
-
-                {/* Add Selected Option */}
-                <Button
-                  variant="primary"
-                  size="sm"
-                  leftIcon={<UserPlus className="h-3.5 w-3.5" />}
-                  onClick={handleAddSelectedAvailable}
-                  disabled={selectedAvailableIds.size === 0}
-                  className="text-xs h-7 font-semibold shadow-2xs"
-                >
-                  Add Selected{selectedAvailableIds.size > 0 ? ` (${selectedAvailableIds.size})` : ''}
-                </Button>
-              </div>
-            </div>
-
-            {availableExperts.length === 0 ? (
-              <div className="p-4 text-center text-xs text-muted-foreground border border-dashed border-border rounded-lg bg-muted/10">
-                {orgExperts.length === assignedExpertsInModal.length
-                  ? 'All eligible experts in the organization are already assigned to this job position.'
-                  : 'No available experts matching filter.'}
-              </div>
-            ) : (
-              <div className="border border-border rounded-lg overflow-hidden bg-card max-h-56 overflow-y-auto">
-                <table className="w-full text-left text-xs border-collapse">
-                  <thead className="sticky top-0 bg-muted/90 backdrop-blur-xs z-10">
-                    <tr className="border-b border-border text-muted-foreground uppercase text-[11px] font-semibold">
-                      <th className="py-2 px-3 w-8">
-                        <input
-                          type="checkbox"
-                          checked={availableExperts.length > 0 && availableExperts.every((e) => selectedAvailableIds.has(e.id))}
-                          onChange={handleToggleSelectAllAvailable}
-                          className="rounded border-border accent-primary cursor-pointer h-3.5 w-3.5 mt-0.5"
-                          title="Select / Unselect all available experts"
-                        />
-                      </th>
-                      <th className="py-2 px-3">Expert</th>
-                      <th className="py-2 px-3">Professional Title</th>
-                      <th className="py-2 px-3 text-right">Action</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-border">
-                    {availableExperts.map((exp) => (
-                      <tr key={exp.id} className="hover:bg-muted/20 transition-colors">
-                        <td className="py-2 px-3 w-8">
-                          <input
-                            type="checkbox"
-                            checked={selectedAvailableIds.has(exp.id)}
-                            onChange={() => handleToggleSelectAvailable(exp.id)}
-                            className="rounded border-border accent-primary cursor-pointer h-3.5 w-3.5 mt-0.5"
-                          />
-                        </td>
-                        <td className="py-2 px-3">
-                          <div className="flex items-center gap-2">
-                            <div className="h-6 w-6 rounded-full bg-muted text-muted-foreground font-bold text-[10px] flex items-center justify-center shrink-0">
-                              {exp.name.slice(0, 2).toUpperCase()}
-                            </div>
-                            <div>
-                              <div className="font-semibold text-foreground">{exp.name}</div>
-                              <div className="text-[11px] text-muted-foreground">{exp.email || `${exp.id}@adaptlearn.internal`}</div>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="py-2 px-3 text-muted-foreground">
-                          {exp.title}
-                        </td>
-                        <td className="py-2 px-3 text-right">
-                          <Button
-                            variant="secondary"
-                            size="sm"
-                            leftIcon={<Plus className="h-3.5 w-3.5" />}
-                            onClick={() => handleAddSingleExpert(exp)}
-                            className="text-xs h-7 px-2.5 font-semibold text-primary"
-                          >
-                            Add
-                          </Button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
-        </div>
-
-        <DialogFooter className="pt-2">
-          <Button variant="primary" size="sm" onClick={() => setIsAssignModalOpen(false)}>
-            Done
-          </Button>
-        </DialogFooter>
-      </Dialog>
     </WorkspaceLayout>
   )
 }

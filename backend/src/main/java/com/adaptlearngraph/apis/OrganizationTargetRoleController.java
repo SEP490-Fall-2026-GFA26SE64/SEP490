@@ -154,6 +154,13 @@ public class OrganizationTargetRoleController {
             return ResponseEntity.badRequest().body(Map.of("error", "Bad Request", "message", "Domain Experts can no longer reject target roles"));
         }
 
+        boolean unpublishing = request.status() != null && !request.status().isBlank()
+                && "UNPUBLISHED".equalsIgnoreCase(request.status().trim());
+        if (isExpert && !isManager && unpublishing) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("error", "Forbidden", "message", "Only L&D Managers can unpublish target roles"));
+        }
+
         return targetRoles.updateTargetRole(organizationId, roleId, request)
                 .map(updated -> ResponseEntity.ok(updated))
                 .orElseGet(() -> ResponseEntity.notFound().build());

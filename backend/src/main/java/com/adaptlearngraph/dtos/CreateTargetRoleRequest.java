@@ -31,7 +31,7 @@ public record CreateTargetRoleRequest(
 
         String version,
 
-        @Pattern(regexp = "^(DRAFT|SENT|REJECTED|ACTIVE|PUBLISHED|RETIRED)?$", message = "Status must be valid")
+        @Pattern(regexp = "^(DRAFT|SENT|REJECTED|ACTIVE|PUBLISHED|UNPUBLISHED)?$", message = "Status must be valid")
         String status,
 
         List<Map<String, Object>> skillTargets,

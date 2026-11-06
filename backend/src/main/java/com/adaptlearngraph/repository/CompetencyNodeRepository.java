@@ -15,6 +15,24 @@ import org.springframework.transaction.annotation.Transactional;
  */
 public interface CompetencyNodeRepository extends Repository<CompetencyNode, String> {
 
+    @Query("""
+            MATCH (c:Competency)
+            WHERE c.organizationId = $organizationId
+              AND (toUpper(c.code) = toUpper($code) OR toUpper(c.id) = toUpper($code))
+            RETURN count(c) > 0 AS exists
+            """)
+    boolean existsByCode(@Param("organizationId") String organizationId, @Param("code") String code);
+
+    @Query("""
+            MATCH (c:Competency)
+            WHERE c.organizationId = $organizationId
+              AND c.id <> $id
+              AND (toUpper(c.code) = toUpper($code) OR toUpper(c.id) = toUpper($code))
+            RETURN count(c) > 0 AS exists
+            """)
+    boolean existsByCodeAndIdNot(@Param("organizationId") String organizationId, @Param("code") String code,
+            @Param("id") String id);
+
     // MERGE with distinct ON CREATE / ON MATCH sets (organizationId, version and reviewStatus only on create).
     @Transactional(TransactionManagers.NEO4J)
     @Query("""

@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react'
-import { Building2, Briefcase, Trash2, Plus, Search, Users, Mail, UserCheck, UserX, Eye, Pencil, ShieldCheck, User } from 'lucide-react'
+import { Building2, Briefcase, Trash2, Plus, Search, Users, Mail, UserCheck, UserX, Eye, Pencil, ShieldCheck, User, Target } from 'lucide-react'
 import { Combobox, type ComboboxOption } from '../../../shared/components/ui/Combobox'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { AdminPageLayout } from '../AdminPageLayout'
@@ -17,6 +17,7 @@ import { Failure, Loading, useCopy } from '../../subscription/SubscriptionFeedba
 import { loadDepartments } from '../../../shared/stores/departmentStore'
 import { fetchDepartments, type DepartmentDto } from '../../../shared/api/departmentApi'
 import { getAvailableJobPositions } from '../../manager/data/ldManagerMockData'
+import { getActiveCompany } from '../../../shared/stores/companyStore'
 
 const ROLES = ['EMPLOYEE', 'DOMAIN_EXPERT', 'LD_MANAGER', 'ORGANIZATION_ADMINISTRATOR'] as const
 const selectClass = 'h-10 w-full rounded-md border border-border bg-card px-3 text-body-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary'
@@ -928,7 +929,15 @@ function UserForm({
   const [tempDeptId, setTempDeptId] = useState('')
   const [tempJobPositionId, setTempJobPositionId] = useState('')
 
+  const activeComp = getActiveCompany()
+  const orgTargetRoles = activeComp?.targetRoles || []
+  const [targetRoleId, setTargetRoleId] = useState('')
+  const [targetRoleLevel, setTargetRoleLevel] = useState('')
+
   const employee = roles.includes('EMPLOYEE')
+  const isLdManager = roles.includes('LD_MANAGER')
+  const isExpert = roles.includes('DOMAIN_EXPERT')
+  const selectableRoles = useMemo(() => member ? ROLES : ROLES.filter(r => r !== 'ORGANIZATION_ADMINISTRATOR'), [member])
 
   const selectedDeptObj = useMemo(() => {
     if (!department) return null
@@ -952,6 +961,40 @@ function UserForm({
     }
     return null
   }, [department, member, allDepartments])
+
+  const availableTargetRolesForEmployee = useMemo(() => {
+    if (!department) return orgTargetRoles
+    const deptName = (selectedDeptObj?.name || '').toLowerCase()
+    const filtered = orgTargetRoles.filter(
+      (r) => r.department && r.department.toLowerCase() === deptName,
+    )
+    return filtered.length > 0 ? filtered : orgTargetRoles
+  }, [orgTargetRoles, department, selectedDeptObj])
+
+  const employeeTargetRoleOptions: ComboboxOption[] = useMemo(() => {
+    return availableTargetRolesForEmployee.map((r) => ({
+      value: r.id,
+      label: `${r.code} - ${r.title}`,
+    }))
+  }, [availableTargetRolesForEmployee])
+
+  const selectedEmployeeTargetRole = useMemo(() => {
+    return orgTargetRoles.find((r) => r.id === targetRoleId)
+  }, [orgTargetRoles, targetRoleId])
+
+  const employeeRoleLevels = useMemo(() => {
+    if (selectedEmployeeTargetRole?.levels && selectedEmployeeTargetRole.levels.length > 0) {
+      return selectedEmployeeTargetRole.levels
+    }
+    return ['Senior', 'Middle', 'Junior']
+  }, [selectedEmployeeTargetRole])
+
+  const employeeLevelOptions: ComboboxOption[] = useMemo(() => {
+    return employeeRoleLevels.map((lvl, idx) => ({
+      value: lvl,
+      label: `Rank ${idx + 1}: ${lvl}`,
+    }))
+  }, [employeeRoleLevels])
 
   const availableJobPositionsForDept = useMemo(() => {
     if (!department) return []
@@ -1072,14 +1115,40 @@ function UserForm({
   const effectiveJobPosition = jobPosition || tempJobPositionId
 
   const save = useMutation({
-    mutationFn: () => member ?
+    mutationFn: async () => {
+      if (employee && selectedEmployeeTargetRole) {
+        const assignment = {
+          roleTitle: selectedEmployeeTargetRole.title,
+          roleId: selectedEmployeeTargetRole.id,
+          roleCode: selectedEmployeeTargetRole.code,
+          level: targetRoleLevel || employeeRoleLevels[employeeRoleLevels.length - 1],
+          departmentName: selectedDeptObj?.name || department,
+        }
+        try {
+          localStorage.setItem(
+            `alg_employee_assignment_${email.toLowerCase().trim()}`,
+            JSON.stringify(assignment),
+          )
+          const activeProfileKey = `alg_learner_learning_profile_${organization}`
+          const currentRaw = localStorage.getItem(activeProfileKey)
+          if (currentRaw) {
+            const parsed = JSON.parse(currentRaw)
+            parsed.currentRole = assignment.roleTitle
+            parsed.currentLevel = assignment.level
+            parsed.department = assignment.departmentName
+            localStorage.setItem(activeProfileKey, JSON.stringify(parsed))
+          }
+        } catch {}
+      }
+
+      return member ?
       updateMemberProfile(organization, member.membershipId, {
         fullName: name,
         roles,
         departmentId: effectiveDepartment || null,
-        jobPositionReferenceId: effectiveJobPosition || null,
+        jobPositionReferenceId: isLdManager ? null : (effectiveJobPosition || null),
         departmentName: selectedDeptObj?.name || null,
-        jobPositionName: selectedJobPositionObj?.jobPositionName || selectedJobPositionObj?.name || null,
+        jobPositionName: isLdManager ? null : (selectedJobPositionObj?.jobPositionName || selectedJobPositionObj?.name || null),
         revision: member.revision,
       }) :
       request(`/api/v1/organizations/${organization}/subscription/activations`, 'POST', {
@@ -1087,10 +1156,11 @@ function UserForm({
         email,
         roles,
         departmentId: effectiveDepartment || null,
-        jobPositionReferenceId: effectiveJobPosition || null,
+        jobPositionReferenceId: isLdManager ? null : (effectiveJobPosition || null),
         departmentName: selectedDeptObj?.name || null,
-        jobPositionName: selectedJobPositionObj?.jobPositionName || selectedJobPositionObj?.name || null,
-      }),
+        jobPositionName: isLdManager ? null : (selectedJobPositionObj?.jobPositionName || selectedJobPositionObj?.name || null),
+      })
+    },
     onSuccess: () => saved(!member),
   })
 
@@ -1136,7 +1206,7 @@ function UserForm({
         <fieldset className="rounded-xl border border-border p-4 bg-card shadow-2xs">
           <legend className="px-1 text-body-sm font-semibold">{c('Organization role', 'Vai trò trong tổ chức')}</legend>
           <div className="grid gap-2 sm:grid-cols-2">
-            {ROLES.map(role => (
+            {selectableRoles.map(role => (
               <label
                 key={role}
                 className={`flex cursor-pointer items-center gap-3 rounded-lg border p-3 text-body-sm transition-colors ${
@@ -1148,7 +1218,13 @@ function UserForm({
                   name="organization-role"
                   className="h-4 w-4 accent-primary cursor-pointer"
                   checked={roles.length === 1 && roles[0] === role}
-                  onChange={() => setRoles([role])}
+                  onChange={() => {
+                    setRoles([role])
+                    if (role === 'LD_MANAGER') {
+                      setJobPosition('')
+                      setTempJobPositionId('')
+                    }
+                  }}
                 />
                 {roleName(role, c)}
               </label>
@@ -1170,7 +1246,7 @@ function UserForm({
 
           <div className="space-y-1.5">
             <label className="text-[11px] font-semibold text-foreground block">
-              {c('Select Department', 'Chọn phòng ban')} {employee && <span className="text-destructive">*</span>}
+              {c('Select Department', 'Chọn phòng ban')} {(employee || isLdManager || isExpert) && <span className="text-destructive">*</span>}
             </label>
             <div className="flex items-center gap-2">
               <div className="flex-1">
@@ -1263,122 +1339,196 @@ function UserForm({
           )}
         </div>
 
-        {/* SECTION 2: Assigned Job Position */}
-        <div className="p-4 rounded-xl border border-border bg-card space-y-3.5 relative shadow-2xs">
-          <div className="font-semibold text-foreground flex items-center justify-between">
-            <span className="flex items-center gap-2 text-xs font-semibold">
-              <Briefcase className="h-4 w-4 text-primary" />
-              {c('Assigned Job Position', 'Vị trí công việc đã phân công')} ({selectedJobPositionObj ? 1 : 0})
-            </span>
-            <span className="text-[11px] text-muted-foreground font-normal">
-              {selectedDeptObj
-                ? c(`Filtered by ${selectedDeptObj.name}`, `Lọc theo ${selectedDeptObj.name}`)
-                : c('Requires department assignment first', 'Cần gán phòng ban trước')}
-            </span>
-          </div>
+        {/* SECTION 2: Assigned Job Position (Hidden for L&D Manager) */}
+        {!isLdManager && (
+          <div className="p-4 rounded-xl border border-border bg-card space-y-3.5 relative shadow-2xs">
+            <div className="font-semibold text-foreground flex items-center justify-between">
+              <span className="flex items-center gap-2 text-xs font-semibold">
+                <Briefcase className="h-4 w-4 text-primary" />
+                {c('Assigned Job Position', 'Vị trí công việc đã phân công')} ({selectedJobPositionObj ? 1 : 0})
+              </span>
+              <span className="text-[11px] text-muted-foreground font-normal">
+                {selectedDeptObj
+                  ? c(`Filtered by ${selectedDeptObj.name}`, `Lọc theo ${selectedDeptObj.name}`)
+                  : c('Requires department assignment first', 'Cần gán phòng ban trước')}
+              </span>
+            </div>
 
-          <div className="space-y-1.5">
-            <label className="text-[11px] font-semibold text-foreground block">
-              {c('Job Position for', 'Vị trí công việc cho')} {selectedDeptObj?.name || c('Department', 'Phòng ban')} {employee && <span className="text-destructive">*</span>}
-            </label>
-            <div className="flex items-center gap-2">
-              <div className="flex-1">
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-semibold text-foreground block">
+                {c('Job Position for', 'Vị trí công việc cho')} {selectedDeptObj?.name || c('Department', 'Phòng ban')} {(employee || isExpert) && <span className="text-destructive">*</span>}
+              </label>
+              <div className="flex items-center gap-2">
+                <div className="flex-1">
+                  <Combobox
+                    size="sm"
+                    clearable={false}
+                    disabled={!department}
+                    options={jobPositionComboboxOptions}
+                    value={tempJobPositionId || jobPosition}
+                    onChange={(val) => {
+                      setTempJobPositionId(val)
+                    }}
+                    placeholder={
+                      department
+                        ? c('Search & select job position for user...', 'Tìm kiếm & chọn vị trí công việc...')
+                        : c('Select a department first to unlock job positions...', 'Vui lòng chọn phòng ban trước để mở khóa...')
+                    }
+                    searchPlaceholder={c('Search by job position code or title...', 'Tìm theo mã hoặc tên vị trí công việc...')}
+                    emptyMessage={
+                      department
+                        ? c('No connected job positions in this department', 'Không có vị trí công việc nào trong phòng ban này')
+                        : c('Select a department first', 'Vui lòng chọn phòng ban trước')
+                    }
+                  />
+                </div>
+                <Button
+                  type="button"
+                  variant="primary"
+                  size="sm"
+                  disabled={!department || !tempJobPositionId}
+                  onClick={handleAssignJobPosition}
+                  className="font-semibold shadow-2xs whitespace-nowrap px-3 text-xs shrink-0"
+                  leftIcon={<Plus className="h-3.5 w-3.5" />}
+                >
+                  {c('Assign Job Position', 'Gán vị trí')}
+                </Button>
+              </div>
+            </div>
+
+            {selectedJobPositionObj ? (
+              <div className="rounded-lg border border-border overflow-hidden">
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-muted/40 border-b border-border text-[10px] uppercase font-bold text-muted-foreground">
+                    <tr>
+                      <th className="py-2.5 px-3">{c('Code', 'Mã')}</th>
+                      <th className="py-2.5 px-3">{c('Job Position Name & Scope', 'Tên vị trí & Phạm vi')}</th>
+                      <th className="py-2.5 px-3">{c('Department', 'Phòng ban')}</th>
+                      <th className="py-2.5 px-3 text-right">{c('Action', 'Thao tác')}</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border">
+                    <tr className="hover:bg-muted/20 transition-colors">
+                      <td className="py-2.5 px-3 font-mono font-bold text-primary whitespace-nowrap">
+                        <Badge variant="secondary" className="font-mono text-[11px] px-2 py-0.5">
+                          {selectedJobPositionObj.code}
+                        </Badge>
+                      </td>
+                      <td className="py-2.5 px-3 max-w-xs">
+                        <div className="font-semibold text-foreground text-xs">{selectedJobPositionObj.name}</div>
+                        <div className="text-[11px] text-muted-foreground line-clamp-1 mt-0.5" title={selectedJobPositionObj.description}>
+                          {selectedJobPositionObj.description || c('Standard industry competency profile', 'Hồ sơ năng lực chuẩn ngành')}
+                        </div>
+                      </td>
+                      <td className="py-2.5 px-3 whitespace-nowrap text-xs text-foreground font-medium">
+                        {selectedDeptObj?.name || department}
+                      </td>
+                      <td className="py-2.5 px-3 text-right whitespace-nowrap">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10 cursor-pointer"
+                          onClick={handleRemoveJobPosition}
+                          title={c('Remove Job Position', 'Gỡ bỏ vị trí')}
+                          aria-label={c('Remove Job Position', 'Gỡ bỏ vị trí')}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="p-4 rounded-lg border border-dashed border-border text-center text-muted-foreground space-y-1">
+                <Briefcase className="h-5 w-5 mx-auto text-muted-foreground/60" />
+                <p className="font-semibold text-foreground text-xs">
+                  {department
+                    ? c('No Job Position Assigned Yet', 'Chưa phân công vị trí công việc')
+                    : c('Department Required First', 'Cần chọn phòng ban trước')}
+                </p>
+                <p className="text-[11px]">
+                  {department
+                    ? c('Select and assign a connected job position from the dropdown above.', 'Chọn và gán vị trí công việc từ danh sách ở trên.')
+                    : c('Please select a department above to view and assign its connected job positions.', 'Vui lòng chọn phòng ban trước để hiển thị các vị trí công việc tương ứng.')}
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* SECTION 3: Initial Target Role & Level (Career Placement for Employee) */}
+        {employee && (
+          <div className="p-4 rounded-xl border border-border bg-card space-y-3.5 relative shadow-2xs">
+            <div className="font-semibold text-foreground flex items-center justify-between">
+              <span className="flex items-center gap-2 text-xs font-semibold">
+                <Target className="h-4 w-4 text-primary" />
+                {c('Assigned Target Role & Level (Career Placement)', 'Gán Target Role & Level khởi điểm')} ({targetRoleId ? 1 : 0})
+              </span>
+              <span className="text-[11px] text-muted-foreground font-normal">
+                {c('Available in organization catalog', 'Có sẵn trong danh mục tổ chức')}
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-semibold text-foreground block">
+                  {c('Select Target Role', 'Chọn Target Role')}
+                </label>
                 <Combobox
                   size="sm"
                   clearable={false}
-                  disabled={!department}
-                  options={jobPositionComboboxOptions}
-                  value={tempJobPositionId || jobPosition}
+                  options={employeeTargetRoleOptions}
+                  value={targetRoleId}
                   onChange={(val) => {
-                    setTempJobPositionId(val)
+                    setTargetRoleId(val)
+                    const role = orgTargetRoles.find((r) => r.id === val)
+                    if (role?.levels && role.levels.length > 0) {
+                      setTargetRoleLevel(role.levels[role.levels.length - 1])
+                    } else {
+                      setTargetRoleLevel('Junior')
+                    }
                   }}
-                  placeholder={
-                    department
-                      ? c('Search & select job position for user...', 'Tìm kiếm & chọn vị trí công việc...')
-                      : c('Select a department first to unlock job positions...', 'Vui lòng chọn phòng ban trước để mở khóa...')
-                  }
-                  searchPlaceholder={c('Search by job position code or title...', 'Tìm theo mã hoặc tên vị trí công việc...')}
-                  emptyMessage={
-                    department
-                      ? c('No connected job positions in this department', 'Không có vị trí công việc nào trong phòng ban này')
-                      : c('Select a department first', 'Vui lòng chọn phòng ban trước')
-                  }
+                  placeholder={c('Search & select target role for employee...', 'Tìm kiếm & chọn target role...')}
+                  searchPlaceholder={c('Search by code or title...', 'Tìm theo mã hoặc tên...')}
+                  emptyMessage={c('No target roles available', 'Không có target role nào')}
                 />
               </div>
-              <Button
-                type="button"
-                variant="primary"
-                size="sm"
-                disabled={!department || !tempJobPositionId}
-                onClick={handleAssignJobPosition}
-                className="font-semibold shadow-2xs whitespace-nowrap px-3 text-xs shrink-0"
-                leftIcon={<Plus className="h-3.5 w-3.5" />}
-              >
-                {c('Assign Job Position', 'Gán vị trí')}
-              </Button>
-            </div>
-          </div>
 
-          {selectedJobPositionObj ? (
-            <div className="rounded-lg border border-border overflow-hidden">
-              <table className="w-full text-left text-xs">
-                <thead className="bg-muted/40 border-b border-border text-[10px] uppercase font-bold text-muted-foreground">
-                  <tr>
-                    <th className="py-2.5 px-3">{c('Code', 'Mã')}</th>
-                    <th className="py-2.5 px-3">{c('Job Position Name & Scope', 'Tên vị trí & Phạm vi')}</th>
-                    <th className="py-2.5 px-3">{c('Department', 'Phòng ban')}</th>
-                    <th className="py-2.5 px-3 text-right">{c('Action', 'Thao tác')}</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border">
-                  <tr className="hover:bg-muted/20 transition-colors">
-                    <td className="py-2.5 px-3 font-mono font-bold text-primary whitespace-nowrap">
-                      <Badge variant="secondary" className="font-mono text-[11px] px-2 py-0.5">
-                        {selectedJobPositionObj.code}
-                      </Badge>
-                    </td>
-                    <td className="py-2.5 px-3 max-w-xs">
-                      <div className="font-semibold text-foreground text-xs">{selectedJobPositionObj.name}</div>
-                      <div className="text-[11px] text-muted-foreground line-clamp-1 mt-0.5" title={selectedJobPositionObj.description}>
-                        {selectedJobPositionObj.description || c('Standard industry competency profile', 'Hồ sơ năng lực chuẩn ngành')}
-                      </div>
-                    </td>
-                    <td className="py-2.5 px-3 whitespace-nowrap text-xs text-foreground font-medium">
-                      {selectedDeptObj?.name || department}
-                    </td>
-                    <td className="py-2.5 px-3 text-right whitespace-nowrap">
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10 cursor-pointer"
-                        onClick={handleRemoveJobPosition}
-                        title={c('Remove Job Position', 'Gỡ bỏ vị trí')}
-                        aria-label={c('Remove Job Position', 'Gỡ bỏ vị trí')}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-semibold text-foreground block">
+                  {c('Assigned Level', 'Level khởi điểm')}
+                </label>
+                <Combobox
+                  size="sm"
+                  clearable={false}
+                  disabled={!targetRoleId}
+                  options={employeeLevelOptions}
+                  value={targetRoleLevel}
+                  onChange={(val) => setTargetRoleLevel(val)}
+                  placeholder={targetRoleId ? c('Select initial level...', 'Chọn level khởi điểm...') : c('Select role first...', 'Chọn role trước...')}
+                  searchPlaceholder={c('Search level...', 'Tìm level...')}
+                  emptyMessage={c('No levels available', 'Không có level nào')}
+                />
+              </div>
             </div>
-          ) : (
-            <div className="p-4 rounded-lg border border-dashed border-border text-center text-muted-foreground space-y-1">
-              <Briefcase className="h-5 w-5 mx-auto text-muted-foreground/60" />
-              <p className="font-semibold text-foreground text-xs">
-                {department
-                  ? c('No Job Position Assigned Yet', 'Chưa phân công vị trí công việc')
-                  : c('Department Required First', 'Cần chọn phòng ban trước')}
-              </p>
-              <p className="text-[11px]">
-                {department
-                  ? c('Select and assign a connected job position from the dropdown above.', 'Chọn và gán vị trí công việc từ danh sách ở trên.')
-                  : c('Please select a department above to view and assign its connected job positions.', 'Vui lòng chọn phòng ban trước để hiển thị các vị trí công việc tương ứng.')}
-              </p>
-            </div>
-          )}
-        </div>
+
+            {selectedEmployeeTargetRole && (
+              <div className="p-2.5 rounded-lg border border-primary/20 bg-primary/5 flex items-center justify-between text-xs">
+                <div className="flex items-center gap-2">
+                  <Badge variant="primary" className="font-mono text-[10px]">
+                    {selectedEmployeeTargetRole.code}
+                  </Badge>
+                  <span className="font-semibold text-foreground">{selectedEmployeeTargetRole.title}</span>
+                </div>
+                <Badge variant="outline" className="border-primary/40 text-primary font-bold text-[10px]">
+                  {targetRoleLevel ? `Assigned: ${targetRoleLevel}` : 'Level unassigned'}
+                </Badge>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Accessible hidden selects for automated testing & accessibility parity */}
         <div className="sr-only" aria-hidden="true">
@@ -1420,7 +1570,7 @@ function UserForm({
           <Button
             type="submit"
             isLoading={save.isPending}
-            disabled={!enabled || roles.length === 0 || (employee && (!effectiveDepartment || !effectiveJobPosition))}
+            disabled={!enabled || roles.length === 0 || (isLdManager && !effectiveDepartment) || ((employee || isExpert) && (!effectiveDepartment || !effectiveJobPosition))}
           >
             {member ? c('Save changes', 'Lưu thay đổi') : c('Send activation link', 'Gửi liên kết kích hoạt')}
           </Button>

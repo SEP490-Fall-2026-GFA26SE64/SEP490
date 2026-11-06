@@ -12,6 +12,8 @@ import {
 } from 'lucide-react'
 import { Badge } from '../../../shared/components/ui/Badge'
 import { Button } from '../../../shared/components/ui/Button'
+import { getActiveCompany } from '../../../shared/stores/companyStore'
+import { resolveJobPositionForRole } from '../../manager/data/ldManagerMockData'
 import { Card } from '../../../shared/components/ui/Card'
 import { EmptyState } from '../../../shared/components/ui/EmptyState'
 import { Pagination } from '../../../shared/components/ui/Pagination'
@@ -64,6 +66,15 @@ function getSearchFromLocation(): string {
   } catch {
     return ''
   }
+}
+
+function getLevelRank(levelName?: string | null): number {
+  if (!levelName) return 3
+  const lower = levelName.toLowerCase()
+  if (lower.includes('level 1') || lower.includes('senior') || lower.includes('lead')) return 1
+  if (lower.includes('level 2') || lower.includes('middle') || lower.includes('mid')) return 2
+  if (lower.includes('level 3') || lower.includes('junior') || lower.includes('entry') || lower.includes('intern')) return 3
+  return 3
 }
 
 export function TargetRoleBrowsePanel() {
@@ -129,6 +140,22 @@ export function TargetRoleBrowsePanel() {
     }
     const deduplicated = Array.from(map.values())
     let result = deduplicated
+
+    // 1. Department restriction: Employee only views target roles in their assigned Department
+    const activeCompany = getActiveCompany()
+    const employeeDept = profile?.department || 'Software Engineering'
+    if (employeeDept) {
+      result = result.filter((role) => {
+        const matched = (activeCompany?.targetRoles || []).find(
+          (tr) => tr.id === role.id || tr.code === role.code,
+        )
+        const roleDept =
+          matched?.department ||
+          resolveJobPositionForRole({ code: role.code, title: role.name })?.name
+        if (!roleDept) return true
+        return roleDept.toLowerCase().trim() === employeeDept.toLowerCase().trim()
+      })
+    }
     if (statusFilter !== 'All') {
       result = deduplicated.filter((role) => {
         const prevRoles = profile?.previousRoles || []
@@ -200,7 +227,7 @@ export function TargetRoleBrowsePanel() {
     setPendingChoice(null)
   }
 
-  const confirmSelection = () => {
+  const confirmSelection = (chosenLevel?: string) => {
     if (!pendingChoice || submissionInFlightRef.current || chooseRole.isPending) return
     submissionInFlightRef.current = true
     const chosenRole = pendingChoice.role
@@ -211,7 +238,8 @@ export function TargetRoleBrowsePanel() {
           chosenRole.code,
           '2026-12-31',
           85,
-          'Selected from catalog'
+          'Selected from catalog',
+          chosenLevel
         )
         pendingChoiceRef.current = null
         setPendingChoice(null)
@@ -449,37 +477,71 @@ export function TargetRoleBrowsePanel() {
                       >
                         View details
                       </Button>
-                      {isDone ? (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          disabled
-                          className="text-xs h-7.5 px-3 bg-success/5 text-success border-success/30 cursor-default font-semibold opacity-95"
-                          title="You have already completed this target role."
-                        >
-                          <CheckCircle2 size={12} className="mr-1 text-success shrink-0" />
-                          <span>Done</span>
-                        </Button>
-                      ) : isActive ? (
-                        <Button
-                          variant="secondary"
-                          size="sm"
-                          disabled
-                          className="text-xs h-7.5 px-3 font-semibold"
-                        >
-                          Active
-                        </Button>
-                      ) : (
-                        <Button
-                          variant="secondary"
-                          size="sm"
-                          disabled={selection.isPending || selection.isError || chooseRole.isPending}
-                          className="text-xs h-7.5 px-3 text-primary hover:bg-primary hover:text-white transition-colors cursor-pointer"
-                          onClick={() => openConfirmation(role)}
-                        >
-                          Choose
-                        </Button>
-                      )}
+                      {(() => {
+                        const isSameAsCurrentRole = Boolean(
+                          profile?.currentRole &&
+                            (role.name.toLowerCase().trim() === profile.currentRole.toLowerCase().trim() ||
+                              role.name.toLowerCase().includes(profile.currentRole.toLowerCase().trim()) ||
+                              profile.currentRole.toLowerCase().includes(role.name.toLowerCase().trim()) ||
+                              (role.code && profile.currentRole.toLowerCase().includes(role.code.toLowerCase()))),
+                        )
+                        const currentRank = getLevelRank(profile?.currentLevel)
+                        const isSameRoleAtHighestLevel = isSameAsCurrentRole && currentRank === 1
+
+                        if (isDone) {
+                          return (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              disabled
+                              className="text-xs h-7.5 px-3 bg-success/5 text-success border-success/30 cursor-default font-semibold opacity-95"
+                              title="You have already completed this target role."
+                            >
+                              <CheckCircle2 size={12} className="mr-1 text-success shrink-0" />
+                              <span>Done</span>
+                            </Button>
+                          )
+                        }
+
+                        if (isActive) {
+                          return (
+                            <Button
+                              variant="secondary"
+                              size="sm"
+                              disabled
+                              className="text-xs h-7.5 px-3 font-semibold"
+                            >
+                              Active
+                            </Button>
+                          )
+                        }
+
+                        if (isSameRoleAtHighestLevel) {
+                          return (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              disabled
+                              className="text-xs h-7.5 px-3 border-border text-muted-foreground opacity-60 cursor-not-allowed font-semibold"
+                              title="You have already attained the highest level (Level 1) for your current role."
+                            >
+                              Highest Level (L1)
+                            </Button>
+                          )
+                        }
+
+                        return (
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            disabled={selection.isPending || selection.isError || chooseRole.isPending}
+                            className="text-xs h-7.5 px-3 text-primary hover:bg-primary hover:text-white transition-colors cursor-pointer font-semibold"
+                            onClick={() => openConfirmation(role)}
+                          >
+                            {isSameAsCurrentRole ? 'Advance Level' : 'Choose'}
+                          </Button>
+                        )
+                      })()}
                     </div>
                   </div>
                 </Card>
@@ -525,6 +587,8 @@ export function TargetRoleBrowsePanel() {
         isPending={chooseRole.isPending}
         onCancel={closeConfirmation}
         onConfirm={confirmSelection}
+        currentRole={profile?.currentRole}
+        currentLevel={profile?.currentLevel}
       />
     </section>
   )

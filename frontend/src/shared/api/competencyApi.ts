@@ -83,7 +83,8 @@ export async function createCompetency(
   )
 
   if (!res.ok) {
-    throw new Error(`Failed to create competency: ${res.statusText}`)
+    const errorBody = await res.json().catch(() => null)
+    throw new Error(errorBody?.message || `Failed to create competency: ${res.statusText}`)
   }
 
   const item: CompetencyDto = await res.json()
@@ -126,7 +127,8 @@ export async function updateCompetency(
   )
 
   if (!res.ok) {
-    throw new Error(`Failed to update competency: ${res.statusText}`)
+    const errorBody = await res.json().catch(() => null)
+    throw new Error(errorBody?.message || `Failed to update competency: ${res.statusText}`)
   }
 
   const item: CompetencyDto = await res.json()

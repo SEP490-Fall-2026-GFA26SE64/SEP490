@@ -305,7 +305,7 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
             }
         }
 
-        List<String> levels = node.levels() != null ? node.levels() : List.of("Junior", "Middle", "Senior");
+        List<String> levels = node.levels() != null ? node.levels() : List.of("Senior", "Middle", "Junior");
         String levelCompetencies = node.levelCompetencies() != null ? node.levelCompetencies().trim() : "{}";
         List<String> competencyIds = node.competencyIds() != null ? node.competencyIds() : List.of();
 

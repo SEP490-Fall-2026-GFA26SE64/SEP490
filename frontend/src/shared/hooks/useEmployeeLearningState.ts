@@ -42,8 +42,11 @@ export interface LearnerLearningProfile {
   learnerId: string
   learnerName: string
   currentRole: string
+  currentLevel?: string | null
+  department?: string | null
   targetRole: string | null
   targetRoleVersion: string | null
+  targetLevel?: string | null
   targetSkill?: string | null
   targetSkillMacroCode?: string | null
   targetSkillLevel?: string | null
@@ -77,8 +80,11 @@ const INITIAL_PROFILE: LearnerLearningProfile = {
   learnerId: 'lrn-101',
   learnerName: 'Alex Chen',
   currentRole: 'Junior Graph Developer',
+  currentLevel: 'Junior',
+  department: 'Software Engineering',
   targetRole: 'AI Knowledge Architect',
   targetRoleVersion: 'v2.4 (Latest - Published 2026-06)',
+  targetLevel: 'Senior',
   targetSkill: 'Google Gemini & LLM Orchestration',
   targetSkillMacroCode: 'GEN_AI',
   targetSkillLevel: 'Advanced',
@@ -157,9 +163,12 @@ const getInitialProfileForActiveCompany = (): LearnerLearningProfile => {
   return {
     learnerId: employee ? employee.id : `lrn-${Date.now()}`,
     learnerName: employee ? employee.name : 'Learner',
-    currentRole: employee ? (employee.department || 'Associate') : 'Associate',
+    currentRole: employee ? (employee.targetRole || 'Junior Graph Developer') : 'Junior Graph Developer',
+    currentLevel: 'Junior',
+    department: employee?.department || 'Software Engineering',
     targetRole,
     targetRoleVersion,
+    targetLevel: 'Senior',
     targetSkill: null,
     targetSkillMacroCode: null,
     targetSkillLevel: null,
@@ -351,7 +360,8 @@ export function useEmployeeLearningState() {
       version: string,
       deadline = '2026-12-31',
       benchmark = 85,
-      notes = ''
+      notes = '',
+      targetLevel?: string
     ) => {
       // Archive current active target role into previous roles if changing
       let updatedPreviousRoles = profile.previousRoles
@@ -373,6 +383,7 @@ export function useEmployeeLearningState() {
         ...profile,
         targetRole: roleTitle,
         targetRoleVersion: version,
+        targetLevel: targetLevel || profile.targetLevel || null,
         deadline,
         assignedByManager: 'Self-Selected (Learner)',
         assignedAt: new Date().toLocaleString([], {

@@ -10,7 +10,8 @@ import static com.adaptlearngraph.dtos.OfficialQuestionBankManifest.*;
 public final class LocalCatalogBootstrap {
     public static final String VERSION="0.11.0";
     public static final String SINGLE_SKILL_VERSION="0.12.0";
-    public static final String SINGLE_SKILL_HASH="3ccdb02789af0d2560b77c477f9e2fe84f6818943a12479cce8d6580273f1702";
+    public static final String SINGLE_SKILL_HASH="b46977db357a376e9c76eee6271371d884d446d1cc91d20e241013097bd25549";
+    public static final String SINGLE_SKILL_CRLF_HASH="68f0fcc02d92e3f07d43db55db425be56e8254595816c7e2cd7e8fcc0e1da7c5";
     private final String catalogVersion;
     private final String sourceHash;
     public String version() { return catalogVersion; }
@@ -61,8 +62,8 @@ public final class LocalCatalogBootstrap {
     }
     public LocalCatalogBootstrap(byte[] bytes)throws java.io.IOException {
         sourceHash=sha256(bytes);
-        catalogVersion=SINGLE_SKILL_HASH.equals(sourceHash)?SINGLE_SKILL_VERSION:VERSION;
-        require(SINGLE_SKILL_HASH.equals(sourceHash) || SOURCE_HASH.equals(sourceHash) || LEGACY_SOURCE_HASH.equals(sourceHash),"Latest catalog source drift");
+        catalogVersion=(SINGLE_SKILL_HASH.equals(sourceHash) || SINGLE_SKILL_CRLF_HASH.equals(sourceHash))?SINGLE_SKILL_VERSION:VERSION;
+        require(SINGLE_SKILL_HASH.equals(sourceHash) || SINGLE_SKILL_CRLF_HASH.equals(sourceHash) || SOURCE_HASH.equals(sourceHash) || LEGACY_SOURCE_HASH.equals(sourceHash),"Latest catalog source drift");
         var data=JSON.readTree(bytes);
         for(var label:LABELS.entrySet())for(var row:data.path(label.getKey())) {
             var props=properties(row);props.remove(switch(label.getValue()){case "TargetRole"->"jobPositionId";case "Level"->"targetRoleId";case "Competency"->"levelId";default->"__exportOnly";});
@@ -168,7 +169,10 @@ public final class LocalCatalogBootstrap {
     }
     private static String assessmentProperties(Map<?,?> value,String kind) {
         var copy=JSON.valueToTree(value);((com.fasterxml.jackson.databind.node.ObjectNode)copy).remove("version");
-        if(kind.equals("Level"))((com.fasterxml.jackson.databind.node.ObjectNode)copy).remove("context");
+        if(kind.equals("Level")) {
+            ((com.fasterxml.jackson.databind.node.ObjectNode)copy).remove("context");
+            ((com.fasterxml.jackson.databind.node.ObjectNode)copy).remove("rank");
+        }
         return canonical(copy);
     }
 }

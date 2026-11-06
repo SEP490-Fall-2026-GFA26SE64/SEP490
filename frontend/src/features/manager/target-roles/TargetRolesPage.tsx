@@ -17,6 +17,7 @@ import {
   Diff,
   Edit3,
   Eye,
+  EyeOff,
   FileCheck,
   History,
   Layers,
@@ -58,6 +59,8 @@ import { useToast } from '../../../shared/hooks/useToast'
 import { WorkspaceLayout } from '../../../shared/layouts/WorkspaceLayout'
 import { WorkspaceSessionContext } from '../../../shared/auth/workspaceSession'
 import { getMembers } from '../../subscription/subscriptionApi'
+import { fetchDepartments } from '../../../shared/api/departmentApi'
+import { loadDepartments } from '../../../shared/stores/departmentStore'
 import {
   getActiveCompany,
   resolveWorkspaceOrgId,
@@ -105,15 +108,20 @@ export const getExpertOptionsForJobPosition = (
 const ROLE_PRESETS: ImportPreset[] = []
 
 export type ManagerRoleStatus =
-  'published' | 'submitted' | 'sent' | 'draft' | 'feedback' | 'rejected'
+  | 'published'
+  | 'submitted'
+  | 'sent'
+  | 'draft'
+  | 'feedback'
+  | 'rejected'
+  | 'unpublished'
 
 export const getManagerEffectiveStatus = (
   role: TargetRoleModel,
 ): ManagerRoleStatus => {
   if (role.status === 'published') return 'published'
-
+  if (role.status === 'unpublished') return 'unpublished'
   if (role.status === 'submitted') return 'submitted'
-
   if (role.status === 'sent') return 'sent'
 
   if (role.status === 'rejected') {
@@ -141,6 +149,7 @@ export function TargetRolesPage() {
     | 'sent'
     | 'feedback'
     | 'rejected'
+    | 'unpublished'
   >('all')
 
   const [expandedLineages, setExpandedLineages] = React.useState<
@@ -252,13 +261,69 @@ export function TargetRolesPage() {
     }
   }, [orgId])
 
+  const [managerDepartment, setManagerDepartment] = React.useState<{ id: string; name: string; jobPositionCodes: string[] } | null>(null)
+
+  React.useEffect(() => {
+    let isMounted = true
+    const loadManagerDept = async () => {
+      try {
+        const [members, depts] = await Promise.all([
+          getMembers(orgId).catch(() => []),
+          fetchDepartments(orgId).catch(() => []),
+        ])
+        const currentMember = (members || []).find(
+          (m) => m.accountId === session?.identity?.accountId || m.email === session?.identity?.email
+        )
+        const localDepts = loadDepartments()
+        const effectiveDepts = (depts && depts.length > 0) ? depts : localDepts
+
+        let matched = effectiveDepts.find(
+          (d) => d.id === currentMember?.departmentId || d.name === currentMember?.departmentName || d.code === currentMember?.departmentId
+        )
+
+        if (!matched && currentMember?.departmentName) {
+          matched = effectiveDepts.find(d => d.name.toLowerCase() === currentMember.departmentName?.toLowerCase())
+        }
+
+        if (!matched && effectiveDepts.length > 0) {
+          matched = effectiveDepts[0]
+        }
+
+        if (matched && isMounted) {
+          const codes = (matched as any).jobPositionCodes || (matched as any).linkedJobPositions || []
+          setManagerDepartment({
+            id: matched.id,
+            name: matched.name,
+            jobPositionCodes: codes,
+          })
+        }
+      } catch {
+        const localDepts = loadDepartments()
+        if (localDepts.length > 0 && isMounted) {
+          setManagerDepartment({
+            id: localDepts[0].id,
+            name: localDepts[0].name,
+            jobPositionCodes: localDepts[0].linkedJobPositions || [],
+          })
+        }
+      }
+    }
+    loadManagerDept()
+    return () => { isMounted = false }
+  }, [orgId, session?.identity?.accountId, session?.identity?.email])
+
   const jobPositionOptions: ComboboxOption[] = React.useMemo(() => {
-    return availableJobPositions.map((occ) => ({
+    const allowedCodes = new Set(managerDepartment?.jobPositionCodes || [])
+    const filtered = (managerDepartment && allowedCodes.size > 0)
+      ? availableJobPositions.filter((occ) => allowedCodes.has(occ.code))
+      : availableJobPositions
+
+    return filtered.map((occ) => ({
       value: occ.code,
       label: `${occ.code} — ${occ.name}`,
       description: occ.description,
     }))
-  }, [availableJobPositions])
+  }, [availableJobPositions, managerDepartment])
 
   const fetchRoles = React.useCallback(async () => {
     try {
@@ -299,7 +364,7 @@ export function TargetRolesPage() {
                       tr.id === String(r.id || '') ||
                       (tr.code === String(r.code || '') &&
                         tr.version === String(r.version || '1.0')),
-                  )?.levels || ['Junior', 'Middle', 'Senior'],
+                  )?.levels || ['Senior', 'Middle', 'Junior'],
             levelThresholds: (r.levelThresholds as RoleLevelThresholds) || {
               J: 60,
               M: 75,
@@ -323,11 +388,17 @@ export function TargetRolesPage() {
               ? (r.responsibilities as string[])
               : [],
             version: String(r.version || '1.0'),
-            status: (String(r.status || '').toLowerCase() === 'active'
+            status: (String(r.status || '').toLowerCase() === 'active' || String(r.status || '').toLowerCase() === 'published'
               ? 'published'
-              : String(
-                  r.status || 'draft',
-                ).toLowerCase()) as TargetRoleModel['status'],
+              : String(r.status || '').toLowerCase() === 'unpublished'
+              ? 'unpublished'
+              : String(r.status || '').toLowerCase() === 'submitted'
+              ? 'submitted'
+              : String(r.status || '').toLowerCase() === 'sent'
+              ? 'sent'
+              : String(r.status || '').toLowerCase() === 'rejected'
+              ? 'rejected'
+              : 'draft') as TargetRoleModel['status'],
             rejectionReason: String(r.rejectionReason || ''),
             levelCompetencies:
               r.levelCompetencies && Object.keys(r.levelCompetencies).length > 0
@@ -570,7 +641,8 @@ export function TargetRolesPage() {
             item.status === 'draft' ||
             item.status === 'submitted' ||
             item.status === 'sent' ||
-            item.status === 'rejected'
+            item.status === 'rejected' ||
+            item.status === 'unpublished'
               ? item.status
               : 'published',
           competencyIds: Array.isArray(item.competencyIds)
@@ -600,7 +672,7 @@ export function TargetRolesPage() {
       'Design, code, and test applications, systems software, and infrastructure pipelines.',
     familyCode: 'DEV',
     track: 'PROFESSIONAL' as 'PROFESSIONAL' | 'MANAGEMENT',
-    levelNames: ['Junior', 'Middle', 'Senior'],
+    levelNames: ['Senior', 'Middle', 'Junior'],
     assignedExpertId: ELIGIBLE_EXPERTS[0].id as string,
     description: '',
   })
@@ -613,7 +685,7 @@ export function TargetRolesPage() {
     scope: '',
     familyCode: 'DEV',
     track: 'PROFESSIONAL' as 'PROFESSIONAL' | 'MANAGEMENT',
-    levelNames: ['Junior', 'Middle', 'Senior'],
+    levelNames: ['Senior', 'Middle', 'Junior'],
     assignedExpertId: '',
     description: '',
   })
@@ -665,7 +737,7 @@ export function TargetRolesPage() {
         roles.some(
           (p) =>
             (p.code === r.code || (p.stableId && p.stableId === r.stableId)) &&
-            p.status === 'published' &&
+            (p.status === 'published' || p.status === 'unpublished') &&
             p.id !== r.id,
         )
 
@@ -705,18 +777,18 @@ export function TargetRolesPage() {
 
   const visibleRoles = React.useMemo(() => {
     return filteredRoles.filter((role) => {
-      const isPublished = role.status === 'published'
+      const isPublishedOrUnpublished = role.status === 'published' || role.status === 'unpublished'
       const publishedInLineage = managerVisibleRoles
         .filter(
           (r) =>
             (r.stableId === role.stableId || r.code === role.code) &&
-            r.status === 'published',
+            (r.status === 'published' || r.status === 'unpublished'),
         )
         .sort((a, b) => compareRoleVersions(b.version, a.version))
 
       const newestPublished = publishedInLineage[0]
       const isOlderPublished =
-        isPublished && newestPublished && role.id !== newestPublished.id
+        isPublishedOrUnpublished && newestPublished && role.id !== newestPublished.id
       const lineageKey = role.stableId || role.code
       const isLineageExpanded = Boolean(expandedLineages[lineageKey])
 
@@ -759,7 +831,11 @@ export function TargetRolesPage() {
     refreshAvailableJobPositions()
     const latestPositions = getAvailableJobPositions(orgId)
     setAvailableJobPositions(latestPositions)
-    const defaultOcc = latestPositions[0] || availableJobPositions[0] || JOB_POSITIONS[0]
+    const allowedCodes = new Set(managerDepartment?.jobPositionCodes || [])
+    const departmentPositions = (managerDepartment && allowedCodes.size > 0)
+      ? latestPositions.filter((occ) => allowedCodes.has(occ.code))
+      : latestPositions
+    const defaultOcc = departmentPositions[0] || latestPositions[0] || availableJobPositions[0] || JOB_POSITIONS[0]
     const eligibleExperts = getEligibleExpertsForJobPosition(
       defaultOcc.code,
       orgId,
@@ -771,7 +847,7 @@ export function TargetRolesPage() {
       scope: defaultOcc.description,
       familyCode: defaultOcc.profiles?.[0] || 'DEV',
       track: 'PROFESSIONAL',
-      levelNames: ['Junior', 'Middle', 'Senior'],
+      levelNames: ['Senior', 'Middle', 'Junior'],
       assignedExpertId: eligibleExperts[0]?.id || orgExperts[0]?.id || '',
       description: defaultOcc.description,
     })
@@ -893,7 +969,7 @@ export function TargetRolesPage() {
       responsibilities: [],
       assignedExpertId: roleForm.assignedExpertId,
       assignedExpertName: expertName,
-      department: selectedOcc.name,
+      department: managerDepartment?.name || selectedOcc.name,
       description:
         roleForm.scope || roleForm.description || selectedOcc.description,
       version: '1.0',
@@ -1006,7 +1082,7 @@ export function TargetRolesPage() {
       levelNames:
         role.levels && role.levels.length > 0
           ? [...role.levels]
-          : ['Junior', 'Middle', 'Senior'],
+          : ['Senior', 'Middle', 'Junior'],
       assignedExpertId: effectiveExpertId,
       description: role.description || role.scope || occ.description,
     })
@@ -1046,7 +1122,9 @@ export function TargetRolesPage() {
         ? 'SENT'
         : selectedRole.status === 'published'
           ? 'ACTIVE'
-          : selectedRole.status === 'sent'
+          : selectedRole.status === 'unpublished'
+            ? 'UNPUBLISHED'
+            : selectedRole.status === 'sent'
             ? 'SENT'
             : selectedRole.status === 'submitted'
               ? 'SUBMITTED'
@@ -1107,7 +1185,7 @@ export function TargetRolesPage() {
       responsibilities: [],
       assignedExpertId: editRoleForm.assignedExpertId,
       assignedExpertName: expertName,
-      department: selectedOcc.name,
+      department: managerDepartment?.name || selectedOcc.name,
       description:
         editRoleForm.scope ||
         editRoleForm.description ||
@@ -1195,6 +1273,53 @@ export function TargetRolesPage() {
       title: 'Target Role Published',
       description: `${role.title} (${role.code} v${role.version}) has been approved and published to the organization catalog.`,
       variant: 'success',
+    })
+  }
+
+  // L&D Manager: Unpublish target role
+  const handleUnpublishRole = async (role: TargetRoleModel) => {
+    const updatedRole: TargetRoleModel = {
+      ...role,
+      status: 'unpublished',
+      updatedAt: new Date().toISOString(),
+    }
+
+    try {
+      const res = await fetch(
+        `/api/v1/organizations/${orgId}/target-roles/${role.id}`,
+        {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-User-Role': 'LD_MANAGER',
+          },
+          body: JSON.stringify({
+            status: 'UNPUBLISHED',
+          }),
+        },
+      )
+
+      if (res.ok) {
+        await fetchRoles()
+      } else {
+        saveAndSetRoles((prev) =>
+          prev.map((r) => (r.id === role.id ? updatedRole : r)),
+        )
+      }
+    } catch {
+      saveAndSetRoles((prev) =>
+        prev.map((r) => (r.id === role.id ? updatedRole : r)),
+      )
+    }
+
+    if (viewingDetailsRole?.id === role.id) {
+      setViewingDetailsRole(updatedRole)
+    }
+
+    toast({
+      title: 'Target Role Unpublished',
+      description: `${role.title} (${role.code} v${role.version}) has been unpublished. Employees will no longer see this role in their catalog.`,
+      variant: 'info',
     })
   }
 
@@ -1562,7 +1687,8 @@ export function TargetRolesPage() {
                           | 'sent'
                           | 'submitted'
                           | 'feedback'
-                          | 'rejected',
+                          | 'rejected'
+                          | 'unpublished',
                       )
                     }
 
@@ -1571,6 +1697,9 @@ export function TargetRolesPage() {
                     <option value="all">All ({totalRoles})</option>
                     <option value="published">
                       Published ({publishedRoles})
+                    </option>
+                    <option value="unpublished">
+                      Unpublished ({managerVisibleRoles.filter((r) => getManagerEffectiveStatus(r) === 'unpublished').length})
                     </option>
                     <option value="sent">Sent ({sentRoles})</option>
                     <option value="submitted">
@@ -1665,18 +1794,20 @@ export function TargetRolesPage() {
                           const isFeedback = effStatus === 'feedback'
                           const isRejected = effStatus === 'rejected'
                           const isPublished = effStatus === 'published'
+                          const isUnpublished = effStatus === 'unpublished'
+                          const isPublishedOrUnpublished = isPublished || isUnpublished
                           const cleanRejectionReason = (
                             role.rejectionReason || ''
                           ).replace(/^\[(EXPERT|LD_MANAGER)\]:\s*/, '')
 
-                          // Lineage identification for published versions
+                          // Lineage identification for published / unpublished versions
 
                           const publishedInLineage = roles
                             .filter(
                               (r) =>
                                 (r.stableId === role.stableId ||
                                   r.code === role.code) &&
-                                r.status === 'published',
+                                (r.status === 'published' || r.status === 'unpublished'),
                             )
                             .sort((a, b) =>
                               compareRoleVersions(b.version, a.version),
@@ -1684,11 +1815,11 @@ export function TargetRolesPage() {
 
                           const newestPublished = publishedInLineage[0]
                           const isNewestPublished =
-                            isPublished &&
+                            isPublishedOrUnpublished &&
                             newestPublished &&
                             role.id === newestPublished.id
                           const isOlderPublished =
-                            isPublished && !isNewestPublished
+                            isPublishedOrUnpublished && !isNewestPublished
                           const hasOlderPublished =
                             isNewestPublished && publishedInLineage.length > 1
                           const lineageKey = role.stableId || role.code
@@ -1696,24 +1827,24 @@ export function TargetRolesPage() {
                             expandedLineages[lineageKey],
                           )
 
-                          // Collapse older published versions if lineage dropdown is not expanded
+                          // Collapse older versions if lineage dropdown is not expanded
 
                           if (isOlderPublished && !isLineageExpanded) {
                             return null
                           }
 
-                          // Identify if role is a successor placed below a published version
+                          // Identify if role is a successor placed below a published/unpublished version
 
                           const predecessorPublished = roles.find(
                             (r) =>
                               (r.stableId === role.stableId ||
                                 r.code === role.code) &&
-                              r.status === 'published' &&
+                              (r.status === 'published' || r.status === 'unpublished') &&
                               r.id !== role.id,
                           )
 
                           const isSuccessor =
-                            !isPublished && Boolean(predecessorPublished)
+                            !isPublishedOrUnpublished && Boolean(predecessorPublished)
                           const expert =
                             orgExperts.find(
                               (e) => e.id === role.assignedExpertId,
@@ -1864,7 +1995,7 @@ export function TargetRolesPage() {
                                   {
                                     (role.levels && role.levels.length > 0
                                       ? role.levels
-                                      : ['Junior', 'Middle', 'Senior']
+                                      : ['Senior', 'Middle', 'Junior']
                                     ).length
                                   }
                                 </span>
@@ -1907,6 +2038,12 @@ export function TargetRolesPage() {
                               <td className="py-3 px-3">
                                 {isPublished && (
                                   <Badge variant="success">PUBLISHED</Badge>
+                                )}
+
+                                {isUnpublished && (
+                                  <Badge variant="outline" className="border-muted-foreground/40 text-muted-foreground font-bold">
+                                    UNPUBLISHED
+                                  </Badge>
                                 )}
 
                                 {isSubmitted && (
@@ -1988,9 +2125,43 @@ export function TargetRolesPage() {
                                     <NetworkIcon className="h-4 w-4 text-primary" />
                                   </Button>
 
-                                  {/* Edit Role (Draft/Feedback/Rejected) - Lock editing when Sent or Submitted or Published */}
+                                  {/* Unpublish Role (for Published roles) */}
+                                  {isPublished && (
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      className="h-8 w-8 p-0 text-muted-foreground hover:bg-muted"
+                                      onClick={(e) => {
+                                        e.stopPropagation()
+                                        handleUnpublishRole(role)
+                                      }}
+                                      title="Unpublish Target Role"
+                                      aria-label="Unpublish Target Role"
+                                    >
+                                      <EyeOff className="h-4 w-4" />
+                                    </Button>
+                                  )}
 
-                                  {!isPublished && !isSent && !isSubmitted && (
+                                  {/* Re-publish Role (for Unpublished roles) */}
+                                  {isUnpublished && (
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      className="h-8 w-8 p-0 text-success hover:bg-success/10 border-success/30"
+                                      onClick={(e) => {
+                                        e.stopPropagation()
+                                        handleApproveAndPublishRole(role)
+                                      }}
+                                      title="Re-publish Target Role"
+                                      aria-label="Re-publish Target Role"
+                                    >
+                                      <CheckCircle2 className="h-4 w-4" />
+                                    </Button>
+                                  )}
+
+                                  {/* Edit Role (Draft/Feedback/Rejected) - Lock editing when Sent or Submitted or Published/Unpublished */}
+
+                                  {!isPublished && !isUnpublished && !isSent && !isSubmitted && (
                                     <Button
                                       variant="outline"
 
@@ -2261,7 +2432,7 @@ export function TargetRolesPage() {
                     ...prev,
                     levelNames: [
                       ...prev.levelNames,
-                      `Level ${prev.levelNames.length + 1}`,
+                      `Rank ${prev.levelNames.length + 1}`,
                     ],
                   }))
                 }
@@ -2300,7 +2471,7 @@ export function TargetRolesPage() {
                       setRoleForm({ ...roleForm, levelNames: newNames })
                     }}
 
-                    placeholder={`e.g. ${idx === 0 ? 'Junior' : idx === 1 ? 'Middle' : idx === 2 ? 'Senior' : 'Lead'}`}
+                    placeholder={`e.g. ${idx === 0 ? 'Senior' : idx === 1 ? 'Middle' : idx === 2 ? 'Junior' : 'Foundational'}`}
 
                     className="flex-1 px-2.5 py-1 text-xs rounded border border-border bg-background text-foreground font-medium focus:ring-1 focus:ring-primary focus:outline-none"
                   />
@@ -2583,7 +2754,7 @@ export function TargetRolesPage() {
                               >
                                 Archived (Rejected)
                               </Badge>
-                            ) : selectedRole.status === 'published' ? (
+                            ) : (selectedRole.status === 'published' || selectedRole.status === 'unpublished') ? (
                               <Badge variant={isLinked ? 'success' : 'outline'}>
                                 {isLinked ? 'Linked (Locked)' : 'Unlinked'}
                               </Badge>
@@ -2611,11 +2782,11 @@ export function TargetRolesPage() {
                 )}
               </div>
 
-              {selectedRole.status === 'published' && (
+              {(selectedRole.status === 'published' || selectedRole.status === 'unpublished') && (
                 <div className="p-2.5 rounded bg-warning/10 border border-warning/30 text-[11px] text-warning flex items-center gap-2">
                   <AlertTriangle className="h-4 w-4 shrink-0" />
                   <span>
-                    This role is published. To modify competency links, create a
+                    This role is published or unpublished. To modify competency links, create a
                     successor draft first.
                   </span>
                 </div>
@@ -2942,7 +3113,7 @@ export function TargetRolesPage() {
                             ...prev,
                             levelNames: [
                               ...prev.levelNames,
-                              `Level ${prev.levelNames.length + 1}`,
+                              `Rank ${prev.levelNames.length + 1}`,
                             ],
                           }))
                         }
@@ -2987,7 +3158,7 @@ export function TargetRolesPage() {
                             })
                           }}
 
-                          placeholder={`e.g. ${idx === 0 ? 'Junior' : idx === 1 ? 'Middle' : idx === 2 ? 'Senior' : 'Lead'}`}
+                          placeholder={`e.g. ${idx === 0 ? 'Senior' : idx === 1 ? 'Middle' : idx === 2 ? 'Junior' : 'Foundational'}`}
 
                           className={`flex-1 px-2.5 py-1 text-xs rounded border border-border bg-background text-foreground font-medium focus:ring-1 focus:ring-primary focus:outline-none ${
                             isSubmittedRole || isPublishedRole
@@ -3628,7 +3799,7 @@ export function TargetRolesPage() {
                       {(viewingDetailsRole.levels &&
                       viewingDetailsRole.levels.length > 0
                         ? viewingDetailsRole.levels
-                        : ['Junior', 'Middle', 'Senior']
+                        : ['Senior', 'Middle', 'Junior']
                       ).map((lvlName, idx) => (
                         <div
                           key={idx}
@@ -3709,7 +3880,7 @@ export function TargetRolesPage() {
                 viewingDetailsRole.levels &&
                 viewingDetailsRole.levels.length > 0
                   ? viewingDetailsRole.levels
-                  : ['Junior', 'Middle', 'Senior']
+                  : ['Senior', 'Middle', 'Junior']
 
               const hasExplicitLevelComps = Boolean(
                 viewingDetailsRole.levelCompetencies &&
@@ -4187,7 +4358,38 @@ export function TargetRolesPage() {
                 </>
               )}
 
+              {viewingDetailsRole.status === 'published' && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="border-muted-foreground/30 text-muted-foreground hover:bg-muted"
+                  onClick={() => {
+                    const r = viewingDetailsRole
+                    setViewingDetailsRole(null)
+                    handleUnpublishRole(r)
+                  }}
+                  leftIcon={<EyeOff className="h-3.5 w-3.5" />}
+                >
+                  Unpublish
+                </Button>
+              )}
+
+              {viewingDetailsRole.status === 'unpublished' && (
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={() => {
+                    const r = viewingDetailsRole
+                    handleApproveAndPublishRole(r)
+                  }}
+                  leftIcon={<CheckCircle2 className="h-3.5 w-3.5" />}
+                >
+                  Re-publish
+                </Button>
+              )}
+
               {viewingDetailsRole.status !== 'published' &&
+                viewingDetailsRole.status !== 'unpublished' &&
                 viewingDetailsRole.status !== 'submitted' &&
                 viewingDetailsRole.status !== 'sent' && (
                   <Button

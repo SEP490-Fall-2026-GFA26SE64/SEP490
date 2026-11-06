@@ -1,5 +1,6 @@
 package com.adaptlearngraph.services;
 
+import com.adaptlearngraph.exception.DuplicateCompetencyException;
 import com.adaptlearngraph.repository.CompetencyRepository;
 import com.adaptlearngraph.entities.domain.CompetencyRecord;
 
@@ -25,6 +26,10 @@ public class CompetencyService implements ManageCompetencyUseCase {
         String finalCode = (code != null && !code.isBlank())
                 ? code.trim().toUpperCase()
                 : generateDefaultCode();
+
+        if (repository.existsByOrganizationIdAndCode(organizationId, finalCode)) {
+            throw new DuplicateCompetencyException(organizationId, finalCode);
+        }
 
         CompetencyRecord newRecord = new CompetencyRecord(
                 id,
@@ -62,6 +67,10 @@ public class CompetencyService implements ManageCompetencyUseCase {
         String finalCode = (code != null && !code.isBlank())
                 ? code.trim().toUpperCase()
                 : (existing.code() != null && !existing.code().isBlank() ? existing.code() : generateDefaultCode());
+
+        if (repository.existsByOrganizationIdAndCodeAndIdNot(organizationId, finalCode, id)) {
+            throw new DuplicateCompetencyException(organizationId, finalCode);
+        }
 
         CompetencyRecord updated = new CompetencyRecord(
                 existing.id(),

@@ -87,6 +87,7 @@ import { TargetRoleVersionDiff } from '../../manager/target-roles/components/Tar
 
 export type ExpertRoleStatus =
   | 'published'
+  | 'unpublished'
   | 'submitted'
   | 'sent'
   | 'approved'
@@ -98,6 +99,7 @@ export const getExpertEffectiveStatus = (
   role: TargetRoleModel,
 ): ExpertRoleStatus => {
   if (role.status === 'published') return 'published'
+  if (role.status === 'unpublished') return 'unpublished'
 
   if (role.status === 'submitted') return 'submitted'
 
@@ -315,11 +317,11 @@ export function ExpertAssignedRolesPage() {
               ? (r.responsibilities as string[])
               : [],
             version: String(r.version || '1.0'),
-            status: (String(r.status || '').toLowerCase() === 'active'
+            status: (String(r.status || '').toLowerCase() === 'active' || String(r.status || '').toLowerCase() === 'published'
               ? 'published'
-              : String(
-                  r.status || 'draft',
-                ).toLowerCase()) as TargetRoleModel['status'],
+              : String(r.status || '').toLowerCase() === 'unpublished'
+                ? 'unpublished'
+                : String(r.status || 'draft').toLowerCase()) as TargetRoleModel['status'],
             rejectionReason: String(r.rejectionReason || ''),
             levelCompetencies: effectiveLevelComps,
             competencyIds: rawCompetencyIds,
@@ -329,7 +331,7 @@ export function ExpertAssignedRolesPage() {
             levels:
               Array.isArray(r.levels) && (r.levels as string[]).length > 0
                 ? (r.levels as string[])
-                : storeRole?.levels || ['Junior', 'Middle', 'Senior'],
+                : storeRole?.levels || ['Senior', 'Middle', 'Junior'],
             activeEnrollments: 0,
             createdAt: r.createdAt
               ? String(r.createdAt)
@@ -385,7 +387,7 @@ export function ExpertAssignedRolesPage() {
                 ? m.levels
                 : prev?.levels && prev.levels.length > 0
                   ? prev.levels
-                  : storeRole?.levels || ['Junior', 'Middle', 'Senior']
+                  : storeRole?.levels || ['Senior', 'Middle', 'Junior']
 
             return {
               ...m,
@@ -458,7 +460,7 @@ export function ExpertAssignedRolesPage() {
 
   const [searchQuery, setSearchQuery] = React.useState('')
   const [statusFilter, setStatusFilter] = React.useState<
-    'all' | 'published' | 'approved' | 'draft' | 'feedback' | 'rejected'
+    'all' | 'published' | 'unpublished' | 'approved' | 'draft' | 'feedback' | 'rejected'
   >('all')
 
   const [expandedLineages, setExpandedLineages] = React.useState<
@@ -554,12 +556,12 @@ export function ExpertAssignedRolesPage() {
 
   const visibleRoles = React.useMemo(() => {
     return filteredRoles.filter((role) => {
-      const isPublished = role.status === 'published'
+      const isPublishedOrUnpublished = role.status === 'published' || role.status === 'unpublished'
       const roleLineageKey =
         (role.stableId && role.stableId.trim()) || role.code.trim() || role.id
       const publishedInLineage = assignedRoles
         .filter((r) => {
-          if (r.status !== 'published') return false
+          if (r.status !== 'published' && r.status !== 'unpublished') return false
 
           const rLineageKey =
             (r.stableId && r.stableId.trim()) || r.code.trim() || r.id
@@ -570,7 +572,7 @@ export function ExpertAssignedRolesPage() {
 
       const newestPublished = publishedInLineage[0]
       const isOlderPublished =
-        isPublished && newestPublished && role.id !== newestPublished.id
+        isPublishedOrUnpublished && newestPublished && role.id !== newestPublished.id
       const isLineageExpanded = Boolean(expandedLineages[roleLineageKey])
 
       return !(isOlderPublished && !isLineageExpanded)
@@ -588,6 +590,9 @@ export function ExpertAssignedRolesPage() {
 
   const publishedCount = assignedRoles.filter(
     (r) => getExpertEffectiveStatus(r) === 'published',
+  ).length
+  const unpublishedCount = assignedRoles.filter(
+    (r) => getExpertEffectiveStatus(r) === 'unpublished',
   ).length
   const approvedCount = assignedRoles.filter(
     (r) => getExpertEffectiveStatus(r) === 'approved',
@@ -668,6 +673,7 @@ export function ExpertAssignedRolesPage() {
       (r) =>
         (r.stableId === role.stableId || r.code === role.code) &&
         r.status !== 'published' &&
+        r.status !== 'unpublished' &&
         r.id !== role.id,
     )
 
@@ -688,7 +694,7 @@ export function ExpertAssignedRolesPage() {
     const inheritedLevels =
       role.levels && role.levels.length > 0
         ? [...role.levels]
-        : ['Junior', 'Middle', 'Senior']
+        : ['Senior', 'Middle', 'Junior']
     const inheritedLevelCompetencies = role.levelCompetencies
       ? JSON.parse(JSON.stringify(role.levelCompetencies))
       : {}
@@ -828,7 +834,7 @@ export function ExpertAssignedRolesPage() {
   const [configuredSkillSearch, setConfiguredSkillSearch] = React.useState('')
   const [selectedAuthoringLevels, setSelectedAuthoringLevels] = React.useState<
     string[]
-  >(['Junior'])
+  >(['Senior'])
   const [isMultiLevelMode, setIsMultiLevelMode] = React.useState(false)
 
   // Skill target form state
@@ -881,7 +887,7 @@ export function ExpertAssignedRolesPage() {
   const currentRoleLevels = React.useMemo(() => {
     return authoringRole?.levels && authoringRole.levels.length > 0
       ? authoringRole.levels
-      : ['Junior', 'Middle', 'Senior']
+      : ['Senior', 'Middle', 'Junior']
   }, [authoringRole])
 
   const isAllLevelsSelected = React.useMemo(() => {
@@ -1414,7 +1420,7 @@ export function ExpertAssignedRolesPage() {
     const roleLevels =
       cloned.levels && cloned.levels.length > 0
         ? cloned.levels
-        : ['Junior', 'Middle', 'Senior']
+        : ['Senior', 'Middle', 'Junior']
     const initLevel = roleLevels[0]
 
     // Explicitly initialize levelCompetencies map for all levels without cross-contamination
@@ -1907,6 +1913,7 @@ export function ExpertAssignedRolesPage() {
                         e.target.value as
                           | 'all'
                           | 'published'
+                          | 'unpublished'
                           | 'approved'
                           | 'draft'
                           | 'feedback'
@@ -1921,6 +1928,9 @@ export function ExpertAssignedRolesPage() {
                     <option value="all">All ({assignedRoles.length})</option>
                     <option value="published">
                       Published ({publishedCount})
+                    </option>
+                    <option value="unpublished">
+                      Unpublished ({unpublishedCount})
                     </option>
                     <option value="approved">
                       Submitted ({approvedCount})
@@ -2018,18 +2028,20 @@ export function ExpertAssignedRolesPage() {
                         const isFeedback = effStatus === 'feedback'
                         const isRejected = effStatus === 'rejected'
                         const isPublished = effStatus === 'published'
+                        const isUnpublished = effStatus === 'unpublished'
+                        const isPublishedOrUnpublished = isPublished || isUnpublished
                         const cleanRejectionReason = (
                           role.rejectionReason || ''
                         ).replace(/^\[(EXPERT|LD_MANAGER)\]:\s*/, '')
 
-                        // Lineage identification for published versions
+                        // Lineage identification for published / unpublished versions
 
                         const publishedInLineage = assignedRoles
                           .filter(
                             (r) =>
                               (r.stableId === role.stableId ||
                                 r.code === role.code) &&
-                              r.status === 'published',
+                              (r.status === 'published' || r.status === 'unpublished'),
                           )
                           .sort((a, b) =>
                             compareRoleVersions(b.version, a.version),
@@ -2037,11 +2049,11 @@ export function ExpertAssignedRolesPage() {
 
                         const newestPublished = publishedInLineage[0]
                         const isNewestPublished =
-                          isPublished &&
+                          isPublishedOrUnpublished &&
                           newestPublished &&
                           role.id === newestPublished.id
                         const isOlderPublished =
-                          isPublished && !isNewestPublished
+                          isPublishedOrUnpublished && !isNewestPublished
                         const hasOlderPublished =
                           isNewestPublished && publishedInLineage.length > 1
                         const lineageKey = role.stableId || role.code
@@ -2049,32 +2061,33 @@ export function ExpertAssignedRolesPage() {
                           expandedLineages[lineageKey],
                         )
 
-                        // Collapse older published versions if lineage dropdown is not expanded
+                        // Collapse older versions if lineage dropdown is not expanded
 
                         if (isOlderPublished && !isLineageExpanded) {
                           return null
                         }
 
-                        // Identify successor role placed under a published role
+                        // Identify successor role placed under a published/unpublished role
 
                         const predecessorPublished = assignedRoles.find(
                           (r) =>
                             (r.stableId === role.stableId ||
                               r.code === role.code) &&
-                            r.status === 'published' &&
+                            (r.status === 'published' || r.status === 'unpublished') &&
                             r.id !== role.id,
                         )
 
                         const isSuccessor =
-                          !isPublished && Boolean(predecessorPublished)
+                          !isPublishedOrUnpublished && Boolean(predecessorPublished)
 
-                        // Check if this published role lineage already has an active revision draft/submission
+                        // Check if this published/unpublished role lineage already has an active revision draft/submission
 
                         const hasActiveSuccessor = assignedRoles.some(
                           (r) =>
                             (r.stableId === role.stableId ||
                               r.code === role.code) &&
                             r.status !== 'published' &&
+                            r.status !== 'unpublished' &&
                             r.id !== role.id,
                         )
 
@@ -2219,7 +2232,7 @@ export function ExpertAssignedRolesPage() {
                                 {
                                   (role.levels && role.levels.length > 0
                                     ? role.levels
-                                    : ['Junior', 'Middle', 'Senior']
+                                    : ['Senior', 'Middle', 'Junior']
                                   ).length
                                 }
                               </span>
@@ -2240,6 +2253,12 @@ export function ExpertAssignedRolesPage() {
                             <td className="py-3 px-3">
                               {isPublished && (
                                 <Badge variant="success">PUBLISHED</Badge>
+                              )}
+
+                              {isUnpublished && (
+                                <Badge variant="outline" className="border-muted-foreground/40 text-muted-foreground font-bold">
+                                  UNPUBLISHED
+                                </Badge>
                               )}
 
                               {isSubmitted && (
@@ -2316,7 +2335,7 @@ export function ExpertAssignedRolesPage() {
 
                                 {/* Create Successor Draft (Domain Expert creates later drafts) */}
 
-                                {isPublished &&
+                                {(isPublished || isUnpublished) &&
                                   isNewestPublished &&
                                   !hasActiveSuccessor && (
                                     <Button
@@ -2754,6 +2773,7 @@ export function ExpertAssignedRolesPage() {
                   </div>
 
                   {authoringRole.status !== 'published' &&
+                    authoringRole.status !== 'unpublished' &&
                     authoringRole.status !== 'submitted' && (
                       <div className="space-y-1.5">
                         <label className="text-[11px] font-semibold text-foreground block">
@@ -3620,19 +3640,23 @@ export function ExpertAssignedRolesPage() {
                       viewEffStatus === 'published' ||
                       viewEffStatus === 'approved'
                         ? 'success'
-                        : viewEffStatus === 'feedback'
+                        : viewEffStatus === 'unpublished'
                           ? 'outline'
-                          : viewEffStatus === 'rejected'
-                            ? 'destructive'
-                            : 'warning'
+                          : viewEffStatus === 'feedback'
+                            ? 'outline'
+                            : viewEffStatus === 'rejected'
+                              ? 'destructive'
+                              : 'warning'
                     }
 
                     className={
-                      viewEffStatus === 'approved'
-                        ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20 font-bold dark:text-emerald-400 text-xs'
-                        : viewEffStatus === 'feedback'
-                          ? 'bg-amber-500/15 !text-black border-amber-500/30 font-bold dark:!text-black text-xs'
-                          : 'font-bold text-xs'
+                      viewEffStatus === 'unpublished'
+                        ? 'border-muted-foreground/40 text-muted-foreground font-bold text-xs'
+                        : viewEffStatus === 'approved'
+                          ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20 font-bold dark:text-emerald-400 text-xs'
+                          : viewEffStatus === 'feedback'
+                            ? 'bg-amber-500/15 !text-black border-amber-500/30 font-bold dark:!text-black text-xs'
+                            : 'font-bold text-xs'
                     }
                   >
                     {viewEffStatus.toUpperCase()}
@@ -3868,7 +3892,7 @@ export function ExpertAssignedRolesPage() {
                     viewingDetailsRole.levels &&
                     viewingDetailsRole.levels.length > 0
                       ? viewingDetailsRole.levels
-                      : ['Junior', 'Middle', 'Senior']
+                      : ['Senior', 'Middle', 'Junior']
 
                   const hasExplicitLevelComps = Boolean(
                     viewingDetailsRole.levelCompetencies &&
@@ -4234,7 +4258,8 @@ export function ExpertAssignedRolesPage() {
 
           <DialogFooter className="shrink-0 pt-3 border-t border-border mt-3 flex items-center justify-between sm:justify-between w-full">
             {viewingDetailsRole.status === 'draft' ||
-            viewingDetailsRole.status === 'published' ? (
+            viewingDetailsRole.status === 'published' ||
+            viewingDetailsRole.status === 'unpublished' ? (
               <Button
                 variant="destructive"
                 size="sm"
@@ -4260,7 +4285,8 @@ export function ExpertAssignedRolesPage() {
               >
                 Close
               </Button>
-              {viewingDetailsRole.status !== 'published' && (
+              {viewingDetailsRole.status !== 'published' &&
+              viewingDetailsRole.status !== 'unpublished' && (
                 <Button
                   variant="primary"
                   size="sm"

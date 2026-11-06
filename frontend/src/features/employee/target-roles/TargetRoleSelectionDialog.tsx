@@ -1,4 +1,6 @@
-import { AlertCircle, ArrowRight, CheckCircle2, ShieldAlert, Target } from 'lucide-react'
+import React from 'react'
+import { AlertCircle, ArrowRight, CheckCircle2, ShieldAlert, Target, TrendingUp } from 'lucide-react'
+import { getActiveCompany } from '../../../shared/stores/companyStore'
 import { Badge } from '../../../shared/components/ui/Badge'
 import { Button } from '../../../shared/components/ui/Button'
 import {
@@ -24,13 +26,24 @@ export interface PendingTargetRoleChoice {
   command: ChooseTargetRoleCommand
 }
 
+function getLevelRank(levelName?: string | null): number {
+  if (!levelName) return 3
+  const lower = levelName.toLowerCase()
+  if (lower.includes('level 1') || lower.includes('senior') || lower.includes('lead')) return 1
+  if (lower.includes('level 2') || lower.includes('middle') || lower.includes('mid')) return 2
+  if (lower.includes('level 3') || lower.includes('junior') || lower.includes('entry') || lower.includes('intern')) return 3
+  return 3
+}
+
 interface TargetRoleSelectionDialogProps {
   choice: PendingTargetRoleChoice | null
   currentSelection: TargetRoleSelection | null
   error: Error | null
   isPending: boolean
   onCancel: () => void
-  onConfirm: () => void
+  onConfirm: (chosenLevel?: string) => void
+  currentRole?: string | null
+  currentLevel?: string | null
 }
 
 export function TargetRoleSelectionDialog({
@@ -40,9 +53,45 @@ export function TargetRoleSelectionDialog({
   isPending,
   onCancel,
   onConfirm,
+  currentRole,
+  currentLevel,
 }: TargetRoleSelectionDialogProps) {
   const isChange = currentSelection !== null
   const requiresNewAction = isTerminalSelectionError(error)
+
+  const comp = getActiveCompany()
+  const matchedRole = comp?.targetRoles?.find(
+    (tr) => tr.id === choice?.role?.id || tr.code === choice?.role?.code,
+  )
+  const roleLevels =
+    matchedRole?.levels && matchedRole.levels.length > 0
+      ? matchedRole.levels
+      : ['Senior', 'Middle', 'Junior']
+
+  const isSameRole = Boolean(
+    currentRole &&
+      choice &&
+      (choice.role.name.toLowerCase().trim() === currentRole.toLowerCase().trim() ||
+        choice.role.name.toLowerCase().includes(currentRole.toLowerCase().trim()) ||
+        currentRole.toLowerCase().includes(choice.role.name.toLowerCase().trim()) ||
+        (choice.role.code && currentRole.toLowerCase().includes(choice.role.code.toLowerCase()))),
+  )
+
+  const currentRank = getLevelRank(currentLevel)
+
+  const defaultSelectableLevel = React.useMemo(() => {
+    if (!isSameRole) return roleLevels[roleLevels.length - 1] || 'Junior'
+    const higherLevel = roleLevels.find((_, idx) => idx + 1 < currentRank)
+    return higherLevel || ''
+  }, [roleLevels, isSameRole, currentRank])
+
+  const [selectedLevel, setSelectedLevel] = React.useState<string>('')
+
+  React.useEffect(() => {
+    if (choice) {
+      setSelectedLevel(defaultSelectableLevel)
+    }
+  }, [choice, defaultSelectableLevel])
 
   return (
     <Dialog
@@ -79,6 +128,72 @@ export function TargetRoleSelectionDialog({
               <RoleCard label="Selected role" name={choice.role.name} code={choice.role.code} highlighted />
             )}
 
+            {/* Target Level Selection Section */}
+            <div className="rounded-xl border border-border bg-card p-3 space-y-2.5">
+              <div className="flex items-center justify-between">
+                <span className="font-semibold text-foreground text-xs flex items-center gap-1.5">
+                  <TrendingUp size={14} className="text-primary" />
+                  Select Target Level
+                </span>
+                <span className="text-[11px] text-muted-foreground">
+                  {isSameRole
+                    ? 'Advancement: Only higher levels allowed'
+                    : 'Choose target proficiency level'}
+                </span>
+              </div>
+
+              {isSameRole && currentRank === 1 ? (
+                <div className="p-2.5 rounded-lg border border-warning/30 bg-warning/10 text-[11px] text-warning font-medium">
+                  You have already reached the highest level (Level 1 - Senior) for this role. You cannot choose a lower or equal level.
+                </div>
+              ) : (
+                <div className="space-y-1.5">
+                  {roleLevels.map((lvl, idx) => {
+                    const levelRank = idx + 1
+                    const isLowerOrEqual = isSameRole && levelRank >= currentRank
+                    const isSelected = selectedLevel === lvl
+
+                    return (
+                      <label
+                        key={lvl}
+                        className={`flex items-center justify-between p-2.5 rounded-lg border transition-all ${
+                          isLowerOrEqual
+                            ? 'opacity-40 cursor-not-allowed bg-muted/30 border-border'
+                            : isSelected
+                              ? 'border-primary bg-primary/5 cursor-pointer'
+                              : 'border-border bg-card hover:border-primary/40 cursor-pointer'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="radio"
+                            name="target-level"
+                            disabled={isLowerOrEqual}
+                            checked={isSelected}
+                            onChange={() => setSelectedLevel(lvl)}
+                            className="accent-primary"
+                          />
+                          <Badge
+                            variant={levelRank === 1 ? 'primary' : 'secondary'}
+                            className="font-mono text-[10px]"
+                          >
+                            Level {levelRank}
+                          </Badge>
+                          <span className="font-semibold text-xs text-foreground">{lvl}</span>
+                        </div>
+
+                        {isLowerOrEqual && (
+                          <span className="text-[10px] text-muted-foreground italic">
+                            {levelRank === currentRank ? 'Current Level' : 'Lower Level (Blocked)'}
+                          </span>
+                        )}
+                      </label>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
+
             <div className="rounded-xl border border-warning/30 bg-warning/10 p-3 text-muted-foreground">
               <div className="mb-1 flex items-center gap-1.5 font-semibold text-foreground">
                 <ShieldAlert size={14} className="text-warning" />
@@ -109,9 +224,9 @@ export function TargetRoleSelectionDialog({
               variant="primary"
               size="sm"
               isLoading={isPending}
-              disabled={requiresNewAction}
+              disabled={requiresNewAction || (isSameRole && currentRank === 1) || !selectedLevel}
               leftIcon={<CheckCircle2 size={15} />}
-              onClick={onConfirm}
+              onClick={() => onConfirm(selectedLevel)}
             >
               {isChange ? 'Confirm role change' : 'Confirm target role'}
             </Button>

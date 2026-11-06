@@ -79,6 +79,21 @@ public class Neo4jCompetencyRepository implements CompetencyRepository {
     }
 
     @Override
+    public boolean existsByOrganizationIdAndCode(String organizationId, String code) {
+        Objects.requireNonNull(organizationId, "organizationId");
+        Objects.requireNonNull(code, "code");
+        return Boolean.TRUE.equals(reads.execute(status -> competencies.existsByCode(organizationId, code.trim())));
+    }
+
+    @Override
+    public boolean existsByOrganizationIdAndCodeAndIdNot(String organizationId, String code, String id) {
+        Objects.requireNonNull(organizationId, "organizationId");
+        Objects.requireNonNull(code, "code");
+        Objects.requireNonNull(id, "id");
+        return Boolean.TRUE.equals(reads.execute(status -> competencies.existsByCodeAndIdNot(organizationId, code.trim(), id)));
+    }
+
+    @Override
     public CompetencyRecord save(String organizationId, CompetencyRecord record, List<String> skillIds, String levelId) {
         String organization = Neo4jTenantGuard.requireOrganization(organizationId);
         return writes.execute(status -> {

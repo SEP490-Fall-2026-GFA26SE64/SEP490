@@ -129,7 +129,7 @@ class CatalogMappingsTest {
                 null, null, "not json", CREATED, UPDATED, null, null, null, null);
         TargetRoleResponse defaults = mapper.map(minimal, TargetRoleResponse.class);
         assertThat(defaults.skillTargets()).isEmpty();
-        assertThat(defaults.levels()).containsExactly("Junior", "Middle", "Senior");
+        assertThat(defaults.levels()).containsExactly("Senior", "Middle", "Junior");
         assertThat(defaults.levelCompetencies()).isEmpty();
         assertThat(defaults.status()).isEqualTo("DRAFT");
         assertThat(defaults.track()).isEqualTo("PROFESSIONAL");

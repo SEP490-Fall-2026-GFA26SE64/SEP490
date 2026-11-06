@@ -26,7 +26,7 @@ export interface TargetRoleModel {
   description: string
   responsibilities?: string[]
   version: string
-  status: 'draft' | 'submitted' | 'sent' | 'rejected' | 'published'
+  status: 'draft' | 'submitted' | 'sent' | 'rejected' | 'published' | 'unpublished'
   rejectionReason?: string
   competencyIds: string[]
   skillTargets: SkillTargetConfig[]
@@ -113,9 +113,9 @@ export interface OntologyLevel {
 }
 
 export const ONTOLOGY_LEVELS: OntologyLevel[] = [
-  { code: 'J', name: 'Junior', rank: 1, threshold: 0.60, context: 'Guided bounded execution under task support' },
+  { code: 'S', name: 'Senior', rank: 1, threshold: 0.90, context: 'Complex solution architecture, system review, and governance (Highest Level)' },
   { code: 'M', name: 'Middle', rank: 2, threshold: 0.75, context: 'Independent defined-scope delivery and standard troubleshooting' },
-  { code: 'S', name: 'Senior', rank: 3, threshold: 0.90, context: 'Complex solution architecture, system review, and governance' },
+  { code: 'J', name: 'Junior', rank: 3, threshold: 0.60, context: 'Guided bounded execution under task support' },
 ]
 
 export function resolveJobPositionForRole(
@@ -233,7 +233,7 @@ export function sortTargetRolesWithDraftsBelowPublished(
   // A lineage is a brand-new role if it has NEVER been published (pure draft/sent/rejected).
   // A lineage that has a published version is an existing role, even if a successor draft was spawned.
   const isPureDraftLineage = (groupRoles: TargetRoleModel[]): boolean => {
-    return groupRoles.every((r) => r.status !== 'published')
+    return groupRoles.every((r) => r.status !== 'published' && r.status !== 'unpublished')
   }
 
   // Base creation time for the lineage:
@@ -296,15 +296,15 @@ export function sortTargetRolesWithDraftsBelowPublished(
   for (const key of sortedKeys) {
     const groupRoles = groups.get(key)!
     const published = groupRoles
-      .filter((r) => r.status === 'published')
+      .filter((r) => r.status === 'published' || r.status === 'unpublished')
       .sort((a, b) => compareRoleVersions(b.version, a.version))
 
     const newestPublished = published[0]
     const olderPublished = published.slice(1)
 
-    // Draft / sent / rejected versions placed immediately below published
+    // Draft / sent / rejected versions placed immediately below published / unpublished
     const nonPublished = groupRoles
-      .filter((r) => r.status !== 'published')
+      .filter((r) => r.status !== 'published' && r.status !== 'unpublished')
       .sort((a, b) => compareRoleVersions(a.version, b.version))
 
     if (newestPublished) {
