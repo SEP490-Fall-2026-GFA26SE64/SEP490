@@ -45,6 +45,9 @@
 
 | Date | A*M, D | In charge | Change Description |
 | --- | --- | --- | --- |
+| 2026-11-06 | M | Documentation preparation with AI assistance | Updated only ST-14 to explicit submission and L&D-configured pass/fail rules; removed evidence, auto-submit and adaptive-stop branches from this diagram. |
+| 2026-11-06 | M | Documentation preparation with AI assistance | Standardized only ST-13, ST-14, ST-16, ST-17, ST-18 and ST-19 to the unchanged ST-01 visual reference. Removed ST-15 from the current report; all other state diagrams retain their previous sources and images. State/transition content is unchanged. |
+| 2026-11-06 | M | Documentation preparation with AI assistance | Updated approved ACT-05 Role-Level baseline flow, related state machines and flow-scoped ERDs; retained report styling and dated physical schema history. Documentation only; no runtime/schema change. |
 | 2026-11-02 | M | Documentation preparation with AI assistance | Aligned ST-11 Module/Content and ST-16 Question Bank titles/notes with their updated diagrams; added ST-23 Independent Skill Learning and updated lifecycle coverage. Retained target/current boundaries and existing physical schema. |
 | 2026-11-01 | M | Documentation preparation with AI assistance | Simplified the backend package view into Presentation, Application, Domain and Infrastructure layers with Shared support. Added embedded package icons and retained only selected dependency arrows. |
 | 2026-11-01 | M | Documentation preparation with AI assistance | Corrected the backend overview to expose hexagonal package layers, input/output ports and adapter roles using the actual identity module structure. Replaced module-family descriptions with layer-package descriptions; no source packages were renamed or created. |
@@ -301,7 +304,7 @@ In the TypeScript frontend, packages mean source-directory groups, not separatel
 
 The current PostgreSQL `platform` schema was captured from the already-running development PostgreSQL using a **repeatable-read, read-only transaction** over `pg_catalog` and `public.flyway_schema_history`. No application rows, credentials, learner answers or payment payloads were extracted. No migration, import, write, restart or reset was performed.
 
-**Verified baseline: PostgreSQL 17.6; V1-V32; 113 tables; 916 columns; 237 foreign keys.** Every applied migration was successful and its Flyway CRC32 matched the corresponding checked-in SQL file. The generated dictionary/ERDs below use that verified metadata, not the older stored JSON snapshot.
+**Historical verified baseline: PostgreSQL 17.6; V1-V32; 113 tables; 916 columns; 237 foreign keys.** Every applied migration was successful and its Flyway CRC32 matched the corresponding checked-in SQL file. The retained physical dictionary and archived DB-* diagrams use that dated metadata. The Role-Level flow ERDs in section 2.2 describe the approved target and are not a live database export.
 
 The existing [postgresql-schema-catalog.json](../documents/diagrams/postgresql-schema-catalog.json) describes an older 89-table assessment lineage and contains script names no longer present in the integrated migration directory. It was **not** used as the current database truth. Historical diagrams/architecture paragraphs are similarly date-scoped. The report does not modify those historical artifacts.
 
@@ -366,37 +369,63 @@ The checksum column is the full signed Flyway CRC32 verified against the running
 
 ### 2.2 Logical database design
 
-SRS section 3.1.5 provides four **core conceptual overviews**, not table-level logical models. The detailed logical relationship views below retain the supporting entities, while section 2.3 provides the complete baseline physical table and constraint coverage. The database design principles are:
+The following four ERDs model only the approved ACT-05 flow. Every entity box lists its complete attribute set **as defined for this target flow model**, including types, keys and nullability. Existing shared entities are scoped references, not exhaustive replacements for their owning physical tables; the full historical physical dictionary remains in section 2.3. This model is proposed documentation, not an applied schema change.
 
-1. Every transactional record has explicit identity and ownership; tenant-bearing composite keys/FKs are retained where defined.
-2. Plan versions/order snapshots, released assessment/blueprint/model versions and historical evidence are immutable according to their constraints/triggers.
-3. Readiness, business lifecycle, review status and payment/application outcomes are separate facts; a single UI badge must not collapse them.
-4. Active pointers and partial unique/exclusion indexes express “one current” semantics without rewriting historical rows.
-5. `organization_id` is legitimately nullable on some historical identity records; this is not an invitation to accept an untrusted tenant value.
-6. Neo4j ID references in PostgreSQL are cross-store references, not database-enforced Neo4j foreign keys.
-7. Missing future module/content approval, financial ledger, assignments and inference persistence must receive explicit approved schema designs/forward migrations, not columns invented solely to match prototype UI.
+**Notation and constraints:** PK/FK identify target logical keys. REQUIRED/NULLABLE describe field nullability. Catalog IDs refer across stores and are not SQL-enforced foreign keys into Neo4j. Tenant-bearing references must match organization and learner ownership, including joins whose compact FK label names only the entity. Time fields are timestamptz. JSON snapshots contain validated, versioned rules/outcomes, never executable organization-supplied code.
 
-**Detailed logical relationship views**
-
-These views retain the 76 distinct entities previously expanded in the SRS. They are detailed domain views, not a replacement for the complete 113-table baseline inventory and foreign-key coverage in section 2.3. Initial-pathway entities defined after V32 are source-defined supplements; their presence here does not assert that newer migrations have been applied to a running database. The conceptual Training Cost and Monetary Benefit entities express business requirements, not a claim that an actual financial ledger has been implemented.
+**1. Role-Level Selection and Baseline Configuration**
 
 [Mermaid source: LERD-01](../documents/diagrams/mermaid/lerd-01.mmd)
 
-![LERD-01 - Detailed identity, organization and subscriptions](../documents/diagrams/mermaid/lerd-01.png)
+![LERD-01 - Role-Level Selection and Baseline Configuration](../documents/diagrams/mermaid/lerd-01.png)
+
+**2. Assessment and Role-Level Profile**
 
 [Mermaid source: LERD-02](../documents/diagrams/mermaid/lerd-02.mmd)
 
-![LERD-02 - Detailed assessment and mastery](../documents/diagrams/mermaid/lerd-02.png)
+![LERD-02 - Assessment and Role-Level Profile](../documents/diagrams/mermaid/lerd-02.png)
+
+**3. Role Requirements and Learning Provision**
 
 [Mermaid source: LERD-03](../documents/diagrams/mermaid/lerd-03.mmd)
 
-![LERD-03 - Detailed competency ontology](../documents/diagrams/mermaid/lerd-03.png)
+![LERD-03 - Role Requirements and Learning Provision](../documents/diagrams/mermaid/lerd-03.png)
+
+**4. Pathway Review, Learning and Bypass**
 
 [Mermaid source: LERD-04](../documents/diagrams/mermaid/lerd-04.mmd)
 
-![LERD-04 - Detailed pathway, processing and reporting](../documents/diagrams/mermaid/lerd-04.png)
+![LERD-04 - Pathway Review, Learning and Bypass](../documents/diagrams/mermaid/lerd-04.png)
 
-#### 2.2.1 Important constraint and field decisions
+**Cross-view references:** the same entity name in different views denotes the same owner and key, not a copied table. The following links connect the views without repeating large entity boxes.
+
+| Referencing field | Referenced entity/key | Rule |
+| --- | --- | --- |
+| AssessmentAttempt.progress_id | LearningProgress.progress_id | Required for skill assessment; null for baseline. |
+| AssessmentItem.skill_id, SkillResult.skill_id, ProfileSkill.skill_id, PathwayStep.skill_id | Skill.skill_id | Exact catalog skill plus frozen knowledge level/outcomes. |
+| ProfileSkill.source_attempt_id | AssessmentAttempt.attempt_id | Present for an assessment source, scoped to the same learner. |
+| ProfileSkill.source_certificate_id | CertificateSubmission.submission_id | Present for accepted certificate evidence; never an unreviewed submission. |
+| StepOption.module_id | LearningModule.module_id | Pin module_version to approved content_version. |
+| StepOption.certificate_id, CertificateSubmission.certificate_id | Certificate.certificate_id | Pin the exact certificate definition version. |
+| LearningProgress.module_id | LearningModule.module_id | Preserve original content version and progress ownership. |
+| PathwayReview.expert_id, PathwayBypass.expert_id, CertificateSubmission.decided_by | Account.account_id | Genuine authorized Expert, with current organization/assignment checks. |
+| BaselineConfigVersion.activated_by | Account.account_id | Genuine authorized L&D activation. |
+| PathwayStep.carried_bypass_id | PathwayBypass.bypass_id | Optional preserved bypass source; never achievement. |
+
+**Flow invariants**
+
+- BaselineConfig is unique per organization and RoleLevel; its optional active pointer must reference a validated version of that same config. New versions preserve previous attempts and history. RoleLevel must belong to the selected Role.
+- Baseline AssessmentAttempt requires config_version_id and no progress_id. Skill assessment requires progress_id and separately validated rule_snapshot; baseline configuration is not silently reused as skill-assessment policy. Exactly one assessment context applies. Resume retains paper, configuration and deadline.
+- AssessmentAnswer uses the composite presented-item reference (attempt_id, position). SkillResult belongs to that same attempt; invalid results and missing data are not Met or a fabricated numerical zero.
+- Profile status is Met only when all applicable mandatory requirements are met; otherwise valid unmet results are Needs supplementation. No valid profile is created from an invalid baseline. Profile revisions preserve original results and distinguish diagnostic baseline sources from accepted learning/certificate evidence.
+- StepOption binds exactly one provision: module_id + module_version OR certificate_id + certificate_version. Module alternatives must match the exact skill/knowledge/outcomes and approved content. Certificate submissions retain private evidence references; pending/rejected decisions do not award achievement.
+- PathwayReview records a real Expert decision on an exact revision/hash. Automatic recalculation uses change_origin and approval_basis_revision_id; it must not fabricate a new Expert approval. A newly discovered missing-provision gap needs a scoped bypass decision, not repeat approval of every adaptation.
+- Bypass requires absence of both eligible module and certificate provision, a genuine Expert/reason/time and preserved source step. It remains Needs supplementation. Any non-bypassed blocking requirement keeps Role and Level locked, including pending generation/review and processing errors. Completion or bypass-only releases target change; a running attempt still blocks replacement. Historical selection/profile/pathway data remains queryable.
+- No-learning-required closes the request without creating an artificial learning task. Other generation errors remain bound to the same target for repair/retry. New target selection returns to its matching Active baseline config; old baseline results are not silently treated as a new assessment.
+
+#### 2.2.1 Historical physical constraints (V1-V32)
+
+These retained constraints describe the dated implementation, including Job Position baseline ownership. They do not override the approved Role-Level target above; reconciling physical mappings requires a separately approved implementation/migration.
 
 | Concern | Current rule / relevant source |
 | --- | --- |
@@ -417,95 +446,18 @@ These views retain the 76 distinct entities previously expanded in the SRS. They
 
 ### 2.3 Physical ERDs and Table Descriptions
 
-**Reading the generated diagrams:** Logical models use Mermaid `erDiagram`. The key-focused physical views use Mermaid `classDiagram` with table/external annotations so the original foreign-key direction is retained without inventing cardinality. Member suffixes identify PK/FK participation and REQUIRED/NULLABLE; type punctuation is normalized only in these diagrams, while exact SQL types remain in the dictionary.
+The report displays only flow-related ERDs in section 2.2, with all target attributes. Historical whole-system key-only DB-01 through DB-08 renders are retained as archived artifacts; they are not the Role-Level design and are not reproduced here. Their original physical definitions and full table/field dictionary below are preserved for traceability.
 
-**Physical view notation:** each table is assigned to one owning diagram. Dashed relationships reference a table in another group; that referenced table is shown as `external` with only key fields. Every one of the 237 physical foreign keys is drawn once from its owning child group. The diagrams use parent/child direction without guessing reverse minimum participation. Complete field nullability and exact FK columns are in the dictionary below.
-
-These are key-focused physical views; they do not invent relationships for matching column names. Unique/check/exclusion constraints and triggers may tighten lifecycle/cardinality beyond a simple relationship line.
-
-<!-- DATABASE_DIAGRAMS:START -->
-
-**DB-01: Identity, registration, catalog references and processing** - 24 owned tables, 25 foreign keys.
-
-[Mermaid source: DB-01](../documents/diagrams/mermaid/db-01.mmd)
-
-![DB-01 - Identity, registration, catalog references and processing V1-V32 key-focused physical ERD](../documents/diagrams/mermaid/db-01.png)
-
-**Diagram notes (DB-01):**
-
-- PK = primary key; FK = foreign key; REQUIRED = NOT NULL; NULLABLE = nullable. Parent -> child. FK IDs resolve to exact definitions in the dictionary. External entities belong to another diagram; no reverse cardinality is inferred.
-
-**DB-02: Subscription, payment, workspace and member references** - 16 owned tables, 38 foreign keys.
-
-[Mermaid source: DB-02](../documents/diagrams/mermaid/db-02.mmd)
-
-![DB-02 - Subscription, payment, workspace and member references V1-V32 key-focused physical ERD](../documents/diagrams/mermaid/db-02.png)
-
-**Diagram notes (DB-02):**
-
-- PK = primary key; FK = foreign key; REQUIRED = NOT NULL; NULLABLE = nullable. Parent -> child. FK IDs resolve to exact definitions in the dictionary. External entities belong to another diagram; no reverse cardinality is inferred.
-
-**DB-03: Shared and legacy assessment, evidence and learning** - 32 owned tables, 75 foreign keys.
-
-[Mermaid source: DB-03](../documents/diagrams/mermaid/db-03.mmd)
-
-![DB-03 - Shared and legacy assessment, evidence and learning V1-V32 key-focused physical ERD](../documents/diagrams/mermaid/db-03.png)
-
-**Diagram notes (DB-03):**
-
-- PK = primary key; FK = foreign key; REQUIRED = NOT NULL; NULLABLE = nullable. Parent -> child. FK IDs resolve to exact definitions in the dictionary. External entities belong to another diagram; no reverse cardinality is inferred.
-
-**DB-04: Adaptive blueprint and activation** - 9 owned tables, 21 foreign keys.
-
-[Mermaid source: DB-04](../documents/diagrams/mermaid/db-04.mmd)
-
-![DB-04 - Adaptive blueprint and activation V1-V32 key-focused physical ERD](../documents/diagrams/mermaid/db-04.png)
-
-**Diagram notes (DB-04):**
-
-- PK = primary key; FK = foreign key; REQUIRED = NOT NULL; NULLABLE = nullable. Parent -> child. FK IDs resolve to exact definitions in the dictionary. External entities belong to another diagram; no reverse cardinality is inferred.
-
-**DB-05: Adaptive attempts and evidence** - 9 owned tables, 22 foreign keys.
-
-[Mermaid source: DB-05](../documents/diagrams/mermaid/db-05.mmd)
-
-![DB-05 - Adaptive attempts and evidence V1-V32 key-focused physical ERD](../documents/diagrams/mermaid/db-05.png)
-
-**Diagram notes (DB-05):**
-
-- PK = primary key; FK = foreign key; REQUIRED = NOT NULL; NULLABLE = nullable. Parent -> child. FK IDs resolve to exact definitions in the dictionary. External entities belong to another diagram; no reverse cardinality is inferred.
-
-**DB-06: IRT calibration and parameter selection** - 6 owned tables, 15 foreign keys.
-
-[Mermaid source: DB-06](../documents/diagrams/mermaid/db-06.mmd)
-
-![DB-06 - IRT calibration and parameter selection V1-V32 key-focused physical ERD](../documents/diagrams/mermaid/db-06.png)
-
-**Diagram notes (DB-06):**
-
-- PK = primary key; FK = foreign key; REQUIRED = NOT NULL; NULLABLE = nullable. Parent -> child. FK IDs resolve to exact definitions in the dictionary. External entities belong to another diagram; no reverse cardinality is inferred.
-
-**DB-07: Current role, Job Position profile and tenant resource binding** - 4 owned tables, 9 foreign keys.
-
-[Mermaid source: DB-07](../documents/diagrams/mermaid/db-07.mmd)
-
-![DB-07 - Current role, Job Position profile and tenant resource binding V1-V32 key-focused physical ERD](../documents/diagrams/mermaid/db-07.png)
-
-**Diagram notes (DB-07):**
-
-- PK = primary key; FK = foreign key; REQUIRED = NOT NULL; NULLABLE = nullable. Parent -> child. FK IDs resolve to exact definitions in the dictionary. External entities belong to another diagram; no reverse cardinality is inferred.
-
-**DB-08: Recommendation, pathway, analytics and evaluation** - 13 owned tables, 32 foreign keys.
-
-[Mermaid source: DB-08](../documents/diagrams/mermaid/db-08.mmd)
-
-![DB-08 - Recommendation, pathway, analytics and evaluation V1-V32 key-focused physical ERD](../documents/diagrams/mermaid/db-08.png)
-
-**Diagram notes (DB-08):**
-
-- PK = primary key; FK = foreign key; REQUIRED = NOT NULL; NULLABLE = nullable. Parent -> child. FK IDs resolve to exact definitions in the dictionary. External entities belong to another diagram; no reverse cardinality is inferred.
-
-<!-- DATABASE_DIAGRAMS:END -->
+| Historical view | Archived source |
+| --- | --- |
+| DB-01 | [Mermaid source](../documents/diagrams/mermaid/db-01.mmd) |
+| DB-02 | [Mermaid source](../documents/diagrams/mermaid/db-02.mmd) |
+| DB-03 | [Mermaid source](../documents/diagrams/mermaid/db-03.mmd) |
+| DB-04 | [Mermaid source](../documents/diagrams/mermaid/db-04.mmd) |
+| DB-05 | [Mermaid source](../documents/diagrams/mermaid/db-05.mmd) |
+| DB-06 | [Mermaid source](../documents/diagrams/mermaid/db-06.mmd) |
+| DB-07 | [Mermaid source](../documents/diagrams/mermaid/db-07.mmd) |
+| DB-08 | [Mermaid source](../documents/diagrams/mermaid/db-08.mmd) |
 
 #### 2.3.1 Table Descriptions
 
@@ -5929,31 +5881,23 @@ The last read arrow is a logical persistence path through an authorized applicat
 
 [Mermaid source: ST-13](../documents/diagrams/mermaid/st-13.mmd)
 
-![ST-13 - Adaptive blueprint working row and released availability](../documents/diagrams/mermaid/st-13.png)
+![ST-13 - Role-Level Baseline Configuration](../documents/diagrams/mermaid/st01-standard-20261106/st-13.png)
 
 **Diagram notes (ST-13):**
 
-- Retiring/Inactive are projections, not stored version enums. Reactivation creates a new Draft and revalidated immutable version. Readiness (READY/stale/unconfigured/infeasible) is a separate dimension.
+- Approved Role-Level target: OPEN errors stay editable and never activate. Successful validation finalizes the draft and publishes the matching immutable active version atomically. Active/Retiring/Inactive are availability projections; attempts retain their pinned version. No schema enum migration is asserted.
 
 [Mermaid source: ST-14](../documents/diagrams/mermaid/st-14.mmd)
 
-![ST-14 - Adaptive attempt (persisted state and reason)](../documents/diagrams/mermaid/st-14.png)
+![ST-14 - Rule-Based Baseline Result](../documents/diagrams/mermaid/st01-standard-20261106/st-14-rule-based-20261106.png)
 
 **Diagram notes (ST-14):**
 
-- Transient dependency outage is retryable, not automatically invalidation. Time passing or GET alone does not finalize. Permitted replacement is a new linked attempt with retained pins.
-
-[Mermaid source: ST-15](../documents/diagrams/mermaid/st-15.mmd)
-
-![ST-15 - IRT calibration and parameter promotion](../documents/diagrams/mermaid/st-15.png)
-
-**Diagram notes (ST-15):**
-
-- Effective selection is keyed by organization, bank and model. Candidate existence and synthetic fitted data are not approval. Activated reviewer/time are populated only on genuine promotion.
+- The Employee starts with an Active baseline configuration for the selected Role-Level, answers/resumes and explicitly submits. The system applies the pass rule configured by L&D and transitions from SUBMITTED to PASSED or FAILED. Example only: when the configured rule is at least 7 correct answers out of 10, 7–10 passes and 0–6 fails; 7/10 is not a hard-coded universal threshold. This diagram has no evidence-sufficiency gate, AUTO_SUBMITTED or adaptive-stop/deadline submission branch. These are approved target business states, not a claim that physical database enums have already changed.
 
 [Mermaid source: ST-16](../documents/diagrams/mermaid/st-16.mmd)
 
-![ST-16 - Question Bank](../documents/diagrams/mermaid/st-16.png)
+![ST-16 - Question Bank](../documents/diagrams/mermaid/st01-standard-20261106/st-16.png)
 
 **Diagram notes (ST-16):**
 
@@ -6008,29 +5952,29 @@ Logical database arrows from actors stand for authorized use-case calls, not dir
 
 [Mermaid source: ST-17](../documents/diagrams/mermaid/st-17.mmd)
 
-![ST-17 - Employee role selection (derived from history)](../documents/diagrams/mermaid/st-17.png)
+![ST-17 - Role-Level Selection and Change Eligibility](../documents/diagrams/mermaid/st01-standard-20261106/st-17.png)
 
 **Diagram notes (ST-17):**
 
-- Lifecycle is derived from active/history fields, not a new enum. In-progress assessment blocks changing the current choice. Unavailable historical role keeps its snapshot; explicit replacement required.
+- Approved target eligibility is derived from current selection and pathway outcomes. Same-target reads/replays do not replace history. A different Role or Level is allowed only after completion or when only accepted missing-module-and-certificate bypasses remain, with no attempt in progress. Pending review, generation errors and ordinary incomplete work retain the target. Replacement ends the old selection and creates its successor atomically; new baseline admission requires matching Active configuration.
 
 [Mermaid source: ST-18](../documents/diagrams/mermaid/st-18.mmd)
 
-![ST-18 - Competency profile and evidence lifecycle](../documents/diagrams/mermaid/st-18.png)
+![ST-18 - Role-Level Profile and Requirement Status](../documents/diagrams/mermaid/st01-standard-20261106/st-18.png)
 
 **Diagram notes (ST-18):**
 
-- Current baseline initializes its own applicable Job Position profile. General continuous tracing remains a planned service. Evidence states describe provenance, not low/medium/high score. Historical COMPLETE revisions stay immutable; updates create successors.
+- The approved target initializes a Role-Level profile from valid finalized baseline results. Met and Needs supplementation describe requirement outcomes; Unknown means no usable result. Bypass preserves Needs supplementation and provenance, never achievement. Accepted learning/assessment or certificate evidence updates successor profile revisions; historical results remain immutable. These target states are not a claim of deployed enum/storage changes.
 
 [Mermaid source: ST-19](../documents/diagrams/mermaid/st-19.mmd)
 
-![ST-19 - Recommendation run and pathway revision (schema foundation/target)](../documents/diagrams/mermaid/st-19.png)
+![ST-19 - Pathway Generation, Review and Target Release](../documents/diagrams/mermaid/st01-standard-20261106/st-19.png)
 
 **Diagram notes (ST-19):**
 
-- Statuses exist in PostgreSQL; full service transitions are not implemented. Initial review gate is required. Subsequent adaptation is automatic under an approved override-preservation policy, not a new mandatory review each time. validation_status is a separate dimension.
+- The approved target retains initial Expert review of an exact valid revision. Missing both module and certificate provision can be explicitly bypassed by Expert; ordinary failures, cycles and invalid configuration cannot. Completion or bypass-only permits target change; bypass does not award achievement. Automatic recalculation retains approval lineage without fabricated review metadata. A newly discovered missing-provision decision is scoped, not mandatory full re-review on every adaptation. No-learning-required completes without artificial tasks. These are target lifecycle concepts, not assertions that every label is a current PostgreSQL enum.
 
-A current-pathway successor may be produced automatically after updated assessment evidence; the schema's review-related labels require a concrete approved mapping before this automation is implemented. The report does not claim every successor must pass a new human review.
+A pathway successor may be produced automatically after valid updated skill evidence; preserve genuine initial approval lineage. Implementation and physical state mapping remain outside this diagram-only revision.
 
 [Mermaid source: ST-23](../documents/diagrams/mermaid/st-23.mmd)
 
@@ -6132,12 +6076,11 @@ Actual financial record approval/locking/retention is not specified by Version 2
 | Module and Learning Content | ST-11 | Current authoring/review/publication states; whole-Module lesson review. Complete module-assessment bundle remains separate. |
 | MicroSkill and other graph definitions | ST-12 | Orthogonal review/availability vocabularies; no automatic approval. |
 | Baseline Draft / released blueprint | ST-13 | Persisted working state and derived active/retiring/inactive. |
-| Baseline attempt | ST-14 | Current terminal states/reasons. |
-| Calibration / IRT parameter set | ST-15 | Current run and promotion states. |
+| Baseline attempt | ST-14 | Explicit submission followed by L&D-configured PASSED / FAILED result. |
 | Question Bank candidate | ST-16 | Current DRAFT/SUBMITTED/PUBLISHED review; immutable published versions and successor drafts. Availability is separate. |
-| Employee role selection | ST-17 | Current/history relationship and explicit replacement. |
-| Mastery/profile | ST-18 | Physical quality/revision foundation; baseline initialization versus planned tracing. |
-| Recommendation / pathway | ST-19 | Foundation states and required initial review. |
+| Employee role selection | ST-17 | Target/history and guarded replacement after completion or bypass-only. |
+| Mastery/profile | ST-18 | Role-Level initialization; Met / Needs supplementation / Unknown with provenance. |
+| Recommendation / pathway | ST-19 | Initial review, learning loop, completion and bypass-only target release. |
 | Evaluation run | ST-20 | Schema foundation, no inferred benchmark pass. |
 | Processing job / email delivery work | ST-21 | Handler-dependent durable state machine. |
 | Independent skill learning | ST-23 | Target business states corresponding to ACT-07; not persisted enums or a completed assessment integration. |
@@ -6180,6 +6123,7 @@ This is a route-family inventory, not a replacement for controller DTO contracts
 
 | Check | Actual result | Scope / qualification |
 | --- | --- | --- |
+| ACT-05 Role-Level diagram revision, 2026-11-06 | Passed | 16 selected Mermaid sources parsed/rendered; 15 updated SVGs XML-validated; ST-16 original artifacts retained. Nine source/preservation/link checks passed, including all scoped target attributes, guarded role change and retained physical dictionary. Visual review completed. [Dedicated evidence](../documents/diagrams/review2-role-level-20261106.md). Documentation only; no runtime/schema acceptance claimed. |
 | Learning / Question Bank report synchronization, 2026-11-02 | Passed | Report3 references ACT-04/07/10; Report4 references ST-11/16/23 with matching captions, notes and lifecycle coverage. All12 scoped Mermaid-source/PNG links resolve; six PNG headers/dimensions and SVG XML are valid. Existing report anchors retained. Diagram rendering was checked during their preceding edits; this synchronization ran document/link checks only, not application/database tests or full report requalification. |
 | DOCX template-body structure | Passed | 26 fixed SRS headings and 7 fixed SDD headings checked in order; feature placeholders expanded into the relevant numbered sections. Stale SRS template TOC was reconciled to its body. |
 | Functional requirement coverage | Passed | 48 distinct source FRs, 48 detailed SRS function sections, 48 use-case table entries and diagram nodes; original actor/domain identities retained. |

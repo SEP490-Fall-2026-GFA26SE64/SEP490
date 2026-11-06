@@ -1,0 +1,392 @@
+{
+  "date": "2026-11-06",
+  "reference": "ST-01 unchanged",
+  "renderer": "Mermaid 12.2.0, look neo, headless Chrome, PNG 2x",
+  "checks": [
+    {
+      "name": "ST01 source/SVG/PNG unchanged byte-for-byte",
+      "status": "Passed"
+    },
+    {
+      "name": "All 21 state graphs, labels, classes and aggregate boundaries unchanged",
+      "status": "Passed"
+    },
+    {
+      "name": "All 21 use ST01 font, theme tokens and state spacing",
+      "status": "Passed"
+    },
+    {
+      "name": "All 21 render without page errors or label/frame overlaps",
+      "status": "Passed"
+    },
+    {
+      "name": "PNG scale matches ST01 2x output; versioned copies match",
+      "status": "Passed"
+    },
+    {
+      "name": "All selected report image/source references resolve",
+      "status": "Passed"
+    }
+  ],
+  "results": [
+    {
+      "id": "st-02",
+      "width": 619,
+      "height": 616,
+      "parse": "Passed",
+      "render": "Passed",
+      "pageErrors": [],
+      "labelNodeCollisions": [],
+      "labelLabelCollisions": []
+    },
+    {
+      "id": "st-03",
+      "width": 518,
+      "height": 574,
+      "parse": "Passed",
+      "render": "Passed",
+      "pageErrors": [],
+      "labelNodeCollisions": [],
+      "labelLabelCollisions": []
+    },
+    {
+      "id": "st-04",
+      "width": 795,
+      "height": 844,
+      "parse": "Passed",
+      "render": "Passed",
+      "pageErrors": [],
+      "labelNodeCollisions": [],
+      "labelLabelCollisions": []
+    },
+    {
+      "id": "st-05",
+      "width": 1436,
+      "height": 1038,
+      "parse": "Passed",
+      "render": "Passed",
+      "pageErrors": [],
+      "labelNodeCollisions": [],
+      "labelLabelCollisions": []
+    },
+    {
+      "id": "st-06",
+      "width": 1282,
+      "height": 651,
+      "parse": "Passed",
+      "render": "Passed",
+      "pageErrors": [],
+      "labelNodeCollisions": [],
+      "labelLabelCollisions": [],
+      "frameExpansions": 1,
+      "frameCollisions": []
+    },
+    {
+      "id": "st-07",
+      "width": 1105,
+      "height": 452,
+      "parse": "Passed",
+      "render": "Passed",
+      "pageErrors": [],
+      "labelNodeCollisions": [],
+      "labelLabelCollisions": [],
+      "frameExpansions": 2,
+      "frameCollisions": []
+    },
+    {
+      "id": "st-08",
+      "width": 474,
+      "height": 592,
+      "parse": "Passed",
+      "render": "Passed",
+      "pageErrors": [],
+      "labelNodeCollisions": [],
+      "labelLabelCollisions": []
+    },
+    {
+      "id": "st-09",
+      "width": 952,
+      "height": 521,
+      "parse": "Passed",
+      "render": "Passed",
+      "pageErrors": [],
+      "labelNodeCollisions": [],
+      "labelLabelCollisions": [],
+      "frameExpansions": 2,
+      "frameCollisions": []
+    },
+    {
+      "id": "st-10",
+      "width": 801,
+      "height": 930,
+      "parse": "Passed",
+      "render": "Passed",
+      "pageErrors": [],
+      "labelNodeCollisions": [],
+      "labelLabelCollisions": []
+    },
+    {
+      "id": "st-11",
+      "width": 1072,
+      "height": 670,
+      "parse": "Passed",
+      "render": "Passed",
+      "pageErrors": [],
+      "labelNodeCollisions": [],
+      "labelLabelCollisions": []
+    },
+    {
+      "id": "st-12",
+      "width": 655,
+      "height": 466,
+      "parse": "Passed",
+      "render": "Passed",
+      "pageErrors": [],
+      "labelNodeCollisions": [],
+      "labelLabelCollisions": [],
+      "frameExpansions": 1,
+      "frameCollisions": []
+    },
+    {
+      "id": "st-13",
+      "width": 651,
+      "height": 1134,
+      "parse": "Passed",
+      "render": "Passed",
+      "pageErrors": [],
+      "labelNodeCollisions": [],
+      "labelLabelCollisions": [],
+      "frameExpansions": 2,
+      "frameCollisions": []
+    },
+    {
+      "id": "st-14",
+      "width": 756,
+      "height": 668,
+      "parse": "Passed",
+      "render": "Passed",
+      "pageErrors": [],
+      "labelNodeCollisions": [],
+      "labelLabelCollisions": [],
+      "frameExpansions": 1,
+      "frameCollisions": []
+    },
+    {
+      "id": "st-15",
+      "width": 732,
+      "height": 537,
+      "parse": "Passed",
+      "render": "Passed",
+      "pageErrors": [],
+      "labelNodeCollisions": [],
+      "labelLabelCollisions": [],
+      "frameExpansions": 2,
+      "frameCollisions": []
+    },
+    {
+      "id": "st-16",
+      "width": 771,
+      "height": 530,
+      "parse": "Passed",
+      "render": "Passed",
+      "pageErrors": [],
+      "labelNodeCollisions": [],
+      "labelLabelCollisions": []
+    },
+    {
+      "id": "st-17",
+      "width": 510,
+      "height": 910,
+      "parse": "Passed",
+      "render": "Passed",
+      "pageErrors": [],
+      "labelNodeCollisions": [],
+      "labelLabelCollisions": []
+    },
+    {
+      "id": "st-18",
+      "width": 1205,
+      "height": 670,
+      "parse": "Passed",
+      "render": "Passed",
+      "pageErrors": [],
+      "labelNodeCollisions": [],
+      "labelLabelCollisions": [],
+      "frameExpansions": 2,
+      "frameCollisions": []
+    },
+    {
+      "id": "st-19",
+      "width": 1390,
+      "height": 1312,
+      "parse": "Passed",
+      "render": "Passed",
+      "pageErrors": [],
+      "labelNodeCollisions": [],
+      "labelLabelCollisions": []
+    },
+    {
+      "id": "st-20",
+      "width": 427,
+      "height": 454,
+      "parse": "Passed",
+      "render": "Passed",
+      "pageErrors": [],
+      "labelNodeCollisions": [],
+      "labelLabelCollisions": []
+    },
+    {
+      "id": "st-21",
+      "width": 1044,
+      "height": 762,
+      "parse": "Passed",
+      "render": "Passed",
+      "pageErrors": [],
+      "labelNodeCollisions": [],
+      "labelLabelCollisions": []
+    },
+    {
+      "id": "st-23",
+      "width": 463,
+      "height": 1028,
+      "parse": "Passed",
+      "render": "Passed",
+      "pageErrors": [],
+      "labelNodeCollisions": [],
+      "labelLabelCollisions": []
+    }
+  ],
+  "referenceHashes": {
+    "mmd": "e284ac1b99e8865f279f1b26164d5b558b9731c905135def3f0e31b59d15e929",
+    "svg": "f24eb5af0d91399577845c2132841ee52e8738c143eb5dd569d664c1b32a2e23",
+    "png": "a2f0d8e9bb16ec6137f10d00d1a773212dabac1bf5a272f8f6bfc7f85e369e8c"
+  },
+  "hashes": [
+    {
+      "id": "st-02",
+      "mmd": "e27ee7d25ee4cd55180012b8998672564c4117fcf2b1f0b321ae1d656db87abf",
+      "svg": "b08fd31cd8f070c2b2670b5e0fa29a770cd92f31c200fb4b5518693a0b179008",
+      "png": "411e8d0e7705b02044cf3db20035f16e58a55aef96c790ecec7d78e7be640f25"
+    },
+    {
+      "id": "st-03",
+      "mmd": "074bd68727239730d62d9cf0a61cb71cfddf111dc6e8100f465323efc62469f9",
+      "svg": "553d20a1a720dc733f361eaaa503aaad0d83783da8aa7e99ae7791d525aea5f0",
+      "png": "c4de30af3b944b9c4b8ad39ee2386b1b3215454b0aef8ea11e39458e4787f0dc"
+    },
+    {
+      "id": "st-04",
+      "mmd": "3c4e848bbc0186cea840e6cba50e0562c6820e79e73d76158058aa0370605b21",
+      "svg": "38d3fc03c46778a0b074b0cded85becd211db6a4fc8029902b3106a494c65d95",
+      "png": "9f4b9b17ea6786dc32f5ef0dcdceff24f84f7a96203f923b7b126a558b6f78fd"
+    },
+    {
+      "id": "st-05",
+      "mmd": "d4189401f10b8c5aaa21019aadfa21b437aea96e59dab818ba0d5ba0174a54fa",
+      "svg": "f493c8735947e025c019a264a5a27da1cb8e663bf26364a6208a130ad0948f9c",
+      "png": "64837778aa65dc15d7e47e6b57210e1ee7640c7293544c1ca359ed0509587dc4"
+    },
+    {
+      "id": "st-06",
+      "mmd": "d487902d03b2def39fbb125c2501bc9717503c60602166798aef7395348e778f",
+      "svg": "c53e112c9288c69fbf8a80a5924ec82b1e20b41269f302b3647467696b93e00b",
+      "png": "09692532633d3cfd3fc25bde0984cfe227e3d8b0424d5f7cf2c13cf88706c641"
+    },
+    {
+      "id": "st-07",
+      "mmd": "6705faa9b68719bab4dfdf808dc6798ad66b1995c09478234b681aa3e09826f1",
+      "svg": "99dd1e33ad6cf43df1ce9706c869f14f24db96d6a81e0858e3e40b62300a4d64",
+      "png": "c939302b54e72566efd2ff8e61ee0041ae327b3a7fbbf6927e785c586ce2ab73"
+    },
+    {
+      "id": "st-08",
+      "mmd": "03839e6b19b5a67353eed7c37deb88bc3414d0b5d5ba5912b5ec1e7db7694338",
+      "svg": "9c1c3d454b860bfe84f613182183254b5b47ab54bc809f08a07d36d2e1d809e8",
+      "png": "636c89a9c7440a176d3576b68f826eae3cf7a2e0d0769b0877f2085dc540ca6a"
+    },
+    {
+      "id": "st-09",
+      "mmd": "9f15ffabcccb87e339a30ec3a693400da3fb7e75197a4d316be213feff3ddfa1",
+      "svg": "761539662a14dd00a1fb0cc14fb0015ddb9668280fbacf9bfaf48937c28a340d",
+      "png": "8d382b7a8aa894e3cf4a8168d016de0f314088b61ad62bde45756bf3ef797b41"
+    },
+    {
+      "id": "st-10",
+      "mmd": "0bcb63089a3fda4996462de07d568cc5ee617460dac090fc0ef582c0b9c848b6",
+      "svg": "dc31a7ab69720c73dcd2b13705f58485d05a5a29cfb26641d8346480919e934f",
+      "png": "f64dbd8cdfa25c5b7e5ce6cc85ac2393e16e2e6ebf0f9183d347d5cbc910d32b"
+    },
+    {
+      "id": "st-11",
+      "mmd": "3171ca192e62876aa11cb6ca4ce8b8e895aa5776673639a7d6db8895ff673da0",
+      "svg": "3a2483bcb03347a06f9dbe714d0a0132aa55ee61c42500e002991ddbc02e46d4",
+      "png": "e2d4d92ca0c413c077f55f46c75406723cc1e96db0782eacdbd8f32ef2671a51"
+    },
+    {
+      "id": "st-12",
+      "mmd": "3c736ee8987cc2aa1e451197f2721530ad727e6d69bc8b13a3b91ab493a9510b",
+      "svg": "030bb2772334f5d38fad2fb65ed2a3026ce2b66c85812985b468d6f33d44451a",
+      "png": "f0ade828c2bab2005ce49f1b9b746c4cc84487f137c7b3db7a42e3eb5f804fe6"
+    },
+    {
+      "id": "st-13",
+      "mmd": "76e66795e95f08a8b8d6c4e5673dbefd3a7f871d89433aad4bd56bdc76ccce4e",
+      "svg": "7def907beac7962373c4b5aad47a3e8056f8bef7e2854f0ce999bad9be97d706",
+      "png": "60109ea0ccedfe6c9ff63e0457807adaea0feee04c5ff753ae17394bfb10585a"
+    },
+    {
+      "id": "st-14",
+      "mmd": "6445096363199b1e6a47f24a5a80f4eb2ebbd325aa9957f14d3e47c30b2a767b",
+      "svg": "1128a9f8140f4ce5fc5a4d4e7e265f772aabfe649ed92117930d685959376d4d",
+      "png": "cfa4375203c664659c17123f4f14cb38af915f32df79f8ac1d1be641e5145a06"
+    },
+    {
+      "id": "st-15",
+      "mmd": "caba3f07647729201018d6f8259922982ecfd6d571ba3e04b7bebbeb65339385",
+      "svg": "e420365c17d172c07ee26a015fc935e5c8ec8c05abec36a056ef765ca3093d9b",
+      "png": "c7c74e378434f5849ba50861687715c98841645d1e679b92af38316e9354e0d0"
+    },
+    {
+      "id": "st-16",
+      "mmd": "6a26949c813770a819b8cc4db2af0ea98643bc9aa9b58e5bc678cf62c63b522a",
+      "svg": "880c8ec04395c100f72d1ba0eb8ebfb63431fc120c57140f610ebeb006c06a58",
+      "png": "c4602db143c9becc7c7961bce897d2d1bf9deac57aa27f1d205fdf758bab8a2d"
+    },
+    {
+      "id": "st-17",
+      "mmd": "30eea2858bd62ec42cbd6e0d0b2f44705bf2cda17e8c4fd5a29d26c529d40a8d",
+      "svg": "ec26c50108f4015daf9a0487ea7abd2b6585a6a8759416cd6f41cc42297b13f1",
+      "png": "8bdbb47cd6ff1b567531b1dcdf05177f921f911c0212a348391fc274da3dffdc"
+    },
+    {
+      "id": "st-18",
+      "mmd": "5d91a5373ea572cf2ec32bcd05025da558a88d1e1539ae8fe4c28ab498f218c0",
+      "svg": "e8c450c5a1e97d9ab07ee877ec5a2482c986d206b1567d41605fb28af6edd721",
+      "png": "20cc5b437dfc54a1ff4a4bc84738cfbf80583c3c596e93d0d33537ff9e7e377a"
+    },
+    {
+      "id": "st-19",
+      "mmd": "1b5b4bdbb6afcae23d4fff60ee2c440e0bf3c6f126716e1bf640ae362182de29",
+      "svg": "9fe42d2a2ef8d0989046345585c6d30f8fff23df01a39e80337c51f30c643a17",
+      "png": "c4f017aa17f768b99c2fa0b6ea9e27b3c80afeef9e7359710715872461aa885f"
+    },
+    {
+      "id": "st-20",
+      "mmd": "296902a974b30599e2be73db444390f9d319f34c907e3c23f58d624e00fb2c58",
+      "svg": "7852ccf830bff9a0aaf849888f01f43c119b357a228d68fe6b4297e92608850e",
+      "png": "238c26815863d141e58b49ebd5c17acb4e89ab222adc870cdcddb7a8c31bb5d5"
+    },
+    {
+      "id": "st-21",
+      "mmd": "4ec1889fdb0546b4eaa777350e4d257ac0b717f64d540eaa9fc1ed6322bcc2c4",
+      "svg": "ed4703bbe287e6c4a4b568015caa04db1a08e1c5194d2c808d3715e6ba00523f",
+      "png": "9891edcb1b903ddce5d8ba6599405117d2e8ff02f60e672399cb10685d0593e7"
+    },
+    {
+      "id": "st-23",
+      "mmd": "66780409a6a3c51ef97b2fd5f7d5c9239a4776af3381136598492634b6bb70e5",
+      "svg": "6ac519727736afea4aec22ca335294541774e68e6443081c6f44913a03b20264",
+      "png": "ef035dc95ac650a0db1f3e0b49dc63ebe4d8bc5d1603cf759974c6baa46232bc"
+    }
+  ]
+}

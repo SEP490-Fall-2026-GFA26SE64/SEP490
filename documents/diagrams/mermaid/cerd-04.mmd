@@ -1,7 +1,7 @@
 ---
-title: "Pathways & Reporting"
+title: "CERD-04 - Pathway Review, Learning and Bypass"
 config:
-  layout: elk
+  layout: dagre
   look: classic
   theme: base
   fontFamily: "Arial, sans-serif"
@@ -10,24 +10,21 @@ config:
   er: {nodeSpacing: 36, rankSpacing: 65, minEntityWidth: 140, diagramPadding: 24}
 ---
 erDiagram
-  C04_Organization["Organization"]
-  C04_User["User"]
-  C04_Pathway["Learning Pathway"]
-  C04_Module["Learning Module"]
-  C04_Review["Review"]
-  C04_Progress["Learning Progress"]
-  C04_Report["Learning Report"]
-  C04_Cost["Training Cost"]
-  C04_Benefit["Monetary Benefit"]
-  C04_User ||--o{ C04_Pathway : "owns"
-  C04_Pathway }o--o{ C04_Module : "contains"
-  C04_User ||--o{ C04_Review : "performs"
-  C04_Pathway ||--o{ C04_Review : "receives"
-  C04_User ||--o{ C04_Progress : "makes"
-  C04_Module ||--o{ C04_Progress : "records"
-  C04_Organization ||--o{ C04_Report : "has"
-  C04_Report }o--o{ C04_Progress : "summarizes"
-  C04_Organization ||--o{ C04_Cost : "incurs"
-  C04_Organization ||--o{ C04_Benefit : "realizes"
-  C04_Report }o--o{ C04_Cost : "includes"
-  C04_Report }o--o{ C04_Benefit : "includes"
+  direction TB
+  CompetencyProfile["CompetencyProfile"]
+  PathwayRequest["PathwayRequest"]
+  PathwayRevision["PathwayRevision"]
+  PathwayStep["PathwayStep"]
+  StepOption["StepOption"]
+  PathwayReview["PathwayReview"]
+  LearningProgress["LearningProgress"]
+  CertificateSubmission["CertificateSubmission"]
+  PathwayBypass["PathwayBypass"]
+  CompetencyProfile ||--o{ PathwayRequest : "reviewed profile input"
+  PathwayRequest ||--o{ PathwayRevision : "version history"
+  PathwayRevision ||--o{ PathwayStep : "ordered work"
+  PathwayRevision ||--o{ PathwayReview : "exact Expert decision"
+  PathwayStep ||--o{ StepOption : "eligible provision"
+  StepOption ||--o{ LearningProgress : "module learning"
+  PathwayStep ||--o{ CertificateSubmission : "certificate evidence"
+  PathwayStep ||--o{ PathwayBypass : "missing provision decision"

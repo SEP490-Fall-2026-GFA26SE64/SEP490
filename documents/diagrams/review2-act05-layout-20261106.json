@@ -1,0 +1,235 @@
+{
+  "date": "2026-11-06",
+  "scope": "ACT-05 layout correction only",
+  "mermaid": "11.12.0",
+  "businessEdgeEquivalence": "Passed",
+  "businessEdgeCount": 41,
+  "palettePreserved": "Passed",
+  "parse": "Passed",
+  "render": "Passed",
+  "svgXml": "Passed",
+  "alignedPanelTops": "Passed",
+  "equalPanelWidths": "Passed",
+  "visualReview": "Passed",
+  "sourceSha256": "23209760b0d53f1d52a83380279589591cb2bd3e45e0080ec83b65c1b4f108c2",
+  "previousSourceSha256": "0ce65abf6e0d62eb0a3f26c5dcdfd1505ba46118f979114d0a57574825f66b73",
+  "assetHashes": {
+    "mmd": "23209760b0d53f1d52a83380279589591cb2bd3e45e0080ec83b65c1b4f108c2",
+    "svg": "851cdfd4e2a9d877e86fc3885735b8685e1470f04f0b51c4fc0d0fcdb46446cb",
+    "png": "c78c6f6023f73e65b2677892414445bc4464843fc6505c3142ca2f32cb507b8c"
+  },
+  "continuationMapping": {
+    "toP": "reviewProfile",
+    "toL": "blocking",
+    "repeatL": "blocking",
+    "toC": "completed",
+    "toB": "activeConfig"
+  },
+  "semanticEdges": [
+    {
+      "from": "start",
+      "to": "configure",
+      "label": ""
+    },
+    {
+      "from": "configure",
+      "to": "validConfig",
+      "label": ""
+    },
+    {
+      "from": "validConfig",
+      "to": "configError",
+      "label": "no"
+    },
+    {
+      "from": "configError",
+      "to": "configure",
+      "label": ""
+    },
+    {
+      "from": "validConfig",
+      "to": "activate",
+      "label": "yes"
+    },
+    {
+      "from": "activate",
+      "to": "choose",
+      "label": ""
+    },
+    {
+      "from": "choose",
+      "to": "activeConfig",
+      "label": ""
+    },
+    {
+      "from": "activeConfig",
+      "to": "unavailable",
+      "label": "no"
+    },
+    {
+      "from": "unavailable",
+      "to": "unavailableEnd",
+      "label": ""
+    },
+    {
+      "from": "activeConfig",
+      "to": "baseline",
+      "label": "yes"
+    },
+    {
+      "from": "baseline",
+      "to": "score",
+      "label": ""
+    },
+    {
+      "from": "score",
+      "to": "validResult",
+      "label": ""
+    },
+    {
+      "from": "validResult",
+      "to": "invalid",
+      "label": "no"
+    },
+    {
+      "from": "invalid",
+      "to": "invalidEnd",
+      "label": ""
+    },
+    {
+      "from": "validResult",
+      "to": "profile",
+      "label": "yes"
+    },
+    {
+      "from": "profile",
+      "to": "reviewProfile",
+      "label": ""
+    },
+    {
+      "from": "reviewProfile",
+      "to": "needs",
+      "label": ""
+    },
+    {
+      "from": "needs",
+      "to": "completed",
+      "label": "no"
+    },
+    {
+      "from": "needs",
+      "to": "generate",
+      "label": "yes"
+    },
+    {
+      "from": "generate",
+      "to": "generated",
+      "label": ""
+    },
+    {
+      "from": "generated",
+      "to": "failed",
+      "label": "no"
+    },
+    {
+      "from": "failed",
+      "to": "failureEnd",
+      "label": ""
+    },
+    {
+      "from": "generated",
+      "to": "expert",
+      "label": "yes"
+    },
+    {
+      "from": "expert",
+      "to": "ready",
+      "label": ""
+    },
+    {
+      "from": "ready",
+      "to": "expert",
+      "label": "no"
+    },
+    {
+      "from": "ready",
+      "to": "approve",
+      "label": "yes"
+    },
+    {
+      "from": "approve",
+      "to": "blocking",
+      "label": ""
+    },
+    {
+      "from": "blocking",
+      "to": "study",
+      "label": "yes"
+    },
+    {
+      "from": "study",
+      "to": "recalculate",
+      "label": ""
+    },
+    {
+      "from": "recalculate",
+      "to": "unresolved",
+      "label": ""
+    },
+    {
+      "from": "unresolved",
+      "to": "blocking",
+      "label": "no"
+    },
+    {
+      "from": "unresolved",
+      "to": "bypassReview",
+      "label": "yes"
+    },
+    {
+      "from": "bypassReview",
+      "to": "blocking",
+      "label": ""
+    },
+    {
+      "from": "blocking",
+      "to": "bypassed",
+      "label": "no"
+    },
+    {
+      "from": "bypassed",
+      "to": "completed",
+      "label": "no"
+    },
+    {
+      "from": "bypassed",
+      "to": "released",
+      "label": "yes"
+    },
+    {
+      "from": "completed",
+      "to": "change",
+      "label": ""
+    },
+    {
+      "from": "released",
+      "to": "change",
+      "label": ""
+    },
+    {
+      "from": "change",
+      "to": "finish",
+      "label": "no"
+    },
+    {
+      "from": "change",
+      "to": "newRole",
+      "label": "yes"
+    },
+    {
+      "from": "newRole",
+      "to": "activeConfig",
+      "label": ""
+    }
+  ]
+}

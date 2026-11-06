@@ -1,0 +1,26 @@
+{
+  "date": "2026-11-06",
+  "status": "Current; supersedes rejected three-panel iteration",
+  "scope": "ACT-05 single continuous top-down presentation",
+  "nodes": 35,
+  "edges": 41,
+  "width": 1450,
+  "height": 4748,
+  "businessGraphAndLabels": "Unchanged byte-for-byte after frontmatter",
+  "noPanelsOrJumpConnectors": "Passed",
+  "mermaidSyntax": "Passed (11.12.0)",
+  "svgExport": "Fixed orthogonal geometry from Mermaid labels/edges; not automatic Mermaid layout",
+  "routeCoverage": "Passed, 41/41",
+  "edgeNodeClearance": "Passed, every segment checked against all unrelated node boxes",
+  "textBounds": "Passed in headless Chrome",
+  "svgXml": "Passed",
+  "visualReview": "Passed at readable size",
+  "reportImageReference": "Passed, versioned filename avoids stale previous image",
+  "hashes": {
+    "act-05.mmd": "07d9434a1d7e974954f92646466723521e747f5490eed1e6524f14c3f82f8260",
+    "act-05.svg": "6436f6222a84bf902907ec0f64365e7e8af2e8faee7be6d6c28091c766b63f45",
+    "act-05.png": "0b56292c64dfcf67c95c9dd04d4215ad90e5cfd78300a7f9ae40390e4c18de21",
+    "act-05-vertical-20261106.svg": "6436f6222a84bf902907ec0f64365e7e8af2e8faee7be6d6c28091c766b63f45",
+    "act-05-vertical-20261106.png": "0b56292c64dfcf67c95c9dd04d4215ad90e5cfd78300a7f9ae40390e4c18de21"
+  }
+}

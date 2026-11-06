@@ -1,5 +1,19 @@
 # Architecture Diagrams
 
+## Scoped state style using ST-01 — 2026-11-06
+
+ST-14's subsequent approved rule correction uses explicit Employee submission and L&D-configured PASSED/FAILED outcomes, with no evidence or auto-submit branch. [Current ST-14 PNG](mermaid/st01-standard-20261106/st-14-rule-based-20261106.png) · [Rule revision checks](review2-st14-rule-20261106.json). This replaces only ST-14's earlier adaptive-attempt diagram.
+
+Only **ST-13, ST-14, ST-16, ST-17, ST-18 and ST-19** use the updated ST-01-based format. ST-15 is removed from Report 4 and [archived](archive/st-15-20261106/README.md). ST-01 is unchanged; all 14 other ST source/SVG/PNG sets have been restored to their pre-formatting versions. State/transition content is preserved. [Current six images and source links](mermaid/st01-standard-20261106/README.md) · [Verification](review2-state-style-20261106.md).
+
+## Review 2 Role-Level flow — 2026-11-06
+
+ACT-05 presentation correction: one continuous top-down flow in the original white/orange format, with a straight main spine, side error branches and orthogonal return arrows outside the content. No panels or continuation circles. [Editable source](mermaid/act-05.mmd) · [Current PNG](mermaid/act-05-vertical-20261106.png) · [SVG layout renderer](render-act05-vertical.cjs) · [Current verification](review2-act05-vertical-20261106.json). All 35 business nodes, all 41 edges and original labels are preserved. The rejected panel layout is superseded.
+
+Report 3/4 display the approved ACT-05 Role-Level baseline/configuration flow and corresponding flow-scoped conceptual/logical ERDs. ST-13/14/16/17/18/19 now follow ST-01's visual format; ST-15 is omitted. This is a documentation target, not an applied database schema or runtime delivery. Dated database inventories below remain historical.
+
+[Verification and artifact notes](review2-role-level-20261106.md) · [Machine-readable checks and hashes](review2-role-level-20261106-checks.json).
+
 
 ## Single-Skill Module contract — 2026-11-05
 

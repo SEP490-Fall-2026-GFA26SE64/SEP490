@@ -57,6 +57,7 @@
 
 | Date | A*M, D | In charge | Change Description |
 | --- | --- | --- | --- |
+| 2026-11-06 | M | Documentation preparation with AI assistance | Updated approved ACT-05 Role-Level baseline flow, related state machines and flow-scoped ERDs; retained report styling and dated physical schema history. Documentation only; no runtime/schema change. |
 | 2026-11-02 | M | Documentation preparation with AI assistance | Added ACT-10 Question Bank activity and clarified current versus target boundaries for ACT-04/07; linked the matching ST-11/ST-16/ST-23 in the SDD without changing requirement IDs or unrelated diagrams. |
 | 2026-11-01 | M | Documentation preparation with AI assistance | Corrected all four conceptual ERD borders by replacing Neo gradient/shadow styling with Classic solid 1.5px borders. Preserved entity and relationship content and regenerated SVG/PNG previews. |
 | 2026-11-01 | M | Documentation preparation with AI assistance | Replaced table-level SRS ERDs with four conceptual overviews of 25 core business entities. Aligned entity descriptions with the overviews and retained the detailed relationship views in SDD logical design. |
@@ -221,9 +222,9 @@ Evidence precedence is Version 2 for intended scope, later approved decisions fo
 
 [Mermaid source: ACT-05](../documents/diagrams/mermaid/act-05.mmd)
 
-![ACT-05 - Main Flow for Adaptive Learning Pathway Generation and Recalculation](../documents/diagrams/mermaid/act-05.png)
+![ACT-05 - Role-Level Baseline, Profile and Adaptive Learning](../documents/diagrams/mermaid/act-05-vertical-20261106.png)
 
-**Ordering boundary:** ACT-06 expresses the Version 2 guidance journey. The currently connected ACT-05 slice asks for a role selection to establish Job Position scope before baseline admission. It does not yet generate AI guidance or require an initial RIASEC result. A future guidance integration must reconcile these entry paths without rewriting existing selections or assessment history.
+**ACT-05 scope (approved target):** L&D validates and activates a baseline configuration for an organization-scoped Role–Level pair. Employee admission requires the matching Active configuration; valid results create a Role-Level profile with Met / Needs supplementation outcomes. Employee reviews the profile and requests a pathway; Expert review, learning, skill assessment and automatic recalculation follow. Target change is allowed only after completion or when all remaining gaps have accepted bypasses because neither module nor certificate provision exists. Other errors retain the target for repair/retry. A new selection returns to matching baseline admission; historical results are retained. This diagram revision is a target design, not a claim of deployed schema or runtime behavior. ACT-06 guidance remains a separate journey.
 
 [Mermaid source: ACT-07](../documents/diagrams/mermaid/act-07.mmd)
 
@@ -775,73 +776,67 @@ Server-side account/session, organization membership, business role, assignment 
 
 #### 3.1.5 Entity Relationship Diagram
 
-The four **conceptual overview ERDs** show only core business entities and their main relationships. They do not enumerate tables, fields, keys or supporting records. Version history, snapshots, configuration, receipts and background processing are generalized into the business concepts they support. Detailed logical relationships and database structures belong in [SDD section 2](Report4_Software%20Design%20Document.md#2-database-design).
+The four **flow-scoped conceptual ERDs** cover ACT-05 only: Role–Level configuration, baseline/profile, skill provision and pathway learning. Subscription, payment, onboarding and ROI are outside these views. They show the approved target model, not an applied migration. Full target attributes, types, keys and nullability are in [SDD section 2.2](Report4_Software%20Design%20Document.md#22-logical-database-design).
 
-Cardinalities describe the conceptual business relationships, not a direct list of database constraints. **User** represents an account holder, not an additional system actor or authorization role.
+Cardinality applies to these flow relationships. Account represents an existing authenticated actor; TargetRole is a professional goal, distinct from actor permissions.
 
-**1. Identity & Subscription**
+**1. Role-Level Selection and Baseline Configuration**
 
 [Mermaid source: CERD-01](../documents/diagrams/mermaid/cerd-01.mmd)
 
-![CERD-01 - Identity and Subscription](../documents/diagrams/mermaid/cerd-01.png)
+![CERD-01 - Role-Level Selection and Baseline Configuration](../documents/diagrams/mermaid/cerd-01.png)
 
-User summarizes account, profile and access information; Organization includes its workspace. Payment summarizes purchase and payment records, while Subscription represents paid access. Department remains explicit because it is a core organization concept.
-
-**2. Assessment & Mastery**
+**2. Assessment and Role-Level Profile**
 
 [Mermaid source: CERD-02](../documents/diagrams/mermaid/cerd-02.mmd)
 
-![CERD-02 - Assessment and Mastery](../documents/diagrams/mermaid/cerd-02.png)
+![CERD-02 - Assessment and Role-Level Profile](../documents/diagrams/mermaid/cerd-02.png)
 
-Assessment and Question summarize assessment design and question content. Answers and assessment outcomes remain explicit, while Mastery Profile generalizes skill results, evidence and profile history.
-
-**3. Competency Ontology**
+**3. Role Requirements and Learning Provision**
 
 [Mermaid source: CERD-03](../documents/diagrams/mermaid/cerd-03.mmd)
 
-![CERD-03 - Competency Ontology](../documents/diagrams/mermaid/cerd-03.png)
+![CERD-03 - Role Requirements and Learning Provision](../documents/diagrams/mermaid/cerd-03.png)
 
-Job Position, Target Role, Level, Competency and Skill describe professional requirements. Users select a target role; Skill generalizes granular micro-skills, and Learning Module represents the content that develops them. Job Position coverage can be shared across departments in different organizations.
-
-**4. Pathways & Reporting**
+**4. Pathway Review, Learning and Bypass**
 
 [Mermaid source: CERD-04](../documents/diagrams/mermaid/cerd-04.mmd)
 
-![CERD-04 - Pathways and Reporting](../documents/diagrams/mermaid/cerd-04.png)
-
-Learning Pathway summarizes recommendations, revisions and module ordering. Review represents an authorized pathway decision; Learning Progress summarizes learning activity and completion. Learning Report generalizes cohort analysis and ROI reporting, using Training Cost and Monetary Benefit as distinct business inputs.
+![CERD-04 - Pathway Review, Learning and Bypass](../documents/diagrams/mermaid/cerd-04.png)
 
 **Entities Description**
 
-Each row describes **one core business entity** shown in the conceptual overviews. Shared entities are listed once, giving 25 distinct concepts.
+Each row describes one entity used by this flow. Existing shared identity/content entities are references to their owners, not replacement account or learning systems.
 
 | # | Entity | Description |
 | --- | --- | --- |
-| 1 | Organization | Represents an organization using the platform, including its identity and operational status. |
-| 2 | User | Represents an account holder, including personal identity, organization access and assigned system role. |
-| 3 | Role | Defines a user's system permissions and responsibilities, distinct from a professional target role. |
-| 4 | Department | Represents an organizational unit that groups members and their job position assignments. |
-| 5 | Registration | Represents an organization's onboarding application and completion of required verification. |
-| 6 | Subscription Plan | Defines an available subscription offering and its commercial terms. |
-| 7 | Subscription | Represents an organization's agreement and paid entitlement to use the platform. |
-| 8 | Payment | Represents a purchase or renewal payment and its outcome. |
-| 9 | Assessment | Defines an assessment used to evaluate an Employee's knowledge and skills. |
-| 10 | Question | Represents an assessment question and its answer criteria. |
-| 11 | Answer | Represents an Employee's response to an assessment question. |
-| 12 | Assessment Result | Summarizes an Employee's assessment outcome and score. |
-| 13 | Mastery Profile | Summarizes an Employee's assessed skill mastery and supporting evidence. |
-| 14 | Skill | Represents a granular professional capability that can be assessed and developed. |
-| 15 | Job Position | Represents a career job position and its professional and interest characteristics. |
-| 16 | Target Role | Defines a target job role within an job position and its expected capabilities. |
-| 17 | Level | Defines a target role's proficiency level and associated requirements. |
-| 18 | Competency | Groups related skills into a professional capability required at a role level. |
-| 19 | Learning Module | Represents a unit of learning content that develops specified skills. |
-| 20 | Learning Pathway | Represents an Employee's recommended sequence of learning modules. |
-| 21 | Review | Represents an authorized evaluation and decision on a proposed learning pathway. |
-| 22 | Learning Progress | Summarizes an Employee's activity and completion within a learning module. |
-| 23 | Learning Report | Summarizes competency, learning outcomes and financial effectiveness for an authorized organizational scope. |
-| 24 | Training Cost | Represents expenditure on an organization's training and development activities. |
-| 25 | Monetary Benefit | Represents the estimated or recorded monetary benefit of an organization's training and development activities. |
+| 1 | Organization | Existing tenant boundary. |
+| 2 | Account | Existing authenticated Employee, L&D or Expert reference; credentials remain outside the flow model. |
+| 3 | TargetRole | Published professional target role, distinct from actor permissions. |
+| 4 | RoleLevel | A Level belonging to a specific target Role. |
+| 5 | RoleSelection | Current and historical Employee Role-Level choices. |
+| 6 | BaselineConfig | L&D configuration identity and active pointer scoped to Role-Level. |
+| 7 | BaselineConfigVersion | Immutable validated configuration, including the exact assessed skill set and rules. |
+| 8 | Skill | Assessable catalog skill with versioned definition. |
+| 9 | RoleSkillRequirement | Explicit skill requirement for a Role-Level. |
+| 10 | QuestionVersion | Existing published question version; protected answer data remains server-side. |
+| 11 | AssessmentAttempt | Frozen baseline or skill-assessment context and timing. |
+| 12 | AssessmentItem | Presented immutable item and its exact requirement context. |
+| 13 | AssessmentAnswer | Accepted response for one presented item. |
+| 14 | SkillResult | Final per-skill result; invalid results do not initialize a valid profile. |
+| 15 | CompetencyProfile | Versioned profile for one Employee Role-Level selection. |
+| 16 | ProfileSkill | Met or Needs supplementation outcome with valid source provenance. |
+| 17 | LearningModule | Existing approved module; exactly one taught skill. |
+| 18 | Certificate | Catalog certificate definition attached to an exact skill requirement. |
+| 19 | SkillPrerequisite | Exact dependent and prerequisite skill-level pair. |
+| 20 | CertificateSubmission | Employee evidence and genuine Expert decision for a certificate. |
+| 21 | PathwayRequest | Explicit request from the reviewed profile; errors retain the selected target. |
+| 22 | PathwayRevision | Generated, reviewed and automatically adapted pathway versions. |
+| 23 | PathwayStep | Required skill work, with module/certificate provision and bypass kept separate from achievement. |
+| 24 | StepOption | Eligible version-pinned module or certificate for one step. |
+| 25 | PathwayReview | Actual Expert review of an exact pathway revision. |
+| 26 | LearningProgress | Existing content progress owner referenced by selected pathway option. |
+| 27 | PathwayBypass | Accepted missing-provision decision; never evidence of achievement. |
 
 ### 3.2 Organization Onboarding
 
