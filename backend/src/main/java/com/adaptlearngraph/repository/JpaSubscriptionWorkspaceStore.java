@@ -90,9 +90,27 @@ public final class JpaSubscriptionWorkspaceStore implements SubscriptionWorkspac
     }
 
     @Override
-    public List<Workspace> workspaces() {
-        return data.organizations().withWorkspaces().stream()
-                .map(row -> new Workspace(row.organizationId(), row.name(), row.status(), row.setupState())).toList();
+    public List<Workspace> workspaces(Instant now) {
+        var organizations = data.organizations().withWorkspaces();
+        if (organizations.isEmpty()) return List.of();
+        var ids = organizations.stream().map(OrganizationJpaRepository.Listed::organizationId).toList();
+        var administrators = data.memberships().administrators(ids).stream()
+                .collect(java.util.stream.Collectors.groupingBy(OrganizationMembershipJpaRepository.Administrator::organizationId));
+        var periods = data.subscriptions().directoryPeriods(ids).stream()
+                .collect(java.util.stream.Collectors.groupingBy(SubscriptionJpaRepository.DirectoryPeriod::organizationId));
+        return organizations.stream().map(row -> {
+            var history = periods.getOrDefault(row.organizationId(), List.of());
+            var current = history.stream().filter(p -> !p.startsAt().isAfter(now) && p.endsAt().isAfter(now))
+                    .findFirst().orElse(null);
+            String status = current != null ? "ACTIVE" : history.isEmpty() ? "NONE" :
+                    history.stream().anyMatch(p -> p.startsAt().isAfter(now)) ? "SCHEDULED" : "EXPIRED";
+            var subscription = new WorkspaceSubscription(status, current == null ? null :
+                    new CurrentPlan(current.name(), current.startsAt(), current.endsAt()));
+            var admins = administrators.getOrDefault(row.organizationId(), List.of()).stream()
+                    .map(admin -> new WorkspaceAdministrator(admin.accountId(), admin.fullName(), admin.email(),
+                            Boolean.TRUE.equals(admin.active()), Boolean.TRUE.equals(admin.accountActive()))).toList();
+            return new Workspace(row.organizationId(), row.name(), row.status(), row.setupState(), subscription, admins);
+        }).toList();
     }
 
     @Override

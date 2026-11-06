@@ -96,9 +96,11 @@ class SubscriptionMappingsTest {
                 7, 50, 50, List.of(mapper.map(order, PaymentOrderResponse.class))));
         assertNoSensitiveComponents(SummaryResponse.class);
 
-        var workspace = new Workspace(organizationId, "Acme", "ACTIVE", "READY");
+        var workspace = new Workspace(organizationId, "Acme", "ACTIVE", "READY",
+                new com.adaptlearngraph.repository.SubscriptionWorkspaceStore.WorkspaceSubscription("NONE", null), List.of());
         assertThat(mapper.map(workspace, WorkspaceResponse.class))
-                .isEqualTo(new WorkspaceResponse(organizationId, "Acme", "ACTIVE", "READY"));
+                .isEqualTo(new WorkspaceResponse(organizationId, "Acme", "ACTIVE", "READY",
+                        new com.adaptlearngraph.dtos.SubscriptionDto.WorkspaceSubscriptionResponse("NONE", null), List.of()));
 
         var member = new Member(UUID.randomUUID(), UUID.randomUUID(), "Ada Lovelace", "ada@example.test", true,
                 Set.of("EMPLOYEE"), UUID.randomUUID(), UUID.randomUUID(), 4, "Engineering", "Backend Engineer", true);
@@ -115,6 +117,29 @@ class SubscriptionMappingsTest {
                 UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), TERMS, 987_654L, "PAID", "link-123",
                 "https://pay.example.test/link-123", 12_000_000L, Instant.parse("2026-11-01T01:00:00Z"),
                 Instant.parse("2026-11-01T01:15:00Z"), Instant.parse("2026-11-01T01:05:00Z"), null, 2);
+    }
+
+    @Test
+    void directoryMapsOnlyCurrentPlanAndAdministratorDisplayFields() throws Exception {
+        var current = new com.adaptlearngraph.repository.SubscriptionWorkspaceStore.CurrentPlan(
+                "Purchased Starter", Instant.parse("2026-11-01T00:00:00Z"), Instant.parse("2026-12-01T00:00:00Z"));
+        var admin = new com.adaptlearngraph.repository.SubscriptionWorkspaceStore.WorkspaceAdministrator(
+                UUID.randomUUID(), null, "admin@example.test", false, true);
+        var workspace = new Workspace(UUID.randomUUID(), "Acme", "SUSPENDED", "READY",
+                new com.adaptlearngraph.repository.SubscriptionWorkspaceStore.WorkspaceSubscription("ACTIVE", current),
+                List.of(admin));
+
+        var response = mapper.map(workspace, WorkspaceResponse.class);
+        assertThat(response.subscription().status()).isEqualTo("ACTIVE");
+        assertThat(response.subscription().current().name()).isEqualTo(current.name());
+        assertThat(response.subscription().current().startsAt()).isEqualTo(current.startsAt());
+        assertThat(response.subscription().current().endsAt()).isEqualTo(current.endsAt());
+        assertThat(response.administrators().getFirst().fullName()).isNull();
+        assertThat(response.administrators().getFirst().email()).isEqualTo(admin.email());
+        assertThat(response.administrators().getFirst().active()).isFalse();
+        assertThat(response.administrators().getFirst().accountActive()).isTrue();
+        assertThat(componentNames(response.subscription().current().getClass())).containsExactly("name", "startsAt", "endsAt");
+        assertThat(json.writeValueAsString(response)).doesNotContain("paymentHistory", "priceVnd", "password", "totp");
     }
 
     private static void assertNoSensitiveComponents(Class<? extends Record> type) {

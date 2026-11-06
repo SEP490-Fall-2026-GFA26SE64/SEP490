@@ -45,7 +45,13 @@ public final class SubscriptionDto {
                                   int usedSeats, int allocatedSeats, int admissionLimit,
                                   List<PaymentOrderResponse> paymentHistory) {}
 
-    public record WorkspaceResponse(UUID organizationId, String name, String status, String setupState) {}
+    public record WorkspaceResponse(UUID organizationId, String name, String status, String setupState,
+                                    WorkspaceSubscriptionResponse subscription,
+                                    List<WorkspaceAdministratorResponse> administrators) {}
+    public record WorkspaceSubscriptionResponse(String status, CurrentPlanResponse current) {}
+    public record CurrentPlanResponse(String name, Instant startsAt, Instant endsAt) {}
+    public record WorkspaceAdministratorResponse(UUID accountId, String fullName, String email,
+                                                 boolean active, boolean accountActive) {}
 
     public record MemberResponse(UUID membershipId, UUID accountId, String fullName, String email, boolean active,
                                  Set<String> roles, UUID departmentId,
@@ -61,7 +67,7 @@ public final class SubscriptionDto {
     public record OrderRequest(@NotNull UUID planId, @NotNull UUID expectedVersionId, @NotNull UUID idempotencyKey,
                                UUID replacesOrderId) {}
 
-    public record SuspensionRequest(boolean suspended) {}
+    public record SuspensionRequest(@NotNull Boolean suspended) {}
 
     public record MemberAccessRequest(boolean active, @NotNull Set<String> roles, long revision) {}
 

@@ -395,6 +395,26 @@ class PaymentOrderPostgresIntegrationTest {
     }
 
     @Test
+    void platformDirectoryUsesPurchasedPlanPeriodsWithoutConflatingSuspensionAndExpiry() {
+        var context = provisioned();
+        UUID org = context.actor().organizationId();
+        var current = workspaces.summary(org, NOW).current();
+        jdbc.update("UPDATE platform.organization SET status='SUSPENDED' WHERE organization_id=?", org);
+        var active = workspaces.workspaces(NOW).stream().filter(w -> w.organizationId().equals(org)).findFirst().orElseThrow();
+        assertEquals("SUSPENDED", active.status());
+        assertEquals("ACTIVE", active.subscription().status());
+        assertEquals(current.terms().name(), active.subscription().current().name());
+        assertEquals(current.startsAt(), active.subscription().current().startsAt());
+        assertEquals(current.endsAt(), active.subscription().current().endsAt());
+        assertEquals(context.actor().accountId(), active.administrators().getFirst().accountId());
+        var expired = workspaces.workspaces(current.endsAt()).stream()
+                .filter(w -> w.organizationId().equals(org)).findFirst().orElseThrow();
+        assertEquals("EXPIRED", expired.subscription().status());
+        assertNull(expired.subscription().current());
+        assertEquals("SUSPENDED", expired.status());
+    }
+
+    @Test
     void oneProviderTransactionReferenceCannotFundTwoOrders() {
         var first=orders.create(registrant(),command(UUID.randomUUID(),null),NOW);
         var second=orders.create(registrant(),command(UUID.randomUUID(),null),NOW);

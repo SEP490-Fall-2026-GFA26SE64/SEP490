@@ -35,6 +35,7 @@ export function StateLabel({ value }: { value: string }) {
     NOT_STARTED: ['Workspace not ready', 'Không gian chưa sẵn sàng'], READY: ['Workspace ready', 'Không gian sẵn sàng'],
     PROVISIONING: ['Setting up workspace', 'Đang thiết lập không gian'], FAILED: ['Setup failed', 'Thiết lập thất bại'],
     ACTIVE: ['Active', 'Đang hoạt động'], EXPIRED: ['Expired', 'Đã hết hạn'], SUSPENDED: ['Suspended', 'Đã tạm ngưng'],
+    NONE: ['No subscription', 'Chưa có gói đăng ký'], SCHEDULED: ['Scheduled', 'Đã lên lịch'],
   }
   const label = labels[value]
   return <span>{label ? c(...label) : value}</span>
