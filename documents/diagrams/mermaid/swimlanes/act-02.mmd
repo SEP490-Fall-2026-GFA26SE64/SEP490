@@ -1,0 +1,48 @@
+---
+title: "ACT-02 - Renewal, seats and administrative access - Swimlane"
+config: {theme: base, look: classic, flowchart: {htmlLabels: true}}
+---
+flowchart TD
+  subgraph Actor0["System Administrator"]
+    direction TB
+    SRS_ACT_02_N1(("Start"))
+    SRS_ACT_02_N2["Review period, Employee seats<br/>and payment history"]
+    SRS_ACT_02_N3["Select existing renewal plan and<br/>confirm payment"]
+    SRS_ACT_02_N9["Deactivate excess memberships or<br/>resolve capacity"]
+  end
+  subgraph Actor1["payOS"]
+    direction TB
+    SRS_ACT_02_N4["Provide signed payment outcome"]
+  end
+  subgraph Actor2["System Handler"]
+    direction TB
+    SRS_ACT_02_N5{"Full payment verified?"}
+    SRS_ACT_02_N6{"Seat capacity sufficient?"}
+    SRS_ACT_02_N7["Apply renewal and record paid<br/>period"]
+    SRS_ACT_02_N8["Retain paid order; show<br/>waiting-for-capacity state"]
+    SRS_ACT_02_N10["Re-evaluate pending application"]
+    SRS_ACT_02_N11["Keep renewal unresolved; do not<br/>grant paid access"]
+    SRS_ACT_02_N13["Evaluate paid period and<br/>administrative suspension<br/>independently"]
+    SRS_ACT_02_N14(("End"))
+  end
+  subgraph Actor3["Platform Administrator"]
+    direction TB
+    SRS_ACT_02_N12["Suspend or reactivate workspace<br/>when authorized"]
+  end
+  SRS_ACT_02_N1 --> SRS_ACT_02_N2
+  SRS_ACT_02_N2 --> SRS_ACT_02_N3
+  SRS_ACT_02_N3 --> SRS_ACT_02_N4
+  SRS_ACT_02_N4 --> SRS_ACT_02_N5
+  SRS_ACT_02_N5 -->|"yes"| SRS_ACT_02_N6
+  SRS_ACT_02_N6 -->|"yes"| SRS_ACT_02_N7
+  SRS_ACT_02_N6 -->|"no"| SRS_ACT_02_N8
+  SRS_ACT_02_N8 --> SRS_ACT_02_N9
+  SRS_ACT_02_N9 --> SRS_ACT_02_N10
+  SRS_ACT_02_N5 -->|"no"| SRS_ACT_02_N11
+  SRS_ACT_02_N7 --> SRS_ACT_02_N12
+  SRS_ACT_02_N10 --> SRS_ACT_02_N12
+  SRS_ACT_02_N11 --> SRS_ACT_02_N12
+  SRS_ACT_02_N12 --> SRS_ACT_02_N13
+  SRS_ACT_02_N13 --> SRS_ACT_02_N14
+
+  %% Fixed actor-column layout is exported by render-business-swimlanes.cjs.

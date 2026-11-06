@@ -1,5 +1,59 @@
 # Architecture Diagrams
 
+## Report 3 business swimlanes - 2026-11-06
+
+All nine business flows referenced by Report 3 now use [separate swimlane assets](mermaid/swimlanes): ACT-01/02/03/04/05/07/08/09/10. Every actor has a fixed column; `L and D Manager` and the short `L&D` label display as `L&D Manager`, and the exact `System` actor displays as `System Handler`. System Administrator and Platform Administrator are not renamed. ACT-06 is not displayed in Report 3 and is not added by this revision.
+
+[Renderer](render-business-swimlanes.cjs) · [Per-diagram checks](mermaid/swimlanes/checks.json)
+
+```powershell
+node documents\diagrams\render-business-swimlanes.cjs C:\path\to\mermaid.min.js
+```
+
+The renderer derives business labels, node shapes, edges and actor ownership from the existing ACT sources, then generates actor-grouped Mermaid sources and fixed-column SVG/PNG exports. The canonical ACT sources and their earlier images remain unchanged, including shared Report 4 views. Edit business content in the canonical source before regenerating; a generic Mermaid renderer may not preserve the custom fixed-column routing.
+
+ACT-09's grouped actors are expanded into separate columns. Repeated steps are alternatives of the same original action; their projection retains the exact original node/edge set without introducing new permissions or mandatory actions. All other diagrams retain one node per original node.
+
+Checks cover complete original node/edge and business-label parity, recognized actor ownership, Mermaid parsing, SVG XML, complete arrowheads, route/head canvas bounds, routes clear of all nodes, actor-lane and shape containment, node/label collisions and labels clear of arrowheads. All nine diagrams passed these checks; their 130 original nodes and 138 original edges are preserved, with explicit alternative-actor copies only in ACT-09. The full contact sheet and representative detailed images were visually inspected. Original-source hashes are retained in the check results. This is a presentation change, not a runtime or business-rule implementation.
+
+The preceding general routing refinement ordered actor columns by handoff distance, preferred short orthogonal connectors, separated entry/exit ports and evaluated alternative routes for branches and loops. Pairwise collinear overlap fell from 1,041px in that initial routing to 9px; ACT-05 then retained one 9px shared decision-port segment. Crossings fell from 129 to 36 within the same reordered-column layout. These are historical measured improvements, not a claim of a globally optimal or crossing-free layout. `initialRouting` and `optimizedRouting` in the checks use the same lane order; `previousRouting` records the SVG present before that rendering run. Layout checks still require no clipping, node crossings, label collisions or lane overflow.
+
+The subsequent ACT-05-only spacing revision widens its four lanes to 620px, increases row/return-channel spacing and penalizes closely packed parallel routes. Parallel runs sharing at least 48px of extent must be at least 24px apart; the current measured minimum is 28px, with zero crowded runs (previously 15, with a 1px minimum). Short connectors at shared node ports are excluded from this long-run spacing rule; ACT-05 retains one 13px shared decision-port segment and 24 crossings, not a claim of zero overlap everywhere. All 35 original steps and 41 edges are preserved. The other eight exported swimlanes are unchanged by this revision.
+
+ACT-05's Start connector is pinned to the shared vertical centerline of Start and the first L&D Manager action. Incoming retry arrows do not offset this connector's destination port or introduce an elbow.
+
+## JobPosition ontology v0.12 - 2026-11-06
+
+SRS section 3.1.5 now includes [CGRAPH-01 source](mermaid/cgraph-01.mmd), [SVG](mermaid/cgraph-01.svg) and [PNG](mermaid/cgraph-01.png) immediately below CERD-01 through CERD-04. This conceptual view retains the same six node labels, seven relationships and cardinalities as GRAPH-01, with no attributes or PK/FK rows. It uses the existing conceptual ERD visual style. Render with the command below plus `cgraph-01` as the final argument; the four flow ERDs are unchanged.
+
+Report 4's GRAPH-01 and node/edge descriptions now match the current v0.12 dataset/import contract: `JobPosition` replaces the obsolete `Occupation` label, while historical `OCC-` IDs remain unchanged. Each LearningModule has exactly one TEACHES edge to a MicroSkill; the old teaching-focus/difficulty fields are omitted. Dataset ownership fields are represented by graph relationships, not imported node properties. Common review/lifecycle metadata remains documented alongside the diagram.
+
+[Source](mermaid/graph-01.mmd) · [SVG](mermaid/graph-01.svg) · [PNG](mermaid/graph-01.png) · [Renderer](render-ontology-diagram.cjs)
+
+```powershell
+node documents\diagrams\render-ontology-diagram.cjs C:\path\to\mermaid.min.js
+```
+
+Validation uses the current dataset to check six labels, seven relationship types, all displayed business properties and one teaching edge per Module. Local Mermaid 12.3.0/Playwright rendering checks SVG XML, complete node/edge-label coverage, clipped labels and label collisions. No database import, identifier rewrite or runtime migration is performed. Historical v0.9/v0.11 datasets and the older `neo4j.svg`/`neo4j.png` remain unchanged.
+
+## Package overview style - 2026-11-06
+
+Report 4 section 1.2 uses white UML package folders, subtle offset shadows and dashed open-arrow import dependencies, matching the supplied visual reference. The backend retains seven actual packages under `com.adaptlearngraph` and adds the direct `entities.domain` subpackage. The frontend retains four principal source directories and adds all 11 direct `features` and nine direct `shared` subdirectories. Packages without subdirectories are not given invented children. Arrows remain selected top-level imports, including the existing `shared` to `features` coupling, not runtime flow or an exhaustive layering contract.
+
+[Backend source](mermaid/pkg-overview-backend.mmd) · [Backend SVG](mermaid/pkg-overview-backend.svg) · [Backend PNG](mermaid/pkg-overview-backend.png)
+
+[Frontend source](mermaid/pkg-overview-frontend.mmd) · [Frontend SVG](mermaid/pkg-overview-frontend.svg) · [Frontend PNG](mermaid/pkg-overview-frontend.png)
+
+The Mermaid files own package names, containment and dependency edges. [The local renderer](render-package-overviews.cjs) applies the fixed UML-folder layout and exports SVG/PNG. Dependencies use orthogonal lanes and explicit open heads drawn outside all folder shapes and shadows, rather than boundary-clipped SVG markers. Checks cover actual package-directory existence, parent containment, package overlaps, complete node/edge/head coverage, path/head collisions with folders and shadows, SVG XML and canvas bounds. A generic Mermaid renderer displays the equivalent dependency graph with rectangular nodes rather than this custom folder presentation. Regenerate with installed frontend Playwright and local Chrome:
+
+```powershell
+node documents\diagrams\render-package-overviews.cjs
+```
+
+Historical PKG-01/PKG-02 inventories are retained unchanged. This is a documentation-only redraw, not an application refactor.
+
+The deeper-layout revision rendered locally with Playwright/Chrome: backend eight folders and 12 complete arrowheads; frontend 24 folders and four complete arrowheads. Both had zero clipped labels/arrowheads, package overlaps, folder/shadow crossings or browser errors. Both PNGs were visually inspected.
+
 ## Scoped state style using ST-01 — 2026-11-06
 
 The following formatting entry is historical for ST-16: the current authoring revision splits it into ST-16A/B below. Its upstream source/render is [archived](archive/st-16-before-split-20261106/README.md). ST-11 also has the subsequent authoring lifecycle expansion below.

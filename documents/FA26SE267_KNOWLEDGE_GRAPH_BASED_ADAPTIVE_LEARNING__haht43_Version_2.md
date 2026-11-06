@@ -129,14 +129,24 @@ Technology stack:
 * **Record system activity:** The System shall record administrative actions, payment events, content and role changes, assessment submissions, and pathway updates.
 
 **d) Non-Functional Requirements:**  
-\-	**Recommendation Relevance:** The adaptive recommendation algorithm shall achieve a Hit Rate@5 ≥ 80% measured against an expert-annotated baseline dataset.  
-\-	**Graph Query Latency:** Complex graph traversals (e.g., finding the shortest learning path between User current state and Target Role) shall execute in ≤ 150 ms in Neo4j.  
-\-	**System Scalability:** The backend API shall support ≥ 300 concurrent learner interactions (module completions, quiz submissions) with response times ≤ 500 ms.  
-\-	**Reproducibility:** Version datasets, mappings, assessment rules, algorithm parameters, and experiment seeds. Separate development data from held-out evaluation data and retain benchmark outputs.  
-\-	**Product Performance:** Target a P95 response time of 2 seconds or less for ordinary interactive requests with 30 concurrent users across at least two organization workspaces in the documented test environment. Measure LLM inference, payment processing, and file transfers separately.  
-\-	**Usability:** Forms shall identify missing or invalid inputs, preserve entered values after validation errors, and display clear success, pending, and failure messages for registration, payments, assessments, and content submissions.  
-\-	**Security and Organization Isolation:** Protected functions and learning content shall be accessible only to authenticated users with the required role and organization access. Cross-organization access shall be denied. Credentials and payment information shall be protected, and administrative changes and payment events shall be auditable.  
-\-	**Data Integrity and Recovery:** Saved records shall remain consistent across related data stores. Failed operations shall be recoverable without losing committed data; retries and duplicate payment notifications shall not create duplicate payments, subscriptions, workspaces, or assessment submissions.
+- Registration, payment, assessment and content-submission forms shall explain missing or invalid inputs, retain non-secret values after validation errors and clearly show pending, successful or failed actions without redisplaying secrets.
+- Main controls shall have understandable labels, visible keyboard focus and keyboard-accessible actions; closing a dialog shall return focus to its trigger. Full accessibility certification is outside the required scope.
+- Main forms and actions shall remain readable and usable at 1366 x 768 and 390 x 844 without being cut off; large tables and graphs may scroll inside their own containers.
+- Loading, empty results, unavailable features and failed requests shall show appropriate messages and a next action where possible, never fabricated successful results.
+- Retried or overlapping operations and duplicate payment notifications shall not create duplicate payments, subscriptions, workspaces or assessment submissions.
+- Failed operations, temporary service failures and application restarts shall not corrupt or lose committed records or related references; failed actions shall remain safely retryable after recovery.
+- New versions shall preserve historical selections, purchased terms, assessment content/rule references and legitimately absent values.
+- Business data and the application catalog shall support a documented backup-and-restore procedure that preserves saved records, catalog versions and related references. No fixed uptime, recovery-time or automatic-failover guarantee is required.
+- At least 95% of ordinary interactive requests shall complete within 3 seconds, from request submission to complete response, with 10 concurrent users in total across two organization workspaces in the documented environment after warm-up. External payment/email, file transfer and AI inference times are outside this ordinary-request limit.
+- The application shall support 10 concurrent learners completing modules and submitting quiz/assessment answers under the ordinary-request response-time requirement above without unexpected server failures, lost accepted submissions or duplicate business records; higher user counts are outside the required scope.
+- Each selected representative role, skill, prerequisite or pathway graph query shall complete within 1 second after warm-up on the recorded catalog; this limit applies to graph-query execution, not full application response time.
+- Recommendation relevance shall be reported using Hit Rate@5 on at least 20 independently reviewed, held-out cases, comparing graph-based and Content-Based Filtering results on the same cases and counting empty results as misses. No fixed relevance percentage is required; applicable organization and prerequisite rules remain mandatory.
+- Protected functions and files shall require server-validated user identity, role, organization and applicable assignment/access rights, denying cross-organization access, wrong-role access and access after assignment removal, membership suspension or subscription expiry.
+- The application shall protect credentials and payment information, prohibit plaintext password storage and secret exposure in code/responses/logs, and retain audit records for administrative changes and payment events. Public deployment shall use HTTPS; isolated local HTTP testing is allowed.
+- Ordinary assessment responses shall withhold answer keys, protected scoring data and unauthorized learner results while returning the authorized result information.
+- Evaluations shall be reproducible using recorded dataset/catalog and mapping versions, assessment rules, algorithm parameters and random seeds where applicable, with separate development/held-out cases and retained review decisions and raw outputs.
+- Interest scores, assessment results, estimated mastery and recommendations shall remain distinct and retain their source/version references; interest scores and generated explanations shall not be treated as proof of skill achievement.
+- Changes shall follow documented package boundaries and shared UI conventions, remain buildable and support relevant automated tests, architecture checks and browser validation for frontend changes.
 
 **e) Theory & Practical:**  
 **Theory**  

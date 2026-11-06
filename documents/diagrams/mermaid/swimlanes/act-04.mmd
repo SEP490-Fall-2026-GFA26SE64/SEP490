@@ -1,0 +1,41 @@
+---
+title: "ACT-04 - Learning offering authoring and approval (target) - Swimlane"
+config: {theme: base, look: classic, flowchart: {htmlLabels: true}}
+---
+flowchart TD
+  subgraph Actor0["Expert"]
+    direction TB
+    SRS_ACT_04_N1(("Start"))
+    SRS_ACT_04_N2["Author module and ordered<br/>learning content"]
+    SRS_ACT_04_N3["Map micro-skills and configure<br/>module assessment"]
+    SRS_ACT_04_N4["Submit versioned offering"]
+    SRS_ACT_04_N7["Revise module, content or<br/>assessment and resubmit"]
+  end
+  subgraph Actor1["L&amp;D Manager"]
+    direction TB
+    SRS_ACT_04_N5{"Revision required?"}
+    SRS_ACT_04_N6["Return offering with feedback"]
+    SRS_ACT_04_N8["Approve offering"]
+  end
+  subgraph Actor2["System Handler"]
+    direction TB
+    SRS_ACT_04_N9["Make approved offering available<br/>within organization"]
+  end
+  subgraph Actor3["Employee"]
+    direction TB
+    SRS_ACT_04_N10["Access permitted module and<br/>private content"]
+    SRS_ACT_04_N11(("End"))
+  end
+  SRS_ACT_04_N1 --> SRS_ACT_04_N2
+  SRS_ACT_04_N2 --> SRS_ACT_04_N3
+  SRS_ACT_04_N3 --> SRS_ACT_04_N4
+  SRS_ACT_04_N4 --> SRS_ACT_04_N5
+  SRS_ACT_04_N5 -->|"yes"| SRS_ACT_04_N6
+  SRS_ACT_04_N6 --> SRS_ACT_04_N7
+  SRS_ACT_04_N7 --> SRS_ACT_04_N5
+  SRS_ACT_04_N5 -->|"no"| SRS_ACT_04_N8
+  SRS_ACT_04_N8 --> SRS_ACT_04_N9
+  SRS_ACT_04_N9 --> SRS_ACT_04_N10
+  SRS_ACT_04_N10 --> SRS_ACT_04_N11
+
+  %% Fixed actor-column layout is exported by render-business-swimlanes.cjs.

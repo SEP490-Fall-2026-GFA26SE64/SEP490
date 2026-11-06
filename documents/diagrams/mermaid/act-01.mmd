@@ -4,22 +4,33 @@ config: {"theme":"base","fontFamily":"Segoe UI, Arial, sans-serif","themeVariabl
 ---
 flowchart TD
     SRS_ACT_01_N1(("Start"))
-    SRS_ACT_01_N2["<b>Guest</b><br/>Enter organization and<br/>administrator details"]
+    SRS_ACT_01_N2["<b>Guest</b><br/>Enter organization details"]
+    SRS_ACT_01_N16["<b>Guest</b><br/>Optionally drag starter catalog<br/>items from the platform graph"]
+    SRS_ACT_01_N17["<b>System</b><br/>Preview items and relationships<br/>that will be copied"]
+    SRS_ACT_01_N18["<b>Guest</b><br/>Enter administrator account<br/>details"]
+    SRS_ACT_01_N3["<b>System</b><br/>Validate and save registration<br/>with catalog selection"]
+    SRS_ACT_01_N4["<b>System</b><br/>Send verification email"]
     SRS_ACT_01_N5["<b>Guest</b><br/>Verify email and enroll<br/>administrator MFA"]
     SRS_ACT_01_N6["<b>Guest</b><br/>Choose an existing plan"]
-    SRS_ACT_01_N12["<b>Guest</b><br/>Review setup status and enter<br/>workspace"]
-    SRS_ACT_01_N14["<b>Guest</b><br/>Wait, reconcile or retry when<br/>permitted"]
-    SRS_ACT_01_N15(("End"))
-    SRS_ACT_01_N3["<b>System</b><br/>Validate and save registration"]
-    SRS_ACT_01_N4["<b>System</b><br/>Send verification email"]
     SRS_ACT_01_N7["<b>System</b><br/>Create checkout request"]
-    SRS_ACT_01_N10["<b>System</b><br/>Record payment and apply initial<br/>purchase"]
-    SRS_ACT_01_N11["<b>System</b><br/>Create workspace, membership and<br/>paid period"]
-    SRS_ACT_01_N13["<b>System</b><br/>Show pending, partial, failed or<br/>unknown status"]
     SRS_ACT_01_N8["<b>payOS</b><br/>Accept checkout interaction"]
     SRS_ACT_01_N9{"<b>payOS</b><br/>Verified full payment?"}
+    SRS_ACT_01_N10["<b>System</b><br/>Record payment and apply initial<br/>purchase"]
+    SRS_ACT_01_N11["<b>System</b><br/>Create workspace, membership and<br/>paid period"]
+    SRS_ACT_01_N19{"<b>System</b><br/>Starter catalog selected?"}
+    SRS_ACT_01_N20["<b>System</b><br/>Copy selected catalog into the<br/>organization graph"]
+    SRS_ACT_01_N21{"<b>System</b><br/>Copy succeeded?"}
+    SRS_ACT_01_N22["<b>System</b><br/>Retry with backoff; mark setup<br/>failed after the final attempt"]
+    SRS_ACT_01_N23["<b>System</b><br/>Mark workspace ready"]
+    SRS_ACT_01_N12["<b>Guest</b><br/>Review setup status and enter<br/>/workspace/{slug}"]
+    SRS_ACT_01_N13["<b>System</b><br/>Show pending, partial, failed or<br/>unknown status"]
+    SRS_ACT_01_N14["<b>Guest</b><br/>Wait, reconcile or retry when<br/>permitted"]
+    SRS_ACT_01_N15(("End"))
   SRS_ACT_01_N1 --> SRS_ACT_01_N2
-  SRS_ACT_01_N2 --> SRS_ACT_01_N3
+  SRS_ACT_01_N2 --> SRS_ACT_01_N16
+  SRS_ACT_01_N16 --> SRS_ACT_01_N17
+  SRS_ACT_01_N17 --> SRS_ACT_01_N18
+  SRS_ACT_01_N18 --> SRS_ACT_01_N3
   SRS_ACT_01_N3 --> SRS_ACT_01_N4
   SRS_ACT_01_N4 --> SRS_ACT_01_N5
   SRS_ACT_01_N5 --> SRS_ACT_01_N6
@@ -28,7 +39,14 @@ flowchart TD
   SRS_ACT_01_N8 --> SRS_ACT_01_N9
   SRS_ACT_01_N9 -->|"yes"| SRS_ACT_01_N10
   SRS_ACT_01_N10 --> SRS_ACT_01_N11
-  SRS_ACT_01_N11 --> SRS_ACT_01_N12
+  SRS_ACT_01_N11 --> SRS_ACT_01_N19
+  SRS_ACT_01_N19 -->|"no"| SRS_ACT_01_N23
+  SRS_ACT_01_N19 -->|"yes"| SRS_ACT_01_N20
+  SRS_ACT_01_N20 --> SRS_ACT_01_N21
+  SRS_ACT_01_N21 -->|"yes"| SRS_ACT_01_N23
+  SRS_ACT_01_N21 -->|"no"| SRS_ACT_01_N22
+  SRS_ACT_01_N22 --> SRS_ACT_01_N13
+  SRS_ACT_01_N23 --> SRS_ACT_01_N12
   SRS_ACT_01_N9 -->|"not yet"| SRS_ACT_01_N13
   SRS_ACT_01_N13 --> SRS_ACT_01_N14
   SRS_ACT_01_N12 --> SRS_ACT_01_N15
@@ -36,7 +54,6 @@ flowchart TD
 
   classDef default fill:#ffffff,stroke:#64748b,color:#0f1729,stroke-width:1px,rx:8,ry:8
   classDef decision fill:#fef3eb,stroke:#e6650f,color:#0f1729,stroke-width:1.5px
-  class SRS_ACT_01_N9 decision
+  class SRS_ACT_01_N9,SRS_ACT_01_N19,SRS_ACT_01_N21 decision
   classDef entry fill:#c24a0a,stroke:#c24a0a,color:#ffffff,stroke-width:1.5px
   class SRS_ACT_01_N1,SRS_ACT_01_N15 entry
-

@@ -1,0 +1,36 @@
+---
+title: "ACT-10 - Question Bank authoring and approval - Swimlane"
+config: {theme: base, look: classic, flowchart: {htmlLabels: true}}
+---
+flowchart TD
+  subgraph Actor0["Responsible Expert"]
+    direction TB
+    START(("Start"))
+    CREATE["Create manually or import questions"]
+    EDIT["Complete and edit question content"]
+    SUBMIT["Submit for review"]
+  end
+  subgraph Actor1["System Handler"]
+    direction TB
+    DRAFT["Save as DRAFT"]
+    RETURN["Record feedback and restore DRAFT"]
+    PUBLISHED["Publish immutable version"]
+    END(("End"))
+  end
+  subgraph Actor2["L&amp;D Manager"]
+    direction TB
+    REVIEW["Review and acknowledge exact version"]
+    DECISION{"Approve or Return?"}
+  end
+  START --> CREATE
+  CREATE --> DRAFT
+  DRAFT --> EDIT
+  EDIT --> SUBMIT
+  SUBMIT --> REVIEW
+  REVIEW --> DECISION
+  DECISION -->|"Return + reason"| RETURN
+  RETURN --> EDIT
+  DECISION -->|"Approve"| PUBLISHED
+  PUBLISHED --> END
+
+  %% Fixed actor-column layout is exported by render-business-swimlanes.cjs.
