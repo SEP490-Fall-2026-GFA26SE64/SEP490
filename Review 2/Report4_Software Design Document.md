@@ -45,6 +45,7 @@
 
 | Date | A*M, D | In charge | Change Description |
 | --- | --- | --- | --- |
+| 2026-11-06 | M | Documentation preparation with AI assistance | Added Certificate / CERTIFIES and Level duration target extensions to GRAPH-01; regenerated SVG/PNG and synchronized node/edge descriptions. No dataset/import/runtime change. |
 | 2026-11-06 | M | Documentation preparation with AI assistance | Reconciled LERD-05/06 identities, snapshot/legacy cardinalities and persistence mappings; checked DB-09/10 keys and FK multiplicities across source lineages; split ST-16A/B and corrected successor semantics. |
 | 2026-11-06 | M | Documentation preparation with AI assistance | Extended ST-11 with guarded draft deletion and archive/restore; added ST-16 availability detail, LERD-05/06 and DB-09/10 authoring supplements. Aligned Module–MicroSkill cardinality with the current contract; retained dated V1–V32 baseline counts. |
 | 2026-11-06 | M | Documentation preparation with AI assistance | Updated only ST-14 to explicit submission and L&D-configured pass/fail rules; removed evidence, auto-submit and adaptive-stop branches from this diagram. |
@@ -5555,30 +5556,32 @@ Explicit organization/graph-Job Position grant and nullable bank/model/mapping p
 | `ontology_seed-v011.json` v0.11 | 994 | 5,121 | 246 modules / 664 TEACHES pairs | Separate review package; all module review statuses remain NEEDS_EXPERT_REVIEW. No deployment/import performed. |
 | `ontology_seed-v012.json` v0.12 | 994 | 4,703 | 246 modules / 246 TEACHES pairs | Current source/review contract using JobPosition and exactly one MicroSkill per Module. This report update performs no deployment or graph import. |
 
-All three packages have five JobPositions, 48 TargetRoles, 144 Levels, 472 Competencies and 79 MicroSkills. v0.9 and v0.11 are historical input/review snapshots. GRAPH-01 now follows the [current v0.12 schema](../documents/neo4j_schema.md#current-contract--2026-11-05): the graph label is `JobPosition`, not `Occupation`, and every LearningModule teaches exactly one MicroSkill. Existing `OCC-` string IDs are preserved as historical identifiers, not interpreted as the graph label. v0.12 removes `teachingFocus` and `difficultyLevel` without changing the six node labels or seven relationship types.
+All three packages have five JobPositions, 48 TargetRoles, 144 Levels, 472 Competencies and 79 MicroSkills. v0.9 and v0.11 are historical input/review snapshots. The six existing catalog node types in GRAPH-01 follow the [current v0.12 schema](../documents/neo4j_schema.md#current-contract--2026-11-05): the graph label is `JobPosition`, not `Occupation`, and every LearningModule teaches exactly one MicroSkill. Existing `OCC-` string IDs are preserved as historical identifiers, not interpreted as the graph label. v0.12 removes `teachingFocus` and `difficultyLevel` without changing the six node labels or seven relationship types.
 
 [Mermaid source: GRAPH-01](../documents/diagrams/mermaid/graph-01.mmd)
 
-![GRAPH-01 - JobPosition ontology v0.12](../documents/diagrams/mermaid/graph-01.png)
+![GRAPH-01 - JobPosition ontology v0.12 with Certificate and Level duration target extensions](../documents/diagrams/mermaid/graph-01.png)
 
 **Diagram notes (GRAPH-01):**
 
 - Common node/edge fields: `id`, `version`, `status`, `reviewStatus`, `reviewedBy` and `reviewedAt`. `id` is shown in each node; the other shared metadata is documented here to avoid repeated rows. Null reviewer/time is preserved.
-- Node attributes show imported graph properties. Dataset linkage fields `jobPositionId`, `targetRoleId` and `levelId` are represented by ownership relationships after import, not retained as graph properties or SQL foreign keys.
+- The six existing catalog nodes retain imported graph properties; Level additionally shows the requested target `duration` as a planning estimate. Its unit and calculation policy are not defined by this diagram, and it is not an imported v0.12 property or measured learner time. Certificate is an ACT-05 target extension derived from LERD-03, not part of the current v0.12 dataset/import. Its `id`, `organizationId`, `knowledgeLevel`, `outcomeCodes` and `referenceUrl` map to `certificate_id`, `organization_id`, `knowledge_level`, `outcome_codes` and `reference_url`; common `version` and `status` are retained. Its skill binding is represented by the proposed `CERTIFIES` relationship.
+- For the existing six node types, dataset linkage fields `jobPositionId`, `targetRoleId` and `levelId` are represented by ownership relationships after import, not retained as graph properties or SQL foreign keys.
 - `TEACHES` has no teaching-focus/difficulty business properties in v0.12. Duration/price remain review estimates. The diagram is the source contract, not evidence that a running database has been migrated.
 
-**Ontology description scope:** The following tables describe the six node types and seven directed relationship types in **GRAPH-01 v0.12**, matching the current dataset/import contract. The diagram and descriptions do not certify a live graph import.
+**Ontology description scope:** The following tables describe the six current node types and seven current relationships plus the proposed Certificate node and CERTIFIES relationship in **GRAPH-01**. Certificate, Level.duration and TargetRole.rejectReason are documentation targets; the v0.12 importer still supports only the original six node labels and seven relationship types. The diagram and descriptions do not certify a live graph import.
 
 **Node Descriptions**
 
 | No | Node | Description |
 | --- | --- | --- |
 | 1 | `JobPosition` | Job Position catalog definition owning a set of target roles. <ul><li>Business properties: <code>code</code>, <code>name</code>, <code>jobZone</code> and the six RIASEC interest dimensions.</li><li>Interest values describe the Job Position, not an Employee's competency or assessment score. Historical <code>OCC-</code> identifiers remain unchanged.</li></ul> |
-| 2 | `TargetRole` | Role definition belonging to one JobPosition. <ul><li>Business properties: <code>code</code>, <code>name</code> and <code>scope</code>.</li><li>Connected to its owning JobPosition through <code>HAS_ROLE</code> and to its levels through <code>HAS_LEVEL</code>.</li></ul> |
-| 3 | `Level` | Attainment level within a TargetRole. <ul><li>Business properties: <code>code</code>, <code>name</code>, <code>rank</code> and <code>attainmentRule</code>.</li><li>Groups competencies and defines level-specific skill requirements; different levels need not have strictly nested skill sets.</li></ul> |
+| 2 | `TargetRole` | Role definition belonging to one JobPosition. <ul><li>Business properties: <code>code</code>, <code>name</code>, <code>scope</code> and proposed <code>rejectReason</code> (nullable reason recorded when the role is rejected; absent when no rejection reason applies).</li><li>Connected to its owning JobPosition through <code>HAS_ROLE</code> and to its levels through <code>HAS_LEVEL</code>.</li></ul> |
+| 3 | `Level` | Attainment level within a TargetRole. <ul><li>Business properties: <code>code</code>, <code>name</code>, <code>rank</code>, <code>attainmentRule</code> and proposed <code>duration</code> (planning estimate; unit/calculation policy unspecified).</li><li>Groups competencies and defines level-specific skill requirements; different levels need not have strictly nested skill sets.</li></ul> |
 | 4 | `Competency` | Named grouping of required skills for its owning Level. <ul><li>Business properties: <code>code</code>, <code>name</code>, <code>description</code> and <code>attainmentRule</code>.</li><li>Connects to member MicroSkills through <code>HAS_SKILL</code>; it is not a learner score or progress record.</li></ul> |
 | 5 | `MicroSkill` | Reusable atomic skill definition referenced by competencies, level requirements, learning provision and prerequisites. <ul><li>Business properties: <code>name</code> and <code>definition</code>.</li><li>Learner results and mastery evidence are stored outside the ontology.</li></ul> |
 | 6 | `LearningModule` | Catalog learning provision with a versioned content locator and skill-teaching mapping. <ul><li>Business properties: <code>title</code>, <code>moduleType</code>, <code>contentUri</code>, <code>contentType</code>, <code>contentVersion</code>, <code>duration</code> and <code>price</code>.</li><li>Duration and price are review estimates, not verified payments or measured learning outcomes; content locators do not prove approved private content delivery.</li></ul> |
+| 7 | `Certificate` | Proposed versioned certificate definition for one MicroSkill, matching LERD-03. Properties: `id`, `organizationId`, `name`, `knowledgeLevel`, `outcomeCodes`, `referenceUrl` plus common version/lifecycle metadata. Learner evidence and Expert acceptance remain in CertificateSubmission; this node is not proof of achievement or an imported v0.12 label. |
 
 **Edge Descriptions**
 
@@ -5593,6 +5596,7 @@ Each edge has common identity, version, lifecycle and review metadata. Direction
 | 5 | `REQUIRES_SKILL` | Defines the skill attainment requirement for a particular Level. <ul><li>Direction: <code>Level -&gt; MicroSkill</code>.</li><li>Business properties: <code>requiredScore</code> and <code>isMandatory</code>. The threshold belongs to the Level-Skill pair, not to Module difficulty or a learner's actual score.</li></ul> |
 | 6 | `TEACHES` | Maps a LearningModule to its single taught MicroSkill. <ul><li>Direction: <code>LearningModule -&gt; MicroSkill</code>.</li><li>Exactly one MicroSkill per Module; a skill may have zero or multiple alternative Modules. No teaching-focus/difficulty business properties.</li><li>Completing a Module satisfies the learning prerequisite for that Skill assessment; it does not establish an assessment result or mastery.</li></ul> |
 | 7 | `HAS_SKILL_PREREQUISITE` | Defines a prerequisite that must be considered before the dependent skill. <ul><li>Direction: <code>dependent MicroSkill -&gt; prerequisite MicroSkill</code>.</li><li>Business property: <code>requiredScore</code>. Self-links, cycles and endpoints of the wrong node type are invalid; prerequisite traversal includes indirect dependencies.</li></ul> |
+| 8 | `CERTIFIES` | Proposed direction: `Certificate -> MicroSkill`. Each Certificate binds exactly one skill; a skill may have zero or multiple certificate options. Knowledge level and outcome coverage must match the pathway requirement. This target relationship is not supported by the current v0.12 importer; learner submissions require separate acceptance before awarding evidence. |
 
 #### 2.4.2 Graph field and relationship contract
 

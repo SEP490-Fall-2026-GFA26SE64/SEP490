@@ -18,18 +18,28 @@ const exportOnly = new Set(['jobPositionId', 'targetRoleId', 'levelId']);
 const entities = conceptual
   ? [...source.matchAll(/^\s+(SDD_GRAPH_01_\w+)\["(\w+)"\]$/gm)]
   : [...source.matchAll(/^\s+(SDD_GRAPH_01_\w+)\["(\w+)"\] \{([\s\S]*?)^\s*}/gm)];
-assert.equal(entities.length, 6);
+assert.equal(entities.length, conceptual ? 6 : 7);
 for (const [section, label] of Object.entries(labels)) {
   const entity = entities.find(e => e[2] === label);
   assert(entity, 'Missing label ' + label);
   if (conceptual) continue;
   const fields = [...entity[3].matchAll(/^\s+\w+ (\w+)/gm)].map(m => m[1]).sort();
   const expected = [...new Set(seed[section].flatMap(row => Object.keys(row)))].filter(k => !metadata.has(k) && !exportOnly.has(k)).sort();
-  assert.deepEqual(fields, expected, label + ' graph properties');
+  if (label === 'Level') expected.push('duration');
+  if (label === 'TargetRole') expected.push('rejectReason');
+  expected.sort();
+  assert.deepEqual(fields, expected, label + ' graph properties and documented target extensions');
 }
 const edges = [...source.matchAll(/^\s+SDD_GRAPH_01_(\w+) ([|o}{-]+) SDD_GRAPH_01_(\w+) : "(\w+)"$/gm)];
-assert.equal(edges.length, 7);
-assert.deepEqual(edges.map(e => e[4]).sort(), [...new Set(seed.relationships.map(e => e.type))].sort());
+assert.equal(edges.length, conceptual ? 7 : 8);
+assert.deepEqual(edges.filter(e => e[4] !== 'CERTIFIES').map(e => e[4]).sort(), [...new Set(seed.relationships.map(e => e.type))].sort());
+if (!conceptual) {
+  const certificate = entities.find(e => e[2] === 'Certificate');
+  assert(certificate, 'Missing Certificate target extension');
+  assert.deepEqual([...certificate[3].matchAll(/^\s+\w+ (\w+)/gm)].map(m => m[1]).sort(),
+    ['id', 'organizationId', 'name', 'knowledgeLevel', 'outcomeCodes', 'referenceUrl'].sort());
+  assert(source.includes('SDD_GRAPH_01_Certificate }o--|| SDD_GRAPH_01_MicroSkill : "CERTIFIES"'));
+}
 assert(source.includes('SDD_GRAPH_01_LearningModule }o--|| SDD_GRAPH_01_MicroSkill : "TEACHES"'));
 assert(!/Occupation|teachingFocus|difficultyLevel|job positionId/.test(source));
 if (conceptual) assert(!/\]\s*\{|\bPK\b|\bFK\b/.test(source.split('erDiagram')[1]), 'Conceptual view must not contain attributes or keys');
@@ -40,7 +50,7 @@ const { chromium } = require(path.join(root, 'frontend', 'node_modules', '@playw
 
 (async () => {
   assert(process.argv[2], 'Provide the local Mermaid bundle path');
-  const browser = await chromium.launch({ headless: true, executablePath: 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe' });
+  const browser = await chromium.launch({ headless: true, ...(process.env.CHROME_PATH ? { executablePath: process.env.CHROME_PATH } : {}) });
   try {
     const page = await browser.newPage({ viewport: { width: 1800, height: 1200 }, deviceScaleFactor: 2 });
     const errors = [];
@@ -68,8 +78,8 @@ const { chromium } = require(path.join(root, 'frontend', 'node_modules', '@playw
       return { svg: new XMLSerializer().serializeToString(el), width: Math.ceil(v.width), height: Math.ceil(v.height), nodes: nodes.length, labels: labels.length, labelNodeCollisions, labelLabelCollisions, clippedLabels, validXml: !parsed.querySelector('parsererror') };
     }, source);
     assert.deepEqual(errors, []);
-    assert.equal(result.nodes, 6);
-    assert.equal(result.labels, 7);
+    assert.equal(result.nodes, conceptual ? 6 : 7);
+    assert.equal(result.labels, conceptual ? 7 : 8);
     assert.equal(result.validXml, true);
     assert.equal(result.clippedLabels, 0);
     assert.deepEqual(result.labelNodeCollisions, []);
