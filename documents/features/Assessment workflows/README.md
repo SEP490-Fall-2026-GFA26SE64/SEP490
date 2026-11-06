@@ -62,7 +62,7 @@ Each record below corresponds to one source bullet. Unspecified fields are inten
 #### Implemented Question Bank subset — 2026-10-30
 
 Activity diagram: [ACT-10 — Question Bank authoring and approval](../../diagrams/mermaid/act-10.mmd) ([SVG](../../diagrams/mermaid/act-10.svg), [PNG](../../diagrams/mermaid/act-10.png)). This concise diagram covers the main draft/submission/return/publication flow; secondary lifecycle rules remain specified below. It does not cover complete module-assessment construction.
-State machine: [ST-16 — current question-candidate lifecycle](../../diagrams/mermaid/st-16.mmd) ([SVG](../../diagrams/mermaid/st-16.svg)).
+State machines: [ST-16A — question-version lifecycle](../../diagrams/mermaid/st-16a.mmd) ([SVG](../../diagrams/mermaid/st-16a.svg)) and [ST-16B — question availability](../../diagrams/mermaid/st-16b.mmd) ([SVG](../../diagrams/mermaid/st-16b.svg)).
 
 This subset covers the organization-wide Question Bank across MicroSkills. It does not complete the whole module-assessment requirement above. The routed UI retains the header, four statistics cards, filters, skill-grouped directory and dialogs; it uses the shared [QuestionBankWorkspace](../../../frontend/src/shared/components/question-bank/QuestionBankWorkspace.tsx) and real staff APIs instead of browser mock storage. Legacy Blueprint configuration is not exposed as a persisted Question Bank capability.
 

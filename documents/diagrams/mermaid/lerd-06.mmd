@@ -1,0 +1,21 @@
+---
+title: "LERD-06 - Question Bank authoring (current logical view)"
+config: {"theme":"base","fontFamily":"Segoe UI, Arial, sans-serif","themeVariables":{"fontFamily":"Segoe UI, Arial, sans-serif","fontSize":"16px","primaryColor":"#ffffff","primaryTextColor":"#0f1729","primaryBorderColor":"#64748b","secondaryColor":"#fef3eb","tertiaryColor":"#ffffff","lineColor":"#64748b","textColor":"#0f1729","mainBkg":"#ffffff","background":"#ffffff","clusterBkg":"#ffffff","clusterBorder":"#64748b","edgeLabelBackground":"#ffffff","titleColor":"#0f1729","noteBkgColor":"#fef3eb","noteTextColor":"#0f1729","noteBorderColor":"#e6650f","attributeBackgroundColorOdd":"#ffffff","attributeBackgroundColorEven":"#ffffff","secondaryBorderColor":"#64748b","tertiaryBorderColor":"#64748b","secondaryTextColor":"#0f1729","tertiaryTextColor":"#0f1729"},"layout":"elk","er":{"layoutDirection":"LR","nodeSpacing":36,"rankSpacing":74,"entityPadding":16,"fontSize":16,"minEntityWidth":140,"diagramPadding":24}}
+---
+erDiagram
+  O["Organization"]
+  B["QuestionBankWorkspace"]
+  Q["Question"]
+  V["QuestionVersion"]
+  S["MicroSkill"]
+  A["AuditEvent"]
+  N["Notice"]
+  X["ImportBatch"]
+  O ||--o| B : "initializes workspace"
+  B ||..o{ Q : "contains"
+  Q ||..|{ V : "retains versions"
+  S |o..o{ V : "assessed by (required for new versions)"
+  Q ||..o{ A : "has audit events"
+  V |o..o{ A : "optional version context"
+  B ||..o{ N : "notifies staff"
+  B ||..o{ X : "previews imports"

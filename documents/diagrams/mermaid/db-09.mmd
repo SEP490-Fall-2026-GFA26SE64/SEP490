@@ -1,0 +1,51 @@
+---
+title: "DB-09 - Module authoring supplement (V36, V37, V48 source)"
+config: {"theme":"base","fontFamily":"Segoe UI, Arial, sans-serif","themeVariables":{"fontFamily":"Segoe UI, Arial, sans-serif","fontSize":"14px","primaryColor":"#ffffff","primaryTextColor":"#0f1729","primaryBorderColor":"#64748b","secondaryColor":"#fef3eb","tertiaryColor":"#ffffff","lineColor":"#64748b","textColor":"#0f1729","mainBkg":"#ffffff","background":"#ffffff","clusterBkg":"#ffffff","clusterBorder":"#64748b","edgeLabelBackground":"#ffffff","titleColor":"#0f1729","noteBkgColor":"#fef3eb","noteTextColor":"#0f1729","noteBorderColor":"#e6650f","classText":"#0f1729","secondaryBorderColor":"#64748b","tertiaryBorderColor":"#64748b","secondaryTextColor":"#0f1729","tertiaryTextColor":"#0f1729"},"layout":"elk","class":{"hideEmptyMembersBox":true,"nodeSpacing":44,"rankSpacing":70,"padding":12,"diagramPadding":24}}
+---
+classDiagram
+  direction LR
+  class M["module_authoring"] {
+    <<table>>
+    text organization_id PK_REQUIRED
+    text module_id PK_UK_REQUIRED
+    jsonb document REQUIRED
+  }
+  class C["module_authoring_content"] {
+    <<table>>
+    text organization_id PK_REQUIRED
+    text content_id PK_REQUIRED
+    jsonb document REQUIRED
+  }
+  class I["module_catalog_intake"] {
+    <<table>>
+    text module_id PK_REQUIRED
+    text organization_id REQUIRED
+    jsonb document REQUIRED
+  }
+  class P["module_learning_pin"] {
+    <<table>>
+    text organization_id PK_FK_REQUIRED
+    text learner_id PK_REQUIRED
+    text module_id PK_FK_REQUIRED
+    integer revision REQUIRED
+    timestamptz started_at REQUIRED
+  }
+  class G["module_job_position_grant"] {
+    <<table>>
+    text organization_id PK_REQUIRED
+    text expert_id PK_REQUIRED
+    text job_position_id PK_REQUIRED
+    boolean active REQUIRED
+  }
+  class A["module_grant_audit"] {
+    <<table>>
+    bigint event_id PK_REQUIRED
+    text organization_id REQUIRED
+    text expert_id REQUIRED
+    text job_position_id REQUIRED
+    boolean active REQUIRED
+    text changed_by REQUIRED
+    timestamptz changed_at REQUIRED
+  }
+  M "1" --> "0..*" P : FK (organization_id, module_id)
+  note "SQL foreign keys only. JSON associations are in LERD-05."
