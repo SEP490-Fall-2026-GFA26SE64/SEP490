@@ -57,6 +57,7 @@
 
 | Date | A*M, D | In charge | Change Description |
 | --- | --- | --- | --- |
+| 2026-11-06 | M | Documentation preparation with AI assistance | Synchronized ACT-05 detailed requirements and role-change rules with the approved Role-Level target and SDD state views; clarified that Certificate is absent from the catalog ontology and modeled separately in flow ERDs. Documentation only. |
 | 2026-11-06 | M | Documentation preparation with AI assistance | Linked ACT-04/ACT-10 authoring logical/physical supplements and extended state views in Report4; retained the ACT-05 conceptual ERDs after upstream synchronization. |
 | 2026-11-06 | M | Documentation preparation with AI assistance | Updated approved ACT-05 Role-Level baseline flow, related state machines and flow-scoped ERDs; retained report styling and dated physical schema history. Documentation only; no runtime/schema change. |
 | 2026-11-02 | M | Documentation preparation with AI assistance | Added ACT-10 Question Bank activity and clarified current versus target boundaries for ACT-04/07; linked the matching ST-11/ST-16/ST-23 in the SDD without changing requirement IDs or unrelated diagrams. |
@@ -817,7 +818,7 @@ ACT-04 Module/Content authoring is documented separately in Report4 LERD-05 and 
 
 ![CGRAPH-01 - Conceptual JobPosition Ontology](../documents/diagrams/mermaid/cgraph-01.png)
 
-The ontology uses `JobPosition`, `TargetRole`, `Level`, `Competency`, `MicroSkill` and `LearningModule`. `JobPosition` is the current catalog label, not `Occupation`. `Level` and `MicroSkill` correspond conceptually to RoleLevel and Skill in the flow views; this does not define a new physical mapping. Each LearningModule teaches exactly one MicroSkill; a MicroSkill can have zero or multiple alternative Modules. Skill prerequisites are directed from the dependent skill to its prerequisite and must not contain cycles. Learner assessment results, profiles and progress are outside the catalog ontology. This view follows the current single-skill contract, not a claim of live database migration.
+The ontology uses `JobPosition`, `TargetRole`, `Level`, `Competency`, `MicroSkill` and `LearningModule`. `JobPosition` is the current catalog label, not `Occupation`. `Level` and `MicroSkill` correspond conceptually to RoleLevel and Skill in the flow views; this does not define a new physical mapping. Each LearningModule teaches exactly one MicroSkill; a MicroSkill can have zero or multiple alternative Modules. Skill prerequisites are directed from the dependent skill to its prerequisite and must not contain cycles. Learner assessment results, profiles and progress are outside the catalog ontology. This view follows the current single-skill contract, not a claim of live database migration. `Certificate` is not a node in this catalog ontology: certificate definitions and submissions are modeled separately in CERD-03/04 and SDD LERD-03/04. Their use in ACT-05 does not imply a Certificate node or relationship in the current Neo4j catalog.
 
 **Entities Description**
 
@@ -1709,7 +1710,7 @@ Each row describes one entity used by the four ACT-05 flow ERDs above. Existing 
 
 #### 3.9.1 Manage baseline assessment configuration - FR-04.05
 
-**Function Trigger:** L&D Manager opens Baseline Assessments and selects an Job Position.
+**Function Trigger:** L&D Manager opens Baseline Assessments and selects a Role and Level within the organization.
 
 **Function Description:**
 
@@ -1721,6 +1722,7 @@ Each row describes one entity used by the four ACT-05 flow ERDs above. Existing 
 
 - **Data:**
   - Job Position
+  - Selected Role and Level
   - Baseline Name
   - Competency Coverage
   - Question-selection Rules
@@ -1732,7 +1734,8 @@ Each row describes one entity used by the four ACT-05 flow ERDs above. Existing 
 
 - **Functionalities:**
   - View Drafts, active versions and history.
-  - Create or continue the single Job Position Draft.
+  - Create or continue the baseline Draft for the organization-scoped Role-Level configuration.
+  - Validate the selected Role-Level, requirement coverage, question selection and L&D-configured pass rule before activation.
   - Save coverage and valid question/time settings.
   - Preview the saved Draft and resolve readiness issues.
   - Activate, replace or deactivate a version after confirmation.
@@ -1781,15 +1784,16 @@ Each row describes one entity used by the four ACT-05 flow ERDs above. Existing 
 
 **Function Description:**
 
-- **Purpose:** Allow Employee to complete the required Job Position baseline.
+- **Purpose:** Allow Employee to complete the baseline for the selected Role and Level under its matching Active configuration.
 - **Interface:** Baseline Assessment and Result screens
 - **Screen layout:**
 
 **Function Detail:**
 
 - **Data:**
-  - Selected Role
+  - Selected Role and Level
   - Job Position
+  - Pinned Configuration Version and Pass Rule
   - Attempt Reference
   - Question and Options
   - Answers
@@ -1800,11 +1804,14 @@ Each row describes one entity used by the four ACT-05 flow ERDs above. Existing 
   - Skill Mastery
 
 - **Functionalities:**
-  - Check coverage, entitlement and baseline readiness.
+  - Check coverage, entitlement and a matching Active baseline configuration for the selected Role-Level.
   - Start or resume the Employee-owned attempt.
   - Display questions and accept answers using pinned versions.
-  - Submit manually or finalize under the server deadline policy.
-  - Show results and mastery only from valid evidence.
+  - Resume using the pinned questions, configuration and deadline; Employee explicitly submits answers.
+  - Evaluate the submitted baseline as PASSED or FAILED using the L&D-configured pass rule; do not assume a universal threshold.
+  - Distinguish result validity from pass/fail: a valid failed result can identify Needs supplementation; an invalid result cannot initialize a valid profile.
+  - Create the Role-Level profile from valid finalized results, with Met / Needs supplementation outcomes.
+  - Deadline handling must not be represented as automatic submission in this approved target flow; current runtime behavior is documented separately in SDD section 3.4.
   - Explain invalidation and permitted recovery.
   - Prevent duplicate submissions and role changes during an active attempt.
 
@@ -1929,9 +1936,12 @@ Each row describes one entity used by the four ACT-05 flow ERDs above. Existing 
 - **Functionalities:**
   - Display AI role suggestions and comments directly to Employee.
   - View published organization roles and requirements.
-  - Explicitly select or confirm a target role.
+  - Explicitly select or confirm a target Role and Level.
   - Show the applicable baseline or learning next step.
-  - Reject unavailable roles and changes during an active assessment.
+  - Reject unavailable targets and changes during an active assessment.
+  - Permit a different Role or Level only after pathway completion or when all remaining gaps have accepted bypasses because both eligible module and certificate provision are absent.
+  - Keep the current target during generation errors, pending review and ordinary incomplete work.
+  - Return a new target to baseline admission using its matching Active configuration; do not reuse old results as a new assessment.
   - Retain previous selections and applicable Job Position coverage.
 
 <a id="fr-07-07"></a>
@@ -2023,6 +2033,8 @@ Each row describes one entity used by the four ACT-05 flow ERDs above. Existing 
   - Show skill gaps and evidence provenance.
   - Distinguish unknown, pending and valid zero mastery.
   - Restrict results to the authorized Employee.
+  - Let Employee review the valid Role-Level profile and explicitly submit a pathway creation request.
+  - Keep bypassed requirements as Needs supplementation, with decision provenance; bypass is not achievement.
 
 <a id="fr-06-06"></a>
 
@@ -2053,6 +2065,8 @@ Each row describes one entity used by the four ACT-05 flow ERDs above. Existing 
   - Show subsequent pathway updates and their status.
   - Retain completed work and applicable review decisions.
   - Block initial pathway access before Expert confirmation.
+  - Display module and certificate options, accepted bypasses and remaining blocking requirements separately.
+  - Show completion or bypass-only target-change eligibility; close a no-learning-required request without artificial tasks.
 
 <a id="fr-06-07"></a>
 
@@ -2143,6 +2157,9 @@ Each row describes one entity used by the four ACT-05 flow ERDs above. Existing 
   - Confirm the exact initial pathway version.
   - Reject stale reviews and unauthorized access.
   - Preserve decisions for compatible later adaptations.
+  - Review coverage, prerequisite order and eligible module/certificate provision before approving the exact pathway revision.
+  - Record a justified bypass only when both eligible module and certificate provision are absent, with the genuine Expert identity and decision time.
+  - Review newly discovered missing-provision gaps through a scoped bypass decision; automatic recalculation does not fabricate a fresh Expert approval.
 
 ### 3.13 Adaptive Engine
 
@@ -2182,7 +2199,7 @@ Each row describes one entity used by the four ACT-05 flow ERDs above. Existing 
 
 #### 3.13.2 Generate and adapt learning pathways - FR-07.08
 
-**Function Trigger:** System detects target-role gaps or updated assessment evidence.
+**Function Trigger:** Employee submits a pathway creation request after reviewing a valid Role-Level profile, or the System receives accepted learning, assessment or certificate evidence for an existing pathway.
 
 **Function Description:**
 
@@ -2206,7 +2223,9 @@ Each row describes one entity used by the four ACT-05 flow ERDs above. Existing 
   - Generate the initial pathway for Expert confirmation.
   - Recalculate remaining steps after relevant assessment results.
   - Preserve completed work and compatible Expert decisions.
-  - Count multi-skill modules once.
+  - Use modules that each teach exactly one skill, with eligible alternative modules or certificate provision for each gap.
+  - Preserve approval lineage during automatic recalculation and send newly discovered missing-provision gaps for scoped Expert bypass review.
+  - Retain the target on generation errors; release target change only after completion or accepted bypass-only outcomes, with no attempt in progress.
   - Explain blocked pathways without skipping required skills.
   - Prevent duplicate versions for repeated source events.
 
@@ -2396,6 +2415,8 @@ Each row describes one entity used by the four ACT-05 flow ERDs above. Existing 
 ### 5.1 Business Rules
 
 The following rules reflect the current checked-in backend implementation, inspected on 2026-11-06. They describe implemented validation and workflow policies, not proposed Version 2 behavior or confirmation that every UI and production integration is complete. Adaptive-attempt processing includes locally configured slices; initial-pathway access requires configured catalog, readiness and content adapters. Where those dependencies are unavailable, the implementation blocks the affected operation rather than treating it as successful.
+
+**ACT-05 target versus current rules:** The approved target in section 2.2 and FR-04.05 / FR-06.02 / FR-06.04 / FR-06.05 / FR-06.06 / FR-05.07 / FR-07.08 uses organization-scoped Role-Level configuration, explicit baseline submission, L&D pass rules and completion-or-bypass-only target release. The current Job Position blueprint/fixed-form rules BR-43–49 and current selection rules BR-41 / BR-81 below are retained as implementation observations, not substitutes for that target. These documentation changes do not establish runtime delivery.
 
 | ID | Rule Definition |
 | --- | --- |
