@@ -8,6 +8,8 @@ spring:
     enabled: false
 
 registration:
+  mfa-enabled: ${MFA_ENABLED:false}
+  email-verification-enabled: ${EMAIL_VERIFICATION_ENABLED:false}
   encryption-key: ${REGISTRATION_ENCRYPTION_KEY:ZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWU=}
   hmac-key: ${REGISTRATION_HMAC_KEY:aGhoaGhoaGhoaGhoaGhoaGhoaGhoaGhoaGhoaGhoaGg=}
   cookie-secure: ${REGISTRATION_COOKIE_SECURE:false}

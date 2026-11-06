@@ -13,17 +13,60 @@ import { Dialog, DialogBody, DialogHeader, DialogTitle, DialogDescription, Dialo
 import type { CurrentRole } from './currentRoleFlowApi'
 import { RoleLevelPicker } from './RoleLevelPicker'
 
-export function InitialRoleGapDialog({ role, initialLevelId, onClose, onBaseline }: { role: CurrentRole; initialLevelId?: string | null; onClose: () => void; onBaseline: (levelId: string) => void }) {
+export function InitialRoleGapDialog({
+  role,
+  initialLevelId,
+  minAllowedRank,
+  onClose,
+  onBaseline,
+}: {
+  role: CurrentRole
+  initialLevelId?: string | null
+  minAllowedRank?: number
+  onClose: () => void
+  onBaseline: (levelId: string) => void
+}) {
   const session = useInitialPathwaySession(), { t } = useTranslation()
   if (!session.scope) return <Dialog open size="wide" onOpenChange={open => { if (!open) onClose() }} ariaLabel={t('initialPathway.gapTitle')}>
     <DialogHeader><DialogTitle>{t('initialPathway.gapTitle')}</DialogTitle></DialogHeader>
     {session.isError ? <InitialPathwayFeedback error={session.error} onRetry={() => void session.refetch()} /> : <LoadingCard label={t('initialPathway.loading')} />}
   </Dialog>
-  return <GapDialog key={session.scope + ':' + role.id + ':' + (initialLevelId ?? '')} role={role} initialLevelId={initialLevelId} scope={session.scope} authorized={session.data?.role === 'EMPLOYEE'} onClose={onClose} onBaseline={onBaseline} />
+  return <GapDialog key={session.scope + ':' + role.id + ':' + (initialLevelId ?? '')} role={role} initialLevelId={initialLevelId} minAllowedRank={minAllowedRank} scope={session.scope} authorized={session.data?.role === 'EMPLOYEE'} onClose={onClose} onBaseline={onBaseline} />
 }
-function GapDialog({ role, initialLevelId, scope, authorized, onClose, onBaseline }: { role: CurrentRole; initialLevelId?: string | null; scope: string; authorized: boolean; onClose: () => void; onBaseline: (levelId: string) => void }) {
+function GapDialog({
+  role,
+  initialLevelId,
+  minAllowedRank,
+  scope,
+  authorized,
+  onClose,
+  onBaseline,
+}: {
+  role: CurrentRole
+  initialLevelId?: string | null
+  minAllowedRank?: number
+  scope: string
+  authorized: boolean
+  onClose: () => void
+  onBaseline: (levelId: string) => void
+}) {
   const { t } = useTranslation(), tr = (key: string) => t('initialPathway.' + key), navigate = useNavigate(), client = useQueryClient()
-  const [levelId, setLevelId] = useState(() => role.levels.some(level => level.id === initialLevelId) ? initialLevelId! : '')
+  const [levelId, setLevelId] = useState(() => {
+    if (initialLevelId && role.levels.some(level => level.id === initialLevelId)) {
+      const match = role.levels.find(level => level.id === initialLevelId)
+      // Upskilling strictly requires a level higher than current assigned rank (match.rank < minAllowedRank)
+      if (!match || typeof minAllowedRank !== 'number' || match.rank < minAllowedRank) {
+        return initialLevelId
+      }
+    }
+    if (typeof minAllowedRank === 'number') {
+      const permissible = role.levels
+        .filter(l => l.rank < minAllowedRank)
+        .sort((a, b) => b.rank - a.rank)
+      if (permissible.length > 0) return permissible[0].id
+    }
+    return role.levels[role.levels.length - 1]?.id ?? ''
+  })
   const preview = useQuery({ queryKey: ['initialPathway', scope, 'gap', role.id, levelId], queryFn: ({ signal }) => readRoleGaps(role.id, levelId, signal), enabled: authorized && Boolean(levelId), retry: false, gcTime: 0 })
   const [pending, setPending] = useState<PendingPathwayCommand | null>(null), [busy, setBusy] = useState(false), [error, setError] = useState<PathwayError | null>(null)
   const lock = useRef(false), committed = useRef(false)
@@ -47,7 +90,7 @@ function GapDialog({ role, initialLevelId, scope, authorized, onClose, onBaselin
     <DialogHeader><DialogTitle className="text-section">{tr('gapTitle')}</DialogTitle><DialogDescription className="text-body-sm">{tr('gapDescription')}</DialogDescription></DialogHeader>
     <DialogBody className="grid items-start gap-6 lg:grid-cols-[16rem_minmax(0,1fr)]">
       <div className="space-y-4"><Text className="break-words font-semibold">{role.name}</Text>
-        <RoleLevelPicker levels={role.levels} value={levelId} disabled={blocked || !authorized} onChange={value => { setLevelId(value); setError(null) }} />
+        <RoleLevelPicker levels={role.levels} value={levelId} minAllowedRank={minAllowedRank} disabled={blocked || !authorized} onChange={value => { setLevelId(value); setError(null) }} />
       </div>
       <div className="min-w-0 space-y-4">
       {authorized && levelId && preview.isPending && <LoadingCard label={tr('loading')} />}

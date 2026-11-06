@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { Building2, Briefcase, Trash2, Plus, Search, Users, Mail, UserCheck, UserX, Eye, Pencil, ShieldCheck, User, Target } from 'lucide-react'
 import { Combobox, type ComboboxOption } from '../../../shared/components/ui/Combobox'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
@@ -11,12 +11,19 @@ import { StatCard } from '../../../shared/components/ui/StatCard'
 import { Pagination } from '../../../shared/components/ui/Pagination'
 import { Dialog, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '../../../shared/components/ui/Dialog'
 import { useTranslation } from '../../../shared/i18n/LanguageContext'
-import { getIdentity, getMembers, getPendingActivations, getReferences, getSummary, request, updateMemberProfile,
+import { decodeJobPositionWithTargetRole, encodeJobPositionWithTargetRole, getIdentity, getMembers, getPendingActivations, getReferences, getSummary, request, updateMemberProfile,
   type Identity, type Member, type PendingActivation, type Reference } from '../../subscription/subscriptionApi'
 import { Failure, Loading, useCopy } from '../../subscription/SubscriptionFeedback'
 import { loadDepartments } from '../../../shared/stores/departmentStore'
 import { fetchDepartments, type DepartmentDto } from '../../../shared/api/departmentApi'
-import { getAvailableJobPositions } from '../../manager/data/ldManagerMockData'
+import { fetchJobPositions, type JobPositionDto } from '../../../shared/api/jobPositionApi'
+import {
+  getAvailableJobPositions,
+  resolveJobPositionForRole,
+  compareRoleVersions,
+  type JobPosition,
+  type TargetRoleModel,
+} from '../../manager/data/ldManagerMockData'
 import { getActiveCompany } from '../../../shared/stores/companyStore'
 
 const ROLES = ['EMPLOYEE', 'DOMAIN_EXPERT', 'LD_MANAGER', 'ORGANIZATION_ADMINISTRATOR'] as const
@@ -229,6 +236,61 @@ export function resolveJobPosition(
   return null
 }
 
+export interface StoredEmployeeRoleAssignment {
+  roleId: string
+  roleCode: string
+  roleTitle: string
+  level: string
+  departmentId?: string
+  departmentName?: string
+  jobPositionCode?: string
+  jobPositionName?: string
+}
+
+export function resolveEmployeeTargetRoleAssignment(
+  member?: Pick<Member, 'email' | 'targetRoleId' | 'targetRoleCode' | 'targetRoleName' | 'targetRoleLevel' | 'departmentId' | 'departmentName' | 'jobPositionName'> | null,
+  fallbackEmail?: string | null,
+): StoredEmployeeRoleAssignment | null {
+  const decoded = decodeJobPositionWithTargetRole(member?.jobPositionName)
+  const effRoleId = member?.targetRoleId || decoded.targetRoleId
+  if (effRoleId) {
+    const rawLvl = member?.targetRoleLevel || decoded.targetRoleLevel || 'Junior'
+    const cleanLvl = rawLvl.replace(/^(?:rank|level)\s*\d+\s*:\s*/i, '').trim()
+    return {
+      roleId: effRoleId,
+      roleCode: member?.targetRoleCode || decoded.targetRoleCode || effRoleId,
+      roleTitle: member?.targetRoleName || decoded.targetRoleName || member?.targetRoleCode || effRoleId,
+      level: cleanLvl || 'Junior',
+      departmentId: member?.departmentId || undefined,
+      departmentName: member?.departmentName || undefined,
+      jobPositionName: decoded.cleanJobPositionName || member?.jobPositionName || undefined,
+    }
+  }
+  const email = (member?.email || fallbackEmail || '').toLowerCase().trim()
+  if (!email || typeof localStorage === 'undefined') return null
+  try {
+    const raw = localStorage.getItem(`alg_employee_assignment_${email}`)
+    if (!raw) return null
+    const parsed = JSON.parse(raw) as Partial<StoredEmployeeRoleAssignment>
+    const roleId = (parsed.roleId || parsed.roleCode || '').trim()
+    if (!roleId) return null
+    const rawLvl = (parsed.level || 'Junior').trim()
+    const cleanLvl = rawLvl.replace(/^(?:rank|level)\s*\d+\s*:\s*/i, '').trim()
+    return {
+      roleId,
+      roleCode: (parsed.roleCode || roleId).trim(),
+      roleTitle: (parsed.roleTitle || parsed.roleCode || roleId).trim(),
+      level: cleanLvl || 'Junior',
+      departmentId: parsed.departmentId,
+      departmentName: parsed.departmentName,
+      jobPositionCode: parsed.jobPositionCode,
+      jobPositionName: parsed.jobPositionName,
+    }
+  } catch {
+    return null
+  }
+}
+
 interface DirectoryRow {
   id: string
   fullName: string | null
@@ -240,6 +302,10 @@ interface DirectoryRow {
   departmentLeadership: string | null
   jobPositionName: string | null
   jobPositionCode: string | null
+  targetRoleId: string | null
+  targetRoleCode: string | null
+  targetRoleName: string | null
+  targetRoleLevel: string | null
   member: Member | null
   invitation: PendingActivation | null
 }
@@ -269,6 +335,10 @@ function UserDirectory({ identity, organization, principal }: { identity: Identi
     queryKey: ['live-departments', organization],
     queryFn: () => fetchDepartments(organization).catch(() => []),
   })
+  const liveJobPositionsQuery = useQuery({
+    queryKey: ['live-job-positions', organization],
+    queryFn: () => fetchJobPositions(organization).catch(() => []),
+  })
 
   const [search, setSearch] = useState('')
   const [role, setRole] = useState('')
@@ -289,6 +359,7 @@ function UserDirectory({ identity, organization, principal }: { identity: Identi
       cache.invalidateQueries({ queryKey: ['subscription-summary', principal, organization] }),
       cache.invalidateQueries({ queryKey: ['workspace-identity'] }),
       cache.invalidateQueries({ queryKey: ['live-departments', organization] }),
+      cache.invalidateQueries({ queryKey: ['live-job-positions', organization] }),
     ])
   }
 
@@ -313,7 +384,42 @@ function UserDirectory({ identity, organization, principal }: { identity: Identi
   })
 
   const localDepts = loadDepartments()
-  const localJobPositions = getAvailableJobPositions(organization)
+  const localAllJobPositions = getAvailableJobPositions(organization, true)
+
+  const allJobPositions = useMemo(() => {
+    const localByCode = new Map(localAllJobPositions.map((jp) => [jp.code, jp]))
+    const map = new Map<string, JobPosition>()
+    for (const jp of localAllJobPositions) {
+      if (jp.status !== 'inactive') {
+        map.set(jp.code, jp)
+      }
+    }
+    const live = (liveJobPositionsQuery.data || []) as JobPositionDto[]
+    for (const jp of live) {
+      const code = jp.code || jp.id || ''
+      if (code) {
+        const localMatch = localByCode.get(code)
+        const existing = map.get(code)
+        const statusStr = String(
+          localMatch?.status || (jp as any).status || existing?.status || 'active',
+        ).toLowerCase()
+        if (statusStr === 'inactive') {
+          map.delete(code)
+          continue
+        }
+        map.set(code, {
+          code,
+          name: jp.name || localMatch?.name || existing?.name || code,
+          description: (jp as any).description || localMatch?.description || existing?.description || 'Industry job position competency domain',
+          jobZone: jp.jobZone || localMatch?.jobZone || existing?.jobZone || 4,
+          profiles: localMatch?.profiles || existing?.profiles || ['DEV'],
+          assignedExpertIds: localMatch?.assignedExpertIds || existing?.assignedExpertIds || [],
+          status: 'active',
+        })
+      }
+    }
+    return Array.from(map.values()).filter((jp) => jp.status !== 'inactive')
+  }, [localAllJobPositions, liveJobPositionsQuery.data])
 
   const allDepartments: DepartmentItem[] = useMemo(() => {
     const list: DepartmentItem[] = []
@@ -324,6 +430,8 @@ function UserDirectory({ identity, organization, principal }: { identity: Identi
       if (!seen.has(ld.id) && !seen.has(ld.code)) {
         seen.add(ld.id)
         seen.add(ld.code)
+        const localMatch = localDepts.find((d) => d.id === ld.id || d.code === ld.code)
+        const mergedLinked = Array.from(new Set([...(ld.jobPositionCodes || []), ...(localMatch?.linkedJobPositions || [])]))
         list.push({
           id: ld.id,
           code: ld.code,
@@ -331,7 +439,7 @@ function UserDirectory({ identity, organization, principal }: { identity: Identi
           description: ld.description || 'Enterprise organizational business unit',
           headOfDepartment: ld.headOfDepartment,
           headEmail: ld.headEmail,
-          linkedJobPositions: ld.jobPositionCodes || [],
+          linkedJobPositions: mergedLinked,
           uuid: toDeterministicUuid(ld.id),
           uuidCode: toDeterministicUuid(ld.code),
         })
@@ -396,7 +504,8 @@ function UserDirectory({ identity, organization, principal }: { identity: Identi
 
     for (const member of (members.data ?? [])) {
       const resolvedDept = resolveDepartment(member.departmentId, member.departmentName, allDepartments)
-      const resolvedJob = resolveJobPosition(member.jobPositionReferenceId, member.jobPositionName, localJobPositions)
+      const resolvedJob = resolveJobPosition(member.jobPositionReferenceId, member.jobPositionName, allJobPositions)
+      const resolvedAssignment = resolveEmployeeTargetRoleAssignment(member, member.email)
       list.push({
         id: member.membershipId,
         fullName: member.fullName,
@@ -408,6 +517,10 @@ function UserDirectory({ identity, organization, principal }: { identity: Identi
         departmentLeadership: resolvedDept?.headOfDepartment || null,
         jobPositionName: resolvedJob?.jobPositionName || (member.jobPositionName?.startsWith('Job Position ') ? '15-1252.00 - Software Developers' : member.jobPositionName),
         jobPositionCode: resolvedJob?.code || null,
+        targetRoleId: resolvedAssignment?.roleId || null,
+        targetRoleCode: resolvedAssignment?.roleCode || null,
+        targetRoleName: resolvedAssignment?.roleTitle || null,
+        targetRoleLevel: resolvedAssignment?.level || null,
         member,
         invitation: null,
       })
@@ -415,7 +528,20 @@ function UserDirectory({ identity, organization, principal }: { identity: Identi
 
     for (const invitation of (invitations.data ?? [])) {
       const resolvedDept = resolveDepartment(invitation.departmentId, invitation.departmentName, allDepartments)
-      const resolvedJob = resolveJobPosition(invitation.jobPositionReferenceId, invitation.jobPositionName, localJobPositions)
+      const resolvedJob = resolveJobPosition(invitation.jobPositionReferenceId, invitation.jobPositionName, allJobPositions)
+      const resolvedAssignment = resolveEmployeeTargetRoleAssignment(
+        {
+          email: invitation.email,
+          targetRoleId: invitation.targetRoleId,
+          targetRoleCode: invitation.targetRoleCode,
+          targetRoleName: invitation.targetRoleName,
+          targetRoleLevel: invitation.targetRoleLevel,
+          departmentId: invitation.departmentId,
+          departmentName: invitation.departmentName,
+          jobPositionName: invitation.jobPositionName,
+        },
+        invitation.email,
+      )
       list.push({
         id: invitation.activationId,
         fullName: invitation.fullName,
@@ -427,13 +553,17 @@ function UserDirectory({ identity, organization, principal }: { identity: Identi
         departmentLeadership: resolvedDept?.headOfDepartment || null,
         jobPositionName: resolvedJob?.jobPositionName || invitation.jobPositionName,
         jobPositionCode: resolvedJob?.code || null,
+        targetRoleId: resolvedAssignment?.roleId || null,
+        targetRoleCode: resolvedAssignment?.roleCode || null,
+        targetRoleName: resolvedAssignment?.roleTitle || null,
+        targetRoleLevel: resolvedAssignment?.level || null,
         member: null,
         invitation,
       })
     }
 
     return list
-  }, [members.data, invitations.data, allDepartments, localJobPositions])
+  }, [members.data, invitations.data, allDepartments, allJobPositions])
 
   const needle = search.trim().toLocaleLowerCase()
   const filtered = rows.filter(row => (!needle || `${row.fullName ?? ''} ${row.email}`.toLocaleLowerCase().includes(needle)) &&
@@ -587,6 +717,13 @@ function UserDirectory({ identity, organization, principal }: { identity: Identi
                                   {row.jobPositionName}
                                 </p>
                               )}
+                              {row.roles.includes('EMPLOYEE') && row.targetRoleName && (
+                                <div className="flex items-center gap-1.5 pt-0.5 flex-wrap">
+                                  <Badge variant="outline" className="border-primary/30 bg-primary/5 text-primary text-[11px] px-1.5 py-0 font-medium">
+                                    {row.targetRoleName}{row.targetRoleLevel ? ` · ${row.targetRoleLevel}` : ''}
+                                  </Badge>
+                                </div>
+                              )}
                             </div>
                           ) : null}
                         </td>
@@ -682,7 +819,7 @@ function UserDirectory({ identity, organization, principal }: { identity: Identi
           key={form.member?.membershipId ?? 'new'}
           member={form.member}
           allDepartments={allDepartments}
-          localJobPositions={localJobPositions}
+          jobPositions={allJobPositions}
           references={references.data ?? []}
           referenceError={references.error}
           referenceLoading={references.isPending}
@@ -772,19 +909,11 @@ function UserDirectory({ identity, organization, principal }: { identity: Identi
                   </Badge>
                 )}
               </div>
-              <div className="grid gap-3 sm:grid-cols-2">
-                <div>
-                  <span className="text-caption text-muted-foreground block">{c('Department Name', 'Tên phòng ban')}</span>
-                  <span className="mt-1 font-semibold text-foreground text-xs block">
-                    {detail.departmentName ?? ''}
-                  </span>
-                </div>
-                <div>
-                  <span className="text-caption text-muted-foreground block">{c('Department Leadership', 'Trưởng phòng')}</span>
-                  <span className="mt-1 text-xs text-foreground block">
-                    {detail.departmentLeadership || ''}
-                  </span>
-                </div>
+              <div>
+                <span className="text-caption text-muted-foreground block">{c('Department Name & Scope', 'Tên phòng ban & Phạm vi')}</span>
+                <span className="mt-1 font-semibold text-foreground text-xs block">
+                  {detail.departmentName ?? ''}
+                </span>
               </div>
             </div>
 
@@ -808,6 +937,43 @@ function UserDirectory({ identity, organization, principal }: { identity: Identi
                 </span>
               </div>
             </div>
+
+            {/* Card 4: Assigned Target Role & Level (for Employees) */}
+            {detail.roles.some(r => r.toUpperCase() === 'EMPLOYEE') && (
+              <div className="rounded-xl border border-border bg-card p-4 space-y-3 shadow-2xs">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 font-semibold text-foreground text-xs uppercase tracking-wider text-muted-foreground">
+                    <Target className="h-4 w-4 text-primary" />
+                    {c('Assigned Target Role & Level (Career Placement)', 'Vai trò mục tiêu & Cấp độ (Định hướng nghề nghiệp)')}
+                  </div>
+                  {detail.targetRoleCode && (
+                    <Badge variant="secondary" className="font-mono text-xs">
+                      {detail.targetRoleCode}
+                    </Badge>
+                  )}
+                </div>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div>
+                    <span className="text-caption text-muted-foreground block">{c('Target Role Title', 'Chức danh mục tiêu')}</span>
+                    <span className="mt-1 font-semibold text-foreground text-xs block">
+                      {detail.targetRoleName || c('Not assigned yet', 'Chưa phân công')}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-caption text-muted-foreground block">{c('Assigned Level', 'Cấp độ khởi điểm')}</span>
+                    <div className="mt-1">
+                      {detail.targetRoleLevel ? (
+                        <Badge variant="outline" className="border-primary/40 text-primary font-semibold text-xs">
+                          {detail.targetRoleLevel}
+                        </Badge>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">{c('Not assigned', 'Chưa gán')}</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Card 4: Invitation & Expiration Details (if applicable) */}
             {detail.invitation && (
@@ -888,7 +1054,7 @@ function UserDirectory({ identity, organization, principal }: { identity: Identi
 function UserForm({
   member,
   allDepartments,
-  localJobPositions,
+  jobPositions,
   references,
   referenceError,
   referenceLoading,
@@ -899,7 +1065,7 @@ function UserForm({
 }: {
   member: Member | null
   allDepartments: DepartmentItem[]
-  localJobPositions: { code: string; name: string; description?: string }[]
+  jobPositions: { code: string; name: string; description?: string }[]
   references: Reference[]
   referenceError: unknown
   referenceLoading: boolean
@@ -921,8 +1087,8 @@ function UserForm({
 
   const initialJobObj = useMemo(() => {
     if (!member?.jobPositionReferenceId) return null
-    return resolveJobPosition(member.jobPositionReferenceId, member.jobPositionName, localJobPositions)
-  }, [member?.jobPositionReferenceId, member?.jobPositionName, localJobPositions])
+    return resolveJobPosition(member.jobPositionReferenceId, member.jobPositionName, jobPositions)
+  }, [member?.jobPositionReferenceId, member?.jobPositionName, jobPositions])
 
   const [department, setDepartment] = useState(initialDeptObj?.id || member?.departmentId || '')
   const [jobPosition, setJobPosition] = useState(initialJobObj?.code || member?.jobPositionReferenceId || '')
@@ -930,9 +1096,222 @@ function UserForm({
   const [tempJobPositionId, setTempJobPositionId] = useState('')
 
   const activeComp = getActiveCompany()
-  const orgTargetRoles = activeComp?.targetRoles || []
-  const [targetRoleId, setTargetRoleId] = useState('')
-  const [targetRoleLevel, setTargetRoleLevel] = useState('')
+  const liveTargetRolesQuery = useQuery({
+    queryKey: ['admin-org-target-roles', organization],
+    queryFn: async () => {
+      if (!organization) return []
+      const orgCandidates = Array.from(
+        new Set([
+          organization,
+          'e0000000-0000-0000-0000-000000000001',
+          '00000000-0000-0000-0000-000000000001',
+        ]),
+      )
+      for (const candidateOrg of orgCandidates) {
+        try {
+          const res = await fetch(`/api/v1/organizations/${candidateOrg}/target-roles`)
+          if (res.ok) {
+            const data = await res.json()
+            if (Array.isArray(data) && data.length > 0) {
+              return data as Record<string, unknown>[]
+            }
+          }
+        } catch {
+          // try next candidate
+        }
+      }
+      // Fallback to public platform catalog template when organization endpoint is restricted by role
+      try {
+        const catRes = await fetch('/api/v1/platform-catalog')
+        if (catRes.ok) {
+          const graph = (await catRes.json()) as {
+            version?: string
+            nodes?: Array<{ id?: string; label?: string; name?: string; code?: string }>
+            edges?: Array<{ from?: string; to?: string; type?: string }>
+          }
+          const roleToJobOcc = new Map<string, string>()
+          for (const edge of graph.edges || []) {
+            if (edge.type === 'HAS_ROLE' && edge.from && edge.to) {
+              roleToJobOcc.set(edge.to, edge.from.replace(/^OCC-/, ''))
+            }
+          }
+          const platformRoles: Record<string, unknown>[] = []
+          for (const node of graph.nodes || []) {
+            if (node.label === 'TargetRole' && node.id) {
+              platformRoles.push({
+                id: node.id,
+                code: node.code || node.id,
+                name: node.name || node.code || node.id,
+                jobPositionCode: roleToJobOcc.get(node.id),
+                status: 'ACTIVE',
+                version: graph.version || '0.12.0',
+              })
+            }
+          }
+          if (platformRoles.length > 0) {
+            return platformRoles
+          }
+        }
+      } catch {
+        // ignore platform catalog fallback error
+      }
+      return []
+    },
+    enabled: Boolean(organization && enabled),
+    staleTime: 15000,
+  })
+
+  const roleMetaByCode = useMemo(() => {
+    const map: Record<string, { jobPositionCode?: string; department?: string; levelNames?: string[] }> = {}
+    if (typeof localStorage === 'undefined') return map
+    try {
+      const keys = [
+        `adaptlearn_target_role_meta_${organization}`,
+        'adaptlearn_target_role_meta_e0000000-0000-0000-0000-000000000001',
+      ]
+      for (const k of keys) {
+        const raw = localStorage.getItem(k)
+        if (!raw) continue
+        const parsed = JSON.parse(raw) as Record<string, { code?: string; jobPositionCode?: string; department?: string; levelNames?: string[] }>
+        for (const [key, val] of Object.entries(parsed || {})) {
+          if (val) {
+            map[key.toUpperCase()] = val
+            if (val.code) map[val.code.toUpperCase()] = val
+          }
+        }
+      }
+    } catch {
+      // ignore storage errors
+    }
+    return map
+  }, [organization])
+
+  const orgTargetRoles = useMemo<TargetRoleModel[]>(() => {
+    const localRoles = activeComp?.targetRoles || []
+    const liveRaw = liveTargetRolesQuery.data || []
+    const liveMapped: TargetRoleModel[] = liveRaw.map((r) => {
+      const code = String(r.code || '').trim()
+      const codeUpper = code.toUpperCase()
+      const meta = roleMetaByCode[codeUpper] || roleMetaByCode[String(r.id || '').toUpperCase()]
+      const localMatch = localRoles.find(
+        (lr) => lr.id === String(r.id || '') || lr.code?.trim().toUpperCase() === codeUpper,
+      )
+      const rawStatus = String(r.status || '').toLowerCase()
+      const mappedStatus: TargetRoleModel['status'] =
+        rawStatus === 'active' || rawStatus === 'published'
+          ? 'published'
+          : rawStatus === 'unpublished'
+            ? 'unpublished'
+            : rawStatus === 'submitted'
+              ? 'submitted'
+              : rawStatus === 'sent'
+                ? 'sent'
+                : rawStatus === 'rejected'
+                  ? 'rejected'
+                  : 'draft'
+      return {
+        id: String(r.id || code),
+        stableId: code,
+        code,
+        title: String(r.name || r.title || localMatch?.title || code),
+        department: meta?.department || localMatch?.department || '',
+        jobPositionCode:
+          (r.jobPositionCode ? String(r.jobPositionCode) : undefined) ||
+          meta?.jobPositionCode ||
+          localMatch?.jobPositionCode,
+        familyCode: r.familyCode ? String(r.familyCode) : localMatch?.familyCode,
+        description: String(r.description || localMatch?.description || ''),
+        version: String(r.version || localMatch?.version || '1.0'),
+        status: mappedStatus,
+        competencyIds: Array.isArray(r.competencyIds) ? (r.competencyIds as string[]) : localMatch?.competencyIds || [],
+        skillTargets: Array.isArray(r.skillTargets)
+          ? (r.skillTargets as TargetRoleModel['skillTargets'])
+          : localMatch?.skillTargets || [],
+        levels:
+          Array.isArray(r.levels) && (r.levels as string[]).length > 0
+            ? (r.levels as string[])
+            : meta?.levelNames || localMatch?.levels || ['Senior', 'Middle', 'Junior'],
+        activeEnrollments: 0,
+        updatedAt: String(r.updatedAt || localMatch?.updatedAt || '2026-01-01T00:00:00Z'),
+      }
+    })
+
+    // Combine and strictly deduplicate by normalized role code so a role never appears twice
+    const combined = [...liveMapped, ...localRoles]
+    const dedupedByCode = new Map<string, TargetRoleModel>()
+
+    for (const role of combined) {
+      const codeKey = (role.code || '').trim().toUpperCase()
+      if (!codeKey) continue
+      const meta = roleMetaByCode[codeKey] || roleMetaByCode[(role.id || '').toUpperCase()]
+      const enriched: TargetRoleModel = {
+        ...role,
+        jobPositionCode: role.jobPositionCode || meta?.jobPositionCode,
+        department: role.department || meta?.department || '',
+        levels:
+          role.levels && role.levels.length > 0
+            ? role.levels
+            : meta?.levelNames || ['Senior', 'Middle', 'Junior'],
+      }
+
+      const existing = dedupedByCode.get(codeKey)
+      if (!existing) {
+        dedupedByCode.set(codeKey, enriched)
+        continue
+      }
+
+      const existingIsPublished = existing.status === 'published'
+      const candidateIsPublished = enriched.status === 'published'
+      const existingIsTemp = String(existing.id || '').startsWith('role-')
+      const candidateIsTemp = String(enriched.id || '').startsWith('role-')
+
+      if (
+        (candidateIsPublished && !existingIsPublished) ||
+        (existingIsTemp && !candidateIsTemp) ||
+        (candidateIsPublished === existingIsPublished &&
+          !candidateIsTemp &&
+          compareRoleVersions(enriched.version, existing.version) > 0)
+      ) {
+        dedupedByCode.set(codeKey, {
+          ...existing,
+          ...enriched,
+          jobPositionCode: enriched.jobPositionCode || existing.jobPositionCode,
+          department: enriched.department || existing.department,
+        })
+      }
+    }
+
+    return Array.from(dedupedByCode.values())
+  }, [activeComp?.targetRoles, liveTargetRolesQuery.data, roleMetaByCode])
+
+  const initialTargetRoleAssignment = useMemo(
+    () => resolveEmployeeTargetRoleAssignment(member, member?.email),
+    [member],
+  )
+  const [targetRoleId, setTargetRoleId] = useState(initialTargetRoleAssignment?.roleId || '')
+  const [targetRoleLevel, setTargetRoleLevel] = useState(initialTargetRoleAssignment?.level || '')
+
+  useEffect(() => {
+    if (!initialTargetRoleAssignment || orgTargetRoles.length === 0) return
+    const matched = orgTargetRoles.find(
+      (r) =>
+        r.id === initialTargetRoleAssignment.roleId ||
+        r.code.trim().toUpperCase() === initialTargetRoleAssignment.roleCode.trim().toUpperCase() ||
+        r.code.trim().toUpperCase() === initialTargetRoleAssignment.roleId.trim().toUpperCase() ||
+        r.title.trim().toLowerCase() === initialTargetRoleAssignment.roleTitle.trim().toLowerCase(),
+    )
+    if (matched) {
+      setTargetRoleId((prev) => {
+        if (!prev || prev === initialTargetRoleAssignment.roleId || prev === initialTargetRoleAssignment.roleCode) {
+          return matched.id
+        }
+        return prev
+      })
+      if (initialTargetRoleAssignment.level) {
+        setTargetRoleLevel((prev) => prev || initialTargetRoleAssignment.level)
+      }
+    }
+  }, [initialTargetRoleAssignment, orgTargetRoles])
 
   const employee = roles.includes('EMPLOYEE')
   const isLdManager = roles.includes('LD_MANAGER')
@@ -963,13 +1342,56 @@ function UserForm({
   }, [department, member, allDepartments])
 
   const availableTargetRolesForEmployee = useMemo(() => {
-    if (!department) return orgTargetRoles
-    const deptName = (selectedDeptObj?.name || '').toLowerCase()
-    const filtered = orgTargetRoles.filter(
-      (r) => r.department && r.department.toLowerCase() === deptName,
+    const normalizeOccCode = (c?: string) => (c || '').trim().toUpperCase().replace(/\.00$/, '')
+    const getRoleOccCode = (r: TargetRoleModel): string => {
+      if (r.jobPositionCode && r.jobPositionCode.trim()) {
+        return r.jobPositionCode.trim()
+      }
+      return resolveJobPositionForRole(r, organization).code
+    }
+    const publishedOrAssignedRoles = orgTargetRoles.filter(
+      (r) =>
+        r.status === 'published' ||
+        r.id === targetRoleId ||
+        r.code.trim().toUpperCase() === (initialTargetRoleAssignment?.roleCode || '').trim().toUpperCase(),
     )
-    return filtered.length > 0 ? filtered : orgTargetRoles
-  }, [orgTargetRoles, department, selectedDeptObj])
+
+    // 1. If a specific Job Position is selected for this user, filter Target Roles to that Job Position
+    if (jobPosition) {
+      const targetOccNorm = normalizeOccCode(jobPosition)
+      const byJobPos = publishedOrAssignedRoles.filter(
+        (r) => normalizeOccCode(getRoleOccCode(r)) === targetOccNorm,
+      )
+      if (byJobPos.length > 0) {
+        return byJobPos
+      }
+    }
+
+    // 2. Otherwise, if a Department is selected, filter by the Department's linked Job Positions
+    if (department && selectedDeptObj) {
+      const deptLinkedNorm = new Set(
+        (selectedDeptObj.linkedJobPositions || []).map((c) => normalizeOccCode(c)),
+      )
+      if (deptLinkedNorm.size > 0) {
+        const byDeptOcc = publishedOrAssignedRoles.filter((r) =>
+          deptLinkedNorm.has(normalizeOccCode(getRoleOccCode(r))),
+        )
+        if (byDeptOcc.length > 0) {
+          return byDeptOcc
+        }
+      }
+
+      const deptName = (selectedDeptObj.name || '').toLowerCase()
+      const byDeptName = publishedOrAssignedRoles.filter(
+        (r) => r.department && r.department.toLowerCase() === deptName,
+      )
+      if (byDeptName.length > 0) {
+        return byDeptName
+      }
+    }
+
+    return publishedOrAssignedRoles
+  }, [orgTargetRoles, jobPosition, department, selectedDeptObj, organization, targetRoleId, initialTargetRoleAssignment?.roleCode])
 
   const employeeTargetRoleOptions: ComboboxOption[] = useMemo(() => {
     return availableTargetRolesForEmployee.map((r) => ({
@@ -979,8 +1401,34 @@ function UserForm({
   }, [availableTargetRolesForEmployee])
 
   const selectedEmployeeTargetRole = useMemo(() => {
-    return orgTargetRoles.find((r) => r.id === targetRoleId)
-  }, [orgTargetRoles, targetRoleId])
+    if (!targetRoleId) return undefined
+    return (
+      orgTargetRoles.find(
+        (r) =>
+          r.id === targetRoleId ||
+          r.code.trim().toUpperCase() === targetRoleId.trim().toUpperCase(),
+      ) ||
+      (initialTargetRoleAssignment &&
+      (initialTargetRoleAssignment.roleId === targetRoleId ||
+        initialTargetRoleAssignment.roleCode === targetRoleId)
+        ? ({
+            id: initialTargetRoleAssignment.roleId,
+            stableId: initialTargetRoleAssignment.roleCode,
+            code: initialTargetRoleAssignment.roleCode,
+            title: initialTargetRoleAssignment.roleTitle,
+            department: selectedDeptObj?.name || '',
+            description: '',
+            version: '1.0',
+            status: 'published',
+            competencyIds: [],
+            skillTargets: [],
+            levels: ['Senior', 'Middle', 'Junior'],
+            activeEnrollments: 0,
+            updatedAt: '',
+          } as TargetRoleModel)
+        : undefined)
+    )
+  }, [orgTargetRoles, targetRoleId, initialTargetRoleAssignment, selectedDeptObj?.name])
 
   const employeeRoleLevels = useMemo(() => {
     if (selectedEmployeeTargetRole?.levels && selectedEmployeeTargetRole.levels.length > 0) {
@@ -1000,7 +1448,7 @@ function UserForm({
     if (!department) return []
     const linked = new Set(selectedDeptObj?.linkedJobPositions || [])
 
-    const matching = localJobPositions
+    const matching = jobPositions
       .filter(jp => linked.has(jp.code) || linked.has(jp.name) || Array.from(linked).some(lc => lc.includes(jp.code)))
       .map(jp => ({
         code: jp.code,
@@ -1017,7 +1465,7 @@ function UserForm({
         const cleanName = ref.jobPositionName?.startsWith('Job Position ')
           ? 'Software Developers'
           : ref.jobPositionName
-        const matchedCatalog = localJobPositions.find(
+        const matchedCatalog = jobPositions.find(
           jp => jp.name.toLowerCase() === cleanName.toLowerCase() ||
                 cleanName.toLowerCase().includes(jp.name.toLowerCase()) ||
                 cleanName.includes(jp.code)
@@ -1039,7 +1487,7 @@ function UserForm({
     for (const m of matching) if (!map.has(m.code)) map.set(m.code, m)
 
     if (map.size === 0) {
-      for (const jp of localJobPositions) {
+      for (const jp of jobPositions) {
         map.set(jp.code, {
           code: jp.code,
           name: jp.name,
@@ -1051,7 +1499,7 @@ function UserForm({
       }
     }
     return Array.from(map.values())
-  }, [department, selectedDeptObj, localJobPositions, references])
+  }, [department, selectedDeptObj, jobPositions, references])
 
   const selectedJobPositionObj = useMemo(() => {
     if (!jobPosition) return null
@@ -1076,7 +1524,7 @@ function UserForm({
   const deptComboboxOptions: ComboboxOption[] = allDepartments.map(d => ({
     value: d.id,
     label: `${d.code} - ${d.name}`,
-    description: d.headOfDepartment ? `Head: ${d.headOfDepartment}` : (d.description || undefined),
+    description: d.description || undefined,
   }))
 
   const jobPositionComboboxOptions: ComboboxOption[] = availableJobPositionsForDept.map(jp => ({
@@ -1116,30 +1564,52 @@ function UserForm({
 
   const save = useMutation({
     mutationFn: async () => {
-      if (employee && selectedEmployeeTargetRole) {
+      const assignedRoleId = employee && selectedEmployeeTargetRole ? selectedEmployeeTargetRole.id : null
+      const assignedRoleCode = employee && selectedEmployeeTargetRole ? selectedEmployeeTargetRole.code : null
+      const assignedRoleTitle = employee && selectedEmployeeTargetRole ? selectedEmployeeTargetRole.title : null
+      const rawAssignedLevel =
+        employee && selectedEmployeeTargetRole
+          ? targetRoleLevel || employeeRoleLevels[employeeRoleLevels.length - 1]
+          : null
+      const assignedLevel = rawAssignedLevel
+        ? rawAssignedLevel.replace(/^(?:rank|level)\s*\d+\s*:\s*/i, '').trim()
+        : null
+
+      if (employee) {
         const assignment = {
-          roleTitle: selectedEmployeeTargetRole.title,
-          roleId: selectedEmployeeTargetRole.id,
-          roleCode: selectedEmployeeTargetRole.code,
-          level: targetRoleLevel || employeeRoleLevels[employeeRoleLevels.length - 1],
-          departmentName: selectedDeptObj?.name || department,
+          roleTitle: assignedRoleTitle || '',
+          roleId: assignedRoleId || '',
+          roleCode: assignedRoleCode || '',
+          level: assignedLevel || '',
+          departmentId: selectedDeptObj?.id || effectiveDepartment || '',
+          departmentName: selectedDeptObj?.name || effectiveDepartment || '',
+          jobPositionCode: selectedJobPositionObj?.code || effectiveJobPosition || '',
+          jobPositionName: selectedJobPositionObj?.jobPositionName || selectedJobPositionObj?.name || '',
         }
         try {
-          localStorage.setItem(
-            `alg_employee_assignment_${email.toLowerCase().trim()}`,
-            JSON.stringify(assignment),
-          )
-          const activeProfileKey = `alg_learner_learning_profile_${organization}`
-          const currentRaw = localStorage.getItem(activeProfileKey)
-          if (currentRaw) {
-            const parsed = JSON.parse(currentRaw)
-            parsed.currentRole = assignment.roleTitle
-            parsed.currentLevel = assignment.level
-            parsed.department = assignment.departmentName
-            localStorage.setItem(activeProfileKey, JSON.stringify(parsed))
+          if (assignedRoleId) {
+            localStorage.setItem(
+              `alg_employee_assignment_${email.toLowerCase().trim()}`,
+              JSON.stringify(assignment),
+            )
+            const activeProfileKey = `alg_learner_learning_profile_${organization}`
+            const currentRaw = localStorage.getItem(activeProfileKey)
+            if (currentRaw) {
+              const parsed = JSON.parse(currentRaw)
+              parsed.currentRole = assignment.roleTitle
+              parsed.currentLevel = assignment.level
+              parsed.targetRole = assignment.roleTitle
+              parsed.targetLevel = assignment.level
+              parsed.department = assignment.departmentName
+              localStorage.setItem(activeProfileKey, JSON.stringify(parsed))
+            }
           }
         } catch {}
       }
+
+      const rawJobPositionName = isLdManager
+        ? null
+        : (selectedJobPositionObj?.jobPositionName || selectedJobPositionObj?.name || null)
 
       return member ?
       updateMemberProfile(organization, member.membershipId, {
@@ -1148,7 +1618,11 @@ function UserForm({
         departmentId: effectiveDepartment || null,
         jobPositionReferenceId: isLdManager ? null : (effectiveJobPosition || null),
         departmentName: selectedDeptObj?.name || null,
-        jobPositionName: isLdManager ? null : (selectedJobPositionObj?.jobPositionName || selectedJobPositionObj?.name || null),
+        jobPositionName: rawJobPositionName,
+        targetRoleId: assignedRoleId,
+        targetRoleCode: assignedRoleCode,
+        targetRoleName: assignedRoleTitle,
+        targetRoleLevel: assignedLevel,
         revision: member.revision,
       }) :
       request(`/api/v1/organizations/${organization}/subscription/activations`, 'POST', {
@@ -1158,7 +1632,9 @@ function UserForm({
         departmentId: effectiveDepartment || null,
         jobPositionReferenceId: isLdManager ? null : (effectiveJobPosition || null),
         departmentName: selectedDeptObj?.name || null,
-        jobPositionName: isLdManager ? null : (selectedJobPositionObj?.jobPositionName || selectedJobPositionObj?.name || null),
+        jobPositionName: employee && assignedRoleId
+          ? encodeJobPositionWithTargetRole(rawJobPositionName, assignedRoleId, assignedRoleCode, assignedRoleTitle, assignedLevel)
+          : rawJobPositionName,
       })
     },
     onSuccess: () => saved(!member),
@@ -1284,7 +1760,6 @@ function UserForm({
                   <tr>
                     <th className="py-2.5 px-3">{c('Code', 'Mã')}</th>
                     <th className="py-2.5 px-3">{c('Department Name & Scope', 'Tên phòng ban & Phạm vi')}</th>
-                    <th className="py-2.5 px-3">{c('Leadership', 'Trưởng phòng')}</th>
                     <th className="py-2.5 px-3 text-right">{c('Action', 'Thao tác')}</th>
                   </tr>
                 </thead>
@@ -1300,14 +1775,6 @@ function UserForm({
                       <div className="text-[11px] text-muted-foreground line-clamp-1 mt-0.5" title={selectedDeptObj.description}>
                         {selectedDeptObj.description || c('Core organizational unit', 'Đơn vị phòng ban chính')}
                       </div>
-                    </td>
-                    <td className="py-2.5 px-3 whitespace-nowrap">
-                      <div className="text-xs text-foreground font-medium">
-                        {selectedDeptObj.headOfDepartment || ''}
-                      </div>
-                      {selectedDeptObj.headEmail && (
-                        <div className="text-[11px] text-muted-foreground">{selectedDeptObj.headEmail}</div>
-                      )}
                     </td>
                     <td className="py-2.5 px-3 text-right whitespace-nowrap">
                       <Button

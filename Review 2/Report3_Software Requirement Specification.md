@@ -57,6 +57,7 @@
 
 | Date | A*M, D | In charge | Change Description |
 | --- | --- | --- | --- |
+| 2026-11-06 | M | Documentation preparation with AI assistance | Updated FR-03.01, FR-03.02, FR-04.01, FR-04.03, FR-04.04, FR-05.02, FR-06.04, scope baseline (1.3), business rules (5.1) and application messages (5.3) to reflect Neo4j-backed Department and Job Position governance, department-scoped L&D Manager catalogs, Job Position deactivation guard against active Target Roles, hiding inactive Job Positions during Target Role creation/editing, per-level estimated durations (`levelDurations`) in Target Role details for L&D Manager and Expert, Employee department-scoped upskilling, strict upskilling level progression constraints (disabling both current and lower levels), admin-assigned Job Position display on Employee Profile, and standardized operational impact confirmation dialogs for unpublishing Target Roles and deactivating Job Positions. |
 | 2026-11-02 | M | Documentation preparation with AI assistance | Added ACT-10 Question Bank activity and clarified current versus target boundaries for ACT-04/07; linked the matching ST-11/ST-16/ST-23 in the SDD without changing requirement IDs or unrelated diagrams. |
 | 2026-11-01 | M | Documentation preparation with AI assistance | Corrected all four conceptual ERD borders by replacing Neo gradient/shadow styling with Classic solid 1.5px borders. Preserved entity and relationship content and regenerated SVG/PNG previews. |
 | 2026-11-01 | M | Documentation preparation with AI assistance | Replaced table-level SRS ERDs with four conceptual overviews of 25 core business entities. Aligned entity descriptions with the overviews and retained the detailed relationship views in SDD logical design. |
@@ -143,8 +144,8 @@ The System is the automated performer within the application boundary, not a sev
 | --- | --- | --- |
 | Onboarding and subscriptions | Purchase, provision, renew and enforce paid access | Connected API/persistence slices exist; live payment/inbox acceptance is not established by this report. |
 | Identity and membership | Trusted authentication and organization permissions | Real sessions, single-role membership, activation, seats and administrator MFA exist. General permission editing and all-feature authorization are incomplete. |
-| Department/job position management | Persisted administration and Expert assignments | Member assignment uses stored references; management screens remain browser-oriented prototypes. |
-| Role/skill catalog | Assigned authoring followed by L&D publication | Legacy CRUD code exists but is gated by `catalog.legacy-api.enabled=true`; it is not the default production-safe authoring service. Existing Expert publication conflicts with Version 2. |
+| Department/job position management | Persisted administration and Expert assignments | Neo4j-persisted Department and Job Position CRUD, department-scoped L&D Manager filtering, inactive Job Position exclusion from Target Role/User assignment, and active Target Role guard before Job Position deactivation are connected. |
+| Role/skill catalog | Assigned authoring followed by L&D publication | Connected Neo4j Target Role lifecycle supports L&D creation with per-level estimated durations (`levelDurations`), Expert competency/skill authoring and submission, and L&D publication/unpublication with version lineage tracking. |
 | Baseline | Authorized configuration, delivery, scoring and results | Real workspace-baseline integration is explicitly local-profile-only and needs reviewed graph content, question bank and promoted model resources. |
 | Other learning and AI | Module/RIASEC evidence, guidance, mastery updates and adaptive pathways | Prototype screens and schema foundations do not constitute the complete learning engine. |
 | Reporting/audit | Actual development, financial inputs and scoped audit views | Some durable events exist; connected ROI/cost-benefit ledger and broad audit dashboards are not evidenced. |
@@ -1212,6 +1213,7 @@ Each row describes **one core business entity** shown in the conceptual overview
   - Organization Role
   - Employee Department
   - Employee Job Position
+  - Assigned Target Role and Level (Career Placement)
   - Membership Status
   - Invitation Status
   - Activation Proof
@@ -1222,6 +1224,7 @@ Each row describes **one core business entity** shown in the conceptual overview
   - Invite members and resend activation invitations.
   - Edit member profile, role and assignment details.
   - Activate or deactivate memberships with seat and last-administrator checks.
+  - Filter selectable Job Positions strictly to active Job Positions linked to the selected Department, filter selectable Target Roles to published roles aligned with the selected Job Position / Department, and persist the Employee's assigned Target Role and Level in the PostgreSQL member profile so it remains saved when viewing or editing the user.
   - Validate that Employee job position belongs to the selected organization department.
   - Let recipients activate once and choose their own password.
 
@@ -1392,12 +1395,15 @@ Each row describes **one core business entity** shown in the conceptual overview
   - Job Position Details
   - Organization Department
   - Active Status
+  - Associated Target Roles Status
 
 - **Functionalities:**
-  - Create and view job positions.
-  - Attach a valid department when creating an job position.
-  - Update job position details and department association.
-  - Deactivate job positions while preserving historical records.
+  - Create and view job positions scoped to the L&D Manager's assigned department without exposing unassigned organization job positions.
+  - Automatically attach the L&D Manager's department when creating a job position.
+  - Update job position details and department association in Neo4j.
+  - Deactivate a job position only when it has no assigned target roles or when all target roles assigned to it are in `UNPUBLISHED` status; otherwise block deactivation and display a warning notification that active target roles still exist.
+  - Hide and disable selection of inactive job positions when creating or editing target roles.
+  - Preserve historical records when deactivating or reactivating job positions.
   - Reject cross-organization department references.
 
 <a id="fr-04-02"></a>
@@ -1446,17 +1452,19 @@ Each row describes **one core business entity** shown in the conceptual overview
 - **Data:**
   - Role Identity
   - Role Details
-  - Job Position
+  - Job Position (active only)
+  - Role Mastery Levels and Estimated Level Durations (`levelDurations`)
   - Assigned Expert
   - Configuration Version
   - Configuration Status
 
 - **Functionalities:**
-  - Create and update roles within an job position.
-  - Assign target roles to Experts.
-  - View role details and configuration progress.
+  - Create and update roles within an active job position belonging to the L&D Manager's assigned department (inactive job positions are hidden and non-selectable).
+  - Configure ordered Role Mastery Levels and estimated duration for each level (e.g., Senior, Middle, Junior durations).
+  - Assign target roles to eligible Domain Experts certified for the selected job position or department.
+  - View role details, per-level estimated durations, competency/micro-skill counts, and configuration progress across L&D Manager and Expert views.
   - Reject duplicate identities and stale edits.
-  - Keep draft roles unavailable for Employee selection.
+  - Keep draft and unpublished roles unavailable for Employee selection.
 
 <a id="fr-04-04"></a>
 
@@ -1504,7 +1512,7 @@ Each row describes **one core business entity** shown in the conceptual overview
 
 - **Data:**
   - Assigned Target Role
-  - Role Level
+  - Role Level and Estimated Level Duration (`levelDurations`)
   - Competencies
   - Micro-skills
   - Required Proficiency
@@ -1512,6 +1520,7 @@ Each row describes **one core business entity** shown in the conceptual overview
   - Configuration Version
 
 - **Functionalities:**
+  - Inspect target role specifications, including ordered Role Mastery Levels and estimated duration per level, in the Role Details modal.
   - Add or remove required competencies and micro-skills.
   - Set required proficiency and relative importance.
   - Save requirements for the applicable role level.
@@ -1911,17 +1920,21 @@ Each row describes **one core business entity** shown in the conceptual overview
   - Role Suggestions
   - AI Comments
   - Published Roles
-  - Role Requirements
+  - Role Requirements and Per-Level Estimated Durations
+  - Current Assigned Role and Level
+  - Next-Level Upskilling Progression
   - Current Selection
   - Selected Role
   - Selection Status
 
 - **Functionalities:**
   - Display AI role suggestions and comments directly to Employee.
-  - View published organization roles and requirements.
-  - Explicitly select or confirm a target role.
+  - View published organization roles scoped to the Employee's assigned Department (and active Job Positions), level requirements, and estimated level durations, plus same-role next-level upskilling progression (`Upskill to Next Level`).
+  - Enforce strict upskilling progression constraint during level enrollment: when an Employee has an organization-assigned level (e.g. Middle / Rank 2), upskilling strictly requires advancing to a higher progressive level (e.g. Senior / Rank 1). Both the current assigned level (marked 'Current assigned level (Upskilling requires higher level)') and any levels lower than it (e.g. Junior / Rank 3, Intern / Rank 4, marked 'Below current assigned level') are strictly disabled and unselectable.
+  - Display the administrator-assigned Job Position, Department, and starting career placement on the Employee's Profile screen.
+  - Explicitly select or confirm a published target role (or next mastery level) for career progression.
   - Show the applicable baseline or learning next step.
-  - Reject unavailable roles and changes during an active assessment.
+  - Reject unavailable/unpublished roles and changes during an active assessment.
   - Retain previous selections and applicable Job Position coverage.
 
 <a id="fr-07-07"></a>
@@ -2411,15 +2424,15 @@ These are **targets**, not measurements from this documentation task. Distinct p
 | BR-08 | V2/Current: duplicate payment observations and retries cannot duplicate paid application, workspace or period. |
 | BR-09 | Current: paid periods do not overlap; suspension does not create or remove purchased payment evidence. |
 | BR-10 | V2/Current: Employee admission respects serialized seat allocation; reduced-capacity renewal may wait for explicit remediation. |
-| BR-11 | V2: job position belongs to an organization department; Expert authoring is limited to assignment. |
-| BR-12 | V2: Expert submits completed role requirements; L&D publishes/unpublishes or returns for revision. Expert direct publication is not the target policy. |
+| BR-11 | V2/Current: job position belongs to an organization department; L&D Manager views and governs only job positions and target roles linked to their assigned department; Expert authoring is limited to assignment. |
+| BR-12 | V2/Current: Expert submits completed role requirements; L&D publishes/unpublishes or returns for revision. In-flight revision drafts and submissions are presented in the version catalog beneath their parent published version with clear visual lineage. Unpublishing a target role affects only the released version, marking it `UNPUBLISHED` and suspending it from employee discovery across all portals (synced in real-time across L&D Manager, Domain Expert, and Employee catalogs), while in-flight revision drafts remain in `DRAFT`/`SUBMITTED` state until approved. A job position can be deactivated only when it has no assigned target roles or all assigned target roles are `UNPUBLISHED`; inactive job positions are hidden and non-selectable when creating or editing target roles. |
 | BR-13 | V2: module, content and module assessment form the submitted offering; L&D approves or returns it. |
 | BR-14 | V2: module/skill learning coverage is many-to-many. One module addressing several gaps is not multiple independent purchases or completions. |
 | BR-15 | V2/Current catalog validation: prerequisites are directed and acyclic; self-prerequisites are invalid. |
 | BR-16 | V2: RIASEC is interest evidence, never proof of skill mastery. |
 | BR-17 | V2: Employee sees AI guidance directly and explicitly chooses a published organization role; no Expert guidance-approval gate. |
 | BR-18 | Current baseline: one stable Job Position blueprint, one open Draft and one active version; released versions are immutable. |
-| BR-19 | Current baseline: selection commits separately from assessment start. Same-Job Position role changes reuse applicable coverage; in-progress assessment blocks role change. |
+| BR-19 | Current baseline: selection commits separately from assessment start. Same-Job Position role changes reuse applicable coverage; in-progress assessment blocks role change. When an Employee has an organization-assigned starting level, upskilling strictly requires progression to a higher level. Both the current assigned level and any levels lower than it are disabled and cannot be selected. |
 | BR-20 | Current baseline: valid low/zero mastery is present evidence; missing/unknown/null or invalid evidence is not complete coverage. |
 | BR-21 | Current baseline: new attempts pin pool, content, policy, model/mapping and deadline; resume/history does not repin to current configuration. |
 | BR-22 | Current baseline: insufficient manual submission can invalidate without mastery; replacement uses approved retained context rather than rewriting the attempt. |
@@ -2470,6 +2483,7 @@ These are **targets**, not measurements from this documentation task. Distinct p
 | 16 | R2-MSG-16 (Proposed) | Reporting explanation | Zero cost or incomplete finance inputs | ROI cannot be calculated for the selected inputs. Review costs, benefits, period and currency. |
 | 17 | R2-MSG-17 (Proposed) | Review confirmation | Offering returned | Revision requested. Review the feedback before resubmitting. |
 | 18 | R2-MSG-18 (Proposed) | Assessment result | Invalidated/insufficient evidence | This attempt did not produce sufficient valid mastery evidence. Review the available recovery action. |
+| 19 | JOB_POSITION_HAS_ACTIVE_ROLES (Current) | Destructive toast | Deactivating a job position that still has non-unpublished target roles | Cannot Deactivate Job Position: {jobPositionName} ({jobPositionCode}) still has active target role(s) assigned to it. Please unpublish all associated target roles before deactivating. |
 
 ### 5.4 Other Requirements
 

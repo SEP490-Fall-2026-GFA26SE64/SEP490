@@ -2,6 +2,7 @@ import * as React from 'react'
 import {
   AlertTriangle,
   BookOpen,
+  Building2,
   CheckCircle2,
   Download,
   Edit3,
@@ -36,13 +37,16 @@ import { useToast } from '../../../shared/hooks/useToast'
 import { WorkspaceLayout } from '../../../shared/layouts/WorkspaceLayout'
 import { getActiveCompany, resolveWorkspaceOrgId } from '../../../shared/stores/companyStore'
 import { WorkspaceSessionContext } from '../../../shared/auth/workspaceSession'
-import { getOrganizationExperts, normalizeExpertId, type EligibleExpert } from '../data/ldManagerMockData'
 import { getMembers } from '../../subscription/subscriptionApi'
+import { fetchDepartments, updateDepartmentApi, linkJobPositionToDepartment } from '../../../shared/api/departmentApi'
+import { loadDepartments, updateDepartment } from '../../../shared/stores/departmentStore'
 import {
   createJobPosition,
   updateJobPosition,
   fetchJobPositions,
 } from '../../../shared/api/jobPositionApi'
+import { workspaceFetch } from '../../../shared/api/workspaceFetch'
+import { resolveJobPositionForRole } from '../data/ldManagerMockData'
 
 export interface RiasecProfile {
   realistic: number
@@ -74,202 +78,7 @@ export interface JobPositionRecord {
   createdAt: string
 }
 
-const INITIAL_JOB_POSITIONS: JobPositionRecord[] = [
-  {
-    id: 'occ-15125200',
-    code: '15-1252.00',
-    name: 'Software Developers',
-    jobZone: 4,
-    description: 'Research, design, and develop computer and network software, clean hexagonal microservices, and distributed systems.',
-    status: 'active',
-    assignedExperts: [
-      {
-        id: 'expert-chen',
-        name: 'Dr. Sarah Chen',
-        email: 'sarah.chen@adaptlearn.internal',
-        title: 'Senior AI & Knowledge Architect',
-      },
-    ],
-    microSkillCount: 24,
-    moduleCount: 24,
-    interests: {
-      realistic: 0.435,
-      investigative: 0.842,
-      artistic: 0.228,
-      social: 0.135,
-      enterprising: 0.145,
-      conventional: 0.77,
-    },
-    createdAt: '2026-08-15',
-  },
-  {
-    id: 'occ-15124300',
-    code: '15-1243.00',
-    name: 'Database Architects',
-    jobZone: 4,
-    description: 'Design enterprise data models, transactional knowledge graphs, graph neural networks, and semantic ontologies.',
-    status: 'active',
-    assignedExperts: [
-      {
-        id: 'expert-vance',
-        name: 'Marcus Vance',
-        email: 'marcus.vance@adaptlearn.internal',
-        title: 'Principal Graph Database Architect',
-      },
-    ],
-    microSkillCount: 18,
-    moduleCount: 18,
-    interests: {
-      realistic: 0.272,
-      investigative: 0.772,
-      artistic: 0.193,
-      social: 0.152,
-      enterprising: 0.28,
-      conventional: 0.853,
-    },
-    createdAt: '2026-08-20',
-  },
-  {
-    id: 'occ-15125300',
-    code: '15-1253.00',
-    name: 'Software Quality Assurance Analysts and Testers',
-    jobZone: 4,
-    description: 'Develop and execute automated test suites, regression pipelines, and test-driven verification workflows across applications.',
-    status: 'active',
-    assignedExperts: [
-      {
-        id: 'expert-chen',
-        name: 'Dr. Sarah Chen',
-        email: 'sarah.chen@adaptlearn.internal',
-        title: 'Senior AI & Knowledge Architect',
-      },
-      {
-        id: 'expert-rivera',
-        name: 'Alex Rivera',
-        email: 'alex.rivera@adaptlearn.internal',
-        title: 'Staff Cloud Infrastructure Engineer',
-      },
-    ],
-    microSkillCount: 15,
-    moduleCount: 15,
-    interests: {
-      realistic: 0.467,
-      investigative: 0.793,
-      artistic: 0.115,
-      social: 0.088,
-      enterprising: 0.095,
-      conventional: 0.778,
-    },
-    createdAt: '2026-09-01',
-  },
-  {
-    id: 'occ-15129908',
-    code: '15-1299.08',
-    name: 'Computer Systems Engineers/Architects',
-    jobZone: 4,
-    description: 'Design systems architecture, distributed multi-cloud orchestration, reliable message queuing architectures, and hardware-software interfaces.',
-    status: 'active',
-    assignedExperts: [
-      {
-        id: 'expert-rivera',
-        name: 'Alex Rivera',
-        email: 'alex.rivera@adaptlearn.internal',
-        title: 'Staff Cloud Infrastructure Engineer',
-      },
-    ],
-    microSkillCount: 16,
-    moduleCount: 16,
-    interests: {
-      realistic: 0.517,
-      investigative: 0.743,
-      artistic: 0.147,
-      social: 0.183,
-      enterprising: 0.338,
-      conventional: 0.793,
-    },
-    createdAt: '2026-09-05',
-  },
-  {
-    id: 'occ-15121200',
-    code: '15-1212.00',
-    name: 'Information Security Analysts',
-    jobZone: 4,
-    description: 'Zero-trust architecture, cryptographic identity models, network boundary security, and enterprise AI compliance frameworks.',
-    status: 'active',
-    assignedExperts: [],
-    microSkillCount: 12,
-    moduleCount: 12,
-    interests: {
-      realistic: 0.427,
-      investigative: 0.733,
-      artistic: 0.057,
-      social: 0.185,
-      enterprising: 0.308,
-      conventional: 0.847,
-    },
-    createdAt: '2026-09-10',
-  },
-]
-
-const JOB_POSITION_PRESETS: ImportPreset[] = [
-  {
-    id: 'preset-standard-tech',
-    name: 'Standard Technology Job Positions',
-    description: 'Includes Software Developers, Database Architects, and Security Analysts.',
-    badge: 'Technology',
-    itemCount: 3,
-    previewSnippet: JSON.stringify(
-      [
-        { code: '15-1252.00', name: 'Software Developers', microSkillCount: 24, moduleCount: 24 },
-        { code: '15-1243.00', name: 'Database Architects', microSkillCount: 18, moduleCount: 18 },
-        { code: '15-1212.00', name: 'Information Security Analysts', microSkillCount: 12, moduleCount: 12 },
-      ],
-      null,
-      2
-    ),
-    payload: [
-      {
-        id: `occ-imp-${Date.now()}-1`,
-        code: '15-1252.00',
-        name: 'Software Developers',
-        jobZone: 4,
-        description: 'Scalable backend systems, clean hexagonal microservices, and high-concurrency event loops.',
-        status: 'active' as const,
-        assignedExperts: [],
-        microSkillCount: 24,
-        moduleCount: 24,
-        interests: { realistic: 0.435, investigative: 0.842, artistic: 0.228, social: 0.135, enterprising: 0.145, conventional: 0.77 },
-        createdAt: new Date().toISOString().split('T')[0],
-      },
-      {
-        id: `occ-imp-${Date.now()}-2`,
-        code: '15-1243.00',
-        name: 'Database Architects',
-        jobZone: 4,
-        description: 'Design enterprise data models, knowledge graphs, and multidimensional analytics.',
-        status: 'active' as const,
-        assignedExperts: [],
-        microSkillCount: 18,
-        moduleCount: 18,
-        interests: { realistic: 0.272, investigative: 0.772, artistic: 0.193, social: 0.152, enterprising: 0.28, conventional: 0.853 },
-        createdAt: new Date().toISOString().split('T')[0],
-      },
-      {
-        id: `occ-imp-${Date.now()}-3`,
-        code: '15-1212.00',
-        name: 'Information Security Analysts',
-        jobZone: 4,
-        description: 'Zero-trust architecture, cryptographic identity models, and enterprise AI compliance frameworks.',
-        status: 'active' as const,
-        assignedExperts: [],
-        microSkillCount: 12,
-        moduleCount: 12,
-        interests: { realistic: 0.427, investigative: 0.733, artistic: 0.057, social: 0.185, enterprising: 0.308, conventional: 0.847 },
-        createdAt: new Date().toISOString().split('T')[0],
-      },
-    ],
-  },
-]
+const JOB_POSITION_PRESETS: ImportPreset[] = []
 
 const PAGE_SIZE = 8
 const JOB_POSITIONS_STORAGE_PREFIX = 'adaptlearn_jobPositions_v2_'
@@ -313,13 +122,106 @@ export function JobPositionsManagementPage() {
   const activeCompany = getActiveCompany()
   const orgId = resolveWorkspaceOrgId(session?.identity?.organizationId || activeCompany?.id)
 
-  const isTechnova = orgId === 'e0000000-0000-0000-0000-000000000001' || orgId === 'comp-technova' || orgId === 'default-org'
+  const isAdministrator = Boolean(
+    session?.identity?.roles?.includes('ORGANIZATION_ADMINISTRATOR') ||
+    session?.identity?.roles?.includes('PLATFORM_ADMINISTRATOR')
+  )
+  const isLdManager = !isAdministrator && Boolean(
+    session?.identity?.roles?.includes('LD_MANAGER') ||
+    (typeof window !== 'undefined' && (window.location.pathname.includes('/manager/') || window.location.pathname.includes('/ld-manager/')))
+  )
 
-  const [jobPositions, setJobPositions] = React.useState<JobPositionRecord[]>(() => {
-    const stored = getStoredJobPositions(orgId)
-    if (stored) return stored
-    return isTechnova ? INITIAL_JOB_POSITIONS : []
+  const [managerDepartment, setManagerDepartment] = React.useState<{
+    id: string
+    name: string
+    jobPositionCodes: string[]
+  } | null>(() => {
+    try {
+      const localDepts = loadDepartments()
+      const activeEmail =
+        (typeof window !== 'undefined' && localStorage.getItem('adaptlearn_last_active_email')) ||
+        'manager@technova.com'
+      const matched =
+        localDepts.find((d) => d.headEmail?.toLowerCase() === activeEmail?.toLowerCase()) ||
+        localDepts.find((d) => d.code === 'ENG-CLOUD') ||
+        localDepts[0]
+      if (matched) {
+        return {
+          id: matched.id,
+          name: matched.name,
+          jobPositionCodes: matched.linkedJobPositions || [],
+        }
+      }
+    } catch {}
+    return null
   })
+
+  React.useEffect(() => {
+    let isMounted = true
+    const loadManagerDept = async () => {
+      try {
+        const [members, depts] = await Promise.all([
+          getMembers(orgId).catch(() => []),
+          fetchDepartments(orgId).catch(() => []),
+        ])
+        const currentMember = (members || []).find(
+          (m) =>
+            (session?.identity?.accountId && m.accountId === session?.identity?.accountId) ||
+            (session?.identity?.email && m.email?.toLowerCase() === session?.identity?.email?.toLowerCase())
+        )
+        const localDepts = loadDepartments()
+        const effectiveDepts = depts && depts.length > 0 ? depts : localDepts
+
+        let matched = effectiveDepts.find(
+          (d) =>
+            (currentMember?.departmentId && (d.id === currentMember.departmentId || d.code === currentMember.departmentId)) ||
+            (currentMember?.departmentName && d.name.toLowerCase() === currentMember.departmentName.toLowerCase())
+        )
+
+        if (!matched && currentMember?.departmentName) {
+          matched = effectiveDepts.find((d) => d.name.toLowerCase() === currentMember.departmentName?.toLowerCase())
+        }
+
+        if (!matched && session?.identity?.email) {
+          matched = effectiveDepts.find(
+            (d) => (d as any).headEmail?.toLowerCase() === session?.identity?.email?.toLowerCase()
+          )
+        }
+
+        if (!matched && isLdManager && effectiveDepts.length > 0) {
+          matched = effectiveDepts[0]
+        }
+
+        if (matched && isMounted) {
+          const serverCodes = (matched as any).jobPositionCodes || (matched as any).linkedJobPositions || []
+          const localDeptMatch = localDepts.find((ld) => ld.id === matched.id || ld.code === matched.code)
+          const localCodes = localDeptMatch?.linkedJobPositions || []
+          const mergedCodes = Array.from(new Set([...serverCodes, ...localCodes]))
+          setManagerDepartment({
+            id: matched.id,
+            name: matched.name,
+            jobPositionCodes: mergedCodes,
+          })
+        }
+      } catch {
+        const localDepts = loadDepartments()
+        if (localDepts.length > 0 && isMounted) {
+          setManagerDepartment({
+            id: localDepts[0].id,
+            name: localDepts[0].name,
+            jobPositionCodes: localDepts[0].linkedJobPositions || [],
+          })
+        }
+      }
+    }
+    loadManagerDept()
+    return () => {
+      isMounted = false
+    }
+  }, [orgId, session?.identity?.accountId, session?.identity?.email, isLdManager])
+
+  const [jobPositions, setJobPositions] = React.useState<JobPositionRecord[]>([])
+  const [isLoading, setIsLoading] = React.useState(true)
   const [searchQuery, setSearchQuery] = React.useState('')
   const [statusFilter, setStatusFilter] = React.useState<'ALL' | 'active' | 'inactive'>('ALL')
   const [currentPage, setCurrentPage] = React.useState(1)
@@ -339,79 +241,79 @@ export function JobPositionsManagementPage() {
   // Live database fetching from Neo4j merged with local state
   const fetchLiveJobPositions = React.useCallback(async () => {
     try {
-      const data = await fetchJobPositions(orgId)
+      const [data, members] = await Promise.all([
+        fetchJobPositions(orgId).catch(() => []),
+        getMembers(orgId).catch(() => []),
+      ])
+
       if (Array.isArray(data)) {
         if (data.length === 0) {
-          const currentStored = getStoredJobPositions(orgId)
-          if (currentStored && currentStored.length > 0) {
-            setJobPositions(currentStored)
-          } else {
-            setJobPositions(isTechnova ? INITIAL_JOB_POSITIONS : [])
-          }
+          setJobPositions([])
+          setStoredJobPositions(orgId, [])
           return
         }
 
-        const currentStored = getStoredJobPositions(orgId) || (isTechnova ? INITIAL_JOB_POSITIONS : [])
+        const currentStored = getStoredJobPositions(orgId) || []
         const storedByCode = new Map(currentStored.map((o) => [o.code, o]))
 
-          const mapped: JobPositionRecord[] = data.map((item: {
-            id?: string
-            code?: string
-            name?: string
-            title?: string
-            jobZone?: number
-            description?: string
-            status?: string
-            assignedExperts?: Array<{ id: string; name?: string; email?: string; title?: string }>
-            microSkillCount?: number
-            moduleCount?: number
-            roles?: Array<{ skillCount?: number }>
-            interests?: RiasecProfile
-            createdAt?: string
-          }) => {
-            const code = item.code || item.id || ''
-            const localMatch = storedByCode.get(code)
-            const initialMatch = isTechnova ? INITIAL_JOB_POSITIONS.find((o) => o.code === code) : undefined
+        // Dynamic expert lookup from live organization members
+        const expertsByPositionCode = new Map<string, AssignedExpert[]>()
+        for (const member of members || []) {
+          const isExpert = (member.roles || []).some((r: string) =>
+            r.toUpperCase().includes('EXPERT')
+          )
+          const posRef = member.jobPositionReferenceId || member.jobPositionName
+          if (posRef) {
+            const list = expertsByPositionCode.get(posRef) || []
+            list.push({
+              id: member.membershipId || member.accountId || member.email,
+              name: member.fullName || member.email,
+              email: member.email,
+              title: isExpert ? 'Subject Matter Expert' : 'Domain Specialist',
+            })
+            expertsByPositionCode.set(posRef, list)
+          }
+        }
 
-            // Preserve assigned experts: local user edits > initial assignments > backend
-            const effectiveExperts =
-              localMatch && localMatch.assignedExperts && localMatch.assignedExperts.length > 0
-                ? localMatch.assignedExperts
-                : initialMatch && initialMatch.assignedExperts && initialMatch.assignedExperts.length > 0
-                ? initialMatch.assignedExperts
-                : (item.assignedExperts || []).map((e) => ({
-                    id: e.id,
-                    name: e.name || e.id,
-                    email: e.email || `${e.id}@technova.internal`,
-                    title: e.title || 'Domain Specialist',
-                  }))
+        const mapped: JobPositionRecord[] = data.map((item: any) => {
+          const code = item.code || item.id || ''
+          const localMatch = storedByCode.get(code)
+          const dynamicExperts =
+            expertsByPositionCode.get(code) ||
+            (item.name ? expertsByPositionCode.get(item.name) : []) ||
+            []
 
-            return {
-              id: item.id || item.code || '',
-              code,
-              name: item.name || item.title || '',
-              jobZone: item.jobZone || 4,
-              description: item.description || localMatch?.description || initialMatch?.description || '',
-              status: localMatch?.status || (String(item.status || 'ACTIVE').toLowerCase() === 'inactive' ? 'inactive' : 'active'),
-              assignedExperts: effectiveExperts,
-              microSkillCount: item.microSkillCount || (item.roles ? item.roles.reduce((acc: number, r) => acc + (r.skillCount || 0), 0) : 0),
-              moduleCount: item.moduleCount || (item.roles ? item.roles.length * 3 : 0),
-              interests: item.interests || localMatch?.interests || initialMatch?.interests || {
-                realistic: 0.4,
-                investigative: 0.8,
-                artistic: 0.2,
-                social: 0.2,
-                enterprising: 0.3,
-                conventional: 0.7,
-              },
-              createdAt: item.createdAt || localMatch?.createdAt || new Date().toISOString().split('T')[0],
-            }
-          })
+          const effectiveExperts =
+            localMatch && localMatch.assignedExperts && localMatch.assignedExperts.length > 0
+              ? localMatch.assignedExperts
+              : dynamicExperts
 
-          // Also keep any custom jobPositions created by the user that are not in the backend
-          const backendCodes = new Set(mapped.map((m) => m.code))
-          const customCreated = currentStored.filter((s) => !backendCodes.has(s.code))
-          const merged = [...customCreated, ...mapped]
+          return {
+            id: item.id || item.code || '',
+            code,
+            name: item.name || item.title || '',
+            jobZone: item.jobZone || 4,
+            description: item.description || localMatch?.description || '',
+            status: localMatch?.status || (String(item.status || 'ACTIVE').toLowerCase() === 'inactive' ? 'inactive' : 'active'),
+            assignedExperts: effectiveExperts,
+            microSkillCount: item.microSkillCount || (item.roles ? item.roles.reduce((acc: number, r: any) => acc + (r.skillCount || 0), 0) : 0),
+            moduleCount: item.roleCount || item.moduleCount || (item.roles ? item.roles.length * 3 : 0),
+            interests: item.interests || localMatch?.interests || {
+              realistic: item.interestRealistic ?? 0.4,
+              investigative: item.interestInvestigative ?? 0.8,
+              artistic: item.interestArtistic ?? 0.2,
+              social: item.interestSocial ?? 0.2,
+              enterprising: item.interestEnterprising ?? 0.3,
+              conventional: item.interestConventional ?? 0.7,
+            },
+            createdAt: item.createdAt || localMatch?.createdAt || new Date().toISOString().split('T')[0],
+          }
+        })
+
+        // Also keep any custom jobPositions created by the user that are not in the backend
+        const backendCodes = new Set(mapped.map((m) => m.code))
+        const customCreated = currentStored.filter((s) => !backendCodes.has(s.code))
+        const merged = [...customCreated, ...mapped]
 
         setJobPositions(merged)
         setStoredJobPositions(orgId, merged)
@@ -419,8 +321,10 @@ export function JobPositionsManagementPage() {
       }
     } catch (e) {
       console.warn('Failed to fetch live jobPositions:', e)
+    } finally {
+      setIsLoading(false)
     }
-  }, [orgId, isTechnova])
+  }, [orgId])
 
   React.useEffect(() => {
     fetchLiveJobPositions()
@@ -462,9 +366,32 @@ export function JobPositionsManagementPage() {
   // Deactivate Confirmation Modal
   const [jobPositionToDeactivate, setJobPositionToDeactivate] = React.useState<JobPositionRecord | null>(null)
 
+  // Department-scoped list for L&D Managers; full catalog for administrators
+  const scopedJobPositions = React.useMemo(() => {
+    if (!isLdManager) {
+      return jobPositions
+    }
+    if (!managerDepartment) {
+      return []
+    }
+    const allowedCodes = new Set(
+      (managerDepartment.jobPositionCodes || []).map((c) => c.toLowerCase().trim())
+    )
+    if (allowedCodes.size === 0) {
+      return []
+    }
+    return jobPositions.filter((o) => {
+      const code = (o.code || '').toLowerCase().trim()
+      const id = (o.id || '').toLowerCase().trim()
+      const baseCode = code.replace(/\.00$/, '')
+      const allowedBaseMatches = Array.from(allowedCodes).some((c) => c.replace(/\.00$/, '') === baseCode)
+      return allowedCodes.has(code) || allowedCodes.has(id) || allowedBaseMatches
+    })
+  }, [jobPositions, isLdManager, managerDepartment])
+
   // Filtered List
   const filteredJobPositions = React.useMemo(() => {
-    return jobPositions
+    return scopedJobPositions
       .filter((o) => {
         const matchesSearch =
           o.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -479,7 +406,7 @@ export function JobPositionsManagementPage() {
         if (timeA !== timeB) return timeB - timeA
         return (b.id || '').localeCompare(a.id || '')
       })
-  }, [jobPositions, searchQuery, statusFilter])
+  }, [scopedJobPositions, searchQuery, statusFilter])
 
   // Pagination
   const totalPages = Math.max(1, Math.ceil(filteredJobPositions.length / PAGE_SIZE))
@@ -605,9 +532,50 @@ export function JobPositionsManagementPage() {
           status: 'ACTIVE',
         })
         setAndSaveJobPositions((prev) => [newOcc, ...prev])
+
+        // Automatically assign created job position to the manager's department
+        if (managerDepartment) {
+          const nextCodes = Array.from(
+            new Set([
+              ...(managerDepartment.jobPositionCodes || []),
+              newOcc.code,
+              newOcc.code.toLowerCase(),
+              newOcc.code.replace(/\.00$/, ''),
+              newOcc.code.replace(/\.00$/, '').toLowerCase(),
+            ])
+          )
+          setManagerDepartment((prev) => (prev ? { ...prev, jobPositionCodes: nextCodes } : prev))
+
+          if (managerDepartment.id) {
+            try {
+              const depts = loadDepartments()
+              const targetDept = depts.find(
+                (d) => d.id === managerDepartment.id || d.code === managerDepartment.id
+              )
+              if (targetDept) {
+                const currentLinked = targetDept.linkedJobPositions || []
+                if (!currentLinked.includes(newOcc.code)) {
+                  const nextLinked = [...currentLinked, newOcc.code]
+                  updateDepartment(targetDept.id, { linkedJobPositions: nextLinked })
+                  await linkJobPositionToDepartment(orgId, targetDept.id, newOcc.code).catch(() => {})
+                  updateDepartmentApi(orgId, targetDept.id, {
+                    code: targetDept.code,
+                    name: targetDept.name,
+                    linkedJobPositions: nextLinked,
+                  }).catch(() => {})
+                  window.dispatchEvent(new Event('departments_updated'))
+                }
+              }
+            } catch (e) {
+              console.warn('Failed to update department linked job positions:', e)
+            }
+          }
+        }
+        window.dispatchEvent(new Event('adaptlearn_job_positions_updated'))
+
         toast({
           title: 'Job Position Created',
-          description: `Added ${newOcc.name} (${newOcc.code}) to the job position catalog.`,
+          description: `Added ${newOcc.name} (${newOcc.code}) to ${managerDepartment ? managerDepartment.name : 'the catalog'}.`,
           variant: 'success',
         })
       } catch (err: unknown) {
@@ -622,9 +590,157 @@ export function JobPositionsManagementPage() {
     setIsJobPositionModalOpen(false)
   }
 
+  // Check whether a job position has any non-unpublished target roles assigned to it
+  const getActiveTargetRolesForJobPosition = React.useCallback(
+    async (occ: JobPositionRecord): Promise<string[]> => {
+      const normalizeOccCode = (c?: string) =>
+        (c || '').trim().toLowerCase().replace(/\.00$/, '')
+      const targetOccCode = normalizeOccCode(occ.code)
+      if (!targetOccCode) return []
+
+      let metaMap: Record<
+        string,
+        {
+          jobPositionCode?: string
+          jobPositionTitle?: string
+          status?: string
+        }
+      > = {}
+      try {
+        const rawMeta = localStorage.getItem('adaptlearn_target_role_meta_' + orgId)
+        if (rawMeta) {
+          metaMap = JSON.parse(rawMeta)
+        }
+      } catch {}
+
+      const currentActiveComp = getActiveCompany()
+      const storeRoles = currentActiveComp?.targetRoles || []
+
+      let backendRoles: Record<string, unknown>[] = []
+      try {
+        const res = await workspaceFetch(`/api/v1/organizations/${orgId}/target-roles`, {
+          headers: {
+            'X-User-Role': 'LD_MANAGER',
+          },
+        })
+        if (res.ok) {
+          const data = await res.json()
+          if (Array.isArray(data)) {
+            backendRoles = data as Record<string, unknown>[]
+          }
+        }
+      } catch {}
+
+      const activeRoleTitles: string[] = []
+      const seenLineageCodes = new Set<string>()
+
+      for (const r of backendRoles) {
+        const rawStatus = String(r.status || '').toLowerCase()
+        if (rawStatus === 'superseded') continue
+
+        const rCode = String(r.code || '').trim().toUpperCase()
+        const rId = String(r.id || '').trim()
+        const rVersion = String(r.version || '1.0').trim()
+        const rTitle = String(r.name || r.title || rCode).trim()
+
+        const meta = metaMap[rCode] || metaMap[rId]
+        const storeRole = storeRoles.find(
+          (tr) =>
+            tr.id === rId ||
+            (tr.code?.toUpperCase() === rCode && String(tr.version || '1.0') === rVersion),
+        )
+
+        const explicitJobPositionCode =
+          typeof r.jobPositionCode === 'string' && r.jobPositionCode
+            ? r.jobPositionCode
+            : meta?.jobPositionCode || storeRole?.jobPositionCode
+
+        const resolvedOcc = resolveJobPositionForRole(
+          {
+            code: rCode,
+            title: rTitle,
+            familyCode: String(r.familyCode || ''),
+            jobPositionCode: explicitJobPositionCode,
+          },
+          orgId,
+        )
+        const effectiveOccCode = normalizeOccCode(explicitJobPositionCode || resolvedOcc.code)
+
+        if (effectiveOccCode === targetOccCode) {
+          seenLineageCodes.add(`${rCode}::${rVersion}`)
+          const isUnpublished = rawStatus === 'unpublished'
+          if (!isUnpublished) {
+            activeRoleTitles.push(`${rTitle} (${rCode})`)
+          }
+        }
+      }
+
+      for (const sr of storeRoles) {
+        const srCode = String(sr.code || '').trim().toUpperCase()
+        const srVersion = String(sr.version || '1.0').trim()
+        if (seenLineageCodes.has(`${srCode}::${srVersion}`)) continue
+        if (
+          backendRoles.some(
+            (br) => String(br.code || '').trim().toUpperCase() === srCode,
+          )
+        ) {
+          continue
+        }
+
+        const meta = metaMap[srCode] || metaMap[sr.id]
+        const explicitJobPositionCode = sr.jobPositionCode || meta?.jobPositionCode
+        const resolvedOcc = resolveJobPositionForRole(
+          {
+            code: srCode,
+            title: sr.title,
+            familyCode: sr.familyCode,
+            jobPositionCode: explicitJobPositionCode,
+          },
+          orgId,
+        )
+        const effectiveOccCode = normalizeOccCode(explicitJobPositionCode || resolvedOcc.code)
+
+        if (effectiveOccCode === targetOccCode) {
+          const isUnpublished =
+            meta?.status === 'unpublished' || sr.status === 'unpublished'
+          if (!isUnpublished) {
+            activeRoleTitles.push(`${sr.title} (${srCode})`)
+          }
+        }
+      }
+
+      return activeRoleTitles
+    },
+    [orgId],
+  )
+
+  const handleRequestDeactivate = async (occ: JobPositionRecord) => {
+    const activeRoles = await getActiveTargetRolesForJobPosition(occ)
+    if (activeRoles.length > 0) {
+      toast({
+        title: 'Cannot Deactivate Job Position',
+        description: `${occ.name} (${occ.code}) still has active target role(s) assigned to it. Please unpublish all associated target roles before deactivating.`,
+        variant: 'destructive',
+      })
+      return
+    }
+    setJobPositionToDeactivate(occ)
+  }
+
   // Toggle Job Position Active Status
   const handleToggleStatus = async (occ: JobPositionRecord) => {
     const nextStatus = occ.status === 'active' ? 'inactive' : 'active'
+    if (nextStatus === 'inactive') {
+      const activeRoles = await getActiveTargetRolesForJobPosition(occ)
+      if (activeRoles.length > 0) {
+        toast({
+          title: 'Cannot Deactivate Job Position',
+          description: `${occ.name} (${occ.code}) still has active target role(s) assigned to it. Please unpublish all associated target roles before deactivating.`,
+          variant: 'destructive',
+        })
+        return
+      }
+    }
     const orgId = resolveWorkspaceOrgId(session?.identity?.organizationId || activeCompany?.id)
     try {
       await updateJobPosition(orgId, occ.id, {
@@ -702,11 +818,11 @@ export function JobPositionsManagementPage() {
     setIsImportModalOpen(false)
   }
 
-  // Aggregate Metrics
-  const totalJobPositions = jobPositions.length
-  const totalMicroSkills = jobPositions.reduce((acc, o) => acc + o.microSkillCount, 0)
-  const activeCount = jobPositions.filter((o) => o.status === 'active').length
-  const inactiveCount = jobPositions.filter((o) => o.status === 'inactive').length
+  // Aggregate Metrics (scoped to manager's department if LD_MANAGER)
+  const totalJobPositions = scopedJobPositions.length
+  const totalMicroSkills = scopedJobPositions.reduce((acc, o) => acc + o.microSkillCount, 0)
+  const activeCount = scopedJobPositions.filter((o) => o.status === 'active').length
+  const inactiveCount = scopedJobPositions.filter((o) => o.status === 'inactive').length
 
   return (
     <WorkspaceLayout>
@@ -743,7 +859,7 @@ export function JobPositionsManagementPage() {
             variant="gradient"
             icon={<FolderTree className="h-4 w-4 text-primary" />}
             title="Job Positions"
-            value={`${totalJobPositions} Job Positions`}
+            value={isLoading ? '—' : `${totalJobPositions} Job Positions`}
             valueClassName="text-primary"
             description="Industry classifications"
           />
@@ -752,7 +868,7 @@ export function JobPositionsManagementPage() {
             variant="gradient"
             icon={<UserCheck className="h-4 w-4 text-success" />}
             title="Active Positions"
-            value={`${activeCount} Active`}
+            value={isLoading ? '—' : `${activeCount} Active`}
             valueClassName="text-success"
             description="Governed in organization"
           />
@@ -761,7 +877,7 @@ export function JobPositionsManagementPage() {
             variant="gradient"
             icon={<BookOpen className="h-4 w-4 text-warning" />}
             title="Micro-Skills Covered"
-            value={`${totalMicroSkills} Skills`}
+            value={isLoading ? '—' : `${totalMicroSkills} Skills`}
             valueClassName="text-warning"
             description="Across all job positions"
           />
@@ -770,7 +886,7 @@ export function JobPositionsManagementPage() {
             variant="gradient"
             icon={<AlertTriangle className="h-4 w-4 text-muted-foreground" />}
             title="Inactive Positions"
-            value={`${inactiveCount} Inactive`}
+            value={isLoading ? '—' : `${inactiveCount} Inactive`}
             valueClassName="text-muted-foreground"
             description="Suspended classifications"
           />
@@ -786,7 +902,9 @@ export function JobPositionsManagementPage() {
                   Job Positions Directory
                 </CardTitle>
                 <CardDescription>
-                  Browse and govern job position classifications, skill footprints, and competency scopes across departments.
+                  {isLdManager && managerDepartment
+                    ? `Browse and govern job position classifications and skill footprints for ${managerDepartment.name}.`
+                    : 'Browse and govern job position classifications, skill footprints, and competency scopes across departments.'}
                 </CardDescription>
               </div>
 
@@ -821,12 +939,19 @@ export function JobPositionsManagementPage() {
           </CardHeader>
 
           <CardContent className="p-0">
-            {jobPositions.length === 0 ? (
+            {isLoading ? (
+              <div className="text-center py-16 text-muted-foreground">
+                <div className="inline-block animate-spin rounded-full h-8 w-8 border-2 border-primary border-t-transparent mb-3" />
+                <p className="text-sm font-medium">Loading job positions from database...</p>
+              </div>
+            ) : scopedJobPositions.length === 0 ? (
               <div className="p-12 text-center text-muted-foreground space-y-3">
                 <FolderTree className="h-10 w-10 mx-auto text-muted-foreground/40" />
-                <p className="text-base font-semibold text-foreground">No job positions created yet</p>
+                <p className="text-base font-semibold text-foreground">No job positions found</p>
                 <p className="text-xs text-muted-foreground max-w-sm mx-auto">
-                  Import job positions from the catalog or create custom job positions to start structuring competency requirements.
+                  {isLdManager && managerDepartment
+                    ? `No job positions are currently associated with ${managerDepartment.name}.`
+                    : 'Import job positions from the catalog or create custom job positions to start structuring competency requirements.'}
                 </p>
                 <div className="pt-2">
                   <Button variant="primary" size="sm" onClick={() => setIsImportModalOpen(true)} className="gap-2">
@@ -916,7 +1041,7 @@ export function JobPositionsManagementPage() {
                               }`}
                               onClick={() => {
                                 if (occ.status === 'active') {
-                                  setJobPositionToDeactivate(occ)
+                                  handleRequestDeactivate(occ)
                                 } else {
                                   handleToggleStatus(occ)
                                 }
@@ -1107,7 +1232,7 @@ export function JobPositionsManagementPage() {
                   const occ = viewingDetailsJobPosition
                   setViewingDetailsJobPosition(null)
                   if (occ.status === 'active') {
-                    setJobPositionToDeactivate(occ)
+                    handleRequestDeactivate(occ)
                   } else {
                     handleToggleStatus(occ)
                   }
@@ -1165,6 +1290,25 @@ export function JobPositionsManagementPage() {
 
         <form onSubmit={handleSaveJobPosition} className="flex flex-col flex-1 min-h-0 overflow-hidden">
           <div className="flex-1 overflow-y-auto pr-1.5 space-y-3.5 py-1 text-xs min-h-0">
+            {managerDepartment && (
+              <div className="p-2.5 rounded-lg border border-primary/20 bg-secondary/30 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Building2 className="h-4 w-4 text-primary shrink-0" />
+                  <div>
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block">
+                      Assigned Department
+                    </span>
+                    <span className="text-xs font-semibold text-foreground">
+                      {managerDepartment.name}
+                    </span>
+                  </div>
+                </div>
+                <Badge variant="outline" className="text-primary border-primary/30 text-[10px] font-bold">
+                  AUTO-LINKED
+                </Badge>
+              </div>
+            )}
+
             {/* Card 1: Taxonomy & Identification */}
             <div className="p-3.5 rounded-lg border border-border bg-card space-y-3">
               <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block">

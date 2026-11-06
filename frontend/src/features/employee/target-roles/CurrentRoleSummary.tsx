@@ -6,11 +6,28 @@ import { Button } from '../../../shared/components/ui/Button'
 import { Card } from '../../../shared/components/ui/Card'
 import { useTranslation } from '../../../shared/i18n/LanguageContext'
 import { RoleBaselineGate } from './RoleBaselineGate'
-import type { RoleFlowView } from './currentRoleFlowApi'
+import { normalizeLevelRank, type RoleFlowView } from './currentRoleFlowApi'
 
 export function CurrentRoleSummary({ view, onReviewGaps, disabled = false }: { view: RoleFlowView; onReviewGaps: () => void; disabled?: boolean }) {
   const { t } = useTranslation()
   const selection = view.selection
+  const targetRank = selection?.levelId ? normalizeLevelRank(selection.levelId) : null
+  const activeLevel = selection && selection.levelId
+    ? (selection.role.levels.find(
+        level =>
+          level.id === selection.levelId ||
+          level.name.toLowerCase() === selection.levelId?.toLowerCase() ||
+          level.code.toLowerCase() === selection.levelId?.toLowerCase(),
+      ) ||
+      (targetRank !== null
+        ? selection.role.levels.find(
+            level =>
+              level.rank === targetRank ||
+              normalizeLevelRank(level.name) === targetRank ||
+              normalizeLevelRank(level.id) === targetRank,
+          )
+        : null))
+    : null
   if (view.progress.state === 'LEGACY_SELECTION_REQUIRES_RESELECTION') {
     return <Card className="p-5"><Text role="status">{t('roleFlow.legacySelection')}</Text></Card>
   }
@@ -22,7 +39,18 @@ export function CurrentRoleSummary({ view, onReviewGaps, disabled = false }: { v
         <div className="min-w-0 space-y-1">
           <div className="flex flex-wrap items-center gap-2">
             <Heading level={2} size="card">{t(selection ? selection.available ? 'upskillingUi.activeRole' : 'roleFlow.previousUnavailable' : 'employeeBaseline.title')}</Heading>
-            {selection && <Badge variant={selection.available ? 'secondary' : 'warning'} className={`max-w-full whitespace-normal break-words ${selection.available ? 'border-primary/20 text-primary' : ''}`}>{selection.role.name}{selection.levelId ? ` · ${selection.role.levels.find(level => level.id === selection.levelId)?.name ?? t('initialPathway.state.UNAVAILABLE')}` : ''}</Badge>}
+            {selection && (
+              <>
+                <Badge variant={selection.available ? 'secondary' : 'warning'} className={`max-w-full whitespace-normal break-words ${selection.available ? 'border-primary/20 text-primary' : ''}`}>
+                  {selection.role.name}{activeLevel ? ` · ${activeLevel.name}` : selection.levelId ? ` · ${t('initialPathway.state.UNAVAILABLE')}` : ''}
+                </Badge>
+                {activeLevel?.duration && (
+                  <Badge variant="outline" className="text-xs font-medium border-border/80">
+                    Est. {activeLevel.duration}
+                  </Badge>
+                )}
+              </>
+            )}
           </div>
           {selection && <Text variant="caption">{selection.role.jobPositionName}</Text>}
         </div>

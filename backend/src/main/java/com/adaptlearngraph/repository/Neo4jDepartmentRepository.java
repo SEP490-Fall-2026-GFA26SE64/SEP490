@@ -36,7 +36,7 @@ public class Neo4jDepartmentRepository implements DepartmentRepository {
             MATCH (d:Department)
             WHERE d.organizationId = $organizationId
             """ + PROJECTION + """
-            ORDER BY d.updatedAt DESC, d.createdAt DESC, d.name ASC
+            ORDER BY updatedAt DESC, createdAt DESC, name ASC
             """;
 
     private static final String DETAIL = """

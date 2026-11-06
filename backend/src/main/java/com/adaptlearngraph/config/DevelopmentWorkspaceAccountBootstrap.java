@@ -39,7 +39,19 @@ public final class DevelopmentWorkspaceAccountBootstrap implements ApplicationRu
     public static final UUID TECHNOVA_IDEMPOTENCY_KEY = UUID.fromString("b0000000-0000-0000-0000-000000000003");
 
     public static final UUID TECHNOVA_DEPT_ID = UUID.fromString("d0000000-0000-0000-0000-000000000001");
+    public static final UUID DEPT_ENG_COG_ID = UUID.fromString("d0000000-0000-0000-0000-000000000001");
+    public static final UUID DEPT_DATA_AI_ID = UUID.fromString("27fd451e-a429-3de1-9a6e-52c5876904a3");
+    public static final UUID DEPT_QA_ID = UUID.fromString("4bb9ce13-f65a-349e-803d-017fd495a62f");
+    public static final UUID DEPT_CLOUD_ID = UUID.fromString("6fe84095-c4f5-39a2-a100-88a15c672d33");
+    public static final UUID DEPT_SEC_ID = UUID.fromString("c05d5732-9897-38c7-9d8f-dfdbe71cfd53");
+
     public static final UUID TECHNOVA_OCC_REF_ID = UUID.fromString("f0000000-0000-0000-0000-000000000001");
+    public static final UUID OCC_REF_DEV_ID = UUID.fromString("f0000000-0000-0000-0000-000000000001");
+    public static final UUID OCC_REF_DATA_ID = UUID.fromString("22f79a58-9b62-307a-a099-55559e9684e0");
+    public static final UUID OCC_REF_QA_ID = UUID.fromString("d1434cbf-166a-3d18-866c-d681cbd9aea3");
+    public static final UUID OCC_REF_CLOUD_ID = UUID.fromString("f6fe81fe-d2c1-3a96-ae98-69a540b5ec22");
+    public static final UUID OCC_REF_SEC_ID = UUID.fromString("4b9de1ce-5095-3f1d-b5ba-8b1a26799507");
+
     public static final UUID TECHNOVA_OCC_ID = UUID.fromString("f0000000-0000-0000-0000-000000000002");
     public static final UUID TECHNOVA_SUB_ID = UUID.fromString("c0000000-0000-0000-0000-000000000001");
     public static final UUID TECHNOVA_PERIOD_ID = UUID.fromString("c0000000-0000-0000-0000-000000000002");
@@ -95,21 +107,29 @@ public final class DevelopmentWorkspaceAccountBootstrap implements ApplicationRu
         // 1. Organization
         seeds.upsertActiveOrganization(TECHNOVA_ORG_ID, "TECHNOVA", "TechNova Cognitive Labs");
 
-        // 2. Department Reference
-        seeds.upsertActiveDepartment(TECHNOVA_DEPT_ID, TECHNOVA_ORG_ID, "Engineering & Cognitive Systems");
+        // 2. Department References
+        seeds.upsertActiveDepartment(DEPT_ENG_COG_ID, TECHNOVA_ORG_ID, "Engineering & Cognitive Systems");
+        seeds.upsertActiveDepartment(DEPT_DATA_AI_ID, TECHNOVA_ORG_ID, "Data & Artificial Intelligence");
+        seeds.upsertActiveDepartment(DEPT_QA_ID, TECHNOVA_ORG_ID, "Quality Engineering & Assurance");
+        seeds.upsertActiveDepartment(DEPT_CLOUD_ID, TECHNOVA_ORG_ID, "Cloud Infrastructure & DevOps");
+        seeds.upsertActiveDepartment(DEPT_SEC_ID, TECHNOVA_ORG_ID, "Cybersecurity & Compliance");
 
-        // 3. JobPosition Department Reference
-        seeds.upsertActiveJobPositionReference(TECHNOVA_OCC_REF_ID, TECHNOVA_OCC_ID, TECHNOVA_ORG_ID, TECHNOVA_DEPT_ID, "Software Developers");
+        // 3. JobPosition Department References
+        seeds.upsertActiveJobPositionReference(OCC_REF_DEV_ID, TECHNOVA_OCC_ID, TECHNOVA_ORG_ID, DEPT_ENG_COG_ID, "Software Developers");
+        seeds.upsertActiveJobPositionReference(OCC_REF_DATA_ID, OCC_REF_DATA_ID, TECHNOVA_ORG_ID, DEPT_DATA_AI_ID, "15-1243.00 - Database Architects");
+        seeds.upsertActiveJobPositionReference(OCC_REF_QA_ID, OCC_REF_QA_ID, TECHNOVA_ORG_ID, DEPT_QA_ID, "15-1253.00 - Software Quality Assurance Analysts and Testers");
+        seeds.upsertActiveJobPositionReference(OCC_REF_CLOUD_ID, OCC_REF_CLOUD_ID, TECHNOVA_ORG_ID, DEPT_CLOUD_ID, "15-1299.08 - Computer Systems Engineers/Architects");
+        seeds.upsertActiveJobPositionReference(OCC_REF_SEC_ID, OCC_REF_SEC_ID, TECHNOVA_ORG_ID, DEPT_SEC_ID, "15-1212.00 - Information Security Analysts");
 
         // 4. Seed Member Accounts (Admin, Manager, Expert, Employee)
         String passwordHash = secrets.hashPassword(DEFAULT_PASSWORD);
-        seedMember(ADMIN_ACCOUNT_ID, "admin@technova.com", "Elena Rostova", "ORGANIZATION_ADMINISTRATOR", passwordHash, null, null);
-        seedMember(MANAGER_ACCOUNT_ID, "manager@technova.com", "Sarah Connor", "LD_MANAGER", passwordHash, null, null);
-        seedMember(EXPERT_ACCOUNT_ID, "expert@technova.com", "Dr. Sarah Chen", "DOMAIN_EXPERT", passwordHash, null, null);
-        seedMember(EXPERT_ALEX_RIVERA_ID, "alex.rivera@technova.com", "Alex Rivera", "DOMAIN_EXPERT", passwordHash, null, null);
-        seedMember(EXPERT_LINH_NGUYEN_ID, "linh.nguyen@technova.com", "Linh Nguyen", "DOMAIN_EXPERT", passwordHash, null, null);
-        seedMember(EXPERT_MARCUS_VANCE_ID, "marcus.vance@technova.com", "Marcus Vance", "DOMAIN_EXPERT", passwordHash, null, null);
-        seedMember(EMPLOYEE_ACCOUNT_ID, "employee@technova.com", "Alex Chen", "EMPLOYEE", passwordHash, TECHNOVA_DEPT_ID, TECHNOVA_OCC_REF_ID);
+        seedMember(ADMIN_ACCOUNT_ID, "admin@technova.com", "Elena Rostova", "ORGANIZATION_ADMINISTRATOR", passwordHash, DEPT_ENG_COG_ID, OCC_REF_DEV_ID);
+        seedMember(MANAGER_ACCOUNT_ID, "manager@technova.com", "Sarah Connor", "LD_MANAGER", passwordHash, DEPT_ENG_COG_ID, OCC_REF_DEV_ID);
+        seedMember(EXPERT_ACCOUNT_ID, "expert@technova.com", "Dr. Sarah Chen", "DOMAIN_EXPERT", passwordHash, DEPT_DATA_AI_ID, OCC_REF_DATA_ID);
+        seedMember(EXPERT_ALEX_RIVERA_ID, "alex.rivera@technova.com", "Alex Rivera", "DOMAIN_EXPERT", passwordHash, DEPT_SEC_ID, OCC_REF_SEC_ID);
+        seedMember(EXPERT_LINH_NGUYEN_ID, "linh.nguyen@technova.com", "Linh Nguyen", "DOMAIN_EXPERT", passwordHash, DEPT_CLOUD_ID, OCC_REF_CLOUD_ID);
+        seedMember(EXPERT_MARCUS_VANCE_ID, "marcus.vance@technova.com", "Marcus Vance", "DOMAIN_EXPERT", passwordHash, DEPT_QA_ID, OCC_REF_QA_ID);
+        seedMember(EMPLOYEE_ACCOUNT_ID, "employee@technova.com", "Alex Chen", "EMPLOYEE", passwordHash, DEPT_ENG_COG_ID, OCC_REF_DEV_ID);
 
         // 5. Organization Registration (Satisfies organization_workspace foreign key)
         seeds.insertRegistrationNowIfAbsent(TECHNOVA_REGISTRATION_ID, ADMIN_ACCOUNT_ID, "TechNova Cognitive Labs", "technova", "Elena Rostova");
@@ -163,27 +183,166 @@ public final class DevelopmentWorkspaceAccountBootstrap implements ApplicationRu
         if (graph == null) return;
         try {
             graph.write(tx -> {
-                // Align all catalog nodes for TechNova organization and assign Dr. Sarah Chen
+                String org = TECHNOVA_ORG_ID.toString();
+
+                // 1. Align all catalog nodes for TechNova organization
                 tx.execute("""
                     MATCH (n)
-                    WHERE (n:JobPosition OR n:TargetRole OR n:Level OR n:Competency OR n:MicroSkill OR n:LearningModule)
+                    WHERE (n:JobPosition OR n:TargetRole OR n:Level OR n:Competency OR n:MicroSkill OR n:LearningModule OR n:Department)
                       AND (n.organizationId IS NULL OR n.organizationId = 'comp-technova')
                     SET n.organizationId = $orgId
-                    """, Map.of("orgId", TECHNOVA_ORG_ID.toString()));
+                    """, Map.of("orgId", org));
 
+                // 2. Ensure all 5 Departments exist as :Department nodes in Neo4j
                 tx.execute("""
-                    MATCH (r:TargetRole)
-                    WHERE r.organizationId = $orgId
-                    SET r.assignedExpertId = $expertId,
-                        r.assignedExpertName = 'Dr. Sarah Chen'
-                    """, Map.of(
-                        "orgId", TECHNOVA_ORG_ID.toString(),
-                        "expertId", EXPERT_ACCOUNT_ID.toString()
-                    ));
+                    MERGE (d1:Department {organizationId: $orgId, code: 'ENG-COG'})
+                    ON CREATE SET d1.id = 'd0000000-0000-0000-0000-000000000001',
+                                  d1.name = 'Engineering & Cognitive Systems',
+                                  d1.description = 'Core software engineering, cognitive knowledge graphs, and distributed systems.',
+                                  d1.headOfDepartment = 'Sarah Connor',
+                                  d1.headEmail = 'manager@technova.com',
+                                  d1.status = 'ACTIVE',
+                                  d1.createdAt = '2026-11-04T00:00:00Z',
+                                  d1.updatedAt = '2026-11-04T00:00:00Z'
+
+                    MERGE (d2:Department {organizationId: $orgId, code: 'ENG-DATA'})
+                    ON CREATE SET d2.id = '27fd451e-a429-3de1-9a6e-52c5876904a3',
+                                  d2.name = 'Data & Artificial Intelligence',
+                                  d2.description = 'Data pipelines, analytics warehouses, and cognitive knowledge models.',
+                                  d2.headOfDepartment = 'Dr. Sarah Chen',
+                                  d2.headEmail = 'expert@technova.com',
+                                  d2.status = 'ACTIVE',
+                                  d2.createdAt = '2026-11-04T00:00:00Z',
+                                  d2.updatedAt = '2026-11-04T00:00:00Z'
+
+                    MERGE (d3:Department {organizationId: $orgId, code: 'ENG-QA'})
+                    ON CREATE SET d3.id = '4bb9ce13-f65a-349e-803d-017fd495a62f',
+                                  d3.name = 'Quality Engineering & Assurance',
+                                  d3.description = 'Automated test suites, Playwright verification, and quality gates.',
+                                  d3.headOfDepartment = 'Marcus Vance',
+                                  d3.headEmail = 'marcus.vance@technova.com',
+                                  d3.status = 'ACTIVE',
+                                  d3.createdAt = '2026-11-04T00:00:00Z',
+                                  d3.updatedAt = '2026-11-04T00:00:00Z'
+
+                    MERGE (d4:Department {organizationId: $orgId, code: 'ENG-CLOUD'})
+                    ON CREATE SET d4.id = '6fe84095-c4f5-39a2-a100-88a15c672d33',
+                                  d4.name = 'Cloud Infrastructure & DevOps',
+                                  d4.description = 'Cloud systems architecture, container orchestration, and CI/CD pipelines.',
+                                  d4.headOfDepartment = 'Linh Nguyen',
+                                  d4.headEmail = 'linh.nguyen@technova.com',
+                                  d4.status = 'ACTIVE',
+                                  d4.createdAt = '2026-11-04T00:00:00Z',
+                                  d4.updatedAt = '2026-11-04T00:00:00Z'
+
+                    MERGE (d5:Department {organizationId: $orgId, code: 'ENG-SEC'})
+                    ON CREATE SET d5.id = 'c05d5732-9897-38c7-9d8f-dfdbe71cfd53',
+                                  d5.name = 'Cybersecurity & Compliance',
+                                  d5.description = 'Zero-trust architecture, security auditing, and compliance governance.',
+                                  d5.headOfDepartment = 'Alex Rivera',
+                                  d5.headEmail = 'alex.rivera@technova.com',
+                                  d5.status = 'ACTIVE',
+                                  d5.createdAt = '2026-11-04T00:00:00Z',
+                                  d5.updatedAt = '2026-11-04T00:00:00Z'
+                    """, Map.of("orgId", org));
+
+                // 3. Link each Department to its respective JobPosition
+                tx.execute("""
+                    MATCH (d:Department {organizationId: $orgId, code: 'ENG-COG'})
+                    MATCH (jp:JobPosition) WHERE jp.code = '15-1252.00'
+                    MERGE (d)-[:HAS_JOB_POSITION]->(jp)
+
+                    WITH d
+                    MATCH (d2:Department {organizationId: $orgId, code: 'ENG-DATA'})
+                    MATCH (jp2:JobPosition) WHERE jp2.code = '15-1243.00'
+                    MERGE (d2)-[:HAS_JOB_POSITION]->(jp2)
+
+                    WITH d2
+                    MATCH (d3:Department {organizationId: $orgId, code: 'ENG-QA'})
+                    MATCH (jp3:JobPosition) WHERE jp3.code = '15-1253.00'
+                    MERGE (d3)-[:HAS_JOB_POSITION]->(jp3)
+
+                    WITH d3
+                    MATCH (d4:Department {organizationId: $orgId, code: 'ENG-CLOUD'})
+                    MATCH (jp4:JobPosition) WHERE jp4.code IN ['15-1299.08', '15-1259.00', '15-1260.00']
+                    MERGE (d4)-[:HAS_JOB_POSITION]->(jp4)
+
+                    WITH d4
+                    MATCH (d5:Department {organizationId: $orgId, code: 'ENG-SEC'})
+                    MATCH (jp5:JobPosition) WHERE jp5.code = '15-1212.00'
+                    MERGE (d5)-[:HAS_JOB_POSITION]->(jp5)
+                    """, Map.of("orgId", org));
+
+                // 4. Assign Subject Matter Experts to Target Roles by Job Position
+                tx.execute("""
+                    MATCH (jp:JobPosition {code: '15-1252.00'})-[:HAS_ROLE]->(tr:TargetRole)
+                    SET tr.assignedExpertId = 'a0000000-0000-0000-0000-000000000005',
+                        tr.assignedExpertName = 'Marcus Vance'
+
+                    WITH jp
+                    MATCH (jp2:JobPosition {code: '15-1243.00'})-[:HAS_ROLE]->(tr2:TargetRole)
+                    SET tr2.assignedExpertId = 'a0000000-0000-0000-0000-000000000002',
+                        tr2.assignedExpertName = 'Dr. Sarah Chen'
+
+                    WITH jp2
+                    MATCH (jp3:JobPosition {code: '15-1253.00'})-[:HAS_ROLE]->(tr3:TargetRole)
+                    SET tr3.assignedExpertId = 'a0000000-0000-0000-0000-000000000005',
+                        tr3.assignedExpertName = 'Marcus Vance'
+
+                    WITH jp3
+                    MATCH (jp4:JobPosition {code: '15-1299.08'})-[:HAS_ROLE]->(tr4:TargetRole)
+                    SET tr4.assignedExpertId = 'a0000000-0000-0000-0000-000000000007',
+                        tr4.assignedExpertName = 'Linh Nguyen'
+
+                    WITH jp4
+                    MATCH (jp5:JobPosition {code: '15-1212.00'})-[:HAS_ROLE]->(tr5:TargetRole)
+                    SET tr5.assignedExpertId = 'a0000000-0000-0000-0000-000000000006',
+                        tr5.assignedExpertName = 'Alex Rivera'
+                    """, Map.of());
+
+                // 4.5. Seed complete metadata for all JobPosition nodes in Neo4j
+                tx.execute("""
+                    MATCH (jp:JobPosition)
+                    SET jp.jobZone = coalesce(jp.jobZone, 4)
+                    WITH jp
+                    MATCH (jp1:JobPosition {code: '15-1252.00'})
+                    SET jp1.description = 'Research, design, and develop computer and network software, clean hexagonal microservices, and distributed systems.'
+                    WITH jp1
+                    MATCH (jp2:JobPosition {code: '15-1243.00'})
+                    SET jp2.description = 'Design enterprise data models, transactional knowledge graphs, graph neural networks, and semantic ontologies.'
+                    WITH jp2
+                    MATCH (jp3:JobPosition {code: '15-1253.00'})
+                    SET jp3.description = 'Develop and execute automated test suites, regression pipelines, and test-driven quality verification systems.'
+                    WITH jp3
+                    MATCH (jp4:JobPosition {code: '15-1299.08'})
+                    SET jp4.description = 'Design systems architecture, distributed multi-cloud orchestration, reliable infrastructure pipelines, and telemetry.'
+                    WITH jp4
+                    MATCH (jp5:JobPosition {code: '15-1212.00'})
+                    SET jp5.description = 'Zero-trust architecture, cryptographic identity models, network boundary security, and threat intelligence operations.'
+                    WITH jp5
+                    MATCH (jp6:JobPosition {code: '15-1259.00'})
+                    SET jp6.description = 'Cloud architecture, distributed microservices, and multi-region deployment infrastructure.',
+                        jp6.interestRealistic = 0.48, jp6.interestInvestigative = 0.79, jp6.interestArtistic = 0.15, jp6.interestSocial = 0.19, jp6.interestEnterprising = 0.27, jp6.interestConventional = 0.81
+                    WITH jp6
+                    MATCH (jp7:JobPosition {code: '15-1260.00'})
+                    SET jp7.description = 'Cloud automation, serverless computing, and containerization platforms.',
+                        jp7.interestRealistic = 0.5, jp7.interestInvestigative = 0.7, jp7.interestArtistic = 0.15, jp7.interestSocial = 0.2, jp7.interestEnterprising = 0.3, jp7.interestConventional = 0.8
+                    """, Map.of());
+
+                // 5. Ensure all :Level nodes have default duration set according to rank
+                tx.execute("""
+                    MATCH (l:Level)
+                    SET l.duration = CASE
+                        WHEN l.rank = 1 OR l.name = 'Senior' THEN '6 months'
+                        WHEN l.rank = 2 OR l.name = 'Middle' THEN '4 months'
+                        WHEN l.rank = 3 OR l.name = 'Junior' THEN '3 months'
+                        ELSE coalesce(l.duration, '2 months')
+                    END
+                    """, Map.of());
 
                 return true;
             });
-            log.info("Neo4j target roles aligned to organization {} and assigned expert {}", TECHNOVA_ORG_ID, EXPERT_ACCOUNT_ID);
+            log.info("Neo4j departments, job positions, and target roles aligned for TechNova organization {}", TECHNOVA_ORG_ID);
         } catch (Exception e) {
             log.warn("Neo4j alignment note: {}", e.getMessage());
         }

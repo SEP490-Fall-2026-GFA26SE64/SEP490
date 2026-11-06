@@ -39,13 +39,66 @@ export function CurrentRolePanel() {
     .sort((a, b) => (sort === 'jobPosition' ? a.jobPositionName.localeCompare(b.jobPositionName, language) : 0) || a.name.localeCompare(b.name, language))
   const pageCount = Math.max(1, Math.ceil(filtered.length / 12)), currentPage = Math.min(page, pageCount)
   const visible = filtered.slice((currentPage - 1) * 12, currentPage * 12)
-  const jobPositions = [...new Map((roles.data ?? []).map(role => [role.jobPositionId, { value: role.jobPositionId, label: role.jobPositionName }])).values()]
   const blocked = busy || Boolean(command)
   const assessmentActive = view.data?.progress.state === 'RESUME'
   async function refresh() { await Promise.all([roles.refetch(), view.refetch()]) }
   function choose(role: CurrentRole, chosenLevel?: string) {
     if (lock.current || command || !view.data) return
-    setSelected(role); setLevelId(chosenLevel ?? (view.data.selection?.role.id === role.id ? view.data.selection.levelId ?? '' : '')); setError(null); committed.current = false
+    const isSameStartOffRole = Boolean(
+      (view.data.selection &&
+        (view.data.selection.role.id === role.id ||
+          view.data.selection.role.code.toUpperCase() === role.code.toUpperCase() ||
+          view.data.selection.role.name.toLowerCase() === role.name.toLowerCase())) ||
+      (view.data.assignedRoleId && view.data.assignedRoleId === role.id) ||
+      (view.data.assignedRoleCode && view.data.assignedRoleCode.toUpperCase() === role.code.toUpperCase()) ||
+      (view.data.assignedRoleTitle && view.data.assignedRoleTitle.toLowerCase() === role.name.toLowerCase())
+    )
+    const assignedLevelStr = (view.data.assignedLevel || view.data.selection?.levelId || '')
+      .replace(/^(?:rank|level)\s*\d+\s*:\s*/i, '')
+      .trim()
+      .toLowerCase()
+
+    const currentAssignedLevel = isSameStartOffRole
+      ? role.levels.find(
+          l =>
+            l.id.toLowerCase() === assignedLevelStr ||
+            l.name.toLowerCase() === assignedLevelStr ||
+            l.code.toLowerCase() === assignedLevelStr ||
+            l.id === view.data?.selection?.levelId ||
+            (typeof view.data?.assignedLevelRank === 'number' && l.rank === view.data.assignedLevelRank),
+        )
+      : null
+    const fallbackLevelId = currentAssignedLevel?.id ?? (isSameStartOffRole ? view.data.selection?.levelId ?? '' : '')
+
+    // The filter preventing lower and same levels ONLY applies when choosing the same start-off target role.
+    // For any other target role, all levels are fully selectable!
+    const effectiveMinRank = isSameStartOffRole
+      ? (currentAssignedLevel?.rank ?? view.data?.assignedLevelRank ?? undefined)
+      : undefined
+
+    let targetLevelId = chosenLevel ?? fallbackLevelId
+    if (effectiveMinRank !== undefined) {
+      const selectedLvl = role.levels.find(l => l.id === targetLevelId)
+      // Upskilling within same role strictly requires a level higher than current assigned rank (rank < effectiveMinRank)
+      if (!selectedLvl || selectedLvl.rank >= effectiveMinRank) {
+        const permissible = role.levels
+          .filter(l => l.rank < effectiveMinRank)
+          .sort((a, b) => b.rank - a.rank)
+        if (permissible.length > 0) {
+          targetLevelId = permissible[0].id
+        } else {
+          targetLevelId = ''
+        }
+      }
+    } else if (!targetLevelId) {
+      // For a different role, default to entry level or first level
+      targetLevelId = role.levels[role.levels.length - 1]?.id ?? role.levels[0]?.id ?? ''
+    }
+
+    setSelected(role)
+    setLevelId(targetLevelId)
+    setError(null)
+    committed.current = false
   }
   async function confirm(prepared?: RoleChoiceCommand) {
     if (lock.current || !selected || !view.data || !levelId) return
@@ -63,7 +116,51 @@ export function CurrentRolePanel() {
     } finally { lock.current = false; setBusy(false) }
   }
   return <section aria-label={t('upskillingUi.roleCatalog')} className="min-w-0 space-y-5">
-    {gapRole && <InitialRoleGapDialog role={gapRole} initialLevelId={view.data?.selection?.role.id === gapRole.id ? view.data.selection.levelId : null} onClose={() => setGapRole(null)} onBaseline={value => { setGapRole(null); choose(gapRole, value) }} />}
+    {gapRole && (() => {
+      const isSameStartOff = Boolean(
+        (view.data?.selection &&
+          (view.data.selection.role.id === gapRole.id ||
+            view.data.selection.role.code.toUpperCase() === gapRole.code.toUpperCase() ||
+            view.data.selection.role.name.toLowerCase() === gapRole.name.toLowerCase())) ||
+        (view.data?.assignedRoleId && view.data.assignedRoleId === gapRole.id) ||
+        (view.data?.assignedRoleCode && view.data.assignedRoleCode.toUpperCase() === gapRole.code.toUpperCase()) ||
+        (view.data?.assignedRoleTitle && view.data.assignedRoleTitle.toLowerCase() === gapRole.name.toLowerCase())
+      )
+      const assignedLevelStr = (view.data?.assignedLevel || view.data?.selection?.levelId || '')
+        .replace(/^(?:rank|level)\s*\d+\s*:\s*/i, '')
+        .trim()
+        .toLowerCase()
+
+      const currentAssignedLevel = isSameStartOff
+        ? gapRole.levels.find(
+            l =>
+              l.id.toLowerCase() === assignedLevelStr ||
+              l.name.toLowerCase() === assignedLevelStr ||
+              l.code.toLowerCase() === assignedLevelStr ||
+              l.id === view.data?.selection?.levelId ||
+              (typeof view.data?.assignedLevelRank === 'number' && l.rank === view.data.assignedLevelRank),
+          )
+        : null
+
+      const allowedMinRank = isSameStartOff
+        ? (currentAssignedLevel?.rank ?? view.data?.assignedLevelRank ?? undefined)
+        : undefined
+
+      return (
+        <InitialRoleGapDialog
+          role={gapRole}
+          initialLevelId={
+            isSameStartOff ? view.data?.selection?.levelId : null
+          }
+          minAllowedRank={allowedMinRank}
+          onClose={() => setGapRole(null)}
+          onBaseline={value => {
+            setGapRole(null)
+            choose(gapRole, value)
+          }}
+        />
+      )
+    })()}
     {(roles.isPending || view.isPending) && <LoadingCard label={tr('loading')} />}
     {(roles.isError || view.isError) && <EmployeeAccessNotice error={roles.error ?? view.error} message={tr(roles.isError ? 'catalogError' : 'statusError')}
       retrying={roles.isFetching || view.isFetching} onRetry={() => void refresh()} />}
@@ -77,13 +174,7 @@ export function CurrentRolePanel() {
           placeholder={t('upskillingUi.searchPlaceholder')}
           onChange={e => { setPage(1); const q = new URLSearchParams(params); q.set('search', e.target.value); setParams(q, { replace: true }) }} />
       </div>
-      <div className="grid min-w-0 gap-2 sm:grid-cols-3 lg:flex lg:items-center">
-        <div role="group" aria-label={tr('jobPosition')} className="min-w-0 lg:w-40">
-          <Combobox size="sm" wrapOptions clearable={false} disabled={blocked} value={jobPosition || 'ALL'}
-            options={[{ value: 'ALL', label: tr('allJobPositions') }, ...jobPositions]}
-            onChange={value => { setJobPosition(value === 'ALL' ? '' : value); setPage(1) }}
-            searchPlaceholder={tr('search')} emptyMessage={tr('empty')} />
-        </div>
+      <div className="grid min-w-0 gap-2 sm:grid-cols-2 lg:flex lg:items-center">
         <div role="group" aria-label={tr('sort')} className="min-w-0 lg:w-40">
           <Combobox size="sm" clearable={false} disabled={blocked} value={sort}
             options={[{ value: 'jobPosition', label: tr('jobPosition') }, { value: 'role', label: tr('roleName') }]}
@@ -96,7 +187,7 @@ export function CurrentRolePanel() {
         </div>
       </div>
       <div className="flex items-center gap-2">
-        {(search || jobPosition || status !== 'all' || sort !== 'jobPosition') && <Button size="sm" variant="ghost" disabled={blocked} onClick={() => {
+        {(search || status !== 'all' || sort !== 'jobPosition') && <Button size="sm" variant="ghost" disabled={blocked} onClick={() => {
           const query = new URLSearchParams(params); query.delete('search'); setParams(query, { replace: true })
           setJobPosition(''); setSort('jobPosition'); setStatus('all'); setPage(1)
         }}>{t('upskillingUi.clearFilters')}</Button>}
@@ -118,7 +209,46 @@ export function CurrentRolePanel() {
       <DialogHeader><DialogTitle className="text-section">{tr('confirmTitle')}</DialogTitle><DialogDescription className="text-body-sm">{tr(view.data?.selection ? 'changeNotice' : 'chooseNotice')}</DialogDescription></DialogHeader>
       <DialogBody className="space-y-4">
       <Text variant="body-sm" className="break-words font-semibold">{selected?.name}</Text>
-      {selected && <RoleLevelPicker levels={selected.levels} value={levelId} disabled={blocked} onChange={setLevelId} />}
+      {selected && (() => {
+        const isSameStartOff = Boolean(
+          (view.data?.selection &&
+            (view.data.selection.role.id === selected.id ||
+              view.data.selection.role.code.toUpperCase() === selected.code.toUpperCase() ||
+              view.data.selection.role.name.toLowerCase() === selected.name.toLowerCase())) ||
+          (view.data?.assignedRoleId && view.data.assignedRoleId === selected.id) ||
+          (view.data?.assignedRoleCode && view.data.assignedRoleCode.toUpperCase() === selected.code.toUpperCase()) ||
+          (view.data?.assignedRoleTitle && view.data.assignedRoleTitle.toLowerCase() === selected.name.toLowerCase())
+        )
+        const assignedLevelStr = (view.data?.assignedLevel || view.data?.selection?.levelId || '')
+          .replace(/^(?:rank|level)\s*\d+\s*:\s*/i, '')
+          .trim()
+          .toLowerCase()
+
+        const currentAssignedLevel = isSameStartOff
+          ? selected.levels.find(
+              l =>
+                l.id.toLowerCase() === assignedLevelStr ||
+                l.name.toLowerCase() === assignedLevelStr ||
+                l.code.toLowerCase() === assignedLevelStr ||
+                l.id === view.data?.selection?.levelId ||
+                (typeof view.data?.assignedLevelRank === 'number' && l.rank === view.data.assignedLevelRank),
+            )
+          : null
+
+        const allowedMinRank = isSameStartOff
+          ? (currentAssignedLevel?.rank ?? view.data?.assignedLevelRank ?? undefined)
+          : undefined
+
+        return (
+          <RoleLevelPicker
+            levels={selected.levels}
+            value={levelId}
+            disabled={blocked}
+            onChange={setLevelId}
+            minAllowedRank={allowedMinRank}
+          />
+        )
+      })()}
       {error && <Text variant="body-sm" tone="destructive" className="text-destructive" role="alert">{tr(`errors.${error.code}`)}</Text>}
       {command && <Text variant="body-sm">{tr('retryNotice')}</Text>}
       </DialogBody>
@@ -130,7 +260,15 @@ export function CurrentRolePanel() {
       <DialogHeader><DialogTitle className="text-section">{details?.name}</DialogTitle><DialogDescription className="text-body-sm">{tr('details')}</DialogDescription></DialogHeader>
       <DialogBody className="space-y-4">
         {details?.levels.map(level => <section key={level.id} className="space-y-3 rounded-lg border border-border bg-muted/30 p-4">
-          <Heading level={3} size="subsection">{level.name}</Heading><Text variant="body-sm" tone="foreground">{level.context}</Text>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <Heading level={3} size="subsection">{level.name}</Heading>
+            {level.duration && (
+              <span className="rounded-md border border-primary/20 bg-primary/10 px-2.5 py-0.5 text-caption font-semibold text-primary">
+                Est. {level.duration}
+              </span>
+            )}
+          </div>
+          <Text variant="body-sm" tone="foreground">{level.context}</Text>
           <ul className="divide-y divide-border">{level.skills.map(skill => <li key={skill.id} className="flex flex-wrap items-center justify-between gap-3 py-3 text-body-sm">
             <span className="min-w-0 flex-1 basis-48 break-words font-medium">{skill.name}{skill.mandatory ? ` · ${tr('mandatory')}` : ''}</span>
             <span className="rounded-md border border-border bg-card px-2.5 py-1 text-caption font-semibold text-foreground">{tr('requiredScore')}: {Math.round(skill.requiredScore * 100)}%</span>

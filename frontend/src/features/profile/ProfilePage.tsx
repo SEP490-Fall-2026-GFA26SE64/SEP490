@@ -1,5 +1,7 @@
 import * as React from 'react'
 import {
+  Award,
+  Briefcase,
   Building,
   Check,
   CheckCircle2,
@@ -28,6 +30,19 @@ import {
   updateUserProfileName,
   type ActorRole,
 } from '../../shared/stores/userProfileStore'
+import { workspaceFetch } from '../../shared/api/workspaceFetch'
+import { resolveWorkspaceOrgId } from '../../shared/stores/companyStore'
+
+interface EmployeeAssignmentData {
+  jobPositionCode?: string
+  jobPositionName?: string
+  departmentId?: string
+  departmentName?: string
+  roleId?: string
+  roleCode?: string
+  roleTitle?: string
+  level?: string
+}
 
 export function ProfilePage() {
   const { toast } = useToast()
@@ -43,6 +58,83 @@ export function ProfilePage() {
 
   const [activeActor] = React.useState<ActorRole>(getInitialActor)
   const [profile, setProfile] = React.useState(() => getUserProfile(activeActor))
+
+  // Assigned Job Position & Placement State
+  const [assignment, setAssignment] = React.useState<EmployeeAssignmentData | null>(() => {
+    if (typeof localStorage === 'undefined') return null
+    try {
+      const email = (localStorage.getItem(`user_email_${activeActor}`) || 'employee@technova.com').toLowerCase().trim()
+      const raw =
+        localStorage.getItem(`alg_employee_assignment_${email}`) ||
+        localStorage.getItem('alg_employee_assignment_employee@technova.com')
+      if (raw) return JSON.parse(raw) as EmployeeAssignmentData
+    } catch {}
+    return null
+  })
+
+  React.useEffect(() => {
+    let cancelled = false
+    async function loadBackendAssignment() {
+      try {
+        const authRes = await workspaceFetch('/api/v1/workspace-auth/current')
+        let userEmail = (profile.email || 'employee@technova.com').toLowerCase().trim()
+        let orgId = resolveWorkspaceOrgId()
+
+        if (authRes.ok) {
+          const authData = await authRes.json()
+          if (authData.email) userEmail = authData.email.toLowerCase().trim()
+          if (authData.organizationId) orgId = authData.organizationId
+        }
+
+        // 1. Check local storage
+        const localRaw =
+          localStorage.getItem(`alg_employee_assignment_${userEmail}`) ||
+          localStorage.getItem(`alg_employee_assignment_${profile.email.toLowerCase().trim()}`) ||
+          localStorage.getItem('alg_employee_assignment_employee@technova.com')
+        if (localRaw) {
+          try {
+            const parsed = JSON.parse(localRaw) as EmployeeAssignmentData
+            if (!cancelled && parsed) {
+              setAssignment(parsed)
+            }
+          } catch {}
+        }
+
+        // 2. Query workspace subscription members if accessible
+        if (orgId) {
+          const memRes = await workspaceFetch(
+            `/api/v1/organizations/${encodeURIComponent(orgId)}/subscription/members`,
+          )
+          if (memRes.ok) {
+            const members = await memRes.json()
+            if (Array.isArray(members)) {
+              const matched = members.find(
+                (m: any) => m.email && m.email.toLowerCase().trim() === userEmail,
+              )
+              if (matched && !cancelled) {
+                setAssignment((prev) => ({
+                  ...prev,
+                  departmentId: matched.departmentId || prev?.departmentId,
+                  departmentName: matched.departmentName || prev?.departmentName,
+                  jobPositionCode: matched.jobPositionReferenceId || prev?.jobPositionCode,
+                  jobPositionName: matched.jobPositionName || prev?.jobPositionName,
+                  roleId: matched.targetRoleId || prev?.roleId,
+                  roleCode: matched.targetRoleCode || prev?.roleCode,
+                  roleTitle: matched.targetRoleName || prev?.roleTitle,
+                  level: matched.targetRoleLevel || prev?.level,
+                }))
+              }
+            }
+          }
+        }
+      } catch {}
+    }
+
+    loadBackendAssignment()
+    return () => {
+      cancelled = true
+    }
+  }, [profile.email, activeActor])
 
   // Editable Name State
   const [fullNameInput, setFullNameInput] = React.useState(profile.name)
@@ -189,6 +281,15 @@ export function ProfilePage() {
                     {profile.details[0]?.value}
                   </span>
                 </div>
+
+                <div className="mt-2.5 pt-2.5 border-t border-border/50 flex items-center justify-between text-xs text-muted-foreground">
+                  <span className="flex items-center gap-1.5 font-medium">
+                    <Briefcase size={14} className="text-primary" /> Assigned Job Position
+                  </span>
+                  <span className="font-semibold text-foreground truncate max-w-[200px]" title={assignment?.jobPositionName || 'Software Developers'}>
+                    {assignment?.jobPositionName || 'Software Developers'}
+                  </span>
+                </div>
               </CardContent>
             </Card>
 
@@ -251,6 +352,56 @@ export function ProfilePage() {
                     {isSavingName ? 'Saving...' : 'Save Name Changes'}
                   </Button>
                 </form>
+              </CardContent>
+            </Card>
+
+            {/* Assigned Job Position & Career Placement Card */}
+            <Card className="border-border shadow-xs" data-testid="profile-assigned-position-card">
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <Briefcase size={16} className="text-primary" /> Assigned Job Position & Placement
+                  </CardTitle>
+                  <Badge variant="outline" className="text-primary border-primary/30 text-[10px] font-bold">
+                    ADMIN ASSIGNED
+                  </Badge>
+                </div>
+                <CardDescription>
+                  Enterprise role governance, industry classification, and starting career placement assigned by your workspace administrator.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3 text-xs">
+                <div className="p-3 rounded-lg border border-border bg-muted/20 space-y-2.5">
+                  <div>
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block">
+                      Industry Job Position
+                    </span>
+                    <strong className="text-sm font-semibold text-foreground block mt-0.5" data-testid="profile-job-position-name">
+                      {assignment?.jobPositionName || assignment?.jobPositionCode || '15-1252.00 - Software Developers'}
+                    </strong>
+                  </div>
+
+                  <div className="pt-2 border-t border-border/50 grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <div>
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block">
+                        Assigned Department
+                      </span>
+                      <span className="text-xs font-medium text-foreground block mt-0.5" data-testid="profile-department-name">
+                        {assignment?.departmentName || profile.department || 'Engineering & Cognitive Systems'}
+                      </span>
+                    </div>
+
+                    <div>
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block">
+                        Starting Career Placement
+                      </span>
+                      <span className="text-xs font-medium text-primary flex items-center gap-1.5 mt-0.5" data-testid="profile-role-level">
+                        <Award size={13} className="shrink-0" />
+                        <span>{assignment?.roleTitle || 'Application Developer'} · {assignment?.level || 'Junior'}</span>
+                      </span>
+                    </div>
+                  </div>
+                </div>
               </CardContent>
             </Card>
 

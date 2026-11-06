@@ -10,7 +10,6 @@ import {
   Power,
   Search,
   Trash2,
-  UserCheck,
   Users,
 } from 'lucide-react'
 import { Combobox, type ComboboxOption } from '../../../shared/components/ui/Combobox'
@@ -56,7 +55,6 @@ import {
 } from '../../../shared/api/jobPositionApi'
 import {
   getAvailableJobPositions,
-  getOrganizationExperts,
   type JobPosition,
 } from '../../manager/data/ldManagerMockData'
 
@@ -92,8 +90,6 @@ export function DepartmentsManagementPage() {
   const [formName, setFormName] = React.useState('')
   const [formCode, setFormCode] = React.useState('')
   const [formDescription, setFormDescription] = React.useState('')
-  const [formHeadName, setFormHeadName] = React.useState('')
-  const [formHeadEmail, setFormHeadEmail] = React.useState('')
   const [selectedJobPositions, setSelectedJobPositions] = React.useState<string[]>([])
   const [tempJobPositionToAdd, setTempJobPositionToAdd] = React.useState('')
 
@@ -104,16 +100,6 @@ export function DepartmentsManagementPage() {
   // View Details modal state
   const [isDetailsModalOpen, setIsDetailsModalOpen] = React.useState(false)
   const [selectedDeptForDetails, setSelectedDeptForDetails] = React.useState<DepartmentRecord | null>(null)
-
-  const orgExperts = React.useMemo(() => getOrganizationExperts(orgId), [orgId])
-
-  const expertOptions: ComboboxOption[] = React.useMemo(() => {
-    return orgExperts.map((exp) => ({
-      value: exp.name,
-      label: exp.name,
-      description: exp.title || exp.email,
-    }))
-  }, [orgExperts])
 
   const jobPositionOptions: ComboboxOption[] = React.useMemo(() => {
     return availableJobPositions
@@ -255,7 +241,6 @@ export function DepartmentsManagementPage() {
       const matchesSearch =
         d.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         d.code.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        d.headOfDepartment.toLowerCase().includes(searchQuery.toLowerCase()) ||
         d.linkedJobPositions.some((jp) => jp.toLowerCase().includes(searchQuery.toLowerCase()))
 
       const matchesStatus =
@@ -286,7 +271,6 @@ export function DepartmentsManagementPage() {
   const activeCount = departments.filter((d) => d.status === 'active').length
   const inactiveCount = departments.filter((d) => d.status === 'inactive').length
   const totalConnectedJobPositions = new Set(departments.flatMap((d) => d.linkedJobPositions)).size
-  const departmentsWithLeads = departments.filter((d) => !!d.headOfDepartment).length
   const totalAssignedMembers = company.users.length
 
   // Handlers
@@ -297,9 +281,6 @@ export function DepartmentsManagementPage() {
     const autoCode = generateDepartmentCode(departments)
     setFormCode(autoCode)
     setFormDescription('')
-    const defaultHead = orgExperts[0]
-    setFormHeadName(defaultHead?.name || '')
-    setFormHeadEmail(defaultHead?.email || '')
     setSelectedJobPositions([])
     setTempJobPositionToAdd('')
     setIsFormModalOpen(true)
@@ -311,8 +292,6 @@ export function DepartmentsManagementPage() {
     setFormName(dept.name)
     setFormCode(dept.code)
     setFormDescription(dept.description)
-    setFormHeadName(dept.headOfDepartment)
-    setFormHeadEmail(dept.headEmail)
     setSelectedJobPositions([...dept.linkedJobPositions])
     setTempJobPositionToAdd('')
     setIsFormModalOpen(true)
@@ -351,8 +330,8 @@ export function DepartmentsManagementPage() {
           code: codeClean,
           name: formName.trim(),
           description: formDescription.trim(),
-          headOfDepartment: formHeadName.trim(),
-          headEmail: formHeadEmail.trim(),
+          headOfDepartment: editingDept.headOfDepartment || '',
+          headEmail: editingDept.headEmail || '',
           status: editingDept.status.toUpperCase(),
           linkedJobPositions: selectedJobPositions,
         })
@@ -364,8 +343,8 @@ export function DepartmentsManagementPage() {
         name: formName.trim(),
         code: codeClean,
         description: formDescription.trim(),
-        headOfDepartment: formHeadName.trim(),
-        headEmail: formHeadEmail.trim(),
+        headOfDepartment: editingDept.headOfDepartment || '',
+        headEmail: editingDept.headEmail || '',
         linkedJobPositions: selectedJobPositions,
       })
 
@@ -382,8 +361,8 @@ export function DepartmentsManagementPage() {
           code: codeClean,
           name: formName.trim(),
           description: formDescription.trim(),
-          headOfDepartment: formHeadName.trim(),
-          headEmail: formHeadEmail.trim(),
+          headOfDepartment: '',
+          headEmail: '',
           status: 'ACTIVE',
           linkedJobPositions: selectedJobPositions,
         })
@@ -395,8 +374,8 @@ export function DepartmentsManagementPage() {
         name: formName.trim(),
         code: codeClean,
         description: formDescription.trim(),
-        headOfDepartment: formHeadName.trim(),
-        headEmail: formHeadEmail.trim(),
+        headOfDepartment: '',
+        headEmail: '',
         status: 'active',
         linkedJobPositions: selectedJobPositions,
       })
@@ -464,7 +443,7 @@ export function DepartmentsManagementPage() {
         {/* Top Header */}
         <PageHeader
           title="Departments Management"
-          description="Structure organizational business units, assign department leadership, and connect job positions across your workforce."
+          description="Structure organizational business units and connect job positions across your workforce."
           actions={
             <Button
               variant="primary"
@@ -491,20 +470,20 @@ export function DepartmentsManagementPage() {
 
           <StatCard
             variant="gradient"
-            icon={<Briefcase className="h-4 w-4 text-success" />}
-            title="Connected Job Positions"
-            value={`${totalConnectedJobPositions} Positions`}
+            icon={<CheckCircle2 className="h-4 w-4 text-success" />}
+            title="Active Departments"
+            value={`${activeCount} Active`}
             valueClassName="text-success"
-            description="Mapped industry roles"
+            description="Operating business units"
           />
 
           <StatCard
             variant="gradient"
-            icon={<UserCheck className="h-4 w-4 text-warning" />}
-            title="Leadership Assigned"
-            value={`${departmentsWithLeads} Leads`}
+            icon={<Briefcase className="h-4 w-4 text-warning" />}
+            title="Connected Job Positions"
+            value={`${totalConnectedJobPositions} Positions`}
             valueClassName="text-warning"
-            description="Guiding unit operations"
+            description="Mapped industry roles"
           />
 
           <StatCard
@@ -527,7 +506,7 @@ export function DepartmentsManagementPage() {
                   Departments Directory
                 </CardTitle>
                 <CardDescription>
-                  Browse and govern organizational units, track leadership, and manage connected job positions.
+                  Browse and govern organizational units and manage connected job positions.
                 </CardDescription>
               </div>
 
@@ -596,7 +575,6 @@ export function DepartmentsManagementPage() {
                       <th className="py-2.5 px-3">CODE</th>
                       <th className="py-2.5 px-3">DEPARTMENT &amp; SCOPE</th>
                       <th className="py-2.5 px-3">JOB POSITION</th>
-                      <th className="py-2.5 px-3">LEADERSHIP</th>
                       <th className="py-2.5 px-3">STATUS</th>
                       <th className="py-2.5 px-3 text-right">ACTIONS</th>
                     </tr>
@@ -618,19 +596,6 @@ export function DepartmentsManagementPage() {
                             <span className="font-semibold text-foreground text-xs">
                               {dept.linkedJobPositions?.length || 0}
                             </span>
-                          </td>
-                          <td className="py-3 px-3">
-                            {dept.headOfDepartment ? (
-                              <div className="flex items-center gap-2">
-                                <div className="h-7 w-7 rounded-full bg-primary/10 text-primary font-bold text-xs flex items-center justify-center shrink-0">
-                                  {dept.headOfDepartment.slice(0, 2).toUpperCase()}
-                                </div>
-                                <div className="min-w-0">
-                                  <div className="font-medium text-foreground truncate">{dept.headOfDepartment}</div>
-                                  <div className="text-[11px] text-muted-foreground truncate">{dept.headEmail}</div>
-                                </div>
-                              </div>
-                            ) : null}
                           </td>
                           <td className="py-3 px-3">
                             {dept.status === 'active' ? (
@@ -746,7 +711,7 @@ export function DepartmentsManagementPage() {
             </Badge>
           </div>
           <DialogDescription className="text-xs text-muted-foreground">
-            Structure internal business units, assign department leadership, and connect job positions across your workforce.
+            Structure internal business units and connect job positions across your workforce.
           </DialogDescription>
         </DialogHeader>
 
@@ -808,42 +773,7 @@ export function DepartmentsManagementPage() {
               </div>
             </div>
 
-            {/* Card 2: Assigned Subject Matter Expert / Department Leadership */}
-            <div className="p-4 rounded-xl border border-border bg-card space-y-3 shadow-2xs">
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block">
-                  Assigned Subject Matter Expert
-                </span>
-                <span className="text-[10px] text-primary font-medium">
-                  {expertOptions.length} eligible expert{expertOptions.length !== 1 ? 's' : ''} available in organization
-                </span>
-              </div>
-
-              <div>
-                <Combobox
-                  size="sm"
-                  clearable={false}
-                  options={expertOptions}
-                  value={formHeadName}
-                  onChange={(val) => {
-                    const matched = orgExperts.find((e) => e.name === val)
-                    if (matched) {
-                      setFormHeadName(matched.name)
-                      setFormHeadEmail(matched.email || '')
-                    } else {
-                      setFormHeadName(val)
-                    }
-                  }}
-                  placeholder="Select assigned domain expert..."
-                  searchPlaceholder="Search eligible expert for department leadership..."
-                />
-                <span className="text-[10px] text-muted-foreground mt-1 block">
-                  Assign an active subject matter expert from your organization to guide department leadership and competencies.
-                </span>
-              </div>
-            </div>
-
-            {/* Card 3: Industry Job Position Alignment (Design matching Picture 2) */}
+            {/* Card 2: Industry Job Position Alignment */}
             <div className="p-4 rounded-xl border border-border bg-card space-y-3.5 shadow-2xs">
               {/* Header with Orange Icon, Title, and Subtitle */}
               <div className="flex items-center justify-between">
@@ -1014,32 +944,12 @@ export function DepartmentsManagementPage() {
             </div>
           </div>
           <DialogDescription className="sr-only">
-            Department governance details, leadership, and connected industry job positions.
+            Department governance details and connected industry job positions.
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 overflow-y-auto px-1 flex-1 min-h-0 text-body-sm">
-          {/* Card 1: Department Leadership & Guiding Expert */}
-          <div className="rounded-xl border border-border bg-card p-4 space-y-3 shadow-2xs">
-            <div className="flex items-center gap-2 font-semibold text-foreground text-xs uppercase tracking-wider text-muted-foreground">
-              <UserCheck className="h-4 w-4 text-primary" />
-              Department Leadership &amp; Domain Expert
-            </div>
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div>
-                <span className="text-caption text-muted-foreground block">Head of Department</span>
-                <span className="mt-1 font-semibold text-foreground text-xs block">
-                  {selectedDeptForDetails?.headOfDepartment || ''}
-                </span>
-              </div>
-              <div>
-                <span className="text-caption text-muted-foreground block">Leadership Contact Email</span>
-                <span className="mt-1 text-xs text-foreground block">
-                  {selectedDeptForDetails?.headEmail || ''}
-                </span>
-              </div>
-            </div>
-          </div>
+          {/* Connected Industry Job Positions */}
 
           {/* Card 2: Connected Industry Job Positions */}
           <div className="rounded-xl border border-border bg-card p-4 space-y-3 shadow-2xs">

@@ -67,6 +67,8 @@ export const en = {
     focus: { PRIMARY: 'Primary learning', SUPPORTING: 'Supporting practice', INCIDENTAL: 'Context only' },
     difficulty: { LOW: 'Low', MEDIUM: 'Medium', HIGH: 'High' },
     chooseLevel: 'Choose a level', levelRequired: 'Choose the level you want to work towards.',
+    currentAssignedLevel: 'Current assigned level (Upskilling requires higher level)',
+    belowStartingLevel: 'Below current assigned level',
     title: 'My learning pathway', reviewTitle: 'Initial pathway review', reviewDescription: 'Review assigned plans and confirm the modules employees should study.',
     gaps: 'Review skill gap', gapTitle: 'Learning needs for this Role', gapDescription: 'Review your saved baseline against this Role before confirming your plan.',
     skill: 'Skill', required: 'Required', mastery: 'Baseline mastery', gap: 'Gap', unknown: 'Not yet known', mandatory: 'Mandatory', optional: 'Reference only',

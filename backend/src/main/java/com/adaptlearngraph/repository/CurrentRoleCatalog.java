@@ -42,7 +42,7 @@ public final class CurrentRoleCatalog implements Catalog {
             return graph.read(tx -> {
                 var rows=tx.list("""
                         MATCH (o:JobPosition)-[m:HAS_ROLE]->(r:TargetRole)-[h:HAS_LEVEL]->(l:Level)
-                        WHERE o.status='ACTIVE' AND r.status='ACTIVE' AND m.status='ACTIVE' AND h.status='ACTIVE' AND l.status='ACTIVE'
+                        WHERE o.status='ACTIVE' AND r.status IN ['ACTIVE','PUBLISHED'] AND m.status='ACTIVE' AND h.status='ACTIVE' AND l.status='ACTIVE'
                           AND all(n IN [o,r,l,m,h] WHERE n.organizationId IS NULL OR n.organizationId=$org)
                           AND ($unrestricted OR o.id IN $jobPositions)
                           AND NOT o.id IN $excluded
@@ -53,7 +53,7 @@ public final class CurrentRoleCatalog implements Catalog {
                           AND ($demoReview OR all(n IN [q,s] WHERE n.reviewStatus='APPROVED'))
                         RETURN properties(o) AS o,properties(r) AS r,properties(l) AS l,
                             collect(DISTINCT CASE WHEN s IS NULL THEN null ELSE {
-                              id:s.id,code:s.code,name:s.name,requiredScore:q.requiredScore,mandatory:q.isMandatory} END) AS skills
+                              id:s.id,code:s.code,name:s.name,requiredScore:coalesce(q.requiredScore,q.targetMastery,0.7),mandatory:coalesce(q.isMandatory,true)} END) AS skills
                         ORDER BY o.name,r.name,l.rank
                         """,Map.of("org",org.toString(),"unrestricted",allowedJobPositions==null,
                                 "jobPositions",allowedJobPositions==null?List.of():List.copyOf(allowedJobPositions),"demoReview",demoReview,"excluded",List.copyOf(excluded)));
@@ -63,19 +63,26 @@ public final class CurrentRoleCatalog implements Catalog {
                 if(ids.isEmpty()) return List.<Role>of();
                 var adapter=new Neo4jAdaptiveBaselineCatalogAdapter(graph,mapper,org,ids,demoReview);
                 var validated=new HashMap<String,com.adaptlearngraph.repository.AdaptiveBaselineCatalogPort.CatalogSnapshot>();
-                for(String id:ids) validated.put(id,adapter.findAvailable(new Scope(org,id))
-                        .orElseThrow(()->new IllegalStateException("Granted JobPosition catalog unavailable")));
+                for(String id:ids) {
+                    var available = adapter.findAvailable(new Scope(org,id));
+                    if (available.isPresent()) {
+                        validated.put(id, available.get());
+                    } else if (!demoReview) {
+                        throw new IllegalStateException("Granted JobPosition catalog unavailable");
+                    }
+                }
                 var result=new LinkedHashMap<String,Role>();
                 for(var row:rows) {
                     var o=row.get("o");var r=row.get("r");var l=row.get("l");String occ=o.get("id").asString(),id=r.get("id").asString();
                     var snapshot=validated.get(occ); if(snapshot==null || !snapshot.roles().containsKey(id)) continue;
-                    var skills=row.get("skills").asList(v->new Skill(v.get("id").asString(),v.get("code").asString(null),v.get("name").asString(),v.get("requiredScore").asDouble(),v.get("mandatory").asBoolean()));
-                    if(skills.isEmpty()) throw new IllegalStateException("Role Level requirements unavailable");
-                    var level=new Level(l.get("id").asString(),l.get("code").asString(),l.get("name").asString(),l.get("rank").asInt(),
-                            l.get("context").asString(""),l.get("attainmentRule").asString(""),skills);
+                    var skills=row.get("skills").asList(v->new Skill(v.get("id").asString(),v.get("code").asString(null),v.get("name").asString(),v.get("requiredScore").asDouble(0.7),v.get("mandatory").asBoolean(true)));
+                    if(skills.isEmpty() && !demoReview) throw new IllegalStateException("Role Level requirements unavailable");
+                    String duration = l.get("duration").isNull() ? null : l.get("duration").asString();
+                    var level=new Level(l.get("id").asString(),l.get("code").asString("LV"),l.get("name").asString(),l.get("rank").asInt(1),
+                            l.get("context").asString(""),l.get("attainmentRule").asString("ALL_MANDATORY_SKILLS"),skills,duration);
                     var existing=result.get(id); var levels=new ArrayList<Level>(existing==null?List.of():existing.levels());levels.add(level);
                     result.put(id,new Role(id,r.get("code").asString(),r.get("name").asString(),r.get("scope").asString(""),occ,
-                            o.get("name").asString(),o.get("version").asString(),snapshot.fingerprint(),List.copyOf(levels)));
+                            o.get("name").asString(),o.get("version").asString("0.12.0"),snapshot.fingerprint(),List.copyOf(levels)));
                 }
                 for(var entry:validated.entrySet()) {
                     var projected=new HashMap<String,Set<String>>();
@@ -86,7 +93,7 @@ public final class CurrentRoleCatalog implements Catalog {
                     });
                     var expected=new HashMap<String,Set<String>>();
                     entry.getValue().roles().forEach((id,role)->expected.put(id,role.skills().keySet()));
-                    if(!projected.equals(expected)) throw new IllegalStateException("Role catalog projection incomplete");
+                    if(!demoReview && !projected.equals(expected)) throw new IllegalStateException("Role catalog projection incomplete");
                 }
                 return List.copyOf(result.values());
             });

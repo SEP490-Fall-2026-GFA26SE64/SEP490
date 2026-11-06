@@ -20,60 +20,60 @@ const STORAGE_KEY_DEPARTMENTS_LEGACY = 'adaptlearn_departments_v1'
 
 export const INITIAL_DEPARTMENTS: DepartmentRecord[] = [
   {
-    id: 'dept-eng-swe',
-    code: 'ENG-SWE',
-    name: 'Software Engineering',
-    description: 'Core distributed systems, hexagonal microservices, and web applications.',
-    headOfDepartment: 'Marcus Vance',
-    headEmail: 'marcus.vance@technova.com',
+    id: 'd0000000-0000-0000-0000-000000000001',
+    code: 'ENG-COG',
+    name: 'Engineering & Cognitive Systems',
+    description: 'Core software engineering, cognitive knowledge graphs, and distributed systems.',
+    headOfDepartment: 'Sarah Connor',
+    headEmail: 'manager@technova.com',
     status: 'active',
     linkedJobPositions: ['15-1252.00'],
     organizationId: 'e0000000-0000-0000-0000-000000000001',
     createdAt: '2026-11-04',
   },
   {
-    id: 'dept-eng-data',
+    id: '27fd451e-a429-3de1-9a6e-52c5876904a3',
     code: 'ENG-DATA',
     name: 'Data & Artificial Intelligence',
     description: 'Data pipelines, analytics warehouses, and cognitive knowledge models.',
-    headOfDepartment: 'Marcus Vance',
-    headEmail: 'marcus.vance@technova.com',
+    headOfDepartment: 'Dr. Sarah Chen',
+    headEmail: 'expert@technova.com',
     status: 'active',
     linkedJobPositions: ['15-1243.00'],
     organizationId: 'e0000000-0000-0000-0000-000000000001',
     createdAt: '2026-11-04',
   },
   {
-    id: 'dept-eng-qa',
+    id: '4bb9ce13-f65a-349e-803d-017fd495a62f',
     code: 'ENG-QA',
     name: 'Quality Engineering & Assurance',
     description: 'Automated test suites, Playwright verification, and quality gates.',
-    headOfDepartment: 'Dr. Sarah Chen',
-    headEmail: 'sarah.chen@technova.com',
+    headOfDepartment: 'Marcus Vance',
+    headEmail: 'marcus.vance@technova.com',
     status: 'active',
     linkedJobPositions: ['15-1253.00'],
     organizationId: 'e0000000-0000-0000-0000-000000000001',
     createdAt: '2026-11-04',
   },
   {
-    id: 'dept-eng-cloud',
+    id: '6fe84095-c4f5-39a2-a100-88a15c672d33',
     code: 'ENG-CLOUD',
     name: 'Cloud Infrastructure & DevOps',
     description: 'Cloud systems architecture, container orchestration, and CI/CD pipelines.',
-    headOfDepartment: 'Alex Rivera',
-    headEmail: 'alex.rivera@technova.com',
+    headOfDepartment: 'Linh Nguyen',
+    headEmail: 'linh.nguyen@technova.com',
     status: 'active',
-    linkedJobPositions: ['15-1299.08'],
+    linkedJobPositions: ['15-1299.08', '15-1259.00', '15-1260.00'],
     organizationId: 'e0000000-0000-0000-0000-000000000001',
     createdAt: '2026-11-04',
   },
   {
-    id: 'dept-eng-sec',
+    id: 'c05d5732-9897-38c7-9d8f-dfdbe71cfd53',
     code: 'ENG-SEC',
     name: 'Cybersecurity & Compliance',
     description: 'Zero-trust architecture, security auditing, and compliance governance.',
-    headOfDepartment: 'Dr. Sarah Chen',
-    headEmail: 'sarah.chen@technova.com',
+    headOfDepartment: 'Alex Rivera',
+    headEmail: 'alex.rivera@technova.com',
     status: 'active',
     linkedJobPositions: ['15-1212.00'],
     organizationId: 'e0000000-0000-0000-0000-000000000001',
@@ -89,7 +89,7 @@ export function loadDepartments(): DepartmentRecord[] {
     if (raw) {
       const parsed = JSON.parse(raw)
       if (Array.isArray(parsed) && parsed.length > 0) {
-        return parsed.map((d: Partial<DepartmentRecord>) => ({
+        const list: DepartmentRecord[] = parsed.map((d: Partial<DepartmentRecord>) => ({
           id: d.id || `dept-${d.code?.toLowerCase() || 'item'}`,
           code: d.code || '',
           name: d.name || '',
@@ -102,6 +102,14 @@ export function loadDepartments(): DepartmentRecord[] {
           createdAt: d.createdAt || '2026-11-04',
           updatedAt: d.updatedAt,
         }))
+        const existingIds = new Set(list.map((d) => d.id))
+        const existingNames = new Set(list.map((d) => d.name.toLowerCase()))
+        for (const init of INITIAL_DEPARTMENTS) {
+          if (!existingIds.has(init.id) && !existingNames.has(init.name.toLowerCase())) {
+            list.unshift(init)
+          }
+        }
+        return list
       }
     }
   } catch (e) {

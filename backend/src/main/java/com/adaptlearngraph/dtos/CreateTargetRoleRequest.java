@@ -38,7 +38,26 @@ public record CreateTargetRoleRequest(
 
         Map<String, List<String>> levelCompetencies,
 
-        List<String> competencyIds) {
+        List<String> competencyIds,
+
+        Map<String, String> levelDurations) {
+
+    public CreateTargetRoleRequest(
+            String code,
+            String name,
+            List<String> levels,
+            String familyCode,
+            String track,
+            String assignedExpertId,
+            String description,
+            List<String> responsibilities,
+            String version,
+            String status,
+            List<Map<String, Object>> skillTargets,
+            Map<String, List<String>> levelCompetencies,
+            List<String> competencyIds) {
+        this(code, name, levels, familyCode, track, assignedExpertId, description, responsibilities, version, status, skillTargets, levelCompetencies, competencyIds, Map.of());
+    }
 
     public CreateTargetRoleRequest(
             String code,
@@ -52,7 +71,7 @@ public record CreateTargetRoleRequest(
             String version,
             String status,
             List<Map<String, Object>> skillTargets) {
-        this(code, name, levels, familyCode, track, assignedExpertId, description, responsibilities, version, status, skillTargets, Map.of(), List.of());
+        this(code, name, levels, familyCode, track, assignedExpertId, description, responsibilities, version, status, skillTargets, Map.of(), List.of(), Map.of());
     }
 
     public CreateTargetRoleRequest(

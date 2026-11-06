@@ -87,7 +87,8 @@ public class OrganizationTargetRoleApplicationService {
                 skillTargetsJson,
                 request.levels(),
                 levelCompetenciesJson != null ? levelCompetenciesJson : "{}",
-                competencyIds);
+                competencyIds,
+                request.levelDurations());
 
         return toResponse(createTargetRole.createTargetRole(command));
     }
@@ -151,7 +152,8 @@ public class OrganizationTargetRoleApplicationService {
                 request.rejectionReason(),
                 request.levels(),
                 levelCompetenciesJson,
-                competencyIds);
+                competencyIds,
+                request.levelDurations());
 
         return manageTargetRole.updateTargetRole(command).map(this::toResponse);
     }
@@ -161,6 +163,15 @@ public class OrganizationTargetRoleApplicationService {
     }
 
     private TargetRoleResponse toResponse(TargetRole role) {
-        return mapper.map(role, TargetRoleResponse.class);
+        TargetRoleResponse resp = mapper.map(role, TargetRoleResponse.class);
+        if (role.getLevelDurations() != null && !role.getLevelDurations().isEmpty()) {
+            return new TargetRoleResponse(
+                    resp.id(), resp.organizationId(), resp.code(), resp.name(), resp.familyCode(),
+                    resp.track(), resp.assignedExpertId(), resp.description(), resp.responsibilities(),
+                    resp.status(), resp.version(), resp.skillTargets(), resp.createdAt(), resp.updatedAt(),
+                    resp.rejectionReason(), resp.levels(), resp.levelCompetencies(), resp.competencyIds(),
+                    role.getLevelDurations());
+        }
+        return resp;
     }
 }

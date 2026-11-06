@@ -114,6 +114,28 @@ export const getExpertEffectiveStatus = (
   return 'draft'
 }
 
+function resolveLevelDuration(
+  role: Pick<TargetRoleModel, 'levelDurations'>,
+  levelName: string,
+  index: number,
+): string {
+  const direct = role.levelDurations?.[levelName]
+  if (direct && direct.trim()) return direct.trim()
+  if (role.levelDurations) {
+    const matchedKey = Object.keys(role.levelDurations).find(
+      (k) => k.toLowerCase().trim() === levelName.toLowerCase().trim(),
+    )
+    if (matchedKey && role.levelDurations[matchedKey]?.trim()) {
+      return role.levelDurations[matchedKey].trim()
+    }
+  }
+  const lower = levelName.toLowerCase()
+  if (lower.includes('senior') || index === 0) return '6 months'
+  if (lower.includes('middle') || lower.includes('mid') || index === 1) return '4 months'
+  if (lower.includes('junior') || index === 2) return '3 months'
+  return '2 months'
+}
+
 export function ExpertAssignedRolesPage() {
   const { toast } = useToast()
 
@@ -332,6 +354,10 @@ export function ExpertAssignedRolesPage() {
               Array.isArray(r.levels) && (r.levels as string[]).length > 0
                 ? (r.levels as string[])
                 : storeRole?.levels || ['Senior', 'Middle', 'Junior'],
+            levelDurations:
+              (r.levelDurations && Object.keys(r.levelDurations as Record<string, string>).length > 0
+                ? (r.levelDurations as Record<string, string>)
+                : storeRole?.levelDurations) || {},
             activeEnrollments: 0,
             createdAt: r.createdAt
               ? String(r.createdAt)
@@ -389,9 +415,17 @@ export function ExpertAssignedRolesPage() {
                   ? prev.levels
                   : storeRole?.levels || ['Senior', 'Middle', 'Junior']
 
+            const effectiveLevelDurations =
+              m.levelDurations && Object.keys(m.levelDurations).length > 0
+                ? m.levelDurations
+                : prev?.levelDurations && Object.keys(prev.levelDurations).length > 0
+                  ? prev.levelDurations
+                  : storeRole?.levelDurations || {}
+
             return {
               ...m,
               levels: effectiveLevels,
+              levelDurations: effectiveLevelDurations,
               skillTargets: effectiveSkills,
               levelCompetencies: prevLevelComps,
               competencyIds: prevCompetencyIds,
@@ -720,6 +754,7 @@ export function ExpertAssignedRolesPage() {
       version: nextVersion,
       status: 'DRAFT',
       levels: inheritedLevels,
+      levelDurations: role.levelDurations || {},
       levelCompetencies: inheritedLevelCompetencies,
       competencyIds: derivedInheritedCompIds,
       skillTargets: inheritedSkillTargets,
@@ -1620,6 +1655,7 @@ export function ExpertAssignedRolesPage() {
                   : 'DRAFT',
             skillTargets: updatedRole.skillTargets,
             levels: updatedRole.levels,
+            levelDurations: updatedRole.levelDurations,
             levelCompetencies: updatedRole.levelCompetencies,
             competencyIds: updatedRole.competencyIds,
             rejectionReason: updatedRole.rejectionReason,
@@ -1709,6 +1745,7 @@ export function ExpertAssignedRolesPage() {
           version: role.version,
           skillTargets: role.skillTargets,
           levels: role.levels,
+          levelDurations: role.levelDurations,
           levelCompetencies: role.levelCompetencies,
           competencyIds: role.competencyIds,
           rejectionReason: '',
@@ -2685,8 +2722,9 @@ export function ExpertAssignedRolesPage() {
                       <span>All Levels ({currentRoleLevels.length})</span>
                     </button>
 
-                    {currentRoleLevels.map((lvl) => {
+                    {currentRoleLevels.map((lvl, lIdx) => {
                       const isSelected = selectedAuthoringLevels.includes(lvl)
+                      const lvlDuration = resolveLevelDuration(authoringRole, lvl, lIdx)
                       const hasExplicitAuthoringComps = Boolean(
                         authoringRole.levelCompetencies &&
                         Object.keys(authoringRole.levelCompetencies).length >
@@ -2748,7 +2786,7 @@ export function ExpertAssignedRolesPage() {
                           <span
                             className={`text-[10px] px-1.5 py-0.5 rounded-full font-mono ${isSelected ? 'bg-primary-foreground/20 text-primary-foreground' : 'bg-muted text-muted-foreground'}`}
                           >
-                            {lvlSkills.length} skills · {lvlComps.length} comps
+                            {lvlDuration} · {lvlSkills.length} skills · {lvlComps.length} comps
                           </span>
                         </button>
                       )
@@ -3797,6 +3835,50 @@ export function ExpertAssignedRolesPage() {
               )
             })()}
 
+            {/* Role Mastery Levels */}
+
+            <div className="p-3 rounded-lg border border-border bg-card space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-bold text-foreground">
+                  Role Mastery Levels
+                </span>
+
+                <span className="text-[10px] text-muted-foreground font-semibold">
+                  {viewingDetailsRole.levels?.length || 3} Progressive Levels
+                </span>
+              </div>
+
+              <div className="flex flex-wrap gap-2">
+                {(viewingDetailsRole.levels &&
+                viewingDetailsRole.levels.length > 0
+                  ? viewingDetailsRole.levels
+                  : ['Senior', 'Middle', 'Junior']
+                ).map((lvlName, idx) => {
+                  const lvlDuration = resolveLevelDuration(viewingDetailsRole, lvlName, idx)
+                  return (
+                    <div
+                      key={idx}
+                      className="flex items-center gap-1.5 p-2 rounded-md bg-muted/30 border border-border/80"
+                    >
+                      <Badge
+                        variant="secondary"
+                        className="text-[9px] py-0 px-1 font-mono"
+                      >
+                        Rank {idx + 1}
+                      </Badge>
+                      <span className="font-bold text-foreground text-xs">
+                        {lvlName}
+                      </span>
+                      <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-primary bg-primary/10 border border-primary/20 px-1.5 py-0.5 rounded font-mono">
+                        <Clock className="h-2.5 w-2.5" />
+                        {lvlDuration}
+                      </span>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+
             {/* Role Objective & Scope (Read-only) */}
 
             <div className="p-3 rounded-lg border border-border bg-muted/20 space-y-2 text-xs">
@@ -3925,7 +4007,7 @@ export function ExpertAssignedRolesPage() {
                             All Levels Overview
                           </button>
 
-                          {detailRoleLevels.map((lvl) => {
+                          {detailRoleLevels.map((lvl, lIdx) => {
                             const compCount =
                               (
                                 viewingDetailsRole.levelCompetencies?.[lvl] ||
@@ -3939,6 +4021,7 @@ export function ExpertAssignedRolesPage() {
                                 (st) =>
                                   (st.level || detailRoleLevels[0]) === lvl,
                               ).length
+                            const lvlDuration = resolveLevelDuration(viewingDetailsRole, lvl, lIdx)
 
                             return (
                               <button
@@ -3956,9 +4039,9 @@ export function ExpertAssignedRolesPage() {
                               >
                                 <span>{lvl}</span>
                                 <span
-                                  className={`text-[10px] px-1 py-0.2 rounded-full font-mono ${selectedDetailLevelTab === lvl ? 'bg-primary-foreground/20 text-primary-foreground' : 'bg-muted text-muted-foreground'}`}
+                                  className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono ${selectedDetailLevelTab === lvl ? 'bg-primary-foreground/20 text-primary-foreground' : 'bg-muted text-muted-foreground'}`}
                                 >
-                                  {skillCount} skills · {compCount} comps
+                                  {lvlDuration} · {skillCount} skills · {compCount} comps
                                 </span>
                               </button>
                             )
@@ -3970,7 +4053,7 @@ export function ExpertAssignedRolesPage() {
 
                       {selectedDetailLevelTab === 'ALL' ? (
                         <div className="space-y-3">
-                          {detailRoleLevels.map((lvl) => {
+                          {detailRoleLevels.map((lvl, lIdx) => {
                             const compIds =
                               viewingDetailsRole.levelCompetencies?.[lvl] ||
                               (!hasExplicitLevelComps &&
@@ -3983,26 +4066,37 @@ export function ExpertAssignedRolesPage() {
                                 (st) =>
                                   (st.level || detailRoleLevels[0]) === lvl,
                               )
+                            const lvlDuration = resolveLevelDuration(viewingDetailsRole, lvl, lIdx)
 
                             return (
                               <div
                                 key={lvl}
                                 className="p-3 rounded-lg border border-border bg-card space-y-2.5"
                               >
-                                <div className="flex items-center justify-between">
+                                <div className="flex items-center justify-between flex-wrap gap-2">
                                   <div className="flex items-center gap-2">
+                                    <Badge
+                                      variant="secondary"
+                                      className="font-mono text-[10px]"
+                                    >
+                                      Rank {lIdx + 1}
+                                    </Badge>
                                     <Badge
                                       variant="primary"
                                       className="font-bold text-xs"
                                     >
                                       {lvl} Level
                                     </Badge>
-
-                                    <span className="text-xs text-muted-foreground">
-                                      {compIds.length} Competencies ·{' '}
-                                      {lvlSkills.length} Micro-skills
+                                    <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-primary bg-primary/10 border border-primary/20 px-2 py-0.5 rounded-full font-mono">
+                                      <Clock className="h-3 w-3" />
+                                      Est. Duration: {lvlDuration}
                                     </span>
                                   </div>
+
+                                  <span className="text-xs text-muted-foreground font-mono">
+                                    {compIds.length} Competencies ·{' '}
+                                    {lvlSkills.length} Micro-skills
+                                  </span>
                                 </div>
 
                                 {/* Competencies */}
@@ -4099,6 +4193,8 @@ export function ExpertAssignedRolesPage() {
 
                         (() => {
                           const lvl = selectedDetailLevelTab
+                          const selectedIdx = Math.max(0, detailRoleLevels.indexOf(lvl))
+                          const selectedDur = resolveLevelDuration(viewingDetailsRole, lvl, selectedIdx)
                           const compIds =
                             viewingDetailsRole.levelCompetencies?.[lvl] ||
                             (!hasExplicitLevelComps &&
@@ -4113,15 +4209,27 @@ export function ExpertAssignedRolesPage() {
 
                           return (
                             <div className="p-3.5 rounded-lg border border-border bg-card space-y-3">
-                              <div className="flex items-center justify-between pb-2 border-b border-border">
-                                <Badge
-                                  variant="primary"
-                                  className="font-bold text-xs"
-                                >
-                                  {lvl} Level Architecture
-                                </Badge>
+                              <div className="flex items-center justify-between pb-2 border-b border-border flex-wrap gap-2">
+                                <div className="flex items-center gap-2">
+                                  <Badge
+                                    variant="secondary"
+                                    className="font-mono text-[10px]"
+                                  >
+                                    Rank {selectedIdx + 1}
+                                  </Badge>
+                                  <Badge
+                                    variant="primary"
+                                    className="font-bold text-xs"
+                                  >
+                                    {lvl} Level Architecture
+                                  </Badge>
+                                  <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-primary bg-primary/10 border border-primary/20 px-2 py-0.5 rounded-full font-mono">
+                                    <Clock className="h-3 w-3" />
+                                    Est. Duration: {selectedDur}
+                                  </span>
+                                </div>
 
-                                <span className="text-xs text-muted-foreground">
+                                <span className="text-xs text-muted-foreground font-mono">
                                   {compIds.length} Competencies ·{' '}
                                   {lvlSkills.length} Micro-skills
                                 </span>

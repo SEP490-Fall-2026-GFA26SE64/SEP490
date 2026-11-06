@@ -69,6 +69,8 @@ export const vi: TranslationKeys = {
     focus: { PRIMARY: 'Nội dung chính', SUPPORTING: 'Thực hành hỗ trợ', INCIDENTAL: 'Chỉ làm ngữ cảnh' },
     difficulty: { LOW: 'Thấp', MEDIUM: 'Trung bình', HIGH: 'Cao' },
     chooseLevel: 'Chọn cấp độ', levelRequired: 'Chọn cấp độ công việc bạn muốn hướng tới.',
+    currentAssignedLevel: 'Cấp độ hiện tại (Nâng cao kỹ năng yêu cầu cấp độ cao hơn)',
+    belowStartingLevel: 'Thấp hơn cấp độ khởi điểm hiện tại',
     title: 'Lộ trình học của tôi', reviewTitle: 'Duyệt lộ trình ban đầu', reviewDescription: 'Xem các kế hoạch được phân công và xác nhận nội dung nhân viên cần học.',
     gaps: 'Xem khoảng cách kỹ năng', gapTitle: 'Nhu cầu học cho vị trí này', gapDescription: 'Đối chiếu kết quả đánh giá đầu vào đã lưu với yêu cầu của vị trí trước khi xác nhận kế hoạch học.',
     skill: 'Kỹ năng', required: 'Yêu cầu', mastery: 'Năng lực từ đánh giá đầu vào', gap: 'Khoảng cách', unknown: 'Chưa xác định', mandatory: 'Bắt buộc', optional: 'Chỉ tham khảo',

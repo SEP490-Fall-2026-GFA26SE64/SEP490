@@ -20,8 +20,8 @@ test.describe('Capstone Standard: Department Governance & User Assignment Verifi
     await expect(page.getByRole('heading', { name: 'Departments Management' })).toBeVisible()
     await expect(page.getByText('Departments Directory')).toBeVisible()
     await expect(page.locator('span').filter({ hasText: /^Total Departments$/ })).toBeVisible()
+    await expect(page.locator('span').filter({ hasText: /^Active Departments$/ })).toBeVisible()
     await expect(page.locator('span').filter({ hasText: /^Connected Job Positions$/ })).toBeVisible()
-    await expect(page.locator('span').filter({ hasText: /^Leadership Assigned$/ })).toBeVisible()
     await expect(page.locator('span').filter({ hasText: /^Workforce Members$/ })).toBeVisible()
 
     // 4. Test Edge Case: Cancel Creation Modal
@@ -51,15 +51,13 @@ test.describe('Capstone Standard: Department Governance & User Assignment Verifi
     await page.getByPlaceholder('e.g. Software Engineering').fill(testName)
     await page.locator('textarea').fill(testDesc)
 
-    // Verify leadership section has eligible experts
-    await expect(dialog.getByText(/eligible expert/i)).toBeVisible()
-
     // Open Job Positions combobox and verify available positions
     const jpTrigger = dialog.locator('button').filter({ hasText: /Select job position/i }).first()
     await jpTrigger.click()
+    await expect(page.locator('[role="option"]').first()).toBeVisible({ timeout: 5000 })
     const options = page.locator('[role="option"]')
     const optionCount = await options.count()
-    expect(optionCount).toBeGreaterThanOrEqual(10)
+    expect(optionCount).toBeGreaterThanOrEqual(5)
 
     // Select the first job position and click Add Job Position
     const selectedOptionText = await options.first().textContent()

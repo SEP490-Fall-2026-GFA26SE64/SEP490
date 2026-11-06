@@ -735,8 +735,14 @@ function OntologyGraphPlaygroundInner({
     if (!current) return
 
     const centerPos = networkRef.current?.getPosition(nodeId) || { x: 0, y: 0 }
-    const existingNodeIds = new Set(canvasNodesRef.current.map((n) => n.id))
-    const existingEdgeIds = new Set<string>(canvasEdgesRef.current.map((e) => String(e.id || '')))
+    const existingNodeIds = new Set<string>([
+      ...canvasNodesRef.current.map((n) => String(n.id)),
+      ...(nodesDataSetRef.current ? nodesDataSetRef.current.getIds().map(String) : [])
+    ])
+    const existingEdgeIds = new Set<string>([
+      ...canvasEdgesRef.current.map((e) => String(e.id || '')),
+      ...(edgesDataSetRef.current ? edgesDataSetRef.current.getIds().map(String) : [])
+    ])
 
     const nodesToAdd: PlaygroundCustomNode[] = []
     const edgesToAdd: Edge[] = []
@@ -781,6 +787,14 @@ function OntologyGraphPlaygroundInner({
           }
         }
 
+        // Deduplicate relevantComps by ID
+        const seenCompIds = new Set<string>()
+        const uniqueRelevantComps = relevantComps.filter((c) => {
+          if (!c?.id || seenCompIds.has(c.id)) return false
+          seenCompIds.add(c.id)
+          return true
+        })
+
         const configuredLevels = Array.isArray(role.levels) && role.levels.length > 0 ? role.levels : []
         const levelNamesFromComps = Object.keys(effectiveLevelCompetencies)
         const levelNamesFromSkills = (role.skillTargets || []).map((st: SkillTargetConfig) => st.level).filter(Boolean) as string[]
@@ -814,16 +828,16 @@ function OntologyGraphPlaygroundInner({
           }
         })
 
-        // 2. Build and position Competency nodes (strictly only relevantComps)
+        // 2. Build and position Competency nodes (strictly only uniqueRelevantComps)
         const compY = levelY + 160
         const compSpacing = 220
-        const compTotalWidth = (relevantComps.length - 1) * compSpacing
+        const compTotalWidth = (uniqueRelevantComps.length - 1) * compSpacing
         const compStartX = centerPos.x - compTotalWidth / 2
         const compNodeMap: Record<string, PlaygroundCustomNode> = {}
 
-        relevantComps.forEach((comp, cIdx) => {
-          let compNode = canvasNodesRef.current.find((n) => n.id === comp.id)
-          if (!compNode) {
+        uniqueRelevantComps.forEach((comp, cIdx) => {
+          let compNode = canvasNodesRef.current.find((n) => n.id === comp.id) || nodesToAdd.find((n) => n.id === comp.id)
+          if (!compNode && !existingNodeIds.has(comp.id)) {
             const rawCompPos = {
               x: Math.round(compStartX + cIdx * compSpacing),
               y: compY,
@@ -833,8 +847,10 @@ function OntologyGraphPlaygroundInner({
             nodesToAdd.push(compNode)
             existingNodeIds.add(comp.id)
           }
-          compNodeMap[comp.id] = compNode
-          if (comp.code) compNodeMap[comp.code] = compNode
+          if (compNode) {
+            compNodeMap[comp.id] = compNode
+            if (comp.code) compNodeMap[comp.code] = compNode
+          }
 
           // Connect level(s) to this competency via HAS_COMPETENCY
           const assignedLevelNames = Object.entries(effectiveLevelCompetencies)
@@ -863,6 +879,7 @@ function OntologyGraphPlaygroundInner({
         const skillSpacing = 220
         const skillTotalWidth = (configuredSkillTargets.length - 1) * skillSpacing
         const skillStartX = centerPos.x - skillTotalWidth / 2
+        const seenSkillIds = new Set<string>()
 
         configuredSkillTargets.forEach((st: SkillTargetConfig, sIdx: number) => {
           const targetSkill = microSkillsRef.current.find(
@@ -871,19 +888,20 @@ function OntologyGraphPlaygroundInner({
           if (!targetSkill) return
 
           // Find parent competency
-          const parentComp = relevantComps.find(
+          const parentComp = uniqueRelevantComps.find(
             (c) =>
               c.skillIds?.includes(targetSkill.id) ||
               (targetSkill.code && c.skillIds?.includes(targetSkill.code)) ||
               (st.macroCompetencyCode && (c.id === st.macroCompetencyCode || c.code === st.macroCompetencyCode))
-          ) || (relevantComps.length > 0 ? relevantComps[sIdx % relevantComps.length] : null)
+          ) || (uniqueRelevantComps.length > 0 ? uniqueRelevantComps[sIdx % uniqueRelevantComps.length] : null)
 
           const parentCompNode = parentComp ? compNodeMap[parentComp.id] : null
           const targetLvlNode = st.level
             ? levelNodeMap[st.level.toLowerCase()]
             : (parentCompNode ? null : Object.values(levelNodeMap)[0])
 
-          if (!existingNodeIds.has(targetSkill.id)) {
+          if (!existingNodeIds.has(targetSkill.id) && !seenSkillIds.has(targetSkill.id)) {
+            seenSkillIds.add(targetSkill.id)
             const rawSkillPos = {
               x: Math.round(skillStartX + sIdx * skillSpacing),
               y: skillY,
@@ -1042,7 +1060,32 @@ function OntologyGraphPlaygroundInner({
       }
     })
 
-    if (nodesToAdd.length === 0 && edgesToAdd.length === 0) {
+    // Final deduplication against both nodesDataSetRef and within the batch
+    const currentDataSetNodeIds = new Set(nodesDataSetRef.current ? nodesDataSetRef.current.getIds().map(String) : [])
+    const uniqueNodesToAdd: PlaygroundCustomNode[] = []
+    const seenBatchNodeIds = new Set<string>()
+
+    for (const node of nodesToAdd) {
+      const idStr = String(node.id)
+      if (!currentDataSetNodeIds.has(idStr) && !seenBatchNodeIds.has(idStr)) {
+        seenBatchNodeIds.add(idStr)
+        uniqueNodesToAdd.push(node)
+      }
+    }
+
+    const currentDataSetEdgeIds = new Set(edgesDataSetRef.current ? edgesDataSetRef.current.getIds().map(String) : [])
+    const uniqueEdgesToAdd: Edge[] = []
+    const seenBatchEdgeIds = new Set<string>()
+
+    for (const edge of edgesToAdd) {
+      const idStr = String(edge.id || '')
+      if (idStr && !currentDataSetEdgeIds.has(idStr) && !seenBatchEdgeIds.has(idStr)) {
+        seenBatchEdgeIds.add(idStr)
+        uniqueEdgesToAdd.push(edge)
+      }
+    }
+
+    if (uniqueNodesToAdd.length === 0 && uniqueEdgesToAdd.length === 0) {
       toast({
         title: 'All Neighbors Already Visible',
         description: `All direct relationships for "${current.code}" are already placed on the canvas.`,
@@ -1051,15 +1094,18 @@ function OntologyGraphPlaygroundInner({
       return
     }
 
-    nodesDataSetRef.current.add(nodesToAdd)
-    if (edgesToAdd.length > 0) edgesDataSetRef.current.add(edgesToAdd)
-
-    setCanvasNodes((prev) => [...prev, ...nodesToAdd])
-    if (edgesToAdd.length > 0) setCanvasEdges((prev) => [...prev, ...edgesToAdd])
+    if (uniqueNodesToAdd.length > 0) {
+      nodesDataSetRef.current?.add(uniqueNodesToAdd)
+      setCanvasNodes((prev) => [...prev, ...uniqueNodesToAdd])
+    }
+    if (uniqueEdgesToAdd.length > 0) {
+      edgesDataSetRef.current?.add(uniqueEdgesToAdd)
+      setCanvasEdges((prev) => [...prev, ...uniqueEdgesToAdd])
+    }
 
     toast({
       title: 'Neighbors Expanded',
-      description: `Added ${nodesToAdd.length} connected node${nodesToAdd.length === 1 ? '' : 's'} around ${current.code}.`,
+      description: `Added ${uniqueNodesToAdd.length} connected node${uniqueNodesToAdd.length === 1 ? '' : 's'} around ${current.code}.`,
       variant: 'success',
     })
   }, [findClearSlot, toast])

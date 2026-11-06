@@ -70,11 +70,11 @@ export function TargetRoleSelectionDialog({
 
   const isSameRole = Boolean(
     currentRole &&
-      choice &&
-      (choice.role.name.toLowerCase().trim() === currentRole.toLowerCase().trim() ||
-        choice.role.name.toLowerCase().includes(currentRole.toLowerCase().trim()) ||
-        currentRole.toLowerCase().includes(choice.role.name.toLowerCase().trim()) ||
-        (choice.role.code && currentRole.toLowerCase().includes(choice.role.code.toLowerCase()))),
+    choice &&
+    (choice.role.name.toLowerCase().trim() === currentRole.toLowerCase().trim() ||
+      choice.role.name.toLowerCase().includes(currentRole.toLowerCase().trim()) ||
+      currentRole.toLowerCase().includes(choice.role.name.toLowerCase().trim()) ||
+      (choice.role.code && currentRole.toLowerCase().includes(choice.role.code.toLowerCase()))),
   )
 
   const currentRank = getLevelRank(currentLevel)
@@ -152,17 +152,17 @@ export function TargetRoleSelectionDialog({
                     const levelRank = idx + 1
                     const isLowerOrEqual = isSameRole && levelRank >= currentRank
                     const isSelected = selectedLevel === lvl
+                    const duration = matchedRole?.levelDurations?.[lvl] || (levelRank === 1 ? '6 months' : levelRank === 2 ? '4 months' : '3 months')
 
                     return (
                       <label
                         key={lvl}
-                        className={`flex items-center justify-between p-2.5 rounded-lg border transition-all ${
-                          isLowerOrEqual
+                        className={`flex items-center justify-between p-2.5 rounded-lg border transition-all ${isLowerOrEqual
                             ? 'opacity-40 cursor-not-allowed bg-muted/30 border-border'
                             : isSelected
                               ? 'border-primary bg-primary/5 cursor-pointer'
                               : 'border-border bg-card hover:border-primary/40 cursor-pointer'
-                        }`}
+                          }`}
                       >
                         <div className="flex items-center gap-2">
                           <input
@@ -182,11 +182,16 @@ export function TargetRoleSelectionDialog({
                           <span className="font-semibold text-xs text-foreground">{lvl}</span>
                         </div>
 
-                        {isLowerOrEqual && (
-                          <span className="text-[10px] text-muted-foreground italic">
-                            {levelRank === currentRank ? 'Current Level' : 'Lower Level (Blocked)'}
-                          </span>
-                        )}
+                        <div className="flex items-center gap-2">
+                          <Badge variant="outline" className="text-[10px] font-medium border-border/80">
+                            {duration}
+                          </Badge>
+                          {isLowerOrEqual && (
+                            <span className="text-[10px] text-muted-foreground italic">
+                              {levelRank === currentRank ? 'Current Level' : 'Lower Level (Blocked)'}
+                            </span>
+                          )}
+                        </div>
                       </label>
                     )
                   })}

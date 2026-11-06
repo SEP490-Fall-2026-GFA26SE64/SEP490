@@ -19,7 +19,26 @@ public record CreateTargetRoleCommand(
         String skillTargets,
         List<String> levels,
         String levelCompetencies,
-        List<String> competencyIds) {
+        List<String> competencyIds,
+        java.util.Map<String, String> levelDurations) {
+
+    public CreateTargetRoleCommand(
+            String organizationId,
+            String code,
+            String name,
+            String familyCode,
+            RoleTrack track,
+            String assignedExpertId,
+            String description,
+            List<String> responsibilities,
+            String version,
+            RoleStatus status,
+            String skillTargets,
+            List<String> levels,
+            String levelCompetencies,
+            List<String> competencyIds) {
+        this(organizationId, code, name, familyCode, track, assignedExpertId, description, responsibilities, version, status, skillTargets, levels, levelCompetencies, competencyIds, java.util.Map.of());
+    }
 
     public CreateTargetRoleCommand(
             String organizationId,
@@ -34,7 +53,7 @@ public record CreateTargetRoleCommand(
             RoleStatus status,
             String skillTargets,
             List<String> levels) {
-        this(organizationId, code, name, familyCode, track, assignedExpertId, description, responsibilities, version, status, skillTargets, levels, "{}", List.of());
+        this(organizationId, code, name, familyCode, track, assignedExpertId, description, responsibilities, version, status, skillTargets, levels, "{}", List.of(), java.util.Map.of());
     }
 
     public CreateTargetRoleCommand(

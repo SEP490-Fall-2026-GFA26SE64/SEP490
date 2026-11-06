@@ -233,6 +233,8 @@ export function TargetRoleGraphModal({
           const rawSkillId = st.skillId || st.skillCode || `skill-${sIdx}`
           const matchedC = fetchedComps.find(
             (c) =>
+              c.id === st.macroCompetencyCode ||
+              c.code === st.macroCompetencyCode ||
               c.skillIds?.includes(rawSkillId) ||
               c.skillIds?.includes(st.skillCode || '') ||
               c.code === rawSkillId ||
@@ -245,7 +247,7 @@ export function TargetRoleGraphModal({
             skillId: rawSkillId,
             skillCode: st.skillCode || rawSkillId,
             skillName: st.skillName || backendSkill?.skillName || rawSkillId,
-            macroCompetencyCode: backendSkill?.macroCompetencyCode || matchedC?.id || matchedC?.code || 'KNOWLEDGE',
+            macroCompetencyCode: st.macroCompetencyCode || backendSkill?.macroCompetencyCode || matchedC?.code || matchedC?.id || 'KNOWLEDGE',
             targetMastery: (st.threshold || 80) / 100,
             status: backendSkill?.status || 'ACTIVE',
             level: st.level || backendSkill?.level,
@@ -589,28 +591,27 @@ export function TargetRoleGraphModal({
       })
 
       // Directed edge: (:Competency)-[:HAS_SKILL]->(:MicroSkill)
-      const matchedComp =
-        relevantComps.find(
-          (c) =>
-            c.skillIds?.includes(skill.skillId) ||
-            c.skillIds?.includes(skill.skillCode) ||
-            (skill.macroCompetencyCode && (c.id === skill.macroCompetencyCode || c.code === skill.macroCompetencyCode))
-        ) ||
-        relevantComps.find(
-          (c) =>
-            skill.level &&
-            (currentRole?.levelCompetencies?.[skill.level]?.includes(c.id) ||
-              (c.code && currentRole?.levelCompetencies?.[skill.level]?.includes(c.code)))
-        ) ||
-        (relevantComps.length > 0 ? relevantComps[0] : null)
+      // Connect from ALL relevant competencies that contain or are mapped to this skill
+      const matchingComps = relevantComps.filter(
+        (c) =>
+          c.skillIds?.includes(skill.skillId) ||
+          c.skillIds?.includes(skill.skillCode) ||
+          (skill.macroCompetencyCode && (c.id === skill.macroCompetencyCode || c.code === skill.macroCompetencyCode)) ||
+          (skill.level && (
+            currentRole?.levelCompetencies?.[skill.level]?.includes(c.id) ||
+            (c.code && currentRole?.levelCompetencies?.[skill.level]?.includes(c.code))
+          ))
+      )
 
-      if (matchedComp) {
-        const parentNodeId = `comp-${matchedComp.id}`
+      const compsToLink = matchingComps.length > 0 ? matchingComps : (relevantComps.length > 0 ? [relevantComps[0]] : [])
+
+      compsToLink.forEach((comp) => {
+        const parentNodeId = `comp-${comp.id}`
         addEdgeSafely({
           id: `has-skill-${parentNodeId}-${skill.skillId}`,
           from: parentNodeId,
           to: skill.skillId,
-          title: `Member skill of ${matchedComp.name} (${Math.round(skill.targetMastery * 100)}% benchmark)`,
+          title: `Member skill of ${comp.name} (${Math.round(skill.targetMastery * 100)}% benchmark)`,
           label: 'HAS_SKILL',
           font: { size: 8, color: '#16A34A', align: 'horizontal' },
           color: { color: '#86EFAC', highlight: '#16A34A', hover: '#15803D' },
@@ -618,7 +619,7 @@ export function TargetRoleGraphModal({
           dashes: false,
           width: 1.5,
         })
-      }
+      })
 
       // Directed edge: (:Level)-[:REQUIRES_SKILL {requiredScore}]->(:MicroSkill)
       const targetLevelNodeId = skill.level
