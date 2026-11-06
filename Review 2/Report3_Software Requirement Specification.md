@@ -218,9 +218,9 @@ Evidence precedence is Version 2 for intended scope, later approved decisions fo
 
 [Mermaid source: ACT-04](../documents/diagrams/mermaid/swimlanes/act-04.mmd)
 
-![ACT-04 - Learning offering authoring and approval (target) - Swimlane](../documents/diagrams/mermaid/swimlanes/act-04.png)
+![ACT-04 - Module and learning content authoring and approval - Swimlane](../documents/diagrams/mermaid/swimlanes/act-04.png)
 
-**Diagram scope (ACT-04):** This remains the target learning-offering bundle, including module assessment configuration. The current implemented slice lets the responsible Expert create/import skill-mapped Modules and ordered Text/Video lessons, save drafts and submit complete content; L&D returns or approves the exact Module revision, followed by retryable catalog publication. Other Experts are read-only. Module assessment construction is separate from Question Bank management. Approved publication does not grant every Employee learning access; current pathway, availability and content authorization still apply. See ST-11 in the SDD for the current Module/Content state machine, including guarded draft deletion and archive/restore, and LERD-05 / DB-09 for authoring data relationships.
+**Diagram scope (ACT-04):** The approval package consists of a Module mapped to one MicroSkill and its ordered Text/Video learning content. The responsible Expert creates/imports the Module, saves drafts and submits complete content; L&D returns it with feedback or approves the exact revision, followed by retryable catalog publication. Expert revises and resubmits returned content. Other Experts are read-only. Assessment configuration and assessment questions are outside this approval package. Approved publication does not grant every Employee learning access; current pathway, availability and content authorization still apply. See ST-11 in the SDD for guarded draft deletion and archive/restore, and LERD-05 / DB-09 for authoring data relationships.
 
 [Mermaid source: ACT-05](../documents/diagrams/mermaid/swimlanes/act-05.mmd)
 
@@ -327,7 +327,7 @@ Evidence precedence is Version 2 for intended scope, later approved decisions fo
 | 63 | Configure Baseline Competency Coverage | L&D Manager | Choose the permitted Job Position competency/skill coverage for baseline assessment. | `UC0405Action1`; [FR-04.05](#fr-04-05); specializes `UC0405` |
 | 64 | Configure Baseline Question Selection | L&D Manager | Save feasible baseline selection rules and question/time bounds without changing released attempt versions. | `UC0405Action2`; [FR-04.05](#fr-04-05); specializes `UC0405` |
 | 65 | Configure Baseline Scoring Rules | L&D Manager | Define validated baseline evaluation rules under the applicable versioned policy. | `UC0405Action3`; [FR-04.05](#fr-04-05); specializes `UC0405` |
-| 66 | Approve learning offerings | L&D Manager | Review a submitted module, content and assessment bundle, then approve or return it for revision. | `UC0406`; [FR-04.06](#fr-04-06) |
+| 66 | Approve learning offerings | L&D Manager | Review a submitted module and learning-content bundle, then approve or return it for revision. | `UC0406`; [FR-04.06](#fr-04-06) |
 | 67 | Monitor employee development | L&D Manager | View development and ROI summaries, filter reporting scope and maintain training cost/benefit records. | `UC0407`; [FR-04.07](#fr-04-07) |
 | 68 | Manage micro-skills | Expert | Manage micro-skill definitions, proficiency information and availability within assigned job positions. | `UC0501`; [FR-05.01](#fr-05-01) |
 | 69 | Create Micro-skill | Expert | Create a stable skill definition and proficiency information in the Expert’s assigned scope. | `UC0501Action1`; [FR-05.01](#fr-05-01); specializes `UC0501` |
@@ -363,7 +363,7 @@ Evidence precedence is Version 2 for intended scope, later approved decisions fo
 | 99 | Configure Module Question Selection | Expert | Define eligible question-selection rules for the assigned module assessment. | `UC0506Action5`; [FR-05.06](#fr-05-06); specializes `UC0506` |
 | 100 | Configure Module Scoring Rules | Expert | Define validated answer-evaluation and outcome rules for the assigned module assessment. | `UC0506Action6`; [FR-05.06](#fr-05-06); specializes `UC0506` |
 | 101 | Review initial learning pathways | Expert | Review initial pathways, include or exclude suggested modules and confirm the exact pathway version. | `UC0507`; [FR-05.07](#fr-05-07) |
-| 102 | Submit content for approval | Expert | Submit a new or revised module/content/assessment bundle for L&D approval. | `UC0508`; [FR-05.08](#fr-05-08) |
+| 102 | Submit content for approval | Expert | Submit a new or revised module/content bundle for L&D approval. | `UC0508`; [FR-05.08](#fr-05-08) |
 | 103 | Manage personal profile | Employee | Manage own permitted personal and work-related profile information; Edit profile is inherited through Authenticated User. | `UC0601`; [FR-06.01](#fr-06-01) |
 | 104 | View Personal Profile | Employee | Display the Employee’s own personal and work-related profile information. | `UC0601Action1`; [FR-06.01](#fr-06-01); specializes `UC0601` |
 | 105 | Edit profile | Platform Administrator, System Administrator, L&D Manager, Expert, Employee | Save permitted own-account profile changes; do not edit administrator-owned roles, assignments or entitlement. | `UC0601Action2`; [FR-06.01](#fr-06-01); user-requested shared actor scope |
@@ -405,7 +405,7 @@ Evidence precedence is Version 2 for intended scope, later approved decisions fo
 | [FR-04.03](#fr-04-03) | Manage target roles | L&D Manager | The L&D Manager shall create and update target role details within job positions, assign target roles to Experts, and monitor configuration status. |
 | [FR-04.04](#fr-04-04) | Manage target role publication | L&D Manager | The L&D Manager shall review submitted target role configurations, publish or unpublish target roles, and return configurations to Experts for revision. |
 | [FR-04.05](#fr-04-05) | Manage baseline assessment configuration | L&D Manager | The L&D Manager shall configure baseline competency coverage, question-selection rules, and scoring rules. |
-| [FR-04.06](#fr-04-06) | Approve learning offerings | L&D Manager | The L&D Manager shall review submitted learning modules, learning content, and module assessments; approve them; or return them to Experts for revision. |
+| [FR-04.06](#fr-04-06) | Approve learning offerings | L&D Manager | The L&D Manager shall review submitted learning modules and learning content; approve them; or return them to Experts for revision. |
 | [FR-04.07](#fr-04-07) | Monitor employee development | L&D Manager | The L&D Manager shall view employee competency profiles, skill gaps, assessment outcomes, learning progress, training ROI, and department development summaries; filter results by department, job position, and reporting period; and record or update training costs and monetary benefits with their period, currency, and supporting basis. |
 | [FR-05.01](#fr-05-01) | Manage micro-skills | Expert | The Expert shall create, view, update, and deactivate micro-skills within assigned job positions, including descriptions and proficiency levels. |
 | [FR-05.02](#fr-05-02) | Manage role competency requirements | Expert | The Expert shall add or remove required competencies and micro-skills for assigned target roles and set required proficiency levels and relative importance. |
@@ -414,7 +414,7 @@ Evidence precedence is Version 2 for intended scope, later approved decisions fo
 | [FR-05.05](#fr-05-05) | Manage learning modules | Expert | The Expert shall create, update, and organize learning modules, map modules to micro-skills, and add, update, organize, or remove learning content within each module. |
 | [FR-05.06](#fr-05-06) | Manage module assessments | Expert | The Expert shall create and update questions for assigned modules, classify questions by micro-skill and difficulty, and configure question-selection and scoring rules. |
 | [FR-05.07](#fr-05-07) | Review initial learning pathways | Expert | The Expert shall review initial learning pathways, include or exclude suggested modules, and confirm the pathways. |
-| [FR-05.08](#fr-05-08) | Submit content for approval | Expert | The Expert shall submit new or revised learning modules, including their learning content and module assessments, to the L&D Manager for approval. |
+| [FR-05.08](#fr-05-08) | Submit content for approval | Expert | The Expert shall submit new or revised learning modules, including their learning content, to the L&D Manager for approval. |
 | [FR-06.01](#fr-06-01) | Manage personal profile | Employee | The Employee shall view and update personal and work-related profile information. |
 | [FR-06.02](#fr-06-02) | Complete baseline assessment | Employee | The Employee shall take the baseline assessment and submit answers. |
 | [FR-06.03](#fr-06-03) | Complete RIASEC assessment | Employee | The Employee shall complete the RIASEC interest assessment and submit answers. |
@@ -1576,7 +1576,6 @@ Each row describes one entity used by the four ACT-05 flow ERDs above. Existing 
 - **Data:**
   - Learning Module
   - Ordered Content
-  - Module Assessment
   - Submitted Version
   - Review Decision
   - Revision Feedback
@@ -1584,7 +1583,7 @@ Each row describes one entity used by the four ACT-05 flow ERDs above. Existing 
 
 - **Functionalities:**
   - View submitted learning offerings.
-  - Review module, content and assessment as one versioned bundle.
+  - Review the Module and ordered learning content as one versioned bundle.
   - Approve eligible offerings or return them with feedback.
   - Reject stale or incomplete submissions.
   - Make only approved versions available to permitted Employees.
@@ -1692,13 +1691,12 @@ Each row describes one entity used by the four ACT-05 flow ERDs above. Existing 
 - **Data:**
   - Learning Module
   - Content Version
-  - Module Assessment
   - Offering Version
   - Submission Status
   - Revision Feedback
 
 - **Functionalities:**
-  - Validate the complete module, content and assessment bundle.
+  - Validate the Module, its single-MicroSkill mapping and complete ordered learning content.
   - Submit the exact offering version to L&D.
   - View return feedback and revise the offering.
   - Resubmit without losing decision history.
@@ -2572,7 +2570,7 @@ Manual review procedure:
 | Topic | Required follow-up |
 | --- | --- |
 | Authoring/publication | Replace gated legacy role/skill writes with current-model, trusted assignment-scoped workflows and the Expert-submit/L&D-publish split. |
-| Learning/content | Approve persistent module/content/assessment bundle, private MinIO access and revision workflow design. |
+| Learning/content | Approve persistent module/content bundle, private MinIO access and revision workflow design. |
 | AI/RIASEC | Select/version instrument and local model; approve minimized inference contract, failure handling and guidance entry ordering. |
 | Adaptive engine | Implement evidence-to-mastery, gap calculation, initial review and recalculation with replay/recovery semantics. |
 | Financial reporting | Approve actual costs/benefits schema, currency/period/zero-cost rules and realized-versus-scenario distinction. |

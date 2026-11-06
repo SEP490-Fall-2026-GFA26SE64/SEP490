@@ -69,6 +69,7 @@ The delivery scope includes:
 - Platform and organization administration, accounts, roles, permissions, departments, job positions, and Expert assignments.
 - Expert configuration of target-role requirements, L&D publication, learning-module/content authoring, assessment question banks, and offering approval.
 - Baseline and module assessments, RIASEC interest assessment, assessment results and history, and AI-assisted target-role guidance.
+- ACT-04 authoring and approval covers the Module, its single-MicroSkill mapping and ordered learning content. Assessment configuration/delivery is a separate workstream and is not part of the submitted approval package.
 - Competency estimation, gap analysis, prerequisite-aware initial pathway generation, Expert initial review, and assessment-driven adaptation.
 - Employee pathway and competency visualization, approved learning-content access, individual-skill learning, and progress tracking.
 - Employee and department development monitoring, recorded training costs and monetary benefits, and ROI summaries.
@@ -314,7 +315,7 @@ Run applicable Docker Compose and Playwright journeys against the integrated app
 
 - Register/verify -> select/pay -> provision -> access/renew workspace.
 - Manage accounts/departments -> job positions/Expert assignments -> configure/submit target role -> L&D publication.
-- Author module/content/assessment -> submit -> approve or return for revision.
+- Author module/content with one MicroSkill mapping -> submit -> approve or return for revision.
 - Complete the agreed baseline/RIASEC and role-entry flow -> gaps -> initial pathway -> Expert review/confirmation -> learning/assessment -> adaptation.
 - Learn an individual skill without replacing the selected role pathway.
 - View development summaries and ROI from traceable cost/benefit records.

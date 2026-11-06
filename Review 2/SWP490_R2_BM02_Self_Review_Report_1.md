@@ -1,5 +1,8 @@
 SWP490 · CAPSTONE PROJECT · REVIEW 2 · BM02
 
+
+**Scope update — 2026-11-06:** The approved ACT-04 package now contains Module and learning content only, with one MicroSkill per Module. F13's former requirement to include a module-assessment snapshot in that approval package is superseded. Its separate concern about authoritative assessment scoring/evidence remains outside ACT-04. Historical findings below retain their original wording.
+
 # SRS/SDD Self-Review Report – Review 2
 
 ## 1. Run Information

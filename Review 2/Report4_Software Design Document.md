@@ -5810,7 +5810,7 @@ Plan versions are immutable value snapshots with a current-plan pointer, not an 
 | `MicroSkillService`, `PrerequisiteService` | Existing skill and directed-cycle validation code; associated write APIs are legacy-gated. |
 | Planned `Job PositionAdministration` / `ExpertAssignment` | Persist organization/department ownership, active references and assignment history; reject foreign or inactive grants. |
 | Planned `RoleConfigurationWorkflow` | Draft configuration version, submission and L&D decision; separate authored requirements from publication authority. |
-| Planned `OfferingWorkflow` | Coordinates a versioned module/content/assessment bundle, return/resubmit and approval. |
+| Planned `OfferingWorkflow` | Coordinates a versioned module/content bundle, return/resubmit and approval. |
 | Planned authorization/repository/projection/content ports | Derive trusted scope; preserve relational workflow history; publish recoverable graph projections; authorize private object access. |
 
 The frontend WF-04/WF-07 layouts and SRS field rules apply. Additional target columns/DTOs must be designed and approved before implementation. Current `assignedExpertId`, local company storage and graph `reviewStatus` are not interchangeable assignment/publication authorities.
@@ -5852,7 +5852,7 @@ The frontend WF-04/WF-07 layouts and SRS field rules apply. Additional target co
 **Diagram notes (ST-11):**
 
 - Current Module-document states are DRAFT, SUBMITTED, RETURNED, PUBLISH_PENDING, RELEASED, ARCHIVE_REQUESTED, ARCHIVE_PENDING and ARCHIVED. The responsible Expert edits/submits; L&D returns with feedback or approves the exact revision. Publication/archive failures remain pending for authorized retry. Archive approval and projection both recheck required skill coverage.
-- Lessons are reviewed as part of the whole Module. Editing a released Module creates a successor draft and preserves the published predecessor/history. Returning an archive request keeps the Module RELEASED. Restoring creates a new DRAFT; archived availability remains in effect until reapproval/publication succeeds. Learner pins and historical packages survive archive/restore. ACT-04 remains the broader learning-offering target; learning access is separately authorized.
+- Lessons are reviewed as part of the whole Module. Editing a released Module creates a successor draft and preserves the published predecessor/history. Returning an archive request keeps the Module RELEASED. Restoring creates a new DRAFT; archived availability remains in effect until reapproval/publication succeeds. Learner pins and historical packages survive archive/restore. ACT-04 covers Module and learning-content authoring/approval with one MicroSkill per Module; assessments are outside the approval package. Learning access is separately authorized.
 - The terminal deletion edge is an operation, not a persisted DELETED state: the responsible Expert may permanently delete only a DRAFT with a matching lock version, no intake, no previous release and no graph/pin reference. RETURNED cannot be directly deleted; saving an edit first creates DRAFT. Stale or unauthorized commands do not transition state. The content library is separate; deleting the Module does not imply deleting its content package.
 
 [Mermaid source: ST-12](../documents/diagrams/mermaid/st-12.mmd)

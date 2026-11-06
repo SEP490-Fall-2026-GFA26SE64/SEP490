@@ -1,5 +1,8 @@
 SWP490 · CAPSTONE PROJECT · REVIEW 2 · BM01
 
+
+**Scope update — 2026-11-06:** The approved ACT-04 package now contains Module and learning content only, with one MicroSkill per Module. F13's former requirement to include a module-assessment snapshot in that approval package is superseded. Its separate concern about authoritative assessment scoring/evidence remains outside ACT-04. Historical findings below retain their original wording.
+
 # Design Brief – Review 2
 
 ## 0. Header
@@ -70,7 +73,7 @@ Adapt-Learn-Graph addresses static corporate training by connecting role require
 | F-01 | Organization registration and provisioning | Guest; System | Valid verification completes registration; incomplete proof blocks entry; payment replay creates one workspace. | TC-F01-01..03 | In progress |
 | F-02 | Subscription purchase and renewal | Guest; System Administrator; System | Confirmed terms create one paid period; duplicate evidence adds none; excess seats block application. | TC-F02-01..03 | In progress |
 | F-03 | Role configuration/publication | Expert; L&D Manager | Expert submits; only L&D publishes; returned versions remain unavailable until approved. | TC-F03-01..03 | In progress |
-| F-04 | Offering approval | Expert; L&D Manager | Approval binds module/content/assessment versions; returned bundles stay unavailable; history remains unchanged. | TC-F04-01..03 | In progress |
+| F-04 | Offering approval | Expert; L&D Manager | Approval binds module/content versions; returned bundles stay unavailable; history remains unchanged. | TC-F04-01..03 | In progress |
 | F-05 | Baseline and RIASEC assessment | Employee; System | Persist scored submissions with versions; replay adds no duplicate; interests never overwrite mastery. | TC-F05-01..03 | In progress |
 | F-06 | Guidance and initial pathway review | Employee; Expert; System | Guidance uses authorized published candidates; Employee chooses; only confirmed exact pathway becomes learnable. | TC-F06-01..03 | In progress |
 | F-07 | Adaptive and independent learning | Employee; System | New evidence updates mastery/pathway once; completed work remains; independent learning preserves selected role. | TC-F07-01..03 | Planned |

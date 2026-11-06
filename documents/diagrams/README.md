@@ -1,5 +1,10 @@
 # Architecture Diagrams
 
+## ACT-04 approval scope — 2026-11-06
+
+ACT-04 now covers the Module, one MicroSkill mapping and ordered learning content. Assessment configuration is outside the submitted approval package. Canonical and swimlane ACT-04 assets, SEQ-06 and the UC-B submission dependency are synchronized with Reports 1–4. Prior dated entries retain their original scope.
+
+
 ## Report 3 business swimlanes - 2026-11-06
 
 All nine business flows referenced by Report 3 now use [separate swimlane assets](mermaid/swimlanes): ACT-01/02/03/04/05/07/08/09/10. Every actor has a fixed column; `L and D Manager` and the short `L&D` label display as `L&D Manager`, and the exact `System` actor displays as `System Handler`. System Administrator and Platform Administrator are not renamed. ACT-06 is not displayed in Report 3 and is not added by this revision.
