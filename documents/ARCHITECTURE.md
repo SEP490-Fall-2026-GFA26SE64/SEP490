@@ -75,6 +75,14 @@ Guest plan/checkout/setup, platform plan configuration, organization subscriptio
 
 Local verification used a separate Compose test image with test-only provider/fixture endpoints, PostgreSQL/Neo4j and Mailpit at `http://127.0.0.1:8092/`. Those fixtures are not in the production image. No live merchant/email call occurred. The retained development database remains V8 pending separately authorized migration. [Evidence](testing/README.md#subscription-lifecycle-local-delivery) distinguishes local completion from provider acceptance and production readiness.
 
+### Platform organization directory projection (2026-11-04)
+
+`GET /api/v1/platform/workspaces` retains `organizationId`, `name`, administrative `status` and provisioning `setupState`. Its read-only extension adds `subscription: { status, current }` and `administrators`. `current` is null outside an active paid period; otherwise it exposes only the purchased plan `name`, `startsAt` and `endsAt`. Coverage uses one server instant and half-open periods `[startsAt, endsAt)`: ACTIVE for current coverage, SCHEDULED for future-only coverage, EXPIRED for historical coverage without a current/future period, and NONE when no paid period exists. These states do not derive from administrative suspension.
+
+Administrators are current `ORGANIZATION_ADMINISTRATOR` membership-role assignments, not a permanent designation of the original registrant. Each projection contains `accountId`, nullable `fullName` (current profile, then legitimate registration-name fallback), `email`, membership `active` and `accountActive`; inactive assignments remain visible. Missing assignments produce an empty list. Organization, account and membership tenant IDs must match. Two batched JPA projections load administrator display data and paid-period display fields for the provisioned organization IDs; no tenant billing/history API is reused or newly authorized.
+
+The existing trusted platform guard, no-store response and suspension transaction/audit remain the owners. `PUT /api/v1/platform/workspaces/{organizationId}/suspension` requires a non-null boolean `suspended` plus existing session/CSRF authorization; missing/null intent is rejected rather than defaulting to reactivation. Confirmation occurs in the UI, not as a substitute for server authorization. Reactivation changes only administrative status, never paid dates or setup readiness. No profile-write endpoint, storage/schema migration or new dependency is introduced. [API/persistence evidence](testing/integration/REQ-064-manage-organizations-20261104.md).
+
 ### Onboarding presentation and transactional mail (2026-10-26)
 
 - Guest organization/account entry, verification/MFA, plan selection, payment and workspace progress reuse one Guest layout. Organization and account entry are separate UI steps but retain the same atomic registration API command; unsaved credentials are not persisted in the browser.

@@ -44,6 +44,22 @@ public interface OrganizationMembershipJpaRepository
             """)
     List<Listed> members(@Param("organization") UUID organizationId);
 
+    record Administrator(UUID organizationId, UUID accountId, String fullName, String email,
+                         Boolean active, Boolean accountActive) {}
+
+    @Query("""
+            select new com.adaptlearngraph.repository.OrganizationMembershipJpaRepository$Administrator(
+                m.organizationId, m.accountId, coalesce(p.fullName, r.adminName), a.identifier, m.active, a.active)
+            from OrganizationMembershipEntity m join AccountEntity a on a.accountId = m.accountId
+                and a.organizationId = m.organizationId
+            join OrganizationMembershipRoleEntity role on role.membershipId = m.membershipId
+            left join WorkspaceAccountProfileEntity p on p.accountId = m.accountId
+            left join OrganizationRegistrationEntity r on r.accountId = m.accountId
+            where m.organizationId in :organizations and role.roleCode = 'ORGANIZATION_ADMINISTRATOR'
+            order by a.identifier, m.accountId
+            """)
+    List<Administrator> administrators(@Param("organizations") List<UUID> organizationIds);
+
     /** Active Employee seats: active membership of an active account with the EMPLOYEE role. */
     @Query("""
             select count(m) from OrganizationMembershipEntity m join AccountEntity a on a.accountId = m.accountId

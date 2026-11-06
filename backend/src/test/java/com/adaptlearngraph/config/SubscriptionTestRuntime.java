@@ -113,6 +113,8 @@ public final class SubscriptionTestRuntime {
         private final JdbcTemplate jdbc; private final RegistrationSecrets secrets; private final Provider provider;
         private final org.springframework.transaction.PlatformTransactionManager manager;
         @org.springframework.beans.factory.annotation.Autowired private com.adaptlearngraph.repository.PlatformAdministratorSeeds platformSeeds;
+        @org.springframework.beans.factory.annotation.Autowired private com.adaptlearngraph.repository.PaymentOrderStore orders;
+        @org.springframework.beans.factory.annotation.Autowired private com.adaptlearngraph.repository.PaymentProcessingStore payments;
         FixtureController(JdbcTemplate jdbc,RegistrationSecrets secrets,Provider provider,
                 org.springframework.transaction.PlatformTransactionManager manager) { this.jdbc=jdbc;this.secrets=secrets;this.provider=provider;this.manager=manager; }
         @PostMapping("/api/v1/__subscription-test/platform-seed")
@@ -141,6 +143,49 @@ public final class SubscriptionTestRuntime {
         Map<String,Object> payment(@PathVariable UUID orderId) {
             return jdbc.queryForObject("SELECT provider_order_code,price_vnd FROM platform.payment_order WHERE order_id=?",
                     (rs,i)->provider.paid(rs.getLong(1),rs.getLong(2)),orderId);
+        }
+        @PostMapping("/api/v1/__subscription-test/organization-directory")
+        Map<String,Object> directory(@RequestParam(defaultValue="ACTIVE") String coverage) {
+            if (!java.util.Set.of("ACTIVE", "EXPIRED", "NONE").contains(coverage))
+                throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.BAD_REQUEST);
+            var account = new LinkedHashMap<>(registrant(false));
+            UUID accountId = (UUID) account.get("accountId"), registrationId = (UUID) account.get("registrationId");
+            UUID organization;
+            if ("NONE".equals(coverage)) {
+                organization = UUID.randomUUID();
+                jdbc.update("INSERT INTO platform.organization(organization_id,code,name) VALUES (?,?,?)",
+                        organization, "DIR_" + organization.toString().toUpperCase(java.util.Locale.ROOT), "Directory no subscription " + organization);
+                jdbc.update("UPDATE platform.account SET organization_id=? WHERE account_id=?", organization, accountId);
+                jdbc.update("""
+                        INSERT INTO platform.organization_workspace(workspace_id,organization_id,registration_id,slug,setup_state,created_at,failure_code)
+                        VALUES (?,?,?,?,'FAILED',now(),'TEST_FIXTURE')
+                        """, UUID.randomUUID(), organization, registrationId, "directory-" + organization);
+            } else {
+                Instant at = "EXPIRED".equals(coverage) ? Instant.now().minus(java.time.Duration.ofDays(120)) : Instant.now();
+                var plan = jdbc.queryForMap("SELECT plan_id,current_version_id FROM platform.subscription_plan WHERE code='starter'");
+                var actor = new com.adaptlearngraph.entities.domain.SubscriptionAccessPolicy.Actor(
+                        accountId, null, true, false, java.util.Set.of(), true);
+                var order = orders.create(new com.adaptlearngraph.repository.SubscriptionIdentity.Context(actor, registrationId),
+                        new com.adaptlearngraph.repository.PaymentOrderStore.Command(null, (UUID) plan.get("plan_id"),
+                                (UUID) plan.get("current_version_id"), UUID.randomUUID(), null), at);
+                payments.record(new PaymentGateway.Observation(order.providerOrderCode(), "directory-" + order.orderId(),
+                        order.terms().priceVnd(), null, "VND", "PAID", "directory-" + order.orderId(), null, at,
+                        "WEBHOOK", java.util.HexFormat.of().formatHex(
+                                java.nio.ByteBuffer.allocate(32).putLong(order.providerOrderCode()).array())), at);
+                payments.apply(order.orderId(), at);
+                organization = jdbc.queryForObject("SELECT organization_id FROM platform.organization_workspace WHERE registration_id=?",
+                        UUID.class, registrationId);
+                jdbc.update("""
+                        INSERT INTO platform.workspace_account_profile(account_id,full_name,email_verified_at)
+                        VALUES (?,'Current Directory Administrator',now())
+                        ON CONFLICT (account_id) DO UPDATE SET full_name=EXCLUDED.full_name
+                        """, accountId);
+                if ("EXPIRED".equals(coverage))
+                    jdbc.update("UPDATE platform.organization_membership SET active=false WHERE account_id=?", accountId);
+            }
+            account.put("organizationId", organization);
+            account.put("organizationName", jdbc.queryForObject("SELECT name FROM platform.organization WHERE organization_id=?", String.class, organization));
+            return account;
         }
         @PostMapping("/api/v1/__subscription-test/references/{organization}")
         void references(@PathVariable UUID organization) {
