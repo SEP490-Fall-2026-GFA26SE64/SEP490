@@ -2,6 +2,8 @@
 
 ## Scoped state style using ST-01 — 2026-11-06
 
+The following formatting entry is historical for ST-16: the current authoring revision splits it into ST-16A/B below. Its upstream source/render is [archived](archive/st-16-before-split-20261106/README.md). ST-11 also has the subsequent authoring lifecycle expansion below.
+
 ST-14's subsequent approved rule correction uses explicit Employee submission and L&D-configured PASSED/FAILED outcomes, with no evidence or auto-submit branch. [Current ST-14 PNG](mermaid/st01-standard-20261106/st-14-rule-based-20261106.png) · [Rule revision checks](review2-st14-rule-20261106.json). This replaces only ST-14's earlier adaptive-attempt diagram.
 
 Only **ST-13, ST-14, ST-16, ST-17, ST-18 and ST-19** use the updated ST-01-based format. ST-15 is removed from Report 4 and [archived](archive/st-15-20261106/README.md). ST-01 is unchanged; all 14 other ST source/SVG/PNG sets have been restored to their pre-formatting versions. State/transition content is preserved. [Current six images and source links](mermaid/st01-standard-20261106/README.md) · [Verification](review2-state-style-20261106.md).
@@ -15,6 +17,23 @@ Report 3/4 display the approved ACT-05 Role-Level baseline/configuration flow an
 [Verification and artifact notes](review2-role-level-20261106.md) · [Machine-readable checks and hashes](review2-role-level-20261106-checks.json).
 
 
+## ACT-04 / ACT-10 authoring coverage — 2026-11-06
+
+Report3 and Report4 now include the following current-source additions, using the existing conceptual/logical/physical and state-diagram templates:
+
+| View | Module / Learning Content (ACT-04) | Question Bank (ACT-10) |
+| --- | --- | --- |
+| ACT-05 conceptual references | [CERD-03](mermaid/cerd-03.mmd): target learning provision, one skill per module | [CERD-02](mermaid/cerd-02.mmd): published QuestionVersion references; authoring detail is in LERD-06 |
+| Logical | [LERD-05](mermaid/lerd-05.mmd): document, revision, content/lesson/teaching snapshots, history and optional intake | [LERD-06](mermaid/lerd-06.mmd): workspace, question/version, audit, notices and imports; publication is a storage mapping |
+| Physical | [DB-09](mermaid/db-09.mmd): six V36/V37 authoring tables with V48 renames | [DB-10](mermaid/db-10.mmd): three V29 authoring tables and five declared foreign keys |
+| State | [ST-11](mermaid/st-11.mmd): review/publication plus guarded deletion, archive/retry and restore | [ST-16A](mermaid/st-16a.mmd): version review; [ST-16B](mermaid/st-16b.mmd): retirement/reactivation |
+
+Each source has sibling SVG and PNG renders. LERD-01–04 and CERD-01–04 retain the upstream ACT-05 target design; LERD-05/06 describe current authoring storage and retain historical snapshots. Logical JSON objects are not represented as invented SQL tables/FKs. DB-09/10 supplement the dated V1–V32 capture rather than claiming a new live database inventory. Only Module supports guarded draft deletion; Question does not. Module restore creates a new draft and keeps archived availability until successful reapproval/publication.
+
+Design refinement: Report4 documents logical identities, identifying/reference edges, retained legacy cardinalities, six exact FK mappings and derived physical multiplicities. ST-16A/16B replace the ambiguous ST-16 filenames; older dated entries retain their historical terminology. DB-09 deliberately contains no invented JSON foreign keys.
+
+The separate authoring validation files are absent from this checkout; source mappings remain in Report4. The dated 2026-11-02 entries below describe their original smaller scope; this entry supersedes their archive/availability omissions.
+
 ## Single-Skill Module contract — 2026-11-05
 
 [Current schema and Mermaid](../neo4j_schema.md#current-contract--2026-11-05) and [PlantUML source](neo4j.puml) describe Module → TEACHES → exactly one MicroSkill, with multiple alternative Modules per Skill and no teaching focus/difficulty properties. PostgreSQL owns original-version completion and optional-learning admission. Existing `neo4j.svg`/`neo4j.png` are retained historical v0.11 renders; they were not regenerated or represented as current. No PlantUML renderer was installed for this source change. [Runtime/API contract](../technical/Skill-Learning-Eligibility.md).
@@ -27,7 +46,7 @@ Report 3/4 display the approved ACT-05 Role-Level baseline/configuration flow an
 | --- | --- | --- |
 | ACT-04 Module / Learning Content | [ST-11 source](mermaid/st-11.mmd), [SVG](mermaid/st-11.svg), [PNG](mermaid/st-11.png) | Current Module document revision: DRAFT, SUBMITTED, RETURNED, PUBLISH_PENDING, RELEASED. Lessons are reviewed with the Module; published history remains immutable. Archive/restore omitted from this main-flow view. |
 | ACT-07 independent skill learning | [ST-23 source](mermaid/st-23.mmd), [SVG](mermaid/st-23.svg), [PNG](mermaid/st-23.png) | Target business states only; not new persisted enum values. Distinguishes content progress, assessment evidence and independent progress. Independent-learning/assessment integration remains incomplete. |
-| ACT-10 Question Bank | [ST-16 source](mermaid/st-16.mmd), [SVG](mermaid/st-16.svg), [PNG](mermaid/st-16.png) | Current question-candidate states: DRAFT, SUBMITTED, PUBLISHED. Return/withdraw goes to DRAFT; a successor is a new draft without changing the immutable published predecessor. Availability is a separate lifecycle. |
+| ACT-10 Question Bank | [ST-16 source](mermaid/st-16a.mmd), [SVG](mermaid/st-16a.svg), [PNG](mermaid/st-16a.png) | Current question-candidate states: DRAFT, SUBMITTED, PUBLISHED. Return/withdraw goes to DRAFT; a successor is a new draft without changing the immutable published predecessor. Availability is a separate lifecycle. |
 
 ST-11 and ST-16 describe the current document/candidate pointer, not mutations of an already published immutable version. Rejected/stale/unauthorized commands do not transition state. References: `ModuleAuthoringService`, `QuestionBankService`, [Learning catalog](../features/Learning%20catalog/README.md), [Question Bank rules](../features/Assessment%20workflows/README.md#fr-05-06) and [independent learning target](../features/Employee%20experience/README.md#fr-06-07). ST-11 and ST-16 are updated in place for Module/Content and Question Bank; duplicate ST-22/ST-24 files and rendered images were removed. ACT diagrams are unchanged. ST-23 remains the separate independent-learning target.
 

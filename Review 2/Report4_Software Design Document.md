@@ -45,6 +45,8 @@
 
 | Date | A*M, D | In charge | Change Description |
 | --- | --- | --- | --- |
+| 2026-11-06 | M | Documentation preparation with AI assistance | Reconciled LERD-05/06 identities, snapshot/legacy cardinalities and persistence mappings; checked DB-09/10 keys and FK multiplicities across source lineages; split ST-16A/B and corrected successor semantics. |
+| 2026-11-06 | M | Documentation preparation with AI assistance | Extended ST-11 with guarded draft deletion and archive/restore; added ST-16 availability detail, LERD-05/06 and DB-09/10 authoring supplements. Aligned Module–MicroSkill cardinality with the current contract; retained dated V1–V32 baseline counts. |
 | 2026-11-06 | M | Documentation preparation with AI assistance | Updated only ST-14 to explicit submission and L&D-configured pass/fail rules; removed evidence, auto-submit and adaptive-stop branches from this diagram. |
 | 2026-11-06 | M | Documentation preparation with AI assistance | Standardized only ST-13, ST-14, ST-16, ST-17, ST-18 and ST-19 to the unchanged ST-01 visual reference. Removed ST-15 from the current report; all other state diagrams retain their previous sources and images. State/transition content is unchanged. |
 | 2026-11-06 | M | Documentation preparation with AI assistance | Updated approved ACT-05 Role-Level baseline flow, related state machines and flow-scoped ERDs; retained report styling and dated physical schema history. Documentation only; no runtime/schema change. |
@@ -369,7 +371,7 @@ The checksum column is the full signed Flyway CRC32 verified against the running
 
 ### 2.2 Logical database design
 
-The following four ERDs model only the approved ACT-05 flow. Every entity box lists its complete attribute set **as defined for this target flow model**, including types, keys and nullability. Existing shared entities are scoped references, not exhaustive replacements for their owning physical tables; the full historical physical dictionary remains in section 2.3. This model is proposed documentation, not an applied schema change.
+LERD-01 through LERD-04 model the approved ACT-05 target flow; LERD-05/06 separately describe current persisted ACT-04/10 authoring aggregates. Within LERD-01–04, every entity box lists its complete attribute set **as defined for this target flow model**, including types, keys and nullability. Existing shared entities are scoped references, not exhaustive replacements for their owning physical tables; the full historical physical dictionary remains in section 2.3. This model is proposed documentation, not an applied schema change.
 
 **Notation and constraints:** PK/FK identify target logical keys. REQUIRED/NULLABLE describe field nullability. Catalog IDs refer across stores and are not SQL-enforced foreign keys into Neo4j. Tenant-bearing references must match organization and learner ownership, including joins whose compact FK label names only the entity. Time fields are timestamptz. JSON snapshots contain validated, versioned rules/outcomes, never executable organization-supplied code.
 
@@ -423,6 +425,50 @@ The following four ERDs model only the approved ACT-05 flow. Every entity box li
 - Bypass requires absence of both eligible module and certificate provision, a genuine Expert/reason/time and preserved source step. It remains Needs supplementation. Any non-bypassed blocking requirement keeps Role and Level locked, including pending generation/review and processing errors. Completion or bypass-only releases target change; a running attempt still blocks replacement. Historical selection/profile/pathway data remains queryable.
 - No-learning-required closes the request without creating an artificial learning task. Other generation errors remain bound to the same target for repair/retry. New target selection returns to its matching Active baseline config; old baseline results are not silently treated as a new assessment.
 
+**ACT-04 / ACT-10 authoring supplements — source-inspected 2026-11-06**
+
+[Mermaid source: LERD-05](../documents/diagrams/mermaid/lerd-05.mmd)
+
+![LERD-05 - Module and content authoring](../documents/diagrams/mermaid/lerd-05.png)
+
+**Diagram notes (LERD-05):** This is a logical model of the persisted authoring aggregate, including retained history. ModuleDocument owns ModuleRevision and ModuleEvent; each revision owns one ContentSnapshot and its LessonSnapshot/TeachingSnapshot occurrences. A lesson ID may recur in later revisions, so the lesson node denotes a snapshot occurrence rather than one global mutable lesson. Drafts allow 0–200 lessons; submission requires at least one complete lesson. Current v0.12 revisions require exactly one TeachingSnapshot; older revisions can retain multiple teachings. Each teaching references one MicroSkill. ContentPackage is the independently stored source package (it has no DRAFT workflow state), and a revision copies its content. Intake can precede a document and a newly created document need not have an intake.
+
+**Logical notation (LERD-05/06):** Crow's-foot ends express minimum/maximum participation. Solid lines identify objects through their owning context; dotted lines are references that do not form the object's identity. Mandatory participation does not imply an identifying relationship. These conventions belong to the logical `erDiagram` views and are distinct from the external-table arrows in DB views. See the [Mermaid ER notation](https://mermaid.js.org/syntax/entityRelationshipDiagram.html#identification). Arrays/embedded snapshots implement logical relationships without requiring separate SQL tables or FKs.
+
+| LERD-05 object | Logical identity / storage mapping |
+| --- | --- |
+| ModuleDocument | `(organizationId, id)` → `module_authoring`; module ID also globally unique. |
+| ModuleRevision | Owning document + `number` → `document.revisions[]`. |
+| ContentSnapshot | Owning revision → `revisions[].payload.content`; its `id` refers to the source package. |
+| LessonSnapshot | Owning content snapshot + lesson `id` → `content.lessons[]`; IDs are unique within that snapshot. |
+| TeachingSnapshot | Owning revision + teaching `metadata.id` → `payload.teachings[]`; repeated skill IDs in a revision are rejected. |
+| ModuleEvent | Owning document + `sequence` → `document.history[]`. |
+| ContentPackage | `(organizationId, contentId)` → `module_authoring_content.document`. |
+| CatalogIntake | `moduleId` → `module_catalog_intake.document` and accepted intake snapshot in the Module document. |
+| MicroSkill | Graph `id`; referenced by teaching `skillId`, not a PostgreSQL FK. |
+
+The owning context in this table describes logical identity; it does not add fields to JSON or propose new tables. Review metadata stays nullable before a decision; original imported authorship is not inferred from acceptance.
+
+[Mermaid source: LERD-06](../documents/diagrams/mermaid/lerd-06.mmd)
+
+![LERD-06 - Question Bank authoring](../documents/diagrams/mermaid/lerd-06.png)
+
+**Diagram notes (LERD-06):** Organization identifies its optional workspace (`organization_id` PK); bank ID is a unique alternate reference. Questions, versions, audit events, notices and import batches have their own UUIDs, so their associations are non-identifying. Each Question has one or more versions. AuditEvent always references a Question and can have optional version context; the service supplies matching question/version IDs. A MicroSkill reference is mandatory for newly saved versions, but the stored model preserves nullable skill metadata in adopted legacy items; the optional end represents that compatibility, not permission to create a new unclassified question.
+
+| LERD-06 object | Logical identity / storage mapping |
+| --- | --- |
+| QuestionBankWorkspace | Organization ID → `question_bank_workspace`; JSON bank `id` matches unique `question_bank_id`. |
+| Question | `id` → workspace `questions[]`; same ID is `question_bank_identity.question_id`. Code is unique within the bank. |
+| QuestionVersion | `id`; version number is scoped to its Question → `questions[].versions[]`. PUBLISHED versions map to `item_version` with `item_version_id=version.id` and `item_id=question.id`. |
+| AuditEvent | `id` → workspace `history[]`; contains question ID and nullable version ID/content snapshot. |
+| Notice | `id` → workspace `notices[]`; the same identity is queued as `question_bank_mail.notice_id`. |
+| ImportBatch | `id` → workspace `imports[]`; preview rows are staging values and need not yet identify stored Questions. |
+| MicroSkill | Graph `id` → version `content.skillId`; cross-store reference, not a SQL FK. |
+
+Published ItemVersion is a persistence representation of the same QuestionVersion, not a second logical entity linked by a business relationship. It is therefore described by the mapping above rather than a separate projection edge. New drafts/submissions stay in JSON; legacy physical drafts can be adopted and reconciled during publication. Question owner and historical author/review metadata can legitimately remain null. Actor/recipient accounts are attributes here; this focused view does not enumerate all identity-domain references.
+
+Sources: [ModuleAuthoring](../backend/src/main/java/com/adaptlearngraph/entities/domain/ModuleAuthoring.java), [LearningContent](../backend/src/main/java/com/adaptlearngraph/entities/domain/LearningContent.java), [QuestionBank](../backend/src/main/java/com/adaptlearngraph/entities/domain/QuestionBank.java), [JpaModuleAuthoringAdapter](../backend/src/main/java/com/adaptlearngraph/repository/JpaModuleAuthoringAdapter.java), [JpaQuestionBankStore](../backend/src/main/java/com/adaptlearngraph/repository/JpaQuestionBankStore.java). LERD-03 depicts the ACT-05 target provision model with one skill per module; LERD-05 describes current authoring storage and retains historical teaching snapshots.
+
 #### 2.2.1 Historical physical constraints (V1-V32)
 
 These retained constraints describe the dated implementation, including Job Position baseline ownership. They do not override the approved Role-Level target above; reconciling physical mappings requires a separately approved implementation/migration.
@@ -458,6 +504,26 @@ The report displays only flow-related ERDs in section 2.2, with all target attri
 | DB-06 | [Mermaid source](../documents/diagrams/mermaid/db-06.mmd) |
 | DB-07 | [Mermaid source](../documents/diagrams/mermaid/db-07.mmd) |
 | DB-08 | [Mermaid source](../documents/diagrams/mermaid/db-08.mmd) |
+
+**Source-defined authoring physical supplements — 2026-11-06**
+
+DB-01 through DB-08 and the dictionary below remain the dated V1–V32 captured inventory. DB-09/10 are focused supplements derived from checked-in SQL, not a new live database capture or a recalculated global table/FK count. All columns of their nine owned tables are shown; external nodes expose referenced keys only. Following the existing DB diagram convention, arrows run from referenced parent to referencing child and carry the child FK columns. Solid arrows are in-view FKs; dashed arrows reference external parent tables. Numeric multiplicities are derived from FK nullability and PK/UNIQUE constraints: every child here has exactly one parent, while a parent need not have children. These are physical table views rendered with `classDiagram`, not class inheritance or logical identifying-relationship notation. Unconnected tables intentionally have no declared SQL FK between them.
+
+[Mermaid source: DB-09](../documents/diagrams/mermaid/db-09.mmd)
+
+![DB-09 - Module authoring physical supplement](../documents/diagrams/mermaid/db-09.png)
+
+**Diagram notes (DB-09):** Six owned tables and one declared FK, from `module_learning_pin(organization_id, module_id)` to `module_authoring`. `module_authoring.module_id` is globally unique in addition to its composite PK. The content and intake documents are connected by service-managed IDs/JSON references, shown in LERD-05 rather than additional SQL FK edges. Grant/audit rows share business identifiers but have no declared FK between them; DB-09 intentionally leaves them disconnected. Adding a line merely because column names match would misrepresent the schema. V48 renames `module_occupation_grant` to `module_job_position_grant` and the relevant `occupation_id` columns to `job_position_id`. Grant/audit rows remain part of the schema; their presence does not make legacy Job Position grants a prerequisite for current single-skill creation. `document` is a required JSON object. `revision` is positive; audit/pin timestamps default to `now()` and audit IDs are generated identities. V38 media/import/progress tables and V50 completion/admission tables are adjacent learning storage, outside this authoring-focused view; their existing learner evidence remains preserved.
+
+Sources: [V36 Module authoring](../backend/src/main/resources/db/migration/V36__module_authoring.sql), [V37 Catalog intake](../backend/src/main/resources/db/migration/V37__module_catalog_intake.sql), [V48 Job Position renames](../backend/src/main/resources/db/migration/V48__refactor_occupation_to_job_position.sql).
+
+[Mermaid source: DB-10](../documents/diagrams/mermaid/db-10.mmd)
+
+![DB-10 - Question Bank authoring physical supplement](../documents/diagrams/mermaid/db-10.png)
+
+**Diagram notes (DB-10):** Three owned tables and five declared FKs. The organization/workspace and bank/workspace ends are 1-to-0..1 because the child FK is unique; bank/identity, organization/mail and account/mail are 1-to-0..many. Workspace PK `organization_id` and unique `question_bank_id` enforce one workspace per organization and one workspace per bank. Identity has unique `(question_bank_id, code)`, uppercase/nonblank codes and `retired=false` by default. `question_id` is a stable projection identity; there is no declared FK from it to `item_version.item_id`. Mail status is PENDING/RUNNING/RETRY/SENT/FAILED; attempts are nonnegative and lease/error fields legitimately nullable. The pending index covers PENDING/RUNNING/RETRY by `next_attempt`. Candidate content, review history and pending RETIRE/REACTIVATE requests remain in workspace JSON rather than additional columns/tables. DB-03 already covers the published `question_bank` / `item_version` foundation.
+
+Source: [V29 Question Bank authoring](../backend/src/main/resources/db/migration/V29__question_bank_authoring.sql). Matching CREATE TABLE definitions were also compared with the `workspace-migration` and `module-migration` copies; migration numbering differs by lineage but these nine table definitions match. This is design reconciliation against schema declarations and persistence mappings. This supplement also makes the V29 authoring tables explicit without relabeling the older captured dictionary as complete for the present checkout.
 
 #### 2.3.1 Table Descriptions
 
@@ -5825,8 +5891,9 @@ The frontend WF-04/WF-07 layouts and SRS field rules apply. Additional target co
 
 **Diagram notes (ST-11):**
 
-- Current Module-document states are DRAFT, SUBMITTED, RETURNED, PUBLISH_PENDING and RELEASED. The responsible Expert edits/submits; L&D returns with feedback or approves the exact revision. Publication failure remains pending for authorized retry; successful catalog projection releases the revision.
-- Lessons are reviewed as part of the whole Module. Editing a released Module creates a successor draft and preserves the published predecessor/history. Archive/restore is outside this concise main-flow view. This does not claim that the complete module-assessment bundle is implemented; ACT-04 in the SRS remains the broader target. Learning access is separately authorized.
+- Current Module-document states are DRAFT, SUBMITTED, RETURNED, PUBLISH_PENDING, RELEASED, ARCHIVE_REQUESTED, ARCHIVE_PENDING and ARCHIVED. The responsible Expert edits/submits; L&D returns with feedback or approves the exact revision. Publication/archive failures remain pending for authorized retry. Archive approval and projection both recheck required skill coverage.
+- Lessons are reviewed as part of the whole Module. Editing a released Module creates a successor draft and preserves the published predecessor/history. Returning an archive request keeps the Module RELEASED. Restoring creates a new DRAFT; archived availability remains in effect until reapproval/publication succeeds. Learner pins and historical packages survive archive/restore. ACT-04 remains the broader learning-offering target; learning access is separately authorized.
+- The terminal deletion edge is an operation, not a persisted DELETED state: the responsible Expert may permanently delete only a DRAFT with a matching lock version, no intake, no previous release and no graph/pin reference. RETURNED cannot be directly deleted; saving an edit first creates DRAFT. Stale or unauthorized commands do not transition state. The content library is separate; deleting the Module does not imply deleting its content package.
 
 [Mermaid source: ST-12](../documents/diagrams/mermaid/st-12.mmd)
 
@@ -5895,14 +5962,24 @@ The last read arrow is a logical persistence path through an authorized applicat
 
 - The Employee starts with an Active baseline configuration for the selected Role-Level, answers/resumes and explicitly submits. The system applies the pass rule configured by L&D and transitions from SUBMITTED to PASSED or FAILED. Example only: when the configured rule is at least 7 correct answers out of 10, 7–10 passes and 0–6 fails; 7/10 is not a hard-coded universal threshold. This diagram has no evidence-sufficiency gate, AUTO_SUBMITTED or adaptive-stop/deadline submission branch. These are approved target business states, not a claim that physical database enums have already changed.
 
-[Mermaid source: ST-16](../documents/diagrams/mermaid/st-16.mmd)
+**ST-16 is a two-panel family:** ST-16A follows a QuestionVersion; ST-16B follows Question availability. These are different state variables, not successive phases in one state machine. Retired questions can retain PUBLISHED versions. Retirement requests require an existing published version; submission and approval require `retired=false`.
 
-![ST-16 - Question Bank](../documents/diagrams/mermaid/st01-standard-20261106/st-16.png)
+[Mermaid source: ST-16A](../documents/diagrams/mermaid/st-16a.mmd)
 
-**Diagram notes (ST-16):**
+![ST-16A - Question Version Lifecycle](../documents/diagrams/mermaid/st-16a.png)
+
+**Diagram notes (ST-16A):**
 
 - This is the current organization Question Bank candidate lifecycle: DRAFT, SUBMITTED and PUBLISHED. Only the responsible Expert edits/submits/withdraws; L&D acknowledges and approves the exact submitted version, or returns it with a reason to DRAFT. Submitted content is locked, and stale/invalid commands do not transition state.
-- A successor creates a new draft; it does not mutate the immutable published predecessor or existing assessment pins. Retirement/reactivation is a separate question-availability lifecycle. ACT-10 in the SRS covers the concise authoring/review activity. Physical `item_version` / `assessment_version` publication fields remain separate foundations and are not substituted for this authoring workflow; module-exam construction and calibration remain separate.
+- ST-16A follows one version identity. PUBLISHED has no transition back to DRAFT: creating a successor starts a separate version at the initial DRAFT entry and leaves the published predecessor/assessment pins intact. ST-16B follows the owning Question identity and its independent availability fields. ACT-10 in the SRS covers the concise authoring/review activity. Physical `item_version` / `assessment_version` publication fields remain separate foundations and are not substituted for this authoring workflow; module-exam construction and calibration remain separate.
+
+[Mermaid source: ST-16B](../documents/diagrams/mermaid/st-16b.mmd)
+
+![ST-16B - Question Availability Lifecycle](../documents/diagrams/mermaid/st-16b.png)
+
+**Diagram notes (ST-16B):** These four labels derive from `Question.retired` and nullable `Question.request`; they are not candidate publication-state values. Not retired means `retired=false`, not necessarily published/eligible. A pending retirement keeps `retired=false`; pending reactivation keeps `retired=true`. The responsible Expert can request a change with a reason only when a published version exists and no availability request is pending. L&D confirms or returns the request with a reason; reactivation additionally checks published-content eligibility. Confirmation/return clears the request. Current expected revision, ownership and organization authorization apply to every command. Retirement preserves published versions and assessment references. No question draft-delete command exists.
+
+State sources: [ModuleAuthoringService](../backend/src/main/java/com/adaptlearngraph/services/ModuleAuthoringService.java), [QuestionBankService](../backend/src/main/java/com/adaptlearngraph/services/QuestionBankService.java).
 
 Legacy `assessment_assignment` has ACTIVE/REVOKED/CLOSED and legacy blueprint working rows have OPEN/FINALIZED/ABANDONED. They remain in the physical dictionary for history/compatibility; they are not substitutes for the current adaptive attempt lifecycle. Module/RIASEC completion must use purpose-specific approved state/retake contracts rather than blindly copying baseline admission rules.
 
@@ -6073,11 +6150,11 @@ Actual financial record approval/locking/retention is not specified by Version 2
 | Subscription period | ST-08 | Time-derived availability; immutable period record. |
 | Department/Job Position / Expert assignment | ST-09 | Target business lifecycle, incomplete implementation. |
 | Target role | ST-10 | Required target publication workflow, not legacy enum equivalence. |
-| Module and Learning Content | ST-11 | Current authoring/review/publication states; whole-Module lesson review. Complete module-assessment bundle remains separate. |
+| Module and Learning Content | ST-11 | Authoring/review/publication, guarded draft deletion, archive approval/retry and restore. Whole-Module lesson review; historical learner pins preserved. |
 | MicroSkill and other graph definitions | ST-12 | Orthogonal review/availability vocabularies; no automatic approval. |
 | Baseline Draft / released blueprint | ST-13 | Persisted working state and derived active/retiring/inactive. |
 | Baseline attempt | ST-14 | Explicit submission followed by L&D-configured PASSED / FAILED result. |
-| Question Bank candidate | ST-16 | Current DRAFT/SUBMITTED/PUBLISHED review; immutable published versions and successor drafts. Availability is separate. |
+| Question Bank version / availability | ST-16A / ST-16B | DRAFT/SUBMITTED/PUBLISHED review and independent retirement/reactivation requests; immutable published versions and successor drafts. No draft deletion. |
 | Employee role selection | ST-17 | Target/history and guarded replacement after completion or bypass-only. |
 | Mastery/profile | ST-18 | Role-Level initialization; Met / Needs supplementation / Unknown with provenance. |
 | Recommendation / pathway | ST-19 | Initial review, learning loop, completion and bypass-only target release. |
@@ -6123,6 +6200,7 @@ This is a route-family inventory, not a replacement for controller DTO contracts
 
 | Check | Actual result | Scope / qualification |
 | --- | --- | --- |
+| ACT-04 / ACT-10 diagram completion, 2026-11-06 | Passed | Ten Mermaid sources rendered and visually reviewed; SVG/PNG integrity, state-node parity, 9 physical tables / 44 columns / 6 FK edges and scoped links checked. The separate validation evidence file is absent from this checkout; this row retains the preceding session result. Source-level documentation verification only. |
 | ACT-05 Role-Level diagram revision, 2026-11-06 | Passed | 16 selected Mermaid sources parsed/rendered; 15 updated SVGs XML-validated; ST-16 original artifacts retained. Nine source/preservation/link checks passed, including all scoped target attributes, guarded role change and retained physical dictionary. Visual review completed. [Dedicated evidence](../documents/diagrams/review2-role-level-20261106.md). Documentation only; no runtime/schema acceptance claimed. |
 | Learning / Question Bank report synchronization, 2026-11-02 | Passed | Report3 references ACT-04/07/10; Report4 references ST-11/16/23 with matching captions, notes and lifecycle coverage. All12 scoped Mermaid-source/PNG links resolve; six PNG headers/dimensions and SVG XML are valid. Existing report anchors retained. Diagram rendering was checked during their preceding edits; this synchronization ran document/link checks only, not application/database tests or full report requalification. |
 | DOCX template-body structure | Passed | 26 fixed SRS headings and 7 fixed SDD headings checked in order; feature placeholders expanded into the relevant numbered sections. Stale SRS template TOC was reconciled to its body. |

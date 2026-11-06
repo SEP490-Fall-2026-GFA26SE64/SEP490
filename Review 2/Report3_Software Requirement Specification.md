@@ -57,6 +57,7 @@
 
 | Date | A*M, D | In charge | Change Description |
 | --- | --- | --- | --- |
+| 2026-11-06 | M | Documentation preparation with AI assistance | Linked ACT-04/ACT-10 authoring logical/physical supplements and extended state views in Report4; retained the ACT-05 conceptual ERDs after upstream synchronization. |
 | 2026-11-06 | M | Documentation preparation with AI assistance | Updated approved ACT-05 Role-Level baseline flow, related state machines and flow-scoped ERDs; retained report styling and dated physical schema history. Documentation only; no runtime/schema change. |
 | 2026-11-02 | M | Documentation preparation with AI assistance | Added ACT-10 Question Bank activity and clarified current versus target boundaries for ACT-04/07; linked the matching ST-11/ST-16/ST-23 in the SDD without changing requirement IDs or unrelated diagrams. |
 | 2026-11-01 | M | Documentation preparation with AI assistance | Corrected all four conceptual ERD borders by replacing Neo gradient/shadow styling with Classic solid 1.5px borders. Preserved entity and relationship content and regenerated SVG/PNG previews. |
@@ -217,8 +218,7 @@ Evidence precedence is Version 2 for intended scope, later approved decisions fo
 
 ![ACT-04 - Learning offering authoring and approval (target)](../documents/diagrams/mermaid/act-04.png)
 
-**Diagram scope (ACT-04):** This remains the target learning-offering bundle, including module assessment configuration. The current implemented slice lets the responsible Expert create/import skill-mapped Modules and ordered Text/Video lessons, save drafts and submit complete content; L&D returns or approves the exact Module revision, followed by retryable catalog publication. Other Experts are read-only. Module assessment construction is separate from Question Bank management. Approved publication does not grant every Employee learning access; current pathway, availability and content authorization still apply. See the current Module/Content state machine ST-11 in the SDD.
-
+**Diagram scope (ACT-04):** This remains the target learning-offering bundle, including module assessment configuration. The current implemented slice lets the responsible Expert create/import skill-mapped Modules and ordered Text/Video lessons, save drafts and submit complete content; L&D returns or approves the exact Module revision, followed by retryable catalog publication. Other Experts are read-only. Module assessment construction is separate from Question Bank management. Approved publication does not grant every Employee learning access; current pathway, availability and content authorization still apply. See ST-11 in the SDD for the current Module/Content state machine, including guarded draft deletion and archive/restore, and LERD-05 / DB-09 for authoring data relationships.
 
 [Mermaid source: ACT-05](../documents/diagrams/mermaid/act-05.mmd)
 
@@ -232,7 +232,6 @@ Evidence precedence is Version 2 for intended scope, later approved decisions fo
 
 **Diagram scope (ACT-07):** This is a target independent-learning journey, not a claim that the full context/assessment workflow is implemented. The current reader persists authorized lesson/video progress; the independent-skill surface is not yet a complete persisted learning context. Content completion alone does not establish assessment success or mastery. Valid assessment evidence and the separate independent-learning integration are required before competency/progress updates; the selected Role pathway must remain unchanged. ST-23 in the SDD describes the corresponding target business states, not a new database enum.
 
-
 [Mermaid source: ACT-08](../documents/diagrams/mermaid/act-08.mmd)
 
 ![ACT-08 - Development reporting and financial accountability (target)](../documents/diagrams/mermaid/act-08.png)
@@ -245,8 +244,7 @@ Evidence precedence is Version 2 for intended scope, later approved decisions fo
 
 ![ACT-10 - Question Bank authoring and approval](../documents/diagrams/mermaid/act-10.png)
 
-**Diagram scope (ACT-10):** The organization has one Question Bank spanning approved MicroSkills. The responsible Expert creates/imports drafts, completes question content and submits for review. L&D acknowledges the exact submitted version and either returns it with a reason to DRAFT or approves immutable publication. Server-generated codes, ownership, valid content, organization scope and current revision are enforced by the service. Import validation, withdrawal, successor drafts and retirement/reactivation remain specified in the [Question Bank rules](../documents/features/Assessment%20workflows/README.md#fr-05-06); the concise activity diagram shows the main flow only. This is not complete module-exam construction or IRT calibration. ST-16 in the SDD describes the current question-candidate lifecycle.
-
+**Diagram scope (ACT-10):** The organization has one Question Bank spanning approved MicroSkills. The responsible Expert creates/imports drafts, completes question content and submits for review. L&D acknowledges the exact submitted version and either returns it with a reason to DRAFT or approves immutable publication. Server-generated codes, ownership, valid content, organization scope and current revision are enforced by the service. Import validation, withdrawal, successor drafts and retirement/reactivation remain specified in the [Question Bank rules](../documents/features/Assessment%20workflows/README.md#fr-05-06); the concise activity diagram shows the main flow only. This is not complete module-exam construction or IRT calibration. ST-16A in the SDD describes one question-version lifecycle; ST-16B describes independent question availability; LERD-06 / DB-10 describe authoring data relationships. Draft deletion is not currently supported for questions.
 
 #### 2.2.2 Descriptions
 
@@ -792,11 +790,15 @@ Cardinality applies to these flow relationships. Account represents an existing 
 
 ![CERD-02 - Assessment and Role-Level Profile](../documents/diagrams/mermaid/cerd-02.png)
 
+ACT-10 Question Bank authoring is documented separately in Report4 LERD-06 and DB-10; the ACT-05 view above references published QuestionVersion identities.
+
 **3. Role Requirements and Learning Provision**
 
 [Mermaid source: CERD-03](../documents/diagrams/mermaid/cerd-03.mmd)
 
 ![CERD-03 - Role Requirements and Learning Provision](../documents/diagrams/mermaid/cerd-03.png)
+
+ACT-04 Module/Content authoring is documented separately in Report4 LERD-05 and DB-09, including content packages and immutable revision snapshots.
 
 **4. Pathway Review, Learning and Bypass**
 

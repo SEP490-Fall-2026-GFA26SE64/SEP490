@@ -1,0 +1,22 @@
+---
+title: "LERD-05 - Module and content authoring (current logical view)"
+config: {"theme":"base","fontFamily":"Segoe UI, Arial, sans-serif","themeVariables":{"fontFamily":"Segoe UI, Arial, sans-serif","fontSize":"16px","primaryColor":"#ffffff","primaryTextColor":"#0f1729","primaryBorderColor":"#64748b","secondaryColor":"#fef3eb","tertiaryColor":"#ffffff","lineColor":"#64748b","textColor":"#0f1729","mainBkg":"#ffffff","background":"#ffffff","clusterBkg":"#ffffff","clusterBorder":"#64748b","edgeLabelBackground":"#ffffff","titleColor":"#0f1729","noteBkgColor":"#fef3eb","noteTextColor":"#0f1729","noteBorderColor":"#e6650f","attributeBackgroundColorOdd":"#ffffff","attributeBackgroundColorEven":"#ffffff","secondaryBorderColor":"#64748b","tertiaryBorderColor":"#64748b","secondaryTextColor":"#0f1729","tertiaryTextColor":"#0f1729"},"layout":"elk","er":{"layoutDirection":"LR","nodeSpacing":36,"rankSpacing":74,"entityPadding":16,"fontSize":16,"minEntityWidth":140,"diagramPadding":24}}
+---
+erDiagram
+  M["ModuleDocument"]
+  R["ModuleRevision"]
+  D["ContentPackage"]
+  C["ContentSnapshot"]
+  L["LessonSnapshot"]
+  S["MicroSkill"]
+  T["TeachingSnapshot"]
+  E["ModuleEvent"]
+  I["CatalogIntake"]
+  M ||--|{ R : "retains revisions"
+  M ||--|{ E : "records history"
+  I |o..o| M : "accepted into authoring"
+  R ||--|| C : "embeds snapshot"
+  D ||..o{ C : "source of copies"
+  C ||--o{ L : "orders lessons (0 to 200)"
+  R ||--|{ T : "captures teachings (new revisions: 1)"
+  S ||..o{ T : "referenced skill"
