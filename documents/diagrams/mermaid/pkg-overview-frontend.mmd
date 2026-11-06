@@ -1,24 +1,43 @@
 ---
-title: "Frontend Package Overview"
+title: "Frontend Package Overview - frontend/src"
 config:
-  layout: elk
   look: classic
-  theme: base
-  fontFamily: "Arial, sans-serif"
-  themeVariables: {background: "#ffffff", primaryColor: "#ffffff", primaryTextColor: "#0f172a", primaryBorderColor: "#334155", lineColor: "#334155", edgeLabelBackground: "#ffffff", fontSize: "16px"}
-  themeCSS: ".node rect, .cluster rect { filter: none !important; stroke-width: 1.5px !important; }"
-  flowchart: {htmlLabels: true, nodeSpacing: 28, rankSpacing: 55, padding: 16, diagramPadding: 24, curve: linear}
+  theme: neutral
+  flowchart: {htmlLabels: false, curve: linear}
 ---
 flowchart LR
-  subgraph FrontendRoot["frontend/src"]
-    App["app"]
-    Features["features"]
-    Shared["shared"]
-    Assets["assets"]
+  subgraph Shared["shared"]
+    SharedApi["api"]
+    SharedAuth["auth"]
+    SharedComponents["components"]
+    SharedHooks["hooks"]
+    SharedI18n["i18n"]
+    SharedLayouts["layouts"]
+    SharedLib["lib"]
+    SharedStores["stores"]
+    SharedStyles["styles"]
   end
+  App["app"]
+  subgraph Features["features"]
+    Administration["administration"]
+    Auth["auth"]
+    Employee["employee"]
+    Expert["expert"]
+    Guest["guest"]
+    Manager["manager"]
+    Packages["packages"]
+    PlatformAdmin["platform-admin"]
+    Profile["profile"]
+    Subscription["subscription"]
+    System["system"]
+  end
+  Assets["assets"]
+
   App -.-> Features
   App -.-> Shared
   Features -.-> Shared
+  Shared -.-> Features
 
-  classDef default fill:#fff7ed,stroke:#d97706,color:#0f172a,stroke-width:1.5px
-  style FrontendRoot fill:#eff6ff,stroke:#2563eb,color:#0f172a
+  %% Selected current source imports. Assets have no selected import edge.
+  %% shared/stores/companyStore.ts imports feature-owned data.
+  %% render-package-overviews.cjs renders these nodes as UML package folders.

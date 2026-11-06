@@ -1,0 +1,64 @@
+---
+title: "ACT-01 - Organization onboarding (connected slice) - Swimlane"
+config: {theme: base, look: classic, flowchart: {htmlLabels: true}}
+---
+flowchart TD
+  subgraph Actor0["Guest"]
+    direction TB
+    SRS_ACT_01_N1(("Start"))
+    SRS_ACT_01_N2["Enter organization details"]
+    SRS_ACT_01_N16["Optionally drag starter catalog<br/>items from the platform graph"]
+    SRS_ACT_01_N18["Enter administrator account<br/>details"]
+    SRS_ACT_01_N5["Verify email and enroll<br/>administrator MFA"]
+    SRS_ACT_01_N6["Choose an existing plan"]
+    SRS_ACT_01_N12["Review setup status and enter<br/>/workspace/{slug}"]
+    SRS_ACT_01_N14["Wait, reconcile or retry when<br/>permitted"]
+    SRS_ACT_01_N15(("End"))
+  end
+  subgraph Actor1["System Handler"]
+    direction TB
+    SRS_ACT_01_N17["Preview items and relationships<br/>that will be copied"]
+    SRS_ACT_01_N3["Validate and save registration<br/>with catalog selection"]
+    SRS_ACT_01_N4["Send verification email"]
+    SRS_ACT_01_N7["Create checkout request"]
+    SRS_ACT_01_N10["Record payment and apply initial<br/>purchase"]
+    SRS_ACT_01_N11["Create workspace, membership and<br/>paid period"]
+    SRS_ACT_01_N19{"Starter catalog selected?"}
+    SRS_ACT_01_N20["Copy selected catalog into the<br/>organization graph"]
+    SRS_ACT_01_N21{"Copy succeeded?"}
+    SRS_ACT_01_N22["Retry with backoff; mark setup<br/>failed after the final attempt"]
+    SRS_ACT_01_N23["Mark workspace ready"]
+    SRS_ACT_01_N13["Show pending, partial, failed or<br/>unknown status"]
+  end
+  subgraph Actor2["payOS"]
+    direction TB
+    SRS_ACT_01_N8["Accept checkout interaction"]
+    SRS_ACT_01_N9{"Verified full payment?"}
+  end
+  SRS_ACT_01_N1 --> SRS_ACT_01_N2
+  SRS_ACT_01_N2 --> SRS_ACT_01_N16
+  SRS_ACT_01_N16 --> SRS_ACT_01_N17
+  SRS_ACT_01_N17 --> SRS_ACT_01_N18
+  SRS_ACT_01_N18 --> SRS_ACT_01_N3
+  SRS_ACT_01_N3 --> SRS_ACT_01_N4
+  SRS_ACT_01_N4 --> SRS_ACT_01_N5
+  SRS_ACT_01_N5 --> SRS_ACT_01_N6
+  SRS_ACT_01_N6 --> SRS_ACT_01_N7
+  SRS_ACT_01_N7 --> SRS_ACT_01_N8
+  SRS_ACT_01_N8 --> SRS_ACT_01_N9
+  SRS_ACT_01_N9 -->|"yes"| SRS_ACT_01_N10
+  SRS_ACT_01_N10 --> SRS_ACT_01_N11
+  SRS_ACT_01_N11 --> SRS_ACT_01_N19
+  SRS_ACT_01_N19 -->|"no"| SRS_ACT_01_N23
+  SRS_ACT_01_N19 -->|"yes"| SRS_ACT_01_N20
+  SRS_ACT_01_N20 --> SRS_ACT_01_N21
+  SRS_ACT_01_N21 -->|"yes"| SRS_ACT_01_N23
+  SRS_ACT_01_N21 -->|"no"| SRS_ACT_01_N22
+  SRS_ACT_01_N22 --> SRS_ACT_01_N13
+  SRS_ACT_01_N23 --> SRS_ACT_01_N12
+  SRS_ACT_01_N9 -->|"not yet"| SRS_ACT_01_N13
+  SRS_ACT_01_N13 --> SRS_ACT_01_N14
+  SRS_ACT_01_N12 --> SRS_ACT_01_N15
+  SRS_ACT_01_N14 --> SRS_ACT_01_N15
+
+  %% Fixed actor-column layout is exported by render-business-swimlanes.cjs.
