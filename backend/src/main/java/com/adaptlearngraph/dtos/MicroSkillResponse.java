@@ -8,7 +8,6 @@ public record MicroSkillResponse(
         String code,
         String name,
         String description,
-        String macroCompetencyCode,
         String status,
         Instant createdAt,
         Instant updatedAt) {

@@ -11,6 +11,4 @@ public record UpdateMicroSkillRequest(
         @Size(max = 1000, message = "description cannot exceed 1000 characters")
         String description,
 
-        String macroCompetencyCode,
-
         SkillStatusDto status) {}

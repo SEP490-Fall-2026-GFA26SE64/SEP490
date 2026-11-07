@@ -125,9 +125,10 @@ test.describe('Capstone Standard: User Roles Enforcements, L&D Unpublish, Scopin
     await page.locator('input[type="password"]').fill('Password123!')
     await page.getByRole('button', { name: 'Sign in', exact: true }).click()
     await page.getByRole('button', { name: 'Continue to workspace', exact: true }).click()
+    await expect(page).toHaveURL(/\/workspace\//, { timeout: 15_000 })
 
     // 2.1 Verify Job Positions does not show Assigned Expert column
-    await page.goto('/ld-manager/job-positions')
+    await page.goto('/workspace/workspace-development/ld-manager/job-positions')
     await expect(page).toHaveURL(/.*\/ld-manager\/job-positions/)
     await expect(page.getByRole('heading', { name: /Job Positions Directory|Danh mục vị trí công việc/i })).toBeVisible({ timeout: 15_000 })
 
@@ -139,10 +140,11 @@ test.describe('Capstone Standard: User Roles Enforcements, L&D Unpublish, Scopin
     }
 
     // 2.2 Verify Target Roles Create Modal: Level 1 Senior, no "(Highest)" text, and clean description
-    await page.goto('/ld-manager/target-roles')
+    await page.goto('/workspace/workspace-development/ld-manager/target-roles')
     await expect(page).toHaveURL(/.*\/ld-manager\/target-roles/)
+    await expect(page.getByText(/Target Role Version Catalog/i)).toBeVisible({ timeout: 15_000 })
 
-    const createRoleBtn = page.getByRole('button', { name: /^Create$/i })
+    const createRoleBtn = page.getByRole('button', { name: /Create/i }).first()
     await expect(createRoleBtn).toBeVisible({ timeout: 15_000 })
     await createRoleBtn.click()
 
@@ -169,21 +171,10 @@ test.describe('Capstone Standard: User Roles Enforcements, L&D Unpublish, Scopin
     await cancelModalBtn.click()
     await expect(createModal).toBeHidden()
 
-    // 2.3 Verify Unpublish Target Role action
-    // Look for unpublish button (title="Unpublish Target Role" or aria-label="Unpublish Target Role")
+    // 2.3 Verify Unpublish Target Role action button and Unpublished status badges
     const unpublishBtn = page.locator('button[title="Unpublish Target Role"], button[aria-label="Unpublish Target Role"]').first()
-    if (await unpublishBtn.isVisible({ timeout: 5000 }).catch(() => false)) {
-      await unpublishBtn.click()
-
-      // Confirm unpublish action if modal appears, or verify toast / status update
-      const confirmBtn = page.getByRole('button', { name: /Unpublish|Confirm|Xác nhận/i }).last()
-      if (await confirmBtn.isVisible({ timeout: 3000 }).catch(() => false)) {
-        await confirmBtn.click()
-      }
-
-      // Assert at least one Unpublished badge appears in the table
-      await expect(page.getByText(/Unpublished|Chưa xuất bản/i).first()).toBeVisible({ timeout: 10_000 })
-    }
+    await expect(unpublishBtn).toBeVisible({ timeout: 10_000 })
+    await expect(page.locator('table').getByText(/Unpublished|Chưa xuất bản/i).first()).toBeVisible({ timeout: 10_000 })
   })
 
   // 3. Domain Expert Permissions: Cannot unpublish target roles (REQ-052-F03)
@@ -194,15 +185,30 @@ test.describe('Capstone Standard: User Roles Enforcements, L&D Unpublish, Scopin
     await page.locator('input[type="password"]').fill('Password123!')
     await page.getByRole('button', { name: 'Sign in', exact: true }).click()
     await page.getByRole('button', { name: 'Continue to workspace', exact: true }).click()
+    await expect(page).toHaveURL(/\/workspace\//, { timeout: 15_000 })
 
     // Navigate to Expert Target Roles
-    await page.goto('/expert/target-roles')
+    await page.goto('/workspace/workspace-development/expert/target-roles')
     await expect(page).toHaveURL(/.*\/expert\/target-roles/)
     await expect(page.getByRole('heading', { name: /Target Roles|Vai trò mục tiêu/i })).toBeVisible({ timeout: 15_000 })
 
     // Verify Domain Expert DOES NOT have Unpublish button
     const unpublishButtons = page.locator('button[title="Unpublish Target Role"], button[aria-label="Unpublish Target Role"]')
     expect(await unpublishButtons.count()).toBe(0)
+
+    // Navigate to Expert Ontology and verify Create Micro-skill modal has human-centric Competency Alignment badge and zero macro-competency fields
+    await page.goto('/workspace/workspace-development/expert/ontology')
+    await expect(page.getByRole('tab', { name: /Micro-skills/i })).toBeVisible({ timeout: 15_000 })
+    await page.getByRole('tab', { name: /Micro-skills/i }).click()
+    await expect(page.getByText(/Micro-skills Catalog/i)).toBeVisible({ timeout: 15_000 })
+    await page.getByRole('button', { name: /Create/i }).first().click()
+    const skillModal = page.getByRole('dialog')
+    await expect(skillModal).toBeVisible()
+    await expect(skillModal.getByText('Competency Alignment')).toBeVisible()
+    await expect(skillModal.getByText('HAS_SKILL relationships')).toHaveCount(0)
+    await expect(skillModal.getByText(/Macro Competency/i)).toHaveCount(0)
+    await skillModal.getByRole('button', { name: /Cancel|Hủy/i }).click()
+    await expect(skillModal).toBeHidden()
   })
 
   // 4. Employee Upskilling Portal: Department scoping and progressive level advancement (REQ-052-F04)

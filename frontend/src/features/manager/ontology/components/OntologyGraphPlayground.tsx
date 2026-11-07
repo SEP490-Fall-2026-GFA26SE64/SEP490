@@ -774,18 +774,10 @@ function OntologyGraphPlaygroundInner({
           ;(lineageRoleWithComps?.competencyIds || []).forEach((cid) => effectiveRoleCompIds.add(cid))
         }
 
-        // Only include competencies strictly assigned to this role (or explicitly tagged in skillTargets)
+        // Only include competencies strictly assigned to this role
         const relevantComps = competenciesRef.current.filter((c) =>
           effectiveRoleCompIds.has(c.id) || (c.code && effectiveRoleCompIds.has(c.code))
         )
-        if (relevantComps.length === 0 && (role.skillTargets || []).length > 0) {
-          const taggedCompCodes = new Set(
-            (role.skillTargets || []).map((st: SkillTargetConfig) => st.macroCompetencyCode).filter(Boolean)
-          )
-          if (taggedCompCodes.size > 0) {
-            relevantComps.push(...competenciesRef.current.filter((c) => taggedCompCodes.has(c.id) || (c.code && taggedCompCodes.has(c.code))))
-          }
-        }
 
         // Deduplicate relevantComps by ID
         const seenCompIds = new Set<string>()
@@ -891,8 +883,7 @@ function OntologyGraphPlaygroundInner({
           const parentComp = uniqueRelevantComps.find(
             (c) =>
               c.skillIds?.includes(targetSkill.id) ||
-              (targetSkill.code && c.skillIds?.includes(targetSkill.code)) ||
-              (st.macroCompetencyCode && (c.id === st.macroCompetencyCode || c.code === st.macroCompetencyCode))
+              (targetSkill.code && c.skillIds?.includes(targetSkill.code))
           ) || (uniqueRelevantComps.length > 0 ? uniqueRelevantComps[sIdx % uniqueRelevantComps.length] : null)
 
           const parentCompNode = parentComp ? compNodeMap[parentComp.id] : null
@@ -1773,7 +1764,6 @@ function OntologyGraphPlaygroundInner({
           skillName: skillNode.name,
           level: levelName,
           threshold: 80,
-          macroCompetencyCode: parentComp.code || parentComp.id,
         },
       ]
 

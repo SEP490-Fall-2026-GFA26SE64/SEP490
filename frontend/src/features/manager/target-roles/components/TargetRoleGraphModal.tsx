@@ -66,7 +66,6 @@ export interface SkillNodeData {
   skillId: string
   code: string
   name: string
-  macroCompetencyCode: string
   targetMastery: number
   status: string
   level?: string
@@ -231,15 +230,6 @@ export function TargetRoleGraphModal({
       if (rawTargets.length > 0) {
         requiredSkills = rawTargets.map((st: SkillTargetConfig, sIdx: number) => {
           const rawSkillId = st.skillId || st.skillCode || `skill-${sIdx}`
-          const matchedC = fetchedComps.find(
-            (c) =>
-              c.id === st.macroCompetencyCode ||
-              c.code === st.macroCompetencyCode ||
-              c.skillIds?.includes(rawSkillId) ||
-              c.skillIds?.includes(st.skillCode || '') ||
-              c.code === rawSkillId ||
-              c.id === rawSkillId
-          )
           const backendSkill = backendData?.requiredSkills?.find(
             (bs) => bs.skillId === rawSkillId || (st.skillCode && bs.skillCode === st.skillCode)
           )
@@ -247,7 +237,6 @@ export function TargetRoleGraphModal({
             skillId: rawSkillId,
             skillCode: st.skillCode || rawSkillId,
             skillName: st.skillName || backendSkill?.skillName || rawSkillId,
-            macroCompetencyCode: st.macroCompetencyCode || backendSkill?.macroCompetencyCode || matchedC?.code || matchedC?.id || 'KNOWLEDGE',
             targetMastery: (st.threshold || 80) / 100,
             status: backendSkill?.status || 'ACTIVE',
             level: st.level || backendSkill?.level,
@@ -449,8 +438,8 @@ export function TargetRoleGraphModal({
       if (isLevelFiltered) {
         return false
       }
-      // 2. Fallback: only include the macro-competencies directly tagged on the required skills
-      if (reqSkills.some((s) => s.macroCompetencyCode === c.code || s.macroCompetencyCode === c.id)) {
+      // 2. Fallback: include competencies containing required skills
+      if (reqSkills.some((s) => c.skillIds?.includes(s.skillId) || c.skillIds?.includes(s.skillCode))) {
         return true
       }
       return false
@@ -501,9 +490,7 @@ export function TargetRoleGraphModal({
           status: comp.status || 'ACTIVE',
           memberSkillCount: reqSkills.filter(
             (s) =>
-              (s.macroCompetencyCode === comp.code ||
-              s.macroCompetencyCode === comp.id ||
-              comp.skillIds?.includes(s.skillId) ||
+              (comp.skillIds?.includes(s.skillId) ||
               comp.skillIds?.includes(s.skillCode)) &&
               (!isLevelFiltered || (s.level && s.level.toLowerCase() === selectedLevelFilter.toLowerCase()))
           ).length,
@@ -584,7 +571,6 @@ export function TargetRoleGraphModal({
           skillId: skill.skillId,
           code: skill.skillCode || skill.skillId,
           name: skill.skillName,
-          macroCompetencyCode: skill.macroCompetencyCode || 'KNOWLEDGE',
           targetMastery: skill.targetMastery,
           status: skill.status || 'ACTIVE',
         },
@@ -596,7 +582,6 @@ export function TargetRoleGraphModal({
         (c) =>
           c.skillIds?.includes(skill.skillId) ||
           c.skillIds?.includes(skill.skillCode) ||
-          (skill.macroCompetencyCode && (c.id === skill.macroCompetencyCode || c.code === skill.macroCompetencyCode)) ||
           (skill.level && (
             currentRole?.levelCompetencies?.[skill.level]?.includes(c.id) ||
             (c.code && currentRole?.levelCompetencies?.[skill.level]?.includes(c.code))
@@ -1183,9 +1168,9 @@ export function TargetRoleGraphModal({
 
                     <div className="grid grid-cols-2 gap-2 p-2.5 rounded bg-muted/30 border border-border">
                       <div>
-                        <span className="text-[10px] text-muted-foreground block">Competency Domain</span>
+                        <span className="text-[10px] text-muted-foreground block">Status</span>
                         <Badge variant="outline" className="text-[10px] mt-0.5">
-                          {selectedNode.macroCompetencyCode}
+                          {selectedNode.status || 'ACTIVE'}
                         </Badge>
                       </div>
                       <div>

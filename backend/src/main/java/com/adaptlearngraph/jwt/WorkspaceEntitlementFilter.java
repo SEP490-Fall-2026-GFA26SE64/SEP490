@@ -52,7 +52,6 @@ public final class WorkspaceEntitlementFilter extends OncePerRequestFilter {
                 boolean admin=actor.roles().contains(Role.ORGANIZATION_ADMINISTRATOR);
                 boolean isGetOrHead=!request.getMethod().equals("POST") && !request.getMethod().equals("PUT") && !request.getMethod().equals("DELETE") && !request.getMethod().equals("PATCH");
                 boolean isCatalogPath=path.contains("/micro-skills")
-                        || path.contains("/macro-competencies")
                         || path.contains("/competencies")
                         || path.contains("/prerequisites")
                         || path.contains("/target-roles")

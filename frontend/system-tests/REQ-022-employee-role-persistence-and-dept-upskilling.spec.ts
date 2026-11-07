@@ -299,11 +299,13 @@ test.describe('Employee Target Role & Level Persistence and Department-Scoped Up
     const rolesPanel = page.locator('#upskilling-roles-panel')
     await expect(rolesPanel).toBeVisible({ timeout: 15000 })
 
-    // Verify the active role summary banner is shown with the assigned role from PostgreSQL and per-level duration
-    await expect(rolesPanel.getByText(/Web Architect|Information Architect|Systems Application Engineer/i).first()).toBeVisible({
+    // Verify the Starting Career Placement card is shown separately from Active Role without Est. duration or Review skill gap
+    await expect(rolesPanel.getByText(/Starting Career Placement|Vị trí khởi điểm/i)).toBeVisible({ timeout: 15000 })
+    await expect(rolesPanel.getByText(/Active Role|Vị trí đang chọn/i)).toBeVisible({ timeout: 15000 })
+    await expect(rolesPanel.getByText('roleFlow.states.READY')).toHaveCount(0)
+    await expect(rolesPanel.getByText(/Web Architect|Information Architect|Systems Application Engineer|Software/i).first()).toBeVisible({
       timeout: 25000,
     })
-    await expect(rolesPanel.getByText(/Est\./i).first()).toBeVisible({ timeout: 15000 })
 
     // Verify that roles from other departments (e.g., Security Analyst, Database Architect) are NOT displayed
     await expect(rolesPanel.getByText('Security Analyst')).toHaveCount(0)
@@ -363,7 +365,14 @@ test.describe('Employee Target Role & Level Persistence and Department-Scoped Up
       }
     }
 
-    // 12. Verify Employee Profile displays the Admin-assigned Job Position and Placement
+    // 12. Verify Employee Upskilling Skills tab loads Neo4j skills with no macro-competency tags or Topic filter
+    await page.goto(`/workspace/${SLUG}/employee/upskilling?tab=skills`)
+    const skillsPanel = page.locator('#upskilling-skills-panel')
+    await expect(skillsPanel).toBeVisible({ timeout: 15000 })
+    await expect(skillsPanel.getByPlaceholder(/Search skills by name or description/i)).toBeVisible()
+    await expect(skillsPanel.getByText('Filter by Topic')).toHaveCount(0)
+
+    // 13. Verify Employee Profile displays the Admin-assigned Job Position and Placement
     await page.goto(`/workspace/${SLUG}/profile`)
     const positionCard = page.locator('[data-testid="profile-assigned-position-card"]')
     await expect(positionCard).toBeVisible({ timeout: 15000 })

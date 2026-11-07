@@ -15,7 +15,6 @@ public record MicroSkillNode(
         @Property("name") String name,
         @Property("description") String description,
         @Property("definition") String definition,
-        @Property("macroCompetencyCode") String macroCompetencyCode,
         @Property("status") String status,
         @Property("version") String version,
         @Property("createdAt") @ConvertWith(converter = LenientGraphInstantConverter.class) Instant createdAt,

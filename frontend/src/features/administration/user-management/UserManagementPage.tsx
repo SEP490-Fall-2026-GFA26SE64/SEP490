@@ -472,7 +472,11 @@ function UserDirectory({ identity, organization, principal }: { identity: Identi
       }
     }
 
+    const resolvedOrgId = resolveWorkspaceOrgId(organization)
     for (const ld of localDepts) {
+      if (ld.organizationId && resolveWorkspaceOrgId(ld.organizationId) !== resolvedOrgId) {
+        continue
+      }
       if (!seen.has(ld.id) && !seen.has(ld.code)) {
         seen.add(ld.id)
         seen.add(ld.code)
@@ -1126,31 +1130,23 @@ function UserForm({
     queryKey: ['admin-org-target-roles', organization],
     queryFn: async () => {
       if (!organization) return []
-      const orgCandidates = Array.from(
-        new Set([
-          resolveWorkspaceOrgId(organization),
-          resolveWorkspaceOrgId(activeComp?.id),
-          'e0000000-0000-0000-0000-000000000001',
-        ]),
-      )
-      for (const candidateOrg of orgCandidates) {
-        try {
-          const res = await fetch(`/api/v1/organizations/${candidateOrg}/target-roles`, {
-            method: 'GET',
-            credentials: 'same-origin',
-            headers: {
-              'X-User-Role': 'ORGANIZATION_ADMINISTRATOR',
-            },
-          })
-          if (res.ok) {
-            const data = await res.json()
-            if (Array.isArray(data) && data.length > 0) {
-              return data as Record<string, unknown>[]
-            }
+      const targetOrgId = resolveWorkspaceOrgId(organization)
+      try {
+        const res = await fetch(`/api/v1/organizations/${targetOrgId}/target-roles`, {
+          method: 'GET',
+          credentials: 'same-origin',
+          headers: {
+            'X-User-Role': 'ORGANIZATION_ADMINISTRATOR',
+          },
+        })
+        if (res.ok) {
+          const data = await res.json()
+          if (Array.isArray(data)) {
+            return data as Record<string, unknown>[]
           }
-        } catch {
-          // try next candidate
         }
+      } catch {
+        // fallback if restricted
       }
 
       // Try employee target-roles endpoint if organization call is restricted
@@ -1211,10 +1207,17 @@ function UserForm({
     const map: Record<string, { jobPositionCode?: string; department?: string; levelNames?: string[]; status?: string }> = {}
     if (typeof localStorage === 'undefined') return map
     try {
-      const keys = [
-        `adaptlearn_target_role_meta_${organization}`,
-        'adaptlearn_target_role_meta_e0000000-0000-0000-0000-000000000001',
-      ]
+      const resolvedOrg = resolveWorkspaceOrgId(organization)
+      const keys = Array.from(
+        new Set(
+          resolvedOrg === 'e0000000-0000-0000-0000-000000000001'
+            ? [
+                `adaptlearn_target_role_meta_${organization}`,
+                'adaptlearn_target_role_meta_e0000000-0000-0000-0000-000000000001',
+              ]
+            : [`adaptlearn_target_role_meta_${organization}`, `adaptlearn_target_role_meta_${resolvedOrg}`],
+        ),
+      )
       for (const k of keys) {
         const raw = localStorage.getItem(k)
         if (!raw) continue
@@ -1233,8 +1236,12 @@ function UserForm({
   }, [organization])
 
   const orgTargetRoles = useMemo<TargetRoleModel[]>(() => {
-    const localRoles = activeComp?.targetRoles || []
+    const isSameOrgAsActiveComp = resolveWorkspaceOrgId(activeComp?.id) === resolveWorkspaceOrgId(organization)
+    const localRoles = isSameOrgAsActiveComp ? (activeComp?.targetRoles || []) : []
     const liveRaw = liveTargetRolesQuery.data || []
+    const knownJpCodes = new Set(
+      jobPositions.map((jp) => (jp.code || '').trim().toUpperCase().replace(/^OCC-/, '').replace(/\.00$/, '')),
+    )
     const liveMapped: TargetRoleModel[] = liveRaw.map((r) => {
       const code = String(r.code || '').trim()
       const codeUpper = code.toUpperCase()
@@ -1257,17 +1264,24 @@ function UserForm({
                 : rawStatus === 'rejected'
                   ? 'rejected'
                   : 'draft'
+      const rawFamilyCode = r.familyCode ? String(r.familyCode).trim() : ''
+      const familyNorm = rawFamilyCode.toUpperCase().replace(/^OCC-/, '').replace(/\.00$/, '')
+      const familyAsJobPosCode =
+        rawFamilyCode && (/^\d{2}-\d{4}/.test(rawFamilyCode) || knownJpCodes.has(familyNorm))
+          ? rawFamilyCode
+          : undefined
       return {
         id: String(r.id || code),
         stableId: code,
         code,
         title: String(r.name || r.title || localMatch?.title || code),
-        department: meta?.department || localMatch?.department || '',
+        department: String(r.department || meta?.department || localMatch?.department || ''),
         jobPositionCode:
           (r.jobPositionCode ? String(r.jobPositionCode) : undefined) ||
           meta?.jobPositionCode ||
-          localMatch?.jobPositionCode,
-        familyCode: r.familyCode ? String(r.familyCode) : localMatch?.familyCode,
+          localMatch?.jobPositionCode ||
+          familyAsJobPosCode,
+        familyCode: rawFamilyCode || localMatch?.familyCode,
         description: String(r.description || localMatch?.description || ''),
         version: String(r.version || localMatch?.version || '1.0'),
         status: mappedStatus,
@@ -1739,11 +1753,11 @@ function UserForm({
           jobPositionName: selectedJobPositionObj?.jobPositionName || selectedJobPositionObj?.name || '',
         }
         try {
+          localStorage.setItem(
+            `alg_employee_assignment_${email.toLowerCase().trim()}`,
+            JSON.stringify(assignment),
+          )
           if (assignedRoleId) {
-            localStorage.setItem(
-              `alg_employee_assignment_${email.toLowerCase().trim()}`,
-              JSON.stringify(assignment),
-            )
             const activeProfileKey = `alg_learner_learning_profile_${organization}`
             const currentRaw = localStorage.getItem(activeProfileKey)
             if (currentRaw) {

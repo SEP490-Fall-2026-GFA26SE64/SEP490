@@ -172,17 +172,32 @@ function resolveLevelDuration(
   return '2 months'
 }
 
+function getRoleMetaKeys(orgId: string): string[] {
+  const resolved = resolveWorkspaceOrgId(orgId)
+  if (resolved === 'e0000000-0000-0000-0000-000000000001') {
+    return Array.from(
+      new Set([
+        'adaptlearn_target_role_meta_' + orgId,
+        'adaptlearn_target_role_meta_e0000000-0000-0000-0000-000000000001',
+        'adaptlearn_target_role_meta_comp-technova',
+        'adaptlearn_target_role_meta_workspace-development',
+        'adaptlearn_target_role_meta_',
+      ]),
+    )
+  }
+  return Array.from(
+    new Set([
+      'adaptlearn_target_role_meta_' + orgId,
+      'adaptlearn_target_role_meta_' + resolved,
+    ]),
+  )
+}
+
 function getTargetRoleMetaMap(orgId: string): Record<string, RoleMetadata> {
   const map: Record<string, RoleMetadata> = {}
   if (typeof localStorage === 'undefined') return map
   try {
-    const keys = Array.from(new Set([
-      'adaptlearn_target_role_meta_' + orgId,
-      'adaptlearn_target_role_meta_e0000000-0000-0000-0000-000000000001',
-      'adaptlearn_target_role_meta_comp-technova',
-      'adaptlearn_target_role_meta_workspace-development',
-      'adaptlearn_target_role_meta_',
-    ]))
+    const keys = getRoleMetaKeys(orgId)
     for (const k of keys) {
       const raw = localStorage.getItem(k)
       if (raw) {
@@ -204,13 +219,7 @@ function getTargetRoleMetaMap(orgId: string): Record<string, RoleMetadata> {
 function saveTargetRoleMeta(orgId: string, meta: RoleMetadata): void {
   if (typeof localStorage === 'undefined') return
   try {
-    const keys = Array.from(new Set([
-      'adaptlearn_target_role_meta_' + orgId,
-      'adaptlearn_target_role_meta_e0000000-0000-0000-0000-000000000001',
-      'adaptlearn_target_role_meta_comp-technova',
-      'adaptlearn_target_role_meta_workspace-development',
-      'adaptlearn_target_role_meta_',
-    ]))
+    const keys = getRoleMetaKeys(orgId)
     for (const k of keys) {
       const raw = localStorage.getItem(k)
       const current = raw ? (JSON.parse(raw) as Record<string, RoleMetadata>) : {}
@@ -228,13 +237,7 @@ function saveTargetRoleMeta(orgId: string, meta: RoleMetadata): void {
 function deleteTargetRoleMeta(orgId: string, id?: string, code?: string): void {
   if (typeof localStorage === 'undefined') return
   try {
-    const keys = Array.from(new Set([
-      'adaptlearn_target_role_meta_' + orgId,
-      'adaptlearn_target_role_meta_e0000000-0000-0000-0000-000000000001',
-      'adaptlearn_target_role_meta_comp-technova',
-      'adaptlearn_target_role_meta_workspace-development',
-      'adaptlearn_target_role_meta_',
-    ]))
+    const keys = getRoleMetaKeys(orgId)
     for (const k of keys) {
       const raw = localStorage.getItem(k)
       if (raw) {
@@ -1288,7 +1291,13 @@ export function TargetRolesPage() {
     const defaultOcc =
       (departmentPositions.length > 0 ? departmentPositions[0] : null) ||
       latestPositions[0] ||
-      availableJobPositions[0]
+      availableJobPositions[0] || {
+        code: '15-1252.00',
+        name: 'Software Developers',
+        description:
+          'Research, design, and develop computer and network software or specialized utility programs.',
+        profiles: ['DEV'],
+      }
     const eligibleExperts = getEligibleExpertsForJobPosition(
       defaultOcc.code,
       orgId,
@@ -1350,7 +1359,13 @@ export function TargetRolesPage() {
     let generatedId = `role-${Date.now()}`
     const selectedOcc =
       availableJobPositions.find((o) => o.code === roleForm.jobPositionCode) ||
-      availableJobPositions[0]
+      availableJobPositions[0] || {
+        code: roleForm.jobPositionCode || '15-1252.00',
+        name: 'Software Developers',
+        description:
+          'Research, design, and develop computer and network software or specialized utility programs.',
+        profiles: ['DEV'],
+      }
     const roleCode = roleForm.code.trim().toUpperCase()
     const backendStatus = targetStatus === 'sent' ? 'SENT' : 'DRAFT'
     const assignedExpert =
@@ -1690,7 +1705,13 @@ export function TargetRolesPage() {
     const expertName = assignedExpert?.name || 'Assigned Expert'
     const selectedOcc =
       availableJobPositions.find((o) => o.code === editRoleForm.jobPositionCode) ||
-      availableJobPositions[0]
+      availableJobPositions[0] || {
+        code: editRoleForm.jobPositionCode || '15-1252.00',
+        name: 'Software Developers',
+        description:
+          'Research, design, and develop computer and network software or specialized utility programs.',
+        profiles: ['DEV'],
+      }
     const newStatus =
       targetStatus === 'sent'
         ? 'SENT'
@@ -1820,7 +1841,7 @@ export function TargetRolesPage() {
     try {
       const payload = {
         name: role.title,
-        familyCode: role.familyCode,
+        familyCode: role.jobPositionCode || role.familyCode,
         track: role.track,
         responsibilities: role.responsibilities,
         assignedExpertId: role.assignedExpertId,
@@ -1893,7 +1914,7 @@ export function TargetRolesPage() {
     try {
       const payload = {
         name: role.title,
-        familyCode: role.familyCode,
+        familyCode: role.jobPositionCode || role.familyCode,
         track: role.track,
         responsibilities: role.responsibilities,
         assignedExpertId: role.assignedExpertId,

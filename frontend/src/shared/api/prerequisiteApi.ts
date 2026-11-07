@@ -23,7 +23,6 @@ export interface TargetRoleGraphSkillDto {
   skillId: string
   skillCode: string
   skillName: string
-  macroCompetencyCode?: string
   targetMastery: number
   status: string
   level?: string

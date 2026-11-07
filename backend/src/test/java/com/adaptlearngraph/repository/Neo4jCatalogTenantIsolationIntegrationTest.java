@@ -60,7 +60,6 @@ class Neo4jCatalogTenantIsolationIntegrationTest {
             CREATE (s1:MicroSkill {id: 'skill-a1', organizationId: $a, code: 'SKILL_A1', name: 'Skill A1', status: 'ACTIVE'})
             CREATE (s2:MicroSkill {id: 'skill-a2', organizationId: $a, code: 'SKILL_A2', name: 'Skill A2', status: 'ACTIVE'})
             CREATE (s3:MicroSkill {id: 'skill-a3', organizationId: $a, code: 'SKILL_A3', name: 'Skill A3', status: 'ACTIVE'})
-            CREATE (macro:MacroCompetency {id: 'macro-a', organizationId: $a, code: 'KNOWLEDGE', name: 'Knowledge'})
             CREATE (occ)-[:HAS_ROLE]->(role)
             CREATE (role)-[:HAS_LEVEL]->(level)
             CREATE (level)-[:HAS_COMPETENCY {status: 'ACTIVE'}]->(comp)
@@ -69,7 +68,6 @@ class Neo4jCatalogTenantIsolationIntegrationTest {
             CREATE (role)-[:REQUIRES_SKILL {level: '', targetMastery: 0.7, status: 'ACTIVE'}]->(s1)
             CREATE (s1)-[:HAS_SKILL_PREREQUISITE {requiredScore: 0.6, status: 'ACTIVE'}]->(s2)
             CREATE (s2)-[:HAS_SKILL_PREREQUISITE {requiredScore: 0.5, status: 'ACTIVE'}]->(s3)
-            CREATE (macro)-[:HAS_SKILL {status: 'ACTIVE'}]->(s1)
             CREATE (module:LearningModule {id: 'module-a', organizationId: $a, title: 'Module A', moduleType: 'LESSON_AND_PRACTICE',
                                            version: '0.11.0', status: 'ACTIVE', reviewStatus: 'APPROVED', duration: 30, price: 1000.0})
             CREATE (module)-[:TEACHES {id: 'teach-a', version: '0.11.0', status: 'ACTIVE', reviewStatus: 'APPROVED',
@@ -85,7 +83,6 @@ class Neo4jCatalogTenantIsolationIntegrationTest {
     private Neo4jCompetencyRepository competencies;
     private Neo4jTargetRoleRepository roles;
     private Neo4jPrerequisiteRepository prerequisites;
-    private Neo4jMacroCompetencyRepository macros;
     private Neo4jLearningModuleRepository modules;
     private Neo4jModuleCatalogGraph moduleGraph;
 
@@ -102,7 +99,6 @@ class Neo4jCatalogTenantIsolationIntegrationTest {
         roles = new Neo4jTargetRoleRepository(persistence.bean(TargetRoleNodeRepository.class), client, mapping, transactions);
         prerequisites = new Neo4jPrerequisiteRepository(persistence.bean(MicroSkillNodeRepository.class), client, mapping,
                 transactions);
-        macros = new Neo4jMacroCompetencyRepository(persistence.bean(MacroCompetencyNodeRepository.class), transactions);
         modules = new Neo4jLearningModuleRepository(persistence.bean(LearningModuleNodeRepository.class), client, transactions);
         moduleGraph = new Neo4jModuleCatalogGraph(persistence.bean(LearningModuleNodeRepository.class), client, transactions);
     }
@@ -128,7 +124,7 @@ class Neo4jCatalogTenantIsolationIntegrationTest {
                 new JobPosition("occ-a", "OCC_B", "Hijacked", 2, 1, 1, 1, 1, 1, 1, "ACTIVE", "1.0", 0, 0)))
                 .isInstanceOf(CrossTenantWriteException.class);
         assertThatThrownBy(() -> skills.save(new MicroSkill(MicroSkillId.fromString("skill-a1"), B, "SKILL_A1", "Hijacked",
-                "hijacked", "COMMUNICATION", SkillStatus.ACTIVE, now, now)))
+                "hijacked", SkillStatus.ACTIVE, now, now)))
                 .isInstanceOf(CrossTenantWriteException.class);
         assertThatThrownBy(() -> competencies.save(B, new CompetencyRecord("comp-a", "COMP_A", "Hijacked", "", "ANY", "ACTIVE",
                 "0.11.0", null, "", "", List.of()), List.of("skill-b1"), "level-b"))
@@ -168,10 +164,9 @@ class Neo4jCatalogTenantIsolationIntegrationTest {
         assertThat(collectIds("MATCH (r:TargetRole {organizationId: $b})-[:REQUIRES_SKILL]->(s) RETURN collect(s.id) AS ids"))
                 .isEqualTo(List.of("skill-b1"));
 
-        skills.save(MicroSkill.createNew(B, "SKILL_B2", "Skill B2", "Second B skill", "KNOWLEDGE"));
-        assertThat(collectIds("MATCH (m:MacroCompetency {code: 'KNOWLEDGE'})-[:HAS_SKILL]->(s:MicroSkill {code: 'SKILL_B2'}) "
-                + "RETURN collect(m.organizationId) AS ids")).isEqualTo(List.of(B));
-        assertThat(macros.findAll(A)).extracting(macro -> macro.id()).containsExactly("macro-a");
+        skills.save(MicroSkill.createNew(B, "SKILL_B2", "Skill B2", "Second B skill"));
+        assertThat(collectIds("MATCH (s:MicroSkill {code: 'SKILL_B2'}) RETURN collect(s.organizationId) AS ids"))
+                .isEqualTo(List.of(B));
 
         assertThat(snapshot(A)).as("A's nodes, properties and relationships").isEqualTo(before);
         assertThat(crossOrganizationRelationships()).isZero();
@@ -217,7 +212,6 @@ class Neo4jCatalogTenantIsolationIntegrationTest {
 
         var roleGraph = graphAdapter.findTargetRoleGraph(A, "ROLE_A").orElseThrow();
         assertThat(roleGraph.requiredSkills()).extracting(skill -> skill.skillId()).containsExactly("skill-a1");
-        assertThat(roleGraph.requiredSkills().getFirst().macroCompetencyCode()).isEqualTo("COMP_A");
         assertThat(roleGraph.prerequisites()).isEmpty();
         assertThat(graphAdapter.findTargetRoleGraph(B, "role-a")).isEmpty();
     }
@@ -240,7 +234,6 @@ class Neo4jCatalogTenantIsolationIntegrationTest {
             assertThat(statements(appender, () -> assertThat(skills.findAll(A)).hasSize(3))).hasSize(1);
             assertThat(statements(appender, () -> assertThat(prerequisites.findAll(A)).hasSize(2))).hasSize(1);
             assertThat(statements(appender, () -> assertThat(competencies.findAllCompetencies(A, null)).hasSize(1))).hasSize(1);
-            assertThat(statements(appender, () -> assertThat(macros.findAll(A)).hasSize(1))).hasSize(1);
             modules.save(A, new LearningModuleRecord("module-a2", "module-a2", "Module A2", null, null, null, null, null, null,
                     null, 15, List.of("skill-a1", "skill-a2"), List.of()));
             assertThat(statements(appender, () -> assertThat(modules.findAll(A)).hasSize(2))).hasSize(1);

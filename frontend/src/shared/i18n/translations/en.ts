@@ -105,6 +105,9 @@ export const en = {
   },
   upskillingUi: {
     roles: 'Roles', skills: 'Skills', activeRole: 'Active Role',
+    startingCareerPlacement: 'Starting Career Placement',
+    noActiveRoleSelected: 'Not selected yet',
+    selectActiveRoleHint: 'Select a target role from the catalog below to begin your upskilling pathway.',
     searchPlaceholder: 'Search Roles by name or Job Position…', clearFilters: 'Clear filters',
     roleCatalog: 'Role catalog', skillCount: 'Required skills', levels: 'Levels',
     allRoles: 'All Roles', status: 'Status', noResults: 'No Roles match your filters',
@@ -197,6 +200,7 @@ export const en = {
     mandatory: 'Required', requiredScore: 'Target proficiency',
     states: {
       SELECT_ROLE: 'Choose a Role to continue.', ROLE_UNAVAILABLE: 'Your previous Role is unavailable. Choose a current Role below.',
+      READY: 'Your selected Role is ready. Review skill gaps or check your baseline history.',
       COMPLETE: 'Mastery is available for every skill in your Job Position baseline. No new baseline is required.',
       BASELINE_REQUIRED: 'Complete the baseline for this Job Position before continuing.', RESUME: 'You have an unfinished baseline. Resume it to continue.',
       NO_BASELINE: 'No baseline configuration is active for this Job Position yet.', BASELINE_UNAVAILABLE: 'Baseline resources or configuration are not ready for a new attempt. Your selected Role and assessment history are retained.',

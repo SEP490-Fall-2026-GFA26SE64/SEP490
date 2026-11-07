@@ -1,4 +1,4 @@
-import { Target } from 'lucide-react'
+import { Briefcase, Target } from 'lucide-react'
 import { Heading } from '../../../shared/components/typography/Heading'
 import { Text } from '../../../shared/components/typography/Text'
 import { Badge } from '../../../shared/components/ui/Badge'
@@ -10,6 +10,28 @@ import { normalizeLevelRank, type RoleFlowView } from './currentRoleFlowApi'
 
 export function CurrentRoleSummary({ view, onReviewGaps, disabled = false }: { view: RoleFlowView; onReviewGaps: () => void; disabled?: boolean }) {
   const { t } = useTranslation()
+  const startingPlacement = view.startingPlacement ?? null
+  const startingTargetRank = startingPlacement?.levelId
+    ? normalizeLevelRank(startingPlacement.levelId)
+    : view.assignedLevelRank ?? normalizeLevelRank(view.assignedLevel)
+  const startingLevel = startingPlacement
+    ? (startingPlacement.role.levels.find(
+        level =>
+          level.id === startingPlacement.levelId ||
+          level.name.toLowerCase() === startingPlacement.levelId?.toLowerCase() ||
+          level.name.toLowerCase() === view.assignedLevel?.toLowerCase() ||
+          level.code.toLowerCase() === startingPlacement.levelId?.toLowerCase(),
+      ) ||
+      (startingTargetRank !== null && startingTargetRank !== undefined
+        ? startingPlacement.role.levels.find(
+            level =>
+              level.rank === startingTargetRank ||
+              normalizeLevelRank(level.name) === startingTargetRank ||
+              normalizeLevelRank(level.id) === startingTargetRank,
+          )
+        : null))
+    : null
+
   const selection = view.selection
   const targetRank = selection?.levelId ? normalizeLevelRank(selection.levelId) : null
   const activeLevel = selection && selection.levelId
@@ -28,35 +50,104 @@ export function CurrentRoleSummary({ view, onReviewGaps, disabled = false }: { v
           )
         : null))
     : null
+
   if (view.progress.state === 'LEGACY_SELECTION_REQUIRES_RESELECTION') {
     return <Card className="p-5"><Text role="status">{t('roleFlow.legacySelection')}</Text></Card>
   }
-  if (!selection && view.progress.state !== 'RESUME') return null
-  return <Card className="min-w-0 overflow-hidden">
-    <div className="flex flex-wrap items-center justify-between gap-4 px-5 py-4">
-      <div className="flex min-w-0 items-center gap-3">
-        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-secondary text-primary"><Target size={16} aria-hidden="true" /></span>
-        <div className="min-w-0 space-y-1">
-          <div className="flex flex-wrap items-center gap-2">
-            <Heading level={2} size="card">{t(selection ? selection.available ? 'upskillingUi.activeRole' : 'roleFlow.previousUnavailable' : 'employeeBaseline.title')}</Heading>
-            {selection && (
-              <>
-                <Badge variant={selection.available ? 'secondary' : 'warning'} className={`max-w-full whitespace-normal break-words ${selection.available ? 'border-primary/20 text-primary' : ''}`}>
-                  {selection.role.name}{activeLevel ? ` · ${activeLevel.name}` : selection.levelId ? ` · ${t('initialPathway.state.UNAVAILABLE')}` : ''}
-                </Badge>
-                {activeLevel?.duration && (
-                  <Badge variant="outline" className="text-xs font-medium border-border/80">
-                    Est. {activeLevel.duration}
+
+  return (
+    <div className="space-y-4">
+      {startingPlacement && (
+        <Card className="min-w-0 overflow-hidden">
+          <div className="flex flex-wrap items-center justify-between gap-4 px-5 py-4">
+            <div className="flex min-w-0 items-center gap-3">
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-secondary text-primary">
+                <Briefcase size={16} aria-hidden="true" />
+              </span>
+              <div className="min-w-0 space-y-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  <Heading level={2} size="card">
+                    {t('upskillingUi.startingCareerPlacement')}
+                  </Heading>
+                  <Badge
+                    variant="secondary"
+                    className="max-w-full whitespace-normal break-words border-primary/20 text-primary"
+                  >
+                    {startingPlacement.role.name}
+                    {startingLevel
+                      ? ` · ${startingLevel.name}`
+                      : view.assignedLevel
+                        ? ` · ${view.assignedLevel}`
+                        : ''}
+                  </Badge>
+                </div>
+                <Text variant="caption">{startingPlacement.role.jobPositionName}</Text>
+              </div>
+            </div>
+          </div>
+        </Card>
+      )}
+
+      <Card className="min-w-0 overflow-hidden">
+        <div className="flex flex-wrap items-center justify-between gap-4 px-5 py-4">
+          <div className="flex min-w-0 items-center gap-3">
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-secondary text-primary">
+              <Target size={16} aria-hidden="true" />
+            </span>
+            <div className="min-w-0 space-y-1">
+              <div className="flex flex-wrap items-center gap-2">
+                <Heading level={2} size="card">
+                  {t(
+                    selection
+                      ? selection.available
+                        ? 'upskillingUi.activeRole'
+                        : 'roleFlow.previousUnavailable'
+                      : 'upskillingUi.activeRole',
+                  )}
+                </Heading>
+                {selection ? (
+                  <>
+                    <Badge
+                      variant={selection.available ? 'secondary' : 'warning'}
+                      className={`max-w-full whitespace-normal break-words ${selection.available ? 'border-primary/20 text-primary' : ''}`}
+                    >
+                      {selection.role.name}
+                      {activeLevel
+                        ? ` · ${activeLevel.name}`
+                        : selection.levelId
+                          ? ` · ${t('initialPathway.state.UNAVAILABLE')}`
+                          : ''}
+                    </Badge>
+                    {activeLevel?.duration && (
+                      <Badge variant="outline" className="text-xs font-medium border-border/80">
+                        Est. {activeLevel.duration}
+                      </Badge>
+                    )}
+                  </>
+                ) : (
+                  <Badge variant="outline" className="text-xs font-medium text-muted-foreground border-border/80">
+                    {t('upskillingUi.noActiveRoleSelected')}
                   </Badge>
                 )}
-              </>
-            )}
+              </div>
+              <Text variant="caption">
+                {selection ? selection.role.jobPositionName : t('upskillingUi.selectActiveRoleHint')}
+              </Text>
+            </div>
           </div>
-          {selection && <Text variant="caption">{selection.role.jobPositionName}</Text>}
+          {selection && (
+            <Button
+              variant="primary"
+              className="h-auto min-h-10 whitespace-normal [&>span]:whitespace-normal"
+              disabled={disabled || !selection.available}
+              onClick={onReviewGaps}
+            >
+              {t('initialPathway.gaps')}
+            </Button>
+          )}
         </div>
-      </div>
-      {selection && <Button variant="primary" className="h-auto min-h-10 whitespace-normal [&>span]:whitespace-normal" disabled={disabled || !selection.available} onClick={onReviewGaps}>{t('initialPathway.gaps')}</Button>}
+        <RoleBaselineGate view={view} />
+      </Card>
     </div>
-    <RoleBaselineGate view={view} />
-  </Card>
+  )
 }

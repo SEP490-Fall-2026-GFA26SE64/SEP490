@@ -32,7 +32,6 @@ export interface ElectiveSkillItem {
   code: string
   name: string
   domain: string
-  macroCompetency: string
   difficulty: 'Beginner' | 'Intermediate' | 'Advanced'
   estimatedHours: number
   mappedModuleId: string
@@ -52,7 +51,6 @@ const INITIAL_SKILLS: ElectiveSkillItem[] = [
     code: 'SKILL-CYPHER-01',
     name: 'Neo4j Cypher Traversal & Pattern Querying',
     domain: 'Software Engineering',
-    macroCompetency: 'Graph Database Engineering',
     difficulty: 'Intermediate',
     estimatedHours: 4,
     mappedModuleId: 'mod-cypher-mastery',
@@ -68,7 +66,6 @@ const INITIAL_SKILLS: ElectiveSkillItem[] = [
     code: 'SKILL-GNN-01',
     name: 'Graph Neural Networks & Message Passing',
     domain: 'Data & AI',
-    macroCompetency: 'Geometric Deep Learning',
     difficulty: 'Advanced',
     estimatedHours: 6,
     mappedModuleId: 'mod-gnn-fundamentals',
@@ -84,7 +81,6 @@ const INITIAL_SKILLS: ElectiveSkillItem[] = [
     code: 'SKILL-OWL-01',
     name: 'Enterprise Ontology Modeling with OWL 2 & Protege',
     domain: 'Data & AI',
-    macroCompetency: 'Semantic Knowledge Representation',
     difficulty: 'Intermediate',
     estimatedHours: 5,
     mappedModuleId: 'mod-owl-foundations',
@@ -100,7 +96,6 @@ const INITIAL_SKILLS: ElectiveSkillItem[] = [
     code: 'SKILL-DOCKER-01',
     name: 'Containerization & Multi-Stage Docker Builds',
     domain: 'Cloud & Infrastructure',
-    macroCompetency: 'Container & Runtime Orchestration',
     difficulty: 'Beginner',
     estimatedHours: 3,
     mappedModuleId: 'mod-cypher-mastery',
@@ -116,7 +111,6 @@ const INITIAL_SKILLS: ElectiveSkillItem[] = [
     code: 'SKILL-DKT-01',
     name: 'Bayesian & Deep Knowledge Tracing Engines',
     domain: 'Data & AI',
-    macroCompetency: 'Adaptive Learning Analytics',
     difficulty: 'Advanced',
     estimatedHours: 8,
     mappedModuleId: 'mod-gnn-fundamentals',
@@ -132,7 +126,6 @@ const INITIAL_SKILLS: ElectiveSkillItem[] = [
     code: 'SKILL-SPRING-01',
     name: 'Reactive Microservices with Spring Boot & WebFlux',
     domain: 'Software Engineering',
-    macroCompetency: 'High-Concurrency Backend Systems',
     difficulty: 'Intermediate',
     estimatedHours: 5,
     mappedModuleId: 'mod-cypher-mastery',
@@ -178,7 +171,7 @@ export const IndividualSkillCatalogPage: React.FC = () => {
       const matchSearch =
         s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         s.code.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        s.macroCompetency.toLowerCase().includes(searchQuery.toLowerCase())
+        s.domain.toLowerCase().includes(searchQuery.toLowerCase())
 
       const matchDomain = selectedDomain === 'ALL' || s.domain === selectedDomain
 
@@ -356,7 +349,7 @@ export const IndividualSkillCatalogPage: React.FC = () => {
                   {skill.name}
                 </CardTitle>
                 <div className="text-caption text-primary font-medium mt-0.5">
-                  {skill.macroCompetency}
+                  {skill.domain}
                 </div>
               </div>
 
@@ -476,7 +469,7 @@ export const IndividualSkillCatalogPage: React.FC = () => {
                 <div className="flex items-center justify-between">
                   <h4 className="font-bold text-foreground text-sm">{enrollTargetSkill.name}</h4>
                   <Badge variant="outline" className="text-[10px] font-mono">
-                    {enrollTargetSkill.macroCompetency}
+                    {enrollTargetSkill.domain}
                   </Badge>
                 </div>
                 <p className="text-muted-foreground text-xs leading-relaxed">

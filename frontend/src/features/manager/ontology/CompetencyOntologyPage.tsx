@@ -76,7 +76,7 @@ const ONTOLOGY_PRESETS: ImportPreset[] = [
   {
     id: 'preset-foundation-models',
     name: 'Foundation Models & LLM Engineering',
-    description: '2 Macro Competencies, 4 Micro-skills, and 2 Prerequisite edges based on Stanford CS324.',
+    description: '2 Competencies, 4 Micro-skills, and 2 Prerequisite edges based on Stanford CS324.',
     badge: 'AI Curricula',
     itemCount: 6,
     previewSnippet: JSON.stringify(
@@ -123,7 +123,6 @@ const ONTOLOGY_PRESETS: ImportPreset[] = [
           name: 'Implement Multi-Head Scaled Dot-Product Attention',
           description: 'Derives queries, keys, values tensors and computes masked softmax weights without memory leakage.',
           status: 'ACTIVE',
-          macroCompetencyCode: 'KNOWLEDGE',
           createdAt: new Date().toISOString().slice(0, 10),
           updatedAt: new Date().toISOString().slice(0, 10),
         },
@@ -133,7 +132,6 @@ const ONTOLOGY_PRESETS: ImportPreset[] = [
           name: 'Configure KV-Cache Quantization & PagedAttention',
           description: 'Profiles vLLM chunked prefill memory allocations under high token concurrency.',
           status: 'ACTIVE',
-          macroCompetencyCode: 'KNOWLEDGE',
           createdAt: new Date().toISOString().slice(0, 10),
           updatedAt: new Date().toISOString().slice(0, 10),
         },
@@ -143,7 +141,6 @@ const ONTOLOGY_PRESETS: ImportPreset[] = [
           name: 'Construct HNSW Vector Graph Embedding Pipeline',
           description: 'Builds approximate nearest neighbor graph index with recall@10 >= 0.95.',
           status: 'ACTIVE',
-          macroCompetencyCode: 'KNOWLEDGE',
           createdAt: new Date().toISOString().slice(0, 10),
           updatedAt: new Date().toISOString().slice(0, 10),
         },
@@ -153,7 +150,6 @@ const ONTOLOGY_PRESETS: ImportPreset[] = [
           name: 'Integrate Cross-Encoder Reciprocal Rank Fusion',
           description: 'Applies reranking scoring to boost precision on complex domain queries.',
           status: 'ACTIVE',
-          macroCompetencyCode: 'KNOWLEDGE',
           createdAt: new Date().toISOString().slice(0, 10),
           updatedAt: new Date().toISOString().slice(0, 10),
         },
@@ -226,7 +222,6 @@ export function CompetencyOntologyPage() {
 
   // Search, filter, and pagination states for Tab 1 (Micro-skills)
   const [skillSearchQuery, setSkillSearchQuery] = React.useState('')
-  const [skillMacroFilter, setSkillMacroFilter] = React.useState('all')
   const [skillSortBy, setSkillSortBy] = React.useState<'latest' | 'title' | 'code'>('latest')
   const [skillCurrentPage, setSkillCurrentPage] = React.useState(1)
   const [skillPageSize] = React.useState(10)
@@ -243,7 +238,7 @@ export function CompetencyOntologyPage() {
 
   React.useEffect(() => {
     setSkillCurrentPage(1)
-  }, [skillSearchQuery, skillMacroFilter, skillSortBy])
+  }, [skillSearchQuery, skillSortBy])
 
   // Search, filter, and pagination states for Tab: Competencies
   const [competencySearchQuery, setCompetencySearchQuery] = React.useState('')
@@ -326,7 +321,6 @@ export function CompetencyOntologyPage() {
             name: s.name,
             description: s.description || '',
             status: (s.status as MicroSkillModel['status']) || 'ACTIVE',
-            macroCompetencyCode: s.macroCompetencyCode || 'KNOWLEDGE',
             createdAt: s.createdAt || (active?.microSkills || []).find((item) => item.id === s.id || item.code === s.code)?.createdAt || '2026-01-01T00:00:00.000Z',
             updatedAt: s.updatedAt || s.createdAt || (active?.microSkills || []).find((item) => item.id === s.id || item.code === s.code)?.updatedAt || '2026-01-01T00:00:00.000Z',
           }))
@@ -478,7 +472,6 @@ export function CompetencyOntologyPage() {
         name: String(s.name || 'Untitled Micro-skill').trim(),
         description: String(s.description || s.observableOutcome || 'Skill description and scope.').trim(),
         status: (s.status === 'DRAFT' || s.status === 'RETIRED' || s.status === 'draft' || s.status === 'archived') ? s.status : 'ACTIVE',
-        macroCompetencyCode: String(s.macroCompetencyCode || 'KNOWLEDGE'),
         createdAt: String(s.createdAt || new Date().toISOString().slice(0, 10)),
         updatedAt: String(s.updatedAt || new Date().toISOString().slice(0, 10)),
       }
@@ -610,7 +603,6 @@ export function CompetencyOntologyPage() {
         const updated = await updateMicroSkill(orgId, selectedSkill.id, {
           name: skillForm.name.trim(),
           description: skillForm.description.trim(),
-          macroCompetencyCode: selectedSkill.macroCompetencyCode || 'KNOWLEDGE',
         })
 
         // Sync competency mapping for selectedSkill (HAS_SKILL edges)
@@ -859,9 +851,16 @@ export function CompetencyOntologyPage() {
           skill.code.toLowerCase().includes(skillSearchQuery.toLowerCase()) ||
           skill.name.toLowerCase().includes(skillSearchQuery.toLowerCase()) ||
           (skill.description || '').toLowerCase().includes(skillSearchQuery.toLowerCase())
-        const matchesMacro =
-          skillMacroFilter === 'all' || (skill.macroCompetencyCode || 'KNOWLEDGE') === skillMacroFilter
-        return matchesSearch && matchesMacro
+        const parentComps = competencies.filter(
+          (c) => (c.skillIds || []).includes(skill.id) || (c.skillIds || []).includes(skill.code)
+        )
+        const matchesCompetency =
+          skillCompetencyFilter === 'all'
+            ? true
+            : skillCompetencyFilter === 'unassigned'
+              ? parentComps.length === 0
+              : parentComps.some((c) => c.id === skillCompetencyFilter || c.code === skillCompetencyFilter)
+        return matchesSearch && matchesCompetency
       })
       .sort((a, b) => {
         if (skillSortBy === 'title') return a.name.localeCompare(b.name)
@@ -877,7 +876,7 @@ export function CompetencyOntologyPage() {
         if (timeA !== timeB) return timeB - timeA
         return (b.code || b.id || '').localeCompare(a.code || a.id || '')
       })
-  }, [microSkills, skillSearchQuery, skillMacroFilter, skillSortBy])
+  }, [microSkills, skillSearchQuery, skillCompetencyFilter, competencies, skillSortBy])
 
   const skillTotalPages = Math.ceil(filteredMicroSkills.length / skillPageSize) || 1
   const paginatedMicroSkills = filteredMicroSkills.slice(
@@ -1326,7 +1325,7 @@ export function CompetencyOntologyPage() {
                       className="mt-3"
                       onClick={() => {
                         setSkillSearchQuery('')
-                        setSkillMacroFilter('all')
+                        setSkillCompetencyFilter('all')
                         setSkillCurrentPage(1)
                       }}
                     >
@@ -1843,7 +1842,7 @@ export function CompetencyOntologyPage() {
                   )}
                 </DialogTitle>
                 <DialogDescription className="text-xs text-muted-foreground mt-0.5">
-                  Define an atomic micro-skill and align it with its macro competency domain.
+                  Define an atomic micro-skill and align it with its competency domain.
                 </DialogDescription>
               </div>
             </div>
@@ -1895,13 +1894,13 @@ export function CompetencyOntologyPage() {
                     Required Competencies for {skillForm.name || selectedSkill?.name || 'Micro-skill'} ({skillForm.competencyIds.length})
                   </span>
                 </div>
-                <Badge variant="outline" className="text-[10px] font-mono text-primary border-primary/30 bg-primary/5 self-start sm:self-auto">
-                  HAS_SKILL relationships
+                <Badge variant="outline" className="text-[10px] font-semibold text-primary border-primary/30 bg-primary/5 self-start sm:self-auto">
+                  Competency Alignment
                 </Badge>
               </div>
 
               <div className="text-[11px] text-muted-foreground leading-relaxed">
-                Macro knowledge &amp; functional capability clusters containing this micro-skill.
+                Domain knowledge &amp; functional capability clusters containing this micro-skill.
               </div>
 
               {/* Add Competency Row */}
@@ -2094,9 +2093,9 @@ export function CompetencyOntologyPage() {
                       {selectedSourceSkill && (
                         <Badge
                           variant="outline"
-                          className="font-bold tracking-wider text-[9.5px] uppercase border-border/80 bg-background text-foreground shadow-2xs px-2 py-0"
+                          className="font-mono font-bold tracking-wider text-[9.5px] uppercase border-border/80 bg-background text-foreground shadow-2xs px-2 py-0"
                         >
-                          {selectedSourceSkill.macroCompetencyCode || 'KNOWLEDGE'}
+                          {selectedSourceSkill.code}
                         </Badge>
                       )}
                     </div>
@@ -2138,9 +2137,9 @@ export function CompetencyOntologyPage() {
                       {selectedTargetSkill && (
                         <Badge
                           variant="outline"
-                          className="font-bold tracking-wider text-[9.5px] uppercase border-border/80 bg-background text-foreground shadow-2xs px-2 py-0"
+                          className="font-mono font-bold tracking-wider text-[9.5px] uppercase border-border/80 bg-background text-foreground shadow-2xs px-2 py-0"
                         >
-                          {selectedTargetSkill.macroCompetencyCode || 'KNOWLEDGE'}
+                          {selectedTargetSkill.code}
                         </Badge>
                       )}
                     </div>
@@ -2548,12 +2547,6 @@ export function CompetencyOntologyPage() {
                         <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">
                           Foundational Prerequisite
                         </span>
-                        <Badge
-                          variant="outline"
-                          className="font-bold tracking-wider text-[9.5px] uppercase border-border/80 bg-background text-foreground shadow-2xs px-2 py-0"
-                        >
-                          {source?.macroCompetencyCode || 'KNOWLEDGE'}
-                        </Badge>
                       </div>
                       <strong className="font-mono text-primary font-bold text-sm block">
                         {source?.code || viewingEdgeDetails.sourceSkillCode}
@@ -2581,12 +2574,6 @@ export function CompetencyOntologyPage() {
                         <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">
                           Dependent Target
                         </span>
-                        <Badge
-                          variant="outline"
-                          className="font-bold tracking-wider text-[9.5px] uppercase border-border/80 bg-background text-foreground shadow-2xs px-2 py-0"
-                        >
-                          {target?.macroCompetencyCode || 'KNOWLEDGE'}
-                        </Badge>
                       </div>
                       <strong className="font-mono text-primary font-bold text-sm block">
                         {target?.code || viewingEdgeDetails.targetSkillCode}
@@ -3114,7 +3101,7 @@ export function CompetencyOntologyPage() {
         description="Select an industry blueprint to rapidly provision competencies, micro-skills, and prerequisite dependencies for your organization."
         presets={ONTOLOGY_PRESETS}
         onImport={handleImportOntology}
-        sampleJsonPlaceholder={`{\n  "competencies": [\n    {\n      "code": "COMP-LLM-01",\n      "name": "Transformer Architectures & Attention Mechanisms",\n      "description": "Deep understanding of self-attention matrices and transformer layers."\n    }\n  ],\n  "microSkills": [\n    {\n      "code": "SKILL-ATTN-01",\n      "name": "Implement Multi-Head Scaled Dot-Product Attention",\n      "description": "Derives queries, keys, values tensors and computes masked softmax weights.",\n      "macroCompetencyCode": "KNOWLEDGE"\n    }\n  ]\n}`}
+        sampleJsonPlaceholder={`{\n  "competencies": [\n    {\n      "code": "COMP-LLM-01",\n      "name": "Transformer Architectures & Attention Mechanisms",\n      "description": "Deep understanding of self-attention matrices and transformer layers."\n    }\n  ],\n  "microSkills": [\n    {\n      "code": "SKILL-ATTN-01",\n      "name": "Implement Multi-Head Scaled Dot-Product Attention",\n      "description": "Derives queries, keys, values tensors and computes masked softmax weights."\n    }\n  ]\n}`}
       />
     </WorkspaceLayout>
   )

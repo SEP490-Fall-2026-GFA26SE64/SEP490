@@ -107,6 +107,9 @@ export const vi: TranslationKeys = {
   },
   upskillingUi: {
     roles: 'Vị trí', skills: 'Kỹ năng', activeRole: 'Vị trí đang chọn',
+    startingCareerPlacement: 'Vị trí khởi điểm',
+    noActiveRoleSelected: 'Chưa chọn vị trí',
+    selectActiveRoleHint: 'Chọn một vị trí mục tiêu từ danh mục bên dưới để bắt đầu lộ trình nâng cao kỹ năng.',
     searchPlaceholder: 'Tìm vị trí theo tên hoặc vị trí công việc…', clearFilters: 'Xóa bộ lọc',
     roleCatalog: 'Danh mục vị trí', skillCount: 'Kỹ năng yêu cầu', levels: 'Cấp độ',
     allRoles: 'Tất cả vị trí', status: 'Trạng thái', noResults: 'Không có vị trí phù hợp với bộ lọc',
@@ -199,6 +202,7 @@ export const vi: TranslationKeys = {
     mandatory: 'Bắt buộc', requiredScore: 'Mức năng lực yêu cầu',
     states: {
       SELECT_ROLE: 'Chọn vị trí để tiếp tục.', ROLE_UNAVAILABLE: 'Vị trí cũ không còn khả dụng. Hãy chọn vị trí hiện tại ở bên dưới.',
+      READY: 'Vị trí đã chọn đã sẵn sàng. Bạn có thể xem khoảng cách kỹ năng hoặc lịch sử đánh giá đầu vào.',
       COMPLETE: 'Đã có mastery cho toàn bộ kỹ năng trong baseline của vị trí công việc. Không cần làm baseline mới.',
       BASELINE_REQUIRED: 'Cần hoàn thành baseline của vị trí công việc này trước khi tiếp tục.', RESUME: 'Bạn có baseline chưa hoàn thành. Hãy tiếp tục bài đang làm.',
       NO_BASELINE: 'Chưa có cấu hình baseline đang được áp dụng cho vị trí công việc này.', BASELINE_UNAVAILABLE: 'Tài nguyên hoặc cấu hình baseline chưa sẵn sàng để bắt đầu bài mới. Vị trí đã chọn và lịch sử làm bài được giữ nguyên.',

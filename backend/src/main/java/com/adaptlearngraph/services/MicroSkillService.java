@@ -28,9 +28,9 @@ public class MicroSkillService
     }
 
     @Override
-    public List<MicroSkill> searchMicroSkills(String organizationId, String query, String macroCode, SkillStatus status) {
+    public List<MicroSkill> searchMicroSkills(String organizationId, String query, SkillStatus status) {
         Objects.requireNonNull(organizationId, "organizationId cannot be null");
-        return microSkillRepository.search(organizationId, query, macroCode, status);
+        return microSkillRepository.search(organizationId, query, status);
     }
 
     @Override
@@ -52,8 +52,7 @@ public class MicroSkillService
                 command.organizationId(),
                 command.code(),
                 command.name(),
-                command.description(),
-                command.macroCompetencyCode());
+                command.description());
 
         return microSkillRepository.save(skill);
     }
@@ -68,7 +67,6 @@ public class MicroSkillService
         MicroSkill updated = existing.update(
                 command.name(),
                 command.description(),
-                command.macroCompetencyCode(),
                 command.status());
 
         return microSkillRepository.save(updated);

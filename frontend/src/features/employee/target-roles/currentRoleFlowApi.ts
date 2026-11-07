@@ -16,6 +16,7 @@ export interface CurrentSelection { selectionId: string; role: CurrentRole; revi
 export interface RoleProgress { state: string; requiredCount: number; coveredCount: number; attemptId: string | null; baselineVersion: number | null }
 export interface RoleFlowView {
   selection: CurrentSelection | null
+  startingPlacement?: CurrentSelection | null
   progress: RoleProgress
   assignedRoleId?: string | null
   assignedRoleCode?: string | null
@@ -136,238 +137,299 @@ const normalizeOccCode = (c?: string | null) =>
     .replace(/^OCC-/, '')
     .replace(/\.00$/, '')
 
-async function resolveEmployeeDepartmentContext(signal?: AbortSignal): Promise<EmployeeDepartmentContext> {
-  let email = 'employee@technova.com'
-  let organizationId = resolveWorkspaceOrgId(DEFAULT_ORG_ID)
-  let isEmployee = false
+let inFlightContextPromise: Promise<EmployeeDepartmentContext> | null = null
 
-  try {
-    const authRes = await workspaceFetch('/api/v1/workspace-auth/current', { method: 'GET', signal })
-    if (authRes.ok) {
-      const authData = (await authRes.json()) as {
-        email?: string
-        organizationId?: string | null
-        roles?: string[]
-      }
-      if (authData.email) email = authData.email.toLowerCase().trim()
-      if (authData.organizationId) organizationId = resolveWorkspaceOrgId(authData.organizationId)
-      if (Array.isArray(authData.roles)) {
-        isEmployee = authData.roles.some(r => String(r).toUpperCase() === 'EMPLOYEE')
-      }
-    }
-  } catch {
-    // fallback to default employee context
-  }
-
-  let assignedRoleId: string | null = null
-  let assignedRoleCode: string | null = null
-  let assignedRoleTitle: string | null = null
-  let assignedLevel: string | null = null
-  let savedDeptName: string | null = null
-  let savedDeptId: string | null = null
-
-  if (typeof localStorage !== 'undefined') {
+async function resolveEmployeeDepartmentContext(): Promise<EmployeeDepartmentContext> {
+  if (inFlightContextPromise) return inFlightContextPromise
+  inFlightContextPromise = (async () => {
     try {
-      const raw = localStorage.getItem(`alg_employee_assignment_${email}`)
-      if (raw) {
-        const parsed = JSON.parse(raw) as {
-          roleId?: string
-          roleCode?: string
-          roleTitle?: string
-          level?: string
-          departmentId?: string
-          departmentName?: string
-        }
-        assignedRoleId = parsed.roleId?.trim() || null
-        assignedRoleCode = parsed.roleCode?.trim() || assignedRoleId
-        assignedRoleTitle = parsed.roleTitle?.trim() || assignedRoleCode
-        assignedLevel = parsed.level?.trim() || null
-        savedDeptName = parsed.departmentName?.trim() || null
-        savedDeptId = parsed.departmentId?.trim() || null
-      }
-    } catch {
-      // ignore storage errors
-    }
-  }
+      let email = 'employee@technova.com'
+      let organizationId = resolveWorkspaceOrgId(DEFAULT_ORG_ID)
+      let isEmployee = false
 
-  // Check if subscription members or member-references in PostgreSQL has an encoded target role & department for this employee
-  try {
-    const memRes = await workspaceFetch(
-      `/api/v1/organizations/${encodeURIComponent(organizationId)}/subscription/members`,
-      { method: 'GET', signal },
-    )
-    if (memRes.ok) {
-      const members = (await memRes.json()) as Array<{
-        email?: string
-        departmentId?: string | null
-        departmentName?: string | null
-        jobPositionName?: string | null
-        targetRoleId?: string | null
-        targetRoleCode?: string | null
-        targetRoleName?: string | null
-        targetRoleLevel?: string | null
-      }>
-      if (Array.isArray(members)) {
-        const matchedMember = members.find(
-          m => m.email && m.email.toLowerCase().trim() === email.toLowerCase().trim(),
+      try {
+        const authRes = await workspaceFetch('/api/v1/workspace-auth/current', { method: 'GET' })
+        if (authRes.ok) {
+          const authData = (await authRes.json()) as {
+            email?: string
+            organizationId?: string | null
+            roles?: string[]
+          }
+          if (authData.email) email = authData.email.toLowerCase().trim()
+          if (authData.organizationId) organizationId = resolveWorkspaceOrgId(authData.organizationId)
+          if (Array.isArray(authData.roles)) {
+            isEmployee = authData.roles.some(r => String(r).toUpperCase() === 'EMPLOYEE')
+          }
+        }
+      } catch {
+        // fallback to default employee context
+      }
+
+      let assignedRoleId: string | null = null
+      let assignedRoleCode: string | null = null
+      let assignedRoleTitle: string | null = null
+      let assignedLevel: string | null = null
+      let savedDeptName: string | null = null
+      let savedDeptId: string | null = null
+      let savedJobPosCode: string | null = null
+
+      if (typeof localStorage !== 'undefined') {
+        try {
+          const raw = localStorage.getItem(`alg_employee_assignment_${email}`)
+          if (raw) {
+            const parsed = JSON.parse(raw) as {
+              roleId?: string
+              roleCode?: string
+              roleTitle?: string
+              level?: string
+              departmentId?: string
+              departmentName?: string
+              jobPositionCode?: string
+            }
+            assignedRoleId = parsed.roleId?.trim() || null
+            assignedRoleCode = parsed.roleCode?.trim() || assignedRoleId
+            assignedRoleTitle = parsed.roleTitle?.trim() || assignedRoleCode
+            assignedLevel = parsed.level?.trim() || null
+            savedDeptName = parsed.departmentName?.trim() || null
+            savedDeptId = parsed.departmentId?.trim() || null
+            savedJobPosCode = parsed.jobPositionCode?.trim() || null
+          }
+        } catch {
+          // ignore storage errors
+        }
+      }
+
+      // Check if subscription members in PostgreSQL has an encoded target role & department for this employee
+      try {
+        const memRes = await workspaceFetch(
+          `/api/v1/organizations/${encodeURIComponent(organizationId)}/subscription/members`,
+          { method: 'GET' },
         )
-        if (matchedMember) {
-          if (matchedMember.departmentName) {
-            savedDeptName = matchedMember.departmentName
-          }
-          if (matchedMember.departmentId) {
-            savedDeptId = matchedMember.departmentId
-          }
-          const decoded = decodeJobPositionWithTargetRole(matchedMember.jobPositionName)
-          const effRoleId = matchedMember.targetRoleId || decoded.targetRoleId
-          if (effRoleId) {
-            assignedRoleId = effRoleId
-            assignedRoleCode = matchedMember.targetRoleCode || decoded.targetRoleCode || effRoleId
-            assignedRoleTitle = matchedMember.targetRoleName || decoded.targetRoleName || assignedRoleCode
-          }
-          const effLvl = matchedMember.targetRoleLevel || decoded.targetRoleLevel
-          if (effLvl) {
-            assignedLevel = effLvl
-          }
-        }
-      }
-    }
-  } catch {
-    // ignore if employee is not permitted to read members list
-  }
-
-  if (assignedLevel) {
-    assignedLevel = assignedLevel.replace(/^(?:rank|level)\s*\d+\s*:\s*/i, '').trim()
-  }
-
-  const isEngCog = email.includes('se.employee') || email === 'employee@technova.com' || email.includes('alex.chen')
-  const defaultDeptName = isEngCog
-    ? 'Engineering & Cognitive Systems'
-    : 'Cloud Infrastructure & DevOps'
-  const defaultDeptId = isEngCog ? 'd0000000-0000-0000-0000-000000000001' : 'dept-cloud'
-
-  const departmentName = savedDeptName || defaultDeptName
-  const departmentId = savedDeptId || defaultDeptId
-
-  // Check if member-references in PostgreSQL has an encoded target role for this department
-  if (!assignedRoleId) {
-    try {
-      const refRes = await workspaceFetch(
-        `/api/v1/organizations/${encodeURIComponent(organizationId)}/subscription/member-references`,
-        { method: 'GET', signal },
-      )
-      if (refRes.ok) {
-        const refs = (await refRes.json()) as Array<{
-          departmentName?: string
-          jobPositionName?: string
-        }>
-        if (Array.isArray(refs)) {
-          for (const ref of refs) {
-            const decoded = decodeJobPositionWithTargetRole(ref.jobPositionName)
-            if (
-              decoded.targetRoleId &&
-              (!ref.departmentName ||
-                ref.departmentName.toLowerCase() === departmentName.toLowerCase())
-            ) {
-              assignedRoleId = decoded.targetRoleId
-              assignedRoleCode = decoded.targetRoleCode || decoded.targetRoleId
-              assignedRoleTitle = decoded.targetRoleName || decoded.targetRoleCode
-              assignedLevel = decoded.targetRoleLevel || 'Junior'
-              break
+        if (memRes.ok) {
+          const members = (await memRes.json()) as Array<{
+            email?: string
+            departmentId?: string | null
+            departmentName?: string | null
+            jobPositionName?: string | null
+            targetRoleId?: string | null
+            targetRoleCode?: string | null
+            targetRoleName?: string | null
+            targetRoleLevel?: string | null
+          }>
+          if (Array.isArray(members)) {
+            const matchedMember = members.find(
+              m => m.email && m.email.toLowerCase().trim() === email.toLowerCase().trim(),
+            )
+            if (matchedMember) {
+              if (matchedMember.departmentName) {
+                savedDeptName = matchedMember.departmentName
+              }
+              if (matchedMember.departmentId) {
+                savedDeptId = matchedMember.departmentId
+              }
+              const decoded = decodeJobPositionWithTargetRole(matchedMember.jobPositionName)
+              const effRoleId = matchedMember.targetRoleId || decoded.targetRoleId
+              if (effRoleId) {
+                assignedRoleId = effRoleId
+                assignedRoleCode = matchedMember.targetRoleCode || decoded.targetRoleCode || effRoleId
+                assignedRoleTitle = matchedMember.targetRoleName || decoded.targetRoleName || assignedRoleCode
+              }
+              const effLvl = matchedMember.targetRoleLevel || decoded.targetRoleLevel
+              if (effLvl) {
+                assignedLevel = effLvl
+              }
             }
           }
         }
+      } catch {
+        // ignore if employee is not permitted to read members list
       }
-    } catch {
-      // ignore if employee is not permitted to read member-references
-    }
-  }
 
-  const allLocalPositions = getAvailableJobPositions(organizationId, true)
-  const inactiveJobPositionCodes = new Set<string>()
-  for (const jp of allLocalPositions) {
-    if (jp.status === 'inactive') {
-      inactiveJobPositionCodes.add(normalizeOccCode(jp.code))
-    }
-  }
+      if (assignedLevel) {
+        assignedLevel = assignedLevel.replace(/^(?:rank|level)\s*\d+\s*:\s*/i, '').trim()
+      }
 
-  const allowedJobPositionCodes = new Set<string>()
-
-  const localDepts = loadDepartments()
-  const matchedLocalDept = localDepts.find(
-    d =>
-      d.id.toLowerCase() === departmentId.toLowerCase() ||
-      d.name.toLowerCase() === departmentName.toLowerCase() ||
-      d.code.toLowerCase() === departmentId.toLowerCase() ||
-      d.code.toLowerCase() === departmentName.toLowerCase(),
-  )
-  for (const code of matchedLocalDept?.linkedJobPositions || []) {
-    const norm = normalizeOccCode(code)
-    if (norm && !inactiveJobPositionCodes.has(norm)) {
-      allowedJobPositionCodes.add(norm)
-    }
-  }
-
-  // Also include job positions aligned to department domain
-  for (const jp of allLocalPositions) {
-    const norm = normalizeOccCode(jp.code)
-    if (
-      norm &&
-      !inactiveJobPositionCodes.has(norm) &&
-      ((departmentName.toLowerCase().includes('cloud') && (norm.startsWith('15-1299') || norm.startsWith('15-1259') || norm.startsWith('15-1260'))) ||
-        (departmentName.toLowerCase().includes('cognitive') && norm.startsWith('15-1252')) ||
-        (departmentName.toLowerCase().includes('data') && norm.startsWith('15-1243')) ||
-        (departmentName.toLowerCase().includes('quality') && norm.startsWith('15-1253')) ||
-        (departmentName.toLowerCase().includes('security') && norm.startsWith('15-1212')))
-    ) {
-      allowedJobPositionCodes.add(norm)
-    }
-  }
-
-  try {
-    const deptRes = await workspaceFetch(
-      `/api/v1/organizations/${encodeURIComponent(organizationId)}/departments`,
-      { method: 'GET', signal },
-    )
-    if (deptRes.ok) {
-      const liveDepts = (await deptRes.json()) as Array<{
+      let liveDepts: Array<{
         id?: string
         code?: string
         name?: string
         jobPositionCodes?: string[]
-      }>
-      if (Array.isArray(liveDepts)) {
-        const matchedLive = liveDepts.find(
-          d =>
-            (d.id && d.id.toLowerCase() === departmentId.toLowerCase()) ||
-            (d.name && d.name.toLowerCase() === departmentName.toLowerCase()) ||
-            (d.code && d.code.toLowerCase() === departmentId.toLowerCase()),
+        linkedJobPositions?: string[]
+      }> = []
+      try {
+        const deptRes = await workspaceFetch(
+          `/api/v1/organizations/${encodeURIComponent(organizationId)}/departments`,
+          { method: 'GET' },
         )
-        for (const code of matchedLive?.jobPositionCodes || []) {
-          const norm = normalizeOccCode(code)
-          if (norm && !inactiveJobPositionCodes.has(norm)) {
-            allowedJobPositionCodes.add(norm)
+        if (deptRes.ok) {
+          const parsedDepts = await deptRes.json()
+          if (Array.isArray(parsedDepts)) {
+            liveDepts = parsedDepts
           }
         }
+      } catch {
+        // ignore department fetch error
       }
-    }
-  } catch {
-    // ignore department fetch error
-  }
 
-  return {
-    email,
-    organizationId,
-    isEmployee,
-    departmentName,
-    departmentId,
-    allowedJobPositionCodes,
-    inactiveJobPositionCodes,
-    assignedRoleId,
-    assignedRoleCode,
-    assignedRoleTitle,
-    assignedLevel,
-  }
+      const isTechnovaOrg = organizationId === DEFAULT_ORG_ID
+      const isEngCog =
+        email.includes('se.employee') || email === 'employee@technova.com' || email.includes('alex.chen')
+      const defaultDeptName = isTechnovaOrg
+        ? isEngCog
+          ? 'Engineering & Cognitive Systems'
+          : 'Cloud Infrastructure & DevOps'
+        : liveDepts[0]?.name || ''
+      const defaultDeptId = isTechnovaOrg
+        ? isEngCog
+          ? 'd0000000-0000-0000-0000-000000000001'
+          : 'dept-cloud'
+        : liveDepts[0]?.id || liveDepts[0]?.code || ''
+
+      const departmentName = savedDeptName || defaultDeptName
+      const departmentId = savedDeptId || defaultDeptId
+
+      if (!assignedRoleId) {
+        try {
+          const refRes = await workspaceFetch(
+            `/api/v1/organizations/${encodeURIComponent(organizationId)}/subscription/member-references`,
+            { method: 'GET' },
+          )
+          if (refRes.ok) {
+            const refs = (await refRes.json()) as Array<{
+              departmentName?: string
+              jobPositionName?: string
+            }>
+            if (Array.isArray(refs)) {
+              for (const ref of refs) {
+                const decoded = decodeJobPositionWithTargetRole(ref.jobPositionName)
+                if (
+                  decoded.targetRoleId &&
+                  (!ref.departmentName ||
+                    !departmentName ||
+                    ref.departmentName.toLowerCase() === departmentName.toLowerCase())
+                ) {
+                  assignedRoleId = decoded.targetRoleId
+                  assignedRoleCode = decoded.targetRoleCode || decoded.targetRoleId
+                  assignedRoleTitle = decoded.targetRoleName || decoded.targetRoleCode
+                  assignedLevel = decoded.targetRoleLevel || 'Junior'
+                  break
+                }
+              }
+            }
+          }
+        } catch {
+          // ignore if employee is not permitted to read member-references
+        }
+      }
+
+      const allLocalPositions = getAvailableJobPositions(organizationId, true)
+      const inactiveJobPositionCodes = new Set<string>()
+      for (const jp of allLocalPositions) {
+        if (jp.status === 'inactive') {
+          inactiveJobPositionCodes.add(normalizeOccCode(jp.code))
+        }
+      }
+
+      const allowedJobPositionCodes = new Set<string>()
+
+      if (savedJobPosCode) {
+        const normSaved = normalizeOccCode(savedJobPosCode)
+        if (normSaved && !inactiveJobPositionCodes.has(normSaved)) {
+          allowedJobPositionCodes.add(normSaved)
+        }
+      }
+
+      const localDepts = loadDepartments().filter(
+        d => !d.organizationId || resolveWorkspaceOrgId(d.organizationId) === organizationId,
+      )
+      const matchedLocalDept = localDepts.find(
+        d =>
+          (departmentId && d.id.toLowerCase() === departmentId.toLowerCase()) ||
+          (departmentName && d.name.toLowerCase() === departmentName.toLowerCase()) ||
+          (departmentId && d.code.toLowerCase() === departmentId.toLowerCase()) ||
+          (departmentName && d.code.toLowerCase() === departmentName.toLowerCase()),
+      )
+      for (const code of matchedLocalDept?.linkedJobPositions || []) {
+        const norm = normalizeOccCode(code)
+        if (norm && !inactiveJobPositionCodes.has(norm)) {
+          allowedJobPositionCodes.add(norm)
+        }
+      }
+
+      // Include canonical department domain job position codes (matching UserManagementPage)
+      const deptNameLower = departmentName.toLowerCase().trim()
+      const deptIdLower = departmentId.toLowerCase().trim()
+      if (
+        deptNameLower.includes('cognitive') ||
+        deptNameLower.includes('software') ||
+        deptIdLower === 'eng-cog' ||
+        deptIdLower === 'eng-swe' ||
+        deptIdLower === 'd0000000-0000-0000-0000-000000000001'
+      ) {
+        if (!inactiveJobPositionCodes.has('15-1252')) allowedJobPositionCodes.add('15-1252')
+      } else if (deptNameLower.includes('data') || deptNameLower.includes('artificial') || deptIdLower === 'eng-data') {
+        if (!inactiveJobPositionCodes.has('15-1243')) allowedJobPositionCodes.add('15-1243')
+      } else if (deptNameLower.includes('quality') || deptNameLower.includes('assurance') || deptIdLower === 'eng-qa') {
+        if (!inactiveJobPositionCodes.has('15-1253')) allowedJobPositionCodes.add('15-1253')
+      } else if (deptNameLower.includes('cloud') || deptNameLower.includes('infrastructure') || deptIdLower === 'eng-cloud') {
+        if (!inactiveJobPositionCodes.has('15-1299.08')) allowedJobPositionCodes.add('15-1299.08')
+      } else if (deptNameLower.includes('security') || deptNameLower.includes('cyber') || deptIdLower === 'eng-sec') {
+        if (!inactiveJobPositionCodes.has('15-1212')) allowedJobPositionCodes.add('15-1212')
+      }
+
+      // Also include local job positions aligned to department domain
+      for (const jp of allLocalPositions) {
+        const norm = normalizeOccCode(jp.code)
+        if (
+          norm &&
+          !inactiveJobPositionCodes.has(norm) &&
+          ((deptNameLower.includes('cloud') && (norm.startsWith('15-1299') || norm.startsWith('15-1259') || norm.startsWith('15-1260'))) ||
+            (deptNameLower.includes('cognitive') && norm.startsWith('15-1252')) ||
+            (deptNameLower.includes('data') && norm.startsWith('15-1243')) ||
+            (deptNameLower.includes('quality') && norm.startsWith('15-1253')) ||
+            (deptNameLower.includes('security') && norm.startsWith('15-1212')))
+        ) {
+          allowedJobPositionCodes.add(norm)
+        }
+      }
+
+      const matchedLive = liveDepts.find(
+        d =>
+          (departmentId && d.id && d.id.toLowerCase() === departmentId.toLowerCase()) ||
+          (departmentName && d.name && d.name.toLowerCase() === departmentName.toLowerCase()) ||
+          (departmentId && d.code && d.code.toLowerCase() === departmentId.toLowerCase()),
+      )
+      const liveCodes = [
+        ...(matchedLive?.jobPositionCodes || []),
+        ...(matchedLive?.linkedJobPositions || []),
+      ]
+      for (const code of liveCodes) {
+        const norm = normalizeOccCode(code)
+        if (norm && !inactiveJobPositionCodes.has(norm)) {
+          allowedJobPositionCodes.add(norm)
+        }
+      }
+
+      return {
+        email,
+        organizationId,
+        isEmployee,
+        departmentName,
+        departmentId,
+        allowedJobPositionCodes,
+        inactiveJobPositionCodes,
+        assignedRoleId,
+        assignedRoleCode,
+        assignedRoleTitle,
+        assignedLevel,
+      }
+    } finally {
+      setTimeout(() => {
+        inFlightContextPromise = null
+      }, 150)
+    }
+  })()
+  return inFlightContextPromise
 }
 
 function getLocalRoleMetadataMap(organizationId: string): Record<
@@ -380,34 +442,23 @@ function getLocalRoleMetadataMap(organizationId: string): Record<
   > = {}
   if (typeof localStorage === 'undefined') return map
   try {
-    const activeComp = getActiveCompany()
-    for (const lr of activeComp?.targetRoles || []) {
-      const entry = {
-        code: lr.code,
-        jobPositionCode: lr.jobPositionCode,
-        department: lr.department,
-        status: lr.status,
-        levelNames: lr.levels,
-        levelDurations: lr.levelDurations,
-      }
-      if (lr.id) map[lr.id.toUpperCase()] = entry
-      if (lr.code) map[lr.code.trim().toUpperCase()] = entry
-    }
-    const keys = Array.from(new Set([
-      `adaptlearn_target_role_meta_${organizationId}`,
-      `adaptlearn_target_role_meta_${DEFAULT_ORG_ID}`,
-      'adaptlearn_target_role_meta_comp-technova',
-      'adaptlearn_target_role_meta_workspace-development',
-      'adaptlearn_target_role_meta_',
-    ]))
-    try {
-      for (let i = 0; i < localStorage.length; i++) {
-        const k = localStorage.key(i)
-        if (k && k.startsWith('adaptlearn_target_role_meta')) {
-          keys.push(k)
-        }
-      }
-    } catch {}
+    const resolvedOrg = resolveWorkspaceOrgId(organizationId)
+    const keys = Array.from(
+      new Set(
+        resolvedOrg === DEFAULT_ORG_ID
+          ? [
+              `adaptlearn_target_role_meta_${organizationId}`,
+              `adaptlearn_target_role_meta_${DEFAULT_ORG_ID}`,
+              'adaptlearn_target_role_meta_comp-technova',
+              'adaptlearn_target_role_meta_workspace-development',
+              'adaptlearn_target_role_meta_',
+            ]
+          : [
+              `adaptlearn_target_role_meta_${organizationId}`,
+              `adaptlearn_target_role_meta_${resolvedOrg}`,
+            ],
+      ),
+    )
     for (const k of keys) {
       const raw = localStorage.getItem(k)
       if (!raw) continue
@@ -434,400 +485,326 @@ function getLocalRoleMetadataMap(organizationId: string): Record<
 
 let inFlightRolesPromise: Promise<CurrentRole[]> | null = null
 
-async function fetchDepartmentScopedPublishedRoles(signal?: AbortSignal): Promise<CurrentRole[]> {
+async function fetchDepartmentScopedPublishedRoles(): Promise<CurrentRole[]> {
   if (inFlightRolesPromise) return inFlightRolesPromise
   inFlightRolesPromise = (async () => {
     try {
-      const ctx = await resolveEmployeeDepartmentContext(signal)
+      const ctx = await resolveEmployeeDepartmentContext()
       const orgId = resolveWorkspaceOrgId(ctx.organizationId || DEFAULT_ORG_ID)
       const metaMap = getLocalRoleMetadataMap(orgId)
 
-      // 1. Primary source of truth: Native employee target-roles endpoint from Neo4j
+      // Optional Neo4j level/skill enrichment map so seeded roles retain their Neo4j level skills if skillTargets is empty
+      const neo4jRoleLevelsMap = new Map<string, CurrentLevel[]>()
       try {
         const empRes = await workspaceFetch('/api/v1/employee/target-roles', {
           method: 'GET',
-          signal,
         }).catch(() => null)
-
         if (empRes && empRes.ok) {
           const empList = (await empRes.json()) as Array<Record<string, unknown>>
-          if (Array.isArray(empList) && empList.length > 0) {
-            const cleanEmpRoles: CurrentRole[] = empList
-              .filter((robj) => {
-                if (!robj || typeof robj !== 'object') return false
-                const status = String(robj.status || 'PUBLISHED').toUpperCase()
-                if (status === 'UNPUBLISHED' || status === 'INACTIVE' || status === 'DRAFT') {
-                  return false
-                }
-                const codeUpper = String(robj.code || robj.id || '').toUpperCase().split('#')[0]
-                const idUpper = String(robj.id || '').toUpperCase()
-                const meta = metaMap[codeUpper] || metaMap[idUpper]
-                if (
-                  meta?.status &&
-                  (meta.status.toUpperCase() === 'UNPUBLISHED' ||
-                    meta.status.toUpperCase() === 'INACTIVE' ||
-                    meta.status.toUpperCase() === 'DRAFT')
-                ) {
-                  return false
-                }
-                return true
-              })
-              .map((robj) => {
-                const rawCode = String(robj.code || robj.id || '')
-                const cleanCode = rawCode.split('#')[0]
-                const id = String(robj.id || cleanCode)
-                const name = String(robj.name || cleanCode)
-                const scope = String(robj.scope || '')
-                const jobPositionId = String(robj.jobPositionId || '')
-                const jobPositionName = String(robj.jobPositionName || 'Software Developers')
-                const catalogVersion = String(robj.catalogVersion || '1.0')
-                const fingerprint = String(robj.fingerprint || '')
-                const levels = Array.isArray(robj.levels) ? (robj.levels as CurrentLevel[]) : []
-                return {
-                  id,
-                  code: cleanCode,
-                  name,
-                  scope,
-                  jobPositionId,
-                  jobPositionName,
-                  catalogVersion,
-                  fingerprint,
-                  levels,
-                }
-              })
-
-            // Filter to roles matching employee's department and allowed job positions
-            const filteredEmpRoles = cleanEmpRoles.filter((r) => {
-              const occCodeNorm = normalizeOccCode(r.jobPositionId)
-              if (occCodeNorm && ctx.inactiveJobPositionCodes.has(occCodeNorm)) {
-                return false
+          if (Array.isArray(empList)) {
+            for (const robj of empList) {
+              if (!robj || typeof robj !== 'object') continue
+              const id = String(robj.id || '').trim().toUpperCase()
+              const code = String(robj.code || '').split('#')[0].trim().toUpperCase()
+              const name = String(robj.name || '').trim().toLowerCase()
+              const levels = Array.isArray(robj.levels) ? (robj.levels as CurrentLevel[]) : []
+              if (levels.length > 0) {
+                if (id) neo4jRoleLevelsMap.set(id, levels)
+                if (code) neo4jRoleLevelsMap.set(code, levels)
+                if (name) neo4jRoleLevelsMap.set(name, levels)
               }
-              if (ctx.allowedJobPositionCodes.size > 0) {
-                return (
-                  ctx.allowedJobPositionCodes.has(occCodeNorm) ||
-                  ctx.allowedJobPositionCodes.has(r.jobPositionId)
-                )
-              }
-              return true
-            })
-
-            if (filteredEmpRoles.length > 0) {
-              return filteredEmpRoles
-            }
-            if (cleanEmpRoles.length > 0) {
-              return cleanEmpRoles
             }
           }
         }
-      } catch (empErr) {
-        console.warn('Employee target-roles primary fetch failed, falling back:', empErr)
+      } catch {
+        // ignore enrichment error
       }
 
-      const orgCandidates = Array.from(new Set([orgId, DEFAULT_ORG_ID].map(resolveWorkspaceOrgId)))
+      // Primary source of truth: Organization Target Roles catalog (same source as Admin User Management & L&D Target Roles)
       let rawRoles: unknown[] = []
-      let jobsRes: Response | null = null
-      for (const candidateOrg of orgCandidates) {
-        const [rRes, jRes] = await Promise.all([
-          workspaceFetch(`/api/v1/organizations/${encodeURIComponent(candidateOrg)}/target-roles`, {
-            method: 'GET',
-            signal,
-          }).catch(() => null),
-          workspaceFetch(`/api/v1/organizations/${encodeURIComponent(candidateOrg)}/job-positions`, {
-            method: 'GET',
-            signal,
-          }).catch(() => null),
-        ])
-        if (rRes && rRes.ok) {
-          const parsed = await rRes.json()
-          if (Array.isArray(parsed) && parsed.length > 0) {
-            rawRoles = parsed
-            jobsRes = jRes
-            break
-          }
+      const [rRes, jobsRes] = await Promise.all([
+        workspaceFetch(`/api/v1/organizations/${encodeURIComponent(orgId)}/target-roles`, {
+          method: 'GET',
+        }).catch(() => null),
+        workspaceFetch(`/api/v1/organizations/${encodeURIComponent(orgId)}/job-positions`, {
+          method: 'GET',
+        }).catch(() => null),
+      ])
+      if (rRes && rRes.ok) {
+        const parsed = await rRes.json()
+        if (Array.isArray(parsed)) {
+          rawRoles = parsed
         }
       }
 
-  // If organization target-roles endpoint returned 403 for EMPLOYEE role or was empty, merge active company store + platform-catalog
-  const activeCompRoles = (getActiveCompany()?.targetRoles || [])
-    .filter(tr => {
-      const codeUpper = String(tr.code || '').trim().toUpperCase()
-      const meta = metaMap[codeUpper] || metaMap[String(tr.id || '').toUpperCase()]
-      if (meta?.status && (meta.status.toUpperCase() === 'UNPUBLISHED' || meta.status.toUpperCase() === 'INACTIVE')) return false
-      const s = String(tr.status || '').toLowerCase()
-      return s === 'published' || s === 'active'
-    })
-    .map(tr => ({
-      id: tr.id,
-      code: tr.code,
-      name: tr.title,
-      description: tr.description,
-      version: tr.version,
-      status: tr.status,
-      jobPositionCode: tr.jobPositionCode,
-      department: tr.department,
-      levels: tr.levels,
-      levelDurations: tr.levelDurations,
-      skillTargets: tr.skillTargets,
-    }))
+      const activeComp = getActiveCompany()
+      const isSameOrgAsActiveComp = resolveWorkspaceOrgId(activeComp?.id) === orgId
+      const activeCompRoles = (isSameOrgAsActiveComp ? activeComp?.targetRoles || [] : [])
+        .filter(tr => {
+          const codeUpper = String(tr.code || '').trim().toUpperCase()
+          const meta = metaMap[codeUpper] || metaMap[String(tr.id || '').toUpperCase()]
+          if (meta?.status && (meta.status.toUpperCase() === 'UNPUBLISHED' || meta.status.toUpperCase() === 'INACTIVE')) return false
+          const s = String(tr.status || '').toLowerCase()
+          return s === 'published' || s === 'active'
+        })
+        .map(tr => ({
+          id: tr.id,
+          code: tr.code,
+          name: tr.title,
+          description: tr.description,
+          version: tr.version,
+          status: tr.status,
+          jobPositionCode: tr.jobPositionCode,
+          familyCode: tr.familyCode,
+          department: tr.department,
+          levels: tr.levels,
+          levelDurations: tr.levelDurations,
+          skillTargets: tr.skillTargets,
+        }))
 
-  if (rawRoles.length === 0) {
-    try {
-      const catRes = await workspaceFetch('/api/v1/platform-catalog', { method: 'GET' })
-      console.log('DEBUG_CAT: catRes status:', catRes.status, 'ok:', catRes.ok)
-      if (catRes.ok) {
-        const graph = (await catRes.json()) as {
-          version?: string
-          nodes?: Array<{ id?: string; label?: string; name?: string; code?: string }>
-          edges?: Array<{ from?: string; to?: string; type?: string }>
-        }
-        const roleToJobOcc = new Map<string, string>()
-        for (const edge of graph.edges || []) {
-          if (edge.type === 'HAS_ROLE' && edge.from && edge.to) {
-            roleToJobOcc.set(edge.to, edge.from.replace(/^OCC-/, ''))
-          }
-        }
-        const platformRoles: Record<string, unknown>[] = []
-        for (const node of graph.nodes || []) {
-          if (node.label === 'TargetRole' && node.id) {
-            const codeUpper = String(node.code || node.id).trim().toUpperCase()
-            const meta = metaMap[codeUpper] || metaMap[String(node.id).toUpperCase()]
-            const metaStatus = String(meta?.status || '').toUpperCase()
-            if (metaStatus === 'UNPUBLISHED' || metaStatus === 'INACTIVE' || metaStatus === 'DRAFT') {
-              continue
-            }
-            platformRoles.push({
-              id: node.id,
-              code: node.code || node.id,
-              name: node.name || node.code || node.id,
-              jobPositionCode: roleToJobOcc.get(node.id),
-              status: 'ACTIVE',
-              version: graph.version || '0.12.0',
-            })
-          }
-        }
-        console.log('DEBUG_CAT: platformRoles mapped:', platformRoles.length)
-        rawRoles = [...activeCompRoles, ...platformRoles]
-      } else {
+      if (rawRoles.length === 0) {
         rawRoles = activeCompRoles
       }
-    } catch (catErr) {
-      console.error('DEBUG_CAT_EXCEPTION:', catErr)
-      rawRoles = activeCompRoles
-    }
-  } else if (activeCompRoles.length > 0) {
-    const rawCodes = new Set(
-      rawRoles.map((r: unknown) => {
-        const robj = r as Record<string, unknown>
-        return String(robj.code || robj.id || '').trim().toUpperCase()
-      })
-    )
-    const customLocalOnly = activeCompRoles.filter(
-      (lr) => !rawCodes.has(String(lr.code || lr.id || '').trim().toUpperCase())
-    )
-    rawRoles = [...rawRoles, ...customLocalOnly]
-  }
 
-  const jobMap = new Map<string, { id: string; code: string; name: string; status: string }>()
-  if (jobsRes && jobsRes.ok) {
-    try {
-      const rawJobs = await jobsRes.json()
-      if (Array.isArray(rawJobs)) {
-        for (const j of rawJobs) {
-          if (j && typeof j === 'object') {
-            const jObj = j as Record<string, unknown>
-            const code = String(jObj.code || '').trim()
-            const id = String(jObj.id || (code ? `OCC-${code}` : '')).trim()
-            const name = String(jObj.name || code || id).trim()
-            const status = String(jObj.status || 'ACTIVE').toUpperCase()
-            if (status === 'INACTIVE') {
-              ctx.inactiveJobPositionCodes.add(normalizeOccCode(code || id))
+      const jobMap = new Map<string, { id: string; code: string; name: string; status: string }>()
+      if (jobsRes && jobsRes.ok) {
+        try {
+          const rawJobs = await jobsRes.json()
+          if (Array.isArray(rawJobs)) {
+            for (const j of rawJobs) {
+              if (j && typeof j === 'object') {
+                const jObj = j as Record<string, unknown>
+                const code = String(jObj.code || '').trim()
+                const id = String(jObj.id || (code ? `OCC-${code}` : '')).trim()
+                const name = String(jObj.name || code || id).trim()
+                const status = String(jObj.status || 'ACTIVE').toUpperCase()
+                if (status === 'INACTIVE') {
+                  ctx.inactiveJobPositionCodes.add(normalizeOccCode(code || id))
+                }
+                if (code) jobMap.set(normalizeOccCode(code), { id, code, name, status })
+                if (id) jobMap.set(normalizeOccCode(id), { id, code: code || id, name, status })
+              }
             }
-            if (code) jobMap.set(normalizeOccCode(code), { id, code, name, status })
-            if (id) jobMap.set(normalizeOccCode(id), { id, code: code || id, name, status })
           }
+        } catch {
+          // ignore job positions parse error
         }
       }
-    } catch {
-      // ignore job positions parse error
-    }
-  }
 
-  const dedupedByCode = new Map<string, CurrentRole>()
-
-  for (const item of rawRoles) {
-    if (!item || typeof item !== 'object') continue
-    const r = item as Record<string, unknown>
-    const id = String(r.id || r.code || '').trim()
-    const code = String(r.code || id).trim()
-    if (!id || !code) continue
-    const codeUpper = code.toUpperCase()
-    const meta = metaMap[codeUpper] || metaMap[id.toUpperCase()]
-
-    // Strictly exclude unpublished, draft, or inactive roles from metadata or backend
-    const metaStatus = String(meta?.status || '').toUpperCase()
-    if (metaStatus === 'UNPUBLISHED' || metaStatus === 'INACTIVE' || metaStatus === 'DRAFT') {
-      continue
-    }
-
-    // 1. Only published versions are offered. The backend status is authoritative so an
-    //    in-flight revision draft never hides the currently published version.
-    const rawStatus = String(r.status || 'ACTIVE').toUpperCase()
-    if (rawStatus !== 'ACTIVE' && rawStatus !== 'PUBLISHED') continue
-
-    const name = String(r.name || code).trim()
-    const scope = String(r.description || '').trim()
-    const version = String(r.version || '0.12.0').trim()
-
-    const roleForOcc = {
-      id,
-      stableId: code,
-      code,
-      title: name,
-      department: meta?.department || '',
-      jobPositionCode:
-        (r.jobPositionCode ? String(r.jobPositionCode) : undefined) || meta?.jobPositionCode,
-      familyCode: String(r.familyCode || 'DEV'),
-      description: scope,
-      version,
-      status: 'published',
-      competencyIds: [],
-      skillTargets: [],
-      activeEnrollments: 0,
-      updatedAt: String(r.updatedAt || ''),
-    } as TargetRoleModel
-
-    const resolvedOcc = resolveJobPositionForRole(roleForOcc, orgId)
-    const occCodeNorm = normalizeOccCode(roleForOcc.jobPositionCode || resolvedOcc.code)
-
-    // 2. Exclude roles under inactive Job Positions
-    if (occCodeNorm && ctx.inactiveJobPositionCodes.has(occCodeNorm)) {
-      continue
-    }
-
-    // 3. Filter strictly to the Employee's assigned Department (or its active Job Positions)
-    const roleDept = (meta?.department || '').trim().toLowerCase()
-    const empDept = ctx.departmentName.trim().toLowerCase()
-    const matchesDeptName = Boolean(roleDept && empDept && roleDept === empDept)
-    const matchesDeptJobPosition = Boolean(
-      occCodeNorm && ctx.allowedJobPositionCodes.has(occCodeNorm),
-    )
-
-    if (!matchesDeptName && !matchesDeptJobPosition) {
-      continue
-    }
-
-    const occInfo = jobMap.get(occCodeNorm)
-    const jobPositionId = occInfo?.id || `OCC-${roleForOcc.jobPositionCode || resolvedOcc.code}`
-    const jobPositionName = occInfo?.name || resolvedOcc.name
-
-    const rawLevels =
-      Array.isArray(r.levels) && r.levels.length > 0
-        ? r.levels.map(x => String(x))
-        : meta?.levelNames && meta.levelNames.length > 0
-          ? meta.levelNames
-          : ['Senior', 'Middle', 'Junior']
-    const durationsObj =
-      r.levelDurations && typeof r.levelDurations === 'object' && !Array.isArray(r.levelDurations)
-        ? (r.levelDurations as Record<string, string>)
-        : meta?.levelDurations || {}
-    const skillTargets: SkillTargetConfig[] = Array.isArray(r.skillTargets)
-      ? (r.skillTargets as SkillTargetConfig[])
-      : []
-
-    const levels: CurrentLevel[] = rawLevels.map((lvlName, idx) => {
-      const rank = idx + 1
-      const normLvl = lvlName.toLowerCase()
-      const lvlCode = normLvl.startsWith('sen')
-        ? 'S'
-        : normLvl.startsWith('mid')
-          ? 'M'
-          : normLvl.startsWith('jun')
-            ? 'J'
-            : normLvl.startsWith('int')
-              ? 'I'
-              : `LV-${rank}`
-      const defaultDur =
-        normLvl.includes('senior') || rank === 1
-          ? '6 months'
-          : normLvl.includes('middle') || normLvl.includes('mid') || rank === 2
-            ? '4 months'
-            : normLvl.includes('junior') || rank === 3
-              ? '3 months'
-              : '2 months'
-      const duration = durationsObj[lvlName] || durationsObj[String(rank)] || defaultDur
-      const levelSkills = skillTargets
-        .filter(st => !st.level || st.level.toLowerCase() === lvlName.toLowerCase())
-        .map(st => ({
-          id: String(st.skillId || st.skillCode || ''),
-          code: st.skillCode ? String(st.skillCode) : null,
-          name: String(st.skillName || st.skillCode || st.skillId || ''),
-          requiredScore: typeof st.threshold === 'number' ? st.threshold / 100 : 0.7,
-          mandatory: true,
-        }))
-        .filter(st => Boolean(st.id))
-
-      // Dynamically calculate level rank from the role's configured level ordering:
-      // Index 0 is Rank 1 (highest level), Index 1 is Rank 2, etc. Zero hardcoded strings.
-      const levelRank = rank
-
-      return {
-        id: `LVL-${code}-${lvlCode}`,
-        code: lvlCode,
-        name: lvlName,
-        rank: levelRank,
-        context: scope,
-        attainmentRule: 'ALL_MANDATORY_SKILLS',
-        duration,
-        skills: levelSkills,
+      function compareVersions(vA = '1.0', vB = '1.0') {
+        const pA = vA.split('.').map(n => parseInt(n, 10) || 0)
+        const pB = vB.split('.').map(n => parseInt(n, 10) || 0)
+        for (let i = 0; i < Math.max(pA.length, pB.length); i++) {
+          const a = pA[i] || 0, b = pB[i] || 0
+          if (a !== b) return a - b
+        }
+        return 0
       }
-    })
 
-    const mappedRole: CurrentRole = {
-      id,
-      code,
-      name,
-      scope,
-      jobPositionId,
-      jobPositionName,
-      catalogVersion: version,
-      fingerprint: '',
-      levels,
+      // Step 1: Deduplicate rawRoles by code across versions using exact UserManagementPage rules
+      const dedupedRawByCode = new Map<string, { item: Record<string, unknown>; effectiveStatus: 'published' | 'unpublished' | 'other'; version: string }>()
+      for (const item of rawRoles) {
+        if (!item || typeof item !== 'object') continue
+        const r = item as Record<string, unknown>
+        const id = String(r.id || r.code || '').trim()
+        const code = String(r.code || id).split('#')[0].trim()
+        if (!id || !code) continue
+        const codeUpper = code.toUpperCase()
+        const meta = metaMap[codeUpper] || metaMap[id.toUpperCase()]
+        const rawStatus = String(r.status || '').toLowerCase()
+        const metaStatus = String(meta?.status || '').toLowerCase()
+        const effectiveStatus: 'published' | 'unpublished' | 'other' =
+          metaStatus === 'unpublished' || rawStatus === 'unpublished'
+            ? 'unpublished'
+            : rawStatus === 'active' || rawStatus === 'published'
+              ? 'published'
+              : 'other'
+        const version = String(r.version || '1.0').trim()
+
+        const existing = dedupedRawByCode.get(codeUpper)
+        const isPubOrUnpub = effectiveStatus === 'published' || effectiveStatus === 'unpublished'
+        const existingIsPubOrUnpub = existing?.effectiveStatus === 'published' || existing?.effectiveStatus === 'unpublished'
+
+        if (!existing) {
+          dedupedRawByCode.set(codeUpper, { item: r, effectiveStatus, version })
+        } else if (isPubOrUnpub && !existingIsPubOrUnpub) {
+          dedupedRawByCode.set(codeUpper, { item: r, effectiveStatus, version })
+        } else if (isPubOrUnpub === existingIsPubOrUnpub && compareVersions(version, existing.version) > 0) {
+          dedupedRawByCode.set(codeUpper, { item: r, effectiveStatus, version })
+        }
+      }
+
+      // Step 2: Map only published roles belonging to the employee's department / active job positions
+      const dedupedByCode = new Map<string, CurrentRole>()
+
+      for (const [codeUpper, entry] of dedupedRawByCode.entries()) {
+        if (entry.effectiveStatus !== 'published') continue
+        const r = entry.item
+        const id = String(r.id || r.code || '').trim()
+        const code = String(r.code || id).split('#')[0].trim()
+        const meta = metaMap[codeUpper] || metaMap[id.toUpperCase()]
+
+        const name = String(r.name || r.title || code).trim()
+        const scope = String(r.description || '').trim()
+        const version = entry.version
+
+        const familyCodeStr = String(r.familyCode || '').trim()
+        const familyNorm = normalizeOccCode(familyCodeStr)
+        const familyAsJobPosCode =
+          familyCodeStr &&
+          (/^\d{2}-\d{4}/.test(familyCodeStr) ||
+            jobMap.has(familyNorm) ||
+            ctx.allowedJobPositionCodes.has(familyNorm))
+            ? familyCodeStr
+            : familyCodeStr.toUpperCase() === 'DEV'
+              ? '15-1252.00'
+              : undefined
+        const explicitJobPosCode =
+          (r.jobPositionCode ? String(r.jobPositionCode) : undefined) ||
+          meta?.jobPositionCode ||
+          familyAsJobPosCode
+
+        const roleForOcc = {
+          id,
+          stableId: code,
+          code,
+          title: name,
+          department: String(r.department || meta?.department || '').trim(),
+          jobPositionCode: explicitJobPosCode,
+          familyCode: familyCodeStr || undefined,
+          description: scope,
+          version,
+          status: 'published',
+          competencyIds: [],
+          skillTargets: [],
+          activeEnrollments: 0,
+          updatedAt: String(r.updatedAt || ''),
+        } as TargetRoleModel
+
+        const resolvedOcc = resolveJobPositionForRole(roleForOcc, orgId)
+        const occCodeNorm = normalizeOccCode(roleForOcc.jobPositionCode || resolvedOcc.code)
+
+        // Exclude roles under inactive Job Positions
+        if (occCodeNorm && ctx.inactiveJobPositionCodes.has(occCodeNorm)) {
+          continue
+        }
+
+        // Filter strictly to the Employee's assigned Department (or its active Job Positions)
+        const roleDept = (roleForOcc.department || '').trim().toLowerCase()
+        const empDept = ctx.departmentName.trim().toLowerCase()
+        const matchesDeptName = Boolean(
+          roleDept && empDept && (roleDept === empDept || roleDept.includes(empDept) || empDept.includes(roleDept)),
+        )
+        const matchesDeptJobPosition = Boolean(
+          occCodeNorm && ctx.allowedJobPositionCodes.has(occCodeNorm),
+        )
+
+        if (!matchesDeptName && !matchesDeptJobPosition) {
+          continue
+        }
+
+        const occInfo = jobMap.get(occCodeNorm)
+        const jobPositionId = occInfo?.id || `OCC-${roleForOcc.jobPositionCode || resolvedOcc.code}`
+        const jobPositionName = occInfo?.name || resolvedOcc.name
+
+        const rawLevels =
+          Array.isArray(r.levels) && r.levels.length > 0
+            ? r.levels.map(x => String(x))
+            : meta?.levelNames && meta.levelNames.length > 0
+              ? meta.levelNames
+              : ['Senior', 'Middle', 'Junior']
+        const durationsObj =
+          r.levelDurations && typeof r.levelDurations === 'object' && !Array.isArray(r.levelDurations)
+            ? (r.levelDurations as Record<string, string>)
+            : meta?.levelDurations || {}
+        const skillTargets: SkillTargetConfig[] = Array.isArray(r.skillTargets)
+          ? (r.skillTargets as SkillTargetConfig[])
+          : []
+
+        const fallbackNeo4jLevels =
+          neo4jRoleLevelsMap.get(id.toUpperCase()) ||
+          neo4jRoleLevelsMap.get(codeUpper) ||
+          neo4jRoleLevelsMap.get(name.toLowerCase())
+
+        const levels: CurrentLevel[] = rawLevels.map((lvlName, idx) => {
+          const rank = idx + 1
+          const normLvl = lvlName.toLowerCase()
+          const lvlCode = normLvl.startsWith('sen')
+            ? 'S'
+            : normLvl.startsWith('mid')
+              ? 'M'
+              : normLvl.startsWith('jun')
+                ? 'J'
+                : normLvl.startsWith('int')
+                  ? 'I'
+                  : `LV-${rank}`
+          const defaultDur =
+            normLvl.includes('senior') || rank === 1
+              ? '6 months'
+              : normLvl.includes('middle') || normLvl.includes('mid') || rank === 2
+                ? '4 months'
+                : normLvl.includes('junior') || rank === 3
+                  ? '3 months'
+                  : '2 months'
+          const duration = durationsObj[lvlName] || durationsObj[String(rank)] || defaultDur
+          let levelSkills = skillTargets
+            .filter(st => !st.level || st.level.toLowerCase() === lvlName.toLowerCase())
+            .map(st => ({
+              id: String(st.skillId || st.skillCode || ''),
+              code: st.skillCode ? String(st.skillCode) : null,
+              name: String(st.skillName || st.skillCode || st.skillId || ''),
+              requiredScore: typeof st.threshold === 'number' ? st.threshold / 100 : 0.7,
+              mandatory: true,
+            }))
+            .filter(st => Boolean(st.id))
+
+          if (levelSkills.length === 0 && fallbackNeo4jLevels) {
+            const matchedNeo4jLvl =
+              fallbackNeo4jLevels.find(
+                nl => nl.name.toLowerCase() === normLvl || nl.rank === rank,
+              ) || fallbackNeo4jLevels[idx]
+            if (matchedNeo4jLvl && Array.isArray(matchedNeo4jLvl.skills)) {
+              levelSkills = matchedNeo4jLvl.skills
+            }
+          }
+
+          return {
+            id: `LVL-${code}-${lvlCode}`,
+            code: lvlCode,
+            name: lvlName,
+            rank,
+            context: scope,
+            attainmentRule: 'ALL_MANDATORY_SKILLS',
+            duration,
+            skills: levelSkills,
+          }
+        })
+
+        dedupedByCode.set(codeUpper, {
+          id,
+          code,
+          name,
+          scope,
+          jobPositionId,
+          jobPositionName,
+          catalogVersion: version,
+          fingerprint: '',
+          levels,
+        })
+      }
+
+      return Array.from(dedupedByCode.values())
+    } finally {
+      setTimeout(() => {
+        inFlightRolesPromise = null
+      }, 150)
     }
-
-    const existing = dedupedByCode.get(codeUpper)
-    if (!existing) {
-      dedupedByCode.set(codeUpper, mappedRole)
-    } else if (existing.id.startsWith('role-') && !mappedRole.id.startsWith('role-')) {
-      dedupedByCode.set(codeUpper, mappedRole)
-    } else if (mappedRole.catalogVersion && compareVersions(mappedRole.catalogVersion, existing.catalogVersion) > 0) {
-      dedupedByCode.set(codeUpper, mappedRole)
-    }
-  }
-
-  function compareVersions(vA = '1.0', vB = '1.0') {
-    const pA = vA.split('.').map(n => parseInt(n, 10) || 0)
-    const pB = vB.split('.').map(n => parseInt(n, 10) || 0)
-    for (let i = 0; i < Math.max(pA.length, pB.length); i++) {
-      const a = pA[i] || 0, b = pB[i] || 0
-      if (a !== b) return a - b
-    }
-    return 0
-  }
-
-  console.log('DEBUG_ROLES: ctxDept:', ctx.departmentName, 'allowedOccs:', Array.from(ctx.allowedJobPositionCodes), 'rawRoles:', rawRoles.length, 'deduped:', dedupedByCode.size)
-
-  return Array.from(dedupedByCode.values())
-  } finally {
-    setTimeout(() => {
-      inFlightRolesPromise = null
-    }, 150)
-  }
   })()
   return inFlightRolesPromise
 }
 
-export const currentRoles = async (signal?: AbortSignal): Promise<CurrentRole[]> => {
-  return await fetchDepartmentScopedPublishedRoles(signal)
+export const currentRoles = async (_signal?: AbortSignal): Promise<CurrentRole[]> => {
+  return await fetchDepartmentScopedPublishedRoles()
 }
 
 function buildSynthesizedSelection(
@@ -853,13 +830,14 @@ function buildSynthesizedSelection(
         (ctx.assignedRoleTitle && tr.title?.toLowerCase() === ctx.assignedRoleTitle.toLowerCase()),
     )
     if (activeCompRole) {
+      const resolvedOcc = resolveJobPositionForRole(activeCompRole, ctx.organizationId)
       matchedRole = {
         id: activeCompRole.id,
         code: activeCompRole.code,
         name: activeCompRole.title,
         scope: activeCompRole.description,
-        jobPositionId: activeCompRole.jobPositionCode || '15-1299.08',
-        jobPositionName: activeCompRole.jobPositionTitle || 'Computer Systems Engineers/Architects',
+        jobPositionId: activeCompRole.jobPositionCode || resolvedOcc.code || '15-1252.00',
+        jobPositionName: resolvedOcc.name || 'Software Developers',
         catalogVersion: activeCompRole.version,
         fingerprint: '',
         levels: (activeCompRole.levels || ['Senior', 'Middle', 'Junior']).map((lvlName, idx) => ({
@@ -876,13 +854,21 @@ function buildSynthesizedSelection(
     } else {
       const code = ctx.assignedRoleCode || ctx.assignedRoleId || 'ROLE'
       const title = ctx.assignedRoleTitle || code
+      const resolvedOcc = resolveJobPositionForRole(
+        {
+          code,
+          title,
+          familyCode: 'DEV',
+        },
+        ctx.organizationId,
+      )
       matchedRole = {
         id: ctx.assignedRoleId || code,
         code,
         name: title,
         scope: '',
-        jobPositionId: '15-1299.08',
-        jobPositionName: 'Computer Systems Engineers/Architects',
+        jobPositionId: resolvedOcc.code || '15-1252.00',
+        jobPositionName: resolvedOcc.name || 'Software Developers',
         catalogVersion: '1.0',
         fingerprint: '',
         levels: ['Senior', 'Middle', 'Junior'].map((lvlName, idx) => ({
@@ -930,14 +916,65 @@ function buildSynthesizedSelection(
   }
 }
 
+function buildActiveRoleSelection(
+  roles: CurrentRole[],
+  ctx: EmployeeDepartmentContext,
+  startingPlacement: CurrentSelection | null,
+  assignedRank: number | null,
+): CurrentSelection | null {
+  if (typeof localStorage === 'undefined') return null
+  try {
+    const raw = localStorage.getItem(`alg_employee_active_role_${ctx.email}`)
+    if (!raw) return null
+    const parsed = JSON.parse(raw) as {
+      roleId?: string
+      roleCode?: string
+      roleTitle?: string
+      levelId?: string
+      level?: string
+      selectedAt?: string
+    }
+    if (!parsed.roleId && !parsed.roleCode && !parsed.roleTitle) return null
+    const activeCtx: EmployeeDepartmentContext = {
+      ...ctx,
+      assignedRoleId: parsed.roleId || null,
+      assignedRoleCode: parsed.roleCode || null,
+      assignedRoleTitle: parsed.roleTitle || null,
+      assignedLevel: parsed.level || parsed.levelId || null,
+    }
+    const sel = buildSynthesizedSelection(roles, activeCtx)
+    if (!sel) return null
+    if (startingPlacement) {
+      const isSameRole =
+        sel.role.id === startingPlacement.role.id ||
+        sel.role.code.toUpperCase() === startingPlacement.role.code.toUpperCase() ||
+        sel.role.name.toLowerCase() === startingPlacement.role.name.toLowerCase()
+      if (isSameRole && typeof assignedRank === 'number') {
+        const selLevel = sel.role.levels.find(l => l.id === sel.levelId)
+        const selRank = selLevel?.rank ?? normalizeLevelRank(sel.levelId)
+        if (typeof selRank === 'number' && selRank >= assignedRank) {
+          return null
+        }
+      }
+    }
+    return {
+      ...sel,
+      selectedAt: parsed.selectedAt || sel.selectedAt,
+    }
+  } catch {
+    return null
+  }
+}
+
 export const readRoleFlow = async (signal?: AbortSignal): Promise<RoleFlowView> => {
   const [ctx, deptRoles] = await Promise.all([
-    resolveEmployeeDepartmentContext(signal),
-    fetchDepartmentScopedPublishedRoles(signal).catch(() => [] as CurrentRole[]),
+    resolveEmployeeDepartmentContext(),
+    fetchDepartmentScopedPublishedRoles().catch(() => [] as CurrentRole[]),
   ])
-  const synthesized = buildSynthesizedSelection(deptRoles, ctx)
-  const matchedAssignedLevel = synthesized?.role.levels.find(l => l.id === synthesized.levelId)
+  const startingPlacement = buildSynthesizedSelection(deptRoles, ctx)
+  const matchedAssignedLevel = startingPlacement?.role.levels.find(l => l.id === startingPlacement.levelId)
   const assignedRank = matchedAssignedLevel?.rank ?? normalizeLevelRank(ctx.assignedLevel)
+  const localActive = buildActiveRoleSelection(deptRoles, ctx, startingPlacement, assignedRank)
 
   try {
     const view = await request('target-role-selection', { method: 'GET', signal }, v => {
@@ -955,42 +992,45 @@ export const readRoleFlow = async (signal?: AbortSignal): Promise<RoleFlowView> 
       } satisfies RoleFlowView
     })
 
-    const currentSelectedRank = view.selection
-      ? (view.selection.role.levels.find(l => l.id === view.selection?.levelId)?.rank ??
-         normalizeLevelRank(view.selection.levelId))
-      : null
-
-    const isBelowAssigned =
-      typeof assignedRank === 'number' &&
-      typeof currentSelectedRank === 'number' &&
-      currentSelectedRank > assignedRank
-
-    if (
-      synthesized &&
-      (!view.selection ||
-        view.selection.role.id !== synthesized.role.id ||
-        view.selection.levelId !== synthesized.levelId ||
-        isBelowAssigned)
-    ) {
-      const totalSkills = synthesized.role.levels.reduce((acc, l) => acc + l.skills.length, 0)
-      return {
-        selection: synthesized,
-        progress: {
-          state: view.progress.state === 'SELECT_ROLE' ? 'READY' : view.progress.state,
-          requiredCount: totalSkills || view.progress.requiredCount,
-          coveredCount: view.progress.coveredCount,
-          attemptId: view.progress.attemptId,
-          baselineVersion: view.progress.baselineVersion,
-        },
-        assignedRoleId: ctx.assignedRoleId,
-        assignedRoleCode: ctx.assignedRoleCode,
-        assignedRoleTitle: ctx.assignedRoleTitle,
-        assignedLevel: ctx.assignedLevel,
-        assignedLevelRank: assignedRank,
+    let effectiveSelection: CurrentSelection | null = localActive ?? view.selection
+    if (effectiveSelection && startingPlacement) {
+      const isSameAsStartingRole =
+        effectiveSelection.role.id === startingPlacement.role.id ||
+        effectiveSelection.role.code.toUpperCase() === startingPlacement.role.code.toUpperCase() ||
+        effectiveSelection.role.name.toLowerCase() === startingPlacement.role.name.toLowerCase()
+      const currentSelectedRank =
+        effectiveSelection.role.levels.find(l => l.id === effectiveSelection?.levelId)?.rank ??
+        normalizeLevelRank(effectiveSelection.levelId)
+      if (
+        isSameAsStartingRole &&
+        typeof assignedRank === 'number' &&
+        typeof currentSelectedRank === 'number' &&
+        currentSelectedRank >= assignedRank
+      ) {
+        effectiveSelection = null
       }
     }
+
+    const totalSkills = effectiveSelection
+      ? effectiveSelection.role.levels.reduce((acc, l) => acc + l.skills.length, 0)
+      : 0
+
     return {
-      ...view,
+      selection: effectiveSelection,
+      startingPlacement,
+      progress: {
+        state: effectiveSelection
+          ? view.progress.state === 'SELECT_ROLE'
+            ? 'READY'
+            : view.progress.state
+          : view.progress.state === 'RESUME'
+            ? 'RESUME'
+            : 'SELECT_ROLE',
+        requiredCount: effectiveSelection ? totalSkills || view.progress.requiredCount : 0,
+        coveredCount: effectiveSelection ? view.progress.coveredCount : 0,
+        attemptId: view.progress.attemptId,
+        baselineVersion: view.progress.baselineVersion,
+      },
       assignedRoleId: ctx.assignedRoleId,
       assignedRoleCode: ctx.assignedRoleCode,
       assignedRoleTitle: ctx.assignedRoleTitle,
@@ -1000,13 +1040,14 @@ export const readRoleFlow = async (signal?: AbortSignal): Promise<RoleFlowView> 
   } catch (err) {
     if (signal?.aborted) throw err
     if (!ctx.isEmployee && err instanceof RoleFlowError && (err.status === 401 || err.status === 403)) throw err
-    const totalSkills = synthesized
-      ? synthesized.role.levels.reduce((acc, l) => acc + l.skills.length, 0)
+    const totalSkills = localActive
+      ? localActive.role.levels.reduce((acc, l) => acc + l.skills.length, 0)
       : 0
     return {
-      selection: synthesized,
+      selection: localActive,
+      startingPlacement,
       progress: {
-        state: synthesized ? 'READY' : 'SELECT_ROLE',
+        state: localActive ? 'READY' : 'SELECT_ROLE',
         requiredCount: totalSkills,
         coveredCount: 0,
         attemptId: null,
@@ -1055,27 +1096,22 @@ export const chooseCurrentRole = async (command: RoleChoiceCommand): Promise<Cur
 
   if (chosenRole && typeof localStorage !== 'undefined') {
     try {
-      const emailKey = `alg_employee_assignment_${ctx.email}`
-      const existingRaw = localStorage.getItem(emailKey)
-      const existing = existingRaw ? (JSON.parse(existingRaw) as Record<string, unknown>) : {}
+      const activeRoleKey = `alg_employee_active_role_${ctx.email}`
       localStorage.setItem(
-        emailKey,
+        activeRoleKey,
         JSON.stringify({
-          ...existing,
           roleId: chosenRole.id,
           roleCode: chosenRole.code,
           roleTitle: chosenRole.name,
+          levelId: chosenLevelObj?.id || parsedBody.levelId || null,
           level: chosenLevelName,
-          departmentId: ctx.departmentId,
-          departmentName: ctx.departmentName,
+          selectedAt: new Date().toISOString(),
         }),
       )
       const activeProfileKey = `alg_learner_learning_profile_${ctx.organizationId}`
       const profRaw = localStorage.getItem(activeProfileKey)
       if (profRaw) {
         const prof = JSON.parse(profRaw) as Record<string, unknown>
-        prof.currentRole = chosenRole.name
-        prof.currentLevel = chosenLevelName
         prof.targetRole = chosenRole.name
         prof.targetLevel = chosenLevelName
         prof.department = ctx.departmentName

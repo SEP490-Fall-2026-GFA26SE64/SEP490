@@ -7,6 +7,6 @@ import java.util.Optional;
 
 public interface GetMicroSkillsUseCase {
     List<MicroSkill> listMicroSkills(String organizationId);
-    List<MicroSkill> searchMicroSkills(String organizationId, String query, String macroCode, SkillStatus status);
+    List<MicroSkill> searchMicroSkills(String organizationId, String query, SkillStatus status);
     Optional<MicroSkill> getMicroSkill(String organizationId, String skillId);
 }

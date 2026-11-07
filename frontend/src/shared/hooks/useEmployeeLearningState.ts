@@ -14,7 +14,6 @@ export interface NotificationItem {
 export interface HistoricalSkill {
   skillKey: string
   skillName: string
-  macroCode?: string
   completedAt: string
   masteryScore: number
   status: 'completed' | 'superseded'
@@ -33,7 +32,6 @@ export interface HistoricalTargetRole {
 
 export interface TrackedSkillItem {
   skillName: string
-  macroCode?: string | null
   level?: string | null
   assignedAt?: string | null
 }
@@ -48,7 +46,6 @@ export interface LearnerLearningProfile {
   targetRoleVersion: string | null
   targetLevel?: string | null
   targetSkill?: string | null
-  targetSkillMacroCode?: string | null
   targetSkillLevel?: string | null
   targetSkillAssignedAt?: string | null
   trackedSkills?: TrackedSkillItem[]
@@ -86,13 +83,11 @@ const INITIAL_PROFILE: LearnerLearningProfile = {
   targetRoleVersion: 'v2.4 (Latest - Published 2026-06)',
   targetLevel: 'Senior',
   targetSkill: 'Google Gemini & LLM Orchestration',
-  targetSkillMacroCode: 'GEN_AI',
   targetSkillLevel: 'Advanced',
   targetSkillAssignedAt: '2026-09-25',
   trackedSkills: [
     {
       skillName: 'Google Gemini & LLM Orchestration',
-      macroCode: 'GEN_AI',
       level: 'Advanced',
       assignedAt: '2026-09-25',
     },
@@ -134,7 +129,6 @@ const INITIAL_PROFILE: LearnerLearningProfile = {
     {
       skillKey: 'python-core',
       skillName: 'Python Core & Async Semantics',
-      macroCode: 'PROGRAMMING_LANGUAGES',
       completedAt: '2026-06-15',
       masteryScore: 95,
       status: 'completed',
@@ -142,7 +136,6 @@ const INITIAL_PROFILE: LearnerLearningProfile = {
     {
       skillKey: 'cypher-basics',
       skillName: 'Neo4j Cypher Fundamentals',
-      macroCode: 'GRAPH_DATABASE',
       completedAt: '2026-08-10',
       masteryScore: 92,
       status: 'completed',
@@ -170,7 +163,6 @@ const getInitialProfileForActiveCompany = (): LearnerLearningProfile => {
     targetRoleVersion,
     targetLevel: 'Senior',
     targetSkill: null,
-    targetSkillMacroCode: null,
     targetSkillLevel: null,
     targetSkillAssignedAt: null,
     trackedSkills: [],
@@ -566,14 +558,13 @@ export function useEmployeeLearningState() {
       rawList = [
         {
           skillName: profile.targetSkill,
-          macroCode: profile.targetSkillMacroCode || null,
           level: profile.targetSkillLevel || 'Intermediate',
           assignedAt: profile.targetSkillAssignedAt || new Date().toISOString().split('T')[0],
         },
       ]
     }
     // Completed skills are NO LONGER tracked so employees don't misunderstand their active learning goals
-    return rawList.filter((item) => !isSkillCompleted(item.skillName, item.macroCode || undefined))
+    return rawList.filter((item) => !isSkillCompleted(item.skillName))
   }, [profile, isSkillCompleted])
 
   const trackedSkills = getTrackedSkills()
@@ -588,9 +579,9 @@ export function useEmployeeLearningState() {
   )
 
   const trackSkill = React.useCallback(
-    (skillName: string, macroCode?: string, level = 'Intermediate') => {
+    (skillName: string, level = 'Intermediate') => {
       // Completed skills cannot be tracked
-      if (isSkillCompleted(skillName, macroCode)) {
+      if (isSkillCompleted(skillName)) {
         return
       }
       const currentList = getTrackedSkills()
@@ -599,7 +590,6 @@ export function useEmployeeLearningState() {
       }
       const newItem: TrackedSkillItem = {
         skillName,
-        macroCode: macroCode || null,
         level,
         assignedAt: new Date().toISOString().split('T')[0],
       }
@@ -607,7 +597,6 @@ export function useEmployeeLearningState() {
       saveProfile({
         ...profile,
         targetSkill: skillName,
-        targetSkillMacroCode: macroCode || null,
         targetSkillLevel: level,
         targetSkillAssignedAt: newItem.assignedAt,
         trackedSkills: updatedList,
@@ -626,7 +615,6 @@ export function useEmployeeLearningState() {
       saveProfile({
         ...profile,
         targetSkill: nextActive ? nextActive.skillName : null,
-        targetSkillMacroCode: nextActive ? nextActive.macroCode : null,
         targetSkillLevel: nextActive ? nextActive.level : null,
         targetSkillAssignedAt: nextActive ? nextActive.assignedAt : null,
         trackedSkills: updatedList,
@@ -639,7 +627,6 @@ export function useEmployeeLearningState() {
     saveProfile({
       ...profile,
       targetSkill: null,
-      targetSkillMacroCode: null,
       targetSkillLevel: null,
       targetSkillAssignedAt: null,
       trackedSkills: [],
@@ -648,8 +635,8 @@ export function useEmployeeLearningState() {
   }, [profile, saveProfile])
 
   const selectTargetSkill = React.useCallback(
-    (skillName: string, macroCode?: string, level = 'Intermediate') => {
-      trackSkill(skillName, macroCode, level)
+    (skillName: string, level = 'Intermediate') => {
+      trackSkill(skillName, level)
     },
     [trackSkill]
   )

@@ -7,5 +7,4 @@ public record UpdateMicroSkillCommand(
         String skillId,
         String name,
         String description,
-        String macroCompetencyCode,
         SkillStatus status) {}

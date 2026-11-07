@@ -15,8 +15,5 @@ public record CreateMicroSkillRequest(
         String name,
 
         @Size(max = 2000, message = "Description cannot exceed 2000 characters")
-        String description,
-
-        @Pattern(regexp = "^(KNOWLEDGE|COMMUNICATION|INNOVATION)?$", message = "Macro competency must be KNOWLEDGE, COMMUNICATION, or INNOVATION")
-        String macroCompetencyCode) {
+        String description) {
 }

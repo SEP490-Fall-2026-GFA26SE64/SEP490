@@ -45,15 +45,15 @@ export function CurrentRolePanel() {
   function choose(role: CurrentRole, chosenLevel?: string) {
     if (lock.current || command || !view.data) return
     const isSameStartOffRole = Boolean(
-      (view.data.selection &&
-        (view.data.selection.role.id === role.id ||
-          view.data.selection.role.code.toUpperCase() === role.code.toUpperCase() ||
-          view.data.selection.role.name.toLowerCase() === role.name.toLowerCase())) ||
+      (view.data.startingPlacement &&
+        (view.data.startingPlacement.role.id === role.id ||
+          view.data.startingPlacement.role.code.toUpperCase() === role.code.toUpperCase() ||
+          view.data.startingPlacement.role.name.toLowerCase() === role.name.toLowerCase())) ||
       (view.data.assignedRoleId && view.data.assignedRoleId === role.id) ||
       (view.data.assignedRoleCode && view.data.assignedRoleCode.toUpperCase() === role.code.toUpperCase()) ||
       (view.data.assignedRoleTitle && view.data.assignedRoleTitle.toLowerCase() === role.name.toLowerCase())
     )
-    const assignedLevelStr = (view.data.assignedLevel || view.data.selection?.levelId || '')
+    const assignedLevelStr = (view.data.assignedLevel || view.data.startingPlacement?.levelId || '')
       .replace(/^(?:rank|level)\s*\d+\s*:\s*/i, '')
       .trim()
       .toLowerCase()
@@ -64,11 +64,11 @@ export function CurrentRolePanel() {
             l.id.toLowerCase() === assignedLevelStr ||
             l.name.toLowerCase() === assignedLevelStr ||
             l.code.toLowerCase() === assignedLevelStr ||
-            l.id === view.data?.selection?.levelId ||
+            l.id === view.data?.startingPlacement?.levelId ||
             (typeof view.data?.assignedLevelRank === 'number' && l.rank === view.data.assignedLevelRank),
         )
       : null
-    const fallbackLevelId = currentAssignedLevel?.id ?? (isSameStartOffRole ? view.data.selection?.levelId ?? '' : '')
+    const fallbackLevelId = currentAssignedLevel?.id ?? (isSameStartOffRole ? view.data.startingPlacement?.levelId ?? '' : '')
 
     // The filter preventing lower and same levels ONLY applies when choosing the same start-off target role.
     // For any other target role, all levels are fully selectable!
@@ -118,15 +118,15 @@ export function CurrentRolePanel() {
   return <section aria-label={t('upskillingUi.roleCatalog')} className="min-w-0 space-y-5">
     {gapRole && (() => {
       const isSameStartOff = Boolean(
-        (view.data?.selection &&
-          (view.data.selection.role.id === gapRole.id ||
-            view.data.selection.role.code.toUpperCase() === gapRole.code.toUpperCase() ||
-            view.data.selection.role.name.toLowerCase() === gapRole.name.toLowerCase())) ||
+        (view.data?.startingPlacement &&
+          (view.data.startingPlacement.role.id === gapRole.id ||
+            view.data.startingPlacement.role.code.toUpperCase() === gapRole.code.toUpperCase() ||
+            view.data.startingPlacement.role.name.toLowerCase() === gapRole.name.toLowerCase())) ||
         (view.data?.assignedRoleId && view.data.assignedRoleId === gapRole.id) ||
         (view.data?.assignedRoleCode && view.data.assignedRoleCode.toUpperCase() === gapRole.code.toUpperCase()) ||
         (view.data?.assignedRoleTitle && view.data.assignedRoleTitle.toLowerCase() === gapRole.name.toLowerCase())
       )
-      const assignedLevelStr = (view.data?.assignedLevel || view.data?.selection?.levelId || '')
+      const assignedLevelStr = (view.data?.assignedLevel || view.data?.startingPlacement?.levelId || '')
         .replace(/^(?:rank|level)\s*\d+\s*:\s*/i, '')
         .trim()
         .toLowerCase()
@@ -137,7 +137,7 @@ export function CurrentRolePanel() {
               l.id.toLowerCase() === assignedLevelStr ||
               l.name.toLowerCase() === assignedLevelStr ||
               l.code.toLowerCase() === assignedLevelStr ||
-              l.id === view.data?.selection?.levelId ||
+              l.id === view.data?.startingPlacement?.levelId ||
               (typeof view.data?.assignedLevelRank === 'number' && l.rank === view.data.assignedLevelRank),
           )
         : null
@@ -146,11 +146,22 @@ export function CurrentRolePanel() {
         ? (currentAssignedLevel?.rank ?? view.data?.assignedLevelRank ?? undefined)
         : undefined
 
+      const isActiveSelectedRole = Boolean(
+        view.data?.selection &&
+          (view.data.selection.role.id === gapRole.id ||
+            view.data.selection.role.code.toUpperCase() === gapRole.code.toUpperCase() ||
+            view.data.selection.role.name.toLowerCase() === gapRole.name.toLowerCase())
+      )
+
       return (
         <InitialRoleGapDialog
           role={gapRole}
           initialLevelId={
-            isSameStartOff ? view.data?.selection?.levelId : null
+            isActiveSelectedRole
+              ? view.data?.selection?.levelId
+              : isSameStartOff
+                ? view.data?.startingPlacement?.levelId
+                : null
           }
           minAllowedRank={allowedMinRank}
           onClose={() => setGapRole(null)}
@@ -211,15 +222,15 @@ export function CurrentRolePanel() {
       <Text variant="body-sm" className="break-words font-semibold">{selected?.name}</Text>
       {selected && (() => {
         const isSameStartOff = Boolean(
-          (view.data?.selection &&
-            (view.data.selection.role.id === selected.id ||
-              view.data.selection.role.code.toUpperCase() === selected.code.toUpperCase() ||
-              view.data.selection.role.name.toLowerCase() === selected.name.toLowerCase())) ||
+          (view.data?.startingPlacement &&
+            (view.data.startingPlacement.role.id === selected.id ||
+              view.data.startingPlacement.role.code.toUpperCase() === selected.code.toUpperCase() ||
+              view.data.startingPlacement.role.name.toLowerCase() === selected.name.toLowerCase())) ||
           (view.data?.assignedRoleId && view.data.assignedRoleId === selected.id) ||
           (view.data?.assignedRoleCode && view.data.assignedRoleCode.toUpperCase() === selected.code.toUpperCase()) ||
           (view.data?.assignedRoleTitle && view.data.assignedRoleTitle.toLowerCase() === selected.name.toLowerCase())
         )
-        const assignedLevelStr = (view.data?.assignedLevel || view.data?.selection?.levelId || '')
+        const assignedLevelStr = (view.data?.assignedLevel || view.data?.startingPlacement?.levelId || '')
           .replace(/^(?:rank|level)\s*\d+\s*:\s*/i, '')
           .trim()
           .toLowerCase()
@@ -230,7 +241,7 @@ export function CurrentRolePanel() {
                 l.id.toLowerCase() === assignedLevelStr ||
                 l.name.toLowerCase() === assignedLevelStr ||
                 l.code.toLowerCase() === assignedLevelStr ||
-                l.id === view.data?.selection?.levelId ||
+                l.id === view.data?.startingPlacement?.levelId ||
                 (typeof view.data?.assignedLevelRank === 'number' && l.rank === view.data.assignedLevelRank),
             )
           : null

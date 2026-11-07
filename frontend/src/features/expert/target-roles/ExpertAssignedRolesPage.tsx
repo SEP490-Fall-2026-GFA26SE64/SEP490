@@ -212,7 +212,6 @@ export function ExpertAssignedRolesPage() {
             name: s.name,
             description: s.description || '',
             status: (s.status as MicroSkillModel['status']) || 'ACTIVE',
-            macroCompetencyCode: s.macroCompetencyCode || 'KNOWLEDGE',
             createdAt: s.createdAt,
             updatedAt: s.updatedAt,
           }),
@@ -1060,10 +1059,7 @@ export function ExpertAssignedRolesPage() {
     return companyMicroSkills.filter((s) => {
       const belongs =
         compSkillIds.has(s.id) ||
-        compSkillIds.has(s.code) ||
-        (s.macroCompetencyCode &&
-          (s.macroCompetencyCode === parentComp.code ||
-            s.macroCompetencyCode === parentComp.id))
+        compSkillIds.has(s.code)
 
       if (!belongs) return false
 
@@ -1189,7 +1185,6 @@ export function ExpertAssignedRolesPage() {
       )
       const targetId = skillObj?.id || skillIdOrCode
       const targetCode = skillObj?.code || skillIdOrCode
-      const macroCode = skillObj?.macroCompetencyCode
       const sourceComps: CompetencyDto[] =
         realCompetencies.length > 0
           ? realCompetencies
@@ -1207,10 +1202,7 @@ export function ExpertAssignedRolesPage() {
             m.id === skillIdOrCode ||
             m.code === skillIdOrCode,
         )
-        const matchesMacro = Boolean(
-          macroCode && (c.code === macroCode || c.id === macroCode),
-        )
-        return inSkillIds || inMemberSkills || matchesMacro
+        return inSkillIds || inMemberSkills
       })
     },
     [companyMicroSkills, realCompetencies, activeCompany],
@@ -1345,7 +1337,7 @@ export function ExpertAssignedRolesPage() {
 
   const doesSkillBelongToCompetency = React.useCallback(
     (
-      skill: { id: string; code?: string; macroCompetencyCode?: string },
+      skill: { id: string; code?: string },
       comp: CompetencyDto,
     ) => {
       if (comp.skillIds && comp.skillIds.includes(skill.id)) return true
@@ -1355,13 +1347,6 @@ export function ExpertAssignedRolesPage() {
         comp.memberSkills.some(
           (ms) => ms.id === skill.id || (skill.code && ms.code === skill.code),
         )
-      )
-        return true
-
-      if (
-        skill.macroCompetencyCode &&
-        (skill.macroCompetencyCode === comp.code ||
-          skill.macroCompetencyCode === comp.id)
       )
         return true
 
@@ -1545,16 +1530,12 @@ export function ExpertAssignedRolesPage() {
       )
 
       if (!alreadyExists) {
-        const parentCompObj = commonCompObjects.find(
-          (c) => c.id === selectedParentCompId || c.code === selectedParentCompId,
-        )
         newTargets.push({
           skillId: skillObj.id,
           skillCode: skillObj.code,
           skillName: skillObj.name,
           threshold: Number(newThreshold) || 80,
           level: lvl,
-          macroCompetencyCode: parentCompObj?.code || parentCompObj?.id,
         })
       }
     })
@@ -2805,7 +2786,7 @@ export function ExpertAssignedRolesPage() {
                     </span>
 
                     <span className="text-[10px] text-muted-foreground font-normal">
-                      Macro knowledge &amp; functional capability clusters for{' '}
+                      Domain knowledge &amp; functional capability clusters for{' '}
                       {selectedLevelNamesLabel}
                     </span>
                   </div>
@@ -2947,7 +2928,7 @@ export function ExpertAssignedRolesPage() {
                         No Competencies Configured Yet
                       </p>
                       <p className="text-[11px]">
-                        Select and add macro competencies above to structure
+                        Select and add competencies above to structure
                         requirements for {selectedLevelNamesLabel}.
                       </p>
                     </div>
@@ -3009,7 +2990,7 @@ export function ExpertAssignedRolesPage() {
                                 const name = compObj?.name || compId
                                 const desc =
                                   compObj?.description ||
-                                  'Macro capability cluster for target role'
+                                  'Capability cluster for target role'
 
                                 return (
                                   <tr

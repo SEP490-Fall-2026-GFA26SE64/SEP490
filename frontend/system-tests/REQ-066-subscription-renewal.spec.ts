@@ -95,7 +95,7 @@ test('Employee activation uses captured email, requires assignments, consumes a 
   const otherIdentity = record(await (await other.request.get('/api/v1/workspace-auth/current')).json())
   const otherOrg = text(otherIdentity.organizationId)
   expect(otherOrg).not.toBe(org)
-  for (const resource of ['target-roles', 'micro-skills', 'prerequisites', 'macro-competencies']) {
+  for (const resource of ['target-roles', 'micro-skills', 'prerequisites']) {
     expect((await employee.request.get(`/api/v1/organizations/${otherOrg}/${resource}`, {
       headers: { 'X-User-Role': 'LD_MANAGER', 'X-User-Id': account.accountId },
     })).status()).toBe(403)

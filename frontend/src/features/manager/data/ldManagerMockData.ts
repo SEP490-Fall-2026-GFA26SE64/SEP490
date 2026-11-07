@@ -4,7 +4,6 @@ export interface SkillTargetConfig {
   skillName: string
   threshold: number // e.g. 80 (%) -> maps to targetMastery in Neo4j
   level?: string
-  macroCompetencyCode?: string
 }
 
 export interface RoleLevelThresholds {
@@ -798,7 +797,6 @@ export interface MicroSkillModel {
   name: string
   description?: string
   status: 'DRAFT' | 'ACTIVE' | 'RETIRED' | 'draft' | 'published' | 'archived'
-  macroCompetencyCode?: 'KNOWLEDGE' | 'COMMUNICATION' | 'INNOVATION' | string
   createdAt?: string
   updatedAt?: string
 }

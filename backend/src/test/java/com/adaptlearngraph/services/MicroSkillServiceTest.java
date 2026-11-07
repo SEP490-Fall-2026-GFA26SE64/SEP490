@@ -40,8 +40,7 @@ class MicroSkillServiceTest {
                 "org-1",
                 "CYPHER_QUERY",
                 "Cypher Query Language",
-                "Graph querying language",
-                "KNOWLEDGE");
+                "Graph querying language");
 
         MicroSkill created = service.createMicroSkill(command);
 
@@ -59,16 +58,14 @@ class MicroSkillServiceTest {
                 "org-1",
                 "CYPHER_QUERY",
                 "Cypher Query Language",
-                "Graph querying language",
-                "KNOWLEDGE");
+                "Graph querying language");
         service.createMicroSkill(command1);
 
         CreateMicroSkillCommand command2 = new CreateMicroSkillCommand(
                 "org-1",
                 "cypher_query",
                 "Duplicate Cypher",
-                "Another desc",
-                "KNOWLEDGE");
+                "Another desc");
 
         assertThrows(DuplicateMicroSkillException.class, () -> service.createMicroSkill(command2));
     }
@@ -80,8 +77,7 @@ class MicroSkillServiceTest {
                 "org-1",
                 "JAVA_CORE",
                 "Java Core",
-                "Core fundamentals",
-                "KNOWLEDGE");
+                "Core fundamentals");
         service.createMicroSkill(command);
 
         List<MicroSkill> result = service.listMicroSkills("org-1");
@@ -96,8 +92,7 @@ class MicroSkillServiceTest {
                 "org-1",
                 "SPRING_BOOT",
                 "Spring Boot",
-                "Old description",
-                "KNOWLEDGE");
+                "Old description");
         MicroSkill created = service.createMicroSkill(createCmd);
 
         UpdateMicroSkillCommand updateCmd = new UpdateMicroSkillCommand(
@@ -105,13 +100,11 @@ class MicroSkillServiceTest {
                 created.getId().toString(),
                 "Spring Boot 3",
                 "Modern Spring Boot 3 framework",
-                "INNOVATION",
                 SkillStatus.ACTIVE);
 
         MicroSkill updated = service.updateMicroSkill(updateCmd);
         assertEquals("Spring Boot 3", updated.getName());
         assertEquals("Modern Spring Boot 3 framework", updated.getDescription());
-        assertEquals("INNOVATION", updated.getMacroCompetencyCode());
     }
 
     @Test
@@ -121,8 +114,7 @@ class MicroSkillServiceTest {
                 "org-1",
                 "TO_DELETE",
                 "To Delete Skill",
-                "Description",
-                "KNOWLEDGE");
+                "Description");
         MicroSkill created = service.createMicroSkill(createCmd);
 
         service.deleteMicroSkill("org-1", created.getId().toString());
@@ -136,8 +128,7 @@ class MicroSkillServiceTest {
                 "org-1",
                 "REFERENCED_SKILL",
                 "Referenced Skill",
-                "Description",
-                "KNOWLEDGE");
+                "Description");
         MicroSkill created = service.createMicroSkill(createCmd);
         repository.dependencyCounts.put(created.getId().toString(), 3);
 
@@ -184,13 +175,12 @@ class MicroSkillServiceTest {
         }
 
         @Override
-        public List<MicroSkill> search(String organizationId, String query, String macroCode, SkillStatus status) {
+        public List<MicroSkill> search(String organizationId, String query, SkillStatus status) {
             return skills.stream()
                     .filter(s -> s.getOrganizationId().equals(organizationId))
                     .filter(s -> query == null || query.isBlank()
                             || s.getName().toLowerCase().contains(query.toLowerCase())
                             || s.getCode().toLowerCase().contains(query.toLowerCase()))
-                    .filter(s -> macroCode == null || macroCode.isBlank() || s.getMacroCompetencyCode().equalsIgnoreCase(macroCode))
                     .filter(s -> status == null || s.getStatus() == status)
                     .toList();
         }

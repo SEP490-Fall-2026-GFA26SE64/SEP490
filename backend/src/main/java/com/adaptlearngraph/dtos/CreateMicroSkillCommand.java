@@ -4,6 +4,5 @@ public record CreateMicroSkillCommand(
         String organizationId,
         String code,
         String name,
-        String description,
-        String macroCompetencyCode) {
+        String description) {
 }

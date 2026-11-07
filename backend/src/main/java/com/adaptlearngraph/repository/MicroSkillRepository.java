@@ -17,7 +17,7 @@ public interface MicroSkillRepository {
 
     List<MicroSkill> findAll(String organizationId);
 
-    List<MicroSkill> search(String organizationId, String query, String macroCode, SkillStatus status);
+    List<MicroSkill> search(String organizationId, String query, SkillStatus status);
 
     void delete(String organizationId, MicroSkillId id);
 
