@@ -18,7 +18,11 @@ public class Neo4jCompetencyRepository implements CompetencyRepository {
             OPTIONAL MATCH (l:Level)-[:HAS_COMPETENCY]->(c)
             OPTIONAL MATCH (r:TargetRole)-[:HAS_LEVEL]->(l)
             OPTIONAL MATCH (c)-[:HAS_SKILL]->(s:MicroSkill)
-            WITH c, l, r, collect(DISTINCT CASE WHEN s IS NOT NULL THEN {id: s.id, code: coalesce(s.code, s.id), name: s.name} END) AS skills
+            WITH c,
+                 head(collect(DISTINCT l.id)) AS levelId,
+                 head(collect(DISTINCT coalesce(l.name, ''))) AS levelName,
+                 head(collect(DISTINCT coalesce(r.name, ''))) AS roleName,
+                 collect(DISTINCT CASE WHEN s IS NOT NULL THEN {id: s.id, code: coalesce(s.code, s.id), name: s.name} END) AS skills
             RETURN c.id AS id,
                    coalesce(c.code, c.id) AS code,
                    c.name AS name,
@@ -26,9 +30,9 @@ public class Neo4jCompetencyRepository implements CompetencyRepository {
                    coalesce(c.attainmentRule, 'ALL_MEMBER_SKILLS_AT_OWNING_LEVEL') AS attainmentRule,
                    coalesce(c.status, 'ACTIVE') AS status,
                    coalesce(c.version, '0.11.0') AS version,
-                   l.id AS levelId,
-                   coalesce(l.name, '') AS levelName,
-                   coalesce(r.name, '') AS roleName,
+                   levelId,
+                   coalesce(levelName, '') AS levelName,
+                   coalesce(roleName, '') AS roleName,
                    skills
             """;
     // Neo4jClient: one statement per list joining the owning level/role and collecting member skills into a row.

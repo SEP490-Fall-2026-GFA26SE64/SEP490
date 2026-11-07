@@ -1057,19 +1057,41 @@ export function ExpertAssignedRolesPage() {
       })
     }
 
-    return companyMicroSkills.filter((s) => {
-      const belongs =
-        compSkillIds.has(s.id) ||
-        compSkillIds.has(s.code)
+    // Populate candidate pool from parentComp's memberSkills and companyMicroSkills
+    const candidates = new Map<string, { id: string; code: string; name: string; description?: string }>()
+    if (parentComp.memberSkills && parentComp.memberSkills.length > 0) {
+      parentComp.memberSkills.forEach((ms) => {
+        const id = ms.id || ms.code
+        if (id) {
+          candidates.set(id, {
+            id,
+            code: ms.code || ms.id,
+            name: ms.name || ms.code || ms.id,
+            description: '',
+          })
+        }
+      })
+    }
 
-      if (!belongs) return false
+    companyMicroSkills.forEach((s) => {
+      const belongs = compSkillIds.has(s.id) || (s.code && compSkillIds.has(s.code))
+      if (belongs) {
+        candidates.set(s.id, {
+          id: s.id,
+          code: s.code || s.id,
+          name: s.name || s.code || s.id,
+          description: s.description || '',
+        })
+      }
+    })
 
+    return Array.from(candidates.values()).filter((s) => {
       // Exclude if already assigned to all selected levels
       const alreadyAssignedToAllSelected = selectedAuthoringLevels.every(
         (lvl) =>
           authoringRole.skillTargets.some(
             (st) =>
-              (st.skillId === s.id || st.skillCode === s.code) &&
+              (st.skillId === s.id || (s.code && st.skillCode === s.code) || st.skillCode === s.id) &&
               (st.level || currentRoleLevels[0]) === lvl,
           ),
       )
@@ -1161,19 +1183,26 @@ export function ExpertAssignedRolesPage() {
     }))
   }, [availableSkills])
 
-  // Competencies available to add: any competency not yet assigned to all selected levels
-
+  // Competencies available to add: any competency not yet assigned to all selected levels (strictly deduplicated)
   const availableCompetencies = React.useMemo(() => {
     if (!authoringRole || selectedAuthoringLevels.length === 0) return []
 
+    const seen = new Set<string>()
     return realCompetencies.filter((c) => {
-      return selectedAuthoringLevels.some((lvl) => {
+      const key = (c.code || c.id).toUpperCase()
+      if (seen.has(key)) return false
+
+      const isAvailable = selectedAuthoringLevels.some((lvl) => {
         const lvlComps = authoringRole.levelCompetencies?.[lvl] || []
 
         return (
           !lvlComps.includes(c.id) && (!c.code || !lvlComps.includes(c.code))
         )
       })
+
+      if (!isAvailable) return false
+      seen.add(key)
+      return true
     })
   }, [authoringRole, realCompetencies, selectedAuthoringLevels])
 
@@ -1248,8 +1277,8 @@ export function ExpertAssignedRolesPage() {
 
   const competencyOptions: ComboboxOption[] = React.useMemo(() => {
     const list = availableCompetencies.map((comp) => {
-      const memberSkillCodes = (comp.memberSkills || []).map(
-        (m) => m.code || m.id,
+      const memberSkillNames = (comp.memberSkills || []).map(
+        (m) => m.name || m.code || m.id,
       )
       const matchingPrereqs = Array.from(
         missingPrereqCodesForSelectedLevels,
@@ -1259,10 +1288,12 @@ export function ExpertAssignedRolesPage() {
       })
 
       const hasMissingPrereq = matchingPrereqs.length > 0
-      const memberSkillsSummary =
-        memberSkillCodes.length > 0
-          ? ` · ${memberSkillCodes.length} micro-skills`
+      const memberSkillsDetails =
+        memberSkillNames.length > 0
+          ? ` · Skills: ${memberSkillNames.slice(0, 4).join(', ')}${memberSkillNames.length > 4 ? ` (+${memberSkillNames.length - 4} more)` : ''}`
           : ''
+
+      const baseDesc = comp.description ? `${comp.description}${memberSkillsDetails}` : `Domain Competency${memberSkillsDetails}`
 
       return {
         comp,
@@ -1273,8 +1304,8 @@ export function ExpertAssignedRolesPage() {
             ? `${comp.code || comp.id} — ${comp.name} [Unlocks: ${matchingPrereqs.join(', ')}]`
             : `${comp.code || comp.id} — ${comp.name}`,
           description: hasMissingPrereq
-            ? `⭐ Unlocks prerequisite ${matchingPrereqs.join(', ')} · ${comp.description || 'Domain Competency'}${memberSkillsSummary}`
-            : `${comp.description || 'Domain Competency'}${memberSkillsSummary}`,
+            ? `⭐ Unlocks prerequisite ${matchingPrereqs.join(', ')} · ${baseDesc}`
+            : baseDesc,
         },
       }
     })
@@ -1516,7 +1547,7 @@ export function ExpertAssignedRolesPage() {
     if (!authoringRole || !newSkillId || !newKnowledgeLevels.length || selectedAuthoringLevels.length === 0)
       return
 
-    const skillObj = companyMicroSkills.find((s) => s.id === newSkillId)
+    const skillObj = companyMicroSkills.find((s) => s.id === newSkillId) || availableSkills.find((s) => s.id === newSkillId)
 
     if (!skillObj) return
 
@@ -3064,14 +3095,16 @@ export function ExpertAssignedRolesPage() {
 
                 {authoringRole.status !== 'published' &&
                   authoringRole.status !== 'submitted' && (
-                    <div className="p-3.5 rounded-lg border border-border bg-card space-y-3 relative z-20">
-                      <div className="font-semibold text-foreground flex items-center justify-between">
-                        <span className="flex items-center gap-1.5">
-                          <Plus className="h-4 w-4 text-primary" />
-                          Add Micro-skill Target ({selectedLevelNamesLabel})
+                    <div className="p-4 rounded-xl border border-border/80 bg-muted/20 space-y-3.5 relative z-20 shadow-2xs">
+                      <div className="font-semibold text-foreground flex items-center justify-between pb-2 border-b border-border/40">
+                        <span className="flex items-center gap-2 text-xs">
+                          <span className="flex items-center justify-center h-5 w-5 rounded-md bg-primary/10 text-primary">
+                            <Plus className="h-3.5 w-3.5 stroke-[2.5]" />
+                          </span>
+                          <span>Add Micro-skill Target ({selectedLevelNamesLabel})</span>
                         </span>
 
-                        <span className="text-[10px] text-muted-foreground font-normal">
+                        <span className="text-[11px] text-muted-foreground font-normal">
                           {t('roleKnowledge.assign')}{' '}
                           {selectedLevelNamesLabel}
                         </span>
@@ -3096,58 +3129,68 @@ export function ExpertAssignedRolesPage() {
                           )}
                         </div>
                       ) : (
-                        <div className="grid grid-cols-1 sm:grid-cols-12 gap-2.5 items-end">
-                          <div className="sm:col-span-4">
-                            <label className="text-[11px] font-semibold text-foreground block mb-1">
-                              From Competency <span className="text-destructive">*</span>
-                            </label>
+                        <div className="space-y-3">
+                          {/* Row 1: Competency & Micro-skill */}
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <div>
+                              <label className="text-[11px] font-semibold text-foreground flex items-center gap-1 mb-1">
+                                <span>From Competency</span>
+                                <span className="text-destructive">*</span>
+                              </label>
 
-                            <select
-                              value={selectedParentCompId}
-                              onChange={(e) => setSelectedParentCompId(e.target.value)}
-                              className="w-full px-2.5 py-1.5 rounded-md bg-background border border-border text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-primary truncate"
-                            >
-                              {commonCompObjects.map((c) => (
-                                <option key={c.id} value={c.id}>
-                                  {c.code} — {c.name}
-                                </option>
-                              ))}
-                            </select>
+                              <select
+                                value={selectedParentCompId}
+                                onChange={(e) => setSelectedParentCompId(e.target.value)}
+                                className="w-full h-8 px-2.5 rounded-md bg-background border border-border text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-primary shadow-2xs truncate"
+                              >
+                                {commonCompObjects.map((c) => (
+                                  <option key={c.id} value={c.id}>
+                                    {c.code} — {c.name}
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
+
+                            <div>
+                              <label className="text-[11px] font-semibold text-foreground flex items-center gap-1 mb-1">
+                                <span>Micro-skill</span>
+                                <span className="text-destructive">*</span>
+                              </label>
+
+                              <Combobox
+                                size="sm"
+                                clearable={false}
+                                options={skillOptions}
+                                value={newSkillId}
+                                onChange={(val) => setNewSkillId(val)}
+                                placeholder={`Select skill in ${commonCompObjects.find((c) => c.id === selectedParentCompId)?.code || 'competency'}...`}
+                                searchPlaceholder="Search by skill code or title..."
+                                emptyMessage="All member skills in this competency are already assigned"
+                              />
+                            </div>
                           </div>
 
-                          <div className="sm:col-span-4">
-                            <label className="text-[11px] font-semibold text-foreground block mb-1">
-                              Micro-skill <span className="text-destructive">*</span>
-                            </label>
+                          {/* Row 2: Required Knowledge Levels dock on the left, Assign button on the right */}
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1.5 border-t border-border/40">
+                            <div className="flex items-center gap-2.5 flex-wrap">
+                              <span className="text-[11px] font-semibold text-foreground whitespace-nowrap">
+                                {t('roleKnowledge.requiredLevels')}:
+                              </span>
 
-                            <Combobox
-                              size="sm"
-                              clearable={false}
-                              options={skillOptions}
-                              value={newSkillId}
-                              onChange={(val) => setNewSkillId(val)}
-                              placeholder={`Select skill in ${commonCompObjects.find((c) => c.id === selectedParentCompId)?.code || 'competency'}...`}
-                              searchPlaceholder="Search by skill code or title..."
-                              emptyMessage="All member skills in this competency are already assigned"
-                            />
-                          </div>
+                              <RequiredKnowledgePicker
+                                value={newKnowledgeLevels}
+                                onChange={setNewKnowledgeLevels}
+                                size="sm"
+                              />
+                            </div>
 
-                          <div className="sm:col-span-2">
-                            <label className="text-[11px] font-semibold text-foreground block mb-1">
-                              {t('roleKnowledge.requiredLevels')}
-                            </label>
-
-                            <RequiredKnowledgePicker value={newKnowledgeLevels} onChange={setNewKnowledgeLevels} />
-                          </div>
-
-                          <div className="sm:col-span-2">
                             <Button
                               type="button"
                               variant="primary"
                               size="sm"
                               disabled={!newSkillId || !newKnowledgeLevels.length}
                               onClick={handleAddSkillTarget}
-                              className="w-full font-semibold shadow-2xs whitespace-nowrap px-3 text-xs justify-center"
+                              className="font-semibold shadow-2xs whitespace-nowrap px-4 text-xs justify-center h-8"
                               leftIcon={
                                 <Plus className="h-3.5 w-3.5 shrink-0" />
                               }
@@ -3385,7 +3428,11 @@ export function ExpertAssignedRolesPage() {
 
                                     <td className="py-2.5 px-3 text-center">
                                       {isEditingThisSkill ? (
-                                        <RequiredKnowledgePicker value={editingKnowledgeLevels} onChange={setEditingKnowledgeLevels} />
+                                        <RequiredKnowledgePicker
+                                          value={editingKnowledgeLevels}
+                                          onChange={setEditingKnowledgeLevels}
+                                          size="xs"
+                                        />
                                       ) : (
                                         <span className="font-mono font-bold text-primary">
                                           {formatRequiredKnowledge(st.requiredKnowledgeLevels, t)}

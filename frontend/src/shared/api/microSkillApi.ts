@@ -39,15 +39,15 @@ export interface UpdateMicroSkillPayload extends Partial<SkillProvisionPayload> 
 }
 
 export async function fetchMicroSkills(organizationId: string, q?: string): Promise<MicroSkillDto[]> {
-  const url = new URL(`/api/v1/organizations/${encodeURIComponent(normalizeOrg(organizationId))}/micro-skills`, window.location.origin)
-  if (q) {
-    url.searchParams.set('q', q)
-  }
-  const res = await fetch(url.toString(), {
-    headers: {
-      Accept: 'application/json',
+  const query = q ? `?q=${encodeURIComponent(q)}` : ''
+  const res = await fetch(
+    `/api/v1/organizations/${encodeURIComponent(normalizeOrg(organizationId))}/micro-skills${query}`,
+    {
+      headers: {
+        Accept: 'application/json',
+      },
     },
-  })
+  )
   if (!res.ok) {
     throw new Error(`Failed to fetch micro-skills: ${res.statusText}`)
   }

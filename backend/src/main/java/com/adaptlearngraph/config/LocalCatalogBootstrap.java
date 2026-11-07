@@ -16,7 +16,12 @@ public final class LocalCatalogBootstrap {
     public static final String KNOWLEDGE_BANK_HASH="62cb7a2289c5a6fd0486d552fce0077badfdce3374f5a6c54d5ee061db909be9";
     public static final String MODULE_KNOWLEDGE_HASH="d6c520311b778b09447a23c03834bfb557617f7ecd566d7708d697ca923da172";
     public static final String PREREQUISITE_KNOWLEDGE_HASH="cc7e3d25549542f945d68eebaff49257190c49db232b076aa50a97893d216a53";
-    private boolean moduleKnowledgeRelease() { return MODULE_KNOWLEDGE_HASH.equals(sourceHash) || PREREQUISITE_KNOWLEDGE_HASH.equals(sourceHash); }
+    public static final String PREREQUISITE_KNOWLEDGE_CRLF_HASH="94bfe3fb7b0586aaeb427b26484742c32d3dfb46f84316f08fbe9eddb08accfe";
+    public static final String PREREQUISITE_KNOWLEDGE_LF_HASH="a73e9571b5a16cab37341cb34124db36062b0383168871b8b97fcabc9c7233f8";
+    public static boolean isPrerequisiteKnowledgeHash(String hash) {
+        return PREREQUISITE_KNOWLEDGE_HASH.equals(hash) || PREREQUISITE_KNOWLEDGE_CRLF_HASH.equals(hash) || PREREQUISITE_KNOWLEDGE_LF_HASH.equals(hash);
+    }
+    private boolean moduleKnowledgeRelease() { return MODULE_KNOWLEDGE_HASH.equals(sourceHash) || isPrerequisiteKnowledgeHash(sourceHash); }
     private final String catalogVersion;
     private final String sourceHash;
     public String version() { return catalogVersion; }
@@ -43,7 +48,7 @@ public final class LocalCatalogBootstrap {
     }
     private void addSoftwareDevelopment() throws java.io.IOException {
         // The current release already includes the exact SE prerequisite supplement.
-        if(PREREQUISITE_KNOWLEDGE_HASH.equals(sourceHash)){baseEdges=Map.copyOf(expectedEdges);return;}
+        if(isPrerequisiteKnowledgeHash(sourceHash)){baseEdges=Map.copyOf(expectedEdges);return;}
         baseEdges=Map.copyOf(expectedEdges);
         var bytes=SoftwareDevelopmentSeed.modules();
         require(SoftwareDevelopmentSeed.MODULES_HASH.equals(sha256(bytes)),"SE module seed drift");
@@ -90,7 +95,7 @@ public final class LocalCatalogBootstrap {
             require(expectedEdges.put(edgeId,canonical(JSON.valueToTree(edge)))==null,"Duplicate catalog edge");
             edges.computeIfAbsent(type,k->new ArrayList<>()).add(edge);
         }
-        require(expectedNodes.size()==(PREREQUISITE_KNOWLEDGE_HASH.equals(sourceHash)?1018:994) && expectedEdges.size()==(PREREQUISITE_KNOWLEDGE_HASH.equals(sourceHash)?4758:SINGLE_SKILL_VERSION.equals(catalogVersion)?4703:5121),"Incomplete latest catalog");
+        require(expectedNodes.size()==(isPrerequisiteKnowledgeHash(sourceHash)?1018:994) && expectedEdges.size()==(isPrerequisiteKnowledgeHash(sourceHash)?4758:SINGLE_SKILL_VERSION.equals(catalogVersion)?4703:5121),"Incomplete latest catalog");
         if(SINGLE_SKILL_VERSION.equals(catalogVersion)) {
             var counts=new HashMap<String,Integer>();
             for(var edge:edges.getOrDefault("TEACHES",List.of())) {
@@ -100,7 +105,7 @@ public final class LocalCatalogBootstrap {
             }
             for(var module:nodes.get("LearningModule"))require(counts.getOrDefault(module.get("id"),0)==1,"Each Module must teach exactly one Skill");
         }
-        if(PREREQUISITE_KNOWLEDGE_HASH.equals(sourceHash)) {
+        if(isPrerequisiteKnowledgeHash(sourceHash)) {
             var pairs=new ArrayList<com.adaptlearngraph.entities.domain.PrerequisiteRules.Pair>();
             for(var edge:edges.getOrDefault("HAS_SKILL_PREREQUISITE",List.of())) {
                 var props=(Map<?,?>)edge.get("props");

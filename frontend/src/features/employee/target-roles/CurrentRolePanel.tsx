@@ -155,7 +155,7 @@ function OwnedCurrentRolePanel({ scope }: { scope: string }) {
       </div>
     </CardContent></Card>
     {!roles.isPending && !roles.isError && filtered.length === 0 && <EmptyState icon={<Target size={24} />}
-      title={roles.data?.length === 0 ? tr('catalogEmpty') : t('upskillingUi.noResults')}
+      title={t('upskillingUi.noResults')}
       description={roles.data?.length === 0 ? tr('catalogEmptyHint') : t('upskillingUi.noResultsHint')} />}
     <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">{visible.map(role => {
       const active = Boolean(view.data?.selection?.available && view.data.selection.role.id === role.id)
@@ -165,12 +165,24 @@ function OwnedCurrentRolePanel({ scope }: { scope: string }) {
     })}</div>
     {filtered.length > 0 && <Card className="overflow-hidden"><Pagination currentPage={currentPage} totalPages={pageCount} totalItems={filtered.length} pageSize={12} disabled={blocked} onPageChange={setPage} itemLabel={t('upskillingUi.roles')}
       labels={{ navigation: t('adaptiveBaseline.paging.navigation'), first: t('adaptiveBaseline.paging.first'), previous: t('adaptiveBaseline.paging.previous'), next: t('adaptiveBaseline.paging.next'), last: t('adaptiveBaseline.paging.last'), showing: t('adaptiveBaseline.paging.showing'), of: t('adaptiveBaseline.paging.of') }} /></Card>}
-    <Dialog open={selected !== null} className="max-w-lg" onOpenChange={open => { if (!open && !blocked) setSelected(null) }} ariaLabel={tr('confirmTitle')} closeLabel={tr('cancel')}>
-      <DialogHeader><DialogTitle><Target size={18} className="shrink-0 text-primary" aria-hidden="true" />{tr('confirmTitle')}</DialogTitle><DialogDescription className="text-body-sm">{tr(view.data?.selection ? 'changeNotice' : 'chooseNotice')}</DialogDescription></DialogHeader>
+    <Dialog open={selected !== null} className="max-w-md sm:max-w-lg" onOpenChange={open => { if (!open && !blocked) setSelected(null) }} ariaLabel={tr('confirmTitle')} closeLabel={tr('cancel')}>
+      <DialogHeader>
+        <DialogTitle className="flex items-center gap-2">
+          <Target size={18} className="shrink-0 text-primary" aria-hidden="true" />
+          {tr('confirmTitle')}
+        </DialogTitle>
+        <DialogDescription className="text-body-sm">
+          {tr(view.data?.selection ? 'changeNotice' : 'chooseNotice')}
+        </DialogDescription>
+      </DialogHeader>
       <DialogBody className="space-y-4">
-      <div className="space-y-1 rounded-lg border border-border bg-background p-3">
-        <Text variant="body-sm" tone="foreground" className="break-words font-semibold">{selected?.name}</Text>
-        <Text variant="caption">{selected?.jobPositionName}</Text>
+      <div className="space-y-1 rounded-lg border border-border bg-muted/20 p-3.5">
+        <Text variant="body-sm" tone="foreground" className="break-words font-semibold text-sm">
+          {selected?.name}
+        </Text>
+        <Text variant="caption" className="text-muted-foreground text-xs">
+          {selected?.jobPositionName}
+        </Text>
       </div>
       {selected && (() => {
         const isSameStartOff = Boolean(
@@ -204,7 +216,6 @@ function OwnedCurrentRolePanel({ scope }: { scope: string }) {
 
         return (
           <RoleLevelPicker
-            compact
             levels={selected.levels}
             value={levelId}
             disabled={blocked}
@@ -216,8 +227,14 @@ function OwnedCurrentRolePanel({ scope }: { scope: string }) {
       {error && <div className="space-y-3 rounded-lg border border-destructive/30 bg-destructive/5 p-3" role="alert"><Text variant="body-sm" tone="destructive">{t(`roleFlow.errors.${error.code}`, tr('statusError'))}</Text>{error.code === 'TARGET_ROLE_LEVEL_LOCKED' && <Link to="/employee/pathway?view=role" className={buttonVariants({ variant: 'primary', size: 'sm' })}>{t('roleFlow.viewPathway')}</Link>}</div>}
       {command && <Text variant="body-sm">{tr('retryNotice')}</Text>}
       </DialogBody>
-      <DialogFooter><Button variant="outline" disabled={blocked} onClick={() => setSelected(null)}>{tr('cancel')}</Button>
-        <Button disabled={busy || !levelId || error?.code === 'TARGET_ROLE_LEVEL_LOCKED'} onClick={() => void confirm(command ?? undefined)}>{tr(command ? 'retry' : 'confirm')}</Button></DialogFooter>
+      <DialogFooter className="flex items-center justify-end gap-2 pt-2">
+        <Button variant="outline" size="sm" disabled={blocked} onClick={() => setSelected(null)}>
+          {tr('cancel')}
+        </Button>
+        <Button variant="primary" size="sm" disabled={busy || (!levelId && (selected?.levels?.length ?? 0) > 0) || error?.code === 'TARGET_ROLE_LEVEL_LOCKED'} onClick={() => void confirm(command ?? undefined)}>
+          {tr(command ? 'retry' : 'confirm')}
+        </Button>
+      </DialogFooter>
     </Dialog>
     {details && <CurrentRoleDetailsDialog key={details.role.id + ':' + (details.selectedLevelId ?? 'browse')} role={details.role} selectedLevelId={details.selectedLevelId} onClose={() => setDetails(null)} />}
   </section>

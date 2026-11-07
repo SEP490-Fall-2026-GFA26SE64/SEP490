@@ -1528,6 +1528,9 @@ function UserForm({
   }, [selectedEmployeeTargetRole])
 
   const employeeLevelOptions: ComboboxOption[] = useMemo(() => {
+    // Dynamic ranking calculation:
+    // Rank 1 is always the highest level (index 0),
+    // and each subsequent level is calculated below it (index + 1)
     return employeeRoleLevels.map((lvl, idx) => ({
       value: lvl,
       label: `Rank ${idx + 1}: ${lvl}`,

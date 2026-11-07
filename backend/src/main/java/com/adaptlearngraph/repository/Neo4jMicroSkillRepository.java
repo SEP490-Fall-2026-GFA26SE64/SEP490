@@ -186,6 +186,20 @@ public class Neo4jMicroSkillRepository implements MicroSkillRepository {
         Instant createdAt = node.createdAt() != null ? node.createdAt() : BASELINE;
         Instant updatedAt = node.updatedAt() != null ? node.updatedAt() : createdAt;
 
+        var modules = new ArrayList<>(orEmpty(node.moduleOnlyKnowledgeLevels()));
+        var certificates = new ArrayList<>(orEmpty(node.certificateOnlyKnowledgeLevels()));
+        var foundation = orEmpty(node.foundationOutcomeCodes());
+        var intermediate = orEmpty(node.intermediateOutcomeCodes());
+        var advanced = orEmpty(node.advancedOutcomeCodes());
+
+        // Backward compatibility: If knowledge levels are not yet explicitly categorized into
+        // moduleOnly or certificateOnly, default any level that has outcomes to moduleOnly.
+        if (modules.isEmpty() && certificates.isEmpty()) {
+            if (!foundation.isEmpty()) modules.add("FOUNDATION");
+            if (!intermediate.isEmpty()) modules.add("INTERMEDIATE");
+            if (!advanced.isEmpty()) modules.add("ADVANCED");
+        }
+
         return new MicroSkill(
                 MicroSkillId.fromString(idStr),
                 orgId,
@@ -195,8 +209,7 @@ public class Neo4jMicroSkillRepository implements MicroSkillRepository {
                 SkillStatus.fromString(statusStr),
                 createdAt,
                 updatedAt,
-                new SkillProvision(orEmpty(node.moduleOnlyKnowledgeLevels()),orEmpty(node.certificateOnlyKnowledgeLevels()),
-                        orEmpty(node.foundationOutcomeCodes()),orEmpty(node.intermediateOutcomeCodes()),orEmpty(node.advancedOutcomeCodes())),
+                new SkillProvision(modules, certificates, foundation, intermediate, advanced),
                 node.version(),node.version());
     }
     private static List<String> orEmpty(List<String> values){return values==null?List.of():values;}
