@@ -75,6 +75,21 @@ Report 3/4 display the approved ACT-05 Role-Level baseline/configuration flow an
 
 [Verification and artifact notes](review2-role-level-20261106.md) · [Machine-readable checks and hashes](review2-role-level-20261106-checks.json).
 
+## Target design r3 — 2026-11-05
+
+These are the **current target** images for the organization-rule flow, not pg_catalog captures or applied migration. Historical images/evidence below are preserved.
+
+| Target | SVG | PNG | Editable sources |
+| --- | --- | --- | --- |
+| Ontology | [SVG](target-r3-ontology.svg) | [PNG](target-r3-ontology.png) | [PlantUML](target-r3-ontology.puml), [JSON](target-r3-ontology.diagram.json) |
+| Assessment/profile | [SVG](target-r3-assessment.svg) | [PNG](target-r3-assessment.png) | [PlantUML](target-r3-assessment.puml), [JSON](target-r3-assessment.diagram.json) |
+| Pathway/certificate | [SVG](target-r3-pathway.svg) | [PNG](target-r3-pathway.png) | [PlantUML](target-r3-pathway.puml), [JSON](target-r3-pathway.diagram.json) |
+| Business flow | [SVG](target-r3-flow.svg) | [PNG](target-r3-flow.png) | [PlantUML](target-r3-flow.puml), [JSON](target-r3-flow.diagram.json) |
+
+[Canonical schema/API/flow](../technical/Organization%20Rule%20Assessment%20and%20Pathway.md) supplies detailed fields/constraints. Principal keys/field groups are shown; orange = changed owner, green = new scoped data, grey = retained structure.
+
+Local Windows System.Drawing generated SVG/PNG and matching PlantUML text from shared layout JSON. No install/external renderer/DB/service startup/executable tests. PNGs were visually inspected; SVG XML/source labels are checked. PlantUML is supplied as semantic source, not falsely claimed rendered by an unavailable PlantUML tool. Older pg_catalog JSON and FK inventories remain dated captures.
+
 
 ## ACT-04 / ACT-10 authoring coverage — 2026-11-06
 

@@ -1,0 +1,91 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1100" viewBox="0 0 1600 1100" role="img">
+<title>PostgreSQL r3 - shared engine, two policies and separate evidence</title><rect width="100%" height="100%" fill="#F8FAFC"/>
+<text x="29" y="45" font-family="Arial, sans-serif" font-size="25" font-weight="bold" fill="#0F172A">PostgreSQL r3 - shared engine, two policies and separate evidence</text>
+<text x="29" y="69" font-family="Arial, sans-serif" font-size="13" font-weight="normal" fill="#0F172A">Principal keys/fields only. All workflow rows use trusted tenant/learner scope and current authorization.</text>
+<polyline points="1020,210 1110,210" fill="none" stroke="#64748B" stroke-width="1.8"/>
+<polygon points="1110,210 1100,206 1100,214" fill="#0F172A"/>
+<polyline points="1335,310 1335,440" fill="none" stroke="#64748B" stroke-width="1.8"/>
+<polygon points="1335,440 1339,430 1331,430" fill="#0F172A"/>
+<polyline points="255,310 255,355 1175,355 1175,440" fill="none" stroke="#64748B" stroke-width="1.8"/>
+<polygon points="1175,440 1179,430 1171,430" fill="#0F172A"/>
+<polyline points="1110,535 1020,535" fill="none" stroke="#64748B" stroke-width="1.8"/>
+<polygon points="1020,535 1030,539 1030,531" fill="#0F172A"/>
+<polyline points="570,535 480,535" fill="none" stroke="#64748B" stroke-width="1.8"/>
+<polygon points="480,535 490,539 490,531" fill="#0F172A"/>
+<polyline points="255,635 255,780" fill="none" stroke="#64748B" stroke-width="1.8"/>
+<polygon points="255,780 259,770 251,770" fill="#0F172A"/>
+<polyline points="400,635 400,705 1150,705 1150,780" fill="none" stroke="#64748B" stroke-width="1.8"/>
+<polygon points="1150,780 1154,770 1146,770" fill="#0F172A"/>
+<rect x="30" y="115" width="450" height="195" fill="#FFFFFF" stroke="#64748B" stroke-width="1.8"/><rect x="31" y="116" width="448" height="38" fill="#FFF5EB"/>
+<text x="41" y="142" font-family="Arial, sans-serif" font-size="17" font-weight="bold" fill="#0F172A">Existing Question Bank</text>
+<text x="41" y="180" font-family="Arial, sans-serif" font-size="14" font-weight="normal" fill="#0F172A">Published item version / protected key</text>
+<text x="41" y="203" font-family="Arial, sans-serif" font-size="14" font-weight="normal" fill="#0F172A">Knowledge mapping: skill + level + outcome</text>
+<text x="41" y="226" font-family="Arial, sans-serif" font-size="14" font-weight="normal" fill="#0F172A">mandatory flag / real review history</text>
+<text x="41" y="249" font-family="Arial, sans-serif" font-size="14" font-weight="normal" fill="#0F172A">Content-based classification, no guessing</text>
+<text x="41" y="272" font-family="Arial, sans-serif" font-size="14" font-weight="normal" fill="#0F172A">No duplicated bank or graph questions</text>
+<rect x="570" y="115" width="450" height="195" fill="#FFFFFF" stroke="#64748B" stroke-width="1.8"/><rect x="571" y="116" width="448" height="38" fill="#EAF5EF"/>
+<text x="581" y="142" font-family="Arial, sans-serif" font-size="17" font-weight="bold" fill="#0F172A">Rule policy version + activation</text>
+<text x="581" y="180" font-family="Arial, sans-serif" font-size="14" font-weight="normal" fill="#0F172A">PK organization + purpose + version</text>
+<text x="581" y="203" font-family="Arial, sans-serif" font-size="14" font-weight="normal" fill="#0F172A">BASELINE: its own config + active pointer</text>
+<text x="581" y="226" font-family="Arial, sans-serif" font-size="14" font-weight="normal" fill="#0F172A">SKILL_ASSESSMENT: separate config/pointer</text>
+<text x="581" y="249" font-family="Arial, sans-serif" font-size="14" font-weight="normal" fill="#0F172A">counts / pass / mandatory / veto / timing</text>
+<text x="581" y="272" font-family="Arial, sans-serif" font-size="14" font-weight="normal" fill="#0F172A">Published content immutable; no IRT pins</text>
+<rect x="1110" y="115" width="450" height="195" fill="#FFFFFF" stroke="#64748B" stroke-width="1.8"/><rect x="1111" y="116" width="448" height="38" fill="#EAF5EF"/>
+<text x="1121" y="142" font-family="Arial, sans-serif" font-size="17" font-weight="bold" fill="#0F172A">rule_assessment_attempt</text>
+<text x="1121" y="180" font-family="Arial, sans-serif" font-size="14" font-weight="normal" fill="#0F172A">PK attempt_id; org + learner + purpose</text>
+<text x="1121" y="203" font-family="Arial, sans-serif" font-size="14" font-weight="normal" fill="#0F172A">Frozen target/module/policy/catalog context</text>
+<text x="1121" y="226" font-family="Arial, sans-serif" font-size="14" font-weight="normal" fill="#0F172A">state / revision / start / deadline / finish</text>
+<text x="1121" y="249" font-family="Arial, sans-serif" font-size="14" font-weight="normal" fill="#0F172A">previous_attempt_id for FULL retake</text>
+<text x="1121" y="272" font-family="Arial, sans-serif" font-size="14" font-weight="normal" fill="#0F172A">downstream processing distinct from score</text>
+<rect x="1110" y="440" width="450" height="195" fill="#FFFFFF" stroke="#64748B" stroke-width="1.8"/><rect x="1111" y="441" width="448" height="38" fill="#EAF5EF"/>
+<text x="1121" y="467" font-family="Arial, sans-serif" font-size="17" font-weight="bold" fill="#0F172A">rule_assessment_group / item</text>
+<text x="1121" y="505" font-family="Arial, sans-serif" font-size="14" font-weight="normal" fill="#0F172A">PK attempt + group / item position</text>
+<text x="1121" y="528" font-family="Arial, sans-serif" font-size="14" font-weight="normal" fill="#0F172A">Exact skill + knowledge + outcome scope</text>
+<text x="1121" y="551" font-family="Arial, sans-serif" font-size="14" font-weight="normal" fill="#0F172A">TARGET / MAIN / PREREQUISITE group role</text>
+<text x="1121" y="574" font-family="Arial, sans-serif" font-size="14" font-weight="normal" fill="#0F172A">Frozen count / pass / mandatory / veto</text>
+<text x="1121" y="597" font-family="Arial, sans-serif" font-size="14" font-weight="normal" fill="#0F172A">Pinned item version and option order</text>
+<rect x="570" y="440" width="450" height="195" fill="#FFFFFF" stroke="#64748B" stroke-width="1.8"/><rect x="571" y="441" width="448" height="38" fill="#EAF5EF"/>
+<text x="581" y="467" font-family="Arial, sans-serif" font-size="17" font-weight="bold" fill="#0F172A">Answer + command receipt</text>
+<text x="581" y="505" font-family="Arial, sans-serif" font-size="14" font-weight="normal" fill="#0F172A">Answer FK to presented attempt/item</text>
+<text x="581" y="528" font-family="Arial, sans-serif" font-size="14" font-weight="normal" fill="#0F172A">Accepted response / revision / actual time</text>
+<text x="581" y="551" font-family="Arial, sans-serif" font-size="14" font-weight="normal" fill="#0F172A">Unique retry key + body hash + outcome</text>
+<text x="581" y="574" font-family="Arial, sans-serif" font-size="14" font-weight="normal" fill="#0F172A">Resume same paper; no deadline reset</text>
+<text x="581" y="597" font-family="Arial, sans-serif" font-size="14" font-weight="normal" fill="#0F172A">Submit / timeout serialize finalization</text>
+<rect x="30" y="440" width="450" height="195" fill="#FFFFFF" stroke="#64748B" stroke-width="1.8"/><rect x="31" y="441" width="448" height="38" fill="#EAF5EF"/>
+<text x="41" y="467" font-family="Arial, sans-serif" font-size="17" font-weight="bold" fill="#0F172A">rule_assessment_group_result</text>
+<text x="41" y="505" font-family="Arial, sans-serif" font-size="14" font-weight="normal" fill="#0F172A">PK/FK attempt + group; immutable result</text>
+<text x="41" y="528" font-family="Arial, sans-serif" font-size="14" font-weight="normal" fill="#0F172A">correct / total / mandatory satisfied</text>
+<text x="41" y="551" font-family="Arial, sans-serif" font-size="14" font-weight="normal" fill="#0F172A">passed / veto / reasons / finalized_at</text>
+<text x="41" y="574" font-family="Arial, sans-serif" font-size="14" font-weight="normal" fill="#0F172A">Correct 1; incorrect or unanswered 0</text>
+<text x="41" y="597" font-family="Arial, sans-serif" font-size="14" font-weight="normal" fill="#0F172A">No cross-group compensation or theta</text>
+<rect x="30" y="780" width="450" height="180" fill="#FFFFFF" stroke="#64748B" stroke-width="1.8"/><rect x="31" y="781" width="448" height="38" fill="#FFF5EB"/>
+<text x="41" y="807" font-family="Arial, sans-serif" font-size="17" font-weight="bold" fill="#0F172A">Baseline diagnostic projection</text>
+<text x="41" y="845" font-family="Arial, sans-serif" font-size="14" font-weight="normal" fill="#0F172A">Only skill-level groups actually assessed</text>
+<text x="41" y="868" font-family="Arial, sans-serif" font-size="14" font-weight="normal" fill="#0F172A">Pass skips initial module assignment</text>
+<text x="41" y="891" font-family="Arial, sans-serif" font-size="14" font-weight="normal" fill="#0F172A">Fail A suggests A module choices only</text>
+<text x="41" y="914" font-family="Arial, sans-serif" font-size="14" font-weight="normal" fill="#0F172A">Do not add prerequisite B to profile</text>
+<text x="41" y="937" font-family="Arial, sans-serif" font-size="14" font-weight="normal" fill="#0F172A">No official ACHIEVED from baseline</text>
+<rect x="870" y="780" width="560" height="180" fill="#FFFFFF" stroke="#64748B" stroke-width="1.8"/><rect x="871" y="781" width="558" height="38" fill="#EAF5EF"/>
+<text x="881" y="807" font-family="Arial, sans-serif" font-size="17" font-weight="bold" fill="#0F172A">Official evidence + NEED_REVIEW</text>
+<text x="881" y="845" font-family="Arial, sans-serif" font-size="14" font-weight="normal" fill="#0F172A">Exact org / learner / skill / knowledge / source</text>
+<text x="881" y="868" font-family="Arial, sans-serif" font-size="14" font-weight="normal" fill="#0F172A">Module + assessment with required conditions OR certificate</text>
+<text x="881" y="891" font-family="Arial, sans-serif" font-size="14" font-weight="normal" fill="#0F172A">Evidence dedup by accepted source and exact requirement</text>
+<text x="881" y="914" font-family="Arial, sans-serif" font-size="14" font-weight="normal" fill="#0F172A">Official prerequisite failure: NEED_REVIEW, no revocation</text>
+<text x="881" y="937" font-family="Arial, sans-serif" font-size="14" font-weight="normal" fill="#0F172A">Missing B appears only when skill assessment detects it</text>
+<rect x="1033" y="181" width="45.5432891845703" height="21" fill="#FFFFFF"/>
+<text x="1035" y="197" font-family="Arial, sans-serif" font-size="13" font-weight="normal" fill="#0F172A">freeze</text>
+<rect x="1343" y="364" width="77.5481719970703" height="21" fill="#FFFFFF"/>
+<text x="1345" y="380" font-family="Arial, sans-serif" font-size="13" font-weight="normal" fill="#0F172A">owns paper</text>
+<rect x="550" y="328" width="204.805969238281" height="21" fill="#FFFFFF"/>
+<text x="552" y="344" font-family="Arial, sans-serif" font-size="13" font-weight="normal" fill="#0F172A">approved matching item versions</text>
+<rect x="1035" y="507" width="36.6184883117676" height="21" fill="#FFFFFF"/>
+<text x="1037" y="523" font-family="Arial, sans-serif" font-size="13" font-weight="normal" fill="#0F172A">save</text>
+<rect x="488" y="507" width="50.0183868408203" height="21" fill="#FFFFFF"/>
+<text x="490" y="523" font-family="Arial, sans-serif" font-size="13" font-weight="normal" fill="#0F172A">finalize</text>
+<rect x="266" y="697" width="73.8220977783203" height="21" fill="#FFFFFF"/>
+<text x="268" y="713" font-family="Arial, sans-serif" font-size="13" font-weight="normal" fill="#0F172A">BASELINE</text>
+<rect x="660" y="679" width="272.167297363281" height="21" fill="#FFFFFF"/>
+<text x="662" y="695" font-family="Arial, sans-serif" font-size="13" font-weight="normal" fill="#0F172A">SKILL_ASSESSMENT + completed learning</text>
+<text x="29" y="1063" font-family="Arial, sans-serif" font-size="13" font-weight="normal" fill="#0F172A">Orange: changed owner   Green: new scoped data   Grey: retained structure</text>
+<text x="29" y="1086" font-family="Arial, sans-serif" font-size="13" font-weight="normal" fill="#0F172A">TARGET DESIGN r3 | Not an applied database capture | Unrelated auth/content/billing retained</text>
+</svg>
