@@ -267,6 +267,8 @@ export const vi: TranslationKeys = {
     focus: { PRIMARY: 'Nội dung chính', SUPPORTING: 'Thực hành hỗ trợ', INCIDENTAL: 'Chỉ làm ngữ cảnh' },
     difficulty: { LOW: 'Thấp', MEDIUM: 'Trung bình', HIGH: 'Cao' },
     chooseLevel: 'Chọn cấp độ', levelRequired: 'Chọn cấp độ công việc bạn muốn hướng tới.',
+    currentAssignedLevel: 'Cấp độ hiện tại (Nâng cao kỹ năng yêu cầu cấp độ cao hơn)',
+    belowStartingLevel: 'Thấp hơn cấp độ khởi điểm hiện tại',
     title: 'Lộ trình học của tôi', reviewTitle: 'Duyệt lộ trình ban đầu', reviewDescription: 'Xem các kế hoạch được phân công và xác nhận nội dung nhân viên cần học.',
     gaps: 'Xem khoảng cách kỹ năng', gapTitle: 'Nhu cầu học cho vị trí này', gapDescription: 'Đối chiếu kết quả đánh giá đầu vào đã lưu với yêu cầu của vị trí trước khi xác nhận kế hoạch học.',
     skill: 'Kỹ năng', required: 'Yêu cầu', mastery: 'Năng lực từ đánh giá đầu vào', gap: 'Khoảng cách', unknown: 'Chưa xác định', mandatory: 'Bắt buộc', optional: 'Chỉ tham khảo',
@@ -303,6 +305,9 @@ export const vi: TranslationKeys = {
   },
   upskillingUi: {
     roles: 'Vị trí', skills: 'Kỹ năng', activeRole: 'Vị trí đang chọn',
+    startingCareerPlacement: 'Vị trí khởi điểm',
+    noActiveRoleSelected: 'Chưa chọn vị trí',
+    selectActiveRoleHint: 'Chọn một vị trí mục tiêu từ danh mục bên dưới để bắt đầu lộ trình nâng cao kỹ năng.',
     searchPlaceholder: 'Tìm vị trí theo tên hoặc vị trí công việc…', clearFilters: 'Xóa bộ lọc',
     roleCatalog: 'Danh mục vị trí', skillCount: 'Kỹ năng yêu cầu', levels: 'Cấp độ',
     allRoles: 'Tất cả vị trí', status: 'Trạng thái', noResults: 'Không có vị trí phù hợp với bộ lọc',
@@ -408,6 +413,7 @@ export const vi: TranslationKeys = {
     mandatory: 'Bắt buộc', requiredScore: 'Mức năng lực yêu cầu',
     states: {
       SELECT_ROLE: 'Chọn vị trí để tiếp tục.', ROLE_UNAVAILABLE: 'Vị trí cũ không còn khả dụng. Hãy chọn vị trí hiện tại ở bên dưới.',
+      READY: 'Vị trí đã chọn đã sẵn sàng. Bạn có thể xem khoảng cách kỹ năng hoặc lịch sử đánh giá đầu vào.',
       SELECT_LEVEL: 'Chọn Level cho Vị trí đã chọn.', BASELINE_NOT_REQUIRED: 'Mục tiêu này không có nhóm cần đánh giá đầu vào. Hãy xem yêu cầu học và chứng chỉ.',
       COMPLETE: 'Đã ghi kết quả chẩn đoán đầu vào cho Vị trí và Level này. Hãy xem yêu cầu học tập.',
       BASELINE_REQUIRED: 'Hoàn thành các nhóm đánh giá được yêu cầu cho Vị trí và Level này.', RESUME: 'Bạn có bài đầu vào chưa hoàn thành. Hãy tiếp tục bài đang làm.',

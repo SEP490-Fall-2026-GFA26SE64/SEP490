@@ -21,7 +21,12 @@ public final class RoleBaselineFlow {
         @Deprecated public double requiredScore(){throw new Failure(409,"NUMERIC_TARGET_RETIRED");}
     }
     public record Level(String id, String code, String name, int rank, String context,
-                        String attainmentRule, List<Skill> skills) {}
+                        String attainmentRule, List<Skill> skills, String duration) {
+        public Level(String id, String code, String name, int rank, String context,
+                     String attainmentRule, List<Skill> skills) {
+            this(id, code, name, rank, context, attainmentRule, skills, null);
+        }
+    }
     public record Role(String id, String code, String name, String scope, String jobPositionId,
                        String jobPositionName, String catalogVersion, String fingerprint, List<Level> levels) {}
     public record Selection(UUID selectionId, Role role, long revision, Instant selectedAt, boolean available,String levelId) {

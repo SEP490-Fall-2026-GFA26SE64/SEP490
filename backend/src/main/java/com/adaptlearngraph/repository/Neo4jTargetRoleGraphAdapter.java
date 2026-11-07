@@ -49,12 +49,9 @@ public class Neo4jTargetRoleGraphAdapter implements TargetRoleGraphPort {
                 WHERE r.organizationId = $organizationId
                   AND (r.id = $roleId OR r.code = $roleId)
                 MATCH (r)-[req:REQUIRES_SKILL]->(s:MicroSkill)
-                WHERE s.organizationId=$organizationId AND req.status='ACTIVE'
-                    AND (req.organizationId IS NULL OR req.organizationId=$organizationId)
-                OPTIONAL MATCH (c:Competency)-[:HAS_SKILL]->(s)
-                WHERE c.organizationId=$organizationId
-                WITH s, req, collect(coalesce(c.code, c.id)) AS compCodes
-                RETURN s, req, CASE WHEN size(compCodes) > 0 THEN head(compCodes) ELSE 'KNOWLEDGE' END AS macroCode
+                WHERE s.organizationId = $organizationId AND req.status = 'ACTIVE'
+                  AND (req.organizationId IS NULL OR req.organizationId = $organizationId)
+                RETURN s, req
                 ORDER BY coalesce(s.code, s.id) ASC
                 """;
 
@@ -97,7 +94,6 @@ public class Neo4jTargetRoleGraphAdapter implements TargetRoleGraphPort {
                 var record = skillsResult.next();
                 Node skillNode = record.get("s").asNode();
                 Relationship reqRel = record.get("req").asRelationship();
-                String macroCode = record.get("macroCode").asString();
 
                 String sId = skillNode.containsKey("id") && !skillNode.get("id").isNull() ? skillNode.get("id").asString() : "";
                 String sCode = skillNode.containsKey("code") && !skillNode.get("code").isNull() ? skillNode.get("code").asString() : sId;
@@ -118,7 +114,6 @@ public class Neo4jTargetRoleGraphAdapter implements TargetRoleGraphPort {
                         sId,
                         sCode,
                         sName,
-                        macroCode,
                         knowledge,
                         SkillStatus.fromString(reqStatus),
                         skillLevel));

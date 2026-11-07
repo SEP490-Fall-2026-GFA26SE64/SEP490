@@ -17,15 +17,13 @@ class MicroSkillDomainTest {
                 "org-1",
                 "spring_security",
                 "Spring Security",
-                "Authentication and authorization in Spring",
-                "KNOWLEDGE");
+                "Authentication and authorization in Spring");
 
         assertNotNull(skill.getId());
         assertEquals("org-1", skill.getOrganizationId());
         assertEquals("SPRING_SECURITY", skill.getCode());
         assertEquals("Spring Security", skill.getName());
         assertEquals("Authentication and authorization in Spring", skill.getDescription());
-        assertEquals("KNOWLEDGE", skill.getMacroCompetencyCode());
         assertEquals(SkillStatus.ACTIVE, skill.getStatus());
         assertNotNull(skill.getCreatedAt());
         assertNotNull(skill.getUpdatedAt());
@@ -35,12 +33,12 @@ class MicroSkillDomainTest {
     @DisplayName("createNew rejects blank required fields")
     void createNewRejectsBlankFields() {
         assertThrows(IllegalArgumentException.class, () ->
-                MicroSkill.createNew("", "CODE", "Name", "Desc", "KNOWLEDGE"));
+                MicroSkill.createNew("", "CODE", "Name", "Desc"));
 
         assertThrows(IllegalArgumentException.class, () ->
-                MicroSkill.createNew("org-1", "", "Name", "Desc", "KNOWLEDGE"));
+                MicroSkill.createNew("org-1", "", "Name", "Desc"));
 
         assertThrows(IllegalArgumentException.class, () ->
-                MicroSkill.createNew("org-1", "CODE", "   ", "Desc", "KNOWLEDGE"));
+                MicroSkill.createNew("org-1", "CODE", "   ", "Desc"));
     }
 }

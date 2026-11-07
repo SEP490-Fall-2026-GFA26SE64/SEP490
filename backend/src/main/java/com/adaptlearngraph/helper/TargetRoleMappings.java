@@ -11,7 +11,7 @@ import org.modelmapper.ModelMapper;
 /** TypeMaps for the organization target-role management API. */
 public final class TargetRoleMappings implements ModelMapperRegistrar {
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
-    private static final List<String> DEFAULT_LEVELS = List.of("Junior", "Middle", "Senior");
+    private static final List<String> DEFAULT_LEVELS = List.of("Senior", "Middle", "Junior");
 
     @Override
     public void register(ModelMapper mapper) {

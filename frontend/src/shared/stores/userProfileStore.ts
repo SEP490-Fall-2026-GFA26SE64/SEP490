@@ -91,11 +91,11 @@ const DEFAULT_PROFILES: Record<
     roleTitle: 'Senior AI & Knowledge Architect',
     portal: 'Expert Authoring Portal',
     department: 'Cognitive Architecture & Curricula',
-    scope: 'Macro Competencies, Micro-skills & Question Bank',
+    scope: 'Competencies, Micro-skills & Question Bank',
     status: '100% Curricular Integrity Verified',
     details: [
       { label: 'Department', value: 'Cognitive Architecture & Curricula' },
-      { label: 'Authoring Scope', value: 'Macro Competencies, Micro-skills & Question Bank' },
+      { label: 'Authoring Scope', value: 'Competencies, Micro-skills & Question Bank' },
       { label: 'Curation Status', value: '100% Curricular Integrity Verified' },
     ],
   },

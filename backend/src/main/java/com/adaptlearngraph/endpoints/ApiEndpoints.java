@@ -21,7 +21,6 @@ public final class ApiEndpoints {
     public static final String IRT_ADMINISTRATION = API_V1 + "/admin/irt/banks/{bankId}/models/{modelId}";
     public static final String LEARNING_CONTENT = API_V1 + "/module-management";
     public static final String LEARNING_MODULE = API_V1 + "/organizations/{organizationId}/modules";
-    public static final String MACRO_COMPETENCY = API_V1 + "/organizations/{organizationId}/macro-competencies";
     public static final String MICRO_SKILL = API_V1 + "/organizations/{organizationId}/micro-skills";
     public static final String MODULE_AUTHORING = API_V1 + "/module-management";
     public static final String ORGANIZATION_TARGET_ROLE = API_V1 + "/organizations/{organizationId}/target-roles";

@@ -19,11 +19,11 @@ function OwnedRoleBaselineGate({ view }: { view: RoleFlowView }) {
   const { t } = useTranslation(), tr = (key: string) => t(`roleFlow.${key}`)
   const state = useBaselineAttempt()
   const progress = view.progress
-  if (!view.selection && progress.state !== 'RESUME') return <Text variant="body-sm">{tr('selectFirst')}</Text>
+  const stateKey = !view.selection && progress.state !== 'RESUME' ? 'SELECT_ROLE' : progress.state
   return <section aria-label={t('upskillingUi.roleSelection')} className="space-y-3 border-t border-border bg-muted/20 px-5 py-4">
     <div className="flex flex-wrap items-center justify-between gap-3">
       <div className="min-w-0 flex-1 space-y-2">
-        <Text variant="body-sm" role="status">{tr(`states.${progress.state}`)}</Text>
+        <Text variant="body-sm" role="status">{tr(`states.${stateKey}`)}</Text>
         <div className="flex flex-wrap gap-2">
           {progress.requiredCount > 0 && <Badge variant="outline">{tr('coverage')}: {progress.coveredCount}/{progress.requiredCount}</Badge>}
           {progress.baselineVersion !== null && <Text variant="caption">{tr('baselineVersion')}: {progress.baselineVersion}</Text>}

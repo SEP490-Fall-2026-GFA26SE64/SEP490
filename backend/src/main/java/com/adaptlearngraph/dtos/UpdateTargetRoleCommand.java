@@ -21,7 +21,27 @@ public record UpdateTargetRoleCommand(
         String rejectionReason,
         List<String> levels,
         String levelCompetencies,
-        List<String> competencyIds) {
+        List<String> competencyIds,
+        java.util.Map<String, String> levelDurations) {
+
+    public UpdateTargetRoleCommand(
+            String organizationId,
+            TargetRoleId roleId,
+            String name,
+            String familyCode,
+            RoleTrack track,
+            String assignedExpertId,
+            String description,
+            List<String> responsibilities,
+            RoleStatus status,
+            String version,
+            String skillTargets,
+            String rejectionReason,
+            List<String> levels,
+            String levelCompetencies,
+            List<String> competencyIds) {
+        this(organizationId, roleId, name, familyCode, track, assignedExpertId, description, responsibilities, status, version, skillTargets, rejectionReason, levels, levelCompetencies, competencyIds, null);
+    }
 
     public UpdateTargetRoleCommand(
             String organizationId,
@@ -37,7 +57,7 @@ public record UpdateTargetRoleCommand(
             String skillTargets,
             String rejectionReason,
             List<String> levels) {
-        this(organizationId, roleId, name, familyCode, track, assignedExpertId, description, responsibilities, status, version, skillTargets, rejectionReason, levels, null, null);
+        this(organizationId, roleId, name, familyCode, track, assignedExpertId, description, responsibilities, status, version, skillTargets, rejectionReason, levels, null, null, null);
     }
 
     public UpdateTargetRoleCommand(

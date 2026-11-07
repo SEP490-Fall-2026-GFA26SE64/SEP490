@@ -37,7 +37,6 @@ describe('ActiveSkillSummary', () => {
         trackedSkills: [
           {
             skillName: 'Python Async',
-            macroCode: 'PROGRAMMING',
             level: 'Advanced',
             assignedAt: '2026-09-01',
           },
@@ -46,7 +45,6 @@ describe('ActiveSkillSummary', () => {
           {
             skillKey: 'python-async',
             skillName: 'Python Async',
-            macroCode: 'PROGRAMMING',
             completedAt: '2026-09-10',
             masteryScore: 92,
             status: 'completed',
@@ -70,13 +68,11 @@ describe('ActiveSkillSummary', () => {
         trackedSkills: [
           {
             skillName: 'Python Async',
-            macroCode: 'PROGRAMMING',
             level: 'Advanced',
             assignedAt: '2026-09-01',
           },
           {
             skillName: 'Docker Orchestration',
-            macroCode: 'DEVOPS',
             level: 'Intermediate',
             assignedAt: '2026-09-05',
           },

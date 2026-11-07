@@ -95,6 +95,12 @@ class TargetRoleLifecycleTest {
 
         TargetRole published = rejected.publish();
         assertEquals(RoleStatus.ACTIVE, published.getStatus());
+
+        TargetRole unpublished = published.unpublish();
+        assertEquals(RoleStatus.UNPUBLISHED, unpublished.getStatus());
+
+        TargetRole republished = unpublished.publish();
+        assertEquals(RoleStatus.ACTIVE, republished.getStatus());
     }
 
     @Test

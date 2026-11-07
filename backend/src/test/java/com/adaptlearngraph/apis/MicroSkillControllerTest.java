@@ -80,7 +80,6 @@ class MicroSkillControllerTest {
                 "GRAPH_DATABASE",
                 "Graph Database",
                 "Neo4j and graph concepts",
-                "KNOWLEDGE",
                 SkillStatus.ACTIVE,
                 Instant.now(),
                 Instant.now());
@@ -91,8 +90,7 @@ class MicroSkillControllerTest {
         CreateMicroSkillRequest request = new CreateMicroSkillRequest(
                 "GRAPH_DATABASE",
                 "Graph Database",
-                "Neo4j and graph concepts",
-                "KNOWLEDGE");
+                "Neo4j and graph concepts");
 
         mockMvc.perform(post("/api/v1/organizations/org-1/micro-skills")
                         .with(csrf())
@@ -103,7 +101,6 @@ class MicroSkillControllerTest {
                 .andExpect(jsonPath("$.id").value(skillId.toString()))
                 .andExpect(jsonPath("$.code").value("GRAPH_DATABASE"))
                 .andExpect(jsonPath("$.name").value("Graph Database"))
-                .andExpect(jsonPath("$.macroCompetencyCode").value("KNOWLEDGE"))
                 .andExpect(jsonPath("$.status").value("ACTIVE"));
     }
 
@@ -117,8 +114,7 @@ class MicroSkillControllerTest {
         CreateMicroSkillRequest request = new CreateMicroSkillRequest(
                 "GRAPH_DATABASE",
                 "Graph Database",
-                "Neo4j and graph concepts",
-                "KNOWLEDGE");
+                "Neo4j and graph concepts");
 
         mockMvc.perform(post("/api/v1/organizations/org-1/micro-skills")
                         .with(csrf())
@@ -137,8 +133,7 @@ class MicroSkillControllerTest {
         CreateMicroSkillRequest request = new CreateMicroSkillRequest(
                 "GRAPH_DATABASE",
                 "Graph Database",
-                "Neo4j and graph concepts",
-                "KNOWLEDGE");
+                "Neo4j and graph concepts");
 
         mockMvc.perform(post("/api/v1/organizations/org-1/micro-skills")
                         .with(csrf())
@@ -159,20 +154,18 @@ class MicroSkillControllerTest {
                 "JAVA_CORE",
                 "Java Core",
                 "Core Java fundamentals",
-                "KNOWLEDGE",
                 SkillStatus.ACTIVE,
                 Instant.now(),
                 Instant.now());
 
-        when(getMicroSkillsUseCase.searchMicroSkills(eq("org-1"), any(), any(), any())).thenReturn(List.of(skill));
+        when(getMicroSkillsUseCase.searchMicroSkills(eq("org-1"), any(), any())).thenReturn(List.of(skill));
 
         mockMvc.perform(get("/api/v1/organizations/org-1/micro-skills")
                         .with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].code").value("JAVA_CORE"))
                 .andExpect(jsonPath("$[0].name").value("Java Core"))
-                .andExpect(jsonPath("$[0].description").value("Core Java fundamentals"))
-                .andExpect(jsonPath("$[0].macroCompetencyCode").value("KNOWLEDGE"));
+                .andExpect(jsonPath("$[0].description").value("Core Java fundamentals"));
     }
 
     @Test
@@ -186,7 +179,6 @@ class MicroSkillControllerTest {
                 "JAVA_CORE",
                 "Java Core",
                 "Core Java fundamentals",
-                "KNOWLEDGE",
                 SkillStatus.ACTIVE,
                 Instant.now(),
                 Instant.now());
@@ -211,7 +203,6 @@ class MicroSkillControllerTest {
                 "JAVA_CORE",
                 "Java Core Advanced",
                 "Updated details",
-                "INNOVATION",
                 SkillStatus.ACTIVE,
                 Instant.now(),
                 Instant.now());
@@ -221,7 +212,6 @@ class MicroSkillControllerTest {
         UpdateMicroSkillRequest request = new UpdateMicroSkillRequest(
                 "Java Core Advanced",
                 "Updated details",
-                "INNOVATION",
                 SkillStatusDto.ACTIVE);
 
         mockMvc.perform(put("/api/v1/organizations/org-1/micro-skills/" + skillId)
@@ -230,8 +220,7 @@ class MicroSkillControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.name").value("Java Core Advanced"))
-                .andExpect(jsonPath("$.macroCompetencyCode").value("INNOVATION"));
+                .andExpect(jsonPath("$.name").value("Java Core Advanced"));
     }
 
     @Test

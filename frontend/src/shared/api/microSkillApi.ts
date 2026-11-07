@@ -19,48 +19,35 @@ export interface MicroSkillDto extends Partial<SkillProvisionPayload> {
   code: string
   name: string
   description?: string
-  macroCompetencyCode?: string
   status?: string
   createdAt?: string
   updatedAt?: string
   version?: string | null
 }
 
-export interface MacroCompetencyDto {
-  id: string
-  code: string
-  name: string
-  description?: string
-  status?: string
-  createdAt?: string
-  updatedAt?: string
-}
-
 export interface CreateMicroSkillPayload extends Partial<SkillProvisionPayload> {
   code: string
   name: string
   description?: string
-  macroCompetencyCode?: string
 }
 
 export interface UpdateMicroSkillPayload extends Partial<SkillProvisionPayload> {
   name: string
   description?: string
-  macroCompetencyCode?: string
   status?: string
   expectedVersion?: string | null
 }
 
 export async function fetchMicroSkills(organizationId: string, q?: string): Promise<MicroSkillDto[]> {
-  const url = new URL(`/api/v1/organizations/${encodeURIComponent(normalizeOrg(organizationId))}/micro-skills`, window.location.origin)
-  if (q) {
-    url.searchParams.set('q', q)
-  }
-  const res = await fetch(url.toString(), {
-    headers: {
-      Accept: 'application/json',
+  const query = q ? `?q=${encodeURIComponent(q)}` : ''
+  const res = await fetch(
+    `/api/v1/organizations/${encodeURIComponent(normalizeOrg(organizationId))}/micro-skills${query}`,
+    {
+      headers: {
+        Accept: 'application/json',
+      },
     },
-  })
+  )
   if (!res.ok) {
     throw new Error(`Failed to fetch micro-skills: ${res.statusText}`)
   }
@@ -128,16 +115,4 @@ export async function deleteMicroSkill(organizationId: string, skillId: string):
     const message = errorData?.message || `Failed to delete micro-skill (HTTP ${res.status})`
     throw new Error(message)
   }
-}
-
-export async function fetchMacroCompetencies(organizationId: string): Promise<MacroCompetencyDto[]> {
-  const res = await fetch(`/api/v1/organizations/${encodeURIComponent(normalizeOrg(organizationId))}/macro-competencies`, {
-    headers: {
-      Accept: 'application/json',
-    },
-  })
-  if (!res.ok) {
-    throw new Error(`Failed to fetch macro-competencies: ${res.statusText}`)
-  }
-  return res.json()
 }

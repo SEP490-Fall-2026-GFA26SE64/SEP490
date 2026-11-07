@@ -6,7 +6,7 @@ import { bankRequest, type BankView, type BankSession } from '../../../api/quest
 vi.mock('../../../layouts/WorkspaceLayout', () => ({ WorkspaceLayout: ({ children }: { children: ReactNode }) => <>{children}</> }))
 vi.mock('../../../i18n/LanguageContext', () => ({ useTranslation: () => ({ language: 'en' }) }))
 vi.mock('../../../api/questionBankApi', () => ({ bankRequest: vi.fn() }))
-const body = { prompt: 'Persisted question', options: ['A1', 'B1', 'C1', 'D1'], correctAnswer: 0, skillId: 'skill', skillName: 'SQL', difficulty: 'EASY', explanation: 'Reason' }
+const body = { prompt: 'Persisted question', options: ['A1', 'B1', 'C1', 'D1'], correctAnswer: 0, skillId: 'skill', skillName: 'SQL', difficulty: 'EASY', explanation: 'Reason', knowledgeLevel: 'FOUNDATION', outcomeCode: 'SQL-01', mandatory: false }
 let bank: BankView, session: BankSession
 beforeEach(() => {
  session = { maxImportRows: 500, maxImportBytes: 10485760, actor: { id: 'expert', organization: 'org', role: 'DOMAIN_EXPERT' }, skills: [{ id: 'skill', name: 'SQL' }], experts: [{ id: 'expert', name: 'Alex' }], people: [{ id: 'expert', name: 'Alex' }] }

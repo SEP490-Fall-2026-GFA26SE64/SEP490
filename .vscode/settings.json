@@ -1,0 +1,11 @@
+{
+  "terminal.integrated.showOnStartup": "never",
+  "terminal.integrated.focusAfterRun": "none",
+  "workbench.panel.opensMaximized": "never",
+  "task.presentation.reveal": "never",
+  "task.presentation.focus": false,
+  "git.path": "C:\\Program Files\\Git\\bin\\git.exe",
+  "git.terminalAuthentication": false,
+  "git.useIntegratedAskPass": true
+}
+

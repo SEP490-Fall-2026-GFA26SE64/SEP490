@@ -21,7 +21,7 @@ it('shows unmet learning prerequisite and offers an optional module before asses
   expect(readSkillEligibility).toHaveBeenCalledWith('skill', expect.any(AbortSignal))
 })
 it('keeps optional learning after one module completes and displays original completion provenance', async () => {
-  vi.mocked(readSkillEligibility).mockResolvedValue({ skillId: 'skill', eligible: true, reason: 'MODULE_COMPLETED', qualifyingCompletion: { skillId: 'skill', moduleId: 'old-module', revision: 2, contentVersion: 'old', completedAt: '2026-11-01T00:00:00Z' } })
+  vi.mocked(readSkillEligibility).mockResolvedValue({ skillId: 'skill', eligible: true, reason: 'MODULE_COMPLETED', qualifyingCompletion: { skillId: 'skill', moduleId: 'old-module', revision: 2, contentVersion: 'old', completedAt: '2026-11-01T00:00:00Z', knowledgeLevel: 'FOUNDATION', skillVersion: '1', outcomeCodes: [], skillName: 'Skill Name' } })
   mount(); expect(await screen.findByText('Learning prerequisite met for Skill Assessment')).toBeTruthy()
   expect(screen.getByText(/old-module/)).toBeTruthy();expect(screen.getByRole('button', { name: 'Study module' })).toBeTruthy()
 })

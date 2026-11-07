@@ -37,7 +37,10 @@ public final class CurrentRoleFlowController {
         return failure(new Failure(switch(e.code()){case UNAUTHENTICATED->401;case FORBIDDEN->403;default->503;},e.code().name()));
     }
     @ExceptionHandler({org.springframework.dao.DataAccessException.class,IllegalStateException.class})
-    ResponseEntity<Map<String,String>> unavailable(Exception e){return failure(new Failure(503,"DEPENDENCY_UNAVAILABLE"));}
+    ResponseEntity<Map<String,String>> unavailable(Exception e){
+        e.printStackTrace();
+        return failure(new Failure(503,"DEPENDENCY_UNAVAILABLE"));
+    }
     @ExceptionHandler({IllegalArgumentException.class,org.springframework.web.bind.MissingRequestHeaderException.class})
     ResponseEntity<Map<String,String>> invalid(Exception e){return failure(new Failure(400,"INVALID_REQUEST"));}
     private <T>ResponseEntity<T> ok(T value){return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(value);}

@@ -15,7 +15,7 @@ import { Send, Target, ListChecks } from 'lucide-react'
 import { Badge } from '../../../shared/components/ui/Badge'
 import { Heading } from '../../../shared/components/typography/Heading'
 
-export function RequirementGapDialog({ role, initialLevelId, scope, authorized, onClose, onBaseline, fixedLevel = false }: { role: CurrentRole; initialLevelId?: string | null; scope: string; authorized: boolean; onClose: () => void; onBaseline: (levelId: string) => void; fixedLevel?: boolean }) {
+export function RequirementGapDialog({ role, initialLevelId, scope, authorized, onClose, onBaseline, fixedLevel = false, minAllowedRank }: { role: CurrentRole; initialLevelId?: string | null; scope: string; authorized: boolean; onClose: () => void; onBaseline: (levelId: string) => void; fixedLevel?: boolean; minAllowedRank?: number }) {
   const { t } = useTranslation(), navigate = useNavigate(), client = useQueryClient()
   const [levelId, setLevelId] = useState(initialLevelId ?? ''), [pending, setPending] = useState<PendingPathwayCommand | null>(null)
   const [busy, setBusy] = useState(false), [error, setError] = useState<PathwayError | null>(null), lock = useRef(false), committed = useRef(false)
@@ -39,7 +39,7 @@ export function RequirementGapDialog({ role, initialLevelId, scope, authorized, 
   }, [pending])
   return <Dialog open size="wide" className={fixedLevel ? 'max-w-2xl border-primary/20' : 'border-primary/20'} onOpenChange={open => { if (!open && !blocked) onClose() }} ariaLabel={t(fixedLevel ? 'rulePathway.request' : 'initialPathway.gapTitle')}>
     <DialogHeader className="-mx-6 -mt-6 border-b border-primary/20 bg-secondary/50 px-6 py-5 pr-14 sm:-mx-7 sm:-mt-7 sm:px-7 sm:pr-14"><DialogTitle><Send size={20} className="shrink-0 text-primary" aria-hidden="true" />{t(fixedLevel ? 'rulePathway.request' : 'initialPathway.gapTitle')}</DialogTitle><DialogDescription className="text-body-sm">{t(fixedLevel ? 'rulePathway.requestHelp' : 'rulePathway.previewHelp')}</DialogDescription></DialogHeader>
-    <DialogBody className={fixedLevel ? 'space-y-4' : 'grid items-start gap-6 lg:grid-cols-[16rem_minmax(0,1fr)]'}>{!fixedLevel && <div className="space-y-4"><Text className="break-words font-semibold">{role.name}</Text><RoleLevelPicker levels={role.levels} value={levelId} disabled={blocked || !authorized} onChange={value => { setLevelId(value); setError(null) }} /></div>}<div className="min-w-0 space-y-4">
+    <DialogBody className={fixedLevel ? 'space-y-4' : 'grid items-start gap-6 lg:grid-cols-[16rem_minmax(0,1fr)]'}>{!fixedLevel && <div className="space-y-4"><Text className="break-words font-semibold">{role.name}</Text><RoleLevelPicker levels={role.levels} value={levelId} disabled={blocked || !authorized} onChange={value => { setLevelId(value); setError(null) }} minAllowedRank={minAllowedRank} /></div>}<div className="min-w-0 space-y-4">
       {selected && query.isPending && <LoadingCard label={t('initialPathway.loading')} />}
       {(error || query.error || !authorized) && <InitialPathwayFeedback error={error ?? query.error ?? new PathwayError('FORBIDDEN', 403)} onRetry={() => { if (pending) void confirm(); else void query.refetch() }} />}
       {!selected && levelId && <Text>{t('roleFlow.selectFirst')}</Text>}

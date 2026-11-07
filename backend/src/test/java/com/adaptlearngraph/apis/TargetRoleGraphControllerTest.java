@@ -38,8 +38,8 @@ class TargetRoleGraphControllerTest {
     @DisplayName("REQ-018-F01: GET target role graph returns 200 with all architectural fields")
     void getTargetRoleGraphReturns200() throws Exception {
         Instant now = Instant.now();
-        RoleGraphSkill s1 = new RoleGraphSkill("s1", "JAVA_CORE", "Java Core", "macro-1", 0.70, SkillStatus.ACTIVE);
-        RoleGraphSkill s2 = new RoleGraphSkill("s2", "SPRING_BOOT", "Spring Boot", "macro-1", 0.80, SkillStatus.ACTIVE);
+        RoleGraphSkill s1 = new RoleGraphSkill("s1", "JAVA_CORE", "Java Core", 0.70, SkillStatus.ACTIVE);
+        RoleGraphSkill s2 = new RoleGraphSkill("s2", "SPRING_BOOT", "Spring Boot", 0.80, SkillStatus.ACTIVE);
         PrerequisiteEdge edge = new PrerequisiteEdge("s1", "JAVA_CORE", "Java Core", "s2", "SPRING_BOOT", "Spring Boot", 0.60, SkillStatus.ACTIVE, now, now);
 
         TargetRoleGraph graph = new TargetRoleGraph(

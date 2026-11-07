@@ -59,7 +59,17 @@ public final class SubscriptionDto {
                                  long revision,
                                  String departmentName,
                                  @JsonProperty("jobPositionName") String occupationName,
-                                 boolean accountActive) {
+                                 boolean accountActive,
+                                 String targetRoleId,
+                                 String targetRoleCode,
+                                 String targetRoleName,
+                                 String targetRoleLevel) {
+        public MemberResponse(UUID membershipId, UUID accountId, String fullName, String email, boolean active,
+                              Set<String> roles, UUID departmentId, UUID occupationReferenceId,
+                              long revision, String departmentName, String occupationName, boolean accountActive) {
+            this(membershipId, accountId, fullName, email, active, roles, departmentId, occupationReferenceId,
+                    revision, departmentName, occupationName, accountActive, null, null, null, null);
+        }
         public UUID jobPositionReferenceId() { return occupationReferenceId; }
         public String jobPositionName() { return occupationName; }
     }
@@ -77,7 +87,16 @@ public final class SubscriptionDto {
                                        @JsonAlias("jobPositionReferenceId") UUID occupationReferenceId,
                                        long revision,
                                        String departmentName,
-                                       @JsonAlias("jobPositionName") String occupationName) {
+                                       @JsonAlias("jobPositionName") String occupationName,
+                                       String targetRoleId,
+                                       String targetRoleCode,
+                                       String targetRoleName,
+                                       String targetRoleLevel) {
+        public MemberProfileRequest(String fullName, Set<String> roles, UUID departmentId, UUID occupationReferenceId,
+                                    long revision, String departmentName, String occupationName) {
+            this(fullName, roles, departmentId, occupationReferenceId, revision, departmentName, occupationName,
+                    null, null, null, null);
+        }
         public UUID jobPositionReferenceId() { return occupationReferenceId; }
         public String jobPositionName() { return occupationName; }
     }

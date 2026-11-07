@@ -11,6 +11,6 @@ export function roleRequirements(targets: SkillTargetConfig[]) {
   return targets.map(target => {
     if (!target.skillId || !target.level || !validRequiredKnowledge(target.requiredKnowledgeLevels)) throw new Error('Select explicit knowledge levels for every skill and Role level before saving.')
     return { skillId: target.skillId, skillCode: target.skillCode, skillName: target.skillName, level: target.level,
-      macroCompetencyCode: target.macroCompetencyCode, requiredKnowledgeLevels: [...target.requiredKnowledgeLevels!].sort() }
+      requiredKnowledgeLevels: [...target.requiredKnowledgeLevels!].sort() }
   })
 }

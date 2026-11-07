@@ -68,7 +68,6 @@ export interface SkillNodeData {
   skillId: string
   code: string
   name: string
-  macroCompetencyCode: string
   requiredKnowledgeLevels: string[]
   status: string
   level?: string
@@ -173,7 +172,7 @@ export function TargetRoleGraphModal({
       ? propLevels
       : currentRole?.levels && currentRole.levels.length > 0
       ? currentRole.levels
-      : ['Junior', 'Middle', 'Senior']
+      : ['Senior', 'Middle', 'Junior']
 
   const handleSearchFocus = React.useCallback(() => {
     if (!networkRef.current || !searchQuery.trim()) return
@@ -234,13 +233,6 @@ export function TargetRoleGraphModal({
       if (rawTargets.length > 0) {
         requiredSkills = rawTargets.map((st: SkillTargetConfig, sIdx: number) => {
           const rawSkillId = st.skillId || st.skillCode || `skill-${sIdx}`
-          const matchedC = fetchedComps.find(
-            (c) =>
-              c.skillIds?.includes(rawSkillId) ||
-              c.skillIds?.includes(st.skillCode || '') ||
-              c.code === rawSkillId ||
-              c.id === rawSkillId
-          )
           const backendSkill = backendData?.requiredSkills?.find(
             (bs) => bs.skillId === rawSkillId || (st.skillCode && bs.skillCode === st.skillCode)
           )
@@ -248,7 +240,6 @@ export function TargetRoleGraphModal({
             skillId: rawSkillId,
             skillCode: st.skillCode || rawSkillId,
             skillName: st.skillName || backendSkill?.skillName || rawSkillId,
-            macroCompetencyCode: backendSkill?.macroCompetencyCode || matchedC?.id || matchedC?.code || 'KNOWLEDGE',
             requiredKnowledgeLevels: st.requiredKnowledgeLevels ?? [],
             status: backendSkill?.status || 'ACTIVE',
             level: st.level || backendSkill?.level,
@@ -356,7 +347,7 @@ export function TargetRoleGraphModal({
         ? propLevels
         : currentRole?.levels && currentRole.levels.length > 0
         ? currentRole.levels
-        : ['Junior', 'Middle', 'Senior']
+        : ['Senior', 'Middle', 'Junior']
 
     const isLevelFiltered = selectedLevelFilter !== 'ALL' && selectedLevelFilter !== ''
     const displayedLevels = isLevelFiltered
@@ -450,8 +441,8 @@ export function TargetRoleGraphModal({
       if (isLevelFiltered) {
         return false
       }
-      // 2. Fallback: only include the macro-competencies directly tagged on the required skills
-      if (reqSkills.some((s) => s.macroCompetencyCode === c.code || s.macroCompetencyCode === c.id)) {
+      // 2. Fallback: include competencies containing required skills
+      if (reqSkills.some((s) => c.skillIds?.includes(s.skillId) || c.skillIds?.includes(s.skillCode))) {
         return true
       }
       return false
@@ -502,9 +493,7 @@ export function TargetRoleGraphModal({
           status: comp.status || 'ACTIVE',
           memberSkillCount: reqSkills.filter(
             (s) =>
-              (s.macroCompetencyCode === comp.code ||
-              s.macroCompetencyCode === comp.id ||
-              comp.skillIds?.includes(s.skillId) ||
+              (comp.skillIds?.includes(s.skillId) ||
               comp.skillIds?.includes(s.skillCode)) &&
               (!isLevelFiltered || (s.level && s.level.toLowerCase() === selectedLevelFilter.toLowerCase()))
           ).length,
@@ -585,35 +574,32 @@ export function TargetRoleGraphModal({
           skillId: skill.skillId,
           code: skill.skillCode || skill.skillId,
           name: skill.skillName,
-          macroCompetencyCode: skill.macroCompetencyCode || 'KNOWLEDGE',
           requiredKnowledgeLevels: skill.requiredKnowledgeLevels,
           status: skill.status || 'ACTIVE',
         },
       })
 
       // Directed edge: (:Competency)-[:HAS_SKILL]->(:MicroSkill)
-      const matchedComp =
-        relevantComps.find(
-          (c) =>
-            c.skillIds?.includes(skill.skillId) ||
-            c.skillIds?.includes(skill.skillCode) ||
-            (skill.macroCompetencyCode && (c.id === skill.macroCompetencyCode || c.code === skill.macroCompetencyCode))
-        ) ||
-        relevantComps.find(
-          (c) =>
-            skill.level &&
-            (currentRole?.levelCompetencies?.[skill.level]?.includes(c.id) ||
-              (c.code && currentRole?.levelCompetencies?.[skill.level]?.includes(c.code)))
-        ) ||
-        (relevantComps.length > 0 ? relevantComps[0] : null)
+      // Connect from ALL relevant competencies that contain or are mapped to this skill
+      const matchingComps = relevantComps.filter(
+        (c) =>
+          c.skillIds?.includes(skill.skillId) ||
+          c.skillIds?.includes(skill.skillCode) ||
+          (skill.level && (
+            currentRole?.levelCompetencies?.[skill.level]?.includes(c.id) ||
+            (c.code && currentRole?.levelCompetencies?.[skill.level]?.includes(c.code))
+          ))
+      )
 
-      if (matchedComp) {
-        const parentNodeId = `comp-${matchedComp.id}`
+      const compsToLink = matchingComps.length > 0 ? matchingComps : (relevantComps.length > 0 ? [relevantComps[0]] : [])
+
+      compsToLink.forEach((comp) => {
+        const parentNodeId = `comp-${comp.id}`
         addEdgeSafely({
           id: `has-skill-${parentNodeId}-${skill.skillId}`,
           from: parentNodeId,
           to: skill.skillId,
-          title: `Member skill of ${matchedComp.name} (${formatRequiredKnowledge(skill.requiredKnowledgeLevels, t)})`,
+          title: `Member skill of ${comp.name} (${formatRequiredKnowledge(skill.requiredKnowledgeLevels, t)})`,
           label: 'HAS_SKILL',
           font: { size: 8, color: '#16A34A', align: 'horizontal' },
           color: { color: '#86EFAC', highlight: '#16A34A', hover: '#15803D' },
@@ -621,7 +607,7 @@ export function TargetRoleGraphModal({
           dashes: false,
           width: 1.5,
         })
-      }
+      })
 
       // Directed edge: (:Level)-[:REQUIRES_SKILL {requiredScore}]->(:MicroSkill)
       const targetLevelNodeId = skill.level
@@ -1185,9 +1171,9 @@ export function TargetRoleGraphModal({
 
                     <div className="grid grid-cols-2 gap-2 p-2.5 rounded bg-muted/30 border border-border">
                       <div>
-                        <span className="text-[10px] text-muted-foreground block">Competency Domain</span>
+                        <span className="text-[10px] text-muted-foreground block">Status</span>
                         <Badge variant="outline" className="text-[10px] mt-0.5">
-                          {selectedNode.macroCompetencyCode}
+                          {selectedNode.status || 'ACTIVE'}
                         </Badge>
                       </div>
                       <div>

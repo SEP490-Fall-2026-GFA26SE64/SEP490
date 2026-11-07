@@ -77,7 +77,7 @@ export function TargetRoleVersionDiff({
       })
     }
     if (lvlSet.size === 0) {
-      return ['Junior', 'Middle', 'Senior']
+      return ['Senior', 'Middle', 'Junior']
     }
     return Array.from(lvlSet)
   }, [currentRole, predecessorRole])

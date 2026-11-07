@@ -5,7 +5,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.adaptlearngraph.dtos.CompetencyDto.CompetencyResponse;
 import com.adaptlearngraph.dtos.CompetencyDto.MemberSkillResponse;
 import com.adaptlearngraph.dtos.LearningModuleDto.LearningModuleResponse;
-import com.adaptlearngraph.dtos.MacroCompetencyResponse;
 import com.adaptlearngraph.dtos.MicroSkillResponse;
 import com.adaptlearngraph.dtos.JobPositionResponse;
 import com.adaptlearngraph.dtos.PrerequisiteResponse;
@@ -13,7 +12,6 @@ import com.adaptlearngraph.dtos.SystemStatusResponse;
 import com.adaptlearngraph.dtos.TargetRoleResponse;
 import com.adaptlearngraph.entities.domain.CompetencyRecord;
 import com.adaptlearngraph.entities.domain.LearningModuleRecord;
-import com.adaptlearngraph.entities.domain.MacroCompetency;
 import com.adaptlearngraph.entities.domain.MicroSkill;
 import com.adaptlearngraph.entities.domain.MicroSkillId;
 import com.adaptlearngraph.entities.domain.JobPosition;
@@ -42,10 +40,10 @@ class CatalogMappingsTest {
     @Test
     void allCatalogRegistrarsValidateTogether() {
         ModelMapper mapper = ModelMapperFactory.create(List.of(new JobPositionMappings(), new CompetencyMappings(),
-                new MacroCompetencyMappings(), new MicroSkillMappings(), new TargetRoleMappings(),
+                new MicroSkillMappings(), new TargetRoleMappings(),
                 new LearningModuleMappings(), new SystemStatusMappings()));
 
-        assertThat(mapper.getTypeMaps()).hasSizeGreaterThanOrEqualTo(9);
+        assertThat(mapper.getTypeMaps()).hasSizeGreaterThanOrEqualTo(8);
         assertThat(mapper.map(new SystemStatus("adapt-learn-graph", "1.2.3", "SCAFFOLD"), SystemStatusResponse.class))
                 .isEqualTo(new SystemStatusResponse("adapt-learn-graph", "1.2.3", "SCAFFOLD"));
     }
@@ -77,25 +75,16 @@ class CatalogMappingsTest {
     }
 
     @Test
-    void mapsMacroCompetencies() {
-        ModelMapper mapper = ModelMapperFactory.create(List.of(new MacroCompetencyMappings()));
-        var macro = new MacroCompetency("macro-1", "KNOWLEDGE", "Knowledge", "Core knowledge", "ACTIVE", CREATED, UPDATED);
-
-        assertThat(mapper.map(macro, MacroCompetencyResponse.class)).isEqualTo(new MacroCompetencyResponse("macro-1",
-                "KNOWLEDGE", "Knowledge", "Core knowledge", "ACTIVE", CREATED, UPDATED));
-    }
-
-    @Test
     void mapsMicroSkillsAndPrerequisitesOfTheirOwnOrganization() throws Exception {
         ModelMapper mapper = ModelMapperFactory.create(List.of(new MicroSkillMappings()));
         UUID skillId = UUID.randomUUID();
-        var skill = new MicroSkill(new MicroSkillId(skillId), "org-a", "java_core", "Java Core", "Basics", "knowledge",
+        var skill = new MicroSkill(new MicroSkillId(skillId), "org-a", "java_core", "Java Core", "Basics",
                 SkillStatus.DRAFT, CREATED, UPDATED);
 
         MicroSkillResponse response = mapper.map(skill, MicroSkillResponse.class);
 
         assertThat(response).isEqualTo(new MicroSkillResponse(new MicroSkillId(skillId).toString(), "org-a", "JAVA_CORE",
-                "Java Core", "Basics", "KNOWLEDGE", "DRAFT", CREATED, UPDATED));
+                "Java Core", "Basics", "DRAFT", CREATED, UPDATED));
         assertThat(json.writeValueAsString(response)).contains("\"organizationId\":\"org-a\"").doesNotContain("org-b");
 
         var edge = new PrerequisiteEdge("s1", "JAVA_CORE", "Java Core", "s2", "SPRING", "Spring", 0.6,
@@ -122,14 +111,14 @@ class CatalogMappingsTest {
         assertThat(Arrays.stream(TargetRoleResponse.class.getRecordComponents()).map(c -> c.getName()).toList())
                 .containsExactly("id", "organizationId", "code", "name", "familyCode", "track", "assignedExpertId",
                         "description", "responsibilities", "status", "version", "skillTargets", "createdAt", "updatedAt",
-                        "rejectionReason", "levels", "levelCompetencies", "competencyIds");
+                        "rejectionReason", "levels", "levelCompetencies", "competencyIds", "levelDurations");
         assertThat(json.writeValueAsString(response)).contains("\"organizationId\":\"org-a\"");
 
         var minimal = new TargetRole(new TargetRoleId(roleId), "org-a", "R2", "Role two", null, null, null, null, null,
                 null, null, "not json", CREATED, UPDATED, null, null, null, null);
         TargetRoleResponse defaults = mapper.map(minimal, TargetRoleResponse.class);
         assertThat(defaults.skillTargets()).isEmpty();
-        assertThat(defaults.levels()).containsExactly("Junior", "Middle", "Senior");
+        assertThat(defaults.levels()).containsExactly("Senior", "Middle", "Junior");
         assertThat(defaults.levelCompetencies()).isEmpty();
         assertThat(defaults.status()).isEqualTo("DRAFT");
         assertThat(defaults.track()).isEqualTo("PROFESSIONAL");

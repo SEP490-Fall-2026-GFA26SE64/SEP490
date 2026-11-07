@@ -11,8 +11,6 @@ public record UpdateMicroSkillRequest(
         @Size(max = 1000, message = "description cannot exceed 1000 characters")
         String description,
 
-        String macroCompetencyCode,
-
         SkillStatusDto status,
         String expectedVersion,
         java.util.List<String> moduleOnlyKnowledgeLevels,
@@ -20,11 +18,11 @@ public record UpdateMicroSkillRequest(
         java.util.List<String> foundationOutcomeCodes,
         java.util.List<String> intermediateOutcomeCodes,
         java.util.List<String> advancedOutcomeCodes) {
-    public UpdateMicroSkillRequest(String name,String description,String macroCompetencyCode,SkillStatusDto status) {
-        this(name,description,macroCompetencyCode,status,null,null,null,null,null,null);
+    public UpdateMicroSkillRequest(String name, String description, SkillStatusDto status) {
+        this(name, description, status, null, null, null, null, null, null);
     }
     public com.adaptlearngraph.entities.domain.SkillProvision provision() {
-        return com.adaptlearngraph.entities.domain.SkillProvision.optional(moduleOnlyKnowledgeLevels,certificateOnlyKnowledgeLevels,
-                foundationOutcomeCodes,intermediateOutcomeCodes,advancedOutcomeCodes);
+        return com.adaptlearngraph.entities.domain.SkillProvision.optional(moduleOnlyKnowledgeLevels, certificateOnlyKnowledgeLevels,
+                foundationOutcomeCodes, intermediateOutcomeCodes, advancedOutcomeCodes);
     }
 }

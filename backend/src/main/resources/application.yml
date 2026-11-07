@@ -46,6 +46,10 @@ spring:
       "[mail.smtp.connectiontimeout]": 5000
       "[mail.smtp.timeout]": 5000
       "[mail.smtp.writetimeout]": 5000
+logging:
+  level:
+    org.springframework.data.neo4j.cypher.unrecognized: ERROR
+
 registration:
   email-verification-enabled: ${EMAIL_VERIFICATION_ENABLED:true}
   mfa-enabled: ${MFA_ENABLED:true}

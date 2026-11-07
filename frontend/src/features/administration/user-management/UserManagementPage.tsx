@@ -1,5 +1,5 @@
-import { useState, useMemo } from 'react'
-import { Building2, Briefcase, Trash2, Plus, Search, Users, Mail, UserCheck, UserX, Eye, Pencil, ShieldCheck, User } from 'lucide-react'
+import { useState, useMemo, useEffect } from 'react'
+import { Building2, Briefcase, Trash2, Plus, Search, Users, Mail, UserCheck, UserX, Eye, Pencil, ShieldCheck, User, Target } from 'lucide-react'
 import { Combobox, type ComboboxOption } from '../../../shared/components/ui/Combobox'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { AdminPageLayout } from '../AdminPageLayout'
@@ -11,12 +11,20 @@ import { StatCard } from '../../../shared/components/ui/StatCard'
 import { Pagination } from '../../../shared/components/ui/Pagination'
 import { Dialog, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '../../../shared/components/ui/Dialog'
 import { useTranslation } from '../../../shared/i18n/LanguageContext'
-import { getIdentity, getMembers, getPendingActivations, getReferences, getSummary, request, updateMemberProfile,
+import { decodeJobPositionWithTargetRole, encodeJobPositionWithTargetRole, getIdentity, getMembers, getPendingActivations, getReferences, getSummary, request, updateMemberProfile,
   type Identity, type Member, type PendingActivation, type Reference } from '../../subscription/subscriptionApi'
 import { Failure, Loading, useCopy } from '../../subscription/SubscriptionFeedback'
 import { loadDepartments } from '../../../shared/stores/departmentStore'
 import { fetchDepartments, type DepartmentDto } from '../../../shared/api/departmentApi'
-import { getAvailableJobPositions } from '../../manager/data/ldManagerMockData'
+import { fetchJobPositions, type JobPositionDto } from '../../../shared/api/jobPositionApi'
+import { workspaceFetch } from '../../../shared/api/workspaceFetch'
+import {
+  getAvailableJobPositions,
+  resolveJobPositionForRole,
+  type JobPosition,
+  type TargetRoleModel,
+} from '../../manager/data/ldManagerMockData'
+import { getActiveCompany, resolveWorkspaceOrgId } from '../../../shared/stores/companyStore'
 
 const ROLES = ['EMPLOYEE', 'DOMAIN_EXPERT', 'LD_MANAGER', 'ORGANIZATION_ADMINISTRATOR'] as const
 const selectClass = 'h-10 w-full rounded-md border border-border bg-card px-3 text-body-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary'
@@ -191,26 +199,49 @@ export function resolveDepartment(
 export function resolveJobPosition(
   rawId: string | null | undefined,
   rawName: string | null | undefined,
-  jobPositions: { code: string; name: string; description?: string }[]
+  jobPositions: {
+    code: string
+    name: string
+    description?: string
+    jobPositionReferenceId?: string
+    jobPositionName?: string
+    uuid?: string
+  }[]
 ): JobPositionItem | null {
   if (!rawId && !rawName) return null
   const idLower = (rawId || '').toLowerCase().trim()
   const nameLower = (rawName || '').toLowerCase().trim()
 
   for (const jp of jobPositions) {
-    const jpUuid = toDeterministicUuid(jp.code).toLowerCase()
+    const jpCodeLower = (jp.code || '').toLowerCase().trim()
+    const jpUuid = toDeterministicUuid(jp.code || '').toLowerCase().trim()
+    const jpRefId = (jp as any).jobPositionReferenceId ? String((jp as any).jobPositionReferenceId).toLowerCase().trim() : ''
+    const itemUuid = (jp as any).uuid ? String((jp as any).uuid).toLowerCase().trim() : ''
+    const jpNameLower = (jp.name || '').toLowerCase().trim()
+    const jpFullNameLower = (jp as any).jobPositionName ? String((jp as any).jobPositionName).toLowerCase().trim() : `${jpCodeLower} - ${jpNameLower}`
+
     if (
-      jp.code.toLowerCase() === idLower ||
-      jpUuid === idLower ||
-      (nameLower && (jp.name.toLowerCase() === nameLower || `${jp.code} - ${jp.name}`.toLowerCase() === nameLower))
+      (idLower && (
+        jpCodeLower === idLower ||
+        jpUuid === idLower ||
+        (jpRefId && jpRefId === idLower) ||
+        (itemUuid && itemUuid === idLower)
+      )) ||
+      (nameLower && (
+        jpNameLower === nameLower ||
+        jpFullNameLower === nameLower ||
+        `${jpCodeLower} - ${jpNameLower}` === nameLower ||
+        (nameLower.length > 3 && jpNameLower.includes(nameLower)) ||
+        (jpNameLower.length > 3 && nameLower.includes(jpNameLower))
+      ))
     ) {
       return {
         code: jp.code,
         name: jp.name,
         description: jp.description,
-        jobPositionReferenceId: jp.code,
-        jobPositionName: `${jp.code} - ${jp.name}`,
-        uuid: jpUuid,
+        jobPositionReferenceId: (jp as any).jobPositionReferenceId || jp.code,
+        jobPositionName: (jp as any).jobPositionName || `${jp.code} - ${jp.name}`,
+        uuid: itemUuid || jpUuid,
       }
     }
   }
@@ -228,6 +259,61 @@ export function resolveJobPosition(
   return null
 }
 
+export interface StoredEmployeeRoleAssignment {
+  roleId: string
+  roleCode: string
+  roleTitle: string
+  level: string
+  departmentId?: string
+  departmentName?: string
+  jobPositionCode?: string
+  jobPositionName?: string
+}
+
+export function resolveEmployeeTargetRoleAssignment(
+  member?: Pick<Member, 'email' | 'targetRoleId' | 'targetRoleCode' | 'targetRoleName' | 'targetRoleLevel' | 'departmentId' | 'departmentName' | 'jobPositionName'> | null,
+  fallbackEmail?: string | null,
+): StoredEmployeeRoleAssignment | null {
+  const decoded = decodeJobPositionWithTargetRole(member?.jobPositionName)
+  const effRoleId = member?.targetRoleId || decoded.targetRoleId
+  if (effRoleId) {
+    const rawLvl = member?.targetRoleLevel || decoded.targetRoleLevel || 'Junior'
+    const cleanLvl = rawLvl.replace(/^(?:rank|level)\s*\d+\s*:\s*/i, '').trim()
+    return {
+      roleId: effRoleId,
+      roleCode: member?.targetRoleCode || decoded.targetRoleCode || effRoleId,
+      roleTitle: member?.targetRoleName || decoded.targetRoleName || member?.targetRoleCode || effRoleId,
+      level: cleanLvl || 'Junior',
+      departmentId: member?.departmentId || undefined,
+      departmentName: member?.departmentName || undefined,
+      jobPositionName: decoded.cleanJobPositionName || member?.jobPositionName || undefined,
+    }
+  }
+  const email = (member?.email || fallbackEmail || '').toLowerCase().trim()
+  if (!email || typeof localStorage === 'undefined') return null
+  try {
+    const raw = localStorage.getItem(`alg_employee_assignment_${email}`)
+    if (!raw) return null
+    const parsed = JSON.parse(raw) as Partial<StoredEmployeeRoleAssignment>
+    const roleId = (parsed.roleId || parsed.roleCode || '').trim()
+    if (!roleId) return null
+    const rawLvl = (parsed.level || 'Junior').trim()
+    const cleanLvl = rawLvl.replace(/^(?:rank|level)\s*\d+\s*:\s*/i, '').trim()
+    return {
+      roleId,
+      roleCode: (parsed.roleCode || roleId).trim(),
+      roleTitle: (parsed.roleTitle || parsed.roleCode || roleId).trim(),
+      level: cleanLvl || 'Junior',
+      departmentId: parsed.departmentId,
+      departmentName: parsed.departmentName,
+      jobPositionCode: parsed.jobPositionCode,
+      jobPositionName: parsed.jobPositionName,
+    }
+  } catch {
+    return null
+  }
+}
+
 interface DirectoryRow {
   id: string
   fullName: string | null
@@ -239,6 +325,10 @@ interface DirectoryRow {
   departmentLeadership: string | null
   jobPositionName: string | null
   jobPositionCode: string | null
+  targetRoleId: string | null
+  targetRoleCode: string | null
+  targetRoleName: string | null
+  targetRoleLevel: string | null
   member: Member | null
   invitation: PendingActivation | null
 }
@@ -268,6 +358,10 @@ function UserDirectory({ identity, organization, principal }: { identity: Identi
     queryKey: ['live-departments', organization],
     queryFn: () => fetchDepartments(organization).catch(() => []),
   })
+  const liveJobPositionsQuery = useQuery({
+    queryKey: ['live-job-positions', organization],
+    queryFn: () => fetchJobPositions(organization).catch(() => []),
+  })
 
   const [search, setSearch] = useState('')
   const [role, setRole] = useState('')
@@ -288,6 +382,7 @@ function UserDirectory({ identity, organization, principal }: { identity: Identi
       cache.invalidateQueries({ queryKey: ['subscription-summary', principal, organization] }),
       cache.invalidateQueries({ queryKey: ['workspace-identity'] }),
       cache.invalidateQueries({ queryKey: ['live-departments', organization] }),
+      cache.invalidateQueries({ queryKey: ['live-job-positions', organization] }),
     ])
   }
 
@@ -312,7 +407,45 @@ function UserDirectory({ identity, organization, principal }: { identity: Identi
   })
 
   const localDepts = loadDepartments()
-  const localJobPositions = getAvailableJobPositions(organization)
+  const localAllJobPositions = getAvailableJobPositions(organization, true)
+
+  const allJobPositions = useMemo(() => {
+    const localByCode = new Map(localAllJobPositions.map((jp) => [jp.code, jp]))
+    const map = new Map<string, JobPosition>()
+    for (const jp of localAllJobPositions) {
+      if (jp.status !== 'inactive') {
+        map.set(jp.code, jp)
+      }
+    }
+    const live = (liveJobPositionsQuery.data || []) as JobPositionDto[]
+    for (const jp of live) {
+      const code = jp.code || jp.id || ''
+      if (code) {
+        const localMatch = localByCode.get(code)
+        const existing = map.get(code)
+        const liveStatus = String((jp as any).status || '').toLowerCase()
+        const localStatus = String(localMatch?.status || existing?.status || '').toLowerCase()
+        const statusStr =
+          liveStatus === 'inactive' || localStatus === 'inactive'
+            ? 'inactive'
+            : liveStatus || localStatus || 'active'
+        if (statusStr === 'inactive') {
+          map.delete(code)
+          continue
+        }
+        map.set(code, {
+          code,
+          name: jp.name || localMatch?.name || existing?.name || code,
+          description: (jp as any).description || localMatch?.description || existing?.description || 'Industry job position competency domain',
+          jobZone: jp.jobZone || localMatch?.jobZone || existing?.jobZone || 4,
+          profiles: localMatch?.profiles || existing?.profiles || ['DEV'],
+          assignedExpertIds: localMatch?.assignedExpertIds || existing?.assignedExpertIds || [],
+          status: 'active',
+        })
+      }
+    }
+    return Array.from(map.values()).filter((jp) => jp.status !== 'inactive')
+  }, [localAllJobPositions, liveJobPositionsQuery.data])
 
   const allDepartments: DepartmentItem[] = useMemo(() => {
     const list: DepartmentItem[] = []
@@ -323,6 +456,8 @@ function UserDirectory({ identity, organization, principal }: { identity: Identi
       if (!seen.has(ld.id) && !seen.has(ld.code)) {
         seen.add(ld.id)
         seen.add(ld.code)
+        const localMatch = localDepts.find((d) => d.id === ld.id || d.code === ld.code)
+        const mergedLinked = Array.from(new Set([...(ld.jobPositionCodes || []), ...(localMatch?.linkedJobPositions || [])]))
         list.push({
           id: ld.id,
           code: ld.code,
@@ -330,14 +465,18 @@ function UserDirectory({ identity, organization, principal }: { identity: Identi
           description: ld.description || 'Enterprise organizational business unit',
           headOfDepartment: ld.headOfDepartment,
           headEmail: ld.headEmail,
-          linkedJobPositions: ld.jobPositionCodes || [],
+          linkedJobPositions: mergedLinked,
           uuid: toDeterministicUuid(ld.id),
           uuidCode: toDeterministicUuid(ld.code),
         })
       }
     }
 
+    const resolvedOrgId = resolveWorkspaceOrgId(organization)
     for (const ld of localDepts) {
+      if (ld.organizationId && resolveWorkspaceOrgId(ld.organizationId) !== resolvedOrgId) {
+        continue
+      }
       if (!seen.has(ld.id) && !seen.has(ld.code)) {
         seen.add(ld.id)
         seen.add(ld.code)
@@ -395,7 +534,8 @@ function UserDirectory({ identity, organization, principal }: { identity: Identi
 
     for (const member of (members.data ?? [])) {
       const resolvedDept = resolveDepartment(member.departmentId, member.departmentName, allDepartments)
-      const resolvedJob = resolveJobPosition(member.jobPositionReferenceId, member.jobPositionName, localJobPositions)
+      const resolvedJob = resolveJobPosition(member.jobPositionReferenceId, member.jobPositionName, allJobPositions)
+      const resolvedAssignment = resolveEmployeeTargetRoleAssignment(member, member.email)
       list.push({
         id: member.membershipId,
         fullName: member.fullName,
@@ -407,6 +547,10 @@ function UserDirectory({ identity, organization, principal }: { identity: Identi
         departmentLeadership: resolvedDept?.headOfDepartment || null,
         jobPositionName: resolvedJob?.jobPositionName || (member.jobPositionName?.startsWith('Job Position ') ? '15-1252.00 - Software Developers' : member.jobPositionName),
         jobPositionCode: resolvedJob?.code || null,
+        targetRoleId: resolvedAssignment?.roleId || null,
+        targetRoleCode: resolvedAssignment?.roleCode || null,
+        targetRoleName: resolvedAssignment?.roleTitle || null,
+        targetRoleLevel: resolvedAssignment?.level || null,
         member,
         invitation: null,
       })
@@ -414,7 +558,20 @@ function UserDirectory({ identity, organization, principal }: { identity: Identi
 
     for (const invitation of (invitations.data ?? [])) {
       const resolvedDept = resolveDepartment(invitation.departmentId, invitation.departmentName, allDepartments)
-      const resolvedJob = resolveJobPosition(invitation.jobPositionReferenceId, invitation.jobPositionName, localJobPositions)
+      const resolvedJob = resolveJobPosition(invitation.jobPositionReferenceId, invitation.jobPositionName, allJobPositions)
+      const resolvedAssignment = resolveEmployeeTargetRoleAssignment(
+        {
+          email: invitation.email,
+          targetRoleId: invitation.targetRoleId,
+          targetRoleCode: invitation.targetRoleCode,
+          targetRoleName: invitation.targetRoleName,
+          targetRoleLevel: invitation.targetRoleLevel,
+          departmentId: invitation.departmentId,
+          departmentName: invitation.departmentName,
+          jobPositionName: invitation.jobPositionName,
+        },
+        invitation.email,
+      )
       list.push({
         id: invitation.activationId,
         fullName: invitation.fullName,
@@ -426,13 +583,17 @@ function UserDirectory({ identity, organization, principal }: { identity: Identi
         departmentLeadership: resolvedDept?.headOfDepartment || null,
         jobPositionName: resolvedJob?.jobPositionName || invitation.jobPositionName,
         jobPositionCode: resolvedJob?.code || null,
+        targetRoleId: resolvedAssignment?.roleId || null,
+        targetRoleCode: resolvedAssignment?.roleCode || null,
+        targetRoleName: resolvedAssignment?.roleTitle || null,
+        targetRoleLevel: resolvedAssignment?.level || null,
         member: null,
         invitation,
       })
     }
 
     return list
-  }, [members.data, invitations.data, allDepartments, localJobPositions])
+  }, [members.data, invitations.data, allDepartments, allJobPositions])
 
   const needle = search.trim().toLocaleLowerCase()
   const filtered = rows.filter(row => (!needle || `${row.fullName ?? ''} ${row.email}`.toLocaleLowerCase().includes(needle)) &&
@@ -586,6 +747,13 @@ function UserDirectory({ identity, organization, principal }: { identity: Identi
                                   {row.jobPositionName}
                                 </p>
                               )}
+                              {row.roles.includes('EMPLOYEE') && row.targetRoleName && (
+                                <div className="flex items-center gap-1.5 pt-0.5 flex-wrap">
+                                  <Badge variant="outline" className="border-primary/30 bg-primary/5 text-primary text-[11px] px-1.5 py-0 font-medium">
+                                    {row.targetRoleName}{row.targetRoleLevel ? ` · ${row.targetRoleLevel}` : ''}
+                                  </Badge>
+                                </div>
+                              )}
                             </div>
                           ) : null}
                         </td>
@@ -681,7 +849,7 @@ function UserDirectory({ identity, organization, principal }: { identity: Identi
           key={form.member?.membershipId ?? 'new'}
           member={form.member}
           allDepartments={allDepartments}
-          localJobPositions={localJobPositions}
+          jobPositions={allJobPositions}
           references={references.data ?? []}
           referenceError={references.error}
           referenceLoading={references.isPending}
@@ -771,19 +939,11 @@ function UserDirectory({ identity, organization, principal }: { identity: Identi
                   </Badge>
                 )}
               </div>
-              <div className="grid gap-3 sm:grid-cols-2">
-                <div>
-                  <span className="text-caption text-muted-foreground block">{c('Department Name', 'Tên phòng ban')}</span>
-                  <span className="mt-1 font-semibold text-foreground text-xs block">
-                    {detail.departmentName ?? ''}
-                  </span>
-                </div>
-                <div>
-                  <span className="text-caption text-muted-foreground block">{c('Department Leadership', 'Trưởng phòng')}</span>
-                  <span className="mt-1 text-xs text-foreground block">
-                    {detail.departmentLeadership || ''}
-                  </span>
-                </div>
+              <div>
+                <span className="text-caption text-muted-foreground block">{c('Department Name & Scope', 'Tên phòng ban & Phạm vi')}</span>
+                <span className="mt-1 font-semibold text-foreground text-xs block">
+                  {detail.departmentName ?? ''}
+                </span>
               </div>
             </div>
 
@@ -807,6 +967,43 @@ function UserDirectory({ identity, organization, principal }: { identity: Identi
                 </span>
               </div>
             </div>
+
+            {/* Card 4: Assigned Target Role & Level (for Employees) */}
+            {detail.roles.some(r => r.toUpperCase() === 'EMPLOYEE') && (
+              <div className="rounded-xl border border-border bg-card p-4 space-y-3 shadow-2xs">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 font-semibold text-foreground text-xs uppercase tracking-wider text-muted-foreground">
+                    <Target className="h-4 w-4 text-primary" />
+                    {c('Assigned Target Role & Level (Career Placement)', 'Vai trò mục tiêu & Cấp độ (Định hướng nghề nghiệp)')}
+                  </div>
+                  {detail.targetRoleCode && (
+                    <Badge variant="secondary" className="font-mono text-xs">
+                      {detail.targetRoleCode}
+                    </Badge>
+                  )}
+                </div>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div>
+                    <span className="text-caption text-muted-foreground block">{c('Target Role Title', 'Chức danh mục tiêu')}</span>
+                    <span className="mt-1 font-semibold text-foreground text-xs block">
+                      {detail.targetRoleName || c('Not assigned yet', 'Chưa phân công')}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-caption text-muted-foreground block">{c('Assigned Level', 'Cấp độ khởi điểm')}</span>
+                    <div className="mt-1">
+                      {detail.targetRoleLevel ? (
+                        <Badge variant="outline" className="border-primary/40 text-primary font-semibold text-xs">
+                          {detail.targetRoleLevel}
+                        </Badge>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">{c('Not assigned', 'Chưa gán')}</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Card 4: Invitation & Expiration Details (if applicable) */}
             {detail.invitation && (
@@ -887,7 +1084,7 @@ function UserDirectory({ identity, organization, principal }: { identity: Identi
 function UserForm({
   member,
   allDepartments,
-  localJobPositions,
+  jobPositions,
   references,
   referenceError,
   referenceLoading,
@@ -898,7 +1095,7 @@ function UserForm({
 }: {
   member: Member | null
   allDepartments: DepartmentItem[]
-  localJobPositions: { code: string; name: string; description?: string }[]
+  jobPositions: { code: string; name: string; description?: string }[]
   references: Reference[]
   referenceError: unknown
   referenceLoading: boolean
@@ -914,21 +1111,284 @@ function UserForm({
 
   // Initial resolution with deterministic UUID mapping
   const initialDeptObj = useMemo(() => {
-    if (!member?.departmentId) return null
+    if (!member?.departmentId && !member?.departmentName) return null
     return resolveDepartment(member.departmentId, member.departmentName, allDepartments)
   }, [member?.departmentId, member?.departmentName, allDepartments])
 
   const initialJobObj = useMemo(() => {
-    if (!member?.jobPositionReferenceId) return null
-    return resolveJobPosition(member.jobPositionReferenceId, member.jobPositionName, localJobPositions)
-  }, [member?.jobPositionReferenceId, member?.jobPositionName, localJobPositions])
+    if (!member?.jobPositionReferenceId && !member?.jobPositionName) return null
+    return resolveJobPosition(member.jobPositionReferenceId, member.jobPositionName, jobPositions)
+  }, [member?.jobPositionReferenceId, member?.jobPositionName, jobPositions])
 
   const [department, setDepartment] = useState(initialDeptObj?.id || member?.departmentId || '')
-  const [jobPosition, setJobPosition] = useState(initialJobObj?.code || member?.jobPositionReferenceId || '')
+  const [jobPosition, setJobPosition] = useState(initialJobObj?.jobPositionReferenceId || initialJobObj?.code || member?.jobPositionReferenceId || '')
   const [tempDeptId, setTempDeptId] = useState('')
   const [tempJobPositionId, setTempJobPositionId] = useState('')
 
+  const activeComp = getActiveCompany()
+  const liveTargetRolesQuery = useQuery({
+    queryKey: ['admin-org-target-roles', organization],
+    queryFn: async () => {
+      if (!organization) return []
+      const targetOrgId = resolveWorkspaceOrgId(organization)
+      try {
+        const res = await fetch(`/api/v1/organizations/${targetOrgId}/target-roles`, {
+          method: 'GET',
+          credentials: 'same-origin',
+          headers: {
+            'X-User-Role': 'ORGANIZATION_ADMINISTRATOR',
+          },
+        })
+        if (res.ok) {
+          const data = await res.json()
+          if (Array.isArray(data)) {
+            return data as Record<string, unknown>[]
+          }
+        }
+      } catch {
+        // fallback if restricted
+      }
+
+      // Try employee target-roles endpoint if organization call is restricted
+      try {
+        const empRes = await workspaceFetch('/api/v1/employee/target-roles', { method: 'GET' })
+        if (empRes.ok) {
+          const empData = await empRes.json()
+          if (Array.isArray(empData) && empData.length > 0) {
+            return empData as Record<string, unknown>[]
+          }
+        }
+      } catch {
+        // ignore
+      }
+
+      // Fallback to public platform catalog template when organization endpoint is restricted by role
+      try {
+        const catRes = await workspaceFetch('/api/v1/platform-catalog', { method: 'GET' })
+        if (catRes.ok) {
+          const graph = (await catRes.json()) as {
+            version?: string
+            nodes?: Array<{ id?: string; label?: string; name?: string; code?: string }>
+            edges?: Array<{ from?: string; to?: string; type?: string }>
+          }
+          const roleToJobOcc = new Map<string, string>()
+          for (const edge of graph.edges || []) {
+            if (edge.type === 'HAS_ROLE' && edge.from && edge.to) {
+              roleToJobOcc.set(edge.to, edge.from.replace(/^OCC-/, ''))
+            }
+          }
+          const platformRoles: Record<string, unknown>[] = []
+          for (const node of graph.nodes || []) {
+            if (node.label === 'TargetRole' && node.id) {
+              platformRoles.push({
+                id: node.id,
+                code: node.code || node.id,
+                name: node.name || node.code || node.id,
+                jobPositionCode: roleToJobOcc.get(node.id),
+                status: 'ACTIVE',
+                version: graph.version || '0.12.0',
+              })
+            }
+          }
+          if (platformRoles.length > 0) {
+            return platformRoles
+          }
+        }
+      } catch {
+        // ignore platform catalog fallback error
+      }
+      return []
+    },
+    enabled: Boolean(organization && enabled),
+    staleTime: 15000,
+  })
+
+  const roleMetaByCode = useMemo(() => {
+    const map: Record<string, { jobPositionCode?: string; department?: string; levelNames?: string[]; status?: string }> = {}
+    if (typeof localStorage === 'undefined') return map
+    try {
+      const resolvedOrg = resolveWorkspaceOrgId(organization)
+      const keys = Array.from(
+        new Set(
+          resolvedOrg === 'e0000000-0000-0000-0000-000000000001'
+            ? [
+                `adaptlearn_target_role_meta_${organization}`,
+                'adaptlearn_target_role_meta_e0000000-0000-0000-0000-000000000001',
+              ]
+            : [`adaptlearn_target_role_meta_${organization}`, `adaptlearn_target_role_meta_${resolvedOrg}`],
+        ),
+      )
+      for (const k of keys) {
+        const raw = localStorage.getItem(k)
+        if (!raw) continue
+        const parsed = JSON.parse(raw) as Record<string, { code?: string; jobPositionCode?: string; department?: string; levelNames?: string[]; status?: string }>
+        for (const [key, val] of Object.entries(parsed || {})) {
+          if (val) {
+            map[key.toUpperCase()] = val
+            if (val.code) map[val.code.toUpperCase()] = val
+          }
+        }
+      }
+    } catch {
+      // ignore storage errors
+    }
+    return map
+  }, [organization])
+
+  const orgTargetRoles = useMemo<TargetRoleModel[]>(() => {
+    const isSameOrgAsActiveComp = resolveWorkspaceOrgId(activeComp?.id) === resolveWorkspaceOrgId(organization)
+    const localRoles = isSameOrgAsActiveComp ? (activeComp?.targetRoles || []) : []
+    const liveRaw = liveTargetRolesQuery.data || []
+    const knownJpCodes = new Set(
+      jobPositions.map((jp) => (jp.code || '').trim().toUpperCase().replace(/^OCC-/, '').replace(/\.00$/, '')),
+    )
+    const liveMapped: TargetRoleModel[] = liveRaw.map((r) => {
+      const code = String(r.code || '').trim()
+      const codeUpper = code.toUpperCase()
+      const meta = roleMetaByCode[codeUpper] || roleMetaByCode[String(r.id || '').toUpperCase()]
+      const localMatch = localRoles.find(
+        (lr) => lr.id === String(r.id || '') || lr.code?.trim().toUpperCase() === codeUpper,
+      )
+      const rawStatus = String(r.status || '').toLowerCase()
+      const metaStatus = String(meta?.status || '').toLowerCase()
+      const localStatus = String(localMatch?.status || '').toLowerCase()
+      const mappedStatus: TargetRoleModel['status'] =
+        metaStatus === 'unpublished' || rawStatus === 'unpublished' || localStatus === 'unpublished'
+          ? 'unpublished'
+          : rawStatus === 'active' || rawStatus === 'published' || localStatus === 'published' || localStatus === 'active'
+            ? 'published'
+            : rawStatus === 'submitted'
+              ? 'submitted'
+              : rawStatus === 'sent'
+                ? 'sent'
+                : rawStatus === 'rejected'
+                  ? 'rejected'
+                  : 'draft'
+      const rawFamilyCode = r.familyCode ? String(r.familyCode).trim() : ''
+      const familyNorm = rawFamilyCode.toUpperCase().replace(/^OCC-/, '').replace(/\.00$/, '')
+      const familyAsJobPosCode =
+        rawFamilyCode && (/^\d{2}-\d{4}/.test(rawFamilyCode) || knownJpCodes.has(familyNorm))
+          ? rawFamilyCode
+          : undefined
+      return {
+        id: String(r.id || code),
+        stableId: code,
+        code,
+        title: String(r.name || r.title || localMatch?.title || code),
+        department: String(r.department || meta?.department || localMatch?.department || ''),
+        jobPositionCode:
+          (r.jobPositionCode ? String(r.jobPositionCode) : undefined) ||
+          meta?.jobPositionCode ||
+          localMatch?.jobPositionCode ||
+          familyAsJobPosCode,
+        familyCode: rawFamilyCode || localMatch?.familyCode,
+        description: String(r.description || localMatch?.description || ''),
+        version: String(r.version || localMatch?.version || '1.0'),
+        status: mappedStatus,
+        competencyIds: Array.isArray(r.competencyIds) ? (r.competencyIds as string[]) : localMatch?.competencyIds || [],
+        skillTargets: Array.isArray(r.skillTargets)
+          ? (r.skillTargets as TargetRoleModel['skillTargets'])
+          : localMatch?.skillTargets || [],
+        levels:
+          Array.isArray(r.levels) && (r.levels as string[]).length > 0
+            ? (r.levels as string[])
+            : meta?.levelNames || localMatch?.levels || ['Senior', 'Middle', 'Junior'],
+        activeEnrollments: 0,
+        updatedAt: String(r.updatedAt || localMatch?.updatedAt || '2026-01-01T00:00:00Z'),
+      }
+    })
+
+    const dedupedByCode = new Map<string, TargetRoleModel>()
+    const isLiveFromBackend = new Set<string>()
+
+    // 1. Live mapped database roles are authoritative
+    for (const role of liveMapped) {
+      const codeKey = (role.code || '').trim().toUpperCase()
+      if (!codeKey) continue
+      const meta = roleMetaByCode[codeKey] || roleMetaByCode[(role.id || '').toUpperCase()]
+      const metaStatus = meta?.status?.toLowerCase()
+      const status = (metaStatus === 'unpublished') ? 'unpublished' : role.status
+      const enriched: TargetRoleModel = {
+        ...role,
+        status,
+        jobPositionCode: role.jobPositionCode || meta?.jobPositionCode,
+        department: role.department || meta?.department || '',
+        levels:
+          role.levels && role.levels.length > 0
+            ? role.levels
+            : meta?.levelNames || ['Senior', 'Middle', 'Junior'],
+      }
+      const existing = dedupedByCode.get(codeKey)
+      const isPublishedOrUnpublished = status === 'published' || status === 'unpublished'
+      const existingIsPublishedOrUnpublished =
+        existing?.status === 'published' || existing?.status === 'unpublished'
+      if (!existing || (isPublishedOrUnpublished && !existingIsPublishedOrUnpublished)) {
+        dedupedByCode.set(codeKey, enriched)
+      }
+      isLiveFromBackend.add(codeKey)
+    }
+
+    // 2. Only fall back to local-only roles if live backend returned nothing
+    if (liveMapped.length === 0) {
+      for (const role of localRoles) {
+        const codeKey = (role.code || '').trim().toUpperCase()
+        if (!codeKey || isLiveFromBackend.has(codeKey)) continue
+        const meta = roleMetaByCode[codeKey] || roleMetaByCode[(role.id || '').toUpperCase()]
+        const metaStatus = meta?.status?.toLowerCase()
+        const status = (metaStatus === 'unpublished') ? 'unpublished' : role.status
+        const enriched: TargetRoleModel = {
+          ...role,
+          status,
+          jobPositionCode: role.jobPositionCode || meta?.jobPositionCode,
+          department: role.department || meta?.department || '',
+          levels:
+            role.levels && role.levels.length > 0
+              ? role.levels
+              : meta?.levelNames || ['Senior', 'Middle', 'Junior'],
+        }
+        const existing = dedupedByCode.get(codeKey)
+        if (!existing) {
+          dedupedByCode.set(codeKey, enriched)
+        }
+      }
+    }
+
+    return Array.from(dedupedByCode.values())
+  }, [activeComp?.targetRoles, liveTargetRolesQuery.data, roleMetaByCode])
+
+  const initialTargetRoleAssignment = useMemo(
+    () => resolveEmployeeTargetRoleAssignment(member, member?.email),
+    [member],
+  )
+  const [targetRoleId, setTargetRoleId] = useState(initialTargetRoleAssignment?.roleId || '')
+  const [targetRoleLevel, setTargetRoleLevel] = useState(initialTargetRoleAssignment?.level || '')
+
+  useEffect(() => {
+    if (!initialTargetRoleAssignment || orgTargetRoles.length === 0) return
+    const matched = orgTargetRoles.find(
+      (r) =>
+        r.id === initialTargetRoleAssignment.roleId ||
+        r.code.trim().toUpperCase() === initialTargetRoleAssignment.roleCode.trim().toUpperCase() ||
+        r.code.trim().toUpperCase() === initialTargetRoleAssignment.roleId.trim().toUpperCase() ||
+        r.title.trim().toLowerCase() === initialTargetRoleAssignment.roleTitle.trim().toLowerCase(),
+    )
+    if (matched) {
+      setTargetRoleId((prev) => {
+        if (!prev || prev === initialTargetRoleAssignment.roleId || prev === initialTargetRoleAssignment.roleCode) {
+          return matched.id
+        }
+        return prev
+      })
+      if (initialTargetRoleAssignment.level) {
+        setTargetRoleLevel((prev) => prev || initialTargetRoleAssignment.level)
+      }
+    }
+  }, [initialTargetRoleAssignment, orgTargetRoles])
+
   const employee = roles.includes('EMPLOYEE')
+  const isLdManager = roles.includes('LD_MANAGER')
+  const isExpert = roles.includes('DOMAIN_EXPERT')
+  const selectableRoles = useMemo(() => member ? ROLES : ROLES.filter(r => r !== 'ORGANIZATION_ADMINISTRATOR'), [member])
 
   const selectedDeptObj = useMemo(() => {
     if (!department) return null
@@ -953,68 +1413,268 @@ function UserForm({
     return null
   }, [department, member, allDepartments])
 
+  const availableTargetRolesForEmployee = useMemo(() => {
+    if (!department && !selectedDeptObj) return []
+
+    const normalizeOccCode = (c?: string) => (c || '').trim().toUpperCase().replace(/^OCC-/, '').replace(/\.00$/, '')
+    const getRoleOccCode = (r: TargetRoleModel): string => {
+      if (r.jobPositionCode && r.jobPositionCode.trim()) {
+        return r.jobPositionCode.trim()
+      }
+      return resolveJobPositionForRole(r, organization).code
+    }
+
+    // Strictly published only: NEVER include unpublished, inactive, or draft roles
+    const publishedRoles = orgTargetRoles.filter((r) => {
+      const s = String(r.status || '').toLowerCase()
+      return s === 'published' || s === 'active'
+    })
+
+    // 1. Resolve jobPosition code if selected
+    let targetOccNorm = ''
+    if (jobPosition) {
+      const matchedJpObj =
+        jobPositions.find(
+          (jp) =>
+            jp.code === jobPosition ||
+            jp.name.toLowerCase() === jobPosition.toLowerCase(),
+        ) ||
+        references.find((ref) => ref.jobPositionReferenceId === jobPosition)
+      targetOccNorm = normalizeOccCode(
+        (matchedJpObj && 'code' in matchedJpObj ? matchedJpObj.code : '') || jobPosition,
+      )
+    }
+
+    // 2. Resolve department's linked job positions + domain fallback
+    const deptLinkedNorm = new Set(
+      (selectedDeptObj?.linkedJobPositions || []).map((c) => normalizeOccCode(c)).filter(Boolean),
+    )
+    const deptName = (selectedDeptObj?.name || '').toLowerCase().trim()
+    const deptCode = (selectedDeptObj?.code || '').toLowerCase().trim()
+    if (deptName.includes('cognitive') || deptName.includes('software') || deptCode === 'eng-cog' || deptCode === 'eng-swe') {
+      deptLinkedNorm.add('15-1252')
+    } else if (deptName.includes('data') || deptName.includes('artificial') || deptCode === 'eng-data') {
+      deptLinkedNorm.add('15-1243')
+    } else if (deptName.includes('quality') || deptName.includes('assurance') || deptCode === 'eng-qa') {
+      deptLinkedNorm.add('15-1253')
+    } else if (deptName.includes('cloud') || deptName.includes('infrastructure') || deptCode === 'eng-cloud') {
+      deptLinkedNorm.add('15-1299.08')
+    } else if (deptName.includes('security') || deptName.includes('cyber') || deptCode === 'eng-sec') {
+      deptLinkedNorm.add('15-1212')
+    }
+
+    // Filter strictly to published roles belonging to the selected job position (if it has roles) or selected department
+    if (targetOccNorm) {
+      const jpMatched = publishedRoles.filter((r) => normalizeOccCode(getRoleOccCode(r)) === targetOccNorm)
+      if (jpMatched.length > 0) {
+        return jpMatched.sort((a, b) => a.title.localeCompare(b.title))
+      }
+    }
+
+    const deptMatched = publishedRoles.filter((r) => {
+      const occNorm = normalizeOccCode(getRoleOccCode(r))
+      const rDept = (r.department || '').toLowerCase().trim()
+      return (
+        deptLinkedNorm.has(occNorm) ||
+        (deptName && rDept && (rDept === deptName || rDept.includes(deptName) || deptName.includes(rDept)))
+      )
+    })
+
+    return deptMatched.sort((a, b) => a.title.localeCompare(b.title))
+  }, [orgTargetRoles, jobPosition, department, selectedDeptObj, organization, jobPositions, references])
+
+  const employeeTargetRoleOptions: ComboboxOption[] = useMemo(() => {
+    return availableTargetRolesForEmployee.map((r) => ({
+      value: r.id,
+      label: `${r.code} - ${r.title}`,
+    }))
+  }, [availableTargetRolesForEmployee])
+
+  const selectedEmployeeTargetRole = useMemo(() => {
+    if (!targetRoleId) return undefined
+    return (
+      orgTargetRoles.find(
+        (r) =>
+          r.id === targetRoleId ||
+          r.code.trim().toUpperCase() === targetRoleId.trim().toUpperCase(),
+      ) ||
+      (initialTargetRoleAssignment &&
+      (initialTargetRoleAssignment.roleId === targetRoleId ||
+        initialTargetRoleAssignment.roleCode === targetRoleId)
+        ? ({
+            id: initialTargetRoleAssignment.roleId,
+            stableId: initialTargetRoleAssignment.roleCode,
+            code: initialTargetRoleAssignment.roleCode,
+            title: initialTargetRoleAssignment.roleTitle,
+            department: selectedDeptObj?.name || '',
+            description: '',
+            version: '1.0',
+            status: 'published',
+            competencyIds: [],
+            skillTargets: [],
+            levels: ['Senior', 'Middle', 'Junior'],
+            activeEnrollments: 0,
+            updatedAt: '',
+          } as TargetRoleModel)
+        : undefined)
+    )
+  }, [orgTargetRoles, targetRoleId, initialTargetRoleAssignment, selectedDeptObj?.name])
+
+  const employeeRoleLevels = useMemo(() => {
+    if (selectedEmployeeTargetRole?.levels && selectedEmployeeTargetRole.levels.length > 0) {
+      return selectedEmployeeTargetRole.levels
+    }
+    return ['Senior', 'Middle', 'Junior']
+  }, [selectedEmployeeTargetRole])
+
+  const employeeLevelOptions: ComboboxOption[] = useMemo(() => {
+    // Dynamic ranking calculation:
+    // Rank 1 is always the highest level (index 0),
+    // and each subsequent level is calculated below it (index + 1)
+    return employeeRoleLevels.map((lvl, idx) => ({
+      value: lvl,
+      label: `Rank ${idx + 1}: ${lvl}`,
+    }))
+  }, [employeeRoleLevels])
+
   const availableJobPositionsForDept = useMemo(() => {
     if (!department) return []
     const linked = new Set(selectedDeptObj?.linkedJobPositions || [])
 
-    const matching = localJobPositions
+    const matching = jobPositions
       .filter(jp => linked.has(jp.code) || linked.has(jp.name) || Array.from(linked).some(lc => lc.includes(jp.code)))
       .map(jp => ({
         code: jp.code,
         name: jp.name,
         description: jp.description || 'Industry job position competency domain',
-        jobPositionReferenceId: jp.code,
+        jobPositionReferenceId: (jp as any).jobPositionReferenceId || jp.code,
         jobPositionName: `${jp.code} - ${jp.name}`,
         uuid: toDeterministicUuid(jp.code),
       }))
 
+    const deptIds = new Set<string>()
+    if (department) deptIds.add(department.toLowerCase().trim())
+    if (selectedDeptObj?.id) deptIds.add(selectedDeptObj.id.toLowerCase().trim())
+    if (selectedDeptObj?.code) deptIds.add(selectedDeptObj.code.toLowerCase().trim())
+    if (selectedDeptObj?.uuid) deptIds.add(selectedDeptObj.uuid.toLowerCase().trim())
+    if (selectedDeptObj?.uuidCode) deptIds.add(selectedDeptObj.uuidCode.toLowerCase().trim())
+    if (selectedDeptObj?.id) deptIds.add(toDeterministicUuid(selectedDeptObj.id).toLowerCase().trim())
+    if (selectedDeptObj?.code) deptIds.add(toDeterministicUuid(selectedDeptObj.code).toLowerCase().trim())
+
+    const deptNameLower = (selectedDeptObj?.name || '').toLowerCase().trim()
+
     const fromRefs = references
-      .filter(ref => ref.departmentId === department || toDeterministicUuid(selectedDeptObj?.id || '') === ref.departmentId)
-      .map(ref => {
-        const cleanName = ref.jobPositionName?.startsWith('Job Position ')
+      .filter(ref => {
+        const refDeptIdLower = (ref.departmentId || '').toLowerCase().trim()
+        const refDeptNameLower = (ref.departmentName || '').toLowerCase().trim()
+        return (refDeptIdLower && deptIds.has(refDeptIdLower)) || (deptNameLower && refDeptNameLower === deptNameLower)
+      })
+      .flatMap(ref => {
+        const rawClean = (ref.jobPositionName || '').split('|')[0].trim()
+        const cleanName = rawClean.startsWith('Job Position ')
           ? 'Software Developers'
-          : ref.jobPositionName
-        const matchedCatalog = localJobPositions.find(
+          : rawClean
+        const matchedCatalog = jobPositions.find(
           jp => jp.name.toLowerCase() === cleanName.toLowerCase() ||
                 cleanName.toLowerCase().includes(jp.name.toLowerCase()) ||
                 cleanName.includes(jp.code)
         )
+        if (jobPositions.length > 0 && !matchedCatalog) {
+          return []
+        }
         const displayCode = matchedCatalog?.code || '15-1252.00'
         const displayName = matchedCatalog?.name || cleanName
-        return {
+        return [{
           code: displayCode,
           name: displayName,
           description: matchedCatalog?.description || 'Standard industry competency profile',
-          jobPositionReferenceId: ref.jobPositionReferenceId,
+          jobPositionReferenceId: ref.jobPositionReferenceId || displayCode,
           jobPositionName: `${displayCode} - ${displayName}`,
-          uuid: toDeterministicUuid(ref.jobPositionReferenceId),
-        }
+          uuid: toDeterministicUuid(ref.jobPositionReferenceId || displayCode),
+        }]
       })
 
     const map = new Map<string, JobPositionItem>()
-    for (const r of fromRefs) map.set(r.code, r)
-    for (const m of matching) if (!map.has(m.code)) map.set(m.code, m)
+    for (const r of fromRefs) {
+      const codeKey = r.code.trim().toUpperCase()
+      if (!map.has(codeKey)) {
+        map.set(codeKey, r)
+      }
+    }
+    for (const m of matching) {
+      const codeKey = m.code.trim().toUpperCase()
+      if (!map.has(codeKey)) {
+        map.set(codeKey, m)
+      }
+    }
 
     if (map.size === 0) {
-      for (const jp of localJobPositions) {
+      for (const jp of jobPositions) {
         map.set(jp.code, {
           code: jp.code,
           name: jp.name,
           description: jp.description || 'Industry job position competency domain',
-          jobPositionReferenceId: jp.code,
+          jobPositionReferenceId: (jp as any).jobPositionReferenceId || jp.code,
           jobPositionName: `${jp.code} - ${jp.name}`,
           uuid: toDeterministicUuid(jp.code),
         })
       }
     }
     return Array.from(map.values())
-  }, [department, selectedDeptObj, localJobPositions, references])
+  }, [department, selectedDeptObj, jobPositions, references])
 
   const selectedJobPositionObj = useMemo(() => {
     if (!jobPosition) return null
+    const idLower = jobPosition.toLowerCase().trim()
+
+    // 1. Direct match in availableJobPositionsForDept by jobPositionReferenceId, code, uuid, or name
+    const directMatch = availableJobPositionsForDept.find(
+      jp =>
+        (jp.jobPositionReferenceId && jp.jobPositionReferenceId.toLowerCase().trim() === idLower) ||
+        (jp.code && jp.code.toLowerCase().trim() === idLower) ||
+        (jp.uuid && jp.uuid.toLowerCase().trim() === idLower) ||
+        (jp.name && jp.name.toLowerCase().trim() === idLower) ||
+        (jp.jobPositionName && jp.jobPositionName.toLowerCase().trim() === idLower)
+    )
+    if (directMatch) return directMatch
+
+    // 2. Resolve via resolveJobPosition in availableJobPositionsForDept
     const matched = resolveJobPosition(jobPosition, null, availableJobPositionsForDept)
     if (matched) return matched
-    if (member?.jobPositionReferenceId === jobPosition) {
+
+    // 3. Fallback to catalog jobPositions
+    const catalogMatch = resolveJobPosition(jobPosition, null, jobPositions)
+    if (catalogMatch) return catalogMatch
+
+    // 4. Fallback to references list
+    const refMatch = references.find(
+      r =>
+        (r.jobPositionReferenceId && r.jobPositionReferenceId.toLowerCase().trim() === idLower) ||
+        (r.jobPositionName && r.jobPositionName.toLowerCase().trim() === idLower)
+    )
+    if (refMatch) {
+      const cleanName = refMatch.jobPositionName?.startsWith('Job Position ')
+        ? 'Software Developers'
+        : refMatch.jobPositionName
+      const matchedCatalog = jobPositions.find(
+        jp => jp.name.toLowerCase() === cleanName.toLowerCase() ||
+              cleanName.toLowerCase().includes(jp.name.toLowerCase()) ||
+              cleanName.includes(jp.code)
+      )
+      const displayCode = matchedCatalog?.code || '15-1252.00'
+      const displayName = matchedCatalog?.name || cleanName
+      return {
+        code: displayCode,
+        name: displayName,
+        description: matchedCatalog?.description || 'Standard industry competency profile',
+        jobPositionReferenceId: refMatch.jobPositionReferenceId,
+        jobPositionName: `${displayCode} - ${displayName}`,
+        uuid: toDeterministicUuid(refMatch.jobPositionReferenceId),
+      }
+    }
+
+    // 5. Fallback to member's existing jobPositionReferenceId
+    if (member?.jobPositionReferenceId && member.jobPositionReferenceId.toLowerCase().trim() === idLower) {
       const cleanJpName = member.jobPositionName?.startsWith('Job Position ')
         ? (availableJobPositionsForDept[0]?.jobPositionName || '15-1252.00 - Software Developers')
         : (member.jobPositionName || member.jobPositionReferenceId)
@@ -1028,12 +1688,12 @@ function UserForm({
       }
     }
     return null
-  }, [jobPosition, member, availableJobPositionsForDept])
+  }, [jobPosition, member, availableJobPositionsForDept, jobPositions, references])
 
   const deptComboboxOptions: ComboboxOption[] = allDepartments.map(d => ({
     value: d.id,
     label: `${d.code} - ${d.name}`,
-    description: d.headOfDepartment ? `Head: ${d.headOfDepartment}` : (d.description || undefined),
+    description: d.description || undefined,
   }))
 
   const jobPositionComboboxOptions: ComboboxOption[] = availableJobPositionsForDept.map(jp => ({
@@ -1068,29 +1728,84 @@ function UserForm({
     setTempJobPositionId('')
   }
 
-  const effectiveDepartment = department || tempDeptId
-  const effectiveJobPosition = jobPosition || tempJobPositionId
+  const effectiveDepartment = department
+  const effectiveJobPosition = jobPosition
 
   const save = useMutation({
-    mutationFn: () => member ?
+    mutationFn: async () => {
+      const assignedRoleId = employee && selectedEmployeeTargetRole ? selectedEmployeeTargetRole.id : null
+      const assignedRoleCode = employee && selectedEmployeeTargetRole ? selectedEmployeeTargetRole.code : null
+      const assignedRoleTitle = employee && selectedEmployeeTargetRole ? selectedEmployeeTargetRole.title : null
+      const rawAssignedLevel =
+        employee && selectedEmployeeTargetRole
+          ? targetRoleLevel || employeeRoleLevels[employeeRoleLevels.length - 1]
+          : null
+      const assignedLevel = rawAssignedLevel
+        ? rawAssignedLevel.replace(/^(?:rank|level)\s*\d+\s*:\s*/i, '').trim()
+        : null
+
+      if (employee) {
+        const assignment = {
+          roleTitle: assignedRoleTitle || '',
+          roleId: assignedRoleId || '',
+          roleCode: assignedRoleCode || '',
+          level: assignedLevel || '',
+          departmentId: selectedDeptObj?.id || effectiveDepartment || '',
+          departmentName: selectedDeptObj?.name || effectiveDepartment || '',
+          jobPositionCode: selectedJobPositionObj?.code || effectiveJobPosition || '',
+          jobPositionName: selectedJobPositionObj?.jobPositionName || selectedJobPositionObj?.name || '',
+        }
+        try {
+          localStorage.setItem(
+            `alg_employee_assignment_${email.toLowerCase().trim()}`,
+            JSON.stringify(assignment),
+          )
+          if (assignedRoleId) {
+            const activeProfileKey = `alg_learner_learning_profile_${organization}`
+            const currentRaw = localStorage.getItem(activeProfileKey)
+            if (currentRaw) {
+              const parsed = JSON.parse(currentRaw)
+              parsed.currentRole = assignment.roleTitle
+              parsed.currentLevel = assignment.level
+              parsed.targetRole = assignment.roleTitle
+              parsed.targetLevel = assignment.level
+              parsed.department = assignment.departmentName
+              localStorage.setItem(activeProfileKey, JSON.stringify(parsed))
+            }
+          }
+        } catch {}
+      }
+
+      const rawJobPositionName = isLdManager
+        ? null
+        : (selectedJobPositionObj?.jobPositionName || selectedJobPositionObj?.name || null)
+
+      return member ?
       updateMemberProfile(organization, member.membershipId, {
         fullName: name,
         roles,
-        departmentId: effectiveDepartment || null,
-        jobPositionReferenceId: effectiveJobPosition || null,
+        departmentId: selectedDeptObj?.id || effectiveDepartment || null,
+        jobPositionReferenceId: isLdManager ? null : (selectedJobPositionObj?.jobPositionReferenceId || effectiveJobPosition || null),
         departmentName: selectedDeptObj?.name || null,
-        jobPositionName: selectedJobPositionObj?.jobPositionName || selectedJobPositionObj?.name || null,
+        jobPositionName: rawJobPositionName,
+        targetRoleId: assignedRoleId,
+        targetRoleCode: assignedRoleCode,
+        targetRoleName: assignedRoleTitle,
+        targetRoleLevel: assignedLevel,
         revision: member.revision,
       }) :
       request(`/api/v1/organizations/${organization}/subscription/activations`, 'POST', {
         fullName: name,
         email,
         roles,
-        departmentId: effectiveDepartment || null,
-        jobPositionReferenceId: effectiveJobPosition || null,
+        departmentId: selectedDeptObj?.id || effectiveDepartment || null,
+        jobPositionReferenceId: isLdManager ? null : (selectedJobPositionObj?.jobPositionReferenceId || effectiveJobPosition || null),
         departmentName: selectedDeptObj?.name || null,
-        jobPositionName: selectedJobPositionObj?.jobPositionName || selectedJobPositionObj?.name || null,
-      }),
+        jobPositionName: employee && assignedRoleId
+          ? encodeJobPositionWithTargetRole(rawJobPositionName, assignedRoleId, assignedRoleCode, assignedRoleTitle, assignedLevel)
+          : rawJobPositionName,
+      })
+    },
     onSuccess: () => saved(!member),
   })
 
@@ -1136,7 +1851,7 @@ function UserForm({
         <fieldset className="rounded-xl border border-border p-4 bg-card shadow-2xs">
           <legend className="px-1 text-body-sm font-semibold">{c('Organization role', 'Vai trò trong tổ chức')}</legend>
           <div className="grid gap-2 sm:grid-cols-2">
-            {ROLES.map(role => (
+            {selectableRoles.map(role => (
               <label
                 key={role}
                 className={`flex cursor-pointer items-center gap-3 rounded-lg border p-3 text-body-sm transition-colors ${
@@ -1148,7 +1863,13 @@ function UserForm({
                   name="organization-role"
                   className="h-4 w-4 accent-primary cursor-pointer"
                   checked={roles.length === 1 && roles[0] === role}
-                  onChange={() => setRoles([role])}
+                  onChange={() => {
+                    setRoles([role])
+                    if (role === 'LD_MANAGER') {
+                      setJobPosition('')
+                      setTempJobPositionId('')
+                    }
+                  }}
                 />
                 {roleName(role, c)}
               </label>
@@ -1170,7 +1891,7 @@ function UserForm({
 
           <div className="space-y-1.5">
             <label className="text-[11px] font-semibold text-foreground block">
-              {c('Select Department', 'Chọn phòng ban')} {employee && <span className="text-destructive">*</span>}
+              {c('Select Department', 'Chọn phòng ban')} {(employee || isLdManager || isExpert) && <span className="text-destructive">*</span>}
             </label>
             <div className="flex items-center gap-2">
               <div className="flex-1">
@@ -1178,7 +1899,7 @@ function UserForm({
                   size="sm"
                   clearable={false}
                   options={deptComboboxOptions}
-                  value={tempDeptId || department}
+                  value={tempDeptId}
                   onChange={(val) => {
                     setTempDeptId(val)
                   }}
@@ -1208,7 +1929,6 @@ function UserForm({
                   <tr>
                     <th className="py-2.5 px-3">{c('Code', 'Mã')}</th>
                     <th className="py-2.5 px-3">{c('Department Name & Scope', 'Tên phòng ban & Phạm vi')}</th>
-                    <th className="py-2.5 px-3">{c('Leadership', 'Trưởng phòng')}</th>
                     <th className="py-2.5 px-3 text-right">{c('Action', 'Thao tác')}</th>
                   </tr>
                 </thead>
@@ -1224,14 +1944,6 @@ function UserForm({
                       <div className="text-[11px] text-muted-foreground line-clamp-1 mt-0.5" title={selectedDeptObj.description}>
                         {selectedDeptObj.description || c('Core organizational unit', 'Đơn vị phòng ban chính')}
                       </div>
-                    </td>
-                    <td className="py-2.5 px-3 whitespace-nowrap">
-                      <div className="text-xs text-foreground font-medium">
-                        {selectedDeptObj.headOfDepartment || ''}
-                      </div>
-                      {selectedDeptObj.headEmail && (
-                        <div className="text-[11px] text-muted-foreground">{selectedDeptObj.headEmail}</div>
-                      )}
                     </td>
                     <td className="py-2.5 px-3 text-right whitespace-nowrap">
                       <Button
@@ -1263,122 +1975,196 @@ function UserForm({
           )}
         </div>
 
-        {/* SECTION 2: Assigned Job Position */}
-        <div className="p-4 rounded-xl border border-border bg-card space-y-3.5 relative shadow-2xs">
-          <div className="font-semibold text-foreground flex items-center justify-between">
-            <span className="flex items-center gap-2 text-xs font-semibold">
-              <Briefcase className="h-4 w-4 text-primary" />
-              {c('Assigned Job Position', 'Vị trí công việc đã phân công')} ({selectedJobPositionObj ? 1 : 0})
-            </span>
-            <span className="text-[11px] text-muted-foreground font-normal">
-              {selectedDeptObj
-                ? c(`Filtered by ${selectedDeptObj.name}`, `Lọc theo ${selectedDeptObj.name}`)
-                : c('Requires department assignment first', 'Cần gán phòng ban trước')}
-            </span>
-          </div>
+        {/* SECTION 2: Assigned Job Position (Hidden for L&D Manager) */}
+        {!isLdManager && (
+          <div className="p-4 rounded-xl border border-border bg-card space-y-3.5 relative shadow-2xs">
+            <div className="font-semibold text-foreground flex items-center justify-between">
+              <span className="flex items-center gap-2 text-xs font-semibold">
+                <Briefcase className="h-4 w-4 text-primary" />
+                {c('Assigned Job Position', 'Vị trí công việc đã phân công')} ({selectedJobPositionObj ? 1 : 0})
+              </span>
+              <span className="text-[11px] text-muted-foreground font-normal">
+                {selectedDeptObj
+                  ? c(`Filtered by ${selectedDeptObj.name}`, `Lọc theo ${selectedDeptObj.name}`)
+                  : c('Requires department assignment first', 'Cần gán phòng ban trước')}
+              </span>
+            </div>
 
-          <div className="space-y-1.5">
-            <label className="text-[11px] font-semibold text-foreground block">
-              {c('Job Position for', 'Vị trí công việc cho')} {selectedDeptObj?.name || c('Department', 'Phòng ban')} {employee && <span className="text-destructive">*</span>}
-            </label>
-            <div className="flex items-center gap-2">
-              <div className="flex-1">
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-semibold text-foreground block">
+                {c('Job Position for', 'Vị trí công việc cho')} {selectedDeptObj?.name || c('Department', 'Phòng ban')} {(employee || isExpert) && <span className="text-destructive">*</span>}
+              </label>
+              <div className="flex items-center gap-2">
+                <div className="flex-1">
+                  <Combobox
+                    size="sm"
+                    clearable={false}
+                    disabled={!department}
+                    options={jobPositionComboboxOptions}
+                    value={tempJobPositionId}
+                    onChange={(val) => {
+                      setTempJobPositionId(val)
+                    }}
+                    placeholder={
+                      department
+                        ? c('Search & select job position for user...', 'Tìm kiếm & chọn vị trí công việc...')
+                        : c('Select a department first to unlock job positions...', 'Vui lòng chọn phòng ban trước để mở khóa...')
+                    }
+                    searchPlaceholder={c('Search by job position code or title...', 'Tìm theo mã hoặc tên vị trí công việc...')}
+                    emptyMessage={
+                      department
+                        ? c('No connected job positions in this department', 'Không có vị trí công việc nào trong phòng ban này')
+                        : c('Select a department first', 'Vui lòng chọn phòng ban trước')
+                    }
+                  />
+                </div>
+                <Button
+                  type="button"
+                  variant="primary"
+                  size="sm"
+                  disabled={!department || !tempJobPositionId}
+                  onClick={handleAssignJobPosition}
+                  className="font-semibold shadow-2xs whitespace-nowrap px-3 text-xs shrink-0"
+                  leftIcon={<Plus className="h-3.5 w-3.5" />}
+                >
+                  {c('Assign Job Position', 'Gán vị trí')}
+                </Button>
+              </div>
+            </div>
+
+            {selectedJobPositionObj ? (
+              <div className="rounded-lg border border-border overflow-hidden">
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-muted/40 border-b border-border text-[10px] uppercase font-bold text-muted-foreground">
+                    <tr>
+                      <th className="py-2.5 px-3">{c('Code', 'Mã')}</th>
+                      <th className="py-2.5 px-3">{c('Job Position Name & Scope', 'Tên vị trí & Phạm vi')}</th>
+                      <th className="py-2.5 px-3">{c('Department', 'Phòng ban')}</th>
+                      <th className="py-2.5 px-3 text-right">{c('Action', 'Thao tác')}</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border">
+                    <tr className="hover:bg-muted/20 transition-colors">
+                      <td className="py-2.5 px-3 font-mono font-bold text-primary whitespace-nowrap">
+                        <Badge variant="secondary" className="font-mono text-[11px] px-2 py-0.5">
+                          {selectedJobPositionObj.code}
+                        </Badge>
+                      </td>
+                      <td className="py-2.5 px-3 max-w-xs">
+                        <div className="font-semibold text-foreground text-xs">{selectedJobPositionObj.name}</div>
+                        <div className="text-[11px] text-muted-foreground line-clamp-1 mt-0.5" title={selectedJobPositionObj.description}>
+                          {selectedJobPositionObj.description || c('Standard industry competency profile', 'Hồ sơ năng lực chuẩn ngành')}
+                        </div>
+                      </td>
+                      <td className="py-2.5 px-3 whitespace-nowrap text-xs text-foreground font-medium">
+                        {selectedDeptObj?.name || department}
+                      </td>
+                      <td className="py-2.5 px-3 text-right whitespace-nowrap">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10 cursor-pointer"
+                          onClick={handleRemoveJobPosition}
+                          title={c('Remove Job Position', 'Gỡ bỏ vị trí')}
+                          aria-label={c('Remove Job Position', 'Gỡ bỏ vị trí')}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="p-4 rounded-lg border border-dashed border-border text-center text-muted-foreground space-y-1">
+                <Briefcase className="h-5 w-5 mx-auto text-muted-foreground/60" />
+                <p className="font-semibold text-foreground text-xs">
+                  {department
+                    ? c('No Job Position Assigned Yet', 'Chưa phân công vị trí công việc')
+                    : c('Department Required First', 'Cần chọn phòng ban trước')}
+                </p>
+                <p className="text-[11px]">
+                  {department
+                    ? c('Select and assign a connected job position from the dropdown above.', 'Chọn và gán vị trí công việc từ danh sách ở trên.')
+                    : c('Please select a department above to view and assign its connected job positions.', 'Vui lòng chọn phòng ban trước để hiển thị các vị trí công việc tương ứng.')}
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* SECTION 3: Initial Target Role & Level (Career Placement for Employee) */}
+        {employee && (
+          <div className="p-4 rounded-xl border border-border bg-card space-y-3.5 relative shadow-2xs">
+            <div className="font-semibold text-foreground flex items-center justify-between">
+              <span className="flex items-center gap-2 text-xs font-semibold">
+                <Target className="h-4 w-4 text-primary" />
+                {c('Assigned Target Role & Level (Career Placement)', 'Gán Target Role & Level khởi điểm')} ({targetRoleId ? 1 : 0})
+              </span>
+              <span className="text-[11px] text-muted-foreground font-normal">
+                {c('Available in organization catalog', 'Có sẵn trong danh mục tổ chức')}
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-semibold text-foreground block">
+                  {c('Select Target Role', 'Chọn Target Role')}
+                </label>
                 <Combobox
                   size="sm"
                   clearable={false}
-                  disabled={!department}
-                  options={jobPositionComboboxOptions}
-                  value={tempJobPositionId || jobPosition}
+                  options={employeeTargetRoleOptions}
+                  value={targetRoleId}
                   onChange={(val) => {
-                    setTempJobPositionId(val)
+                    setTargetRoleId(val)
+                    const role = orgTargetRoles.find((r) => r.id === val)
+                    if (role?.levels && role.levels.length > 0) {
+                      setTargetRoleLevel(role.levels[role.levels.length - 1])
+                    } else {
+                      setTargetRoleLevel('Junior')
+                    }
                   }}
-                  placeholder={
-                    department
-                      ? c('Search & select job position for user...', 'Tìm kiếm & chọn vị trí công việc...')
-                      : c('Select a department first to unlock job positions...', 'Vui lòng chọn phòng ban trước để mở khóa...')
-                  }
-                  searchPlaceholder={c('Search by job position code or title...', 'Tìm theo mã hoặc tên vị trí công việc...')}
-                  emptyMessage={
-                    department
-                      ? c('No connected job positions in this department', 'Không có vị trí công việc nào trong phòng ban này')
-                      : c('Select a department first', 'Vui lòng chọn phòng ban trước')
-                  }
+                  placeholder={c('Search & select target role for employee...', 'Tìm kiếm & chọn target role...')}
+                  searchPlaceholder={c('Search by code or title...', 'Tìm theo mã hoặc tên...')}
+                  emptyMessage={c('No target roles available', 'Không có target role nào')}
                 />
               </div>
-              <Button
-                type="button"
-                variant="primary"
-                size="sm"
-                disabled={!department || !tempJobPositionId}
-                onClick={handleAssignJobPosition}
-                className="font-semibold shadow-2xs whitespace-nowrap px-3 text-xs shrink-0"
-                leftIcon={<Plus className="h-3.5 w-3.5" />}
-              >
-                {c('Assign Job Position', 'Gán vị trí')}
-              </Button>
-            </div>
-          </div>
 
-          {selectedJobPositionObj ? (
-            <div className="rounded-lg border border-border overflow-hidden">
-              <table className="w-full text-left text-xs">
-                <thead className="bg-muted/40 border-b border-border text-[10px] uppercase font-bold text-muted-foreground">
-                  <tr>
-                    <th className="py-2.5 px-3">{c('Code', 'Mã')}</th>
-                    <th className="py-2.5 px-3">{c('Job Position Name & Scope', 'Tên vị trí & Phạm vi')}</th>
-                    <th className="py-2.5 px-3">{c('Department', 'Phòng ban')}</th>
-                    <th className="py-2.5 px-3 text-right">{c('Action', 'Thao tác')}</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border">
-                  <tr className="hover:bg-muted/20 transition-colors">
-                    <td className="py-2.5 px-3 font-mono font-bold text-primary whitespace-nowrap">
-                      <Badge variant="secondary" className="font-mono text-[11px] px-2 py-0.5">
-                        {selectedJobPositionObj.code}
-                      </Badge>
-                    </td>
-                    <td className="py-2.5 px-3 max-w-xs">
-                      <div className="font-semibold text-foreground text-xs">{selectedJobPositionObj.name}</div>
-                      <div className="text-[11px] text-muted-foreground line-clamp-1 mt-0.5" title={selectedJobPositionObj.description}>
-                        {selectedJobPositionObj.description || c('Standard industry competency profile', 'Hồ sơ năng lực chuẩn ngành')}
-                      </div>
-                    </td>
-                    <td className="py-2.5 px-3 whitespace-nowrap text-xs text-foreground font-medium">
-                      {selectedDeptObj?.name || department}
-                    </td>
-                    <td className="py-2.5 px-3 text-right whitespace-nowrap">
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10 cursor-pointer"
-                        onClick={handleRemoveJobPosition}
-                        title={c('Remove Job Position', 'Gỡ bỏ vị trí')}
-                        aria-label={c('Remove Job Position', 'Gỡ bỏ vị trí')}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-semibold text-foreground block">
+                  {c('Assigned Level', 'Level khởi điểm')}
+                </label>
+                <Combobox
+                  size="sm"
+                  clearable={false}
+                  disabled={!targetRoleId}
+                  options={employeeLevelOptions}
+                  value={targetRoleLevel}
+                  onChange={(val) => setTargetRoleLevel(val)}
+                  placeholder={targetRoleId ? c('Select initial level...', 'Chọn level khởi điểm...') : c('Select role first...', 'Chọn role trước...')}
+                  searchPlaceholder={c('Search level...', 'Tìm level...')}
+                  emptyMessage={c('No levels available', 'Không có level nào')}
+                />
+              </div>
             </div>
-          ) : (
-            <div className="p-4 rounded-lg border border-dashed border-border text-center text-muted-foreground space-y-1">
-              <Briefcase className="h-5 w-5 mx-auto text-muted-foreground/60" />
-              <p className="font-semibold text-foreground text-xs">
-                {department
-                  ? c('No Job Position Assigned Yet', 'Chưa phân công vị trí công việc')
-                  : c('Department Required First', 'Cần chọn phòng ban trước')}
-              </p>
-              <p className="text-[11px]">
-                {department
-                  ? c('Select and assign a connected job position from the dropdown above.', 'Chọn và gán vị trí công việc từ danh sách ở trên.')
-                  : c('Please select a department above to view and assign its connected job positions.', 'Vui lòng chọn phòng ban trước để hiển thị các vị trí công việc tương ứng.')}
-              </p>
-            </div>
-          )}
-        </div>
+
+            {selectedEmployeeTargetRole && (
+              <div className="p-2.5 rounded-lg border border-primary/20 bg-primary/5 flex items-center justify-between text-xs">
+                <div className="flex items-center gap-2">
+                  <Badge variant="primary" className="font-mono text-[10px]">
+                    {selectedEmployeeTargetRole.code}
+                  </Badge>
+                  <span className="font-semibold text-foreground">{selectedEmployeeTargetRole.title}</span>
+                </div>
+                <Badge variant="outline" className="border-primary/40 text-primary font-bold text-[10px]">
+                  {targetRoleLevel ? `Assigned: ${targetRoleLevel}` : 'Level unassigned'}
+                </Badge>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Accessible hidden selects for automated testing & accessibility parity */}
         <div className="sr-only" aria-hidden="true">
@@ -1420,7 +2206,7 @@ function UserForm({
           <Button
             type="submit"
             isLoading={save.isPending}
-            disabled={!enabled || roles.length === 0 || (employee && (!effectiveDepartment || !effectiveJobPosition))}
+            disabled={!enabled || roles.length === 0 || (isLdManager && !effectiveDepartment) || ((employee || isExpert) && (!effectiveDepartment || !effectiveJobPosition))}
           >
             {member ? c('Save changes', 'Lưu thay đổi') : c('Send activation link', 'Gửi liên kết kích hoạt')}
           </Button>

@@ -261,11 +261,6 @@ export function TargetRoleSelector() {
                         </span>
                       )}
                     </div>
-                    {profile.targetSkillMacroCode && (
-                      <div className="text-[11px] text-muted-foreground mt-0.5">
-                        Domain: {profile.targetSkillMacroCode}
-                      </div>
-                    )}
                   </div>
                   {isViewingActiveSkill && <Check size={15} className="text-primary shrink-0" />}
                 </button>
@@ -298,11 +293,6 @@ export function TargetRoleSelector() {
                           <div className="min-w-0 flex-1">
                             <div className="flex items-center gap-1.5">
                               <span className="font-semibold text-foreground truncate">{skill.skillName}</span>
-                              {skill.macroCode && (
-                                <span className="text-[10px] font-mono text-muted-foreground">
-                                  ({skill.macroCode})
-                                </span>
-                              )}
                             </div>
                             <div className="text-[10px] text-muted-foreground mt-0.5 truncate">
                               Completed on {skill.completedAt} &bull; Score: {skill.masteryScore}%

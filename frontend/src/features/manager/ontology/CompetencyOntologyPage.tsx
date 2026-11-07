@@ -82,7 +82,7 @@ const ONTOLOGY_PRESETS: ImportPreset[] = [
   {
     id: 'preset-foundation-models',
     name: 'Foundation Models & LLM Engineering',
-    description: '2 Macro Competencies, 4 Micro-skills, and 2 Prerequisite edges based on Stanford CS324.',
+    description: '2 Competencies, 4 Micro-skills, and 2 Prerequisite edges based on Stanford CS324.',
     badge: 'AI Curricula',
     itemCount: 6,
     previewSnippet: JSON.stringify(
@@ -129,7 +129,6 @@ const ONTOLOGY_PRESETS: ImportPreset[] = [
           name: 'Implement Multi-Head Scaled Dot-Product Attention',
           description: 'Derives queries, keys, values tensors and computes masked softmax weights without memory leakage.',
           status: 'ACTIVE',
-          macroCompetencyCode: 'KNOWLEDGE',
           createdAt: new Date().toISOString().slice(0, 10),
           updatedAt: new Date().toISOString().slice(0, 10),
         },
@@ -139,7 +138,6 @@ const ONTOLOGY_PRESETS: ImportPreset[] = [
           name: 'Configure KV-Cache Quantization & PagedAttention',
           description: 'Profiles vLLM chunked prefill memory allocations under high token concurrency.',
           status: 'ACTIVE',
-          macroCompetencyCode: 'KNOWLEDGE',
           createdAt: new Date().toISOString().slice(0, 10),
           updatedAt: new Date().toISOString().slice(0, 10),
         },
@@ -149,7 +147,6 @@ const ONTOLOGY_PRESETS: ImportPreset[] = [
           name: 'Construct HNSW Vector Graph Embedding Pipeline',
           description: 'Builds approximate nearest neighbor graph index with recall@10 >= 0.95.',
           status: 'ACTIVE',
-          macroCompetencyCode: 'KNOWLEDGE',
           createdAt: new Date().toISOString().slice(0, 10),
           updatedAt: new Date().toISOString().slice(0, 10),
         },
@@ -159,7 +156,6 @@ const ONTOLOGY_PRESETS: ImportPreset[] = [
           name: 'Integrate Cross-Encoder Reciprocal Rank Fusion',
           description: 'Applies reranking scoring to boost precision on complex domain queries.',
           status: 'ACTIVE',
-          macroCompetencyCode: 'KNOWLEDGE',
           createdAt: new Date().toISOString().slice(0, 10),
           updatedAt: new Date().toISOString().slice(0, 10),
         },
@@ -217,7 +213,7 @@ function OwnedCompetencyOntologyPage() {
         body: JSON.stringify({
           name: updatedRole.title,
           description: updatedRole.description,
-          levels: updatedRole.levels || ['Junior', 'Middle', 'Senior'],
+          levels: updatedRole.levels || ['Senior', 'Middle', 'Junior'],
           levelCompetencies: updatedRole.levelCompetencies || {},
           competencyIds: updatedRole.competencyIds || [],
           skillTargets: roleRequirements(updatedRole.skillTargets || []),
@@ -235,8 +231,6 @@ function OwnedCompetencyOntologyPage() {
 
   // Search, filter, and pagination states for Tab 1 (Micro-skills)
   const [skillSearchQuery, setSkillSearchQuery] = React.useState('')
-  const [skillMacroFilter, setSkillMacroFilter] = React.useState('all')
-  const [skillStatusFilter, setSkillStatusFilter] = React.useState('all')
   const [skillSortBy, setSkillSortBy] = React.useState<'latest' | 'title' | 'code'>('latest')
   const [skillCurrentPage, setSkillCurrentPage] = React.useState(1)
   const [skillPageSize] = React.useState(10)
@@ -253,11 +247,10 @@ function OwnedCompetencyOntologyPage() {
 
   React.useEffect(() => {
     setSkillCurrentPage(1)
-  }, [skillSearchQuery, skillMacroFilter, skillStatusFilter, skillSortBy])
+  }, [skillSearchQuery, skillSortBy])
 
   // Search, filter, and pagination states for Tab: Competencies
   const [competencySearchQuery, setCompetencySearchQuery] = React.useState('')
-  const [competencyStatusFilter, setCompetencyStatusFilter] = React.useState('all')
   const [competencySortBy, setCompetencySortBy] = React.useState<'latest' | 'title' | 'code'>('latest')
   const [competencyCurrentPage, setCompetencyCurrentPage] = React.useState(1)
   const [competencyPageSize] = React.useState(10)
@@ -340,7 +333,6 @@ function OwnedCompetencyOntologyPage() {
             name: s.name,
             description: s.description || '',
             status: (s.status as MicroSkillModel['status']) || 'ACTIVE',
-            macroCompetencyCode: s.macroCompetencyCode || 'KNOWLEDGE',
             createdAt: s.createdAt || (active?.microSkills || []).find((item) => item.id === s.id || item.code === s.code)?.createdAt || '2026-01-01T00:00:00.000Z',
             updatedAt: s.updatedAt || s.createdAt || (active?.microSkills || []).find((item) => item.id === s.id || item.code === s.code)?.updatedAt || '2026-01-01T00:00:00.000Z',
           }))
@@ -411,7 +403,7 @@ function OwnedCompetencyOntologyPage() {
                 ? 'published'
                 : String(r.status || 'draft').toLowerCase()) as TargetRoleModel['status'],
               rejectionReason: String(r.rejectionReason || ''),
-              levels: Array.isArray(r.levels) && r.levels.length > 0 ? r.levels : ['Junior', 'Middle', 'Senior'],
+              levels: Array.isArray(r.levels) && r.levels.length > 0 ? r.levels : ['Senior', 'Middle', 'Junior'],
               levelCompetencies: (r.levelCompetencies as Record<string, string[]>) || {},
               competencyIds: Array.isArray(r.competencyIds) ? r.competencyIds : [],
               skillTargets: Array.isArray(r.skillTargets) ? r.skillTargets : [],
@@ -493,7 +485,6 @@ function OwnedCompetencyOntologyPage() {
         name: String(s.name || 'Untitled Micro-skill').trim(),
         description: String(s.description || s.observableOutcome || 'Skill description and scope.').trim(),
         status: (s.status === 'DRAFT' || s.status === 'RETIRED' || s.status === 'draft' || s.status === 'archived') ? s.status : 'ACTIVE',
-        macroCompetencyCode: String(s.macroCompetencyCode || 'KNOWLEDGE'),
         createdAt: String(s.createdAt || new Date().toISOString().slice(0, 10)),
         updatedAt: String(s.updatedAt || new Date().toISOString().slice(0, 10)),
       }
@@ -633,7 +624,6 @@ function OwnedCompetencyOntologyPage() {
         const updated = await updateMicroSkill(orgId, selectedSkill.id, {
           name: skillForm.name.trim(),
           description: skillForm.description.trim(),
-          macroCompetencyCode: selectedSkill.macroCompetencyCode || 'KNOWLEDGE',
           expectedVersion: liveSkillDefinitions[selectedSkill.id]?.version ?? null,
           ...provisionPayload(knowledgeForm),
         })
@@ -886,9 +876,16 @@ function OwnedCompetencyOntologyPage() {
           skill.code.toLowerCase().includes(skillSearchQuery.toLowerCase()) ||
           skill.name.toLowerCase().includes(skillSearchQuery.toLowerCase()) ||
           (skill.description || '').toLowerCase().includes(skillSearchQuery.toLowerCase())
-        const matchesMacro =
-          skillMacroFilter === 'all' || (skill.macroCompetencyCode || 'KNOWLEDGE') === skillMacroFilter
-        return matchesSearch && matchesMacro
+        const parentComps = competencies.filter(
+          (c) => (c.skillIds || []).includes(skill.id) || (c.skillIds || []).includes(skill.code)
+        )
+        const matchesCompetency =
+          skillCompetencyFilter === 'all'
+            ? true
+            : skillCompetencyFilter === 'unassigned'
+              ? parentComps.length === 0
+              : parentComps.some((c) => c.id === skillCompetencyFilter || c.code === skillCompetencyFilter)
+        return matchesSearch && matchesCompetency
       })
       .sort((a, b) => {
         if (skillSortBy === 'title') return a.name.localeCompare(b.name)
@@ -904,7 +901,7 @@ function OwnedCompetencyOntologyPage() {
         if (timeA !== timeB) return timeB - timeA
         return (b.code || b.id || '').localeCompare(a.code || a.id || '')
       })
-  }, [microSkills, skillSearchQuery, skillMacroFilter, skillSortBy])
+  }, [microSkills, skillSearchQuery, skillCompetencyFilter, competencies, skillSortBy])
 
   const skillTotalPages = Math.ceil(filteredMicroSkills.length / skillPageSize) || 1
   const paginatedMicroSkills = filteredMicroSkills.slice(
@@ -958,10 +955,7 @@ function OwnedCompetencyOntologyPage() {
           c.name.toLowerCase().includes(q) ||
           c.code.toLowerCase().includes(q) ||
           (c.description && c.description.toLowerCase().includes(q))
-        const matchesStatus =
-          competencyStatusFilter === 'all' ||
-          (c.status || 'ACTIVE').toUpperCase() === competencyStatusFilter.toUpperCase()
-        return matchesSearch && matchesStatus
+        return matchesSearch
       })
       .sort((a, b) => {
         if (competencySortBy === 'title') return a.name.localeCompare(b.name)
@@ -977,7 +971,7 @@ function OwnedCompetencyOntologyPage() {
         if (timeA !== timeB) return timeB - timeA
         return (b.code || b.id || '').localeCompare(a.code || a.id || '')
       })
-  }, [competencies, competencySearchQuery, competencyStatusFilter, competencySortBy])
+  }, [competencies, competencySearchQuery, competencySortBy])
 
   const competencyTotalPages = Math.max(1, Math.ceil(filteredCompetencies.length / competencyPageSize))
   const paginatedCompetencies = React.useMemo(() => {
@@ -1018,10 +1012,34 @@ function OwnedCompetencyOntologyPage() {
   }
 
   const handleSaveCompetency = async () => {
+    const normalizedCode = competencyForm.code.trim().toUpperCase()
+    if (!normalizedCode) {
+      toast({
+        title: 'Validation Error',
+        description: 'Competency code is strictly required.',
+        variant: 'destructive',
+      })
+      return
+    }
+
     if (!competencyForm.name.trim()) {
       toast({
         title: 'Validation Error',
         description: 'Competency name is strictly required.',
+        variant: 'destructive',
+      })
+      return
+    }
+
+    const isDuplicate = competencies.some(
+      (c) =>
+        c.code?.trim().toUpperCase() === normalizedCode &&
+        (!selectedCompetency || c.id !== selectedCompetency.id)
+    )
+    if (isDuplicate) {
+      toast({
+        title: 'Duplicate Competency Code',
+        description: `A competency with code "${normalizedCode}" already exists. Competency codes must be unique.`,
         variant: 'destructive',
       })
       return
@@ -1309,22 +1327,6 @@ function OwnedCompetencyOntologyPage() {
                     </div>
 
                     <div className="flex items-center gap-1.5 bg-background border border-border rounded-lg px-2.5 py-1.5 shadow-2xs shrink-0">
-                      <span className="text-[11px] text-muted-foreground font-medium">Status:</span>
-                      <select
-                        value={skillStatusFilter}
-                        onChange={(e) => {
-                          setSkillStatusFilter(e.target.value)
-                          setSkillCurrentPage(1)
-                        }}
-                        className="text-xs bg-transparent text-foreground border-0 focus:outline-none cursor-pointer font-medium"
-                      >
-                        <option value="all">All</option>
-                        <option value="ACTIVE">Active</option>
-                        <option value="DRAFT">Draft</option>
-                      </select>
-                    </div>
-
-                    <div className="flex items-center gap-1.5 bg-background border border-border rounded-lg px-2.5 py-1.5 shadow-2xs shrink-0">
                       <span className="text-[11px] text-muted-foreground font-medium">Sort:</span>
                       <select
                         value={skillSortBy}
@@ -1350,8 +1352,7 @@ function OwnedCompetencyOntologyPage() {
                       className="mt-3"
                       onClick={() => {
                         setSkillSearchQuery('')
-                        setSkillMacroFilter('all')
-                        setSkillStatusFilter('all')
+                        setSkillCompetencyFilter('all')
                         setSkillCurrentPage(1)
                       }}
                     >
@@ -1712,22 +1713,6 @@ function OwnedCompetencyOntologyPage() {
                     </div>
 
                     <div className="flex items-center gap-1.5 bg-background border border-border rounded-lg px-2.5 py-1.5 shadow-2xs shrink-0">
-                      <span className="text-[11px] text-muted-foreground font-medium">Status:</span>
-                      <select
-                        value={competencyStatusFilter}
-                        onChange={(e) => {
-                          setCompetencyStatusFilter(e.target.value)
-                          setCompetencyCurrentPage(1)
-                        }}
-                        className="text-xs bg-transparent text-foreground border-0 focus:outline-none cursor-pointer font-medium"
-                      >
-                        <option value="all">All ({competencies.length})</option>
-                        <option value="ACTIVE">Active</option>
-                        <option value="DRAFT">Draft</option>
-                      </select>
-                    </div>
-
-                    <div className="flex items-center gap-1.5 bg-background border border-border rounded-lg px-2.5 py-1.5 shadow-2xs shrink-0">
                       <span className="text-[11px] text-muted-foreground font-medium">Sort:</span>
                       <select
                         value={competencySortBy}
@@ -1747,18 +1732,17 @@ function OwnedCompetencyOntologyPage() {
                 {filteredCompetencies.length === 0 ? (
                   <div className="text-center py-16 text-muted-foreground">
                     <AlertCircle className="h-8 w-8 mx-auto mb-2 text-muted-foreground/60" />
-                    <p className="text-sm font-semibold">No competencies match your search or filter.</p>
+                    <p className="text-sm font-semibold">No competencies match your search.</p>
                     <Button
                       variant="outline"
                       size="sm"
                       className="mt-3"
                       onClick={() => {
                         setCompetencySearchQuery('')
-                        setCompetencyStatusFilter('all')
                         setCompetencyCurrentPage(1)
                       }}
                     >
-                      Reset Filters
+                      Clear Search
                     </Button>
                   </div>
                 ) : (
@@ -1885,7 +1869,7 @@ function OwnedCompetencyOntologyPage() {
                   )}
                 </DialogTitle>
                 <DialogDescription className="text-xs text-muted-foreground mt-0.5">
-                  Define an atomic micro-skill and align it with its macro competency domain.
+                  Define an atomic micro-skill and align it with its competency domain.
                 </DialogDescription>
               </div>
             </div>
@@ -1937,13 +1921,13 @@ function OwnedCompetencyOntologyPage() {
                     Required Competencies for {skillForm.name || selectedSkill?.name || 'Micro-skill'} ({skillForm.competencyIds.length})
                   </span>
                 </div>
-                <Badge variant="outline" className="text-[10px] font-mono text-primary border-primary/30 bg-primary/5 self-start sm:self-auto">
-                  HAS_SKILL relationships
+                <Badge variant="outline" className="text-[10px] font-semibold text-primary border-primary/30 bg-primary/5 self-start sm:self-auto">
+                  Competency Alignment
                 </Badge>
               </div>
 
               <div className="text-[11px] text-muted-foreground leading-relaxed">
-                Macro knowledge &amp; functional capability clusters containing this micro-skill.
+                Domain knowledge &amp; functional capability clusters containing this micro-skill.
               </div>
 
               {/* Add Competency Row */}
@@ -2138,9 +2122,9 @@ function OwnedCompetencyOntologyPage() {
                       {selectedSourceSkill && (
                         <Badge
                           variant="outline"
-                          className="font-bold tracking-wider text-[9.5px] uppercase border-border/80 bg-background text-foreground shadow-2xs px-2 py-0"
+                          className="font-mono font-bold tracking-wider text-[9.5px] uppercase border-border/80 bg-background text-foreground shadow-2xs px-2 py-0"
                         >
-                          {selectedSourceSkill.macroCompetencyCode || 'KNOWLEDGE'}
+                          {selectedSourceSkill.code}
                         </Badge>
                       )}
                     </div>
@@ -2182,9 +2166,9 @@ function OwnedCompetencyOntologyPage() {
                       {selectedTargetSkill && (
                         <Badge
                           variant="outline"
-                          className="font-bold tracking-wider text-[9.5px] uppercase border-border/80 bg-background text-foreground shadow-2xs px-2 py-0"
+                          className="font-mono font-bold tracking-wider text-[9.5px] uppercase border-border/80 bg-background text-foreground shadow-2xs px-2 py-0"
                         >
-                          {selectedTargetSkill.macroCompetencyCode || 'KNOWLEDGE'}
+                          {selectedTargetSkill.code}
                         </Badge>
                       )}
                     </div>
@@ -2546,12 +2530,6 @@ function OwnedCompetencyOntologyPage() {
                         <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">
                           Dependent Requirement
                         </span>
-                        <Badge
-                          variant="outline"
-                          className="font-bold tracking-wider text-[9.5px] uppercase border-border/80 bg-background text-foreground shadow-2xs px-2 py-0"
-                        >
-                          {source?.macroCompetencyCode || 'KNOWLEDGE'}
-                        </Badge>
                       </div>
                       <strong className="font-mono text-primary font-bold text-sm block">
                         {source?.code || viewingEdgeDetails.sourceSkillCode}
@@ -2579,12 +2557,6 @@ function OwnedCompetencyOntologyPage() {
                         <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">
                           Required Prerequisite
                         </span>
-                        <Badge
-                          variant="outline"
-                          className="font-bold tracking-wider text-[9.5px] uppercase border-border/80 bg-background text-foreground shadow-2xs px-2 py-0"
-                        >
-                          {target?.macroCompetencyCode || 'KNOWLEDGE'}
-                        </Badge>
                       </div>
                       <strong className="font-mono text-primary font-bold text-sm block">
                         {target?.code || viewingEdgeDetails.targetSkillCode}
@@ -3111,7 +3083,7 @@ function OwnedCompetencyOntologyPage() {
         description="Select an industry blueprint to rapidly provision competencies, micro-skills, and prerequisite dependencies for your organization."
         presets={ONTOLOGY_PRESETS}
         onImport={handleImportOntology}
-        sampleJsonPlaceholder={`{\n  "competencies": [\n    {\n      "code": "COMP-LLM-01",\n      "name": "Transformer Architectures & Attention Mechanisms",\n      "description": "Deep understanding of self-attention matrices and transformer layers."\n    }\n  ],\n  "microSkills": [\n    {\n      "code": "SKILL-ATTN-01",\n      "name": "Implement Multi-Head Scaled Dot-Product Attention",\n      "description": "Derives queries, keys, values tensors and computes masked softmax weights.",\n      "macroCompetencyCode": "KNOWLEDGE"\n    }\n  ]\n}`}
+        sampleJsonPlaceholder={`{\n  "competencies": [\n    {\n      "code": "COMP-LLM-01",\n      "name": "Transformer Architectures & Attention Mechanisms",\n      "description": "Deep understanding of self-attention matrices and transformer layers."\n    }\n  ],\n  "microSkills": [\n    {\n      "code": "SKILL-ATTN-01",\n      "name": "Implement Multi-Head Scaled Dot-Product Attention",\n      "description": "Derives queries, keys, values tensors and computes masked softmax weights."\n    }\n  ]\n}`}
       />
     </WorkspaceLayout>
   )

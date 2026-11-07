@@ -4,10 +4,12 @@ import com.adaptlearngraph.endpoints.ApiEndpoints;
 import com.adaptlearngraph.dtos.CompetencyDto.CompetencyResponse;
 import com.adaptlearngraph.dtos.CompetencyDto.CreateCompetencyRequest;
 import com.adaptlearngraph.dtos.CompetencyDto.UpdateCompetencyRequest;
+import com.adaptlearngraph.exception.DuplicateCompetencyException;
 import com.adaptlearngraph.services.CompetencyApplicationService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -18,6 +20,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Objects;
 
 @RestController
@@ -57,5 +61,21 @@ public class CompetencyController {
             @PathVariable("id") String id) {
         competencies.deleteCompetency(organizationId, id);
         return ResponseEntity.noContent().build();
+    }
+
+    @ExceptionHandler(DuplicateCompetencyException.class)
+    public ResponseEntity<?> handleDuplicate(DuplicateCompetencyException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of(
+                "error", "Conflict",
+                "message", ex.getMessage(),
+                "organizationId", ex.getOrganizationId(),
+                "code", ex.getCode()));
+    }
+
+    @ExceptionHandler(NoSuchElementException.class)
+    public ResponseEntity<?> handleNotFound(NoSuchElementException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of(
+                "error", "Not Found",
+                "message", ex.getMessage()));
     }
 }

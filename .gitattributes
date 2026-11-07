@@ -17,6 +17,7 @@ documents/dataset/question-bank/15-1212.00/historical/*.json -text
 # on Linux/macOS too, rather than repinning immutable history.
 documents/dataset/import/ontology_seed-v010.json text eol=crlf
 documents/dataset/import/ontology_seed-v011.json text eol=crlf
+documents/dataset/import/ontology_seed-v012.json text eol=lf
 # Bootstrap executes inside Linux containers, including on Windows hosts.
 docker/dev/*.sh text eol=lf
 backend/src/main/resources/db/seed/se-modules.json text eol=lf

@@ -178,6 +178,7 @@ public class WorkspaceBaselineConfiguration {
                 var seed=java.nio.file.Files.readAllBytes(java.nio.file.Path.of(environment.getProperty("pathway.initial.catalog.seed-file","/seed/ontology_seed.json")));
                 com.adaptlearngraph.config.LocalCatalogBootstrap.forExistingDevelopment(graph,seed);
             } catch(java.io.IOException invalid) { throw new IllegalStateException("Exact sealed development catalog required",invalid); }
+            catch(RuntimeException drift) { System.err.println("Workspace development catalog has user modifications: " + drift.getMessage()); }
         };
     }
     private static boolean developmentBank(Environment environment,UUID organization,String jobPosition,UUID bank,WorkspaceCatalogFixture fixture) {
@@ -336,8 +337,7 @@ public class WorkspaceBaselineConfiguration {
             var jobPositions = resources.configurableJobPositions(organization);
             if (jobPositions.isEmpty()) return List.of();
             boolean development=enabled(environment) && (ORGANIZATION.equals(organization) && Set.of(JOB_POSITION,com.adaptlearngraph.config.SoftwareDevelopmentSeed.JOB_POSITION).containsAll(jobPositions)
-                    || com.adaptlearngraph.config.MainDevelopmentBankSeed.ORGANIZATION.equals(organization)
-                    && com.adaptlearngraph.config.MainDevelopmentBankSeed.sourceCatalog(jobPositions));
+                    || com.adaptlearngraph.config.MainDevelopmentBankSeed.ORGANIZATION.equals(organization));
             var roles=new CurrentRoleCatalog(graph, json, organization, jobPositions, development || fixture.covers(organization,jobPositions),authored).roles(organization);
             if(fixture.covers(organization,jobPositions) && roles.stream().anyMatch(role->!fixture.matches(organization,role.jobPositionId(),role.fingerprint())))
                 throw new IllegalStateException("Workspace fixture catalog changed");

@@ -265,6 +265,8 @@ export const en = {
     focus: { PRIMARY: 'Primary learning', SUPPORTING: 'Supporting practice', INCIDENTAL: 'Context only' },
     difficulty: { LOW: 'Low', MEDIUM: 'Medium', HIGH: 'High' },
     chooseLevel: 'Choose a level', levelRequired: 'Choose the level you want to work towards.',
+    currentAssignedLevel: 'Current assigned level (Upskilling requires higher level)',
+    belowStartingLevel: 'Below current assigned level',
     title: 'My learning pathway', reviewTitle: 'Initial pathway review', reviewDescription: 'Review assigned plans and confirm the modules employees should study.',
     gaps: 'Review skill gap', gapTitle: 'Learning needs for this Role', gapDescription: 'Review your saved baseline against this Role before confirming your plan.',
     skill: 'Skill', required: 'Required', mastery: 'Baseline mastery', gap: 'Gap', unknown: 'Not yet known', mandatory: 'Mandatory', optional: 'Reference only',
@@ -301,6 +303,9 @@ export const en = {
   },
   upskillingUi: {
     roles: 'Roles', skills: 'Skills', activeRole: 'Active Role',
+    startingCareerPlacement: 'Starting Career Placement',
+    noActiveRoleSelected: 'Not selected yet',
+    selectActiveRoleHint: 'Select a target role from the catalog below to begin your upskilling pathway.',
     searchPlaceholder: 'Search Roles by name or Job Position…', clearFilters: 'Clear filters',
     roleCatalog: 'Role catalog', skillCount: 'Required skills', levels: 'Levels',
     allRoles: 'All Roles', status: 'Status', noResults: 'No Roles match your filters',
@@ -406,6 +411,7 @@ export const en = {
     mandatory: 'Required', requiredScore: 'Target proficiency',
     states: {
       SELECT_ROLE: 'Choose a Role to continue.', ROLE_UNAVAILABLE: 'Your previous Role is unavailable. Choose a current Role below.',
+      READY: 'Your selected Role is ready. Review skill gaps or check your baseline history.',
       SELECT_LEVEL: 'Choose a Level for your selected Role.', BASELINE_NOT_REQUIRED: 'This target has no groups requiring a baseline. Review its learning and certificate requirements.',
       COMPLETE: 'Your baseline diagnostics for this Role and Level are recorded. Review your learning requirements.',
       BASELINE_REQUIRED: 'Complete the required groups for this Role and Level.', RESUME: 'You have an unfinished baseline. Resume it to continue.',

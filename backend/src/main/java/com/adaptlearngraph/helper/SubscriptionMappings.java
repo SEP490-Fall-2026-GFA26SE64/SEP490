@@ -82,7 +82,8 @@ public final class SubscriptionMappings implements ModelMapperRegistrar {
             Member source = context.getSource();
             return new MemberResponse(source.membershipId(), source.accountId(), source.fullName(), source.email(),
                     source.active(), source.roles(), source.departmentId(), source.jobPositionReferenceId(),
-                    source.revision(), source.departmentName(), source.jobPositionName(), source.accountActive());
+                    source.revision(), source.departmentName(), source.jobPositionName(), source.accountActive(),
+                    source.targetRoleId(), source.targetRoleCode(), source.targetRoleName(), source.targetRoleLevel());
         });
     }
 

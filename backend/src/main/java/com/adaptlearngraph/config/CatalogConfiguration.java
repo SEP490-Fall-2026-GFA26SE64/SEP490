@@ -219,6 +219,8 @@ public class CatalogConfiguration {
         return new com.adaptlearngraph.repository.CompetencyRepository() {
             @Override public java.util.List<com.adaptlearngraph.entities.domain.CompetencyRecord> findAllCompetencies(String organizationId, String search) { return java.util.List.of(); }
             @Override public java.util.Optional<com.adaptlearngraph.entities.domain.CompetencyRecord> findById(String organizationId, String id) { return java.util.Optional.empty(); }
+            @Override public boolean existsByOrganizationIdAndCode(String organizationId, String code) { return false; }
+            @Override public boolean existsByOrganizationIdAndCodeAndIdNot(String organizationId, String code, String id) { return false; }
             @Override public com.adaptlearngraph.entities.domain.CompetencyRecord save(String organizationId, com.adaptlearngraph.entities.domain.CompetencyRecord record, java.util.List<String> skillIds, String levelId) { return record; }
             @Override public void deleteById(String organizationId, String id) {}
         };

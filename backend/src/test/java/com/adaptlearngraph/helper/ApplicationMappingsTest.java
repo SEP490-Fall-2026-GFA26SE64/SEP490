@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test;
 /** Every registrar the application exposes validates together on the single shared mapper without TypeMap clashes. */
 class ApplicationMappingsTest {
     private static final List<Supplier<ModelMapperRegistrar>> REGISTRARS = List.of(
-            JobPositionMappings::new, CompetencyMappings::new, MacroCompetencyMappings::new, MicroSkillMappings::new,
+            JobPositionMappings::new, CompetencyMappings::new, MicroSkillMappings::new,
             TargetRoleMappings::new, LearningModuleMappings::new, SystemStatusMappings::new, RegistrationMappings::new,
             SubscriptionMappings::new, AssessmentPolicyMappings::new, () -> new BaselineAuthoringMappings(new ObjectMapper()),
             InitialPathwayMappings::new, IrtAdministrationMappings::new, QuestionBankMappings::new,

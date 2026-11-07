@@ -100,13 +100,6 @@ export function ActiveSkillSummary() {
                   >
                     <div>
                       <div className="flex items-center justify-between gap-1.5 mb-1.5">
-                        {skill.macroCode ? (
-                          <Badge variant="secondary" className="text-[10px] font-semibold text-primary truncate max-w-[140px] whitespace-nowrap">
-                            {skill.macroCode}
-                          </Badge>
-                        ) : (
-                          <span />
-                        )}
                         <span
                           className={cn(
                             "text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0 whitespace-nowrap",

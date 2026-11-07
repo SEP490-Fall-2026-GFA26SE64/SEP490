@@ -57,6 +57,7 @@ public interface TargetRoleNodeRepository extends Repository<TargetRoleNode, Str
     long countCodeHolders(@Param("code") String code, @Param("roleId") String roleId);
 
     // MERGE with distinct ON CREATE / ON MATCH sets (organizationId and createdAt only on create).
+    // Note: r.levels property is strictly removed from TargetRole node; levels are stored in :Level nodes via :HAS_LEVEL.
     @Transactional(TransactionManagers.NEO4J)
     @Query("""
             MERGE (r:TargetRole {id: $id})
@@ -69,11 +70,11 @@ public interface TargetRoleNodeRepository extends Repository<TargetRoleNode, Str
                 r.track = $track,
                 r.assignedExpertId = $assignedExpertId,
                 r.description = $description,
+                r.scope = coalesce($description, r.scope, ''),
                 r.responsibilities = $responsibilities,
                 r.status = $status,
                 r.version = $version,
                 r.skillTargets = $skillTargets,
-                r.levels = $levels,
                 r.levelCompetencies = $levelCompetencies,
                 r.competencyIds = $competencyIds,
                 r.createdAt = datetime($createdAt),
@@ -87,15 +88,16 @@ public interface TargetRoleNodeRepository extends Repository<TargetRoleNode, Str
                 r.track = $track,
                 r.assignedExpertId = $assignedExpertId,
                 r.description = $description,
+                r.scope = coalesce($description, r.scope, ''),
                 r.responsibilities = $responsibilities,
                 r.status = $status,
                 r.version = $version,
                 r.skillTargets = $skillTargets,
-                r.levels = $levels,
                 r.levelCompetencies = $levelCompetencies,
                 r.competencyIds = $competencyIds,
                 r.updatedAt = datetime($updatedAt),
                 r.rejectionReason = $rejectionReason
+            REMOVE r.levels
             """)
     void merge(@Param("id") String id, @Param("organizationId") String organizationId,
             @Param("graphCode") String graphCode, @Param("rawCode") String rawCode, @Param("name") String name,
@@ -103,17 +105,21 @@ public interface TargetRoleNodeRepository extends Repository<TargetRoleNode, Str
             @Param("assignedExpertId") String assignedExpertId, @Param("description") String description,
             @Param("responsibilities") List<String> responsibilities, @Param("status") String status,
             @Param("version") String version, @Param("skillTargets") String skillTargets,
-            @Param("levels") List<String> levels, @Param("levelCompetencies") String levelCompetencies,
+            @Param("levelCompetencies") String levelCompetencies,
             @Param("competencyIds") List<String> competencyIds, @Param("createdAt") String createdAt,
             @Param("updatedAt") String updatedAt, @Param("rejectionReason") String rejectionReason);
 
-    // Publishing supersedes every other version of the same role (matched by name, base code or code) in the organization.
+    // Publishing supersedes only previously released versions (ACTIVE / PUBLISHED / UNPUBLISHED) of the same role
+    // lineage (base code or code). In-flight revisions (DRAFT / SENT / SUBMITTED / REJECTED) keep their own workflow,
+    // and different roles that merely share a display name are never touched. $name is kept for signature stability.
     @Transactional(TransactionManagers.NEO4J)
     @Query("""
             MATCH (old:TargetRole)
             WHERE old.organizationId = $organizationId
               AND old.id <> $id
-              AND (toLower(old.name) = toLower($name) OR (old.baseCode IS NOT NULL AND old.baseCode = $rawCode) OR old.code = $rawCode OR old.code = $graphCode)
+              AND ((old.baseCode IS NOT NULL AND old.baseCode = $rawCode) OR old.code = $rawCode OR old.code = $graphCode)
+              AND coalesce(old.status, 'ACTIVE') IN ['ACTIVE', 'PUBLISHED', 'UNPUBLISHED']
+              AND ($name IS NULL OR true)
             SET old.status = 'SUPERSEDED', old.updatedAt = datetime($updatedAt)
             """)
     void supersedeOtherVersions(@Param("organizationId") String organizationId, @Param("id") String id,
@@ -128,14 +134,16 @@ public interface TargetRoleNodeRepository extends Repository<TargetRoleNode, Str
             """)
     void deleteRequiredSkills(@Param("roleId") String roleId, @Param("organizationId") String organizationId);
 
-    // Relationship write: UNWIND batch, role and skill matched inside the same organization; one edge per level.
+    // Relationship write: UNWIND batch, role and skill matched inside the same organization or template; one edge per level.
     @Transactional(TransactionManagers.NEO4J)
     @Query("""
             UNWIND $skills AS item
             MATCH (r:TargetRole {id: $roleId}) WHERE r.organizationId = $organizationId
             MATCH (s:MicroSkill)
-            WHERE s.organizationId = $organizationId
-              AND s.id = item.skillId
+            WHERE (s.organizationId IS NULL OR s.organizationId = $organizationId)
+              AND (s.id = item.skillId OR s.code = item.skillCode OR s.id = item.skillCode
+                   OR toLower(s.id) = toLower(item.skillCode) OR toLower(s.code) = toLower(item.skillCode)
+                   OR toLower(s.id) = toLower(item.skillId))
             MERGE (r)-[req:REQUIRES_SKILL {level: item.level}]->(s)
             ON CREATE SET req.createdAt = datetime($updatedAt)
             SET req.requiredKnowledgeLevels = item.requiredKnowledgeLevels,

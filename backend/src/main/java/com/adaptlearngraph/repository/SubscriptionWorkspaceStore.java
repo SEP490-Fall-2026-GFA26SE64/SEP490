@@ -30,5 +30,13 @@ public interface SubscriptionWorkspaceStore {
     record WorkspaceAdministrator(UUID accountId, String fullName, String email, boolean active, boolean accountActive) {}
     record Member(UUID membershipId, UUID accountId, String fullName, String email, boolean active,
                   Set<String> roles, UUID departmentId, UUID jobPositionReferenceId, long revision,
-                  String departmentName, String jobPositionName, boolean accountActive) {}
+                  String departmentName, String jobPositionName, boolean accountActive,
+                  String targetRoleId, String targetRoleCode, String targetRoleName, String targetRoleLevel) {
+        public Member(UUID membershipId, UUID accountId, String fullName, String email, boolean active,
+                      Set<String> roles, UUID departmentId, UUID jobPositionReferenceId, long revision,
+                      String departmentName, String jobPositionName, boolean accountActive) {
+            this(membershipId, accountId, fullName, email, active, roles, departmentId, jobPositionReferenceId,
+                    revision, departmentName, jobPositionName, accountActive, null, null, null, null);
+        }
+    }
 }

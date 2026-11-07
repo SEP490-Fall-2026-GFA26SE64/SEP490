@@ -108,35 +108,24 @@ class TargetRoleAndMicroSkillNeo4jIntegrationTest {
                 assertFalse(roleRepo.existsByOrganizationIdAndCode("org-alpha", "ROLE_DATA_ENG"));
                 assertTrue(roleRepo.findById("org-alpha", roleAlpha.getId()).isEmpty());
 
-                // REQ-012-F01: Create Micro-Skill linked to MacroCompetency
+                // REQ-012-F01: Create Micro-Skill
                 MicroSkill skill = MicroSkill.createNew(
                         "org-alpha",
                         "APACHE_SPARK",
                         "Apache Spark",
-                        "Distributed processing framework",
-                        "KNOWLEDGE");
+                        "Distributed processing framework");
                 skillRepo.save(skill);
 
                 assertTrue(skillRepo.existsByOrganizationIdAndCode("org-alpha", "APACHE_SPARK"));
                 assertFalse(skillRepo.existsByOrganizationIdAndCode("org-beta", "APACHE_SPARK"));
 
-                // Verify Graph Relationship in Neo4j
-                try (var session = driver.session()) {
-                    var relCount = session.run("""
-                            MATCH (macro:MacroCompetency {code: 'KNOWLEDGE'})-[r:HAS_SKILL]->(skill:MicroSkill {code: 'APACHE_SPARK'})
-                            RETURN count(r) AS count
-                            """).single().get("count").asInt();
-                    assertEquals(1, relCount);
-                }
-
                 // Verify REQUIRES_SKILL graph relationship synchronization stays inside the role's organization
-                // The legacy test graph enforces globally unique skill and macro codes, so Beta owns distinct codes.
+                // The legacy test graph enforces globally unique skill codes, so Beta owns distinct codes.
                 skillRepo.save(MicroSkill.createNew(
                         "org-beta",
                         "SPARK_STREAMING",
                         "Spark Streaming",
-                        "Distributed processing framework",
-                        "COMMUNICATION"));
+                        "Distributed processing framework"));
                 TargetRole roleWithSkills = TargetRole.createNew(
                         "org-beta",
                         "ROLE_ML_ENG",

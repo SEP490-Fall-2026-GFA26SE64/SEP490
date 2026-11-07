@@ -91,6 +91,7 @@ import { TargetRoleVersionDiff } from '../../manager/target-roles/components/Tar
 
 export type ExpertRoleStatus =
   | 'published'
+  | 'unpublished'
   | 'submitted'
   | 'sent'
   | 'approved'
@@ -102,6 +103,7 @@ export const getExpertEffectiveStatus = (
   role: TargetRoleModel,
 ): ExpertRoleStatus => {
   if (role.status === 'published') return 'published'
+  if (role.status === 'unpublished') return 'unpublished'
 
   if (role.status === 'submitted') return 'submitted'
 
@@ -114,6 +116,28 @@ export const getExpertEffectiveStatus = (
   }
 
   return 'draft'
+}
+
+function resolveLevelDuration(
+  role: Pick<TargetRoleModel, 'levelDurations'>,
+  levelName: string,
+  index: number,
+): string {
+  const direct = role.levelDurations?.[levelName]
+  if (direct && direct.trim()) return direct.trim()
+  if (role.levelDurations) {
+    const matchedKey = Object.keys(role.levelDurations).find(
+      (k) => k.toLowerCase().trim() === levelName.toLowerCase().trim(),
+    )
+    if (matchedKey && role.levelDurations[matchedKey]?.trim()) {
+      return role.levelDurations[matchedKey].trim()
+    }
+  }
+  const lower = levelName.toLowerCase()
+  if (lower.includes('senior') || index === 0) return '6 months'
+  if (lower.includes('middle') || lower.includes('mid') || index === 1) return '4 months'
+  if (lower.includes('junior') || index === 2) return '3 months'
+  return '2 months'
 }
 
 export function ExpertAssignedRolesPage() {
@@ -193,7 +217,6 @@ export function ExpertAssignedRolesPage() {
             name: s.name,
             description: s.description || '',
             status: (s.status as MicroSkillModel['status']) || 'ACTIVE',
-            macroCompetencyCode: s.macroCompetencyCode || 'KNOWLEDGE',
             createdAt: s.createdAt,
             updatedAt: s.updatedAt,
           }),
@@ -320,11 +343,11 @@ export function ExpertAssignedRolesPage() {
               ? (r.responsibilities as string[])
               : [],
             version: String(r.version || '1.0'),
-            status: (String(r.status || '').toLowerCase() === 'active'
+            status: (String(r.status || '').toLowerCase() === 'active' || String(r.status || '').toLowerCase() === 'published'
               ? 'published'
-              : String(
-                  r.status || 'draft',
-                ).toLowerCase()) as TargetRoleModel['status'],
+              : String(r.status || '').toLowerCase() === 'unpublished'
+                ? 'unpublished'
+                : String(r.status || 'draft').toLowerCase()) as TargetRoleModel['status'],
             rejectionReason: String(r.rejectionReason || ''),
             levelCompetencies: effectiveLevelComps,
             competencyIds: rawCompetencyIds,
@@ -334,7 +357,11 @@ export function ExpertAssignedRolesPage() {
             levels:
               Array.isArray(r.levels) && (r.levels as string[]).length > 0
                 ? (r.levels as string[])
-                : storeRole?.levels || ['Junior', 'Middle', 'Senior'],
+                : storeRole?.levels || ['Senior', 'Middle', 'Junior'],
+            levelDurations:
+              (r.levelDurations && Object.keys(r.levelDurations as Record<string, string>).length > 0
+                ? (r.levelDurations as Record<string, string>)
+                : storeRole?.levelDurations) || {},
             activeEnrollments: 0,
             createdAt: r.createdAt
               ? String(r.createdAt)
@@ -390,11 +417,19 @@ export function ExpertAssignedRolesPage() {
                 ? m.levels
                 : prev?.levels && prev.levels.length > 0
                   ? prev.levels
-                  : storeRole?.levels || ['Junior', 'Middle', 'Senior']
+                  : storeRole?.levels || ['Senior', 'Middle', 'Junior']
+
+            const effectiveLevelDurations =
+              m.levelDurations && Object.keys(m.levelDurations).length > 0
+                ? m.levelDurations
+                : prev?.levelDurations && Object.keys(prev.levelDurations).length > 0
+                  ? prev.levelDurations
+                  : storeRole?.levelDurations || {}
 
             return {
               ...m,
               levels: effectiveLevels,
+              levelDurations: effectiveLevelDurations,
               skillTargets: effectiveSkills,
               levelCompetencies: prevLevelComps,
               competencyIds: prevCompetencyIds,
@@ -463,7 +498,7 @@ export function ExpertAssignedRolesPage() {
 
   const [searchQuery, setSearchQuery] = React.useState('')
   const [statusFilter, setStatusFilter] = React.useState<
-    'all' | 'published' | 'approved' | 'draft' | 'feedback' | 'rejected'
+    'all' | 'published' | 'unpublished' | 'approved' | 'draft' | 'feedback' | 'rejected'
   >('all')
 
   const [expandedLineages, setExpandedLineages] = React.useState<
@@ -559,12 +594,12 @@ export function ExpertAssignedRolesPage() {
 
   const visibleRoles = React.useMemo(() => {
     return filteredRoles.filter((role) => {
-      const isPublished = role.status === 'published'
+      const isPublishedOrUnpublished = role.status === 'published' || role.status === 'unpublished'
       const roleLineageKey =
         (role.stableId && role.stableId.trim()) || role.code.trim() || role.id
       const publishedInLineage = assignedRoles
         .filter((r) => {
-          if (r.status !== 'published') return false
+          if (r.status !== 'published' && r.status !== 'unpublished') return false
 
           const rLineageKey =
             (r.stableId && r.stableId.trim()) || r.code.trim() || r.id
@@ -575,7 +610,7 @@ export function ExpertAssignedRolesPage() {
 
       const newestPublished = publishedInLineage[0]
       const isOlderPublished =
-        isPublished && newestPublished && role.id !== newestPublished.id
+        isPublishedOrUnpublished && newestPublished && role.id !== newestPublished.id
       const isLineageExpanded = Boolean(expandedLineages[roleLineageKey])
 
       return !(isOlderPublished && !isLineageExpanded)
@@ -593,6 +628,9 @@ export function ExpertAssignedRolesPage() {
 
   const publishedCount = assignedRoles.filter(
     (r) => getExpertEffectiveStatus(r) === 'published',
+  ).length
+  const unpublishedCount = assignedRoles.filter(
+    (r) => getExpertEffectiveStatus(r) === 'unpublished',
   ).length
   const approvedCount = assignedRoles.filter(
     (r) => getExpertEffectiveStatus(r) === 'approved',
@@ -673,6 +711,7 @@ export function ExpertAssignedRolesPage() {
       (r) =>
         (r.stableId === role.stableId || r.code === role.code) &&
         r.status !== 'published' &&
+        r.status !== 'unpublished' &&
         r.id !== role.id,
     )
 
@@ -693,7 +732,7 @@ export function ExpertAssignedRolesPage() {
     const inheritedLevels =
       role.levels && role.levels.length > 0
         ? [...role.levels]
-        : ['Junior', 'Middle', 'Senior']
+        : ['Senior', 'Middle', 'Junior']
     const inheritedLevelCompetencies = role.levelCompetencies
       ? JSON.parse(JSON.stringify(role.levelCompetencies))
       : {}
@@ -719,6 +758,7 @@ export function ExpertAssignedRolesPage() {
       version: nextVersion,
       status: 'DRAFT',
       levels: inheritedLevels,
+      levelDurations: role.levelDurations || {},
       levelCompetencies: inheritedLevelCompetencies,
       competencyIds: derivedInheritedCompIds,
       skillTargets: inheritedSkillTargets,
@@ -833,7 +873,7 @@ export function ExpertAssignedRolesPage() {
   const [configuredSkillSearch, setConfiguredSkillSearch] = React.useState('')
   const [selectedAuthoringLevels, setSelectedAuthoringLevels] = React.useState<
     string[]
-  >(['Junior'])
+  >(['Senior'])
   const [isMultiLevelMode, setIsMultiLevelMode] = React.useState(false)
 
   // Skill target form state
@@ -882,7 +922,7 @@ export function ExpertAssignedRolesPage() {
   const currentRoleLevels = React.useMemo(() => {
     return authoringRole?.levels && authoringRole.levels.length > 0
       ? authoringRole.levels
-      : ['Junior', 'Middle', 'Senior']
+      : ['Senior', 'Middle', 'Junior']
   }, [authoringRole])
 
   const isAllLevelsSelected = React.useMemo(() => {
@@ -1017,22 +1057,41 @@ export function ExpertAssignedRolesPage() {
       })
     }
 
-    return companyMicroSkills.filter((s) => {
-      const belongs =
-        compSkillIds.has(s.id) ||
-        compSkillIds.has(s.code) ||
-        (s.macroCompetencyCode &&
-          (s.macroCompetencyCode === parentComp.code ||
-            s.macroCompetencyCode === parentComp.id))
+    // Populate candidate pool from parentComp's memberSkills and companyMicroSkills
+    const candidates = new Map<string, { id: string; code: string; name: string; description?: string }>()
+    if (parentComp.memberSkills && parentComp.memberSkills.length > 0) {
+      parentComp.memberSkills.forEach((ms) => {
+        const id = ms.id || ms.code
+        if (id) {
+          candidates.set(id, {
+            id,
+            code: ms.code || ms.id,
+            name: ms.name || ms.code || ms.id,
+            description: '',
+          })
+        }
+      })
+    }
 
-      if (!belongs) return false
+    companyMicroSkills.forEach((s) => {
+      const belongs = compSkillIds.has(s.id) || (s.code && compSkillIds.has(s.code))
+      if (belongs) {
+        candidates.set(s.id, {
+          id: s.id,
+          code: s.code || s.id,
+          name: s.name || s.code || s.id,
+          description: s.description || '',
+        })
+      }
+    })
 
+    return Array.from(candidates.values()).filter((s) => {
       // Exclude if already assigned to all selected levels
       const alreadyAssignedToAllSelected = selectedAuthoringLevels.every(
         (lvl) =>
           authoringRole.skillTargets.some(
             (st) =>
-              (st.skillId === s.id || st.skillCode === s.code) &&
+              (st.skillId === s.id || (s.code && st.skillCode === s.code) || st.skillCode === s.id) &&
               (st.level || currentRoleLevels[0]) === lvl,
           ),
       )
@@ -1124,19 +1183,26 @@ export function ExpertAssignedRolesPage() {
     }))
   }, [availableSkills])
 
-  // Competencies available to add: any competency not yet assigned to all selected levels
-
+  // Competencies available to add: any competency not yet assigned to all selected levels (strictly deduplicated)
   const availableCompetencies = React.useMemo(() => {
     if (!authoringRole || selectedAuthoringLevels.length === 0) return []
 
+    const seen = new Set<string>()
     return realCompetencies.filter((c) => {
-      return selectedAuthoringLevels.some((lvl) => {
+      const key = (c.code || c.id).toUpperCase()
+      if (seen.has(key)) return false
+
+      const isAvailable = selectedAuthoringLevels.some((lvl) => {
         const lvlComps = authoringRole.levelCompetencies?.[lvl] || []
 
         return (
           !lvlComps.includes(c.id) && (!c.code || !lvlComps.includes(c.code))
         )
       })
+
+      if (!isAvailable) return false
+      seen.add(key)
+      return true
     })
   }, [authoringRole, realCompetencies, selectedAuthoringLevels])
 
@@ -1149,7 +1215,6 @@ export function ExpertAssignedRolesPage() {
       )
       const targetId = skillObj?.id || skillIdOrCode
       const targetCode = skillObj?.code || skillIdOrCode
-      const macroCode = skillObj?.macroCompetencyCode
       const sourceComps: CompetencyDto[] =
         realCompetencies.length > 0
           ? realCompetencies
@@ -1167,10 +1232,7 @@ export function ExpertAssignedRolesPage() {
             m.id === skillIdOrCode ||
             m.code === skillIdOrCode,
         )
-        const matchesMacro = Boolean(
-          macroCode && (c.code === macroCode || c.id === macroCode),
-        )
-        return inSkillIds || inMemberSkills || matchesMacro
+        return inSkillIds || inMemberSkills
       })
     },
     [companyMicroSkills, realCompetencies, activeCompany],
@@ -1215,8 +1277,8 @@ export function ExpertAssignedRolesPage() {
 
   const competencyOptions: ComboboxOption[] = React.useMemo(() => {
     const list = availableCompetencies.map((comp) => {
-      const memberSkillCodes = (comp.memberSkills || []).map(
-        (m) => m.code || m.id,
+      const memberSkillNames = (comp.memberSkills || []).map(
+        (m) => m.name || m.code || m.id,
       )
       const matchingPrereqs = Array.from(
         missingPrereqCodesForSelectedLevels,
@@ -1226,10 +1288,12 @@ export function ExpertAssignedRolesPage() {
       })
 
       const hasMissingPrereq = matchingPrereqs.length > 0
-      const memberSkillsSummary =
-        memberSkillCodes.length > 0
-          ? ` · ${memberSkillCodes.length} micro-skills`
+      const memberSkillsDetails =
+        memberSkillNames.length > 0
+          ? ` · Skills: ${memberSkillNames.slice(0, 4).join(', ')}${memberSkillNames.length > 4 ? ` (+${memberSkillNames.length - 4} more)` : ''}`
           : ''
+
+      const baseDesc = comp.description ? `${comp.description}${memberSkillsDetails}` : `Domain Competency${memberSkillsDetails}`
 
       return {
         comp,
@@ -1240,8 +1304,8 @@ export function ExpertAssignedRolesPage() {
             ? `${comp.code || comp.id} — ${comp.name} [Unlocks: ${matchingPrereqs.join(', ')}]`
             : `${comp.code || comp.id} — ${comp.name}`,
           description: hasMissingPrereq
-            ? `⭐ Unlocks prerequisite ${matchingPrereqs.join(', ')} · ${comp.description || 'Domain Competency'}${memberSkillsSummary}`
-            : `${comp.description || 'Domain Competency'}${memberSkillsSummary}`,
+            ? `⭐ Unlocks prerequisite ${matchingPrereqs.join(', ')} · ${baseDesc}`
+            : baseDesc,
         },
       }
     })
@@ -1305,7 +1369,7 @@ export function ExpertAssignedRolesPage() {
 
   const doesSkillBelongToCompetency = React.useCallback(
     (
-      skill: { id: string; code?: string; macroCompetencyCode?: string },
+      skill: { id: string; code?: string },
       comp: CompetencyDto,
     ) => {
       if (comp.skillIds && comp.skillIds.includes(skill.id)) return true
@@ -1315,13 +1379,6 @@ export function ExpertAssignedRolesPage() {
         comp.memberSkills.some(
           (ms) => ms.id === skill.id || (skill.code && ms.code === skill.code),
         )
-      )
-        return true
-
-      if (
-        skill.macroCompetencyCode &&
-        (skill.macroCompetencyCode === comp.code ||
-          skill.macroCompetencyCode === comp.id)
       )
         return true
 
@@ -1415,7 +1472,7 @@ export function ExpertAssignedRolesPage() {
     const roleLevels =
       cloned.levels && cloned.levels.length > 0
         ? cloned.levels
-        : ['Junior', 'Middle', 'Senior']
+        : ['Senior', 'Middle', 'Junior']
     const initLevel = roleLevels[0]
 
     // Explicitly initialize levelCompetencies map for all levels without cross-contamination
@@ -1490,7 +1547,7 @@ export function ExpertAssignedRolesPage() {
     if (!authoringRole || !newSkillId || !newKnowledgeLevels.length || selectedAuthoringLevels.length === 0)
       return
 
-    const skillObj = companyMicroSkills.find((s) => s.id === newSkillId)
+    const skillObj = companyMicroSkills.find((s) => s.id === newSkillId) || availableSkills.find((s) => s.id === newSkillId)
 
     if (!skillObj) return
 
@@ -1505,9 +1562,6 @@ export function ExpertAssignedRolesPage() {
       )
 
       if (!alreadyExists) {
-        const parentCompObj = commonCompObjects.find(
-          (c) => c.id === selectedParentCompId || c.code === selectedParentCompId,
-        )
         newTargets.push({
           skillId: skillObj.id,
           skillCode: skillObj.code,
@@ -1515,7 +1569,6 @@ export function ExpertAssignedRolesPage() {
           threshold: 0,
           requiredKnowledgeLevels: [...newKnowledgeLevels],
           level: lvl,
-          macroCompetencyCode: parentCompObj?.code || parentCompObj?.id,
         })
       }
     })
@@ -1616,6 +1669,7 @@ export function ExpertAssignedRolesPage() {
                   : 'DRAFT',
             skillTargets: roleRequirements(updatedRole.skillTargets),
             levels: updatedRole.levels,
+            levelDurations: updatedRole.levelDurations,
             levelCompetencies: updatedRole.levelCompetencies,
             competencyIds: updatedRole.competencyIds,
             rejectionReason: updatedRole.rejectionReason,
@@ -1705,6 +1759,7 @@ export function ExpertAssignedRolesPage() {
           version: role.version,
           skillTargets: roleRequirements(role.skillTargets),
           levels: role.levels,
+          levelDurations: role.levelDurations,
           levelCompetencies: role.levelCompetencies,
           competencyIds: role.competencyIds,
           rejectionReason: '',
@@ -1907,6 +1962,7 @@ export function ExpertAssignedRolesPage() {
                         e.target.value as
                           | 'all'
                           | 'published'
+                          | 'unpublished'
                           | 'approved'
                           | 'draft'
                           | 'feedback'
@@ -1921,6 +1977,9 @@ export function ExpertAssignedRolesPage() {
                     <option value="all">All ({assignedRoles.length})</option>
                     <option value="published">
                       Published ({publishedCount})
+                    </option>
+                    <option value="unpublished">
+                      Unpublished ({unpublishedCount})
                     </option>
                     <option value="approved">
                       Submitted ({approvedCount})
@@ -2018,18 +2077,20 @@ export function ExpertAssignedRolesPage() {
                         const isFeedback = effStatus === 'feedback'
                         const isRejected = effStatus === 'rejected'
                         const isPublished = effStatus === 'published'
+                        const isUnpublished = effStatus === 'unpublished'
+                        const isPublishedOrUnpublished = isPublished || isUnpublished
                         const cleanRejectionReason = (
                           role.rejectionReason || ''
                         ).replace(/^\[(EXPERT|LD_MANAGER)\]:\s*/, '')
 
-                        // Lineage identification for published versions
+                        // Lineage identification for published / unpublished versions
 
                         const publishedInLineage = assignedRoles
                           .filter(
                             (r) =>
                               (r.stableId === role.stableId ||
                                 r.code === role.code) &&
-                              r.status === 'published',
+                              (r.status === 'published' || r.status === 'unpublished'),
                           )
                           .sort((a, b) =>
                             compareRoleVersions(b.version, a.version),
@@ -2037,11 +2098,11 @@ export function ExpertAssignedRolesPage() {
 
                         const newestPublished = publishedInLineage[0]
                         const isNewestPublished =
-                          isPublished &&
+                          isPublishedOrUnpublished &&
                           newestPublished &&
                           role.id === newestPublished.id
                         const isOlderPublished =
-                          isPublished && !isNewestPublished
+                          isPublishedOrUnpublished && !isNewestPublished
                         const hasOlderPublished =
                           isNewestPublished && publishedInLineage.length > 1
                         const lineageKey = role.stableId || role.code
@@ -2049,32 +2110,33 @@ export function ExpertAssignedRolesPage() {
                           expandedLineages[lineageKey],
                         )
 
-                        // Collapse older published versions if lineage dropdown is not expanded
+                        // Collapse older versions if lineage dropdown is not expanded
 
                         if (isOlderPublished && !isLineageExpanded) {
                           return null
                         }
 
-                        // Identify successor role placed under a published role
+                        // Identify successor role placed under a published/unpublished role
 
                         const predecessorPublished = assignedRoles.find(
                           (r) =>
                             (r.stableId === role.stableId ||
                               r.code === role.code) &&
-                            r.status === 'published' &&
+                            (r.status === 'published' || r.status === 'unpublished') &&
                             r.id !== role.id,
                         )
 
                         const isSuccessor =
-                          !isPublished && Boolean(predecessorPublished)
+                          !isPublishedOrUnpublished && Boolean(predecessorPublished)
 
-                        // Check if this published role lineage already has an active revision draft/submission
+                        // Check if this published/unpublished role lineage already has an active revision draft/submission
 
                         const hasActiveSuccessor = assignedRoles.some(
                           (r) =>
                             (r.stableId === role.stableId ||
                               r.code === role.code) &&
                             r.status !== 'published' &&
+                            r.status !== 'unpublished' &&
                             r.id !== role.id,
                         )
 
@@ -2219,7 +2281,7 @@ export function ExpertAssignedRolesPage() {
                                 {
                                   (role.levels && role.levels.length > 0
                                     ? role.levels
-                                    : ['Junior', 'Middle', 'Senior']
+                                    : ['Senior', 'Middle', 'Junior']
                                   ).length
                                 }
                               </span>
@@ -2240,6 +2302,12 @@ export function ExpertAssignedRolesPage() {
                             <td className="py-3 px-3">
                               {isPublished && (
                                 <Badge variant="success">PUBLISHED</Badge>
+                              )}
+
+                              {isUnpublished && (
+                                <Badge variant="outline" className="border-muted-foreground/40 text-muted-foreground font-bold">
+                                  UNPUBLISHED
+                                </Badge>
                               )}
 
                               {isSubmitted && (
@@ -2316,7 +2384,7 @@ export function ExpertAssignedRolesPage() {
 
                                 {/* Create Successor Draft (Domain Expert creates later drafts) */}
 
-                                {isPublished &&
+                                {(isPublished || isUnpublished) &&
                                   isNewestPublished &&
                                   !hasActiveSuccessor && (
                                     <Button
@@ -2666,8 +2734,9 @@ export function ExpertAssignedRolesPage() {
                       <span>All Levels ({currentRoleLevels.length})</span>
                     </button>
 
-                    {currentRoleLevels.map((lvl) => {
+                    {currentRoleLevels.map((lvl, lIdx) => {
                       const isSelected = selectedAuthoringLevels.includes(lvl)
+                      const lvlDuration = resolveLevelDuration(authoringRole, lvl, lIdx)
                       const hasExplicitAuthoringComps = Boolean(
                         authoringRole.levelCompetencies &&
                         Object.keys(authoringRole.levelCompetencies).length >
@@ -2729,7 +2798,7 @@ export function ExpertAssignedRolesPage() {
                           <span
                             className={`text-[10px] px-1.5 py-0.5 rounded-full font-mono ${isSelected ? 'bg-primary-foreground/20 text-primary-foreground' : 'bg-muted text-muted-foreground'}`}
                           >
-                            {lvlSkills.length} skills · {lvlComps.length} comps
+                            {lvlDuration} · {lvlSkills.length} skills · {lvlComps.length} comps
                           </span>
                         </button>
                       )
@@ -2748,12 +2817,13 @@ export function ExpertAssignedRolesPage() {
                     </span>
 
                     <span className="text-[10px] text-muted-foreground font-normal">
-                      Macro knowledge &amp; functional capability clusters for{' '}
+                      Domain knowledge &amp; functional capability clusters for{' '}
                       {selectedLevelNamesLabel}
                     </span>
                   </div>
 
                   {authoringRole.status !== 'published' &&
+                    authoringRole.status !== 'unpublished' &&
                     authoringRole.status !== 'submitted' && (
                       <div className="space-y-1.5">
                         <label className="text-[11px] font-semibold text-foreground block">
@@ -2889,7 +2959,7 @@ export function ExpertAssignedRolesPage() {
                         No Competencies Configured Yet
                       </p>
                       <p className="text-[11px]">
-                        Select and add macro competencies above to structure
+                        Select and add competencies above to structure
                         requirements for {selectedLevelNamesLabel}.
                       </p>
                     </div>
@@ -2951,7 +3021,7 @@ export function ExpertAssignedRolesPage() {
                                 const name = compObj?.name || compId
                                 const desc =
                                   compObj?.description ||
-                                  'Macro capability cluster for target role'
+                                  'Capability cluster for target role'
 
                                 return (
                                   <tr
@@ -3025,14 +3095,16 @@ export function ExpertAssignedRolesPage() {
 
                 {authoringRole.status !== 'published' &&
                   authoringRole.status !== 'submitted' && (
-                    <div className="p-3.5 rounded-lg border border-border bg-card space-y-3 relative z-20">
-                      <div className="font-semibold text-foreground flex items-center justify-between">
-                        <span className="flex items-center gap-1.5">
-                          <Plus className="h-4 w-4 text-primary" />
-                          Add Micro-skill Target ({selectedLevelNamesLabel})
+                    <div className="p-4 rounded-xl border border-border/80 bg-muted/20 space-y-3.5 relative z-20 shadow-2xs">
+                      <div className="font-semibold text-foreground flex items-center justify-between pb-2 border-b border-border/40">
+                        <span className="flex items-center gap-2 text-xs">
+                          <span className="flex items-center justify-center h-5 w-5 rounded-md bg-primary/10 text-primary">
+                            <Plus className="h-3.5 w-3.5 stroke-[2.5]" />
+                          </span>
+                          <span>Add Micro-skill Target ({selectedLevelNamesLabel})</span>
                         </span>
 
-                        <span className="text-[10px] text-muted-foreground font-normal">
+                        <span className="text-[11px] text-muted-foreground font-normal">
                           {t('roleKnowledge.assign')}{' '}
                           {selectedLevelNamesLabel}
                         </span>
@@ -3057,58 +3129,68 @@ export function ExpertAssignedRolesPage() {
                           )}
                         </div>
                       ) : (
-                        <div className="grid grid-cols-1 sm:grid-cols-12 gap-2.5 items-end">
-                          <div className="sm:col-span-4">
-                            <label className="text-[11px] font-semibold text-foreground block mb-1">
-                              From Competency <span className="text-destructive">*</span>
-                            </label>
+                        <div className="space-y-3">
+                          {/* Row 1: Competency & Micro-skill */}
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <div>
+                              <label className="text-[11px] font-semibold text-foreground flex items-center gap-1 mb-1">
+                                <span>From Competency</span>
+                                <span className="text-destructive">*</span>
+                              </label>
 
-                            <select
-                              value={selectedParentCompId}
-                              onChange={(e) => setSelectedParentCompId(e.target.value)}
-                              className="w-full px-2.5 py-1.5 rounded-md bg-background border border-border text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-primary truncate"
-                            >
-                              {commonCompObjects.map((c) => (
-                                <option key={c.id} value={c.id}>
-                                  {c.code} — {c.name}
-                                </option>
-                              ))}
-                            </select>
+                              <select
+                                value={selectedParentCompId}
+                                onChange={(e) => setSelectedParentCompId(e.target.value)}
+                                className="w-full h-8 px-2.5 rounded-md bg-background border border-border text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-primary shadow-2xs truncate"
+                              >
+                                {commonCompObjects.map((c) => (
+                                  <option key={c.id} value={c.id}>
+                                    {c.code} — {c.name}
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
+
+                            <div>
+                              <label className="text-[11px] font-semibold text-foreground flex items-center gap-1 mb-1">
+                                <span>Micro-skill</span>
+                                <span className="text-destructive">*</span>
+                              </label>
+
+                              <Combobox
+                                size="sm"
+                                clearable={false}
+                                options={skillOptions}
+                                value={newSkillId}
+                                onChange={(val) => setNewSkillId(val)}
+                                placeholder={`Select skill in ${commonCompObjects.find((c) => c.id === selectedParentCompId)?.code || 'competency'}...`}
+                                searchPlaceholder="Search by skill code or title..."
+                                emptyMessage="All member skills in this competency are already assigned"
+                              />
+                            </div>
                           </div>
 
-                          <div className="sm:col-span-4">
-                            <label className="text-[11px] font-semibold text-foreground block mb-1">
-                              Micro-skill <span className="text-destructive">*</span>
-                            </label>
+                          {/* Row 2: Required Knowledge Levels dock on the left, Assign button on the right */}
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1.5 border-t border-border/40">
+                            <div className="flex items-center gap-2.5 flex-wrap">
+                              <span className="text-[11px] font-semibold text-foreground whitespace-nowrap">
+                                {t('roleKnowledge.requiredLevels')}:
+                              </span>
 
-                            <Combobox
-                              size="sm"
-                              clearable={false}
-                              options={skillOptions}
-                              value={newSkillId}
-                              onChange={(val) => setNewSkillId(val)}
-                              placeholder={`Select skill in ${commonCompObjects.find((c) => c.id === selectedParentCompId)?.code || 'competency'}...`}
-                              searchPlaceholder="Search by skill code or title..."
-                              emptyMessage="All member skills in this competency are already assigned"
-                            />
-                          </div>
+                              <RequiredKnowledgePicker
+                                value={newKnowledgeLevels}
+                                onChange={setNewKnowledgeLevels}
+                                size="sm"
+                              />
+                            </div>
 
-                          <div className="sm:col-span-2">
-                            <label className="text-[11px] font-semibold text-foreground block mb-1">
-                              {t('roleKnowledge.requiredLevels')}
-                            </label>
-
-                            <RequiredKnowledgePicker value={newKnowledgeLevels} onChange={setNewKnowledgeLevels} />
-                          </div>
-
-                          <div className="sm:col-span-2">
                             <Button
                               type="button"
                               variant="primary"
                               size="sm"
                               disabled={!newSkillId || !newKnowledgeLevels.length}
                               onClick={handleAddSkillTarget}
-                              className="w-full font-semibold shadow-2xs whitespace-nowrap px-3 text-xs justify-center"
+                              className="font-semibold shadow-2xs whitespace-nowrap px-4 text-xs justify-center h-8"
                               leftIcon={
                                 <Plus className="h-3.5 w-3.5 shrink-0" />
                               }
@@ -3346,7 +3428,11 @@ export function ExpertAssignedRolesPage() {
 
                                     <td className="py-2.5 px-3 text-center">
                                       {isEditingThisSkill ? (
-                                        <RequiredKnowledgePicker value={editingKnowledgeLevels} onChange={setEditingKnowledgeLevels} />
+                                        <RequiredKnowledgePicker
+                                          value={editingKnowledgeLevels}
+                                          onChange={setEditingKnowledgeLevels}
+                                          size="xs"
+                                        />
                                       ) : (
                                         <span className="font-mono font-bold text-primary">
                                           {formatRequiredKnowledge(st.requiredKnowledgeLevels, t)}
@@ -3575,19 +3661,23 @@ export function ExpertAssignedRolesPage() {
                       viewEffStatus === 'published' ||
                       viewEffStatus === 'approved'
                         ? 'success'
-                        : viewEffStatus === 'feedback'
+                        : viewEffStatus === 'unpublished'
                           ? 'outline'
-                          : viewEffStatus === 'rejected'
-                            ? 'destructive'
-                            : 'warning'
+                          : viewEffStatus === 'feedback'
+                            ? 'outline'
+                            : viewEffStatus === 'rejected'
+                              ? 'destructive'
+                              : 'warning'
                     }
 
                     className={
-                      viewEffStatus === 'approved'
-                        ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20 font-bold dark:text-emerald-400 text-xs'
-                        : viewEffStatus === 'feedback'
-                          ? 'bg-amber-500/15 !text-black border-amber-500/30 font-bold dark:!text-black text-xs'
-                          : 'font-bold text-xs'
+                      viewEffStatus === 'unpublished'
+                        ? 'border-muted-foreground/40 text-muted-foreground font-bold text-xs'
+                        : viewEffStatus === 'approved'
+                          ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20 font-bold dark:text-emerald-400 text-xs'
+                          : viewEffStatus === 'feedback'
+                            ? 'bg-amber-500/15 !text-black border-amber-500/30 font-bold dark:!text-black text-xs'
+                            : 'font-bold text-xs'
                     }
                   >
                     {viewEffStatus.toUpperCase()}
@@ -3728,6 +3818,50 @@ export function ExpertAssignedRolesPage() {
               )
             })()}
 
+            {/* Role Mastery Levels */}
+
+            <div className="p-3 rounded-lg border border-border bg-card space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-bold text-foreground">
+                  Role Mastery Levels
+                </span>
+
+                <span className="text-[10px] text-muted-foreground font-semibold">
+                  {viewingDetailsRole.levels?.length || 3} Progressive Levels
+                </span>
+              </div>
+
+              <div className="flex flex-wrap gap-2">
+                {(viewingDetailsRole.levels &&
+                viewingDetailsRole.levels.length > 0
+                  ? viewingDetailsRole.levels
+                  : ['Senior', 'Middle', 'Junior']
+                ).map((lvlName, idx) => {
+                  const lvlDuration = resolveLevelDuration(viewingDetailsRole, lvlName, idx)
+                  return (
+                    <div
+                      key={idx}
+                      className="flex items-center gap-1.5 p-2 rounded-md bg-muted/30 border border-border/80"
+                    >
+                      <Badge
+                        variant="secondary"
+                        className="text-[9px] py-0 px-1 font-mono"
+                      >
+                        Rank {idx + 1}
+                      </Badge>
+                      <span className="font-bold text-foreground text-xs">
+                        {lvlName}
+                      </span>
+                      <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-primary bg-primary/10 border border-primary/20 px-1.5 py-0.5 rounded font-mono">
+                        <Clock className="h-2.5 w-2.5" />
+                        {lvlDuration}
+                      </span>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+
             {/* Role Objective & Scope (Read-only) */}
 
             <div className="p-3 rounded-lg border border-border bg-muted/20 space-y-2 text-xs">
@@ -3823,7 +3957,7 @@ export function ExpertAssignedRolesPage() {
                     viewingDetailsRole.levels &&
                     viewingDetailsRole.levels.length > 0
                       ? viewingDetailsRole.levels
-                      : ['Junior', 'Middle', 'Senior']
+                      : ['Senior', 'Middle', 'Junior']
 
                   const hasExplicitLevelComps = Boolean(
                     viewingDetailsRole.levelCompetencies &&
@@ -3856,7 +3990,7 @@ export function ExpertAssignedRolesPage() {
                             All Levels Overview
                           </button>
 
-                          {detailRoleLevels.map((lvl) => {
+                          {detailRoleLevels.map((lvl, lIdx) => {
                             const compCount =
                               (
                                 viewingDetailsRole.levelCompetencies?.[lvl] ||
@@ -3870,6 +4004,7 @@ export function ExpertAssignedRolesPage() {
                                 (st) =>
                                   (st.level || detailRoleLevels[0]) === lvl,
                               ).length
+                            const lvlDuration = resolveLevelDuration(viewingDetailsRole, lvl, lIdx)
 
                             return (
                               <button
@@ -3887,9 +4022,9 @@ export function ExpertAssignedRolesPage() {
                               >
                                 <span>{lvl}</span>
                                 <span
-                                  className={`text-[10px] px-1 py-0.2 rounded-full font-mono ${selectedDetailLevelTab === lvl ? 'bg-primary-foreground/20 text-primary-foreground' : 'bg-muted text-muted-foreground'}`}
+                                  className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono ${selectedDetailLevelTab === lvl ? 'bg-primary-foreground/20 text-primary-foreground' : 'bg-muted text-muted-foreground'}`}
                                 >
-                                  {skillCount} skills · {compCount} comps
+                                  {lvlDuration} · {skillCount} skills · {compCount} comps
                                 </span>
                               </button>
                             )
@@ -3901,7 +4036,7 @@ export function ExpertAssignedRolesPage() {
 
                       {selectedDetailLevelTab === 'ALL' ? (
                         <div className="space-y-3">
-                          {detailRoleLevels.map((lvl) => {
+                          {detailRoleLevels.map((lvl, lIdx) => {
                             const compIds =
                               viewingDetailsRole.levelCompetencies?.[lvl] ||
                               (!hasExplicitLevelComps &&
@@ -3914,26 +4049,37 @@ export function ExpertAssignedRolesPage() {
                                 (st) =>
                                   (st.level || detailRoleLevels[0]) === lvl,
                               )
+                            const lvlDuration = resolveLevelDuration(viewingDetailsRole, lvl, lIdx)
 
                             return (
                               <div
                                 key={lvl}
                                 className="p-3 rounded-lg border border-border bg-card space-y-2.5"
                               >
-                                <div className="flex items-center justify-between">
+                                <div className="flex items-center justify-between flex-wrap gap-2">
                                   <div className="flex items-center gap-2">
+                                    <Badge
+                                      variant="secondary"
+                                      className="font-mono text-[10px]"
+                                    >
+                                      Rank {lIdx + 1}
+                                    </Badge>
                                     <Badge
                                       variant="primary"
                                       className="font-bold text-xs"
                                     >
                                       {lvl} Level
                                     </Badge>
-
-                                    <span className="text-xs text-muted-foreground">
-                                      {compIds.length} Competencies ·{' '}
-                                      {lvlSkills.length} Micro-skills
+                                    <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-primary bg-primary/10 border border-primary/20 px-2 py-0.5 rounded-full font-mono">
+                                      <Clock className="h-3 w-3" />
+                                      Est. Duration: {lvlDuration}
                                     </span>
                                   </div>
+
+                                  <span className="text-xs text-muted-foreground font-mono">
+                                    {compIds.length} Competencies ·{' '}
+                                    {lvlSkills.length} Micro-skills
+                                  </span>
                                 </div>
 
                                 {/* Competencies */}
@@ -4030,6 +4176,8 @@ export function ExpertAssignedRolesPage() {
 
                         (() => {
                           const lvl = selectedDetailLevelTab
+                          const selectedIdx = Math.max(0, detailRoleLevels.indexOf(lvl))
+                          const selectedDur = resolveLevelDuration(viewingDetailsRole, lvl, selectedIdx)
                           const compIds =
                             viewingDetailsRole.levelCompetencies?.[lvl] ||
                             (!hasExplicitLevelComps &&
@@ -4044,15 +4192,27 @@ export function ExpertAssignedRolesPage() {
 
                           return (
                             <div className="p-3.5 rounded-lg border border-border bg-card space-y-3">
-                              <div className="flex items-center justify-between pb-2 border-b border-border">
-                                <Badge
-                                  variant="primary"
-                                  className="font-bold text-xs"
-                                >
-                                  {lvl} Level Architecture
-                                </Badge>
+                              <div className="flex items-center justify-between pb-2 border-b border-border flex-wrap gap-2">
+                                <div className="flex items-center gap-2">
+                                  <Badge
+                                    variant="secondary"
+                                    className="font-mono text-[10px]"
+                                  >
+                                    Rank {selectedIdx + 1}
+                                  </Badge>
+                                  <Badge
+                                    variant="primary"
+                                    className="font-bold text-xs"
+                                  >
+                                    {lvl} Level Architecture
+                                  </Badge>
+                                  <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-primary bg-primary/10 border border-primary/20 px-2 py-0.5 rounded-full font-mono">
+                                    <Clock className="h-3 w-3" />
+                                    Est. Duration: {selectedDur}
+                                  </span>
+                                </div>
 
-                                <span className="text-xs text-muted-foreground">
+                                <span className="text-xs text-muted-foreground font-mono">
                                   {compIds.length} Competencies ·{' '}
                                   {lvlSkills.length} Micro-skills
                                 </span>
@@ -4189,7 +4349,8 @@ export function ExpertAssignedRolesPage() {
 
           <DialogFooter className="shrink-0 pt-3 border-t border-border mt-3 flex items-center justify-between sm:justify-between w-full">
             {viewingDetailsRole.status === 'draft' ||
-            viewingDetailsRole.status === 'published' ? (
+            viewingDetailsRole.status === 'published' ||
+            viewingDetailsRole.status === 'unpublished' ? (
               <Button
                 variant="destructive"
                 size="sm"
@@ -4215,7 +4376,8 @@ export function ExpertAssignedRolesPage() {
               >
                 Close
               </Button>
-              {viewingDetailsRole.status !== 'published' && (
+              {viewingDetailsRole.status !== 'published' &&
+              viewingDetailsRole.status !== 'unpublished' && (
                 <Button
                   variant="primary"
                   size="sm"

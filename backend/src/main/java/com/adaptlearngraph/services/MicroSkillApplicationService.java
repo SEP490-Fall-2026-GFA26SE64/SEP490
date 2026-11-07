@@ -15,7 +15,6 @@ import org.modelmapper.ModelMapper;
 
 /** DTO boundary of the micro-skill catalog API; organization and skill ids always come from the request path. */
 public class MicroSkillApplicationService {
-    private static final String DEFAULT_MACRO = "KNOWLEDGE";
     private final CreateMicroSkillUseCase createMicroSkill;
     private final GetMicroSkillsUseCase getMicroSkills;
     private final UpdateMicroSkillUseCase updateMicroSkill;
@@ -31,9 +30,9 @@ public class MicroSkillApplicationService {
         this.mapper = Objects.requireNonNull(mapper, "mapper");
     }
 
-    public List<MicroSkillResponse> searchMicroSkills(String organizationId, String query, String macroCode,
+    public List<MicroSkillResponse> searchMicroSkills(String organizationId, String query,
             SkillStatusDto status) {
-        return getMicroSkills.searchMicroSkills(organizationId, query, macroCode, toDomain(status)).stream()
+        return getMicroSkills.searchMicroSkills(organizationId, query, toDomain(status)).stream()
                 .map(this::toResponse)
                 .toList();
     }
@@ -48,7 +47,7 @@ public class MicroSkillApplicationService {
                 request.code(),
                 request.name(),
                 request.description(),
-                macroCode(request.macroCompetencyCode()), request.provision());
+                request.provision());
         return toResponse(createMicroSkill.createMicroSkill(command));
     }
 
@@ -58,9 +57,9 @@ public class MicroSkillApplicationService {
                 id,
                 request.name(),
                 request.description(),
-                macroCode(request.macroCompetencyCode()),
                 request.status() != null ? toDomain(request.status()) : SkillStatus.ACTIVE,
-                request.provision(), request.expectedVersion());
+                request.provision(),
+                request.expectedVersion());
         return toResponse(updateMicroSkill.updateMicroSkill(command));
     }
 
@@ -70,10 +69,6 @@ public class MicroSkillApplicationService {
 
     static SkillStatus toDomain(SkillStatusDto status) {
         return status == null ? null : SkillStatus.valueOf(status.name());
-    }
-
-    private static String macroCode(String requested) {
-        return requested != null && !requested.isBlank() ? requested.trim().toUpperCase() : DEFAULT_MACRO;
     }
 
     private MicroSkillResponse toResponse(MicroSkill skill) {

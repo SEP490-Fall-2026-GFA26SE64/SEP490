@@ -69,10 +69,11 @@ public class OrganizationTargetRoleController {
 
         boolean isManager = isAuthorizedManager(userRole);
         boolean isExpert = isDomainExpert(userRole);
+        boolean isEmployee = isEmployeeRole(userRole);
 
-        if (!isManager && !isExpert) {
+        if (!isManager && !isExpert && !isEmployee) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(Map.of("error", "Forbidden", "message", "Only L&D Managers, Administrators, and assigned Domain Experts can view organization target roles"));
+                    .body(Map.of("error", "Forbidden", "message", "Only L&D Managers, Administrators, Domain Experts, and Employees can view organization target roles"));
         }
 
         String effectiveExpertFilter = assignedExpertId;
@@ -97,10 +98,11 @@ public class OrganizationTargetRoleController {
 
         boolean isManager = isAuthorizedManager(userRole);
         boolean isExpert = isDomainExpert(userRole);
+        boolean isEmployee = isEmployeeRole(userRole);
 
-        if (!isManager && !isExpert) {
+        if (!isManager && !isExpert && !isEmployee) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(Map.of("error", "Forbidden", "message", "Only L&D Managers, Administrators, and assigned Domain Experts can view target roles"));
+                    .body(Map.of("error", "Forbidden", "message", "Only L&D Managers, Administrators, Domain Experts, and Employees can view target roles"));
         }
 
         Optional<TargetRoleResponse> roleOpt = targetRoles.getTargetRole(organizationId, roleId);
@@ -152,6 +154,13 @@ public class OrganizationTargetRoleController {
                 && REJECTED.equals(request.status().trim().toUpperCase());
         if (isExpert && !isManager && existingRole != null && !REJECTED.equals(existingRole.status()) && rejecting) {
             return ResponseEntity.badRequest().body(Map.of("error", "Bad Request", "message", "Domain Experts can no longer reject target roles"));
+        }
+
+        boolean unpublishing = request.status() != null && !request.status().isBlank()
+                && "UNPUBLISHED".equalsIgnoreCase(request.status().trim());
+        if (isExpert && !isManager && unpublishing) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("error", "Forbidden", "message", "Only L&D Managers can unpublish target roles"));
         }
 
         return targetRoles.updateTargetRole(organizationId, roleId, request)
@@ -215,13 +224,27 @@ public class OrganizationTargetRoleController {
     private boolean isAuthorizedManager(String role) {
         if (role == null) return false;
         String normalized = role.trim().toUpperCase();
-        return normalized.equals("LD_MANAGER") || normalized.equals("ADMINISTRATOR") || normalized.equals("ROLE_LD_MANAGER") || normalized.equals("ROLE_ADMINISTRATOR");
+        return normalized.equals("LD_MANAGER")
+                || normalized.equals("ADMINISTRATOR")
+                || normalized.equals("ORGANIZATION_ADMINISTRATOR")
+                || normalized.equals("ROLE_LD_MANAGER")
+                || normalized.equals("ROLE_ADMINISTRATOR")
+                || normalized.equals("ROLE_ORGANIZATION_ADMINISTRATOR");
     }
 
     private boolean isAdministrator(String role) {
         if (role == null) return false;
         String normalized = role.trim().toUpperCase();
-        return normalized.equals("ADMINISTRATOR") || normalized.equals("ROLE_ADMINISTRATOR");
+        return normalized.equals("ADMINISTRATOR")
+                || normalized.equals("ORGANIZATION_ADMINISTRATOR")
+                || normalized.equals("ROLE_ADMINISTRATOR")
+                || normalized.equals("ROLE_ORGANIZATION_ADMINISTRATOR");
+    }
+
+    private boolean isEmployeeRole(String role) {
+        if (role == null) return false;
+        String normalized = role.trim().toUpperCase();
+        return normalized.equals("EMPLOYEE") || normalized.equals("ROLE_EMPLOYEE") || normalized.equals("LEARNER");
     }
 
     private boolean isDomainExpert(String role) {

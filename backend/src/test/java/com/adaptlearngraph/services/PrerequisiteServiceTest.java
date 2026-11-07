@@ -104,8 +104,8 @@ class PrerequisiteServiceTest {
                 "PROFESSIONAL",
                                 "ACTIVE",
                 List.of(
-                        new RoleGraphSkill("skill-java", "JAVA_CORE", "Java Core", "KNOWLEDGE", 0.8, SkillStatus.ACTIVE),
-                        new RoleGraphSkill("skill-spring", "SPRING_BOOT", "Spring Boot", "KNOWLEDGE", 0.7, SkillStatus.ACTIVE)),
+                        new RoleGraphSkill("skill-java", "JAVA_CORE", "Java Core", 0.8, SkillStatus.ACTIVE),
+                        new RoleGraphSkill("skill-spring", "SPRING_BOOT", "Spring Boot", 0.7, SkillStatus.ACTIVE)),
                 List.of(new PrerequisiteEdge("skill-java", "JAVA_CORE", "Java Core", "skill-spring", "SPRING_BOOT", "Spring Boot", 0.6, SkillStatus.ACTIVE, Instant.now(), Instant.now())));
         targetRoleGraphPort.graph = mockGraph;
 
