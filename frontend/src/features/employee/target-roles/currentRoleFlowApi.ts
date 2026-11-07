@@ -1,5 +1,5 @@
 import { workspaceFetch } from '../../../shared/api/workspaceFetch'
-import { getActiveCompany } from '../../../shared/stores/companyStore'
+import { getActiveCompany, resolveWorkspaceOrgId } from '../../../shared/stores/companyStore'
 import { loadDepartments } from '../../../shared/stores/departmentStore'
 import { decodeJobPositionWithTargetRole } from '../../subscription/subscriptionApi'
 import {
@@ -138,7 +138,7 @@ const normalizeOccCode = (c?: string | null) =>
 
 async function resolveEmployeeDepartmentContext(signal?: AbortSignal): Promise<EmployeeDepartmentContext> {
   let email = 'employee@technova.com'
-  let organizationId = DEFAULT_ORG_ID
+  let organizationId = resolveWorkspaceOrgId(DEFAULT_ORG_ID)
   let isEmployee = false
 
   try {
@@ -150,7 +150,7 @@ async function resolveEmployeeDepartmentContext(signal?: AbortSignal): Promise<E
         roles?: string[]
       }
       if (authData.email) email = authData.email.toLowerCase().trim()
-      if (authData.organizationId) organizationId = authData.organizationId
+      if (authData.organizationId) organizationId = resolveWorkspaceOrgId(authData.organizationId)
       if (Array.isArray(authData.roles)) {
         isEmployee = authData.roles.some(r => String(r).toUpperCase() === 'EMPLOYEE')
       }
@@ -240,10 +240,11 @@ async function resolveEmployeeDepartmentContext(signal?: AbortSignal): Promise<E
     assignedLevel = assignedLevel.replace(/^(?:rank|level)\s*\d+\s*:\s*/i, '').trim()
   }
 
-  const defaultDeptName = email.includes('se.employee')
+  const isEngCog = email.includes('se.employee') || email === 'employee@technova.com' || email.includes('alex.chen')
+  const defaultDeptName = isEngCog
     ? 'Engineering & Cognitive Systems'
     : 'Cloud Infrastructure & DevOps'
-  const defaultDeptId = email.includes('se.employee') ? 'dept-eng' : 'dept-cloud'
+  const defaultDeptId = isEngCog ? 'd0000000-0000-0000-0000-000000000001' : 'dept-cloud'
 
   const departmentName = savedDeptName || defaultDeptName
   const departmentId = savedDeptId || defaultDeptId
@@ -438,10 +439,91 @@ async function fetchDepartmentScopedPublishedRoles(signal?: AbortSignal): Promis
   inFlightRolesPromise = (async () => {
     try {
       const ctx = await resolveEmployeeDepartmentContext(signal)
-      const orgId = ctx.organizationId || DEFAULT_ORG_ID
+      const orgId = resolveWorkspaceOrgId(ctx.organizationId || DEFAULT_ORG_ID)
       const metaMap = getLocalRoleMetadataMap(orgId)
 
-      const orgCandidates = Array.from(new Set([orgId, DEFAULT_ORG_ID]))
+      // 1. Primary source of truth: Native employee target-roles endpoint from Neo4j
+      try {
+        const empRes = await workspaceFetch('/api/v1/employee/target-roles', {
+          method: 'GET',
+          signal,
+        }).catch(() => null)
+
+        if (empRes && empRes.ok) {
+          const empList = (await empRes.json()) as Array<Record<string, unknown>>
+          if (Array.isArray(empList) && empList.length > 0) {
+            const cleanEmpRoles: CurrentRole[] = empList
+              .filter((robj) => {
+                if (!robj || typeof robj !== 'object') return false
+                const status = String(robj.status || 'PUBLISHED').toUpperCase()
+                if (status === 'UNPUBLISHED' || status === 'INACTIVE' || status === 'DRAFT') {
+                  return false
+                }
+                const codeUpper = String(robj.code || robj.id || '').toUpperCase().split('#')[0]
+                const idUpper = String(robj.id || '').toUpperCase()
+                const meta = metaMap[codeUpper] || metaMap[idUpper]
+                if (
+                  meta?.status &&
+                  (meta.status.toUpperCase() === 'UNPUBLISHED' ||
+                    meta.status.toUpperCase() === 'INACTIVE' ||
+                    meta.status.toUpperCase() === 'DRAFT')
+                ) {
+                  return false
+                }
+                return true
+              })
+              .map((robj) => {
+                const rawCode = String(robj.code || robj.id || '')
+                const cleanCode = rawCode.split('#')[0]
+                const id = String(robj.id || cleanCode)
+                const name = String(robj.name || cleanCode)
+                const scope = String(robj.scope || '')
+                const jobPositionId = String(robj.jobPositionId || '')
+                const jobPositionName = String(robj.jobPositionName || 'Software Developers')
+                const catalogVersion = String(robj.catalogVersion || '1.0')
+                const fingerprint = String(robj.fingerprint || '')
+                const levels = Array.isArray(robj.levels) ? (robj.levels as CurrentLevel[]) : []
+                return {
+                  id,
+                  code: cleanCode,
+                  name,
+                  scope,
+                  jobPositionId,
+                  jobPositionName,
+                  catalogVersion,
+                  fingerprint,
+                  levels,
+                }
+              })
+
+            // Filter to roles matching employee's department and allowed job positions
+            const filteredEmpRoles = cleanEmpRoles.filter((r) => {
+              const occCodeNorm = normalizeOccCode(r.jobPositionId)
+              if (occCodeNorm && ctx.inactiveJobPositionCodes.has(occCodeNorm)) {
+                return false
+              }
+              if (ctx.allowedJobPositionCodes.size > 0) {
+                return (
+                  ctx.allowedJobPositionCodes.has(occCodeNorm) ||
+                  ctx.allowedJobPositionCodes.has(r.jobPositionId)
+                )
+              }
+              return true
+            })
+
+            if (filteredEmpRoles.length > 0) {
+              return filteredEmpRoles
+            }
+            if (cleanEmpRoles.length > 0) {
+              return cleanEmpRoles
+            }
+          }
+        }
+      } catch (empErr) {
+        console.warn('Employee target-roles primary fetch failed, falling back:', empErr)
+      }
+
+      const orgCandidates = Array.from(new Set([orgId, DEFAULT_ORG_ID].map(resolveWorkspaceOrgId)))
       let rawRoles: unknown[] = []
       let jobsRes: Response | null = null
       for (const candidateOrg of orgCandidates) {
@@ -462,14 +544,15 @@ async function fetchDepartmentScopedPublishedRoles(signal?: AbortSignal): Promis
             jobsRes = jRes
             break
           }
-        } else if (rRes && (rRes.status === 401 || rRes.status === 403)) {
-          break
         }
       }
 
   // If organization target-roles endpoint returned 403 for EMPLOYEE role or was empty, merge active company store + platform-catalog
   const activeCompRoles = (getActiveCompany()?.targetRoles || [])
     .filter(tr => {
+      const codeUpper = String(tr.code || '').trim().toUpperCase()
+      const meta = metaMap[codeUpper] || metaMap[String(tr.id || '').toUpperCase()]
+      if (meta?.status && (meta.status.toUpperCase() === 'UNPUBLISHED' || meta.status.toUpperCase() === 'INACTIVE')) return false
       const s = String(tr.status || '').toLowerCase()
       return s === 'published' || s === 'active'
     })
@@ -506,6 +589,12 @@ async function fetchDepartmentScopedPublishedRoles(signal?: AbortSignal): Promis
         const platformRoles: Record<string, unknown>[] = []
         for (const node of graph.nodes || []) {
           if (node.label === 'TargetRole' && node.id) {
+            const codeUpper = String(node.code || node.id).trim().toUpperCase()
+            const meta = metaMap[codeUpper] || metaMap[String(node.id).toUpperCase()]
+            const metaStatus = String(meta?.status || '').toUpperCase()
+            if (metaStatus === 'UNPUBLISHED' || metaStatus === 'INACTIVE' || metaStatus === 'DRAFT') {
+              continue
+            }
             platformRoles.push({
               id: node.id,
               code: node.code || node.id,
@@ -526,7 +615,16 @@ async function fetchDepartmentScopedPublishedRoles(signal?: AbortSignal): Promis
       rawRoles = activeCompRoles
     }
   } else if (activeCompRoles.length > 0) {
-    rawRoles = [...activeCompRoles, ...rawRoles]
+    const rawCodes = new Set(
+      rawRoles.map((r: unknown) => {
+        const robj = r as Record<string, unknown>
+        return String(robj.code || robj.id || '').trim().toUpperCase()
+      })
+    )
+    const customLocalOnly = activeCompRoles.filter(
+      (lr) => !rawCodes.has(String(lr.code || lr.id || '').trim().toUpperCase())
+    )
+    rawRoles = [...rawRoles, ...customLocalOnly]
   }
 
   const jobMap = new Map<string, { id: string; code: string; name: string; status: string }>()
@@ -564,6 +662,12 @@ async function fetchDepartmentScopedPublishedRoles(signal?: AbortSignal): Promis
     if (!id || !code) continue
     const codeUpper = code.toUpperCase()
     const meta = metaMap[codeUpper] || metaMap[id.toUpperCase()]
+
+    // Strictly exclude unpublished, draft, or inactive roles from metadata or backend
+    const metaStatus = String(meta?.status || '').toUpperCase()
+    if (metaStatus === 'UNPUBLISHED' || metaStatus === 'INACTIVE' || metaStatus === 'DRAFT') {
+      continue
+    }
 
     // 1. Only published versions are offered. The backend status is authoritative so an
     //    in-flight revision draft never hides the currently published version.

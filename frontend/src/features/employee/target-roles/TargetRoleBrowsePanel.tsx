@@ -13,7 +13,6 @@ import {
 import { Badge } from '../../../shared/components/ui/Badge'
 import { Button } from '../../../shared/components/ui/Button'
 import { getActiveCompany } from '../../../shared/stores/companyStore'
-import { resolveJobPositionForRole } from '../../manager/data/ldManagerMockData'
 import { Card } from '../../../shared/components/ui/Card'
 import { EmptyState } from '../../../shared/components/ui/EmptyState'
 import { Pagination } from '../../../shared/components/ui/Pagination'
@@ -143,17 +142,21 @@ export function TargetRoleBrowsePanel() {
 
     // 1. Department restriction: Employee only views target roles in their assigned Department
     const activeCompany = getActiveCompany()
-    const employeeDept = profile?.department || 'Software Engineering'
-    if (employeeDept) {
+    const employeeDept = profile?.department
+    if (employeeDept && (activeCompany?.targetRoles || []).length > 0) {
       result = result.filter((role) => {
         const matched = (activeCompany?.targetRoles || []).find(
           (tr) => tr.id === role.id || tr.code === role.code,
         )
-        const roleDept =
-          matched?.department ||
-          resolveJobPositionForRole({ code: role.code, title: role.name })?.name
+        const roleDept = matched?.department
         if (!roleDept) return true
-        return roleDept.toLowerCase().trim() === employeeDept.toLowerCase().trim()
+        const normRole = roleDept.toLowerCase().trim()
+        const normEmp = employeeDept.toLowerCase().trim()
+        return (
+          normRole === normEmp ||
+          normRole.includes(normEmp) ||
+          normEmp.includes(normRole)
+        )
       })
     }
     if (statusFilter !== 'All') {

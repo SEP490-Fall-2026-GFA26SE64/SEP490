@@ -462,9 +462,14 @@ export function JobPositionsManagementPage() {
 
     const orgId = resolveWorkspaceOrgId(session?.identity?.organizationId || activeCompany?.id)
 
-    if (editingJobPosition) {
+    // Close modal immediately and capture editing state
+    setIsJobPositionModalOpen(false)
+    const currentEditing = editingJobPosition
+    setEditingJobPosition(null)
+
+    if (currentEditing) {
       try {
-        await updateJobPosition(orgId, editingJobPosition.id, {
+        await updateJobPosition(orgId, currentEditing.id, {
           name: occName.trim(),
           code: occCode.trim().toUpperCase(),
           jobZone: occJobZone,
@@ -477,7 +482,7 @@ export function JobPositionsManagementPage() {
         })
         setAndSaveJobPositions((prev) =>
           prev.map((o) =>
-            o.id === editingJobPosition.id
+            o.id === currentEditing.id
               ? {
                   ...o,
                   name: occName.trim(),
@@ -587,7 +592,6 @@ export function JobPositionsManagementPage() {
         return
       }
     }
-    setIsJobPositionModalOpen(false)
   }
 
   // Check whether a job position has any non-unpublished target roles assigned to it

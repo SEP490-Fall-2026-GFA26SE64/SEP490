@@ -60,7 +60,7 @@ import {
 import { useToast } from '../../../shared/hooks/useToast'
 import { WorkspaceLayout } from '../../../shared/layouts/WorkspaceLayout'
 import { WorkspaceSessionContext } from '../../../shared/auth/workspaceSession'
-import { getMembers } from '../../subscription/subscriptionApi'
+import { getMembers, request } from '../../subscription/subscriptionApi'
 import { fetchDepartments, updateDepartmentApi, linkJobPositionToDepartment } from '../../../shared/api/departmentApi'
 import { loadDepartments, updateDepartment } from '../../../shared/stores/departmentStore'
 import {
@@ -93,10 +93,12 @@ import {
 export const getExpertOptionsForJobPosition = (
   jobPositionCode?: string,
   organizationId?: string,
+  departmentScope?: { id?: string; code?: string; name?: string } | null,
 ): ComboboxOption[] => {
   const eligible = getEligibleExpertsForJobPosition(
     jobPositionCode,
     organizationId,
+    departmentScope,
   )
 
   return eligible.map((exp) => ({
@@ -223,6 +225,28 @@ function saveTargetRoleMeta(orgId: string, meta: RoleMetadata): void {
   } catch {}
 }
 
+function deleteTargetRoleMeta(orgId: string, id?: string, code?: string): void {
+  if (typeof localStorage === 'undefined') return
+  try {
+    const keys = Array.from(new Set([
+      'adaptlearn_target_role_meta_' + orgId,
+      'adaptlearn_target_role_meta_e0000000-0000-0000-0000-000000000001',
+      'adaptlearn_target_role_meta_comp-technova',
+      'adaptlearn_target_role_meta_workspace-development',
+      'adaptlearn_target_role_meta_',
+    ]))
+    for (const k of keys) {
+      const raw = localStorage.getItem(k)
+      if (raw) {
+        const current = JSON.parse(raw) as Record<string, RoleMetadata>
+        if (code) delete current[code.toUpperCase()]
+        if (id) delete current[id]
+        localStorage.setItem(k, JSON.stringify(current))
+      }
+    }
+  } catch {}
+}
+
 export function TargetRolesPage() {
   const { toast } = useToast()
 
@@ -308,12 +332,20 @@ export function TargetRolesPage() {
 
   React.useEffect(() => {
     refreshAvailableJobPositions()
-    const handleJobPositionsUpdated = () => {
-      refreshAvailableJobPositions()
+    let timeoutId: any = null
+    const handleJobPositionsUpdated = (e?: StorageEvent | Event) => {
+      if (e instanceof StorageEvent) {
+        if (e.key && e.key !== 'adaptlearn_job_positions_v1') return
+      }
+      clearTimeout(timeoutId)
+      timeoutId = setTimeout(() => {
+        refreshAvailableJobPositions()
+      }, 500)
     }
     window.addEventListener('storage', handleJobPositionsUpdated)
     window.addEventListener('adaptlearn_job_positions_updated', handleJobPositionsUpdated)
     return () => {
+      clearTimeout(timeoutId)
       window.removeEventListener('storage', handleJobPositionsUpdated)
       window.removeEventListener('adaptlearn_job_positions_updated', handleJobPositionsUpdated)
     }
@@ -351,7 +383,21 @@ export function TargetRolesPage() {
             )
           }
           if (isMounted) {
-            setOrgExperts(mapped)
+            setOrgExperts((prev) => {
+              if (
+                prev.length === mapped.length &&
+                prev.every(
+                  (e, idx) =>
+                    e.id === mapped[idx].id &&
+                    e.name === mapped[idx].name &&
+                    e.departmentId === mapped[idx].departmentId &&
+                    e.jobPositionReferenceId === mapped[idx].jobPositionReferenceId,
+                )
+              ) {
+                return prev
+              }
+              return mapped
+            })
           }
         } else {
           const fallback = getOrganizationExperts(orgId)
@@ -439,10 +485,21 @@ export function TargetRolesPage() {
           const localDeptMatch = localDepts.find((ld) => ld.id === matched.id || ld.code === matched.code)
           const localCodes = localDeptMatch?.linkedJobPositions || []
           const mergedCodes = Array.from(new Set([...serverCodes, ...localCodes]))
-          setManagerDepartment({
-            id: matched.id,
-            name: matched.name,
-            jobPositionCodes: mergedCodes,
+          setManagerDepartment((prev) => {
+            if (
+              prev &&
+              prev.id === matched.id &&
+              prev.name === matched.name &&
+              prev.jobPositionCodes.length === mergedCodes.length &&
+              prev.jobPositionCodes.every((c, i) => c === mergedCodes[i])
+            ) {
+              return prev
+            }
+            return {
+              id: matched.id,
+              name: matched.name,
+              jobPositionCodes: mergedCodes,
+            }
           })
         }
       } catch {
@@ -518,9 +575,13 @@ export function TargetRolesPage() {
     }))
   }, [availableJobPositions, isLdManager, managerDepartment])
 
+  const isFetchingRef = React.useRef(false)
   const fetchRoles = React.useCallback(async () => {
+    if (isFetchingRef.current) return
+    isFetchingRef.current = true
     try {
       const res = await fetch(`/api/v1/organizations/${orgId}/target-roles`, {
+        credentials: 'same-origin',
         headers: {
           'X-User-Role': 'LD_MANAGER',
         },
@@ -545,9 +606,13 @@ export function TargetRolesPage() {
           )
 
           const explicitJobPositionCode =
-            (typeof r.jobPositionCode === 'string' && r.jobPositionCode)
+            meta?.jobPositionCode ||
+            storeRole?.jobPositionCode ||
+            (typeof r.jobPositionCode === 'string' && r.jobPositionCode
               ? r.jobPositionCode
-              : meta?.jobPositionCode || storeRole?.jobPositionCode
+              : (typeof r.familyCode === 'string' && r.familyCode.match(/^\d{2}-\d{4}/)
+                  ? r.familyCode
+                  : undefined))
 
           const occ = resolveJobPositionForRole(
             {
@@ -795,19 +860,13 @@ export function TargetRolesPage() {
             }
           })
 
-          updateActiveCompany((c) => ({
-            ...c,
-            targetRoles: resolvedRoles,
-          }))
-
           return resolvedRoles
         })
-      } else {
-        setRoles([])
       }
-    } catch {
-      setRoles([])
+    } catch (err) {
+      console.warn('Failed to fetch target roles:', err)
     } finally {
+      isFetchingRef.current = false
       setIsLoading(false)
     }
   }, [orgId])
@@ -819,17 +878,26 @@ export function TargetRolesPage() {
   // Synchronize state when active company scope changes
 
   React.useEffect(() => {
-    const handleSync = () => {
-      fetchRoles()
+    let timeoutId: any = null
+    const handleSync = (e?: StorageEvent | Event) => {
+      // Guard against infinite cross-tab storage event cascade
+      if (e instanceof StorageEvent) {
+        if (!e.key || (!e.key.startsWith('adaptlearn_target_role') && e.key !== 'adaptlearn_companies_v1')) {
+          return
+        }
+      }
+      clearTimeout(timeoutId)
+      timeoutId = setTimeout(() => {
+        fetchRoles()
+      }, 500)
     }
 
     window.addEventListener('active_company_changed', handleSync)
-    window.addEventListener('companies_updated', handleSync)
     window.addEventListener('storage', handleSync)
 
     return () => {
+      clearTimeout(timeoutId)
       window.removeEventListener('active_company_changed', handleSync)
-      window.removeEventListener('companies_updated', handleSync)
       window.removeEventListener('storage', handleSync)
     }
   }, [fetchRoles])
@@ -849,29 +917,10 @@ export function TargetRolesPage() {
           targetRoles: next,
         }))
 
-        try {
-          for (const r of next) {
-            if (r.code) {
-              saveTargetRoleMeta(orgId, {
-                id: r.id,
-                code: r.code,
-                jobPositionCode: r.jobPositionCode,
-                jobPositionTitle: r.jobPositionTitle,
-                department: r.department,
-                departmentId: r.departmentId,
-                assignedExpertId: r.assignedExpertId,
-                assignedExpertName: r.assignedExpertName,
-                levelNames: r.levels,
-                levelDurations: r.levelDurations,
-              })
-            }
-          }
-        } catch {}
-
         return next
       })
     },
-    [orgId],
+    [],
   )
 
   const [liveCompetencies, setLiveCompetencies] = React.useState<
@@ -1058,11 +1107,21 @@ export function TargetRolesPage() {
     }))
   }, [roleForm.jobPositionCode, orgId, managerDepartment, orgExperts])
 
+  const editRoleDeptScope = React.useMemo(() => {
+    if (selectedRole?.departmentId || selectedRole?.department) {
+      return {
+        id: selectedRole.departmentId,
+        name: selectedRole.department,
+      }
+    }
+    return managerDepartment
+  }, [selectedRole?.department, selectedRole?.departmentId, managerDepartment])
+
   const editExpertOptions: ComboboxOption[] = React.useMemo(() => {
     const list = getEligibleExpertsForJobPosition(
       editRoleForm.jobPositionCode,
       orgId,
-      managerDepartment,
+      editRoleDeptScope,
       orgExperts,
     )
     return list.map((exp) => ({
@@ -1070,7 +1129,7 @@ export function TargetRolesPage() {
       label: exp.name,
       description: exp.title,
     }))
-  }, [editRoleForm.jobPositionCode, orgId, managerDepartment, orgExperts])
+  }, [editRoleForm.jobPositionCode, orgId, editRoleDeptScope, orgExperts])
 
   // Sort criteria: defaults to 'latest' so newly created or updated roles go to the top
 
@@ -1388,92 +1447,7 @@ export function TargetRolesPage() {
     }))
     setRoles((prev) => [newRole, ...prev.filter((r) => r.code !== newRole.code)])
 
-    try {
-      const res = await fetch(`/api/v1/organizations/${orgId}/target-roles`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-User-Role': 'LD_MANAGER',
-        },
-        body: JSON.stringify({
-          code: roleCode,
-          name: roleForm.title.trim(),
-          familyCode: roleForm.familyCode,
-          track: roleForm.track,
-          responsibilities: [],
-          assignedExpertId: roleForm.assignedExpertId,
-          description:
-            roleForm.scope || roleForm.description || selectedOcc.description,
-          competencyIds: [],
-          levels: roleForm.levelNames,
-          levelDurations: roleForm.levelDurations,
-          status: backendStatus,
-        }),
-      })
-
-      if (res.status === 409) {
-        // Rollback local optimistic add
-        updateActiveCompany((c) => ({
-          ...c,
-          targetRoles: (c.targetRoles || []).filter((r) => r.code !== newRole.code),
-        }))
-        setRoles((prev) => prev.filter((r) => r.code !== newRole.code))
-
-        toast({
-          title: 'Duplicate Role Code',
-          description: `Role Code ${roleForm.code} already exists for this organization.`,
-          variant: 'destructive',
-        })
-
-        return
-      }
-
-      if (res.ok) {
-        try {
-          const createdData = await res.json()
-          if (createdData && createdData.id) {
-            newRole.id = String(createdData.id)
-            saveTargetRoleMeta(orgId, {
-              id: String(createdData.id),
-              code: roleCode,
-              jobPositionCode: selectedOcc.code,
-              jobPositionTitle: selectedOcc.name,
-              department: managerDepartment?.name || selectedOcc.name,
-              departmentId: managerDepartment?.id,
-              assignedExpertId: roleForm.assignedExpertId,
-              assignedExpertName: expertName,
-              levelNames: roleForm.levelNames,
-              levelDurations: roleForm.levelDurations,
-            })
-            updateActiveCompany((c) => ({
-              ...c,
-              targetRoles: [newRole, ...(c.targetRoles || []).filter((r) => r.code !== newRole.code)],
-            }))
-          }
-        } catch {}
-
-        await fetchRoles()
-
-        setIsCreateRoleModalOpen(false)
-
-        toast({
-          title:
-            targetStatus === 'sent'
-              ? 'Target Role Created & Sent to Expert'
-              : 'Target Role Draft Created',
-          description:
-            targetStatus === 'sent'
-              ? `Role ${roleForm.title.trim()} (${roleCode}) created and dispatched to ${expertName}.`
-              : `Draft role ${roleCode} - ${roleForm.title.trim()} created and saved to database.`,
-          variant: 'success',
-        })
-
-        return
-      }
-    } catch {
-      // Backend unavailable fallback
-    }
-
+    // Immediately close modal and show immediate feedback
     setIsCreateRoleModalOpen(false)
 
     toast({
@@ -1483,69 +1457,121 @@ export function TargetRolesPage() {
           : 'Target Role Draft Created',
       description:
         targetStatus === 'sent'
-          ? `Role ${newRole.title} (${newRole.code}) created and dispatched to ${expertName}.`
-          : `Draft role ${newRole.code} - ${newRole.title} initialized.`,
+          ? `Role ${roleForm.title.trim()} (${roleCode}) created and dispatched to ${expertName}.`
+          : `Draft role ${roleCode} - ${roleForm.title.trim()} created and saved to catalog.`,
       variant: 'success',
     })
 
-    toast({
-      title:
-        targetStatus === 'sent'
-          ? 'Target Role Created & Sent to Expert'
-          : 'Target Role Draft Created',
-      description:
-        targetStatus === 'sent'
-          ? `Role ${newRole.title} (${newRole.code}) created and dispatched to ${expertName}.`
-          : `Draft role ${newRole.code} - ${newRole.title} initialized.`,
-      variant: 'success',
+    // Reset create role form
+    setRoleForm({
+      code: `ROLE-${Math.random().toString(36).substring(2, 6).toUpperCase()}`,
+      title: '',
+      jobPositionCode: selectedOcc.code,
+      scope: selectedOcc.description,
+      familyCode: selectedOcc.profiles?.[0] || 'DEV',
+      track: 'PROFESSIONAL',
+      levelNames: ['Senior', 'Middle', 'Junior'],
+      levelDurations: {
+        Senior: '6 months',
+        Middle: '4 months',
+        Junior: '3 months',
+      },
+      assignedExpertId: '',
+      description: selectedOcc.description,
     })
+
+    try {
+      const createdData = (await request(
+        `/api/v1/organizations/${orgId}/target-roles`,
+        'POST',
+        {
+          code: roleCode,
+          name: newRole.title,
+          familyCode: selectedOcc.code,
+          track: roleForm.track,
+          responsibilities: [],
+          assignedExpertId: roleForm.assignedExpertId,
+          description:
+            roleForm.scope || roleForm.description || selectedOcc.description,
+          competencyIds: [],
+          levels: roleForm.levelNames,
+          levelDurations: roleForm.levelDurations,
+          status: backendStatus,
+        },
+        {
+          'X-User-Role': 'LD_MANAGER',
+        },
+      )) as Record<string, unknown> | null
+
+      if (createdData && createdData.id) {
+        newRole.id = String(createdData.id)
+        saveTargetRoleMeta(orgId, {
+          id: String(createdData.id),
+          code: roleCode,
+          jobPositionCode: selectedOcc.code,
+          jobPositionTitle: selectedOcc.name,
+          department: managerDepartment?.name || selectedOcc.name,
+          departmentId: managerDepartment?.id,
+          assignedExpertId: roleForm.assignedExpertId,
+          assignedExpertName: expertName,
+          levelNames: roleForm.levelNames,
+          levelDurations: roleForm.levelDurations,
+        })
+        saveAndSetRoles((prev) =>
+          prev.map((r) => (r.code === roleCode ? newRole : r)),
+        )
+      }
+      await fetchRoles()
+    } catch (err: any) {
+      if (err?.status === 409 || err?.message?.includes('409') || err?.code === 'CONFLICT') {
+        // Rollback local optimistic add
+        updateActiveCompany((c) => ({
+          ...c,
+          targetRoles: (c.targetRoles || []).filter((r) => r.code !== newRole.code),
+        }))
+        setRoles((prev) => prev.filter((r) => r.code !== newRole.code))
+
+        toast({
+          title: 'Duplicate Role Code',
+          description: `Role Code ${roleCode} already exists for this organization.`,
+          variant: 'destructive',
+        })
+        return
+      }
+    }
   }
 
   // Delete Target Role (Draft or Published)
-
   const handleDeleteRole = async (role: TargetRoleModel) => {
     const orgId = resolveWorkspaceOrgId(
       session?.identity?.organizationId || activeComp?.id,
     )
 
-    try {
-      const res = await fetch(
-        `/api/v1/organizations/${orgId}/target-roles/${role.id}`,
-        {
-          method: 'DELETE',
-          headers: {
-            'X-User-Role': 'LD_MANAGER',
-          },
-        },
-      )
-      if (!res.ok && res.status === 403) {
-        toast({
-          title: 'Action Not Permitted',
-          description:
-            'L&D Managers can only delete target roles in draft status.',
-          variant: 'destructive',
-        })
-        setDeletingRole(null)
-        return
-      }
-      await fetchRoles()
-    } catch {
-      // Local fallback
-    }
-
-    saveAndSetRoles((prev) => prev.filter((r) => r.id !== role.id))
-
+    // 1. Instantly close confirmation and edit/view modals
     setDeletingRole(null)
-
-    if (selectedRole?.id === role.id) {
+    if (
+      selectedRole?.id === role.id ||
+      (selectedRole?.code && role.code && selectedRole.code.trim().toUpperCase() === role.code.trim().toUpperCase())
+    ) {
       setIsSkillTargetsModalOpen(false)
-
       setSelectedRole(null)
     }
-
-    if (viewingDetailsRole?.id === role.id) {
+    if (
+      viewingDetailsRole?.id === role.id ||
+      (viewingDetailsRole?.code && role.code && viewingDetailsRole.code.trim().toUpperCase() === role.code.trim().toUpperCase())
+    ) {
       setViewingDetailsRole(null)
     }
+
+    // 2. Instantly remove from local roles state and persisted company store
+    const isTargetMatch = (r: TargetRoleModel) =>
+      r.id === role.id ||
+      (Boolean(r.code && role.code) &&
+        r.code.trim().toUpperCase() === role.code.trim().toUpperCase() &&
+        String(r.version || '1.0').trim() === String(role.version || '1.0').trim())
+
+    deleteTargetRoleMeta(orgId, role.id, role.code)
+    saveAndSetRoles((prev) => prev.filter((r) => !isTargetMatch(r)))
 
     toast({
       title:
@@ -1555,6 +1581,29 @@ export function TargetRolesPage() {
       description: `${role.title} (${role.code} v${role.version}) has been permanently deleted from the organization catalog.`,
       variant: 'info',
     })
+
+    // 3. Perform backend delete in background
+    try {
+      await request(
+        `/api/v1/organizations/${orgId}/target-roles/${role.id}`,
+        'DELETE',
+        undefined,
+        {
+          'X-User-Role': 'LD_MANAGER',
+        },
+      )
+      await fetchRoles()
+    } catch (err: any) {
+      if (err?.status === 403 || err?.code === 'FORBIDDEN') {
+        toast({
+          title: 'Action Not Permitted',
+          description:
+            'L&D Managers can only delete target roles in draft status.',
+          variant: 'destructive',
+        })
+        await fetchRoles()
+      }
+    }
   }
 
   // Open edit role modal (L&D Manager scope: edit attributes & assigned expert)
@@ -1571,10 +1620,14 @@ export function TargetRolesPage() {
       activeDepartmentCodes.has(rawOccCode) || activeAllCodes.has(rawOccCode)
         ? rawOccCode
         : jobPositionOptions[0]?.value || latestPositions[0]?.code || ''
+    const roleDeptScope =
+      role.departmentId || role.department
+        ? { id: role.departmentId, name: role.department }
+        : managerDepartment
     const eligibleExperts = getEligibleExpertsForJobPosition(
       occCode,
       orgId,
-      managerDepartment,
+      roleDeptScope,
       orgExperts,
     )
     const isCurrentEligible = eligibleExperts.some(
@@ -1653,41 +1706,6 @@ export function TargetRolesPage() {
                 ? 'REJECTED'
                 : 'DRAFT'
 
-    try {
-      const res = await fetch(
-        `/api/v1/organizations/${orgId}/target-roles/${selectedRole.id}`,
-        {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-User-Role': 'LD_MANAGER',
-          },
-          body: JSON.stringify({
-            name: editRoleForm.title.trim(),
-            familyCode: editRoleForm.familyCode,
-            track: editRoleForm.track,
-            responsibilities: [],
-            assignedExpertId: editRoleForm.assignedExpertId,
-            description:
-              editRoleForm.scope ||
-              editRoleForm.description ||
-              selectedOcc.description,
-            status: newStatus,
-            version: selectedRole.version,
-            skillTargets: selectedRole.skillTargets,
-            levels: editRoleForm.levelNames,
-            levelDurations: editRoleForm.levelDurations,
-          }),
-        },
-      )
-
-      if (res.ok) {
-        await fetchRoles()
-      }
-    } catch {
-      // Local fallback
-    }
-
     const updatedRole: TargetRoleModel = {
       ...selectedRole,
       title: editRoleForm.title.trim(),
@@ -1717,14 +1735,23 @@ export function TargetRolesPage() {
       updatedAt: new Date().toISOString(),
     }
 
+    // 1. Immediately update local state and persistence
     saveAndSetRoles((prev) =>
-      prev.map((r) => (r.id === selectedRole.id ? updatedRole : r)),
+      prev.map((r) =>
+        r.id === selectedRole.id ||
+        (Boolean(r.code && selectedRole.code) &&
+          r.code.trim().toUpperCase() === selectedRole.code.trim().toUpperCase() &&
+          r.version === selectedRole.version)
+          ? updatedRole
+          : r
+      ),
     )
 
-    setSelectedRole(updatedRole)
-
+    // 2. Immediately close the Edit Role modal
     setIsSkillTargetsModalOpen(false)
+    setSelectedRole(null)
 
+    // 3. Immediately show feedback toast
     toast({
       title:
         targetStatus === 'sent'
@@ -1736,6 +1763,36 @@ export function TargetRolesPage() {
           : `Saved changes to ${updatedRole.code} - ${updatedRole.title}.`,
       variant: 'success',
     })
+
+    // 4. Background server sync
+    try {
+      await request(
+        `/api/v1/organizations/${orgId}/target-roles/${selectedRole.id}`,
+        'PUT',
+        {
+          name: editRoleForm.title.trim(),
+          familyCode: selectedOcc.code || editRoleForm.familyCode,
+          track: editRoleForm.track,
+          responsibilities: [],
+          assignedExpertId: editRoleForm.assignedExpertId,
+          description:
+            editRoleForm.scope ||
+            editRoleForm.description ||
+            selectedOcc.description,
+          status: newStatus,
+          version: selectedRole.version,
+          skillTargets: selectedRole.skillTargets,
+          levels: editRoleForm.levelNames,
+          levelDurations: editRoleForm.levelDurations,
+        },
+        {
+          'X-User-Role': 'LD_MANAGER',
+        },
+      )
+      await fetchRoles()
+    } catch {
+      // Local fallback
+    }
   }
 
   // L&D Manager: Approve and Publish submitted configuration (REQ-052)
@@ -1776,38 +1833,34 @@ export function TargetRolesPage() {
         levels: role.levels,
         levelDurations: role.levelDurations,
       }
-      let res = await fetch(
-        `/api/v1/organizations/${effectiveOrgId}/target-roles/${encodeURIComponent(role.id)}`,
-        {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
+      try {
+        await request(
+          `/api/v1/organizations/${effectiveOrgId}/target-roles/${encodeURIComponent(role.id)}`,
+          'PUT',
+          payload,
+          {
             'X-User-Role': 'LD_MANAGER',
           },
-          body: JSON.stringify(payload),
-        },
-      )
-      if (!res.ok && role.code && role.code !== role.id) {
-        res = await fetch(
-          `/api/v1/organizations/${effectiveOrgId}/target-roles/${encodeURIComponent(role.code)}`,
-          {
-            method: 'PUT',
-            headers: {
-              'Content-Type': 'application/json',
+        )
+      } catch {
+        if (role.code && role.code !== role.id) {
+          await request(
+            `/api/v1/organizations/${effectiveOrgId}/target-roles/${encodeURIComponent(role.code)}`,
+            'PUT',
+            payload,
+            {
               'X-User-Role': 'LD_MANAGER',
             },
-            body: JSON.stringify(payload),
-          },
-        )
+          ).catch(() => {})
+        }
       }
-
       await fetchRoles()
     } catch {
       // Already saved via saveAndSetRoles
     }
 
     if (viewingDetailsRole?.id === role.id) {
-      setViewingDetailsRole(updatedRole)
+      setViewingDetailsRole(null)
     }
 
     toast({
@@ -1853,38 +1906,34 @@ export function TargetRolesPage() {
         levels: role.levels,
         levelDurations: role.levelDurations,
       }
-      let res = await fetch(
-        `/api/v1/organizations/${effectiveOrgId}/target-roles/${encodeURIComponent(role.id)}`,
-        {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
+      try {
+        await request(
+          `/api/v1/organizations/${effectiveOrgId}/target-roles/${encodeURIComponent(role.id)}`,
+          'PUT',
+          payload,
+          {
             'X-User-Role': 'LD_MANAGER',
           },
-          body: JSON.stringify(payload),
-        },
-      )
-      if (!res.ok && role.code && role.code !== role.id) {
-        res = await fetch(
-          `/api/v1/organizations/${effectiveOrgId}/target-roles/${encodeURIComponent(role.code)}`,
-          {
-            method: 'PUT',
-            headers: {
-              'Content-Type': 'application/json',
+        )
+      } catch {
+        if (role.code && role.code !== role.id) {
+          await request(
+            `/api/v1/organizations/${effectiveOrgId}/target-roles/${encodeURIComponent(role.code)}`,
+            'PUT',
+            payload,
+            {
               'X-User-Role': 'LD_MANAGER',
             },
-            body: JSON.stringify(payload),
-          },
-        )
+          ).catch(() => {})
+        }
       }
-
       await fetchRoles()
     } catch {
       // Already saved via saveAndSetRoles
     }
 
     if (viewingDetailsRole?.id === role.id) {
-      setViewingDetailsRole(updatedRole)
+      setViewingDetailsRole(null)
     }
 
     toast({
@@ -1931,62 +1980,54 @@ export function TargetRolesPage() {
       updatedAt: new Date().toISOString(),
     }
 
-    try {
-      const res = await fetch(
-        `/api/v1/organizations/${orgId}/target-roles/${managerRejectingRole.id}`,
-        {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-User-Role': 'LD_MANAGER',
-          },
-          body: JSON.stringify({
-            name: managerRejectingRole.title,
-            familyCode: managerRejectingRole.familyCode,
-            track: managerRejectingRole.track,
-            responsibilities: managerRejectingRole.responsibilities,
-            assignedExpertId: managerRejectingRole.assignedExpertId,
-            description: managerRejectingRole.description,
-            status: 'REJECTED',
-            version: managerRejectingRole.version,
-            skillTargets: managerRejectingRole.skillTargets,
-            competencyIds: managerRejectingRole.competencyIds,
-            levelCompetencies: managerRejectingRole.levelCompetencies,
-            levels: managerRejectingRole.levels,
-            levelDurations: managerRejectingRole.levelDurations,
-            rejectionReason: fullRejectionReason,
-          }),
-        },
-      )
+    // Immediately close modal and reset state
+    setIsManagerRejectDialogOpen(false)
+    setManagerRejectingRole(null)
+    setManagerRejectionReason('')
 
-      if (res.ok) {
-        await fetchRoles()
-      } else {
-        saveAndSetRoles((prev) =>
-          prev.map((r) => (r.id === managerRejectingRole.id ? updatedRole : r)),
-        )
-      }
-    } catch {
-      saveAndSetRoles((prev) =>
-        prev.map((r) => (r.id === managerRejectingRole.id ? updatedRole : r)),
-      )
-    }
+    // Immediately update optimistic state
+    saveAndSetRoles((prev) =>
+      prev.map((r) => (r.id === managerRejectingRole.id ? updatedRole : r)),
+    )
 
     if (viewingDetailsRole?.id === managerRejectingRole.id) {
-      setViewingDetailsRole(updatedRole)
+      setViewingDetailsRole(null)
     }
-
-    setIsManagerRejectDialogOpen(false)
-
-    setManagerRejectingRole(null)
-
-    setManagerRejectionReason('')
 
     toast({
       title: 'Target Role Returned for Revision',
       description: `${updatedRole.title} (${updatedRole.code}) returned to draft status with revision guidance for the expert.`,
       variant: 'info',
     })
+
+    try {
+      await request(
+        `/api/v1/organizations/${orgId}/target-roles/${managerRejectingRole.id}`,
+        'PUT',
+        {
+          name: managerRejectingRole.title,
+          familyCode: managerRejectingRole.familyCode,
+          track: managerRejectingRole.track,
+          responsibilities: managerRejectingRole.responsibilities,
+          assignedExpertId: managerRejectingRole.assignedExpertId,
+          description: managerRejectingRole.description,
+          status: 'REJECTED',
+          version: managerRejectingRole.version,
+          skillTargets: managerRejectingRole.skillTargets,
+          competencyIds: managerRejectingRole.competencyIds,
+          levelCompetencies: managerRejectingRole.levelCompetencies,
+          levels: managerRejectingRole.levels,
+          levelDurations: managerRejectingRole.levelDurations,
+          rejectionReason: fullRejectionReason,
+        },
+        {
+          'X-User-Role': 'LD_MANAGER',
+        },
+      )
+      await fetchRoles()
+    } catch {
+      // Local optimistic state is already saved
+    }
   }
 
   // Toggle Competency Mapping
@@ -2080,14 +2121,30 @@ export function TargetRolesPage() {
       return
     }
 
+    // Immediately close modal and reset selected role
+    setIsPublishModalOpen(false)
+    setSelectedRole(null)
+
+    // Optimistically update in-memory state
+    saveAndSetRoles((prev) =>
+      prev.map((r) =>
+        r.id === role.id
+          ? { ...r, status: 'published', updatedAt: new Date().toISOString() }
+          : r,
+      ),
+    )
+
+    toast({
+      title: 'Target Role Published',
+      description: `${role.code} (${role.version}) is now published and active for enterprise diagnostic matching.`,
+      variant: 'success',
+    })
+
     try {
-      await fetch(`/api/v1/organizations/${orgId}/target-roles/${role.id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-User-Role': 'LD_MANAGER',
-        },
-        body: JSON.stringify({
+      await request(
+        `/api/v1/organizations/${orgId}/target-roles/${role.id}`,
+        'PUT',
+        {
           name: role.title,
           familyCode: role.familyCode,
           track: role.track,
@@ -2096,27 +2153,16 @@ export function TargetRolesPage() {
           status: 'ACTIVE',
           version: role.version,
           skillTargets: role.skillTargets,
-        }),
-      })
+        },
+        {
+          'X-User-Role': 'LD_MANAGER',
+        },
+      )
 
       await fetchRoles()
     } catch {
-      saveAndSetRoles((prev) =>
-        prev.map((r) =>
-          r.id === role.id
-            ? { ...r, status: 'published', updatedAt: new Date().toISOString() }
-            : r,
-        ),
-      )
+      // Local optimistic state is already saved
     }
-
-    setIsPublishModalOpen(false)
-
-    toast({
-      title: 'Target Role Published',
-      description: `${role.code} (${role.version}) is now published and active for enterprise diagnostic matching.`,
-      variant: 'success',
-    })
   }
 
   return (
@@ -3249,7 +3295,10 @@ export function TargetRolesPage() {
       {selectedRole && (
         <Dialog
           open={isMappingsModalOpen}
-          onOpenChange={setIsMappingsModalOpen}
+          onOpenChange={(open) => {
+            setIsMappingsModalOpen(open)
+            if (!open) setSelectedRole(null)
+          }}
         >
           <div className="space-y-4">
             <DialogHeader>
@@ -3428,7 +3477,10 @@ export function TargetRolesPage() {
               <Button
                 variant="primary"
                 size="sm"
-                onClick={() => setIsMappingsModalOpen(false)}
+                onClick={() => {
+                  setIsMappingsModalOpen(false)
+                  setSelectedRole(null)
+                }}
               >
                 Done
               </Button>
@@ -3456,7 +3508,10 @@ export function TargetRolesPage() {
           return (
             <Dialog
               open={isSkillTargetsModalOpen}
-              onOpenChange={setIsSkillTargetsModalOpen}
+              onOpenChange={(open) => {
+                setIsSkillTargetsModalOpen(open)
+                if (!open) setSelectedRole(null)
+              }}
               className="max-w-3xl max-h-[88vh] flex flex-col p-6 overflow-hidden"
             >
               <DialogHeader className="shrink-0 mb-3">
@@ -3675,7 +3730,7 @@ export function TargetRolesPage() {
                         const eligible = getEligibleExpertsForJobPosition(
                           val,
                           orgId,
-                          managerDepartment,
+                          editRoleDeptScope,
                           orgExperts,
                         )
                         const isCurrentEligible = eligible.some(
@@ -4080,6 +4135,7 @@ export function TargetRolesPage() {
                       onClick={() => {
                         const r = selectedRole
                         setIsSkillTargetsModalOpen(false)
+                        setSelectedRole(null)
                         setDeletingRole(r)
                       }}
                     >
@@ -4089,7 +4145,10 @@ export function TargetRolesPage() {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => setIsSkillTargetsModalOpen(false)}
+                        onClick={() => {
+                          setIsSkillTargetsModalOpen(false)
+                          setSelectedRole(null)
+                        }}
                       >
                         Cancel
                       </Button>
@@ -4121,7 +4180,10 @@ export function TargetRolesPage() {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => setIsSkillTargetsModalOpen(false)}
+                        onClick={() => {
+                          setIsSkillTargetsModalOpen(false)
+                          setSelectedRole(null)
+                        }}
                       >
                         Cancel
                       </Button>
@@ -4148,7 +4210,10 @@ export function TargetRolesPage() {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => setIsSkillTargetsModalOpen(false)}
+                      onClick={() => {
+                        setIsSkillTargetsModalOpen(false)
+                        setSelectedRole(null)
+                      }}
                     >
                       Close
                     </Button>
@@ -5055,7 +5120,7 @@ export function TargetRolesPage() {
 
                     onClick={() => {
                       const r = viewingDetailsRole
-
+                      setViewingDetailsRole(null)
                       handleApproveAndPublishRole(r)
                     }}
 

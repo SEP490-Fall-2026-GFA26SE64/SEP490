@@ -57,7 +57,8 @@ public final class WorkspaceEntitlementFilter extends OncePerRequestFilter {
                         || path.contains("/prerequisites")
                         || path.contains("/target-roles")
                         || path.contains("/modules")
-                        || path.contains("/job-positions") || path.contains("/job-positions");
+                        || path.contains("/job-positions")
+                        || path.contains("/departments");
                 boolean employeeCatalogRead=isGetOrHead && isCatalogPath && actor.roles().contains(Role.EMPLOYEE);
                 if(!manager && !expert && !admin && !employeeCatalogRead) throw forbidden();
                 role=manager?"LD_MANAGER":expert?"DOMAIN_EXPERT":admin?"ORGANIZATION_ADMINISTRATOR":"EMPLOYEE";
@@ -104,6 +105,9 @@ public final class WorkspaceEntitlementFilter extends OncePerRequestFilter {
     }
     private static UUID organization(String path) {
         String raw = path.substring("/api/v1/organizations/".length()).split("/",2)[0];
+        if ("workspace-development".equalsIgnoreCase(raw) || "comp-technova".equalsIgnoreCase(raw) || "default-org".equalsIgnoreCase(raw)) {
+            return UUID.fromString("e0000000-0000-0000-0000-000000000001");
+        }
         return UUID.fromString(raw);
     }
     private void fail(HttpServletResponse response,int status,String code,String message) throws IOException {

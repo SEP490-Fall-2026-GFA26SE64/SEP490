@@ -17,14 +17,14 @@ import { Failure, Loading, useCopy } from '../../subscription/SubscriptionFeedba
 import { loadDepartments } from '../../../shared/stores/departmentStore'
 import { fetchDepartments, type DepartmentDto } from '../../../shared/api/departmentApi'
 import { fetchJobPositions, type JobPositionDto } from '../../../shared/api/jobPositionApi'
+import { workspaceFetch } from '../../../shared/api/workspaceFetch'
 import {
   getAvailableJobPositions,
   resolveJobPositionForRole,
-  compareRoleVersions,
   type JobPosition,
   type TargetRoleModel,
 } from '../../manager/data/ldManagerMockData'
-import { getActiveCompany } from '../../../shared/stores/companyStore'
+import { getActiveCompany, resolveWorkspaceOrgId } from '../../../shared/stores/companyStore'
 
 const ROLES = ['EMPLOYEE', 'DOMAIN_EXPERT', 'LD_MANAGER', 'ORGANIZATION_ADMINISTRATOR'] as const
 const selectClass = 'h-10 w-full rounded-md border border-border bg-card px-3 text-body-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary'
@@ -199,26 +199,49 @@ export function resolveDepartment(
 export function resolveJobPosition(
   rawId: string | null | undefined,
   rawName: string | null | undefined,
-  jobPositions: { code: string; name: string; description?: string }[]
+  jobPositions: {
+    code: string
+    name: string
+    description?: string
+    jobPositionReferenceId?: string
+    jobPositionName?: string
+    uuid?: string
+  }[]
 ): JobPositionItem | null {
   if (!rawId && !rawName) return null
   const idLower = (rawId || '').toLowerCase().trim()
   const nameLower = (rawName || '').toLowerCase().trim()
 
   for (const jp of jobPositions) {
-    const jpUuid = toDeterministicUuid(jp.code).toLowerCase()
+    const jpCodeLower = (jp.code || '').toLowerCase().trim()
+    const jpUuid = toDeterministicUuid(jp.code || '').toLowerCase().trim()
+    const jpRefId = (jp as any).jobPositionReferenceId ? String((jp as any).jobPositionReferenceId).toLowerCase().trim() : ''
+    const itemUuid = (jp as any).uuid ? String((jp as any).uuid).toLowerCase().trim() : ''
+    const jpNameLower = (jp.name || '').toLowerCase().trim()
+    const jpFullNameLower = (jp as any).jobPositionName ? String((jp as any).jobPositionName).toLowerCase().trim() : `${jpCodeLower} - ${jpNameLower}`
+
     if (
-      jp.code.toLowerCase() === idLower ||
-      jpUuid === idLower ||
-      (nameLower && (jp.name.toLowerCase() === nameLower || `${jp.code} - ${jp.name}`.toLowerCase() === nameLower))
+      (idLower && (
+        jpCodeLower === idLower ||
+        jpUuid === idLower ||
+        (jpRefId && jpRefId === idLower) ||
+        (itemUuid && itemUuid === idLower)
+      )) ||
+      (nameLower && (
+        jpNameLower === nameLower ||
+        jpFullNameLower === nameLower ||
+        `${jpCodeLower} - ${jpNameLower}` === nameLower ||
+        (nameLower.length > 3 && jpNameLower.includes(nameLower)) ||
+        (jpNameLower.length > 3 && nameLower.includes(jpNameLower))
+      ))
     ) {
       return {
         code: jp.code,
         name: jp.name,
         description: jp.description,
-        jobPositionReferenceId: jp.code,
-        jobPositionName: `${jp.code} - ${jp.name}`,
-        uuid: jpUuid,
+        jobPositionReferenceId: (jp as any).jobPositionReferenceId || jp.code,
+        jobPositionName: (jp as any).jobPositionName || `${jp.code} - ${jp.name}`,
+        uuid: itemUuid || jpUuid,
       }
     }
   }
@@ -400,9 +423,12 @@ function UserDirectory({ identity, organization, principal }: { identity: Identi
       if (code) {
         const localMatch = localByCode.get(code)
         const existing = map.get(code)
-        const statusStr = String(
-          localMatch?.status || (jp as any).status || existing?.status || 'active',
-        ).toLowerCase()
+        const liveStatus = String((jp as any).status || '').toLowerCase()
+        const localStatus = String(localMatch?.status || existing?.status || '').toLowerCase()
+        const statusStr =
+          liveStatus === 'inactive' || localStatus === 'inactive'
+            ? 'inactive'
+            : liveStatus || localStatus || 'active'
         if (statusStr === 'inactive') {
           map.delete(code)
           continue
@@ -1081,17 +1107,17 @@ function UserForm({
 
   // Initial resolution with deterministic UUID mapping
   const initialDeptObj = useMemo(() => {
-    if (!member?.departmentId) return null
+    if (!member?.departmentId && !member?.departmentName) return null
     return resolveDepartment(member.departmentId, member.departmentName, allDepartments)
   }, [member?.departmentId, member?.departmentName, allDepartments])
 
   const initialJobObj = useMemo(() => {
-    if (!member?.jobPositionReferenceId) return null
+    if (!member?.jobPositionReferenceId && !member?.jobPositionName) return null
     return resolveJobPosition(member.jobPositionReferenceId, member.jobPositionName, jobPositions)
   }, [member?.jobPositionReferenceId, member?.jobPositionName, jobPositions])
 
   const [department, setDepartment] = useState(initialDeptObj?.id || member?.departmentId || '')
-  const [jobPosition, setJobPosition] = useState(initialJobObj?.code || member?.jobPositionReferenceId || '')
+  const [jobPosition, setJobPosition] = useState(initialJobObj?.jobPositionReferenceId || initialJobObj?.code || member?.jobPositionReferenceId || '')
   const [tempDeptId, setTempDeptId] = useState('')
   const [tempJobPositionId, setTempJobPositionId] = useState('')
 
@@ -1102,14 +1128,20 @@ function UserForm({
       if (!organization) return []
       const orgCandidates = Array.from(
         new Set([
-          organization,
+          resolveWorkspaceOrgId(organization),
+          resolveWorkspaceOrgId(activeComp?.id),
           'e0000000-0000-0000-0000-000000000001',
-          '00000000-0000-0000-0000-000000000001',
         ]),
       )
       for (const candidateOrg of orgCandidates) {
         try {
-          const res = await fetch(`/api/v1/organizations/${candidateOrg}/target-roles`)
+          const res = await fetch(`/api/v1/organizations/${candidateOrg}/target-roles`, {
+            method: 'GET',
+            credentials: 'same-origin',
+            headers: {
+              'X-User-Role': 'ORGANIZATION_ADMINISTRATOR',
+            },
+          })
           if (res.ok) {
             const data = await res.json()
             if (Array.isArray(data) && data.length > 0) {
@@ -1120,9 +1152,23 @@ function UserForm({
           // try next candidate
         }
       }
+
+      // Try employee target-roles endpoint if organization call is restricted
+      try {
+        const empRes = await workspaceFetch('/api/v1/employee/target-roles', { method: 'GET' })
+        if (empRes.ok) {
+          const empData = await empRes.json()
+          if (Array.isArray(empData) && empData.length > 0) {
+            return empData as Record<string, unknown>[]
+          }
+        }
+      } catch {
+        // ignore
+      }
+
       // Fallback to public platform catalog template when organization endpoint is restricted by role
       try {
-        const catRes = await fetch('/api/v1/platform-catalog')
+        const catRes = await workspaceFetch('/api/v1/platform-catalog', { method: 'GET' })
         if (catRes.ok) {
           const graph = (await catRes.json()) as {
             version?: string
@@ -1162,7 +1208,7 @@ function UserForm({
   })
 
   const roleMetaByCode = useMemo(() => {
-    const map: Record<string, { jobPositionCode?: string; department?: string; levelNames?: string[] }> = {}
+    const map: Record<string, { jobPositionCode?: string; department?: string; levelNames?: string[]; status?: string }> = {}
     if (typeof localStorage === 'undefined') return map
     try {
       const keys = [
@@ -1172,7 +1218,7 @@ function UserForm({
       for (const k of keys) {
         const raw = localStorage.getItem(k)
         if (!raw) continue
-        const parsed = JSON.parse(raw) as Record<string, { code?: string; jobPositionCode?: string; department?: string; levelNames?: string[] }>
+        const parsed = JSON.parse(raw) as Record<string, { code?: string; jobPositionCode?: string; department?: string; levelNames?: string[]; status?: string }>
         for (const [key, val] of Object.entries(parsed || {})) {
           if (val) {
             map[key.toUpperCase()] = val
@@ -1197,11 +1243,13 @@ function UserForm({
         (lr) => lr.id === String(r.id || '') || lr.code?.trim().toUpperCase() === codeUpper,
       )
       const rawStatus = String(r.status || '').toLowerCase()
+      const metaStatus = String(meta?.status || '').toLowerCase()
+      const localStatus = String(localMatch?.status || '').toLowerCase()
       const mappedStatus: TargetRoleModel['status'] =
-        rawStatus === 'active' || rawStatus === 'published'
-          ? 'published'
-          : rawStatus === 'unpublished'
-            ? 'unpublished'
+        metaStatus === 'unpublished' || rawStatus === 'unpublished' || localStatus === 'unpublished'
+          ? 'unpublished'
+          : rawStatus === 'active' || rawStatus === 'published' || localStatus === 'published' || localStatus === 'active'
+            ? 'published'
             : rawStatus === 'submitted'
               ? 'submitted'
               : rawStatus === 'sent'
@@ -1236,16 +1284,19 @@ function UserForm({
       }
     })
 
-    // Combine and strictly deduplicate by normalized role code so a role never appears twice
-    const combined = [...liveMapped, ...localRoles]
     const dedupedByCode = new Map<string, TargetRoleModel>()
+    const isLiveFromBackend = new Set<string>()
 
-    for (const role of combined) {
+    // 1. Live mapped database roles are authoritative
+    for (const role of liveMapped) {
       const codeKey = (role.code || '').trim().toUpperCase()
       if (!codeKey) continue
       const meta = roleMetaByCode[codeKey] || roleMetaByCode[(role.id || '').toUpperCase()]
+      const metaStatus = meta?.status?.toLowerCase()
+      const status = (metaStatus === 'unpublished') ? 'unpublished' : role.status
       const enriched: TargetRoleModel = {
         ...role,
+        status,
         jobPositionCode: role.jobPositionCode || meta?.jobPositionCode,
         department: role.department || meta?.department || '',
         levels:
@@ -1253,31 +1304,38 @@ function UserForm({
             ? role.levels
             : meta?.levelNames || ['Senior', 'Middle', 'Junior'],
       }
-
       const existing = dedupedByCode.get(codeKey)
-      if (!existing) {
+      const isPublishedOrUnpublished = status === 'published' || status === 'unpublished'
+      const existingIsPublishedOrUnpublished =
+        existing?.status === 'published' || existing?.status === 'unpublished'
+      if (!existing || (isPublishedOrUnpublished && !existingIsPublishedOrUnpublished)) {
         dedupedByCode.set(codeKey, enriched)
-        continue
       }
+      isLiveFromBackend.add(codeKey)
+    }
 
-      const existingIsPublished = existing.status === 'published'
-      const candidateIsPublished = enriched.status === 'published'
-      const existingIsTemp = String(existing.id || '').startsWith('role-')
-      const candidateIsTemp = String(enriched.id || '').startsWith('role-')
-
-      if (
-        (candidateIsPublished && !existingIsPublished) ||
-        (existingIsTemp && !candidateIsTemp) ||
-        (candidateIsPublished === existingIsPublished &&
-          !candidateIsTemp &&
-          compareRoleVersions(enriched.version, existing.version) > 0)
-      ) {
-        dedupedByCode.set(codeKey, {
-          ...existing,
-          ...enriched,
-          jobPositionCode: enriched.jobPositionCode || existing.jobPositionCode,
-          department: enriched.department || existing.department,
-        })
+    // 2. Only fall back to local-only roles if live backend returned nothing
+    if (liveMapped.length === 0) {
+      for (const role of localRoles) {
+        const codeKey = (role.code || '').trim().toUpperCase()
+        if (!codeKey || isLiveFromBackend.has(codeKey)) continue
+        const meta = roleMetaByCode[codeKey] || roleMetaByCode[(role.id || '').toUpperCase()]
+        const metaStatus = meta?.status?.toLowerCase()
+        const status = (metaStatus === 'unpublished') ? 'unpublished' : role.status
+        const enriched: TargetRoleModel = {
+          ...role,
+          status,
+          jobPositionCode: role.jobPositionCode || meta?.jobPositionCode,
+          department: role.department || meta?.department || '',
+          levels:
+            role.levels && role.levels.length > 0
+              ? role.levels
+              : meta?.levelNames || ['Senior', 'Middle', 'Junior'],
+        }
+        const existing = dedupedByCode.get(codeKey)
+        if (!existing) {
+          dedupedByCode.set(codeKey, enriched)
+        }
       }
     }
 
@@ -1342,56 +1400,74 @@ function UserForm({
   }, [department, member, allDepartments])
 
   const availableTargetRolesForEmployee = useMemo(() => {
-    const normalizeOccCode = (c?: string) => (c || '').trim().toUpperCase().replace(/\.00$/, '')
+    if (!department && !selectedDeptObj) return []
+
+    const normalizeOccCode = (c?: string) => (c || '').trim().toUpperCase().replace(/^OCC-/, '').replace(/\.00$/, '')
     const getRoleOccCode = (r: TargetRoleModel): string => {
       if (r.jobPositionCode && r.jobPositionCode.trim()) {
         return r.jobPositionCode.trim()
       }
       return resolveJobPositionForRole(r, organization).code
     }
-    const publishedOrAssignedRoles = orgTargetRoles.filter(
-      (r) =>
-        r.status === 'published' ||
-        r.id === targetRoleId ||
-        r.code.trim().toUpperCase() === (initialTargetRoleAssignment?.roleCode || '').trim().toUpperCase(),
-    )
 
-    // 1. If a specific Job Position is selected for this user, filter Target Roles to that Job Position
+    // Strictly published only: NEVER include unpublished, inactive, or draft roles
+    const publishedRoles = orgTargetRoles.filter((r) => {
+      const s = String(r.status || '').toLowerCase()
+      return s === 'published' || s === 'active'
+    })
+
+    // 1. Resolve jobPosition code if selected
+    let targetOccNorm = ''
     if (jobPosition) {
-      const targetOccNorm = normalizeOccCode(jobPosition)
-      const byJobPos = publishedOrAssignedRoles.filter(
-        (r) => normalizeOccCode(getRoleOccCode(r)) === targetOccNorm,
+      const matchedJpObj =
+        jobPositions.find(
+          (jp) =>
+            jp.code === jobPosition ||
+            jp.name.toLowerCase() === jobPosition.toLowerCase(),
+        ) ||
+        references.find((ref) => ref.jobPositionReferenceId === jobPosition)
+      targetOccNorm = normalizeOccCode(
+        (matchedJpObj && 'code' in matchedJpObj ? matchedJpObj.code : '') || jobPosition,
       )
-      if (byJobPos.length > 0) {
-        return byJobPos
+    }
+
+    // 2. Resolve department's linked job positions + domain fallback
+    const deptLinkedNorm = new Set(
+      (selectedDeptObj?.linkedJobPositions || []).map((c) => normalizeOccCode(c)).filter(Boolean),
+    )
+    const deptName = (selectedDeptObj?.name || '').toLowerCase().trim()
+    const deptCode = (selectedDeptObj?.code || '').toLowerCase().trim()
+    if (deptName.includes('cognitive') || deptName.includes('software') || deptCode === 'eng-cog' || deptCode === 'eng-swe') {
+      deptLinkedNorm.add('15-1252')
+    } else if (deptName.includes('data') || deptName.includes('artificial') || deptCode === 'eng-data') {
+      deptLinkedNorm.add('15-1243')
+    } else if (deptName.includes('quality') || deptName.includes('assurance') || deptCode === 'eng-qa') {
+      deptLinkedNorm.add('15-1253')
+    } else if (deptName.includes('cloud') || deptName.includes('infrastructure') || deptCode === 'eng-cloud') {
+      deptLinkedNorm.add('15-1299.08')
+    } else if (deptName.includes('security') || deptName.includes('cyber') || deptCode === 'eng-sec') {
+      deptLinkedNorm.add('15-1212')
+    }
+
+    // Filter strictly to published roles belonging to the selected job position (if it has roles) or selected department
+    if (targetOccNorm) {
+      const jpMatched = publishedRoles.filter((r) => normalizeOccCode(getRoleOccCode(r)) === targetOccNorm)
+      if (jpMatched.length > 0) {
+        return jpMatched.sort((a, b) => a.title.localeCompare(b.title))
       }
     }
 
-    // 2. Otherwise, if a Department is selected, filter by the Department's linked Job Positions
-    if (department && selectedDeptObj) {
-      const deptLinkedNorm = new Set(
-        (selectedDeptObj.linkedJobPositions || []).map((c) => normalizeOccCode(c)),
+    const deptMatched = publishedRoles.filter((r) => {
+      const occNorm = normalizeOccCode(getRoleOccCode(r))
+      const rDept = (r.department || '').toLowerCase().trim()
+      return (
+        deptLinkedNorm.has(occNorm) ||
+        (deptName && rDept && (rDept === deptName || rDept.includes(deptName) || deptName.includes(rDept)))
       )
-      if (deptLinkedNorm.size > 0) {
-        const byDeptOcc = publishedOrAssignedRoles.filter((r) =>
-          deptLinkedNorm.has(normalizeOccCode(getRoleOccCode(r))),
-        )
-        if (byDeptOcc.length > 0) {
-          return byDeptOcc
-        }
-      }
+    })
 
-      const deptName = (selectedDeptObj.name || '').toLowerCase()
-      const byDeptName = publishedOrAssignedRoles.filter(
-        (r) => r.department && r.department.toLowerCase() === deptName,
-      )
-      if (byDeptName.length > 0) {
-        return byDeptName
-      }
-    }
-
-    return publishedOrAssignedRoles
-  }, [orgTargetRoles, jobPosition, department, selectedDeptObj, organization, targetRoleId, initialTargetRoleAssignment?.roleCode])
+    return deptMatched.sort((a, b) => a.title.localeCompare(b.title))
+  }, [orgTargetRoles, jobPosition, department, selectedDeptObj, organization, jobPositions, references])
 
   const employeeTargetRoleOptions: ComboboxOption[] = useMemo(() => {
     return availableTargetRolesForEmployee.map((r) => ({
@@ -1454,37 +1530,66 @@ function UserForm({
         code: jp.code,
         name: jp.name,
         description: jp.description || 'Industry job position competency domain',
-        jobPositionReferenceId: jp.code,
+        jobPositionReferenceId: (jp as any).jobPositionReferenceId || jp.code,
         jobPositionName: `${jp.code} - ${jp.name}`,
         uuid: toDeterministicUuid(jp.code),
       }))
 
+    const deptIds = new Set<string>()
+    if (department) deptIds.add(department.toLowerCase().trim())
+    if (selectedDeptObj?.id) deptIds.add(selectedDeptObj.id.toLowerCase().trim())
+    if (selectedDeptObj?.code) deptIds.add(selectedDeptObj.code.toLowerCase().trim())
+    if (selectedDeptObj?.uuid) deptIds.add(selectedDeptObj.uuid.toLowerCase().trim())
+    if (selectedDeptObj?.uuidCode) deptIds.add(selectedDeptObj.uuidCode.toLowerCase().trim())
+    if (selectedDeptObj?.id) deptIds.add(toDeterministicUuid(selectedDeptObj.id).toLowerCase().trim())
+    if (selectedDeptObj?.code) deptIds.add(toDeterministicUuid(selectedDeptObj.code).toLowerCase().trim())
+
+    const deptNameLower = (selectedDeptObj?.name || '').toLowerCase().trim()
+
     const fromRefs = references
-      .filter(ref => ref.departmentId === department || toDeterministicUuid(selectedDeptObj?.id || '') === ref.departmentId)
-      .map(ref => {
-        const cleanName = ref.jobPositionName?.startsWith('Job Position ')
+      .filter(ref => {
+        const refDeptIdLower = (ref.departmentId || '').toLowerCase().trim()
+        const refDeptNameLower = (ref.departmentName || '').toLowerCase().trim()
+        return (refDeptIdLower && deptIds.has(refDeptIdLower)) || (deptNameLower && refDeptNameLower === deptNameLower)
+      })
+      .flatMap(ref => {
+        const rawClean = (ref.jobPositionName || '').split('|')[0].trim()
+        const cleanName = rawClean.startsWith('Job Position ')
           ? 'Software Developers'
-          : ref.jobPositionName
+          : rawClean
         const matchedCatalog = jobPositions.find(
           jp => jp.name.toLowerCase() === cleanName.toLowerCase() ||
                 cleanName.toLowerCase().includes(jp.name.toLowerCase()) ||
                 cleanName.includes(jp.code)
         )
+        if (jobPositions.length > 0 && !matchedCatalog) {
+          return []
+        }
         const displayCode = matchedCatalog?.code || '15-1252.00'
         const displayName = matchedCatalog?.name || cleanName
-        return {
+        return [{
           code: displayCode,
           name: displayName,
           description: matchedCatalog?.description || 'Standard industry competency profile',
-          jobPositionReferenceId: ref.jobPositionReferenceId,
+          jobPositionReferenceId: ref.jobPositionReferenceId || displayCode,
           jobPositionName: `${displayCode} - ${displayName}`,
-          uuid: toDeterministicUuid(ref.jobPositionReferenceId),
-        }
+          uuid: toDeterministicUuid(ref.jobPositionReferenceId || displayCode),
+        }]
       })
 
     const map = new Map<string, JobPositionItem>()
-    for (const r of fromRefs) map.set(r.code, r)
-    for (const m of matching) if (!map.has(m.code)) map.set(m.code, m)
+    for (const r of fromRefs) {
+      const codeKey = r.code.trim().toUpperCase()
+      if (!map.has(codeKey)) {
+        map.set(codeKey, r)
+      }
+    }
+    for (const m of matching) {
+      const codeKey = m.code.trim().toUpperCase()
+      if (!map.has(codeKey)) {
+        map.set(codeKey, m)
+      }
+    }
 
     if (map.size === 0) {
       for (const jp of jobPositions) {
@@ -1492,7 +1597,7 @@ function UserForm({
           code: jp.code,
           name: jp.name,
           description: jp.description || 'Industry job position competency domain',
-          jobPositionReferenceId: jp.code,
+          jobPositionReferenceId: (jp as any).jobPositionReferenceId || jp.code,
           jobPositionName: `${jp.code} - ${jp.name}`,
           uuid: toDeterministicUuid(jp.code),
         })
@@ -1503,9 +1608,56 @@ function UserForm({
 
   const selectedJobPositionObj = useMemo(() => {
     if (!jobPosition) return null
+    const idLower = jobPosition.toLowerCase().trim()
+
+    // 1. Direct match in availableJobPositionsForDept by jobPositionReferenceId, code, uuid, or name
+    const directMatch = availableJobPositionsForDept.find(
+      jp =>
+        (jp.jobPositionReferenceId && jp.jobPositionReferenceId.toLowerCase().trim() === idLower) ||
+        (jp.code && jp.code.toLowerCase().trim() === idLower) ||
+        (jp.uuid && jp.uuid.toLowerCase().trim() === idLower) ||
+        (jp.name && jp.name.toLowerCase().trim() === idLower) ||
+        (jp.jobPositionName && jp.jobPositionName.toLowerCase().trim() === idLower)
+    )
+    if (directMatch) return directMatch
+
+    // 2. Resolve via resolveJobPosition in availableJobPositionsForDept
     const matched = resolveJobPosition(jobPosition, null, availableJobPositionsForDept)
     if (matched) return matched
-    if (member?.jobPositionReferenceId === jobPosition) {
+
+    // 3. Fallback to catalog jobPositions
+    const catalogMatch = resolveJobPosition(jobPosition, null, jobPositions)
+    if (catalogMatch) return catalogMatch
+
+    // 4. Fallback to references list
+    const refMatch = references.find(
+      r =>
+        (r.jobPositionReferenceId && r.jobPositionReferenceId.toLowerCase().trim() === idLower) ||
+        (r.jobPositionName && r.jobPositionName.toLowerCase().trim() === idLower)
+    )
+    if (refMatch) {
+      const cleanName = refMatch.jobPositionName?.startsWith('Job Position ')
+        ? 'Software Developers'
+        : refMatch.jobPositionName
+      const matchedCatalog = jobPositions.find(
+        jp => jp.name.toLowerCase() === cleanName.toLowerCase() ||
+              cleanName.toLowerCase().includes(jp.name.toLowerCase()) ||
+              cleanName.includes(jp.code)
+      )
+      const displayCode = matchedCatalog?.code || '15-1252.00'
+      const displayName = matchedCatalog?.name || cleanName
+      return {
+        code: displayCode,
+        name: displayName,
+        description: matchedCatalog?.description || 'Standard industry competency profile',
+        jobPositionReferenceId: refMatch.jobPositionReferenceId,
+        jobPositionName: `${displayCode} - ${displayName}`,
+        uuid: toDeterministicUuid(refMatch.jobPositionReferenceId),
+      }
+    }
+
+    // 5. Fallback to member's existing jobPositionReferenceId
+    if (member?.jobPositionReferenceId && member.jobPositionReferenceId.toLowerCase().trim() === idLower) {
       const cleanJpName = member.jobPositionName?.startsWith('Job Position ')
         ? (availableJobPositionsForDept[0]?.jobPositionName || '15-1252.00 - Software Developers')
         : (member.jobPositionName || member.jobPositionReferenceId)
@@ -1519,7 +1671,7 @@ function UserForm({
       }
     }
     return null
-  }, [jobPosition, member, availableJobPositionsForDept])
+  }, [jobPosition, member, availableJobPositionsForDept, jobPositions, references])
 
   const deptComboboxOptions: ComboboxOption[] = allDepartments.map(d => ({
     value: d.id,
@@ -1559,8 +1711,8 @@ function UserForm({
     setTempJobPositionId('')
   }
 
-  const effectiveDepartment = department || tempDeptId
-  const effectiveJobPosition = jobPosition || tempJobPositionId
+  const effectiveDepartment = department
+  const effectiveJobPosition = jobPosition
 
   const save = useMutation({
     mutationFn: async () => {
@@ -1615,8 +1767,8 @@ function UserForm({
       updateMemberProfile(organization, member.membershipId, {
         fullName: name,
         roles,
-        departmentId: effectiveDepartment || null,
-        jobPositionReferenceId: isLdManager ? null : (effectiveJobPosition || null),
+        departmentId: selectedDeptObj?.id || effectiveDepartment || null,
+        jobPositionReferenceId: isLdManager ? null : (selectedJobPositionObj?.jobPositionReferenceId || effectiveJobPosition || null),
         departmentName: selectedDeptObj?.name || null,
         jobPositionName: rawJobPositionName,
         targetRoleId: assignedRoleId,
@@ -1629,8 +1781,8 @@ function UserForm({
         fullName: name,
         email,
         roles,
-        departmentId: effectiveDepartment || null,
-        jobPositionReferenceId: isLdManager ? null : (effectiveJobPosition || null),
+        departmentId: selectedDeptObj?.id || effectiveDepartment || null,
+        jobPositionReferenceId: isLdManager ? null : (selectedJobPositionObj?.jobPositionReferenceId || effectiveJobPosition || null),
         departmentName: selectedDeptObj?.name || null,
         jobPositionName: employee && assignedRoleId
           ? encodeJobPositionWithTargetRole(rawJobPositionName, assignedRoleId, assignedRoleCode, assignedRoleTitle, assignedLevel)
@@ -1730,7 +1882,7 @@ function UserForm({
                   size="sm"
                   clearable={false}
                   options={deptComboboxOptions}
-                  value={tempDeptId || department}
+                  value={tempDeptId}
                   onChange={(val) => {
                     setTempDeptId(val)
                   }}
@@ -1832,7 +1984,7 @@ function UserForm({
                     clearable={false}
                     disabled={!department}
                     options={jobPositionComboboxOptions}
-                    value={tempJobPositionId || jobPosition}
+                    value={tempJobPositionId}
                     onChange={(val) => {
                       setTempJobPositionId(val)
                     }}

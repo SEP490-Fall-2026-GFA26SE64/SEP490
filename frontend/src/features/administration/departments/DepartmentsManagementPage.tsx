@@ -221,17 +221,27 @@ export function DepartmentsManagementPage() {
   }, [fetchLiveDepartments, loadJobPositions])
 
   React.useEffect(() => {
+    let timeoutId: any = null
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key && (e.key === 'adaptlearn_departments_v1' || e.key === 'adaptlearn_departments_v2')) {
+        clearTimeout(timeoutId)
+        timeoutId = setTimeout(() => {
+          reloadData()
+        }, 500)
+      }
+    }
     window.addEventListener('departments_updated', reloadData)
     window.addEventListener('companies_updated', reloadData)
     window.addEventListener('active_company_changed', reloadData)
     window.addEventListener('adaptlearn_job_positions_updated', reloadData)
-    window.addEventListener('storage', reloadData)
+    window.addEventListener('storage', handleStorage)
     return () => {
+      clearTimeout(timeoutId)
       window.removeEventListener('departments_updated', reloadData)
       window.removeEventListener('companies_updated', reloadData)
       window.removeEventListener('active_company_changed', reloadData)
       window.removeEventListener('adaptlearn_job_positions_updated', reloadData)
-      window.removeEventListener('storage', reloadData)
+      window.removeEventListener('storage', handleStorage)
     }
   }, [reloadData])
 
@@ -387,9 +397,10 @@ export function DepartmentsManagementPage() {
       })
     }
 
-    await fetchLiveDepartments()
-    setIsSubmitting(false)
     setIsFormModalOpen(false)
+    setEditingDept(null)
+    setIsSubmitting(false)
+    await fetchLiveDepartments()
   }
 
   // Toggle Department Status (Active <-> Inactive)
@@ -419,21 +430,21 @@ export function DepartmentsManagementPage() {
   // Delete Department
   const handleConfirmDelete = async () => {
     if (!deptToDelete) return
-    setIsSubmitting(true)
+    const targetDept = deptToDelete
+    setIsDeleteModalOpen(false)
+    setDeptToDelete(null)
+    deleteDepartment(targetDept.id)
+    toast({
+      title: 'Department Removed',
+      description: `${targetDept.name} has been removed from the directory.`,
+      variant: 'destructive',
+    })
+
     try {
-      await deleteDepartmentApi(orgId, deptToDelete.id)
+      await deleteDepartmentApi(orgId, targetDept.id)
     } catch (err: unknown) {
       console.warn('Neo4j delete department error:', err)
     }
-    deleteDepartment(deptToDelete.id)
-    setIsSubmitting(false)
-    setIsDeleteModalOpen(false)
-    toast({
-      title: 'Department Removed',
-      description: `${deptToDelete.name} has been removed from the directory.`,
-      variant: 'destructive',
-    })
-    setDeptToDelete(null)
     fetchLiveDepartments()
   }
 

@@ -125,7 +125,7 @@ public final class DevelopmentWorkspaceAccountBootstrap implements ApplicationRu
         String passwordHash = secrets.hashPassword(DEFAULT_PASSWORD);
         seedMember(ADMIN_ACCOUNT_ID, "admin@technova.com", "Elena Rostova", "ORGANIZATION_ADMINISTRATOR", passwordHash, DEPT_ENG_COG_ID, OCC_REF_DEV_ID);
         seedMember(MANAGER_ACCOUNT_ID, "manager@technova.com", "Sarah Connor", "LD_MANAGER", passwordHash, DEPT_ENG_COG_ID, OCC_REF_DEV_ID);
-        seedMember(EXPERT_ACCOUNT_ID, "expert@technova.com", "Dr. Sarah Chen", "DOMAIN_EXPERT", passwordHash, DEPT_DATA_AI_ID, OCC_REF_DATA_ID);
+        seedMember(EXPERT_ACCOUNT_ID, "expert@technova.com", "Dr. Sarah Chen", "DOMAIN_EXPERT", passwordHash, DEPT_ENG_COG_ID, OCC_REF_DEV_ID);
         seedMember(EXPERT_ALEX_RIVERA_ID, "alex.rivera@technova.com", "Alex Rivera", "DOMAIN_EXPERT", passwordHash, DEPT_SEC_ID, OCC_REF_SEC_ID);
         seedMember(EXPERT_LINH_NGUYEN_ID, "linh.nguyen@technova.com", "Linh Nguyen", "DOMAIN_EXPERT", passwordHash, DEPT_CLOUD_ID, OCC_REF_CLOUD_ID);
         seedMember(EXPERT_MARCUS_VANCE_ID, "marcus.vance@technova.com", "Marcus Vance", "DOMAIN_EXPERT", passwordHash, DEPT_QA_ID, OCC_REF_QA_ID);
@@ -276,8 +276,8 @@ public final class DevelopmentWorkspaceAccountBootstrap implements ApplicationRu
                 // 4. Assign Subject Matter Experts to Target Roles by Job Position
                 tx.execute("""
                     MATCH (jp:JobPosition {code: '15-1252.00'})-[:HAS_ROLE]->(tr:TargetRole)
-                    SET tr.assignedExpertId = 'a0000000-0000-0000-0000-000000000005',
-                        tr.assignedExpertName = 'Marcus Vance'
+                    SET tr.assignedExpertId = 'a0000000-0000-0000-0000-000000000002',
+                        tr.assignedExpertName = 'Dr. Sarah Chen'
 
                     WITH jp
                     MATCH (jp2:JobPosition {code: '15-1243.00'})-[:HAS_ROLE]->(tr2:TargetRole)

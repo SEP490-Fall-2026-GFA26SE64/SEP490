@@ -33,7 +33,7 @@ import { EmptyState } from '../../../shared/components/ui/EmptyState'
 import { Pagination } from '../../../shared/components/ui/Pagination'
 import { ConfirmationModal } from '../../../shared/components/ui/ConfirmationModal'
 import { WorkspaceSessionContext } from '../../../shared/auth/workspaceSession'
-import { getActiveCompanyId } from '../../../shared/stores/companyStore'
+import { getActiveCompanyId, getActiveCompany } from '../../../shared/stores/companyStore'
 import { TARGET_ROLE_ROADMAPS } from '../data/roadmapData'
 
 interface EnrichedSkill extends MicroSkillDto {
@@ -206,16 +206,34 @@ export function UpskillSkillsPanel() {
       })
 
       // Strictly deduplicate micro-skills by unique code or id so that duplicate entries cannot collide
+      const activeCompSkills = (getActiveCompany()?.microSkills || []).map((ms) => ({
+        id: ms.id,
+        code: ms.code || ms.id,
+        name: ms.name,
+        description: ms.description,
+        macroCompetencyCode: ms.macroCompetencyCode || 'KNOWLEDGE',
+        status: ms.status || 'ACTIVE',
+        updatedAt: ms.updatedAt,
+      }))
+      const combinedSkills = [...skillsData, ...activeCompSkills]
+
       const uniqueSkillsMap = new Map<string, MicroSkillDto>()
-      for (const s of skillsData) {
-        const key = s.code || s.id
-        if (!uniqueSkillsMap.has(key)) {
+      for (const s of combinedSkills) {
+        const key = (s.code || s.id || '').trim().toUpperCase()
+        if (key && !uniqueSkillsMap.has(key)) {
           uniqueSkillsMap.set(key, s)
         }
       }
       const uniqueSkills = Array.from(uniqueSkillsMap.values())
 
       const enriched = uniqueSkills.map((s) => calculateSkillMetadata(s, macroMap))
+      // Sort with newest created/updated skills first so recently added skills are immediately visible on page 1
+      enriched.sort((a, b) => {
+        const timeA = new Date(a.updatedAt || a.createdAt || '2026-01-01T00:00:00Z').getTime()
+        const timeB = new Date(b.updatedAt || b.createdAt || '2026-01-01T00:00:00Z').getTime()
+        if (timeA !== timeB) return timeB - timeA
+        return a.name.localeCompare(b.name)
+      })
       setMacroCompetencies(macrosData)
       setSkills(enriched)
     } catch {

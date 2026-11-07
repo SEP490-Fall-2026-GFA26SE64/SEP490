@@ -282,15 +282,21 @@ export function useEmployeeLearningState() {
       }
     }
 
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key && (e.key.startsWith('alg_') || e.key === 'adaptlearn_companies_v1')) {
+        handleSync()
+      }
+    }
+
     window.addEventListener(SYNC_EVENT_NAME, handleSync)
     window.addEventListener('active_company_changed', handleSync)
     window.addEventListener('companies_updated', handleSync)
-    window.addEventListener('storage', handleSync)
+    window.addEventListener('storage', handleStorage)
     return () => {
       window.removeEventListener(SYNC_EVENT_NAME, handleSync)
       window.removeEventListener('active_company_changed', handleSync)
       window.removeEventListener('companies_updated', handleSync)
-      window.removeEventListener('storage', handleSync)
+      window.removeEventListener('storage', handleStorage)
     }
   }, [])
 

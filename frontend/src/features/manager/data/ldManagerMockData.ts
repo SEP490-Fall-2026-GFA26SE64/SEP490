@@ -103,6 +103,32 @@ export function resolveJobPositionForRole(
     }
   }
 
+  // Direct job position code match from familyCode (cross-browser persistent persistence in Neo4j)
+  if (role.familyCode) {
+    const famCode = role.familyCode.trim()
+    const famUpper = famCode.toUpperCase()
+    const foundByCode = jobPositions.find(
+      (o) =>
+        o.code.toLowerCase() === famCode.toLowerCase() ||
+        o.code.replace(/\.00$/, '').toLowerCase() === famCode.replace(/\.00$/, '').toLowerCase()
+    )
+    if (foundByCode) return foundByCode
+
+    // Explicit 'DEV' familyCode (authored roles under Software Developers, distinct from backend null-default 'SOFTWARE_ENGINEERING')
+    if (famUpper === 'DEV' || famUpper === 'SOFTWARE_DEVELOPMENT') {
+      const devMatch = jobPositions.find((o) => o.code === '15-1252.00')
+      if (devMatch) return devMatch
+      return {
+        code: '15-1252.00',
+        name: 'Software Developers',
+        description: 'Research, design, and develop computer and network software or specialized utility programs.',
+        jobZone: 4,
+        profiles: ['DEV'],
+        assignedExpertIds: [],
+      }
+    }
+  }
+
   const code = (role.code || '').toUpperCase()
   const title = (role.title || '').toLowerCase()
   const family = (role.familyCode || '').toUpperCase()
@@ -120,7 +146,9 @@ export function resolveJobPositionForRole(
       assignedExpertIds: [],
     }
   }
-  if (title.includes('test') || title.includes('quality') || title.includes('qa') || code.includes('QA') || family.includes('QA')) {
+  const isQaTitle = /\b(qa|test|tests|testing|testers?|quality|sqa)\b/i.test(title)
+  const isQaCodeOrFamily = code.includes('QA') || family.includes('QA') || family === 'QA'
+  if (isQaTitle || isQaCodeOrFamily) {
     const match = jobPositions.find((o) => o.code === '15-1253.00')
     if (match) return match
     return {
@@ -330,12 +358,12 @@ export const ELIGIBLE_EXPERTS = [
   {
     id: EXPERT_SARAH_CHEN_ID,
     name: 'Dr. Sarah Chen',
-    title: 'Senior AI & Database Architect',
+    title: 'Senior Software & AI Architect',
     email: 'expert@technova.com',
-    departmentId: '27fd451e-a429-3de1-9a6e-52c5876904a3',
-    departmentName: 'Data & Artificial Intelligence',
-    jobPositionReferenceId: '22f79a58-9b62-307a-a099-55559e9684e0',
-    jobPositionName: '15-1243.00 - Database Architects',
+    departmentId: 'd0000000-0000-0000-0000-000000000001',
+    departmentName: 'Engineering & Cognitive Systems',
+    jobPositionReferenceId: 'f0000000-0000-0000-0000-000000000001',
+    jobPositionName: '15-1252.00 - Software Developers',
   },
   {
     id: EXPERT_MARCUS_VANCE_ID,
@@ -394,7 +422,7 @@ export function getOrganizationExperts(organizationId?: string): EligibleExpert[
     ? organizationId
     : (typeof localStorage !== 'undefined' ? localStorage.getItem('adaptlearn_active_company_id') || 'e0000000-0000-0000-0000-000000000001' : 'e0000000-0000-0000-0000-000000000001');
 
-  const isTechnova = effectiveOrg === 'e0000000-0000-0000-0000-000000000001' || effectiveOrg === 'comp-technova' || effectiveOrg === 'default-org';
+  const isTechnova = effectiveOrg === 'e0000000-0000-0000-0000-000000000001' || effectiveOrg === 'comp-technova' || effectiveOrg === 'default-org' || effectiveOrg === 'workspace-development';
 
   const expertsMap = new Map<string, EligibleExpert>();
 
@@ -491,7 +519,7 @@ export function getAvailableJobPositions(organizationId?: string, includeInactiv
     ? organizationId
     : (typeof localStorage !== 'undefined' ? localStorage.getItem('adaptlearn_active_company_id') || 'e0000000-0000-0000-0000-000000000001' : 'e0000000-0000-0000-0000-000000000001');
 
-  const isTechnova = effectiveOrg === 'e0000000-0000-0000-0000-000000000001' || effectiveOrg === 'comp-technova' || effectiveOrg === 'default-org';
+  const isTechnova = effectiveOrg === 'e0000000-0000-0000-0000-000000000001' || effectiveOrg === 'comp-technova' || effectiveOrg === 'default-org' || effectiveOrg === 'workspace-development';
 
   if (isTechnova) {
     for (const o of JOB_POSITIONS) {
@@ -569,7 +597,109 @@ export function getEligibleExpertsForJobPosition(
     ? customOrgExperts
     : getOrganizationExperts(organizationId);
 
-  if (!jobPositionCode) return allExperts;
+  // 1. Resolve department scope if provided
+  const scopeId = (departmentScope?.id || '').toLowerCase().trim();
+  const scopeCode = (departmentScope?.code || '').toLowerCase().trim();
+  const scopeName = (departmentScope?.name || '').toLowerCase().trim();
+  const hasDeptScope = Boolean(scopeId || scopeCode || scopeName);
+
+  const getStoredDepartments = (): Array<{ id?: string; code?: string; name?: string }> => {
+    try {
+      if (typeof localStorage !== 'undefined') {
+        const raw =
+          localStorage.getItem('adaptlearn_departments_v2') ||
+          localStorage.getItem('adaptlearn_departments_v1');
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        }
+      }
+    } catch {}
+    return [
+      { id: 'd0000000-0000-0000-0000-000000000001', code: 'ENG-COG', name: 'Engineering & Cognitive Systems' },
+      { id: '27fd451e-a429-3de1-9a6e-52c5876904a3', code: 'ENG-DATA', name: 'Data & Artificial Intelligence' },
+      { id: '4bb9ce13-f65a-349e-803d-017fd495a62f', code: 'ENG-QA', name: 'Quality Engineering & Assurance' },
+      { id: '6fe84095-c4f5-39a2-a100-88a15c672d33', code: 'ENG-CLOUD', name: 'Cloud Infrastructure & DevOps' },
+      { id: 'c05d5732-9897-38c7-9d8f-dfdbe71cfd53', code: 'ENG-SEC', name: 'Cybersecurity & Compliance' },
+    ];
+  };
+
+  const allDepts = getStoredDepartments();
+
+  const targetDept = hasDeptScope
+    ? allDepts.find((d) => {
+        const dId = (d.id || '').toLowerCase().trim();
+        const dCode = (d.code || '').toLowerCase().trim();
+        const dName = (d.name || '').toLowerCase().trim();
+        return (
+          (scopeId && (dId === scopeId || dCode === scopeId)) ||
+          (scopeCode && dCode === scopeCode) ||
+          (scopeName && (dName === scopeName || dName.includes(scopeName) || scopeName.includes(dName)))
+        );
+      })
+    : undefined;
+
+  const targetDeptTokens = new Set<string>();
+  if (hasDeptScope) {
+    if (scopeId) targetDeptTokens.add(scopeId);
+    if (scopeCode) targetDeptTokens.add(scopeCode);
+    if (scopeName) targetDeptTokens.add(scopeName);
+    if (targetDept) {
+      if (targetDept.id) targetDeptTokens.add(targetDept.id.toLowerCase().trim());
+      if (targetDept.code) targetDeptTokens.add(targetDept.code.toLowerCase().trim());
+      if (targetDept.name) targetDeptTokens.add(targetDept.name.toLowerCase().trim());
+    }
+  }
+
+  // Filter experts by department when department scope is active
+  const isExpertInDept = (exp: EligibleExpert): boolean => {
+    if (!hasDeptScope) return true;
+    const expDeptId = (exp.departmentId || '').toLowerCase().trim();
+    const expDeptName = (exp.departmentName || '').toLowerCase().trim();
+
+    // If expert has no department assigned, exclude when department scope is active
+    if (!expDeptId && !expDeptName) return false;
+
+    // Check if expert's department matches targetDeptTokens directly
+    if (expDeptId && targetDeptTokens.has(expDeptId)) return true;
+    if (expDeptName && targetDeptTokens.has(expDeptName)) return true;
+
+    // Find expert's department in allDepts
+    const expDept = allDepts.find((d) => {
+      const dId = (d.id || '').toLowerCase().trim();
+      const dCode = (d.code || '').toLowerCase().trim();
+      const dName = (d.name || '').toLowerCase().trim();
+      return (
+        (expDeptId && (dId === expDeptId || dCode === expDeptId)) ||
+        (expDeptName && (dName === expDeptName || dName.includes(expDeptName) || expDeptName.includes(dName)))
+      );
+    });
+
+    if (expDept && targetDept) {
+      const matchId = Boolean(expDept.id && targetDept.id && expDept.id === targetDept.id);
+      const matchCode = Boolean(expDept.code && targetDept.code && expDept.code.toLowerCase() === targetDept.code.toLowerCase());
+      return matchId || matchCode;
+    }
+
+    // Name substring match without prefixes
+    if (scopeName && expDeptName) {
+      const cleanScope = scopeName.replace(/^[a-z0-9_-]+\s*[-–:]\s*/i, '').trim();
+      const cleanExp = expDeptName.replace(/^[a-z0-9_-]+\s*[-–:]\s*/i, '').trim();
+      if (cleanScope && cleanExp && (cleanExp === cleanScope || cleanExp.includes(cleanScope) || cleanScope.includes(cleanExp))) {
+        return true;
+      }
+    }
+
+    return false;
+  };
+
+  const candidateExperts = hasDeptScope
+    ? allExperts.filter(isExpertInDept)
+    : allExperts;
+
+  if (!jobPositionCode) {
+    return candidateExperts;
+  }
 
   const normCode = jobPositionCode.toLowerCase().trim();
   const normBaseCode = normCode.replace(/\.00$/, '');
@@ -581,82 +711,73 @@ export function getEligibleExpertsForJobPosition(
   });
 
   const occName = (occ?.name || '').toLowerCase().trim();
+  const cleanOccName = occName
+    .replace(/^[0-9.-]+\s*[-–:]\s*/i, '')
+    .replace(/\s*\((?:department|dept)\)\s*/gi, '')
+    .trim()
+    .replace(/s$/, '');
 
-  // 1. Check real user accounts matching this job position (from User Directory / members)
-  const jobPositionMatchedExperts = allExperts.filter((exp) => {
+  // Match experts by job position
+  const isJobPositionMatch = (exp: EligibleExpert): boolean => {
     const expJobRef = (exp.jobPositionReferenceId || '').toLowerCase().trim();
     const expJobName = (exp.jobPositionName || '').toLowerCase().trim();
-    const matchesJobRef =
-      expJobRef === normCode || (expJobRef && expJobRef.replace(/\.00$/, '') === normBaseCode);
-    const matchesJobName = Boolean(
-      (expJobName && (expJobName.includes(normCode) || expJobName.includes(normBaseCode))) ||
-      (occName && expJobName && (
-        expJobName === occName ||
-        occName.includes(expJobName) ||
-        expJobName.includes(occName) ||
-        occName.split(/[\s,&/]+/).filter((w) => w.length > 3).some((w) => expJobName.includes(w))
-      ))
-    );
-    return matchesJobRef || matchesJobName;
-  });
+    const cleanExpJobName = expJobName
+      .replace(/^[0-9.-]+\s*[-–:]\s*/i, '')
+      .replace(/\s*\((?:department|dept)\)\s*/gi, '')
+      .trim()
+      .replace(/s$/, '');
 
-  // 2. Check experts belonging to the same department
-  const deptId = departmentScope?.id?.toLowerCase().trim();
-  const deptCode = departmentScope?.code?.toLowerCase().trim();
-  const deptName = departmentScope?.name?.toLowerCase().trim();
+    // 1. Reference code match (e.g. 15-1252.00 or 15-1252)
+    if (expJobRef === normCode || (expJobRef && expJobRef.replace(/\.00$/, '') === normBaseCode)) {
+      return true;
+    }
 
-  const departmentMatchedExperts = (deptId || deptCode || deptName)
-    ? allExperts.filter((exp) => {
-      const expDeptId = (exp.departmentId || '').toLowerCase().trim();
-      const expDeptName = (exp.departmentName || '').toLowerCase().trim();
-      return Boolean(
-        (deptId && expDeptId === deptId) ||
-        (deptCode && expDeptId === deptCode) ||
-        (deptName && expDeptName === deptName)
+    // Check if expJobRef is a UUID matching the job position in catalog
+    if (expJobRef) {
+      const matchedPos = jobPositions.find(
+        (p: any) =>
+          (p.id && String(p.id).toLowerCase() === expJobRef) ||
+          (p.referenceId && String(p.referenceId).toLowerCase() === expJobRef) ||
+          (p.code && p.code.toLowerCase().trim() === expJobRef)
       );
-    })
-    : [];
-
-  // Combine matches prioritizing exact job position match, then department match
-  const matchedIds = new Set<string>();
-  const results: EligibleExpert[] = [];
-
-  // Priority 1: Check catalog assignedExpertIds for this job position
-  if (occ?.assignedExpertIds && occ.assignedExpertIds.length > 0) {
-    const assignedNormalized = new Set(occ.assignedExpertIds.map(normalizeExpertId));
-    for (const exp of allExperts) {
-      const nid = normalizeExpertId(exp.id);
-      if (assignedNormalized.has(nid) && !matchedIds.has(nid)) {
-        matchedIds.add(nid);
-        results.push(exp);
+      if (matchedPos) {
+        const pCode = (matchedPos.code || '').toLowerCase().trim();
+        if (pCode === normCode || pCode.replace(/\.00$/, '') === normBaseCode) {
+          return true;
+        }
       }
     }
-  }
 
-  // Priority 2: Check real user accounts matching this job position (from User Directory / members)
-  for (const exp of jobPositionMatchedExperts) {
-    const nid = normalizeExpertId(exp.id);
-    if (!matchedIds.has(nid)) {
-      matchedIds.add(nid);
-      results.push(exp);
+    // 2. Code inside jobPositionName (e.g. "15-1252.00 - Software Developers")
+    if (expJobName && (expJobName.includes(normCode) || expJobName.includes(normBaseCode))) {
+      return true;
     }
-  }
 
-  // Priority 3: Check experts belonging to the same department
-  for (const exp of departmentMatchedExperts) {
-    const nid = normalizeExpertId(exp.id);
-    if (!matchedIds.has(nid)) {
-      matchedIds.add(nid);
-      results.push(exp);
+    // 3. Exact job position title match (e.g. "Software Developer" === "Software Developer")
+    if (cleanOccName && cleanExpJobName && cleanExpJobName === cleanOccName) {
+      return true;
     }
+
+    // 4. Catalog assignedExpertIds for this job position
+    if (occ?.assignedExpertIds && occ.assignedExpertIds.length > 0) {
+      const nid = normalizeExpertId(exp.id);
+      if (occ.assignedExpertIds.map(normalizeExpertId).includes(nid)) {
+        return true;
+      }
+    }
+
+    return false;
+  };
+
+  const jobMatchedExperts = candidateExperts.filter(isJobPositionMatch);
+
+  if (jobMatchedExperts.length > 0) {
+    return jobMatchedExperts;
   }
 
-  // If we found experts matching this job position or department, return them!
-  if (results.length > 0) {
-    return results;
-  }
-
-  return allExperts;
+  // Fallback: If no expert in candidates specifically matched this job position code,
+  // return the department-scoped candidates (never cross-department experts)
+  return candidateExperts;
 }
 
 export interface CompetencyModel {

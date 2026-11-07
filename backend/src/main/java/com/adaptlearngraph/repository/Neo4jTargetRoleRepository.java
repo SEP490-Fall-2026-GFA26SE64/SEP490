@@ -149,6 +149,9 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
 
             // 3. Synchronize REQUIRES_SKILL graph edges (both on TargetRole and on Level nodes)
             syncSkillRelationships(organizationId, matchedId, targetRole.getSkillTargets(), targetRole.getUpdatedAt());
+
+            // 4. Synchronize HAS_ROLE edge from JobPosition to TargetRole
+            syncJobPositionRelationship(organizationId, matchedId, targetRole.getFamilyCode(), targetRole.getStatus().name(), targetRole.getUpdatedAt());
         });
         return targetRole;
     }
@@ -410,6 +413,33 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
                     .bind(organizationId).to("organizationId")
                     .run();
         }
+    }
+
+    private void syncJobPositionRelationship(String organizationId, String roleId, String familyCode, String status, Instant updatedAt) {
+        String famCode = familyCode != null ? familyCode.trim().toUpperCase() : "DEV";
+        client.query("""
+                MATCH (r:TargetRole {id: $roleId})
+                MATCH (jp:JobPosition)
+                WHERE jp.status = 'ACTIVE'
+                  AND (
+                    jp.code = $famCode
+                    OR jp.id = $famCode
+                    OR jp.id = 'OCC-' + $famCode
+                    OR ($famCode IN ['DEV', 'JAVA_BACKEND', 'SOFTWARE_ENGINEERING', 'SOFTWARE_DEVELOPMENT', '15-1252.00', '15-1252'] AND jp.code = '15-1252.00')
+                    OR ($famCode IN ['DATA', 'DATABASE', '15-1243.00', '15-1243'] AND jp.code = '15-1243.00')
+                    OR ($famCode IN ['QA', 'QUALITY', 'TEST', '15-1253.00', '15-1253'] AND jp.code = '15-1253.00')
+                    OR ($famCode IN ['CLOUD', 'DEVOPS', 'SYSTEMS', 'INFRASTRUCTURE', '15-1299.08'] AND jp.code = '15-1299.08')
+                    OR ($famCode IN ['SECURITY', 'SEC', 'COMPLIANCE', '15-1212.00'] AND jp.code = '15-1212.00')
+                  )
+                MERGE (jp)-[rel:HAS_ROLE]->(r)
+                SET rel.status = CASE WHEN $status IN ['PUBLISHED', 'ACTIVE'] THEN 'ACTIVE' ELSE 'INACTIVE' END,
+                    rel.updatedAt = datetime($updatedAt)
+                """)
+                .bind(roleId).to("roleId")
+                .bind(famCode).to("famCode")
+                .bind(status).to("status")
+                .bind(updatedAt.toString()).to("updatedAt")
+                .run();
     }
 
     private List<String> resolveExpertVariants(String expertId) {

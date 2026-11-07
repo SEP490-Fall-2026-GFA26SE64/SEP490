@@ -147,16 +147,18 @@ async function read(response: Response): Promise<unknown> {
   }
   return value
 }
-export async function request(path: string, method = 'GET', payload?: unknown): Promise<unknown> {
-  const headers: Record<string, string> = {}
+export async function request(path: string, method = 'GET', payload?: unknown, customHeaders?: Record<string, string>): Promise<unknown> {
+  const headers: Record<string, string> = { ...customHeaders }
   if (method !== 'GET') {
     const base = path.startsWith('/api/v1/registration/') ? '/api/v1/registration' : '/api/v1/workspace-auth'
     const csrf = object(await read(await fetch(`${base}/csrf`, { credentials: 'same-origin', cache: 'no-store' })))
     headers[text(csrf.headerName)] = text(csrf.token)
-    headers['Content-Type'] = 'application/json'
+    if (payload !== undefined) {
+      headers['Content-Type'] = 'application/json'
+    }
   }
   return read(await fetch(path, { method, headers, credentials: 'same-origin', cache: 'no-store',
-    body: method === 'GET' ? undefined : JSON.stringify(payload ?? {}) }))
+    body: method === 'GET' || payload === undefined ? undefined : JSON.stringify(payload ?? {}) }))
 }
 export async function getIdentity(): Promise<Identity | null> {
   const response = await fetch('/api/v1/workspace-auth/current', { credentials: 'same-origin', cache: 'no-store' })

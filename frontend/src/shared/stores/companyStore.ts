@@ -73,7 +73,7 @@ const SEED_COMPANY_TECHNOVA: CompanyRecord = {
       name: 'Dr. Sarah Chen',
       email: 'expert@technova.com',
       role: 'Expert',
-      department: 'Data & Artificial Intelligence',
+      department: 'Engineering & Cognitive Systems',
       status: 'active',
       lastActive: '10 mins ago',
       avatar: 'SC',
@@ -147,8 +147,8 @@ const SEED_COMPANY_TECHNOVA: CompanyRecord = {
   prerequisites: [],
   modules: [],
   targetRoles: [],
-  questions: INITIAL_QUESTIONS,
-  blueprints: INITIAL_BLUEPRINTS,
+  questions: INITIAL_QUESTIONS || [],
+  blueprints: INITIAL_BLUEPRINTS || [],
 }
 
 // Initial seeded starter company: Acme Global
@@ -197,8 +197,8 @@ const SEED_COMPANY_ACME: CompanyRecord = {
   prerequisites: [],
   modules: [],
   targetRoles: [],
-  questions: INITIAL_QUESTIONS.slice(0, 3),
-  blueprints: INITIAL_BLUEPRINTS.slice(0, 1),
+  questions: (INITIAL_QUESTIONS || []).slice(0, 3),
+  blueprints: (INITIAL_BLUEPRINTS || []).slice(0, 1),
 }
 
 export const PACKAGE_LIMITS: Record<PackageTier, { limit: number; price: string; description: string }> = {
