@@ -108,8 +108,7 @@ public class ModuleAuthoringApplicationService {
                 .map(teaching -> teaching == null ? null
                         : new TeachingInput(teaching.skillId()))
                 .toList();
-        return new Save(input.title(), input.moduleType(), input.contentId(), input.duration(), input.price(),
-                input.jobPositionIds(), teachings);
+        return new Save(input.title(), input.moduleType(), input.contentId(), input.duration(), input.jobPositionIds(), teachings,input.knowledgeLevel(),input.outcomeCodes());
     }
 
     private static Lesson lesson(LessonRequest lesson) {

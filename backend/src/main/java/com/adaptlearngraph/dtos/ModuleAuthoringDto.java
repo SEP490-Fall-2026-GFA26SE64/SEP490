@@ -1,7 +1,6 @@
 package com.adaptlearngraph.dtos;
 
 import com.adaptlearngraph.entities.domain.LearningContent;
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Set;
 
@@ -37,8 +36,7 @@ public final class ModuleAuthoringDto {
     public record TeachingResponse(MetadataResponse metadata, String skillId, String skillName) {}
 
     public record PackageResponse(MetadataResponse metadata, String title, String moduleType, String contentUri,
-                                  String contentType, String contentVersion, int duration, BigDecimal price,
-                                  List<TeachingResponse> teachings, ContentResponse content) {}
+                                  String contentType, String contentVersion, int duration, List<TeachingResponse> teachings, ContentResponse content,String knowledgeLevel,List<String> outcomeCodes,String skillVersion) {}
 
     public record RevisionResponse(int number, String state, PackageResponse payload, String editedBy, String editedAt,
                                    String decidedBy, String decidedAt, String feedback) {}
@@ -48,8 +46,7 @@ public final class ModuleAuthoringDto {
     public record CatalogTeachingResponse(MetadataResponse metadata, String skillId, String skillName) {}
 
     public record CatalogModuleResponse(MetadataResponse metadata, String title, String moduleType, String contentUri,
-                                        String contentType, String contentVersion, Integer duration, BigDecimal price,
-                                        List<CatalogTeachingResponse> teachings) {}
+                                        String contentType, String contentVersion, Integer duration, List<CatalogTeachingResponse> teachings,String knowledgeLevel,List<String> outcomeCodes,String skillVersion) {}
 
     public record IntakeResponse(String moduleId, String organizationId, List<String> jobPositionIds, String assignedBy,
                                  String assignedAt, CatalogModuleResponse source, String acceptedBy, String acceptedAt,
@@ -70,6 +67,9 @@ public final class ModuleAuthoringDto {
     public record TeachingSelection(String skillId) {}
 
     /** Module draft values (request and import preview); jobPositionIds is accepted for legacy clients only. */
-    public record ModuleInput(String title, String moduleType, String contentId, int duration, BigDecimal price,
-                              List<String> jobPositionIds, List<TeachingSelection> teachings) {}
+    public record ModuleInput(String title, String moduleType, String contentId, int duration, List<String> jobPositionIds, List<TeachingSelection> teachings,String knowledgeLevel,List<String> outcomeCodes) {
+        public ModuleInput(String title,String type,String content,int duration,List<String> jobs,List<TeachingSelection> teachings) {
+            this(title,type,content,duration,jobs,teachings,null,List.of());
+        }
+    }
 }

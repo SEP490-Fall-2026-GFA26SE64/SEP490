@@ -7,9 +7,9 @@ import { Card, CardContent, CardFooter } from '../../../shared/components/ui/Car
 import { useTranslation } from '../../../shared/i18n/LanguageContext'
 import type { CurrentRole } from './currentRoleFlowApi'
 
-export function CurrentRoleCard({ role, active, disabled, onDetails, onChoose, onGaps, gapDisabled = disabled }: {
+export function CurrentRoleCard({ role, active, disabled, onDetails, onChoose }: {
   role: CurrentRole; active: boolean; disabled: boolean
-  onDetails: () => void; onChoose: () => void; onGaps?: () => void; gapDisabled?: boolean
+  onDetails: () => void; onChoose: () => void
 }) {
   const { t } = useTranslation()
   const skills = new Set(role.levels.flatMap(level => level.skills.map(skill => skill.id))).size
@@ -28,9 +28,8 @@ export function CurrentRoleCard({ role, active, disabled, onDetails, onChoose, o
         <span className="inline-flex items-center gap-1.5"><Layers size={14} aria-hidden="true" />{role.levels.length} {t('upskillingUi.levels')}</span>
       </div>
       <div className="flex flex-wrap gap-2">
-        {onGaps && <Button size="sm" variant="primary" disabled={gapDisabled} onClick={onGaps}>{t('initialPathway.gaps')}</Button>}
-        <Button size="sm" variant="outline" aria-label={t('roleFlow.details')} onClick={onDetails}>{t('upskillingUi.showDetails')}</Button>
-        <Button size="sm" variant="secondary" disabled={disabled} onClick={onChoose}>{t(active ? 'initialPathway.chooseLevel' : 'roleFlow.choose')}</Button>
+        <Button size="sm" variant="primary" disabled={disabled} onClick={onChoose}>{t(active ? 'initialPathway.chooseLevel' : 'roleFlow.choose')}</Button>
+        <Button size="sm" variant="outline" className="border-primary/30 text-primary hover:bg-secondary" aria-label={t('roleFlow.details')} onClick={onDetails}>{t('upskillingUi.showDetails')}</Button>
       </div>
     </CardFooter>
   </Card>

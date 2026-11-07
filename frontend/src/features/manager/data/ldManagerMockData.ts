@@ -2,7 +2,8 @@ export interface SkillTargetConfig {
   skillId: string
   skillCode: string
   skillName: string
-  threshold: number // e.g. 80 (%) -> maps to targetMastery in Neo4j
+  threshold: number // Historical local records only; excluded from active Role writes
+  requiredKnowledgeLevels?: string[]
   level?: string
   macroCompetencyCode?: string
 }
@@ -538,13 +539,15 @@ export interface MicroSkillModel {
 
 export interface PrerequisiteEdge {
   id: string
-  sourceSkillId: string // Prerequisite skill
+  sourceSkillId: string // Dependent skill in HAS_SKILL_PREREQUISITE direction
   sourceSkillCode?: string
   sourceSkillName?: string
-  targetSkillId: string // Dependent skill
+  targetSkillId: string // Prerequisite skill
   targetSkillCode?: string
   targetSkillName?: string
-  minMastery: number // Float [0, 1] e.g. 0.75
+  minMastery?: number // Historical records only; never used for rule-assessment readiness
+  dependentKnowledgeLevel?: string | null
+  prerequisiteKnowledgeLevel?: string | null
   status?: string
   createdAt?: string
   updatedAt?: string

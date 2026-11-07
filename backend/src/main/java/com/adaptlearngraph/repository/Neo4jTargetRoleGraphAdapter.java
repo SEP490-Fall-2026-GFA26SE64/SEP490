@@ -49,7 +49,10 @@ public class Neo4jTargetRoleGraphAdapter implements TargetRoleGraphPort {
                 WHERE r.organizationId = $organizationId
                   AND (r.id = $roleId OR r.code = $roleId)
                 MATCH (r)-[req:REQUIRES_SKILL]->(s:MicroSkill)
+                WHERE s.organizationId=$organizationId AND req.status='ACTIVE'
+                    AND (req.organizationId IS NULL OR req.organizationId=$organizationId)
                 OPTIONAL MATCH (c:Competency)-[:HAS_SKILL]->(s)
+                WHERE c.organizationId=$organizationId
                 WITH s, req, collect(coalesce(c.code, c.id)) AS compCodes
                 RETURN s, req, CASE WHEN size(compCodes) > 0 THEN head(compCodes) ELSE 'KNOWLEDGE' END AS macroCode
                 ORDER BY coalesce(s.code, s.id) ASC
@@ -59,10 +62,12 @@ public class Neo4jTargetRoleGraphAdapter implements TargetRoleGraphPort {
                 MATCH (r:TargetRole)
                 WHERE r.organizationId = $organizationId
                   AND (r.id = $roleId OR r.code = $roleId)
-                MATCH (r)-[:REQUIRES_SKILL]->(s1:MicroSkill)
-                MATCH (r)-[:REQUIRES_SKILL]->(s2:MicroSkill)
-                MATCH (s1)-[rel:HAS_SKILL_PREREQUISITE|PREREQUISITE_OF]->(s2)
-                RETURN s1, s2, rel
+                MATCH (r)-[first:REQUIRES_SKILL]->(s1:MicroSkill {organizationId:$organizationId})
+                MATCH (r)-[second:REQUIRES_SKILL]->(s2:MicroSkill {organizationId:$organizationId})
+                MATCH (s1)-[rel:HAS_SKILL_PREREQUISITE]->(s2)
+                WHERE first.status='ACTIVE' AND second.status='ACTIVE' AND rel.status='ACTIVE'
+                    AND (rel.organizationId IS NULL OR rel.organizationId=$organizationId)
+                RETURN DISTINCT s1, s2, rel
                 ORDER BY coalesce(s1.code, s1.id) ASC, coalesce(s2.code, s2.id) ASC
                 """;
 
@@ -97,9 +102,7 @@ public class Neo4jTargetRoleGraphAdapter implements TargetRoleGraphPort {
                 String sId = skillNode.containsKey("id") && !skillNode.get("id").isNull() ? skillNode.get("id").asString() : "";
                 String sCode = skillNode.containsKey("code") && !skillNode.get("code").isNull() ? skillNode.get("code").asString() : sId;
                 String sName = skillNode.containsKey("name") && !skillNode.get("name").isNull() ? skillNode.get("name").asString() : sCode;
-                double targetMastery = reqRel.containsKey("targetMastery") && !reqRel.get("targetMastery").isNull()
-                        ? reqRel.get("targetMastery").asDouble()
-                        : 0.70;
+                var knowledge=reqRel.get("requiredKnowledgeLevels").isNull()?List.<String>of():reqRel.get("requiredKnowledgeLevels").asList(org.neo4j.driver.Value::asString);
                 String reqStatus = reqRel.containsKey("status") && !reqRel.get("status").isNull()
                         ? reqRel.get("status").asString()
                         : "ACTIVE";
@@ -116,7 +119,7 @@ public class Neo4jTargetRoleGraphAdapter implements TargetRoleGraphPort {
                         sCode,
                         sName,
                         macroCode,
-                        targetMastery,
+                        knowledge,
                         SkillStatus.fromString(reqStatus),
                         skillLevel));
             }
@@ -161,7 +164,9 @@ public class Neo4jTargetRoleGraphAdapter implements TargetRoleGraphPort {
                         minMastery,
                         SkillStatus.fromString(relStatus),
                         createdAt,
-                        updatedAt));
+                        updatedAt,
+                        rel.get("dependentKnowledgeLevel").isNull()?null:com.adaptlearngraph.entities.domain.KnowledgeLevel.valueOf(rel.get("dependentKnowledgeLevel").asString()),
+                        rel.get("prerequisiteKnowledgeLevel").isNull()?null:com.adaptlearngraph.entities.domain.KnowledgeLevel.valueOf(rel.get("prerequisiteKnowledgeLevel").asString())));
             }
 
             return Optional.of(new TargetRoleGraph(

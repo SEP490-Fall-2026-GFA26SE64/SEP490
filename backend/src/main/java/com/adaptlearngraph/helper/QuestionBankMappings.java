@@ -33,7 +33,7 @@ public final class QuestionBankMappings implements ModelMapperRegistrar {
         mapper.typeMap(Content.class, ContentDto.class).setConverter(context -> {
             Content source = context.getSource();
             return new ContentDto(source.prompt(), source.options(), source.correctAnswer(), source.skillId(),
-                    source.skillName(), source.difficulty(), source.explanation());
+                    source.skillName(), source.knowledgeLevel(), source.outcomeCode(), source.mandatory(), source.explanation());
         });
         mapper.typeMap(Row.class, RowDto.class).setConverter(context -> {
             Row source = context.getSource();
@@ -49,13 +49,14 @@ public final class QuestionBankMappings implements ModelMapperRegistrar {
             Session source = context.getSource();
             return new SessionResponse(nested(context, source.actor(), ActorResponse.class),
                     list(context, source.skills(), ChoiceResponse.class), list(context, source.experts(), ChoiceResponse.class),
-                    list(context, source.people(), ChoiceResponse.class), source.maxImportRows(), source.maxImportBytes());
+                    list(context, source.people(), ChoiceResponse.class), source.maxImportRows(), source.maxImportBytes(),source.knowledge().stream().map(k->
+                        new com.adaptlearngraph.dtos.QuestionBankDto.KnowledgeChoiceResponse(k.skillId(),k.knowledgeLevel(),k.outcomes().stream().map(o->new ChoiceResponse(o.id(),o.name())).toList())).toList());
         });
         mapper.typeMap(Version.class, VersionResponse.class).setConverter(context -> {
             Version source = context.getSource();
             return new VersionResponse(source.id, source.number, source.state, nested(context, source.content, ContentDto.class),
                     source.editedBy, source.editedAt, source.submittedBy, source.submittedAt, source.reviewedBy,
-                    source.reviewedAt, source.reason, source.viewed);
+                    source.reviewedAt, source.reason, source.viewed,source.publicationSource);
         });
         mapper.typeMap(Question.class, QuestionResponse.class).setConverter(context -> {
             Question source = context.getSource();

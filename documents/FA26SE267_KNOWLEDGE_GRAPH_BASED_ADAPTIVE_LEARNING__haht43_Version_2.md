@@ -1,4 +1,6 @@
 ![][image1]   
+
+**Implementation alignment — 2026-11-05:** [Current organization-rule schema/flow](technical/Organization%20Rule%20Assessment%20and%20Pathway.md) and feature contracts define the changed assessment/pathway direction. Original registration/submission text is retained; its knowledge-tracing/CBF/HitRate research obligations are neither claimed fulfilled nor automatically cancelled by the new flow. Reconcile external submission obligations explicitly. No new benchmark/runtime/test result is asserted.
    
 **CAPSTONE PROJECT REGISTER**   
    

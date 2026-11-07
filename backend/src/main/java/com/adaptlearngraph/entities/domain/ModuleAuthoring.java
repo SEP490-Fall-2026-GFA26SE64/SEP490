@@ -1,6 +1,5 @@
 package com.adaptlearngraph.entities.domain;
 
-import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 import java.util.Set;
@@ -57,18 +56,28 @@ public final class ModuleAuthoring {
             if (markdown == null) markdown = "";
         }
     }
+    @com.fasterxml.jackson.annotation.JsonIgnoreProperties("price")
     public record Package(Metadata metadata, String title, String moduleType, String contentUri,
-                          String contentType, String contentVersion, int duration, BigDecimal price,
-                          List<Teaching> teachings, Content content) {
+                          String contentType, String contentVersion, int duration, List<Teaching> teachings, Content content,KnowledgeLevel knowledgeLevel,List<String> outcomeCodes,String skillVersion) {
+        public Package(Metadata metadata,String title,String moduleType,String uri,String type,String version,int duration,
+                       List<Teaching> teachings,Content content) {
+            this(metadata,title,moduleType,uri,type,version,duration,teachings,content,null,List.of(),null);
+        }
         public Package {
             text(title, "title", 240);
             oneOf(moduleType, Set.of("LESSON_AND_PRACTICE", "RESOURCE_GUIDED_PRACTICE"), "moduleType");
             text(contentUri, "contentUri", 500); text(contentVersion, "contentVersion", 100);
             if (!Set.of("text/markdown", LearningContent.MANIFEST_TYPE).contains(contentType)) throw new IllegalArgumentException("Only Markdown packages are supported");
-            if (duration <= 0 || price == null || price.signum() <= 0 || price.scale() > 2 || !Double.isFinite(price.doubleValue())) {
-                throw new IllegalArgumentException("Duration and VND price must be positive; price accepts at most two decimals");
+            if (duration <= 0) {
+                throw new IllegalArgumentException("Duration must be positive");
             }
             teachings = List.copyOf(teachings);
+            outcomeCodes=outcomeCodes==null?List.of():List.copyOf(outcomeCodes);
+            if(knowledgeLevel!=null) {
+                RuleAssessment.unique(outcomeCodes);text(skillVersion,"skillVersion",200);
+                if(teachings.size()!=1 || teachings.getFirst().teachingFocus()!=null || teachings.getFirst().difficultyLevel()!=null)
+                    throw new IllegalArgumentException("Knowledge modules teach exactly one skill without numeric difficulty or focus");
+            } else if(!outcomeCodes.isEmpty() || skillVersion!=null)throw new IllegalArgumentException("Incomplete module knowledge scope");
             if (teachings.isEmpty() || teachings.size() > 200
                     || teachings.stream().map(Teaching::skillId).distinct().count() != teachings.size()) {
                 throw new IllegalArgumentException("Select unique skills");
@@ -80,13 +89,13 @@ public final class ModuleAuthoring {
         }
         public Package approved(String actor, String time, String lifecycle) {
             return new Package(metadata.approved(actor, time, lifecycle), title, moduleType, contentUri,
-                    contentType, contentVersion, duration, price, teachings.stream().map(t -> new Teaching(
-                    t.metadata().approved(actor, time, lifecycle), t.skillId(), t.skillName(), t.teachingFocus(), t.difficultyLevel())).toList(), content);
+                    contentType, contentVersion, duration, teachings.stream().map(t -> new Teaching(
+                    t.metadata().approved(actor, time, lifecycle), t.skillId(), t.skillName(), t.teachingFocus(), t.difficultyLevel())).toList(), content,knowledgeLevel,outcomeCodes,skillVersion);
         }
         public Package rejected(String actor, String time) {
             return new Package(metadata.rejected(actor, time), title, moduleType, contentUri,
-                    contentType, contentVersion, duration, price, teachings.stream().map(t -> new Teaching(
-                    t.metadata().rejected(actor, time), t.skillId(), t.skillName(), t.teachingFocus(), t.difficultyLevel())).toList(), content);
+                    contentType, contentVersion, duration, teachings.stream().map(t -> new Teaching(
+                    t.metadata().rejected(actor, time), t.skillId(), t.skillName(), t.teachingFocus(), t.difficultyLevel())).toList(), content,knowledgeLevel,outcomeCodes,skillVersion);
         }
     }
     public record Revision(int number, String state, Package payload, String editedBy, String editedAt,
@@ -108,20 +117,32 @@ public final class ModuleAuthoring {
             return releasedRevision == null ? null : revisions.stream().filter(r -> r.number() == releasedRevision).findFirst().orElseThrow();
         }
     }
+    public record RetainedModule(Document document,int revision) {}
     public record TeachingInput(String skillId, String teachingFocus, String difficultyLevel) {
         public TeachingInput(String skillId) { this(skillId, null, null); }
     }
     // jobPositionIds is accepted for legacy clients only; new authoring is skill-based.
-    public record Save(String title, String moduleType, String contentId, int duration, BigDecimal price,
-                       List<String> jobPositionIds, List<TeachingInput> teachings) {}
+    @com.fasterxml.jackson.annotation.JsonIgnoreProperties("price")
+    public record Save(String title, String moduleType, String contentId, int duration, List<String> jobPositionIds, List<TeachingInput> teachings,String knowledgeLevel,List<String> outcomeCodes) {
+        public Save(String title,String type,String content,int duration,List<String> jobs,List<TeachingInput> teachings) {
+            this(title,type,content,duration,jobs,teachings,null,List.of());
+        }
+    }
+    public record KnowledgeDefinition(KnowledgeLevel knowledgeLevel,String skillVersion,List<String> outcomeCodes) {
+        public KnowledgeDefinition { outcomeCodes=List.copyOf(outcomeCodes); }
+    }
     public record Page(List<Document> items, int total, int page, int pageSize) {}
     /** Read catalog values as stored, including absent historical metadata; never invent audit history. */
     public record CatalogTeaching(Metadata metadata, String skillId, String skillName,
                                   String teachingFocus, String difficultyLevel) {}
+    @com.fasterxml.jackson.annotation.JsonIgnoreProperties("price")
     public record CatalogModule(Metadata metadata, String title, String moduleType, String contentUri,
-                                String contentType, String contentVersion, Integer duration, BigDecimal price,
-                                List<CatalogTeaching> teachings) {
-        public CatalogModule { teachings = List.copyOf(teachings); }
+                                String contentType, String contentVersion, Integer duration, List<CatalogTeaching> teachings,KnowledgeLevel knowledgeLevel,List<String> outcomeCodes,String skillVersion) {
+        public CatalogModule(Metadata m,String title,String type,String uri,String contentType,String contentVersion,Integer duration,
+                             List<CatalogTeaching> teachings) {
+            this(m,title,type,uri,contentType,contentVersion,duration,teachings,null,List.of(),null);
+        }
+        public CatalogModule { teachings = List.copyOf(teachings);outcomeCodes=outcomeCodes==null?List.of():List.copyOf(outcomeCodes); }
     }
     public record Intake(String moduleId, String organizationId, List<String> jobPositionIds, String assignedBy,
                          String assignedAt, CatalogModule source, String acceptedBy, String acceptedAt, List<Event> history, String expertId) {

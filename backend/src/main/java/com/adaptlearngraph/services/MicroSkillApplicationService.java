@@ -48,7 +48,7 @@ public class MicroSkillApplicationService {
                 request.code(),
                 request.name(),
                 request.description(),
-                macroCode(request.macroCompetencyCode()));
+                macroCode(request.macroCompetencyCode()), request.provision());
         return toResponse(createMicroSkill.createMicroSkill(command));
     }
 
@@ -59,7 +59,8 @@ public class MicroSkillApplicationService {
                 request.name(),
                 request.description(),
                 macroCode(request.macroCompetencyCode()),
-                request.status() != null ? toDomain(request.status()) : SkillStatus.ACTIVE);
+                request.status() != null ? toDomain(request.status()) : SkillStatus.ACTIVE,
+                request.provision(), request.expectedVersion());
         return toResponse(updateMicroSkill.updateMicroSkill(command));
     }
 

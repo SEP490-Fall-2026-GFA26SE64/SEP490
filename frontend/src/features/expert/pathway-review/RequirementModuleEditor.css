@@ -1,0 +1,35 @@
+.module-review-viewport { position: relative; overflow: auto; flex: 1; min-height: 30rem; background: hsl(var(--background)); cursor: grab; overscroll-behavior: contain; }
+.module-review-viewport:active { cursor: grabbing; }
+.module-review-scroll-area { position: relative; min-width: 100%; }
+.module-review-map { position: absolute; top: 0; left: 50%; width: 48rem; padding: 2rem 1rem 4rem; transform-origin: top center; }
+.module-review-branch { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) 10rem minmax(0, 1fr); align-items: center; gap: 1.5rem; min-width: 0; padding: 1.5rem 0; }
+.module-review-branch::before { content: ''; position: absolute; top: 0; bottom: 0; left: 50%; border-left: 2px solid hsl(var(--border)); pointer-events: none; }
+.module-review-branch:first-child::before { top: 50%; }
+.module-review-branch:last-child::before { bottom: 50%; }
+.module-review-root { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; gap: 0.5rem; min-width: 0; }
+.module-review-map .module-review-skill { min-width: 0; width: 100%; height: auto; padding: 0.875rem; font-size: var(--text-body-sm); border-color: hsl(var(--primary-hover)); color: hsl(var(--primary-foreground)); }
+.module-review-skill > span { display: flex; flex-direction: column; width: 100%; gap: 0.5rem; white-space: normal; }
+.module-review-skill .module-review-root-label { color: inherit; font-size: var(--text-caption); font-weight: 500; }
+.module-review-root-label:first-child { border-bottom: 1px solid hsl(var(--primary-foreground) / 0.3); padding-bottom: 0.5rem; }
+.module-review-root-title { color: inherit; overflow-wrap: anywhere; font-weight: 700; }
+.module-review-order-controls { display: flex; justify-content: center; gap: 0.375rem; padding: 0.25rem; border-radius: var(--radius); background: hsl(var(--background)); }
+.module-review-options { display: flex; flex-direction: column; gap: 1rem; min-width: 0; }
+.module-review-option { position: relative; border: 1px solid hsl(var(--primary) / 0.45); border-radius: var(--radius); background: hsl(var(--card)); box-shadow: 0 2px 8px hsl(var(--primary) / 0.08); cursor: grab; overflow-wrap: anywhere; }
+.module-review-option::before { content: ''; position: absolute; top: 50%; width: 1.5rem; border-top: 1px solid hsl(var(--primary) / 0.4); pointer-events: none; }
+.module-review-options.is-left .module-review-option::before { left: 100%; }
+.module-review-options.is-right .module-review-option::before { right: 100%; }
+.module-review-option-top { display: flex; align-items: center; justify-content: space-between; padding: 0.375rem 0.625rem; border-bottom: 1px solid hsl(var(--primary) / 0.2); background: hsl(var(--secondary)); color: hsl(var(--secondary-foreground)); font-size: var(--text-caption); font-weight: 600; border-radius: var(--radius) var(--radius) 0 0; }
+.module-review-option-title { display: block; width: 100%; padding: 0.875rem; text-align: left; color: hsl(var(--foreground)); font-size: var(--text-body-sm); font-weight: 600; cursor: pointer; }
+.module-review-option-title:hover { background: hsl(var(--secondary) / 0.5); }
+.module-review-option-title:focus-visible { outline: 2px solid hsl(var(--ring)); outline-offset: -2px; border-radius: var(--radius); }
+.module-review-option .module-review-exclude { border-color: hsl(var(--destructive) / 0.35); color: hsl(var(--destructive)); background: hsl(var(--card)); }
+.module-review-option .module-review-exclude:hover { background: hsl(var(--destructive)); color: hsl(var(--destructive-foreground)); }
+.module-review-branch.is-focused .module-review-skill { outline: 3px solid hsl(var(--ring) / 0.45); outline-offset: 3px; }
+.module-review-branch.is-focused .module-review-option { border-color: hsl(var(--primary)); }
+.module-review-content h2, .module-review-content h3 { margin-top: 1.5rem; padding: 0; border: 0; background: none; font-size: var(--text-subsection); font-weight: 600; line-height: 1.4; color: hsl(var(--foreground)); }
+.module-review-content p { color: hsl(var(--foreground)); line-height: 1.65; }
+.module-review-drag-handle { display: inline-flex; align-items: center; justify-content: center; padding: 0.25rem; border-radius: var(--radius); color: hsl(var(--secondary-foreground)); cursor: grab; touch-action: none; }
+.module-review-drag-handle:hover { background: hsl(var(--secondary)); }
+.module-review-drag-handle:active { cursor: grabbing; }
+.module-review-drag-handle:focus-visible { outline: 2px solid hsl(var(--ring)); outline-offset: 2px; }
+.module-review-drag-handle:disabled { cursor: not-allowed; opacity: 0.35; }

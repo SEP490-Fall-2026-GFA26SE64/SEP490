@@ -1,6 +1,10 @@
 # Initial Pathway Review
 
+**Latest direction — 2026-11-05-r3.** [Target schema/API/flow](../../technical/Organization%20Rule%20Assessment%20and%20Pathway.md) now maps this flow; it is not applied runtime. Baseline records only assessed skills and never creates unassessed prerequisites; skill assessment can discover them as **Cần bổ sung**. Baseline/skill have two independently configured policies with timed auto-finalization. Cross-target old bypass work is parallel/non-gating. Affected old dev records may be rebuilt; normal new-flow history remains. Preserve FE design and classify existing Question Bank content into appropriate knowledge levels with corresponding field changes.
+
 **Source:** [Version 2](../../FA26SE267_KNOWLEDGE_GRAPH_BASED_ADAPTIVE_LEARNING__haht43_Version_2.md), section 3.2(c), and confirmed Expert review decisions. **Aligned:** 2026-10-29. **Source requirements:** 1.
+
+**Feature direction: 2026-11-05.** Affected contracts describe intended behavior pending C1 acceptance, not implementation evidence. Dated source/delivery/evidence retains its historical scope. IDs/anchors and unrelated behavior remain. Target technical mapping is now specified in r3; runtime/seed implementation and detailed changed UI review remain pending.
 
 ## Requirements
 
@@ -12,48 +16,51 @@
 | --- | --- |
 | 1. Requirement ID | FR-05.07 |
 | 2. Requirement Name | Review initial learning pathways |
-| 3. Description | The Expert shall inspect an assigned Employee's initial pathway, adjust module membership and prerequisite-valid order, check and preview the draft, then confirm the exact valid revision. |
-| 4. Actor | Authorized Expert assigned to the review scope in the same organization. |
-| 5. Preconditions | A proposal exists for the Employee's confirmed Role and member Level. The Expert has current access and assignment. Changes and confirmation require a current draft awaiting review; approved and archived pathways are read-only. |
-| 6. Main Flow | Open assigned queue/detail; inspect learner context, frozen gaps, Included/Excluded/Catalog, dependencies, warnings and totals; adjust membership or adjacent order; Check and resolve blocking issues; open Roadmap/Timeline preview; finally confirm the inspected valid revision. |
-| 7. Alternative / Exception Flows | Missing coverage leaves an editable unresolved draft with reasons and eligible repair suggestions. Invalid eligibility/order is rejected. Stale content requires reconciliation and review again. Access loss denies the operation. An uncertain save retains the exact command for retry. Dependency/transaction failure cannot produce partial edits or approval. |
-| 8. Postconditions | Successful changes retain immutable draft revisions and history. Final confirmation records the authorized Expert and exact revision/content identity. The Employee can view the approved pathway; learning access additionally requires availability and readiness. |
-| 9. Acceptance Criteria | Assigned scope only; distinct persisted Include/Exclude/Remove; adjacent prerequisite-valid moves; fresh Check with actionable reasons; exact preview/final confirmation; unresolved/stale denial; approved/archive locks; safe retry/concurrency; no catalog/history deletion or mastery change. Detailed rules follow. |
+| 3. Description | Assigned Expert reviews the Employee's initial requirement steps, eligible module alternatives/certificate provision and dependency order, then approves the exact valid revision. Authorized Expert also resolves missing provision, certificate evidence and scoped bypass as described below. |
+| 4. Actor | Trusted same-organization Expert with current assignment/decision authority. |
+| 5. Preconditions | Request is bound to selected Role/member Level; editable initial proposal or an authorized unresolved/evidence decision exists; current revision and assignment are valid. |
+| 6. Main Flow | Open assigned context; inspect requirements/provenance, alternatives, dependencies and unresolved needs; repair invalid provision/order or explicitly decide scoped bypass; Check and preview; confirm exact valid initial revision. |
+| 7. Alternative / Exception Flows | Missing provision/cycles/stale versions stay unresolved; authorized bypass is separate from achievement. Assignment loss/foreign records deny access. Uncertain outcomes retry the same command. |
+| 8. Postconditions | Initial approval records actual Expert and exact requirement/choice/dependency revision. History/progress/evidence remain. Learning still requires live access/prerequisite/content guards. |
+| 9. Acceptance Criteria | Own assigned scope, complete requirement coverage or explicit bypass, exact approval, safe concurrency/replay and no achievement from review. Valid later supplementation is automatic without another Expert approval. |
 
 ### Review context and inputs
 
-Detail shows a scoped learner display name or identifier, Role and Level, frozen gaps and UNKNOWN reasons, teaching focus/difficulty, providers, dependencies, distinct duration/price, blocking errors and separate advisory warnings. Protected assessment answers, credentials and other learners' data are not review fields.
+Show scoped learner identity, bound Role/member Level, explicit skill–knowledge/outcomes, official achievement versus baseline diagnostics, unmet/bypassed needs, provision mode, equivalent module choices or assigned certificate, dependencies and actionable missing reasons. Duration/price are descriptive, not a global optimization objective. Numeric gaps, mastery-thirds difficulty and teachingFocus fallback no longer define valid choices. Protected answer keys, credentials and foreign learner data are not review fields.
 
-The Expert supplies pathway/module references, supported intent, expected revision/content identity, retry key and optional reason. Move adds Up or Down. The system derives actor, organization, assignment, eligibility, validation, order and approval metadata. Clients cannot submit mastery, tenant, arbitrary order arrays or approved status.
+Client supplies references, supported intent, expected revision/content identity, retry key and decision reason where required. The server derives organization, actor, assignment, eligibility, validation, reviewer/time and decision status. Neither a client-provided achieved profile nor an arbitrary approved status is accepted.
 
-### Membership and ordering rules
+### Requirement coverage, alternatives and ordering
 
-| Action | Required behavior |
-| --- | --- |
-| Include / Restore | Add a currently eligible Catalog or Excluded module to Included. Recompute coverage, dependencies, warnings and distinct totals without silently replacing another selection. Include-existing is a safe current-revision no-op. |
-| Exclude | Remove an Included module and retain explicit exclusion/reason in Excluded. Exclude-absent is a safe current-revision no-op; neutral Catalog modules cannot be preemptively banned. |
-| Remove | Clear Included or Excluded membership. Return to neutral Add Existing Catalog Module only while eligible. Remove is distinct from Exclude and deletes neither catalog data nor earlier revisions, overrides or approvals. |
-| Move Up / Down | Swap with exactly one adjacent position. Check actual skill prerequisites, provider assignments, valid external evidence and internal gates. Reject provider-after-dependent order when the dependency requires that provider. Explain the required order and preserve draft/history on rejection. Reject boundary/nonmember moves. |
+Generation supplies ALL eligible interchangeable alternatives per requirement. Review validates exact skill/knowledge/outcome equivalence, publication/access/content versions and dependencies; it does not choose a cheaper optimal subset or require the Employee to complete every module.
 
-Excluding or removing a required provider may save an unresolved draft. Check explains affected coverage/prerequisites and offers eligible suggestions where available; Include can repair the set. It never invents mastery, silently restores a module or approves incomplete coverage. Titles and LOW/MEDIUM/HIGH do not define prerequisites.
+Existing Include/Exclude/neutral Remove concepts, when applicable to a choice, affect that choice's review membership rather than deleting the skill requirement, catalog or history. An invalid/removed required provision leaves an unresolved draft unless a valid explicit bypass covers the exact need. Exclusion cannot waive learning or fabricate official achievement. The target retains all eligible equivalent alternatives; review removes invalid/unavailable provision or repairs mappings, not a cheaper optimizer subset. Detailed control binding is a C2 UI review item. Do not inherit arbitrary legacy optimizer selection as an approved restriction.
 
-Preserve saved Expert order through Check, reload, preview and confirmation. After membership changes, retain valid relative order and place new prerequisites before dependents. Review validates the fixed selected set without discarding Expert choices to recover a cheaper generation optimum. Advisory fallback warnings alone do not invalidate a complete feasible draft.
+Preserve user-controlled valid relative order, but prerequisites must precede dependents. Invalid moves leave state unchanged with reasons; unrelated requirements are not gated by mere display order. Detailed placement of membership/order controls for requirement-root data is reviewed in define C2, preserving the existing visual presentation.
 
 ### Check, preview and confirmation
 
-Every Check requests fresh server validation. Reload full detail only when the returned content identity differs; otherwise retain the displayed list. Blocking issues show useful reasons and eligible Include suggestions where a repair exists. Include reconciles the saved result and requests a fresh Check; a suggestion is not a validity guarantee.
+Check uses fresh authorized validation of current requirements, choices, dependencies, bypass scope and versions, with actionable repair/missing-provision reasons. Save unresolved work for repair; no silent removal of needs or automatic achievement. Initial approval covers established target needs with valid provision or explicit bypass; it does not pre-add unassessed prerequisite needs from baseline.
 
-Approval opens Roadmap/Timeline preview with saved order, teaching details, warnings and totals. Opening, switching or closing preview performs no approval or learning authorization. Only final confirmation submits the exact previewed revision/content identity. The server reauthorizes, verifies current selection/source binding, and validates the fixed set and order again. Stale, unresolved, cyclic, unproved or unavailable validation cannot approve. Approved/archive views expose no edits, including repair actions in Check dialogs.
+Roadmap/Timeline preview represents the exact saved revision. Viewing/switching/closing it grants no approval or learning access. Final confirmation reauthorizes and validates the same current revision and binding. Stale/unresolved/cyclic/unavailable validation cannot approve; reconcile and inspect again. Approved/archived initial revisions are read-only; later adaptations are new history, not edits to old approvals.
 
-Cross-list gestures and keyboard/mobile buttons express the same Include/Exclude intents. Same-list drag does not save order; Up/Down provides adjacent reorder. Ignore external/unknown/stale payloads. Lock conflicting actions while busy or outcome is uncertain. Preserve responsive Catalog and Included/Excluded workspaces and equivalent EN/VI labels, feedback and errors.
+After initial approval, recalculation automatically adds/reuses valid supplemental requirements and alternatives without a second Expert approval. Missing module/certificate or unresolvable configuration routes to Expert. This is distinct from regenerating or replacing the Employee's target.
 
-### Consistency and failures
+### Certificate and missing-provision decisions
 
-New commands must match the current editable revision/content identity. Concurrent changes retain a consistent winner and reject stale intent. After current authorization, an exact accepted retry returns its recorded outcome even after later edits; it cannot reapply the action or approve a newer revision. Same key with a different command conflicts. Reconcile unknown outcomes with the same key/body and current detail.
+- Catalog authoring uses [Add certificate](../Learning%20catalog/README.md#expert-add-certificate): skill + knowledge level, Add, certificate requirement with mandatory reference URL. It is not a learner approval.
+- Employee [submits evidence](../Employee%20experience/README.md#certificate-evidence-and-review) as link OR PDF OR picture for the single assigned certificate definition. Expert inspects exact submission/definition versions, identity/scope and private authorized attachment access; approves/rejects with actual reviewer/time/reason and retained history.
+- Submission alone remains pending; only authorized approval records exact official achievement and triggers coherent recalculation. Rejection stays unmet with a reason/resubmission path; outage, inaccessible/invalid evidence or stale review does not approve. Catalog definition changes do not rewrite old decisions.
+- Missing provision is NEEDS_EXPERT_ACTION. Expert can provide eligible content/definition through owning workflows or explicitly bypass Employee + requirement/pathway with reason/history. Bypass remains unmet/waived, never ACHIEVED. Repeated decisions cannot duplicate achievements or bypasses.
+- Prerequisite bypass temporarily unlocks dependent learning; non-prerequisite bypass permits other work. Later provision follows [backfill rules](../Adaptive%20engine/README.md#recalculation-bypass-and-later-provision), preserving started/completed work. On another target, original bypass needs are carried as parallel supplementation, not prerequisite gates on its other skills.
 
-Retain tenant/actor isolation, assignment history, audit and recoverable notifications. Edits do not change baseline evidence, mastery or completion. Regeneration, recalculation, catalog management and learning execution are separate capabilities.
+### Consistency, target binding and visual continuity
 
-Status: Confirmed.
+Concurrent finalization, certificate decision, bypass, provision changes and target commands must retain one coherent authorized revision and retry outcome; stale intent cannot overwrite newer accepted decisions. Exact accepted retries return their recorded result after reauthorization, without reapplying to a later revision. Reused key with changed command conflicts. Keep assignment/decision/audit history and recoverable notifications; external delivery failure cannot masquerade as an uncommitted decision or generate duplicate business effects.
+
+The request-bound Role AND Level lock includes pending initial review. No review/repair/selection route may archive unfinished work to bypass it. [Selection lifecycle](../Role%20guidance/README.md#rolelevel-selection-and-lock) defines completion/bypass release and open exceptional release policy.
+
+Retain current review queue/detail, list/dialog/actions, graph/timeline styling, tokens, fonts, sizes, spacing, density and EN/VI. Requirement roots branch to alternatives; no layout/component redesign. Detailed new UI, certificate review routing/authority, equivalence criteria, validity/upload limits, exceptional request closure and late backfill after target release remain open for define C2. Physical target mapping is in r3; it is not applied schema.
 
 ## Current Implementation
 

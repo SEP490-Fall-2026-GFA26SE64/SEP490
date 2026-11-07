@@ -14,7 +14,7 @@ const num = (v: unknown): number => { if (typeof v !== 'number' || !Number.isFin
 const bool = (v: unknown): boolean => { if (typeof v !== 'boolean') throw Error(); return v }
 const list = <T>(v: unknown, parse: (v: unknown) => T): T[] => { if (!Array.isArray(v)) throw Error(); return v.map(parse) }
 const nullable = <T>(v: unknown, parse: (v: unknown) => T): T | null => v === null ? null : parse(v)
-async function request<T>(path: string, parse: (v: unknown) => T, init: RequestInit = {}): Promise<T> {
+export async function request<T>(path: string, parse: (v: unknown) => T, init: RequestInit = {}): Promise<T> {
   let response: Response
   try { response = await (demoSession ? fetch : workspaceFetch)('/api/v1/' + path, { credentials: 'same-origin', cache: 'no-store', ...init }) }
   catch (cause) { if (init.signal?.aborted) throw cause; throw new PathwayError('NETWORK_ERROR') }

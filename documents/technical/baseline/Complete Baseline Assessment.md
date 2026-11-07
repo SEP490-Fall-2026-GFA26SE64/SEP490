@@ -1,5 +1,7 @@
 # Complete Baseline Assessment
 
+**Current flow revision: 2026-11-05-r3.** [Target schema/API/flow](../Organization%20Rule%20Assessment%20and%20Pathway.md) supersedes this document's older active assessment/mastery/gap/optimizer assumptions. Material below is retained previous design/source/operation history, not proof of r3 being applied. Keep non-conflicting security/content/retry safeguards. Baseline covers selected Role–Level, records only assessed diagnostics and does not pre-add prerequisites; two separate policy configs share an engine; skill assessment discovers supplementation; cross-target old bypass work is parallel/non-gating. Old affected dev records may be rebuilt; new-flow history and unrelated/shared evidence/backups remain. Do not automatically run retained setup/reset/test commands below.
+
 **Function:** REQ-002-F01. **Actor:** Employee.
 
 **2026-11-01 C1/C2 status:** workspace source now adds the own active [Assessment Policy](Configure%20Baseline%20Assessment.md#organization-assessment-policy--planned) pin for new roots and uses original pins on continuation/replacement; result/evidence/V2 event/profile readers compile. Legacy technical JSON/V1 remains supported. SQL is not applied and runtime/numerical/executable preservation is Not run; full-Job Position/allowance/evidence/history rules remain the contract.

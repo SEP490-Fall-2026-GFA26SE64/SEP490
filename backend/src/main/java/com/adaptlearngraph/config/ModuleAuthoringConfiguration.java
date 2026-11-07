@@ -76,14 +76,20 @@ public class ModuleAuthoringConfiguration {
         return new ExcelLearningImport(modules, content, files, service, imports, mapper);
     }
     @Bean LearningContentPort learningContentPort(ListableBeanFactory beans, ObjectMapper mapper, ModuleAuthoringPort modules,
-            org.springframework.beans.factory.ObjectProvider<com.adaptlearngraph.services.InitialPathwayAccess> pathways) {
-        return new JpaLearningContentAdapter(LearningContentRepositories.from(beans::getBean),mapper,(organization,learner,module)->{
+            org.springframework.beans.factory.ObjectProvider<com.adaptlearngraph.services.InitialPathwayAccess> pathways,
+            org.springframework.beans.factory.ObjectProvider<com.adaptlearngraph.services.RequirementPathwayAccess> requirements,
+            org.springframework.core.env.Environment environment) {
+        boolean exact=environment.acceptsProfiles(org.springframework.core.env.Profiles.of("workspace-baseline & !local-baseline-demo & !prod"));
+        return new JpaLearningContentAdapter(LearningContentRepositories.from(beans::getBean),mapper,(organization,learner,module,revision)->{
             var actor=modules.actor();
             if(!organization.equals(actor.organizationId()) || !learner.equals(actor.id()) || !actor.roles().contains("EMPLOYEE")) return false;
-            var access=pathways.getIfAvailable();if(access==null)return false;
-            try { access.requireCurrentEntry(module);return true; }
-            catch(com.adaptlearngraph.repository.InitialPathwayPorts.Failure denied){return false;}
-        });
+            try {
+                if(exact) {var access=requirements.getIfAvailable();return access!=null && access.permits(module,revision);}
+                var access=pathways.getIfAvailable();if(access==null)return false;access.requireCurrentEntry(module);return true;
+            } catch(com.adaptlearngraph.repository.InitialPathwayPorts.Failure denied){
+                if(denied.status()>=500)throw new ModuleAuthoringService.Failure(503,"Pathway authorization is temporarily unavailable");return false;
+            }
+        },exact);
     }
     @Bean @Primary
     @org.springframework.boot.autoconfigure.condition.ConditionalOnProperty(name="pathway.initial.enabled",havingValue="true")

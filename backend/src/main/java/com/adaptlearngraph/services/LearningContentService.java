@@ -180,6 +180,8 @@ public final class LearningContentService {
                     Revision next = d.released();
                     if (d.archived() || next == null || next.number() <= old.number())
                         throw new Failure(409, "No newer approved version");
+                    if(!content.assignedRevision(a.organizationId(),a.id(),id,next.number()))
+                        throw new Failure(403,"The newer package is not an accepted option for this requirement");
                     if (old.payload().teachings().size()!=1 || next.payload().teachings().size()!=1
                             || !old.payload().teachings().getFirst().skillId().equals(next.payload().teachings().getFirst().skillId()))
                         throw new Failure(409,"Skill changed. Keep the completed version or start through the new skill.");
@@ -246,6 +248,7 @@ public final class LearningContentService {
         Asset asset =
                 content.asset(a.organizationId(), id)
                         .orElseThrow(() -> new Failure(404, "File not found"));
+        if(asset.objectKey().startsWith(a.organizationId()+"/certificate-evidence/"))throw new Failure(404,"File not found");
         if (a.expert() || a.manager()) return asset;
         if (a.roles().contains("EMPLOYEE"))
             for (Document d : modules.documents(a.organizationId())) {

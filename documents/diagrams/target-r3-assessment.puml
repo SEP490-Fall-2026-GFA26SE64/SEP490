@@ -1,0 +1,71 @@
+@startuml
+!pragma layout smetana
+left to right direction
+hide empty members
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+title PostgreSQL r3 - shared engine, two policies and separate evidence - TARGET, not applied
+class "Existing Question Bank" as bank {
+  Published item version / protected key
+  Knowledge mapping: skill + level + outcome
+  mandatory flag / real review history
+  Content-based classification, no guessing
+  No duplicated bank or graph questions
+}
+class "Rule policy version + activation" as policy {
+  PK organization + purpose + version
+  BASELINE: its own config + active pointer
+  SKILL_ASSESSMENT: separate config/pointer
+  counts / pass / mandatory / veto / timing
+  Published content immutable; no IRT pins
+}
+class "rule_assessment_attempt" as attempt {
+  PK attempt_id; org + learner + purpose
+  Frozen target/module/policy/catalog context
+  state / revision / start / deadline / finish
+  previous_attempt_id for FULL retake
+  downstream processing distinct from score
+}
+class "rule_assessment_group / item" as group {
+  PK attempt + group / item position
+  Exact skill + knowledge + outcome scope
+  TARGET / MAIN / PREREQUISITE group role
+  Frozen count / pass / mandatory / veto
+  Pinned item version and option order
+}
+class "Answer + command receipt" as answer {
+  Answer FK to presented attempt/item
+  Accepted response / revision / actual time
+  Unique retry key + body hash + outcome
+  Resume same paper; no deadline reset
+  Submit / timeout serialize finalization
+}
+class "rule_assessment_group_result" as result {
+  PK/FK attempt + group; immutable result
+  correct / total / mandatory satisfied
+  passed / veto / reasons / finalized_at
+  Correct 1; incorrect or unanswered 0
+  No cross-group compensation or theta
+}
+class "Baseline diagnostic projection" as diag {
+  Only skill-level groups actually assessed
+  Pass skips initial module assignment
+  Fail A suggests A module choices only
+  Do not add prerequisite B to profile
+  No official ACHIEVED from baseline
+}
+class "Official evidence + NEED_REVIEW" as official {
+  Exact org / learner / skill / knowledge / source
+  Module + assessment with required conditions OR certificate
+  Evidence dedup by accepted source and exact requirement
+  Official prerequisite failure: NEED_REVIEW, no revocation
+  Missing B appears only when skill assessment detects it
+}
+policy --> attempt : freeze
+attempt --> group : owns paper
+bank --> group : approved matching item versions
+group --> answer : save
+answer --> result : finalize
+result --> diag : BASELINE
+result --> official : SKILL_ASSESSMENT + completed learning
+@enduml

@@ -11,7 +11,7 @@ import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@Profile("(local-baseline-demo | workspace-baseline) & !prod")
+@Profile("((local-baseline-demo & !workspace-baseline) | (local & workspace-baseline & !local-baseline-demo)) & !prod")
 @ConditionalOnWebApplication(type=ConditionalOnWebApplication.Type.SERVLET)
 @ConditionalOnExpression("${assessment.baseline.local-demo.enabled:false} or ${assessment.baseline.workspace.enabled:false}")
 @RequestMapping(ApiEndpoints.CURRENT_ROLE_FLOW)

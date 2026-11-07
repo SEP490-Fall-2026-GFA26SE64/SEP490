@@ -38,7 +38,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @Validated
 @RestController
-@Profile("local")
+@Profile("local & !workspace-baseline & !prod")
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 @ConditionalOnProperty(
         prefix = "assessment.baseline.jobPosition-catalog", name = "enabled", havingValue = "true")

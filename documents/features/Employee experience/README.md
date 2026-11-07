@@ -1,10 +1,12 @@
 # Employee Learning Experience
 
+**Latest direction — 2026-11-05-r3.** [Target schema/API/flow](../../technical/Organization%20Rule%20Assessment%20and%20Pathway.md) now maps this flow; it is not applied runtime. Baseline records only assessed skills and never creates unassessed prerequisites; skill assessment can discover them as **Cần bổ sung**. Baseline/skill have two independently configured policies with timed auto-finalization. Cross-target old bypass work is parallel/non-gating. Affected old dev records may be rebuilt; normal new-flow history remains. Preserve FE design and classify existing Question Bank content into appropriate knowledge levels with corresponding field changes.
+
 **Source:** [Version 2](../../FA26SE267_KNOWLEDGE_GRAPH_BASED_ADAPTIVE_LEARNING__haht43_Version_2.md), section 3.2(c), Functional Requirements.
 
 **Aligned:** 2026-10-28. **Source requirements in this domain:** 5.
 
-Each record below corresponds to one source bullet. Unspecified fields are intentionally blank; they are not approved designs or completed acceptance criteria. See the [catalog rules](../README.md#reading-rules) and [complete source coverage](../README.md#source-coverage).
+**Feature direction: 2026-11-05.** Affected contracts describe intended behavior pending C1 acceptance, not implementation evidence. Dated source/delivery/evidence retains its historical scope. IDs/anchors and unrelated behavior remain. Target technical mapping is now specified in r3; runtime/seed implementation and detailed changed UI review remain pending.
 
 ## Current Implementation
 
@@ -18,13 +20,47 @@ Each record below corresponds to one source bullet. Unspecified fields are inten
 | [FR-06.07](#fr-06-07) | Partial | The Skills tab loads real micro-skills/macro competencies through catalog APIs and lets Employees track/untrack skills locally. | Duration/level metadata is synthesized in the browser; tracking and sample module/roadmap content are not a persisted independent-learning context with approved mapped content. |
 | [FR-06.09](#fr-06-09) | Prototype | Overview, history and assessment views show seeded/local completion, scores, previous roles/skills and pathway status. | No authoritative progress aggregation from persisted module completion, assessment evidence and pathway revisions is wired to these screens. |
 
-### Confirmed Role pathway display
+### Role pathway display — new direction
 
-Only the trusted Employee's approved/current or own archived revision is projected; pending drafts/candidate rankings and foreign learner data are protected. Reads do not generate, approve, advance learning or rewrite mastery. Role/Level baseline counts use known mastery at the original planning snapshot, not completion/certification. Preserve UNKNOWN and out-of-Role unavailable evidence. Show explicit pending/unresolved/stale/empty/error/archive states and live AVAILABLE/LOCKED/UNAVAILABLE reasons; missing content/readiness cannot produce a learning entry. The Role/Module/flanking-skill roadmap, timeline, compact toolbar/search and wide read-only details retain the exact approved revision's saved Expert order and dependencies with equivalent responsive EN/VI. Expert draft preview grants no Employee access. [Detailed read contract](../../technical/initial-pathway/Adaptive%20pathway/View%20Adaptive%20Pathway.md); [workspace/dependency limits](../../technical/Workspace%20Adaptive%20Integration.md).
+Only own approved/current or own archived revisions are projected from trusted Employee/organization context; no draft candidates, foreign records or answer keys. Preserve explicit pending/unresolved/stale/empty/error/archive and live AVAILABLE/LOCKED/UNAVAILABLE reasons. Reads cannot generate, approve, advance progress or award achievement. Archived records are read-only; preview/notification grants no access.
+
+The hierarchy becomes **skill/requirement → module alternatives** (or the assigned certificate), retaining current Roadmap/Timeline style, toolbar/search/details, components, colors, fonts, sizes, spacing and layout conventions. Show exact knowledge/outcomes, dependencies, official versus diagnostic evidence and bypass reasons. Numeric baseline mastery counts are not official completion/certification. Detailed changed structure/interactions/data binding require define C2 review. [Adaptive behavior](../Adaptive%20engine/README.md#initial-requirement-steps-and-alternatives) owns planning rules; existing technical read contracts remain historical until aligned.
 
 **Entry points:** `/profile`, `/employee/overview`, `/employee/gap-analysis`, `/employee/pathway`, `/employee/upskilling?tab=skills`. Older skills-catalog routes redirect to the consolidated Skills tab.
 
 **Code references:** [profile prototype](../../../frontend/src/features/profile/ProfilePage.tsx), [browser learning state](../../../frontend/src/shared/hooks/useEmployeeLearningState.ts), [gap screen](../../../frontend/src/features/employee/components/CompetencyGapAnalysis.tsx), [pathway screen](../../../frontend/src/features/employee/pathway/AdaptivePathwayPage.tsx), [real skill reads/local tracking](../../../frontend/src/features/employee/target-roles/UpskillSkillsPanel.tsx), [overview](../../../frontend/src/features/employee/overview/EmployeeOverviewPage.tsx). See [Assessment workflows](../Assessment%20workflows/README.md#current-implementation) for module-reader and quiz limitations.
+
+## Employee behavior for the new pathway
+
+### Choose, learn, switch and resume
+
+1. Review explicit requirements and diagnostic results for selected Role/member Level; [request submission locks both](../Role%20guidance/README.md#rolelevel-selection-and-lock), including pending Expert review. Browsing another target changes no binding.
+2. After exact initial approval, open an available requirement. MODULE_ONLY offers approved equivalent choices; choose or switch without discarding each module's pinned content/progress. Preserve access/content guards and gates for established shortages; unassessed B inferred solely from baseline never gates initial A learning. Unrelated steps remain available.
+3. Resume real lessons through existing reader/progress behavior. Completing content only satisfies learning eligibility for the exact compatible requirement; it is not official achievement.
+4. Take the [shared skill assessment](../Assessment%20workflows/README.md#shared-engine-scope-and-policy), including main and all prerequisite groups. Show each group result, veto/retake and required supplementation versus optional NEED_REVIEW.
+5. One successful module + assessment and required completion conditions satisfies the requirement. Other alternatives stay optional/accessible with independent history. Recalculation adds/reuses required steps automatically, showing missing provision/Expert action without sample fallback.
+
+Official achievements are exact skill/knowledge/outcomes from accepted learning+assessment or approved certificate. Baseline pass only skips initial module assignment; it never becomes official profile achievement. Later prerequisite failure of an officially achieved item shows NEED_REVIEW without revocation/mandatory relearning. Missing/not-assessed differs from failed.
+
+### Certificate evidence and review
+
+For CERTIFICATE_ONLY, display the single assigned certificate definition, skill/knowledge/outcomes and reference URL. Employee submits a **link OR PDF OR picture** as evidence; all three forms must be supported but all three are not required together. Catalog reference URL is not the learner's evidence.
+
+Input binds evidence to the Employee's exact organization/requirement and accepted definition/version. Server derives learner/organization/status; no editable reviewer/pass fields. Uploaded evidence stays private with access limited to the learner and authorized reviewers. Validate evidence form/content and authorized ownership; show upload/access failure with retry rather than a successful submission. Accept one HTTPS link OR one PDF OR one PNG/JPEG per submission; max 10 MiB/file subject to a tighter applicable existing limit. Validate actual media/size and private access; do not fetch remote URLs automatically. Replacement after rejection creates linked new-flow history; no generalized verification/expiry engine is included.
+
+Submission becomes pending, not achieved. Show reviewer decision and actual reason/history; rejection stays unmet and allows the defined resubmission path. Only authorized Expert approval updates official exact achievement and triggers recalculation. Repeated submit/approve or concurrent stale decisions cannot duplicate achievement or overwrite accepted history. Exact review routing, fields, persisted state names and mechanics remain open.
+
+### Bypass, progress and target release
+
+Show waived/bypassed unmet needs separately from fulfilled requirements. Prerequisite bypass temporarily permits dependent learning; later provision relocks not-started dependents, preserves started content but waits on supplementation before new completion, and retains completed results with supplementary work. Never erase progress or silently replace another active target. After target release, carry the old bypass as parallel supplementation without gates on new-pathway work.
+
+Required-work completion or only approved bypass needs remaining releases Role/Level selection. Optional alternatives and optional review do not block release. A new target reuses compatible official evidence and carries original bypass needs as parallel supplementation without gates on its other skills. Diagnostic reuse is limited to the same unchanged request/context, not a new-target exemption; no self-declared-title exemption.
+
+Independent upskill remains separate. The same module cannot be opened via skill browsing, optional-module lists, deep links or another context to evade its current pathway LOCKED state. All server admission and media/content paths must retain tenant/actor/prerequisite guards; hiding a button is insufficient. Current skill-only optional-module authorization does not establish this new guarantee.
+
+Progress/history distinguishes lessons, attempts and per-group results, official achievements, diagnostics, pending evidence, optional alternatives, bypass and pathway revisions. It must not count every alternative as compulsory, every baseline pass as certified, or waived needs as achieved. Mocks/localStorage are not integration evidence.
+
+Target fields/storage/versioning and state rules are specified in r3. C2 still must implement exact scoped constraints, classify real content, handle dependency failures and present detailed changed UI/data binding for review. No runtime/production readiness is claimed.
 
 ## Requirements
 
@@ -54,11 +90,11 @@ Only the trusted Employee's approved/current or own archived revision is project
 | 2. Requirement Name | Review competency profile and gaps |
 | 3. Description | The Employee shall view the current competency profile and skill gaps against the selected target role. |
 | 4. Actor | Employee |
-| 5. Preconditions |  |
-| 6. Main Flow |  |
-| 7. Alternative / Exception Flows |  |
-| 8. Postconditions |  |
-| 9. Acceptance Criteria |  |
+| 5. Preconditions | Trusted Employee reading own selected Role/member Level and compatible evidence. |
+| 6. Main Flow | Read explicit requirements; compare official exact achievements, diagnostics and remaining needs; inspect provenance/review/bypass reasons. |
+| 7. Alternative / Exception Flows | Missing/incompatible/outage is explicit, distinct from failure; unauthorized/foreign records denied. |
+| 8. Postconditions | Read-only profile/needs projection; baseline pass is not official achievement. |
+| 9. Acceptance Criteria | No numeric gap subtraction; exact knowledge levels, diagnostic/official distinction, NEED_REVIEW and bypass remain separate. |
 
 <a id="fr-06-06"></a>
 
@@ -68,15 +104,15 @@ Only the trusted Employee's approved/current or own archived revision is project
 | --- | --- |
 | 1. Requirement ID | FR-06.06 |
 | 2. Requirement Name | Follow a learning pathway |
-| 3. Description | The Employee shall view and follow their learning pathway, access its recommended modules, and view pathway updates. This scoped definition covers initial approved-pathway display; learning execution and subsequent recalculation remain separate owner capabilities. |
+| 3. Description | The Employee shall follow requirement-root pathways, choose equivalent module alternatives or submit the assigned certificate, and see authorized recalculation updates. |
 | 4. Actor | Authorized Employee reading their own pathway. |
-| 5. Preconditions | Trusted organization/Employee context. Approved module detail requires an exact current Expert approval; historical detail requires the Employee's own approved archived record. |
-| 6. Main Flow | Open current pathway; read generation/review status; after confirmation view the exact approved revision in Roadmap/Timeline; inspect ordered modules, teaching skills, frozen baseline context, dependencies and current lock/unavailable reasons. |
-| 7. Alternative / Exception Flows | No request, preparing, awaiting review, unresolved, retryable, stale and no-learning-required outcomes have explicit safe states. Draft modules/candidates are hidden. Missing readiness/content yields locked or unavailable entry. Foreign records are denied; concurrent revision changes require refresh. Own archived content is read-only with no resume. |
-| 8. Postconditions | Display does not generate/approve a pathway or write baseline, mastery, progress or completion. Saved Expert order/content references are retained. Viewing a draft preview or success notification never grants learning permission. |
-| 9. Acceptance Criteria | Own-only exact approved revision/hash/order/dependencies; no draft/protected-data leak; explicit empty/error/lifecycle states; frozen baseline is not completion; live prerequisite restrictions and independent branches are respected; reads cause no learner-state change; archived records cannot resume. |
+| 5. Preconditions | Trusted own scope; exact initial approval and live content/prerequisite/access readiness for learning. |
+| 6. Main Flow | Read requirement steps/dependencies; choose or switch alternatives; resume content; complete assessment or certificate review; view supplemental updates. |
+| 7. Alternative / Exception Flows | Pending/unresolved/missing/stale/locked states stay explicit; draft/archive grants no learning; switching retains progress. |
+| 8. Postconditions | One successful alternative satisfies a requirement; optional choices/history remain. Viewing grants no completion. |
+| 9. Acceptance Criteria | Requirement-root graph/timeline keeps current visual design; exact approved scope, separate evidence states, full retake, safe recalculation and request-onset target lock. |
 
-Initial-view status: Confirmed. Approval alone does not establish readiness PASS or protected content access. The [technical read contract](../../technical/initial-pathway/Adaptive%20pathway/View%20Adaptive%20Pathway.md) separates implemented projection, owner learning dependencies and actual evidence.
+The new contract supersedes the initial-view-only scope. Approval alone does not establish readiness or protected content access. The [technical read contract](../../technical/initial-pathway/Adaptive%20pathway/View%20Adaptive%20Pathway.md) separates implemented projection, owner learning dependencies and actual evidence.
 
 <a id="fr-06-07"></a>
 
@@ -88,11 +124,11 @@ Initial-view status: Confirmed. Approval alone does not establish readiness PASS
 | 2. Requirement Name | Learn an individual skill |
 | 3. Description | The Employee shall browse available micro-skills, select a skill for independent learning, and access its mapped learning modules and content. |
 | 4. Actor | Employee |
-| 5. Preconditions |  |
-| 6. Main Flow |  |
-| 7. Alternative / Exception Flows |  |
-| 8. Postconditions |  |
-| 9. Acceptance Criteria |  |
+| 5. Preconditions | Trusted Employee with authorized skill/knowledge learning context and live access/prerequisite guards. |
+| 6. Main Flow | Browse skill provision; choose an eligible module; resume independent progress through existing reader behavior. |
+| 7. Alternative / Exception Flows | Current pathway LOCKED modules cannot be admitted through skill/optional/deep-link routes; wrong organization or missing content denies entry. |
+| 8. Postconditions | Independent learning/progress remains separate; content alone grants no official achievement or pathway unlock. |
+| 9. Acceptance Criteria | Preserve independent study without bypassing shared access guards or treating any same-skill module as an equivalent requirement choice. |
 
 <a id="fr-06-09"></a>
 
@@ -104,11 +140,11 @@ Initial-view status: Confirmed. Approval alone does not establish readiness PASS
 | 2. Requirement Name | Track learning progress |
 | 3. Description | The Employee shall view completed learning activities, assessment outcomes, competency progress, and pathway status. |
 | 4. Actor | Employee |
-| 5. Preconditions |  |
-| 6. Main Flow |  |
-| 7. Alternative / Exception Flows |  |
-| 8. Postconditions |  |
-| 9. Acceptance Criteria |  |
+| 5. Preconditions | Trusted Employee reading own persisted progress/evidence/pathway history. |
+| 6. Main Flow | Inspect lessons, attempts/group results, diagnostics, official achievements, pending certificate decisions and requirement revisions. |
+| 7. Alternative / Exception Flows | Missing/prototype data remains unavailable; optional, waived, failed and NEED_REVIEW states cannot be collapsed into achieved. |
+| 8. Postconditions | Read-only traceable progress/history; no generated completion or reviewer metadata. |
+| 9. Acceptance Criteria | Separate official versus diagnostic/bypass, preserve all attempts/alternative progress and show real mandatory pending work. |
 
 ## Legacy ID Traceability
 
@@ -178,4 +214,5 @@ This supersedes the manual selector/assignment and blank-empty-state behavior in
 
 ### Optional Modules for the same Skill — 2026-11-05
 
-An Employee with an authorized Module or original completion evidence for a Skill can study other approved, active Modules teaching that same Skill within their organization. Each Module retains its own pinned content and progress; optional study does not change pathway membership/order. Completing one Module leaves the others available. Loading, empty, retry and access-denial states use real APIs. [Learning contract](../../technical/Skill-Learning-Eligibility.md).
+**Pre-transition implementation:** an Employee with an authorized Module or original skill completion can study other approved, active Modules teaching that Skill within the organization. Each Module retains its own pinned content and progress; optional study does not change pathway membership/order. Completing one Module leaves the others available. Loading, empty, retry and access-denial states use real APIs. [Learning contract](../../technical/Skill-Learning-Eligibility.md).
+\nFor new requirement alternatives, exact knowledge/outcome compatibility and current pathway lock checks must also apply. The preceding skill-only API/history does not prove that new behavior.\n

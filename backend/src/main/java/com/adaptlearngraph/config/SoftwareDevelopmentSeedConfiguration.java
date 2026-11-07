@@ -34,6 +34,14 @@ public class SoftwareDevelopmentSeedConfiguration {
             if(!DevelopmentWorkspace.enabled(env))throw new IllegalStateException("Development fixture gate required");
             var graph=Files.readAllBytes(Path.of(env.getProperty("pathway.initial.catalog.seed-file","/seed/ontology_seed.json")));
             var catalog=LocalCatalogBootstrap.forExistingDevelopment(catalogGraph,graph);
+            if(env.getProperty("workspace.development.rule-seed-only",Boolean.class,false)) {
+                var repositories=DevelopmentSeedRepositories.from(beans::getBean);
+                new TransactionTemplate(transactionManager).executeWithoutResult(tx->{
+                    repositories.locks().lock("WORKSPACE_SE");
+                    provision(repositories,null,env.getRequiredProperty("workspace.development-fixtures.password"),true);
+                });
+                context.close();return;
+            }
             if(!catalog.hasSoftwareDevelopment())System.out.println("SE bank ready; existing sealed graph retained. Three additional prerequisite edges remain pending approved catalog import.");
             var manifest=MainDevelopmentBankSeed.project(bank(graph));
             var seeds=DevelopmentSeedRepositories.from(beans::getBean);
@@ -45,12 +53,12 @@ public class SoftwareDevelopmentSeedConfiguration {
                     MainDevelopmentBankSeed.id("bank-owner"),MainDevelopmentBankSeed.ORGANIZATION,importer.targetUrl()),OfficialQuestionBankImporter.Mode.LOCAL_SEED);
             new TransactionTemplate(transactionManager).executeWithoutResult(tx -> {
                 seeds.locks().lock("WORKSPACE_SE");
-                provision(seeds,manifest,env.getRequiredProperty("workspace.development-fixtures.password"));
+                provision(seeds,manifest,env.getRequiredProperty("workspace.development-fixtures.password"),false);
             });
             context.close();
         };
     }
-    private static void provision(DevelopmentSeedRepositories repositories,OfficialQuestionBankManifest bank,String password) {
+    private static void provision(DevelopmentSeedRepositories repositories,OfficialQuestionBankManifest bank,String password,boolean ruleOnly) {
         require(password.length()>=12,"Development password must contain at least twelve characters");
         var seeds=repositories.identities();var technical=repositories.technical();
         var org=MainDevelopmentBankSeed.ORGANIZATION;
@@ -72,6 +80,10 @@ public class SoftwareDevelopmentSeedConfiguration {
         seeds.insertEmployeeMembershipIgnoringConflicts(membership,account,org,department,reference,now);
         seeds.insertMembershipRoleIfAbsent(membership,"EMPLOYEE");
         require(seeds.activeEmployeeMembershipRoles(membership,account,org,department,reference).equals(List.of("EMPLOYEE")),"SE membership drift");
+        if(ruleOnly) {
+            repositories.resources().seedBankIfAbsent(org,reference,JOB_POSITION,MainDevelopmentBankSeed.seId("bank"));
+            return;
+        }
         try {
             var model=canonical(JSON.valueToTree(AdaptiveIrtPolicy.referenceModelV1()));
             var mapping=canonical(JSON.valueToTree(AdaptiveIrtPolicy.referenceMappingV1()));

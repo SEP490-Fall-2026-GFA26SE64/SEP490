@@ -31,11 +31,12 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
     private static final Instant BASELINE = Instant.parse("2026-01-01T00:00:00Z");
     private static final String GRAPH_SKILLS = """
             OPTIONAL MATCH (r)-[req:REQUIRES_SKILL]->(s:MicroSkill)
+            WHERE req.status='ACTIVE' AND s.organizationId=r.organizationId AND s.status='ACTIVE'
             WITH r, collect(CASE WHEN s IS NOT NULL THEN {
                 skillId: s.id,
                 skillCode: s.code,
                 skillName: s.name,
-                threshold: toInteger(round(coalesce(req.targetMastery, 0.0) * 100)),
+                requiredKnowledgeLevels: req.requiredKnowledgeLevels,
                 level: coalesce(req.level, '')
             } END) AS graphSkills
             """;
@@ -129,7 +130,9 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
             }
 
             // Synchronize REQUIRES_SKILL graph edges
-            syncSkillRelationships(organizationId, roleIdStr, targetRole.getSkillTargets(), targetRole.getUpdatedAt());
+            syncSkillRelationships(organizationId, matchedId, targetRole.getSkillTargets(), targetRole.getUpdatedAt(),
+                    targetRole.getStatus(),targetRole.getLevels());
+            syncMemberLevelIdentities(organizationId,matchedId,targetRole.getLevels(),version,updatedAt);
         });
         return targetRole;
     }
@@ -142,30 +145,83 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
         return rawCode + "#" + orgId + "#v" + version;
     }
 
-    private void syncSkillRelationships(String organizationId, String roleId, String skillTargetsJson, Instant updatedAt) {
+    /** Stable owned membership IDs for the authored projection; display tokens remain wire-compatible. */
+    private void syncMemberLevelIdentities(String org,String role,List<String> levels,String version,String at) {
+        var current=levels==null?List.<String>of():List.copyOf(levels);
+        if(current.size()>100 || new java.util.HashSet<>(current).size()!=current.size() || current.stream().anyMatch(String::isBlank))
+            throw new IllegalArgumentException("Invalid member Levels");
+        var retained=client.query("""
+                MATCH (r:TargetRole {id:$role,organizationId:$org})-[h:HAS_LEVEL]->(l:Level)
+                WHERE h.status='ACTIVE' OR l.memberToken IN $tokens
+                RETURN l.id AS id,l.organizationId AS owner,l.memberToken AS token,l.sourceFormat AS source,h.status AS status LIMIT 201
+                """).bindAll(Map.of("org",org,"role",role,"tokens",current)).fetch().all();
+        if(retained.size()>200)throw new IllegalStateException("Too many member Level identities");
+        // Existing typed Level memberships are another catalog owner's projection; do not rewrite them.
+        if(retained.stream().anyMatch(row->!"AUTHORED_ROLE_MEMBER_V1".equals(row.get("source"))))return;
+        var ids=new HashMap<String,String>();
+        for(var row:retained) {
+            if(!org.equals(row.get("owner")))throw new IllegalStateException("Member Level owner mismatch");
+            String token=Objects.toString(row.get("token"),""),id=Objects.toString(row.get("id"),"");
+            if(token.isBlank() || id.isBlank() || ids.putIfAbsent(token,id)!=null)throw new IllegalStateException("Ambiguous member Level identity");
+        }
+        var members=new ArrayList<Map<String,Object>>();
+        for(int rank=0;rank<current.size();rank++) {
+            String token=current.get(rank);members.add(Map.of("token",token,"id",ids.getOrDefault(token,UUID.randomUUID().toString()),"rank",rank));
+        }
+        client.query("""
+                MATCH (r:TargetRole {id:$role,organizationId:$org}) UNWIND $members AS item
+                MERGE (l:Level {id:item.id}) ON CREATE SET l.createdAt=datetime($at)
+                SET l.organizationId=$org,l.memberToken=item.token,l.code=item.id,l.name=item.token,l.rank=item.rank,
+                    l.status='ACTIVE',l.version=$version,l.sourceFormat='AUTHORED_ROLE_MEMBER_V1'
+                MERGE (r)-[h:HAS_LEVEL]->(l) SET h.organizationId=$org,h.status='ACTIVE',h.updatedAt=datetime($at)
+                """).bindAll(Map.of("org",org,"role",role,"members",members,"at",at,"version",version)).run();
+        client.query("""
+                MATCH (r:TargetRole {id:$role,organizationId:$org})-[h:HAS_LEVEL]->(l:Level {organizationId:$org,sourceFormat:'AUTHORED_ROLE_MEMBER_V1'})
+                WHERE NOT l.memberToken IN $tokens SET h.status='INACTIVE',h.updatedAt=datetime($at)
+                """).bindAll(Map.of("org",org,"role",role,"tokens",current,"at",at)).run();
+    }
+
+    private void syncSkillRelationships(String organizationId, String roleId, String skillTargetsJson, Instant updatedAt,
+                                        RoleStatus status,List<String> memberLevels) {
         List<Map<String, Object>> skillItems = parseSkillTargetsJson(skillTargetsJson);
         List<Map<String, Object>> processedSkills = new ArrayList<>();
+        if(skillItems.size()>5000)throw new IllegalArgumentException("Too many role requirements");
+        var seen=new java.util.HashSet<String>();
 
         for (Map<String, Object> item : skillItems) {
-            String code = Objects.toString(item.get("skillCode"), "").trim();
+            String code = Objects.toString(item.get("skillCode"), Objects.toString(item.get("skillId"), "")).trim();
+            if(code.isBlank())throw new IllegalArgumentException("Select an existing owned skill");
+            if(item.containsKey("threshold") || item.containsKey("targetMastery") || item.containsKey("requiredScore"))
+                throw new IllegalArgumentException("Use requiredKnowledgeLevels instead of a numeric target");
             if (!code.isBlank()) {
                 Map<String, Object> skillData = new HashMap<>();
                 skillData.put("skillCode", code);
                 skillData.put("skillName", Objects.toString(item.get("skillName"), code));
-                skillData.put("skillId", Objects.toString(item.get("skillId"), UUID.randomUUID().toString()));
+                String skillId=Objects.toString(item.get("skillId"), "").strip();
+                if(skillId.isBlank())throw new IllegalArgumentException("Select an existing owned skill");
+                skillData.put("skillId", skillId);
                 String level = Objects.toString(item.get("level"), "");
                 skillData.put("level", level);
-                Number threshold = 70;
-                if (item.get("threshold") instanceof Number n) {
-                    threshold = n;
-                }
-                skillData.put("threshold", threshold.intValue());
+                if(level.isBlank() || !seen.add(skillId+"\n"+level))throw new IllegalArgumentException("Unique skill and member level required");
+                if(!(item.get("requiredKnowledgeLevels") instanceof List<?> knowledge) || knowledge.isEmpty()
+                    || knowledge.size()>3 || new java.util.HashSet<>(knowledge).size()!=knowledge.size()
+                    || knowledge.stream().anyMatch(k->!(k instanceof String) || !java.util.Set.of("FOUNDATION","INTERMEDIATE","ADVANCED").contains(k)))
+                    throw new IllegalArgumentException("Select explicit required knowledge levels");
+                skillData.put("requiredKnowledgeLevels", List.copyOf(knowledge));
                 processedSkills.add(skillData);
             }
         }
 
-        // 1. Delete existing REQUIRES_SKILL edges for this role to prevent stale or duplicate edges
-        roles.deleteRequiredSkills(roleId, organizationId);
+        if(roles.countOwnedRequirements(organizationId,roleId,processedSkills)!=processedSkills.size())
+            throw new IllegalArgumentException("Requirements must reference owned active skills and a member level");
+        if(status==RoleStatus.ACTIVE || status==RoleStatus.PUBLISHED) {
+            var missingLevels=memberLevels.stream()
+                    .filter(level->processedSkills.stream().noneMatch(s->level.equals(s.get("level")))).toList();
+            if(processedSkills.isEmpty() || !missingLevels.isEmpty())
+                throw new com.adaptlearngraph.exception.IncompleteRoleRequirementsException(missingLevels);
+        }
+        // Retain relationship identity and historical properties; deactivate only omitted owned pairs.
+        roles.retireOmittedRequiredSkills(roleId,organizationId,processedSkills,updatedAt.toString());
 
         // 2. Merge current REQUIRES_SKILL edges distinguishing per-level assignments
         if (!processedSkills.isEmpty()) {
@@ -335,9 +391,11 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
             return Collections.emptyList();
         }
         try {
-            return objectMapper.readValue(json, new TypeReference<List<Map<String, Object>>>() {});
+            var values=objectMapper.readValue(json, new TypeReference<List<Map<String, Object>>>() {});
+            if(values==null || values.stream().anyMatch(Objects::isNull))throw new IllegalArgumentException("Role requirements must be an array");
+            return values;
         } catch (Exception e) {
-            return Collections.emptyList();
+            throw new IllegalArgumentException("Invalid role requirements",e);
         }
     }
 }

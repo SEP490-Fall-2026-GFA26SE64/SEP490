@@ -1,0 +1,55 @@
+@startuml
+!pragma layout smetana
+left to right direction
+hide empty members
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+title Flow r3 - assess the selected target, discover prerequisite needs later - TARGET, not applied
+class "1. Select Role + member Level" as target {
+  Read explicit requiredKnowledgeLevels
+  Reuse exact official evidence only
+  Resolve MODULE_ONLY / CERTIFICATE_ONLY
+}
+class "2. Baseline: separate config" as base {
+  Freeze groups / paper / deadline
+  Save/resume; automatic timed finalization
+  Record diagnostics only for groups asked
+}
+class "3. Request + initial Expert review" as initial {
+  A needs learning => A alternatives only
+  Do not add B from prerequisite edge yet
+  Request locks BOTH Role and Level
+}
+class "4. Learn one eligible alternative" as learn {
+  Requirement roots branch to choices
+  Each module retains its own progress
+  Content alone is not official achievement
+}
+class "5. Skill assessment: own config" as skill {
+  Main + ALL configured prerequisite groups
+  Per-group pass / mandatory / optional veto
+  Every retake is a new FULL paper
+}
+class "6. Discover / record result" as needs {
+  Missing B => Cần bổ sung + auto supplement
+  Official B failure => NEED_REVIEW only
+  Main waits on required conditions / veto
+}
+class "7. Complete / bypass-only release" as release {
+  Module + assessment OR approved certificate
+  Bypass is outstanding, never ACHIEVED
+  No other mandatory pending work => release
+}
+class "8. New target + parallel old needs" as parallel {
+  Carry old bypass context as parallel supplementary learning
+  Even if new module/certificate arrives: no new-target prerequisite gate
+  Keep official / diagnostic / waived provenance distinct
+}
+target --> base : scope
+base --> initial : needs
+initial --> learn : exact approval
+learn --> skill : assess
+skill --> needs : result
+needs --> release : required work resolved
+release --> parallel : Employee selects another Role
+@enduml

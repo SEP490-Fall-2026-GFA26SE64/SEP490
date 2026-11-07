@@ -1,6 +1,21 @@
-# Schema Neo4j — Single-Skill Module contract v0.12.0
+# Schema Neo4j — target r3 and historical inventory
 
-## Current contract — 2026-11-05
+## Current target — 2026-11-05-r3
+
+**Target design, not applied Neo4j inventory.** Keep existing ontology topology; add only Certificate linked from Skill. No intermediate requirement node.
+
+![Neo4j target r3](diagrams/target-r3-ontology.svg)
+
+[PNG](diagrams/target-r3-ontology.png) · [PlantUML](diagrams/target-r3-ontology.puml) · [layout](diagrams/target-r3-ontology.diagram.json).
+
+REQUIRES_SKILL.requiredKnowledgeLevels replaces numeric requiredScore, explicitly and without inheritance. Module gains knowledgeLevel/outcomeCodes; retire active teachingFocus/difficultyLevel without duplicating level on TEACHES. HAS_SKILL_PREREQUISITE retains topology with exact dependent/prerequisite levels. Tenant-owned Skill holds disjoint moduleOnlyKnowledgeLevels/certificateOnlyKnowledgeLevels and per-level outcome-code lists; shared templates are read-only. Skill → REQUIRES_CERTIFICATE → Certificate holds one assigned definition per configured certificate-only skill/level, with required HTTPS referenceUrl; learner data stays outside graph.
+
+Baseline never pre-adds unassessed prerequisites; skill assessment discovers shortages. Old bypass work on another target is parallel/non-gating. [Complete field/constraint mapping](technical/Organization%20Rule%20Assessment%20and%20Pathway.md#3-neo4j-physical-mapping). Existing counts/fields/renders below are previous-release history, not applied r3. No graph/seed changes here.
+
+
+<a id="current-contract--2026-11-05"></a>
+
+## Previous single-Skill contract — 2026-11-05
 
 ```mermaid
 flowchart LR

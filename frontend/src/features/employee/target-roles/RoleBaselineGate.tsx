@@ -1,4 +1,6 @@
 import { Link } from 'react-router-dom'
+import { useContext } from 'react'
+import { WorkspaceSessionContext } from '../../../shared/auth/workspaceSession'
 import { History } from 'lucide-react'
 import { Button, buttonVariants } from '../../../shared/components/ui/Button'
 import { Badge } from '../../../shared/components/ui/Badge'
@@ -7,8 +9,13 @@ import { useTranslation } from '../../../shared/i18n/LanguageContext'
 import { startCommand, attemptPath } from '../baseline-assessment/baselineApi'
 import { useBaselineAttempt } from '../baseline-assessment/useBaselineAttempt'
 import type { RoleFlowView } from './currentRoleFlowApi'
+import { RolePathwayRequest } from './RolePathwayRequest'
 
 export function RoleBaselineGate({ view }: { view: RoleFlowView }) {
+  const identity = useContext(WorkspaceSessionContext)?.identity
+  return <OwnedRoleBaselineGate key={(identity?.organizationId ?? '') + ':' + (identity?.accountId ?? '') + ':' + (view.selection?.selectionId ?? '')} view={view} />
+}
+function OwnedRoleBaselineGate({ view }: { view: RoleFlowView }) {
   const { t } = useTranslation(), tr = (key: string) => t(`roleFlow.${key}`)
   const state = useBaselineAttempt()
   const progress = view.progress
@@ -23,7 +30,8 @@ export function RoleBaselineGate({ view }: { view: RoleFlowView }) {
         </div>
       </div>
       <div className="flex flex-wrap gap-2">
-        {progress.state === 'BASELINE_REQUIRED' && <Button size="sm" disabled={state.locked} onClick={() => void state.run(startCommand())}>{tr('start')}</Button>}
+        <RolePathwayRequest view={view} disabled={state.locked} />
+        {progress.state === 'BASELINE_REQUIRED' && view.selection && <Button size="sm" disabled={state.locked} onClick={() => void state.run(startCommand({ selectionId: view.selection!.selectionId, selectionRevision: view.selection!.revision }, 'BASELINE', progress.attemptId ?? undefined))}>{tr('start')}</Button>}
         {progress.state === 'RESUME' && progress.attemptId && <Link className={buttonVariants({ size: 'sm' })} to={attemptPath(progress.attemptId)}>{tr('resume')}</Link>}
         <Link className={buttonVariants({ size: 'sm', variant: 'outline' })} to="/employee/baseline-assessment"><History size={14} aria-hidden="true" />{t('baselineUi.history')}</Link>
       </div>

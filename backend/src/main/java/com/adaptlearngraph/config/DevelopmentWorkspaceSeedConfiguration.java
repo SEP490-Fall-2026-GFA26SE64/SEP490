@@ -65,6 +65,7 @@ public class DevelopmentWorkspaceSeedConfiguration {
                 resources.seedBankIfAbsent(org,reference,DevelopmentWorkspace.JOB_POSITION,MainDevelopmentBankSeed.securityBank());
             });
             // Reuse the exact validated synthetic artifact, without provisioning persona accounts or learner state.
+            if(environment.getProperty("workspace.development.rule-seed-only",Boolean.class,false)) {context.close();return;}
             new LocalDemoProvisioning(repositories,json,transactionManager,false,MainDevelopmentBankSeed.id("ld"),MainDevelopmentBankSeed.securityProjection()).run(args);
             resources.bindUnsetVersions(MainDevelopmentBankSeed.ORGANIZATION,DevelopmentWorkspace.JOB_POSITION,MainDevelopmentBankSeed.securityBank(),
                     MainDevelopmentBankSeed.securityId("model-v1"),MainDevelopmentBankSeed.securityId("mapping-v1"));

@@ -5,6 +5,7 @@ import com.adaptlearngraph.repository.PrerequisiteRepository;
 import com.adaptlearngraph.repository.TargetRoleGraphPort;
 import com.adaptlearngraph.exception.PrerequisiteCycleException;
 import com.adaptlearngraph.entities.domain.PrerequisiteEdge;
+import com.adaptlearngraph.entities.domain.KnowledgeLevel;
 import com.adaptlearngraph.entities.domain.TargetRoleGraph;
 import java.util.List;
 import java.util.Objects;
@@ -24,26 +25,17 @@ public class PrerequisiteService implements ManagePrerequisiteUseCase, GetTarget
     @Override
     public PrerequisiteEdge createPrerequisite(CreatePrerequisiteCommand command) {
         Objects.requireNonNull(command, "command cannot be null");
-        if (command.sourceSkillId().equals(command.targetSkillId())) {
+        var dependent=KnowledgeLevel.valueOf(command.dependentKnowledgeLevel());
+        var prerequisite=KnowledgeLevel.valueOf(command.prerequisiteKnowledgeLevel());
+        if (command.sourceSkillId().equals(command.targetSkillId()) && dependent==prerequisite) {
             throw new IllegalArgumentException("Self-referencing prerequisite is not allowed: a micro-skill cannot be a prerequisite of itself.");
         }
-        if (command.minMastery() < 0.0 || command.minMastery() > 1.0) {
-            throw new IllegalArgumentException("minMastery must be between 0.0 and 1.0, was " + command.minMastery());
-        }
-
-        // Anti-cycle guard: if target already reaches source through any existing prerequisite chain, adding source -> target creates a cycle
-        boolean wouldCycle = prerequisiteRepository.hasPath(command.organizationId(), command.targetSkillId(), command.sourceSkillId());
-        if (wouldCycle) {
-            throw new PrerequisiteCycleException(
-                    "Adding prerequisite from skill " + command.sourceSkillId() + " to " + command.targetSkillId()
-                            + " introduces a cyclic dependency in the prerequisite graph.");
-        }
-
+        // The repository serializes the scoped catalog and checks exact-pair cycles in the write transaction.
         return prerequisiteRepository.savePrerequisite(
                 command.organizationId(),
                 command.sourceSkillId(),
                 command.targetSkillId(),
-                command.minMastery(),
+                dependent, prerequisite,
                 command.status());
     }
 
@@ -52,7 +44,16 @@ public class PrerequisiteService implements ManagePrerequisiteUseCase, GetTarget
         Objects.requireNonNull(organizationId, "organizationId cannot be null");
         Objects.requireNonNull(sourceSkillId, "sourceSkillId cannot be null");
         Objects.requireNonNull(targetSkillId, "targetSkillId cannot be null");
-        prerequisiteRepository.deletePrerequisite(organizationId, sourceSkillId, targetSkillId);
+        throw new IllegalArgumentException("Exact prerequisite knowledge levels are required");
+    }
+    @Override public PrerequisiteEdge reversePrerequisite(CreatePrerequisiteCommand command) {
+        return prerequisiteRepository.reversePrerequisite(command.organizationId(),command.sourceSkillId(),command.targetSkillId(),
+                KnowledgeLevel.valueOf(command.dependentKnowledgeLevel()),KnowledgeLevel.valueOf(command.prerequisiteKnowledgeLevel()));
+    }
+
+    @Override public void deletePrerequisite(String organizationId,String sourceSkillId,String targetSkillId,String dependentLevel,String prerequisiteLevel) {
+        prerequisiteRepository.deletePrerequisite(Objects.requireNonNull(organizationId),Objects.requireNonNull(sourceSkillId),Objects.requireNonNull(targetSkillId),
+                KnowledgeLevel.valueOf(dependentLevel),KnowledgeLevel.valueOf(prerequisiteLevel));
     }
 
     @Override

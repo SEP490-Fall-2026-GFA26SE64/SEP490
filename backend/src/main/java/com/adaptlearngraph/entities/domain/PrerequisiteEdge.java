@@ -13,12 +13,19 @@ public record PrerequisiteEdge(
         double minMastery,
         SkillStatus status,
         Instant createdAt,
-        Instant updatedAt) {
+        Instant updatedAt,
+        KnowledgeLevel dependentKnowledgeLevel,
+        KnowledgeLevel prerequisiteKnowledgeLevel) {
+
+    public PrerequisiteEdge(String sourceSkillId,String sourceSkillCode,String sourceSkillName,String targetSkillId,
+            String targetSkillCode,String targetSkillName,double minMastery,SkillStatus status,Instant createdAt,Instant updatedAt) {
+        this(sourceSkillId,sourceSkillCode,sourceSkillName,targetSkillId,targetSkillCode,targetSkillName,minMastery,status,createdAt,updatedAt,null,null);
+    }
 
     public PrerequisiteEdge {
         Objects.requireNonNull(sourceSkillId, "sourceSkillId cannot be null");
         Objects.requireNonNull(targetSkillId, "targetSkillId cannot be null");
-        if (sourceSkillId.equals(targetSkillId)) {
+        if (sourceSkillId.equals(targetSkillId) && Objects.equals(dependentKnowledgeLevel,prerequisiteKnowledgeLevel)) {
             throw new IllegalArgumentException("Self-referencing prerequisite is not allowed");
         }
         if (minMastery < 0.0 || minMastery > 1.0) {
@@ -31,5 +38,12 @@ public record PrerequisiteEdge(
         status = status != null ? status : SkillStatus.ACTIVE;
         createdAt = createdAt != null ? createdAt : Instant.now();
         updatedAt = updatedAt != null ? updatedAt : Instant.now();
+        if ((dependentKnowledgeLevel == null) != (prerequisiteKnowledgeLevel == null))
+            throw new IllegalArgumentException("Both prerequisite knowledge levels are required");
+    }
+
+    @Deprecated public double minMastery() {
+        if(dependentKnowledgeLevel!=null)throw new IllegalStateException("NUMERIC_PREREQUISITE_RETIRED");
+        return minMastery;
     }
 }

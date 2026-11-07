@@ -1,5 +1,7 @@
 # Notifications and Activity Recording
 
+**Latest direction — 2026-11-05-r3.** [Target schema/API/flow](../../technical/Organization%20Rule%20Assessment%20and%20Pathway.md) now maps this flow; it is not applied runtime. Baseline records only assessed skills and never creates unassessed prerequisites; skill assessment can discover them as **Cần bổ sung**. Baseline/skill have two independently configured policies with timed auto-finalization. Cross-target old bypass work is parallel/non-gating. Affected old dev records may be rebuilt; normal new-flow history remains. Preserve FE design and classify existing Question Bank content into appropriate knowledge levels with corresponding field changes.
+
 **Source:** [Version 2](../../FA26SE267_KNOWLEDGE_GRAPH_BASED_ADAPTIVE_LEARNING__haht43_Version_2.md), section 3.2(c), Functional Requirements.
 
 **Aligned:** 2026-10-28. **Source requirements in this domain:** 2.
@@ -18,6 +20,16 @@ Each record below corresponds to one source bullet. Unspecified fields are inten
 **Observed separation:** real backend audit records are not the data source of the current administrator/platform activity screens. Those screens use sample or browser-stored logs; Employee browser notifications are also not delivered emails.
 
 **Code references:** [verification/activation mail](../../../backend/src/main/java/com/adaptlearngraph/helper/RegistrationMailDelivery.java), [registration worker](../../../backend/src/main/java/com/adaptlearngraph/services/RegistrationMailWorker.java), [activation worker](../../../backend/src/main/java/com/adaptlearngraph/services/MemberActivationMailWorker.java), [paid-confirmation worker](../../../backend/src/main/java/com/adaptlearngraph/services/PaymentConfirmationMailWorker.java), [identity audit persistence](../../../backend/src/main/java/com/adaptlearngraph/repository/JdbcRegistrationStore.java), [member/workspace audit persistence](../../../backend/src/main/java/com/adaptlearngraph/repository/JdbcSubscriptionWorkspaceStore.java), [payment records](../../../backend/src/main/java/com/adaptlearngraph/repository/JdbcPaymentProcessingStore.java). Dated verification and live-delivery limitations remain in the [testing guide](../../testing/README.md).
+
+## Assessment/pathway decision history boundary - 2026-11-05
+
+This narrow FR-07.10/FR-07.11 contract follows the new assessment/pathway decisions, pending C1 acceptance. It adds no account/payment workflow and claims no delivery implementation or new test result.
+
+Accepted assessment finalization, official evidence/certificate decision, scoped bypass/backfill, pathway revision and target binding/release must retain trusted organization/actor, affected learner/requirement, source/result/decision versions, reason and actual time/provenance. A baseline diagnostic, official achievement, NEED_REVIEW and bypass are distinct outcomes. Never invent reviewer identity/time or expose protected answers/private evidence in notifications.
+
+Business decisions and recoverable notification intent must remain consistent. Retry/replay cannot duplicate achievement, remediation, bypass or a target change; delivery outage remains visible/retryable without undoing the accepted decision. Notify only authorized intended recipients; a success toast/email is not proof of current learning access or completed processing.
+
+Exact event names, recipient/channel routing, transport payloads, storage/outbox mechanics and retention policy remain open for define C2. Existing audit/email history and failures remain preserved. [Expert decision rules](../Pathway%20review/README.md#consistency-target-binding-and-visual-continuity) and [attempt rules](../Assessment%20workflows/README.md#attempt-resume-history-and-result-contract) define the business outcomes; no general notification redesign is included.
 
 ## Requirements
 

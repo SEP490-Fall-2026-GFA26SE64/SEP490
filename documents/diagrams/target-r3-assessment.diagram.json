@@ -1,0 +1,24 @@
+{
+  "width": 1600, "height": 1100,
+  "title": "PostgreSQL r3 - shared engine, two policies and separate evidence",
+  "subtitle": "Principal keys/fields only. All workflow rows use trusted tenant/learner scope and current authorization.",
+  "nodes": [
+    {"id":"bank","title":"Existing Question Bank","kind":"changed","x":30,"y":115,"w":450,"h":195,"fields":["Published item version / protected key","Knowledge mapping: skill + level + outcome","mandatory flag / real review history","Content-based classification, no guessing","No duplicated bank or graph questions"]},
+    {"id":"policy","title":"Rule policy version + activation","kind":"new","x":570,"y":115,"w":450,"h":195,"fields":["PK organization + purpose + version","BASELINE: its own config + active pointer","SKILL_ASSESSMENT: separate config/pointer","counts / pass / mandatory / veto / timing","Published content immutable; no IRT pins"]},
+    {"id":"attempt","title":"rule_assessment_attempt","kind":"new","x":1110,"y":115,"w":450,"h":195,"fields":["PK attempt_id; org + learner + purpose","Frozen target/module/policy/catalog context","state / revision / start / deadline / finish","previous_attempt_id for FULL retake","downstream processing distinct from score"]},
+    {"id":"group","title":"rule_assessment_group / item","kind":"new","x":1110,"y":440,"w":450,"h":195,"fields":["PK attempt + group / item position","Exact skill + knowledge + outcome scope","TARGET / MAIN / PREREQUISITE group role","Frozen count / pass / mandatory / veto","Pinned item version and option order"]},
+    {"id":"answer","title":"Answer + command receipt","kind":"new","x":570,"y":440,"w":450,"h":195,"fields":["Answer FK to presented attempt/item","Accepted response / revision / actual time","Unique retry key + body hash + outcome","Resume same paper; no deadline reset","Submit / timeout serialize finalization"]},
+    {"id":"result","title":"rule_assessment_group_result","kind":"new","x":30,"y":440,"w":450,"h":195,"fields":["PK/FK attempt + group; immutable result","correct / total / mandatory satisfied","passed / veto / reasons / finalized_at","Correct 1; incorrect or unanswered 0","No cross-group compensation or theta"]},
+    {"id":"diag","title":"Baseline diagnostic projection","kind":"changed","x":30,"y":780,"w":450,"h":180,"fields":["Only skill-level groups actually assessed","Pass skips initial module assignment","Fail A suggests A module choices only","Do not add prerequisite B to profile","No official ACHIEVED from baseline"]},
+    {"id":"official","title":"Official evidence + NEED_REVIEW","kind":"new","x":870,"y":780,"w":560,"h":180,"fields":["Exact org / learner / skill / knowledge / source","Module + assessment with required conditions OR certificate","Evidence dedup by accepted source and exact requirement","Official prerequisite failure: NEED_REVIEW, no revocation","Missing B appears only when skill assessment detects it"]}
+  ],
+  "edges": [
+    {"from":"policy","to":"attempt","points":[[1020,210],[1110,210]],"label":"freeze","labelAt":[1033,181]},
+    {"from":"attempt","to":"group","points":[[1335,310],[1335,440]],"label":"owns paper","labelAt":[1343,364]},
+    {"from":"bank","to":"group","points":[[255,310],[255,355],[1175,355],[1175,440]],"label":"approved matching item versions","labelAt":[550,328]},
+    {"from":"group","to":"answer","points":[[1110,535],[1020,535]],"label":"save","labelAt":[1035,507]},
+    {"from":"answer","to":"result","points":[[570,535],[480,535]],"label":"finalize","labelAt":[488,507]},
+    {"from":"result","to":"diag","points":[[255,635],[255,780]],"label":"BASELINE","labelAt":[266,697]},
+    {"from":"result","to":"official","points":[[400,635],[400,705],[1150,705],[1150,780]],"label":"SKILL_ASSESSMENT + completed learning","labelAt":[660,679]}
+  ]
+}

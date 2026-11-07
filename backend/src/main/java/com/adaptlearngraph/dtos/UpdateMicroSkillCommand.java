@@ -8,4 +8,10 @@ public record UpdateMicroSkillCommand(
         String name,
         String description,
         String macroCompetencyCode,
-        SkillStatus status) {}
+        SkillStatus status,
+        com.adaptlearngraph.entities.domain.SkillProvision provision,
+        String expectedVersion) {
+    public UpdateMicroSkillCommand(String organizationId,String skillId,String name,String description,String macroCompetencyCode,SkillStatus status) {
+        this(organizationId,skillId,name,description,macroCompetencyCode,status,null,null);
+    }
+}

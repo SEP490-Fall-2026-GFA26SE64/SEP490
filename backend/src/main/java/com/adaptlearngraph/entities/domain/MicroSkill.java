@@ -13,6 +13,9 @@ public final class MicroSkill {
     private final SkillStatus status;
     private final Instant createdAt;
     private final Instant updatedAt;
+    private final SkillProvision provision;
+    private final String version;
+    private final String expectedVersion;
 
     public MicroSkill(
             MicroSkillId id,
@@ -24,6 +27,12 @@ public final class MicroSkill {
             SkillStatus status,
             Instant createdAt,
             Instant updatedAt) {
+        this(id,organizationId,code,name,description,macroCompetencyCode,status,createdAt,updatedAt,SkillProvision.empty(),null,null);
+    }
+
+    public MicroSkill(MicroSkillId id,String organizationId,String code,String name,String description,
+            String macroCompetencyCode,SkillStatus status,Instant createdAt,Instant updatedAt,
+            SkillProvision provision,String version,String expectedVersion) {
         this.id = Objects.requireNonNull(id, "MicroSkill id cannot be null");
         this.organizationId = requireNonBlank(organizationId, "organizationId cannot be blank");
         this.code = normalizeCode(code);
@@ -33,6 +42,9 @@ public final class MicroSkill {
         this.status = Objects.requireNonNullElse(status, SkillStatus.ACTIVE);
         this.createdAt = Objects.requireNonNullElseGet(createdAt, Instant::now);
         this.updatedAt = Objects.requireNonNullElseGet(updatedAt, Instant::now);
+        this.provision = Objects.requireNonNull(provision);
+        this.version = version;
+        this.expectedVersion = expectedVersion;
     }
 
     public static MicroSkill createNew(
@@ -51,7 +63,7 @@ public final class MicroSkill {
                 macroCompetencyCode,
                 SkillStatus.ACTIVE,
                 now,
-                now);
+                now,SkillProvision.empty(),java.util.UUID.randomUUID().toString(),null);
     }
 
     public MicroSkill update(
@@ -68,8 +80,16 @@ public final class MicroSkill {
                 newMacroCompetencyCode != null ? newMacroCompetencyCode : this.macroCompetencyCode,
                 newStatus != null ? newStatus : this.status,
                 this.createdAt,
-                Instant.now());
+                Instant.now(),this.provision,java.util.UUID.randomUUID().toString(),this.version);
     }
+
+    public MicroSkill withProvision(SkillProvision value) {
+        return new MicroSkill(id,organizationId,code,name,description,macroCompetencyCode,status,createdAt,updatedAt,
+                value == null ? provision : value,version,expectedVersion);
+    }
+    public SkillProvision getProvision() { return provision; }
+    public String getVersion() { return version; }
+    public String getExpectedVersion() { return expectedVersion; }
 
     private static String requireNonBlank(String value, String message) {
         if (value == null || value.isBlank()) {

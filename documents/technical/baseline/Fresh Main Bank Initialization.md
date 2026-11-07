@@ -1,5 +1,7 @@
 # Fresh main initialization after version reconciliation
 
+**Current flow revision: 2026-11-05-r3.** [Target schema/API/flow](../Organization%20Rule%20Assessment%20and%20Pathway.md) supersedes this document's older active assessment/mastery/gap/optimizer assumptions. Material below is retained previous design/source/operation history, not proof of r3 being applied. Keep non-conflicting security/content/retry safeguards. Baseline covers selected Role–Level, records only assessed diagnostics and does not pre-add prerequisites; two separate policy configs share an engine; skill assessment discovers supplementation; cross-target old bypass work is parallel/non-gating. Old affected dev records may be rebuilt; new-flow history and unrelated/shared evidence/backups remain. Do not automatically run retained setup/reset/test commands below.
+
 Confirmed user scope2026-11-01: keep main migration versions/content, use new own versions, synchronize dependencies/build, prepare Docker. The user chooses to remove the existing containers/volumes and test from scratch; retained-DB comparison/adoption is cancelled. This document does not authorize the agent to delete containers/volumes or fabricate learner results.
 
 All active `db/migration`, `db/workspace-migration` and `db/module-migration` lineages retain main V1–V43 unchanged and add:

@@ -14,6 +14,7 @@ x-backend-environment: &backend-environment
   # This shared dev deployment uses an independent main-lineage DB; old demo volumes are retained.
   SPRING_FLYWAY_LOCATIONS: classpath:db/workspace-migration
   CATALOG_SEED_ENABLED: "false"
+  WORKSPACE_DEVELOPMENT_RULE_SEED_ONLY: "true"
   ASSESSMENT_BASELINE_LEGACYAUTHORING_ENABLED: "false"
   BASELINE_ANSWER_REVIEW_ENABLED: "false"
   ASSESSMENT_BASELINE_IRTADMINISTRATION_ENABLED: "false"
@@ -99,7 +100,7 @@ services:
       ASSESSMENT_BASELINE_LOCALDEMO_SEEDENABLED: "true"
       WORKSPACE_DEVELOPMENT_FIXTURES_ENABLED: "true"
     volumes:
-      - ./documents/dataset/import/ontology_seed-v012.json:/seed/ontology_seed.json:ro
+      - ./documents/dataset/import/ontology_seed-prerequisite-knowledge.json:/seed/ontology_seed.json:ro
       - ./documents/dataset/question-bank/15-1212.00/catalog-scope-v09.json:/seed/catalog-scope.json:ro
       - workspace_catalog_v011_bootstrap:/catalog-state
     depends_on:
@@ -139,7 +140,7 @@ services:
       WORKSPACE_DEVELOPMENT_FIXTURES_ENABLED: "true"
       WORKSPACE_DEVELOPMENT_FIXTURES_PASSWORD: ${WORKSPACE_DEVELOPMENT_PASSWORD:-Workspace-Development-490!}
     volumes:
-      - ./documents/dataset/import/ontology_seed-v012.json:/seed/ontology_seed.json:ro
+      - ./documents/dataset/import/ontology_seed-prerequisite-knowledge.json:/seed/ontology_seed.json:ro
     depends_on:
       workspace-seed:
         condition: service_completed_successfully
@@ -218,7 +219,7 @@ services:
       PATHWAY_INITIAL_WORKER_MAXIMUM_BACKOFF_MS: ${PATHWAY_INITIAL_WORKER_MAXIMUM_BACKOFF_MS:-30000}
       PATHWAY_INITIAL_WORKER_POLL_INTERVAL_MS: ${PATHWAY_INITIAL_WORKER_POLL_INTERVAL_MS:-2000}
     volumes:
-      - ./documents/dataset/import/ontology_seed-v012.json:/seed/ontology_seed.json:ro
+      - ./documents/dataset/import/ontology_seed-prerequisite-knowledge.json:/seed/ontology_seed.json:ro
       - ./documents/dataset/import/ontology_seed-v010.json:/seed/baseline-history-v010.json:ro
       - ./documents/dataset/question-bank/15-1212.00/historical/ontology_seed-v08.json:/seed/baseline-history-v08.json:ro
       - ./documents/dataset/question-bank/15-1212.00/historical/question-bank-v1.json:/seed/baseline-bank-v08.json:ro
@@ -255,6 +256,39 @@ services:
       PLATFORM_ADMIN_SEED_EMAIL: ${PLATFORM_ADMIN_SEED_EMAIL:-}
       PLATFORM_ADMIN_SEED_PASSWORD: ${PLATFORM_ADMIN_SEED_PASSWORD:-}
 
+  knowledge-seed:
+    image: adapt-learn-graph-backend:dev
+    build: *backend-build
+    environment:
+      <<: *backend-environment
+      SPRING_PROFILES_ACTIVE: local,workspace-development,knowledge-bank-seed
+      SPRING_MAIN_WEB_APPLICATION_TYPE: none
+      WORKSPACE_DEVELOPMENT_FIXTURES_ENABLED: "true"
+      QUESTION_BANK_DEVELOPMENT_SEED_ENABLED: "true"
+    volumes:
+      - ./documents/dataset/import/ontology_seed-prerequisite-knowledge.json:/seed/ontology_seed.json:ro
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: "no"
+
+  module-knowledge-seed:
+    image: adapt-learn-graph-backend:dev
+    build: *backend-build
+    environment:
+      <<: *backend-environment
+      SPRING_PROFILES_ACTIVE: local,workspace-development,module-knowledge-seed
+      SPRING_MAIN_WEB_APPLICATION_TYPE: none
+      WORKSPACE_DEVELOPMENT_FIXTURES_ENABLED: "true"
+      MODULES_DEVELOPMENT_SEED_ENABLED: "true"
+      MODULES_DEVELOPMENT_SEED_MANIFEST: /seed/module-knowledge.json
+    volumes:
+      - ./documents/dataset/module-knowledge/development-complete-release.json:/seed/module-knowledge.json:ro
+    depends_on:
+      knowledge-seed:
+        condition: service_completed_successfully
+    restart: "no"
+
   web:
     build:
       context: ./frontend
@@ -272,6 +306,8 @@ services:
     depends_on:
       api:
         condition: service_healthy
+      module-knowledge-seed:
+        condition: service_completed_successfully
     ports:
       - "127.0.0.1:${WEB_PORT:-8088}:5173"
 

@@ -9,7 +9,8 @@ public record PrerequisiteResponse(
         String targetSkillId,
         String targetSkillCode,
         String targetSkillName,
-        double minMastery,
+        String dependentKnowledgeLevel,
+        String prerequisiteKnowledgeLevel,
         String status,
         String createdAt,
         String updatedAt) {
@@ -22,7 +23,8 @@ public record PrerequisiteResponse(
                 edge.targetSkillId(),
                 edge.targetSkillCode(),
                 edge.targetSkillName(),
-                edge.minMastery(),
+                edge.dependentKnowledgeLevel()==null?null:edge.dependentKnowledgeLevel().name(),
+                edge.prerequisiteKnowledgeLevel()==null?null:edge.prerequisiteKnowledgeLevel().name(),
                 edge.status().name(),
                 edge.createdAt().toString(),
                 edge.updatedAt().toString());

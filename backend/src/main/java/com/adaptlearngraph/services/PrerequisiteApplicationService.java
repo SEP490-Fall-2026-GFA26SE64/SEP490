@@ -28,13 +28,20 @@ public class PrerequisiteApplicationService {
                 organizationId,
                 request.sourceSkillId(),
                 request.targetSkillId(),
-                request.minMastery(),
+                request.dependentKnowledgeLevel(),request.prerequisiteKnowledgeLevel(),
                 request.status() != null ? MicroSkillApplicationService.toDomain(request.status()) : SkillStatus.ACTIVE);
         return toResponse(prerequisites.createPrerequisite(command));
     }
 
     public void deletePrerequisite(String organizationId, String sourceSkillId, String targetSkillId) {
         prerequisites.deletePrerequisite(organizationId, sourceSkillId, targetSkillId);
+    }
+    public PrerequisiteResponse reversePrerequisite(String organizationId,CreatePrerequisiteRequest request) {
+        return toResponse(prerequisites.reversePrerequisite(new CreatePrerequisiteCommand(organizationId,request.sourceSkillId(),request.targetSkillId(),
+                request.dependentKnowledgeLevel(),request.prerequisiteKnowledgeLevel(),SkillStatus.ACTIVE)));
+    }
+    public void deletePrerequisite(String organizationId,String sourceSkillId,String targetSkillId,String dependentLevel,String prerequisiteLevel) {
+        prerequisites.deletePrerequisite(organizationId,sourceSkillId,targetSkillId,dependentLevel,prerequisiteLevel);
     }
 
     private PrerequisiteResponse toResponse(PrerequisiteEdge edge) {
