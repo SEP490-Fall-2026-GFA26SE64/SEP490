@@ -10,6 +10,7 @@ export interface ComboboxOption {
 }
 
 export interface ComboboxProps {
+  id?: string
   options: ComboboxOption[]
   value?: string
   values?: string[]
@@ -27,6 +28,7 @@ export interface ComboboxProps {
 }
 
 export function Combobox({
+  id,
   options,
   value,
   values,
@@ -109,6 +111,7 @@ export function Combobox({
   return (
     <div ref={containerRef} className={cn('relative w-full', className)}>
       <button
+        id={id}
         type="button"
         disabled={disabled}
         onClick={() => setIsOpen((prev) => !prev)}

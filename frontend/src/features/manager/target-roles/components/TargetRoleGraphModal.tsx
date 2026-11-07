@@ -19,6 +19,8 @@ import { Badge } from '../../../../shared/components/ui/Badge'
 import { Button } from '../../../../shared/components/ui/Button'
 import { Dialog } from '../../../../shared/components/ui/Dialog'
 import { getActiveCompany } from '../../../../shared/stores/companyStore'
+import { useTranslation } from '../../../../shared/i18n/LanguageContext'
+import { formatRequiredKnowledge } from '../roleKnowledgePresentation'
 import {
   type SkillTargetConfig,
   type TargetRoleModel,
@@ -67,7 +69,7 @@ export interface SkillNodeData {
   code: string
   name: string
   macroCompetencyCode: string
-  targetMastery: number
+  requiredKnowledgeLevels: string[]
   status: string
   level?: string
 }
@@ -146,6 +148,7 @@ export function TargetRoleGraphModal({
   role,
   skillTargets,
 }: TargetRoleGraphModalProps) {
+  const { t } = useTranslation()
   const [loading, setLoading] = React.useState(false)
   const [error, setError] = React.useState<string | null>(null)
   const [graphData, setGraphData] = React.useState<TargetRoleGraphDto | null>(null)
@@ -246,7 +249,7 @@ export function TargetRoleGraphModal({
             skillCode: st.skillCode || rawSkillId,
             skillName: st.skillName || backendSkill?.skillName || rawSkillId,
             macroCompetencyCode: backendSkill?.macroCompetencyCode || matchedC?.id || matchedC?.code || 'KNOWLEDGE',
-            targetMastery: (st.threshold || 80) / 100,
+            requiredKnowledgeLevels: st.requiredKnowledgeLevels ?? [],
             status: backendSkill?.status || 'ACTIVE',
             level: st.level || backendSkill?.level,
           }
@@ -557,7 +560,7 @@ export function TargetRoleGraphModal({
 
       addNodeSafely({
         id: skill.skillId,
-        label: `<b>${skill.skillCode || skill.skillId}</b>\n${skill.skillName}\nTarget Mastery: ${Math.round(skill.targetMastery * 100)}%`,
+        label: `<b>${skill.skillCode || skill.skillId}</b>\n${skill.skillName}\n${formatRequiredKnowledge(skill.requiredKnowledgeLevels, t)}`,
         shape: 'box',
         shapeProperties: { borderRadius: 14 },
         margin: { top: 8, right: 14, bottom: 8, left: 14 },
@@ -583,7 +586,7 @@ export function TargetRoleGraphModal({
           code: skill.skillCode || skill.skillId,
           name: skill.skillName,
           macroCompetencyCode: skill.macroCompetencyCode || 'KNOWLEDGE',
-          targetMastery: skill.targetMastery,
+          requiredKnowledgeLevels: skill.requiredKnowledgeLevels,
           status: skill.status || 'ACTIVE',
         },
       })
@@ -610,7 +613,7 @@ export function TargetRoleGraphModal({
           id: `has-skill-${parentNodeId}-${skill.skillId}`,
           from: parentNodeId,
           to: skill.skillId,
-          title: `Member skill of ${matchedComp.name} (${Math.round(skill.targetMastery * 100)}% benchmark)`,
+          title: `Member skill of ${matchedComp.name} (${formatRequiredKnowledge(skill.requiredKnowledgeLevels, t)})`,
           label: 'HAS_SKILL',
           font: { size: 8, color: '#16A34A', align: 'horizontal' },
           color: { color: '#86EFAC', highlight: '#16A34A', hover: '#15803D' },
@@ -630,7 +633,7 @@ export function TargetRoleGraphModal({
           id: `requires-skill-${targetLevelNodeId}-${skill.skillId}`,
           from: targetLevelNodeId,
           to: skill.skillId,
-          title: `Level Requirement: REQUIRES_SKILL (Target Mastery: ${Math.round(skill.targetMastery * 100)}%)`,
+          title: `Level Requirement: REQUIRES_SKILL (${formatRequiredKnowledge(skill.requiredKnowledgeLevels, t)})`,
           label: 'REQUIRES_SKILL',
           font: { size: 7, color: '#64748B', align: 'horizontal' },
           color: { color: '#CBD5E1', highlight: '#64748B', hover: '#475569' },
@@ -649,8 +652,8 @@ export function TargetRoleGraphModal({
           id: `prereq-${p.sourceSkillId}-${p.targetSkillId}-${pIdx}`,
           from: p.sourceSkillId,
           to: p.targetSkillId,
-          label: `HAS_SKILL_PREREQUISITE (≥ ${Math.round(p.minMastery * 100)}%)`,
-          title: `HAS_SKILL_PREREQUISITE: Requires ≥ ${Math.round(p.minMastery * 100)}% before learning`,
+          label: `${p.dependentKnowledgeLevel ?? 'Unclassified'} → ${p.prerequisiteKnowledgeLevel ?? 'Unclassified'}`,
+          title: `HAS_SKILL_PREREQUISITE: ${p.dependentKnowledgeLevel ?? 'Unclassified'} requires ${p.prerequisiteKnowledgeLevel ?? 'Unclassified'}`,
           font: {
             size: 8,
             color: '#DC2626',
@@ -808,7 +811,7 @@ export function TargetRoleGraphModal({
       }
       networkRef.current = null
     }
-  }, [graphData, layoutMode, loading, role, propLevels, roleId, selectedLevelFilter, searchQuery])
+  }, [graphData, layoutMode, loading, role, propLevels, roleId, selectedLevelFilter, searchQuery, t])
 
   return (
     <Dialog
@@ -1188,9 +1191,9 @@ export function TargetRoleGraphModal({
                         </Badge>
                       </div>
                       <div>
-                        <span className="text-[10px] text-muted-foreground block">Target Mastery</span>
+                        <span className="text-[10px] text-muted-foreground block">{t('roleKnowledge.requiredLevels')}</span>
                         <strong className="text-success text-xs font-bold block mt-0.5">
-                          {Math.round(selectedNode.targetMastery * 100)}%
+                          {formatRequiredKnowledge(selectedNode.requiredKnowledgeLevels, t)}
                         </strong>
                       </div>
                     </div>
@@ -1216,7 +1219,7 @@ export function TargetRoleGraphModal({
                                 {p.sourceSkillCode || p.sourceSkillId}
                               </span>
                               <Badge variant="primary" className="text-[10px]">
-                                ≥ {Math.round(p.minMastery * 100)}%
+                                {p.dependentKnowledgeLevel ?? 'Unclassified'} → {p.prerequisiteKnowledgeLevel ?? 'Unclassified'}
                               </Badge>
                             </div>
                           ))

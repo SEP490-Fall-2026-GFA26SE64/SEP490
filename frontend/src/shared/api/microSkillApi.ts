@@ -5,7 +5,15 @@ function normalizeOrg(orgId?: string): string {
   return requireOrganizationId(orgId)
 }
 
-export interface MicroSkillDto {
+export interface SkillProvisionPayload {
+  moduleOnlyKnowledgeLevels: string[]
+  certificateOnlyKnowledgeLevels: string[]
+  foundationOutcomeCodes: string[]
+  intermediateOutcomeCodes: string[]
+  advancedOutcomeCodes: string[]
+}
+
+export interface MicroSkillDto extends Partial<SkillProvisionPayload> {
   id: string
   organizationId?: string
   code: string
@@ -15,6 +23,7 @@ export interface MicroSkillDto {
   status?: string
   createdAt?: string
   updatedAt?: string
+  version?: string | null
 }
 
 export interface MacroCompetencyDto {
@@ -27,18 +36,19 @@ export interface MacroCompetencyDto {
   updatedAt?: string
 }
 
-export interface CreateMicroSkillPayload {
+export interface CreateMicroSkillPayload extends Partial<SkillProvisionPayload> {
   code: string
   name: string
   description?: string
   macroCompetencyCode?: string
 }
 
-export interface UpdateMicroSkillPayload {
+export interface UpdateMicroSkillPayload extends Partial<SkillProvisionPayload> {
   name: string
   description?: string
   macroCompetencyCode?: string
   status?: string
+  expectedVersion?: string | null
 }
 
 export async function fetchMicroSkills(organizationId: string, q?: string): Promise<MicroSkillDto[]> {

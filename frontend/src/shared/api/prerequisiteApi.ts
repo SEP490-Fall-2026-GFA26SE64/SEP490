@@ -13,7 +13,8 @@ export interface PrerequisiteEdgeDto {
   targetSkillId: string
   targetSkillCode?: string
   targetSkillName?: string
-  minMastery: number
+  dependentKnowledgeLevel: string | null
+  prerequisiteKnowledgeLevel: string | null
   status: string
   createdAt?: string
   updatedAt?: string
@@ -24,7 +25,7 @@ export interface TargetRoleGraphSkillDto {
   skillCode: string
   skillName: string
   macroCompetencyCode?: string
-  targetMastery: number
+  requiredKnowledgeLevels: string[]
   status: string
   level?: string
 }
@@ -42,7 +43,8 @@ export interface TargetRoleGraphDto {
 export interface CreatePrerequisitePayload {
   sourceSkillId: string
   targetSkillId: string
-  minMastery: number
+  dependentKnowledgeLevel: string
+  prerequisiteKnowledgeLevel: string
 }
 
 export async function fetchPrerequisites(organizationId: string): Promise<PrerequisiteEdgeDto[]> {
@@ -80,12 +82,14 @@ export async function createPrerequisite(
 export async function deletePrerequisite(
   organizationId: string,
   sourceSkillId: string,
-  targetSkillId: string
+  targetSkillId: string,
+  dependentKnowledgeLevel: string,
+  prerequisiteKnowledgeLevel: string,
 ): Promise<void> {
   const res = await fetch(
     `/api/v1/organizations/${encodeURIComponent(normalizeOrg(organizationId))}/prerequisites?sourceSkillId=${encodeURIComponent(
       sourceSkillId
-    )}&targetSkillId=${encodeURIComponent(targetSkillId)}`,
+    )}&targetSkillId=${encodeURIComponent(targetSkillId)}&dependentKnowledgeLevel=${encodeURIComponent(dependentKnowledgeLevel)}&prerequisiteKnowledgeLevel=${encodeURIComponent(prerequisiteKnowledgeLevel)}`,
     {
       method: 'DELETE',
     }
@@ -111,6 +115,17 @@ export async function fetchTargetRoleGraph(
   )
   if (!res.ok) {
     throw new Error(`Failed to fetch target role graph: ${res.statusText}`)
+  }
+  return res.json()
+}
+
+export async function reversePrerequisite(organizationId: string, payload: CreatePrerequisitePayload): Promise<PrerequisiteEdgeDto> {
+  const res = await fetch(`/api/v1/organizations/${encodeURIComponent(normalizeOrg(organizationId))}/prerequisites/reverse`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify(payload),
+  })
+  if (!res.ok) {
+    const error = await res.json().catch(() => null)
+    throw new Error(error?.message || `Failed to reverse prerequisite (HTTP ${res.status})`)
   }
   return res.json()
 }
