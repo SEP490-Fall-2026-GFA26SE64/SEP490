@@ -1,5 +1,7 @@
 # Choose Target Role
 
+**Current flow revision: 2026-11-05-r3.** [Target schema/API/flow](../../Organization%20Rule%20Assessment%20and%20Pathway.md) supersedes this document's older active assessment/mastery/gap/optimizer assumptions. Material below is retained previous design/source/operation history, not proof of r3 being applied. Keep non-conflicting security/content/retry safeguards. Baseline covers selected Role–Level, records only assessed diagnostics and does not pre-add prerequisites; two separate policy configs share an engine; skill assessment discovers supplementation; cross-target old bypass work is parallel/non-gating. Old affected dev records may be rebuilt; new-flow history and unrelated/shared evidence/backups remain. Do not automatically run retained setup/reset/test commands below.
+
 ## Confirmed Employee UI refinement — 2026-10-28
 
 User approved five screenshot-based changes plus alignment with FE AGENTS/live tokens: always-visible accessible Level options (no dropdown), a larger viewport-bounded selection/gap/detail dialog, original portal menu with one fixed demo Employee, removal of catalog scope text/selection timestamp from the Active Role summary, and an always-visible summary with a standard Review skill gap button instead of a collapse arrow. That button opens the exact selected Role+member Level preview; legacy unbound Level still requires an explicit choice. Level changes remain preview-only until the existing confirmation command. No selection/profile/history/hash change from opening or resizing UI.

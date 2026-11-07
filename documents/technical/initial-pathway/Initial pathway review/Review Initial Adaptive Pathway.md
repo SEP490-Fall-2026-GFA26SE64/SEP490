@@ -1,5 +1,7 @@
 # Review Initial Adaptive Pathway
 
+**Current flow revision: 2026-11-05-r3.** [Target schema/API/flow](../../Organization%20Rule%20Assessment%20and%20Pathway.md) supersedes this document's older active assessment/mastery/gap/optimizer assumptions. Material below is retained previous design/source/operation history, not proof of r3 being applied. Keep non-conflicting security/content/retry safeguards. Baseline covers selected Role–Level, records only assessed diagnostics and does not pre-add prerequisites; two separate policy configs share an engine; skill assessment discovers supplementation; cross-target old bypass work is parallel/non-gating. Old affected dev records may be rebuilt; new-flow history and unrelated/shared evidence/backups remain. Do not automatically run retained setup/reset/test commands below.
+
 **Function:** REQ-019-F01. **Actor:** assigned Expert. **Contract updated:** 2026-10-29.
 Business requirements: [FR-05.07](../../../features/Pathway%20review/README.md#fr-05-07). This document defines technical sequencing and implementation alignment; deployment/evidence limits do not alter the business requirement.
 

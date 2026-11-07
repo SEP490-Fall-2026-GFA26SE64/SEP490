@@ -1,5 +1,7 @@
 # Initial gap-to-pathway flow and data design
 
+**Current flow revision: 2026-11-05-r3.** [Target schema/API/flow](../../Organization%20Rule%20Assessment%20and%20Pathway.md) supersedes this document's older active assessment/mastery/gap/optimizer assumptions. Material below is retained previous design/source/operation history, not proof of r3 being applied. Keep non-conflicting security/content/retry safeguards. Baseline covers selected Role–Level, records only assessed diagnostics and does not pre-add prerequisites; two separate policy configs share an engine; skill assessment discovers supplementation; cross-target old bypass work is parallel/non-gating. Old affected dev records may be rebuilt; new-flow history and unrelated/shared evidence/backups remain. Do not automatically run retained setup/reset/test commands below.
+
 **Current contract consolidated:** 2026-10-29. **Source inspected:** product cced745. Sections1–8 are the current shared design, including the confirmed Expert adjacent moves and neutral removal. Sections9–18 retain dated design/implementation history and existing link anchors; their old source-only, unapplied-migration, no-reorder and pending-runtime statements are historical, not the current contract. Detailed dated verification stays in the [workspace receipt](../../../testing/system/REQ-002-041-042-workspace-integration.md).
 
 ## 1. Product goal, example and Function boundaries
