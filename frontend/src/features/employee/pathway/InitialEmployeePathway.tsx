@@ -18,10 +18,13 @@ import { WorkspaceLayout } from '../../../shared/layouts/WorkspaceLayout'
 import { AdaptivePathwayTimeline } from '../components/AdaptivePathwayTimeline'
 import { InteractiveRoleRoadmap } from '../components/InteractiveRoleRoadmap'
 import { baselineTargetMet, pathwayAccessNote } from '../../../shared/api/initialPathwayMessages'
+import { rulePathwaysEnabled } from '../../../shared/api/requirementPathway'
+import { RequirementEmployeePathway } from './RequirementEmployeePathway'
 
 export function InitialEmployeePathway() {
   const session = useInitialPathwaySession(), { t } = useTranslation()
-  return <WorkspaceLayout>{session.scope && session.data?.role === 'EMPLOYEE' ? <Pathway key={session.scope} scope={session.scope} /> : session.isPending ? <LoadingCard label={t('initialPathway.loading')} /> : <InitialPathwayFeedback error={session.error ?? new PathwayError('FORBIDDEN', 403)} onRetry={() => void session.refetch()} />}</WorkspaceLayout>
+  const View = rulePathwaysEnabled ? RequirementEmployeePathway : Pathway
+  return <WorkspaceLayout>{session.scope && session.data?.role === 'EMPLOYEE' ? <View key={session.scope} scope={session.scope} /> : session.isPending ? <LoadingCard label={t('initialPathway.loading')} /> : <InitialPathwayFeedback error={session.error ?? new PathwayError('FORBIDDEN', 403)} onRetry={() => void session.refetch()} />}</WorkspaceLayout>
 }
 function Pathway({ scope }: { scope: string }) {
   const { t, language } = useTranslation(), tr = (key: string) => t('initialPathway.' + key), ui = (key: string) => tr('display.' + key), [params] = useSearchParams(), archiveId = params.get('archive')

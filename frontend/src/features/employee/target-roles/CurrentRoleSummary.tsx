@@ -1,14 +1,15 @@
-import { Target } from 'lucide-react'
+import { Target, Eye, BookOpenCheck } from 'lucide-react'
+import { Link } from 'react-router-dom'
 import { Heading } from '../../../shared/components/typography/Heading'
 import { Text } from '../../../shared/components/typography/Text'
 import { Badge } from '../../../shared/components/ui/Badge'
-import { Button } from '../../../shared/components/ui/Button'
+import { Button, buttonVariants } from '../../../shared/components/ui/Button'
 import { Card } from '../../../shared/components/ui/Card'
 import { useTranslation } from '../../../shared/i18n/LanguageContext'
 import { RoleBaselineGate } from './RoleBaselineGate'
 import type { RoleFlowView } from './currentRoleFlowApi'
 
-export function CurrentRoleSummary({ view, onReviewGaps, disabled = false }: { view: RoleFlowView; onReviewGaps: () => void; disabled?: boolean }) {
+export function CurrentRoleSummary({ view, onDetails, disabled = false }: { view: RoleFlowView; onDetails: () => void; disabled?: boolean }) {
   const { t } = useTranslation()
   const selection = view.selection
   if (view.progress.state === 'LEGACY_SELECTION_REQUIRES_RESELECTION') {
@@ -27,7 +28,8 @@ export function CurrentRoleSummary({ view, onReviewGaps, disabled = false }: { v
           {selection && <Text variant="caption">{selection.role.jobPositionName}</Text>}
         </div>
       </div>
-      {selection && <Button variant="primary" className="h-auto min-h-10 whitespace-normal [&>span]:whitespace-normal" disabled={disabled || !selection.available} onClick={onReviewGaps}>{t('initialPathway.gaps')}</Button>}
+      {selection && <div className="flex flex-wrap gap-2"><Button variant="primary" className="font-semibold" leftIcon={<Eye size={16} aria-hidden="true" />} disabled={disabled} onClick={onDetails}>{t('upskillingUi.showDetails')}</Button>
+        <Link className={buttonVariants({ variant: 'outline', className: `gap-2 border-primary/40 font-semibold text-primary hover:bg-secondary ${disabled ? 'pointer-events-none opacity-50' : ''}` })} to="/employee/my-mastery" aria-disabled={disabled || undefined} tabIndex={disabled ? -1 : undefined} onClick={event => { if (disabled) event.preventDefault() }}><BookOpenCheck size={16} aria-hidden="true" />{t('baselineUi.viewProfile')}</Link></div>}
     </div>
     <RoleBaselineGate view={view} />
   </Card>

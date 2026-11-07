@@ -12,14 +12,17 @@ export function useBaselineAttempt(attemptId?: string) {
   const [needsRefresh, setNeedsRefresh] = useState(false)
   const [pending, setPending] = useState<BaselineCommand | null>(null)
   const [seconds, setSeconds] = useState(0)
-  const clock = useRef({ remaining: 0, receivedAt: 0 })
+  const clock = useRef({ attemptId: '', remaining: 0, receivedAt: 0 })
   const lock = useRef(false), alive = useRef(true)
   function clearDenied(cause: unknown) {
     if (cause instanceof BaselineError && [401, 403, 404].includes(cause.status)) { setAttempt(null); setResult(null) }
   }
   function accept(value: BaselineAttempt) {
     setAttempt(value); setResult(null)
-    clock.current = { remaining: Math.max(0, Date.parse(value.deadlineAt) - Date.parse(value.observedAt)), receivedAt: performance.now() }
+    const now = performance.now(), serverRemaining = Math.max(0, Date.parse(value.deadlineAt) - Date.parse(value.observedAt))
+    // A retained command receipt can contain an earlier observation. It cannot refill the displayed timer.
+    const remaining = clock.current.attemptId === value.id ? Math.min(serverRemaining, Math.max(0, clock.current.remaining - (now - clock.current.receivedAt))) : serverRemaining
+    clock.current = { attemptId: value.id, remaining, receivedAt: now }
     setSeconds(Math.ceil(clock.current.remaining / 1000))
   }
   useEffect(() => {
@@ -71,10 +74,12 @@ export function useBaselineAttempt(attemptId?: string) {
       setPending(null); setNeedsRefresh(false); accept(next)
       // Read after a committed response: never resend a successful write for a failed result GET.
       if (!attemptId || next.id !== attemptId) { navigate(attemptPath(next.id)); return }
-      if (next.state !== 'IN_PROGRESS') {
-        try { const detail = await readResult(next.id); if (alive.current) setResult(detail) }
-        catch (cause) { if (alive.current) { clearDenied(cause); setError(asError(cause)); setNeedsRefresh(true) } }
-      }
+      try {
+        const current = await readAttempt(next.id)
+        if (!alive.current) return
+        accept(current)
+        if (current.state !== 'IN_PROGRESS') { const detail = await readResult(current.id); if (alive.current) setResult(detail) }
+      } catch (cause) { if (alive.current) { clearDenied(cause); setError(asError(cause)); setNeedsRefresh(true) } }
     } catch (cause) {
       if (!alive.current) return
       const failure = asError(cause)

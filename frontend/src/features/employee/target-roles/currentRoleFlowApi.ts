@@ -1,4 +1,4 @@
-export interface CurrentSkill { id: string; code: string | null; name: string; requiredScore: number; mandatory: boolean }
+export interface CurrentSkill { id: string; code: string | null; name: string; requiredKnowledgeLevels: string[]; mandatory: boolean }
 export interface CurrentLevel { id: string; code: string; name: string; rank: number; context: string; attainmentRule: string; skills: CurrentSkill[] }
 export interface CurrentRole { id: string; code: string; name: string; scope: string; jobPositionId: string; jobPositionName: string; catalogVersion: string; fingerprint: string; levels: CurrentLevel[] }
 export interface CurrentSelection { selectionId: string; role: CurrentRole; revision: number; selectedAt: string; available: boolean; levelId?: string | null }
@@ -19,7 +19,9 @@ function role(value: unknown): CurrentRole {
   const r = object(value)
   return { id: text(r.id), code: text(r.code), name: text(r.name), scope: text(r.scope), jobPositionId: text(r.jobPositionId), jobPositionName: text(r.jobPositionName), catalogVersion: text(r.catalogVersion), fingerprint: text(r.fingerprint),
     levels: array(r.levels, value => { const l = object(value); return { id: text(l.id), code: text(l.code), name: text(l.name), rank: num(l.rank), context: text(l.context), attainmentRule: text(l.attainmentRule),
-      skills: array(l.skills, value => { const s = object(value); return { id: text(s.id), code: s.code === null || s.code === undefined ? null : text(s.code), name: text(s.name), requiredScore: num(s.requiredScore), mandatory: bool(s.mandatory) } }) } }) }
+      skills: array(l.skills, value => { const s = object(value), levels = array(s.requiredKnowledgeLevels, text)
+        if (!levels.length || new Set(levels).size !== levels.length || levels.some(l => !['FOUNDATION', 'INTERMEDIATE', 'ADVANCED'].includes(l))) throw Error()
+        return { id: text(s.id), code: s.code === null || s.code === undefined ? null : text(s.code), name: text(s.name), requiredKnowledgeLevels: levels, mandatory: bool(s.mandatory) } }) } }) }
 }
 function selection(value: unknown): CurrentSelection {
   const s = object(value)

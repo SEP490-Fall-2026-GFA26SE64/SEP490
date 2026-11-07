@@ -1,5 +1,10 @@
+import { useQuery } from '@tanstack/react-query'
+import { WorkspaceSessionContext } from '../../../shared/auth/workspaceSession'
+import { readRulePathway } from '../../../shared/api/requirementPathway'
+import { InitialPathwayFeedback } from '../../../shared/components/InitialPathwayFeedback'
 import { SkillLearningPanel } from './SkillLearningPanel'
-import { useCallback, useEffect, useEffectEvent, useRef, useState } from 'react'
+import { SkillAssessmentEntry } from '../baseline-assessment/SkillAssessmentEntry'
+import { useCallback, useContext, useEffect, useEffectEvent, useRef, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import {
   Award,
@@ -539,6 +544,7 @@ function LearningModuleReader({ moduleId }: { moduleId: string }) {
                         )}
                       </div>
                       {view.revision.payload.teachings.length === 1 && <SkillLearningPanel skillId={view.revision.payload.teachings[0].skillId} skillName={view.revision.payload.teachings[0].skillName} moduleId={moduleId} completedLessons={view.progress.filter(p => p.completedAt !== null).length} />}
+                      {lessons.length > 0 && completed === lessons.length && view.revision.payload.knowledgeLevel && view.revision.payload.teachings.length === 1 && <CompletedModuleAssessmentLink moduleId={moduleId} revision={view.revision.number} />}
                       {view.revision.payload.teachings.length !== 1 && <p role="status" className="text-body-sm text-muted-foreground">{vi ? 'Liên kết kỹ năng của phiên bản này cần được đối soát trước khi xác định điều kiện thi.' : 'This historical version needs skill mapping reconciliation before learning eligibility can be determined.'}</p>}
                       <div className="flex justify-end">
                         <Button
@@ -664,4 +670,19 @@ function LearningModuleReader({ moduleId }: { moduleId: string }) {
       </div>
     </WorkspaceLayout>
   )
+}
+
+function CompletedModuleAssessmentLink({ moduleId, revision }: { moduleId: string; revision: number }) {
+  const { t } = useTranslation(), identity = useContext(WorkspaceSessionContext)?.identity
+  const scope = `${identity?.organizationId}:${identity?.accountId}:${identity?.roles?.join(',')}`
+  const query = useQuery({ queryKey: ['initialPathway', scope, 'moduleAssessmentEntry', moduleId, revision], queryFn: ({ signal }) => readRulePathway(null, signal), enabled: Boolean(identity?.organizationId && identity?.accountId), retry: false, gcTime: 0 })
+  if (query.isPending) return <p className="text-body-sm text-muted-foreground" role="status">{t('initialPathway.loading')}</p>
+  if (query.error) return <InitialPathwayFeedback error={query.error} onRetry={() => void query.refetch()} />
+  const pathway = query.data
+  if (!pathway || pathway.archived) return null
+  const step = pathway.steps.find(step => !['FULFILLED', 'BYPASSED'].includes(step.state) && step.options.some(option => option.moduleId === moduleId && option.moduleRevision === revision))
+  const option = step?.options.find(option => option.moduleId === moduleId && option.moduleRevision === revision)
+  if (!step || !option) return null
+  if (!option.completedAt) return <Button size="sm" variant="outline" onClick={() => void query.refetch()}>{t('initialPathway.refresh')}</Button>
+  return <SkillAssessmentEntry pathway={pathway} step={step} option={option} />
 }

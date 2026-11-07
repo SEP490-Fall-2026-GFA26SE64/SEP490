@@ -211,3 +211,11 @@
   min-width: 0;
   white-space: normal;
 }
+
+/* Current requirement pathway: explicit contrast without changing legacy graphs. */
+.requirement-roadmap .roadmap-module-box .text-caption,
+.requirement-roadmap .roadmap-module-box > span { color: hsl(var(--primary-foreground)); }
+.requirement-roadmap .roadmap-skill-box.is-not-achieved { color: hsl(var(--foreground)); background: hsl(var(--secondary) / 0.45); }
+.requirement-roadmap .roadmap-skill-box.is-exam-ready { color: hsl(var(--foreground)); background: hsl(var(--warning) / 0.12); }
+.requirement-roadmap .roadmap-skill-box.is-achieved { color: hsl(var(--foreground)); background: hsl(var(--success) / 0.1); }
+.requirement-roadmap .roadmap-skill-box > span { color: hsl(var(--foreground)); }
