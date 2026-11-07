@@ -10,6 +10,7 @@ public final class ApiEndpoints {
     public static final String ADAPTIVE_ATTEMPT_SUBMIT = API_V1 + "/employee/baseline-attempts/{attemptId}/submit";
     public static final String ADAPTIVE_BLUEPRINT = API_V1 + "/ld/adaptive-baseline-blueprints";
     public static final String ASSESSMENT_POLICY = API_V1 + "/ld/adaptive-baseline-policy";
+    public static final String SCOPED_ASSESSMENT_POLICY = API_V1 + "/assessment-policies";
     public static final String BASELINE_ANSWER_REVIEW = API_V1 + "/ld/baseline-assessments";
     public static final String BASELINE_ASSESSMENT_MANAGEMENT = API_V1 + "/ld/baseline-assessments";
     public static final String BASELINE_BLUEPRINT = API_V1 + "/ld/baseline-blueprints";

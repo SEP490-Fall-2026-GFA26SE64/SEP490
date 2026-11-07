@@ -49,7 +49,7 @@ public interface AuthoredCatalogPort {
                     var skills=new HashSet<String>();
                     for(var skill:level.skills()) {
                         text(skill.id());text(skill.name());text(skillVersions.get(skill.id()));
-                        if(!skills.add(skill.id()) || !skill.mandatory() || !Double.isFinite(skill.requiredScore()) || skill.requiredScore()<0 || skill.requiredScore()>1)throw invalid();
+                        if(!skills.add(skill.id()) || !skill.mandatory() || skill.requiredKnowledgeLevels().isEmpty())throw invalid();
                     }
                 }
             }

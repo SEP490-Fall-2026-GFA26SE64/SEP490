@@ -213,6 +213,14 @@ public class OrganizationTargetRoleController {
                 "code", ex.getCode()));
     }
 
+    @ExceptionHandler(com.adaptlearngraph.exception.IncompleteRoleRequirementsException.class)
+    public ResponseEntity<?> handleIncompleteRequirements(com.adaptlearngraph.exception.IncompleteRoleRequirementsException ex) {
+        return ResponseEntity.unprocessableEntity().body(Map.of(
+                "code", "INCOMPLETE_LEVEL_REQUIREMENTS",
+                "message", ex.getMessage(),
+                "levels", ex.getLevels()));
+    }
+
     private boolean isAuthorizedManager(String role) {
         if (role == null) return false;
         String normalized = role.trim().toUpperCase();

@@ -222,6 +222,67 @@ class SubscriptionPlanApiIntegrationTest {
         assertEquals(401, get(browser, "/api/v1/platform/subscription-plans").statusCode());
     }
 
+    @Test
+    void platformDirectoryExposesOnlyProvisionedRowsAndCurrentAdministratorAssignments() throws Exception {
+        var platform = fixture(true);
+        var owner = fixture(false);
+        var other = fixture(false);
+        var browser = signedIn(platform);
+        UUID unprovisioned = UUID.randomUUID();
+        jdbc.update("INSERT INTO platform.organization(organization_id,code,name) VALUES (?,?,'No workspace')",
+                unprovisioned, "ORG_" + unprovisioned.toString().toUpperCase());
+        jdbc.update("UPDATE platform.workspace_account_profile SET full_name='Current Profile' WHERE account_id=?", owner.id());
+        jdbc.update("UPDATE platform.organization_membership SET active=false WHERE account_id=?", other.id());
+
+        var response = get(browser, "/api/v1/platform/workspaces");
+        assertEquals(200, response.statusCode(), response.body());
+        assertEquals("no-store", response.headers().firstValue("Cache-Control").orElseThrow());
+        var rows = body(response);
+        JsonNode first = null, second = null;
+        for (var row : rows) {
+            assertNotEquals(unprovisioned.toString(), row.path("organizationId").asText());
+            if (owner.organizationId().toString().equals(row.path("organizationId").asText())) first = row;
+            if (other.organizationId().toString().equals(row.path("organizationId").asText())) second = row;
+        }
+        assertNotNull(first);
+        assertNotNull(second);
+        assertEquals("NONE", first.path("subscription").path("status").asText());
+        assertTrue(first.path("subscription").path("current").isNull());
+        assertEquals(1, first.path("administrators").size());
+        assertEquals(owner.email(), first.path("administrators").get(0).path("email").asText());
+        assertEquals("Current Profile", first.path("administrators").get(0).path("fullName").asText());
+        assertFalse(second.path("administrators").get(0).path("active").asBoolean());
+        assertFalse(response.body().contains("password"));
+        assertFalse(response.body().contains("paymentHistory"));
+        assertEquals(401, get(browser(), "/api/v1/platform/workspaces").statusCode());
+        var organizationBrowser = signedIn(owner);
+        assertEquals(403, get(organizationBrowser, "/api/v1/platform/workspaces").statusCode());
+        assertEquals(403, send(organizationBrowser, "PUT",
+                "/api/v1/platform/workspaces/" + other.organizationId() + "/suspension", Map.of("suspended", true)).statusCode());
+        assertEquals(403, get(browser, "/api/v1/organizations/" + owner.organizationId() + "/subscription").statusCode());
+
+        String path = "/api/v1/platform/workspaces/" + owner.organizationId() + "/suspension";
+        assertEquals(403, browser.send(HttpRequest.newBuilder(uri(path)).header("Content-Type", "application/json")
+                .PUT(HttpRequest.BodyPublishers.ofString("{\"suspended\":true}")).build(),
+                HttpResponse.BodyHandlers.ofString()).statusCode());
+        assertEquals(400, send(browser, "PUT", path, Map.of()).statusCode());
+        assertEquals(400, send(browser, "PUT", path, java.util.Collections.singletonMap("suspended", null)).statusCode());
+        assertEquals("ACTIVE", jdbc.queryForObject("SELECT status FROM platform.organization WHERE organization_id=?",
+                String.class, owner.organizationId()));
+        assertEquals(200, send(browser, "PUT", path, Map.of("suspended", true)).statusCode());
+        assertEquals("SUSPENDED", jdbc.queryForObject("SELECT status FROM platform.organization WHERE organization_id=?",
+                String.class, owner.organizationId()));
+        assertEquals(200, send(browser, "PUT", path, Map.of("suspended", false)).statusCode());
+        assertEquals("ACTIVE", jdbc.queryForObject("SELECT status FROM platform.organization WHERE organization_id=?",
+                String.class, owner.organizationId()));
+        assertEquals("READY", jdbc.queryForObject("SELECT setup_state FROM platform.organization_workspace WHERE organization_id=?",
+                String.class, owner.organizationId()));
+        assertEquals(2, jdbc.queryForObject("""
+                SELECT count(*) FROM platform.audit_event WHERE resource_id=?
+                AND action IN ('WORKSPACE_SUSPENDED','WORKSPACE_REACTIVATED')
+                """, Integer.class, owner.organizationId()));
+    }
+
     private Account fixture(boolean platform) {
         UUID id = UUID.randomUUID();
         UUID organization = platform ? null : UUID.randomUUID();

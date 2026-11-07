@@ -49,7 +49,9 @@ const view: LearningView = {
       contentType: 'application/vnd.adapt-learning.lessons+json',
       contentVersion: '1',
       duration: 4,
-      price: 0,
+      knowledgeLevel: 'FOUNDATION',
+      outcomeCodes: [],
+      skillVersion: '1',
       teachings: [
         {
           metadata: {

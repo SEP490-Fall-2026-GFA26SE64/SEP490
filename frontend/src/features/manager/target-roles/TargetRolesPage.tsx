@@ -34,6 +34,9 @@ import {
 import * as React from 'react'
 import { TargetRoleGraphModal } from './components/TargetRoleGraphModal'
 import { TargetRoleVersionDiff } from './components/TargetRoleVersionDiff'
+import { missingRoleLevelRequirements, roleRequirements, validRequiredKnowledge } from './roleRequirements'
+import { formatRequiredKnowledge } from './roleKnowledgePresentation'
+import { useTranslation } from '../../../shared/i18n/LanguageContext'
 import { Badge } from '../../../shared/components/ui/Badge'
 import { Button } from '../../../shared/components/ui/Button'
 import {
@@ -252,6 +255,10 @@ function deleteTargetRoleMeta(orgId: string, id?: string, code?: string): void {
 
 export function TargetRolesPage() {
   const { toast } = useToast()
+  const { language, t } = useTranslation()
+  const publicationCopy = (en: string, vi: string) => language === 'vi' ? vi : en
+  const [publishingRoleId, setPublishingRoleId] = React.useState<string | null>(null)
+  const publicationLock = React.useRef(false)
 
   // Master roles state
 
@@ -1802,7 +1809,7 @@ export function TargetRolesPage() {
             selectedOcc.description,
           status: newStatus,
           version: selectedRole.version,
-          skillTargets: selectedRole.skillTargets,
+          skillTargets: roleRequirements(selectedRole.skillTargets),
           levels: editRoleForm.levelNames,
           levelDurations: editRoleForm.levelDurations,
         },
@@ -1819,76 +1826,100 @@ export function TargetRolesPage() {
   // L&D Manager: Approve and Publish submitted configuration (REQ-052)
 
   const handleApproveAndPublishRole = async (role: TargetRoleModel) => {
-    const effectiveOrgId = resolveWorkspaceOrgId(
+    if (publicationLock.current) return false
+    const validation = getPublishValidation(role)
+    const missingLevelsMessage = (levels: string[]) => publicationCopy(
+      `Add skills and select their required knowledge levels for: ${levels.join(', ')}.`,
+      `Bổ sung kỹ năng và chọn mức kiến thức yêu cầu cho các Level: ${levels.join(', ')}.`,
+    )
+    if (!validation.canPublish) {
+      toast({
+        title: publicationCopy('Publication blocked', 'Chưa thể xuất bản'),
+        description: validation.missingLevels.length ? missingLevelsMessage(validation.missingLevels) : publicationCopy(
+          'Complete the Role name, code, member levels, competency links and required knowledge levels before publishing.',
+          'Hoàn thiện tên, mã Role, các Level, liên kết competency và mức kiến thức yêu cầu trước khi xuất bản.',
+        ),
+        variant: 'destructive',
+      })
+      return false
+    }
+    const orgId = resolveWorkspaceOrgId(
       session?.identity?.organizationId || activeComp?.id,
     )
-    const updatedRole: TargetRoleModel = {
-      ...role,
-      status: 'published',
-      updatedAt: new Date().toISOString(),
-    }
-
-    // Immediately update state and active company
-    saveAndSetRoles((prev) =>
-      prev.map((r) =>
-        r.id === role.id ||
-        (r.code && role.code && r.code.toUpperCase() === role.code.toUpperCase() && r.version === role.version)
-          ? updatedRole
-          : r
-      ),
+    let failureMessage = publicationCopy(
+      'Publication was not confirmed. Refresh the Role to check its status before trying again.',
+      'Chưa xác nhận được kết quả xuất bản. Tải lại Role để kiểm tra trạng thái trước khi thử lại.',
     )
-
+    publicationLock.current = true
+    setPublishingRoleId(role.id)
     try {
-      const payload = {
-        name: role.title,
-        familyCode: role.jobPositionCode || role.familyCode,
-        track: role.track,
-        responsibilities: role.responsibilities,
-        assignedExpertId: role.assignedExpertId,
-        description: role.description,
-        status: 'PUBLISHED',
-        version: role.version,
-        skillTargets: role.skillTargets,
-        competencyIds: role.competencyIds,
-        levelCompetencies: role.levelCompetencies,
-        levels: role.levels,
-        levelDurations: role.levelDurations,
-      }
-      try {
-        await request(
-          `/api/v1/organizations/${effectiveOrgId}/target-roles/${encodeURIComponent(role.id)}`,
-          'PUT',
-          payload,
-          {
+      const res = await fetch(
+        `/api/v1/organizations/${orgId}/target-roles/${encodeURIComponent(role.id)}`,
+        {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
             'X-User-Role': 'LD_MANAGER',
           },
-        )
-      } catch {
-        if (role.code && role.code !== role.id) {
-          await request(
-            `/api/v1/organizations/${effectiveOrgId}/target-roles/${encodeURIComponent(role.code)}`,
-            'PUT',
-            payload,
-            {
-              'X-User-Role': 'LD_MANAGER',
-            },
-          ).catch(() => {})
+          body: JSON.stringify({
+            name: role.title,
+            familyCode: role.jobPositionCode || role.familyCode,
+            track: role.track,
+            responsibilities: role.responsibilities,
+            assignedExpertId: role.assignedExpertId,
+            description: role.description,
+            status: 'ACTIVE',
+            version: role.version,
+            skillTargets: roleRequirements(role.skillTargets),
+            competencyIds: role.competencyIds,
+            levelCompetencies: role.levelCompetencies,
+            levels: role.levels,
+            levelDurations: role.levelDurations,
+          }),
+        },
+      )
+
+      if (!res.ok) {
+        const failure = await res.json().catch(() => null)
+        if (failure?.code === 'INCOMPLETE_LEVEL_REQUIREMENTS' && Array.isArray(failure.levels)) {
+          failureMessage = missingLevelsMessage(failure.levels.filter((level: unknown): level is string => typeof level === 'string'))
         }
+        throw new Error('Publication rejected')
       }
+      const saved = await res.json()
+      if (saved?.id !== role.id || !['ACTIVE', 'PUBLISHED'].includes(saved?.status)) throw new Error('Publication not confirmed')
+      const updatedRole: TargetRoleModel = {
+        ...role,
+        status: 'published',
+        updatedAt: typeof saved.updatedAt === 'string' ? saved.updatedAt : role.updatedAt,
+      }
+      saveAndSetRoles((prev) =>
+        prev.map((r) =>
+          r.id === role.id ||
+          (r.code && role.code && r.code.toUpperCase() === role.code.toUpperCase() && r.version === role.version)
+            ? updatedRole
+            : r
+        ),
+      )
+      setViewingDetailsRole(prev => prev?.id === role.id ? updatedRole : prev)
+      setSelectedRole(prev => prev?.id === role.id ? updatedRole : prev)
       await fetchRoles()
+      toast({
+        title: publicationCopy('Target Role published', 'Đã xuất bản Role'),
+        description: publicationCopy(
+          `${role.title} (${role.code} v${role.version}) has been approved and published.`,
+          `${role.title} (${role.code} v${role.version}) đã được duyệt và xuất bản.`,
+        ),
+        variant: 'success',
+      })
+      return true
     } catch {
-      // Already saved via saveAndSetRoles
+      toast({ title: publicationCopy('Publication not confirmed', 'Chưa xác nhận xuất bản'), description: failureMessage, variant: 'destructive' })
+      return false
+    } finally {
+      publicationLock.current = false
+      setPublishingRoleId(null)
     }
-
-    if (viewingDetailsRole?.id === role.id) {
-      setViewingDetailsRole(null)
-    }
-
-    toast({
-      title: 'Target Role Published',
-      description: `${role.title} (${role.code} v${role.version}) has been approved and published to the organization catalog.`,
-      variant: 'success',
-    })
   }
 
   // L&D Manager: Unpublish target role
@@ -2034,7 +2065,7 @@ export function TargetRolesPage() {
           description: managerRejectingRole.description,
           status: 'REJECTED',
           version: managerRejectingRole.version,
-          skillTargets: managerRejectingRole.skillTargets,
+          skillTargets: roleRequirements(managerRejectingRole.skillTargets),
           competencyIds: managerRejectingRole.competencyIds,
           levelCompetencies: managerRejectingRole.levelCompetencies,
           levels: managerRejectingRole.levels,
@@ -2107,14 +2138,15 @@ export function TargetRolesPage() {
     const hasCompetencies = role.competencyIds.length > 0
     const hasSkillTargets = role.skillTargets.length > 0
     const validThresholds = role.skillTargets.every(
-      (st) => st.threshold > 0 && st.threshold <= 100,
+      (st) => validRequiredKnowledge(st.requiredKnowledgeLevels),
     )
+    const missingLevels = missingRoleLevelRequirements(role.levels, role.skillTargets)
     const canPublish =
       hasTitle &&
       hasCode &&
       hasCompetencies &&
       hasSkillTargets &&
-      validThresholds
+      validThresholds && Boolean(role.levels?.length) && missingLevels.length === 0
 
     return {
       canPublish,
@@ -2123,67 +2155,14 @@ export function TargetRolesPage() {
       hasCompetencies,
       hasSkillTargets,
       validThresholds,
+      missingLevels,
     }
   }
 
   // Execute Publication
 
   const handleExecutePublish = async (role: TargetRoleModel) => {
-    const validation = getPublishValidation(role)
-
-    if (!validation.canPublish) {
-      toast({
-        title: 'Publication Blocked',
-        description:
-          'Complete all required competency links and micro-skill targets before publication.',
-        variant: 'destructive',
-      })
-
-      return
-    }
-
-    // Immediately close modal and reset selected role
-    setIsPublishModalOpen(false)
-    setSelectedRole(null)
-
-    // Optimistically update in-memory state
-    saveAndSetRoles((prev) =>
-      prev.map((r) =>
-        r.id === role.id
-          ? { ...r, status: 'published', updatedAt: new Date().toISOString() }
-          : r,
-      ),
-    )
-
-    toast({
-      title: 'Target Role Published',
-      description: `${role.code} (${role.version}) is now published and active for enterprise diagnostic matching.`,
-      variant: 'success',
-    })
-
-    try {
-      await request(
-        `/api/v1/organizations/${orgId}/target-roles/${role.id}`,
-        'PUT',
-        {
-          name: role.title,
-          familyCode: role.familyCode,
-          track: role.track,
-          assignedExpertId: role.assignedExpertId,
-          description: role.description,
-          status: 'ACTIVE',
-          version: role.version,
-          skillTargets: role.skillTargets,
-        },
-        {
-          'X-User-Role': 'LD_MANAGER',
-        },
-      )
-
-      await fetchRoles()
-    } catch {
-      // Local optimistic state is already saved
-    }
+    if (await handleApproveAndPublishRole(role)) setIsPublishModalOpen(false)
   }
 
   return (
@@ -2291,7 +2270,7 @@ export function TargetRolesPage() {
                 <CardDescription>
                   {isLdManager && managerDepartment
                     ? `Draft and published role definitions for ${managerDepartment.name}.`
-                    : 'Draft and published role definitions with mapped competencies and micro-skill mastery targets.'}
+                    : t('roleKnowledge.catalogHelp')}
                 </CardDescription>
               </div>
 
@@ -3077,7 +3056,7 @@ export function TargetRolesPage() {
             <div className="flex items-center justify-between">
               <div>
                 <span className="text-xs font-bold text-foreground block">
-                  Role Mastery Levels
+                  {t('roleKnowledge.memberLevels')}
                 </span>
 
                 <span className="text-[10px] text-muted-foreground">
@@ -3584,7 +3563,7 @@ export function TargetRolesPage() {
                   {isSubmittedRole
                     ? 'Review the target role configuration, competencies, and micro-skills submitted by the domain expert.'
                     : isSentRole
-                      ? 'This role has been dispatched to the domain expert for micro-skill authoring and target mastery configuration.'
+                      ? t('roleKnowledge.dispatched')
                       : isFeedbackRole
                         ? 'The domain expert provided feedback requesting revisions on this proposal. Update details and re-dispatch.'
                         : isRejectedRole
@@ -3800,7 +3779,7 @@ export function TargetRolesPage() {
                   <div className="flex items-center justify-between">
                     <div>
                       <span className="text-xs font-bold text-foreground block">
-                        Role Mastery Levels
+                        {t('roleKnowledge.memberLevels')}
                       </span>
 
                       <span className="text-[10px] text-muted-foreground">
@@ -4060,7 +4039,7 @@ export function TargetRolesPage() {
                                 Skill Code &amp; Name
                               </th>
                               <th className="py-2 px-3 text-center">
-                                Target Mastery
+                                {t('roleKnowledge.required')}
                               </th>
                             </tr>
                           </thead>
@@ -4082,7 +4061,7 @@ export function TargetRolesPage() {
 
                                 <td className="py-2.5 px-3 text-center">
                                   <span className="font-bold text-primary">
-                                    {st.threshold}%
+                                    {formatRequiredKnowledge(st.requiredKnowledgeLevels, t)}
                                   </span>
                                 </td>
                               </tr>
@@ -4136,10 +4115,11 @@ export function TargetRolesPage() {
                         onClick={async () => {
                           const r = selectedRole
 
-                          setIsSkillTargetsModalOpen(false)
-
-                          handleApproveAndPublishRole(r)
+                          if (await handleApproveAndPublishRole(r)) setIsSkillTargetsModalOpen(false)
                         }}
+
+                        disabled={publishingRoleId !== null}
+                        isLoading={publishingRoleId === selectedRole.id}
 
                         leftIcon={<CheckCircle2 className="h-3.5 w-3.5" />}
                       >
@@ -4268,8 +4248,7 @@ export function TargetRolesPage() {
               </div>
 
               <DialogDescription className="text-xs text-muted-foreground">
-                Verify all required competency links and skill mastery targets
-                before releasing to enterprise diagnostics.
+                {t('roleKnowledge.publishHelp')}
               </DialogDescription>
             </DialogHeader>
 
@@ -4334,7 +4313,7 @@ export function TargetRolesPage() {
 
                     <div className="flex items-center justify-between">
                       <span className="text-muted-foreground">
-                        Target Mastery Standards (1–100%)
+                        {t('roleKnowledge.requiredLevels')}
                       </span>
 
                       {validation.validThresholds ? (
@@ -4343,18 +4322,23 @@ export function TargetRolesPage() {
                         </span>
                       ) : (
                         <span className="text-destructive font-semibold">
-                          Invalid Target Mastery
+                          {t('roleKnowledge.needsConfiguration')}
                         </span>
                       )}
                     </div>
                   </div>
 
                   {!validation.canPublish ? (
-                    <div className="p-2.5 rounded bg-destructive/10 border border-destructive/20 text-destructive text-[11px] flex items-center gap-2">
+                    <div role="alert" className="p-2.5 rounded bg-destructive/10 border border-destructive/20 text-destructive text-[11px] flex items-center gap-2">
                       <AlertCircle className="h-4 w-4 shrink-0" />
                       <span>
-                        Publication rejected: Complete the checklist items above
-                        before this role can be published.
+                        {validation.missingLevels.length ? publicationCopy(
+                          `Add skills and select their required knowledge levels for: ${validation.missingLevels.join(', ')}.`,
+                          `Bổ sung kỹ năng và chọn mức kiến thức yêu cầu cho các Level: ${validation.missingLevels.join(', ')}.`,
+                        ) : publicationCopy(
+                          'Complete the checklist above before publishing this Role.',
+                          'Hoàn thiện các mục bên trên trước khi xuất bản Role.',
+                        )}
                       </span>
                     </div>
                   ) : (
@@ -4384,7 +4368,8 @@ export function TargetRolesPage() {
 
                 size="sm"
 
-                disabled={!getPublishValidation(selectedRole).canPublish}
+                disabled={publishingRoleId !== null || !getPublishValidation(selectedRole).canPublish}
+                isLoading={publishingRoleId === selectedRole.id}
 
                 onClick={() => handleExecutePublish(selectedRole)}
               >
@@ -4546,7 +4531,7 @@ export function TargetRolesPage() {
                   <div className="p-3 rounded-lg border border-border bg-card space-y-2">
                     <div className="flex items-center justify-between">
                       <span className="text-[11px] font-bold text-foreground">
-                        Role Mastery Levels
+                        {t('roleKnowledge.memberLevels')}
                       </span>
 
                       <span className="text-[10px] text-muted-foreground font-semibold">
@@ -4884,7 +4869,7 @@ export function TargetRolesPage() {
                                               Skill Code &amp; Title
                                             </th>
                                             <th className="py-1.5 px-2.5 text-center w-28">
-                                              Target Mastery
+                                              {t('roleKnowledge.required')}
                                             </th>
                                           </tr>
                                         </thead>
@@ -4915,7 +4900,7 @@ export function TargetRolesPage() {
                                                 </td>
 
                                                 <td className="py-1.5 px-2.5 text-center font-mono font-bold text-primary">
-                                                  {st.threshold}%
+                                                  {formatRequiredKnowledge(st.requiredKnowledgeLevels, t)}
                                                 </td>
                                               </tr>
                                             )
@@ -5035,7 +5020,7 @@ export function TargetRolesPage() {
                                           Skill Code &amp; Title
                                         </th>
                                         <th className="py-2 px-3 text-center w-32">
-                                          Target Mastery
+                                          {t('roleKnowledge.required')}
                                         </th>
                                       </tr>
                                     </thead>
@@ -5063,7 +5048,7 @@ export function TargetRolesPage() {
                                             </td>
 
                                             <td className="py-2 px-3 text-center font-mono font-bold text-primary">
-                                              {st.threshold}%
+                                              {formatRequiredKnowledge(st.requiredKnowledgeLevels, t)}
                                             </td>
                                           </tr>
                                         )
@@ -5144,6 +5129,9 @@ export function TargetRolesPage() {
                       setViewingDetailsRole(null)
                       handleApproveAndPublishRole(r)
                     }}
+
+                    disabled={publishingRoleId !== null}
+                    isLoading={publishingRoleId === viewingDetailsRole.id}
 
                     leftIcon={<CheckCircle2 className="h-3.5 w-3.5" />}
                   >

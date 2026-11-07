@@ -10,7 +10,7 @@ sequenceDiagram
   participant SDD_SEQ_06_Service as Offering service
   participant SDD_SEQ_06_DB as Metadata and workflow store
   participant SDD_SEQ_06_Store as Private object store
-  SDD_SEQ_06_Expert->>SDD_SEQ_06_Service: author content and skill/assessment mapping
+  SDD_SEQ_06_Expert->>SDD_SEQ_06_Service: author module/content and single-skill mapping
   SDD_SEQ_06_Service->>SDD_SEQ_06_Service: authorize assignment and validate metadata
   SDD_SEQ_06_Service->>SDD_SEQ_06_Store: store private versioned object
   SDD_SEQ_06_Service->>SDD_SEQ_06_DB: persist ordered content and object locator

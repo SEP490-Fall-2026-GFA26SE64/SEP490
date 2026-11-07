@@ -23,7 +23,7 @@ import org.springframework.web.bind.MissingRequestHeaderException;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@Profile("(local | demo) & !prod")
+@Profile("(local | demo) & !workspace-baseline & !prod")
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 @ConditionalOnProperty(prefix = "assessment.baseline.adaptive", name = {"enabled", "persistence.enabled", "eligibility.enabled"}, havingValue = "true")
 @RequestMapping(value = ApiEndpoints.ADAPTIVE_BLUEPRINT, produces = "application/json")

@@ -1,0 +1,95 @@
+---
+title: "ACT-05 - Role-Level Baseline, Profile and Adaptive Learning - Swimlane"
+config: {theme: base, look: classic, flowchart: {htmlLabels: true}}
+---
+flowchart TD
+  subgraph Actor0["L&amp;D Manager"]
+    direction TB
+    start(("Start"))
+    configure["Select Role and Level;<br/>configure baseline parameters"]
+  end
+  subgraph Actor1["Expert"]
+    direction TB
+    expert["Review coverage and order; adjust;<br/>record bypass only for gaps with no module/cert"]
+    approve["Approve the reviewed pathway version"]
+    bypassReview["Review missing provision;<br/>record a justified bypass"]
+  end
+  subgraph Actor2["System Handler"]
+    direction TB
+    validConfig{"Configuration valid?"}
+    configError["Show configuration errors"]
+    activate["Save and activate baseline<br/>for the selected Role and Level"]
+    activeConfig{"Matching baseline<br/>configuration Active?"}
+    unavailable["Explain baseline is unavailable;<br/>wait for valid active configuration"]
+    score["Finalize and evaluate baseline<br/>using its pinned configuration"]
+    validResult{"Results valid?"}
+    invalid["Explain invalid results;<br/>do not create a valid profile"]
+    profile["Create Role-Level profile:<br/>Met / Needs supplementation"]
+    needs{"Any unmet requirements?"}
+    generate["Generate pathway from profile;<br/>check modules, certificates and prerequisites"]
+    generated{"Generation completed?"}
+    failed["Show generation error;<br/>retain target for repair or retry"]
+    ready{"Reviewed pathway valid?"}
+    blocking{"Any non-bypassed<br/>requirements remaining?"}
+    recalculate["Evaluate valid results; update profile;<br/>recalculate remaining pathway automatically"]
+    unresolved{"New gap lacks<br/>both module and cert?"}
+    bypassed{"Any bypassed gaps?"}
+    completed["Pathway completed"]
+    released["Only bypassed gaps remain;<br/>keep Needs supplementation, allow role change"]
+    unavailableEnd(("End"))
+    invalidEnd(("End"))
+    failureEnd(("End"))
+  end
+  subgraph Actor3["Employee"]
+    direction TB
+    choose["Choose target Role and Level"]
+    baseline["Take or resume baseline<br/>for the selected Role and Level"]
+    reviewProfile["Review profile and submit<br/>a pathway creation request"]
+    study["Study approved modules and take skill assessments;<br/>provide certificate evidence where required"]
+    change{"Change target Role<br/>and Level?"}
+    newRole["Select another Role and Level"]
+    finish(("End"))
+  end
+  start --> configure
+  configure --> validConfig
+  validConfig -->|"no"| configError
+  configError --> configure
+  validConfig -->|"yes"| activate
+  activate --> choose
+  choose --> activeConfig
+  activeConfig -->|"no"| unavailable
+  unavailable --> unavailableEnd
+  activeConfig -->|"yes"| baseline
+  baseline --> score
+  score --> validResult
+  validResult -->|"no"| invalid
+  invalid --> invalidEnd
+  validResult -->|"yes"| profile
+  profile --> reviewProfile
+  reviewProfile --> needs
+  needs -->|"no"| completed
+  needs -->|"yes"| generate
+  generate --> generated
+  generated -->|"no"| failed
+  failed --> failureEnd
+  generated -->|"yes"| expert
+  expert --> ready
+  ready -->|"no"| expert
+  ready -->|"yes"| approve
+  approve --> blocking
+  blocking -->|"yes"| study
+  study --> recalculate
+  recalculate --> unresolved
+  unresolved -->|"no"| blocking
+  unresolved -->|"yes"| bypassReview
+  bypassReview --> blocking
+  blocking -->|"no"| bypassed
+  bypassed -->|"no"| completed
+  bypassed -->|"yes"| released
+  completed --> change
+  released --> change
+  change -->|"no"| finish
+  change -->|"yes"| newRole
+  newRole --> activeConfig
+
+  %% Fixed actor-column layout is exported by render-business-swimlanes.cjs.

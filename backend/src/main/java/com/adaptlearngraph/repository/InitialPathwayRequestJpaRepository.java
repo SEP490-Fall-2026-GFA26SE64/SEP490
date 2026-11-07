@@ -86,7 +86,8 @@ public interface InitialPathwayRequestJpaRepository
             JOIN platform.initial_pathway_current c USING(request_id)
             JOIN platform.employee_role_selection s ON s.selection_id=r.selection_id AND s.ended_at IS NULL
             JOIN platform.account a ON a.account_id=r.learner_id AND a.organization_id=r.organization_id AND a.active
-            WHERE c.archived_at IS NULL AND c.current_revision IS NULL AND
+            WHERE coalesce(r.frozen_input->>'flowVersion','NUMERIC_V1')='NUMERIC_V1'
+              AND c.archived_at IS NULL AND c.current_revision IS NULL AND
               ((r.generation_status IN ('PENDING','FAILED_RETRYABLE') AND r.next_retry_at<=clock_timestamp())
                OR (r.generation_status='GENERATING' AND r.lease_expires_at<=clock_timestamp()))
             ORDER BY r.created_at,r.request_id LIMIT 1 FOR UPDATE OF r SKIP LOCKED

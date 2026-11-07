@@ -1,0 +1,303 @@
+{
+  "date": "2026-11-06",
+  "scope": "Review 2 reports 3/4, documentation only",
+  "tool": "Mermaid 11.12.0 in headless Chrome via installed Playwright",
+  "checks": [
+    {
+      "name": "All retained target entity attributes are present with type, keys and nullability",
+      "status": "Passed"
+    },
+    {
+      "name": "No unrelated business domains or Job Position baseline in flow ERDs",
+      "status": "Passed"
+    },
+    {
+      "name": "ACT05 Role-Level admission, error branches, learning loop and target return",
+      "status": "Passed"
+    },
+    {
+      "name": "Guarded target change and bypass distinct from achievement",
+      "status": "Passed"
+    },
+    {
+      "name": "ST15 lifecycle unchanged apart from safe label punctuation",
+      "status": "Passed"
+    },
+    {
+      "name": "ST16 source and original assets preserved byte-for-byte",
+      "status": "Passed"
+    },
+    {
+      "name": "Historical physical table and field dictionary preserved",
+      "status": "Passed"
+    },
+    {
+      "name": "Diagram report links resolve and all SVG/PNG assets exist",
+      "status": "Passed"
+    },
+    {
+      "name": "Original per-diagram palettes and fonts retained",
+      "status": "Passed"
+    }
+  ],
+  "rendered": [
+    {
+      "id": "act-05",
+      "width": 1441,
+      "height": 5064,
+      "parse": "Passed",
+      "render": "Passed",
+      "pageErrors": []
+    },
+    {
+      "id": "st-13",
+      "width": 1004,
+      "height": 904,
+      "parse": "Passed",
+      "render": "Passed",
+      "pageErrors": []
+    },
+    {
+      "id": "st-14",
+      "width": 908,
+      "height": 692,
+      "parse": "Passed",
+      "render": "Passed",
+      "pageErrors": []
+    },
+    {
+      "id": "st-15",
+      "width": 726,
+      "height": 622,
+      "parse": "Passed",
+      "render": "Passed",
+      "pageErrors": []
+    },
+    {
+      "id": "st-16",
+      "width": 931,
+      "height": 456,
+      "parse": "Passed",
+      "render": "Passed",
+      "pageErrors": []
+    },
+    {
+      "id": "st-18",
+      "width": 1093,
+      "height": 925,
+      "parse": "Passed",
+      "render": "Passed",
+      "pageErrors": []
+    },
+    {
+      "id": "cerd-01",
+      "width": 566,
+      "height": 904,
+      "parse": "Passed",
+      "render": "Passed",
+      "pageErrors": []
+    },
+    {
+      "id": "cerd-02",
+      "width": 740,
+      "height": 719,
+      "parse": "Passed",
+      "render": "Passed",
+      "pageErrors": []
+    },
+    {
+      "id": "cerd-03",
+      "width": 898,
+      "height": 534,
+      "parse": "Passed",
+      "render": "Passed",
+      "pageErrors": []
+    },
+    {
+      "id": "cerd-04",
+      "width": 664,
+      "height": 1089,
+      "parse": "Passed",
+      "render": "Passed",
+      "pageErrors": []
+    },
+    {
+      "id": "lerd-01",
+      "width": 947,
+      "height": 2074,
+      "parse": "Passed",
+      "render": "Passed",
+      "pageErrors": []
+    },
+    {
+      "id": "lerd-02",
+      "width": 1483,
+      "height": 2507,
+      "parse": "Passed",
+      "render": "Passed",
+      "pageErrors": []
+    },
+    {
+      "id": "lerd-03",
+      "width": 1878,
+      "height": 1356,
+      "parse": "Passed",
+      "render": "Passed",
+      "pageErrors": []
+    },
+    {
+      "id": "lerd-04",
+      "width": 1423,
+      "height": 3577,
+      "parse": "Passed",
+      "render": "Passed",
+      "pageErrors": []
+    },
+    {
+      "id": "st-19",
+      "width": 1217,
+      "height": 1054,
+      "parse": "Passed",
+      "render": "Passed",
+      "pageErrors": []
+    },
+    {
+      "id": "st-17",
+      "width": 646,
+      "height": 895,
+      "parse": "Passed",
+      "render": "Passed",
+      "pageErrors": []
+    }
+  ],
+  "hashes": [
+    {
+      "id": "act-05",
+      "assets": {
+        "mmd": "0ce65abf6e0d62eb0a3f26c5dcdfd1505ba46118f979114d0a57574825f66b73",
+        "svg": "8d2f6baf3a08e783c7d1528bf25142c0da4ad67553b1e14c08c7079556ad2767",
+        "png": "7fb44294cc18c643ee08b1c08f7cdca4655532c09c09f26da78a085519a802e0"
+      }
+    },
+    {
+      "id": "st-13",
+      "assets": {
+        "mmd": "30ef489052fd06f173a771136225dc7a896022209c193e8fbced8511d4cdbaba",
+        "svg": "dc8bdcba950031127340fdb8948240236073898c0297a924265c34f29de6f18e",
+        "png": "e46fba55629a186abec9d0dbbf718fa57c41969a14acf26c89ee7c7364edc789"
+      }
+    },
+    {
+      "id": "st-14",
+      "assets": {
+        "mmd": "1b16771f23969b06d2f97ee2d620505e016bf68f21824e768cb434cc5605eed2",
+        "svg": "eca69314919046859a24ad727599b5c4a970f69661c40e507a75ef214c7087de",
+        "png": "9e9de2aa6cf205c50d272be16af74b153206fbafac812ec1e6e97cb1da91edfd"
+      }
+    },
+    {
+      "id": "st-15",
+      "assets": {
+        "mmd": "676bd8c4187a26f88e96c3fece24262ebafc4cc2ebcdb9b46ac00cddbabfb794",
+        "svg": "0b42ac8e473c38cde908172ea459caeb4450efa49493f3b2c658c04dfd4ad512",
+        "png": "38c65ddb4752e007939d2df9812fc7f57d12b27eeb592f384fea0c392c5b6dd7"
+      }
+    },
+    {
+      "id": "st-16",
+      "assets": {
+        "mmd": "0f3a00bb25e6a031f1e99cee3d99264b77457f1c22fbac9b0c64a1005263bfd5",
+        "svg": "10eddabd2234bfd8f32afac8f0889d77fe0816674d0e64a63cd9e6372b8cf546",
+        "png": "c908832098e82275463f1eda6234a5859457e3af142658f083cad30e0e64df41"
+      }
+    },
+    {
+      "id": "st-17",
+      "assets": {
+        "mmd": "40660896488a717be632d87184751723e0efa23def986ce549bd04c3cbd8a204",
+        "svg": "ae3ffa0e5ef6570cd6e85e6eafa2b4af45a15d4b2a339044515e0b888d70b5f0",
+        "png": "bf76c0ce1c16ea34dd67de441d42559b466079c259f3c3f1972db75a7bf142ba"
+      }
+    },
+    {
+      "id": "st-18",
+      "assets": {
+        "mmd": "3fc3b5fac683996fcb2d95635498f1b5b8a3e5071b5279d082f0fc097ac999fe",
+        "svg": "ddd2aa51660ec93f7a5a6edd5e38ae017035807e6bd61a97c3662e4bcce90f65",
+        "png": "4b7d5ab65ded1aeea22f4f8d6808cd909388e8f32b934b45d01f34e512d1d359"
+      }
+    },
+    {
+      "id": "st-19",
+      "assets": {
+        "mmd": "4ea87ec803df4e60f711bc67dff254c9ede561f312b43d915b9ffd1b9042be4a",
+        "svg": "dab24f7461fe17fcc8198235b3e6ebbcbc04fe11797bf8c080bccde77df53c23",
+        "png": "334d821c5624b6d4b16d5e86a307fabca56d51d31b2bab3ac09fc57136ec163d"
+      }
+    },
+    {
+      "id": "cerd-01",
+      "assets": {
+        "mmd": "c73a6ed16efdbc92f2fcc55a105d4aa3a4a62668be752de933c8524dae49f193",
+        "svg": "6703a2e9eb44a104e8eb675f86773a8e241aef0fea809134648f0eacdcfc5a03",
+        "png": "15701feaae51c93449deb76dd45ec66caa607af3a2cbdc95b373f53a39f6003a"
+      }
+    },
+    {
+      "id": "cerd-02",
+      "assets": {
+        "mmd": "6c74725b21eb02ee8d8b2beabc3582ca23eb3063eb5fe7c85bc6b1701c5aee3b",
+        "svg": "97e51bc3851d847376378d95be4357a3cd9ef147d345d7a2b396285bdf410c29",
+        "png": "e08fd3acf7beae9fa05eeeec348784c4f8c1fdc23c92ee9dc9a1a41faf9e7bd0"
+      }
+    },
+    {
+      "id": "cerd-03",
+      "assets": {
+        "mmd": "b74f767f8dab7093d5a5a63bc27de311ce9a9376ee50bf4f0b5a2173d5522ae3",
+        "svg": "52ce9d1af5915be1064a13acb2cf7b123970ed27128335ad1ac859b37e613fb2",
+        "png": "1f8bfa0112ca6ba49529d3fc301e8b290a0d3f06fdb62a926c002074f54c86e7"
+      }
+    },
+    {
+      "id": "cerd-04",
+      "assets": {
+        "mmd": "de15d571ff4d685b89726cc1bddeb6460d9b0117acce4581114423494535eaf3",
+        "svg": "d5c28cfec8087d463df5f77b435c884596728da6e7d21095b6dc13b929df3fdc",
+        "png": "8023a043ad4f6d9b0cd482d3d2117688476a00ee57a3b6011bd856b20dedaf1a"
+      }
+    },
+    {
+      "id": "lerd-01",
+      "assets": {
+        "mmd": "7861dfb10e2bc9b5b71f02e2e57a46e71b5810e1de80f3452eb059115637501f",
+        "svg": "90b7a7cabac60589b1bacab3031ba82905cc9613dde46303626820e43f0d16cc",
+        "png": "2e12f0fd3afd02d7cb7d92eb939cb7339456a2a1c1539cc5ca93ac1cf740d539"
+      }
+    },
+    {
+      "id": "lerd-02",
+      "assets": {
+        "mmd": "35b15cd0aa4887464c4794f450830e266df71c9e6eb0115941bfda5f865b2f99",
+        "svg": "99cd282e4ea672454aa0444d25628a4ea493136601647f819b65e8ef5af73d85",
+        "png": "7c004ae48fd1c05fb6c25ac147a3d4bda849373e5696e415259b1b0689a4696d"
+      }
+    },
+    {
+      "id": "lerd-03",
+      "assets": {
+        "mmd": "16dbb90c06dd1cf0f8851ee2bf4a9956726e123e86267f657a077d8eabd3584c",
+        "svg": "d3e66999d2ba9252e356a2da6e6aef14d40508e2d578f7b2e3b201522841c74c",
+        "png": "d7516f047b377be6db34bbc654f64564a50adec77a5e44058f1e1910a6689878"
+      }
+    },
+    {
+      "id": "lerd-04",
+      "assets": {
+        "mmd": "c51ad13546ca1a86e2000dabeffe4fd20031252b1bed3f88629f95d62cf7a7ba",
+        "svg": "ecfef1ee05a2e98e97b17f786d1803aed0a34f71eed20b27a7cbd2a7550f8b35",
+        "png": "14f39391c9b1f383dbd4545cdc5a72436d7f3a82bcc5b914c6c757d7f9625fae"
+      }
+    }
+  ]
+}

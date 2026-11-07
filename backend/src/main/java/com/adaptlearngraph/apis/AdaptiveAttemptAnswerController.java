@@ -18,7 +18,7 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 
 /** Separate opt-in answer capability; no submit/finalization endpoint is introduced here. */
 @RestController
-@Profile("(local | demo) & !prod")
+@Profile("(local | demo) & !prod & !workspace-baseline")
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 @ConditionalOnProperty(prefix = "assessment.baseline.adaptive", name = {"enabled", "persistence.enabled", "eligibility.enabled", "attempts.enabled", "attempts.answers.enabled"}, havingValue = "true")
 @RequestMapping(value = ApiEndpoints.ADAPTIVE_ATTEMPT_ANSWER, produces = "application/json")

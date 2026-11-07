@@ -68,10 +68,17 @@ public final class Neo4jCypher {
     public <T> T read(Function<Statements, T> work) {
         return run(reads, work);
     }
+    /** Scoped transaction budget for new consumers; does not change the existing shared transaction defaults. */
+    public <T>T read(int timeoutSeconds,Function<Statements,T> work){return run(bounded(reads,timeoutSeconds),work);}
 
     /** Read-write transaction committed when {@code work} returns and rolled back when it throws. */
     public <T> T write(Function<Statements, T> work) {
         return run(writes, work);
+    }
+    public <T>T write(int timeoutSeconds,Function<Statements,T> work){return run(bounded(writes,timeoutSeconds),work);}
+    private static TransactionTemplate bounded(TransactionTemplate original,int seconds) {
+        if(seconds<1 || seconds>60)throw new IllegalArgumentException("Catalog transaction timeout must be 1..60 seconds");
+        var template=new TransactionTemplate(Objects.requireNonNull(original.getTransactionManager()),original);template.setTimeout(seconds);return template;
     }
 
     /** Driver failures surfacing from commit are translated like statement failures, so no driver exception escapes. */

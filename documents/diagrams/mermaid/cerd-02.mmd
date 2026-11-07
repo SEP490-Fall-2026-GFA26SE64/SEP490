@@ -1,7 +1,7 @@
 ---
-title: "Assessment & Mastery"
+title: "CERD-02 - Assessment and Role-Level Profile"
 config:
-  layout: elk
+  layout: dagre
   look: classic
   theme: base
   fontFamily: "Arial, sans-serif"
@@ -10,20 +10,22 @@ config:
   er: {nodeSpacing: 36, rankSpacing: 65, minEntityWidth: 140, diagramPadding: 24}
 ---
 erDiagram
-  C02_User["User"]
-  C02_Assessment["Assessment"]
-  C02_Question["Question"]
-  C02_Answer["Answer"]
-  C02_Result["Assessment Result"]
-  C02_Profile["Mastery Profile"]
-  C02_Skill["Skill"]
-  C02_User }o--o{ C02_Assessment : "takes"
-  C02_Assessment }o--o{ C02_Question : "uses"
-  C02_User ||--o{ C02_Answer : "submits"
-  C02_Question ||--o{ C02_Answer : "receives"
-  C02_Assessment ||--o{ C02_Answer : "collects"
-  C02_Assessment ||--o{ C02_Result : "produces"
-  C02_User ||--o{ C02_Result : "receives"
-  C02_User ||--o{ C02_Profile : "has"
-  C02_Result }o--o{ C02_Profile : "informs"
-  C02_Profile }o--o{ C02_Skill : "measures"
+  direction TB
+  RoleSelection["RoleSelection"]
+  BaselineConfigVersion["BaselineConfigVersion"]
+  AssessmentAttempt["AssessmentAttempt"]
+  AssessmentItem["AssessmentItem"]
+  AssessmentAnswer["AssessmentAnswer"]
+  QuestionVersion["QuestionVersion"]
+  SkillResult["SkillResult"]
+  CompetencyProfile["CompetencyProfile"]
+  ProfileSkill["ProfileSkill"]
+  RoleSelection ||--o{ AssessmentAttempt : "assessment context"
+  BaselineConfigVersion o|--o{ AssessmentAttempt : "baseline version pin"
+  AssessmentAttempt ||--|{ AssessmentItem : "freezes paper"
+  QuestionVersion ||--o{ AssessmentItem : "published item pin"
+  AssessmentItem ||--o| AssessmentAnswer : "accepted response"
+  AssessmentAttempt ||--o{ SkillResult : "finalizes"
+  RoleSelection ||--o{ CompetencyProfile : "profile history"
+  AssessmentAttempt ||--o{ CompetencyProfile : "valid baseline source"
+  CompetencyProfile ||--|{ ProfileSkill : "outcomes"

@@ -23,6 +23,10 @@ public interface LearningContentPort {
             String organizationId, String actorId, List<Lesson> lessons, boolean requireValid);
 
     boolean assigned(String organizationId, String learnerId, String moduleId);
+    /** Version switches must pass the same exact scope admission as a new start. */
+    default boolean assignedRevision(String organizationId,String learnerId,String moduleId,int revision) {
+        return assigned(organizationId,learnerId,moduleId);
+    }
 
     List<Pathway> pathways(String organizationId, String actorId, boolean learner);
 

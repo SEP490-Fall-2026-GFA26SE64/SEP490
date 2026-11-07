@@ -146,12 +146,36 @@ public interface TargetRoleNodeRepository extends Repository<TargetRoleNode, Str
                    OR toLower(s.id) = toLower(item.skillId))
             MERGE (r)-[req:REQUIRES_SKILL {level: item.level}]->(s)
             ON CREATE SET req.createdAt = datetime($updatedAt)
-            SET req.targetMastery = toFloat(item.threshold) / 100.0,
+            SET req.requiredKnowledgeLevels = item.requiredKnowledgeLevels,
+                req.organizationId = $organizationId,
                 req.status = 'ACTIVE',
                 req.updatedAt = datetime($updatedAt)
             """)
     void mergeRequiredSkills(@Param("organizationId") String organizationId, @Param("roleId") String roleId,
             @Param("skills") List<Map<String, Object>> skills, @Param("updatedAt") String updatedAt);
+
+    @Query("""
+            UNWIND $skills AS item
+            MATCH (r:TargetRole {id:$roleId,organizationId:$organizationId})
+            MATCH (s:MicroSkill {id:item.skillId,organizationId:$organizationId})
+            WHERE s.status='ACTIVE' AND item.level IN r.levels
+            OPTIONAL MATCH (r)-[existing:REQUIRES_SKILL {level:item.level}]->(s)
+            WITH item,collect(existing) AS edges
+            WHERE size(edges)<=1 AND ALL(edge IN edges WHERE edge.organizationId IS NULL OR edge.organizationId=$organizationId)
+            RETURN count(*)
+            """)
+    long countOwnedRequirements(@Param("organizationId") String organizationId,@Param("roleId") String roleId,
+                                @Param("skills") List<Map<String,Object>> skills);
+
+    @Transactional(TransactionManagers.NEO4J)
+    @Query("""
+            MATCH (r:TargetRole {id:$roleId,organizationId:$organizationId})-[req:REQUIRES_SKILL]->(s:MicroSkill)
+            WHERE s.organizationId=$organizationId AND (req.organizationId IS NULL OR req.organizationId=$organizationId)
+                AND NONE(item IN $skills WHERE item.skillId=s.id AND item.level=req.level)
+            SET req.status='INACTIVE', req.updatedAt=datetime($updatedAt)
+            """)
+    void retireOmittedRequiredSkills(@Param("roleId") String roleId,@Param("organizationId") String organizationId,
+                                     @Param("skills") List<Map<String,Object>> skills,@Param("updatedAt") String updatedAt);
 
     @Transactional(TransactionManagers.NEO4J)
     @Query("""

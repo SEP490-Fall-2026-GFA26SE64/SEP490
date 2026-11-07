@@ -36,7 +36,31 @@ it('MM01 multiple profiles retain separate original versions', async () => {
  expect(screen.getAllByRole('link', { name: 'baselineUi.viewResult' }).map(a => a.getAttribute('href'))).toEqual(['/employee/baseline-assessment/attempt-v1', '/employee/baseline-assessment/attempt-v2'])
 })
 it('MM03 raw assessment score remains separate from zero mastery and no retake', async () => {
- const result: BaselineResult = { attemptId: 'attempt-v1', jobPositionId: 'occ-a', jobPositionName: 'Original JobPosition', purpose: 'ROLE_REQUIREMENT', roleId: 'role-a', roleName: 'Role A', assessmentScope: 'JOB_POSITION', state: 'SUBMITTED', completionReason: 'MANUAL', startedAt: profile.initializedAt, completedAt: profile.initializedAt, replacesAttemptId: null, replacementAttemptId: null, rawScore: 1, skills: [{ microSkillId: 's1', microSkillName: 'Original Skill', mastery: 0, confidence: 'LOW' }] }
+ const result: BaselineResult = {
+   id: 'attempt-v1',
+   target: { selectionId: 's1', selectionRevision: 1 },
+   jobPositionId: 'occ-a',
+   jobPositionName: 'Original JobPosition',
+   roleId: 'role-a',
+   roleName: 'Role A',
+   levelId: 'lvl-1',
+   levelName: 'Level 1',
+   purpose: 'BASELINE',
+   state: 'FINALIZED',
+   revision: 1,
+   startedAt: profile.initializedAt,
+   deadlineAt: profile.initializedAt,
+   observedAt: profile.initializedAt,
+   finishedAt: profile.initializedAt,
+   finishReason: 'SUBMITTED',
+   previousAttemptId: null,
+   expired: false,
+   maxQuestions: 1,
+   answeredCount: 1,
+   items: [],
+   groups: [],
+   results: [],
+ }
  show(<BaselineResultPanel result={result} locked={false} run={vi.fn()} />)
  await screen.findByText('baselineUi.profileSaved')
  expect(screen.getByText('100.0%')).toBeTruthy(); expect(screen.getByRole('progressbar').getAttribute('aria-valuenow')).toBe('0')

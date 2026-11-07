@@ -1,10 +1,12 @@
 # Learning Catalog and Approval
 
+**Latest direction — 2026-11-05-r3.** [Target schema/API/flow](../../technical/Organization%20Rule%20Assessment%20and%20Pathway.md) now maps this flow; it is not applied runtime. Baseline records only assessed skills and never creates unassessed prerequisites; skill assessment can discover them as **Cần bổ sung**. Baseline/skill have two independently configured policies with timed auto-finalization. Cross-target old bypass work is parallel/non-gating. Affected old dev records may be rebuilt; normal new-flow history remains. Preserve FE design and classify existing Question Bank content into appropriate knowledge levels with corresponding field changes.
+
 **Source:** [Version 2](../../FA26SE267_KNOWLEDGE_GRAPH_BASED_ADAPTIVE_LEARNING__haht43_Version_2.md), section 3.2(c), Functional Requirements.
 
 **Aligned:** 2026-10-28. **Source requirements in this domain:** 5.
 
-Each record below corresponds to one source bullet. Unspecified fields are intentionally blank; they are not approved designs or completed acceptance criteria. See the [catalog rules](../README.md#reading-rules) and [complete source coverage](../README.md#source-coverage).
+**Feature direction: 2026-11-05.** The new requirements/provision contract below is intended behavior pending C1 acceptance, not implementation evidence. Dated source/delivery/evidence notes retain historical scope. IDs/anchors and unrelated content rules remain. Target technical mapping is now specified in r3; runtime/seed implementation and detailed changed UI review remain pending.
 
 ## Current Implementation
 
@@ -23,6 +25,38 @@ Each record below corresponds to one source bullet. Unspecified fields are inten
 **Code references:** [ontology page](../../../frontend/src/features/manager/ontology/CompetencyOntologyPage.tsx), [micro-skill API](../../../backend/src/main/java/com/adaptlearngraph/apis/MicroSkillController.java), [prerequisite service](../../../backend/src/main/java/com/adaptlearngraph/services/PrerequisiteService.java), [shared module workspace](../../../frontend/src/features/expert/modules/ModuleManagementWorkspace.tsx), [approval entry](../../../frontend/src/features/manager/approvals/ContentApprovalQueuePage.tsx). Module assessment authoring is separately described in [Assessment workflows](../Assessment%20workflows/README.md#current-implementation).
 
 ## Requirements
+
+### Module outcomes and prerequisite requirements
+
+Each module teaches exactly one skill at one knowledge level (FOUNDATION / INTERMEDIATE / ADVANCED), with explicit outcomes and normal content/version/publication/access metadata. Multiple modules are interchangeable only when Expert validates equivalent minimum outcomes. Same skill identity alone is insufficient. Preserve responsible-Expert ownership, immutable content review, ordered lessons, private assets and independent progress.
+
+Expert defines prerequisites by exact skill/knowledge/outcomes and dependency meaning. These drive real learning gates and assessment groups; display order is not a prerequisite. Reject self-dependencies, duplicates, cycles and stale/foreign references; missing mappings remain unresolved. Numeric minimum mastery, teachingFocus and module difficulty do not determine readiness or alternatives in this flow. MAIN/PREREQUISITE is a role within an assessment, not a fixed module/question type.
+
+### Provision modes and certificate definitions
+
+| Organization + skill + knowledge level | Allowed provision | Missing provision |
+| --- | --- | --- |
+| MODULE_ONLY | All approved, active, accessible modules meeting equivalent outcomes form alternatives. One completed module plus successful assessment and required completion conditions satisfies the requirement. | No eligible module gives NEEDS_EXPERT_ACTION. |
+| CERTIFICATE_ONLY | One assigned accepted certificate definition. Employee submits evidence; authorized Expert approval establishes exact official achievement. | No definition gives NEEDS_EXPERT_ACTION. |
+
+Modes are mutually exclusive. Provisioned CERTIFICATE_ONLY has exactly one assigned certificate definition, not a list of alternatives or a module fallback. Absence remains unmet until provisioned or explicitly bypassed for the learner. Explicit mode changes preserve evidence, progress and history; treatment of active work/validity remains open for define C2.
+
+### Expert Add certificate
+
+The applicable existing Expert catalog surface must support an **Add certificate** tab listing skills with knowledge levels. **Add** on the intended skill–level opens entry of the required certificate, including a mandatory reference URL. The definition identifies the accepted certificate and exact skill/knowledge/outcome scope; organization, author and version are trusted server values. Reject missing URL, invalid/foreign references and conflicting MODULE_ONLY/existing certificate provision.
+
+The catalog definition/reference URL differs from Employee evidence. Saving it awards no achievement and approves no learner submission. Exact host page, fields/placement, URL validation, definition approval route and physical uniqueness/version design remain open for define C2. Reuse current list/actions/dialogs/forms and navigation patterns.
+
+### Authoring, publication and later provision
+
+1. Reauthorize organization/Expert ownership or assignment; read current skill/knowledge/outcome/provision revision.
+2. Author module/content for MODULE_ONLY or the assigned certificate definition for CERTIFICATE_ONLY; validate scope/mode. Retain module submit/L&D publication safeguards.
+3. Keep immutable versions and actual author/reviewer history. Output eligible provision and missing/blocked reasons; clients cannot supply approval or learner achievement.
+4. Later provision triggers scoped [recalculation/backfill](../Adaptive%20engine/README.md#recalculation-bypass-and-later-provision), preserving started/completed work. Never automatically approve evidence or convert bypass to ACHIEVED.
+
+[Employee evidence](../Employee%20experience/README.md#certificate-evidence-and-review) supports link OR PDF OR picture with private authorized access. [Expert decisions](../Pathway%20review/README.md#certificate-and-missing-provision-decisions) handle approval/rejection and scoped bypass.
+
+Keep current Module workspace, shared components, tokens, fonts, sizes, spacing, density and responsive EN/VI. Detailed UI/data binding needs user review in define C2. Open: physical graph/relational representation, equivalence criteria, version drift, mode transitions, certificate validity/expiry and exact evidence file/URL limits. Physical target mapping is in r3; it is not applied schema.
 
 <a id="fr-04-06"></a>
 
@@ -64,13 +98,13 @@ Each record below corresponds to one source bullet. Unspecified fields are inten
 | --- | --- |
 | 1. Requirement ID | FR-05.04 |
 | 2. Requirement Name | Manage skill prerequisites |
-| 3. Description | The Expert shall define, update, and remove prerequisite relationships between micro-skills. |
+| 3. Description | The Expert shall manage skill–knowledge prerequisite requirements, outcomes and dependency semantics for learning and assessment groups. |
 | 4. Actor | Expert |
-| 5. Preconditions |  |
-| 6. Main Flow |  |
-| 7. Alternative / Exception Flows |  |
-| 8. Postconditions |  |
-| 9. Acceptance Criteria |  |
+| 5. Preconditions | Trusted authorized Expert; same-organization exact requirement references and current revision. |
+| 6. Main Flow | Define dependent/prerequisite skill/knowledge/outcomes; validate acyclic references; save traceable version. |
+| 7. Alternative / Exception Flows | Reject self/cyclic/duplicate/stale references; missing mapping/provision remains unresolved, not a numeric default/pass. |
+| 8. Postconditions | Dependencies are available to consumers without rewriting official evidence/attempts. |
+| 9. Acceptance Criteria | Only actual dependencies gate learning; numeric mastery and screen order do not define prerequisites. |
 
 <a id="fr-05-05"></a>
 
@@ -80,13 +114,13 @@ Each record below corresponds to one source bullet. Unspecified fields are inten
 | --- | --- |
 | 1. Requirement ID | FR-05.05 |
 | 2. Requirement Name | Manage learning modules |
-| 3. Description | The Expert shall create, update, and organize learning modules, map modules to micro-skills, and add, update, organize, or remove learning content within each module. |
+| 3. Description | The Expert shall author/import modules and content for exactly one skill at one knowledge level/outcome scope, and manage exclusive module/certificate provision as defined above. |
 | 4. Actor | Expert |
-| 5. Preconditions |  |
-| 6. Main Flow |  |
-| 7. Alternative / Exception Flows |  |
-| 8. Postconditions |  |
-| 9. Acceptance Criteria |  |
+| 5. Preconditions | Trusted responsible Expert; valid skill/knowledge/outcome mapping, provision mode and revision. |
+| 6. Main Flow | Choose scope; author/import content or Add certificate with mandatory reference URL; follow applicable review/publication. |
+| 7. Alternative / Exception Flows | Incomplete drafts do not supply requirements; wrong scope/mode conflict or missing provision remains explicit. |
+| 8. Postconditions | Versioned provision preserves prior evidence/progress; authoring awards no achievement. |
+| 9. Acceptance Criteria | Equivalent module alternatives OR one assigned certificate definition per skill/knowledge level, never both modes. |
 
 <a id="fr-05-08"></a>
 
@@ -201,3 +235,5 @@ Companion state machine for the current Module/Content main review flow: [ST-11]
 FR-05.05 now requires exactly one Skill for each authored/imported Module; a Skill may have multiple Modules. The TEACHES relationship is retained. The editor, import template and active catalog responses omit Teaching focus and difficulty. Existing ownership, same-organization choices, review and publication safeguards remain. Dataset 0.12 narrows each Module to its actual content; eight Skills have no dedicated provider and are reported explicitly. Legacy snapshots remain readable. [Technical contract and dataset audit](../../technical/Skill-Learning-Eligibility.md).
 
 The Module editor presents Skill selection before learning content so the Expert chooses the teaching target before composing lessons.
+
+The single-Skill paragraph above describes the preceding implementation. The new contract additionally requires knowledge-level/outcome compatibility. Existing import, completion and optional-module APIs do not establish that mapping or the certificate workflow; reconciliation remains open for define C2.

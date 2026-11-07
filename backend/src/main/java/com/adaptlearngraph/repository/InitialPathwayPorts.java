@@ -58,6 +58,7 @@ public final class InitialPathwayPorts {
     public interface ReviewAssignments {
         Assignment require(Actor expert, UUID pathwayId);
         Set<UUID> assignedPathways(Actor expert);
+        default Set<UUID> assignedCertificatePathways(Actor expert){return assignedPathways(expert);}
         void requireApprovalValid(Scope scope, UUID pathwayId, long revision, String hash);
     }
     public interface Coordination {

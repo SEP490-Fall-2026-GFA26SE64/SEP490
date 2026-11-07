@@ -242,6 +242,11 @@ export function WorkspaceLayout({ children, identity: suppliedIdentity, onSignOu
         href: '/expert/assessment-bank',
         icon: <FileQuestion size={15} />,
       },
+        {
+          label: t('scopedPolicy.skillTitle'),
+          href: '/expert/skill-assessment-config',
+          icon: <Sliders size={15} />,
+        },
       {
         label: t('nav.serverStatus'),
         href: '/system-status?portal=expert',
@@ -465,7 +470,7 @@ export function WorkspaceLayout({ children, identity: suppliedIdentity, onSignOu
       return path === '/ld-manager/target-roles' || path === '/manager/target-roles'
     }
     if (itemHref === '/ld-manager/baseline-config') {
-      return path === '/ld-manager/baseline-config' || path === '/manager/baseline-config'
+      return path === '/ld-manager/baseline-config' || path === '/manager/baseline-config' || path.startsWith('/ld-manager/baseline-assessments')
     }
     if (itemHref === '/ld-manager/users') {
       return path === '/ld-manager/users' || path === '/admin/users'

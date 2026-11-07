@@ -1,0 +1,320 @@
+// Paste this complete file into dbdiagram.io. This is a VISUAL relational projection of Neo4j.
+// It is NOT a PostgreSQL migration or a physical Neo4j table schema.
+// Evidence: documents/neo4j_schema.md, ontology_seed-v011.json and graph_payload.py;
+// runtime source: Neo4jWorkspaceCatalogWriter, Neo4j*Repository and JdbcModuleAuthoringAdapter.
+// No running Neo4j was inspected. Properties are the union of documented catalog and explicit source extensions.
+// Six primary node labels plus the source-supported legacy MacroCompetency label are shown separately.
+// Neo4j properties are optional unless specifically constrained. Absent review fields are not fabricated.
+// Each REL_* block is a directed graph relationship with its own properties, NOT a real join table.
+// _from_node_id, _to_node_id and _diagram_key are diagram-only fields, never Neo4j properties.
+// Relationship ids are not universally present in legacy runtime writes, so they are not forced to be PK/not-null.
+// Version metadata properties remain because only version TABLES were excluded, not entity properties.
+
+Project AdaptLearnGraph_Neo4j {
+  database_type: 'Neo4j'
+  Note: 'Visualization only: node/relationship property contract plus source-supported authoring extensions. Not a live graph inventory and not a relational database design.'
+}
+
+Table nodes.Occupation {
+  "id" varchar [pk, not null]
+  "version" varchar [null, note: 'Catalog metadata property retained; no separate Version node is introduced.']
+  "status" varchar [null]
+  "reviewStatus" varchar [null]
+  "reviewedBy" varchar [null, note: 'May be absent until a genuine review is recorded.']
+  "reviewedAt" varchar [null, note: 'May be absent; documented seed uses ISO-8601 text. Some runtime paths use temporal values.']
+  "code" varchar [null]
+  "name" varchar [null]
+  "jobZone" integer [null]
+  "interestRealistic" float [null]
+  "interestInvestigative" float [null]
+  "interestArtistic" float [null]
+  "interestSocial" float [null]
+  "interestEnterprising" float [null]
+  "interestConventional" float [null]
+  "organizationId" varchar [null, note: 'Optional source-defined organization ownership; not a PostgreSQL FK.']
+  "sourceId" varchar [null, note: 'Optional provenance added when a template is copied into an organization.']
+  "sourceTemplateVersion" varchar [null, note: 'Optional template provenance on copied nodes.']
+  Note: 'Neo4j node label Occupation. Properties are not relational columns; optional source extensions may not exist on an individual node.'
+}
+
+Table nodes.TargetRole {
+  "id" varchar [pk, not null]
+  "version" varchar [null, note: 'Catalog metadata property retained; no separate Version node is introduced.']
+  "status" varchar [null]
+  "reviewStatus" varchar [null]
+  "reviewedBy" varchar [null, note: 'May be absent until a genuine review is recorded.']
+  "reviewedAt" varchar [null, note: 'May be absent; documented seed uses ISO-8601 text. Some runtime paths use temporal values.']
+  "code" varchar [null]
+  "name" varchar [null]
+  "scope" varchar [null]
+  "occupationId" varchar [null, note: 'Source-path dependent: omitted by the standalone graph_payload importer, preserved/remapped by the workspace template-copy writer. Ownership is also represented by graph relationships.']
+  "organizationId" varchar [null, note: 'Optional source-defined organization ownership; not a PostgreSQL FK.']
+  "sourceId" varchar [null, note: 'Optional provenance added when a template is copied into an organization.']
+  "sourceTemplateVersion" varchar [null, note: 'Optional template provenance on copied nodes.']
+  "baseCode" varchar [null, note: 'Optional property supported by runtime authoring/reader source; not present on every catalog node.']
+  "familyCode" varchar [null, note: 'Optional property supported by runtime authoring/reader source; not present on every catalog node.']
+  "track" varchar [null, note: 'Optional property supported by runtime authoring/reader source; not present on every catalog node.']
+  "assignedExpertId" varchar [null, note: 'Optional property supported by runtime authoring/reader source; not present on every catalog node.']
+  "description" text [null, note: 'Optional property supported by runtime authoring/reader source; not present on every catalog node.']
+  "responsibilities" "string[]" [null, note: 'Optional property supported by runtime authoring/reader source; not present on every catalog node.']
+  "skillTargets" text [null, note: 'JSON-serialized skill-target structure.']
+  "levels" "string[]" [null, note: 'Runtime TargetRole levels list; distinct from the Level node label.']
+  "levelCompetencies" text [null, note: 'JSON-serialized competency structure.']
+  "competencyIds" "string[]" [null, note: 'Optional property supported by runtime authoring/reader source; not present on every catalog node.']
+  "createdAt" datetime [null, note: 'Optional property supported by runtime authoring/reader source; not present on every catalog node.']
+  "updatedAt" datetime [null, note: 'Optional property supported by runtime authoring/reader source; not present on every catalog node.']
+  "rejectionReason" text [null, note: 'Optional property supported by runtime authoring/reader source; not present on every catalog node.']
+  Note: 'Neo4j node label TargetRole. Properties are not relational columns; optional source extensions may not exist on an individual node.'
+}
+
+Table nodes.Level {
+  "id" varchar [pk, not null]
+  "version" varchar [null, note: 'Catalog metadata property retained; no separate Version node is introduced.']
+  "status" varchar [null]
+  "reviewStatus" varchar [null]
+  "reviewedBy" varchar [null, note: 'May be absent until a genuine review is recorded.']
+  "reviewedAt" varchar [null, note: 'May be absent; documented seed uses ISO-8601 text. Some runtime paths use temporal values.']
+  "targetRoleId" varchar [null, note: 'Source-path dependent: omitted by the standalone graph_payload importer, preserved/remapped by the workspace template-copy writer. Ownership is also represented by graph relationships.']
+  "code" varchar [null]
+  "name" varchar [null]
+  "rank" integer [null]
+  "attainmentRule" varchar [null]
+  "organizationId" varchar [null, note: 'Optional source-defined organization ownership; not a PostgreSQL FK.']
+  "sourceId" varchar [null, note: 'Optional provenance added when a template is copied into an organization.']
+  "sourceTemplateVersion" varchar [null, note: 'Optional template provenance on copied nodes.']
+  Note: 'Neo4j node label Level. Properties are not relational columns; optional source extensions may not exist on an individual node.'
+}
+
+Table nodes.Competency {
+  "id" varchar [pk, not null]
+  "version" varchar [null, note: 'Catalog metadata property retained; no separate Version node is introduced.']
+  "status" varchar [null]
+  "reviewStatus" varchar [null]
+  "reviewedBy" varchar [null, note: 'May be absent until a genuine review is recorded.']
+  "reviewedAt" varchar [null, note: 'May be absent; documented seed uses ISO-8601 text. Some runtime paths use temporal values.']
+  "levelId" varchar [null, note: 'Source-path dependent: omitted by the standalone graph_payload importer, preserved/remapped by the workspace template-copy writer. Ownership is also represented by graph relationships.']
+  "name" varchar [null]
+  "description" varchar [null]
+  "attainmentRule" varchar [null]
+  "code" varchar [null]
+  "organizationId" varchar [null, note: 'Optional source-defined organization ownership; not a PostgreSQL FK.']
+  "sourceId" varchar [null, note: 'Optional provenance added when a template is copied into an organization.']
+  "sourceTemplateVersion" varchar [null, note: 'Optional template provenance on copied nodes.']
+  Note: 'Neo4j node label Competency. Properties are not relational columns; optional source extensions may not exist on an individual node.'
+}
+
+Table nodes.MicroSkill {
+  "id" varchar [pk, not null]
+  "version" varchar [null, note: 'Catalog metadata property retained; no separate Version node is introduced.']
+  "status" varchar [null]
+  "reviewStatus" varchar [null]
+  "reviewedBy" varchar [null, note: 'May be absent until a genuine review is recorded.']
+  "reviewedAt" varchar [null, note: 'May be absent; documented seed uses ISO-8601 text. Some runtime paths use temporal values.']
+  "name" varchar [null]
+  "definition" varchar [null]
+  "organizationId" varchar [null, note: 'Optional source-defined organization ownership; not a PostgreSQL FK.']
+  "sourceId" varchar [null, note: 'Optional provenance added when a template is copied into an organization.']
+  "sourceTemplateVersion" varchar [null, note: 'Optional template provenance on copied nodes.']
+  "code" varchar [null, note: 'Optional property supported by runtime authoring/reader source; not present on every catalog node.']
+  "description" text [null, note: 'Optional property supported by runtime authoring/reader source; not present on every catalog node.']
+  "macroCompetencyCode" varchar [null, note: 'Optional property supported by runtime authoring/reader source; not present on every catalog node.']
+  "createdAt" datetime [null, note: 'Optional property supported by runtime authoring/reader source; not present on every catalog node.']
+  "updatedAt" datetime [null, note: 'Optional property supported by runtime authoring/reader source; not present on every catalog node.']
+  Note: 'Neo4j node label MicroSkill. Properties are not relational columns; optional source extensions may not exist on an individual node.'
+}
+
+Table nodes.LearningModule {
+  "id" varchar [pk, not null]
+  "title" varchar [null]
+  "version" varchar [null, note: 'Catalog metadata property retained; no separate Version node is introduced.']
+  "status" varchar [null]
+  "reviewStatus" varchar [null]
+  "reviewedBy" varchar [null, note: 'May be absent until a genuine review is recorded.']
+  "reviewedAt" varchar [null, note: 'May be absent; documented seed uses ISO-8601 text. Some runtime paths use temporal values.']
+  "moduleType" varchar [null]
+  "contentUri" varchar [null]
+  "contentType" varchar [null]
+  "contentVersion" varchar [null]
+  "duration" integer [null]
+  "price" float [null]
+  "organizationId" varchar [null, note: 'Optional source-defined organization ownership; not a PostgreSQL FK.']
+  "sourceId" varchar [null, note: 'Optional provenance added when a template is copied into an organization.']
+  "sourceTemplateVersion" varchar [null, note: 'Optional template provenance on copied nodes.']
+  "code" varchar [null, note: 'Optional property consumed by LearningModuleRecord readers.']
+  "durationMinutes" integer [null, note: 'Legacy authoring field. The documented catalog uses duration; these are not silently merged.']
+  Note: 'Neo4j node label LearningModule. Properties are not relational columns; optional source extensions may not exist on an individual node.'
+}
+
+Table nodes.MacroCompetency {
+  "id" varchar [pk, not null]
+  "organizationId" varchar [null]
+  "code" varchar [null]
+  "name" varchar [null]
+  "description" text [null]
+  "status" varchar [null]
+  "createdAt" datetime [null]
+  "updatedAt" datetime [null]
+  Note: 'Legacy authoring node label; distinct from the level-owned Competency label in the six-label ontology. Included because runtime MicroSkill authoring creates it.'
+}
+
+Table relationships.REL_HAS_ROLE {
+  "_diagram_key" bigint [pk, note: 'Diagram-only synthetic key; not a graph property or persisted identity.']
+  "_from_node_id" varchar [not null, note: 'Diagram-only start endpoint: Occupation. Not a stored property.']
+  "_to_node_id" varchar [not null, note: 'Diagram-only end endpoint: TargetRole. Not a stored property.']
+  "id" varchar [null]
+  "version" varchar [null, note: 'Catalog metadata property retained; no separate Version node is introduced.']
+  "status" varchar [null]
+  "reviewStatus" varchar [null]
+  "reviewedBy" varchar [null, note: 'May be absent until a genuine review is recorded.']
+  "reviewedAt" varchar [null, note: 'May be absent; documented seed uses ISO-8601 text. Some runtime paths use temporal values.']
+  "organizationId" varchar [null, note: 'Optional source-defined organization ownership; not a PostgreSQL FK.']
+  "sourceId" varchar [null, note: 'Optional provenance added when a template is copied into an organization.']
+  Note: 'Directed Neo4j relationship Occupation -[HAS_ROLE]-> TargetRole. Endpoints and synthetic key exist only for dbdiagram visualization.'
+}
+
+Ref REL_HAS_ROLE_from: relationships.REL_HAS_ROLE."_from_node_id" > nodes.Occupation."id"
+Ref REL_HAS_ROLE_to: relationships.REL_HAS_ROLE."_to_node_id" > nodes.TargetRole."id"
+
+Table relationships.REL_HAS_LEVEL {
+  "_diagram_key" bigint [pk, note: 'Diagram-only synthetic key; not a graph property or persisted identity.']
+  "_from_node_id" varchar [not null, note: 'Diagram-only start endpoint: TargetRole. Not a stored property.']
+  "_to_node_id" varchar [not null, note: 'Diagram-only end endpoint: Level. Not a stored property.']
+  "id" varchar [null]
+  "version" varchar [null, note: 'Catalog metadata property retained; no separate Version node is introduced.']
+  "status" varchar [null]
+  "reviewStatus" varchar [null]
+  "reviewedBy" varchar [null, note: 'May be absent until a genuine review is recorded.']
+  "reviewedAt" varchar [null, note: 'May be absent; documented seed uses ISO-8601 text. Some runtime paths use temporal values.']
+  "organizationId" varchar [null, note: 'Optional source-defined organization ownership; not a PostgreSQL FK.']
+  "sourceId" varchar [null, note: 'Optional provenance added when a template is copied into an organization.']
+  Note: 'Directed Neo4j relationship TargetRole -[HAS_LEVEL]-> Level. Endpoints and synthetic key exist only for dbdiagram visualization.'
+}
+
+Ref REL_HAS_LEVEL_from: relationships.REL_HAS_LEVEL."_from_node_id" > nodes.TargetRole."id"
+Ref REL_HAS_LEVEL_to: relationships.REL_HAS_LEVEL."_to_node_id" > nodes.Level."id"
+
+Table relationships.REL_HAS_COMPETENCY {
+  "_diagram_key" bigint [pk, note: 'Diagram-only synthetic key; not a graph property or persisted identity.']
+  "_from_node_id" varchar [not null, note: 'Diagram-only start endpoint: Level. Not a stored property.']
+  "_to_node_id" varchar [not null, note: 'Diagram-only end endpoint: Competency. Not a stored property.']
+  "id" varchar [null]
+  "version" varchar [null, note: 'Catalog metadata property retained; no separate Version node is introduced.']
+  "status" varchar [null]
+  "reviewStatus" varchar [null]
+  "reviewedBy" varchar [null, note: 'May be absent until a genuine review is recorded.']
+  "reviewedAt" varchar [null, note: 'May be absent; documented seed uses ISO-8601 text. Some runtime paths use temporal values.']
+  "organizationId" varchar [null, note: 'Optional source-defined organization ownership; not a PostgreSQL FK.']
+  "sourceId" varchar [null, note: 'Optional provenance added when a template is copied into an organization.']
+  Note: 'Directed Neo4j relationship Level -[HAS_COMPETENCY]-> Competency. Endpoints and synthetic key exist only for dbdiagram visualization.'
+}
+
+Ref REL_HAS_COMPETENCY_from: relationships.REL_HAS_COMPETENCY."_from_node_id" > nodes.Level."id"
+Ref REL_HAS_COMPETENCY_to: relationships.REL_HAS_COMPETENCY."_to_node_id" > nodes.Competency."id"
+
+Table relationships.REL_HAS_SKILL {
+  "_diagram_key" bigint [pk, note: 'Diagram-only synthetic key; not a graph property or persisted identity.']
+  "_from_node_id" varchar [not null, note: 'Diagram-only start endpoint: Competency. Not a stored property.']
+  "_to_node_id" varchar [not null, note: 'Diagram-only end endpoint: MicroSkill. Not a stored property.']
+  "id" varchar [null]
+  "version" varchar [null, note: 'Catalog metadata property retained; no separate Version node is introduced.']
+  "status" varchar [null]
+  "reviewStatus" varchar [null]
+  "reviewedBy" varchar [null, note: 'May be absent until a genuine review is recorded.']
+  "reviewedAt" varchar [null, note: 'May be absent; documented seed uses ISO-8601 text. Some runtime paths use temporal values.']
+  "organizationId" varchar [null, note: 'Optional source-defined organization ownership; not a PostgreSQL FK.']
+  "sourceId" varchar [null, note: 'Optional provenance added when a template is copied into an organization.']
+  Note: 'Directed Neo4j relationship Competency -[HAS_SKILL]-> MicroSkill. Endpoints and synthetic key exist only for dbdiagram visualization.'
+}
+
+Ref REL_HAS_SKILL_from: relationships.REL_HAS_SKILL."_from_node_id" > nodes.Competency."id"
+Ref REL_HAS_SKILL_to: relationships.REL_HAS_SKILL."_to_node_id" > nodes.MicroSkill."id"
+
+Table relationships.REL_REQUIRES_SKILL {
+  "_diagram_key" bigint [pk, note: 'Diagram-only synthetic key; not a graph property or persisted identity.']
+  "_from_node_id" varchar [not null, note: 'Diagram-only start endpoint: Level. Not a stored property.']
+  "_to_node_id" varchar [not null, note: 'Diagram-only end endpoint: MicroSkill. Not a stored property.']
+  "id" varchar [null]
+  "version" varchar [null, note: 'Catalog metadata property retained; no separate Version node is introduced.']
+  "status" varchar [null]
+  "reviewStatus" varchar [null]
+  "reviewedBy" varchar [null, note: 'May be absent until a genuine review is recorded.']
+  "reviewedAt" varchar [null, note: 'May be absent; documented seed uses ISO-8601 text. Some runtime paths use temporal values.']
+  "isMandatory" boolean [null]
+  "requiredScore" float [null]
+  "organizationId" varchar [null, note: 'Optional source-defined organization ownership; not a PostgreSQL FK.']
+  "sourceId" varchar [null, note: 'Optional provenance added when a template is copied into an organization.']
+  Note: 'Directed Neo4j relationship Level -[REQUIRES_SKILL]-> MicroSkill. Endpoints and synthetic key exist only for dbdiagram visualization.'
+}
+
+Ref REL_REQUIRES_SKILL_from: relationships.REL_REQUIRES_SKILL."_from_node_id" > nodes.Level."id"
+Ref REL_REQUIRES_SKILL_to: relationships.REL_REQUIRES_SKILL."_to_node_id" > nodes.MicroSkill."id"
+
+Table relationships.REL_TEACHES {
+  "_diagram_key" bigint [pk, note: 'Diagram-only synthetic key; not a graph property or persisted identity.']
+  "_from_node_id" varchar [not null, note: 'Diagram-only start endpoint: LearningModule. Not a stored property.']
+  "_to_node_id" varchar [not null, note: 'Diagram-only end endpoint: MicroSkill. Not a stored property.']
+  "id" varchar [null]
+  "version" varchar [null, note: 'Catalog metadata property retained; no separate Version node is introduced.']
+  "status" varchar [null]
+  "reviewStatus" varchar [null]
+  "reviewedBy" varchar [null, note: 'May be absent until a genuine review is recorded.']
+  "reviewedAt" varchar [null, note: 'May be absent; documented seed uses ISO-8601 text. Some runtime paths use temporal values.']
+  "teachingFocus" varchar [null]
+  "difficultyLevel" varchar [null]
+  "organizationId" varchar [null, note: 'Optional source-defined organization ownership; not a PostgreSQL FK.']
+  "sourceId" varchar [null, note: 'Optional provenance added when a template is copied into an organization.']
+  Note: 'Directed Neo4j relationship LearningModule -[TEACHES]-> MicroSkill. Endpoints and synthetic key exist only for dbdiagram visualization.'
+}
+
+Ref REL_TEACHES_from: relationships.REL_TEACHES."_from_node_id" > nodes.LearningModule."id"
+Ref REL_TEACHES_to: relationships.REL_TEACHES."_to_node_id" > nodes.MicroSkill."id"
+
+Table relationships.REL_HAS_SKILL_PREREQUISITE {
+  "_diagram_key" bigint [pk, note: 'Diagram-only synthetic key; not a graph property or persisted identity.']
+  "_from_node_id" varchar [not null, note: 'Diagram-only start endpoint: MicroSkill. Not a stored property.']
+  "_to_node_id" varchar [not null, note: 'Diagram-only end endpoint: MicroSkill. Not a stored property.']
+  "id" varchar [null]
+  "version" varchar [null, note: 'Catalog metadata property retained; no separate Version node is introduced.']
+  "status" varchar [null]
+  "reviewStatus" varchar [null]
+  "reviewedBy" varchar [null, note: 'May be absent until a genuine review is recorded.']
+  "reviewedAt" varchar [null, note: 'May be absent; documented seed uses ISO-8601 text. Some runtime paths use temporal values.']
+  "requiredScore" float [null]
+  "organizationId" varchar [null, note: 'Optional source-defined organization ownership; not a PostgreSQL FK.']
+  "sourceId" varchar [null, note: 'Optional provenance added when a template is copied into an organization.']
+  "minMastery" float [null, note: 'Legacy readiness alias written alongside requiredScore.']
+  "createdAt" datetime [null]
+  "updatedAt" datetime [null]
+  Note: 'Directed Neo4j relationship MicroSkill -[HAS_SKILL_PREREQUISITE]-> MicroSkill. Endpoints and synthetic key exist only for dbdiagram visualization.'
+}
+
+Ref REL_HAS_SKILL_PREREQUISITE_from: relationships.REL_HAS_SKILL_PREREQUISITE."_from_node_id" > nodes.MicroSkill."id"
+Ref REL_HAS_SKILL_PREREQUISITE_to: relationships.REL_HAS_SKILL_PREREQUISITE."_to_node_id" > nodes.MicroSkill."id"
+
+Table relationships.REL_MACRO_HAS_SKILL {
+  "_diagram_key" bigint [pk, note: 'Diagram-only synthetic key; not a graph property or persisted identity.']
+  "_from_node_id" varchar [not null, note: 'Diagram-only start endpoint: MacroCompetency. Not a stored property.']
+  "_to_node_id" varchar [not null, note: 'Diagram-only end endpoint: MicroSkill. Not a stored property.']
+  "status" varchar [null]
+  "createdAt" datetime [null]
+  "updatedAt" datetime [null]
+  Note: 'Directed Neo4j relationship MacroCompetency -[HAS_SKILL]-> MicroSkill. Endpoints and synthetic key exist only for dbdiagram visualization.'
+}
+
+Ref REL_MACRO_HAS_SKILL_from: relationships.REL_MACRO_HAS_SKILL."_from_node_id" > nodes.MacroCompetency."id"
+Ref REL_MACRO_HAS_SKILL_to: relationships.REL_MACRO_HAS_SKILL."_to_node_id" > nodes.MicroSkill."id"
+
+Table relationships.REL_ROLE_REQUIRES_SKILL {
+  "_diagram_key" bigint [pk, note: 'Diagram-only synthetic key; not a graph property or persisted identity.']
+  "_from_node_id" varchar [not null, note: 'Diagram-only start endpoint: TargetRole. Not a stored property.']
+  "_to_node_id" varchar [not null, note: 'Diagram-only end endpoint: MicroSkill. Not a stored property.']
+  "level" varchar [null]
+  "targetMastery" float [null]
+  "status" varchar [null]
+  "createdAt" datetime [null]
+  "updatedAt" datetime [null]
+  Note: 'Directed Neo4j relationship TargetRole -[REQUIRES_SKILL]-> MicroSkill. Endpoints and synthetic key exist only for dbdiagram visualization.'
+}
+
+Ref REL_ROLE_REQUIRES_SKILL_from: relationships.REL_ROLE_REQUIRES_SKILL."_from_node_id" > nodes.TargetRole."id"
+Ref REL_ROLE_REQUIRES_SKILL_to: relationships.REL_ROLE_REQUIRES_SKILL."_to_node_id" > nodes.MicroSkill."id"

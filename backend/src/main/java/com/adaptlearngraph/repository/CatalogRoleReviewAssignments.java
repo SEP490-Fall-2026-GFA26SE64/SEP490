@@ -9,10 +9,20 @@ public final class CatalogRoleReviewAssignments implements ReviewAssignments {
     private record Owner(UUID expert,String id,String version) {}
     private record Candidate(UUID id,String role) {}
     private final Neo4jCypher graph;private final InitialPathwayRepositories data;private final int maximum;private final Set<String> allowed;
+    private final CertificateSubmissionJpaRepository certificates;
+    private final int timeout;
     public CatalogRoleReviewAssignments(Neo4jCypher graph,InitialPathwayRepositories data,int maximum,Set<String> allowed) {
+        this(graph,data,maximum,allowed,null,0);
+    }
+    public CatalogRoleReviewAssignments(Neo4jCypher graph,InitialPathwayRepositories data,int maximum,Set<String> allowed,CertificateSubmissionJpaRepository certificates) {
+        this(graph,data,maximum,allowed,certificates,5);
+    }
+    public CatalogRoleReviewAssignments(Neo4jCypher graph,InitialPathwayRepositories data,int maximum,Set<String> allowed,CertificateSubmissionJpaRepository certificates,int timeout) {
         if(maximum<1 || maximum==Integer.MAX_VALUE || allowed.size()>maximum)throw new IllegalArgumentException("Bounded review scope required");
         allowed.forEach(CatalogRoleReviewAssignments::text);
         this.graph=graph;this.data=data;this.maximum=maximum;this.allowed=Set.copyOf(allowed);
+        this.certificates=certificates;
+        if(timeout<0 || timeout>60)throw new IllegalArgumentException("Invalid assignment transaction budget");this.timeout=timeout;
     }
     private void activeExpert(UUID org,UUID expert) {
         if(!data.actors().isActiveMemberExpert(org,expert))throw new Failure(403,"FORBIDDEN",false);
@@ -24,7 +34,7 @@ public final class CatalogRoleReviewAssignments implements ReviewAssignments {
         roles.forEach(CatalogRoleReviewAssignments::text);
         // Neo4jClient: organization-scoped scalar owner projection with a read bound (LIMIT roles+1).
         try {
-            return graph.read(tx->{
+            java.util.function.Function<Neo4jCypher.Statements,Map<String,Owner>> work=tx->{
                 var rows=tx.list("""
                         MATCH (r:TargetRole) WHERE r.organizationId=$org AND r.id IN $roles AND r.status IN ['ACTIVE','PUBLISHED']
                         RETURN r.id AS id,r.version AS version,r.assignedExpertId AS expert LIMIT $maximum
@@ -39,7 +49,8 @@ public final class CatalogRoleReviewAssignments implements ReviewAssignments {
                             "catalog-role-review-v1:"+InitialIdentity.hash("role-review-assignment",List.of(org,id,version,expert))));
                 }
                 return Map.copyOf(result);
-            });
+            };
+            return timeout==0?graph.read(work):graph.read(timeout,work);
         }catch(Failure failure){throw failure;}catch(RuntimeException unavailable){throw new Failure(503,"REVIEW_ASSIGNMENT_UNAVAILABLE",false);}
     }
     @Override public Assignment require(Actor actor,UUID id) {
@@ -58,6 +69,16 @@ public final class CatalogRoleReviewAssignments implements ReviewAssignments {
         var roles=new HashSet<String>();rows.stream().filter(r->allowed(r.role())).forEach(r->roles.add(r.role()));
         var owners=owners(actor.organizationId(),roles);var result=new HashSet<UUID>();
         for(var row:rows) {var owner=owners.get(row.role());if(owner!=null && actor.accountId().equals(owner.expert()))result.add(row.id());}
+        return Set.copyOf(result);
+    }
+    @Override public Set<UUID> assignedCertificatePathways(Actor actor) {
+        authorize(actor);if(certificates==null)return assignedPathways(actor);
+        var rows=certificates.pendingRoles(actor.organizationId(),(long)maximum+1).stream()
+                .map(row->new Candidate(PersistenceValues.uuid(row[0]),(String)row[1])).toList();
+        if(rows.size()>maximum)throw new Failure(503,"REVIEW_ASSIGNMENT_QUERY_LIMIT",false);
+        var roles=new HashSet<String>();rows.stream().filter(row->allowed(row.role())).forEach(row->roles.add(row.role()));
+        var owners=owners(actor.organizationId(),roles);var result=new HashSet<UUID>();
+        for(var row:rows){var owner=owners.get(row.role());if(owner!=null && actor.accountId().equals(owner.expert()))result.add(row.id());}
         return Set.copyOf(result);
     }
     @Override public void requireApprovalValid(Scope scope,UUID id,long revision,String hash) {

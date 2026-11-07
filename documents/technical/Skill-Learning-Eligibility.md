@@ -1,5 +1,7 @@
 # Single-Skill Modules and learning eligibility handoff
 
+**Current flow revision: 2026-11-05-r3.** [Target schema/API/flow](Organization%20Rule%20Assessment%20and%20Pathway.md) supersedes this document's older active assessment/mastery/gap/optimizer assumptions. Material below is retained previous design/source/operation history, not proof of r3 being applied. Keep non-conflicting security/content/retry safeguards. Baseline covers selected Role–Level, records only assessed diagnostics and does not pre-add prerequisites; two separate policy configs share an engine; skill assessment discovers supplementation; cross-target old bypass work is parallel/non-gating. Old affected dev records may be rebuilt; new-flow history and unrelated/shared evidence/backups remain. Do not automatically run retained setup/reset/test commands below.
+
 Approved scope: 2026-11-05, r2. This document covers Module learning, optional same-Skill study and the **learning prerequisite** for a teammate-owned Skill Assessment. It does not define assessment construction, question selection, scoring, retakes, mastery updates or complete exam admission.
 
 ## Catalog and authoring

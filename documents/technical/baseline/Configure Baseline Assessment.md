@@ -1,5 +1,7 @@
 # Configure Baseline Assessment
 
+**Current flow revision: 2026-11-05-r3.** [Target schema/API/flow](../Organization%20Rule%20Assessment%20and%20Pathway.md) supersedes this document's older active assessment/mastery/gap/optimizer assumptions. Material below is retained previous design/source/operation history, not proof of r3 being applied. Keep non-conflicting security/content/retry safeguards. Baseline covers selected Role–Level, records only assessed diagnostics and does not pre-add prerequisites; two separate policy configs share an engine; skill assessment discovers supplementation; cross-target old bypass work is parallel/non-gating. Old affected dev records may be rebuilt; new-flow history and unrelated/shared evidence/backups remain. Do not automatically run retained setup/reset/test commands below.
+
 **Function:** REQ-002-F02. **Actor:** L&D Manager.
 
 **2026-11-01 C1/C2 status:** [organization Assessment Policy](#organization-assessment-policy--planned) extends this Function with confirmed L&D ownership/tab placement. Domain/use-case/store/controller and EN/VI tab source now compile/build; forward SQL exists but is **not applied**. API/browser/concurrency acceptance is Not run. The contract below remains the rollout target; older system-owned SE/k wording is superseded only here, without production-readiness claims.

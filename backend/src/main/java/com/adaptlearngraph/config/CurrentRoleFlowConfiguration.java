@@ -22,7 +22,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 /** TMP-REQ002-13; current Employee routes only in the enabled local demo, no history import. */
 @Configuration(proxyBeanMethods=false)
-@Profile("local-baseline-demo & !prod")
+@Profile("local-baseline-demo & !workspace-baseline & !prod")
 @ConditionalOnWebApplication(type=ConditionalOnWebApplication.Type.SERVLET)
 @ConditionalOnProperty(prefix="assessment.baseline.local-demo",name="enabled",havingValue="true")
 @Import(PersistenceConfiguration.class)

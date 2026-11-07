@@ -1,17 +1,17 @@
-export type AttemptState = 'IN_PROGRESS' | 'SUBMITTED' | 'AUTO_SUBMITTED' | 'INVALIDATED'
-export type BaselineScope = 'JOB_POSITION' | 'EARLIER_ROLE' | 'EARLIER_JOB_POSITION'
-export interface PresentedItem { position: number; itemVersionId: string; prompt: string; options: { id: string; text: string }[]; selectedOptionId: string | null }
+import { workspaceFetch } from '../../../shared/api/workspaceFetch'
+export type AssessmentPurpose = 'BASELINE' | 'SKILL_ASSESSMENT'
+export type AttemptState = 'IN_PROGRESS' | 'FINALIZED'
+export interface AssessmentTarget { selectionId: string; selectionRevision: number; stepId?: string | null; moduleId?: string | null; moduleRevision?: number | null }
+export interface Requirement { skillId: string; knowledgeLevel: string; outcomeCodes: string[] }
+export interface AssessmentGroup { id: string; skillName: string; requirement: Requirement; role: 'TARGET' | 'MAIN' | 'PREREQUISITE'; totalCount: number; requiredCorrectCount: number; mandatoryRequired: boolean }
+export interface GroupResult { groupId: string; correctCount: number; totalCount: number; mandatorySatisfied: boolean; passed: boolean; vetoTriggered: boolean; reasons: string[] }
+export interface PresentedItem { position: number; itemVersionId: string; groupId: string; prompt: string; options: { id: string; text: string }[]; selectedOptionId: string | null }
 export interface BaselineAttempt {
-  id: string; jobPositionId: string; jobPositionName: string; purpose: string; roleId: string | null; assessmentScope: BaselineScope
-  state: AttemptState; revision: number; startedAt: string; deadlineAt: string; observedAt: string
-  expired: boolean; maxQuestions: number; answeredCount: number; items: PresentedItem[]
+  id: string; target: AssessmentTarget; jobPositionId: string; jobPositionName: string; roleId: string; roleName: string; levelId: string; levelName: string; purpose: AssessmentPurpose
+  state: AttemptState; revision: number; startedAt: string; deadlineAt: string; observedAt: string; finishedAt: string | null; finishReason: string | null; previousAttemptId: string | null
+  expired: boolean; maxQuestions: number; answeredCount: number; items: PresentedItem[]; groups: AssessmentGroup[]; results: GroupResult[]
 }
-export interface BaselineResult {
-  attemptId: string; jobPositionId: string; jobPositionName: string; purpose: string; roleId: string | null; roleName: string | null; assessmentScope: BaselineScope
-  state: Exclude<AttemptState, 'IN_PROGRESS'>; completionReason: string; startedAt: string; completedAt: string
-  replacesAttemptId: string | null; replacementAttemptId: string | null; rawScore: number | null
-  skills: { microSkillId: string; microSkillName: string; mastery: number; confidence: 'LOW' | 'MEDIUM' | 'HIGH' }[]
-}
+export type BaselineResult = BaselineAttempt & { state: 'FINALIZED'; finishedAt: string; finishReason: string }
 export interface BaselineCommand { path: string; body: string; key: string }
 export class BaselineError extends Error {
   readonly code: string
@@ -21,27 +21,31 @@ export class BaselineError extends Error {
 }
 const base = '/api/v1/employee/baseline-attempts'
 export const employeeBaselineEnabled = import.meta.env.VITE_EMPLOYEE_ADAPTIVE_BASELINE_ENABLED === 'true'
-export const attemptPath = (id: string) => `/employee/baseline-assessment/${encodeURIComponent(id)}`
-export function startCommand(jobPositionId?: string): BaselineCommand {
-  return command('', jobPositionId === undefined ? { entry: 'SELECTED_ROLE' } : { entry: 'JOB_POSITION_EXPLORATION', jobPositionId: jobPositionId.trim() })
+export const attemptPath = (id: string) => '/employee/baseline-assessment/' + encodeURIComponent(id)
+export function startCommand(target: AssessmentTarget, purpose: AssessmentPurpose = 'BASELINE', previousAttemptId: string | null = null): BaselineCommand {
+  return command('', { purpose, expectedSelectionId: target.selectionId, expectedSelectionRevision: target.selectionRevision, previousAttemptId,
+    stepId: target.stepId ?? null, moduleId: target.moduleId ?? null, moduleRevision: target.moduleRevision ?? null })
 }
 export function answerCommand(attempt: BaselineAttempt, item: PresentedItem, selectedOptionId: string) {
-  return command(`/${encodeURIComponent(attempt.id)}/answers`, {
-    expectedRevision: attempt.revision, position: item.position, itemVersionId: item.itemVersionId, selectedOptionId,
-  })
+  return command('/' + encodeURIComponent(attempt.id) + '/answers', { expectedRevision: attempt.revision, position: item.position, itemVersionId: item.itemVersionId, selectedOptionId })
 }
-export const submitCommand = (attempt: BaselineAttempt) => command(`/${encodeURIComponent(attempt.id)}/submit`, { expectedRevision: attempt.revision })
+export const submitCommand = (attempt: BaselineAttempt) => command('/' + encodeURIComponent(attempt.id) + '/submit', { expectedRevision: attempt.revision })
 function command(path: string, body: unknown): BaselineCommand { return { path, body: JSON.stringify(body), key: crypto.randomUUID() } }
-export const executeCommand = (value: BaselineCommand) => request(value.path, parseAttempt, {
-  method: 'POST', body: value.body, headers: { 'Content-Type': 'application/json', 'Idempotency-Key': value.key },
-})
-export const readAttempt = (id: string, signal?: AbortSignal) => request(`/${encodeURIComponent(id)}`, value => {
-  const result = parseAttempt(value); if (result.id !== id) throw new Error('Scope mismatch'); return result
+export const executeCommand = (value: BaselineCommand) => request(value.path, parseAttempt, { method: 'POST', body: value.body, headers: { 'Content-Type': 'application/json', 'Idempotency-Key': value.key } })
+export const readAttempt = (id: string, signal?: AbortSignal) => request('/' + encodeURIComponent(id), value => { const result = parseAttempt(value); if (result.id !== id) throw Error(); return result }, { signal })
+export const readResult = (id: string, signal?: AbortSignal) => request('/' + encodeURIComponent(id) + '/result', value => {
+  const result = parseAttempt(value)
+  if (result.id !== id || result.state !== 'FINALIZED' || !result.finishedAt || !result.finishReason) throw Error()
+  return result as BaselineResult
 }, { signal })
-export const readResult = (id: string, signal?: AbortSignal) => request(`/${encodeURIComponent(id)}/result`, value => {
-  const result = parseResult(value); if (result.attemptId !== id) throw new Error('Scope mismatch'); return result
-}, { signal })
-export const readHistory = (signal?: AbortSignal) => request('/history', value => list(value, parseResult), { signal })
+export const readHistory = (signal?: AbortSignal, page = 0) => request('/history?page=' + page + '&size=20', value => list(value, parseAttempt), { signal })
+export const readContextAttempt = (target: AssessmentTarget, purpose: AssessmentPurpose, signal?: AbortSignal) => {
+  const params = new URLSearchParams({ selectionId: target.selectionId, selectionRevision: String(target.selectionRevision), purpose })
+  if (target.stepId) params.set('stepId', target.stepId)
+  if (target.moduleId) params.set('moduleId', target.moduleId)
+  if (target.moduleRevision) params.set('moduleRevision', String(target.moduleRevision))
+  return request('/context?' + params, value => value === null ? null : parseAttempt(value), { signal })
+}
 async function request<T>(path: string, parse: (value: unknown) => T, init: RequestInit = {}): Promise<T> {
   let response: Response
   try { response = await workspaceFetch(base + path, init) }
@@ -53,48 +57,48 @@ async function request<T>(path: string, parse: (value: unknown) => T, init: Requ
   }
   try { return parse(payload) } catch { throw new BaselineError('INVALID_RESPONSE', response.status) }
 }
-function object(value: unknown): Record<string, unknown> {
-  if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error('Invalid object')
-  return value as Record<string, unknown>
-}
-function text(value: unknown): string { if (typeof value !== 'string' || !value.trim()) throw new Error('Invalid text'); return value }
-const nullable = (value: unknown) => value === null ? null : text(value)
-function number(value: unknown): number { if (typeof value !== 'number' || !Number.isFinite(value)) throw new Error('Invalid number'); return value }
-function integer(value: unknown, minimum = 0): number { const result = number(value); if (!Number.isSafeInteger(result) || result < minimum) throw new Error('Invalid integer'); return result }
-function ratio(value: unknown): number { const result = number(value); if (result < 0 || result > 1) throw new Error('Invalid ratio'); return result }
-function date(value: unknown): string { const result = text(value); if (!Number.isFinite(Date.parse(result))) throw new Error('Invalid date'); return result }
-function list<T>(value: unknown, parse: (item: unknown) => T): T[] { if (!Array.isArray(value)) throw new Error('Invalid list'); return value.map(parse) }
-function state(value: unknown): AttemptState {
-  if (!['IN_PROGRESS', 'SUBMITTED', 'AUTO_SUBMITTED', 'INVALIDATED'].includes(text(value))) throw new Error('Invalid state')
-  return value as AttemptState
-}
-function scope(value: unknown): BaselineScope {
-  if (value !== 'JOB_POSITION' && value !== 'EARLIER_ROLE' && value !== 'EARLIER_JOB_POSITION') throw new Error('Invalid assessment scope')
-  return value
+function object(value: unknown): Record<string, unknown> { if (!value || typeof value !== 'object' || Array.isArray(value)) throw Error(); return value as Record<string, unknown> }
+function text(value: unknown): string { if (typeof value !== 'string' || !value.trim()) throw Error(); return value }
+function nullable(value: unknown): string | null { return value === null ? null : text(value) }
+function count(value: unknown, min = 0): number { if (typeof value !== 'number' || !Number.isSafeInteger(value) || value < min) throw Error(); return value }
+function bool(value: unknown): boolean { if (typeof value !== 'boolean') throw Error(); return value }
+function date(value: unknown): string { const result = text(value); if (!Number.isFinite(Date.parse(result))) throw Error(); return result }
+function list<T>(value: unknown, parse: (value: unknown) => T): T[] { if (!Array.isArray(value)) throw Error(); return value.map(parse) }
+function requirement(value: unknown): Requirement {
+  const r = object(value), knowledgeLevel = text(r.knowledgeLevel), outcomeCodes = list(r.outcomeCodes, text)
+  if (!['FOUNDATION', 'INTERMEDIATE', 'ADVANCED'].includes(knowledgeLevel) || !outcomeCodes.length || new Set(outcomeCodes).size !== outcomeCodes.length) throw Error()
+  return { skillId: text(r.skillId), knowledgeLevel, outcomeCodes }
 }
 function parseAttempt(value: unknown): BaselineAttempt {
-  const v = object(value)
-  if (typeof v.expired !== 'boolean') throw new Error('Invalid expiry')
-  return { id: text(v.id), jobPositionId: text(v.jobPositionId), jobPositionName: text(v.jobPositionName), purpose: text(v.purpose), roleId: nullable(v.roleId), assessmentScope: scope(v.assessmentScope),
-    state: state(v.state), revision: integer(v.revision, 1), startedAt: date(v.startedAt), deadlineAt: date(v.deadlineAt), observedAt: date(v.observedAt),
-    expired: v.expired, maxQuestions: integer(v.maxQuestions, 1), answeredCount: integer(v.answeredCount), items: list(v.items, item => {
-      const i = object(item)
-      return { position: integer(i.position, 1), itemVersionId: text(i.itemVersionId), prompt: text(i.prompt), selectedOptionId: nullable(i.selectedOptionId),
-        options: list(i.options, option => { const o = object(option); return { id: text(o.id), text: text(o.text) } }) }
-    }) }
+  const v = object(value), target = object(v.target), purpose = text(v.purpose), state = text(v.state)
+  if (!['BASELINE', 'SKILL_ASSESSMENT'].includes(purpose) || !['IN_PROGRESS', 'FINALIZED'].includes(state)) throw Error()
+  const groups = list(v.groups, raw => {
+    const g = object(raw), role = text(g.role), totalCount = count(g.totalCount, 1), requiredCorrectCount = count(g.requiredCorrectCount, 1)
+    if (!['TARGET', 'MAIN', 'PREREQUISITE'].includes(role) || requiredCorrectCount > totalCount) throw Error()
+    return { id: text(g.id), skillName: text(g.skillName), requirement: requirement(g.requirement), role: role as AssessmentGroup['role'], totalCount, requiredCorrectCount, mandatoryRequired: bool(g.mandatoryRequired) }
+  })
+  const items = list(v.questions, raw => {
+    const i = object(raw), options = list(i.options, raw => { const o = object(raw); return { id: text(o.id), text: text(o.text) } }), selectedOptionId = nullable(i.selectedOptionId)
+    if (options.length < 2 || new Set(options.map(o => o.id)).size !== options.length || selectedOptionId !== null && !options.some(o => o.id === selectedOptionId)) throw Error()
+    return { position: count(i.position, 1), itemVersionId: text(i.itemVersionId), groupId: text(i.groupId), prompt: text(i.prompt), options, selectedOptionId }
+  })
+  const results = list(v.results, raw => {
+    const r = object(raw), correctCount = count(r.correctCount), totalCount = count(r.totalCount, 1)
+    if (correctCount > totalCount) throw Error()
+    return { groupId: text(r.groupId), correctCount, totalCount, mandatorySatisfied: bool(r.mandatorySatisfied), passed: bool(r.passed), vetoTriggered: bool(r.vetoTriggered), reasons: list(r.reasons, text) }
+  })
+  const startedAt = date(v.startedAt), deadlineAt = date(v.deadlineAt), observedAt = date(v.observedAt), finishedAt = v.finishedAt === null ? null : date(v.finishedAt), finishReason = nullable(v.finishReason)
+  if (!groups.length || new Set(groups.map(g => g.id)).size !== groups.length || groups.reduce((n, g) => n + g.totalCount, 0) !== items.length
+    || items.some(i => !groups.some(g => g.id === i.groupId)) || new Set(items.map(i => i.itemVersionId)).size !== items.length
+    || items.some((item, index) => item.position !== index + 1) || Date.parse(deadlineAt) <= Date.parse(startedAt)
+    || state === 'FINALIZED' && (!finishedAt || !finishReason || results.length !== groups.length)
+    || state === 'IN_PROGRESS' && (finishedAt !== null || finishReason !== null || results.length !== 0)) throw Error()
+  for (const g of groups) if (items.filter(i => i.groupId === g.id).length !== g.totalCount) throw Error()
+  if (new Set(results.map(r => r.groupId)).size !== results.length || results.some(r => !groups.some(g => g.id === r.groupId && g.totalCount === r.totalCount))) throw Error()
+  return { id: text(v.attemptId), target: { selectionId: text(target.selectionId), selectionRevision: count(target.selectionRevision, 1),
+    stepId: nullable(target.stepId), moduleId: nullable(target.moduleId), moduleRevision: target.moduleRevision === null ? null : count(target.moduleRevision, 1) },
+    jobPositionId: text(target.jobPositionId), jobPositionName: text(target.jobPositionName), roleId: text(target.roleId), roleName: text(target.roleName), levelId: text(target.levelId), levelName: text(target.levelName),
+    purpose: purpose as AssessmentPurpose, state: state as AttemptState, revision: count(v.revision, 1), startedAt, deadlineAt, observedAt, finishedAt, finishReason,
+    previousAttemptId: nullable(v.previousAttemptId), expired: state !== 'IN_PROGRESS' || Date.parse(observedAt) >= Date.parse(deadlineAt),
+    maxQuestions: items.length, answeredCount: items.filter(i => i.selectedOptionId !== null).length, items, groups, results }
 }
-function parseResult(value: unknown): BaselineResult {
-  const v = object(value), terminal = state(v.state)
-  if (terminal === 'IN_PROGRESS') throw new Error('Invalid terminal state')
-  const result: BaselineResult = { attemptId: text(v.attemptId), jobPositionId: text(v.jobPositionId), jobPositionName: text(v.jobPositionName), purpose: text(v.purpose),
-    roleId: nullable(v.roleId), roleName: nullable(v.roleName), assessmentScope: scope(v.assessmentScope), state: terminal, completionReason: text(v.completionReason), startedAt: date(v.startedAt), completedAt: date(v.completedAt),
-    replacesAttemptId: nullable(v.replacesAttemptId), replacementAttemptId: nullable(v.replacementAttemptId), rawScore: v.rawScore === null ? null : ratio(v.rawScore),
-    skills: list(v.skills, skill => { const s = object(skill), confidence = text(s.confidence)
-      if (!['LOW', 'MEDIUM', 'HIGH'].includes(confidence)) throw new Error('Invalid confidence')
-      return { microSkillId: text(s.microSkillId), microSkillName: text(s.microSkillName), mastery: ratio(s.mastery), confidence: confidence as 'LOW' | 'MEDIUM' | 'HIGH' }
-    }) }
-  if (terminal === 'INVALIDATED' ? result.rawScore !== null || result.skills.length !== 0 : result.rawScore === null || result.skills.length === 0) throw new Error('Invalid result evidence')
-  if (new Set(result.skills.map(skill => skill.microSkillId)).size !== result.skills.length) throw new Error('Duplicate result skill')
-  return result
-}
-import { workspaceFetch } from '../../../shared/api/workspaceFetch'

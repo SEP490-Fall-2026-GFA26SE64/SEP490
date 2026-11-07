@@ -74,6 +74,10 @@ import {
   type ComboboxOption,
 } from '../../../shared/components/ui/Combobox'
 import { fetchMicroSkills } from '../../../shared/api/microSkillApi'
+import { roleRequirements } from '../../manager/target-roles/roleRequirements'
+import { formatRequiredKnowledge } from '../../manager/target-roles/roleKnowledgePresentation'
+import { useTranslation } from '../../../shared/i18n/LanguageContext'
+import { RequiredKnowledgePicker } from '../../manager/target-roles/components/RequiredKnowledgePicker'
 import {
   fetchCompetencies,
   type CompetencyDto,
@@ -137,6 +141,7 @@ function resolveLevelDuration(
 }
 
 export function ExpertAssignedRolesPage() {
+  const { t } = useTranslation()
   const { toast } = useToast()
 
   // Company state
@@ -772,7 +777,7 @@ export function ExpertAssignedRolesPage() {
           'X-User-Role': 'DOMAIN_EXPERT',
           'X-User-Id': currentExpertId,
         },
-        body: JSON.stringify(successorPayload),
+        body: JSON.stringify({ ...successorPayload, skillTargets: roleRequirements(successorPayload.skillTargets) }),
       })
 
       if (res.ok) {
@@ -874,7 +879,7 @@ export function ExpertAssignedRolesPage() {
   // Skill target form state
 
   const [newSkillId, setNewSkillId] = React.useState('')
-  const [newThreshold, setNewThreshold] = React.useState(80)
+  const [newKnowledgeLevels, setNewKnowledgeLevels] = React.useState<string[]>([])
   const [selectedParentCompId, setSelectedParentCompId] = React.useState<string>('')
 
   // Inline edit state for configured micro-skill target mastery
@@ -882,20 +887,16 @@ export function ExpertAssignedRolesPage() {
   const [editingSkillKey, setEditingSkillKey] = React.useState<string | null>(
     null,
   )
-  const [editingMasteryValue, setEditingMasteryValue] =
-    React.useState<number>(80)
+  const [editingKnowledgeLevels, setEditingKnowledgeLevels] = React.useState<string[]>([])
   const handleSaveMasteryEdit = (skillId: string, level: string) => {
     if (!authoringRole) return
 
-    const clamped = Math.max(
-      1,
-      Math.min(100, Math.round(Number(editingMasteryValue) || 80)),
-    )
+    if (!editingKnowledgeLevels.length) return
     const updatedSkillTargets = authoringRole.skillTargets.map((st) => {
       const stLevel = st.level || currentRoleLevels[0]
 
       if (st.skillId === skillId && stLevel === level) {
-        return { ...st, threshold: clamped }
+        return { ...st, requiredKnowledgeLevels: [...editingKnowledgeLevels] }
       }
 
       return st
@@ -912,8 +913,8 @@ export function ExpertAssignedRolesPage() {
     setEditingSkillKey(null)
 
     toast({
-      title: 'Target Mastery Updated',
-      description: `Target mastery for skill updated to ${clamped}%. Remember to Save Draft to persist changes.`,
+      title: 'Knowledge Requirements Updated',
+      description: 'Remember to Save Draft to persist the selected knowledge levels.',
       variant: 'success',
     })
   }
@@ -1496,7 +1497,7 @@ export function ExpertAssignedRolesPage() {
 
     setIsMultiLevelMode(false)
 
-    setNewThreshold(80)
+    setNewKnowledgeLevels([])
 
     setNewCompetencyId('')
 
@@ -1512,7 +1513,7 @@ export function ExpertAssignedRolesPage() {
   // Add micro-skill target to all currently selected levels
 
   const handleAddSkillTarget = () => {
-    if (!authoringRole || !newSkillId || selectedAuthoringLevels.length === 0)
+    if (!authoringRole || !newSkillId || !newKnowledgeLevels.length || selectedAuthoringLevels.length === 0)
       return
 
     const skillObj = companyMicroSkills.find((s) => s.id === newSkillId)
@@ -1534,7 +1535,8 @@ export function ExpertAssignedRolesPage() {
           skillId: skillObj.id,
           skillCode: skillObj.code,
           skillName: skillObj.name,
-          threshold: Number(newThreshold) || 80,
+          threshold: 0,
+          requiredKnowledgeLevels: [...newKnowledgeLevels],
           level: lvl,
         })
       }
@@ -1634,7 +1636,7 @@ export function ExpertAssignedRolesPage() {
                 : updatedRole.status === 'rejected'
                   ? 'REJECTED'
                   : 'DRAFT',
-            skillTargets: updatedRole.skillTargets,
+            skillTargets: roleRequirements(updatedRole.skillTargets),
             levels: updatedRole.levels,
             levelDurations: updatedRole.levelDurations,
             levelCompetencies: updatedRole.levelCompetencies,
@@ -1724,7 +1726,7 @@ export function ExpertAssignedRolesPage() {
           description: role.description,
           status: 'SUBMITTED',
           version: role.version,
-          skillTargets: role.skillTargets,
+          skillTargets: roleRequirements(role.skillTargets),
           levels: role.levels,
           levelDurations: role.levelDurations,
           levelCompetencies: role.levelCompetencies,
@@ -1806,7 +1808,7 @@ export function ExpertAssignedRolesPage() {
       <div className="space-y-6 pb-16">
         <PageHeader
           title="Assigned Target Roles"
-          description="Review assigned job roles, configure level-isolated competencies, and set benchmark proficiency thresholds."
+          description="Review assigned job roles, configure level-isolated competencies, and select explicit knowledge requirements."
         />
 
         {/* Aggregate KPI StatCards */}
@@ -1851,7 +1853,7 @@ export function ExpertAssignedRolesPage() {
 
             valueClassName="text-primary"
 
-            description="Benchmark mastery targets defined"
+            description={t('roleKnowledge.configured')}
           />
 
           <StatCard
@@ -1881,9 +1883,7 @@ export function ExpertAssignedRolesPage() {
                 </CardTitle>
 
                 <CardDescription>
-                  Review assigned target roles, author micro-skill mastery
-                  benchmarks, and submit completed configurations for L&D
-                  publication.
+                  {t('roleKnowledge.expertHelp')}
                 </CardDescription>
               </div>
 
@@ -3072,7 +3072,7 @@ export function ExpertAssignedRolesPage() {
                         </span>
 
                         <span className="text-[10px] text-muted-foreground font-normal">
-                          Assign required target mastery to{' '}
+                          {t('roleKnowledge.assign')}{' '}
                           {selectedLevelNamesLabel}
                         </span>
                       </div>
@@ -3134,20 +3134,10 @@ export function ExpertAssignedRolesPage() {
 
                           <div className="sm:col-span-2">
                             <label className="text-[11px] font-semibold text-foreground block mb-1">
-                              Target Mastery (%)
+                              {t('roleKnowledge.requiredLevels')}
                             </label>
 
-                            <input
-                              type="number"
-                              min={1}
-                              max={100}
-                              step={5}
-                              value={newThreshold}
-                              onChange={(e) =>
-                                setNewThreshold(Number(e.target.value))
-                              }
-                              className="w-full px-2.5 py-1.5 rounded-md bg-background border border-border text-foreground text-xs font-mono focus:outline-none focus:ring-1 focus:ring-primary text-center"
-                            />
+                            <RequiredKnowledgePicker value={newKnowledgeLevels} onChange={setNewKnowledgeLevels} />
                           </div>
 
                           <div className="sm:col-span-2">
@@ -3155,7 +3145,7 @@ export function ExpertAssignedRolesPage() {
                               type="button"
                               variant="primary"
                               size="sm"
-                              disabled={!newSkillId}
+                              disabled={!newSkillId || !newKnowledgeLevels.length}
                               onClick={handleAddSkillTarget}
                               className="w-full font-semibold shadow-2xs whitespace-nowrap px-3 text-xs justify-center"
                               leftIcon={
@@ -3181,7 +3171,7 @@ export function ExpertAssignedRolesPage() {
                     </span>
 
                     <span className="text-[10px] text-muted-foreground font-normal">
-                      Target Mastery Required
+                      {t('roleKnowledge.requiredLevels')}
                     </span>
                   </div>
 
@@ -3251,7 +3241,7 @@ export function ExpertAssignedRolesPage() {
                                   Skill Code &amp; Name
                                 </th>
                                 <th className="py-2.5 px-3 text-center">
-                                  Target Mastery
+                                  {t('roleKnowledge.required')}
                                 </th>
 
                                 {authoringRole.status !== 'published' &&
@@ -3395,45 +3385,10 @@ export function ExpertAssignedRolesPage() {
 
                                     <td className="py-2.5 px-3 text-center">
                                       {isEditingThisSkill ? (
-                                        <div className="flex items-center justify-center gap-1">
-                                          <input
-                                            type="number"
-
-                                            min={1}
-
-                                            max={100}
-
-                                            value={editingMasteryValue}
-
-                                            onChange={(e) =>
-                                              setEditingMasteryValue(
-                                                Number(e.target.value),
-                                              )
-                                            }
-
-                                            onKeyDown={(e) => {
-                                              if (e.key === 'Enter')
-                                                handleSaveMasteryEdit(
-                                                  st.skillId,
-                                                  stLevel,
-                                                )
-
-                                              if (e.key === 'Escape')
-                                                setEditingSkillKey(null)
-                                            }}
-
-                                            autoFocus
-
-                                            className="w-16 h-7 text-center font-mono font-bold text-xs bg-card border border-primary rounded px-1 text-foreground focus:outline-hidden focus:ring-1 focus:ring-primary shadow-2xs"
-                                          />
-
-                                          <span className="text-xs font-mono font-semibold text-muted-foreground">
-                                            %
-                                          </span>
-                                        </div>
+                                        <RequiredKnowledgePicker value={editingKnowledgeLevels} onChange={setEditingKnowledgeLevels} />
                                       ) : (
                                         <span className="font-mono font-bold text-primary">
-                                          {st.threshold}%
+                                          {formatRequiredKnowledge(st.requiredKnowledgeLevels, t)}
                                         </span>
                                       )}
                                     </td>
@@ -3457,7 +3412,7 @@ export function ExpertAssignedRolesPage() {
                                                   )
                                                 }
 
-                                                title="Save target mastery"
+                                                title={t('roleKnowledge.save')}
                                               >
                                                 <Check className="h-3 w-3" />
                                                 <span>Save</span>
@@ -3493,14 +3448,14 @@ export function ExpertAssignedRolesPage() {
                                                     `${st.skillId}-${stLevel}`,
                                                   )
 
-                                                  setEditingMasteryValue(
-                                                    st.threshold,
+                                                  setEditingKnowledgeLevels(
+                                                    [...(st.requiredKnowledgeLevels ?? [])],
                                                   )
                                                 }}
 
-                                                title="Edit Target Mastery"
+                                                title={t('roleKnowledge.edit')}
 
-                                                aria-label="Edit Target Mastery"
+                                                aria-label={t('roleKnowledge.edit')}
                                               >
                                                 <Edit3 className="h-3.5 w-3.5" />
                                               </Button>
@@ -4135,7 +4090,7 @@ export function ExpertAssignedRolesPage() {
                                               Skill Code &amp; Name
                                             </th>
                                             <th className="py-1.5 px-2.5 text-center">
-                                              Target Mastery
+                                              {t('roleKnowledge.required')}
                                             </th>
                                           </tr>
                                         </thead>
@@ -4156,7 +4111,7 @@ export function ExpertAssignedRolesPage() {
                                               </td>
 
                                               <td className="py-1.5 px-2.5 text-center font-mono font-bold text-primary">
-                                                {st.threshold}%
+                                                {formatRequiredKnowledge(st.requiredKnowledgeLevels, t)}
                                               </td>
                                             </tr>
                                           ))}
@@ -4304,7 +4259,7 @@ export function ExpertAssignedRolesPage() {
                                             Skill Code &amp; Name
                                           </th>
                                           <th className="py-2 px-3 text-center">
-                                            Target Mastery
+                                            {t('roleKnowledge.required')}
                                           </th>
                                         </tr>
                                       </thead>
@@ -4325,7 +4280,7 @@ export function ExpertAssignedRolesPage() {
                                             </td>
 
                                             <td className="py-2 px-3 text-center font-mono font-bold text-primary">
-                                              {st.threshold}%
+                                              {formatRequiredKnowledge(st.requiredKnowledgeLevels, t)}
                                             </td>
                                           </tr>
                                         ))}

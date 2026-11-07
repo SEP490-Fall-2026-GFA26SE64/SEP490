@@ -10,14 +10,24 @@ Each record below corresponds to one source bullet. Unspecified fields are inten
 
 **Source-inspected:** 2026-10-28. See the [implementation legend](../README.md#current-implementation-overview).
 
+**FR-02.01 follow-up, 2026-11-04:** the provisioned-organization directory now includes real administrator assignments and subscription coverage. Organization details remain intentionally read-only in this delivered slice.
+
 | Requirement | Status | Current behavior | Remaining boundary |
 | --- | --- | --- | --- |
-| [FR-02.01](#fr-02-01) | Partial | The active organizations route lists provisioned workspaces from the backend and supports persisted suspension/reactivation for an authenticated Platform Administrator. | The active screen is not a full registered-organization directory: designated administrator details, subscription detail and organization-profile editing are not supplied by these controls. |
+| [FR-02.01](#fr-02-01) | API-backed slice | The active organizations route lists provisioned organizations, separate workspace access/setup states, subscription status/current paid plan/period, and current organization-administrator assignments with names, emails and active/inactive status. Named confirmation precedes persisted suspension/reactivation. | Organization details are read-only; profile editing and registrations without a provisioned workspace remain outside this slice. This is not completion of the full source requirement. |
 | [FR-02.03](#fr-02-03) | Prototype | Activity navigation displays searchable/filterable browser-stored sample audit events and fixed health indicators. | It is not connected to persisted registration/payment/service/audit telemetry or a real cross-organization aggregation API. A displayed health badge is not a service check. |
 
 **Entry points:** `/platform-admin/organizations` renders [PlatformWorkspacePage](../../../frontend/src/features/subscription/PlatformWorkspaceControls.tsx), not the older [organization prototype](../../../frontend/src/features/platform-admin/PlatformOrganizationsPage.tsx). `/platform-admin/activity` renders the [activity prototype](../../../frontend/src/features/platform-admin/PlatformActivityMonitoringPage.tsx), backed by the [platform browser store](../../../frontend/src/features/platform-admin/platformAdminStore.ts). Plan administration is covered under [Subscription lifecycle](../Subscription%20lifecycle/README.md#current-implementation).
 
-**Backend reference:** [lifecycle API](../../../backend/src/main/java/com/adaptlearngraph/apis/SubscriptionLifecycleController.java) and [workspace persistence](../../../backend/src/main/java/com/adaptlearngraph/repository/JdbcSubscriptionWorkspaceStore.java). Password-only seeded Platform Administrator identity is a separate implemented slice; see [Workspace administration](../Workspace%20administration/README.md#implemented-policy-reference).
+**Backend reference:** [lifecycle API](../../../backend/src/main/java/com/adaptlearngraph/apis/SubscriptionLifecycleController.java) and [workspace persistence](../../../backend/src/main/java/com/adaptlearngraph/repository/JpaSubscriptionWorkspaceStore.java). Password-only seeded Platform Administrator identity is a separate implemented slice; see [Workspace administration](../Workspace%20administration/README.md#implemented-policy-reference).
+
+### Implemented organization-directory rules
+
+- Only an authenticated Platform Administrator can use this cross-organization directory and its workspace controls. Organization users do not receive platform authority.
+- Displayed administrators are current organization-administrator role assignments, including inactive assignments, rather than a permanent copy of the original registration contact. A missing display name, missing administrator assignment or absent current subscription period remains explicit.
+- Administrative suspension, provisioning readiness and paid coverage are distinct. Current plan dates come from the purchased paid period; expired or future coverage is not shown as currently active.
+- Suspend/reactivate requires confirmation naming the organization. Cancel leaves it unchanged; API errors remain visible and retryable. Reactivation does not renew subscriptions or complete workspace setup. Existing trusted audit and entitlement rules remain in force.
+- No organization-profile editing, administrator reassignment, payment mutation or provisioning-retry action is supplied here. [Local verification and manual checklist](../../testing/system/REQ-064-manage-organizations-20261104.md).
 
 ## Requirements
 

@@ -24,7 +24,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../..
 import { Combobox, type ComboboxOption } from '../../../shared/components/ui/Combobox'
 import { ConfirmationModal } from '../../../shared/components/ui/ConfirmationModal'
 import { PageHeader } from '../../../shared/components/ui/PageHeader'
-import { Progress } from '../../../shared/components/ui/Progress'
 import {
   Dialog,
   DialogDescription,
@@ -35,6 +34,9 @@ import {
 import { Pagination } from '../../../shared/components/ui/Pagination'
 import { StatCard } from '../../../shared/components/ui/StatCard'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../../shared/components/ui/Tabs'
+import { CertificatesTab } from '../../expert/certificates/CertificatesTab'
+import { useTranslation } from '../../../shared/i18n/LanguageContext'
+import { rulePathwaysEnabled } from '../../../shared/api/requirementPathway'
 import {
   QuickConfigImportModal,
   type ImportPreset,
@@ -53,7 +55,11 @@ import {
   createMicroSkill,
   updateMicroSkill,
   deleteMicroSkill,
+  type MicroSkillDto,
 } from '../../../shared/api/microSkillApi'
+import { SkillProvisionFields } from './SkillProvisionFields'
+import { provisionForm, provisionPayload } from './skillProvisionForm'
+import { roleRequirements } from '../target-roles/roleRequirements'
 import {
   fetchCompetencies,
   createCompetency,
@@ -177,8 +183,14 @@ const ONTOLOGY_PRESETS: ImportPreset[] = [
 ]
 
 export function CompetencyOntologyPage() {
+  const identity = React.useContext(WorkspaceSessionContext)?.identity
+  return <OwnedCompetencyOntologyPage key={`${identity?.organizationId ?? ''}:${identity?.accountId ?? ''}:${identity?.roles?.join(',') ?? ''}`} />
+}
+function OwnedCompetencyOntologyPage() {
+  const { t } = useTranslation()
   const { toast } = useToast()
   const session = React.useContext(WorkspaceSessionContext)
+  const accountId = session?.identity?.accountId ?? ''
   const activeCompany = getActiveCompany()
   const effectiveOrgId = resolveWorkspaceOrgId(session?.identity?.organizationId || activeCompany?.id)
 
@@ -191,18 +203,12 @@ export function CompetencyOntologyPage() {
   })
 
   const handleUpdateTargetRole = React.useCallback(async (updatedRole: TargetRoleModel) => {
-    setTargetRoles((prev) => prev.map((r) => (r.id === updatedRole.id ? updatedRole : r)))
-    updateActiveCompany((comp) => ({
-      ...comp,
-      targetRoles: (comp.targetRoles || []).map((r) => (r.id === updatedRole.id ? updatedRole : r)),
-    }))
-    try {
-      await fetch(`/api/v1/organizations/${effectiveOrgId}/target-roles/${updatedRole.id}`, {
+      const response = await fetch(`/api/v1/organizations/${effectiveOrgId}/target-roles/${updatedRole.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
           'X-User-Role': 'DOMAIN_EXPERT',
-          'X-User-Id': session?.identity?.accountId || '',
+          'X-User-Id': accountId,
         },
         body: JSON.stringify({
           name: updatedRole.title,
@@ -210,14 +216,17 @@ export function CompetencyOntologyPage() {
           levels: updatedRole.levels || ['Senior', 'Middle', 'Junior'],
           levelCompetencies: updatedRole.levelCompetencies || {},
           competencyIds: updatedRole.competencyIds || [],
-          skillTargets: updatedRole.skillTargets || [],
+          skillTargets: roleRequirements(updatedRole.skillTargets || []),
         }),
       })
-    } catch (err) {
-      console.error('Failed to sync updated target role:', err)
+    if (!response.ok) {
+      const error = await response.json().catch(() => null)
+      throw new Error(error?.message || `Unable to save Role (${response.status})`)
     }
+    setTargetRoles((prev) => prev.map((r) => (r.id === updatedRole.id ? updatedRole : r)))
+    updateActiveCompany((comp) => ({ ...comp, targetRoles: (comp.targetRoles || []).map((r) => (r.id === updatedRole.id ? updatedRole : r)) }))
     window.dispatchEvent(new CustomEvent('target_roles_updated', { detail: updatedRole }))
-  }, [effectiveOrgId, session?.identity?.accountId])
+  }, [effectiveOrgId, accountId])
 
 
   // Search, filter, and pagination states for Tab 1 (Micro-skills)
@@ -272,7 +281,9 @@ export function CompetencyOntologyPage() {
   // State for entities
   const [competencies, setCompetencies] = React.useState<CompetencyModel[]>(() => getActiveCompany()?.competencies ?? [])
   const [microSkills, setMicroSkills] = React.useState<MicroSkillModel[]>(() => getActiveCompany()?.microSkills ?? [])
-  const [prerequisites, setPrerequisites] = React.useState<PrerequisiteEdge[]>(() => getActiveCompany()?.prerequisites ?? [])
+  const [liveSkillDefinitions, setLiveSkillDefinitions] = React.useState<Record<string, MicroSkillDto>>({})
+  const [knowledgeForm, setKnowledgeForm] = React.useState(() => provisionForm())
+  const [prerequisites, setPrerequisites] = React.useState<PrerequisiteEdge[]>([])
 
   
 
@@ -308,10 +319,11 @@ export function CompetencyOntologyPage() {
           fetch(`/api/v1/organizations/${orgId}/target-roles`, {
             headers: {
               'X-User-Role': 'DOMAIN_EXPERT',
-              'X-User-Id': session?.identity?.accountId || '',
+              'X-User-Id': accountId,
             },
           }).catch(() => null),
         ])
+        setLiveSkillDefinitions(Object.fromEntries(liveSkills.map(skill => [skill.id, skill])))
 
         let resolvedSkills: MicroSkillModel[] = active?.microSkills ?? []
         if (liveSkills && liveSkills.length > 0) {
@@ -355,21 +367,22 @@ export function CompetencyOntologyPage() {
 
         if (livePrereqs && livePrereqs.length > 0) {
           const mappedPrereqs: PrerequisiteEdge[] = livePrereqs.map((p) => ({
-            id: `edge-${p.sourceSkillId}-${p.targetSkillId}`,
+            id: `edge-${p.sourceSkillId}-${p.dependentKnowledgeLevel}-${p.targetSkillId}-${p.prerequisiteKnowledgeLevel}`,
             sourceSkillId: p.sourceSkillId,
             sourceSkillCode: p.sourceSkillCode,
             sourceSkillName: p.sourceSkillName,
             targetSkillId: p.targetSkillId,
             targetSkillCode: p.targetSkillCode,
             targetSkillName: p.targetSkillName,
-            minMastery: p.minMastery,
+            dependentKnowledgeLevel: p.dependentKnowledgeLevel,
+            prerequisiteKnowledgeLevel: p.prerequisiteKnowledgeLevel,
             status: p.status,
             createdAt: p.createdAt || '2026-01-01T00:00:00.000Z',
             updatedAt: p.updatedAt || p.createdAt || '2026-01-01T00:00:00.000Z',
           }))
           setPrerequisites(mappedPrereqs)
         } else {
-          setPrerequisites(active?.prerequisites ?? [])
+          setPrerequisites([])
         }
 
         if (liveRolesRes && liveRolesRes.ok) {
@@ -403,9 +416,9 @@ export function CompetencyOntologyPage() {
       } catch {
         setMicroSkills(active?.microSkills ?? [])
         setCompetencies(active?.competencies ?? [])
-        setPrerequisites(active?.prerequisites ?? [])
+        setPrerequisites([])
       }
-  }, [])
+  }, [effectiveOrgId, accountId])
 
   React.useEffect(() => {
     handleSync()
@@ -543,11 +556,12 @@ export function CompetencyOntologyPage() {
       }))
   }, [competencies, skillForm.competencyIds])
 
-  // Prerequisite Form (Strictly aligned with neo4j_schema.md PREREQUISITE_OF { minMastery })
+  // Direction: dependent skill-level HAS_SKILL_PREREQUISITE prerequisite skill-level.
   const [prereqForm, setPrereqForm] = React.useState({
     sourceSkillId: '',
     targetSkillId: '',
-    minMasteryPercent: 75,
+    dependentKnowledgeLevel: '',
+    prerequisiteKnowledgeLevel: '',
   })
 
   // Graph state
@@ -556,6 +570,7 @@ export function CompetencyOntologyPage() {
   // Micro-Skill Handlers (REQ-012)
   // ------------------------------------------------------------------
   const handleOpenCreateSkill = () => {
+    setKnowledgeForm(provisionForm())
     const count = microSkills.length + 1
     const pad = count < 10 ? `0${count}` : `${count}`
     setSkillForm({
@@ -571,6 +586,12 @@ export function CompetencyOntologyPage() {
   }
 
   const handleOpenEditSkill = (skill: MicroSkillModel) => {
+    const definition = liveSkillDefinitions[skill.id]
+    if (!definition) {
+      toast({ title: 'Skill unavailable', description: 'Reload the catalog before editing this skill.', variant: 'destructive' })
+      return
+    }
+    setKnowledgeForm(provisionForm(definition))
     setSelectedSkill(skill)
     const parentComps = competencies.filter(
       (c) => (c.skillIds || []).includes(skill.id) || (c.skillIds || []).includes(skill.code)
@@ -603,7 +624,10 @@ export function CompetencyOntologyPage() {
         const updated = await updateMicroSkill(orgId, selectedSkill.id, {
           name: skillForm.name.trim(),
           description: skillForm.description.trim(),
+          expectedVersion: liveSkillDefinitions[selectedSkill.id]?.version ?? null,
+          ...provisionPayload(knowledgeForm),
         })
+        setLiveSkillDefinitions(previous => ({ ...previous, [updated.id]: updated }))
 
         // Sync competency mapping for selectedSkill (HAS_SKILL edges)
         const skillId = selectedSkill.id
@@ -676,6 +700,7 @@ export function CompetencyOntologyPage() {
           code: skillForm.code.trim().toUpperCase(),
           name: skillForm.name.trim(),
           description: skillForm.description.trim(),
+          ...provisionPayload(knowledgeForm),
         })
 
         // Map all selected parent competencies to the newly created skill
@@ -754,10 +779,10 @@ export function CompetencyOntologyPage() {
   // Prerequisite Edge Handlers (REQ-018-F02: Self-edge & Cycle Detection)
   // ------------------------------------------------------------------
   const handleSavePrerequisite = async () => {
-    const { sourceSkillId, targetSkillId, minMasteryPercent } = prereqForm
+    const { sourceSkillId, targetSkillId, dependentKnowledgeLevel, prerequisiteKnowledgeLevel } = prereqForm
 
     // 1. Reject self-edges
-    if (sourceSkillId === targetSkillId) {
+    if (sourceSkillId === targetSkillId && dependentKnowledgeLevel === prerequisiteKnowledgeLevel) {
       toast({
         title: 'Self-Edge Rejected',
         description: 'A micro-skill cannot be a prerequisite of itself.',
@@ -766,35 +791,34 @@ export function CompetencyOntologyPage() {
       return
     }
 
-    // 2. Threshold validation
-    if (minMasteryPercent < 1 || minMasteryPercent > 100) {
+    if (!dependentKnowledgeLevel || !prerequisiteKnowledgeLevel) {
       toast({
-        title: 'Invalid Target Mastery',
-        description: 'Minimum required mastery must be between 1% and 100%.',
+        title: 'Select knowledge levels',
+        description: 'Both exact knowledge levels are required.',
         variant: 'destructive',
       })
       return
     }
 
     const orgId = effectiveOrgId
-    const minMastery = minMasteryPercent / 100.0
 
     try {
       const created = await createPrerequisite(orgId, {
         sourceSkillId,
         targetSkillId,
-        minMastery,
+        dependentKnowledgeLevel, prerequisiteKnowledgeLevel,
       })
 
       const newEdge: PrerequisiteEdge = {
-        id: `edge-${created.sourceSkillId}-${created.targetSkillId}`,
+        id: `edge-${created.sourceSkillId}-${created.dependentKnowledgeLevel}-${created.targetSkillId}-${created.prerequisiteKnowledgeLevel}`,
         sourceSkillId: created.sourceSkillId,
         sourceSkillCode: created.sourceSkillCode,
         sourceSkillName: created.sourceSkillName,
         targetSkillId: created.targetSkillId,
         targetSkillCode: created.targetSkillCode,
         targetSkillName: created.targetSkillName,
-        minMastery: created.minMastery,
+        dependentKnowledgeLevel: created.dependentKnowledgeLevel,
+        prerequisiteKnowledgeLevel: created.prerequisiteKnowledgeLevel,
         status: created.status,
         createdAt: created.createdAt,
         updatedAt: created.updatedAt,
@@ -809,7 +833,7 @@ export function CompetencyOntologyPage() {
 
       toast({
         title: 'Prerequisite Edge Created',
-        description: `${sourceSkill?.code || created.sourceSkillCode} -> ${targetSkill?.code || created.targetSkillCode} (Min Mastery: ${minMasteryPercent}%).`,
+        description: `${sourceSkill?.code || created.sourceSkillCode} (${dependentKnowledgeLevel}) requires ${targetSkill?.code || created.targetSkillCode} (${prerequisiteKnowledgeLevel}).`,
         variant: 'success',
       })
     } catch (err: unknown) {
@@ -826,9 +850,10 @@ export function CompetencyOntologyPage() {
     const orgId = effectiveOrgId
 
     try {
-      await deletePrerequisite(orgId, edge.sourceSkillId, edge.targetSkillId)
+      if (!edge.dependentKnowledgeLevel || !edge.prerequisiteKnowledgeLevel) throw new Error('This legacy edge needs catalog repair before exact removal.')
+      await deletePrerequisite(orgId, edge.sourceSkillId, edge.targetSkillId, edge.dependentKnowledgeLevel, edge.prerequisiteKnowledgeLevel)
       saveAndSetPrerequisites((prev) =>
-        prev.filter((p) => !(p.sourceSkillId === edge.sourceSkillId && p.targetSkillId === edge.targetSkillId))
+        prev.filter((p) => p.id !== edge.id)
       )
       toast({ title: 'Edge Removed', description: 'Prerequisite edge deleted.', variant: 'info' })
       setDeletingEdge(null)
@@ -1246,7 +1271,9 @@ export function CompetencyOntologyPage() {
             <TabsTrigger value="prerequisites" className="px-3.5 py-1.5 text-xs font-semibold whitespace-nowrap">
               Skill Prerequisites
             </TabsTrigger>
+            {rulePathwaysEnabled && session?.identity?.roles?.includes('DOMAIN_EXPERT') && <TabsTrigger value="certificates" className="px-3.5 py-1.5 text-xs font-semibold whitespace-nowrap">{t('certificates.title')}</TabsTrigger>}
           </TabsList>
+          {rulePathwaysEnabled && session?.identity?.roles?.includes('DOMAIN_EXPERT') && <TabsContent value="certificates" className="space-y-4"><CertificatesTab /></TabsContent>}
 
           {/* TAB 1: MICRO-SKILLS */}
           <TabsContent value="skills" className="space-y-4">
@@ -1585,7 +1612,7 @@ export function CompetencyOntologyPage() {
                                     variant="outline"
                                     className="font-bold tracking-wider text-[10px] uppercase border-border/80 bg-background text-foreground shadow-2xs px-2.5 py-0.5"
                                   >
-                                    {Math.round(edge.minMastery * 100)}% Mastery
+                                    {edge.dependentKnowledgeLevel ?? 'Unclassified'} → {edge.prerequisiteKnowledgeLevel ?? 'Unclassified'}
                                   </Badge>
                                 </td>
                                 <td className="py-3 px-3 text-center">
@@ -1645,7 +1672,7 @@ export function CompetencyOntologyPage() {
             <OntologyGraphPlayground
               microSkills={microSkills}
               competencies={competencies}
-              prerequisites={prerequisites}
+              prerequisites={prerequisites.filter(edge => edge.status === 'ACTIVE')}
               targetRoles={targetRoles}
               onUpdateTargetRole={handleUpdateTargetRole}
               organizationId={effectiveOrgId}
@@ -2013,6 +2040,8 @@ export function CompetencyOntologyPage() {
               )}
             </div>
 
+            <SkillProvisionFields value={knowledgeForm} onChange={setKnowledgeForm} />
+
             {/* Description Textarea */}
             <div>
               <label className="font-semibold text-foreground flex items-center gap-1 mb-1.5">
@@ -2056,7 +2085,7 @@ export function CompetencyOntologyPage() {
           const selectedSourceSkill = microSkills.find((s) => s.id === prereqForm.sourceSkillId)
           const selectedTargetSkill = microSkills.find((s) => s.id === prereqForm.targetSkillId)
           const isSelfPrereq = Boolean(
-            prereqForm.sourceSkillId && prereqForm.sourceSkillId === prereqForm.targetSkillId
+            prereqForm.sourceSkillId && prereqForm.sourceSkillId === prereqForm.targetSkillId && prereqForm.dependentKnowledgeLevel === prereqForm.prerequisiteKnowledgeLevel
           )
 
           return (
@@ -2071,7 +2100,7 @@ export function CompetencyOntologyPage() {
                       Add Skill Prerequisite Edge
                     </DialogTitle>
                     <DialogDescription className="text-xs text-muted-foreground mt-0.5">
-                      Define directed learning sequences between micro-skills to enforce prerequisite mastery before progression.
+                      Define the exact prerequisite assessed alongside a dependent skill level.
                     </DialogDescription>
                   </div>
                 </div>
@@ -2087,7 +2116,7 @@ export function CompetencyOntologyPage() {
                         <span className="w-4 h-4 rounded-full bg-primary/10 text-primary text-[10px] font-bold flex items-center justify-center">
                           1
                         </span>
-                        <span>Source Skill (Must Master First)</span>
+                        <span>Dependent Skill</span>
                         <span className="text-destructive">*</span>
                       </label>
                       {selectedSourceSkill && (
@@ -2105,7 +2134,7 @@ export function CompetencyOntologyPage() {
                       options={prereqSkillComboboxOptions}
                       value={prereqForm.sourceSkillId}
                       onChange={(val) => setPrereqForm((prev) => ({ ...prev, sourceSkillId: val }))}
-                      placeholder="Select source micro-skill (must master first)..."
+                      placeholder="Select dependent micro-skill..."
                       searchPlaceholder="Search by skill code or title..."
                       emptyMessage="No matching micro-skills found."
                     />
@@ -2119,7 +2148,7 @@ export function CompetencyOntologyPage() {
                   {/* Directional Connector Bridge */}
                   <div className="flex items-center justify-center my-1">
                     <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary font-mono text-[10px] font-bold tracking-wider shadow-2xs">
-                      <span>MUST BE MASTERED BEFORE</span>
+                      <span>REQUIRES</span>
                       <ArrowDown className="h-3.5 w-3.5" />
                     </div>
                   </div>
@@ -2131,7 +2160,7 @@ export function CompetencyOntologyPage() {
                         <span className="w-4 h-4 rounded-full bg-primary/10 text-primary text-[10px] font-bold flex items-center justify-center">
                           2
                         </span>
-                        <span>Target Skill (Unlocked Next)</span>
+                        <span>Prerequisite Skill</span>
                         <span className="text-destructive">*</span>
                       </label>
                       {selectedTargetSkill && (
@@ -2149,7 +2178,7 @@ export function CompetencyOntologyPage() {
                       options={prereqSkillComboboxOptions}
                       value={prereqForm.targetSkillId}
                       onChange={(val) => setPrereqForm((prev) => ({ ...prev, targetSkillId: val }))}
-                      placeholder="Select target micro-skill (unlocked next)..."
+                      placeholder="Select prerequisite micro-skill..."
                       searchPlaceholder="Search by skill code or title..."
                       emptyMessage="No matching micro-skills found."
                       className={cn(
@@ -2170,57 +2199,11 @@ export function CompetencyOntologyPage() {
                 </div>
 
                 {/* Minimum Required Mastery Threshold */}
-                <div className="space-y-2.5 rounded-xl border border-border bg-card p-4 shadow-2xs">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <label className="font-semibold text-foreground flex items-center gap-1">
-                        Minimum Required Mastery (%) <span className="text-destructive">*</span>
-                      </label>
-                      <span className="text-[11px] text-muted-foreground block mt-0.5">
-                        Benchmark score learners must reach on the source skill to unlock the target skill.
-                      </span>
-                    </div>
-                    <div className="text-right">
-                      <span className="font-mono font-bold text-primary text-base">
-                        {prereqForm.minMasteryPercent}%
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Quick Preset Buttons & Input slider */}
-                  <div className="flex items-center gap-3 pt-1">
-                    <input
-                      type="range"
-                      min="10"
-                      max="100"
-                      step="5"
-                      value={prereqForm.minMasteryPercent}
-                      onChange={(e) =>
-                        setPrereqForm({ ...prereqForm, minMasteryPercent: parseInt(e.target.value) || 0 })
-                      }
-                      style={{
-                        background: `linear-gradient(to right, hsl(var(--primary)) 0%, hsl(var(--primary)) ${(prereqForm.minMasteryPercent - 10) / 90 * 100}%, #FFFFFF ${(prereqForm.minMasteryPercent - 10) / 90 * 100}%, #FFFFFF 100%)`,
-                      }}
-                      className="flex-1 accent-primary cursor-pointer h-2.5 rounded-lg appearance-none border border-border shadow-xs"
-                    />
-                    <div className="flex items-center gap-1 shrink-0">
-                      {[60, 70, 75, 80, 90].map((preset) => (
-                        <button
-                          key={preset}
-                          type="button"
-                          onClick={() => setPrereqForm({ ...prereqForm, minMasteryPercent: preset })}
-                          className={cn(
-                            'px-2 py-0.5 rounded text-[10.5px] font-mono font-semibold transition-all cursor-pointer',
-                            prereqForm.minMasteryPercent === preset
-                              ? 'bg-primary text-primary-foreground shadow-2xs'
-                              : 'bg-muted hover:bg-muted/80 text-muted-foreground'
-                          )}
-                        >
-                          {preset}%
-                        </button>
-                      ))}
-                    </div>
-                  </div>
+                <div className="space-y-3 rounded-xl border border-border bg-card p-4 shadow-2xs">
+                  {(['dependentKnowledgeLevel', 'prerequisiteKnowledgeLevel'] as const).map(field => <div key={field}>
+                    <label className="font-semibold text-foreground block mb-1.5">{field === 'dependentKnowledgeLevel' ? 'Dependent knowledge level' : 'Prerequisite knowledge level'}</label>
+                    <Combobox size="sm" clearable={false} value={prereqForm[field]} onChange={value => setPrereqForm(previous => ({ ...previous, [field]: value }))} placeholder="Select knowledge level" options={['FOUNDATION', 'INTERMEDIATE', 'ADVANCED'].map(level => ({ value: level, label: level }))} />
+                  </div>)}
                 </div>
 
                 {/* Automatic Graph Validation Banner */}
@@ -2243,7 +2226,7 @@ export function CompetencyOntologyPage() {
                     isSelfPrereq ||
                     !prereqForm.sourceSkillId ||
                     !prereqForm.targetSkillId ||
-                    prereqForm.minMasteryPercent < 1
+                    !prereqForm.dependentKnowledgeLevel || !prereqForm.prerequisiteKnowledgeLevel || isSelfPrereq
                   }
                   onClick={handleSavePrerequisite}
                   className="gap-1.5 font-semibold shadow-2xs"
@@ -2266,7 +2249,7 @@ export function CompetencyOntologyPage() {
         {viewingSkillDetails && (() => {
           const parentComps = competencies.filter((c) => c.skillIds.includes(viewingSkillDetails.id))
           const incomingPrereqs = prerequisites.filter(
-            (p) => p.targetSkillId === viewingSkillDetails.id || p.targetSkillId === viewingSkillDetails.code
+            (p) => p.status === 'ACTIVE' && (p.sourceSkillId === viewingSkillDetails.id || p.sourceSkillId === viewingSkillDetails.code)
           )
           const companyRoles = getActiveCompany()?.targetRoles || []
           const boundRoles = companyRoles.filter((r) =>
@@ -2360,7 +2343,7 @@ export function CompetencyOntologyPage() {
                       <div className="space-y-1.5">
                         {incomingPrereqs.map((p) => {
                           const srcSkill = microSkills.find(
-                            (s) => s.id === p.sourceSkillId || s.code === p.sourceSkillId || s.code === p.sourceSkillCode
+                            (s) => s.id === p.targetSkillId || s.code === p.targetSkillId || s.code === p.targetSkillCode
                           )
                           return (
                             <div
@@ -2369,12 +2352,12 @@ export function CompetencyOntologyPage() {
                             >
                               <span className="truncate">
                                 <strong className="font-mono text-primary mr-1">
-                                  {srcSkill?.code || p.sourceSkillCode || p.sourceSkillId}
+                                  {srcSkill?.code || p.targetSkillCode || p.targetSkillId}
                                 </strong>
-                                {srcSkill?.name || p.sourceSkillName || 'Prerequisite Skill'}
+                                {srcSkill?.name || p.targetSkillName || 'Prerequisite Skill'}
                               </span>
                               <Badge variant="primary" className="text-[10px] shrink-0 font-mono">
-                                ≥ {Math.round((p.minMastery || 0) * 100)}%
+                                {p.dependentKnowledgeLevel ?? 'Unclassified'} → {p.prerequisiteKnowledgeLevel ?? 'Unclassified'}
                               </Badge>
                             </div>
                           )
@@ -2501,7 +2484,7 @@ export function CompetencyOntologyPage() {
           const target = microSkills.find(
             (s) => s.id === viewingEdgeDetails.targetSkillId || s.code === viewingEdgeDetails.targetSkillId
           )
-          const masteryPct = Math.round((viewingEdgeDetails.minMastery || 0) * 100)
+          const pairLabel = `${viewingEdgeDetails.dependentKnowledgeLevel ?? 'Unclassified'} → ${viewingEdgeDetails.prerequisiteKnowledgeLevel ?? 'Unclassified'}`
 
           return (
             <div className="space-y-6 flex-1 flex flex-col justify-between">
@@ -2525,7 +2508,7 @@ export function CompetencyOntologyPage() {
                       variant="outline"
                       className="font-bold tracking-wider text-[10px] uppercase border-border/80 bg-background text-foreground shadow-2xs px-2.5 py-0.5"
                     >
-                      ≥ {masteryPct}% Mastery
+                      {pairLabel}
                     </Badge>
                     <Badge
                       variant={viewingEdgeDetails.status === 'ACTIVE' ? 'success' : 'outline'}
@@ -2545,7 +2528,7 @@ export function CompetencyOntologyPage() {
                     <div className="flex-1 p-3.5 rounded-lg bg-card border border-border/90 shadow-2xs flex flex-col justify-between">
                       <div className="flex items-center justify-between gap-2 mb-1.5">
                         <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">
-                          Foundational Prerequisite
+                          Dependent Requirement
                         </span>
                       </div>
                       <strong className="font-mono text-primary font-bold text-sm block">
@@ -2559,12 +2542,12 @@ export function CompetencyOntologyPage() {
                     {/* Arrow Connector with Mastery Badge */}
                     <div className="flex sm:flex-col items-center justify-center shrink-0 px-2 gap-1 text-center">
                       <span className="text-[10px] font-mono text-primary font-bold bg-primary/10 border border-primary/20 px-2.5 py-0.5 rounded-full shadow-2xs">
-                        ≥ {masteryPct}% req
+                        {pairLabel}
                       </span>
                       <ArrowRight className="h-4 w-4 text-primary hidden sm:block mt-0.5" />
                       <ArrowDown className="h-4 w-4 text-primary sm:hidden" />
                       <span className="text-[9.5px] text-muted-foreground uppercase font-bold tracking-wider">
-                        Unlocks
+                        Requires
                       </span>
                     </div>
 
@@ -2572,7 +2555,7 @@ export function CompetencyOntologyPage() {
                     <div className="flex-1 p-3.5 rounded-lg bg-card border border-border/90 shadow-2xs flex flex-col justify-between">
                       <div className="flex items-center justify-between gap-2 mb-1.5">
                         <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">
-                          Dependent Target
+                          Required Prerequisite
                         </span>
                       </div>
                       <strong className="font-mono text-primary font-bold text-sm block">
@@ -2589,12 +2572,11 @@ export function CompetencyOntologyPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="p-3.5 rounded-xl bg-card border border-border shadow-2xs space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="text-muted-foreground text-[11px] font-medium">Minimum Required Mastery</span>
-                      <span className="font-mono font-bold text-primary text-sm">{masteryPct}%</span>
+                      <span className="text-muted-foreground text-[11px] font-medium">Knowledge level pair</span>
+                      <span className="font-mono font-bold text-primary text-sm">{pairLabel}</span>
                     </div>
-                    <Progress value={masteryPct} max={100} variant="primary" className="h-2" />
                     <span className="text-[10.5px] text-muted-foreground block">
-                      Learners must score at or above this target mastery level.
+                      Assessment checks these exact levels using the organization policy.
                     </span>
                   </div>
 

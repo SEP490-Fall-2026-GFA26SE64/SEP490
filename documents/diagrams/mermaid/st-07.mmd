@@ -8,9 +8,9 @@ stateDiagram-v2
     state "READY" as SDD_ST_07_READY
     state "FAILED" as SDD_ST_07_FAILED
     [*] --> SDD_ST_07_PROVISIONING
-    SDD_ST_07_PROVISIONING --> SDD_ST_07_READY : successful setup transaction
-    SDD_ST_07_PROVISIONING --> SDD_ST_07_FAILED : recorded setup failure
-    SDD_ST_07_FAILED --> SDD_ST_07_PROVISIONING : approved recoverable retry
+    SDD_ST_07_PROVISIONING --> SDD_ST_07_READY : setup transaction without starter catalog<br/>/ starter catalog copy succeeded
+    SDD_ST_07_PROVISIONING --> SDD_ST_07_FAILED : catalog copy failed after final attempt<br/>(CATALOG_IMPORT_FAILED)
+    SDD_ST_07_FAILED --> SDD_ST_07_PROVISIONING : approved recoverable retry<br/>(target, not implemented)
   }
   state "Organization administrative<br/>state" as SDD_ST_07_Organization {
     state "ACTIVE" as SDD_ST_07_ACTIVE

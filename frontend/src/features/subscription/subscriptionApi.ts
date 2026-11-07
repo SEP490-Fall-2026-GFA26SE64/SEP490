@@ -29,7 +29,11 @@ export interface Summary {
   organizationId: string; organizationName: string; workspaceStatus: string; subscriptionStatus: string; current: Period | null
   scheduled: Period | null; usedSeats: number; allocatedSeats: number; admissionLimit: number; paymentHistory: Order[]
 }
-export interface Workspace { organizationId: string; name: string; status: string; setupState: string }
+export interface Workspace {
+  organizationId: string; name: string; status: string; setupState: string
+  subscription: { status: string; current: { name: string; startsAt: string; endsAt: string } | null }
+  administrators: { accountId: string; fullName: string | null; email: string; active: boolean; accountActive: boolean }[]
+}
 export interface Member {
   membershipId: string; fullName: string | null; email: string; active: boolean; roles: string[]; revision: number
   accountId: string; accountActive: boolean; departmentId: string | null; departmentName: string | null
@@ -196,7 +200,19 @@ export async function getSummary(organization: string): Promise<Summary> { retur
 export async function getWorkspaces(): Promise<Workspace[]> {
   return list(await request('/api/v1/platform/workspaces'), value => {
     const v = object(value)
-    return { organizationId: text(v.organizationId), name: text(v.name), status: text(v.status), setupState: text(v.setupState) }
+    const subscription = object(v.subscription)
+    return {
+      organizationId: text(v.organizationId), name: text(v.name), status: text(v.status), setupState: text(v.setupState),
+      subscription: { status: text(subscription.status), current: nullable(subscription.current, value => {
+        const period = object(value)
+        return { name: text(period.name), startsAt: text(period.startsAt), endsAt: text(period.endsAt) }
+      }) },
+      administrators: list(v.administrators, value => {
+        const admin = object(value)
+        return { accountId: text(admin.accountId), fullName: nullable(admin.fullName, text), email: text(admin.email),
+          active: boolean(admin.active), accountActive: boolean(admin.accountActive) }
+      }),
+    }
   })
 }
 const TR_DELIMITER = ' || TR:'

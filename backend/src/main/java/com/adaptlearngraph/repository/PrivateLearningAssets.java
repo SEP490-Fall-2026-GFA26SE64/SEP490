@@ -40,12 +40,22 @@ public final class PrivateLearningAssets implements LearningAssetPort {
 
     @Override
     public Asset upload(String org, String actor, String filename, long size, InputStream input) {
+        return upload(org,actor,filename,size,input,false,null);
+    }
+    @Override public Asset uploadCertificate(String org,String actor,String filename,long size,InputStream input) {
+        return upload(org,actor,filename,size,input,true,null);
+    }
+    @Override public Asset uploadCertificate(String org,String actor,UUID retry,String filename,long size,InputStream input) {
+        String id=UUID.nameUUIDFromBytes(("certificate-upload\n"+org+"\n"+actor+"\n"+retry).getBytes(java.nio.charset.StandardCharsets.UTF_8)).toString();
+        return upload(org,actor,filename,size,input,true,id);
+    }
+    private Asset upload(String org,String actor,String filename,long size,InputStream input,boolean certificate,String retainedId) {
         var limits = content.limits();
         String name = filename == null ? "" : Path.of(filename).getFileName().toString();
         String ext = name.substring(name.lastIndexOf('.') + 1).toLowerCase(Locale.ROOT);
-        if (!Set.of("mp4", "jpg", "jpeg", "png", "webp").contains(ext))
-            throw new Failure(400, "Upload MP4, JPG, PNG or WebP files only");
-        long max = ext.equals("mp4") ? limits.videoBytes() : limits.imageBytes();
+        if (!(certificate?Set.of("pdf","jpg","jpeg","png"):Set.of("mp4", "jpg", "jpeg", "png", "webp")).contains(ext))
+            throw new Failure(400, certificate?"Upload PDF, JPG or PNG certificate evidence only":"Upload MP4, JPG, PNG or WebP files only");
+        long max = certificate?Math.min(10485760L,ext.equals("pdf")?10485760L:limits.imageBytes()):ext.equals("mp4") ? limits.videoBytes() : limits.imageBytes();
         if (size <= 0 || size > max)
             throw new Failure(413, "File exceeds the configured upload limit");
         Path temp = null;
@@ -70,7 +80,10 @@ public final class PrivateLearningAssets implements LearningAssetPort {
             }
             String mime;
             Double duration = null;
-            if (ext.equals("mp4")) {
+            if (certificate && ext.equals("pdf") && signature.length>=5
+                    && new String(signature,0,5,java.nio.charset.StandardCharsets.US_ASCII).equals("%PDF-")) {
+                mime="application/pdf";
+            } else if (ext.equals("mp4")) {
                 mime = "video/mp4";
                 duration = mp4Duration(temp);
             } else if (signature.length >= 8
@@ -98,8 +111,8 @@ public final class PrivateLearningAssets implements LearningAssetPort {
                         throw e;
                 }
             }
-            String id = UUID.randomUUID().toString();
-            String object = org + "/" + id + "." + ext;
+            String id = retainedId==null?UUID.randomUUID().toString():retainedId;
+            String object = org + (certificate?"/certificate-evidence/":"/") + id + "." + ext;
             minio.uploadObject(
                     UploadObjectArgs.builder()
                             .bucket(bucket)

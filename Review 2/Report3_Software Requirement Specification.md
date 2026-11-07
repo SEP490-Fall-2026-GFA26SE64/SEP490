@@ -57,8 +57,11 @@
 
 | Date | A*M, D | In charge | Change Description |
 | --- | --- | --- | --- |
-| 2026-11-06 | M | Documentation preparation with AI assistance | Updated FR-03.01, FR-03.02, FR-04.01, FR-04.03, FR-04.04, FR-05.02, FR-06.04, scope baseline (1.3), business rules (5.1) and application messages (5.3) to reflect Neo4j-backed Department and Job Position governance, department-scoped L&D Manager catalogs, Job Position deactivation guard against active Target Roles, hiding inactive Job Positions during Target Role creation/editing, per-level estimated durations (`levelDurations`) in Target Role details for L&D Manager and Expert, Employee department-scoped upskilling, strict upskilling level progression constraints (disabling both current and lower levels), admin-assigned Job Position display on Employee Profile, and standardized operational impact confirmation dialogs for unpublishing Target Roles and deactivating Job Positions. |
+| 2026-11-06 | M | Documentation preparation with AI assistance | Synchronized ACT-05 detailed requirements and role-change rules with the approved Role-Level target and SDD state views; clarified that Certificate is absent from the catalog ontology and modeled separately in flow ERDs. Documentation only. |
+| 2026-11-06 | M | Documentation preparation with AI assistance | Linked ACT-04/ACT-10 authoring logical/physical supplements and extended state views in Report4; retained the ACT-05 conceptual ERDs after upstream synchronization. |
+| 2026-11-06 | M | Documentation preparation with AI assistance | Updated approved ACT-05 Role-Level baseline flow, related state machines and flow-scoped ERDs; retained report styling and dated physical schema history. Documentation only; no runtime/schema change. |
 | 2026-11-02 | M | Documentation preparation with AI assistance | Added ACT-10 Question Bank activity and clarified current versus target boundaries for ACT-04/07; linked the matching ST-11/ST-16/ST-23 in the SDD without changing requirement IDs or unrelated diagrams. |
+| 2026-11-02 | M | Đặng Minh Hoàng | Updated ACT-01 for the optional starter catalog chosen during registration, the catalog copy that must succeed before the workspace is ready (retry, then failed status) and entry at /workspace/{slug}. |
 | 2026-11-01 | M | Documentation preparation with AI assistance | Corrected all four conceptual ERD borders by replacing Neo gradient/shadow styling with Classic solid 1.5px borders. Preserved entity and relationship content and regenerated SVG/PNG previews. |
 | 2026-11-01 | M | Documentation preparation with AI assistance | Replaced table-level SRS ERDs with four conceptual overviews of 25 core business entities. Aligned entity descriptions with the overviews and retained the detailed relationship views in SDD logical design. |
 | 2026-11-01 | M | Documentation preparation with AI assistance | Rewrote Entities Description as conceptual business descriptions, removing migration versions, physical database names and code references while preserving all 76 entity names. |
@@ -144,8 +147,8 @@ The System is the automated performer within the application boundary, not a sev
 | --- | --- | --- |
 | Onboarding and subscriptions | Purchase, provision, renew and enforce paid access | Connected API/persistence slices exist; live payment/inbox acceptance is not established by this report. |
 | Identity and membership | Trusted authentication and organization permissions | Real sessions, single-role membership, activation, seats and administrator MFA exist. General permission editing and all-feature authorization are incomplete. |
-| Department/job position management | Persisted administration and Expert assignments | Neo4j-persisted Department and Job Position CRUD, department-scoped L&D Manager filtering, inactive Job Position exclusion from Target Role/User assignment, and active Target Role guard before Job Position deactivation are connected. |
-| Role/skill catalog | Assigned authoring followed by L&D publication | Connected Neo4j Target Role lifecycle supports L&D creation with per-level estimated durations (`levelDurations`), Expert competency/skill authoring and submission, and L&D publication/unpublication with version lineage tracking. |
+| Department/job position management | Persisted administration and Expert assignments | Member assignment uses stored references; management screens remain browser-oriented prototypes. |
+| Role/skill catalog | Assigned authoring followed by L&D publication | Legacy CRUD code exists but is gated by `catalog.legacy-api.enabled=true`; it is not the default production-safe authoring service. Existing Expert publication conflicts with Version 2. |
 | Baseline | Authorized configuration, delivery, scoring and results | Real workspace-baseline integration is explicitly local-profile-only and needs reviewed graph content, question bank and promoted model resources. |
 | Other learning and AI | Module/RIASEC evidence, guidance, mastery updates and adaptive pathways | Prototype screens and schema foundations do not constitute the complete learning engine. |
 | Reporting/audit | Actual development, financial inputs and scoped audit views | Some durable events exist; connected ROI/cost-benefit ledger and broad audit dashboards are not evidenced. |
@@ -199,54 +202,53 @@ Evidence precedence is Version 2 for intended scope, later approved decisions fo
 
 **Notation references:** [UML use case diagram conventions](https://www.visual-paradigm.com/guide/uml-unified-modeling-language/what-is-use-case-diagram/) and [Mermaid native use case syntax](https://mermaid.js.org/syntax/usecase.html).
 
-**Business activity diagrams.** The following actor-labeled flowcharts show participation and business handoffs rather than internal algorithms. Bold actor labels stay with each step, preserving ownership without long cross-lane return lines. Planned flows describe required product behavior; they do not assert complete implementation.
+**Business activity diagrams.** The following swimlane diagrams show participation and business handoffs rather than internal algorithms. Each actor has a separate column, and each step appears in its responsible actor's lane. Actor labels use **L&D Manager** and **System Handler**. Decision branches and return arrows preserve the original business flow; crossing lines do not indicate a junction. Planned flows describe required product behavior; they do not assert complete implementation.
 
-[Mermaid source: ACT-01](../documents/diagrams/mermaid/act-01.mmd)
+[Mermaid source: ACT-01](../documents/diagrams/mermaid/swimlanes/act-01.mmd)
 
-![ACT-01 - Organization onboarding (connected slice)](../documents/diagrams/mermaid/act-01.png)
+![ACT-01 - Organization onboarding (connected slice) - Swimlane](../documents/diagrams/mermaid/swimlanes/act-01.png)
 
-[Mermaid source: ACT-02](../documents/diagrams/mermaid/act-02.mmd)
+[Mermaid source: ACT-02](../documents/diagrams/mermaid/swimlanes/act-02.mmd)
 
-![ACT-02 - Renewal, seats and administrative access](../documents/diagrams/mermaid/act-02.png)
+![ACT-02 - Renewal, seats and administrative access - Swimlane](../documents/diagrams/mermaid/swimlanes/act-02.png)
 
-[Mermaid source: ACT-03](../documents/diagrams/mermaid/act-03.mmd)
+[Mermaid source: ACT-03](../documents/diagrams/mermaid/swimlanes/act-03.mmd)
 
-![ACT-03 - Target role management](../documents/diagrams/mermaid/act-03.png)
+![ACT-03 - Target role management - Swimlane](../documents/diagrams/mermaid/swimlanes/act-03.png)
 
-[Mermaid source: ACT-04](../documents/diagrams/mermaid/act-04.mmd)
+[Mermaid source: ACT-04](../documents/diagrams/mermaid/swimlanes/act-04.mmd)
 
-![ACT-04 - Learning offering authoring and approval (target)](../documents/diagrams/mermaid/act-04.png)
+![ACT-04 - Module and learning content authoring and approval - Swimlane](../documents/diagrams/mermaid/swimlanes/act-04.png)
 
-**Diagram scope (ACT-04):** This remains the target learning-offering bundle, including module assessment configuration. The current implemented slice lets the responsible Expert create/import skill-mapped Modules and ordered Text/Video lessons, save drafts and submit complete content; L&D returns or approves the exact Module revision, followed by retryable catalog publication. Other Experts are read-only. Module assessment construction is separate from Question Bank management. Approved publication does not grant every Employee learning access; current pathway, availability and content authorization still apply. See the current Module/Content state machine ST-11 in the SDD.
+**Diagram scope (ACT-04):** The approval package consists of a Module mapped to one MicroSkill and its ordered Text/Video learning content. The responsible Expert creates/imports the Module, saves drafts and submits complete content; L&D returns it with feedback or approves the exact revision, followed by retryable catalog publication. Expert revises and resubmits returned content. Other Experts are read-only. Assessment configuration and assessment questions are outside this approval package. Approved publication does not grant every Employee learning access; current pathway, availability and content authorization still apply. See ST-11 in the SDD for guarded draft deletion and archive/restore, and LERD-05 / DB-09 for authoring data relationships.
 
+[Mermaid source: ACT-05](../documents/diagrams/mermaid/swimlanes/act-05.mmd)
 
-[Mermaid source: ACT-05](../documents/diagrams/mermaid/act-05.mmd)
+![ACT-05 - Role-Level Baseline, Profile and Adaptive Learning - Swimlane](../documents/diagrams/mermaid/swimlanes/act-05.png)
 
-![ACT-05 - Main Flow for Adaptive Learning Pathway Generation and Recalculation](../documents/diagrams/mermaid/act-05.png)
+**ACT-05 scope (approved target):** L&D validates and activates a baseline configuration for an organization-scoped Role–Level pair. Employee admission requires the matching Active configuration; valid results create a Role-Level profile with Met / Needs supplementation outcomes. Employee reviews the profile and requests a pathway; Expert review, learning, skill assessment and automatic recalculation follow. Target change is allowed only after completion or when all remaining gaps have accepted bypasses because neither module nor certificate provision exists. Other errors retain the target for repair/retry. A new selection returns to matching baseline admission; historical results are retained. This diagram revision is a target design, not a claim of deployed schema or runtime behavior. ACT-06 guidance remains a separate journey.
 
-**Ordering boundary:** ACT-06 expresses the Version 2 guidance journey. The currently connected ACT-05 slice asks for a role selection to establish Job Position scope before baseline admission. It does not yet generate AI guidance or require an initial RIASEC result. A future guidance integration must reconcile these entry paths without rewriting existing selections or assessment history.
+[Mermaid source: ACT-07](../documents/diagrams/mermaid/swimlanes/act-07.mmd)
 
-[Mermaid source: ACT-07](../documents/diagrams/mermaid/act-07.mmd)
-
-![ACT-07 - Independent skill learning (target)](../documents/diagrams/mermaid/act-07.png)
+![ACT-07 - Independent skill learning (target) - Swimlane](../documents/diagrams/mermaid/swimlanes/act-07.png)
 
 **Diagram scope (ACT-07):** This is a target independent-learning journey, not a claim that the full context/assessment workflow is implemented. The current reader persists authorized lesson/video progress; the independent-skill surface is not yet a complete persisted learning context. Content completion alone does not establish assessment success or mastery. Valid assessment evidence and the separate independent-learning integration are required before competency/progress updates; the selected Role pathway must remain unchanged. ST-23 in the SDD describes the corresponding target business states, not a new database enum.
 
+[Mermaid source: ACT-08](../documents/diagrams/mermaid/swimlanes/act-08.mmd)
 
-[Mermaid source: ACT-08](../documents/diagrams/mermaid/act-08.mmd)
+![ACT-08 - Development reporting and financial accountability (target) - Swimlane](../documents/diagrams/mermaid/swimlanes/act-08.png)
 
-![ACT-08 - Development reporting and financial accountability (target)](../documents/diagrams/mermaid/act-08.png)
+[Mermaid source: ACT-09](../documents/diagrams/mermaid/swimlanes/act-09.mmd)
 
-[Mermaid source: ACT-09](../documents/diagrams/mermaid/act-09.mmd)
+![ACT-09 - Notifications and scoped activity review - Swimlane](../documents/diagrams/mermaid/swimlanes/act-09.png)
 
-![ACT-09 - Notifications and scoped activity review](../documents/diagrams/mermaid/act-09.png)
+**Actor alternatives (ACT-09):** The original Guest / Workspace Actor step is shown separately for Guest, System Administrator, L&D Manager, Expert and Employee. The activity-view step is shown separately for Platform Administrator and System Administrator. These repeated steps are alternative actor paths for the same business action, not additional mandatory actions or permission grants. SMTP Service and System Handler remain separate actors.
 
-[Mermaid source: ACT-10](../documents/diagrams/mermaid/act-10.mmd)
+[Mermaid source: ACT-10](../documents/diagrams/mermaid/swimlanes/act-10.mmd)
 
-![ACT-10 - Question Bank authoring and approval](../documents/diagrams/mermaid/act-10.png)
+![ACT-10 - Question Bank authoring and approval - Swimlane](../documents/diagrams/mermaid/swimlanes/act-10.png)
 
-**Diagram scope (ACT-10):** The organization has one Question Bank spanning approved MicroSkills. The responsible Expert creates/imports drafts, completes question content and submits for review. L&D acknowledges the exact submitted version and either returns it with a reason to DRAFT or approves immutable publication. Server-generated codes, ownership, valid content, organization scope and current revision are enforced by the service. Import validation, withdrawal, successor drafts and retirement/reactivation remain specified in the [Question Bank rules](../documents/features/Assessment%20workflows/README.md#fr-05-06); the concise activity diagram shows the main flow only. This is not complete module-exam construction or IRT calibration. ST-16 in the SDD describes the current question-candidate lifecycle.
-
+**Diagram scope (ACT-10):** The organization has one Question Bank spanning approved MicroSkills. The responsible Expert creates/imports drafts, completes question content and submits for review. L&D acknowledges the exact submitted version and either returns it with a reason to DRAFT or approves immutable publication. Server-generated codes, ownership, valid content, organization scope and current revision are enforced by the service. Import validation, withdrawal, successor drafts and retirement/reactivation remain specified in the [Question Bank rules](../documents/features/Assessment%20workflows/README.md#fr-05-06); the concise activity diagram shows the main flow only. This is not complete module-exam construction or IRT calibration. ST-16A in the SDD describes one question-version lifecycle; ST-16B describes independent question availability; LERD-06 / DB-10 describe authoring data relationships. Draft deletion is not currently supported for questions.
 
 #### 2.2.2 Descriptions
 
@@ -325,7 +327,7 @@ Evidence precedence is Version 2 for intended scope, later approved decisions fo
 | 63 | Configure Baseline Competency Coverage | L&D Manager | Choose the permitted Job Position competency/skill coverage for baseline assessment. | `UC0405Action1`; [FR-04.05](#fr-04-05); specializes `UC0405` |
 | 64 | Configure Baseline Question Selection | L&D Manager | Save feasible baseline selection rules and question/time bounds without changing released attempt versions. | `UC0405Action2`; [FR-04.05](#fr-04-05); specializes `UC0405` |
 | 65 | Configure Baseline Scoring Rules | L&D Manager | Define validated baseline evaluation rules under the applicable versioned policy. | `UC0405Action3`; [FR-04.05](#fr-04-05); specializes `UC0405` |
-| 66 | Approve learning offerings | L&D Manager | Review a submitted module, content and assessment bundle, then approve or return it for revision. | `UC0406`; [FR-04.06](#fr-04-06) |
+| 66 | Approve learning offerings | L&D Manager | Review a submitted module and learning-content bundle, then approve or return it for revision. | `UC0406`; [FR-04.06](#fr-04-06) |
 | 67 | Monitor employee development | L&D Manager | View development and ROI summaries, filter reporting scope and maintain training cost/benefit records. | `UC0407`; [FR-04.07](#fr-04-07) |
 | 68 | Manage micro-skills | Expert | Manage micro-skill definitions, proficiency information and availability within assigned job positions. | `UC0501`; [FR-05.01](#fr-05-01) |
 | 69 | Create Micro-skill | Expert | Create a stable skill definition and proficiency information in the Expert’s assigned scope. | `UC0501Action1`; [FR-05.01](#fr-05-01); specializes `UC0501` |
@@ -361,7 +363,7 @@ Evidence precedence is Version 2 for intended scope, later approved decisions fo
 | 99 | Configure Module Question Selection | Expert | Define eligible question-selection rules for the assigned module assessment. | `UC0506Action5`; [FR-05.06](#fr-05-06); specializes `UC0506` |
 | 100 | Configure Module Scoring Rules | Expert | Define validated answer-evaluation and outcome rules for the assigned module assessment. | `UC0506Action6`; [FR-05.06](#fr-05-06); specializes `UC0506` |
 | 101 | Review initial learning pathways | Expert | Review initial pathways, include or exclude suggested modules and confirm the exact pathway version. | `UC0507`; [FR-05.07](#fr-05-07) |
-| 102 | Submit content for approval | Expert | Submit a new or revised module/content/assessment bundle for L&D approval. | `UC0508`; [FR-05.08](#fr-05-08) |
+| 102 | Submit content for approval | Expert | Submit a new or revised module/content bundle for L&D approval. | `UC0508`; [FR-05.08](#fr-05-08) |
 | 103 | Manage personal profile | Employee | Manage own permitted personal and work-related profile information; Edit profile is inherited through Authenticated User. | `UC0601`; [FR-06.01](#fr-06-01) |
 | 104 | View Personal Profile | Employee | Display the Employee’s own personal and work-related profile information. | `UC0601Action1`; [FR-06.01](#fr-06-01); specializes `UC0601` |
 | 105 | Edit profile | Platform Administrator, System Administrator, L&D Manager, Expert, Employee | Save permitted own-account profile changes; do not edit administrator-owned roles, assignments or entitlement. | `UC0601Action2`; [FR-06.01](#fr-06-01); user-requested shared actor scope |
@@ -403,7 +405,7 @@ Evidence precedence is Version 2 for intended scope, later approved decisions fo
 | [FR-04.03](#fr-04-03) | Manage target roles | L&D Manager | The L&D Manager shall create and update target role details within job positions, assign target roles to Experts, and monitor configuration status. |
 | [FR-04.04](#fr-04-04) | Manage target role publication | L&D Manager | The L&D Manager shall review submitted target role configurations, publish or unpublish target roles, and return configurations to Experts for revision. |
 | [FR-04.05](#fr-04-05) | Manage baseline assessment configuration | L&D Manager | The L&D Manager shall configure baseline competency coverage, question-selection rules, and scoring rules. |
-| [FR-04.06](#fr-04-06) | Approve learning offerings | L&D Manager | The L&D Manager shall review submitted learning modules, learning content, and module assessments; approve them; or return them to Experts for revision. |
+| [FR-04.06](#fr-04-06) | Approve learning offerings | L&D Manager | The L&D Manager shall review submitted learning modules and learning content; approve them; or return them to Experts for revision. |
 | [FR-04.07](#fr-04-07) | Monitor employee development | L&D Manager | The L&D Manager shall view employee competency profiles, skill gaps, assessment outcomes, learning progress, training ROI, and department development summaries; filter results by department, job position, and reporting period; and record or update training costs and monetary benefits with their period, currency, and supporting basis. |
 | [FR-05.01](#fr-05-01) | Manage micro-skills | Expert | The Expert shall create, view, update, and deactivate micro-skills within assigned job positions, including descriptions and proficiency levels. |
 | [FR-05.02](#fr-05-02) | Manage role competency requirements | Expert | The Expert shall add or remove required competencies and micro-skills for assigned target roles and set required proficiency levels and relative importance. |
@@ -412,7 +414,7 @@ Evidence precedence is Version 2 for intended scope, later approved decisions fo
 | [FR-05.05](#fr-05-05) | Manage learning modules | Expert | The Expert shall create, update, and organize learning modules, map modules to micro-skills, and add, update, organize, or remove learning content within each module. |
 | [FR-05.06](#fr-05-06) | Manage module assessments | Expert | The Expert shall create and update questions for assigned modules, classify questions by micro-skill and difficulty, and configure question-selection and scoring rules. |
 | [FR-05.07](#fr-05-07) | Review initial learning pathways | Expert | The Expert shall review initial learning pathways, include or exclude suggested modules, and confirm the pathways. |
-| [FR-05.08](#fr-05-08) | Submit content for approval | Expert | The Expert shall submit new or revised learning modules, including their learning content and module assessments, to the L&D Manager for approval. |
+| [FR-05.08](#fr-05-08) | Submit content for approval | Expert | The Expert shall submit new or revised learning modules, including their learning content, to the L&D Manager for approval. |
 | [FR-06.01](#fr-06-01) | Manage personal profile | Employee | The Employee shall view and update personal and work-related profile information. |
 | [FR-06.02](#fr-06-02) | Complete baseline assessment | Employee | The Employee shall take the baseline assessment and submit answers. |
 | [FR-06.03](#fr-06-03) | Complete RIASEC assessment | Employee | The Employee shall complete the RIASEC interest assessment and submit answers. |
@@ -776,73 +778,81 @@ Server-side account/session, organization membership, business role, assignment 
 
 #### 3.1.5 Entity Relationship Diagram
 
-The four **conceptual overview ERDs** show only core business entities and their main relationships. They do not enumerate tables, fields, keys or supporting records. Version history, snapshots, configuration, receipts and background processing are generalized into the business concepts they support. Detailed logical relationships and database structures belong in [SDD section 2](Report4_Software%20Design%20Document.md#2-database-design).
+The four **flow-scoped conceptual ERDs** cover ACT-05 only: Role–Level configuration, baseline/profile, skill provision and pathway learning. Subscription, payment, onboarding and ROI are outside these views. They show the approved target model, not an applied migration. Full target attributes, types, keys and nullability are in [SDD section 2.2](Report4_Software%20Design%20Document.md#22-logical-database-design).
 
-Cardinalities describe the conceptual business relationships, not a direct list of database constraints. **User** represents an account holder, not an additional system actor or authorization role.
+A separate **conceptual ontology** below the four ERDs describes the catalog structure used by the learning flow. It contains node names, relationships and cardinalities only; graph attributes and node/edge descriptions remain in [SDD section 2.4](Report4_Software%20Design%20Document.md#24-neo4j-design-and-controlled-import).
 
-**1. Identity & Subscription**
+Cardinality applies to these flow relationships. Account represents an existing authenticated actor; TargetRole is a professional goal, distinct from actor permissions.
+
+**1. Role-Level Selection and Baseline Configuration**
 
 [Mermaid source: CERD-01](../documents/diagrams/mermaid/cerd-01.mmd)
 
-![CERD-01 - Identity and Subscription](../documents/diagrams/mermaid/cerd-01.png)
+![CERD-01 - Role-Level Selection and Baseline Configuration](../documents/diagrams/mermaid/cerd-01.png)
 
-User summarizes account, profile and access information; Organization includes its workspace. Payment summarizes purchase and payment records, while Subscription represents paid access. Department remains explicit because it is a core organization concept.
-
-**2. Assessment & Mastery**
+**2. Assessment and Role-Level Profile**
 
 [Mermaid source: CERD-02](../documents/diagrams/mermaid/cerd-02.mmd)
 
-![CERD-02 - Assessment and Mastery](../documents/diagrams/mermaid/cerd-02.png)
+![CERD-02 - Assessment and Role-Level Profile](../documents/diagrams/mermaid/cerd-02.png)
 
-Assessment and Question summarize assessment design and question content. Answers and assessment outcomes remain explicit, while Mastery Profile generalizes skill results, evidence and profile history.
+ACT-10 Question Bank authoring is documented separately in Report4 LERD-06 and DB-10; the ACT-05 view above references published QuestionVersion identities.
 
-**3. Competency Ontology**
+**3. Role Requirements and Learning Provision**
 
 [Mermaid source: CERD-03](../documents/diagrams/mermaid/cerd-03.mmd)
 
-![CERD-03 - Competency Ontology](../documents/diagrams/mermaid/cerd-03.png)
+![CERD-03 - Role Requirements and Learning Provision](../documents/diagrams/mermaid/cerd-03.png)
 
-Job Position, Target Role, Level, Competency and Skill describe professional requirements. Users select a target role; Skill generalizes granular micro-skills, and Learning Module represents the content that develops them. Job Position coverage can be shared across departments in different organizations.
+ACT-04 Module/Content authoring is documented separately in Report4 LERD-05 and DB-09, including content packages and immutable revision snapshots.
 
-**4. Pathways & Reporting**
+**4. Pathway Review, Learning and Bypass**
 
 [Mermaid source: CERD-04](../documents/diagrams/mermaid/cerd-04.mmd)
 
-![CERD-04 - Pathways and Reporting](../documents/diagrams/mermaid/cerd-04.png)
+![CERD-04 - Pathway Review, Learning and Bypass](../documents/diagrams/mermaid/cerd-04.png)
 
-Learning Pathway summarizes recommendations, revisions and module ordering. Review represents an authorized pathway decision; Learning Progress summarizes learning activity and completion. Learning Report generalizes cohort analysis and ROI reporting, using Training Cost and Monetary Benefit as distinct business inputs.
+**5. Conceptual Ontology**
+
+[Mermaid source: CGRAPH-01](../documents/diagrams/mermaid/cgraph-01.mmd)
+
+![CGRAPH-01 - Conceptual JobPosition Ontology](../documents/diagrams/mermaid/cgraph-01.png)
+
+The ontology uses `JobPosition`, `TargetRole`, `Level`, `Competency`, `MicroSkill` and `LearningModule`. `JobPosition` is the current catalog label, not `Occupation`. `Level` and `MicroSkill` correspond conceptually to RoleLevel and Skill in the flow views; this does not define a new physical mapping. Each LearningModule teaches exactly one MicroSkill; a MicroSkill can have zero or multiple alternative Modules. Skill prerequisites are directed from the dependent skill to its prerequisite and must not contain cycles. Learner assessment results, profiles and progress are outside the catalog ontology. This view follows the current single-skill contract, not a claim of live database migration. `Certificate` is not a node in this catalog ontology: certificate definitions and submissions are modeled separately in CERD-03/04 and SDD LERD-03/04. Their use in ACT-05 does not imply a Certificate node or relationship in the current Neo4j catalog.
 
 **Entities Description**
 
-Each row describes **one core business entity** shown in the conceptual overviews. Shared entities are listed once, giving 25 distinct concepts.
+Each row describes one entity used by the four ACT-05 flow ERDs above. Existing shared identity/content entities are references to their owners, not replacement account or learning systems.
 
 | # | Entity | Description |
 | --- | --- | --- |
-| 1 | Organization | Represents an organization using the platform, including its identity and operational status. |
-| 2 | User | Represents an account holder, including personal identity, organization access and assigned system role. |
-| 3 | Role | Defines a user's system permissions and responsibilities, distinct from a professional target role. |
-| 4 | Department | Represents an organizational unit that groups members and their job position assignments. |
-| 5 | Registration | Represents an organization's onboarding application and completion of required verification. |
-| 6 | Subscription Plan | Defines an available subscription offering and its commercial terms. |
-| 7 | Subscription | Represents an organization's agreement and paid entitlement to use the platform. |
-| 8 | Payment | Represents a purchase or renewal payment and its outcome. |
-| 9 | Assessment | Defines an assessment used to evaluate an Employee's knowledge and skills. |
-| 10 | Question | Represents an assessment question and its answer criteria. |
-| 11 | Answer | Represents an Employee's response to an assessment question. |
-| 12 | Assessment Result | Summarizes an Employee's assessment outcome and score. |
-| 13 | Mastery Profile | Summarizes an Employee's assessed skill mastery and supporting evidence. |
-| 14 | Skill | Represents a granular professional capability that can be assessed and developed. |
-| 15 | Job Position | Represents a career job position and its professional and interest characteristics. |
-| 16 | Target Role | Defines a target job role within an job position and its expected capabilities. |
-| 17 | Level | Defines a target role's proficiency level and associated requirements. |
-| 18 | Competency | Groups related skills into a professional capability required at a role level. |
-| 19 | Learning Module | Represents a unit of learning content that develops specified skills. |
-| 20 | Learning Pathway | Represents an Employee's recommended sequence of learning modules. |
-| 21 | Review | Represents an authorized evaluation and decision on a proposed learning pathway. |
-| 22 | Learning Progress | Summarizes an Employee's activity and completion within a learning module. |
-| 23 | Learning Report | Summarizes competency, learning outcomes and financial effectiveness for an authorized organizational scope. |
-| 24 | Training Cost | Represents expenditure on an organization's training and development activities. |
-| 25 | Monetary Benefit | Represents the estimated or recorded monetary benefit of an organization's training and development activities. |
+| 1 | Organization | Existing tenant boundary. |
+| 2 | Account | Existing authenticated Employee, L&D or Expert reference; credentials remain outside the flow model. |
+| 3 | TargetRole | Published professional target role, distinct from actor permissions. |
+| 4 | RoleLevel | A Level belonging to a specific target Role. |
+| 5 | RoleSelection | Current and historical Employee Role-Level choices. |
+| 6 | BaselineConfig | L&D configuration identity and active pointer scoped to Role-Level. |
+| 7 | BaselineConfigVersion | Immutable validated configuration, including the exact assessed skill set and rules. |
+| 8 | Skill | Assessable catalog skill with versioned definition. |
+| 9 | RoleSkillRequirement | Explicit skill requirement for a Role-Level. |
+| 10 | QuestionVersion | Existing published question version; protected answer data remains server-side. |
+| 11 | AssessmentAttempt | Frozen baseline or skill-assessment context and timing. |
+| 12 | AssessmentItem | Presented immutable item and its exact requirement context. |
+| 13 | AssessmentAnswer | Accepted response for one presented item. |
+| 14 | SkillResult | Final per-skill result; invalid results do not initialize a valid profile. |
+| 15 | CompetencyProfile | Versioned profile for one Employee Role-Level selection. |
+| 16 | ProfileSkill | Met or Needs supplementation outcome with valid source provenance. |
+| 17 | LearningModule | Existing approved module; exactly one taught skill. |
+| 18 | Certificate | Catalog certificate definition attached to an exact skill requirement. |
+| 19 | SkillPrerequisite | Exact dependent and prerequisite skill-level pair. |
+| 20 | CertificateSubmission | Employee evidence and genuine Expert decision for a certificate. |
+| 21 | PathwayRequest | Explicit request from the reviewed profile; errors retain the selected target. |
+| 22 | PathwayRevision | Generated, reviewed and automatically adapted pathway versions. |
+| 23 | PathwayStep | Required skill work, with module/certificate provision and bypass kept separate from achievement. |
+| 24 | StepOption | Eligible version-pinned module or certificate for one step. |
+| 25 | PathwayReview | Actual Expert review of an exact pathway revision. |
+| 26 | LearningProgress | Existing content progress owner referenced by selected pathway option. |
+| 27 | PathwayBypass | Accepted missing-provision decision; never evidence of achievement. |
 
 ### 3.2 Organization Onboarding
 
@@ -1213,7 +1223,6 @@ Each row describes **one core business entity** shown in the conceptual overview
   - Organization Role
   - Employee Department
   - Employee Job Position
-  - Assigned Target Role and Level (Career Placement)
   - Membership Status
   - Invitation Status
   - Activation Proof
@@ -1224,7 +1233,6 @@ Each row describes **one core business entity** shown in the conceptual overview
   - Invite members and resend activation invitations.
   - Edit member profile, role and assignment details.
   - Activate or deactivate memberships with seat and last-administrator checks.
-  - Filter selectable Job Positions strictly to active Job Positions linked to the selected Department, filter selectable Target Roles to published roles aligned with the selected Job Position / Department, and persist the Employee's assigned Target Role and Level in the PostgreSQL member profile so it remains saved when viewing or editing the user.
   - Validate that Employee job position belongs to the selected organization department.
   - Let recipients activate once and choose their own password.
 
@@ -1395,15 +1403,12 @@ Each row describes **one core business entity** shown in the conceptual overview
   - Job Position Details
   - Organization Department
   - Active Status
-  - Associated Target Roles Status
 
 - **Functionalities:**
-  - Create and view job positions scoped to the L&D Manager's assigned department without exposing unassigned organization job positions.
-  - Automatically attach the L&D Manager's department when creating a job position.
-  - Update job position details and department association in Neo4j.
-  - Deactivate a job position only when it has no assigned target roles or when all target roles assigned to it are in `UNPUBLISHED` status; otherwise block deactivation and display a warning notification that active target roles still exist.
-  - Hide and disable selection of inactive job positions when creating or editing target roles.
-  - Preserve historical records when deactivating or reactivating job positions.
+  - Create and view job positions.
+  - Attach a valid department when creating an job position.
+  - Update job position details and department association.
+  - Deactivate job positions while preserving historical records.
   - Reject cross-organization department references.
 
 <a id="fr-04-02"></a>
@@ -1452,19 +1457,17 @@ Each row describes **one core business entity** shown in the conceptual overview
 - **Data:**
   - Role Identity
   - Role Details
-  - Job Position (active only)
-  - Role Mastery Levels and Estimated Level Durations (`levelDurations`)
+  - Job Position
   - Assigned Expert
   - Configuration Version
   - Configuration Status
 
 - **Functionalities:**
-  - Create and update roles within an active job position belonging to the L&D Manager's assigned department (inactive job positions are hidden and non-selectable).
-  - Configure ordered Role Mastery Levels and estimated duration for each level (e.g., Senior, Middle, Junior durations).
-  - Assign target roles to eligible Domain Experts certified for the selected job position or department.
-  - View role details, per-level estimated durations, competency/micro-skill counts, and configuration progress across L&D Manager and Expert views.
+  - Create and update roles within an job position.
+  - Assign target roles to Experts.
+  - View role details and configuration progress.
   - Reject duplicate identities and stale edits.
-  - Keep draft and unpublished roles unavailable for Employee selection.
+  - Keep draft roles unavailable for Employee selection.
 
 <a id="fr-04-04"></a>
 
@@ -1512,7 +1515,7 @@ Each row describes **one core business entity** shown in the conceptual overview
 
 - **Data:**
   - Assigned Target Role
-  - Role Level and Estimated Level Duration (`levelDurations`)
+  - Role Level
   - Competencies
   - Micro-skills
   - Required Proficiency
@@ -1520,7 +1523,6 @@ Each row describes **one core business entity** shown in the conceptual overview
   - Configuration Version
 
 - **Functionalities:**
-  - Inspect target role specifications, including ordered Role Mastery Levels and estimated duration per level, in the Role Details modal.
   - Add or remove required competencies and micro-skills.
   - Set required proficiency and relative importance.
   - Save requirements for the applicable role level.
@@ -1574,7 +1576,6 @@ Each row describes **one core business entity** shown in the conceptual overview
 - **Data:**
   - Learning Module
   - Ordered Content
-  - Module Assessment
   - Submitted Version
   - Review Decision
   - Revision Feedback
@@ -1582,7 +1583,7 @@ Each row describes **one core business entity** shown in the conceptual overview
 
 - **Functionalities:**
   - View submitted learning offerings.
-  - Review module, content and assessment as one versioned bundle.
+  - Review the Module and ordered learning content as one versioned bundle.
   - Approve eligible offerings or return them with feedback.
   - Reject stale or incomplete submissions.
   - Make only approved versions available to permitted Employees.
@@ -1690,13 +1691,12 @@ Each row describes **one core business entity** shown in the conceptual overview
 - **Data:**
   - Learning Module
   - Content Version
-  - Module Assessment
   - Offering Version
   - Submission Status
   - Revision Feedback
 
 - **Functionalities:**
-  - Validate the complete module, content and assessment bundle.
+  - Validate the Module, its single-MicroSkill mapping and complete ordered learning content.
   - Submit the exact offering version to L&D.
   - View return feedback and revise the offering.
   - Resubmit without losing decision history.
@@ -1708,7 +1708,7 @@ Each row describes **one core business entity** shown in the conceptual overview
 
 #### 3.9.1 Manage baseline assessment configuration - FR-04.05
 
-**Function Trigger:** L&D Manager opens Baseline Assessments and selects an Job Position.
+**Function Trigger:** L&D Manager opens Baseline Assessments and selects a Role and Level within the organization.
 
 **Function Description:**
 
@@ -1720,6 +1720,7 @@ Each row describes **one core business entity** shown in the conceptual overview
 
 - **Data:**
   - Job Position
+  - Selected Role and Level
   - Baseline Name
   - Competency Coverage
   - Question-selection Rules
@@ -1731,7 +1732,8 @@ Each row describes **one core business entity** shown in the conceptual overview
 
 - **Functionalities:**
   - View Drafts, active versions and history.
-  - Create or continue the single Job Position Draft.
+  - Create or continue the baseline Draft for the organization-scoped Role-Level configuration.
+  - Validate the selected Role-Level, requirement coverage, question selection and L&D-configured pass rule before activation.
   - Save coverage and valid question/time settings.
   - Preview the saved Draft and resolve readiness issues.
   - Activate, replace or deactivate a version after confirmation.
@@ -1780,15 +1782,16 @@ Each row describes **one core business entity** shown in the conceptual overview
 
 **Function Description:**
 
-- **Purpose:** Allow Employee to complete the required Job Position baseline.
+- **Purpose:** Allow Employee to complete the baseline for the selected Role and Level under its matching Active configuration.
 - **Interface:** Baseline Assessment and Result screens
 - **Screen layout:**
 
 **Function Detail:**
 
 - **Data:**
-  - Selected Role
+  - Selected Role and Level
   - Job Position
+  - Pinned Configuration Version and Pass Rule
   - Attempt Reference
   - Question and Options
   - Answers
@@ -1799,11 +1802,14 @@ Each row describes **one core business entity** shown in the conceptual overview
   - Skill Mastery
 
 - **Functionalities:**
-  - Check coverage, entitlement and baseline readiness.
+  - Check coverage, entitlement and a matching Active baseline configuration for the selected Role-Level.
   - Start or resume the Employee-owned attempt.
   - Display questions and accept answers using pinned versions.
-  - Submit manually or finalize under the server deadline policy.
-  - Show results and mastery only from valid evidence.
+  - Resume using the pinned questions, configuration and deadline; Employee explicitly submits answers.
+  - Evaluate the submitted baseline as PASSED or FAILED using the L&D-configured pass rule; do not assume a universal threshold.
+  - Distinguish result validity from pass/fail: a valid failed result can identify Needs supplementation; an invalid result cannot initialize a valid profile.
+  - Create the Role-Level profile from valid finalized results, with Met / Needs supplementation outcomes.
+  - Deadline handling must not be represented as automatic submission in this approved target flow; current runtime behavior is documented separately in SDD section 3.4.
   - Explain invalidation and permitted recovery.
   - Prevent duplicate submissions and role changes during an active attempt.
 
@@ -1920,21 +1926,20 @@ Each row describes **one core business entity** shown in the conceptual overview
   - Role Suggestions
   - AI Comments
   - Published Roles
-  - Role Requirements and Per-Level Estimated Durations
-  - Current Assigned Role and Level
-  - Next-Level Upskilling Progression
+  - Role Requirements
   - Current Selection
   - Selected Role
   - Selection Status
 
 - **Functionalities:**
   - Display AI role suggestions and comments directly to Employee.
-  - View published organization roles scoped to the Employee's assigned Department (and active Job Positions), level requirements, and estimated level durations, plus same-role next-level upskilling progression (`Upskill to Next Level`).
-  - Enforce strict upskilling progression constraint during level enrollment: when an Employee has an organization-assigned level (e.g. Middle / Rank 2), upskilling strictly requires advancing to a higher progressive level (e.g. Senior / Rank 1). Both the current assigned level (marked 'Current assigned level (Upskilling requires higher level)') and any levels lower than it (e.g. Junior / Rank 3, Intern / Rank 4, marked 'Below current assigned level') are strictly disabled and unselectable.
-  - Display the administrator-assigned Job Position, Department, and starting career placement on the Employee's Profile screen.
-  - Explicitly select or confirm a published target role (or next mastery level) for career progression.
+  - View published organization roles and requirements.
+  - Explicitly select or confirm a target Role and Level.
   - Show the applicable baseline or learning next step.
-  - Reject unavailable/unpublished roles and changes during an active assessment.
+  - Reject unavailable targets and changes during an active assessment.
+  - Permit a different Role or Level only after pathway completion or when all remaining gaps have accepted bypasses because both eligible module and certificate provision are absent.
+  - Keep the current target during generation errors, pending review and ordinary incomplete work.
+  - Return a new target to baseline admission using its matching Active configuration; do not reuse old results as a new assessment.
   - Retain previous selections and applicable Job Position coverage.
 
 <a id="fr-07-07"></a>
@@ -2026,6 +2031,8 @@ Each row describes **one core business entity** shown in the conceptual overview
   - Show skill gaps and evidence provenance.
   - Distinguish unknown, pending and valid zero mastery.
   - Restrict results to the authorized Employee.
+  - Let Employee review the valid Role-Level profile and explicitly submit a pathway creation request.
+  - Keep bypassed requirements as Needs supplementation, with decision provenance; bypass is not achievement.
 
 <a id="fr-06-06"></a>
 
@@ -2056,6 +2063,8 @@ Each row describes **one core business entity** shown in the conceptual overview
   - Show subsequent pathway updates and their status.
   - Retain completed work and applicable review decisions.
   - Block initial pathway access before Expert confirmation.
+  - Display module and certificate options, accepted bypasses and remaining blocking requirements separately.
+  - Show completion or bypass-only target-change eligibility; close a no-learning-required request without artificial tasks.
 
 <a id="fr-06-07"></a>
 
@@ -2146,6 +2155,9 @@ Each row describes **one core business entity** shown in the conceptual overview
   - Confirm the exact initial pathway version.
   - Reject stale reviews and unauthorized access.
   - Preserve decisions for compatible later adaptations.
+  - Review coverage, prerequisite order and eligible module/certificate provision before approving the exact pathway revision.
+  - Record a justified bypass only when both eligible module and certificate provision are absent, with the genuine Expert identity and decision time.
+  - Review newly discovered missing-provision gaps through a scoped bypass decision; automatic recalculation does not fabricate a fresh Expert approval.
 
 ### 3.13 Adaptive Engine
 
@@ -2185,7 +2197,7 @@ Each row describes **one core business entity** shown in the conceptual overview
 
 #### 3.13.2 Generate and adapt learning pathways - FR-07.08
 
-**Function Trigger:** System detects target-role gaps or updated assessment evidence.
+**Function Trigger:** Employee submits a pathway creation request after reviewing a valid Role-Level profile, or the System receives accepted learning, assessment or certificate evidence for an existing pathway.
 
 **Function Description:**
 
@@ -2209,7 +2221,9 @@ Each row describes **one core business entity** shown in the conceptual overview
   - Generate the initial pathway for Expert confirmation.
   - Recalculate remaining steps after relevant assessment results.
   - Preserve completed work and compatible Expert decisions.
-  - Count multi-skill modules once.
+  - Use modules that each teach exactly one skill, with eligible alternative modules or certificate provision for each gap.
+  - Preserve approval lineage during automatic recalculation and send newly discovered missing-provision gaps for scoped Expert bypass review.
+  - Retain the target on generation errors; release target change only after completion or accepted bypass-only outcomes, with no attempt in progress.
   - Explain blocked pathways without skipping required skills.
   - Prevent duplicate versions for repeated source events.
 
@@ -2353,95 +2367,144 @@ Each row describes **one core business entity** shown in the conceptual overview
 
 ### 4.1 External Interfaces
 
-| Interface | Requirement |
-| --- | --- |
-| User interface | Browser-based, role-specific screens; reuse project design system, accessible labels, visible focus, keyboard operation and explicit pending/failure/empty states. Existing English/Vietnamese UI support is an implementation fact; this report is English. |
-| Business API | JSON over HTTP locally and HTTPS at deployment boundary; authenticate using server-owned sessions; validate input, organization/assignment scope and idempotent commands. Versioned existing routes use `/api/v1`. |
-| Payment | payOS checkout, query and signature-verified webhook; signed server evidence and expected order terms govern payment acceptance. Do not trust redirect query strings as proof. |
-| Email | Gmail SMTP is the product choice; configurable SMTP with TLS is implemented. Delivery content contains only necessary recipient/action information. |
-| Graph | Internal competency graph access; preserve graph IDs, requirement semantics and dataset version. No cross-store foreign-key enforcement is assumed. |
-| File storage | Planned MinIO private objects. Backend authorizes tenant, offering and learner access before retrieval; public object possession is not authorization. |
-| AI | Planned local model over internal inference API; minimized evidence and authorized role candidates; identifiable model/input version and explicit failure states. |
-| Hardware/mobile | No specialized hardware or native mobile client specified. Deployment resource sizing must be recorded with performance evidence rather than invented. |
+- **User interface:** The application shall provide browser-based, role-appropriate screens with clear labels, keyboard-accessible main actions and visible loading, success and error messages.
+- **Business API:** The application shall exchange JSON requests/responses and validate the signed-in user, role, organization and applicable access rights for protected requests.
+- **Payment:** The server shall accept payOS payment confirmation only after checking its signature, order identity and expected amount; a browser return URL alone shall not prove payment.
+- **Email:** Transactional email shall use the configured SMTP service with TLS, include only necessary recipient information and record delivery failures without showing successful delivery.
+- **Graph:** Internal graph access shall preserve stable catalog identifiers, relationship meanings and the selected catalog version without allowing unrestricted public editing.
+- **File storage:** Private learning files shall require authorized access before retrieval; possession of a file URL shall not grant access.
+- **AI:** Internal/local role guidance shall use only necessary input information, return authorized role candidates and show an unavailable/error state when inference fails.
+- **Hardware/mobile:** The application shall operate through a browser and network connection without requiring specialized hardware or a native mobile client.
 
 ### 4.2 Quality Attributes
 
 #### 4.2.1 Usability
 
-| ID | Requirement / verification |
-| --- | --- |
-| NFR-U01 | Required by Version 2: forms identify missing/invalid inputs, retain non-secret values after validation errors and show success/pending/failure for registration, payments, assessments and submissions. Verify each named flow with valid/invalid inputs. |
-| NFR-U02 | Proposed acceptance: key actions are keyboard-operable, controls have accessible names and dialogs restore focus; inspect with component tests and Playwright. No blanket WCAG certification is claimed. |
-| NFR-U03 | Proposed acceptance: test representative 360px, 768px and 1440px widths; primary forms/actions remain usable without page-level horizontal clipping. Complex graph/table scrolling may be explicitly contained. |
-| NFR-U04 | Unknown, empty, unconfigured, blocked and loading states are distinct; a failed request must not become sample success data. Validate offline/dependency-failure cases. |
+- Registration, payment, assessment and content-submission forms shall explain missing or invalid inputs, retain non-secret values after validation errors and clearly show pending, successful or failed actions without redisplaying secrets.
+- Main controls shall have understandable labels, visible keyboard focus and keyboard-accessible actions; closing a dialog shall return focus to its trigger. Full accessibility certification is outside the required scope.
+- Main forms and actions shall remain readable and usable at 1366 x 768 and 390 x 844 without being cut off; large tables and graphs may scroll inside their own containers.
+- Loading, empty results, unavailable features and failed requests shall show appropriate messages and a next action where possible, never fabricated successful results.
 
 #### 4.2.2 Reliability
 
-| ID | Requirement / verification |
-| --- | --- |
-| NFR-R01 | Required: retries/duplicate notifications create no duplicate payments, subscriptions, workspaces or submissions. Verify exact request replay, concurrent requests and worker crash/retry scenarios. |
-| NFR-R02 | Required: saved records remain consistent and failed operations recover without losing committed data. Test rollback, durable outbox/job state and version-pinned recovery across PostgreSQL/Neo4j boundaries. |
-| NFR-R03 | Required: historical selections, purchased terms, assessment content/model pins and valid nulls are retained; no destructive reseed is an ordinary recovery procedure. |
-| NFR-R04 | Availability percentage, MTBF, MTTR, RPO and RTO are not specified in the source. Proposed review action: agree service hours, backup frequency and recovery budget, then demonstrate restoration before claiming an SLA. |
+- Retried or overlapping operations and duplicate payment notifications shall not create duplicate payments, subscriptions, workspaces or assessment submissions.
+- Failed operations, temporary service failures and application restarts shall not corrupt or lose committed records or related references; failed actions shall remain safely retryable after recovery.
+- New versions shall preserve historical selections, purchased terms, assessment content/rule references and legitimately absent values.
+- Business data and the application catalog shall support a documented backup-and-restore procedure that preserves saved records, catalog versions and related references. No fixed uptime, recovery-time or automatic-failover guarantee is required.
 
 #### 4.2.3 Performance
 
-These are **targets**, not measurements from this documentation task. Distinct product and research workloads must not be conflated.
-
-| ID | Source target | Measurement condition / acceptance evidence |
-| --- | --- | --- |
-| NFR-P01 | Ordinary interactive requests P95 <=2 seconds | 30 concurrent users across at least two organizations in a documented environment; report endpoint mix, dataset size, run duration and percentile distribution. Exclude and separately report LLM, payment and file transfer. |
-| NFR-P02 | Backend supports >=300 concurrent learner interactions with response times <=500ms | Dedicated module-completion/quiz-submission workload. Source does not specify percentile; report full distribution and maximum, not silently weaken the threshold to an invented percentile. |
-| NFR-P03 | Complex Neo4j traversal <=150ms | Frozen query suite and graph size; record hardware, indexes, cold/warm conditions and per-query results. Separate database time from end-user latency. |
-| NFR-P04 | Recommendation Hit Rate@5 >=80% | Expert-annotated held-out baseline dataset; fixed metric definition, candidate universe, seeds and evaluation outputs; compare graph traversal with Content-Based Filtering. |
+- At least 95% of ordinary interactive requests shall complete within 3 seconds, from request submission to complete response, with 10 concurrent users in total across two organization workspaces in the documented environment after warm-up. External payment/email, file transfer and AI inference times are outside this ordinary-request limit.
+- The application shall support 10 concurrent learners completing modules and submitting quiz/assessment answers under the ordinary-request response-time requirement above without unexpected server failures, lost accepted submissions or duplicate business records; higher user counts are outside the required scope.
+- Each selected representative role, skill, prerequisite or pathway graph query shall complete within 1 second after warm-up on the recorded catalog; this limit applies to graph-query execution, not full application response time.
+- Recommendation relevance shall be reported using Hit Rate@5 on at least 20 independently reviewed, held-out cases, comparing graph-based and Content-Based Filtering results on the same cases and counting empty results as misses. No fixed relevance percentage is required; applicable organization and prerequisite rules remain mandatory.
 
 #### 4.2.4 Security, Isolation and Reproducibility
 
-| ID | Requirement / verification |
-| --- | --- |
-| NFR-S01 | Required: protected functions and files require authenticated, authorized organization access. Test cross-tenant reads/writes, role mismatch, removed assignment, suspended membership and expired entitlement. |
-| NFR-S02 | Required: protect credentials and payment information; audit administrative/payment actions. Proposed deployment controls include TLS termination, managed secrets, private database/object-store networks and log redaction. |
-| NFR-S03 | Protect assessment answer keys and avoid leaking internal scoring state; safe result projections expose only authorized evidence. Verify both required returned fields and prohibited fields. |
-| NFR-E01 | Required: version datasets, mappings, assessment rules, model/algorithm parameters and seeds; separate development and held-out evaluation data and retain raw benchmark outputs. |
-| NFR-E02 | Required: separate interest signals, observed scores, estimated mastery and recommendation outcomes; retain explainable source/version provenance. |
-| NFR-M01 | Observed architectural standard: domain independence and application ports are checked by ArchUnit. Proposed acceptance for changes includes affected tests, frontend type/build checks and browser validation. |
+- Protected functions and files shall require server-validated user identity, role, organization and applicable assignment/access rights, denying cross-organization access, wrong-role access and access after assignment removal, membership suspension or subscription expiry.
+- The application shall protect credentials and payment information, prohibit plaintext password storage and secret exposure in code/responses/logs, and retain audit records for administrative changes and payment events. Public deployment shall use HTTPS; isolated local HTTP testing is allowed.
+- Ordinary assessment responses shall withhold answer keys, protected scoring data and unauthorized learner results while returning the authorized result information.
+- Evaluations shall be reproducible using recorded dataset/catalog and mapping versions, assessment rules, algorithm parameters and random seeds where applicable, with separate development/held-out cases and retained review decisions and raw outputs.
+- Interest scores, assessment results, estimated mastery and recommendations shall remain distinct and retain their source/version references; interest scores and generated explanations shall not be treated as proof of skill achievement.
+- Changes shall follow documented package boundaries and shared UI conventions, remain buildable and support relevant automated tests, architecture checks and browser validation for frontend changes.
 
 ## 5. Requirement Appendix
 
 ### 5.1 Business Rules
 
-`V2` means directly grounded in source scope; `Current` means observed detailed policy; `Proposed` requires product/design approval before implementation.
+The following rules reflect the current checked-in backend implementation, inspected on 2026-11-06. They describe implemented validation and workflow policies, not proposed Version 2 behavior or confirmation that every UI and production integration is complete. Adaptive-attempt processing includes locally configured slices; initial-pathway access requires configured catalog, readiness and content adapters. Where those dependencies are unavailable, the implementation blocks the affected operation rather than treating it as successful.
+
+**ACT-05 target versus current rules:** The approved target in section 2.2 and FR-04.05 / FR-06.02 / FR-06.04 / FR-06.05 / FR-06.06 / FR-05.07 / FR-07.08 uses organization-scoped Role-Level configuration, explicit baseline submission, L&D pass rules and completion-or-bypass-only target release. The current Job Position blueprint/fixed-form rules BR-43–49 and current selection rules BR-41 / BR-81 below are retained as implementation observations, not substitutes for that target. These documentation changes do not establish runtime delivery.
 
 | ID | Rule Definition |
 | --- | --- |
-| BR-01 | V2: every protected business operation is scoped by organization and appropriate role/assignment; platform and organization authority are separate. |
-| BR-02 | Current: exactly one role per account; platform administrator and organization membership are mutually exclusive identity contexts. |
-| BR-03 | Current: Organization Administrators require MFA; Platform Administrator authentication is password-only under the present single-role policy. |
-| BR-04 | V2: Guest must verify administrator email and complete onboarding before workspace handoff. Payment and setup completion are separate facts. |
-| BR-05 | V2/Current: order terms are immutable purchased-version snapshots; later plan edits do not rewrite history. |
-| BR-06 | V2: provider-authenticated payment evidence, not browser redirect state, determines payment acceptance. |
-| BR-07 | Current: plan price currency is VND, positive whole amount; duration is positive calendar months and seats positive whole Employees. Broader currency editing remains a source-scope gap. |
-| BR-08 | V2/Current: duplicate payment observations and retries cannot duplicate paid application, workspace or period. |
-| BR-09 | Current: paid periods do not overlap; suspension does not create or remove purchased payment evidence. |
-| BR-10 | V2/Current: Employee admission respects serialized seat allocation; reduced-capacity renewal may wait for explicit remediation. |
-| BR-11 | V2/Current: job position belongs to an organization department; L&D Manager views and governs only job positions and target roles linked to their assigned department; Expert authoring is limited to assignment. |
-| BR-12 | V2/Current: Expert submits completed role requirements; L&D publishes/unpublishes or returns for revision. In-flight revision drafts and submissions are presented in the version catalog beneath their parent published version with clear visual lineage. Unpublishing a target role affects only the released version, marking it `UNPUBLISHED` and suspending it from employee discovery across all portals (synced in real-time across L&D Manager, Domain Expert, and Employee catalogs), while in-flight revision drafts remain in `DRAFT`/`SUBMITTED` state until approved. A job position can be deactivated only when it has no assigned target roles or all assigned target roles are `UNPUBLISHED`; inactive job positions are hidden and non-selectable when creating or editing target roles. |
-| BR-13 | V2: module, content and module assessment form the submitted offering; L&D approves or returns it. |
-| BR-14 | V2: module/skill learning coverage is many-to-many. One module addressing several gaps is not multiple independent purchases or completions. |
-| BR-15 | V2/Current catalog validation: prerequisites are directed and acyclic; self-prerequisites are invalid. |
-| BR-16 | V2: RIASEC is interest evidence, never proof of skill mastery. |
-| BR-17 | V2: Employee sees AI guidance directly and explicitly chooses a published organization role; no Expert guidance-approval gate. |
-| BR-18 | Current baseline: one stable Job Position blueprint, one open Draft and one active version; released versions are immutable. |
-| BR-19 | Current baseline: selection commits separately from assessment start. Same-Job Position role changes reuse applicable coverage; in-progress assessment blocks role change. When an Employee has an organization-assigned starting level, upskilling strictly requires progression to a higher level. Both the current assigned level and any levels lower than it are disabled and cannot be selected. |
-| BR-20 | Current baseline: valid low/zero mastery is present evidence; missing/unknown/null or invalid evidence is not complete coverage. |
-| BR-21 | Current baseline: new attempts pin pool, content, policy, model/mapping and deadline; resume/history does not repin to current configuration. |
-| BR-22 | Current baseline: insufficient manual submission can invalidate without mastery; replacement uses approved retained context rather than rewriting the attempt. |
-| BR-23 | V2: initial pathway is confirmed by Expert; later assessment results trigger remaining-pathway recalculation, not only failed results. |
-| BR-24 | V2: independent skill learning must not silently replace the Employee's selected role/pathway. |
-| BR-25 | V2: ROI uses recorded costs and monetary benefits with period, currency and supporting basis. Formula, zero-cost and conversion policy in this report are explicitly proposed. |
-| BR-26 | V2/Current: review identities/timestamps reflect actual decisions; unreviewed dataset rows retain null reviewer/time. |
-| BR-27 | Current: SMTP acceptance and inbox delivery are different; durable application success does not require immediate successful email delivery. |
-| BR-28 | V2: no destructive data reset, live payment, production deployment or schema change is authorized by creation of these reports. |
+| BR-01 | Registration email must be unique across existing accounts. An existing account must sign in instead of registering again with the same email. |
+| BR-02 | Administrator email is trimmed, converted to lowercase and validated as an email address; its total length must not exceed 254 characters and its local part must not exceed 64 characters. |
+| BR-03 | Registration password must contain 12-128 Unicode characters. The current validator does not require an uppercase letter, number or special character. |
+| BR-04 | Organization name and administrator name are mandatory, with maximum lengths of 200 and 120 characters respectively. |
+| BR-05 | Industry and headcount are optional; when provided, they must match the available registration options. |
+| BR-06 | A supplied workspace subdomain must be available, contain 3-63 lowercase letters, digits or internal hyphens, and must not be a reserved name. If omitted, the system generates and reserves one. |
+| BR-07 | When email verification is enabled, registration sends a six-digit verification code to the administrator email. |
+| BR-08 | An email verification code expires after 10 minutes and can be used only once. Requesting a new code replaces the previous proof. |
+| BR-09 | Verification emails must be requested at least 60 seconds apart, with at most five sends per account per one-hour window and 20 sends per requesting address per one-hour window. |
+| BR-10 | Registration requests are limited to 10 per requesting address per one-hour window. |
+| BR-11 | System Administrators must complete authenticator enrollment or the required MFA challenge when MFA is enabled. The current Platform Administrator login does not require MFA. |
+| BR-12 | A workspace MFA recovery code can be used only once; using it requires the administrator to complete MFA recovery enrollment before regaining full access. |
+| BR-13 | PayOS, email verification and MFA may be disabled only under an explicitly allowed local/development profile, never under a production profile. |
+| BR-14 | Subscription/workspace authorization requires an active account with exactly one role. Organization member roles are Employee, L&D Manager, Expert or System Administrator; Platform Administrator is a separate authority. |
+| BR-15 | Ordinary workspace access requires an active membership in the requested organization, a ready workspace, a current paid subscription and an organization that is not suspended. |
+| BR-16 | Only a Platform Administrator can edit platform subscription plans or suspend/reactivate organizations. |
+| BR-17 | Only the organization's System Administrator can read its billing information, renew its subscription or change member profiles and roles. Required MFA must already be satisfied. |
+| BR-18 | Billing access remains available to an authorized System Administrator when ordinary workspace access is blocked by suspension or lack of a current paid period. Renewal and seat-remediation actions are blocked while the organization is suspended. |
+| BR-19 | The last active System Administrator of an organization cannot be deactivated or changed to another role. |
+| BR-20 | An Employee membership must have both department and job-position references. Member-profile changes validate these references against the organization. |
+| BR-21 | An account consumes an Employee seat only when the account and membership are active and the membership role is Employee. Activating or converting a member to Employee is rejected when no seat is available. |
+| BR-22 | Employee admission uses the lowest applicable current, unresolved-renewal or scheduled seat allocation; a pending smaller allocation cannot be bypassed by adding more Employees. |
+| BR-23 | Member changes must supply the current membership revision. Changes based on an outdated revision are rejected rather than overwriting a newer update. |
+| BR-24 | A subscription plan requires a name, description, positive whole VND price, positive duration in calendar months and positive whole Employee-seat allocation. Other currencies are not supported by the current plan validator. |
+| BR-25 | Purchasing or editing a plan requires its expected current version. If the terms have changed, the user must review and confirm the latest version. |
+| BR-26 | A payment order retains a snapshot of the purchased plan terms. Later plan edits do not change an existing order's price, duration or seat allocation. |
+| BR-27 | Repeating a purchase command with the same key and identical terms returns the existing order; using that key for different terms is rejected. |
+| BR-28 | An unresolved payment order must be reconciled before another order replaces it. An already-applied purchase cannot be purchased again under the same purchase context. |
+| BR-29 | In the enabled PayOS flow, payment is confirmed only from accepted provider evidence showing the full ordered amount paid in VND. Browser redirect state does not confirm payment. |
+| BR-30 | Provider-reference reuse across orders, mismatched payment terms, overpayment and conflicting late payment are recorded as payment exceptions instead of activating a subscription. |
+| BR-31 | Duplicate payment observations and repeated application processing must not create another workspace or another subscription period for the same applied purchase. |
+| BR-32 | Workspace provisioning requires a completed registration owned by the paying account. Provisioning creates that account's System Administrator membership. |
+| BR-33 | Workspace readiness requires subscription application and completion of the required catalog-copy setup; a recorded payment alone does not complete workspace handoff. |
+| BR-34 | A continuous renewal starts at the previous period's end; after a lapse, the new period starts when payment is applied. Subscription periods use the Asia/Ho_Chi_Minh calendar and do not overlap. |
+| BR-35 | Subscription end dates add the purchased number of calendar months, retain the billing anniversary day and clamp it to the target month's last day when necessary. A period includes its start but excludes its end. |
+| BR-36 | Renewal is rejected if a paid future period is already scheduled or the selected plan cannot accommodate the organization's counted Employee accounts. If capacity exceeds the purchased allocation at payment application, application waits for capacity remediation. |
+| BR-37 | A target-role code and version combination must be unique within its organization. The creation lookup normalizes the code to uppercase and uses version 1.0 when no version is supplied. |
+| BR-38 | A micro-skill cannot be its own prerequisite, and a new prerequisite relationship must not create a cycle in the skill graph. |
+| BR-39 | A prerequisite's minimum mastery must be between 0 and 1 inclusive. |
+| BR-40 | Target-role selection is available only to an active Employee and must resolve to a selectable role in that Employee's organization. |
+| BR-41 | Changing the selected target role is blocked while an assessment is in progress. Selecting the already-current role is a no-op rather than another selection change. |
+| BR-42 | An accepted target-role change ends the previous selection and archives its associated pathway while preserving selection history. Role selection does not itself start an assessment attempt. |
+| BR-43 | Creating or revising a baseline blueprint requires an active L&D Manager. A job position has one stable blueprint identity; revisions cannot move that blueprint to another job position. |
+| BR-44 | The fixed-form baseline blueprint must include exactly the available job position's roles and each role's resolvable micro-skills, without duplicate IDs. At least one role must participate in the assessment. |
+| BR-45 | In a participating fixed-form role, every micro-skill requires at least one Easy, one Medium and one Hard question. |
+| BR-46 | Participating fixed-form difficulty weights must total 1 and satisfy Hard > Medium > Easy >= 0.01. A difficulty with no questions must have zero weight. |
+| BR-47 | A baseline release line cannot have multiple pending changes or multiple open assessment candidates. A generated candidate must use the pending blueprint version. |
+| BR-48 | Only a Draft baseline candidate can be edited or reviewed. A Reviewed candidate must be replaced rather than edited and must be reviewed before publication. |
+| BR-49 | Only the currently active baseline assessment can be disabled. Historical restoration is blocked while another change is pending, and the already-active assessment cannot be restored again. |
+| BR-50 | Baseline and adaptive commands using an expected revision reject outdated state. Reusing a supported command key with different content is rejected. |
+| BR-51 | Adaptive attempts belong to the authenticated Employee and authorized assessment scope. Another Employee's attempt cannot be resumed or answered. |
+| BR-52 | Starting an adaptive assessment resumes the existing in-progress attempt in that scope. A scope with a mastery-producing completion cannot start another attempt under the same allowance. |
+| BR-53 | An adaptive attempt retains its starting blueprint, applicable skills, item-version pool, technical versions, applicable policy and deadline. Resuming it does not replace those inputs with current configuration. |
+| BR-54 | An adaptive answer is accepted only for an in-progress attempt at the expected revision and before its deadline. It must answer the currently presented item with one of that item's presented options, and that position must not already be answered. |
+| BR-55 | Adaptive answer correctness is calculated by the server from the pinned question version; the client cannot supply the accepted correctness or mastery result. |
+| BR-56 | An insufficient manual adaptive submission does not produce mastery. Trusted-input technical invalidation also records no mastery rather than inventing a result. |
+| BR-57 | Adaptive completion produces mastery only when the terminal policy succeeds and the resulting skill set matches the pinned scope. Missing required scoring or finalization dependencies block processing. |
+| BR-58 | Question-bank staff access is restricted to Experts and L&D Managers in an organization. Only the responsible Expert can edit a question or submit its draft. |
+| BR-59 | New question codes are generated by the system, must be unique in the question bank and cannot be changed. Imports cannot supply manually chosen question codes. |
+| BR-60 | A question requires a prompt and a valid micro-skill. Prompt and explanation lengths must not exceed 20,000 characters, and each choice must not exceed 5,000 characters. |
+| BR-61 | Before submission, a question must have four nonempty distinct choices, exactly one correct answer, an Easy/Medium/Hard difficulty and a nonempty explanation. Incomplete answer fields are allowed in a draft. |
+| BR-62 | Matching normalized prompt-and-choice content requires acknowledgment of the duplicate warning before saving or importing; duplicates are not silently accepted. |
+| BR-63 | Only an L&D Manager can approve a submitted question, and that manager must first open the exact submitted version. Approval is blocked if its micro-skill snapshot changed or its responsible Expert is no longer valid. |
+| BR-64 | Published question content is revised through a successor draft rather than by editing the published version. A submitted question must be withdrawn or returned before further draft editing. |
+| BR-65 | Withdrawal, return, responsibility transfer and availability decisions require a reason of at most 2,000 characters. Retirement/reactivation requires an Expert request and an L&D Manager decision. |
+| BR-66 | Bulk question approval accepts 1-500 distinct questions and validates the entire selection before applying approvals. |
+| BR-67 | A question import preview belongs to its creating Expert, expires after 30 minutes and cannot be committed with validation errors or unacknowledged warnings. Changed duplicate matches require a new preview. |
+| BR-68 | Current module authoring requires exactly one valid micro-skill teaching mapping and available learning content. It does not implement the proposed many-to-many module/skill authoring rule. |
+| BR-69 | The owning Expert submits a Draft or Returned module. An L&D Manager approves or returns it, and returning a submission requires feedback of at most 2,000 characters. |
+| BR-70 | A module becomes Released only after its approved catalog projection succeeds. A pending publication or archive projection must be retried rather than treated as completed. |
+| BR-71 | Module archival requires an Expert request and L&D Manager approval, and must not remove a required skill provider. Restoring an archived module creates a new draft requiring approval. |
+| BR-72 | Only an owning Expert's unreferenced, never-released, non-intake Draft module can be deleted. Referenced or previously released modules must be archived instead. |
+| BR-73 | Learning content supports at most 200 lessons with unique IDs. Submission requires at least one lesson and every lesson must be complete. |
+| BR-74 | Learning preview does not start a session. Starting learning pins a released module revision; later publication or archival does not silently replace that learner's pinned revision. |
+| BR-75 | A text lesson can be marked completed only after reaching its end. A video lesson requires at least 90% watched coverage; overlapping playback intervals do not count twice. |
+| BR-76 | Video progress must use valid playback positions and contiguous watched intervals of at most 15 seconds, within the allowed elapsed-viewing-time bound. Progress updates must target the pinned learning revision. |
+| BR-77 | Required skill scores and known mastery values must be between 0 and 1 inclusive. A role-gap calculation requires at least one mandatory skill and cannot contain duplicate skill requirements. |
+| BR-78 | For known evidence, skill gap = max(required score - stored conservative mastery, 0). Confidence is explanatory metadata and does not apply another mastery discount. |
+| BR-79 | Missing compatible evidence is reported as Unknown with a reason and null mastery/gap, not as zero mastery. A valid mastery value of zero remains known evidence. |
+| BR-80 | Learning is required when any mandatory skill has unknown evidence or a positive gap. Optional-skill gaps alone do not make learning required. |
+| BR-81 | Role/level confirmation must match the current selection revision and the previewed gap-input hash. A changed role/level is blocked during an active assessment, and stale selection or gap input must be refreshed. |
+| BR-82 | Initial-pathway review is restricted to the assigned Expert. Edits and approval must match the current draft revision and content hash; included modules must be eligible candidates. |
+| BR-83 | Initial-pathway approval requires a valid rechecked plan whose content identity matches the reviewed draft and whose learner selection is still current. A generated proposal is not an approved pathway. |
+| BR-84 | The Employee's actionable initial-pathway view contains approved modules only. Archived pathways preserve their approved historical view but provide no active module-entry access. |
+| BR-85 | Entry to an initial-pathway module requires current valid approval, matching role/catalog binding and available content. Unmet prerequisite readiness locks entry; unavailable required adapters do not bypass the gate. |
+
+**Implementation references:** Registration rules are grounded in [RegistrationFields](../backend/src/main/java/com/adaptlearngraph/entities/domain/RegistrationFields.java), [RegistrationService](../backend/src/main/java/com/adaptlearngraph/services/RegistrationService.java), [WorkspaceAuthenticationService](../backend/src/main/java/com/adaptlearngraph/services/WorkspaceAuthenticationService.java) and [IntegrationPolicy](../backend/src/main/java/com/adaptlearngraph/entities/domain/IntegrationPolicy.java). Workspace and payment rules are grounded in [SubscriptionAccessPolicy](../backend/src/main/java/com/adaptlearngraph/entities/domain/SubscriptionAccessPolicy.java), [JpaSubscriptionWorkspaceStore](../backend/src/main/java/com/adaptlearngraph/repository/JpaSubscriptionWorkspaceStore.java), [PlanTerms](../backend/src/main/java/com/adaptlearngraph/entities/domain/PlanTerms.java), [JpaPaymentOrderStore](../backend/src/main/java/com/adaptlearngraph/repository/JpaPaymentOrderStore.java), [JpaPaymentProcessingStore](../backend/src/main/java/com/adaptlearngraph/repository/JpaPaymentProcessingStore.java) and [BillingCalendar](../backend/src/main/java/com/adaptlearngraph/entities/domain/BillingCalendar.java). Catalog and assessment rules are grounded in [TargetRoleService](../backend/src/main/java/com/adaptlearngraph/services/TargetRoleService.java), [PrerequisiteService](../backend/src/main/java/com/adaptlearngraph/services/PrerequisiteService.java), [TargetSelectionCommandProcessor](../backend/src/main/java/com/adaptlearngraph/services/TargetSelectionCommandProcessor.java), [BaselineBlueprintService](../backend/src/main/java/com/adaptlearngraph/services/BaselineBlueprintService.java), [BaselineBlueprintDraftValidator](../backend/src/main/java/com/adaptlearngraph/services/BaselineBlueprintDraftValidator.java), [BaselineAssessmentLifecycle](../backend/src/main/java/com/adaptlearngraph/entities/domain/BaselineAssessmentLifecycle.java) and the [adaptive-attempt services](../backend/src/main/java/com/adaptlearngraph/services/AdaptiveAttemptStartService.java). Authoring and learning rules are grounded in [QuestionBankService](../backend/src/main/java/com/adaptlearngraph/services/QuestionBankService.java), [ModuleAuthoringService](../backend/src/main/java/com/adaptlearngraph/services/ModuleAuthoringService.java), [LearningContent](../backend/src/main/java/com/adaptlearngraph/entities/domain/LearningContent.java) and [LearningContentService](../backend/src/main/java/com/adaptlearngraph/services/LearningContentService.java). Gap and pathway rules are grounded in [RoleGap](../backend/src/main/java/com/adaptlearngraph/entities/domain/RoleGap.java), [InitialPathwayAdmission](../backend/src/main/java/com/adaptlearngraph/services/InitialPathwayAdmission.java), [InitialPathwayReview](../backend/src/main/java/com/adaptlearngraph/services/InitialPathwayReview.java), [InitialPathwayView](../backend/src/main/java/com/adaptlearngraph/services/InitialPathwayView.java) and [InitialPathwayAccess](../backend/src/main/java/com/adaptlearngraph/services/InitialPathwayAccess.java).
 
 ### 5.2 Common Requirements
 
@@ -2483,7 +2546,6 @@ These are **targets**, not measurements from this documentation task. Distinct p
 | 16 | R2-MSG-16 (Proposed) | Reporting explanation | Zero cost or incomplete finance inputs | ROI cannot be calculated for the selected inputs. Review costs, benefits, period and currency. |
 | 17 | R2-MSG-17 (Proposed) | Review confirmation | Offering returned | Revision requested. Review the feedback before resubmitting. |
 | 18 | R2-MSG-18 (Proposed) | Assessment result | Invalidated/insufficient evidence | This attempt did not produce sufficient valid mastery evidence. Review the available recovery action. |
-| 19 | JOB_POSITION_HAS_ACTIVE_ROLES (Current) | Destructive toast | Deactivating a job position that still has non-unpublished target roles | Cannot Deactivate Job Position: {jobPositionName} ({jobPositionCode}) still has active target role(s) assigned to it. Please unpublish all associated target roles before deactivating. |
 
 ### 5.4 Other Requirements
 
@@ -2508,7 +2570,7 @@ Manual review procedure:
 | Topic | Required follow-up |
 | --- | --- |
 | Authoring/publication | Replace gated legacy role/skill writes with current-model, trusted assignment-scoped workflows and the Expert-submit/L&D-publish split. |
-| Learning/content | Approve persistent module/content/assessment bundle, private MinIO access and revision workflow design. |
+| Learning/content | Approve persistent module/content bundle, private MinIO access and revision workflow design. |
 | AI/RIASEC | Select/version instrument and local model; approve minimized inference contract, failure handling and guidance entry ordering. |
 | Adaptive engine | Implement evidence-to-mastery, gap calculation, initial review and recalculation with replay/recovery semantics. |
 | Financial reporting | Approve actual costs/benefits schema, currency/period/zero-cost rules and realized-versus-scenario distinction. |

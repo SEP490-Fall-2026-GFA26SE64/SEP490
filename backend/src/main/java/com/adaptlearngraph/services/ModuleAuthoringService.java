@@ -120,7 +120,7 @@ public final class ModuleAuthoringService {
                 var p = doc.current().payload();
                 var teachings = p.teachings().stream().map(t -> new CatalogTeaching(t.metadata(), t.skillId(), t.skillName(), t.teachingFocus(), t.difficultyLevel())).toList();
                 combined.put(doc.id(), new CatalogItem(new CatalogModule(p.metadata(), p.title(), p.moduleType(), p.contentUri(),
-                        p.contentType(), p.contentVersion(), p.duration(), p.price(), teachings), doc));
+                        p.contentType(), p.contentVersion(), p.duration(), teachings,p.knowledgeLevel(),p.outcomeCodes(),p.skillVersion()), doc));
             }
         }
         String query = search == null ? "" : search.strip().toLowerCase(Locale.ROOT);
@@ -181,7 +181,8 @@ public final class ModuleAuthoringService {
                     source.contentType(), source.contentVersion(), assigned.jobPositionIds(), null, now);
             var teachings = source.teachings().stream().map(t -> new Teaching(draftMetadata(t.metadata()), t.skillId(), t.skillName(), t.teachingFocus(), t.difficultyLevel())).toList();
             var payload = new ModuleAuthoring.Package(draftMetadata(source.metadata()), source.title(), source.moduleType(), source.contentUri(),
-                    source.contentType(), source.contentVersion(), source.duration() == null ? 0 : source.duration(), source.price(), teachings, content);
+                    source.contentType(), source.contentVersion(), source.duration() == null ? 0 : source.duration(), teachings, content,
+                    source.knowledgeLevel(),source.outcomeCodes(),source.skillVersion());
             Intake accepted = new Intake(id, actor.organizationId(), assigned.jobPositionIds(), assigned.assignedBy(), assigned.assignedAt(), source, actor.id(), now, assigned.history(), assigned.expertId());
             Revision revision = new Revision(1, "DRAFT", payload, actor.id(), now, null, null, null);
             List<Event> history = new ArrayList<>(assigned.history());
@@ -221,7 +222,21 @@ public final class ModuleAuthoringService {
     public Document create(Save input) {
         Actor actor = staff(); expert(actor);
         return port.transaction(() -> {
-            String id = "MOD-" + UUID.randomUUID(); String now = ModuleAuthoring.now();
+            if(input==null || input.teachings()==null || input.teachings().size()!=1 || input.teachings().getFirst()==null
+                    || input.teachings().getFirst().skillId()==null || input.knowledgeLevel()==null)
+                throw new Failure(400,"Select one skill and knowledge level");
+            String skillCode=input.teachings().getFirst().skillId().replaceFirst("^MS-","");
+            if(!skillCode.matches("[A-Za-z0-9_-]{1,100}"))throw new Failure(400,"Invalid skill identity");
+            com.adaptlearngraph.entities.domain.KnowledgeLevel level;
+            try{level=com.adaptlearngraph.entities.domain.KnowledgeLevel.valueOf(input.knowledgeLevel());}
+            catch(IllegalArgumentException invalid){throw new Failure(400,"Select a knowledge level");}
+            String prefix="MOD-"+skillCode+"-"+level.name()+"-";
+            port.lockCatalogIdentity(prefix);
+            var used=new HashSet<>(port.managedModuleIds());port.graphModules(actor.organizationId()).forEach(module->used.add(module.metadata().id()));
+            int ordinal=1;while(used.contains(prefix+String.format(java.util.Locale.ROOT,"%02d",ordinal)))ordinal++;
+            String id=prefix+String.format(java.util.Locale.ROOT,"%02d",ordinal);port.lockCatalogIdentity(id);
+            if(port.managedModuleIds().contains(id))throw new Failure(409,"Module identity changed; retry creation");
+            String now = ModuleAuthoring.now();
             Revision revision = new Revision(1, "DRAFT", payload(actor, id, input, null), actor.id(), now, null, null, null);
             Document doc = new Document(id, actor.organizationId(), List.of(), actor.id(), now, 1,
                     false, false, null, List.of(revision), List.of(new Event(1, 1, "CREATE", actor.id(), now, "Created complete draft")));
@@ -235,6 +250,7 @@ public final class ModuleAuthoringService {
         Map<String, String> skills = new HashMap<>(); port.catalog("MicroSkill").forEach(c -> skills.put(c.id(), c.name()));
         if (input.teachings() == null || input.teachings().size() != 1 || input.teachings().getFirst() == null)
             throw new Failure(400, "Select exactly one skill");
+        var knowledge=port.requireKnowledge(actor.organizationId(),input.teachings().getFirst().skillId(),input.knowledgeLevel(),input.outcomeCodes());
         List<Teaching> mappings = input.teachings().stream().map(t -> {
             if (!skills.containsKey(t.skillId())) throw new Failure(400, "Unknown skill");
             String relationId = previous == null ? UUID.randomUUID().toString() : previous.teachings().stream()
@@ -244,7 +260,7 @@ public final class ModuleAuthoringService {
         }).toList();
         return new ModuleAuthoring.Package(new Metadata(id, "0.12.0", "DRAFT", "NEEDS_EXPERT_REVIEW", null, null),
                 input.title(), input.moduleType(), "module-content:" + content.id(), content.contentType(), content.contentVersion(),
-                input.duration(), input.price(), mappings, content);
+                input.duration(), mappings, content,knowledge.knowledgeLevel(),knowledge.outcomeCodes(),knowledge.skillVersion());
     }
     public Document update(String id, long expected, Save input) {
         Actor actor = staff(); expert(actor);
@@ -259,7 +275,8 @@ public final class ModuleAuthoringService {
             if (!before.moduleType().equals(input.moduleType())) changes.add("moduleType");
             if (!before.content().id().equals(input.contentId())) changes.add("content");
             if (before.duration() != input.duration()) changes.add("duration");
-            if (before.price().compareTo(input.price()) != 0) changes.add("price");
+            if(!Objects.equals(before.knowledgeLevel()==null?null:before.knowledgeLevel().name(),input.knowledgeLevel()))changes.add("knowledgeLevel");
+            if(!Objects.equals(before.outcomeCodes(),input.outcomeCodes()))changes.add("outcomeCodes");
             if (!before.teachings().stream().map(t -> new TeachingInput(t.skillId(), t.teachingFocus(), t.difficultyLevel())).toList().equals(input.teachings())) changes.add("teachings");
             return changed(doc, revision, actor, "EDIT", changes.isEmpty() ? "Saved unchanged package" : "Changed: " + String.join(", ", changes), doc.archived(), doc.releasedRevision());
         });
@@ -273,8 +290,12 @@ public final class ModuleAuthoringService {
             check(doc, expected); Revision old = doc.current();
             String next; String now = ModuleAuthoring.now(); boolean archived = doc.archived(); Integer released = doc.releasedRevision();
             switch (action) {
-                case "submit" -> { expert(actor); state(old, "DRAFT", "RETURNED"); validateContent(actor, old.payload().content()); next = "SUBMITTED"; }
-                case "return" -> { manager(actor); state(old, "SUBMITTED", "ARCHIVE_REQUESTED"); ModuleAuthoring.text(feedback, "feedback", 2000); next = old.state().equals("ARCHIVE_REQUESTED") ? "RELEASED" : "RETURNED"; }
+                case "submit" -> { expert(actor); state(old, "DRAFT", "RETURNED"); validateContent(actor, old.payload().content());
+                    var scope=port.requireKnowledge(actor.organizationId(),old.payload().teachings().getFirst().skillId(),
+                            old.payload().knowledgeLevel()==null?null:old.payload().knowledgeLevel().name(),old.payload().outcomeCodes());
+                    if(!scope.skillVersion().equals(old.payload().skillVersion()))throw new Failure(409,"Skill knowledge definition changed; revise the module");
+                    next = "SUBMITTED"; }
+                case "return" -> { manager(actor); state(old, "SUBMITTED", "ARCHIVE_REQUESTED", "PUBLISH_PENDING"); ModuleAuthoring.text(feedback, "feedback", 2000); next = old.state().equals("ARCHIVE_REQUESTED") ? "RELEASED" : "RETURNED"; }
                 case "approve" -> { manager(actor); state(old, "SUBMITTED");
                     if (doc.intake() != null && !doc.everReleased() && !source(actor, id).equals(doc.intake().source())) throw new Failure(409, "Catalog changed since intake; publication requires reconciliation");
                     validateContent(actor, old.payload().content()); next = "PUBLISH_PENDING"; }
@@ -284,13 +305,14 @@ public final class ModuleAuthoringService {
                 case "restore" -> {
                     expert(actor); if (!archived) throw new Failure(409, "Module is not archived");
                     ModuleAuthoring.Package p = old.payload();
-                    Save input = new Save(p.title(), p.moduleType(), p.content().id(), p.duration(), p.price(), doc.jobPositionIds(), p.teachings().stream().map(t -> new TeachingInput(t.skillId(), t.teachingFocus(), t.difficultyLevel())).toList());
+                    Save input = new Save(p.title(), p.moduleType(), p.content().id(), p.duration(), doc.jobPositionIds(), p.teachings().stream().map(t -> new TeachingInput(t.skillId(), t.teachingFocus(), t.difficultyLevel())).toList(),
+                            p.knowledgeLevel()==null?null:p.knowledgeLevel().name(),p.outcomeCodes());
                     Revision fresh = new Revision(old.number() + 1, "DRAFT", payload(actor, id, input, p), actor.id(), now, null, null, null);
                     return changed(doc, fresh, actor, "RESTORE", "Restored to draft; approval required", true, released);
                 }
                 default -> throw new Failure(400, "Unknown action");
             }
-            var payload = action.equals("return") && old.state().equals("SUBMITTED") ? old.payload().rejected(actor.id(), now) : old.payload();
+            var payload = action.equals("return") && !old.state().equals("ARCHIVE_REQUESTED") ? old.payload().rejected(actor.id(), now) : old.payload();
             Revision revision = new Revision(old.number(), next, payload, old.editedBy(), old.editedAt(),
                     actor.manager() && !action.equals("retry") ? actor.id() : old.decidedBy(),
                     actor.manager() && !action.equals("retry") ? now : old.decidedAt(), feedback);

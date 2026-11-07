@@ -80,8 +80,8 @@ public final class ModuleAuthoringMappings implements ModelMapperRegistrar {
             Package source = context.getSource();
             return new PackageResponse(nested(context, source.metadata(), MetadataResponse.class), source.title(),
                     source.moduleType(), source.contentUri(), source.contentType(), source.contentVersion(),
-                    source.duration(), source.price(), list(context, source.teachings(), TeachingResponse.class),
-                    nested(context, source.content(), ContentResponse.class));
+                    source.duration(), list(context, source.teachings(), TeachingResponse.class),
+                    nested(context, source.content(), ContentResponse.class),source.knowledgeLevel()==null?null:source.knowledgeLevel().name(),source.outcomeCodes(),source.skillVersion());
         });
         mapper.typeMap(Revision.class, RevisionResponse.class).setConverter(context -> {
             Revision source = context.getSource();
@@ -102,7 +102,8 @@ public final class ModuleAuthoringMappings implements ModelMapperRegistrar {
             CatalogModule source = context.getSource();
             return new CatalogModuleResponse(nested(context, source.metadata(), MetadataResponse.class), source.title(),
                     source.moduleType(), source.contentUri(), source.contentType(), source.contentVersion(),
-                    source.duration(), source.price(), list(context, source.teachings(), CatalogTeachingResponse.class));
+                    source.duration(), list(context, source.teachings(), CatalogTeachingResponse.class),
+                    source.knowledgeLevel()==null?null:source.knowledgeLevel().name(),source.outcomeCodes(),source.skillVersion());
         });
         mapper.typeMap(Intake.class, IntakeResponse.class).setConverter(context -> {
             Intake source = context.getSource();
@@ -140,8 +141,7 @@ public final class ModuleAuthoringMappings implements ModelMapperRegistrar {
         });
         mapper.typeMap(Save.class, ModuleInput.class).setConverter(context -> {
             Save source = context.getSource();
-            return new ModuleInput(source.title(), source.moduleType(), source.contentId(), source.duration(), source.price(),
-                    source.jobPositionIds(), list(context, source.teachings(), TeachingSelection.class));
+            return new ModuleInput(source.title(), source.moduleType(), source.contentId(), source.duration(), source.jobPositionIds(), list(context, source.teachings(), TeachingSelection.class),source.knowledgeLevel(),source.outcomeCodes());
         });
     }
 

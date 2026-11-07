@@ -1,7 +1,7 @@
 ---
-title: "Competency Ontology"
+title: "CERD-03 - Role Requirements and Learning Provision"
 config:
-  layout: elk
+  layout: dagre
   look: classic
   theme: base
   fontFamily: "Arial, sans-serif"
@@ -10,20 +10,18 @@ config:
   er: {nodeSpacing: 36, rankSpacing: 65, minEntityWidth: 140, diagramPadding: 24}
 ---
 erDiagram
-  C03_User["User"]
-  C03_Department["Department"]
-  C03_Job Position["Job Position"]
-  C03_Role["Target Role"]
-  C03_Level["Level"]
-  C03_Competency["Competency"]
-  C03_Skill["Skill"]
-  C03_Module["Learning Module"]
-  C03_Department }o--o{ C03_Job Position : "covers"
-  C03_Job Position ||--o{ C03_Role : "contains"
-  C03_Role |o--o{ C03_User : "selected by"
-  C03_Role ||--o{ C03_Level : "defines"
-  C03_Level ||--o{ C03_Competency : "requires"
-  C03_Competency }o--o{ C03_Skill : "groups"
-  C03_Level }o--o{ C03_Skill : "requires"
-  C03_Module }o--o{ C03_Skill : "teaches"
-  C03_Skill }o--o{ C03_Skill : "has prerequisite"
+  direction TB
+  TargetRole["TargetRole"]
+  RoleLevel["RoleLevel"]
+  RoleSkillRequirement["RoleSkillRequirement"]
+  Skill["Skill"]
+  LearningModule["LearningModule"]
+  Certificate["Certificate"]
+  SkillPrerequisite["SkillPrerequisite"]
+  TargetRole ||--o{ RoleLevel : "has member levels"
+  RoleLevel ||--o{ RoleSkillRequirement : "requires"
+  Skill ||--o{ RoleSkillRequirement : "required capability"
+  Skill ||--o{ LearningModule : "taught by"
+  Skill ||--o{ Certificate : "certificate provision"
+  Skill ||--o{ SkillPrerequisite : "dependent skill"
+  Skill ||--o{ SkillPrerequisite : "prerequisite skill"

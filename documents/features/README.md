@@ -8,13 +8,31 @@ The [Product Overview](../PRODUCT_OVERVIEW.md) provides the complete product-sco
 
 **Initial gap/pathway integration:** the [retained shared contract](../technical/initial-pathway/Initial%20pathway%20generation/Initial%20Pathway%20Flow%20and%20Data%20Design.md) defines REQ-041-F02 → explicit REQ-001-F02 confirmation → REQ-042-F01 → REQ-019-F01/REQ-020-F01/F02 → REQ-004-F01. [Workspace integration](../technical/Workspace%20Adaptive%20Integration.md) preserves those confirmed rules under the domain structure below. The branch contains persisted baseline/gap/generation/review/approved-view source; the new real-auth shared-development composition still needs runtime verification. Historical checkpoint results are not new executable evidence.
 
+## Selected Role baseline/pathway contract - 2026-11-05
+
+Latest confirmed feature direction supersedes earlier numeric/IRT/whole-path rules for this flow. C1 document acceptance is pending; this catalog claims no new runtime delivery. The separately authorized r3 batch now aligns architecture, target schema/API/overview and diagram images through the [canonical technical contract](../technical/Organization%20Rule%20Assessment%20and%20Pathway.md). This is target design, not runtime evidence; original research/submission obligations remain separately identified.
+
+| Owning feature | Current contract delta |
+| --- | --- |
+| [Assessment workflows](Assessment%20workflows/README.md#shared-engine-scope-and-policy) | Shared baseline/skill engine, org rules, frozen attempts/history, per-group results, veto and full retake. |
+| [Adaptive engine](Adaptive%20engine/README.md#profile-and-evidence-precedence) | Explicit requirements, diagnostic versus official evidence, alternatives, recalculation/bypass/backfill. |
+| [Role catalog](Role%20catalog/README.md#explicit-rolelevel-skill-requirements) | Explicit skill/knowledge levels replace numeric targets. |
+| [Learning catalog](Learning%20catalog/README.md#provision-modes-and-certificate-definitions) | One skill/knowledge scope per module, exclusive provision modes and Expert Add certificate. |
+| [Employee experience](Employee%20experience/README.md#employee-behavior-for-the-new-pathway) | Requirement-root pathway, independent progress, certificate link/PDF/picture and protected access. |
+| [Pathway review](Pathway%20review/README.md#fr-05-07) | Exact initial approval, certificate decisions and scoped missing-provision/bypass handling. |
+| [Role guidance](Role%20guidance/README.md#rolelevel-selection-and-lock) | Request-onset Role AND Level lock across selection/admission routes. |
+| [Development reporting](Development%20reporting/README.md#assessmentpathway-reporting-boundary---2026-11-05) | Direct input semantics only: official versus diagnostic/waived/pending. |
+| [Notifications and audit](Notifications%20and%20audit/README.md#assessmentpathway-decision-history-boundary---2026-11-05) | Direct decision-history/retry boundary only; exact routing remains open. |
+
+Keep current FE design. Requirement/skill roots branch to module alternatives; Expert Add certificate uses skill + level, Add and required reference URL; Employee submits link OR PDF OR picture. Detailed changed UI/data binding is reviewed in define C2. Mocks are not backend integration proof. Physical names/storage/constraints are not finalized.
+
 ## Current Reading Rules
 
 ## Reading Rules
 
-- Only section 3.2(c) defines the functional requirements in this catalog. Requirement names and descriptions retain the source wording; Markdown escaping is normalized for display.
+- Section 3.2(c) supplies the original 48 stable source records. The explicitly confirmed 2026-11-05 direction updates affected feature behavior/descriptions as marked above; it does not claim the unchanged Version 2 document already contains that revision. No IDs are added or reassigned.
 - FR-AA.NN is the source-level identifier: AA identifies the source actor group (01 Guest, 02 Platform Administrator, 03 System Administrator, 04 L&D Manager, 05 Expert, 06 Employee, 07 System); NN identifies the bullet assigned during this reconciliation. Keep these IDs stable in future revisions; do not renumber or reuse retired IDs.
-- Requirement ID, Requirement Name, Description and Actor are populated from the source. It does not specify complete precondition, ordered-flow, exception-flow, postcondition or acceptance contracts. Those five fields are deliberately empty for later design; blanks do not mean that no rules or tests will be needed.
+- Requirement ID, Requirement Name, Description and Actor are populated from the source. It does not specify complete precondition, ordered-flow, exception-flow, postcondition or acceptance contracts. Affected feature records now fill these fields from the confirmed direction; remaining blanks are still unspecified, not completed contracts.
 - Do not infer policies from old implementation notes, prototype fields or generic defaults. Details such as validation limits, timing, pricing, MFA, scoring formulas and retry behavior require later design; this catalog does not change application behavior or invalidate historical decisions outside its source-only scope.
 - Existing REQ-nnn and REQ-nnn-Fnn anchors remain in the owning domains as legacy traceability references. They are not additional active requirements and do not make every old subfunction a Version 2 obligation. Historical test IDs and results remain unchanged.
 - Implementation snapshots describe current behavior, inputs and limitations; they do not fill unspecified acceptance contracts with assumptions or redefine the source requirements. A mismatch between code and Version 2 is a gap, not an approved scope change.
@@ -38,7 +56,7 @@ The 2026-10-28 main/workspace integration updates the role-selection and baselin
 | --- | --- |
 | [Organization onboarding](Organization%20onboarding/README.md#current-implementation) | API-backed registration, email verification, administrator MFA, resumable onboarding, payment-driven provisioning and workspace handoff. Live external delivery is not certified here. |
 | [Subscription lifecycle](Subscription%20lifecycle/README.md#current-implementation) | API-backed plan selection/versioning, purchase, renewal, payment processing, periods and seats. Currency is currently VND-only. |
-| [Platform administration](Platform%20administration/README.md#current-implementation) | Real workspace listing/suspension; full organization administration and activity monitoring remain incomplete/prototype. |
+| [Platform administration](Platform%20administration/README.md#current-implementation) | API-backed read-only provisioned-organization directory with current administrators, subscription plan/period/status and confirmed suspension/reactivation (2026-11-04). Profile editing, preprovisioning registrations and real activity monitoring remain outside this delivered slice. |
 | [Workspace administration](Workspace%20administration/README.md#current-implementation) | Real account activation, member edits, single-role identity and billing access controls; settings/audit screens remain prototypes and catalog authorization is not fully integrated. |
 | [Departments and job positions](Departments%20and%20job positions/README.md#current-implementation) | Real member assignment to stored references; department CRUD, job position management and job position Expert assignments remain browser-only. |
 | [Role catalog](Role%20catalog/README.md#current-implementation) | Neo4j-backed roles and skill requirements with partial UI integration. Existing Expert publication conflicts with the required Expert-submit/L&D-publish workflow. |

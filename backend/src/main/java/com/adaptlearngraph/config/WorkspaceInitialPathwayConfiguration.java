@@ -34,8 +34,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 
-/** Real workspace identity only. Local persona configuration is mutually excluded. */
-@Configuration(proxyBeanMethods=false)
+/** Retained numeric workspace factories; not component-scanned or imported by requirement-based pathways. */
+@Deprecated
 @Profile("local & workspace-baseline & !local-baseline-demo & !prod")
 @ConditionalOnWebApplication(type=ConditionalOnWebApplication.Type.SERVLET)
 @ConditionalOnProperty(name={"pathway.initial.enabled","assessment.baseline.workspace.enabled"},havingValue="true")

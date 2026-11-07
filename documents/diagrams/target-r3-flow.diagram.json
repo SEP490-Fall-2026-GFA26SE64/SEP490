@@ -1,0 +1,24 @@
+{
+  "width": 1470, "height": 1040,
+  "title": "Flow r3 - assess the selected target, discover prerequisite needs later",
+  "subtitle": "Business data flow and key state distinctions; diagram is a target contract, not runtime proof.",
+  "nodes": [
+    {"id":"target","title":"1. Select Role + member Level","kind":"kept","x":30,"y":115,"w":420,"h":155,"fields":["Read explicit requiredKnowledgeLevels","Reuse exact official evidence only","Resolve MODULE_ONLY / CERTIFICATE_ONLY"]},
+    {"id":"base","title":"2. Baseline: separate config","kind":"changed","x":525,"y":115,"w":420,"h":155,"fields":["Freeze groups / paper / deadline","Save/resume; automatic timed finalization","Record diagnostics only for groups asked"]},
+    {"id":"initial","title":"3. Request + initial Expert review","kind":"changed","x":1020,"y":115,"w":420,"h":155,"fields":["A needs learning => A alternatives only","Do not add B from prerequisite edge yet","Request locks BOTH Role and Level"]},
+    {"id":"learn","title":"4. Learn one eligible alternative","kind":"changed","x":1020,"y":430,"w":420,"h":155,"fields":["Requirement roots branch to choices","Each module retains its own progress","Content alone is not official achievement"]},
+    {"id":"skill","title":"5. Skill assessment: own config","kind":"changed","x":525,"y":430,"w":420,"h":155,"fields":["Main + ALL configured prerequisite groups","Per-group pass / mandatory / optional veto","Every retake is a new FULL paper"]},
+    {"id":"needs","title":"6. Discover / record result","kind":"new","x":30,"y":430,"w":420,"h":155,"fields":["Missing B => Cần bổ sung + auto supplement","Official B failure => NEED_REVIEW only","Main waits on required conditions / veto"]},
+    {"id":"release","title":"7. Complete / bypass-only release","kind":"changed","x":30,"y":760,"w":420,"h":155,"fields":["Module + assessment OR approved certificate","Bypass is outstanding, never ACHIEVED","No other mandatory pending work => release"]},
+    {"id":"parallel","title":"8. New target + parallel old needs","kind":"new","x":750,"y":760,"w":690,"h":155,"fields":["Carry old bypass context as parallel supplementary learning","Even if new module/certificate arrives: no new-target prerequisite gate","Keep official / diagnostic / waived provenance distinct"]}
+  ],
+  "edges": [
+    {"from":"target","to":"base","points":[[450,190],[525,190]],"label":"scope","labelAt":[458,160]},
+    {"from":"base","to":"initial","points":[[945,190],[1020,190]],"label":"needs","labelAt":[950,160]},
+    {"from":"initial","to":"learn","points":[[1230,270],[1230,430]],"label":"exact approval","labelAt":[1240,340]},
+    {"from":"learn","to":"skill","points":[[1020,505],[945,505]],"label":"assess","labelAt":[952,476]},
+    {"from":"skill","to":"needs","points":[[525,505],[450,505]],"label":"result","labelAt":[458,476]},
+    {"from":"needs","to":"release","points":[[240,585],[240,760]],"label":"required work resolved","labelAt":[249,670]},
+    {"from":"release","to":"parallel","points":[[450,835],[750,835]],"label":"Employee selects another Role","labelAt":[477,806]}
+  ]
+}

@@ -1,0 +1,31 @@
+---
+title: "ACT-08 - Development reporting and financial accountability (target) - Swimlane"
+config: {theme: base, look: classic, flowchart: {htmlLabels: true}}
+---
+flowchart TD
+  subgraph Actor0["L&amp;D Manager"]
+    direction TB
+    SRS_ACT_08_N1(("Start"))
+    SRS_ACT_08_N2["Select department, job position<br/>and reporting period"]
+    SRS_ACT_08_N3["Record or correct training costs<br/>and monetary benefits"]
+    SRS_ACT_08_N4["Supply currency, period and<br/>supporting basis"]
+    SRS_ACT_08_N8["Review employee and department<br/>development summaries"]
+    SRS_ACT_08_N9(("End"))
+  end
+  subgraph Actor1["System Handler"]
+    direction TB
+    SRS_ACT_08_N5{"Financial inputs comparable and<br/>valid?"}
+    SRS_ACT_08_N6["Aggregate permitted results and<br/>calculate defined ROI"]
+    SRS_ACT_08_N7["Show missing, zero-cost or<br/>currency exception explicitly"]
+  end
+  SRS_ACT_08_N1 --> SRS_ACT_08_N2
+  SRS_ACT_08_N2 --> SRS_ACT_08_N3
+  SRS_ACT_08_N3 --> SRS_ACT_08_N4
+  SRS_ACT_08_N4 --> SRS_ACT_08_N5
+  SRS_ACT_08_N5 -->|"yes"| SRS_ACT_08_N6
+  SRS_ACT_08_N5 -->|"no"| SRS_ACT_08_N7
+  SRS_ACT_08_N6 --> SRS_ACT_08_N8
+  SRS_ACT_08_N7 --> SRS_ACT_08_N8
+  SRS_ACT_08_N8 --> SRS_ACT_08_N9
+
+  %% Fixed actor-column layout is exported by render-business-swimlanes.cjs.

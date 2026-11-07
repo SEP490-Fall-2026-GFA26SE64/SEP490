@@ -17,9 +17,14 @@ import { Input } from '../../../shared/components/ui/Input'
 import { LoadingCard } from '../../../shared/components/ui/LoadingCard'
 import { StatCard } from '../../../shared/components/ui/StatCard'
 import { WorkspaceLayout } from '../../../shared/layouts/WorkspaceLayout'
+import { rulePathwaysEnabled } from '../../../shared/api/requirementPathway'
+import { RequirementPathwayReviewQueue } from './RequirementPathwayReview'
 
 /** Original queue composition, backed exclusively by the authorized paged APIs. */
 export function ExpertPathwayReviewPage() {
+  return rulePathwaysEnabled ? <RequirementPathwayReviewQueue /> : <LegacyExpertPathwayReviewPage />
+}
+function LegacyExpertPathwayReviewPage() {
   const { t, language } = useTranslation(), tr = (key: string) => t('initialPathway.' + key), ui = (key: string) => tr('reviewUi.' + key)
   const session = useInitialPathwaySession(), authorized = session.data?.role === 'DOMAIN_EXPERT'
   const [offset, setOffset] = useState(0), [search, setSearch] = useState(''), [status, setStatus] = useState('ALL')

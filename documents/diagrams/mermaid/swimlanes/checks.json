@@ -1,0 +1,416 @@
+[
+  {
+    "id": "act-01",
+    "originalHash": "dcea67e5b74679f0dfaeaa67a4b0a0cdadfd05a0263eff5bb47a8da86b3fa331",
+    "originalNodes": 23,
+    "originalEdges": 25,
+    "width": 1450,
+    "height": 4113,
+    "nodes": 23,
+    "edges": 25,
+    "arrowheads": 25,
+    "actors": [
+      "Guest",
+      "System Handler",
+      "payOS"
+    ],
+    "clippedText": [],
+    "outsideShapes": [],
+    "outsideLanes": [],
+    "nodeNodeCollisions": [],
+    "labelNodeCollisions": [],
+    "labelLabelCollisions": [],
+    "labelArrowheadCollisions": [],
+    "validXml": true,
+    "previousRouting": {
+      "overlapPixels": 0,
+      "overlappingPairs": 0,
+      "crossings": 0
+    },
+    "initialRouting": {
+      "overlapPixels": 78,
+      "overlappingPairs": 6,
+      "crossings": 18
+    },
+    "optimizedRouting": {
+      "overlapPixels": 0,
+      "overlappingPairs": 0,
+      "crossings": 0
+    },
+    "graphParity": "Passed",
+    "actorOwnership": "Passed",
+    "routeNodeCrossings": 0,
+    "clippedArrowheads": 0,
+    "pageErrors": []
+  },
+  {
+    "id": "act-02",
+    "originalHash": "2a8156940347e7d97f5a62b34fdea20c40242507f57c41455c2bf14df84ca3c7",
+    "originalNodes": 14,
+    "originalEdges": 15,
+    "width": 1910,
+    "height": 2687,
+    "nodes": 14,
+    "edges": 15,
+    "arrowheads": 15,
+    "actors": [
+      "System Administrator",
+      "payOS",
+      "System Handler",
+      "Platform Administrator"
+    ],
+    "clippedText": [],
+    "outsideShapes": [],
+    "outsideLanes": [],
+    "nodeNodeCollisions": [],
+    "labelNodeCollisions": [],
+    "labelLabelCollisions": [],
+    "labelArrowheadCollisions": [],
+    "validXml": true,
+    "previousRouting": {
+      "overlapPixels": 0,
+      "overlappingPairs": 0,
+      "crossings": 3
+    },
+    "initialRouting": {
+      "overlapPixels": 81,
+      "overlappingPairs": 5,
+      "crossings": 5
+    },
+    "optimizedRouting": {
+      "overlapPixels": 0,
+      "overlappingPairs": 0,
+      "crossings": 3
+    },
+    "graphParity": "Passed",
+    "actorOwnership": "Passed",
+    "routeNodeCrossings": 0,
+    "clippedArrowheads": 0,
+    "pageErrors": []
+  },
+  {
+    "id": "act-03",
+    "originalHash": "df29fd8a3b47197702eecfcfd267981143aab751cfefb2e99447d84dd8c18645",
+    "originalNodes": 10,
+    "originalEdges": 10,
+    "width": 1450,
+    "height": 1797,
+    "nodes": 10,
+    "edges": 10,
+    "arrowheads": 10,
+    "actors": [
+      "L&D Manager",
+      "Expert",
+      "Employee"
+    ],
+    "clippedText": [],
+    "outsideShapes": [],
+    "outsideLanes": [],
+    "nodeNodeCollisions": [],
+    "labelNodeCollisions": [],
+    "labelLabelCollisions": [],
+    "labelArrowheadCollisions": [],
+    "validXml": true,
+    "previousRouting": {
+      "overlapPixels": 0,
+      "overlappingPairs": 0,
+      "crossings": 2
+    },
+    "initialRouting": {
+      "overlapPixels": 24,
+      "overlappingPairs": 2,
+      "crossings": 5
+    },
+    "optimizedRouting": {
+      "overlapPixels": 0,
+      "overlappingPairs": 0,
+      "crossings": 2
+    },
+    "graphParity": "Passed",
+    "actorOwnership": "Passed",
+    "routeNodeCrossings": 0,
+    "clippedArrowheads": 0,
+    "pageErrors": []
+  },
+  {
+    "id": "act-04",
+    "originalHash": "8c92166e68533722f39e1b2e61309a53d1aa7ed481e8816307a3f84d32d33ca5",
+    "originalNodes": 11,
+    "originalEdges": 11,
+    "width": 1910,
+    "height": 1933,
+    "nodes": 11,
+    "edges": 11,
+    "arrowheads": 11,
+    "actors": [
+      "Expert",
+      "L&D Manager",
+      "System Handler",
+      "Employee"
+    ],
+    "clippedText": [],
+    "outsideShapes": [],
+    "outsideLanes": [],
+    "nodeNodeCollisions": [],
+    "labelNodeCollisions": [],
+    "labelLabelCollisions": [],
+    "labelArrowheadCollisions": [],
+    "validXml": true,
+    "previousRouting": {
+      "overlapPixels": 0,
+      "overlappingPairs": 0,
+      "crossings": 3
+    },
+    "initialRouting": {
+      "overlapPixels": 24,
+      "overlappingPairs": 2,
+      "crossings": 6
+    },
+    "optimizedRouting": {
+      "overlapPixels": 0,
+      "overlappingPairs": 0,
+      "crossings": 3
+    },
+    "graphParity": "Passed",
+    "actorOwnership": "Passed",
+    "routeNodeCrossings": 0,
+    "clippedArrowheads": 0,
+    "pageErrors": []
+  },
+  {
+    "id": "act-05",
+    "originalHash": "e6bc54617a51235ed5e99b2571d8b81cd6fd17b18b0def4dd1f734c25191d289",
+    "originalNodes": 35,
+    "originalEdges": 41,
+    "width": 2550,
+    "height": 8045,
+    "nodes": 35,
+    "edges": 41,
+    "arrowheads": 41,
+    "actors": [
+      "L&D Manager",
+      "Expert",
+      "System Handler",
+      "Employee"
+    ],
+    "clippedText": [],
+    "outsideShapes": [],
+    "outsideLanes": [],
+    "nodeNodeCollisions": [],
+    "labelNodeCollisions": [],
+    "labelLabelCollisions": [],
+    "labelArrowheadCollisions": [],
+    "validXml": true,
+    "previousRouting": {
+      "overlapPixels": 13,
+      "overlappingPairs": 1,
+      "crossings": 24
+    },
+    "initialRouting": {
+      "overlapPixels": 416,
+      "overlappingPairs": 18,
+      "crossings": 55
+    },
+    "optimizedRouting": {
+      "overlapPixels": 13,
+      "overlappingPairs": 1,
+      "crossings": 24
+    },
+    "previousParallelSpacing": {
+      "requiredGap": 24,
+      "minimumParallelRun": 48,
+      "crowdedSegments": 0,
+      "minimumGap": 28
+    },
+    "parallelSpacing": {
+      "requiredGap": 24,
+      "minimumParallelRun": 48,
+      "crowdedSegments": 0,
+      "minimumGap": 28
+    },
+    "graphParity": "Passed",
+    "actorOwnership": "Passed",
+    "routeNodeCrossings": 0,
+    "clippedArrowheads": 0,
+    "pageErrors": []
+  },
+  {
+    "id": "act-07",
+    "originalHash": "0e91fce0fc2882258d6b67e83a6e20bb80452fb8da264677ba00ee5b9c30f2f5",
+    "originalNodes": 8,
+    "originalEdges": 7,
+    "width": 990,
+    "height": 1467,
+    "nodes": 8,
+    "edges": 7,
+    "arrowheads": 7,
+    "actors": [
+      "Employee",
+      "System Handler"
+    ],
+    "clippedText": [],
+    "outsideShapes": [],
+    "outsideLanes": [],
+    "nodeNodeCollisions": [],
+    "labelNodeCollisions": [],
+    "labelLabelCollisions": [],
+    "labelArrowheadCollisions": [],
+    "validXml": true,
+    "previousRouting": {
+      "overlapPixels": 0,
+      "overlappingPairs": 0,
+      "crossings": 0
+    },
+    "initialRouting": {
+      "overlapPixels": 0,
+      "overlappingPairs": 0,
+      "crossings": 0
+    },
+    "optimizedRouting": {
+      "overlapPixels": 0,
+      "overlappingPairs": 0,
+      "crossings": 0
+    },
+    "graphParity": "Passed",
+    "actorOwnership": "Passed",
+    "routeNodeCrossings": 0,
+    "clippedArrowheads": 0,
+    "pageErrors": []
+  },
+  {
+    "id": "act-08",
+    "originalHash": "2f6600b7c7340890748541f5d25c1d01dff1cdc3d7282348c8ed8a266b36fe8b",
+    "originalNodes": 9,
+    "originalEdges": 9,
+    "width": 990,
+    "height": 1749,
+    "nodes": 9,
+    "edges": 9,
+    "arrowheads": 9,
+    "actors": [
+      "L&D Manager",
+      "System Handler"
+    ],
+    "clippedText": [],
+    "outsideShapes": [],
+    "outsideLanes": [],
+    "nodeNodeCollisions": [],
+    "labelNodeCollisions": [],
+    "labelLabelCollisions": [],
+    "labelArrowheadCollisions": [],
+    "validXml": true,
+    "previousRouting": {
+      "overlapPixels": 0,
+      "overlappingPairs": 0,
+      "crossings": 0
+    },
+    "initialRouting": {
+      "overlapPixels": 24,
+      "overlappingPairs": 2,
+      "crossings": 2
+    },
+    "optimizedRouting": {
+      "overlapPixels": 0,
+      "overlappingPairs": 0,
+      "crossings": 0
+    },
+    "graphParity": "Passed",
+    "actorOwnership": "Passed",
+    "routeNodeCrossings": 0,
+    "clippedArrowheads": 0,
+    "pageErrors": []
+  },
+  {
+    "id": "act-09",
+    "originalHash": "ab19712b1c803286cc66522e8e79e4e81714bded3c5d83628a85a08d287299a7",
+    "originalNodes": 10,
+    "originalEdges": 10,
+    "width": 3750,
+    "height": 2365,
+    "nodes": 19,
+    "edges": 21,
+    "arrowheads": 21,
+    "actors": [
+      "Guest",
+      "L&D Manager",
+      "System Administrator",
+      "System Handler",
+      "Platform Administrator",
+      "SMTP Service",
+      "Expert",
+      "Employee"
+    ],
+    "clippedText": [],
+    "outsideShapes": [],
+    "outsideLanes": [],
+    "nodeNodeCollisions": [],
+    "labelNodeCollisions": [],
+    "labelLabelCollisions": [],
+    "labelArrowheadCollisions": [],
+    "validXml": true,
+    "previousRouting": {
+      "overlapPixels": 0,
+      "overlappingPairs": 0,
+      "crossings": 2
+    },
+    "initialRouting": {
+      "overlapPixels": 430,
+      "overlappingPairs": 16,
+      "crossings": 9
+    },
+    "optimizedRouting": {
+      "overlapPixels": 0,
+      "overlappingPairs": 0,
+      "crossings": 2
+    },
+    "graphParity": "Passed",
+    "actorOwnership": "Passed",
+    "routeNodeCrossings": 0,
+    "clippedArrowheads": 0,
+    "pageErrors": []
+  },
+  {
+    "id": "act-10",
+    "originalHash": "2668add54d1ef2091c19871e0a31ced21d4f2a3d4ff62280d1c497115adf82f9",
+    "originalNodes": 10,
+    "originalEdges": 10,
+    "width": 1450,
+    "height": 1881,
+    "nodes": 10,
+    "edges": 10,
+    "arrowheads": 10,
+    "actors": [
+      "Responsible Expert",
+      "System Handler",
+      "L&D Manager"
+    ],
+    "clippedText": [],
+    "outsideShapes": [],
+    "outsideLanes": [],
+    "nodeNodeCollisions": [],
+    "labelNodeCollisions": [],
+    "labelLabelCollisions": [],
+    "labelArrowheadCollisions": [],
+    "validXml": true,
+    "previousRouting": {
+      "overlapPixels": 0,
+      "overlappingPairs": 0,
+      "crossings": 0
+    },
+    "initialRouting": {
+      "overlapPixels": 24,
+      "overlappingPairs": 2,
+      "crossings": 3
+    },
+    "optimizedRouting": {
+      "overlapPixels": 0,
+      "overlappingPairs": 0,
+      "crossings": 0
+    },
+    "graphParity": "Passed",
+    "actorOwnership": "Passed",
+    "routeNodeCrossings": 0,
+    "clippedArrowheads": 0,
+    "pageErrors": []
+  }
+]

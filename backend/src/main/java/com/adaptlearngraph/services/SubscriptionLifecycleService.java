@@ -75,8 +75,9 @@ public final class SubscriptionLifecycleService implements SubscriptionLifecycle
     }
     @Override
     public List<Workspace> workspaces() {
-        workspaces.require(identity.current().actor(),null,Action.SUSPENSION,clock.instant());
-        return workspaces.workspaces();
+        var now = clock.instant();
+        workspaces.require(identity.current().actor(),null,Action.SUSPENSION,now);
+        return workspaces.workspaces(now);
     }
     @Override
     public void suspend(UUID organizationId,boolean suspended) {

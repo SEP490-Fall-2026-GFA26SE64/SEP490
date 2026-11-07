@@ -1,44 +1,40 @@
 ---
-title: "ST-19 - Initial pathway generation and review"
-config: {"theme":"base","fontFamily":"Segoe UI, Arial, sans-serif","themeVariables":{"fontFamily":"Segoe UI, Arial, sans-serif","fontSize":"16px","primaryColor":"#ffffff","primaryTextColor":"#0f1729","primaryBorderColor":"#64748b","secondaryColor":"#fef3eb","tertiaryColor":"#ffffff","lineColor":"#64748b","textColor":"#0f1729","mainBkg":"#ffffff","background":"#ffffff","clusterBkg":"#ffffff","clusterBorder":"#64748b","edgeLabelBackground":"#ffffff","titleColor":"#0f1729","noteBkgColor":"#fef3eb","noteTextColor":"#0f1729","noteBorderColor":"#e6650f","labelColor":"#0f1729","compositeBackground":"#ffffff","compositeTitleBackground":"#ffffff","compositeBorder":"#64748b","altBackground":"#ffffff","nodeBorder":"#64748b","nodeTextColor":"#0f1729","cScale0":"#ffffff","cScaleLabel0":"#0f1729","cScale1":"#ffffff","cScaleLabel1":"#0f1729","cScale2":"#ffffff","cScaleLabel2":"#0f1729","cScale3":"#ffffff","cScaleLabel3":"#0f1729","cScale4":"#ffffff","cScaleLabel4":"#0f1729","cScale5":"#ffffff","cScaleLabel5":"#0f1729","cScale6":"#ffffff","cScaleLabel6":"#0f1729","cScale7":"#ffffff","cScaleLabel7":"#0f1729","cScale8":"#ffffff","cScaleLabel8":"#0f1729","cScale9":"#ffffff","cScaleLabel9":"#0f1729","cScale10":"#ffffff","cScaleLabel10":"#0f1729","cScale11":"#ffffff","cScaleLabel11":"#0f1729","secondaryBorderColor":"#64748b","tertiaryBorderColor":"#64748b","secondaryTextColor":"#0f1729","tertiaryTextColor":"#0f1729"},"state":{"nodeSpacing":42,"rankSpacing":64,"padding":16,"fontSize":16,"wrappingWidth":250}}
+title: "ST-19 - Pathway Generation, Review and Target Release"
+config: {"theme":"base","fontFamily":"Segoe UI, Arial, sans-serif","themeVariables":{"fontFamily":"Segoe UI, Arial, sans-serif","fontSize":"16px","primaryColor":"#ffffff","primaryTextColor":"#0f1729","primaryBorderColor":"#64748b","secondaryColor":"#fef3eb","tertiaryColor":"#ffffff","lineColor":"#64748b","textColor":"#0f1729","mainBkg":"#ffffff","background":"#ffffff","clusterBkg":"#ffffff","clusterBorder":"#64748b","edgeLabelBackground":"#ffffff","titleColor":"#0f1729","noteBkgColor":"#fef3eb","noteTextColor":"#0f1729","noteBorderColor":"#e6650f","labelColor":"#0f1729","compositeBackground":"#ffffff","compositeTitleBackground":"#ffffff","compositeBorder":"#64748b","altBackground":"#ffffff","nodeBorder":"#64748b","nodeTextColor":"#0f1729","cScale0":"#ffffff","cScaleLabel0":"#0f1729","cScale1":"#ffffff","cScaleLabel1":"#0f1729","cScale2":"#ffffff","cScaleLabel2":"#0f1729","cScale3":"#ffffff","cScaleLabel3":"#0f1729","cScale4":"#ffffff","cScaleLabel4":"#0f1729","cScale5":"#ffffff","cScaleLabel5":"#0f1729","cScale6":"#ffffff","cScaleLabel6":"#0f1729","cScale7":"#ffffff","cScaleLabel7":"#0f1729","cScale8":"#ffffff","cScaleLabel8":"#0f1729","cScale9":"#ffffff","cScaleLabel9":"#0f1729","cScale10":"#ffffff","cScaleLabel10":"#0f1729","cScale11":"#ffffff","cScaleLabel11":"#0f1729","secondaryBorderColor":"#64748b","tertiaryBorderColor":"#64748b","secondaryTextColor":"#0f1729","tertiaryTextColor":"#0f1729"},"state":{"nodeSpacing":42,"rankSpacing":64,"padding":16,"fontSize":16,"wrappingWidth":250},"look":"neo"}
 ---
 stateDiagram-v2
-  state "Pathway Request: Generation Status" as Group0 {
-    state "PENDING" as pending
-    state "GENERATING" as generating
-    state "SUCCEEDED" as success
-    state "NO_LEARNING_REQUIRED" as noLearn
-    state "UNRESOLVED" as unresolved
-    state "BLOCKED" as blocked
-    state "FAILED_RETRYABLE" as retry
-    state "STALE" as stale
-    [*] --> pending : explicit confirmation
-    pending --> generating : System starts processing
-    generating --> success : Valid pathway found; search completed
-    generating --> noLearn : no mandatory need
-    generating --> unresolved : infeasible / cycle / search limit, not proved
-    generating --> blocked : missing configuration / invalid input / retry exhausted
-    generating --> retry : transient failure; attempts remain
-    retry --> generating : backoff + System starts processing
-    retry --> blocked : Retry limit reached
-    generating --> stale : Source or selection changed
-  }
-  state "Pathway Request: Review and Validation" as Group1 {
-    state "AWAITING_EXPERT_REVIEW<br/>validation = VALID" as valid
-    state "AWAITING_EXPERT_REVIEW<br/>validation = UNRESOLVED" as invalidDraft
-    state "APPROVED<br/>exact revision + content hash" as approved
-    state "NONE<br/>no current proposal" as none
-    valid --> invalidDraft : save edit with uncovered need
-    invalidDraft --> valid : save eligible repair; fixed set validates
-    valid --> approved : assigned Expert confirms the reviewed valid version
-    [*] --> none
-    none --> valid : Initial pathway generated; first revision saved
-  }
+  direction TB
+  state "PENDING" as pending
+  state "GENERATING" as generating
+  state "AWAITING_EXPERT_REVIEW" as review
+  state "FAILED_RETRYABLE" as retry
+  state "BLOCKED_OR_UNRESOLVED" as blocked
+  state "APPROVED" as approved
+  state "LEARNING" as learning
+  state "COMPLETED" as completed
+  state "BYPASS_ONLY<br/>Needs supplementation remains" as bypass
+  [*] --> pending : Confirm reviewed profile request
+  pending --> generating : Freeze Role-Level input
+  generating --> completed : No learning required
+  generating --> review : Proposal and provision check
+  generating --> retry : Transient generation failure
+  generating --> blocked : Planning error
+  retry --> generating : Retry within allowed policy
+  blocked --> generating : Repair and retry
+  review --> review : Expert edits or repairs proposal
+  review --> approved : Expert approves exact valid revision
+  approved --> learning : Non-bypassed requirements remain
+  approved --> bypass : Only accepted bypasses remain
+  learning --> learning : Assess and recalculate
+  learning --> review : New missing provision
+  learning --> completed : All required work met
+  learning --> bypass : Only accepted bypasses remain
+  completed --> [*] : Permit target change
+  bypass --> [*] : Permit change, preserve gaps
   classDef accepted fill:#eaf6ef,stroke:#1a9e4a,color:#0f1729,stroke-width:1.5px
   classDef attention fill:#fdf2f2,stroke:#dc2828,color:#0f1729,stroke-width:1.5px
   classDef working fill:#fef3eb,stroke:#e6650f,color:#0f1729,stroke-width:1.5px
-  class pending working
-  class generating working
-  class success accepted
+  class pending,generating,review,learning working
+  class approved,completed accepted
   class blocked attention
-  class approved accepted
+  class bypass working

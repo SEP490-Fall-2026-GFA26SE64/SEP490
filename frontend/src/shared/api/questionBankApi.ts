@@ -1,11 +1,12 @@
 import { workspaceFetch } from './workspaceFetch'
-export interface BankContent { prompt: string; options: string[]; correctAnswer: number | null; skillId: string; skillName: string | null; difficulty: string | null; explanation: string | null }
-export interface BankVersion { id: string; number: number; state: 'DRAFT' | 'SUBMITTED' | 'PUBLISHED'; content: BankContent; editedBy: string | null; editedAt: string | null; submittedBy: string | null; submittedAt: string | null; reviewedBy: string | null; reviewedAt: string | null; reason: string | null; viewed: Record<string,string> }
+export interface BankContent { prompt: string; options: string[]; correctAnswer: number | null; skillId: string; skillName: string | null; knowledgeLevel: string | null; outcomeCode: string | null; mandatory: boolean; explanation: string | null }
+export interface BankVersion { id: string; number: number; state: 'DRAFT' | 'SUBMITTED' | 'PUBLISHED'; content: BankContent; editedBy: string | null; editedAt: string | null; submittedBy: string | null; submittedAt: string | null; reviewedBy: string | null; reviewedAt: string | null; reason: string | null; viewed: Record<string,string>; publicationSource?: string | null }
 export interface BankQuestion { id: string; code: string; createdBy: string | null; createdAt: string | null; owner: string | null; revision: number; retired: boolean; request: 'RETIRE' | 'REACTIVATE' | null; versions: BankVersion[] }
 export interface BankAudit { id: string; question: string; version: string | null; action: string; actor: string; at: string; reason: string | null; snapshot: BankContent | null }
 export interface BankView { id: string; name: string; questions: BankQuestion[]; history: BankAudit[] }
 export interface BankChoice { id: string; name: string }
-export interface BankSession { actor: { id: string; organization: string; role: 'DOMAIN_EXPERT' | 'LD_MANAGER' }; skills: BankChoice[]; experts: BankChoice[]; people: BankChoice[]; maxImportRows: number; maxImportBytes: number }
+export interface BankKnowledgeChoice { skillId: string; knowledgeLevel: string; outcomes: BankChoice[] }
+export interface BankSession { actor: { id: string; organization: string; role: 'DOMAIN_EXPERT' | 'LD_MANAGER' }; skills: BankChoice[]; experts: BankChoice[]; people: BankChoice[]; maxImportRows: number; maxImportBytes: number; knowledge?: BankKnowledgeChoice[] }
 export interface BankNotice { id: string; recipient: string; title: string; body: string; createdAt: string; readAt: string | null }
 export interface BankRow { code?: string; content: BankContent }
 export interface BankPreview { id: string; expiresAt: string; rows: BankRow[]; errors: string[]; warnings: string[]; committed: boolean; expected: Record<string,number> }

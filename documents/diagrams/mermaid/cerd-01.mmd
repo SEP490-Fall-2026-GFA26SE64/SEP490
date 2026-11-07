@@ -1,7 +1,7 @@
 ---
-title: "Identity & Subscription"
+title: "CERD-01 - Role-Level Selection and Baseline Configuration"
 config:
-  layout: elk
+  layout: dagre
   look: classic
   theme: base
   fontFamily: "Arial, sans-serif"
@@ -10,22 +10,20 @@ config:
   er: {nodeSpacing: 36, rankSpacing: 65, minEntityWidth: 140, diagramPadding: 24}
 ---
 erDiagram
-  C01_Organization["Organization"]
-  C01_User["User"]
-  C01_Role["Role"]
-  C01_Department["Department"]
-  C01_Registration["Registration"]
-  C01_Plan["Subscription Plan"]
-  C01_Subscription["Subscription"]
-  C01_Payment["Payment"]
-  C01_Organization ||--o{ C01_Department : "contains"
-  C01_Organization |o--o{ C01_User : "has members"
-  C01_Department |o--o{ C01_User : "groups"
-  C01_Role |o--o{ C01_User : "assigned to"
-  C01_User ||--o| C01_Registration : "initiates"
-  C01_Registration |o--o| C01_Organization : "establishes"
-  C01_Organization ||--o| C01_Subscription : "holds"
-  C01_User ||--o{ C01_Payment : "initiates"
-  C01_Plan ||--o{ C01_Payment : "provides terms"
-  C01_Registration |o--o{ C01_Payment : "initial purchase"
-  C01_Subscription |o--o{ C01_Payment : "funded by"
+  direction TB
+  Organization["Organization"]
+  Account["Account"]
+  TargetRole["TargetRole"]
+  RoleLevel["RoleLevel"]
+  RoleSelection["RoleSelection"]
+  BaselineConfig["BaselineConfig"]
+  BaselineConfigVersion["BaselineConfigVersion"]
+  Organization ||--o{ Account : "contains"
+  Organization ||--o{ TargetRole : "owns"
+  TargetRole ||--o{ RoleLevel : "has member levels"
+  Account ||--o{ RoleSelection : "selects"
+  RoleLevel ||--o{ RoleSelection : "target history"
+  RoleLevel ||--o{ BaselineConfig : "tenant baseline configuration"
+  Account ||--o{ BaselineConfig : "L&D creates"
+  BaselineConfig ||--o{ BaselineConfigVersion : "releases"
+  BaselineConfig o|--o| BaselineConfigVersion : "active pointer"

@@ -1,0 +1,45 @@
+{
+  "date": "2026-11-06",
+  "scope": "ST-14 only, approved rule-based result correction",
+  "states": [
+    "IN_PROGRESS",
+    "SUBMITTED",
+    "PASSED",
+    "FAILED"
+  ],
+  "submission": "Employee explicit submit",
+  "resultRule": "L&D configured; threshold is not hard-coded",
+  "example": {
+    "totalQuestions": 10,
+    "requiredCorrectCount": 7,
+    "passed": "correctCount >= 7",
+    "failed": "correctCount < 7"
+  },
+  "removed": [
+    "evidence sufficiency",
+    "AUTO_SUBMITTED",
+    "ADAPTIVE_STOP",
+    "INVALIDATED"
+  ],
+  "unrelatedStateSourcesAndImages": "Unchanged (hash comparison)",
+  "render": {
+    "id": "st-14",
+    "width": 484,
+    "height": 683,
+    "parse": "Passed",
+    "render": "Passed",
+    "pageErrors": [],
+    "labelNodeCollisions": [],
+    "labelLabelCollisions": [],
+    "frameExpansions": 1,
+    "frameCollisions": []
+  },
+  "svgXml": "Passed",
+  "visualReview": "Passed",
+  "hashes": {
+    "mmd": "f78883e0093ce110ce2690d4ae70a9d9254a60c9807e673952e7eec617d98677",
+    "svg": "ad7698b916125d93463aa274ad984b9ea6b4d28b9788624978f91513972bbb03",
+    "png": "453bf1aeed23d46a6e93d778734059fe84b1ad40817bfdecde1da58dc2fbdfa0"
+  },
+  "scopeBoundary": "Documentation only; no application or physical schema changes"
+}

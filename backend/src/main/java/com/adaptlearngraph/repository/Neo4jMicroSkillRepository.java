@@ -4,6 +4,7 @@ import com.adaptlearngraph.entities.domain.MicroSkill;
 import com.adaptlearngraph.entities.domain.MicroSkillId;
 import com.adaptlearngraph.entities.MicroSkillNode;
 import com.adaptlearngraph.entities.domain.SkillStatus;
+import com.adaptlearngraph.entities.domain.SkillProvision;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -66,6 +67,13 @@ public class Neo4jMicroSkillRepository implements MicroSkillRepository {
     public MicroSkill save(MicroSkill microSkill) {
         writes.executeWithoutResult(status -> {
             Neo4jTenantGuard.requireOwnedOrAbsent(client, "MicroSkill", microSkill.getId().toString(), microSkill.getOrganizationId());
+            // Serialize with other edits of this exact owned node before checking the source version.
+            var versions=client.query("MATCH (s:MicroSkill {id:$id,organizationId:$org}) SET s.version=s.version RETURN s.version AS version")
+                    .bindAll(Map.of("id",microSkill.getId().toString(),"org",microSkill.getOrganizationId()))
+                    .fetchAs(org.neo4j.driver.Value.class).mappedBy((types,row)->row.get("version")).all();
+            if(versions.size()>1 || !versions.isEmpty() && !Objects.equals(
+                    versions.iterator().next().isNull()?null:versions.iterator().next().asString(),microSkill.getExpectedVersion()))
+                throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.CONFLICT,"Skill changed; reload before saving");
             skills.merge(
                     microSkill.getId().toString(),
                     microSkill.getOrganizationId(),
@@ -75,6 +83,25 @@ public class Neo4jMicroSkillRepository implements MicroSkillRepository {
                     microSkill.getStatus().name(),
                     microSkill.getCreatedAt().toString(),
                     microSkill.getUpdatedAt().toString());
+            var provision=microSkill.getProvision();
+            var parameters=new HashMap<String,Object>();
+            parameters.put("id",microSkill.getId().toString());parameters.put("org",microSkill.getOrganizationId());
+            parameters.put("version",microSkill.getVersion());
+            parameters.put("modules",provision.moduleOnlyKnowledgeLevels());parameters.put("certificates",provision.certificateOnlyKnowledgeLevels());
+            parameters.put("foundation",provision.foundationOutcomeCodes());parameters.put("intermediate",provision.intermediateOutcomeCodes());parameters.put("advanced",provision.advancedOutcomeCodes());
+            var incompatible=client.query("""
+                    MATCH (s:MicroSkill {id:$id,organizationId:$org})-[r:REQUIRES_CERTIFICATE]->(c:Certificate)
+                    WHERE r.status='ACTIVE' AND c.status='ACTIVE' AND
+                        (coalesce(c.organizationId,'')<>$org OR coalesce(r.organizationId,$org)<>$org
+                            OR NOT coalesce(c.knowledgeLevel,'') IN $certificates)
+                    RETURN count(c) AS total
+                    """).bindAll(parameters).fetchAs(Long.class).mappedBy((types,row)->row.get("total").asLong()).one().orElse(0L);
+            if(incompatible>0)throw new IllegalArgumentException("Deactivate incompatible certificates before changing provision mode");
+            client.query("""
+                    MATCH (s:MicroSkill {id:$id,organizationId:$org})
+                    SET s.version=$version,s.moduleOnlyKnowledgeLevels=$modules,s.certificateOnlyKnowledgeLevels=$certificates,
+                        s.foundationOutcomeCodes=$foundation,s.intermediateOutcomeCodes=$intermediate,s.advancedOutcomeCodes=$advanced
+                    """).bindAll(parameters).run();
         });
         return microSkill;
     }
@@ -167,6 +194,10 @@ public class Neo4jMicroSkillRepository implements MicroSkillRepository {
                 desc,
                 SkillStatus.fromString(statusStr),
                 createdAt,
-                updatedAt);
+                updatedAt,
+                new SkillProvision(orEmpty(node.moduleOnlyKnowledgeLevels()),orEmpty(node.certificateOnlyKnowledgeLevels()),
+                        orEmpty(node.foundationOutcomeCodes()),orEmpty(node.intermediateOutcomeCodes()),orEmpty(node.advancedOutcomeCodes())),
+                node.version(),node.version());
     }
+    private static List<String> orEmpty(List<String> values){return values==null?List.of():values;}
 }

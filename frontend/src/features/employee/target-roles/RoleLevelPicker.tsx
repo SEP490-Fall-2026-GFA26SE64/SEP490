@@ -9,12 +9,14 @@ export function RoleLevelPicker({
   value,
   onChange,
   disabled,
+  compact = false,
   minAllowedRank,
 }: {
   levels: CurrentLevel[]
   value: string
   onChange: (value: string) => void
   disabled?: boolean
+  compact?: boolean
   minAllowedRank?: number
 }) {
   const { t } = useTranslation(), name = useId()
@@ -35,15 +37,17 @@ export function RoleLevelPicker({
   }, [value, minAllowedRank, levels, onChange])
   return <fieldset disabled={disabled} className="min-w-0 space-y-3">
     <Text as="legend" variant="body-sm" className="font-semibold">{t('initialPathway.level')}</Text>
-    <div className="space-y-3">{[...levels].sort((a, b) => a.rank - b.rank || a.id.localeCompare(b.id)).map(level => {
+    <div className={compact ? 'grid gap-2 sm:grid-cols-3' : 'space-y-3'}>{[...levels].sort((a, b) => a.rank - b.rank || a.id.localeCompare(b.id)).map(level => {
       const isCurrentLevel = typeof minAllowedRank === 'number' && level.rank === minAllowedRank
       const isBelowMin = typeof minAllowedRank === 'number' && level.rank > minAllowedRank
       const isLevelDisabled = disabled || isCurrentLevel || isBelowMin
       return (
         <label key={level.id}
-          className={`flex min-h-16 items-center justify-between gap-3 rounded-lg border p-4 transition-colors focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2 ${
+          className={`flex items-center justify-between gap-3 rounded-lg border ring-inset transition-colors focus-within:ring-2 focus-within:ring-ring ${
+            compact ? 'min-h-12 p-3' : 'min-h-16 p-4'
+          } ${
             value === level.id
-              ? 'border-primary bg-secondary'
+              ? 'border-primary bg-secondary ring-1 ring-primary'
               : 'border-border bg-card hover:border-primary/40 hover:bg-muted/40'
           } ${isLevelDisabled ? 'cursor-not-allowed opacity-50 bg-muted/20' : 'cursor-pointer'}`}>
           <div className="flex items-center gap-3 min-w-0">
@@ -54,10 +58,12 @@ export function RoleLevelPicker({
               checked={value === level.id}
               disabled={isLevelDisabled}
               onChange={() => !isLevelDisabled && onChange(level.id)}
-              className="size-5 shrink-0 accent-primary"
+              className={`${compact ? 'size-4' : 'size-5'} shrink-0 accent-primary`}
             />
             <div className="flex flex-col min-w-0">
-              <Text as="span" className="break-words font-semibold">{level.name}</Text>
+              <Text as="span" variant={compact ? 'body-sm' : 'body'} tone="foreground" className="break-words font-semibold">
+                {level.name}
+              </Text>
               {isCurrentLevel && (
                 <Text as="span" variant="caption" className="text-muted-foreground text-xs">
                   {t('initialPathway.currentAssignedLevel', 'Current assigned level (Upskilling requires higher level)')}

@@ -9,8 +9,24 @@ import {
   type TargetRoleModel,
 } from '../../manager/data/ldManagerMockData'
 
-export interface CurrentSkill { id: string; code: string | null; name: string; requiredScore: number; mandatory: boolean }
-export interface CurrentLevel { id: string; code: string; name: string; rank: number; context: string; attainmentRule: string; duration?: string; skills: CurrentSkill[] }
+export interface CurrentSkill {
+  id: string
+  code: string | null
+  name: string
+  requiredKnowledgeLevels: string[]
+  requiredScore: number
+  mandatory: boolean
+}
+export interface CurrentLevel {
+  id: string
+  code: string
+  name: string
+  rank: number
+  context: string
+  attainmentRule: string
+  duration?: string
+  skills: CurrentSkill[]
+}
 export interface CurrentRole { id: string; code: string; name: string; scope: string; jobPositionId: string; jobPositionName: string; catalogVersion: string; fingerprint: string; levels: CurrentLevel[] }
 export interface CurrentSelection { selectionId: string; role: CurrentRole; revision: number; selectedAt: string; available: boolean; levelId?: string | null }
 export interface RoleProgress { state: string; requiredCount: number; coveredCount: number; attemptId: string | null; baselineVersion: number | null }
@@ -87,10 +103,14 @@ function role(value: unknown): CurrentRole {
         skills: Array.isArray(l.skills)
           ? l.skills.map(sv => {
               const s = object(sv)
+              const levels = Array.isArray(s.requiredKnowledgeLevels)
+                ? s.requiredKnowledgeLevels.filter((k): k is string => typeof k === 'string')
+                : []
               return {
                 id: text(s.id),
                 code: s.code === null || s.code === undefined ? null : optText(s.code, ''),
                 name: optText(s.name, text(s.id)),
+                requiredKnowledgeLevels: levels,
                 requiredScore: optNum(s.requiredScore, 0.7),
                 mandatory: optBool(s.mandatory, true),
               }
@@ -747,12 +767,13 @@ async function fetchDepartmentScopedPublishedRoles(): Promise<CurrentRole[]> {
                   ? '3 months'
                   : '2 months'
           const duration = durationsObj[lvlName] || durationsObj[String(rank)] || defaultDur
-          let levelSkills = skillTargets
+          let levelSkills: CurrentSkill[] = skillTargets
             .filter(st => !st.level || st.level.toLowerCase() === lvlName.toLowerCase())
             .map(st => ({
               id: String(st.skillId || st.skillCode || ''),
               code: st.skillCode ? String(st.skillCode) : null,
               name: String(st.skillName || st.skillCode || st.skillId || ''),
+              requiredKnowledgeLevels: Array.isArray(st.requiredKnowledgeLevels) ? st.requiredKnowledgeLevels : [],
               requiredScore: typeof st.threshold === 'number' ? st.threshold / 100 : 0.7,
               mandatory: true,
             }))

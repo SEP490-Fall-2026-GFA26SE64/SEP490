@@ -1,0 +1,68 @@
+[
+  {
+    "id": "st-13",
+    "width": 651,
+    "height": 1134,
+    "parse": "Passed",
+    "render": "Passed",
+    "pageErrors": [],
+    "labelNodeCollisions": [],
+    "labelLabelCollisions": [],
+    "frameExpansions": 2,
+    "frameCollisions": []
+  },
+  {
+    "id": "st-14",
+    "width": 484,
+    "height": 683,
+    "parse": "Passed",
+    "render": "Passed",
+    "pageErrors": [],
+    "labelNodeCollisions": [],
+    "labelLabelCollisions": [],
+    "frameExpansions": 1,
+    "frameCollisions": []
+  },
+  {
+    "id": "st-16",
+    "width": 771,
+    "height": 530,
+    "parse": "Passed",
+    "render": "Passed",
+    "pageErrors": [],
+    "labelNodeCollisions": [],
+    "labelLabelCollisions": []
+  },
+  {
+    "id": "st-17",
+    "width": 510,
+    "height": 910,
+    "parse": "Passed",
+    "render": "Passed",
+    "pageErrors": [],
+    "labelNodeCollisions": [],
+    "labelLabelCollisions": []
+  },
+  {
+    "id": "st-18",
+    "width": 1205,
+    "height": 670,
+    "parse": "Passed",
+    "render": "Passed",
+    "pageErrors": [],
+    "labelNodeCollisions": [],
+    "labelLabelCollisions": [],
+    "frameExpansions": 2,
+    "frameCollisions": []
+  },
+  {
+    "id": "st-19",
+    "width": 1390,
+    "height": 1312,
+    "parse": "Passed",
+    "render": "Passed",
+    "pageErrors": [],
+    "labelNodeCollisions": [],
+    "labelLabelCollisions": []
+  }
+]

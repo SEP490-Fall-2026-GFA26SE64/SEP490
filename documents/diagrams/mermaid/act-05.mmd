@@ -1,89 +1,68 @@
 ---
-title: "ACT-05 - Main Flow for Adaptive Learning Pathway Generation and Recalculation"
-config: {"theme":"base","fontFamily":"Segoe UI, Arial, sans-serif","themeVariables":{"fontFamily":"Segoe UI, Arial, sans-serif","fontSize":"16px","primaryColor":"#ffffff","primaryTextColor":"#0f1729","primaryBorderColor":"#64748b","secondaryColor":"#fef3eb","tertiaryColor":"#ffffff","lineColor":"#64748b","textColor":"#0f1729","mainBkg":"#ffffff","background":"#ffffff","clusterBkg":"#ffffff","clusterBorder":"#64748b","edgeLabelBackground":"#ffffff","titleColor":"#0f1729","noteBkgColor":"#fef3eb","noteTextColor":"#0f1729","noteBorderColor":"#e6650f","secondaryBorderColor":"#64748b","tertiaryBorderColor":"#64748b","secondaryTextColor":"#0f1729","tertiaryTextColor":"#0f1729"},"layout":"elk","elk":{"mergeEdges":false,"nodePlacementStrategy":"NETWORK_SIMPLEX"},"flowchart":{"htmlLabels":true,"nodeSpacing":28,"rankSpacing":56,"curve":"linear","diagramPadding":24,"padding":16,"wrappingWidth":250}}
+title: "ACT-05 - Role-Level Baseline, Profile and Adaptive Learning"
+config: {"theme":"base","fontFamily":"Segoe UI, Arial, sans-serif","themeVariables":{"fontFamily":"Segoe UI, Arial, sans-serif","fontSize":"16px","primaryColor":"#ffffff","primaryTextColor":"#0f1729","primaryBorderColor":"#64748b","secondaryColor":"#fef3eb","tertiaryColor":"#ffffff","lineColor":"#64748b","textColor":"#0f1729","mainBkg":"#ffffff","background":"#ffffff","clusterBkg":"#ffffff","clusterBorder":"#64748b","edgeLabelBackground":"#ffffff","titleColor":"#0f1729","noteBkgColor":"#fef3eb","noteTextColor":"#0f1729","noteBorderColor":"#e6650f","secondaryBorderColor":"#64748b","tertiaryBorderColor":"#64748b","secondaryTextColor":"#0f1729","tertiaryTextColor":"#0f1729"},"layout":"dagre","elk":{"mergeEdges":false,"nodePlacementStrategy":"NETWORK_SIMPLEX"},"flowchart":{"htmlLabels":true,"nodeSpacing":48,"rankSpacing":40,"curve":"linear","diagramPadding":24,"padding":16,"wrappingWidth":250}}
 ---
 flowchart TD
   start(("Start"))
+  configure["<b>L&amp;D</b><br/>Select Role and Level;<br/>configure baseline parameters"]
+  validConfig{"<b>System</b><br/>Configuration valid?"}
+  configError["<b>System</b><br/>Show configuration errors"]
+  activate["<b>System</b><br/>Save and activate baseline<br/>for the selected Role and Level"]
   choose["<b>Employee</b><br/>Choose target Role and Level"]
-  coverage{"<b>System</b><br/>Valid results for<br/>all required skills?"}
-  admission{"<b>System</b><br/>Can baseline start<br/>or resume?"}
-  baseline["<b>Employee</b><br/>Take or resume the Job Position baseline;<br/>answer questions and submit"]
-  baselineScore["<b>System</b><br/>Apply time and stop rules; score baseline;<br/>initialize mastery only from valid results"]
-  validBaseline{"<b>System</b><br/>Baseline results<br/>valid?"}
-  gaps["<b>System</b><br/>Calculate skill gaps from current mastery<br/>for the chosen Role and Level"]
-  request["<b>Employee</b><br/>Review skill gaps and confirm<br/>the pathway request"]
-  learningNeeded{"<b>System</b><br/>Any skill gaps<br/>to address?"}
-  generate["<b>System</b><br/>Validate the request and generate a pathway;<br/>check skill coverage and prerequisites"]
-  generated{"<b>System</b><br/>Pathway generated<br/>successfully?"}
-  expertReview["<b>Expert</b><br/>Review skill coverage, modules<br/>and learning order; adjust if needed"]
-  ready{"<b>System</b><br/>Pathway ready<br/>for approval?"}
+  activeConfig{"<b>System</b><br/>Matching baseline<br/>configuration Active?"}
+  unavailable["<b>System</b><br/>Explain baseline is unavailable;<br/>wait for valid active configuration"]
+  baseline["<b>Employee</b><br/>Take or resume baseline<br/>for the selected Role and Level"]
+  score["<b>System</b><br/>Finalize and evaluate baseline<br/>using its pinned configuration"]
+  validResult{"<b>System</b><br/>Results valid?"}
+  invalid["<b>System</b><br/>Explain invalid results;<br/>do not create a valid profile"]
+  profile["<b>System</b><br/>Create Role-Level profile:<br/>Met / Needs supplementation"]
+  reviewProfile["<b>Employee</b><br/>Review profile and submit<br/>a pathway creation request"]
+  needs{"<b>System</b><br/>Any unmet requirements?"}
+  generate["<b>System</b><br/>Generate pathway from profile;<br/>check modules, certificates and prerequisites"]
+  generated{"<b>System</b><br/>Generation completed?"}
+  failed["<b>System</b><br/>Show generation error;<br/>retain target for repair or retry"]
+  expert["<b>Expert</b><br/>Review coverage and order; adjust;<br/>record bypass only for gaps with no module/cert"]
+  ready{"<b>System</b><br/>Reviewed pathway valid?"}
   approve["<b>Expert</b><br/>Approve the reviewed pathway version"]
-  selectModule["<b>Employee</b><br/>Choose a module from<br/>the approved pathway"]
-  access{"<b>System</b><br/>Can this module<br/>be opened?"}
-  studyAssess["<b>Employee</b><br/>Study module content; complete the<br/>Micro Skill assessment and submit answers"]
-  masteryGap["<b>System</b><br/>Score answers; update mastery from valid results<br/>and recalculate gaps for the same Role/Level"]
-  remaining{"<b>System</b><br/>Any skill gaps<br/>remaining?"}
-  adapt["<b>System</b><br/>Automatically update the remaining pathway;<br/>show recommended modules and approved content<br/>without another Expert review"]
-  end(("End"))
-  unavailable["<b>System</b><br/>Explain why baseline<br/>cannot be started or resumed"]
+  blocking{"<b>System</b><br/>Any non-bypassed<br/>requirements remaining?"}
+  study["<b>Employee</b><br/>Study approved modules and take skill assessments;<br/>provide certificate evidence where required"]
+  recalculate["<b>System</b><br/>Evaluate valid results; update profile;<br/>recalculate remaining pathway automatically"]
+  unresolved{"<b>System</b><br/>New gap lacks<br/>both module and cert?"}
+  bypassReview["<b>Expert</b><br/>Review missing provision;<br/>record a justified bypass"]
+  bypassed{"<b>System</b><br/>Any bypassed gaps?"}
+  completed["<b>System</b><br/>Pathway completed"]
+  released["<b>System</b><br/>Only bypassed gaps remain;<br/>keep Needs supplementation, allow role change"]
+  change{"<b>Employee</b><br/>Change target Role<br/>and Level?"}
+  newRole["<b>Employee</b><br/>Select another Role and Level"]
+  finish(("End"))
   unavailableEnd(("End"))
-  invalid["<b>System</b><br/>Explain why baseline<br/>results are invalid"]
   invalidEnd(("End"))
-  generationFailed["<b>System</b><br/>Explain why no pathway<br/>was generated"]
-  generationFailedEnd(("End"))
-  locked["<b>System</b><br/>Keep the module closed;<br/>explain the access restriction"]
-  lockedEnd(("End"))
-  learningNeededEnd(("End"))
-  remainingEnd(("End"))
-  start --> choose
-  choose --> coverage
-  coverage -->|"no"| admission
-  admission -->|"yes"| baseline
-  baseline --> baselineScore
-  baselineScore --> validBaseline
-  validBaseline -->|"yes"| gaps
-  coverage -->|"yes"| gaps
-  gaps --> request
-  request --> learningNeeded
-  learningNeeded -->|"yes"| generate
-  generate --> generated
-  generated -->|"yes"| expertReview
-  expertReview --> ready
-  ready -->|"no"| expertReview
-  ready -->|"yes"| approve
-  approve --> selectModule
-  selectModule --> access
-  access -->|"yes"| studyAssess
-  studyAssess --> masteryGap
-  masteryGap --> remaining
-  remaining -->|"yes"| adapt
-  adapt --> end
-  admission -->|"no"| unavailable
-  unavailable --> unavailableEnd
-  validBaseline -->|"no"| invalid
-  invalid --> invalidEnd
-  generated -->|"no"| generationFailed
-  generationFailed --> generationFailedEnd
-  access -->|"no"| locked
-  locked --> lockedEnd
-  learningNeeded -->|"no"| learningNeededEnd
-  remaining -->|"no"| remainingEnd
+  failureEnd(("End"))
+  start --> configure --> validConfig
+  validConfig -->|no| configError --> configure
+  validConfig -->|yes| activate --> choose --> activeConfig
+  activeConfig -->|no| unavailable --> unavailableEnd
+  activeConfig -->|yes| baseline --> score --> validResult
+  validResult -->|no| invalid --> invalidEnd
+  validResult -->|yes| profile --> reviewProfile --> needs
+  needs -->|no| completed
+  needs -->|yes| generate --> generated
+  generated -->|no| failed --> failureEnd
+  generated -->|yes| expert --> ready
+  ready -->|no| expert
+  ready -->|yes| approve --> blocking
+  blocking -->|yes| study --> recalculate --> unresolved
+  unresolved -->|no| blocking
+  unresolved -->|yes| bypassReview --> blocking
+  blocking -->|no| bypassed
+  bypassed -->|no| completed
+  bypassed -->|yes| released
+  completed --> change
+  released --> change
+  change -->|no| finish
+  change -->|yes| newRole --> activeConfig
   classDef default fill:#ffffff,stroke:#64748b,color:#0f1729,stroke-width:1px,rx:8,ry:8
   classDef decision fill:#fef3eb,stroke:#e6650f,color:#0f1729,stroke-width:1.5px
   classDef entry fill:#c24a0a,stroke:#c24a0a,color:#ffffff,stroke-width:1.5px
-  class start entry
-  class coverage decision
-  class admission decision
-  class validBaseline decision
-  class learningNeeded decision
-  class generated decision
-  class ready decision
-  class access decision
-  class remaining decision
-  class end entry
-  class unavailableEnd entry
-  class invalidEnd entry
-  class generationFailedEnd entry
-  class lockedEnd entry
-  class learningNeededEnd entry
-  class remainingEnd entry
+  class validConfig,activeConfig,validResult,needs,generated,ready,blocking,unresolved,bypassed,change decision
+  class start,finish,unavailableEnd,invalidEnd,failureEnd entry

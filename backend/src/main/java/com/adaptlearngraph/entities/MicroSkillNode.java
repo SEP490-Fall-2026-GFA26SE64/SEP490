@@ -18,5 +18,10 @@ public record MicroSkillNode(
         @Property("status") String status,
         @Property("version") String version,
         @Property("createdAt") @ConvertWith(converter = LenientGraphInstantConverter.class) Instant createdAt,
-        @Property("updatedAt") @ConvertWith(converter = LenientGraphInstantConverter.class) Instant updatedAt) {
+        @Property("updatedAt") @ConvertWith(converter = LenientGraphInstantConverter.class) Instant updatedAt,
+        @Property("moduleOnlyKnowledgeLevels") java.util.List<String> moduleOnlyKnowledgeLevels,
+        @Property("certificateOnlyKnowledgeLevels") java.util.List<String> certificateOnlyKnowledgeLevels,
+        @Property("foundationOutcomeCodes") java.util.List<String> foundationOutcomeCodes,
+        @Property("intermediateOutcomeCodes") java.util.List<String> intermediateOutcomeCodes,
+        @Property("advancedOutcomeCodes") java.util.List<String> advancedOutcomeCodes) {
 }

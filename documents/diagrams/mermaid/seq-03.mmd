@@ -11,6 +11,8 @@ sequenceDiagram
   participant SDD_SEQ_03_Worker as PaymentProcessor
   participant SDD_SEQ_03_Adapter as PayOsPaymentGateway
   participant SDD_SEQ_03_Provider as payOS
+  participant SDD_SEQ_03_Import as WorkspaceCatalogImportWorker
+  participant SDD_SEQ_03_Graph as Neo4j
   SDD_SEQ_03_User->>SDD_SEQ_03_UI: confirm plan version
   SDD_SEQ_03_UI->>SDD_SEQ_03_API: create order + idempotency key
   SDD_SEQ_03_API->>SDD_SEQ_03_DB: persist intent, snapshot order and create job
@@ -33,5 +35,11 @@ sequenceDiagram
   SDD_SEQ_03_API->>SDD_SEQ_03_DB: record and enqueue application
   SDD_SEQ_03_Worker->>SDD_SEQ_03_DB: apply eligible full payment once
   SDD_SEQ_03_DB->>SDD_SEQ_03_DB: period + provisioning / renewal + audit/outbox
+  opt initial purchase with a saved starter catalog selection
+  SDD_SEQ_03_DB->>SDD_SEQ_03_DB: enqueue catalog import, setup stays PROVISIONING
+  SDD_SEQ_03_Import->>SDD_SEQ_03_DB: claim due import with lease
+  SDD_SEQ_03_Import->>SDD_SEQ_03_Graph: copy selection closure with organization-owned ids
+  SDD_SEQ_03_Import->>SDD_SEQ_03_DB: SUCCEEDED and setup READY / retry / FAILED
+  end
   SDD_SEQ_03_UI->>SDD_SEQ_03_API: reconcile order/setup
-  SDD_SEQ_03_API-->>SDD_SEQ_03_UI: backend-confirmed payment and application
+  SDD_SEQ_03_API-->>SDD_SEQ_03_UI: backend-confirmed payment, application and setup state

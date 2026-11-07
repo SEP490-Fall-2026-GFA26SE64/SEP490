@@ -18,7 +18,15 @@ export function reviewLearnerName(summary: Pick<ReviewSummary, 'learnerId' | 'le
 
 export function pathwayMessage(error: unknown, t: (key: string) => string): string {
   const e = error instanceof PathwayError ? error : null
+  if (e?.code === 'PREREQUISITE_POSITION_LOCKED') return t('moduleReview.positionLocked')
+  if (e?.code === 'INVALID_REQUIREMENT_ORDER') return t('initialPathway.stale')
   if (e?.code === 'ASSESSMENT_IN_PROGRESS') return t('roleFlow.errors.ASSESSMENT_IN_PROGRESS')
+  if (e?.code === 'EXACTLY_ONE_CERTIFICATE_EVIDENCE_REQUIRED') return t('certificates.evidenceHelp')
+  if (e && ['INVALID_CERTIFICATE_UPLOAD', 'FILE_HASH_MISMATCH', 'PRIVATE_UPLOAD_REJECTED', 'FILE_EXCEEDS_CURRENT_UPLOAD_LIMIT'].includes(e.code)) return t('certificates.invalidFile')
+  if (e?.code === 'CERTIFICATE_REVIEW_PENDING') return t('certificates.pending')
+  if (e?.code === 'REQUIREMENT_ALREADY_ACHIEVED') return t('rulePathway.official')
+  if (e?.code === 'CERTIFICATE_ALREADY_ASSIGNED') return t('certificates.alreadyAssigned')
+  if (e?.code === 'CERTIFICATE_PROVISION_REQUIRED') return t('certificates.description')
   const key = e?.code === 'BASELINE_REQUIRED' ? 'baseline' : e?.status === 401 || e?.status === 403 ? 'denied' : e?.status === 409 ? 'stale' : e?.code.endsWith('NOT_CONFIGURED') ? 'setup' : 'unavailable'
   return t('initialPathway.' + key)
 }

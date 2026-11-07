@@ -197,7 +197,7 @@ The initial application and evaluation are bounded to Software Engineering compe
 
 7. **FE-07: Skill and prerequisite management.** Allow assigned Experts to maintain specific skills, proficiency expectations, and prerequisite relationships so that learning recommendations reflect the knowledge needed before progressing.
 
-8. **FE-08: Learning modules, content, and approval.** Allow Experts to organize modules, map them to skills, maintain learning materials and module assessment questions, and submit learning offerings to the L&D Manager for approval or revision.
+8. **FE-08: Learning modules, content, and approval.** Allow Experts to organize modules, map each module to one MicroSkill, maintain ordered learning materials, and submit the module/content package to the L&D Manager for approval or revision.
 
 9. **FE-09: Baseline and module assessments.** Allow the L&D Manager to configure baseline assessment coverage and rules, Experts to maintain module assessments, and Employees to complete assessments. Evaluate submitted answers to provide evidence for competency estimates.
 

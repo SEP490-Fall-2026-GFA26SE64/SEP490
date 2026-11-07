@@ -3,6 +3,9 @@ package com.adaptlearngraph.repository;
 import com.adaptlearngraph.entities.MicroSkillNode;
 import com.adaptlearngraph.entities.domain.PrerequisiteEdge;
 import com.adaptlearngraph.entities.domain.SkillStatus;
+import com.adaptlearngraph.entities.domain.KnowledgeLevel;
+import com.adaptlearngraph.entities.domain.PrerequisiteRules;
+import org.neo4j.driver.Value;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -37,29 +40,6 @@ public class Neo4jPrerequisiteRepository implements PrerequisiteRepository {
             RETURN source, target, rel
             ORDER BY coalesce(source.code, source.id) ASC, coalesce(target.code, target.id) ASC
             """;
-    // Relationship write matching both endpoints inside one organization; returns the stored edge in the same round trip.
-    private static final String SAVE = """
-            MATCH (source:MicroSkill), (target:MicroSkill)
-            WHERE source.organizationId = $organizationId AND target.organizationId = $organizationId
-              AND (source.id = $sourceSkillId OR source.code = $sourceSkillId)
-              AND (target.id = $targetSkillId OR target.code = $targetSkillId)
-            MERGE (source)-[rel:HAS_SKILL_PREREQUISITE]->(target)
-            ON CREATE SET
-                rel.requiredScore = $minMastery,
-                rel.minMastery = $minMastery,
-                rel.version = '0.10.0',
-                rel.status = $status,
-                rel.createdAt = datetime(),
-                rel.updatedAt = datetime()
-            ON MATCH SET
-                rel.requiredScore = $minMastery,
-                rel.minMastery = $minMastery,
-                rel.version = '0.10.0',
-                rel.status = $status,
-                rel.updatedAt = datetime()
-            RETURN source, target, rel
-            """;
-
     private final MicroSkillNodeRepository skills;
     private final Neo4jClient client;
     private final Neo4jMappingContext mappingContext;
@@ -99,31 +79,103 @@ public class Neo4jPrerequisiteRepository implements PrerequisiteRepository {
         return Boolean.TRUE.equals(reads.execute(status -> skills.hasPrerequisitePath(organization, fromSkillId, toSkillId)));
     }
 
-    @Override
-    public PrerequisiteEdge savePrerequisite(
-            String organizationId,
-            String sourceSkillId,
-            String targetSkillId,
-            double minMastery,
-            SkillStatus status) {
-        Map<String, Object> params = Map.of(
-                "organizationId", Neo4jTenantGuard.requireOrganization(organizationId),
-                "sourceSkillId", sourceSkillId,
-                "targetSkillId", targetSkillId,
-                "minMastery", minMastery,
-                "status", status != null ? status.name() : "ACTIVE");
-        return writes.execute(tx -> client.query(SAVE).bindAll(params).fetchAs(PrerequisiteEdge.class)
-                .mappedBy(edgeMapper()).first()
-                .orElseThrow(() -> new IllegalArgumentException(
-                        "Source or target micro-skill not found for ids: " + sourceSkillId + ", " + targetSkillId)));
+    @Override public PrerequisiteEdge savePrerequisite(String organizationId,String sourceSkillId,String targetSkillId,double minMastery,SkillStatus status) {
+        throw new IllegalArgumentException("Numeric prerequisites are retired; select both knowledge levels");
+    }
+    @Override public void deletePrerequisite(String organizationId,String sourceSkillId,String targetSkillId) {
+        throw new IllegalArgumentException("Exact prerequisite knowledge levels are required");
     }
 
-    @Override
-    public void deletePrerequisite(String organizationId, String sourceSkillId, String targetSkillId) {
-        String organization = Neo4jTenantGuard.requireOrganization(organizationId);
-        Objects.requireNonNull(sourceSkillId, "sourceSkillId");
-        Objects.requireNonNull(targetSkillId, "targetSkillId");
-        writes.executeWithoutResult(status -> skills.deletePrerequisite(organization, sourceSkillId, targetSkillId));
+    @Override public PrerequisiteEdge savePrerequisite(String organizationId,String sourceSkillId,String targetSkillId,
+            KnowledgeLevel dependentLevel,KnowledgeLevel prerequisiteLevel,SkillStatus status) {
+        String organization=Neo4jTenantGuard.requireOrganization(organizationId);
+        var pair=new PrerequisiteRules.Pair(sourceSkillId,dependentLevel,targetSkillId,prerequisiteLevel);
+        if(status!=SkillStatus.ACTIVE)throw new IllegalArgumentException("Create an active prerequisite; use removal to retire an exact pair");
+        return writes.execute(tx->{
+            lockCatalog(organization);
+            requireLevel(organization,sourceSkillId,dependentLevel);
+            requireLevel(organization,targetSkillId,prerequisiteLevel);
+            var rows=client.query("""
+                    MATCH (a:MicroSkill {organizationId:$org})-[p:HAS_SKILL_PREREQUISITE]->(b:MicroSkill {organizationId:$org})
+                    WHERE p.status='ACTIVE'
+                    RETURN a.id AS dependent,b.id AS prerequisite,p.organizationId AS owner,
+                        p.dependentKnowledgeLevel AS dependentLevel,p.prerequisiteKnowledgeLevel AS prerequisiteLevel
+                    LIMIT 5001
+                    """).bind(organization).to("org").fetchAs(PrerequisiteRules.Pair.class).mappedBy((types,row)->{
+                        if(!row.get("owner").isNull() && !organization.equals(row.get("owner").asString()))
+                            throw new IllegalArgumentException("Prerequisite relationship ownership conflicts");
+                        try{return new PrerequisiteRules.Pair(row.get("dependent").asString(),KnowledgeLevel.valueOf(row.get("dependentLevel").asString()),
+                                row.get("prerequisite").asString(),KnowledgeLevel.valueOf(row.get("prerequisiteLevel").asString()));}
+                        catch(RuntimeException invalid){throw new IllegalArgumentException("Classify or retire legacy prerequisites before changing this catalog");}
+                    }).all();
+            if(rows.size()>5000)throw new IllegalArgumentException("Prerequisite catalog capacity exceeded");
+            PrerequisiteRules.assertAddition(new ArrayList<>(rows),pair);
+            var params=parameters(organization,sourceSkillId,targetSkillId,dependentLevel,prerequisiteLevel);
+            var existing=client.query("""
+                    MATCH (a:MicroSkill {id:$source,organizationId:$org})-[p:HAS_SKILL_PREREQUISITE]->(b:MicroSkill {id:$target,organizationId:$org})
+                    WHERE p.dependentKnowledgeLevel=$dependent AND p.prerequisiteKnowledgeLevel=$prerequisite
+                    RETURN p.organizationId AS owner
+                    """).bindAll(params).fetchAs(Value.class).mappedBy((types,row)->row.get("owner")).all();
+            if(existing.size()>1 || existing.stream().anyMatch(owner->!owner.isNull() && !organization.equals(owner.asString())))
+                throw new IllegalArgumentException("Duplicate or foreign prerequisite relationship");
+            return client.query("""
+                    MATCH (source:MicroSkill {id:$source,organizationId:$org}), (target:MicroSkill {id:$target,organizationId:$org})
+                    MERGE (source)-[rel:HAS_SKILL_PREREQUISITE {dependentKnowledgeLevel:$dependent,prerequisiteKnowledgeLevel:$prerequisite}]->(target)
+                    ON CREATE SET rel.id=randomUUID(),rel.createdAt=datetime()
+                    SET rel.organizationId=$org,rel.status='ACTIVE',rel.version=randomUUID(),rel.updatedAt=datetime()
+                    RETURN source,target,rel
+                    """).bindAll(params).fetchAs(PrerequisiteEdge.class).mappedBy(edgeMapper()).one().orElseThrow();
+        });
+    }
+
+    @Override public void deletePrerequisite(String organizationId,String sourceSkillId,String targetSkillId,
+            KnowledgeLevel dependentLevel,KnowledgeLevel prerequisiteLevel) {
+        String organization=Neo4jTenantGuard.requireOrganization(organizationId);
+        writes.executeWithoutResult(tx->{
+            lockCatalog(organization);
+            client.query("""
+                    MATCH (a:MicroSkill {id:$source,organizationId:$org})-[p:HAS_SKILL_PREREQUISITE]->(b:MicroSkill {id:$target,organizationId:$org})
+                    WHERE p.dependentKnowledgeLevel=$dependent AND p.prerequisiteKnowledgeLevel=$prerequisite
+                        AND (p.organizationId IS NULL OR p.organizationId=$org)
+                    SET p.status='RETIRED',p.updatedAt=datetime(),p.version=randomUUID()
+                    """).bindAll(parameters(organization,sourceSkillId,targetSkillId,dependentLevel,prerequisiteLevel)).run();
+        });
+    }
+    private Map<String,Object> parameters(String org,String source,String target,KnowledgeLevel dependent,KnowledgeLevel prerequisite) {
+        return Map.of("org",org,"source",source,"target",target,"dependent",dependent.name(),"prerequisite",prerequisite.name());
+    }
+    @Override public PrerequisiteEdge reversePrerequisite(String organization,String source,String target,KnowledgeLevel dependent,KnowledgeLevel prerequisite) {
+        Neo4jTenantGuard.requireOrganization(organization);
+        return writes.execute(tx->{
+            lockCatalog(organization);
+            var current=client.query("""
+                    MATCH (a:MicroSkill {id:$source,organizationId:$org})-[p:HAS_SKILL_PREREQUISITE]->(b:MicroSkill {id:$target,organizationId:$org})
+                    WHERE p.status='ACTIVE' AND p.dependentKnowledgeLevel=$dependent AND p.prerequisiteKnowledgeLevel=$prerequisite
+                        AND (p.organizationId IS NULL OR p.organizationId=$org)
+                    RETURN count(p) AS total
+                    """).bindAll(parameters(organization,source,target,dependent,prerequisite)).fetchAs(Long.class).mappedBy((types,row)->row.get("total").asLong()).one().orElse(0L);
+            if(current!=1)throw new IllegalArgumentException("Reload the exact active prerequisite before reversing it");
+            deletePrerequisite(organization,source,target,dependent,prerequisite);
+            // Both nested operations join this Neo4j transaction; a failed addition restores the original active edge.
+            return savePrerequisite(organization,target,source,prerequisite,dependent,SkillStatus.ACTIVE);
+        });
+    }
+    private void lockCatalog(String organization) {
+        // Bounded administrative writes lock existing owned nodes in one order; no lock node or cross-store transaction.
+        var locked=client.query("""
+                MATCH (s:MicroSkill {organizationId:$org}) WITH s ORDER BY s.id LIMIT 5001
+                SET s.version=s.version RETURN s.id AS id
+                """).bind(organization).to("org").fetchAs(String.class).mappedBy((types,row)->row.get("id").asString()).all();
+        if(locked.size()>5000)throw new IllegalArgumentException("Skill catalog capacity exceeded");
+    }
+    private void requireLevel(String organization,String skill,KnowledgeLevel level) {
+        var rows=client.query("""
+                MATCH (s:MicroSkill {id:$id,organizationId:$org})
+                WHERE s.status='ACTIVE' AND s.reviewStatus='APPROVED'
+                    AND ($level IN coalesce(s.moduleOnlyKnowledgeLevels,[]) OR $level IN coalesce(s.certificateOnlyKnowledgeLevels,[]))
+                RETURN s.id AS id LIMIT 2
+                """).bindAll(Map.of("org",organization,"id",skill,"level",level.name())).fetchAs(String.class).mappedBy((types,row)->row.get("id").asString()).all();
+        if(rows.size()!=1)throw new IllegalArgumentException("Select an owned active approved skill with this configured knowledge level");
     }
 
     private List<PrerequisiteEdge> edges(String cypher, Map<String, Object> parameters) {
@@ -187,6 +239,8 @@ public class Neo4jPrerequisiteRepository implements PrerequisiteRepository {
                 minMastery,
                 SkillStatus.fromString(statusStr),
                 createdAt,
-                updatedAt);
+                updatedAt,
+                rel.get("dependentKnowledgeLevel").isNull()?null:KnowledgeLevel.valueOf(rel.get("dependentKnowledgeLevel").asString()),
+                rel.get("prerequisiteKnowledgeLevel").isNull()?null:KnowledgeLevel.valueOf(rel.get("prerequisiteKnowledgeLevel").asString()));
     }
 }

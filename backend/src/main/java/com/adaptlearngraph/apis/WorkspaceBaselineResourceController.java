@@ -12,7 +12,8 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 
-@RestController
+/** Retained IRT resource-tuple administration; inactive in the rule-assessment workspace. */
+@Deprecated
 @Profile("local & workspace-baseline & !local-baseline-demo & !prod")
 @ConditionalOnProperty(name="assessment.baseline.workspace.enabled",havingValue="true")
 @ConditionalOnWebApplication(type=ConditionalOnWebApplication.Type.SERVLET)

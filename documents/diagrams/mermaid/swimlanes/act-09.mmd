@@ -1,0 +1,72 @@
+---
+title: "ACT-09 - Notifications and scoped activity review - Swimlane"
+config: {theme: base, look: classic, flowchart: {htmlLabels: true}}
+---
+flowchart TD
+  subgraph Actor0["Guest"]
+    direction TB
+    SRS_ACT_09_N1_Guest(("Start"))
+    SRS_ACT_09_N2_Guest["Complete a business action"]
+  end
+  subgraph Actor1["L&amp;D Manager"]
+    direction TB
+    SRS_ACT_09_N1_LDManager(("Start"))
+    SRS_ACT_09_N2_LDManager["Complete a business action"]
+  end
+  subgraph Actor2["System Administrator"]
+    direction TB
+    SRS_ACT_09_N1_SystemAdministrator(("Start"))
+    SRS_ACT_09_N2_SystemAdministrator["Complete a business action"]
+    SRS_ACT_09_N8_SystemAdministrator["Open activity view in permitted<br/>scope"]
+  end
+  subgraph Actor3["System Handler"]
+    direction TB
+    SRS_ACT_09_N3["Commit authorized action and<br/>corresponding event"]
+    SRS_ACT_09_N4["Schedule required notification"]
+    SRS_ACT_09_N6["Record delivery attempt outcome"]
+    SRS_ACT_09_N7["Record failure and retry<br/>according to delivery policy"]
+    SRS_ACT_09_N9["Return only authorized activity<br/>and status"]
+    SRS_ACT_09_N10(("End"))
+  end
+  subgraph Actor4["Platform Administrator"]
+    direction TB
+    SRS_ACT_09_N8_PlatformAdministrator["Open activity view in permitted<br/>scope"]
+  end
+  subgraph Actor5["SMTP Service"]
+    direction TB
+    SRS_ACT_09_N5{"Message accepted?"}
+  end
+  subgraph Actor6["Expert"]
+    direction TB
+    SRS_ACT_09_N1_Expert(("Start"))
+    SRS_ACT_09_N2_Expert["Complete a business action"]
+  end
+  subgraph Actor7["Employee"]
+    direction TB
+    SRS_ACT_09_N1_Employee(("Start"))
+    SRS_ACT_09_N2_Employee["Complete a business action"]
+  end
+  SRS_ACT_09_N1_Guest --> SRS_ACT_09_N2_Guest
+  SRS_ACT_09_N1_SystemAdministrator --> SRS_ACT_09_N2_SystemAdministrator
+  SRS_ACT_09_N1_LDManager --> SRS_ACT_09_N2_LDManager
+  SRS_ACT_09_N1_Expert --> SRS_ACT_09_N2_Expert
+  SRS_ACT_09_N1_Employee --> SRS_ACT_09_N2_Employee
+  SRS_ACT_09_N2_Guest --> SRS_ACT_09_N3
+  SRS_ACT_09_N2_SystemAdministrator --> SRS_ACT_09_N3
+  SRS_ACT_09_N2_LDManager --> SRS_ACT_09_N3
+  SRS_ACT_09_N2_Expert --> SRS_ACT_09_N3
+  SRS_ACT_09_N2_Employee --> SRS_ACT_09_N3
+  SRS_ACT_09_N3 --> SRS_ACT_09_N4
+  SRS_ACT_09_N4 --> SRS_ACT_09_N5
+  SRS_ACT_09_N5 -->|"yes"| SRS_ACT_09_N6
+  SRS_ACT_09_N5 -->|"no"| SRS_ACT_09_N7
+  SRS_ACT_09_N6 --> SRS_ACT_09_N8_PlatformAdministrator
+  SRS_ACT_09_N6 --> SRS_ACT_09_N8_SystemAdministrator
+  SRS_ACT_09_N7 --> SRS_ACT_09_N8_PlatformAdministrator
+  SRS_ACT_09_N7 --> SRS_ACT_09_N8_SystemAdministrator
+  SRS_ACT_09_N8_PlatformAdministrator --> SRS_ACT_09_N9
+  SRS_ACT_09_N8_SystemAdministrator --> SRS_ACT_09_N9
+  SRS_ACT_09_N9 --> SRS_ACT_09_N10
+
+  %% Fixed actor-column layout is exported by render-business-swimlanes.cjs.
+  %% Repeated actor-specific copies are alternatives of the same original step.

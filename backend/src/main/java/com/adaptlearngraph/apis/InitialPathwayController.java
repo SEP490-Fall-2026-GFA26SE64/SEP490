@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping(ApiEndpoints.INITIAL_PATHWAY)
-@Profile("((local-baseline-demo & !workspace-baseline) | (local & workspace-baseline & !local-baseline-demo)) & !prod")
+@Profile("local-baseline-demo & !workspace-baseline & !prod")
 @ConditionalOnProperty(name="pathway.initial.enabled",havingValue="true")
 @org.springframework.boot.autoconfigure.condition.ConditionalOnExpression("${assessment.baseline.workspace.enabled:false} or (${pathway.local-auth-bypass.enabled:false} and ${assessment.baseline.local-demo.enabled:false})")
 public final class InitialPathwayController {

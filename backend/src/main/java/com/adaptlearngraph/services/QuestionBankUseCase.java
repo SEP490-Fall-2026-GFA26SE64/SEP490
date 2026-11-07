@@ -4,7 +4,7 @@ import com.adaptlearngraph.entities.domain.QuestionBank.*;
 import java.util.*;
 
 public interface QuestionBankUseCase {
-    record Session(Actor actor, List<Choice> skills, List<Choice> experts, List<Choice> people, int maxImportRows, long maxImportBytes) {}
+    record Session(Actor actor, List<Choice> skills, List<Choice> experts, List<Choice> people, int maxImportRows, long maxImportBytes,List<KnowledgeChoice> knowledge) {}
     record View(UUID id, String name, List<Question> questions, List<Audit> history) {}
     record Save(UUID id, Long expectedRevision, String code, Content content, boolean acknowledgeDuplicates) {}
     record Command(UUID id, long expectedRevision, String action, String reason, UUID owner) {}

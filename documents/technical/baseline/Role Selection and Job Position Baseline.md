@@ -1,5 +1,7 @@
 # Role selection and Job Position baseline
 
+**Current flow revision: 2026-11-05-r3.** [Target schema/API/flow](../Organization%20Rule%20Assessment%20and%20Pathway.md) supersedes this document's older active assessment/mastery/gap/optimizer assumptions. Material below is retained previous design/source/operation history, not proof of r3 being applied. Keep non-conflicting security/content/retry safeguards. Baseline covers selected Role–Level, records only assessed diagnostics and does not pre-add prerequisites; two separate policy configs share an engine; skill assessment discovers supplementation; cross-target old bypass work is parallel/non-gating. Old affected dev records may be rebuilt; new-flow history and unrelated/shared evidence/backups remain. Do not automatically run retained setup/reset/test commands below.
+
 **Revision19 C1 — revised main-authored source alignment:** [the shared consumer contract](../Workspace%20Adaptive%20Integration.md#authored-catalog-consumer-alignment--revision19) adds the owner's stored Level members/direct requirements behind existing ports. Authored levelId is the exact stored member string under roleId, not a hash or claim of a Level node. User confirms all declared authored skills mandatory and explicit temporary org/Role→Job Position bindings. Legacy actual IDs/flags/history remain unchanged. Source/API changes require C2; no integration/runtime acceptance is asserted.
 
 ## Purpose and scope

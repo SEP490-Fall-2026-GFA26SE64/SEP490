@@ -14,6 +14,8 @@ import {
 import { Badge } from '../../../../shared/components/ui/Badge'
 import { Button } from '../../../../shared/components/ui/Button'
 import type { TargetRoleModel, SkillTargetConfig } from '../../data/ldManagerMockData'
+import { useTranslation } from '../../../../shared/i18n/LanguageContext'
+import { formatRequiredKnowledge } from '../roleKnowledgePresentation'
 
 export interface TargetRoleVersionDiffProps {
   currentRole: TargetRoleModel
@@ -41,6 +43,7 @@ export function TargetRoleVersionDiff({
   competencies = [],
   microSkills = [],
 }: TargetRoleVersionDiffProps) {
+  const { t } = useTranslation()
   // Find predecessor in the same lineage
   const predecessorRole = React.useMemo(() => {
     const lineageKey = currentRole.stableId || currentRole.code
@@ -111,7 +114,7 @@ export function TargetRoleVersionDiff({
         addedSkills.push(st)
       } else {
         const prevSt = prevSkillMap.get(key)!
-        if (prevSt.threshold !== st.threshold) {
+        if (JSON.stringify([...(prevSt.requiredKnowledgeLevels ?? [])].sort()) !== JSON.stringify([...(st.requiredKnowledgeLevels ?? [])].sort())) {
           modifiedSkills.push({ current: st, previous: prevSt })
         } else {
           unchangedSkills.push(st)
@@ -373,7 +376,7 @@ export function TargetRoleVersionDiff({
           <button
             type="button"
             onClick={() => handleToggleFilter('MODIFIED')}
-            title="Click to view Target Mastery Adjusted skills"
+            title="Click to view changed knowledge requirements"
             className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-all cursor-pointer border ${
               activeFilter === 'MODIFIED'
                 ? 'bg-warning text-black border-warning shadow-xs ring-2 ring-warning/30 font-bold'
@@ -382,7 +385,7 @@ export function TargetRoleVersionDiff({
           >
             <Sliders className="h-3.5 w-3.5 shrink-0 text-black" />
             <span className="text-black font-semibold">
-              {filteredModifiedSkills.length} Target Mastery Adjusted
+              {filteredModifiedSkills.length} Knowledge Requirements Changed
             </span>
             {activeFilter === 'MODIFIED' && <Check className="h-3 w-3 ml-0.5 text-black stroke-[2.5]" />}
           </button>
@@ -416,7 +419,7 @@ export function TargetRoleVersionDiff({
           </h4>
           <p className="text-[11px] text-muted-foreground max-w-sm mx-auto">
             {selectedLevel === 'ALL'
-              ? `No skill target, competency, or target mastery changes between v${predecessorRole.version} and v${currentRole.version}.`
+              ? `${t('roleKnowledge.noChanges')} (v${predecessorRole.version} → v${currentRole.version}).`
               : `All micro-skills and competencies for ${selectedLevel} remain identical between revisions.`}
           </p>
           {filteredUnchangedSkills.length > 0 && (
@@ -443,7 +446,7 @@ export function TargetRoleVersionDiff({
                   {activeFilter === 'REMOVED' &&
                     `Removed (-${filteredRemovedSkills.length} Skills, -${filteredRemovedComps.length} Competencies)`}
                   {activeFilter === 'MODIFIED' &&
-                    `Target Mastery Adjusted (${filteredModifiedSkills.length})`}
+                    `Knowledge Requirements Changed (${filteredModifiedSkills.length})`}
                   {activeFilter === 'UNCHANGED' &&
                     `Unchanged Skills (${filteredUnchangedSkills.length})`}
                 </strong>
@@ -493,8 +496,8 @@ export function TargetRoleVersionDiff({
                       <tr>
                         <th className="py-2 px-3">Level</th>
                         <th className="py-2 px-3">Skill Code &amp; Title</th>
-                        <th className="py-2 px-3 text-center">Previous Mastery</th>
-                        <th className="py-2 px-3 text-center">Current Mastery</th>
+                        <th className="py-2 px-3 text-center">{t('roleKnowledge.previous')}</th>
+                        <th className="py-2 px-3 text-center">{t('roleKnowledge.current')}</th>
                         <th className="py-2 px-3 text-right">Change Status</th>
                       </tr>
                     </thead>
@@ -521,7 +524,7 @@ export function TargetRoleVersionDiff({
                               </td>
                               <td className="py-2 px-3 text-center text-muted-foreground font-mono">—</td>
                               <td className="py-2 px-3 text-center font-mono font-bold text-foreground">
-                                {st.threshold}%
+                                {formatRequiredKnowledge(st.requiredKnowledgeLevels, t)}
                               </td>
                               <td className="py-2 px-3 text-right">
                                 <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-success/15 text-success border border-success/30">
@@ -536,7 +539,6 @@ export function TargetRoleVersionDiff({
                       {(activeFilter === 'ALL' || activeFilter === 'MODIFIED') &&
                         filteredModifiedSkills.map(({ current: cur, previous: prev }) => {
                           const skill = microSkills.find((s) => s.id === cur.skillId || s.code === cur.skillCode)
-                          const diffPct = cur.threshold - prev.threshold
                           return (
                             <tr
                               key={`mod-${cur.level}-${cur.skillId || cur.skillCode}`}
@@ -554,14 +556,14 @@ export function TargetRoleVersionDiff({
                                 <span className="text-muted-foreground">{cur.skillName || skill?.name}</span>
                               </td>
                               <td className="py-2 px-3 text-center font-mono text-muted-foreground line-through">
-                                {prev.threshold}%
+                                {formatRequiredKnowledge(prev.requiredKnowledgeLevels, t)}
                               </td>
                               <td className="py-2 px-3 text-center font-mono font-bold text-foreground">
-                                {cur.threshold}%
+                                {formatRequiredKnowledge(cur.requiredKnowledgeLevels, t)}
                               </td>
                               <td className="py-2 px-3 text-right">
                                 <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-warning/20 text-black border border-warning/50">
-                                  ~ {diffPct > 0 ? `+${diffPct}%` : `${diffPct}%`}
+                                  Updated
                                 </span>
                               </td>
                             </tr>
@@ -589,7 +591,7 @@ export function TargetRoleVersionDiff({
                                 <span className="text-muted-foreground line-through">{st.skillName || skill?.name}</span>
                               </td>
                               <td className="py-2 px-3 text-center font-mono text-muted-foreground line-through">
-                                {st.threshold}%
+                                {formatRequiredKnowledge(st.requiredKnowledgeLevels, t)}
                               </td>
                               <td className="py-2 px-3 text-center text-muted-foreground font-mono">—</td>
                               <td className="py-2 px-3 text-right">
@@ -703,7 +705,7 @@ export function TargetRoleVersionDiff({
                   Unchanged Micro-skills ({filteredUnchangedSkills.length})
                 </span>
                 <span className="text-[10px] text-muted-foreground font-normal">
-                  Skills that retain the same target mastery from v{predecessorRole.version}
+                  {t('roleKnowledge.unchanged')} v{predecessorRole.version}
                 </span>
               </div>
 
@@ -718,7 +720,7 @@ export function TargetRoleVersionDiff({
                       <tr>
                         <th className="py-2 px-3">Level</th>
                         <th className="py-2 px-3">Skill Code &amp; Title</th>
-                        <th className="py-2 px-3 text-center">Target Mastery</th>
+                        <th className="py-2 px-3 text-center">{t('roleKnowledge.required')}</th>
                         <th className="py-2 px-3 text-right">Status</th>
                       </tr>
                     </thead>
@@ -739,7 +741,7 @@ export function TargetRoleVersionDiff({
                               <span className="text-muted-foreground">{st.skillName || skill?.name}</span>
                             </td>
                             <td className="py-2 px-3 text-center font-mono font-bold text-foreground">
-                              {st.threshold}%
+                              {formatRequiredKnowledge(st.requiredKnowledgeLevels, t)}
                             </td>
                             <td className="py-2 px-3 text-right">
                               <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-muted text-muted-foreground border border-border">

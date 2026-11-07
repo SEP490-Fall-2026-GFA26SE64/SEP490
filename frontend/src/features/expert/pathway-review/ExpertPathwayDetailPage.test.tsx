@@ -34,7 +34,7 @@ beforeEach(() => {
 })
 afterEach(() => { cleanup(); vi.unstubAllGlobals(); vi.resetAllMocks() })
 
-describe('REQ-019/020 C3 component: ORG-A assigned Expert, independent fixture', () => {
+describe('REQ-019/020 component: ORG-A assigned Expert, independent fixture', () => {
   it('R09 every Check is fresh; equal hash avoids detail reload', async () => {
     mount(); await screen.findByText('Employee A')
     const user = userEvent.setup()

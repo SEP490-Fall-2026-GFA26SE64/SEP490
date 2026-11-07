@@ -14,7 +14,7 @@ public final class QuestionBankDto {
     }
 
     public record ContentDto(String prompt, List<String> options, Integer correctAnswer, String skillId, String skillName,
-                             String difficulty, String explanation) {
+                             String knowledgeLevel, String outcomeCode, boolean mandatory, String explanation) {
         public ContentDto {
             options = options == null ? List.of() : List.copyOf(options);
         }
@@ -31,11 +31,12 @@ public final class QuestionBankDto {
     public record ChoiceResponse(String id, String name) {}
 
     public record SessionResponse(ActorResponse actor, List<ChoiceResponse> skills, List<ChoiceResponse> experts,
-                                  List<ChoiceResponse> people, int maxImportRows, long maxImportBytes) {}
+                                  List<ChoiceResponse> people, int maxImportRows, long maxImportBytes,List<KnowledgeChoiceResponse> knowledge) {}
+    public record KnowledgeChoiceResponse(String skillId,String knowledgeLevel,List<ChoiceResponse> outcomes) {}
 
     public record VersionResponse(UUID id, int number, String state, ContentDto content, UUID editedBy, Instant editedAt,
                                   UUID submittedBy, Instant submittedAt, UUID reviewedBy, Instant reviewedAt, String reason,
-                                  Map<UUID, String> viewed) {}
+                                  Map<UUID, String> viewed,String publicationSource) {}
 
     public record QuestionResponse(UUID id, String code, UUID createdBy, Instant createdAt, UUID owner, long revision,
                                    boolean retired, String request, List<VersionResponse> versions) {}

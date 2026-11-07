@@ -7,6 +7,8 @@ import com.adaptlearngraph.entities.domain.ModuleAuthoring.Document;
 import com.adaptlearngraph.entities.domain.ModuleAuthoring.Metadata;
 import com.adaptlearngraph.entities.domain.ModuleAuthoring.Revision;
 import com.adaptlearngraph.entities.domain.ModuleAuthoring.Teaching;
+import com.adaptlearngraph.entities.domain.ModuleAuthoring.KnowledgeDefinition;
+import com.adaptlearngraph.entities.domain.KnowledgeLevel;
 import com.adaptlearngraph.services.ModuleAuthoringService.Failure;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -88,7 +90,9 @@ public final class Neo4jModuleCatalogGraph {
                     return new CatalogModule(catalogMetadata(m), catalogText(m.get("title")), catalogText(m.get("moduleType")),
                             catalogText(m.get("contentUri")), catalogText(m.get("contentType")), catalogText(m.get("contentVersion")),
                             m.get("duration").isNull() ? null : m.get("duration").asNumber().intValue(),
-                            m.get("price").isNull() ? null : new java.math.BigDecimal(m.get("price").asNumber().toString()), teachings);
+                            teachings,
+                            m.get("knowledgeLevel").isNull()?null:KnowledgeLevel.valueOf(m.get("knowledgeLevel").asString()),
+                            m.get("outcomeCodes").isNull()?List.of():m.get("outcomeCodes").asList(Value::asString),catalogText(m.get("skillVersion")));
                 }).all()));
     }
 
@@ -100,24 +104,63 @@ public final class Neo4jModuleCatalogGraph {
                 .bind(organization).to("organization").fetchAs(Choice.class).mappedBy((types, r) -> new Choice(r.get("id").asString(), r.get("name").asString())).all()));
     }
 
+    public KnowledgeDefinition requireKnowledge(String organization,String skill,String level,List<String> outcomes) {
+        return reads.execute(status->knowledge(organization,skill,level,outcomes));
+    }
+    private KnowledgeDefinition knowledge(String organization,String skill,String level,List<String> outcomes) {
+        KnowledgeLevel knowledge;
+        try{knowledge=KnowledgeLevel.valueOf(level);}catch(RuntimeException invalid){throw new Failure(400,"Select a knowledge level");}
+        if(outcomes==null || outcomes.isEmpty() || new java.util.HashSet<>(outcomes).size()!=outcomes.size()
+                || outcomes.stream().anyMatch(o->o==null || o.isBlank() || o.length()>160))throw new Failure(400,"Select unique module outcomes");
+        var rows=client.query("""
+                MATCH (s:MicroSkill {id:$skill,organizationId:$organization})
+                WHERE s.status='ACTIVE' AND s.reviewStatus='APPROVED' RETURN properties(s) AS skill LIMIT 2
+                """).bindAll(Map.of("organization",organization,"skill",skill)).fetchAs(Value.class).mappedBy((types,row)->row.get("skill")).all();
+        if(rows.size()!=1)throw new Failure(409,"Select an owned active approved skill");
+        var s=rows.iterator().next();
+        var modules=s.get("moduleOnlyKnowledgeLevels").isNull()?List.<String>of():s.get("moduleOnlyKnowledgeLevels").asList(Value::asString);
+        var certificates=s.get("certificateOnlyKnowledgeLevels").isNull()?List.<String>of():s.get("certificateOnlyKnowledgeLevels").asList(Value::asString);
+        if(new java.util.HashSet<>(modules).size()!=modules.size() || new java.util.HashSet<>(certificates).size()!=certificates.size()
+            || java.util.stream.Stream.concat(modules.stream(),certificates.stream()).anyMatch(k->!Set.of("FOUNDATION","INTERMEDIATE","ADVANCED").contains(k)))
+            throw new Failure(409,"Invalid skill-level provision configuration");
+        try {
+            if(com.adaptlearngraph.entities.domain.SkillProvisionMode.resolve(catalogText(s.get("provisionMode")),modules,certificates,knowledge)
+                    !=com.adaptlearngraph.entities.domain.SkillProvisionMode.MODULE_ONLY)
+                throw new Failure(409,"This skill level is not configured for module learning");
+        } catch(IllegalArgumentException invalid) {throw new Failure(409,"Invalid skill-level provision configuration");}
+        String property=switch(knowledge){case FOUNDATION->"foundationOutcomeCodes";case INTERMEDIATE->"intermediateOutcomeCodes";case ADVANCED->"advancedOutcomeCodes";};
+        var configured=s.get(property).isNull()?List.<String>of():s.get(property).asList(Value::asString);
+        if(configured.isEmpty() || new java.util.HashSet<>(configured).size()!=configured.size()
+                || !new java.util.HashSet<>(configured).equals(new java.util.HashSet<>(outcomes)))throw new Failure(409,"Module outcomes must cover the configured skill-level outcomes");
+        String version=catalogText(s.get("version"));if(version==null || version.isBlank())throw new Failure(409,"Skill version is not configured");
+        return new KnowledgeDefinition(knowledge,version,outcomes.stream().sorted().toList());
+    }
+
     public void project(Document doc, Revision revision, boolean archived) {
         var p = revision.payload();
         if (p.teachings().size() != 1) throw new Failure(409, "Publication requires exactly one skill");
         Map<String, Object> properties = metadata(p.metadata());
         properties.putAll(Map.of("title", p.title(), "moduleType", p.moduleType(), "contentUri", p.contentUri(),
-                "contentType", p.contentType(), "contentVersion", p.contentVersion(), "duration", p.duration(), "price", p.price().doubleValue()));
+                "contentType", p.contentType(), "contentVersion", p.contentVersion(), "duration", p.duration()));
+        if(p.knowledgeLevel()!=null)properties.putAll(Map.of("knowledgeLevel",p.knowledgeLevel().name(),"outcomeCodes",p.outcomeCodes(),"skillVersion",p.skillVersion()));
+        else if(!archived)throw new Failure(409,"Configure module knowledge scope before publication");
         List<Map<String, Object>> teachings = p.teachings().stream().map(t -> {
             Map<String, Object> props = metadata(t.metadata());
             return Map.<String, Object>of("skillId", t.skillId(), "props", props);
         }).toList();
         writes.executeWithoutResult(status -> {
+            if(!archived) {
+                var current=knowledge(doc.organizationId(),p.teachings().getFirst().skillId(),p.knowledgeLevel().name(),p.outcomeCodes());
+                if(!current.skillVersion().equals(p.skillVersion()))throw new Failure(409,"Skill knowledge definition changed; revise the module");
+            }
             // Lock the existing node before comparing the source snapshot and replacing it.
             if (doc.intake() != null && !doc.everReleased()) {
                 modules.lockForPublication(doc.id());
                 var source = doc.intake().source();
                 Map<String, Object> expected = metadata(source.metadata());
                 expected.putAll(Map.of("title", source.title(), "moduleType", source.moduleType(), "contentUri", source.contentUri(),
-                        "contentType", source.contentType(), "contentVersion", source.contentVersion(), "duration", source.duration(), "price", source.price().doubleValue()));
+                        "contentType", source.contentType(), "contentVersion", source.contentVersion(), "duration", source.duration()));
+                if(source.knowledgeLevel()!=null)expected.putAll(Map.of("knowledgeLevel",source.knowledgeLevel().name(),"outcomeCodes",source.outcomeCodes(),"skillVersion",source.skillVersion()));
                 var originalTeachings = source.teachings().stream().map(t -> {
                     Map<String, Object> props = metadata(t.metadata());
                     return Map.<String, Object>of("skillId", t.skillId(), "props", props);

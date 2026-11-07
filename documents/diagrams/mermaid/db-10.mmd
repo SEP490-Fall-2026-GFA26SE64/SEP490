@@ -1,0 +1,52 @@
+---
+title: "DB-10 - Question Bank authoring supplement (V29 source)"
+config: {"theme":"base","fontFamily":"Segoe UI, Arial, sans-serif","themeVariables":{"fontFamily":"Segoe UI, Arial, sans-serif","fontSize":"14px","primaryColor":"#ffffff","primaryTextColor":"#0f1729","primaryBorderColor":"#64748b","secondaryColor":"#fef3eb","tertiaryColor":"#ffffff","lineColor":"#64748b","textColor":"#0f1729","mainBkg":"#ffffff","background":"#ffffff","clusterBkg":"#ffffff","clusterBorder":"#64748b","edgeLabelBackground":"#ffffff","titleColor":"#0f1729","noteBkgColor":"#fef3eb","noteTextColor":"#0f1729","noteBorderColor":"#e6650f","classText":"#0f1729","secondaryBorderColor":"#64748b","tertiaryBorderColor":"#64748b","secondaryTextColor":"#0f1729","tertiaryTextColor":"#0f1729"},"layout":"elk","class":{"hideEmptyMembersBox":true,"nodeSpacing":44,"rankSpacing":70,"padding":12,"diagramPadding":24}}
+---
+classDiagram
+  direction TB
+  class O["organization"] {
+    <<external>>
+    uuid organization_id PK_REQUIRED
+  }
+  class A["account"] {
+    <<external>>
+    uuid account_id PK_REQUIRED
+  }
+  class B["question_bank"] {
+    <<external>>
+    uuid question_bank_id PK_REQUIRED
+  }
+  class W["question_bank_workspace"] {
+    <<table>>
+    uuid organization_id PK_FK_REQUIRED
+    uuid question_bank_id FK_UK_REQUIRED
+    jsonb document REQUIRED
+  }
+  class I["question_bank_identity"] {
+    <<table>>
+    uuid question_id PK_REQUIRED
+    uuid question_bank_id FK_REQUIRED
+    text code REQUIRED
+    boolean retired REQUIRED
+  }
+  class N["question_bank_mail"] {
+    <<table>>
+    uuid notice_id PK_REQUIRED
+    uuid organization_id FK_REQUIRED
+    uuid recipient FK_REQUIRED
+    text title REQUIRED
+    text body REQUIRED
+    timestamptz created_at REQUIRED
+    text status REQUIRED
+    integer attempts REQUIRED
+    timestamptz next_attempt REQUIRED
+    uuid lease_owner NULLABLE
+    timestamptz lease_until NULLABLE
+    text error_code NULLABLE
+  }
+  O "1" ..> "0..1" W : FK (organization_id)
+  B "1" ..> "0..1" W : FK (question_bank_id)
+  B "1" ..> "0..*" I : FK (question_bank_id)
+  O "1" ..> "0..*" N : FK (organization_id)
+  A "1" ..> "0..*" N : FK (recipient)
+  note for I "Composite UNIQUE (question_bank_id, code)"

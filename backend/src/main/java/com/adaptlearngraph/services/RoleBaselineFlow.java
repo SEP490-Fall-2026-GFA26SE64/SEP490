@@ -6,7 +6,20 @@ import java.util.*;
 /** Current catalog contract. Transactional selection and read-only next-step policy behind ports. */
 public final class RoleBaselineFlow {
     public record Actor(UUID organizationId, UUID learnerId) {}
-    public record Skill(String id, String code, String name, double requiredScore, boolean mandatory) {}
+    public record Skill(String id, String code, String name, List<String> requiredKnowledgeLevels, boolean mandatory) {
+        public Skill {
+            requiredKnowledgeLevels=requiredKnowledgeLevels==null?List.of():List.copyOf(requiredKnowledgeLevels);
+            if(new HashSet<>(requiredKnowledgeLevels).size()!=requiredKnowledgeLevels.size()
+                || requiredKnowledgeLevels.stream().anyMatch(l->!Set.of("FOUNDATION","INTERMEDIATE","ADVANCED").contains(l)))
+                throw new IllegalArgumentException("Invalid explicit knowledge levels");
+        }
+        /** Old development fixture constructors are unclassified, never converted from a numeric target. */
+        @Deprecated public Skill(String id,String code,String name,double ignoredNumericTarget,boolean mandatory) {
+            this(id,code,name,List.of(),mandatory);
+        }
+        /** Compatibility for not-yet-retired numeric consumers: fail closed instead of inventing a target. */
+        @Deprecated public double requiredScore(){throw new Failure(409,"NUMERIC_TARGET_RETIRED");}
+    }
     public record Level(String id, String code, String name, int rank, String context,
                         String attainmentRule, List<Skill> skills, String duration) {
         public Level(String id, String code, String name, int rank, String context,
@@ -70,7 +83,9 @@ public final class RoleBaselineFlow {
         if (current.isEmpty() || old.levelId()!=null && current.get().levels().stream().noneMatch(l->l.id().equals(old.levelId()))) return new View(new Selection(old.selectionId(),old.role(),old.revision(),old.selectedAt(),false,old.levelId()),
                 new Progress("ROLE_UNAVAILABLE",0,0,null,null));
         var role=current.get();
-        var required=roles.stream().filter(r->r.jobPositionId().equals(role.jobPositionId())).flatMap(r->r.levels().stream())
+        if(old.levelId()==null)return new View(new Selection(old.selectionId(),role,old.revision(),old.selectedAt(),true,null),
+                new Progress("SELECT_LEVEL",0,0,null,null));
+        var required=role.levels().stream().filter(l->l.id().equals(old.levelId()))
                 .flatMap(l->l.skills().stream()).map(Skill::id).collect(java.util.stream.Collectors.toSet());
         if(required.isEmpty()) throw new Failure(503,"DEPENDENCY_UNAVAILABLE");
         return new View(new Selection(old.selectionId(),role,old.revision(),old.selectedAt(),true,old.levelId()),baseline.progress(actor,role,required));
@@ -88,7 +103,15 @@ public final class RoleBaselineFlow {
         return store.transaction(actor, () -> {
             var refreshed=identity.requireEmployee();
             if (!actor.equals(refreshed)) throw new Failure(403,"FORBIDDEN");
-            var replay=store.replay(actor,key,hash); if (replay.isPresent()) return replay.get();
+            var replay=store.replay(actor,key,hash);
+            if (replay.isPresent()) {
+                var retained=replay.get();
+                var permitted=catalog.roles(actor.organizationId()).stream().filter(r->r.id().equals(retained.role().id())).findFirst()
+                        .orElseThrow(()->new Failure(404,"ROLE_NOT_AVAILABLE"));
+                if(retained.levelId()!=null && permitted.levels().stream().noneMatch(l->l.id().equals(retained.levelId())))
+                    throw new Failure(404,"LEVEL_NOT_AVAILABLE");
+                return retained;
+            }
             var current=store.current(actor);
             if (!Objects.equals(current.map(Selection::selectionId).orElse(null),expected)) throw new Failure(409,"STALE_SELECTION");
             var role=catalog.roles(actor.organizationId()).stream().filter(r -> r.id().equals(roleId)).findFirst()

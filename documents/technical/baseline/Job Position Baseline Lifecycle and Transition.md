@@ -1,5 +1,7 @@
 # Job Position Baseline Lifecycle and Transition
 
+**Current flow revision: 2026-11-05-r3.** [Target schema/API/flow](../Organization%20Rule%20Assessment%20and%20Pathway.md) supersedes this document's older active assessment/mastery/gap/optimizer assumptions. Material below is retained previous design/source/operation history, not proof of r3 being applied. Keep non-conflicting security/content/retry safeguards. Baseline covers selected Role–Level, records only assessed diagnostics and does not pre-add prerequisites; two separate policy configs share an engine; skill assessment discovers supplementation; cross-target old bypass work is parallel/non-gating. Old affected dev records may be rebuilt; new-flow history and unrelated/shared evidence/backups remain. Do not automatically run retained setup/reset/test commands below.
+
 ## Scope
 
 Design for REQ-002-F01/F02 and protected result/history reads. [Role-to-baseline](Role%20Selection%20and%20Job Position%20Baseline.md), [Configure](Configure%20Baseline%20Assessment.md) and [Complete](Complete%20Baseline%20Assessment.md) define the confirmed behavior. One organization+Job Position has one stable Blueprint, one open Draft and one Active version; all new attempts use the deduplicated full skill/item union and one bounds pair.

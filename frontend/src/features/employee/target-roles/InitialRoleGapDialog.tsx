@@ -12,6 +12,8 @@ import { LoadingCard } from '../../../shared/components/ui/LoadingCard'
 import { Dialog, DialogBody, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '../../../shared/components/ui/Dialog'
 import type { CurrentRole } from './currentRoleFlowApi'
 import { RoleLevelPicker } from './RoleLevelPicker'
+import { rulePathwaysEnabled } from '../../../shared/api/requirementPathway'
+import { RequirementGapDialog } from './RequirementGapDialog'
 
 export function InitialRoleGapDialog({
   role,
@@ -19,19 +21,23 @@ export function InitialRoleGapDialog({
   minAllowedRank,
   onClose,
   onBaseline,
+  requestOnly = false,
 }: {
   role: CurrentRole
   initialLevelId?: string | null
   minAllowedRank?: number
   onClose: () => void
   onBaseline: (levelId: string) => void
+  requestOnly?: boolean
 }) {
   const session = useInitialPathwaySession(), { t } = useTranslation()
-  if (!session.scope) return <Dialog open size="wide" onOpenChange={open => { if (!open) onClose() }} ariaLabel={t('initialPathway.gapTitle')}>
-    <DialogHeader><DialogTitle>{t('initialPathway.gapTitle')}</DialogTitle></DialogHeader>
+  if (!session.scope) return <Dialog open size="wide" className={requestOnly ? 'max-w-2xl' : undefined} onOpenChange={open => { if (!open) onClose() }} ariaLabel={t(requestOnly ? 'rulePathway.request' : 'initialPathway.gapTitle')}>
+    <DialogHeader><DialogTitle>{t(requestOnly ? 'rulePathway.request' : 'initialPathway.gapTitle')}</DialogTitle></DialogHeader>
     {session.isError ? <InitialPathwayFeedback error={session.error} onRetry={() => void session.refetch()} /> : <LoadingCard label={t('initialPathway.loading')} />}
   </Dialog>
-  return <GapDialog key={session.scope + ':' + role.id + ':' + (initialLevelId ?? '')} role={role} initialLevelId={initialLevelId} minAllowedRank={minAllowedRank} scope={session.scope} authorized={session.data?.role === 'EMPLOYEE'} onClose={onClose} onBaseline={onBaseline} />
+  const props = { role, initialLevelId, minAllowedRank, scope: session.scope, authorized: session.data?.role === 'EMPLOYEE', onClose, onBaseline }
+  const key = session.scope + ':' + role.id + ':' + (initialLevelId ?? '')
+  return rulePathwaysEnabled ? <RequirementGapDialog key={key} {...props} fixedLevel={requestOnly} /> : <GapDialog key={key} {...props} />
 }
 function GapDialog({
   role,
