@@ -55,7 +55,7 @@ public class MicroSkillService
                 command.description(),
                 command.macroCompetencyCode());
 
-        return microSkillRepository.save(skill);
+        return microSkillRepository.save(skill.withProvision(command.provision()));
     }
 
     @Override
@@ -71,7 +71,10 @@ public class MicroSkillService
                 command.macroCompetencyCode(),
                 command.status());
 
-        return microSkillRepository.save(updated);
+        if (command.provision() != null && !Objects.equals(command.expectedVersion(),existing.getVersion()))
+            throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.CONFLICT,"Skill changed; reload before configuring outcomes");
+
+        return microSkillRepository.save(updated.withProvision(command.provision()));
     }
 
     @Override

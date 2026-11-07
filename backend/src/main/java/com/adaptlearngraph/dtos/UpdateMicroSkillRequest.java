@@ -13,4 +13,18 @@ public record UpdateMicroSkillRequest(
 
         String macroCompetencyCode,
 
-        SkillStatusDto status) {}
+        SkillStatusDto status,
+        String expectedVersion,
+        java.util.List<String> moduleOnlyKnowledgeLevels,
+        java.util.List<String> certificateOnlyKnowledgeLevels,
+        java.util.List<String> foundationOutcomeCodes,
+        java.util.List<String> intermediateOutcomeCodes,
+        java.util.List<String> advancedOutcomeCodes) {
+    public UpdateMicroSkillRequest(String name,String description,String macroCompetencyCode,SkillStatusDto status) {
+        this(name,description,macroCompetencyCode,status,null,null,null,null,null,null);
+    }
+    public com.adaptlearngraph.entities.domain.SkillProvision provision() {
+        return com.adaptlearngraph.entities.domain.SkillProvision.optional(moduleOnlyKnowledgeLevels,certificateOnlyKnowledgeLevels,
+                foundationOutcomeCodes,intermediateOutcomeCodes,advancedOutcomeCodes);
+    }
+}

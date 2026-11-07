@@ -18,7 +18,7 @@ public record TargetRoleGraphResponse(
             String skillCode,
             String skillName,
             String macroCompetencyCode,
-            double targetMastery,
+            List<String> requiredKnowledgeLevels,
             String status,
             String level) {}
 
@@ -29,7 +29,7 @@ public record TargetRoleGraphResponse(
                         s.skillCode(),
                         s.skillName(),
                         s.macroCompetencyCode(),
-                        s.targetMastery(),
+                        s.requiredKnowledgeLevels(),
                         s.status().name(),
                         s.level()))
                 .toList();

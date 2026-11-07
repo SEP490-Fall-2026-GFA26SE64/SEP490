@@ -112,6 +112,11 @@ public class MicroSkillController {
                 "code", ex.getCode()));
     }
 
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<?> invalidKnowledge(IllegalArgumentException ex) {
+        return ResponseEntity.badRequest().cacheControl(org.springframework.http.CacheControl.noStore()).body(Map.of("message",ex.getMessage()));
+    }
+
     @ExceptionHandler(MicroSkillInUseException.class)
     public ResponseEntity<?> handleInUse(MicroSkillInUseException ex) {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of(

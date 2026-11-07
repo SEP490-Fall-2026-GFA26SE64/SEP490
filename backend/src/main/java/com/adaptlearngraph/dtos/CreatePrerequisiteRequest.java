@@ -1,7 +1,5 @@
 package com.adaptlearngraph.dtos;
 
-import jakarta.validation.constraints.DecimalMax;
-import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 
 public record CreatePrerequisiteRequest(
@@ -11,8 +9,7 @@ public record CreatePrerequisiteRequest(
         @NotBlank(message = "targetSkillId cannot be blank")
         String targetSkillId,
 
-        @DecimalMin(value = "0.0", message = "minMastery must be >= 0.0")
-        @DecimalMax(value = "1.0", message = "minMastery must be <= 1.0")
-        double minMastery,
+        @NotBlank String dependentKnowledgeLevel,
+        @NotBlank String prerequisiteKnowledgeLevel,
 
         SkillStatusDto status) {}

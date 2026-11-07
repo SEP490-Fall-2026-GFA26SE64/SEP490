@@ -4,6 +4,7 @@ import com.adaptlearngraph.services.RoleBaselineFlow.*;
 import com.adaptlearngraph.entities.domain.AdaptiveBlueprint.Scope;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.*;
+import org.neo4j.driver.Value;
 
 /** Local-only current-schema catalog. Reuses full union validation; never invents legacy track/seniority. */
 public final class CurrentRoleCatalog implements Catalog {
@@ -43,6 +44,7 @@ public final class CurrentRoleCatalog implements Catalog {
                 var rows=tx.list("""
                         MATCH (o:JobPosition)-[m:HAS_ROLE]->(r:TargetRole)-[h:HAS_LEVEL]->(l:Level)
                         WHERE o.status='ACTIVE' AND r.status='ACTIVE' AND m.status='ACTIVE' AND h.status='ACTIVE' AND l.status='ACTIVE'
+                          AND (l.sourceFormat IS NULL OR l.sourceFormat<>'AUTHORED_ROLE_MEMBER_V1')
                           AND all(n IN [o,r,l,m,h] WHERE n.organizationId IS NULL OR n.organizationId=$org)
                           AND ($unrestricted OR o.id IN $jobPositions)
                           AND NOT o.id IN $excluded
@@ -53,7 +55,7 @@ public final class CurrentRoleCatalog implements Catalog {
                           AND ($demoReview OR all(n IN [q,s] WHERE n.reviewStatus='APPROVED'))
                         RETURN properties(o) AS o,properties(r) AS r,properties(l) AS l,
                             collect(DISTINCT CASE WHEN s IS NULL THEN null ELSE {
-                              id:s.id,code:s.code,name:s.name,requiredScore:q.requiredScore,mandatory:q.isMandatory} END) AS skills
+                              id:s.id,code:s.code,name:s.name,requiredKnowledgeLevels:q.requiredKnowledgeLevels,mandatory:q.isMandatory} END) AS skills
                         ORDER BY o.name,r.name,l.rank
                         """,Map.of("org",org.toString(),"unrestricted",allowedJobPositions==null,
                                 "jobPositions",allowedJobPositions==null?List.of():List.copyOf(allowedJobPositions),"demoReview",demoReview,"excluded",List.copyOf(excluded)));
@@ -69,8 +71,9 @@ public final class CurrentRoleCatalog implements Catalog {
                 for(var row:rows) {
                     var o=row.get("o");var r=row.get("r");var l=row.get("l");String occ=o.get("id").asString(),id=r.get("id").asString();
                     var snapshot=validated.get(occ); if(snapshot==null || !snapshot.roles().containsKey(id)) continue;
-                    var skills=row.get("skills").asList(v->new Skill(v.get("id").asString(),v.get("code").asString(null),v.get("name").asString(),v.get("requiredScore").asDouble(),v.get("mandatory").asBoolean()));
-                    if(skills.isEmpty()) throw new IllegalStateException("Role Level requirements unavailable");
+                    var skills=row.get("skills").asList(v->new Skill(v.get("id").asString(),v.get("code").asString(null),v.get("name").asString(),v.get("requiredKnowledgeLevels").asList(Value::asString),v.get("mandatory").asBoolean()));
+                    if(skills.isEmpty() || skills.stream().anyMatch(s->s.requiredKnowledgeLevels().isEmpty()))
+                        throw new IllegalStateException("Explicit Role Level knowledge requirements unavailable");
                     var level=new Level(l.get("id").asString(),l.get("code").asString(),l.get("name").asString(),l.get("rank").asInt(),
                             l.get("context").asString(""),l.get("attainmentRule").asString(""),skills);
                     var existing=result.get(id); var levels=new ArrayList<Level>(existing==null?List.of():existing.levels());levels.add(level);

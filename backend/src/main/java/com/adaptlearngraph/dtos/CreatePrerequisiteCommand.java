@@ -6,5 +6,6 @@ public record CreatePrerequisiteCommand(
         String organizationId,
         String sourceSkillId,
         String targetSkillId,
-        double minMastery,
+        String dependentKnowledgeLevel,
+        String prerequisiteKnowledgeLevel,
         SkillStatus status) {}

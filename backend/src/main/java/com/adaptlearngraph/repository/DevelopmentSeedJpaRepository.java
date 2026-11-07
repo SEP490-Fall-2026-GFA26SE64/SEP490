@@ -17,6 +17,13 @@ import org.springframework.transaction.annotation.Transactional;
  * (with the exact conflict target of each fixture); fixture verification reads are JPQL. Never used by runtime flows.
  */
 public interface DevelopmentSeedJpaRepository extends Repository<OrganizationEntity, UUID> {
+    @Modifying(flushAutomatically=true)
+    @Transactional(TransactionManagers.JPA)
+    @Query(value="INSERT INTO platform.question_bank(question_bank_id,name,created_by) VALUES(:bank,:name,:actor) ON CONFLICT(question_bank_id) DO NOTHING",nativeQuery=true)
+    int insertCatalogBankIfAbsent(@Param("bank") UUID bank,@Param("name") String name,@Param("actor") UUID actor);
+    @Modifying(flushAutomatically=true)
+    @Query(value="UPDATE platform.organization_membership SET active=false WHERE membership_id=:membership AND account_id=:account AND organization_id=:org",nativeQuery=true)
+    int deactivateFixtureMembership(@Param("membership") UUID membership,@Param("account") UUID account,@Param("org") UUID organization);
     record AccountState(UUID organizationId, String identifier, String normalizedIdentifier, String passwordHash, Boolean active) {}
 
     // ---- organization ----

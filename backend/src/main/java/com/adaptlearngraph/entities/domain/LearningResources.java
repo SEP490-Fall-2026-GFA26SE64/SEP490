@@ -79,7 +79,18 @@ public final class LearningResources {
 
     /** Immutable completion-time provenance; never resolved through today's graph mapping. */
     public record SkillCompletion(String skillId, String moduleId, int revision,
-            String contentVersion, String completedAt) {}
+            String contentVersion, String completedAt,String knowledgeLevel,String skillVersion,java.util.List<String> outcomeCodes,String skillName) {
+        public SkillCompletion(String skill,String module,int revision,String version,String at) {
+            this(skill,module,revision,version,at,null,null,java.util.List.of(),null);
+        }
+        public SkillCompletion {
+            outcomeCodes=outcomeCodes==null?java.util.List.of():java.util.List.copyOf(outcomeCodes);
+            if(knowledgeLevel!=null) {
+                KnowledgeLevel.valueOf(knowledgeLevel);RuleAssessment.unique(outcomeCodes);
+                ModuleAuthoring.text(skillVersion,"skillVersion",200);ModuleAuthoring.text(skillName,"skillName",2000);
+            }else if(skillVersion!=null || !outcomeCodes.isEmpty())throw new IllegalArgumentException("Incomplete learning requirement scope");
+        }
+    }
     public record SkillEligibility(String skillId, boolean eligible, String reason,
             SkillCompletion qualifyingCompletion) {}
     public record OptionalModule(String moduleId, String title, String contentVersion,

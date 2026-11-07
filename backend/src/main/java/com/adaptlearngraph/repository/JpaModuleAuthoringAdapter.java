@@ -56,6 +56,17 @@ public final class JpaModuleAuthoringAdapter implements ModuleAuthoringPort {
     @Override public List<Document> documents(String org) {
         return mutable(repositories.documents().documents(org).stream().map(document -> read(document, Document.class)).toList());
     }
+    @Override public List<Document> releasedCandidates(String organization,List<String> skills,int maximum) {
+        if(skills.isEmpty())return List.of();
+        if(skills.size()>1000 || maximum<1 || maximum>1001)throw new IllegalArgumentException("Invalid module catalog query bound");
+        return repositories.documents().releasedCandidates(organization,skills,maximum).stream().map(document->read(document,Document.class)).toList();
+    }
+    @Override public List<RetainedModule> retainedCandidates(String organization,String learner,List<String> skills,List<String> currentModules,int maximum) {
+        if(skills.isEmpty())return List.of();
+        if(skills.size()>1000 || currentModules.size()>1000 || maximum<1 || maximum>1001)throw new IllegalArgumentException("Invalid retained module query bound");
+        return repositories.documents().retainedCandidates(organization,learner,skills,json(currentModules),maximum).stream()
+                .map(row->new RetainedModule(read((String)row[0],Document.class),((Number)row[1]).intValue())).toList();
+    }
     @Override public List<Intake> intakes(String org) {
         return mutable(repositories.intakes().documents(org).stream().map(document -> read(document, Intake.class)).toList());
     }
@@ -106,6 +117,9 @@ public final class JpaModuleAuthoringAdapter implements ModuleAuthoringPort {
     }
     @Override public void project(Document doc, Revision revision, boolean archived) {
         graph.project(doc, revision, archived);
+    }
+    @Override public KnowledgeDefinition requireKnowledge(String organization,String skill,String level,List<String> outcomes) {
+        return graph.requireKnowledge(organization,skill,level,outcomes);
     }
     @Override public boolean referenced(Document doc) {
         long pins = repositories.pins().countByModule(doc.organizationId(), doc.id());
