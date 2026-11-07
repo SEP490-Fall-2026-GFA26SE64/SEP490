@@ -21,10 +21,13 @@ import { Heading } from '../../../shared/components/typography/Heading'
 import { Combobox } from '../../../shared/components/ui/Combobox'
 import { ReviewValidation } from './ReviewValidation'
 import { ReviewPathwayPreview } from './ReviewPathwayPreview'
+import { rulePathwaysEnabled } from '../../../shared/api/requirementPathway'
+import { RequirementPathwayReviewDetail } from './RequirementPathwayReview'
 
 export function ExpertPathwayDetailPage() {
   const session = useInitialPathwaySession(), { pathwayId = '' } = useParams<{ pathwayId: string }>(), { t } = useTranslation()
-  return <WorkspaceLayout>{session.scope && session.data?.role === 'DOMAIN_EXPERT' ? <Review key={session.scope + pathwayId} scope={session.scope} id={pathwayId} /> : session.isPending ? <LoadingCard label={t('initialPathway.loading')} /> : <InitialPathwayFeedback error={session.error ?? new PathwayError('FORBIDDEN', 403)} onRetry={() => void session.refetch()} />}</WorkspaceLayout>
+  const View = rulePathwaysEnabled ? RequirementPathwayReviewDetail : Review
+  return <WorkspaceLayout>{session.scope && session.data?.role === 'DOMAIN_EXPERT' ? <View key={session.scope + pathwayId} scope={session.scope} id={pathwayId} /> : session.isPending ? <LoadingCard label={t('initialPathway.loading')} /> : <InitialPathwayFeedback error={session.error ?? new PathwayError('FORBIDDEN', 403)} onRetry={() => void session.refetch()} />}</WorkspaceLayout>
 }
 function Review({ scope, id }: { scope: string; id: string }) {
   const [orderWarningOpen, setOrderWarningOpen] = useState(false)

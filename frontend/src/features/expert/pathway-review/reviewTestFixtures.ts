@@ -1,4 +1,4 @@
-// C3-only independent wire fixture. Never imported by runtime modules.
+// Independent wire fixture for review checks. Never imported by runtime modules.
 import type { ReviewDetail, TeachingTarget } from '../../../shared/api/initialPathway'
 export const target: TeachingTarget = { skillId: 'S', instructionLevel: null, teachingFocus: 'PRIMARY', difficultyLevel: 'LOW', coverageRole: 'COVERAGE', expertAttention: false, attentionReason: null }
 export function reviewFixture(state = 'AWAITING_EXPERT_REVIEW', unresolved = false): ReviewDetail {
