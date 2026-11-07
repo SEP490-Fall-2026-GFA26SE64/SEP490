@@ -48,6 +48,16 @@ public interface QuestionBankJpaRepository extends Repository<QuestionBankEntity
             """)
     List<UUID> banksOf(@Param("organization") UUID organizationId);
 
+    @Modifying(flushAutomatically = true)
+    @Query(value="""
+            INSERT INTO platform.question_bank_scope(organization_id,question_bank_id)
+            SELECT :organization,b.question_bank_id FROM platform.question_bank b
+            JOIN platform.account a ON a.account_id=b.created_by
+            WHERE b.question_bank_id=:bank AND a.organization_id=:organization
+            ON CONFLICT(organization_id,question_bank_id) DO NOTHING
+            """,nativeQuery=true)
+    int registerScope(@Param("organization") UUID organization,@Param("bank") UUID bank);
+
     @Query("select b.name from QuestionBankEntity b where b.questionBankId = :bank")
     Optional<String> name(@Param("bank") UUID bankId);
 

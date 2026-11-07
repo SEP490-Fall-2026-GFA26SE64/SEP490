@@ -34,7 +34,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @Validated
 @RestController
-@Profile("local")
+@Profile("local & !workspace-baseline & !prod")
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 @ConditionalOnProperty(prefix = "catalog.local-actor", name = "enabled", havingValue = "true")
 @ConditionalOnProperty(prefix = "assessment.baseline.legacy-authoring", name = "enabled", havingValue = "true")

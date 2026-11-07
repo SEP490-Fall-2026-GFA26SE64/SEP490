@@ -10,7 +10,9 @@ public final class QuestionBankPorts {
     public interface Actors { Actor require(); }
     public interface Catalog {
         List<Choice> skills(Actor actor);
+        default List<KnowledgeChoice> knowledge(Actor actor){return List.of();}
         String requireSkill(Actor actor, String id);
+        void requireOutcome(Actor actor,String skill,String knowledgeLevel,String outcomeCode);
         List<Choice> experts(Actor actor);
         List<Choice> managers(Actor actor);
         void requireExpert(Actor actor, UUID id);

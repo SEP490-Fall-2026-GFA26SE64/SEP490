@@ -92,7 +92,8 @@ public class QuestionBankApplicationService {
 
     private static Content content(ContentDto content) {
         return content == null ? null : new Content(content.prompt(), content.options(), content.correctAnswer(),
-                content.skillId(), content.skillName(), content.difficulty(), content.explanation());
+                content.skillId(), content.skillName(), null, content.explanation(),
+                content.knowledgeLevel(), content.outcomeCode(), content.mandatory());
     }
 
     private ViewResponse view(QuestionBankUseCase.View view) {
