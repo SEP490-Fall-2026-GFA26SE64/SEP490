@@ -26,6 +26,9 @@ public class WorkspaceInitialPathwaySecurity {
     SecurityFilterChain workspaceInitialPathwayFilterChain(HttpSecurity http,Actors actors,ObjectMapper json) throws Exception {
         return http.securityMatcher("/api/v1/employee/role-gaps","/api/v1/employee/initial-pathway-requests",
                 "/api/v1/employee/initial-pathway-requests/*","/api/v1/employee/pathway","/api/v1/employee/pathways/*",
+                "/api/v1/employee/initial-pathway-requests/*/retry",
+                "/api/v1/employee/pathways/*/certificate-submissions","/api/v1/employee/pathways/*/certificate-uploads",
+                "/api/v1/employee/certificate-submissions/*/file","/api/v1/expert/certificates","/api/v1/expert/certificate-submissions/**",
                 "/api/v1/expert/initial-pathways","/api/v1/expert/initial-pathways/**")
             .addFilterBefore(new OncePerRequestFilter() {
                 @Override protected void doFilterInternal(HttpServletRequest request,HttpServletResponse response,FilterChain chain)

@@ -2,6 +2,7 @@ package com.adaptlearngraph.repository;
 
 import com.adaptlearngraph.entities.AccountEntity;
 import java.util.List;
+import java.util.Collection;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.Repository;
@@ -29,6 +30,9 @@ public interface PathwayActorJpaRepository extends Repository<AccountEntity, UUI
             where a.organizationId = :org and a.accountId = :learner
             """)
     List<String> workspaceFullName(@Param("org") UUID organizationId, @Param("learner") UUID learnerId);
+    record Label(UUID learnerId,String fullName) {}
+    @Query("select new com.adaptlearngraph.repository.PathwayActorJpaRepository$Label(a.accountId,p.fullName) from AccountEntity a join WorkspaceAccountProfileEntity p on p.accountId=a.accountId where a.organizationId=:org and a.accountId in :ids")
+    List<Label> workspaceNames(@Param("org") UUID org,@Param("ids") Collection<UUID> ids);
 
     @Query("select a.identifier from AccountEntity a where a.organizationId = :org and a.accountId = :learner")
     List<String> identifier(@Param("org") UUID organizationId, @Param("learner") UUID learnerId);

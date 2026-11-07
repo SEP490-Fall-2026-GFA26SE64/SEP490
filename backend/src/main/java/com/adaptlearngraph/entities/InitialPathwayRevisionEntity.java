@@ -47,6 +47,12 @@ public class InitialPathwayRevisionEntity {
     private Instant createdAt;
     @Column(name = "format_version", nullable = false)
     private Short formatVersion;
+    @Column(name="change_origin",nullable=false)
+    private String changeOrigin;
+    @Column(name="source_event_id")
+    private UUID sourceEventId;
+    @Column(name="approval_basis_revision")
+    private Long approvalBasisRevision;
 
     protected InitialPathwayRevisionEntity() {
     }
@@ -65,6 +71,13 @@ public class InitialPathwayRevisionEntity {
         this.content = content;
         this.createdAt = createdAt;
         this.formatVersion = formatVersion;
+        this.changeOrigin = "EXPERT";
+    }
+
+    public static InitialPathwayRevisionEntity rule(UUID request,long revision,UUID org,UUID learner,UUID selection,long selectionRevision,
+            UUID run,String hash,String content,String origin,UUID event,Long approvalBasis) {
+        var row=new InitialPathwayRevisionEntity(request,revision,org,learner,selection,selectionRevision,run,hash,"VALID",content,null,(short)3);
+        row.changeOrigin=origin;row.sourceEventId=event;row.approvalBasisRevision=approvalBasis;return row;
     }
 
     public UUID getRequestId() { return requestId; }
@@ -79,6 +92,9 @@ public class InitialPathwayRevisionEntity {
     public String getContent() { return content; }
     public Instant getCreatedAt() { return createdAt; }
     public Short getFormatVersion() { return formatVersion; }
+    public String getChangeOrigin() { return changeOrigin; }
+    public UUID getSourceEventId() { return sourceEventId; }
+    public Long getApprovalBasisRevision() { return approvalBasisRevision; }
 
     public record Key(UUID requestId, Long revision) implements Serializable {
         public Key() {

@@ -28,8 +28,12 @@ public class InitialPathwayRequestEntity {
     private UUID selectionId;
     @Column(name = "selection_revision", nullable = false)
     private Long selectionRevision;
-    @Column(name = "gap_snapshot_id", nullable = false)
+    @Column(name = "gap_snapshot_id")
     private UUID gapSnapshotId;
+    @Column(name="flow_version",nullable=false,updatable=false)
+    private String flowVersion;
+    @Column(name="requirement_snapshot_id",updatable=false)
+    private UUID requirementSnapshotId;
     @Column(name = "planning_input_hash", nullable = false, columnDefinition = PostgresColumnTypes.CONTENT_HASH)
     private String planningInputHash;
     @Column(name = "algorithm_version", nullable = false)
@@ -67,6 +71,7 @@ public class InitialPathwayRequestEntity {
         this.selectionId = selectionId;
         this.selectionRevision = selectionRevision;
         this.gapSnapshotId = gapSnapshotId;
+        this.flowVersion = "NUMERIC_V1";
         this.planningInputHash = planningInputHash;
         this.algorithmVersion = algorithmVersion;
         this.configurationVersion = configurationVersion;
@@ -81,12 +86,20 @@ public class InitialPathwayRequestEntity {
         this.createdAt = createdAt;
     }
 
+    public static InitialPathwayRequestEntity rule(UUID id,UUID org,UUID learner,UUID selection,long selectionRevision,
+            UUID snapshot,String hash,String frozen,String version) {
+        var row=new InitialPathwayRequestEntity(id,org,learner,selection,selectionRevision,null,hash,version,version,frozen,"PENDING",null,null,null,null,null,null,null);
+        row.flowVersion="REQUIREMENT_V1";row.requirementSnapshotId=snapshot;return row;
+    }
+
     public UUID getRequestId() { return requestId; }
     public UUID getOrganizationId() { return organizationId; }
     public UUID getLearnerId() { return learnerId; }
     public UUID getSelectionId() { return selectionId; }
     public Long getSelectionRevision() { return selectionRevision; }
     public UUID getGapSnapshotId() { return gapSnapshotId; }
+    public String getFlowVersion() { return flowVersion; }
+    public UUID getRequirementSnapshotId() { return requirementSnapshotId; }
     public String getPlanningInputHash() { return planningInputHash; }
     public String getAlgorithmVersion() { return algorithmVersion; }
     public String getConfigurationVersion() { return configurationVersion; }
