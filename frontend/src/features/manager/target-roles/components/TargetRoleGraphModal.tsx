@@ -491,12 +491,25 @@ export function TargetRoleGraphModal({
           name: comp.name,
           description: comp.description,
           status: comp.status || 'ACTIVE',
-          memberSkillCount: reqSkills.filter(
-            (s) =>
-              (comp.skillIds?.includes(s.skillId) ||
-              comp.skillIds?.includes(s.skillCode)) &&
+          memberSkillCount: reqSkills.filter((s) => {
+            const sId = (s.skillId || '').toLowerCase().trim()
+            const sCode = (s.skillCode || '').toLowerCase().trim()
+            const matchesComp =
+              (Array.isArray(comp.memberSkills) && comp.memberSkills.some((ms) => {
+                const msId = (ms.id || '').toLowerCase().trim()
+                const msCode = (ms.code || '').toLowerCase().trim()
+                return (sId && (msId === sId || msCode === sId)) || (sCode && (msId === sCode || msCode === sCode))
+              })) ||
+              (Array.isArray(comp.skillIds) && comp.skillIds.some((sid) => {
+                const sidNorm = (sid || '').toLowerCase().trim()
+                return (sId && sidNorm === sId) || (sCode && sidNorm === sCode)
+              }))
+
+            return (
+              matchesComp &&
               (!isLevelFiltered || (s.level && s.level.toLowerCase() === selectedLevelFilter.toLowerCase()))
-          ).length,
+            )
+          }).length,
         },
       })
 
@@ -580,20 +593,39 @@ export function TargetRoleGraphModal({
       })
 
       // Directed edge: (:Competency)-[:HAS_SKILL]->(:MicroSkill)
-      // Connect from ALL relevant competencies that contain or are mapped to this skill
-      const matchingComps = relevantComps.filter(
-        (c) =>
-          c.skillIds?.includes(skill.skillId) ||
-          c.skillIds?.includes(skill.skillCode) ||
-          (skill.level && (
-            currentRole?.levelCompetencies?.[skill.level]?.includes(c.id) ||
-            (c.code && currentRole?.levelCompetencies?.[skill.level]?.includes(c.code))
-          ))
-      )
+      // A competency connects to a micro-skill with HAS_SKILL strictly if the competency contains that skill
+      const skillIdNorm = (skill.skillId || '').toLowerCase().trim()
+      const skillCodeNorm = (skill.skillCode || '').toLowerCase().trim()
 
-      const compsToLink = matchingComps.length > 0 ? matchingComps : (relevantComps.length > 0 ? [relevantComps[0]] : [])
+      const matchingComps = relevantComps.filter((c) => {
+        if (c.id === 'comp-core') return true
 
-      compsToLink.forEach((comp) => {
+        if (Array.isArray(c.memberSkills) && c.memberSkills.length > 0) {
+          const matched = c.memberSkills.some((ms) => {
+            const msId = (ms.id || '').toLowerCase().trim()
+            const msCode = (ms.code || '').toLowerCase().trim()
+            return (
+              (skillIdNorm && (msId === skillIdNorm || msCode === skillIdNorm)) ||
+              (skillCodeNorm && (msId === skillCodeNorm || msCode === skillCodeNorm))
+            )
+          })
+          if (matched) return true
+        }
+
+        if (Array.isArray(c.skillIds) && c.skillIds.length > 0) {
+          return c.skillIds.some((sid) => {
+            const sidNorm = (sid || '').toLowerCase().trim()
+            return (
+              (skillIdNorm && sidNorm === skillIdNorm) ||
+              (skillCodeNorm && sidNorm === skillCodeNorm)
+            )
+          })
+        }
+
+        return false
+      })
+
+      matchingComps.forEach((comp) => {
         const parentNodeId = `comp-${comp.id}`
         addEdgeSafely({
           id: `has-skill-${parentNodeId}-${skill.skillId}`,

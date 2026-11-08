@@ -90,11 +90,15 @@ public class Neo4jDepartmentRepository implements DepartmentRepository {
                     d.updatedAt() != null ? d.updatedAt() : java.time.Instant.now().toString());
 
             if (d.jobPositionCodes() != null) {
-                client.query("MATCH (d:Department {organizationId: $organizationId}) WHERE d.id = $id OR d.code = $id OPTIONAL MATCH (d)-[r:HAS_JOB_POSITION]->() DELETE r")
-                        .bindAll(Map.of("organizationId", organization, "id", id)).run();
+                String code = d.code() != null ? d.code() : "";
+                client.query("MATCH (d:Department {organizationId: $organizationId}) WHERE d.id = $id OR d.code = $id OR d.code = $code OR d.id = $code OPTIONAL MATCH (d)-[r:HAS_JOB_POSITION]->() DELETE r")
+                        .bindAll(Map.of("organizationId", organization, "id", id, "code", code)).run();
                 for (String jpCode : d.jobPositionCodes()) {
                     if (jpCode != null && !jpCode.isBlank()) {
                         departments.linkJobPosition(organization, id, jpCode);
+                        if (!code.isBlank() && !code.equals(id)) {
+                            departments.linkJobPosition(organization, code, jpCode);
+                        }
                     }
                 }
             }

@@ -893,7 +893,7 @@ function OntologyGraphPlaygroundInner({
             (c) =>
               c.skillIds?.includes(targetSkill.id) ||
               (targetSkill.code && c.skillIds?.includes(targetSkill.code))
-          ) || (uniqueRelevantComps.length > 0 ? uniqueRelevantComps[sIdx % uniqueRelevantComps.length] : null)
+          )
 
           const parentCompNode = parentComp ? compNodeMap[parentComp.id] : null
           const targetLvlNode = st.level

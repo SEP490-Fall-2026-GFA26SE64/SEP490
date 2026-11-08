@@ -14,8 +14,8 @@ import { useTranslation } from '../../../shared/i18n/LanguageContext'
 import { decodeJobPositionWithTargetRole, encodeJobPositionWithTargetRole, getIdentity, getMembers, getPendingActivations, getReferences, getSummary, request, updateMemberProfile,
   type Identity, type Member, type PendingActivation, type Reference } from '../../subscription/subscriptionApi'
 import { Failure, Loading, useCopy } from '../../subscription/SubscriptionFeedback'
-import { loadDepartments } from '../../../shared/stores/departmentStore'
-import { fetchDepartments, type DepartmentDto } from '../../../shared/api/departmentApi'
+import { loadDepartments, updateDepartment, type DepartmentRecord } from '../../../shared/stores/departmentStore'
+import { fetchDepartments, updateDepartmentApi, type DepartmentDto } from '../../../shared/api/departmentApi'
 import { fetchJobPositions, type JobPositionDto } from '../../../shared/api/jobPositionApi'
 import { workspaceFetch } from '../../../shared/api/workspaceFetch'
 import {
@@ -406,7 +406,19 @@ function UserDirectory({ identity, organization, principal }: { identity: Identi
     onSuccess: async () => { await refresh(); setNotice('invited') },
   })
 
-  const localDepts = loadDepartments()
+  const [localDepts, setLocalDepts] = useState<DepartmentRecord[]>(() => loadDepartments(organization))
+
+  const refetchLiveDepts = liveDeptsQuery.refetch
+
+  useEffect(() => {
+    setLocalDepts(loadDepartments(organization))
+    const handleUpdated = () => {
+      setLocalDepts(loadDepartments(organization))
+      refetchLiveDepts()
+    }
+    window.addEventListener('departments_updated', handleUpdated)
+    return () => window.removeEventListener('departments_updated', handleUpdated)
+  }, [organization, refetchLiveDepts])
   const localAllJobPositions = getAvailableJobPositions(organization, true)
 
   const allJobPositions = useMemo(() => {
@@ -474,7 +486,11 @@ function UserDirectory({ identity, organization, principal }: { identity: Identi
 
     const resolvedOrgId = resolveWorkspaceOrgId(organization)
     for (const ld of localDepts) {
-      if (ld.organizationId && resolveWorkspaceOrgId(ld.organizationId) !== resolvedOrgId) {
+      if (
+        ld.organizationId &&
+        resolveWorkspaceOrgId(ld.organizationId) !== resolvedOrgId &&
+        ld.organizationId !== organization
+      ) {
         continue
       }
       if (!seen.has(ld.id) && !seen.has(ld.code)) {
@@ -605,6 +621,12 @@ function UserDirectory({ identity, organization, principal }: { identity: Identi
   const lastAdmin = (member: Member) => member.active && member.accountActive && member.roles.includes('ORGANIZATION_ADMINISTRATOR') && adminCount <= 1
   const incomplete = summary.isPending || members.isPending || invitations.isPending
   const failure = summary.error ?? members.error ?? invitations.error
+  const isCapReached = Boolean(
+    summary.isSuccess &&
+    summary.data?.admissionLimit !== undefined &&
+    summary.data.admissionLimit > 0 &&
+    (summary.data?.usedSeats ?? 0) >= summary.data.admissionLimit
+  )
 
   return (
     <AdminPageLayout
@@ -614,9 +636,10 @@ function UserDirectory({ identity, organization, principal }: { identity: Identi
       description={c('Manage your organization members, assignments and account activation.', 'Quản lý thành viên tổ chức, phân công và kích hoạt tài khoản.')}
       actions={
         <Button
-          disabled={!editable}
+          disabled={!editable || isCapReached}
           leftIcon={<Plus size={16} aria-hidden="true" />}
           onClick={() => { setNotice(null); setForm({ member: null }) }}
+          title={isCapReached ? c('Seat limit reached. Upgrade subscription to add more users.', 'Đã đạt giới hạn ghế thành viên. Nâng cấp gói để thêm người dùng.') : undefined}
         >
           {c('Create User', 'Tạo người dùng')}
         </Button>
@@ -627,6 +650,14 @@ function UserDirectory({ identity, organization, principal }: { identity: Identi
           {suspended
             ? c('Workspace suspended. User changes are unavailable.', 'Không gian bị tạm ngưng. Không thể thay đổi người dùng.')
             : c('Subscription expired: view members or deactivate memberships to reduce seats. Renew before creating, editing or reactivating users.', 'Gói đã hết hạn: chỉ xem hoặc vô hiệu hóa membership để giảm ghế. Gia hạn trước khi tạo, sửa hoặc kích hoạt lại.')}
+        </div>
+      )}
+      {summary.isSuccess && editable && isCapReached && (
+        <div role="status" className="rounded-lg border border-warning/40 bg-card p-4 text-body-sm text-foreground">
+          {c(
+            `Seat limit reached (${summary.data?.usedSeats ?? 0}/${summary.data?.admissionLimit ?? 0}). Upgrade subscription before creating new users.`,
+            `Đã đạt giới hạn ghế (${summary.data?.usedSeats ?? 0}/${summary.data?.admissionLimit ?? 0}). Vui lòng nâng cấp gói đăng ký trước khi tạo người dùng mới.`
+          )}
         </div>
       )}
       {notice && (
@@ -648,9 +679,8 @@ function UserDirectory({ identity, organization, principal }: { identity: Identi
             />
             <StatCard title={c('Awaiting activation', 'Chờ kích hoạt')} value={invitations.data?.length ?? 0} icon={<Mail size={16} />} />
             <StatCard
-              title={c('Employee seats used / admission limit', 'Ghế Nhân viên đang dùng / giới hạn')}
+              title={c('Seats used / admission limit', 'Ghế thành viên đang dùng / giới hạn')}
               value={`${summary.data?.usedSeats ?? 0} / ${summary.data?.admissionLimit ?? 0}`}
-              description={c('Invitations do not reserve an Employee seat.', 'Lời mời chưa chiếm ghế Nhân viên.')}
             />
           </div>
 
@@ -855,6 +885,7 @@ function UserDirectory({ identity, organization, principal }: { identity: Identi
           referenceLoading={references.isPending}
           organization={organization}
           enabled={editable}
+          isCapReached={isCapReached}
           close={() => setForm(null)}
           saved={async (invited) => {
             await refresh()
@@ -1090,6 +1121,7 @@ function UserForm({
   referenceLoading,
   organization,
   enabled,
+  isCapReached = false,
   close,
   saved,
 }: {
@@ -1101,10 +1133,14 @@ function UserForm({
   referenceLoading: boolean
   organization: string
   enabled: boolean
+  isCapReached?: boolean
   close: () => void
   saved: (invited: boolean) => Promise<void>
 }) {
   const c = useCopy()
+  const isExistingAdmin = Boolean(
+    member && (member.roles.includes('ORGANIZATION_ADMINISTRATOR') || member.roles.includes('ADMINISTRATOR'))
+  )
   const [name, setName] = useState(member?.fullName ?? '')
   const [email, setEmail] = useState(member?.email ?? '')
   const [roles, setRoles] = useState<string[]>(member?.roles ?? ['EMPLOYEE'])
@@ -1388,7 +1424,10 @@ function UserForm({
   const employee = roles.includes('EMPLOYEE')
   const isLdManager = roles.includes('LD_MANAGER')
   const isExpert = roles.includes('DOMAIN_EXPERT')
-  const selectableRoles = useMemo(() => member ? ROLES : ROLES.filter(r => r !== 'ORGANIZATION_ADMINISTRATOR'), [member])
+  const selectableRoles = useMemo(() => {
+    if (isExistingAdmin) return ['ORGANIZATION_ADMINISTRATOR'] as const
+    return ROLES.filter((r) => r !== 'ORGANIZATION_ADMINISTRATOR')
+  }, [isExistingAdmin])
 
   const selectedDeptObj = useMemo(() => {
     if (!department) return null
@@ -1744,7 +1783,7 @@ function UserForm({
         ? rawAssignedLevel.replace(/^(?:rank|level)\s*\d+\s*:\s*/i, '').trim()
         : null
 
-      if (employee) {
+      if (employee || isLdManager) {
         const assignment = {
           roleTitle: assignedRoleTitle || '',
           roleId: assignedRoleId || '',
@@ -1760,7 +1799,7 @@ function UserForm({
             `alg_employee_assignment_${email.toLowerCase().trim()}`,
             JSON.stringify(assignment),
           )
-          if (assignedRoleId) {
+          if (employee && assignedRoleId) {
             const activeProfileKey = `alg_learner_learning_profile_${organization}`
             const currentRaw = localStorage.getItem(activeProfileKey)
             if (currentRaw) {
@@ -1773,7 +1812,36 @@ function UserForm({
               localStorage.setItem(activeProfileKey, JSON.stringify(parsed))
             }
           }
+
+          if (isLdManager) {
+            if (member?.departmentId && member.departmentId !== selectedDeptObj?.id) {
+              const oldDept = allDepartments.find((d) => d.id === member.departmentId || d.code === member.departmentId)
+              if (oldDept) {
+                updateDepartment(oldDept.id, { headOfDepartment: '', headEmail: '' }, organization)
+                updateDepartmentApi(organization, oldDept.id, {
+                  code: oldDept.code,
+                  name: oldDept.name,
+                  headOfDepartment: '',
+                  headEmail: '',
+                }).catch(() => {})
+              }
+            }
+            if (selectedDeptObj?.id) {
+              updateDepartment(selectedDeptObj.id, { headOfDepartment: name, headEmail: email }, organization)
+              updateDepartmentApi(organization, selectedDeptObj.id, {
+                code: selectedDeptObj.code,
+                name: selectedDeptObj.name,
+                headOfDepartment: name,
+                headEmail: email,
+              }).catch(() => {})
+            }
+            window.dispatchEvent(new Event('departments_updated'))
+          }
         } catch {}
+      }
+
+      if (!member && isCapReached) {
+        throw new Error(c('Seat limit reached. Upgrade subscription to add more users.', 'Đã đạt giới hạn ghế thành viên. Nâng cấp gói để thêm người dùng.'))
       }
 
       const rawJobPositionName = isLdManager
@@ -1783,7 +1851,7 @@ function UserForm({
       return member ?
       updateMemberProfile(organization, member.membershipId, {
         fullName: name,
-        roles,
+        roles: isExistingAdmin ? ['ORGANIZATION_ADMINISTRATOR'] : roles,
         departmentId: selectedDeptObj?.id || effectiveDepartment || null,
         jobPositionReferenceId: isLdManager ? null : (selectedJobPositionObj?.jobPositionReferenceId || effectiveJobPosition || null),
         departmentName: selectedDeptObj?.name || null,
@@ -1827,17 +1895,33 @@ function UserForm({
       </DialogHeader>
 
       <form className="space-y-5 overflow-y-auto px-1 flex-1 min-h-0" onSubmit={event => { event.preventDefault(); save.mutate() }}>
+        {!member && isCapReached && (
+          <div role="status" className="rounded-lg border border-warning/40 bg-card p-3 text-body-sm text-foreground">
+            {c(
+              'Seat limit reached. Creating new users is locked until subscription seats are upgraded.',
+              'Đã đạt giới hạn ghế. Tính năng tạo người dùng mới bị khóa cho đến khi nâng cấp số ghế.'
+            )}
+          </div>
+        )}
+
         {/* Basic Information */}
         <div className="grid gap-4 sm:grid-cols-2">
           <label className="block space-y-1.5 text-body-sm font-medium">
             {c('Full name', 'Họ tên')} <span className="text-destructive">*</span>
-            <Input required maxLength={120} value={name} onChange={event => setName(event.target.value)} />
+            <Input
+              required
+              aria-label={c('Full name', 'Họ tên')}
+              maxLength={120}
+              value={name}
+              onChange={event => setName(event.target.value)}
+            />
           </label>
           <label className="block space-y-1.5 text-body-sm font-medium">
             Email <span className="text-destructive">*</span>
             <Input
               required
               type="email"
+              aria-label="Email"
               maxLength={254}
               readOnly={!!member}
               className={member ? 'bg-muted text-muted-foreground' : ''}
@@ -1849,21 +1933,32 @@ function UserForm({
 
         {/* Organization Role Selection */}
         <fieldset className="rounded-xl border border-border p-4 bg-card shadow-2xs">
-          <legend className="px-1 text-body-sm font-semibold">{c('Organization role', 'Vai trò trong tổ chức')}</legend>
-          <div className="grid gap-2 sm:grid-cols-2">
+          <legend className="px-1 text-body-sm font-semibold flex items-center gap-2">
+            <span>{c('Organization role', 'Vai trò trong tổ chức')}</span>
+            {isExistingAdmin && (
+              <span className="text-xs text-muted-foreground font-normal">
+                {c('(Administrator role cannot be changed)', '(Vai trò Quản trị viên không thể thay đổi)')}
+              </span>
+            )}
+          </legend>
+          <div className={`grid gap-2 ${selectableRoles.length === 3 ? 'sm:grid-cols-3' : 'sm:grid-cols-2'}`}>
             {selectableRoles.map(role => (
               <label
                 key={role}
-                className={`flex cursor-pointer items-center gap-3 rounded-lg border p-3 text-body-sm transition-colors ${
+                className={`flex items-center gap-3 rounded-lg border p-3 text-body-sm transition-colors ${
+                  isExistingAdmin ? 'cursor-not-allowed opacity-80' : 'cursor-pointer'
+                } ${
                   roles.includes(role) ? 'border-primary/50 bg-secondary/50 font-medium' : 'border-border bg-card hover:bg-muted/30'
                 }`}
               >
                 <input
                   type="radio"
                   name="organization-role"
-                  className="h-4 w-4 accent-primary cursor-pointer"
+                  disabled={isExistingAdmin}
+                  className={`h-4 w-4 accent-primary ${isExistingAdmin ? 'cursor-not-allowed' : 'cursor-pointer'}`}
                   checked={roles.length === 1 && roles[0] === role}
                   onChange={() => {
+                    if (isExistingAdmin) return
                     setRoles([role])
                     if (role === 'LD_MANAGER') {
                       setJobPosition('')
@@ -2206,7 +2301,13 @@ function UserForm({
           <Button
             type="submit"
             isLoading={save.isPending}
-            disabled={!enabled || roles.length === 0 || (isLdManager && !effectiveDepartment) || ((employee || isExpert) && (!effectiveDepartment || !effectiveJobPosition))}
+            disabled={
+              !enabled ||
+              (!member && isCapReached) ||
+              roles.length === 0 ||
+              (isLdManager && !effectiveDepartment) ||
+              ((employee || isExpert) && (!effectiveDepartment || !effectiveJobPosition))
+            }
           >
             {member ? c('Save changes', 'Lưu thay đổi') : c('Send activation link', 'Gửi liên kết kích hoạt')}
           </Button>

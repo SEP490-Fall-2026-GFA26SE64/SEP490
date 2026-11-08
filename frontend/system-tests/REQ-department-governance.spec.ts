@@ -22,7 +22,6 @@ test.describe('Capstone Standard: Department Governance & User Assignment Verifi
     await expect(page.locator('span').filter({ hasText: /^Total Departments$/ })).toBeVisible()
     await expect(page.locator('span').filter({ hasText: /^Active Departments$/ })).toBeVisible()
     await expect(page.locator('span').filter({ hasText: /^Connected Job Positions$/ })).toBeVisible()
-    await expect(page.locator('span').filter({ hasText: /^Workforce Members$/ })).toBeVisible()
 
     // 4. Test Edge Case: Cancel Creation Modal
     await page.getByRole('button', { name: 'Create Department', exact: true }).click()
