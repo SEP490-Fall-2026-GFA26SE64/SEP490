@@ -190,7 +190,7 @@ On 2026-10-23 the sources were regenerated from the isolated V11 lifecycle catal
 
 ### Neo4j
 
-The catalog figure below now shows current source topology, Certificate/REQUIRES_CERTIFICATE and exact knowledge fields, defined in [neo4j_schema.md](neo4j_schema.md) and [dataset 0.8.0](dataset/ONTOLOGY.md).
+The existing catalog figure now lists all properties of the six labels and seven directed relationship types in the supplied Neo4j capture, with relationship properties in its legend. Certificate/REQUIRES_CERTIFICATE remain source-defined and are marked source only because they were not observed in that capture. See [capture/source differences and constraints](neo4j_schema.md#diagram-scope--2026-11-08). PostgreSQL owns learner state and evidence. This documentation update did not query or change a live database.
 
 ![Source-defined catalog and exact provision](diagrams/neo4j.svg)
 

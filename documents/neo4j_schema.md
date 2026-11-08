@@ -2,6 +2,16 @@
 
 ![Current source-defined catalog](diagrams/neo4j.svg)
 
+### Diagram scope — 2026-11-08
+
+The existing [PlantUML source](diagrams/neo4j.puml) generates both catalog image formats. All six captured labels now show the complete property lists supplied for this task, including `id: String [UNIQUE]`; the seven captured directed relationship types and their properties are preserved. Relationship properties are in the diagram legend. These are Neo4j properties, not SQL foreign keys. Uniqueness is source-defined by the importer's per-label id constraints; this documentation update does not verify their deployment.
+
+**Capture versus source.** The supplied capture has no `Certificate` label or `REQUIRES_CERTIFICATE` type. Both remain current source concepts in [CertificateCatalogRepository](../backend/src/main/java/com/adaptlearngraph/repository/CertificateCatalogRepository.java), with an [id uniqueness constraint](../backend/src/main/resources/db/neo4j/certificate-constraints.cypher); they remain visibly marked **source only**. The box lists exactly the writer's Certificate fields, including audit/idempotency strings. The relationship lists its create fields and optional replacement fields; it does not inherit an invented `id`, `version` or `reviewStatus`.
+
+The capture is an observed-property inventory, not the union of all optional source fields: compatibility fields such as `MicroSkill.moduleOnlyKnowledgeLevels` / `certificateOnlyKnowledgeLevels`, TargetRole authoring fields and optional reviewer timestamps remain source-defined outside the six captured lists. Java projections are partial read models; `LearningModuleNode.duration` uses Java `Integer`, while the supplied Neo4j property type is `Long`. Seed null values are omitted on import. Organization/assignment fields are supplied by tenant import/bootstrap and catalog writers. No source fields, seeds or constraints are changed to make them match the capture. Live Neo4j was not queried in this documentation task.
+
+Source cross-check: mounted [knowledge seed](dataset/import/ontology_seed-prerequisite-knowledge.json), [importer](dataset/import/import_neo4j.py), tenant [bootstrap](../backend/src/main/java/com/adaptlearngraph/config/LocalCatalogBootstrap.java), catalog node projections and Certificate writer. Historical inventories below keep their release-specific scope; their old counts/properties are not assertions about the supplied capture. PostgreSQL continues to own learner state and evidence.
+
 ## Current source — 2026-11-07
 
 **Source mapping, not an applied Neo4j capture.** Current tenant readers/writers implement knowledge/provision/certificate fields; live graph metadata was not accessible in this task. Keep existing ontology topology; add only Certificate linked from Skill. No intermediate requirement node.
@@ -34,7 +44,7 @@ Release [v0.12](dataset/import/ontology_seed-v012.json) có 994 node, 4.703 cạ
 
 Neo4j chỉ sở hữu catalog. PostgreSQL lưu tiến độ, bằng chứng hoàn thành bất biến theo org/learner/Module/revision/Skill và quyền tự học. Hoàn thành mọi lesson của một Module mở **điều kiện học tập** để thi Skill; không ghi nhận điểm/mastery, không khóa Module khác, không chuyển bằng chứng sang Skill mới khi Module đổi mapping. [Contract và bàn giao API](technical/Skill-Learning-Eligibility.md).
 
-Đây là thay đổi source/dataset được kiểm chứng trên môi trường riêng. Chưa migration dev chính/accounts-dev. Các phần v0.11 bên dưới mô tả dữ liệu/hành vi lịch sử; không dùng phân loại/difficulty cũ làm contract authoring mới. Hình SVG/PNG cũ được giữ làm tài liệu lịch sử; [PlantUML source](diagrams/neo4j.puml) và Mermaid trên mô tả contract mới.
+Đây là thay đổi source/dataset được kiểm chứng trên môi trường riêng. Chưa migration dev chính/accounts-dev. Các phần v0.11 bên dưới mô tả dữ liệu/hành vi lịch sử; không dùng phân loại/difficulty cũ làm contract authoring mới. SVG/PNG đã được tái tạo ngày 08/11/2026 theo capture được cung cấp và định nghĩa Certificate trong source; [PlantUML source](diagrams/neo4j.puml) và Mermaid trên mô tả contract mới.
 
 ## Historical v0.11 reference
 
@@ -44,7 +54,7 @@ Neo4j chỉ sở hữu catalog. PostgreSQL lưu tiến độ, bằng chứng ho�
 
 
 
-![Sơ đồ ontology lịch sử v0.11](diagrams/neo4j.svg)
+[Sơ đồ catalog hiện tại](diagrams/neo4j.svg) được dùng chung; phần inventory v0.11 dưới đây là lịch sử, không phải nội dung của hình hiện tại.
 
 
 

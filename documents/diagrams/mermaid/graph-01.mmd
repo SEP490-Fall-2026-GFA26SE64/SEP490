@@ -1,62 +1,124 @@
----
-title: "GRAPH-01 - Source-defined Neo4j catalog fields and relationships"
-config: {"theme":"base","fontFamily":"Segoe UI, Arial, sans-serif","themeVariables":{"fontFamily":"Segoe UI, Arial, sans-serif","fontSize":"16px","primaryColor":"#ffffff","primaryTextColor":"#0f1729","primaryBorderColor":"#64748b","secondaryColor":"#fef3eb","tertiaryColor":"#ffffff","lineColor":"#64748b","textColor":"#0f1729","mainBkg":"#ffffff","background":"#ffffff","clusterBkg":"#ffffff","clusterBorder":"#64748b","edgeLabelBackground":"#ffffff","titleColor":"#0f1729","noteBkgColor":"#fef3eb","noteTextColor":"#0f1729","noteBorderColor":"#e6650f","attributeBackgroundColorOdd":"#ffffff","attributeBackgroundColorEven":"#ffffff","secondaryBorderColor":"#64748b","tertiaryBorderColor":"#64748b","secondaryTextColor":"#0f1729","tertiaryTextColor":"#0f1729"},"layout":"dagre","er":{"layoutDirection":"LR","nodeSpacing":70,"rankSpacing":120,"entityPadding":16,"fontSize":16,"minEntityWidth":140,"diagramPadding":32}}
----
-
-erDiagram
+%% Companion of ../neo4j.puml; canonical image exports use that PlantUML source.
+classDiagram
   direction TB
-  JobPosition ||--o{ TargetRole : "HAS_ROLE"
-  TargetRole ||--o{ Level : "HAS_LEVEL"
-  Level ||--o{ Competency : "HAS_COMPETENCY"
-  Competency }o--o{ MicroSkill : "HAS_SKILL"
-  Level }o--o{ MicroSkill : "REQUIRES_SKILL explicit knowledge levels"
-  LearningModule }o--|| MicroSkill : "TEACHES exactly one Skill"
-  MicroSkill }o--o{ MicroSkill : "PREREQUISITE level pair"
-  MicroSkill ||--o{ Certificate : "REQUIRES_CERTIFICATE"
-
-  JobPosition {
-    text id PK
-    text organizationId
-    text status
+  class JobPosition {
+    id: String [UNIQUE]
+    code: String
+    name: String
+    organizationId: String
+    version: String
+    status: String
+    reviewStatus: String
+    jobZone: Long
+    interestRealistic: Double
+    interestInvestigative: Double
+    interestArtistic: Double
+    interestSocial: Double
+    interestEnterprising: Double
+    interestConventional: Double
   }
-  TargetRole {
-    text id PK
-    text organizationId
-    text status
-    text version
+  class TargetRole {
+    id: String [UNIQUE]
+    code: String
+    name: String
+    organizationId: String
+    version: String
+    status: String
+    reviewStatus: String
+    scope: String
+    assignedExpertId: String
+    assignedExpertName: String
   }
-  Level {
-    text id PK
-    text organizationId
-    text duration
-    text memberToken
+  class Level {
+    id: String [UNIQUE]
+    code: String
+    name: String
+    organizationId: String
+    version: String
+    status: String
+    reviewStatus: String
+    rank: Long
+    attainmentRule: String
   }
-  Competency {
-    text id PK
-    text name
+  class Competency {
+    id: String [UNIQUE]
+    code: String
+    name: String
+    description: String
+    organizationId: String
+    version: String
+    status: String
+    reviewStatus: String
+    attainmentRule: String
   }
-  MicroSkill {
-    text id PK
-    text organizationId
-    text version
-    text provisionMode
-    list foundationOutcomeCodes
-    list intermediateOutcomeCodes
-    list advancedOutcomeCodes
+  class MicroSkill {
+    id: String [UNIQUE]
+    name: String
+    definition: String
+    organizationId: String
+    version: String
+    status: String
+    reviewStatus: String
+    reviewSource: String
+    reviewedBy: String
+    provisionMode: String
+    foundationOutcomeCodes: String[]
+    foundationOutcomeLabels: String[]
+    intermediateOutcomeCodes: String[]
+    intermediateOutcomeLabels: String[]
+    advancedOutcomeCodes: String[]
+    advancedOutcomeLabels: String[]
   }
-  LearningModule {
-    text id PK
-    text knowledgeLevel
-    text skillVersion
-    list outcomeCodes
-    text contentVersion
+  class LearningModule {
+    id: String [UNIQUE]
+    title: String
+    organizationId: String
+    version: String
+    status: String
+    reviewStatus: String
+    reviewSource: String
+    moduleType: String
+    duration: Long
+    knowledgeLevel: String
+    skillVersion: String
+    contentType: String
+    contentUri: String
+    contentVersion: String
+    outcomeCodes: String[]
   }
-  Certificate {
-    text id PK
-    text organizationId
-    text knowledgeLevel
-    text skillVersion
-    list outcomeCodes
-    text referenceUrl
-    text version
+  class Certificate {
+    id: String [UNIQUE]
+    organizationId: String
+    version: String
+    name: String
+    description: String
+    knowledgeLevel: String
+    skillVersion: String
+    outcomeCodes: String[]
+    referenceUrl: String
+    status: String
+    reviewStatus: String
+    authoredBy: String
+    authoredAt: String
+    approvedBy: String
+    approvedAt: String
+    commandHash: String
   }
+  JobPosition --> TargetRole : HAS_ROLE
+  TargetRole --> Level : HAS_LEVEL
+  Level --> Competency : HAS_COMPETENCY
+  Competency --> MicroSkill : HAS_SKILL
+  Level --> MicroSkill : REQUIRES_SKILL
+  LearningModule --> MicroSkill : TEACHES
+  MicroSkill --> MicroSkill : HAS_SKILL_PREREQUISITE
+  MicroSkill --> Certificate : REQUIRES_CERTIFICATE
+  note for MicroSkill "Catalog only. PostgreSQL owns learner state and evidence."
+  note for Certificate "Source-defined; not observed in supplied schema capture."
+%% HAS_ROLE: id: String; version: String; status: String; reviewStatus: String
+%% HAS_LEVEL: id: String; version: String; status: String; reviewStatus: String
+%% HAS_COMPETENCY: id: String; version: String; status: String; reviewStatus: String
+%% HAS_SKILL: id: String; version: String; status: String; reviewStatus: String
+%% REQUIRES_SKILL: id: String; requiredKnowledgeLevels: String[]; isMandatory: Boolean; version: String; status: String; reviewStatus: String
+%% TEACHES: id: String; organizationId: String; version: String; status: String; reviewStatus: String; reviewSource: String
+%% HAS_SKILL_PREREQUISITE: id: String; organizationId: String; prerequisiteKnowledgeLevel: String; dependentKnowledgeLevel: String; version: String; status: String; reviewStatus: String; reviewSource: String
+%% REQUIRES_CERTIFICATE: organizationId: String; status: String; createdBy: String; createdAt: String; replacedBy: String; replacedByActor: String; replacedAt: String
