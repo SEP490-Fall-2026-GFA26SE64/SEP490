@@ -1,10 +1,10 @@
 # Initial Pathway Review
 
-**Latest direction — 2026-11-05-r3.** [Target schema/API/flow](../../technical/Organization%20Rule%20Assessment%20and%20Pathway.md) now maps this flow; it is not applied runtime. Baseline records only assessed skills and never creates unassessed prerequisites; skill assessment can discover them as **Cần bổ sung**. Baseline/skill have two independently configured policies with timed auto-finalization. Cross-target old bypass work is parallel/non-gating. Affected old dev records may be rebuilt; normal new-flow history remains. Preserve FE design and classify existing Question Bank content into appropriate knowledge levels with corresponding field changes.
+**Source alignment — 2026-11-07.** Confirmed behavior is distinguished from checked-in implementation below. [Current source/schema/API contract](../../technical/Organization%20Rule%20Assessment%20and%20Pathway.md) records local profile gates, exact ownership and remaining mismatches. Runtime/database acceptance is not established by this prose update.
 
 **Source:** [Version 2](../../FA26SE267_KNOWLEDGE_GRAPH_BASED_ADAPTIVE_LEARNING__haht43_Version_2.md), section 3.2(c), and confirmed Expert review decisions. **Aligned:** 2026-10-29. **Source requirements:** 1.
 
-**Feature direction: 2026-11-05.** Affected contracts describe intended behavior pending C1 acceptance, not implementation evidence. Dated source/delivery/evidence retains its historical scope. IDs/anchors and unrelated behavior remain. Target technical mapping is now specified in r3; runtime/seed implementation and detailed changed UI review remain pending.
+**Contract basis:** confirmed behavior plus the later L&D Role–Level / Expert Skill–knowledge configuration decisions. Historical evidence retains its original scope; it is not a fresh passing result.
 
 ## Requirements
 
@@ -17,7 +17,7 @@
 | 1. Requirement ID | FR-05.07 |
 | 2. Requirement Name | Review initial learning pathways |
 | 3. Description | Assigned Expert reviews the Employee's initial requirement steps, eligible module alternatives/certificate provision and dependency order, then approves the exact valid revision. Authorized Expert also resolves missing provision, certificate evidence and scoped bypass as described below. |
-| 4. Actor | Trusted same-organization Expert with current assignment/decision authority. |
+| 4. Actor | Trusted same-organization Expert assigned to the selected Role, with current decision authority. |
 | 5. Preconditions | Request is bound to selected Role/member Level; editable initial proposal or an authorized unresolved/evidence decision exists; current revision and assignment are valid. |
 | 6. Main Flow | Open assigned context; inspect requirements/provenance, alternatives, dependencies and unresolved needs; repair invalid provision/order or explicitly decide scoped bypass; Check and preview; confirm exact valid initial revision. |
 | 7. Alternative / Exception Flows | Missing provision/cycles/stale versions stay unresolved; authorized bypass is separate from achievement. Assignment loss/foreign records deny access. Uncertain outcomes retry the same command. |
@@ -34,9 +34,9 @@ Client supplies references, supported intent, expected revision/content identity
 
 Generation supplies ALL eligible interchangeable alternatives per requirement. Review validates exact skill/knowledge/outcome equivalence, publication/access/content versions and dependencies; it does not choose a cheaper optimal subset or require the Employee to complete every module.
 
-Existing Include/Exclude/neutral Remove concepts, when applicable to a choice, affect that choice's review membership rather than deleting the skill requirement, catalog or history. An invalid/removed required provision leaves an unresolved draft unless a valid explicit bypass covers the exact need. Exclusion cannot waive learning or fabricate official achievement. The target retains all eligible equivalent alternatives; review removes invalid/unavailable provision or repairs mappings, not a cheaper optimizer subset. Detailed control binding is a C2 UI review item. Do not inherit arbitrary legacy optimizer selection as an approved restriction.
+Expert may reduce the generated eligible module alternatives during review, using exact step/module/revision/content keys and preserving requirement coverage, history and existing progress. This is a confirmed choice rule, not an optimizer objective or waiver. Current source retains started-option protection; code confirmation must distinguish that safeguard from authorized removal of unstarted alternatives. A missing final provision stays unresolved unless the confirmed missing-provision-only bypass rule applies. After one qualified module and assessment fulfils the step, other eligible modules remain available for voluntary learning under normal access and their own assessment conditions. No separate neutral Remove endpoint is implied.
 
-Preserve user-controlled valid relative order, but prerequisites must precede dependents. Invalid moves leave state unchanged with reasons; unrelated requirements are not gated by mere display order. Detailed placement of membership/order controls for requirement-root data is reviewed in define C2, preserving the existing visual presentation.
+Preserve user-controlled valid relative order, but prerequisites must precede dependents. Invalid moves leave state unchanged with reasons; unrelated requirements are not gated by mere display order. Current source allows explicit order only for unstarted, non-bypassed, unfulfilled and non-dependency-bound requirements; fixed positions cannot move. The existing visual system remains.
 
 ### Check, preview and confirmation
 
@@ -51,7 +51,7 @@ After initial approval, recalculation automatically adds/reuses valid supplement
 - Catalog authoring uses [Add certificate](../Learning%20catalog/README.md#expert-add-certificate): skill + knowledge level, Add, certificate requirement with mandatory reference URL. It is not a learner approval.
 - Employee [submits evidence](../Employee%20experience/README.md#certificate-evidence-and-review) as link OR PDF OR picture for the single assigned certificate definition. Expert inspects exact submission/definition versions, identity/scope and private authorized attachment access; approves/rejects with actual reviewer/time/reason and retained history.
 - Submission alone remains pending; only authorized approval records exact official achievement and triggers coherent recalculation. Rejection stays unmet with a reason/resubmission path; outage, inaccessible/invalid evidence or stale review does not approve. Catalog definition changes do not rewrite old decisions.
-- Missing provision is NEEDS_EXPERT_ACTION. Expert can provide eligible content/definition through owning workflows or explicitly bypass Employee + requirement/pathway with reason/history. Bypass remains unmet/waived, never ACHIEVED. Repeated decisions cannot duplicate achievements or bypasses.
+- Missing provision is NEEDS_EXPERT_ACTION. Expert can provide eligible content/definition through owning workflows or explicitly bypass Employee + requirement/pathway with reason/history. Bypass is allowed only when no suitable module/certificate exists; available suitable provision cannot be waived. Bypass remains unmet/waived, never ACHIEVED. Repeated decisions cannot duplicate achievements or bypasses.
 - Prerequisite bypass temporarily unlocks dependent learning; non-prerequisite bypass permits other work. Later provision follows [backfill rules](../Adaptive%20engine/README.md#recalculation-bypass-and-later-provision), preserving started/completed work. On another target, original bypass needs are carried as parallel supplementation, not prerequisite gates on its other skills.
 
 ### Consistency, target binding and visual continuity
@@ -60,11 +60,11 @@ Concurrent finalization, certificate decision, bypass, provision changes and tar
 
 The request-bound Role AND Level lock includes pending initial review. No review/repair/selection route may archive unfinished work to bypass it. [Selection lifecycle](../Role%20guidance/README.md#rolelevel-selection-and-lock) defines completion/bypass release and open exceptional release policy.
 
-Retain current review queue/detail, list/dialog/actions, graph/timeline styling, tokens, fonts, sizes, spacing, density and EN/VI. Requirement roots branch to alternatives; no layout/component redesign. Detailed new UI, certificate review routing/authority, equivalence criteria, validity/upload limits, exceptional request closure and late backfill after target release remain open for define C2. Physical target mapping is in r3; it is not applied schema.
+Retain current review queue/detail, list/dialog/actions, graph/timeline styling, tokens, fonts, sizes, spacing, density and EN/VI. Requirement roots branch to alternatives; no layout/component redesign. Current certificate review uses actual pathway assignment and immutable submission/definition versions. Upload limits and source mapping are in the technical contract. General expiry and self-cancel target release are excluded; full late-backfill/certificate/bypass behavior remains unverified. Applied schema has not been inspected in this task.
 
 ## Current Implementation
 
-Source-inspected at product `cced745` on 2026-10-29: durable commands, adjacent moves, neutral removal, Check/preview/exact approval and own approved reads exist. Acceptance remains limited to recorded evidence. Deployment dependencies, the Check-dialog lifecycle-guard gap and verification limits are in the [technical contract](../../technical/initial-pathway/Initial%20pathway%20review/Review%20Initial%20Adaptive%20Pathway.md) and [reconciliation receipt](../../testing/system/REQ-002-041-042-workspace-integration.md#scoped-document-and-source-reconciliation--2026-10-29).
+Source-inspected at HEAD `61d334c` on 2026-11-07: RequirementPathwayReviewService now checks/saves exact per-step module selections and supported requirement order, approves revision/hash under actual assignment, and records bypass/refresh history. Source presence does not establish runtime acceptance of every branch. Acceptance remains limited to recorded evidence. Deployment dependencies, the Check-dialog lifecycle-guard gap and verification limits are in the [technical contract](../../technical/initial-pathway/Initial%20pathway%20review/Review%20Initial%20Adaptive%20Pathway.md) and [reconciliation receipt](../../testing/system/REQ-002-041-042-workspace-integration.md#scoped-document-and-source-reconciliation--2026-10-29).
 
 Entry points: `/expert/pathway-review` and `/expert/pathway-review/:pathwayId`. `/expert/guidance-review` redirects here; it is not another approval workflow. See [Include](../../technical/initial-pathway/Pathway%20adjustment/Include%20Pathway%20Module.md) and [Exclude](../../technical/initial-pathway/Pathway%20adjustment/Exclude%20Pathway%20Module.md).
 

@@ -1,45 +1,25 @@
 ---
-title: "CLS-03 - Catalog authoring target and retained legacy boundary"
-config: {"theme":"base","fontFamily":"Segoe UI, Arial, sans-serif","themeVariables":{"fontFamily":"Segoe UI, Arial, sans-serif","fontSize":"14px","primaryColor":"#ffffff","primaryTextColor":"#0f1729","primaryBorderColor":"#64748b","secondaryColor":"#fef3eb","tertiaryColor":"#ffffff","lineColor":"#64748b","textColor":"#0f1729","mainBkg":"#ffffff","background":"#ffffff","clusterBkg":"#ffffff","clusterBorder":"#64748b","edgeLabelBackground":"#ffffff","titleColor":"#0f1729","noteBkgColor":"#fef3eb","noteTextColor":"#0f1729","noteBorderColor":"#e6650f","classText":"#0f1729","secondaryBorderColor":"#64748b","tertiaryBorderColor":"#64748b","secondaryTextColor":"#0f1729","tertiaryTextColor":"#0f1729"},"layout":"elk","class":{"hideEmptyMembersBox":true,"nodeSpacing":44,"rankSpacing":70,"padding":12,"diagramPadding":24}}
+title: "CLS-03 - Catalog owners consumed by the adaptive flow"
+config: {"theme":"base","fontFamily":"Segoe UI, Arial, sans-serif","themeVariables":{"fontFamily":"Segoe UI, Arial, sans-serif","fontSize":"14px","primaryColor":"#ffffff","primaryTextColor":"#0f1729","primaryBorderColor":"#64748b","secondaryColor":"#fef3eb","tertiaryColor":"#ffffff","lineColor":"#64748b","textColor":"#0f1729","mainBkg":"#ffffff","background":"#ffffff","clusterBkg":"#ffffff","clusterBorder":"#64748b","edgeLabelBackground":"#ffffff","titleColor":"#0f1729","noteBkgColor":"#fef3eb","noteTextColor":"#0f1729","noteBorderColor":"#e6650f","classText":"#0f1729","secondaryBorderColor":"#64748b","tertiaryBorderColor":"#64748b","secondaryTextColor":"#0f1729","tertiaryTextColor":"#0f1729"},"layout":"dagre","class":{"hideEmptyMembersBox":true,"nodeSpacing":44,"rankSpacing":70,"padding":12,"diagramPadding":24}}
 ---
-classDiagram
-  direction LR
-  class SDD_CLS_03_LegacyAPI["OrganizationTargetRoleController<br/>legacy flag required"]
-  class SDD_CLS_03_LegacyService["TargetRoleService legacy model"]
-  class SDD_CLS_03_LegacyRepo["Neo4jTargetRoleRepository legacy<br/>model"]
-  class SDD_CLS_03_Job Positions["Job PositionAdministration"]
-  <<planned>> SDD_CLS_03_Job Positions
-  class SDD_CLS_03_Assignment["ExpertAssignment"]
-  <<planned>> SDD_CLS_03_Assignment
-  class SDD_CLS_03_RoleWorkflow["RoleConfigurationWorkflow"]
-  <<planned>> SDD_CLS_03_RoleWorkflow
-  class SDD_CLS_03_Offering["OfferingWorkflow"]
-  <<planned>> SDD_CLS_03_Offering
-  class SDD_CLS_03_Authz["TrustedCatalogAuthorization"]
-  <<planned>> SDD_CLS_03_Authz
-  class SDD_CLS_03_Repo["WorkflowRepository"]
-  <<planned>> SDD_CLS_03_Repo
-  class SDD_CLS_03_Graph["CatalogProjectionPort"]
-  <<planned>> SDD_CLS_03_Graph
-  class SDD_CLS_03_Files["PrivateContentPort"]
-  <<planned>> SDD_CLS_03_Files
-  SDD_CLS_03_LegacyAPI --> SDD_CLS_03_LegacyService
-  SDD_CLS_03_LegacyService --> SDD_CLS_03_LegacyRepo
-  SDD_CLS_03_Job Positions --> SDD_CLS_03_Authz
-  SDD_CLS_03_Assignment --> SDD_CLS_03_Authz
-  SDD_CLS_03_RoleWorkflow --> SDD_CLS_03_Authz
-  SDD_CLS_03_Offering --> SDD_CLS_03_Authz
-  SDD_CLS_03_RoleWorkflow --> SDD_CLS_03_Repo
-  SDD_CLS_03_Offering --> SDD_CLS_03_Repo
-  SDD_CLS_03_RoleWorkflow --> SDD_CLS_03_Graph
-  SDD_CLS_03_Offering --> SDD_CLS_03_Graph
-  SDD_CLS_03_Offering --> SDD_CLS_03_Files
 
-  style SDD_CLS_03_Job Positions fill:#fef3eb,stroke:#e6650f,color:#0f1729,stroke-dasharray:5 4
-  style SDD_CLS_03_Assignment fill:#fef3eb,stroke:#e6650f,color:#0f1729,stroke-dasharray:5 4
-  style SDD_CLS_03_RoleWorkflow fill:#fef3eb,stroke:#e6650f,color:#0f1729,stroke-dasharray:5 4
-  style SDD_CLS_03_Offering fill:#fef3eb,stroke:#e6650f,color:#0f1729,stroke-dasharray:5 4
-  style SDD_CLS_03_Authz fill:#fef3eb,stroke:#e6650f,color:#0f1729,stroke-dasharray:5 4
-  style SDD_CLS_03_Repo fill:#fef3eb,stroke:#e6650f,color:#0f1729,stroke-dasharray:5 4
-  style SDD_CLS_03_Graph fill:#fef3eb,stroke:#e6650f,color:#0f1729,stroke-dasharray:5 4
-  style SDD_CLS_03_Files fill:#fef3eb,stroke:#e6650f,color:#0f1729,stroke-dasharray:5 4
+classDiagram
+  direction TB
+  class OrganizationTargetRoleController
+  class OrganizationTargetRoleApplicationService
+  class TargetRoleService
+  class Neo4jTargetRoleRepository
+  class CurrentRoleCatalog
+  class AuthoredCatalogPort
+  class CurrentRoleKnowledgeCatalog
+  class RulePathwayCatalog
+  class ModuleAuthoringPort
+  class CertificateCatalogRepository
+  OrganizationTargetRoleController --> OrganizationTargetRoleApplicationService
+  OrganizationTargetRoleApplicationService --> TargetRoleService
+  TargetRoleService --> Neo4jTargetRoleRepository
+  CurrentRoleCatalog --> AuthoredCatalogPort
+  RulePathwayCatalog --> ModuleAuthoringPort
+  CurrentRoleKnowledgeCatalog ..> CurrentRoleCatalog : resolves selected catalog
+  CertificateCatalogRepository ..> RulePathwayCatalog : catalog definitions consumed
+  note for RulePathwayCatalog "Catalog supplies exact Skill version, knowledge, outcomes and exclusive provision"

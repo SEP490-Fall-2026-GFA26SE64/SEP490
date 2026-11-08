@@ -1,5 +1,5 @@
 ---
-title: "CERD-01 - Role-Level Selection and Baseline Configuration"
+title: "CERD-01 - Scoped policies and catalog context"
 config:
   layout: dagre
   look: classic
@@ -9,21 +9,13 @@ config:
   themeVariables: {background: "#ffffff", primaryColor: "#ffffff", primaryTextColor: "#0f172a", primaryBorderColor: "#334155", lineColor: "#334155", textColor: "#0f172a", edgeLabelBackground: "#ffffff", fontSize: "18px"}
   er: {nodeSpacing: 36, rankSpacing: 65, minEntityWidth: 140, diagramPadding: 24}
 ---
+
 erDiagram
   direction TB
-  Organization["Organization"]
-  Account["Account"]
-  TargetRole["TargetRole"]
-  RoleLevel["RoleLevel"]
-  RoleSelection["RoleSelection"]
-  BaselineConfig["BaselineConfig"]
-  BaselineConfigVersion["BaselineConfigVersion"]
-  Organization ||--o{ Account : "contains"
-  Organization ||--o{ TargetRole : "owns"
-  TargetRole ||--o{ RoleLevel : "has member levels"
-  Account ||--o{ RoleSelection : "selects"
-  RoleLevel ||--o{ RoleSelection : "target history"
-  RoleLevel ||--o{ BaselineConfig : "tenant baseline configuration"
-  Account ||--o{ BaselineConfig : "L&D creates"
-  BaselineConfig ||--o{ BaselineConfigVersion : "releases"
-  BaselineConfig o|--o| BaselineConfigVersion : "active pointer"
+  Organization ||--o{ ScopedPolicy : "owns purpose and scope"
+  RoleMemberLevel ||..o{ ScopedPolicy : "BASELINE scope snapshot"
+  SkillKnowledge ||..o{ ScopedPolicy : "SKILL_ASSESSMENT scope snapshot"
+  ScopedPolicy ||--o| MutableDraft : "one current draft"
+  ScopedPolicy ||--o{ ImmutableVersion : "scope-local numbering"
+  ImmutableVersion ||--o| ActivePointer : "exact active version"
+  ScopedPolicy ||--o{ AbandonedDraft : "saved baseline history"

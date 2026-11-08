@@ -1,29 +1,23 @@
 # Competency and Adaptive Pathway Engine
 
-**Latest direction — 2026-11-05-r3.** [Target schema/API/flow](../../technical/Organization%20Rule%20Assessment%20and%20Pathway.md) now maps this flow; it is not applied runtime. Baseline records only assessed skills and never creates unassessed prerequisites; skill assessment can discover them as **Cần bổ sung**. Baseline/skill have two independently configured policies with timed auto-finalization. Cross-target old bypass work is parallel/non-gating. Affected old dev records may be rebuilt; normal new-flow history remains. Preserve FE design and classify existing Question Bank content into appropriate knowledge levels with corresponding field changes.
+**Source alignment — 2026-11-07.** Confirmed behavior is distinguished from checked-in implementation below. [Current source/schema/API contract](../../technical/Organization%20Rule%20Assessment%20and%20Pathway.md) records local profile gates, exact ownership and remaining mismatches. Runtime/database acceptance is not established by this prose update.
 
 **Source:** [Version 2](../../FA26SE267_KNOWLEDGE_GRAPH_BASED_ADAPTIVE_LEARNING__haht43_Version_2.md), section 3.2(c), Functional Requirements.
 
 **Aligned:** 2026-10-28. **Source requirements in this domain:** 2.
 
-**Feature direction: 2026-11-05.** Requirements below describe intended behavior pending C1 acceptance, not implementation evidence. Dated source/evidence snapshots retain historical scope. IDs/anchors remain. Target technical mapping is now specified in r3; runtime/seed implementation and detailed changed UI review remain pending.
+**Contract basis:** confirmed behavior plus the later L&D Role–Level / Expert Skill–knowledge configuration decisions. Historical evidence retains its original scope; it is not a fresh passing result.
 
 ## Current Implementation
 
-**Source-inspected:** 2026-10-28. See the [implementation legend](../README.md#current-implementation-overview).
+**Source-inspected:** HEAD `61d334c`, 2026-11-07. The local rule flow is implemented in code; runtime behavior was not exercised in this task.
 
-| Requirement | Status | Current behavior | Remaining boundary |
-| --- | --- | --- | --- |
-| [FR-07.06](#fr-07-06) | API-backed slice | Genuine baseline finalization initializes immutable PostgreSQL mastery. RoleGapPreview reads compatible original evidence for an explicit Role+Level without writes. | Later-learning mastery processing remains separate; real-auth workspace runtime verification and production semantic/publication integration remain open. |
-| [FR-07.08](#fr-07-08) | API-backed slice | Durable admission, bounded deterministic initial planning, fixed-set Expert validation and immutable approved revisions are implemented behind ports. | Shared development uses explicit catalog/planning/assignment fixtures; production owner adapters and post-learning recalculation remain incomplete. |
+| Requirement | Classification | Current behavior / remaining limit |
+| --- | --- | --- |
+| FR-07.06 | Implemented local evidence path; runtime unverified here | RuleKnowledgeProfileService separates actual baseline diagnostics, compatible official MODULE_ASSESSMENT/CERTIFICATE evidence and NEED_REVIEW. Baseline and bypass never award ACHIEVED. No numeric mastery-gap update is used by this flow. |
+| FR-07.08 | Implemented local requirement path; code confirmation pending for confirmed policy | RequirementPathwayAdmission/Generation/Planning/Recalculation/Refresh services persist requirement roots, alternatives, assessed prerequisite supplementation, approval lineage and bypass/parallel provenance. Expert option reduction is now confirmed for review; certificate/backfill/parallel branches remain unverified. |
 
-**Related user surfaces:** Role gap review in `/employee/upskilling?tab=roles`, `/employee/pathway?view=role` and `/expert/pathway-review` consume the initial-pathway APIs. The separate legacy gap screen and independent-skill browser state are not this workflow's authority. Source integration alone does not establish runtime acceptance.
-
-### Previous generation contract — superseded in the new flow
-
-Numeric conservative mastery/gap, full-Job Position baseline reuse, mastery-thirds difficulty, PRIMARY/SUPPORTING fallback and branch-and-bound whole-path optimization no longer define target behavior. Existing [technical contract](../../technical/initial-pathway/Initial%20pathway%20generation/Initial%20Pathway%20Flow%20and%20Data%20Design.md) and [integration boundary](../../technical/Workspace%20Adaptive%20Integration.md) retain historical scope until the approved post-DB update. Preserve tenant guards, attempts/evidence, content versions, replay/concurrency, approval history and legitimate dependencies. Consumer/route retirement is future C2 work, not a C1 implementation claim.
-
-**Code references:** [mastery/evidence schema](../../../backend/src/main/resources/db/migration/V3__assessment_evidence_and_learning.sql), [recommendation/pathway schema](../../../backend/src/main/resources/db/migration/V4__pathway_analytics_and_evaluation.sql), [selection events](../../../backend/src/main/java/com/adaptlearngraph/repository/JdbcTargetSelectionEventAdapter.java), [provisional-pathway archive](../../../backend/src/main/java/com/adaptlearngraph/repository/JdbcProvisionalPathwayArchiveAdapter.java), [business services](../../../backend/src/main/java/com/adaptlearngraph/services/), [pathway planning entities](../../../backend/src/main/java/com/adaptlearngraph/entities/), [local learning state](../../../frontend/src/shared/hooks/useEmployeeLearningState.ts). Existing package/schema foundations are retained, not reclassified as delivered automation.
+**Surfaces:** selected Role–Level preview, `/employee/pathway` and `/expert/pathway-review`. Source: [admission](../../../backend/src/main/java/com/adaptlearngraph/services/RequirementPathwayAdmissionService.java), [recalculation](../../../backend/src/main/java/com/adaptlearngraph/services/RequirementPathwayRecalculationService.java), [access](../../../backend/src/main/java/com/adaptlearngraph/services/RequirementPathwayAccess.java). The old numeric gap/optimizer classes and their dated designs are retained demo/research material, with disjoint active routing. They are not the workspace planning authority.
 
 ## Requirements
 
@@ -48,12 +42,12 @@ Official compatibility includes exact organization/learner, skill/knowledge/outc
 2. Identify unmet target requirements actually established by diagnostics/evidence. Do not expand unassessed prerequisite closure from baseline; add shortages only when skill assessment discovers them. Deduplicate by exact requirement identity, not skill alone. Filter provision by knowledge/outcome equivalence, publication, access, content and versions.
 3. Create requirement steps with ALL eligible interchangeable module alternatives or the single assigned certificate definition. Missing provision gives NEEDS_EXPERT_ACTION; cycles, unsupported mappings and incoherent versions remain unresolved, never silent omissions.
 4. Order dependencies only for established shortages; do not gate initial A learning on unassessed B. Newly discovered prerequisite needs after skill assessment use explicit dependency semantics. Independent requirements are not locked just because displayed later. No global quality/time/cost optimization, branch-and-bound or mastery-based difficulty selection.
-5. Persist the proposal for assigned Expert initial approval of requirements, choices and valid order. Generation grants neither approval, content access nor completion.
-6. Employee chooses/switches among approved alternatives, preserving each module's pinned content/progress. One qualified module + passing assessment and required completion conditions satisfies the step. Other choices become optional and remain available under normal guards.
+5. Persist all eligible choices for the selected Role's assigned Expert, who may remove some alternatives and approve valid requirements/order. Generation grants neither approval, content access nor completion.
+6. Employee chooses/switches among approved alternatives, preserving each module's pinned content/progress. One qualified module + passing assessment and required completion conditions satisfies the step. If A assessment introduced B, a later A paper passing its B group does not remove B or its actual learning/official-achievement requirement; A already started remains open for continued content. Other eligible choices become optional and remain available under normal guards; completing the Skill must not itself block their own assessments, and retry allowance/wait is module-specific under common Skill-knowledge configuration.
 
-If no mandatory work remains, show no-learning-required/exempt context without inventing official achievement. Certificate-only and missing/bypassed needs stay explicit; all-baseline-pass does not mean all skills officially achieved.
+If no mandatory work remains, the current source returns NO_LEARNING_REQUIRED, possibly with carried parallel work, and shows exempt context without inventing official achievement. Certificate-only and missing/bypassed needs stay explicit; all-baseline-pass does not mean all skills officially achieved.
 
-Business state meanings below are required; physical state/enum names are not finalized:
+Current requirement state names are NEEDS_SUPPLEMENTATION, NEEDS_EXPERT_ACTION, IN_PROGRESS, FULFILLED and BYPASSED; required versus parallel kind and generation/review states remain separate:
 
 | Situation | Visible outcome / permitted action |
 | --- | --- |
@@ -71,7 +65,7 @@ Recalculation consumes accepted assessment results, certificate decisions, valid
 
 [Assessment rules](../Assessment%20workflows/README.md#prerequisite-results-and-full-retake) govern main failure, supplementation, all-wrong veto and full retakes. Keep a passing main group result pending mandatory supplementation without closing the step early or duplicating it. Official prerequisite failure is NEED_REVIEW/optional review, not mandatory relearning. Veto still requires a new full main + ALL prerequisite paper.
 
-Bypass requires authorized Expert decision, Employee + exact requirement/pathway scope, reason and history. It is neither content provision nor achievement. Non-prerequisite bypass permits unrelated work; prerequisite bypass temporarily unlocks dependent learning.
+Bypass is allowed only when no suitable module/certificate exists for the exact requirement. Available suitable provision cannot be waived. Bypass requires authorized Role-assigned Expert decision, Employee + exact requirement/pathway scope, reason and history. It is neither content provision nor achievement. Non-prerequisite bypass permits unrelated work; prerequisite bypass temporarily unlocks dependent learning.
 
 | Later provision for a bypassed requirement | Required effect |
 | --- | --- |
@@ -80,7 +74,7 @@ Bypass requires authorized Expert decision, Employee + exact requirement/pathway
 | Dependent completed | Retain accepted result and add supplementary work; no revocation. |
 | Old pathway closed and another target released | Carry original bypass needs as parallel supplementation in the new view; even later provision does not gate other new-pathway skills or reopen the old target. |
 
-Repeated events/commands must not create duplicate remediation, revisions or endless loops. Conflicting graphs remain explicit/recoverable. Result finalization, profile/certificate/bypass updates, backfill and target selection must produce a consistent authorized outcome despite races, with retained retry outcomes/history and recoverable notifications. The r3 technical contract specifies target ownership/version/transaction/replay boundaries; C2 must implement and validate concrete routing.
+Repeated events/commands must not create duplicate remediation, revisions or endless loops. Conflicting graphs remain explicit/recoverable. Result finalization, profile/certificate/bypass updates, backfill and target selection must produce a consistent authorized outcome despite races, with retained retry outcomes/history and recoverable notifications. Current technical documentation maps the implemented owners, versions, transactions and replay paths; static inspection does not establish all concurrency/recovery behavior.
 
 ### Completion, target lock and presentation
 
@@ -88,9 +82,9 @@ Complete when every required item is satisfied or explicitly bypassed and no oth
 
 From pathway request submission, lock BOTH Role and member Level, including pending initial review. Release only after required work is satisfied or only approved bypass needs remain. [Role guidance](../Role%20guidance/README.md#rolelevel-selection-and-lock) defines all-entry enforcement, same-target no-op, browsing, next-target reuse and open exceptional lifecycle rules. Never archive unfinished work to evade the lock.
 
-Pathway hierarchy is **skill/requirement root → module alternatives**, replacing module root → skills. Keep current graph/timeline styling, components, colors, fonts, sizes, spacing and layout conventions. Detailed interactions/data binding need define C2 review; mocks are not BE integration proof.
+Pathway hierarchy is **skill/requirement root → module alternatives**, replacing module root → skills. Keep current graph/timeline styling, components, colors, fonts, sizes, spacing and layout conventions. RequirementPathwayPresentation now renders that hierarchy with existing graph/timeline styling; assessment badges remain on module cards, not roots. Runtime interaction acceptance remains unverified here.
 
-Target fields/storage/versioning and state rules are specified in r3. C2 still must implement exact scoped constraints, classify real content, handle dependency failures and present detailed changed UI/data binding for review. No runtime/production readiness is claimed.
+Current source implements the local rule flow and versioned mappings described in the technical contract. Full runtime, authorization, certificate/bypass/backfill and production verification remain unproved; source-policy mismatches are retained explicitly.
 
 <a id="fr-07-06"></a>
 
@@ -124,7 +118,7 @@ Target fields/storage/versioning and state rules are specified in r3. C2 still m
 | 8. Postconditions | Versioned requirements, choices, dependencies and reasons preserve history/completed work/independent progress. Generation grants neither approval, achievement nor content access. |
 | 9. Acceptance Criteria | One successful alternative per requirement; no optimizer/numeric-gap fallback; deduplicated recalculation, full-retake/veto semantics, scoped bypass/backfill and request-onset Role–Level lock. |
 
-The direction above supersedes the initial-only feature scope. Recalculation/learning are target behavior here; runtime delivery remains separately authorized and unverified. [Expert review](../Pathway%20review/README.md#fr-05-07) defines initial approval and missing-provision decisions. Older technical designs/evidence do not prove this transition is implemented.
+This contract supersedes the initial-only feature scope. Recalculation and learning are present in the local source; full runtime acceptance remains unverified. [Expert review](../Pathway%20review/README.md#fr-05-07) defines initial approval and missing-provision decisions. Older technical designs/evidence retain their dated contracts and do not validate current branches.
 
 ## Legacy ID Traceability
 

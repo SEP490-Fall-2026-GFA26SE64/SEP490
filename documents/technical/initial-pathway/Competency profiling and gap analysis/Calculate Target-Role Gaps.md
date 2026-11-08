@@ -1,57 +1,37 @@
-# Calculate Target-Role Gaps
+# Calculate Target-Role Requirements and Needs
 
-**Current flow revision: 2026-11-05-r3.** [Target schema/API/flow](../../Organization%20Rule%20Assessment%20and%20Pathway.md) supersedes this document's older active assessment/mastery/gap/optimizer assumptions. Material below is retained previous design/source/operation history, not proof of r3 being applied. Keep non-conflicting security/content/retry safeguards. Baseline covers selected Role–Level, records only assessed diagnostics and does not pre-add prerequisites; two separate policy configs share an engine; skill assessment discovers supplementation; cross-target old bypass work is parallel/non-gating. Old affected dev records may be rebuilt; new-flow history and unrelated/shared evidence/backups remain. Do not automatically run retained setup/reset/test commands below.
+REQ-041-F02; trusted Employee reads own target requirements.
 
-**Function:** REQ-041-F02. **Performer:** System for an authenticated Employee. **Status:** Cluster2 source implemented; Role-Level/publication/compatibility integration and runtime acceptance incomplete. Business rules confirmed27/10/2026.
+Source checkpoint: HEAD `61d334c`, 2026-11-07. Confirmed contract and source implementation are distinguished below; current composition is local/workspace-baseline and excludes prod/demo. [Complete field/key/API and conflict mapping](../../Organization%20Rule%20Assessment%20and%20Pathway.md) owns the shared technical detail. Applied DB state and full runtime behavior were not verified in this documentation task.
 
 ## Current Scope Alignment
 
-Explain learning needs for the Employee's explicitly selected Role + Level. Each member Level is a distinct effective target; requiredScore is taken from that exact Level–Skill edge. Preview never selects/archives/generates or changes mastery. [Current amendment and shared design](../Initial%20pathway%20generation/Initial%20Pathway%20Flow%20and%20Data%20Design.md#12-confirmed-amendment--employee-selects-role--level) govern the revised selection contract. Generation is triggered separately by explicit confirmation.
+RuleKnowledgeProfileService and RuleAssessmentOutcomeService read PostgreSQL diagnostics/group results separately from official skill_knowledge_evidence and NEED_REVIEW. Baseline only creates diagnostics for actually assessed groups; a pass skips initial corresponding learning, never ACHIEVED or module completion. It does not create B solely from A prerequisite topology. No numeric gap subtraction, title exemption or lower-knowledge inheritance.
 
-Example: SQL required0.75/conservative mastery0.60→gap0.15; Modeling required0.70/mastery0.80→0; new required Quality without compatible evidence→UNKNOWN/null numeric gap, foundational learning need. No values are production seed truth.
-
-## Actor, trusted input and output
-
-Trusted active Employee/organization authorizes before reads. Client supplies roleId + levelId, never arbitrary learner/org, requiredScore, mastery, confidence or source versions. Server verifies membership/visibility/publication, reads exact decimal Level requirements and immutable baseline evidence. The internal effective-choice ID is server-derived from the pair; no separate enterprise mapping or guessed Level is required.
-
-Catalog binding, original profile and semantic compatibility must describe the same trusted organization/learner/Job Position and coherent authorized release. Matching skill IDs alone do not authorize cross-tenant evidence or prove unchanged semantics. A missing release/compatibility source is unavailable, never an empty requirement set or fabricated UNKNOWN. Role/Level changes preserve original mastery, pins and allowance; only target requirements and the resulting gap input change. [Organization integration contract](../../Workspace%20Adaptive%20Integration.md#organization-scoped-source-and-operation-contract).
-
-Output is own Role/Level refs, gapInputHash/source versions, expected current selection ID/revision separately, mandatory/optional skill requirements, known conservative mastery/confidence or UNKNOWN reason, numeric gap or null, and aggregate LEARNING_REQUIRED/NO_LEARNING_REQUIRED. No answer keys, theta/SE, another Employee's evidence or assessor-only material. Preview is read-only; confirmed snapshot persistence belongs to the confirmation transaction. The hash identifies calculation sources, not the future selection ID; the resulting selection is bound by planningInputHash after confirmation as shared design section5.1 proposes.
+Official evidence requires exact org/learner/Skill/knowledge/Skill version/outcome coverage with accepted MODULE_ASSESSMENT or CERTIFICATE source. Bypass is a waiver, not achievement. Failed already-achieved prerequisite yields NEED_REVIEW without revocation; later genuine compatible evidence may resolve it. Result finalization differs from pending downstream processing; WAITING_REQUIRED_SUPPLEMENT is not a new scoring failure.
 
 ## Ordered reads and rules
 
-**Revision19 C1, source design under revision:** [authored catalog normalization](../../Workspace%20Adaptive%20Integration.md#authored-catalog-consumer-alignment--revision19) would supply the same existing Binding/Requirement records from actual stored Level members and direct requirements once binding/source contracts are settled. No guessed label/Job Position, missing-threshold default or synthetic graph Level. Legacy real-node requirements remain unchanged. The user has explicitly confirmed that every skill declared in a new authored Level is mandatory: record `ALL_LISTED_REQUIREMENTS_V1` as consumer business-policy provenance, not a stored owner flag. Raw stored targetMastery is already a unit decimal. Keep exact original mastery/UNKNOWN arithmetic and complete source/binding/publication/semantic hash inputs; current release/binding failure is unavailable, never UNKNOWN or a different historical pin. [CA19-09–12](../../../testing/REQ-041-042-initial-pathway-test-plan.md#authored-catalog-alignment--revision19) is Planned/Not run. Normalization/hash alone does not replace actual release/semantics/assignment sources; this answer is not implementation approval.
-
-1. Authorize Employee/catalog visibility; validate the selected Level belongs to exactly one selected Role/Job Position. Nonmember/foreign/ambiguous/unpublished or invalid mandatory requirements deny; no highest-Level inference.
-2. Read applicable initialized profile/baseline origin and compatibility facts. No valid profile→baseline prerequisite under existing rules. Old completed baseline is neither rescored nor reopened for catalog additions.
-3. Verify snapshot completeness/version consistency and evidence semantics. A skill genuinely absent or incompatible is UNKNOWN; missing expected original evidence due to integrity/read failure is unavailable, not UNKNOWN.
-4. For known skill use stored conservative mastery logistic(theta-k×SE), original mapping/model; gap=max(0,requiredScore-mastery). Compare normalized decimals, round display only. Equality→0. Confidence is explanatory; no additional LOW gate/penalty.
-5. Mandatory skills independently determine needs, with no average or cross-skill compensation. Optional rows are reference-only. UNKNOWN mandatory skill needs foundational instruction, without fabricated mastery0 or numeric gap.
-6. Aggregate: all mandatory skills known/gap0→NO_LEARNING_REQUIRED; any positive gap or mandatory UNKNOWN→LEARNING_REQUIRED; no mandatory requirements→invalid configuration. These are planning estimates, not Level certification/readiness PASS.
-7. Return preview/source hash with no learner writes. At confirmation re-read/revalidate versions; snapshot exact calculation atomically with durable request under planned orchestration. Same frozen input/policy reuses a result; stale results cannot feed F01.
-
-Prerequisite is catalog dependency metadata for F01; it does not add skills to the Role's mandatory attainment set. F02 never converts skill mastery into prerequisite readiness PASS. Profile after learning, BKT and REQ-043 are outside scope.
+RequirementPathwayAdmissionService.preview reads selected Role/Level/catalog, exact official evidence and latest finalized baseline only when selection/catalog/Skill version/outcomes match. Missing MODULE_ONLY diagnostics requires baseline; diagnostic pass skips that initial requirement. Certificate-only and missing provision remain needs. No unassessed prerequisite expansion or profile write. Return selection/revision/inputHash and baselineRequired/required/parallel context.
 
 ## Authorization, failure and recovery
 
-Cross-actor/tenant reads deny safely. Missing baseline is distinct from a corrupt profile, missing publication and graph outage. Empty malformed requirements never imply success. Dependency errors→unavailable/retry without partial calculation or persisted success. Stale source→conflict/refresh; no silent requirement update in a historical snapshot. Exact replay and concurrent confirmation use server input identity, not client-supplied mastery.
+Authentication/tenant/owner/assignment denial, stale identities/revisions/hashes, changed-body idempotency conflict, missing policy/bank/provider and dependency/integrity outages remain distinct. Reconcile an uncertain outcome with the same key/body and authorized current/receipt reads; do not invent success or reset history. No executable checks or learner actions ran in this task.
 
-Current source profile stores original skills/attempt pins; UNKNOWN projections do not mutate it. Catalog0.11 focus/difficulty does not enter gap arithmetic or change mastery. Preserve exact local v08/v010 eligibility-fingerprint support when adding reviewed v011 compatibility; equal skill IDs alone are insufficient and an unsupported origin fails safely. No-state-change preview includes audit-free learner state; operational logging is not learning history mutation.
+## Retained section aliases
 
-## Acceptance-to-test mapping
+These aliases preserve older links; the current sections above replace the numeric/IRT/optimizer contract at those entry points. No retired Function is reopened.
 
-| Rule | Required observable outcome |
-| --- | --- |
-| G01–G03 | Own explicit Role-Level binding; foreign/ambiguous/unpublished deny; preview no selection/pathway mutation |
-| G04–G07 | Formula/equality/confidence; no mandatory compensation; optional reference-only; UNKNOWN/null vs data failure |
-| G08–G10 | New skill without baseline retake; no-gap/empty mandatory; original history/allowance retained |
-| G11–G12 | Separate gap/selection/planning identity, coherent source reads, stale/concurrent/exact receipt replay and dependency failure without partial success |
-| G13 | Recognized historical v08/v010 profile reused against reviewed v011 only with unchanged skill semantics; exact mastery/pins retained, unsupported source denied, no reset/retake/rescore/repin |
+<a id="actor-trusted-input-and-output"></a>
+<a id="acceptance-to-test-mapping"></a>
+<a id="confirmed-local-compose-amendment--2026-10-28"></a>
 
-[Test plan](../../../testing/REQ-041-042-initial-pathway-test-plan.md). Executable acceptance remains Planned/Not run. Gap domain, scoped original-profile reader, no-write endpoint and explicit-confirm UI exist in C2 source; default owner adapters deny missing binding/publication/compatibility. [Actual checks/limits](../Initial%20pathway%20generation/Initial%20Pathway%20Flow%20and%20Data%20Design.md#10-cluster-2-source-implementation-and-verification--2026-10-27) distinguish compilation from runtime proof.
+Historical references retained: REQ-041-F02, REQ-041, REQ-043. They do not expand this task or approve new implementation.
 
-Confirmed: unchanged gap rules/compatibility preservation | Source updated/built2026-10-28: local0.11 compatibility retaining v08/v010 | Open: actual profile/hash round-trip, production publication/semantic adapters and runtime evidence | Rejected: mastery rewrite/reset or tests without C3.
+## Historical evidence references
 
-## Confirmed local Compose amendment ? 2026-10-28
+The following retained records describe their original dates/contracts only; they were not rerun or recertified here.
 
-[Shared design18](../Initial%20pathway%20generation/Initial%20Pathway%20Flow%20and%20Data%20Design.md) supersedes earlier missing-planner-input labels for the explicitly gated local demo once implemented. Fixed seed availability and original compatible mastery/UNKNOWN drive planning-only prerequisite decisions; no assessment PASS/internal gate is fabricated. Main dev Compose and FE rule review are approved C2 scope. Production owner adapters and executable acceptance remain Open/Not run.
+[CA19-09–12](../../../testing/REQ-041-042-initial-pathway-test-plan.md#authored-catalog-alignment--revision19)
+
+[Test plan](../../../testing/REQ-041-042-initial-pathway-test-plan.md)

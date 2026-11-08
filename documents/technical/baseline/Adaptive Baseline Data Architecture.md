@@ -1,10 +1,18 @@
 # Adaptive Baseline Data Architecture
 
-**Current flow revision: 2026-11-05-r3.** [Target schema/API/flow](../Organization%20Rule%20Assessment%20and%20Pathway.md) supersedes this document's older active assessment/mastery/gap/optimizer assumptions. Material below is retained previous design/source/operation history, not proof of r3 being applied. Keep non-conflicting security/content/retry safeguards. Baseline covers selected Role–Level, records only assessed diagnostics and does not pre-add prerequisites; two separate policy configs share an engine; skill assessment discovers supplementation; cross-target old bypass work is parallel/non-gating. Old affected dev records may be rebuilt; new-flow history and unrelated/shared evidence/backups remain. Do not automatically run retained setup/reset/test commands below.
-
 **2026-11-01 fresh-main correction:** [organization-policy storage/admission](#planned-organization-policy-storage-and-admission) uses forward SQL [workspace V44](../../../backend/src/main/resources/db/workspace-migration/V44__organization_assessment_policy.sql), [canonical V44](../../../backend/src/main/resources/db/migration/V44__organization_assessment_policy.sql) or [module V44](../../../backend/src/main/resources/db/module-migration/V44__organization_assessment_policy.sql), selecting only one lineage per database. Main V1–V43 remains unchanged; original local V29/V40 sources are archived outside active Flyway locations. The user selected fresh initialization, not retained-DB adoption/repair; [fresh-main guide](Fresh%20Main%20Bank%20Initialization.md) records the boundary. New versions are source until actually applied on the fresh stack. Diagrams/inventories remain dated snapshots; guard/concurrency acceptance is Not run. PostgreSQL owns policy/learner provenance; no Neo4j schema/data rewrite.
 
+## Current source counterpart — 2026-11-07
+
+Actual local composition uses scoped RuleAssessment and RequirementPathway owners. Baseline belongs to org+Role+member Level; Skill Assessment belongs to org+Skill+knowledge and is shared across equivalent modules. V52–V62 define frozen papers/groups/results, exact evidence/completion sidecar, certificate decisions, requirement snapshots/revisions, scoped draft/activation/editor/abandoned history and per-scope version numbers. Existing initial request/run/current/approval/receipt owners are reused; learner state never enters Neo4j.
+
+Baseline diagnostics only cover actually assessed targets and never award official achievement or infer prerequisite B. New official evidence requires exact qualified module+assessment or assigned certificate approval. Actual failed prerequisite groups introduce B; a later A retake passing B does not remove assigned B work. Target lock precedes archive/write. Automatic revisions preserve real approval basis; carried bypasses stay parallel/non-gating. The confirmed policy allows Expert option reduction, orders drafts first, derives Skill-policy editing from Role assignments and evaluates retry allowance/wait separately per module under a shared Skill-knowledge configuration. Only missing-provision bypass is allowed; code confirmation remains pending in the current contract.
+
+No applied DB/runtime/new test acceptance is claimed. Subsequent old sections are retained numerical design/research provenance, locally labelled at their entry points; use the current counterpart for implementation and API/physical schema.
+
 ## Ownership and processing boundary
+
+> **Historical design section (retained 2026-11-07):** numerical/IRT/optimizer/older route assertions in this section are not the active requirement flow. Current counterpart: [source-defined owners, fields, transactions and limits](../Organization%20Rule%20Assessment%20and%20Pathway.md). Original formulas, dated observations and evidence links remain historical; no operation below was run.
 
 Java 21/Spring Boot 3.5 implements application/domain rules behind ports. Neo4j owns authorized versioned catalog relationships. PostgreSQL owns selection, profiles, configuration/activation, attempts/pools/responses/deadlines, result/evidence, technical versions, receipts/audit/outbox and downstream mastery/gap/pathway state. Learner state is never stored in Neo4j.
 
@@ -15,6 +23,8 @@ Java 21/Spring Boot 3.5 implements application/domain rules behind ports. Neo4j 
 [Role-to-baseline contract](Role%20Selection%20and%20Job Position%20Baseline.md) defines visible flow. [Lifecycle/API contract](Job Position%20Baseline%20Lifecycle%20and%20Transition.md) defines exact revision/retry/lock semantics. [Schema catalog and drawings](../../diagrams/README.md) inventory actual storage; [synchronization review](../../testing/system/REQ-001-002-final-synchronization-review.md) records implementation limits separately from required behavior.
 
 ## Version identities
+
+> **Historical design section (retained 2026-11-07):** numerical/IRT/optimizer/older route assertions in this section are not the active requirement flow. Current counterpart: [source-defined owners, fields, transactions and limits](../Organization%20Rule%20Assessment%20and%20Pathway.md). Original formulas, dated observations and evidence links remain historical; no operation below was run.
 
 | Version | Meaning and owner |
 | --- | --- |
@@ -29,6 +39,8 @@ No lookup uses a global latest version to replace a historical pin.
 
 ## Planned authored-source provenance — revision19
 
+> **Historical design section (retained 2026-11-07):** numerical/IRT/optimizer/older route assertions in this section are not the active requirement flow. Current counterpart: [source-defined owners, fields, transactions and limits](../Organization%20Rule%20Assessment%20and%20Pathway.md). Original formulas, dated observations and evidence links remain historical; no operation below was run.
+
 The [authored consumer contract](../Workspace%20Adaptive%20Integration.md#authored-catalog-consumer-alignment--revision19) proposes source-format-aware projections, not a PostgreSQL catalog replica. Neo4j/source owner retains Role/Skill facts; a trusted versioned integration binding supplies missing Role→Job Position mapping through normal server configuration/owner port. This C1 creates no configuration values, table, SQL migration, backfill or graph mutation. Existing workspace_baseline_resource remains the exact org+Job Position bank/model/mapping tuple; its readiness is not catalog membership or publication authority.
 
 New own snapshots may record a versioned `catalogSource` object containing `format`, `projectionHash`, `bindingRevision`, exact scoped binding identity and actual publication/version provenance. The proposed source object belongs to existing selection/Blueprint/frozen-input JSON; historical absent provenance selects the exact legacy reader/hash branch. In revised authored mode levelId is the exact stored member value scoped by roleId, never a synthetic graph-node FK/hash. Source format/projection provenance distinguishes its semantics from legacy real Level IDs. Retain original IDs, serialized receipts, profile/evidence/policy/technical pins and frozen approvals unchanged. Do not backfill old rows with today's mapping/hash or translate old Level IDs by label; missing expected provenance is integrity/unavailable, not permission to guess. Temporary server bindings are the user-selected integration source, not a new PostgreSQL catalog table.
@@ -37,11 +49,15 @@ Projection/schema versions differ from Flyway versions and owner Role.version. N
 
 ## Organization resource identity
 
+> **Historical design section (retained 2026-11-07):** numerical/IRT/optimizer/older route assertions in this section are not the active requirement flow. Current counterpart: [source-defined owners, fields, transactions and limits](../Organization%20Rule%20Assessment%20and%20Pathway.md). Original formulas, dated observations and evidence links remain historical; no operation below was run.
+
 The shared workspace lineage stores `platform.workspace_baseline_resource` in V32, keyed by organization_id+graph_job position_id and linked to the same-tenant Job Position reference. Its nullable question_bank_id/model_version_id/mastery_mapping_version_id form the configured resource tuple; null means unconfigured, not permission to select a default. The bank-owner guard checks the creator's organization. Technical eligibility must still validate the exact model/mapping/parameter provenance; the row and non-null pins alone do not certify readiness. Legacy V18–V26 version labels below refer to the retained baseline lineage, not equivalent workspace migration numbers or a live DB inspection.
 
 Use the trusted organization and exact graph Job Position ID consistently from catalog grant through configuration, eligibility and new admission. Authorized Role discovery does not require the tuple to be assessment-ready or a Blueprint to be Active. Existing attempt/profile readers use their original scoped pins rather than today's tuple. This is the [organization integration contract](../Workspace%20Adaptive%20Integration.md#organization-scoped-source-and-operation-contract); no new table, migration, backfill or schema application is specified here.
 
 ## Configuration and compatibility storage
+
+> **Historical design section (retained 2026-11-07):** numerical/IRT/optimizer/older route assertions in this section are not the active requirement flow. Current counterpart: [source-defined owners, fields, transactions and limits](../Organization%20Rule%20Assessment%20and%20Pathway.md). Original formulas, dated observations and evidence links remain historical; no operation below was run.
 
 | Original V18 structure | Historical representation | Implemented V20-V22 compatibility |
 | --- | --- | --- |
@@ -59,6 +75,8 @@ V20 conditional full/legacy representation uses explicit FULL_JOB_POSITION_V2 fo
 
 ## Selection and profile persistence
 
+> **Historical design section (retained 2026-11-07):** numerical/IRT/optimizer/older route assertions in this section are not the active requirement flow. Current counterpart: [source-defined owners, fields, transactions and limits](../Organization%20Rule%20Assessment%20and%20Pathway.md). Original formulas, dated observations and evidence links remain historical; no operation below was run.
+
 | V25 structure | Actual fields and structural guarantees |
 | --- | --- |
 | employee_role_selection | UUID selection_id PK; organization_id; learner_id FK; string role_id/job position_id; role_snapshot JSON object; positive target_revision; selected_at/ended_at; unique org+learner+revision; partial unique org+learner current row |
@@ -68,6 +86,8 @@ V20 conditional full/legacy representation uses explicit FULL_JOB_POSITION_V2 fo
 Required production behavior reads authoritative profiles and preserves original version/skill provenance. The current physical profile table represents initialization records; later-learning profile ownership and updates are separate integration work recorded in the synchronization review. JSON checks enforce shape/nonemptiness; domain validation must additionally check numeric range, required-skill equality and sufficient genuine evidence. Selection/receipt FKs alone do not prove organization membership: account/learner joins and trusted org/actor predicates are required at every boundary.
 
 ## Technical and attempt storage
+
+> **Historical design section (retained 2026-11-07):** numerical/IRT/optimizer/older route assertions in this section are not the active requirement flow. Current counterpart: [source-defined owners, fields, transactions and limits](../Organization%20Rule%20Assessment%20and%20Pathway.md). Original formulas, dated observations and evidence links remain historical; no operation below was run.
 
 V18 model_version/mastery_mapping_version/irt_calibration_run/irt_parameter_set/irt_item_parameter retain exact version/provenance semantics. V23 scoped irt_effective_parameter_selection and immutable promotion receipts choose future Blueprint parameters by org+bank+model+mapping. Historical findPinned reads never substitute effective/current sets. Numerical validation and actual-pilot approval cannot be inferred from a storage status.
 
@@ -85,6 +105,8 @@ V26 preserves terminal timing/immutability checks while allowing INVALIDATED/MAN
 
 ## Transaction order and consistency
 
+> **Historical design section (retained 2026-11-07):** numerical/IRT/optimizer/older route assertions in this section are not the active requirement flow. Current counterpart: [source-defined owners, fields, transactions and limits](../Organization%20Rule%20Assessment%20and%20Pathway.md). Original formulas, dated observations and evidence links remain historical; no operation below was run.
+
 1. Management serializes org+Job Position, checks authorization/replay/expected Draft ID+revision; unchanged Save preserves revision and returns immutable receipt. Preview is read-only.
 2. Activate/Deactivate use exclusive scope coordination and activation locking; verify confirmed current pair/revisions, then atomically commit version/pointer/closed Draft/event/receipt. Counts never require learner/attempt locks.
 3. Selection/start first serialize the trusted learner and check replay/allowance/activity. New start alone holds shared scope/activation locks through exact pool/skill/first-item/receipt insertion. Missing activation rows require scope serialization; locking an absent row is insufficient.
@@ -93,6 +115,8 @@ V26 preserves terminal timing/immutability checks while allowing INVALIDATED/MAN
 6. List/status/result/history/My Mastery apply trusted actor/tenant predicates and safe projections. GET never starts/finalizes an attempt, creates a receipt, changes mastery or marks delivery. Failure is distinct from empty data.
 
 ## Retention, migration and acceptance
+
+> **Historical design section (retained 2026-11-07):** numerical/IRT/optimizer/older route assertions in this section are not the active requirement flow. Current counterpart: [source-defined owners, fields, transactions and limits](../Organization%20Rule%20Assessment%20and%20Pathway.md). Original formulas, dated observations and evidence links remain historical; no operation below was run.
 
 All applied migrations and historical data are retained. Forward compatible readers preserve old snapshots, hashes, responses, evidence and successful allowance; linked invalidated replacements retain the chain's original version/pool. Rollback stops new admission and uses compatible readers; no down migration, data reset/re-score/repin or legacy-only downgrade.
 
@@ -103,6 +127,8 @@ AB-C17–C18, AB-A02/A08–A11, AB-R01–R05, AB-S01–S02 and RB/VB cover schem
 Confirmed | Provisional: existing technical constants | Open: cross-owner production integration and numerical validation | Rejected: history mutation, global-latest repinning or learner state in Neo4j.
 
 ## Planned organization policy storage and admission
+
+> **Historical design section (retained 2026-11-07):** numerical/IRT/optimizer/older route assertions in this section are not the active requirement flow. Current counterpart: [source-defined owners, fields, transactions and limits](../Organization%20Rule%20Assessment%20and%20Pathway.md). Original formulas, dated observations and evidence links remain historical; no operation below was run.
 
 C1 target for REQ-002-F02/F01, not live SQL. Reserve the next unused forward migration in C2 after checking both lineages; never edit applied V23–V39/checksums. Keep Blueprint technical-pin equality, allowance/replacement/history/result guards. New policy identity is additional to model/mapping/parameter IDs, never an alias for a modified global mapping.
 
@@ -120,6 +146,8 @@ SQL checks reject NaN/infinity as well as invalid ranges. Only server constructs
 
 ### Planned transaction and failure order
 
+> **Historical design section (retained 2026-11-07):** numerical/IRT/optimizer/older route assertions in this section are not the active requirement flow. Current counterpart: [source-defined owners, fields, transactions and limits](../Organization%20Rule%20Assessment%20and%20Pathway.md). Original formulas, dated observations and evidence links remain historical; no operation below was run.
+
 1. Authorize trusted org/actor/role/entitlement before existence/list/receipt and replay. L&D policy commands never accept client tenant/actor or grant Employee permission. List/page use bounded consistent snapshots and no-store safe projections.
 2. Policy writes acquire transaction-scoped advisory coordination keyed by org+POLICY before activation-row creation/locking; this serializes absent-row races. Save allocates own version or reuses canonical content, then commits version/receipt/audit; no activation. Activate CAS-checks expected revision under exclusive row lock; pointer/activation event/receipt/audit atomic. Neither command locks Blueprint/learner rows.
 3. New start retains trusted learner/allowance coordination → shared Blueprint scope/activation locks → org policy coordination/shared activation-row lock → exact technical/pool/policy reads/rechecks → atomic attempt/pool/skill/first item/receipt. Missing active policy fails without creating a row. Org policy coordination is also used for absent-row verification; management never takes reverse learner/Blueprint locks. Identity commit-time revocation retains its existing owner contract; no cross-store ACID claim.
@@ -130,6 +158,8 @@ SQL checks reject NaN/infinity as well as invalid ranges. Only server constructs
 Exact pinned model/mapping JSON continues strict legacy decoding. For ORG_POLICY_V1, policy adapter overlays only four stored values into effective typed engine inputs in memory, carrying policy ID/hash alongside the original technical IDs. Prior/algorithm/minimum evidence/item-validity/parameter set stay unchanged. Never change persisted model/mapping JSON/hash. [Configure](Configure%20Baseline%20Assessment.md#organization-assessment-policy--planned) defines API, field validations and UI behavior.
 
 ### Planned rollout, legacy mapping and rollback
+
+> **Historical design section (retained 2026-11-07):** numerical/IRT/optimizer/older route assertions in this section are not the active requirement flow. Current counterpart: [source-defined owners, fields, transactions and limits](../Organization%20Rule%20Assessment%20and%20Pathway.md). Original formulas, dated observations and evidence links remain historical; no operation below was run.
 
 Forward additive schema → compatible old/new readers and V2 producer/consumers → explicit L&D Save then Activate → new policy-mode root admission. Existing org without explicit active policy is unavailable for new starts; UI suggestions or values explicitly copied from exact legacy JSON require normal Save/Activate. No migration/GET/seed auto-activates a default or backfills old attempts. Linked legacy replacements keep original applicable policy/mode. Legacy local-demo composition stays explicitly gated and is regression scope, not a fallback for workspace admission.
 

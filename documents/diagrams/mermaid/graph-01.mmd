@@ -1,71 +1,62 @@
 ---
-title: "GRAPH-01 - JobPosition ontology v0.12 with Certificate and Level duration target extensions"
-config: {"theme":"base","fontFamily":"Segoe UI, Arial, sans-serif","themeVariables":{"fontFamily":"Segoe UI, Arial, sans-serif","fontSize":"16px","primaryColor":"#ffffff","primaryTextColor":"#0f1729","primaryBorderColor":"#64748b","secondaryColor":"#fef3eb","tertiaryColor":"#ffffff","lineColor":"#64748b","textColor":"#0f1729","mainBkg":"#ffffff","background":"#ffffff","clusterBkg":"#ffffff","clusterBorder":"#64748b","edgeLabelBackground":"#ffffff","titleColor":"#0f1729","noteBkgColor":"#fef3eb","noteTextColor":"#0f1729","noteBorderColor":"#e6650f","attributeBackgroundColorOdd":"#ffffff","attributeBackgroundColorEven":"#ffffff","secondaryBorderColor":"#64748b","tertiaryBorderColor":"#64748b","secondaryTextColor":"#0f1729","tertiaryTextColor":"#0f1729"},"layout":"dagre","er":{"layoutDirection":"LR","nodeSpacing":70,"rankSpacing":100,"entityPadding":16,"fontSize":16,"minEntityWidth":140,"diagramPadding":32}}
+title: "GRAPH-01 - Source-defined Neo4j catalog fields and relationships"
+config: {"theme":"base","fontFamily":"Segoe UI, Arial, sans-serif","themeVariables":{"fontFamily":"Segoe UI, Arial, sans-serif","fontSize":"16px","primaryColor":"#ffffff","primaryTextColor":"#0f1729","primaryBorderColor":"#64748b","secondaryColor":"#fef3eb","tertiaryColor":"#ffffff","lineColor":"#64748b","textColor":"#0f1729","mainBkg":"#ffffff","background":"#ffffff","clusterBkg":"#ffffff","clusterBorder":"#64748b","edgeLabelBackground":"#ffffff","titleColor":"#0f1729","noteBkgColor":"#fef3eb","noteTextColor":"#0f1729","noteBorderColor":"#e6650f","attributeBackgroundColorOdd":"#ffffff","attributeBackgroundColorEven":"#ffffff","secondaryBorderColor":"#64748b","tertiaryBorderColor":"#64748b","secondaryTextColor":"#0f1729","tertiaryTextColor":"#0f1729"},"layout":"dagre","er":{"layoutDirection":"LR","nodeSpacing":70,"rankSpacing":120,"entityPadding":16,"fontSize":16,"minEntityWidth":140,"diagramPadding":32}}
 ---
+
 erDiagram
-  direction LR
-  SDD_GRAPH_01_JobPosition["JobPosition"] {
-    string id PK
-    string code
-    string name
-    integer jobZone
-    number interestRealistic
-    number interestInvestigative
-    number interestArtistic
-    number interestSocial
-    number interestEnterprising
-    number interestConventional
+  direction TB
+  JobPosition ||--o{ TargetRole : "HAS_ROLE"
+  TargetRole ||--o{ Level : "HAS_LEVEL"
+  Level ||--o{ Competency : "HAS_COMPETENCY"
+  Competency }o--o{ MicroSkill : "HAS_SKILL"
+  Level }o--o{ MicroSkill : "REQUIRES_SKILL explicit knowledge levels"
+  LearningModule }o--|| MicroSkill : "TEACHES exactly one Skill"
+  MicroSkill }o--o{ MicroSkill : "PREREQUISITE level pair"
+  MicroSkill ||--o{ Certificate : "REQUIRES_CERTIFICATE"
+
+  JobPosition {
+    text id PK
+    text organizationId
+    text status
   }
-  SDD_GRAPH_01_TargetRole["TargetRole"] {
-    string id PK
-    string code
-    string name
-    string scope
-    string rejectReason
+  TargetRole {
+    text id PK
+    text organizationId
+    text status
+    text version
   }
-  SDD_GRAPH_01_Level["Level"] {
-    string id PK
-    string code
-    string name
-    integer rank
-    review_estimate duration
-    string attainmentRule
+  Level {
+    text id PK
+    text organizationId
+    text duration
+    text memberToken
   }
-  SDD_GRAPH_01_Competency["Competency"] {
-    string id PK
-    string code
-    string name
-    string description
-    string attainmentRule
+  Competency {
+    text id PK
+    text name
   }
-  SDD_GRAPH_01_MicroSkill["MicroSkill"] {
-    string id PK
-    string name
-    string definition
+  MicroSkill {
+    text id PK
+    text organizationId
+    text version
+    text provisionMode
+    list foundationOutcomeCodes
+    list intermediateOutcomeCodes
+    list advancedOutcomeCodes
   }
-  SDD_GRAPH_01_LearningModule["LearningModule"] {
-    string id PK
-    string title
-    string moduleType
-    string contentUri
-    string contentType
-    string contentVersion
-    review_estimate duration
-    review_estimate price
+  LearningModule {
+    text id PK
+    text knowledgeLevel
+    text skillVersion
+    list outcomeCodes
+    text contentVersion
   }
-  SDD_GRAPH_01_Certificate["Certificate"] {
-    string id PK
-    string organizationId
-    string name
-    string knowledgeLevel
-    json outcomeCodes
-    string referenceUrl
+  Certificate {
+    text id PK
+    text organizationId
+    text knowledgeLevel
+    text skillVersion
+    list outcomeCodes
+    text referenceUrl
+    text version
   }
-  SDD_GRAPH_01_JobPosition ||--o{ SDD_GRAPH_01_TargetRole : "HAS_ROLE"
-  SDD_GRAPH_01_TargetRole ||--o{ SDD_GRAPH_01_Level : "HAS_LEVEL"
-  SDD_GRAPH_01_Level ||--o{ SDD_GRAPH_01_Competency : "HAS_COMPETENCY"
-  SDD_GRAPH_01_Competency }o--o{ SDD_GRAPH_01_MicroSkill : "HAS_SKILL"
-  SDD_GRAPH_01_Level }o--o{ SDD_GRAPH_01_MicroSkill : "REQUIRES_SKILL"
-  SDD_GRAPH_01_LearningModule }o--|| SDD_GRAPH_01_MicroSkill : "TEACHES"
-  SDD_GRAPH_01_MicroSkill }o--o{ SDD_GRAPH_01_MicroSkill : "HAS_SKILL_PREREQUISITE"
-  SDD_GRAPH_01_Certificate }o--|| SDD_GRAPH_01_MicroSkill : "CERTIFIES"

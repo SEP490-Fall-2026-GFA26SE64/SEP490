@@ -1,30 +1,28 @@
 ---
-title: "SEQ-10 - Planned intelligence pipeline with human confirmation"
+title: "SEQ-10 - Current rule evidence and pathway adaptation"
 config: {"theme":"base","fontFamily":"Segoe UI, Arial, sans-serif","themeVariables":{"fontFamily":"Segoe UI, Arial, sans-serif","fontSize":"16px","primaryColor":"#ffffff","primaryTextColor":"#0f1729","primaryBorderColor":"#64748b","secondaryColor":"#fef3eb","tertiaryColor":"#ffffff","lineColor":"#64748b","textColor":"#0f1729","mainBkg":"#ffffff","background":"#ffffff","clusterBkg":"#ffffff","clusterBorder":"#64748b","edgeLabelBackground":"#ffffff","titleColor":"#0f1729","noteBkgColor":"#fef3eb","noteTextColor":"#0f1729","noteBorderColor":"#e6650f","actorBkg":"#fef3eb","actorBorder":"#e6650f","actorTextColor":"#0f1729","actorLineColor":"#64748b","signalColor":"#64748b","signalTextColor":"#0f1729","labelBoxBkgColor":"#ffffff","labelBoxBorderColor":"#64748b","labelTextColor":"#0f1729","loopTextColor":"#0f1729","activationBkgColor":"#fef3eb","activationBorderColor":"#e6650f","sequenceNumberColor":"#ffffff","secondaryBorderColor":"#64748b","tertiaryBorderColor":"#64748b","secondaryTextColor":"#0f1729","tertiaryTextColor":"#0f1729"},"sequence":{"actorMargin":40,"width":170,"height":56,"diagramMarginX":24,"diagramMarginY":24,"boxMargin":12,"boxTextMargin":8,"noteMargin":16,"messageMargin":38,"mirrorActors":false,"wrap":true,"wrapPadding":12,"actorFontSize":15,"messageFontSize":14,"noteFontSize":14,"actorFontFamily":"Segoe UI, Arial, sans-serif","messageFontFamily":"Segoe UI, Arial, sans-serif","noteFontFamily":"Segoe UI, Arial, sans-serif"},"themeCSS":".actor-line { stroke-width: 1px; }"}
 ---
+
 sequenceDiagram
   autonumber
-  actor SDD_SEQ_10_Employee as Employee
-  actor SDD_SEQ_10_Expert as Expert
-  participant SDD_SEQ_10_Guidance as Guidance service
-  participant SDD_SEQ_10_LLM as Internal LLM
-  participant SDD_SEQ_10_Mastery as Competency/evidence service
-  participant SDD_SEQ_10_Pathway as Pathway service
-  participant SDD_SEQ_10_DB as Authorized graph and<br/>versioned state
-  SDD_SEQ_10_Employee->>SDD_SEQ_10_Guidance: request role guidance
-  SDD_SEQ_10_Guidance->>SDD_SEQ_10_DB: authorized candidate roles and minimized evidence
-  SDD_SEQ_10_Guidance->>SDD_SEQ_10_LLM: pinned prompt/model context
-  SDD_SEQ_10_LLM-->>SDD_SEQ_10_Guidance: suggested IDs and explanation
-  SDD_SEQ_10_Guidance->>SDD_SEQ_10_Guidance: validate candidate membership and output shape
-  SDD_SEQ_10_Guidance-->>SDD_SEQ_10_Employee: suggestions, no automatic selection
-  SDD_SEQ_10_Employee->>SDD_SEQ_10_DB: via selection use case: explicit role choice
-  SDD_SEQ_10_Pathway->>SDD_SEQ_10_Mastery: resolve applicable gaps
-  SDD_SEQ_10_Pathway->>SDD_SEQ_10_DB: graph prerequisites and approved module coverage
-  SDD_SEQ_10_Pathway->>SDD_SEQ_10_DB: save initial generated revision
-  SDD_SEQ_10_Expert->>SDD_SEQ_10_Pathway: include/exclude and confirm exact version
-  SDD_SEQ_10_Pathway->>SDD_SEQ_10_DB: persist review and current pathway
-  SDD_SEQ_10_Employee->>SDD_SEQ_10_Mastery: via assessment service: new valid evidence
-  SDD_SEQ_10_Mastery->>SDD_SEQ_10_DB: idempotent profile revision and event
-  SDD_SEQ_10_Mastery->>SDD_SEQ_10_Pathway: updated evidence/gaps
-  SDD_SEQ_10_Pathway->>SDD_SEQ_10_DB: recalculate remaining modules, preserve completed<br/>work/overrides
-  SDD_SEQ_10_Pathway-->>SDD_SEQ_10_Employee: versioned update and explanation
+  participant Attempt as Finalized Skill Assessment
+  participant Outcome as RuleAssessmentOutcomeService
+  participant Evidence as Official evidence and review store
+  participant Pathway as RequirementPathway recalculation
+  participant PG as Revision and work store
+  Attempt->>Outcome: MAIN and all configured prerequisite group results
+  alt Main failure or all-wrong prerequisite veto
+    Outcome->>PG: Retain failed result and full-retake requirement
+  else Main passes
+    alt Unachieved prerequisite B fails
+      Outcome->>Pathway: Add or reuse B from actual attempt and group
+      Pathway->>PG: Keep passing A pending required B evidence
+    else Previously achieved B fails
+      Outcome->>Evidence: NEED_REVIEW without revoking prior achievement
+    end
+    Outcome->>Evidence: Award only when exact completion and supplements qualify
+    Evidence->>Pathway: Durable accepted evidence event
+    Pathway->>PG: Immutable successor, source event and valid approval basis
+  end
+  Note over Outcome,PG: Later A retake does not complete an already-assigned B learning step
+  Note over Pathway,PG: Parallel old bypass work never gates the new target

@@ -1,28 +1,24 @@
 ---
-title: "SEQ-07 - Job Position baseline activation with preserved history"
+title: "SEQ-07 - Scoped policy draft and publication"
 config: {"theme":"base","fontFamily":"Segoe UI, Arial, sans-serif","themeVariables":{"fontFamily":"Segoe UI, Arial, sans-serif","fontSize":"16px","primaryColor":"#ffffff","primaryTextColor":"#0f1729","primaryBorderColor":"#64748b","secondaryColor":"#fef3eb","tertiaryColor":"#ffffff","lineColor":"#64748b","textColor":"#0f1729","mainBkg":"#ffffff","background":"#ffffff","clusterBkg":"#ffffff","clusterBorder":"#64748b","edgeLabelBackground":"#ffffff","titleColor":"#0f1729","noteBkgColor":"#fef3eb","noteTextColor":"#0f1729","noteBorderColor":"#e6650f","actorBkg":"#fef3eb","actorBorder":"#e6650f","actorTextColor":"#0f1729","actorLineColor":"#64748b","signalColor":"#64748b","signalTextColor":"#0f1729","labelBoxBkgColor":"#ffffff","labelBoxBorderColor":"#64748b","labelTextColor":"#0f1729","loopTextColor":"#0f1729","activationBkgColor":"#fef3eb","activationBorderColor":"#e6650f","sequenceNumberColor":"#ffffff","secondaryBorderColor":"#64748b","tertiaryBorderColor":"#64748b","secondaryTextColor":"#0f1729","tertiaryTextColor":"#0f1729"},"sequence":{"actorMargin":40,"width":170,"height":56,"diagramMarginX":24,"diagramMarginY":24,"boxMargin":12,"boxTextMargin":8,"noteMargin":16,"messageMargin":38,"mirrorActors":false,"wrap":true,"wrapPadding":12,"actorFontSize":15,"messageFontSize":14,"noteFontSize":14,"actorFontFamily":"Segoe UI, Arial, sans-serif","messageFontFamily":"Segoe UI, Arial, sans-serif","noteFontFamily":"Segoe UI, Arial, sans-serif"},"themeCSS":".actor-line { stroke-width: 1px; }"}
 ---
+
 sequenceDiagram
   autonumber
-  actor SDD_SEQ_07_LD as L and D Manager
-  participant SDD_SEQ_07_UI as Baseline UI
-  participant SDD_SEQ_07_Service as AdaptiveBlueprintService
-  participant SDD_SEQ_07_Auth as Trusted actor/resource ports
-  participant SDD_SEQ_07_DB as PostgreSQL
-  participant SDD_SEQ_07_Ready as Eligibility/catalog/model<br/>ports
-  SDD_SEQ_07_LD->>SDD_SEQ_07_UI: save configuration
-  SDD_SEQ_07_UI->>SDD_SEQ_07_Service: working ID + expected revision + key/body
-  SDD_SEQ_07_Service->>SDD_SEQ_07_Auth: require L and D, tenant, job position and entitlement
-  SDD_SEQ_07_Service->>SDD_SEQ_07_DB: coordinate scope, compare Draft identity/revision
-  SDD_SEQ_07_Service->>SDD_SEQ_07_DB: save Draft and immutable command receipt
-  SDD_SEQ_07_Service-->>SDD_SEQ_07_UI: saved Draft/revision
-  SDD_SEQ_07_LD->>SDD_SEQ_07_UI: preview saved revision
-  SDD_SEQ_07_UI->>SDD_SEQ_07_Service: test saved configuration
-  SDD_SEQ_07_Service->>SDD_SEQ_07_Ready: resolve actual eligible pool
-  SDD_SEQ_07_Service-->>SDD_SEQ_07_UI: preview, no assessment writes
-  SDD_SEQ_07_LD->>SDD_SEQ_07_UI: confirm activation/replacement
-  SDD_SEQ_07_UI->>SDD_SEQ_07_Service: expected Draft + expected current + command key
-  SDD_SEQ_07_Service->>SDD_SEQ_07_DB: exclusive activation coordination
-  SDD_SEQ_07_Service->>SDD_SEQ_07_Ready: revalidate pool/catalog/model snapshots
-  SDD_SEQ_07_Service->>SDD_SEQ_07_DB: immutable version + activation pointer +<br/>receipt/event
-  SDD_SEQ_07_Service-->>SDD_SEQ_07_UI: active version
+  actor Owner as L&D Baseline or Expert Skill owner
+  participant UI as Scoped policy UI
+  participant Service as ScopedAssessmentPolicyService
+  participant Catalog as Neo4j policy catalog and Question Bank
+  participant PG as PostgreSQL scoped policy store
+  Owner->>UI: Choose Role-Level or Skill-knowledge scope
+  UI->>Service: Read directory and current scope
+  Service->>Catalog: Resolve owned catalog and bank capacity
+  Service-->>UI: Draft, active pointer and scoped history
+  Owner->>Service: Create or save draft with expected revision
+  Service->>PG: Authorize, coordinate org-purpose and retain receipt
+  Service->>PG: Save mutable configuration and catalog hash
+  Owner->>Service: Publish expected draft and activation revision
+  Service->>Catalog: Revalidate exact scope, groups and bank readiness
+  Service->>PG: Immutable scoped version, active pointer and consume draft
+  Service-->>UI: Retained authorized outcome
+  Note over Owner,Service: Expert role enforced, individual Skill assignment filtering remains incomplete

@@ -42,7 +42,10 @@ The five specific gaps this project addresses are:
 \-	**Inefficient Training:** Employees waste time studying concepts they have already mastered because the system cannot identify granular knowledge gaps.  
 \-	**No Predictive Upskilling:** Organizations cannot forecast which training modules will yield the highest ROI for transitioning an employee to a new role.
 
-**b) Proposed Solutions:**  
+**b) Proposed Solutions:**
+
+**Current product interpretation, 2026-11-07:** Original registration prose below is retained as submission provenance. For the approved current flow, Modules teach one Skill/knowledge with exact outcomes; selected Role–member Level defines explicit requirements. Baseline is diagnostic, official achievement requires qualified learning+Skill Assessment or assigned certificate approval, and requirement-root pathways recalculate actual shortages without numeric mastery/IRT/whole-path optimization. Local rule source exists; DB/runtime acceptance remains separate. Original knowledge-tracing/CBF/RQ obligations are not silently cancelled by this product interpretation.
+
 Adapt-Learn-Graph connects competency assessment, role requirements, and learning modules in a subscription-based, multi-organization web platform. It serves six actors: Guest, Platform Administrator, System Administrator, L\&D Manager, Expert, and Employee.  
 The proposed solution combines three architectural pillars:  
 \-	**Competency Intelligence Engine:** Uses baseline and module assessment evidence to estimate employee competencies and identify gaps against a target role. RIASEC interests support AI-assisted role guidance, while skill mastery remains grounded in assessment evidence.  
@@ -60,7 +63,10 @@ Technology stack:
 \-	**Local LLM:** A locally hosted language model, accessed through an internal inference API, for AI-assisted target role guidance.  
 \-	**DevOps:** On-premises deployment with Docker Compose, Nginx for web serving and reverse proxying, and GitHub Actions for CI/CD.
 
-**c) Functional Requirements:**  
+**c) Functional Requirements:**
+
+**Confirmed affected-contract refinement, 2026-11-07:** Keep the 48 source bullet identities below. L&D configures BASELINE per organization+Role+member Level; Expert configures SKILL_ASSESSMENT per organization+Skill+knowledge, shared by equivalent modules. Knowledge/outcome/mandatory replaces legacy question difficulty for this flow; both purposes use server deadlines/full persisted retakes. Requirement roots branch to alternatives/single certificate; source-policy and diagram mismatches remain listed in the technical contract. Original source bullet wording is not a new assertion that legacy numeric/difficulty rules remain active.
+
 \-	**Guest**
 
 * **Register an organization:** The Guest shall submit organization and contact details, create an administrator account, verify the account email, and resume an incomplete registration.  

@@ -1,10 +1,18 @@
 # Initial gap-to-pathway flow and data design
 
-**Current flow revision: 2026-11-05-r3.** [Target schema/API/flow](../../Organization%20Rule%20Assessment%20and%20Pathway.md) supersedes this document's older active assessment/mastery/gap/optimizer assumptions. Material below is retained previous design/source/operation history, not proof of r3 being applied. Keep non-conflicting security/content/retry safeguards. Baseline covers selected Role–Level, records only assessed diagnostics and does not pre-add prerequisites; two separate policy configs share an engine; skill assessment discovers supplementation; cross-target old bypass work is parallel/non-gating. Old affected dev records may be rebuilt; new-flow history and unrelated/shared evidence/backups remain. Do not automatically run retained setup/reset/test commands below.
+**Current contract consolidated:** 2026-10-29. **Source inspected:** product cced745. Sections1–8 are the retained 29 October numeric design, including its then-current review rules; they are superseded for current requirement routing. Sections9–18 retain dated design/implementation history and existing link anchors; their old source-only, unapplied-migration, no-reorder and pending-runtime statements are historical, not the current contract. Detailed dated verification stays in the [workspace receipt](../../../testing/system/REQ-002-041-042-workspace-integration.md).
 
-**Current contract consolidated:** 2026-10-29. **Source inspected:** product cced745. Sections1–8 are the current shared design, including the confirmed Expert adjacent moves and neutral removal. Sections9–18 retain dated design/implementation history and existing link anchors; their old source-only, unapplied-migration, no-reorder and pending-runtime statements are historical, not the current contract. Detailed dated verification stays in the [workspace receipt](../../../testing/system/REQ-002-041-042-workspace-integration.md).
+## Current source counterpart — 2026-11-07
+
+Actual local composition uses scoped RuleAssessment and RequirementPathway owners. Baseline belongs to org+Role+member Level; Skill Assessment belongs to org+Skill+knowledge and is shared across equivalent modules. V52–V62 define frozen papers/groups/results, exact evidence/completion sidecar, certificate decisions, requirement snapshots/revisions, scoped draft/activation/editor/abandoned history and per-scope version numbers. Existing initial request/run/current/approval/receipt owners are reused; learner state never enters Neo4j.
+
+Baseline diagnostics only cover actually assessed targets and never award official achievement or infer prerequisite B. New official evidence requires exact qualified module+assessment or assigned certificate approval. Actual failed prerequisite groups introduce B; a later A retake passing B does not remove assigned B work. Target lock precedes archive/write. Automatic revisions preserve real approval basis; carried bypasses stay parallel/non-gating. The confirmed policy allows Expert option reduction, orders drafts first, derives Skill-policy editing from Role assignments and evaluates retry allowance/wait separately per module under a shared Skill-knowledge configuration. Only missing-provision bypass is allowed; code confirmation remains pending in the current contract.
+
+No applied DB/runtime/new test acceptance is claimed. Subsequent old sections are retained numerical design/research provenance, locally labelled at their entry points; use the current counterpart for implementation and API/physical schema.
 
 ## 1. Product goal, example and Function boundaries
+
+> **Historical design section (retained 2026-11-07):** numerical/IRT/optimizer/older route assertions in this section are not the active requirement flow. Current counterpart: [source-defined owners, fields, transactions and limits](../../Organization%20Rule%20Assessment%20and%20Pathway.md). Original formulas, dated observations and evidence links remain historical; no operation below was run.
 
 An Employee selects a target Role and its member Level, completes a genuine full-Job Position baseline when required, reviews own gaps and explicitly confirms generation. An assigned Expert inspects and edits the proposal, Checks it, previews Roadmap/Timeline and finally confirms the exact valid revision. Employee display then uses that same approved order. Learning execution is a separate owner integration.
 
@@ -21,6 +29,8 @@ Example: SQL required0.75/mastery0.60 has gap0.15 and preferred MEDIUM; Modeling
 
 ## 2. Sources, versions and dependency ownership
 
+> **Historical design section (retained 2026-11-07):** numerical/IRT/optimizer/older route assertions in this section are not the active requirement flow. Current counterpart: [source-defined owners, fields, transactions and limits](../../Organization%20Rule%20Assessment%20and%20Pathway.md). Original formulas, dated observations and evidence links remain historical; no operation below was run.
+
 Neo4j owns catalog Role/Level/skills, per-TEACHES focus/difficulty and skill-prerequisite edges. PostgreSQL owns selection, immutable baseline/mastery, gap snapshot, request/run/revision/modules/dependencies, overrides/approvals/receipts/audit/outbox. Learner state is never stored in Neo4j.
 
 The [organization integration contract](../../Workspace%20Adaptive%20Integration.md#organization-scoped-source-and-operation-contract) defines the reusable source→processing→storage→output boundary. Session organization and exact Job Position/Role+member Level constrain catalog grants, baseline resource lookup, original profile and planning source versions. Catalog visibility is separate from baseline readiness. Legacy requirements come from the exact Level→Skill relation. [Revision19's planned authored representation](../../Workspace%20Adaptive%20Integration.md#authored-catalog-consumer-alignment--revision19) admits explicitly bound Role.levels/direct requirements only through the same typed projection and publication/coherence gates; these raw fields or a name match alone cannot substitute. A null graph tenant field alone cannot grant access. Changing the pair never rewrites baseline/mastery/pins/history. Retain the existing planner, fixed-set review and approved-view behavior; no source integration or owner CRUD is performed by this C1.
@@ -33,11 +43,15 @@ Relevant ports are Bindings, Profiles, Semantics, Graphs, SuitabilityPolicy, Rea
 
 ### Planned authored-catalog handoff — revision19
 
+> **Historical design section (retained 2026-11-07):** numerical/IRT/optimizer/older route assertions in this section are not the active requirement flow. Current counterpart: [source-defined owners, fields, transactions and limits](../../Organization%20Rule%20Assessment%20and%20Pathway.md). Original formulas, dated observations and evidence links remain historical; no operation below was run.
+
 `CurrentCatalogRoleReferences`/`Bindings` must agree with selection and baseline on one source-format-aware projection. An authored Level key is an explicit member identity; do not send it to a query that requires a real Neo4j Level node. New authored requirement adapters return existing Binding/RoleGap inputs with exact source decimals and mandatory-policy provenance. Legacy adapters keep their original graph checks and IDs. Unconfigured/ambiguous Role→Job Position mapping or publication/semantics remains unavailable; content-addressing cannot manufacture a ReleaseAuthority token or reviewer evidence.
 
 Full projection/binding/publication/semantic versions join new-format gap and frozen planning hashes; old stored inputs/hashes retain their readers and meaning. Preview, confirm, worker, Check/approval and own approved-view keep their existing authorization, replay, stale-source, crash/fencing and immutable revision behavior. Retain original revision18 policy/evidence and never apply k again to stored mastery. No planner objective, module ranking, assignment CRUD, learning permission or closed review milestone is reopened. [CA19-09–12](../../../testing/REQ-041-042-initial-pathway-test-plan.md#authored-catalog-alignment--revision19) plans the dependent acceptance, including missing-input denial versus a genuinely successful positive journey.
 
 ## 3. Confirmed learning-need and ranking rules
+
+> **Historical design section (retained 2026-11-07):** numerical/IRT/optimizer/older route assertions in this section are not the active requirement flow. Current counterpart: [source-defined owners, fields, transactions and limits](../../Organization%20Rule%20Assessment%20and%20Pathway.md). Original formulas, dated observations and evidence links remain historical; no operation below was run.
 
 Known gap=max(0, requiredScore−stored conservative mastery), with no extra confidence penalty. Mandatory positive gap and genuine UNKNOWN require learning; optional deficits and known gap0 do not create mandatory providers. Missing/corrupt expected evidence is an error rather than UNKNOWN. All mandatory known/gap0 yields NO_LEARNING_REQUIRED without proposal approval, certification or fabricated completion. Role/Level changes reuse full-Job Position evidence and preserve allowance/history.
 
@@ -50,6 +64,8 @@ After mandatory eligibility, coverage, prerequisites, versions, tenant and gate 
 Bounded search must prove the generation optimum. SEARCH_LIMIT/NOT_PROVEN cannot publish an approximate successful current proposal. Fixed-set review retains the Expert's selected modules and validates coverage/providers; it may cost more than the generation optimum. It cannot add/remove modules to reoptimize, fake global optimality or approve search uncertainty.
 
 ## 4. Ordered read, compute and write pipeline
+
+> **Historical design section (retained 2026-11-07):** numerical/IRT/optimizer/older route assertions in this section are not the active requirement flow. Current counterpart: [source-defined owners, fields, transactions and limits](../../Organization%20Rule%20Assessment%20and%20Pathway.md). Original formulas, dated observations and evidence links remain historical; no operation below was run.
 
 1. Authorize Employee/org before profile/selection/existence/receipt reads. Resolve exact Role+member Level, requirements, original compatible profile and versions. Missing baseline uses the existing admission rules; it is not an accepted generation PENDING.
 2. Preview computes gaps and deterministic gapInputHash in memory with expected selection identity. No selection/pathway/mastery writes.
@@ -65,6 +81,8 @@ Bounded search must prove the generation optimum. SEARCH_LIMIT/NOT_PROVEN cannot
 12. Employee GET projects the exact approved order/dependencies with safe frozen baseline and live lock/unavailable reasons. Protected learning owner routes must reauthorize independently. GET does not generate, approve, complete learning or write mastery.
 
 ## 5. HTTP and DTO contract — current source
+
+> **Historical design section (retained 2026-11-07):** numerical/IRT/optimizer/older route assertions in this section are not the active requirement flow. Current counterpart: [source-defined owners, fields, transactions and limits](../../Organization%20Rule%20Assessment%20and%20Pathway.md). Original formulas, dated observations and evidence links remain historical; no operation below was run.
 
 All paths use /api/v1 and no-store responses. Actor/org/learner/assignment come from trusted context. Current activation is non-production gated (section8), not a deployed production API claim.
 
@@ -88,6 +106,8 @@ Edit tuple: moduleId, expectedRevision>=1, expectedContentHash(64 lowercase hex)
 
 ### 5.1 Input identity and exact retry — current technical contract
 
+> **Historical design section (retained 2026-11-07):** numerical/IRT/optimizer/older route assertions in this section are not the active requirement flow. Current counterpart: [source-defined owners, fields, transactions and limits](../../Organization%20Rule%20Assessment%20and%20Pathway.md). Original formulas, dated observations and evidence links remain historical; no operation below was run.
+
 gapInputHash identifies Role binding, original baseline/profile, normalized requirements and compatibility/calculation policy; expected current selection is a separate precondition. planningInputHash binds that snapshot to the resulting selection and planning source/policy/configuration. revisionContentHash binds selected set, content refs, actual ordinals, teaching/provider assignments, needs, dependencies/gate definitions, warnings/quality, pins and ordered override history. Format2 search execution counters/scope/proof metadata are retained outside the material content hash; live readiness/availability is also outside it.
 
 Command body hash covers operation/resource/expected tuple/module/reason. Receipts are scoped by actor+tenant+operation+resource+key. Authorize/re-authorize -> receipt lookup -> conflict or exact outcome -> only new command checks current expected state -> coordinated CAS/write/receipt. A revision4→5 success may replay its original revision5 outcome after revision6; a new key expecting4 conflicts. Replay does not confer current approval/access. No-op still requires current draft/selection/binding/assignment and writes only its receipt.
@@ -96,6 +116,8 @@ Unknown outcome retains original key/body. A successful POST followed by failed 
 
 ### 5.2 Status projection and recovery — current wire contract
 
+> **Historical design section (retained 2026-11-07):** numerical/IRT/optimizer/older route assertions in this section are not the active requirement flow. Current counterpart: [source-defined owners, fields, transactions and limits](../../Organization%20Rule%20Assessment%20and%20Pathway.md). Original formulas, dated observations and evidence links remain historical; no operation below was run.
+
 generationStatus: PENDING, GENERATING, SUCCEEDED, NO_LEARNING_REQUIRED, UNRESOLVED, BLOCKED, FAILED_RETRYABLE, STALE. reviewStatus: NONE, AWAITING_EXPERT_REVIEW, APPROVED, STALE, ARCHIVED. validationStatus: null without revision, else VALID/UNRESOLVED/BLOCKED/STALE. displayState combines these, so SUCCEEDED never means learning authority and exact approval ends awaiting-review display.
 
 A generation failure without a proposal differs from an editable draft made UNRESOLVED by exclusion/removal. Corrected authoritative input requires fresh preview/confirmation; refreshing an already reviewed stale draft remains an owner decision, not an authorized regeneration endpoint. No-gap acknowledgement is optional Proposed UX with no command in this slice.
@@ -103,6 +125,8 @@ A generation failure without a proposal differs from an editable draft made UNRE
 Errors generally carry code/retryable/correlationId; prerequisite-order rejection specifically returns code+diagnostics. Identity/CSRF filters can have a smaller safe envelope. FE handles safe codes/status and optional diagnostics, never assumes all error envelopes contain the same fields. Network/5xx/invalid responses are treated as uncertain for commands. Caches are actor/tenant scoped and cleaned on identity switch.
 
 ## 6. Persistence and consistency design — current source
+
+> **Historical design section (retained 2026-11-07):** numerical/IRT/optimizer/older route assertions in this section are not the active requirement flow. Current counterpart: [source-defined owners, fields, transactions and limits](../../Organization%20Rule%20Assessment%20and%20Pathway.md). Original formulas, dated observations and evidence links remain historical; no operation below was run.
 
 | Record | Ownership / invariant |
 | --- | --- |
@@ -119,6 +143,8 @@ V27 initial storage and V28 format2 source/readers exist; dated receipts record 
 Format1 keeps original instructionLevel, codec and identity; format2 uses a separate discriminator/material hash with immutable teaching_v2 children. Unknown format/hash mismatch denies. Never backfill old history, edit applied migration/checksum, narrow CHECK or downgrade to a reader that cannot handle new records. Rollback stops new writes/substitutes and retains forward schema/dual readers/receipts/approvals/history. Production/native migration rollout is separate scope.
 
 ## 7. Lifecycle, failure and acceptance
+
+> **Historical design section (retained 2026-11-07):** numerical/IRT/optimizer/older route assertions in this section are not the active requirement flow. Current counterpart: [source-defined owners, fields, transactions and limits](../../Organization%20Rule%20Assessment%20and%20Pathway.md). Original formulas, dated observations and evidence links remain historical; no operation below was run.
 
 | Condition | Required result |
 | --- | --- |
@@ -140,6 +166,8 @@ Role changes retain archived history and make old-selection work ineligible to c
 [Acceptance plan](../../../testing/REQ-041-042-initial-pathway-test-plan.md): G01–G13/P01–P20/R01–R14/E01–E09. Required cases cover tenant/actor/assignment, empty/not-found/outage/no-write reads, exact retry/CAS/fencing, both formats, fixed-set repair, saved order, Check/preview/final confirmation and own projection. E04–E06 learning execution remains deferred owner scope; no new executable tests are authorized here.
 
 ## 8. Implementation alignment and remaining dependencies
+
+> **Historical design section (retained 2026-11-07):** numerical/IRT/optimizer/older route assertions in this section are not the active requirement flow. Current counterpart: [source-defined owners, fields, transactions and limits](../../Organization%20Rule%20Assessment%20and%20Pathway.md). Original formulas, dated observations and evidence links remain historical; no operation below was run.
 
 | Existing behavior | Disposition / state |
 | --- | --- |
@@ -165,9 +193,13 @@ Status: Confirmed.
 
 ## Dated design and implementation history
 
+> **Historical design section (retained 2026-11-07):** numerical/IRT/optimizer/older route assertions in this section are not the active requirement flow. Current counterpart: [source-defined owners, fields, transactions and limits](../../Organization%20Rule%20Assessment%20and%20Pathway.md). Original formulas, dated observations and evidence links remain historical; no operation below was run.
+
 Sections9–18 below preserve original dated context and anchors. Their observations apply only to their recorded environment/date; current requirements, source status, authority and deployment limits are consolidated above. No old reset/volume-deletion/next-session approval instruction is current authority. Historical evidence is linked rather than promoted to a new pass.
 
 ## 9. C2-00 engineering closure — 2026-10-27
+
+> **Historical design section (retained 2026-11-07):** numerical/IRT/optimizer/older route assertions in this section are not the active requirement flow. Current counterpart: [source-defined owners, fields, transactions and limits](../../Organization%20Rule%20Assessment%20and%20Pathway.md). Original formulas, dated observations and evidence links remain historical; no operation below was run.
 
 These technical choices implement the approved invariants, without defining missing owner business policy.
 
@@ -184,6 +216,8 @@ Physical DDL is source only until separately authorized migration application. A
 
 ## 10. Cluster 2 source implementation and verification — 2026-10-27
 
+> **Historical design section (retained 2026-11-07):** numerical/IRT/optimizer/older route assertions in this section are not the active requirement flow. Current counterpart: [source-defined owners, fields, transactions and limits](../../Organization%20Rule%20Assessment%20and%20Pathway.md). Original formulas, dated observations and evidence links remain historical; no operation below was run.
+
 **Partial implementation, not a successful full flow or Cluster 2 completion.** The user authorized implementation of C2-00–17 and subsequently explicitly authorized creation of the V27 source (11 `initial_*` tables, composite constraints/indexes/history triggers and two additive V25 unique keys) after automatic review rejected the attachment-based authorization. Creation succeeded; no SQL was applied. Base HEAD remains `1580e44c235423e0961977f2c0949452ab3037aa`; the original 21 document changes were retained.
 
 The Java source now implements stored-decimal gap/UNKNOWN calculation and separate canonical identities; a scoped original-profile reader; selection-owner transaction participation and new-path archive; durable admission/semantic dedup/receipts/audit/outbox; batched graph closure behind a required immutable-published-session provider; suitability/readiness filtering, ranked whole-assignment alternatives, shared-module dedup, internal/dependency gates and topological validation; fenced default-off dispatch; assigned Expert queue/detail/edit/exact approval; and Employee current/archive projections plus reusable content/start/segment policy. Missing owner data is not replaced with successful fake state. Source compilation does not validate SQL, Spring context/security matching, live transactions or algorithm acceptance.
@@ -196,6 +230,8 @@ The existing Roles cards now open gap preview and explicit confirmation, retaini
 
 ### Activation and unavailable integrations
 
+> **Historical design section (retained 2026-11-07):** numerical/IRT/optimizer/older route assertions in this section are not the active requirement flow. Current counterpart: [source-defined owners, fields, transactions and limits](../../Organization%20Rule%20Assessment%20and%20Pathway.md). Original formulas, dated observations and evidence links remain historical; no operation below was run.
+
 - API/security/wiring require `local-baseline-demo & !prod` and **all three** properties `assessment.baseline.local-demo.enabled=true`, `pathway.local-auth-bypass.enabled=true`, `pathway.initial.enabled=true`. New pathway properties have no enabling default. The baseline profile's pre-existing provisioning is not executed by this task; do not start it on a shared database.
 - Session uses the existing HttpOnly cookie and fixed server Employee aliases. An Expert alias is offered only with bypass enabled and server property `pathway.local-auth-bypass.expert-account-id=<real configured account UUID>`. PostgreSQL still checks same-organization active account and `DOMAIN_EXPERT`; activation creates no accounts/roles/assignments. Missing/unknown alias denies new-flow use. Production/mixed prod profiles cannot load this configuration.
 - Admission requires explicit `pathway.initial.search.{version,max-closure-nodes,max-closure-edges,max-providers,batch-size,max-states}`. Dispatch also needs `worker.enabled=true`, `worker.version`, positive `worker.{lease-ms,max-attempts,minimum-backoff-ms,maximum-backoff-ms,poll-interval-ms}`; maximum backoff is at least minimum. No operational numbers were set or benchmarked. Worker version plus its settings hash is retained for completed runs. Missing values prevent dispatch/admission; gap preview does not require worker settings.
@@ -204,6 +240,8 @@ The existing Roles cards now open gap preview and explicit confirmation, retaini
 
 ### Actual allowed checks and limitations
 
+> **Historical design section (retained 2026-11-07):** numerical/IRT/optimizer/older route assertions in this section are not the active requirement flow. Current counterpart: [source-defined owners, fields, transactions and limits](../../Organization%20Rule%20Assessment%20and%20Pathway.md). Original formulas, dated observations and evidence links remain historical; no operation below was run.
+
 On Windows/Java21, backend `.\mvnw.cmd '-Dmaven.test.skip=true' compile` completed successfully. Frontend `npm.cmd run build` completed successfully (TypeScript + Vite); the build reports a bundle-size warning. Scoped `npm.cmd run lint -- <19 affected FE runtime files>` completed with **0 errors / 3 existing warnings** in the legacy timeline state effect, legacy roadmap dependencies and WorkspaceLayout state effect; source comparison with HEAD confirms these predate this change. Introduced helper-export warnings were removed. Earlier sandbox build-artifact access and `npm.ps1` execution-policy failures were resolved using approved elevated build commands and `npm.cmd`; no packages or security settings were changed.
 
 Manual UI/full-flow smoke was **not performed**: browser inventory was empty. A temporary static-only server at127.0.0.1:5178 returned unavailable for API paths with no backend proxy; it was stopped after the browser blocker. No app/backend/DB/container/import/reset/rescore/repin or seed was started. No JUnit/ArchUnit/Vitest/Playwright/Testcontainers or automated assertion script was created/run. Migration application/SQL execution, runtime transactions/fencing/security, numerical/performance and G01–G12/P01–P14/R01–R12/E01–E08 all remain **Not run**. Compile/build/lint are not executable-test evidence.
@@ -211,6 +249,8 @@ Manual UI/full-flow smoke was **not performed**: browser inventory was empty. A 
 Next continuation is still Cluster 2: supply/confirm owner contracts and operational configuration, then prepare a concrete isolated migration/runtime scope for authorization and manual observations. Full successful review/access integration and visual QA remain incomplete; no automatic Cluster3 or Git index/commit/push is authorized.
 
 ## 11. C2 catalog continuation — source implementation
+
+> **Historical design section (retained 2026-11-07):** numerical/IRT/optimizer/older route assertions in this section are not the active requirement flow. Current counterpart: [source-defined owners, fields, transactions and limits](../../Organization%20Rule%20Assessment%20and%20Pathway.md). Original formulas, dated observations and evidence links remain historical; no operation below was run.
 
 User requested the next catalog integration slice after confirming that ontology0.10 was merged before C1. Keep Neo4j as the catalog source; no JSON runtime fallback, graph import, Compose startup or seed rewrite is authorized by this continuation. Preserve all existing C2 source and the member-owned catalog package.
 
@@ -225,6 +265,8 @@ Allowed verification remains compilation and source review only; no executable t
 Source verification on2026-10-27: BE compile with `-Dmaven.test.skip=true` passed; paired FE TypeScript/Vite build passed; scoped10-file FE lint0 errors/0 warnings. No SQL/Cypher execution, Spring runtime context or visual/full-flow proof. The existing large-bundle warning remains; no new test source or package/dependency change. Concrete `Bindings`/`Graphs` beans replace the former direct unavailable placeholders; their release authority/session dependencies still deny until real integration is supplied.
 
 ## 12. Confirmed amendment — Employee selects Role + Level
+
+> **Historical design section (retained 2026-11-07):** numerical/IRT/optimizer/older route assertions in this section are not the active requirement flow. Current counterpart: [source-defined owners, fields, transactions and limits](../../Organization%20Rule%20Assessment%20and%20Pathway.md). Original formulas, dated observations and evidence links remain historical; no operation below was run.
 
 The user explicitly confirmed on2026-10-27: a catalog Role with three Levels represents three effective target choices. The Employee chooses Role then Level, and required target mastery comes from that exact Level→REQUIRES_SKILL→Skill edge. There is no inferred highest Level, title-to-Level conversion, global per-skill threshold or mastery-to-instruction-depth formula. This supersedes the earlier no-separate-Level/business-binding assumption in this document and linked C1 descriptions; it is a current-task confirmed decision, not an Open proposal.
 
@@ -243,6 +285,8 @@ Rollback must retain the dual snapshot reader: old binaries that only understand
 Acceptance amendment (Planned/Not run): preview two Levels of the same Role using one profile; verify different authoritative requirements/gaps and no writes; select/change/no-op pair with active-assessment/archive/replay races; reject foreign/nonmember Level; legacy snapshot/receipt read without guessed Level; unchanged baseline allowance/history; confirm exact selected pair/hash and Employee/Expert display of the frozen Level. No executable tests are created/run in Cluster2.
 
 ## 13. Authorized latest local catalog/database integration — 2026-10-27
+
+> **Historical design section (retained 2026-11-07):** numerical/IRT/optimizer/older route assertions in this section are not the active requirement flow. Current counterpart: [source-defined owners, fields, transactions and limits](../../Organization%20Rule%20Assessment%20and%20Pathway.md). Original formulas, dated observations and evidence links remain historical; no operation below was run.
 
 Confirmed user scope: apply the latest checked-in catalog and PostgreSQL migrations, align consumers and verify manually; use authentication bypass locally until the authentication owner supplies real identity. Expert-to-Role assignment is another owner's work, not permission to grant every Expert every pathway. User explicitly permits NEEDS_EXPERT_REVIEW seed use in local/demo only; retain original review metadata and production publication checks. No learner reset/rescore/repin, destructive volume replacement, executable tests or Git commit/push is authorized.
 
@@ -264,9 +308,13 @@ Local compatibility continuation: source comparison found that all15 original Jo
 
 ## 14. Confirmed catalog0.11 policy and implementation contract — 2026-10-28
 
+> **Historical design section (retained 2026-11-07):** numerical/IRT/optimizer/older route assertions in this section are not the active requirement flow. Current counterpart: [source-defined owners, fields, transactions and limits](../../Organization%20Rule%20Assessment%20and%20Pathway.md). Original formulas, dated observations and evidence links remain historical; no operation below was run.
+
 User confirmed the reviewed schema/quality/fallback/search proposal and explicitly requested this C1 document update. This section governs new planning; no source, migration, configuration, DB or executable-test implementation is performed by the amendment. Current reference source is5b17c7768dee4dbcee3a19881177e5b476b4350a, including owner4c33273; preserved checkpoints are c932981/7080f00/85e1ff6. No history rewrite, commit or push is authorized.
 
 ### 14.1 Need, focus and difficulty
+
+> **Historical design section (retained 2026-11-07):** numerical/IRT/optimizer/older route assertions in this section are not the active requirement flow. Current counterpart: [source-defined owners, fields, transactions and limits](../../Organization%20Rule%20Assessment%20and%20Pathway.md). Original formulas, dated observations and evidence links remain historical; no operation below was run.
 
 1. Authorize and freeze exact Role+Level requirements and original compatible evidence. Known mandatory positive gap and mandatory UNKNOWN are learning needs; known gap0 and optional deficits do not create mandatory providers. Prerequisite-only needs come from skill-prerequisite readiness definitions; preserve their separate provenance without changing the Role's attainment set.
 2. A known need uses its own stored mastery:0≤m<1/3 LOW;1/3≤m<2/3 MEDIUM;2/3≤m≤1 HIGH. Compare3m with1 and2 without rounding. A finite decimal immediately below1/3 remains LOW; do not pretend rounded0.333333 equals the mathematical boundary. UNKNOWN uses preferred LOW plus original reason, not numeric0. Invalid/out-of-range/corrupt evidence is an error. Confidence does not add a penalty.
@@ -276,6 +324,8 @@ User confirmed the reviewed schema/quality/fallback/search proposal and explicit
 6. No requirement to study three levels, no constant expected mastery gain, no module-prerequisite catalog edge and no completion-to-readiness-PASS conversion. When the same Module legitimately supplies both prerequisite and dependent coverage through the permitted fallback rules, explicit versioned internal readiness gates are still required.
 
 ### 14.2 Whole-path objective, search and fixed review sets
+
+> **Historical design section (retained 2026-11-07):** numerical/IRT/optimizer/older route assertions in this section are not the active requirement flow. Current counterpart: [source-defined owners, fields, transactions and limits](../../Organization%20Rule%20Assessment%20and%20Pathway.md). Original formulas, dated observations and evidence links remain historical; no operation below was run.
 
 First enforce all required coverage, skill prerequisites, publication/availability, content versions, tenant/actor boundaries, valid metadata and complete gate mappings. Among these feasible assignments compare, in order:
 
@@ -300,6 +350,8 @@ Expert include/exclude freezes the explicit selected Module set. Validation find
 
 ### 14.3 Contract/DTO and protected projections
 
+> **Historical design section (retained 2026-11-07):** numerical/IRT/optimizer/older route assertions in this section are not the active requirement flow. Current counterpart: [source-defined owners, fields, transactions and limits](../../Organization%20Rule%20Assessment%20and%20Pathway.md). Original formulas, dated observations and evidence links remain historical; no operation below was run.
+
 Client command fields/routes in section5 remain unchanged. Actor/org/learner/mastery/preferred difficulty/score/approval/search outcome are never supplied by the client. Server response additions are planned:
 
 - Expert candidate/selected teaching pair: skillId, teachingFocus, difficultyLevel, `coverageRole=COVERAGE|ANCILLARY`, preferredDifficulty when this skill has a need, nullable coverage difficultyFallbackRank, expertAttention and attentionReason; effective policy version and safe explanation. A missing explanation for an actual fallback is invalid content. Candidate modules are grouped by moduleId with per-skill links, not duplicated per pair.
@@ -310,6 +362,8 @@ Client command fields/routes in section5 remain unchanged. Actor/org/learner/mas
 Authorization precedes scoped existence/count/paging/receipt reads. Replays retain existing body hashes and original outcomes before new-command revision checks; client reconciles current GET afterward. CAS/claim fencing/immutable revisions/audit/outbox remain unchanged in intent. Stale catalog/selection/revision→409; invalid requested content→400/422; absent configuration/outage→503 or explicit worker BLOCKED; no partial new draft/approval on dependency failure.
 
 ### 14.4 Planned forward schema, format and compatibility
+
+> **Historical design section (retained 2026-11-07):** numerical/IRT/optimizer/older route assertions in this section are not the active requirement flow. Current counterpart: [source-defined owners, fields, transactions and limits](../../Organization%20Rule%20Assessment%20and%20Pathway.md). Original formulas, dated observations and evidence links remain historical; no operation below was run.
 
 Select the next unused migration after rechecking the actual source/DB head; V28 is a candidate, not an applied migration. Retain V27 and all its immutable rows/checksums. Planned additive shape:
 
@@ -328,6 +382,8 @@ Rollback disables new admission/dispatch/review mutation/local substitutes while
 
 ### 14.5 Local assignment substitute and mandatory owner ports
 
+> **Historical design section (retained 2026-11-07):** numerical/IRT/optimizer/older route assertions in this section are not the active requirement flow. Current counterpart: [source-defined owners, fields, transactions and limits](../../Organization%20Rule%20Assessment%20and%20Pathway.md). Original formulas, dated observations and evidence links remain historical; no operation below was run.
+
 Authentication substitute remains the existing default-off local identity path. The separately planned assignment substitute is **not yet implemented**. Activation requires local-baseline-demo & !prod, existing baseline-demo/auth/initial gates and a separate default-off assignment flag. Server configuration supplies one trusted Expert account and organization plus an optional explicit Role allowlist. Client fields/cookies cannot choose arbitrary organization/Expert identity. Verify active account/grant and filter authorized proposals before paging/counting; never expose a broad organization-wide learner list through a generic Expert switch.
 
 Store a versioned local assignment identity with each override/approval. The adapter's approval-validity path must verify the real persisted exact pathway/revision/hash approval, configured tenant/scope and applicable active account/grant; it cannot return unconditional success. Removing the local authorization denies subsequent commands/replay/current approval access while retaining history. Production assignment/revocation semantics remain the owning team's contract. Replace the substitute behind ReviewAssignments; keep exact-revision validation/approval and current-scope checks. A temporary registry records gate/consumers/owner/replacement/retained code and deferred tests before activation.
@@ -335,6 +391,8 @@ Store a versioned local assignment identity with each override/approval. The ada
 ReadinessDefinitions, LiveReadiness, Availability and ContentAccess still require real owner adapters/data. The source hook has no protected owner controller mounting yet. An approved pathway GET may project locks but cannot secure a public contentUri by itself. Actual content/start/internal-segment routes must independently call trusted approval/tenant/content/readiness checks at each protected access. Missing contract/evidence/version denies or reports unavailable. A Markdown scaffold, baseline/mastery threshold, completion, assignment bypass or reachable DB is not readiness PASS. Do not add module-prerequisite graph fields or implement the owner's assessment engine in this Function.
 
 ### 14.6 Work order, environment and evidence boundary
+
+> **Historical design section (retained 2026-11-07):** numerical/IRT/optimizer/older route assertions in this section are not the active requirement flow. Current counterpart: [source-defined owners, fields, transactions and limits](../../Organization%20Rule%20Assessment%20and%20Pathway.md). Original formulas, dated observations and evidence links remain historical; no operation below was run.
 
 Reuse existing gap/profile/selection/transaction/receipt/revision/worker/review paths. Extend ports/domain → additive persistence/dual reader →0.11 release/compatibility → confirmed suitability/whole-plan optimizer → local assignment → owner access integration → API/FE. Keep slices small; build/type/lint in C2 only, executable tests only in separately approved C3. The required owner ports may stay safely denied while source work proceeds, but successful full flow remains incomplete until integrated.
 
@@ -349,6 +407,8 @@ Acceptance mapping: unchanged G01–G12 plus G13 history/compatibility; P01–P2
 Confirmed: selected Role+Level, exact mastery policy, per-pair focus/difficulty, fallback/quality/search and local assignment design | C1 target/source distinction: section15 supersedes earlier pending-source labels | Open: owner readiness/content, production adapters and runtime/UI evidence | Rejected: history rewrite, fake PASS/approval, unauthorized DB changes/tests/cluster transition.
 
 ## 15. C2 source/build update — 2026-10-28
+
+> **Historical design section (retained 2026-11-07):** numerical/IRT/optimizer/older route assertions in this section are not the active requirement flow. Current counterpart: [source-defined owners, fields, transactions and limits](../../Organization%20Rule%20Assessment%20and%20Pathway.md). Original formulas, dated observations and evidence links remain historical; no operation below was run.
 
 User explicitly approved C1 and requested C2 execution. Reference base5b17c77 plus uncommitted scoped changes; preserved checkpoints/history and the C1 amendment. Updated source is **built, not deployed or runtime-accepted**. [Build/static receipt](../../../testing/system/REQ-041-042-v011-source-build.md) records actual commands/environment/artifact hashes and limitations.
 
@@ -366,6 +426,8 @@ Confirmed: C2 authority and source/build observations | Source implemented: scop
 
 ## 16. Native DB cutover and bounded manual observations — 2026-10-28
 
+> **Historical design section (retained 2026-11-07):** numerical/IRT/optimizer/older route assertions in this section are not the active requirement flow. Current counterpart: [source-defined owners, fields, transactions and limits](../../Organization%20Rule%20Assessment%20and%20Pathway.md). Original formulas, dated observations and evidence links remain historical; no operation below was run.
+
 User subsequently authorized applying current database versions and starting fresh without preserving learner data. This supersedes earlier no-DB/deferred-runtime boundaries for this local fixture; it does not change normal baseline/mastery/history rules or authorize C3. [Native cutover receipt](../../../testing/system/REQ-041-042-v011-native-cutover.md) records actual commands/environment/actors/artifact/results/limits. Earlier source-build observations remain dated.
 
 Isolated PostgreSQL17.11 on15432, database adapt_learn_graph_v011, applied V1–V28 successfully; twelve initial tables and V28 constraints exist. Existing installed PG5432 was untouched. Separate workspace Neo4j2026.10.1 configuration/data imported exact0.11/994 nodes/5121 relationships, retained review metadata, and is online/read-only under dedicated service AdaptLearnGraphNeo4jV011.135 DRAFT bank items imported. Local seed configuration now accepts native seed/scope paths with existing defaults/gates/hash checks; Java21 package12:57:16+07 succeeded with tests skipped.
@@ -377,6 +439,8 @@ DB migration/import/connectivity is complete for this fresh local fixture. Full 
 Confirmed: fresh local DB authority and actual migration/import/read observations | Open: mandatory owner integration, positive full flow, actual UI and executable acceptance | Rejected: fake PASS/approval, full C2 claim from DB availability, automatic C3 or Git operations.
 
 ## 17. Current milestone and machine-transfer gate — 2026-10-28
+
+> **Historical design section (retained 2026-11-07):** numerical/IRT/optimizer/older route assertions in this section are not the active requirement flow. Current counterpart: [source-defined owners, fields, transactions and limits](../../Organization%20Rule%20Assessment%20and%20Pathway.md). Original formulas, dated observations and evidence links remain historical; no operation below was run.
 
 User clarified the completion journey: actual baseline → persisted mastery → selected Role+Level gaps → explicit confirmation/generation → Expert include/exclude/validate/exact approval → Employee sees own approved pathway. **The milestone ends at pathway display.** Actual module learning/content/start/segment/assessment execution belongs to another owner. Earlier sections retain those protected contracts for future integration; their execution is not an additional acceptance step for this view-only milestone.
 
@@ -390,9 +454,13 @@ Confirmed: own approved pathway view endpoint and next-session report/OK gate | 
 
 ## 18. Confirmed reproducible Compose demo amendment — 2026-10-28
 
+> **Historical design section (retained 2026-11-07):** numerical/IRT/optimizer/older route assertions in this section are not the active requirement flow. Current counterpart: [source-defined owners, fields, transactions and limits](../../Organization%20Rule%20Assessment%20and%20Pathway.md). Original formulas, dated observations and evidence links remain historical; no operation below was run.
+
 The user approved this document amendment and subsequent C2 implementation together. Goal: anyone using the repository's main `compose.dev.yml` can prepare a genuine full-Job Position baseline, obtain persisted mastery, confirm an exact Role+Level, review/edit/approve as Expert and see the same Employee's approved pathway. Learning execution remains outside scope. Existing acceptance G/P/R/E and history/tenant/replay/CAS rules remain; executable tests require separate C3 authority.
 
 ### Trusted local planning inputs
+
+> **Historical design section (retained 2026-11-07):** numerical/IRT/optimizer/older route assertions in this section are not the active requirement flow. Current counterpart: [source-defined owners, fields, transactions and limits](../../Organization%20Rule%20Assessment%20and%20Pathway.md). Original formulas, dated observations and evidence links remain historical; no operation below was run.
 
 Separate default-off `pathway.initial.local-planning.enabled`, existing local-baseline-demo/initial/auth gates and `!prod` activate TMP-REQ001-10. Fixed server LOCAL-DEMO organization only. Exact checked-in v0.11 seed/hash defines eligible ACTIVE Module IDs and exact content versions. This is a local availability exception for planning, not production content publication or a protected learning entry.
 
@@ -401,6 +469,8 @@ Version `local-baseline-prerequisite-v1` defines a planning-only prerequisite de
 Each applicable external gate has a deterministic definition tied to seed/module/skill edge and this policy version. No internal gate is invented: a Module cannot simultaneously supply an unmet prerequisite and its dependent coverage; the shared validator must choose separate Modules or report unresolved. Missing/mismatched source, tenant, policy or profile integrity denies. Missing compatible skill is UNKNOWN; unavailable/corrupt evidence is an error. ContentAccess and LiveReadiness stay unavailable; approved summaries remain visible with no learning entry.
 
 ### Dev lifecycle and verification
+
+> **Historical design section (retained 2026-11-07):** numerical/IRT/optimizer/older route assertions in this section are not the active requirement flow. Current counterpart: [source-defined owners, fields, transactions and limits](../../Organization%20Rule%20Assessment%20and%20Pathway.md). Original formulas, dated observations and evidence links remain historical; no operation below was run.
 
 Compose explicitly opts into these local substitutes with fixed server Expert identity and an additive active same-tenant DOMAIN_EXPERT fixture. It orchestrates migrate, exact graph/bank seed, await indexes and graceful read-only sealing before API/worker/web. Restart is idempotent and preserves data. Explicit deletion of this project's verified dev volumes is user-authorized; no startup reset and no deletion of unrelated volumes. Bank items remain DRAFT until actual LD author/review/activation; attempts, profiles, requests and approvals are never seeded.
 

@@ -1,5 +1,5 @@
 ---
-title: "CERD-02 - Assessment and Role-Level Profile"
+title: "CERD-02 - Assessment diagnostics and official achievement"
 config:
   layout: dagre
   look: classic
@@ -9,23 +9,16 @@ config:
   themeVariables: {background: "#ffffff", primaryColor: "#ffffff", primaryTextColor: "#0f172a", primaryBorderColor: "#334155", lineColor: "#334155", textColor: "#0f172a", edgeLabelBackground: "#ffffff", fontSize: "18px"}
   er: {nodeSpacing: 36, rankSpacing: 65, minEntityWidth: 140, diagramPadding: 24}
 ---
+
 erDiagram
   direction TB
-  RoleSelection["RoleSelection"]
-  BaselineConfigVersion["BaselineConfigVersion"]
-  AssessmentAttempt["AssessmentAttempt"]
-  AssessmentItem["AssessmentItem"]
-  AssessmentAnswer["AssessmentAnswer"]
-  QuestionVersion["QuestionVersion"]
-  SkillResult["SkillResult"]
-  CompetencyProfile["CompetencyProfile"]
-  ProfileSkill["ProfileSkill"]
-  RoleSelection ||--o{ AssessmentAttempt : "assessment context"
-  BaselineConfigVersion o|--o{ AssessmentAttempt : "baseline version pin"
-  AssessmentAttempt ||--|{ AssessmentItem : "freezes paper"
-  QuestionVersion ||--o{ AssessmentItem : "published item pin"
-  AssessmentItem ||--o| AssessmentAnswer : "accepted response"
-  AssessmentAttempt ||--o{ SkillResult : "finalizes"
-  RoleSelection ||--o{ CompetencyProfile : "profile history"
-  AssessmentAttempt ||--o{ CompetencyProfile : "valid baseline source"
-  CompetencyProfile ||--|{ ProfileSkill : "outcomes"
+  RoleSelection ||--o{ FrozenAttempt : "owned exact context"
+  ImmutablePolicy ||--o{ FrozenAttempt : "pinned version"
+  FrozenAttempt ||--|{ AssessmentGroup : "TARGET or MAIN and PREREQUISITE"
+  AssessmentGroup ||--|{ PresentedItem : "frozen mapped versions"
+  PresentedItem ||--o| AcceptedAnswer : "revision and replay"
+  AssessmentGroup ||--o| GroupResult : "immutable score and veto"
+  GroupResult ||..o{ BaselineDiagnostic : "BASELINE only"
+  ExactCompletion ||..o{ OfficialEvidence : "with qualifying Skill assessment"
+  CertificateDecision ||..o{ OfficialEvidence : "assigned Expert approval"
+  GroupResult ||..o{ PrerequisiteReview : "NEED_REVIEW without revocation"

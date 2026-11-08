@@ -5,6 +5,11 @@ SWP490 · CAPSTONE PROJECT · REVIEW 2 · BM01
 
 # Design Brief – Review 2
 
+## Current source disposition — 2026-11-07
+
+The findings/estimates below are retained historical review records, not rewritten results. At HEAD `61d334c`, authoritative rule Skill papers/results, exact completion/evidence and requirement recalculation now exist in the local gated composition. Thus F13/F14's older missing-source observations no longer describe all current source; their end-to-end acceptance remains unverified. F18's stale architecture prose is corrected in Report4; LLM/ROI remain incomplete. Current limits include per-Skill policy assignment, eligible-option exclusion conflict, module-specific retake contexts, unverified certificate/bypass/parallel/backfill and unavailable applied DB metadata. No runtime/test result or finding closure is fabricated. [Current source contract](../documents/technical/Organization%20Rule%20Assessment%20and%20Pathway.md).
+
+
 ## 0. Header
 
 | Project code | FA26SE267 (registration identifier) |

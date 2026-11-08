@@ -1,37 +1,29 @@
 # Current Project Architecture
 
-## Organization-rule assessment/pathway target — 2026-11-05-r3
+## Organization-rule assessment/pathway — source 2026-11-07
 
-Selected Role/member Level determines explicit requiredKnowledgeLevels. Baseline and skill assessment share a rule engine with **two independently configured policies and deadlines**. PostgreSQL owns frozen attempts/groups/results, diagnostic versus official evidence, certificate decisions and requirement-root pathways; Neo4j remains catalog-only. Keep Java 21/Spring Boot 3.5, existing auth/tenant/assignment/entitlement, JPA/SDN, content/review/progress and audit/outbox.
+Selected Role/member Level determines explicit requiredKnowledgeLevels. Baseline and skill assessment share a rule engine with **separate scoped policies and deadlines: L&D Baseline per organization+Role+member Level, Expert Skill Assessment per organization+Skill+knowledge**. PostgreSQL owns frozen attempts/groups/results, diagnostic versus official evidence, certificate decisions and requirement-root pathways; Neo4j remains catalog-only. Keep Java 21/Spring Boot 3.5, existing auth/tenant/assignment/entitlement, JPA/SDN, content/review/progress and audit/outbox.
 
-[Current target schema/API and ordered flow](technical/Organization%20Rule%20Assessment%20and%20Pathway.md) supersedes older whole-Job-Position baseline, IRT/numeric mastery-gap and optimizer descriptions. Existing runtime has not been migrated by this document update. No intermediate requirement node/table/type is introduced.
+[Current target schema/API and ordered flow](technical/Organization%20Rule%20Assessment%20and%20Pathway.md) supersedes older whole-Job-Position baseline, IRT/numeric mastery-gap and optimizer descriptions. Current local workspace source implements the rule flow; this document update neither migrates a database nor proves full runtime behavior. Catalog keeps existing Role/Level/Skill topology; PostgreSQL owns learner requirement snapshots and steps.
 
 - Baseline records only assessed skill-level diagnostics. A's result never creates unassessed prerequisite B; A needing learning gets A alternatives. Skill assessment may later discover B and add **Cần bổ sung**.
 - Module + passing assessment with required conditions, or approved certificate, creates official achievement. Baseline and bypass do not. Official prerequisite failure gives NEED_REVIEW without revocation.
 - Initial Expert approval covers requirement-root choices; valid supplementation recalculates automatically. Retakes always include main and ALL prerequisite groups.
 - Lock Role AND Level from request submission. Release on mandatory-work completion/bypass-only. After another target is chosen, old bypass needs are parallel learning and never gate its other skills, even when provision appears.
 - Preserve current FE design. Change fields/data binding for Question Bank classification, separate policy configs, alternatives and certificate evidence. Mocks do not prove integration.
-- Affected old dev flow records need not be migrated; matching schema/seeds are future C2 work. Unrelated/shared data and research/evidence/backups remain; no DB reset occurs here.
+- Affected old dev flow records need not be migrated; matching forward V50–V62 and explicitly gated development seed definitions now exist in source; applied state remains unverified here. Unrelated/shared data and research/evidence/backups remain; no DB reset occurs here.
 
-![Ontology target r3](diagrams/target-r3-ontology.svg)
-![Assessment/profile target r3](diagrams/target-r3-assessment.svg)
-![Pathway/certificate target r3](diagrams/target-r3-pathway.svg)
 
-[Target PNGs and editable sources](diagrams/README.md#target-design-r3--2026-11-05). Figures are target design, not captured/applied DB metadata. Dated inventories below remain historical and do not override r3.
 
 ## Workspace Baseline Integration (2026-10-28)
 
-The combined main/local development runtime uses `local,workspace-baseline`. It retains real workspace login, single membership roles, entitlement checks and existing onboarding/billing. L&D baseline configuration and Employee role/attempt/result APIs reuse the incoming adaptive engine through trusted workspace adapters; demo personas are not enabled by default.
+The current rule runtime uses `local,workspace-baseline`, excludes demo/prod profiles, and requires the workspace property; pathway/certificate additionally requires `pathway.initial.enabled`. Real session/membership/entitlement remain. ScopedAssessmentPolicyService owns directory/draft/activation; RuleAssessmentAttemptService owns both purposes; RequirementPathway services own request, generation, review, access and recalculation. Legacy factory methods retained in WorkspaceBaselineConfiguration without @Bean are not active IRT wiring.
 
-- PostgreSQL V1-V12 and their applied checksums remain unchanged. Incoming main assessment migrations V8-V26 are integrated as V13-V31; V32 adds `workspace_baseline_resource`. This lineage is for the existing V12 dev database. A database that already applied the original main assessment lineage must not be pointed at this migration directory without a separate migration design.
-- A binding explicitly grants an organization an active job position/department reference and Neo4j job position identifier. Optional bank/model/mastery-mapping UUIDs represent unconfigured resources. Composite tenant foreign keys and the bank-owner guard reject cross-organization bindings; runtime catalog publication/review and model-promotion checks still apply.
-- `WorkspaceBaselineConfiguration` revalidates the actual session, membership and entitlement. Baseline and identity operations share the application transaction manager. Role/attempt writes remain transactional and replay-safe; result reads check real organization membership, not the legacy demo role table.
-- Frontend mutations use the existing workspace CSRF helper. Workspace feature queries live in an identity-keyed cache that is cleared on unmount/logout. No actor or organization supplied in browser storage establishes authority.
-- Historical UUID role selections remain stored. If no current-schema selection exists, an explicit reselection notice is returned; integration does not fabricate compatible graph IDs or rewrite old evidence.
-- Migration startup does not reseed Neo4j. The old insert-only demo seed is tools-only. Development has no automatically approved question bank or scoring model: missing resources are visible readiness states and cannot produce an assessment result.
-- The dataset's DRAFT/NEEDS_EXPERT_REVIEW bank is not approved by integration. Publication, question import, actual calibration/promotion, AI guidance, RIASEC and production readiness remain outside this slice.
+PostgreSQL retains three distinct migration lineages through V62 in source. The workspace profile defaults to `db/workspace-migration`; an explicit location override must match the whole installed history. V52–V56 add rule papers/evidence/requirement revisions; V57–V62 add scoped drafts/activation, editor progress, owned bank sources, abandoned history, option overrides/no new module price and scope-local version labels. [Current source-defined schema/API](technical/Organization%20Rule%20Assessment%20and%20Pathway.md#4-postgresql-schema-mapping) is not an applied schema receipt.
 
-See the [schema and preservation evidence](testing/integration/REQ-002-workspace-baseline.md) and [browser/manual checks](testing/system/REQ-002-workspace-baseline.md). The live schema diagrams below are regenerated through V32.
+At accepted request, Role and Level lock under learner transaction before later archive/write. Baseline only consumes selected target groups; Skill Assessment uses exact completed accepted option plus all prerequisite groups. Frozen paper/history/deadline survive resume/config changes; server expiry finalizes once. Result jobs distinguish finalized scoring from pending supplementation/official evidence. New genuine evidence and catalog refresh publish successor revisions with original approval basis, preserving started content and history.
+
+The Docker Linux engine was unavailable in this documentation task, so live PG/Neo4j metadata, active policies and current learner state were not inspected. No service start, seed, migration, learner action or executable test occurred. Historical 2026-10-28 results retain their original environment and numerical flow, not current rule-engine acceptance.
 
 ## Confirmed Product Target
 
@@ -168,11 +160,11 @@ The [revision 13 public landing](features/Organization%20onboarding/README.md#pu
 
 ## Database diagrams
 
-Use the r3 images above and [physical mapping](technical/Organization%20Rule%20Assessment%20and%20Pathway.md#4-postgresql-schema-mapping) for the changed flow. Images below are **historical migrated inventory**, not current target/new live captures. Identity/subscription ownership is unchanged.
+Use the current [physical mapping](technical/Organization%20Rule%20Assessment%20and%20Pathway.md#4-postgresql-schema-mapping) for the changed flow. Identity/subscription figures below remain historical inventory. Assessment/pathway and Neo4j figures have been updated from current source definitions; none is a new live database capture.
 
 ### PostgreSQL
 
-The four source views include every column of the 76 migrated tables through V11. `?` marks a nullable column; `[PK]` and `[FK]` mark key participation. Arrows point from a referenced table to a referencing table when both are in the same view; cross-view foreign keys remain marked on their columns.
+Identity/subscription views retain the dated V11 snapshot. Assessment/pathway views now show selected current scoped-policy, rule-paper, evidence and requirement-revision tables from source through V62. `?` marks a nullable column; `[PK]` and `[FK]` mark key participation. Arrows point from a referenced table to a referencing table when both are in the same view; cross-view foreign keys remain marked on their columns.
 
 ![PostgreSQL identity, catalog and processing tables](diagrams/postgresql.svg)
 
@@ -190,7 +182,7 @@ On 2026-10-23 the sources were regenerated from the isolated V11 lifecycle catal
 
 [Assessment and learning PlantUML source](diagrams/postgresql-assessment.puml)
 
-![PostgreSQL recommendation, analytics and evaluation tables](diagrams/postgresql-pathway.svg)
+![PostgreSQL requirement pathway source-defined tables](diagrams/postgresql-pathway.svg)
 
 [Pathway and analytics PlantUML source](diagrams/postgresql-pathway.puml)
 
@@ -198,9 +190,9 @@ On 2026-10-23 the sources were regenerated from the isolated V11 lifecycle catal
 
 ### Neo4j
 
-The current ontology contract has six entity labels and seven relationship types, defined in [neo4j_schema.md](neo4j_schema.md) and [dataset 0.8.0](dataset/ONTOLOGY.md).
+The catalog figure below now shows current source topology, Certificate/REQUIRES_CERTIFICATE and exact knowledge fields, defined in [neo4j_schema.md](neo4j_schema.md) and [dataset 0.8.0](dataset/ONTOLOGY.md).
 
-![Job Position-based ontology 0.8.0](diagrams/neo4j.svg)
+![Source-defined catalog and exact provision](diagrams/neo4j.svg)
 
 [PlantUML source](diagrams/neo4j.puml)
 
@@ -212,7 +204,7 @@ V2 adds ontology entity constraints and V3 adds Job Position constraints after t
 
 **Runtime compatibility:** DevelopmentCatalogSeeder, Neo4jTargetRoleCatalogAdapter, Neo4jTargetRoleMapper and role-selection domain/API contracts still use the legacy model. They have not been converted by this schema change. Import the new seed in an isolated database until the runtime and cross-store references are migrated. The legacy development seeder now refuses an Job Position catalog instead of mixing legacy fixtures into it. The current dataset is under dataset/; existing learner decisions must retain their original catalog context.
 
-PostgreSQL V2-V5 contain a versioned `catalog_reference`/`catalog_release` contract, whereas the legacy runtime uses stable `id`/`code`; ontology 0.8.0 adds version metadata but no separate graph version nodes. No cross-store synchronizer or catalog CRUD API is implemented yet. V7 keeps the selection FK to `catalog_reference`, adds `target_selection.role_snapshot`, and adds `target_selection_request` for command idempotency. Successful request outcomes persist the selection, target revision, and original `changed` value so an idempotent replay returns the same observable result. F02 uses the trusted learner as the outbox aggregate, the target revision as source revision, and the request ID as correlation ID; selection, request outcome, audit, and outbox writes share the caller's PostgreSQL transaction. The snapshot is nullable only for pre-V7 compatibility; new F02 writes must populate it. The provisional runtime adapter rechecks F01 availability under the trusted organization and then resolves exactly one `TARGET_ROLE` reference from the PostgreSQL release whose catalog guard is `OPEN`; mismatch is a dependency failure and the command never creates a reference. The local migrate flow may seed matching cross-store references, but that seed is not a published production release.
+PostgreSQL V2-V5 contain a versioned `catalog_reference`/`catalog_release` contract, whereas the legacy runtime uses stable `id`/`code`; ontology 0.8.0 adds version metadata but no separate graph version nodes. Current module authoring has a retryable graph publication projection; legacy catalog CRUD remains separately gated and does not establish a general synchronizer. V7 keeps the selection FK to `catalog_reference`, adds `target_selection.role_snapshot`, and adds `target_selection_request` for command idempotency. Successful request outcomes persist the selection, target revision, and original `changed` value so an idempotent replay returns the same observable result. F02 uses the trusted learner as the outbox aggregate, the target revision as source revision, and the request ID as correlation ID; selection, request outcome, audit, and outbox writes share the caller's PostgreSQL transaction. The snapshot is nullable only for pre-V7 compatibility; new F02 writes must populate it. The provisional runtime adapter rechecks F01 availability under the trusted organization and then resolves exactly one `TARGET_ROLE` reference from the PostgreSQL release whose catalog guard is `OPEN`; mismatch is a dependency failure and the command never creates a reference. The local migrate flow may seed matching cross-store references, but that seed is not a published production release.
 
 F02's temporary assessment guard and `SUPERSEDED` pathway archive mapping are local/demo adapters behind application ports. They load only with the explicit local-dependency property and are absent from the production profile. The real assessment/pathway adapters must share the learner lock/revision transaction contract or provide an owner-approved equivalent before F02 is production-complete.
 
@@ -245,7 +237,7 @@ backend/
     utility/             Infrastructure: cryptography, IRT psychometrics and command-line tools
   src/main/resources/
     application*.yml     local, prod, migrate, starter, worker profiles
-    db/migration/        PostgreSQL Flyway V1-V8
+    db/migration/        PostgreSQL canonical lineage through V62; workspace/module histories are separate
     db/neo4j/            graph constraints packaged in the backend JAR
   src/test/java/com/adaptlearngraph/
     <layer>/             tests live in the same layer package as the class under test
@@ -314,19 +306,19 @@ Production publishes HTTP on `127.0.0.1:${WEB_PORT:-8088}`. Place a separately m
 
 ## Question Bank authoring — R2 (2026-10-30)
 
-Implementation targets the approved Question Bank subset of FR-05.06. Runtime acceptance is recorded separately in `testing/system/REQ-014-question-bank.md`; source implementation is not a production-readiness receipt. Expert `/expert/assessment-bank` and L&D `/ld-manager/question-bank` share the question directory, four statistics cards, MicroSkill grouping, filters and authoring/details/import dialogs. Browser company storage and mock presets are not part of these routed flows; module Blueprint authoring/Employee exams remain separate.
+Implementation targets the approved Question Bank subset of FR-05.06. Runtime acceptance is recorded separately in `testing/system/REQ-014-question-bank.md`; source implementation is not a production-readiness receipt. Expert `/expert/assessment-bank` and L&D `/ld-manager/question-bank` share the question directory, four statistics cards, MicroSkill grouping, filters and authoring/details/import dialogs. Browser company storage and mock presets are not part of these routed flows; scoped Skill policy configuration and timed rule Employee exams now use separate active services.
 
-The bank owns working content in PostgreSQL; Neo4j supplies currently ACTIVE/APPROVED MicroSkill identity and name. New MCQs contain four distinct plain-text choices, one correct choice, one skill and EASY/MEDIUM/HARD editorial difficulty. Editorial difficulty does not create/calibrate IRT parameters. Draft save requires prompt/skill; the backend generates an immutable Q-UUID code for each new question. Existing codes are retained; callers cannot choose new codes. Draft options, key, difficulty and explanation may legitimately be incomplete; submission validates all fields including explanation.
+The bank owns working content in PostgreSQL; Neo4j supplies currently ACTIVE/APPROVED MicroSkill identity and name. New MCQs contain four distinct plain-text choices, one correct choice, one Skill, exact knowledgeLevel/outcomeCode, mandatory designation and explanation; editorial difficulty is retired from the new flow. Editorial difficulty does not create/calibrate IRT parameters. Draft save requires prompt/skill; the backend generates an immutable Q-UUID code for each new question. Existing codes are retained; callers cannot choose new codes. Draft options, key, knowledge mapping and explanation may legitimately be incomplete; submission validates all fields including explanation.
 
 ### Persisted ownership and fields
 
 | Store                     | Fields and responsibility                                                                                                                                                                                                           |
 | ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `question_bank_workspace` | Organization PK, unique existing `question_bank_id`, staff-only JSON aggregate. Reuse sole existing bank or create one; ambiguous legacy multiple banks return409 without merging/rebinding.                                        |
+| `question_bank_workspace` | Organization PK, unique existing `question_bank_id`, staff-only JSON aggregate. One authoring workspace can adopt multiple owned source banks through V59 question_bank_scope, preserving each question.sourceBankId; an item identity spanning banks conflicts instead of being moved/rebound.                                        |
 | Aggregate bank            | `id`, `organization`, `name`, `questions`, `history`, private per-actor `imports`, recipient-scoped `notices`.                                                                                                                      |
 | Question                  | Stable `id`, normalized immutable `code`, nullable historical `createdBy/createdAt`, `owner`, optimistic `revision`, `retired`, pending RETIRE/REACTIVATE `request`, ordered `versions`. Missing legacy owner is not fabricated.    |
 | Working version           | `id`, integer `number`, DRAFT/SUBMITTED/PUBLISHED state; `content`; editor/time, submitter/time, reviewer/time, return reason, exact-version `viewed` acknowledgements. Nullable facts remain absent until the actual event occurs. |
-| Content                   | Plain `prompt`, `options`, nullable draft `correctAnswer`, required `skillId`, server-resolved `skillName`, nullable draft `difficulty/explanation`. No caller-selected reviewer or author.                                         |
+| Content                   | Plain `prompt`, `options`, nullable draft `correctAnswer`, required `skillId`, server-resolved `skillName`, nullable draft `knowledgeLevel/outcomeCode/correctAnswer/explanation`, plus `mandatory`; difficulty is legacy only. No caller-selected reviewer or author.                                         |
 | Audit                     | Event UUID, stable question/version, action, trusted actor, timestamp, reason and content snapshot. Transfers retain original creators/submitters/reviewers.                                                                        |
 | Import receipt            | UUID/actor/expiry/committed flag, normalized rows, per-row errors/warnings, expected question revisions and matching-content identities. Preview is not publication.                                                                |
 | `question_bank_identity`  | Stable question PK, bank FK, unique code within bank, retired flag used by future candidate selection. No deletion or published-history rewrite.                                                                                    |
@@ -501,4 +493,4 @@ The L&D catalog reads `/module-list`; the Approvals view reads `/modules?pending
 
 The 0.12 catalog release narrows each Module to one outgoing TEACHES MicroSkill and removes teaching focus/difficulty from the active authoring/projection/import contract. Old releases, authored revision snapshots and frozen assessment/pathway pins remain historical. New direct provider reads use the versioned `single-skill-v1` policy without invented focus/difficulty; old policies/hashes remain readable. The content mapping audit reports eight Skills without a dedicated Module.
 
-PostgreSQL V50 adds immutable `learning_module_completion` and `learning_self_study`; V51 supports the explicit new planning-policy shape alongside historical teaching rows. The final lesson transaction writes original Skill/Module/revision/content-version/real-time provenance once. Backfill requires complete original single-Skill evidence; ambiguous multi-Skill history is retained without guessed eligibility. A session-scoped service/API exposes only the learning prerequisite for teammate-owned Skill Assessments. Optional same-Skill approved content in the same organization uses explicit self-study admission and the existing private reader/version/progress guards, without modifying pathway membership/order or mastery. [Contract/API and migration boundary](technical/Skill-Learning-Eligibility.md). Existing dev/accounts-dev data is not migrated by this source-only delivery; isolated verification is recorded separately.
+PostgreSQL V50 adds immutable `learning_module_completion` and `learning_self_study`; V51 supports the explicit new planning-policy shape alongside historical teaching rows. The final lesson transaction writes original Skill/Module/revision/content-version/real-time provenance once; V53 adds the exact knowledge/Skill-version/outcome sidecar used by rule-exam admission. Backfill requires complete original single-Skill evidence; ambiguous multi-Skill history is retained without guessed eligibility. The retained skill-only eligibility service is informational; CurrentRoleKnowledgeCatalog and RuleAssessmentContextJpaRepository enforce exact accepted-option completion for rule Skill Assessment. Optional same-Skill approved content in the same organization uses explicit self-study admission and the existing private reader/version/progress guards, without modifying pathway membership/order or mastery. [Contract/API and migration boundary](technical/Skill-Learning-Eligibility.md). Existing dev/accounts-dev data is not migrated by this source-only delivery; isolated verification is recorded separately.

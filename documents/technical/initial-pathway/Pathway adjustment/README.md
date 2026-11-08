@@ -1,11 +1,23 @@
-# Pathway Adjustment
+# Requirement Module Option Adjustment
 
-**Current flow revision: 2026-11-05-r3.** [Target schema/API/flow](../../Organization%20Rule%20Assessment%20and%20Pathway.md) supersedes this document's older active assessment/mastery/gap/optimizer assumptions. Material below is retained previous design/source/operation history, not proof of r3 being applied. Keep non-conflicting security/content/retry safeguards. Baseline covers selected Role–Level, records only assessed diagnostics and does not pre-add prerequisites; two separate policy configs share an engine; skill assessment discovers supplementation; cross-target old bypass work is parallel/non-gating. Old affected dev records may be rebuilt; new-flow history and unrelated/shared evidence/backups remain. Do not automatically run retained setup/reset/test commands below.
+REQ-020-F01/F02 and REQ-019-F01 review; assigned Expert.
 
-Assigned Experts change initial-draft membership through [Include — REQ-020-F01](Include%20Pathway%20Module.md) and [Exclude — REQ-020-F02](Exclude%20Pathway%20Module.md). Exclude records an explicit excluded membership. Neutral Remove clears Included/Excluded membership while retaining history and returning eligible content to Catalog. Adjacent Move Up/Down and Remove use the existing [review contract — REQ-019-F01](../Initial%20pathway%20review/Review%20Initial%20Adaptive%20Pathway.md); no new Function ID is introduced.
+Source checkpoint: HEAD `61d334c`, 2026-11-07. Confirmed contract and source implementation are distinguished below; current composition is local/workspace-baseline and excludes prod/demo. [Complete field/key/API and conflict mapping](../../Organization%20Rule%20Assessment%20and%20Pathway.md) owns the shared technical detail. Applied DB state and full runtime behavior were not verified in this documentation task.
 
-Every changed set is revalidated with current assignment, exact revision/hash, prerequisites and source pins. Invalid drafts remain editable but cannot approve. Preserve explicit dependency-valid Expert order and insert new prerequisites before dependents. No catalog deletion, Employee override, fake mastery or automatic replacement belongs here.
+## Current Scope Alignment
 
-[Business requirements](../../../features/Pathway%20review/README.md#fr-05-07), [shared design](../Initial%20pathway%20generation/Initial%20Pathway%20Flow%20and%20Data%20Design.md), [acceptance plan](../../../testing/REQ-041-042-initial-pathway-test-plan.md) and [dated evidence](../../../testing/system/REQ-002-041-042-workspace-integration.md) separate the confirmed contract from implementation limits and unrun executable cases.
+Active requirement controller uses module-selection/check and module-selection with exact expected revision/contentHash and step/module/revision/content keys. No standalone inclusion/exclusion/neutral Remove or arbitrary old optimizer command is current. Started choices and dependency-bound/fixed order positions are protected. Exclusion never waives a requirement; empty module options remain NEEDS_EXPERT_ACTION.
 
-Status: Confirmed.
+## Functions
+
+[Include option](Include%20Pathway%20Module.md), [Exclude option](Exclude%20Pathway%20Module.md), [Review and exact approval](../Initial%20pathway%20review/Review%20Initial%20Adaptive%20Pathway.md). Confirmed on 2026-11-08: generate all eligible modules, allow Expert option reduction, and permit bypass only if suitable module/certificate provision is absent. Code confirmation is pending.
+
+Historical references retained: REQ-020-F01, REQ-020-F02, REQ-019-F01, REQ-041, REQ-002. They do not expand this task or approve new implementation.
+
+## Historical evidence references
+
+The following retained records describe their original dates/contracts only; they were not rerun or recertified here.
+
+[acceptance plan](../../../testing/REQ-041-042-initial-pathway-test-plan.md)
+
+[dated evidence](../../../testing/system/REQ-002-041-042-workspace-integration.md)

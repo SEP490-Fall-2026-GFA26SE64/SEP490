@@ -1,12 +1,10 @@
 # Single-Skill Modules and learning eligibility handoff
 
-**Current flow revision: 2026-11-05-r3.** [Target schema/API/flow](Organization%20Rule%20Assessment%20and%20Pathway.md) supersedes this document's older active assessment/mastery/gap/optimizer assumptions. Material below is retained previous design/source/operation history, not proof of r3 being applied. Keep non-conflicting security/content/retry safeguards. Baseline covers selected Role–Level, records only assessed diagnostics and does not pre-add prerequisites; two separate policy configs share an engine; skill assessment discovers supplementation; cross-target old bypass work is parallel/non-gating. Old affected dev records may be rebuilt; new-flow history and unrelated/shared evidence/backups remain. Do not automatically run retained setup/reset/test commands below.
-
-Approved scope: 2026-11-05, r2. This document covers Module learning, optional same-Skill study and the **learning prerequisite** for a teammate-owned Skill Assessment. It does not define assessment construction, question selection, scoring, retakes, mastery updates or complete exam admission.
+Approved scope: 2026-11-05, r2. The original r2 handoff covered Skill-only learning eligibility. Current source adds exact knowledge/Skill-version/outcomes completion and current accepted-option access; complete rule-exam admission is owned by CurrentRoleKnowledgeCatalog/RuleAssessmentContextJpaRepository and the rule engine, not this Boolean API.
 
 ## Catalog and authoring
 
-`(LearningModule)-[:TEACHES]->(MicroSkill)` has exactly one target per active Module; a Skill may have any number of alternative Modules. Neither `teachingFocus` nor Module/relationship `difficultyLevel` belongs to the 0.12 contract. Question difficulty, Role/Level requirements, minimum mastery and Skill prerequisites are separate and unchanged.
+`(LearningModule)-[:TEACHES]->(MicroSkill)` has exactly one target per active Module; a Skill may have any number of alternative Modules. Neither `teachingFocus` nor Module/relationship `difficultyLevel` belongs to the 0.12 contract. Current rule flow uses explicit Role-Level requiredKnowledgeLevels, exact prerequisite knowledge pairs and outcome-mapped questions; legacy difficulty/minimum-mastery are retired from that flow.
 
 The active authoring wire shape retains the `teachings` array for the established integration, but requires exactly one item: `[{"skillId":"..."}]`. Create/edit, import preview validation and publication reject missing/multiple/foreign targets. Expert ownership, L&D publication and source-drift guards remain. Old raw authoring snapshots retain their historical fields for decoding; they are not rewritten into new evidence.
 
@@ -18,7 +16,7 @@ The 0.11 release, original content and frozen historical assessment/pathway refe
 
 Learning progress remains server-owned. Text requires reached-end plus explicit completion; Video requires at least 90% distinct watched coverage plus explicit completion. A Module requires every lesson in its pinned, nonempty version to be complete. The final lesson transaction records `learning_module_completion`, uniquely keyed by organization, learner, Module and revision, with the original Skill, content version and actual final completion timestamp. Repeated requests cannot overwrite it.
 
-Completing any one Module is sufficient for the Skill's learning prerequisite. Other Modules remain independently studyable, with their own progress. Completing a Module does not complete alternatives, pass an assessment, certify mastery or mutate the approved pathway.
+Completing a Module records its own Skill/content proof; current rule exam requires the additional exact requirement sidecar and accepted step/option. Skill-only completion does not qualify every knowledge level or module. Other Modules remain independently studyable, with their own progress. Completing a Module does not complete alternatives, pass an assessment, certify mastery or mutate the approved pathway.
 
 Later edits, archive or reassignment do not move a completion to another Skill. New Skill mapping is not used to interpret old progress. The forward migration backfills only an original single-Skill snapshot whose original lesson list is entirely completed; it uses existing completion times. Ambiguous old multi-Skill revisions are retained without automatic eligibility and require reconciliation. Version switching across a Skill change is refused; original completed-version evidence remains available.
 
@@ -27,7 +25,7 @@ Later edits, archive or reassignment do not move a completion to another Skill. 
 All calls require a real entitled Employee workspace session. Organization/learner identity comes from the session, never the request. Wrong role: 403; unavailable/foreign Skill without own historical proof: 404. Storage failure is an error, not an empty or successful result. GET performs no completion/admission writes.
 
 - `GET /api/v1/module-management/skills/{skillId}/assessment-eligibility`
-- Backend owner: `SkillLearningService.eligibility(skillId)` in an authenticated request context. The assessment backend must recheck this service when admitting an attempt; a frontend boolean is not authority.
+- Backend owner: `SkillLearningService.eligibility(skillId)` in an authenticated request context. This is a retained informational API. Rule assessment admission rechecks exact current accepted option/completion/version/outcomes through its own context repository; neither this Skill-only result nor a frontend Boolean is authority.
 
 Unmet response:
 
@@ -43,9 +41,9 @@ Met response has `eligible: true`, `reason: "MODULE_COMPLETED"` and a `qualifyin
 - `POST /api/v1/module-management/skills/{skillId}/modules/{moduleId}/learning` requires workspace CSRF and returns 204 after admission/pinning.
 - Continue through existing `/learning/{moduleId}/begin`, `/view` and lesson progress APIs.
 
-A learner must already have a currently authorized Module for that Skill or original completion evidence for it. This prevents arbitrary Skill enumeration/admission from bypassing the existing pathway/prerequisite boundary. Optional targets require released approved complete content in the same organization and matching sole Skill. Explicit `learning_self_study` admission permits the existing reader/private-media path to continue without adding Module membership/order to the pathway. A prior pin is retained; new enrollment never silently changes a learned version or grants a different Skill.
+Current source requires currently authorized module access for the Skill and separately checks each listed/started option through assigned/accepted-access guards; historical completion alone does not authorize every same-Skill Module. This prevents arbitrary Skill enumeration/admission from bypassing the existing pathway/prerequisite boundary. Optional targets require released approved complete content in the same organization and matching sole Skill. Explicit `learning_self_study` admission permits the existing reader/private-media path to continue without adding Module membership/order to the pathway. A prior pin is retained; new enrollment never silently changes a learned version or grants a different Skill.
 
-The reader exposes prerequisite status and available alternatives in EN/VI; no exam/score is simulated, and no route to an unfinished assessment is provided.
+The reader now exposes a real Skill assessment action for the exact accepted completed option; module badges/results and inline retake errors use current rule APIs. Score is not simulated. Full runtime branches were not verified here.
 
 ## Forward migration and verification
 
@@ -57,6 +55,6 @@ Actual tests, commands, environment and manual checks are recorded in [system ev
 
 ## Main-local synchronization (2026-11-05)
 
-The user subsequently authorized synchronizing the main local environment. `compose.dev.yml` now mounts the exact 0.12 seed for catalog/import/API consumers; existing named volumes and lifecycle markers keep their names to preserve data. Generic 0.12 migration continues to refuse tenant/authored drift. The separate explicit `upgrade_workspace_v012.py` accepts only the exact known TechNova 0.11 graph with its organization/TargetRole Expert metadata and three exact SE prerequisite links, or its identical 0.12 result. It preserves that administrative metadata, renames the five Occupation labels to JobPosition, narrows 664 TEACHES links to 246 and rebases the SE supplement version. Unknown nodes, tenant ownership or content changes are refused. The transaction locks/rechecks the original graph and verifies exact readback before committing. JobPosition uniqueness is installed separately after cutover.
+The user subsequently authorized synchronizing the main local environment. The 5 November synchronization mounted the exact 0.12 seed; current Compose source instead mounts ontology_seed-prerequisite-knowledge.json and a separate module-knowledge release; existing named volumes and lifecycle markers keep their names to preserve data. Generic 0.12 migration continues to refuse tenant/authored drift. The separate explicit `upgrade_workspace_v012.py` accepts only the exact known TechNova 0.11 graph with its organization/TargetRole Expert metadata and three exact SE prerequisite links, or its identical 0.12 result. It preserves that administrative metadata, renames the five Occupation labels to JobPosition, narrows 664 TEACHES links to 246 and rebases the SE supplement version. Unknown nodes, tenant ownership or content changes are refused. The transaction locks/rechecks the original graph and verifies exact readback before committing. JobPosition uniqueness is installed separately after cutover.
 
 Private backup location on this workstation: `local/backups/single-skill-20261105/` (git-ignored), containing the PostgreSQL custom dump and full Neo4j before/after/schema/plan snapshots. PostgreSQL uses its existing workspace lineage and forward V48–V51; no historical Flyway checksum or learner snapshot is rewritten. [Main-local synchronization receipt](../testing/system/REQ-013-016-main-sync-20261105.md) records actual startup/smoke results. Historical baseline model provenance and fixture UUID strings are retained across the earlier terminology refactor; current APIs keep Job Position naming.

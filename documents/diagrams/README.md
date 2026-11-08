@@ -1,5 +1,12 @@
 # Architecture Diagrams
 
+## Adaptive flow diagrams - source alignment 2026-11-08
+
+The existing ACT-05, scoped policy/paper/evidence ERDs, requirement pathway ERDs, class/sequence/state views and direct catalog/module/Question Bank dependencies now describe source at commit `84cfb6f1`. Canonical Mermaid sources and sibling SVG/PNG exports are synchronized; Report 3 uses the updated fixed-column swimlanes and Report 4 state aliases are refreshed. PostgreSQL views show selected source-defined columns through V62, not live DB captures. Catalog IDs remain cross-store snapshots, not SQL foreign keys into Neo4j.
+
+Baseline diagnostics, official evidence and prerequisite review flags are separate. Request/review/step states are separate. Approval basis, target lock and non-gating parallel supplementation remain visible. The 2026-11-08 decisions now allow Expert option reduction and restrict bypass to missing suitable provision. Role-derived Skill authorization, draft-first ordering and module-specific retry allowance are confirmed; code and source-diagram annotations await the separate confirmation session. Independent learning remains a partial target. Application code, migrations, data and historical runtime evidence are unchanged.
+
+
 ## ACT-04 approval scope — 2026-11-06
 
 ACT-04 now covers the Module, one MicroSkill mapping and ordered learning content. Assessment configuration is outside the submitted approval package. Canonical and swimlane ACT-04 assets, SEQ-06 and the UC-B submission dependency are synchronized with Reports 1–4. Prior dated entries retain their original scope.
@@ -74,22 +81,6 @@ ACT-05 presentation correction: one continuous top-down flow in the original whi
 Report 3/4 display the approved ACT-05 Role-Level baseline/configuration flow and corresponding flow-scoped conceptual/logical ERDs. ST-13/14/16/17/18/19 now follow ST-01's visual format; ST-15 is omitted. This is a documentation target, not an applied database schema or runtime delivery. Dated database inventories below remain historical.
 
 [Verification and artifact notes](review2-role-level-20261106.md) · [Machine-readable checks and hashes](review2-role-level-20261106-checks.json).
-
-## Target design r3 — 2026-11-05
-
-These are the **current target** images for the organization-rule flow, not pg_catalog captures or applied migration. Historical images/evidence below are preserved.
-
-| Target | SVG | PNG | Editable sources |
-| --- | --- | --- | --- |
-| Ontology | [SVG](target-r3-ontology.svg) | [PNG](target-r3-ontology.png) | [PlantUML](target-r3-ontology.puml), [JSON](target-r3-ontology.diagram.json) |
-| Assessment/profile | [SVG](target-r3-assessment.svg) | [PNG](target-r3-assessment.png) | [PlantUML](target-r3-assessment.puml), [JSON](target-r3-assessment.diagram.json) |
-| Pathway/certificate | [SVG](target-r3-pathway.svg) | [PNG](target-r3-pathway.png) | [PlantUML](target-r3-pathway.puml), [JSON](target-r3-pathway.diagram.json) |
-| Business flow | [SVG](target-r3-flow.svg) | [PNG](target-r3-flow.png) | [PlantUML](target-r3-flow.puml), [JSON](target-r3-flow.diagram.json) |
-
-[Canonical schema/API/flow](../technical/Organization%20Rule%20Assessment%20and%20Pathway.md) supplies detailed fields/constraints. Principal keys/field groups are shown; orange = changed owner, green = new scoped data, grey = retained structure.
-
-Local Windows System.Drawing generated SVG/PNG and matching PlantUML text from shared layout JSON. No install/external renderer/DB/service startup/executable tests. PNGs were visually inspected; SVG XML/source labels are checked. PlantUML is supplied as semantic source, not falsely claimed rendered by an unavailable PlantUML tool. Older pg_catalog JSON and FK inventories remain dated captures.
-
 
 ## ACT-04 / ACT-10 authoring coverage — 2026-11-06
 

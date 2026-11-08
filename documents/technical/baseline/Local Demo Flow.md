@@ -1,7 +1,5 @@
 # Relocated operational reference
 
-**Current flow revision: 2026-11-05-r3.** [Target schema/API/flow](../Organization%20Rule%20Assessment%20and%20Pathway.md) supersedes this document's older active assessment/mastery/gap/optimizer assumptions. Material below is retained previous design/source/operation history, not proof of r3 being applied. Keep non-conflicting security/content/retry safeguards. Baseline covers selected Role–Level, records only assessed diagnostics and does not pre-add prerequisites; two separate policy configs share an engine; skill assessment discovers supplementation; cross-target old bypass work is parallel/non-gating. Old affected dev records may be rebuilt; new-flow history and unrelated/shared evidence/backups remain. Do not automatically run retained setup/reset/test commands below.
-
 This historical link target is retained for evidence traceability. It is not a business requirement or an implementation-completion certificate.
 
 Current operational replacement records are TMP-REQ002-12/13 in the workspace [temporary registry](../../../../../.project/temporary/REQ-002-003-009.md). The current [walkthrough](../../../../../s2%20work/Test%20Guides/REQ-002-F02-full-walkthrough-test-guide.md) is an explanatory development guide. The [business contract](Role%20Selection%20and%20Job Position%20Baseline.md) contains the official rules.

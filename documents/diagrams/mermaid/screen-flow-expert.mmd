@@ -1,7 +1,7 @@
 ---
 title: "Expert Screen Flow"
 config:
-  layout: elk
+  layout: dagre
   theme: base
   look: classic
   fontFamily: "Arial, sans-serif"
@@ -9,6 +9,7 @@ config:
   flowchart: {htmlLabels: true, curve: linear, nodeSpacing: 30, rankSpacing: 65, padding: 16}
   elk: {mergeEdges: false}
 ---
+
 flowchart LR
   E_Login["Login"]
   E_Roles["Assigned Roles"]
@@ -73,3 +74,12 @@ flowchart LR
   %% Feature visibility, trusted role, assignment and entitlement guards still apply.
   %% Additional metadata/import/error dialogs are intentionally omitted from this main-navigation view.
   classDef default fill:#ffffff,stroke:#000000,color:#000000,stroke-width:1px
+
+  E_SkillPolicies["Skill Assessment Configuration"]
+  E_SkillPolicy("Skill and Knowledge Scope Draft / Publish")
+  E_Certificates("Certificate Definitions and Assigned Evidence Review")
+  E_Roles --> E_SkillPolicies
+  E_SkillPolicies -->|"Choose scope"| E_SkillPolicy
+  E_SkillPolicy -->|"Back"| E_SkillPolicies
+  E_Modules -->|"Certificate tab"| E_Certificates
+  E_Certificates -->|"Close"| E_Modules

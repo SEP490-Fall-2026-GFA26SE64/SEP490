@@ -1,99 +1,37 @@
 @startuml
 !pragma layout smetana
-left to right direction
+top to bottom direction
 hide empty members
-hide circle
-skinparam shadowing false
-skinparam roundcorner 10
 skinparam classAttributeIconSize 0
-skinparam backgroundColor #F8FAFC
-skinparam classBackgroundColor #FFFFFF
-skinparam classBorderColor #64748B
-skinparam ArrowColor #475569
-skinparam noteBackgroundColor #FFF7ED
-skinparam noteBorderColor #D97706
-skinparam defaultFontName Arial
-skinparam defaultFontSize 14
-title Ontology v0.12 — one Skill per Module
-class JobPosition {
- code : String
- name : String
- jobZone : Integer
- interestRealistic : Float [0,1]
- interestInvestigative : Float [0,1]
- interestArtistic : Float [0,1]
- interestSocial : Float [0,1]
- interestEnterprising : Float [0,1]
- interestConventional : Float [0,1]
-}
-class TargetRole {
- code : String
- name : String
- scope : String
-}
+skinparam shadowing false
+title Neo4j catalog - current source mapping, not a live capture
+class JobPosition
+class TargetRole
 class Level {
- code : String
- name : String
- rank : Integer
- attainmentRule = ALL_MANDATORY_SKILLS
+  actual member ID / duration
 }
-class Competency {
- name : String
- description : String
- attainmentRule = ALL_MEMBER_SKILLS_AT_OWNING_LEVEL
-}
+class Competency
 class MicroSkill {
- name : String
- definition : String
+  organizationId / version
+  provisionMode
+  per-knowledge outcome code lists
 }
 class LearningModule {
- title : String
- moduleType : String
- contentUri : String
- contentType : String
- contentVersion : String
- duration : Integer (minutes > 0)
- price : Float (VND > 0)
+  knowledgeLevel / skillVersion
+  outcomeCodes / contentVersion
 }
-JobPosition "1" --> "1..*" TargetRole : HAS_ROLE
-TargetRole "1" --> "1..*" Level : HAS_LEVEL
-Level "1" -up-> "1..*" Competency : HAS_COMPETENCY
-Competency "0..*" --> "1..*" MicroSkill : HAS_SKILL
-Level "0..*" --> "1..*" MicroSkill : REQUIRES_SKILL
-LearningModule "0..*" -up-> "1" MicroSkill : TEACHES
-note on link
-Each Module teaches exactly one Skill.
-No teachingFocus or difficultyLevel properties.
-A Skill may have multiple alternative Modules.
-end note
-MicroSkill --> MicroSkill : HAS_SKILL_PREREQUISITE
-note bottom of MicroSkill
-REQUIRES_SKILL: requiredScore [0,1], isMandatory.
-HAS_SKILL_PREREQUISITE: requiredScore [0,1].
-end note
-note top of Competency
-Owned by one Level.
-All member skills PASS under that Level's requirements
-=> Competency ACHIEVED.
-No independent score or assessment.
-end note
-note bottom of Level
-Each Level has its own skill requirements and competencies.
-Skill sets may differ across Levels of the same role.
-A Competency member must be required by its owning Level.
-end note
-note bottom of LearningModule
-Complete every lesson in any one Module
-=> learning prerequisite met for that Skill assessment.
-Other Modules remain optional and independently learnable.
-PostgreSQL owns completion/version/Skill evidence.
-Module edits do not move historical evidence to another Skill.
-Completion is not an assessment result or mastery.
-end note
-note top of JobPosition
-Each TargetRole has one owning JobPosition.
-Repeated reported titles use distinct role IDs per JobPosition.
-Shared metadata: id, version, status, reviewStatus,
-reviewedBy?, reviewedAt?
-end note
+class Certificate {
+  organizationId / knowledgeLevel
+  skillVersion / outcomeCodes
+  version / HTTPS referenceUrl
+}
+JobPosition --> TargetRole : HAS_ROLE
+TargetRole --> Level : HAS_LEVEL
+Level --> Competency : HAS_COMPETENCY
+Competency --> MicroSkill : HAS_SKILL
+Level --> MicroSkill : REQUIRES_SKILL\nrequiredKnowledgeLevels
+LearningModule "many" --> "one" MicroSkill : TEACHES
+MicroSkill --> MicroSkill : HAS_SKILL_PREREQUISITE\nexact knowledge pair
+MicroSkill --> Certificate : REQUIRES_CERTIFICATE\none active configured pair
+note bottom of MicroSkill : Catalog only. PostgreSQL owns learner state and evidence.
 @enduml

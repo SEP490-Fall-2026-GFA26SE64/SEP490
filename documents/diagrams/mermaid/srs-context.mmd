@@ -1,7 +1,8 @@
 ---
 title: "SRS-CONTEXT - System Context Diagram"
-config: {"layout":"elk","theme":"base","look":"classic","htmlLabels":true,"fontFamily":"Arial, sans-serif","themeVariables":{"background":"#ffffff","primaryColor":"#ffffff","primaryTextColor":"#000000","primaryBorderColor":"#000000","lineColor":"#000000","edgeLabelBackground":"#ffffff","fontSize":"16px"},"flowchart":{"curve":"linear","nodeSpacing":110,"rankSpacing":140,"padding":28,"wrappingWidth":300},"elk":{"mergeEdges":false,"cycleBreakingStrategy":"MODEL_ORDER","considerModelOrder":"NODES_AND_EDGES","forceNodeModelOrder":true,"nodePlacementStrategy":"NETWORK_SIMPLEX","keepEntryNodeOnTop":false}}
+config: {"layout":"dagre","theme":"base","look":"classic","htmlLabels":true,"fontFamily":"Arial, sans-serif","themeVariables":{"background":"#ffffff","primaryColor":"#ffffff","primaryTextColor":"#000000","primaryBorderColor":"#000000","lineColor":"#000000","edgeLabelBackground":"#ffffff","fontSize":"16px"},"flowchart":{"curve":"linear","nodeSpacing":110,"rankSpacing":140,"padding":28,"wrappingWidth":300},"elk":{"mergeEdges":false,"cycleBreakingStrategy":"MODEL_ORDER","considerModelOrder":"NODES_AND_EDGES","forceNodeModelOrder":true,"nodePlacementStrategy":"NETWORK_SIMPLEX","keepEntryNodeOnTop":false}}
 ---
+
 flowchart LR
   Guest["<div style='width:220px;height:56px;display:flex;align-items:center;justify-content:center'>Guest</div>"]
   SystemAdmin["<div style='width:220px;height:56px;display:flex;align-items:center;justify-content:center'>System Administrator</div>"]
@@ -50,7 +51,7 @@ flowchart LR
   Manager -->|"Expert job position assignments"| System
   Manager -->|"Target role details"| System
   Manager -->|"Target role publication decision"| System
-  Manager -->|"Baseline assessment configuration"| System
+  Manager -->|"Role-Level Baseline policy"| System
   Manager -->|"Learning offering approval decision"| System
   Manager -->|"Training cost records"| System
   Manager -->|"Monetary benefit records"| System
@@ -69,7 +70,7 @@ flowchart LR
   Expert -->|"Completed role configuration"| System
   Expert -->|"Learning module details"| System
   Expert -->|"Learning content"| System
-  Expert -->|"Module assessment configuration"| System
+  Expert -->|"Skill-knowledge assessment policy"| System
   Expert -->|"Learning offering submission"| System
   Expert -->|"Initial pathway review decisions"| System
   System -->|"Assigned target roles"| Expert
@@ -83,7 +84,7 @@ flowchart LR
   Employee -->|"Selected target role"| System
   Employee -->|"Independent skill selection"| System
   Employee -->|"Learning activity records"| System
-  System -->|"Assessment results"| Employee
+  System -->|"Group diagnostics and official evidence"| Employee
   System -->|"Competency profile"| Employee
   System -->|"Competency gaps"| Employee
   System -->|"RIASEC interest profile"| Employee

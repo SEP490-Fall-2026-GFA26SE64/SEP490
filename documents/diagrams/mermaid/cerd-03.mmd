@@ -1,5 +1,5 @@
 ---
-title: "CERD-03 - Role Requirements and Learning Provision"
+title: "CERD-03 - Catalog requirements and exclusive provision"
 config:
   layout: dagre
   look: classic
@@ -9,19 +9,11 @@ config:
   themeVariables: {background: "#ffffff", primaryColor: "#ffffff", primaryTextColor: "#0f172a", primaryBorderColor: "#334155", lineColor: "#334155", textColor: "#0f172a", edgeLabelBackground: "#ffffff", fontSize: "18px"}
   er: {nodeSpacing: 36, rankSpacing: 65, minEntityWidth: 140, diagramPadding: 24}
 ---
+
 erDiagram
   direction TB
-  TargetRole["TargetRole"]
-  RoleLevel["RoleLevel"]
-  RoleSkillRequirement["RoleSkillRequirement"]
-  Skill["Skill"]
-  LearningModule["LearningModule"]
-  Certificate["Certificate"]
-  SkillPrerequisite["SkillPrerequisite"]
-  TargetRole ||--o{ RoleLevel : "has member levels"
-  RoleLevel ||--o{ RoleSkillRequirement : "requires"
-  Skill ||--o{ RoleSkillRequirement : "required capability"
-  Skill ||--o{ LearningModule : "taught by"
-  Skill ||--o{ Certificate : "certificate provision"
-  Skill ||--o{ SkillPrerequisite : "dependent skill"
-  Skill ||--o{ SkillPrerequisite : "prerequisite skill"
+  TargetRole ||--o{ MemberLevel : "owns actual levels"
+  MemberLevel }o--o{ MicroSkill : "explicit requiredKnowledgeLevels"
+  MicroSkill ||--o{ LearningModule : "exact compatible alternatives"
+  MicroSkill ||--o{ Certificate : "REQUIRES_CERTIFICATE per configured pair"
+  MicroSkill }o--o{ MicroSkill : "knowledge prerequisite pair"

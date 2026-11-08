@@ -1,157 +1,99 @@
 @startuml
 !pragma layout smetana
 top to bottom direction
+hide empty members
+skinparam classAttributeIconSize 0
 skinparam shadowing false
-title PostgreSQL - Recommendation, analytics and evaluation
-class recommendation_version {
-    recommendation_version_id : uuid [PK]
-    algorithm : text
-    version : text
-    contract_version : text
-    configuration : jsonb
-    artifact_hash : platform.content_hash
-    approved_by? : uuid [FK]
-    approved_at? : timestamp with time zone
+title Requirement pathway and certificate - selected source-defined columns
+entity "pathway_requirement_snapshot" as pathway_requirement_snapshot {
+  uuid id <<PK>>
+  uuid organization_id
+  uuid learner_id
+  uuid selection_id
+  bigint selection_revision
+  content_hash content_hash
 }
-class recommendation_run {
-    recommendation_run_id : uuid [PK]
-    learner_id : uuid [FK]
-    selection_id : uuid [FK]
-    profile_revision_id : uuid [FK]
-    progress_revision_id : uuid [FK]
-    catalog_release_id : uuid [FK]
-    availability_revision : bigint
-    policy_version_id : uuid [FK]
-    model_version_id : uuid [FK]
-    recommendation_version_id : uuid [FK]
-    seed : bigint
-    input_hash : platform.content_hash
-    frozen_input : jsonb
-    status : text
-    unresolved_skills : jsonb
-    failure_code? : text
-    created_at : timestamp with time zone
+entity "initial_pathway_request" as initial_pathway_request {
+  uuid request_id <<PK>>
+  uuid organization_id
+  uuid learner_id
+  uuid selection_id
+  uuid requirement_snapshot_id "NULLABLE"
+  text flow_version "NULLABLE"
+  text generation_status
 }
-class recommendation_candidate {
-    recommendation_run_id : uuid [PK, FK]
-    rank : integer [PK]
-    module_ref_id : uuid [FK]
-    module_kind : text [FK]
-    explanation : jsonb
+entity "initial_pathway_revision" as initial_pathway_revision {
+  uuid request_id <<PK>>
+  bigint revision <<PK>>
+  content_hash content_hash
+  text change_origin "NULLABLE"
+  bigint approval_basis_revision "NULLABLE"
 }
-class pathway_revision {
-    pathway_revision_id : uuid [PK]
-    pathway_id : uuid
-    recommendation_run_id : uuid [FK]
-    learner_id : uuid [FK]
-    selection_id : uuid [FK]
-    revision : integer
-    content_hash : platform.content_hash
-    status : text
-    validation_status : text
-    published_at? : timestamp with time zone
-    created_at : timestamp with time zone
+entity "pathway_requirement_step" as pathway_requirement_step {
+  uuid request_id <<PK>>
+  bigint revision <<PK>>
+  uuid step_id <<PK>>
+  text skill_id
+  text knowledge_level
+  text kind
+  text state
+  uuid source_bypass_id "NULLABLE"
+  uuid fulfilled_evidence_id "NULLABLE"
 }
-class pathway_step {
-    step_id : uuid [PK]
-    pathway_revision_id : uuid [FK]
-    learner_id : uuid [FK]
-    activity_id : uuid [FK]
-    ordinal : integer
-    required : boolean
-    rationale : jsonb
+entity "pathway_requirement_option" as pathway_requirement_option {
+  uuid request_id <<PK>>
+  bigint revision <<PK>>
+  uuid step_id <<PK>>
+  text module_id <<PK>>
+  text content_version <<PK>>
+  integer module_revision
 }
-class pathway_approval {
-    approval_id : uuid [PK]
-    pathway_revision_id : uuid [FK]
-    administrator_id : uuid [FK]
-    approved_hash : platform.content_hash [FK]
-    approved_at : timestamp with time zone
+entity "pathway_requirement_dependency" as pathway_requirement_dependency {
+  uuid request_id <<PK>>
+  bigint revision <<PK>>
+  uuid prerequisite_step_id <<PK>>
+  uuid dependent_step_id <<PK>>
+  jsonb assessed_source
 }
-class publication_request {
-    publication_request_id : uuid [PK]
-    actor_id : uuid [FK]
-    pathway_revision_id : uuid [FK]
-    idempotency_key : text
-    request_hash : platform.content_hash
-    status : text
-    outcome_code? : text
-    created_at : timestamp with time zone
+entity "pathway_requirement_bypass" as pathway_requirement_bypass {
+  uuid id <<PK>>
+  uuid request_id
+  bigint revision
+  uuid step_id
+  uuid expert_id
+  text reason
 }
-class cohort_snapshot {
-    cohort_snapshot_id : uuid [PK]
-    created_by : uuid [FK]
-    role_ref_id : uuid [FK]
-    role_kind : text [FK]
-    period_start : timestamp with time zone
-    period_end : timestamp with time zone
-    definition : jsonb
-    definition_hash : platform.content_hash
-    created_at : timestamp with time zone
+entity "certificate_submission" as certificate_submission {
+  uuid id <<PK>>
+  uuid organization_id
+  uuid learner_id
+  text definition_id
+  text definition_version
+  bigint revision
+  text status
+  jsonb definition_snapshot
 }
-class cohort_member {
-    cohort_snapshot_id : uuid [PK, FK]
-    learner_id : uuid [PK, FK]
-    before_profile_revision_id? : uuid [FK]
-    after_profile_revision_id? : uuid [FK]
-    exclusion_reason? : text
+entity "certificate_submission_attachment" as certificate_submission_attachment {
+  uuid submission_id <<PK>>
+  text evidence_kind
+  text private_object_key "NULLABLE"
+  text https_url "NULLABLE"
 }
-class analytics_snapshot {
-    analytics_snapshot_id : uuid [PK]
-    cohort_snapshot_id : uuid [FK]
-    metric_version : text
-    privacy_policy_version : text
-    results : jsonb
-    result_hash : platform.content_hash
-    created_at : timestamp with time zone
+entity "certificate_submission_decision" as certificate_submission_decision {
+  uuid id <<PK>>
+  uuid submission_id
+  bigint submission_revision
+  uuid expert_id
+  text decision
+  text reason
 }
-class roi_scenario {
-    scenario_id : uuid [PK]
-    owner_id : uuid [FK]
-    cohort_snapshot_id : uuid [FK]
-    period_start : date
-    period_end : date
-    currency : text
-    cost : numeric
-    benefit? : numeric
-    assumptions : jsonb
-    sources : jsonb
-    calculation_version : text
-    revision : bigint
-}
-class evaluation_run {
-    evaluation_run_id : uuid [PK]
-    created_by : uuid [FK]
-    idempotency_key : text
-    request_hash : platform.content_hash
-    dataset_version : text
-    model_version_id : uuid [FK]
-    recommendation_version_id : uuid [FK]
-    catalog_release_id : uuid [FK]
-    baseline_version : text
-    seed : bigint
-    environment : jsonb
-    frozen_manifest : jsonb
-    status : text
-    created_at : timestamp with time zone
-}
-class evaluation_artifact {
-    artifact_id : uuid [PK]
-    evaluation_run_id : uuid [FK]
-    artifact_kind : text
-    relative_path : text
-    content_hash : platform.content_hash
-    byte_size : bigint
-}
-cohort_snapshot --> analytics_snapshot
-cohort_snapshot --> cohort_member
-cohort_snapshot --> roi_scenario
-evaluation_run --> evaluation_artifact
-pathway_revision --> pathway_approval
-pathway_revision --> pathway_step
-pathway_revision --> publication_request
-recommendation_run --> pathway_revision
-recommendation_run --> recommendation_candidate
-recommendation_version --> evaluation_run
-recommendation_version --> recommendation_run
+pathway_requirement_snapshot --> initial_pathway_request : owned input FK
+initial_pathway_request --> initial_pathway_revision : retained revisions
+initial_pathway_revision --> pathway_requirement_step : same owned revision FK
+pathway_requirement_step --> pathway_requirement_option : same request revision step
+pathway_requirement_step --> pathway_requirement_dependency : prerequisite and dependent FKs
+pathway_requirement_step --> pathway_requirement_bypass : authorized source decision
+certificate_submission --> certificate_submission_attachment : one evidence form FK
+certificate_submission --> certificate_submission_decision : same submission revision owner FK
+note bottom of certificate_submission : Request and step context is frozen JSON, not an invented SQL FK.
 @enduml

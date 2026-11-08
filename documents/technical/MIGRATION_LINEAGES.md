@@ -1,6 +1,6 @@
 # PostgreSQL migration lineages after Question Bank / Learning Module integration
 
-Updated 2026-11-01. Source reconciliation and read-only installed-history validation are complete. The later accounts deployment/recovery receipt is tracked separately.
+Updated source boundary 2026-11-07: supported directories reach V62; installed-history validations below are dated historical results and were not repeated in this task. The later accounts deployment/recovery receipt is tracked separately.
 
 Flyway versions identify changes within one history. These three histories must never be combined in one `locations` list or selected interchangeably for an existing database.
 
@@ -13,6 +13,12 @@ Flyway versions identify changes within one history. These three histories must 
 The accounts artifact previously packaged this third history under `db/workspace-migration`. The new directory gives it an unambiguous identity. All 42 SQL resources match that existing artifact byte-for-byte; no applied checksum is rewritten. The application schemas, entity fields, Neo4j schema and store responsibilities are unchanged by this reconciliation.
 
 The `workspace-baseline` profile accepts an explicit `WORKSPACE_MIGRATION_LOCATION` and defaults to the workspace history. Local-only registration key defaults and existing Compose key overrides are retained. Non-local registration key configuration remains unchanged. Existing learning-content dependencies/resources and asset/mail settings from Learning Module are retained; this does not establish that every deployment has a configured asset service.
+
+## Current source extensions V44–V62
+
+All three supported locations contain forward extensions through V62; do not combine their different preserved prefixes. V44–V49 cover the earlier policy/catalog/terminology transition; V50–V51 learning completion/single-Skill compatibility; V52–V56 rule policies/papers, knowledge evidence/certificates, requirement revisions/question publication/hash domain; V57–V62 scoped drafts/activation, baseline editor progress, owned bank sources, abandoned history, multi-option/no-price documents and scope-local version numbering. V62 preserves policy IDs/configuration/hash/attempt references while recording one-time old/new labels.
+
+Source files are not proof of applied state. Docker Linux engine was unavailable during C1, so no live Flyway metadata/checksum inspection occurred. No migration/seed or service start was performed. See [current field mapping](Organization%20Rule%20Assessment%20and%20Pathway.md#4-postgresql-schema-mapping).
 
 ## Before a future deployment
 

@@ -1,46 +1,51 @@
-# Complete Baseline Assessment
+# Complete Baseline and Skill Assessment
 
-**Current flow revision: 2026-11-05-r3.** [Target schema/API/flow](../Organization%20Rule%20Assessment%20and%20Pathway.md) supersedes this document's older active assessment/mastery/gap/optimizer assumptions. Material below is retained previous design/source/operation history, not proof of r3 being applied. Keep non-conflicting security/content/retry safeguards. Baseline covers selected Role–Level, records only assessed diagnostics and does not pre-add prerequisites; two separate policy configs share an engine; skill assessment discovers supplementation; cross-target old bypass work is parallel/non-gating. Old affected dev records may be rebuilt; new-flow history and unrelated/shared evidence/backups remain. Do not automatically run retained setup/reset/test commands below.
+REQ-002-F01 and direct Skill execution; Employee/System.
 
-**Function:** REQ-002-F01. **Actor:** Employee.
-
-**2026-11-01 C1/C2 status:** workspace source now adds the own active [Assessment Policy](Configure%20Baseline%20Assessment.md#organization-assessment-policy--planned) pin for new roots and uses original pins on continuation/replacement; result/evidence/V2 event/profile readers compile. Legacy technical JSON/V1 remains supported. SQL is not applied and runtime/numerical/executable preservation is Not run; full-Job Position/allowance/evidence/history rules remain the contract.
+Source checkpoint: HEAD `61d334c`, 2026-11-07. Confirmed contract and source implementation are distinguished below; current composition is local/workspace-baseline and excludes prod/demo. [Complete field/key/API and conflict mapping](../Organization%20Rule%20Assessment%20and%20Pathway.md) owns the shared technical detail. Applied DB state and full runtime behavior were not verified in this documentation task.
 
 ## Goal and position
 
-Estimate initial mastery for MicroSkills covered by the applicable Job Position Blueprint. The same baseline must distinguish limited evidence from reliable evidence for Intern, Junior and Senior Employees; a strong result is not capped merely because it came from a baseline.
+Resolve selected explicit MODULE_ONLY target groups minus exact compatible official evidence for BASELINE; keep certificate-only/unconfigured needs separate. SKILL_ASSESSMENT requires current accepted exact completed option (step/module revision/content, Skill version/knowledge/outcomes) and MAIN plus ALL configured transitive prerequisite groups. Official prerequisite evidence does not exempt those groups.
 
-**One baseline per Job Position:** every new attempt assesses the deduplicated union of all active-role skills/items using one Job Position question maximum and total duration. Selected Role A or Role B changes entry/provenance, never the pool, bounds, allowance or a separate assessment section. “Full baseline” means the entire Job Position skill scope with the pinned minimum-evidence coverage; it does not mean answering every item in the bank or an identical fixed sequence for all Employees. Adaptive early stopping remains valid only after all required skill evidence conditions are satisfied.
+RuleAssessmentAttemptService validates active scoped policy/catalog and all bank coverage, samples once, freezes groups/items/rules/options and sets server start/deadline only after a complete paper exists. Resume retains the paper/deadline/accepted answers; only presented options at expected revision before deadline are accepted. Explicit submit and server expiry both FINALIZE once, with SUBMITTED/DEADLINE reason; unanswered=0. Each group has its own count/pass/mandatory/veto/reasons. Retake is a new full paper with configured max/wait and latest previousAttemptId, no carry-over. Current Skill attempt context includes exact module/revision despite shared policy.
 
-```text
-trusted Employee selects Role
- -> resolve Job Position and authoritative profile coverage
- -> resume pinned attempt, or require baseline if incomplete
- -> pin full Job Position scope, versions, content and deadline
- -> accept responses and select next items idempotently
- -> finalize result/evidence and initialize mastery profile
- -> read result/history/My Mastery
-```
+## Result semantics
 
-Role selection is not blocked by baseline. Existing initialized profiles retain their original skill set/version; complete coverage counts low/zero valid mastery and does not certify target proficiency. No independent Job Position-exploration entry exists. Missing configuration is distinct from dependency failure. A completed result without an authoritative profile is pending/review-needed, never automatic repeat or fabricated coverage.
+RuleKnowledgeProfileService and RuleAssessmentOutcomeService read PostgreSQL diagnostics/group results separately from official skill_knowledge_evidence and NEED_REVIEW. Baseline only creates diagnostics for actually assessed groups; a pass skips initial corresponding learning, never ACHIEVED or module completion. It does not create B solely from A prerequisite topology. No numeric gap subtraction, title exemption or lower-knowledge inheritance.
 
-The allowance is one successful mastery-producing baseline per Employee + Job Position, regardless of entry path. A completed result cannot be retaken because a role, Blueprint or catalog later changes. A replacement is allowed only when the earlier attempt was invalidated and emitted no mastery; deleting an account follows the separate retention/deletion policy and is not a reset command.
+Official evidence requires exact org/learner/Skill/knowledge/Skill version/outcome coverage with accepted MODULE_ASSESSMENT or CERTIFICATE source. Bypass is a waiver, not achievement. Failed already-achieved prerequisite yields NEED_REVIEW without revocation; later genuine compatible evidence may resolve it. Result finalization differs from pending downstream processing; WAITING_REQUIRED_SUPPLEMENT is not a new scoring failure.
 
-The Employee cannot choose parameters, submit correctness/mastery, see protected answers or change the server deadline. Gap calculation, pathway generation/review and `a/b/c` calibration belong to dependent Functions.
+## Transaction and recovery
 
-### Trusted context and client input
+Learner transaction, attempt row lock/revision and immutable command receipts serialize supported operations. Finalization stores all group results and durable outcome work; worker re-reads persisted owner, not event-supplied tenant. NEED_REVIEW/official evidence/recalculation remain downstream and retryable. Authentication/tenant/owner/assignment denial, stale identities/revisions/hashes, changed-body idempotency conflict, missing policy/bank/provider and dependency/integrity outages remain distinct. Reconcile an uncertain outcome with the same key/body and authorized current/receipt reads; do not invent success or reset history. No executable checks or learner actions ran in this task.
 
-| Client may send | Server owns/derives |
-| --- | --- |
-| Idempotency key and expected revision | Organization, learner and attempt purpose |
-| Own attempt ID returned by the server | Current Blueprint and every pinned version |
-| Presented position/item identifier | Eligibility, option order and next-item selection |
-| Selected option/response payload | Correctness, raw counts, theta, SE, point/conservative mastery and confidence label |
-| Manual-submit confirmation | Start/deadline, remaining time and timeout outcome |
+## Retained section aliases
 
-Server derives Job Position from the trusted selected Role; client cannot substitute scope or supply pool/budget/pins. Draft/inactive/removed Roles and ineligible questions are excluded from new snapshots. Role/selection revision is provenance, never a separate pool or allowance. Role-specific proficiency thresholds belong to later gap processing.
+These aliases preserve older links; the current sections above replace the numeric/IRT/optimizer contract at those entry points. No retired Function is reopened.
 
-New entry uses the explicit Role+member Level under the session's organization. Resolve new-start resources by that organization+exact graph Job Position ID; identical catalog IDs in another organization do not authorize reuse of its bank, attempt, result or profile. Every follow-up read/command rechecks trusted learner/tenant ownership. Deadline workers use the stored tenant/attempt context. Resume and linked replacement preserve original pins; changing Role/Level or a current resource binding never resets/rescores/repins existing evidence or reopens the completed allowance. [Organization integration contract](../Workspace%20Adaptive%20Integration.md#organization-scoped-source-and-operation-contract).
+<a id="trusted-context-and-client-input"></a>
+<a id="ordered-operations"></a>
+<a id="start-or-resume"></a>
+<a id="answer-and-select-next"></a>
+<a id="submit-or-auto-submit"></a>
+<a id="resume-versioning-and-history"></a>
+<a id="failure-and-concurrency-branches"></a>
+<a id="dependencies-and-implementation-alignment"></a>
+<a id="acceptance-to-test-mapping"></a>
+<a id="decision-status"></a>
+
+Historical references retained: REQ-002-F01, REQ-009, REQ-001, REQ-002-F02, REQ-041, REQ-002. They do not expand this task or approve new implementation.
+
+## Historical evidence references
+
+The following retained records describe their original dates/contracts only; they were not rerun or recertified here.
+
+[Current alignment/evidence](../../testing/system/REQ-001-002-final-synchronization-review.md)
+
+## Retained numerical research reference
+
+The following original numerical description is preserved as historical research/design, not active rule-scoring behavior or a new result. No calibration/IRT operation was executed.
 
 ### IRT 3PL behavior
 
@@ -57,109 +62,3 @@ P(correct | theta) = c + (1 - c) / (1 + exp(-a * (theta - b)))
 - Difficulty labels are for authoring/cold-start explanation. The algorithm does not follow a fixed Easy → Medium → Hard ladder.
 
 Estimation/prior/minimum-evidence/technical validity stay system-managed/versioned. Planned organization policy supplies stop SE, confidence cutoffs and k; Employee cannot supply them. Numerical validation is a separate acceptance dependency; UI success or difficulty labels never establish calibration validity.
-
-### Ordered operations
-
-#### Start or resume
-
-1. Authorize the Employee and derive Job Position from the committed selected Role and check authoritative profile coverage.
-2. Check the Employee + Job Position allowance. A prior completed baseline that emitted mastery closes it; an invalidated/no-mastery attempt does not.
-3. Lock/check the unique active-attempt key for Employee + Job Position.
-4. Return an existing `IN_PROGRESS` attempt for retries/resume.
-5. Otherwise validate current availability, explicit full-Job Position format, active-role/catalog fingerprint, full union skill/item capacity, exact parameter coverage and feasibility under the pinned model. Never omit a skill to fit a small maximum. Current membership drift blocks new starts until L&D activates a refreshed version. A legacy-format current requires the confirmed explicit configuration transition; it is never silently interpreted as the new scope.
-6. Under the implemented shared activation-scope lock, recheck current/version/readiness and create the attempt. Use selected-Role provenance for new entry; preserve original provenance for historical readers; pin full-Job Position scope policy, common bounds, complete deduplicated pool, skill snapshots and all versions. Set server `startedAt/deadlineAt`; initialize every union skill and persist the first item/receipt atomically. Exact lock/schema design is approved in the linked transition document.
-
-#### Answer and select next
-
-1. Lock/check ownership, attempt state/revision and server deadline.
-2. Verify the submitted position is the pinned presented item.
-3. Save one response and server-computed correctness idempotently.
-4. Update the affected skill theta/SE/information.
-5. Stop when required, or select/persist exactly one next unseen item and option order.
-6. Store the command outcome and commit before responding.
-
-#### Submit or auto-submit
-
-1. Lock the same attempt; finalization is idempotent.
-2. Use all responses whose transactions were accepted strictly before the authoritative server deadline. There is no grace period; a request observed at or after the deadline cannot mutate the attempt.
-3. Derive raw score `correct / answered` for explanation only.
-4. If minimum evidence is absent because of manual submission, timeout or technical failure, mark the attempt `INVALIDATED`, store no skill mastery result/evidence and permit one linked replacement attempt.
-5. Otherwise store immutable overall completion and per-skill theta, SE, point mastery, conservative mastery and confidence label, then emit mastery evidence once and reject further response mutation. Reaching the question bound with high `SE` still finalizes using conservative mastery; it does not fabricate confidence and does not unlock a retake.
-
-The client timer is display-only. PostgreSQL owns deadlines; a worker may claim expired attempts in bounded batches. Redis is not the source of truth.
-
-### Result semantics
-
-- Canonical psychometric output is per MicroSkill `theta + SE`. The pinned mapping version defines point `estimatedMastery = logistic(theta)` and downstream conservative `mastery = logistic(theta - k × SE)` with positive `k`.
-- There is no `INSUFFICIENT_EVIDENCE` result status. Below the minimum-evidence gate, the attempt is invalidated, no mastery is written and a linked replacement is allowed. Once minimum evidence exists, high `SE` produces a lower conservative mastery and a low-confidence label rather than a fixed `0.2/0.8` cap.
-- There is no baseline mastery cap. Strong answers to discriminating items can yield high mastery.
-- Guessing and uncertainty prevent a lucky raw score from being treated as equally reliable evidence.
-- Baseline initializes mastery. The same responses are not applied again as independent BKT evidence.
-- REQ-009 shows raw score, conservative per-skill mastery and a plain-language confidence label. It hides theta, SE, protected answers and rationales from the Employee.
-
-### Resume, versioning and history
-
-Planned org-policy admission: a genuinely new workspace root start resolves own effective policy under shared policy-scope coordination and persists its ID/hash/four numerical values alongside exact existing technical/catalog/pool pins. Missing active policy returns503 ASSESSMENT_POLICY_UNAVAILABLE, separately from unavailable resources/no Active Blueprint, without consuming allowance. Concurrent activation/start has one serialized ordering; no mixed pin/values. Exact authorized replay/resume resolves the original attempt before today's policy lookup. [Planned storage/locking](Adaptive%20Baseline%20Data%20Architecture.md#planned-organization-policy-storage-and-admission).
-
-Answer/manual/precision/deadline finalization and recovery use persisted inputs only. Existing minimum coverage/maxima/deadline priority remains. Estimated mastery=sigmoid(theta); conservative mastery uses pinned k; confidence uses pinned SE cutoffs independently. Existing safe Employee DTOs remain; no client policy/answer-key fields. Legacy attempts keep exact old technical JSON including non-default values. Original-chain invalidated replacements retain their original applicable snapshot/policy mode; new workspace root starts cannot silently fall back to legacy mode. Matching result/evidence policy provenance and versioned outbox commit atomically; corrupt pins fail without partial mastery/profile. Activation never rewrites completed results, old hashes, gaps or pathways.
-
-- Reload/reconnect returns the same responses, item/option order, provisional state and deadline.
-- Presented items never change after question/Blueprint/parameter updates.
-- New selection remains inside the attempt's pinned eligible versions; calibration never changes an active/past attempt.
-- Replacing or disabling the current Blueprint affects only new starts. An `IN_PROGRESS` attempt continues/resumes with its pinned snapshot.
-- Final results are immutable and retain original target/Job Position/Blueprint/model provenance.
-- REQ-001 blocks target-role change while an assessment is `IN_PROGRESS`.
-- Legacy role-scoped/exploration attempts continue with their original pool, bounds, purpose, deadline and numerical pins, even after configuration replacement or cutover. A previously completed Role A result still consumes the same Employee+Job Position allowance; never relabel it full-Job Position, rescore it, add fabricated skill evidence or reset it to satisfy the new definition.
-- New-format attempts/results retain an explicit server-owned scope discriminator and full union; REQ-009 reads the recorded scope rather than deriving it from the Employee's current Role or today's Blueprint. A linked replacement reauthorizes ownership and retains the invalidated chain's original version, pool and snapshot; it does not adopt a newer Active version or mutate its predecessor.
-
-### Failure and concurrency branches
-
-| Condition | Result and state guarantee |
-| --- | --- |
-| No valid current Blueprint/item/parameter coverage | Block start with structured reason; create/consume no attempt. |
-| Current active-role membership differs from Blueprint snapshot | Block new start as Blueprint-stale; do not silently include/exclude roles or consume the allowance. |
-| Cross-learner/organization attempt ID | Reject without data leakage. |
-| Duplicate start/answer/submit | Replay stored outcome; create no duplicate state/evidence. |
-| Stale/simultaneous answers | One valid transaction wins; sequence cannot fork. |
-| Unpresented/replaced item | Reject and preserve attempt. |
-| Request at/after deadline | Reject answer mutation with no grace; idempotent worker/request finalizes accepted responses or invalidates below the evidence gate. |
-| Reload/network loss | Resume committed PostgreSQL state. |
-| Manual submit before minimum evidence | Finalize INVALIDATED/MANUAL without mastery/profile and retain linked replacement eligibility. |
-| Estimator/technical failure preventing mastery | Preserve audit data, invalidate with no mastery, and allow a replacement linked by `replacesAttemptId`. |
-| Auto-submit retry | Finalize and emit evidence once. |
-| Completed Employee + Job Position requests another baseline | Reject; role/Blueprint/catalog changes do not reopen the allowance. |
-| Legacy-format current version after revised admission cutover | Actionable configuration-update requirement; no new attempt, allowance consumption or silent role/exploration fallback. |
-| Union skill has insufficient eligible/parameterized items or maximum cannot cover minimum evidence | Reject activation/start with structured readiness failure; do not narrow scope or create partial state. |
-| Activate/Deactivate races new start | Serialize admission against current switch; pin the version that wins the agreed transaction ordering, or reject unavailable/stale configuration. Existing pinned attempts remain valid. |
-
-### Dependencies and implementation alignment
-
-REQ-001 selection/identity; authorized catalog publication/release; REQ-002-F02 configuration; reviewed published question versions; exact approved model/mapping/parameter pins; profile/evidence processing and REQ-041 delivery; REQ-009 result/history. [Data architecture](Adaptive%20Baseline%20Data%20Architecture.md) defines persistence boundaries. [Current alignment/evidence](../../testing/system/REQ-001-002-final-synchronization-review.md) is reported separately. Profile initialization uses genuine valid outcomes with no score threshold; below-minimum attempts write no mastery/profile. Baseline responses are never double-applied as learning BKT transitions.
-
-### Acceptance-to-test mapping
-
-| Acceptance | Planned executable evidence |
-| --- | --- |
-| Start pins versions/deadline and retry returns same attempt | API/PostgreSQL integration test |
-| Reload preserves item/option order, responses and timing | System test |
-| Fixed response vectors reproduce theta/SE/mastery | Unit/vector tests |
-| Selection does not repeat items and respects bounds | Unit/property/integration tests |
-| Deadline auto-submits once | Worker/integration/concurrency test |
-| Concurrent answers cannot fork sequence | Concurrency integration test |
-| Below-minimum evidence invalidates without mastery and permits one linked replacement | Unit/API/integration test |
-| High-SE evidence above the minimum finalizes through conservative mastery | Deterministic unit/vector and API result test |
-| Tenant/learner isolation holds | Authorization/isolation tests |
-| Baseline initializes mastery once without BKT double count | REQ-002/REQ-041 integration test |
-| Save draft → Preview assessment → Activate → full-Job Position start → answer/reload → submit → result | Disposable-adapter system test |
-| Different selected Roles in the same Job Position use the same full scope/pair with skill/item deduplication | AB-A02 selector/API/integration/system plan |
-| Legacy attempts/history/allowance survive forward transition; new starts require explicit full-Job Position config | AB-A09–A11 and AB-R02–R03 compatibility plan |
-
-### Decision status
-
-- **Confirmed:** immediate Role choice; selected-Role entry with one whole-Job Position baseline/pair; required skill coverage with no role sections; one mastery-producing completion per Employee+Job Position; invalidated/no-mastery linked replacement; unchanged history/pins/allowance; individual adaptive 3PL, raw explanatory score and conservative mastery; no confidence/mastery cap; PostgreSQL authority/reload/deadline/idempotency/security/evidence boundaries above.
-- **Provisional technical configuration:** estimator/prior/minimum-evidence constants remain system-managed/versioned. **Confirmed target:** L&D org policy supplies stop SE/confidence/k. **Proposed:** new policy schema/admission/provenance design; source still uses original technical JSON until separately approved C2.
-- **Confirmed design:** dual-format schema/readers, legacy-configuration admission gate, explicit conversion and transaction protocol in the linked design.
-- **Open:** authoritative external production contracts and numerical/executable/browser validation. Numerical calibration remains outside this alignment.
-- **Rejected:** per-Role or exploration-specific sampling/bounds for new attempts, history relabel/rescore/reset, shared fixed published baseline, fixed difficulty ladder, client scoring, raw score as mastery or unanswered prior as a result.
-
-Confirmed | Provisional | Open | Rejected.

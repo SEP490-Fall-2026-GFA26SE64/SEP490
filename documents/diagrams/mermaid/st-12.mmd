@@ -2,6 +2,7 @@
 title: "ST-12 - Ontology definition review and availability (orthogonal)"
 config: {"theme":"base","fontFamily":"Segoe UI, Arial, sans-serif","themeVariables":{"fontFamily":"Segoe UI, Arial, sans-serif","fontSize":"16px","primaryColor":"#ffffff","primaryTextColor":"#0f1729","primaryBorderColor":"#64748b","secondaryColor":"#fef3eb","tertiaryColor":"#ffffff","lineColor":"#64748b","textColor":"#0f1729","mainBkg":"#ffffff","background":"#ffffff","clusterBkg":"#ffffff","clusterBorder":"#64748b","edgeLabelBackground":"#ffffff","titleColor":"#0f1729","noteBkgColor":"#fef3eb","noteTextColor":"#0f1729","noteBorderColor":"#e6650f","labelColor":"#0f1729","compositeBackground":"#ffffff","compositeTitleBackground":"#ffffff","compositeBorder":"#64748b","altBackground":"#ffffff","nodeBorder":"#64748b","nodeTextColor":"#0f1729","cScale0":"#ffffff","cScaleLabel0":"#0f1729","cScale1":"#ffffff","cScaleLabel1":"#0f1729","cScale2":"#ffffff","cScaleLabel2":"#0f1729","cScale3":"#ffffff","cScaleLabel3":"#0f1729","cScale4":"#ffffff","cScaleLabel4":"#0f1729","cScale5":"#ffffff","cScaleLabel5":"#0f1729","cScale6":"#ffffff","cScaleLabel6":"#0f1729","cScale7":"#ffffff","cScaleLabel7":"#0f1729","cScale8":"#ffffff","cScaleLabel8":"#0f1729","cScale9":"#ffffff","cScaleLabel9":"#0f1729","cScale10":"#ffffff","cScaleLabel10":"#0f1729","cScale11":"#ffffff","cScaleLabel11":"#0f1729","secondaryBorderColor":"#64748b","tertiaryBorderColor":"#64748b","secondaryTextColor":"#0f1729","tertiaryTextColor":"#0f1729"},"state":{"nodeSpacing":42,"rankSpacing":64,"padding":16,"fontSize":16,"wrappingWidth":250}}
 ---
+
 stateDiagram-v2
   state "Review status" as SDD_ST_12_Review {
     state "NEEDS_EXPERT_REVIEW" as SDD_ST_12_NEEDS_EXPERT_REVIEW
@@ -28,3 +29,8 @@ stateDiagram-v2
 
   classDef working fill:#fef3eb,stroke:#e6650f,color:#0f1729,stroke-width:1.5px
   class SDD_ST_12_NEEDS_EXPERT_REVIEW,SDD_ST_12_DRAFT,SDD_ST_12_ACTIVE working
+
+  note right of SDD_ST_12_Review
+    Rule consumers require approved active tenant catalog and exact versions
+    No learner evidence is stored in this graph lifecycle
+  end note
