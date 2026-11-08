@@ -1,7 +1,8 @@
 ---
 title: "DB-10 - Question Bank authoring supplement (V29 source)"
-config: {"theme":"base","fontFamily":"Segoe UI, Arial, sans-serif","themeVariables":{"fontFamily":"Segoe UI, Arial, sans-serif","fontSize":"14px","primaryColor":"#ffffff","primaryTextColor":"#0f1729","primaryBorderColor":"#64748b","secondaryColor":"#fef3eb","tertiaryColor":"#ffffff","lineColor":"#64748b","textColor":"#0f1729","mainBkg":"#ffffff","background":"#ffffff","clusterBkg":"#ffffff","clusterBorder":"#64748b","edgeLabelBackground":"#ffffff","titleColor":"#0f1729","noteBkgColor":"#fef3eb","noteTextColor":"#0f1729","noteBorderColor":"#e6650f","classText":"#0f1729","secondaryBorderColor":"#64748b","tertiaryBorderColor":"#64748b","secondaryTextColor":"#0f1729","tertiaryTextColor":"#0f1729"},"layout":"elk","class":{"hideEmptyMembersBox":true,"nodeSpacing":44,"rankSpacing":70,"padding":12,"diagramPadding":24}}
+config: {"theme":"base","fontFamily":"Segoe UI, Arial, sans-serif","themeVariables":{"fontFamily":"Segoe UI, Arial, sans-serif","fontSize":"14px","primaryColor":"#ffffff","primaryTextColor":"#0f1729","primaryBorderColor":"#64748b","secondaryColor":"#fef3eb","tertiaryColor":"#ffffff","lineColor":"#64748b","textColor":"#0f1729","mainBkg":"#ffffff","background":"#ffffff","clusterBkg":"#ffffff","clusterBorder":"#64748b","edgeLabelBackground":"#ffffff","titleColor":"#0f1729","noteBkgColor":"#fef3eb","noteTextColor":"#0f1729","noteBorderColor":"#e6650f","classText":"#0f1729","secondaryBorderColor":"#64748b","tertiaryBorderColor":"#64748b","secondaryTextColor":"#0f1729","tertiaryTextColor":"#0f1729"},"layout":"dagre","class":{"hideEmptyMembersBox":true,"nodeSpacing":44,"rankSpacing":70,"padding":12,"diagramPadding":24}}
 ---
+
 classDiagram
   direction TB
   class O["organization"] {
@@ -50,3 +51,17 @@ classDiagram
   O "1" ..> "0..*" N : FK (organization_id)
   A "1" ..> "0..*" N : FK (recipient)
   note for I "Composite UNIQUE (question_bank_id, code)"
+  class Scope["question_bank_scope"] {
+    uuid organization_id PK
+    uuid question_bank_id PK_UK
+  }
+  class Mapping["assessment_item_knowledge_mapping"] {
+    uuid item_version_id PK_FK
+    uuid organization_id FK
+    uuid question_bank_id FK
+    text skill_id
+    text knowledge_level
+    text outcome_code
+    boolean mandatory
+  }
+  Scope "1" --> "0..*" Mapping : owned source-bank composite FK

@@ -343,7 +343,6 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
         }
         return rawDuration.trim();
     }
-
     private String resolveGraphCode(String roleId, String orgId, String rawCode, String version) {
         if (roles.countCodeHolders(rawCode, roleId) == 0) {
             return rawCode;
@@ -464,6 +463,7 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
                     .bind(processedSkills).to("skills")
                     .bind(updatedAt.toString()).to("updatedAt")
                     .run();
+
         }
     }
 

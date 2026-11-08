@@ -179,19 +179,19 @@
   },
   {
     "id": "act-05",
-    "originalHash": "e6bc54617a51235ed5e99b2571d8b81cd6fd17b18b0def4dd1f734c25191d289",
-    "originalNodes": 35,
-    "originalEdges": 41,
+    "originalHash": "2ab9ee9f509b6551c60bbdb0e7c2bdad02bc163d07fb1881c1a91e329c773024",
+    "originalNodes": 27,
+    "originalEdges": 34,
     "width": 2550,
-    "height": 8045,
-    "nodes": 35,
-    "edges": 41,
-    "arrowheads": 41,
+    "height": 6515,
+    "nodes": 27,
+    "edges": 34,
+    "arrowheads": 34,
     "actors": [
       "L&D Manager",
-      "Expert",
+      "Employee",
       "System Handler",
-      "Employee"
+      "Expert"
     ],
     "clippedText": [],
     "outsideShapes": [],
@@ -202,31 +202,31 @@
     "labelArrowheadCollisions": [],
     "validXml": true,
     "previousRouting": {
-      "overlapPixels": 13,
+      "overlapPixels": 9,
       "overlappingPairs": 1,
-      "crossings": 24
+      "crossings": 17
     },
     "initialRouting": {
-      "overlapPixels": 416,
-      "overlappingPairs": 18,
-      "crossings": 55
+      "overlapPixels": 368,
+      "overlappingPairs": 20,
+      "crossings": 46
     },
     "optimizedRouting": {
-      "overlapPixels": 13,
+      "overlapPixels": 9,
       "overlappingPairs": 1,
-      "crossings": 24
+      "crossings": 20
     },
     "previousParallelSpacing": {
       "requiredGap": 24,
       "minimumParallelRun": 48,
       "crowdedSegments": 0,
-      "minimumGap": 28
+      "minimumGap": 24
     },
     "parallelSpacing": {
       "requiredGap": 24,
       "minimumParallelRun": 48,
       "crowdedSegments": 0,
-      "minimumGap": 28
+      "minimumGap": 24
     },
     "graphParity": "Passed",
     "actorOwnership": "Passed",
@@ -236,11 +236,11 @@
   },
   {
     "id": "act-07",
-    "originalHash": "0e91fce0fc2882258d6b67e83a6e20bb80452fb8da264677ba00ee5b9c30f2f5",
+    "originalHash": "74c663623d587690b22db6f366934ba67e7a91e012d86f2c974cb3fc09c32965",
     "originalNodes": 8,
     "originalEdges": 7,
     "width": 990,
-    "height": 1467,
+    "height": 1527,
     "nodes": 8,
     "edges": 7,
     "arrowheads": 7,
@@ -371,11 +371,11 @@
   },
   {
     "id": "act-10",
-    "originalHash": "2668add54d1ef2091c19871e0a31ced21d4f2a3d4ff62280d1c497115adf82f9",
+    "originalHash": "2f33c47acf967f82e40870fd3dd162fc346d5c74db4ff7c984b9e5467778dd60",
     "originalNodes": 10,
     "originalEdges": 10,
     "width": 1450,
-    "height": 1881,
+    "height": 1909,
     "nodes": 10,
     "edges": 10,
     "arrowheads": 10,

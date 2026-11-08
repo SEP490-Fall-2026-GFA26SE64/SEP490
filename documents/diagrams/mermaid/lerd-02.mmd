@@ -1,121 +1,71 @@
 ---
-title: "LERD-02 - Assessment and Role-Level Profile"
+title: "LERD-02 - Frozen assessment and separate official evidence"
 config: {"theme":"base","fontFamily":"Segoe UI, Arial, sans-serif","themeVariables":{"fontFamily":"Segoe UI, Arial, sans-serif","fontSize":"16px","primaryColor":"#ffffff","primaryTextColor":"#0f1729","primaryBorderColor":"#64748b","secondaryColor":"#fef3eb","tertiaryColor":"#ffffff","lineColor":"#64748b","textColor":"#0f1729","mainBkg":"#ffffff","background":"#ffffff","clusterBkg":"#ffffff","clusterBorder":"#64748b","edgeLabelBackground":"#ffffff","titleColor":"#0f1729","noteBkgColor":"#fef3eb","noteTextColor":"#0f1729","noteBorderColor":"#e6650f","attributeBackgroundColorOdd":"#ffffff","attributeBackgroundColorEven":"#ffffff","secondaryBorderColor":"#64748b","tertiaryBorderColor":"#64748b","secondaryTextColor":"#0f1729","tertiaryTextColor":"#0f1729"},"layout":"dagre","er":{"layoutDirection":"LR","nodeSpacing":36,"rankSpacing":74,"entityPadding":16,"fontSize":16,"minEntityWidth":140,"diagramPadding":24}}
 ---
+
 erDiagram
   direction TB
-  RoleSelection["RoleSelection"] {
-    uuid selection_id PK "REQUIRED"
-    uuid organization_id FK "REQUIRED"
-    uuid learner_id FK "REQUIRED"
-    text role_level_id FK "REQUIRED"
-    integer revision "REQUIRED"
-    timestamptz selected_at "REQUIRED"
-    timestamptz ended_at "NULLABLE"
-    uuid previous_selection_id FK "NULLABLE"
+  rule_assessment_attempt {
+    uuid id PK
+    uuid organization_id
+    uuid learner_id
+    text purpose
+    uuid selection_id
+    uuid policy_id
+    text state
+    timestamptz deadline_at
+    text finish_reason "NULLABLE"
+    text processing_status
   }
-  BaselineConfigVersion["BaselineConfigVersion"] {
-    uuid config_version_id PK "REQUIRED"
-    uuid config_id FK "REQUIRED"
-    integer version "REQUIRED"
-    text name "REQUIRED"
-    jsonb parameters "REQUIRED"
-    jsonb requirement_snapshot "REQUIRED"
-    text content_hash "REQUIRED"
-    text availability "REQUIRED"
-    uuid activated_by FK "REQUIRED"
-    timestamptz activated_at "REQUIRED"
+  rule_assessment_group {
+    uuid attempt_id PK
+    uuid group_id PK
+    text skill_id
+    text knowledge_level
+    text group_role
+    integer total_count
+    integer required_correct_count
   }
-  AssessmentAttempt["AssessmentAttempt"] {
-    uuid attempt_id PK "REQUIRED"
-    uuid organization_id FK "REQUIRED"
-    uuid learner_id FK "REQUIRED"
-    uuid selection_id FK "REQUIRED"
-    uuid config_version_id FK "NULLABLE"
-    uuid progress_id FK "NULLABLE"
-    text purpose "REQUIRED"
-    jsonb rule_snapshot "REQUIRED"
-    jsonb requirement_snapshot "REQUIRED"
-    text state "REQUIRED"
-    integer revision "REQUIRED"
-    timestamptz started_at "REQUIRED"
-    timestamptz deadline_at "REQUIRED"
-    timestamptz finished_at "NULLABLE"
-    text completion_reason "NULLABLE"
-    uuid previous_attempt_id FK "NULLABLE"
+  rule_assessment_item {
+    uuid attempt_id PK
+    integer item_position PK
+    uuid group_id
+    uuid item_version_id
+    jsonb frozen_item
   }
-  AssessmentItem["AssessmentItem"] {
-    uuid attempt_id PK, FK "REQUIRED"
-    integer position PK "REQUIRED"
-    uuid item_version_id FK "REQUIRED"
-    text skill_id FK "REQUIRED"
-    text knowledge_level "REQUIRED"
-    jsonb outcome_codes "REQUIRED"
-    jsonb option_order "REQUIRED"
-    jsonb scoring_reference "REQUIRED"
+  rule_assessment_answer {
+    uuid attempt_id PK
+    integer item_position PK
+    jsonb response
+    bigint revision
+    uuid source_command
   }
-  AssessmentAnswer["AssessmentAnswer"] {
-    uuid attempt_id PK, FK "REQUIRED"
-    integer position PK, FK "REQUIRED"
-    jsonb response "REQUIRED"
-    boolean is_correct "REQUIRED"
-    integer revision "REQUIRED"
-    timestamptz accepted_at "REQUIRED"
+  rule_assessment_group_result {
+    uuid attempt_id PK
+    uuid group_id PK
+    boolean passed
+    boolean veto_triggered
+    boolean mandatory_satisfied
   }
-  QuestionVersion["QuestionVersion"] {
-    uuid item_version_id PK "REQUIRED"
-    uuid organization_id FK "REQUIRED"
-    text skill_id FK "REQUIRED"
-    text knowledge_level "REQUIRED"
-    text outcome_code "REQUIRED"
-    boolean mandatory "REQUIRED"
-    text prompt "REQUIRED"
-    jsonb options "REQUIRED"
-    jsonb scoring_key "REQUIRED"
-    text explanation "NULLABLE"
-    integer version "REQUIRED"
-    text publication_status "REQUIRED"
+  skill_knowledge_evidence {
+    uuid id PK
+    uuid organization_id
+    uuid learner_id
+    text skill_id
+    text knowledge_level
+    text source_kind
+    uuid source_id
   }
-  SkillResult["SkillResult"] {
-    uuid attempt_id PK, FK "REQUIRED"
-    text skill_id PK, FK "REQUIRED"
-    text knowledge_level PK "REQUIRED"
-    jsonb outcome_codes "REQUIRED"
-    integer correct_count "REQUIRED"
-    integer total_count "REQUIRED"
-    boolean valid "REQUIRED"
-    text outcome "REQUIRED"
-    jsonb reasons "REQUIRED"
-    timestamptz finalized_at "REQUIRED"
+  skill_knowledge_review {
+    uuid id PK
+    uuid attempt_id
+    uuid group_id
+    text state
+    uuid resolved_by_evidence_id "NULLABLE"
   }
-  CompetencyProfile["CompetencyProfile"] {
-    uuid profile_id PK "REQUIRED"
-    uuid organization_id FK "REQUIRED"
-    uuid learner_id FK "REQUIRED"
-    uuid selection_id FK "REQUIRED"
-    uuid baseline_attempt_id FK "REQUIRED"
-    integer revision "REQUIRED"
-    text status "REQUIRED"
-    timestamptz created_at "REQUIRED"
-    uuid previous_profile_id FK "NULLABLE"
-  }
-  ProfileSkill["ProfileSkill"] {
-    uuid profile_id PK, FK "REQUIRED"
-    text skill_id PK, FK "REQUIRED"
-    text knowledge_level PK "REQUIRED"
-    jsonb outcome_codes "REQUIRED"
-    text status "REQUIRED"
-    text source_kind "REQUIRED"
-    uuid source_attempt_id FK "NULLABLE"
-    uuid source_certificate_id FK "NULLABLE"
-    timestamptz evaluated_at "REQUIRED"
-  }
-  RoleSelection ||--o{ AssessmentAttempt : "assessment context"
-  BaselineConfigVersion o|--o{ AssessmentAttempt : "baseline version pin"
-  AssessmentAttempt ||--|{ AssessmentItem : "freezes paper"
-  QuestionVersion ||--o{ AssessmentItem : "published item pin"
-  AssessmentItem ||--o| AssessmentAnswer : "accepted response"
-  AssessmentAttempt ||--o{ SkillResult : "finalizes"
-  RoleSelection ||--o{ CompetencyProfile : "profile history"
-  AssessmentAttempt ||--o{ CompetencyProfile : "valid baseline source"
-  CompetencyProfile ||--|{ ProfileSkill : "outcomes"
+  rule_assessment_attempt ||--|{ rule_assessment_group : "owned attempt"
+  rule_assessment_group ||--|{ rule_assessment_item : "composite group FK"
+  rule_assessment_item ||--o| rule_assessment_answer : "presented item FK"
+  rule_assessment_group ||--o| rule_assessment_group_result : "immutable result"
+  rule_assessment_group ||--o| skill_knowledge_review : "failed prerequisite FK"
+  skill_knowledge_evidence o|--o{ skill_knowledge_review : "resolving evidence FK"

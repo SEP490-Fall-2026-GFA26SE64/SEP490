@@ -1,30 +1,30 @@
 # Employee Learning Experience
 
-**Latest direction — 2026-11-05-r3.** [Target schema/API/flow](../../technical/Organization%20Rule%20Assessment%20and%20Pathway.md) now maps this flow; it is not applied runtime. Baseline records only assessed skills and never creates unassessed prerequisites; skill assessment can discover them as **Cần bổ sung**. Baseline/skill have two independently configured policies with timed auto-finalization. Cross-target old bypass work is parallel/non-gating. Affected old dev records may be rebuilt; normal new-flow history remains. Preserve FE design and classify existing Question Bank content into appropriate knowledge levels with corresponding field changes.
+**Source alignment — 2026-11-07.** Confirmed behavior is distinguished from checked-in implementation below. [Current source/schema/API contract](../../technical/Organization%20Rule%20Assessment%20and%20Pathway.md) records local profile gates, exact ownership and remaining mismatches. Runtime/database acceptance is not established by this prose update.
 
 **Source:** [Version 2](../../FA26SE267_KNOWLEDGE_GRAPH_BASED_ADAPTIVE_LEARNING__haht43_Version_2.md), section 3.2(c), Functional Requirements.
 
 **Aligned:** 2026-10-28. **Source requirements in this domain:** 5.
 
-**Feature direction: 2026-11-05.** Affected contracts describe intended behavior pending C1 acceptance, not implementation evidence. Dated source/delivery/evidence retains its historical scope. IDs/anchors and unrelated behavior remain. Target technical mapping is now specified in r3; runtime/seed implementation and detailed changed UI review remain pending.
+**Contract basis:** confirmed behavior plus the later L&D Role–Level / Expert Skill–knowledge configuration decisions. Historical evidence retains its original scope; it is not a fresh passing result.
 
 ## Current Implementation
 
-**Source-inspected:** 2026-10-28. See the [implementation legend](../README.md#current-implementation-overview). Real sign-in does not make these local learning/profile records authoritative.
+**Source-inspected:** HEAD `61d334c`, 2026-11-07; source inspection only. See the [implementation legend](../README.md#current-implementation-overview). Real sign-in does not make these local learning/profile records authoritative.
 
 | Requirement | Status | Current behavior | Remaining boundary |
 | --- | --- | --- | --- |
 | [FR-06.01](#fr-06-01) | Prototype | The shared profile screen reads actor-specific browser profiles and offers local name/password changes. | These changes do not update the authenticated account/password or a persisted Employee work profile. Real administrator member edits are a separate feature. |
-| [FR-06.05](#fr-06-05) | Partial | The Role gap dialog uses persisted baseline evidence and the authorized Role+Level gap API; the separate legacy gap-analysis screen retains prototype behavior. | Later-learning profile processing and production compatibility/publication integration remain open. |
-| [FR-06.06](#fr-06-06) | API-backed slice | Role roadmap/timeline reads the Employee's own exact approved pathway, ordered Modules and safe frozen baseline context. | Generated entry access now checks current approval, content version and prerequisites before serving real lessons/progress. Unsupported internal gates, assessment-driven adaptation and full merged browser mutation acceptance remain separate; independent-skill prototype consumers are not recertified. |
+| [FR-06.05](#fr-06-05) | Partial | The Role gap dialog uses persisted baseline evidence and the authorized Role+Level gap API; the separate legacy gap-analysis screen retains prototype behavior. | RuleKnowledgeProfileService now reads diagnostics, official exact evidence and review flags; full runtime/production compatibility remains unverified here. |
+| [FR-06.06](#fr-06-06) | API-backed slice | Role roadmap/timeline reads the Employee's own exact approved pathway, ordered Modules and safe frozen baseline context. | Generated entry access now checks current approval, content version and prerequisites before serving real lessons/progress. Requirement-root alternatives, exact rule-assessment entry and assessment-driven supplementation now exist in source; full merged browser/certificate/bypass acceptance remains unverified; independent-skill prototype consumers are not recertified. |
 | [FR-06.07](#fr-06-07) | Partial | The Skills tab loads real micro-skills/macro competencies through catalog APIs and lets Employees track/untrack skills locally. | Duration/level metadata is synthesized in the browser; tracking and sample module/roadmap content are not a persisted independent-learning context with approved mapped content. |
-| [FR-06.09](#fr-06-09) | Prototype | Overview, history and assessment views show seeded/local completion, scores, previous roles/skills and pathway status. | No authoritative progress aggregation from persisted module completion, assessment evidence and pathway revisions is wired to these screens. |
+| [FR-06.09](#fr-06-09) | Prototype | Overview, history and assessment views show seeded/local completion, scores, previous roles/skills and pathway status. | Pathway option progress, rule attempt history and official profile have server projections; separate legacy overview/history widgets still use browser state and are not certified as a unified progress aggregate. |
 
 ### Role pathway display — new direction
 
 Only own approved/current or own archived revisions are projected from trusted Employee/organization context; no draft candidates, foreign records or answer keys. Preserve explicit pending/unresolved/stale/empty/error/archive and live AVAILABLE/LOCKED/UNAVAILABLE reasons. Reads cannot generate, approve, advance progress or award achievement. Archived records are read-only; preview/notification grants no access.
 
-The hierarchy becomes **skill/requirement → module alternatives** (or the assigned certificate), retaining current Roadmap/Timeline style, toolbar/search/details, components, colors, fonts, sizes, spacing and layout conventions. Show exact knowledge/outcomes, dependencies, official versus diagnostic evidence and bypass reasons. Numeric baseline mastery counts are not official completion/certification. Detailed changed structure/interactions/data binding require define C2 review. [Adaptive behavior](../Adaptive%20engine/README.md#initial-requirement-steps-and-alternatives) owns planning rules; existing technical read contracts remain historical until aligned.
+The hierarchy becomes **skill/requirement → module alternatives** (or the assigned certificate), retaining current Roadmap/Timeline style, toolbar/search/details, components, colors, fonts, sizes, spacing and layout conventions. Show exact knowledge/outcomes, dependencies, official versus diagnostic evidence and bypass reasons. Numeric baseline mastery counts are not official completion/certification. RequirementPathwayPresentation now renders this hierarchy; module cards carry assessment status and roots carry requirement state. [Adaptive behavior](../Adaptive%20engine/README.md#initial-requirement-steps-and-alternatives) owns planning rules; the current technical read contract identifies the active owners and retained historical designs.
 
 **Entry points:** `/profile`, `/employee/overview`, `/employee/gap-analysis`, `/employee/pathway`, `/employee/upskilling?tab=skills`. Older skills-catalog routes redirect to the consolidated Skills tab.
 
@@ -48,7 +48,7 @@ For CERTIFICATE_ONLY, display the single assigned certificate definition, skill/
 
 Input binds evidence to the Employee's exact organization/requirement and accepted definition/version. Server derives learner/organization/status; no editable reviewer/pass fields. Uploaded evidence stays private with access limited to the learner and authorized reviewers. Validate evidence form/content and authorized ownership; show upload/access failure with retry rather than a successful submission. Accept one HTTPS link OR one PDF OR one PNG/JPEG per submission; max 10 MiB/file subject to a tighter applicable existing limit. Validate actual media/size and private access; do not fetch remote URLs automatically. Replacement after rejection creates linked new-flow history; no generalized verification/expiry engine is included.
 
-Submission becomes pending, not achieved. Show reviewer decision and actual reason/history; rejection stays unmet and allows the defined resubmission path. Only authorized Expert approval updates official exact achievement and triggers recalculation. Repeated submit/approve or concurrent stale decisions cannot duplicate achievement or overwrite accepted history. Exact review routing, fields, persisted state names and mechanics remain open.
+Submission becomes pending, not achieved. Show reviewer decision and actual reason/history; rejection stays unmet and allows the defined resubmission path. Only authorized Expert approval updates official exact achievement and triggers recalculation. Repeated submit/approve or concurrent stale decisions cannot duplicate achievement or overwrite accepted history. Current routing uses CertificateController with PENDING/APPROVED/REJECTED submission status, current assigned Expert review, expected revision and immutable definition/decision history. These source paths were not runtime-exercised here.
 
 ### Bypass, progress and target release
 
@@ -56,11 +56,11 @@ Show waived/bypassed unmet needs separately from fulfilled requirements. Prerequ
 
 Required-work completion or only approved bypass needs remaining releases Role/Level selection. Optional alternatives and optional review do not block release. A new target reuses compatible official evidence and carries original bypass needs as parallel supplementation without gates on its other skills. Diagnostic reuse is limited to the same unchanged request/context, not a new-target exemption; no self-declared-title exemption.
 
-Independent upskill remains separate. The same module cannot be opened via skill browsing, optional-module lists, deep links or another context to evade its current pathway LOCKED state. All server admission and media/content paths must retain tenant/actor/prerequisite guards; hiding a button is insufficient. Current skill-only optional-module authorization does not establish this new guarantee.
+Independent upskill remains separate. The same module cannot be opened via skill browsing, optional-module lists, deep links or another context to evade its current pathway LOCKED state. All server admission and media/content paths must retain tenant/actor/prerequisite guards; hiding a button is insufficient. SkillLearningService now rechecks assigned/accepted module access; exact rule-exam admission is a separate server check. Full bypass/deep-link/security behavior remains unverified here.
 
 Progress/history distinguishes lessons, attempts and per-group results, official achievements, diagnostics, pending evidence, optional alternatives, bypass and pathway revisions. It must not count every alternative as compulsory, every baseline pass as certified, or waived needs as achieved. Mocks/localStorage are not integration evidence.
 
-Target fields/storage/versioning and state rules are specified in r3. C2 still must implement exact scoped constraints, classify real content, handle dependency failures and present detailed changed UI/data binding for review. No runtime/production readiness is claimed.
+Current source implements the local rule flow and versioned mappings described in the technical contract. Full runtime, authorization, certificate/bypass/backfill and production verification remain unproved; source-policy mismatches are retained explicitly.
 
 ## Requirements
 
@@ -215,4 +215,4 @@ This supersedes the manual selector/assignment and blank-empty-state behavior in
 ### Optional Modules for the same Skill — 2026-11-05
 
 **Pre-transition implementation:** an Employee with an authorized Module or original skill completion can study other approved, active Modules teaching that Skill within the organization. Each Module retains its own pinned content and progress; optional study does not change pathway membership/order. Completing one Module leaves the others available. Loading, empty, retry and access-denial states use real APIs. [Learning contract](../../technical/Skill-Learning-Eligibility.md).
-\nFor new requirement alternatives, exact knowledge/outcome compatibility and current pathway lock checks must also apply. The preceding skill-only API/history does not prove that new behavior.\n
+Current requirement alternatives additionally use exact knowledge/outcome/Skill version and accepted-access guards. Legacy same-Skill eligibility is not exam authorization; arbitrary independent assessment contexts remain incomplete.

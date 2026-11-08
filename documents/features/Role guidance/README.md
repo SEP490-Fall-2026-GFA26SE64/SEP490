@@ -1,20 +1,20 @@
 # AI-Assisted Role Guidance
 
-**Latest direction — 2026-11-05-r3.** [Target schema/API/flow](../../technical/Organization%20Rule%20Assessment%20and%20Pathway.md) now maps this flow; it is not applied runtime. Baseline records only assessed skills and never creates unassessed prerequisites; skill assessment can discover them as **Cần bổ sung**. Baseline/skill have two independently configured policies with timed auto-finalization. Cross-target old bypass work is parallel/non-gating. Affected old dev records may be rebuilt; normal new-flow history remains. Preserve FE design and classify existing Question Bank content into appropriate knowledge levels with corresponding field changes.
+**Source alignment — 2026-11-07.** Confirmed behavior is distinguished from checked-in implementation below. [Current source/schema/API contract](../../technical/Organization%20Rule%20Assessment%20and%20Pathway.md) records local profile gates, exact ownership and remaining mismatches. Runtime/database acceptance is not established by this prose update.
 
 **Source:** [Version 2](../../FA26SE267_KNOWLEDGE_GRAPH_BASED_ADAPTIVE_LEARNING__haht43_Version_2.md), section 3.2(c), Functional Requirements.
 
 **Aligned:** 2026-10-28. **Source requirements in this domain:** 2.
 
-**Feature direction: 2026-11-05.** Affected contracts describe intended behavior pending C1 acceptance, not implementation evidence. Dated source/delivery/evidence retains its historical scope. IDs/anchors and unrelated behavior remain. Target technical mapping is now specified in r3; runtime/seed implementation and detailed changed UI review remain pending.
+**Contract basis:** confirmed behavior plus the later L&D Role–Level / Expert Skill–knowledge configuration decisions. Historical evidence retains its original scope; it is not a fresh passing result.
 
 ## Current Implementation
 
-**Source-inspected:** 2026-10-28. See the [implementation legend](../README.md#current-implementation-overview). Catalog selection and AI guidance have different implementation status.
+**Source-inspected:** HEAD `61d334c`, 2026-11-07; code inspection only. See the [implementation legend](../README.md#current-implementation-overview). Catalog selection and AI guidance have different implementation status.
 
 | Requirement | Status | Current behavior | Remaining boundary |
 | --- | --- | --- | --- |
-| [FR-06.04](#fr-06-04) | Partial | Employees browse published organization target roles scoped to their assigned Department (and active Job Positions), inspect per-level skill and duration requirements, and view or update their persisted target-role and level assignment under their workspace session. The role view connects to baseline readiness, own attempts and stored mastery. | AI-generated suggestions/comments remain unimplemented. Catalog/bank/model provisioning is separate; missing resources remain unavailable. |
+| [FR-06.04](#fr-06-04) | Partial | Employees browse published organization target roles scoped to their assigned Department (and active Job Positions), inspect per-level skill, explicit knowledge and duration requirements, and persist a replay-safe target-role and level choice under their real workspace session. The role view connects to baseline readiness, own rule attempts, diagnostics and exact official evidence. | AI-generated suggestions/comments remain unimplemented. Catalog/bank/scoped-policy readiness is separate; missing resources remain unavailable. Department filtering is present in the current UI; uniform server-side Department enforcement remains unverified. |
 | [FR-07.07](#fr-07-07) | Foundation only | Recommendation schema/package placeholders and sample role-match presentation exist. | No backend AI inference, assessment/RIASEC-based suggestion generation or persisted explanation workflow was found. Labels such as AI match are not evidence of an implemented AI service. |
 
 **Observed selection rules:** the backend requires an active authenticated Employee membership, entitlement and an available organization role, checks the selected snapshot, supports idempotent command replay and reports unavailable catalog/selection conflicts. Baseline uses pinned persisted evidence; pathway generation and AI advice remain separate. Historical selections are preserved; incompatible legacy selections are explicitly identified for reselection rather than silently rewritten.
@@ -23,7 +23,7 @@
 
 **Entry point:** `/employee/upskilling?tab=roles`. `/employee/guidance` redirects there; the standalone guidance page is not the active route. Initial Expert review belongs to [Pathway review](../Pathway%20review/README.md#current-implementation), not a guidance approval gate.
 
-**Historical code references:** [role browsing and sample recommendations](../../../frontend/src/features/employee/target-roles/TargetRoleBrowsePanel.tsx), [selection service](../../../backend/src/main/java/com/adaptlearngraph/services/TargetRoleSelectionService.java), [selection persistence](../../../backend/src/main/java/com/adaptlearngraph/repository/JdbcTargetSelectionPersistence.java), [configured Employee context](../../../backend/src/main/java/com/adaptlearngraph/repository/ConfiguredEmployeeContextAdapter.java), [business services](../../../backend/src/main/java/com/adaptlearngraph/services/). Historical evidence covers [role browsing](../../testing/REQ-001-F01-view-target-roles.md) and [selection](../../testing/REQ-001-F02-choose-target-role.md), not AI generation.
+**Historical code references:** [role browsing and sample recommendations](../../../frontend/src/features/employee/target-roles/TargetRoleBrowsePanel.tsx), [selection service](../../../backend/src/main/java/com/adaptlearngraph/services/TargetRoleSelectionService.java), [selection persistence](../../../backend/src/main/java/com/adaptlearngraph/repository/JpaTargetSelectionPersistence.java), [configured Employee context](../../../backend/src/main/java/com/adaptlearngraph/repository/ConfiguredEmployeeContextAdapter.java), [business services](../../../backend/src/main/java/com/adaptlearngraph/services/). Historical evidence covers [role browsing](../../testing/REQ-001-F01-view-target-roles.md) and [selection](../../testing/REQ-001-F02-choose-target-role.md), not AI generation.
 
 <a id="rolelevel-selection-and-lock"></a>
 
@@ -39,13 +39,13 @@ Inputs are published organization Role + its actual member Level, current select
 4. Release when required work is satisfied or only approved scoped bypass needs remain and no other mandatory pending work exists. Optional alternative modules/NEED_REVIEW do not hold the lock. No-learning-required context cannot fabricate achievement or lock on nonexistent work.
 5. On another target, retain prior attempts/completions/history and reuse exact compatible official evidence for baseline exemptions. Baseline diagnostics and self-declared current titles are not official evidence. Carry original bypass needs with provenance as parallel Cần bổ sung work; later provision is studied separately and never gates the new pathway’s other skills.
 
-Stale selection/catalog, wrong scope and dependency outages give explicit unchanged-state outcomes; retries must not create another request or repeat archive effects. Simultaneous request, selection and completion/bypass decisions require one coherent authorized binding and retained replay outcome. The r3 technical contract specifies target transaction/version/API boundaries; C2 must implement the concrete owners.
+Stale selection/catalog, wrong scope and dependency outages give explicit unchanged-state outcomes; retries must not create another request or repeat archive effects. Simultaneous request, selection and completion/bypass decisions require one coherent authorized binding and retained replay outcome. CurrentRoleSelectionStore and RequirementPathwayAdmissionService implement the local learner transaction/binding paths; current-source presence is not full runtime/concurrency proof.
 
 Failed/returned/stale requests remain bound for repair/retry, without a new self-cancel-to-unlock feature. After a different target is chosen, old bypass supplementation is parallel/non-gating even when provision appears. Retrying or repairing pending work must preserve the request-bound target; do not invent an exceptional unlock.
 
-**Current-source mismatch (static, 2026-11-05):** RoleBaselineFlow.choose guards active assessment; CurrentRoleSelectionStore.writeSelection still calls archiveInitialPathways on changed selection. InitialPathwayAdmission also participates in selection. This is not the required completion lock and has not been runtime-reproduced in this C1 task. C2 must cover every route/consumer, not merely the visible selector.
+**Current-source correction (2026-11-07):** `writeSelection` now checks `targetBound` and active assessment before any archive/write, under the learner transaction. Accepted requirement requests bind both Role and Level. The prior 5 November archive-before-lock observation is superseded; no runtime regression was attempted here.
 
-Keep current Role list/details/selection UI, shared design and EN/VI; use Role in English and Vị trí / Vị trí làm việc mong muốn in Vietnamese. Detailed lock feedback and field/data binding are reviewed in define C2; preserve the visual design; r3 defines target technical mapping without applying it.
+Keep current Role list/details/selection UI, shared design and EN/VI; use Role in English and Vị trí / Vị trí làm việc mong muốn in Vietnamese. Current Role UI consumes explicit knowledge requirements and server lock reasons. Full all-entry security/race verification remains open; AI/RIASEC capability is separate.
 
 ## Requirements
 

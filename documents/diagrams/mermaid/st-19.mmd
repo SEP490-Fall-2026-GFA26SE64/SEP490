@@ -1,40 +1,46 @@
 ---
-title: "ST-19 - Pathway Generation, Review and Target Release"
+title: "ST-19 - Separate request, review and requirement lifecycles"
 config: {"theme":"base","fontFamily":"Segoe UI, Arial, sans-serif","themeVariables":{"fontFamily":"Segoe UI, Arial, sans-serif","fontSize":"16px","primaryColor":"#ffffff","primaryTextColor":"#0f1729","primaryBorderColor":"#64748b","secondaryColor":"#fef3eb","tertiaryColor":"#ffffff","lineColor":"#64748b","textColor":"#0f1729","mainBkg":"#ffffff","background":"#ffffff","clusterBkg":"#ffffff","clusterBorder":"#64748b","edgeLabelBackground":"#ffffff","titleColor":"#0f1729","noteBkgColor":"#fef3eb","noteTextColor":"#0f1729","noteBorderColor":"#e6650f","labelColor":"#0f1729","compositeBackground":"#ffffff","compositeTitleBackground":"#ffffff","compositeBorder":"#64748b","altBackground":"#ffffff","nodeBorder":"#64748b","nodeTextColor":"#0f1729","cScale0":"#ffffff","cScaleLabel0":"#0f1729","cScale1":"#ffffff","cScaleLabel1":"#0f1729","cScale2":"#ffffff","cScaleLabel2":"#0f1729","cScale3":"#ffffff","cScaleLabel3":"#0f1729","cScale4":"#ffffff","cScaleLabel4":"#0f1729","cScale5":"#ffffff","cScaleLabel5":"#0f1729","cScale6":"#ffffff","cScaleLabel6":"#0f1729","cScale7":"#ffffff","cScaleLabel7":"#0f1729","cScale8":"#ffffff","cScaleLabel8":"#0f1729","cScale9":"#ffffff","cScaleLabel9":"#0f1729","cScale10":"#ffffff","cScaleLabel10":"#0f1729","cScale11":"#ffffff","cScaleLabel11":"#0f1729","secondaryBorderColor":"#64748b","tertiaryBorderColor":"#64748b","secondaryTextColor":"#0f1729","tertiaryTextColor":"#0f1729"},"state":{"nodeSpacing":42,"rankSpacing":64,"padding":16,"fontSize":16,"wrappingWidth":250},"look":"neo"}
 ---
+
 stateDiagram-v2
   direction TB
-  state "PENDING" as pending
-  state "GENERATING" as generating
-  state "AWAITING_EXPERT_REVIEW" as review
-  state "FAILED_RETRYABLE" as retry
-  state "BLOCKED_OR_UNRESOLVED" as blocked
-  state "APPROVED" as approved
-  state "LEARNING" as learning
-  state "COMPLETED" as completed
-  state "BYPASS_ONLY<br/>Needs supplementation remains" as bypass
-  [*] --> pending : Confirm reviewed profile request
-  pending --> generating : Freeze Role-Level input
-  generating --> completed : No learning required
-  generating --> review : Proposal and provision check
-  generating --> retry : Transient generation failure
-  generating --> blocked : Planning error
-  retry --> generating : Retry within allowed policy
-  blocked --> generating : Repair and retry
-  review --> review : Expert edits or repairs proposal
-  review --> approved : Expert approves exact valid revision
-  approved --> learning : Non-bypassed requirements remain
-  approved --> bypass : Only accepted bypasses remain
-  learning --> learning : Assess and recalculate
-  learning --> review : New missing provision
-  learning --> completed : All required work met
-  learning --> bypass : Only accepted bypasses remain
-  completed --> [*] : Permit target change
-  bypass --> [*] : Permit change, preserve gaps
-  classDef accepted fill:#eaf6ef,stroke:#1a9e4a,color:#0f1729,stroke-width:1.5px
-  classDef attention fill:#fdf2f2,stroke:#dc2828,color:#0f1729,stroke-width:1.5px
-  classDef working fill:#fef3eb,stroke:#e6650f,color:#0f1729,stroke-width:1.5px
-  class pending,generating,review,learning working
-  class approved,completed accepted
-  class blocked attention
-  class bypass working
+  state "Request generation status" as Request {
+    state "PENDING" as pending
+    state "GENERATING" as generating
+    state "FAILED_RETRYABLE" as failed
+    state "SUCCEEDED" as ready
+    state "NO_LEARNING_REQUIRED" as empty
+    [*] --> pending : Freeze requirement input and bind target
+    pending --> generating : Worker claim and fencing
+    generating --> failed : Recoverable generation failure
+    failed --> generating : Authorized repair and retry
+    generating --> ready : Publish required-work revision
+    generating --> empty : No required learning need
+  }
+  state "Review status" as Review {
+    state "AWAITING_EXPERT_REVIEW" as waiting
+    state "APPROVED" as approved
+    [*] --> waiting : Required work needs initial review
+    waiting --> approved : Assigned Expert approves exact revision and hash
+    approved --> approved : Valid successor keeps approval basis
+    approved --> waiting : Approval assignment or basis no longer valid
+  }
+  state "Requirement step state" as Step {
+    state "NEEDS_EXPERT_ACTION" as action
+    state "NEEDS_SUPPLEMENTATION" as needs
+    state "IN_PROGRESS" as studying
+    state "FULFILLED" as fulfilled
+    state "BYPASSED" as bypassed
+    action --> needs : Compatible provision appears
+    needs --> studying : Start accepted option
+    studying --> fulfilled : Exact official evidence accepted
+    action --> bypassed : Authorized scoped decision with reason
+    needs --> bypassed : Source permits unresolved REQUIRED waiver
+    studying --> bypassed : Source permits unresolved REQUIRED waiver
+  }
+  note right of Step
+    PARALLEL_SUPPLEMENT never gates new target
+    No blocking REQUIRED steps releases target
+    Bypass policy boundary remains unresolved
+  end note

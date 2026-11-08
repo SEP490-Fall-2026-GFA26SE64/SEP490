@@ -1,5 +1,5 @@
 ---
-title: "CERD-04 - Pathway Review, Learning and Bypass"
+title: "CERD-04 - Requirement roots, learning and certificate decisions"
 config:
   layout: dagre
   look: classic
@@ -9,22 +9,16 @@ config:
   themeVariables: {background: "#ffffff", primaryColor: "#ffffff", primaryTextColor: "#0f172a", primaryBorderColor: "#334155", lineColor: "#334155", textColor: "#0f172a", edgeLabelBackground: "#ffffff", fontSize: "18px"}
   er: {nodeSpacing: 36, rankSpacing: 65, minEntityWidth: 140, diagramPadding: 24}
 ---
+
 erDiagram
   direction TB
-  CompetencyProfile["CompetencyProfile"]
-  PathwayRequest["PathwayRequest"]
-  PathwayRevision["PathwayRevision"]
-  PathwayStep["PathwayStep"]
-  StepOption["StepOption"]
-  PathwayReview["PathwayReview"]
-  LearningProgress["LearningProgress"]
-  CertificateSubmission["CertificateSubmission"]
-  PathwayBypass["PathwayBypass"]
-  CompetencyProfile ||--o{ PathwayRequest : "reviewed profile input"
-  PathwayRequest ||--o{ PathwayRevision : "version history"
-  PathwayRevision ||--o{ PathwayStep : "ordered work"
-  PathwayRevision ||--o{ PathwayReview : "exact Expert decision"
-  PathwayStep ||--o{ StepOption : "eligible provision"
-  StepOption ||--o{ LearningProgress : "module learning"
-  PathwayStep ||--o{ CertificateSubmission : "certificate evidence"
-  PathwayStep ||--o{ PathwayBypass : "missing provision decision"
+  RoleSelection ||--o{ RequirementSnapshot : "immutable exact input"
+  RequirementSnapshot ||--o{ PathwayRequest : "binds target on confirmation"
+  PathwayRequest ||--o{ PathwayRevision : "approval and event lineage"
+  PathwayRevision ||--o{ RequirementStep : "REQUIRED or PARALLEL_SUPPLEMENT"
+  RequirementStep ||--o{ ModuleOption : "eligible compatible choices"
+  ModuleOption }o..o{ OriginalLearningProgress : "module revision context not owner FK"
+  RequirementStep ||..o{ CertificateSubmission : "frozen JSON request and step context"
+  CertificateSubmission ||--o| CertificateDecision : "one exact assigned review"
+  RequirementStep ||--o{ BypassDecision : "waiver is not evidence"
+  RequirementStep }o--o{ RequirementStep : "assessed dependencies exclude parallel work"

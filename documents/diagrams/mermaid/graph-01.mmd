@@ -1,71 +1,124 @@
----
-title: "GRAPH-01 - JobPosition ontology v0.12 with Certificate and Level duration target extensions"
-config: {"theme":"base","fontFamily":"Segoe UI, Arial, sans-serif","themeVariables":{"fontFamily":"Segoe UI, Arial, sans-serif","fontSize":"16px","primaryColor":"#ffffff","primaryTextColor":"#0f1729","primaryBorderColor":"#64748b","secondaryColor":"#fef3eb","tertiaryColor":"#ffffff","lineColor":"#64748b","textColor":"#0f1729","mainBkg":"#ffffff","background":"#ffffff","clusterBkg":"#ffffff","clusterBorder":"#64748b","edgeLabelBackground":"#ffffff","titleColor":"#0f1729","noteBkgColor":"#fef3eb","noteTextColor":"#0f1729","noteBorderColor":"#e6650f","attributeBackgroundColorOdd":"#ffffff","attributeBackgroundColorEven":"#ffffff","secondaryBorderColor":"#64748b","tertiaryBorderColor":"#64748b","secondaryTextColor":"#0f1729","tertiaryTextColor":"#0f1729"},"layout":"dagre","er":{"layoutDirection":"LR","nodeSpacing":70,"rankSpacing":100,"entityPadding":16,"fontSize":16,"minEntityWidth":140,"diagramPadding":32}}
----
-erDiagram
-  direction LR
-  SDD_GRAPH_01_JobPosition["JobPosition"] {
-    string id PK
-    string code
-    string name
-    integer jobZone
-    number interestRealistic
-    number interestInvestigative
-    number interestArtistic
-    number interestSocial
-    number interestEnterprising
-    number interestConventional
+%% Companion of ../neo4j.puml; canonical image exports use that PlantUML source.
+classDiagram
+  direction TB
+  class JobPosition {
+    id: String [UNIQUE]
+    code: String
+    name: String
+    organizationId: String
+    version: String
+    status: String
+    reviewStatus: String
+    jobZone: Long
+    interestRealistic: Double
+    interestInvestigative: Double
+    interestArtistic: Double
+    interestSocial: Double
+    interestEnterprising: Double
+    interestConventional: Double
   }
-  SDD_GRAPH_01_TargetRole["TargetRole"] {
-    string id PK
-    string code
-    string name
-    string scope
-    string rejectReason
+  class TargetRole {
+    id: String [UNIQUE]
+    code: String
+    name: String
+    organizationId: String
+    version: String
+    status: String
+    reviewStatus: String
+    scope: String
+    assignedExpertId: String
+    assignedExpertName: String
   }
-  SDD_GRAPH_01_Level["Level"] {
-    string id PK
-    string code
-    string name
-    integer rank
-    review_estimate duration
-    string attainmentRule
+  class Level {
+    id: String [UNIQUE]
+    code: String
+    name: String
+    organizationId: String
+    version: String
+    status: String
+    reviewStatus: String
+    rank: Long
+    attainmentRule: String
   }
-  SDD_GRAPH_01_Competency["Competency"] {
-    string id PK
-    string code
-    string name
-    string description
-    string attainmentRule
+  class Competency {
+    id: String [UNIQUE]
+    code: String
+    name: String
+    description: String
+    organizationId: String
+    version: String
+    status: String
+    reviewStatus: String
+    attainmentRule: String
   }
-  SDD_GRAPH_01_MicroSkill["MicroSkill"] {
-    string id PK
-    string name
-    string definition
+  class MicroSkill {
+    id: String [UNIQUE]
+    name: String
+    definition: String
+    organizationId: String
+    version: String
+    status: String
+    reviewStatus: String
+    reviewSource: String
+    reviewedBy: String
+    provisionMode: String
+    foundationOutcomeCodes: String[]
+    foundationOutcomeLabels: String[]
+    intermediateOutcomeCodes: String[]
+    intermediateOutcomeLabels: String[]
+    advancedOutcomeCodes: String[]
+    advancedOutcomeLabels: String[]
   }
-  SDD_GRAPH_01_LearningModule["LearningModule"] {
-    string id PK
-    string title
-    string moduleType
-    string contentUri
-    string contentType
-    string contentVersion
-    review_estimate duration
-    review_estimate price
+  class LearningModule {
+    id: String [UNIQUE]
+    title: String
+    organizationId: String
+    version: String
+    status: String
+    reviewStatus: String
+    reviewSource: String
+    moduleType: String
+    duration: Long
+    knowledgeLevel: String
+    skillVersion: String
+    contentType: String
+    contentUri: String
+    contentVersion: String
+    outcomeCodes: String[]
   }
-  SDD_GRAPH_01_Certificate["Certificate"] {
-    string id PK
-    string organizationId
-    string name
-    string knowledgeLevel
-    json outcomeCodes
-    string referenceUrl
+  class Certificate {
+    id: String [UNIQUE]
+    organizationId: String
+    version: String
+    name: String
+    description: String
+    knowledgeLevel: String
+    skillVersion: String
+    outcomeCodes: String[]
+    referenceUrl: String
+    status: String
+    reviewStatus: String
+    authoredBy: String
+    authoredAt: String
+    approvedBy: String
+    approvedAt: String
+    commandHash: String
   }
-  SDD_GRAPH_01_JobPosition ||--o{ SDD_GRAPH_01_TargetRole : "HAS_ROLE"
-  SDD_GRAPH_01_TargetRole ||--o{ SDD_GRAPH_01_Level : "HAS_LEVEL"
-  SDD_GRAPH_01_Level ||--o{ SDD_GRAPH_01_Competency : "HAS_COMPETENCY"
-  SDD_GRAPH_01_Competency }o--o{ SDD_GRAPH_01_MicroSkill : "HAS_SKILL"
-  SDD_GRAPH_01_Level }o--o{ SDD_GRAPH_01_MicroSkill : "REQUIRES_SKILL"
-  SDD_GRAPH_01_LearningModule }o--|| SDD_GRAPH_01_MicroSkill : "TEACHES"
-  SDD_GRAPH_01_MicroSkill }o--o{ SDD_GRAPH_01_MicroSkill : "HAS_SKILL_PREREQUISITE"
-  SDD_GRAPH_01_Certificate }o--|| SDD_GRAPH_01_MicroSkill : "CERTIFIES"
+  JobPosition --> TargetRole : HAS_ROLE
+  TargetRole --> Level : HAS_LEVEL
+  Level --> Competency : HAS_COMPETENCY
+  Competency --> MicroSkill : HAS_SKILL
+  Level --> MicroSkill : REQUIRES_SKILL
+  LearningModule --> MicroSkill : TEACHES
+  MicroSkill --> MicroSkill : HAS_SKILL_PREREQUISITE
+  MicroSkill --> Certificate : REQUIRES_CERTIFICATE
+  note for MicroSkill "Catalog only. PostgreSQL owns learner state and evidence."
+  note for Certificate "Source-defined; not observed in supplied schema capture."
+%% HAS_ROLE: id: String; version: String; status: String; reviewStatus: String
+%% HAS_LEVEL: id: String; version: String; status: String; reviewStatus: String
+%% HAS_COMPETENCY: id: String; version: String; status: String; reviewStatus: String
+%% HAS_SKILL: id: String; version: String; status: String; reviewStatus: String
+%% REQUIRES_SKILL: id: String; requiredKnowledgeLevels: String[]; isMandatory: Boolean; version: String; status: String; reviewStatus: String
+%% TEACHES: id: String; organizationId: String; version: String; status: String; reviewStatus: String; reviewSource: String
+%% HAS_SKILL_PREREQUISITE: id: String; organizationId: String; prerequisiteKnowledgeLevel: String; dependentKnowledgeLevel: String; version: String; status: String; reviewStatus: String; reviewSource: String
+%% REQUIRES_CERTIFICATE: organizationId: String; status: String; createdBy: String; createdAt: String; replacedBy: String; replacedByActor: String; replacedAt: String

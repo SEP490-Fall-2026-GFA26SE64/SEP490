@@ -1,3 +1,6 @@
+// HISTORICAL source-union projection, superseded for the current catalog diagram on 2026-11-08.
+// Current canonical graph: ../neo4j.puml; capture/source scope: ../../neo4j_schema.md#diagram-scope--2026-11-08.
+// Retained as a separate historical relational visualization; do not use it as the current capture.
 // Paste this complete file into dbdiagram.io. This is a VISUAL relational projection of Neo4j.
 // It is NOT a PostgreSQL migration or a physical Neo4j table schema.
 // Evidence: documents/neo4j_schema.md, ontology_seed-v011.json and graph_payload.py;

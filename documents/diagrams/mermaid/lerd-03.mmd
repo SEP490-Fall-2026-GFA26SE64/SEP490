@@ -1,78 +1,15 @@
 ---
-title: "LERD-03 - Role Requirements and Learning Provision"
-config: {"theme":"base","fontFamily":"Segoe UI, Arial, sans-serif","themeVariables":{"fontFamily":"Segoe UI, Arial, sans-serif","fontSize":"16px","primaryColor":"#ffffff","primaryTextColor":"#0f1729","primaryBorderColor":"#64748b","secondaryColor":"#fef3eb","tertiaryColor":"#ffffff","lineColor":"#64748b","textColor":"#0f1729","mainBkg":"#ffffff","background":"#ffffff","clusterBkg":"#ffffff","clusterBorder":"#64748b","edgeLabelBackground":"#ffffff","titleColor":"#0f1729","noteBkgColor":"#fef3eb","noteTextColor":"#0f1729","noteBorderColor":"#e6650f","attributeBackgroundColorOdd":"#ffffff","attributeBackgroundColorEven":"#ffffff","secondaryBorderColor":"#64748b","tertiaryBorderColor":"#64748b","secondaryTextColor":"#0f1729","tertiaryTextColor":"#0f1729"},"layout":"dagre","er":{"layoutDirection":"LR","nodeSpacing":36,"rankSpacing":74,"entityPadding":16,"fontSize":16,"minEntityWidth":140,"diagramPadding":24}}
+title: "LERD-03 - Logical catalog references; IDs are snapshots outside Neo4j"
+config: {"theme":"base","fontFamily":"Segoe UI, Arial, sans-serif","themeVariables":{"fontFamily":"Segoe UI, Arial, sans-serif","fontSize":"16px","primaryColor":"#ffffff","primaryTextColor":"#0f1729","primaryBorderColor":"#64748b","secondaryColor":"#fef3eb","tertiaryColor":"#ffffff","lineColor":"#64748b","textColor":"#0f1729","mainBkg":"#ffffff","background":"#ffffff","clusterBkg":"#ffffff","clusterBorder":"#64748b","edgeLabelBackground":"#ffffff","titleColor":"#0f1729","noteBkgColor":"#fef3eb","noteTextColor":"#0f1729","noteBorderColor":"#e6650f","attributeBackgroundColorOdd":"#ffffff","attributeBackgroundColorEven":"#ffffff","secondaryBorderColor":"#64748b","tertiaryBorderColor":"#64748b","secondaryTextColor":"#0f1729","tertiaryTextColor":"#0f1729"},"layout":"dagre","er":{"layoutDirection":"LR","nodeSpacing":60,"rankSpacing":120,"entityPadding":16,"fontSize":16,"minEntityWidth":140,"diagramPadding":24}}
 ---
+
 erDiagram
   direction TB
-  TargetRole["TargetRole"] {
-    text role_id PK "REQUIRED"
-    uuid organization_id FK "REQUIRED"
-    text name "REQUIRED"
-    integer catalog_version "REQUIRED"
-    text status "REQUIRED"
-  }
-  RoleLevel["RoleLevel"] {
-    text role_level_id PK "REQUIRED"
-    text role_id FK "REQUIRED"
-    text level_code "REQUIRED"
-    text name "REQUIRED"
-    integer catalog_version "REQUIRED"
-    text status "REQUIRED"
-  }
-  RoleSkillRequirement["RoleSkillRequirement"] {
-    text requirement_id PK "REQUIRED"
-    text role_level_id FK "REQUIRED"
-    text skill_id FK "REQUIRED"
-    text knowledge_level "REQUIRED"
-    jsonb outcome_codes "REQUIRED"
-    boolean mandatory "REQUIRED"
-    integer catalog_version "REQUIRED"
-  }
-  Skill["Skill"] {
-    text skill_id PK "REQUIRED"
-    uuid organization_id FK "REQUIRED"
-    text name "REQUIRED"
-    text description "NULLABLE"
-    integer catalog_version "REQUIRED"
-    text status "REQUIRED"
-  }
-  LearningModule["LearningModule"] {
-    text module_id PK "REQUIRED"
-    uuid organization_id FK "REQUIRED"
-    text skill_id FK "REQUIRED"
-    text title "REQUIRED"
-    text knowledge_level "REQUIRED"
-    jsonb outcome_codes "REQUIRED"
-    integer content_version "REQUIRED"
-    text content_type "REQUIRED"
-    text private_content_reference "REQUIRED"
-    integer duration_minutes "NULLABLE"
-    text status "REQUIRED"
-  }
-  Certificate["Certificate"] {
-    text certificate_id PK "REQUIRED"
-    uuid organization_id FK "REQUIRED"
-    text skill_id FK "REQUIRED"
-    text name "REQUIRED"
-    text knowledge_level "REQUIRED"
-    jsonb outcome_codes "REQUIRED"
-    text reference_url "REQUIRED"
-    integer version "REQUIRED"
-    text status "REQUIRED"
-  }
-  SkillPrerequisite["SkillPrerequisite"] {
-    text prerequisite_id PK "REQUIRED"
-    uuid organization_id FK "REQUIRED"
-    text dependent_skill_id FK "REQUIRED"
-    text dependent_knowledge_level "REQUIRED"
-    text prerequisite_skill_id FK "REQUIRED"
-    text prerequisite_knowledge_level "REQUIRED"
-    integer catalog_version "REQUIRED"
-  }
-  TargetRole ||--o{ RoleLevel : "has member levels"
-  RoleLevel ||--o{ RoleSkillRequirement : "requires"
-  Skill ||--o{ RoleSkillRequirement : "required capability"
-  Skill ||--o{ LearningModule : "taught by"
-  Skill ||--o{ Certificate : "certificate provision"
-  Skill ||--o{ SkillPrerequisite : "dependent skill"
-  Skill ||--o{ SkillPrerequisite : "prerequisite skill"
+  JobPosition ||--o{ TargetRole : "HAS_ROLE"
+  TargetRole ||--o{ Level : "HAS_LEVEL"
+  Level ||--o{ Competency : "HAS_COMPETENCY"
+  Competency }o--o{ MicroSkill : "HAS_SKILL"
+  Level }o--o{ MicroSkill : "REQUIRES_SKILL explicit knowledge levels"
+  LearningModule }o--|| MicroSkill : "TEACHES exactly one Skill"
+  MicroSkill }o--o{ MicroSkill : "PREREQUISITE level pair"
+  MicroSkill ||--o{ Certificate : "REQUIRES_CERTIFICATE"

@@ -50,12 +50,14 @@ The plan uses the following project references:
 
 | Reference | Purpose in this plan |
 | --- | --- |
-| [Report 2 template](../Report2_Project%20Management%20Plan.docx) | Required report structure, table columns, and management topics. |
-| [Product Overview](../PRODUCT_OVERVIEW.md) and [Functional Requirements Catalog](../features/README.md) | Product scope, actor responsibilities, and the 48 source-level functional requirements. |
-| [Four-person allocation](../PHAN_CONG_4_NGUOI.md) | Requested functional ownership model and producer-consumer handoffs. |
-| [Ten-sprint plan](../KE_HOACH_10_SPRINT.md) | Reference sprint windows and dependency-oriented planning. |
-| [Architecture](../ARCHITECTURE.md) and [Neo4j schema](../neo4j_schema.md) | Technical boundaries, data ownership, persistence, and integration constraints. |
-| [Testing documentation](../testing/README.md) | Verification levels, evidence requirements, and recorded limitations. |
+| Report 2 template (historical template; absent from this checkout) | Required report structure, table columns, and management topics. |
+| [Product Overview](../documents/PRODUCT_OVERVIEW.md) and [Functional Requirements Catalog](../documents/features/README.md) | Product scope, actor responsibilities, and the 48 source-level functional requirements. |
+| [Four-person allocation](../documents/PHAN_CONG_4_NGUOI.md) | Requested functional ownership model and producer-consumer handoffs. |
+| [Ten-sprint plan](../documents/KE_HOACH_10_SPRINT.md) | Reference sprint windows and dependency-oriented planning. |
+| [Architecture](../documents/ARCHITECTURE.md) and [Neo4j schema](../documents/neo4j_schema.md) | Technical boundaries, data ownership, persistence, and integration constraints. |
+| [Testing documentation](../documents/testing/README.md) | Verification levels, evidence requirements, and recorded limitations. |
+
+**Current source boundary (2026-11-07):** rule-flow services/schema definitions exist in the local gated composition; live DB, full certificate/bypass/parallel behavior and production acceptance remain unverified. This report does not update effort, completion dates, research results or team ownership from code presence. Member 3/4 allocations below are retained proposals; user-confirmed Person 3 REQ scope governs the current task and any conflicting S2/S4 allocation needs team reconciliation.
 
 **Planning basis.** The functional grouping of Member 1 to Member 4 follows the requested allocation document. That document and the sprint plan are retained planning snapshots, so this report does not treat their earlier exclusions, effort figures, or workflow rules as current product commitments. The allocation below is a proposed report-level arrangement, not a replacement for an approved technical ownership agreement. Member labels do not assume a name-to-number mapping.
 
@@ -68,9 +70,9 @@ The delivery scope includes:
 - Self-service organization registration, account verification, subscription selection and payment, workspace provisioning, renewal, and Employee-seat enforcement.
 - Platform and organization administration, accounts, roles, permissions, departments, job positions, and Expert assignments.
 - Expert configuration of target-role requirements, L&D publication, learning-module/content authoring, assessment question banks, and offering approval.
-- Baseline and module assessments, RIASEC interest assessment, assessment results and history, and AI-assisted target-role guidance.
+- Baseline and Skill Assessment share execution but have separate policy ownership: L&D org+Role–Level and Expert org+Skill–knowledge. Timed frozen papers, exact group results, retakes/history and diagnostic versus official evidence are the current flow. RIASEC/AI guidance remains a separate incomplete capability.
 - ACT-04 authoring and approval covers the Module, its single-MicroSkill mapping and ordered learning content. Assessment configuration/delivery is a separate workstream and is not part of the submitted approval package.
-- Competency estimation, gap analysis, prerequisite-aware initial pathway generation, Expert initial review, and assessment-driven adaptation.
+- Explicit Skill/knowledge requirements, exact official evidence, requirement-root alternatives/certificate, initial Expert review and assessed-shortage supplementation/recalculation define the current adaptive flow. Old bypass work remains parallel/non-gating after target release. Numeric tracing/CBF obligations remain research commitments for explicit reconciliation, not implementation or result claims.
 - Employee pathway and competency visualization, approved learning-content access, individual-skill learning, and progress tracking.
 - Employee and department development monitoring, recorded training costs and monetary benefits, and ROI summaries.
 - Organization isolation, private sample-content storage, notifications, audit events, reproducible datasets, research evaluation, and deployment documentation.

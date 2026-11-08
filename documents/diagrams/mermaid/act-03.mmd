@@ -1,17 +1,18 @@
 ---
 title: "ACT-03 - Target role management"
-config: {"theme":"base","fontFamily":"Segoe UI, Arial, sans-serif","themeVariables":{"fontFamily":"Segoe UI, Arial, sans-serif","fontSize":"16px","primaryColor":"#ffffff","primaryTextColor":"#0f1729","primaryBorderColor":"#64748b","secondaryColor":"#fef3eb","tertiaryColor":"#ffffff","lineColor":"#64748b","textColor":"#0f1729","mainBkg":"#ffffff","background":"#ffffff","clusterBkg":"#ffffff","clusterBorder":"#64748b","edgeLabelBackground":"#ffffff","titleColor":"#0f1729","noteBkgColor":"#fef3eb","noteTextColor":"#0f1729","noteBorderColor":"#e6650f","secondaryBorderColor":"#64748b","tertiaryBorderColor":"#64748b","secondaryTextColor":"#0f1729","tertiaryTextColor":"#0f1729"},"layout":"elk","elk":{"mergeEdges":false,"nodePlacementStrategy":"NETWORK_SIMPLEX"},"flowchart":{"htmlLabels":true,"nodeSpacing":28,"rankSpacing":56,"curve":"linear","diagramPadding":24,"padding":16,"wrappingWidth":250}}
+config: {"theme":"base","fontFamily":"Segoe UI, Arial, sans-serif","themeVariables":{"fontFamily":"Segoe UI, Arial, sans-serif","fontSize":"16px","primaryColor":"#ffffff","primaryTextColor":"#0f1729","primaryBorderColor":"#64748b","secondaryColor":"#fef3eb","tertiaryColor":"#ffffff","lineColor":"#64748b","textColor":"#0f1729","mainBkg":"#ffffff","background":"#ffffff","clusterBkg":"#ffffff","clusterBorder":"#64748b","edgeLabelBackground":"#ffffff","titleColor":"#0f1729","noteBkgColor":"#fef3eb","noteTextColor":"#0f1729","noteBorderColor":"#e6650f","secondaryBorderColor":"#64748b","tertiaryBorderColor":"#64748b","secondaryTextColor":"#0f1729","tertiaryTextColor":"#0f1729"},"layout":"dagre","elk":{"mergeEdges":false,"nodePlacementStrategy":"NETWORK_SIMPLEX"},"flowchart":{"htmlLabels":true,"nodeSpacing":28,"rankSpacing":56,"curve":"linear","diagramPadding":24,"padding":16,"wrappingWidth":250}}
 ---
+
 flowchart TD
     SRS_ACT_03_N1(("Start"))
     SRS_ACT_03_N4["<b>L and D Manager</b><br/>Create target role and assign<br/>Expert"]
     SRS_ACT_03_N7{"<b>L and D Manager</b><br/>Revision required?"}
     SRS_ACT_03_N8["<b>L and D Manager</b><br/>Return configuration with<br/>feedback"]
     SRS_ACT_03_N10["<b>L and D Manager</b><br/>Publish role"]
-    SRS_ACT_03_N5["<b>Expert</b><br/>Configure competencies,<br/>micro-skills and required<br/>proficiency"]
+    SRS_ACT_03_N5["<b>Expert</b><br/>Configure member Levels, Skills,<br/>explicit knowledge requirements and duration"]
     SRS_ACT_03_N6["<b>Expert</b><br/>Submit completed role<br/>configuration"]
     SRS_ACT_03_N9["<b>Expert</b><br/>Revise and resubmit"]
-    SRS_ACT_03_N11["<b>Employee</b><br/>Browse published organization<br/>roles"]
+    SRS_ACT_03_N11["<b>Employee</b><br/>Browse available Roles and Levels;<br/>Department filter in current UI"]
     SRS_ACT_03_N12(("End"))
   SRS_ACT_03_N1 --> SRS_ACT_03_N4
   SRS_ACT_03_N4 --> SRS_ACT_03_N5
@@ -29,4 +30,3 @@ flowchart TD
   class SRS_ACT_03_N7 decision
   classDef entry fill:#c24a0a,stroke:#c24a0a,color:#ffffff,stroke-width:1.5px
   class SRS_ACT_03_N1,SRS_ACT_03_N12 entry
-

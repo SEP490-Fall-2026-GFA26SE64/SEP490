@@ -7,14 +7,14 @@ flowchart TD
     direction TB
     START(("Start"))
     CREATE["Create manually or import questions"]
-    EDIT["Complete and edit question content"]
+    EDIT["Complete exact Skill, knowledge,<br/>outcome, mandatory flag and four options"]
     SUBMIT["Submit for review"]
   end
   subgraph Actor1["System Handler"]
     direction TB
     DRAFT["Save as DRAFT"]
     RETURN["Record feedback and restore DRAFT"]
-    PUBLISHED["Publish immutable version"]
+    PUBLISHED["Publish immutable version;<br/>retain owned source-bank mapping"]
     END(("End"))
   end
   subgraph Actor2["L&amp;D Manager"]

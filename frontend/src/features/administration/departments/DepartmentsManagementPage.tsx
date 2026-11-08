@@ -460,6 +460,7 @@ export function DepartmentsManagementPage() {
         console.warn('Neo4j department create error, saved in local store:', err)
       }
 
+
       toast({
         title: 'Department Created',
         description: `Created ${formName} (${codeClean}) successfully.`,
@@ -511,7 +512,6 @@ export function DepartmentsManagementPage() {
     setDepartments((prev) =>
       prev.filter((d) => d.id !== targetDept.id && d.code !== targetDept.id && d.code !== targetDept.code)
     )
-
     toast({
       title: 'Department Removed',
       description: `${targetDept.name} has been removed from the directory.`,
@@ -573,6 +573,7 @@ export function DepartmentsManagementPage() {
             value={`${totalConnectedJobPositions} Positions`}
             valueClassName="text-warning"
             description="Mapped industry roles"
+
           />
         </div>
 

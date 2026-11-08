@@ -1,5 +1,12 @@
 # Architecture Diagrams
 
+## Adaptive flow diagrams - source alignment 2026-11-08
+
+The existing ACT-05, scoped policy/paper/evidence ERDs, requirement pathway ERDs, class/sequence/state views and direct catalog/module/Question Bank dependencies now describe source at commit `84cfb6f1`. Canonical Mermaid sources and sibling SVG/PNG exports are synchronized; Report 3 uses the updated fixed-column swimlanes and Report 4 state aliases are refreshed. PostgreSQL views show selected source-defined columns through V62, not live DB captures. Catalog IDs remain cross-store snapshots, not SQL foreign keys into Neo4j.
+
+Baseline diagnostics, official evidence and prerequisite review flags are separate. Request/review/step states are separate. Approval basis, target lock and non-gating parallel supplementation remain visible. The 2026-11-08 decisions now allow Expert option reduction and restrict bypass to missing suitable provision. Role-derived Skill authorization, draft-first ordering and module-specific retry allowance are confirmed; code and source-diagram annotations await the separate confirmation session. Independent learning remains a partial target. Application code, migrations, data and historical runtime evidence are unchanged.
+
+
 ## ACT-04 approval scope — 2026-11-06
 
 ACT-04 now covers the Module, one MicroSkill mapping and ordered learning content. Assessment configuration is outside the submitted approval package. Canonical and swimlane ACT-04 assets, SEQ-06 and the UC-B submission dependency are synchronized with Reports 1–4. Prior dated entries retain their original scope.
@@ -29,17 +36,17 @@ ACT-05's Start connector is pinned to the shared vertical centerline of Start an
 
 ## JobPosition ontology v0.12 - 2026-11-06
 
-SRS section 3.1.5 now includes [CGRAPH-01 source](mermaid/cgraph-01.mmd), [SVG](mermaid/cgraph-01.svg) and [PNG](mermaid/cgraph-01.png) immediately below CERD-01 through CERD-04. This conceptual view retains the same six node labels, seven relationships and cardinalities as GRAPH-01, with no attributes or PK/FK rows. It uses the existing conceptual ERD visual style. Render with the command below plus `cgraph-01` as the final argument; the four flow ERDs are unchanged.
+SRS section 3.1.5 now includes [CGRAPH-01 source](mermaid/cgraph-01.mmd), [SVG](mermaid/cgraph-01.svg) and [PNG](mermaid/cgraph-01.png) immediately below CERD-01 through CERD-04. This separate conceptual view has no property rows; it retains its existing conceptual topology. The 2026-11-08 property expansion applies to the shared physical catalog image below. It uses the existing conceptual ERD visual style. Render with the command below plus `cgraph-01` as the final argument; the four flow ERDs are unchanged.
 
 Report 4's GRAPH-01 and node/edge descriptions now match the current v0.12 dataset/import contract: `JobPosition` replaces the obsolete `Occupation` label, while historical `OCC-` IDs remain unchanged. Each LearningModule has exactly one TEACHES edge to a MicroSkill; the old teaching-focus/difficulty fields are omitted. Dataset ownership fields are represented by graph relationships, not imported node properties. Common review/lifecycle metadata remains documented alongside the diagram.
 
-[Source](mermaid/graph-01.mmd) · [SVG](mermaid/graph-01.svg) · [PNG](mermaid/graph-01.png) · [Renderer](render-ontology-diagram.cjs)
+[Canonical source](neo4j.puml) · [SVG](neo4j.svg) · [PNG](neo4j.png) · [Mermaid companion](mermaid/graph-01.mmd) · [Renderer](render-ontology-diagram.cjs)
 
 ```powershell
-node documents\diagrams\render-ontology-diagram.cjs C:\path\to\mermaid.min.js
+node documents\diagrams\render-ontology-diagram.cjs C:\path\to\plantuml.jar graph-01
 ```
 
-Validation uses the current dataset to check six labels, seven relationship types, all displayed business properties and one teaching edge per Module. Local Mermaid 12.3.0/Playwright rendering checks SVG XML, complete node/edge-label coverage, clipped labels and label collisions. No database import, identifier rewrite or runtime migration is performed. Historical v0.9/v0.11 datasets and the older `neo4j.svg`/`neo4j.png` remain unchanged.
+The 2026-11-08 catalog exports use `neo4j.puml` as their single canonical image source. `mermaid/graph-01.svg` and `.png` are identical compatibility copies, not separate renders. All six supplied label-property lists and seven directed relationships are shown; source-defined Certificate/REQUIRES_CERTIFICATE are marked as absent from the supplied capture. See [schema scope](../neo4j_schema.md#diagram-scope--2026-11-08). No import or runtime migration is performed. The conceptual CGRAPH-01 renderer still accepts a Mermaid bundle and `cgraph-01`.
 
 ## Package overview style - 2026-11-06
 
@@ -75,22 +82,6 @@ Report 3/4 display the approved ACT-05 Role-Level baseline/configuration flow an
 
 [Verification and artifact notes](review2-role-level-20261106.md) · [Machine-readable checks and hashes](review2-role-level-20261106-checks.json).
 
-## Target design r3 — 2026-11-05
-
-These are the **current target** images for the organization-rule flow, not pg_catalog captures or applied migration. Historical images/evidence below are preserved.
-
-| Target | SVG | PNG | Editable sources |
-| --- | --- | --- | --- |
-| Ontology | [SVG](target-r3-ontology.svg) | [PNG](target-r3-ontology.png) | [PlantUML](target-r3-ontology.puml), [JSON](target-r3-ontology.diagram.json) |
-| Assessment/profile | [SVG](target-r3-assessment.svg) | [PNG](target-r3-assessment.png) | [PlantUML](target-r3-assessment.puml), [JSON](target-r3-assessment.diagram.json) |
-| Pathway/certificate | [SVG](target-r3-pathway.svg) | [PNG](target-r3-pathway.png) | [PlantUML](target-r3-pathway.puml), [JSON](target-r3-pathway.diagram.json) |
-| Business flow | [SVG](target-r3-flow.svg) | [PNG](target-r3-flow.png) | [PlantUML](target-r3-flow.puml), [JSON](target-r3-flow.diagram.json) |
-
-[Canonical schema/API/flow](../technical/Organization%20Rule%20Assessment%20and%20Pathway.md) supplies detailed fields/constraints. Principal keys/field groups are shown; orange = changed owner, green = new scoped data, grey = retained structure.
-
-Local Windows System.Drawing generated SVG/PNG and matching PlantUML text from shared layout JSON. No install/external renderer/DB/service startup/executable tests. PNGs were visually inspected; SVG XML/source labels are checked. PlantUML is supplied as semantic source, not falsely claimed rendered by an unavailable PlantUML tool. Older pg_catalog JSON and FK inventories remain dated captures.
-
-
 ## ACT-04 / ACT-10 authoring coverage — 2026-11-06
 
 Report3 and Report4 now include the following current-source additions, using the existing conceptual/logical/physical and state-diagram templates:
@@ -110,7 +101,7 @@ The separate authoring validation files are absent from this checkout; source ma
 
 ## Single-Skill Module contract — 2026-11-05
 
-[Current schema and Mermaid](../neo4j_schema.md#current-contract--2026-11-05) and [PlantUML source](neo4j.puml) describe Module → TEACHES → exactly one MicroSkill, with multiple alternative Modules per Skill and no teaching focus/difficulty properties. PostgreSQL owns original-version completion and optional-learning admission. Existing `neo4j.svg`/`neo4j.png` are retained historical v0.11 renders; they were not regenerated or represented as current. No PlantUML renderer was installed for this source change. [Runtime/API contract](../technical/Skill-Learning-Eligibility.md).
+[Current schema and Mermaid](../neo4j_schema.md#current-contract--2026-11-05) and [PlantUML source](neo4j.puml) describe Module → TEACHES → exactly one MicroSkill, with multiple alternative Modules per Skill and no teaching focus/difficulty properties. PostgreSQL owns original-version completion and optional-learning admission. The 2026-11-08 update regenerates `neo4j.svg`/`neo4j.png` with full captured properties; they are no longer historical v0.11 renders. [Runtime/API contract](../technical/Skill-Learning-Eligibility.md).
 
 ## Current Scope Alignment
 
@@ -162,7 +153,7 @@ These PlantUML sources back the diagrams in [../ARCHITECTURE.md](../ARCHITECTURE
 | PostgreSQL subscriptions, payments, memberships | [postgresql-subscription.puml](postgresql-subscription.puml) | [postgresql-subscription.svg](postgresql-subscription.svg) |
 | PostgreSQL assessment and learning | [postgresql-assessment.puml](postgresql-assessment.puml) | [postgresql-assessment.svg](postgresql-assessment.svg) |
 | PostgreSQL pathway, analytics, evaluation | [postgresql-pathway.puml](postgresql-pathway.puml) | [postgresql-pathway.svg](postgresql-pathway.svg) |
-| Neo4j job position-based ontology 0.7.0 | [neo4j.puml](neo4j.puml) | [neo4j.svg](neo4j.svg) |
+| Neo4j catalog capture + source-defined Certificate | [neo4j.puml](neo4j.puml) | [neo4j.svg](neo4j.svg) |
 
 After editing PostgreSQL migrations, start the development stack, regenerate the PostgreSQL sources from `pg_catalog`, then render the SVGs with PlantUML 1.2025.10 or newer:
 
@@ -174,7 +165,7 @@ docker compose -f compose.dev.yml up --build -d
 java -jar path\to\plantuml.jar -tsvg documents/diagrams
 ```
 
-Run these commands from the repository root. PostgreSQL groups cover every table and column; they draw only foreign keys whose endpoints are within the same group. The Neo4j view shows six entity types and seven relationship types for ontology 0.8.0. LearningModule TEACHES MicroSkill is exactly one-to-one; only MicroSkill has prerequisite self-links. SVG and PNG are generated from neo4j.puml using PlantUML 1.2025.10.
+Run these commands from the repository root. PostgreSQL groups cover every table and column; they draw only foreign keys whose endpoints are within the same group. The Neo4j view shows the six captured labels and seven directed relationship types, plus source-only Certificate/REQUIRES_CERTIFICATE. No cardinalities are inferred from the capture; only MicroSkill has prerequisite self-links. SVG and PNG are generated from neo4j.puml using PlantUML 1.2025.10.
 
 On 2026-10-21 the V8 sources were regenerated from the isolated registration-test stack (24 identity/catalog/processing, 23 assessment/learning, 13 pathway/analytics tables). `postgresql.svg` and `runtime-topology.svg` were rendered locally with PlantUML 1.2025.10 and XML-validated. Registration adds seven PostgreSQL tables and the SMTP worker path; it does not change Neo4j.
 

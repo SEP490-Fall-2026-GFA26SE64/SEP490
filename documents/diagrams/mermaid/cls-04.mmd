@@ -1,50 +1,32 @@
 ---
-title: "CLS-04 - Current adaptive assessment ports and services"
-config: {"theme":"base","fontFamily":"Segoe UI, Arial, sans-serif","themeVariables":{"fontFamily":"Segoe UI, Arial, sans-serif","fontSize":"14px","primaryColor":"#ffffff","primaryTextColor":"#0f1729","primaryBorderColor":"#64748b","secondaryColor":"#fef3eb","tertiaryColor":"#ffffff","lineColor":"#64748b","textColor":"#0f1729","mainBkg":"#ffffff","background":"#ffffff","clusterBkg":"#ffffff","clusterBorder":"#64748b","edgeLabelBackground":"#ffffff","titleColor":"#0f1729","noteBkgColor":"#fef3eb","noteTextColor":"#0f1729","noteBorderColor":"#e6650f","classText":"#0f1729","secondaryBorderColor":"#64748b","tertiaryBorderColor":"#64748b","secondaryTextColor":"#0f1729","tertiaryTextColor":"#0f1729"},"layout":"elk","class":{"hideEmptyMembersBox":true,"nodeSpacing":44,"rankSpacing":70,"padding":12,"diagramPadding":24}}
+title: "CLS-04 - Scoped policy and rule assessment owners"
+config: {"theme":"base","fontFamily":"Segoe UI, Arial, sans-serif","themeVariables":{"fontFamily":"Segoe UI, Arial, sans-serif","fontSize":"14px","primaryColor":"#ffffff","primaryTextColor":"#0f1729","primaryBorderColor":"#64748b","secondaryColor":"#fef3eb","tertiaryColor":"#ffffff","lineColor":"#64748b","textColor":"#0f1729","mainBkg":"#ffffff","background":"#ffffff","clusterBkg":"#ffffff","clusterBorder":"#64748b","edgeLabelBackground":"#ffffff","titleColor":"#0f1729","noteBkgColor":"#fef3eb","noteTextColor":"#0f1729","noteBorderColor":"#e6650f","classText":"#0f1729","secondaryBorderColor":"#64748b","tertiaryBorderColor":"#64748b","secondaryTextColor":"#0f1729","tertiaryTextColor":"#0f1729"},"layout":"dagre","class":{"hideEmptyMembersBox":true,"nodeSpacing":44,"rankSpacing":70,"padding":12,"diagramPadding":24}}
 ---
+
 classDiagram
-  direction LR
-  class SDD_CLS_04_AdaptiveBlueprintController["AdaptiveBlueprintController"]
-  class SDD_CLS_04_AdaptiveBlueprintUseCase["AdaptiveBlueprintUseCase"]
-  <<interface>> SDD_CLS_04_AdaptiveBlueprintUseCase
-  class SDD_CLS_04_AdaptiveBlueprintService["AdaptiveBlueprintService"]
-  class SDD_CLS_04_AdaptiveBlueprintStore["AdaptiveBlueprintStore"]
-  <<interface>> SDD_CLS_04_AdaptiveBlueprintStore
-  class SDD_CLS_04_AdaptiveBlueprintEligibilityPort["AdaptiveBlueprintEligibilityPort"]
-  <<interface>> SDD_CLS_04_AdaptiveBlueprintEligibilityPort
-  class SDD_CLS_04_AdaptiveAttemptController["AdaptiveAttemptController"]
-  class SDD_CLS_04_StartRead["AdaptiveAttemptUseCase.StartRead"]
-  <<interface>> SDD_CLS_04_StartRead
-  class SDD_CLS_04_AdaptiveAttemptStartService["AdaptiveAttemptStartService"]
-  class SDD_CLS_04_AdaptiveAttemptAnswerService["AdaptiveAttemptAnswerService"]
-  class SDD_CLS_04_AdaptiveAttemptSubmitService["AdaptiveAttemptSubmitService"]
-  class SDD_CLS_04_AdaptiveAttemptFinalizationService["AdaptiveAttemptFinalizationService"] {
-    -AdaptiveAttemptStore store
-    -AdaptiveAttemptPolicyPort policies
-    -AdaptiveAttemptOutcomePort outcomes
-    +finalizeAccepted(attempt) AdaptiveAttempt
-    +finish(attempt, decision, observed) AdaptiveAttempt
-    +technicalFailure(attempt, observed) AdaptiveAttempt
+  direction TB
+  class AssessmentPolicyController
+  class ScopedAssessmentPolicyService
+  class AssessmentPolicyCatalog
+  class ScopedAssessmentPolicyJpaRepository
+  class RuleAssessmentController
+  class RuleAssessmentAttemptService
+  class RuleAssessmentContextJpaRepository
+  class RuleAssessmentAttemptJpaRepository
+  class RuleAssessmentOutcomeService
+  class RuleAssessmentOutcomeJpaRepository
+  class RuleAssessment {
+    Purpose BASELINE_or_SKILL_ASSESSMENT
+    Paper frozenGroupsAndDeadline
+    select()
+    score()
   }
-  class SDD_CLS_04_AdaptiveAttemptStore["AdaptiveAttemptStore"]
-  <<interface>> SDD_CLS_04_AdaptiveAttemptStore
-  class SDD_CLS_04_AdaptiveAttemptPolicyPort["AdaptiveAttemptPolicyPort"]
-  <<interface>> SDD_CLS_04_AdaptiveAttemptPolicyPort
-  class SDD_CLS_04_AdaptiveAttemptOutcomePort["AdaptiveAttemptOutcomePort"]
-  <<interface>> SDD_CLS_04_AdaptiveAttemptOutcomePort
-  class SDD_CLS_04_AdaptiveAttempt["AdaptiveAttempt"]
-  class SDD_CLS_04_AdaptiveAttemptSnapshot["AdaptiveAttemptSnapshot"]
-  SDD_CLS_04_AdaptiveBlueprintController --> SDD_CLS_04_AdaptiveBlueprintUseCase
-  SDD_CLS_04_AdaptiveBlueprintService ..|> SDD_CLS_04_AdaptiveBlueprintUseCase
-  SDD_CLS_04_AdaptiveBlueprintService --> SDD_CLS_04_AdaptiveBlueprintStore
-  SDD_CLS_04_AdaptiveBlueprintService --> SDD_CLS_04_AdaptiveBlueprintEligibilityPort
-  SDD_CLS_04_AdaptiveAttemptController --> SDD_CLS_04_StartRead
-  SDD_CLS_04_AdaptiveAttemptStartService ..|> SDD_CLS_04_StartRead
-  SDD_CLS_04_AdaptiveAttemptStartService --> SDD_CLS_04_AdaptiveAttemptStore
-  SDD_CLS_04_AdaptiveAttemptAnswerService --> SDD_CLS_04_AdaptiveAttemptStore
-  SDD_CLS_04_AdaptiveAttemptSubmitService --> SDD_CLS_04_AdaptiveAttemptFinalizationService
-  SDD_CLS_04_AdaptiveAttemptAnswerService --> SDD_CLS_04_AdaptiveAttemptFinalizationService
-  SDD_CLS_04_AdaptiveAttemptFinalizationService --> SDD_CLS_04_AdaptiveAttemptStore
-  SDD_CLS_04_AdaptiveAttemptFinalizationService --> SDD_CLS_04_AdaptiveAttemptPolicyPort
-  SDD_CLS_04_AdaptiveAttemptFinalizationService --> SDD_CLS_04_AdaptiveAttemptOutcomePort
-  SDD_CLS_04_AdaptiveAttempt --> SDD_CLS_04_AdaptiveAttemptSnapshot
+  AssessmentPolicyController --> ScopedAssessmentPolicyService
+  ScopedAssessmentPolicyService --> AssessmentPolicyCatalog
+  ScopedAssessmentPolicyService --> ScopedAssessmentPolicyJpaRepository
+  RuleAssessmentController --> RuleAssessmentAttemptService
+  RuleAssessmentAttemptService --> RuleAssessmentContextJpaRepository
+  RuleAssessmentAttemptService --> RuleAssessmentAttemptJpaRepository
+  RuleAssessmentAttemptService --> RuleAssessment
+  RuleAssessmentOutcomeService --> RuleAssessmentOutcomeJpaRepository
+  RuleAssessmentOutcomeService --> RuleAssessment

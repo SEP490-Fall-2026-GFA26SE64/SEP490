@@ -1,5 +1,5 @@
 ---
-title: "CGRAPH-01 - Conceptual JobPosition Ontology"
+title: "CGRAPH-01 - Catalog topology and exact provision"
 config:
   layout: dagre
   look: classic
@@ -9,19 +9,14 @@ config:
   themeVariables: {background: "#ffffff", primaryColor: "#ffffff", primaryTextColor: "#0f172a", primaryBorderColor: "#334155", lineColor: "#334155", textColor: "#0f172a", edgeLabelBackground: "#ffffff", fontSize: "18px"}
   er: {nodeSpacing: 50, rankSpacing: 90, minEntityWidth: 140, diagramPadding: 32}
 ---
+
 erDiagram
   direction TB
-  SDD_GRAPH_01_JobPosition["JobPosition"]
-  SDD_GRAPH_01_TargetRole["TargetRole"]
-  SDD_GRAPH_01_Level["Level"]
-  SDD_GRAPH_01_Competency["Competency"]
-  SDD_GRAPH_01_MicroSkill["MicroSkill"]
-  SDD_GRAPH_01_LearningModule["LearningModule"]
-
-  SDD_GRAPH_01_JobPosition ||--o{ SDD_GRAPH_01_TargetRole : "HAS_ROLE"
-  SDD_GRAPH_01_TargetRole ||--o{ SDD_GRAPH_01_Level : "HAS_LEVEL"
-  SDD_GRAPH_01_Level ||--o{ SDD_GRAPH_01_Competency : "HAS_COMPETENCY"
-  SDD_GRAPH_01_Competency }o--o{ SDD_GRAPH_01_MicroSkill : "HAS_SKILL"
-  SDD_GRAPH_01_Level }o--o{ SDD_GRAPH_01_MicroSkill : "REQUIRES_SKILL"
-  SDD_GRAPH_01_LearningModule }o--|| SDD_GRAPH_01_MicroSkill : "TEACHES"
-  SDD_GRAPH_01_MicroSkill }o--o{ SDD_GRAPH_01_MicroSkill : "HAS_SKILL_PREREQUISITE"
+  JobPosition ||--o{ TargetRole : "HAS_ROLE"
+  TargetRole ||--o{ Level : "HAS_LEVEL"
+  Level ||--o{ Competency : "HAS_COMPETENCY"
+  Competency }o--o{ MicroSkill : "HAS_SKILL"
+  Level }o--o{ MicroSkill : "REQUIRES_SKILL explicit knowledge levels"
+  LearningModule }o--|| MicroSkill : "TEACHES exactly one Skill"
+  MicroSkill }o--o{ MicroSkill : "PREREQUISITE level pair"
+  MicroSkill ||--o{ Certificate : "REQUIRES_CERTIFICATE"

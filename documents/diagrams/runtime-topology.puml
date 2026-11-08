@@ -14,6 +14,9 @@ component "Payment create / reconcile / apply\n(leased PostgreSQL jobs)" as Paym
 cloud "payOS merchant API" as PayOS
 cloud "SMTP\nGmail / isolated Mailpit" as SMTP
 component "Spring Boot migrate profile" as Migrate
+component "Rule expiry + outcome worker" as RuleWorker
+component "Requirement pathway + refresh" as Pathway
+component "Certificate review + private assets" as Certificate
 database "PostgreSQL" as PG
 database "Neo4j" as Graph
 
@@ -34,6 +37,13 @@ Baseline --> Graph : authorized reviewed catalog
 MailWorker --> PG : outbox, lease, delivery state
 MailWorker --> SMTP : bounded SMTP retries
 API --> Graph
-Migrate --> PG : Flyway V1-V32
+API --> RuleWorker : local rule profile
+RuleWorker --> PG : groups, results, evidence, receipts
+API --> Pathway : owned requirement roots and alternatives
+Pathway --> PG : snapshots, revisions, approval and bypass
+Pathway --> Graph : exact catalog provision
+API --> Certificate : own submission / assigned decision
+Certificate --> PG : metadata and official evidence
+Migrate --> PG : Flyway source through V62
 note bottom of Graph : Migration does not reseed or overwrite graph data.
 @enduml

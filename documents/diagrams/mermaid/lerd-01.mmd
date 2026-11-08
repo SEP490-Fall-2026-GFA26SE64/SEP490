@@ -1,73 +1,44 @@
 ---
-title: "LERD-01 - Role-Level Selection and Baseline Configuration"
+title: "LERD-01 - Scoped policies: selected physical columns, source-defined"
 config: {"theme":"base","fontFamily":"Segoe UI, Arial, sans-serif","themeVariables":{"fontFamily":"Segoe UI, Arial, sans-serif","fontSize":"16px","primaryColor":"#ffffff","primaryTextColor":"#0f1729","primaryBorderColor":"#64748b","secondaryColor":"#fef3eb","tertiaryColor":"#ffffff","lineColor":"#64748b","textColor":"#0f1729","mainBkg":"#ffffff","background":"#ffffff","clusterBkg":"#ffffff","clusterBorder":"#64748b","edgeLabelBackground":"#ffffff","titleColor":"#0f1729","noteBkgColor":"#fef3eb","noteTextColor":"#0f1729","noteBorderColor":"#e6650f","attributeBackgroundColorOdd":"#ffffff","attributeBackgroundColorEven":"#ffffff","secondaryBorderColor":"#64748b","tertiaryBorderColor":"#64748b","secondaryTextColor":"#0f1729","tertiaryTextColor":"#0f1729"},"layout":"dagre","er":{"layoutDirection":"LR","nodeSpacing":36,"rankSpacing":74,"entityPadding":16,"fontSize":16,"minEntityWidth":140,"diagramPadding":24}}
 ---
+
 erDiagram
   direction TB
-  Organization["Organization"] {
-    uuid organization_id PK "REQUIRED"
-    text name "REQUIRED"
-    text status "REQUIRED"
+  assessment_rule_policy_draft {
+    uuid organization_id PK
+    text purpose PK
+    content_hash scope_key PK
+    uuid id
+    bigint revision
+    jsonb configuration "NULLABLE"
+    content_hash catalog_hash
   }
-  Account["Account"] {
-    uuid account_id PK "REQUIRED"
-    uuid organization_id FK "REQUIRED"
-    text display_name "REQUIRED"
-    text actor_role "REQUIRED"
-    text status "REQUIRED"
+  assessment_rule_policy_version {
+    uuid id PK
+    uuid organization_id
+    text purpose
+    content_hash scope_key "NULLABLE"
+    bigint version
+    content_hash catalog_hash "NULLABLE"
+    jsonb configuration
   }
-  TargetRole["TargetRole"] {
-    text role_id PK "REQUIRED"
-    uuid organization_id FK "REQUIRED"
-    text name "REQUIRED"
-    integer catalog_version "REQUIRED"
-    text status "REQUIRED"
+  assessment_rule_scoped_activation {
+    uuid organization_id PK
+    text purpose PK
+    content_hash scope_key PK
+    uuid current_policy_version_id
+    bigint revision
   }
-  RoleLevel["RoleLevel"] {
-    text role_level_id PK "REQUIRED"
-    text role_id FK "REQUIRED"
-    text level_code "REQUIRED"
-    text name "REQUIRED"
-    integer catalog_version "REQUIRED"
-    text status "REQUIRED"
+  assessment_rule_abandoned_draft {
+    uuid id PK
+    uuid organization_id
+    text purpose
+    content_hash scope_key
   }
-  RoleSelection["RoleSelection"] {
-    uuid selection_id PK "REQUIRED"
-    uuid organization_id FK "REQUIRED"
-    uuid learner_id FK "REQUIRED"
-    text role_level_id FK "REQUIRED"
-    integer revision "REQUIRED"
-    timestamptz selected_at "REQUIRED"
-    timestamptz ended_at "NULLABLE"
-    uuid previous_selection_id FK "NULLABLE"
+  assessment_rule_policy_version_number_history {
+    uuid policy_id PK
+    content_hash scope_key
+    bigint scoped_version
   }
-  BaselineConfig["BaselineConfig"] {
-    uuid config_id PK "REQUIRED"
-    uuid organization_id FK "REQUIRED"
-    text role_level_id FK "REQUIRED"
-    integer revision "REQUIRED"
-    uuid active_version_id FK "NULLABLE"
-    uuid created_by FK "REQUIRED"
-    timestamptz created_at "REQUIRED"
-  }
-  BaselineConfigVersion["BaselineConfigVersion"] {
-    uuid config_version_id PK "REQUIRED"
-    uuid config_id FK "REQUIRED"
-    integer version "REQUIRED"
-    text name "REQUIRED"
-    jsonb parameters "REQUIRED"
-    jsonb requirement_snapshot "REQUIRED"
-    text content_hash "REQUIRED"
-    text availability "REQUIRED"
-    uuid activated_by FK "REQUIRED"
-    timestamptz activated_at "REQUIRED"
-  }
-  Organization ||--o{ Account : "contains"
-  Organization ||--o{ TargetRole : "owns"
-  TargetRole ||--o{ RoleLevel : "has member levels"
-  Account ||--o{ RoleSelection : "selects"
-  RoleLevel ||--o{ RoleSelection : "target history"
-  RoleLevel ||--o{ BaselineConfig : "tenant baseline configuration"
-  Account ||--o{ BaselineConfig : "L&D creates"
-  BaselineConfig ||--o{ BaselineConfigVersion : "releases"
-  BaselineConfig o|--o| BaselineConfigVersion : "active pointer"
+  assessment_rule_policy_version ||--o| assessment_rule_scoped_activation : "same org purpose scope policy FK"

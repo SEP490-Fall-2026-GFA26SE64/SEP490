@@ -13,13 +13,13 @@ flowchart TD
   end
   subgraph Actor1["Expert"]
     direction TB
-    SRS_ACT_03_N5["Configure competencies,<br/>micro-skills and required<br/>proficiency"]
+    SRS_ACT_03_N5["Configure member Levels, Skills,<br/>explicit knowledge requirements and duration"]
     SRS_ACT_03_N6["Submit completed role<br/>configuration"]
     SRS_ACT_03_N9["Revise and resubmit"]
   end
   subgraph Actor2["Employee"]
     direction TB
-    SRS_ACT_03_N11["Browse published organization<br/>roles"]
+    SRS_ACT_03_N11["Browse available Roles and Levels;<br/>Department filter in current UI"]
     SRS_ACT_03_N12(("End"))
   end
   SRS_ACT_03_N1 --> SRS_ACT_03_N4

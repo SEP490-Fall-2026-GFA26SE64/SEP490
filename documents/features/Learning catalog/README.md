@@ -1,22 +1,22 @@
 # Learning Catalog and Approval
 
-**Latest direction — 2026-11-05-r3.** [Target schema/API/flow](../../technical/Organization%20Rule%20Assessment%20and%20Pathway.md) now maps this flow; it is not applied runtime. Baseline records only assessed skills and never creates unassessed prerequisites; skill assessment can discover them as **Cần bổ sung**. Baseline/skill have two independently configured policies with timed auto-finalization. Cross-target old bypass work is parallel/non-gating. Affected old dev records may be rebuilt; normal new-flow history remains. Preserve FE design and classify existing Question Bank content into appropriate knowledge levels with corresponding field changes.
+**Source alignment — 2026-11-07.** Confirmed behavior is distinguished from checked-in implementation below. [Current source/schema/API contract](../../technical/Organization%20Rule%20Assessment%20and%20Pathway.md) records local profile gates, exact ownership and remaining mismatches. Runtime/database acceptance is not established by this prose update.
 
 **Source:** [Version 2](../../FA26SE267_KNOWLEDGE_GRAPH_BASED_ADAPTIVE_LEARNING__haht43_Version_2.md), section 3.2(c), Functional Requirements.
 
 **Aligned:** 2026-10-28. **Source requirements in this domain:** 5.
 
-**Feature direction: 2026-11-05.** The new requirements/provision contract below is intended behavior pending C1 acceptance, not implementation evidence. Dated source/delivery/evidence notes retain historical scope. IDs/anchors and unrelated content rules remain. Target technical mapping is now specified in r3; runtime/seed implementation and detailed changed UI review remain pending.
+**Contract basis:** confirmed behavior plus the later L&D Role–Level / Expert Skill–knowledge configuration decisions. Historical evidence retains its original scope; it is not a fresh passing result.
 
 ## Current Implementation
 
-**Source-inspected:** 2026-11-01; module/content merge reconciled with real-store tests recorded separately. See the [implementation legend](../README.md#current-implementation-overview).
+**Source-inspected:** HEAD `61d334c`, 2026-11-07. Older module/content results remain separately dated; no new behavior checks were run. See the [implementation legend](../README.md#current-implementation-overview).
 
 | Requirement | Status | Current behavior | Remaining boundary |
 | --- | --- | --- | --- |
 | [FR-04.06](#fr-04-06) | API-backed module/content slice | L&D reads submitted immutable Module revisions, inspects numbered lessons/history, returns with feedback or approves publication to Neo4j; pending projection can be retried. | Module assessment construction/review and full production learning acceptance remain separate. |
 | [FR-05.01](#fr-05-01) | Partial | Micro-skill APIs and Neo4j persistence support search, create, update/status and guarded deletion. The ontology page loads skills and macro competencies and calls skill mutations. | The authoring model covers code/name/description/macro category/status, not complete assigned-job position proficiency-level management. Legacy actor headers/browser company context remain. |
-| [FR-05.04](#fr-05-04) | Partial | Prerequisite APIs list, save and remove graph edges with minimum mastery/status; the service rejects self-edges, cycles and mastery outside 0..1. The ontology UI uses those APIs. | Trusted assignment-scoped authorization and complete update UX remain unestablished. Local import/browser data is not equivalent to a persisted prerequisite operation. |
+| [FR-05.04](#fr-05-04) | Partial | Active rule readers require exact dependent/prerequisite knowledge pairs. Retained legacy prerequisite authoring still exposes numeric fields and separate authorization risks; it is not a numeric fallback for the rule flow. The ontology UI uses those APIs. | Trusted assignment-scoped authorization and complete update UX remain unestablished. Local import/browser data is not equivalent to a persisted prerequisite operation. |
 | [FR-05.05](#fr-05-05) | API-backed module/content slice | The responsible Expert authors skill-mapped Modules and ordered Text/Video lessons through authenticated APIs; PostgreSQL owns versions/history and MinIO owns private assets. Excel/ZIP preview and atomic confirmation preserve ownership. | Vimeo live-provider acceptance and production delivery remain limited as recorded in dedicated evidence. |
 | [FR-05.08](#fr-05-08) | API-backed module/content slice | Owner-only submit/withdraw and L&D return/approval operate on exact persisted Module/content revisions; peers can inspect history. | This does not construct or submit a complete module assessment bundle. Question Bank has its own review workflow. |
 
@@ -45,7 +45,7 @@ Modes are mutually exclusive. Provisioned CERTIFICATE_ONLY has exactly one assig
 
 The applicable existing Expert catalog surface must support an **Add certificate** tab listing skills with knowledge levels. **Add** on the intended skill–level opens entry of the required certificate, including a mandatory reference URL. The definition identifies the accepted certificate and exact skill/knowledge/outcome scope; organization, author and version are trusted server values. Reject missing URL, invalid/foreign references and conflicting MODULE_ONLY/existing certificate provision.
 
-The catalog definition/reference URL differs from Employee evidence. Saving it awards no achievement and approves no learner submission. Exact host page, fields/placement, URL validation, definition approval route and physical uniqueness/version design remain open for define C2. Reuse current list/actions/dialogs/forms and navigation patterns.
+The catalog definition/reference URL differs from Employee evidence. Saving it awards no achievement and approves no learner submission. Current source places certificate catalog/review tabs in the Expert module workspace. CertificateCatalogRepository uses REQUIRES_CERTIFICATE, locks/rechecks the owned Skill and exact version, validates HTTPS and retains definition history. Learner approval is separately assigned and persisted in PostgreSQL; full runtime acceptance remains unverified. Reuse current list/actions/dialogs/forms and navigation patterns.
 
 ### Authoring, publication and later provision
 
@@ -56,7 +56,7 @@ The catalog definition/reference URL differs from Employee evidence. Saving it a
 
 [Employee evidence](../Employee%20experience/README.md#certificate-evidence-and-review) supports link OR PDF OR picture with private authorized access. [Expert decisions](../Pathway%20review/README.md#certificate-and-missing-provision-decisions) handle approval/rejection and scoped bypass.
 
-Keep current Module workspace, shared components, tokens, fonts, sizes, spacing, density and responsive EN/VI. Detailed UI/data binding needs user review in define C2. Open: physical graph/relational representation, equivalence criteria, version drift, mode transitions, certificate validity/expiry and exact evidence file/URL limits. Physical target mapping is in r3; it is not applied schema.
+Keep current Module workspace, shared components, tokens, fonts, sizes, spacing, density and responsive EN/VI. Detailed UI/data binding needs user review in define C2. Current mapping uses Skill version + exact knowledge + outcome coverage, exclusive provision and immutable definition/submission snapshots. One HTTPS link or PDF/PNG/JPEG up to 10 MiB (subject to tighter platform limits) is supported in source. General expiry/revocation is excluded; arbitrary active mode transitions and full runtime acceptance are not established.
 
 <a id="fr-04-06"></a>
 
@@ -236,4 +236,4 @@ FR-05.05 now requires exactly one Skill for each authored/imported Module; a Ski
 
 The Module editor presents Skill selection before learning content so the Expert chooses the teaching target before composing lessons.
 
-The single-Skill paragraph above describes the preceding implementation. The new contract additionally requires knowledge-level/outcome compatibility. Existing import, completion and optional-module APIs do not establish that mapping or the certificate workflow; reconciliation remains open for define C2.
+The current Module payload/projection adds knowledgeLevel, skillVersion and outcomeCodes to the single-Skill rule; new documents omit price under V61. Exact completion is recorded in a sidecar and checked by rule exam admission. Optional same-Skill study remains constrained by accepted module access, rather than granting every same-Skill provider. Certificate flow source exists separately; the older dataset audit/results above retain their historical scope.

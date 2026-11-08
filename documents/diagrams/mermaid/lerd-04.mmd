@@ -1,118 +1,97 @@
 ---
-title: "LERD-04 - Pathway Review, Learning and Bypass"
+title: "LERD-04 - Requirement pathway composite identities"
 config: {"theme":"base","fontFamily":"Segoe UI, Arial, sans-serif","themeVariables":{"fontSize":"16px","primaryColor":"#ffffff","primaryTextColor":"#0f1729","primaryBorderColor":"#64748b","lineColor":"#64748b","textColor":"#0f1729","background":"#ffffff","edgeLabelBackground":"#ffffff"},"layout":"dagre","er":{"layoutDirection":"LR","nodeSpacing":36,"rankSpacing":74,"entityPadding":16,"fontSize":16,"minEntityWidth":140,"diagramPadding":24}}
 ---
+
 erDiagram
   direction TB
-  CompetencyProfile["CompetencyProfile"] {
-    uuid profile_id PK "REQUIRED"
-    uuid organization_id FK "REQUIRED"
-    uuid learner_id FK "REQUIRED"
-    uuid selection_id FK "REQUIRED"
-    uuid baseline_attempt_id FK "REQUIRED"
-    integer revision "REQUIRED"
-    text status "REQUIRED"
-    timestamptz created_at "REQUIRED"
-    uuid previous_profile_id FK "NULLABLE"
+  pathway_requirement_snapshot {
+    uuid id PK
+    uuid organization_id
+    uuid learner_id
+    uuid selection_id
+    bigint selection_revision
+    content_hash content_hash
   }
-  PathwayRequest["PathwayRequest"] {
-    uuid request_id PK "REQUIRED"
-    uuid organization_id FK "REQUIRED"
-    uuid learner_id FK "REQUIRED"
-    uuid selection_id FK "REQUIRED"
-    uuid profile_id FK "REQUIRED"
-    integer profile_revision "REQUIRED"
-    text generation_status "REQUIRED"
-    integer revision "REQUIRED"
-    timestamptz requested_at "REQUIRED"
-    text failure_reason "NULLABLE"
+  initial_pathway_request {
+    uuid request_id PK
+    uuid organization_id
+    uuid learner_id
+    uuid selection_id
+    uuid requirement_snapshot_id "NULLABLE"
+    text flow_version "NULLABLE"
+    text generation_status
   }
-  PathwayRevision["PathwayRevision"] {
-    uuid pathway_revision_id PK "REQUIRED"
-    uuid request_id FK "REQUIRED"
-    integer version "REQUIRED"
-    text content_hash "REQUIRED"
-    text status "REQUIRED"
-    text change_origin "REQUIRED"
-    uuid previous_revision_id FK "NULLABLE"
-    uuid approval_basis_revision_id FK "NULLABLE"
-    timestamptz created_at "REQUIRED"
-    timestamptz completed_at "NULLABLE"
+  initial_pathway_revision {
+    uuid request_id PK
+    bigint revision PK
+    content_hash content_hash
+    text change_origin "NULLABLE"
+    bigint approval_basis_revision "NULLABLE"
   }
-  PathwayStep["PathwayStep"] {
-    uuid step_id PK "REQUIRED"
-    uuid pathway_revision_id FK "REQUIRED"
-    text skill_id FK "REQUIRED"
-    text knowledge_level "REQUIRED"
-    jsonb outcome_codes "REQUIRED"
-    boolean mandatory "REQUIRED"
-    integer ordinal "REQUIRED"
-    text status "REQUIRED"
-    text reason "NULLABLE"
-    uuid carried_bypass_id FK "NULLABLE"
+  pathway_requirement_step {
+    uuid request_id PK
+    bigint revision PK
+    uuid step_id PK
+    text skill_id
+    text knowledge_level
+    text kind
+    text state
+    uuid source_bypass_id "NULLABLE"
+    uuid fulfilled_evidence_id "NULLABLE"
   }
-  StepOption["StepOption"] {
-    uuid option_id PK "REQUIRED"
-    uuid step_id FK "REQUIRED"
-    text module_id FK "NULLABLE"
-    integer module_version "NULLABLE"
-    text certificate_id FK "NULLABLE"
-    integer certificate_version "NULLABLE"
-    boolean selected "REQUIRED"
+  pathway_requirement_option {
+    uuid request_id PK
+    bigint revision PK
+    uuid step_id PK
+    text module_id PK
+    text content_version PK
+    integer module_revision
   }
-  PathwayReview["PathwayReview"] {
-    uuid review_id PK "REQUIRED"
-    uuid pathway_revision_id FK "REQUIRED"
-    uuid expert_id FK "REQUIRED"
-    text decision "REQUIRED"
-    text reviewed_hash "REQUIRED"
-    text reason "NULLABLE"
-    timestamptz decided_at "REQUIRED"
+  pathway_requirement_dependency {
+    uuid request_id PK
+    bigint revision PK
+    uuid prerequisite_step_id PK
+    uuid dependent_step_id PK
+    jsonb assessed_source
   }
-  LearningProgress["LearningProgress"] {
-    uuid progress_id PK "REQUIRED"
-    uuid organization_id FK "REQUIRED"
-    uuid learner_id FK "REQUIRED"
-    uuid option_id FK "REQUIRED"
-    text module_id FK "REQUIRED"
-    integer content_version "REQUIRED"
-    jsonb lesson_progress "REQUIRED"
-    text status "REQUIRED"
-    timestamptz started_at "REQUIRED"
-    timestamptz completed_at "NULLABLE"
+  pathway_requirement_bypass {
+    uuid id PK
+    uuid request_id
+    bigint revision
+    uuid step_id
+    uuid expert_id
+    text reason
   }
-  CertificateSubmission["CertificateSubmission"] {
-    uuid submission_id PK "REQUIRED"
-    uuid organization_id FK "REQUIRED"
-    uuid learner_id FK "REQUIRED"
-    text certificate_id FK "REQUIRED"
-    integer certificate_version "REQUIRED"
-    uuid step_id FK "REQUIRED"
-    text evidence_kind "REQUIRED"
-    text evidence_reference "REQUIRED"
-    text status "REQUIRED"
-    integer revision "REQUIRED"
-    timestamptz submitted_at "REQUIRED"
-    uuid decided_by FK "NULLABLE"
-    timestamptz decided_at "NULLABLE"
-    text decision_reason "NULLABLE"
+  pathway_requirement_snapshot ||--o{ initial_pathway_request : "owned input FK"
+  initial_pathway_request ||--o{ initial_pathway_revision : "retained revisions"
+  initial_pathway_revision ||--o{ pathway_requirement_step : "same owned revision FK"
+  pathway_requirement_step ||--o{ pathway_requirement_option : "same request revision step"
+  pathway_requirement_step ||--o{ pathway_requirement_dependency : "prerequisite and dependent FKs"
+  pathway_requirement_step ||--o{ pathway_requirement_bypass : "authorized source decision"
+  certificate_submission {
+    uuid id PK
+    uuid organization_id
+    uuid learner_id
+    text definition_id
+    text definition_version
+    bigint revision
+    text status
+    jsonb definition_snapshot
   }
-  PathwayBypass["PathwayBypass"] {
-    uuid bypass_id PK "REQUIRED"
-    uuid organization_id FK "REQUIRED"
-    uuid learner_id FK "REQUIRED"
-    uuid step_id FK "REQUIRED"
-    uuid expert_id FK "REQUIRED"
-    text reason "REQUIRED"
-    jsonb missing_provision_snapshot "REQUIRED"
-    timestamptz decided_at "REQUIRED"
-    uuid supersedes_bypass_id FK "NULLABLE"
+  certificate_submission_attachment {
+    uuid submission_id PK
+    text evidence_kind
+    text private_object_key "NULLABLE"
+    text https_url "NULLABLE"
   }
-  CompetencyProfile ||--o{ PathwayRequest : "reviewed profile input"
-  PathwayRequest ||--o{ PathwayRevision : "version history"
-  PathwayRevision ||--o{ PathwayStep : "ordered work"
-  PathwayRevision ||--o{ PathwayReview : "exact Expert decision"
-  PathwayStep ||--o{ StepOption : "eligible provision"
-  StepOption ||--o{ LearningProgress : "module learning"
-  PathwayStep ||--o{ CertificateSubmission : "certificate evidence"
-  PathwayStep ||--o{ PathwayBypass : "missing provision decision"
+  certificate_submission_decision {
+    uuid id PK
+    uuid submission_id
+    bigint submission_revision
+    uuid expert_id
+    text decision
+    text reason
+  }
+  certificate_submission ||--|| certificate_submission_attachment : "one evidence form FK"
+  certificate_submission ||--o| certificate_submission_decision : "same submission revision owner FK"

@@ -608,7 +608,6 @@ export function JobPositionsManagementPage() {
         return
       }
     }
-
     // Close modal immediately and capture editing state
     setIsJobPositionModalOpen(false)
     const currentEditing = editingJobPosition

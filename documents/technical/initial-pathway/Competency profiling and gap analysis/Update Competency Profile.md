@@ -1,31 +1,29 @@
-# Update Competency Profile
+# Update exact official competency evidence
 
-**Current flow revision: 2026-11-05-r3.** [Target schema/API/flow](../../Organization%20Rule%20Assessment%20and%20Pathway.md) supersedes this document's older active assessment/mastery/gap/optimizer assumptions. Material below is retained previous design/source/operation history, not proof of r3 being applied. Keep non-conflicting security/content/retry safeguards. Baseline covers selected Role–Level, records only assessed diagnostics and does not pre-add prerequisites; two separate policy configs share an engine; skill assessment discovers supplementation; cross-target old bypass work is parallel/non-gating. Old affected dev records may be rebuilt; new-flow history and unrelated/shared evidence/backups remain. Do not automatically run retained setup/reset/test commands below.
+REQ-059-F01 / REQ-041-F01 retained traceability; System consumes accepted evidence.
+
+Source checkpoint: HEAD `61d334c`, 2026-11-07. Confirmed contract and source implementation are distinguished below; current composition is local/workspace-baseline and excludes prod/demo. [Complete field/key/API and conflict mapping](../../Organization%20Rule%20Assessment%20and%20Pathway.md) owns the shared technical detail. Applied DB state and full runtime behavior were not verified in this documentation task.
 
 ## Current Scope Alignment
-System initializes each assessed skill from finalized adaptive-baseline theta/SE/mapped mastery once, then applies later module/independent-learning evidence through the configured BKT model. Baseline answers are not applied again as individual BKT evidence. RIASEC interests are not knowledge evidence. Follow the [current feature contract](README.md#current-scope-alignment) and [Product Overview](../../../PRODUCT_OVERVIEW.md).
 
-## Historical Specification
-Conflicting actors, policies and acceptance below are superseded; old evidence is not revised-scope certification.
+RuleKnowledgeProfileService and RuleAssessmentOutcomeService read PostgreSQL diagnostics/group results separately from official skill_knowledge_evidence and NEED_REVIEW. Baseline only creates diagnostics for actually assessed groups; a pass skips initial corresponding learning, never ACHIEVED or module completion. It does not create B solely from A prerequisite topology. No numeric gap subtraction, title exemption or lower-knowledge inheritance.
 
-**Function ID:** REQ-041-F01
-**Actor:** Automated system
-**Status:** Pending clarification
-**Feature:** [Competency Profiling and Gap Analysis](README.md)
+Official evidence requires exact org/learner/Skill/knowledge/Skill version/outcome coverage with accepted MODULE_ASSESSMENT or CERTIFICATE source. Bypass is a waiver, not achievement. Failed already-achieved prerequisite yields NEED_REVIEW without revocation; later genuine compatible evidence may resolve it. Result finalization differs from pending downstream processing; WAITING_REQUIRED_SUPPLEMENT is not a new scoring failure.
 
 ## Description
 
-Derive and update an employee's skill state using assessment evidence and question-to-skill mappings. Module viewing alone is not evidence of mastery.
+RuleAssessmentOutcomeService consumes persisted owned finalized groups; verify definition/hash/provenance, apply requirement recalculation, record NEED_REVIEW or qualifying exact official evidence, then processed/receipt/durable events. CertificateReviewService awards evidence atomically with assigned exact decision. No new arbitrary model/percentage update or synthetic BASELINE/BYPASS source.
 
-**Input:** Valid scored attempts, applicable mappings, and previous skill state.
-**Outcome:** Updated competency evidence/state for the employee.
+## Recovery boundary
 
-## Open Decisions
+Authentication/tenant/owner/assignment denial, stale identities/revisions/hashes, changed-body idempotency conflict, missing policy/bank/provider and dependency/integrity outages remain distinct. Reconcile an uncertain outcome with the same key/body and authorized current/receipt reads; do not invent success or reset history. No executable checks or learner actions ran in this task.
 
-- BKT parameters/thresholds, confidence propagation and mapping of later evidence; baseline mapping is independently versioned.
-- Repeated attempts, conflicting evidence, missing skills, and time decay.
-- Soft-skill integration, model versioning, and transfer of evidence between target roles.
+## Retained section aliases
 
-## Acceptance Baseline
+These aliases preserve older links; the current sections above replace the numeric/IRT/optimizer contract at those entry points. No retired Function is reopened.
 
-The updated state is attributable to assessment evidence and is not duplicated when the same submitted attempt is processed again.
+<a id="historical-specification"></a>
+<a id="open-decisions"></a>
+<a id="acceptance-baseline"></a>
+
+Historical references retained: REQ-041-F01. They do not expand this task or approve new implementation.

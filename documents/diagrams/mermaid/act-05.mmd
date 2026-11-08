@@ -1,68 +1,55 @@
 ---
-title: "ACT-05 - Role-Level Baseline, Profile and Adaptive Learning"
+title: "ACT-05 - Role-Level assessment, evidence and requirement pathway"
 config: {"theme":"base","fontFamily":"Segoe UI, Arial, sans-serif","themeVariables":{"fontFamily":"Segoe UI, Arial, sans-serif","fontSize":"16px","primaryColor":"#ffffff","primaryTextColor":"#0f1729","primaryBorderColor":"#64748b","secondaryColor":"#fef3eb","tertiaryColor":"#ffffff","lineColor":"#64748b","textColor":"#0f1729","mainBkg":"#ffffff","background":"#ffffff","clusterBkg":"#ffffff","clusterBorder":"#64748b","edgeLabelBackground":"#ffffff","titleColor":"#0f1729","noteBkgColor":"#fef3eb","noteTextColor":"#0f1729","noteBorderColor":"#e6650f","secondaryBorderColor":"#64748b","tertiaryBorderColor":"#64748b","secondaryTextColor":"#0f1729","tertiaryTextColor":"#0f1729"},"layout":"dagre","elk":{"mergeEdges":false,"nodePlacementStrategy":"NETWORK_SIMPLEX"},"flowchart":{"htmlLabels":true,"nodeSpacing":48,"rankSpacing":40,"curve":"linear","diagramPadding":24,"padding":16,"wrappingWidth":250}}
 ---
+
 flowchart TD
   start(("Start"))
-  configure["<b>L&amp;D</b><br/>Select Role and Level;<br/>configure baseline parameters"]
-  validConfig{"<b>System</b><br/>Configuration valid?"}
-  configError["<b>System</b><br/>Show configuration errors"]
-  activate["<b>System</b><br/>Save and activate baseline<br/>for the selected Role and Level"]
-  choose["<b>Employee</b><br/>Choose target Role and Level"]
-  activeConfig{"<b>System</b><br/>Matching baseline<br/>configuration Active?"}
-  unavailable["<b>System</b><br/>Explain baseline is unavailable;<br/>wait for valid active configuration"]
-  baseline["<b>Employee</b><br/>Take or resume baseline<br/>for the selected Role and Level"]
-  score["<b>System</b><br/>Finalize and evaluate baseline<br/>using its pinned configuration"]
-  validResult{"<b>System</b><br/>Results valid?"}
-  invalid["<b>System</b><br/>Explain invalid results;<br/>do not create a valid profile"]
-  profile["<b>System</b><br/>Create Role-Level profile:<br/>Met / Needs supplementation"]
-  reviewProfile["<b>Employee</b><br/>Review profile and submit<br/>a pathway creation request"]
-  needs{"<b>System</b><br/>Any unmet requirements?"}
-  generate["<b>System</b><br/>Generate pathway from profile;<br/>check modules, certificates and prerequisites"]
-  generated{"<b>System</b><br/>Generation completed?"}
-  failed["<b>System</b><br/>Show generation error;<br/>retain target for repair or retry"]
-  expert["<b>Expert</b><br/>Review coverage and order; adjust;<br/>record bypass only for gaps with no module/cert"]
-  ready{"<b>System</b><br/>Reviewed pathway valid?"}
-  approve["<b>Expert</b><br/>Approve the reviewed pathway version"]
-  blocking{"<b>System</b><br/>Any non-bypassed<br/>requirements remaining?"}
-  study["<b>Employee</b><br/>Study approved modules and take skill assessments;<br/>provide certificate evidence where required"]
-  recalculate["<b>System</b><br/>Evaluate valid results; update profile;<br/>recalculate remaining pathway automatically"]
-  unresolved{"<b>System</b><br/>New gap lacks<br/>both module and cert?"}
-  bypassReview["<b>Expert</b><br/>Review missing provision;<br/>record a justified bypass"]
-  bypassed{"<b>System</b><br/>Any bypassed gaps?"}
-  completed["<b>System</b><br/>Pathway completed"]
-  released["<b>System</b><br/>Only bypassed gaps remain;<br/>keep Needs supplementation, allow role change"]
-  change{"<b>Employee</b><br/>Change target Role<br/>and Level?"}
-  newRole["<b>Employee</b><br/>Select another Role and Level"]
-  finish(("End"))
-  unavailableEnd(("End"))
-  invalidEnd(("End"))
-  failureEnd(("End"))
-  start --> configure --> validConfig
-  validConfig -->|no| configError --> configure
-  validConfig -->|yes| activate --> choose --> activeConfig
-  activeConfig -->|no| unavailable --> unavailableEnd
-  activeConfig -->|yes| baseline --> score --> validResult
-  validResult -->|no| invalid --> invalidEnd
-  validResult -->|yes| profile --> reviewProfile --> needs
-  needs -->|no| completed
-  needs -->|yes| generate --> generated
-  generated -->|no| failed --> failureEnd
-  generated -->|yes| expert --> ready
-  ready -->|no| expert
-  ready -->|yes| approve --> blocking
-  blocking -->|yes| study --> recalculate --> unresolved
-  unresolved -->|no| blocking
-  unresolved -->|yes| bypassReview --> blocking
-  blocking -->|no| bypassed
-  bypassed -->|no| completed
-  bypassed -->|yes| released
-  completed --> change
-  released --> change
-  change -->|no| finish
-  change -->|yes| newRole --> activeConfig
-  classDef default fill:#ffffff,stroke:#64748b,color:#0f1729,stroke-width:1px,rx:8,ry:8
-  classDef decision fill:#fef3eb,stroke:#e6650f,color:#0f1729,stroke-width:1.5px
-  classDef entry fill:#c24a0a,stroke:#c24a0a,color:#ffffff,stroke-width:1.5px
-  class validConfig,activeConfig,validResult,needs,generated,ready,blocking,unresolved,bypassed,change decision
-  class start,finish,unavailableEnd,invalidEnd,failureEnd entry
+  config["<b>L&amp;D Manager</b><br/>Publish Baseline policy for Role and member Level"]
+  skillPolicy["<b>Expert</b><br/>Publish shared Skill-knowledge policy"]
+  choose["<b>Employee</b><br/>Choose available Role and actual member Level"]
+  evidence["<b>System</b><br/>Read exact compatible official evidence"]
+  need{"<b>System</b><br/>Baseline groups remain?"}
+  baseline["<b>Employee</b><br/>Start or resume full frozen Baseline paper"]
+  finish["<b>System</b><br/>Submit or deadline finalization;<br/>per-group diagnostics only"]
+  confirm["<b>Employee</b><br/>Confirm exact requirement input and request pathway"]
+  bind["<b>System</b><br/>Bind Role and Level;<br/>generate requirement roots and alternatives"]
+  review["<b>Expert</b><br/>Check choices and order;<br/>approve exact revision and hash"]
+  admission{"<b>System</b><br/>Configured provision and approval ready?"}
+  repair["<b>Expert</b><br/>Repair provision or reasoned scoped bypass;<br/>policy boundary remains open"]
+  option{"<b>Employee</b><br/>Module or certificate provision?"}
+  learn["<b>Employee</b><br/>Study accepted pinned module;<br/>complete exact content conditions"]
+  assess["<b>Employee</b><br/>Take Skill paper: MAIN and all prerequisite groups"]
+  evaluate["<b>System</b><br/>Score groups; veto requires full retake;<br/>failed unachieved B adds required B work"]
+  cert["<b>Employee</b><br/>Submit HTTPS link or private PDF/image"]
+  certReview["<b>Expert</b><br/>Review exact certificate submission"]
+  award["<b>System</b><br/>Write exact official evidence when qualified;<br/>retain diagnostics and NEED_REVIEW separately"]
+  recalc["<b>System</b><br/>Recalculate immutable successor;<br/>retain valid approval basis and progress"]
+  block{"<b>System</b><br/>Blocking REQUIRED work remains?"}
+  release["<b>System</b><br/>Permit target change if no active attempt;<br/>old bypass needs stay parallel and non-gating"]
+  done(("End"))
+  start --> config --> choose --> evidence --> need
+  skillStart(("Start"))
+  skillStart --> skillPolicy
+  need -->|yes| baseline --> finish --> confirm
+  need -->|no| confirm
+  required{"<b>System</b><br/>Required learning remains?"}
+  confirm --> bind --> required
+  required -->|yes| admission
+  required -->|no| release
+  admission -->|repair needed| repair --> admission
+  reviewed{"<b>System</b><br/>Valid approval basis retained?"}
+  admission -->|ready| reviewed
+  reviewed -->|yes| option
+  reviewed -->|no| review --> option
+  option -->|module| learn --> assess --> evaluate
+  skillPolicy -.-> assess
+  evaluate -->|main fail or veto| assess
+  evaluate -->|passing main waits for B| recalc
+  evaluate -->|completion and prerequisites qualify| award
+  option -->|certificate| cert --> certReview
+  certReview -->|reject with reason| cert
+  certReview -->|approve| award
+  award --> recalc --> block
+  block -->|yes| admission
+  block -->|no| release --> done

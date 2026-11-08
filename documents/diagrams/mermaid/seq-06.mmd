@@ -2,6 +2,7 @@
 title: "SEQ-06 - Required offering lifecycle and retrieval (planned)"
 config: {"theme":"base","fontFamily":"Segoe UI, Arial, sans-serif","themeVariables":{"fontFamily":"Segoe UI, Arial, sans-serif","fontSize":"16px","primaryColor":"#ffffff","primaryTextColor":"#0f1729","primaryBorderColor":"#64748b","secondaryColor":"#fef3eb","tertiaryColor":"#ffffff","lineColor":"#64748b","textColor":"#0f1729","mainBkg":"#ffffff","background":"#ffffff","clusterBkg":"#ffffff","clusterBorder":"#64748b","edgeLabelBackground":"#ffffff","titleColor":"#0f1729","noteBkgColor":"#fef3eb","noteTextColor":"#0f1729","noteBorderColor":"#e6650f","actorBkg":"#fef3eb","actorBorder":"#e6650f","actorTextColor":"#0f1729","actorLineColor":"#64748b","signalColor":"#64748b","signalTextColor":"#0f1729","labelBoxBkgColor":"#ffffff","labelBoxBorderColor":"#64748b","labelTextColor":"#0f1729","loopTextColor":"#0f1729","activationBkgColor":"#fef3eb","activationBorderColor":"#e6650f","sequenceNumberColor":"#ffffff","secondaryBorderColor":"#64748b","tertiaryBorderColor":"#64748b","secondaryTextColor":"#0f1729","tertiaryTextColor":"#0f1729"},"sequence":{"actorMargin":40,"width":170,"height":56,"diagramMarginX":24,"diagramMarginY":24,"boxMargin":12,"boxTextMargin":8,"noteMargin":16,"messageMargin":38,"mirrorActors":false,"wrap":true,"wrapPadding":12,"actorFontSize":15,"messageFontSize":14,"noteFontSize":14,"actorFontFamily":"Segoe UI, Arial, sans-serif","messageFontFamily":"Segoe UI, Arial, sans-serif","noteFontFamily":"Segoe UI, Arial, sans-serif"},"themeCSS":".actor-line { stroke-width: 1px; }"}
 ---
+
 sequenceDiagram
   autonumber
   actor SDD_SEQ_06_Expert as Expert
@@ -10,7 +11,7 @@ sequenceDiagram
   participant SDD_SEQ_06_Service as Offering service
   participant SDD_SEQ_06_DB as Metadata and workflow store
   participant SDD_SEQ_06_Store as Private object store
-  SDD_SEQ_06_Expert->>SDD_SEQ_06_Service: author module/content and single-skill mapping
+  SDD_SEQ_06_Expert->>SDD_SEQ_06_Service: author module, ordered content and one exact Skill-knowledge mapping
   SDD_SEQ_06_Service->>SDD_SEQ_06_Service: authorize assignment and validate metadata
   SDD_SEQ_06_Service->>SDD_SEQ_06_Store: store private versioned object
   SDD_SEQ_06_Service->>SDD_SEQ_06_DB: persist ordered content and object locator
@@ -19,10 +20,10 @@ sequenceDiagram
   SDD_SEQ_06_LD->>SDD_SEQ_06_Service: approve exact offering version
   SDD_SEQ_06_Service->>SDD_SEQ_06_DB: record decision and authorized availability
   SDD_SEQ_06_Employee->>SDD_SEQ_06_Service: request module/content
-  SDD_SEQ_06_Service->>SDD_SEQ_06_DB: check tenant, entitlement and approved version
+  SDD_SEQ_06_Service->>SDD_SEQ_06_DB: check tenant, accepted option, pinned version and dependency gates
   alt authorized
   SDD_SEQ_06_Service->>SDD_SEQ_06_Store: read permitted object/version
-  SDD_SEQ_06_Store-->>SDD_SEQ_06_Employee: controlled content delivery
+  SDD_SEQ_06_Store-->>SDD_SEQ_06_Employee: controlled content delivery, progress alone is not achievement
   else not permitted or not approved
   SDD_SEQ_06_Service-->>SDD_SEQ_06_Employee: deny without exposing object contents
   end
