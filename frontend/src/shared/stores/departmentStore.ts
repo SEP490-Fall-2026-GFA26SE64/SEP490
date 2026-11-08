@@ -15,8 +15,12 @@ export interface DepartmentRecord {
   updatedAt?: string
 }
 
-const STORAGE_KEY_DEPARTMENTS = 'adaptlearn_departments_v2'
-const STORAGE_KEY_DEPARTMENTS_LEGACY = 'adaptlearn_departments_v1'
+const STORAGE_KEY_DEPARTMENTS_PREFIX = 'adaptlearn_departments_v2_'
+
+export function getDepartmentStorageKey(orgId?: string): string {
+  const effectiveOrg = orgId || getActiveCompany()?.id || 'e0000000-0000-0000-0000-000000000001'
+  return `${STORAGE_KEY_DEPARTMENTS_PREFIX}${effectiveOrg}`
+}
 
 export const INITIAL_DEPARTMENTS: DepartmentRecord[] = [
   {
@@ -81,77 +85,101 @@ export const INITIAL_DEPARTMENTS: DepartmentRecord[] = [
   },
 ]
 
-export function loadDepartments(): DepartmentRecord[] {
+export function loadDepartments(orgId?: string): DepartmentRecord[] {
+  const effectiveOrg = orgId || getActiveCompany()?.id || 'e0000000-0000-0000-0000-000000000001'
+  const key = getDepartmentStorageKey(effectiveOrg)
+
   try {
-    const raw =
-      localStorage.getItem(STORAGE_KEY_DEPARTMENTS) ||
-      localStorage.getItem(STORAGE_KEY_DEPARTMENTS_LEGACY)
+    const raw = typeof localStorage !== 'undefined' ? localStorage.getItem(key) : null
     if (raw) {
       const parsed = JSON.parse(raw)
-      if (Array.isArray(parsed) && parsed.length > 0) {
-        const list: DepartmentRecord[] = parsed.map((d: Partial<DepartmentRecord>) => ({
-          id: d.id || `dept-${d.code?.toLowerCase() || 'item'}`,
-          code: d.code || '',
-          name: d.name || '',
-          description: d.description || '',
-          headOfDepartment: d.headOfDepartment || '',
-          headEmail: d.headEmail || '',
-          status: d.status === 'inactive' ? 'inactive' : 'active',
-          linkedJobPositions: Array.isArray(d.linkedJobPositions) ? d.linkedJobPositions : [],
-          organizationId: d.organizationId || 'e0000000-0000-0000-0000-000000000001',
-          createdAt: d.createdAt || '2026-11-04',
-          updatedAt: d.updatedAt,
-        }))
-        const existingIds = new Set(list.map((d) => d.id))
-        const existingNames = new Set(list.map((d) => d.name.toLowerCase()))
-        for (const init of INITIAL_DEPARTMENTS) {
-          if (!existingIds.has(init.id) && !existingNames.has(init.name.toLowerCase())) {
-            list.unshift(init)
-          }
-        }
-        return list
+      if (Array.isArray(parsed)) {
+        return parsed
+          .filter((d: Partial<DepartmentRecord>) => !d.organizationId || d.organizationId === effectiveOrg)
+          .map((d: Partial<DepartmentRecord>) => ({
+            id: d.id || `dept-${d.code?.toLowerCase() || 'item'}`,
+            code: d.code || '',
+            name: d.name || '',
+            description: d.description || '',
+            headOfDepartment: d.headOfDepartment || '',
+            headEmail: d.headEmail || '',
+            status: d.status === 'inactive' ? 'inactive' : 'active',
+            linkedJobPositions: Array.isArray(d.linkedJobPositions) ? d.linkedJobPositions : [],
+            organizationId: effectiveOrg,
+            createdAt: d.createdAt || '2026-11-04',
+            updatedAt: d.updatedAt,
+          }))
       }
     }
   } catch (e) {
     console.error('Failed to load departments from storage:', e)
   }
-  saveDepartments(INITIAL_DEPARTMENTS)
-  return INITIAL_DEPARTMENTS
+
+  // Only seed default initial departments if in the standard demo organization (TechNova)
+  if (effectiveOrg === 'e0000000-0000-0000-0000-000000000001') {
+    saveDepartments(INITIAL_DEPARTMENTS, effectiveOrg)
+    return INITIAL_DEPARTMENTS
+  }
+
+  // For any other organization: do NOT seed foreign mock data. Return clean empty array.
+  return []
 }
 
-export function saveDepartments(departments: DepartmentRecord[]) {
+export function saveDepartments(departments: DepartmentRecord[], orgId?: string, notify = true) {
+  const effectiveOrg = orgId || getActiveCompany()?.id || 'e0000000-0000-0000-0000-000000000001'
+  const key = getDepartmentStorageKey(effectiveOrg)
+
   try {
-    const serialized = JSON.stringify(departments)
-    localStorage.setItem(STORAGE_KEY_DEPARTMENTS, serialized)
-    localStorage.setItem(STORAGE_KEY_DEPARTMENTS_LEGACY, serialized)
-    window.dispatchEvent(new Event('departments_updated'))
+    const scopedDepartments = departments.map((d) => ({
+      ...d,
+      organizationId: d.organizationId || effectiveOrg,
+    }))
+    const serialized = JSON.stringify(scopedDepartments)
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem(key, serialized)
+    }
+    if (notify && typeof window !== 'undefined') {
+      window.dispatchEvent(new Event('departments_updated'))
+    }
   } catch (e) {
     console.error('Failed to save departments:', e)
   }
 }
 
 export function createDepartment(
-  data: Omit<DepartmentRecord, 'id' | 'createdAt' | 'organizationId'>
+  data: Omit<DepartmentRecord, 'id' | 'createdAt' | 'organizationId'>,
+  orgId?: string
 ): DepartmentRecord {
-  const current = loadDepartments()
-  const activeComp = getActiveCompany()
+  const effectiveOrg = orgId || getActiveCompany()?.id || 'e0000000-0000-0000-0000-000000000001'
+  const current = loadDepartments(effectiveOrg)
   const codeClean = data.code.trim().toUpperCase()
   const newDept: DepartmentRecord = {
     ...data,
     code: codeClean,
     id: `dept-${codeClean.toLowerCase().replace(/[^a-z0-9]/g, '-')}`,
-    organizationId: activeComp.id || 'e0000000-0000-0000-0000-000000000001',
+    organizationId: effectiveOrg,
     status: data.status || 'active',
     createdAt: new Date().toISOString().slice(0, 10),
   }
-  saveDepartments([newDept, ...current])
+  saveDepartments([newDept, ...current], effectiveOrg)
   return newDept
 }
 
-export function updateDepartment(id: string, updates: Partial<DepartmentRecord>) {
-  const current = loadDepartments()
-  const updated = current.map((d) =>
-    d.id === id || d.code === id
+export function updateDepartment(id: string, updates: Partial<DepartmentRecord>, orgId?: string) {
+  const effectiveOrg = orgId || getActiveCompany()?.id || 'e0000000-0000-0000-0000-000000000001'
+  const current = loadDepartments(effectiveOrg)
+  const idLower = (id || '').toLowerCase().trim()
+  const codeLower = (updates.code || id || '').toLowerCase().trim()
+  const updated = current.map((d) => {
+    const dIdLower = (d.id || '').toLowerCase().trim()
+    const dCodeLower = (d.code || '').toLowerCase().trim()
+    const isMatch =
+      dIdLower === idLower ||
+      dCodeLower === idLower ||
+      dIdLower === codeLower ||
+      dCodeLower === codeLower ||
+      (updates.name && d.name.toLowerCase().trim() === updates.name.toLowerCase().trim())
+    return isMatch
       ? {
           ...d,
           ...updates,
@@ -159,14 +187,15 @@ export function updateDepartment(id: string, updates: Partial<DepartmentRecord>)
           updatedAt: new Date().toISOString(),
         }
       : d
-  )
-  saveDepartments(updated)
+  })
+  saveDepartments(updated, effectiveOrg)
 }
 
-export function deleteDepartment(id: string) {
-  const current = loadDepartments()
+export function deleteDepartment(id: string, orgId?: string) {
+  const effectiveOrg = orgId || getActiveCompany()?.id || 'e0000000-0000-0000-0000-000000000001'
+  const current = loadDepartments(effectiveOrg)
   const updated = current.filter((d) => d.id !== id && d.code !== id)
-  saveDepartments(updated)
+  saveDepartments(updated, effectiveOrg)
 }
 
 export function reassignEmployeeDepartment(userEmail: string, newDeptName: string) {

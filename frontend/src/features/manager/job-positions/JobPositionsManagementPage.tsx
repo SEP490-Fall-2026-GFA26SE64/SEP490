@@ -37,9 +37,9 @@ import { useToast } from '../../../shared/hooks/useToast'
 import { WorkspaceLayout } from '../../../shared/layouts/WorkspaceLayout'
 import { getActiveCompany, resolveWorkspaceOrgId } from '../../../shared/stores/companyStore'
 import { WorkspaceSessionContext } from '../../../shared/auth/workspaceSession'
-import { getMembers } from '../../subscription/subscriptionApi'
-import { fetchDepartments, updateDepartmentApi, linkJobPositionToDepartment } from '../../../shared/api/departmentApi'
-import { loadDepartments, updateDepartment } from '../../../shared/stores/departmentStore'
+import { getMembers, getReferences } from '../../subscription/subscriptionApi'
+import { fetchDepartments, updateDepartmentApi, createDepartmentApi, linkJobPositionToDepartment } from '../../../shared/api/departmentApi'
+import { loadDepartments, saveDepartments, updateDepartment } from '../../../shared/stores/departmentStore'
 import {
   createJobPosition,
   updateJobPosition,
@@ -133,23 +133,46 @@ export function JobPositionsManagementPage() {
 
   const [managerDepartment, setManagerDepartment] = React.useState<{
     id: string
+    code?: string
     name: string
     jobPositionCodes: string[]
   } | null>(() => {
     try {
-      const localDepts = loadDepartments()
-      const activeEmail =
-        (typeof window !== 'undefined' && localStorage.getItem('adaptlearn_last_active_email')) ||
-        'manager@technova.com'
-      const matched =
-        localDepts.find((d) => d.headEmail?.toLowerCase() === activeEmail?.toLowerCase()) ||
-        localDepts.find((d) => d.code === 'ENG-CLOUD') ||
-        localDepts[0]
-      if (matched) {
-        return {
-          id: matched.id,
-          name: matched.name,
-          jobPositionCodes: matched.linkedJobPositions || [],
+      const localDepts = loadDepartments(orgId)
+      const activeEmail = session?.identity?.email
+      if (activeEmail) {
+        const assignmentRaw =
+          typeof window !== 'undefined'
+            ? localStorage.getItem(`alg_employee_assignment_${activeEmail.toLowerCase().trim()}`)
+            : null
+        if (assignmentRaw) {
+          const assignment = JSON.parse(assignmentRaw)
+          const matched = localDepts.find(
+            (d) =>
+              (assignment.departmentId &&
+                (d.id === assignment.departmentId || d.code === assignment.departmentId)) ||
+              (assignment.departmentName &&
+                d.name?.trim().toLowerCase() === assignment.departmentName.trim().toLowerCase())
+          )
+          if (matched) {
+            return {
+              id: matched.id,
+              code: matched.code,
+              name: matched.name,
+              jobPositionCodes: matched.linkedJobPositions || [],
+            }
+          }
+        }
+        const matchedHead = localDepts.find(
+          (d) => d.headEmail?.toLowerCase() === activeEmail.toLowerCase()
+        )
+        if (matchedHead) {
+          return {
+            id: matchedHead.id,
+            code: matchedHead.code,
+            name: matchedHead.name,
+            jobPositionCodes: matchedHead.linkedJobPositions || [],
+          }
         }
       }
     } catch {}
@@ -160,63 +183,138 @@ export function JobPositionsManagementPage() {
     let isMounted = true
     const loadManagerDept = async () => {
       try {
-        const [members, depts] = await Promise.all([
+        const [members, depts, refs] = await Promise.all([
           getMembers(orgId).catch(() => []),
           fetchDepartments(orgId).catch(() => []),
+          getReferences(orgId).catch(() => []),
         ])
         const currentMember = (members || []).find(
           (m) =>
             (session?.identity?.accountId && m.accountId === session?.identity?.accountId) ||
             (session?.identity?.email && m.email?.toLowerCase() === session?.identity?.email?.toLowerCase())
         )
-        const localDepts = loadDepartments()
-        const effectiveDepts = depts && depts.length > 0 ? depts : localDepts
+        const localDepts = loadDepartments(orgId)
 
-        let matched = effectiveDepts.find(
-          (d) =>
-            (currentMember?.departmentId && (d.id === currentMember.departmentId || d.code === currentMember.departmentId)) ||
-            (currentMember?.departmentName && d.name.toLowerCase() === currentMember.departmentName.toLowerCase())
-        )
+        // Merge departments from Neo4j, Postgres references, and localStorage
+        const deptMap = new Map<string, any>()
+        for (const ld of localDepts) {
+          const key = (ld.name || ld.code || ld.id).toLowerCase().trim()
+          deptMap.set(key, { ...ld, jobPositionCodes: ld.linkedJobPositions || [] })
+        }
+        for (const ref of refs || []) {
+          if (ref.departmentId || ref.departmentName) {
+            const key = (ref.departmentName || ref.departmentId).toLowerCase().trim()
+            if (!deptMap.has(key)) {
+              deptMap.set(key, {
+                id: ref.departmentId,
+                code: ref.departmentName,
+                name: ref.departmentName,
+                jobPositionCodes: [],
+                linkedJobPositions: [],
+              })
+            }
+          }
+        }
+        for (const d of depts || []) {
+          const key = (d.name || d.code || d.id).toLowerCase().trim()
+          const existing = deptMap.get(key)
+          const serverCodes = d.jobPositionCodes || (d as any).linkedJobPositions || []
+          deptMap.set(key, {
+            ...existing,
+            ...d,
+            jobPositionCodes: serverCodes,
+            linkedJobPositions: serverCodes,
+          })
+        }
+        const effectiveDepts = Array.from(deptMap.values())
 
-        if (!matched && currentMember?.departmentName) {
-          matched = effectiveDepts.find((d) => d.name.toLowerCase() === currentMember.departmentName?.toLowerCase())
+        let matched: any = null
+
+        let localAssignmentObj: any = null
+        if (session?.identity?.email) {
+          try {
+            const raw = localStorage.getItem(`alg_employee_assignment_${session.identity.email.toLowerCase().trim()}`)
+            if (raw) localAssignmentObj = JSON.parse(raw)
+          } catch {}
         }
 
+        const targetDeptId = localAssignmentObj?.departmentId || currentMember?.departmentId
+        const targetDeptName = localAssignmentObj?.departmentName || currentMember?.departmentName
+
+        if (targetDeptId || targetDeptName) {
+          matched = effectiveDepts.find((d) => {
+            if (targetDeptId) {
+              if (d.id === targetDeptId || d.code === targetDeptId) return true
+              if ((d as any).uuid === targetDeptId || (d as any).uuidCode === targetDeptId) return true
+            }
+            if (targetDeptName && d.name) {
+              if (d.name.trim().toLowerCase() === targetDeptName.trim().toLowerCase()) return true
+            }
+            return false
+          })
+
+          if (!matched && targetDeptName) {
+            matched = {
+              id: targetDeptId || `dept-${targetDeptName.toLowerCase().replace(/\s+/g, '-')}`,
+              code: targetDeptName || 'DPT',
+              name: targetDeptName,
+              jobPositionCodes: [],
+              linkedJobPositions: [],
+            }
+            if (!localAssignmentObj) {
+              createDepartmentApi(orgId, {
+                id: matched.id,
+                code: matched.code,
+                name: matched.name,
+                headEmail: session?.identity?.email || '',
+                headOfDepartment: session?.identity?.fullName || session?.identity?.email || '',
+                status: 'ACTIVE',
+              }).catch(() => {})
+            }
+          }
+        }
+
+        // Secondary fallback: Match headEmail ONLY if user has no assigned department anywhere
         if (!matched && session?.identity?.email) {
           matched = effectiveDepts.find(
             (d) => (d as any).headEmail?.toLowerCase() === session?.identity?.email?.toLowerCase()
           )
         }
 
-        if (!matched && isLdManager && effectiveDepts.length > 0) {
-          matched = effectiveDepts[0]
-        }
-
         if (matched && isMounted) {
-          const serverCodes = (matched as any).jobPositionCodes || (matched as any).linkedJobPositions || []
-          const localDeptMatch = localDepts.find((ld) => ld.id === matched.id || ld.code === matched.code)
-          const localCodes = localDeptMatch?.linkedJobPositions || []
-          const mergedCodes = Array.from(new Set([...serverCodes, ...localCodes]))
+          const serverCodes = (matched as any).jobPositionCodes ?? (matched as any).linkedJobPositions
+          let effectiveCodes: string[] = []
+          if (Array.isArray(serverCodes) && (matched as any).createdAt !== undefined) {
+            effectiveCodes = serverCodes
+          } else {
+            const localDeptMatch = localDepts.find(
+              (ld) =>
+                ld.id === matched.id ||
+                ld.code === matched.code ||
+                ld.name?.toLowerCase() === matched.name?.toLowerCase()
+            )
+            effectiveCodes = (serverCodes && serverCodes.length > 0) ? serverCodes : (localDeptMatch?.linkedJobPositions || [])
+          }
           setManagerDepartment({
             id: matched.id,
+            code: matched.code,
             name: matched.name,
-            jobPositionCodes: mergedCodes,
+            jobPositionCodes: effectiveCodes,
           })
+        } else if (!matched && isMounted) {
+          setManagerDepartment(null)
         }
       } catch {
-        const localDepts = loadDepartments()
-        if (localDepts.length > 0 && isMounted) {
-          setManagerDepartment({
-            id: localDepts[0].id,
-            name: localDepts[0].name,
-            jobPositionCodes: localDepts[0].linkedJobPositions || [],
-          })
-        }
+        // Leave current or null
       }
     }
     loadManagerDept()
+    window.addEventListener('departments_updated', loadManagerDept)
+    window.addEventListener('adaptlearn_job_positions_updated', loadManagerDept)
     return () => {
       isMounted = false
+      window.removeEventListener('departments_updated', loadManagerDept)
+      window.removeEventListener('adaptlearn_job_positions_updated', loadManagerDept)
     }
   }, [orgId, session?.identity?.accountId, session?.identity?.email, isLdManager])
 
@@ -231,8 +329,15 @@ export function JobPositionsManagementPage() {
     (updater: JobPositionRecord[] | ((prev: JobPositionRecord[]) => JobPositionRecord[])) => {
       setJobPositions((prev) => {
         const next = typeof updater === 'function' ? updater(prev) : updater
-        setStoredJobPositions(orgId, next)
-        return next
+        const seen = new Set<string>()
+        const deduplicated = next.filter((item) => {
+          const key = (item.code || item.id || '').toUpperCase().trim()
+          if (!key || seen.has(key)) return false
+          seen.add(key)
+          return true
+        })
+        setStoredJobPositions(orgId, deduplicated)
+        return deduplicated
       })
     },
     [orgId]
@@ -248,8 +353,8 @@ export function JobPositionsManagementPage() {
 
       if (Array.isArray(data)) {
         if (data.length === 0) {
-          setJobPositions([])
-          setStoredJobPositions(orgId, [])
+          const currentStored = getStoredJobPositions(orgId) || []
+          setJobPositions(currentStored)
           return
         }
 
@@ -366,7 +471,7 @@ export function JobPositionsManagementPage() {
   // Deactivate Confirmation Modal
   const [jobPositionToDeactivate, setJobPositionToDeactivate] = React.useState<JobPositionRecord | null>(null)
 
-  // Department-scoped list for L&D Managers; full catalog for administrators
+  // Department-scoped list for L&D Managers; full catalog for administrators or unassigned L&D managers
   const scopedJobPositions = React.useMemo(() => {
     if (!isLdManager) {
       return jobPositions
@@ -423,7 +528,19 @@ export function JobPositionsManagementPage() {
   const handleOpenCreate = () => {
     setEditingJobPosition(null)
     setOccName('')
-    setOccCode(`15-${(1250 + jobPositions.length + 1).toString().padStart(4, '0')}.00`)
+
+    // Generate unique code that doesn't collide with ANY existing job position
+    const existingCodes = new Set(
+      jobPositions.map((p) => p.code.toLowerCase().trim())
+    )
+    let nextNum = 1251
+    while (
+      existingCodes.has(`15-${nextNum.toString().padStart(4, '0')}.00`) ||
+      existingCodes.has(`15-${nextNum}.00`)
+    ) {
+      nextNum++
+    }
+    setOccCode(`15-${nextNum.toString().padStart(4, '0')}.00`)
     setOccJobZone(4)
     setOccDescription('')
     setOccInterests({
@@ -461,6 +578,36 @@ export function JobPositionsManagementPage() {
     if (!occName.trim() || !occCode.trim()) return
 
     const orgId = resolveWorkspaceOrgId(session?.identity?.organizationId || activeCompany?.id)
+    const codeUpper = occCode.trim().toUpperCase()
+
+    // Guard against duplicate codes
+    if (!editingJobPosition) {
+      const duplicate = jobPositions.find(
+        (p) => p.code.toLowerCase().trim() === codeUpper.toLowerCase().trim()
+      )
+      if (duplicate) {
+        toast({
+          title: 'Duplicate Job Position Code',
+          description: `A job position with code ${codeUpper} already exists ("${duplicate.name}"). Each job position must have a unique code.`,
+          variant: 'destructive',
+        })
+        return
+      }
+    } else if (editingJobPosition.code.toUpperCase() !== codeUpper) {
+      const duplicate = jobPositions.find(
+        (p) =>
+          p.id !== editingJobPosition.id &&
+          p.code.toLowerCase().trim() === codeUpper.toLowerCase().trim()
+      )
+      if (duplicate) {
+        toast({
+          title: 'Duplicate Job Position Code',
+          description: `A job position with code ${codeUpper} already exists ("${duplicate.name}"). Please use a different code.`,
+          variant: 'destructive',
+        })
+        return
+      }
+    }
 
     // Close modal immediately and capture editing state
     setIsJobPositionModalOpen(false)
@@ -471,7 +618,7 @@ export function JobPositionsManagementPage() {
       try {
         await updateJobPosition(orgId, currentEditing.id, {
           name: occName.trim(),
-          code: occCode.trim().toUpperCase(),
+          code: codeUpper,
           jobZone: occJobZone,
           interestRealistic: occInterests.realistic,
           interestInvestigative: occInterests.investigative,
@@ -486,7 +633,7 @@ export function JobPositionsManagementPage() {
               ? {
                   ...o,
                   name: occName.trim(),
-                  code: occCode.trim().toUpperCase(),
+                  code: codeUpper,
                   jobZone: occJobZone,
                   description: occDescription.trim(),
                   interests: occInterests,
@@ -508,7 +655,6 @@ export function JobPositionsManagementPage() {
         return
       }
     } else {
-      const codeUpper = occCode.trim().toUpperCase()
       const newOcc: JobPositionRecord = {
         id: codeUpper,
         code: codeUpper,
@@ -551,29 +697,49 @@ export function JobPositionsManagementPage() {
           )
           setManagerDepartment((prev) => (prev ? { ...prev, jobPositionCodes: nextCodes } : prev))
 
-          if (managerDepartment.id) {
-            try {
-              const depts = loadDepartments()
-              const targetDept = depts.find(
-                (d) => d.id === managerDepartment.id || d.code === managerDepartment.id
-              )
-              if (targetDept) {
-                const currentLinked = targetDept.linkedJobPositions || []
-                if (!currentLinked.includes(newOcc.code)) {
-                  const nextLinked = [...currentLinked, newOcc.code]
-                  updateDepartment(targetDept.id, { linkedJobPositions: nextLinked })
-                  await linkJobPositionToDepartment(orgId, targetDept.id, newOcc.code).catch(() => {})
-                  updateDepartmentApi(orgId, targetDept.id, {
-                    code: targetDept.code,
-                    name: targetDept.name,
-                    linkedJobPositions: nextLinked,
-                  }).catch(() => {})
-                  window.dispatchEvent(new Event('departments_updated'))
-                }
+          try {
+            const depts = loadDepartments(orgId)
+            const targetDept = depts.find(
+              (d) =>
+                d.id === managerDepartment.id ||
+                d.code === managerDepartment.id ||
+                (managerDepartment as any).code === d.code ||
+                d.name.toLowerCase() === managerDepartment.name.toLowerCase()
+            )
+            if (targetDept) {
+              const currentLinked = targetDept.linkedJobPositions || []
+              if (!currentLinked.includes(newOcc.code)) {
+                const nextLinked = [...currentLinked, newOcc.code]
+                updateDepartment(targetDept.id, { linkedJobPositions: nextLinked }, orgId)
+                await linkJobPositionToDepartment(orgId, targetDept.id, newOcc.code).catch(() => {})
+                await linkJobPositionToDepartment(orgId, targetDept.code, newOcc.code).catch(() => {})
+                await updateDepartmentApi(orgId, targetDept.id, {
+                  code: targetDept.code,
+                  name: targetDept.name,
+                  linkedJobPositions: nextLinked,
+                }).catch(() => {})
+                window.dispatchEvent(new Event('departments_updated'))
               }
-            } catch (e) {
-              console.warn('Failed to update department linked job positions:', e)
+            } else {
+              const createdDeptRecord = {
+                id: managerDepartment.id,
+                code: (managerDepartment as any).code || managerDepartment.name.toUpperCase().slice(0, 8),
+                name: managerDepartment.name,
+                description: '',
+                headOfDepartment: '',
+                headEmail: session?.identity?.email || '',
+                status: 'active' as const,
+                linkedJobPositions: [newOcc.code],
+                organizationId: orgId,
+                createdAt: new Date().toISOString(),
+              }
+              const currentDepts = loadDepartments(orgId)
+              saveDepartments([createdDeptRecord, ...currentDepts], orgId)
+              await linkJobPositionToDepartment(orgId, managerDepartment.id, newOcc.code).catch(() => {})
+              window.dispatchEvent(new Event('departments_updated'))
             }
+          } catch (e) {
+            console.warn('Failed to update department linked job positions:', e)
           }
         }
         window.dispatchEvent(new Event('adaptlearn_job_positions_updated'))
@@ -814,6 +980,34 @@ export function JobPositionsManagementPage() {
     }
 
     setAndSaveJobPositions((prev) => [...validJobPositions, ...prev])
+
+    if (managerDepartment && validJobPositions.length > 0) {
+      const importedCodes = validJobPositions.map((p) => p.code)
+      const nextCodes = Array.from(new Set([...(managerDepartment.jobPositionCodes || []), ...importedCodes]))
+      setManagerDepartment((prev) => (prev ? { ...prev, jobPositionCodes: nextCodes } : prev))
+
+      try {
+        const depts = loadDepartments(orgId)
+        const targetDept = depts.find(
+          (d) =>
+            d.id === managerDepartment.id ||
+            d.code === managerDepartment.id ||
+            d.name.toLowerCase() === managerDepartment.name.toLowerCase()
+        )
+        if (targetDept) {
+          const currentLinked = targetDept.linkedJobPositions || []
+          const nextLinked = Array.from(new Set([...currentLinked, ...importedCodes]))
+          updateDepartment(targetDept.id, { linkedJobPositions: nextLinked }, orgId)
+          for (const code of importedCodes) {
+            linkJobPositionToDepartment(orgId, targetDept.id, code).catch(() => {})
+          }
+          window.dispatchEvent(new Event('departments_updated'))
+        }
+      } catch (e) {
+        console.warn('Failed to link imported positions to manager department:', e)
+      }
+    }
+
     toast({
       title: 'JobPositions Imported',
       description: `Successfully imported ${validJobPositions.length} jobPosition(s) into catalog.`,

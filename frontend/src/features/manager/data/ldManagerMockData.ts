@@ -542,13 +542,15 @@ export function getAvailableJobPositions(organizationId?: string, includeInactiv
         'adaptlearn_job_positions_v2_' + effectiveOrg,
       ];
       const otherKeys: string[] = [];
-      for (let i = 0; i < localStorage.length; i++) {
-        const k = localStorage.key(i);
-        if (k && /adaptlearn_job.*positions/i.test(k) && !fallbackKeys.includes(k) && !primaryKeys.includes(k)) {
-          otherKeys.push(k);
+      if (isTechnova) {
+        for (let i = 0; i < localStorage.length; i++) {
+          const k = localStorage.key(i);
+          if (k && /adaptlearn_job.*positions/i.test(k) && !fallbackKeys.includes(k) && !primaryKeys.includes(k)) {
+            otherKeys.push(k);
+          }
         }
       }
-      const orderedKeys = [...otherKeys, ...fallbackKeys, ...primaryKeys];
+      const orderedKeys = isTechnova ? [...otherKeys, ...fallbackKeys, ...primaryKeys] : primaryKeys;
       for (const key of orderedKeys) {
         const raw = localStorage.getItem(key);
         if (raw) {
