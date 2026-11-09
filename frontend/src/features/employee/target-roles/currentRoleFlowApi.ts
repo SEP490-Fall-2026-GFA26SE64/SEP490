@@ -916,9 +916,9 @@ function buildSynthesizedSelection(
   }
   let matchedRole = roles.find(
     r =>
-      (ctx.assignedRoleId && r.id === ctx.assignedRoleId) ||
-      (ctx.assignedRoleCode && r.code.toUpperCase() === ctx.assignedRoleCode.toUpperCase()) ||
-      (ctx.assignedRoleId && r.code.toUpperCase() === ctx.assignedRoleId.toUpperCase()) ||
+      (ctx.assignedRoleId && (r.id === ctx.assignedRoleId || r.id.toLowerCase() === ctx.assignedRoleId.toLowerCase())) ||
+      (ctx.assignedRoleCode && (r.code.toUpperCase() === ctx.assignedRoleCode.toUpperCase() || r.code.toUpperCase().split('#')[0] === ctx.assignedRoleCode.toUpperCase())) ||
+      (ctx.assignedRoleId && (r.code.toUpperCase() === ctx.assignedRoleId.toUpperCase() || r.code.toUpperCase().split('#')[0] === ctx.assignedRoleId.toUpperCase())) ||
       (ctx.assignedRoleTitle && r.name.toLowerCase() === ctx.assignedRoleTitle.toLowerCase()),
   )
 
@@ -997,6 +997,14 @@ function buildSynthesizedSelection(
   const wantedRank = normalizeLevelRank(ctx.assignedLevel)
   const wantedLevel = (ctx.assignedLevel || '').trim().toLowerCase()
   const matchedLevel =
+    matchedRole.levels.find(
+      l =>
+        l.id.toLowerCase() === wantedLevel ||
+        l.name.toLowerCase() === wantedLevel ||
+        l.code.toLowerCase() === wantedLevel ||
+        wantedLevel.includes(l.name.toLowerCase()) ||
+        l.name.toLowerCase().includes(wantedLevel),
+    ) ||
     (wantedRank !== null
       ? matchedRole.levels.find(
           l =>
@@ -1005,12 +1013,6 @@ function buildSynthesizedSelection(
             normalizeLevelRank(l.id) === wantedRank,
         )
       : undefined) ||
-    matchedRole.levels.find(
-      l =>
-        l.id.toLowerCase() === wantedLevel ||
-        l.name.toLowerCase() === wantedLevel ||
-        l.code.toLowerCase() === wantedLevel,
-    ) ||
     matchedRole.levels[0]
 
   return {

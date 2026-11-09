@@ -59,8 +59,8 @@ public class PrerequisiteController {
             @PathVariable("organizationId") String organizationId,
             @RequestParam("sourceSkillId") String sourceSkillId,
             @RequestParam("targetSkillId") String targetSkillId,
-            @RequestParam("dependentKnowledgeLevel") String dependentKnowledgeLevel,
-            @RequestParam("prerequisiteKnowledgeLevel") String prerequisiteKnowledgeLevel,
+            @RequestParam(value = "dependentKnowledgeLevel", required = false) String dependentKnowledgeLevel,
+            @RequestParam(value = "prerequisiteKnowledgeLevel", required = false) String prerequisiteKnowledgeLevel,
             @RequestHeader(value = "X-User-Role", required = false, defaultValue = "DOMAIN_EXPERT") String userRole) {
 
         if (!isAuthorizedExpert(userRole)) {

@@ -12,10 +12,13 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.BiFunction;
 import org.neo4j.driver.Record;
@@ -34,24 +37,33 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
             WITH r, l ORDER BY coalesce(l.rank, 999) ASC, l.name ASC
             WITH r, [x IN collect(DISTINCT CASE WHEN l IS NOT NULL THEN l.name END) WHERE x IS NOT NULL] AS graphLevels,
                     [x IN collect(DISTINCT CASE WHEN l IS NOT NULL THEN { name: l.name, duration: coalesce(l.duration, '') } END) WHERE x IS NOT NULL] AS graphLevelDetails
+            OPTIONAL MATCH (r)-[:HAS_LEVEL]->(clvl:Level)-[:HAS_COMPETENCY]->(comp:Competency)
+            WHERE (comp.organizationId IS NULL OR comp.organizationId = r.organizationId) AND coalesce(comp.status, 'ACTIVE') = 'ACTIVE'
+            WITH r, graphLevels, graphLevelDetails,
+                 [x IN collect(DISTINCT CASE WHEN comp IS NOT NULL THEN {
+                     levelName: clvl.name,
+                     competencyId: comp.id,
+                     competencyCode: coalesce(comp.code, comp.id)
+                 } END) WHERE x IS NOT NULL] AS graphCompetencies
             OPTIONAL MATCH (r)-[req:REQUIRES_SKILL]->(s:MicroSkill)
             WHERE req.status='ACTIVE' AND (s.organizationId IS NULL OR s.organizationId=r.organizationId) AND s.status='ACTIVE'
-            WITH r, graphLevels, graphLevelDetails, [x IN collect(DISTINCT CASE WHEN s IS NOT NULL THEN {
+            WITH r, graphLevels, graphLevelDetails, graphCompetencies, [x IN collect(DISTINCT CASE WHEN s IS NOT NULL THEN {
                 skillId: s.id,
                 skillCode: s.code,
                 skillName: s.name,
                 requiredKnowledgeLevels: req.requiredKnowledgeLevels,
                 level: coalesce(req.level, '')
             } END) WHERE x IS NOT NULL] AS directSkills
-            OPTIONAL MATCH (r)-[:HAS_LEVEL]->(lvl:Level)-[lreq:REQUIRES_SKILL]->(ls:MicroSkill)
-            WITH r, graphLevels, graphLevelDetails, directSkills, [x IN collect(DISTINCT CASE WHEN ls IS NOT NULL THEN {
-                skillId: ls.id,
-                skillCode: ls.code,
-                skillName: ls.name,
+            OPTIONAL MATCH (r)-[:HAS_LEVEL]->(lvl:Level)-[:HAS_COMPETENCY]->(c:Competency)-[:HAS_SKILL]->(cs:MicroSkill)
+            OPTIONAL MATCH (lvl)-[lreq:REQUIRES_SKILL]->(cs)
+            WITH r, graphLevels, graphLevelDetails, graphCompetencies, directSkills, [x IN collect(DISTINCT CASE WHEN cs IS NOT NULL THEN {
+                skillId: cs.id,
+                skillCode: cs.code,
+                skillName: cs.name,
                 threshold: toInteger(round(coalesce(lreq.targetMastery, lreq.requiredScore, 0.7) * 100)),
                 level: coalesce(lreq.level, lvl.name, '')
             } END) WHERE x IS NOT NULL] AS levelSkills
-            WITH r, graphLevels, graphLevelDetails, CASE WHEN size(directSkills) > 0 THEN directSkills ELSE levelSkills END AS graphSkills
+            WITH r, graphLevels, graphLevelDetails, graphCompetencies, CASE WHEN size(directSkills) > 0 THEN directSkills ELSE levelSkills END AS graphSkills
             """;
     // Neo4jClient: the role node is mapped by SDN; its HAS_LEVEL and REQUIRES_SKILL targets are collected.
     private static final String BY_ID = """
@@ -64,13 +76,13 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
                    OR (r.baseCode IS NOT NULL AND $id CONTAINS r.baseCode AND (r.version IS NOT NULL AND $id CONTAINS r.version)))
               AND coalesce(r.status, 'ACTIVE') <> 'SUPERSEDED'
             """ + GRAPH_RELATIONS + """
-            RETURN r, graphSkills, graphLevels, graphLevelDetails
+            RETURN r, graphSkills, graphLevels, graphLevelDetails, graphCompetencies
             """;
     private static final String BY_CODE = """
             MATCH (r:TargetRole)
             WHERE r.organizationId = $organizationId AND (r.code = $code OR r.baseCode = $code)
             """ + GRAPH_RELATIONS + """
-            RETURN r, graphSkills, graphLevels, graphLevelDetails
+            RETURN r, graphSkills, graphLevels, graphLevelDetails, graphCompetencies
             """;
 
     private final TargetRoleNodeRepository roles;
@@ -397,8 +409,6 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
         for (Map<String, Object> item : skillItems) {
             String code = Objects.toString(item.get("skillCode"), Objects.toString(item.get("skillId"), "")).trim();
             if(code.isBlank())throw new IllegalArgumentException("Select an existing owned skill");
-            if(item.containsKey("threshold") || item.containsKey("targetMastery") || item.containsKey("requiredScore"))
-                throw new IllegalArgumentException("Use requiredKnowledgeLevels instead of a numeric target");
             if (!code.isBlank()) {
                 Map<String, Object> skillData = new HashMap<>();
                 skillData.put("skillCode", code);
@@ -411,10 +421,26 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
                 String level = Objects.toString(item.get("level"), "").trim();
                 skillData.put("level", level);
                 if(level.isBlank() || !seen.add(skillId+"\n"+level))throw new IllegalArgumentException("Unique skill and member level required");
-                if(!(item.get("requiredKnowledgeLevels") instanceof List<?> knowledge) || knowledge.isEmpty()
-                    || knowledge.size()>3 || new java.util.HashSet<>(knowledge).size()!=knowledge.size()
-                    || knowledge.stream().anyMatch(k->!(k instanceof String) || !java.util.Set.of("FOUNDATION","INTERMEDIATE","ADVANCED").contains(k)))
-                    throw new IllegalArgumentException("Select explicit required knowledge levels");
+                
+                List<String> knowledge = new ArrayList<>();
+                if (item.get("requiredKnowledgeLevels") instanceof List<?> kl) {
+                    for (Object k : kl) {
+                        if (k instanceof String ks && java.util.Set.of("FOUNDATION","INTERMEDIATE","ADVANCED").contains(ks.trim().toUpperCase())) {
+                            String normalized = ks.trim().toUpperCase();
+                            if (!knowledge.contains(normalized)) knowledge.add(normalized);
+                        }
+                    }
+                }
+                if (knowledge.isEmpty()) {
+                    // Fallback for imported / template roles with legacy threshold or unconfigured knowledge levels
+                    if ("Senior".equalsIgnoreCase(level)) {
+                        knowledge.addAll(List.of("INTERMEDIATE", "ADVANCED"));
+                    } else if ("Middle".equalsIgnoreCase(level)) {
+                        knowledge.add("INTERMEDIATE");
+                    } else {
+                        knowledge.add("FOUNDATION");
+                    }
+                }
                 skillData.put("requiredKnowledgeLevels", List.copyOf(knowledge));
                 processedSkills.add(skillData);
             }
@@ -542,7 +568,7 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
         }
 
         cypher.append("\n").append(GRAPH_RELATIONS).append("""
-                 RETURN r, graphSkills, graphLevels, graphLevelDetails ORDER BY coalesce(r.updatedAt, r.createdAt) DESC, r.name ASC
+                 RETURN r, graphSkills, graphLevels, graphLevelDetails, graphCompetencies ORDER BY coalesce(r.updatedAt, r.createdAt) DESC, r.name ASC
                 """);
 
         return reads.execute(status -> new ArrayList<>(client.query(cypher.toString()).bindAll(params)
@@ -620,10 +646,22 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
                 }
             }
         }
-        return mapNodeToTargetRole(node, graphSkills, graphLevels, levelDurations);
+        List<Map<String, String>> graphCompetencies = new ArrayList<>();
+        if (record.containsKey("graphCompetencies") && !record.get("graphCompetencies").isNull()) {
+            for (Object comp : record.get("graphCompetencies").asList()) {
+                if (comp instanceof Map<?, ?> m) {
+                    Object lvlObj = m.get("levelName");
+                    Object compObj = m.get("competencyId");
+                    if (lvlObj != null && compObj != null) {
+                        graphCompetencies.add(Map.of("levelName", lvlObj.toString(), "competencyId", compObj.toString()));
+                    }
+                }
+            }
+        }
+        return mapNodeToTargetRole(node, graphSkills, graphLevels, levelDurations, graphCompetencies);
     }
 
-    private TargetRole mapNodeToTargetRole(TargetRoleNode node, List<Map<String, Object>> graphSkills, List<String> graphLevels, Map<String, String> levelDurations) {
+    private TargetRole mapNodeToTargetRole(TargetRoleNode node, List<Map<String, Object>> graphSkills, List<String> graphLevels, Map<String, String> levelDurations, List<Map<String, String>> graphCompetencies) {
         String idStr = node.id() != null ? node.id()
                 : (node.code() != null ? node.code() : UUID.randomUUID().toString());
         String orgId = node.organizationId() != null ? node.organizationId() : "comp-technova";
@@ -666,6 +704,25 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
                 : List.of("Senior", "Middle", "Junior");
         String levelCompetencies = node.levelCompetencies() != null ? node.levelCompetencies().trim() : "{}";
         List<String> competencyIds = node.competencyIds() != null ? node.competencyIds() : List.of();
+
+        if ((levelCompetencies.isBlank() || levelCompetencies.equals("{}")) && graphCompetencies != null && !graphCompetencies.isEmpty()) {
+            Map<String, List<String>> compMap = new LinkedHashMap<>();
+            Set<String> allCompIds = new LinkedHashSet<>();
+            for (Map<String, String> entry : graphCompetencies) {
+                String lvl = entry.get("levelName");
+                String compId = entry.get("competencyId");
+                if (lvl != null && compId != null) {
+                    compMap.computeIfAbsent(lvl, k -> new ArrayList<>()).add(compId);
+                    allCompIds.add(compId);
+                }
+            }
+            try {
+                levelCompetencies = objectMapper.writeValueAsString(compMap);
+            } catch (Exception ignored) {}
+            if (competencyIds.isEmpty()) {
+                competencyIds = new ArrayList<>(allCompIds);
+            }
+        }
 
         return new TargetRole(
                 TargetRoleId.fromString(idStr),

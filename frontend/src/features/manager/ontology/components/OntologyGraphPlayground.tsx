@@ -1468,6 +1468,11 @@ function OntologyGraphPlaygroundInner({
     let newNode: PlaygroundCustomNode
     if (item.type === 'targetRole') {
       const fullRole = (targetRolesRef.current || targetRoles || []).find((r) => r.id === item.id || r.code === item.code)
+      const rawStatus = (fullRole?.status || (item as unknown as { status?: string }).status || 'DRAFT').trim().toUpperCase()
+      if (rawStatus !== 'DRAFT' && rawStatus !== 'REJECTED' && rawStatus !== 'REJECT') {
+        toast({ title: 'Cannot add role', description: 'Only Draft or Rejected target roles can be explored on the graph.', variant: 'destructive' })
+        return
+      }
       if (fullRole) {
         newNode = buildTargetRoleNode(fullRole, pos)
       } else {
@@ -1946,8 +1951,7 @@ function OntologyGraphPlaygroundInner({
     try {
       if (String(edgeId).startsWith('prereq-')) {
         const exact = prerequisitesRef.current.find(p => buildPrereqEdge(p.sourceSkillId, p.targetSkillId, p.dependentKnowledgeLevel, p.prerequisiteKnowledgeLevel).id === edgeId)
-        if (!exact?.dependentKnowledgeLevel || !exact.prerequisiteKnowledgeLevel) throw new Error('Select a classified exact prerequisite pair.')
-        await deletePrerequisite(organizationId, fromStr, toStr, exact.dependentKnowledgeLevel, exact.prerequisiteKnowledgeLevel)
+        await deletePrerequisite(organizationId, fromStr, toStr, exact?.dependentKnowledgeLevel, exact?.prerequisiteKnowledgeLevel)
         edgesDataSetRef.current.remove(edgeId)
         setCanvasEdges((prev) => prev.filter((e) => e.id !== edgeId))
         if (onRefreshData) await onRefreshData()
@@ -2069,19 +2073,38 @@ function OntologyGraphPlaygroundInner({
     }> = []
 
     if (filterType === 'all' || filterType === 'targetRole') {
-      (targetRolesRef.current || targetRoles || []).forEach((r) => {
-        const s = String(r.status || '').toLowerCase()
-        if (s === 'draft' || s === 'rejected') {
-          if (!q || r.code.toLowerCase().includes(q) || r.title.toLowerCase().includes(q)) {
-            items.push({
-              id: r.id,
-              type: 'targetRole',
-              code: r.code || r.id,
-              name: r.title,
-              description: r.description,
-              status: (r.status || 'DRAFT').toUpperCase(),
-            })
-          }
+      const activeRoles = getActiveCompany()?.targetRoles || []
+      const propRoles = targetRolesRef.current && targetRolesRef.current.length > 0
+        ? targetRolesRef.current
+        : targetRoles || []
+
+      const roleMap = new Map<string, TargetRoleModel>()
+      // Seed with local active roles first, then live propRoles overrides
+      for (const r of [...activeRoles, ...propRoles]) {
+        if (r && (r.id || r.code)) {
+          const key = (r.code || r.id || '').trim().toUpperCase()
+          roleMap.set(key, r)
+        }
+      }
+
+      roleMap.forEach((r) => {
+        const rawStatus = (r.status || 'DRAFT').trim().toUpperCase()
+        const isDraftOrRejected = rawStatus === 'DRAFT' || rawStatus === 'REJECTED' || rawStatus === 'REJECT'
+        if (!isDraftOrRejected) {
+          return // Only target roles with status DRAFT or REJECTED are shown in explore graph ontology
+        }
+
+        const roleCode = r.code || r.id || ''
+        const roleTitle = r.title || ''
+        if (!q || roleCode.toLowerCase().includes(q) || roleTitle.toLowerCase().includes(q)) {
+          items.push({
+            id: r.id,
+            type: 'targetRole',
+            code: roleCode,
+            name: roleTitle,
+            description: r.description,
+            status: rawStatus === 'REJECT' ? 'REJECTED' : rawStatus,
+          })
         }
       })
     }
@@ -2372,7 +2395,16 @@ function OntologyGraphPlaygroundInner({
                             {item.code}
                           </span>
                           {item.status && item.type === 'targetRole' && (
-                            <span className="text-[9px] font-bold px-1 py-0.5 rounded bg-warning/15 text-warning font-mono">
+                            <span
+                              className={cn(
+                                'text-[9px] font-bold px-1 py-0.5 rounded font-mono',
+                                item.status === 'PUBLISHED' || item.status === 'ACTIVE'
+                                  ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400'
+                                  : item.status === 'REJECTED'
+                                    ? 'bg-destructive/15 text-destructive'
+                                    : 'bg-warning/15 text-warning'
+                              )}
+                            >
                               {item.status}
                             </span>
                           )}

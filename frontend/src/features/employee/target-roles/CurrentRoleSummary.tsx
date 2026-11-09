@@ -21,6 +21,8 @@ export function CurrentRoleSummary({ view, onDetails, disabled = false }: { view
           level.id === startingPlacement.levelId ||
           level.name.toLowerCase() === startingPlacement.levelId?.toLowerCase() ||
           level.name.toLowerCase() === view.assignedLevel?.toLowerCase() ||
+          (view.assignedLevel && level.name.toLowerCase().includes(view.assignedLevel.toLowerCase())) ||
+          (view.assignedLevel && view.assignedLevel.toLowerCase().includes(level.name.toLowerCase())) ||
           level.code.toLowerCase() === startingPlacement.levelId?.toLowerCase(),
       ) ||
       (startingTargetRank !== null && startingTargetRank !== undefined

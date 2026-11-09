@@ -82,13 +82,21 @@ export async function deletePrerequisite(
   organizationId: string,
   sourceSkillId: string,
   targetSkillId: string,
-  dependentKnowledgeLevel: string,
-  prerequisiteKnowledgeLevel: string,
+  dependentKnowledgeLevel?: string | null,
+  prerequisiteKnowledgeLevel?: string | null,
 ): Promise<void> {
+  const query = new URLSearchParams({
+    sourceSkillId,
+    targetSkillId,
+  })
+  if (dependentKnowledgeLevel) {
+    query.set('dependentKnowledgeLevel', dependentKnowledgeLevel)
+  }
+  if (prerequisiteKnowledgeLevel) {
+    query.set('prerequisiteKnowledgeLevel', prerequisiteKnowledgeLevel)
+  }
   const res = await fetch(
-    `/api/v1/organizations/${encodeURIComponent(normalizeOrg(organizationId))}/prerequisites?sourceSkillId=${encodeURIComponent(
-      sourceSkillId
-    )}&targetSkillId=${encodeURIComponent(targetSkillId)}&dependentKnowledgeLevel=${encodeURIComponent(dependentKnowledgeLevel)}&prerequisiteKnowledgeLevel=${encodeURIComponent(prerequisiteKnowledgeLevel)}`,
+    `/api/v1/organizations/${encodeURIComponent(normalizeOrg(organizationId))}/prerequisites?${query.toString()}`,
     {
       method: 'DELETE',
     }

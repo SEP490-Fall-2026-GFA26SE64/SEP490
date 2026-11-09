@@ -764,7 +764,7 @@ export function TargetRolesPage() {
             storeRole?.department ||
             (typeof r.department === 'string' && r.department
               ? r.department
-              : matchedDept?.name || occ.name)
+              : matchedDept?.name || undefined)
 
           const effectiveDeptId =
             meta?.departmentId ||
@@ -1222,12 +1222,15 @@ export function TargetRolesPage() {
   // Dynamic expert options filtered to experts certified for the selected jobPosition
 
   const createExpertOptions: ComboboxOption[] = React.useMemo(() => {
-    const list = getEligibleExpertsForJobPosition(
+    let list = getEligibleExpertsForJobPosition(
       roleForm.jobPositionCode,
       orgId,
       managerDepartment,
       orgExperts,
     )
+    if (list.length === 0 && orgExperts.length > 0) {
+      list = orgExperts
+    }
     return list.map((exp) => ({
       value: exp.id,
       label: exp.name,
@@ -1236,7 +1239,7 @@ export function TargetRolesPage() {
   }, [roleForm.jobPositionCode, orgId, managerDepartment, orgExperts])
 
   const editRoleDeptScope = React.useMemo(() => {
-    if (selectedRole?.departmentId || selectedRole?.department) {
+    if (selectedRole?.departmentId) {
       return {
         id: selectedRole.departmentId,
         name: selectedRole.department,
@@ -1246,18 +1249,39 @@ export function TargetRolesPage() {
   }, [selectedRole?.department, selectedRole?.departmentId, managerDepartment])
 
   const editExpertOptions: ComboboxOption[] = React.useMemo(() => {
-    const list = getEligibleExpertsForJobPosition(
+    let list = getEligibleExpertsForJobPosition(
       editRoleForm.jobPositionCode,
       orgId,
       editRoleDeptScope,
       orgExperts,
     )
-    return list.map((exp) => ({
+    if (list.length === 0 && orgExperts.length > 0) {
+      list = orgExperts
+    }
+    const options = list.map((exp) => ({
       value: exp.id,
       label: exp.name,
       description: exp.title,
     }))
-  }, [editRoleForm.jobPositionCode, orgId, editRoleDeptScope, orgExperts])
+    if (selectedRole?.assignedExpertId) {
+      const alreadyIncluded = options.some(
+        (o) => normalizeExpertId(o.value) === normalizeExpertId(selectedRole.assignedExpertId)
+      )
+      if (!alreadyIncluded) {
+        const expertObj =
+          orgExperts.find((e) => normalizeExpertId(e.id) === normalizeExpertId(selectedRole.assignedExpertId)) ||
+          findEligibleExpert(selectedRole.assignedExpertId, orgId, orgExperts)
+        if (expertObj) {
+          options.unshift({
+            value: expertObj.id,
+            label: expertObj.name,
+            description: expertObj.title,
+          })
+        }
+      }
+    }
+    return options
+  }, [editRoleForm.jobPositionCode, orgId, editRoleDeptScope, orgExperts, selectedRole?.assignedExpertId])
 
   // Sort criteria: defaults to 'latest' so newly created or updated roles go to the top
 
@@ -1764,22 +1788,27 @@ export function TargetRolesPage() {
         ? rawOccCode
         : jobPositionOptions[0]?.value || latestPositions[0]?.code || ''
     const roleDeptScope =
-      role.departmentId || role.department
+      role.departmentId
         ? { id: role.departmentId, name: role.department }
         : managerDepartment
-    const eligibleExperts = getEligibleExpertsForJobPosition(
+    let eligibleExperts = getEligibleExpertsForJobPosition(
       occCode,
       orgId,
       roleDeptScope,
       orgExperts,
     )
+    if (eligibleExperts.length === 0 && orgExperts.length > 0) {
+      eligibleExperts = orgExperts
+    }
     const isCurrentEligible = eligibleExperts.some(
       (e) =>
         normalizeExpertId(e.id) === normalizeExpertId(role.assignedExpertId),
     )
-    const effectiveExpertId = isCurrentEligible
-      ? role.assignedExpertId || ''
-      : eligibleExperts[0]?.id || ''
+    const effectiveExpertId =
+      role.assignedExpertId ||
+      (isCurrentEligible ? role.assignedExpertId : '') ||
+      eligibleExperts[0]?.id ||
+      ''
 
     setSelectedRole(role)
 
@@ -1944,6 +1973,8 @@ export function TargetRolesPage() {
           skillTargets: roleRequirements(selectedRole.skillTargets),
           levels: editRoleForm.levelNames,
           levelDurations: editRoleForm.levelDurations,
+          levelCompetencies: selectedRole.levelCompetencies,
+          competencyIds: selectedRole.competencyIds,
         },
         {
           'X-User-Role': 'LD_MANAGER',
@@ -1996,7 +2027,7 @@ export function TargetRolesPage() {
           body: JSON.stringify({
             name: role.title,
             familyCode: role.jobPositionCode || role.familyCode,
-            track: role.track,
+            track: (role.track || 'PROFESSIONAL').toUpperCase(),
             responsibilities: role.responsibilities,
             assignedExpertId: role.assignedExpertId,
             description: role.description,
@@ -2078,7 +2109,7 @@ export function TargetRolesPage() {
       const payload = {
         name: role.title,
         familyCode: role.jobPositionCode || role.familyCode,
-        track: role.track,
+        track: (role.track || 'PROFESSIONAL').toUpperCase(),
         responsibilities: role.responsibilities,
         assignedExpertId: role.assignedExpertId,
         description: role.description,
@@ -2884,6 +2915,46 @@ export function TargetRolesPage() {
                                     <NetworkIcon className="h-4 w-4 text-primary" />
                                   </Button>
 
+                                  {/* Edit Role (Draft/Feedback/Rejected/Published/Unpublished) - Lock editing only when Sent or Submitted */}
+
+                                  {!isSent && !isSubmitted && (
+                                    <Button
+                                      variant="outline"
+
+                                      size="sm"
+
+                                      className="h-8 w-8 p-0"
+
+                                      onClick={(e) => {
+                                        e.stopPropagation()
+
+                                        handleOpenEditRole(role)
+                                      }}
+
+                                      title={
+                                        isPublished || isUnpublished
+                                          ? 'Edit Role & Assigned Expert'
+                                          : isFeedback
+                                            ? 'Edit & Address Expert Feedback'
+                                            : 'Edit Role Details'
+                                      }
+
+                                      aria-label={
+                                        isPublished || isUnpublished
+                                          ? 'Edit Role & Assigned Expert'
+                                          : isFeedback
+                                            ? 'Edit & Address Expert Feedback'
+                                            : 'Edit Role Details'
+                                      }
+                                    >
+                                      {isFeedback ? (
+                                        <Edit3 className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                                      ) : (
+                                        <Edit3 className="h-4 w-4" />
+                                      )}
+                                    </Button>
+                                  )}
+
                                   {/* Unpublish Role (for Published roles) */}
                                   {isPublished && (
                                     <Button
@@ -2915,42 +2986,6 @@ export function TargetRolesPage() {
                                       aria-label="Re-publish Target Role"
                                     >
                                       <CheckCircle2 className="h-4 w-4" />
-                                    </Button>
-                                  )}
-
-                                  {/* Edit Role (Draft/Feedback/Rejected) - Lock editing when Sent or Submitted or Published/Unpublished */}
-
-                                  {!isPublished && !isUnpublished && !isSent && !isSubmitted && (
-                                    <Button
-                                      variant="outline"
-
-                                      size="sm"
-
-                                      className="h-8 w-8 p-0"
-
-                                      onClick={(e) => {
-                                        e.stopPropagation()
-
-                                        handleOpenEditRole(role)
-                                      }}
-
-                                      title={
-                                        isFeedback
-                                          ? 'Edit & Address Expert Feedback'
-                                          : 'Edit Role Details'
-                                      }
-
-                                      aria-label={
-                                        isFeedback
-                                          ? 'Edit & Address Expert Feedback'
-                                          : 'Edit Role Details'
-                                      }
-                                    >
-                                      {isFeedback ? (
-                                        <Edit3 className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-                                      ) : (
-                                        <Edit3 className="h-4 w-4" />
-                                      )}
                                     </Button>
                                   )}
 
@@ -3664,6 +3699,7 @@ export function TargetRolesPage() {
           const isSubmittedRole = modalEffStatus === 'submitted'
           const isSentRole = modalEffStatus === 'sent'
           const isPublishedRole = modalEffStatus === 'published'
+          const isUnpublishedRole = modalEffStatus === 'unpublished'
           const isFeedbackRole = modalEffStatus === 'feedback'
           const isRejectedRole = modalEffStatus === 'rejected'
           const isDraftRole =
@@ -3894,20 +3930,25 @@ export function TargetRolesPage() {
                         const occ =
                           availableJobPositions.find((o) => o.code === val) ||
                           availableJobPositions.find((o) => o.code === val)
-                        const eligible = getEligibleExpertsForJobPosition(
+                        let eligible = getEligibleExpertsForJobPosition(
                           val,
                           orgId,
                           editRoleDeptScope,
                           orgExperts,
                         )
+                        if (eligible.length === 0 && orgExperts.length > 0) {
+                          eligible = orgExperts
+                        }
                         const isCurrentEligible = eligible.some(
                           (e) =>
                             normalizeExpertId(e.id) ===
                             normalizeExpertId(editRoleForm.assignedExpertId),
                         )
-                        const newExpertId = isCurrentEligible
-                          ? editRoleForm.assignedExpertId
-                          : eligible[0]?.id || ''
+                        const newExpertId =
+                          editRoleForm.assignedExpertId ||
+                          (isCurrentEligible ? editRoleForm.assignedExpertId : '') ||
+                          eligible[0]?.id ||
+                          ''
 
                         setEditRoleForm((prev) => ({
                           ...prev,
@@ -4126,7 +4167,7 @@ export function TargetRolesPage() {
 
                       clearable={false}
 
-                      disabled={isSubmittedRole || isPublishedRole}
+                      disabled={isSubmittedRole}
 
                       options={editExpertOptions}
 
@@ -4380,6 +4421,30 @@ export function TargetRolesPage() {
                         onClick={() => handleSaveEditRole('sent')}
                       >
                         Save & Re-dispatch to Expert
+                      </Button>
+                    </div>
+                  </>
+                ) : isPublishedRole || isUnpublishedRole ? (
+                  <>
+                    <div />
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setIsSkillTargetsModalOpen(false)
+                          setSelectedRole(null)
+                        }}
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        variant="primary"
+                        size="sm"
+                        disabled={!editRoleForm.assignedExpertId}
+                        onClick={() => handleSaveEditRole()}
+                      >
+                        Save Changes
                       </Button>
                     </div>
                   </>

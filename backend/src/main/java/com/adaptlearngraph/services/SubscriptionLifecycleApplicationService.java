@@ -9,6 +9,7 @@ import com.adaptlearngraph.dtos.SubscriptionDto.SummaryResponse;
 import com.adaptlearngraph.dtos.SubscriptionDto.WorkspaceResponse;
 import com.adaptlearngraph.entities.domain.MemberProfileUpdate;
 import com.adaptlearngraph.repository.PaymentOrderStore;
+import com.adaptlearngraph.repository.SubscriptionWorkspaceStore;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -64,12 +65,12 @@ public class SubscriptionLifecycleApplicationService {
     }
 
     public List<MemberResponse> members(UUID organizationId) {
-        return lifecycle.members(organizationId).stream().map(member -> mapper.map(member, MemberResponse.class)).toList();
+        return lifecycle.members(organizationId).stream().map(this::toMemberResponse).toList();
     }
 
     public MemberResponse myAssignment(UUID organizationId) {
         var member = lifecycle.myAssignment(organizationId);
-        return member == null ? null : mapper.map(member, MemberResponse.class);
+        return toMemberResponse(member);
     }
 
     public void changeMember(UUID organizationId, UUID membershipId, MemberAccessRequest input) {
@@ -78,10 +79,32 @@ public class SubscriptionLifecycleApplicationService {
 
     public MemberResponse updateMember(UUID organizationId, UUID membershipId, MemberProfileRequest input) {
         var update = new MemberProfileUpdate(input.fullName(), input.roles(), input.departmentId(),
-                input.occupationReferenceId(), input.revision(), input.departmentName(), input.occupationName(),
+                input.jobPositionReferenceId(), input.revision(), input.departmentName(), input.jobPositionName(),
                 input.targetRoleId(), input.targetRoleCode(), input.targetRoleName(), input.targetRoleLevel());
         var member = lifecycle.updateMember(organizationId, membershipId, update);
-        return member == null ? null : mapper.map(member, MemberResponse.class);
+        return toMemberResponse(member);
+    }
+
+    private MemberResponse toMemberResponse(SubscriptionWorkspaceStore.Member member) {
+        if (member == null) return null;
+        return new MemberResponse(
+                member.membershipId(),
+                member.accountId(),
+                member.fullName(),
+                member.email(),
+                member.active(),
+                member.roles(),
+                member.departmentId(),
+                member.jobPositionReferenceId(),
+                member.revision(),
+                member.departmentName(),
+                member.jobPositionName(),
+                member.accountActive(),
+                member.targetRoleId(),
+                member.targetRoleCode(),
+                member.targetRoleName(),
+                member.targetRoleLevel()
+        );
     }
 
     private OrderStatusResponse toResponse(SubscriptionLifecycleUseCase.Status status) {

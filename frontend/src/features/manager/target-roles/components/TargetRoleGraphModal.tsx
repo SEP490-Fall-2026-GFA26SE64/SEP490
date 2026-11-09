@@ -555,7 +555,7 @@ export function TargetRoleGraphModal({
         })
       : reqSkills
 
-    filteredReqSkills.forEach((skill, sIdx) => {
+    filteredReqSkills.forEach((skill) => {
       if (!skill.skillId) return
       const hasIncomingPrereq = prereqs.some((p) => p.targetSkillId === skill.skillId)
       const nodeLevel = hasIncomingPrereq ? 4 : 3
@@ -644,7 +644,7 @@ export function TargetRoleGraphModal({
       // Directed edge: (:Level)-[:REQUIRES_SKILL {requiredScore}]->(:MicroSkill)
       const targetLevelNodeId = skill.level
         ? Object.entries(levelMap).find(([lvl]) => lvl.toLowerCase() === skill.level?.toLowerCase())?.[1]
-        : (levelNodeIds.length > 0 ? levelNodeIds[sIdx % levelNodeIds.length] : undefined)
+        : (levelNodeIds.length > 0 ? levelNodeIds[0] : undefined)
 
       if (targetLevelNodeId) {
         addEdgeSafely({

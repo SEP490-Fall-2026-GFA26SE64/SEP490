@@ -1123,6 +1123,7 @@ export function ExpertAssignedRolesPage() {
       prereqCode: string
       level: string
     }> = []
+    const seen = new Set<string>()
 
     authoringRole.skillTargets.forEach((st) => {
       const stLevel = st.level || currentRoleLevels[0]
@@ -1143,11 +1144,16 @@ export function ExpertAssignedRolesPage() {
       })
 
       missing.forEach((m) => {
-        missingList.push({
-          skillCode: st.skillCode,
-          prereqCode: m.targetSkillCode || m.targetSkillId,
-          level: stLevel,
-        })
+        const pCode = m.targetSkillCode || m.targetSkillId
+        const key = `${st.skillCode}:${pCode}:${stLevel}`
+        if (!seen.has(key)) {
+          seen.add(key)
+          missingList.push({
+            skillCode: st.skillCode,
+            prereqCode: pCode,
+            level: stLevel,
+          })
+        }
       })
     })
 
@@ -3299,37 +3305,55 @@ export function ExpertAssignedRolesPage() {
                             <tbody className="divide-y divide-border">
                               {filteredTargets.map((st) => {
                                 const stLevel = st.level || currentRoleLevels[0]
-                                const prereqOf = realPrerequisites.filter(
-                                  (p) =>
-                                    (p.targetSkillId === st.skillId ||
-                                      p.targetSkillCode === st.skillCode) &&
-                                    displayedSkillTargets.some(
-                                      (other) =>
-                                        other.skillId === p.sourceSkillId ||
-                                        other.skillCode === p.sourceSkillCode,
-                                    ),
+                                const prereqOf = Array.from(
+                                  new Map(
+                                    realPrerequisites
+                                      .filter(
+                                        (p) =>
+                                          (p.targetSkillId === st.skillId ||
+                                            p.targetSkillCode === st.skillCode) &&
+                                          displayedSkillTargets.some(
+                                            (other) =>
+                                              other.skillId === p.sourceSkillId ||
+                                              other.skillCode === p.sourceSkillCode,
+                                          ),
+                                      )
+                                      .map((p) => [p.sourceSkillCode || p.sourceSkillId, p]),
+                                  ).values(),
                                 )
 
-                                const requiresSkill = realPrerequisites.filter(
-                                  (p) =>
-                                    (p.sourceSkillId === st.skillId ||
-                                      p.sourceSkillCode === st.skillCode) &&
-                                    displayedSkillTargets.some(
-                                      (other) =>
-                                        other.skillId === p.targetSkillId ||
-                                        other.skillCode === p.targetSkillCode,
-                                    ),
+                                const requiresSkill = Array.from(
+                                  new Map(
+                                    realPrerequisites
+                                      .filter(
+                                        (p) =>
+                                          (p.sourceSkillId === st.skillId ||
+                                            p.sourceSkillCode === st.skillCode) &&
+                                          displayedSkillTargets.some(
+                                            (other) =>
+                                              other.skillId === p.targetSkillId ||
+                                              other.skillCode === p.targetSkillCode,
+                                          ),
+                                      )
+                                      .map((p) => [p.targetSkillCode || p.targetSkillId, p]),
+                                  ).values(),
                                 )
 
-                                const missingPrereqs = realPrerequisites.filter(
-                                  (p) =>
-                                    (p.sourceSkillId === st.skillId ||
-                                      p.sourceSkillCode === st.skillCode) &&
-                                    !displayedSkillTargets.some(
-                                      (other) =>
-                                        other.skillId === p.targetSkillId ||
-                                        other.skillCode === p.targetSkillCode,
-                                    ),
+                                const missingPrereqs = Array.from(
+                                  new Map(
+                                    realPrerequisites
+                                      .filter(
+                                        (p) =>
+                                          (p.sourceSkillId === st.skillId ||
+                                            p.sourceSkillCode === st.skillCode) &&
+                                          !displayedSkillTargets.some(
+                                            (other) =>
+                                              other.skillId === p.targetSkillId ||
+                                              other.skillCode === p.targetSkillCode,
+                                          ),
+                                      )
+                                      .map((p) => [p.targetSkillCode || p.targetSkillId, p]),
+                                  ).values(),
                                 )
 
                                 const isEditingThisSkill =
