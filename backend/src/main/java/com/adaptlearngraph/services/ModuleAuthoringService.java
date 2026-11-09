@@ -276,7 +276,6 @@ public final class ModuleAuthoringService {
             if (!before.content().id().equals(input.contentId())) changes.add("content");
             if (before.duration() != input.duration()) changes.add("duration");
             if(!Objects.equals(before.knowledgeLevel()==null?null:before.knowledgeLevel().name(),input.knowledgeLevel()))changes.add("knowledgeLevel");
-            if(!Objects.equals(before.outcomeCodes(),input.outcomeCodes()))changes.add("outcomeCodes");
             if (!before.teachings().stream().map(t -> new TeachingInput(t.skillId(), t.teachingFocus(), t.difficultyLevel())).toList().equals(input.teachings())) changes.add("teachings");
             return changed(doc, revision, actor, "EDIT", changes.isEmpty() ? "Saved unchanged package" : "Changed: " + String.join(", ", changes), doc.archived(), doc.releasedRevision());
         });

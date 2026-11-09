@@ -15,11 +15,13 @@ public final class LocalCatalogBootstrap {
     public static final String KNOWLEDGE_REQUIREMENTS_HASH="9fa8f570f50104089f57678a9cad202e24d9cde56e38084a9bf7db75cc1b916f";
     public static final String KNOWLEDGE_BANK_HASH="62cb7a2289c5a6fd0486d552fce0077badfdce3374f5a6c54d5ee061db909be9";
     public static final String MODULE_KNOWLEDGE_HASH="d6c520311b778b09447a23c03834bfb557617f7ecd566d7708d697ca923da172";
+    public static final String SKILL_LEVEL_HASH="1f6c15983de4486ecee6dd3c0d764b19ddceee12252ad54ad7d016e839cbdb1d";
+    public static final String SKILL_LEVEL_CRLF_HASH="183f50dd240ea5981625137c9ea38908e35f0dad2a8c3509e2a333b3ab2c6423";
     public static final String PREREQUISITE_KNOWLEDGE_HASH="cc7e3d25549542f945d68eebaff49257190c49db232b076aa50a97893d216a53";
     public static final String PREREQUISITE_KNOWLEDGE_CRLF_HASH="94bfe3fb7b0586aaeb427b26484742c32d3dfb46f84316f08fbe9eddb08accfe";
     public static final String PREREQUISITE_KNOWLEDGE_LF_HASH="a73e9571b5a16cab37341cb34124db36062b0383168871b8b97fcabc9c7233f8";
     public static boolean isPrerequisiteKnowledgeHash(String hash) {
-        return PREREQUISITE_KNOWLEDGE_HASH.equals(hash) || PREREQUISITE_KNOWLEDGE_CRLF_HASH.equals(hash) || PREREQUISITE_KNOWLEDGE_LF_HASH.equals(hash);
+        return SKILL_LEVEL_HASH.equals(hash) || SKILL_LEVEL_CRLF_HASH.equals(hash) || PREREQUISITE_KNOWLEDGE_HASH.equals(hash) || PREREQUISITE_KNOWLEDGE_CRLF_HASH.equals(hash) || PREREQUISITE_KNOWLEDGE_LF_HASH.equals(hash);
     }
     private boolean moduleKnowledgeRelease() { return MODULE_KNOWLEDGE_HASH.equals(sourceHash) || isPrerequisiteKnowledgeHash(sourceHash); }
     private final String catalogVersion;
@@ -155,7 +157,7 @@ public final class LocalCatalogBootstrap {
     public void applyKnowledgeBankFields(Neo4jCypher graph,UUID organization) {
         require(KNOWLEDGE_BANK_HASH.equals(sourceHash) || moduleKnowledgeRelease(),"Expected exact development knowledge-bank release");
         var fields=Set.of("version","reviewStatus","reviewedBy","reviewedAt","reviewSource",
-                "foundationOutcomeCodes","foundationOutcomeLabels","intermediateOutcomeCodes","intermediateOutcomeLabels","advancedOutcomeCodes","advancedOutcomeLabels");
+                "foundationOutcomeLabels","intermediateOutcomeLabels","advancedOutcomeLabels");
         var expected=new HashMap<String,Map<String,Object>>();nodes.get("MicroSkill").forEach(s->expected.put((String)s.get("id"),s));
         graph.write(tx->{
             var rows=tx.list("MATCH (s:MicroSkill {organizationId:$org}) WHERE s.id IN $ids RETURN s.id AS id,properties(s) AS props",Map.of("org",organization.toString(),"ids",List.copyOf(expected.keySet())));

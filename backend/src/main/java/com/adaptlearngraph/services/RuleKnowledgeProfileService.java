@@ -22,7 +22,7 @@ public final class RuleKnowledgeProfileService {
         if(!Set.of("ALL","DIAGNOSTIC","EVIDENCE","REVIEW").contains(kind) || page<0 || page>250)throw new Failure(400,"INVALID_REQUEST");
         var rows=data.page(actor.organizationId(),actor.learnerId(),kind,21,page*20);
         var items=rows.stream().limit(20).map(row->new Entry(row.getKind(),row.getId(),row.getSkillId(),row.getSkillName(),KnowledgeLevel.valueOf(row.getKnowledgeLevel()),
-                row.getSkillVersion(),strings(row.getOutcomeCodes()),row.getObservedAt(),row.getPurpose(),row.getAttemptId(),row.getCorrectCount(),row.getTotalCount(),
+                row.getSkillVersion(),List.of(),row.getObservedAt(),row.getPurpose(),row.getAttemptId(),row.getCorrectCount(),row.getTotalCount(),
                 row.getPassed(),row.getMandatorySatisfied(),row.getVetoTriggered(),strings(row.getReasons()),row.getSourceKind(),row.getSourceId(),row.getReviewState())).toList();
         if(!actor.equals(identity.requireEmployee()))throw new Failure(403,"FORBIDDEN");
         return new Page(items,page,20,rows.size()>20);

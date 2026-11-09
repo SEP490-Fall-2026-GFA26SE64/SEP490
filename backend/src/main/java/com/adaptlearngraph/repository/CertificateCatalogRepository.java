@@ -49,8 +49,6 @@ public final class CertificateCatalogRepository {
             if(!command.expectedSkillVersion().equals(skill.get("version").asString("")))throw new Failure(409,"SKILL_VERSION_CHANGED");
             var modules=strings(skill,"moduleOnlyKnowledgeLevels");var certificates=strings(skill,"certificateOnlyKnowledgeLevels");
             if(modules.stream().anyMatch(certificates::contains) || !certificates.contains(command.knowledgeLevel().name()))throw new Failure(409,"CERTIFICATE_PROVISION_REQUIRED");
-            String property=switch(command.knowledgeLevel()){case FOUNDATION->"foundationOutcomeCodes";case INTERMEDIATE->"intermediateOutcomeCodes";case ADVANCED->"advancedOutcomeCodes";};
-            var outcomes=CertificateCatalog.outcomes(strings(skill,property));
             var existing=tx.list("""
                     MATCH (s:MicroSkill {id:$skill,organizationId:$org})-[a:REQUIRES_CERTIFICATE]->(c:Certificate {organizationId:$org})
                     WHERE a.status='ACTIVE' AND c.status='ACTIVE' AND c.knowledgeLevel=$level RETURN c.id AS id LIMIT 2
@@ -68,17 +66,17 @@ public final class CertificateCatalogRepository {
             return definition(tx.single("""
                     MATCH (s:MicroSkill {id:$skill,organizationId:$org})
                     CREATE (c:Certificate {id:$id,organizationId:$org,version:'1',name:$name,description:'',knowledgeLevel:$level,
-                        skillVersion:$skillVersion,outcomeCodes:$outcomes,referenceUrl:$url,status:'ACTIVE',reviewStatus:'APPROVED',
+                        skillVersion:$skillVersion,referenceUrl:$url,status:'ACTIVE',reviewStatus:'APPROVED',
                         authoredBy:$expert,authoredAt:toString(datetime()),approvedBy:$expert,approvedAt:toString(datetime()),commandHash:$hash})
                     CREATE (s)-[:REQUIRES_CERTIFICATE {organizationId:$org,status:'ACTIVE',createdBy:$expert,createdAt:toString(datetime())}]->(c)
                     RETURN s.id AS skillId,s.name AS skillName,properties(c) AS certificate
                     """,Map.of("org",organization.toString(),"skill",command.skillId(),"id",id,"name",command.name(),"level",command.knowledgeLevel().name(),
-                    "skillVersion",command.expectedSkillVersion(),"outcomes",outcomes,"url",command.referenceUrl(),"expert",expert.toString(),"hash",hash)));
+                    "skillVersion",command.expectedSkillVersion(),"url",command.referenceUrl(),"expert",expert.toString(),"hash",hash)));
         });
     }
     private Definition definition(org.neo4j.driver.Record row) {
         var c=row.get("certificate");return new Definition(c.get("id").asString(),c.get("version").asString(),row.get("skillId").asString(),row.get("skillName").asString(),
-                KnowledgeLevel.valueOf(c.get("knowledgeLevel").asString()),c.get("skillVersion").asString(),strings(c,"outcomeCodes"),c.get("name").asString(),c.get("referenceUrl").asString(),
+                KnowledgeLevel.valueOf(c.get("knowledgeLevel").asString()),c.get("skillVersion").asString(),List.of(),c.get("name").asString(),c.get("referenceUrl").asString(),
                 c.get("status").asString(),c.get("authoredBy").asString(),c.get("authoredAt").asString());
     }
     private static List<String> strings(Value value,String field){return value.get(field).isNull()?List.of():value.get(field).asList(Value::asString);}

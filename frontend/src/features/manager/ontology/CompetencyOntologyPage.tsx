@@ -26,6 +26,7 @@ import { ConfirmationModal } from '../../../shared/components/ui/ConfirmationMod
 import { PageHeader } from '../../../shared/components/ui/PageHeader'
 import {
   Dialog,
+  DialogBody,
   DialogDescription,
   DialogFooter,
   DialogHeader,
@@ -1845,9 +1846,10 @@ function OwnedCompetencyOntologyPage() {
       <Dialog
         open={isSkillModalOpen}
         onOpenChange={setIsSkillModalOpen}
-        className="max-w-2xl sm:max-w-3xl w-full p-6 sm:p-8 min-h-[580px] flex flex-col justify-between overflow-visible"
+        size="wide"
+        className="max-w-2xl sm:max-w-3xl w-full p-6 sm:p-8"
       >
-        <div className="space-y-6 flex-1 flex flex-col justify-between">
+
           <DialogHeader>
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 text-primary flex items-center justify-center shrink-0">
@@ -1869,7 +1871,7 @@ function OwnedCompetencyOntologyPage() {
             </div>
           </DialogHeader>
 
-          <div className="space-y-5 text-xs flex-1">
+          <DialogBody className="space-y-5 text-xs pr-2 pb-2">
             {/* Code & Title Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
@@ -2049,7 +2051,7 @@ function OwnedCompetencyOntologyPage() {
                 className="w-full px-3.5 py-2.5 rounded-lg bg-background border border-border text-foreground text-xs focus:outline-none focus:ring-2 focus:ring-primary/25 focus:border-primary transition-all shadow-2xs leading-relaxed min-h-[120px]"
               />
             </div>
-          </div>
+          </DialogBody>
 
           <DialogFooter className="pt-3 border-t border-border mt-4 flex items-center justify-end gap-2.5">
             <Button variant="outline" size="sm" onClick={() => setIsSkillModalOpen(false)}>
@@ -2066,7 +2068,6 @@ function OwnedCompetencyOntologyPage() {
               <span>{selectedSkill ? 'Save Changes' : 'Create Micro-skill'}</span>
             </Button>
           </DialogFooter>
-        </div>
       </Dialog>
 
       {/* ADD PREREQUISITE EDGE MODAL (WITH CYCLE PREVENTION) */}

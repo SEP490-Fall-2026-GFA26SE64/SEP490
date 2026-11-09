@@ -7,7 +7,6 @@
       "skillId": "MS-FS12",
       "knowledgeLevel": "INTERMEDIATE",
       "skillVersion": "0.12.1",
-      "outcomeCodes": ["MS_FS12_INTERMEDIATE"],
       "name": "Development sample — Application input validation",
       "referenceUrl": "https://owasp.org/www-project-web-security-testing-guide/"
     },
@@ -16,7 +15,6 @@
       "skillId": "MS-FS08",
       "knowledgeLevel": "ADVANCED",
       "skillVersion": "0.12.1",
-      "outcomeCodes": ["MS_FS08_ADVANCED"],
       "name": "Development sample — ICT code review",
       "referenceUrl": "https://google.github.io/eng-practices/review/"
     }

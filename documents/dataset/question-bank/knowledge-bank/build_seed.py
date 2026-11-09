@@ -5,7 +5,7 @@ import uuid
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[4]
-BASE = ROOT / 'documents/dataset/import/ontology_seed-v012.json'
+BASE = ROOT / 'documents/dataset/import/ontology_seed-skill-level.json'
 PREFIX = 'development-knowledge-bank:v1:'
 
 
@@ -15,7 +15,7 @@ def identity(value):
 
 def build():
     original = BASE.read_bytes()
-    if hashlib.sha256(original).hexdigest() != '9fa8f570f50104089f57678a9cad202e24d9cde56e38084a9bf7db75cc1b916f':
+    if hashlib.sha256(original).hexdigest() != '1f6c15983de4486ecee6dd3c0d764b19ddceee12252ad54ad7d016e839cbdb1d':
         raise ValueError('Unexpected base catalog; preserve it and review the release input')
     catalog = json.loads(original)
     profiles = []
@@ -44,11 +44,9 @@ def build():
         if len(peers) < 3:
             peers += [p for p in profiles if p['skillId'] != skill['id'] and p not in peers]
         for level, answer_key in level_names:
-            outcome = skill['id'].replace('-', '_') + '_' + level
             label = {'FOUNDATION': 'Explain the core concepts of ', 'INTERMEDIATE': 'Apply the defined procedure for ', 'ADVANCED': 'Evaluate constraints and tradeoffs for '}[level] + skill['name']
-            scope['levels'].append({'knowledgeLevel': level, 'outcomeCode': outcome, 'description': label})
+            scope['levels'].append({'knowledgeLevel': level, 'description': label})
             prop = level.lower()
-            skill[prop + 'OutcomeCodes'] = [outcome]
             skill[prop + 'OutcomeLabels'] = [label]
             for variant, context in enumerate(['payroll', 'ordering', 'inventory'], 1):
                 if level == 'FOUNDATION':
@@ -67,7 +65,7 @@ def build():
                     'content': {'prompt': prompt, 'options': choices, 'correctAnswer': choices.index(correct),
                         'skillId': skill['id'], 'skillName': skill['name'], 'difficulty': None,
                         'explanation': correct + ' This directly answers the stated task; the other choices address different catalog capabilities.',
-                        'knowledgeLevel': level, 'outcomeCode': outcome, 'mandatory': False}})
+                        'knowledgeLevel': level, 'skillVersion': skill['version'], 'mandatory': False}})
         bindings.append(scope)
     manifest = {'format': 'DEVELOPMENT_KNOWLEDGE_BANK_V1', 'developmentOnly': True,
         'publicationSource': 'DEVELOPMENT_SEED', 'publisherId': publisher,
@@ -75,7 +73,7 @@ def build():
         'limitations': 'Authored scenario variants for local development only; not an Expert-reviewed or calibrated production question bank.',
         'catalogBindings': bindings, 'profiles': profiles, 'items': items}
     outputs = [(ROOT / 'backend/src/main/resources/db/seed/knowledge-question-bank.json', manifest),
-               (ROOT / 'documents/dataset/import/ontology_seed-knowledge-bank.json', catalog)]
+               (ROOT / 'documents/dataset/import/ontology_seed-skill-level.json', catalog)]
     for path, value in outputs:
         data = (json.dumps(value, indent=2, ensure_ascii=False) + '\n').encode('utf-8')
         path.write_bytes(data)

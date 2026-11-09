@@ -94,6 +94,6 @@ public final class SkillLearningService {
         learning.complete(a.organizationId(),a.id(),new SkillCompletion(revision.payload().teachings().getFirst().skillId(),
                 module,revision.number(),revision.payload().contentVersion(),at,
                 revision.payload().knowledgeLevel()==null?null:revision.payload().knowledgeLevel().name(),revision.payload().skillVersion(),
-                revision.payload().outcomeCodes(),revision.payload().teachings().getFirst().skillName()));
+                List.of(),revision.payload().teachings().getFirst().skillName()));
     }
 }

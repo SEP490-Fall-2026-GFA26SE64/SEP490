@@ -3,6 +3,7 @@ WORKDIR /workspace/backend
 COPY backend/pom.xml ./
 COPY backend/src ./src
 COPY documents/dataset/import/content ../documents/dataset/import/content
+COPY documents/dataset/import/ontology_seed-prerequisite-knowledge.json ../documents/dataset/import/
 RUN mvn -B -ntp -Dmaven.test.skip=true package
 
 FROM eclipse-temurin:21-jre-alpine

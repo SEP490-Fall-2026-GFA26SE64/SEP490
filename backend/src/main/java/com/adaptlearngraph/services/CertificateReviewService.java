@@ -67,7 +67,7 @@ public final class CertificateReviewService {
             UUID decision=UUID.randomUUID();submissions.decision(decision,actor.organizationId(),id,row.getRevision(),command.decision(),actor.accountId(),revisions.encode(assignment),command.reason().trim(),retry);
             if("APPROVED".equals(command.decision())) {
                 UUID evidence=UUID.randomUUID();var snapshot=new LinkedHashMap<String,Object>();
-                snapshot.put("skillVersion",frozen.requirement().skillVersion());snapshot.put("skillName",frozen.requirement().skillName());snapshot.put("outcomeCodes",frozen.requirement().outcomeCodes());
+                snapshot.put("skillVersion",frozen.requirement().skillVersion());snapshot.put("skillName",frozen.requirement().skillName());
                 snapshot.put("requestId",frozen.requestId());snapshot.put("pathwayRevision",frozen.pathwayRevision());snapshot.put("stepId",frozen.stepId());
                 snapshot.put("definitionId",frozen.certificate().id());snapshot.put("definitionVersion",frozen.certificate().version());snapshot.put("decisionId",decision);
                 if(submissions.evidence(evidence,actor.organizationId(),row.getLearnerId(),id,revisions.encode(snapshot))!=1)throw new Failure(503,"CERTIFICATE_EVIDENCE_WRITE_INCOMPLETE");

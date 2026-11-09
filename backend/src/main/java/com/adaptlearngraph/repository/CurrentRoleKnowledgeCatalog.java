@@ -58,7 +58,7 @@ public final class CurrentRoleKnowledgeCatalog implements Contexts {
                 definitions.add(definition);
                 if(definitions.size()>maximum)throw new Failure(422,"GROUP_CAPACITY_EXCEEDED");
                 if(!definition.mode().equals("MODULE_ONLY"))continue;
-                var official=evidence.official(actor.organizationId(),actor.learnerId(),skill.id(),knowledge,definition.skillVersion(),write(definition.requirement().outcomeCodes()));
+                var official=evidence.official(actor.organizationId(),actor.learnerId(),skill.id(),knowledge,definition.skillVersion());
                 if(official.isEmpty())needs.add(new Need(definition.requirement(),GroupRole.TARGET));else official.forEach(e->exempt.add(e.getId()));
             }
         } else {
@@ -70,8 +70,7 @@ public final class CurrentRoleKnowledgeCatalog implements Contexts {
             if(!"MODULE_ONLY".equals(main.mode()))throw new Failure(409,"PATHWAY_PROVISION_CHANGED");
             try {
                 var expected=json.readTree(completed.getRequirementSnapshot());
-                if(!main.skillVersion().equals(expected.path("skillVersion").asText())
-                    || !new HashSet<>(main.requirement().outcomeCodes()).equals(new HashSet<>(json.convertValue(expected.get("outcomeCodes"),new com.fasterxml.jackson.core.type.TypeReference<List<String>>(){}))))
+                if(!main.skillVersion().equals(expected.path("skillVersion").asText()))
                     throw new Failure(409,"PATHWAY_REQUIREMENT_CHANGED");
             }catch(java.io.IOException invalid){throw new Failure(503,"CONTEXT_INTEGRITY_FAILURE");}
             definitions.add(main);needs.add(new Need(main.requirement(),GroupRole.MAIN));
@@ -111,13 +110,12 @@ public final class CurrentRoleKnowledgeCatalog implements Contexts {
             boolean module=modules.contains(level.name()) || mode==com.adaptlearngraph.entities.domain.SkillProvisionMode.MODULE_ONLY;
             boolean certificate=certificates.contains(level.name()) || mode==com.adaptlearngraph.entities.domain.SkillProvisionMode.CERTIFICATE_ONLY;
             if(module && certificate)throw new Failure(422,"CONFLICTING_PROVISION_MODES");
-            String property=switch(level){case FOUNDATION->"foundationOutcomeCodes";case INTERMEDIATE->"intermediateOutcomeCodes";case ADVANCED->"advancedOutcomeCodes";};
             if(!module && !certificate)throw new Failure(422,"PROVISION_NOT_CONFIGURED");
-            if(s.get(property).isNull() || s.get("version").isNull())throw new Failure(422,"EXACT_KNOWLEDGE_CONFIGURATION_REQUIRED");
-            var outcomes=s.get(property).asList(Value::asString).stream().sorted().toList();String version=s.get("version").asString();
-            if(version.isBlank() || outcomes.isEmpty())throw new Failure(422,"EXACT_KNOWLEDGE_CONFIGURATION_REQUIRED");
+            if(s.get("version").isNull())throw new Failure(422,"EXACT_KNOWLEDGE_CONFIGURATION_REQUIRED");
+            String version=s.get("version").asString();
+            if(version.isBlank())throw new Failure(422,"EXACT_KNOWLEDGE_CONFIGURATION_REQUIRED");
             String name=s.get("name").asString();if(name.isBlank())throw new Failure(422,"OWNED_SKILL_CONFIGURATION_REQUIRED");
-            return new Definition(new Requirement(skill,level,outcomes),name,version,module?"MODULE_ONLY":"CERTIFICATE_ONLY");
+            return new Definition(new Requirement(skill,level,List.of()),name,version,module?"MODULE_ONLY":"CERTIFICATE_ONLY");
         });
     }
     private Set<String> levels(Value skill,String property) {

@@ -34,7 +34,12 @@ public final class AssessmentPolicyScope {
         public Discovery { scopes=List.copyOf(scopes);issues=List.copyOf(issues); }
     }
     public record Scope(String key,Purpose purpose,String ownerId,String ownerName,String levelId,String levelName,String contextLevelId,
-                        int rank,String catalogHash,List<GroupSpec> groups,boolean ready,List<String> readinessIssues) {
+                        int rank,String catalogHash,List<GroupSpec> groups,boolean ready,List<String> readinessIssues,
+                        @com.fasterxml.jackson.annotation.JsonIgnore String legacyCatalogHash) {
+        public Scope(String key,Purpose purpose,String ownerId,String ownerName,String levelId,String levelName,String contextLevelId,int rank,String catalogHash,List<GroupSpec> groups,boolean ready,List<String> readinessIssues) {
+            this(key,purpose,ownerId,ownerName,levelId,levelName,contextLevelId,rank,catalogHash,groups,ready,readinessIssues,null);
+        }
+        public boolean matchesCatalog(String hash){return catalogHash.equals(hash) || legacyCatalogHash!=null && legacyCatalogHash.equals(hash);}
         public Scope { groups=List.copyOf(groups);readinessIssues=readinessIssues==null?List.of():List.copyOf(readinessIssues); }
     }
 }

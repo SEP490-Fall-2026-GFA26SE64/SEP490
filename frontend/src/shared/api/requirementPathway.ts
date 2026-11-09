@@ -24,8 +24,8 @@ function oneOf<T extends string>(v: unknown, allowed: readonly T[]): T { const v
 function timestamp(v: unknown): string { const value = text(v); if (!Number.isFinite(Date.parse(value))) throw Error(); return value }
 function requirement(v: unknown): RuleRequirement {
   const r = object(v), provision = oneOf(r.provision, ['MODULE_ONLY', 'CERTIFICATE_ONLY', 'UNCONFIGURED'] as const)
-  const skillVersion = nullable(r.skillVersion, text), outcomeCodes = list(r.outcomeCodes, text)
-  if (new Set(outcomeCodes).size !== outcomeCodes.length || provision !== 'UNCONFIGURED' && (!skillVersion || !outcomeCodes.length)) throw Error()
+  const skillVersion = nullable(r.skillVersion, text), outcomeCodes = [] as string[]
+  if (provision !== 'UNCONFIGURED' && (!skillVersion)) throw Error()
   return { skillId: text(r.skillId), skillName: text(r.skillName), knowledgeLevel: oneOf(r.knowledgeLevel, ['FOUNDATION', 'INTERMEDIATE', 'ADVANCED'] as const), skillVersion, outcomeCodes, provision }
 }
 function certificate(v: unknown): RuleCertificate { const c = object(v), url = new URL(text(c.referenceUrl)); if (url.protocol !== 'https:' || url.username || url.password) throw Error(); return { id: text(c.id), version: text(c.version), name: text(c.name), referenceUrl: url.href } }

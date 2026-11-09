@@ -71,8 +71,8 @@ function bool(value: unknown): boolean { if (typeof value !== 'boolean') throw E
 function date(value: unknown): string { const result = text(value); if (!Number.isFinite(Date.parse(result))) throw Error(); return result }
 function list<T>(value: unknown, parse: (value: unknown) => T): T[] { if (!Array.isArray(value)) throw Error(); return value.map(parse) }
 function requirement(value: unknown): Requirement {
-  const r = object(value), knowledgeLevel = text(r.knowledgeLevel), outcomeCodes = list(r.outcomeCodes, text)
-  if (!['FOUNDATION', 'INTERMEDIATE', 'ADVANCED'].includes(knowledgeLevel) || !outcomeCodes.length || new Set(outcomeCodes).size !== outcomeCodes.length) throw Error()
+  const r = object(value), knowledgeLevel = text(r.knowledgeLevel), outcomeCodes = [] as string[]
+  if (!['FOUNDATION', 'INTERMEDIATE', 'ADVANCED'].includes(knowledgeLevel)) throw Error()
   return { skillId: text(r.skillId), knowledgeLevel, outcomeCodes }
 }
 function parseAttempt(value: unknown): BaselineAttempt {

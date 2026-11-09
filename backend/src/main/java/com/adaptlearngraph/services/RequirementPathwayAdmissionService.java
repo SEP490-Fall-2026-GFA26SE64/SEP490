@@ -171,7 +171,7 @@ public final class RequirementPathwayAdmissionService {
                     var current=selected.stream().filter(requirement->requirement.key().equals(pair)).findFirst();
                     if(!"TARGET".equals(result.getRole()) || current.isEmpty() || definition==null)continue;
                     var pinned=json.convertValue(definition.path("requirement"),RuleAssessment.Requirement.class);
-                    if(Objects.equals(current.get().skillVersion(),definition.path("skillVersion").asText()) && new HashSet<>(current.get().outcomeCodes()).equals(new HashSet<>(pinned.outcomeCodes())))passed.put(pair,result.getPassed());
+                    if(Objects.equals(current.get().skillVersion(),definition.path("skillVersion").asText()))passed.put(pair,result.getPassed());
                 }
             }
             baseline=new Baseline(attempt.getId(),attempt.getPolicyId(),attempt.getPolicyHash(),attempt.getFinishedAt().toString(),passed);

@@ -102,7 +102,7 @@ public final class RuleAssessmentOutcomeService {
         var requirement=main.requirement();
         var snapshot=new LinkedHashMap<String,Object>();
         snapshot.put("skillVersion",definition.get("skillVersion").asText());snapshot.put("skillName",definition.get("skillName").asText());
-        snapshot.put("outcomeCodes",requirement.outcomeCodes());snapshot.put("attemptId",attempt.getId());snapshot.put("groupId",main.groupId());
+        snapshot.put("attemptId",attempt.getId());snapshot.put("groupId",main.groupId());
         for(var field:List.of("selectionId","selectionRevision","requestId","pathwayRevision","stepId","moduleId","moduleRevision","contentVersion")) {
             if(context.path(field).isMissingNode() || context.path(field).isNull())throw integrity();snapshot.put(field,json.convertValue(context.get(field),Object.class));
         }

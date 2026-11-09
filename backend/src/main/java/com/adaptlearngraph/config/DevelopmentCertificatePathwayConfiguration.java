@@ -55,7 +55,7 @@ public class DevelopmentCertificatePathwayConfiguration {
                 DevelopmentCertificateFixtures.require(rules.official(organization,learner,revisions.encode(targets.stream().map(Step::requirement).toList())).isEmpty(),"Preserve existing target achievements");
                 for(var step:targets) {
                     var need=step.requirement();var definition=definitions.stream().filter(d->d.skillId().equals(need.skillId()) && d.knowledgeLevel()==need.knowledgeLevel()).findFirst().orElseThrow();
-                    DevelopmentCertificateFixtures.require(definition.skillVersion().equals(need.skillVersion()) && new HashSet<>(definition.outcomeCodes()).equals(new HashSet<>(need.outcomeCodes())),"Frozen requirement drift");
+                    DevelopmentCertificateFixtures.require(definition.skillVersion().equals(need.skillVersion()),"Frozen requirement drift");
                     for(var option:step.options())DevelopmentCertificateFixtures.require(jdbc.queryForObject("SELECT count(*) FROM platform.rule_assessment_attempt WHERE organization_id=? AND learner_id=? AND purpose='SKILL_ASSESSMENT' AND context_snapshot->'context'->>'moduleId'=?",Long.class,organization,learner,option.moduleId())==0,"Preserve target attempt history");
                 }
                 var publisher=UUID.nameUUIDFromBytes("development-knowledge-bank:v1:publisher".getBytes(StandardCharsets.UTF_8));

@@ -103,7 +103,7 @@ public final class RuleAssessmentAttemptService {
                     .findFirst().orElseThrow(()->new Failure(422,"ASSESSMENT_POLICY_REQUIRED"));
             policyContext.put("policyScopeKey",scope.key());
             var policy=scopedPolicies.active(a.organizationId(),command.purpose().name(),scope.key()).orElseThrow(()->new Failure(422,"ASSESSMENT_POLICY_REQUIRED"));
-            if(!scope.ready() || !scope.catalogHash().equals(policy.getCatalogHash()))throw new Failure(422,"ASSESSMENT_POLICY_CATALOG_CHANGED");
+            if(!scope.ready() || !scope.matchesCatalog(policy.getCatalogHash()))throw new Failure(422,"ASSESSMENT_POLICY_CATALOG_CHANGED");
             var config=read(policy.getConfiguration(),Policy.class);
             if(!RoleBaselineFlow.hash(policy.getHashDomain()+"\n"+command.purpose()+"\n"+write(config)).equals(policy.getConfigurationHash()))throw integrity();
             if(attempts.contextCount(a.organizationId(),a.learnerId(),command.purpose().name(),context.contextKey())>=config.maxAttempts())
@@ -115,7 +115,7 @@ public final class RuleAssessmentAttemptService {
             for(var need:context.groups()) {
                 GroupRule rule;try{rule=config.require(need.requirement());}catch(IllegalArgumentException missing){throw new Failure(422,"GROUP_POLICY_REQUIRED");}
                 if((count+=rule.totalCount())>maximum)throw new Failure(422,"PAPER_CAPACITY_EXCEEDED");
-                var pool=bank.eligible(a.organizationId(),need.requirement().skillId(),need.requirement().knowledgeLevel().name(),need.requirement().outcomeCodes(),maximum+1);
+                var pool=bank.eligible(a.organizationId(),need.requirement().skillId(),need.requirement().knowledgeLevel().name(),scope.groups().stream().filter(g->g.requirement().key().equals(need.requirement().key())).findFirst().orElseThrow(()->new Failure(422,"GROUP_POLICY_REQUIRED")).skillVersion(),maximum+1);
                 if(pool.size()>maximum)throw new Failure(422,"BANK_QUERY_LIMIT_EXCEEDED");
                 try {
                     var candidates=pool.stream().map(c->new Candidate(c.getItemVersionId(),need.requirement(),c.getOutcomeCode(),c.getMandatory(),

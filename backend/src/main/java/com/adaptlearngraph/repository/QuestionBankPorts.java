@@ -12,7 +12,7 @@ public final class QuestionBankPorts {
         List<Choice> skills(Actor actor);
         default List<KnowledgeChoice> knowledge(Actor actor){return List.of();}
         String requireSkill(Actor actor, String id);
-        void requireOutcome(Actor actor,String skill,String knowledgeLevel,String outcomeCode);
+        String requireKnowledge(Actor actor,String skill,String knowledgeLevel);
         List<Choice> experts(Actor actor);
         List<Choice> managers(Actor actor);
         void requireExpert(Actor actor, UUID id);
