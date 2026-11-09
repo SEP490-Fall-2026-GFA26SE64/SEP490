@@ -5,7 +5,7 @@ import { useTranslation } from '../../i18n/LanguageContext'
 import { Badge } from './Badge'
 import { cn } from '../../lib/utils'
 
-export function TargetRoleSelector() {
+export function TargetRoleSelector({ roleSummary }: { roleSummary?: { title: string; status: string } }) {
   const {
     profile,
     setSelectedViewRoleKey,
@@ -105,23 +105,25 @@ export function TargetRoleSelector() {
         {/* Dropdown Toggle Button */}
         <button
           type="button"
-          onClick={() => setIsOpen((prev) => !prev)}
+          onClick={() => { if (!roleSummary || viewType !== 'role') setIsOpen((prev) => !prev) }}
+          disabled={!!roleSummary && viewType === 'role'}
+          title={viewType === 'role' ? roleSummary?.title : undefined}
           className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-muted/60 hover:bg-muted text-xs font-bold text-foreground transition-colors cursor-pointer border border-border/60"
           aria-expanded={isOpen}
         >
           <span className="truncate max-w-[180px] sm:max-w-[240px]">
-            {viewType === 'role' ? currentRoleTitle : currentSkillTitle}
+            {viewType === 'role' ? roleSummary?.title ?? currentRoleTitle : currentSkillTitle}
           </span>
-          <ChevronDown
+          {(!roleSummary || viewType !== 'role') && <ChevronDown
             size={13}
             className={`text-muted-foreground transition-transform duration-150 ${
               isOpen ? 'rotate-180 text-primary' : ''
             }`}
-          />
+          />}
         </button>
 
         {/* Status indicator badge (Active vs Completed) */}
-        {viewType === 'role' ? (
+        {viewType === 'role' && roleSummary ? <Badge variant="secondary" className="text-[10px] font-semibold py-0.5 hidden sm:inline-flex">{roleSummary.status}</Badge> : viewType === 'role' ? (
           isRoleActive ? (
             isLearningLocked ? (
               <Badge variant="warning" className="text-[10px] font-semibold py-0.5 hidden sm:inline-flex">
@@ -155,7 +157,7 @@ export function TargetRoleSelector() {
       </div>
 
       {/* Popover Menu */}
-      {isOpen && (
+      {isOpen && (!roleSummary || viewType !== 'role') && (
         <div className="absolute left-0 top-full mt-1.5 w-80 sm:w-96 rounded-xl border border-border bg-card shadow-lg z-50 overflow-hidden animate-in fade-in-50 zoom-in-95 duration-100 p-1.5 text-xs">
           {viewType === 'role' ? (
             /* --- TARGET ROLE VIEW --- */
