@@ -37,7 +37,7 @@ public final class PlatformCatalogTemplate {
 
         public String code() {
             Object code = properties.get("code");
-            return code == null ? null : code.toString();
+            return code != null ? code.toString() : id;
         }
     }
 

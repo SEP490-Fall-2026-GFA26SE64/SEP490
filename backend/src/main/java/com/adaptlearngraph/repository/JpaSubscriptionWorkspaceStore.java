@@ -193,8 +193,8 @@ public final class JpaSubscriptionWorkspaceStore implements SubscriptionWorkspac
                     ? encodeJobPositionName(update.jobPositionName(), update.targetRoleId(), update.targetRoleCode(),
                         update.targetRoleName(), update.targetRoleLevel())
                     : parseJobPositionName(update.jobPositionName()).cleanJobPositionName();
-            references.validate(organizationId, update.roles(), update.departmentId(), update.jobPositionReferenceId(), update.departmentName(), storedJobPositionName, historical);
-            data.memberships().assignReferences(organizationId, memberId, update.departmentId(), update.jobPositionReferenceId());
+            var validated = references.validate(organizationId, update.roles(), update.departmentId(), update.jobPositionReferenceId(), update.departmentName(), storedJobPositionName, historical);
+            data.memberships().assignReferences(organizationId, memberId, validated.departmentId(), validated.jobPositionReferenceId());
             // Reuse the serialized role, last-administrator, revision and capacity checks in the same transaction.
             changeMember(actor, organizationId, memberId, member.active(), update.roles(), update.revision(), now);
             if (data.profiles().upsertFullName(member.accountId(), update.fullName()) != 1) {

@@ -48,10 +48,21 @@ public class Neo4jTargetRoleGraphAdapter implements TargetRoleGraphPort {
                 MATCH (r:TargetRole)
                 WHERE r.organizationId = $organizationId
                   AND (r.id = $roleId OR r.code = $roleId)
-                MATCH (r)-[req:REQUIRES_SKILL]->(s:MicroSkill)
-                WHERE s.organizationId = $organizationId AND req.status = 'ACTIVE'
-                  AND (req.organizationId IS NULL OR req.organizationId = $organizationId)
-                RETURN s, req
+                OPTIONAL MATCH (r)-[reqDirect:REQUIRES_SKILL]->(sDirect:MicroSkill)
+                WHERE sDirect.organizationId = $organizationId
+                OPTIONAL MATCH (r)-[:HAS_LEVEL]->(lvlComp:Level)-[:HAS_COMPETENCY]->(c:Competency)-[:HAS_SKILL]->(sComp:MicroSkill)
+                WHERE sComp.organizationId = $organizationId
+                OPTIONAL MATCH (r)-[:HAS_LEVEL]->(lvlDirect:Level)-[reqLvl:REQUIRES_SKILL]->(sLvl:MicroSkill)
+                WHERE sLvl.organizationId = $organizationId
+                WITH coalesce(sDirect, sComp, sLvl) AS s,
+                     coalesce(lvlComp.name, lvlDirect.name, reqDirect.level) AS skillLevel,
+                     coalesce(reqDirect.status, reqLvl.status, 'ACTIVE') AS reqStatus,
+                     coalesce(reqDirect.requiredKnowledgeLevels, reqLvl.requiredKnowledgeLevels,
+                         CASE WHEN coalesce(lvlComp.name, lvlDirect.name, reqDirect.level) = 'Senior' THEN ['INTERMEDIATE', 'ADVANCED']
+                              WHEN coalesce(lvlComp.name, lvlDirect.name, reqDirect.level) = 'Middle' THEN ['INTERMEDIATE']
+                              ELSE ['FOUNDATION'] END) AS knowledge
+                WHERE s IS NOT NULL
+                RETURN DISTINCT s, skillLevel, reqStatus, knowledge
                 ORDER BY coalesce(s.code, s.id) ASC
                 """;
 
@@ -59,10 +70,14 @@ public class Neo4jTargetRoleGraphAdapter implements TargetRoleGraphPort {
                 MATCH (r:TargetRole)
                 WHERE r.organizationId = $organizationId
                   AND (r.id = $roleId OR r.code = $roleId)
-                MATCH (r)-[first:REQUIRES_SKILL]->(s1:MicroSkill {organizationId:$organizationId})
-                MATCH (r)-[second:REQUIRES_SKILL]->(s2:MicroSkill {organizationId:$organizationId})
+                OPTIONAL MATCH (r)-[:REQUIRES_SKILL]->(sDirect:MicroSkill {organizationId:$organizationId})
+                OPTIONAL MATCH (r)-[:HAS_LEVEL]->(:Level)-[:HAS_COMPETENCY]->(:Competency)-[:HAS_SKILL]->(sComp:MicroSkill {organizationId:$organizationId})
+                OPTIONAL MATCH (r)-[:HAS_LEVEL]->(:Level)-[:REQUIRES_SKILL]->(sLvl:MicroSkill {organizationId:$organizationId})
+                WITH collect(DISTINCT coalesce(sDirect, sComp, sLvl)) AS roleSkills
+                UNWIND roleSkills AS s1
+                UNWIND roleSkills AS s2
                 MATCH (s1)-[rel:HAS_SKILL_PREREQUISITE]->(s2)
-                WHERE first.status='ACTIVE' AND second.status='ACTIVE' AND rel.status='ACTIVE'
+                WHERE rel.status='ACTIVE'
                     AND (rel.organizationId IS NULL OR rel.organizationId=$organizationId)
                 RETURN DISTINCT s1, s2, rel
                 ORDER BY coalesce(s1.code, s1.id) ASC, coalesce(s2.code, s2.id) ASC
@@ -93,18 +108,28 @@ public class Neo4jTargetRoleGraphAdapter implements TargetRoleGraphPort {
             while (skillsResult.hasNext()) {
                 var record = skillsResult.next();
                 Node skillNode = record.get("s").asNode();
-                Relationship reqRel = record.get("req").asRelationship();
 
                 String sId = skillNode.containsKey("id") && !skillNode.get("id").isNull() ? skillNode.get("id").asString() : "";
                 String sCode = skillNode.containsKey("code") && !skillNode.get("code").isNull() ? skillNode.get("code").asString() : sId;
                 String sName = skillNode.containsKey("name") && !skillNode.get("name").isNull() ? skillNode.get("name").asString() : sCode;
-                var knowledge=reqRel.get("requiredKnowledgeLevels").isNull()?List.<String>of():reqRel.get("requiredKnowledgeLevels").asList(org.neo4j.driver.Value::asString);
-                String reqStatus = reqRel.containsKey("status") && !reqRel.get("status").isNull()
-                        ? reqRel.get("status").asString()
+                List<String> knowledge = record.containsKey("knowledge") && !record.get("knowledge").isNull()
+                        ? record.get("knowledge").asList(org.neo4j.driver.Value::asString)
+                        : List.of();
+                String reqStatus = record.containsKey("reqStatus") && !record.get("reqStatus").isNull()
+                        ? record.get("reqStatus").asString()
                         : "ACTIVE";
-                String skillLevel = reqRel.containsKey("level") && !reqRel.get("level").isNull()
-                        ? reqRel.get("level").asString()
+                String skillLevel = record.containsKey("skillLevel") && !record.get("skillLevel").isNull()
+                        ? record.get("skillLevel").asString()
                         : null;
+                if (knowledge.isEmpty()) {
+                    if ("Senior".equalsIgnoreCase(skillLevel)) {
+                        knowledge = List.of("INTERMEDIATE", "ADVANCED");
+                    } else if ("Middle".equalsIgnoreCase(skillLevel)) {
+                        knowledge = List.of("INTERMEDIATE");
+                    } else {
+                        knowledge = List.of("FOUNDATION");
+                    }
+                }
 
                 String dedupeKey = (sId.isBlank() ? sCode : sId) + ":" + (skillLevel != null ? skillLevel : "");
                 if (!skillIds.add(dedupeKey)) {

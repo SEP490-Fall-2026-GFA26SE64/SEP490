@@ -44,7 +44,7 @@ public class PrerequisiteService implements ManagePrerequisiteUseCase, GetTarget
         Objects.requireNonNull(organizationId, "organizationId cannot be null");
         Objects.requireNonNull(sourceSkillId, "sourceSkillId cannot be null");
         Objects.requireNonNull(targetSkillId, "targetSkillId cannot be null");
-        throw new IllegalArgumentException("Exact prerequisite knowledge levels are required");
+        prerequisiteRepository.deletePrerequisite(organizationId, sourceSkillId, targetSkillId);
     }
     @Override public PrerequisiteEdge reversePrerequisite(CreatePrerequisiteCommand command) {
         return prerequisiteRepository.reversePrerequisite(command.organizationId(),command.sourceSkillId(),command.targetSkillId(),
@@ -52,8 +52,10 @@ public class PrerequisiteService implements ManagePrerequisiteUseCase, GetTarget
     }
 
     @Override public void deletePrerequisite(String organizationId,String sourceSkillId,String targetSkillId,String dependentLevel,String prerequisiteLevel) {
+        KnowledgeLevel dep = (dependentLevel != null && !dependentLevel.isBlank()) ? KnowledgeLevel.valueOf(dependentLevel) : null;
+        KnowledgeLevel prereq = (prerequisiteLevel != null && !prerequisiteLevel.isBlank()) ? KnowledgeLevel.valueOf(prerequisiteLevel) : null;
         prerequisiteRepository.deletePrerequisite(Objects.requireNonNull(organizationId),Objects.requireNonNull(sourceSkillId),Objects.requireNonNull(targetSkillId),
-                KnowledgeLevel.valueOf(dependentLevel),KnowledgeLevel.valueOf(prerequisiteLevel));
+                dep, prereq);
     }
 
     @Override
