@@ -6,7 +6,7 @@ skinparam classAttributeIconSize 0
 skinparam shadowing false
 skinparam nodesep 80
 skinparam ranksep 65
-title Neo4j catalog - supplied schema capture and source-defined Certificate
+title Neo4j catalog - current Skill / knowledge / version source; deployment not verified
 class JobPosition {
   id: String [UNIQUE]
   code: String
@@ -67,12 +67,11 @@ class MicroSkill {
   reviewStatus: String
   reviewSource: String
   reviewedBy: String
-  provisionMode: String
-  foundationOutcomeCodes: String[]
+  moduleOnlyKnowledgeLevels: String[]
+  certificateOnlyKnowledgeLevels: String[]
+  provisionMode: String [legacy common mode]
   foundationOutcomeLabels: String[]
-  intermediateOutcomeCodes: String[]
   intermediateOutcomeLabels: String[]
-  advancedOutcomeCodes: String[]
   advancedOutcomeLabels: String[]
 }
 class LearningModule {
@@ -90,7 +89,6 @@ class LearningModule {
   contentType: String
   contentUri: String
   contentVersion: String
-  outcomeCodes: String[]
 }
 class Certificate <<source only>> {
   id: String [UNIQUE]
@@ -100,7 +98,6 @@ class Certificate <<source only>> {
   description: String
   knowledgeLevel: String
   skillVersion: String
-  outcomeCodes: String[]
   referenceUrl: String
   status: String
   reviewStatus: String
@@ -120,6 +117,8 @@ MicroSkill --> MicroSkill : HAS_SKILL_PREREQUISITE
 MicroSkill --> Certificate : REQUIRES_CERTIFICATE
 note bottom of MicroSkill
   Catalog only. PostgreSQL owns learner state and evidence.
+  Match Skill + knowledge level + Skill version; no OC filters.
+  Each Module teaches one complete Skill at one level.
   Certificate / REQUIRES_CERTIFICATE: source-defined;
   not observed in the supplied Neo4j schema capture.
 end note
