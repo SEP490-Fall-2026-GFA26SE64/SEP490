@@ -164,7 +164,7 @@ export const vi: TranslationKeys = {
   certificates: {
     alreadyAssigned: 'Skill–mức này đã có chứng chỉ. Dùng Thay định nghĩa để cập nhật sau khi kiểm tra nội dung.',
     replace: 'Thay định nghĩa', replaceHelp: 'Minh chứng đã nộp giữ nguyên yêu cầu chứng chỉ tại thời điểm nộp.',
-    title: 'Chứng chỉ', description: 'Quản lý một chứng chỉ cho mỗi skill–mức được cấu hình học bằng chứng chỉ.', add: 'Thêm chứng chỉ', skill: 'Skill', level: 'Mức kiến thức', name: 'Tên chứng chỉ', reference: 'URL tham khảo HTTPS',
+    title: 'Chứng chỉ', description: 'Quản lý một chứng chỉ cho mỗi skill–mức được cấu hình học bằng chứng chỉ.', add: 'Thêm chứng chỉ', skill: 'Skill', level: 'Mức kiến thức', name: 'Tên chứng chỉ', reference: 'URL tham khảo',
     link: 'Đường dẫn', file: 'Tệp', submit: 'Nộp minh chứng', evidenceHelp: 'Nộp duy nhất một link HTTPS hoặc tệp PDF, PNG, JPEG tối đa 10 MiB. Giới hạn ảnh hiện có có thể thấp hơn.', evidenceLink: 'Link minh chứng HTTPS',
     history: 'Lịch sử nộp', noHistory: 'Chưa có minh chứng được nộp.', pending: 'Chờ duyệt', approved: 'Đã duyệt', rejected: 'Bị từ chối',
     reason: 'Lý do quyết định', reviewer: 'Duyệt minh chứng chứng chỉ', approve: 'Duyệt minh chứng', reject: 'Từ chối minh chứng', download: 'Tải minh chứng riêng tư',

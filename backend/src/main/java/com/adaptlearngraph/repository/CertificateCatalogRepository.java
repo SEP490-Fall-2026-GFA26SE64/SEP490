@@ -15,12 +15,18 @@ public final class CertificateCatalogRepository {
     public CertificateCatalogRepository(Neo4jCypher graph,ObjectMapper json){this(graph,json,5);}
     public CertificateCatalogRepository(Neo4jCypher graph,ObjectMapper json,int timeout){if(timeout<1 || timeout>60)throw new IllegalArgumentException("Invalid catalog transaction budget");this.graph=graph;this.json=json;this.timeout=timeout;}
     public List<Definition> list(UUID organization,int offset,int limit) {
+        return list(organization,offset,limit,"","");
+    }
+    public List<Definition> list(UUID organization,int offset,int limit,String query,String level) {
         if(offset<0 || offset>10000 || limit<1 || limit>100)throw new Failure(400,"INVALID_PAGINATION");
+        if(query==null || query.length()>300 || level==null || !Set.of("","FOUNDATION","INTERMEDIATE","ADVANCED").contains(level))throw new Failure(400,"INVALID_REQUEST");
         return graph.read(timeout,tx->tx.list("""
                 MATCH (s:MicroSkill {organizationId:$org})-[a:REQUIRES_CERTIFICATE]->(c:Certificate {organizationId:$org})
                 WHERE a.status='ACTIVE' AND a.organizationId=$org AND c.status='ACTIVE' AND c.reviewStatus='APPROVED'
+                    AND ($query='' OR toLower(c.name) CONTAINS $query OR toLower(s.name) CONTAINS $query)
+                    AND ($level='' OR c.knowledgeLevel=$level)
                 RETURN s.id AS skillId,s.name AS skillName,properties(c) AS certificate ORDER BY s.name,c.knowledgeLevel,c.id SKIP $offset LIMIT $limit
-                """,Map.of("org",organization.toString(),"offset",offset,"limit",limit)).stream().map(this::definition).toList());
+                """,Map.of("org",organization.toString(),"offset",offset,"limit",limit,"query",query.trim().toLowerCase(Locale.ROOT),"level",level)).stream().map(this::definition).toList());
     }
     public Definition create(UUID organization,UUID expert,UUID retry,Create command) {
         String hash;

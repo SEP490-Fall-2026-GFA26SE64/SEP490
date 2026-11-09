@@ -28,9 +28,13 @@ public final class CertificateReviewService {
     private Actor expert(){var actor=actors.require();actor.require(Role.DOMAIN_EXPERT);return actor;}
     private void reauthorize(Actor actor,UUID request,Assignment assignment){if(!actor.equals(expert()) || !assignment.equals(assignments.require(actor,request)))throw new Failure(409,"REVIEW_ASSIGNMENT_CHANGED");}
     public List<CertificateSubmissionService.Submission> queue(int offset,int limit) {
+        return queue(offset,limit,"PENDING");
+    }
+    public List<CertificateSubmissionService.Submission> queue(int offset,int limit,String status) {
         var actor=expert();if(offset<0 || offset>10000 || limit<1 || limit>100)throw new Failure(400,"INVALID_PAGINATION");
+        if(!Set.of("PENDING","REVIEWED").contains(status))throw new Failure(400,"INVALID_REQUEST");
         var ids=assignments.assignedCertificatePathways(actor);if(ids.isEmpty())return List.of();
-        var result=submissions.queue(actor.organizationId(),ids,offset,limit).stream().map(views::view).toList();
+        var result=("REVIEWED".equals(status)?submissions.reviewed(actor.organizationId(),ids,offset,limit):submissions.queue(actor.organizationId(),ids,offset,limit)).stream().map(views::view).toList();
         if(!actor.equals(expert()))throw new Failure(403,"FORBIDDEN");return result;
     }
     public CertificateSubmissionService.Submission detail(UUID id) {

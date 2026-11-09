@@ -34,9 +34,6 @@ import {
 import { Pagination } from '../../../shared/components/ui/Pagination'
 import { StatCard } from '../../../shared/components/ui/StatCard'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../../shared/components/ui/Tabs'
-import { CertificatesTab } from '../../expert/certificates/CertificatesTab'
-import { useTranslation } from '../../../shared/i18n/LanguageContext'
-import { rulePathwaysEnabled } from '../../../shared/api/requirementPathway'
 import {
   QuickConfigImportModal,
   type ImportPreset,
@@ -187,7 +184,6 @@ export function CompetencyOntologyPage() {
   return <OwnedCompetencyOntologyPage key={`${identity?.organizationId ?? ''}:${identity?.accountId ?? ''}:${identity?.roles?.join(',') ?? ''}`} />
 }
 function OwnedCompetencyOntologyPage() {
-  const { t } = useTranslation()
   const { toast } = useToast()
   const session = React.useContext(WorkspaceSessionContext)
   const accountId = session?.identity?.accountId ?? ''
@@ -1271,9 +1267,7 @@ function OwnedCompetencyOntologyPage() {
             <TabsTrigger value="prerequisites" className="px-3.5 py-1.5 text-xs font-semibold whitespace-nowrap">
               Skill Prerequisites
             </TabsTrigger>
-            {rulePathwaysEnabled && session?.identity?.roles?.includes('DOMAIN_EXPERT') && <TabsTrigger value="certificates" className="px-3.5 py-1.5 text-xs font-semibold whitespace-nowrap">{t('certificates.title')}</TabsTrigger>}
           </TabsList>
-          {rulePathwaysEnabled && session?.identity?.roles?.includes('DOMAIN_EXPERT') && <TabsContent value="certificates" className="space-y-4"><CertificatesTab /></TabsContent>}
 
           {/* TAB 1: MICRO-SKILLS */}
           <TabsContent value="skills" className="space-y-4">

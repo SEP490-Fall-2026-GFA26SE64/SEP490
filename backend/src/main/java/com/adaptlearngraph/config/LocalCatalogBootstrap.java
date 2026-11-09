@@ -195,6 +195,7 @@ public final class LocalCatalogBootstrap {
             var labels=row.get("labels").asList(v->v.asString());if(moduleKnowledgeRelease() && labels.equals(List.of("LearningModule")))continue;require(labels.size()==1,"Unexpected catalog label");
             var id=row.get("props").get("id").asString();
             var props=new HashMap<String,Object>(row.get("props").asMap());
+            if(moduleKnowledgeRelease() && labels.equals(List.of("MicroSkill")))DevelopmentCertificateFixtures.sealedComparison(id,props);
             var allowed=expectedNodeKeys.get(id);
             if(allowed!=null)props.keySet().retainAll(allowed);
             require(actualNodes.put(id,canonical(JSON.valueToTree(Map.of("label",labels.getFirst(),"props",props))))==null,"Ambiguous catalog node");

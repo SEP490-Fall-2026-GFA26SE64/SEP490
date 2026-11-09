@@ -85,7 +85,8 @@ public class DevelopmentModuleKnowledgeSeedConfiguration {
                 });
                 jdbc.update("INSERT INTO platform.development_module_seed_release(organization_id,manifest_hash) VALUES(CAST(? AS uuid),?)",ORG,manifestHash);
             });
-            System.out.println("Development module release ready:"+expected+" modules, explicit seed provenance; learner progress preserved.");
+            DevelopmentCertificateFixtures.apply(graph,DevelopmentCertificateFixtures.read(json));
+            System.out.println("Development module release ready:"+expected+" modules and 2 certificate provisions; explicit seed provenance; learner progress preserved.");
             context.close();
         };
     }

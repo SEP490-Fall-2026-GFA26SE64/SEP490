@@ -162,7 +162,7 @@ export const en = {
   certificates: {
     alreadyAssigned: 'This skill level already has a certificate. Replace its definition to make a reviewed change.',
     replace: 'Replace definition', replaceHelp: 'Previously submitted evidence retains its original certificate requirements.',
-    title: 'Certificates', description: 'Manage the single certificate provision for each certificate-only skill level.', add: 'Add certificate', skill: 'Skill', level: 'Knowledge level', name: 'Certificate name', reference: 'HTTPS reference URL',
+    title: 'Certificates', description: 'Manage the single certificate provision for each certificate-only skill level.', add: 'Add certificate', skill: 'Skill', level: 'Knowledge level', name: 'Certificate name', reference: 'Reference URL',
     link: 'Link', file: 'File', submit: 'Submit evidence', evidenceHelp: 'Submit exactly one HTTPS link or a PDF, PNG or JPEG file up to 10 MiB. A tighter configured image limit may apply.', evidenceLink: 'HTTPS evidence link',
     history: 'Submission history', noHistory: 'No evidence submitted yet.', pending: 'Pending review', approved: 'Approved', rejected: 'Rejected',
     reason: 'Decision reason', reviewer: 'Review certificate evidence', approve: 'Approve evidence', reject: 'Reject evidence', download: 'Download private evidence',

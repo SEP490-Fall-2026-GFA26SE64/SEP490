@@ -238,6 +238,11 @@ export function WorkspaceLayout({ children, identity: suppliedIdentity, onSignOu
         icon: <BookOpen size={15} />,
       },
       {
+        label: t('certificates.title'),
+        href: '/expert/certificates',
+        icon: <Award size={15} />,
+      },
+      {
         label: t('nav.assessmentBank'),
         href: '/expert/assessment-bank',
         icon: <FileQuestion size={15} />,
