@@ -88,7 +88,6 @@ public class Neo4jMicroSkillRepository implements MicroSkillRepository {
             parameters.put("id",microSkill.getId().toString());parameters.put("org",microSkill.getOrganizationId());
             parameters.put("version",microSkill.getVersion());
             parameters.put("modules",provision.moduleOnlyKnowledgeLevels());parameters.put("certificates",provision.certificateOnlyKnowledgeLevels());
-            parameters.put("foundation",provision.foundationOutcomeCodes());parameters.put("intermediate",provision.intermediateOutcomeCodes());parameters.put("advanced",provision.advancedOutcomeCodes());
             var incompatible=client.query("""
                     MATCH (s:MicroSkill {id:$id,organizationId:$org})-[r:REQUIRES_CERTIFICATE]->(c:Certificate)
                     WHERE r.status='ACTIVE' AND c.status='ACTIVE' AND
@@ -99,8 +98,8 @@ public class Neo4jMicroSkillRepository implements MicroSkillRepository {
             if(incompatible>0)throw new IllegalArgumentException("Deactivate incompatible certificates before changing provision mode");
             client.query("""
                     MATCH (s:MicroSkill {id:$id,organizationId:$org})
-                    SET s.version=$version,s.moduleOnlyKnowledgeLevels=$modules,s.certificateOnlyKnowledgeLevels=$certificates,
-                        s.foundationOutcomeCodes=$foundation,s.intermediateOutcomeCodes=$intermediate,s.advancedOutcomeCodes=$advanced
+                    SET s.version=$version,s.moduleOnlyKnowledgeLevels=$modules,s.certificateOnlyKnowledgeLevels=$certificates
+                    REMOVE s.provisionMode,s.foundationOutcomeCodes,s.intermediateOutcomeCodes,s.advancedOutcomeCodes
                     """).bindAll(parameters).run();
         });
         return microSkill;
@@ -190,16 +189,10 @@ public class Neo4jMicroSkillRepository implements MicroSkillRepository {
 
         var modules = new ArrayList<>(orEmpty(node.moduleOnlyKnowledgeLevels()));
         var certificates = new ArrayList<>(orEmpty(node.certificateOnlyKnowledgeLevels()));
-        var foundation = orEmpty(node.foundationOutcomeCodes());
-        var intermediate = orEmpty(node.intermediateOutcomeCodes());
-        var advanced = orEmpty(node.advancedOutcomeCodes());
-
-        // Backward compatibility: If knowledge levels are not yet explicitly categorized into
-        // moduleOnly or certificateOnly, default any level that has outcomes to moduleOnly.
-        if (modules.isEmpty() && certificates.isEmpty()) {
-            if (!foundation.isEmpty()) modules.add("FOUNDATION");
-            if (!intermediate.isEmpty()) modules.add("INTERMEDIATE");
-            if (!advanced.isEmpty()) modules.add("ADVANCED");
+        var foundation = List.<String>of();var intermediate=List.<String>of();var advanced=List.<String>of();
+        if (modules.isEmpty() && certificates.isEmpty() && node.provisionMode()!=null) {
+            var target="CERTIFICATE_ONLY".equals(node.provisionMode())?certificates:modules;
+            if (java.util.Set.of("MODULE_ONLY","CERTIFICATE_ONLY").contains(node.provisionMode())) target.addAll(List.of("FOUNDATION","INTERMEDIATE","ADVANCED"));
         }
 
         return new MicroSkill(

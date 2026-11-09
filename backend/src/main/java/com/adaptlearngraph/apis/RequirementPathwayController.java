@@ -23,6 +23,7 @@ public final class RequirementPathwayController {
         this.admission=admission;this.view=view;this.review=review;this.json=json.copy().enable(com.fasterxml.jackson.core.JsonParser.Feature.STRICT_DUPLICATE_DETECTION)
                 .enable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES).enable(DeserializationFeature.FAIL_ON_TRAILING_TOKENS);
     }
+    @GetMapping("/employee/learning-overview") ResponseEntity<?> overview(){return ok(admission.overview());}
     @GetMapping("/employee/role-gaps") ResponseEntity<?> preview(@RequestParam String roleId,@RequestParam String levelId){return ok(admission.preview(roleId,levelId));}
     @PostMapping("/employee/initial-pathway-requests") ResponseEntity<?> confirm(@RequestHeader("Idempotency-Key")String key,@RequestBody String body){return receipt(admission.confirm(key,parse(body,RequirementPathwayAdmissionService.Confirm.class)));}
     @GetMapping("/employee/initial-pathway-requests/{id}") ResponseEntity<?> status(@PathVariable UUID id){return ok(view.own(id));}

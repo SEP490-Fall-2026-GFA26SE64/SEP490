@@ -22,7 +22,8 @@ import org.springframework.transaction.support.TransactionTemplate;
 @ConditionalOnProperty(name="modules.development-seed.enabled",havingValue="true")
 public class DevelopmentModuleKnowledgeSeedConfiguration {
     private static final String HASH="22d08d80691257e44f2ef6afbd9b15c385f12f9b8f429d5fa7e1ff43f32e3cda";
-    private static final String COMPLETE_HASH="f455b6cf4d17aac8b32feeff59ab09f017c68537450bdc36bb67d45987764e15";
+    private static final String COMPLETE_HASH="3f30270e4375dc8f33796d6951c9d0e1b8a49707791231b2c37214350fc5fa25";
+    private static final String COMPLETE_CRLF_HASH="0f0768d38dcb564602df0d6720a01193572dd74e37cbfb27aecc0dc90092fb0e";
     private static final Set<String> ADDED_SKILLS=Set.of("MS-DE09","MS-DE10","MS-FS01","MS-FS10","MS-FS15","MS-QA09","MS-QA12","MS-QA15");
     private static final String ORG="e0000000-0000-0000-0000-000000000001";
     @Bean ApplicationRunner moduleKnowledgeSeed(ObjectMapper json,Neo4jCypher graph,JdbcTemplate jdbc,Environment env,
@@ -31,8 +32,8 @@ public class DevelopmentModuleKnowledgeSeedConfiguration {
             require(com.adaptlearngraph.constants.DevelopmentWorkspace.enabled(env),"Development fixture gate required");
             var bytes=Files.readAllBytes(Path.of(env.getRequiredProperty("modules.development-seed.manifest")));
             String manifestHash=java.util.HexFormat.of().formatHex(java.security.MessageDigest.getInstance("SHA-256").digest(bytes));
-            require(Set.of(HASH,COMPLETE_HASH).contains(manifestHash),"Module seed source drift");
-            boolean supplement=COMPLETE_HASH.equals(manifestHash) && jdbc.queryForObject("SELECT count(*) FROM platform.development_module_seed_release WHERE organization_id=CAST(? AS uuid) AND manifest_hash=?",Long.class,ORG,HASH)>0;
+            require(Set.of(HASH,COMPLETE_HASH,COMPLETE_CRLF_HASH).contains(manifestHash),"Module seed source drift");
+            boolean supplement=Set.of(COMPLETE_HASH,COMPLETE_CRLF_HASH).contains(manifestHash) && jdbc.queryForObject("SELECT count(*) FROM platform.development_module_seed_release WHERE organization_id=CAST(? AS uuid) AND manifest_hash=?",Long.class,ORG,HASH)>0;
             var release=json.readTree(bytes);
             require(ORG.equals(release.path("organizationId").asText()) && "DEVELOPMENT_SEED".equals(release.path("source").asText()),"Unexpected module fixture owner");
             var documents=new ArrayList<Document>();
@@ -40,7 +41,7 @@ public class DevelopmentModuleKnowledgeSeedConfiguration {
                 var document=json.treeToValue(row,Document.class);
                 if(!supplement || ADDED_SKILLS.contains(document.revisions().getFirst().payload().teachings().getFirst().skillId()))documents.add(document);
             }
-            int expected=supplement?24:COMPLETE_HASH.equals(manifestHash)?270:246;
+            int expected=supplement?24:Set.of(COMPLETE_HASH,COMPLETE_CRLF_HASH).contains(manifestHash)?270:246;
             require(documents.size()==expected && documents.stream().map(Document::id).distinct().count()==expected,"Module inventory mismatch");
             var old=new ArrayList<String>();release.path("oldToNew").fieldNames().forEachRemaining(old::add);
             if(supplement)old.clear();
@@ -66,13 +67,13 @@ public class DevelopmentModuleKnowledgeSeedConfiguration {
                     var p=document.revisions().getFirst().payload();var props=new HashMap<String,Object>();
                     props.putAll(Map.of("id",document.id(),"organizationId",ORG,"version",p.metadata().version(),"status","ACTIVE","reviewStatus","APPROVED","reviewSource","DEVELOPMENT_SEED"));
                     props.putAll(Map.of("title",p.title(),"moduleType",p.moduleType(),"contentUri",p.contentUri(),"contentType",p.contentType(),"contentVersion",p.contentVersion(),"duration",p.duration(),
-                            "knowledgeLevel",p.knowledgeLevel().name(),"outcomeCodes",p.outcomeCodes(),"skillVersion",p.skillVersion()));
+                            "knowledgeLevel",p.knowledgeLevel().name(),"skillVersion",p.skillVersion()));
                     modules.add(Map.of("id",document.id(),"props",props));
                     var teaching=p.teachings().getFirst();
                     teachings.add(Map.of("module",document.id(),"skill",teaching.skillId(),"props",Map.of("id",teaching.metadata().id(),"organizationId",ORG,"version","0.12.0","status","ACTIVE","reviewStatus","APPROVED","reviewSource","DEVELOPMENT_SEED")));
                 }
                 graph.write(g->{
-                    if(COMPLETE_HASH.equals(manifestHash)) {
+                    if(Set.of(COMPLETE_HASH,COMPLETE_CRLF_HASH).contains(manifestHash)) {
                         require(g.single("MATCH (s:MicroSkill {organizationId:$org}) WHERE s.id IN $ids AND s.version='0.12.1' AND (s.provisionMode IS NULL OR s.provisionMode='MODULE_ONLY') RETURN count(s) AS c",Map.of("org",ORG,"ids",List.copyOf(ADDED_SKILLS))).get("c").asLong()==8,"Changed Skill provision; preserve authored data");
                         g.execute("MATCH (s:MicroSkill {organizationId:$org}) WHERE s.id IN $ids SET s.provisionMode='MODULE_ONLY'",Map.of("org",ORG,"ids",List.copyOf(ADDED_SKILLS)));
                     }
@@ -85,7 +86,8 @@ public class DevelopmentModuleKnowledgeSeedConfiguration {
                 });
                 jdbc.update("INSERT INTO platform.development_module_seed_release(organization_id,manifest_hash) VALUES(CAST(? AS uuid),?)",ORG,manifestHash);
             });
-            System.out.println("Development module release ready:"+expected+" modules, explicit seed provenance; learner progress preserved.");
+            DevelopmentCertificateFixtures.apply(graph,DevelopmentCertificateFixtures.read(json));
+            System.out.println("Development module release ready:"+expected+" modules and 2 certificate provisions; explicit seed provenance; learner progress preserved.");
             context.close();
         };
     }

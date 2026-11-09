@@ -63,8 +63,8 @@ export function LearningImportPanel({
         </Heading>}
         <p className="text-sm text-muted-foreground">
           {vi
-            ? 'Dùng Excel theo mẫu, hoặc ZIP chứa modules.xlsx và tài nguyên. Mỗi module cần một kỹ năng, mức kiến thức và mã đầu ra đã duyệt. Kiểm tra toàn bộ trước khi xác nhận.'
-            : 'Use the Excel template, or a ZIP containing modules.xlsx and assets. Each module needs one skill, a knowledge level and approved outcome codes. Review the entire batch before confirming.'}
+            ? 'Dùng Excel theo mẫu, hoặc ZIP chứa modules.xlsx và tài nguyên. Mỗi module cần một kỹ năng và một mức kiến thức. Kiểm tra toàn bộ trước khi xác nhận.'
+            : 'Use the Excel template, or a ZIP containing modules.xlsx and assets. Each module needs one skill and a knowledge level. Review the entire batch before confirming.'}
         </p>
         <a
           className={cn(

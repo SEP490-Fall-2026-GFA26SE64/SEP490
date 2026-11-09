@@ -23,10 +23,10 @@ export function ModuleAssessmentConfiguration({ scope, payload }: { scope: strin
   const row = query.data?.rows.find(item => item.scope.ownerId === skillId && item.scope.levelId === level)
   return <section aria-label={t('moduleReview.assessmentStatus')} className="space-y-3 rounded-lg border border-primary/25 bg-secondary/30 p-4">
     <div className="flex flex-wrap items-center justify-between gap-3">
-      <Text tone="foreground" variant="body" className="flex items-center gap-2 font-semibold"><SlidersHorizontal size={16} className="shrink-0 text-primary" aria-hidden="true" />{t('moduleReview.assessmentStatus')}</Text>
-      {supported && !query.isError && row && <div className="flex flex-wrap items-center gap-2">
-        <Badge className="px-3 py-1 font-semibold" variant={row.activeVersion !== null ? 'success' : row.hasDraft ? 'secondary' : 'outline'}>{t(`scopedPolicy.${row.activeVersion !== null ? 'ACTIVE' : row.hasDraft ? 'DRAFT' : 'UNCONFIGURED'}`)}{row.activeVersion !== null ? ` · v${row.activeVersion}` : ''}</Badge>
-        {row.activeVersion === null && <Button className="min-w-28 border border-primary font-semibold" leftIcon={<SlidersHorizontal size={14} aria-hidden="true" />} onClick={() => setConfiguring(true)}>{t(row.hasDraft ? 'baselineWizard.continue' : 'scopedPolicy.configure')}</Button>}
+      <Text tone="foreground" variant="body-sm" className="flex min-w-0 items-center gap-2 font-semibold"><SlidersHorizontal size={16} className="shrink-0 text-primary" aria-hidden="true" />{t('moduleReview.assessmentStatus')}</Text>
+      {supported && !query.isError && row && <div className="flex shrink-0 items-center gap-2">
+        <Badge className="h-8 px-3 text-caption font-semibold" variant={row.activeVersion !== null ? 'success' : row.hasDraft ? 'secondary' : 'outline'}>{t(`scopedPolicy.${row.activeVersion !== null ? 'ACTIVE' : row.hasDraft ? 'DRAFT' : 'UNCONFIGURED'}`)}{row.activeVersion !== null ? ` · v${row.activeVersion}` : ''}</Badge>
+        {row.activeVersion === null && <Button size="sm" className="border border-primary font-semibold" leftIcon={<SlidersHorizontal size={14} aria-hidden="true" />} onClick={() => setConfiguring(true)}>{t(row.hasDraft ? 'baselineWizard.continue' : 'scopedPolicy.configure')}</Button>}
       </div>}
     </div>
     <Text variant="body-sm">{t('moduleReview.assessmentShared')}</Text>

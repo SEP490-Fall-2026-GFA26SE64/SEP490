@@ -8,9 +8,6 @@ function normalizeOrg(orgId?: string): string {
 export interface SkillProvisionPayload {
   moduleOnlyKnowledgeLevels: string[]
   certificateOnlyKnowledgeLevels: string[]
-  foundationOutcomeCodes: string[]
-  intermediateOutcomeCodes: string[]
-  advancedOutcomeCodes: string[]
 }
 
 export interface MicroSkillDto extends Partial<SkillProvisionPayload> {

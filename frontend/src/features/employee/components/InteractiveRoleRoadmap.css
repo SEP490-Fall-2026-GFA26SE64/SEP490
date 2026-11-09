@@ -90,6 +90,14 @@
   box-shadow: 0 8px 24px -2px hsl(var(--primary) / 0.45);
 }
 
+/* Official requirement state is independent of each alternative's assessment. */
+.requirement-roadmap .roadmap-module-box.is-fulfilled,
+.requirement-roadmap .roadmap-module-box.is-fulfilled:hover {
+  background-color: hsl(var(--success));
+  border-color: hsl(var(--success));
+  box-shadow: 0 6px 18px -3px hsl(var(--success) / 0.35);
+}
+
 /* =============================================================================
    MICRO-SKILL (FLANKING BOXES)
    - Achieved: Success Token (hsl(var(--success)))

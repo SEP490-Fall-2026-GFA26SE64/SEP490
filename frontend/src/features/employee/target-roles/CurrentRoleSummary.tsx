@@ -7,52 +7,18 @@ import { Button, buttonVariants } from '../../../shared/components/ui/Button'
 import { Card } from '../../../shared/components/ui/Card'
 import { useTranslation } from '../../../shared/i18n/LanguageContext'
 import { RoleBaselineGate } from './RoleBaselineGate'
-import { normalizeLevelRank, type RoleFlowView } from './currentRoleFlowApi'
+import type { RoleFlowView } from './currentRoleFlowApi'
 
 export function CurrentRoleSummary({ view, onDetails, disabled = false }: { view: RoleFlowView; onDetails: () => void; disabled?: boolean }) {
   const { t } = useTranslation()
-  const startingPlacement = view.startingPlacement ?? null
-  const startingTargetRank = startingPlacement?.levelId
-    ? normalizeLevelRank(startingPlacement.levelId)
-    : view.assignedLevelRank ?? normalizeLevelRank(view.assignedLevel)
-  const startingLevel = startingPlacement
-    ? (startingPlacement.role.levels.find(
-        level =>
-          level.id === startingPlacement.levelId ||
-          level.name.toLowerCase() === startingPlacement.levelId?.toLowerCase() ||
-          level.name.toLowerCase() === view.assignedLevel?.toLowerCase() ||
-          (view.assignedLevel && level.name.toLowerCase().includes(view.assignedLevel.toLowerCase())) ||
-          (view.assignedLevel && view.assignedLevel.toLowerCase().includes(level.name.toLowerCase())) ||
-          level.code.toLowerCase() === startingPlacement.levelId?.toLowerCase(),
-      ) ||
-      (startingTargetRank !== null && startingTargetRank !== undefined
-        ? startingPlacement.role.levels.find(
-            level =>
-              level.rank === startingTargetRank ||
-              normalizeLevelRank(level.name) === startingTargetRank ||
-              normalizeLevelRank(level.id) === startingTargetRank,
-          )
-        : null))
-    : null
-
+  const placement = view.placement ?? (view.startingPlacement ? {
+    roleId: view.startingPlacement.role.id,
+    roleCode: view.startingPlacement.role.code,
+    roleName: view.startingPlacement.role.name,
+    levelName: view.assignedLevel ?? null,
+  } : null)
   const selection = view.selection
-  const targetRank = selection?.levelId ? normalizeLevelRank(selection.levelId) : null
-  const activeLevel = selection && selection.levelId
-    ? (selection.role.levels.find(
-        level =>
-          level.id === selection.levelId ||
-          level.name.toLowerCase() === selection.levelId?.toLowerCase() ||
-          level.code.toLowerCase() === selection.levelId?.toLowerCase(),
-      ) ||
-      (targetRank !== null
-        ? selection.role.levels.find(
-            level =>
-              level.rank === targetRank ||
-              normalizeLevelRank(level.name) === targetRank ||
-              normalizeLevelRank(level.id) === targetRank,
-          )
-        : null))
-    : null
+  const activeLevel = selection?.role.levels.find(level => level.id === selection.levelId)
 
   if (view.progress.state === 'LEGACY_SELECTION_REQUIRES_RESELECTION') {
     return <Card className="p-5"><Text role="status">{t('roleFlow.legacySelection')}</Text></Card>
@@ -60,7 +26,7 @@ export function CurrentRoleSummary({ view, onDetails, disabled = false }: { view
 
   return (
     <div className="space-y-4">
-      {startingPlacement && (
+      {placement && (
         <Card className="min-w-0 overflow-hidden">
           <div className="flex flex-wrap items-center justify-between gap-4 px-5 py-4">
             <div className="flex min-w-0 items-center gap-3">
@@ -76,15 +42,11 @@ export function CurrentRoleSummary({ view, onDetails, disabled = false }: { view
                     variant="secondary"
                     className="max-w-full whitespace-normal break-words border-primary/20 text-primary"
                   >
-                    {startingPlacement.role.name}
-                    {startingLevel
-                      ? ` · ${startingLevel.name}`
-                      : view.assignedLevel
-                        ? ` · ${view.assignedLevel}`
-                        : ''}
+                    {placement.roleName || placement.roleCode || placement.roleId}
+                    {placement.levelName ? ` · ${placement.levelName}` : ''}
                   </Badge>
                 </div>
-                <Text variant="caption">{startingPlacement.role.jobPositionName}</Text>
+                <Text variant="caption">{t('upskillingUi.assignedPlacementHint')}</Text>
               </div>
             </div>
           </div>

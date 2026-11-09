@@ -36,7 +36,7 @@ public final class RequirementPathwayRecalculationService {
                 var definition=java.util.stream.StreamSupport.stream(context.path("requirements").spliterator(),false)
                         .filter(item->group.getSkillId().equals(item.path("requirement").path("skillId").asText())
                             && group.getKnowledgeLevel().equals(item.path("requirement").path("knowledgeLevel").asText())).findFirst().orElseThrow();
-                var outcomes=json.convertValue(definition.path("requirement").path("outcomeCodes"),new com.fasterxml.jackson.core.type.TypeReference<List<String>>(){});
+                var outcomes=List.<String>of();
                 var required=new Requirement(group.getSkillId(),definition.path("skillName").asText(),KnowledgeLevel.valueOf(group.getKnowledgeLevel()),
                         definition.path("skillVersion").asText(),outcomes,Provision.valueOf(definition.path("mode").asText()));
                 var existing=steps.stream().filter(step->step.kind()==parent.kind() && Objects.equals(step.sourceBypassId(),parent.sourceBypassId())

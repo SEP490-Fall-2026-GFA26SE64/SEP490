@@ -14,13 +14,35 @@ import org.neo4j.driver.Value;
 /** Reads the owner's canonical ontology. Discovery never creates or repairs Role/Level nodes. */
 public final class Neo4jAssessmentPolicyCatalog implements AssessmentPolicyCatalog {
     private final Neo4jCypher graph;private final ObjectMapper json;
-    public Neo4jAssessmentPolicyCatalog(Neo4jCypher graph,ObjectMapper json){this.graph=graph;this.json=json;}
+    private final Map<String,com.fasterxml.jackson.databind.JsonNode> legacySkills;
+    public Neo4jAssessmentPolicyCatalog(Neo4jCypher graph,ObjectMapper json){this.graph=graph;this.json=json;this.legacySkills=legacySkills(json);}
     private record Skill(String id,String name,String version,SkillProvisionMode mode,boolean invalidMode,
                          List<String> modules,List<String> certificates,Map<KnowledgeLevel,List<String>> outcomes,boolean approved) {}
     private record Edge(String skill,KnowledgeLevel level,String prerequisite,KnowledgeLevel prerequisiteLevel) {}
     private record Need(String skill,String level) {}
     private record RoleLevel(String id,String name,String level,String levelName,int rank,String version,String status,List<Need> needs,Set<String> problems) {}
     @Override public List<Scope> scopes(UUID organization,Purpose purpose){return discover(organization,purpose).scopes();}
+    @Override public Discovery discoverForEditor(UUID organization,Purpose purpose,UUID expert) {
+        if(purpose==Purpose.BASELINE)return discover(organization,purpose);
+        var owners=graph.read(5,tx->{
+            var rows=tx.list("""
+                    MATCH (r:TargetRole {organizationId:$org,assignedExpertId:$expert})-[h:HAS_LEVEL]->(l:Level)
+                    MATCH (l)-[q:REQUIRES_SKILL]->(s:MicroSkill {organizationId:$org})
+                    WHERE r.status IN ['ACTIVE','PUBLISHED'] AND h.status='ACTIVE' AND l.status='ACTIVE'
+                      AND (h.organizationId IS NULL OR h.organizationId=$org)
+                      AND (l.organizationId IS NULL OR l.organizationId=$org)
+                      AND q.status='ACTIVE' AND (q.organizationId IS NULL OR q.organizationId=$org)
+                      AND s.status='ACTIVE'
+                    RETURN DISTINCT s.id AS id ORDER BY id LIMIT 10001
+                    """,Map.of("org",organization.toString(),"expert",expert.toString()));
+            if(rows.size()>10000)throw capacity();
+            return rows.stream().map(row->row.get("id").asString()).collect(java.util.stream.Collectors.toSet());
+        });
+        if(owners.isEmpty())return new Discovery(List.of(),List.of());
+        var discovery=discover(organization,purpose);
+        return new Discovery(discovery.scopes().stream().filter(scope->owners.contains(scope.ownerId())).toList(),
+                discovery.issues().stream().filter(issue->owners.contains(issue.ownerId())).toList());
+    }
     @Override public Discovery discover(UUID organization,Purpose purpose) {
         return graph.read(5,tx->{
             var params=Map.<String,Object>of("org",organization.toString());
@@ -29,9 +51,9 @@ public final class Neo4jAssessmentPolicyCatalog implements AssessmentPolicyCatal
             var skills=new TreeMap<String,Skill>();
             for(var row:rows) {
                 var s=row.get("skill");var outcomes=new EnumMap<KnowledgeLevel,List<String>>(KnowledgeLevel.class);
-                outcomes.put(KnowledgeLevel.FOUNDATION,list(s,"foundationOutcomeCodes"));
-                outcomes.put(KnowledgeLevel.INTERMEDIATE,list(s,"intermediateOutcomeCodes"));
-                outcomes.put(KnowledgeLevel.ADVANCED,list(s,"advancedOutcomeCodes"));
+                outcomes.put(KnowledgeLevel.FOUNDATION,List.of());
+                outcomes.put(KnowledgeLevel.INTERMEDIATE,List.of());
+                outcomes.put(KnowledgeLevel.ADVANCED,List.of());
                 SkillProvisionMode mode=null;boolean invalidMode=false;
                 if(!s.get("provisionMode").isNull())try{mode=SkillProvisionMode.valueOf(s.get("provisionMode").asString());}
                 catch(IllegalArgumentException invalid){invalidMode=true;}
@@ -158,7 +180,6 @@ public final class Neo4jAssessmentPolicyCatalog implements AssessmentPolicyCatal
         if(!skill.approved())problems.add("CATALOG_REVIEW_REQUIRED");
         if(skill.version().isBlank())problems.add("EXACT_KNOWLEDGE_CONFIGURATION_REQUIRED");
         var outcomes=skill.outcomes().get(level);
-        if(outcomes.isEmpty())problems.add("ASSESSMENT_OUTCOMES_NOT_CONFIGURED");
         var need=new ConfigurationRequirement(skill.id(),level,outcomes);
         groups.put(need.key(),new GroupSpec(need,skill.name(),skill.version().isBlank()?null:skill.version(),mode,List.copyOf(problems)));
     }
@@ -171,7 +192,30 @@ public final class Neo4jAssessmentPolicyCatalog implements AssessmentPolicyCatal
         String hash;
         try{hash=RoleBaselineFlow.hash(json.writeValueAsString(List.of(purpose,id,name,level,levelName,version,ordered,allProblems)));}
         catch(java.io.IOException invalid){throw new Failure(503,"CATALOG_INTEGRITY_FAILURE");}
-        return new Scope(AssessmentPolicyScope.key(purpose,id,level),purpose,id,name,level,levelName,level,rank,hash,ordered,allProblems.isEmpty(),List.copyOf(allProblems));
+        return new Scope(AssessmentPolicyScope.key(purpose,id,level),purpose,id,name,level,levelName,level,rank,hash,ordered,allProblems.isEmpty(),List.copyOf(allProblems),legacyHash(purpose,id,name,level,levelName,version,ordered,allProblems));
+    }
+    private static Map<String,com.fasterxml.jackson.databind.JsonNode> legacySkills(ObjectMapper json) {
+        try(var in=Neo4jAssessmentPolicyCatalog.class.getResourceAsStream("/catalog-import/ontology_seed-prerequisite-knowledge.json")) {
+            if(in==null)return Map.of();
+            byte[] bytes=in.readAllBytes();String hash=java.util.HexFormat.of().formatHex(java.security.MessageDigest.getInstance("SHA-256").digest(bytes));
+            if(!Set.of(com.adaptlearngraph.config.LocalCatalogBootstrap.PREREQUISITE_KNOWLEDGE_HASH,com.adaptlearngraph.config.LocalCatalogBootstrap.PREREQUISITE_KNOWLEDGE_CRLF_HASH,com.adaptlearngraph.config.LocalCatalogBootstrap.PREREQUISITE_KNOWLEDGE_LF_HASH).contains(hash))return Map.of();
+            var skills=new HashMap<String,com.fasterxml.jackson.databind.JsonNode>();json.readTree(bytes).path("MicroSkills").forEach(s->skills.put(s.path("id").asText(),s));
+            return Map.copyOf(skills);
+        }catch(Exception unavailable){return Map.of();}
+    }
+    private String legacyHash(Purpose purpose,String id,String name,String level,String levelName,String version,List<GroupSpec> groups,Set<String> problems) {
+        try {
+            var legacy=new ArrayList<GroupSpec>();
+            for(var group:groups) {
+                var r=group.requirement();var skill=legacySkills.get(r.skillId());
+                if(skill==null || !skill.path("version").asText().equals(group.skillVersion()))return null;
+                String property=switch(r.knowledgeLevel()){case FOUNDATION->"foundationOutcomeCodes";case INTERMEDIATE->"intermediateOutcomeCodes";case ADVANCED->"advancedOutcomeCodes";};
+                var codes=json.convertValue(skill.path(property),new com.fasterxml.jackson.core.type.TypeReference<List<String>>(){});
+                if(codes==null || codes.isEmpty())return null;
+                legacy.add(new GroupSpec(new ConfigurationRequirement(r.skillId(),r.knowledgeLevel(),codes.stream().sorted().toList()),group.skillName(),group.skillVersion(),group.provisionMode(),group.readinessIssues()));
+            }
+            return RoleBaselineFlow.hash(json.writeValueAsString(List.of(purpose,id,name,level,levelName,version,legacy,problems)));
+        }catch(Exception unavailable){return null;}
     }
     private static Failure capacity(){return new Failure(422,"CATALOG_CAPACITY_EXCEEDED");}
     private static KnowledgeLevel level(String value){try{return KnowledgeLevel.valueOf(value);}catch(RuntimeException invalid){throw new Failure(422,"INVALID_KNOWLEDGE_CONFIGURATION");}}

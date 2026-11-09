@@ -29,17 +29,21 @@ export interface CurrentLevel {
 }
 export interface CurrentRole { id: string; code: string; name: string; scope: string; jobPositionId: string; jobPositionName: string; catalogVersion: string; fingerprint: string; levels: CurrentLevel[] }
 export interface CurrentSelection { selectionId: string; role: CurrentRole; revision: number; selectedAt: string; available: boolean; levelId?: string | null }
+export interface CareerPlacement { roleId: string | null; roleCode: string | null; roleName: string | null; levelName: string | null }
 export interface RoleProgress { state: string; requiredCount: number; coveredCount: number; attemptId: string | null; baselineVersion: number | null }
 export interface RoleFlowView {
   selection: CurrentSelection | null
   startingPlacement?: CurrentSelection | null
   progress: RoleProgress
+  placement?: CareerPlacement | null
+  targetLocked?: boolean
   assignedRoleId?: string | null
   assignedRoleCode?: string | null
   assignedRoleTitle?: string | null
   assignedLevel?: string | null
   assignedLevelRank?: number | null
 }
+
 export function normalizeLevelRank(levelStr?: string | null): number | null {
   if (!levelStr) return null
   const s = levelStr.toLowerCase().trim()
@@ -50,87 +54,83 @@ export function normalizeLevelRank(levelStr?: string | null): number | null {
 }
 
 export function resolveLevelRankInRole(role: CurrentRole, levelIdentifier?: string | null): number | null {
-  if (!levelIdentifier || !role?.levels?.length) return null
-  const clean = levelIdentifier.toLowerCase().trim()
-  const cleanWithoutRank = clean.replace(/^(?:rank|level)\s*\d+\s*:\s*/i, '').trim()
-  const match = role.levels.find(
-    (l) =>
-      l.id.toLowerCase() === clean ||
-      l.code.toLowerCase() === clean ||
-      l.name.toLowerCase() === clean ||
-      l.name.toLowerCase() === cleanWithoutRank,
+  if (!levelIdentifier) return null
+  const clean = levelIdentifier.replace(/^(?:rank|level)\s*\d+\s*:\s*/i, '').trim().toLowerCase()
+  const matches = role.levels.filter(level =>
+    [level.id, level.code, level.name].some(value => value.toLowerCase() === clean),
   )
-  if (match) return match.rank
-  const rankMatch = clean.match(/(?:rank|level)\s*(\d+)/i)
-  if (rankMatch) return parseInt(rankMatch[1], 10)
-  return null
+  if (matches.length !== 1 || matches[0].rank < 1 ||
+      role.levels.some(level => level.rank < 1) ||
+      new Set(role.levels.map(level => level.rank)).size !== role.levels.length) return null
+  return matches[0].rank
 }
+
+export function assignedRankForRole(role: CurrentRole, view?: RoleFlowView): number | undefined {
+  const placement = view?.placement
+  if (!placement) return undefined
+  const sameRole = role.id === placement.roleId ||
+    Boolean(placement.roleCode && role.code.split('#')[0].toLowerCase() === placement.roleCode.split('#')[0].toLowerCase())
+  return sameRole ? resolveLevelRankInRole(role, placement.levelName) ?? undefined : undefined
+}
+
 export class RoleFlowError extends Error {
   readonly code: string
   readonly status: number
   constructor(code: string, status = 0) { super(code); this.code = code; this.status = status }
   get ambiguous() { return this.status === 0 || this.status >= 500 || this.code === 'INVALID_RESPONSE' }
 }
-const object = (v: unknown): Record<string, unknown> => { if (!v || typeof v !== 'object' || Array.isArray(v)) throw Error(); return v as Record<string, unknown> }
-const text = (v: unknown) => { if (typeof v !== 'string') throw Error(); return v }
-const optText = (v: unknown, fallback = '') => (typeof v === 'string' ? v : fallback)
-const num = (v: unknown) => { if (typeof v !== 'number' || !Number.isFinite(v)) throw Error(); return v }
-const optNum = (v: unknown, fallback = 0) => (typeof v === 'number' && Number.isFinite(v) ? v : fallback)
-const bool = (v: unknown) => { if (typeof v !== 'boolean') throw Error(); return v }
-const optBool = (v: unknown, fallback = true) => (typeof v === 'boolean' ? v : fallback)
-const array = <T>(v: unknown, parse: (x: unknown) => T) => { if (!Array.isArray(v)) throw Error(); return v.map(parse) }
+const object = (value: unknown): Record<string, unknown> => {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) throw Error()
+  return value as Record<string, unknown>
+}
+const text = (value: unknown) => { if (typeof value !== 'string') throw Error(); return value }
+const optionalText = (value: unknown): string | null => value == null ? null : text(value)
+const num = (value: unknown) => { if (typeof value !== 'number' || !Number.isFinite(value)) throw Error(); return value }
+const bool = (value: unknown) => { if (typeof value !== 'boolean') throw Error(); return value }
+const array = <T>(value: unknown, parse: (item: unknown) => T) => { if (!Array.isArray(value)) throw Error(); return value.map(parse) }
+
 function role(value: unknown): CurrentRole {
-  const r = object(value)
+  const item = object(value)
   return {
-    id: text(r.id),
-    code: optText(r.code, text(r.id)),
-    name: text(r.name),
-    scope: optText(r.scope, ''),
-    jobPositionId: text(r.jobPositionId),
-    jobPositionName: optText(r.jobPositionName, text(r.jobPositionId)),
-    catalogVersion: optText(r.catalogVersion, '0.12.0'),
-    fingerprint: optText(r.fingerprint, ''),
-    levels: array(r.levels, value => {
-      const l = object(value)
+    id: text(item.id), code: text(item.code), name: text(item.name), scope: text(item.scope),
+    jobPositionId: text(item.jobPositionId), jobPositionName: text(item.jobPositionName),
+    catalogVersion: text(item.catalogVersion), fingerprint: text(item.fingerprint),
+    levels: array(item.levels, value => {
+      const level = object(value)
       return {
-        id: text(l.id),
-        code: optText(l.code, 'LV'),
-        name: text(l.name),
-        rank: optNum(l.rank, 1),
-        context: optText(l.context, ''),
-        attainmentRule: optText(l.attainmentRule, 'ALL_MANDATORY_SKILLS'),
-        duration: l.duration ? String(l.duration) : undefined,
-        skills: Array.isArray(l.skills)
-          ? l.skills.map(sv => {
-              const s = object(sv)
-              const levels = Array.isArray(s.requiredKnowledgeLevels)
-                ? s.requiredKnowledgeLevels.filter((k): k is string => typeof k === 'string')
-                : []
-              return {
-                id: text(s.id),
-                code: s.code === null || s.code === undefined ? null : optText(s.code, ''),
-                name: optText(s.name, text(s.id)),
-                requiredKnowledgeLevels: levels,
-                requiredScore: optNum(s.requiredScore, 0.7),
-                mandatory: optBool(s.mandatory, true),
-              }
-            })
-          : [],
+        id: text(level.id), code: text(level.code), name: text(level.name), rank: num(level.rank),
+        context: text(level.context), attainmentRule: text(level.attainmentRule),
+        duration: optionalText(level.duration) ?? undefined,
+        skills: array(level.skills, value => {
+          const skill = object(value)
+          return {
+            id: text(skill.id), code: optionalText(skill.code), name: text(skill.name),
+            requiredKnowledgeLevels: array(skill.requiredKnowledgeLevels, text),
+            requiredScore: typeof skill.requiredScore === 'number' ? num(skill.requiredScore) : 0.7,
+            mandatory: bool(skill.mandatory),
+          }
+        }),
       }
     }),
   }
 }
 function selection(value: unknown): CurrentSelection {
-  const s = object(value)
-  return { selectionId: text(s.selectionId), role: role(s.role), revision: num(s.revision), selectedAt: text(s.selectedAt), available: bool(s.available), levelId: s.levelId === null || s.levelId === undefined ? null : text(s.levelId) }
+  const item = object(value)
+  return {
+    selectionId: text(item.selectionId), role: role(item.role), revision: num(item.revision),
+    selectedAt: text(item.selectedAt), available: bool(item.available), levelId: optionalText(item.levelId),
+  }
 }
-async function request<T>(path: string, init: RequestInit, parse: (v: unknown) => T): Promise<T> {
+async function request<T>(path: string, init: RequestInit, parse: (value: unknown) => T): Promise<T> {
   let response: Response
   try { response = await workspaceFetch('/api/v1/employee/' + path, init) }
   catch (cause) { if (init.signal?.aborted) throw cause; throw new RoleFlowError('NETWORK_ERROR') }
   let value: unknown
   try { value = await response.json() } catch { throw new RoleFlowError('INVALID_RESPONSE', response.status) }
-  if (!response.ok) throw new RoleFlowError(typeof object(value).code === 'string' ? String(object(value).code) : 'DEPENDENCY_UNAVAILABLE', response.status)
+  if (!response.ok) {
+    const failure = value && typeof value === 'object' ? value as Record<string, unknown> : {}
+    throw new RoleFlowError(typeof failure.code === 'string' ? failure.code : 'DEPENDENCY_UNAVAILABLE', response.status)
+  }
   try { return parse(value) } catch { throw new RoleFlowError('INVALID_RESPONSE', response.status) }
 }
 
@@ -1089,6 +1089,7 @@ export const readRoleFlow = async (signal?: AbortSignal): Promise<RoleFlowView> 
     const view = await request('target-role-selection', { method: 'GET', signal }, v => {
       const data = object(v),
         p = object(data.progress)
+      const placement = data.placement == null ? null : object(data.placement)
       return {
         selection: data.selection === null ? null : selection(data.selection),
         progress: {
@@ -1098,6 +1099,13 @@ export const readRoleFlow = async (signal?: AbortSignal): Promise<RoleFlowView> 
           attemptId: p.attemptId === null ? null : text(p.attemptId),
           baselineVersion: p.baselineVersion === null ? null : num(p.baselineVersion),
         },
+        placement: placement ? {
+          roleId: optionalText(placement.roleId),
+          roleCode: optionalText(placement.roleCode),
+          roleName: optionalText(placement.roleName),
+          levelName: optionalText(placement.levelName),
+        } : null,
+        targetLocked: data.targetLocked === undefined ? undefined : bool(data.targetLocked),
       } satisfies RoleFlowView
     })
 
@@ -1127,6 +1135,13 @@ export const readRoleFlow = async (signal?: AbortSignal): Promise<RoleFlowView> 
     return {
       selection: effectiveSelection,
       startingPlacement,
+      placement: view.placement ?? (startingPlacement ? {
+        roleId: startingPlacement.role.id,
+        roleCode: startingPlacement.role.code,
+        roleName: startingPlacement.role.name,
+        levelName: matchedAssignedLevel?.name ?? ctx.assignedLevel ?? null,
+      } : null),
+      targetLocked: view.targetLocked ?? false,
       progress: {
         state: effectiveSelection
           ? view.progress.state === 'SELECT_ROLE'
@@ -1155,6 +1170,13 @@ export const readRoleFlow = async (signal?: AbortSignal): Promise<RoleFlowView> 
     return {
       selection: localActive,
       startingPlacement,
+      placement: startingPlacement ? {
+        roleId: startingPlacement.role.id,
+        roleCode: startingPlacement.role.code,
+        roleName: startingPlacement.role.name,
+        levelName: matchedAssignedLevel?.name ?? ctx.assignedLevel ?? null,
+      } : null,
+      targetLocked: false,
       progress: {
         state: localActive ? 'READY' : 'SELECT_ROLE',
         requiredCount: totalSkills,
@@ -1174,17 +1196,21 @@ export const readRoleFlow = async (signal?: AbortSignal): Promise<RoleFlowView> 
 export interface RoleChoiceCommand { body: string; key: string }
 export interface MasteryProfile { jobPositionId: string; jobPositionName: string; attemptId: string; baselineVersion: number; initializedAt: string; skills: { id: string; name: string; mastery: number; confidence: string }[] }
 export const readMyMastery = (signal?: AbortSignal) => request('target-role-selection/mastery', { method: 'GET', signal }, value => array(value, value => {
-  const p = object(value)
+  const item = object(value)
   return {
-    jobPositionId: text(p.jobPositionId), jobPositionName: text(p.jobPositionName), attemptId: text(p.attemptId), baselineVersion: num(p.baselineVersion), initializedAt: text(p.initializedAt),
-    skills: array(p.skills, value => {
-      const s = object(value), mastery = num(s.mastery), confidence = text(s.confidence)
+    jobPositionId: text(item.jobPositionId), jobPositionName: text(item.jobPositionName), attemptId: text(item.attemptId),
+    baselineVersion: num(item.baselineVersion), initializedAt: text(item.initializedAt),
+    skills: array(item.skills, value => {
+      const skill = object(value), mastery = num(skill.mastery), confidence = text(skill.confidence)
       if (mastery < 0 || mastery > 1 || !['LOW', 'MEDIUM', 'HIGH'].includes(confidence)) throw Error()
-      return { id: text(s.id), name: text(s.name), mastery, confidence }
-    })
+      return { id: text(skill.id), name: text(skill.name), mastery, confidence }
+    }),
   } satisfies MasteryProfile
 }))
-export const prepareRoleChoice = (id: string, expected: string | null, levelId?: string): RoleChoiceCommand => ({ body: JSON.stringify({ roleId: id, ...(levelId ? { levelId } : {}), expectedCurrentSelectionId: expected }), key: crypto.randomUUID() })
+export const prepareRoleChoice = (id: string, expected: string | null, levelId?: string): RoleChoiceCommand => ({
+  body: JSON.stringify({ roleId: id, ...(levelId ? { levelId } : {}), expectedCurrentSelectionId: expected }),
+  key: crypto.randomUUID(),
+})
 export const chooseCurrentRole = async (command: RoleChoiceCommand): Promise<CurrentSelection> => {
   const parsedBody = JSON.parse(command.body) as {
     roleId: string

@@ -13,11 +13,10 @@ public interface RuleAssessmentContextJpaRepository extends Repository<RuleAsses
             FROM platform.skill_knowledge_evidence e
             WHERE e.organization_id=:org AND e.learner_id=:learner AND e.skill_id=:skill AND e.knowledge_level=:level
                 AND e.requirement_snapshot->>'skillVersion'=:skillVersion
-                AND e.requirement_snapshot->'outcomeCodes' @> CAST(:outcomes AS jsonb)
             ORDER BY e.achieved_at,e.id LIMIT 100
             """,nativeQuery=true)
     List<Official> official(@Param("org") UUID org,@Param("learner") UUID learner,@Param("skill") String skill,
-            @Param("level") String level,@Param("skillVersion") String skillVersion,@Param("outcomes") String outcomes);
+            @Param("level") String level,@Param("skillVersion") String skillVersion);
     interface Official { UUID getId();String getSourceKind();UUID getSourceId();long getSourceVersion();java.time.Instant getAchievedAt(); }
     @Query(value="""
             SELECT s.request_id AS requestId,s.revision AS pathwayRevision,s.skill_id AS skillId,s.knowledge_level AS knowledgeLevel,
@@ -35,7 +34,6 @@ public interface RuleAssessmentContextJpaRepository extends Repository<RuleAsses
             JOIN platform.learning_completion_requirement proof ON proof.organization_id=c.organization_id AND proof.learner_id=c.learner_id
                 AND proof.module_id=c.module_id AND proof.revision=c.revision AND proof.knowledge_level=s.knowledge_level
                 AND proof.requirement_snapshot->>'skillVersion'=s.requirement_snapshot->>'skillVersion'
-                AND (proof.requirement_snapshot->'outcomeCodes') @> (s.requirement_snapshot->'outcomeCodes')
             WHERE current.organization_id=:org AND current.learner_id=:learner AND current.archived_at IS NULL
                 AND (current.review_status='APPROVED' OR (current.review_status='NONE' AND r.generation_status='NO_LEARNING_REQUIRED' AND s.kind='PARALLEL_SUPPLEMENT'))
                 AND r.selection_id=:selection AND r.selection_revision=:selectionRevision

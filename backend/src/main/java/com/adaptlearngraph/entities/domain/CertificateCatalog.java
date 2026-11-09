@@ -6,7 +6,9 @@ import java.util.*;
 public final class CertificateCatalog {
     private CertificateCatalog() {}
     public static List<String> outcomes(List<String> values){
-        if(values==null || values.size()>100 || values.stream().anyMatch(value->value==null || !value.equals(value.trim()) || value.length()>160))throw new IllegalArgumentException("Invalid certificate outcomes");
+        if(values==null)return List.of();
+        if(values.isEmpty())return List.of();
+        if(values.size()>100 || values.stream().anyMatch(value->value==null || !value.equals(value.trim()) || value.length()>160))throw new IllegalArgumentException("Invalid certificate outcomes");
         return RuleAssessment.unique(values).stream().sorted().toList();
     }
     public record Create(String skillId,KnowledgeLevel knowledgeLevel,String name,String referenceUrl,String expectedSkillVersion,String replacesDefinitionId) {

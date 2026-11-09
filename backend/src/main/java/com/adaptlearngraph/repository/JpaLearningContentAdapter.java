@@ -80,7 +80,7 @@ public final class JpaLearningContentAdapter implements LearningContentPort {
         return rows.stream().map(r->{
             if(r.knowledgeLevel()==null)return new SkillCompletion(r.skillId(),r.moduleId(),r.revision(),r.contentVersion(),time(r.completedAt()));
             var snapshot=decode(r.requirementSnapshot(),new TypeReference<Map<String,Object>>(){});
-            var outcomes=json.convertValue(snapshot.get("outcomeCodes"),new TypeReference<List<String>>(){});
+            var outcomes=List.<String>of();
             return new SkillCompletion(r.skillId(),r.moduleId(),r.revision(),r.contentVersion(),time(r.completedAt()),r.knowledgeLevel(),
                     Objects.toString(snapshot.get("skillVersion"),null),outcomes,Objects.toString(snapshot.get("skillName"),null));
         }).toList();
@@ -89,11 +89,12 @@ public final class JpaLearningContentAdapter implements LearningContentPort {
         repositories.completions().insert(org,learner,proof.moduleId(),proof.revision(),proof.skillId(),proof.contentVersion(),proof.completedAt());
         if(proof.knowledgeLevel()!=null) {
             var snapshot=Map.of("skillId",proof.skillId(),"skillName",proof.skillName(),"knowledgeLevel",proof.knowledgeLevel(),
-                    "skillVersion",proof.skillVersion(),"outcomeCodes",proof.outcomeCodes(),"contentVersion",proof.contentVersion());
+                    "skillVersion",proof.skillVersion(),"contentVersion",proof.contentVersion());
             repositories.completions().freezeRequirement(org,learner,proof.moduleId(),proof.revision(),proof.skillId(),proof.contentVersion(),proof.knowledgeLevel(),encode(snapshot));
             var retained=repositories.completions().requirement(org,learner,proof.moduleId(),proof.revision(),proof.knowledgeLevel())
                     .orElseThrow(()->new Failure(409,"Learning completion requirement does not match the original completion"));
-            if(!decode(retained,new TypeReference<Map<String,Object>>(){}).equals(snapshot))
+            var original=new java.util.HashMap<>(decode(retained,new TypeReference<Map<String,Object>>(){}));original.remove("outcomeCodes");
+            if(!original.equals(snapshot))
                 throw new Failure(409,"Original learning completion scope is immutable");
         }
     }

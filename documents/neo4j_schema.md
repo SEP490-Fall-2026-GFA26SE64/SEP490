@@ -1,5 +1,7 @@
 # Schema Neo4j — current source and historical inventory
 
+Current source update2026-11-09: Outcome Codes are retired from authoring, provider/question selection and evidence compatibility. Match the owned Skill + knowledge level + Skill version; retain release/review and content-version guards. Human-readable objectives remain. New Compose input is `ontology_seed-skill-level.json`; older captures/OC properties below remain historical only. The running Neo4j graph remains unchanged. The local PostgreSQL V63/API follow-up was applied after user approval; it preserves original immutable snapshots and learner data.
+
 ![Current source-defined catalog](diagrams/neo4j.svg)
 
 ### Diagram scope — 2026-11-08
@@ -18,7 +20,7 @@ Source cross-check: mounted [knowledge seed](dataset/import/ontology_seed-prereq
 
 
 
-REQUIRES_SKILL.requiredKnowledgeLevels replaces numeric requiredScore, explicitly and without inheritance. Module gains knowledgeLevel/outcomeCodes; retire active teachingFocus/difficultyLevel without duplicating level on TEACHES. HAS_SKILL_PREREQUISITE retains topology with exact dependent/prerequisite levels. Tenant-owned Skill uses current common provisionMode and per-level outcome-code lists; readers retain disjoint moduleOnlyKnowledgeLevels/certificateOnlyKnowledgeLevels compatibility; shared templates are read-only. Skill → REQUIRES_CERTIFICATE → Certificate holds one assigned definition per configured certificate-only skill/level, with required HTTPS referenceUrl; learner data stays outside graph.
+REQUIRES_SKILL.requiredKnowledgeLevels replaces numeric requiredScore, explicitly and without inheritance. Module uses knowledgeLevel/skillVersion; retire active teachingFocus/difficultyLevel without duplicating level on TEACHES. HAS_SKILL_PREREQUISITE retains topology with exact dependent/prerequisite levels. Tenant-owned Skill uses disjoint moduleOnlyKnowledgeLevels/certificateOnlyKnowledgeLevels; readers retain common provisionMode compatibility; shared templates are read-only. Skill → REQUIRES_CERTIFICATE → Certificate holds one assigned definition per configured certificate-only skill/level, with required HTTPS referenceUrl; learner data stays outside graph.
 
 Baseline never pre-adds unassessed prerequisites; skill assessment discovers shortages. Old bypass work on another target is parallel/non-gating. [Complete field/constraint mapping](technical/Organization%20Rule%20Assessment%20and%20Pathway.md#3-neo4j-physical-mapping). Existing counts and inventories below retain previous-release history. The linked catalog figure is source-defined, not a live capture. No graph/seed changes here.
 
@@ -349,7 +351,7 @@ MicroSkill là định nghĩa một kỹ năng có thể quan sát hoặc kiểm
 
 
 
-Node không lưu điểm learner. Luồng hiện tại dùng requiredKnowledgeLevels trên REQUIRES_SKILL; MicroSkill giữ provisionMode, các outcome-code list theo FOUNDATION/INTERMEDIATE/ADVANCED và version. Reader còn hỗ trợ hai danh sách mode theo level của snapshot trước. Numeric requiredScore chỉ thuộc lịch sử, không phải fallback cho baseline/pathway mới.
+Node không lưu điểm learner. Luồng hiện tại dùng requiredKnowledgeLevels trên REQUIRES_SKILL; MicroSkill giữ version và hai danh sách provision theo FOUNDATION/INTERMEDIATE/ADVANCED. Reader còn hỗ trợ provisionMode dùng chung. OC cũ chỉ là metadata lịch sử, không dùng để quyết định nghiệp vụ. Numeric requiredScore chỉ thuộc lịch sử, không phải fallback cho baseline/pathway mới.
 
 
 
@@ -377,7 +379,7 @@ LearningModule chứa tham chiếu nội dung bài học/thực hành. Module d�
 
 | `duration` | Integer > 0, bắt buộc | Thời lượng học dự kiến, tính bằng phút. |
 
-| `knowledgeLevel`, `skillVersion`, `outcomeCodes` | Enum/String/List | Cấp kiến thức, phiên bản Skill và phạm vi outcome thực; cần khớp requirement để là alternative. |
+| `knowledgeLevel`, `skillVersion` | Enum/String | Cấp kiến thức và phiên bản Skill; phải khớp đúng Skill + mức + phiên bản để là alternative. |
 
 | `price` (lịch sử) | Legacy snapshot | V61 không cho price trong document authoring mới; không dùng làm điều kiện hay mục tiêu tối ưu của luồng hiện tại. |
 
@@ -405,11 +407,11 @@ Mọi relationship cũng có bộ field chung ở mục 2. Các field `type`, `f
 
 ### 4.3. TEACHES — current single-Skill mapping
 
-Mỗi Module có đúng một MicroSkill; một Skill có nhiều Module. Knowledge/Skill version/outcomes nằm trên payload/projection Module, không sao chép level lên TEACHES. Alternative phải đúng Skill/version/knowledge và phủ outcomes, có approved active complete released content. teachingFocus/difficultyLevel và minimum-mastery không điều khiển luồng hiện tại. Lịch sử v0.11 nhiều Skill/focus/difficulty giữ riêng trong dataset/research, không được diễn giải thành contract mới.
+Mỗi Module có đúng một MicroSkill; một Skill có nhiều Module. Knowledge/Skill version nằm trên payload/projection Module, không sao chép level lên TEACHES. Lấy tất cả alternative đúng Skill/version/knowledge, có approved active complete released content. teachingFocus/difficultyLevel và minimum-mastery không điều khiển luồng hiện tại. Lịch sử v0.11 nhiều Skill/focus/difficulty giữ riêng trong dataset/research, không được diễn giải thành contract mới.
 
 ### 4.4. REQUIRES_CERTIFICATE
 
-`MicroSkill → Certificate`: một active definition cho skill–knowledge CERTIFICATE_ONLY, có id/org/version/name/description/knowledgeLevel/skillVersion/outcomeCodes/referenceUrl HTTPS và lifecycle/author metadata. Không phải CERTIFIES theo chiều ngược trong GRAPH-01 cũ. Definition không chứa hồ sơ learner; submission/attachment/assigned decision/evidence ở PostgreSQL và bytes ở private storage. Writer khóa owned Skill và so expected version trước tạo/thay definition; không tự sửa template chung.
+`MicroSkill → Certificate`: một active definition cho skill–knowledge CERTIFICATE_ONLY, có id/org/version/name/description/knowledgeLevel/skillVersion/referenceUrl HTTPS và lifecycle/author metadata. Không phải CERTIFIES theo chiều ngược trong GRAPH-01 cũ. Definition không chứa hồ sơ learner; submission/attachment/assigned decision/evidence ở PostgreSQL và bytes ở private storage. Writer khóa owned Skill và so expected version trước tạo/thay definition; không tự sửa template chung.
 
 ## 5. Dữ liệu đánh giá nằm ngoài Neo4j
 
@@ -479,7 +481,7 @@ Importer từ chối liên kết thiếu/sai thay vì tự suy đoán. Sau impor
 
 ### Ràng buộc TEACHES và nội dung theo cấp độ
 
-Một Module dạy đúng một Skill–knowledge; nhiều Module có thể là alternatives nếu tương đương version/outcomes. Không bắt học mọi alternative và không hợp nhất mọi same-Skill Module thành proof. Thiếu module/definition hợp lệ giữ NEEDS_EXPERT_ACTION. Learner completion/history ở PostgreSQL; content completion không phải official achievement.
+Một Module dạy đúng một Skill–knowledge; nhiều Module có thể là alternatives nếu đúng Skill + knowledge level + phiên bản Skill. Không bắt học mọi alternative và không hợp nhất mọi same-Skill Module thành proof. Thiếu module/definition hợp lệ giữ NEEDS_EXPERT_ACTION. Learner completion/history ở PostgreSQL; content completion không phải official achievement.
 
 Initial pathway không mở prerequisite closure chưa được đánh giá; Skill Assessment mới dùng đủ MAIN + ALL prerequisite groups. Không dùng thứ tự hiển thị để khóa learning. Source chính: CurrentRoleKnowledgeCatalog, RulePathwayCatalog, RequirementPathwayAccess; mọi phát biểu về DB thật còn chưa xác minh.
 
@@ -519,11 +521,11 @@ Mọi node và relationship đều có metadata chung: `id`, `version`, `status`
 
 | Competency | name, description, attainmentRule |
 
-| MicroSkill | name, definition, provisionMode, per-level outcome-code lists; historical mode-level lists retained by readers |
+| MicroSkill | name, definition, version, moduleOnlyKnowledgeLevels, certificateOnlyKnowledgeLevels; common provisionMode retained by readers |
 
-| LearningModule | title, moduleType, contentUri, contentType, contentVersion, duration, knowledgeLevel, skillVersion, outcomeCodes; price is historical |
+| LearningModule | title, moduleType, contentUri, contentType, contentVersion, duration, knowledgeLevel, skillVersion; price is historical |
 
-| Certificate | organizationId, name, description, knowledgeLevel, skillVersion, outcomeCodes, referenceUrl and lifecycle/version |
+| Certificate | organizationId, name, description, knowledgeLevel, skillVersion, referenceUrl and lifecycle/version |
 
 
 
