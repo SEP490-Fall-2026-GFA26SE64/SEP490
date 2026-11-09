@@ -10,7 +10,7 @@ public final class RuleAssessment {
     public enum GroupRole { TARGET, MAIN, PREREQUISITE }
     public record Requirement(String skillId,KnowledgeLevel knowledgeLevel,List<String> outcomeCodes) {
         public Requirement {
-            text(skillId);Objects.requireNonNull(knowledgeLevel);outcomeCodes=unique(outcomeCodes);
+            text(skillId);Objects.requireNonNull(knowledgeLevel);outcomeCodes=outcomeCodes==null?List.of():List.copyOf(outcomeCodes);
         }
         public String key(){return skillId+"\n"+knowledgeLevel;}
     }
@@ -42,10 +42,10 @@ public final class RuleAssessment {
     public record Candidate(UUID itemVersionId,Requirement requirement,String outcomeCode,boolean mandatory,
                             String prompt,List<Option> options,String correctOptionId,String contentHash,String mappingHash) {
         public Candidate {
-            Objects.requireNonNull(itemVersionId);Objects.requireNonNull(requirement);text(outcomeCode);body(prompt);
+            Objects.requireNonNull(itemVersionId);Objects.requireNonNull(requirement);body(prompt);
             options=List.copyOf(options);text(contentHash);text(mappingHash);
             if(options.size()<2 || options.size()>10 || options.stream().map(Option::id).distinct().count()!=options.size()
-                || options.stream().noneMatch(o->o.id().equals(correctOptionId)) || !requirement.outcomeCodes().contains(outcomeCode))
+                || options.stream().noneMatch(o->o.id().equals(correctOptionId)))
                 throw new IllegalArgumentException("Invalid published item");
         }
     }
@@ -75,21 +75,13 @@ public final class RuleAssessment {
                     || groups.stream().anyMatch(g->g.role()==GroupRole.TARGET)))throw new IllegalArgumentException("Invalid purpose groups");
         }
     }
-    /** Skill Assessment reserves mandatory items; Baseline uses coverage and random fill without mandatory rules. */
+    /** Skill Assessment reserves mandatory items; both purposes fill from the exact Skill/level/version pool. */
     public static Group select(Requirement requirement,GroupRole role,GroupRule rule,List<Candidate> available,Random random) {
-        var pool=new ArrayList<>(available.stream().filter(c->c.requirement().key().equals(requirement.key())
-                && requirement.outcomeCodes().contains(c.outcomeCode())).toList());
+        var pool=new ArrayList<>(available.stream().filter(c->c.requirement().key().equals(requirement.key())).toList());
         if(pool.stream().map(Candidate::itemVersionId).distinct().count()!=pool.size())throw new IllegalArgumentException("Duplicate bank item");
         Collections.shuffle(pool,random);
         var chosen=new LinkedHashMap<UUID,Candidate>();
         for(var c:pool)if(c.mandatory() && (role!=GroupRole.TARGET || rule.mandatoryRequired()))chosen.put(c.itemVersionId(),c);
-        for(var outcome:requirement.outcomeCodes()) {
-            if(chosen.values().stream().noneMatch(c->c.outcomeCode().equals(outcome))) {
-                var c=pool.stream().filter(i->i.outcomeCode().equals(outcome)).findFirst()
-                        .orElseThrow(()->new IllegalArgumentException("Insufficient approved outcome bank"));
-                chosen.put(c.itemVersionId(),c);
-            }
-        }
         if(chosen.size()>rule.totalCount() || pool.size()<rule.totalCount())throw new IllegalArgumentException("Insufficient approved group bank");
         for(var c:pool){if(chosen.size()==rule.totalCount())break;chosen.putIfAbsent(c.itemVersionId(),c);}
         var items=new ArrayList<>(chosen.values());Collections.shuffle(items,random);

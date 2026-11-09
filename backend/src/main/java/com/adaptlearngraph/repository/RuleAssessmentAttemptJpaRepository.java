@@ -23,6 +23,15 @@ public interface RuleAssessmentAttemptJpaRepository extends Repository<RuleAsses
     long contextCount(@Param("org") UUID org,@Param("learner") UUID learner,@Param("purpose") String purpose,@Param("context") String context);
     @Query("select a from RuleAssessmentAttemptEntity a where a.organizationId=:org and a.learnerId=:learner order by a.startedAt desc,a.id")
     List<RuleAssessmentAttemptEntity> history(@Param("org") UUID org,@Param("learner") UUID learner,Pageable page);
+    @Query(value="""
+            SELECT a.* FROM platform.rule_assessment_attempt a
+            WHERE a.organization_id=:org AND a.learner_id=:learner AND a.purpose='SKILL_ASSESSMENT'
+                AND a.context_snapshot->'context'->>'moduleId'=:module
+                AND a.context_snapshot->'context'->>'moduleRevision'=CAST(:revision AS text)
+            ORDER BY a.started_at DESC,a.id
+            """,nativeQuery=true)
+    List<RuleAssessmentAttemptEntity> moduleHistory(@Param("org") UUID org,@Param("learner") UUID learner,
+            @Param("module") String moduleId,@Param("revision") int moduleRevision,Pageable page);
     @Query("select a from RuleAssessmentAttemptEntity a where a.organizationId=:org and a.learnerId=:learner and a.selectionId=:selection and a.selectionRevision=:revision and a.purpose='BASELINE' and a.state='FINALIZED' order by a.startedAt desc,a.id")
     List<RuleAssessmentAttemptEntity> baselineForSelection(@Param("org") UUID org,@Param("learner") UUID learner,@Param("selection") UUID selection,@Param("revision") long revision,Pageable page);
     @Query("select a from RuleAssessmentAttemptEntity a where a.organizationId=:org and a.learnerId=:learner and a.purpose='BASELINE' and a.state='IN_PROGRESS' order by a.startedAt desc,a.id")

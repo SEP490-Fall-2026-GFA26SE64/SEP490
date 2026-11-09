@@ -24,7 +24,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 public class WorkspaceInitialPathwaySecurity {
     @Bean @Order(-9)
     SecurityFilterChain workspaceInitialPathwayFilterChain(HttpSecurity http,Actors actors,ObjectMapper json) throws Exception {
-        return http.securityMatcher("/api/v1/employee/role-gaps","/api/v1/employee/initial-pathway-requests",
+        return http.securityMatcher("/api/v1/employee/learning-overview","/api/v1/employee/role-gaps","/api/v1/employee/initial-pathway-requests",
                 "/api/v1/employee/initial-pathway-requests/*","/api/v1/employee/pathway","/api/v1/employee/pathways/*",
                 "/api/v1/employee/initial-pathway-requests/*/retry",
                 "/api/v1/employee/pathways/*/certificate-submissions","/api/v1/employee/pathways/*/certificate-uploads",

@@ -1,4 +1,10 @@
 import * as React from 'react'
+import { useQuery } from '@tanstack/react-query'
+import { WorkspaceSessionContext } from '../../../shared/auth/workspaceSession'
+import { readRoleOverview, type OverviewSkill } from './roleOverviewData'
+import { RequirementStatusRing } from './RequirementStatusRing'
+import { OverviewSkillRow } from './OverviewSkillRow'
+import { Button } from '../../../shared/components/ui/Button'
 import { Link } from 'react-router-dom'
 import {
   Award,
@@ -60,6 +66,25 @@ export function EmployeeOverviewPage() {
   }, [])
 
   const isSkillMode = profile.selectedViewType === 'skill'
+  const session = React.useContext(WorkspaceSessionContext)
+  const overview = useQuery({ queryKey: ['employee-role-overview', session?.identity.organizationId, session?.identity.accountId],
+    queryFn: ({ signal }) => readRoleOverview(signal), enabled: !isSkillMode, staleTime: 0 })
+  const real = !isSkillMode && !overview.isError ? overview.data : undefined
+  const vi = language === 'vi'
+  const missing = vi ? 'Chưa thiết lập' : 'Not set'
+  const level = real?.flow.selection?.role.levels.find(l => l.id === real.flow.selection?.levelId)
+  const realTitle = real?.flow.selection ? `${real.flow.selection.role.name}${level ? ' · ' + level.name : ''}` : (vi ? 'Chưa chọn Role' : 'No Role selected')
+  const requiredSteps = real?.pathway?.steps.filter(s => s.kind === 'REQUIRED') ?? []
+  const achievedSteps = requiredSteps.filter(s => s.state === 'FULFILLED').length
+  const achievedPairs = real?.pairs.filter(p => p.status === 'achieved').length ?? 0
+  const readiness = real?.pairs.length ? Math.round(100 * achievedPairs / real.pairs.length) : 0
+  const progressLabels: Record<string, string> = {
+    BASELINE_REQUIRED: vi ? 'Cần baseline' : 'Baseline required', RESUME: vi ? 'Đang làm baseline' : 'Baseline in progress',
+    COMPLETE: vi ? 'Đã có kết quả baseline' : 'Baseline result available', BASELINE_NOT_REQUIRED: vi ? 'Không cần baseline' : 'Baseline not required',
+    BASELINE_UNAVAILABLE: vi ? 'Baseline chưa khả dụng' : 'Baseline unavailable', ROLE_UNAVAILABLE: vi ? 'Role không còn khả dụng' : 'Role unavailable',
+  }
+  const liveStatus = overview.isPending ? (vi ? 'Đang tải' : 'Loading') : overview.isError ? (vi ? 'Không tải được' : 'Unavailable')
+    : progressLabels[real?.flow.progress.state ?? ''] ?? (real?.flow.selection ? (vi ? 'Đã chọn mục tiêu' : 'Target selected') : missing)
   const [selectedRole, setSelectedRole] = React.useState(() => normalizeRoleKey(profile.targetRole))
   const [selectedSkill, setSelectedSkill] = React.useState(() => normalizeSkillKey(profile.targetSkill))
 
@@ -84,12 +109,13 @@ export function EmployeeOverviewPage() {
 
   // Derive benchmark and skills dynamically based on active target role or skill
   const activeBenchmark = React.useMemo(() => {
-    return getOverviewBenchmark(isSkillMode, selectedRole, selectedSkill)
-  }, [isSkillMode, selectedRole, selectedSkill])
+    const benchmark = getOverviewBenchmark(isSkillMode, selectedRole, selectedSkill)
+    return !isSkillMode ? { ...benchmark, roleTitle: realTitle } : benchmark
+  }, [isSkillMode, selectedRole, selectedSkill, realTitle])
 
-  const companySkills: CompetencySkillProfile[] = React.useMemo(() => {
-    return getOverviewSkills(isSkillMode, selectedRole, selectedSkill)
-  }, [isSkillMode, selectedRole, selectedSkill])
+  const companySkills: (CompetencySkillProfile | OverviewSkill)[] = React.useMemo(() => {
+    return !isSkillMode ? real?.skills ?? [] : getOverviewSkills(isSkillMode, selectedRole, selectedSkill)
+  }, [isSkillMode, selectedRole, selectedSkill, real])
 
   // Company and role/skill-scoped statistics
   const profileStats = React.useMemo(() => {
@@ -102,12 +128,12 @@ export function EmployeeOverviewPage() {
     const sumCur = companySkills.reduce((acc, s) => acc + s.estimatedMastery, 0)
     const overallMastery = sumReq > 0 ? Math.round((sumCur / sumReq) * 100) : 0
     
-    const completedModules = mastered
-    const totalModules = totalSkills
+    const completedModules = isSkillMode ? mastered : achievedSteps
+    const totalModules = isSkillMode ? totalSkills : requiredSteps.length
     const pathwayProgress = totalModules > 0 ? Math.round((completedModules / totalModules) * 100) : 0
 
     return {
-      overallMasteryPercentage: overallMastery,
+      overallMasteryPercentage: isSkillMode ? overallMastery : totalSkills ? Math.round(100 * mastered / totalSkills) : 0,
       totalSkillsEvaluated: totalSkills,
       masteredSkillsCount: mastered,
       inProgressSkillsCount: inProgress,
@@ -115,20 +141,19 @@ export function EmployeeOverviewPage() {
       pathwayProgressPercentage: pathwayProgress,
       completedModulesCount: completedModules,
       totalPathwayModules: totalModules,
-      bktConfidencePercentage: 92,
-      hoursSavedViaAdaptivity: Math.round(mastered * 6.5),
+      hoursSavedViaAdaptivity: Math.round(getOverviewSkills(isSkillMode, selectedRole, selectedSkill).filter(s => s.status === 'mastered').length * 6.5),
       lastAssessedDate: '2026-09-20',
     }
-  }, [companySkills])
+  }, [companySkills, isSkillMode, achievedSteps, requiredSteps.length, selectedRole, selectedSkill])
 
   // Duration, Start Date, End Date metadata for overview
-  const startDate = profile.assignedAt ? profile.assignedAt.split(' ')[0] : '2026-06-15'
-  const endDate = profile.deadline || '2026-12-31'
+  const startDate = !isSkillMode ? real?.flow.selection?.selectedAt.slice(0, 10) ?? missing : profile.assignedAt ? profile.assignedAt.split(' ')[0] : '2026-06-15'
+  const endDate = !isSkillMode ? missing : profile.deadline || '2026-12-31'
   const start = new Date(startDate)
   const end = new Date(endDate)
   const diffDays = Math.max(0, Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)))
   const diffMonths = (diffDays / 30.4).toFixed(1)
-  const durationText = language === 'vi' 
+  const durationText = !isSkillMode ? missing : language === 'vi'
     ? `${diffMonths} Tháng (${diffDays} Ngày)`
     : `${diffMonths} Months (${diffDays} Days)`
 
@@ -147,7 +172,7 @@ export function EmployeeOverviewPage() {
       (skill.skillCode && skill.skillCode.toLowerCase().includes(q)) ||
       skill.category.toLowerCase().includes(q)
     const matchesCategory =
-      selectedCategory === 'all' || skill.category === selectedCategory
+      selectedCategory === 'all' || !companySkills.some(s => s.category === selectedCategory) || skill.category === selectedCategory
 
     return matchesSearch && matchesCategory
   })
@@ -163,15 +188,15 @@ export function EmployeeOverviewPage() {
 
   const totalPages = Math.max(1, Math.ceil(filteredSkills.length / PAGE_SIZE))
   const paginatedSkills = React.useMemo(() => {
-    const startIndex = (currentPage - 1) * PAGE_SIZE
+    const startIndex = (Math.min(currentPage, totalPages) - 1) * PAGE_SIZE
     return filteredSkills.slice(startIndex, startIndex + PAGE_SIZE)
-  }, [filteredSkills, currentPage])
+  }, [filteredSkills, currentPage, totalPages])
 
   // Categories list with counts
   const categories = React.useMemo(() => {
     const set = new Set<string>()
     companySkills.forEach((s) => set.add(s.category))
-    const arr = [{ key: 'all', label: 'All Domains', count: companySkills.length }]
+    const arr = [{ key: 'all', label: !isSkillMode ? (vi ? 'Tất cả Skill' : 'All Skills') : 'All Domains', count: companySkills.length }]
     set.forEach((cat) => {
       arr.push({
         key: cat,
@@ -180,7 +205,7 @@ export function EmployeeOverviewPage() {
       })
     })
     return arr
-  }, [companySkills])
+  }, [companySkills, isSkillMode, vi])
 
   const getStatusBadge = (status: CompetencySkillProfile['status']) => {
     switch (status) {
@@ -200,7 +225,7 @@ export function EmployeeOverviewPage() {
         <PageHeader
           actions={
             <div className="w-full flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5 flex-wrap">
-              <TargetRoleSelector />
+              <TargetRoleSelector roleSummary={!isSkillMode ? { title: realTitle, status: liveStatus } : undefined} />
 
               {/* Timeline & Duration Metadata */}
               <div className="flex flex-wrap items-center gap-2.5 bg-card border border-border px-3.5 py-1.5 rounded-xl shadow-2xs text-xs">
@@ -223,6 +248,7 @@ export function EmployeeOverviewPage() {
           }
         />
 
+        {!isSkillMode && (overview.isPending || overview.isError || !real?.flow.selection) && <div className="rounded-xl border border-border bg-card p-4 text-sm text-muted-foreground" role="status">{overview.isPending ? (vi ? 'Đang tải dữ liệu học tập…' : 'Loading learning data…') : overview.isError ? (vi ? 'Không tải được dữ liệu học tập. Vui lòng thử lại.' : 'Could not load learning data. Please retry.') : (vi ? 'Chọn Role tại Upskilling để xem tổng quan.' : 'Select a Role in Upskilling to view your overview.')} {overview.isError && <Button size="sm" variant="outline" onClick={() => overview.refetch()}>{vi ? 'Thử lại' : 'Retry'}</Button>}</div>}
         {/* =========================================================================
             AGGREGATED SUMMARY KPIS
            ========================================================================= */}
@@ -239,7 +265,7 @@ export function EmployeeOverviewPage() {
               variant="gradient"
               icon={<Award className="h-4 w-4" />}
               title={t('Overall Skill Mastery')}
-              value={`${profileStats.overallMasteryPercentage}%`}
+              value={!isSkillMode && !real?.flow.selection ? '—' : `${profileStats.overallMasteryPercentage}%`}
               valueClassName="text-primary font-bold"
               description={language === 'vi' 
                 ? `${profileStats.masteredSkillsCount} trên ${profileStats.totalSkillsEvaluated} vi kỹ năng đã thành thạo`
@@ -248,7 +274,7 @@ export function EmployeeOverviewPage() {
               <div className="mt-3 space-y-1.5">
                 <div className="flex items-center justify-between text-xs text-muted-foreground font-mono">
                   <span>{t('Target Benchmark')}</span>
-                  <span className="font-bold text-foreground">{profile.targetReadinessScore}% {t('Minimum')}</span>
+                  <span className="font-bold text-foreground">{isSkillMode ? `${profile.targetReadinessScore}% ${t('Minimum')}` : (vi ? 'Tất cả yêu cầu của Skill' : 'All requirements per Skill')}</span>
                 </div>
                 <Progress value={profileStats.overallMasteryPercentage} variant="primary" className="h-2" />
               </div>
@@ -259,18 +285,13 @@ export function EmployeeOverviewPage() {
               variant="default"
               icon={<Target className="h-4 w-4 text-primary" />}
               title={isSkillMode ? t('Skill Readiness') : t('Target Readiness')}
-              value={`${profileStats.overallMasteryPercentage}%`}
+              value={!isSkillMode ? real?.pairs.length ? `${readiness}%` : '—' : `${profileStats.overallMasteryPercentage}%`}
               valueClassName="text-foreground font-bold"
               description={language === 'vi' 
                 ? `Độ sẵn sàng cho ${activeBenchmark.roleTitle}`
                 : `Readiness for ${activeBenchmark.roleTitle}`}
             >
-              <div className="mt-3 flex items-center justify-between text-xs pt-1 border-t border-border/60">
-                <span className="text-muted-foreground">{t('Confidence Metric')}</span>
-                <Badge variant="secondary" className="font-mono text-xs">
-                  {profileStats.bktConfidencePercentage}% BKT
-                </Badge>
-              </div>
+              {!isSkillMode && real?.flow.selection && <div className="mt-3 text-xs text-muted-foreground pt-1 border-t border-border/60">{achievedPairs}/{real.pairs.length} {vi ? 'yêu cầu kiến thức đạt chính thức' : 'knowledge requirements officially achieved'}</div>}
             </StatCard>
 
             {/* KPI 3: Pathway Progression */}
@@ -278,7 +299,7 @@ export function EmployeeOverviewPage() {
               variant="default"
               icon={<CheckCircle2 className="h-4 w-4 text-success" />}
               title={t('Pathway Progression')}
-              value={`${profileStats.completedModulesCount} / ${profileStats.totalPathwayModules} ${t('Modules')}`}
+              value={!isSkillMode && !real?.pathway ? '—' : `${profileStats.completedModulesCount} / ${profileStats.totalPathwayModules} ${isSkillMode ? t('Modules') : vi ? 'bước yêu cầu' : 'required steps'}`}
               valueClassName="text-foreground font-bold"
               description={t('Curriculum milestone advancement')}
             >
@@ -316,25 +337,25 @@ export function EmployeeOverviewPage() {
                 <div className="flex items-center gap-2">
                   <Compass className="h-5 w-5 text-primary" />
                   <CardTitle className="text-base font-bold text-foreground">
-                    {t('Competency Radar Analysis')}
+                    {isSkillMode ? t('Competency Radar Analysis') : vi ? 'Trạng thái yêu cầu kiến thức' : 'Knowledge Requirement Status'}
                   </CardTitle>
                 </div>
               </div>
               <CardDescription className="text-xs text-muted-foreground mt-1">
-                {language === 'vi' 
-                  ? `Biểu đồ đa biến thể hiện mức độ thành thạo đã được xác thực so với chuẩn của ${activeBenchmark.roleTitle}.` 
+                {!isSkillMode ? (vi ? `Trạng thái yêu cầu kiến thức cho ${realTitle}.` : `Knowledge requirements for ${realTitle}.`) : language === 'vi'
+                  ? `Biểu đồ đa biến thể hiện mức độ thành thạo đã được xác thực so với chuẩn của ${activeBenchmark.roleTitle}.`
                   : `Multivariate vector of verified proficiency vs benchmark requirements for ${activeBenchmark.roleTitle}.`}
               </CardDescription>
             </CardHeader>
 
             <CardContent className="pt-4 flex-1 flex flex-col items-center justify-center">
-              <CompetencyRadarChart
+              {!isSkillMode ? real ? <RequirementStatusRing pairs={real.pairs} /> : <div className="min-h-[300px] flex items-center justify-center text-sm text-muted-foreground">{overview.isError ? (vi ? 'Dữ liệu chưa khả dụng' : 'Data unavailable') : (vi ? 'Đang tải…' : 'Loading…')}</div> : <CompetencyRadarChart
                 selectedRoleKey={selectedRole}
                 onSelectRoleKey={setSelectedRole}
                 isSkillMode={isSkillMode}
                 selectedSkillKey={selectedSkill}
                 onSelectSkillKey={setSelectedSkill}
-              />
+              />}
             </CardContent>
           </Card>
 
@@ -430,6 +451,7 @@ export function EmployeeOverviewPage() {
                 </div>
               ) : (
                 paginatedSkills.map((skill) => {
+                  if (!isSkillMode) return <OverviewSkillRow key={skill.id} skill={skill as OverviewSkill} expanded={!!expandedSkills[skill.id]} toggle={() => toggleSkillExpand(skill.id)} />
                   const isExpanded = !!expandedSkills[skill.id]
                   const moduleInfo = skill.teachingModule || (skill.recommendedModule ? {
                     id: 'mod-ref',
@@ -572,7 +594,7 @@ export function EmployeeOverviewPage() {
 
             {filteredSkills.length > 0 && (
               <Pagination
-                currentPage={currentPage}
+                currentPage={Math.min(currentPage, totalPages)}
                 totalPages={totalPages}
                 totalItems={filteredSkills.length}
                 pageSize={PAGE_SIZE}

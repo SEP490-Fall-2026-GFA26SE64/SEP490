@@ -86,7 +86,7 @@ public final class LearningResources {
         public SkillCompletion {
             outcomeCodes=outcomeCodes==null?java.util.List.of():java.util.List.copyOf(outcomeCodes);
             if(knowledgeLevel!=null) {
-                KnowledgeLevel.valueOf(knowledgeLevel);RuleAssessment.unique(outcomeCodes);
+                KnowledgeLevel.valueOf(knowledgeLevel);
                 ModuleAuthoring.text(skillVersion,"skillVersion",200);ModuleAuthoring.text(skillName,"skillName",2000);
             }else if(skillVersion!=null || !outcomeCodes.isEmpty())throw new IllegalArgumentException("Incomplete learning requirement scope");
         }

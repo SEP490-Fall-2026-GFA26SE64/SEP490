@@ -123,12 +123,12 @@ public interface RequirementPathwayJpaRepository extends Repository<InitialPathw
             """,nativeQuery=true)
     int dependencies(@Param("org") UUID org,@Param("learner") UUID learner,@Param("request") UUID request,@Param("revision") long revision,@Param("plan") String plan);
     @Query(value="""
-            SELECT DISTINCT ON (required->>'skillId',required->>'knowledgeLevel',required->>'skillVersion',required->'outcomeCodes')
+            SELECT DISTINCT ON (required->>'skillId',required->>'knowledgeLevel',required->>'skillVersion')
                 required::text AS requirementSnapshot,e.id AS evidenceId
             FROM jsonb_array_elements(CAST(:requirements AS jsonb)) required JOIN platform.skill_knowledge_evidence e
                 ON e.organization_id=:org AND e.learner_id=:learner AND e.skill_id=required->>'skillId' AND e.knowledge_level=required->>'knowledgeLevel'
-                AND e.requirement_snapshot->>'skillVersion'=required->>'skillVersion' AND (e.requirement_snapshot->'outcomeCodes') @> (required->'outcomeCodes')
-            ORDER BY required->>'skillId',required->>'knowledgeLevel',required->>'skillVersion',required->'outcomeCodes',e.achieved_at DESC,e.id
+                AND e.requirement_snapshot->>'skillVersion'=required->>'skillVersion'
+            ORDER BY required->>'skillId',required->>'knowledgeLevel',required->>'skillVersion',e.achieved_at DESC,e.id
             """,nativeQuery=true)
     List<Official> official(@Param("org") UUID org,@Param("learner") UUID learner,@Param("requirements") String requirements);
     interface Official {String getRequirementSnapshot();UUID getEvidenceId();}
@@ -155,7 +155,7 @@ public interface RequirementPathwayJpaRepository extends Repository<InitialPathw
     @Query(value="""
             SELECT DISTINCT ON (b.id,g.skill_id,g.knowledge_level) b.id AS bypassId,
                 jsonb_build_object('skillId',g.skill_id,'skillName',definition->>'skillName','knowledgeLevel',g.knowledge_level,
-                    'skillVersion',definition->>'skillVersion','outcomeCodes',g.outcome_codes,'provision',definition->>'mode')::text AS requirementSnapshot,
+                    'skillVersion',definition->>'skillVersion','provision',definition->>'mode')::text AS requirementSnapshot,
                 'ASSESSED_PREREQUISITE_REQUIRES_LEARNING' AS reason,a.id AS attemptId,g.group_id AS groupId,
                 CAST(a.context_snapshot->'context'->>'requestId' AS uuid) AS sourceRequestId,CAST(a.context_snapshot->'context'->>'stepId' AS uuid) AS dependentStepId
             FROM platform.rule_assessment_attempt a JOIN platform.rule_assessment_group g ON g.attempt_id=a.id AND g.group_role='PREREQUISITE'
@@ -170,15 +170,14 @@ public interface RequirementPathwayJpaRepository extends Repository<InitialPathw
             WHERE a.organization_id=:org AND a.learner_id=:learner AND a.purpose='SKILL_ASSESSMENT' AND a.state='FINALIZED'
                 AND a.context_snapshot->'context'->>'stepKind'='PARALLEL_SUPPLEMENT'
                 AND NOT EXISTS (SELECT 1 FROM platform.skill_knowledge_evidence e WHERE e.organization_id=a.organization_id AND e.learner_id=a.learner_id
-                    AND e.skill_id=g.skill_id AND e.knowledge_level=g.knowledge_level AND e.requirement_snapshot->>'skillVersion'=definition->>'skillVersion'
-                    AND e.requirement_snapshot->'outcomeCodes' @> g.outcome_codes)
+                    AND e.skill_id=g.skill_id AND e.knowledge_level=g.knowledge_level AND e.requirement_snapshot->>'skillVersion'=definition->>'skillVersion')
             ORDER BY b.id,g.skill_id,g.knowledge_level,a.finished_at,a.id,g.group_id LIMIT 1001
             """,nativeQuery=true)
     List<ParallelNeed> parallelNeeds(@Param("org") UUID org,@Param("learner") UUID learner);
     interface ParallelNeed extends Carried {UUID getAttemptId();UUID getGroupId();UUID getSourceRequestId();UUID getDependentStepId();}
     /** An authentic pin must follow an accepted exact option; skill-only self-study rows grant no pathway access. */
     @Query(value="""
-            SELECT DISTINCT ON (p.module_id,p.revision,s.skill_id,s.knowledge_level,s.requirement_snapshot->>'skillVersion',s.requirement_snapshot->'outcomeCodes')
+            SELECT DISTINCT ON (p.module_id,p.revision,s.skill_id,s.knowledge_level,s.requirement_snapshot->>'skillVersion')
                 s.requirement_snapshot::text AS requirementSnapshot,p.module_id AS moduleId,p.revision AS moduleRevision,p.started_at AS startedAt,
                 o.content_version AS contentVersion
             FROM platform.module_learning_pin p
@@ -200,7 +199,7 @@ public interface RequirementPathwayJpaRepository extends Repository<InitialPathw
                             JOIN platform.initial_pathway_approval approval ON approval.request_id=old.request_id AND approval.revision=coalesce(old.approval_basis_revision,old.revision)
                             JOIN platform.initial_pathway_revision approved ON approved.request_id=approval.request_id AND approved.revision=approval.revision AND approved.content_hash=approval.content_hash
                             WHERE b.id=s.source_bypass_id AND b.organization_id=s.organization_id AND b.learner_id=s.learner_id AND approval.confirmed_at<=greatest(p.started_at,switched.accepted_at))))
-            ORDER BY p.module_id,p.revision,s.skill_id,s.knowledge_level,s.requirement_snapshot->>'skillVersion',s.requirement_snapshot->'outcomeCodes',v.created_at,s.step_id LIMIT 1001
+            ORDER BY p.module_id,p.revision,s.skill_id,s.knowledge_level,s.requirement_snapshot->>'skillVersion',v.created_at,s.step_id LIMIT 1001
             """,nativeQuery=true)
     List<Started> startedModules(@Param("org") UUID org,@Param("learner") UUID learner,@Param("modules") Collection<String> modules);
     interface Started {String getRequirementSnapshot();String getModuleId();int getModuleRevision();Instant getStartedAt();String getContentVersion();}
@@ -224,8 +223,7 @@ public interface RequirementPathwayJpaRepository extends Repository<InitialPathw
                 AND c.skill_id=step->'requirement'->>'skillId'
                 AND EXISTS (SELECT 1 FROM platform.learning_completion_requirement proof WHERE proof.organization_id=c.organization_id AND proof.learner_id=c.learner_id
                     AND proof.module_id=c.module_id AND proof.revision=c.revision AND proof.knowledge_level=step->'requirement'->>'knowledgeLevel'
-                    AND proof.requirement_snapshot->>'skillVersion'=step->'requirement'->>'skillVersion'
-                    AND (proof.requirement_snapshot->'outcomeCodes') @> (step->'requirement'->'outcomeCodes'))
+                    AND proof.requirement_snapshot->>'skillVersion'=step->'requirement'->>'skillVersion')
             LIMIT 100001
             """,nativeQuery=true)
     List<Progress> progress(@Param("org") UUID org,@Param("learner") UUID learner,@Param("plan") String plan);
@@ -236,7 +234,6 @@ public interface RequirementPathwayJpaRepository extends Repository<InitialPathw
                 AND e.organization_id=:org AND e.learner_id=:learner AND e.skill_id=step->'requirement'->>'skillId'
                 AND e.knowledge_level=step->'requirement'->>'knowledgeLevel'
                 AND e.requirement_snapshot->>'skillVersion'=step->'requirement'->>'skillVersion'
-                AND (e.requirement_snapshot->'outcomeCodes') @> (step->'requirement'->'outcomeCodes')
             WHERE step->>'state'='FULFILLED'
             """,nativeQuery=true)
     long validFulfilled(@Param("org") UUID org,@Param("learner") UUID learner,@Param("plan") String plan);
@@ -249,8 +246,6 @@ public interface RequirementPathwayJpaRepository extends Repository<InitialPathw
                 AND current_step.organization_id=b.organization_id AND current_step.learner_id=b.learner_id
                 AND current_step.skill_id=original.skill_id AND current_step.knowledge_level=original.knowledge_level AND current_step.provision=original.provision
                 AND current_step.requirement_snapshot->>'skillVersion' IS NOT DISTINCT FROM original.requirement_snapshot->>'skillVersion'
-                AND (current_step.requirement_snapshot->'outcomeCodes') @> (original.requirement_snapshot->'outcomeCodes')
-                AND (original.requirement_snapshot->'outcomeCodes') @> (current_step.requirement_snapshot->'outcomeCodes')
             WHERE b.organization_id=:org AND b.learner_id=:learner AND b.request_id=:request AND b.revision<=:revision
                 AND NOT EXISTS (SELECT 1 FROM platform.pathway_requirement_bypass newer WHERE newer.supersedes_id=b.id)
             ORDER BY b.step_id,b.decided_at DESC,b.id LIMIT 1001
@@ -275,14 +270,13 @@ public interface RequirementPathwayJpaRepository extends Repository<InitialPathw
                 ON definition->'requirement'->>'skillId'=g.skill_id AND definition->'requirement'->>'knowledgeLevel'=g.knowledge_level
             WHERE definition->>'skillVersion'=source->'requirement'->>'skillVersion'
                 AND definition->>'mode'=source->'requirement'->>'provision'
-                AND g.outcome_codes @> (source->'requirement'->'outcomeCodes') AND (source->'requirement'->'outcomeCodes') @> g.outcome_codes
                 AND parent.kind=source->>'kind' AND parent.source_bypass_id IS NOT DISTINCT FROM CAST(source->>'sourceBypassId' AS uuid)
                 AND ((source->>'kind'='REQUIRED' AND a.context_snapshot->'context'->>'stepKind'='REQUIRED')
                     OR (source->>'kind'='PARALLEL_SUPPLEMENT' AND a.context_snapshot->'context'->>'stepKind'='PARALLEL_SUPPLEMENT'
                         AND a.context_snapshot->'context'->>'sourceBypassId'=source->>'sourceBypassId'))
                 AND NOT EXISTS (SELECT 1 FROM platform.skill_knowledge_evidence e WHERE e.organization_id=a.organization_id AND e.learner_id=a.learner_id
                     AND e.skill_id=g.skill_id AND e.knowledge_level=g.knowledge_level AND e.achieved_at<=a.finished_at
-                    AND e.requirement_snapshot->>'skillVersion'=definition->>'skillVersion' AND e.requirement_snapshot->'outcomeCodes' @> g.outcome_codes)
+                    AND e.requirement_snapshot->>'skillVersion'=definition->>'skillVersion')
             """,nativeQuery=true)
     long validSources(@Param("org") UUID org,@Param("learner") UUID learner,@Param("request") UUID request,@Param("sources") String sources);
     @Modifying @Transactional(TransactionManagers.JPA)

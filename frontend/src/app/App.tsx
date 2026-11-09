@@ -20,6 +20,7 @@ import { SkillAssessmentConfigurationPage } from '../features/manager/baseline-a
 import { LegacyBaselineAssessmentRedirect } from '../features/manager/baseline-assessments/LegacyBaselineAssessmentRedirect'
 import { LearningModulesPage } from '../features/manager/modules/LearningModulesPage'
 import { CompetencyOntologyPage } from '../features/manager/ontology/CompetencyOntologyPage'
+import { CertificatesPage } from '../features/expert/certificates/CertificatesPage'
 import { LearningContentAuthoringPage } from '../features/expert/content/LearningContentAuthoringPage'
 import { ExpertAssignedRolesPage } from '../features/expert/target-roles/ExpertAssignedRolesPage'
 import { ExpertPathwayReviewPage } from '../features/expert/guidance-review/ExpertGuidanceReviewPage'
@@ -128,6 +129,7 @@ export default function App() {
             <Route path="/expert/pathway-review/:pathwayId" element={<ExpertPathwayDetailPage />} />
             <Route path="/expert/guidance-review" element={<Navigate to="/expert/pathway-review" replace />} />
             <Route path="/expert/ontology" element={<CompetencyOntologyPage />} />
+            <Route path="/expert/certificates" element={<CertificatesPage />} />
             <Route path="/expert/learning-content" element={<LearningContentAuthoringPage />} />
             <Route path="/expert/modules" element={<LearningModulesPage />} />
             <Route path="/expert/assessment-bank" element={<AssessmentBankPage />} />

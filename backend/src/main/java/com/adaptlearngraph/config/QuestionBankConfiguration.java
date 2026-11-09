@@ -40,7 +40,7 @@ public class QuestionBankConfiguration {
             public List<Choice> skills(Actor a){return skills.skills(a.organization().toString());}
             public List<KnowledgeChoice> knowledge(Actor a){return skills.knowledge(a.organization().toString());}
             public String requireSkill(Actor a,String id){return skills.requireSkill(a.organization().toString(),id);}
-            public void requireOutcome(Actor a,String skill,String level,String outcome){skills.requireOutcome(a.organization().toString(),skill,level,outcome);}
+            public String requireKnowledge(Actor a,String skill,String level){return skills.requireKnowledge(a.organization().toString(),skill,level);}
 
         };
     }

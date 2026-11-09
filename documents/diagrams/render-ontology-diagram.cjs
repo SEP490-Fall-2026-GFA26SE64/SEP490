@@ -1,3 +1,15 @@
+// GRAPH-01 exports reuse the existing canonical PlantUML catalog (no browser/test runner).
+if ((process.argv[3] || 'graph-01') === 'graph-01') {
+  const fs = require('node:fs'), path = require('node:path');
+  const { execFileSync } = require('node:child_process');
+  if (!process.argv[2] || !process.argv[2].endsWith('.jar')) throw Error('Provide local PlantUML jar path for graph-01');
+  for (const format of ['svg', 'png']) {
+    execFileSync('java', ['-DPLANTUML_LIMIT_SIZE=16384', '-jar', path.resolve(process.argv[2]), '-charset', 'UTF-8', '-t' + format, path.join(__dirname, 'neo4j.puml')], { stdio: 'inherit' });
+    fs.copyFileSync(path.join(__dirname, 'neo4j.' + format), path.join(__dirname, 'mermaid', 'graph-01.' + format));
+  }
+  console.log('Regenerated canonical Neo4j SVG/PNG and GRAPH-01 compatibility copies.');
+  process.exit(0);
+}
 // node documents\diagrams\render-ontology-diagram.cjs <mermaid.min.js> [graph-01|cgraph-01]
 const fs = require('node:fs');
 const path = require('node:path');

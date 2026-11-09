@@ -1,0 +1,22 @@
+{
+  "format": "DEVELOPMENT_APPLICATION_DEVELOPER_CERTIFICATES_V1",
+  "organizationId": "e0000000-0000-0000-0000-000000000001",
+  "definitions": [
+    {
+      "id": "cert-dev-application-developer-input-validation-intermediate",
+      "skillId": "MS-FS12",
+      "knowledgeLevel": "INTERMEDIATE",
+      "skillVersion": "0.12.1",
+      "name": "Development sample — Application input validation",
+      "referenceUrl": "https://owasp.org/www-project-web-security-testing-guide/"
+    },
+    {
+      "id": "cert-dev-application-developer-code-review-advanced",
+      "skillId": "MS-FS08",
+      "knowledgeLevel": "ADVANCED",
+      "skillVersion": "0.12.1",
+      "name": "Development sample — ICT code review",
+      "referenceUrl": "https://google.github.io/eng-practices/review/"
+    }
+  ]
+}

@@ -18,11 +18,11 @@ function entry(value: unknown): KnowledgeEntry {
   const row = object(value), kind = text(row.kind), knowledgeLevel = text(row.knowledgeLevel)
   if (!['DIAGNOSTIC', 'EVIDENCE', 'REVIEW'].includes(kind) || !['FOUNDATION', 'INTERMEDIATE', 'ADVANCED'].includes(knowledgeLevel)) throw Error()
   const result: KnowledgeEntry = { kind: kind as KnowledgeEntry['kind'], knowledgeLevel, id: text(row.id), skillId: text(row.skillId),
-    skillName: optional(row.skillName, text) ?? text(row.skillId), skillVersion: text(row.skillVersion), outcomeCodes: strings(row.outcomeCodes), observedAt: text(row.observedAt),
+    skillName: optional(row.skillName, text) ?? text(row.skillId), skillVersion: text(row.skillVersion), outcomeCodes: [], observedAt: text(row.observedAt),
     purpose: optional(row.purpose, text), attemptId: optional(row.attemptId, text), correctCount: optional(row.correctCount, number), totalCount: optional(row.totalCount, number),
     passed: optional(row.passed, boolean), mandatorySatisfied: optional(row.mandatorySatisfied, boolean), vetoTriggered: optional(row.vetoTriggered, boolean), reasons: strings(row.reasons),
     sourceKind: optional(row.sourceKind, text), sourceId: text(row.sourceId), reviewState: optional(row.reviewState, text) }
-  if (!result.outcomeCodes.length || new Set(result.outcomeCodes).size !== result.outcomeCodes.length || !Number.isFinite(Date.parse(result.observedAt))) throw Error()
+  if (!Number.isFinite(Date.parse(result.observedAt))) throw Error()
   if (kind === 'DIAGNOSTIC' && (result.correctCount === null || result.totalCount === null || result.totalCount < 1 || result.correctCount > result.totalCount
     || result.passed === null || result.mandatorySatisfied === null || result.vetoTriggered === null || !['BASELINE', 'SKILL_ASSESSMENT'].includes(result.purpose ?? '') || !result.attemptId)) throw Error()
   if (kind === 'EVIDENCE' && !['MODULE_ASSESSMENT', 'CERTIFICATE'].includes(result.sourceKind ?? '')) throw Error()

@@ -70,14 +70,11 @@ public interface EmployeeRoleSelectionJpaRepository
                                 (s.state='FULFILLED' AND EXISTS (SELECT 1 FROM platform.skill_knowledge_evidence e
                                     WHERE e.id=s.fulfilled_evidence_id AND e.organization_id=s.organization_id
                                         AND e.learner_id=s.learner_id AND e.skill_id=s.skill_id AND e.knowledge_level=s.knowledge_level
-                                        AND e.requirement_snapshot->>'skillVersion'=s.requirement_snapshot->>'skillVersion'
-                                        AND (e.requirement_snapshot->'outcomeCodes') @> (s.requirement_snapshot->'outcomeCodes')))
+                                        AND e.requirement_snapshot->>'skillVersion'=s.requirement_snapshot->>'skillVersion'))
                                 OR (s.state='BYPASSED' AND EXISTS (SELECT 1 FROM platform.pathway_requirement_bypass b
                                     JOIN platform.pathway_requirement_step original ON original.request_id=b.request_id AND original.revision=b.revision AND original.step_id=b.step_id
                                         AND original.organization_id=s.organization_id AND original.learner_id=s.learner_id AND original.skill_id=s.skill_id AND original.knowledge_level=s.knowledge_level
                                         AND original.provision=s.provision AND original.requirement_snapshot->>'skillVersion' IS NOT DISTINCT FROM s.requirement_snapshot->>'skillVersion'
-                                        AND (original.requirement_snapshot->'outcomeCodes') @> (s.requirement_snapshot->'outcomeCodes')
-                                        AND (s.requirement_snapshot->'outcomeCodes') @> (original.requirement_snapshot->'outcomeCodes')
                                     WHERE b.organization_id=s.organization_id AND b.learner_id=s.learner_id
                                         AND b.request_id=s.request_id AND b.step_id=s.step_id AND b.revision<=s.revision
                                         AND NOT EXISTS (SELECT 1 FROM platform.pathway_requirement_bypass newer WHERE newer.supersedes_id=b.id)))

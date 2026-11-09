@@ -111,7 +111,6 @@ public final class RequirementPathwayAccess {
     }
     private static boolean matches(ModuleAuthoring.Revision revision,Requirement required) {
         var payload=revision.payload();return payload.teachings().size()==1 && payload.teachings().getFirst().skillId().equals(required.skillId())
-                && payload.knowledgeLevel()==required.knowledgeLevel() && Objects.equals(payload.skillVersion(),required.skillVersion())
-                && payload.outcomeCodes().containsAll(required.outcomeCodes());
+                && payload.knowledgeLevel()==required.knowledgeLevel() && Objects.equals(payload.skillVersion(),required.skillVersion());
     }
 }

@@ -100,7 +100,7 @@ services:
       ASSESSMENT_BASELINE_LOCALDEMO_SEEDENABLED: "true"
       WORKSPACE_DEVELOPMENT_FIXTURES_ENABLED: "true"
     volumes:
-      - ./documents/dataset/import/ontology_seed-prerequisite-knowledge.json:/seed/ontology_seed.json:ro
+      - ./documents/dataset/import/ontology_seed-skill-level.json:/seed/ontology_seed.json:ro
       - ./documents/dataset/question-bank/15-1212.00/catalog-scope-v09.json:/seed/catalog-scope.json:ro
       - workspace_catalog_v011_bootstrap:/catalog-state
     depends_on:
@@ -140,7 +140,7 @@ services:
       WORKSPACE_DEVELOPMENT_FIXTURES_ENABLED: "true"
       WORKSPACE_DEVELOPMENT_FIXTURES_PASSWORD: ${WORKSPACE_DEVELOPMENT_PASSWORD:-Workspace-Development-490!}
     volumes:
-      - ./documents/dataset/import/ontology_seed-prerequisite-knowledge.json:/seed/ontology_seed.json:ro
+      - ./documents/dataset/import/ontology_seed-skill-level.json:/seed/ontology_seed.json:ro
     depends_on:
       workspace-seed:
         condition: service_completed_successfully
@@ -221,7 +221,7 @@ services:
       PATHWAY_INITIAL_WORKER_MAXIMUM_BACKOFF_MS: ${PATHWAY_INITIAL_WORKER_MAXIMUM_BACKOFF_MS:-30000}
       PATHWAY_INITIAL_WORKER_POLL_INTERVAL_MS: ${PATHWAY_INITIAL_WORKER_POLL_INTERVAL_MS:-2000}
     volumes:
-      - ./documents/dataset/import/ontology_seed-prerequisite-knowledge.json:/seed/ontology_seed.json:ro
+      - ./documents/dataset/import/ontology_seed-skill-level.json:/seed/ontology_seed.json:ro
       - ./documents/dataset/import/ontology_seed-v010.json:/seed/baseline-history-v010.json:ro
       - ./documents/dataset/question-bank/15-1212.00/historical/ontology_seed-v08.json:/seed/baseline-history-v08.json:ro
       - ./documents/dataset/question-bank/15-1212.00/historical/question-bank-v1.json:/seed/baseline-bank-v08.json:ro
@@ -268,7 +268,7 @@ services:
       WORKSPACE_DEVELOPMENT_FIXTURES_ENABLED: "true"
       QUESTION_BANK_DEVELOPMENT_SEED_ENABLED: "true"
     volumes:
-      - ./documents/dataset/import/ontology_seed-prerequisite-knowledge.json:/seed/ontology_seed.json:ro
+      - ./documents/dataset/import/ontology_seed-skill-level.json:/seed/ontology_seed.json:ro
     depends_on:
       api:
         condition: service_healthy

@@ -23,7 +23,7 @@ public final class CertificateController {
         this.catalog=catalog;this.submissions=submissions;this.review=review;this.json=json.copy().enable(com.fasterxml.jackson.core.JsonParser.Feature.STRICT_DUPLICATE_DETECTION)
                 .enable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES).enable(DeserializationFeature.FAIL_ON_TRAILING_TOKENS);
     }
-    @GetMapping("/expert/certificates")ResponseEntity<?> catalog(@RequestParam(defaultValue="0")int offset,@RequestParam(defaultValue="20")int limit){return ok(catalog.list(offset,limit));}
+    @GetMapping("/expert/certificates")ResponseEntity<?> catalog(@RequestParam(defaultValue="0")int offset,@RequestParam(defaultValue="20")int limit,@RequestParam(defaultValue="")String q,@RequestParam(defaultValue="")String level){return ok(catalog.list(offset,limit,q,level));}
     @PostMapping(value="/expert/certificates",consumes="application/json")ResponseEntity<?> create(@RequestHeader("Idempotency-Key")UUID key,@RequestBody String body){return ResponseEntity.status(201).cacheControl(CacheControl.noStore()).body(catalog.create(key,parse(body,CertificateCatalog.Create.class)));}
     @GetMapping("/employee/pathways/{request}/certificate-submissions")ResponseEntity<?> history(@PathVariable UUID request,@RequestParam UUID stepId,
             @RequestParam(defaultValue="0")int offset,@RequestParam(defaultValue="20")int limit){return ok(submissions.history(request,stepId,offset,limit));}
@@ -32,7 +32,7 @@ public final class CertificateController {
             @RequestParam long revision,@RequestParam String contentHash,@RequestParam UUID stepId,@RequestParam String sha256,@RequestParam("file")MultipartFile file){
         return receipt(submissions.upload(request,key,new CertificateSubmissionService.Expected(revision,contentHash,stepId),file.getOriginalFilename(),file.getSize(),sha256,file));
     }
-    @GetMapping("/expert/certificate-submissions")ResponseEntity<?> queue(@RequestParam(defaultValue="0")int offset,@RequestParam(defaultValue="20")int limit){return ok(review.queue(offset,limit));}
+    @GetMapping("/expert/certificate-submissions")ResponseEntity<?> queue(@RequestParam(defaultValue="0")int offset,@RequestParam(defaultValue="20")int limit,@RequestParam(defaultValue="PENDING")String status){return ok(review.queue(offset,limit,status));}
     @GetMapping("/expert/certificate-submissions/{id}")ResponseEntity<?> detail(@PathVariable UUID id){return ok(review.detail(id));}
     @PostMapping(value="/expert/certificate-submissions/{id}/decision",consumes="application/json")ResponseEntity<?> decide(@PathVariable UUID id,@RequestHeader("Idempotency-Key")String key,@RequestBody String body){return receipt(review.decide(id,key,parse(body,CertificateReviewService.Decide.class)));}
     @GetMapping({"/employee/certificate-submissions/{id}/file","/expert/certificate-submissions/{id}/file"})ResponseEntity<InputStreamResource> file(@PathVariable UUID id){

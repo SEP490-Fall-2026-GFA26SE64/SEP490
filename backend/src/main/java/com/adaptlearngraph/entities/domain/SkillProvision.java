@@ -8,27 +8,18 @@ public record SkillProvision(List<String> moduleOnlyKnowledgeLevels, List<String
     public SkillProvision {
         moduleOnlyKnowledgeLevels = levels(moduleOnlyKnowledgeLevels);
         certificateOnlyKnowledgeLevels = levels(certificateOnlyKnowledgeLevels);
-        foundationOutcomeCodes = outcomes(foundationOutcomeCodes);
-        intermediateOutcomeCodes = outcomes(intermediateOutcomeCodes);
-        advancedOutcomeCodes = outcomes(advancedOutcomeCodes);
+        foundationOutcomeCodes = List.of();
+        intermediateOutcomeCodes = List.of();
+        advancedOutcomeCodes = List.of();
         if (moduleOnlyKnowledgeLevels.stream().anyMatch(certificateOnlyKnowledgeLevels::contains))
             throw new IllegalArgumentException("Module and certificate modes must be disjoint");
-        for (var level : KnowledgeLevel.values()) {
-            var codes = switch (level) {
-                case FOUNDATION -> foundationOutcomeCodes;
-                case INTERMEDIATE -> intermediateOutcomeCodes;
-                case ADVANCED -> advancedOutcomeCodes;
-            };
-            boolean configured = moduleOnlyKnowledgeLevels.contains(level.name()) || certificateOnlyKnowledgeLevels.contains(level.name());
-            if (configured == codes.isEmpty())
-                throw new IllegalArgumentException("Each configured knowledge level needs outcomes and one provision mode");
-        }
+
     }
     public static SkillProvision empty() { return new SkillProvision(List.of(), List.of(), List.of(), List.of(), List.of()); }
     public static SkillProvision optional(List<String> modules,List<String> certificates,List<String> foundation,List<String> intermediate,List<String> advanced) {
-        if (modules == null && certificates == null && foundation == null && intermediate == null && advanced == null) return null;
-        if (modules == null || certificates == null || foundation == null || intermediate == null || advanced == null)
-            throw new IllegalArgumentException("Supply all five skill provision and outcome lists");
+        if (modules == null && certificates == null) return null;
+        if (modules == null || certificates == null)
+            throw new IllegalArgumentException("Supply both skill provision lists");
         return new SkillProvision(modules,certificates,foundation,intermediate,advanced);
     }
     private static List<String> levels(List<String> values) {

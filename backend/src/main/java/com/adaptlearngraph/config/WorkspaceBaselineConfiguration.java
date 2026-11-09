@@ -327,9 +327,10 @@ public class WorkspaceBaselineConfiguration {
         };
     }
     @Bean CurrentRoleSelectionStore workspaceRoleSelections(org.springframework.beans.factory.BeanFactory beans,
-            com.adaptlearngraph.repository.PostgresAdvisoryLocks locks, ObjectMapper json, PlatformTransactionManager transactions) {
+            com.adaptlearngraph.repository.PostgresAdvisoryLocks locks, ObjectMapper json, PlatformTransactionManager transactions,
+            com.adaptlearngraph.repository.OrganizationMembershipJpaRepository memberships) {
         return new CurrentRoleSelectionStore(com.adaptlearngraph.repository.RoleSelectionRepositories.from(beans::getBean, locks), json,
-                new TransactionTemplate(transactions));
+                new TransactionTemplate(transactions),new com.adaptlearngraph.repository.JpaEmployeeCareerPlacements(memberships));
     }
     @Bean RoleBaselineFlow.Catalog workspaceRoleCatalog(com.adaptlearngraph.repository.Neo4jCypher graph, ObjectMapper json, WorkspaceBaselineResources resources,Environment environment,WorkspaceCatalogFixture fixture,
             com.adaptlearngraph.repository.AuthoredCatalogPort authored) {

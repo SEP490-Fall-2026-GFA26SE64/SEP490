@@ -51,7 +51,6 @@ function OwnedKnowledgeProfile() {
             </>}
             {item.kind === 'EVIDENCE' && <Text variant="body-sm">{item.sourceKind === 'CERTIFICATE' ? copy('Source: approved certificate.', 'Nguồn: chứng chỉ đã được duyệt.') : copy('Source: qualifying module completion and skill assessment.', 'Nguồn: hoàn thành module và đánh giá kỹ năng đủ điều kiện.')}</Text>}
             {item.kind === 'REVIEW' && <Text variant="body-sm">{copy('A later prerequisite assessment identified a review need. Your accepted achievement remains recorded.', 'Một lượt đánh giá tiền đề về sau xác định nhu cầu ôn tập. Thành tích đã được chấp nhận vẫn được giữ.')}</Text>}
-            <details className="text-body-sm text-muted-foreground"><summary className="cursor-pointer font-medium">{copy('Outcomes', 'Đầu ra')} ({item.outcomeCodes.length})</summary><Text variant="caption" className="mt-2 break-words">{item.outcomeCodes.join(', ')}</Text></details>
             {item.attemptId && <div className="mt-auto flex justify-end border-t border-border pt-3"><Link className={buttonVariants({ variant: 'primary', size: 'sm', className: 'gap-2 font-semibold' })} to={attemptPath(item.attemptId)}>{copy('View assessment result', 'Xem kết quả đánh giá')}<ArrowUpRight size={14} aria-hidden="true" /></Link></div>}
           </CardContent>
         </Card>})}</div>}

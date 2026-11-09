@@ -32,7 +32,7 @@ public final class ExcelLearningImport implements LearningImportUseCase {
     private final ObjectMapper json;
     private static final List<String> MODULE_COLUMNS =
             List.of("moduleId", "title", "moduleType", "durationMinutes", "teachings",
-                    "knowledgeLevel", "outcomeCodes");
+                    "knowledgeLevel");
     private static final List<String> LESSON_COLUMNS =
             List.of(
                     "moduleId",
@@ -82,8 +82,7 @@ public final class ExcelLearningImport implements LearningImportUseCase {
                 "moduleId: new code or your released module code. Existing drafts/reviews block the"
                         + " entire batch.",
                 "teachings: JSON array with exactly one object containing skillId. No focus or difficulty.",
-                "knowledgeLevel: FOUNDATION, INTERMEDIATE or ADVANCED. outcomeCodes: JSON string array"
-                        + " matching the approved skill outcomes for that level; the level must allow modules.",
+                "knowledgeLevel: FOUNDATION, INTERMEDIATE or ADVANCED; the level must allow modules.",
                 "TEXT: inline text (Markdown), or markdownPath inside ZIP. VIDEO: UPLOAD plus"
                         + " videoPath, or YOUTUBE/VIMEO plus videoUrl.",
                 "lessonId: stable ID (letters/numbers/hyphens/underscores); preserve it when"
@@ -103,10 +102,8 @@ public final class ExcelLearningImport implements LearningImportUseCase {
                 "Example module",
                 "LESSON_AND_PRACTICE",
                 "10",
-                "100000",
                 "[{\"skillId\":\"REPLACE_SKILL_ID\"}]",
-                "REPLACE_KNOWLEDGE_LEVEL",
-                "[\"REPLACE_APPROVED_OUTCOME_CODE\"]"
+                "REPLACE_KNOWLEDGE_LEVEL"
             };
             for (int i = 0; i < m.length; i++) sample.createCell(i).setCellValue(m[i]);
             var lesson = workbook.getSheet("Lessons").createRow(1);
@@ -326,8 +323,7 @@ public final class ExcelLearningImport implements LearningImportUseCase {
                                         List.of(),
                                         skills,
                                         v.get("knowledgeLevel"),
-                                        json.readValue(v.get("outcomeCodes"), json.getTypeFactory()
-                                                .constructCollectionType(List.class, String.class)));
+                                        List.of());
                         if (documents == null) {
                             documents = new HashMap<>();
                             for (Document d : port.documents(a.organizationId()))

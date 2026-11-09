@@ -44,33 +44,26 @@ public final class Neo4jQuestionBankSkillReader {
     public List<com.adaptlearngraph.entities.domain.QuestionBank.KnowledgeChoice> knowledge(String organizationId) {
         return read("""
                 MATCH (s:MicroSkill {organizationId:$organization}) WHERE s.status='ACTIVE' AND s.reviewStatus='APPROVED'
-                UNWIND [{level:'FOUNDATION',codes:coalesce(s.foundationOutcomeCodes,[]),labels:coalesce(s.foundationOutcomeLabels,[])},
-                    {level:'INTERMEDIATE',codes:coalesce(s.intermediateOutcomeCodes,[]),labels:coalesce(s.intermediateOutcomeLabels,[])},
-                    {level:'ADVANCED',codes:coalesce(s.advancedOutcomeCodes,[]),labels:coalesce(s.advancedOutcomeLabels,[])}] AS k
-                WITH s,k WHERE size(k.codes)>0
-                RETURN s.id AS skill,k.level AS level,k.codes AS codes,k.labels AS labels ORDER BY skill,level LIMIT 10001
-                """,Map.of("organization",organization(organizationId)),row->{
-                    var codes=row.get("codes").asList(v->v.asString());var labels=row.get("labels").asList(v->v.asString());
-                    var choices=new java.util.ArrayList<Choice>();
-                    for(int i=0;i<codes.size();i++)choices.add(new Choice(codes.get(i),i<labels.size()?labels.get(i):codes.get(i)));
-                    return new com.adaptlearngraph.entities.domain.QuestionBank.KnowledgeChoice(row.get("skill").asString(),row.get("level").asString(),choices);
-                });
+                UNWIND ['FOUNDATION','INTERMEDIATE','ADVANCED'] AS level
+                WITH s,level WHERE level IN coalesce(s.moduleOnlyKnowledgeLevels,[])+coalesce(s.certificateOnlyKnowledgeLevels,[])
+                    OR s.provisionMode IN ['MODULE_ONLY','CERTIFICATE_ONLY']
+                RETURN s.id AS skill,level ORDER BY skill,level LIMIT 10001
+                """,Map.of("organization",organization(organizationId)),row->new com.adaptlearngraph.entities.domain.QuestionBank.KnowledgeChoice(row.get("skill").asString(),row.get("level").asString(),List.of()));
     }
-
-    public void requireOutcome(String organizationId,String skill,String level,String outcome) {
-        String property=switch(com.adaptlearngraph.entities.domain.KnowledgeLevel.valueOf(level)) {
-            case FOUNDATION -> "foundationOutcomeCodes";
-            case INTERMEDIATE -> "intermediateOutcomeCodes";
-            case ADVANCED -> "advancedOutcomeCodes";
-        };
+    public String requireKnowledge(String organizationId,String skill,String level) {
+        com.adaptlearngraph.entities.domain.KnowledgeLevel.valueOf(level);
         var found=read("""
-                MATCH (s:MicroSkill {id:$id})
-                WHERE s.organizationId=$organization AND s.status='ACTIVE' AND s.reviewStatus='APPROVED'
-                    AND $outcome IN coalesce(s[$property],[])
-                RETURN s.id AS id
-                """,Map.of("organization",organization(organizationId),"id",skill,"property",property,"outcome",outcome),
-                row->row.get("id").asString());
-        if(found.size()!=1)throw new Failure(400,"Select a configured outcome for this skill and knowledge level");
+                MATCH (s:MicroSkill {id:$id,organizationId:$organization})
+                WHERE s.status='ACTIVE' AND s.reviewStatus='APPROVED'
+                RETURN properties(s) AS skill LIMIT 2
+                """,Map.of("organization",organization(organizationId),"id",skill),row->row.get("skill"));
+        if(found.size()!=1)throw new Failure(400,"Select an owned approved Skill");
+        var s=found.getFirst();
+        var modules=s.get("moduleOnlyKnowledgeLevels").isNull()?List.<String>of():s.get("moduleOnlyKnowledgeLevels").asList(v->v.asString());
+        var certificates=s.get("certificateOnlyKnowledgeLevels").isNull()?List.<String>of():s.get("certificateOnlyKnowledgeLevels").asList(v->v.asString());
+        var mode=com.adaptlearngraph.entities.domain.SkillProvisionMode.resolve(s.get("provisionMode").asString(null),modules,certificates,com.adaptlearngraph.entities.domain.KnowledgeLevel.valueOf(level));
+        if(mode==null || s.get("version").asString("").isBlank())throw new Failure(400,"Configure this Skill and knowledge level before publishing");
+        return s.get("version").asString();
     }
 
     private <T> List<T> read(String query, Map<String, Object> parameters, Function<Record, T> mapper) {

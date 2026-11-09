@@ -1,4 +1,6 @@
 import * as React from 'react'
+import { Link } from 'react-router-dom'
+import { useTranslation } from '../../shared/i18n/LanguageContext'
 import {
   Award,
   Briefcase,
@@ -18,7 +20,7 @@ import {
 } from 'lucide-react'
 import { Heading } from '../../shared/components/typography/Heading'
 import { Badge } from '../../shared/components/ui/Badge'
-import { Button } from '../../shared/components/ui/Button'
+import { Button, buttonVariants } from '../../shared/components/ui/Button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../../shared/components/ui/Card'
 import { Input } from '../../shared/components/ui/Input'
 import { PageHeader } from '../../shared/components/ui/PageHeader'
@@ -47,6 +49,7 @@ interface EmployeeAssignmentData {
 }
 
 export function ProfilePage() {
+  const { language } = useTranslation()
   const { toast } = useToast()
   const session = React.useContext(WorkspaceSessionContext)
   const sessionIdentity = session?.identity
@@ -371,6 +374,7 @@ export function ProfilePage() {
                     {assignment?.jobPositionName || 'Unassigned'}
                   </span>
                 </div>
+                {sessionIdentity?.roles?.includes('EMPLOYEE') && <Link to="/employee/my-mastery" className={buttonVariants({ variant: 'outline', className: 'mt-4 gap-2 text-primary' })}><Award size={16} />{language === 'vi' ? 'Xem hồ sơ kiến thức' : 'View knowledge profile'}</Link>}
               </CardContent>
             </Card>
 

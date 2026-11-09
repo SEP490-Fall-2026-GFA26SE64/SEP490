@@ -1,5 +1,5 @@
 import { workspaceFetch } from './workspaceFetch'
-export interface BankContent { prompt: string; options: string[]; correctAnswer: number | null; skillId: string; skillName: string | null; knowledgeLevel: string | null; outcomeCode: string | null; mandatory: boolean; explanation: string | null }
+export interface BankContent { prompt: string; options: string[]; correctAnswer: number | null; skillId: string; skillName: string | null; knowledgeLevel: string | null; outcomeCode?: string | null; mandatory: boolean; explanation: string | null }
 export interface BankVersion { id: string; number: number; state: 'DRAFT' | 'SUBMITTED' | 'PUBLISHED'; content: BankContent; editedBy: string | null; editedAt: string | null; submittedBy: string | null; submittedAt: string | null; reviewedBy: string | null; reviewedAt: string | null; reason: string | null; viewed: Record<string,string>; publicationSource?: string | null }
 export interface BankQuestion { id: string; code: string; createdBy: string | null; createdAt: string | null; owner: string | null; revision: number; retired: boolean; request: 'RETIRE' | 'REACTIVATE' | null; versions: BankVersion[] }
 export interface BankAudit { id: string; question: string; version: string | null; action: string; actor: string; at: string; reason: string | null; snapshot: BankContent | null }
