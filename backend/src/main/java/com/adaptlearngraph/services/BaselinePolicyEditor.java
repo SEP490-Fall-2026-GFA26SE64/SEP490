@@ -25,7 +25,7 @@ public final class BaselinePolicyEditor {
             int limit=500;var sizes=new LinkedHashMap<String,Integer>();
             for(var group:groups) {
                 var need=group.requirement();
-                int size=need.outcomeCodes().isEmpty()?0:Math.min(500,bank.availableCount(organization,need.skillId(),level.name(),need.outcomeCodes()));
+                int size=group.skillVersion()==null?0:Math.min(500,bank.availableCount(organization,need.skillId(),level.name(),group.skillVersion()));
                 sizes.put(group.skillName(),size);limit=Math.min(limit,size);
             }
             final int bound=limit;

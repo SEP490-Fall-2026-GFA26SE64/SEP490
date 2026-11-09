@@ -27,7 +27,7 @@ import { CatalogModuleDetails } from './CatalogModuleDetails'
 type Mode = 'modules' | 'content' | 'approvals' | 'learning'
 const control = 'min-h-10 w-full rounded-lg border border-border bg-card px-3 py-2 text-[length:var(--text-body-sm)] text-foreground focus:outline-none focus:ring-2 focus:ring-primary'
 const latest = (doc: ModuleDocument) => doc.revisions[doc.revisions.length - 1]
-const initialForm = (): ModuleSave => ({ title: '', moduleType: 'LESSON_AND_PRACTICE', contentId: '', duration: 1, teachings: [{ skillId: '' }], knowledgeLevel: '', outcomeCodes: [] })
+const initialForm = (): ModuleSave => ({ title: '', moduleType: 'LESSON_AND_PRACTICE', contentId: '', duration: 1, teachings: [{ skillId: '' }], knowledgeLevel: '' })
 const statusVariant = (state: string | null | undefined): BadgeProps['variant'] => {
   if (['APPROVED', 'ACTIVE', 'RELEASED'].includes(state ?? '')) return 'success'
   if (['SUBMITTED', 'NEEDS_EXPERT_REVIEW', 'PUBLISH_PENDING', 'ARCHIVE_PENDING', 'ARCHIVE_REQUESTED'].includes(state ?? '')) return 'warning'
@@ -82,7 +82,6 @@ function OwnedModuleManagementWorkspace({ mode }: { mode: Mode }) {
   const [conflict, setConflict] = useState<ModuleDocument | null>(null)
   const [editing, setEditing] = useState(false)
   const [form, setForm] = useState<ModuleSave>(initialForm)
-  const [outcomesDraft, setOutcomesDraft] = useState('')
   const [moduleLessons, setModuleLessons] = useState<LearningLesson[]>([newLesson('TEXT')])
   const [contentOpen, setContentOpen] = useState(false)
   const [contentForm, setContentForm] = useState({ title: '', markdown: '', lessons: [newLesson('TEXT')] as LearningLesson[] })
@@ -165,9 +164,8 @@ function OwnedModuleManagementWorkspace({ mode }: { mode: Mode }) {
     if (doc) {
       const p = latest(doc).payload
       setForm({ title: p.title, moduleType: p.moduleType, contentId: p.content.id, duration: p.duration,
-        teachings: p.teachings.length === 1 ? [{ skillId: p.teachings[0].skillId }] : [{ skillId: '' }], knowledgeLevel: p.knowledgeLevel ?? '', outcomeCodes: p.outcomeCodes ?? [] })
-      setOutcomesDraft((p.outcomeCodes ?? []).join(', '))
-    } else { setForm(initialForm()); setOutcomesDraft('') }
+        teachings: p.teachings.length === 1 ? [{ skillId: p.teachings[0].skillId }] : [{ skillId: '' }], knowledgeLevel: p.knowledgeLevel ?? '' })
+    } else { setForm(initialForm()) }
     setModuleLessons(doc ? latest(doc).payload.content.lessons ?? [] : [newLesson('TEXT')])
     setEditing(true)
   }
@@ -183,7 +181,7 @@ function OwnedModuleManagementWorkspace({ mode }: { mode: Mode }) {
     reviewStatus: copy('Review status', 'Trạng thái duyệt'), reviewedBy: copy('Reviewed by', 'Người duyệt'), reviewedAt: copy('Reviewed at', 'Thời điểm duyệt'),
     title: copy('Title', 'Tiêu đề'), moduleType: copy('Module type', 'Loại module'), contentUri: copy('Content reference', 'Tham chiếu nội dung'),
     contentType: copy('Content format', 'Định dạng nội dung'), contentVersion: copy('Content version', 'Phiên bản nội dung'), duration: copy('Duration (minutes)', 'Thời lượng (phút)'),
-    knowledgeLevel: copy('Knowledge level', 'Mức kiến thức'), skillVersion: copy('Skill version', 'Phiên bản kỹ năng'), outcomeCodes: copy('Covered outcomes', 'Đầu ra được đáp ứng'),
+    knowledgeLevel: copy('Knowledge level', 'Mức kiến thức'), skillVersion: copy('Skill version', 'Phiên bản kỹ năng'),
     content: copy('Learning content', 'Nội dung học'), teachings: copy('Skills taught', 'Kỹ năng được dạy'),
   }
   const stateLabels: Record<string, string> = {
@@ -347,10 +345,9 @@ function OwnedModuleManagementWorkspace({ mode }: { mode: Mode }) {
           <Field label={copy('Duration (minutes)', 'Thời lượng (phút)')}><Input required type="number" min={1} step={1} value={form.duration} onChange={e => setForm({ ...form, duration: Number(e.target.value) })} /></Field></div>
         <Heading level={3}>{copy('Skill taught', 'Kỹ năng được dạy')}</Heading>
         <p className="text-body-sm text-muted-foreground">{copy('Each module teaches one skill. A skill may have several modules.', 'Mỗi module dạy một kỹ năng. Một kỹ năng có thể có nhiều module.')}</p>
-        <Field label={copy('Skill', 'Kỹ năng')}><select required disabled={!moduleSkills.length} aria-describedby="module-skill-eligibility" className={control} value={form.teachings[0]?.skillId ?? ''} onChange={e => { setForm({ ...form, teachings: [{ skillId: e.target.value }], knowledgeLevel: '', outcomeCodes: [] }); setOutcomesDraft('') }}><option value="">{copy('Select skill', 'Chọn kỹ năng')}</option>{moduleSkills.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}</select></Field>
+        <Field label={copy('Skill', 'Kỹ năng')}><select required disabled={!moduleSkills.length} aria-describedby="module-skill-eligibility" className={control} value={form.teachings[0]?.skillId ?? ''} onChange={e => { setForm({ ...form, teachings: [{ skillId: e.target.value }], knowledgeLevel: '' }) }}><option value="">{copy('Select skill', 'Chọn kỹ năng')}</option>{moduleSkills.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}</select></Field>
         <p id="module-skill-eligibility" role="status" className="text-body-sm text-muted-foreground">{!moduleSkills.length ? copy('No active, approved skills are available in this organization. Approve and activate a skill before creating a module.', 'Tổ chức chưa có kỹ năng đang hoạt động và đã được duyệt. Hãy duyệt và kích hoạt kỹ năng trước khi tạo module.') : form.teachings[0]?.skillId && !moduleSkills.some(skill => skill.id === form.teachings[0].skillId) ? copy('The selected skill is no longer eligible. Choose an active, approved skill.', 'Kỹ năng đã chọn không còn đủ điều kiện. Hãy chọn kỹ năng đang hoạt động và đã được duyệt.') : copy('Only active, approved skills in this organization are listed.', 'Chỉ hiển thị kỹ năng thuộc tổ chức, đang hoạt động và đã được duyệt.')}</p>
-        <Field label={copy('Knowledge level', 'Mức kiến thức')}><select required className={control} value={form.knowledgeLevel ?? ''} onChange={e => { setForm({ ...form, knowledgeLevel: e.target.value, outcomeCodes: [] }); setOutcomesDraft('') }}><option value="">{copy('Select level', 'Chọn mức')}</option><option value="FOUNDATION">{copy('Foundation', 'Nền tảng')}</option><option value="INTERMEDIATE">{copy('Intermediate', 'Trung cấp')}</option><option value="ADVANCED">{copy('Advanced', 'Nâng cao')}</option></select></Field>
-        <Field label={copy('Covered outcomes', 'Đầu ra được đáp ứng')}><Input required value={outcomesDraft} placeholder={copy('Configured outcome codes, separated by commas', 'Mã đầu ra đã cấu hình, phân cách bằng dấu phẩy')} onChange={e => { setOutcomesDraft(e.target.value); setForm({ ...form, outcomeCodes: e.target.value.split(',').map(value => value.trim()).filter(Boolean) }) }} /></Field>
+        <Field label={copy('Knowledge level', 'Mức kiến thức')}><select required className={control} value={form.knowledgeLevel ?? ''} onChange={e => { setForm({ ...form, knowledgeLevel: e.target.value }) }}><option value="">{copy('Select level', 'Chọn mức')}</option><option value="FOUNDATION">{copy('Foundation', 'Nền tảng')}</option><option value="INTERMEDIATE">{copy('Intermediate', 'Trung cấp')}</option><option value="ADVANCED">{copy('Advanced', 'Nâng cao')}</option></select></Field>
         <LearningLessonsEditor onBusyChange={setContentBusy} disabled={busy || contentBusy} lessons={moduleLessons} onChange={setModuleLessons} />
         </fieldset>
         <DialogFooter><Button type="button" variant="outline" disabled={busy || contentBusy} onClick={() => { setEditing(false); setSelected(null) }}>{copy('Cancel', 'Hủy')}</Button><Button type="submit" disabled={busy || contentBusy || !moduleSkills.some(skill => skill.id === form.teachings[0]?.skillId)}>{copy('Save draft', 'Lưu bản nháp')}</Button></DialogFooter>
@@ -369,7 +366,7 @@ function OwnedModuleManagementWorkspace({ mode }: { mode: Mode }) {
         </section>}<p>{copy('Released revision', 'Phiên bản đã phát hành')}: {selected.releasedRevision ?? '—'}</p>
         {selected.revisions.map(revision => <section key={revision.number} className="space-y-3 rounded-lg border border-border p-3"><Heading level={3} size="card">{copy('Revision', 'Phiên bản')} {revision.number} · {stateLabels[revision.state] ?? revision.state}</Heading>
           <p>{copy('Edited by', 'Người sửa')}: {person(revision.editedBy)} · {formatTime(revision.editedAt)}</p><p>{copy('Decision by', 'Người quyết định')}: {revision.decidedBy ? person(revision.decidedBy) : '—'} · {formatTime(revision.decidedAt)}</p>{revision.feedback && <p>{revision.feedback}</p>}
-          <dl className="grid gap-2 sm:grid-cols-2">{Object.entries({ ...revision.payload.metadata, title: revision.payload.title, moduleType: revision.payload.moduleType, contentUri: revision.payload.contentUri, contentType: revision.payload.contentType, contentVersion: revision.payload.contentVersion, duration: revision.payload.duration, knowledgeLevel: revision.payload.knowledgeLevel, skillVersion: revision.payload.skillVersion, outcomeCodes: revision.payload.outcomeCodes.join(", ") }).map(([key, value]) => <div key={key}><dt className="text-muted-foreground">{fieldLabels[key] ?? key}</dt><dd className="break-all">{typeof value === 'string' ? stateLabels[value] ?? value : value ?? copy('Not reviewed', 'Chưa duyệt')}</dd></div>)}</dl>
+          <dl className="grid gap-2 sm:grid-cols-2">{Object.entries({ ...revision.payload.metadata, title: revision.payload.title, moduleType: revision.payload.moduleType, contentUri: revision.payload.contentUri, contentType: revision.payload.contentType, contentVersion: revision.payload.contentVersion, duration: revision.payload.duration, knowledgeLevel: revision.payload.knowledgeLevel, skillVersion: revision.payload.skillVersion }).map(([key, value]) => <div key={key}><dt className="text-muted-foreground">{fieldLabels[key] ?? key}</dt><dd className="break-all">{typeof value === 'string' ? stateLabels[value] ?? value : value ?? copy('Not reviewed', 'Chưa duyệt')}</dd></div>)}</dl>
           {revision.payload.teachings.map(t => <details key={t.skillId} className="rounded bg-muted p-3"><summary>{t.skillName}</summary><dl className="mt-2 space-y-1">{Object.entries(t.metadata).map(([key, value]) => <div key={key} className="break-all">{fieldLabels[key] ?? key}: {value ? stateLabels[value] ?? value : '—'}</div>)}</dl></details>)}
           <LearningLessonList lessons={revision.payload.content.lessons} headingLevel={4} />
         </section>)}

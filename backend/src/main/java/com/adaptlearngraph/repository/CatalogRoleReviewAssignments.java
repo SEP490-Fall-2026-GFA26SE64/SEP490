@@ -73,7 +73,7 @@ public final class CatalogRoleReviewAssignments implements ReviewAssignments {
     }
     @Override public Set<UUID> assignedCertificatePathways(Actor actor) {
         authorize(actor);if(certificates==null)return assignedPathways(actor);
-        var rows=certificates.pendingRoles(actor.organizationId(),(long)maximum+1).stream()
+        var rows=certificates.reviewRoles(actor.organizationId(),(long)maximum+1).stream()
                 .map(row->new Candidate(PersistenceValues.uuid(row[0]),(String)row[1])).toList();
         if(rows.size()>maximum)throw new Failure(503,"REVIEW_ASSIGNMENT_QUERY_LIMIT",false);
         var roles=new HashSet<String>();rows.stream().filter(row->allowed(row.role())).forEach(row->roles.add(row.role()));

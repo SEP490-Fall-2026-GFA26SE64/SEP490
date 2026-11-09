@@ -55,19 +55,18 @@ public final class QuestionBankService implements QuestionBankUseCase {
         require(c.correctAnswer()==null||(c.correctAnswer()>=0&&c.correctAnswer()<4),400,"Choose one correct answer");
         String level=c.knowledgeLevel()==null||c.knowledgeLevel().isBlank()?null:c.knowledgeLevel();
         require(level==null||Set.of("FOUNDATION","INTERMEDIATE","ADVANCED").contains(level),400,"Invalid knowledge level");
-        String outcome=c.outcomeCode()==null||c.outcomeCode().isBlank()?null:c.outcomeCode().strip();
-        require(outcome==null||outcome.matches("[A-Za-z0-9][A-Za-z0-9_.:-]{0,159}"),400,"Invalid assessed outcome code");
-        if(level!=null && outcome!=null)catalog.requireOutcome(a,skill,level,outcome);
+        String skillVersion=level==null?null:catalog.requireKnowledge(a,skill,level);
         String explanation=c.explanation()==null?"":c.explanation().strip(); require(explanation.length()<=20000,400,"Explanation too long");
         if(complete) {
             require(options.stream().noneMatch(String::isBlank)&&options.stream().map(this::normalized).distinct().count()==4,400,"Four nonempty distinct choices required");
-            require(c.correctAnswer()!=null&&level!=null&&outcome!=null&&!explanation.isBlank(),400,"Answer, knowledge level, assessed outcome and explanation required before submission");
+            require(c.correctAnswer()!=null&&level!=null&&!explanation.isBlank(),400,"Answer, knowledge level and explanation required before submission");
         }
-        return new Content(prompt,options,c.correctAnswer(),skill,name,null,explanation,level,outcome,c.mandatory());
+        return new Content(prompt,options,c.correctAnswer(),skill,name,null,explanation,level,null,c.mandatory(),skillVersion);
     }
     private void publishedEligibility(Actor a,Content original) {
         Content c=content(a,original,false);
-        require(c.options().stream().noneMatch(String::isBlank)&&c.options().stream().map(this::normalized).distinct().count()==4&&c.correctAnswer()!=null&&c.knowledgeLevel()!=null&&c.outcomeCode()!=null,409,"Published content needs a reviewed knowledge mapping before reactivation");
+        require(c.options().stream().noneMatch(String::isBlank)&&c.options().stream().map(this::normalized).distinct().count()==4&&c.correctAnswer()!=null&&c.knowledgeLevel()!=null,409,"Published content needs a reviewed knowledge mapping before reactivation");
+        require(original.skillVersion()==null || original.skillVersion().equals(c.skillVersion()),409,"Skill version changed; publish a reviewed successor before reactivation");
         // Historical explanations may legitimately be absent; never manufacture them or mutate a published definition.
     }
     private String normalized(String s) { return s.strip().replaceAll("\\s+"," ").toLowerCase(Locale.ROOT); }

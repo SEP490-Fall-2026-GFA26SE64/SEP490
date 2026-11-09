@@ -14,18 +14,18 @@ public final class RequirementPathway {
             text(skillId);text(skillName);Objects.requireNonNull(knowledgeLevel);Objects.requireNonNull(provision);
             if(provision!=Provision.UNCONFIGURED)text(skillVersion);
             var codes=outcomeCodes==null?List.<String>of():outcomeCodes;
-            outcomeCodes=provision==Provision.UNCONFIGURED && codes.isEmpty()?List.of():RuleAssessment.unique(codes).stream().sorted().toList();
+            outcomeCodes=List.copyOf(codes);
         }
         public String key(){return skillId+"\n"+knowledgeLevel;}
-        public String proofKey(){return InitialIdentity.hash("exact-knowledge-proof",Arrays.asList(skillId,knowledgeLevel,skillVersion,outcomeCodes));}
+        public String proofKey(){return InitialIdentity.hash("exact-knowledge-proof",Arrays.asList(skillId,knowledgeLevel,skillVersion));}
     }
     public record Option(String moduleId,int moduleRevision,String contentVersion,String title,List<String> outcomeCodes,String skillVersion) {
         public Option {
             text(moduleId);text(contentVersion);text(title);text(skillVersion);if(moduleRevision<1)throw new IllegalArgumentException("Module revision required");
-            outcomeCodes=RuleAssessment.unique(outcomeCodes).stream().sorted().toList();
+            outcomeCodes=outcomeCodes==null?List.of():List.copyOf(outcomeCodes);
         }
         public String key(){return moduleId+"\n"+contentVersion;}
-        public boolean matches(Requirement requirement){return skillVersion.equals(requirement.skillVersion()) && outcomeCodes.containsAll(requirement.outcomeCodes());}
+        public boolean matches(Requirement requirement){return skillVersion.equals(requirement.skillVersion());}
     }
     public record AssessedSource(UUID attemptId,UUID groupId,UUID dependentStepId,UUID requestId) {
         public AssessedSource(UUID attemptId,UUID groupId,UUID dependentStepId){this(attemptId,groupId,dependentStepId,null);}

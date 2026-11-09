@@ -114,8 +114,6 @@ public final class Neo4jModuleCatalogGraph {
     private KnowledgeDefinition knowledge(String organization,String skill,String level,List<String> outcomes) {
         KnowledgeLevel knowledge;
         try{knowledge=KnowledgeLevel.valueOf(level);}catch(RuntimeException invalid){throw new Failure(400,"Select a knowledge level");}
-        if(outcomes==null || outcomes.isEmpty() || new java.util.HashSet<>(outcomes).size()!=outcomes.size()
-                || outcomes.stream().anyMatch(o->o==null || o.isBlank() || o.length()>160))throw new Failure(400,"Select unique module outcomes");
         var rows=client.query("""
                 MATCH (s:MicroSkill {id:$skill,organizationId:$organization})
                 WHERE s.status='ACTIVE' AND s.reviewStatus='APPROVED' RETURN properties(s) AS skill LIMIT 2
@@ -132,12 +130,8 @@ public final class Neo4jModuleCatalogGraph {
                     !=com.adaptlearngraph.entities.domain.SkillProvisionMode.MODULE_ONLY)
                 throw new Failure(409,"This skill level is not configured for module learning");
         } catch(IllegalArgumentException invalid) {throw new Failure(409,"Invalid skill-level provision configuration");}
-        String property=switch(knowledge){case FOUNDATION->"foundationOutcomeCodes";case INTERMEDIATE->"intermediateOutcomeCodes";case ADVANCED->"advancedOutcomeCodes";};
-        var configured=s.get(property).isNull()?List.<String>of():s.get(property).asList(Value::asString);
-        if(configured.isEmpty() || new java.util.HashSet<>(configured).size()!=configured.size()
-                || !new java.util.HashSet<>(configured).equals(new java.util.HashSet<>(outcomes)))throw new Failure(409,"Module outcomes must cover the configured skill-level outcomes");
         String version=catalogText(s.get("version"));if(version==null || version.isBlank())throw new Failure(409,"Skill version is not configured");
-        return new KnowledgeDefinition(knowledge,version,outcomes.stream().sorted().toList());
+        return new KnowledgeDefinition(knowledge,version,List.of());
     }
 
     public void project(Document doc, Revision revision, boolean archived) {
@@ -146,7 +140,7 @@ public final class Neo4jModuleCatalogGraph {
         Map<String, Object> properties = metadata(p.metadata());
         properties.putAll(Map.of("title", p.title(), "moduleType", p.moduleType(), "contentUri", p.contentUri(),
                 "contentType", p.contentType(), "contentVersion", p.contentVersion(), "duration", p.duration()));
-        if(p.knowledgeLevel()!=null)properties.putAll(Map.of("knowledgeLevel",p.knowledgeLevel().name(),"outcomeCodes",p.outcomeCodes(),"skillVersion",p.skillVersion()));
+        if(p.knowledgeLevel()!=null)properties.putAll(Map.of("knowledgeLevel",p.knowledgeLevel().name(),"skillVersion",p.skillVersion()));
         else if(!archived)throw new Failure(409,"Configure module knowledge scope before publication");
         List<Map<String, Object>> teachings = p.teachings().stream().map(t -> {
             Map<String, Object> props = metadata(t.metadata());
@@ -164,7 +158,7 @@ public final class Neo4jModuleCatalogGraph {
                 Map<String, Object> expected = metadata(source.metadata());
                 expected.putAll(Map.of("title", source.title(), "moduleType", source.moduleType(), "contentUri", source.contentUri(),
                         "contentType", source.contentType(), "contentVersion", source.contentVersion(), "duration", source.duration()));
-                if(source.knowledgeLevel()!=null)expected.putAll(Map.of("knowledgeLevel",source.knowledgeLevel().name(),"outcomeCodes",source.outcomeCodes(),"skillVersion",source.skillVersion()));
+                if(source.knowledgeLevel()!=null)expected.putAll(Map.of("knowledgeLevel",source.knowledgeLevel().name(),"skillVersion",source.skillVersion()));
                 var originalTeachings = source.teachings().stream().map(t -> {
                     Map<String, Object> props = metadata(t.metadata());
                     return Map.<String, Object>of("skillId", t.skillId(), "props", props);

@@ -62,7 +62,15 @@ public final class ScopedAssessmentPolicyService {
             // Scoped version uniqueness is additionally enforced by the database index.
             locks.lock("ASSESSMENT-RULE-POLICY\n"+a.organizationId()+"\n"+purpose);
             if(!a.equals(actor(purpose)))throw new Failure(403,"FORBIDDEN");
-            T result=work.get();if(!a.equals(actor(purpose)))throw new Failure(403,"FORBIDDEN");return result;
+            T result=work.get();if(!a.equals(actor(purpose)))throw new Failure(403,"FORBIDDEN");
+            // Recheck current Role responsibility on reads and exact receipt replays too.
+            if(result instanceof Workspace workspace)require(a,purpose,workspace.scope().key());
+            if(result instanceof Directory directory && purpose==Purpose.SKILL_ASSESSMENT) {
+                var allowed=catalog.discoverForEditor(a.organizationId(),purpose,a.accountId()).scopes().stream()
+                        .map(Scope::key).collect(java.util.stream.Collectors.toSet());
+                if(directory.choices().stream().anyMatch(choice->!allowed.contains(choice.key())))throw new Failure(403,"FORBIDDEN");
+            }
+            return result;
         });
     }
     public Directory directory(Purpose purpose,String search,String owner,String level,String filter,int page,int size) {
@@ -70,7 +78,7 @@ public final class ScopedAssessmentPolicyService {
         if(search.length()>200 || owner.length()>200 || level.length()>200 || !Set.of("","UNCONFIGURED","DRAFT","ACTIVE","HISTORY").contains(filter)
                 || !level.isEmpty() && owner.isEmpty())throw new Failure(400,"INVALID_REQUEST");
         return locked(a,purpose,()->{
-            var discovery=catalog.discover(a.organizationId(),purpose);var all=discovery.scopes();var summaries=scopes.summaries(a.organizationId(),purpose.name());
+            var discovery=catalog.discoverForEditor(a.organizationId(),purpose,a.accountId());var all=discovery.scopes();var summaries=scopes.summaries(a.organizationId(),purpose.name());
             if(summaries.size()>10000)throw new Failure(422,"CATALOG_CAPACITY_EXCEEDED");
             var states=new HashMap<String,ScopedAssessmentPolicyJpaRepository.Summary>();summaries.forEach(s->states.put(s.getScopeKey(),s));
             var rows=new ArrayList<Row>();String query=search.strip().toLowerCase(Locale.ROOT);
@@ -222,16 +230,11 @@ public final class ScopedAssessmentPolicyService {
         var result=new ArrayList<GroupCapacity>();
         for(var group:scope.groups()) {
             var need=group.requirement();
-            var pool=bank.eligible(organization,need.skillId(),need.knowledgeLevel().name(),need.outcomeCodes(),maximum+1);
+            var pool=bank.eligible(organization,need.skillId(),need.knowledgeLevel().name(),group.skillVersion(),maximum+1);
             int mandatory=(int)pool.stream().filter(AssessmentItemKnowledgeMappingJpaRepository.Candidate::getMandatory).count();
             int minimum=mandatory;
-            boolean covered=!need.outcomeCodes().isEmpty();
-            for(String outcome:need.outcomeCodes()) {
-                if(pool.stream().noneMatch(c->outcome.equals(c.getOutcomeCode())))covered=false;
-                if(pool.stream().noneMatch(c->c.getMandatory() && outcome.equals(c.getOutcomeCode())))minimum++;
-            }
             result.add(new GroupCapacity(need.skillId(),need.knowledgeLevel(),Math.max(1,minimum),
-                    covered && pool.size()<=maximum?Math.min(500,pool.size()):0,mandatory));
+                    pool.size()<=maximum?Math.min(500,pool.size()):0,mandatory));
         }
         return List.copyOf(result);
     }
@@ -250,26 +253,21 @@ public final class ScopedAssessmentPolicyService {
         if(!scope.ready())throw new Failure(422,"SCOPE_REQUIREMENTS_NOT_READY");
         int total=0;
         for(var group:scope.groups()) {
-            if(group.requirement().outcomeCodes().isEmpty())throw new Failure(422,"ASSESSMENT_OUTCOMES_NOT_CONFIGURED");
             var rule=policy.require(group.requirement().assessmentRequirement());total+=rule.totalCount();if(total>maximum)throw new Failure(422,"PAPER_CAPACITY_EXCEEDED");
-            var pool=bank.eligible(a.organizationId(),group.requirement().skillId(),group.requirement().knowledgeLevel().name(),group.requirement().outcomeCodes(),maximum+1);
+            var pool=bank.eligible(a.organizationId(),group.requirement().skillId(),group.requirement().knowledgeLevel().name(),group.skillVersion(),maximum+1);
             long mandatory=scope.purpose()==Purpose.BASELINE?0:pool.stream().filter(AssessmentItemKnowledgeMappingJpaRepository.Candidate::getMandatory).count();
             if(pool.size()>maximum)throw new Failure(422,"BANK_QUERY_LIMIT_EXCEEDED");
             long minimum=mandatory;
-            for(String outcome:group.requirement().outcomeCodes()) {
-                if(pool.stream().noneMatch(c->c.getOutcomeCode().equals(outcome)))throw new Failure(422,"INSUFFICIENT_APPROVED_GROUP_BANK");
-                if(scope.purpose()==Purpose.BASELINE || pool.stream().noneMatch(c->c.getMandatory() && c.getOutcomeCode().equals(outcome)))minimum++;
-            }
             if(pool.size()<rule.totalCount() || minimum>rule.totalCount())throw new Failure(422,"INSUFFICIENT_APPROVED_GROUP_BANK");
         }
     }
     private Scope require(SubscriptionAccessPolicy.Actor a,Purpose purpose,String key) {
         if(key==null || !key.matches("[0-9a-f]{64}"))throw new Failure(400,"INVALID_REQUEST");
-        return catalog.scopes(a.organizationId(),purpose).stream().filter(s->s.key().equals(key)).findFirst().orElseThrow(()->new Failure(404,"CONFIGURATION_SCOPE_NOT_FOUND"));
+        return catalog.discoverForEditor(a.organizationId(),purpose,a.accountId()).scopes().stream().filter(s->s.key().equals(key)).findFirst().orElseThrow(()->new Failure(404,"CONFIGURATION_SCOPE_NOT_FOUND"));
     }
     private static Choice choice(Scope s){return new Choice(s.key(),s.ownerId(),s.ownerName(),s.levelId(),s.levelName(),s.rank(),s.ready());}
     private long revision(SubscriptionAccessPolicy.Actor a,Purpose p,String key){return scopes.revision(a.organizationId(),p.name(),key).orElse(0L);}
-    private static void current(Scope scope,String hash){if(!scope.catalogHash().equals(hash))throw new Failure(409,"POLICY_CATALOG_CHANGED");}
+    private static void current(Scope scope,String hash){if(!scope.matchesCatalog(hash))throw new Failure(409,"POLICY_CATALOG_CHANGED");}
     private static void bounds(int page,int size){if(page<0 || page>100000 || size<1 || size>100)throw new Failure(400,"INVALID_REQUEST");}
     private String write(Object value){try{return json.writeValueAsString(value);}catch(java.io.IOException invalid){throw new Failure(503,"POLICY_INTEGRITY_FAILURE");}}
     private <T>T read(String body,Class<T> type){try{return json.readValue(body,type);}catch(java.io.IOException invalid){throw new Failure(503,"POLICY_INTEGRITY_FAILURE");}}

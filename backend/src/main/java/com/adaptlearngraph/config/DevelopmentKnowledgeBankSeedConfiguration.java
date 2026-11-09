@@ -22,7 +22,8 @@ import org.springframework.transaction.support.TransactionTemplate;
 @Profile("local & workspace-development & knowledge-bank-seed & !prod")
 @ConditionalOnProperty(name="question-bank.development-seed.enabled",havingValue="true")
 public class DevelopmentKnowledgeBankSeedConfiguration {
-    private static final String MANIFEST_HASH="a4939e021c953c450ade4b5782048ca7bd56338e8832005de052ec2c7f44b5c0";
+    private static final String MANIFEST_HASH="c484c658c292ab1ee3eb51d35436ecdd5122a79c82bbfdf6eabf751bb9abfedb";
+    private static final String MANIFEST_CRLF_HASH="5ea765a2876ec27dd7509e7aa8e692f76b605aacdb1efe178020ac35b6a5e7b7";
     private static final UUID ORGANIZATION=MainDevelopmentBankSeed.ORGANIZATION;
     private static UUID id(String name){return UUID.nameUUIDFromBytes(("development-knowledge-bank:v1:"+name).getBytes(StandardCharsets.UTF_8));}
     @Bean ApplicationRunner developmentKnowledgeBankSeed(ObjectMapper json,Neo4jCypher graph,DevelopmentSeedJpaRepository identities,
@@ -32,7 +33,7 @@ public class DevelopmentKnowledgeBankSeedConfiguration {
             if(!com.adaptlearngraph.constants.DevelopmentWorkspace.enabled(environment))throw new IllegalStateException("Development fixture gate required");
             byte[] bytes;
             try(var input=getClass().getResourceAsStream("/db/seed/knowledge-question-bank.json")){if(input==null)throw new IllegalStateException("Knowledge seed missing");bytes=input.readAllBytes();}
-            require(java.util.HexFormat.of().formatHex(java.security.MessageDigest.getInstance("SHA-256").digest(bytes)).equals(MANIFEST_HASH),"Knowledge seed source drift");
+            require(Set.of(MANIFEST_HASH,MANIFEST_CRLF_HASH).contains(java.util.HexFormat.of().formatHex(java.security.MessageDigest.getInstance("SHA-256").digest(bytes))),"Knowledge seed source drift");
             var manifest=json.readTree(bytes);
             require(manifest.path("developmentOnly").asBoolean() && "DEVELOPMENT_KNOWLEDGE_BANK_V1".equals(manifest.path("format").asText())
                     && id("publisher").toString().equals(manifest.path("publisherId").asText()) && manifest.path("items").size()==711,"Invalid knowledge seed manifest");
@@ -62,12 +63,12 @@ public class DevelopmentKnowledgeBankSeedConfiguration {
                         try{content=json.treeToValue(entry.path("content"),Content.class);}catch(Exception invalid){throw new IllegalStateException("Invalid seed content",invalid);}
                         require(unique.add(questionId) && content.options().size()==4 && new HashSet<>(content.options()).size()==4
                                 && content.options().stream().noneMatch(String::isBlank) && content.correctAnswer()!=null && content.correctAnswer()>=0 && content.correctAnswer()<4
-                                && content.knowledgeLevel()!=null && content.outcomeCode()!=null && !content.explanation().isBlank() && !content.mandatory(),"Incomplete knowledge seed question");
+                                && content.knowledgeLevel()!=null && content.skillVersion()!=null && !content.explanation().isBlank() && !content.mandatory(),"Incomplete knowledge seed question");
                         require(Set.of("FOUNDATION","INTERMEDIATE","ADVANCED").contains(content.knowledgeLevel()),"Invalid seed knowledge level");
                         groups.merge(content.skillId()+"\n"+content.knowledgeLevel(),1,Integer::sum);
                         var existing=bank.questions.stream().filter(q->q.id.equals(questionId)).findFirst();
                         if(existing.isPresent()) {
-                            require(existing.get().versions.stream().anyMatch(v->v.id.equals(versionId) && "PUBLISHED".equals(v.state) && content.equals(v.content)
+                            require(existing.get().versions.stream().anyMatch(v->v.id.equals(versionId) && "PUBLISHED".equals(v.state) && sameSeedContent(content,v.content)
                                     && "DEVELOPMENT_SEED".equals(v.publicationSource)),"Existing seed version changed; preserve authored data");
                             continue; // Successors, retirement and reassignment are never reset.
                         }
@@ -93,6 +94,11 @@ public class DevelopmentKnowledgeBankSeedConfiguration {
             }
             context.close();
         };
+    }
+    private static boolean sameSeedContent(Content expected,Content actual) {
+        if(expected.equals(actual))return true;
+        if(actual.skillVersion()!=null)return false;
+        return expected.equals(new Content(actual.prompt(),actual.options(),actual.correctAnswer(),actual.skillId(),actual.skillName(),actual.difficulty(),actual.explanation(),actual.knowledgeLevel(),null,actual.mandatory(),expected.skillVersion()));
     }
     private static void require(boolean condition,String message){if(!condition)throw new IllegalStateException(message);}
 }

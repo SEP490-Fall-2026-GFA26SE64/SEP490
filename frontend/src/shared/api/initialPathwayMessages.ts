@@ -25,6 +25,7 @@ export function pathwayMessage(error: unknown, t: (key: string) => string): stri
   if (e && ['INVALID_CERTIFICATE_UPLOAD', 'FILE_HASH_MISMATCH', 'PRIVATE_UPLOAD_REJECTED', 'FILE_EXCEEDS_CURRENT_UPLOAD_LIMIT'].includes(e.code)) return t('certificates.invalidFile')
   if (e?.code === 'CERTIFICATE_REVIEW_PENDING') return t('certificates.pending')
   if (e?.code === 'REQUIREMENT_ALREADY_ACHIEVED') return t('rulePathway.official')
+  if (e?.code === 'REQUIREMENT_BYPASS_NOT_ALLOWED') return t('rulePathway.bypassHelp')
   if (e?.code === 'CERTIFICATE_ALREADY_ASSIGNED') return t('certificates.alreadyAssigned')
   if (e?.code === 'CERTIFICATE_PROVISION_REQUIRED') return t('certificates.description')
   const key = e?.code === 'BASELINE_REQUIRED' ? 'baseline' : e?.status === 401 || e?.status === 403 ? 'denied' : e?.status === 409 ? 'stale' : e?.code.endsWith('NOT_CONFIGURED') ? 'setup' : 'unavailable'

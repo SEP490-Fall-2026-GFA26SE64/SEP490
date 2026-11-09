@@ -23,5 +23,6 @@ public record MicroSkillNode(
         @Property("certificateOnlyKnowledgeLevels") java.util.List<String> certificateOnlyKnowledgeLevels,
         @Property("foundationOutcomeCodes") java.util.List<String> foundationOutcomeCodes,
         @Property("intermediateOutcomeCodes") java.util.List<String> intermediateOutcomeCodes,
-        @Property("advancedOutcomeCodes") java.util.List<String> advancedOutcomeCodes) {
+        @Property("advancedOutcomeCodes") java.util.List<String> advancedOutcomeCodes,
+        @Property("provisionMode") String provisionMode) {
 }

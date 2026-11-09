@@ -6,6 +6,8 @@ Source checkpoint: HEAD `61d334c`, 2026-11-07. Confirmed contract and source imp
 
 ## Current Scope Alignment
 
+Updated2026-11-09: the view now includes dependency-based display ordering, explicit per-module Open/Resume/Retake/history, certificate success colors based on FULFILLED, and separated certificate reference/submission controls. Expert Certificates is a dedicated sidebar workspace with catalog and pending/review-history views. The own knowledge-profile link and real Role-mode Overview coverage KPIs/status ring are described in the shared contract sections1.3–1.5. These source updates do not establish end-to-end runtime acceptance.
+
 Current requirement-root graph/timeline projects exact approved/current or retained own historical revisions, alternatives/certificate, option progress and separate diagnostic/official/waived/parallel provenance. Viewing does not start, approve or advance learning. Real access checks accepted exact option and established dependencies; authentic started pins continue.
 
 ## Functions

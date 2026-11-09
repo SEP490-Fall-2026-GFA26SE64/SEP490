@@ -16,15 +16,19 @@ public interface CertificateSubmissionJpaRepository extends Repository<Certifica
                 s.skill_id AS skillId,s.knowledge_level AS knowledgeLevel,s.definition_id AS definitionId,s.definition_version AS definitionVersion,
                 s.definition_snapshot::text AS definitionSnapshot,s.submitted_at AS submittedAt,s.replaces_submission_id AS replacesSubmissionId,
                 a.evidence_kind AS evidenceKind,a.https_url AS httpsUrl,a.private_object_key AS privateObjectKey,a.media_type AS mediaType,
-                a.byte_size AS byteSize,a.content_hash AS contentHash,d.decision AS decision,d.reason AS reason,d.decided_at AS decidedAt,d.expert_id AS expertId
+                a.byte_size AS byteSize,a.content_hash AS contentHash,d.decision AS decision,d.reason AS reason,d.decided_at AS decidedAt,d.expert_id AS expertId,
+                p.full_name AS learnerName
             FROM platform.certificate_submission s JOIN platform.certificate_submission_attachment a ON a.submission_id=s.id
             LEFT JOIN platform.certificate_submission_decision d ON d.submission_id=s.id AND d.submission_revision=s.revision AND d.organization_id=s.organization_id
+            LEFT JOIN platform.account member ON member.account_id=s.learner_id AND member.organization_id=s.organization_id
+            LEFT JOIN platform.workspace_account_profile p ON p.account_id=member.account_id
             """;
     interface Row {
         UUID getId();UUID getOrganizationId();UUID getLearnerId();long getRevision();String getStatus();String getSkillId();String getKnowledgeLevel();
         String getDefinitionId();String getDefinitionVersion();String getDefinitionSnapshot();Instant getSubmittedAt();UUID getReplacesSubmissionId();
         String getEvidenceKind();String getHttpsUrl();String getPrivateObjectKey();String getMediaType();Long getByteSize();String getContentHash();
         String getDecision();String getReason();Instant getDecidedAt();UUID getExpertId();
+        String getLearnerName();
     }
     @Query(value="""
             SELECT DISTINCT r.request_id,r.frozen_input->'input'->'binding'->>'roleId' AS role_id
@@ -33,6 +37,13 @@ public interface CertificateSubmissionJpaRepository extends Repository<Certifica
             WHERE s.organization_id=:org AND s.status='PENDING' ORDER BY r.request_id LIMIT :maximum
             """,nativeQuery=true)
     List<Object[]> pendingRoles(@Param("org") UUID org,@Param("maximum") long maximum);
+    @Query(value="""
+            SELECT DISTINCT r.request_id,r.frozen_input->'input'->'binding'->>'roleId' AS role_id
+            FROM platform.certificate_submission s JOIN platform.initial_pathway_request r ON r.request_id=CAST(s.definition_snapshot->>'requestId' AS uuid)
+                AND r.organization_id=s.organization_id AND r.learner_id=s.learner_id AND r.requirement_snapshot_id IS NOT NULL
+            WHERE s.organization_id=:org AND s.status IN ('PENDING','APPROVED','REJECTED') ORDER BY r.request_id LIMIT :maximum
+            """,nativeQuery=true)
+    List<Object[]> reviewRoles(@Param("org") UUID org,@Param("maximum") long maximum);
     @Query(value=READ+" WHERE s.organization_id=:org AND s.learner_id=:learner AND s.id=:id",nativeQuery=true)
     Optional<Row> own(@Param("org") UUID org,@Param("learner") UUID learner,@Param("id") UUID id);
     @Query(value=READ+" WHERE s.organization_id=:org AND s.id=:id",nativeQuery=true)
@@ -41,6 +52,8 @@ public interface CertificateSubmissionJpaRepository extends Repository<Certifica
     List<Row> history(@Param("org") UUID org,@Param("learner") UUID learner,@Param("request") UUID request,@Param("step") UUID step,@Param("offset") int offset,@Param("limit") int limit);
     @Query(value=READ+" WHERE s.organization_id=:org AND s.status='PENDING' AND CAST(s.definition_snapshot->>'requestId' AS uuid) IN (:requests) ORDER BY s.submitted_at,s.id LIMIT :limit OFFSET :offset",nativeQuery=true)
     List<Row> queue(@Param("org") UUID org,@Param("requests") Collection<UUID> requests,@Param("offset") int offset,@Param("limit") int limit);
+    @Query(value=READ+" WHERE s.organization_id=:org AND s.status IN ('APPROVED','REJECTED') AND CAST(s.definition_snapshot->>'requestId' AS uuid) IN (:requests) ORDER BY d.decided_at DESC,s.submitted_at DESC,s.id LIMIT :limit OFFSET :offset",nativeQuery=true)
+    List<Row> reviewed(@Param("org") UUID org,@Param("requests") Collection<UUID> requests,@Param("offset") int offset,@Param("limit") int limit);
     @Query(value="SELECT id FROM platform.certificate_submission WHERE organization_id=:org AND learner_id=:learner AND id=:id FOR UPDATE",nativeQuery=true)
     Optional<UUID> lock(@Param("org") UUID org,@Param("learner") UUID learner,@Param("id") UUID id);
     @Query(value="""

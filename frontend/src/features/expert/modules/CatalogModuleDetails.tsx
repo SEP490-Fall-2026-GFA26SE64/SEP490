@@ -13,7 +13,7 @@ export function CatalogModuleDetails({ module, hasHistory, onClose, actions }: {
     title: copy('Title', 'Tên module'), moduleType: copy('Module type', 'Loại module'), contentUri: copy('Content location', 'Địa chỉ nội dung'),
     contentType: copy('Content format', 'Định dạng nội dung'), contentVersion: copy('Content version', 'Phiên bản nội dung'),
     duration: copy('Duration (minutes)', 'Thời lượng (phút)'),
-    knowledgeLevel: copy('Knowledge level', 'Mức kiến thức'), outcomeCodes: copy('Required outcomes', 'Đầu ra bắt buộc'),
+    knowledgeLevel: copy('Knowledge level', 'Mức kiến thức'),
     skillVersion: copy('Skill version', 'Phiên bản kỹ năng'),
   }
   const values: Record<string, string> = {
@@ -30,8 +30,8 @@ export function CatalogModuleDetails({ module, hasHistory, onClose, actions }: {
     <DialogHeader><DialogTitle>{module?.title ?? module?.metadata.id}</DialogTitle></DialogHeader>
     {module && <div className="space-y-5 overflow-y-auto px-1 text-[length:var(--text-body-sm)]">
       {!hasHistory && <p className="rounded-lg border border-border bg-muted p-3 text-muted-foreground">{copy('No edit history has been recorded for this module.', 'Module này chưa có lịch sử chỉnh sửa được ghi nhận.')}</p>}
-      {fields(Object.entries({ ...module.metadata, title: module.title, moduleType: module.moduleType, contentUri: module.contentUri, contentType: module.contentType, contentVersion: module.contentVersion, duration: module.duration, knowledgeLevel: module.knowledgeLevel, skillVersion: module.skillVersion, outcomeCodes: module.outcomeCodes.join(", ") }))}
-      {fields(Object.entries({ knowledgeLevel: module.knowledgeLevel ?? null, outcomeCodes: module.outcomeCodes.join(', '), skillVersion: module.skillVersion ?? null }))}
+      {fields(Object.entries({ ...module.metadata, title: module.title, moduleType: module.moduleType, contentUri: module.contentUri, contentType: module.contentType, contentVersion: module.contentVersion, duration: module.duration, knowledgeLevel: module.knowledgeLevel, skillVersion: module.skillVersion }))}
+      {fields(Object.entries({ knowledgeLevel: module.knowledgeLevel ?? null, skillVersion: module.skillVersion ?? null }))}
       <Heading level={3} size="subsection">{copy('Skills taught', 'Kỹ năng được giảng dạy')}</Heading>
       {!module.teachings.length && <p className="text-muted-foreground">{copy('No skills have been mapped yet.', 'Chưa có kỹ năng được liên kết.')}</p>}
       {module.teachings.map((teaching, index) => <section key={`${teaching.skillId}:${index}`} className="space-y-3 rounded-lg border border-border p-3">

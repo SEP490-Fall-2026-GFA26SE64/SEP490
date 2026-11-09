@@ -72,7 +72,7 @@ public final class RulePathwayCatalog {
                         var provision=SkillProvisionMode.resolve(text(source,"provisionMode"),list(source,"moduleOnlyKnowledgeLevels"),
                                 list(source,"certificateOnlyKnowledgeLevels"),knowledge);
                         var mode=provision==null?Provision.UNCONFIGURED:Provision.valueOf(provision.name());
-                        var outcomes=list(source,switch(knowledge){case FOUNDATION->"foundationOutcomeCodes";case INTERMEDIATE->"intermediateOutcomeCodes";case ADVANCED->"advancedOutcomeCodes";});
+                        var outcomes=List.<String>of();
                         var version=text(source,"version");
                         if(version==null || version.isBlank())mode=Provision.UNCONFIGURED;
                         skillRequirements.add(new Requirement(entry.getKey(),source.get("name").asString(),knowledge,version,outcomes,mode));
@@ -109,7 +109,7 @@ public final class RulePathwayCatalog {
             if(!currentProjection(document,projection))continue;
             var payload=release.payload();
             related.add(new Related(payload.teachings().getFirst().skillId(),payload.knowledgeLevel(),
-                    new Option(document.id(),release.number(),payload.contentVersion(),payload.title(),payload.outcomeCodes(),payload.skillVersion())));
+                    new Option(document.id(),release.number(),payload.contentVersion(),payload.title(),List.of(),payload.skillVersion())));
             addOption(document,release,required,options);
         }
         for(var pinned:retained) {
@@ -135,15 +135,14 @@ public final class RulePathwayCatalog {
         var payload=release.payload();var visible=projection.get("module");
         return projection.get("teachingCount").asLong()==1 && projection.get("skillIds").asList(Value::asString).equals(List.of(payload.teachings().getFirst().skillId()))
                 && Objects.equals(text(visible,"version"),payload.metadata().version()) && Objects.equals(text(visible,"contentVersion"),payload.contentVersion())
-                && Objects.equals(text(visible,"knowledgeLevel"),payload.knowledgeLevel().name()) && Objects.equals(text(visible,"skillVersion"),payload.skillVersion())
-                && new HashSet<>(list(visible,"outcomeCodes")).equals(new HashSet<>(payload.outcomeCodes()));
+                && Objects.equals(text(visible,"knowledgeLevel"),payload.knowledgeLevel().name()) && Objects.equals(text(visible,"skillVersion"),payload.skillVersion());
     }
     private static void addOption(ModuleAuthoring.Document document,ModuleAuthoring.Revision revision,List<Requirement> requirements,Map<String,List<Option>> options) {
         var payload=revision.payload();if(!ready(payload))return;
         var requirement=requirements.stream().filter(item->item.skillId().equals(payload.teachings().getFirst().skillId())
                 && item.knowledgeLevel()==payload.knowledgeLevel() && item.provision()==Provision.MODULE_ONLY).findFirst();
         if(requirement.isEmpty())return;
-        var option=new Option(document.id(),revision.number(),payload.contentVersion(),payload.title(),payload.outcomeCodes(),payload.skillVersion());
+        var option=new Option(document.id(),revision.number(),payload.contentVersion(),payload.title(),List.of(),payload.skillVersion());
         if(option.matches(requirement.get())) {
             var eligible=options.computeIfAbsent(requirement.get().key(),key->new ArrayList<>());
             if(eligible.stream().noneMatch(existing->existing.key().equals(option.key())))eligible.add(option);
@@ -163,8 +162,8 @@ public final class RulePathwayCatalog {
             if(!seen.add(key)) {if(strictKeys.contains(key))throw new Failure(422,"DUPLICATE_CERTIFICATE_ASSIGNMENT");result.remove(key);continue;}
             var requirement=required.stream().filter(item->item.key().equals(key)).findFirst();if(requirement.isEmpty())continue;
             if(requirement.get().provision()!=Provision.CERTIFICATE_ONLY) {if(strictKeys.contains(key))throw new Failure(422,"PROVISION_MODE_CONFLICT");continue;}
-            var outcomes=list(source,"outcomeCodes");
-            if(!Objects.equals(text(source,"skillVersion"),requirement.get().skillVersion()) || !new HashSet<>(outcomes).equals(new HashSet<>(requirement.get().outcomeCodes())))continue;
+            var outcomes=List.<String>of();
+            if(!Objects.equals(text(source,"skillVersion"),requirement.get().skillVersion()))continue;
             try{result.put(key,new Certificate(source.get("id").asString(),source.get("version").asString(),source.get("name").asString(),source.get("referenceUrl").asString(),outcomes));}
             catch(IllegalArgumentException invalid){if(strictKeys.contains(key))throw new Failure(422,"CERTIFICATE_DEFINITION_INVALID");}
         }

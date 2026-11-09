@@ -18,7 +18,7 @@ public final class CertificateSubmissionService {
             Requirement requirement,CertificateReference certificate,AttachmentInfo attachment) {}
     public record Decision(String decision,String reason,UUID expertId,Instant decidedAt) {}
     public record Submission(UUID id,UUID requestId,UUID stepId,UUID learnerId,long revision,String status,Requirement requirement,CertificateReference certificate,
-            String evidenceKind,String link,String filename,String mediaType,Long byteSize,Instant submittedAt,UUID replacesSubmissionId,Decision decision) {}
+            String evidenceKind,String link,String filename,String mediaType,Long byteSize,Instant submittedAt,UUID replacesSubmissionId,Decision decision,String learnerName) {}
     private record Context(RequirementPathwayJpaRepository.Row row,Step step) {}
     private final Actors actors;private final CurrentRoleSelectionStore selections;private final RequirementPathwayJpaRepository rules;
     private final RequirementPathwayRevisions revisions;private final RequirementPathwayAdmissionService admission;private final RequirementPathwayAccess access;
@@ -111,6 +111,6 @@ public final class CertificateSubmissionService {
     public Submission view(CertificateSubmissionJpaRepository.Row row) {
         var frozen=decode(row);return new Submission(row.getId(),frozen.requestId(),frozen.stepId(),row.getLearnerId(),row.getRevision(),row.getStatus(),frozen.requirement(),frozen.certificate(),
                 row.getEvidenceKind(),row.getHttpsUrl(),frozen.attachment()==null?null:frozen.attachment().filename(),row.getMediaType(),row.getByteSize(),row.getSubmittedAt(),row.getReplacesSubmissionId(),
-                row.getDecision()==null?null:new Decision(row.getDecision(),row.getReason(),row.getExpertId(),row.getDecidedAt()));
+                row.getDecision()==null?null:new Decision(row.getDecision(),row.getReason(),row.getExpertId(),row.getDecidedAt()),row.getLearnerName());
     }
 }

@@ -47,7 +47,7 @@ function workspace(value: unknown, purpose: AssessmentPurpose, key: string): Pol
     if (!['FOUNDATION', 'INTERMEDIATE', 'ADVANCED'].includes(str(level))) throw new Error('Invalid knowledge level')
     const mode = g.provisionMode
     if (mode !== undefined && mode !== null && mode !== 'MODULE_ONLY' && mode !== 'CERTIFICATE_ONLY') throw new Error('Invalid provision mode')
-    return { requirement: { skillId: str(r.skillId), knowledgeLevel: level as KnowledgeLevel, outcomeCodes: list(r.outcomeCodes, str) }, skillName: str(g.skillName), skillVersion: g.skillVersion === null ? null : str(g.skillVersion), provisionMode: mode, readinessIssues: g.readinessIssues === undefined ? [] : list(g.readinessIssues, str) }
+    return { requirement: { skillId: str(r.skillId), knowledgeLevel: level as KnowledgeLevel, outcomeCodes: [] }, skillName: str(g.skillName), skillVersion: g.skillVersion === null ? null : str(g.skillVersion), provisionMode: mode, readinessIssues: g.readinessIssues === undefined ? [] : list(g.readinessIssues, str) }
   })
   const d = v.draft === null ? null : obj(v.draft)
   return { scope: { ...scope, purpose, catalogHash: hash(s.catalogHash), groups, readinessIssues: s.readinessIssues === undefined ? [] : list(s.readinessIssues, str) },

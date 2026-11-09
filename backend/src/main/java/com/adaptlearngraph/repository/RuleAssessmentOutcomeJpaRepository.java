@@ -29,11 +29,9 @@ public interface RuleAssessmentOutcomeJpaRepository extends Repository<RuleAsses
                 g.group_role AS role,r.correct_count AS correctCount,r.total_count AS totalCount,r.mandatory_satisfied AS mandatorySatisfied,
                 r.passed AS passed,r.veto_triggered AS vetoTriggered,r.reasons::text AS reasons,
                 EXISTS (SELECT 1 FROM platform.skill_knowledge_evidence e WHERE e.organization_id=a.organization_id AND e.learner_id=a.learner_id
-                    AND e.skill_id=g.skill_id AND e.knowledge_level=g.knowledge_level AND e.requirement_snapshot->>'skillVersion'=definition->>'skillVersion'
-                    AND e.requirement_snapshot->'outcomeCodes' @> g.outcome_codes) AS officialNow,
+                    AND e.skill_id=g.skill_id AND e.knowledge_level=g.knowledge_level AND e.requirement_snapshot->>'skillVersion'=definition->>'skillVersion') AS officialNow,
                 EXISTS (SELECT 1 FROM platform.skill_knowledge_evidence e WHERE e.organization_id=a.organization_id AND e.learner_id=a.learner_id
-                    AND e.skill_id=g.skill_id AND e.knowledge_level=g.knowledge_level AND e.requirement_snapshot->>'skillVersion'=definition->>'skillVersion'
-                    AND e.requirement_snapshot->'outcomeCodes' @> g.outcome_codes AND e.achieved_at<=a.finished_at) AS officialAtFinalization
+                    AND e.skill_id=g.skill_id AND e.knowledge_level=g.knowledge_level AND e.requirement_snapshot->>'skillVersion'=definition->>'skillVersion' AND e.achieved_at<=a.finished_at) AS officialAtFinalization
             FROM platform.rule_assessment_attempt a JOIN platform.rule_assessment_group g ON g.attempt_id=a.id
                 AND g.organization_id=a.organization_id AND g.learner_id=a.learner_id
             JOIN platform.rule_assessment_group_result r ON r.attempt_id=g.attempt_id AND r.group_id=g.group_id
@@ -57,8 +55,15 @@ public interface RuleAssessmentOutcomeJpaRepository extends Repository<RuleAsses
                             AND EXISTS (SELECT 1 FROM platform.rule_assessment_group previous_main JOIN platform.rule_assessment_group current_main
                                 ON current_main.attempt_id=current_attempt.id AND current_main.group_role='MAIN'
                                     AND current_main.skill_id=previous_main.skill_id AND current_main.knowledge_level=previous_main.knowledge_level
-                                    AND current_main.outcome_codes=previous_main.outcome_codes
-                                WHERE previous_main.attempt_id=prior.id AND previous_main.group_role='MAIN')))
+                                WHERE previous_main.attempt_id=prior.id AND previous_main.group_role='MAIN'
+                                    AND EXISTS (
+                                        SELECT 1 FROM jsonb_array_elements(prior.context_snapshot->'context'->'requirements') old_definition,
+                                            jsonb_array_elements(current_attempt.context_snapshot->'context'->'requirements') current_definition
+                                        WHERE old_definition->'requirement'->>'skillId'=previous_main.skill_id
+                                            AND old_definition->'requirement'->>'knowledgeLevel'=previous_main.knowledge_level
+                                            AND current_definition->'requirement'->>'skillId'=current_main.skill_id
+                                            AND current_definition->'requirement'->>'knowledgeLevel'=current_main.knowledge_level
+                                            AND old_definition->>'skillVersion'=current_definition->>'skillVersion'))))
                     AND prior.purpose='SKILL_ASSESSMENT' AND prior.state='FINALIZED' AND prior.finished_at<=current_attempt.finished_at
                 JOIN platform.rule_assessment_group g ON g.attempt_id=prior.id AND g.group_role='PREREQUISITE'
                 JOIN platform.rule_assessment_group_result score ON score.attempt_id=g.attempt_id AND score.group_id=g.group_id AND NOT score.passed
@@ -67,7 +72,7 @@ public interface RuleAssessmentOutcomeJpaRepository extends Repository<RuleAsses
                 WHERE current_attempt.organization_id=:org AND current_attempt.learner_id=:learner AND current_attempt.id=:attempt
                     AND NOT EXISTS (SELECT 1 FROM platform.skill_knowledge_evidence e
                         WHERE e.organization_id=prior.organization_id AND e.learner_id=prior.learner_id AND e.skill_id=g.skill_id AND e.knowledge_level=g.knowledge_level
-                            AND e.requirement_snapshot->>'skillVersion'=definition->>'skillVersion' AND e.requirement_snapshot->'outcomeCodes' @> g.outcome_codes)
+                            AND e.requirement_snapshot->>'skillVersion'=definition->>'skillVersion')
             ) OR EXISTS (
                 SELECT 1 FROM platform.rule_assessment_attempt a
                 JOIN platform.initial_pathway_current pointer ON pointer.request_id=CAST(a.context_snapshot->'context'->>'requestId' AS uuid)
@@ -80,8 +85,7 @@ public interface RuleAssessmentOutcomeJpaRepository extends Repository<RuleAsses
                 WHERE a.organization_id=:org AND a.learner_id=:learner AND a.id=:attempt
                     AND NOT EXISTS (SELECT 1 FROM platform.skill_knowledge_evidence e
                         WHERE e.organization_id=a.organization_id AND e.learner_id=a.learner_id AND e.skill_id=prerequisite.skill_id AND e.knowledge_level=prerequisite.knowledge_level
-                            AND e.requirement_snapshot->>'skillVersion'=prerequisite.requirement_snapshot->>'skillVersion'
-                            AND (e.requirement_snapshot->'outcomeCodes') @> (prerequisite.requirement_snapshot->'outcomeCodes'))
+                            AND e.requirement_snapshot->>'skillVersion'=prerequisite.requirement_snapshot->>'skillVersion')
             )
             """,nativeQuery=true)
     boolean assignedLearningPending(@Param("org") UUID org,@Param("learner") UUID learner,@Param("attempt") UUID attempt);
@@ -113,7 +117,6 @@ public interface RuleAssessmentOutcomeJpaRepository extends Repository<RuleAsses
                 AND proof.module_id=c.module_id AND proof.revision=c.revision AND proof.knowledge_level=s.knowledge_level
             WHERE a.id=:attempt AND a.organization_id=:org AND a.learner_id=:learner AND a.purpose='SKILL_ASSESSMENT' AND a.state='FINALIZED'
                 AND proof.requirement_snapshot->>'skillVersion'=CAST(:snapshot AS jsonb)->>'skillVersion'
-                AND (proof.requirement_snapshot->'outcomeCodes') @> (CAST(:snapshot AS jsonb)->'outcomeCodes')
             ON CONFLICT(organization_id,learner_id,skill_id,knowledge_level,source_kind,source_id,source_version) DO NOTHING
             """,nativeQuery=true)
     int evidence(@Param("id") UUID id,@Param("org") UUID org,@Param("learner") UUID learner,@Param("attempt") UUID attempt,
@@ -140,7 +143,7 @@ public interface RuleAssessmentOutcomeJpaRepository extends Repository<RuleAsses
                 AND r.organization_id=e.organization_id AND r.learner_id=e.learner_id AND r.skill_id=e.skill_id AND r.knowledge_level=e.knowledge_level
                 AND r.state='NEED_REVIEW' AND a.finished_at<=e.achieved_at
                 AND a.id=r.attempt_id AND a.organization_id=r.organization_id AND a.learner_id=r.learner_id
-                AND g.attempt_id=r.attempt_id AND g.group_id=r.group_id AND e.requirement_snapshot->'outcomeCodes' @> g.outcome_codes
+                AND g.attempt_id=r.attempt_id AND g.group_id=r.group_id
                 AND EXISTS (SELECT 1 FROM jsonb_array_elements(a.context_snapshot->'context'->'requirements') definition
                     WHERE definition->'requirement'->>'skillId'=r.skill_id AND definition->'requirement'->>'knowledgeLevel'=r.knowledge_level
                         AND definition->>'skillVersion'=e.requirement_snapshot->>'skillVersion')
@@ -157,7 +160,7 @@ public interface RuleAssessmentOutcomeJpaRepository extends Repository<RuleAsses
                     ON definition->'requirement'->>'skillId'=r.skill_id AND definition->'requirement'->>'knowledgeLevel'=r.knowledge_level
                 JOIN platform.skill_knowledge_evidence e ON e.organization_id=r.organization_id AND e.learner_id=r.learner_id
                     AND e.skill_id=r.skill_id AND e.knowledge_level=r.knowledge_level AND e.achieved_at>=a.finished_at
-                    AND e.requirement_snapshot->>'skillVersion'=definition->>'skillVersion' AND e.requirement_snapshot->'outcomeCodes' @> g.outcome_codes
+                    AND e.requirement_snapshot->>'skillVersion'=definition->>'skillVersion'
                 WHERE r.organization_id=:org AND r.learner_id=:learner AND r.state='NEED_REVIEW'
                 ORDER BY r.id,e.achieved_at DESC,e.id LIMIT 1000
             ) UPDATE platform.skill_knowledge_review r SET state='RESOLVED',resolved_by_evidence_id=c.evidence_id

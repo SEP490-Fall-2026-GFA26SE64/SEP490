@@ -74,7 +74,7 @@ public final class ModuleAuthoring {
             teachings = List.copyOf(teachings);
             outcomeCodes=outcomeCodes==null?List.of():List.copyOf(outcomeCodes);
             if(knowledgeLevel!=null) {
-                RuleAssessment.unique(outcomeCodes);text(skillVersion,"skillVersion",200);
+                text(skillVersion,"skillVersion",200);
                 if(teachings.size()!=1 || teachings.getFirst().teachingFocus()!=null || teachings.getFirst().difficultyLevel()!=null)
                     throw new IllegalArgumentException("Knowledge modules teach exactly one skill without numeric difficulty or focus");
             } else if(!outcomeCodes.isEmpty() || skillVersion!=null)throw new IllegalArgumentException("Incomplete module knowledge scope");

@@ -6,15 +6,25 @@ Source checkpoint: HEAD `61d334c`, 2026-11-07. Confirmed contract and source imp
 
 ## Goal and position
 
-Resolve selected explicit MODULE_ONLY target groups minus exact compatible official evidence for BASELINE; keep certificate-only/unconfigured needs separate. SKILL_ASSESSMENT requires current accepted exact completed option (step/module revision/content, Skill version/knowledge/outcomes) and MAIN plus ALL configured transitive prerequisite groups. Official prerequisite evidence does not exempt those groups.
+### Implemented navigation and history updates — 2026-11-09
 
-RuleAssessmentAttemptService validates active scoped policy/catalog and all bank coverage, samples once, freezes groups/items/rules/options and sets server start/deadline only after a complete paper exists. Resume retains the paper/deadline/accepted answers; only presented options at expected revision before deadline are accepted. Explicit submit and server expiry both FINALIZE once, with SUBMITTED/DEADLINE reason; unanswered=0. Each group has its own count/pass/mandatory/veto/reasons. Retake is a new full paper with configured max/wait and latest previousAttemptId, no carry-over. Current Skill attempt context includes exact module/revision despite shared policy.
+The Employee Role/Level comes from the persisted selection. Admin-assigned placement is separate: a new target in the same assigned Role must have a higher Level (smaller rank), while other available Roles are not restricted by department. Existing pathway/assessment target locks remain; later Admin reassignment does not reset or revalidate an ongoing target. See shared contract section1.2.
+
+Finalized Skill Assessment results provide Back to pathway. The shared module-reader/pathway entry shows Open before any current-context attempt, Resume for an unfinished attempt, and Retake after finalization; a separate Assessment history action lists retained attempts/results for that exact module revision. History GET supports paired moduleId/moduleRevision filters before pagination within the trusted organization/learner and SKILL_ASSESSMENT purpose. Reading history never starts a new attempt, and a load failure is not treated as an empty history. Retake resolves the latest context and supplies previousAttemptId while retaining server allowance/wait/policy/prerequisite guards.
+
+Ordinary prerequisite failure can retain a passing MAIN group while formal supplemental learning/achievement remains pending; it does not necessarily require repeating a passed main Skill. An all-wrong prerequisite veto may still require full retake when configured. Failure of an already officially achieved prerequisite creates review work without revoking prior achievement. These distinctions must remain visible in the result/learning state instead of treating every passing group as official achievement.
+
+These source updates passed frontend build/type-check/scoped lint and backend offline compilation/package with tests skipped. This documentation refresh creates no attempts, submits no answers and runs no executable tests; full authenticated retry/prerequisite scenarios remain unverified here.
+
+Resolve selected explicit MODULE_ONLY target groups minus exact compatible official evidence for BASELINE; keep certificate-only/unconfigured needs separate. SKILL_ASSESSMENT requires current accepted exact completed option (step/module revision/content, Skill version/knowledge) and MAIN plus ALL configured transitive prerequisite groups. Official prerequisite evidence does not exempt those groups.
+
+RuleAssessmentAttemptService validates active scoped policy/catalog and exact Skill/knowledge/Skill-version bank capacity, samples once, freezes groups/items/rules/options and sets server start/deadline only after a complete paper exists. Resume retains the paper/deadline/accepted answers; only presented options at expected revision before deadline are accepted. Explicit submit and server expiry both FINALIZE once, with SUBMITTED/DEADLINE reason; unanswered=0. Each group has its own count/pass/mandatory/veto/reasons. Retake is a new full paper with configured max/wait and latest previousAttemptId, no carry-over. Current Skill attempt context includes exact module/revision despite shared policy.
 
 ## Result semantics
 
 RuleKnowledgeProfileService and RuleAssessmentOutcomeService read PostgreSQL diagnostics/group results separately from official skill_knowledge_evidence and NEED_REVIEW. Baseline only creates diagnostics for actually assessed groups; a pass skips initial corresponding learning, never ACHIEVED or module completion. It does not create B solely from A prerequisite topology. No numeric gap subtraction, title exemption or lower-knowledge inheritance.
 
-Official evidence requires exact org/learner/Skill/knowledge/Skill version/outcome coverage with accepted MODULE_ASSESSMENT or CERTIFICATE source. Bypass is a waiver, not achievement. Failed already-achieved prerequisite yields NEED_REVIEW without revocation; later genuine compatible evidence may resolve it. Result finalization differs from pending downstream processing; WAITING_REQUIRED_SUPPLEMENT is not a new scoring failure.
+Official evidence requires exact org/learner/Skill/knowledge/Skill version with accepted MODULE_ASSESSMENT or CERTIFICATE source. Bypass is a waiver, not achievement. Failed already-achieved prerequisite yields NEED_REVIEW without revocation; later genuine compatible evidence may resolve it. Result finalization differs from pending downstream processing; WAITING_REQUIRED_SUPPLEMENT is not a new scoring failure.
 
 ## Transaction and recovery
 

@@ -43,6 +43,30 @@ public final class RequirementPathwayAdmissionService {
     private Actor employee(){var actor=actors.require();actor.require(Role.EMPLOYEE);return actor;}
     private RoleBaselineFlow.Actor owner(Actor actor){return new RoleBaselineFlow.Actor(actor.organizationId(),actor.accountId());}
     private void reauthorize(Actor actor){if(!actor.equals(employee()))throw new Failure(403,"FORBIDDEN");}
+    public record Overview(UUID selectionId,long selectionRevision,List<Requirement> target,List<String> achievedKeys,List<String> baselinePassedKeys) {}
+    /** Read-only projection using the bound target snapshot and the same compatible official evidence query as planning. */
+    public Overview overview() {
+        var actor=employee();
+            reauthorize(actor);
+            var selected=selections.current(owner(actor)).orElseThrow(()->new Failure(409,"SELECTION_REQUIRED"));
+            var bound=current(actor).filter(row->row.getSelectionId().equals(selected.selectionId()) && row.getSelectionRevision()==selected.revision());
+            var input=bound.isPresent()?decode(bound.get()).input():prepare(actor,selected.role().id(),selected.levelId()).input();
+            var plan=bound.map(revisions::read);
+            var target=input.target().stream().map(requirement->requirement.provision()!=Provision.UNCONFIGURED?requirement:
+                    plan.stream().flatMap(value->value.steps().stream()).map(Step::requirement)
+                            .filter(value->value.key().equals(requirement.key())).findFirst().orElse(requirement)).toList();
+            var achieved=new TreeSet<String>();
+            rules.official(actor.organizationId(),actor.accountId(),revisions.encode(target)).forEach(row->{
+                var proof=read(row.getRequirementSnapshot(),Requirement.class);
+                target.stream().filter(requirement->requirement.proofKey().equals(proof.proofKey())).forEach(requirement->achieved.add(requirement.key()));
+            });
+            var baseline=input.baseline()==null?List.<String>of():input.baseline().passed().entrySet().stream()
+                    .filter(entry->Boolean.TRUE.equals(entry.getValue())).map(Map.Entry::getKey).sorted().toList();
+            reauthorize(actor);
+            var latest=selections.current(owner(actor)).orElseThrow(()->new Failure(409,"STALE_SELECTION"));
+            if(!latest.selectionId().equals(selected.selectionId()) || latest.revision()!=selected.revision())throw new Failure(409,"STALE_SELECTION");
+            return new Overview(selected.selectionId(),selected.revision(),List.copyOf(target),List.copyOf(achieved),baseline);
+    }
     public Preview preview(String roleId,String levelId) {
         var actor=employee();return selections.transaction(owner(actor),()->{
             reauthorize(actor);var prepared=prepare(actor,roleId,levelId);var open=current(actor);
@@ -147,7 +171,7 @@ public final class RequirementPathwayAdmissionService {
                     var current=selected.stream().filter(requirement->requirement.key().equals(pair)).findFirst();
                     if(!"TARGET".equals(result.getRole()) || current.isEmpty() || definition==null)continue;
                     var pinned=json.convertValue(definition.path("requirement"),RuleAssessment.Requirement.class);
-                    if(Objects.equals(current.get().skillVersion(),definition.path("skillVersion").asText()) && new HashSet<>(current.get().outcomeCodes()).equals(new HashSet<>(pinned.outcomeCodes())))passed.put(pair,result.getPassed());
+                    if(Objects.equals(current.get().skillVersion(),definition.path("skillVersion").asText()))passed.put(pair,result.getPassed());
                 }
             }
             baseline=new Baseline(attempt.getId(),attempt.getPolicyId(),attempt.getPolicyHash(),attempt.getFinishedAt().toString(),passed);

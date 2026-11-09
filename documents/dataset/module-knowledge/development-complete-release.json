@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "source": "DEVELOPMENT_SEED",
   "organizationId": "e0000000-0000-0000-0000-000000000001",
-  "catalogSha256": "cc7e3d25549542f945d68eebaff49257190c49db232b076aa50a97893d216a53",
+  "catalogSha256": "1f6c15983de4486ecee6dd3c0d764b19ddceee12252ad54ad7d016e839cbdb1d",
   "oldToNew": {
     "MOD-DE-J-MODEL-01": "MOD-DE01-FOUNDATION-01",
     "MOD-DE-J-MODEL-02": "MOD-DE13-FOUNDATION-01",
@@ -328,9 +328,6 @@
               ]
             },
             "knowledgeLevel": "FOUNDATION",
-            "outcomeCodes": [
-              "MS_DE01_FOUNDATION"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -424,9 +421,6 @@
               ]
             },
             "knowledgeLevel": "FOUNDATION",
-            "outcomeCodes": [
-              "MS_DE13_FOUNDATION"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -520,9 +514,6 @@
               ]
             },
             "knowledgeLevel": "FOUNDATION",
-            "outcomeCodes": [
-              "MS_DE02_FOUNDATION"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -620,9 +611,6 @@
               ]
             },
             "knowledgeLevel": "FOUNDATION",
-            "outcomeCodes": [
-              "MS_DE11_FOUNDATION"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -716,9 +704,6 @@
               ]
             },
             "knowledgeLevel": "FOUNDATION",
-            "outcomeCodes": [
-              "MS_DE05_FOUNDATION"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -816,9 +801,6 @@
               ]
             },
             "knowledgeLevel": "FOUNDATION",
-            "outcomeCodes": [
-              "MS_DE15_FOUNDATION"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -916,9 +898,6 @@
               ]
             },
             "knowledgeLevel": "INTERMEDIATE",
-            "outcomeCodes": [
-              "MS_DE01_INTERMEDIATE"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -1012,9 +991,6 @@
               ]
             },
             "knowledgeLevel": "INTERMEDIATE",
-            "outcomeCodes": [
-              "MS_DE13_INTERMEDIATE"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -1108,9 +1084,6 @@
               ]
             },
             "knowledgeLevel": "INTERMEDIATE",
-            "outcomeCodes": [
-              "MS_DE02_INTERMEDIATE"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -1208,9 +1181,6 @@
               ]
             },
             "knowledgeLevel": "INTERMEDIATE",
-            "outcomeCodes": [
-              "MS_DE11_INTERMEDIATE"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -1304,9 +1274,6 @@
               ]
             },
             "knowledgeLevel": "INTERMEDIATE",
-            "outcomeCodes": [
-              "MS_DE05_INTERMEDIATE"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -1404,9 +1371,6 @@
               ]
             },
             "knowledgeLevel": "INTERMEDIATE",
-            "outcomeCodes": [
-              "MS_DE15_INTERMEDIATE"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -1504,9 +1468,6 @@
               ]
             },
             "knowledgeLevel": "ADVANCED",
-            "outcomeCodes": [
-              "MS_DE01_ADVANCED"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -1600,9 +1561,6 @@
               ]
             },
             "knowledgeLevel": "ADVANCED",
-            "outcomeCodes": [
-              "MS_DE13_ADVANCED"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -1696,9 +1654,6 @@
               ]
             },
             "knowledgeLevel": "ADVANCED",
-            "outcomeCodes": [
-              "MS_DE02_ADVANCED"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -1796,9 +1751,6 @@
               ]
             },
             "knowledgeLevel": "ADVANCED",
-            "outcomeCodes": [
-              "MS_DE11_ADVANCED"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -1892,9 +1844,6 @@
               ]
             },
             "knowledgeLevel": "ADVANCED",
-            "outcomeCodes": [
-              "MS_DE05_ADVANCED"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -1992,9 +1941,6 @@
               ]
             },
             "knowledgeLevel": "ADVANCED",
-            "outcomeCodes": [
-              "MS_DE15_ADVANCED"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -2088,9 +2034,6 @@
               ]
             },
             "knowledgeLevel": "FOUNDATION",
-            "outcomeCodes": [
-              "MS_FS02_FOUNDATION"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -2184,9 +2127,6 @@
               ]
             },
             "knowledgeLevel": "FOUNDATION",
-            "outcomeCodes": [
-              "MS_FS11_FOUNDATION"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -2282,9 +2222,6 @@
               ]
             },
             "knowledgeLevel": "FOUNDATION",
-            "outcomeCodes": [
-              "MS_FS03_FOUNDATION"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -2380,9 +2317,6 @@
               ]
             },
             "knowledgeLevel": "FOUNDATION",
-            "outcomeCodes": [
-              "MS_FS12_FOUNDATION"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -2478,9 +2412,6 @@
               ]
             },
             "knowledgeLevel": "FOUNDATION",
-            "outcomeCodes": [
-              "MS_FS06_FOUNDATION"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -2578,9 +2509,6 @@
               ]
             },
             "knowledgeLevel": "FOUNDATION",
-            "outcomeCodes": [
-              "MS_FS16_FOUNDATION"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -2674,9 +2602,6 @@
               ]
             },
             "knowledgeLevel": "INTERMEDIATE",
-            "outcomeCodes": [
-              "MS_FS02_INTERMEDIATE"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -2770,9 +2695,6 @@
               ]
             },
             "knowledgeLevel": "INTERMEDIATE",
-            "outcomeCodes": [
-              "MS_FS11_INTERMEDIATE"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -2868,9 +2790,6 @@
               ]
             },
             "knowledgeLevel": "INTERMEDIATE",
-            "outcomeCodes": [
-              "MS_FS03_INTERMEDIATE"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -2966,9 +2885,6 @@
               ]
             },
             "knowledgeLevel": "INTERMEDIATE",
-            "outcomeCodes": [
-              "MS_FS12_INTERMEDIATE"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -3064,9 +2980,6 @@
               ]
             },
             "knowledgeLevel": "INTERMEDIATE",
-            "outcomeCodes": [
-              "MS_FS06_INTERMEDIATE"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -3164,9 +3077,6 @@
               ]
             },
             "knowledgeLevel": "INTERMEDIATE",
-            "outcomeCodes": [
-              "MS_FS16_INTERMEDIATE"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -3260,9 +3170,6 @@
               ]
             },
             "knowledgeLevel": "ADVANCED",
-            "outcomeCodes": [
-              "MS_FS02_ADVANCED"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -3356,9 +3263,6 @@
               ]
             },
             "knowledgeLevel": "ADVANCED",
-            "outcomeCodes": [
-              "MS_FS11_ADVANCED"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -3454,9 +3358,6 @@
               ]
             },
             "knowledgeLevel": "ADVANCED",
-            "outcomeCodes": [
-              "MS_FS03_ADVANCED"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -3552,9 +3453,6 @@
               ]
             },
             "knowledgeLevel": "ADVANCED",
-            "outcomeCodes": [
-              "MS_FS12_ADVANCED"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -3650,9 +3548,6 @@
               ]
             },
             "knowledgeLevel": "ADVANCED",
-            "outcomeCodes": [
-              "MS_FS06_ADVANCED"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -3750,9 +3645,6 @@
               ]
             },
             "knowledgeLevel": "ADVANCED",
-            "outcomeCodes": [
-              "MS_FS16_ADVANCED"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -3846,9 +3738,6 @@
               ]
             },
             "knowledgeLevel": "FOUNDATION",
-            "outcomeCodes": [
-              "MS_QA01_FOUNDATION"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -3942,9 +3831,6 @@
               ]
             },
             "knowledgeLevel": "FOUNDATION",
-            "outcomeCodes": [
-              "MS_QA10_FOUNDATION"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -4038,9 +3924,6 @@
               ]
             },
             "knowledgeLevel": "FOUNDATION",
-            "outcomeCodes": [
-              "MS_QA03_FOUNDATION"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -4134,9 +4017,6 @@
               ]
             },
             "knowledgeLevel": "FOUNDATION",
-            "outcomeCodes": [
-              "MS_QA14_FOUNDATION"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -4236,9 +4116,6 @@
               ]
             },
             "knowledgeLevel": "FOUNDATION",
-            "outcomeCodes": [
-              "MS_FS07_FOUNDATION"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -4332,9 +4209,6 @@
               ]
             },
             "knowledgeLevel": "FOUNDATION",
-            "outcomeCodes": [
-              "MS_QA16_FOUNDATION"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -4428,9 +4302,6 @@
               ]
             },
             "knowledgeLevel": "INTERMEDIATE",
-            "outcomeCodes": [
-              "MS_QA01_INTERMEDIATE"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -4524,9 +4395,6 @@
               ]
             },
             "knowledgeLevel": "INTERMEDIATE",
-            "outcomeCodes": [
-              "MS_QA10_INTERMEDIATE"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -4620,9 +4488,6 @@
               ]
             },
             "knowledgeLevel": "INTERMEDIATE",
-            "outcomeCodes": [
-              "MS_QA03_INTERMEDIATE"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -4716,9 +4581,6 @@
               ]
             },
             "knowledgeLevel": "INTERMEDIATE",
-            "outcomeCodes": [
-              "MS_QA14_INTERMEDIATE"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -4818,9 +4680,6 @@
               ]
             },
             "knowledgeLevel": "INTERMEDIATE",
-            "outcomeCodes": [
-              "MS_FS07_INTERMEDIATE"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -4914,9 +4773,6 @@
               ]
             },
             "knowledgeLevel": "INTERMEDIATE",
-            "outcomeCodes": [
-              "MS_QA16_INTERMEDIATE"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -5010,9 +4866,6 @@
               ]
             },
             "knowledgeLevel": "ADVANCED",
-            "outcomeCodes": [
-              "MS_QA01_ADVANCED"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -5106,9 +4959,6 @@
               ]
             },
             "knowledgeLevel": "ADVANCED",
-            "outcomeCodes": [
-              "MS_QA10_ADVANCED"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -5202,9 +5052,6 @@
               ]
             },
             "knowledgeLevel": "ADVANCED",
-            "outcomeCodes": [
-              "MS_QA03_ADVANCED"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -5298,9 +5145,6 @@
               ]
             },
             "knowledgeLevel": "ADVANCED",
-            "outcomeCodes": [
-              "MS_QA14_ADVANCED"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -5400,9 +5244,6 @@
               ]
             },
             "knowledgeLevel": "ADVANCED",
-            "outcomeCodes": [
-              "MS_FS07_ADVANCED"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -5496,9 +5337,6 @@
               ]
             },
             "knowledgeLevel": "ADVANCED",
-            "outcomeCodes": [
-              "MS_QA16_ADVANCED"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -5596,9 +5434,6 @@
               ]
             },
             "knowledgeLevel": "FOUNDATION",
-            "outcomeCodes": [
-              "MS_ARC01_FOUNDATION"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -5696,9 +5531,6 @@
               ]
             },
             "knowledgeLevel": "FOUNDATION",
-            "outcomeCodes": [
-              "MS_ARC02_FOUNDATION"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -5796,9 +5628,6 @@
               ]
             },
             "knowledgeLevel": "FOUNDATION",
-            "outcomeCodes": [
-              "MS_ARC03_FOUNDATION"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -5896,9 +5725,6 @@
               ]
             },
             "knowledgeLevel": "FOUNDATION",
-            "outcomeCodes": [
-              "MS_ARC04_FOUNDATION"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -5996,9 +5822,6 @@
               ]
             },
             "knowledgeLevel": "FOUNDATION",
-            "outcomeCodes": [
-              "MS_ARC05_FOUNDATION"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -6096,9 +5919,6 @@
               ]
             },
             "knowledgeLevel": "FOUNDATION",
-            "outcomeCodes": [
-              "MS_ARC06_FOUNDATION"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -6198,9 +6018,6 @@
               ]
             },
             "knowledgeLevel": "FOUNDATION",
-            "outcomeCodes": [
-              "MS_CORE01_FOUNDATION"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -6300,9 +6117,6 @@
               ]
             },
             "knowledgeLevel": "FOUNDATION",
-            "outcomeCodes": [
-              "MS_CORE02_FOUNDATION"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -6400,9 +6214,6 @@
               ]
             },
             "knowledgeLevel": "FOUNDATION",
-            "outcomeCodes": [
-              "MS_CORE03_FOUNDATION"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -6496,9 +6307,6 @@
               ]
             },
             "knowledgeLevel": "FOUNDATION",
-            "outcomeCodes": [
-              "MS_CORE04_FOUNDATION"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -6592,9 +6400,6 @@
               ]
             },
             "knowledgeLevel": "FOUNDATION",
-            "outcomeCodes": [
-              "MS_GOV01_FOUNDATION"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -6688,9 +6493,6 @@
               ]
             },
             "knowledgeLevel": "FOUNDATION",
-            "outcomeCodes": [
-              "MS_GOV02_FOUNDATION"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -6784,9 +6586,6 @@
               ]
             },
             "knowledgeLevel": "FOUNDATION",
-            "outcomeCodes": [
-              "MS_GOV03_FOUNDATION"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -6884,9 +6683,6 @@
               ]
             },
             "knowledgeLevel": "FOUNDATION",
-            "outcomeCodes": [
-              "MS_INF01_FOUNDATION"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -6984,9 +6780,6 @@
               ]
             },
             "knowledgeLevel": "FOUNDATION",
-            "outcomeCodes": [
-              "MS_INF02_FOUNDATION"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -7082,9 +6875,6 @@
               ]
             },
             "knowledgeLevel": "FOUNDATION",
-            "outcomeCodes": [
-              "MS_INF03_FOUNDATION"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -7182,9 +6972,6 @@
               ]
             },
             "knowledgeLevel": "FOUNDATION",
-            "outcomeCodes": [
-              "MS_INF04_FOUNDATION"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -7282,9 +7069,6 @@
               ]
             },
             "knowledgeLevel": "FOUNDATION",
-            "outcomeCodes": [
-              "MS_INF05_FOUNDATION"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -7380,9 +7164,6 @@
               ]
             },
             "knowledgeLevel": "FOUNDATION",
-            "outcomeCodes": [
-              "MS_INF06_FOUNDATION"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -7478,9 +7259,6 @@
               ]
             },
             "knowledgeLevel": "FOUNDATION",
-            "outcomeCodes": [
-              "MS_INF07_FOUNDATION"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -7578,9 +7356,6 @@
               ]
             },
             "knowledgeLevel": "FOUNDATION",
-            "outcomeCodes": [
-              "MS_INF08_FOUNDATION"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -7680,9 +7455,6 @@
               ]
             },
             "knowledgeLevel": "FOUNDATION",
-            "outcomeCodes": [
-              "MS_SEC01_FOUNDATION"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -7782,9 +7554,6 @@
               ]
             },
             "knowledgeLevel": "FOUNDATION",
-            "outcomeCodes": [
-              "MS_SEC02_FOUNDATION"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -7882,9 +7651,6 @@
               ]
             },
             "knowledgeLevel": "FOUNDATION",
-            "outcomeCodes": [
-              "MS_SEC03_FOUNDATION"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -7982,9 +7748,6 @@
               ]
             },
             "knowledgeLevel": "FOUNDATION",
-            "outcomeCodes": [
-              "MS_SEC04_FOUNDATION"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -8078,9 +7841,6 @@
               ]
             },
             "knowledgeLevel": "FOUNDATION",
-            "outcomeCodes": [
-              "MS_SEC05_FOUNDATION"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -8174,9 +7934,6 @@
               ]
             },
             "knowledgeLevel": "FOUNDATION",
-            "outcomeCodes": [
-              "MS_SEC06_FOUNDATION"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -8270,9 +8027,6 @@
               ]
             },
             "knowledgeLevel": "FOUNDATION",
-            "outcomeCodes": [
-              "MS_SEC07_FOUNDATION"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -8368,9 +8122,6 @@
               ]
             },
             "knowledgeLevel": "FOUNDATION",
-            "outcomeCodes": [
-              "MS_SEC08_FOUNDATION"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -8464,9 +8215,6 @@
               ]
             },
             "knowledgeLevel": "FOUNDATION",
-            "outcomeCodes": [
-              "MS_SEC09_FOUNDATION"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -8560,9 +8308,6 @@
               ]
             },
             "knowledgeLevel": "FOUNDATION",
-            "outcomeCodes": [
-              "MS_SEC10_FOUNDATION"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -8660,9 +8405,6 @@
               ]
             },
             "knowledgeLevel": "INTERMEDIATE",
-            "outcomeCodes": [
-              "MS_ARC01_INTERMEDIATE"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -8760,9 +8502,6 @@
               ]
             },
             "knowledgeLevel": "ADVANCED",
-            "outcomeCodes": [
-              "MS_ARC01_ADVANCED"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -8860,9 +8599,6 @@
               ]
             },
             "knowledgeLevel": "INTERMEDIATE",
-            "outcomeCodes": [
-              "MS_ARC02_INTERMEDIATE"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -8960,9 +8696,6 @@
               ]
             },
             "knowledgeLevel": "ADVANCED",
-            "outcomeCodes": [
-              "MS_ARC02_ADVANCED"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -9060,9 +8793,6 @@
               ]
             },
             "knowledgeLevel": "INTERMEDIATE",
-            "outcomeCodes": [
-              "MS_ARC03_INTERMEDIATE"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -9160,9 +8890,6 @@
               ]
             },
             "knowledgeLevel": "ADVANCED",
-            "outcomeCodes": [
-              "MS_ARC03_ADVANCED"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -9260,9 +8987,6 @@
               ]
             },
             "knowledgeLevel": "INTERMEDIATE",
-            "outcomeCodes": [
-              "MS_ARC04_INTERMEDIATE"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -9360,9 +9084,6 @@
               ]
             },
             "knowledgeLevel": "ADVANCED",
-            "outcomeCodes": [
-              "MS_ARC04_ADVANCED"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -9460,9 +9181,6 @@
               ]
             },
             "knowledgeLevel": "INTERMEDIATE",
-            "outcomeCodes": [
-              "MS_ARC05_INTERMEDIATE"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -9560,9 +9278,6 @@
               ]
             },
             "knowledgeLevel": "ADVANCED",
-            "outcomeCodes": [
-              "MS_ARC05_ADVANCED"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -9660,9 +9375,6 @@
               ]
             },
             "knowledgeLevel": "INTERMEDIATE",
-            "outcomeCodes": [
-              "MS_ARC06_INTERMEDIATE"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -9760,9 +9472,6 @@
               ]
             },
             "knowledgeLevel": "ADVANCED",
-            "outcomeCodes": [
-              "MS_ARC06_ADVANCED"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -9862,9 +9571,6 @@
               ]
             },
             "knowledgeLevel": "INTERMEDIATE",
-            "outcomeCodes": [
-              "MS_CORE01_INTERMEDIATE"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -9964,9 +9670,6 @@
               ]
             },
             "knowledgeLevel": "ADVANCED",
-            "outcomeCodes": [
-              "MS_CORE01_ADVANCED"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -10066,9 +9769,6 @@
               ]
             },
             "knowledgeLevel": "INTERMEDIATE",
-            "outcomeCodes": [
-              "MS_CORE02_INTERMEDIATE"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -10168,9 +9868,6 @@
               ]
             },
             "knowledgeLevel": "ADVANCED",
-            "outcomeCodes": [
-              "MS_CORE02_ADVANCED"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -10268,9 +9965,6 @@
               ]
             },
             "knowledgeLevel": "INTERMEDIATE",
-            "outcomeCodes": [
-              "MS_CORE03_INTERMEDIATE"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -10368,9 +10062,6 @@
               ]
             },
             "knowledgeLevel": "ADVANCED",
-            "outcomeCodes": [
-              "MS_CORE03_ADVANCED"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -10464,9 +10155,6 @@
               ]
             },
             "knowledgeLevel": "INTERMEDIATE",
-            "outcomeCodes": [
-              "MS_CORE04_INTERMEDIATE"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -10560,9 +10248,6 @@
               ]
             },
             "knowledgeLevel": "ADVANCED",
-            "outcomeCodes": [
-              "MS_CORE04_ADVANCED"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -10660,9 +10345,6 @@
               ]
             },
             "knowledgeLevel": "FOUNDATION",
-            "outcomeCodes": [
-              "MS_DE01_FOUNDATION"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -10760,9 +10442,6 @@
               ]
             },
             "knowledgeLevel": "INTERMEDIATE",
-            "outcomeCodes": [
-              "MS_DE01_INTERMEDIATE"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -10860,9 +10539,6 @@
               ]
             },
             "knowledgeLevel": "ADVANCED",
-            "outcomeCodes": [
-              "MS_DE01_ADVANCED"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -10956,9 +10632,6 @@
               ]
             },
             "knowledgeLevel": "FOUNDATION",
-            "outcomeCodes": [
-              "MS_DE03_FOUNDATION"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -11052,9 +10725,6 @@
               ]
             },
             "knowledgeLevel": "INTERMEDIATE",
-            "outcomeCodes": [
-              "MS_DE03_INTERMEDIATE"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -11148,9 +10818,6 @@
               ]
             },
             "knowledgeLevel": "ADVANCED",
-            "outcomeCodes": [
-              "MS_DE03_ADVANCED"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -11248,9 +10915,6 @@
               ]
             },
             "knowledgeLevel": "FOUNDATION",
-            "outcomeCodes": [
-              "MS_DE04_FOUNDATION"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -11348,9 +11012,6 @@
               ]
             },
             "knowledgeLevel": "INTERMEDIATE",
-            "outcomeCodes": [
-              "MS_DE04_INTERMEDIATE"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -11448,9 +11109,6 @@
               ]
             },
             "knowledgeLevel": "ADVANCED",
-            "outcomeCodes": [
-              "MS_DE04_ADVANCED"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -11546,9 +11204,6 @@
               ]
             },
             "knowledgeLevel": "FOUNDATION",
-            "outcomeCodes": [
-              "MS_DE06_FOUNDATION"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -11644,9 +11299,6 @@
               ]
             },
             "knowledgeLevel": "INTERMEDIATE",
-            "outcomeCodes": [
-              "MS_DE06_INTERMEDIATE"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -11742,9 +11394,6 @@
               ]
             },
             "knowledgeLevel": "ADVANCED",
-            "outcomeCodes": [
-              "MS_DE06_ADVANCED"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -11838,9 +11487,6 @@
               ]
             },
             "knowledgeLevel": "FOUNDATION",
-            "outcomeCodes": [
-              "MS_DE07_FOUNDATION"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -11934,9 +11580,6 @@
               ]
             },
             "knowledgeLevel": "INTERMEDIATE",
-            "outcomeCodes": [
-              "MS_DE07_INTERMEDIATE"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -12030,9 +11673,6 @@
               ]
             },
             "knowledgeLevel": "ADVANCED",
-            "outcomeCodes": [
-              "MS_DE07_ADVANCED"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -12130,9 +11770,6 @@
               ]
             },
             "knowledgeLevel": "FOUNDATION",
-            "outcomeCodes": [
-              "MS_DE08_FOUNDATION"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -12230,9 +11867,6 @@
               ]
             },
             "knowledgeLevel": "INTERMEDIATE",
-            "outcomeCodes": [
-              "MS_DE08_INTERMEDIATE"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -12330,9 +11964,6 @@
               ]
             },
             "knowledgeLevel": "ADVANCED",
-            "outcomeCodes": [
-              "MS_DE08_ADVANCED"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -12430,9 +12061,6 @@
               ]
             },
             "knowledgeLevel": "FOUNDATION",
-            "outcomeCodes": [
-              "MS_DE11_FOUNDATION"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -12530,9 +12158,6 @@
               ]
             },
             "knowledgeLevel": "INTERMEDIATE",
-            "outcomeCodes": [
-              "MS_DE11_INTERMEDIATE"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -12630,9 +12255,6 @@
               ]
             },
             "knowledgeLevel": "ADVANCED",
-            "outcomeCodes": [
-              "MS_DE11_ADVANCED"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -12726,9 +12348,6 @@
               ]
             },
             "knowledgeLevel": "FOUNDATION",
-            "outcomeCodes": [
-              "MS_DE12_FOUNDATION"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -12822,9 +12441,6 @@
               ]
             },
             "knowledgeLevel": "INTERMEDIATE",
-            "outcomeCodes": [
-              "MS_DE12_INTERMEDIATE"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -12918,9 +12534,6 @@
               ]
             },
             "knowledgeLevel": "ADVANCED",
-            "outcomeCodes": [
-              "MS_DE12_ADVANCED"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -13014,9 +12627,6 @@
               ]
             },
             "knowledgeLevel": "FOUNDATION",
-            "outcomeCodes": [
-              "MS_DE14_FOUNDATION"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -13110,9 +12720,6 @@
               ]
             },
             "knowledgeLevel": "INTERMEDIATE",
-            "outcomeCodes": [
-              "MS_DE14_INTERMEDIATE"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -13206,9 +12813,6 @@
               ]
             },
             "knowledgeLevel": "ADVANCED",
-            "outcomeCodes": [
-              "MS_DE14_ADVANCED"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -13306,9 +12910,6 @@
               ]
             },
             "knowledgeLevel": "FOUNDATION",
-            "outcomeCodes": [
-              "MS_DE15_FOUNDATION"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -13406,9 +13007,6 @@
               ]
             },
             "knowledgeLevel": "INTERMEDIATE",
-            "outcomeCodes": [
-              "MS_DE15_INTERMEDIATE"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -13506,9 +13104,6 @@
               ]
             },
             "knowledgeLevel": "ADVANCED",
-            "outcomeCodes": [
-              "MS_DE15_ADVANCED"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -13606,9 +13201,6 @@
               ]
             },
             "knowledgeLevel": "FOUNDATION",
-            "outcomeCodes": [
-              "MS_DE16_FOUNDATION"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -13706,9 +13298,6 @@
               ]
             },
             "knowledgeLevel": "INTERMEDIATE",
-            "outcomeCodes": [
-              "MS_DE16_INTERMEDIATE"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -13806,9 +13395,6 @@
               ]
             },
             "knowledgeLevel": "ADVANCED",
-            "outcomeCodes": [
-              "MS_DE16_ADVANCED"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -13902,9 +13488,6 @@
               ]
             },
             "knowledgeLevel": "FOUNDATION",
-            "outcomeCodes": [
-              "MS_FS02_FOUNDATION"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -13998,9 +13581,6 @@
               ]
             },
             "knowledgeLevel": "INTERMEDIATE",
-            "outcomeCodes": [
-              "MS_FS02_INTERMEDIATE"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -14094,9 +13674,6 @@
               ]
             },
             "knowledgeLevel": "ADVANCED",
-            "outcomeCodes": [
-              "MS_FS02_ADVANCED"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -14192,9 +13769,6 @@
               ]
             },
             "knowledgeLevel": "FOUNDATION",
-            "outcomeCodes": [
-              "MS_FS03_FOUNDATION"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -14290,9 +13864,6 @@
               ]
             },
             "knowledgeLevel": "INTERMEDIATE",
-            "outcomeCodes": [
-              "MS_FS03_INTERMEDIATE"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -14388,9 +13959,6 @@
               ]
             },
             "knowledgeLevel": "ADVANCED",
-            "outcomeCodes": [
-              "MS_FS03_ADVANCED"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -14488,9 +14056,6 @@
               ]
             },
             "knowledgeLevel": "FOUNDATION",
-            "outcomeCodes": [
-              "MS_FS04_FOUNDATION"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -14588,9 +14153,6 @@
               ]
             },
             "knowledgeLevel": "INTERMEDIATE",
-            "outcomeCodes": [
-              "MS_FS04_INTERMEDIATE"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -14688,9 +14250,6 @@
               ]
             },
             "knowledgeLevel": "ADVANCED",
-            "outcomeCodes": [
-              "MS_FS04_ADVANCED"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -14786,9 +14345,6 @@
               ]
             },
             "knowledgeLevel": "FOUNDATION",
-            "outcomeCodes": [
-              "MS_FS05_FOUNDATION"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -14884,9 +14440,6 @@
               ]
             },
             "knowledgeLevel": "INTERMEDIATE",
-            "outcomeCodes": [
-              "MS_FS05_INTERMEDIATE"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -14982,9 +14535,6 @@
               ]
             },
             "knowledgeLevel": "ADVANCED",
-            "outcomeCodes": [
-              "MS_FS05_ADVANCED"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -15084,9 +14634,6 @@
               ]
             },
             "knowledgeLevel": "FOUNDATION",
-            "outcomeCodes": [
-              "MS_FS07_FOUNDATION"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -15186,9 +14733,6 @@
               ]
             },
             "knowledgeLevel": "INTERMEDIATE",
-            "outcomeCodes": [
-              "MS_FS07_INTERMEDIATE"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -15288,9 +14832,6 @@
               ]
             },
             "knowledgeLevel": "ADVANCED",
-            "outcomeCodes": [
-              "MS_FS07_ADVANCED"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -15388,9 +14929,6 @@
               ]
             },
             "knowledgeLevel": "FOUNDATION",
-            "outcomeCodes": [
-              "MS_FS08_FOUNDATION"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -15488,9 +15026,6 @@
               ]
             },
             "knowledgeLevel": "INTERMEDIATE",
-            "outcomeCodes": [
-              "MS_FS08_INTERMEDIATE"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -15588,9 +15123,6 @@
               ]
             },
             "knowledgeLevel": "ADVANCED",
-            "outcomeCodes": [
-              "MS_FS08_ADVANCED"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -15684,9 +15216,6 @@
               ]
             },
             "knowledgeLevel": "FOUNDATION",
-            "outcomeCodes": [
-              "MS_FS09_FOUNDATION"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -15780,9 +15309,6 @@
               ]
             },
             "knowledgeLevel": "INTERMEDIATE",
-            "outcomeCodes": [
-              "MS_FS09_INTERMEDIATE"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -15876,9 +15402,6 @@
               ]
             },
             "knowledgeLevel": "ADVANCED",
-            "outcomeCodes": [
-              "MS_FS09_ADVANCED"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -15972,9 +15495,6 @@
               ]
             },
             "knowledgeLevel": "FOUNDATION",
-            "outcomeCodes": [
-              "MS_FS11_FOUNDATION"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -16068,9 +15588,6 @@
               ]
             },
             "knowledgeLevel": "INTERMEDIATE",
-            "outcomeCodes": [
-              "MS_FS11_INTERMEDIATE"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -16164,9 +15681,6 @@
               ]
             },
             "knowledgeLevel": "ADVANCED",
-            "outcomeCodes": [
-              "MS_FS11_ADVANCED"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -16264,9 +15778,6 @@
               ]
             },
             "knowledgeLevel": "FOUNDATION",
-            "outcomeCodes": [
-              "MS_FS13_FOUNDATION"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -16364,9 +15875,6 @@
               ]
             },
             "knowledgeLevel": "INTERMEDIATE",
-            "outcomeCodes": [
-              "MS_FS13_INTERMEDIATE"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -16464,9 +15972,6 @@
               ]
             },
             "knowledgeLevel": "ADVANCED",
-            "outcomeCodes": [
-              "MS_FS13_ADVANCED"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -16564,9 +16069,6 @@
               ]
             },
             "knowledgeLevel": "FOUNDATION",
-            "outcomeCodes": [
-              "MS_FS14_FOUNDATION"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -16664,9 +16166,6 @@
               ]
             },
             "knowledgeLevel": "INTERMEDIATE",
-            "outcomeCodes": [
-              "MS_FS14_INTERMEDIATE"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -16764,9 +16263,6 @@
               ]
             },
             "knowledgeLevel": "ADVANCED",
-            "outcomeCodes": [
-              "MS_FS14_ADVANCED"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -16864,9 +16360,6 @@
               ]
             },
             "knowledgeLevel": "FOUNDATION",
-            "outcomeCodes": [
-              "MS_FS16_FOUNDATION"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -16964,9 +16457,6 @@
               ]
             },
             "knowledgeLevel": "INTERMEDIATE",
-            "outcomeCodes": [
-              "MS_FS16_INTERMEDIATE"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -17064,9 +16554,6 @@
               ]
             },
             "knowledgeLevel": "ADVANCED",
-            "outcomeCodes": [
-              "MS_FS16_ADVANCED"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -17160,9 +16647,6 @@
               ]
             },
             "knowledgeLevel": "INTERMEDIATE",
-            "outcomeCodes": [
-              "MS_GOV01_INTERMEDIATE"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -17256,9 +16740,6 @@
               ]
             },
             "knowledgeLevel": "ADVANCED",
-            "outcomeCodes": [
-              "MS_GOV01_ADVANCED"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -17352,9 +16833,6 @@
               ]
             },
             "knowledgeLevel": "INTERMEDIATE",
-            "outcomeCodes": [
-              "MS_GOV02_INTERMEDIATE"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -17448,9 +16926,6 @@
               ]
             },
             "knowledgeLevel": "ADVANCED",
-            "outcomeCodes": [
-              "MS_GOV02_ADVANCED"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -17544,9 +17019,6 @@
               ]
             },
             "knowledgeLevel": "INTERMEDIATE",
-            "outcomeCodes": [
-              "MS_GOV03_INTERMEDIATE"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -17640,9 +17112,6 @@
               ]
             },
             "knowledgeLevel": "ADVANCED",
-            "outcomeCodes": [
-              "MS_GOV03_ADVANCED"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -17740,9 +17209,6 @@
               ]
             },
             "knowledgeLevel": "INTERMEDIATE",
-            "outcomeCodes": [
-              "MS_INF01_INTERMEDIATE"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -17840,9 +17306,6 @@
               ]
             },
             "knowledgeLevel": "ADVANCED",
-            "outcomeCodes": [
-              "MS_INF01_ADVANCED"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -17940,9 +17403,6 @@
               ]
             },
             "knowledgeLevel": "INTERMEDIATE",
-            "outcomeCodes": [
-              "MS_INF02_INTERMEDIATE"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -18040,9 +17500,6 @@
               ]
             },
             "knowledgeLevel": "ADVANCED",
-            "outcomeCodes": [
-              "MS_INF02_ADVANCED"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -18138,9 +17595,6 @@
               ]
             },
             "knowledgeLevel": "INTERMEDIATE",
-            "outcomeCodes": [
-              "MS_INF03_INTERMEDIATE"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -18236,9 +17690,6 @@
               ]
             },
             "knowledgeLevel": "ADVANCED",
-            "outcomeCodes": [
-              "MS_INF03_ADVANCED"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -18336,9 +17787,6 @@
               ]
             },
             "knowledgeLevel": "INTERMEDIATE",
-            "outcomeCodes": [
-              "MS_INF04_INTERMEDIATE"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -18436,9 +17884,6 @@
               ]
             },
             "knowledgeLevel": "ADVANCED",
-            "outcomeCodes": [
-              "MS_INF04_ADVANCED"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -18536,9 +17981,6 @@
               ]
             },
             "knowledgeLevel": "INTERMEDIATE",
-            "outcomeCodes": [
-              "MS_INF05_INTERMEDIATE"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -18636,9 +18078,6 @@
               ]
             },
             "knowledgeLevel": "ADVANCED",
-            "outcomeCodes": [
-              "MS_INF05_ADVANCED"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -18734,9 +18173,6 @@
               ]
             },
             "knowledgeLevel": "INTERMEDIATE",
-            "outcomeCodes": [
-              "MS_INF06_INTERMEDIATE"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -18832,9 +18268,6 @@
               ]
             },
             "knowledgeLevel": "ADVANCED",
-            "outcomeCodes": [
-              "MS_INF06_ADVANCED"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -18930,9 +18363,6 @@
               ]
             },
             "knowledgeLevel": "INTERMEDIATE",
-            "outcomeCodes": [
-              "MS_INF07_INTERMEDIATE"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -19028,9 +18458,6 @@
               ]
             },
             "knowledgeLevel": "ADVANCED",
-            "outcomeCodes": [
-              "MS_INF07_ADVANCED"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -19128,9 +18555,6 @@
               ]
             },
             "knowledgeLevel": "INTERMEDIATE",
-            "outcomeCodes": [
-              "MS_INF08_INTERMEDIATE"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -19228,9 +18652,6 @@
               ]
             },
             "knowledgeLevel": "ADVANCED",
-            "outcomeCodes": [
-              "MS_INF08_ADVANCED"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -19324,9 +18745,6 @@
               ]
             },
             "knowledgeLevel": "FOUNDATION",
-            "outcomeCodes": [
-              "MS_QA02_FOUNDATION"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -19420,9 +18838,6 @@
               ]
             },
             "knowledgeLevel": "INTERMEDIATE",
-            "outcomeCodes": [
-              "MS_QA02_INTERMEDIATE"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -19516,9 +18931,6 @@
               ]
             },
             "knowledgeLevel": "ADVANCED",
-            "outcomeCodes": [
-              "MS_QA02_ADVANCED"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -19612,9 +19024,6 @@
               ]
             },
             "knowledgeLevel": "FOUNDATION",
-            "outcomeCodes": [
-              "MS_QA04_FOUNDATION"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -19708,9 +19117,6 @@
               ]
             },
             "knowledgeLevel": "INTERMEDIATE",
-            "outcomeCodes": [
-              "MS_QA04_INTERMEDIATE"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -19804,9 +19210,6 @@
               ]
             },
             "knowledgeLevel": "ADVANCED",
-            "outcomeCodes": [
-              "MS_QA04_ADVANCED"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -19900,9 +19303,6 @@
               ]
             },
             "knowledgeLevel": "FOUNDATION",
-            "outcomeCodes": [
-              "MS_QA05_FOUNDATION"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -19996,9 +19396,6 @@
               ]
             },
             "knowledgeLevel": "INTERMEDIATE",
-            "outcomeCodes": [
-              "MS_QA05_INTERMEDIATE"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -20092,9 +19489,6 @@
               ]
             },
             "knowledgeLevel": "ADVANCED",
-            "outcomeCodes": [
-              "MS_QA05_ADVANCED"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -20188,9 +19582,6 @@
               ]
             },
             "knowledgeLevel": "FOUNDATION",
-            "outcomeCodes": [
-              "MS_QA06_FOUNDATION"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -20284,9 +19675,6 @@
               ]
             },
             "knowledgeLevel": "INTERMEDIATE",
-            "outcomeCodes": [
-              "MS_QA06_INTERMEDIATE"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -20380,9 +19768,6 @@
               ]
             },
             "knowledgeLevel": "ADVANCED",
-            "outcomeCodes": [
-              "MS_QA06_ADVANCED"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -20476,9 +19861,6 @@
               ]
             },
             "knowledgeLevel": "FOUNDATION",
-            "outcomeCodes": [
-              "MS_QA07_FOUNDATION"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -20572,9 +19954,6 @@
               ]
             },
             "knowledgeLevel": "INTERMEDIATE",
-            "outcomeCodes": [
-              "MS_QA07_INTERMEDIATE"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -20668,9 +20047,6 @@
               ]
             },
             "knowledgeLevel": "ADVANCED",
-            "outcomeCodes": [
-              "MS_QA07_ADVANCED"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -20764,9 +20140,6 @@
               ]
             },
             "knowledgeLevel": "FOUNDATION",
-            "outcomeCodes": [
-              "MS_QA08_FOUNDATION"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -20860,9 +20233,6 @@
               ]
             },
             "knowledgeLevel": "INTERMEDIATE",
-            "outcomeCodes": [
-              "MS_QA08_INTERMEDIATE"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -20956,9 +20326,6 @@
               ]
             },
             "knowledgeLevel": "ADVANCED",
-            "outcomeCodes": [
-              "MS_QA08_ADVANCED"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -21052,9 +20419,6 @@
               ]
             },
             "knowledgeLevel": "FOUNDATION",
-            "outcomeCodes": [
-              "MS_QA10_FOUNDATION"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -21148,9 +20512,6 @@
               ]
             },
             "knowledgeLevel": "INTERMEDIATE",
-            "outcomeCodes": [
-              "MS_QA10_INTERMEDIATE"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -21244,9 +20605,6 @@
               ]
             },
             "knowledgeLevel": "ADVANCED",
-            "outcomeCodes": [
-              "MS_QA10_ADVANCED"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -21340,9 +20698,6 @@
               ]
             },
             "knowledgeLevel": "FOUNDATION",
-            "outcomeCodes": [
-              "MS_QA11_FOUNDATION"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -21436,9 +20791,6 @@
               ]
             },
             "knowledgeLevel": "INTERMEDIATE",
-            "outcomeCodes": [
-              "MS_QA11_INTERMEDIATE"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -21532,9 +20884,6 @@
               ]
             },
             "knowledgeLevel": "ADVANCED",
-            "outcomeCodes": [
-              "MS_QA11_ADVANCED"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -21628,9 +20977,6 @@
               ]
             },
             "knowledgeLevel": "FOUNDATION",
-            "outcomeCodes": [
-              "MS_QA13_FOUNDATION"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -21724,9 +21070,6 @@
               ]
             },
             "knowledgeLevel": "INTERMEDIATE",
-            "outcomeCodes": [
-              "MS_QA13_INTERMEDIATE"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -21820,9 +21163,6 @@
               ]
             },
             "knowledgeLevel": "ADVANCED",
-            "outcomeCodes": [
-              "MS_QA13_ADVANCED"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -21916,9 +21256,6 @@
               ]
             },
             "knowledgeLevel": "FOUNDATION",
-            "outcomeCodes": [
-              "MS_QA14_FOUNDATION"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -22012,9 +21349,6 @@
               ]
             },
             "knowledgeLevel": "INTERMEDIATE",
-            "outcomeCodes": [
-              "MS_QA14_INTERMEDIATE"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -22108,9 +21442,6 @@
               ]
             },
             "knowledgeLevel": "ADVANCED",
-            "outcomeCodes": [
-              "MS_QA14_ADVANCED"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -22204,9 +21535,6 @@
               ]
             },
             "knowledgeLevel": "FOUNDATION",
-            "outcomeCodes": [
-              "MS_QA16_FOUNDATION"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -22300,9 +21628,6 @@
               ]
             },
             "knowledgeLevel": "INTERMEDIATE",
-            "outcomeCodes": [
-              "MS_QA16_INTERMEDIATE"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -22396,9 +21721,6 @@
               ]
             },
             "knowledgeLevel": "ADVANCED",
-            "outcomeCodes": [
-              "MS_QA16_ADVANCED"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -22498,9 +21820,6 @@
               ]
             },
             "knowledgeLevel": "INTERMEDIATE",
-            "outcomeCodes": [
-              "MS_SEC01_INTERMEDIATE"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -22600,9 +21919,6 @@
               ]
             },
             "knowledgeLevel": "ADVANCED",
-            "outcomeCodes": [
-              "MS_SEC01_ADVANCED"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -22702,9 +22018,6 @@
               ]
             },
             "knowledgeLevel": "INTERMEDIATE",
-            "outcomeCodes": [
-              "MS_SEC02_INTERMEDIATE"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -22804,9 +22117,6 @@
               ]
             },
             "knowledgeLevel": "ADVANCED",
-            "outcomeCodes": [
-              "MS_SEC02_ADVANCED"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -22904,9 +22214,6 @@
               ]
             },
             "knowledgeLevel": "INTERMEDIATE",
-            "outcomeCodes": [
-              "MS_SEC03_INTERMEDIATE"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -23004,9 +22311,6 @@
               ]
             },
             "knowledgeLevel": "ADVANCED",
-            "outcomeCodes": [
-              "MS_SEC03_ADVANCED"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -23104,9 +22408,6 @@
               ]
             },
             "knowledgeLevel": "INTERMEDIATE",
-            "outcomeCodes": [
-              "MS_SEC04_INTERMEDIATE"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -23204,9 +22505,6 @@
               ]
             },
             "knowledgeLevel": "ADVANCED",
-            "outcomeCodes": [
-              "MS_SEC04_ADVANCED"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -23300,9 +22598,6 @@
               ]
             },
             "knowledgeLevel": "INTERMEDIATE",
-            "outcomeCodes": [
-              "MS_SEC05_INTERMEDIATE"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -23396,9 +22691,6 @@
               ]
             },
             "knowledgeLevel": "ADVANCED",
-            "outcomeCodes": [
-              "MS_SEC05_ADVANCED"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -23492,9 +22784,6 @@
               ]
             },
             "knowledgeLevel": "INTERMEDIATE",
-            "outcomeCodes": [
-              "MS_SEC06_INTERMEDIATE"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -23588,9 +22877,6 @@
               ]
             },
             "knowledgeLevel": "ADVANCED",
-            "outcomeCodes": [
-              "MS_SEC06_ADVANCED"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -23684,9 +22970,6 @@
               ]
             },
             "knowledgeLevel": "INTERMEDIATE",
-            "outcomeCodes": [
-              "MS_SEC07_INTERMEDIATE"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -23780,9 +23063,6 @@
               ]
             },
             "knowledgeLevel": "ADVANCED",
-            "outcomeCodes": [
-              "MS_SEC07_ADVANCED"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -23878,9 +23158,6 @@
               ]
             },
             "knowledgeLevel": "INTERMEDIATE",
-            "outcomeCodes": [
-              "MS_SEC08_INTERMEDIATE"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -23976,9 +23253,6 @@
               ]
             },
             "knowledgeLevel": "ADVANCED",
-            "outcomeCodes": [
-              "MS_SEC08_ADVANCED"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -24072,9 +23346,6 @@
               ]
             },
             "knowledgeLevel": "INTERMEDIATE",
-            "outcomeCodes": [
-              "MS_SEC09_INTERMEDIATE"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -24168,9 +23439,6 @@
               ]
             },
             "knowledgeLevel": "ADVANCED",
-            "outcomeCodes": [
-              "MS_SEC09_ADVANCED"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -24264,9 +23532,6 @@
               ]
             },
             "knowledgeLevel": "INTERMEDIATE",
-            "outcomeCodes": [
-              "MS_SEC10_INTERMEDIATE"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -24360,9 +23625,6 @@
               ]
             },
             "knowledgeLevel": "ADVANCED",
-            "outcomeCodes": [
-              "MS_SEC10_ADVANCED"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -24456,9 +23718,6 @@
               ]
             },
             "knowledgeLevel": "FOUNDATION",
-            "outcomeCodes": [
-              "MS_DE09_FOUNDATION"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -24552,9 +23811,6 @@
               ]
             },
             "knowledgeLevel": "INTERMEDIATE",
-            "outcomeCodes": [
-              "MS_DE09_INTERMEDIATE"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -24648,9 +23904,6 @@
               ]
             },
             "knowledgeLevel": "ADVANCED",
-            "outcomeCodes": [
-              "MS_DE09_ADVANCED"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -24748,9 +24001,6 @@
               ]
             },
             "knowledgeLevel": "FOUNDATION",
-            "outcomeCodes": [
-              "MS_DE10_FOUNDATION"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -24848,9 +24098,6 @@
               ]
             },
             "knowledgeLevel": "INTERMEDIATE",
-            "outcomeCodes": [
-              "MS_DE10_INTERMEDIATE"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -24948,9 +24195,6 @@
               ]
             },
             "knowledgeLevel": "ADVANCED",
-            "outcomeCodes": [
-              "MS_DE10_ADVANCED"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -25044,9 +24288,6 @@
               ]
             },
             "knowledgeLevel": "FOUNDATION",
-            "outcomeCodes": [
-              "MS_FS01_FOUNDATION"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -25140,9 +24381,6 @@
               ]
             },
             "knowledgeLevel": "INTERMEDIATE",
-            "outcomeCodes": [
-              "MS_FS01_INTERMEDIATE"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -25236,9 +24474,6 @@
               ]
             },
             "knowledgeLevel": "ADVANCED",
-            "outcomeCodes": [
-              "MS_FS01_ADVANCED"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -25332,9 +24567,6 @@
               ]
             },
             "knowledgeLevel": "FOUNDATION",
-            "outcomeCodes": [
-              "MS_FS10_FOUNDATION"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -25428,9 +24660,6 @@
               ]
             },
             "knowledgeLevel": "INTERMEDIATE",
-            "outcomeCodes": [
-              "MS_FS10_INTERMEDIATE"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -25524,9 +24753,6 @@
               ]
             },
             "knowledgeLevel": "ADVANCED",
-            "outcomeCodes": [
-              "MS_FS10_ADVANCED"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -25620,9 +24846,6 @@
               ]
             },
             "knowledgeLevel": "FOUNDATION",
-            "outcomeCodes": [
-              "MS_FS15_FOUNDATION"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -25716,9 +24939,6 @@
               ]
             },
             "knowledgeLevel": "INTERMEDIATE",
-            "outcomeCodes": [
-              "MS_FS15_INTERMEDIATE"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -25812,9 +25032,6 @@
               ]
             },
             "knowledgeLevel": "ADVANCED",
-            "outcomeCodes": [
-              "MS_FS15_ADVANCED"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -25908,9 +25125,6 @@
               ]
             },
             "knowledgeLevel": "FOUNDATION",
-            "outcomeCodes": [
-              "MS_QA09_FOUNDATION"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -26004,9 +25218,6 @@
               ]
             },
             "knowledgeLevel": "INTERMEDIATE",
-            "outcomeCodes": [
-              "MS_QA09_INTERMEDIATE"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -26100,9 +25311,6 @@
               ]
             },
             "knowledgeLevel": "ADVANCED",
-            "outcomeCodes": [
-              "MS_QA09_ADVANCED"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -26196,9 +25404,6 @@
               ]
             },
             "knowledgeLevel": "FOUNDATION",
-            "outcomeCodes": [
-              "MS_QA12_FOUNDATION"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -26292,9 +25497,6 @@
               ]
             },
             "knowledgeLevel": "INTERMEDIATE",
-            "outcomeCodes": [
-              "MS_QA12_INTERMEDIATE"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -26388,9 +25590,6 @@
               ]
             },
             "knowledgeLevel": "ADVANCED",
-            "outcomeCodes": [
-              "MS_QA12_ADVANCED"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -26484,9 +25683,6 @@
               ]
             },
             "knowledgeLevel": "FOUNDATION",
-            "outcomeCodes": [
-              "MS_QA15_FOUNDATION"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -26580,9 +25776,6 @@
               ]
             },
             "knowledgeLevel": "INTERMEDIATE",
-            "outcomeCodes": [
-              "MS_QA15_INTERMEDIATE"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",
@@ -26676,9 +25869,6 @@
               ]
             },
             "knowledgeLevel": "ADVANCED",
-            "outcomeCodes": [
-              "MS_QA15_ADVANCED"
-            ],
             "skillVersion": "0.12.1"
           },
           "editedBy": "DEVELOPMENT_SEED",

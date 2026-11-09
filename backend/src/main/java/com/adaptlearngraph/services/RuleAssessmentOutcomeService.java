@@ -85,18 +85,24 @@ public final class RuleAssessmentOutcomeService {
         }
         // A later genuine evidence source resolves an earlier review; the evidence itself is never removed.
         effects.resolveCompatibleReviews(a.getOrganizationId(),a.getLearnerId());
-        if(decision.state()==RuleAssessmentDecision.State.READY)award(a,work,context,definitions.get(decision.main().requirement().key()),decision.main());
+        if(decision.state()==RuleAssessmentDecision.State.READY) {
+            var evidenceEvent=award(a,work,context,definitions.get(decision.main().requirement().key()),decision.main());
+            // The first recalculation discovers mandatory supplements before the decision.
+            // Reconcile again with the real accepted evidence in this same transaction,
+            // rather than leaving the current step yellow until the periodic refresh.
+            if(evidenceEvent!=null)pathways.apply(a,evidenceEvent,rows);
+        }
         if(decision.state()==RuleAssessmentDecision.State.WAITING_SUPPLEMENT) {
             effects.retry(work.getJobId(),"WAITING_REQUIRED_SUPPLEMENT");return;
         }
         if(effects.processed(a.getOrganizationId(),a.getLearnerId(),a.getId())!=1 || effects.done(work.getJobId())!=1)throw integrity();
         effects.receipt(work.getEventId(),work.getSourceRevision());
     }
-    private void award(RuleAssessmentAttemptEntity attempt,RuleAssessmentOutcomeJpaRepository.Work work,JsonNode context,JsonNode definition,GroupResult main) {
+    private UUID award(RuleAssessmentAttemptEntity attempt,RuleAssessmentOutcomeJpaRepository.Work work,JsonNode context,JsonNode definition,GroupResult main) {
         var requirement=main.requirement();
         var snapshot=new LinkedHashMap<String,Object>();
         snapshot.put("skillVersion",definition.get("skillVersion").asText());snapshot.put("skillName",definition.get("skillName").asText());
-        snapshot.put("outcomeCodes",requirement.outcomeCodes());snapshot.put("attemptId",attempt.getId());snapshot.put("groupId",main.groupId());
+        snapshot.put("attemptId",attempt.getId());snapshot.put("groupId",main.groupId());
         for(var field:List.of("selectionId","selectionRevision","requestId","pathwayRevision","stepId","moduleId","moduleRevision","contentVersion")) {
             if(context.path(field).isMissingNode() || context.path(field).isNull())throw integrity();snapshot.put(field,json.convertValue(context.get(field),Object.class));
         }
@@ -109,12 +115,15 @@ public final class RuleAssessmentOutcomeService {
         UUID id=effects.evidenceId(attempt.getOrganizationId(),attempt.getLearnerId(),attempt.getId(),work.getSourceRevision(),requirement.skillId(),requirement.knowledgeLevel().name())
                 .orElseThrow(()->new IllegalStateException("Retained qualifying module completion is unavailable"));
         effects.resolveReviews(attempt.getOrganizationId(),attempt.getLearnerId(),id);
+        UUID event=null;
         if(inserted==1) {
+            event=UUID.randomUUID();
             var now=attempts.clock();
-            outbox.insert(new OutboxEventEntity(UUID.randomUUID(),"KNOWLEDGE_EVIDENCE_ACCEPTED",id,1,
+            outbox.insert(new OutboxEventEntity(event,"KNOWLEDGE_EVIDENCE_ACCEPTED",id,1,
                     Map.of("organizationId",attempt.getOrganizationId(),"learnerId",attempt.getLearnerId(),"evidenceId",id,"sourceKind","MODULE_ASSESSMENT"),attempt.getId(),now));
             audit.insert(new com.adaptlearngraph.entities.AuditEventEntity(UUID.randomUUID(),null,"rule-assessment","KNOWLEDGE_EVIDENCE_ACCEPTED",id,"1",now,"ACCEPTED",attempt.getId()));
         }
+        return event;
     }
     private JsonNode read(String value){try{return json.readTree(value);}catch(Exception invalid){throw integrity();}}
     private List<String> strings(String value){try{return json.readValue(value,new TypeReference<List<String>>(){});}catch(Exception invalid){throw integrity();}}

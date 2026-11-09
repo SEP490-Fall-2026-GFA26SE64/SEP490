@@ -20,7 +20,7 @@ export async function uploadLearningFile<T>(path: string, file: File): Promise<T
   return response.json() as Promise<T>
 }
 export interface ModuleContent { id: string; title: string; markdown: string; contentType: string; contentVersion: string; jobPositionIds: string[]; createdBy: string | null; createdAt: string; lessons?: LearningLesson[] }
-export interface ModulePackage { metadata: ModuleMetadata; title: string; moduleType: string; contentUri: string; contentType: string; contentVersion: string; duration: number; teachings: ModuleTeaching[]; content: ModuleContent; knowledgeLevel: string | null; outcomeCodes: string[]; skillVersion: string | null }
+export interface ModulePackage { metadata: ModuleMetadata; title: string; moduleType: string; contentUri: string; contentType: string; contentVersion: string; duration: number; teachings: ModuleTeaching[]; content: ModuleContent; knowledgeLevel: string | null; outcomeCodes?: string[]; skillVersion: string | null }
 export interface ModuleRevision { number: number; state: string; payload: ModulePackage; editedBy: string; editedAt: string; decidedBy: string | null; decidedAt: string | null; feedback: string | null }
 export interface ModuleEvent { sequence: number; revision: number; action: string; actorId: string; occurredAt: string; detail: string | null }
 export interface ModuleDocument { id: string; organizationId: string; jobPositionIds: string[]; createdBy: string | null; createdAt: string; lockVersion: number; everReleased: boolean; archived: boolean; releasedRevision: number | null; revisions: ModuleRevision[]; history: ModuleEvent[]; intake?: ModuleIntake | null }
@@ -28,7 +28,7 @@ export interface ModuleSave { title: string; moduleType: string; contentId: stri
 export interface ModulePage { items: ModuleDocument[]; total: number; page: number; pageSize: number }
 export type CatalogMetadata = { [Key in keyof ModuleMetadata]: ModuleMetadata[Key] | null }
 export interface CatalogTeaching { metadata: CatalogMetadata; skillId: string; skillName: string | null }
-export interface CatalogModule { metadata: CatalogMetadata & { id: string }; title: string | null; moduleType: string | null; contentUri: string | null; contentType: string | null; contentVersion: string | null; duration: number | null; teachings: CatalogTeaching[]; knowledgeLevel: string | null; outcomeCodes: string[]; skillVersion: string | null }
+export interface CatalogModule { metadata: CatalogMetadata & { id: string }; title: string | null; moduleType: string | null; contentUri: string | null; contentType: string | null; contentVersion: string | null; duration: number | null; teachings: CatalogTeaching[]; knowledgeLevel: string | null; outcomeCodes?: string[]; skillVersion: string | null }
 export interface ModuleCatalogItem { module: CatalogModule; authoring: ModuleDocument | null; intake?: ModuleIntake | null }
 export interface ModuleIntake { expertId?: string | null; moduleId: string; organizationId: string; jobPositionIds: string[]; assignedBy: string; assignedAt: string; source: CatalogModule; acceptedBy: string | null; acceptedAt: string | null; history: ModuleEvent[] }
 export interface ModuleCatalogPage { items: ModuleCatalogItem[]; total: number; page: number; pageSize: number }

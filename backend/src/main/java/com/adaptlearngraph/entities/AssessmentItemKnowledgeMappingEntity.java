@@ -12,7 +12,7 @@ public class AssessmentItemKnowledgeMappingEntity {
     @Column(name="question_bank_id",nullable=false) private UUID questionBankId;
     @Column(name="skill_id",nullable=false) private String skillId;
     @Column(name="knowledge_level",nullable=false) private String knowledgeLevel;
-    @Column(name="outcome_code",nullable=false) private String outcomeCode;
+    @Column(name="outcome_code") private String outcomeCode;
     @Column(name="mandatory",nullable=false) private boolean mandatory;
     @Column(name="mapping_version",nullable=false) private long mappingVersion;
     @Column(name="mapping_hash",nullable=false,columnDefinition=PostgresColumnTypes.CONTENT_HASH) private String mappingHash;

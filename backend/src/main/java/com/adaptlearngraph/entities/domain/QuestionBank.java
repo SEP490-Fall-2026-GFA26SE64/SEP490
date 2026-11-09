@@ -42,7 +42,10 @@ public final class QuestionBank {
     }
     public record Content(String prompt, List<String> options, Integer correctAnswer,
                           String skillId, String skillName, String difficulty, String explanation,
-                          String knowledgeLevel, String outcomeCode, boolean mandatory) {
+                          String knowledgeLevel, String outcomeCode, boolean mandatory,String skillVersion) {
+        public Content(String prompt,List<String> options,Integer answer,String skill,String name,String difficulty,String explanation,String level,String outcome,boolean mandatory) {
+            this(prompt,options,answer,skill,name,difficulty,explanation,level,outcome,mandatory,null);
+        }
         /** Historical JSON/import callers retain original difficulty without inferring knowledge. */
         public Content(String prompt,List<String> options,Integer answer,String skill,String name,String difficulty,String explanation) {
             this(prompt,options,answer,skill,name,difficulty,explanation,null,null,false);

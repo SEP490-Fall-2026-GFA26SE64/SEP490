@@ -21,13 +21,14 @@ public interface AssessmentItemKnowledgeMappingJpaRepository
                 m.outcome_code AS outcomeCode,m.mandatory AS mandatory
             FROM latest d JOIN platform.assessment_item_knowledge_mapping m ON m.item_version_id=d.item_version_id
                 AND m.question_bank_id=d.question_bank_id AND m.organization_id=:org
+            JOIN platform.assessment_item_skill_scope scope ON scope.item_version_id=m.item_version_id AND scope.skill_version=:skillVersion
             WHERE d.publication_state='PUBLISHED' AND d.micro_skill_id=m.skill_id
-                AND m.skill_id=:skill AND m.knowledge_level=:level AND m.outcome_code IN (:outcomes)
+                AND m.skill_id=:skill AND m.knowledge_level=:level
                 AND NOT EXISTS (SELECT 1 FROM platform.question_bank_identity q WHERE q.question_id=d.item_id AND q.retired)
             ORDER BY d.item_version_id LIMIT :maximum
             """,nativeQuery=true)
     List<Candidate> eligible(@Param("org") UUID org,@Param("skill") String skill,@Param("level") String level,
-            @Param("outcomes") List<String> outcomes,@Param("maximum") int maximum);
+            @Param("skillVersion") String skillVersion,@Param("maximum") int maximum);
     /** Same eligibility as paper selection; staff configuration receives only a bounded count. */
     @Query(value="""
             WITH latest AS (
@@ -37,13 +38,17 @@ public interface AssessmentItemKnowledgeMappingJpaRepository
             ) SELECT count(*) FROM (
                 SELECT d.item_version_id FROM latest d JOIN platform.assessment_item_knowledge_mapping m ON m.item_version_id=d.item_version_id
                     AND m.question_bank_id=d.question_bank_id AND m.organization_id=:org
-                WHERE d.publication_state='PUBLISHED' AND d.micro_skill_id=m.skill_id
-                    AND m.skill_id=:skill AND m.knowledge_level=:level AND m.outcome_code IN (:outcomes)
+                JOIN platform.assessment_item_skill_scope scope ON scope.item_version_id=m.item_version_id AND scope.skill_version=:skillVersion
+            WHERE d.publication_state='PUBLISHED' AND d.micro_skill_id=m.skill_id
+                    AND m.skill_id=:skill AND m.knowledge_level=:level
                     AND NOT EXISTS (SELECT 1 FROM platform.question_bank_identity q WHERE q.question_id=d.item_id AND q.retired)
                 LIMIT 501
             ) available
             """,nativeQuery=true)
-    int availableCount(@Param("org") UUID org,@Param("skill") String skill,@Param("level") String level,@Param("outcomes") List<String> outcomes);
+    int availableCount(@Param("org") UUID org,@Param("skill") String skill,@Param("level") String level,@Param("skillVersion") String skillVersion);
+    @org.springframework.data.jpa.repository.Modifying
+    @Query(value="INSERT INTO platform.assessment_item_skill_scope(item_version_id,skill_version,source) VALUES(:item,:version,'PUBLICATION')",nativeQuery=true)
+    int bindScope(@Param("item") UUID item,@Param("version") String version);
     interface Candidate {
         UUID getItemVersionId();String getPrompt();String getResponseSchema();String getProtectedKey();
         String getContentHash();String getMappingHash();String getOutcomeCode();boolean getMandatory();

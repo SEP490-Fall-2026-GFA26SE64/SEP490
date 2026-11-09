@@ -13,7 +13,7 @@ import { Pagination } from '../../../shared/components/ui/Pagination'
 import { LoadingCard } from '../../../shared/components/ui/LoadingCard'
 import { Text } from '../../../shared/components/typography/Text'
 import { useTranslation } from '../../../shared/i18n/LanguageContext'
-import { chooseCurrentRole, currentRoles, prepareRoleChoice, readRoleFlow, RoleFlowError, type CurrentRole, type RoleChoiceCommand } from './currentRoleFlowApi'
+import { assignedRankForRole, chooseCurrentRole, currentRoles, prepareRoleChoice, readRoleFlow, RoleFlowError, type CurrentRole, type RoleChoiceCommand } from './currentRoleFlowApi'
 import { EmptyState } from '../../../shared/components/ui/EmptyState'
 import { CurrentRoleCard } from './CurrentRoleCard'
 import { CurrentRoleSummary } from './CurrentRoleSummary'
@@ -48,56 +48,19 @@ function OwnedCurrentRolePanel({ scope }: { scope: string }) {
   async function refresh() { await Promise.all([roles.refetch(), view.refetch()]) }
   function choose(role: CurrentRole, chosenLevel?: string) {
     if (lock.current || command || !view.data) return
-    const isSameStartOffRole = Boolean(
-      (view.data.startingPlacement &&
-        (view.data.startingPlacement.role.id === role.id ||
-          view.data.startingPlacement.role.code.toUpperCase() === role.code.toUpperCase() ||
-          view.data.startingPlacement.role.name.toLowerCase() === role.name.toLowerCase())) ||
-      (view.data.assignedRoleId && view.data.assignedRoleId === role.id) ||
-      (view.data.assignedRoleCode && view.data.assignedRoleCode.toUpperCase() === role.code.toUpperCase()) ||
-      (view.data.assignedRoleTitle && view.data.assignedRoleTitle.toLowerCase() === role.name.toLowerCase())
-    )
-    const assignedLevelStr = (view.data.assignedLevel || view.data.startingPlacement?.levelId || '')
-      .replace(/^(?:rank|level)\s*\d+\s*:\s*/i, '')
-      .trim()
-      .toLowerCase()
-
-    const currentAssignedLevel = isSameStartOffRole
-      ? role.levels.find(
-          l =>
-            l.id.toLowerCase() === assignedLevelStr ||
-            l.name.toLowerCase() === assignedLevelStr ||
-            l.code.toLowerCase() === assignedLevelStr ||
-            l.id === view.data?.startingPlacement?.levelId ||
-            (typeof view.data?.assignedLevelRank === 'number' && l.rank === view.data.assignedLevelRank),
-        )
-      : null
-    const fallbackLevelId = currentAssignedLevel?.id ?? (isSameStartOffRole ? view.data.startingPlacement?.levelId ?? '' : '')
-
-    // The filter preventing lower and same levels ONLY applies when choosing the same start-off target role.
-    // For any other target role, all levels are fully selectable!
-    const effectiveMinRank = isSameStartOffRole
-      ? (currentAssignedLevel?.rank ?? view.data?.assignedLevelRank ?? undefined)
-      : undefined
-
-    let targetLevelId = chosenLevel ?? fallbackLevelId
-    if (effectiveMinRank !== undefined) {
-      const selectedLvl = role.levels.find(l => l.id === targetLevelId)
-      // Upskilling within same role strictly requires a level higher than current assigned rank (rank < effectiveMinRank)
-      if (!selectedLvl || selectedLvl.rank >= effectiveMinRank) {
-        const permissible = role.levels
-          .filter(l => l.rank < effectiveMinRank)
-          .sort((a, b) => b.rank - a.rank)
-        if (permissible.length > 0) {
-          targetLevelId = permissible[0].id
-        } else {
-          targetLevelId = ''
-        }
-      }
-    } else if (!targetLevelId) {
-      // For a different role, default to entry level or first level
-      targetLevelId = role.levels[role.levels.length - 1]?.id ?? role.levels[0]?.id ?? ''
+    if (view.data.targetLocked === undefined) {
+      setError(new RoleFlowError('ROLE_SELECTION_NOT_READY', 409))
+      return
     }
+    if (view.data.targetLocked) {
+      setError(new RoleFlowError('TARGET_ROLE_LEVEL_LOCKED', 409))
+      return
+    }
+    const assignedRank = assignedRankForRole(role, view.data)
+    const eligible = role.levels
+      .filter(level => assignedRank === undefined || level.rank < assignedRank)
+      .sort((a, b) => b.rank - a.rank)
+    const targetLevelId = eligible.find(level => level.id === chosenLevel)?.id ?? eligible[0]?.id ?? ''
 
     setSelected(role)
     setLevelId(targetLevelId)
@@ -125,6 +88,8 @@ function OwnedCurrentRolePanel({ scope }: { scope: string }) {
       retrying={roles.isFetching || view.isFetching} onRetry={() => void refresh()} />}
     {view.data && !view.isError && <CurrentRoleSummary view={view.data} disabled={blocked} onDetails={() => { if (view.data?.selection) setDetails({ role: view.data.selection.role, selectedLevelId: view.data.selection.levelId ?? undefined }) }} />}
     {error && !selected && <div className="space-y-3 rounded-lg border border-destructive/30 bg-destructive/5 p-3" role="alert"><Text variant="body-sm" tone="destructive">{t(`roleFlow.errors.${error.code}`, tr('statusError'))}</Text>{error.code === 'TARGET_ROLE_LEVEL_LOCKED' && <Link to="/employee/pathway?view=role" className={buttonVariants({ variant: 'primary', size: 'sm' })}>{t('roleFlow.viewPathway')}</Link>}</div>}
+    {view.data?.targetLocked && !error && <Text variant="body-sm" role="status">{tr('errors.TARGET_ROLE_LEVEL_LOCKED')}</Text>}
+    {view.data && view.data.targetLocked === undefined && !view.isError && !error && <Text variant="body-sm" role="status">{tr('errors.ROLE_SELECTION_NOT_READY')}</Text>}
     {assessmentActive && <Text variant="body-sm" role="status">{tr('errors.ASSESSMENT_IN_PROGRESS')}</Text>}
     <Card><CardContent className="flex flex-col gap-3 p-3 lg:flex-row lg:items-center">
       <div className="min-w-0 flex-1">
@@ -165,7 +130,7 @@ function OwnedCurrentRolePanel({ scope }: { scope: string }) {
     })}</div>
     {filtered.length > 0 && <Card className="overflow-hidden"><Pagination currentPage={currentPage} totalPages={pageCount} totalItems={filtered.length} pageSize={12} disabled={blocked} onPageChange={setPage} itemLabel={t('upskillingUi.roles')}
       labels={{ navigation: t('adaptiveBaseline.paging.navigation'), first: t('adaptiveBaseline.paging.first'), previous: t('adaptiveBaseline.paging.previous'), next: t('adaptiveBaseline.paging.next'), last: t('adaptiveBaseline.paging.last'), showing: t('adaptiveBaseline.paging.showing'), of: t('adaptiveBaseline.paging.of') }} /></Card>}
-    <Dialog open={selected !== null} className="max-w-md sm:max-w-lg" onOpenChange={open => { if (!open && !blocked) setSelected(null) }} ariaLabel={tr('confirmTitle')} closeLabel={tr('cancel')}>
+    <Dialog open={selected !== null} className="max-w-lg sm:max-w-xl" onOpenChange={open => { if (!open && !blocked) setSelected(null) }} ariaLabel={tr('confirmTitle')} closeLabel={tr('cancel')}>
       <DialogHeader>
         <DialogTitle className="flex items-center gap-2">
           <Target size={18} className="shrink-0 text-primary" aria-hidden="true" />
@@ -175,7 +140,7 @@ function OwnedCurrentRolePanel({ scope }: { scope: string }) {
           {tr(view.data?.selection ? 'changeNotice' : 'chooseNotice')}
         </DialogDescription>
       </DialogHeader>
-      <DialogBody className="space-y-4">
+      <DialogBody className="space-y-4 px-1 py-1">
       <div className="space-y-1 rounded-lg border border-border bg-muted/20 p-3.5">
         <Text variant="body-sm" tone="foreground" className="break-words font-semibold text-sm">
           {selected?.name}
@@ -184,46 +149,13 @@ function OwnedCurrentRolePanel({ scope }: { scope: string }) {
           {selected?.jobPositionName}
         </Text>
       </div>
-      {selected && (() => {
-        const isSameStartOff = Boolean(
-          (view.data?.startingPlacement &&
-            (view.data.startingPlacement.role.id === selected.id ||
-              view.data.startingPlacement.role.code.toUpperCase() === selected.code.toUpperCase() ||
-              view.data.startingPlacement.role.name.toLowerCase() === selected.name.toLowerCase())) ||
-          (view.data?.assignedRoleId && view.data.assignedRoleId === selected.id) ||
-          (view.data?.assignedRoleCode && view.data.assignedRoleCode.toUpperCase() === selected.code.toUpperCase()) ||
-          (view.data?.assignedRoleTitle && view.data.assignedRoleTitle.toLowerCase() === selected.name.toLowerCase())
-        )
-        const assignedLevelStr = (view.data?.assignedLevel || view.data?.startingPlacement?.levelId || '')
-          .replace(/^(?:rank|level)\s*\d+\s*:\s*/i, '')
-          .trim()
-          .toLowerCase()
-
-        const currentAssignedLevel = isSameStartOff
-          ? selected.levels.find(
-              l =>
-                l.id.toLowerCase() === assignedLevelStr ||
-                l.name.toLowerCase() === assignedLevelStr ||
-                l.code.toLowerCase() === assignedLevelStr ||
-                l.id === view.data?.startingPlacement?.levelId ||
-                (typeof view.data?.assignedLevelRank === 'number' && l.rank === view.data.assignedLevelRank),
-            )
-          : null
-
-        const allowedMinRank = isSameStartOff
-          ? (currentAssignedLevel?.rank ?? view.data?.assignedLevelRank ?? undefined)
-          : undefined
-
-        return (
-          <RoleLevelPicker
-            levels={selected.levels}
-            value={levelId}
-            disabled={blocked}
-            onChange={setLevelId}
-            minAllowedRank={allowedMinRank}
-          />
-        )
-      })()}
+      {selected && <RoleLevelPicker
+        levels={selected.levels}
+        value={levelId}
+        disabled={blocked}
+        onChange={setLevelId}
+        minAllowedRank={assignedRankForRole(selected, view.data)}
+      />}
       {error && <div className="space-y-3 rounded-lg border border-destructive/30 bg-destructive/5 p-3" role="alert"><Text variant="body-sm" tone="destructive">{t(`roleFlow.errors.${error.code}`, tr('statusError'))}</Text>{error.code === 'TARGET_ROLE_LEVEL_LOCKED' && <Link to="/employee/pathway?view=role" className={buttonVariants({ variant: 'primary', size: 'sm' })}>{t('roleFlow.viewPathway')}</Link>}</div>}
       {command && <Text variant="body-sm">{tr('retryNotice')}</Text>}
       </DialogBody>

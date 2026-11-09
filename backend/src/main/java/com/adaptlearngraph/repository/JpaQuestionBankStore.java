@@ -146,16 +146,17 @@ public final class JpaQuestionBankStore implements Store {
                 String response = encode(Map.of("type", "SINGLE_CHOICE", "options", options));
                 String key = encode(Map.of("correctOptionId", String.valueOf((char) ('A' + v.content.correctAnswer()))));
                 String hash = sha256(encode(List.of(source, q.id, v.number, v.content.prompt(), response, key, v.content.skillId(),
-                        v.content.skillName(), v.content.knowledgeLevel(), v.content.outcomeCode(),v.content.mandatory())));
+                        v.content.skillName(), v.content.knowledgeLevel(), v.content.skillVersion(),v.content.mandatory())));
                 if (states.contains("DRAFT")) {
                     if (items.publishDraft(v.id, v.content.prompt(), response, key, hash, v.content.skillId(), v.content.skillName(),
                             v.content.difficulty()) != 1) throw new Failure(409, "Legacy draft changed during approval");
                 } else items.insert(new ItemVersionEntity(v.id, q.id, v.number, source, v.content.prompt(), response, key, "PUBLISHED", hash,
                         v.content.skillId(), v.content.skillName(), null));
                 mappings.insert(new com.adaptlearngraph.entities.AssessmentItemKnowledgeMappingEntity(v.id,bank.organization,source,
-                        v.content.skillId(),v.content.knowledgeLevel(),v.content.outcomeCode(),v.content.mandatory(),v.number,
+                        v.content.skillId(),v.content.knowledgeLevel(),null,v.content.mandatory(),v.number,
                         sha256(encode(List.of(v.id,bank.organization,v.content.skillId(),v.content.knowledgeLevel(),
-                                v.content.outcomeCode(),v.content.mandatory(),v.number)))));
+                                v.content.skillVersion(),v.content.mandatory(),v.number)))));
+                mappings.bindScope(v.id,v.content.skillVersion());
             }
         }
         for (var notice : bank.notices) {

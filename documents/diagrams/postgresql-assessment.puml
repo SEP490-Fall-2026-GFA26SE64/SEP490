@@ -42,6 +42,27 @@ entity "assessment_rule_policy_version_number_history" as assessment_rule_policy
   bigint scoped_version
 }
 assessment_rule_policy_version --> assessment_rule_scoped_activation : same org purpose scope policy FK
+entity "assessment_item_knowledge_mapping" as assessment_item_knowledge_mapping {
+  uuid item_version_id <<PK>>
+  uuid organization_id
+  uuid question_bank_id
+  text skill_id
+  text knowledge_level
+  text outcome_code "NULLABLE legacy metadata"
+  boolean mandatory
+  content_hash mapping_hash
+}
+entity "assessment_item_skill_scope" as assessment_item_skill_scope {
+  uuid item_version_id <<PK, FK>>
+  text skill_version
+  text source
+}
+assessment_item_knowledge_mapping --> assessment_item_skill_scope : append-only version binding V63
+note bottom of assessment_item_skill_scope
+  Source definition; local V63 applied 2026-11-09.
+  Pool = owned Skill + knowledge level + Skill version.
+  Original item / mapping hashes and frozen papers retained.
+end note
 entity "rule_assessment_attempt" as rule_assessment_attempt {
   uuid id <<PK>>
   uuid organization_id
@@ -102,6 +123,7 @@ entity "skill_knowledge_review" as skill_knowledge_review {
 }
 rule_assessment_attempt --> rule_assessment_group : owned attempt
 rule_assessment_group --> rule_assessment_item : composite group FK
+rule_assessment_item --> assessment_item_knowledge_mapping : exact immutable mapping FK
 rule_assessment_item --> rule_assessment_answer : presented item FK
 rule_assessment_group --> rule_assessment_group_result : immutable result
 rule_assessment_group --> skill_knowledge_review : failed prerequisite FK

@@ -31,9 +31,7 @@ export function RoleLevelPicker({
         const allowed = levels
           .filter((l) => l.rank < minAllowedRank)
           .sort((a, b) => b.rank - a.rank)
-        if (allowed.length > 0) {
-          onChange(allowed[0].id)
-        }
+        onChange(allowed[0]?.id ?? '')
       }
     }
   }, [value, minAllowedRank, levels, onChange])
@@ -41,6 +39,7 @@ export function RoleLevelPicker({
   const sortedLevels = [...levels].sort(
     (a, b) => a.rank - b.rank || a.id.localeCompare(b.id),
   )
+  const noHigherLevel = typeof minAllowedRank === 'number' && !levels.some(level => level.rank < minAllowedRank)
 
   return (
     <fieldset disabled={disabled} className="min-w-0 space-y-2.5">
@@ -130,7 +129,8 @@ export function RoleLevelPicker({
           )
         })}
       </div>
-      {!value && (
+      {noHigherLevel && <Text variant="caption" role="status">{t('roleFlow.noHigherLevel')}</Text>}
+      {!value && !noHigherLevel && (
         <Text variant="caption" tone="destructive">
           {t('initialPathway.levelRequired')}
         </Text>

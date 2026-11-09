@@ -34,8 +34,9 @@ public final class RuleAssessmentController {
         return ok(attempts.latest(new Start(purpose,selectionId,selectionRevision,null,stepId,moduleId,moduleRevision)));
     }
     @GetMapping("/{id}/result") public ResponseEntity<View> result(@PathVariable UUID id){return ok(attempts.resume(id));}
-    @GetMapping("/history") public ResponseEntity<List<View>> history(@RequestParam(defaultValue="0") int page,@RequestParam(defaultValue="20") int size) {
-        return ok(attempts.history(page,size));
+    @GetMapping("/history") public ResponseEntity<List<View>> history(@RequestParam(defaultValue="0") int page,@RequestParam(defaultValue="20") int size,
+            @RequestParam(required=false) String moduleId,@RequestParam(required=false) Integer moduleRevision) {
+        return ok(attempts.history(page,size,moduleId,moduleRevision));
     }
     @PostMapping(value="/{id}/answers",consumes="application/json") public ResponseEntity<View> answer(@PathVariable UUID id,
             @RequestHeader("Idempotency-Key") UUID key,@RequestBody String body){return ok(attempts.answer(id,decode(body,Answer.class),key));}
