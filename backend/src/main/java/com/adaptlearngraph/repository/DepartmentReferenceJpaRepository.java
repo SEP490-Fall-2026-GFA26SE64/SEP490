@@ -22,6 +22,9 @@ public interface DepartmentReferenceJpaRepository extends Repository<DepartmentR
     boolean departmentUsable(@Param("organization") UUID organization, @Param("department") UUID department,
             @Param("historical") boolean preserveHistoricalReferences);
 
+    @Query("select d.organizationId from DepartmentReferenceEntity d where d.departmentId = :department")
+    List<UUID> findDepartmentOwnerOrganizationIds(@Param("department") UUID department);
+
     @Query("""
             select count(o) > 0 from JobPositionDepartmentReferenceEntity o
             where o.jobPositionReferenceId = :jobPosition and o.departmentId = :department and o.organizationId = :organization
@@ -29,6 +32,9 @@ public interface DepartmentReferenceJpaRepository extends Repository<DepartmentR
             """)
     boolean jobPositionUsable(@Param("organization") UUID organization, @Param("department") UUID department,
             @Param("jobPosition") UUID jobPosition, @Param("historical") boolean preserveHistoricalReferences);
+
+    @Query("select o.organizationId from JobPositionDepartmentReferenceEntity o where o.jobPositionReferenceId = :jobPosition")
+    List<UUID> findJobPositionOwnerOrganizationIds(@Param("jobPosition") UUID jobPosition);
 
     @Query("""
             select new com.adaptlearngraph.repository.DepartmentReferenceJpaRepository$Choice(d.departmentId, d.name,

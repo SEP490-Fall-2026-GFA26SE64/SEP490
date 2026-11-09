@@ -273,32 +273,32 @@ public final class DevelopmentWorkspaceAccountBootstrap implements ApplicationRu
                     MERGE (d5)-[:HAS_JOB_POSITION]->(jp5)
                     """, Map.of("orgId", org));
 
-                // 4. Assign Subject Matter Experts to Target Roles by Job Position
+                // 4. Assign Subject Matter Experts to Target Roles by Job Position (ONLY for TechNova default org)
                 tx.execute("""
-                    MATCH (jp:JobPosition {code: '15-1252.00'})-[:HAS_ROLE]->(tr:TargetRole)
+                    MATCH (jp:JobPosition {code: '15-1252.00'})-[:HAS_ROLE]->(tr:TargetRole {organizationId: $orgId})
                     SET tr.assignedExpertId = 'a0000000-0000-0000-0000-000000000002',
                         tr.assignedExpertName = 'Dr. Sarah Chen'
 
                     WITH jp
-                    MATCH (jp2:JobPosition {code: '15-1243.00'})-[:HAS_ROLE]->(tr2:TargetRole)
+                    MATCH (jp2:JobPosition {code: '15-1243.00'})-[:HAS_ROLE]->(tr2:TargetRole {organizationId: $orgId})
                     SET tr2.assignedExpertId = 'a0000000-0000-0000-0000-000000000002',
                         tr2.assignedExpertName = 'Dr. Sarah Chen'
 
                     WITH jp2
-                    MATCH (jp3:JobPosition {code: '15-1253.00'})-[:HAS_ROLE]->(tr3:TargetRole)
+                    MATCH (jp3:JobPosition {code: '15-1253.00'})-[:HAS_ROLE]->(tr3:TargetRole {organizationId: $orgId})
                     SET tr3.assignedExpertId = 'a0000000-0000-0000-0000-000000000005',
                         tr3.assignedExpertName = 'Marcus Vance'
 
                     WITH jp3
-                    MATCH (jp4:JobPosition {code: '15-1299.08'})-[:HAS_ROLE]->(tr4:TargetRole)
+                    MATCH (jp4:JobPosition {code: '15-1299.08'})-[:HAS_ROLE]->(tr4:TargetRole {organizationId: $orgId})
                     SET tr4.assignedExpertId = 'a0000000-0000-0000-0000-000000000007',
                         tr4.assignedExpertName = 'Linh Nguyen'
 
                     WITH jp4
-                    MATCH (jp5:JobPosition {code: '15-1212.00'})-[:HAS_ROLE]->(tr5:TargetRole)
+                    MATCH (jp5:JobPosition {code: '15-1212.00'})-[:HAS_ROLE]->(tr5:TargetRole {organizationId: $orgId})
                     SET tr5.assignedExpertId = 'a0000000-0000-0000-0000-000000000006',
                         tr5.assignedExpertName = 'Alex Rivera'
-                    """, Map.of());
+                    """, Map.of("orgId", org));
 
                 // 4.5. Seed complete metadata for all JobPosition nodes in Neo4j
                 tx.execute("""

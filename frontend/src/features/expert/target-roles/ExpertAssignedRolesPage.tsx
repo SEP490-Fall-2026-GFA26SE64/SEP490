@@ -3459,7 +3459,7 @@ export function ExpertAssignedRolesPage() {
                                         />
                                       ) : (
                                         <span className="font-mono font-bold text-primary">
-                                          {formatRequiredKnowledge(st.requiredKnowledgeLevels, t)}
+                                          {formatRequiredKnowledge(st.requiredKnowledgeLevels, t, stLevel || st.level)}
                                         </span>
                                       )}
                                     </td>
@@ -4182,7 +4182,7 @@ export function ExpertAssignedRolesPage() {
                                               </td>
 
                                               <td className="py-1.5 px-2.5 text-center font-mono font-bold text-primary">
-                                                {formatRequiredKnowledge(st.requiredKnowledgeLevels, t)}
+                                                {formatRequiredKnowledge(st.requiredKnowledgeLevels, t, st.level || lvl)}
                                               </td>
                                             </tr>
                                           ))}
@@ -4351,7 +4351,7 @@ export function ExpertAssignedRolesPage() {
                                             </td>
 
                                             <td className="py-2 px-3 text-center font-mono font-bold text-primary">
-                                              {formatRequiredKnowledge(st.requiredKnowledgeLevels, t)}
+                                              {formatRequiredKnowledge(st.requiredKnowledgeLevels, t, st.level || selectedDetailLevelTab)}
                                             </td>
                                           </tr>
                                         ))}

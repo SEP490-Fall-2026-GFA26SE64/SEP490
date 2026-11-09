@@ -17,6 +17,23 @@ export interface DepartmentRecord {
 
 const STORAGE_KEY_DEPARTMENTS_PREFIX = 'adaptlearn_departments_v2_'
 
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
+export function isUuid(val?: string | null): boolean {
+  return typeof val === 'string' && UUID_REGEX.test(val.trim())
+}
+
+export function generateDepartmentId(): string {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID()
+  }
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0
+    const v = c === 'x' ? r : (r & 0x3) | 0x8
+    return v.toString(16)
+  })
+}
+
 export function getDepartmentStorageKey(orgId?: string): string {
   const effectiveOrg = orgId || getActiveCompany()?.id || 'e0000000-0000-0000-0000-000000000001'
   return `${STORAGE_KEY_DEPARTMENTS_PREFIX}${effectiveOrg}`
@@ -94,21 +111,33 @@ export function loadDepartments(orgId?: string): DepartmentRecord[] {
     if (raw) {
       const parsed = JSON.parse(raw)
       if (Array.isArray(parsed)) {
-        return parsed
+        let modified = false
+        const list = parsed
           .filter((d: Partial<DepartmentRecord>) => !d.organizationId || d.organizationId === effectiveOrg)
-          .map((d: Partial<DepartmentRecord>) => ({
-            id: d.id || `dept-${d.code?.toLowerCase() || 'item'}`,
-            code: d.code || '',
-            name: d.name || '',
-            description: d.description || '',
-            headOfDepartment: d.headOfDepartment || '',
-            headEmail: d.headEmail || '',
-            status: d.status === 'inactive' ? 'inactive' : 'active',
-            linkedJobPositions: Array.isArray(d.linkedJobPositions) ? d.linkedJobPositions : [],
-            organizationId: effectiveOrg,
-            createdAt: d.createdAt || '2026-11-04',
-            updatedAt: d.updatedAt,
-          }))
+          .map((d: Partial<DepartmentRecord>) => {
+            let id = d.id
+            if (!id || !isUuid(id)) {
+              id = generateDepartmentId()
+              modified = true
+            }
+            return {
+              id,
+              code: d.code || '',
+              name: d.name || '',
+              description: d.description || '',
+              headOfDepartment: d.headOfDepartment || '',
+              headEmail: d.headEmail || '',
+              status: (d.status === 'inactive' ? 'inactive' : 'active') as 'active' | 'inactive',
+              linkedJobPositions: Array.isArray(d.linkedJobPositions) ? d.linkedJobPositions : [],
+              organizationId: effectiveOrg,
+              createdAt: d.createdAt || '2026-11-04',
+              updatedAt: d.updatedAt,
+            }
+          })
+        if (modified) {
+          saveDepartments(list, effectiveOrg, false)
+        }
+        return list
       }
     }
   } catch (e) {
@@ -147,7 +176,7 @@ export function saveDepartments(departments: DepartmentRecord[], orgId?: string,
 }
 
 export function createDepartment(
-  data: Omit<DepartmentRecord, 'id' | 'createdAt' | 'organizationId'>,
+  data: Omit<DepartmentRecord, 'id' | 'createdAt' | 'organizationId'> & { id?: string },
   orgId?: string
 ): DepartmentRecord {
   const effectiveOrg = orgId || getActiveCompany()?.id || 'e0000000-0000-0000-0000-000000000001'
@@ -156,7 +185,7 @@ export function createDepartment(
   const newDept: DepartmentRecord = {
     ...data,
     code: codeClean,
-    id: `dept-${codeClean.toLowerCase().replace(/[^a-z0-9]/g, '-')}`,
+    id: data.id && isUuid(data.id) ? data.id : generateDepartmentId(),
     organizationId: effectiveOrg,
     status: data.status || 'active',
     createdAt: new Date().toISOString().slice(0, 10),

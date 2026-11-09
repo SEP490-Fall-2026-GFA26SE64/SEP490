@@ -51,7 +51,10 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
                 skillId: s.id,
                 skillCode: s.code,
                 skillName: s.name,
-                requiredKnowledgeLevels: req.requiredKnowledgeLevels,
+                requiredKnowledgeLevels: coalesce(req.requiredKnowledgeLevels,
+                    CASE WHEN coalesce(req.level, '') = 'Senior' THEN ['INTERMEDIATE', 'ADVANCED']
+                         WHEN coalesce(req.level, '') = 'Middle' THEN ['INTERMEDIATE']
+                         ELSE ['FOUNDATION'] END),
                 level: coalesce(req.level, '')
             } END) WHERE x IS NOT NULL] AS directSkills
             OPTIONAL MATCH (r)-[:HAS_LEVEL]->(lvl:Level)-[:HAS_COMPETENCY]->(c:Competency)-[:HAS_SKILL]->(cs:MicroSkill)
@@ -61,6 +64,10 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
                 skillCode: cs.code,
                 skillName: cs.name,
                 threshold: toInteger(round(coalesce(lreq.targetMastery, lreq.requiredScore, 0.7) * 100)),
+                requiredKnowledgeLevels: coalesce(lreq.requiredKnowledgeLevels,
+                    CASE WHEN coalesce(lreq.level, lvl.name, '') = 'Senior' THEN ['INTERMEDIATE', 'ADVANCED']
+                         WHEN coalesce(lreq.level, lvl.name, '') = 'Middle' THEN ['INTERMEDIATE']
+                         ELSE ['FOUNDATION'] END),
                 level: coalesce(lreq.level, lvl.name, '')
             } END) WHERE x IS NOT NULL] AS levelSkills
             WITH r, graphLevels, graphLevelDetails, graphCompetencies, CASE WHEN size(directSkills) > 0 THEN directSkills ELSE levelSkills END AS graphSkills
@@ -697,6 +704,30 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
             } else {
                 skillTargets = "[]";
             }
+        } else {
+            try {
+                var targets = objectMapper.readValue(skillTargets, new TypeReference<List<Map<String, Object>>>() {});
+                boolean modified = false;
+                for (var target : targets) {
+                    Object reqK = target.get("requiredKnowledgeLevels");
+                    if (reqK == null || (reqK instanceof List<?> l && l.isEmpty())) {
+                        String lvl = Objects.toString(target.get("level"), "");
+                        List<String> def;
+                        if ("Senior".equalsIgnoreCase(lvl)) {
+                            def = List.of("INTERMEDIATE", "ADVANCED");
+                        } else if ("Middle".equalsIgnoreCase(lvl)) {
+                            def = List.of("INTERMEDIATE");
+                        } else {
+                            def = List.of("FOUNDATION");
+                        }
+                        target.put("requiredKnowledgeLevels", def);
+                        modified = true;
+                    }
+                }
+                if (modified) {
+                    skillTargets = objectMapper.writeValueAsString(targets);
+                }
+            } catch (Exception ignored) {}
         }
 
         List<String> levels = (graphLevels != null && !graphLevels.isEmpty())

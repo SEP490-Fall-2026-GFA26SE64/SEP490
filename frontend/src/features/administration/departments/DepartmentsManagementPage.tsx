@@ -35,6 +35,7 @@ import {
 import {
   createDepartment,
   deleteDepartment,
+  generateDepartmentId,
   loadDepartments,
   saveDepartments,
   updateDepartment,
@@ -135,6 +136,18 @@ export function DepartmentsManagementPage() {
         const localOnly = localDepts.filter(
           (loc) => !liveIds.has(loc.id) && !liveCodes.has(loc.code.toUpperCase())
         )
+        for (const loc of localOnly) {
+          createDepartmentApi(orgId, {
+            id: loc.id,
+            code: loc.code,
+            name: loc.name,
+            description: loc.description,
+            headOfDepartment: loc.headOfDepartment,
+            headEmail: loc.headEmail,
+            status: loc.status === 'inactive' ? 'INACTIVE' : 'ACTIVE',
+            linkedJobPositions: loc.linkedJobPositions,
+          }).catch(() => {})
+        }
         const merged = [...mapped, ...localOnly]
 
         setDepartments(merged)
@@ -421,9 +434,10 @@ export function DepartmentsManagementPage() {
         variant: 'success',
       })
     } else {
-      const newId = `dept-${codeClean.toLowerCase().replace(/[^a-z0-9]/g, '-')}`
+      const newId = generateDepartmentId()
       const newDeptRecord = createDepartment(
         {
+          id: newId,
           name: formName.trim(),
           code: codeClean,
           description: formDescription.trim(),
@@ -446,7 +460,7 @@ export function DepartmentsManagementPage() {
 
       try {
         await createDepartmentApi(orgId, {
-          id: newId,
+          id: newDeptRecord.id,
           code: codeClean,
           name: formName.trim(),
           description: formDescription.trim(),

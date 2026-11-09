@@ -303,6 +303,11 @@ export function TargetRolesPage() {
   const orgId = resolveWorkspaceOrgId(
     session?.identity?.organizationId || activeComp?.id,
   )
+  const isTechnova =
+    orgId === 'e0000000-0000-0000-0000-000000000001' ||
+    orgId === 'comp-technova' ||
+    orgId === 'default-org' ||
+    orgId === 'workspace-development'
   const [availableJobPositions, setAvailableJobPositions] = React.useState<JobPosition[]>(() =>
     getAvailableJobPositions(orgId)
   )
@@ -776,19 +781,31 @@ export function TargetRolesPage() {
           const effectiveJobPositionCode = explicitJobPositionCode || meta?.jobPositionCode || occ.code
           const effectiveJobPositionTitle = meta?.jobPositionTitle || storeRole?.jobPositionTitle || occ.name
 
-          const expertId = r.assignedExpertId
-            ? String(r.assignedExpertId)
-            : meta?.assignedExpertId || storeRole?.assignedExpertId
+          const rawBackendExpertId = r.assignedExpertId ? String(r.assignedExpertId).trim() : ''
+          const hasRealBackendExpert = Boolean(
+            rawBackendExpertId &&
+            rawBackendExpertId !== 'null' &&
+            rawBackendExpertId !== 'undefined'
+          )
 
-          const expertName =
-            meta?.assignedExpertName ||
-            storeRole?.assignedExpertName ||
-            findEligibleExpert(
-              expertId as string | null | undefined,
-              orgId,
-            )?.name ||
-            ELIGIBLE_EXPERTS.find((e) => e.id === expertId)?.name ||
-            undefined
+          // Only keep expertId if explicitly set on backend, or if meta has a valid expert in orgExperts
+          const expertId = hasRealBackendExpert
+            ? rawBackendExpertId
+            : (meta?.assignedExpertId && (isTechnova || orgExperts.some((e) => e.id === meta.assignedExpertId))
+                ? meta.assignedExpertId
+                : undefined)
+
+          const matchedExpert = expertId
+            ? orgExperts.find((e) => e.id === expertId) ||
+              findEligibleExpert(expertId, orgId, orgExperts) ||
+              (isTechnova ? ELIGIBLE_EXPERTS.find((e) => e.id === expertId) : undefined)
+            : undefined
+
+          const rawBackendExpertName = r.assignedExpertName ? String(r.assignedExpertName).trim() : ''
+          const expertName = matchedExpert?.name ||
+            (hasRealBackendExpert && rawBackendExpertName && !rawBackendExpertName.includes('-')
+              ? rawBackendExpertName
+              : undefined)
 
           return {
             id: rId,
@@ -960,10 +977,21 @@ export function TargetRolesPage() {
               m.jobPositionTitle || meta?.jobPositionTitle || prev?.jobPositionTitle || storeRole?.jobPositionTitle
 
             const effectiveExpertId =
-              m.assignedExpertId || meta?.assignedExpertId || prev?.assignedExpertId || storeRole?.assignedExpertId
+              m.assignedExpertId && (isTechnova || orgExperts.some((e) => e.id === m.assignedExpertId))
+                ? m.assignedExpertId
+                : (meta?.assignedExpertId && (isTechnova || orgExperts.some((e) => e.id === meta.assignedExpertId)))
+                  ? meta.assignedExpertId
+                  : (prev?.assignedExpertId && (isTechnova || orgExperts.some((e) => e.id === prev.assignedExpertId)))
+                    ? prev.assignedExpertId
+                    : undefined
 
-            const effectiveExpertName =
-              m.assignedExpertName || meta?.assignedExpertName || prev?.assignedExpertName || storeRole?.assignedExpertName
+            const effectiveExpertName = effectiveExpertId
+              ? (orgExperts.find((e) => e.id === effectiveExpertId)?.name ||
+                 findEligibleExpert(effectiveExpertId, orgId, orgExperts)?.name ||
+                 (isTechnova ? ELIGIBLE_EXPERTS.find((e) => e.id === effectiveExpertId)?.name : undefined) ||
+                 m.assignedExpertName ||
+                 prev?.assignedExpertName)
+              : undefined
 
             const effectiveLevelDurations =
               m.levelDurations && Object.keys(m.levelDurations).length > 0
@@ -980,8 +1008,8 @@ export function TargetRolesPage() {
               jobPositionTitle: effectiveJobPositionTitle || m.jobPositionTitle,
               department: effectiveDept || m.department,
               departmentId: effectiveDeptId || m.departmentId,
-              assignedExpertId: effectiveExpertId || m.assignedExpertId,
-              assignedExpertName: effectiveExpertName || m.assignedExpertName,
+              assignedExpertId: effectiveExpertId,
+              assignedExpertName: effectiveExpertName,
               levelDurations: effectiveLevelDurations,
               levelCompetencies: prevLevelComps,
               competencyIds: prevCompetencyIds,
@@ -1178,6 +1206,8 @@ export function TargetRolesPage() {
           updatedAt: String(
             item.updatedAt || new Date().toISOString().slice(0, 10),
           ),
+          assignedExpertId: undefined,
+          assignedExpertName: undefined,
         }
       },
     )
@@ -1201,7 +1231,7 @@ export function TargetRolesPage() {
       Middle: '4 months',
       Junior: '3 months',
     } as Record<string, string>,
-    assignedExpertId: ELIGIBLE_EXPERTS[0].id as string,
+    assignedExpertId: '',
     description: '',
   })
 
@@ -1520,11 +1550,12 @@ export function TargetRolesPage() {
     }
     const roleCode = roleForm.code.trim().toUpperCase()
     const backendStatus = targetStatus === 'sent' ? 'SENT' : 'DRAFT'
-    const assignedExpert =
-      orgExperts.find((e) => e.id === roleForm.assignedExpertId) ||
-      findEligibleExpert(roleForm.assignedExpertId, orgId) ||
-      ELIGIBLE_EXPERTS.find((e) => e.id === roleForm.assignedExpertId)
-    const expertName = assignedExpert?.name || 'Assigned Expert'
+    const assignedExpert = roleForm.assignedExpertId
+      ? orgExperts.find((e) => e.id === roleForm.assignedExpertId) ||
+        findEligibleExpert(roleForm.assignedExpertId, orgId, orgExperts) ||
+        (isTechnova ? ELIGIBLE_EXPERTS.find((e) => e.id === roleForm.assignedExpertId) : undefined)
+      : undefined
+    const expertName = assignedExpert?.name || ''
 
     const newRole: TargetRoleModel = {
       id: generatedId,
@@ -1539,8 +1570,8 @@ export function TargetRolesPage() {
       familyCode: roleForm.familyCode || selectedOcc.profiles[0] || 'DEV',
       track: roleForm.track || 'PROFESSIONAL',
       responsibilities: [],
-      assignedExpertId: roleForm.assignedExpertId,
-      assignedExpertName: expertName,
+      assignedExpertId: roleForm.assignedExpertId || undefined,
+      assignedExpertName: expertName || undefined,
       department: managerDepartment?.name || selectedOcc.name,
       departmentId: managerDepartment?.id,
       description:
@@ -1805,10 +1836,7 @@ export function TargetRolesPage() {
         normalizeExpertId(e.id) === normalizeExpertId(role.assignedExpertId),
     )
     const effectiveExpertId =
-      role.assignedExpertId ||
-      (isCurrentEligible ? role.assignedExpertId : '') ||
-      eligibleExperts[0]?.id ||
-      ''
+      isCurrentEligible ? (role.assignedExpertId || '') : ''
 
     setSelectedRole(role)
 
@@ -1865,11 +1893,12 @@ export function TargetRolesPage() {
     const orgId = resolveWorkspaceOrgId(
       session?.identity?.organizationId || activeComp?.id,
     )
-    const assignedExpert =
-      orgExperts.find((e) => e.id === editRoleForm.assignedExpertId) ||
-      findEligibleExpert(editRoleForm.assignedExpertId, orgId) ||
-      ELIGIBLE_EXPERTS.find((e) => e.id === editRoleForm.assignedExpertId)
-    const expertName = assignedExpert?.name || 'Assigned Expert'
+    const assignedExpert = editRoleForm.assignedExpertId
+      ? orgExperts.find((e) => e.id === editRoleForm.assignedExpertId) ||
+        findEligibleExpert(editRoleForm.assignedExpertId, orgId, orgExperts) ||
+        (isTechnova ? ELIGIBLE_EXPERTS.find((e) => e.id === editRoleForm.assignedExpertId) : undefined)
+      : undefined
+    const expertName = assignedExpert?.name || ''
     const selectedOcc = availableJobPositions.find((o) => o.code === editRoleForm.jobPositionCode)
     if (!selectedOcc) {
       toast({
@@ -1913,8 +1942,8 @@ export function TargetRolesPage() {
         'DEV',
       track: editRoleForm.track || selectedRole.track || 'PROFESSIONAL',
       responsibilities: [],
-      assignedExpertId: editRoleForm.assignedExpertId,
-      assignedExpertName: expertName,
+      assignedExpertId: editRoleForm.assignedExpertId || undefined,
+      assignedExpertName: expertName || undefined,
       department: managerDepartment?.name || selectedOcc.name,
       description:
         editRoleForm.scope ||
@@ -2635,14 +2664,11 @@ export function TargetRolesPage() {
 
                           const isSuccessor =
                             !isPublishedOrUnpublished && Boolean(predecessorPublished)
-                          const expert =
-                            orgExperts.find(
-                              (e) => e.id === role.assignedExpertId,
-                            ) ||
-                            findEligibleExpert(role.assignedExpertId, orgId) ||
-                            ELIGIBLE_EXPERTS.find(
-                              (e) => e.id === role.assignedExpertId,
-                            )
+                          const expert = role.assignedExpertId
+                            ? orgExperts.find((e) => e.id === role.assignedExpertId) ||
+                              findEligibleExpert(role.assignedExpertId, orgId, orgExperts) ||
+                              (isTechnova ? ELIGIBLE_EXPERTS.find((e) => e.id === role.assignedExpertId) : undefined)
+                            : undefined
 
                           return (
                             <tr
@@ -2792,18 +2818,16 @@ export function TargetRolesPage() {
                               </td>
 
                               <td className="py-3 px-3">
-                                {role.assignedExpertName || expert ? (
+                                {expert ? (
                                   <div className="flex items-center gap-1.5">
                                     <div className="h-6 w-6 rounded-full bg-primary/10 text-primary font-bold text-[10px] flex items-center justify-center shrink-0">
-                                      {(
-                                        expert?.name || (role.assignedExpertName && !role.assignedExpertName.includes('-') ? role.assignedExpertName : undefined) || orgExperts.find((e) => e.id === role.assignedExpertId)?.name || 'E'
-                                      )
+                                      {(expert.name || 'E')
                                         .slice(0, 2)
                                         .toUpperCase()}
                                     </div>
 
                                     <span className="text-xs font-medium text-foreground">
-                                      {expert?.name || (role.assignedExpertName && !role.assignedExpertName.includes('-') ? role.assignedExpertName : undefined) || orgExperts.find((e) => e.id === role.assignedExpertId)?.name || 'Unassigned'}
+                                      {expert.name}
                                     </span>
                                   </div>
                                 ) : (
@@ -4276,7 +4300,7 @@ export function TargetRolesPage() {
 
                                 <td className="py-2.5 px-3 text-center">
                                   <span className="font-bold text-primary">
-                                    {formatRequiredKnowledge(st.requiredKnowledgeLevels, t)}
+                                    {formatRequiredKnowledge(st.requiredKnowledgeLevels, t, st.level)}
                                   </span>
                                 </td>
                               </tr>
@@ -4843,13 +4867,15 @@ export function TargetRolesPage() {
                   Assigned Domain Expert
                 </span>
                 <span className="font-semibold text-primary mt-0.5 truncate block">
-                  {viewingDetailsRole.assignedExpertName ||
-                    findEligibleExpert(viewingDetailsRole.assignedExpertId)
-                      ?.name ||
-                    ELIGIBLE_EXPERTS.find(
-                      (e) => e.id === viewingDetailsRole.assignedExpertId,
-                    )?.name ||
-                    'Unassigned'}
+                  {(() => {
+                    const expId = viewingDetailsRole.assignedExpertId
+                    const exp = expId
+                      ? orgExperts.find((e) => e.id === expId) ||
+                        findEligibleExpert(expId, orgId, orgExperts) ||
+                        (isTechnova ? ELIGIBLE_EXPERTS.find((e) => e.id === expId) : undefined)
+                      : undefined
+                    return exp ? exp.name : 'Unassigned'
+                  })()}
                 </span>
               </div>
             </div>
@@ -5143,7 +5169,7 @@ export function TargetRolesPage() {
                                                 </td>
 
                                                 <td className="py-1.5 px-2.5 text-center font-mono font-bold text-primary">
-                                                  {formatRequiredKnowledge(st.requiredKnowledgeLevels, t)}
+                                                  {formatRequiredKnowledge(st.requiredKnowledgeLevels, t, st.level || lvl)}
                                                 </td>
                                               </tr>
                                             )
@@ -5291,7 +5317,7 @@ export function TargetRolesPage() {
                                             </td>
 
                                             <td className="py-2 px-3 text-center font-mono font-bold text-primary">
-                                              {formatRequiredKnowledge(st.requiredKnowledgeLevels, t)}
+                                              {formatRequiredKnowledge(st.requiredKnowledgeLevels, t, st.level || selectedDetailLevelTab)}
                                             </td>
                                           </tr>
                                         )

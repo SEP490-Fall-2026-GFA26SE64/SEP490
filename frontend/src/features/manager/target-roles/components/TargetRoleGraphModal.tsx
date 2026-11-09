@@ -236,11 +236,22 @@ export function TargetRoleGraphModal({
           const backendSkill = backendData?.requiredSkills?.find(
             (bs) => bs.skillId === rawSkillId || (st.skillCode && bs.skillCode === st.skillCode)
           )
+          const isUuid = (val?: string) => !!val && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(val)
+          let finalCode: string | undefined = st.skillCode
+          if (!finalCode || isUuid(finalCode)) {
+            finalCode = backendSkill?.skillCode && !isUuid(backendSkill.skillCode)
+              ? backendSkill.skillCode
+              : (isUuid(rawSkillId) ? undefined : rawSkillId)
+          }
           return {
             skillId: rawSkillId,
-            skillCode: st.skillCode || rawSkillId,
+            skillCode: String(finalCode || backendSkill?.skillCode || st.skillName || rawSkillId || ''),
             skillName: st.skillName || backendSkill?.skillName || rawSkillId,
-            requiredKnowledgeLevels: st.requiredKnowledgeLevels ?? [],
+            requiredKnowledgeLevels: (st.requiredKnowledgeLevels && st.requiredKnowledgeLevels.length > 0)
+              ? st.requiredKnowledgeLevels
+              : (backendSkill?.requiredKnowledgeLevels && backendSkill.requiredKnowledgeLevels.length > 0)
+                ? backendSkill.requiredKnowledgeLevels
+                : [],
             status: backendSkill?.status || 'ACTIVE',
             level: st.level || backendSkill?.level,
           }
@@ -562,7 +573,7 @@ export function TargetRoleGraphModal({
 
       addNodeSafely({
         id: skill.skillId,
-        label: `<b>${skill.skillCode || skill.skillId}</b>\n${skill.skillName}\n${formatRequiredKnowledge(skill.requiredKnowledgeLevels, t)}`,
+        label: `<b>${skill.skillCode || skill.skillId}</b>\n${skill.skillName}\n${formatRequiredKnowledge(skill.requiredKnowledgeLevels, t, skill.level)}`,
         shape: 'box',
         shapeProperties: { borderRadius: 14 },
         margin: { top: 8, right: 14, bottom: 8, left: 14 },
@@ -631,7 +642,7 @@ export function TargetRoleGraphModal({
           id: `has-skill-${parentNodeId}-${skill.skillId}`,
           from: parentNodeId,
           to: skill.skillId,
-          title: `Member skill of ${comp.name} (${formatRequiredKnowledge(skill.requiredKnowledgeLevels, t)})`,
+          title: `Member skill of ${comp.name} (${formatRequiredKnowledge(skill.requiredKnowledgeLevels, t, skill.level)})`,
           label: 'HAS_SKILL',
           font: { size: 8, color: '#16A34A', align: 'horizontal' },
           color: { color: '#86EFAC', highlight: '#16A34A', hover: '#15803D' },
@@ -651,7 +662,7 @@ export function TargetRoleGraphModal({
           id: `requires-skill-${targetLevelNodeId}-${skill.skillId}`,
           from: targetLevelNodeId,
           to: skill.skillId,
-          title: `Level Requirement: REQUIRES_SKILL (${formatRequiredKnowledge(skill.requiredKnowledgeLevels, t)})`,
+          title: `Level Requirement: REQUIRES_SKILL (${formatRequiredKnowledge(skill.requiredKnowledgeLevels, t, skill.level)})`,
           label: 'REQUIRES_SKILL',
           font: { size: 7, color: '#64748B', align: 'horizontal' },
           color: { color: '#CBD5E1', highlight: '#64748B', hover: '#475569' },
@@ -1211,7 +1222,7 @@ export function TargetRoleGraphModal({
                       <div>
                         <span className="text-[10px] text-muted-foreground block">{t('roleKnowledge.requiredLevels')}</span>
                         <strong className="text-success text-xs font-bold block mt-0.5">
-                          {formatRequiredKnowledge(selectedNode.requiredKnowledgeLevels, t)}
+                          {formatRequiredKnowledge(selectedNode.requiredKnowledgeLevels, t, selectedNode.level)}
                         </strong>
                       </div>
                     </div>

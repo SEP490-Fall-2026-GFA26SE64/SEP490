@@ -57,7 +57,10 @@ public class Neo4jTargetRoleGraphAdapter implements TargetRoleGraphPort {
                 WITH coalesce(sDirect, sComp, sLvl) AS s,
                      coalesce(lvlComp.name, lvlDirect.name, reqDirect.level) AS skillLevel,
                      coalesce(reqDirect.status, reqLvl.status, 'ACTIVE') AS reqStatus,
-                     coalesce(reqDirect.requiredKnowledgeLevels, reqLvl.requiredKnowledgeLevels, []) AS knowledge
+                     coalesce(reqDirect.requiredKnowledgeLevels, reqLvl.requiredKnowledgeLevels,
+                         CASE WHEN coalesce(lvlComp.name, lvlDirect.name, reqDirect.level) = 'Senior' THEN ['INTERMEDIATE', 'ADVANCED']
+                              WHEN coalesce(lvlComp.name, lvlDirect.name, reqDirect.level) = 'Middle' THEN ['INTERMEDIATE']
+                              ELSE ['FOUNDATION'] END) AS knowledge
                 WHERE s IS NOT NULL
                 RETURN DISTINCT s, skillLevel, reqStatus, knowledge
                 ORDER BY coalesce(s.code, s.id) ASC
@@ -118,6 +121,15 @@ public class Neo4jTargetRoleGraphAdapter implements TargetRoleGraphPort {
                 String skillLevel = record.containsKey("skillLevel") && !record.get("skillLevel").isNull()
                         ? record.get("skillLevel").asString()
                         : null;
+                if (knowledge.isEmpty()) {
+                    if ("Senior".equalsIgnoreCase(skillLevel)) {
+                        knowledge = List.of("INTERMEDIATE", "ADVANCED");
+                    } else if ("Middle".equalsIgnoreCase(skillLevel)) {
+                        knowledge = List.of("INTERMEDIATE");
+                    } else {
+                        knowledge = List.of("FOUNDATION");
+                    }
+                }
 
                 String dedupeKey = (sId.isBlank() ? sCode : sId) + ":" + (skillLevel != null ? skillLevel : "");
                 if (!skillIds.add(dedupeKey)) {

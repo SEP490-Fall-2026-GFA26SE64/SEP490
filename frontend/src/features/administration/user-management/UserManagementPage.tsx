@@ -15,7 +15,7 @@ import { decodeJobPositionWithTargetRole, encodeJobPositionWithTargetRole, getId
   type Identity, type Member, type PendingActivation, type Reference } from '../../subscription/subscriptionApi'
 import { Failure, Loading, useCopy } from '../../subscription/SubscriptionFeedback'
 import { loadDepartments, updateDepartment, type DepartmentRecord } from '../../../shared/stores/departmentStore'
-import { fetchDepartments, updateDepartmentApi, type DepartmentDto } from '../../../shared/api/departmentApi'
+import { fetchDepartments, updateDepartmentApi, createDepartmentApi, type DepartmentDto } from '../../../shared/api/departmentApi'
 import { fetchJobPositions, type JobPositionDto } from '../../../shared/api/jobPositionApi'
 import { workspaceFetch } from '../../../shared/api/workspaceFetch'
 import {
@@ -1833,7 +1833,17 @@ function UserForm({
                 name: selectedDeptObj.name,
                 headOfDepartment: name,
                 headEmail: email,
-              }).catch(() => {})
+              }).catch(() => {
+                createDepartmentApi(organization, {
+                  id: selectedDeptObj.id,
+                  code: selectedDeptObj.code,
+                  name: selectedDeptObj.name,
+                  headOfDepartment: name,
+                  headEmail: email,
+                  status: 'ACTIVE',
+                  linkedJobPositions: selectedDeptObj.linkedJobPositions,
+                }).catch(() => {})
+              })
             }
             window.dispatchEvent(new Event('departments_updated'))
           }

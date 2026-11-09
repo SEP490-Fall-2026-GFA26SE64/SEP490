@@ -178,7 +178,9 @@ public class Neo4jMicroSkillRepository implements MicroSkillRepository {
     private static MicroSkill toDomain(MicroSkillNode node, String defaultOrgId) {
         String idStr = node.id() != null ? node.id() : UUID.randomUUID().toString();
         String orgId = node.organizationId() != null ? node.organizationId() : defaultOrgId;
-        String code = node.code() != null ? node.code() : idStr;
+        String code = node.code() != null && !node.code().isBlank()
+                ? node.code()
+                : (node.sourceId() != null && !node.sourceId().isBlank() ? node.sourceId() : idStr);
         String name = node.name() != null ? node.name() : idStr;
         String desc = node.description() != null ? node.description()
                 : (node.definition() != null ? node.definition() : "");
