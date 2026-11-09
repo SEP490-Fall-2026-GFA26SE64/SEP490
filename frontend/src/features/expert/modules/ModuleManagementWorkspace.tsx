@@ -75,6 +75,7 @@ function OwnedModuleManagementWorkspace({ mode }: { mode: Mode }) {
   }, [filters.search])
   const [jobPositions, setJobPositions] = useState<CatalogChoice[]>([])
   const [skills, setSkills] = useState<CatalogChoice[]>([])
+  const [moduleSkills, setModuleSkills] = useState<CatalogChoice[]>([])
   const [contents, setContents] = useState<ModuleContent[]>([])
   const [experts, setExperts] = useState<CatalogChoice[]>([])
   const [selected, setSelected] = useState<ModuleDocument | null>(null)
@@ -130,16 +131,17 @@ function OwnedModuleManagementWorkspace({ mode }: { mode: Mode }) {
         const listRequest = mode === 'modules'
           ? moduleRequest<ModuleCatalogPage>(`/module-list?${query}`, 'GET', undefined, signal).then(setCatalogPage)
           : mode === 'content' ? Promise.resolve() : moduleRequest<ModulePage>(`/modules?${query}`, 'GET', undefined, signal).then(setPage)
-        const [, nextJobPositions, nextSkills, nextContents, nextStaff, nextExperts] = await Promise.all([
+        const [, nextJobPositions, nextSkills, nextContents, nextStaff, nextExperts, nextModuleSkills] = await Promise.all([
           listRequest,
           moduleRequest<CatalogChoice[]>('/catalog/JobPosition', 'GET', undefined, signal),
           moduleRequest<CatalogChoice[]>('/catalog/MicroSkill', 'GET', undefined, signal),
           actor.roles.includes('LD_MANAGER') && mode !== 'content' ? Promise.resolve(null) : moduleRequest<ModuleContent[]>('/contents', 'GET', undefined, signal),
           moduleRequest<CatalogChoice[]>('/catalog/Staff', 'GET', undefined, signal),
           actor.roles.includes('LD_MANAGER') ? moduleRequest<CatalogChoice[]>('/catalog/Expert', 'GET', undefined, signal) : Promise.resolve([]),
+          actor.roles.includes('EXPERT') ? moduleRequest<CatalogChoice[]>('/catalog/ModuleSkill', 'GET', undefined, signal) : Promise.resolve([]),
         ])
         setJobPositions(nextJobPositions); setSkills(nextSkills); if (nextContents) setContents(nextContents); setStaff(Array.isArray(nextStaff) ? nextStaff : []); setCatalogReady(true)
-        setExperts(nextExperts)
+        setExperts(nextExperts); setModuleSkills(nextModuleSkills)
       }
     } catch (failure) { if (!signal?.aborted) setError(errorText(failure)) }
     finally { if (!signal?.aborted) setLoading(false) }
@@ -267,7 +269,7 @@ function OwnedModuleManagementWorkspace({ mode }: { mode: Mode }) {
           <div className={`grid grid-cols-1 gap-4 ${manager ? 'md:grid-cols-2' : 'md:grid-cols-3'}`}>
             <StatCard variant="gradient" icon={<BookOpen className="h-4 w-4 text-primary" aria-hidden="true" />} title={mode === 'approvals' ? copy('Pending actions', 'Yêu cầu cần xử lý') : copy('Matching modules', 'Module phù hợp')} value={displayedPage.total} valueClassName="text-primary" description={copy('Matching your current filters', 'Phù hợp với bộ lọc hiện tại')} />
             {!manager && <StatCard variant="gradient" icon={<FileText className="h-4 w-4 text-success" aria-hidden="true" />} title={copy('Available content', 'Nội dung hiện có')} value={contents.length} valueClassName="text-success" description={copy('Learning content in your workspace', 'Nội dung học tập trong không gian làm việc')} />}
-            <StatCard variant="gradient" icon={<Layers className="h-4 w-4 text-warning" aria-hidden="true" />} title={copy('Available skills', 'Kỹ năng hiện có')} value={skills.length} valueClassName="text-warning" description={copy('Skills available for module authoring', 'Kỹ năng có thể chọn khi soạn module')} />
+            <StatCard variant="gradient" icon={<Layers className="h-4 w-4 text-warning" aria-hidden="true" />} role="group" aria-label={copy('Available skills', 'Kỹ năng hiện có')} title={copy('Available skills', 'Kỹ năng hiện có')} value={expert ? moduleSkills.length : skills.length} valueClassName="text-warning" description={expert ? copy('Skills available for module authoring', 'Kỹ năng có thể chọn khi soạn module') : copy('Skills in the module catalog', 'Kỹ năng trong danh mục module')} />
           </div>
           <div className="flex flex-wrap items-end gap-3">
             <Field label={copy('Search name or ID', 'Tìm theo tên hoặc ID')}><Input value={filters.search} onChange={e => { setPageNumber(1); setFilters({ ...filters, search: e.target.value }) }} /></Field>
@@ -276,7 +278,7 @@ function OwnedModuleManagementWorkspace({ mode }: { mode: Mode }) {
             </select></Field>)}
           </div>
           {!loading && !listItems.length && <Card><CardContent className="space-y-3 pt-6"><p>{mode === 'approvals' ? copy('No requests need your attention. New submissions will appear here.', 'Chưa có yêu cầu cần xử lý. Các module được gửi duyệt sẽ xuất hiện tại đây.') : manager ? copy('No modules match your filters. Try another search.', 'Không có module phù hợp. Hãy thử tìm kiếm hoặc bộ lọc khác.') : copy('No modules match this view. Try changing your filters, or prepare content for a new module.', 'Chưa có module phù hợp. Hãy thử bộ lọc khác hoặc chuẩn bị nội dung cho module mới.')}</p></CardContent></Card>}
-          {listItems.map(item => <Card key={item.module.metadata.id}><CardContent className="space-y-3 pt-5"><div className="flex flex-wrap justify-between gap-2"><div className="min-w-0"><Heading level={2} size="card" className="break-words">{item.module.title ?? item.module.metadata.id}</Heading><p className="break-all text-caption text-muted-foreground">{item.module.metadata.id}</p><div className="mt-2 flex flex-wrap gap-2">{item.module.knowledgeLevel && <Badge variant="secondary">{stateLabels[item.module.knowledgeLevel] ?? item.module.knowledgeLevel}</Badge>}{item.authoring?.createdBy === 'DEVELOPMENT_SEED' && <Badge variant="outline">{copy('Development seed', 'Dữ liệu mẫu dev')}</Badge>}</div></div>
+          {listItems.map(item => <Card key={item.module.metadata.id}><CardContent className="space-y-3 pt-5"><div className="flex flex-wrap justify-between gap-2"><div className="min-w-0"><Heading level={2} size="card" className="break-words">{item.module.title?.trim() || copy('Untitled module', 'Module chưa có tên')}</Heading><p className="break-words text-body-sm text-muted-foreground">{copy('Skill taught', 'Kỹ năng được dạy')}: {item.module.teachings.length ? item.module.teachings.map(teaching => teaching.skillName?.trim() || copy('Skill name unavailable', 'Chưa có tên kỹ năng')).join(', ') : copy('No skill linked', 'Chưa liên kết kỹ năng')}</p><div className="mt-2 flex flex-wrap gap-2">{item.module.knowledgeLevel && <Badge variant="secondary">{stateLabels[item.module.knowledgeLevel] ?? item.module.knowledgeLevel}</Badge>}{item.authoring?.createdBy === 'DEVELOPMENT_SEED' && <Badge variant="outline">{copy('Development seed', 'Dữ liệu mẫu dev')}</Badge>}</div></div>
             <div className="flex flex-wrap items-start gap-2"><Badge variant={statusVariant(item.module.metadata.status)}>{item.module.metadata.status ? stateLabels[item.module.metadata.status] ?? item.module.metadata.status : copy('Lifecycle not recorded', 'Chưa có vòng đời')}</Badge><Badge variant={statusVariant(item.module.metadata.reviewStatus)}>{item.module.metadata.reviewStatus ? stateLabels[item.module.metadata.reviewStatus] ?? item.module.metadata.reviewStatus : copy('Review not recorded', 'Chưa có thông tin duyệt')}</Badge>{!item.authoring && <Badge variant="warning">{item.intake ? copy('Awaiting Expert intake', 'Chờ Expert tiếp nhận') : copy('Not received', 'Chưa tiếp nhận')}</Badge>}{item.authoring && (!latest(item.authoring).payload.content.lessons?.length || latest(item.authoring).payload.content.lessons?.some(l => !l.title.trim() || !l.durationSeconds || l.type === 'TEXT' && !l.body?.replace(/<[^>]*>/g, '').trim() || l.type === 'VIDEO' && !(l.assetId || l.videoUrl))) && <Badge variant="warning">{copy('Needs content', 'Cần bổ sung nội dung')}</Badge>}{item.authoring && <Badge variant={statusVariant(latest(item.authoring).state)}>{stateLabels[latest(item.authoring).state] ?? latest(item.authoring).state}</Badge>}</div></div>
             <p className="text-[length:var(--text-body-sm)] text-muted-foreground">{item.module.duration ?? '—'} {copy('minutes', 'phút')} · · {copy('Catalog version', 'Phiên bản danh mục')} {item.module.metadata.version ?? '—'}</p>
             {item.authoring && latest(item.authoring).payload.title !== item.module.title && <p className="break-words text-[length:var(--text-body-sm)]">{copy('Working revision', 'Phiên bản đang chỉnh sửa')}: {latest(item.authoring).payload.title}</p>}
@@ -324,7 +326,7 @@ function OwnedModuleManagementWorkspace({ mode }: { mode: Mode }) {
     <Dialog open={editing} onOpenChange={open => { if (!busy && !contentBusy) { setEditing(open); if (!open) setSelected(null) } }} className="max-w-3xl" ariaLabel={copy('Module editor', 'Chỉnh sửa module')}>
       <DialogHeader><DialogTitle>{selected ? copy('Create a revised package', 'Chỉnh sửa gói học') : copy('Create module', 'Tạo module')}</DialogTitle></DialogHeader>
       <form className="space-y-4 overflow-y-auto px-1" onSubmit={event => { event.preventDefault(); void run(async () => {
-        if (form.teachings.length !== 1 || !form.teachings[0].skillId) throw new Error(copy('Choose exactly one skill.', 'Chọn đúng một kỹ năng.'))
+        if (form.teachings.length !== 1 || !moduleSkills.some(skill => skill.id === form.teachings[0].skillId)) throw new Error(copy('Choose exactly one skill.', 'Chọn đúng một kỹ năng.'))
         const prepared = await moduleRequest<ModuleContent>('/contents/lessons', 'POST', { title: form.title, lessons: moduleLessons })
         const savedForm = { ...form, contentId: prepared.id }
         await moduleRequest<ModuleDocument>(selected ? `/modules/${selected.id}` : '/modules', selected ? 'PUT' : 'POST', selected ? { expectedVersion: selected.lockVersion, value: savedForm } : savedForm)
@@ -345,12 +347,13 @@ function OwnedModuleManagementWorkspace({ mode }: { mode: Mode }) {
           <Field label={copy('Duration (minutes)', 'Thời lượng (phút)')}><Input required type="number" min={1} step={1} value={form.duration} onChange={e => setForm({ ...form, duration: Number(e.target.value) })} /></Field></div>
         <Heading level={3}>{copy('Skill taught', 'Kỹ năng được dạy')}</Heading>
         <p className="text-body-sm text-muted-foreground">{copy('Each module teaches one skill. A skill may have several modules.', 'Mỗi module dạy một kỹ năng. Một kỹ năng có thể có nhiều module.')}</p>
-        <Field label={copy('Skill', 'Kỹ năng')}><select required className={control} value={form.teachings[0]?.skillId ?? ''} onChange={e => { setForm({ ...form, teachings: [{ skillId: e.target.value }], knowledgeLevel: '', outcomeCodes: [] }); setOutcomesDraft('') }}><option value="">{copy('Select skill', 'Chọn kỹ năng')}</option>{skills.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}</select></Field>
+        <Field label={copy('Skill', 'Kỹ năng')}><select required disabled={!moduleSkills.length} aria-describedby="module-skill-eligibility" className={control} value={form.teachings[0]?.skillId ?? ''} onChange={e => { setForm({ ...form, teachings: [{ skillId: e.target.value }], knowledgeLevel: '', outcomeCodes: [] }); setOutcomesDraft('') }}><option value="">{copy('Select skill', 'Chọn kỹ năng')}</option>{moduleSkills.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}</select></Field>
+        <p id="module-skill-eligibility" role="status" className="text-body-sm text-muted-foreground">{!moduleSkills.length ? copy('No active, approved skills are available in this organization. Approve and activate a skill before creating a module.', 'Tổ chức chưa có kỹ năng đang hoạt động và đã được duyệt. Hãy duyệt và kích hoạt kỹ năng trước khi tạo module.') : form.teachings[0]?.skillId && !moduleSkills.some(skill => skill.id === form.teachings[0].skillId) ? copy('The selected skill is no longer eligible. Choose an active, approved skill.', 'Kỹ năng đã chọn không còn đủ điều kiện. Hãy chọn kỹ năng đang hoạt động và đã được duyệt.') : copy('Only active, approved skills in this organization are listed.', 'Chỉ hiển thị kỹ năng thuộc tổ chức, đang hoạt động và đã được duyệt.')}</p>
         <Field label={copy('Knowledge level', 'Mức kiến thức')}><select required className={control} value={form.knowledgeLevel ?? ''} onChange={e => { setForm({ ...form, knowledgeLevel: e.target.value, outcomeCodes: [] }); setOutcomesDraft('') }}><option value="">{copy('Select level', 'Chọn mức')}</option><option value="FOUNDATION">{copy('Foundation', 'Nền tảng')}</option><option value="INTERMEDIATE">{copy('Intermediate', 'Trung cấp')}</option><option value="ADVANCED">{copy('Advanced', 'Nâng cao')}</option></select></Field>
         <Field label={copy('Covered outcomes', 'Đầu ra được đáp ứng')}><Input required value={outcomesDraft} placeholder={copy('Configured outcome codes, separated by commas', 'Mã đầu ra đã cấu hình, phân cách bằng dấu phẩy')} onChange={e => { setOutcomesDraft(e.target.value); setForm({ ...form, outcomeCodes: e.target.value.split(',').map(value => value.trim()).filter(Boolean) }) }} /></Field>
         <LearningLessonsEditor onBusyChange={setContentBusy} disabled={busy || contentBusy} lessons={moduleLessons} onChange={setModuleLessons} />
         </fieldset>
-        <DialogFooter><Button type="button" variant="outline" disabled={busy || contentBusy} onClick={() => { setEditing(false); setSelected(null) }}>{copy('Cancel', 'Hủy')}</Button><Button type="submit" disabled={busy || contentBusy}>{copy('Save draft', 'Lưu bản nháp')}</Button></DialogFooter>
+        <DialogFooter><Button type="button" variant="outline" disabled={busy || contentBusy} onClick={() => { setEditing(false); setSelected(null) }}>{copy('Cancel', 'Hủy')}</Button><Button type="submit" disabled={busy || contentBusy || !moduleSkills.some(skill => skill.id === form.teachings[0]?.skillId)}>{copy('Save draft', 'Lưu bản nháp')}</Button></DialogFooter>
       </form>
     </Dialog>
 

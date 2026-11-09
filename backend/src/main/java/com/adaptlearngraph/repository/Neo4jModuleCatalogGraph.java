@@ -98,9 +98,13 @@ public final class Neo4jModuleCatalogGraph {
 
     /** Active {@code JobPosition}/{@code MicroSkill} choices; the label is interpolated only after the allow-list check. */
     public List<Choice> choices(String kind, String organization) {
-        if (!Set.of("JobPosition", "MicroSkill").contains(kind)) throw new IllegalArgumentException("Unknown catalog");
-        return reads.execute(status -> new ArrayList<>(client.query("MATCH (n:" + kind
-                        + ") WHERE n.organizationId=$organization AND n.status <> 'ARCHIVED' AND n.id IS NOT NULL AND n.name IS NOT NULL RETURN n.id AS id,n.name AS name ORDER BY name")
+        if (!Set.of("JobPosition", "MicroSkill", "ModuleSkill").contains(kind)) throw new IllegalArgumentException("Unknown catalog");
+        String label = kind.equals("ModuleSkill") ? "MicroSkill" : kind;
+        String eligibility = kind.equals("ModuleSkill")
+                ? "n.status='ACTIVE' AND n.reviewStatus='APPROVED'" : "n.status <> 'ARCHIVED'";
+        return reads.execute(status -> new ArrayList<>(client.query("MATCH (n:" + label
+                        + ") WHERE n.organizationId=$organization AND " + eligibility
+                        + " AND n.id IS NOT NULL AND n.name IS NOT NULL RETURN n.id AS id,n.name AS name ORDER BY name")
                 .bind(organization).to("organization").fetchAs(Choice.class).mappedBy((types, r) -> new Choice(r.get("id").asString(), r.get("name").asString())).all()));
     }
 

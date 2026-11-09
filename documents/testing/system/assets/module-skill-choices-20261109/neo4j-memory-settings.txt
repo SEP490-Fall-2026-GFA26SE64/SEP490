@@ -1,0 +1,4 @@
+Read from the running Neo4j using SHOW SETTINGS on 2026-11-09:
+server.memory.heap.initial_size = 256.00MiB
+server.memory.heap.max_size = 512.00MiB
+server.memory.pagecache.size = 256.00MiB

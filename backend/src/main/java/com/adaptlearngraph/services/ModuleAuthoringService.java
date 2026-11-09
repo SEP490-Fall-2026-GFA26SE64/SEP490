@@ -51,7 +51,7 @@ public final class ModuleAuthoringService {
     public Actor session() { return port.actor(); }
     public List<Choice> choices(String kind) {
         Actor actor = staff();
-        if (!Set.of("JobPosition", "MicroSkill", "Expert", "Staff", "Employee", "ReleasedModule").contains(kind)) throw new Failure(400, "Invalid catalog");
+        if (!Set.of("JobPosition", "MicroSkill", "ModuleSkill", "Expert", "Staff", "Employee", "ReleasedModule").contains(kind)) throw new Failure(400, "Invalid catalog");
         if (kind.equals("Expert")) manager(actor);
         return port.catalog(kind).stream().filter(c -> !kind.equals("JobPosition") || actor.manager()
                 || port.jobPositions(actor).contains(c.id())).toList();
