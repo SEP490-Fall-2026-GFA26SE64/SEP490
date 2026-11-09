@@ -142,6 +142,8 @@ interface EmployeeDepartmentContext {
   isEmployee: boolean
   departmentName: string
   departmentId: string
+  jobPositionName: string | null
+  jobPositionCode: string | null
   allowedJobPositionCodes: Set<string>
   inactiveJobPositionCodes: Set<string>
   assignedRoleId: string | null
@@ -192,7 +194,103 @@ async function resolveEmployeeDepartmentContext(): Promise<EmployeeDepartmentCon
       let savedDeptName: string | null = null
       let savedDeptId: string | null = null
       let savedJobPosCode: string | null = null
+      let assignedJobPositionName: string | null = null
 
+      // 1. Fetch self assignment from backend (accessible to any workspace member)
+      try {
+        const myRes = await workspaceFetch(
+          `/api/v1/organizations/${encodeURIComponent(organizationId)}/subscription/my-assignment`,
+          { method: 'GET' },
+        )
+        if (myRes.ok) {
+          const myData = (await myRes.json()) as {
+            departmentId?: string | null
+            departmentName?: string | null
+            jobPositionName?: string | null
+            targetRoleId?: string | null
+            targetRoleCode?: string | null
+            targetRoleName?: string | null
+            targetRoleLevel?: string | null
+          }
+          if (myData) {
+            if (myData.departmentName) savedDeptName = myData.departmentName
+            if (myData.departmentId) savedDeptId = myData.departmentId
+            const decoded = decodeJobPositionWithTargetRole(myData.jobPositionName)
+            if (decoded.cleanJobPositionName) {
+              assignedJobPositionName = decoded.cleanJobPositionName
+              const codeMatch = decoded.cleanJobPositionName.match(/^([0-9]{2}-[0-9]{4}(?:\.[0-9]{2})?)/)
+              if (codeMatch) savedJobPosCode = codeMatch[1]
+            }
+            const effRoleId = myData.targetRoleId || decoded.targetRoleId
+            if (effRoleId) {
+              assignedRoleId = effRoleId
+              assignedRoleCode = myData.targetRoleCode || decoded.targetRoleCode || effRoleId
+              assignedRoleTitle = myData.targetRoleName || decoded.targetRoleName || assignedRoleCode
+            }
+            const effLvl = myData.targetRoleLevel || decoded.targetRoleLevel
+            if (effLvl) {
+              assignedLevel = effLvl
+            }
+          }
+        }
+      } catch {
+        // ignore if endpoint fails
+      }
+
+      // 2. If not found via my-assignment, try subscription members list (for managers/admins)
+      if (!assignedRoleId && !savedDeptName) {
+        try {
+          const memRes = await workspaceFetch(
+            `/api/v1/organizations/${encodeURIComponent(organizationId)}/subscription/members`,
+            { method: 'GET' },
+          )
+          if (memRes.ok) {
+            const members = (await memRes.json()) as Array<{
+              email?: string
+              departmentId?: string | null
+              departmentName?: string | null
+              jobPositionName?: string | null
+              targetRoleId?: string | null
+              targetRoleCode?: string | null
+              targetRoleName?: string | null
+              targetRoleLevel?: string | null
+            }>
+            if (Array.isArray(members)) {
+              const matchedMember = members.find(
+                m => m.email && m.email.toLowerCase().trim() === email.toLowerCase().trim(),
+              )
+              if (matchedMember) {
+                if (matchedMember.departmentName) {
+                  savedDeptName = matchedMember.departmentName
+                }
+                if (matchedMember.departmentId) {
+                  savedDeptId = matchedMember.departmentId
+                }
+                const decoded = decodeJobPositionWithTargetRole(matchedMember.jobPositionName)
+                if (decoded.cleanJobPositionName) {
+                  assignedJobPositionName = decoded.cleanJobPositionName
+                  const codeMatch = decoded.cleanJobPositionName.match(/^([0-9]{2}-[0-9]{4}(?:\.[0-9]{2})?)/)
+                  if (codeMatch) savedJobPosCode = codeMatch[1]
+                }
+                const effRoleId = matchedMember.targetRoleId || decoded.targetRoleId
+                if (effRoleId) {
+                  assignedRoleId = effRoleId
+                  assignedRoleCode = matchedMember.targetRoleCode || decoded.targetRoleCode || effRoleId
+                  assignedRoleTitle = matchedMember.targetRoleName || decoded.targetRoleName || assignedRoleCode
+                }
+                const effLvl = matchedMember.targetRoleLevel || decoded.targetRoleLevel
+                if (effLvl) {
+                  assignedLevel = effLvl
+                }
+              }
+            }
+          }
+        } catch {
+          // ignore if employee is not permitted to read members list
+        }
+      }
+
+      // 3. Fallback to localStorage if still not populated
       if (typeof localStorage !== 'undefined') {
         try {
           const raw = localStorage.getItem(`alg_employee_assignment_${email}`)
@@ -205,64 +303,39 @@ async function resolveEmployeeDepartmentContext(): Promise<EmployeeDepartmentCon
               departmentId?: string
               departmentName?: string
               jobPositionCode?: string
+              jobPositionName?: string
             }
-            assignedRoleId = parsed.roleId?.trim() || null
-            assignedRoleCode = parsed.roleCode?.trim() || assignedRoleId
-            assignedRoleTitle = parsed.roleTitle?.trim() || assignedRoleCode
-            assignedLevel = parsed.level?.trim() || null
-            savedDeptName = parsed.departmentName?.trim() || null
-            savedDeptId = parsed.departmentId?.trim() || null
-            savedJobPosCode = parsed.jobPositionCode?.trim() || null
+            if (!assignedRoleId && parsed.roleId) assignedRoleId = parsed.roleId.trim()
+            if (!assignedRoleCode && (parsed.roleCode || parsed.roleId)) assignedRoleCode = (parsed.roleCode || parsed.roleId)!.trim()
+            if (!assignedRoleTitle && (parsed.roleTitle || assignedRoleCode)) assignedRoleTitle = (parsed.roleTitle || assignedRoleCode)!.trim()
+            if (!assignedLevel && parsed.level) assignedLevel = parsed.level.trim()
+            if (!savedDeptName && parsed.departmentName) savedDeptName = parsed.departmentName.trim()
+            if (!savedDeptId && parsed.departmentId) savedDeptId = parsed.departmentId.trim()
+            if (!savedJobPosCode && parsed.jobPositionCode) savedJobPosCode = parsed.jobPositionCode.trim()
+            if (!assignedJobPositionName && parsed.jobPositionName) assignedJobPositionName = parsed.jobPositionName.trim()
           }
         } catch {
           // ignore storage errors
         }
       }
 
-      // Check if subscription members in PostgreSQL has an encoded target role & department for this employee
-      try {
-        const memRes = await workspaceFetch(
-          `/api/v1/organizations/${encodeURIComponent(organizationId)}/subscription/members`,
-          { method: 'GET' },
-        )
-        if (memRes.ok) {
-          const members = (await memRes.json()) as Array<{
-            email?: string
-            departmentId?: string | null
-            departmentName?: string | null
-            jobPositionName?: string | null
-            targetRoleId?: string | null
-            targetRoleCode?: string | null
-            targetRoleName?: string | null
-            targetRoleLevel?: string | null
-          }>
-          if (Array.isArray(members)) {
-            const matchedMember = members.find(
-              m => m.email && m.email.toLowerCase().trim() === email.toLowerCase().trim(),
-            )
-            if (matchedMember) {
-              if (matchedMember.departmentName) {
-                savedDeptName = matchedMember.departmentName
-              }
-              if (matchedMember.departmentId) {
-                savedDeptId = matchedMember.departmentId
-              }
-              const decoded = decodeJobPositionWithTargetRole(matchedMember.jobPositionName)
-              const effRoleId = matchedMember.targetRoleId || decoded.targetRoleId
-              if (effRoleId) {
-                assignedRoleId = effRoleId
-                assignedRoleCode = matchedMember.targetRoleCode || decoded.targetRoleCode || effRoleId
-                assignedRoleTitle = matchedMember.targetRoleName || decoded.targetRoleName || assignedRoleCode
-              }
-              const effLvl = matchedMember.targetRoleLevel || decoded.targetRoleLevel
-              if (effLvl) {
-                assignedLevel = effLvl
-              }
-            }
-          }
-        }
-      } catch {
-        // ignore if employee is not permitted to read members list
+      // Persist in localStorage for instant offline/subsequent sync
+      if (typeof localStorage !== 'undefined' && email && (assignedRoleId || savedDeptName || assignedJobPositionName)) {
+        try {
+          localStorage.setItem(
+            `alg_employee_assignment_${email}`,
+            JSON.stringify({
+              roleId: assignedRoleId,
+              roleCode: assignedRoleCode,
+              roleTitle: assignedRoleTitle,
+              level: assignedLevel,
+              departmentId: savedDeptId,
+              departmentName: savedDeptName,
+              jobPositionCode: savedJobPosCode,
+              jobPositionName: assignedJobPositionName,
+            }),
+          )
+        } catch {}
       }
 
       if (assignedLevel) {
@@ -436,6 +509,8 @@ async function resolveEmployeeDepartmentContext(): Promise<EmployeeDepartmentCon
         isEmployee,
         departmentName,
         departmentId,
+        jobPositionName: assignedJobPositionName,
+        jobPositionCode: savedJobPosCode,
         allowedJobPositionCodes,
         inactiveJobPositionCodes,
         assignedRoleId,
@@ -712,6 +787,10 @@ async function fetchDepartmentScopedPublishedRoles(): Promise<CurrentRole[]> {
         // Filter strictly to the Employee's assigned Department (or its active Job Positions)
         const roleDept = (roleForOcc.department || '').trim().toLowerCase()
         const empDept = ctx.departmentName.trim().toLowerCase()
+        const isAssignedRole = Boolean(
+          (ctx.assignedRoleId && (id === ctx.assignedRoleId || code === ctx.assignedRoleId)) ||
+          (ctx.assignedRoleCode && code.toUpperCase() === ctx.assignedRoleCode.toUpperCase())
+        )
         const matchesDeptName = Boolean(
           roleDept && empDept && (roleDept === empDept || roleDept.includes(empDept) || empDept.includes(roleDept)),
         )
@@ -719,7 +798,7 @@ async function fetchDepartmentScopedPublishedRoles(): Promise<CurrentRole[]> {
           occCodeNorm && ctx.allowedJobPositionCodes.has(occCodeNorm),
         )
 
-        if (!matchesDeptName && !matchesDeptJobPosition) {
+        if (!isAssignedRole && !matchesDeptName && !matchesDeptJobPosition) {
           continue
         }
 
@@ -843,6 +922,13 @@ function buildSynthesizedSelection(
       (ctx.assignedRoleTitle && r.name.toLowerCase() === ctx.assignedRoleTitle.toLowerCase()),
   )
 
+  if (matchedRole && ctx.jobPositionName && (!matchedRole.jobPositionName || matchedRole.jobPositionName === matchedRole.jobPositionId)) {
+    matchedRole = {
+      ...matchedRole,
+      jobPositionName: ctx.jobPositionName,
+    }
+  }
+
   if (!matchedRole && (ctx.assignedRoleTitle || ctx.assignedRoleCode || ctx.assignedRoleId)) {
     const activeCompRole = (getActiveCompany()?.targetRoles || []).find(
       tr =>
@@ -858,7 +944,7 @@ function buildSynthesizedSelection(
         name: activeCompRole.title,
         scope: activeCompRole.description,
         jobPositionId: activeCompRole.jobPositionCode || resolvedOcc.code || '15-1252.00',
-        jobPositionName: resolvedOcc.name || 'Software Developers',
+        jobPositionName: ctx.jobPositionName || resolvedOcc.name || 'Software Developers',
         catalogVersion: activeCompRole.version,
         fingerprint: '',
         levels: (activeCompRole.levels || ['Senior', 'Middle', 'Junior']).map((lvlName, idx) => ({
@@ -889,7 +975,7 @@ function buildSynthesizedSelection(
         name: title,
         scope: '',
         jobPositionId: resolvedOcc.code || '15-1252.00',
-        jobPositionName: resolvedOcc.name || 'Software Developers',
+        jobPositionName: ctx.jobPositionName || resolvedOcc.name || 'Software Developers',
         catalogVersion: '1.0',
         fingerprint: '',
         levels: ['Senior', 'Middle', 'Junior'].map((lvlName, idx) => ({
