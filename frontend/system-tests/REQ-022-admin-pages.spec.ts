@@ -1,8 +1,8 @@
 import { expect, test } from '@playwright/test'
 import { activationLink, confirmPayment, fixture, mutate, observe, purchase, record, registrationSession, text } from './subscriptionHelpers'
 
-test.setTimeout(150000)
 test.beforeEach(async ({ page, baseURL }) => {
+  test.setTimeout(150000)
   if (!['http://127.0.0.1:8092', 'http://127.0.0.1:8093'].includes(baseURL ?? '')) throw new Error('Use the isolated subscription or identity-test stack.')
   await page.addInitScript(() => localStorage.setItem('app_language', 'en'))
 })

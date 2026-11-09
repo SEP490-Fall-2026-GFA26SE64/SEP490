@@ -62,7 +62,15 @@ public final class ScopedAssessmentPolicyService {
             // Scoped version uniqueness is additionally enforced by the database index.
             locks.lock("ASSESSMENT-RULE-POLICY\n"+a.organizationId()+"\n"+purpose);
             if(!a.equals(actor(purpose)))throw new Failure(403,"FORBIDDEN");
-            T result=work.get();if(!a.equals(actor(purpose)))throw new Failure(403,"FORBIDDEN");return result;
+            T result=work.get();if(!a.equals(actor(purpose)))throw new Failure(403,"FORBIDDEN");
+            // Recheck current Role responsibility on reads and exact receipt replays too.
+            if(result instanceof Workspace workspace)require(a,purpose,workspace.scope().key());
+            if(result instanceof Directory directory && purpose==Purpose.SKILL_ASSESSMENT) {
+                var allowed=catalog.discoverForEditor(a.organizationId(),purpose,a.accountId()).scopes().stream()
+                        .map(Scope::key).collect(java.util.stream.Collectors.toSet());
+                if(directory.choices().stream().anyMatch(choice->!allowed.contains(choice.key())))throw new Failure(403,"FORBIDDEN");
+            }
+            return result;
         });
     }
     public Directory directory(Purpose purpose,String search,String owner,String level,String filter,int page,int size) {
@@ -70,7 +78,7 @@ public final class ScopedAssessmentPolicyService {
         if(search.length()>200 || owner.length()>200 || level.length()>200 || !Set.of("","UNCONFIGURED","DRAFT","ACTIVE","HISTORY").contains(filter)
                 || !level.isEmpty() && owner.isEmpty())throw new Failure(400,"INVALID_REQUEST");
         return locked(a,purpose,()->{
-            var discovery=catalog.discover(a.organizationId(),purpose);var all=discovery.scopes();var summaries=scopes.summaries(a.organizationId(),purpose.name());
+            var discovery=catalog.discoverForEditor(a.organizationId(),purpose,a.accountId());var all=discovery.scopes();var summaries=scopes.summaries(a.organizationId(),purpose.name());
             if(summaries.size()>10000)throw new Failure(422,"CATALOG_CAPACITY_EXCEEDED");
             var states=new HashMap<String,ScopedAssessmentPolicyJpaRepository.Summary>();summaries.forEach(s->states.put(s.getScopeKey(),s));
             var rows=new ArrayList<Row>();String query=search.strip().toLowerCase(Locale.ROOT);
@@ -265,7 +273,7 @@ public final class ScopedAssessmentPolicyService {
     }
     private Scope require(SubscriptionAccessPolicy.Actor a,Purpose purpose,String key) {
         if(key==null || !key.matches("[0-9a-f]{64}"))throw new Failure(400,"INVALID_REQUEST");
-        return catalog.scopes(a.organizationId(),purpose).stream().filter(s->s.key().equals(key)).findFirst().orElseThrow(()->new Failure(404,"CONFIGURATION_SCOPE_NOT_FOUND"));
+        return catalog.discoverForEditor(a.organizationId(),purpose,a.accountId()).scopes().stream().filter(s->s.key().equals(key)).findFirst().orElseThrow(()->new Failure(404,"CONFIGURATION_SCOPE_NOT_FOUND"));
     }
     private static Choice choice(Scope s){return new Choice(s.key(),s.ownerId(),s.ownerName(),s.levelId(),s.levelName(),s.rank(),s.ready());}
     private long revision(SubscriptionAccessPolicy.Actor a,Purpose p,String key){return scopes.revision(a.organizationId(),p.name(),key).orElse(0L);}

@@ -22,7 +22,7 @@ public final class RequirementPathwayReviewService {
         public Selection(Expected expected,List<StepSelection> selections){this(expected,selections,null);}
     }
     public record SelectionPreview(Plan plan,RequirementPathwayValidationService.Checked validation) {}
-    public record Detail(Summary status,Plan plan,RequirementPathwayValidationService.Checked validation,boolean archived,List<Candidate> candidates,List<RulePathwayCatalog.Related> related,List<UUID> reorderableStepIds) {}
+    public record Detail(Summary status,Plan plan,RequirementPathwayValidationService.Checked validation,boolean archived,List<Candidate> candidates,List<RulePathwayCatalog.Related> related,List<UUID> reorderableStepIds,List<UUID> bypassableStepIds) {}
     public record ReviewState(String status,Long basis) {}
     private final Actors actors;private final ReviewAssignments assignments;private final CurrentRoleSelectionStore selections;
     private final RequirementPathwayJpaRepository rules;private final InitialPathwayRepositories data;private final RequirementPathwayAdmissionService admission;
@@ -59,7 +59,17 @@ public final class RequirementPathwayReviewService {
         var providers=row.getArchivedAt()!=null?null:validation.providers(row,plan);
         return new Detail(summary(row,names.isEmpty()?null:names.getFirst()),plan,validation.check(row),row.getArchivedAt()!=null,
                 providers==null?List.of():candidates(plan,providers),providers==null?List.of():providers.related(),
-                row.getArchivedAt()!=null || !"AWAITING_EXPERT_REVIEW".equals(row.getReviewStatus())?List.of():reorderableSteps(row,plan));
+                row.getArchivedAt()!=null || !"AWAITING_EXPERT_REVIEW".equals(row.getReviewStatus())?List.of():reorderableSteps(row,plan),
+                providers==null?List.of():plan.steps().stream().filter(step->canBypass(step,providers)).map(Step::id).toList());
+    }
+    private static boolean canBypass(Step step,RulePathwayCatalog.Snapshot fresh) {
+        if(step.kind()!=Kind.REQUIRED || step.state()==State.FULFILLED || step.state()==State.BYPASSED)return false;
+        var current=fresh.requirements().stream().filter(need->need.key().equals(step.requirement().key())).findFirst();
+        if(current.isEmpty())return false; // Unavailable scope is not proof that provision is missing.
+        var need=current.get();
+        if(step.requirement().provision()!=Provision.UNCONFIGURED && !need.equals(step.requirement()))return false;
+        return fresh.options().getOrDefault(need.key(),List.of()).stream().noneMatch(option->option.matches(need))
+                && !fresh.certificates().containsKey(need.key());
     }
     private List<UUID> reorderableSteps(RequirementPathwayJpaRepository.Row row,Plan plan) {
         var fixed=new HashSet<UUID>();
@@ -214,6 +224,7 @@ public final class RequirementPathwayReviewService {
             var row=editable(actor,id,command.expected());var plan=revisions.read(row);
             var step=plan.steps().stream().filter(item->item.id().equals(command.stepId()) && item.kind()==Kind.REQUIRED).findFirst().orElseThrow(()->new Failure(404,"REQUIREMENT_NOT_FOUND"));
             if(step.state()==State.FULFILLED || step.state()==State.BYPASSED)throw new Failure(409,"REQUIREMENT_ALREADY_RESOLVED_OR_BYPASSED");
+            if(!canBypass(step,validation.providers(row,plan)))throw new Failure(409,"REQUIREMENT_BYPASS_NOT_ALLOWED");
             var review=nextReview(row);reauthorize(actor,id,assignment);
             rules.bypass(UUID.randomUUID(),actor.organizationId(),row.getLearnerId(),id,row.getCurrentRevision(),step.id(),actor.accountId(),revisions.encode(assignment),command.reason().trim(),retry);
             var steps=plan.steps().stream().map(item->item.id().equals(step.id())?new Step(item.id(),item.requirement(),item.kind(),item.sourceBypassId(),State.BYPASSED,command.reason().trim(),null,item.options(),item.certificate(),item.assessedSources()):item).toList();

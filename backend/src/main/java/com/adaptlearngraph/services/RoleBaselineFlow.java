@@ -34,7 +34,12 @@ public final class RoleBaselineFlow {
     }
     public record Progress(String state, int requiredCount, int coveredCount, UUID attemptId,
                            Integer baselineVersion) {}
-    public record View(Selection selection, Progress progress) {}
+    /** Actual company placement; deliberately separate from a learning target. */
+    public record Placement(String roleId, String roleCode, String roleName, String levelName) {}
+    public interface Placements { Optional<Placement> find(Actor actor); }
+    public record View(Selection selection, Progress progress, Placement placement, boolean targetLocked) {
+        public View(Selection selection, Progress progress) { this(selection,progress,null,false); }
+    }
     public record MasterySkill(String id, String name, double mastery, String confidence) {}
     public record MasteryProfile(String jobPositionId, String jobPositionName, UUID attemptId,
                                  int baselineVersion, Instant initializedAt, List<MasterySkill> skills) {}
@@ -44,6 +49,8 @@ public final class RoleBaselineFlow {
     public interface Store {
         <T> T transaction(Actor actor, java.util.function.Supplier<T> work);
         Optional<Selection> current(Actor actor);
+        default Optional<Placement> placement(Actor actor) { return Optional.empty(); }
+        default boolean targetLocked(Actor actor) { return false; }
         default boolean hasLegacySelection(Actor actor) { return false; }
         Optional<Selection> replay(Actor actor, String key, String hash);
         boolean assessmentActive(Actor actor);
@@ -74,7 +81,12 @@ public final class RoleBaselineFlow {
                 .filter(r -> (r.name()+" "+r.jobPositionName()+" "+r.scope()).toLowerCase(Locale.ROOT).contains(term)).toList();
     }
     public View view() {
-        var actor=identity.requireEmployee(); var selected=store.current(actor);
+        var actor=identity.requireEmployee();
+        var target=targetView(actor);
+        return new View(target.selection(),target.progress(),store.placement(actor).orElse(null),store.targetLocked(actor));
+    }
+    private View targetView(Actor actor) {
+        var selected=store.current(actor);
         if (selected.isEmpty()) return new View(null,baseline.active(actor).orElseGet(()->new Progress(
                 store.hasLegacySelection(actor) ? "LEGACY_SELECTION_REQUIRES_RESELECTION" : "SELECT_ROLE",0,0,null,null)));
         var old=selected.get();
@@ -92,6 +104,27 @@ public final class RoleBaselineFlow {
     }
     public Selection choose(String roleId, UUID expected, String key) {
         return choose(roleId,null,expected,key);
+    }
+    /** Called only for a new/changed target, never while reading or continuing an existing pathway. */
+    public static void requireHigherTarget(Role role,String levelId,Placement placement) {
+        if(placement==null || placement.levelName()==null || placement.levelName().isBlank())return;
+        boolean sameRole=Objects.equals(role.id(),placement.roleId())
+                || placement.roleCode()!=null && role.code()!=null
+                    && role.code().split("#",2)[0].equalsIgnoreCase(placement.roleCode().split("#",2)[0]);
+        if(!sameRole)return;
+        if(levelId==null)throw new Failure(400,"LEVEL_REQUIRED");
+        String assigned=placement.levelName().replaceFirst("(?i)^(?:rank|level)\\s*\\d+\\s*:\\s*", "").strip();
+        var matches=role.levels().stream().filter(l->l.id().equalsIgnoreCase(assigned)
+                || l.code()!=null && l.code().equalsIgnoreCase(assigned) || l.name().equalsIgnoreCase(assigned)).toList();
+        if(matches.size()!=1)throw new Failure(409,"ASSIGNED_LEVEL_UNAVAILABLE");
+        var current=matches.getFirst();
+        var target=role.levels().stream().filter(l->l.id().equals(levelId)).findFirst()
+                .orElseThrow(()->new Failure(404,"LEVEL_NOT_AVAILABLE"));
+        if(current.rank()<1 || target.rank()<1
+                || role.levels().stream().anyMatch(l->l.rank()<1)
+                || role.levels().stream().map(Level::rank).distinct().count()!=role.levels().size())
+            throw new Failure(409,"ASSIGNED_LEVEL_UNAVAILABLE");
+        if(target.rank()>=current.rank())throw new Failure(409,"TARGET_LEVEL_NOT_HIGHER");
     }
     public Selection choose(String roleId,String levelId,UUID expected,String key) {
         var actor=identity.requireEmployee();

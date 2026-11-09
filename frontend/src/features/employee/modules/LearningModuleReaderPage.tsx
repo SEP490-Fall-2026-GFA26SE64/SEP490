@@ -1,9 +1,10 @@
 import { useQuery } from '@tanstack/react-query'
 import { WorkspaceSessionContext } from '../../../shared/auth/workspaceSession'
-import { readRulePathway } from '../../../shared/api/requirementPathway'
+import { readRulePathway, type RulePathway, type RuleStep, type RuleModuleOption } from '../../../shared/api/requirementPathway'
 import { InitialPathwayFeedback } from '../../../shared/components/InitialPathwayFeedback'
 import { SkillLearningPanel } from './SkillLearningPanel'
-import { SkillAssessmentEntry } from '../baseline-assessment/SkillAssessmentEntry'
+import { AssessmentStatus, SkillAssessmentEntry } from '../baseline-assessment/SkillAssessmentEntry'
+import { usePathwayAssessmentStates } from '../baseline-assessment/usePathwayAssessmentStates'
 import { useCallback, useContext, useEffect, useEffectEvent, useRef, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import {
@@ -675,14 +676,21 @@ function LearningModuleReader({ moduleId }: { moduleId: string }) {
 function CompletedModuleAssessmentLink({ moduleId, revision }: { moduleId: string; revision: number }) {
   const { t } = useTranslation(), identity = useContext(WorkspaceSessionContext)?.identity
   const scope = `${identity?.organizationId}:${identity?.accountId}:${identity?.roles?.join(',')}`
-  const query = useQuery({ queryKey: ['initialPathway', scope, 'moduleAssessmentEntry', moduleId, revision], queryFn: ({ signal }) => readRulePathway(null, signal), enabled: Boolean(identity?.organizationId && identity?.accountId), retry: false, gcTime: 0 })
+  const query = useQuery({ queryKey: ['initialPathway', scope, 'moduleAssessmentEntry', moduleId, revision], queryFn: ({ signal }) => readRulePathway(null, signal), enabled: Boolean(identity?.organizationId && identity?.accountId), retry: false, gcTime: 0,
+    refetchInterval: current => !current.state.error && current.state.data && !current.state.data.archived ? 5000 : false })
   if (query.isPending) return <p className="text-body-sm text-muted-foreground" role="status">{t('initialPathway.loading')}</p>
   if (query.error) return <InitialPathwayFeedback error={query.error} onRetry={() => void query.refetch()} />
   const pathway = query.data
   if (!pathway || pathway.archived) return null
-  const step = pathway.steps.find(step => !['FULFILLED', 'BYPASSED'].includes(step.state) && step.options.some(option => option.moduleId === moduleId && option.moduleRevision === revision))
+  const step = pathway.steps.find(step => step.state !== 'BYPASSED' && step.options.some(option => option.moduleId === moduleId && option.moduleRevision === revision))
   const option = step?.options.find(option => option.moduleId === moduleId && option.moduleRevision === revision)
   if (!step || !option) return null
   if (!option.completedAt) return <Button size="sm" variant="outline" onClick={() => void query.refetch()}>{t('initialPathway.refresh')}</Button>
-  return <SkillAssessmentEntry pathway={pathway} step={step} option={option} />
+  return <ReaderModuleAssessment pathway={pathway} step={step} option={option} />
+}
+
+function ReaderModuleAssessment({ pathway, step, option }: { pathway: RulePathway; step: RuleStep; option: RuleModuleOption }) {
+  const { t } = useTranslation()
+  const assessmentState = usePathwayAssessmentStates({ ...pathway, steps: [{ ...step, options: [option] }] }, false)
+  return <div className="space-y-2"><Badge variant={step.state === 'FULFILLED' ? 'success' : 'warning'}>{t('rulePathway.official')}: {t('rulePathway.state.' + step.state)}</Badge><AssessmentStatus state={assessmentState(step, option)} /><SkillAssessmentEntry pathway={pathway} step={step} option={option} /></div>
 }

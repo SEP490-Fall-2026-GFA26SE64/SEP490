@@ -24,6 +24,8 @@ import { Input } from '../../shared/components/ui/Input'
 import { PageHeader } from '../../shared/components/ui/PageHeader'
 import { useToast } from '../../shared/hooks/useToast'
 import { WorkspaceLayout } from '../../shared/layouts/WorkspaceLayout'
+import { WorkspaceSessionContext } from '../../shared/auth/workspaceSession'
+import { decodeJobPositionWithTargetRole } from '../subscription/subscriptionApi'
 import {
   getUserProfile,
   updateUserPassword,
@@ -34,18 +36,20 @@ import { workspaceFetch } from '../../shared/api/workspaceFetch'
 import { resolveWorkspaceOrgId } from '../../shared/stores/companyStore'
 
 interface EmployeeAssignmentData {
-  jobPositionCode?: string
-  jobPositionName?: string
-  departmentId?: string
-  departmentName?: string
-  roleId?: string
-  roleCode?: string
-  roleTitle?: string
-  level?: string
+  jobPositionCode?: string | null
+  jobPositionName?: string | null
+  departmentId?: string | null
+  departmentName?: string | null
+  roleId?: string | null
+  roleCode?: string | null
+  roleTitle?: string | null
+  level?: string | null
 }
 
 export function ProfilePage() {
   const { toast } = useToast()
+  const session = React.useContext(WorkspaceSessionContext)
+  const sessionIdentity = session?.identity
 
   // Determine current active actor
   const getInitialActor = (): ActorRole => {
@@ -57,17 +61,57 @@ export function ProfilePage() {
   }
 
   const [activeActor] = React.useState<ActorRole>(getInitialActor)
-  const [profile, setProfile] = React.useState(() => getUserProfile(activeActor))
+  const [profile, setProfile] = React.useState(() => {
+    const base = getUserProfile(activeActor)
+    if (sessionIdentity) {
+      const email = sessionIdentity.email || base.email
+      const name = sessionIdentity.fullName || base.name
+      const initials = name.split(' ').filter(Boolean).map(s => s[0]).join('').slice(0, 2).toUpperCase() || 'U'
+      const orgName = sessionIdentity.organizationName || base.details[0]?.value || 'Enterprise Workspace'
+      return {
+        ...base,
+        name,
+        email,
+        initials,
+        details: [
+          { label: 'Department / Org', value: orgName },
+          ...base.details.slice(1),
+        ],
+      }
+    }
+    return base
+  })
+
+  // Sync profile when sessionIdentity updates
+  React.useEffect(() => {
+    if (sessionIdentity) {
+      const email = sessionIdentity.email || profile.email
+      const name = sessionIdentity.fullName || profile.name
+      const initials = name.split(' ').filter(Boolean).map(s => s[0]).join('').slice(0, 2).toUpperCase() || 'U'
+      const orgName = sessionIdentity.organizationName || profile.details[0]?.value || 'Enterprise Workspace'
+      setProfile(prev => ({
+        ...prev,
+        name,
+        email,
+        initials,
+        details: [
+          { label: 'Department / Org', value: orgName },
+          ...prev.details.slice(1),
+        ],
+      }))
+      setFullNameInput(name)
+    }
+  }, [sessionIdentity])
 
   // Assigned Job Position & Placement State
   const [assignment, setAssignment] = React.useState<EmployeeAssignmentData | null>(() => {
     if (typeof localStorage === 'undefined') return null
     try {
-      const email = (localStorage.getItem(`user_email_${activeActor}`) || 'employee@technova.com').toLowerCase().trim()
-      const raw =
-        localStorage.getItem(`alg_employee_assignment_${email}`) ||
-        localStorage.getItem('alg_employee_assignment_employee@technova.com')
-      if (raw) return JSON.parse(raw) as EmployeeAssignmentData
+      const email = (sessionIdentity?.email || localStorage.getItem(`user_email_${activeActor}`) || '').toLowerCase().trim()
+      if (email) {
+        const raw = localStorage.getItem(`alg_employee_assignment_${email}`)
+        if (raw) return JSON.parse(raw) as EmployeeAssignmentData
+      }
     } catch {}
     return null
   })
@@ -76,54 +120,91 @@ export function ProfilePage() {
     let cancelled = false
     async function loadBackendAssignment() {
       try {
-        const authRes = await workspaceFetch('/api/v1/workspace-auth/current')
-        let userEmail = (profile.email || 'employee@technova.com').toLowerCase().trim()
-        let orgId = resolveWorkspaceOrgId()
+        let userEmail = (sessionIdentity?.email || profile.email || '').toLowerCase().trim()
+        let orgId = sessionIdentity?.organizationId || resolveWorkspaceOrgId()
 
-        if (authRes.ok) {
-          const authData = await authRes.json()
-          if (authData.email) userEmail = authData.email.toLowerCase().trim()
-          if (authData.organizationId) orgId = authData.organizationId
+        if (!userEmail || !orgId) {
+          const authRes = await workspaceFetch('/api/v1/workspace-auth/current')
+          if (authRes.ok) {
+            const authData = await authRes.json()
+            if (authData.email) userEmail = authData.email.toLowerCase().trim()
+            if (authData.organizationId) orgId = authData.organizationId
+            if (authData.fullName) {
+              setProfile(prev => ({
+                ...prev,
+                name: authData.fullName,
+                email: userEmail,
+                initials: authData.fullName.split(' ').filter(Boolean).map((s: string) => s[0]).join('').slice(0, 2).toUpperCase() || 'U',
+              }))
+              setFullNameInput(authData.fullName)
+            }
+          }
         }
 
-        // 1. Check local storage
-        const localRaw =
-          localStorage.getItem(`alg_employee_assignment_${userEmail}`) ||
-          localStorage.getItem(`alg_employee_assignment_${profile.email.toLowerCase().trim()}`) ||
-          localStorage.getItem('alg_employee_assignment_employee@technova.com')
-        if (localRaw) {
+        // 1. Fetch self assignment from backend (accessible to employee, expert, ld, admin)
+        if (orgId) {
           try {
-            const parsed = JSON.parse(localRaw) as EmployeeAssignmentData
-            if (!cancelled && parsed) {
-              setAssignment(parsed)
+            const myRes = await workspaceFetch(
+              `/api/v1/organizations/${encodeURIComponent(orgId)}/subscription/my-assignment`,
+            )
+            if (myRes.ok) {
+              const myData = await myRes.json()
+              if (myData && !cancelled) {
+                const decoded = decodeJobPositionWithTargetRole(myData.jobPositionName)
+                setAssignment({
+                  departmentId: myData.departmentId || null,
+                  departmentName: myData.departmentName || null,
+                  jobPositionCode: myData.jobPositionReferenceId || null,
+                  jobPositionName: decoded.cleanJobPositionName || null,
+                  roleId: myData.targetRoleId || decoded.targetRoleId || null,
+                  roleCode: myData.targetRoleCode || decoded.targetRoleCode || null,
+                  roleTitle: myData.targetRoleName || decoded.targetRoleName || null,
+                  level: myData.targetRoleLevel || decoded.targetRoleLevel || null,
+                })
+                return
+              }
             }
           } catch {}
         }
 
-        // 2. Query workspace subscription members if accessible
+        // 2. Query workspace subscription members if accessible (for manager/admin)
         if (orgId) {
-          const memRes = await workspaceFetch(
-            `/api/v1/organizations/${encodeURIComponent(orgId)}/subscription/members`,
-          )
-          if (memRes.ok) {
-            const members = await memRes.json()
-            if (Array.isArray(members)) {
-              const matched = members.find(
-                (m: any) => m.email && m.email.toLowerCase().trim() === userEmail,
-              )
-              if (matched && !cancelled) {
-                setAssignment((prev) => ({
-                  ...prev,
-                  departmentId: matched.departmentId || prev?.departmentId,
-                  departmentName: matched.departmentName || prev?.departmentName,
-                  jobPositionCode: matched.jobPositionReferenceId || prev?.jobPositionCode,
-                  jobPositionName: matched.jobPositionName || prev?.jobPositionName,
-                  roleId: matched.targetRoleId || prev?.roleId,
-                  roleCode: matched.targetRoleCode || prev?.roleCode,
-                  roleTitle: matched.targetRoleName || prev?.roleTitle,
-                  level: matched.targetRoleLevel || prev?.level,
-                }))
+          try {
+            const memRes = await workspaceFetch(
+              `/api/v1/organizations/${encodeURIComponent(orgId)}/subscription/members`,
+            )
+            if (memRes.ok) {
+              const members = await memRes.json()
+              if (Array.isArray(members)) {
+                const matched = members.find(
+                  (m: any) => m.email && m.email.toLowerCase().trim() === userEmail,
+                )
+                if (matched && !cancelled) {
+                  const decoded = decodeJobPositionWithTargetRole(matched.jobPositionName)
+                  setAssignment({
+                    departmentId: matched.departmentId || null,
+                    departmentName: matched.departmentName || null,
+                    jobPositionCode: matched.jobPositionReferenceId || null,
+                    jobPositionName: decoded.cleanJobPositionName || null,
+                    roleId: matched.targetRoleId || decoded.targetRoleId || null,
+                    roleCode: matched.targetRoleCode || decoded.targetRoleCode || null,
+                    roleTitle: matched.targetRoleName || decoded.targetRoleName || null,
+                    level: matched.targetRoleLevel || decoded.targetRoleLevel || null,
+                  })
+                  return
+                }
               }
+            }
+          } catch {}
+        }
+
+        // 3. Fallback to user-specific localStorage only if matching userEmail
+        if (userEmail) {
+          const localRaw = localStorage.getItem(`alg_employee_assignment_${userEmail}`)
+          if (localRaw) {
+            const parsed = JSON.parse(localRaw) as EmployeeAssignmentData
+            if (!cancelled && parsed) {
+              setAssignment(parsed)
             }
           }
         }
@@ -134,7 +215,7 @@ export function ProfilePage() {
     return () => {
       cancelled = true
     }
-  }, [profile.email, activeActor])
+  }, [sessionIdentity?.email, sessionIdentity?.organizationId, profile.email, activeActor])
 
   // Editable Name State
   const [fullNameInput, setFullNameInput] = React.useState(profile.name)
@@ -286,8 +367,8 @@ export function ProfilePage() {
                   <span className="flex items-center gap-1.5 font-medium">
                     <Briefcase size={14} className="text-primary" /> Assigned Job Position
                   </span>
-                  <span className="font-semibold text-foreground truncate max-w-[200px]" title={assignment?.jobPositionName || 'Software Developers'}>
-                    {assignment?.jobPositionName || 'Software Developers'}
+                  <span className="font-semibold text-foreground truncate max-w-[200px]" title={assignment?.jobPositionName || 'Unassigned'}>
+                    {assignment?.jobPositionName || 'Unassigned'}
                   </span>
                 </div>
               </CardContent>
@@ -316,7 +397,7 @@ export function ProfilePage() {
                       id="full-name-input"
                       value={fullNameInput}
                       onChange={(e) => setFullNameInput(e.target.value)}
-                      placeholder="e.g. Alex Chen"
+                      placeholder="Enter your full name"
                       leftIcon={<User size={15} />}
                     />
                   </div>
@@ -377,7 +458,7 @@ export function ProfilePage() {
                       Industry Job Position
                     </span>
                     <strong className="text-sm font-semibold text-foreground block mt-0.5" data-testid="profile-job-position-name">
-                      {assignment?.jobPositionName || assignment?.jobPositionCode || '15-1252.00 - Software Developers'}
+                      {assignment?.jobPositionName || assignment?.jobPositionCode || 'Unassigned'}
                     </strong>
                   </div>
 
@@ -387,7 +468,7 @@ export function ProfilePage() {
                         Assigned Department
                       </span>
                       <span className="text-xs font-medium text-foreground block mt-0.5" data-testid="profile-department-name">
-                        {assignment?.departmentName || profile.department || 'Engineering & Cognitive Systems'}
+                        {assignment?.departmentName || profile.department || 'Unassigned'}
                       </span>
                     </div>
 
@@ -397,7 +478,11 @@ export function ProfilePage() {
                       </span>
                       <span className="text-xs font-medium text-primary flex items-center gap-1.5 mt-0.5" data-testid="profile-role-level">
                         <Award size={13} className="shrink-0" />
-                        <span>{assignment?.roleTitle || 'Application Developer'} · {assignment?.level || 'Junior'}</span>
+                        <span>
+                          {assignment?.roleTitle
+                            ? `${assignment.roleTitle}${assignment.level ? ` · ${assignment.level}` : ''}`
+                            : 'Unassigned'}
+                        </span>
                       </span>
                     </div>
                   </div>

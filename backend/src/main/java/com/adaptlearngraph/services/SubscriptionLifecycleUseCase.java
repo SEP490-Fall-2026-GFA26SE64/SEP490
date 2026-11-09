@@ -18,6 +18,7 @@ public interface SubscriptionLifecycleUseCase {
     List<Workspace> workspaces();
     void suspend(UUID organizationId,boolean suspended);
     List<Member> members(UUID organizationId);
+    Member myAssignment(UUID organizationId);
     void changeMember(UUID organizationId,UUID membershipId,boolean active,Set<String> roles,long revision);
     Member updateMember(UUID organizationId,UUID membershipId,MemberProfileUpdate update);
     record Status(PaymentOrder order,String applicationState,Setup workspace) {}

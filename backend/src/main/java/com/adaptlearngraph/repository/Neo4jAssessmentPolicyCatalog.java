@@ -21,6 +21,27 @@ public final class Neo4jAssessmentPolicyCatalog implements AssessmentPolicyCatal
     private record Need(String skill,String level) {}
     private record RoleLevel(String id,String name,String level,String levelName,int rank,String version,String status,List<Need> needs,Set<String> problems) {}
     @Override public List<Scope> scopes(UUID organization,Purpose purpose){return discover(organization,purpose).scopes();}
+    @Override public Discovery discoverForEditor(UUID organization,Purpose purpose,UUID expert) {
+        if(purpose==Purpose.BASELINE)return discover(organization,purpose);
+        var owners=graph.read(5,tx->{
+            var rows=tx.list("""
+                    MATCH (r:TargetRole {organizationId:$org,assignedExpertId:$expert})-[h:HAS_LEVEL]->(l:Level)
+                    MATCH (l)-[q:REQUIRES_SKILL]->(s:MicroSkill {organizationId:$org})
+                    WHERE r.status IN ['ACTIVE','PUBLISHED'] AND h.status='ACTIVE' AND l.status='ACTIVE'
+                      AND (h.organizationId IS NULL OR h.organizationId=$org)
+                      AND (l.organizationId IS NULL OR l.organizationId=$org)
+                      AND q.status='ACTIVE' AND (q.organizationId IS NULL OR q.organizationId=$org)
+                      AND s.status='ACTIVE'
+                    RETURN DISTINCT s.id AS id ORDER BY id LIMIT 10001
+                    """,Map.of("org",organization.toString(),"expert",expert.toString()));
+            if(rows.size()>10000)throw capacity();
+            return rows.stream().map(row->row.get("id").asString()).collect(java.util.stream.Collectors.toSet());
+        });
+        if(owners.isEmpty())return new Discovery(List.of(),List.of());
+        var discovery=discover(organization,purpose);
+        return new Discovery(discovery.scopes().stream().filter(scope->owners.contains(scope.ownerId())).toList(),
+                discovery.issues().stream().filter(issue->owners.contains(issue.ownerId())).toList());
+    }
     @Override public Discovery discover(UUID organization,Purpose purpose) {
         return graph.read(5,tx->{
             var params=Map.<String,Object>of("org",organization.toString());

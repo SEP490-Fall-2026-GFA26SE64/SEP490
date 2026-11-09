@@ -44,6 +44,16 @@ public interface OrganizationMembershipJpaRepository
             """)
     List<Listed> members(@Param("organization") UUID organizationId);
 
+    /** Own placement only; does not grant employees access to the member directory. */
+    @Query("""
+            select o.name from OrganizationMembershipEntity m
+            join AccountEntity a on a.accountId=m.accountId and a.organizationId=m.organizationId
+            join JobPositionDepartmentReferenceEntity o on o.jobPositionReferenceId=m.jobPositionReferenceId
+                and o.organizationId=m.organizationId and o.departmentId=m.departmentId
+            where m.organizationId=:organization and m.accountId=:account and m.active=true and a.active=true
+            """)
+    Optional<String> ownJobPositionName(@Param("organization") UUID organizationId,@Param("account") UUID accountId);
+
     record Administrator(UUID organizationId, UUID accountId, String fullName, String email,
                          Boolean active, Boolean accountActive) {}
 

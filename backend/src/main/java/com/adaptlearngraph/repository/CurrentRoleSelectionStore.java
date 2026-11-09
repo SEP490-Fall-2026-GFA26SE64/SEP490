@@ -14,9 +14,15 @@ import org.springframework.transaction.support.TransactionTemplate;
 /** Current string-ID selection namespace; legacy UUID records remain historical only in demo routing. */
 public final class CurrentRoleSelectionStore implements Store {
     private final RoleSelectionRepositories data; private final ObjectMapper json; private final TransactionTemplate tx;
+    private final Placements placements;
     public CurrentRoleSelectionStore(RoleSelectionRepositories data, ObjectMapper json, TransactionTemplate tx) {
-        this.data=data; this.json=json; this.tx=tx;
+        this(data,json,tx,actor->Optional.empty());
     }
+    public CurrentRoleSelectionStore(RoleSelectionRepositories data,ObjectMapper json,TransactionTemplate tx,Placements placements) {
+        this.data=data; this.json=json; this.tx=tx; this.placements=Objects.requireNonNull(placements);
+    }
+    @Override public Optional<Placement> placement(Actor actor) { return placements.find(actor); }
+    @Override public boolean targetLocked(Actor actor) { return data.selections().targetBound(actor.organizationId(),actor.learnerId()); }
     private record Snapshot(int snapshotVersion,Role role,String levelId) {}
     @Override public <T> T transaction(Actor a, java.util.function.Supplier<T> work) {
         return tx.execute(status -> {
@@ -80,6 +86,7 @@ public final class CurrentRoleSelectionStore implements Store {
                 throw new Failure(409,"TARGET_ROLE_LEVEL_LOCKED");
             if(assessmentActive(a))throw new Failure(409,"ASSESSMENT_IN_PROGRESS");
             requireNoLegacyPath(a);
+            com.adaptlearngraph.services.RoleBaselineFlow.requireHigherTarget(role,levelId,placement(a).orElse(null));
             archiveInitialPathways(a,now);
             data.selections().endCurrent(a.organizationId(),a.learnerId(),now);
             // Former UPDATE ... RETURNING: the learner_state row is locked by transaction(), so the re-read is the incremented value.

@@ -15,10 +15,10 @@ export function AssessmentStatus({ state }: { state: AssessmentState | null }) {
   const labels: Record<AssessmentState, [string, string]> = {
     loading: ['Checking assessment…', 'Đang kiểm tra bài đánh giá…'], unavailable: ['Assessment status unavailable', 'Chưa tải được trạng thái đánh giá'],
     notStarted: ['Assessment not taken', 'Chưa làm bài đánh giá'], inProgress: ['Assessment in progress', 'Đang làm bài đánh giá'],
-    failed: ['Assessment not passed', 'Bài đánh giá chưa đạt'], passed: ['Assessment passed · achievement pending', 'Bài đánh giá đạt · chờ đủ điều kiện ghi nhận'],
-    achieved: ['Officially achieved', 'Đã đạt chính thức'],
+    failed: ['Assessment not passed', 'Bài đánh giá chưa đạt'], passed: ['Assessment passed', 'Bài đánh giá đạt'],
+    prerequisites: ['Main group passed · check prerequisite results', 'Nhóm chính đạt · xem kết quả tiền đề'],
   }
-  return <Badge variant={state === 'achieved' || state === 'passed' ? 'success' : state === 'failed' ? 'destructive' : state === 'loading' || state === 'unavailable' ? 'outline' : 'warning'} className="whitespace-normal text-left">{labels[state][language === 'vi' ? 1 : 0]}</Badge>
+  return <Badge variant={state === 'passed' ? 'success' : state === 'failed' ? 'destructive' : state === 'loading' || state === 'unavailable' ? 'outline' : 'warning'} className="whitespace-normal text-left">{labels[state][language === 'vi' ? 1 : 0]}</Badge>
 }
 
 /** A deliberate click resumes an existing attempt or starts one through the shared command API. */
