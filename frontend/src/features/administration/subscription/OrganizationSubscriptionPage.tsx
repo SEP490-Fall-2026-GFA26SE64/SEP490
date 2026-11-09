@@ -87,8 +87,8 @@ function SubscriptionContent({ identity, organization, principal }: { identity: 
           </CardContent>
         </Card>
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-1">
-          <StatCard title={c('Used / allocated Employee seats', 'Chỗ Nhân viên đang dùng / được cấp')} value={`${value.usedSeats} / ${value.allocatedSeats}`}
-            icon={<Users size={16} aria-hidden="true" />} description={c('Only active Employee accounts and memberships count. Manage people in User Accounts.', 'Chỉ tính tài khoản và membership Nhân viên đang hoạt động. Quản lý người dùng tại trang riêng.')} />
+          <StatCard title={c('Used / allocated seats', 'Ghế đang dùng / được cấp')} value={`${value.usedSeats} / ${value.allocatedSeats}`}
+            icon={<Users size={16} aria-hidden="true" />} />
           <StatCard title={c('Admission limit', 'Giới hạn tiếp nhận')} value={value.admissionLimit}
             description={c('Includes pending and scheduled lower-seat commitments; it does not remove existing users.', 'Bao gồm cam kết giảm chỗ đang chờ hoặc đã đặt lịch; không tự xóa người dùng.')} />
         </div>

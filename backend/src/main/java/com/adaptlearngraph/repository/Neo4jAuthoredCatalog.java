@@ -87,12 +87,13 @@ public final class Neo4jAuthoredCatalog implements AuthoredCatalogPort {
                     var facts=List.of(skillName,skillVersion,Objects.toString(code,""));
                     if(skillFacts.putIfAbsent(skill,facts)!=null && !skillFacts.get(skill).equals(facts))throw invalid();
                     skillVersions.put(skill,skillVersion);
-                    var raw=q.get("targetMastery").asObject();if(!(raw instanceof Number))throw invalid();
-                    var target=new BigDecimal(raw.toString()).stripTrailingZeros();if(target.signum()<0 || target.compareTo(BigDecimal.ONE)>0)throw invalid();
+                    var knowledge=q.get("requiredKnowledgeLevels").asList(Value::asString);
+                    if(knowledge.isEmpty() || new HashSet<>(knowledge).size()!=knowledge.size()
+                        || knowledge.stream().anyMatch(k->!Set.of("FOUNDATION","INTERMEDIATE","ADVANCED").contains(k)))throw invalid();
                     var levelSkills=requirements.computeIfAbsent(id,k->new TreeMap<>()).computeIfAbsent(level,k->new TreeMap<>());
-                    if(levelSkills.putIfAbsent(skill,new Skill(skill,code,skillName,target.doubleValue(),true))!=null)throw invalid();
+                    if(levelSkills.putIfAbsent(skill,new Skill(skill,code,skillName,knowledge,true))!=null)throw invalid();
                     canonical.add(write(Map.of("role",id,"level",level,"skill",skill,"name",skillName,"code",Objects.toString(code,""),
-                            "skillVersion",skillVersion,"target",target.toPlainString(),"mandatoryPolicy","ALL_LISTED_REQUIREMENTS_V1","status","ACTIVE")));
+                            "skillVersion",skillVersion,"requiredKnowledgeLevels",knowledge,"mandatoryPolicy","ALL_LISTED_REQUIREMENTS_V1","status","ACTIVE")));
                     canonical.add(write(Map.of("role",id,"level",level,"skill",skill,"skillOwner",text(s,"organizationId"),
                             "requirementOwner",q.get("organizationId").asString(""))));
                 }

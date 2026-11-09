@@ -16,7 +16,16 @@ public record CreateMicroSkillRequest(
 
         @Size(max = 2000, message = "Description cannot exceed 2000 characters")
         String description,
-
-        @Pattern(regexp = "^(KNOWLEDGE|COMMUNICATION|INNOVATION)?$", message = "Macro competency must be KNOWLEDGE, COMMUNICATION, or INNOVATION")
-        String macroCompetencyCode) {
+        java.util.List<String> moduleOnlyKnowledgeLevels,
+        java.util.List<String> certificateOnlyKnowledgeLevels,
+        java.util.List<String> foundationOutcomeCodes,
+        java.util.List<String> intermediateOutcomeCodes,
+        java.util.List<String> advancedOutcomeCodes) {
+    public CreateMicroSkillRequest(String code, String name, String description) {
+        this(code, name, description, null, null, null, null, null);
+    }
+    public com.adaptlearngraph.entities.domain.SkillProvision provision() {
+        return com.adaptlearngraph.entities.domain.SkillProvision.optional(moduleOnlyKnowledgeLevels, certificateOnlyKnowledgeLevels,
+                foundationOutcomeCodes, intermediateOutcomeCodes, advancedOutcomeCodes);
+    }
 }

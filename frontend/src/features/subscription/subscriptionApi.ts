@@ -29,20 +29,36 @@ export interface Summary {
   organizationId: string; organizationName: string; workspaceStatus: string; subscriptionStatus: string; current: Period | null
   scheduled: Period | null; usedSeats: number; allocatedSeats: number; admissionLimit: number; paymentHistory: Order[]
 }
-export interface Workspace { organizationId: string; name: string; status: string; setupState: string }
+export interface Workspace {
+  organizationId: string; name: string; status: string; setupState: string
+  subscription: { status: string; current: { name: string; startsAt: string; endsAt: string } | null }
+  administrators: { accountId: string; fullName: string | null; email: string; active: boolean; accountActive: boolean }[]
+}
 export interface Member {
   membershipId: string; fullName: string | null; email: string; active: boolean; roles: string[]; revision: number
   accountId: string; accountActive: boolean; departmentId: string | null; departmentName: string | null
   jobPositionReferenceId: string | null; jobPositionName: string | null
+  targetRoleId?: string | null
+  targetRoleCode?: string | null
+  targetRoleName?: string | null
+  targetRoleLevel?: string | null
 }
 export interface PendingActivation {
   activationId: string; fullName: string; email: string; roles: string[]; departmentId: string | null; departmentName: string | null
   jobPositionReferenceId: string | null; jobPositionName: string | null; createdAt: string; expiresAt: string; state: string; deliveryStatus: string
+  targetRoleId?: string | null
+  targetRoleCode?: string | null
+  targetRoleName?: string | null
+  targetRoleLevel?: string | null
 }
 export interface MemberProfileInput {
   fullName: string; roles: string[]; departmentId: string | null; jobPositionReferenceId: string | null; revision: number
   departmentName?: string | null
   jobPositionName?: string | null
+  targetRoleId?: string | null
+  targetRoleCode?: string | null
+  targetRoleName?: string | null
+  targetRoleLevel?: string | null
 }
 export interface Reference { departmentId: string; departmentName: string; jobPositionReferenceId: string; jobPositionName: string }
 export class SubscriptionApiError extends Error {
@@ -135,16 +151,18 @@ async function read(response: Response): Promise<unknown> {
   }
   return value
 }
-export async function request(path: string, method = 'GET', payload?: unknown): Promise<unknown> {
-  const headers: Record<string, string> = {}
+export async function request(path: string, method = 'GET', payload?: unknown, customHeaders?: Record<string, string>): Promise<unknown> {
+  const headers: Record<string, string> = { ...customHeaders }
   if (method !== 'GET') {
     const base = path.startsWith('/api/v1/registration/') ? '/api/v1/registration' : '/api/v1/workspace-auth'
     const csrf = object(await read(await fetch(`${base}/csrf`, { credentials: 'same-origin', cache: 'no-store' })))
     headers[text(csrf.headerName)] = text(csrf.token)
-    headers['Content-Type'] = 'application/json'
+    if (payload !== undefined) {
+      headers['Content-Type'] = 'application/json'
+    }
   }
   return read(await fetch(path, { method, headers, credentials: 'same-origin', cache: 'no-store',
-    body: method === 'GET' ? undefined : JSON.stringify(payload ?? {}) }))
+    body: method === 'GET' || payload === undefined ? undefined : JSON.stringify(payload ?? {}) }))
 }
 export async function getIdentity(): Promise<Identity | null> {
   const response = await fetch('/api/v1/workspace-auth/current', { credentials: 'same-origin', cache: 'no-store' })
@@ -182,35 +200,239 @@ export async function getSummary(organization: string): Promise<Summary> { retur
 export async function getWorkspaces(): Promise<Workspace[]> {
   return list(await request('/api/v1/platform/workspaces'), value => {
     const v = object(value)
-    return { organizationId: text(v.organizationId), name: text(v.name), status: text(v.status), setupState: text(v.setupState) }
+    const subscription = object(v.subscription)
+    return {
+      organizationId: text(v.organizationId), name: text(v.name), status: text(v.status), setupState: text(v.setupState),
+      subscription: { status: text(subscription.status), current: nullable(subscription.current, value => {
+        const period = object(value)
+        return { name: text(period.name), startsAt: text(period.startsAt), endsAt: text(period.endsAt) }
+      }) },
+      administrators: list(v.administrators, value => {
+        const admin = object(value)
+        return { accountId: text(admin.accountId), fullName: nullable(admin.fullName, text), email: text(admin.email),
+          active: boolean(admin.active), accountActive: boolean(admin.accountActive) }
+      }),
+    }
   })
 }
+const TR_DELIMITER = ' || TR:'
+
+export interface DecodedJobPositionTargetRole {
+  cleanJobPositionName: string | null
+  targetRoleId: string | null
+  targetRoleCode: string | null
+  targetRoleName: string | null
+  targetRoleLevel: string | null
+}
+
+export function decodeJobPositionWithTargetRole(raw: string | null | undefined): DecodedJobPositionTargetRole {
+  if (!raw) {
+    return {
+      cleanJobPositionName: null,
+      targetRoleId: null,
+      targetRoleCode: null,
+      targetRoleName: null,
+      targetRoleLevel: null,
+    }
+  }
+  const idx = raw.indexOf(TR_DELIMITER)
+  if (idx === -1) {
+    return {
+      cleanJobPositionName: raw,
+      targetRoleId: null,
+      targetRoleCode: null,
+      targetRoleName: null,
+      targetRoleLevel: null,
+    }
+  }
+  const clean = raw.slice(0, idx).trim()
+  const meta = raw.slice(idx + TR_DELIMITER.length).trim()
+  const parts = meta.split('::')
+  const roleId = parts[0]?.trim() || null
+  const roleCode = parts[1]?.trim() || roleId
+  const roleName = parts[2]?.trim() || roleCode
+  const rawRoleLevel = parts[3]?.trim() || null
+  const roleLevel = rawRoleLevel ? rawRoleLevel.replace(/^(?:rank|level)\s*\d+\s*:\s*/i, '').trim() : null
+  return {
+    cleanJobPositionName: clean || null,
+    targetRoleId: roleId,
+    targetRoleCode: roleCode,
+    targetRoleName: roleName,
+    targetRoleLevel: roleLevel || null,
+  }
+}
+
+export function encodeJobPositionWithTargetRole(
+  rawJobPositionName: string | null | undefined,
+  targetRoleId?: string | null,
+  targetRoleCode?: string | null,
+  targetRoleName?: string | null,
+  targetRoleLevel?: string | null,
+): string | null {
+  const base = decodeJobPositionWithTargetRole(rawJobPositionName)
+  const clean = base.cleanJobPositionName
+  const effRoleId = targetRoleId?.trim() || null
+  if (!effRoleId) {
+    return clean
+  }
+  const effCode = targetRoleCode?.trim() || effRoleId
+  const effName = targetRoleName?.trim() || effCode
+  const effLevel = (targetRoleLevel?.trim() || '').replace(/^(?:rank|level)\s*\d+\s*:\s*/i, '').trim()
+  return `${clean || ''}${TR_DELIMITER}${effRoleId}::${effCode}::${effName}::${effLevel}`
+}
+
+function syncEmployeeAssignmentCache(member: Member): void {
+  if (typeof localStorage === 'undefined' || !member.email) return
+  try {
+    const emailKey = `alg_employee_assignment_${member.email.toLowerCase().trim()}`
+    const existingRaw = localStorage.getItem(emailKey)
+    const existing = existingRaw ? (JSON.parse(existingRaw) as Record<string, unknown>) : null
+    if (member.targetRoleId) {
+      localStorage.setItem(
+        emailKey,
+        JSON.stringify({
+          ...(existing || {}),
+          roleId: member.targetRoleId,
+          roleCode: member.targetRoleCode || member.targetRoleId,
+          roleTitle: member.targetRoleName || member.targetRoleCode || member.targetRoleId,
+          level: member.targetRoleLevel || 'Junior',
+          departmentId: member.departmentId || existing?.departmentId || null,
+          departmentName: member.departmentName || existing?.departmentName || null,
+          jobPositionName: member.jobPositionName || existing?.jobPositionName || null,
+        }),
+      )
+    } else if (existing && (member.departmentName || member.jobPositionName)) {
+      localStorage.setItem(
+        emailKey,
+        JSON.stringify({
+          ...existing,
+          departmentId: member.departmentId || existing.departmentId || null,
+          departmentName: member.departmentName || existing.departmentName || null,
+          jobPositionName: member.jobPositionName || existing.jobPositionName || null,
+        }),
+      )
+    } else if (!existing && (member.departmentName || member.jobPositionName)) {
+      localStorage.setItem(
+        emailKey,
+        JSON.stringify({
+          departmentId: member.departmentId || null,
+          departmentName: member.departmentName || null,
+          jobPositionName: member.jobPositionName || null,
+        }),
+      )
+    }
+  } catch {
+    // ignore storage errors
+  }
+}
+
 export async function getMembers(organization: string): Promise<Member[]> {
   return list(await request(`/api/v1/organizations/${organization}/subscription/members`), parseMember)
 }
+export async function getMyAssignment(organization: string): Promise<Member | null> {
+  try {
+    const raw = await request(`/api/v1/organizations/${organization}/subscription/my-assignment`)
+    if (!raw) return null
+    return parseMember(raw)
+  } catch {
+    return null
+  }
+}
 function parseMember(value: unknown): Member {
   const v = object(value)
-  return { membershipId: text(v.membershipId), accountId: text(v.accountId), fullName: nullable(v.fullName, text), email: text(v.email),
-    active: boolean(v.active), accountActive: boolean(v.accountActive), roles: list(v.roles, text), revision: number(v.revision),
-    departmentId: nullable(v.departmentId, text), departmentName: nullable(v.departmentName, text),
-    jobPositionReferenceId: nullable(v.jobPositionReferenceId, text), jobPositionName: nullable(v.jobPositionName, text) }
+  const rawJpName = nullable(v.jobPositionName, text)
+  const decoded = decodeJobPositionWithTargetRole(rawJpName)
+  const directRoleId = v.targetRoleId !== undefined && v.targetRoleId !== null ? String(v.targetRoleId) : null
+  const directRoleCode = v.targetRoleCode !== undefined && v.targetRoleCode !== null ? String(v.targetRoleCode) : null
+  const directRoleName = v.targetRoleName !== undefined && v.targetRoleName !== null ? String(v.targetRoleName) : null
+  const directRoleLevel = v.targetRoleLevel !== undefined && v.targetRoleLevel !== null ? String(v.targetRoleLevel) : null
+
+  const email = text(v.email)
+  let fallbackRoleId: string | null = null
+  let fallbackRoleCode: string | null = null
+  let fallbackRoleName: string | null = null
+  let fallbackRoleLevel: string | null = null
+  if (typeof localStorage !== 'undefined' && email) {
+    try {
+      const savedRaw = localStorage.getItem(`alg_employee_assignment_${email.toLowerCase().trim()}`)
+      if (savedRaw) {
+        const saved = JSON.parse(savedRaw) as {
+          roleId?: string
+          roleCode?: string
+          roleTitle?: string
+          level?: string
+        }
+        fallbackRoleId = saved.roleId || null
+        fallbackRoleCode = saved.roleCode || saved.roleId || null
+        fallbackRoleName = saved.roleTitle || saved.roleCode || null
+        fallbackRoleLevel = saved.level || null
+      }
+    } catch {
+      // ignore storage errors
+    }
+  }
+
+  const member: Member = {
+    membershipId: text(v.membershipId),
+    accountId: text(v.accountId),
+    fullName: nullable(v.fullName, text),
+    email,
+    active: boolean(v.active),
+    accountActive: boolean(v.accountActive),
+    roles: list(v.roles, text),
+    revision: number(v.revision),
+    departmentId: nullable(v.departmentId, text),
+    departmentName: nullable(v.departmentName, text),
+    jobPositionReferenceId: nullable(v.jobPositionReferenceId, text),
+    jobPositionName: decoded.cleanJobPositionName,
+    targetRoleId: directRoleId || decoded.targetRoleId || fallbackRoleId,
+    targetRoleCode: directRoleCode || decoded.targetRoleCode || fallbackRoleCode,
+    targetRoleName: directRoleName || decoded.targetRoleName || fallbackRoleName,
+    targetRoleLevel: directRoleLevel || decoded.targetRoleLevel || fallbackRoleLevel,
+  }
+  syncEmployeeAssignmentCache(member)
+  return member
 }
 export async function updateMemberProfile(organization: string, memberId: string, input: MemberProfileInput): Promise<Member> {
-  return parseMember(await request(`/api/v1/organizations/${organization}/subscription/members/${memberId}/profile`, 'PUT', input))
+  const isEmployee = input.roles.includes('EMPLOYEE')
+  const encodedJobPositionName = isEmployee
+    ? encodeJobPositionWithTargetRole(
+        input.jobPositionName,
+        input.targetRoleId,
+        input.targetRoleCode,
+        input.targetRoleName,
+        input.targetRoleLevel,
+      )
+    : decodeJobPositionWithTargetRole(input.jobPositionName).cleanJobPositionName
+  const scopedJobPositionReferenceId =
+    input.jobPositionReferenceId && isEmployee && input.targetRoleId
+      ? `${input.departmentId || organization}:${input.jobPositionReferenceId}:${memberId}`
+      : input.jobPositionReferenceId
+  const payload: MemberProfileInput = {
+    ...input,
+    jobPositionReferenceId: scopedJobPositionReferenceId,
+    jobPositionName: encodedJobPositionName,
+  }
+  return parseMember(await request(`/api/v1/organizations/${organization}/subscription/members/${memberId}/profile`, 'PUT', payload))
 }
 export async function getPendingActivations(organization: string): Promise<PendingActivation[]> {
   return list(await request(`/api/v1/organizations/${organization}/subscription/activations`), value => {
     const v = object(value)
+    const rawJpName = nullable(v.jobPositionName, text)
+    const decoded = decodeJobPositionWithTargetRole(rawJpName)
     return { activationId: text(v.activationId), fullName: text(v.fullName), email: text(v.email), roles: list(v.roles, text),
       departmentId: nullable(v.departmentId, text), departmentName: nullable(v.departmentName, text),
-      jobPositionReferenceId: nullable(v.jobPositionReferenceId, text), jobPositionName: nullable(v.jobPositionName, text),
-      createdAt: text(v.createdAt), expiresAt: text(v.expiresAt), state: text(v.state), deliveryStatus: text(v.deliveryStatus) }
+      jobPositionReferenceId: nullable(v.jobPositionReferenceId, text), jobPositionName: decoded.cleanJobPositionName,
+      createdAt: text(v.createdAt), expiresAt: text(v.expiresAt), state: text(v.state), deliveryStatus: text(v.deliveryStatus),
+      targetRoleId: decoded.targetRoleId, targetRoleCode: decoded.targetRoleCode,
+      targetRoleName: decoded.targetRoleName, targetRoleLevel: decoded.targetRoleLevel }
   })
 }
 export async function getReferences(organization: string): Promise<Reference[]> {
   return list(await request(`/api/v1/organizations/${organization}/subscription/member-references`), value => {
     const v = object(value)
+    const decoded = decodeJobPositionWithTargetRole(text(v.jobPositionName))
     return { departmentId: text(v.departmentId), departmentName: text(v.departmentName),
-      jobPositionReferenceId: text(v.jobPositionReferenceId), jobPositionName: text(v.jobPositionName) }
+      jobPositionReferenceId: text(v.jobPositionReferenceId), jobPositionName: decoded.cleanJobPositionName || text(v.jobPositionName) }
   })
 }

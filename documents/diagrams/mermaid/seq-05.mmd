@@ -2,6 +2,7 @@
 title: "SEQ-05 - Required role handoff (planned completion)"
 config: {"theme":"base","fontFamily":"Segoe UI, Arial, sans-serif","themeVariables":{"fontFamily":"Segoe UI, Arial, sans-serif","fontSize":"16px","primaryColor":"#ffffff","primaryTextColor":"#0f1729","primaryBorderColor":"#64748b","secondaryColor":"#fef3eb","tertiaryColor":"#ffffff","lineColor":"#64748b","textColor":"#0f1729","mainBkg":"#ffffff","background":"#ffffff","clusterBkg":"#ffffff","clusterBorder":"#64748b","edgeLabelBackground":"#ffffff","titleColor":"#0f1729","noteBkgColor":"#fef3eb","noteTextColor":"#0f1729","noteBorderColor":"#e6650f","actorBkg":"#fef3eb","actorBorder":"#e6650f","actorTextColor":"#0f1729","actorLineColor":"#64748b","signalColor":"#64748b","signalTextColor":"#0f1729","labelBoxBkgColor":"#ffffff","labelBoxBorderColor":"#64748b","labelTextColor":"#0f1729","loopTextColor":"#0f1729","activationBkgColor":"#fef3eb","activationBorderColor":"#e6650f","sequenceNumberColor":"#ffffff","secondaryBorderColor":"#64748b","tertiaryBorderColor":"#64748b","secondaryTextColor":"#0f1729","tertiaryTextColor":"#0f1729"},"sequence":{"actorMargin":40,"width":170,"height":56,"diagramMarginX":24,"diagramMarginY":24,"boxMargin":12,"boxTextMargin":8,"noteMargin":16,"messageMargin":38,"mirrorActors":false,"wrap":true,"wrapPadding":12,"actorFontSize":15,"messageFontSize":14,"noteFontSize":14,"actorFontFamily":"Segoe UI, Arial, sans-serif","messageFontFamily":"Segoe UI, Arial, sans-serif","noteFontFamily":"Segoe UI, Arial, sans-serif"},"themeCSS":".actor-line { stroke-width: 1px; }"}
 ---
+
 sequenceDiagram
   autonumber
   actor SDD_SEQ_05_LD as L and D Manager
@@ -13,7 +14,7 @@ sequenceDiagram
   SDD_SEQ_05_LD->>SDD_SEQ_05_Workflow: create role and assign Expert
   SDD_SEQ_05_Workflow->>SDD_SEQ_05_Guard: authorize organization and assignment
   SDD_SEQ_05_Workflow->>SDD_SEQ_05_DB: save draft/assignment
-  SDD_SEQ_05_Expert->>SDD_SEQ_05_Workflow: save skill/proficiency/importance configuration
+  SDD_SEQ_05_Expert->>SDD_SEQ_05_Workflow: save actual member Levels, explicit knowledge and duration
   SDD_SEQ_05_Workflow->>SDD_SEQ_05_Guard: verify assigned author and revision
   SDD_SEQ_05_Workflow->>SDD_SEQ_05_DB: save authored version
   SDD_SEQ_05_Expert->>SDD_SEQ_05_Workflow: submit exact completed version
@@ -25,5 +26,5 @@ sequenceDiagram
   else publication approved
   SDD_SEQ_05_Workflow->>SDD_SEQ_05_DB: record decision/publication + durable event
   SDD_SEQ_05_Workflow->>SDD_SEQ_05_Graph: apply versioned authorized projection
-  SDD_SEQ_05_Workflow-->>SDD_SEQ_05_LD: published or explicit projection-pending state
+  SDD_SEQ_05_Workflow-->>SDD_SEQ_05_LD: available Role-Level projection or explicit failure
   end

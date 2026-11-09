@@ -24,12 +24,15 @@ import { Network, type Options, type Node, type Edge } from 'vis-network'
 import { DataSet } from 'vis-data'
 import { Badge } from '../../../../shared/components/ui/Badge'
 import { Button } from '../../../../shared/components/ui/Button'
+import { Combobox } from '../../../../shared/components/ui/Combobox'
+import { RequiredKnowledgePicker } from '../../target-roles/components/RequiredKnowledgePicker'
 import { Dialog, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '../../../../shared/components/ui/Dialog'
 import { useToast } from '../../../../shared/hooks/useToast'
+import { useTranslation } from '../../../../shared/i18n/LanguageContext'
 import { cn } from '../../../../shared/lib/utils'
-import { type CompetencyModel, type MicroSkillModel, type PrerequisiteEdge, type TargetRoleModel } from '../../data/ldManagerMockData'
-import { updateActiveCompany } from '../../../../shared/stores/companyStore'
-import { createPrerequisite, deletePrerequisite } from '../../../../shared/api/prerequisiteApi'
+import { type CompetencyModel, type MicroSkillModel, type PrerequisiteEdge, type TargetRoleModel, type SkillTargetConfig } from '../../data/ldManagerMockData'
+import { getActiveCompany, updateActiveCompany } from '../../../../shared/stores/companyStore'
+import { createPrerequisite, deletePrerequisite, reversePrerequisite } from '../../../../shared/api/prerequisiteApi'
 import { updateCompetency } from '../../../../shared/api/competencyApi'
 
 export interface OntologyGraphPlaygroundProps {
@@ -116,6 +119,8 @@ function OntologyGraphPlaygroundInner({
   onRefreshData,
 }: OntologyGraphPlaygroundProps) {
   const { toast } = useToast()
+  const { language } = useTranslation()
+  const copy = (en: string, vi: string) => language === 'vi' ? vi : en
   const containerRef = React.useRef<HTMLDivElement>(null)
   const networkRef = React.useRef<Network | null>(null)
 
@@ -163,7 +168,11 @@ function OntologyGraphPlaygroundInner({
   // Prerequisite creation threshold dialog
   const [isPrereqModalOpen, setIsPrereqModalOpen] = React.useState(false)
   const [pendingPrereq, setPendingPrereq] = React.useState<{ source: PlaygroundCustomNode; target: PlaygroundCustomNode } | null>(null)
-  const [prereqThreshold, setPrereqThreshold] = React.useState('75')
+  const [dependentLevel, setDependentLevel] = React.useState('')
+  const [prerequisiteLevel, setPrerequisiteLevel] = React.useState('')
+  const [pendingRoleRequirement, setPendingRoleRequirement] = React.useState<{ role: TargetRoleModel; skill: PlaygroundCustomNode; level: PlaygroundCustomNode; parent: string } | null>(null)
+  const [requiredKnowledge, setRequiredKnowledge] = React.useState<string[]>([])
+  const [savingRequirement, setSavingRequirement] = React.useState(false)
 
   // Palette & Filter State
   const [isPaletteOpen, setIsPaletteOpen] = React.useState(true)
@@ -267,6 +276,21 @@ function OntologyGraphPlaygroundInner({
     }
   }
 
+  function buildRequiresSkillEdge(levelId: string, skillId: string, knowledge: string[] = []): Edge {
+    return {
+      id: `requires-skill-${levelId}-${skillId}`,
+      from: levelId,
+      to: skillId,
+      title: `Level Requirement: REQUIRES_SKILL (${knowledge.join(' · ') || 'Unclassified'})`,
+      label: 'REQUIRES_SKILL',
+      font: { size: 7, color: '#64748B', strokeWidth: 0, align: 'horizontal' },
+      color: { color: '#CBD5E1', highlight: '#64748B', hover: '#475569' },
+      arrows: { to: { enabled: true, scaleFactor: 0.5 } },
+      dashes: [4, 4],
+      width: 1,
+    }
+  }
+
   function buildCompetencyNode(c: CompetencyModel, pos?: { x: number; y: number }): PlaygroundCustomNode {
     const isCompact = isCompactViewRef.current
     return {
@@ -346,14 +370,14 @@ function OntologyGraphPlaygroundInner({
     }
   }
 
-  function buildPrereqEdge(sourceSkillId: string, targetSkillId: string, minMastery: number = 0.75): Edge {
-    const pct = Math.round(minMastery * 100)
+  function buildPrereqEdge(sourceSkillId: string, targetSkillId: string, dependent?: string | null, prerequisite?: string | null): Edge {
+    const pair = `${dependent ?? 'Unclassified'} → ${prerequisite ?? 'Unclassified'}`
     return {
-      id: `prereq-${sourceSkillId}-${targetSkillId}`,
+      id: `prereq-${sourceSkillId}-${dependent}-${targetSkillId}-${prerequisite}`,
       from: sourceSkillId,
       to: targetSkillId,
-      label: `≥ ${pct}%`,
-      title: `HAS_SKILL_PREREQUISITE: Requires ≥ ${pct}% readiness score`,
+      label: pair,
+      title: `HAS_SKILL_PREREQUISITE: ${pair}`,
       font: {
         size: 9.5,
         color: '#DC2626',
@@ -447,6 +471,14 @@ function OntologyGraphPlaygroundInner({
         activeColor: { color: '#9333EA', highlight: '#9333EA', hover: '#7E22CE' },
         width: 1.5,
         activeWidth: 2,
+      }
+    }
+    if (idStr.startsWith('requires-skill-')) {
+      return {
+        color: { color: '#CBD5E1', highlight: '#64748B', hover: '#475569' },
+        activeColor: { color: '#64748B', highlight: '#64748B', hover: '#475569' },
+        width: 1,
+        activeWidth: 1.5,
       }
     }
     if (idStr.startsWith('has-skill-')) {
@@ -712,25 +744,72 @@ function OntologyGraphPlaygroundInner({
     if (!current) return
 
     const centerPos = networkRef.current?.getPosition(nodeId) || { x: 0, y: 0 }
-    const existingNodeIds = new Set(canvasNodesRef.current.map((n) => n.id))
-    const existingEdgeIds = new Set<string>(canvasEdgesRef.current.map((e) => String(e.id || '')))
+    const existingNodeIds = new Set<string>([
+      ...canvasNodesRef.current.map((n) => String(n.id)),
+      ...(nodesDataSetRef.current ? nodesDataSetRef.current.getIds().map(String) : [])
+    ])
+    const existingEdgeIds = new Set<string>([
+      ...canvasEdgesRef.current.map((e) => String(e.id || '')),
+      ...(edgesDataSetRef.current ? edgesDataSetRef.current.getIds().map(String) : [])
+    ])
 
     const nodesToAdd: PlaygroundCustomNode[] = []
     const edgesToAdd: Edge[] = []
 
     if (current.nodeType === 'targetRole') {
-      const role = (targetRolesRef.current || targetRoles || []).find((r) => r.id === current.id || r.code === current.code)
+      const activeComp = getActiveCompany()
+      const allRoles = (targetRolesRef.current || targetRoles || [])
+      const role =
+        allRoles.find((r: TargetRoleModel) => r.id === current.id || r.code === current.code) ||
+        activeComp?.targetRoles?.find((r: TargetRoleModel) => r.id === current.id || r.code === current.code)
       if (role) {
-        const levelNamesFromComps = Object.keys(role.levelCompetencies || {})
-        const levelNamesFromSkills = (role.skillTargets || []).map((st) => st.level).filter(Boolean) as string[]
-        const combinedLevels = Array.from(new Set([...levelNamesFromComps, ...levelNamesFromSkills]))
-        const effectiveLevels = combinedLevels.length > 0 ? combinedLevels : ['Junior', 'Middle', 'Senior']
+        // Find effective level competencies: if this role has empty mappings, inherit from predecessor in the same lineage
+        const baseCode = (role.stableId || role.code || '').split('#')[0].trim().toUpperCase()
+        const lineageRoleWithComps = allRoles.find((r: TargetRoleModel) => {
+          const rBase = (r.stableId || r.code || '').split('#')[0].trim().toUpperCase()
+          return rBase === baseCode && (
+            (r.levelCompetencies && Object.values(r.levelCompetencies).some((list) => Array.isArray(list) && list.length > 0)) ||
+            (r.competencyIds && r.competencyIds.length > 0)
+          )
+        })
+        const effectiveLevelCompetencies = (
+          role.levelCompetencies && Object.values(role.levelCompetencies).some((list) => Array.isArray(list) && list.length > 0)
+        ) ? role.levelCompetencies : (lineageRoleWithComps?.levelCompetencies || {})
+
+        const effectiveRoleCompIds = new Set<string>()
+        Object.values(effectiveLevelCompetencies).flat().forEach((cid) => effectiveRoleCompIds.add(cid as string))
+        if (effectiveRoleCompIds.size === 0) {
+          ;(role.competencyIds || []).forEach((cid) => effectiveRoleCompIds.add(cid))
+          ;(lineageRoleWithComps?.competencyIds || []).forEach((cid) => effectiveRoleCompIds.add(cid))
+        }
+
+        // Only include competencies strictly assigned to this role
+        const relevantComps = competenciesRef.current.filter((c) =>
+          effectiveRoleCompIds.has(c.id) || (c.code && effectiveRoleCompIds.has(c.code))
+        )
+
+        // Deduplicate relevantComps by ID
+        const seenCompIds = new Set<string>()
+        const uniqueRelevantComps = relevantComps.filter((c) => {
+          if (!c?.id || seenCompIds.has(c.id)) return false
+          seenCompIds.add(c.id)
+          return true
+        })
+
+        const configuredLevels = Array.isArray(role.levels) && role.levels.length > 0 ? role.levels : []
+        const levelNamesFromComps = Object.keys(effectiveLevelCompetencies)
+        const levelNamesFromSkills = (role.skillTargets || []).map((st: SkillTargetConfig) => st.level).filter(Boolean) as string[]
+        const combinedLevels = Array.from(new Set([...configuredLevels, ...levelNamesFromComps, ...levelNamesFromSkills]))
+        const effectiveLevels = combinedLevels.length > 0 ? combinedLevels : ['Junior', 'Middle', 'Senior', 'Fresher']
 
         const levelSpacing = 200
         const totalWidth = (effectiveLevels.length - 1) * levelSpacing
         const startX = centerPos.x - totalWidth / 2
         const levelY = centerPos.y + 140
 
+        const levelNodeMap: Record<string, PlaygroundCustomNode> = {}
+
+        // 1. Build and position Level nodes
         effectiveLevels.forEach((lvl, lIdx) => {
           const rawPos = {
             x: Math.round(startX + lIdx * levelSpacing),
@@ -738,6 +817,7 @@ function OntologyGraphPlaygroundInner({
           }
           const pos = findClearSlot(rawPos, 'level')
           const lvlNode = buildLevelNode(role, lvl, pos)
+          levelNodeMap[lvl.toLowerCase()] = lvlNode
           if (!existingNodeIds.has(lvlNode.id)) {
             nodesToAdd.push(lvlNode)
             existingNodeIds.add(lvlNode.id)
@@ -747,70 +827,125 @@ function OntologyGraphPlaygroundInner({
             existingEdgeIds.add(String(levelEdge.id))
             edgesToAdd.push(levelEdge)
           }
+        })
 
-          const assignedCompIds = (role.levelCompetencies?.[lvl] || []).concat(role.competencyIds || [])
-          const uniqueCompIds = Array.from(new Set(assignedCompIds))
-          const matchingComps = competenciesRef.current.filter((c) =>
-            uniqueCompIds.includes(c.id) || uniqueCompIds.includes(c.code)
+        // 2. Build and position Competency nodes (strictly only uniqueRelevantComps)
+        const compY = levelY + 160
+        const compSpacing = 220
+        const compTotalWidth = (uniqueRelevantComps.length - 1) * compSpacing
+        const compStartX = centerPos.x - compTotalWidth / 2
+        const compNodeMap: Record<string, PlaygroundCustomNode> = {}
+
+        uniqueRelevantComps.forEach((comp, cIdx) => {
+          let compNode = canvasNodesRef.current.find((n) => n.id === comp.id) || nodesToAdd.find((n) => n.id === comp.id)
+          if (!compNode && !existingNodeIds.has(comp.id)) {
+            const rawCompPos = {
+              x: Math.round(compStartX + cIdx * compSpacing),
+              y: compY,
+            }
+            const compSlot = findClearSlot(rawCompPos, 'competency')
+            compNode = buildCompetencyNode(comp, compSlot)
+            nodesToAdd.push(compNode)
+            existingNodeIds.add(comp.id)
+          }
+          if (compNode) {
+            compNodeMap[comp.id] = compNode
+            if (comp.code) compNodeMap[comp.code] = compNode
+          }
+
+          // Connect level(s) to this competency via HAS_COMPETENCY
+          const assignedLevelNames = Object.entries(effectiveLevelCompetencies)
+            .filter(([, compIds]) => Array.isArray(compIds) && (compIds.includes(comp.id) || (comp.code && compIds.includes(comp.code))))
+            .map(([lvl]) => lvl)
+
+          const targetLevelNames = assignedLevelNames.length > 0
+            ? assignedLevelNames
+            : (effectiveLevels.length > 0 ? [effectiveLevels[0]] : [])
+
+          targetLevelNames.forEach((lvl) => {
+            const lvlNode = levelNodeMap[lvl.toLowerCase()]
+            if (lvlNode) {
+              const reqEdge = buildRequiresCompetencyEdge(lvlNode.id, comp.id)
+              if (!existingEdgeIds.has(String(reqEdge.id))) {
+                existingEdgeIds.add(String(reqEdge.id))
+                edgesToAdd.push(reqEdge)
+              }
+            }
+          })
+        })
+
+        // 3. Build and position Micro-skill nodes (strictly only role.skillTargets)
+        const configuredSkillTargets = role.skillTargets || []
+        const skillY = compY + 160
+        const skillSpacing = 220
+        const skillTotalWidth = (configuredSkillTargets.length - 1) * skillSpacing
+        const skillStartX = centerPos.x - skillTotalWidth / 2
+        const seenSkillIds = new Set<string>()
+
+        configuredSkillTargets.forEach((st: SkillTargetConfig, sIdx: number) => {
+          const targetSkill = microSkillsRef.current.find(
+            (s) => s.id === st.skillId || s.code === st.skillCode || s.code === st.skillId
+          )
+          if (!targetSkill) return
+
+          // Find parent competency
+          const parentComp = uniqueRelevantComps.find(
+            (c) =>
+              c.skillIds?.includes(targetSkill.id) ||
+              (targetSkill.code && c.skillIds?.includes(targetSkill.code))
           )
 
-          const compY = levelY + 160
-          const compSpacing = 220
-          const compTotalWidth = (matchingComps.length - 1) * compSpacing
-          const compStartX = rawPos.x - compTotalWidth / 2
+          const parentCompNode = parentComp ? compNodeMap[parentComp.id] : null
+          const targetLvlNode = st.level
+            ? levelNodeMap[st.level.toLowerCase()]
+            : (parentCompNode ? null : Object.values(levelNodeMap)[0])
 
-          matchingComps.forEach((comp, cIdx) => {
-            if (!existingNodeIds.has(comp.id)) {
-              const rawCompPos = {
-                x: Math.round(compStartX + cIdx * compSpacing),
-                y: compY,
-              }
-              const compSlot = findClearSlot(rawCompPos, 'competency')
-              nodesToAdd.push(buildCompetencyNode(comp, compSlot))
-              existingNodeIds.add(comp.id)
+          if (!existingNodeIds.has(targetSkill.id) && !seenSkillIds.has(targetSkill.id)) {
+            seenSkillIds.add(targetSkill.id)
+            const rawSkillPos = {
+              x: Math.round(skillStartX + sIdx * skillSpacing),
+              y: skillY,
             }
-            const reqEdge = buildRequiresCompetencyEdge(lvlNode.id, comp.id)
-            if (!existingEdgeIds.has(String(reqEdge.id))) {
-              existingEdgeIds.add(String(reqEdge.id))
-              edgesToAdd.push(reqEdge)
+            const skillSlot = findClearSlot(rawSkillPos, 'skill')
+            nodesToAdd.push(buildSkillNode(targetSkill, skillSlot))
+            existingNodeIds.add(targetSkill.id)
+          }
+
+          // Edge from parent competency (:Competency)-[:HAS_SKILL]->(:MicroSkill)
+          if (parentComp) {
+            const hasSkillEdge = buildHasSkillEdge(parentComp.id, targetSkill.id)
+            if (!existingEdgeIds.has(String(hasSkillEdge.id))) {
+              existingEdgeIds.add(String(hasSkillEdge.id))
+              edgesToAdd.push(hasSkillEdge)
             }
+          }
 
-            const skillY = compY + 160
-            const memberSkills = (comp.skillIds || []).map((sId) =>
-              microSkillsRef.current.find((s) => s.id === sId || s.code === sId)
-            ).filter(Boolean) as MicroSkillModel[]
-
-            const skillSpacing = 200
-            const skillTotalWidth = (memberSkills.length - 1) * skillSpacing
-            const skillStartX = (matchingComps.length > 0 ? (compStartX + cIdx * compSpacing) : rawPos.x) - skillTotalWidth / 2
-
-            memberSkills.forEach((skill, sIdx) => {
-              if (!existingNodeIds.has(skill.id)) {
-                const rawSkillPos = {
-                  x: Math.round(skillStartX + sIdx * skillSpacing),
-                  y: skillY,
-                }
-                const skillSlot = findClearSlot(rawSkillPos, 'skill')
-                nodesToAdd.push(buildSkillNode(skill, skillSlot))
-                existingNodeIds.add(skill.id)
-              }
-              const hasSkillEdge = buildHasSkillEdge(comp.id, skill.id)
-              if (!existingEdgeIds.has(String(hasSkillEdge.id))) {
-                existingEdgeIds.add(String(hasSkillEdge.id))
-                edgesToAdd.push(hasSkillEdge)
-              }
-            })
-          })
+          // Directed edge from Level (:Level)-[:REQUIRES_SKILL {threshold}]->(:MicroSkill)
+          if (targetLvlNode) {
+            const reqSkillEdge = buildRequiresSkillEdge(targetLvlNode.id, targetSkill.id, st.requiredKnowledgeLevels ?? [])
+            if (!existingEdgeIds.has(String(reqSkillEdge.id))) {
+              existingEdgeIds.add(String(reqSkillEdge.id))
+              edgesToAdd.push(reqSkillEdge)
+            }
+          }
         })
       }
     } else if (current.nodeType === 'level') {
       const roleId = current.targetRoleId
-      const role = (targetRolesRef.current || targetRoles || []).find((r) => r.id === roleId)
+      const allRoles = (targetRolesRef.current || targetRoles || [])
+      const role = allRoles.find((r) => r.id === roleId)
       if (role && current.levelName) {
-        const assignedCompIds = (role.levelCompetencies?.[current.levelName] || []).concat(role.competencyIds || [])
-        const uniqueCompIds = Array.from(new Set(assignedCompIds))
+        const baseCode = (role.stableId || role.code || '').split('#')[0].trim().toUpperCase()
+        const lineageRole = allRoles.find((r: TargetRoleModel) => {
+          const rBase = (r.stableId || r.code || '').split('#')[0].trim().toUpperCase()
+          return rBase === baseCode && r.levelCompetencies?.[current.levelName!]?.length
+        })
+        const lvlComps = (role.levelCompetencies?.[current.levelName] && role.levelCompetencies[current.levelName].length > 0)
+          ? role.levelCompetencies[current.levelName]
+          : (lineageRole?.levelCompetencies?.[current.levelName] || [])
+
         const matchingComps = competenciesRef.current.filter((c) =>
-          uniqueCompIds.includes(c.id) || uniqueCompIds.includes(c.code)
+          lvlComps.includes(c.id) || (c.code && lvlComps.includes(c.code))
         )
         matchingComps.forEach((comp, idx) => {
           if (!existingNodeIds.has(comp.id)) {
@@ -829,6 +964,7 @@ function OntologyGraphPlaygroundInner({
           }
         })
       }
+    
     } else if (current.nodeType === 'competency') {
       const comp = competenciesRef.current.find((c) => c.id === current.id)
       if (comp) {
@@ -919,12 +1055,37 @@ function OntologyGraphPlaygroundInner({
         const edgeId = `prereq-${p.sourceSkillId}-${p.targetSkillId}`
         if (!existingEdgeIds.has(edgeId)) {
           existingEdgeIds.add(edgeId)
-          edgesToAdd.push(buildPrereqEdge(p.sourceSkillId, p.targetSkillId, p.minMastery))
+          edgesToAdd.push(buildPrereqEdge(p.sourceSkillId, p.targetSkillId, p.dependentKnowledgeLevel, p.prerequisiteKnowledgeLevel))
         }
       }
     })
 
-    if (nodesToAdd.length === 0 && edgesToAdd.length === 0) {
+    // Final deduplication against both nodesDataSetRef and within the batch
+    const currentDataSetNodeIds = new Set(nodesDataSetRef.current ? nodesDataSetRef.current.getIds().map(String) : [])
+    const uniqueNodesToAdd: PlaygroundCustomNode[] = []
+    const seenBatchNodeIds = new Set<string>()
+
+    for (const node of nodesToAdd) {
+      const idStr = String(node.id)
+      if (!currentDataSetNodeIds.has(idStr) && !seenBatchNodeIds.has(idStr)) {
+        seenBatchNodeIds.add(idStr)
+        uniqueNodesToAdd.push(node)
+      }
+    }
+
+    const currentDataSetEdgeIds = new Set(edgesDataSetRef.current ? edgesDataSetRef.current.getIds().map(String) : [])
+    const uniqueEdgesToAdd: Edge[] = []
+    const seenBatchEdgeIds = new Set<string>()
+
+    for (const edge of edgesToAdd) {
+      const idStr = String(edge.id || '')
+      if (idStr && !currentDataSetEdgeIds.has(idStr) && !seenBatchEdgeIds.has(idStr)) {
+        seenBatchEdgeIds.add(idStr)
+        uniqueEdgesToAdd.push(edge)
+      }
+    }
+
+    if (uniqueNodesToAdd.length === 0 && uniqueEdgesToAdd.length === 0) {
       toast({
         title: 'All Neighbors Already Visible',
         description: `All direct relationships for "${current.code}" are already placed on the canvas.`,
@@ -933,15 +1094,18 @@ function OntologyGraphPlaygroundInner({
       return
     }
 
-    nodesDataSetRef.current.add(nodesToAdd)
-    if (edgesToAdd.length > 0) edgesDataSetRef.current.add(edgesToAdd)
-
-    setCanvasNodes((prev) => [...prev, ...nodesToAdd])
-    if (edgesToAdd.length > 0) setCanvasEdges((prev) => [...prev, ...edgesToAdd])
+    if (uniqueNodesToAdd.length > 0) {
+      nodesDataSetRef.current?.add(uniqueNodesToAdd)
+      setCanvasNodes((prev) => [...prev, ...uniqueNodesToAdd])
+    }
+    if (uniqueEdgesToAdd.length > 0) {
+      edgesDataSetRef.current?.add(uniqueEdgesToAdd)
+      setCanvasEdges((prev) => [...prev, ...uniqueEdgesToAdd])
+    }
 
     toast({
       title: 'Neighbors Expanded',
-      description: `Added ${nodesToAdd.length} connected node${nodesToAdd.length === 1 ? '' : 's'} around ${current.code}.`,
+      description: `Added ${uniqueNodesToAdd.length} connected node${uniqueNodesToAdd.length === 1 ? '' : 's'} around ${current.code}.`,
       variant: 'success',
     })
   }, [findClearSlot, toast])
@@ -1175,7 +1339,7 @@ function OntologyGraphPlaygroundInner({
         const edgeId = `prereq-${p.sourceSkillId}-${p.targetSkillId}`
         if (!seenEdgeIds.has(edgeId)) {
           seenEdgeIds.add(edgeId)
-          sampleEdges.push(buildPrereqEdge(p.sourceSkillId, p.targetSkillId, p.minMastery))
+          sampleEdges.push(buildPrereqEdge(p.sourceSkillId, p.targetSkillId, p.dependentKnowledgeLevel, p.prerequisiteKnowledgeLevel))
         }
       }
     })
@@ -1250,7 +1414,7 @@ function OntologyGraphPlaygroundInner({
         const edgeId = `prereq-${p.sourceSkillId}-${p.targetSkillId}`
         if (!seenEdgeIds.has(edgeId)) {
           seenEdgeIds.add(edgeId)
-          fullEdges.push(buildPrereqEdge(p.sourceSkillId, p.targetSkillId, p.minMastery))
+          fullEdges.push(buildPrereqEdge(p.sourceSkillId, p.targetSkillId, p.dependentKnowledgeLevel, p.prerequisiteKnowledgeLevel))
         }
       }
     })
@@ -1362,11 +1526,11 @@ function OntologyGraphPlaygroundInner({
       prerequisites.forEach((p) => {
         if (p.sourceSkillId === newNode.id || p.sourceSkillCode === newNode.code) {
           const tgt = canvasNodesRef.current.find((n) => n.id === p.targetSkillId || n.code === p.targetSkillCode)
-          if (tgt) newEdges.push(buildPrereqEdge(newNode.id, tgt.id, p.minMastery))
+          if (tgt) newEdges.push(buildPrereqEdge(newNode.id, tgt.id, p.dependentKnowledgeLevel, p.prerequisiteKnowledgeLevel))
         }
         if (p.targetSkillId === newNode.id || p.targetSkillCode === newNode.code) {
           const src = canvasNodesRef.current.find((n) => n.id === p.sourceSkillId || n.code === p.sourceSkillCode)
-          if (src) newEdges.push(buildPrereqEdge(src.id, newNode.id, p.minMastery))
+          if (src) newEdges.push(buildPrereqEdge(src.id, newNode.id, p.dependentKnowledgeLevel, p.prerequisiteKnowledgeLevel))
         }
       })
     }
@@ -1439,18 +1603,13 @@ function OntologyGraphPlaygroundInner({
     connectSourceNodeRef.current = sourceNode
     // Restore all nodes to full opacity so every potential target is crisp and clearly visible
     clearNeighborDimming()
-    toast({
-      title: 'Connecting Mode Active',
-      description: `Step 1/2: Selected ${sourceNode.code}. Now click another node on the canvas to link them!`,
-      variant: 'default',
-    })
   }
 
   const handleNodeClickForConnect = async (targetNode: PlaygroundCustomNode) => {
     const sourceNode = connectSourceNodeRef.current || connectSourceNode
     if (!sourceNode) return
 
-    if (sourceNode.id === targetNode.id) {
+    if (sourceNode.id === targetNode.id && sourceNode.nodeType !== 'skill') {
       toast({
         title: 'Self-Loop Disallowed',
         description: 'A node cannot form a prerequisite or membership relationship with itself.',
@@ -1514,7 +1673,7 @@ function OntologyGraphPlaygroundInner({
       setCanvasEdges((prev) => [...prev, newEdge])
 
       if (onUpdateTargetRoleRef.current) {
-        onUpdateTargetRoleRef.current(updatedRole)
+        await onUpdateTargetRoleRef.current(updatedRole)
       }
 
       updateActiveCompany((comp) => ({
@@ -1545,6 +1704,73 @@ function OntologyGraphPlaygroundInner({
       return
     }
 
+    // Branch 0b: Level + MicroSkill (REQUIRES_SKILL) with auto-save to Edit Target Role
+    if (
+      (sourceNode.nodeType === 'level' && targetNode.nodeType === 'skill') ||
+      (sourceNode.nodeType === 'skill' && targetNode.nodeType === 'level')
+    ) {
+      const levelNode = sourceNode.nodeType === 'level' ? sourceNode : targetNode
+      const skillNode = sourceNode.nodeType === 'skill' ? sourceNode : targetNode
+
+      const roleId = levelNode.targetRoleId
+      const levelName = levelNode.levelName || levelNode.code
+      const role =
+        (targetRolesRef.current || targetRoles || []).find((r: TargetRoleModel) => r.id === roleId) ||
+        getActiveCompany()?.targetRoles?.find((r: TargetRoleModel) => r.id === roleId)
+
+      if (!role) {
+        toast({
+          title: 'Target Role Not Found',
+          description: 'Could not resolve the parent Target Role for this level.',
+          variant: 'destructive',
+        })
+        handleCancelConnect()
+        return
+      }
+
+      // Check whether this level is connected to a competency that owns this skill
+      const currentLvlComps = role.levelCompetencies?.[levelName] || []
+      const assignedCompObjs = competenciesRef.current.filter((c) =>
+        currentLvlComps.includes(c.id) || (c.code && currentLvlComps.includes(c.code))
+      )
+      const parentComp = assignedCompObjs.find((c) =>
+        c.skillIds?.includes(skillNode.id) ||
+        (skillNode.code && c.skillIds?.includes(skillNode.code))
+      )
+
+      if (!parentComp) {
+        toast({
+          title: 'Competency Required First',
+          description: `You must connect "${levelName}" level to a Competency first before selecting its micro-skills. Micro-skills cannot be connected directly without an assigned parent competency.`,
+          variant: 'destructive',
+        })
+        handleCancelConnect()
+        return
+      }
+
+      const existingTargets: SkillTargetConfig[] = role.skillTargets || []
+      const alreadyLinked = existingTargets.some(
+        (st: SkillTargetConfig) =>
+          (st.skillId === skillNode.id || st.skillCode === skillNode.code) &&
+          st.level?.toLowerCase() === levelName.toLowerCase()
+      )
+
+      if (alreadyLinked) {
+        toast({
+          title: 'Skill Requirement Already Connected',
+          description: `${skillNode.code} is already configured as a required skill for ${levelName} level in ${role.code}.`,
+          variant: 'default',
+        })
+        handleCancelConnect()
+        return
+      }
+
+      setPendingRoleRequirement({ role, skill: skillNode, level: levelNode, parent: parentComp.code || parentComp.id })
+      setRequiredKnowledge([])
+      handleCancelConnect()
+      return
+    }
+
     // Branch 1: Competency + MicroSkill (HAS_SKILL)
     if (
       (sourceNode.nodeType === 'competency' && targetNode.nodeType === 'skill') ||
@@ -1561,6 +1787,8 @@ function OntologyGraphPlaygroundInner({
     // Branch 2: MicroSkill + MicroSkill (HAS_SKILL_PREREQUISITE)
     if (sourceNode.nodeType === 'skill' && targetNode.nodeType === 'skill') {
       setPendingPrereq({ source: sourceNode, target: targetNode })
+      setDependentLevel('')
+      setPrerequisiteLevel('')
       setIsPrereqModalOpen(true)
       handleCancelConnect()
       return
@@ -1618,26 +1846,45 @@ function OntologyGraphPlaygroundInner({
     }
   }
 
+  const confirmRoleRequirement = async () => {
+    if (!pendingRoleRequirement || !requiredKnowledge.length || savingRequirement) return
+    setSavingRequirement(true)
+    const { role, skill, level } = pendingRoleRequirement
+    try {
+      if (!onUpdateTargetRoleRef.current) throw new Error('Role editing is unavailable.')
+      const updated: TargetRoleModel = { ...role, skillTargets: [...role.skillTargets, { skillId: skill.id, skillCode: skill.code, skillName: skill.name,
+        level: level.levelName || level.code, threshold: 0, requiredKnowledgeLevels: [...requiredKnowledge] }] }
+      await onUpdateTargetRoleRef.current(updated)
+      const edge = buildRequiresSkillEdge(level.id, skill.id, requiredKnowledge)
+      edgesDataSetRef.current.add(edge)
+      setCanvasEdges(previous => [...previous, edge])
+      setPendingRoleRequirement(null)
+      toast({ title: 'Required knowledge saved', description: 'The Role requirement was accepted by the server.', variant: 'success' })
+    } catch (error) {
+      toast({ title: 'Unable to save requirement', description: error instanceof Error ? error.message : 'Reload the Role and retry.', variant: 'destructive' })
+    } finally { setSavingRequirement(false) }
+  }
+
   // Save HAS_SKILL_PREREQUISITE via API
   const handleConfirmPrerequisite = async () => {
     if (!pendingPrereq) return
-    const minMasteryVal = (Number(prereqThreshold) || 75) / 100
+    if (!dependentLevel || !prerequisiteLevel) return
 
     try {
       await createPrerequisite(organizationId, {
         sourceSkillId: String(pendingPrereq.source.id),
         targetSkillId: String(pendingPrereq.target.id),
-        minMastery: minMasteryVal,
+        dependentKnowledgeLevel: dependentLevel, prerequisiteKnowledgeLevel: prerequisiteLevel,
       })
 
-      const newEdge = buildPrereqEdge(pendingPrereq.source.id, pendingPrereq.target.id, minMasteryVal)
+      const newEdge = buildPrereqEdge(pendingPrereq.source.id, pendingPrereq.target.id, dependentLevel, prerequisiteLevel)
       edgesDataSetRef.current.add(newEdge)
       setCanvasEdges((prev) => [...prev, newEdge])
       if (onRefreshData) await onRefreshData()
 
       toast({
         title: 'Prerequisite Saved',
-        description: `${pendingPrereq.source.code} is now a prerequisite for ${pendingPrereq.target.code} (≥ ${prereqThreshold}%).`,
+        description: `${pendingPrereq.source.code} (${dependentLevel}) requires ${pendingPrereq.target.code} (${prerequisiteLevel}).`,
         variant: 'success',
       })
     } catch (err: unknown) {
@@ -1662,38 +1909,16 @@ function OntologyGraphPlaygroundInner({
 
     try {
       if (String(edgeId).startsWith('prereq-')) {
-        const existingPrereq = prerequisitesRef.current.find(
-          (p) =>
-            (p.sourceSkillId === fromStr && p.targetSkillId === toStr) ||
-            (p.sourceSkillCode === fromStr && p.targetSkillCode === toStr)
-        )
-        const currentMastery = existingPrereq?.minMastery ?? 0.75
-
-        // Delete old prerequisite (from -> to)
-        await deletePrerequisite(organizationId, fromStr, toStr)
-
-        // Create reversed prerequisite (to -> from)
-        await createPrerequisite(organizationId, {
-          sourceSkillId: toStr,
-          targetSkillId: fromStr,
-          minMastery: currentMastery,
-        })
-
-        // Update edge in DataSet without shifting any nodes
+        const exact = prerequisitesRef.current.find(p => buildPrereqEdge(p.sourceSkillId, p.targetSkillId, p.dependentKnowledgeLevel, p.prerequisiteKnowledgeLevel).id === edgeId)
+        if (!exact?.dependentKnowledgeLevel || !exact.prerequisiteKnowledgeLevel) throw new Error('Select a classified exact prerequisite pair.')
+        const reversed = await reversePrerequisite(organizationId, { sourceSkillId: fromStr, targetSkillId: toStr,
+          dependentKnowledgeLevel: exact.dependentKnowledgeLevel, prerequisiteKnowledgeLevel: exact.prerequisiteKnowledgeLevel })
+        const replacement = buildPrereqEdge(reversed.sourceSkillId, reversed.targetSkillId, reversed.dependentKnowledgeLevel, reversed.prerequisiteKnowledgeLevel)
         edgesDataSetRef.current.remove(edgeId)
-        const reversedEdge = buildPrereqEdge(toStr, fromStr, currentMastery)
-        edgesDataSetRef.current.add(reversedEdge)
-
-        setCanvasEdges((prev) => [...prev.filter((e) => e.id !== edgeId), reversedEdge])
-        setSelectedEdge(reversedEdge)
-
+        edgesDataSetRef.current.add(replacement)
+        setCanvasEdges(previous => [...previous.filter(item => item.id !== edgeId), replacement])
+        setSelectedEdge(replacement)
         if (onRefreshData) await onRefreshData()
-
-        toast({
-          title: 'Direction Switched',
-          description: `Reversed prerequisite flow: now requires ${toStr} before ${fromStr}.`,
-          variant: 'success',
-        })
       } else {
         toast({
           title: 'Cannot Reverse Containment',
@@ -1705,7 +1930,7 @@ function OntologyGraphPlaygroundInner({
       console.error(e)
       toast({
         title: 'Switch Failed',
-        description: 'Unable to reverse relationship direction.',
+        description: e instanceof Error ? e.message : 'Unable to reverse relationship direction.',
         variant: 'destructive',
       })
     }
@@ -1720,7 +1945,9 @@ function OntologyGraphPlaygroundInner({
 
     try {
       if (String(edgeId).startsWith('prereq-')) {
-        await deletePrerequisite(organizationId, fromStr, toStr)
+        const exact = prerequisitesRef.current.find(p => buildPrereqEdge(p.sourceSkillId, p.targetSkillId, p.dependentKnowledgeLevel, p.prerequisiteKnowledgeLevel).id === edgeId)
+        if (!exact?.dependentKnowledgeLevel || !exact.prerequisiteKnowledgeLevel) throw new Error('Select a classified exact prerequisite pair.')
+        await deletePrerequisite(organizationId, fromStr, toStr, exact.dependentKnowledgeLevel, exact.prerequisiteKnowledgeLevel)
         edgesDataSetRef.current.remove(edgeId)
         setCanvasEdges((prev) => prev.filter((e) => e.id !== edgeId))
         if (onRefreshData) await onRefreshData()
@@ -1748,7 +1975,8 @@ function OntologyGraphPlaygroundInner({
                 [levelName]: updatedLvlComps,
               },
             }
-            if (onUpdateTargetRoleRef.current) onUpdateTargetRoleRef.current(updatedRole)
+            if (!onUpdateTargetRoleRef.current) throw new Error('Role editing is unavailable.')
+            await onUpdateTargetRoleRef.current(updatedRole)
             updateActiveCompany((comp) => ({
               ...comp,
               targetRoles: (comp.targetRoles || []).map((r) => (r.id === role.id ? updatedRole : r)),
@@ -1758,6 +1986,42 @@ function OntologyGraphPlaygroundInner({
             toast({
               title: 'Requirement Removed',
               description: `Unlinked ${compNode.code} from ${levelName} level for ${role.code}.`,
+              variant: 'success',
+            })
+          }
+        }
+      } else if (String(edgeId).startsWith('requires-skill-')) {
+        const levelNode = canvasNodesRef.current.find((n) => n.id === fromStr && n.nodeType === 'level')
+        const skillNode = canvasNodesRef.current.find((n) => n.id === toStr && n.nodeType === 'skill')
+        if (levelNode && skillNode) {
+          const roleId = levelNode.targetRoleId
+          const levelName = levelNode.levelName || levelNode.code
+          const role =
+            (targetRolesRef.current || targetRoles || []).find((r: TargetRoleModel) => r.id === roleId) ||
+            getActiveCompany()?.targetRoles?.find((r: TargetRoleModel) => r.id === roleId)
+          if (role) {
+            const updatedSkillTargets = (role.skillTargets || []).filter(
+              (st: SkillTargetConfig) =>
+                !(
+                  (st.skillId === skillNode.id || st.skillCode === skillNode.code) &&
+                  st.level?.toLowerCase() === levelName.toLowerCase()
+                )
+            )
+            const updatedRole: TargetRoleModel = {
+              ...role,
+              skillTargets: updatedSkillTargets,
+            }
+            if (!onUpdateTargetRoleRef.current) throw new Error('Role editing is unavailable.')
+            await onUpdateTargetRoleRef.current(updatedRole)
+            updateActiveCompany((comp) => ({
+              ...comp,
+              targetRoles: (comp.targetRoles || []).map((r) => (r.id === role.id ? updatedRole : r)),
+            }))
+            edgesDataSetRef.current.remove(edgeId)
+            setCanvasEdges((prev) => prev.filter((e) => e.id !== edgeId))
+            toast({
+              title: 'Requirement Removed',
+              description: `Unlinked required skill ${skillNode.code} from ${levelName} level for ${role.code}.`,
               variant: 'success',
             })
           }
@@ -2343,10 +2607,39 @@ function OntologyGraphPlaygroundInner({
               </div>
             </div>
           )}
+          {/* Bottom Right Legend similar to Target Role explore graph */}
+          <div className="absolute bottom-4 right-4 z-20 hidden md:flex items-center gap-3 px-3 py-1.5 rounded-lg bg-card/90 backdrop-blur-xs border border-border text-[11px] font-medium text-muted-foreground shadow-xs select-none">
+            <span className="flex items-center gap-1.5">
+              <span className="h-2.5 w-2.5 rounded-full bg-orange-500" />
+              <span>Target Role</span>
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="h-2.5 w-2.5 rounded-full bg-indigo-500" />
+              <span>Proficiency Level</span>
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="h-2.5 w-2.5 rounded-full bg-purple-500" />
+              <span>Competency</span>
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="h-2.5 w-2.5 rounded-full bg-emerald-500" />
+              <span>Required Skill</span>
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="h-0.5 w-3 bg-destructive border-t border-dashed border-destructive" />
+              <span>Prerequisite (exact levels)</span>
+            </span>
+          </div>
         </div>
       </div>
 
-      {/* MODAL: PREREQUISITE THRESHOLD CONFIG */}
+      <Dialog open={pendingRoleRequirement !== null} onOpenChange={open => { if (!open && !savingRequirement) setPendingRoleRequirement(null) }} className="max-w-md">
+        <DialogHeader><DialogTitle>{copy('Required knowledge levels', 'Mức kiến thức bắt buộc')}</DialogTitle><DialogDescription>{pendingRoleRequirement?.role.title} · {pendingRoleRequirement?.level.levelName} · {pendingRoleRequirement?.skill.name}</DialogDescription></DialogHeader>
+        <RequiredKnowledgePicker value={requiredKnowledge} onChange={setRequiredKnowledge} />
+        <DialogFooter><Button variant="outline" size="sm" disabled={savingRequirement} onClick={() => setPendingRoleRequirement(null)}>{copy('Cancel', 'Hủy')}</Button><Button size="sm" disabled={!requiredKnowledge.length || savingRequirement} onClick={() => void confirmRoleRequirement()}>{copy('Save requirement', 'Lưu yêu cầu')}</Button></DialogFooter>
+      </Dialog>
+
+      {/* MODAL: EXACT PREREQUISITE CONFIG */}
       <Dialog open={isPrereqModalOpen} onOpenChange={(open) => {
         setIsPrereqModalOpen(open);
         if (!open) setPendingPrereq(null);
@@ -2355,36 +2648,18 @@ function OntologyGraphPlaygroundInner({
           <div className="space-y-4">
             <DialogHeader>
               <DialogTitle className="text-base font-bold text-foreground">
-                Set Prerequisite Target Mastery
+                Set Exact Prerequisite
               </DialogTitle>
               <DialogDescription className="text-xs text-muted-foreground">
-                Establish the minimum proficiency required on <strong>{pendingPrereq.source.code}</strong> before
-                unlocking <strong>{pendingPrereq.target.code}</strong>.
+                <strong>{pendingPrereq.source.code}</strong> requires <strong>{pendingPrereq.target.code}</strong> at the selected knowledge levels.
               </DialogDescription>
             </DialogHeader>
 
             <div className="space-y-3 py-2">
-              <div className="flex items-center justify-between text-xs">
-                <span className="font-semibold text-foreground">Minimum Target Mastery:</span>
-                <span className="font-mono font-bold text-primary text-sm">{prereqThreshold}%</span>
-              </div>
-              <input
-                type="range"
-                min="50"
-                max="100"
-                step="5"
-                value={prereqThreshold}
-                onChange={(e) => setPrereqThreshold(e.target.value)}
-                style={{
-                  background: `linear-gradient(to right, hsl(var(--primary)) 0%, hsl(var(--primary)) ${(Number(prereqThreshold) - 50) / 50 * 100}%, #FFFFFF ${(Number(prereqThreshold) - 50) / 50 * 100}%, #FFFFFF 100%)`,
-                }}
-                className="w-full h-2.5 rounded-lg appearance-none cursor-pointer accent-primary border border-border shadow-xs"
-              />
-              <div className="flex justify-between text-[10px] text-muted-foreground font-mono">
-                <span>50% (Basic)</span>
-                <span>75% (Standard)</span>
-                <span>100% (Mastery)</span>
-              </div>
+              {([['Dependent knowledge level', dependentLevel, setDependentLevel], ['Prerequisite knowledge level', prerequisiteLevel, setPrerequisiteLevel]] as const).map(([label, value, change]) => <div key={label}>
+                <label className="font-semibold text-foreground block text-xs mb-1.5">{label}</label>
+                <Combobox size="sm" clearable={false} value={value} onChange={change} placeholder="Select knowledge level" options={['FOUNDATION', 'INTERMEDIATE', 'ADVANCED'].map(level => ({ value: level, label: level }))} />
+              </div>)}
             </div>
 
             <DialogFooter className="flex items-center justify-end gap-2 pt-2">
@@ -2398,7 +2673,7 @@ function OntologyGraphPlaygroundInner({
               >
                 Cancel
               </Button>
-              <Button variant="primary" size="sm" onClick={handleConfirmPrerequisite}>
+              <Button variant="primary" size="sm" disabled={!dependentLevel || !prerequisiteLevel} onClick={handleConfirmPrerequisite}>
                 Confirm Prerequisite
               </Button>
             </DialogFooter>

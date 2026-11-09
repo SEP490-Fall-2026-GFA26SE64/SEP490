@@ -24,7 +24,7 @@ public final class Neo4jAdaptiveBaselineCatalogAdapter implements AdaptiveBaseli
             MATCH (jobPosition:JobPosition {id:$jobPosition}) WHERE jobPosition.status='ACTIVE'
               AND (jobPosition.organizationId IS NULL OR jobPosition.organizationId=$organization)
             OPTIONAL MATCH (jobPosition)-[membership:HAS_ROLE]->(role:TargetRole)
-            WHERE membership.status='ACTIVE' AND role.status='ACTIVE'
+            WHERE membership.status='ACTIVE' AND role.status IN ['ACTIVE','PUBLISHED']
               AND (role.organizationId IS NULL OR role.organizationId=$organization)
               AND (membership.organizationId IS NULL OR membership.organizationId=$organization)
             OPTIONAL MATCH (owner:JobPosition)-[ownership:HAS_ROLE]->(role)
@@ -71,7 +71,7 @@ public final class Neo4jAdaptiveBaselineCatalogAdapter implements AdaptiveBaseli
                 if (rows.stream().map(row -> row.get("jobPositionNode").asString()).distinct().count() != 1) {
                     throw new IllegalArgumentException("Ambiguous JobPosition identity");
                 }
-                Map<String, Object> jobPosition = rows.getFirst().get("jobPosition").asMap();
+                Map<String, Object> jobPosition = sanitizeMap(rows.getFirst().get("jobPosition").asMap());
                 if (!published(jobPosition)) return Optional.empty();
                 String name = text(jobPosition, "name");
                 text(jobPosition, "id"); text(jobPosition, "version");
@@ -82,25 +82,37 @@ public final class Neo4jAdaptiveBaselineCatalogAdapter implements AdaptiveBaseli
                 paths.add(json.canonicalObject(json.write(Map.of("jobPosition", jobPosition))));
                 for (var row : rows) {
                     if (row.get("role").isNull()) continue;
-                    Map<String, Object> role = row.get("role").asMap();
-                    Map<String, Object> membership = row.get("membership").asMap();
+                    Map<String, Object> role = sanitizeMap(row.get("role").asMap());
+                    Map<String, Object> membership = sanitizeMap(row.get("membership").asMap());
                     if (!published(role) || !published(membership)) continue;
                     String roleId = text(role, "id");
                     uniqueNode(nodeIdentities, "role:" + roleId, row.get("roleNode").asString());
                     if (!Set.copyOf(row.get("owners").asList(value -> value.asString())).equals(Set.of(scope.jobPositionId()))) {
                         throw new IllegalArgumentException("Active role has ambiguous JobPosition ownership");
                     }
-                    text(role, "name"); text(role, "version"); text(membership, "id"); text(membership, "version");
+                    text(role, "name"); text(role, "version");
+                    if (demoReview) {
+                        membership.putIfAbsent("id", scope.jobPositionId() + ":" + roleId);
+                        membership.putIfAbsent("version", role.getOrDefault("version", "0.12.0"));
+                    }
+                    text(membership, "id"); text(membership, "version");
                     roleDefinitions.put(roleId, role);
                     skills.computeIfAbsent(roleId, ignored -> new LinkedHashMap<>());
                     paths.add(json.canonicalObject(json.write(Map.of("role", role, "membership", membership))));
                     if (row.get("skill").isNull()) continue;
-                    Map<String, Object> level = row.get("level").asMap();
-                    Map<String, Object> roleLevel = row.get("roleLevel").asMap();
-                    Map<String, Object> requirement = row.get("requirement").asMap();
-                    Map<String, Object> skill = row.get("skill").asMap();
+                    Map<String, Object> level = sanitizeMap(row.get("level").asMap());
+                    Map<String, Object> roleLevel = sanitizeMap(row.get("roleLevel").asMap());
+                    Map<String, Object> requirement = sanitizeMap(row.get("requirement").asMap());
+                    Map<String, Object> skill = sanitizeMap(row.get("skill").asMap());
                     if (!published(level) || !published(roleLevel) || !published(requirement) || !published(skill)) continue;
-                    text(level, "id"); text(level, "version"); text(roleLevel, "id"); text(roleLevel, "version");
+                    text(level, "id"); text(level, "version");
+                    if (demoReview) {
+                        roleLevel.putIfAbsent("id", roleId + ":" + level.get("id"));
+                        roleLevel.putIfAbsent("version", level.getOrDefault("version", "0.12.0"));
+                        requirement.putIfAbsent("id", level.get("id") + ":" + skill.get("id"));
+                        requirement.putIfAbsent("version", skill.getOrDefault("version", "0.12.0"));
+                    }
+                    text(roleLevel, "id"); text(roleLevel, "version");
                     uniqueNode(nodeIdentities, "level:" + text(level, "id"), row.get("levelNode").asString());
                     text(requirement, "id"); text(requirement, "version");
                     String skillId = text(skill, "id");
@@ -110,7 +122,15 @@ public final class Neo4jAdaptiveBaselineCatalogAdapter implements AdaptiveBaseli
                             "requirement", requirement, "skill", skill))));
                 }
                 var roles = new LinkedHashMap<String, RoleSnapshot>();
-                roleDefinitions.forEach((id, role) -> roles.put(id, new RoleSnapshot(text(role, "name"), text(role, "version"), skills.get(id))));
+                roleDefinitions.forEach((id, role) -> {
+                    var roleSkills = skills.get(id);
+                    if (roleSkills != null && !roleSkills.isEmpty()) {
+                        roles.put(id, new RoleSnapshot(text(role, "name"), text(role, "version"), roleSkills));
+                    } else if (!demoReview) {
+                        roles.put(id, new RoleSnapshot(text(role, "name"), text(role, "version"), roleSkills));
+                    }
+                });
+                if (roles.isEmpty() && demoReview) return Optional.empty();
                 String fingerprint = AdaptiveBlueprintJson.hash("AB-CATALOG-V1:" + scope.organizationId() + ":" + json.write(paths));
                 return Optional.of(new CatalogSnapshot(scope, name, fingerprint, roles));
             });
@@ -120,9 +140,24 @@ public final class Neo4jAdaptiveBaselineCatalogAdapter implements AdaptiveBaseli
         }
     }
 
+    private static Map<String, Object> sanitizeMap(Map<String, Object> raw) {
+        var copy = new LinkedHashMap<String, Object>();
+        raw.forEach((k, v) -> {
+            if (v == null || v instanceof String || v instanceof Number || v instanceof Boolean) {
+                copy.put(k, v);
+            } else if (v instanceof java.util.Collection<?> col) {
+                copy.put(k, col.stream().map(x -> (x == null || x instanceof String || x instanceof Number || x instanceof Boolean) ? x : x.toString()).toList());
+            } else {
+                copy.put(k, v.toString());
+            }
+        });
+        return copy;
+    }
+
     private boolean published(Map<String, Object> properties) {
-        if (demoReview) return "ACTIVE".equals(properties.get("status"));
-        if (!"ACTIVE".equals(properties.get("status")) || !"APPROVED".equals(properties.get("reviewStatus"))) return false;
+        Object st = properties.get("status");
+        if (demoReview) return "ACTIVE".equals(st) || "PUBLISHED".equals(st);
+        if (!"ACTIVE".equals(st) || !"APPROVED".equals(properties.get("reviewStatus"))) return false;
         text(properties, "reviewedBy");
         OffsetDateTime.parse(text(properties, "reviewedAt"));
         return true;

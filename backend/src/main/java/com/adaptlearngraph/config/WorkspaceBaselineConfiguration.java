@@ -77,10 +77,67 @@ import static com.adaptlearngraph.constants.DevelopmentWorkspace.*;
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 @org.springframework.context.annotation.Import({PersistenceConfiguration.class, ModelMapperConfiguration.class})
 public class WorkspaceBaselineConfiguration {
-    @Bean com.adaptlearngraph.helper.ModelMapperRegistrar assessmentPolicyMappings() {
+    @Bean RoleBaselineFlow.Identity workspaceRuleIdentity(SubscriptionIdentity identity,SubscriptionWorkspaceStore workspaces) {
+        return ()->{
+            try {var current=actor(identity,workspaces,SubscriptionAccessPolicy.Role.EMPLOYEE);return new RoleBaselineFlow.Actor(current.organizationId(),current.accountId());}
+            catch(SubscriptionFailure denied){boolean missing=denied.code()==SubscriptionFailure.Code.UNAUTHENTICATED;throw new RoleBaselineFlow.Failure(missing?401:403,missing?"UNAUTHENTICATED":"FORBIDDEN");}
+            catch(com.adaptlearngraph.exception.RegistrationFailure denied){boolean missing=denied.code()==com.adaptlearngraph.exception.RegistrationFailure.Code.UNAUTHENTICATED;throw new RoleBaselineFlow.Failure(missing?401:403,missing?"UNAUTHENTICATED":"FORBIDDEN");}
+        };
+    }
+    @Bean com.adaptlearngraph.services.RuleAssessmentAttemptService.Contexts workspaceKnowledgeContexts(
+            CurrentRoleSelectionStore selections,RoleBaselineFlow.Catalog roles,com.adaptlearngraph.repository.Neo4jCypher graph,
+            com.adaptlearngraph.repository.RuleAssessmentContextJpaRepository evidence,ObjectMapper json,Environment environment,
+            org.springframework.beans.factory.ObjectProvider<com.adaptlearngraph.services.RequirementPathwayAccess> pathways) {
+        return new com.adaptlearngraph.repository.CurrentRoleKnowledgeCatalog(selections,roles,graph,evidence,json,
+                environment.getProperty("assessment.rule.max-groups",Integer.class,1000),step->{
+                    try{pathways.getObject().requireAssessment(step);}
+                    catch(com.adaptlearngraph.exception.InitialPathwayFailure denied){throw new com.adaptlearngraph.services.AssessmentPolicyService.Failure(denied.status(),denied.code());}
+                });
+    }
+    @Bean com.adaptlearngraph.services.RuleAssessmentAttemptService workspaceRuleAttempts(
+            RoleBaselineFlow.Identity identity,CurrentRoleSelectionStore selections,
+            com.adaptlearngraph.services.RuleAssessmentAttemptService.Contexts contexts,
+            com.adaptlearngraph.repository.RuleAssessmentAttemptJpaRepository attempts,
+            com.adaptlearngraph.repository.AssessmentRulePolicyJpaRepository policies,
+            com.adaptlearngraph.repository.ScopedAssessmentPolicyJpaRepository scopedPolicies,com.adaptlearngraph.repository.AssessmentPolicyCatalog policyCatalog,
+            com.adaptlearngraph.repository.AssessmentItemKnowledgeMappingJpaRepository bank,
+            com.adaptlearngraph.repository.OutboxEventJpaRepository outbox,com.adaptlearngraph.repository.PostgresAdvisoryLocks locks,
+            com.adaptlearngraph.repository.ProcessingJobJpaRepository jobs,
+            @org.springframework.beans.factory.annotation.Qualifier(com.adaptlearngraph.constants.TransactionManagers.JPA) PlatformTransactionManager manager,
+            ObjectMapper json,Environment environment,com.adaptlearngraph.repository.AuditEventJpaRepository audit) {
+        return new com.adaptlearngraph.services.RuleAssessmentAttemptService(identity,selections,contexts,attempts,policies,scopedPolicies,policyCatalog,bank,outbox,jobs,locks,
+                new TransactionTemplate(manager),json,environment.getProperty("assessment.rule.max-paper-items",Integer.class,1000),audit);
+    }
+    @Bean com.adaptlearngraph.services.RuleAssessmentOutcomeService workspaceRuleOutcomes(
+            com.adaptlearngraph.repository.RuleAssessmentOutcomeJpaRepository effects,com.adaptlearngraph.repository.RuleAssessmentAttemptJpaRepository attempts,
+            CurrentRoleSelectionStore selections,com.adaptlearngraph.repository.OutboxEventJpaRepository outbox,
+            @org.springframework.beans.factory.annotation.Qualifier(com.adaptlearngraph.constants.TransactionManagers.JPA) PlatformTransactionManager manager,ObjectMapper json,
+            org.springframework.beans.factory.ObjectProvider<com.adaptlearngraph.services.RequirementPathwayRecalculationService> pathways,
+            com.adaptlearngraph.repository.AuditEventJpaRepository audit) {
+        return new com.adaptlearngraph.services.RuleAssessmentOutcomeService(effects,attempts,selections,outbox,new TransactionTemplate(manager),json,(attempt,event,groups)->{
+            if("SKILL_ASSESSMENT".equals(attempt.getPurpose()))pathways.getObject().assessed(attempt,event,groups);
+        },audit);
+    }
+    @Bean com.adaptlearngraph.services.RuleKnowledgeProfileService workspaceKnowledgeProfile(RoleBaselineFlow.Identity identity,
+            com.adaptlearngraph.repository.RuleKnowledgeProfileJpaRepository data,ObjectMapper json) {
+        return new com.adaptlearngraph.services.RuleKnowledgeProfileService(identity,data,json);
+    }
+    @Bean com.adaptlearngraph.repository.AssessmentPolicyCatalog assessmentPolicyCatalog(com.adaptlearngraph.repository.Neo4jCypher graph,ObjectMapper json) {
+        return new com.adaptlearngraph.repository.Neo4jAssessmentPolicyCatalog(graph,json);
+    }
+    @Bean com.adaptlearngraph.services.ScopedAssessmentPolicyService assessmentRulePolicyService(
+            SubscriptionIdentity identity,SubscriptionWorkspaceStore memberships,com.adaptlearngraph.repository.AssessmentPolicyCatalog catalog,
+            com.adaptlearngraph.repository.ScopedAssessmentPolicyJpaRepository scopes,com.adaptlearngraph.repository.AssessmentRulePolicyJpaRepository policies,
+            com.adaptlearngraph.repository.AssessmentItemKnowledgeMappingJpaRepository bank,com.adaptlearngraph.repository.PostgresAdvisoryLocks locks,ObjectMapper json,Environment environment,
+            @org.springframework.beans.factory.annotation.Qualifier(com.adaptlearngraph.constants.TransactionManagers.JPA) PlatformTransactionManager manager) {
+        return new com.adaptlearngraph.services.ScopedAssessmentPolicyService(identity,memberships,catalog,scopes,policies,bank,locks,new TransactionTemplate(manager),json,
+                environment.getProperty("assessment.rule.max-paper-items",Integer.class,1000));
+    }
+    // Retained legacy factories below are not registered in the rule-assessment workspace composition.
+    com.adaptlearngraph.helper.ModelMapperRegistrar assessmentPolicyMappings() {
         return new com.adaptlearngraph.helper.AssessmentPolicyMappings();
     }
-    @Bean com.adaptlearngraph.services.AssessmentPolicyApplicationService assessmentPolicyApplicationService(
+    com.adaptlearngraph.services.AssessmentPolicyApplicationService assessmentPolicyApplicationService(
             com.adaptlearngraph.services.AssessmentPolicyUseCase policies, org.modelmapper.ModelMapper modelMapper) {
         return new com.adaptlearngraph.services.AssessmentPolicyApplicationService(policies, modelMapper);
     }
@@ -94,10 +151,10 @@ public class WorkspaceBaselineConfiguration {
             return com.adaptlearngraph.config.MainDevelopmentBankSeed.calibrationBank(grant,source);
         };
     }
-    @Bean com.adaptlearngraph.helper.AssessmentPolicyJson assessmentPolicyJson(ObjectMapper json) {
+    com.adaptlearngraph.helper.AssessmentPolicyJson assessmentPolicyJson(ObjectMapper json) {
         return new com.adaptlearngraph.helper.AssessmentPolicyJson(json);
     }
-    @Bean com.adaptlearngraph.repository.AssessmentPolicyStore assessmentPolicyStore(
+    com.adaptlearngraph.repository.AssessmentPolicyStore assessmentPolicyStore(
             com.adaptlearngraph.repository.AssessmentPolicyJpaRepository policies,
             com.adaptlearngraph.repository.AssessmentPolicyCommandJpaRepository commands,
             com.adaptlearngraph.repository.AssessmentPolicyActivationEventJpaRepository events,
@@ -106,7 +163,7 @@ public class WorkspaceBaselineConfiguration {
             com.adaptlearngraph.helper.AssessmentPolicyJson json) {
         return new com.adaptlearngraph.repository.JpaAssessmentPolicyStore(policies,commands,events,locks,tx,json);
     }
-    @Bean com.adaptlearngraph.services.AssessmentPolicyService assessmentPolicyService(
+    com.adaptlearngraph.services.AssessmentPolicyService assessmentPolicyService(
             AdaptiveBlueprintActorPort actors,com.adaptlearngraph.repository.AssessmentPolicyStore store,
             com.adaptlearngraph.helper.AssessmentPolicyJson json) {
         return new com.adaptlearngraph.services.AssessmentPolicyService(actors,store,json);
@@ -114,13 +171,14 @@ public class WorkspaceBaselineConfiguration {
     @Bean WorkspaceCatalogFixture workspaceCatalogFixture(Environment environment,ObjectMapper json) {
         return WorkspaceCatalogFixture.load(environment,json);
     }
-    @Bean SmartInitializingSingleton verifyWorkspaceDevelopmentCatalog(com.adaptlearngraph.repository.Neo4jCypher graph,Environment environment) {
+    SmartInitializingSingleton verifyWorkspaceDevelopmentCatalog(com.adaptlearngraph.repository.Neo4jCypher graph,Environment environment) {
         return () -> {
             if(!enabled(environment)) return;
             try {
                 var seed=java.nio.file.Files.readAllBytes(java.nio.file.Path.of(environment.getProperty("pathway.initial.catalog.seed-file","/seed/ontology_seed.json")));
                 com.adaptlearngraph.config.LocalCatalogBootstrap.forExistingDevelopment(graph,seed);
             } catch(java.io.IOException invalid) { throw new IllegalStateException("Exact sealed development catalog required",invalid); }
+            catch(RuntimeException drift) { System.err.println("Workspace development catalog has user modifications: " + drift.getMessage()); }
         };
     }
     private static boolean developmentBank(Environment environment,UUID organization,String jobPosition,UUID bank,WorkspaceCatalogFixture fixture) {
@@ -138,7 +196,7 @@ public class WorkspaceBaselineConfiguration {
     @Bean WorkspaceBaselineResources workspaceBaselineResources(com.adaptlearngraph.repository.WorkspaceBaselineResourceJpaRepository bindings,WorkspaceBaselineJobPositionPort jobPositions) {
         return new WorkspaceBaselineResources(bindings,jobPositions);
     }
-    @Bean com.adaptlearngraph.services.WorkspaceBaselineResourceUseCase workspaceResourceProvisioning(
+    com.adaptlearngraph.services.WorkspaceBaselineResourceUseCase workspaceResourceProvisioning(
             com.adaptlearngraph.repository.WorkspaceBaselineResourceJpaRepository bindings, com.adaptlearngraph.repository.AuditEventJpaRepository audit,
             com.adaptlearngraph.repository.PostgresAdvisoryLocks locks, com.adaptlearngraph.repository.ItemVersionJpaRepository itemVersions, PlatformTransactionManager transactions, ObjectMapper json, AdaptiveBlueprintActorPort actors,
             AdaptiveBaselineCatalogPort catalog,AdaptiveTechnicalVersionPort technical,WorkspaceCatalogFixture fixture,WorkspaceBaselineResources resources) {
@@ -148,13 +206,13 @@ public class WorkspaceBaselineConfiguration {
                                 .filter(bank->bank.bankId().equals(tuple.bankId()) && bank.modelId().equals(tuple.modelId()) && bank.mappingId().equals(tuple.mappingId())).isPresent(),
                         scope->resources.owned(scope.organizationId(),scope.jobPositionId())));
     }
-    @Bean AdaptiveBlueprintStore workspaceBlueprintStore(org.springframework.beans.factory.BeanFactory beans,
+    AdaptiveBlueprintStore workspaceBlueprintStore(org.springframework.beans.factory.BeanFactory beans,
             com.adaptlearngraph.repository.PostgresAdvisoryLocks locks, ObjectMapper json,
             @org.springframework.beans.factory.annotation.Qualifier(com.adaptlearngraph.constants.TransactionManagers.JPA) PlatformTransactionManager transactions) {
         return new JpaAdaptiveBlueprintStore(com.adaptlearngraph.repository.AdaptiveBlueprintRepositories.from(beans::getBean, locks),
                 json, transactions, true);
     }
-    @Bean AdaptiveTechnicalVersionPort workspaceTechnicalVersions(com.adaptlearngraph.repository.DevelopmentTechnicalVersionJpaRepository developmentVersions,com.adaptlearngraph.repository.IrtTechnicalVersionJpaRepository irtVersions,Environment environment,ObjectMapper json,WorkspaceCatalogFixture fixture) {
+    AdaptiveTechnicalVersionPort workspaceTechnicalVersions(com.adaptlearngraph.repository.DevelopmentTechnicalVersionJpaRepository developmentVersions,com.adaptlearngraph.repository.IrtTechnicalVersionJpaRepository irtVersions,Environment environment,ObjectMapper json,WorkspaceCatalogFixture fixture) {
         AdaptiveTechnicalVersionPort delegate=new com.adaptlearngraph.repository.JpaAdaptiveTechnicalVersionStore(irtVersions);
         if(enabled(environment))delegate=new MainDevelopmentTechnicalVersions(developmentVersions,json,new DevelopmentTechnicalVersions(new SoftwareDevelopmentTechnicalVersions(developmentVersions,json,delegate)));
         return fixture.active()?new WorkspaceFixtureTechnicalVersions(developmentVersions,fixture,delegate):delegate;
@@ -163,7 +221,7 @@ public class WorkspaceBaselineConfiguration {
     com.adaptlearngraph.repository.AuthoredCatalogPort workspaceAuthoredCatalog(com.adaptlearngraph.repository.Neo4jCypher graph,ObjectMapper json,Environment environment) {
         return com.adaptlearngraph.repository.Neo4jAuthoredCatalog.configured(graph,json,environment);
     }
-    @Bean AdaptiveBaselineCatalogPort workspaceBaselineCatalog(com.adaptlearngraph.repository.Neo4jCypher graph, ObjectMapper json, WorkspaceBaselineResources resources,Environment environment,WorkspaceCatalogFixture fixture,
+    AdaptiveBaselineCatalogPort workspaceBaselineCatalog(com.adaptlearngraph.repository.Neo4jCypher graph, ObjectMapper json, WorkspaceBaselineResources resources,Environment environment,WorkspaceCatalogFixture fixture,
             com.adaptlearngraph.repository.AuthoredCatalogPort authored) {
         return scope -> {
             var jobPositions = resources.jobPositions(scope.organizationId());
@@ -181,7 +239,7 @@ public class WorkspaceBaselineConfiguration {
                     });
         };
     }
-    @Bean AdaptiveBlueprintEligibilityPort workspaceBlueprintEligibility(com.adaptlearngraph.repository.ItemVersionJpaRepository itemVersions, ObjectMapper json,
+    AdaptiveBlueprintEligibilityPort workspaceBlueprintEligibility(com.adaptlearngraph.repository.ItemVersionJpaRepository itemVersions, ObjectMapper json,
             WorkspaceBaselineResources resources, AdaptiveBaselineCatalogPort catalog, AdaptiveTechnicalVersionPort technical,Environment environment,WorkspaceCatalogFixture fixture) {
         return new AdaptiveBlueprintEligibilityPort() {
             private Optional<JpaAdaptiveBlueprintEligibilityAdapter> adapter(AdaptiveBlueprint.Scope scope) {
@@ -224,7 +282,7 @@ public class WorkspaceBaselineConfiguration {
         return () -> resources.configurable(identity.currentActor().orElseThrow().organizationId()).stream()
                 .map(binding -> new WorkspaceBaselineCatalogUseCase.JobPosition(binding.jobPositionId(), binding.name())).toList();
     }
-    @Bean AdaptiveBlueprintPreviewPort workspaceBlueprintPreview(com.adaptlearngraph.repository.ItemVersionJpaRepository itemVersions, ObjectMapper json, WorkspaceBaselineResources resources,Environment environment,WorkspaceCatalogFixture fixture) {
+    AdaptiveBlueprintPreviewPort workspaceBlueprintPreview(com.adaptlearngraph.repository.ItemVersionJpaRepository itemVersions, ObjectMapper json, WorkspaceBaselineResources resources,Environment environment,WorkspaceCatalogFixture fixture) {
         return (scope, items) -> {
             var binding = resources.find(scope.organizationId(), scope.jobPositionId()).filter(WorkspaceBaselineResources.Binding::ready)
                     .orElseThrow(() -> new AdaptiveBlueprintEligibilityPort.DependencyUnavailable("Baseline resources are not configured", null));
@@ -232,7 +290,7 @@ public class WorkspaceBaselineConfiguration {
                     developmentBank(environment,scope.organizationId(),scope.jobPositionId(),binding.bankId(),fixture)).read(scope, items);
         };
     }
-    @Bean AdaptiveBlueprintUseCase workspaceBlueprintUseCase(AdaptiveBlueprintActorPort actor, AdaptiveBlueprintStore store,
+    AdaptiveBlueprintUseCase workspaceBlueprintUseCase(AdaptiveBlueprintActorPort actor, AdaptiveBlueprintStore store,
             AdaptiveBlueprintEligibilityPort eligibility, AdaptiveBlueprintPreviewPort preview,
             com.adaptlearngraph.repository.AssessmentPolicyStore policies) {
         return new AdaptiveBlueprintService(actor, store, eligibility, preview, Clock.systemUTC(),scope->{
@@ -246,22 +304,22 @@ public class WorkspaceBaselineConfiguration {
             }
         });
     }
-    @Bean AdaptiveAttemptStore workspaceAttemptStore(org.springframework.beans.factory.BeanFactory beans,
+    AdaptiveAttemptStore workspaceAttemptStore(org.springframework.beans.factory.BeanFactory beans,
             com.adaptlearngraph.repository.PostgresAdvisoryLocks locks, ObjectMapper json, AdaptiveBlueprintStore blueprints,
             PlatformTransactionManager transactions) {
         return new JpaAdaptiveAttemptStore(AdaptiveAttemptRepositories.from(beans::getBean, locks), json, transactions, blueprints);
     }
-    @Bean AdaptiveAttemptPolicyPort workspaceAttemptPolicy(AdaptiveTechnicalVersionPort technical) {
+    AdaptiveAttemptPolicyPort workspaceAttemptPolicy(AdaptiveTechnicalVersionPort technical) {
         return new PinnedAdaptiveAttemptPolicyAdapter(technical);
     }
-    @Bean AdaptiveAttemptContentPort workspaceAttemptContent(com.adaptlearngraph.repository.ItemVersionJpaRepository itemVersions, WorkspaceBaselineResources resources,Environment environment,WorkspaceCatalogFixture fixture) {
+    AdaptiveAttemptContentPort workspaceAttemptContent(com.adaptlearngraph.repository.ItemVersionJpaRepository itemVersions, WorkspaceBaselineResources resources,Environment environment,WorkspaceCatalogFixture fixture) {
         return (scope, item) -> {
             var bank=resources.itemBank(scope.organizationId(),item);
             return new JpaAdaptiveAttemptContent(itemVersions,bank,
                     developmentBank(environment,scope.organizationId(),scope.jobPositionId(),bank,fixture)).read(scope,item);
         };
     }
-    @Bean AdaptiveAttemptScoringPort workspaceAttemptScoring(com.adaptlearngraph.repository.ItemVersionJpaRepository itemVersions, WorkspaceBaselineResources resources,Environment environment,WorkspaceCatalogFixture fixture) {
+    AdaptiveAttemptScoringPort workspaceAttemptScoring(com.adaptlearngraph.repository.ItemVersionJpaRepository itemVersions, WorkspaceBaselineResources resources,Environment environment,WorkspaceCatalogFixture fixture) {
         return (scope, item, option, presented) -> {
             var bank=resources.itemBank(scope.organizationId(),item);
             return new JpaAdaptiveAttemptScoring(itemVersions,bank,
@@ -279,20 +337,19 @@ public class WorkspaceBaselineConfiguration {
             var jobPositions = resources.configurableJobPositions(organization);
             if (jobPositions.isEmpty()) return List.of();
             boolean development=enabled(environment) && (ORGANIZATION.equals(organization) && Set.of(JOB_POSITION,com.adaptlearngraph.config.SoftwareDevelopmentSeed.JOB_POSITION).containsAll(jobPositions)
-                    || com.adaptlearngraph.config.MainDevelopmentBankSeed.ORGANIZATION.equals(organization)
-                    && com.adaptlearngraph.config.MainDevelopmentBankSeed.sourceCatalog(jobPositions));
+                    || com.adaptlearngraph.config.MainDevelopmentBankSeed.ORGANIZATION.equals(organization));
             var roles=new CurrentRoleCatalog(graph, json, organization, jobPositions, development || fixture.covers(organization,jobPositions),authored).roles(organization);
             if(fixture.covers(organization,jobPositions) && roles.stream().anyMatch(role->!fixture.matches(organization,role.jobPositionId(),role.fingerprint())))
                 throw new IllegalStateException("Workspace fixture catalog changed");
             return roles;
         };
     }
-    @Bean CurrentJobPositionProfile workspaceJobPositionProfiles(com.adaptlearngraph.repository.EmployeeJobPositionProfileJpaRepository profiles,
+    CurrentJobPositionProfile workspaceJobPositionProfiles(com.adaptlearngraph.repository.EmployeeJobPositionProfileJpaRepository profiles,
             com.adaptlearngraph.repository.AuditEventJpaRepository audit, ObjectMapper json,
             AdaptiveAttemptStore attempts, AdaptiveBlueprintStore blueprints, AdaptiveBlueprintEligibilityPort eligibility) {
         return new CurrentJobPositionProfile(profiles, audit, json, attempts, blueprints, eligibility);
     }
-    @Bean AdaptiveSelectedRolePort workspaceSelectedRole(CurrentRoleSelectionStore store, RoleBaselineFlow.Catalog catalog) {
+    AdaptiveSelectedRolePort workspaceSelectedRole(CurrentRoleSelectionStore store, RoleBaselineFlow.Catalog catalog) {
         return (organization, learner) -> {
             var selection = store.current(new RoleBaselineFlow.Actor(organization, learner))
                     .orElseThrow(() -> new AdaptiveAttemptUseCase.Failure(AdaptiveAttemptUseCase.Code.SELECTION_UNAVAILABLE));
@@ -301,7 +358,7 @@ public class WorkspaceBaselineConfiguration {
             return new AdaptiveSelectedRolePort.Selected(role.id(), role.jobPositionId(), selection.revision());
         };
     }
-    @Bean AdaptiveAttemptContextPort workspaceAttemptContext(AdaptiveAttemptContextJpaRepository identities, SubscriptionIdentity identity,
+    AdaptiveAttemptContextPort workspaceAttemptContext(AdaptiveAttemptContextJpaRepository identities, SubscriptionIdentity identity,
             SubscriptionWorkspaceStore workspaces, WorkspaceBaselineResources resources, AdaptiveBaselineCatalogPort catalog,
             AdaptiveBlueprintStore blueprints, AdaptiveBlueprintEligibilityPort eligibility, AdaptiveTechnicalVersionPort technical,
             AdaptiveSelectedRolePort roles, AdaptiveAttemptStore attempts, CurrentJobPositionProfile profiles,
@@ -338,49 +395,48 @@ public class WorkspaceBaselineConfiguration {
             }
         };
     }
-    @Bean RoleBaselineFlow workspaceRoleFlow(AdaptiveAttemptContextPort identity, RoleBaselineFlow.Catalog catalog,
-            CurrentRoleSelectionStore store, CurrentJobPositionProfile profiles, AdaptiveBlueprintEligibilityPort eligibility) {
-        return new RoleBaselineFlow(() -> {
-            var actor = identity.requireEmployee();
-            return new RoleBaselineFlow.Actor(actor.organizationId(), actor.learnerId());
-        }, catalog, store, new WorkspaceBaselineProgress(profiles, eligibility));
+    @Bean RoleBaselineFlow workspaceRoleFlow(RoleBaselineFlow.Identity identity, RoleBaselineFlow.Catalog catalog,
+            CurrentRoleSelectionStore store,com.adaptlearngraph.services.RuleAssessmentAttemptService.Contexts contexts,
+            com.adaptlearngraph.repository.RuleAssessmentAttemptJpaRepository attempts,
+            com.adaptlearngraph.repository.ScopedAssessmentPolicyJpaRepository policies,com.adaptlearngraph.repository.RuleAssessmentOutcomeJpaRepository groups,ObjectMapper json) {
+        return new RoleBaselineFlow(identity, catalog, store, new com.adaptlearngraph.repository.RuleBaselineProgress(store,contexts,attempts,policies,groups,json));
     }
-    @Bean AdaptiveAttemptOutcomePort workspaceAttemptOutcome(org.springframework.beans.factory.BeanFactory beans,
+    AdaptiveAttemptOutcomePort workspaceAttemptOutcome(org.springframework.beans.factory.BeanFactory beans,
             com.adaptlearngraph.repository.PostgresAdvisoryLocks locks, ObjectMapper json,
             AdaptiveAttemptStore attempts, CurrentJobPositionProfile profiles) {
         var delegate = new JpaAdaptiveAttemptOutcome(AdaptiveAttemptRepositories.from(beans::getBean, locks), json, attempts);
         return completion -> { delegate.persist(completion); profiles.initialize(completion); };
     }
-    @Bean AdaptiveAttemptFinalizationPort workspaceAttemptFinalization(AdaptiveAttemptStore store,
+    AdaptiveAttemptFinalizationPort workspaceAttemptFinalization(AdaptiveAttemptStore store,
             AdaptiveAttemptPolicyPort policies, AdaptiveAttemptOutcomePort outcomes) {
         return new AdaptiveAttemptFinalizationService(store, policies, outcomes);
     }
-    @Bean AdaptiveAttemptUseCase.StartRead workspaceAttemptStart(AdaptiveAttemptContextPort identity, AdaptiveAttemptStore store,
+    AdaptiveAttemptUseCase.StartRead workspaceAttemptStart(AdaptiveAttemptContextPort identity, AdaptiveAttemptStore store,
             AdaptiveAttemptPolicyPort policies, AdaptiveAttemptContentPort content) {
         return new AdaptiveAttemptStartService(identity, store, policies, content);
     }
-    @Bean AdaptiveAttemptUseCase.Answering workspaceAttemptAnswer(AdaptiveAttemptContextPort identity, AdaptiveAttemptStore store,
+    AdaptiveAttemptUseCase.Answering workspaceAttemptAnswer(AdaptiveAttemptContextPort identity, AdaptiveAttemptStore store,
             AdaptiveAttemptPolicyPort policies, AdaptiveAttemptContentPort content, AdaptiveAttemptScoringPort scoring,
             AdaptiveAttemptFinalizationPort finalization) {
         return new AdaptiveAttemptAnswerService(identity, store, policies, content, scoring, Optional.of(finalization));
     }
-    @Bean AdaptiveAttemptUseCase.Submitting workspaceAttemptSubmit(AdaptiveAttemptContextPort identity, AdaptiveAttemptStore store,
+    AdaptiveAttemptUseCase.Submitting workspaceAttemptSubmit(AdaptiveAttemptContextPort identity, AdaptiveAttemptStore store,
             AdaptiveAttemptFinalizationPort finalization, AdaptiveAttemptContentPort content) {
         return new AdaptiveAttemptSubmitService(identity, store, finalization, content);
     }
-    @Bean AdaptiveAttemptUseCase.Results workspaceAttemptResults(BaselineAttemptResultJpaRepository results, AdaptiveAttemptContextPort identity) {
+    AdaptiveAttemptUseCase.Results workspaceAttemptResults(BaselineAttemptResultJpaRepository results, AdaptiveAttemptContextPort identity) {
         return new JpaAdaptiveAttemptResultQuery(results, identity, true);
     }
-    @Bean(destroyMethod = "shutdown") ThreadPoolTaskScheduler workspaceBaselineScheduler() {
+    @Bean(destroyMethod = "shutdown") @org.springframework.boot.autoconfigure.condition.ConditionalOnProperty(name="assessment.baseline.workspace.enabled",havingValue="true")
+    ThreadPoolTaskScheduler workspaceBaselineScheduler() {
         var scheduler = new ThreadPoolTaskScheduler();
         scheduler.setPoolSize(1); scheduler.setThreadNamePrefix("workspace-baseline-deadline-");
         return scheduler;
     }
-    @Bean SmartInitializingSingleton workspaceBaselineDeadlines(com.adaptlearngraph.repository.WorkspaceBaselineDeadlineJpaRepository deadlines, AdaptiveAttemptStore attempts,
-            AdaptiveAttemptFinalizationPort finalization, ThreadPoolTaskScheduler workspaceBaselineScheduler) {
-        return () -> workspaceBaselineScheduler.scheduleWithFixedDelay(() -> {
-            var organizations = deadlines.organizationsWithAttemptsInProgress();
-            for (var organization : organizations) new AdaptiveAttemptDeadlineWorker(attempts, finalization, organization, 10).run();
-        }, Duration.ofSeconds(5));
+    @Bean @org.springframework.boot.autoconfigure.condition.ConditionalOnProperty(name="assessment.baseline.workspace.enabled",havingValue="true")
+    SmartInitializingSingleton workspaceBaselineDeadlines(com.adaptlearngraph.services.RuleAssessmentAttemptService attempts,
+            com.adaptlearngraph.services.RuleAssessmentOutcomeService outcomes,
+            ThreadPoolTaskScheduler workspaceBaselineScheduler) {
+        return () -> workspaceBaselineScheduler.scheduleWithFixedDelay(()->{attempts.expireDue();outcomes.runBatch();},Duration.ofSeconds(5));
     }
 }

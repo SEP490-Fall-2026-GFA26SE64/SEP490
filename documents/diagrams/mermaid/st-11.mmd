@@ -2,12 +2,16 @@
 title: "ST-11 - Module and Learning Content"
 config: {"theme":"base","fontFamily":"Segoe UI, Arial, sans-serif","themeVariables":{"fontFamily":"Segoe UI, Arial, sans-serif","fontSize":"16px","primaryColor":"#ffffff","primaryTextColor":"#0f1729","primaryBorderColor":"#64748b","secondaryColor":"#fef3eb","tertiaryColor":"#ffffff","lineColor":"#64748b","textColor":"#0f1729","mainBkg":"#ffffff","background":"#ffffff","clusterBkg":"#ffffff","clusterBorder":"#64748b","edgeLabelBackground":"#ffffff","titleColor":"#0f1729","noteBkgColor":"#fef3eb","noteTextColor":"#0f1729","noteBorderColor":"#e6650f","labelColor":"#0f1729","compositeBackground":"#ffffff","compositeTitleBackground":"#ffffff","compositeBorder":"#64748b","altBackground":"#ffffff","nodeBorder":"#64748b","nodeTextColor":"#0f1729","cScale0":"#ffffff","cScaleLabel0":"#0f1729","cScale1":"#ffffff","cScaleLabel1":"#0f1729","cScale2":"#ffffff","cScaleLabel2":"#0f1729","cScale3":"#ffffff","cScaleLabel3":"#0f1729","cScale4":"#ffffff","cScaleLabel4":"#0f1729","cScale5":"#ffffff","cScaleLabel5":"#0f1729","cScale6":"#ffffff","cScaleLabel6":"#0f1729","cScale7":"#ffffff","cScaleLabel7":"#0f1729","cScale8":"#ffffff","cScaleLabel8":"#0f1729","cScale9":"#ffffff","cScaleLabel9":"#0f1729","cScale10":"#ffffff","cScaleLabel10":"#0f1729","cScale11":"#ffffff","cScaleLabel11":"#0f1729","secondaryBorderColor":"#64748b","tertiaryBorderColor":"#64748b","secondaryTextColor":"#0f1729","tertiaryTextColor":"#0f1729"},"state":{"nodeSpacing":42,"rankSpacing":64,"padding":16,"fontSize":16,"wrappingWidth":250}}
 ---
+
 stateDiagram-v2
   state "DRAFT" as SDD_ST_11_Draft
   state "SUBMITTED" as SDD_ST_11_Submitted
   state "RETURNED" as SDD_ST_11_Returned
   state "PUBLISH_PENDING" as SDD_ST_11_PublishPending
   state "RELEASED" as SDD_ST_11_Released
+  state "ARCHIVE_REQUESTED" as SDD_ST_11_ArchiveRequested
+  state "ARCHIVE_PENDING" as SDD_ST_11_ArchivePending
+  state "ARCHIVED" as SDD_ST_11_Archived
   [*] --> SDD_ST_11_Draft
   SDD_ST_11_Draft --> SDD_ST_11_Draft : Expert saves draft
   SDD_ST_11_Draft --> SDD_ST_11_Submitted : Expert submits valid module + content
@@ -19,9 +23,22 @@ stateDiagram-v2
   SDD_ST_11_PublishPending --> SDD_ST_11_Released : catalog publication succeeds
   SDD_ST_11_Released --> SDD_ST_11_Draft : author successor, preserve released version
 
+  SDD_ST_11_Draft --> [*] : Expert deletes eligible draft
+  SDD_ST_11_Released --> SDD_ST_11_ArchiveRequested : Expert requests archive
+  SDD_ST_11_ArchiveRequested --> SDD_ST_11_Released : L and D returns request with reason
+  SDD_ST_11_ArchiveRequested --> SDD_ST_11_ArchivePending : L and D approves, coverage retained
+  SDD_ST_11_ArchivePending --> SDD_ST_11_ArchivePending : projection failure / retry
+  SDD_ST_11_ArchivePending --> SDD_ST_11_Archived : catalog archive succeeds
+  SDD_ST_11_Archived --> SDD_ST_11_Draft : Expert restores, approval required
+
   classDef working fill:#fef3eb,stroke:#e6650f,color:#0f1729,stroke-width:1.5px
   classDef accepted fill:#eaf6ef,stroke:#1a9e4a,color:#0f1729,stroke-width:1.5px
   classDef attention fill:#fdf2f2,stroke:#dc2828,color:#0f1729,stroke-width:1.5px
-  class SDD_ST_11_Draft,SDD_ST_11_Submitted,SDD_ST_11_PublishPending working
-  class SDD_ST_11_Returned attention
+  class SDD_ST_11_Draft,SDD_ST_11_Submitted,SDD_ST_11_PublishPending,SDD_ST_11_ArchiveRequested,SDD_ST_11_ArchivePending working
+  class SDD_ST_11_Returned,SDD_ST_11_Archived attention
   class SDD_ST_11_Released accepted
+
+  note right of SDD_ST_11_Draft
+    New revisions pin one Skill, knowledge, Skill version and outcomes
+    Released content completion is not official achievement
+  end note

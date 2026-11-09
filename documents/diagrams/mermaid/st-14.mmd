@@ -1,26 +1,31 @@
 ---
-title: "ST-14 - Employee baseline attempt"
-config: {"theme":"base","fontFamily":"Segoe UI, Arial, sans-serif","themeVariables":{"fontFamily":"Segoe UI, Arial, sans-serif","fontSize":"16px","primaryColor":"#ffffff","primaryTextColor":"#0f1729","primaryBorderColor":"#64748b","secondaryColor":"#fef3eb","tertiaryColor":"#ffffff","lineColor":"#64748b","textColor":"#0f1729","mainBkg":"#ffffff","background":"#ffffff","clusterBkg":"#ffffff","clusterBorder":"#64748b","edgeLabelBackground":"#ffffff","titleColor":"#0f1729","noteBkgColor":"#fef3eb","noteTextColor":"#0f1729","noteBorderColor":"#e6650f","labelColor":"#0f1729","compositeBackground":"#ffffff","compositeTitleBackground":"#ffffff","compositeBorder":"#64748b","altBackground":"#ffffff","nodeBorder":"#64748b","nodeTextColor":"#0f1729","cScale0":"#ffffff","cScaleLabel0":"#0f1729","cScale1":"#ffffff","cScaleLabel1":"#0f1729","cScale2":"#ffffff","cScaleLabel2":"#0f1729","cScale3":"#ffffff","cScaleLabel3":"#0f1729","cScale4":"#ffffff","cScaleLabel4":"#0f1729","cScale5":"#ffffff","cScaleLabel5":"#0f1729","cScale6":"#ffffff","cScaleLabel6":"#0f1729","cScale7":"#ffffff","cScaleLabel7":"#0f1729","cScale8":"#ffffff","cScaleLabel8":"#0f1729","cScale9":"#ffffff","cScaleLabel9":"#0f1729","cScale10":"#ffffff","cScaleLabel10":"#0f1729","cScale11":"#ffffff","cScaleLabel11":"#0f1729","secondaryBorderColor":"#64748b","tertiaryBorderColor":"#64748b","secondaryTextColor":"#0f1729","tertiaryTextColor":"#0f1729"},"state":{"nodeSpacing":42,"rankSpacing":64,"padding":16,"fontSize":16,"wrappingWidth":250}}
+title: "ST-14 - Rule attempt, group results and processing"
+config: {"theme":"base","fontFamily":"Segoe UI, Arial, sans-serif","themeVariables":{"fontFamily":"Segoe UI, Arial, sans-serif","fontSize":"16px","primaryColor":"#ffffff","primaryTextColor":"#0f1729","primaryBorderColor":"#64748b","secondaryColor":"#fef3eb","tertiaryColor":"#ffffff","lineColor":"#64748b","textColor":"#0f1729","mainBkg":"#ffffff","background":"#ffffff","clusterBkg":"#ffffff","clusterBorder":"#64748b","edgeLabelBackground":"#ffffff","titleColor":"#0f1729","noteBkgColor":"#fef3eb","noteTextColor":"#0f1729","noteBorderColor":"#e6650f","labelColor":"#0f1729","compositeBackground":"#ffffff","compositeTitleBackground":"#ffffff","compositeBorder":"#64748b","altBackground":"#ffffff","nodeBorder":"#64748b","nodeTextColor":"#0f1729","cScale0":"#ffffff","cScaleLabel0":"#0f1729","cScale1":"#ffffff","cScaleLabel1":"#0f1729","cScale2":"#ffffff","cScaleLabel2":"#0f1729","cScale3":"#ffffff","cScaleLabel3":"#0f1729","cScale4":"#ffffff","cScaleLabel4":"#0f1729","cScale5":"#ffffff","cScaleLabel5":"#0f1729","cScale6":"#ffffff","cScaleLabel6":"#0f1729","cScale7":"#ffffff","cScaleLabel7":"#0f1729","cScale8":"#ffffff","cScaleLabel8":"#0f1729","cScale9":"#ffffff","cScaleLabel9":"#0f1729","cScale10":"#ffffff","cScaleLabel10":"#0f1729","cScale11":"#ffffff","cScaleLabel11":"#0f1729","secondaryBorderColor":"#64748b","tertiaryBorderColor":"#64748b","secondaryTextColor":"#0f1729","tertiaryTextColor":"#0f1729"},"state":{"nodeSpacing":42,"rankSpacing":64,"padding":16,"fontSize":16,"wrappingWidth":250},"look":"neo"}
 ---
+
 stateDiagram-v2
-  state "Employee baseline attempt" as Group0 {
+  direction TB
+  state "Persisted attempt" as Attempt {
     state "IN_PROGRESS" as progress
-    state "SUBMITTED<br/>reason = MANUAL" as submitted
-    state "AUTO_SUBMITTED<br/>ADAPTIVE_STOP or DEADLINE" as auto
-    state "INVALIDATED<br/>MANUAL / DEADLINE /<br/>TECHNICAL_FAILURE" as invalid
-    [*] --> progress : authorized admission; first item and snapshot commit
-    progress --> progress : Answer or resume
-    progress --> submitted : manual before deadline; sufficient valid evidence
-    progress --> auto : adaptive stop / deadline; sufficient valid evidence
-    progress --> invalid : insufficient evidence or technical error invalidates results
-    submitted --> [*]
-    auto --> [*]
-    invalid --> [*]
+    state "FINALIZED" as finalized
+    [*] --> progress : Freeze complete paper and deadline
+    progress --> progress : Answer or resume before deadline
+    progress --> finalized : Accepted submit or server deadline
   }
-  classDef accepted fill:#eaf6ef,stroke:#1a9e4a,color:#0f1729,stroke-width:1.5px
-  classDef attention fill:#fdf2f2,stroke:#dc2828,color:#0f1729,stroke-width:1.5px
-  classDef working fill:#fef3eb,stroke:#e6650f,color:#0f1729,stroke-width:1.5px
-  class progress working
-  class submitted accepted
-  class auto accepted
-  class invalid attention
+  state "Downstream processing" as Processing {
+    state "PENDING" as pending
+    state "PROCESSED" as processed
+    [*] --> pending : Finalized event creates recoverable work
+    pending --> pending : Retry or wait for required supplement
+    pending --> processed : Idempotent effects and receipt
+  }
+  note right of finalized
+    finishReason SUBMITTED or DEADLINE
+    Wrong and unanswered count zero
+    Each group has passed and veto results
+  end note
+  note right of processed
+    Baseline gives diagnostics only
+    Official evidence requires exact completion or
+    certificate
+  end note

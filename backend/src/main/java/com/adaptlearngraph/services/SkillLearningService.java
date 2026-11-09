@@ -23,7 +23,8 @@ public final class SkillLearningService {
     public SkillEligibility eligibility(String skill) {
         return modules.transaction(() -> {
             Actor a=employee();
-            var proof=learning.completions(a.organizationId(),a.id(),skill).stream().findFirst();
+            var proof=learning.completions(a.organizationId(),a.id(),skill).stream()
+                    .filter(item->learning.assignedRevision(a.organizationId(),a.id(),item.moduleId(),item.revision())).findFirst();
             if(proof.isEmpty() && modules.catalog("MicroSkill").stream().noneMatch(s->s.id().equals(skill)))
                 throw new Failure(404,"Skill not found");
             return new SkillEligibility(skill,proof.isPresent(),proof.isPresent()?"MODULE_COMPLETED":"NO_COMPLETED_MODULE",proof.orElse(null));
@@ -34,7 +35,6 @@ public final class SkillLearningService {
     }
     private void requireSkillAccess(Actor a,String skill) {
         if(modules.catalog("MicroSkill").stream().noneMatch(s->s.id().equals(skill))) throw new Failure(404,"Skill not found");
-        if(!learning.completions(a.organizationId(),a.id(),skill).isEmpty())return;
         boolean accessible=modules.documents(a.organizationId()).stream().anyMatch(d->{
             Revision pinned=modules.pinned(a.organizationId(),a.id(),d.id())
                     .flatMap(n->d.revisions().stream().filter(r->r.number()==n).findFirst()).orElse(d.released());
@@ -54,6 +54,7 @@ public final class SkillLearningService {
             Actor a=employee();requireSkillAccess(a,skill);
             var proofs=learning.completions(a.organizationId(),a.id(),skill);
             return modules.documents(a.organizationId()).stream().filter(d->available(d,skill))
+                    .filter(d->learning.assigned(a.organizationId(),a.id(),d.id()))
                     .sorted(Comparator.comparing(d->d.released().payload().title()))
                     .flatMap(d->{
                         var pin=modules.pinned(a.organizationId(),a.id(),d.id());
@@ -72,6 +73,8 @@ public final class SkillLearningService {
             Revision r=modules.pinned(a.organizationId(),a.id(),module)
                     .flatMap(n->d.revisions().stream().filter(v->v.number()==n).findFirst()).orElse(d.released());
             if(!teaches(r,skill))throw new Failure(409,"Pinned module belongs to a different skill");
+            if(!learning.assignedRevision(a.organizationId(),a.id(),module,r.number()))
+                throw new Failure(403,"Start from an accepted option for this exact skill and knowledge level");
             learning.admitSelfStudy(a.organizationId(),a.id(),module,r.number(),skill);
             modules.pin(a.organizationId(),a.id(),module,r.number());
             return null;
@@ -89,6 +92,8 @@ public final class SkillLearningService {
         }
         String at=Collections.max(times).toString();
         learning.complete(a.organizationId(),a.id(),new SkillCompletion(revision.payload().teachings().getFirst().skillId(),
-                module,revision.number(),revision.payload().contentVersion(),at));
+                module,revision.number(),revision.payload().contentVersion(),at,
+                revision.payload().knowledgeLevel()==null?null:revision.payload().knowledgeLevel().name(),revision.payload().skillVersion(),
+                revision.payload().outcomeCodes(),revision.payload().teachings().getFirst().skillName()));
     }
 }

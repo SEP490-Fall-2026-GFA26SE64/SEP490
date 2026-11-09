@@ -1,89 +1,55 @@
 ---
-title: "ACT-05 - Main Flow for Adaptive Learning Pathway Generation and Recalculation"
-config: {"theme":"base","fontFamily":"Segoe UI, Arial, sans-serif","themeVariables":{"fontFamily":"Segoe UI, Arial, sans-serif","fontSize":"16px","primaryColor":"#ffffff","primaryTextColor":"#0f1729","primaryBorderColor":"#64748b","secondaryColor":"#fef3eb","tertiaryColor":"#ffffff","lineColor":"#64748b","textColor":"#0f1729","mainBkg":"#ffffff","background":"#ffffff","clusterBkg":"#ffffff","clusterBorder":"#64748b","edgeLabelBackground":"#ffffff","titleColor":"#0f1729","noteBkgColor":"#fef3eb","noteTextColor":"#0f1729","noteBorderColor":"#e6650f","secondaryBorderColor":"#64748b","tertiaryBorderColor":"#64748b","secondaryTextColor":"#0f1729","tertiaryTextColor":"#0f1729"},"layout":"elk","elk":{"mergeEdges":false,"nodePlacementStrategy":"NETWORK_SIMPLEX"},"flowchart":{"htmlLabels":true,"nodeSpacing":28,"rankSpacing":56,"curve":"linear","diagramPadding":24,"padding":16,"wrappingWidth":250}}
+title: "ACT-05 - Role-Level assessment, evidence and requirement pathway"
+config: {"theme":"base","fontFamily":"Segoe UI, Arial, sans-serif","themeVariables":{"fontFamily":"Segoe UI, Arial, sans-serif","fontSize":"16px","primaryColor":"#ffffff","primaryTextColor":"#0f1729","primaryBorderColor":"#64748b","secondaryColor":"#fef3eb","tertiaryColor":"#ffffff","lineColor":"#64748b","textColor":"#0f1729","mainBkg":"#ffffff","background":"#ffffff","clusterBkg":"#ffffff","clusterBorder":"#64748b","edgeLabelBackground":"#ffffff","titleColor":"#0f1729","noteBkgColor":"#fef3eb","noteTextColor":"#0f1729","noteBorderColor":"#e6650f","secondaryBorderColor":"#64748b","tertiaryBorderColor":"#64748b","secondaryTextColor":"#0f1729","tertiaryTextColor":"#0f1729"},"layout":"dagre","elk":{"mergeEdges":false,"nodePlacementStrategy":"NETWORK_SIMPLEX"},"flowchart":{"htmlLabels":true,"nodeSpacing":48,"rankSpacing":40,"curve":"linear","diagramPadding":24,"padding":16,"wrappingWidth":250}}
 ---
+
 flowchart TD
   start(("Start"))
-  choose["<b>Employee</b><br/>Choose target Role and Level"]
-  coverage{"<b>System</b><br/>Valid results for<br/>all required skills?"}
-  admission{"<b>System</b><br/>Can baseline start<br/>or resume?"}
-  baseline["<b>Employee</b><br/>Take or resume the Job Position baseline;<br/>answer questions and submit"]
-  baselineScore["<b>System</b><br/>Apply time and stop rules; score baseline;<br/>initialize mastery only from valid results"]
-  validBaseline{"<b>System</b><br/>Baseline results<br/>valid?"}
-  gaps["<b>System</b><br/>Calculate skill gaps from current mastery<br/>for the chosen Role and Level"]
-  request["<b>Employee</b><br/>Review skill gaps and confirm<br/>the pathway request"]
-  learningNeeded{"<b>System</b><br/>Any skill gaps<br/>to address?"}
-  generate["<b>System</b><br/>Validate the request and generate a pathway;<br/>check skill coverage and prerequisites"]
-  generated{"<b>System</b><br/>Pathway generated<br/>successfully?"}
-  expertReview["<b>Expert</b><br/>Review skill coverage, modules<br/>and learning order; adjust if needed"]
-  ready{"<b>System</b><br/>Pathway ready<br/>for approval?"}
-  approve["<b>Expert</b><br/>Approve the reviewed pathway version"]
-  selectModule["<b>Employee</b><br/>Choose a module from<br/>the approved pathway"]
-  access{"<b>System</b><br/>Can this module<br/>be opened?"}
-  studyAssess["<b>Employee</b><br/>Study module content; complete the<br/>Micro Skill assessment and submit answers"]
-  masteryGap["<b>System</b><br/>Score answers; update mastery from valid results<br/>and recalculate gaps for the same Role/Level"]
-  remaining{"<b>System</b><br/>Any skill gaps<br/>remaining?"}
-  adapt["<b>System</b><br/>Automatically update the remaining pathway;<br/>show recommended modules and approved content<br/>without another Expert review"]
-  end(("End"))
-  unavailable["<b>System</b><br/>Explain why baseline<br/>cannot be started or resumed"]
-  unavailableEnd(("End"))
-  invalid["<b>System</b><br/>Explain why baseline<br/>results are invalid"]
-  invalidEnd(("End"))
-  generationFailed["<b>System</b><br/>Explain why no pathway<br/>was generated"]
-  generationFailedEnd(("End"))
-  locked["<b>System</b><br/>Keep the module closed;<br/>explain the access restriction"]
-  lockedEnd(("End"))
-  learningNeededEnd(("End"))
-  remainingEnd(("End"))
-  start --> choose
-  choose --> coverage
-  coverage -->|"no"| admission
-  admission -->|"yes"| baseline
-  baseline --> baselineScore
-  baselineScore --> validBaseline
-  validBaseline -->|"yes"| gaps
-  coverage -->|"yes"| gaps
-  gaps --> request
-  request --> learningNeeded
-  learningNeeded -->|"yes"| generate
-  generate --> generated
-  generated -->|"yes"| expertReview
-  expertReview --> ready
-  ready -->|"no"| expertReview
-  ready -->|"yes"| approve
-  approve --> selectModule
-  selectModule --> access
-  access -->|"yes"| studyAssess
-  studyAssess --> masteryGap
-  masteryGap --> remaining
-  remaining -->|"yes"| adapt
-  adapt --> end
-  admission -->|"no"| unavailable
-  unavailable --> unavailableEnd
-  validBaseline -->|"no"| invalid
-  invalid --> invalidEnd
-  generated -->|"no"| generationFailed
-  generationFailed --> generationFailedEnd
-  access -->|"no"| locked
-  locked --> lockedEnd
-  learningNeeded -->|"no"| learningNeededEnd
-  remaining -->|"no"| remainingEnd
-  classDef default fill:#ffffff,stroke:#64748b,color:#0f1729,stroke-width:1px,rx:8,ry:8
-  classDef decision fill:#fef3eb,stroke:#e6650f,color:#0f1729,stroke-width:1.5px
-  classDef entry fill:#c24a0a,stroke:#c24a0a,color:#ffffff,stroke-width:1.5px
-  class start entry
-  class coverage decision
-  class admission decision
-  class validBaseline decision
-  class learningNeeded decision
-  class generated decision
-  class ready decision
-  class access decision
-  class remaining decision
-  class end entry
-  class unavailableEnd entry
-  class invalidEnd entry
-  class generationFailedEnd entry
-  class lockedEnd entry
-  class learningNeededEnd entry
-  class remainingEnd entry
+  config["<b>L&amp;D Manager</b><br/>Publish Baseline policy for Role and member Level"]
+  skillPolicy["<b>Expert</b><br/>Publish shared Skill-knowledge policy"]
+  choose["<b>Employee</b><br/>Choose available Role and actual member Level"]
+  evidence["<b>System</b><br/>Read exact compatible official evidence"]
+  need{"<b>System</b><br/>Baseline groups remain?"}
+  baseline["<b>Employee</b><br/>Start or resume full frozen Baseline paper"]
+  finish["<b>System</b><br/>Submit or deadline finalization;<br/>per-group diagnostics only"]
+  confirm["<b>Employee</b><br/>Confirm exact requirement input and request pathway"]
+  bind["<b>System</b><br/>Bind Role and Level;<br/>generate requirement roots and alternatives"]
+  review["<b>Expert</b><br/>Check choices and order;<br/>approve exact revision and hash"]
+  admission{"<b>System</b><br/>Configured provision and approval ready?"}
+  repair["<b>Expert</b><br/>Repair provision or reasoned scoped bypass;<br/>policy boundary remains open"]
+  option{"<b>Employee</b><br/>Module or certificate provision?"}
+  learn["<b>Employee</b><br/>Study accepted pinned module;<br/>complete exact content conditions"]
+  assess["<b>Employee</b><br/>Take Skill paper: MAIN and all prerequisite groups"]
+  evaluate["<b>System</b><br/>Score groups; veto requires full retake;<br/>failed unachieved B adds required B work"]
+  cert["<b>Employee</b><br/>Submit HTTPS link or private PDF/image"]
+  certReview["<b>Expert</b><br/>Review exact certificate submission"]
+  award["<b>System</b><br/>Write exact official evidence when qualified;<br/>retain diagnostics and NEED_REVIEW separately"]
+  recalc["<b>System</b><br/>Recalculate immutable successor;<br/>retain valid approval basis and progress"]
+  block{"<b>System</b><br/>Blocking REQUIRED work remains?"}
+  release["<b>System</b><br/>Permit target change if no active attempt;<br/>old bypass needs stay parallel and non-gating"]
+  done(("End"))
+  start --> config --> choose --> evidence --> need
+  skillStart(("Start"))
+  skillStart --> skillPolicy
+  need -->|yes| baseline --> finish --> confirm
+  need -->|no| confirm
+  required{"<b>System</b><br/>Required learning remains?"}
+  confirm --> bind --> required
+  required -->|yes| admission
+  required -->|no| release
+  admission -->|repair needed| repair --> admission
+  reviewed{"<b>System</b><br/>Valid approval basis retained?"}
+  admission -->|ready| reviewed
+  reviewed -->|yes| option
+  reviewed -->|no| review --> option
+  option -->|module| learn --> assess --> evaluate
+  skillPolicy -.-> assess
+  evaluate -->|main fail or veto| assess
+  evaluate -->|passing main waits for B| recalc
+  evaluate -->|completion and prerequisites qualify| award
+  option -->|certificate| cert --> certReview
+  certReview -->|reject with reason| cert
+  certReview -->|approve| award
+  award --> recalc --> block
+  block -->|yes| admission
+  block -->|no| release --> done

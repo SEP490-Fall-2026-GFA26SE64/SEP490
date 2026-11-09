@@ -1,5 +1,7 @@
 # Employee and Department Development Reporting
 
+**Source alignment — 2026-11-07.** [Current rule-flow input/ownership contract](../../technical/Organization%20Rule%20Assessment%20and%20Pathway.md) separates diagnostics, official evidence, bypass and pending supplementation. No new reporting or notification delivery result is asserted.
+
 **Source:** [Version 2](../../FA26SE267_KNOWLEDGE_GRAPH_BASED_ADAPTIVE_LEARNING__haht43_Version_2.md), section 3.2(c), Functional Requirements.
 
 **Aligned:** 2026-10-28. **Source requirements in this domain:** 2.
@@ -17,7 +19,17 @@ Each record below corresponds to one source bullet. Unspecified fields are inten
 
 **Entry points:** `/ld-manager/team-matrix`, `/ld-manager/learning-outcomes`. `/ld-manager/roi-forecast` redirects to the team matrix; the standalone ROI forecast page is not the active route. Prototype export controls do not introduce a new Version 2 requirement.
 
-**Code references:** [team matrix](../../../frontend/src/features/manager/team-matrix/TeamMatrixPage.tsx), [learning outcomes](../../../frontend/src/features/manager/learning-outcomes/LearningOutcomesPage.tsx), [analytics/ROI schema](../../../backend/src/main/resources/db/migration/V4__pathway_analytics_and_evaluation.sql), [backend business services](../../../backend/src/main/java/com/adaptlearngraph/services/) (no analytics service is implemented yet), [route wiring](../../../frontend/src/app/App.tsx).
+**Code references:** [team matrix](../../../frontend/src/features/manager/team-matrix/TeamMatrixPage.tsx), [learning outcomes](../../../frontend/src/features/manager/learning-outcomes/Dashboard.tsx), [analytics/ROI schema](../../../backend/src/main/resources/db/migration/V4__pathway_analytics_and_evaluation.sql), [backend business services](../../../backend/src/main/java/com/adaptlearngraph/services/) (no analytics service is implemented yet), [route wiring](../../../frontend/src/app/App.tsx).
+
+## Assessment/pathway reporting boundary - 2026-11-05
+
+This is the directly affected input/meaning contract for FR-04.07 and FR-07.09, confirmed for the affected input meanings; it does not implement reporting, change ROI formulas or redesign screens. Dated prototype/evidence notes retain their original scope.
+
+Authorized same-organization L&D reporting must read official exact skill/knowledge achievements separately from baseline diagnostics, lessons, group assessment outcomes, optional module progress and pathway requirement revisions. Baseline pass is not certified achievement; approved bypass is unmet/waived; NEED_REVIEW does not revoke ACHIEVED. A requirement satisfied by one alternative does not require every alternative to complete.
+
+Filter and aggregate only authorized scope/period with provenance, explicit missing data and distinct fulfilled/waived/pending counts. Reads do not finalize attempts or update profile/pathway. Synthetic browser values are not observed organization results. [Adaptive profile/completion rules](../Adaptive%20engine/README.md#profile-and-evidence-precedence) own these meanings; cost/benefit and department-reporting scope remains unchanged.
+
+Current rule-flow input/schema owners are mapped in the technical contract. Those source paths do not establish a complete reporting/audit reader or mail delivery; no new runtime/production acceptance is claimed.
 
 ## Requirements
 

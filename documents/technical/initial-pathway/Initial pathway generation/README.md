@@ -1,19 +1,27 @@
-# Initial Pathway Generation
+# Initial Requirement Pathway Generation
+
+REQ-042; System.
+
+Source checkpoint: HEAD `61d334c`, 2026-11-07. Confirmed contract and source implementation are distinguished below; current composition is local/workspace-baseline and excludes prod/demo. [Complete field/key/API and conflict mapping](../../Organization%20Rule%20Assessment%20and%20Pathway.md) owns the shared technical detail. Applied DB state and full runtime behavior were not verified in this documentation task.
 
 ## Current Scope Alignment
 
-REQ-042. System. Business pipeline confirmed; C2 source implemented, owner integration/runtime acceptance incomplete. Explicit Employee confirmation dispatches initial generation: batch related graph → eligibility → per-pair teachingFocus/difficultyLevel suitability and confirmed whole-path lexical objective → whole-path selection/dedup/feasibility → dependency/topological order → validation. Distinguish generating/review/no-gap/unresolved; no learning before Expert confirmation.
-
-Current Function contract: [Generate Initial Adaptive Pathway](Generate%20Initial%20Adaptive%20Pathway.md). [Shared full-flow design](Initial%20Pathway%20Flow%20and%20Data%20Design.md) and [acceptance plan](../../../testing/REQ-041-042-initial-pathway-test-plan.md) govern the 2026-10-27 initial flow. All new executable evidence Planned/Not run; historical/mock implementation labels below do not certify this flow.
-
-## Historical Specification
-Use the alignment above where older details conflict.
-
-Generate an explainable initial module sequence from baseline evidence and target-role gaps. This is a must-have capability.
-
-**Source:** [REQ-042](../../../PRODUCT_OVERVIEW.md)  
-**Execution:** Automated; Employee consumes the result and Domain Expert reviews it.
+Current local generation consumes explicit selected Role–Level requirements, same-context diagnostics and compatible official evidence. RequirementPathwayAdmission/Generation produce requirement roots with exact module alternatives or one certificate; no numeric gap, teachingFocus/difficulty or whole-path objective. Actual failed prerequisite groups drive later supplementation/recalculation. Accepted request locks target; exact assigned initial approval precedes learning. Runtime remains unverified here.
 
 ## Functions
 
-- [Generate Initial Adaptive Pathway](Generate%20Initial%20Adaptive%20Pathway.md)
+[Generate and recalculate](Generate%20Initial%20Adaptive%20Pathway.md). The [long data design](Initial%20Pathway%20Flow%20and%20Data%20Design.md) retains numerical research/history with a current-source counterpart; it is not the active optimizer specification.
+
+## Retained section aliases
+
+These aliases preserve older links; the current sections above replace the numeric/IRT/optimizer contract at those entry points. No retired Function is reopened.
+
+<a id="historical-specification-superseded-numerical-model"></a>
+
+Historical references retained: REQ-042, REQ-041. They do not expand this task or approve new implementation.
+
+## Historical evidence references
+
+The following retained records describe their original dates/contracts only; they were not rerun or recertified here.
+
+[acceptance plan](../../../testing/REQ-041-042-initial-pathway-test-plan.md)

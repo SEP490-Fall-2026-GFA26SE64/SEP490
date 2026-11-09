@@ -9,14 +9,17 @@ import {
   AlertTriangle,
   BookOpen,
   Briefcase,
+  Building2,
   Check,
   CheckCircle2,
   ChevronDown,
   ChevronRight,
+  Clock,
   CornerDownRight,
   Diff,
   Edit3,
   Eye,
+  EyeOff,
   FileCheck,
   History,
   Layers,
@@ -31,6 +34,9 @@ import {
 import * as React from 'react'
 import { TargetRoleGraphModal } from './components/TargetRoleGraphModal'
 import { TargetRoleVersionDiff } from './components/TargetRoleVersionDiff'
+import { missingRoleLevelRequirements, roleRequirements, validRequiredKnowledge } from './roleRequirements'
+import { formatRequiredKnowledge } from './roleKnowledgePresentation'
+import { useTranslation } from '../../../shared/i18n/LanguageContext'
 import { Badge } from '../../../shared/components/ui/Badge'
 import { Button } from '../../../shared/components/ui/Button'
 import {
@@ -57,7 +63,9 @@ import {
 import { useToast } from '../../../shared/hooks/useToast'
 import { WorkspaceLayout } from '../../../shared/layouts/WorkspaceLayout'
 import { WorkspaceSessionContext } from '../../../shared/auth/workspaceSession'
-import { getMembers } from '../../subscription/subscriptionApi'
+import { getMembers, getReferences, request } from '../../subscription/subscriptionApi'
+import { fetchDepartments, updateDepartmentApi, createDepartmentApi, linkJobPositionToDepartment } from '../../../shared/api/departmentApi'
+import { loadDepartments, updateDepartment } from '../../../shared/stores/departmentStore'
 import {
   getActiveCompany,
   resolveWorkspaceOrgId,
@@ -66,7 +74,6 @@ import {
 import {
   ELIGIBLE_EXPERTS,
   findEligibleExpert,
-  JOB_POSITIONS,
   type JobPosition,
   compareRoleVersions,
   formatDate,
@@ -89,10 +96,12 @@ import {
 export const getExpertOptionsForJobPosition = (
   jobPositionCode?: string,
   organizationId?: string,
+  departmentScope?: { id?: string; code?: string; name?: string } | null,
 ): ComboboxOption[] => {
   const eligible = getEligibleExpertsForJobPosition(
     jobPositionCode,
     organizationId,
+    departmentScope,
   )
 
   return eligible.map((exp) => ({
@@ -105,15 +114,20 @@ export const getExpertOptionsForJobPosition = (
 const ROLE_PRESETS: ImportPreset[] = []
 
 export type ManagerRoleStatus =
-  'published' | 'submitted' | 'sent' | 'draft' | 'feedback' | 'rejected'
+  | 'published'
+  | 'submitted'
+  | 'sent'
+  | 'draft'
+  | 'feedback'
+  | 'rejected'
+  | 'unpublished'
 
 export const getManagerEffectiveStatus = (
   role: TargetRoleModel,
 ): ManagerRoleStatus => {
   if (role.status === 'published') return 'published'
-
+  if (role.status === 'unpublished') return 'unpublished'
   if (role.status === 'submitted') return 'submitted'
-
   if (role.status === 'sent') return 'sent'
 
   if (role.status === 'rejected') {
@@ -125,8 +139,137 @@ export const getManagerEffectiveStatus = (
   return 'draft'
 }
 
+interface RoleMetadata {
+  id?: string
+  code: string
+  jobPositionCode?: string
+  jobPositionTitle?: string
+  department?: string
+  departmentId?: string
+  assignedExpertId?: string
+  assignedExpertName?: string
+  levelNames?: string[]
+  levelDurations?: Record<string, string>
+  status?: TargetRoleModel['status']
+}
+
+function parseDurationNumber(val?: string | number, defaultNum = 6): number {
+  if (val === undefined || val === null || val === '') return defaultNum
+  const match = String(val).match(/\d+/)
+  if (match) {
+    const parsed = parseInt(match[0], 10)
+    return isNaN(parsed) || parsed < 1 ? defaultNum : parsed
+  }
+  return defaultNum
+}
+
+function resolveLevelDuration(
+  role: Pick<TargetRoleModel, 'levelDurations'>,
+  levelName: string,
+  index: number,
+): string {
+  const defaultMonths = index === 0 ? 6 : index === 1 ? 4 : index === 2 ? 3 : 2
+  const direct = role.levelDurations?.[levelName]
+  if (direct && direct.trim()) return `${parseDurationNumber(direct, defaultMonths)} months`
+  if (role.levelDurations) {
+    const matchedKey = Object.keys(role.levelDurations).find(
+      (k) => k.toLowerCase().trim() === levelName.toLowerCase().trim(),
+    )
+    if (matchedKey && role.levelDurations[matchedKey]?.trim()) {
+      return `${parseDurationNumber(role.levelDurations[matchedKey], defaultMonths)} months`
+    }
+  }
+  const lower = levelName.toLowerCase()
+  if (lower.includes('senior') || index === 0) return '6 months'
+  if (lower.includes('middle') || lower.includes('mid') || index === 1) return '4 months'
+  if (lower.includes('junior') || index === 2) return '3 months'
+  return '2 months'
+}
+
+function getRoleMetaKeys(orgId: string): string[] {
+  const resolved = resolveWorkspaceOrgId(orgId)
+  if (resolved === 'e0000000-0000-0000-0000-000000000001') {
+    return Array.from(
+      new Set([
+        'adaptlearn_target_role_meta_' + orgId,
+        'adaptlearn_target_role_meta_e0000000-0000-0000-0000-000000000001',
+        'adaptlearn_target_role_meta_comp-technova',
+        'adaptlearn_target_role_meta_workspace-development',
+        'adaptlearn_target_role_meta_',
+      ]),
+    )
+  }
+  return Array.from(
+    new Set([
+      'adaptlearn_target_role_meta_' + orgId,
+      'adaptlearn_target_role_meta_' + resolved,
+    ]),
+  )
+}
+
+function getTargetRoleMetaMap(orgId: string): Record<string, RoleMetadata> {
+  const map: Record<string, RoleMetadata> = {}
+  if (typeof localStorage === 'undefined') return map
+  try {
+    const keys = getRoleMetaKeys(orgId)
+    for (const k of keys) {
+      const raw = localStorage.getItem(k)
+      if (raw) {
+        const parsed = JSON.parse(raw) as Record<string, RoleMetadata>
+        for (const [idOrCode, val] of Object.entries(parsed || {})) {
+          if (val) {
+            map[idOrCode.toUpperCase()] = { ...(map[idOrCode.toUpperCase()] || {}), ...val }
+            if (val.code) {
+              map[val.code.toUpperCase()] = { ...(map[val.code.toUpperCase()] || {}), ...val }
+            }
+          }
+        }
+      }
+    }
+  } catch {}
+  return map
+}
+
+function saveTargetRoleMeta(orgId: string, meta: RoleMetadata): void {
+  if (typeof localStorage === 'undefined') return
+  try {
+    const keys = getRoleMetaKeys(orgId)
+    for (const k of keys) {
+      const raw = localStorage.getItem(k)
+      const current = raw ? (JSON.parse(raw) as Record<string, RoleMetadata>) : {}
+      if (meta.code) {
+        current[meta.code.toUpperCase()] = { ...(current[meta.code.toUpperCase()] || {}), ...meta }
+      }
+      if (meta.id) {
+        current[meta.id] = { ...(current[meta.id] || {}), ...meta }
+      }
+      localStorage.setItem(k, JSON.stringify(current))
+    }
+  } catch {}
+}
+
+function deleteTargetRoleMeta(orgId: string, id?: string, code?: string): void {
+  if (typeof localStorage === 'undefined') return
+  try {
+    const keys = getRoleMetaKeys(orgId)
+    for (const k of keys) {
+      const raw = localStorage.getItem(k)
+      if (raw) {
+        const current = JSON.parse(raw) as Record<string, RoleMetadata>
+        if (code) delete current[code.toUpperCase()]
+        if (id) delete current[id]
+        localStorage.setItem(k, JSON.stringify(current))
+      }
+    }
+  } catch {}
+}
+
 export function TargetRolesPage() {
   const { toast } = useToast()
+  const { language, t } = useTranslation()
+  const publicationCopy = (en: string, vi: string) => language === 'vi' ? vi : en
+  const [publishingRoleId, setPublishingRoleId] = React.useState<string | null>(null)
+  const publicationLock = React.useRef(false)
 
   // Master roles state
 
@@ -141,6 +284,7 @@ export function TargetRolesPage() {
     | 'sent'
     | 'feedback'
     | 'rejected'
+    | 'unpublished'
   >('all')
 
   const [expandedLineages, setExpandedLineages] = React.useState<
@@ -163,31 +307,44 @@ export function TargetRolesPage() {
   )
 
   const refreshAvailableJobPositions = React.useCallback(async () => {
-    const localPositions = getAvailableJobPositions(orgId)
-    setAvailableJobPositions(localPositions)
+    const localAllPositions = getAvailableJobPositions(orgId, true)
+    const localActivePositions = localAllPositions.filter((p) => p.status !== 'inactive')
+    const localByCode = new Map(localAllPositions.map((p) => [p.code, p]))
+    setAvailableJobPositions(localActivePositions)
 
     try {
       const apiPositions = await fetchJobPositions(orgId)
       if (Array.isArray(apiPositions) && apiPositions.length > 0) {
         const mergedMap = new Map<string, JobPosition>()
-        for (const p of localPositions) {
+        for (const p of localActivePositions) {
           mergedMap.set(p.code, p)
         }
         for (const ap of apiPositions) {
           const code = ap.code || ap.id || ''
           if (code) {
+            const localMatch = localByCode.get(code)
             const existing = mergedMap.get(code)
+            const statusStr = String(
+              localMatch?.status || (ap as any).status || existing?.status || 'active',
+            ).toLowerCase()
+            if (statusStr === 'inactive') {
+              mergedMap.delete(code)
+              continue
+            }
             mergedMap.set(code, {
               code,
-              name: ap.name || existing?.name || code,
-              description: existing?.description || '',
-              jobZone: ap.jobZone || existing?.jobZone || 4,
-              profiles: existing?.profiles || ['DEV'],
-              assignedExpertIds: existing?.assignedExpertIds || [],
+              name: ap.name || localMatch?.name || existing?.name || code,
+              description: (ap as any).description || localMatch?.description || existing?.description || '',
+              jobZone: ap.jobZone || localMatch?.jobZone || existing?.jobZone || 4,
+              profiles: localMatch?.profiles || existing?.profiles || ['DEV'],
+              assignedExpertIds: localMatch?.assignedExpertIds || existing?.assignedExpertIds || [],
+              status: 'active',
             })
           }
         }
-        setAvailableJobPositions(Array.from(mergedMap.values()))
+        setAvailableJobPositions(
+          Array.from(mergedMap.values()).filter((p) => p.status !== 'inactive'),
+        )
       }
     } catch {
       // localStorage fallback is already active
@@ -196,12 +353,20 @@ export function TargetRolesPage() {
 
   React.useEffect(() => {
     refreshAvailableJobPositions()
-    const handleJobPositionsUpdated = () => {
-      refreshAvailableJobPositions()
+    let timeoutId: any = null
+    const handleJobPositionsUpdated = (e?: StorageEvent | Event) => {
+      if (e instanceof StorageEvent) {
+        if (e.key && e.key !== 'adaptlearn_job_positions_v1') return
+      }
+      clearTimeout(timeoutId)
+      timeoutId = setTimeout(() => {
+        refreshAvailableJobPositions()
+      }, 500)
     }
     window.addEventListener('storage', handleJobPositionsUpdated)
     window.addEventListener('adaptlearn_job_positions_updated', handleJobPositionsUpdated)
     return () => {
+      clearTimeout(timeoutId)
       window.removeEventListener('storage', handleJobPositionsUpdated)
       window.removeEventListener('adaptlearn_job_positions_updated', handleJobPositionsUpdated)
     }
@@ -227,6 +392,10 @@ export function TargetRolesPage() {
             name: m.fullName || m.email,
             title: m.jobPositionName || m.departmentName || 'Domain Expert',
             email: m.email,
+            departmentId: m.departmentId || undefined,
+            departmentName: m.departmentName || undefined,
+            jobPositionReferenceId: m.jobPositionReferenceId || undefined,
+            jobPositionName: m.jobPositionName || undefined,
           }))
           if (typeof localStorage !== 'undefined') {
             localStorage.setItem(
@@ -235,7 +404,21 @@ export function TargetRolesPage() {
             )
           }
           if (isMounted) {
-            setOrgExperts(mapped)
+            setOrgExperts((prev) => {
+              if (
+                prev.length === mapped.length &&
+                prev.every(
+                  (e, idx) =>
+                    e.id === mapped[idx].id &&
+                    e.name === mapped[idx].name &&
+                    e.departmentId === mapped[idx].departmentId &&
+                    e.jobPositionReferenceId === mapped[idx].jobPositionReferenceId,
+                )
+              ) {
+                return prev
+              }
+              return mapped
+            })
           }
         } else {
           const fallback = getOrganizationExperts(orgId)
@@ -252,17 +435,272 @@ export function TargetRolesPage() {
     }
   }, [orgId])
 
+  const isAdministrator = Boolean(
+    session?.identity?.roles?.includes('ORGANIZATION_ADMINISTRATOR') ||
+    session?.identity?.roles?.includes('PLATFORM_ADMINISTRATOR')
+  )
+  const isLdManager = !isAdministrator && Boolean(
+    session?.identity?.roles?.includes('LD_MANAGER') ||
+    (typeof window !== 'undefined' && (window.location.pathname.includes('/manager/') || window.location.pathname.includes('/ld-manager/')))
+  )
+
+  const [managerDepartment, setManagerDepartment] = React.useState<{
+    id: string
+    code?: string
+    name: string
+    jobPositionCodes: string[]
+  } | null>(() => {
+    try {
+      const localDepts = loadDepartments(orgId)
+      const activeEmail = session?.identity?.email
+      if (activeEmail) {
+        const assignmentRaw =
+          typeof window !== 'undefined'
+            ? localStorage.getItem(`alg_employee_assignment_${activeEmail.toLowerCase().trim()}`)
+            : null
+        if (assignmentRaw) {
+          const assignment = JSON.parse(assignmentRaw)
+          const matched = localDepts.find(
+            (d) =>
+              (assignment.departmentId &&
+                (d.id === assignment.departmentId || d.code === assignment.departmentId)) ||
+              (assignment.departmentName &&
+                d.name?.trim().toLowerCase() === assignment.departmentName.trim().toLowerCase())
+          )
+          if (matched) {
+            return {
+              id: matched.id,
+              code: matched.code,
+              name: matched.name,
+              jobPositionCodes: matched.linkedJobPositions || [],
+            }
+          }
+        }
+        const matchedHead = localDepts.find(
+          (d) => d.headEmail?.toLowerCase() === activeEmail.toLowerCase()
+        )
+        if (matchedHead) {
+          return {
+            id: matchedHead.id,
+            code: matchedHead.code,
+            name: matchedHead.name,
+            jobPositionCodes: matchedHead.linkedJobPositions || [],
+          }
+        }
+      }
+    } catch {}
+    return null
+  })
+
+  React.useEffect(() => {
+    let isMounted = true
+    const loadManagerDept = async () => {
+      try {
+        const [members, depts, refs] = await Promise.all([
+          getMembers(orgId).catch(() => []),
+          fetchDepartments(orgId).catch(() => []),
+          getReferences(orgId).catch(() => []),
+        ])
+        const currentMember = (members || []).find(
+          (m) =>
+            (session?.identity?.accountId && m.accountId === session?.identity?.accountId) ||
+            (session?.identity?.email && m.email?.toLowerCase() === session?.identity?.email?.toLowerCase())
+        )
+        const localDepts = loadDepartments(orgId)
+
+        // Merge departments from Neo4j, Postgres references, and localStorage
+        const deptMap = new Map<string, any>()
+        for (const ld of localDepts) {
+          const key = (ld.name || ld.code || ld.id).toLowerCase().trim()
+          deptMap.set(key, { ...ld, jobPositionCodes: ld.linkedJobPositions || [] })
+        }
+        for (const ref of refs || []) {
+          if (ref.departmentId || ref.departmentName) {
+            const key = (ref.departmentName || ref.departmentId).toLowerCase().trim()
+            if (!deptMap.has(key)) {
+              deptMap.set(key, {
+                id: ref.departmentId,
+                code: ref.departmentName,
+                name: ref.departmentName,
+                jobPositionCodes: [],
+                linkedJobPositions: [],
+              })
+            }
+          }
+        }
+        for (const d of depts || []) {
+          const key = (d.name || d.code || d.id).toLowerCase().trim()
+          const existing = deptMap.get(key)
+          const serverCodes = d.jobPositionCodes || (d as any).linkedJobPositions || []
+          deptMap.set(key, {
+            ...existing,
+            ...d,
+            jobPositionCodes: serverCodes,
+            linkedJobPositions: serverCodes,
+          })
+        }
+        const effectiveDepts = Array.from(deptMap.values())
+
+        let matched: any = null
+
+        let localAssignmentObj: any = null
+        if (session?.identity?.email) {
+          try {
+            const raw = localStorage.getItem(`alg_employee_assignment_${session.identity.email.toLowerCase().trim()}`)
+            if (raw) localAssignmentObj = JSON.parse(raw)
+          } catch {}
+        }
+
+        const targetDeptId = localAssignmentObj?.departmentId || currentMember?.departmentId
+        const targetDeptName = localAssignmentObj?.departmentName || currentMember?.departmentName
+
+        if (targetDeptId || targetDeptName) {
+          matched = effectiveDepts.find((d) => {
+            if (targetDeptId) {
+              if (d.id === targetDeptId || d.code === targetDeptId) return true
+              if ((d as any).uuid === targetDeptId || (d as any).uuidCode === targetDeptId) return true
+            }
+            if (targetDeptName && d.name) {
+              if (d.name.trim().toLowerCase() === targetDeptName.trim().toLowerCase()) return true
+            }
+            return false
+          })
+
+          if (!matched && targetDeptName) {
+            matched = {
+              id: targetDeptId || `dept-${targetDeptName.toLowerCase().replace(/\s+/g, '-')}`,
+              code: targetDeptName || 'DPT',
+              name: targetDeptName,
+              jobPositionCodes: [],
+              linkedJobPositions: [],
+            }
+            if (!localAssignmentObj) {
+              createDepartmentApi(orgId, {
+                id: matched.id,
+                code: matched.code,
+                name: matched.name,
+                headEmail: session?.identity?.email || '',
+                headOfDepartment: session?.identity?.fullName || session?.identity?.email || '',
+                status: 'ACTIVE',
+              }).catch(() => {})
+            }
+          }
+        }
+
+        // Secondary fallback: Match headEmail ONLY if user has no assigned department anywhere
+        if (!matched && session?.identity?.email) {
+          matched = effectiveDepts.find(
+            (d) => (d as any).headEmail?.toLowerCase() === session?.identity?.email?.toLowerCase()
+          )
+        }
+
+        if (matched && isMounted) {
+          const serverCodes = (matched as any).jobPositionCodes ?? (matched as any).linkedJobPositions
+          let effectiveCodes: string[] = []
+          if (Array.isArray(serverCodes) && (matched as any).createdAt !== undefined) {
+            effectiveCodes = serverCodes
+          } else {
+            const localDeptMatch = localDepts.find(
+              (ld) =>
+                ld.id === matched.id ||
+                ld.code === matched.code ||
+                ld.name?.toLowerCase() === matched.name?.toLowerCase()
+            )
+            effectiveCodes = (serverCodes && serverCodes.length > 0) ? serverCodes : (localDeptMatch?.linkedJobPositions || [])
+          }
+          setManagerDepartment((prev) => {
+            if (
+              prev &&
+              prev.id === matched.id &&
+              prev.name === matched.name &&
+              prev.jobPositionCodes.length === effectiveCodes.length &&
+              prev.jobPositionCodes.every((c, i) => c === effectiveCodes[i])
+            ) {
+              return prev
+            }
+            return {
+              id: matched.id,
+              code: matched.code,
+              name: matched.name,
+              jobPositionCodes: effectiveCodes,
+            }
+          })
+        } else if (!matched && isMounted) {
+          setManagerDepartment(null)
+        }
+      } catch {
+        // Leave current or null
+      }
+    }
+    loadManagerDept()
+    window.addEventListener('departments_updated', loadManagerDept)
+    window.addEventListener('adaptlearn_job_positions_updated', loadManagerDept)
+    return () => {
+      isMounted = false
+      window.removeEventListener('departments_updated', loadManagerDept)
+      window.removeEventListener('adaptlearn_job_positions_updated', loadManagerDept)
+    }
+  }, [orgId, session?.identity?.accountId, session?.identity?.email])
+
   const jobPositionOptions: ComboboxOption[] = React.useMemo(() => {
-    return availableJobPositions.map((occ) => ({
+    const inactiveCodes = new Set<string>()
+    if (typeof localStorage !== 'undefined') {
+      try {
+        for (let i = 0; i < localStorage.length; i++) {
+          const k = localStorage.key(i)
+          if (k && /adaptlearn_job.*positions/i.test(k)) {
+            const raw = localStorage.getItem(k)
+            if (raw) {
+              const list = JSON.parse(raw)
+              if (Array.isArray(list)) {
+                for (const item of list) {
+                  if (item?.code && String(item?.status || '').toLowerCase() === 'inactive') {
+                    inactiveCodes.add(String(item.code).toLowerCase().trim())
+                    inactiveCodes.add(String(item.code).replace(/\.00$/, '').toLowerCase().trim())
+                  }
+                }
+              }
+            }
+          }
+        }
+      } catch {}
+    }
+
+    const activePositions = availableJobPositions.filter((occ) => {
+      if (occ.status === 'inactive') return false
+      const c = (occ.code || '').toLowerCase().trim()
+      const base = c.replace(/\.00$/, '')
+      return !inactiveCodes.has(c) && !inactiveCodes.has(base)
+    })
+    const allowedCodes = new Set(
+      (managerDepartment?.jobPositionCodes || []).map((c) => c.toLowerCase().trim())
+    )
+    const filteredPositions =
+      isLdManager && managerDepartment
+        ? activePositions.filter((occ) => {
+            const code = (occ.code || '').toLowerCase().trim()
+            const baseCode = code.replace(/\.00$/, '')
+            return (
+              allowedCodes.has(code) ||
+              Array.from(allowedCodes).some((c) => c.replace(/\.00$/, '') === baseCode)
+            )
+          })
+        : activePositions
+
+    return filteredPositions.map((occ) => ({
       value: occ.code,
-      label: `${occ.code} — ${occ.name}`,
+      label: `${occ.code} — ${occ.name.replace(/\s*\((?:Department|dept)\)\s*/gi, '').trim()}`,
       description: occ.description,
     }))
-  }, [availableJobPositions])
+  }, [availableJobPositions, isLdManager, managerDepartment])
 
+  const isFetchingRef = React.useRef(false)
   const fetchRoles = React.useCallback(async () => {
+    if (isFetchingRef.current) return
+    isFetchingRef.current = true
     try {
       const res = await fetch(`/api/v1/organizations/${orgId}/target-roles`, {
+        credentials: 'same-origin',
         headers: {
           'X-User-Role': 'LD_MANAGER',
         },
@@ -270,72 +708,140 @@ export function TargetRolesPage() {
 
       if (res.ok) {
         const data = await res.json()
+        const currentActiveComp = getActiveCompany()
+        const metaMap = getTargetRoleMetaMap(orgId)
+
         const mapped: TargetRoleModel[] = (
           data as Record<string, unknown>[]
         ).map((r) => {
-          const occ = resolveJobPositionForRole({
-            code: String(r.code || ''),
-            title: String(r.name || ''),
-            familyCode: String(r.familyCode || ''),
-            jobPositionCode:
-              typeof r.jobPositionCode === 'string'
-                ? r.jobPositionCode
-                : undefined,
-          }, orgId)
+          const rCode = String(r.code || '').toUpperCase()
+          const rId = String(r.id || '')
+          const meta = metaMap[rCode] || metaMap[rId]
+
+          const storeRole = (currentActiveComp?.targetRoles || []).find(
+            (tr) =>
+              tr.id === rId ||
+              (tr.code?.toUpperCase() === rCode && tr.version === String(r.version || '1.0')),
+          )
+
+          const explicitJobPositionCode =
+            meta?.jobPositionCode ||
+            storeRole?.jobPositionCode ||
+            (typeof r.jobPositionCode === 'string' && r.jobPositionCode
+              ? r.jobPositionCode
+              : (typeof r.familyCode === 'string' && r.familyCode.match(/^\d{2}-\d{4}/)
+                  ? r.familyCode
+                  : undefined))
+
+          const occ = resolveJobPositionForRole(
+            {
+              code: String(r.code || ''),
+              title: String(r.name || ''),
+              familyCode: String(r.familyCode || ''),
+              jobPositionCode: explicitJobPositionCode,
+            },
+            orgId,
+          )
+
+          const localDepts = loadDepartments(orgId)
+          const matchedDept = localDepts.find((d) =>
+            (d.linkedJobPositions || []).some(
+              (p) => p.replace(/\.00$/, '').toLowerCase().trim() === occ.code.replace(/\.00$/, '').toLowerCase().trim()
+            )
+          )
+
+          const effectiveDept =
+            meta?.department ||
+            storeRole?.department ||
+            (typeof r.department === 'string' && r.department
+              ? r.department
+              : matchedDept?.name || occ.name)
+
+          const effectiveDeptId =
+            meta?.departmentId ||
+            storeRole?.departmentId ||
+            (typeof r.departmentId === 'string' && r.departmentId
+              ? r.departmentId
+              : matchedDept?.id)
+
+          const effectiveJobPositionCode = explicitJobPositionCode || meta?.jobPositionCode || occ.code
+          const effectiveJobPositionTitle = meta?.jobPositionTitle || storeRole?.jobPositionTitle || occ.name
+
+          const expertId = r.assignedExpertId
+            ? String(r.assignedExpertId)
+            : meta?.assignedExpertId || storeRole?.assignedExpertId
+
+          const expertName =
+            meta?.assignedExpertName ||
+            storeRole?.assignedExpertName ||
+            findEligibleExpert(
+              expertId as string | null | undefined,
+              orgId,
+            )?.name ||
+            ELIGIBLE_EXPERTS.find((e) => e.id === expertId)?.name ||
+            undefined
 
           return {
-            id: String(r.id || ''),
+            id: rId,
             stableId: String(r.code || ''),
             code: String(r.code || ''),
             title: String(r.name || ''),
-            jobPositionCode: occ.code,
-            jobPositionTitle: occ.name,
+            jobPositionCode: effectiveJobPositionCode,
+            jobPositionTitle: effectiveJobPositionTitle,
             scope: String(r.scope || r.description || occ.description),
             levels:
               Array.isArray(r.levels) && (r.levels as string[]).length > 0
                 ? (r.levels as string[])
-                : (activeComp?.targetRoles || []).find(
+                : (currentActiveComp?.targetRoles || []).find(
                     (tr) =>
-                      tr.id === String(r.id || '') ||
-                      (tr.code === String(r.code || '') &&
+                      tr.id === rId ||
+                      (tr.code?.toUpperCase() === rCode &&
                         tr.version === String(r.version || '1.0')),
-                  )?.levels || ['Junior', 'Middle', 'Senior'],
+                  )?.levels || ['Senior', 'Middle', 'Junior'],
             levelThresholds: (r.levelThresholds as RoleLevelThresholds) || {
               J: 60,
               M: 75,
               S: 90,
             },
+            levelDurations:
+              (r.levelDurations && Object.keys(r.levelDurations as Record<string, string>).length > 0
+                ? (r.levelDurations as Record<string, string>)
+                : meta?.levelDurations || storeRole?.levelDurations) || {},
             familyCode: String(r.familyCode || occ.profiles[0] || 'DEV'),
             track: (r.track as TargetRoleModel['track']) || 'PROFESSIONAL',
-            assignedExpertId: r.assignedExpertId
-              ? String(r.assignedExpertId)
-              : undefined,
-            assignedExpertName:
-              findEligibleExpert(
-                r.assignedExpertId as string | null | undefined,
-                orgId,
-              )?.name ||
-              ELIGIBLE_EXPERTS.find((e) => e.id === r.assignedExpertId)?.name ||
-              undefined,
-            department: occ.name,
+            assignedExpertId: expertId,
+            assignedExpertName: expertName,
+            department: effectiveDept,
+            departmentId: effectiveDeptId,
             description: String(r.description || ''),
             responsibilities: Array.isArray(r.responsibilities)
               ? (r.responsibilities as string[])
               : [],
             version: String(r.version || '1.0'),
-            status: (String(r.status || '').toLowerCase() === 'active'
-              ? 'published'
-              : String(
-                  r.status || 'draft',
-                ).toLowerCase()) as TargetRoleModel['status'],
+            // The backend status is the single source of truth so every portal (L&D Manager,
+            // Domain Expert, Employee) sees the same lifecycle state for each version.
+            status: (
+              String(r.status || '').toLowerCase() === 'active' ||
+                    String(r.status || '').toLowerCase() === 'published'
+                ? 'published'
+                : String(r.status || '').toLowerCase() === 'unpublished'
+                ? 'unpublished'
+                : String(r.status || '').toLowerCase() === 'submitted'
+                ? 'submitted'
+                : String(r.status || '').toLowerCase() === 'sent'
+                ? 'sent'
+                : String(r.status || '').toLowerCase() === 'rejected'
+                ? 'rejected'
+                : 'draft'
+            ) as TargetRoleModel['status'],
             rejectionReason: String(r.rejectionReason || ''),
             levelCompetencies:
               r.levelCompetencies && Object.keys(r.levelCompetencies).length > 0
                 ? (r.levelCompetencies as Record<string, string[]>)
-                : (activeComp?.targetRoles || []).find(
+                : (currentActiveComp?.targetRoles || []).find(
                     (tr) =>
-                      tr.id === String(r.id || '') ||
-                      (tr.code === String(r.code || '') &&
+                      tr.id === rId ||
+                      (tr.code?.toUpperCase() === rCode &&
                         tr.version === String(r.version || '1.0')),
                   )?.levelCompetencies || {},
             competencyIds: Array.from(
@@ -343,10 +849,10 @@ export function TargetRolesPage() {
                 ...(Array.isArray(r.competencyIds)
                   ? (r.competencyIds as string[])
                   : []),
-                ...((activeComp?.targetRoles || []).find(
+                ...((currentActiveComp?.targetRoles || []).find(
                   (tr) =>
-                    tr.id === String(r.id || '') ||
-                    (tr.code === String(r.code || '') &&
+                    tr.id === rId ||
+                    (tr.code?.toUpperCase() === rCode &&
                       tr.version === String(r.version || '1.0')),
                 )?.competencyIds || []),
                 ...Object.values(
@@ -372,15 +878,40 @@ export function TargetRolesPage() {
         })
 
         setRoles((prevRoles) => {
-          return mapped.map((m) => {
+          const backendKeys = new Set(
+            mapped.map((m) => `${m.code.toUpperCase()}::${String(m.version || '1.0').trim()}`)
+          )
+          const backendIds = new Set(mapped.map((m) => m.id))
+          const localOnlyDrafts = (currentActiveComp?.targetRoles || []).filter(
+            (s) =>
+              !backendIds.has(s.id) &&
+              !backendKeys.has(`${s.code.toUpperCase()}::${String(s.version || '1.0').trim()}`) &&
+              (s.status === 'draft' || s.status === 'sent' || s.status === 'submitted' || s.status === 'rejected'),
+          )
+          const rawCombined = [...localOnlyDrafts, ...mapped]
+          const dedupedMap = new Map<string, TargetRoleModel>()
+          for (const item of rawCombined) {
+            const key = `${String(item.code || '').trim().toUpperCase()}::${String(item.version || '1.0').trim()}`
+            const existing = dedupedMap.get(key)
+            if (!existing || (String(existing.id || '').startsWith('role-') && !String(item.id || '').startsWith('role-'))) {
+              dedupedMap.set(key, item)
+            }
+          }
+          const allRoles = Array.from(dedupedMap.values())
+
+          const resolvedRoles = allRoles.map((m) => {
+            const rCode = String(m.code || '').toUpperCase()
+            const rId = String(m.id || '')
+            const meta = metaMap[rCode] || metaMap[rId]
+
             const prev = prevRoles.find(
               (p) =>
-                p.id === m.id || (p.code === m.code && p.version === m.version),
+                p.id === rId || (p.code.toUpperCase() === rCode && p.version === m.version),
             )
-            const storeRole = (activeComp?.targetRoles || []).find(
+            const storeRole = (currentActiveComp?.targetRoles || []).find(
               (tr) =>
-                tr.id === m.id ||
-                (tr.code === m.code && tr.version === m.version),
+                tr.id === rId ||
+                (tr.code?.toUpperCase() === rCode && tr.version === m.version),
             )
             const prevLevelComps =
               m.levelCompetencies && Object.keys(m.levelCompetencies).length > 0
@@ -399,19 +930,62 @@ export function TargetRolesPage() {
               ]),
             )
 
+            const effectiveDept =
+              m.department ||
+              meta?.department ||
+              prev?.department ||
+              storeRole?.department ||
+              ''
+
+            const effectiveDeptId =
+              m.departmentId ||
+              meta?.departmentId ||
+              prev?.departmentId ||
+              storeRole?.departmentId ||
+              ''
+
+            const effectiveJobPositionCode =
+              m.jobPositionCode || meta?.jobPositionCode || prev?.jobPositionCode || storeRole?.jobPositionCode
+
+            const effectiveJobPositionTitle =
+              m.jobPositionTitle || meta?.jobPositionTitle || prev?.jobPositionTitle || storeRole?.jobPositionTitle
+
+            const effectiveExpertId =
+              m.assignedExpertId || meta?.assignedExpertId || prev?.assignedExpertId || storeRole?.assignedExpertId
+
+            const effectiveExpertName =
+              m.assignedExpertName || meta?.assignedExpertName || prev?.assignedExpertName || storeRole?.assignedExpertName
+
+            const effectiveLevelDurations =
+              m.levelDurations && Object.keys(m.levelDurations).length > 0
+                ? m.levelDurations
+                : meta?.levelDurations && Object.keys(meta.levelDurations).length > 0
+                  ? meta.levelDurations
+                  : prev?.levelDurations && Object.keys(prev.levelDurations).length > 0
+                    ? prev.levelDurations
+                    : storeRole?.levelDurations || {}
+
             return {
               ...m,
+              jobPositionCode: effectiveJobPositionCode || m.jobPositionCode,
+              jobPositionTitle: effectiveJobPositionTitle || m.jobPositionTitle,
+              department: effectiveDept || m.department,
+              departmentId: effectiveDeptId || m.departmentId,
+              assignedExpertId: effectiveExpertId || m.assignedExpertId,
+              assignedExpertName: effectiveExpertName || m.assignedExpertName,
+              levelDurations: effectiveLevelDurations,
               levelCompetencies: prevLevelComps,
               competencyIds: prevCompetencyIds,
             }
           })
+
+          return resolvedRoles
         })
-      } else {
-        setRoles([])
       }
-    } catch {
-      setRoles([])
+    } catch (err) {
+      console.warn('Failed to fetch target roles:', err)
     } finally {
+      isFetchingRef.current = false
       setIsLoading(false)
     }
   }, [orgId])
@@ -423,17 +997,26 @@ export function TargetRolesPage() {
   // Synchronize state when active company scope changes
 
   React.useEffect(() => {
-    const handleSync = () => {
-      fetchRoles()
+    let timeoutId: any = null
+    const handleSync = (e?: StorageEvent | Event) => {
+      // Guard against infinite cross-tab storage event cascade
+      if (e instanceof StorageEvent) {
+        if (!e.key || (!e.key.startsWith('adaptlearn_target_role') && e.key !== 'adaptlearn_companies_v1')) {
+          return
+        }
+      }
+      clearTimeout(timeoutId)
+      timeoutId = setTimeout(() => {
+        fetchRoles()
+      }, 500)
     }
 
     window.addEventListener('active_company_changed', handleSync)
-    window.addEventListener('companies_updated', handleSync)
     window.addEventListener('storage', handleSync)
 
     return () => {
+      clearTimeout(timeoutId)
       window.removeEventListener('active_company_changed', handleSync)
-      window.removeEventListener('companies_updated', handleSync)
       window.removeEventListener('storage', handleSync)
     }
   }, [fetchRoles])
@@ -530,6 +1113,8 @@ export function TargetRolesPage() {
   const [graphRole, setGraphRole] = React.useState<TargetRoleModel | null>(null)
   const [deletingRole, setDeletingRole] =
     React.useState<TargetRoleModel | null>(null)
+  const [roleToUnpublish, setRoleToUnpublish] =
+    React.useState<TargetRoleModel | null>(null)
   const [selectedDetailLevelTab, setSelectedDetailLevelTab] =
     React.useState<string>('ALL')
   const [compSearchQuery, setCompSearchQuery] = React.useState('')
@@ -570,7 +1155,8 @@ export function TargetRolesPage() {
             item.status === 'draft' ||
             item.status === 'submitted' ||
             item.status === 'sent' ||
-            item.status === 'rejected'
+            item.status === 'rejected' ||
+            item.status === 'unpublished'
               ? item.status
               : 'published',
           competencyIds: Array.isArray(item.competencyIds)
@@ -600,7 +1186,12 @@ export function TargetRolesPage() {
       'Design, code, and test applications, systems software, and infrastructure pipelines.',
     familyCode: 'DEV',
     track: 'PROFESSIONAL' as 'PROFESSIONAL' | 'MANAGEMENT',
-    levelNames: ['Junior', 'Middle', 'Senior'],
+    levelNames: ['Senior', 'Middle', 'Junior'],
+    levelDurations: {
+      Senior: '6 months',
+      Middle: '4 months',
+      Junior: '3 months',
+    } as Record<string, string>,
     assignedExpertId: ELIGIBLE_EXPERTS[0].id as string,
     description: '',
   })
@@ -613,7 +1204,8 @@ export function TargetRolesPage() {
     scope: '',
     familyCode: 'DEV',
     track: 'PROFESSIONAL' as 'PROFESSIONAL' | 'MANAGEMENT',
-    levelNames: ['Junior', 'Middle', 'Senior'],
+    levelNames: ['Senior', 'Middle', 'Junior'],
+    levelDurations: {} as Record<string, string>,
     assignedExpertId: '',
     description: '',
   })
@@ -621,25 +1213,42 @@ export function TargetRolesPage() {
   // Dynamic expert options filtered to experts certified for the selected jobPosition
 
   const createExpertOptions: ComboboxOption[] = React.useMemo(() => {
-    const list = getEligibleExpertsForJobPosition(roleForm.jobPositionCode, orgId)
-    return list.map((exp) => ({
-      value: exp.id,
-      label: exp.name,
-      description: exp.title,
-    }))
-  }, [roleForm.jobPositionCode, orgId])
-
-  const editExpertOptions: ComboboxOption[] = React.useMemo(() => {
     const list = getEligibleExpertsForJobPosition(
-      editRoleForm.jobPositionCode,
+      roleForm.jobPositionCode,
       orgId,
+      managerDepartment,
+      orgExperts,
     )
     return list.map((exp) => ({
       value: exp.id,
       label: exp.name,
       description: exp.title,
     }))
-  }, [editRoleForm.jobPositionCode, orgId])
+  }, [roleForm.jobPositionCode, orgId, managerDepartment, orgExperts])
+
+  const editRoleDeptScope = React.useMemo(() => {
+    if (selectedRole?.departmentId || selectedRole?.department) {
+      return {
+        id: selectedRole.departmentId,
+        name: selectedRole.department,
+      }
+    }
+    return managerDepartment
+  }, [selectedRole?.department, selectedRole?.departmentId, managerDepartment])
+
+  const editExpertOptions: ComboboxOption[] = React.useMemo(() => {
+    const list = getEligibleExpertsForJobPosition(
+      editRoleForm.jobPositionCode,
+      orgId,
+      editRoleDeptScope,
+      orgExperts,
+    )
+    return list.map((exp) => ({
+      value: exp.id,
+      label: exp.name,
+      description: exp.title,
+    }))
+  }, [editRoleForm.jobPositionCode, orgId, editRoleDeptScope, orgExperts])
 
   // Sort criteria: defaults to 'latest' so newly created or updated roles go to the top
 
@@ -656,22 +1265,43 @@ export function TargetRolesPage() {
     setCurrentPage(1)
   }, [searchQuery, statusFilter, sortBy])
 
-  // Base list of roles visible to L&D Manager: hide unsubmitted expert successor drafts until submitted
-
+  // Base list of roles visible to L&D Manager:
+  // 1. Hide unsubmitted expert successor drafts until submitted
+  // 2. Hide target roles not in the L&D Manager's assigned department
   const managerVisibleRoles = React.useMemo(() => {
+    const allowedJobPositionCodes = new Set(
+      (managerDepartment?.jobPositionCodes || []).map((c) => c.toLowerCase().trim())
+    )
+    const deptName = managerDepartment?.name?.toLowerCase().trim()
+    const deptId = managerDepartment?.id?.toLowerCase().trim()
+
     return roles.filter((r) => {
-      const isUnsubmittedSuccessorDraft =
-        r.status === 'draft' &&
-        roles.some(
-          (p) =>
-            (p.code === r.code || (p.stableId && p.stableId === r.stableId)) &&
-            p.status === 'published' &&
-            p.id !== r.id,
+      // If user is L&D Manager with an assigned department, scope roles to that department; otherwise show all organization roles
+      if (isLdManager && managerDepartment) {
+        const roleDept = (r.department || '').toLowerCase().trim()
+        const roleDeptId = (r.departmentId || '').toLowerCase().trim()
+        const matchesDept = Boolean(
+          (deptName && (roleDept === deptName || roleDept.includes(deptName) || deptName.includes(roleDept))) ||
+          (deptId && (roleDeptId === deptId || roleDept === deptId || roleDeptId.includes(deptId)))
         )
 
-      return !isUnsubmittedSuccessorDraft
+        const occCode = (r.jobPositionCode || '').toLowerCase().trim()
+        const baseOccCode = occCode.replace(/\.00$/, '')
+        const matchesJobPosition =
+          allowedJobPositionCodes.size > 0 &&
+          (allowedJobPositionCodes.has(occCode) ||
+            Array.from(allowedJobPositionCodes).some((c) => c.replace(/\.00$/, '') === baseOccCode))
+
+        if (allowedJobPositionCodes.size > 0 || deptName || deptId) {
+          if (!matchesJobPosition && !matchesDept) {
+            return false
+          }
+        }
+      }
+
+      return true
     })
-  }, [roles])
+  }, [roles, isLdManager, managerDepartment])
 
   // Filtered and sorted roles: Drafts always immediately below their previous published version
 
@@ -705,18 +1335,18 @@ export function TargetRolesPage() {
 
   const visibleRoles = React.useMemo(() => {
     return filteredRoles.filter((role) => {
-      const isPublished = role.status === 'published'
+      const isPublishedOrUnpublished = role.status === 'published' || role.status === 'unpublished'
       const publishedInLineage = managerVisibleRoles
         .filter(
           (r) =>
             (r.stableId === role.stableId || r.code === role.code) &&
-            r.status === 'published',
+            (r.status === 'published' || r.status === 'unpublished'),
         )
         .sort((a, b) => compareRoleVersions(b.version, a.version))
 
       const newestPublished = publishedInLineage[0]
       const isOlderPublished =
-        isPublished && newestPublished && role.id !== newestPublished.id
+        isPublishedOrUnpublished && newestPublished && role.id !== newestPublished.id
       const lineageKey = role.stableId || role.code
       const isLineageExpanded = Boolean(expandedLineages[lineageKey])
 
@@ -759,10 +1389,35 @@ export function TargetRolesPage() {
     refreshAvailableJobPositions()
     const latestPositions = getAvailableJobPositions(orgId)
     setAvailableJobPositions(latestPositions)
-    const defaultOcc = latestPositions[0] || availableJobPositions[0] || JOB_POSITIONS[0]
+    const allowedCodes = new Set(
+      (managerDepartment?.jobPositionCodes || []).map((c) => c.toLowerCase().trim())
+    )
+    const departmentPositions =
+      isLdManager && managerDepartment
+        ? latestPositions.filter((occ) => {
+            const code = (occ.code || '').toLowerCase().trim()
+            const baseCode = code.replace(/\.00$/, '')
+            return (
+              allowedCodes.has(code) ||
+              Array.from(allowedCodes).some((c) => c.replace(/\.00$/, '') === baseCode)
+            )
+          })
+        : latestPositions
+    const defaultOcc =
+      (departmentPositions.length > 0 ? departmentPositions[0] : null) ||
+      latestPositions[0] ||
+      availableJobPositions[0] || {
+        code: '15-1252.00',
+        name: 'Software Developers',
+        description:
+          'Research, design, and develop computer and network software or specialized utility programs.',
+        profiles: ['DEV'],
+      }
     const eligibleExperts = getEligibleExpertsForJobPosition(
       defaultOcc.code,
       orgId,
+      managerDepartment,
+      orgExperts,
     )
     setRoleForm({
       code: `ROLE-${Math.random().toString(36).substring(2, 6).toUpperCase()}`,
@@ -771,7 +1426,12 @@ export function TargetRolesPage() {
       scope: defaultOcc.description,
       familyCode: defaultOcc.profiles?.[0] || 'DEV',
       track: 'PROFESSIONAL',
-      levelNames: ['Junior', 'Middle', 'Senior'],
+      levelNames: ['Senior', 'Middle', 'Junior'],
+      levelDurations: {
+        Senior: '6 months',
+        Middle: '4 months',
+        Junior: '3 months',
+      },
       assignedExpertId: eligibleExperts[0]?.id || orgExperts[0]?.id || '',
       description: defaultOcc.description,
     })
@@ -814,8 +1474,13 @@ export function TargetRolesPage() {
     let generatedId = `role-${Date.now()}`
     const selectedOcc =
       availableJobPositions.find((o) => o.code === roleForm.jobPositionCode) ||
-      JOB_POSITIONS.find((o) => o.code === roleForm.jobPositionCode) ||
-      JOB_POSITIONS[0]
+      availableJobPositions[0] || {
+        code: roleForm.jobPositionCode || '15-1252.00',
+        name: 'Software Developers',
+        description:
+          'Research, design, and develop computer and network software or specialized utility programs.',
+        profiles: ['DEV'],
+      }
     const roleCode = roleForm.code.trim().toUpperCase()
     const backendStatus = targetStatus === 'sent' ? 'SENT' : 'DRAFT'
     const assignedExpert =
@@ -824,76 +1489,23 @@ export function TargetRolesPage() {
       ELIGIBLE_EXPERTS.find((e) => e.id === roleForm.assignedExpertId)
     const expertName = assignedExpert?.name || 'Assigned Expert'
 
-    try {
-      const res = await fetch(`/api/v1/organizations/${orgId}/target-roles`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-User-Role': 'LD_MANAGER',
-        },
-        body: JSON.stringify({
-          code: roleCode,
-          name: roleForm.title.trim(),
-          familyCode: roleForm.familyCode,
-          track: roleForm.track,
-          responsibilities: [],
-          assignedExpertId: roleForm.assignedExpertId,
-          description:
-            roleForm.scope || roleForm.description || selectedOcc.description,
-          competencyIds: [],
-          levels: roleForm.levelNames,
-          status: backendStatus,
-        }),
-      })
-
-      if (res.status === 409) {
-        toast({
-          title: 'Duplicate Role Code',
-          description: `Role Code ${roleForm.code} already exists for this organization.`,
-          variant: 'destructive',
-        })
-
-        return
-      }
-
-      if (res.ok) {
-        await fetchRoles()
-
-        setIsCreateRoleModalOpen(false)
-
-        toast({
-          title:
-            targetStatus === 'sent'
-              ? 'Target Role Created & Sent to Expert'
-              : 'Target Role Draft Created',
-          description:
-            targetStatus === 'sent'
-              ? `Role ${roleForm.title.trim()} (${roleCode}) created and dispatched to ${expertName}.`
-              : `Draft role ${roleCode} - ${roleForm.title.trim()} created and saved to database.`,
-          variant: 'success',
-        })
-
-        return
-      }
-    } catch {
-      // Backend unavailable fallback
-    }
-
     const newRole: TargetRoleModel = {
       id: generatedId,
-      stableId: `role-uuid-${Date.now()}`,
+      stableId: roleCode,
       code: roleCode,
       title: roleForm.title.trim(),
       jobPositionCode: selectedOcc.code,
       jobPositionTitle: selectedOcc.name,
       scope: roleForm.scope || selectedOcc.description,
       levels: roleForm.levelNames,
+      levelDurations: roleForm.levelDurations,
       familyCode: roleForm.familyCode || selectedOcc.profiles[0] || 'DEV',
       track: roleForm.track || 'PROFESSIONAL',
       responsibilities: [],
       assignedExpertId: roleForm.assignedExpertId,
       assignedExpertName: expertName,
-      department: selectedOcc.name,
+      department: managerDepartment?.name || selectedOcc.name,
+      departmentId: managerDepartment?.id,
       description:
         roleForm.scope || roleForm.description || selectedOcc.description,
       version: '1.0',
@@ -905,8 +1517,67 @@ export function TargetRolesPage() {
       updatedAt: new Date().toISOString(),
     }
 
-    saveAndSetRoles([newRole, ...roles])
+    // Automatically link selected job position to manager's department
+    if (managerDepartment && selectedOcc?.code) {
+      const nextCodes = Array.from(
+        new Set([
+          ...(managerDepartment.jobPositionCodes || []),
+          selectedOcc.code,
+          selectedOcc.code.toLowerCase(),
+          selectedOcc.code.replace(/\.00$/, ''),
+          selectedOcc.code.replace(/\.00$/, '').toLowerCase(),
+        ])
+      )
+      setManagerDepartment((prev) => (prev ? { ...prev, jobPositionCodes: nextCodes } : prev))
 
+      if (managerDepartment.id) {
+        try {
+          const depts = loadDepartments(orgId)
+          const targetDept = depts.find(
+            (d) => d.id === managerDepartment.id || d.code === managerDepartment.id
+          )
+          if (targetDept) {
+            const currentLinked = targetDept.linkedJobPositions || []
+            if (!currentLinked.includes(selectedOcc.code)) {
+              const nextLinked = [...currentLinked, selectedOcc.code]
+              updateDepartment(targetDept.id, { linkedJobPositions: nextLinked }, orgId)
+              linkJobPositionToDepartment(orgId, targetDept.id, selectedOcc.code).catch(() => {})
+              updateDepartmentApi(orgId, targetDept.id, {
+                code: targetDept.code,
+                name: targetDept.name,
+                linkedJobPositions: nextLinked,
+              }).catch(() => {})
+              window.dispatchEvent(new Event('departments_updated'))
+            }
+          }
+        } catch (e) {
+          console.warn('Failed to link job position to department:', e)
+        }
+      }
+    }
+
+    // Persist metadata locally first
+    saveTargetRoleMeta(orgId, {
+      id: generatedId,
+      code: roleCode,
+      jobPositionCode: selectedOcc.code,
+      jobPositionTitle: selectedOcc.name,
+      department: managerDepartment?.name || selectedOcc.name,
+      departmentId: managerDepartment?.id,
+      assignedExpertId: roleForm.assignedExpertId,
+      assignedExpertName: expertName,
+      levelNames: roleForm.levelNames,
+      levelDurations: roleForm.levelDurations,
+    })
+
+    // Persist locally immediately so the role never vanishes upon save draft
+    updateActiveCompany((c) => ({
+      ...c,
+      targetRoles: [newRole, ...(c.targetRoles || []).filter((r) => r.code !== newRole.code)],
+    }))
+    setRoles((prev) => [newRole, ...prev.filter((r) => r.code !== newRole.code)])
+
+    // Immediately close modal and show immediate feedback
     setIsCreateRoleModalOpen(false)
 
     toast({
@@ -916,57 +1587,121 @@ export function TargetRolesPage() {
           : 'Target Role Draft Created',
       description:
         targetStatus === 'sent'
-          ? `Role ${newRole.title} (${newRole.code}) created and dispatched to ${expertName}.`
-          : `Draft role ${newRole.code} - ${newRole.title} initialized.`,
+          ? `Role ${roleForm.title.trim()} (${roleCode}) created and dispatched to ${expertName}.`
+          : `Draft role ${roleCode} - ${roleForm.title.trim()} created and saved to catalog.`,
       variant: 'success',
     })
+
+    // Reset create role form
+    setRoleForm({
+      code: `ROLE-${Math.random().toString(36).substring(2, 6).toUpperCase()}`,
+      title: '',
+      jobPositionCode: selectedOcc.code,
+      scope: selectedOcc.description,
+      familyCode: selectedOcc.profiles?.[0] || 'DEV',
+      track: 'PROFESSIONAL',
+      levelNames: ['Senior', 'Middle', 'Junior'],
+      levelDurations: {
+        Senior: '6 months',
+        Middle: '4 months',
+        Junior: '3 months',
+      },
+      assignedExpertId: '',
+      description: selectedOcc.description,
+    })
+
+    try {
+      const createdData = (await request(
+        `/api/v1/organizations/${orgId}/target-roles`,
+        'POST',
+        {
+          code: roleCode,
+          name: newRole.title,
+          familyCode: selectedOcc.code,
+          track: roleForm.track,
+          responsibilities: [],
+          assignedExpertId: roleForm.assignedExpertId,
+          description:
+            roleForm.scope || roleForm.description || selectedOcc.description,
+          competencyIds: [],
+          levels: roleForm.levelNames,
+          levelDurations: roleForm.levelDurations,
+          status: backendStatus,
+        },
+        {
+          'X-User-Role': 'LD_MANAGER',
+        },
+      )) as Record<string, unknown> | null
+
+      if (createdData && createdData.id) {
+        newRole.id = String(createdData.id)
+        saveTargetRoleMeta(orgId, {
+          id: String(createdData.id),
+          code: roleCode,
+          jobPositionCode: selectedOcc.code,
+          jobPositionTitle: selectedOcc.name,
+          department: managerDepartment?.name || selectedOcc.name,
+          departmentId: managerDepartment?.id,
+          assignedExpertId: roleForm.assignedExpertId,
+          assignedExpertName: expertName,
+          levelNames: roleForm.levelNames,
+          levelDurations: roleForm.levelDurations,
+        })
+        saveAndSetRoles((prev) =>
+          prev.map((r) => (r.code === roleCode ? newRole : r)),
+        )
+      }
+      await fetchRoles()
+    } catch (err: any) {
+      if (err?.status === 409 || err?.message?.includes('409') || err?.code === 'CONFLICT') {
+        // Rollback local optimistic add
+        updateActiveCompany((c) => ({
+          ...c,
+          targetRoles: (c.targetRoles || []).filter((r) => r.code !== newRole.code),
+        }))
+        setRoles((prev) => prev.filter((r) => r.code !== newRole.code))
+
+        toast({
+          title: 'Duplicate Role Code',
+          description: `Role Code ${roleCode} already exists for this organization.`,
+          variant: 'destructive',
+        })
+        return
+      }
+    }
   }
 
   // Delete Target Role (Draft or Published)
-
   const handleDeleteRole = async (role: TargetRoleModel) => {
     const orgId = resolveWorkspaceOrgId(
       session?.identity?.organizationId || activeComp?.id,
     )
 
-    try {
-      const res = await fetch(
-        `/api/v1/organizations/${orgId}/target-roles/${role.id}`,
-        {
-          method: 'DELETE',
-          headers: {
-            'X-User-Role': 'LD_MANAGER',
-          },
-        },
-      )
-      if (!res.ok && res.status === 403) {
-        toast({
-          title: 'Action Not Permitted',
-          description:
-            'L&D Managers can only delete target roles in draft status.',
-          variant: 'destructive',
-        })
-        setDeletingRole(null)
-        return
-      }
-      await fetchRoles()
-    } catch {
-      // Local fallback
-    }
-
-    saveAndSetRoles((prev) => prev.filter((r) => r.id !== role.id))
-
+    // 1. Instantly close confirmation and edit/view modals
     setDeletingRole(null)
-
-    if (selectedRole?.id === role.id) {
+    if (
+      selectedRole?.id === role.id ||
+      (selectedRole?.code && role.code && selectedRole.code.trim().toUpperCase() === role.code.trim().toUpperCase())
+    ) {
       setIsSkillTargetsModalOpen(false)
-
       setSelectedRole(null)
     }
-
-    if (viewingDetailsRole?.id === role.id) {
+    if (
+      viewingDetailsRole?.id === role.id ||
+      (viewingDetailsRole?.code && role.code && viewingDetailsRole.code.trim().toUpperCase() === role.code.trim().toUpperCase())
+    ) {
       setViewingDetailsRole(null)
     }
+
+    // 2. Instantly remove from local roles state and persisted company store
+    const isTargetMatch = (r: TargetRoleModel) =>
+      r.id === role.id ||
+      (Boolean(r.code && role.code) &&
+        r.code.trim().toUpperCase() === role.code.trim().toUpperCase() &&
+        String(r.version || '1.0').trim() === String(role.version || '1.0').trim())
+
+    deleteTargetRoleMeta(orgId, role.id, role.code)
+    saveAndSetRoles((prev) => prev.filter((r) => !isTargetMatch(r)))
 
     toast({
       title:
@@ -976,6 +1711,29 @@ export function TargetRolesPage() {
       description: `${role.title} (${role.code} v${role.version}) has been permanently deleted from the organization catalog.`,
       variant: 'info',
     })
+
+    // 3. Perform backend delete in background
+    try {
+      await request(
+        `/api/v1/organizations/${orgId}/target-roles/${role.id}`,
+        'DELETE',
+        undefined,
+        {
+          'X-User-Role': 'LD_MANAGER',
+        },
+      )
+      await fetchRoles()
+    } catch (err: any) {
+      if (err?.status === 403 || err?.code === 'FORBIDDEN') {
+        toast({
+          title: 'Action Not Permitted',
+          description:
+            'L&D Managers can only delete target roles in draft status.',
+          variant: 'destructive',
+        })
+        await fetchRoles()
+      }
+    }
   }
 
   // Open edit role modal (L&D Manager scope: edit attributes & assigned expert)
@@ -985,8 +1743,23 @@ export function TargetRolesPage() {
     const latestPositions = getAvailableJobPositions(orgId)
     setAvailableJobPositions(latestPositions)
     const occ = resolveJobPositionForRole(role, orgId)
-    const occCode = role.jobPositionCode || occ.code
-    const eligibleExperts = getEligibleExpertsForJobPosition(occCode, orgId)
+    const rawOccCode = role.jobPositionCode || occ.code
+    const activeDepartmentCodes = new Set(jobPositionOptions.map((o) => o.value))
+    const activeAllCodes = new Set(latestPositions.map((o) => o.code))
+    const occCode =
+      activeDepartmentCodes.has(rawOccCode) || activeAllCodes.has(rawOccCode)
+        ? rawOccCode
+        : jobPositionOptions[0]?.value || latestPositions[0]?.code || ''
+    const roleDeptScope =
+      role.departmentId || role.department
+        ? { id: role.departmentId, name: role.department }
+        : managerDepartment
+    const eligibleExperts = getEligibleExpertsForJobPosition(
+      occCode,
+      orgId,
+      roleDeptScope,
+      orgExperts,
+    )
     const isCurrentEligible = eligibleExperts.some(
       (e) =>
         normalizeExpertId(e.id) === normalizeExpertId(role.assignedExpertId),
@@ -1006,7 +1779,15 @@ export function TargetRolesPage() {
       levelNames:
         role.levels && role.levels.length > 0
           ? [...role.levels]
-          : ['Junior', 'Middle', 'Senior'],
+          : ['Senior', 'Middle', 'Junior'],
+      levelDurations:
+        role.levelDurations && Object.keys(role.levelDurations).length > 0
+          ? { ...role.levelDurations }
+          : {
+              Senior: '6 months',
+              Middle: '4 months',
+              Junior: '3 months',
+            },
       assignedExpertId: effectiveExpertId,
       description: role.description || role.scope || occ.description,
     })
@@ -1039,54 +1820,27 @@ export function TargetRolesPage() {
     const expertName = assignedExpert?.name || 'Assigned Expert'
     const selectedOcc =
       availableJobPositions.find((o) => o.code === editRoleForm.jobPositionCode) ||
-      JOB_POSITIONS.find((o) => o.code === editRoleForm.jobPositionCode) ||
-      JOB_POSITIONS[0]
+      availableJobPositions[0] || {
+        code: editRoleForm.jobPositionCode || '15-1252.00',
+        name: 'Software Developers',
+        description:
+          'Research, design, and develop computer and network software or specialized utility programs.',
+        profiles: ['DEV'],
+      }
     const newStatus =
       targetStatus === 'sent'
         ? 'SENT'
         : selectedRole.status === 'published'
           ? 'ACTIVE'
-          : selectedRole.status === 'sent'
+          : selectedRole.status === 'unpublished'
+            ? 'UNPUBLISHED'
+            : selectedRole.status === 'sent'
             ? 'SENT'
             : selectedRole.status === 'submitted'
               ? 'SUBMITTED'
               : selectedRole.status === 'rejected'
                 ? 'REJECTED'
                 : 'DRAFT'
-
-    try {
-      const res = await fetch(
-        `/api/v1/organizations/${orgId}/target-roles/${selectedRole.id}`,
-        {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-User-Role': 'LD_MANAGER',
-          },
-          body: JSON.stringify({
-            name: editRoleForm.title.trim(),
-            familyCode: editRoleForm.familyCode,
-            track: editRoleForm.track,
-            responsibilities: [],
-            assignedExpertId: editRoleForm.assignedExpertId,
-            description:
-              editRoleForm.scope ||
-              editRoleForm.description ||
-              selectedOcc.description,
-            status: newStatus,
-            version: selectedRole.version,
-            skillTargets: selectedRole.skillTargets,
-            levels: editRoleForm.levelNames,
-          }),
-        },
-      )
-
-      if (res.ok) {
-        await fetchRoles()
-      }
-    } catch {
-      // Local fallback
-    }
 
     const updatedRole: TargetRoleModel = {
       ...selectedRole,
@@ -1098,6 +1852,7 @@ export function TargetRolesPage() {
         editRoleForm.description ||
         selectedOcc.description,
       levels: editRoleForm.levelNames,
+      levelDurations: editRoleForm.levelDurations,
       familyCode:
         editRoleForm.familyCode ||
         selectedRole.familyCode ||
@@ -1107,7 +1862,7 @@ export function TargetRolesPage() {
       responsibilities: [],
       assignedExpertId: editRoleForm.assignedExpertId,
       assignedExpertName: expertName,
-      department: selectedOcc.name,
+      department: managerDepartment?.name || selectedOcc.name,
       description:
         editRoleForm.scope ||
         editRoleForm.description ||
@@ -1116,14 +1871,23 @@ export function TargetRolesPage() {
       updatedAt: new Date().toISOString(),
     }
 
+    // 1. Immediately update local state and persistence
     saveAndSetRoles((prev) =>
-      prev.map((r) => (r.id === selectedRole.id ? updatedRole : r)),
+      prev.map((r) =>
+        r.id === selectedRole.id ||
+        (Boolean(r.code && selectedRole.code) &&
+          r.code.trim().toUpperCase() === selectedRole.code.trim().toUpperCase() &&
+          r.version === selectedRole.version)
+          ? updatedRole
+          : r
+      ),
     )
 
-    setSelectedRole(updatedRole)
-
+    // 2. Immediately close the Edit Role modal
     setIsSkillTargetsModalOpen(false)
+    setSelectedRole(null)
 
+    // 3. Immediately show feedback toast
     toast({
       title:
         targetStatus === 'sent'
@@ -1135,23 +1899,70 @@ export function TargetRolesPage() {
           : `Saved changes to ${updatedRole.code} - ${updatedRole.title}.`,
       variant: 'success',
     })
+
+    // 4. Background server sync
+    try {
+      await request(
+        `/api/v1/organizations/${orgId}/target-roles/${selectedRole.id}`,
+        'PUT',
+        {
+          name: editRoleForm.title.trim(),
+          familyCode: selectedOcc.code || editRoleForm.familyCode,
+          track: editRoleForm.track,
+          responsibilities: [],
+          assignedExpertId: editRoleForm.assignedExpertId,
+          description:
+            editRoleForm.scope ||
+            editRoleForm.description ||
+            selectedOcc.description,
+          status: newStatus,
+          version: selectedRole.version,
+          skillTargets: roleRequirements(selectedRole.skillTargets),
+          levels: editRoleForm.levelNames,
+          levelDurations: editRoleForm.levelDurations,
+        },
+        {
+          'X-User-Role': 'LD_MANAGER',
+        },
+      )
+      await fetchRoles()
+    } catch {
+      // Local fallback
+    }
   }
 
   // L&D Manager: Approve and Publish submitted configuration (REQ-052)
 
   const handleApproveAndPublishRole = async (role: TargetRoleModel) => {
+    if (publicationLock.current) return false
+    const validation = getPublishValidation(role)
+    const missingLevelsMessage = (levels: string[]) => publicationCopy(
+      `Add skills and select their required knowledge levels for: ${levels.join(', ')}.`,
+      `Bổ sung kỹ năng và chọn mức kiến thức yêu cầu cho các Level: ${levels.join(', ')}.`,
+    )
+    if (!validation.canPublish) {
+      toast({
+        title: publicationCopy('Publication blocked', 'Chưa thể xuất bản'),
+        description: validation.missingLevels.length ? missingLevelsMessage(validation.missingLevels) : publicationCopy(
+          'Complete the Role name, code, member levels, competency links and required knowledge levels before publishing.',
+          'Hoàn thiện tên, mã Role, các Level, liên kết competency và mức kiến thức yêu cầu trước khi xuất bản.',
+        ),
+        variant: 'destructive',
+      })
+      return false
+    }
     const orgId = resolveWorkspaceOrgId(
       session?.identity?.organizationId || activeComp?.id,
     )
-    const updatedRole: TargetRoleModel = {
-      ...role,
-      status: 'published',
-      updatedAt: new Date().toISOString(),
-    }
-
+    let failureMessage = publicationCopy(
+      'Publication was not confirmed. Refresh the Role to check its status before trying again.',
+      'Chưa xác nhận được kết quả xuất bản. Tải lại Role để kiểm tra trạng thái trước khi thử lại.',
+    )
+    publicationLock.current = true
+    setPublishingRoleId(role.id)
     try {
       const res = await fetch(
-        `/api/v1/organizations/${orgId}/target-roles/${role.id}`,
+        `/api/v1/organizations/${orgId}/target-roles/${encodeURIComponent(role.id)}`,
         {
           method: 'PUT',
           headers: {
@@ -1160,41 +1971,135 @@ export function TargetRolesPage() {
           },
           body: JSON.stringify({
             name: role.title,
-            familyCode: role.familyCode,
+            familyCode: role.jobPositionCode || role.familyCode,
             track: role.track,
             responsibilities: role.responsibilities,
             assignedExpertId: role.assignedExpertId,
             description: role.description,
             status: 'ACTIVE',
             version: role.version,
-            skillTargets: role.skillTargets,
+            skillTargets: roleRequirements(role.skillTargets),
             competencyIds: role.competencyIds,
+            levelCompetencies: role.levelCompetencies,
             levels: role.levels,
+            levelDurations: role.levelDurations,
           }),
         },
       )
 
-      if (res.ok) {
-        await fetchRoles()
-      } else {
-        saveAndSetRoles((prev) =>
-          prev.map((r) => (r.id === role.id ? updatedRole : r)),
-        )
+      if (!res.ok) {
+        const failure = await res.json().catch(() => null)
+        if (failure?.code === 'INCOMPLETE_LEVEL_REQUIREMENTS' && Array.isArray(failure.levels)) {
+          failureMessage = missingLevelsMessage(failure.levels.filter((level: unknown): level is string => typeof level === 'string'))
+        }
+        throw new Error('Publication rejected')
       }
-    } catch {
+      const saved = await res.json()
+      if (saved?.id !== role.id || !['ACTIVE', 'PUBLISHED'].includes(saved?.status)) throw new Error('Publication not confirmed')
+      const updatedRole: TargetRoleModel = {
+        ...role,
+        status: 'published',
+        updatedAt: typeof saved.updatedAt === 'string' ? saved.updatedAt : role.updatedAt,
+      }
       saveAndSetRoles((prev) =>
-        prev.map((r) => (r.id === role.id ? updatedRole : r)),
+        prev.map((r) =>
+          r.id === role.id ||
+          (r.code && role.code && r.code.toUpperCase() === role.code.toUpperCase() && r.version === role.version)
+            ? updatedRole
+            : r
+        ),
       )
+      setViewingDetailsRole(prev => prev?.id === role.id ? updatedRole : prev)
+      setSelectedRole(prev => prev?.id === role.id ? updatedRole : prev)
+      await fetchRoles()
+      toast({
+        title: publicationCopy('Target Role published', 'Đã xuất bản Role'),
+        description: publicationCopy(
+          `${role.title} (${role.code} v${role.version}) has been approved and published.`,
+          `${role.title} (${role.code} v${role.version}) đã được duyệt và xuất bản.`,
+        ),
+        variant: 'success',
+      })
+      return true
+    } catch {
+      toast({ title: publicationCopy('Publication not confirmed', 'Chưa xác nhận xuất bản'), description: failureMessage, variant: 'destructive' })
+      return false
+    } finally {
+      publicationLock.current = false
+      setPublishingRoleId(null)
+    }
+  }
+
+  // L&D Manager: Unpublish target role
+  const handleUnpublishRole = async (role: TargetRoleModel) => {
+    const effectiveOrgId = resolveWorkspaceOrgId(
+      session?.identity?.organizationId || activeComp?.id,
+    )
+    const updatedRole: TargetRoleModel = {
+      ...role,
+      status: 'unpublished',
+      updatedAt: new Date().toISOString(),
+    }
+
+    saveAndSetRoles((prev) =>
+      prev.map((r) =>
+        r.id === role.id ||
+        (r.code && role.code && r.code.toUpperCase() === role.code.toUpperCase() && r.version === role.version)
+          ? updatedRole
+          : r
+      ),
+    )
+
+    try {
+      const payload = {
+        name: role.title,
+        familyCode: role.jobPositionCode || role.familyCode,
+        track: role.track,
+        responsibilities: role.responsibilities,
+        assignedExpertId: role.assignedExpertId,
+        description: role.description,
+        status: 'UNPUBLISHED',
+        version: role.version,
+        skillTargets: role.skillTargets,
+        competencyIds: role.competencyIds,
+        levelCompetencies: role.levelCompetencies,
+        levels: role.levels,
+        levelDurations: role.levelDurations,
+      }
+      try {
+        await request(
+          `/api/v1/organizations/${effectiveOrgId}/target-roles/${encodeURIComponent(role.id)}`,
+          'PUT',
+          payload,
+          {
+            'X-User-Role': 'LD_MANAGER',
+          },
+        )
+      } catch {
+        if (role.code && role.code !== role.id) {
+          await request(
+            `/api/v1/organizations/${effectiveOrgId}/target-roles/${encodeURIComponent(role.code)}`,
+            'PUT',
+            payload,
+            {
+              'X-User-Role': 'LD_MANAGER',
+            },
+          ).catch(() => {})
+        }
+      }
+      await fetchRoles()
+    } catch {
+      // Already saved via saveAndSetRoles
     }
 
     if (viewingDetailsRole?.id === role.id) {
-      setViewingDetailsRole(updatedRole)
+      setViewingDetailsRole(null)
     }
 
     toast({
-      title: 'Target Role Published',
-      description: `${role.title} (${role.code} v${role.version}) has been approved and published to the organization catalog.`,
-      variant: 'success',
+      title: 'Target Role Unpublished',
+      description: `${role.title} (${role.code} v${role.version}) has been unpublished. Employees will no longer see this role in their catalog.`,
+      variant: 'info',
     })
   }
 
@@ -1235,59 +2140,54 @@ export function TargetRolesPage() {
       updatedAt: new Date().toISOString(),
     }
 
-    try {
-      const res = await fetch(
-        `/api/v1/organizations/${orgId}/target-roles/${managerRejectingRole.id}`,
-        {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-User-Role': 'LD_MANAGER',
-          },
-          body: JSON.stringify({
-            name: managerRejectingRole.title,
-            familyCode: managerRejectingRole.familyCode,
-            track: managerRejectingRole.track,
-            responsibilities: managerRejectingRole.responsibilities,
-            assignedExpertId: managerRejectingRole.assignedExpertId,
-            description: managerRejectingRole.description,
-            status: 'REJECTED',
-            version: managerRejectingRole.version,
-            skillTargets: managerRejectingRole.skillTargets,
-            competencyIds: managerRejectingRole.competencyIds,
-            rejectionReason: fullRejectionReason,
-          }),
-        },
-      )
+    // Immediately close modal and reset state
+    setIsManagerRejectDialogOpen(false)
+    setManagerRejectingRole(null)
+    setManagerRejectionReason('')
 
-      if (res.ok) {
-        await fetchRoles()
-      } else {
-        saveAndSetRoles((prev) =>
-          prev.map((r) => (r.id === managerRejectingRole.id ? updatedRole : r)),
-        )
-      }
-    } catch {
-      saveAndSetRoles((prev) =>
-        prev.map((r) => (r.id === managerRejectingRole.id ? updatedRole : r)),
-      )
-    }
+    // Immediately update optimistic state
+    saveAndSetRoles((prev) =>
+      prev.map((r) => (r.id === managerRejectingRole.id ? updatedRole : r)),
+    )
 
     if (viewingDetailsRole?.id === managerRejectingRole.id) {
-      setViewingDetailsRole(updatedRole)
+      setViewingDetailsRole(null)
     }
-
-    setIsManagerRejectDialogOpen(false)
-
-    setManagerRejectingRole(null)
-
-    setManagerRejectionReason('')
 
     toast({
       title: 'Target Role Returned for Revision',
       description: `${updatedRole.title} (${updatedRole.code}) returned to draft status with revision guidance for the expert.`,
       variant: 'info',
     })
+
+    try {
+      await request(
+        `/api/v1/organizations/${orgId}/target-roles/${managerRejectingRole.id}`,
+        'PUT',
+        {
+          name: managerRejectingRole.title,
+          familyCode: managerRejectingRole.familyCode,
+          track: managerRejectingRole.track,
+          responsibilities: managerRejectingRole.responsibilities,
+          assignedExpertId: managerRejectingRole.assignedExpertId,
+          description: managerRejectingRole.description,
+          status: 'REJECTED',
+          version: managerRejectingRole.version,
+          skillTargets: roleRequirements(managerRejectingRole.skillTargets),
+          competencyIds: managerRejectingRole.competencyIds,
+          levelCompetencies: managerRejectingRole.levelCompetencies,
+          levels: managerRejectingRole.levels,
+          levelDurations: managerRejectingRole.levelDurations,
+          rejectionReason: fullRejectionReason,
+        },
+        {
+          'X-User-Role': 'LD_MANAGER',
+        },
+      )
+      await fetchRoles()
+    } catch {
+      // Local optimistic state is already saved
+    }
   }
 
   // Toggle Competency Mapping
@@ -1346,14 +2246,15 @@ export function TargetRolesPage() {
     const hasCompetencies = role.competencyIds.length > 0
     const hasSkillTargets = role.skillTargets.length > 0
     const validThresholds = role.skillTargets.every(
-      (st) => st.threshold > 0 && st.threshold <= 100,
+      (st) => validRequiredKnowledge(st.requiredKnowledgeLevels),
     )
+    const missingLevels = missingRoleLevelRequirements(role.levels, role.skillTargets)
     const canPublish =
       hasTitle &&
       hasCode &&
       hasCompetencies &&
       hasSkillTargets &&
-      validThresholds
+      validThresholds && Boolean(role.levels?.length) && missingLevels.length === 0
 
     return {
       canPublish,
@@ -1362,62 +2263,14 @@ export function TargetRolesPage() {
       hasCompetencies,
       hasSkillTargets,
       validThresholds,
+      missingLevels,
     }
   }
 
   // Execute Publication
 
   const handleExecutePublish = async (role: TargetRoleModel) => {
-    const validation = getPublishValidation(role)
-
-    if (!validation.canPublish) {
-      toast({
-        title: 'Publication Blocked',
-        description:
-          'Complete all required competency links and micro-skill targets before publication.',
-        variant: 'destructive',
-      })
-
-      return
-    }
-
-    try {
-      await fetch(`/api/v1/organizations/${orgId}/target-roles/${role.id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-User-Role': 'LD_MANAGER',
-        },
-        body: JSON.stringify({
-          name: role.title,
-          familyCode: role.familyCode,
-          track: role.track,
-          assignedExpertId: role.assignedExpertId,
-          description: role.description,
-          status: 'ACTIVE',
-          version: role.version,
-          skillTargets: role.skillTargets,
-        }),
-      })
-
-      await fetchRoles()
-    } catch {
-      saveAndSetRoles((prev) =>
-        prev.map((r) =>
-          r.id === role.id
-            ? { ...r, status: 'published', updatedAt: new Date().toISOString() }
-            : r,
-        ),
-      )
-    }
-
-    setIsPublishModalOpen(false)
-
-    toast({
-      title: 'Target Role Published',
-      description: `${role.code} (${role.version}) is now published and active for enterprise diagnostic matching.`,
-      variant: 'success',
-    })
+    if (await handleApproveAndPublishRole(role)) setIsPublishModalOpen(false)
   }
 
   return (
@@ -1469,7 +2322,7 @@ export function TargetRolesPage() {
 
             title="Total Role Profiles"
 
-            value={totalRoles.toString()}
+            value={isLoading ? '—' : totalRoles.toString()}
 
             valueClassName="text-primary"
 
@@ -1483,7 +2336,7 @@ export function TargetRolesPage() {
 
             title="Published Versions"
 
-            value={publishedRoles.toString()}
+            value={isLoading ? '—' : publishedRoles.toString()}
 
             valueClassName="text-success"
 
@@ -1497,7 +2350,7 @@ export function TargetRolesPage() {
 
             title="In-Flight Profiles"
 
-            value={(
+            value={isLoading ? '—' : (
               draftRoles +
               sentRoles +
               submittedRoles +
@@ -1523,8 +2376,9 @@ export function TargetRolesPage() {
                 </CardTitle>
 
                 <CardDescription>
-                  Draft and published role definitions with mapped competencies
-                  and micro-skill mastery targets.
+                  {isLdManager && managerDepartment
+                    ? `Draft and published role definitions for ${managerDepartment.name}.`
+                    : t('roleKnowledge.catalogHelp')}
                 </CardDescription>
               </div>
 
@@ -1562,7 +2416,8 @@ export function TargetRolesPage() {
                           | 'sent'
                           | 'submitted'
                           | 'feedback'
-                          | 'rejected',
+                          | 'rejected'
+                          | 'unpublished',
                       )
                     }
 
@@ -1571,6 +2426,9 @@ export function TargetRolesPage() {
                     <option value="all">All ({totalRoles})</option>
                     <option value="published">
                       Published ({publishedRoles})
+                    </option>
+                    <option value="unpublished">
+                      Unpublished ({managerVisibleRoles.filter((r) => getManagerEffectiveStatus(r) === 'unpublished').length})
                     </option>
                     <option value="sent">Sent ({sentRoles})</option>
                     <option value="submitted">
@@ -1665,18 +2523,20 @@ export function TargetRolesPage() {
                           const isFeedback = effStatus === 'feedback'
                           const isRejected = effStatus === 'rejected'
                           const isPublished = effStatus === 'published'
+                          const isUnpublished = effStatus === 'unpublished'
+                          const isPublishedOrUnpublished = isPublished || isUnpublished
                           const cleanRejectionReason = (
                             role.rejectionReason || ''
                           ).replace(/^\[(EXPERT|LD_MANAGER)\]:\s*/, '')
 
-                          // Lineage identification for published versions
+                          // Lineage identification for published / unpublished versions
 
                           const publishedInLineage = roles
                             .filter(
                               (r) =>
                                 (r.stableId === role.stableId ||
                                   r.code === role.code) &&
-                                r.status === 'published',
+                                (r.status === 'published' || r.status === 'unpublished'),
                             )
                             .sort((a, b) =>
                               compareRoleVersions(b.version, a.version),
@@ -1684,11 +2544,11 @@ export function TargetRolesPage() {
 
                           const newestPublished = publishedInLineage[0]
                           const isNewestPublished =
-                            isPublished &&
+                            isPublishedOrUnpublished &&
                             newestPublished &&
                             role.id === newestPublished.id
                           const isOlderPublished =
-                            isPublished && !isNewestPublished
+                            isPublishedOrUnpublished && !isNewestPublished
                           const hasOlderPublished =
                             isNewestPublished && publishedInLineage.length > 1
                           const lineageKey = role.stableId || role.code
@@ -1696,24 +2556,24 @@ export function TargetRolesPage() {
                             expandedLineages[lineageKey],
                           )
 
-                          // Collapse older published versions if lineage dropdown is not expanded
+                          // Collapse older versions if lineage dropdown is not expanded
 
                           if (isOlderPublished && !isLineageExpanded) {
                             return null
                           }
 
-                          // Identify if role is a successor placed below a published version
+                          // Identify if role is a successor placed below a published/unpublished version
 
                           const predecessorPublished = roles.find(
                             (r) =>
                               (r.stableId === role.stableId ||
                                 r.code === role.code) &&
-                              r.status === 'published' &&
+                              (r.status === 'published' || r.status === 'unpublished') &&
                               r.id !== role.id,
                           )
 
                           const isSuccessor =
-                            !isPublished && Boolean(predecessorPublished)
+                            !isPublishedOrUnpublished && Boolean(predecessorPublished)
                           const expert =
                             orgExperts.find(
                               (e) => e.id === role.assignedExpertId,
@@ -1864,7 +2724,7 @@ export function TargetRolesPage() {
                                   {
                                     (role.levels && role.levels.length > 0
                                       ? role.levels
-                                      : ['Junior', 'Middle', 'Senior']
+                                      : ['Senior', 'Middle', 'Junior']
                                     ).length
                                   }
                                 </span>
@@ -1907,6 +2767,12 @@ export function TargetRolesPage() {
                               <td className="py-3 px-3">
                                 {isPublished && (
                                   <Badge variant="success">PUBLISHED</Badge>
+                                )}
+
+                                {isUnpublished && (
+                                  <Badge variant="outline" className="border-muted-foreground/40 text-muted-foreground font-bold">
+                                    UNPUBLISHED
+                                  </Badge>
                                 )}
 
                                 {isSubmitted && (
@@ -1988,9 +2854,43 @@ export function TargetRolesPage() {
                                     <NetworkIcon className="h-4 w-4 text-primary" />
                                   </Button>
 
-                                  {/* Edit Role (Draft/Feedback/Rejected) - Lock editing when Sent or Submitted or Published */}
+                                  {/* Unpublish Role (for Published roles) */}
+                                  {isPublished && (
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      className="h-8 w-8 p-0 text-muted-foreground hover:bg-muted"
+                                      onClick={(e) => {
+                                        e.stopPropagation()
+                                        setRoleToUnpublish(role)
+                                      }}
+                                      title="Unpublish Target Role"
+                                      aria-label="Unpublish Target Role"
+                                    >
+                                      <EyeOff className="h-4 w-4" />
+                                    </Button>
+                                  )}
 
-                                  {!isPublished && !isSent && !isSubmitted && (
+                                  {/* Re-publish Role (for Unpublished roles) */}
+                                  {isUnpublished && (
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      className="h-8 w-8 p-0 text-success hover:bg-success/10 border-success/30"
+                                      onClick={(e) => {
+                                        e.stopPropagation()
+                                        handleApproveAndPublishRole(role)
+                                      }}
+                                      title="Re-publish Target Role"
+                                      aria-label="Re-publish Target Role"
+                                    >
+                                      <CheckCircle2 className="h-4 w-4" />
+                                    </Button>
+                                  )}
+
+                                  {/* Edit Role (Draft/Feedback/Rejected) - Lock editing when Sent or Submitted or Published/Unpublished */}
+
+                                  {!isPublished && !isUnpublished && !isSent && !isSubmitted && (
                                     <Button
                                       variant="outline"
 
@@ -2154,6 +3054,25 @@ export function TargetRolesPage() {
           {/* Card 2: Industry Job Position Alignment */}
 
           <div className="p-3.5 rounded-lg border border-primary/20 bg-primary/5 space-y-3">
+            {managerDepartment && (
+              <div className="flex items-center justify-between p-2.5 rounded-md bg-background border border-border">
+                <div className="flex items-center gap-2">
+                  <Building2 className="h-4 w-4 text-primary shrink-0" />
+                  <div>
+                    <span className="text-[10px] text-muted-foreground uppercase font-bold block">
+                      Assigned Department
+                    </span>
+                    <span className="text-xs font-semibold text-foreground">
+                      {managerDepartment.name}
+                    </span>
+                  </div>
+                </div>
+                <Badge variant="outline" className="text-[10px] font-bold text-primary border-primary/30">
+                  AUTO-LINKED
+                </Badge>
+              </div>
+            )}
+
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <div>
                 <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider block">
@@ -2193,8 +3112,13 @@ export function TargetRolesPage() {
 
                   const occ =
                     availableJobPositions.find((o) => o.code === val) ||
-                    JOB_POSITIONS.find((o) => o.code === val)
-                  const eligible = getEligibleExpertsForJobPosition(val, orgId)
+                    availableJobPositions.find((o) => o.code === val)
+                  const eligible = getEligibleExpertsForJobPosition(
+                    val,
+                    orgId,
+                    managerDepartment,
+                    orgExperts,
+                  )
                   const isCurrentEligible = eligible.some(
                     (e) =>
                       normalizeExpertId(e.id) ===
@@ -2222,7 +3146,7 @@ export function TargetRolesPage() {
             {(() => {
               const selectedOcc =
                 availableJobPositions.find((o) => o.code === roleForm.jobPositionCode) ||
-                JOB_POSITIONS.find((o) => o.code === roleForm.jobPositionCode)
+                availableJobPositions.find((o) => o.code === roleForm.jobPositionCode)
 
               if (!selectedOcc) return null
 
@@ -2240,7 +3164,7 @@ export function TargetRolesPage() {
             <div className="flex items-center justify-between">
               <div>
                 <span className="text-xs font-bold text-foreground block">
-                  Role Mastery Levels
+                  {t('roleKnowledge.memberLevels')}
                 </span>
 
                 <span className="text-[10px] text-muted-foreground">
@@ -2256,15 +3180,19 @@ export function TargetRolesPage() {
 
                 size="sm"
 
-                onClick={() =>
+                onClick={() => {
+                  const nextRank = roleForm.levelNames.length + 1
+                  const newName = `Rank ${nextRank}`
+                  const defaultDur = nextRank === 1 ? '6 months' : nextRank === 2 ? '4 months' : nextRank === 3 ? '3 months' : '2 months'
                   setRoleForm((prev) => ({
                     ...prev,
-                    levelNames: [
-                      ...prev.levelNames,
-                      `Level ${prev.levelNames.length + 1}`,
-                    ],
+                    levelNames: [...prev.levelNames, newName],
+                    levelDurations: {
+                      ...(prev.levelDurations || {}),
+                      [newName]: defaultDur,
+                    },
                   }))
-                }
+                }}
 
                 className="h-7 text-xs font-semibold"
 
@@ -2294,16 +3222,49 @@ export function TargetRolesPage() {
 
                     onChange={(e) => {
                       const newNames = [...roleForm.levelNames]
-
-                      newNames[idx] = e.target.value
-
-                      setRoleForm({ ...roleForm, levelNames: newNames })
+                      const oldName = newNames[idx]
+                      const newName = e.target.value
+                      newNames[idx] = newName
+                      const newDurations = { ...(roleForm.levelDurations || {}) }
+                      if (oldName && newDurations[oldName]) {
+                        newDurations[newName] = newDurations[oldName]
+                        delete newDurations[oldName]
+                      }
+                      setRoleForm({ ...roleForm, levelNames: newNames, levelDurations: newDurations })
                     }}
 
-                    placeholder={`e.g. ${idx === 0 ? 'Junior' : idx === 1 ? 'Middle' : idx === 2 ? 'Senior' : 'Lead'}`}
+                    placeholder={`e.g. ${idx === 0 ? 'Senior' : idx === 1 ? 'Middle' : idx === 2 ? 'Junior' : 'Foundational'}`}
 
                     className="flex-1 px-2.5 py-1 text-xs rounded border border-border bg-background text-foreground font-medium focus:ring-1 focus:ring-primary focus:outline-none"
                   />
+
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <span className="text-[11px] text-muted-foreground whitespace-nowrap">Est. Duration:</span>
+                    <div className="inline-flex items-center rounded border border-border bg-background focus-within:ring-1 focus-within:ring-primary focus-within:border-primary overflow-hidden">
+                      <input
+                        type="number"
+                        min={1}
+                        step={1}
+                        value={parseDurationNumber(roleForm.levelDurations?.[name], idx === 0 ? 6 : idx === 1 ? 4 : idx === 2 ? 3 : 2)}
+                        onChange={(e) => {
+                          const raw = e.target.value.replace(/\D/g, '')
+                          const num = raw ? Math.max(1, parseInt(raw, 10)) : 1
+                          setRoleForm((prev) => ({
+                            ...prev,
+                            levelDurations: {
+                              ...(prev.levelDurations || {}),
+                              [name]: `${num} months`,
+                            },
+                          }))
+                        }}
+                        className="w-12 px-2 py-1 text-xs bg-transparent text-foreground font-semibold text-center focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                        title="Estimated Level Duration"
+                      />
+                      <span className="px-1.5 py-1 text-xs text-muted-foreground font-medium bg-muted/40 border-l border-border select-none">
+                        months
+                      </span>
+                    </div>
+                  </div>
 
                   {roleForm.levelNames.length > 1 && (
                     <Button
@@ -2314,11 +3275,13 @@ export function TargetRolesPage() {
                       size="sm"
 
                       onClick={() => {
+                        const removedName = roleForm.levelNames[idx]
                         const newNames = roleForm.levelNames.filter(
                           (_, i) => i !== idx,
                         )
-
-                        setRoleForm({ ...roleForm, levelNames: newNames })
+                        const newDurations = { ...(roleForm.levelDurations || {}) }
+                        delete newDurations[removedName]
+                        setRoleForm({ ...roleForm, levelNames: newNames, levelDurations: newDurations })
                       }}
 
                       className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
@@ -2447,7 +3410,10 @@ export function TargetRolesPage() {
       {selectedRole && (
         <Dialog
           open={isMappingsModalOpen}
-          onOpenChange={setIsMappingsModalOpen}
+          onOpenChange={(open) => {
+            setIsMappingsModalOpen(open)
+            if (!open) setSelectedRole(null)
+          }}
         >
           <div className="space-y-4">
             <DialogHeader>
@@ -2583,7 +3549,7 @@ export function TargetRolesPage() {
                               >
                                 Archived (Rejected)
                               </Badge>
-                            ) : selectedRole.status === 'published' ? (
+                            ) : (selectedRole.status === 'published' || selectedRole.status === 'unpublished') ? (
                               <Badge variant={isLinked ? 'success' : 'outline'}>
                                 {isLinked ? 'Linked (Locked)' : 'Unlinked'}
                               </Badge>
@@ -2611,11 +3577,11 @@ export function TargetRolesPage() {
                 )}
               </div>
 
-              {selectedRole.status === 'published' && (
+              {(selectedRole.status === 'published' || selectedRole.status === 'unpublished') && (
                 <div className="p-2.5 rounded bg-warning/10 border border-warning/30 text-[11px] text-warning flex items-center gap-2">
                   <AlertTriangle className="h-4 w-4 shrink-0" />
                   <span>
-                    This role is published. To modify competency links, create a
+                    This role is published or unpublished. To modify competency links, create a
                     successor draft first.
                   </span>
                 </div>
@@ -2626,7 +3592,10 @@ export function TargetRolesPage() {
               <Button
                 variant="primary"
                 size="sm"
-                onClick={() => setIsMappingsModalOpen(false)}
+                onClick={() => {
+                  setIsMappingsModalOpen(false)
+                  setSelectedRole(null)
+                }}
               >
                 Done
               </Button>
@@ -2654,7 +3623,10 @@ export function TargetRolesPage() {
           return (
             <Dialog
               open={isSkillTargetsModalOpen}
-              onOpenChange={setIsSkillTargetsModalOpen}
+              onOpenChange={(open) => {
+                setIsSkillTargetsModalOpen(open)
+                if (!open) setSelectedRole(null)
+              }}
               className="max-w-3xl max-h-[88vh] flex flex-col p-6 overflow-hidden"
             >
               <DialogHeader className="shrink-0 mb-3">
@@ -2706,7 +3678,7 @@ export function TargetRolesPage() {
                   {isSubmittedRole
                     ? 'Review the target role configuration, competencies, and micro-skills submitted by the domain expert.'
                     : isSentRole
-                      ? 'This role has been dispatched to the domain expert for micro-skill authoring and target mastery configuration.'
+                      ? t('roleKnowledge.dispatched')
                       : isFeedbackRole
                         ? 'The domain expert provided feedback requesting revisions on this proposal. Update details and re-dispatch.'
                         : isRejectedRole
@@ -2869,10 +3841,12 @@ export function TargetRolesPage() {
 
                         const occ =
                           availableJobPositions.find((o) => o.code === val) ||
-                          JOB_POSITIONS.find((o) => o.code === val)
+                          availableJobPositions.find((o) => o.code === val)
                         const eligible = getEligibleExpertsForJobPosition(
                           val,
                           orgId,
+                          editRoleDeptScope,
+                          orgExperts,
                         )
                         const isCurrentEligible = eligible.some(
                           (e) =>
@@ -2902,7 +3876,7 @@ export function TargetRolesPage() {
                   {(() => {
                     const selectedOcc =
                       availableJobPositions.find((o) => o.code === editRoleForm.jobPositionCode) ||
-                      JOB_POSITIONS.find((o) => o.code === editRoleForm.jobPositionCode)
+                      availableJobPositions.find((o) => o.code === editRoleForm.jobPositionCode)
 
                     if (!selectedOcc) return null
 
@@ -2920,7 +3894,7 @@ export function TargetRolesPage() {
                   <div className="flex items-center justify-between">
                     <div>
                       <span className="text-xs font-bold text-foreground block">
-                        Role Mastery Levels
+                        {t('roleKnowledge.memberLevels')}
                       </span>
 
                       <span className="text-[10px] text-muted-foreground">
@@ -2937,15 +3911,19 @@ export function TargetRolesPage() {
 
                         size="sm"
 
-                        onClick={() =>
+                        onClick={() => {
+                          const nextRank = editRoleForm.levelNames.length + 1
+                          const newName = `Rank ${nextRank}`
+                          const defaultDur = nextRank === 1 ? '6 months' : nextRank === 2 ? '4 months' : nextRank === 3 ? '3 months' : '2 months'
                           setEditRoleForm((prev) => ({
                             ...prev,
-                            levelNames: [
-                              ...prev.levelNames,
-                              `Level ${prev.levelNames.length + 1}`,
-                            ],
+                            levelNames: [...prev.levelNames, newName],
+                            levelDurations: {
+                              ...(prev.levelDurations || {}),
+                              [newName]: defaultDur,
+                            },
                           }))
-                        }
+                        }}
 
                         className="h-7 text-xs font-semibold"
 
@@ -2978,16 +3956,23 @@ export function TargetRolesPage() {
 
                           onChange={(e) => {
                             const newNames = [...editRoleForm.levelNames]
-
-                            newNames[idx] = e.target.value
+                            const oldName = newNames[idx]
+                            const newName = e.target.value
+                            newNames[idx] = newName
+                            const newDurations = { ...(editRoleForm.levelDurations || {}) }
+                            if (oldName && newDurations[oldName]) {
+                              newDurations[newName] = newDurations[oldName]
+                              delete newDurations[oldName]
+                            }
 
                             setEditRoleForm({
                               ...editRoleForm,
                               levelNames: newNames,
+                              levelDurations: newDurations,
                             })
                           }}
 
-                          placeholder={`e.g. ${idx === 0 ? 'Junior' : idx === 1 ? 'Middle' : idx === 2 ? 'Senior' : 'Lead'}`}
+                          placeholder={`e.g. ${idx === 0 ? 'Senior' : idx === 1 ? 'Middle' : idx === 2 ? 'Junior' : 'Foundational'}`}
 
                           className={`flex-1 px-2.5 py-1 text-xs rounded border border-border bg-background text-foreground font-medium focus:ring-1 focus:ring-primary focus:outline-none ${
                             isSubmittedRole || isPublishedRole
@@ -2995,6 +3980,39 @@ export function TargetRolesPage() {
                               : ''
                           }`}
                         />
+
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          <span className="text-[11px] text-muted-foreground whitespace-nowrap">Est. Duration:</span>
+                          <div className={`inline-flex items-center rounded border border-border bg-background focus-within:ring-1 focus-within:ring-primary focus-within:border-primary overflow-hidden ${
+                            isSubmittedRole || isPublishedRole
+                              ? 'bg-muted/50 cursor-not-allowed opacity-80'
+                              : ''
+                          }`}>
+                            <input
+                              type="number"
+                              min={1}
+                              step={1}
+                              disabled={isSubmittedRole || isPublishedRole}
+                              value={parseDurationNumber(editRoleForm.levelDurations?.[name], idx === 0 ? 6 : idx === 1 ? 4 : idx === 2 ? 3 : 2)}
+                              onChange={(e) => {
+                                const raw = e.target.value.replace(/\D/g, '')
+                                const num = raw ? Math.max(1, parseInt(raw, 10)) : 1
+                                setEditRoleForm((prev) => ({
+                                  ...prev,
+                                  levelDurations: {
+                                    ...(prev.levelDurations || {}),
+                                    [name]: `${num} months`,
+                                  },
+                                }))
+                              }}
+                              className="w-12 px-2 py-1 text-xs bg-transparent text-foreground font-semibold text-center focus:outline-none disabled:cursor-not-allowed [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                              title="Estimated Level Duration"
+                            />
+                            <span className="px-1.5 py-1 text-xs text-muted-foreground font-medium bg-muted/40 border-l border-border select-none">
+                              months
+                            </span>
+                          </div>
+                        </div>
 
                         {!isSubmittedRole &&
                           !isPublishedRole &&
@@ -3007,13 +4025,17 @@ export function TargetRolesPage() {
                               size="sm"
 
                               onClick={() => {
+                                const removedName = editRoleForm.levelNames[idx]
                                 const newNames = editRoleForm.levelNames.filter(
                                   (_, i) => i !== idx,
                                 )
+                                const newDurations = { ...(editRoleForm.levelDurations || {}) }
+                                delete newDurations[removedName]
 
                                 setEditRoleForm({
                                   ...editRoleForm,
                                   levelNames: newNames,
+                                  levelDurations: newDurations,
                                 })
                               }}
 
@@ -3139,7 +4161,7 @@ export function TargetRolesPage() {
                                 Skill Code &amp; Name
                               </th>
                               <th className="py-2 px-3 text-center">
-                                Target Mastery
+                                {t('roleKnowledge.required')}
                               </th>
                             </tr>
                           </thead>
@@ -3161,7 +4183,7 @@ export function TargetRolesPage() {
 
                                 <td className="py-2.5 px-3 text-center">
                                   <span className="font-bold text-primary">
-                                    {st.threshold}%
+                                    {formatRequiredKnowledge(st.requiredKnowledgeLevels, t)}
                                   </span>
                                 </td>
                               </tr>
@@ -3215,10 +4237,11 @@ export function TargetRolesPage() {
                         onClick={async () => {
                           const r = selectedRole
 
-                          setIsSkillTargetsModalOpen(false)
-
-                          handleApproveAndPublishRole(r)
+                          if (await handleApproveAndPublishRole(r)) setIsSkillTargetsModalOpen(false)
                         }}
+
+                        disabled={publishingRoleId !== null}
+                        isLoading={publishingRoleId === selectedRole.id}
 
                         leftIcon={<CheckCircle2 className="h-3.5 w-3.5" />}
                       >
@@ -3235,6 +4258,7 @@ export function TargetRolesPage() {
                       onClick={() => {
                         const r = selectedRole
                         setIsSkillTargetsModalOpen(false)
+                        setSelectedRole(null)
                         setDeletingRole(r)
                       }}
                     >
@@ -3244,7 +4268,10 @@ export function TargetRolesPage() {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => setIsSkillTargetsModalOpen(false)}
+                        onClick={() => {
+                          setIsSkillTargetsModalOpen(false)
+                          setSelectedRole(null)
+                        }}
                       >
                         Cancel
                       </Button>
@@ -3276,7 +4303,10 @@ export function TargetRolesPage() {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => setIsSkillTargetsModalOpen(false)}
+                        onClick={() => {
+                          setIsSkillTargetsModalOpen(false)
+                          setSelectedRole(null)
+                        }}
                       >
                         Cancel
                       </Button>
@@ -3303,7 +4333,10 @@ export function TargetRolesPage() {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => setIsSkillTargetsModalOpen(false)}
+                      onClick={() => {
+                        setIsSkillTargetsModalOpen(false)
+                        setSelectedRole(null)
+                      }}
                     >
                       Close
                     </Button>
@@ -3337,8 +4370,7 @@ export function TargetRolesPage() {
               </div>
 
               <DialogDescription className="text-xs text-muted-foreground">
-                Verify all required competency links and skill mastery targets
-                before releasing to enterprise diagnostics.
+                {t('roleKnowledge.publishHelp')}
               </DialogDescription>
             </DialogHeader>
 
@@ -3403,7 +4435,7 @@ export function TargetRolesPage() {
 
                     <div className="flex items-center justify-between">
                       <span className="text-muted-foreground">
-                        Target Mastery Standards (1–100%)
+                        {t('roleKnowledge.requiredLevels')}
                       </span>
 
                       {validation.validThresholds ? (
@@ -3412,18 +4444,23 @@ export function TargetRolesPage() {
                         </span>
                       ) : (
                         <span className="text-destructive font-semibold">
-                          Invalid Target Mastery
+                          {t('roleKnowledge.needsConfiguration')}
                         </span>
                       )}
                     </div>
                   </div>
 
                   {!validation.canPublish ? (
-                    <div className="p-2.5 rounded bg-destructive/10 border border-destructive/20 text-destructive text-[11px] flex items-center gap-2">
+                    <div role="alert" className="p-2.5 rounded bg-destructive/10 border border-destructive/20 text-destructive text-[11px] flex items-center gap-2">
                       <AlertCircle className="h-4 w-4 shrink-0" />
                       <span>
-                        Publication rejected: Complete the checklist items above
-                        before this role can be published.
+                        {validation.missingLevels.length ? publicationCopy(
+                          `Add skills and select their required knowledge levels for: ${validation.missingLevels.join(', ')}.`,
+                          `Bổ sung kỹ năng và chọn mức kiến thức yêu cầu cho các Level: ${validation.missingLevels.join(', ')}.`,
+                        ) : publicationCopy(
+                          'Complete the checklist above before publishing this Role.',
+                          'Hoàn thiện các mục bên trên trước khi xuất bản Role.',
+                        )}
                       </span>
                     </div>
                   ) : (
@@ -3453,7 +4490,8 @@ export function TargetRolesPage() {
 
                 size="sm"
 
-                disabled={!getPublishValidation(selectedRole).canPublish}
+                disabled={publishingRoleId !== null || !getPublishValidation(selectedRole).canPublish}
+                isLoading={publishingRoleId === selectedRole.id}
 
                 onClick={() => handleExecutePublish(selectedRole)}
               >
@@ -3615,7 +4653,7 @@ export function TargetRolesPage() {
                   <div className="p-3 rounded-lg border border-border bg-card space-y-2">
                     <div className="flex items-center justify-between">
                       <span className="text-[11px] font-bold text-foreground">
-                        Role Mastery Levels
+                        {t('roleKnowledge.memberLevels')}
                       </span>
 
                       <span className="text-[10px] text-muted-foreground font-semibold">
@@ -3628,23 +4666,30 @@ export function TargetRolesPage() {
                       {(viewingDetailsRole.levels &&
                       viewingDetailsRole.levels.length > 0
                         ? viewingDetailsRole.levels
-                        : ['Junior', 'Middle', 'Senior']
-                      ).map((lvlName, idx) => (
-                        <div
-                          key={idx}
-                          className="flex items-center gap-1.5 p-2 rounded-md bg-muted/30 border border-border/80"
-                        >
-                          <Badge
-                            variant="secondary"
-                            className="text-[9px] py-0 px-1 font-mono"
+                        : ['Senior', 'Middle', 'Junior']
+                      ).map((lvlName, idx) => {
+                        const lvlDuration = resolveLevelDuration(viewingDetailsRole, lvlName, idx)
+                        return (
+                          <div
+                            key={idx}
+                            className="flex items-center gap-1.5 p-2 rounded-md bg-muted/30 border border-border/80"
                           >
-                            Rank {idx + 1}
-                          </Badge>
-                          <span className="font-bold text-foreground text-xs">
-                            {lvlName}
-                          </span>
-                        </div>
-                      ))}
+                            <Badge
+                              variant="secondary"
+                              className="text-[9px] py-0 px-1 font-mono"
+                            >
+                              Rank {idx + 1}
+                            </Badge>
+                            <span className="font-bold text-foreground text-xs">
+                              {lvlName}
+                            </span>
+                            <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-primary bg-primary/10 border border-primary/20 px-1.5 py-0.5 rounded font-mono">
+                              <Clock className="h-2.5 w-2.5" />
+                              {lvlDuration}
+                            </span>
+                          </div>
+                        )
+                      })}
                     </div>
                   </div>
                 </div>
@@ -3709,7 +4754,7 @@ export function TargetRolesPage() {
                 viewingDetailsRole.levels &&
                 viewingDetailsRole.levels.length > 0
                   ? viewingDetailsRole.levels
-                  : ['Junior', 'Middle', 'Senior']
+                  : ['Senior', 'Middle', 'Junior']
 
               const hasExplicitLevelComps = Boolean(
                 viewingDetailsRole.levelCompetencies &&
@@ -3803,7 +4848,7 @@ export function TargetRolesPage() {
                           All Levels Overview
                         </button>
 
-                        {detailRoleLevels.map((lvl) => {
+                        {detailRoleLevels.map((lvl, lIdx) => {
                           const lvlComps =
                             viewingDetailsRole.levelCompetencies?.[lvl] ||
                             (!hasExplicitLevelComps &&
@@ -3816,6 +4861,7 @@ export function TargetRolesPage() {
                               (st) => (st.level || detailRoleLevels[0]) === lvl,
                             )
                           const isSelected = selectedDetailLevelTab === lvl
+                          const lvlDuration = resolveLevelDuration(viewingDetailsRole, lvl, lIdx)
 
                           return (
                             <button
@@ -3835,7 +4881,7 @@ export function TargetRolesPage() {
                               <span
                                 className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono ${isSelected ? 'bg-primary-foreground/20 text-primary-foreground' : 'bg-muted text-muted-foreground'}`}
                               >
-                                {lvlSkills.length} skills · {lvlComps.length}{' '}
+                                {lvlDuration} · {lvlSkills.length} skills · {lvlComps.length}{' '}
                                 comps
                               </span>
                             </button>
@@ -3860,13 +4906,14 @@ export function TargetRolesPage() {
                                 (st) =>
                                   (st.level || detailRoleLevels[0]) === lvl,
                               )
+                            const lvlDuration = resolveLevelDuration(viewingDetailsRole, lvl, lIdx)
 
                             return (
                               <div
                                 key={lvl}
                                 className="p-3.5 rounded-lg border border-border bg-card space-y-2.5"
                               >
-                                <div className="flex items-center justify-between pb-1.5 border-b border-border">
+                                <div className="flex items-center justify-between pb-1.5 border-b border-border flex-wrap gap-2">
                                   <div className="flex items-center gap-2">
                                     <Badge
                                       variant="secondary"
@@ -3876,6 +4923,10 @@ export function TargetRolesPage() {
                                     </Badge>
                                     <span className="font-bold text-foreground text-xs">
                                       {lvl} Level
+                                    </span>
+                                    <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-primary bg-primary/10 border border-primary/20 px-2 py-0.5 rounded-full font-mono">
+                                      <Clock className="h-3 w-3" />
+                                      Est. Duration: {lvlDuration}
                                     </span>
                                   </div>
 
@@ -3940,7 +4991,7 @@ export function TargetRolesPage() {
                                               Skill Code &amp; Title
                                             </th>
                                             <th className="py-1.5 px-2.5 text-center w-28">
-                                              Target Mastery
+                                              {t('roleKnowledge.required')}
                                             </th>
                                           </tr>
                                         </thead>
@@ -3971,7 +5022,7 @@ export function TargetRolesPage() {
                                                 </td>
 
                                                 <td className="py-1.5 px-2.5 text-center font-mono font-bold text-primary">
-                                                  {st.threshold}%
+                                                  {formatRequiredKnowledge(st.requiredKnowledgeLevels, t)}
                                                 </td>
                                               </tr>
                                             )
@@ -3987,6 +5038,27 @@ export function TargetRolesPage() {
                         </div>
                       ) : (
                         <div className="p-3.5 rounded-lg border border-border bg-card space-y-3">
+                          {(() => {
+                            const selectedIdx = Math.max(0, detailRoleLevels.indexOf(selectedDetailLevelTab))
+                            const selectedDur = resolveLevelDuration(viewingDetailsRole, selectedDetailLevelTab, selectedIdx)
+                            return (
+                              <div className="flex items-center justify-between pb-2 border-b border-border flex-wrap gap-2">
+                                <div className="flex items-center gap-2">
+                                  <Badge variant="secondary" className="font-mono text-[10px]">
+                                    Rank {selectedIdx + 1}
+                                  </Badge>
+                                  <span className="font-bold text-foreground text-xs">
+                                    {selectedDetailLevelTab} Level
+                                  </span>
+                                  <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-primary bg-primary/10 border border-primary/20 px-2 py-0.5 rounded-full font-mono">
+                                    <Clock className="h-3 w-3" />
+                                    Est. Duration: {selectedDur}
+                                  </span>
+                                </div>
+                              </div>
+                            )
+                          })()}
+
                           {/* Competencies for selected Level */}
 
                           <div>
@@ -4070,7 +5142,7 @@ export function TargetRolesPage() {
                                           Skill Code &amp; Title
                                         </th>
                                         <th className="py-2 px-3 text-center w-32">
-                                          Target Mastery
+                                          {t('roleKnowledge.required')}
                                         </th>
                                       </tr>
                                     </thead>
@@ -4098,7 +5170,7 @@ export function TargetRolesPage() {
                                             </td>
 
                                             <td className="py-2 px-3 text-center font-mono font-bold text-primary">
-                                              {st.threshold}%
+                                              {formatRequiredKnowledge(st.requiredKnowledgeLevels, t)}
                                             </td>
                                           </tr>
                                         )
@@ -4176,9 +5248,12 @@ export function TargetRolesPage() {
 
                     onClick={() => {
                       const r = viewingDetailsRole
-
+                      setViewingDetailsRole(null)
                       handleApproveAndPublishRole(r)
                     }}
+
+                    disabled={publishingRoleId !== null}
+                    isLoading={publishingRoleId === viewingDetailsRole.id}
 
                     leftIcon={<CheckCircle2 className="h-3.5 w-3.5" />}
                   >
@@ -4187,7 +5262,38 @@ export function TargetRolesPage() {
                 </>
               )}
 
+              {viewingDetailsRole.status === 'published' && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="border-muted-foreground/30 text-muted-foreground hover:bg-muted"
+                  onClick={() => {
+                    const r = viewingDetailsRole
+                    setViewingDetailsRole(null)
+                    setRoleToUnpublish(r)
+                  }}
+                  leftIcon={<EyeOff className="h-3.5 w-3.5" />}
+                >
+                  Unpublish
+                </Button>
+              )}
+
+              {viewingDetailsRole.status === 'unpublished' && (
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={() => {
+                    const r = viewingDetailsRole
+                    handleApproveAndPublishRole(r)
+                  }}
+                  leftIcon={<CheckCircle2 className="h-3.5 w-3.5" />}
+                >
+                  Re-publish
+                </Button>
+              )}
+
               {viewingDetailsRole.status !== 'published' &&
+                viewingDetailsRole.status !== 'unpublished' &&
                 viewingDetailsRole.status !== 'submitted' &&
                 viewingDetailsRole.status !== 'sent' && (
                   <Button
@@ -4286,6 +5392,80 @@ export function TargetRolesPage() {
                 leftIcon={<Trash2 className="h-3.5 w-3.5" />}
               >
                 Delete Draft Role
+              </Button>
+            </DialogFooter>
+          </>
+        )}
+      </Dialog>
+
+      {/* 5B. UNPUBLISH TARGET ROLE CONFIRMATION MODAL */}
+      <Dialog
+        open={Boolean(roleToUnpublish)}
+        onOpenChange={(open) => !open && setRoleToUnpublish(null)}
+      >
+        {roleToUnpublish && (
+          <>
+            <DialogHeader>
+              <DialogTitle className="text-base font-bold text-destructive flex items-center gap-2">
+                <AlertTriangle className="h-5 w-5 text-destructive" />
+                Unpublish Target Role?
+              </DialogTitle>
+              <DialogDescription className="text-xs text-muted-foreground">
+                Are you sure you want to unpublish{' '}
+                <strong className="text-foreground">
+                  {roleToUnpublish.title}
+                </strong>
+                ?
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-3 py-2 text-xs">
+              <div className="p-3 rounded-lg border border-border bg-muted/20 space-y-1">
+                <div className="font-semibold text-foreground flex items-center justify-between">
+                  <span>{roleToUnpublish.title}</span>
+                  <span className="text-[11px] text-muted-foreground font-mono">v{roleToUnpublish.version}</span>
+                </div>
+                <div className="text-[11px] text-muted-foreground flex items-center gap-2">
+                  <span>{roleToUnpublish.jobPositionTitle || roleToUnpublish.jobPositionCode || 'Unassigned'}</span>
+                  <span>•</span>
+                  <span>{roleToUnpublish.levels?.length || 0} Levels</span>
+                  <span>•</span>
+                  <span>{roleToUnpublish.skillTargets?.length || 0} Skills</span>
+                </div>
+              </div>
+
+              <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/25 text-xs flex items-start gap-2.5">
+                <AlertTriangle className="h-4 w-4 shrink-0 text-destructive mt-0.5" />
+                <div className="text-[11.5px] leading-relaxed text-foreground">
+                  <strong className="text-destructive font-semibold">
+                    Operational Impact:
+                  </strong>{' '}
+                  Unpublishing this target role will suspend it from active employee upskilling catalogs.
+                  Existing learning pathways and historical diagnostic records will be preserved.
+                </div>
+              </div>
+            </div>
+
+            <DialogFooter className="pt-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setRoleToUnpublish(null)}
+              >
+                Keep Published
+              </Button>
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={() => {
+                  if (roleToUnpublish) {
+                    handleUnpublishRole(roleToUnpublish)
+                    setRoleToUnpublish(null)
+                  }
+                }}
+                leftIcon={<EyeOff className="h-3.5 w-3.5" />}
+              >
+                Unpublish Target Role
               </Button>
             </DialogFooter>
           </>

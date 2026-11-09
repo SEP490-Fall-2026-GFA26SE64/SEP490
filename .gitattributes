@@ -1,6 +1,11 @@
 
 # Keep byte-pinned ontology imports stable across Windows/macOS checkouts.
 documents/dataset/import/ontology_seed.json text eol=lf
+documents/dataset/import/ontology_seed-v012.json text eol=lf
+documents/dataset/import/ontology_seed-knowledge-bank.json text eol=lf
+backend/src/main/resources/db/seed/knowledge-question-bank.json text eol=lf
+documents/dataset/question-bank/knowledge-bank/*.tsv text eol=lf
+documents/dataset/question-bank/knowledge-bank/*.py text eol=lf
 documents/dataset/question-bank/15-1212.00/catalog-scope-v09.json text eol=lf
 documents/dataset/question-bank/15-1212.00/release-manifest-v09.json text eol=lf
 backend/src/main/resources/db/seed/question-bank-15-1212.00-v1-ontology-v09.json text eol=lf
@@ -12,7 +17,14 @@ documents/dataset/question-bank/15-1212.00/historical/*.json -text
 # on Linux/macOS too, rather than repinning immutable history.
 documents/dataset/import/ontology_seed-v010.json text eol=crlf
 documents/dataset/import/ontology_seed-v011.json text eol=crlf
+documents/dataset/import/ontology_seed-v012.json text eol=lf
 # Bootstrap executes inside Linux containers, including on Windows hosts.
 docker/dev/*.sh text eol=lf
 backend/src/main/resources/db/seed/se-modules.json text eol=lf
 backend/src/main/resources/db/seed/question-bank-se.json text eol=lf
+# This development module release was published from an exact CRLF snapshot.
+documents/dataset/import/ontology_seed-module-knowledge.json text eol=crlf
+documents/dataset/module-knowledge/development-release.json text eol=crlf
+
+documents/dataset/import/ontology_seed-prerequisite-knowledge.json text eol=lf
+documents/dataset/module-knowledge/development-complete-release.json text eol=lf

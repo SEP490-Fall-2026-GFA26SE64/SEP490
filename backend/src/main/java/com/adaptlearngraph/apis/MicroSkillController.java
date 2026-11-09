@@ -42,9 +42,8 @@ public class MicroSkillController {
     public ResponseEntity<List<MicroSkillResponse>> listMicroSkills(
             @PathVariable("organizationId") String organizationId,
             @RequestParam(value = "query", required = false) String query,
-            @RequestParam(value = "macro", required = false) String macroCode,
             @RequestParam(value = "status", required = false) SkillStatusDto status) {
-        return ResponseEntity.ok(microSkills.searchMicroSkills(organizationId, query, macroCode, status));
+        return ResponseEntity.ok(microSkills.searchMicroSkills(organizationId, query, status));
     }
 
     @GetMapping("/{id}")
@@ -110,6 +109,11 @@ public class MicroSkillController {
                 "message", ex.getMessage(),
                 "organizationId", ex.getOrganizationId(),
                 "code", ex.getCode()));
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<?> invalidKnowledge(IllegalArgumentException ex) {
+        return ResponseEntity.badRequest().cacheControl(org.springframework.http.CacheControl.noStore()).body(Map.of("message",ex.getMessage()));
     }
 
     @ExceptionHandler(MicroSkillInUseException.class)

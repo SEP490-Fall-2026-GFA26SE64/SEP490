@@ -197,15 +197,15 @@ The initial application and evaluation are bounded to Software Engineering compe
 
 7. **FE-07: Skill and prerequisite management.** Allow assigned Experts to maintain specific skills, proficiency expectations, and prerequisite relationships so that learning recommendations reflect the knowledge needed before progressing.
 
-8. **FE-08: Learning modules, content, and approval.** Allow Experts to organize modules, map them to skills, maintain learning materials and module assessment questions, and submit learning offerings to the L&D Manager for approval or revision.
+8. **FE-08: Learning modules, content, and approval.** Allow Experts to organize modules, map each module to one MicroSkill, maintain ordered learning materials, and submit the module/content package to the L&D Manager for approval or revision.
 
-9. **FE-09: Baseline and module assessments.** Allow the L&D Manager to configure baseline assessment coverage and rules, Experts to maintain module assessments, and Employees to complete assessments. Evaluate submitted answers to provide evidence for competency estimates.
+9. **FE-09: Baseline and module assessments.** Allow the L&D Manager to configure baseline assessment coverage and rules, Experts to maintain module assessments, and Employees to complete assessments. Use separate scoped policies: L&D Baseline per Role–member Level and Expert Skill Assessment per Skill–knowledge, shared across equivalent modules. Persist timed papers/group results; baseline is diagnostic and official achievement requires qualifying learning+assessment or accepted certificate.
 
 10. **FE-10: Interest assessment and target role guidance.** Allow Employees to complete a RIASEC career-interest assessment, view AI-assisted role suggestions and explanations, and select or confirm a published role. Interests inform guidance; they do not establish skill mastery or determine a role on the employee's behalf.
 
 11. **FE-11: Employee profiles and skill-gap visibility.** Allow Employees to maintain their profiles and see their estimated current competencies and the gaps between those competencies and a selected target role.
 
-12. **FE-12: Personalized pathways with Expert review and adaptation.** Recommend modules that address identified gaps and prerequisite needs. Allow an Expert to review, include or exclude suggested modules, and confirm the initial pathway. Recalculate the remaining pathway as later assessment results update competency estimates.
+12. **FE-12: Personalized pathways with Expert review and adaptation.** Generate Skill/knowledge requirement roots with eligible module alternatives or one assigned certificate; add prerequisite learning only when actual Skill assessment discovers the shortage. Allow an Expert to review, include or exclude suggested modules, and confirm the initial pathway. Recalculate remaining requirements from accepted group outcomes and exact evidence, preserving initial approval, history and started work. Lock Role–Level from request until required work resolves or is bypassed; old-target bypass needs carry as parallel non-gating work.
 
 13. **FE-13: Pathway learning, independent skill learning, and progress tracking.** Allow Employees to access approved learning materials through their pathways or by selecting individual skills, complete module assessments, and review completed activities, assessment outcomes, competency progress, and pathway status.
 
@@ -245,11 +245,11 @@ These boundaries preserve the project's intended contribution: demonstrating and
 
 ---
 
-[^P1]: Project team. *Capstone Project Register, Version 2: Knowledge Graph-Based Adaptive Learning and Competency Intelligence Platform*. Internal project source, registration dated 18 October 2026. Used for the project name, team, period, proposal, functional scope, deliverables, and research exclusions. [Project registration](../FA26SE267_KNOWLEDGE_GRAPH_BASED_ADAPTIVE_LEARNING__haht43_Version_2.md).
+[^P1]: Project team. *Capstone Project Register, Version 2: Knowledge Graph-Based Adaptive Learning and Competency Intelligence Platform*. Internal project source, registration dated 18 October 2026. Used for the project name, team, period, proposal, functional scope, deliverables, and research exclusions. [Project registration](../documents/FA26SE267_KNOWLEDGE_GRAPH_BASED_ADAPTIVE_LEARNING__haht43_Version_2.md).
 
-[^P2]: Project team. *Adapt-Learn-Graph: Product Overview*. Scope alignment dated 28 October 2026. Used for the six human actors and the distribution of 48 functional requirements. [Product overview](../PRODUCT_OVERVIEW.md).
+[^P2]: Project team. *Adapt-Learn-Graph: Product Overview*. Scope alignment dated 28 October 2026. Used for the six human actors and the distribution of 48 functional requirements. [Product overview](../documents/PRODUCT_OVERVIEW.md).
 
-[^P3]: Project team. *Functional Requirements Catalog*. Includes dated implementation snapshots and verification boundaries. Used only to distinguish proposed functionality from completed or verified delivery. [Functional requirements catalog](../features/README.md).
+[^P3]: Project team. *Functional Requirements Catalog*. Includes dated implementation snapshots and verification boundaries. Used only to distinguish proposed functionality from completed or verified delivery. [Functional requirements catalog](../documents/features/README.md).
 
 [^W1]: International Labour Organization. *Changing demand for skills in digital economies and societies: Literature review and case studies from low- and middle-income countries*. Published 9 December 2021; public publication summary accessed 01 November 2026. Used for the context of digitalization, changing skill demands, and lifelong learning; no findings beyond the accessible summary are asserted. [ILO publication](https://www.ilo.org/publications/changing-demand-skills-digital-economies-and-societies-literature-review).
 

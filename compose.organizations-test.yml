@@ -1,0 +1,27 @@
+# Use after compose.dev.yml and compose.subscription-test.yml with a dedicated -p project.
+services:
+  neo4j:
+    entrypoint: ["tini", "-g", "--", "/startup/docker-entrypoint.sh"]
+    command: ["neo4j"]
+    volumes: !override
+      - neo4j_workspace_v011_data:/data
+  api:
+    image: alg-organizations-test-backend:20261104
+    environment:
+      SPRING_PROFILES_ACTIVE: local
+      SPRING_FLYWAY_ENABLED: "true"
+      SPRING_FLYWAY_LOCATIONS: classpath:db/migration
+      WORKSPACE_DEVELOPMENT_FIXTURES_ENABLED: "false"
+      PATHWAY_INITIAL_ENABLED: "false"
+      SUBSCRIPTION_WORKER_ENABLED: "true"
+      REGISTRATION_MAIL_WORKER_ENABLED: "false"
+    volumes: !reset []
+    depends_on: !override
+      postgres:
+        condition: service_healthy
+      neo4j:
+        condition: service_healthy
+      mailpit:
+        condition: service_started
+  web:
+    image: alg-organizations-test-web:20261104

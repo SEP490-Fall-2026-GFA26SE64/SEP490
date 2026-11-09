@@ -1,8 +1,12 @@
 # Adapt-Learn-Graph: Product Overview
 
-## Shared workspace adaptive integration
+## Assessment/pathway contract — source 2026-11-07
 
-Real workspace identity/CSRF now composes the retained initial-pathway source. The [integration contract](technical/Workspace%20Adaptive%20Integration.md) records actor/tenant boundaries, portable development seed gates, separate migration lineage/volumes and view-only limits. Detailed Function rules are retained in [technical contracts](technical/initial-pathway/Initial%20pathway%20generation/Initial%20Pathway%20Flow%20and%20Data%20Design.md); domain REQ/FR anchors remain reserved. Current Role-first entry resolves the full-Job Position baseline before gap/confirmation; SRS discussion of another ordering does not silently change this accepted flow. Source/build checks are distinct from [new runtime verification still Not run](testing/system/REQ-002-041-042-workspace-integration.md).
+The Employee selects Role/member Level with explicit skill–knowledge requirements. Baseline records diagnostics only for assessed skills; it does not infer prerequisite profile entries or official achievement. Skill assessment shares the engine with its own separate config/deadline and can discover missing prerequisites. Both persist attempts/resume/history and automatically finalize at deadline.
+
+Pathway steps are skill/knowledge requirements with equivalent module choices or one assigned certificate. Initial Expert approval remains; valid supplementation recalculates automatically. Module+assessment/certificate approval creates official achievement; bypass remains **Cần bổ sung**. Lock Role/Level from request submission until mandatory work resolves or bypass-only remains. Carried old bypass needs are parallel and do not gate the next target's other skills.
+
+Preserve FE design, security and unrelated features. [Features](features/README.md), [target schema/API/flow](technical/Organization%20Rule%20Assessment%20and%20Pathway.md) define this flow, replacing IRT/numeric gap/optimizer rules. The local rule composition now implements scoped configuration, papers/results, exact evidence and requirement-pathway services. Applied DB state and full certificate/bypass/parallel behavior were not verified here. L&D configures Baseline per Role–Level; Expert configures Skill Assessment per Skill–knowledge, shared across equivalent modules. Legacy IRT/optimizer source is retained outside the active workspace route; research obligations remain separate.
 
 **Functional scope source:** [Capstone Register Version 2](./FA26SE267_KNOWLEDGE_GRAPH_BASED_ADAPTIVE_LEARNING__haht43_Version_2.md), section 3.2(c).
 
@@ -50,13 +54,13 @@ Each link resolves to one nine-field requirement record. A requirement spanning 
 | [FR-02.02](features/Subscription%20lifecycle/README.md#fr-02-02) | Platform Administrator | Configure subscriptions | Subscription lifecycle |
 | [FR-02.03](features/Platform%20administration/README.md#fr-02-03) | Platform Administrator | Monitor platform activity | Platform administration |
 | [FR-03.01](features/Workspace%20administration/README.md#fr-03-01) | System Administrator | Manage user accounts | Workspace administration |
-| [FR-03.02](features/Departments%20and%20job positions/README.md#fr-03-02) | System Administrator | Manage departments | Departments and job positions |
+| [FR-03.02](features/Departments%20and%20occupations/README.md#fr-03-02) | System Administrator | Manage departments | Departments and job positions |
 | [FR-03.03](features/Workspace%20administration/README.md#fr-03-03) | System Administrator | Manage roles and permissions | Workspace administration |
 | [FR-03.04](features/Workspace%20administration/README.md#fr-03-04) | System Administrator | Manage system configuration | Workspace administration |
 | [FR-03.05](features/Workspace%20administration/README.md#fr-03-05) | System Administrator | Monitor system activity | Workspace administration |
 | [FR-03.06](features/Subscription%20lifecycle/README.md#fr-03-06) | System Administrator | Manage organization subscription | Subscription lifecycle |
-| [FR-04.01](features/Departments%20and%20job positions/README.md#fr-04-01) | L&D Manager | Manage job positions | Departments and job positions |
-| [FR-04.02](features/Departments%20and%20job positions/README.md#fr-04-02) | L&D Manager | Assign Experts | Departments and job positions |
+| [FR-04.01](features/Departments%20and%20occupations/README.md#fr-04-01) | L&D Manager | Manage job positions | Departments and job positions |
+| [FR-04.02](features/Departments%20and%20occupations/README.md#fr-04-02) | L&D Manager | Assign Experts | Departments and job positions |
 | [FR-04.03](features/Role%20catalog/README.md#fr-04-03) | L&D Manager | Manage target roles | Role catalog |
 | [FR-04.04](features/Role%20catalog/README.md#fr-04-04) | L&D Manager | Manage target role publication | Role catalog |
 | [FR-04.05](features/Assessment%20workflows/README.md#fr-04-05) | L&D Manager | Manage baseline assessment configuration | Assessment workflows |
@@ -94,7 +98,7 @@ Each link resolves to one nine-field requirement record. A requirement spanning 
 ## Detail and Scope Boundaries
 
 - Domain records use Requirement ID, Requirement Name, Description, Actor, Preconditions, Main Flow, Alternative / Exception Flows, Postconditions and Acceptance Criteria.
-- Names, descriptions and actors come from Version 2. The remaining fields are intentionally blank pending design; no inferred workflows, validation rules or acceptance targets have been supplied.
+- Names, descriptions and actors come from Version 2. Unaffected unspecified fields remain blank. Confirmed assessment/pathway decisions populate their affected contracts; implemented, partial and unverified status is separately described rather than inferred from a requirement statement.
 - The [feature index](features/README.md#reading-rules) defines stable FR identifiers and legacy REQ traceability. Old IDs are references, not extra requirements or fresh certification of historical tests.
 - Non-functional targets, architecture, research evaluation, work packages and delivery history are outside this functional overview. They remain in the source or their dedicated documents, not duplicated as functional requirements.
 - This documentation reconciliation does not change application code, schemas, historical test evidence or runtime behavior.

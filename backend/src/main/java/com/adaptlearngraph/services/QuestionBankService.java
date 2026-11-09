@@ -28,7 +28,7 @@ public final class QuestionBankService implements QuestionBankUseCase {
         return a;
     }
     private <T> T run(Function<QuestionBank,T> action) { return store.atomic(actor(),action); }
-    @Override public Session session() { var a=actor(); var people=new ArrayList<>(catalog.experts(a));people.addAll(catalog.managers(a));return new Session(a,catalog.skills(a),catalog.experts(a),people,maxRows,maxBytes); }
+    @Override public Session session() { var a=actor(); var people=new ArrayList<>(catalog.experts(a));people.addAll(catalog.managers(a));return new Session(a,catalog.skills(a),catalog.experts(a),people,maxRows,maxBytes,catalog.knowledge(a)); }
     @Override public View read() { return run(this::view); }
     private View view(QuestionBank b) { return new View(b.id,b.name,b.questions,b.history); }
     private Question find(QuestionBank b,UUID id) { return b.questions.stream().filter(q->q.id.equals(id)).findFirst().orElseThrow(()->new Failure(404,"Question not found")); }
@@ -53,18 +53,21 @@ public final class QuestionBankService implements QuestionBankUseCase {
         var options=new ArrayList<String>(); for(String o:c.options()) { require(o!=null&&o.length()<=5000,400,"Invalid option"); options.add(o.strip()); }
         while(options.size()<4) options.add("");
         require(c.correctAnswer()==null||(c.correctAnswer()>=0&&c.correctAnswer()<4),400,"Choose one correct answer");
-        String difficulty=c.difficulty()==null||c.difficulty().isBlank()?null:c.difficulty();
-        require(difficulty==null||Set.of("EASY","MEDIUM","HARD").contains(difficulty),400,"Invalid difficulty");
+        String level=c.knowledgeLevel()==null||c.knowledgeLevel().isBlank()?null:c.knowledgeLevel();
+        require(level==null||Set.of("FOUNDATION","INTERMEDIATE","ADVANCED").contains(level),400,"Invalid knowledge level");
+        String outcome=c.outcomeCode()==null||c.outcomeCode().isBlank()?null:c.outcomeCode().strip();
+        require(outcome==null||outcome.matches("[A-Za-z0-9][A-Za-z0-9_.:-]{0,159}"),400,"Invalid assessed outcome code");
+        if(level!=null && outcome!=null)catalog.requireOutcome(a,skill,level,outcome);
         String explanation=c.explanation()==null?"":c.explanation().strip(); require(explanation.length()<=20000,400,"Explanation too long");
         if(complete) {
             require(options.stream().noneMatch(String::isBlank)&&options.stream().map(this::normalized).distinct().count()==4,400,"Four nonempty distinct choices required");
-            require(c.correctAnswer()!=null&&difficulty!=null&&!explanation.isBlank(),400,"Answer, difficulty and explanation required before submission");
+            require(c.correctAnswer()!=null&&level!=null&&outcome!=null&&!explanation.isBlank(),400,"Answer, knowledge level, assessed outcome and explanation required before submission");
         }
-        return new Content(prompt,options,c.correctAnswer(),skill,name,difficulty,explanation);
+        return new Content(prompt,options,c.correctAnswer(),skill,name,null,explanation,level,outcome,c.mandatory());
     }
     private void publishedEligibility(Actor a,Content original) {
         Content c=content(a,original,false);
-        require(c.options().stream().noneMatch(String::isBlank)&&c.options().stream().map(this::normalized).distinct().count()==4&&c.correctAnswer()!=null&&c.difficulty()!=null,409,"Published content is no longer eligible for reactivation");
+        require(c.options().stream().noneMatch(String::isBlank)&&c.options().stream().map(this::normalized).distinct().count()==4&&c.correctAnswer()!=null&&c.knowledgeLevel()!=null&&c.outcomeCode()!=null,409,"Published content needs a reviewed knowledge mapping before reactivation");
         // Historical explanations may legitimately be absent; never manufacture them or mutate a published definition.
     }
     private String normalized(String s) { return s.strip().replaceAll("\\s+"," ").toLowerCase(Locale.ROOT); }
@@ -82,7 +85,7 @@ public final class QuestionBankService implements QuestionBankUseCase {
     private void notifyManagers(QuestionBank b,Actor a,String title,String body) { for(var recipient:catalog.managers(a)) notice(b,UUID.fromString(recipient.id()),title,body); }
     private Question create(QuestionBank b,Actor a,String code,Content content) {
         require(b.questions.stream().noneMatch(q->q.code.equals(code)),409,"Question code already exists");
-        var q=new Question();q.id=UUID.randomUUID();q.code=code;q.createdBy=a.id();q.createdAt=clock.instant();q.owner=a.id();q.revision=1;
+        var q=new Question();q.id=UUID.randomUUID();q.sourceBankId=b.id;q.code=code;q.createdBy=a.id();q.createdAt=clock.instant();q.owner=a.id();q.revision=1;
         q.versions.add(draft(1,content,a));b.questions.add(q);audit(b,q,latest(q),a,"CREATED",null);return q;
     }
     private Version draft(int number,Content content,Actor a) {
@@ -107,7 +110,7 @@ public final class QuestionBankService implements QuestionBankUseCase {
     private void approveOne(QuestionBank b,Actor a,Question q,Version v) {
         manager(a);require(!q.retired&&q.owner!=null&&"SUBMITTED".equals(v.state),409,"Question is not eligible for approval");catalog.requireExpert(a,q.owner);
         require(v.id.toString().equals(v.viewed.get(a.id())),409,"Open this exact submitted version before approval");
-        Content validated=content(a,v.content,true);require(validated.equals(v.content),409,"MicroSkill snapshot changed. Return the question for another review.");v.state="PUBLISHED";v.reviewedBy=a.id();v.reviewedAt=clock.instant();v.reason=null;
+        Content validated=content(a,v.content,true);require(validated.equals(v.content),409,"MicroSkill snapshot changed. Return the question for another review.");v.state="PUBLISHED";v.reviewedBy=a.id();v.reviewedAt=clock.instant();v.reason=null;v.publicationSource="STAFF_REVIEW";
         audit(b,q,v,a,"APPROVED",null);notice(b,q.owner,"Question approved",q.code+" · v"+v.number);
     }
     private void apply(QuestionBank b,Actor a,Command in) {

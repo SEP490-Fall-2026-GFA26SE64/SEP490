@@ -1,64 +1,71 @@
 ---
-title: "LERD-02 - Baseline evidence and learning (current mapped entities)"
-config: {"theme":"base","fontFamily":"Segoe UI, Arial, sans-serif","themeVariables":{"fontFamily":"Segoe UI, Arial, sans-serif","fontSize":"16px","primaryColor":"#ffffff","primaryTextColor":"#0f1729","primaryBorderColor":"#64748b","secondaryColor":"#fef3eb","tertiaryColor":"#ffffff","lineColor":"#64748b","textColor":"#0f1729","mainBkg":"#ffffff","background":"#ffffff","clusterBkg":"#ffffff","clusterBorder":"#64748b","edgeLabelBackground":"#ffffff","titleColor":"#0f1729","noteBkgColor":"#fef3eb","noteTextColor":"#0f1729","noteBorderColor":"#e6650f","attributeBackgroundColorOdd":"#ffffff","attributeBackgroundColorEven":"#ffffff","secondaryBorderColor":"#64748b","tertiaryBorderColor":"#64748b","secondaryTextColor":"#0f1729","tertiaryTextColor":"#0f1729"},"layout":"elk","er":{"layoutDirection":"LR","nodeSpacing":36,"rankSpacing":74,"entityPadding":16,"fontSize":16,"minEntityWidth":140,"diagramPadding":24}}
+title: "LERD-02 - Frozen assessment and separate official evidence"
+config: {"theme":"base","fontFamily":"Segoe UI, Arial, sans-serif","themeVariables":{"fontFamily":"Segoe UI, Arial, sans-serif","fontSize":"16px","primaryColor":"#ffffff","primaryTextColor":"#0f1729","primaryBorderColor":"#64748b","secondaryColor":"#fef3eb","tertiaryColor":"#ffffff","lineColor":"#64748b","textColor":"#0f1729","mainBkg":"#ffffff","background":"#ffffff","clusterBkg":"#ffffff","clusterBorder":"#64748b","edgeLabelBackground":"#ffffff","titleColor":"#0f1729","noteBkgColor":"#fef3eb","noteTextColor":"#0f1729","noteBorderColor":"#e6650f","attributeBackgroundColorOdd":"#ffffff","attributeBackgroundColorEven":"#ffffff","secondaryBorderColor":"#64748b","tertiaryBorderColor":"#64748b","secondaryTextColor":"#0f1729","tertiaryTextColor":"#0f1729"},"layout":"dagre","er":{"layoutDirection":"LR","nodeSpacing":36,"rankSpacing":74,"entityPadding":16,"fontSize":16,"minEntityWidth":140,"diagramPadding":24}}
 ---
+
 erDiagram
-  SRS_LERD_02_Account["Account"]
-  SRS_LERD_02_EmployeeRoleSelection["EmployeeRoleSelection"]
-  SRS_LERD_02_Job PositionProfile["Job PositionProfile"]
-  SRS_LERD_02_AdaptiveBlueprintVersion["AdaptiveBlueprintVersion"]
-  SRS_LERD_02_BaselineAttempt["BaselineAttempt"]
-  SRS_LERD_02_AttemptItem["AttemptItem"]
-  SRS_LERD_02_AttemptResponse["AttemptResponse"]
-  SRS_LERD_02_AttemptResult["AttemptResult"]
-  SRS_LERD_02_AttemptSkillResult["AttemptSkillResult"]
-  SRS_LERD_02_MasteryEvidence["MasteryEvidence"]
-  SRS_LERD_02_QuestionBank["QuestionBank"]
-  SRS_LERD_02_ItemVersion["ItemVersion"]
-  SRS_LERD_02_IrtParameterSet["IrtParameterSet"]
-  SRS_LERD_02_IrtItemParameter["IrtItemParameter"]
-  SRS_LERD_02_LearnerState["LearnerState"]
-  SRS_LERD_02_BaselineBlueprint["BaselineBlueprint"]
-  SRS_LERD_02_AdaptiveBlueprintDraft["AdaptiveBlueprintDraft"]
-  SRS_LERD_02_BlueprintActivation["BlueprintActivation"]
-  SRS_LERD_02_MasteryMappingVersion["MasteryMappingVersion"]
-  SRS_LERD_02_ModelVersion["ModelVersion"]
-  SRS_LERD_02_AttemptSkillState["AttemptSkillState"]
-  SRS_LERD_02_AttemptPoolItem["AttemptPoolItem"]
-  SRS_LERD_02_OutboxEvent["OutboxEvent"]
-  SRS_LERD_02_WorkspaceBaselineResource["WorkspaceBaselineResource"]
-  SRS_LERD_02_Job PositionDepartmentReference["Job PositionDepartmentReference"]
-  %% LearnerState is an account-backed state row, not a separate human actor.
-  SRS_LERD_02_Account ||--o| SRS_LERD_02_LearnerState : "learner state"
-  SRS_LERD_02_LearnerState ||--o{ SRS_LERD_02_EmployeeRoleSelection : "selection history"
-  SRS_LERD_02_Account ||--o{ SRS_LERD_02_BaselineAttempt : "takes"
-  SRS_LERD_02_BaselineBlueprint ||--o{ SRS_LERD_02_AdaptiveBlueprintDraft : "working drafts"
-  SRS_LERD_02_BaselineBlueprint ||--o{ SRS_LERD_02_AdaptiveBlueprintVersion : "released versions"
-  SRS_LERD_02_BaselineBlueprint ||--o| SRS_LERD_02_BlueprintActivation : "job position activation pointer"
-  SRS_LERD_02_AdaptiveBlueprintVersion |o--o| SRS_LERD_02_BlueprintActivation : "selected active version"
-  SRS_LERD_02_ModelVersion ||--o{ SRS_LERD_02_IrtParameterSet : "parameter sets"
-  SRS_LERD_02_MasteryMappingVersion ||--o{ SRS_LERD_02_AdaptiveBlueprintVersion : "mastery interpretation"
-  SRS_LERD_02_IrtParameterSet ||--o{ SRS_LERD_02_AdaptiveBlueprintVersion : "pinned parameters"
-  SRS_LERD_02_AdaptiveBlueprintVersion ||--o{ SRS_LERD_02_BaselineAttempt : "pinned version"
-  SRS_LERD_02_BaselineAttempt ||--o{ SRS_LERD_02_AttemptSkillState : "adaptive skill state"
-  SRS_LERD_02_BaselineAttempt ||--o{ SRS_LERD_02_AttemptPoolItem : "pinned eligible items"
-  SRS_LERD_02_AttemptSkillState ||--o{ SRS_LERD_02_AttemptPoolItem : "eligible skill items"
-  SRS_LERD_02_IrtItemParameter ||--o{ SRS_LERD_02_AttemptPoolItem : "frozen item parameters"
-  SRS_LERD_02_AttemptPoolItem ||--o| SRS_LERD_02_AttemptItem : "delivered item"
-  SRS_LERD_02_AttemptItem ||--o| SRS_LERD_02_AttemptResponse : "response at position"
-  SRS_LERD_02_BaselineAttempt ||--o| SRS_LERD_02_AttemptResult : "terminal result"
-  SRS_LERD_02_AttemptSkillState ||--o| SRS_LERD_02_AttemptSkillResult : "final skill outcome"
-  SRS_LERD_02_MasteryMappingVersion ||--o{ SRS_LERD_02_AttemptSkillResult : "maps theta to mastery"
-  SRS_LERD_02_BaselineAttempt ||--o{ SRS_LERD_02_MasteryEvidence : "valid evidence"
-  SRS_LERD_02_AttemptSkillResult ||--o| SRS_LERD_02_MasteryEvidence : "evidence for skill outcome"
-  SRS_LERD_02_AttemptResult ||--o{ SRS_LERD_02_MasteryEvidence : "terminal evidence"
-  SRS_LERD_02_OutboxEvent ||--o| SRS_LERD_02_AttemptResult : "mastery event"
-  SRS_LERD_02_BaselineAttempt ||--o| SRS_LERD_02_Job PositionProfile : "initialization source"
-  SRS_LERD_02_AdaptiveBlueprintVersion ||--o{ SRS_LERD_02_Job PositionProfile : "profile version pin"
-  SRS_LERD_02_QuestionBank ||--o{ SRS_LERD_02_ItemVersion : "versioned questions"
-  SRS_LERD_02_IrtParameterSet ||--o{ SRS_LERD_02_IrtItemParameter : "fitted parameters"
-  SRS_LERD_02_ItemVersion ||--o{ SRS_LERD_02_IrtItemParameter : "parameterized item"
-  SRS_LERD_02_Job PositionDepartmentReference ||--o| SRS_LERD_02_WorkspaceBaselineResource : "tenant resource binding"
-  SRS_LERD_02_QuestionBank |o--o{ SRS_LERD_02_WorkspaceBaselineResource : "configured question bank"
-  SRS_LERD_02_ModelVersion |o--o{ SRS_LERD_02_WorkspaceBaselineResource : "configured model"
-  SRS_LERD_02_MasteryMappingVersion |o--o{ SRS_LERD_02_WorkspaceBaselineResource : "configured mastery mapping"
+  direction TB
+  rule_assessment_attempt {
+    uuid id PK
+    uuid organization_id
+    uuid learner_id
+    text purpose
+    uuid selection_id
+    uuid policy_id
+    text state
+    timestamptz deadline_at
+    text finish_reason "NULLABLE"
+    text processing_status
+  }
+  rule_assessment_group {
+    uuid attempt_id PK
+    uuid group_id PK
+    text skill_id
+    text knowledge_level
+    text group_role
+    integer total_count
+    integer required_correct_count
+  }
+  rule_assessment_item {
+    uuid attempt_id PK
+    integer item_position PK
+    uuid group_id
+    uuid item_version_id
+    jsonb frozen_item
+  }
+  rule_assessment_answer {
+    uuid attempt_id PK
+    integer item_position PK
+    jsonb response
+    bigint revision
+    uuid source_command
+  }
+  rule_assessment_group_result {
+    uuid attempt_id PK
+    uuid group_id PK
+    boolean passed
+    boolean veto_triggered
+    boolean mandatory_satisfied
+  }
+  skill_knowledge_evidence {
+    uuid id PK
+    uuid organization_id
+    uuid learner_id
+    text skill_id
+    text knowledge_level
+    text source_kind
+    uuid source_id
+  }
+  skill_knowledge_review {
+    uuid id PK
+    uuid attempt_id
+    uuid group_id
+    text state
+    uuid resolved_by_evidence_id "NULLABLE"
+  }
+  rule_assessment_attempt ||--|{ rule_assessment_group : "owned attempt"
+  rule_assessment_group ||--|{ rule_assessment_item : "composite group FK"
+  rule_assessment_item ||--o| rule_assessment_answer : "presented item FK"
+  rule_assessment_group ||--o| rule_assessment_group_result : "immutable result"
+  rule_assessment_group ||--o| skill_knowledge_review : "failed prerequisite FK"
+  skill_knowledge_evidence o|--o{ skill_knowledge_review : "resolving evidence FK"

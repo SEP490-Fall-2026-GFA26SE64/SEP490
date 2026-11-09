@@ -4,6 +4,7 @@ import com.adaptlearngraph.entities.domain.MicroSkill;
 import com.adaptlearngraph.entities.domain.MicroSkillId;
 import com.adaptlearngraph.entities.MicroSkillNode;
 import com.adaptlearngraph.entities.domain.SkillStatus;
+import com.adaptlearngraph.entities.domain.SkillProvision;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -23,18 +24,15 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 public class Neo4jMicroSkillRepository implements MicroSkillRepository {
     private static final Instant BASELINE = Instant.parse("2026-01-01T00:00:00Z");
-    // Neo4jClient: the node is mapped by SDN, the owning MacroCompetency code is an extra aggregated column.
     private static final String BY_ID = """
             MATCH (s:MicroSkill {id: $id})
             WHERE s.organizationId = $organizationId
-            OPTIONAL MATCH (macro:MacroCompetency)-[:HAS_SKILL]->(s)
-            RETURN s, coalesce(macro.code, s.macroCompetencyCode, 'KNOWLEDGE') AS macroCode
+            RETURN s
             """;
     private static final String BY_CODE = """
             MATCH (s:MicroSkill)
             WHERE s.organizationId = $organizationId AND s.code = $code
-            OPTIONAL MATCH (macro:MacroCompetency)-[:HAS_SKILL]->(s)
-            RETURN s, coalesce(macro.code, s.macroCompetencyCode, 'KNOWLEDGE') AS macroCode
+            RETURN s
             """;
 
     private final MicroSkillNodeRepository skills;
@@ -69,16 +67,41 @@ public class Neo4jMicroSkillRepository implements MicroSkillRepository {
     public MicroSkill save(MicroSkill microSkill) {
         writes.executeWithoutResult(status -> {
             Neo4jTenantGuard.requireOwnedOrAbsent(client, "MicroSkill", microSkill.getId().toString(), microSkill.getOrganizationId());
+            // Serialize with other edits of this exact owned node before checking the source version.
+            var versions=client.query("MATCH (s:MicroSkill {id:$id,organizationId:$org}) SET s.version=s.version RETURN s.version AS version")
+                    .bindAll(Map.of("id",microSkill.getId().toString(),"org",microSkill.getOrganizationId()))
+                    .fetchAs(org.neo4j.driver.Value.class).mappedBy((types,row)->row.get("version")).all();
+            if(versions.size()>1 || !versions.isEmpty() && !Objects.equals(
+                    versions.iterator().next().isNull()?null:versions.iterator().next().asString(),microSkill.getExpectedVersion()))
+                throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.CONFLICT,"Skill changed; reload before saving");
             skills.merge(
                     microSkill.getId().toString(),
                     microSkill.getOrganizationId(),
                     microSkill.getCode(),
                     microSkill.getName(),
                     microSkill.getDescription(),
-                    microSkill.getMacroCompetencyCode(),
                     microSkill.getStatus().name(),
                     microSkill.getCreatedAt().toString(),
                     microSkill.getUpdatedAt().toString());
+            var provision=microSkill.getProvision();
+            var parameters=new HashMap<String,Object>();
+            parameters.put("id",microSkill.getId().toString());parameters.put("org",microSkill.getOrganizationId());
+            parameters.put("version",microSkill.getVersion());
+            parameters.put("modules",provision.moduleOnlyKnowledgeLevels());parameters.put("certificates",provision.certificateOnlyKnowledgeLevels());
+            parameters.put("foundation",provision.foundationOutcomeCodes());parameters.put("intermediate",provision.intermediateOutcomeCodes());parameters.put("advanced",provision.advancedOutcomeCodes());
+            var incompatible=client.query("""
+                    MATCH (s:MicroSkill {id:$id,organizationId:$org})-[r:REQUIRES_CERTIFICATE]->(c:Certificate)
+                    WHERE r.status='ACTIVE' AND c.status='ACTIVE' AND
+                        (coalesce(c.organizationId,'')<>$org OR coalesce(r.organizationId,$org)<>$org
+                            OR NOT coalesce(c.knowledgeLevel,'') IN $certificates)
+                    RETURN count(c) AS total
+                    """).bindAll(parameters).fetchAs(Long.class).mappedBy((types,row)->row.get("total").asLong()).one().orElse(0L);
+            if(incompatible>0)throw new IllegalArgumentException("Deactivate incompatible certificates before changing provision mode");
+            client.query("""
+                    MATCH (s:MicroSkill {id:$id,organizationId:$org})
+                    SET s.version=$version,s.moduleOnlyKnowledgeLevels=$modules,s.certificateOnlyKnowledgeLevels=$certificates,
+                        s.foundationOutcomeCodes=$foundation,s.intermediateOutcomeCodes=$intermediate,s.advancedOutcomeCodes=$advanced
+                    """).bindAll(parameters).run();
         });
         return microSkill;
     }
@@ -97,12 +120,12 @@ public class Neo4jMicroSkillRepository implements MicroSkillRepository {
 
     @Override
     public List<MicroSkill> findAll(String organizationId) {
-        return search(organizationId, null, null, null);
+        return search(organizationId, null, null);
     }
 
     // Neo4jClient: optional filters are appended to one statement (one query per list, never per row).
     @Override
-    public List<MicroSkill> search(String organizationId, String query, String macroCode, SkillStatus status) {
+    public List<MicroSkill> search(String organizationId, String query, SkillStatus status) {
         StringBuilder cypher = new StringBuilder("""
                 MATCH (s:MicroSkill)
                 WHERE s.organizationId = $organizationId
@@ -121,24 +144,12 @@ public class Neo4jMicroSkillRepository implements MicroSkillRepository {
             params.put("status", status.name());
         }
 
-        cypher.append("""
-                OPTIONAL MATCH (c:Competency)-[:HAS_SKILL]->(s)
-                OPTIONAL MATCH (macro:MacroCompetency)-[:HAS_SKILL]->(s)
-                WITH s, collect(DISTINCT c.name) AS compNames, collect(DISTINCT macro.code) AS macroCodes
-                WITH s, coalesce(macroCodes[0], s.macroCompetencyCode, compNames[0], 'KNOWLEDGE') AS macroCode
-                """);
-
-        if (macroCode != null && !macroCode.isBlank()) {
-            cypher.append(" WHERE macroCode = $macroCode");
-            params.put("macroCode", macroCode.trim().toUpperCase());
-        }
-
-        cypher.append(" RETURN s, macroCode ORDER BY coalesce(s.code, s.id) ASC");
+        cypher.append(" RETURN s ORDER BY coalesce(s.code, s.id) ASC");
 
         var nodes = nodes();
         return reads.execute(tx -> new ArrayList<>(client.query(cypher.toString()).bindAll(params)
                 .fetchAs(MicroSkill.class)
-                .mappedBy((types, row) -> toDomain(nodes.apply(types, row.get("s")), organizationId, row.get("macroCode").asString()))
+                .mappedBy((types, row) -> toDomain(nodes.apply(types, row.get("s")), organizationId))
                 .all()));
     }
 
@@ -160,23 +171,34 @@ public class Neo4jMicroSkillRepository implements MicroSkillRepository {
     private Optional<MicroSkill> findOne(String cypher, Map<String, Object> parameters, String organizationId) {
         var nodes = nodes();
         return client.query(cypher).bindAll(parameters).fetchAs(MicroSkill.class)
-                .mappedBy((types, row) -> toDomain(nodes.apply(types, row.get("s")), organizationId, row.get("macroCode").asString()))
+                .mappedBy((types, row) -> toDomain(nodes.apply(types, row.get("s")), organizationId))
                 .first();
     }
 
-    private static MicroSkill toDomain(MicroSkillNode node, String defaultOrgId, String explicitMacroCode) {
+    private static MicroSkill toDomain(MicroSkillNode node, String defaultOrgId) {
         String idStr = node.id() != null ? node.id() : UUID.randomUUID().toString();
         String orgId = node.organizationId() != null ? node.organizationId() : defaultOrgId;
         String code = node.code() != null ? node.code() : idStr;
         String name = node.name() != null ? node.name() : idStr;
         String desc = node.description() != null ? node.description()
                 : (node.definition() != null ? node.definition() : "");
-        String macroCode = explicitMacroCode != null && !explicitMacroCode.isBlank()
-                ? explicitMacroCode
-                : (node.macroCompetencyCode() != null ? node.macroCompetencyCode() : "KNOWLEDGE");
         String statusStr = node.status() != null ? node.status() : "ACTIVE";
         Instant createdAt = node.createdAt() != null ? node.createdAt() : BASELINE;
         Instant updatedAt = node.updatedAt() != null ? node.updatedAt() : createdAt;
+
+        var modules = new ArrayList<>(orEmpty(node.moduleOnlyKnowledgeLevels()));
+        var certificates = new ArrayList<>(orEmpty(node.certificateOnlyKnowledgeLevels()));
+        var foundation = orEmpty(node.foundationOutcomeCodes());
+        var intermediate = orEmpty(node.intermediateOutcomeCodes());
+        var advanced = orEmpty(node.advancedOutcomeCodes());
+
+        // Backward compatibility: If knowledge levels are not yet explicitly categorized into
+        // moduleOnly or certificateOnly, default any level that has outcomes to moduleOnly.
+        if (modules.isEmpty() && certificates.isEmpty()) {
+            if (!foundation.isEmpty()) modules.add("FOUNDATION");
+            if (!intermediate.isEmpty()) modules.add("INTERMEDIATE");
+            if (!advanced.isEmpty()) modules.add("ADVANCED");
+        }
 
         return new MicroSkill(
                 MicroSkillId.fromString(idStr),
@@ -184,9 +206,11 @@ public class Neo4jMicroSkillRepository implements MicroSkillRepository {
                 code,
                 name,
                 desc,
-                macroCode,
                 SkillStatus.fromString(statusStr),
                 createdAt,
-                updatedAt);
+                updatedAt,
+                new SkillProvision(modules, certificates, foundation, intermediate, advanced),
+                node.version(),node.version());
     }
+    private static List<String> orEmpty(List<String> values){return values==null?List.of():values;}
 }

@@ -1,0 +1,80 @@
+---
+title: "ACT-05 - Role-Level assessment, evidence and requirement pathway - Swimlane"
+config: {theme: base, look: classic, flowchart: {htmlLabels: true}}
+---
+flowchart TD
+  subgraph Actor0["L&amp;D Manager"]
+    direction TB
+    start(("Start"))
+    config["Publish Baseline policy for Role and member Level"]
+  end
+  subgraph Actor1["Employee"]
+    direction TB
+    choose["Choose available Role and actual member Level"]
+    baseline["Start or resume full frozen Baseline paper"]
+    confirm["Confirm exact requirement input and request pathway"]
+    option{"Module or certificate provision?"}
+    learn["Study accepted pinned module;<br/>complete exact content conditions"]
+    assess["Take Skill paper: MAIN and all prerequisite groups"]
+    cert["Submit HTTPS link or private PDF/image"]
+  end
+  subgraph Actor2["System Handler"]
+    direction TB
+    evidence["Read exact compatible official evidence"]
+    need{"Baseline groups remain?"}
+    finish["Submit or deadline finalization;<br/>per-group diagnostics only"]
+    bind["Bind Role and Level;<br/>generate requirement roots and alternatives"]
+    admission{"Configured provision and approval ready?"}
+    evaluate["Score groups; veto requires full retake;<br/>failed unachieved B adds required B work"]
+    award["Write exact official evidence when qualified;<br/>retain diagnostics and NEED_REVIEW separately"]
+    recalc["Recalculate immutable successor;<br/>retain valid approval basis and progress"]
+    block{"Blocking REQUIRED work remains?"}
+    release["Permit target change if no active attempt;<br/>old bypass needs stay parallel and non-gating"]
+    done(("End"))
+    required{"Required learning remains?"}
+    reviewed{"Valid approval basis retained?"}
+  end
+  subgraph Actor3["Expert"]
+    direction TB
+    skillPolicy["Publish shared Skill-knowledge policy"]
+    review["Check choices and order;<br/>approve exact revision and hash"]
+    repair["Repair provision or reasoned scoped bypass;<br/>policy boundary remains open"]
+    certReview["Review exact certificate submission"]
+    skillStart(("Start"))
+  end
+  start --> config
+  config --> choose
+  choose --> evidence
+  evidence --> need
+  skillStart --> skillPolicy
+  need -->|"yes"| baseline
+  baseline --> finish
+  finish --> confirm
+  need -->|"no"| confirm
+  confirm --> bind
+  bind --> required
+  required -->|"yes"| admission
+  required -->|"no"| release
+  admission -->|"repair needed"| repair
+  repair --> admission
+  admission -->|"ready"| reviewed
+  reviewed -->|"yes"| option
+  reviewed -->|"no"| review
+  review --> option
+  option -->|"module"| learn
+  learn --> assess
+  assess --> evaluate
+  evaluate -->|"main fail or veto"| assess
+  evaluate -->|"passing main waits for B"| recalc
+  evaluate -->|"completion and prerequisites qualify"| award
+  option -->|"certificate"| cert
+  cert --> certReview
+  certReview -->|"reject with reason"| cert
+  certReview -->|"approve"| award
+  award --> recalc
+  recalc --> block
+  block -->|"yes"| admission
+  block -->|"no"| release
+  release --> done
+
+  %% Fixed actor-column layout is exported by render-business-swimlanes.cjs.

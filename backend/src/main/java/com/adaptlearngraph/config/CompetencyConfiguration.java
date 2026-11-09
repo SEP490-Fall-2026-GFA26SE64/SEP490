@@ -1,13 +1,10 @@
 package com.adaptlearngraph.config;
 
-import com.adaptlearngraph.repository.Neo4jMacroCompetencyRepository;
 import com.adaptlearngraph.repository.Neo4jMicroSkillRepository;
 import com.adaptlearngraph.repository.Neo4jPrerequisiteRepository;
 import com.adaptlearngraph.repository.Neo4jTargetRoleGraphAdapter;
-import com.adaptlearngraph.helper.MacroCompetencyMappings;
 import com.adaptlearngraph.helper.MicroSkillMappings;
 import com.adaptlearngraph.helper.ModelMapperRegistrar;
-import com.adaptlearngraph.services.MacroCompetencyApplicationService;
 import com.adaptlearngraph.services.MicroSkillApplicationService;
 import com.adaptlearngraph.services.PrerequisiteApplicationService;
 import com.adaptlearngraph.services.MicroSkillService;
@@ -20,7 +17,6 @@ import com.adaptlearngraph.services.GetMicroSkillsUseCase;
 import com.adaptlearngraph.services.GetTargetRoleGraphUseCase;
 import com.adaptlearngraph.services.ManagePrerequisiteUseCase;
 import com.adaptlearngraph.services.UpdateMicroSkillUseCase;
-import com.adaptlearngraph.repository.MacroCompetencyRepository;
 import com.adaptlearngraph.repository.MicroSkillRepository;
 import com.adaptlearngraph.repository.PrerequisiteRepository;
 import com.adaptlearngraph.repository.TargetRoleGraphPort;
@@ -28,9 +24,7 @@ import com.adaptlearngraph.entities.domain.MicroSkill;
 import com.adaptlearngraph.entities.domain.MicroSkillId;
 import com.adaptlearngraph.entities.domain.PrerequisiteEdge;
 import com.adaptlearngraph.entities.domain.SkillStatus;
-import com.adaptlearngraph.entities.domain.TargetRoleGraph;
 import com.adaptlearngraph.constants.TransactionManagers;
-import com.adaptlearngraph.repository.MacroCompetencyNodeRepository;
 import com.adaptlearngraph.repository.MicroSkillNodeRepository;
 import org.neo4j.driver.Driver;
 import org.springframework.beans.factory.ObjectProvider;
@@ -42,7 +36,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -59,11 +52,6 @@ public class CompetencyConfiguration {
     }
 
     @Bean
-    public ModelMapperRegistrar macroCompetencyMappings() {
-        return new MacroCompetencyMappings();
-    }
-
-    @Bean
     public MicroSkillApplicationService microSkillApplicationService(CreateMicroSkillUseCase createMicroSkillUseCase,
             GetMicroSkillsUseCase getMicroSkillsUseCase, UpdateMicroSkillUseCase updateMicroSkillUseCase,
             DeleteMicroSkillUseCase deleteMicroSkillUseCase, ModelMapper modelMapper) {
@@ -75,12 +63,6 @@ public class CompetencyConfiguration {
     public PrerequisiteApplicationService prerequisiteApplicationService(ManagePrerequisiteUseCase managePrerequisiteUseCase,
             ModelMapper modelMapper) {
         return new PrerequisiteApplicationService(managePrerequisiteUseCase, modelMapper);
-    }
-
-    @Bean
-    public MacroCompetencyApplicationService macroCompetencyApplicationService(
-            com.adaptlearngraph.services.GetMacroCompetenciesUseCase getMacroCompetenciesUseCase, ModelMapper modelMapper) {
-        return new MacroCompetencyApplicationService(getMacroCompetenciesUseCase, modelMapper);
     }
 
     @Bean
@@ -119,29 +101,6 @@ public class CompetencyConfiguration {
     @Bean
     public DeleteMicroSkillUseCase deleteMicroSkillUseCase(MicroSkillService microSkillService) {
         return microSkillService;
-    }
-
-    @Bean
-    public MacroCompetencyRepository macroCompetencyRepository(ObjectProvider<Driver> driverProvider,
-            ObjectProvider<MacroCompetencyNodeRepository> macros,
-            @Qualifier(TransactionManagers.NEO4J) ObjectProvider<PlatformTransactionManager> transactions) {
-        Driver driver = driverProvider.getIfAvailable();
-        if (driver != null) {
-            return new Neo4jMacroCompetencyRepository(macros.getObject(), transactions.getObject());
-        }
-        return new InMemoryFallbackMacroCompetencyRepository();
-    }
-
-    @Bean
-    public com.adaptlearngraph.services.MacroCompetencyService macroCompetencyService(
-            MacroCompetencyRepository macroCompetencyRepository) {
-        return new com.adaptlearngraph.services.MacroCompetencyService(macroCompetencyRepository);
-    }
-
-    @Bean
-    public com.adaptlearngraph.services.GetMacroCompetenciesUseCase getMacroCompetenciesUseCase(
-            com.adaptlearngraph.services.MacroCompetencyService macroCompetencyService) {
-        return macroCompetencyService;
     }
 
     @Bean
@@ -184,23 +143,6 @@ public class CompetencyConfiguration {
         return prerequisiteService;
     }
 
-    private static class InMemoryFallbackMacroCompetencyRepository implements MacroCompetencyRepository {
-        @Override
-        public List<com.adaptlearngraph.entities.domain.MacroCompetency> findAll(String organizationId) {
-            Instant now = Instant.now();
-            return List.of(
-                    new com.adaptlearngraph.entities.domain.MacroCompetency("30000000-0000-0000-0000-000000000001", "KNOWLEDGE", "Knowledge", "Core technical and conceptual domain knowledge", "ACTIVE", now, now),
-                    new com.adaptlearngraph.entities.domain.MacroCompetency("30000000-0000-0000-0000-000000000002", "COMMUNICATION", "Communication", "Interpersonal, technical communication, and collaboration", "ACTIVE", now, now),
-                    new com.adaptlearngraph.entities.domain.MacroCompetency("30000000-0000-0000-0000-000000000003", "INNOVATION", "Innovation", "Creative problem solving and novel architectural solutions", "ACTIVE", now, now),
-                    new com.adaptlearngraph.entities.domain.MacroCompetency("30000000-0000-0000-0000-000000000004", "RESPONSIBLE_AI", "Responsible AI", "AI safety, governance, transparency, and ethical machine learning deployments", "ACTIVE", now, now),
-                    new com.adaptlearngraph.entities.domain.MacroCompetency("30000000-0000-0000-0000-000000000005", "AI_LITERACY", "AI literacy", "Foundations of artificial intelligence, LLM capabilities, and organizational enablement", "ACTIVE", now, now),
-                    new com.adaptlearngraph.entities.domain.MacroCompetency("30000000-0000-0000-0000-000000000006", "GEN_AI", "Generative AI", "Modern generative AI architectures, prompt patterns, multimodal reasoning, and foundation models", "ACTIVE", now, now),
-                    new com.adaptlearngraph.entities.domain.MacroCompetency("30000000-0000-0000-0000-000000000007", "MACHINE_LEARNING", "Machine Learning", "Statistical learning, model training pipelines, deep learning, and evaluation", "ACTIVE", now, now),
-                    new com.adaptlearngraph.entities.domain.MacroCompetency("30000000-0000-0000-0000-000000000008", "LEADERSHIP", "Leadership and Management", "Engineering leadership, strategic technology management, and team empowerment", "ACTIVE", now, now)
-            );
-        }
-    }
-
     private static class InMemoryFallbackMicroSkillRepository implements MicroSkillRepository {
         private final Map<String, MicroSkill> store = new ConcurrentHashMap<>();
 
@@ -233,17 +175,16 @@ public class CompetencyConfiguration {
 
         @Override
         public List<MicroSkill> findAll(String organizationId) {
-            return search(organizationId, null, null, null);
+            return search(organizationId, null, null);
         }
 
         @Override
-        public List<MicroSkill> search(String organizationId, String query, String macroCode, SkillStatus status) {
+        public List<MicroSkill> search(String organizationId, String query, SkillStatus status) {
             return store.values().stream()
                     .filter(m -> m.getOrganizationId() == null || m.getOrganizationId().equals(organizationId))
                     .filter(m -> query == null || query.isBlank()
                             || m.getName().toLowerCase().contains(query.toLowerCase())
                             || m.getCode().toLowerCase().contains(query.toLowerCase()))
-                    .filter(m -> macroCode == null || macroCode.isBlank() || m.getMacroCompetencyCode().equalsIgnoreCase(macroCode))
                     .filter(m -> status == null || m.getStatus() == status)
                     .toList();
         }

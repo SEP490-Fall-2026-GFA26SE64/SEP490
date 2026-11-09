@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { getStatus, parsePlan, parseStatus, request, SubscriptionApiError } from './subscriptionApi'
+import { getStatus, getWorkspaces, parsePlan, parseStatus, request, SubscriptionApiError } from './subscriptionApi'
 
 const terms = { name: 'Starter', description: 'Description', priceVnd: 4900000, currency: 'VND', durationMonths: 1, employeeSeats: 20 }
 describe('Subscription API contracts', () => {
@@ -31,5 +31,26 @@ describe('Subscription API contracts', () => {
     await expect(request('/api/v1/registration/subscription/orders', 'POST', {})).rejects.toBeInstanceOf(SubscriptionApiError)
     expect(fetcher.mock.calls[0][0]).toBe('/api/v1/registration/csrf')
     expect(fetcher.mock.calls[1][1].headers['X-CSRF-TOKEN']).toBe('fixture')
+  })
+  it('retains real workspace administrator and current plan fields, including nullable names', async () => {
+    const workspace = { organizationId: 'org', name: 'Acme', status: 'SUSPENDED', setupState: 'READY',
+      subscription: { status: 'ACTIVE', current: { name: 'Purchased Starter', startsAt: '2026-11-01T00:00:00Z', endsAt: '2026-12-01T00:00:00Z' } },
+      administrators: [{ accountId: 'admin', fullName: null, email: 'admin@example.test', active: false, accountActive: true }] }
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify([workspace]))))
+    expect(await getWorkspaces()).toEqual([workspace])
+  })
+  it('preserves absent current subscription and empty administrator assignments', async () => {
+    const workspace = { organizationId: 'org', name: 'Acme', status: 'ACTIVE', setupState: 'FAILED',
+      subscription: { status: 'NONE', current: null }, administrators: [] }
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify([workspace]))))
+    expect(await getWorkspaces()).toEqual([workspace])
+  })
+  it('rejects malformed administrator flags instead of treating strings as true', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify([{
+      organizationId: 'org', name: 'Acme', status: 'ACTIVE', setupState: 'READY',
+      subscription: { status: 'NONE', current: null },
+      administrators: [{ accountId: 'admin', fullName: null, email: 'admin@example.test', active: 'false', accountActive: true }],
+    }]))))
+    await expect(getWorkspaces()).rejects.toThrow('Invalid server state.')
   })
 })

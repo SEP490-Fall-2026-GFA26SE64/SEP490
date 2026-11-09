@@ -8,7 +8,7 @@ For an empty local setup: set `CATALOG_READ_ONLY=false`, start postgres/neo4j, r
 
 The entries below are historical evidence and must not be read as the current source/runtime version.
 
-User-authorized local cutover on 2026-10-22 replaced the backed-up Backend P3/Platform P4 fixture with the official documents/dataset/import/ontology_seed.json:827 nodes/4536 relationships. Six official node-ID uniqueness constraints are created by that package's importer. No SchemaMigration/JobDomain/MacroCompetency/Course seed is active.
+User-authorized local cutover on 2026-10-22 replaced the backed-up Backend P3/Platform P4 fixture with the official documents/dataset/import/ontology_seed.json:827 nodes/4536 relationships. Six official node-ID uniqueness constraints are created by that package's importer. No SchemaMigration/JobDomain/Course seed is active.
 
 Historical V1–V4 graph scripts and GraphSchemaMigrator are now only in src/test scope for an existing legacy compatibility test; production migrate startup cannot load them. DevelopmentCatalogSeeder/DevelopmentTargetSelectionSeeder and obsolete fixture-only checks are removed. Legacy graph CRUD controllers require explicit catalog.legacy-api.enabled=true and must never be enabled against the official graph until their owner aligns the schema. Read adapters still need authoritative review/permission integration; no fabricated fields are added to official nodes.
 
@@ -18,7 +18,7 @@ Session1 (2026-10-22): the already-seeded official graph is an external read-onl
 
 The active ontology contract is defined in `documents/neo4j_schema.md` and `documents/dataset/ONTOLOGY.md` at the repository root. It has six node labels and seven relationship types. Course is retired. LearningModule TEACHES MicroSkill is many-to-many; skill prerequisites retain only requiredScore plus common metadata.
 
-V1–V3 are immutable historical migrations: their checksums may already be recorded in a database. V4 removes the Course ID constraint without deleting any data. The migration runner is schema-only and does not import or transform a catalog. Legacy JobDomain/MacroCompetency constraints remain for the existing legacy API; they do not define the current ontology.
+V1–V3 are immutable historical migrations: their checksums may already be recorded in a database. V4 removes the Course ID constraint without deleting any data. The migration runner is schema-only and does not import or transform a catalog. Legacy JobDomain constraints remain for the existing legacy API; they do not define the current ontology.
 
 Use `documents/dataset/import/import_neo4j.py` for a validated import into an empty isolated graph. The importer does not overwrite an existing legacy/v0.7 database. It validates module/skill coverage and unique teaching pairs, prerequisites, fields and source-backed jobPosition values. A future write API must preserve these invariants in each transaction.
 

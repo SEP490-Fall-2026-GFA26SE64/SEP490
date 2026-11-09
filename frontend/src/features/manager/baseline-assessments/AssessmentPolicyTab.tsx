@@ -1,121 +1,86 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Button } from '../../../shared/components/ui/Button'
 import { Badge } from '../../../shared/components/ui/Badge'
 import { Card, CardContent, CardHeader } from '../../../shared/components/ui/Card'
 import { Dialog, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../../../shared/components/ui/Dialog'
 import { Input } from '../../../shared/components/ui/Input'
-import { Pagination } from '../../../shared/components/ui/Pagination'
+import { Tabs, TabsList, TabsTrigger } from '../../../shared/components/ui/Tabs'
 import { Heading } from '../../../shared/components/typography/Heading'
 import { Text } from '../../../shared/components/typography/Text'
 import { useTranslation } from '../../../shared/i18n/LanguageContext'
-import { AdaptiveBaselineApiError } from './adaptiveBaselineApi'
-import { AdaptiveErrorNotice, AdaptiveLoading } from './AdaptiveBaselineFeedback'
-import { getAssessmentPolicy, listAssessmentPolicies, runPolicyCommand, type PolicyCommand, type PolicyPage, type PolicyState, type PolicyValues, type PolicyVersion } from './assessmentPolicyApi'
+import { bankRequest, type BankSession } from '../../../shared/api/questionBankApi'
+import { getRulePolicy, listRulePolicies, rulePolicy, runRulePolicyCommand, type AssessmentPurpose, type RulePolicyState, type RulePolicyVersion, type RulePolicyCommand } from './assessmentRulePolicyApi'
 
-const fields = ['stopSe', 'highConfidenceSe', 'mediumConfidenceSe', 'k'] as const
-type Field = typeof fields[number]
-type Draft = Record<Field, string>
-const suggestions: Draft = { stopSe: '0.5', highConfidenceSe: '0.35', mediumConfidenceSe: '0.7', k: '1' }
-const draftOf = (values: PolicyValues): Draft => Object.fromEntries(fields.map(field => [field, String(values[field])])) as Draft
-
-export function AssessmentPolicyTab({ onPendingChange, returnToBaseline }: { onPendingChange: (pending: boolean) => void; returnToBaseline?: string }) {
-  const navigate = useNavigate()
-  const { t, language } = useTranslation(), tr = (key: string) => t(`assessmentPolicy.${key}`)
-  const [state, setState] = useState<PolicyState | null>(null), [versions, setVersions] = useState<PolicyPage | null>(null)
-  const [page, setPage] = useState(0), [reload, setReload] = useState(0), [loading, setLoading] = useState(true)
-  const [draft, setDraft] = useState<Draft | null>(null), [errors, setErrors] = useState<Partial<Record<Field, string>>>({})
-  const [error, setError] = useState<AdaptiveBaselineApiError | null>(null), [notice, setNotice] = useState('')
-  const [pending, setPending] = useState<PolicyCommand | null>(null), [busy, setBusy] = useState(false), [needsRefresh, setNeedsRefresh] = useState(false)
-  const [confirm, setConfirm] = useState<PolicyVersion | null>(null)
-  const inFlight = useRef(false), summary = useRef<HTMLDivElement>(null)
-  useEffect(() => { onPendingChange(busy || pending !== null || needsRefresh) }, [busy, pending, needsRefresh, onPendingChange])
-  useEffect(() => () => onPendingChange(false), [onPendingChange])
+const selectClass = 'w-full rounded-lg border border-border bg-background px-3 py-2 text-[length:var(--text-body-sm)] text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary'
+type GroupDraft = { skillId: string; knowledgeLevel: string; totalCount: string; requiredCorrectCount: string; mandatoryRequired: boolean; allWrongVeto: boolean }
+export function AssessmentPolicyTab(props: { onPendingChange?: (pending: boolean) => void; returnToBaseline?: string }) {
+  const { language } = useTranslation(), [purpose, setPurpose] = useState<AssessmentPurpose>('BASELINE'), [locked, setLocked] = useState(false)
+  const { onPendingChange } = props
+  const reportPending = useCallback((value: boolean) => { setLocked(value); onPendingChange?.(value) }, [onPendingChange])
+  return <div className="space-y-5"><Tabs value={purpose} onValueChange={value => { if (!locked) setPurpose(value as AssessmentPurpose) }}><TabsList>
+    <TabsTrigger value="BASELINE" disabled={locked}>{language === 'vi' ? 'Đánh giá đầu vào' : 'Baseline'}</TabsTrigger>
+    <TabsTrigger value="SKILL_ASSESSMENT" disabled={locked}>{language === 'vi' ? 'Đánh giá kỹ năng' : 'Skill Assessment'}</TabsTrigger>
+  </TabsList></Tabs><RulePolicyEditor key={purpose} purpose={purpose} onPendingChange={reportPending} returnToBaseline={props.returnToBaseline} /></div>
+}
+function RulePolicyEditor({ purpose, onPendingChange, returnToBaseline }: { purpose: AssessmentPurpose; onPendingChange: (pending: boolean) => void; returnToBaseline?: string }) {
+  const { language } = useTranslation(), vi = language === 'vi', copy = (en: string, vn: string) => vi ? vn : en, navigate = useNavigate()
+  const [state, setState] = useState<RulePolicyState | null>(null), [versions, setVersions] = useState<RulePolicyVersion[]>([]), [skills, setSkills] = useState<BankSession['skills']>([])
+  const [timer, setTimer] = useState(''), [wait, setWait] = useState(''), [max, setMax] = useState(''), [groups, setGroups] = useState<GroupDraft[]>([])
+  const [busy, setBusy] = useState(false), [loading, setLoading] = useState(true), [error, setError] = useState(''), [notice, setNotice] = useState(''), [page, setPage] = useState(0), [reload, setReload] = useState(0)
+  const [pending, setPending] = useState<RulePolicyCommand | null>(null), [confirm, setConfirm] = useState<RulePolicyVersion | null>(null), inFlight = useRef(false), initialized = useRef(false)
+  useEffect(() => { onPendingChange(busy || pending !== null); return () => onPendingChange(false) }, [busy, pending, onPendingChange])
   useEffect(() => {
     const controller = new AbortController()
-    void Promise.all([getAssessmentPolicy(controller.signal), listAssessmentPolicies(page, controller.signal)])
-      .then(([current, list]) => {
+    void Promise.all([getRulePolicy(purpose, controller.signal), listRulePolicies(purpose, page, controller.signal), bankRequest<BankSession>('/session', undefined, controller.signal)])
+      .then(([current, history, session]) => {
         if (controller.signal.aborted) return
-        setState(current); setVersions(list); setError(null); setNeedsRefresh(false)
-        setDraft(previous => previous ?? (current.active ? draftOf(current.active.pin.values) : { ...suggestions }))
-      })
-      .catch((cause: unknown) => { if (!controller.signal.aborted) setError(asError(cause)) })
+        setState(current); setVersions(history); setSkills(session.skills); setError('')
+        if (!initialized.current) {
+          initialized.current = true
+          if (current.active) { const c = current.active.configuration; setTimer(String(c.timeLimitSeconds)); setWait(String(c.retakeWaitSeconds)); setMax(String(c.maxAttempts)); setGroups(c.groups.map(g => ({ ...g, totalCount: String(g.totalCount), requiredCorrectCount: String(g.requiredCorrectCount) }))) }
+        }
+      }).catch((e: unknown) => { if (!controller.signal.aborted) setError(e instanceof Error ? e.message : 'Unable to load policies.') })
       .finally(() => { if (!controller.signal.aborted) setLoading(false) })
     return () => controller.abort()
-  }, [page, reload])
-  const locked = busy || pending !== null || needsRefresh || loading || !state
-  async function execute(command: PolicyCommand) {
+  }, [purpose, page, reload])
+  const locked = busy || pending !== null || loading || !state
+  async function execute(command: RulePolicyCommand) {
     if (inFlight.current) return
-    inFlight.current = true; setBusy(true); setPending(command); setError(null); setNotice(''); setConfirm(null)
-    try {
-      const result = await runPolicyCommand(command)
-      setPending(null)
-      setNotice(result.kind === 'saved' ? (result.noOp ? 'unchanged' : 'saved') : 'activated')
-      setLoading(true); setPage(0); setReload(value => value + 1)
-    } catch (cause: unknown) {
-      const failure = asError(cause); setError(failure)
-      const uncertain = failure.status === 0 || failure.status >= 500 || failure.code === 'INVALID_RESPONSE'
-      if (!uncertain) setPending(null)
-      if (failure.status === 409) setNeedsRefresh(true)
-    } finally { inFlight.current = false; setBusy(false) }
+    inFlight.current = true; setBusy(true); setPending(command); setError(''); setNotice(''); setConfirm(null)
+    try { await runRulePolicyCommand(command); setPending(null); setNotice(copy('Policy saved.', 'Đã lưu cấu hình.')); setLoading(true); setReload(v => v + 1) }
+    catch (e) { setError(e instanceof Error ? e.message : copy('Unable to save.', 'Không lưu được.')); const status = e && typeof e === 'object' && 'status' in e ? Number(e.status) : 0; if (status >= 400 && status < 500) { setPending(null); setLoading(true); setReload(v => v + 1) } }
+    finally { inFlight.current = false; setBusy(false) }
   }
   function save() {
-    if (locked || !draft) return
-    const invalid: Partial<Record<Field, string>> = {}
-    const values = {} as PolicyValues
-    for (const field of fields) {
-      const raw = draft[field].trim(), value = Number(raw)
-      if (!raw) invalid[field] = tr('required')
-      else if (!Number.isFinite(value) || value <= 0) invalid[field] = tr('positive')
-      values[field] = value
-    }
-    if (!invalid.mediumConfidenceSe && !invalid.highConfidenceSe && values.mediumConfidenceSe <= values.highConfidenceSe) invalid.mediumConfidenceSe = tr('ordered')
-    if (!invalid.k && values.k > 10) invalid.k = tr('kRange')
-    setErrors(invalid)
-    if (Object.keys(invalid).length) { queueMicrotask(() => summary.current?.focus()); return }
-    void execute({ kind: 'save', commandKey: crypto.randomUUID(), values })
+    try {
+      const number = (value: string) => { if (!value.trim()) throw new Error('Required'); return Number(value) }
+      const configuration = rulePolicy({ timeLimitSeconds: number(timer), retakeWaitSeconds: number(wait), maxAttempts: number(max), groups: groups.map(g => ({ ...g, totalCount: number(g.totalCount), requiredCorrectCount: number(g.requiredCorrectCount) })) })
+      void execute({ purpose, kind: 'save', commandKey: crypto.randomUUID(), configuration })
+    } catch { setError(copy('Enter valid timing and unique skill-level groups. Required correct answers must be within the total.', 'Nhập thời gian hợp lệ và nhóm kỹ năng–mức không trùng. Số câu đúng bắt buộc phải nằm trong tổng số câu.')) }
   }
+  const patchGroup = (index: number, patch: Partial<GroupDraft>) => setGroups(all => all.map((g, i) => i === index ? { ...g, ...patch } : g))
   return <div className="space-y-5">
-    {returnToBaseline && <div role="status" className="space-y-3 rounded-lg border border-border bg-muted/30 p-4">
-      <Text variant="body-sm">{tr(state?.active ? 'readyToReturn' : 'requiredForBaseline')}</Text>
-      <Button variant="outline" disabled={locked || !state?.active || error !== null} onClick={() => navigate(returnToBaseline)}>{tr('returnBaseline')}</Button>
-    </div>}
-    <Card><CardHeader><Heading level={2} size="section">{tr('title')}</Heading><Text>{tr('description')}</Text></CardHeader>
-      <CardContent className="space-y-4">
-        {loading && <AdaptiveLoading />}
-        {error && <AdaptiveErrorNotice error={error} />}
-        {needsRefresh && <Text role="alert" tone="destructive">{tr('stale')}</Text>}
-        {notice && <Text role="status" tone="success">{tr(notice)}</Text>}
-        {!loading && state && <div className="flex flex-wrap items-center gap-3"><Badge variant={state.active ? 'success' : 'warning'}>{state.active ? `${tr('activeVersion')} ${state.active.version}` : tr('noActive')}</Badge><Text variant="body-sm">{tr('historyHelp')}</Text></div>}
-        {pending && !busy && <div className="space-y-2 rounded-lg border border-warning/40 bg-warning/5 p-4"><Text role="status">{tr('uncertain')}</Text><Button variant="outline" onClick={() => void execute(pending)}>{tr('retry')}</Button></div>}
-        <Button variant="outline" disabled={busy} onClick={() => { setLoading(true); setReload(value => value + 1) }}>{tr('refresh')}</Button>
-        {draft && <form className="space-y-4" noValidate onSubmit={event => { event.preventDefault(); save() }}>
-          {Object.keys(errors).length > 0 && <div ref={summary} tabIndex={-1} role="alert" className="rounded-lg border border-destructive/40 bg-destructive/5 p-4 text-destructive"><Text>{tr('errorSummary')}</Text><ul className="list-disc pl-5">{fields.filter(field => errors[field]).map(field => <li key={field}><a href={`#assessment-policy-${field}`} className="underline">{tr(field)}: {errors[field]}</a></li>)}</ul></div>}
-          <div className="grid gap-4 md:grid-cols-2">{fields.map(field => <div key={field} className="space-y-2">
-            <label htmlFor={`assessment-policy-${field}`} className="text-body-sm font-medium">{tr(field)} <span aria-hidden="true">*</span></label>
-            <Input id={`assessment-policy-${field}`} type="number" step="any" required value={draft[field]} disabled={locked}
-              aria-invalid={Boolean(errors[field])} aria-describedby={`assessment-policy-${field}-help${errors[field] ? ` assessment-policy-${field}-error` : ''}`}
-              onChange={event => { setDraft({ ...draft, [field]: event.target.value }); setErrors(previous => ({ ...previous, [field]: undefined })) }} />
-            <Text id={`assessment-policy-${field}-help`} variant="caption">{tr(`${field}Help`)}</Text>
-            {errors[field] && <Text id={`assessment-policy-${field}-error`} role="alert" variant="body-sm" tone="destructive">{errors[field]}</Text>}
-          </div>)}</div>
-          <Text variant="body-sm">{tr('suggestionsHelp')}</Text>
-          <div className="flex flex-wrap gap-2"><Button type="submit" disabled={locked}>{busy ? tr('saving') : tr('save')}</Button>
-            <Button type="button" variant="outline" disabled={locked || !state?.active} onClick={() => { if (state?.active) { setDraft(draftOf(state.active.pin.values)); setErrors({}) } }}>{tr('useActive')}</Button></div>
-        </form>}
-      </CardContent></Card>
-    <Card><CardHeader><Heading level={2} size="subsection">{tr('versions')}</Heading></CardHeader><CardContent className="space-y-3">
-      {versions?.items.length === 0 && <Text>{tr('noVersions')}</Text>}
-      {versions?.items.map(version => <div key={version.pin.versionId} className="flex flex-col gap-3 rounded-lg border border-border p-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="space-y-1"><Heading level={3} size="card">{tr('version')} {version.version}</Heading><Text variant="caption">{new Date(version.createdAt).toLocaleString(language === 'vi' ? 'vi-VN' : 'en-US')}</Text><Text variant="body-sm">{fields.map(field => `${tr(field)}: ${version.pin.values[field]}`).join(' · ')}</Text></div>
-        {state?.active?.pin.versionId === version.pin.versionId ? <Badge variant="success">{tr('active')}</Badge> : <Button variant="outline" disabled={locked} onClick={() => setConfirm(version)}>{tr('activate')}</Button>}
-      </div>)}
-      {versions && <Pagination currentPage={page + 1} totalPages={Math.max(1, Math.ceil(versions.total / 20))} totalItems={versions.total} pageSize={20} onPageChange={value => { setLoading(true); setPage(value - 1) }} disabled={locked} locale={language === 'vi' ? 'vi' : 'en'} />}
+    {returnToBaseline && purpose === 'BASELINE' && <Button variant="outline" disabled={locked || !state?.active} onClick={() => navigate(returnToBaseline)}>{copy('Return to baseline', 'Trở lại đánh giá đầu vào')}</Button>}
+    <Card><CardHeader><Heading level={2} size="section">{purpose === 'BASELINE' ? copy('Baseline policy', 'Cấu hình đánh giá đầu vào') : copy('Skill Assessment policy', 'Cấu hình đánh giá kỹ năng')}</Heading><Text>{copy('Set the assessment time and passing rules for each skill and knowledge level.', 'Cấu hình thời gian và quy tắc đạt cho từng kỹ năng và mức kiến thức.')}</Text></CardHeader><CardContent className="space-y-4">
+      {loading && <Text role="status">{copy('Loading…', 'Đang tải…')}</Text>}{error && <Text role="alert" tone="destructive">{error}</Text>}{notice && <Text role="status" tone="success">{notice}</Text>}
+      {state && <Badge variant={state.active ? 'success' : 'warning'}>{state.active ? copy('Active version ', 'Phiên bản đang dùng ') + state.active.version : copy('No active policy', 'Chưa kích hoạt cấu hình')}</Badge>}
+      {pending && !busy && <div className="space-y-2 rounded-lg border border-warning/40 bg-warning/5 p-4"><Text>{copy('The result is uncertain. Retry the same request.', 'Chưa xác định được kết quả. Hãy gửi lại yêu cầu cũ.')}</Text><Button variant="outline" onClick={() => void execute(pending)}>{copy('Retry', 'Thử lại')}</Button></div>}
+      <Button variant="outline" disabled={busy} onClick={() => { setLoading(true); setReload(v => v + 1) }}>{copy('Refresh', 'Tải lại')}</Button>
+      <form className="space-y-4" onSubmit={event => { event.preventDefault(); save() }}>
+        <div className="grid gap-4 md:grid-cols-2">{[{ label: copy('Time limit (seconds)', 'Thời gian làm bài (giây)'), value: timer, set: setTimer, min: 1 }, { label: copy('Wait before retake (seconds)', 'Chờ trước khi làm lại (giây)'), value: wait, set: setWait, min: 0 }, { label: copy('Maximum attempts', 'Số lượt làm tối đa'), value: max, set: setMax, min: 1 }].map(f => <label key={f.label} className="space-y-2"><Text as="span">{f.label}</Text><Input type="number" step="1" min={f.min} required disabled={locked} value={f.value} onChange={e => f.set(e.target.value)} /></label>)}</div>
+        {groups.map((g, index) => <div key={index} className="space-y-3 rounded-lg border border-border p-3"><div className="grid gap-4 md:grid-cols-2">
+          <label className="space-y-2"><Text as="span">{copy('Skill', 'Kỹ năng')}</Text><select className={selectClass} required disabled={locked} value={g.skillId} onChange={e => patchGroup(index, { skillId: e.target.value })}><option value="">{copy('Select skill', 'Chọn kỹ năng')}</option>{skills.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}</select></label>
+          <label className="space-y-2"><Text as="span">{copy('Knowledge level', 'Mức kiến thức')}</Text><select className={selectClass} required disabled={locked} value={g.knowledgeLevel} onChange={e => patchGroup(index, { knowledgeLevel: e.target.value })}><option value="">{copy('Select level', 'Chọn mức')}</option><option value="FOUNDATION">{copy('Foundation', 'Nền tảng')}</option><option value="INTERMEDIATE">{copy('Intermediate', 'Trung cấp')}</option><option value="ADVANCED">{copy('Advanced', 'Nâng cao')}</option></select></label>
+          <label className="space-y-2"><Text as="span">{copy('Total questions', 'Tổng số câu')}</Text><Input type="number" min="1" max="500" step="1" required disabled={locked} value={g.totalCount} onChange={e => patchGroup(index, { totalCount: e.target.value })} /></label>
+          <label className="space-y-2"><Text as="span">{copy('Required correct answers', 'Số câu đúng bắt buộc')}</Text><Input type="number" min="1" max={g.totalCount || undefined} step="1" required disabled={locked} value={g.requiredCorrectCount} onChange={e => patchGroup(index, { requiredCorrectCount: e.target.value })} /></label>
+        </div><label className="flex items-center gap-2"><input type="checkbox" disabled={locked} checked={g.mandatoryRequired} onChange={e => patchGroup(index, { mandatoryRequired: e.target.checked })} /><Text as="span">{copy('Require all mandatory questions correct', 'Phải đúng tất cả câu bắt buộc')}</Text></label>
+          {purpose === 'SKILL_ASSESSMENT' && <label className="flex items-center gap-2"><input type="checkbox" disabled={locked} checked={g.allWrongVeto} onChange={e => patchGroup(index, { allWrongVeto: e.target.checked })} /><Text as="span">{copy('Block main result on all-wrong prerequisite answers', 'Chặn kết quả chính khi sai toàn bộ câu tiền đề')}</Text></label>}
+          <Button type="button" variant="outline" disabled={locked} onClick={() => setGroups(all => all.filter((_, i) => i !== index))}>{copy('Remove group', 'Bỏ nhóm')}</Button></div>)}
+        <div className="flex flex-wrap gap-2"><Button type="button" variant="outline" disabled={locked || groups.length >= 1000} onClick={() => setGroups(all => [...all, { skillId: '', knowledgeLevel: '', totalCount: '', requiredCorrectCount: '', mandatoryRequired: false, allWrongVeto: false }])}>{copy('Add skill group', 'Thêm nhóm kỹ năng')}</Button><Button type="submit" disabled={locked}>{copy('Save version', 'Lưu phiên bản')}</Button></div>
+      </form>
     </CardContent></Card>
-    <Dialog open={confirm !== null} onOpenChange={open => { if (!open) setConfirm(null) }} ariaLabel={tr('confirmTitle')}>
-      <DialogHeader><DialogTitle>{tr('confirmTitle')}</DialogTitle><DialogDescription>{tr('confirmHelp')}</DialogDescription></DialogHeader>
-      <DialogFooter><Button variant="outline" onClick={() => setConfirm(null)}>{t('common.cancel')}</Button><Button disabled={busy || !confirm || !state} onClick={() => { if (confirm && state) void execute({ kind: 'activate', commandKey: crypto.randomUUID(), policyVersionId: confirm.pin.versionId, expectedActivationRevision: state.activationRevision }) }}>{tr('activate')}</Button></DialogFooter>
-    </Dialog>
+    <Card><CardHeader><Heading level={2} size="subsection">{copy('Versions', 'Các phiên bản')}</Heading></CardHeader><CardContent className="space-y-3">{!versions.length && <Text>{copy('No versions yet.', 'Chưa có phiên bản.')}</Text>}{versions.map(v => <div key={v.id} className="flex flex-col gap-3 rounded-lg border border-border p-3 sm:flex-row sm:items-center sm:justify-between"><div><Heading level={3} size="card">{copy('Version ', 'Phiên bản ')}{v.version}</Heading><Text variant="caption">{new Date(v.createdAt).toLocaleString(vi ? 'vi-VN' : 'en-US')} · {v.configuration.groups.length} {copy('groups', 'nhóm')}</Text></div>{v.id === state?.active?.id ? <Badge variant="success">{copy('Active', 'Đang dùng')}</Badge> : <Button variant="outline" disabled={locked} onClick={() => setConfirm(v)}>{copy('Activate', 'Kích hoạt')}</Button>}</div>)}<div className="flex gap-2"><Button variant="outline" disabled={locked || page === 0} onClick={() => { setLoading(true); setPage(p => p - 1) }}>{copy('Previous', 'Trang trước')}</Button><Button variant="outline" disabled={locked || versions.length < 20} onClick={() => { setLoading(true); setPage(p => p + 1) }}>{copy('Next', 'Trang sau')}</Button></div></CardContent></Card>
+    <Dialog open={confirm !== null} onOpenChange={open => { if (!open) setConfirm(null) }} ariaLabel={copy('Activate policy', 'Kích hoạt cấu hình')}><DialogHeader><DialogTitle>{copy('Activate policy', 'Kích hoạt cấu hình')}</DialogTitle><DialogDescription>{copy('New attempts use this version. Attempts already started keep their saved policy and deadline.', 'Lượt làm mới dùng phiên bản này. Lượt đã bắt đầu giữ cấu hình và hạn làm bài đã lưu.')}</DialogDescription></DialogHeader><DialogFooter><Button variant="outline" onClick={() => setConfirm(null)}>{copy('Cancel', 'Hủy')}</Button><Button disabled={busy || !confirm || !state} onClick={() => { if (confirm && state) void execute({ purpose, kind: 'activate', commandKey: crypto.randomUUID(), versionId: confirm.id, expectedRevision: state.activationRevision }) }}>{copy('Activate', 'Kích hoạt')}</Button></DialogFooter></Dialog>
   </div>
 }
-function asError(cause: unknown): AdaptiveBaselineApiError { return cause instanceof AdaptiveBaselineApiError ? cause : new AdaptiveBaselineApiError(0, 'NETWORK_ERROR') }

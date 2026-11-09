@@ -13,7 +13,7 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 
 /** REQ-009 Employee-safe result/history API; trusted actor and tenant come from the server context. */
 @RestController
-@Profile("(local | demo) & !prod")
+@Profile("(local | demo) & !prod & !workspace-baseline")
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 @ConditionalOnProperty(prefix = "assessment.baseline.adaptive", name = {"enabled", "persistence.enabled", "eligibility.enabled", "attempts.enabled", "attempts.finalization.enabled"}, havingValue = "true")
 @RequestMapping(value = ApiEndpoints.ADAPTIVE_ATTEMPT_RESULT, produces = "application/json")

@@ -8,14 +8,14 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Organization-scoped access to {@code :MicroSkill} and the skill-to-skill prerequisite relationships. Reads that join the
- * owning MacroCompetency or return whole prerequisite edges run through {@code Neo4jClient}; no unscoped CRUD is exposed.
+ * Organization-scoped access to {@code :MicroSkill} and the skill-to-skill prerequisite relationships. Reads that
+ * return whole prerequisite edges run through {@code Neo4jClient}; no unscoped CRUD is exposed.
  */
 public interface MicroSkillNodeRepository extends Repository<MicroSkillNode, String> {
 
     boolean existsByOrganizationIdAndCode(String organizationId, String code);
 
-    // MERGE with ON CREATE / ON MATCH sets plus re-pointing the single owning MacroCompetency (same organization).
+    // MERGE with ON CREATE / ON MATCH sets (same organization).
     @Transactional(TransactionManagers.NEO4J)
     @Query("""
             MERGE (s:MicroSkill {id: $id})
@@ -25,7 +25,6 @@ public interface MicroSkillNodeRepository extends Repository<MicroSkillNode, Str
                 s.name = $name,
                 s.description = $description,
                 s.definition = $description,
-                s.macroCompetencyCode = $macroCompetencyCode,
                 s.status = $status,
                 s.version = '0.10.0',
                 s.reviewStatus = 'APPROVED',
@@ -35,23 +34,12 @@ public interface MicroSkillNodeRepository extends Repository<MicroSkillNode, Str
                 s.name = $name,
                 s.description = $description,
                 s.definition = $description,
-                s.macroCompetencyCode = $macroCompetencyCode,
                 s.status = $status,
                 s.updatedAt = datetime($updatedAt)
-            WITH s
-            OPTIONAL MATCH (oldMacro:MacroCompetency)-[oldRel:HAS_SKILL]->(s)
-            WHERE oldMacro.code <> $macroCompetencyCode OR coalesce(oldMacro.organizationId, '') <> $organizationId
-            DELETE oldRel
-            WITH s
-            MERGE (macro:MacroCompetency {code: $macroCompetencyCode, organizationId: $organizationId})
-            ON CREATE SET macro.id = randomUUID(), macro.name = $macroCompetencyCode,
-                macro.status = 'ACTIVE', macro.createdAt = datetime(), macro.updatedAt = datetime()
-            MERGE (macro)-[rel:HAS_SKILL]->(s)
-            ON CREATE SET rel.status = 'ACTIVE', rel.createdAt = datetime(), rel.updatedAt = datetime()
             """)
     void merge(@Param("id") String id, @Param("organizationId") String organizationId, @Param("code") String code,
             @Param("name") String name, @Param("description") String description,
-            @Param("macroCompetencyCode") String macroCompetencyCode, @Param("status") String status,
+            @Param("status") String status,
             @Param("createdAt") String createdAt, @Param("updatedAt") String updatedAt);
 
     // Aggregate over four optional relationship patterns.

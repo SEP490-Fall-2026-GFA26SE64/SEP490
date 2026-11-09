@@ -44,18 +44,34 @@ public interface OrganizationMembershipJpaRepository
             """)
     List<Listed> members(@Param("organization") UUID organizationId);
 
-    /** Active Employee seats: active membership of an active account with the EMPLOYEE role. */
+    record Administrator(UUID organizationId, UUID accountId, String fullName, String email,
+                         Boolean active, Boolean accountActive) {}
+
     @Query("""
-            select count(m) from OrganizationMembershipEntity m join AccountEntity a on a.accountId = m.accountId
+            select new com.adaptlearngraph.repository.OrganizationMembershipJpaRepository$Administrator(
+                m.organizationId, m.accountId, coalesce(p.fullName, r.adminName), a.identifier, m.active, a.active)
+            from OrganizationMembershipEntity m join AccountEntity a on a.accountId = m.accountId
+                and a.organizationId = m.organizationId
+            join OrganizationMembershipRoleEntity role on role.membershipId = m.membershipId
+            left join WorkspaceAccountProfileEntity p on p.accountId = m.accountId
+            left join OrganizationRegistrationEntity r on r.accountId = m.accountId
+            where m.organizationId in :organizations and role.roleCode = 'ORGANIZATION_ADMINISTRATOR'
+            order by a.identifier, m.accountId
+            """)
+    List<Administrator> administrators(@Param("organizations") List<UUID> organizationIds);
+
+    /** Active seats: active membership of an active account with any role except ORGANIZATION_ADMINISTRATOR. */
+    @Query("""
+            select count(distinct m) from OrganizationMembershipEntity m join AccountEntity a on a.accountId = m.accountId
             join OrganizationMembershipRoleEntity r on r.membershipId = m.membershipId
-            where m.organizationId = :organization and m.active = true and a.active = true and r.roleCode = 'EMPLOYEE'
+            where m.organizationId = :organization and m.active = true and a.active = true and r.roleCode != 'ORGANIZATION_ADMINISTRATOR'
             """)
     long usedSeats(@Param("organization") UUID organizationId);
 
     @Query("""
             select count(distinct a.accountId) from AccountEntity a join OrganizationMembershipEntity m on m.accountId = a.accountId
             join OrganizationMembershipRoleEntity r on r.membershipId = m.membershipId
-            where m.organizationId = :organization and a.active = true and m.active = true and r.roleCode = 'EMPLOYEE'
+            where m.organizationId = :organization and a.active = true and m.active = true and r.roleCode != 'ORGANIZATION_ADMINISTRATOR'
             """)
     long distinctEmployeeAccounts(@Param("organization") UUID organizationId);
 

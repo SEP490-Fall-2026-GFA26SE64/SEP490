@@ -90,9 +90,27 @@ public final class JpaSubscriptionWorkspaceStore implements SubscriptionWorkspac
     }
 
     @Override
-    public List<Workspace> workspaces() {
-        return data.organizations().withWorkspaces().stream()
-                .map(row -> new Workspace(row.organizationId(), row.name(), row.status(), row.setupState())).toList();
+    public List<Workspace> workspaces(Instant now) {
+        var organizations = data.organizations().withWorkspaces();
+        if (organizations.isEmpty()) return List.of();
+        var ids = organizations.stream().map(OrganizationJpaRepository.Listed::organizationId).toList();
+        var administrators = data.memberships().administrators(ids).stream()
+                .collect(java.util.stream.Collectors.groupingBy(OrganizationMembershipJpaRepository.Administrator::organizationId));
+        var periods = data.subscriptions().directoryPeriods(ids).stream()
+                .collect(java.util.stream.Collectors.groupingBy(SubscriptionJpaRepository.DirectoryPeriod::organizationId));
+        return organizations.stream().map(row -> {
+            var history = periods.getOrDefault(row.organizationId(), List.of());
+            var current = history.stream().filter(p -> !p.startsAt().isAfter(now) && p.endsAt().isAfter(now))
+                    .findFirst().orElse(null);
+            String status = current != null ? "ACTIVE" : history.isEmpty() ? "NONE" :
+                    history.stream().anyMatch(p -> p.startsAt().isAfter(now)) ? "SCHEDULED" : "EXPIRED";
+            var subscription = new WorkspaceSubscription(status, current == null ? null :
+                    new CurrentPlan(current.name(), current.startsAt(), current.endsAt()));
+            var admins = administrators.getOrDefault(row.organizationId(), List.of()).stream()
+                    .map(admin -> new WorkspaceAdministrator(admin.accountId(), admin.fullName(), admin.email(),
+                            Boolean.TRUE.equals(admin.active()), Boolean.TRUE.equals(admin.accountActive()))).toList();
+            return new Workspace(row.organizationId(), row.name(), row.status(), row.setupState(), subscription, admins);
+        }).toList();
     }
 
     @Override
@@ -105,16 +123,57 @@ public final class JpaSubscriptionWorkspaceStore implements SubscriptionWorkspac
         });
     }
 
+    private static final String TR_DELIMITER = " || TR:";
+
+    private record ParsedJobPosition(String cleanJobPositionName, String targetRoleId, String targetRoleCode,
+                                     String targetRoleName, String targetRoleLevel) {}
+
+    private static ParsedJobPosition parseJobPositionName(String raw) {
+        if (raw == null || !raw.contains(TR_DELIMITER)) {
+            return new ParsedJobPosition(raw, null, null, null, null);
+        }
+        int idx = raw.indexOf(TR_DELIMITER);
+        String clean = raw.substring(0, idx).trim();
+        String meta = raw.substring(idx + TR_DELIMITER.length()).trim();
+        String[] parts = meta.split("::", -1);
+        String roleId = parts.length > 0 && !parts[0].isBlank() ? parts[0] : null;
+        String roleCode = parts.length > 1 && !parts[1].isBlank() ? parts[1] : roleId;
+        String roleName = parts.length > 2 && !parts[2].isBlank() ? parts[2] : roleCode;
+        String roleLevel = parts.length > 3 && !parts[3].isBlank() ? parts[3] : null;
+        return new ParsedJobPosition(clean.isEmpty() ? null : clean, roleId, roleCode, roleName, roleLevel);
+    }
+
+    private static String encodeJobPositionName(String rawJobPositionName, String targetRoleId, String targetRoleCode,
+                                                String targetRoleName, String targetRoleLevel) {
+        ParsedJobPosition base = parseJobPositionName(rawJobPositionName);
+        String clean = base.cleanJobPositionName();
+        String effRoleId = (targetRoleId != null && !targetRoleId.isBlank()) ? targetRoleId.trim() : base.targetRoleId();
+        if (effRoleId == null || effRoleId.isBlank()) {
+            return clean;
+        }
+        String effCode = (targetRoleCode != null && !targetRoleCode.isBlank()) ? targetRoleCode.trim()
+                : (base.targetRoleCode() != null ? base.targetRoleCode() : effRoleId);
+        String effName = (targetRoleName != null && !targetRoleName.isBlank()) ? targetRoleName.trim()
+                : (base.targetRoleName() != null ? base.targetRoleName() : effCode);
+        String effLevel = (targetRoleLevel != null && !targetRoleLevel.isBlank()) ? targetRoleLevel.trim()
+                : (base.targetRoleLevel() != null ? base.targetRoleLevel() : "");
+        return (clean != null ? clean : "") + TR_DELIMITER + effRoleId + "::" + effCode + "::" + effName + "::" + effLevel;
+    }
+
     @Override
     public List<Member> members(UUID organizationId) {
         Map<UUID, Set<String>> roles = new HashMap<>();
         for (OrganizationMembershipRoleEntity role : data.roles().rolesInOrganization(organizationId)) {
             roles.computeIfAbsent(role.getMembershipId(), id -> new HashSet<>()).add(role.getRoleCode());
         }
-        return data.memberships().members(organizationId).stream().map(row -> new Member(row.membershipId(), row.accountId(),
-                row.fullName(), row.email(), Boolean.TRUE.equals(row.active()), roles.getOrDefault(row.membershipId(), Set.of()),
-                row.departmentId(), row.jobPositionReferenceId(), row.revision(), row.departmentName(), row.jobPositionName(),
-                Boolean.TRUE.equals(row.accountActive()))).toList();
+        return data.memberships().members(organizationId).stream().map(row -> {
+            ParsedJobPosition parsed = parseJobPositionName(row.jobPositionName());
+            return new Member(row.membershipId(), row.accountId(),
+                    row.fullName(), row.email(), Boolean.TRUE.equals(row.active()), roles.getOrDefault(row.membershipId(), Set.of()),
+                    row.departmentId(), row.jobPositionReferenceId(), row.revision(), row.departmentName(),
+                    parsed.cleanJobPositionName(), Boolean.TRUE.equals(row.accountActive()),
+                    parsed.targetRoleId(), parsed.targetRoleCode(), parsed.targetRoleName(), parsed.targetRoleLevel());
+        }).toList();
     }
 
     @Override
@@ -130,7 +189,11 @@ public final class JpaSubscriptionWorkspaceStore implements SubscriptionWorkspac
             boolean historical = java.util.Objects.equals(member.departmentId(), update.departmentId())
                     && java.util.Objects.equals(member.jobPositionReferenceId(), update.jobPositionReferenceId())
                     && (!update.roles().contains("EMPLOYEE") || member.roles().contains("EMPLOYEE"));
-            references.validate(organizationId, update.roles(), update.departmentId(), update.jobPositionReferenceId(), update.departmentName(), update.jobPositionName(), historical);
+            String storedJobPositionName = update.roles().contains("EMPLOYEE")
+                    ? encodeJobPositionName(update.jobPositionName(), update.targetRoleId(), update.targetRoleCode(),
+                        update.targetRoleName(), update.targetRoleLevel())
+                    : parseJobPositionName(update.jobPositionName()).cleanJobPositionName();
+            references.validate(organizationId, update.roles(), update.departmentId(), update.jobPositionReferenceId(), update.departmentName(), storedJobPositionName, historical);
             data.memberships().assignReferences(organizationId, memberId, update.departmentId(), update.jobPositionReferenceId());
             // Reuse the serialized role, last-administrator, revision and capacity checks in the same transaction.
             changeMember(actor, organizationId, memberId, member.active(), update.roles(), update.revision(), now);
@@ -167,10 +230,10 @@ public final class JpaSubscriptionWorkspaceStore implements SubscriptionWorkspac
                 throw new SubscriptionFailure(SubscriptionFailure.Code.REFERENCE_DATA_REQUIRED, "Employee department and jobPosition are required.");
             }
             boolean accountActive = data.accounts().active(member.accountId()).orElse(false);
-            boolean wasSeat = accountActive && member.active() && member.roles().contains("EMPLOYEE");
-            boolean newSeat = accountActive && active && roles.contains("EMPLOYEE");
+            boolean wasSeat = accountActive && member.active() && !member.roles().contains("ORGANIZATION_ADMINISTRATOR");
+            boolean newSeat = accountActive && active && !roles.contains("ORGANIZATION_ADMINISTRATOR");
             if (newSeat && !wasSeat && used(organizationId) >= summary(organizationId, now).admissionLimit()) {
-                throw new SubscriptionFailure(SubscriptionFailure.Code.CAPACITY_EXCEEDED, "No Employee seat is available.");
+                throw new SubscriptionFailure(SubscriptionFailure.Code.CAPACITY_EXCEEDED, "No seat is available.");
             }
             data.memberships().changeActive(organizationId, memberId, active, now);
             data.roles().deleteOf(memberId);

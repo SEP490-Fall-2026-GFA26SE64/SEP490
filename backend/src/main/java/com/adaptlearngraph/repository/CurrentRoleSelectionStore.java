@@ -74,6 +74,11 @@ public final class CurrentRoleSelectionStore implements Store {
         var now=AdaptiveAttemptRows.instant(data.learners().clock());
         if(old.filter(s->s.role().id().equals(role.id()) && Objects.equals(s.levelId(),levelId)).isPresent()) selected=old.get();
         else {
+            // All selection/admission callers converge here under transaction()'s learner lock.
+            // Check before archive, revision increment, selection write, audit or outbox.
+            if(data.selections().targetBound(a.organizationId(),a.learnerId()))
+                throw new Failure(409,"TARGET_ROLE_LEVEL_LOCKED");
+            if(assessmentActive(a))throw new Failure(409,"ASSESSMENT_IN_PROGRESS");
             requireNoLegacyPath(a);
             archiveInitialPathways(a,now);
             data.selections().endCurrent(a.organizationId(),a.learnerId(),now);

@@ -226,6 +226,80 @@ class OrganizationTargetRoleControllerTest {
 
     @Test
     @WithMockUser
+    @DisplayName("REQ-052-F03: PUT with status UNPUBLISHED returns 200 OK for LD_MANAGER")
+    void updateTargetRoleUnpublishReturns200ForLdManager() throws Exception {
+        UUID roleId = UUID.randomUUID();
+        TargetRole unpublishedRole = new TargetRole(
+                new TargetRoleId(roleId),
+                "org-1",
+                "ROLE_CLOUD",
+                "Cloud Architect",
+                "CLOUD_DEVOPS",
+                RoleTrack.MANAGEMENT,
+                "expert-1",
+                "Description",
+                RoleStatus.UNPUBLISHED,
+                Instant.now(),
+                Instant.now());
+
+        when(manageTargetRoleUseCase.updateTargetRole(any()))
+                .thenReturn(Optional.of(unpublishedRole));
+
+        com.adaptlearngraph.dtos.UpdateTargetRoleRequest request =
+                new com.adaptlearngraph.dtos.UpdateTargetRoleRequest(
+                        "Cloud Architect",
+                        "CLOUD_DEVOPS",
+                        "MANAGEMENT",
+                        "expert-1",
+                        "Description",
+                        null,
+                        "UNPUBLISHED",
+                        null,
+                        null,
+                        null);
+
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put("/api/v1/organizations/org-1/target-roles/" + roleId)
+                        .with(csrf())
+                        .header("X-User-Role", "LD_MANAGER")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("UNPUBLISHED"));
+    }
+
+    @Test
+    @WithMockUser
+    @DisplayName("REQ-052-F03: PUT with status UNPUBLISHED returns 403 Forbidden for DOMAIN_EXPERT")
+    void updateTargetRoleUnpublishReturns403ForDomainExpert() throws Exception {
+        UUID roleId = UUID.randomUUID();
+        TargetRole existingRole = TargetRole.createNew("org-1", "ROLE_CLOUD", "Cloud Architect", "CLOUD_DEVOPS", RoleTrack.MANAGEMENT, "expert-1", "Description").publish();
+        when(viewTargetRolesUseCase.getTargetRole(eq("org-1"), eq(new TargetRoleId(roleId))))
+                .thenReturn(Optional.of(existingRole));
+
+        com.adaptlearngraph.dtos.UpdateTargetRoleRequest request =
+                new com.adaptlearngraph.dtos.UpdateTargetRoleRequest(
+                        "Cloud Architect",
+                        "CLOUD_DEVOPS",
+                        "MANAGEMENT",
+                        "expert-1",
+                        "Description",
+                        null,
+                        "UNPUBLISHED",
+                        null,
+                        null,
+                        null);
+
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put("/api/v1/organizations/org-1/target-roles/" + roleId)
+                        .with(csrf())
+                        .header("X-User-Role", "DOMAIN_EXPERT")
+                        .header("X-User-Id", "expert-1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser
     @DisplayName("REQ-023-F04: DELETE /api/v1/organizations/{orgId}/target-roles/{roleId} returns 204 No Content for LD_MANAGER when DRAFT")
     void deleteTargetRoleReturns204() throws Exception {
         UUID roleId = UUID.randomUUID();

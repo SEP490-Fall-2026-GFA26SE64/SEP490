@@ -14,6 +14,8 @@ public final class QuestionBank {
     public List<ImportBatch> imports = new ArrayList<>();
     public static final class Question {
         public UUID id;
+        /** Source identity stays immutable when several owned banks share an authoring workspace. */
+        public UUID sourceBankId;
         public String code;
         public UUID createdBy;
         public Instant createdAt;
@@ -35,10 +37,16 @@ public final class QuestionBank {
         public UUID reviewedBy;
         public Instant reviewedAt;
         public String reason;
+        public String publicationSource;
         public Map<UUID, String> viewed = new HashMap<>();
     }
     public record Content(String prompt, List<String> options, Integer correctAnswer,
-                          String skillId, String skillName, String difficulty, String explanation) {
+                          String skillId, String skillName, String difficulty, String explanation,
+                          String knowledgeLevel, String outcomeCode, boolean mandatory) {
+        /** Historical JSON/import callers retain original difficulty without inferring knowledge. */
+        public Content(String prompt,List<String> options,Integer answer,String skill,String name,String difficulty,String explanation) {
+            this(prompt,options,answer,skill,name,difficulty,explanation,null,null,false);
+        }
         public Content { options = options == null ? List.of() : List.copyOf(options); }
     }
     public record Audit(UUID id, UUID question, UUID version, String action, UUID actor,
@@ -69,6 +77,7 @@ public final class QuestionBank {
         public boolean expert() { return "DOMAIN_EXPERT".equals(role); }
     }
     public record Choice(String id, String name) {}
+    public record KnowledgeChoice(String skillId,String knowledgeLevel,List<Choice> outcomes) {}
     public static final class Failure extends RuntimeException {
         private final int status;
         public Failure(int status, String message) { super(message); this.status=status; }

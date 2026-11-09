@@ -10,6 +10,7 @@ import org.springframework.data.neo4j.core.schema.Property;
 /**
  * Organization-owned {@code :TargetRole} catalog node. {@code title}/{@code scope} are the template's legacy names for
  * {@code name}/{@code description}; JSON-like authoring fields are stored as strings exactly as the adapter writes them.
+ * Role levels are stored strictly as connected {@code :Level} nodes via {@code :HAS_LEVEL}, not as a node property.
  */
 @Node("TargetRole")
 public record TargetRoleNode(
@@ -28,7 +29,6 @@ public record TargetRoleNode(
         @Property("status") String status,
         @Property("version") String version,
         @Property("skillTargets") String skillTargets,
-        @Property("levels") List<String> levels,
         @Property("levelCompetencies") String levelCompetencies,
         @Property("competencyIds") List<String> competencyIds,
         @Property("rejectionReason") String rejectionReason,

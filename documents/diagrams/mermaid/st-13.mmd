@@ -1,28 +1,32 @@
 ---
-title: "ST-13 - Baseline Draft and released version"
-config: {"theme":"base","fontFamily":"Segoe UI, Arial, sans-serif","themeVariables":{"fontFamily":"Segoe UI, Arial, sans-serif","fontSize":"16px","primaryColor":"#ffffff","primaryTextColor":"#0f1729","primaryBorderColor":"#64748b","secondaryColor":"#fef3eb","tertiaryColor":"#ffffff","lineColor":"#64748b","textColor":"#0f1729","mainBkg":"#ffffff","background":"#ffffff","clusterBkg":"#ffffff","clusterBorder":"#64748b","edgeLabelBackground":"#ffffff","titleColor":"#0f1729","noteBkgColor":"#fef3eb","noteTextColor":"#0f1729","noteBorderColor":"#e6650f","labelColor":"#0f1729","compositeBackground":"#ffffff","compositeTitleBackground":"#ffffff","compositeBorder":"#64748b","altBackground":"#ffffff","nodeBorder":"#64748b","nodeTextColor":"#0f1729","cScale0":"#ffffff","cScaleLabel0":"#0f1729","cScale1":"#ffffff","cScaleLabel1":"#0f1729","cScale2":"#ffffff","cScaleLabel2":"#0f1729","cScale3":"#ffffff","cScaleLabel3":"#0f1729","cScale4":"#ffffff","cScaleLabel4":"#0f1729","cScale5":"#ffffff","cScaleLabel5":"#0f1729","cScale6":"#ffffff","cScaleLabel6":"#0f1729","cScale7":"#ffffff","cScaleLabel7":"#0f1729","cScale8":"#ffffff","cScaleLabel8":"#0f1729","cScale9":"#ffffff","cScaleLabel9":"#0f1729","cScale10":"#ffffff","cScaleLabel10":"#0f1729","cScale11":"#ffffff","cScaleLabel11":"#0f1729","secondaryBorderColor":"#64748b","tertiaryBorderColor":"#64748b","secondaryTextColor":"#0f1729","tertiaryTextColor":"#0f1729"},"state":{"nodeSpacing":42,"rankSpacing":64,"padding":16,"fontSize":16,"wrappingWidth":250}}
+title: "ST-13 - Scoped Baseline and Skill policy lifecycle"
+config: {"theme":"base","fontFamily":"Segoe UI, Arial, sans-serif","themeVariables":{"fontFamily":"Segoe UI, Arial, sans-serif","fontSize":"16px","primaryColor":"#ffffff","primaryTextColor":"#0f1729","primaryBorderColor":"#64748b","secondaryColor":"#fef3eb","tertiaryColor":"#ffffff","lineColor":"#64748b","textColor":"#0f1729","mainBkg":"#ffffff","background":"#ffffff","clusterBkg":"#ffffff","clusterBorder":"#64748b","edgeLabelBackground":"#ffffff","titleColor":"#0f1729","noteBkgColor":"#fef3eb","noteTextColor":"#0f1729","noteBorderColor":"#e6650f","labelColor":"#0f1729","compositeBackground":"#ffffff","compositeTitleBackground":"#ffffff","compositeBorder":"#64748b","altBackground":"#ffffff","nodeBorder":"#64748b","nodeTextColor":"#0f1729","cScale0":"#ffffff","cScaleLabel0":"#0f1729","cScale1":"#ffffff","cScaleLabel1":"#0f1729","cScale2":"#ffffff","cScaleLabel2":"#0f1729","cScale3":"#ffffff","cScaleLabel3":"#0f1729","cScale4":"#ffffff","cScaleLabel4":"#0f1729","cScale5":"#ffffff","cScaleLabel5":"#0f1729","cScale6":"#ffffff","cScaleLabel6":"#0f1729","cScale7":"#ffffff","cScaleLabel7":"#0f1729","cScale8":"#ffffff","cScaleLabel8":"#0f1729","cScale9":"#ffffff","cScaleLabel9":"#0f1729","cScale10":"#ffffff","cScaleLabel10":"#0f1729","cScale11":"#ffffff","cScaleLabel11":"#0f1729","secondaryBorderColor":"#64748b","tertiaryBorderColor":"#64748b","secondaryTextColor":"#0f1729","tertiaryTextColor":"#0f1729"},"state":{"nodeSpacing":42,"rankSpacing":64,"padding":16,"fontSize":16,"wrappingWidth":250},"look":"neo"}
 ---
+
 stateDiagram-v2
-  state "Working Draft" as Group0 {
-    state "OPEN" as open
-    state "FINALIZED" as final
-    state "ABANDONED" as abandon
-    [*] --> open : save
-    open --> open : Save changes or keep the same Draft
-    open --> final : L&D activation succeeds
-    open --> abandon : explicit L&D discard
+  direction TB
+  state "Scoped policy workspace" as Scope {
+    state "No draft" as none
+    state "Mutable draft" as draft
+    state "Abandoned snapshot" as abandoned
+    none --> draft : Authorized owner creates draft
+    draft --> draft : Save with revision and catalog hash
+    draft --> none : Publish immutable version and consume draft
+    draft --> abandoned : L&D abandons saved baseline draft
+    abandoned --> none : Preserve history
   }
-  state "Released baseline version" as Group1 {
-    state "Active" as active
-    state "Retiring" as retiring
-    state "Inactive" as inactive
-    [*] --> active : activate
-    active --> retiring : replace / disable; pinned IN_PROGRESS attempt remains
-    active --> inactive : replace / disable; no attempt in progress
-    retiring --> inactive : last pinned attempt finalizes
+  state "Scoped activation" as Active {
+    state "No active policy" as absent
+    state "Active immutable version" as active
+    [*] --> absent
+    absent --> active : Publish first complete ready policy
+    active --> active : Replace pointer with next scoped version
   }
-  classDef accepted fill:#eaf6ef,stroke:#1a9e4a,color:#0f1729,stroke-width:1.5px
-  classDef attention fill:#fdf2f2,stroke:#dc2828,color:#0f1729,stroke-width:1.5px
-  classDef working fill:#fef3eb,stroke:#e6650f,color:#0f1729,stroke-width:1.5px
-  class open working
-  class final accepted
+  note right of Scope
+    L&D owns Role plus member Level BASELINE
+    Expert owns Skill plus knowledge SKILL_ASSESSMENT
+  end note
+  note right of Active
+    Draft may coexist with active policy
+    Pinned attempts retain original version
+  end note

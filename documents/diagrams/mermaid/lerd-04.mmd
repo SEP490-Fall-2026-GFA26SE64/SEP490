@@ -1,74 +1,97 @@
 ---
-title: "LERD-04 - Pathway, processing and reporting"
-config: {"theme":"base","fontFamily":"Segoe UI, Arial, sans-serif","themeVariables":{"fontSize":"16px","primaryColor":"#ffffff","primaryTextColor":"#0f1729","primaryBorderColor":"#64748b","lineColor":"#64748b","textColor":"#0f1729","background":"#ffffff","edgeLabelBackground":"#ffffff"},"layout":"elk","er":{"layoutDirection":"LR","nodeSpacing":36,"rankSpacing":74,"entityPadding":16,"fontSize":16,"minEntityWidth":140,"diagramPadding":24}}
+title: "LERD-04 - Requirement pathway composite identities"
+config: {"theme":"base","fontFamily":"Segoe UI, Arial, sans-serif","themeVariables":{"fontSize":"16px","primaryColor":"#ffffff","primaryTextColor":"#0f1729","primaryBorderColor":"#64748b","lineColor":"#64748b","textColor":"#0f1729","background":"#ffffff","edgeLabelBackground":"#ffffff"},"layout":"dagre","er":{"layoutDirection":"LR","nodeSpacing":36,"rankSpacing":74,"entityPadding":16,"fontSize":16,"minEntityWidth":140,"diagramPadding":24}}
 ---
+
 erDiagram
-  SRS_LERD_04_Account["Account"]
-  SRS_LERD_04_LearnerState["LearnerState"]
-  SRS_LERD_04_EmployeeRoleSelection["EmployeeRoleSelection"]
-  SRS_LERD_04_Job PositionProfile["Job PositionProfile"]
-  SRS_LERD_04_InitialGapSnapshot["InitialGapSnapshot"]
-  SRS_LERD_04_InitialPathwayRequest["InitialPathwayRequest"]
-  SRS_LERD_04_InitialPathwayRun["InitialPathwayRun"]
-  SRS_LERD_04_InitialPathwayRevision["InitialPathwayRevision"]
-  SRS_LERD_04_InitialPathwayModule["InitialPathwayModule"]
-  SRS_LERD_04_InitialPathwayTeaching["InitialPathwayTeaching"]
-  SRS_LERD_04_InitialPathwayTarget["InitialPathwayTarget"]
-  SRS_LERD_04_InitialPathwayDependency["InitialPathwayDependency"]
-  SRS_LERD_04_InitialPathwayOverride["InitialPathwayOverride"]
-  SRS_LERD_04_InitialPathwayApproval["InitialPathwayApproval"]
-  SRS_LERD_04_InitialPathwayCurrent["InitialPathwayCurrent"]
-  SRS_LERD_04_InitialPathwayReceipt["InitialPathwayReceipt"]
-  SRS_LERD_04_ProcessingStream["ProcessingStream"]
-  SRS_LERD_04_ProfileRevision["ProfileRevision"]
-  SRS_LERD_04_RecommendationRun["RecommendationRun"]
-  SRS_LERD_04_PathwayRevision["PathwayRevision"]
-  SRS_LERD_04_PathwayStep["PathwayStep"]
-  SRS_LERD_04_PathwayApproval["PathwayApproval"]
-  SRS_LERD_04_LearningActivity["LearningActivity"]
-  SRS_LERD_04_AuditEvent["AuditEvent"]
-  SRS_LERD_04_OutboxEvent["OutboxEvent"]
-  SRS_LERD_04_ProcessingJob["ProcessingJob"]
-  SRS_LERD_04_ProcessingReceipt["ProcessingReceipt"]
-  SRS_LERD_04_CohortSnapshot["CohortSnapshot"]
-  SRS_LERD_04_RoiScenario["RoiScenario"]
-  %% Initial pathway tables are defined in workspace V33 and refined by V34-V35; live application is not asserted.
-  SRS_LERD_04_Account ||--o| SRS_LERD_04_LearnerState : "learner state"
-  SRS_LERD_04_LearnerState ||--o{ SRS_LERD_04_EmployeeRoleSelection : "role selections"
-  SRS_LERD_04_EmployeeRoleSelection ||--o{ SRS_LERD_04_InitialGapSnapshot : "role gap snapshots"
-  SRS_LERD_04_Job PositionProfile ||--o{ SRS_LERD_04_InitialGapSnapshot : "baseline mastery source"
-  SRS_LERD_04_InitialGapSnapshot ||--o{ SRS_LERD_04_InitialPathwayRequest : "frozen planning input"
-  SRS_LERD_04_InitialPathwayRequest ||--o{ SRS_LERD_04_InitialPathwayRun : "generation runs"
-  SRS_LERD_04_InitialPathwayRequest ||--o{ SRS_LERD_04_InitialPathwayRevision : "content revisions"
-  SRS_LERD_04_InitialPathwayRun ||--o{ SRS_LERD_04_InitialPathwayRevision : "generation origin"
-  SRS_LERD_04_InitialPathwayRevision ||--o{ SRS_LERD_04_InitialPathwayModule : "ordered modules"
-  SRS_LERD_04_InitialPathwayModule ||--o{ SRS_LERD_04_InitialPathwayTarget : "skill targets"
-  SRS_LERD_04_InitialPathwayModule ||--o{ SRS_LERD_04_InitialPathwayTeaching : "format2 skill teaching"
-  SRS_LERD_04_InitialPathwayRevision ||--o{ SRS_LERD_04_InitialPathwayTeaching : "format2 revision scope"
-  SRS_LERD_04_InitialPathwayModule ||--o{ SRS_LERD_04_InitialPathwayDependency : "required dependencies"
-  SRS_LERD_04_InitialPathwayModule |o--o{ SRS_LERD_04_InitialPathwayDependency : "optional prerequisite provider"
-  SRS_LERD_04_InitialPathwayRevision ||--o| SRS_LERD_04_InitialPathwayOverride : "previous revision"
-  SRS_LERD_04_InitialPathwayRevision ||--o| SRS_LERD_04_InitialPathwayOverride : "next revision"
-  SRS_LERD_04_Account ||--o{ SRS_LERD_04_InitialPathwayOverride : "Expert edits"
-  SRS_LERD_04_InitialPathwayRevision ||--o| SRS_LERD_04_InitialPathwayApproval : "approved content"
-  SRS_LERD_04_Account ||--o{ SRS_LERD_04_InitialPathwayApproval : "Expert confirmation"
-  SRS_LERD_04_InitialPathwayRequest ||--o| SRS_LERD_04_InitialPathwayCurrent : "current pointer"
-  SRS_LERD_04_InitialPathwayRevision |o--o| SRS_LERD_04_InitialPathwayCurrent : "selected revision"
-  SRS_LERD_04_Account ||--o{ SRS_LERD_04_InitialPathwayReceipt : "command receipts"
-  %% Legacy pathway and reporting foundations remain separate from the initial pathway aggregate.
-  SRS_LERD_04_LearnerState ||--o{ SRS_LERD_04_ProcessingStream : "evidence processing streams"
-  SRS_LERD_04_ProcessingStream ||--o{ SRS_LERD_04_ProfileRevision : "profile revisions"
-  SRS_LERD_04_ProfileRevision ||--o{ SRS_LERD_04_RecommendationRun : "legacy recommendation input"
-  SRS_LERD_04_RecommendationRun ||--o{ SRS_LERD_04_PathwayRevision : "legacy pathway generation"
-  SRS_LERD_04_PathwayRevision ||--o{ SRS_LERD_04_PathwayStep : "legacy steps"
-  SRS_LERD_04_LearningActivity ||--o{ SRS_LERD_04_PathwayStep : "assigned learning activity"
-  SRS_LERD_04_LearnerState ||--o{ SRS_LERD_04_LearningActivity : "learning activities"
-  SRS_LERD_04_PathwayRevision ||--o| SRS_LERD_04_PathwayApproval : "legacy approval"
-  SRS_LERD_04_Account ||--o{ SRS_LERD_04_PathwayApproval : "legacy approving account"
-  SRS_LERD_04_Account |o--o{ SRS_LERD_04_AuditEvent : "human actor if present"
-  SRS_LERD_04_OutboxEvent ||--o{ SRS_LERD_04_ProcessingJob : "asynchronous jobs"
-  SRS_LERD_04_LearnerState |o--o{ SRS_LERD_04_ProcessingJob : "optional learner scope"
-  SRS_LERD_04_Account ||--o{ SRS_LERD_04_CohortSnapshot : "reporting cohort creator"
-  SRS_LERD_04_CohortSnapshot ||--o{ SRS_LERD_04_RoiScenario : "scenario scope"
-  SRS_LERD_04_Account ||--o{ SRS_LERD_04_RoiScenario : "scenario owner"
-  %% ProcessingReceipt has event/handler identity but no declared FK; no SQL relationship is invented.
+  direction TB
+  pathway_requirement_snapshot {
+    uuid id PK
+    uuid organization_id
+    uuid learner_id
+    uuid selection_id
+    bigint selection_revision
+    content_hash content_hash
+  }
+  initial_pathway_request {
+    uuid request_id PK
+    uuid organization_id
+    uuid learner_id
+    uuid selection_id
+    uuid requirement_snapshot_id "NULLABLE"
+    text flow_version "NULLABLE"
+    text generation_status
+  }
+  initial_pathway_revision {
+    uuid request_id PK
+    bigint revision PK
+    content_hash content_hash
+    text change_origin "NULLABLE"
+    bigint approval_basis_revision "NULLABLE"
+  }
+  pathway_requirement_step {
+    uuid request_id PK
+    bigint revision PK
+    uuid step_id PK
+    text skill_id
+    text knowledge_level
+    text kind
+    text state
+    uuid source_bypass_id "NULLABLE"
+    uuid fulfilled_evidence_id "NULLABLE"
+  }
+  pathway_requirement_option {
+    uuid request_id PK
+    bigint revision PK
+    uuid step_id PK
+    text module_id PK
+    text content_version PK
+    integer module_revision
+  }
+  pathway_requirement_dependency {
+    uuid request_id PK
+    bigint revision PK
+    uuid prerequisite_step_id PK
+    uuid dependent_step_id PK
+    jsonb assessed_source
+  }
+  pathway_requirement_bypass {
+    uuid id PK
+    uuid request_id
+    bigint revision
+    uuid step_id
+    uuid expert_id
+    text reason
+  }
+  pathway_requirement_snapshot ||--o{ initial_pathway_request : "owned input FK"
+  initial_pathway_request ||--o{ initial_pathway_revision : "retained revisions"
+  initial_pathway_revision ||--o{ pathway_requirement_step : "same owned revision FK"
+  pathway_requirement_step ||--o{ pathway_requirement_option : "same request revision step"
+  pathway_requirement_step ||--o{ pathway_requirement_dependency : "prerequisite and dependent FKs"
+  pathway_requirement_step ||--o{ pathway_requirement_bypass : "authorized source decision"
+  certificate_submission {
+    uuid id PK
+    uuid organization_id
+    uuid learner_id
+    text definition_id
+    text definition_version
+    bigint revision
+    text status
+    jsonb definition_snapshot
+  }
+  certificate_submission_attachment {
+    uuid submission_id PK
+    text evidence_kind
+    text private_object_key "NULLABLE"
+    text https_url "NULLABLE"
+  }
+  certificate_submission_decision {
+    uuid id PK
+    uuid submission_id
+    bigint submission_revision
+    uuid expert_id
+    text decision
+    text reason
+  }
+  certificate_submission ||--|| certificate_submission_attachment : "one evidence form FK"
+  certificate_submission ||--o| certificate_submission_decision : "same submission revision owner FK"

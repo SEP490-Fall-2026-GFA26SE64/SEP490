@@ -42,7 +42,7 @@ services:
       SPRING_PROFILES_ACTIVE: local,workspace-baseline
       PAYOS_ENABLED: ${PAYOS_ENABLED:-true}
       EMAIL_VERIFICATION_ENABLED: ${EMAIL_VERIFICATION_ENABLED:-true}
-      MFA_ENABLED: ${MFA_ENABLED:-true}
+      MFA_ENABLED: ${MFA_ENABLED:-false}
       SPRING_FLYWAY_ENABLED: 'true'
       # Preserve the V1-V41 module history already installed on this stack.
       WORKSPACE_MIGRATION_LOCATION: classpath:db/module-migration

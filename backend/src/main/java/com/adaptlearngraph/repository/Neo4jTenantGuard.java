@@ -8,7 +8,7 @@ import org.springframework.data.neo4j.core.Neo4jClient;
 /** Organization ownership checks shared by Neo4j catalog writers. */
 public final class Neo4jTenantGuard {
     private static final Set<String> LABELS = Set.of(
-            "Department", "JobPosition", "TargetRole", "Level", "Competency", "MicroSkill", "LearningModule", "MacroCompetency");
+            "Department", "JobPosition", "TargetRole", "Level", "Competency", "MicroSkill", "LearningModule");
 
     private Neo4jTenantGuard() {
     }

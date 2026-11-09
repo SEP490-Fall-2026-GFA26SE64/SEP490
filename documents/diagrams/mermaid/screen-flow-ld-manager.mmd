@@ -1,7 +1,7 @@
 ---
 title: "L&D Manager Screen Flow"
 config:
-  layout: elk
+  layout: dagre
   theme: base
   look: classic
   fontFamily: "Arial, sans-serif"
@@ -9,20 +9,21 @@ config:
   flowchart: {htmlLabels: true, curve: linear, nodeSpacing: 30, rankSpacing: 65, padding: 16}
   elk: {mergeEdges: false}
 ---
+
 flowchart LR
   L_Login["Login"]
-  L_Job Positions["Job Positions"]
-  L_Job PositionForm("Job Position Editor")
+  L_JobPositions["Job Positions"]
+  L_JobPositionForm("Job Position Editor")
   L_Experts("Expert Assignment")
   L_Roles["Target Roles"]
   L_RoleForm("Create Role")
   L_RoleEdit("Edit Role")
   L_Publication("Role Publication")
   L_Baselines["Baseline List"]
-  L_Choose("Job Position Selection")
-  L_Disable("Deactivate Baseline")
+  L_Choose("Role and Member Level Scope")
+  L_Disable("Abandon Saved Baseline Draft")
   L_Config["Baseline Configuration"]
-  L_Preview("Baseline Preview")
+  L_Preview("Draft Completion and Bank Readiness")
   L_Confirmation("Action Confirmation")
   L_Approvals["Content Approvals"]
   L_Submission("Submission Details")
@@ -31,40 +32,40 @@ flowchart LR
   L_Outcomes["Learning Outcomes"]
   L_Profile["Profile"]
 
-  L_Login -->|"Continue"| L_Job Positions
-  L_Job Positions -->|"Create / edit job position"| L_Job PositionForm
-  L_Job PositionForm -->|"Save / close"| L_Job Positions
-  L_Job Positions -->|"Assign Experts"| L_Experts
-  L_Experts -->|"Apply / close"| L_Job Positions
-  L_Job Positions --> L_Roles
+  L_Login -->|"Continue"| L_JobPositions
+  L_JobPositions -->|"Create / edit job position"| L_JobPositionForm
+  L_JobPositionForm -->|"Save / close"| L_JobPositions
+  L_JobPositions -->|"Assign Experts"| L_Experts
+  L_Experts -->|"Apply / close"| L_JobPositions
+  L_JobPositions --> L_Roles
   L_Roles -->|"Create role"| L_RoleForm
   L_RoleForm -->|"Save / close"| L_Roles
   L_Roles -->|"Edit role"| L_RoleEdit
   L_RoleEdit -->|"Save / close"| L_Roles
   L_Roles -->|"Publication action"| L_Publication
   L_Publication -->|"Confirm / close"| L_Roles
-  L_Job Positions --> L_Baselines
-  L_Baselines -->|"Choose Job Position"| L_Choose
+  L_JobPositions --> L_Baselines
+  L_Baselines -->|"Choose Role and Level"| L_Choose
   L_Choose -->|"Select"| L_Config
   L_Choose -->|"Cancel"| L_Baselines
   L_Baselines -->|"Manage"| L_Config
   L_Config -->|"Back (guarded)"| L_Baselines
-  L_Baselines -->|"Deactivate active version"| L_Disable
+  L_Baselines -->|"Abandon saved draft"| L_Disable
   L_Disable -->|"Confirm / cancel"| L_Baselines
   L_Config -->|"Preview saved Draft"| L_Preview
   L_Preview -->|"Close"| L_Config
   L_Config -->|"Confirm action"| L_Confirmation
   L_Confirmation -->|"Confirm / cancel"| L_Config
-  L_Job Positions --> L_Approvals
+  L_JobPositions --> L_Approvals
   L_Approvals -->|"View submission"| L_Submission
   L_Submission -->|"Close"| L_Approvals
   L_Approvals -->|"Request revision"| L_Revision
   L_Revision -->|"Send feedback / cancel"| L_Approvals
-  L_Job Positions --> L_Matrix
-  L_Job Positions --> L_Outcomes
-  L_Job Positions -->|"User menu"| L_Profile
-  L_Profile -.->|"Direct access"| L_Job Positions
-  L_Job Positions -->|"Logout"| L_Login
+  L_JobPositions --> L_Matrix
+  L_JobPositions --> L_Outcomes
+  L_JobPositions -->|"User menu"| L_Profile
+  L_Profile -.->|"Direct access"| L_JobPositions
+  L_JobPositions -->|"Logout"| L_Login
 
   %% Sidebar actions are available from every WorkspaceLayout page; the diagram uses the default landing page as the hub.
   %% /ld-manager/baseline-config redirects to the baseline directory, not a separate configuration page.

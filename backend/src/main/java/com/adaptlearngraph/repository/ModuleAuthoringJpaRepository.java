@@ -18,6 +18,37 @@ public interface ModuleAuthoringJpaRepository extends Repository<ModuleAuthoring
     @Query("select m.document from ModuleAuthoringEntity m where m.organizationId = :organization")
     List<String> documents(@Param("organization") String organizationId);
 
+    /** Native JSON revision projection: bounded released candidates from the original authoring owner, not a second module catalog. */
+    @Query(value="""
+            SELECT m.document::text FROM platform.module_authoring m
+            CROSS JOIN LATERAL jsonb_array_elements(m.document->'revisions') r
+            WHERE m.organization_id=:organization AND coalesce((m.document->>'archived')::boolean,false)=false
+                AND (r->>'number')::integer=(m.document->>'releasedRevision')::integer AND r->>'state'='RELEASED'
+                AND r->'payload'->>'knowledgeLevel' IS NOT NULL
+                AND EXISTS (SELECT 1 FROM jsonb_array_elements(r->'payload'->'teachings') t WHERE t->>'skillId' IN (:skills))
+            ORDER BY m.module_id LIMIT :maximum
+            """,nativeQuery=true)
+    List<String> releasedCandidates(@Param("organization") String organizationId,@Param("skills") java.util.Collection<String> skills,@Param("maximum") int maximum);
+    @Query(value="""
+            WITH retained AS (
+                SELECT module_id,revision FROM platform.module_learning_pin WHERE organization_id=:organization AND learner_id=:learner
+                UNION
+                SELECT c.module_id,c.revision FROM platform.learning_module_completion c
+                JOIN platform.learning_completion_requirement proof ON proof.organization_id=c.organization_id AND proof.learner_id=c.learner_id AND proof.module_id=c.module_id AND proof.revision=c.revision
+                WHERE c.organization_id=:organization AND c.learner_id=:learner
+            )
+            SELECT m.document::text,p.revision FROM retained p
+            JOIN platform.module_authoring m ON m.organization_id=:organization AND m.module_id=p.module_id
+            CROSS JOIN LATERAL jsonb_array_elements(m.document->'revisions') r
+            WHERE coalesce((m.document->>'archived')::boolean,false)=false
+                AND (r->>'number')::integer=p.revision AND r->>'state'='RELEASED'
+                AND (m.module_id IN (SELECT jsonb_array_elements_text(CAST(:currentModules AS jsonb)))
+                    OR EXISTS (SELECT 1 FROM jsonb_array_elements(r->'payload'->'teachings') t WHERE t->>'skillId' IN (:skills)))
+            ORDER BY m.module_id,p.revision LIMIT :maximum
+            """,nativeQuery=true)
+    List<Object[]> retainedCandidates(@Param("organization") String organizationId,@Param("learner") String learnerId,
+            @Param("skills") java.util.Collection<String> skills,@Param("currentModules") String currentModules,@Param("maximum") int maximum);
+
     /** Global module code identity (no document data); module_authoring.module_id is UNIQUE across organizations. */
     @Query("select m.moduleId from ModuleAuthoringEntity m")
     List<String> moduleIds();

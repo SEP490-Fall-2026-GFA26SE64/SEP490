@@ -35,13 +35,19 @@ public class LocalDemoSeedConfiguration {
             bank.validate(catalog);
             var latest=com.adaptlearngraph.constants.DevelopmentWorkspace.enabled(environment)
                     ? LocalCatalogBootstrap.withSoftwareDevelopment(graph) : new LocalCatalogBootstrap(graph);
-            latest.requireBaselineCompatibility(catalog);
+            if(latest.knowledgeFieldRelease())latest.requireRetainedQuestionIdentities(catalog);
+            else latest.requireBaselineCompatibility(catalog);
             var seeds=DevelopmentSeedRepositories.from(beans::getBean);
             var importer=new OfficialQuestionBankImporter(seeds.imports(),seeds.banks(),seeds.items(),seeds.locks(),transactionManager);
             if(com.adaptlearngraph.constants.DevelopmentWorkspace.enabled(environment))MainDevelopmentBankSeed.requireFreshOrProjected(seeds.technical());
             latest.bootstrap(catalogGraph);
             if(com.adaptlearngraph.constants.DevelopmentWorkspace.enabled(environment)){
                 MainDevelopmentBankSeed.prepareOwner(seeds.identities());
+                if(environment.getProperty("workspace.development.rule-seed-only",Boolean.class,false)) {
+                    seeds.identities().insertCatalogBankIfAbsent(MainDevelopmentBankSeed.securityBank(),"Information Security Analysts - catalog binding",MainDevelopmentBankSeed.id("bank-owner"));
+                    seeds.identities().insertCatalogBankIfAbsent(MainDevelopmentBankSeed.seId("bank"),"Software Developers - catalog binding",MainDevelopmentBankSeed.id("bank-owner"));
+                    context.close();return;
+                }
                 var projected=MainDevelopmentBankSeed.project(bank);
                 projected.validate(catalog);
                 importer.importManifest(projected,new OfficialQuestionBankImporter.Owner(

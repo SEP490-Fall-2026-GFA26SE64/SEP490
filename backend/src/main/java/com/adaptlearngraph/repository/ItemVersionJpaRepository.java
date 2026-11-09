@@ -23,7 +23,8 @@ public interface ItemVersionJpaRepository extends Repository<ItemVersionEntity, 
                 i.publicationState, i.prompt, i.responseSchema, i.protectedKey, i.microSkillId, i.microSkillNameSnapshot, i.difficulty)
             from ItemVersionEntity i where i.questionBankId = :bank order by i.itemId, i.version
             """)
-    List<Definition> definitionsOf(@Param("bank") UUID bankId);
+    List<Definition> definitionsOf(@Param("bank") UUID bankId,org.springframework.data.domain.Pageable page);
+    default List<Definition> definitionsOf(UUID bankId){return definitionsOf(bankId,org.springframework.data.domain.PageRequest.of(0,10001));}
 
     @Query("""
             select count(own) > 0 from ItemVersionEntity own join ItemVersionEntity other on other.itemId = own.itemId

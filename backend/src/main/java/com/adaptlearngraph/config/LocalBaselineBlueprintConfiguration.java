@@ -41,7 +41,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.transaction.PlatformTransactionManager;
 
 @Configuration(proxyBeanMethods = false)
-@Profile("local")
+@Profile("local & !workspace-baseline & !prod")
 @ConditionalOnProperty(prefix = "assessment.baseline.legacy-authoring", name = "enabled", havingValue = "true")
 @ConditionalOnProperty(prefix = "catalog.local-actor", name = "enabled", havingValue = "true")
 @org.springframework.context.annotation.Import({PersistenceConfiguration.class, ModelMapperConfiguration.class})

@@ -88,8 +88,7 @@ export function GlobalSearchbar({ className }: { className?: string }) {
     return skills
       .filter((s) =>
         s.name.toLowerCase().includes(trimmedQuery) ||
-        (s.description && s.description.toLowerCase().includes(trimmedQuery)) ||
-        (s.macroCompetencyCode && s.macroCompetencyCode.toLowerCase().includes(trimmedQuery))
+        (s.description && s.description.toLowerCase().includes(trimmedQuery))
       )
       .slice(0, 5)
   }, [skills, trimmedQuery])
@@ -249,11 +248,6 @@ export function GlobalSearchbar({ className }: { className?: string }) {
                             </div>
                           )}
                         </div>
-                        {skill.macroCompetencyCode && (
-                          <Badge variant="secondary" className="text-[10px] shrink-0 font-medium">
-                            {skill.macroCompetencyCode.replace(/_/g, ' ')}
-                          </Badge>
-                        )}
                       </button>
                     ))}
                   </div>

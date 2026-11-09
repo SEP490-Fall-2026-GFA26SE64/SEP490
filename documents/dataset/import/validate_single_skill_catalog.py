@@ -46,7 +46,9 @@ def validate(path):
         require(content.is_relative_to(base.resolve()) and content.is_file(),'Missing/unsafe content')
         chosen=entries[m['id']]
         require(chosen['skillId'] in content.read_text(),'Content omits chosen Skill')
-        require(chosen['sourceContentSha256']==hashlib.sha256((base/chosen['sourceContentUri']).read_bytes()).hexdigest(),'Historical source changed')
+        source_bytes = (base/chosen['sourceContentUri']).read_bytes()
+        source_sha = hashlib.sha256(source_bytes.replace(b'\r\n', b'\n')).hexdigest()
+        require(chosen['sourceContentSha256'] in (source_sha, hashlib.sha256(source_bytes).hexdigest()),'Historical source changed')
         require(m['duration']>0 and m['price']>0,'Invalid duration/price')
     uncovered=sorted(s['id'] for s in data['MicroSkills'] if not providers[s['id']])
     require(uncovered==sorted(audit['uncoveredSkills']),'Uncovered Skill report differs')

@@ -61,9 +61,9 @@ const SEED_COMPANY_TECHNOVA: CompanyRecord = {
     {
       id: 'USR-101',
       name: 'Sarah Connor',
-      email: 'sarah.connor@adaptlearn.internal',
+      email: 'manager@technova.com',
       role: 'L&D Manager',
-      department: 'Enterprise Talent Development',
+      department: 'Cloud Infrastructure & DevOps',
       status: 'active',
       lastActive: 'Just now',
       avatar: 'SC',
@@ -73,7 +73,7 @@ const SEED_COMPANY_TECHNOVA: CompanyRecord = {
       name: 'Dr. Sarah Chen',
       email: 'expert@technova.com',
       role: 'Expert',
-      department: 'Cognitive Architecture & AI',
+      department: 'Engineering & Cognitive Systems',
       status: 'active',
       lastActive: '10 mins ago',
       avatar: 'SC',
@@ -83,7 +83,7 @@ const SEED_COMPANY_TECHNOVA: CompanyRecord = {
       name: 'Alex Rivera',
       email: 'alex.rivera@technova.com',
       role: 'Expert',
-      department: 'Cloud & Infrastructure DevOps',
+      department: 'Cybersecurity & Compliance',
       status: 'active',
       lastActive: '20 mins ago',
       avatar: 'AR',
@@ -93,7 +93,7 @@ const SEED_COMPANY_TECHNOVA: CompanyRecord = {
       name: 'Linh Nguyen',
       email: 'linh.nguyen@technova.com',
       role: 'Expert',
-      department: 'Data Systems & Engineering',
+      department: 'Cloud Infrastructure & DevOps',
       status: 'active',
       lastActive: '1 hour ago',
       avatar: 'LN',
@@ -103,7 +103,7 @@ const SEED_COMPANY_TECHNOVA: CompanyRecord = {
       name: 'Marcus Vance',
       email: 'marcus.vance@technova.com',
       role: 'Expert',
-      department: 'Graph Database & Backend Architecture',
+      department: 'Quality Engineering & Assurance',
       status: 'active',
       lastActive: 'Yesterday',
       avatar: 'MV',
@@ -147,8 +147,8 @@ const SEED_COMPANY_TECHNOVA: CompanyRecord = {
   prerequisites: [],
   modules: [],
   targetRoles: [],
-  questions: INITIAL_QUESTIONS,
-  blueprints: INITIAL_BLUEPRINTS,
+  questions: INITIAL_QUESTIONS || [],
+  blueprints: INITIAL_BLUEPRINTS || [],
 }
 
 // Initial seeded starter company: Acme Global
@@ -197,8 +197,8 @@ const SEED_COMPANY_ACME: CompanyRecord = {
   prerequisites: [],
   modules: [],
   targetRoles: [],
-  questions: INITIAL_QUESTIONS.slice(0, 3),
-  blueprints: INITIAL_BLUEPRINTS.slice(0, 1),
+  questions: (INITIAL_QUESTIONS || []).slice(0, 3),
+  blueprints: (INITIAL_BLUEPRINTS || []).slice(0, 1),
 }
 
 export const PACKAGE_LIMITS: Record<PackageTier, { limit: number; price: string; description: string }> = {
@@ -221,19 +221,49 @@ export const PACKAGE_LIMITS: Record<PackageTier, { limit: number; price: string;
 
 export function resolveWorkspaceOrgId(contextOrgId?: string | null): string {
   if (contextOrgId) {
-    if (contextOrgId === 'comp-technova' || contextOrgId === 'default-org') {
+    if (contextOrgId === 'comp-technova' || contextOrgId === 'default-org' || contextOrgId === 'workspace-development') {
       return SEED_COMPANY_TECHNOVA.id
     }
     return contextOrgId
   }
   const activeId = typeof localStorage !== 'undefined' ? localStorage.getItem(STORAGE_KEY_ACTIVE_COMPANY) : null
   if (activeId) {
-    if (activeId === 'comp-technova' || activeId === 'default-org') {
+    if (activeId === 'comp-technova' || activeId === 'default-org' || activeId === 'workspace-development') {
       return SEED_COMPANY_TECHNOVA.id
     }
     return activeId
   }
   return SEED_COMPANY_TECHNOVA.id
+}
+
+function deduplicateTargetRoles(roles?: TargetRoleModel[]): TargetRoleModel[] {
+  if (!Array.isArray(roles)) return []
+  const hasRealBackendIdForCode = new Set<string>()
+  for (const r of roles) {
+    if (r?.code && r.id && !String(r.id).startsWith('role-')) {
+      hasRealBackendIdForCode.add(r.code.trim().toUpperCase())
+    }
+  }
+  const byCodeAndVersion = new Map<string, TargetRoleModel>()
+  for (const r of roles) {
+    if (!r || !r.code) continue
+    const codeKey = r.code.trim().toUpperCase()
+    const isTempId = String(r.id || '').startsWith('role-')
+    if (isTempId && hasRealBackendIdForCode.has(codeKey)) {
+      continue
+    }
+    const verKey = `${codeKey}::${String(r.version || '1.0').trim()}`
+    const existing = byCodeAndVersion.get(verKey)
+    if (!existing) {
+      byCodeAndVersion.set(verKey, r)
+    } else {
+      const existingIsTemp = String(existing.id || '').startsWith('role-')
+      if (existingIsTemp && !isTempId) {
+        byCodeAndVersion.set(verKey, { ...existing, ...r, id: r.id })
+      }
+    }
+  }
+  return Array.from(byCodeAndVersion.values())
 }
 
 export function loadCompanies(): CompanyRecord[] {
@@ -265,6 +295,7 @@ export function loadCompanies(): CompanyRecord[] {
             ...comp,
             id: normalizedId,
             users,
+            targetRoles: deduplicateTargetRoles(comp.targetRoles),
             microSkills: Array.isArray(comp.microSkills) ? comp.microSkills : [],
             competencies: Array.isArray(comp.competencies) ? comp.competencies : [],
             blueprints: Array.isArray(comp.blueprints)
@@ -286,7 +317,10 @@ export function loadCompanies(): CompanyRecord[] {
 
 export function saveCompanies(companies: CompanyRecord[]) {
   try {
-    const sanitized = companies.map((c) => (c.id === 'comp-technova' ? { ...c, id: SEED_COMPANY_TECHNOVA.id } : c))
+    const sanitized = companies.map((c) => ({
+      ...(c.id === 'comp-technova' ? { ...c, id: SEED_COMPANY_TECHNOVA.id } : c),
+      targetRoles: deduplicateTargetRoles(c.targetRoles),
+    }))
     localStorage.setItem(STORAGE_KEY_COMPANIES, JSON.stringify(sanitized))
     window.dispatchEvent(new Event('companies_updated'))
   } catch (e) {

@@ -51,6 +51,18 @@ public interface SubscriptionJpaRepository extends Repository<SubscriptionEntity
             """)
     List<PaidPeriodRow> openPeriods(@Param("organization") UUID organizationId, @Param("now") Instant now);
 
+    record DirectoryPeriod(UUID organizationId, String name, Instant startsAt, Instant endsAt) {}
+
+    @Query("""
+            select new com.adaptlearngraph.repository.SubscriptionJpaRepository$DirectoryPeriod(
+                s.organizationId, o.name, p.startsAt, p.endsAt)
+            from SubscriptionEntity s join SubscriptionPeriodEntity p on p.subscriptionId = s.subscriptionId
+            join PaymentOrderEntity o on o.orderId = p.orderId
+            where s.organizationId in :organizations
+            order by s.organizationId, p.startsAt
+            """)
+    List<DirectoryPeriod> directoryPeriods(@Param("organizations") List<UUID> organizationIds);
+
     @Modifying(flushAutomatically = true, clearAutomatically = true)
     @Transactional(TransactionManagers.JPA)
     @Query("update SubscriptionEntity s set s.revision = s.revision + 1 where s.subscriptionId = :subscription")

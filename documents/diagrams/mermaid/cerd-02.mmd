@@ -1,7 +1,7 @@
 ---
-title: "Assessment & Mastery"
+title: "CERD-02 - Assessment diagnostics and official achievement"
 config:
-  layout: elk
+  layout: dagre
   look: classic
   theme: base
   fontFamily: "Arial, sans-serif"
@@ -9,21 +9,16 @@ config:
   themeVariables: {background: "#ffffff", primaryColor: "#ffffff", primaryTextColor: "#0f172a", primaryBorderColor: "#334155", lineColor: "#334155", textColor: "#0f172a", edgeLabelBackground: "#ffffff", fontSize: "18px"}
   er: {nodeSpacing: 36, rankSpacing: 65, minEntityWidth: 140, diagramPadding: 24}
 ---
+
 erDiagram
-  C02_User["User"]
-  C02_Assessment["Assessment"]
-  C02_Question["Question"]
-  C02_Answer["Answer"]
-  C02_Result["Assessment Result"]
-  C02_Profile["Mastery Profile"]
-  C02_Skill["Skill"]
-  C02_User }o--o{ C02_Assessment : "takes"
-  C02_Assessment }o--o{ C02_Question : "uses"
-  C02_User ||--o{ C02_Answer : "submits"
-  C02_Question ||--o{ C02_Answer : "receives"
-  C02_Assessment ||--o{ C02_Answer : "collects"
-  C02_Assessment ||--o{ C02_Result : "produces"
-  C02_User ||--o{ C02_Result : "receives"
-  C02_User ||--o{ C02_Profile : "has"
-  C02_Result }o--o{ C02_Profile : "informs"
-  C02_Profile }o--o{ C02_Skill : "measures"
+  direction TB
+  RoleSelection ||--o{ FrozenAttempt : "owned exact context"
+  ImmutablePolicy ||--o{ FrozenAttempt : "pinned version"
+  FrozenAttempt ||--|{ AssessmentGroup : "TARGET or MAIN and PREREQUISITE"
+  AssessmentGroup ||--|{ PresentedItem : "frozen mapped versions"
+  PresentedItem ||--o| AcceptedAnswer : "revision and replay"
+  AssessmentGroup ||--o| GroupResult : "immutable score and veto"
+  GroupResult ||..o{ BaselineDiagnostic : "BASELINE only"
+  ExactCompletion ||..o{ OfficialEvidence : "with qualifying Skill assessment"
+  CertificateDecision ||..o{ OfficialEvidence : "assigned Expert approval"
+  GroupResult ||..o{ PrerequisiteReview : "NEED_REVIEW without revocation"

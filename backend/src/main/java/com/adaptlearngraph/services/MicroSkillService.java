@@ -28,9 +28,9 @@ public class MicroSkillService
     }
 
     @Override
-    public List<MicroSkill> searchMicroSkills(String organizationId, String query, String macroCode, SkillStatus status) {
+    public List<MicroSkill> searchMicroSkills(String organizationId, String query, SkillStatus status) {
         Objects.requireNonNull(organizationId, "organizationId cannot be null");
-        return microSkillRepository.search(organizationId, query, macroCode, status);
+        return microSkillRepository.search(organizationId, query, status);
     }
 
     @Override
@@ -52,10 +52,9 @@ public class MicroSkillService
                 command.organizationId(),
                 command.code(),
                 command.name(),
-                command.description(),
-                command.macroCompetencyCode());
+                command.description());
 
-        return microSkillRepository.save(skill);
+        return microSkillRepository.save(skill.withProvision(command.provision()));
     }
 
     @Override
@@ -68,10 +67,12 @@ public class MicroSkillService
         MicroSkill updated = existing.update(
                 command.name(),
                 command.description(),
-                command.macroCompetencyCode(),
                 command.status());
 
-        return microSkillRepository.save(updated);
+        if (command.provision() != null && !Objects.equals(command.expectedVersion(),existing.getVersion()))
+            throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.CONFLICT,"Skill changed; reload before configuring outcomes");
+
+        return microSkillRepository.save(updated.withProvision(command.provision()));
     }
 
     @Override

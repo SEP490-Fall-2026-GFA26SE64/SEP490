@@ -10,6 +10,7 @@ export interface ComboboxOption {
 }
 
 export interface ComboboxProps {
+  id?: string
   options: ComboboxOption[]
   value?: string
   values?: string[]
@@ -27,6 +28,7 @@ export interface ComboboxProps {
 }
 
 export function Combobox({
+  id,
   options,
   value,
   values,
@@ -75,9 +77,12 @@ export function Combobox({
 
   const filteredOptions = React.useMemo(() => {
     if (!searchQuery.trim()) return options
-    const query = searchQuery.toLowerCase()
+    const query = searchQuery.trim().toLowerCase()
     return options.filter(
-      (opt) => opt.label.toLowerCase().includes(query) || opt.description?.toLowerCase().includes(query),
+      (opt) =>
+        opt.label.toLowerCase().includes(query) ||
+        (opt.value && opt.value.toLowerCase().includes(query)) ||
+        opt.description?.toLowerCase().includes(query),
     )
   }, [options, searchQuery])
 
@@ -109,6 +114,7 @@ export function Combobox({
   return (
     <div ref={containerRef} className={cn('relative w-full', className)}>
       <button
+        id={id}
         type="button"
         disabled={disabled}
         onClick={() => setIsOpen((prev) => !prev)}
@@ -165,11 +171,11 @@ export function Combobox({
                 {emptyMessage}
               </div>
             ) : (
-              filteredOptions.map((option) => {
+              filteredOptions.map((option, idx) => {
                 const selected = isSelected(option.value)
                 return (
                   <div
-                    key={option.value}
+                    key={`${option.value}-${idx}`}
                     role="option"
                     aria-selected={selected}
                     onClick={() => handleSelect(option.value, option.disabled)}

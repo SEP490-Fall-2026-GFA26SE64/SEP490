@@ -32,7 +32,7 @@
     - [3.1 Identity, Registration and Workspace Administration](#31-identity-registration-and-workspace-administration)
     - [3.2 Subscriptions, Payments and Platform Controls](#32-subscriptions-payments-and-platform-controls)
     - [3.3 Organization Catalog, Role Publication and Learning Offerings](#33-organization-catalog-role-publication-and-learning-offerings)
-    - [3.4 Baseline, Assessment Evidence and IRT](#34-baseline-assessment-evidence-and-irt)
+    - [3.4 Baseline, Assessment Evidence and IRT](#34-baseline-rule-assessment-and-evidence)
     - [3.5 Role Selection, Guidance and Adaptive Learning](#35-role-selection-guidance-and-adaptive-learning)
     - [3.6 Development Summaries and ROI](#36-development-summaries-and-roi)
     - [3.7 Notifications, Audit and Asynchronous Recovery](#37-notifications-audit-and-asynchronous-recovery)
@@ -45,9 +45,16 @@
 
 | Date | A*M, D | In charge | Change Description |
 | --- | --- | --- | --- |
+| 2026-11-06 | M | Documentation preparation with AI assistance | Added Certificate / CERTIFIES and Level duration target extensions to GRAPH-01; regenerated SVG/PNG and synchronized node/edge descriptions. No dataset/import/runtime change. |
+| 2026-11-06 | M | Documentation preparation with AI assistance | Reconciled LERD-05/06 identities, snapshot/legacy cardinalities and persistence mappings; checked DB-09/10 keys and FK multiplicities across source lineages; split ST-16A/B and corrected successor semantics. |
+| 2026-11-06 | M | Documentation preparation with AI assistance | Extended ST-11 with guarded draft deletion and archive/restore; added ST-16 availability detail, LERD-05/06 and DB-09/10 authoring supplements. Aligned Module–MicroSkill cardinality with the current contract; retained dated V1–V32 baseline counts. |
+| 2026-11-06 | M | Documentation preparation with AI assistance | Updated only ST-14 to explicit submission and L&D-configured pass/fail rules; removed evidence, auto-submit and adaptive-stop branches from this diagram. |
+| 2026-11-06 | M | Documentation preparation with AI assistance | Standardized only ST-13, ST-14, ST-16, ST-17, ST-18 and ST-19 to the unchanged ST-01 visual reference. Removed ST-15 from the current report; all other state diagrams retain their previous sources and images. State/transition content is unchanged. |
+| 2026-11-06 | M | Documentation preparation with AI assistance | Updated approved ACT-05 Role-Level baseline flow, related state machines and flow-scoped ERDs; retained report styling and dated physical schema history. Documentation only; no runtime/schema change. |
 | 2026-11-02 | M | Documentation preparation with AI assistance | Aligned ST-11 Module/Content and ST-16 Question Bank titles/notes with their updated diagrams; added ST-23 Independent Skill Learning and updated lifecycle coverage. Retained target/current boundaries and existing physical schema. |
 | 2026-11-01 | M | Documentation preparation with AI assistance | Simplified the backend package view into Presentation, Application, Domain and Infrastructure layers with Shared support. Added embedded package icons and retained only selected dependency arrows. |
 | 2026-11-01 | M | Documentation preparation with AI assistance | Corrected the backend overview to expose hexagonal package layers, input/output ports and adapter roles using the actual identity module structure. Replaced module-family descriptions with layer-package descriptions; no source packages were renamed or created. |
+| 2026-11-02 | M | Đặng Minh Hoàng | Updated ST-07 and SEQ-03 for the registration starter catalog: workspace setup stays PROVISIONING until the catalog import succeeds, and import failure records FAILED. Added ST-22 for the catalog import lifecycle and its coverage row. |
 | 2026-11-01 | M | Documentation preparation with AI assistance | Aligned architecture descriptions with the eight named service groups and supporting components. Replaced exhaustive package previews with actual backend/frontend overviews and No, Package, Description tables; retained detailed inventories as references. |
 | 2026-11-01 | M | Documentation preparation with AI assistance | Adopted the user-provided System Architecture image for section 1.1, preserving the supplied image unchanged. Retained the detailed Mermaid alternative and implementation/readiness limitations. |
 | 2026-11-01 | M | Documentation preparation with AI assistance | Separated SRS core conceptual overviews from detailed logical ERDs. Retained the four detailed relationship views in section 2.2 and preserved the complete baseline physical table/constraint dictionary. |
@@ -61,7 +68,7 @@
 
 *A - Added; M - Modified; D - Deleted.*
 
-**Template conformance.** This document follows the body of the [Report 4 template](../documents/Report4_Software%20Design%20Document.docx): Record of Changes; System Design with System Architecture and Package Diagram; Database Design with table/key descriptions; and Detailed Design with class specifications and sequence diagrams. Additional numbered subsections contain the requested technology declarations, ERDs and state machines without replacing the template's mandatory structure.
+**Template conformance.** This document follows the body of the Report 4 template (historical template; absent from this checkout): Record of Changes; System Design with System Architecture and Package Diagram; Database Design with table/key descriptions; and Detailed Design with class specifications and sequence diagrams. Additional numbered subsections contain the requested technology declarations, ERDs and state machines without replacing the template's mandatory structure.
 
 **Evidence contract.** “Current” means supported by inspected source, manifests or a read-only schema query. “Target” means required by [Version 2](../documents/FA26SE267_KNOWLEDGE_GRAPH_BASED_ADAPTIVE_LEARNING__haht43_Version_2.md). “Proposed” means a report-level design recommendation authorized for clear inclusion by the requester, not an approved implementation or completed deployment. No human approval signature, live provider acceptance or benchmark result is fabricated.
 
@@ -83,11 +90,11 @@ All diagrams are displayed as **PNG images**, with links to their editable **Mer
 
 The current application is a **modular monolith** with a React web client and Java Spring Boot backend. API adapters invoke application use cases; use cases depend on domain types and output ports rather than database/provider implementations. PostgreSQL is the transaction/evidence store; Neo4j is the competency-catalog/traversal store. Background processing uses durable PostgreSQL outbox/job records.
 
-The target adds complete private content, local inference, workflow approvals, adaptive knowledge tracing and actual development/ROI reporting. The following user-approved image presents this **target logical architecture**. Its eight service groups are functional modules within one Spring Boot backend, not eight independently deployed microservices or proof that every capability is complete.
+Current local source includes private content/progress, rule assessments/exact evidence and requirement-pathway review/recalculation/certificate workflows. Local inference, complete RIASEC and actual development/ROI aggregation remain separate incomplete scope; numeric knowledge tracing is not the active rule engine. The following user-approved image presents this **target logical architecture**. Its eight service groups are functional modules within one Spring Boot backend, not eight independently deployed microservices or proof that every capability is complete.
 
-![System Architecture - User-approved logical architecture](../documents/diagrams/system-architecture-report4.png)
+![System Architecture - Source-defined adaptive flow](../documents/diagrams/mermaid/sys-01.png)
 
-**Detailed editable alternative:** [Mermaid source: SYS-01](../documents/diagrams/mermaid/sys-01.mmd) · [Detailed architecture preview](../documents/diagrams/mermaid/sys-01.png). This retained diagram is a separate detailed view, not the source used to generate the supplied image.
+**Editable source:** [SYS-01](../documents/diagrams/mermaid/sys-01.mmd). [Original approved logical reference](../documents/diagrams/system-architecture-report4.png) is retained separately; the current displayed source view updates only the adaptive owners and dependencies, not deployment acceptance.
 
 **Diagram notes:**
 
@@ -116,7 +123,7 @@ The target adds complete private content, local inference, workflow approvals, a
 
 The eight Service names describe logical functional groups, not independently deployed applications or a one-to-one Java package map. Notifications, audit and background processing are shared backend capabilities rather than a ninth service group.
 
-**Implementation boundaries:** The table describes the target responsibilities in the approved image. Connected identity/subscription and workspace-baseline slices do not establish completion of all learning, RIASEC, reporting or inference functions. MinIO and a concrete local LLM remain target integrations; live payment/email acceptance is not certified here. The runtime web entry, schema migration and detailed data ownership remain described in the following design/deployment sections.
+**Implementation boundaries:** The table describes the target responsibilities in the approved image. Connected identity/subscription and workspace-baseline slices do not establish completion of all learning, RIASEC, reporting or inference functions. Private asset adapter/MinIO source is implemented, with runtime acceptance separately dated; concrete local LLM remains a target integration; live payment/email acceptance is not certified here. The runtime web entry, schema migration and detailed data ownership remain described in the following design/deployment sections.
 
 #### 1.1.2 Data ownership and consistency
 
@@ -127,11 +134,11 @@ The eight Service names describe logical functional groups, not independently de
 | Organization/department/job position grants | PostgreSQL references and approved organization contracts | A catalog ID alone does not grant tenant access. V32 binds organization to explicit graph Job Position resources. |
 | Role/skill/prerequisite/teaching relationships | Neo4j | Stable string IDs and versioned snapshot context; tenant/review eligibility must be checked by trusted adapters. |
 | Question content, answer keys, attempts and results | Assessment / PostgreSQL | Immutable pins and safe DTO projections; correct answers are not ordinary Employee fields. |
-| Baseline mastery/profile | PostgreSQL result/evidence/profile tables | Valid low/zero values differ from missing evidence; no automatic reinterpretation under new models. |
-| Module metadata, ordering and approval | Target backend / PostgreSQL | Full target aggregate still requires design and forward migration; graph `contentUri` is not a private content service. |
-| Content objects | Target MinIO | Store object locator/version in relational metadata; authorize before object access. |
+| Diagnostics and official profile | PostgreSQL rule results + skill_knowledge_evidence/review | Baseline group diagnostics are not ACHIEVED; only qualified learning+assessment or assigned certificate approval creates exact official evidence. No numeric gap/IRT fallback. |
+| Module metadata, ordering and approval | Existing module authoring/content / PostgreSQL | Responsible Expert and L&D review immutable revisions; retryable graph projection releases exact single-Skill/knowledge/outcome content. Graph contentUri alone grants no access. |
+| Content objects | Existing private asset adapter/MinIO | Store object locator/version in relational metadata; authorize before object access. |
 | AI explanations | Target guidance service / approved persistence | Retain model/input provenance; do not let prose overwrite mastery. |
-| Pathway versions and Expert overrides | Target pathway service / PostgreSQL | Initial confirmation gate and subsequent adaptation retain committed history. |
+| Pathway versions and Expert overrides | RequirementPathway services / PostgreSQL | Initial exact approval, automatic successor revisions/approval basis, source dedup, bypass and carried parallel provenance retain history; runtime branches remain unverified here. |
 | Costs, benefits and actual ROI | Target reporting/finance records / PostgreSQL | Existing `roi_scenario` is not a complete actual cost-benefit ledger. |
 | Audit and outbox events | PostgreSQL | Commit related mutation/event atomically where possible; asynchronous delivery is recoverable, not cross-store ACID. |
 
@@ -237,47 +244,49 @@ Before final institutional submission, the team should complete an AI usage regi
 
 ### 1.2 Package Diagram
 
-This section shows **package overviews**, not an exhaustive list of nested packages, classes or test directories. The backend view exposes hexagonal package layers and adapter roles; the frontend view shows principal source-directory groups. Detailed inventory sources are retained as references but are not displayed as the main views.
+This section shows **package overviews**, not an exhaustive list of nested packages, classes or test directories. The backend view uses current Java package names; the frontend view shows principal source-directory groups. Both use white UML folder shapes, subtle offset shadows and dashed open-arrow dependencies. Detailed inventory sources are retained as historical references but are not displayed as the main views.
 
 #### 1.2.1 Backend packages and dependency direction
 
-The root namespace is `com.adaptlearngraph`. Feature modules include `identity`, `subscription`, `catalog`, `competency`, `assessment`, `learning`, `pathway`, `recommendation`, `platform`, `analytics`, `evaluation` and `synchronization`. Instead of listing those families alone, this overview shows the actual **identity module's hexagonal structure** as a representative pattern: `api`, `application`, `application.port.in`, `application.port.out`, `domain` and `infrastructure`, together with shared packages. Other modules can omit or specialize layers; the example is not a claim that every module has identical packages.
+The root namespace is `com.adaptlearngraph`. The checked-out backend uses `apis`, `services`, `repository`, `entities` and supporting packages, not feature-module namespaces or hexagonal `application.port.in` / `application.port.out` packages. The overview retains seven principal packages and their selected current imports, adding one direct subpackage level where it exists.
 
 [Mermaid source: Backend Package Overview](../documents/diagrams/mermaid/pkg-overview-backend.mmd)
 
 ![Backend Package Overview](../documents/diagrams/mermaid/pkg-overview-backend.png)
 
-**Reading the overview:** Packages are grouped into **Presentation Layer**, **Application Layer**, **Domain Layer** and **Infrastructure Layer**, with **Shared Support** alongside them. Each package uses the same tabbed-package icon. Layer names are organizational labels, not additional Java namespaces. Shared subpackages are collapsed into `shared` for readability and remain described below.
+**Reading the overview:** Each top-level tabbed folder is an actual package relative to `com.adaptlearngraph`. The main row aligns `apis`, `services`, `repository` and `entities`; DTO support sits above, configuration and JWT support below. The `entities` folder contains its direct `domain` subpackage. The other six displayed packages have no direct subpackages, so no invented child packages or classes are added. Folder size does not encode class count. Orthogonal arrows use separate approach lanes and open heads outside folder borders, tabs and shadows.
 
-Dotted arrows show selected source dependencies, not runtime request flow. Inbound adapters use input ports; application services implement input ports and use output ports/domain types; infrastructure implements output ports and composes services. Domain types do not depend on API, application or infrastructure. Secondary dependencies are omitted from this overview.
+Dotted arrows point from the importing package to its dependency, not along runtime request flow. Controllers import services and DTOs; services import repositories, entities and DTOs; repositories and DTOs import entities. Configuration imports services, repositories and JWT support; JWT support imports repositories and entities. These are selected imports, not a strict one-way layering claim: additional imports, including reverse dependencies, exist and are omitted for readability.
 
-**Adapter naming:** `Adapter In` and `Adapter Out` are role annotations, not literal package names. The repository has no declared `adapter.in` or `adapter.out` namespace. REST inbound adapters reside in `api`; outbound persistence/provider adapters reside in `infrastructure`, alongside runtime composition and bootstrap classes. Some infrastructure classes also implement input use cases, so infrastructure is not exclusively outbound.
+**Supporting packages:** `advice`, `constants`, `endpoints`, `exception`, `helper`, `model`, `responseDto` and `utility` also exist. They are omitted from the main overview, not renamed or represented as a nonexistent `shared` backend namespace.
 
 **Package Descriptions**
 
 | No | Package | Description |
 | --- | --- | --- |
 | 01 | `com.adaptlearngraph` | Root backend package containing the Spring Boot entry class and top-level module organization. |
-| 02 | `api` | Inbound REST adapters, request/response contracts and validation that delegate to application input ports. |
-| 03 | `application` | Application services and use-case orchestration using domain rules and output ports. |
-| 04 | `application.port.in` | Input interfaces defining the operations offered by the application to inbound adapters. |
-| 05 | `application.port.out` | Output interfaces defining persistence, identity, secret-management and delivery capabilities needed by use cases. |
-| 06 | `domain` | Business models, value types, policies and failures independent of framework and adapter implementations. |
-| 07 | `infrastructure` | Persistence/provider adapters, runtime configuration and composition, transaction integration and bootstrap support. |
-| 08 | `shared` | Namespace grouping reusable domain and infrastructure support across feature modules. |
-| 09 | `shared.domain` | Shared domain policies and types used by application logic. |
-| 10 | `shared.infrastructure` | Shared runtime/integration support and its specialized subpackages. |
-| 11 | `shared.infrastructure.mail` | Reusable transactional email contracts and delivery infrastructure. |
+| 02 | `apis` | REST controllers and request handling that delegate to services. |
+| 03 | `services` | Application use cases, business rules and orchestration. |
+| 04 | `repository` | Persistence access, stores and database integration. |
+| 05 | `entities` | Entity and business data types shared by services and persistence. |
+| 06 | `dtos` | Data-transfer contracts and mappings used at application boundaries. |
+| 07 | `config` | Spring configuration, runtime composition and development bootstrap support. |
+| 08 | `jwt` | Token-based authentication and supporting security integration. |
+| 09 | `entities.domain` | Direct nested Java package under `entities`; deeper descendants are not expanded. |
 
-Rows 02-07 are relative to `com.adaptlearngraph.identity` in this diagram; shared rows are relative to `com.adaptlearngraph`. Adapter roles are explained above rather than falsely listed as additional packages.
+Rows 02-09 are relative to `com.adaptlearngraph`. The overview does not introduce or rename application packages.
 
-The [architecture test](../backend/src/test/java/com/adaptlearngraph/architecture/LayeredArchitectureTest.java) records the dependency constraints. Representative source evidence includes [MemberActivationController](../backend/src/main/java/com/adaptlearngraph/apis/MemberActivationController.java), [RegistrationService](../backend/src/main/java/com/adaptlearngraph/services/RegistrationService.java), [JdbcRegistrationStore](../backend/src/main/java/com/adaptlearngraph/repository/JdbcRegistrationStore.java) and [DevelopmentWorkspaceAccountBootstrap](../backend/src/main/java/com/adaptlearngraph/config/DevelopmentWorkspaceAccountBootstrap.java). Bootstrap is infrastructure composition, not a domain or port package. This documentation revision does not rename application packages or certify a new application test run.
+The [architecture test](../backend/src/test/java/com/adaptlearngraph/architecture/LayeredArchitectureTest.java) records the dependency constraints. Representative source evidence includes [MemberActivationController](../backend/src/main/java/com/adaptlearngraph/apis/MemberActivationController.java), [RegistrationService](../backend/src/main/java/com/adaptlearngraph/services/RegistrationService.java), [JdbcRegistrationStore](../backend/src/main/java/com/adaptlearngraph/repository/JpaRegistrationStore.java) and [DevelopmentWorkspaceAccountBootstrap](../backend/src/main/java/com/adaptlearngraph/config/DevelopmentWorkspaceAccountBootstrap.java). Bootstrap resides in `config`. This documentation revision does not change runtime code or certify a new application test run.
 
-**Detailed inventory reference:** [PKG-01 source](../documents/diagrams/mermaid/pkg-01.mmd) · [PKG-01 image](../documents/diagrams/mermaid/pkg-01.png). The previous inventory is retained rather than regenerated as part of this overview revision.
+**Historical detailed inventory reference:** [PKG-01 source](../documents/diagrams/mermaid/pkg-01.mmd) · [PKG-01 image](../documents/diagrams/mermaid/pkg-01.png). The previous inventory is retained rather than regenerated; it is not the authority for the current package names.
 
 #### 1.2.2 Frontend packages
 
-In the TypeScript frontend, packages mean source-directory groups, not separately published npm packages. The overview shows only the source root and its four principal groups; actor-specific screens and nested shared folders are intentionally collapsed. Dotted arrows show selected imports, not REST calls or an exhaustive dependency graph.
+In the TypeScript frontend, packages mean source-directory groups, not separately published npm packages. The overview retains the four principal groups and expands exactly one direct subdirectory level inside `features` and `shared`. The `app` and `assets` groups have no direct subdirectories. Deeper screens and component subdirectories remain collapsed. Dotted arrows show selected imports, not REST calls or an exhaustive dependency graph.
+
+The source root appears in the title, not as a fifth package. Arrows show `app` importing `features` and `shared`, plus `features` importing `shared`. The reverse `shared` dependency on `features` is also present in current source, for example [companyStore](../frontend/src/shared/stores/companyStore.ts); it is shown as an existing coupling, not a recommended architecture. `assets` remains visible without an invented import arrow.
+
+**Direct subpackages:** `features` contains `administration`, `auth`, `employee`, `expert`, `guest`, `manager`, `packages`, `platform-admin`, `profile`, `subscription` and `system`. `shared` contains `api`, `auth`, `components`, `hooks`, `i18n`, `layouts`, `lib`, `stores` and `styles`. These nested folders show containment; dependency arrows stay at the retained top-level granularity. The two directions between `features` and `shared` use separate horizontal lanes so neither arrowhead is hidden.
 
 [Mermaid source: Frontend Package Overview](../documents/diagrams/mermaid/pkg-overview-frontend.mmd)
 
@@ -293,15 +302,15 @@ In the TypeScript frontend, packages mean source-directory groups, not separatel
 | 04 | `shared` | Reusable API/auth helpers, UI components, hooks, layouts, translations, stores and styles. |
 | 05 | `assets` | Static source assets used by the frontend. |
 
-**Detailed inventory reference:** [PKG-02 source](../documents/diagrams/mermaid/pkg-02.mmd) · [PKG-02 image](../documents/diagrams/mermaid/pkg-02.png). Verification directories and nested feature/shared packages remain in that reference, not in the main overview.
+**Detailed inventory reference:** [PKG-02 source](../documents/diagrams/mermaid/pkg-02.mmd) · [PKG-02 image](../documents/diagrams/mermaid/pkg-02.png). Verification directories and deeper feature/shared descendants remain in that historical reference, not in the main overview.
 
 ## 2. Database Design
 
 ### 2.1 Physical baseline, script ownership and verification
 
-The current PostgreSQL `platform` schema was captured from the already-running development PostgreSQL using a **repeatable-read, read-only transaction** over `pg_catalog` and `public.flyway_schema_history`. No application rows, credentials, learner answers or payment payloads were extracted. No migration, import, write, restart or reset was performed.
+The historical PostgreSQL `platform` schema described by the retained dictionary was captured from the already-running development PostgreSQL using a **repeatable-read, read-only transaction** over `pg_catalog` and `public.flyway_schema_history`. No application rows, credentials, learner answers or payment payloads were extracted. No migration, import, write, restart or reset was performed.
 
-**Verified baseline: PostgreSQL 17.6; V1-V32; 113 tables; 916 columns; 237 foreign keys.** Every applied migration was successful and its Flyway CRC32 matched the corresponding checked-in SQL file. The generated dictionary/ERDs below use that verified metadata, not the older stored JSON snapshot.
+**Historical verified baseline: PostgreSQL 17.6; V1-V32; 113 tables; 916 columns; 237 foreign keys.** Every applied migration was successful and its Flyway CRC32 matched the corresponding checked-in SQL file. The retained physical dictionary and archived DB-* diagrams use that dated metadata. Neither that historical dictionary nor the selected-column source views in section 2.2 is an exhaustive inventory of V50–V62. No live DB metadata was obtained in the 7 November C1 task: Docker Linux engine pipe was unavailable; no service was started.
 
 The existing [postgresql-schema-catalog.json](../documents/diagrams/postgresql-schema-catalog.json) describes an older 89-table assessment lineage and contains script names no longer present in the integrated migration directory. It was **not** used as the current database truth. Historical diagrams/architecture paragraphs are similarly date-scoped. The report does not modify those historical artifacts.
 
@@ -309,12 +318,12 @@ The existing [postgresql-schema-catalog.json](../documents/diagrams/postgresql-s
 
 | File / directory | Purpose and execution boundary |
 | --- | --- |
-| [db/migration](../backend/src/main/resources/db/migration) | Executable PostgreSQL schema source, V1-V32 in numeric order, applied by Flyway. These existing scripts are the “database script” paired with this report's physical ERDs. |
+| [db/migration](../backend/src/main/resources/db/migration) | Canonical source lineage now reaches V62. Workspace and Module histories have different preserved prefixes; use the exact installed lineage, not the historical ledger below, to select a directory. |
 | [application.yml](../backend/src/main/resources/application.yml) | Flyway location, JDBC/Neo4j/session settings and Hibernate `ddl-auto: validate`. |
 | [compose.dev.yml](../compose.dev.yml), [compose.prod.yml](../compose.prod.yml) | Run schema migration before API startup; distinct profile behavior. |
 | [Generate-PostgresqlDiagrams.ps1](../documents/diagrams/Generate-PostgresqlDiagrams.ps1) | Existing diagram-generation tooling; inspect its environment/lineage before use. |
 | [Generate-PostgresqlDiagrams.py](../documents/diagrams/Generate-PostgresqlDiagrams.py) | Existing read-only catalog query used as metadata-query prior art. Its static table groups/snapshot are not assumed current. |
-| [ontology_seed.json](../documents/dataset/import/ontology_seed.json) | v0.9 runtime-input catalog, 833 nodes and 4,638 relationships, including 85 modules. |
+| [ontology_seed.json](../documents/dataset/import/ontology_seed.json) | Historical v0.9 input; counts/provenance remain historical. Current dev Compose mounts ontology_seed-prerequisite-knowledge.json, with separate module-knowledge release input. |
 | [ontology_seed-v011.json](../documents/dataset/import/ontology_seed-v011.json) | Separate v0.11 review catalog, 994 nodes and 5,121 relationships, including 246 modules. Not a live migration. |
 | [import_neo4j.py](../documents/dataset/import/import_neo4j.py), [validate_dataset.py](../documents/dataset/import/validate_dataset.py) | Current controlled graph validation/import; creates six ID uniqueness constraints and rejects incompatible snapshots. Does not supply SQL foreign keys. |
 | [db/neo4j/README.md](../backend/src/main/resources/db/neo4j/README.md) | Distinguishes historical graph scripts/cutovers from current runtime and review packages. |
@@ -323,80 +332,157 @@ The existing [postgresql-schema-catalog.json](../documents/diagrams/postgresql-s
 
 #### 2.1.1 Migration ledger
 
-The checksum column is the full signed Flyway CRC32 verified against the running schema. SHA-256 prefixes identify the inspected source bytes; they are not signatures or a substitute for full release artifacts.
+The checksum column is the full signed Flyway CRC32 recorded against the historical running schema; it was not reverified against a DB in this task. The 32 historical source SHA-256 prefixes were matched to the preserved workspace-lineage files for link repair in this documentation pass; their recorded Flyway CRC32/application results remain historical. SHA-256 prefixes identify the inspected source bytes; they are not signatures or a substitute for full release artifacts.
 
 <!-- MIGRATIONS:START -->
 
 | Version | Executable script | Verified Flyway checksum | Source SHA-256 prefix |
 | --- | --- | --- | --- |
-| V1 | [V1__initialize_platform_schema.sql](../backend/src/main/resources/db/migration/V1__initialize_platform_schema.sql) | -996555326 | 9e9ceeaebc2f2eba |
-| V2 | [V2__identity_catalog_and_processing.sql](../backend/src/main/resources/db/migration/V2__identity_catalog_and_processing.sql) | -1975842268 | 18140b491728a917 |
-| V3 | [V3__assessment_evidence_and_learning.sql](../backend/src/main/resources/db/migration/V3__assessment_evidence_and_learning.sql) | -1741254678 | a80f8e89f4c6f4f3 |
-| V4 | [V4__pathway_analytics_and_evaluation.sql](../backend/src/main/resources/db/migration/V4__pathway_analytics_and_evaluation.sql) | 1805290226 | c2d43a80c658f069 |
-| V5 | [V5__publication_and_activity_guards.sql](../backend/src/main/resources/db/migration/V5__publication_and_activity_guards.sql) | -741739431 | 0b3ff5ed272e4ebc |
-| V6 | [V6__organization_baseline.sql](../backend/src/main/resources/db/migration/V6__organization_baseline.sql) | 1148597275 | 3fb21db03d24455c |
-| V7 | [V7__target_role_selection_command.sql](../backend/src/main/resources/db/migration/V7__target_role_selection_command.sql) | -826639885 | 8eec7ad70bf293bb |
-| V8 | [V8__organization_registration.sql](../backend/src/main/resources/db/migration/V8__organization_registration.sql) | 1078279438 | 5d7f40d3d534d560 |
-| V9 | [V9__subscription_lifecycle.sql](../backend/src/main/resources/db/migration/V9__subscription_lifecycle.sql) | -53106023 | 3e7531e24adeaef5 |
-| V10 | [V10__workspace_identity_support.sql](../backend/src/main/resources/db/migration/V10__workspace_identity_support.sql) | -1645780626 | 38ce22d59c888e64 |
-| V11 | [V11__subscription_period_guards.sql](../backend/src/main/resources/db/migration/V11__subscription_period_guards.sql) | 1955686220 | cbece7983ea86dae |
-| V12 | [V12__single_account_role.sql](../backend/src/main/resources/db/migration/V12__single_account_role.sql) | -1693760114 | e322bed59afa4f73 |
-| V13 | [V13__baseline_question_metadata.sql](../backend/src/main/resources/db/migration/V13__baseline_question_metadata.sql) | -958529426 | 7f716fea4e825f70 |
-| V14 | [V14__baseline_blueprint.sql](../backend/src/main/resources/db/migration/V14__baseline_blueprint.sql) | -1488394481 | d550d6a298605ba1 |
-| V15 | [V15__baseline_blueprint_write_idempotency.sql](../backend/src/main/resources/db/migration/V15__baseline_blueprint_write_idempotency.sql) | -406452938 | 6efecb2360fa1d06 |
-| V16 | [V16__baseline_assessment_generation.sql](../backend/src/main/resources/db/migration/V16__baseline_assessment_generation.sql) | 305115675 | 11a39e745f08e1c5 |
-| V17 | [V17__baseline_assessment_review_publish.sql](../backend/src/main/resources/db/migration/V17__baseline_assessment_review_publish.sql) | 1670694760 | 90fe26d114b4f527 |
-| V18 | [V18__job position_blueprint_identity.sql](../backend/src/main/resources/db/migration/V18__job position_blueprint_identity.sql) | -1992663521 | a9135f5534eb1c4a |
-| V19 | [V19__baseline_assessment_management.sql](../backend/src/main/resources/db/migration/V19__baseline_assessment_management.sql) | 1966272887 | ba913205f765353d |
-| V20 | [V20__baseline_management_command_idempotency.sql](../backend/src/main/resources/db/migration/V20__baseline_management_command_idempotency.sql) | -489468397 | c237a3c5cb67b86a |
-| V21 | [V21__baseline_answer_reveal_audit.sql](../backend/src/main/resources/db/migration/V21__baseline_answer_reveal_audit.sql) | 919091195 | b7735c744556dd39 |
-| V22 | [V22__fix_baseline_management_actor_trigger.sql](../backend/src/main/resources/db/migration/V22__fix_baseline_management_actor_trigger.sql) | -913315742 | 0bc2811a14571502 |
-| V23 | [V23__adaptive_baseline_blueprint_and_irt_versions.sql](../backend/src/main/resources/db/migration/V23__adaptive_baseline_blueprint_and_irt_versions.sql) | 242615654 | abbc0686648eadeb |
-| V24 | [V24__adaptive_baseline_attempt.sql](../backend/src/main/resources/db/migration/V24__adaptive_baseline_attempt.sql) | 975611633 | bb2562cd01f25781 |
-| V25 | [V25__job position_baseline_scope_compatibility.sql](../backend/src/main/resources/db/migration/V25__job position_baseline_scope_compatibility.sql) | 2137365147 | 6dfec5d2fd4fe6da |
-| V26 | [V26__job position_baseline_name_and_time_limits.sql](../backend/src/main/resources/db/migration/V26__job position_baseline_name_and_time_limits.sql) | -935442136 | c1b2cb79b6140bdf |
-| V27 | [V27__job position_baseline_draft_conversion_receipt.sql](../backend/src/main/resources/db/migration/V27__job position_baseline_draft_conversion_receipt.sql) | 859223100 | 65f04ae3c2e873b2 |
-| V28 | [V28__irt_scoped_parameter_promotion.sql](../backend/src/main/resources/db/migration/V28__irt_scoped_parameter_promotion.sql) | -1125147424 | 4f5c8b69db4a7d42 |
-| V29 | [V29__baseline_draft_discard_receipt.sql](../backend/src/main/resources/db/migration/V29__baseline_draft_discard_receipt.sql) | -71600753 | 4d21100bd1d5d989 |
-| V30 | [V30__current_role_selection_and_job position_profile.sql](../backend/src/main/resources/db/migration/V30__current_role_selection_and_job position_profile.sql) | 1717114679 | 6107ba3e440cdc92 |
-| V31 | [V31__insufficient_evidence_manual_submission.sql](../backend/src/main/resources/db/migration/V31__insufficient_evidence_manual_submission.sql) | -738341887 | 521dcb12b37df11f |
-| V32 | [V32__workspace_baseline_resources.sql](../backend/src/main/resources/db/migration/V32__workspace_baseline_resources.sql) | 608834404 | 9d406120924ef06f |
+| V1 | [V1__initialize_platform_schema.sql](../backend/src/main/resources/db/workspace-migration/V1__initialize_platform_schema.sql) | -996555326 | 9e9ceeaebc2f2eba |
+| V2 | [V2__identity_catalog_and_processing.sql](../backend/src/main/resources/db/workspace-migration/V2__identity_catalog_and_processing.sql) | -1975842268 | 18140b491728a917 |
+| V3 | [V3__assessment_evidence_and_learning.sql](../backend/src/main/resources/db/workspace-migration/V3__assessment_evidence_and_learning.sql) | -1741254678 | a80f8e89f4c6f4f3 |
+| V4 | [V4__pathway_analytics_and_evaluation.sql](../backend/src/main/resources/db/workspace-migration/V4__pathway_analytics_and_evaluation.sql) | 1805290226 | c2d43a80c658f069 |
+| V5 | [V5__publication_and_activity_guards.sql](../backend/src/main/resources/db/workspace-migration/V5__publication_and_activity_guards.sql) | -741739431 | 0b3ff5ed272e4ebc |
+| V6 | [V6__organization_baseline.sql](../backend/src/main/resources/db/workspace-migration/V6__organization_baseline.sql) | 1148597275 | 3fb21db03d24455c |
+| V7 | [V7__target_role_selection_command.sql](../backend/src/main/resources/db/workspace-migration/V7__target_role_selection_command.sql) | -826639885 | 8eec7ad70bf293bb |
+| V8 | [V8__organization_registration.sql](../backend/src/main/resources/db/workspace-migration/V8__organization_registration.sql) | 1078279438 | 5d7f40d3d534d560 |
+| V9 | [V9__subscription_lifecycle.sql](../backend/src/main/resources/db/workspace-migration/V9__subscription_lifecycle.sql) | -53106023 | 3e7531e24adeaef5 |
+| V10 | [V10__workspace_identity_support.sql](../backend/src/main/resources/db/workspace-migration/V10__workspace_identity_support.sql) | -1645780626 | 38ce22d59c888e64 |
+| V11 | [V11__subscription_period_guards.sql](../backend/src/main/resources/db/workspace-migration/V11__subscription_period_guards.sql) | 1955686220 | cbece7983ea86dae |
+| V12 | [V12__single_account_role.sql](../backend/src/main/resources/db/workspace-migration/V12__single_account_role.sql) | -1693760114 | e322bed59afa4f73 |
+| V13 | [V13__baseline_question_metadata.sql](../backend/src/main/resources/db/workspace-migration/V13__baseline_question_metadata.sql) | -958529426 | 7f716fea4e825f70 |
+| V14 | [V14__baseline_blueprint.sql](../backend/src/main/resources/db/workspace-migration/V14__baseline_blueprint.sql) | -1488394481 | d550d6a298605ba1 |
+| V15 | [V15__baseline_blueprint_write_idempotency.sql](../backend/src/main/resources/db/workspace-migration/V15__baseline_blueprint_write_idempotency.sql) | -406452938 | 6efecb2360fa1d06 |
+| V16 | [V16__baseline_assessment_generation.sql](../backend/src/main/resources/db/workspace-migration/V16__baseline_assessment_generation.sql) | 305115675 | 11a39e745f08e1c5 |
+| V17 | [V17__baseline_assessment_review_publish.sql](../backend/src/main/resources/db/workspace-migration/V17__baseline_assessment_review_publish.sql) | 1670694760 | 90fe26d114b4f527 |
+| V18 | [V18__job position_blueprint_identity.sql](../backend/src/main/resources/db/workspace-migration/V18__occupation_blueprint_identity.sql) | -1992663521 | a9135f5534eb1c4a |
+| V19 | [V19__baseline_assessment_management.sql](../backend/src/main/resources/db/workspace-migration/V19__baseline_assessment_management.sql) | 1966272887 | ba913205f765353d |
+| V20 | [V20__baseline_management_command_idempotency.sql](../backend/src/main/resources/db/workspace-migration/V20__baseline_management_command_idempotency.sql) | -489468397 | c237a3c5cb67b86a |
+| V21 | [V21__baseline_answer_reveal_audit.sql](../backend/src/main/resources/db/workspace-migration/V21__baseline_answer_reveal_audit.sql) | 919091195 | b7735c744556dd39 |
+| V22 | [V22__fix_baseline_management_actor_trigger.sql](../backend/src/main/resources/db/workspace-migration/V22__fix_baseline_management_actor_trigger.sql) | -913315742 | 0bc2811a14571502 |
+| V23 | [V23__adaptive_baseline_blueprint_and_irt_versions.sql](../backend/src/main/resources/db/workspace-migration/V23__adaptive_baseline_blueprint_and_irt_versions.sql) | 242615654 | abbc0686648eadeb |
+| V24 | [V24__adaptive_baseline_attempt.sql](../backend/src/main/resources/db/workspace-migration/V24__adaptive_baseline_attempt.sql) | 975611633 | bb2562cd01f25781 |
+| V25 | [V25__job position_baseline_scope_compatibility.sql](../backend/src/main/resources/db/workspace-migration/V25__occupation_baseline_scope_compatibility.sql) | 2137365147 | 6dfec5d2fd4fe6da |
+| V26 | [V26__job position_baseline_name_and_time_limits.sql](../backend/src/main/resources/db/workspace-migration/V26__occupation_baseline_name_and_time_limits.sql) | -935442136 | c1b2cb79b6140bdf |
+| V27 | [V27__job position_baseline_draft_conversion_receipt.sql](../backend/src/main/resources/db/workspace-migration/V27__occupation_baseline_draft_conversion_receipt.sql) | 859223100 | 65f04ae3c2e873b2 |
+| V28 | [V28__irt_scoped_parameter_promotion.sql](../backend/src/main/resources/db/workspace-migration/V28__irt_scoped_parameter_promotion.sql) | -1125147424 | 4f5c8b69db4a7d42 |
+| V29 | [V29__baseline_draft_discard_receipt.sql](../backend/src/main/resources/db/workspace-migration/V29__baseline_draft_discard_receipt.sql) | -71600753 | 4d21100bd1d5d989 |
+| V30 | [V30__current_role_selection_and_job position_profile.sql](../backend/src/main/resources/db/workspace-migration/V30__current_role_selection_and_occupation_profile.sql) | 1717114679 | 6107ba3e440cdc92 |
+| V31 | [V31__insufficient_evidence_manual_submission.sql](../backend/src/main/resources/db/workspace-migration/V31__insufficient_evidence_manual_submission.sql) | -738341887 | 521dcb12b37df11f |
+| V32 | [V32__workspace_baseline_resources.sql](../backend/src/main/resources/db/workspace-migration/V32__workspace_baseline_resources.sql) | 608834404 | 9d406120924ef06f |
 
 <!-- MIGRATIONS:END -->
 
+#### 2.1.2 Current source-defined extensions — 2026-11-07
+
+Source HEAD `61d334c`; no claim of applied migrations or new checksum validation. [Migration lineages](../documents/technical/MIGRATION_LINEAGES.md) distinguishes canonical/workspace/module prefixes. Current workspace defaults to `db/workspace-migration` with explicit override.
+
+| Versions | Current schema responsibilities |
+| --- | --- |
+| V50–V51 | Immutable module completion/self-study and retained explicit single-Skill policy shape. |
+| V52 | Rule policy versions, published question knowledge mapping, frozen attempt/group/item/answer/result/command, deadline and history guards. |
+| V53 | Official skill_knowledge_evidence/review, exact learning_completion_requirement sidecar, certificate submission/attachment/decision with private evidence and source uniqueness. |
+| V54 | Requirement snapshot/steps/options/dependencies/bypass; reuse initial request/run/revision/current/approval; source-event uniqueness and approval basis. |
+| V55–V56 | Rule question publication, protected version hashes and REQUIREMENT_V1 flow format while retaining historical formats. |
+| V57 | One draft/scoped active pointer per org+purpose+scope; catalog hash; attempt insert requires exact scoped policy. |
+| V58–V60 | Partial baseline editor state, organization-owned source banks, immutable explicitly abandoned drafts. |
+| V61 | Multi-option Expert override history; no price in new Module authoring documents; explicit development release marker. |
+| V62 | Version numbering per org+purpose+scope with immutable old/new label history; original policy IDs/config/hashes/attempt pins/command receipts retained. |
+
+Composite tenant FKs, immutable triggers, native row/advisory locks and application revision/hash checks are defined in source. They are not fresh runtime/security evidence. Refer to the [current field/key/API mapping](../documents/technical/Organization%20Rule%20Assessment%20and%20Pathway.md#4-postgresql-schema-mapping) for exact owners/types/nullability; the diagrams show selected source-defined columns and do not replace complete migration definitions.
+
 ### 2.2 Logical database design
 
-SRS section 3.1.5 provides four **core conceptual overviews**, not table-level logical models. The detailed logical relationship views below retain the supporting entities, while section 2.3 provides the complete baseline physical table and constraint coverage. The database design principles are:
+LERD-01/02/04 now show selected current source-defined policy, paper/evidence and requirement-pathway tables with actual composite identities. LERD-03 remains the cross-store logical catalog view; LERD-05/06 retain authoring aggregates with current completion and source-bank mappings. These are documentation views, not live DB exports or exhaustive dictionaries. The historical dictionary in section 2.3 retains its dated scope.
 
-1. Every transactional record has explicit identity and ownership; tenant-bearing composite keys/FKs are retained where defined.
-2. Plan versions/order snapshots, released assessment/blueprint/model versions and historical evidence are immutable according to their constraints/triggers.
-3. Readiness, business lifecycle, review status and payment/application outcomes are separate facts; a single UI badge must not collapse them.
-4. Active pointers and partial unique/exclusion indexes express “one current” semantics without rewriting historical rows.
-5. `organization_id` is legitimately nullable on some historical identity records; this is not an invitation to accept an untrusted tenant value.
-6. Neo4j ID references in PostgreSQL are cross-store references, not database-enforced Neo4j foreign keys.
-7. Missing future module/content approval, financial ledger, assignments and inference persistence must receive explicit approved schema designs/forward migrations, not columns invented solely to match prototype UI.
+**Notation and constraints:** PK/FK identify target logical keys. REQUIRED/NULLABLE describe field nullability. Catalog IDs refer across stores and are not SQL-enforced foreign keys into Neo4j. Tenant-bearing references must match organization and learner ownership, including joins whose compact FK label names only the entity. Time fields are timestamptz. JSON snapshots contain validated, versioned rules/outcomes, never executable organization-supplied code.
 
-**Detailed logical relationship views**
-
-These views retain the 76 distinct entities previously expanded in the SRS. They are detailed domain views, not a replacement for the complete 113-table baseline inventory and foreign-key coverage in section 2.3. Initial-pathway entities defined after V32 are source-defined supplements; their presence here does not assert that newer migrations have been applied to a running database. The conceptual Training Cost and Monetary Benefit entities express business requirements, not a claim that an actual financial ledger has been implemented.
+**1. Role-Level Selection and Baseline Configuration**
 
 [Mermaid source: LERD-01](../documents/diagrams/mermaid/lerd-01.mmd)
 
-![LERD-01 - Detailed identity, organization and subscriptions](../documents/diagrams/mermaid/lerd-01.png)
+![LERD-01 - Role-Level Selection and Baseline Configuration](../documents/diagrams/mermaid/lerd-01.png)
+
+**2. Assessment and Role-Level Profile**
 
 [Mermaid source: LERD-02](../documents/diagrams/mermaid/lerd-02.mmd)
 
-![LERD-02 - Detailed assessment and mastery](../documents/diagrams/mermaid/lerd-02.png)
+![LERD-02 - Assessment and Role-Level Profile](../documents/diagrams/mermaid/lerd-02.png)
+
+**3. Role Requirements and Learning Provision**
 
 [Mermaid source: LERD-03](../documents/diagrams/mermaid/lerd-03.mmd)
 
-![LERD-03 - Detailed competency ontology](../documents/diagrams/mermaid/lerd-03.png)
+![LERD-03 - Role Requirements and Learning Provision](../documents/diagrams/mermaid/lerd-03.png)
+
+**4. Pathway Review, Learning and Bypass**
 
 [Mermaid source: LERD-04](../documents/diagrams/mermaid/lerd-04.mmd)
 
-![LERD-04 - Detailed pathway, processing and reporting](../documents/diagrams/mermaid/lerd-04.png)
+![LERD-04 - Pathway Review, Learning and Bypass](../documents/diagrams/mermaid/lerd-04.png)
 
-#### 2.2.1 Important constraint and field decisions
+**Cross-view references:** policy and paper tables retain exact organization/purpose/scope identity. Requirement steps/options/dependencies use request+revision+step composite identities. Catalog Role/Level/Skill IDs and certificate definitions are cross-store snapshots, not SQL FKs into Neo4j. Original module progress/completion remains its existing owner; certificate request/step context is frozen in the submitted JSON snapshot. Official evidence is separate from baseline diagnostics.
+
+
+**Flow invariants**
+
+- BaselineConfig is unique per organization and RoleLevel; its optional active pointer must reference a validated version of that same config. New versions preserve previous attempts and history. RoleLevel must belong to the selected Role.
+- Baseline AssessmentAttempt requires config_version_id and no progress_id. Skill assessment requires progress_id and separately validated rule_snapshot; baseline configuration is not silently reused as skill-assessment policy. Exactly one assessment context applies. Resume retains paper, configuration and deadline.
+- For the approved baseline target (ST-14), Employee explicitly submits and the pinned L&D pass rule determines PASSED / FAILED. Validity is separate from attainment: valid failed results can initialize a Needs supplementation profile; invalid results cannot initialize a valid profile. ACT-05's Results valid decision is not a pass/fail gate. Current runtime deadline/IRT behavior below is an implementation inventory, not this target contract.
+- AssessmentAnswer uses the composite presented-item reference (attempt_id, position). SkillResult belongs to that same attempt; invalid results and missing data are not Met or a fabricated numerical zero.
+- Profile status is Met only when all applicable mandatory requirements are met; otherwise valid unmet results are Needs supplementation. No valid profile is created from an invalid baseline. Profile revisions preserve original results and distinguish diagnostic baseline sources from accepted learning/certificate evidence.
+- StepOption binds exactly one provision: module_id + module_version OR certificate_id + certificate_version. Module alternatives must match the exact skill/knowledge/outcomes and approved content. Certificate submissions retain private evidence references; pending/rejected decisions do not award achievement.
+- PathwayReview records a real Expert decision on an exact revision/hash. Automatic recalculation uses change_origin and approval_basis_revision_id; it must not fabricate a new Expert approval. A newly discovered missing-provision gap needs a scoped bypass decision, not repeat approval of every adaptation.
+- Bypass requires absence of both eligible module and certificate provision, a genuine Expert/reason/time and preserved source step. It remains Needs supplementation. Any non-bypassed blocking requirement keeps Role and Level locked, including pending generation/review and processing errors. Completion or bypass-only releases target change; a running attempt still blocks replacement. Historical selection/profile/pathway data remains queryable.
+- No-learning-required closes the request without creating an artificial learning task. Other generation errors remain bound to the same target for repair/retry. New target selection returns to its matching Active baseline config; old baseline results are not silently treated as a new assessment.
+
+**ACT-04 / ACT-10 authoring supplements — source-inspected 2026-11-06**
+
+[Mermaid source: LERD-05](../documents/diagrams/mermaid/lerd-05.mmd)
+
+![LERD-05 - Module and content authoring](../documents/diagrams/mermaid/lerd-05.png)
+
+**Diagram notes (LERD-05):** This is a logical model of the persisted authoring aggregate, including retained history. ModuleDocument owns ModuleRevision and ModuleEvent; each revision owns one ContentSnapshot and its LessonSnapshot/TeachingSnapshot occurrences. A lesson ID may recur in later revisions, so the lesson node denotes a snapshot occurrence rather than one global mutable lesson. Drafts allow 0–200 lessons; submission requires at least one complete lesson. Current v0.12 revisions require exactly one TeachingSnapshot; older revisions can retain multiple teachings. Each teaching references one MicroSkill. ContentPackage is the independently stored source package (it has no DRAFT workflow state), and a revision copies its content. Intake can precede a document and a newly created document need not have an intake.
+
+**Logical notation (LERD-05/06):** Crow's-foot ends express minimum/maximum participation. Solid lines identify objects through their owning context; dotted lines are references that do not form the object's identity. Mandatory participation does not imply an identifying relationship. These conventions belong to the logical `erDiagram` views and are distinct from the external-table arrows in DB views. See the [Mermaid ER notation](https://mermaid.js.org/syntax/entityRelationshipDiagram.html#identification). Arrays/embedded snapshots implement logical relationships without requiring separate SQL tables or FKs.
+
+| LERD-05 object | Logical identity / storage mapping |
+| --- | --- |
+| ModuleDocument | `(organizationId, id)` → `module_authoring`; module ID also globally unique. |
+| ModuleRevision | Owning document + `number` → `document.revisions[]`. |
+| ContentSnapshot | Owning revision → `revisions[].payload.content`; its `id` refers to the source package. |
+| LessonSnapshot | Owning content snapshot + lesson `id` → `content.lessons[]`; IDs are unique within that snapshot. |
+| TeachingSnapshot | Owning revision + teaching `metadata.id` → `payload.teachings[]`; repeated skill IDs in a revision are rejected. |
+| ModuleEvent | Owning document + `sequence` → `document.history[]`. |
+| ContentPackage | `(organizationId, contentId)` → `module_authoring_content.document`. |
+| CatalogIntake | `moduleId` → `module_catalog_intake.document` and accepted intake snapshot in the Module document. |
+| MicroSkill | Graph `id`; referenced by teaching `skillId`, not a PostgreSQL FK. |
+
+The owning context in this table describes logical identity; it does not add fields to JSON or propose new tables. Review metadata stays nullable before a decision; original imported authorship is not inferred from acceptance.
+
+[Mermaid source: LERD-06](../documents/diagrams/mermaid/lerd-06.mmd)
+
+![LERD-06 - Question Bank authoring](../documents/diagrams/mermaid/lerd-06.png)
+
+**Diagram notes (LERD-06):** Organization identifies its optional workspace (`organization_id` PK); bank ID is a unique alternate reference. Questions, versions, audit events, notices and import batches have their own UUIDs, so their associations are non-identifying. Each Question has one or more versions. AuditEvent always references a Question and can have optional version context; the service supplies matching question/version IDs. A MicroSkill reference is mandatory for newly saved versions, but the stored model preserves nullable skill metadata in adopted legacy items; the optional end represents that compatibility, not permission to create a new unclassified question.
+
+| LERD-06 object | Logical identity / storage mapping |
+| --- | --- |
+| QuestionBankWorkspace | Organization ID → `question_bank_workspace`; JSON bank `id` matches unique `question_bank_id`. |
+| Question | `id` → workspace `questions[]`; same ID is `question_bank_identity.question_id`. Code is unique within the bank. |
+| QuestionVersion | `id`; version number is scoped to its Question → `questions[].versions[]`. PUBLISHED versions map to `item_version` with `item_version_id=version.id` and `item_id=question.id`. |
+| AuditEvent | `id` → workspace `history[]`; contains question ID and nullable version ID/content snapshot. |
+| Notice | `id` → workspace `notices[]`; the same identity is queued as `question_bank_mail.notice_id`. |
+| ImportBatch | `id` → workspace `imports[]`; preview rows are staging values and need not yet identify stored Questions. |
+| MicroSkill | Graph `id` → version `content.skillId`; cross-store reference, not a SQL FK. |
+
+Published ItemVersion is a persistence representation of the same QuestionVersion, not a second logical entity linked by a business relationship. It is therefore described by the mapping above rather than a separate projection edge. New drafts/submissions stay in JSON; legacy physical drafts can be adopted and reconciled during publication. Question owner and historical author/review metadata can legitimately remain null. Actor/recipient accounts are attributes here; this focused view does not enumerate all identity-domain references.
+
+Sources: [ModuleAuthoring](../backend/src/main/java/com/adaptlearngraph/entities/domain/ModuleAuthoring.java), [LearningContent](../backend/src/main/java/com/adaptlearngraph/entities/domain/LearningContent.java), [QuestionBank](../backend/src/main/java/com/adaptlearngraph/entities/domain/QuestionBank.java), [JpaModuleAuthoringAdapter](../backend/src/main/java/com/adaptlearngraph/repository/JpaModuleAuthoringAdapter.java), [JpaQuestionBankStore](../backend/src/main/java/com/adaptlearngraph/repository/JpaQuestionBankStore.java). LERD-03 depicts the ACT-05 target provision model with one skill per module; LERD-05 describes current authoring storage and retains historical teaching snapshots.
+
+#### 2.2.1 Historical physical constraints (V1-V32)
+
+These retained constraints describe the dated implementation, including Job Position baseline ownership. They do not override the approved Role-Level target above; reconciling physical mappings requires a separately approved implementation/migration.
 
 | Concern | Current rule / relevant source |
 | --- | --- |
@@ -417,221 +503,74 @@ These views retain the 76 distinct entities previously expanded in the SRS. They
 
 ### 2.3 Physical ERDs and Table Descriptions
 
-**Reading the generated diagrams:** Logical models use Mermaid `erDiagram`. The key-focused physical views use Mermaid `classDiagram` with table/external annotations so the original foreign-key direction is retained without inventing cardinality. Member suffixes identify PK/FK participation and REQUIRED/NULLABLE; type punctuation is normalized only in these diagrams, while exact SQL types remain in the dictionary.
+The report displays only flow-related ERDs in section 2.2, with all target attributes. Section 2.3.1 describes only the logical tables in LERD-01 through LERD-04. Historical whole-system key-only DB-01 through DB-08 renders are retained as archived artifacts; they are not the Role-Level design and are not reproduced here. Their original physical definitions and full table/field dictionary in section 2.3.2 are preserved separately for traceability.
 
-**Physical view notation:** each table is assigned to one owning diagram. Dashed relationships reference a table in another group; that referenced table is shown as `external` with only key fields. Every one of the 237 physical foreign keys is drawn once from its owning child group. The diagrams use parent/child direction without guessing reverse minimum participation. Complete field nullability and exact FK columns are in the dictionary below.
+| Historical view | Archived source |
+| --- | --- |
+| DB-01 | [Mermaid source](../documents/diagrams/mermaid/db-01.mmd) |
+| DB-02 | [Mermaid source](../documents/diagrams/mermaid/db-02.mmd) |
+| DB-03 | [Mermaid source](../documents/diagrams/mermaid/db-03.mmd) |
+| DB-04 | [Mermaid source](../documents/diagrams/mermaid/db-04.mmd) |
+| DB-05 | [Mermaid source](../documents/diagrams/mermaid/db-05.mmd) |
+| DB-06 | [Mermaid source](../documents/diagrams/mermaid/db-06.mmd) |
+| DB-07 | [Mermaid source](../documents/diagrams/mermaid/db-07.mmd) |
+| DB-08 | [Mermaid source](../documents/diagrams/mermaid/db-08.mmd) |
 
-These are key-focused physical views; they do not invent relationships for matching column names. Unique/check/exclusion constraints and triggers may tighten lifecycle/cardinality beyond a simple relationship line.
+**Source-defined authoring physical supplements — 2026-11-06**
 
-<!-- DATABASE_DIAGRAMS:START -->
+DB-01 through DB-08 and the dictionary below remain the dated V1–V32 captured inventory. DB-09/10 are focused supplements derived from checked-in SQL, not a new live database capture or a recalculated global table/FK count. The supplements show selected owned tables and add exact completion/source-bank mappings; external nodes expose referenced keys only. Following the existing DB diagram convention, arrows run from referenced parent to referencing child and carry the child FK columns. Solid arrows are in-view FKs; dashed arrows reference external parent tables. Numeric multiplicities are derived from FK nullability and PK/UNIQUE constraints: every child here has exactly one parent, while a parent need not have children. These are physical table views rendered with `classDiagram`, not class inheritance or logical identifying-relationship notation. Unconnected tables intentionally have no declared SQL FK between them.
 
-**DB-01: Identity, registration, catalog references and processing** - 24 owned tables, 25 foreign keys.
+[Mermaid source: DB-09](../documents/diagrams/mermaid/db-09.mmd)
 
-[Mermaid source: DB-01](../documents/diagrams/mermaid/db-01.mmd)
+![DB-09 - Module authoring physical supplement](../documents/diagrams/mermaid/db-09.png)
 
-![DB-01 - Identity, registration, catalog references and processing V1-V32 key-focused physical ERD](../documents/diagrams/mermaid/db-01.png)
+**Diagram notes (DB-09):** Six owned tables and one declared FK, from `module_learning_pin(organization_id, module_id)` to `module_authoring`. `module_authoring.module_id` is globally unique in addition to its composite PK. The content and intake documents are connected by service-managed IDs/JSON references, shown in LERD-05 rather than additional SQL FK edges. Grant/audit rows share business identifiers but have no declared FK between them; DB-09 intentionally leaves them disconnected. Adding a line merely because column names match would misrepresent the schema. V48 renames `module_occupation_grant` to `module_job_position_grant` and the relevant `occupation_id` columns to `job_position_id`. Grant/audit rows remain part of the schema; their presence does not make legacy Job Position grants a prerequisite for current single-skill creation. `document` is a required JSON object. `revision` is positive; audit/pin timestamps default to `now()` and audit IDs are generated identities. V38 media/import/progress tables and V50 completion/admission tables are adjacent learning storage, outside this authoring-focused view; their existing learner evidence remains preserved.
 
-**Diagram notes (DB-01):**
+Sources: [V36 Module authoring](../backend/src/main/resources/db/migration/V36__module_authoring.sql), [V37 Catalog intake](../backend/src/main/resources/db/migration/V37__module_catalog_intake.sql), [V48 Job Position renames](../backend/src/main/resources/db/migration/V48__refactor_occupation_to_job_position.sql).
 
-- PK = primary key; FK = foreign key; REQUIRED = NOT NULL; NULLABLE = nullable. Parent -> child. FK IDs resolve to exact definitions in the dictionary. External entities belong to another diagram; no reverse cardinality is inferred.
+[Mermaid source: DB-10](../documents/diagrams/mermaid/db-10.mmd)
 
-**DB-02: Subscription, payment, workspace and member references** - 16 owned tables, 38 foreign keys.
+![DB-10 - Question Bank authoring physical supplement](../documents/diagrams/mermaid/db-10.png)
 
-[Mermaid source: DB-02](../documents/diagrams/mermaid/db-02.mmd)
+**Diagram notes (DB-10):** Three owned tables and five declared FKs. The organization/workspace and bank/workspace ends are 1-to-0..1 because the child FK is unique; bank/identity, organization/mail and account/mail are 1-to-0..many. Workspace PK `organization_id` and unique `question_bank_id` enforce one workspace per organization and one workspace per bank. Identity has unique `(question_bank_id, code)`, uppercase/nonblank codes and `retired=false` by default. `question_id` is a stable projection identity; there is no declared FK from it to `item_version.item_id`. Mail status is PENDING/RUNNING/RETRY/SENT/FAILED; attempts are nonnegative and lease/error fields legitimately nullable. The pending index covers PENDING/RUNNING/RETRY by `next_attempt`. Candidate content, review history and pending RETIRE/REACTIVATE requests remain in workspace JSON rather than additional columns/tables. DB-03 already covers the published `question_bank` / `item_version` foundation.
 
-![DB-02 - Subscription, payment, workspace and member references V1-V32 key-focused physical ERD](../documents/diagrams/mermaid/db-02.png)
-
-**Diagram notes (DB-02):**
-
-- PK = primary key; FK = foreign key; REQUIRED = NOT NULL; NULLABLE = nullable. Parent -> child. FK IDs resolve to exact definitions in the dictionary. External entities belong to another diagram; no reverse cardinality is inferred.
-
-**DB-03: Shared and legacy assessment, evidence and learning** - 32 owned tables, 75 foreign keys.
-
-[Mermaid source: DB-03](../documents/diagrams/mermaid/db-03.mmd)
-
-![DB-03 - Shared and legacy assessment, evidence and learning V1-V32 key-focused physical ERD](../documents/diagrams/mermaid/db-03.png)
-
-**Diagram notes (DB-03):**
-
-- PK = primary key; FK = foreign key; REQUIRED = NOT NULL; NULLABLE = nullable. Parent -> child. FK IDs resolve to exact definitions in the dictionary. External entities belong to another diagram; no reverse cardinality is inferred.
-
-**DB-04: Adaptive blueprint and activation** - 9 owned tables, 21 foreign keys.
-
-[Mermaid source: DB-04](../documents/diagrams/mermaid/db-04.mmd)
-
-![DB-04 - Adaptive blueprint and activation V1-V32 key-focused physical ERD](../documents/diagrams/mermaid/db-04.png)
-
-**Diagram notes (DB-04):**
-
-- PK = primary key; FK = foreign key; REQUIRED = NOT NULL; NULLABLE = nullable. Parent -> child. FK IDs resolve to exact definitions in the dictionary. External entities belong to another diagram; no reverse cardinality is inferred.
-
-**DB-05: Adaptive attempts and evidence** - 9 owned tables, 22 foreign keys.
-
-[Mermaid source: DB-05](../documents/diagrams/mermaid/db-05.mmd)
-
-![DB-05 - Adaptive attempts and evidence V1-V32 key-focused physical ERD](../documents/diagrams/mermaid/db-05.png)
-
-**Diagram notes (DB-05):**
-
-- PK = primary key; FK = foreign key; REQUIRED = NOT NULL; NULLABLE = nullable. Parent -> child. FK IDs resolve to exact definitions in the dictionary. External entities belong to another diagram; no reverse cardinality is inferred.
-
-**DB-06: IRT calibration and parameter selection** - 6 owned tables, 15 foreign keys.
-
-[Mermaid source: DB-06](../documents/diagrams/mermaid/db-06.mmd)
-
-![DB-06 - IRT calibration and parameter selection V1-V32 key-focused physical ERD](../documents/diagrams/mermaid/db-06.png)
-
-**Diagram notes (DB-06):**
-
-- PK = primary key; FK = foreign key; REQUIRED = NOT NULL; NULLABLE = nullable. Parent -> child. FK IDs resolve to exact definitions in the dictionary. External entities belong to another diagram; no reverse cardinality is inferred.
-
-**DB-07: Current role, Job Position profile and tenant resource binding** - 4 owned tables, 9 foreign keys.
-
-[Mermaid source: DB-07](../documents/diagrams/mermaid/db-07.mmd)
-
-![DB-07 - Current role, Job Position profile and tenant resource binding V1-V32 key-focused physical ERD](../documents/diagrams/mermaid/db-07.png)
-
-**Diagram notes (DB-07):**
-
-- PK = primary key; FK = foreign key; REQUIRED = NOT NULL; NULLABLE = nullable. Parent -> child. FK IDs resolve to exact definitions in the dictionary. External entities belong to another diagram; no reverse cardinality is inferred.
-
-**DB-08: Recommendation, pathway, analytics and evaluation** - 13 owned tables, 32 foreign keys.
-
-[Mermaid source: DB-08](../documents/diagrams/mermaid/db-08.mmd)
-
-![DB-08 - Recommendation, pathway, analytics and evaluation V1-V32 key-focused physical ERD](../documents/diagrams/mermaid/db-08.png)
-
-**Diagram notes (DB-08):**
-
-- PK = primary key; FK = foreign key; REQUIRED = NOT NULL; NULLABLE = nullable. Parent -> child. FK IDs resolve to exact definitions in the dictionary. External entities belong to another diagram; no reverse cardinality is inferred.
-
-<!-- DATABASE_DIAGRAMS:END -->
+Source: [V29 Question Bank authoring](../backend/src/main/resources/db/migration/V29__question_bank_authoring.sql). Matching CREATE TABLE definitions were also compared with the `workspace-migration` and `module-migration` copies; migration numbering differs by lineage but these nine table definitions match. This is design reconciliation against schema declarations and persistence mappings. This supplement also makes the V29 authoring tables explicit without relabeling the older captured dictionary as complete for the present checkout.
 
 #### 2.3.1 Table Descriptions
 
-Every table is listed below with purpose and its real primary/foreign keys. “Foundation” means the table exists but the corresponding end-to-end product service may not.
+The glossary below retains the earlier logical vocabulary and maps it to current source owners. It is not the entity inventory of the updated diagrams or an assertion that every logical term is a physical SQL table. The updated views above use actual table/column identities where applicable; catalog references remain cross-store snapshots.
 
 <!-- TABLE_DESCRIPTIONS:START -->
 
-| No | Table | Description | Primary keys | Foreign keys |
-| --- | --- | --- | --- | --- |
-| 1 | [account](#table-account) | Account identity, active state and internal credential linkage. | `account_id` | FK005 to `organization`; FK006 to `organizational_unit`; FK007 to `organizational_unit` |
-| 2 | [account_recovery_code](#table-account-recovery-code) | Internal hashed single-use recovery proofs. | `account_id`, `code_hash` | FK001 to `account_totp` |
-| 3 | [account_role](#table-account-role) | Historical/account-level role assignment under current single-role guards. | `account_id`, `role_code` | FK002 to `account`; FK003 to `application_role` |
-| 4 | [account_totp](#table-account-totp) | Internal encrypted authenticator enrollment and replay protection. | `account_id` | FK004 to `account` |
-| 5 | [activity_requirement](#table-activity-requirement) | Assessment requirement attached to learning activity. | `activity_id`, `assessment_version_id` | FK008 to `learning_activity`; FK009 to `module_assessment_binding` |
-| 6 | [analytics_snapshot](#table-analytics-snapshot) | Versioned analytics output foundation. | `analytics_snapshot_id` | FK010 to `cohort_snapshot` |
-| 7 | [application_role](#table-application-role) | Registered application role vocabulary. | `role_code` | None |
-| 8 | [assessment_assignment](#table-assessment-assignment) | Learner assessment assignment lifecycle foundation. | `assignment_id` | FK011 to `activity_requirement`; FK012 to `learning_activity`; FK013 to `assessment_version`; FK014 to `learner_state` |
-| 9 | [assessment_attempt](#table-assessment-attempt) | Legacy/shared attempt snapshot and response lifecycle foundation. | `attempt_id` | FK015 to `assessment_assignment` |
-| 10 | [assessment_availability](#table-assessment-availability) | Versioned assessment availability history. | `assessment_version_id`, `revision` | FK016 to `assessment_version`; FK017 to `account` |
-| 11 | [assessment_item](#table-assessment-item) | Ordered item inclusion in an assessment version. | `assessment_version_id`, `item_position` | FK018 to `assessment_version`; FK019 to `item_version` |
-| 12 | [assessment_result](#table-assessment-result) | Legacy/shared terminal assessment result. | `attempt_id` | FK020 to `assessment_attempt` |
-| 13 | [assessment_version](#table-assessment-version) | Versioned assessment definition and legacy baseline publication state. | `assessment_version_id` | FK021 to `baseline_blueprint_version`; FK022 to `account`; FK023 to `account` |
-| 14 | [audit_event](#table-audit-event) | Actual actor/action/outcome audit trail. | `audit_event_id` | FK024 to `account` |
-| 15 | [baseline_adaptive_attempt](#table-baseline-adaptive-attempt) | Current pinned adaptive attempt, deadline and terminal reason. | `attempt_id` | FK025 to `baseline_adaptive_blueprint_role`; FK026 to `learner_state`; FK027 to `account`; FK028 to `baseline_adaptive_blueprint_version`; FK029 to `baseline_adaptive_attempt` |
-| 16 | [baseline_adaptive_blueprint_role](#table-baseline-adaptive-blueprint-role) | Pinned role requirement snapshot in adaptive version. | `blueprint_id`, `blueprint_version`, `role_id` | FK030 to `baseline_adaptive_blueprint_version` |
-| 17 | [baseline_adaptive_blueprint_skill](#table-baseline-adaptive-blueprint-skill) | Pinned role-skill union input in adaptive version. | `blueprint_id`, `blueprint_version`, `role_id`, `micro_skill_id` | FK031 to `baseline_adaptive_blueprint_role` |
-| 18 | [baseline_adaptive_blueprint_version](#table-baseline-adaptive-blueprint-version) | Immutable adaptive configuration, resource pins and full-Job Position policy. | `blueprint_id`, `version` | FK032 to `baseline_blueprint`; FK033 to `irt_parameter_set`; FK034 to `account`; FK035 to `mastery_mapping_version`; FK036 to `model_version` |
-| 19 | [baseline_adaptive_blueprint_working_revision](#table-baseline-adaptive-blueprint-working-revision) | Current adaptive editable Draft identity/settings/state. | `working_revision_id` | FK037 to `baseline_blueprint`; FK038 to `account`; FK039 to `account` |
-| 20 | [baseline_answer_reveal_audit](#table-baseline-answer-reveal-audit) | Protected answer-review access audit. | `answer_reveal_audit_id` | FK040 to `account`; FK041 to `assessment_version`; FK042 to `organization` |
-| 21 | [baseline_assessment_series](#table-baseline-assessment-series) | Legacy Job Position assessment series/current working state. | `organization_id`, `job position_id` | FK043 to `assessment_version`; FK044 to `baseline_blueprint`; FK045 to `baseline_blueprint_version`; FK046 to `assessment_version`; FK047 to `organization`; FK048 to `baseline_blueprint_working_revision` |
-| 22 | [baseline_assessment_transition](#table-baseline-assessment-transition) | Legacy management transition history. | `transition_id` | FK049 to `assessment_version`; FK050 to `baseline_assessment_series`; FK051 to `baseline_blueprint_version`; FK052 to `assessment_version`; FK053 to `assessment_version`; FK054 to `baseline_blueprint_version`; FK055 to `baseline_blueprint_working_revision`; FK056 to `account`; FK057 to `assessment_version`; FK058 to `baseline_blueprint_working_revision` |
-| 23 | [baseline_attempt_command](#table-baseline-attempt-command) | Attempt operation idempotency receipt scoped to tenant and actor. | `organization_id`, `actor_id`, `idempotency_key` | FK059 to `baseline_adaptive_attempt` |
-| 24 | [baseline_attempt_item](#table-baseline-attempt-item) | Delivered item sequence and content snapshot. | `attempt_id`, `position` | FK060 to `baseline_attempt_pool_item` |
-| 25 | [baseline_attempt_pool_item](#table-baseline-attempt-pool-item) | Immutable eligible item pool captured for attempt. | `attempt_id`, `item_version_id` | FK061 to `baseline_attempt_skill_state`; FK062 to `baseline_adaptive_attempt`; FK063 to `irt_item_parameter` |
-| 26 | [baseline_attempt_response](#table-baseline-attempt-response) | Accepted response for a delivered position. | `attempt_id`, `position` | FK064 to `baseline_attempt_item` |
-| 27 | [baseline_attempt_result](#table-baseline-attempt-result) | Valid terminal adaptive result summary. | `attempt_id` | FK065 to `baseline_adaptive_attempt`; FK066 to `outbox_event` |
-| 28 | [baseline_attempt_skill_result](#table-baseline-attempt-skill-result) | Terminal per-skill result and confidence. | `attempt_id`, `micro_skill_id` | FK067 to `baseline_attempt_skill_state`; FK068 to `mastery_mapping_version` |
-| 29 | [baseline_attempt_skill_state](#table-baseline-attempt-skill-state) | Internal per-skill adaptive progress, theta and uncertainty. | `attempt_id`, `micro_skill_id` | FK069 to `baseline_adaptive_attempt` |
-| 30 | [baseline_blueprint](#table-baseline-blueprint) | Stable organization/Job Position baseline identity. | `blueprint_id` | FK089 to `account`; FK090 to `organization` |
-| 31 | [baseline_blueprint_activation](#table-baseline-blueprint-activation) | Current active baseline pointer for organization/Job Position. | `organization_id`, `job position_id` | FK074 to `account`; FK075 to `baseline_blueprint`; FK076 to `baseline_adaptive_blueprint_version` |
-| 32 | [baseline_blueprint_activation_event](#table-baseline-blueprint-activation-event) | Activation/deactivation/replacement history. | `activation_event_id` | FK070 to `baseline_blueprint`; FK071 to `baseline_blueprint_activation`; FK072 to `baseline_adaptive_blueprint_version`; FK073 to `account` |
-| 33 | [baseline_blueprint_command](#table-baseline-blueprint-command) | Adaptive management exact replay receipt. | `organization_id`, `actor_id`, `idempotency_key` | FK077 to `account`; FK078 to `baseline_blueprint` |
-| 34 | [baseline_blueprint_role](#table-baseline-blueprint-role) | Legacy blueprint role coverage and bounds. | `blueprint_id`, `blueprint_version`, `role_id` | FK079 to `baseline_blueprint_version` |
-| 35 | [baseline_blueprint_skill](#table-baseline-blueprint-skill) | Legacy blueprint role-skill coverage snapshot. | `blueprint_id`, `blueprint_version`, `role_id`, `micro_skill_id` | FK080 to `baseline_blueprint_role` |
-| 36 | [baseline_blueprint_version](#table-baseline-blueprint-version) | Legacy immutable baseline blueprint settings. | `blueprint_id`, `version` | FK082 to `account`; FK083 to `baseline_blueprint` |
-| 37 | [baseline_blueprint_version_registry](#table-baseline-blueprint-version-registry) | Blueprint/version identity shared across compatible formats. | `blueprint_id`, `version` | FK081 to `baseline_blueprint` |
-| 38 | [baseline_blueprint_working_registry](#table-baseline-blueprint-working-registry) | Unique open working revision registration. | `blueprint_id` | FK084 to `baseline_blueprint` |
-| 39 | [baseline_blueprint_working_revision](#table-baseline-blueprint-working-revision) | Legacy mutable Draft with revision and close state. | `working_revision_id` | FK085 to `baseline_assessment_series`; FK086 to `baseline_blueprint_version`; FK087 to `account`; FK088 to `account` |
-| 40 | [baseline_management_command](#table-baseline-management-command) | Legacy management command idempotency receipt. | `actor_id`, `idempotency_key` | FK091 to `account`; FK092 to `baseline_assessment_series` |
-| 41 | [baseline_mastery_evidence](#table-baseline-mastery-evidence) | Valid pinned baseline mastery evidence and provenance. | `attempt_id`, `micro_skill_id` | FK093 to `baseline_adaptive_attempt`; FK094 to `baseline_attempt_result`; FK095 to `baseline_attempt_skill_result`; FK096 to `mastery_mapping_version`; FK097 to `model_version`; FK098 to `irt_parameter_set` |
-| 42 | [catalog_guard](#table-catalog-guard) | Catalog release availability and manifest consistency guard. | `guard_id` | None |
-| 43 | [catalog_reference](#table-catalog-reference) | Versioned relational references to graph/catalog identities. | `catalog_ref_id` | FK099 to `catalog_release` |
-| 44 | [catalog_release](#table-catalog-release) | Immutable catalog release provenance. | `release_id` | None |
-| 45 | [cohort_member](#table-cohort-member) | Learner membership and provenance in cohort snapshot. | `cohort_snapshot_id`, `learner_id` | FK100 to `profile_revision`; FK101 to `profile_revision`; FK102 to `cohort_snapshot`; FK103 to `learner_state` |
-| 46 | [cohort_snapshot](#table-cohort-snapshot) | Frozen reporting population and filter context. | `cohort_snapshot_id` | FK104 to `account`; FK105 to `catalog_reference` |
-| 47 | [completion_pass](#table-completion-pass) | Satisfied assessment requirement for activity completion. | `activity_id`, `assessment_version_id` | FK106 to `activity_requirement`; FK107 to `module_completion`; FK108 to `assessment_result` |
-| 48 | [department_reference](#table-department-reference) | Stored same-organization department lookup for member assignment. | `department_id` | FK109 to `organization` |
-| 49 | [employee_job position_profile](#table-employee-job position-profile) | Applicable Job Position mastery/profile initialization binding. | `organization_id`, `learner_id`, `job position_id` | FK110 to `baseline_adaptive_attempt`; FK111 to `baseline_adaptive_blueprint_version` |
-| 50 | [employee_role_selection](#table-employee-role-selection) | Current string-ID Role selection history and immutable snapshot. | `selection_id` | FK113 to `learner_state` |
-| 51 | [employee_role_selection_request](#table-employee-role-selection-request) | Current Role selection retry receipt. | `organization_id`, `learner_id`, `retry_key` | FK112 to `employee_role_selection` |
-| 52 | [evaluation_artifact](#table-evaluation-artifact) | Retained evaluation output artifact metadata. | `artifact_id` | FK114 to `evaluation_run` |
-| 53 | [evaluation_run](#table-evaluation-run) | Reproducible research/evaluation execution status and version pins. | `evaluation_run_id` | FK115 to `catalog_release`; FK116 to `account`; FK117 to `model_version`; FK118 to `recommendation_version` |
-| 54 | [evidence_application](#table-evidence-application) | Idempotent application of an observation to a processing stream. | `processing_stream_id`, `observation_id` | FK119 to `evidence_observation`; FK120 to `profile_revision` |
-| 55 | [evidence_observation](#table-evidence-observation) | Immutable observed assessment evidence. | `observation_id` | FK121 to `item_response`; FK122 to `assessment_attempt`; FK123 to `item_skill_mapping` |
-| 56 | [evidence_policy_version](#table-evidence-policy-version) | Versioned evidence acceptance/interpretation policy foundation. | `policy_version_id` | FK124 to `account` |
-| 57 | [irt_calibration_run](#table-irt-calibration-run) | Actual calibration execution status and output provenance. | `calibration_run_id` | FK125 to `model_version`; FK126 to `irt_parameter_set` |
-| 58 | [irt_effective_parameter_selection](#table-irt-effective-parameter-selection) | Organization/bank/model effective parameter-set pointer. | `organization_id`, `question_bank_id`, `model_version_id` | FK127 to `irt_parameter_set`; FK128 to `account`; FK129 to `model_version`; FK130 to `organization`; FK131 to `question_bank` |
-| 59 | [irt_item_parameter](#table-irt-item-parameter) | Item/skill parameter values within a parameter set. | `parameter_set_id`, `item_version_id`, `micro_skill_id` | FK132 to `item_version`; FK133 to `irt_parameter_set` |
-| 60 | [irt_parameter_promotion_command](#table-irt-parameter-promotion-command) | Scoped parameter promotion command receipt/history. | `organization_id`, `actor_id`, `idempotency_key` | FK134 to `irt_parameter_set`; FK135 to `irt_effective_parameter_selection`; FK136 to `irt_parameter_set`; FK137 to `account` |
-| 61 | [irt_parameter_set](#table-irt-parameter-set) | Built/candidate/promoted item-parameter set. | `parameter_set_id` | FK138 to `account`; FK139 to `model_version` |
-| 62 | [item_response](#table-item-response) | Legacy/shared attempt item answer. | `attempt_id`, `item_position` | FK140 to `assessment_item`; FK141 to `assessment_attempt` |
-| 63 | [item_skill_mapping](#table-item-skill-mapping) | Versioned item-to-skill evidence mapping. | `mapping_version_id` | FK142 to `item_version`; FK143 to `catalog_reference` |
-| 64 | [item_version](#table-item-version) | Immutable/versioned question content, metadata and protected answer material. | `item_version_id` | FK144 to `question_bank` |
-| 65 | [learner_state](#table-learner-state) | Learner coordination and current revision pointers. | `learner_id` | FK145 to `account` |
-| 66 | [learning_activity](#table-learning-activity) | Learner module/activity context foundation. | `activity_id` | FK146 to `learner_state`; FK147 to `catalog_reference` |
-| 67 | [manager_scope](#table-manager-scope) | Manager-to-organizational-unit scope foundation. | `manager_id`, `unit_id` | FK148 to `account`; FK149 to `organizational_unit` |
-| 68 | [mastery_estimate](#table-mastery-estimate) | Per-skill mastery values and evidence quality in a profile revision. | `profile_revision_id`, `skill_ref_id` | FK150 to `profile_revision`; FK151 to `catalog_reference` |
-| 69 | [mastery_mapping_version](#table-mastery-mapping-version) | Versioned transformation from technical estimate to mastery semantics. | `mastery_mapping_version_id` | None |
-| 70 | [model_version](#table-model-version) | Versioned assessment/mastery model configuration. | `model_version_id` | FK152 to `account` |
-| 71 | [module_assessment_binding](#table-module-assessment-binding) | Versioned catalog module-to-assessment binding foundation. | `module_ref_id`, `assessment_version_id` | FK153 to `assessment_version`; FK154 to `catalog_reference` |
-| 72 | [module_completion](#table-module-completion) | Activity-level module completion fact. | `activity_id` | FK155 to `learning_activity`; FK156 to `progress_revision` |
-| 73 | [job position_department_reference](#table-job position-department-reference) | Stored job position-to-department association for assignment and baseline grants. | `job position_reference_id` | FK157 to `department_reference`; FK158 to `organization` |
-| 74 | [organization](#table-organization) | Organization tenant identity and administrative availability. | `organization_id` | None |
-| 75 | [organization_membership](#table-organization-membership) | Account membership, access state, revision and assignment references. | `membership_id` | FK160 to `account`; FK161 to `account`; FK162 to `department_reference`; FK163 to `job position_department_reference`; FK164 to `organization` |
-| 76 | [organization_membership_role](#table-organization-membership-role) | Exactly-one organization membership role under V12 guards. | `membership_id`, `role_code` | FK159 to `organization_membership` |
-| 77 | [organization_registration](#table-organization-registration) | Resumable organization and initial administrator onboarding. | `registration_id` | FK165 to `account` |
-| 78 | [organization_workspace](#table-organization-workspace) | Logical organization workspace setup and readiness. | `workspace_id` | FK166 to `organization`; FK167 to `organization_registration` |
-| 79 | [organizational_unit](#table-organizational-unit) | Legacy organizational hierarchy with preserved nullable organization ownership. | `unit_id` | FK168 to `organization`; FK169 to `organizational_unit` |
-| 80 | [outbox_event](#table-outbox-event) | Durable business event committed for asynchronous processing. | `event_id` | None |
-| 81 | [pathway_approval](#table-pathway-approval) | Expert decision on a pathway revision. | `approval_id` | FK170 to `account`; FK171 to `pathway_revision` |
-| 82 | [pathway_revision](#table-pathway-revision) | Generated/reviewed/current/superseded pathway snapshot foundation. | `pathway_revision_id` | FK172 to `recommendation_run` |
-| 83 | [pathway_step](#table-pathway-step) | Ordered module choice and decision metadata in pathway. | `step_id` | FK173 to `learning_activity`; FK174 to `pathway_revision` |
-| 84 | [payment_application](#table-payment-application) | Unique entitlement/provisioning application of paid order. | `application_id` | FK175 to `subscription_intent`; FK176 to `payment_order`; FK177 to `payment_order`; FK178 to `subscription_period` |
-| 85 | [payment_observation](#table-payment-observation) | Retained provider observation and verification/reconciliation evidence. | `observation_id` | FK179 to `payment_order` |
-| 86 | [payment_order](#table-payment-order) | Immutable checkout terms, provider identity and verified payment state. | `order_id` | FK180 to `account`; FK181 to `subscription_intent`; FK182 to `payment_order`; FK183 to `subscription_plan_version` |
-| 87 | [platform_administrator](#table-platform-administrator) | Platform-only administrator authority. | `account_id` | FK184 to `account`; FK185 to `account` |
-| 88 | [processing_job](#table-processing-job) | Handler execution status, leases, attempts and retry scheduling. | `job_id` | FK186 to `outbox_event`; FK187 to `learner_state`; FK188 to `processing_job` |
-| 89 | [processing_receipt](#table-processing-receipt) | Unique event-handler processing outcome. | `event_id`, `handler` | None |
-| 90 | [processing_stream](#table-processing-stream) | Versioned evidence processing context for a learner/model. | `processing_stream_id` | FK189 to `learner_state`; FK190 to `model_version`; FK191 to `evidence_policy_version` |
-| 91 | [profile_revision](#table-profile-revision) | Versioned competency profile completion/processing state foundation. | `profile_revision_id` | FK192 to `processing_stream` |
-| 92 | [progress_revision](#table-progress-revision) | Versioned learning progress projection foundation. | `progress_revision_id` | FK193 to `learner_state` |
-| 93 | [publication_request](#table-publication-request) | Controlled pathway publication request/outcome foundation. | `publication_request_id` | FK194 to `account`; FK195 to `pathway_revision` |
-| 94 | [question_bank](#table-question-bank) | Question collection and author identity. | `question_bank_id` | FK196 to `account` |
-| 95 | [recommendation_candidate](#table-recommendation-candidate) | Ranked candidate/module output of a recommendation run. | `recommendation_run_id`, `rank` | FK197 to `catalog_reference`; FK198 to `recommendation_run` |
-| 96 | [recommendation_run](#table-recommendation-run) | Reproducible recommendation execution and input revisions. | `recommendation_run_id` | FK199 to `catalog_release`; FK200 to `model_version`; FK201 to `evidence_policy_version`; FK202 to `profile_revision`; FK203 to `profile_revision`; FK204 to `progress_revision`; FK205 to `recommendation_version`; FK206 to `target_selection` |
-| 97 | [recommendation_version](#table-recommendation-version) | Versioned recommendation policy/configuration foundation. | `recommendation_version_id` | FK207 to `account` |
-| 98 | [registration_email_verification](#table-registration-email-verification) | Email proof generation, expiry, consumption and resend bookkeeping. | `account_id` | FK208 to `organization_registration` |
-| 99 | [registration_rate_limit](#table-registration-rate-limit) | Authentication/registration rate-limit buckets. | `bucket_key` | None |
-| 100 | [registration_session](#table-registration-session) | Spring Session JDBC session metadata used by current authentication. | `primary_id` | None |
-| 101 | [registration_session_attributes](#table-registration-session-attributes) | Serialized server session attributes; not public profile fields. | `session_primary_id`, `attribute_name` | FK209 to `registration_session` |
-| 102 | [roi_scenario](#table-roi-scenario) | ROI scenario inputs/output foundation, not actual cost-benefit ledger. | `scenario_id` | FK210 to `cohort_snapshot`; FK211 to `account` |
-| 103 | [session](#table-session) | Legacy account session foundation; distinct from JDBC registration_session. | `session_id` | FK212 to `account` |
-| 104 | [subscription](#table-subscription) | Organization subscription agreement identity. | `subscription_id` | FK222 to `organization` |
-| 105 | [subscription_intent](#table-subscription-intent) | Initial purchase or renewal business intent across eligible orders. | `intent_id` | FK213 to `payment_order`; FK214 to `organization`; FK215 to `account`; FK216 to `organization_registration` |
-| 106 | [subscription_period](#table-subscription-period) | Immutable paid access interval with allocated terms/seats. | `period_id` | FK217 to `payment_order`; FK218 to `subscription` |
-| 107 | [subscription_plan](#table-subscription-plan) | Stable subscription plan identity/current-version reference. | `plan_id` | FK221 to `subscription_plan_version` |
-| 108 | [subscription_plan_version](#table-subscription-plan-version) | Immutable plan name, price, currency, duration and seat terms. | `version_id` | FK219 to `account`; FK220 to `subscription_plan` |
-| 109 | [target_selection](#table-target-selection) | Legacy learner target-role selection history. | `selection_id` | FK225 to `learner_state`; FK226 to `catalog_reference` |
-| 110 | [target_selection_request](#table-target-selection-request) | Legacy selection command replay and rejected/successful outcome. | `request_id` | FK223 to `account`; FK224 to `target_selection` |
-| 111 | [workspace_account_profile](#table-workspace-account-profile) | Current workspace name/profile projection separate from registration snapshot. | `account_id` | FK227 to `account` |
-| 112 | [workspace_activation](#table-workspace-activation) | Pending member invitation/activation and single-use proof lifecycle. | `activation_id` | FK228 to `account`; FK229 to `account`; FK230 to `department_reference`; FK231 to `job position_department_reference`; FK232 to `organization` |
-| 113 | [workspace_baseline_resource](#table-workspace-baseline-resource) | Explicit organization/graph-Job Position grant and nullable bank/model/mapping pins. | `organization_id`, `graph_job position_id` | FK233 to `mastery_mapping_version`; FK234 to `model_version`; FK235 to `job position_department_reference`; FK236 to `organization`; FK237 to `question_bank` |
+| Diagram term | Current source owner / exact difference |
+| --- | --- |
+| Organization / Account | Existing PostgreSQL identity/membership owner. Logical actor_role/display_name are projections, not replacements for physical normalized identity. |
+| TargetRole / RoleLevel | Neo4j TargetRole and existing member Level nodes; no new SQL RoleLevel table or copied organization FK into Neo4j. |
+| RoleSelection | employee_role_selection with owned selection_id/target_revision, Role snapshot including actual Level, selected/end time and command history. Guard before archive/write. |
+| BaselineConfig / BaselineConfigVersion | assessment_rule_policy_draft/version/scoped_activation keyed by org+purpose+scope_key; scope is Role+Level for Baseline or Skill+knowledge for Skill Assessment. LERD-01 now includes both purposes and scope-local version identity. |
+| AssessmentAttempt | rule_assessment_attempt: mandatory policy_id, selection/revision, context JSON, deadline, previous_attempt and processing status. The updated source-defined view uses the actual policy and context fields. |
+| AssessmentItem | rule_assessment_group + rule_assessment_item: group role and exact outcomes/rules are separate; PK attempt+position, unique paper item version and group FKs. |
+| AssessmentAnswer | rule_assessment_answer: attempt+position PK, accepted response/revision/time/source_command; immutable rule_assessment_command retains replay history. |
+| QuestionVersion | Existing published item_version/protected key plus immutable assessment_item_knowledge_mapping and owned question_bank_scope; not a duplicated answer-bearing table. |
+| SkillResult | rule_assessment_group_result keyed attempt+group: counts/mandatory/pass/veto/reasons/time; attempt state is IN_PROGRESS/FINALIZED, not a whole-paper PASSED/FAILED enum. |
+| CompetencyProfile / ProfileSkill | RuleKnowledgeProfile read projection over diagnostics and separate skill_knowledge_evidence/review. Baseline does not create the drawn official profile record or achievement. |
+| RoleSkillRequirement / SkillPrerequisite | Neo4j REQUIRES_SKILL.requiredKnowledgeLevels and HAS_SKILL_PREREQUISITE exact dependent/prerequisite knowledge pairs. No separate new SQL requirement entity. |
+| Skill / LearningModule / Certificate | Catalog definitions/projection in Neo4j; exact content/authoring and progress in PG, private bytes in asset store. Certificate direction is Skill→REQUIRES_CERTIFICATE→Certificate, one active definition per configured pair. |
+| PathwayRequest | initial_pathway_request + pathway_requirement_snapshot, selected Role/Level input/hash and REQUIREMENT_V1. No mandatory synthetic profile_id/numeric gap input. |
+| PathwayRevision / PathwayReview | Existing initial_pathway_revision/current/approval/override/receipt; composite request+revision, exact hash/assignment and approval_basis_revision. No new surrogate pathway_revision_id aggregate. |
+| PathwayStep | pathway_requirement_step PK(request_id,revision,step_id), owned requirement/provision, kind REQUIRED/PARALLEL_SUPPLEMENT, source_bypass_id, reason/ordinal and official fulfilled_evidence_id. |
+| StepOption | pathway_requirement_option PK(request_id,revision,step_id,module_id,content_version), module_revision and compatibility snapshot. Certificate reference is on the certificate-only step; no mixed module/certificate choice or selected boolean authority. |
+| LearningProgress | Existing pinned lesson progress and learning_module_completion; learning_completion_requirement sidecar supplies exact knowledge/Skill version/outcomes. No second option-owned progress table. |
+| CertificateSubmission | certificate_submission + attachment + immutable decision; exact definition/pathway snapshot, replacement chain and PENDING/APPROVED/REJECTED. Actual assigned Expert approval creates official evidence once. |
+| PathwayBypass | pathway_requirement_bypass with owned request/revision/step, Expert/assignment/reason/time/retry/supersedes provenance. Waiver never creates achievement. Current code permits scoped available-work bypass; the updated figure labels the broader source behavior and documents earlier source behavior; confirmed policy now restricts bypass to missing suitable provision, pending code confirmation. |
 
 <!-- TABLE_DESCRIPTIONS:END -->
 
+
+
 #### 2.3.2 Complete column and constraint dictionary
+
+**Historical V1–V32 capture, retained verbatim below.** Completeness/counts refer only to that capture. It omits later source-defined module/content and V50–V62 rule/evidence/pathway/scoped-policy additions; it is not a current DB match claim.
 
 The following expandable records include **all 916 current columns**. `Required = Yes` corresponds to PostgreSQL `NOT NULL`; PK/FK markers identify key participation, and the exact composite FK definitions remain authoritative. Defaults are database expressions, not sample values. This internal design inventory does **not** make sensitive/server-managed fields visible or editable through APIs.
 
@@ -5617,39 +5556,70 @@ Explicit organization/graph-Job Position grant and nullable bank/model/mapping p
 | --- | --- | --- | --- | --- |
 | `ontology_seed.json` v0.9 | 833 | 4,638 | 85 modules / 181 TEACHES pairs | Runtime-input artifact; schema metadata inspection did not certify the live graph's exact snapshot. |
 | `ontology_seed-v011.json` v0.11 | 994 | 5,121 | 246 modules / 664 TEACHES pairs | Separate review package; all module review statuses remain NEEDS_EXPERT_REVIEW. No deployment/import performed. |
+| `ontology_seed-v012.json` v0.12 | 994 | 4,703 | 246 modules / 246 TEACHES pairs | Current source/review contract using JobPosition and exactly one MicroSkill per Module. This report update performs no deployment or graph import. |
 
-Both packages have five Job Positions, 48 TargetRoles, 144 Levels, 472 Competencies and 79 MicroSkills. v0.11 adds teaching focus/difficulty and review duration/price fields without changing the six labels/seven relationship types. Old [neo4j_schema.md](../documents/neo4j_schema.md) descriptions of v0.8 one-to-one TEACHES are historical, not the current many-to-many rule.
+All three packages have five JobPositions, 48 TargetRoles, 144 Levels, 472 Competencies and 79 MicroSkills. v0.9 and v0.11 are historical input/review snapshots. The six existing catalog node types in GRAPH-01 follow the [current v0.12 schema](../documents/neo4j_schema.md#current-contract--2026-11-05): the graph label is `JobPosition`, not `Occupation`, and every LearningModule teaches exactly one MicroSkill. Existing `OCC-` string IDs are preserved as historical identifiers, not interpreted as the graph label. v0.12 removes `teachingFocus` and `difficultyLevel` without changing the six node labels or seven relationship types.
 
-[Mermaid source: GRAPH-01](../documents/diagrams/mermaid/graph-01.mmd)
+[Canonical catalog source: PlantUML](../documents/diagrams/neo4j.puml) · [Capture/source scope](../documents/neo4j_schema.md#diagram-scope--2026-11-08)
 
-![GRAPH-01 - Current review ontology structure](../documents/diagrams/mermaid/graph-01.png)
+![GRAPH-01 - Neo4j captured catalog properties; Certificate marked source only](../documents/diagrams/neo4j.svg)
 
 **Diagram notes (GRAPH-01):**
 
-- Common node/edge fields: id, version, status, reviewStatus, reviewedBy and reviewedAt. Null reviewer/time is preserved. Duration/price and teachingFocus/difficultyLevel describe v0.11, not an automatic runtime v0.9 schema conversion.
+- The six captured labels show every property listed in the supplied schema; `id` uniqueness is source-defined, not newly verified in a live database. Relationship properties are listed in the image legend without assuming common fields for Certificate assignments.
+- Certificate and REQUIRES_CERTIFICATE remain current source concepts, visibly marked source only because neither was observed in the supplied capture. Optional replacement audit properties come directly from the Certificate writer.
+- Dataset linkage fields `jobPositionId`, `targetRoleId` and `levelId` are represented by graph relationships, not SQL foreign keys or extra graph properties. PostgreSQL owns learner state and evidence.
+- The original v0.12 import inventory remains historical. The shared image is regenerated from the existing PlantUML source; it does not prove a graph migration or deployment. Source-only compatibility fields outside the capture are described in the linked schema scope.
+
+**Node Descriptions**
+
+| No | Node | Description |
+| --- | --- | --- |
+| 1 | `JobPosition` | Job Position catalog definition owning a set of target roles. <ul><li>Business properties: <code>code</code>, <code>name</code>, <code>jobZone</code> and the six RIASEC interest dimensions.</li><li>Interest values describe the Job Position, not an Employee's competency or assessment score. Historical <code>OCC-</code> identifiers remain unchanged.</li></ul> |
+| 2 | `TargetRole` | Role definition belonging to one JobPosition. <ul><li>Business properties: <code>code</code>, <code>name</code>, <code>scope</code> and <code>assignedExpertId</code>/<code>assignedExpertName</code>.</li><li>Connected to its owning JobPosition through <code>HAS_ROLE</code> and to its levels through <code>HAS_LEVEL</code>.</li></ul> |
+| 3 | `Level` | Attainment level within a TargetRole. <ul><li>Business properties: <code>code</code>, <code>name</code>, <code>rank</code>, <code>attainmentRule</code>.</li><li>Groups competencies and defines level-specific skill requirements; different levels need not have strictly nested skill sets.</li></ul> |
+| 4 | `Competency` | Named grouping of required skills for its owning Level. <ul><li>Business properties: <code>code</code>, <code>name</code>, <code>description</code> and <code>attainmentRule</code>.</li><li>Connects to member MicroSkills through <code>HAS_SKILL</code>; it is not a learner score or progress record.</li></ul> |
+| 5 | `MicroSkill` | Reusable atomic skill definition referenced by competencies, level requirements, learning provision and prerequisites. <ul><li>Business properties: <code>name</code> and <code>definition</code>.</li><li>Learner results and mastery evidence are stored outside the ontology.</li></ul> |
+| 6 | `LearningModule` | Catalog learning provision with a versioned content locator and skill-teaching mapping. <ul><li>Business properties: <code>title</code>, <code>moduleType</code>, <code>contentUri</code>, <code>contentType</code>, <code>contentVersion</code>, <code>duration</code>, <code>knowledgeLevel</code>, <code>skillVersion</code> and <code>outcomeCodes</code>.</li><li>Duration is catalog metadata, not measured learning time; content locators do not prove approved private content delivery.</li></ul> |
+| 7 | `Certificate` | Source-defined versioned certificate definition, not observed in the supplied capture, for one MicroSkill, matching LERD-03. Properties: `id`, `organizationId`, `name`, `knowledgeLevel`, `outcomeCodes`, `referenceUrl` plus common version/lifecycle metadata. Learner evidence and Expert acceptance remain in CertificateSubmission; this node is not proof of achievement or an imported v0.12 label. |
+
+**Edge Descriptions**
+
+The seven captured relationship types have the properties shown in the diagram legend. REQUIRES_CERTIFICATE has its own source-written fields; no id/version/review fields are assumed for that assignment. Direction runs from the source node to the target node shown below. Neo4j uniqueness constraints do not by themselves enforce ownership, prerequisite acyclicity or teaching cardinality.
+
+| No | Edge | Description |
+| --- | --- | --- |
+| 1 | `HAS_ROLE` | Assigns a TargetRole to its owning Job Position. <ul><li>Direction: <code>JobPosition -&gt; TargetRole</code>.</li><li>Each TargetRole has one owning JobPosition; one JobPosition can own multiple roles. No additional business edge properties.</li></ul> |
+| 2 | `HAS_LEVEL` | Defines the levels belonging to a TargetRole. <ul><li>Direction: <code>TargetRole -&gt; Level</code>.</li><li>Each Level belongs to one role; one role can have multiple levels. No additional business edge properties.</li></ul> |
+| 3 | `HAS_COMPETENCY` | Groups competency definitions under a Level. <ul><li>Direction: <code>Level -&gt; Competency</code>.</li><li>Each Competency belongs to one Level; one Level can contain multiple competencies. No additional business edge properties.</li></ul> |
+| 4 | `HAS_SKILL` | Identifies the MicroSkills composing a Competency. <ul><li>Direction: <code>Competency -&gt; MicroSkill</code>.</li><li>A Competency can include multiple skills, and a skill can be reused by multiple competencies. No additional business edge properties.</li></ul> |
+| 5 | `REQUIRES_SKILL` | Defines the skill attainment requirement for a particular Level. <ul><li>Direction: <code>Level -&gt; MicroSkill</code>.</li><li>Current business property is <code>requiredKnowledgeLevels</code> and <code>isMandatory</code> plus retained applicable metadata; <code>requiredScore</code> is historical and is not a rule-flow target.</li></ul> |
+| 6 | `TEACHES` | Maps a LearningModule to its single taught MicroSkill. <ul><li>Direction: <code>LearningModule -&gt; MicroSkill</code>.</li><li>Exactly one MicroSkill per Module; a skill may have zero or multiple alternative Modules. No teaching-focus/difficulty business properties.</li><li>Completing a Module satisfies the learning prerequisite for that Skill assessment; it does not establish an assessment result or mastery.</li></ul> |
+| 7 | `HAS_SKILL_PREREQUISITE` | Defines a prerequisite that must be considered before the dependent skill. <ul><li>Direction: <code>dependent MicroSkill -&gt; prerequisite MicroSkill</code>.</li><li>Current properties are <code>dependentKnowledgeLevel</code> and <code>prerequisiteKnowledgeLevel</code>; exact-pair cycles/duplicates/malformed configuration block assessment readiness. Initial baseline does not create prerequisite work.</li></ul> |
+| 8 | `REQUIRES_CERTIFICATE` (source) | Direction Skill→Certificate, one active assigned certificate per configured CERTIFICATE_ONLY skill/knowledge, exact Skill version/outcomes and mandatory HTTPS URL. GRAPH-01 now uses this direction; active uniqueness applies to the configured Skill/knowledge pair, with historical versions retained. |
 
 #### 2.4.2 Graph field and relationship contract
 
 | Element | Definition and validation |
 | --- | --- |
-| Common identity | Stable string `id`; version/status/review metadata on nodes and relationships. Import validates IDs/endpoints and snapshot integrity. |
+| Common identity | The six captured labels have unique string `id`; the seven captured relationship types retain their listed id/version/status/review metadata. Source-only REQUIRES_CERTIFICATE has no writer-defined id/version/reviewStatus. Import validates IDs/endpoints and snapshot integrity. |
 | Review metadata | `NEEDS_EXPERT_REVIEW`, `APPROVED`, `REJECTED`; reviewer/time remain absent/null until real review. Dataset review is not interchangeable with L&D business publication. |
 | Job Position interests | Six normalized O*NET OI dimensions in [0,1], computed from source 1..7 scale as `(value - 1) / 6`. This is job positional interest data, not Employee mastery. |
 | Role/Level | Each TargetRole has one owning Job Position; current package has three Levels per role. Level-specific skill sets may differ/overlap without being nested. |
 | Competency | Group of required skills for its owning Level; no independent RIASEC or competency score is added. |
-| REQUIRES_SKILL | Requirement belongs to the Level-Skill pair; `requiredScore` and applicable metadata are not global Module difficulty. |
-| TEACHES | Many-to-many. v0.11 pair has `teachingFocus = PRIMARY/SUPPORTING/INCIDENTAL` and `difficultyLevel = LOW/MEDIUM/HIGH`. Incidental exposure must not be treated as closing a gap. |
-| Coverage validation | v0.11 package requires one PRIMARY skill per module, at least one provider per skill and LOW/MEDIUM/HIGH PRIMARY options for each of 79 skills. These are package review-completeness rules, not universal database cardinalities. |
-| Prerequisite | Directed MicroSkill-to-MicroSkill only; validate no self-link or cycle. `requiredScore` is retained; deprecated fields are not silently mapped. |
-| Module duration/price | v0.11 review estimates, not verified vendor prices, training costs, payments or measured learning gains. Count a multi-skill module once when estimating totals. |
+| REQUIRES_SKILL | Requirement belongs to the Level-Skill pair; `requiredKnowledgeLevels` and retained metadata replace numeric target use in this flow. |
+| TEACHES | Exactly one outgoing MicroSkill mapping per LearningModule; multiple alternative Modules may teach the same skill. `teachingFocus` and `difficultyLevel` are removed in v0.12. Cardinality is validated by writers/import/publication, not by uniqueness constraints alone. |
+| Coverage validation | v0.12 has 246 Modules and 246 TEACHES edges: 71 skills have Module provision and eight skills have no Module. Missing provision remains explicit; no content or approval is fabricated to fill the gap. |
+| Prerequisite | Directed MicroSkill-to-MicroSkill only; validate no self-link or cycle. Exact dependent/prerequisite knowledge pairs replace numeric readiness; no difficulty/score conversion is inferred. |
+| Module duration/price | Duration is descriptive; price remains only in historical data, forbidden in new authoring by V61; neither proves financial outcomes. Module completion, progress and immutable learner evidence belong to PostgreSQL, not the ontology. |
 | Content locator | `contentUri` refers to representative source/scaffold content; not evidence that the application serves approved private MinIO objects. |
 | Tenant ownership | Raw reference packages are not full tenant membership/assignment models. Trusted resource binding and explicit future organization-scoped authoring/projection are required. |
 
 #### 2.4.3 Import script correspondence
 
-The current importer consumes the v0.11 review package, validates entity/relationship fields and endpoint types, creates six per-label `id` uniqueness constraints and imports only into an empty or exactly compatible graph. Community uniqueness constraints alone do not enforce acyclicity, cardinality, publication, review or tenant authorization; those remain validated application/import rules.
+The [current importer](../documents/dataset/import/import_neo4j.py) defaults to `ontology_seed-v012.json` and uses the [single-skill validator](../documents/dataset/import/validate_single_skill_catalog.py), whose label allowlist maps `JobPositions` to `JobPosition`. It validates entity/relationship fields, endpoint types and teaching cardinality, creates six per-label `id` uniqueness constraints and imports only into an empty or exactly compatible graph. Community uniqueness constraints alone do not enforce acyclicity, cardinality, publication, review or tenant authorization; those remain validated application/import rules.
 
-A controlled import must pin the chosen dataset path/version and compare counts/IDs/pairs after import. The existing runtime v0.9 and review v0.11 artifacts cannot be overlaid by assumption. No graph data or historical learner pins were changed during report preparation.
+A controlled import must pin the chosen dataset path/version and compare counts/IDs/pairs after import. Historical v0.9/v0.11 artifacts and current v0.12 cannot be overlaid by assumption. Updating this diagram and report changes no graph data, stable identifiers or historical learner pins.
 
 ### 2.5 Target schema gaps and API visibility
 
@@ -5657,9 +5627,9 @@ A controlled import must pin the chosen dataset path/version and compare counts/
 | --- | --- | --- |
 | Full department/job position/Expert lifecycle | Reference tables and baseline resource binding | Approved organization-owned aggregates and assignment history; forward migration preserving member/attempt references. |
 | Role submission and L&D publication | Legacy graph state and catalog references | Separate content/configuration version, submission, decision and publication identity; no fabricated mapping from legacy ACTIVE. |
-| Private learning offering | Graph module identity/content URI and assessment bindings | Module/content metadata, ordered content versions, object version locator and offering approval aggregate; MinIO private objects. |
+| Private learning offering | Existing module authoring/content/progress/private assets; exact knowledge completion sidecar | Full provider/runtime acceptance remains separately scoped; contentUri alone is not access authority. |
 | RIASEC/guidance | Prototype UI and job position interest vector | Versioned instrument result, minimized inference input/output provenance and authorized role recommendations. |
-| Ongoing tracing/adaptation | Evidence/profile/pathway foundations | Idempotent evidence application, versioned gaps, override-preserving recalculation and initial confirmation. |
+| Ongoing rule evidence/adaptation | Implemented local RuleAssessmentOutcome and RequirementPathway services with V52–V62 source schema | Full runtime/assignment/security/recovery acceptance remains unverified; numeric tracing/CBF research is separate. |
 | Realized ROI | Analytics/cohort and `roi_scenario` foundation | Actual costs/benefits ledger with period/currency/basis and versioned report calculation. |
 | Audit readers | Durable `audit_event` and selected events | Scoped administrator query contract, retention and privacy policy. |
 
@@ -5689,7 +5659,7 @@ Sensitive fields (password hashes, encrypted MFA material, HMAC proofs, provider
 
 | Class / contract | Specification |
 | --- | --- |
-| [RegistrationFields](../backend/src/main/java/com/adaptlearngraph/entities/RegistrationFields.java) | Immutable normalized registration input; validates name/email/password/slug and optional fixed-choice fields. Null optional industry/headcount/slug is legitimate. |
+| [RegistrationFields](../backend/src/main/java/com/adaptlearngraph/entities/domain/RegistrationFields.java) | Immutable normalized registration input; validates name/email/password/slug and optional fixed-choice fields. Null optional industry/headcount/slug is legitimate. |
 | [RegistrationService](../backend/src/main/java/com/adaptlearngraph/services/RegistrationService.java) | Owns atomic registration, email proof, MFA enrollment/recovery and resumable stage. Uses injected clock, secrets and transactional store. |
 | `RegistrationStore` | Output port for account/registration/proof/rate-limit/audit operations and transaction/locking scope. |
 | `RegistrationSecrets` | Hash/match credentials; HMAC proofs and encrypt MFA material; configuration failure is explicit. |
@@ -5756,7 +5726,7 @@ Sensitive fields (password hashes, encrypted MFA material, HMAC proofs, provider
 
 | Class / contract | Specification |
 | --- | --- |
-| [PlanTerms](../backend/src/main/java/com/adaptlearngraph/entities/PlanTerms.java) | Validated immutable terms; nonblank name/description, supported VND integer amount, positive calendar months and Employee seats. |
+| [PlanTerms](../backend/src/main/java/com/adaptlearngraph/entities/domain/PlanTerms.java) | Validated immutable terms; nonblank name/description, supported VND integer amount, positive calendar months and Employee seats. |
 | `SubscriptionCatalogService` | Read existing plans and update through expected-version immutable successor terms. |
 | `SubscriptionLifecycleService` | Purchase/renewal/status, member/suspension and access orchestration through explicit identity/workspace ports. |
 | `SubscriptionAccessPolicy` | Distinguishes ordinary workspace, billing/recovery and membership actions under time/seat/suspension constraints. |
@@ -5801,7 +5771,7 @@ Sensitive fields (password hashes, encrypted MFA material, HMAC proofs, provider
 
 **Diagram notes (ST-07):**
 
-- Persisted setup and suspension vocabularies are separate. The current successful initial purchase may create READY atomically; the schema's FAILED state does not prove every failure is separately stored.
+- Persisted setup and suspension vocabularies are separate. An initial purchase without a starter catalog selection creates READY in the provisioning transaction. With a selection, setup stays PROVISIONING until the catalog import (ST-22) succeeds; exhausting the import attempts records FAILED with `CATALOG_IMPORT_FAILED`. The FAILED-to-PROVISIONING retry is a target transition; no current code performs it.
 
 [Mermaid source: ST-08](../documents/diagrams/mermaid/st-08.mmd)
 
@@ -5810,6 +5780,14 @@ Sensitive fields (password hashes, encrypted MFA material, HMAC proofs, provider
 **Diagram notes (ST-08):**
 
 - Interval boundary semantics and non-overlap are enforced by policy/DDL. Renewal adds another paid period; it does not edit the expired record. Administrative suspension can deny access in any time state.
+
+[Mermaid source: ST-22](../documents/diagrams/mermaid/st-22.mmd)
+
+![ST-22 - Workspace starter catalog import (persisted states)](../documents/diagrams/mermaid/st-22.png)
+
+**Diagram notes (ST-22):**
+
+- One `platform.workspace_catalog_import` row per organization, created only when the first payment is applied for a registration with a saved selection. Persisted states are PENDING, SUCCEEDED and FAILED; Due and Leased are derived from `next_attempt_at` and `lease_owner`/`lease_until` inside PENDING. Only the current lease owner can commit. Success copies the selection closure into Neo4j with organization-owned ids and moves ST-07 to READY; an invalid selection or the fifth failed attempt moves it to FAILED. Retrying a copy is idempotent.
 
 Plan versions are immutable value snapshots with a current-plan pointer, not an approval lifecycle. Updating a plan creates a successor version; purchased references do not move. This is a version graph rather than a fictitious DRAFT/APPROVED enum.
 
@@ -5832,7 +5810,7 @@ Plan versions are immutable value snapshots with a current-plan pointer, not an 
 | `MicroSkillService`, `PrerequisiteService` | Existing skill and directed-cycle validation code; associated write APIs are legacy-gated. |
 | Planned `Job PositionAdministration` / `ExpertAssignment` | Persist organization/department ownership, active references and assignment history; reject foreign or inactive grants. |
 | Planned `RoleConfigurationWorkflow` | Draft configuration version, submission and L&D decision; separate authored requirements from publication authority. |
-| Planned `OfferingWorkflow` | Coordinates a versioned module/content/assessment bundle, return/resubmit and approval. |
+| Planned `OfferingWorkflow` | Coordinates a versioned module/content bundle, return/resubmit and approval. |
 | Planned authorization/repository/projection/content ports | Derive trusted scope; preserve relational workflow history; publish recoverable graph projections; authorize private object access. |
 
 The frontend WF-04/WF-07 layouts and SRS field rules apply. Additional target columns/DTOs must be designed and approved before implementation. Current `assignedExpertId`, local company storage and graph `reviewStatus` are not interchangeable assignment/publication authorities.
@@ -5873,8 +5851,9 @@ The frontend WF-04/WF-07 layouts and SRS field rules apply. Additional target co
 
 **Diagram notes (ST-11):**
 
-- Current Module-document states are DRAFT, SUBMITTED, RETURNED, PUBLISH_PENDING and RELEASED. The responsible Expert edits/submits; L&D returns with feedback or approves the exact revision. Publication failure remains pending for authorized retry; successful catalog projection releases the revision.
-- Lessons are reviewed as part of the whole Module. Editing a released Module creates a successor draft and preserves the published predecessor/history. Archive/restore is outside this concise main-flow view. This does not claim that the complete module-assessment bundle is implemented; ACT-04 in the SRS remains the broader target. Learning access is separately authorized.
+- Current Module-document states are DRAFT, SUBMITTED, RETURNED, PUBLISH_PENDING, RELEASED, ARCHIVE_REQUESTED, ARCHIVE_PENDING and ARCHIVED. The responsible Expert edits/submits; L&D returns with feedback or approves the exact revision. Publication/archive failures remain pending for authorized retry. Archive approval and projection both recheck required skill coverage.
+- Lessons are reviewed as part of the whole Module. Editing a released Module creates a successor draft and preserves the published predecessor/history. Returning an archive request keeps the Module RELEASED. Restoring creates a new DRAFT; archived availability remains in effect until reapproval/publication succeeds. Learner pins and historical packages survive archive/restore. ACT-04 covers Module and learning-content authoring/approval with one MicroSkill per Module; assessments are outside the approval package. Learning access is separately authorized.
+- The terminal deletion edge is an operation, not a persisted DELETED state: the responsible Expert may permanently delete only a DRAFT with a matching lock version, no intake, no previous release and no graph/pin reference. RETURNED cannot be directly deleted; saving an edit first creates DRAFT. Stale or unauthorized commands do not transition state. The content library is separate; deleting the Module does not imply deleting its content package.
 
 [Mermaid source: ST-12](../documents/diagrams/mermaid/st-12.mmd)
 
@@ -5884,7 +5863,7 @@ The frontend WF-04/WF-07 layouts and SRS field rules apply. Additional target co
 
 - Applies to principal catalog nodes/relationships including MicroSkill. This shows documented vocabularies and target transitions; dataset import alone does not execute a business review. ACTIVE plus NEEDS_EXPERT_REVIEW is not approved publication.
 
-### 3.4 Baseline, Assessment Evidence and IRT
+### 3.4 Baseline, Rule Assessment and Evidence
 
 #### 3.4.1 Class Diagram and Class Specifications
 
@@ -5892,30 +5871,26 @@ The frontend WF-04/WF-07 layouts and SRS field rules apply. Additional target co
 
 ![CLS-04 - Current adaptive assessment ports and services](../documents/diagrams/mermaid/cls-04.png)
 
-| Class / contract | Specification |
+**CLS-04 source scope:** the updated diagram shows active scoped-policy and rule-assessment owners listed below. It is a bounded class dependency view, not a complete call graph.
+
+| Class / contract | Current responsibility |
 | --- | --- |
-| `AdaptiveBlueprintService` | Authorized Draft/save/preview/finalize/disable/discard with exact identity/revision/current-pointer checks and idempotent receipts. |
-| `AdaptiveBlueprintStore` / JDBC implementation | Transactional blueprint/registry/activation persistence; read-only history/list queries and coordinated writes. |
-| `AdaptiveBlueprintEligibilityPort` | Resolve current or pinned available pool from permitted catalog, bank and technical versions; no fabricated default bank/model. |
-| [WorkspaceBaselineResources](../backend/src/main/java/com/adaptlearngraph/repository/WorkspaceBaselineResources.java) | Read explicit V32 tenant/Job Position/resource binding; null pins mean not ready. |
-| [WorkspaceBaselineConfiguration](../backend/src/main/java/com/adaptlearngraph/config/WorkspaceBaselineConfiguration.java) | Composition root for trusted session/entitlement adapters, JDBC stores, Neo4j catalog and attempt services. Profile: `workspace-baseline & local & !local-baseline-demo & !prod`. |
-| `AdaptiveAttemptStartService` | New admission, resume and replay under trusted learner/selection/current configuration; pins full Job Position scope, content and timing. |
-| `AdaptiveAttemptAnswerService` | Revision/position-bound response acceptance, server correctness and adaptive next-item/finalization. |
-| `AdaptiveAttemptSubmitService` | Explicit manual submission, idempotency and shared terminal policy. |
-| [AdaptiveAttemptFinalizationService](../backend/src/main/java/com/adaptlearngraph/services/AdaptiveAttemptFinalizationService.java) | Shared answer/manual/deadline terminal policy; checks actual progress against pinned IRT outcomes; invalidates inconsistent/insufficient attempts without invented mastery. |
-| `AdaptiveAttemptPolicyPort` | Load pinned technical parameters; distinguishes dependency unavailability from incompatible policy. |
-| `AdaptiveAttemptOutcomePort` | Persist terminal state, result/evidence and permitted profile initialization once. |
-| `CalibrationService`, `PromotionService` | Fit candidate IRT parameters and promote effective selection in authorized scope; actual calibration evidence is distinct from a demo fitted file. |
+| ScopedAssessmentPolicyService / Neo4jAssessmentPolicyCatalog | Trusted L&D Role–Level or Expert Skill–knowledge discovery, one draft/active, exact catalog groups/bank readiness, publication, abandoned history and scope-local version labels. |
+| BaselinePolicyEditor | Partial three-step editor; uniform count/pass per knowledge level; baseline mandatory/veto false; complete-and-activate atomically validates current submitted snapshot. |
+| CurrentRoleKnowledgeCatalog / RuleAssessmentContextJpaRepository | Current selection, target groups or exact accepted completed option, compatible official exemptions, full prerequisite closure for Skill paper and context fingerprint revalidation. |
+| RuleAssessmentAttemptService / RuleAssessment | Sample/freeze once, safe read/resume, expected-revision answers, submit/deadline finalization and group scoring. Every retake is full; no prior group carry-over or IRT pins. |
+| RuleAssessmentOutcomeService / RuleAssessmentDecision | Consume finalized groups idempotently; separate main fail/veto/waiting supplement/ready, preserve NEED_REVIEW without revocation, and award exact qualifying official evidence. |
+| WorkspaceBaselineConfiguration | Local-only trusted workspace wiring and deadline/outcome scheduler. Retained legacy factories without @Bean are not active rule fallbacks. |
 
 #### 3.4.2 Draft, preview and activation sequence
 
 [Mermaid source: SEQ-07](../documents/diagrams/mermaid/seq-07.mmd)
 
-![SEQ-07 - Job Position baseline activation with preserved history](../documents/diagrams/mermaid/seq-07.png)
+![SEQ-07 - Scoped policy draft and publication](../documents/diagrams/mermaid/seq-07.png)
 
 **Diagram notes (SEQ-07):**
 
-- Existing attempts and initialized profiles retain original pins. Historical version reads do not depend on current catalog availability.
+- ScopedAssessmentPolicyService owns Role-Level/Skill-knowledge draft publication with exact bank/catalog checks, immutable versions and a scoped activation pointer. Saving a draft is distinct from publication.
 
 #### 3.4.3 Start, answer and finalize sequence
 
@@ -5923,42 +5898,44 @@ The frontend WF-04/WF-07 layouts and SRS field rules apply. Additional target co
 
 ![SEQ-08 - Pinned Employee baseline](../documents/diagrams/mermaid/seq-08.png)
 
-The last read arrow is a logical persistence path through an authorized application read use case, not direct browser database access.
+SEQ-08 now shows the full frozen group paper, revision-checked answers, submit/server deadline finalization and separate durable effects. Protected answer keys are absent from Employee projections; pending supplementation is not another scoring failure.
 
 #### 3.4.4 Assessment lifecycle state machines
 
 [Mermaid source: ST-13](../documents/diagrams/mermaid/st-13.mmd)
 
-![ST-13 - Adaptive blueprint working row and released availability](../documents/diagrams/mermaid/st-13.png)
+![ST-13 - Scoped Baseline and Skill policy lifecycle](../documents/diagrams/mermaid/st01-standard-20261106/st-13.png)
 
 **Diagram notes (ST-13):**
 
-- Retiring/Inactive are projections, not stored version enums. Reactivation creates a new Draft and revalidated immutable version. Readiness (READY/stale/unconfigured/infeasible) is a separate dimension.
+- The updated figure separates mutable scope drafts, abandoned baseline snapshots and immutable active versions. A draft may coexist with an active version; pinned attempts retain their original policy.
 
 [Mermaid source: ST-14](../documents/diagrams/mermaid/st-14.mmd)
 
-![ST-14 - Adaptive attempt (persisted state and reason)](../documents/diagrams/mermaid/st-14.png)
+![ST-14 - Attempt state and downstream processing](../documents/diagrams/mermaid/st01-standard-20261106/st-14-rule-based-20261106.png)
 
 **Diagram notes (ST-14):**
 
-- Transient dependency outage is retryable, not automatically invalidation. Time passing or GET alone does not finalize. Permitted replacement is a new linked attempt with retained pins.
+- The updated figure separates IN_PROGRESS/FINALIZED attempt state, SUBMITTED/DEADLINE finish reason, per-group results and PENDING/PROCESSED effects. No universal pass threshold is introduced.
 
-[Mermaid source: ST-15](../documents/diagrams/mermaid/st-15.mmd)
+**ST-16 is a two-panel family:** ST-16A follows a QuestionVersion; ST-16B follows Question availability. These are different state variables, not successive phases in one state machine. Retired questions can retain PUBLISHED versions. Retirement requests require an existing published version; submission and approval require `retired=false`.
 
-![ST-15 - IRT calibration and parameter promotion](../documents/diagrams/mermaid/st-15.png)
+[Mermaid source: ST-16A](../documents/diagrams/mermaid/st-16a.mmd)
 
-**Diagram notes (ST-15):**
+![ST-16A - Question Version Lifecycle](../documents/diagrams/mermaid/st-16a.png)
 
-- Effective selection is keyed by organization, bank and model. Candidate existence and synthetic fitted data are not approval. Activated reviewer/time are populated only on genuine promotion.
-
-[Mermaid source: ST-16](../documents/diagrams/mermaid/st-16.mmd)
-
-![ST-16 - Question Bank](../documents/diagrams/mermaid/st-16.png)
-
-**Diagram notes (ST-16):**
+**Diagram notes (ST-16A):**
 
 - This is the current organization Question Bank candidate lifecycle: DRAFT, SUBMITTED and PUBLISHED. Only the responsible Expert edits/submits/withdraws; L&D acknowledges and approves the exact submitted version, or returns it with a reason to DRAFT. Submitted content is locked, and stale/invalid commands do not transition state.
-- A successor creates a new draft; it does not mutate the immutable published predecessor or existing assessment pins. Retirement/reactivation is a separate question-availability lifecycle. ACT-10 in the SRS covers the concise authoring/review activity. Physical `item_version` / `assessment_version` publication fields remain separate foundations and are not substituted for this authoring workflow; module-exam construction and calibration remain separate.
+- ST-16A follows one version identity. PUBLISHED has no transition back to DRAFT: creating a successor starts a separate version at the initial DRAFT entry and leaves the published predecessor/assessment pins intact. ST-16B follows the owning Question identity and its independent availability fields. ACT-10 in the SRS covers the concise authoring/review activity. Physical `item_version` / `assessment_version` publication fields remain separate foundations and are not substituted for this authoring workflow; scoped Skill policy and rule-exam execution are separate active services; IRT calibration is retained outside the active rule flow.
+
+[Mermaid source: ST-16B](../documents/diagrams/mermaid/st-16b.mmd)
+
+![ST-16B - Question Availability Lifecycle](../documents/diagrams/mermaid/st-16b.png)
+
+**Diagram notes (ST-16B):** These four labels derive from `Question.retired` and nullable `Question.request`; they are not candidate publication-state values. Not retired means `retired=false`, not necessarily published/eligible. A pending retirement keeps `retired=false`; pending reactivation keeps `retired=true`. The responsible Expert can request a change with a reason only when a published version exists and no availability request is pending. L&D confirms or returns the request with a reason; reactivation additionally checks published-content eligibility. Confirmation/return clears the request. Current expected revision, ownership and organization authorization apply to every command. Retirement preserves published versions and assessment references. No question draft-delete command exists.
+
+State sources: [ModuleAuthoringService](../backend/src/main/java/com/adaptlearngraph/services/ModuleAuthoringService.java), [QuestionBankService](../backend/src/main/java/com/adaptlearngraph/services/QuestionBankService.java).
 
 Legacy `assessment_assignment` has ACTIVE/REVOKED/CLOSED and legacy blueprint working rows have OPEN/FINALIZED/ABANDONED. They remain in the physical dictionary for history/compatibility; they are not substitutes for the current adaptive attempt lifecycle. Module/RIASEC completion must use purpose-specific approved state/retake contracts rather than blindly copying baseline admission rules.
 
@@ -5972,19 +5949,19 @@ Legacy `assessment_assignment` has ACTIVE/REVOKED/CLOSED and legacy blueprint wo
 
 **Diagram notes (CLS-05):**
 
-- Current composition uses ports/adapters around RoleBaselineFlow. Planned class names are responsibilities, not existing implementations. General pathway/tracing is not inferred from baseline profile initialization.
+- Current composition uses ports/adapters around RoleBaselineFlow. CLS-05 retains planned names and numeric/profile assumptions; current requirement services are listed below. Figure is only partly aligned and was not changed.
 
-| Class / responsibility | Specification |
+| Class / responsibility | Current specification |
 | --- | --- |
-| [CurrentRoleFlowController](../backend/src/main/java/com/adaptlearngraph/apis/CurrentRoleFlowController.java) | Employee roles/details, current selection/next step, selection command and mastery routes. |
-| [RoleBaselineFlow](../backend/src/main/java/com/adaptlearngraph/services/RoleBaselineFlow.java) | Trusted role choice, replay/CAS coordination and baseline/profile next-step orchestration. Selection is not itself assessment admission. |
-| `CurrentRoleCatalog` | Reads current string-ID Job Position/Role/Level requirements through graph adapter. |
-| `CurrentRoleSelectionStore` | Selection history, expected selection comparison, retry receipt, audit/outbox and learner coordination. |
-| Applicable Job Position profile | Stable required skill set and applicable baseline binding; newer catalog requirements do not retroactively alter initialized profiles. |
-| Planned `GuidanceService` | Minimized evidence/interest context, authorized candidates, validated LLM output and provenance; Employee retains choice. |
-| Planned `CompetencyUpdateService` | Versioned evidence-to-mastery updates and role gaps; idempotent source observation consumption. |
-| Planned `PathwayGenerationService` | Prerequisite-aware approved coverage, module deduplication, initial reviewable pathway and remaining-step recalculation. |
-| Planned `InitialPathwayReviewService` | Assigned Expert includes/excludes/confirms exact initial version; preserves decision identity and applicable override rationale. |
+| RoleBaselineFlow / CurrentRoleSelectionStore | Real session/tenant Role+member Level, expected selection and replay; targetBound checked before archive/write under learner lock, then selection/audit/outbox atomically. |
+| RequirementPathwayAdmissionService | Read-only preview, exact selection/input-hash confirmation, immutable requirement snapshot and pending request; explicit retry preserves total history and binding. |
+| RequirementPathwayGenerationService | Bounded claim/lease/fencing generation with exact needs/options and no numeric optimizer or initial prerequisite expansion. |
+| RequirementPathwayReviewService / ValidationService | Actual assigned queue/check/save/approval/bypass/refresh; exact revision/hash and live provider checks. Eligible-unstarted option exclusion is a confirmed-policy mismatch. |
+| RequirementPathwayAccess | Accepted exact option/Skill-version/knowledge/outcome/content and established dependency gates. Authentic started pins may continue; content alone never awards achievement. |
+| RequirementPathwayRecalculationService / PlanningService / RefreshService | Actual failed-group supplementation, compatible evidence/provision refresh, event dedup and immutable successor revisions with real approval basis. B discovered earlier still needs actual B learning/evidence after an A retake passes B. |
+| CertificateSubmissionService / CertificateReviewService | Exact immutable definition/submission, one private evidence form, actual assigned approve/reject/reason, once-only official evidence/outbox and private downloads. |
+| RuleKnowledgeProfileService | Separate diagnostics, official exact evidence and NEED_REVIEW; no numeric gap subtraction. |
+| Guidance/ROI | Full persisted AI guidance/RIASEC and realized ROI remain incomplete separate scope; depicted target services are not implemented by the rule engine. |
 
 #### 3.5.2 Current role selection and next-step sequence
 
@@ -5994,43 +5971,43 @@ Legacy `assessment_assignment` has ACTIVE/REVOKED/CLOSED and legacy blueprint wo
 
 **Diagram notes (SEQ-09):**
 
-- A failed post-commit read does not erase the selected role. Low valid mastery counts as present; unknown is not zero.
+- A failed post-commit read does not erase selection. SEQ-09 now shows exact member Level, targetBound before archive and diagnostic-versus-official next-step readiness; full runtime isolation and race coverage remain unverified.
 
-#### 3.5.3 Planned guidance, review and adaptation sequence
+#### 3.5.3 Retained guidance/adaptation sequence and current boundary
 
 [Mermaid source: SEQ-10](../documents/diagrams/mermaid/seq-10.mmd)
 
 ![SEQ-10 - Planned intelligence pipeline with human confirmation](../documents/diagrams/mermaid/seq-10.png)
 
-Logical database arrows from actors stand for authorized use-case calls, not direct browser database connections. Module learning/progress uses the reusable API/use-case/port pattern and private retrieval sequence in section 3.3; no separate unauthorized content path is implied.
+SEQ-10 is a retained planned intelligence pipeline: current rule adaptation does not invoke LLM/knowledge tracing, and certificate/failed-group supplementation/parallel provenance is absent from the figure. It is not a current runtime sequence. Logical actor-to-DB arrows stand for authorized use cases, not direct browser database access. Module learning/progress uses the reusable API/use-case/port pattern and private retrieval sequence in section 3.3; no separate unauthorized content path is implied.
 
 #### 3.5.4 Selection, profile and pathway lifecycle state machines
 
 [Mermaid source: ST-17](../documents/diagrams/mermaid/st-17.mmd)
 
-![ST-17 - Employee role selection (derived from history)](../documents/diagrams/mermaid/st-17.png)
+![ST-17 - Role-Level Selection and Change Eligibility](../documents/diagrams/mermaid/st01-standard-20261106/st-17.png)
 
 **Diagram notes (ST-17):**
 
-- Lifecycle is derived from active/history fields, not a new enum. In-progress assessment blocks changing the current choice. Unavailable historical role keeps its snapshot; explicit replacement required.
+- The updated figure includes targetBound before archive, official-evidence exemptions and non-gating carried bypass work. Missing-suitable-provision-only bypass is now confirmed; server enforcement remains for code confirmation.
 
 [Mermaid source: ST-18](../documents/diagrams/mermaid/st-18.mmd)
 
-![ST-18 - Competency profile and evidence lifecycle](../documents/diagrams/mermaid/st-18.png)
+![ST-18 - Role-Level Profile and Requirement Status](../documents/diagrams/mermaid/st01-standard-20261106/st-18.png)
 
 **Diagram notes (ST-18):**
 
-- Current baseline initializes its own applicable Job Position profile. General continuous tracing remains a planned service. Evidence states describe provenance, not low/medium/high score. Historical COMPLETE revisions stay immutable; updates create successors.
+- The updated figure separates assessed baseline diagnostics, append-only official achievement and prerequisite NEED_REVIEW/RESOLVED flags. Bypass never awards evidence.
 
 [Mermaid source: ST-19](../documents/diagrams/mermaid/st-19.mmd)
 
-![ST-19 - Recommendation run and pathway revision (schema foundation/target)](../documents/diagrams/mermaid/st-19.png)
+![ST-19 - Pathway Generation, Review and Target Release](../documents/diagrams/mermaid/st01-standard-20261106/st-19.png)
 
 **Diagram notes (ST-19):**
 
-- Statuses exist in PostgreSQL; full service transitions are not implemented. Initial review gate is required. Subsequent adaptation is automatic under an approved override-preservation policy, not a new mandatory review each time. validation_status is a separate dimension.
+- The updated figure separates request generation, exact Expert review and requirement-step state. Valid successors retain approval basis; parallel supplements cannot gate a new target. Earlier source allowed broader unresolved REQUIRED bypass; confirmed policy permits only missing suitable provision. Code confirmation and corresponding figure-annotation alignment remain pending.
 
-A current-pathway successor may be produced automatically after updated assessment evidence; the schema's review-related labels require a concrete approved mapping before this automation is implemented. The report does not claim every successor must pass a new human review.
+A pathway successor may be produced automatically after valid updated skill evidence; preserve genuine initial approval lineage. Implementation and physical state mapping remain outside this diagram-only revision.
 
 [Mermaid source: ST-23](../documents/diagrams/mermaid/st-23.mmd)
 
@@ -6126,18 +6103,18 @@ Actual financial record approval/locking/retention is not specified by Version 2
 | Payment order | ST-05 | Current persisted vocabulary and ordinary verified branches. |
 | Payment application / subscription intent | ST-06 | Separate persisted aggregates. |
 | Workspace / organization | ST-07 | Setup readiness versus administrative suspension. |
+| Workspace starter catalog import | ST-22 | Persisted PENDING/SUCCEEDED/FAILED with derived lease substates; gates ST-07 READY. |
 | Subscription period | ST-08 | Time-derived availability; immutable period record. |
 | Department/Job Position / Expert assignment | ST-09 | Target business lifecycle, incomplete implementation. |
 | Target role | ST-10 | Required target publication workflow, not legacy enum equivalence. |
-| Module and Learning Content | ST-11 | Current authoring/review/publication states; whole-Module lesson review. Complete module-assessment bundle remains separate. |
+| Module and Learning Content | ST-11 | Authoring/review/publication, guarded draft deletion, archive approval/retry and restore. Whole-Module lesson review; historical learner pins preserved. |
 | MicroSkill and other graph definitions | ST-12 | Orthogonal review/availability vocabularies; no automatic approval. |
 | Baseline Draft / released blueprint | ST-13 | Persisted working state and derived active/retiring/inactive. |
-| Baseline attempt | ST-14 | Current terminal states/reasons. |
-| Calibration / IRT parameter set | ST-15 | Current run and promotion states. |
-| Question Bank candidate | ST-16 | Current DRAFT/SUBMITTED/PUBLISHED review; immutable published versions and successor drafts. Availability is separate. |
-| Employee role selection | ST-17 | Current/history relationship and explicit replacement. |
-| Mastery/profile | ST-18 | Physical quality/revision foundation; baseline initialization versus planned tracing. |
-| Recommendation / pathway | ST-19 | Foundation states and required initial review. |
+| Baseline attempt | ST-14 | Explicit submission followed by L&D-configured PASSED / FAILED result. |
+| Question Bank version / availability | ST-16A / ST-16B | DRAFT/SUBMITTED/PUBLISHED review and independent retirement/reactivation requests; immutable published versions and successor drafts. No draft deletion. |
+| Employee role selection | ST-17 | Target/history and guarded replacement after completion or bypass-only. |
+| Mastery/profile | ST-18 | Role-Level initialization; Met / Needs supplementation / Unknown with provenance. |
+| Recommendation / pathway | ST-19 | Initial review, learning loop, completion and bypass-only target release. |
 | Evaluation run | ST-20 | Schema foundation, no inferred benchmark pass. |
 | Processing job / email delivery work | ST-21 | Handler-dependent durable state machine. |
 | Independent skill learning | ST-23 | Target business states corresponding to ACT-07; not persisted enums or a completed assessment integration. |
@@ -6159,14 +6136,14 @@ This is a route-family inventory, not a replacement for controller DTO contracts
 | `/api/v1/payments/payos/webhook` | Provider observation | Original signature-verified fields; raw callback is not accepted on trust. |
 | `/api/v1/employee/target-roles`, `/target-roles/{id}` | Current Employee catalog reads | Trusted tenant and available current-schema Role. |
 | `/api/v1/employee/target-role-selection`, `/next-step`, `/mastery` | Role selection/readiness/profile | Idempotency key, expected selection and safe own profile output. |
-| `/api/v1/ld/adaptive-baseline-blueprints` | L&D paged versions/Drafts | Authorized filters/counts first; default page size 20, max 100 in documented contract. |
-| `/api/v1/ld/adaptive-baseline-blueprints/job positions/{job positionId}/working` | Save Draft | Expected working identity/revision and exact replay semantics. |
-| Same job position family: `/test`, `/finalize`, `/disable`, `/working/discard`, `/working/convert` | Preview, activation/deactivation, explicit discard/conversion | Expected current pair for fresh lifecycle writes; server revalidation; no invented preview token. |
-| `/api/v1/employee/baseline-attempts` and `/{attemptId}` | Start/read/resume | Derived Job Position scope and pinned resources; no client-owned score/timing. |
+| `/api/v1/assessment-policies/{purpose}/scopes` and `/{key}` | Exact scoped directory/versions | L&D BASELINE Role–Level; Expert SKILL_ASSESSMENT Skill–knowledge; trusted role/tenant/entitlement, search/filter/count before pagination. |
+| Scope `/{key}/draft`, `/draft/editor`, `/activation`, `/completion`, `/abandonment` | Draft/save/publish/history | commandKey, expected draft/activation revisions and catalog hash; editor/completion/abandonment baseline-only. |
+| `/api/v1/employee/initial-pathway-requests`, `/role-gaps`, `/pathway`; Expert `/initial-pathways/...` | Requirement request/review/refresh/bypass | Exact selected Level/input hash, revision/content hash, assignment and immutable receipts; no numeric optimizer fallback. |
+| `/api/v1/employee/baseline-attempts` and `/{attemptId}` | Start/read/resume | Selected Role–Level BASELINE or exact accepted-option SKILL_ASSESSMENT, scoped policy and frozen deadline; no client-owned score/timing. |
 | Attempt `/{attemptId}/answers`, `/submit`, `/result`, plus `/history` | Answers, finalization and own results | Idempotency/revision/ownership; answer-key/internal-parameter filtering. |
 | Legacy organization target-role/skill/prerequisite routes | Retained older authoring model | Explicit property gates; not default current-ontology write support. |
 | `/api/v1/system/status`, `/actuator/health` | Technical state | Health is not full readiness/acceptance and exposes no detailed secrets. |
-| Planned content, AI, ROI and broad audit APIs | Remaining product scope | Do not assign fictitious implemented endpoints; design/approve contracts before code. |
+| Existing module/content/certificate; planned AI/ROI/broad audit APIs | Distinguish current rule/content owners from remaining product scope | Do not assign fictitious implemented endpoints; design/approve contracts before code. |
 
 **Error behavior:** authentication/authorization, invalid input, stale revisions, idempotency conflicts, dependency unavailability and domain readiness are distinct. Preserve actual domain error codes/HTTP mappings per controller. Existing registration uses structured failures and field-specific feedback; baseline/selection also exposes operation-specific code contracts. Detailed error text is safe and actionable, without stack traces or secrets. See SRS application messages for current versus proposed wording.
 
@@ -6180,6 +6157,8 @@ This is a route-family inventory, not a replacement for controller DTO contracts
 
 | Check | Actual result | Scope / qualification |
 | --- | --- | --- |
+| ACT-04 / ACT-10 diagram completion, 2026-11-06 | Passed | Ten Mermaid sources rendered and visually reviewed; SVG/PNG integrity, state-node parity, 9 physical tables / 44 columns / 6 FK edges and scoped links checked. The separate validation evidence file is absent from this checkout; this row retains the preceding session result. Source-level documentation verification only. |
+| ACT-05 Role-Level diagram revision, 2026-11-06 | Passed | 16 selected Mermaid sources parsed/rendered; 15 updated SVGs XML-validated; ST-16 original artifacts retained. Nine source/preservation/link checks passed, including all scoped target attributes, guarded role change and retained physical dictionary. Visual review completed. [Dedicated evidence](../documents/diagrams/review2-role-level-20261106.md). Documentation only; no runtime/schema acceptance claimed. |
 | Learning / Question Bank report synchronization, 2026-11-02 | Passed | Report3 references ACT-04/07/10; Report4 references ST-11/16/23 with matching captions, notes and lifecycle coverage. All12 scoped Mermaid-source/PNG links resolve; six PNG headers/dimensions and SVG XML are valid. Existing report anchors retained. Diagram rendering was checked during their preceding edits; this synchronization ran document/link checks only, not application/database tests or full report requalification. |
 | DOCX template-body structure | Passed | 26 fixed SRS headings and 7 fixed SDD headings checked in order; feature placeholders expanded into the relevant numbered sections. Stale SRS template TOC was reconciled to its body. |
 | Functional requirement coverage | Passed | 48 distinct source FRs, 48 detailed SRS function sections, 48 use-case table entries and diagram nodes; original actor/domain identities retained. |
@@ -6200,9 +6179,11 @@ This is a route-family inventory, not a replacement for controller DTO contracts
 
 <!-- VALIDATION_SUMMARY:END -->
 
-The read-only schema query verified **source-to-applied-DDL consistency**, not runtime correctness of every service or formal semantic correctness of every business rule. Report diagram syntax/link/coverage checks are documentation checks, not application test passes.
+The historical read-only schema query verified its dated **source-to-applied-DDL consistency**, not runtime correctness of every service or formal semantic correctness of every business rule. Report diagram syntax/link/coverage checks are documentation checks, not application test passes.
 
-#### 3.9.2 Verification required for implementation acceptance
+#### 3.9.2 Retained verification requirements for future authorized acceptance
+
+The table is retained submission/engineering scope, not instructions executed in this C1 task. Current user scope prohibits executable tests and test-result authoring and skips a separate C3; no historical row is promoted to a new pass. Current limits include unavailable live DB metadata, Role-derived Skill-policy authorization and voluntary cross-module access pending code confirmation and unverified certificate/bypass/parallel/backfill/races.
 
 | Level | Required focus |
 | --- | --- |
@@ -6228,12 +6209,12 @@ Follow [testing guides](../documents/testing/README.md). Existing successful rec
 
 | Reference | Evidence role |
 | --- | --- |
-| [Report 4 template](../documents/Report4_Software%20Design%20Document.docx) | Document body structure and required class/sequence/table descriptions. |
+| Report 4 template (historical template; absent from this checkout) | Document body structure and required class/sequence/table descriptions. |
 | [SRS](Report3_Software%20Requirement%20Specification.md) | All 48 functions, activities, screens, authorization and NFRs. |
 | [Version 2](../documents/FA26SE267_KNOWLEDGE_GRAPH_BASED_ADAPTIVE_LEARNING__haht43_Version_2.md) | Intended product/technology scope. |
 | [Feature catalog](../documents/features/README.md) | Stable FR-domain mapping and source-inspected snapshots. |
 | [Architecture](../documents/ARCHITECTURE.md) | Target/technical baseline and integration lineage, reconciled with current source. |
-| [PostgreSQL migrations](../backend/src/main/resources/db/migration) | Executable current DDL; verified V1-V32. |
+| [PostgreSQL migrations](../backend/src/main/resources/db/migration) | Current source-defined DDL through V62 across distinct lineages; V1–V32 verification is historical only. |
 | [Baseline lifecycle](../documents/technical/baseline/Job Position%20Baseline%20Lifecycle%20and%20Transition.md) | Current version/availability/retry design. |
 | [Role/baseline flow](../documents/technical/baseline/Role%20Selection%20and%20Job Position%20Baseline.md) | Selection, coverage and admission boundaries. |
 | [Ontology review](../documents/dataset/ONTOLOGY.md) | Latest v0.11 review data, metadata and provenance. |

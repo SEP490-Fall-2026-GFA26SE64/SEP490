@@ -6,50 +6,30 @@
 
 The [Product Overview](../PRODUCT_OVERVIEW.md) provides the complete product-scope directory. Each source bullet has exactly one authoritative nine-field record in the domain documents below. Each domain also includes a separate, source-inspected implementation snapshot dated 2026-10-28.
 
-**Initial gap/pathway integration:** the [retained shared contract](../technical/initial-pathway/Initial%20pathway%20generation/Initial%20Pathway%20Flow%20and%20Data%20Design.md) defines REQ-041-F02 → explicit REQ-001-F02 confirmation → REQ-042-F01 → REQ-019-F01/REQ-020-F01/F02 → REQ-004-F01. [Workspace integration](../technical/Workspace%20Adaptive%20Integration.md) preserves those confirmed rules under the domain structure below. The branch contains persisted baseline/gap/generation/review/approved-view source; the new real-auth shared-development composition still needs runtime verification. Historical checkpoint results are not new executable evidence.
+**Initial gap/pathway integration:** the [historical shared contract](../technical/initial-pathway/Initial%20pathway%20generation/Initial%20Pathway%20Flow%20and%20Data%20Design.md) defines REQ-041-F02 → explicit REQ-001-F02 confirmation → REQ-042-F01 → REQ-019-F01/REQ-020-F01/F02 → REQ-004-F01. [Workspace integration](../technical/Workspace%20Adaptive%20Integration.md) preserves those confirmed rules under the domain structure below. The branch contains persisted baseline/gap/generation/review/approved-view source; the new real-auth shared-development composition still needs runtime verification. Historical checkpoint results are not new executable evidence.
 
-## Current Reading Rules
+## Selected Role baseline/pathway contract — source 2026-11-07
 
-## Reading Rules
+The [current technical contract](../technical/Organization%20Rule%20Assessment%20and%20Pathway.md) separates confirmed behavior, current local implementation and remaining source-policy mismatches. PostgreSQL owns learner state; Neo4j owns catalog. Active workspace papers are rule-based, not IRT/whole-Job-Position/optimizer fallback. This is source alignment, not runtime acceptance.
 
-- Only section 3.2(c) defines the functional requirements in this catalog. Requirement names and descriptions retain the source wording; Markdown escaping is normalized for display.
-- FR-AA.NN is the source-level identifier: AA identifies the source actor group (01 Guest, 02 Platform Administrator, 03 System Administrator, 04 L&D Manager, 05 Expert, 06 Employee, 07 System); NN identifies the bullet assigned during this reconciliation. Keep these IDs stable in future revisions; do not renumber or reuse retired IDs.
-- Requirement ID, Requirement Name, Description and Actor are populated from the source. It does not specify complete precondition, ordered-flow, exception-flow, postcondition or acceptance contracts. Those five fields are deliberately empty for later design; blanks do not mean that no rules or tests will be needed.
-- Do not infer policies from old implementation notes, prototype fields or generic defaults. Details such as validation limits, timing, pricing, MFA, scoring formulas and retry behavior require later design; this catalog does not change application behavior or invalidate historical decisions outside its source-only scope.
-- Existing REQ-nnn and REQ-nnn-Fnn anchors remain in the owning domains as legacy traceability references. They are not additional active requirements and do not make every old subfunction a Version 2 obligation. Historical test IDs and results remain unchanged.
-- Implementation snapshots describe current behavior, inputs and limitations; they do not fill unspecified acceptance contracts with assumptions or redefine the source requirements. A mismatch between code and Version 2 is a gap, not an approved scope change.
-- Non-functional requirements, architecture, research deliverables, implementation briefs, delivery reports and test evidence are not functional records. The Version 2 source remains unchanged; technical documentation and dated [test evidence](../testing/README.md) remain separate.
-- System identifies the automated performer, not a seventh human actor. No requirement or empty field implies implementation completion or approved schema changes.
+| Owning feature | Current source scope / limitation |
+| --- | --- |
+| Assessment workflows | L&D Baseline org+Role+member Level; Expert Skill Assessment org+Skill+knowledge shared across modules. Scoped drafts/active/history, deadline finalization, frozen full papers and group scoring exist. Per-Skill Expert assignment remains incomplete. |
+| Adaptive engine | Actual diagnostics versus official exact evidence, immutable requirement snapshots, generation/recalculation/refresh and original approval lineage exist. Full recovery/concurrency runtime acceptance remains unverified. |
+| Role catalog / guidance | Explicit requiredKnowledgeLevels, real member Level and request-onset Role–Level lock exist in the adaptive path. Legacy catalog authoring/publication and AI suggestions remain separate partial/missing capabilities. |
+| Learning catalog / Employee experience | Exactly one Skill/knowledge/outcome module target; real pinned lessons/progress and exact completion sidecar. Requirement roots branch to alternatives/certificate; module cards carry assessment badges. Generic independent assessment context is incomplete. |
+| Pathway review | Actual assigned Expert check/save selection/order/approval, bypass/refresh and certificate review exist. Generation includes all eligible options; Role-assigned Expert may reduce them during review. Code confirmation remains pending. |
+| Notifications / reporting | Rule result/evidence/pathway audit/outbox/jobs exist. Broad mail coverage, administrator audit readers and actual ROI aggregation are not established by those events. |
+
+### Reading Rules
+
+Source-level FR records preserve Version 2 identity and stable REQ/Function anchors. Later confirmed decisions refine the affected behavior. Requirement statements express intended behavior; implementation snapshots describe actual source separately. Prototype/draft/fixture/unverified behavior is never a completed product requirement or new acceptance result. Historical evidence remains date-scoped.
 
 ## Current Implementation Overview
 
-The 2026-10-28 main/workspace integration updates the role-selection and baseline slices below. They now use real workspace sessions and tenant readiness guards; legacy local adapters elsewhere are not evidence of this slice's active authorization. The domain/FR distribution is unchanged.
+Implemented means current source/callers exist; Partial means an actual gap/conflict remains; Missing means no active implementation was found; Incorrect means behavior contradicts confirmed policy; Unverified means evidence is insufficient. These labels do not claim executable or production acceptance.
 
-**Inspection date:** 2026-10-28. This snapshot covers the current working tree, including uncommitted changes, rather than only the last commit. Backend handlers/services/persistence, frontend route wiring/data sources, migrations and existing verification references were inspected. No application, payment, email or browser tests were rerun for this documentation update.
-
-| Status | Meaning |
-| --- | --- |
-| API-backed slice | UI or automated processing is connected to backend behavior and persistence for the described slice. This is not a claim that the entire source requirement is accepted or production-ready. |
-| Partial | Some real backend behavior exists, but required workflow, field, authorization or UI integration remains incomplete. |
-| Prototype | The described interaction uses component state, browser storage or fixed/demo data rather than an end-to-end business API. |
-| Foundation only | Relevant schema, package boundaries or supporting code exists, but the required automated use case is not implemented. |
-
-| Domain | Current implementation and principal boundary |
-| --- | --- |
-| [Organization onboarding](Organization%20onboarding/README.md#current-implementation) | API-backed registration, email verification, administrator MFA, resumable onboarding, payment-driven provisioning and workspace handoff. Live external delivery is not certified here. |
-| [Subscription lifecycle](Subscription%20lifecycle/README.md#current-implementation) | API-backed plan selection/versioning, purchase, renewal, payment processing, periods and seats. Currency is currently VND-only. |
-| [Platform administration](Platform%20administration/README.md#current-implementation) | Real workspace listing/suspension; full organization administration and activity monitoring remain incomplete/prototype. |
-| [Workspace administration](Workspace%20administration/README.md#current-implementation) | Real account activation, member edits, single-role identity and billing access controls; settings/audit screens remain prototypes and catalog authorization is not fully integrated. |
-| [Departments and job positions](Departments%20and%20job positions/README.md#current-implementation) | Real member assignment to stored references; department CRUD, job position management and job position Expert assignments remain browser-only. |
-| [Role catalog](Role%20catalog/README.md#current-implementation) | Neo4j-backed roles and skill requirements with partial UI integration. Existing Expert publication conflicts with the required Expert-submit/L&D-publish workflow. |
-| [Learning catalog](Learning%20catalog/README.md#current-implementation) | Real micro-skill/prerequisite operations; assigned-job position boundaries are incomplete. Modules/content/approval are prototypes. |
-| [Assessment workflows](Assessment%20workflows/README.md#current-implementation) | Real-session baseline configuration, attempts/scoring/results with tenant resource/readiness guards. Module/RIASEC slices and content/model provisioning remain incomplete. |
-| [Role guidance](Role%20guidance/README.md#current-implementation) | Authenticated organization-scoped role selection connected to baseline readiness/results; AI-generated guidance remains unimplemented. |
-| [Employee experience](Employee%20experience/README.md#current-implementation) | Real skill browsing mixed with local profile, tracking, gaps, progress and pathway demonstrations. |
-| [Pathway review](Pathway%20review/README.md#current-implementation) | Assigned Expert review uses persisted draft membership, adjacent order, Check/preview and exact approval commands. Production dependencies and remaining verification gaps are recorded separately. |
-| [Adaptive engine](Adaptive%20engine/README.md#current-implementation) | Schema, graph and selection-event foundations; no implemented mastery-update or pathway-generation/recalculation service. |
-| [Development reporting](Development%20reporting/README.md#current-implementation) | Sample/derived reporting screens; no connected training-cost/benefit ledger or actual ROI aggregation. |
-| [Notifications and audit](Notifications%20and%20audit/README.md#current-implementation) | Durable verification/activation/paid-confirmation mail and selected audit events; learning-workflow events and administrator audit read APIs remain incomplete. |
+All 17 feature Markdown files were inventoried. The seven adaptive-flow domain READMEs and directly affected audit/reporting/module design prose were reconciled. Onboarding, subscriptions, platform/workspace administration and department management retain unrelated contracts and known prototype limits; no new delivery, ownership or product IDs are inferred.
 
 ### Cross-Domain Boundaries
 
@@ -81,7 +61,7 @@ The 2026-10-28 main/workspace integration updates the role-selection and baselin
 | [Subscription lifecycle](Subscription%20lifecycle/README.md) | 6 |
 | [Platform administration](Platform%20administration/README.md) | 2 |
 | [Workspace administration](Workspace%20administration/README.md) | 5 |
-| [Departments and job positions](Departments%20and%20job positions/README.md) | 3 |
+| [Departments and job positions](Departments%20and%20occupations/README.md) | 3 |
 | [Role catalog](Role%20catalog/README.md) | 4 |
 | [Learning catalog](Learning%20catalog/README.md) | 5 |
 | [Assessment workflows](Assessment%20workflows/README.md) | 6 |
@@ -105,13 +85,13 @@ The 2026-10-28 main/workspace integration updates the role-selection and baselin
 | [FR-02.02](Subscription%20lifecycle/README.md#fr-02-02) | Platform Administrator | Configure subscriptions | Subscription lifecycle |
 | [FR-02.03](Platform%20administration/README.md#fr-02-03) | Platform Administrator | Monitor platform activity | Platform administration |
 | [FR-03.01](Workspace%20administration/README.md#fr-03-01) | System Administrator | Manage user accounts | Workspace administration |
-| [FR-03.02](Departments%20and%20job positions/README.md#fr-03-02) | System Administrator | Manage departments | Departments and job positions |
+| [FR-03.02](Departments%20and%20occupations/README.md#fr-03-02) | System Administrator | Manage departments | Departments and job positions |
 | [FR-03.03](Workspace%20administration/README.md#fr-03-03) | System Administrator | Manage roles and permissions | Workspace administration |
 | [FR-03.04](Workspace%20administration/README.md#fr-03-04) | System Administrator | Manage system configuration | Workspace administration |
 | [FR-03.05](Workspace%20administration/README.md#fr-03-05) | System Administrator | Monitor system activity | Workspace administration |
 | [FR-03.06](Subscription%20lifecycle/README.md#fr-03-06) | System Administrator | Manage organization subscription | Subscription lifecycle |
-| [FR-04.01](Departments%20and%20job positions/README.md#fr-04-01) | L&D Manager | Manage job positions | Departments and job positions |
-| [FR-04.02](Departments%20and%20job positions/README.md#fr-04-02) | L&D Manager | Assign Experts | Departments and job positions |
+| [FR-04.01](Departments%20and%20occupations/README.md#fr-04-01) | L&D Manager | Manage job positions | Departments and job positions |
+| [FR-04.02](Departments%20and%20occupations/README.md#fr-04-02) | L&D Manager | Assign Experts | Departments and job positions |
 | [FR-04.03](Role%20catalog/README.md#fr-04-03) | L&D Manager | Manage target roles | Role catalog |
 | [FR-04.04](Role%20catalog/README.md#fr-04-04) | L&D Manager | Manage target role publication | Role catalog |
 | [FR-04.05](Assessment%20workflows/README.md#fr-04-05) | L&D Manager | Manage baseline assessment configuration | Assessment workflows |

@@ -1,7 +1,7 @@
 {
   "catalogVersion": "0.12.0",
   "sourceSha256": "c49ee17ae3826952fd8e66c211bd3da60d5b2530dda3e8688148fbb736ec10a1",
-  "releaseSha256": "3ccdb02789af0d2560b77c477f9e2fe84f6818943a12479cce8d6580273f1702",
+  "releaseSha256": "b46977db357a376e9c76eee6271371d884d446d1cc91d20e241013097bd25549",
   "modules": [
     {
       "moduleId": "MOD-DE-J-MODEL-01",

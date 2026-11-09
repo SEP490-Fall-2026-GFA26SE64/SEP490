@@ -23,7 +23,7 @@ public record UpdateTargetRoleRequest(
 
         List<String> responsibilities,
 
-        @Pattern(regexp = "^(DRAFT|SENT|SUBMITTED|REJECTED|ACTIVE|PUBLISHED|RETIRED)?$", message = "Status must be valid")
+        @Pattern(regexp = "^(DRAFT|SENT|SUBMITTED|REJECTED|ACTIVE|PUBLISHED|UNPUBLISHED)?$", message = "Status must be valid")
         String status,
 
         String version,
@@ -37,7 +37,26 @@ public record UpdateTargetRoleRequest(
 
         Map<String, List<String>> levelCompetencies,
 
-        List<String> competencyIds) {
+        List<String> competencyIds,
+
+        Map<String, String> levelDurations) {
+
+    public UpdateTargetRoleRequest(
+            String name,
+            String familyCode,
+            String track,
+            String assignedExpertId,
+            String description,
+            List<String> responsibilities,
+            String status,
+            String version,
+            List<Map<String, Object>> skillTargets,
+            String rejectionReason,
+            List<String> levels,
+            Map<String, List<String>> levelCompetencies,
+            List<String> competencyIds) {
+        this(name, familyCode, track, assignedExpertId, description, responsibilities, status, version, skillTargets, rejectionReason, levels, levelCompetencies, competencyIds, null);
+    }
 
     public UpdateTargetRoleRequest(
             String name,
@@ -51,7 +70,7 @@ public record UpdateTargetRoleRequest(
             List<Map<String, Object>> skillTargets,
             String rejectionReason,
             List<String> levels) {
-        this(name, familyCode, track, assignedExpertId, description, responsibilities, status, version, skillTargets, rejectionReason, levels, null, null);
+        this(name, familyCode, track, assignedExpertId, description, responsibilities, status, version, skillTargets, rejectionReason, levels, null, null, null);
     }
 
     public UpdateTargetRoleRequest(

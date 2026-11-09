@@ -1,0 +1,28 @@
+---
+title: "ACT-07 - Independent learning target and current admission boundary - Swimlane"
+config: {theme: base, look: classic, flowchart: {htmlLabels: true}}
+---
+flowchart TD
+  subgraph Actor0["Employee"]
+    direction TB
+    SRS_ACT_07_N1(("Start"))
+    SRS_ACT_07_N2["Browse skills and select an<br/>individual skill"]
+    SRS_ACT_07_N4["Select module, study content and<br/>submit assessment"]
+    SRS_ACT_07_N7["Review independent progress"]
+    SRS_ACT_07_N8(("End"))
+  end
+  subgraph Actor1["System Handler"]
+    direction TB
+    SRS_ACT_07_N3["Show permitted modules;<br/>rule exam still requires exact accepted option"]
+    SRS_ACT_07_N5["Retain original module completion;<br/>full independent exam context remains target"]
+    SRS_ACT_07_N6["Update relevant competency<br/>evidence without editing<br/>role-pathway choice"]
+  end
+  SRS_ACT_07_N1 --> SRS_ACT_07_N2
+  SRS_ACT_07_N2 --> SRS_ACT_07_N3
+  SRS_ACT_07_N3 --> SRS_ACT_07_N4
+  SRS_ACT_07_N4 --> SRS_ACT_07_N5
+  SRS_ACT_07_N5 --> SRS_ACT_07_N6
+  SRS_ACT_07_N6 --> SRS_ACT_07_N7
+  SRS_ACT_07_N7 --> SRS_ACT_07_N8
+
+  %% Fixed actor-column layout is exported by render-business-swimlanes.cjs.

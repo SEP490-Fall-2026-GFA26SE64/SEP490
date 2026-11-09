@@ -67,13 +67,19 @@ public class SubscriptionLifecycleApplicationService {
         return lifecycle.members(organizationId).stream().map(member -> mapper.map(member, MemberResponse.class)).toList();
     }
 
+    public MemberResponse myAssignment(UUID organizationId) {
+        var member = lifecycle.myAssignment(organizationId);
+        return member == null ? null : mapper.map(member, MemberResponse.class);
+    }
+
     public void changeMember(UUID organizationId, UUID membershipId, MemberAccessRequest input) {
         lifecycle.changeMember(organizationId, membershipId, input.active(), input.roles(), input.revision());
     }
 
     public MemberResponse updateMember(UUID organizationId, UUID membershipId, MemberProfileRequest input) {
         var update = new MemberProfileUpdate(input.fullName(), input.roles(), input.departmentId(),
-                input.occupationReferenceId(), input.revision(), input.departmentName(), input.occupationName());
+                input.occupationReferenceId(), input.revision(), input.departmentName(), input.occupationName(),
+                input.targetRoleId(), input.targetRoleCode(), input.targetRoleName(), input.targetRoleLevel());
         var member = lifecycle.updateMember(organizationId, membershipId, update);
         return member == null ? null : mapper.map(member, MemberResponse.class);
     }

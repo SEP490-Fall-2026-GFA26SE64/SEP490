@@ -1,58 +1,34 @@
 ---
-title: "CLS-05 - Current selection flow and planned adaptive completion"
-config: {"theme":"base","fontFamily":"Segoe UI, Arial, sans-serif","themeVariables":{"fontFamily":"Segoe UI, Arial, sans-serif","fontSize":"14px","primaryColor":"#ffffff","primaryTextColor":"#0f1729","primaryBorderColor":"#64748b","secondaryColor":"#fef3eb","tertiaryColor":"#ffffff","lineColor":"#64748b","textColor":"#0f1729","mainBkg":"#ffffff","background":"#ffffff","clusterBkg":"#ffffff","clusterBorder":"#64748b","edgeLabelBackground":"#ffffff","titleColor":"#0f1729","noteBkgColor":"#fef3eb","noteTextColor":"#0f1729","noteBorderColor":"#e6650f","classText":"#0f1729","secondaryBorderColor":"#64748b","tertiaryBorderColor":"#64748b","secondaryTextColor":"#0f1729","tertiaryTextColor":"#0f1729"},"layout":"elk","class":{"hideEmptyMembersBox":true,"nodeSpacing":44,"rankSpacing":70,"padding":12,"diagramPadding":24}}
+title: "CLS-05 - Target selection and requirement pathway owners"
+config: {"theme":"base","fontFamily":"Segoe UI, Arial, sans-serif","themeVariables":{"fontFamily":"Segoe UI, Arial, sans-serif","fontSize":"14px","primaryColor":"#ffffff","primaryTextColor":"#0f1729","primaryBorderColor":"#64748b","secondaryColor":"#fef3eb","tertiaryColor":"#ffffff","lineColor":"#64748b","textColor":"#0f1729","mainBkg":"#ffffff","background":"#ffffff","clusterBkg":"#ffffff","clusterBorder":"#64748b","edgeLabelBackground":"#ffffff","titleColor":"#0f1729","noteBkgColor":"#fef3eb","noteTextColor":"#0f1729","noteBorderColor":"#e6650f","classText":"#0f1729","secondaryBorderColor":"#64748b","tertiaryBorderColor":"#64748b","secondaryTextColor":"#0f1729","tertiaryTextColor":"#0f1729"},"layout":"dagre","class":{"hideEmptyMembersBox":true,"nodeSpacing":44,"rankSpacing":70,"padding":12,"diagramPadding":24}}
 ---
-classDiagram
-  direction LR
-  class SDD_CLS_05_CurrentRoleFlowController["CurrentRoleFlowController"]
-  class SDD_CLS_05_RoleBaselineFlow["RoleBaselineFlow"] {
-    +roles(search)
-    +choose(...)
-    +view()
-    +mastery()
-  }
-  class SDD_CLS_05_CurrentRoleCatalog["CurrentRoleCatalog"]
-  class SDD_CLS_05_CurrentRoleSelectionStore["CurrentRoleSelectionStore"]
-  class SDD_CLS_05_Identity["RoleBaselineFlow.Identity"]
-  <<interface>> SDD_CLS_05_Identity
-  class SDD_CLS_05_CatalogPort["RoleBaselineFlow.Catalog"]
-  <<interface>> SDD_CLS_05_CatalogPort
-  class SDD_CLS_05_SelectionPort["RoleBaselineFlow.Store"]
-  <<interface>> SDD_CLS_05_SelectionPort
-  class SDD_CLS_05_BaselinePort["RoleBaselineFlow.Baseline"]
-  <<interface>> SDD_CLS_05_BaselinePort
-  class SDD_CLS_05_Guidance["GuidanceService"]
-  <<planned>> SDD_CLS_05_Guidance
-  class SDD_CLS_05_Competency["CompetencyUpdateService"]
-  <<planned>> SDD_CLS_05_Competency
-  class SDD_CLS_05_Pathway["PathwayGenerationService"]
-  <<planned>> SDD_CLS_05_Pathway
-  class SDD_CLS_05_Review["InitialPathwayReviewService"]
-  <<planned>> SDD_CLS_05_Review
-  class SDD_CLS_05_LLM["InternalInferencePort"]
-  <<planned>> SDD_CLS_05_LLM
-  class SDD_CLS_05_Graph["VersionedLearningGraphPort"]
-  <<planned>> SDD_CLS_05_Graph
-  class SDD_CLS_05_Repos["Evidence / Pathway repositories"]
-  <<planned>> SDD_CLS_05_Repos
-  SDD_CLS_05_CurrentRoleFlowController --> SDD_CLS_05_RoleBaselineFlow
-  SDD_CLS_05_RoleBaselineFlow --> SDD_CLS_05_Identity
-  SDD_CLS_05_RoleBaselineFlow --> SDD_CLS_05_CatalogPort
-  SDD_CLS_05_RoleBaselineFlow --> SDD_CLS_05_SelectionPort
-  SDD_CLS_05_RoleBaselineFlow --> SDD_CLS_05_BaselinePort
-  SDD_CLS_05_CurrentRoleCatalog ..|> SDD_CLS_05_CatalogPort
-  SDD_CLS_05_CurrentRoleSelectionStore ..|> SDD_CLS_05_SelectionPort
-  SDD_CLS_05_Guidance --> SDD_CLS_05_LLM
-  SDD_CLS_05_Guidance --> SDD_CLS_05_Graph
-  SDD_CLS_05_Competency --> SDD_CLS_05_Repos
-  SDD_CLS_05_Pathway --> SDD_CLS_05_Repos
-  SDD_CLS_05_Pathway --> SDD_CLS_05_Graph
-  SDD_CLS_05_Review --> SDD_CLS_05_Repos
 
-  style SDD_CLS_05_Guidance fill:#fef3eb,stroke:#e6650f,color:#0f1729,stroke-dasharray:5 4
-  style SDD_CLS_05_Competency fill:#fef3eb,stroke:#e6650f,color:#0f1729,stroke-dasharray:5 4
-  style SDD_CLS_05_Pathway fill:#fef3eb,stroke:#e6650f,color:#0f1729,stroke-dasharray:5 4
-  style SDD_CLS_05_Review fill:#fef3eb,stroke:#e6650f,color:#0f1729,stroke-dasharray:5 4
-  style SDD_CLS_05_LLM fill:#fef3eb,stroke:#e6650f,color:#0f1729,stroke-dasharray:5 4
-  style SDD_CLS_05_Graph fill:#fef3eb,stroke:#e6650f,color:#0f1729,stroke-dasharray:5 4
-  style SDD_CLS_05_Repos fill:#fef3eb,stroke:#e6650f,color:#0f1729,stroke-dasharray:5 4
+classDiagram
+  direction TB
+  class CurrentRoleFlowController
+  class RoleBaselineFlow
+  class CurrentRoleCatalog
+  class CurrentRoleSelectionStore
+  class RequirementPathwayAdmissionService
+  class RequirementPathwayGenerationService
+  class RequirementPathwayPlanningService
+  class RequirementPathwayReviewService
+  class RequirementPathwayAccess
+  class RequirementPathwayRecalculationService
+  class RequirementPathwayRevisions
+  class RuleKnowledgeProfileService
+  class CertificateSubmissionService
+  class CertificateReviewService
+  CurrentRoleFlowController --> RoleBaselineFlow
+  RoleBaselineFlow --> CurrentRoleCatalog
+  RoleBaselineFlow --> CurrentRoleSelectionStore
+  RequirementPathwayAdmissionService --> CurrentRoleSelectionStore
+  RequirementPathwayGenerationService --> RequirementPathwayPlanningService
+  RequirementPathwayGenerationService --> RequirementPathwayRevisions
+  RequirementPathwayReviewService --> RequirementPathwayRevisions
+  RequirementPathwayRecalculationService --> RequirementPathwayRevisions
+  class ReviewAssignments
+  RequirementPathwayAccess --> ReviewAssignments : validates approval basis
+  RuleKnowledgeProfileService ..> RequirementPathwayAdmissionService : diagnostic and evidence inputs
+  CertificateSubmissionService --> RequirementPathwayAccess
+  CertificateReviewService ..> RequirementPathwayRecalculationService : accepted evidence event

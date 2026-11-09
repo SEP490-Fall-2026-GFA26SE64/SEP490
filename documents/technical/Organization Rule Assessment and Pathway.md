@@ -1,0 +1,152 @@
+# Organization-rule assessment and pathway — current source contract
+
+Source checkpoint: 2026-11-07, `61d334c307e0a6a604c13b9d265f3e9d3749722c`, branch `Generate-Initial-Adaptive-Pathway-v3`. Confirmed decisions and the later configuration-scope decisions define intended behavior. The observations below describe checked-in implementation; they do not establish applied DB state, runtime acceptance or new business approval. The Docker Linux engine was unavailable during this read-only review; no service was started and no migration/seed was applied.
+
+## 1. Scope and ownership
+
+| Owner | Current responsibility |
+| --- | --- |
+| Neo4j | Tenant Role/member Level/Competency/MicroSkill catalog, `requiredKnowledgeLevels`, exact prerequisite pairs, released Module projection and Certificate definitions. No learner attempts, achievement or pathway progress. |
+| PostgreSQL | Trusted workspace identity/entitlement, selection and target lock, Question Bank, scoped policies, frozen attempts/answers/group results, learning progress/completion, official evidence/review, certificate submissions/decisions, requirement snapshots/revisions/approval/bypass, audit/outbox/jobs/receipts. |
+| Private asset adapter | Learning media and certificate PDF/image bytes. PostgreSQL retains owned metadata/object keys; Neo4j never stores learner uploads. |
+
+Production backend remains Java 21/Spring Boot 3.5. Source uses existing `apis → services → repository/entities` ownership, JPA/native scoped queries and SDN/Neo4jClient. JPA and graph transaction managers are separate; graph reads plus PostgreSQL writes are not a distributed atomic transaction. Fingerprint/version revalidation detects supported drift; it is not proof that every cross-store race is closed.
+
+The current rule composition is explicitly local: `local & workspace-baseline & !local-baseline-demo & !prod`. Assessment APIs require `assessment.baseline.workspace.enabled=true`; pathway/certificate flow also requires `pathway.initial.enabled=true`. Old IRT/optimizer controllers use disjoint demo profiles; retained classes/tables are not an active workspace fallback. Enabled source is not evidence of a production deployment.
+
+## 1.1 Confirmed operating rules - 2026-11-08
+
+These decisions supersede the earlier open choice, bypass, assignment, directory-order and cross-module retry interpretations. This is a document decision update, not fresh code/runtime verification.
+
+1. Generation attaches every eligible module for each unmet Skill and knowledge level. The Expert responsible for the selected Role may reduce those alternatives during review; this does not remove the requirement or erase learning history. The Employee chooses an approved alternative. Qualifying completion plus passing Skill Assessment and required prerequisite conditions fulfils the step and allows progression. Other eligible alternatives remain available for voluntary learning under normal access rules; prior achievement alone must not block their own assessment.
+2. Bypass is permitted only when no suitable module or certificate exists for the exact requirement. It is not permitted merely to skip available suitable provision. Preserve reason, actual authorized reviewer, tenant/learner/request/step ownership, revision and history; bypass never awards achievement.
+3. The Expert assigned to the Employee's selected Role reviews its pathway and related Skills. Experts assigned to any Role containing a Skill may configure that Skill's common Skill-knowledge assessment policy. If several Roles share the Skill, their assigned Experts may edit the same shared configuration; do not clone policies per Role/module or invent a required direct Skill assignment. Retain same-organization membership, entitlement, expected revisions and command replay safeguards. A same-organization Expert role alone is not a substitute for the Role-derived scope.
+4. Scopes with saved drafts appear before unconfigured scopes.
+5. Equivalent modules share the Skill-knowledge policy parameters, including configured attempt limit and retake wait, but attempts and retry allowance/wait are evaluated separately per module's authorized learning context. Using module 1 must not consume module 2's allowance or impose module 1's waiting period on it. Completing the Skill via module 1 must not itself block module 2's Skill Assessment. This does not waive module 2's own completion, access, prerequisite or retry conditions; no new rule about resetting counts after version/target changes is inferred.
+
+## 2. Source-defined diagrams
+
+[Assessment storage](../diagrams/postgresql-assessment.svg), [pathway storage](../diagrams/postgresql-pathway.svg), [ontology](../diagrams/neo4j.svg) and [business flow](../diagrams/mermaid/swimlanes/act-05.png) describe the current source structure. These are not live database captures.
+
+## 3. Neo4j physical mapping
+
+| Element | Current source mapping and boundary |
+| --- | --- |
+| Role and member Level | Existing `TargetRole -HAS_LEVEL-> Level`, not a new RoleLevel node. `Level -REQUIRES_SKILL-> MicroSkill` carries explicit `requiredKnowledgeLevels` from FOUNDATION/INTERMEDIATE/ADVANCED and retained metadata. No lower-level inheritance, numeric target conversion or whole-Job-Position union. |
+| Skill provision | `provisionMode` is the current common-mode field. Readers also recognize historical `moduleOnlyKnowledgeLevels` / `certificateOnlyKnowledgeLevels`; conflicting/unconfigured mappings fail readiness. Outcome lists are `foundationOutcomeCodes`, `intermediateOutcomeCodes`, `advancedOutcomeCodes`, with the Skill version. |
+| Module | Exactly one `TEACHES` Skill; payload/projection pins `knowledgeLevel`, `skillVersion`, `outcomeCodes`, module revision and contentVersion. Eligible alternatives require matching Skill/version/level, full outcome coverage, approved active released complete content. Teaching focus/difficulty and numeric readiness are retired from this flow. V61 rejects price in new authoring documents; old price-bearing snapshots remain history. |
+| Prerequisite | `MicroSkill -HAS_SKILL_PREREQUISITE-> MicroSkill` carries `dependentKnowledgeLevel` and `prerequisiteKnowledgeLevel`. The assessment context traverses the exact transitive closure with cycle/duplicate/capacity checks. Initial baseline planning does not traverse it to invent learning needs. |
+| Certificate | `MicroSkill -REQUIRES_CERTIFICATE-> Certificate`, not `Certificate -CERTIFIES-> Skill`. Definition contains id/org/name/description, knowledgeLevel, skillVersion, outcomeCodes, HTTPS referenceUrl, version/lifecycle and actual author metadata. One active definition for the configured certificate-only pair; definitions are not learner evidence. |
+
+Source owners: [CurrentRoleKnowledgeCatalog](../../backend/src/main/java/com/adaptlearngraph/repository/CurrentRoleKnowledgeCatalog.java), [Neo4jAssessmentPolicyCatalog](../../backend/src/main/java/com/adaptlearngraph/repository/Neo4jAssessmentPolicyCatalog.java), [RulePathwayCatalog](../../backend/src/main/java/com/adaptlearngraph/repository/RulePathwayCatalog.java), [CertificateCatalogRepository](../../backend/src/main/java/com/adaptlearngraph/repository/CertificateCatalogRepository.java). Certificate writes lock/recheck the owned Skill and expected Skill version, retain prior definitions and reject conflicting provision. Current catalog creation sets definition reviewStatus APPROVED with actual author metadata; it is not an L&D learner-evidence review.
+
+## 4. PostgreSQL schema mapping
+
+This is **source-defined schema**, including forward V50–V62, not a fresh `pg_catalog` capture. Select exactly the instance's existing [migration lineage](MIGRATION_LINEAGES.md); `workspace-baseline` defaults to `db/workspace-migration`, with an explicit location override. UUID workflow identities coexist with existing text organization/learner keys in learning tables. Cross-store catalog IDs are text snapshots, never SQL FKs into Neo4j.
+
+### 4.1 Policies, questions and papers
+
+| Table | Current fields, keys and handling |
+| --- | --- |
+| Existing `question_bank_workspace` / `item_version` | Staff authoring/review/version owner and protected key remain. Question content now uses exact Skill + knowledgeLevel + outcomeCode + mandatory, not difficulty-to-knowledge conversion. Four distinct options and one correct answer are required at submission. Legacy unclassified published items cannot silently qualify. |
+| `question_bank_scope` (V59) | PK org+bank; bank unique across organizations. Allows one authoring workspace to retain multiple owned source banks without moving/publishing/reclassifying their items. |
+| `assessment_item_knowledge_mapping` (V52/V59) | PK item_version_id; owned bank FK now points to `question_bank_scope`; skill/knowledge/outcome/mandatory, mapping_version/hash. Published item/skill/owner consistency and immutable mapping protect frozen papers. |
+| `assessment_rule_policy_version` (V52/V56/V57/V62) | UUID id; org, purpose, scope_key/catalog_hash, version, configuration/hash_domain/hash, actual created/published actor/time. Active uniqueness is **org+purpose+scope+version** for scoped rows; retained null-scope policies have a separate legacy numbering namespace. V62 records old/new labels without changing policy IDs, hashes, receipts or attempt FKs. |
+| `assessment_rule_policy_draft` (V57/V58) | PK org+purpose+scope_key; one mutable draft with UUID id, revision, nullable configuration, catalog_hash, updated_by/at and optional baseline editor_state. Draft may coexist with active version. Incomplete saved progress cannot activate. |
+| `assessment_rule_scoped_activation` (V57) | PK org+purpose+scope_key; same-scope policy FK, pointer revision and changed_by/at. Atomic publication replaces this pointer and consumes draft. Legacy `assessment_rule_policy_activation` remains physically retained but is not new workspace admission authority. |
+| `assessment_rule_abandoned_draft` (V60) | Immutable last-saved draft/editor snapshot, actor/time and exact scope. Explicit baseline abandonment does not deactivate current policy or delete attempts. |
+| `assessment_rule_policy_version_number_history` (V62) | Immutable mapping from policy ID and previous number to scoped number; migration-only label rewrite is distinct from ordinary published-policy immutability. |
+| `rule_assessment_attempt` (V52/V57) | Owned UUID id, purpose/context_key, selection id/revision, policy id/hash, context_snapshot, state IN_PROGRESS/FINALIZED, revision, start/deadline/finish/reason, previous attempt, processing PENDING/PROCESSED and finalization retry fields. Partial unique active attempt per owned purpose/context. Insert guard requires the exact scoped activation. |
+| `rule_assessment_group` | PK attempt+group; unique attempt+skill+knowledge; owned learner, outcomes, TARGET/MAIN/PREREQUISITE and frozen count/pass/mandatory/veto rules. |
+| `rule_assessment_item` | PK attempt+position; unique item version per paper; same-group/tenant/mapping FKs, option/hash snapshot and mandatory flag. Immutable published item definition retains prompt/options/protected key. No answer key in Employee projection. |
+| `rule_assessment_answer` | PK attempt+position; response/is_correct, answer revision/accepted_at/source_command. Only presented options, expected attempt revision and server-before-deadline writes are accepted. Accepted command history survives answer changes. |
+| `rule_assessment_group_result` | PK attempt+group; correct/total, mandatory_satisfied, passed/veto/reasons/finalized_at. Frozen after finalization; no aggregate compensation or theta/SE/mastery. |
+| `rule_assessment_command` | Unique org+actor+operation+resource+retry_key, body hash, retained JSON outcome/time. Same key with changed body conflicts; authorized exact replay returns the retained result. |
+
+Configuration owner is **L&D: org+Role+member Level BASELINE**; **Expert: org+Skill+knowledge level SKILL_ASSESSMENT**, shared across equivalent modules. There is no module-owned policy and no global-purpose version sequence. [ScopedAssessmentPolicyService](../../backend/src/main/java/com/adaptlearngraph/services/ScopedAssessmentPolicyService.java) validates trusted role/membership/entitlement, serializes writes by org+purpose advisory lock, then applies scope/revision/catalog-hash checks. Database keys reinforce uniqueness. Its Expert check currently grants all discovered owned Skill scopes to a same-organization entitled Expert; Role-derived scope enforcement has not been confirmed (see section 8); the confirmed policy does not require direct Skill assignment.
+
+Directory discovers real member-Level/Skill scopes, including unconfigured pairs; it filters/counts before pagination, supports owner/name/level/status, and exposes invalid catalog issues. Actual ordering is draft first, then unconfigured, then other configured rows. Draft-before-unconfigured ordering is confirmed on 2026-11-08; no fresh implementation verification is claimed.
+
+Current hard validation: group total 1–500; requiredCorrectCount 1..total; unique group rules up to 1,000; positive timer/maxAttempts, nonnegative retake wait. Paper ceiling defaults to `assessment.rule.max-paper-items=1000` (constructor accepts 1..10000); catalog/group/query bounds also apply. Bank must cover every configured outcome and enough distinct approved mapped items before any usable paper is persisted. Skill groups reserve mandatory items inside total, cover remaining outcomes, then random-fill without duplicates. Baseline editor disables mandatory conditions and veto; target groups use outcome coverage/random fill. Correct=1; wrong/unanswered=0. No universal pass threshold.
+
+### 4.2 Profile, learning provenance and certificate
+
+| Table / owner | Current mapping |
+| --- | --- |
+| `skill_knowledge_evidence` (V53) | Append-only owned Skill+knowledge+requirement snapshot; only MODULE_ASSESSMENT or CERTIFICATE sources, source ID/version, actual achieved_at. Unique exact accepted source. Compatibility requires Skill version and outcome coverage; baseline/bypass cannot write official achievement. |
+| `skill_knowledge_review` (V53) | Exact failed prerequisite attempt/group; NEED_REVIEW or RESOLVED, reason/time and resolving evidence FK. Earlier official achievement is not revoked. |
+| `learning_module_completion` / `learning_self_study` (V50) | Original text-keyed learning owner, immutable module revision/content/Skill/time provenance and explicit optional-study admission. No second progress system. |
+| `learning_completion_requirement` (V53) | Sidecar PK/FK org+learner+module+revision; exact knowledge and requirement JSON (Skill version/outcomes). Skill-only legacy eligibility does not authorize the rule exam. |
+| `certificate_submission` | Owned learner, Skill/knowledge, definition ID/version/snapshot, immutable submitted revision/time/replacement link; status PENDING/APPROVED/REJECTED. One pending submission per request+step and one successor per rejected submission. |
+| `certificate_submission_attachment` | One LINK/PDF/IMAGE: HTTPS URL OR private object key/media/size/hash. One evidence form only. No bytes/public file URL in PG. |
+| `certificate_submission_decision` | Exact submission/revision, actual assigned Expert+assignment snapshot, approval/rejection, mandatory reason/time/retry key; one accepted immutable decision. Approval writes official evidence and outbox in the same PG transaction. |
+
+Actual content eligibility requires every lesson in the pinned nonempty revision: reached-end plus explicit Text completion; Video at least 90% distinct bounded watched coverage plus explicit confirmation. Final lesson transaction records original completion and exact requirement sidecar once. [CurrentRoleKnowledgeCatalog](../../backend/src/main/java/com/adaptlearngraph/repository/CurrentRoleKnowledgeCatalog.java) / [RuleAssessmentContextJpaRepository](../../backend/src/main/java/com/adaptlearngraph/repository/RuleAssessmentContextJpaRepository.java) additionally require a current accepted option, matching selection, module revision/content version, Skill version/level/outcomes and assessment access. No content-only achievement.
+
+Certificate: one HTTPS link OR one PDF OR one PNG/JPEG, max 10 MiB subject to tighter platform image limit. Existing private asset service validates media/bytes/ownership; submission binds request/step/selection/definition snapshot and expected pathway revision/hash. No server fetching of evidence URLs or issuer/expiry engine. Review uses current assigned Expert authority but the original submitted definition/revision. Rejected evidence is retained and replaced through a linked new submission, never edited into a pass. Private downloads reauthorize own learner or assigned reviewer. Full certificate runtime scenarios remain unverified in this task.
+
+### 4.3 Existing pathway machinery, new requirement projections
+
+| Owner | Current mapping |
+| --- | --- |
+| `employee_role_selection` | Role snapshot contains actual member Level; target revision and replay/history retained. `CurrentRoleSelectionStore.writeSelection` calls targetBound and active-assessment guards before archive/end/write/audit/outbox. Same pair is a reauthorized no-op. |
+| `pathway_requirement_snapshot` (V54) | Owned selection/revision, immutable planning JSON/hash with published Role/catalog, explicit target/required needs, compatible evidence, actual diagnostics and carried bypass provenance. No fabricated old numeric gap snapshot. |
+| `initial_pathway_request` (V54) | flow_version REQUIREMENT_V1 (V56) and requirement_snapshot_id; new-flow input differs from retained legacy gap input. Request is accepted before asynchronous generation and immediately binds Role+Level. |
+| Existing run/revision/current/approval/receipt | Reuses claim/lease/fencing/retry history, exact revision/hash and assignment approval. New revisions carry change_origin/source event and approval_basis_revision; no invented Expert on automatic revisions. |
+| `pathway_requirement_step` | Owned request+revision+step; Skill/knowledge/requirement snapshot, ordinal, provision, kind REQUIRED/PARALLEL_SUPPLEMENT, source_bypass_id, state/reason, fulfilled_evidence_id, options/certificate/assessed-source projections. State is NEEDS_SUPPLEMENTATION, NEEDS_EXPERT_ACTION, IN_PROGRESS, FULFILLED or BYPASSED. |
+| `pathway_requirement_option` | Same step/revision module_id+module_revision+content_version and compatible snapshot. Existing learning owner supplies independent per-option progress; no boolean selected-module completion substitute. |
+| `pathway_requirement_dependency` | Same-revision prerequisite/dependent IDs and actual failed attempt/group source. No initial speculative edges; parallel supplements cannot be dependency gates. |
+| `pathway_requirement_bypass` | Actual Expert/assignment/reason/time/retry and exact owned request/requirement source. A waiver is not evidence. |
+| Refresh/outcome jobs, audit/outbox/receipts | Persist source events and dedup consumer effects; retryable failures/pending supplementation are separate from finalized score and visible plan revision. Delivery is recoverable, not exactly-once network notification. |
+
+Composite FKs, immutable-history triggers, current-pointer CAS and scoped native queries support ownership/history. These are source safeguards, not a blanket security/concurrency certification.
+
+## 5. Ordered business flow and completion
+
+1. Trusted Employee selects available organization Role and actual member Level. Preview is read-only; accepted selection writes its snapshot/revision/replay/audit/outbox atomically under learner coordination.
+2. Baseline resolves selected explicit MODULE_ONLY target groups minus compatible official evidence. Certificate-only/unconfigured needs are represented separately. No whole-Job-Position union or prerequisite expansion. It pins exact scoped policy/catalog, paper and deadline. Resume returns that attempt; server expiry also finalizes it, unanswered=0.
+3. Baseline diagnostics are per actually assessed group and reusable only for unchanged selection/catalog/Skill/outcomes. Pass skips that initial learning need, never creates ACHIEVED or a prerequisite profile. No remaining questions yields ASSESSMENT_NOT_REQUIRED rather than a synthetic attempt/pass.
+4. Employee previews and confirms exact selection revision/input hash. Admission rejects stale input, missing baseline or another bound request; writes immutable requirement input and a pending request. Generation produces requirement roots with eligible alternatives/single certificate; no optimizer. No mandatory work yields NO_LEARNING_REQUIRED, including a separate carried-parallel view where applicable.
+5. Assigned Expert inspects fresh candidates/validation, checks/saves the exact selection/order and approves exact revision/hash. Missing provision remains actionable; generation is not approval. Expert reduction of eligible alternatives during review is confirmed; current source guards and cross-module voluntary access remain for code confirmation. Started modules cannot be excluded; fulfilled/in-progress/bypassed/dependency-bound positions are fixed.
+6. Employee learns/resumes one accepted option through real reader/progress. Rule Skill Assessment requires exact qualifying completion and includes MAIN + ALL configured transitive PREREQUISITE groups, even if previously achieved. Policy is Skill+knowledge, shared across equivalent modules; attempt context/retake count currently includes exact step+module+revision.
+7. Score each group separately. Main failure stays incomplete. Main pass plus all-wrong configured prerequisite veto requires full retake. Ordinary unachieved failed prerequisite creates/reuses B with actual attempt/group/dependent provenance; retain passing main while required B learning/official achievement remains pending. A later A retake passing B cannot complete the already-assigned B step. Already achieved failed B yields NEED_REVIEW without revocation; veto can still require retake.
+8. Accepted module+assessment with completion conditions, or assigned Expert certificate approval, writes exact official evidence once. Outcome worker/recalculation/refresh retain immutable revisions and real approval lineage. WAITING_REQUIRED_SUPPLEMENT is retryable pending work, not another scoring failure. Genuine later evidence resolves compatible review flags.
+9. Current-pathway access preserves authentic started/pinned content after supplementation or target change. New admission checks accepted options/fresh provision and established dependency gates. Official completion still waits for required supplements. Independent/optional APIs call accepted-access guards; a same-Skill eligibility boolean does not authorize an exam or every alternative.
+10. Required steps fulfilled or explicitly bypassed release target change when no attempt is active. Optional alternatives, NEED_REVIEW and PARALLEL_SUPPLEMENT do not hold target lock. Failed/stale requests remain bound for repair/retry; no self-cancel unlock. After another target, old bypass needs retain original source as parallel work with no dependency into new required work. No bypass-derived ACHIEVED or reset of history.
+
+## 6. API and UI contract delta
+
+All URLs below are implemented route families under the local rule composition, not production exposure claims. Services derive actor/org/roles/entitlement; client supplies references, expected identities/revisions/hashes, answers and retry keys only. Existing session/CSRF helpers remain. Rule responses use no-store; keys/protected answers never enter learner projections.
+
+| Surface | Current routes / contract |
+| --- | --- |
+| Role choice | `/api/v1/employee/target-roles`, `/target-role-selection`, `/next-step`; current controller/RoleBaselineFlow with explicit Level and binding guard. |
+| Policy configuration | `/api/v1/assessment-policies/{purpose}/scopes`, `/{key}`, `/{key}/draft`, `/draft/editor`, `/activation`, `/completion`, `/abandonment`. Verify the constant in ApiEndpoints; completion/editor/abandonment are baseline-only. Commands carry commandKey, expected draft/activation revisions and catalog hash. |
+| Rule attempts | `/api/v1/employee/baseline-attempts`, `/context`, `/{id}`, `/{id}/answers`, `/submit`, `/result`, `/history`. Both purposes use the family; start includes purpose, expected selection, optional previousAttemptId and exact step/module context. Header Idempotency-Key for writes. |
+| Requirement pathway | `/api/v1/employee/role-gaps`, `/initial-pathway-requests`, request status/retry, `/pathway`, `/pathways/{id}`; Expert `/api/v1/expert/initial-pathways` detail/validation/module-selection/check/module-selection/confirmation/bypasses/refresh. |
+| Certificate | Existing [CertificateController](../../backend/src/main/java/com/adaptlearngraph/apis/CertificateController.java) owns catalog, upload/submission/history, assigned review/decision and private file reads. No public object access or automatic approval. |
+| FE | L&D `/ld-manager/baseline-assessments`; Expert `/expert/skill-assessment-config`, `/expert/assessment-bank`, module certificate tabs and `/expert/pathway-review`; Employee selected Roles, baseline routes, My Mastery, `/employee/pathway` and module reader. Legacy baseline-config/assessment-bank/guidance aliases redirect; RIASEC remains a separate browser prototype. |
+
+The pathway uses Skill/knowledge requirement roots branching to alternatives. Assessment status badges appear on module cards, not repeated on roots. Reader-to-assessment navigation supplies exact option context; retake failures remain inline. Existing design tokens/components/typography/spacing and EN/VI are retained. Needs supplementation = Cần bổ sung; Role = Vị trí / Vị trí làm việc mong muốn.
+
+Common explicit failures include 400 invalid request/presented item/option, 401 unauthenticated, 403 forbidden/not approved, owned 404, 409 stale selection/draft/activation/attempt/pathway/idempotency/retake/target lock, 422 policy/catalog/group/bank/capacity readiness, 423 required supplement not ready, and 503 dependency/integrity failure. Controller-specific payloads differ (pathway includes retryable/correlationId); preserve real codes rather than inventing a universal envelope.
+
+## 7. Data transition, retirement and seed design
+
+Forward V50–V62 are present across the supported migration directories. Applied checksums and old SQL are not edited. Research/evidence/backups and unrelated data remain. Normal new-flow attempts, frozen policies and history are retained. Source-defined migrations are not proof they ran on this machine or another deployment.
+
+`compose.dev.yml` mounts `ontology_seed-prerequisite-knowledge.json` for catalog consumers and `dataset/module-knowledge/development-complete-release.json` for module knowledge provisioning. The explicit knowledge-bank/module-knowledge seed compositions and their gates are development-only. Historic v0.8/v0.10/v0.11/v0.12 resources remain compatibility/research inputs, not the active product authority. No policy activation, question reclassification, seed/import execution or learner action occurred in this task. Do not promote fixture counts, default-on local bootstrap behavior, CORE01 Foundation seed variants with the same four answer texts in different order (verified in the pinned 711-item source manifest) or synthetic development publication into production truth.
+
+## 8. Source implementation gap and review boundary
+
+| Classification | Finding / remaining boundary |
+| --- | --- |
+| Implemented in source; runtime unverified here | Scoped policy drafts/publication/version numbering, shared frozen papers/scoring/deadlines, exact completion/evidence, target lock, requirement generation/review/recalculation/refresh, certificate submission/assigned review and parallel provenance. No new executable or manual learner checks were run. |
+| Code confirmation pending: Role-derived authorization | Confirmed: Role-assigned Expert reviews the pathway and may configure Skills in assigned Roles; several such Experts share the same Skill-knowledge policy. Earlier inspection found organization-wide Expert grants; confirm Role-derived scope before calling authorization aligned. |
+| Decision cleared: module alternatives | Generate all eligible modules, allow Role-assigned Expert reduction, fulfil step through one qualifying module and assessment, retain voluntary access to other eligible modules. Reconfirm source guards and post-fulfilment assessment access. |
+| Confirmed restriction; possible source defect | Bypass only when no suitable module/certificate exists. Earlier inspection found broader unresolved REQUIRED bypass in RequirementPathwayReviewService.bypass. No code change or fresh verification here; next session must confirm the server guard. |
+| Decisions cleared: ordering and retries | Drafts precede unconfigured scopes. Shared Skill-knowledge policy parameters, separate module attempt allowance/wait; another module and its assessment are not blocked merely by the first module's attempts or achievement. Fresh code confirmation pending. |
+| Unverified | Full certificate/bypass/parallel/backfill and FS04→FS05 progression, all-entry isolation/races/recovery, actual DB metadata/active policy state and production integration. Historical resolved CORE03/SQL42883 notes are not reopened as current defects. |
+| Missing separate capabilities | Complete persisted RIASEC/AI guidance and actual ROI workflow remain outside this rule-flow delivery. Retained numeric/IRT/optimizer research code is not the active engine. Knowledge-tracing/CBF/HitRate academic obligations remain for explicit submission reconciliation. |
+
+Source lookup used the local lexical/import map at the checkpoint (1,444 Java/TypeScript sources, no recorded parse diagnostics), then actual files. It is not native CodeGraph, a call graph, SQL semantic analysis or runtime evidence. This documentation task performs reference/diff/preservation checks only; it creates/runs no executable tests or test-result documents and makes no C3/production acceptance claim.

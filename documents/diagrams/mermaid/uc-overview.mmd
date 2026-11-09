@@ -1,7 +1,8 @@
 ---
 title: "UC-OVERVIEW - Adapt-Learn-Graph use cases"
-config: {"theme":"base","look":"classic","layout":"elk","fontFamily":"Arial, sans-serif","themeVariables":{"background":"#ffffff","primaryColor":"#ffffff","primaryTextColor":"#000000","primaryBorderColor":"#000000","lineColor":"#000000","textColor":"#000000","usecaseActorBkg":"#ffffff","usecaseActorBorder":"#000000","usecaseBkg":"#ffffff","usecaseBorder":"#000000","usecaseBoundaryBkg":"#ffffff","usecaseBoundaryBorder":"#000000","fontSize":"14px"},"usecase":{"wrappingWidth":180,"actorFontSize":16,"usecaseFontSize":14,"nodeSpacing":14,"rankSpacing":45,"diagramPadding":20},"elk":{"mergeEdges":false,"nodePlacementStrategy":"NETWORK_SIMPLEX","cycleBreakingStrategy":"GREEDY","lineHops":false},"themeCSS":".edgeLabel p { font-size: 14px; } .edgeLabel p::before { content: \"\\00ab\"; } .edgeLabel p::after { content: \"\\00bb\"; }"}
+config: {"theme":"base","look":"classic","layout":"dagre","fontFamily":"Arial, sans-serif","themeVariables":{"background":"#ffffff","primaryColor":"#ffffff","primaryTextColor":"#000000","primaryBorderColor":"#000000","lineColor":"#000000","textColor":"#000000","usecaseActorBkg":"#ffffff","usecaseActorBorder":"#000000","usecaseBkg":"#ffffff","usecaseBorder":"#000000","usecaseBoundaryBkg":"#ffffff","usecaseBoundaryBorder":"#000000","fontSize":"14px"},"usecase":{"wrappingWidth":180,"actorFontSize":16,"usecaseFontSize":14,"nodeSpacing":14,"rankSpacing":45,"diagramPadding":20},"elk":{"mergeEdges":false,"nodePlacementStrategy":"NETWORK_SIMPLEX","cycleBreakingStrategy":"GREEDY","lineHops":false},"themeCSS":".edgeLabel p { font-size: 14px; } .edgeLabel p::before { content: \"\\00ab\"; } .edgeLabel p::after { content: \"\\00bb\"; }"}
 ---
+
 usecase-beta
 direction LR
 actor AuthenticatedUser("Authenticated User")
@@ -90,7 +91,7 @@ systemBoundary ALG["Adapt-Learn-Graph"]
   UC0404Action4("Return Role Configuration for Revision")
   %% FR-04.05: Manage baseline assessment configuration
   UC0405("Manage baseline assessment configuration")
-  UC0405Action1("Configure Baseline Competency Coverage")
+  UC0405Action1("Configure Role-Level Target Groups")
   UC0405Action2("Configure Baseline Question Selection")
   UC0405Action3("Configure Baseline Scoring Rules")
   %% FR-04.06: Approve learning offerings
@@ -109,7 +110,7 @@ systemBoundary ALG["Adapt-Learn-Graph"]
   UC0502Action2("Remove Required Competency")
   UC0502Action3("Add Required Micro-skill")
   UC0502Action4("Remove Required Micro-skill")
-  UC0502Action5("Set Required Proficiency")
+  UC0502Action5("Set Required Knowledge Levels")
   UC0502Action6("Set Relative Importance")
   %% FR-05.03: Submit completed target role configurations
   UC0503("Submit completed target role configurations")
@@ -123,17 +124,17 @@ systemBoundary ALG["Adapt-Learn-Graph"]
   UC0505Action1("Create Learning Module")
   UC0505Action2("Update Learning Module")
   UC0505Action3("Organize Learning Modules")
-  UC0505Action4("Map Module to Micro-skills")
+  UC0505Action4("Map Module to One Skill and Knowledge Level")
   UC0505Action5("Add Learning Content")
   UC0505Action6("Update Learning Content")
   UC0505Action7("Reorder Learning Content")
   UC0505Action8("Remove Learning Content")
-  %% FR-05.06: Manage module assessments
-  UC0506("Manage module assessments")
+  %% FR-05.06: Manage Question Bank and Skill Policies
+  UC0506("Manage Question Bank and Skill Policies")
   UC0506Action1("Create Assessment Question")
   UC0506Action2("Update Assessment Question")
   UC0506Action3("Classify Question by Skill")
-  UC0506Action4("Classify Question by Difficulty")
+  UC0506Action4("Classify Question by Knowledge and Outcome")
   UC0506Action5("Configure Module Question Selection")
   UC0506Action6("Configure Module Scoring Rules")
   %% FR-05.07: Review initial learning pathways

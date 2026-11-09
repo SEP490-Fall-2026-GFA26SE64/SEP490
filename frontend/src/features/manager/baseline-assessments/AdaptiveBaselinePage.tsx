@@ -21,6 +21,7 @@ import { assessmentPolicyPath } from './assessmentPolicyNavigation'
 import { AssessmentPolicyNotice } from './AssessmentPolicyNotice'
 import { boundsDraft, createAdaptiveDraft } from './adaptiveBaselineDraft'
 import { adaptiveApproval, useAdaptiveBaselineWorkspace, type AdaptiveApproval } from './useAdaptiveBaselineWorkspace'
+import { rulePathwaysEnabled } from '../../../shared/api/requirementPathway'
 
 type Confirmation = { action: 'finalize' | 'disable' | 'discard' | 'convert' | 'refresh' | 'leave'; snapshot: AdaptiveApproval }
 // Actions must also fit the narrow content area beside an expanded mobile sidebar.
@@ -35,7 +36,8 @@ export function AdaptiveBaselineRoute() {
     <Heading level={1} className="sr-only">{t('adaptiveBaseline.title')}</Heading>
     <Card><CardContent className="p-6"><Text role="status">{t('adaptiveBaseline.unavailable')}</Text></CardContent></Card>
   </div></WorkspaceLayout>
-  return <WorkspaceLayout>{jobPositionId ? <AdaptiveBaselineWorkspace key={jobPositionId} jobPositionId={jobPositionId} /> : <AdaptiveBaselineHome />}</WorkspaceLayout>
+  if (rulePathwaysEnabled && jobPositionId) return <Navigate to="/ld-manager/baseline-assessments" replace />
+  return <WorkspaceLayout>{jobPositionId && !rulePathwaysEnabled ? <AdaptiveBaselineWorkspace key={jobPositionId} jobPositionId={jobPositionId} /> : <AdaptiveBaselineHome />}</WorkspaceLayout>
 }
 export const AdaptiveBaselinePage = AdaptiveBaselineRoute
 

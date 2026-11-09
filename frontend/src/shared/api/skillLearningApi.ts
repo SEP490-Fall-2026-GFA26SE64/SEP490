@@ -1,5 +1,5 @@
 import { moduleRequest } from './moduleAuthoringApi'
-export interface SkillCompletion { skillId: string; moduleId: string; revision: number; contentVersion: string; completedAt: string }
+export interface SkillCompletion { skillId: string; moduleId: string; revision: number; contentVersion: string; completedAt: string; knowledgeLevel: string | null; skillVersion: string | null; outcomeCodes: string[]; skillName: string | null }
 export interface SkillEligibility { skillId: string; eligible: boolean; reason: string; qualifyingCompletion: SkillCompletion | null }
 export interface OptionalSkillModule { moduleId: string; title: string; contentVersion: string; started: boolean; completed: boolean }
 const skillPath = (skillId: string) => `/skills/${encodeURIComponent(skillId)}`

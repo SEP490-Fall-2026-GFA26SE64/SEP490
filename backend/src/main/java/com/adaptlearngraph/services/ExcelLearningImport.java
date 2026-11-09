@@ -31,7 +31,8 @@ public final class ExcelLearningImport implements LearningImportUseCase {
     private final LearningImportJpaRepository imports;
     private final ObjectMapper json;
     private static final List<String> MODULE_COLUMNS =
-            List.of("moduleId", "title", "moduleType", "durationMinutes", "priceVnd", "teachings");
+            List.of("moduleId", "title", "moduleType", "durationMinutes", "teachings",
+                    "knowledgeLevel", "outcomeCodes");
     private static final List<String> LESSON_COLUMNS =
             List.of(
                     "moduleId",
@@ -81,6 +82,8 @@ public final class ExcelLearningImport implements LearningImportUseCase {
                 "moduleId: new code or your released module code. Existing drafts/reviews block the"
                         + " entire batch.",
                 "teachings: JSON array with exactly one object containing skillId. No focus or difficulty.",
+                "knowledgeLevel: FOUNDATION, INTERMEDIATE or ADVANCED. outcomeCodes: JSON string array"
+                        + " matching the approved skill outcomes for that level; the level must allow modules.",
                 "TEXT: inline text (Markdown), or markdownPath inside ZIP. VIDEO: UPLOAD plus"
                         + " videoPath, or YOUTUBE/VIMEO plus videoUrl.",
                 "lessonId: stable ID (letters/numbers/hyphens/underscores); preserve it when"
@@ -101,7 +104,9 @@ public final class ExcelLearningImport implements LearningImportUseCase {
                 "LESSON_AND_PRACTICE",
                 "10",
                 "100000",
-                "[{\"skillId\":\"REPLACE_SKILL_ID\"}]"
+                "[{\"skillId\":\"REPLACE_SKILL_ID\"}]",
+                "REPLACE_KNOWLEDGE_LEVEL",
+                "[\"REPLACE_APPROVED_OUTCOME_CODE\"]"
             };
             for (int i = 0; i < m.length; i++) sample.createCell(i).setCellValue(m[i]);
             var lesson = workbook.getSheet("Lessons").createRow(1);
@@ -151,7 +156,7 @@ public final class ExcelLearningImport implements LearningImportUseCase {
             Cell cell = row.getCell(i);
             if (cell != null
                     && cell.getCellType() == CellType.NUMERIC
-                    && Set.of("durationMinutes", "priceVnd", "order", "durationSeconds")
+                    && Set.of("durationMinutes", "order", "durationSeconds")
                             .contains(columns.get(i)))
                 value =
                         BigDecimal.valueOf(cell.getNumericCellValue())
@@ -318,9 +323,11 @@ public final class ExcelLearningImport implements LearningImportUseCase {
                                         v.get("moduleType"),
                                         "",
                                         Integer.parseInt(v.get("durationMinutes")),
-                                        new BigDecimal(v.get("priceVnd")),
                                         List.of(),
-                                        skills);
+                                        skills,
+                                        v.get("knowledgeLevel"),
+                                        json.readValue(v.get("outcomeCodes"), json.getTypeFactory()
+                                                .constructCollectionType(List.class, String.class)));
                         if (documents == null) {
                             documents = new HashMap<>();
                             for (Document d : port.documents(a.organizationId()))
@@ -604,13 +611,12 @@ public final class ExcelLearningImport implements LearningImportUseCase {
                 ModuleAuthoring.text(row.module().title(), "title", 240);
                 if (!Set.of("LESSON_AND_PRACTICE", "RESOURCE_GUIDED_PRACTICE")
                                 .contains(row.module().moduleType())
-                        || row.module().duration() <= 0
-                        || row.module().price().signum() <= 0
-                        || row.module().price().scale() > 2
-                        || !Double.isFinite(row.module().price().doubleValue()))
-                    throw new Failure(400, "Invalid module type/duration/price");
+                        || row.module().duration() <= 0)
+                    throw new Failure(400, "Invalid module type/duration");
                 var skills = row.module().teachings();
                 if (skills.size()!=1) throw new Failure(400,"Select exactly one skill per module");
+                port.requireKnowledge(a.organizationId(), skills.getFirst().skillId(),
+                        row.module().knowledgeLevel(), row.module().outcomeCodes());
                 for (var t : skills) {
                     new Teaching(
                             new Metadata(
@@ -654,9 +660,8 @@ public final class ExcelLearningImport implements LearningImportUseCase {
                                                 m.moduleType(),
                                                 c.id(),
                                                 m.duration(),
-                                                m.price(),
                                                 m.jobPositionIds(),
-                                                m.teachings()),
+                                                m.teachings(), m.knowledgeLevel(), m.outcomeCodes()),
                                         confirm,
                                         row.expectedVersion()));
                     }

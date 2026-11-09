@@ -7,10 +7,20 @@ import java.util.UUID;
 
 public record MemberProfileUpdate(String fullName, Set<String> roles, UUID departmentId,
                                   UUID jobPositionReferenceId, long revision,
-                                  String departmentName, String jobPositionName) {
+                                  String departmentName, String jobPositionName,
+                                  String targetRoleId, String targetRoleCode,
+                                  String targetRoleName, String targetRoleLevel) {
+    public MemberProfileUpdate(String fullName, Set<String> roles, UUID departmentId,
+                               UUID jobPositionReferenceId, long revision,
+                               String departmentName, String jobPositionName) {
+        this(fullName, roles, departmentId, jobPositionReferenceId, revision, departmentName, jobPositionName,
+                null, null, null, null);
+    }
+
     public MemberProfileUpdate(String fullName, Set<String> roles, UUID departmentId,
                                UUID jobPositionReferenceId, long revision) {
-        this(fullName, roles, departmentId, jobPositionReferenceId, revision, null, null);
+        this(fullName, roles, departmentId, jobPositionReferenceId, revision, null, null,
+                null, null, null, null);
     }
 
     public MemberProfileUpdate {

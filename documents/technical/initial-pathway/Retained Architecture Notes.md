@@ -10,14 +10,28 @@ Employee UI refinement2026-10-28: confirmed direct member-Level list, selected-p
 
 Expert review UX amendment2026-10-28: user approved main-like Catalog/Included/Excluded with gestures mapped onto existing exact include/exclude commands. Server revision.overrides provides excluded history; no new table/migration/order command. Assigned queue/detail Summary adds scoped learner ID and same-tenant account identifier via InitialPathwayStore.learnerLabel/JDBC after authorization. These display fields do not alter content hash/receipts/approval identity or client authority. Manual reorder/regeneration remain outside scope. Shared design primitives and EN/VI remain; actual drag/visual acceptance is recorded separately in the Compose manual receipt.
 
+## Current source counterpart — 2026-11-07
+
+Actual local composition uses scoped RuleAssessment and RequirementPathway owners. Baseline belongs to org+Role+member Level; Skill Assessment belongs to org+Skill+knowledge and is shared across equivalent modules. V52–V62 define frozen papers/groups/results, exact evidence/completion sidecar, certificate decisions, requirement snapshots/revisions, scoped draft/activation/editor/abandoned history and per-scope version numbers. Existing initial request/run/current/approval/receipt owners are reused; learner state never enters Neo4j.
+
+Baseline diagnostics only cover actually assessed targets and never award official achievement or infer prerequisite B. New official evidence requires exact qualified module+assessment or assigned certificate approval. Actual failed prerequisite groups introduce B; a later A retake passing B does not remove assigned B work. Target lock precedes archive/write. Automatic revisions preserve real approval basis; carried bypasses stay parallel/non-gating. The confirmed policy allows Expert option reduction, orders drafts first, derives Skill-policy editing from Role assignments and evaluates retry allowance/wait separately per module under a shared Skill-knowledge configuration. Only missing-provision bypass is allowed; code confirmation remains pending in the current contract.
+
+No applied DB/runtime/new test acceptance is claimed. Subsequent old sections are retained numerical design/research provenance, locally labelled at their entry points; use the current counterpart for implementation and API/physical schema.
+
 ## Product contract and ownership
+
+> **Historical design section (retained 2026-11-07):** numerical/IRT/optimizer/older route assertions in this section are not the active requirement flow. Current counterpart: [source-defined owners, fields, transactions and limits](../Organization%20Rule%20Assessment%20and%20Pathway.md). Original formulas, dated observations and evidence links remain historical; no operation below was run.
 
 See [synchronization review](../../testing/system/REQ-001-002-final-synchronization-review.md) for actual commands/results, temporary integration references, mismatches, security/dependency/rollback review and acceptance gaps. Builds, metadata and manual smoke are distinct from executable acceptance. Real Identity/grants/revocation, catalog publication/release, approved model/content/pilot validation, profile updates, activity/pathway integration and downstream delivery remain required. No current deployment/production readiness is asserted.
 ## Module–Skill cardinality alignment — 2026-10-26
 
+> **Historical design section (retained 2026-11-07):** numerical/IRT/optimizer/older route assertions in this section are not the active requirement flow. Current counterpart: [source-defined owners, fields, transactions and limits](../Organization%20Rule%20Assessment%20and%20Pathway.md). Original formulas, dated observations and evidence links remain historical; no operation below was run.
+
 Expected: no rows. This is a manual procedure; no live runtime database is changed.
 
 ## Initial gap → pathway → review boundary — 2026-10-27
+
+> **Historical design section (retained 2026-11-07):** numerical/IRT/optimizer/older route assertions in this section are not the active requirement flow. Current counterpart: [source-defined owners, fields, transactions and limits](../Organization%20Rule%20Assessment%20and%20Pathway.md). Original formulas, dated observations and evidence links remain historical; no operation below was run.
 
 **Dated implementation record for catalog0.10.** The0.11 catalog contract and later0.11 source/native records supersede old catalog-field/deployment descriptions in this section. Preserve original schema/cutover/baseline evidence as dated observations, not proof of current0.11 acceptance.
 
@@ -49,6 +63,8 @@ C2 Java21 compile (all tests skipped), FE TypeScript/Vite build and scoped lint 
 
 ## Initial pathway0.11 policy and forward design — 2026-10-28
 
+> **Historical design section (retained 2026-11-07):** numerical/IRT/optimizer/older route assertions in this section are not the active requirement flow. Current counterpart: [source-defined owners, fields, transactions and limits](../Organization%20Rule%20Assessment%20and%20Pathway.md). Original formulas, dated observations and evidence links remain historical; no operation below was run.
+
 **Confirmed C1 contract; scoped C2 source/build and fresh native DB cutover observed; owner integration/full-flow acceptance pending.** Preceding0.10 section is dated history. [Shared design1–8/14–16](Initial%20pathway%20generation/Initial%20Pathway%20Flow%20and%20Data%20Design.md#16-native-db-cutover-and-bounded-manual-observations--2026-10-28) governs the seven Functions. [Build/static receipt](../../testing/system/REQ-041-042-v011-source-build.md) and later [native receipt](../../testing/system/REQ-041-042-v011-native-cutover.md) separate source/build, SQL/import/read observations and unexecuted acceptance. New isolated PG17.11/15432 applies V1–V28; native Neo4j2026.10.1 holds exact0.11/994/5121 online/read-only. This is fresh provisioning with user authority, not a retained learner-history migration or production certification.
 
 Current user endpoint is the Employee's own approved pathway display; learning-content/start/segment execution is outside this milestone and remains deny-by-default pending its owner. Planning-required readiness evidence/gate definitions and Availability remain blockers. Source projection catches per-module423/503 as LOCKED/UNAVAILABLE and retains safe approved summaries. [Shared design17](Initial%20pathway%20generation/Initial%20Pathway%20Flow%20and%20Data%20Design.md#17-current-milestone-and-machine-transfer-gate--2026-10-28) and [pre-transfer reconciliation](../../testing/system/REQ-041-042-v011-handoff-review.md) record the current boundary, fresh Compose/setup/session gaps and next-session report/OK gate. No product code changed during this cleanup.
@@ -63,11 +79,15 @@ Sources → processing → stores → output:
 
 ### Forward physical extension — source implemented, not applied schema
 
+> **Historical design section (retained 2026-11-07):** numerical/IRT/optimizer/older route assertions in this section are not the active requirement flow. Current counterpart: [source-defined owners, fields, transactions and limits](../Organization%20Rule%20Assessment%20and%20Pathway.md). Original formulas, dated observations and evidence links remain historical; no operation below was run.
+
 V27/legacy instruction_level meaning are unchanged. New V28 adds revision format1/2 and immutable scoped `initial_pathway_teaching_v2` with per-pair enums/coverage/fallback/attention/policy fields and composite keys/FKs. Old target rows remain. Envelope codec/JDBC dispatch format1/2 with original legacy hash computation; version2 hash binds material needs/assignments/teaching/warnings/content/dependencies/quality/source/policy/overrides. Execution search scope/counts remain immutable metadata outside learning-content identity, so unchanged revalidation retains its hash. Unknown formats/corruption deny. V28 applied on the fresh native DB; table/constraints/history read back. Actual format/hash round-trip and migration of retained profiles remain unverified; earlier PostgreSQL inventory is dated.
 
 Local compatibility must retain recognized v08/v010 eligibility sources while adding exact v011. Skill semantics may differ only under an approved compatibility rule; the local identity adapter currently allows version-only change and returns original evidence unchanged. Changed module content versions do not silently retarget archived/approved paths. Rollback retains additive schema and both readers, disables new writes/worker/local substitutes, and preserves all immutable history; old binaries without format2 support are not a safe reader rollback.
 
 ### Local scope, deployment and evidence
+
+> **Historical design section (retained 2026-11-07):** numerical/IRT/optimizer/older route assertions in this section are not the active requirement flow. Current counterpart: [source-defined owners, fields, transactions and limits](../Organization%20Rule%20Assessment%20and%20Pathway.md). Original formulas, dated observations and evidence links remain historical; no operation below was run.
 
 The source-implemented assignment substitute is separately default-off under local-baseline-demo & !prod plus existing gates, one configured Expert/fixed demo tenant, optional Role allowlist and explicit query bound. It scopes before existence/paging/receipts, stores versioned local identity on real overrides/approvals and checks active account/grant/real exact approval for access. Native config explicitly enables it for a same-tenant provisioned local Expert/grant; session/empty queue200 observed. No assignment/approval/PASS fabricated, no real proposal mutation/access proof. Replace behind ReviewAssignments when the owner contract arrives; production Identity/publication/coherence/assignment/revocation remains Open.
 
@@ -76,5 +96,7 @@ Actual ReadinessDefinitions/LiveReadiness/Availability/ContentAccess and protect
 User reports JDK/Node installed and databases usable on another machine; no Docker/local DB setup or remote DB operation belongs to this C1 scope. Native build work needs only verified Java21/Node22; deployment needs explicit real endpoints/secrets, artifact paths and versioned bounded worker/search settings. Today's intended source/build milestone is separate from deferred evening manual/UI verification. Record actual environments/results before calling full C2 accepted; no executable tests without C3, commit/push or cluster transition is inferred. [Acceptance G01–G13/P01–P20/R01–R14/E01–E09](../../testing/REQ-041-042-initial-pathway-test-plan.md) remains Planned/Not run.
 
 ## Confirmed main dev Compose planning inputs ? 2026-10-28
+
+> **Historical design section (retained 2026-11-07):** numerical/IRT/optimizer/older route assertions in this section are not the active requirement flow. Current counterpart: [source-defined owners, fields, transactions and limits](../Organization%20Rule%20Assessment%20and%20Pathway.md). Original formulas, dated observations and evidence links remain historical; no operation below was run.
 
 Shared design section18 governs TMP-REQ001-10: exact seed Module/content availability, compatible original mastery against prerequisite thresholds, deterministic external gate definitions and no invented internal gates. Separate local planning gate and version; learning ContentAccess/LiveReadiness remain denied. Main dev Compose opts into scoped fixtures/worker and orchestrates writable seed to graceful read-only sealing; production configuration remains unchanged. No new store/entity/migration, learner PASS, automatic reset or executable evidence is introduced. C2 manual verification pending.

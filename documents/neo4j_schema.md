@@ -1,6 +1,31 @@
-# Schema Neo4j — Single-Skill Module contract v0.12.0
+# Schema Neo4j — current source and historical inventory
 
-## Current contract — 2026-11-05
+![Current source-defined catalog](diagrams/neo4j.svg)
+
+### Diagram scope — 2026-11-08
+
+The existing [PlantUML source](diagrams/neo4j.puml) generates both catalog image formats. All six captured labels now show the complete property lists supplied for this task, including `id: String [UNIQUE]`; the seven captured directed relationship types and their properties are preserved. Relationship properties are in the diagram legend. These are Neo4j properties, not SQL foreign keys. Uniqueness is source-defined by the importer's per-label id constraints; this documentation update does not verify their deployment.
+
+**Capture versus source.** The supplied capture has no `Certificate` label or `REQUIRES_CERTIFICATE` type. Both remain current source concepts in [CertificateCatalogRepository](../backend/src/main/java/com/adaptlearngraph/repository/CertificateCatalogRepository.java), with an [id uniqueness constraint](../backend/src/main/resources/db/neo4j/certificate-constraints.cypher); they remain visibly marked **source only**. The box lists exactly the writer's Certificate fields, including audit/idempotency strings. The relationship lists its create fields and optional replacement fields; it does not inherit an invented `id`, `version` or `reviewStatus`.
+
+The capture is an observed-property inventory, not the union of all optional source fields: compatibility fields such as `MicroSkill.moduleOnlyKnowledgeLevels` / `certificateOnlyKnowledgeLevels`, TargetRole authoring fields and optional reviewer timestamps remain source-defined outside the six captured lists. Java projections are partial read models; `LearningModuleNode.duration` uses Java `Integer`, while the supplied Neo4j property type is `Long`. Seed null values are omitted on import. Organization/assignment fields are supplied by tenant import/bootstrap and catalog writers. No source fields, seeds or constraints are changed to make them match the capture. Live Neo4j was not queried in this documentation task.
+
+Source cross-check: mounted [knowledge seed](dataset/import/ontology_seed-prerequisite-knowledge.json), [importer](dataset/import/import_neo4j.py), tenant [bootstrap](../backend/src/main/java/com/adaptlearngraph/config/LocalCatalogBootstrap.java), catalog node projections and Certificate writer. Historical inventories below keep their release-specific scope; their old counts/properties are not assertions about the supplied capture. PostgreSQL continues to own learner state and evidence.
+
+## Current source — 2026-11-07
+
+**Source mapping, not an applied Neo4j capture.** Current tenant readers/writers implement knowledge/provision/certificate fields; live graph metadata was not accessible in this task. Keep existing ontology topology; add only Certificate linked from Skill. No intermediate requirement node.
+
+
+
+REQUIRES_SKILL.requiredKnowledgeLevels replaces numeric requiredScore, explicitly and without inheritance. Module gains knowledgeLevel/outcomeCodes; retire active teachingFocus/difficultyLevel without duplicating level on TEACHES. HAS_SKILL_PREREQUISITE retains topology with exact dependent/prerequisite levels. Tenant-owned Skill uses current common provisionMode and per-level outcome-code lists; readers retain disjoint moduleOnlyKnowledgeLevels/certificateOnlyKnowledgeLevels compatibility; shared templates are read-only. Skill → REQUIRES_CERTIFICATE → Certificate holds one assigned definition per configured certificate-only skill/level, with required HTTPS referenceUrl; learner data stays outside graph.
+
+Baseline never pre-adds unassessed prerequisites; skill assessment discovers shortages. Old bypass work on another target is parallel/non-gating. [Complete field/constraint mapping](technical/Organization%20Rule%20Assessment%20and%20Pathway.md#3-neo4j-physical-mapping). Existing counts and inventories below retain previous-release history. The linked catalog figure is source-defined, not a live capture. No graph/seed changes here.
+
+
+<a id="current-contract--2026-11-05"></a>
+
+## Previous single-Skill contract — 2026-11-05
 
 ```mermaid
 flowchart LR
@@ -19,7 +44,7 @@ Release [v0.12](dataset/import/ontology_seed-v012.json) có 994 node, 4.703 cạ
 
 Neo4j chỉ sở hữu catalog. PostgreSQL lưu tiến độ, bằng chứng hoàn thành bất biến theo org/learner/Module/revision/Skill và quyền tự học. Hoàn thành mọi lesson của một Module mở **điều kiện học tập** để thi Skill; không ghi nhận điểm/mastery, không khóa Module khác, không chuyển bằng chứng sang Skill mới khi Module đổi mapping. [Contract và bàn giao API](technical/Skill-Learning-Eligibility.md).
 
-Đây là thay đổi source/dataset được kiểm chứng trên môi trường riêng. Chưa migration dev chính/accounts-dev. Các phần v0.11 bên dưới mô tả dữ liệu/hành vi lịch sử; không dùng phân loại/difficulty cũ làm contract authoring mới. Hình SVG/PNG cũ được giữ làm tài liệu lịch sử; [PlantUML source](diagrams/neo4j.puml) và Mermaid trên mô tả contract mới.
+Đây là thay đổi source/dataset được kiểm chứng trên môi trường riêng. Chưa migration dev chính/accounts-dev. Các phần v0.11 bên dưới mô tả dữ liệu/hành vi lịch sử; không dùng phân loại/difficulty cũ làm contract authoring mới. SVG/PNG đã được tái tạo ngày 08/11/2026 theo capture được cung cấp và định nghĩa Certificate trong source; [PlantUML source](diagrams/neo4j.puml) và Mermaid trên mô tả contract mới.
 
 ## Historical v0.11 reference
 
@@ -29,7 +54,7 @@ Neo4j chỉ sở hữu catalog. PostgreSQL lưu tiến độ, bằng chứng ho�
 
 
 
-![Sơ đồ ontology lịch sử v0.11](diagrams/neo4j.svg)
+[Sơ đồ catalog hiện tại](diagrams/neo4j.svg) được dùng chung; phần inventory v0.11 dưới đây là lịch sử, không phải nội dung của hình hiện tại.
 
 
 
@@ -324,7 +349,7 @@ MicroSkill là định nghĩa một kỹ năng có thể quan sát hoặc kiểm
 
 
 
-Node không lưu `actualScore` hoặc `requiredScore`. `requiredScore` nằm trên `REQUIRES_SKILL` để đánh giá đạt Level và trên `HAS_SKILL_PREREQUISITE` để kiểm tra sẵn sàng học; `actualScore` thuộc kết quả đánh giá của từng learner. Như vậy một skill có thể yêu cầu mức thực hiện khác nhau ở Junior và Senior.
+Node không lưu điểm learner. Luồng hiện tại dùng requiredKnowledgeLevels trên REQUIRES_SKILL; MicroSkill giữ provisionMode, các outcome-code list theo FOUNDATION/INTERMEDIATE/ADVANCED và version. Reader còn hỗ trợ hai danh sách mode theo level của snapshot trước. Numeric requiredScore chỉ thuộc lịch sử, không phải fallback cho baseline/pathway mới.
 
 
 
@@ -352,7 +377,9 @@ LearningModule chứa tham chiếu nội dung bài học/thực hành. Module d�
 
 | `duration` | Integer > 0, bắt buộc | Thời lượng học dự kiến, tính bằng phút. |
 
-| `price` | Float > 0, bắt buộc | Giá gói học Module, tính bằng VND; dataset hiện tại chỉ có Module trả phí, giá phải lớn hơn 0. |
+| `knowledgeLevel`, `skillVersion`, `outcomeCodes` | Enum/String/List | Cấp kiến thức, phiên bản Skill và phạm vi outcome thực; cần khớp requirement để là alternative. |
+
+| `price` (lịch sử) | Legacy snapshot | V61 không cho price trong document authoring mới; không dùng làm điều kiện hay mục tiêu tối ưu của luồng hiện tại. |
 
 
 
@@ -370,63 +397,19 @@ Mọi relationship cũng có bộ field chung ở mục 2. Các field `type`, `f
 
 ### 4.1. REQUIRES_SKILL
 
-
-
-| Field | Kiểu | Ý nghĩa |
-
-|---|---|---|
-
-| `requiredScore` | Float [0,1] | Ngưỡng điểm để skill đạt trong Level này. Dataset hiện đề xuất 0.60–0.95, chờ hiệu chuẩn. |
-
-| `isMandatory` | Boolean | Skill có bắt buộc để đạt Level hay không. Tất cả 1.891 requirement hiện là true và đang chờ chuyên gia rà. |
-
-
+`Level → MicroSkill`: requiredKnowledgeLevels là danh sách rõ ràng, duy nhất, gồm FOUNDATION/INTERMEDIATE/ADVANCED; không tự suy cấp thấp hơn. Giữ isMandatory/metadata phù hợp. Không dùng requiredScore, phần trăm target hay numeric gap để sinh lộ trình hiện tại.
 
 ### 4.2. HAS_SKILL_PREREQUISITE
 
+`dependent MicroSkill → prerequisite MicroSkill`: dependentKnowledgeLevel và prerequisiteKnowledgeLevel xác định cặp requirement chính xác. Reader assessment đi theo closure cấu hình, kiểm tra cycle/duplicate/bounds; malformed mapping là lỗi readiness. Baseline không thêm hoặc khóa B chỉ vì A có cạnh đến B. Chỉ shortage từ nhóm prerequisite thực sự đã đánh giá mới tạo/reuse bổ sung; B đã có official evidence chỉ NEED_REVIEW, không bị thu hồi achievement.
 
+### 4.3. TEACHES — current single-Skill mapping
 
-A → B nghĩa là xác nhận skill nền tảng B trước khi học skill A. Đây là điều kiện sẵn sàng học, không tự thêm B vào tập skill bắt buộc để đạt Level.
+Mỗi Module có đúng một MicroSkill; một Skill có nhiều Module. Knowledge/Skill version/outcomes nằm trên payload/projection Module, không sao chép level lên TEACHES. Alternative phải đúng Skill/version/knowledge và phủ outcomes, có approved active complete released content. teachingFocus/difficultyLevel và minimum-mastery không điều khiển luồng hiện tại. Lịch sử v0.11 nhiều Skill/focus/difficulty giữ riêng trong dataset/research, không được diễn giải thành contract mới.
 
+### 4.4. REQUIRES_CERTIFICATE
 
-
-| Field | Kiểu | Ý nghĩa |
-
-|---|---|---|
-
-| `requiredScore` | Float [0,1] | Ngưỡng điểm readiness; cả 11 cạnh hiện đề xuất `0.75`, chờ chuyên gia duyệt. |
-
-
-
-Quan hệ này chỉ có `requiredScore` và metadata chung; mô tả readiness và tham chiếu bài đánh giá được quản lý ngoài Neo4j. Backend cần mapping assessment rõ ràng cho cặp skill phụ thuộc–skill nền tảng trước khi xác nhận readiness. Kết quả phải khớp learner, skill nền tảng, quan hệ tiên quyết và phiên bản task/rubric/catalog. Readiness `PASS` đáp ứng điều kiện; `FAIL` hoặc `NOT_ASSESSED` chưa đáp ứng. Không tự dùng kết quả đánh giá skill theo Level thay cho readiness vì rubric và nhiệm vụ khác nhau.
-
-
-
-Các quan hệ `HAS_ROLE`, `HAS_LEVEL`, `HAS_COMPETENCY`, `HAS_SKILL` chỉ có metadata chung. `TEACHES` có hai field `teachingFocus` và `difficultyLevel`.
-
-
-
-### 4.3. TEACHES — teachingFocus và difficultyLevel
-
-
-
-| Field | Kiểu | Ý nghĩa |
-
-|---|---|---|
-
-| `teachingFocus` | Enum/String, bắt buộc | `PRIMARY`: mục tiêu dạy chính; `SUPPORTING`: thực hành hỗ trợ; `INCIDENTAL`: chỉ xuất hiện trong ngữ cảnh, không tính là đã bù gap. |
-
-| `difficultyLevel` | Enum/String, bắt buộc | `LOW`, `MEDIUM`, `HIGH`: độ khó nhiệm vụ của skill trong Module cụ thể. |
-
-
-
-Hai field độc lập trên từng cặp Module–Skill. Ví dụ MOD-FOCUS-CORE01-HIGH có MS-CORE01 = PRIMARY/HIGH, MS-CORE02 = SUPPORTING/MEDIUM và MS-CORE03 = INCIDENTAL/LOW. Không còn instructionLevel hay điểm coverage trên graph v0.11. Không suy độ khó từ gap, requiredScore hoặc tên Senior; không dùng INCIDENTAL thay thế bằng chứng học/đạt skill.
-
-
-
-Catalog review giữ 85 Module cũ, thêm 161 gói thực hành tập trung, tổng 246 Module/664 mapping. Mỗi skill có lựa chọn PRIMARY ở LOW/MEDIUM/HIGH trong dataset này. Nội dung mới là scaffold chờ tác giả/chuyên gia hoàn thiện, chưa phải khóa học được duyệt. Chi tiết và quy trình kiểm tra: [Teaching focus và difficulty](dataset/TEACHING_FOCUS_DIFFICULTY.md).
-
-
+`MicroSkill → Certificate`: một active definition cho skill–knowledge CERTIFICATE_ONLY, có id/org/version/name/description/knowledgeLevel/skillVersion/outcomeCodes/referenceUrl HTTPS và lifecycle/author metadata. Không phải CERTIFIES theo chiều ngược trong GRAPH-01 cũ. Definition không chứa hồ sơ learner; submission/attachment/assigned decision/evidence ở PostgreSQL và bytes ở private storage. Writer khóa owned Skill và so expected version trước tạo/thay definition; không tự sửa template chung.
 
 ## 5. Dữ liệu đánh giá nằm ngoài Neo4j
 
@@ -494,27 +477,11 @@ Importer từ chối liên kết thiếu/sai thay vì tự suy đoán. Sau impor
 
 
 
-### Ràng buộc TEACHES N–N và nội dung theo cấp độ
+### Ràng buộc TEACHES và nội dung theo cấp độ
 
+Một Module dạy đúng một Skill–knowledge; nhiều Module có thể là alternatives nếu tương đương version/outcomes. Không bắt học mọi alternative và không hợp nhất mọi same-Skill Module thành proof. Thiếu module/definition hợp lệ giữ NEEDS_EXPERT_ACTION. Learner completion/history ở PostgreSQL; content completion không phải official achievement.
 
-
-- Mỗi Module trong catalog hiện có ít nhất một cạnh `TEACHES` tới MicroSkill; mỗi MicroSkill có ít nhất một Module dạy. Không giới hạn mỗi phía ở một cạnh. Mỗi cặp Module–Skill chỉ có một mapping trong snapshot.
-
-- Bộ kiểm tra import và thao tác ghi catalog phải kiểm tra cả hai phía, kể cả node không có cạnh. Constraint duy nhất trên ID không tự đảm bảo cardinality này. Importer v0.11 đã kiểm tra cả hai phía; API ghi catalog trong tương lai cũng phải thực thi ràng buộc này.
-
-- Một Module dùng chung cho các Level yêu cầu cùng skill. Nội dung có thể chia thành phần nền tảng, thực hành và nâng cao trong cùng Module; nhiệm vụ và bằng chứng đánh giá được định nghĩa trong cấu hình assessment ngoài graph, gắn với skill và ngữ cảnh Level tương ứng.
-
-- Hoàn thành Module không đồng nghĩa đạt skill ở mọi Level. Nếu nội dung chưa đáp ứng ngữ cảnh/độ sâu của Level, trả về `PATHWAY_UNRESOLVED`, không suy ra đủ năng lực chỉ vì tồn tại cạnh `TEACHES`.
-
-- Với mỗi skill gap, xét các Module thay thế theo nội dung, độ sâu, readiness và phê duyệt; không mặc định học tất cả Module dạy cùng skill. Một Module bù nhiều gap chỉ xuất hiện một lần trong cùng kế hoạch học, với danh sách skill cần học rõ ràng.
-
-- Đánh giá riêng từng skill có bằng chứng; hoàn thành Module không tự PASS mọi skill được gắn TEACHES.
-
-- Readiness áp dụng trước hoạt động học skill phụ thuộc. Nếu Module dạy cả nền tảng và skill phụ thuộc, phải có thứ tự nội dung phù hợp và xác nhận readiness giữa các phần; nếu không khả thi thì chọn Module nền tảng khác hoặc báo lộ trình chưa giải quyết được.
-
-- Bỏ Course đồng thời bỏ `HAS_COURSE`, `HAS_MODULE`, `HAS_COURSE_PREREQUISITE` và `sequence` thuộc Course. Không chuyển bằng chứng hoàn thành Course cũ thành bằng chứng đạt skill.
-
-
+Initial pathway không mở prerequisite closure chưa được đánh giá; Skill Assessment mới dùng đủ MAIN + ALL prerequisite groups. Không dùng thứ tự hiển thị để khóa learning. Source chính: CurrentRoleKnowledgeCatalog, RulePathwayCatalog, RequirementPathwayAccess; mọi phát biểu về DB thật còn chưa xác minh.
 
 ## 8. Nguồn dữ liệu và trạng thái hiện tại
 
@@ -524,7 +491,7 @@ O*NET cung cấp Job Position, sample job titles và điểm sở thích nghề 
 
 
 
-[JSON seed](dataset/import/ontology_seed-v011.json) và [Excel review](dataset/ontology_dataset.xlsx) có **994 node, 5.121 relationship**: 5 Job Position, 48 TargetRole, 144 Level, 472 Competency, 79 MicroSkill, 246 LearningModule. Có 11 prerequisite skill; không còn Course. Schema, dataset và import đã đồng bộ v0.11. Backend legacy API và database đang chạy chưa được chuyển dữ liệu; xem ranh giới runtime trong [ARCHITECTURE.md](ARCHITECTURE.md). Learner assessment trong quá khứ giữ ngữ cảnh catalog và rubric gốc.
+[JSON seed](dataset/import/ontology_seed-v011.json) và [Excel review](dataset/ontology_dataset.xlsx) có **994 node, 5.121 relationship**: 5 Job Position, 48 TargetRole, 144 Level, 472 Competency, 79 MicroSkill, 246 LearningModule. Có 11 prerequisite skill; không còn Course. Đây là thống kê lịch sử v0.11, không phải snapshot graph hiện tại. compose.dev.yml hiện mount ontology_seed-prerequisite-knowledge.json; trạng thái DB thật chưa được đọc ở đợt này; xem ranh giới runtime trong [ARCHITECTURE.md](ARCHITECTURE.md). Learner assessment trong quá khứ giữ ngữ cảnh catalog và rubric gốc.
 
 
 
@@ -552,9 +519,11 @@ Mọi node và relationship đều có metadata chung: `id`, `version`, `status`
 
 | Competency | name, description, attainmentRule |
 
-| MicroSkill | name, definition |
+| MicroSkill | name, definition, provisionMode, per-level outcome-code lists; historical mode-level lists retained by readers |
 
-| LearningModule | title, moduleType, contentUri, contentType, contentVersion, duration, price |
+| LearningModule | title, moduleType, contentUri, contentType, contentVersion, duration, knowledgeLevel, skillVersion, outcomeCodes; price is historical |
+
+| Certificate | organizationId, name, description, knowledgeLevel, skillVersion, outcomeCodes, referenceUrl and lifecycle/version |
 
 
 
@@ -570,11 +539,13 @@ Mọi node và relationship đều có metadata chung: `id`, `version`, `status`
 
 | HAS_SKILL | Không có | 1.891 |
 
-| REQUIRES_SKILL | requiredScore, isMandatory | 1.891 |
+| REQUIRES_SKILL | requiredKnowledgeLevels, isMandatory; count below is historical | 1.891 |
 
-| TEACHES | teachingFocus, difficultyLevel | 664 |
+| TEACHES | No active focus/difficulty; exactly one Skill per current Module; count is v0.11 history | 664 |
 
-| HAS_SKILL_PREREQUISITE | requiredScore | 11 |
+| HAS_SKILL_PREREQUISITE | dependentKnowledgeLevel, prerequisiteKnowledgeLevel; count is historical | 11 |
+
+| REQUIRES_CERTIFICATE | Same-owned active Skill→Certificate binding | Not measured |
 
 
 

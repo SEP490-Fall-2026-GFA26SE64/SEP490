@@ -25,6 +25,5 @@ public record LearningModuleNode(
         @Property("reviewedBy") String reviewedBy,
         @Property("reviewedAt") String reviewedAt,
         @Property("duration") Integer duration,
-        @Property("durationMinutes") Integer durationMinutes,
-        @Property("price") Double price) {
+        @Property("durationMinutes") Integer durationMinutes) {
 }

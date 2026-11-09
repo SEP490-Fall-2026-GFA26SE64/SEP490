@@ -59,6 +59,8 @@ public class PrerequisiteController {
             @PathVariable("organizationId") String organizationId,
             @RequestParam("sourceSkillId") String sourceSkillId,
             @RequestParam("targetSkillId") String targetSkillId,
+            @RequestParam("dependentKnowledgeLevel") String dependentKnowledgeLevel,
+            @RequestParam("prerequisiteKnowledgeLevel") String prerequisiteKnowledgeLevel,
             @RequestHeader(value = "X-User-Role", required = false, defaultValue = "DOMAIN_EXPERT") String userRole) {
 
         if (!isAuthorizedExpert(userRole)) {
@@ -66,8 +68,16 @@ public class PrerequisiteController {
                     .body(Map.of("error", "Forbidden", "message", "Only Domain Experts can edit prerequisite relationships"));
         }
 
-        prerequisites.deletePrerequisite(organizationId, sourceSkillId, targetSkillId);
+        prerequisites.deletePrerequisite(organizationId, sourceSkillId, targetSkillId,dependentKnowledgeLevel,prerequisiteKnowledgeLevel);
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/reverse")
+    public ResponseEntity<?> reversePrerequisite(@PathVariable("organizationId") String organizationId,
+            @RequestHeader(value="X-User-Role",required=false,defaultValue="") String userRole,
+            @Valid @RequestBody CreatePrerequisiteRequest request) {
+        if(!isAuthorizedExpert(userRole))return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("message","Expert required"));
+        return ResponseEntity.ok(prerequisites.reversePrerequisite(organizationId,request));
     }
 
     @ExceptionHandler(PrerequisiteCycleException.class)

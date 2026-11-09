@@ -10,7 +10,7 @@ public final class SkillLearningApplicationService {
     public EligibilityResponse eligibility(String skill) {
         var r=learning.eligibility(skill);var p=r.qualifyingCompletion();
         return new EligibilityResponse(r.skillId(),r.eligible(),r.reason(),p==null?null:
-                new CompletionResponse(p.skillId(),p.moduleId(),p.revision(),p.contentVersion(),p.completedAt()));
+                new CompletionResponse(p.skillId(),p.moduleId(),p.revision(),p.contentVersion(),p.completedAt(),p.knowledgeLevel(),p.skillVersion(),p.outcomeCodes(),p.skillName()));
     }
     public List<ModuleResponse> modules(String skill) {
         return learning.modules(skill).stream().map(m->new ModuleResponse(m.moduleId(),m.title(),m.contentVersion(),m.started(),m.completed())).toList();

@@ -16,6 +16,7 @@ import { EmployeeOverviewPage } from '../features/employee/overview/EmployeeOver
 import { EmployeeTargetRolesPage, EmployeeUpskillingPage } from '../features/employee/target-roles/EmployeeTargetRolesPage'
 import { AssessmentBankPage } from '../features/manager/assessment-bank/AssessmentBankPage'
 import { AdaptiveBaselineRoute } from '../features/manager/baseline-assessments/AdaptiveBaselinePage'
+import { SkillAssessmentConfigurationPage } from '../features/manager/baseline-assessments/ScopedAssessmentConfiguration'
 import { LegacyBaselineAssessmentRedirect } from '../features/manager/baseline-assessments/LegacyBaselineAssessmentRedirect'
 import { LearningModulesPage } from '../features/manager/modules/LearningModulesPage'
 import { CompetencyOntologyPage } from '../features/manager/ontology/CompetencyOntologyPage'
@@ -130,6 +131,7 @@ export default function App() {
             <Route path="/expert/learning-content" element={<LearningContentAuthoringPage />} />
             <Route path="/expert/modules" element={<LearningModulesPage />} />
             <Route path="/expert/assessment-bank" element={<AssessmentBankPage />} />
+            <Route path="/expert/skill-assessment-config" element={<SkillAssessmentConfigurationPage />} />
 
             {/* 3. L&D Manager routes (JobPositions, Target Roles, Approvals, Team Matrix, Outcomes, Users) */}
             <Route path="/ld-manager" element={<Navigate to="/ld-manager/dashboard" replace />} />

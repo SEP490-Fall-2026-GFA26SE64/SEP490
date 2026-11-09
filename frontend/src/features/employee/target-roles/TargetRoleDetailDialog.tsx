@@ -125,6 +125,29 @@ export function TargetRoleDetailDialog({
 
             <section>
               <h3 className="mb-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                Target Levels & Estimated Durations
+              </h3>
+              <div className="grid gap-2 sm:grid-cols-3">
+                {[
+                  { name: 'Senior', rank: 1, defaultDur: '6 months' },
+                  { name: 'Middle', rank: 2, defaultDur: '4 months' },
+                  { name: 'Junior', rank: 3, defaultDur: '3 months' },
+                ].map((lvl) => (
+                  <div key={lvl.name} className="p-2.5 rounded-lg border border-border bg-card">
+                    <div className="flex items-center justify-between">
+                      <p className="font-semibold text-foreground text-xs">{lvl.name}</p>
+                      <Badge variant="outline" className="text-[10px] font-mono">Rank {lvl.rank}</Badge>
+                    </div>
+                    <p className="text-[11px] text-muted-foreground mt-1">
+                      Est. Duration: <span className="font-medium text-foreground">{lvl.defaultDur}</span>
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            <section>
+              <h3 className="mb-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
                 Required micro-skills
               </h3>
               <div className="space-y-2">

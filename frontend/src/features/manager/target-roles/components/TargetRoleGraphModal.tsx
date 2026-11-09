@@ -19,6 +19,8 @@ import { Badge } from '../../../../shared/components/ui/Badge'
 import { Button } from '../../../../shared/components/ui/Button'
 import { Dialog } from '../../../../shared/components/ui/Dialog'
 import { getActiveCompany } from '../../../../shared/stores/companyStore'
+import { useTranslation } from '../../../../shared/i18n/LanguageContext'
+import { formatRequiredKnowledge } from '../roleKnowledgePresentation'
 import {
   type SkillTargetConfig,
   type TargetRoleModel,
@@ -66,8 +68,7 @@ export interface SkillNodeData {
   skillId: string
   code: string
   name: string
-  macroCompetencyCode: string
-  targetMastery: number
+  requiredKnowledgeLevels: string[]
   status: string
   level?: string
 }
@@ -146,6 +147,7 @@ export function TargetRoleGraphModal({
   role,
   skillTargets,
 }: TargetRoleGraphModalProps) {
+  const { t } = useTranslation()
   const [loading, setLoading] = React.useState(false)
   const [error, setError] = React.useState<string | null>(null)
   const [graphData, setGraphData] = React.useState<TargetRoleGraphDto | null>(null)
@@ -170,7 +172,7 @@ export function TargetRoleGraphModal({
       ? propLevels
       : currentRole?.levels && currentRole.levels.length > 0
       ? currentRole.levels
-      : ['Junior', 'Middle', 'Senior']
+      : ['Senior', 'Middle', 'Junior']
 
   const handleSearchFocus = React.useCallback(() => {
     if (!networkRef.current || !searchQuery.trim()) return
@@ -231,13 +233,6 @@ export function TargetRoleGraphModal({
       if (rawTargets.length > 0) {
         requiredSkills = rawTargets.map((st: SkillTargetConfig, sIdx: number) => {
           const rawSkillId = st.skillId || st.skillCode || `skill-${sIdx}`
-          const matchedC = fetchedComps.find(
-            (c) =>
-              c.skillIds?.includes(rawSkillId) ||
-              c.skillIds?.includes(st.skillCode || '') ||
-              c.code === rawSkillId ||
-              c.id === rawSkillId
-          )
           const backendSkill = backendData?.requiredSkills?.find(
             (bs) => bs.skillId === rawSkillId || (st.skillCode && bs.skillCode === st.skillCode)
           )
@@ -245,8 +240,7 @@ export function TargetRoleGraphModal({
             skillId: rawSkillId,
             skillCode: st.skillCode || rawSkillId,
             skillName: st.skillName || backendSkill?.skillName || rawSkillId,
-            macroCompetencyCode: backendSkill?.macroCompetencyCode || matchedC?.id || matchedC?.code || 'KNOWLEDGE',
-            targetMastery: (st.threshold || 80) / 100,
+            requiredKnowledgeLevels: st.requiredKnowledgeLevels ?? [],
             status: backendSkill?.status || 'ACTIVE',
             level: st.level || backendSkill?.level,
           }
@@ -353,7 +347,7 @@ export function TargetRoleGraphModal({
         ? propLevels
         : currentRole?.levels && currentRole.levels.length > 0
         ? currentRole.levels
-        : ['Junior', 'Middle', 'Senior']
+        : ['Senior', 'Middle', 'Junior']
 
     const isLevelFiltered = selectedLevelFilter !== 'ALL' && selectedLevelFilter !== ''
     const displayedLevels = isLevelFiltered
@@ -447,8 +441,8 @@ export function TargetRoleGraphModal({
       if (isLevelFiltered) {
         return false
       }
-      // 2. Fallback: only include the macro-competencies directly tagged on the required skills
-      if (reqSkills.some((s) => s.macroCompetencyCode === c.code || s.macroCompetencyCode === c.id)) {
+      // 2. Fallback: include competencies containing required skills
+      if (reqSkills.some((s) => c.skillIds?.includes(s.skillId) || c.skillIds?.includes(s.skillCode))) {
         return true
       }
       return false
@@ -497,14 +491,25 @@ export function TargetRoleGraphModal({
           name: comp.name,
           description: comp.description,
           status: comp.status || 'ACTIVE',
-          memberSkillCount: reqSkills.filter(
-            (s) =>
-              (s.macroCompetencyCode === comp.code ||
-              s.macroCompetencyCode === comp.id ||
-              comp.skillIds?.includes(s.skillId) ||
-              comp.skillIds?.includes(s.skillCode)) &&
+          memberSkillCount: reqSkills.filter((s) => {
+            const sId = (s.skillId || '').toLowerCase().trim()
+            const sCode = (s.skillCode || '').toLowerCase().trim()
+            const matchesComp =
+              (Array.isArray(comp.memberSkills) && comp.memberSkills.some((ms) => {
+                const msId = (ms.id || '').toLowerCase().trim()
+                const msCode = (ms.code || '').toLowerCase().trim()
+                return (sId && (msId === sId || msCode === sId)) || (sCode && (msId === sCode || msCode === sCode))
+              })) ||
+              (Array.isArray(comp.skillIds) && comp.skillIds.some((sid) => {
+                const sidNorm = (sid || '').toLowerCase().trim()
+                return (sId && sidNorm === sId) || (sCode && sidNorm === sCode)
+              }))
+
+            return (
+              matchesComp &&
               (!isLevelFiltered || (s.level && s.level.toLowerCase() === selectedLevelFilter.toLowerCase()))
-          ).length,
+            )
+          }).length,
         },
       })
 
@@ -557,7 +562,7 @@ export function TargetRoleGraphModal({
 
       addNodeSafely({
         id: skill.skillId,
-        label: `<b>${skill.skillCode || skill.skillId}</b>\n${skill.skillName}\nTarget Mastery: ${Math.round(skill.targetMastery * 100)}%`,
+        label: `<b>${skill.skillCode || skill.skillId}</b>\n${skill.skillName}\n${formatRequiredKnowledge(skill.requiredKnowledgeLevels, t)}`,
         shape: 'box',
         shapeProperties: { borderRadius: 14 },
         margin: { top: 8, right: 14, bottom: 8, left: 14 },
@@ -582,35 +587,51 @@ export function TargetRoleGraphModal({
           skillId: skill.skillId,
           code: skill.skillCode || skill.skillId,
           name: skill.skillName,
-          macroCompetencyCode: skill.macroCompetencyCode || 'KNOWLEDGE',
-          targetMastery: skill.targetMastery,
+          requiredKnowledgeLevels: skill.requiredKnowledgeLevels,
           status: skill.status || 'ACTIVE',
         },
       })
 
       // Directed edge: (:Competency)-[:HAS_SKILL]->(:MicroSkill)
-      const matchedComp =
-        relevantComps.find(
-          (c) =>
-            c.skillIds?.includes(skill.skillId) ||
-            c.skillIds?.includes(skill.skillCode) ||
-            (skill.macroCompetencyCode && (c.id === skill.macroCompetencyCode || c.code === skill.macroCompetencyCode))
-        ) ||
-        relevantComps.find(
-          (c) =>
-            skill.level &&
-            (currentRole?.levelCompetencies?.[skill.level]?.includes(c.id) ||
-              (c.code && currentRole?.levelCompetencies?.[skill.level]?.includes(c.code)))
-        ) ||
-        (relevantComps.length > 0 ? relevantComps[0] : null)
+      // A competency connects to a micro-skill with HAS_SKILL strictly if the competency contains that skill
+      const skillIdNorm = (skill.skillId || '').toLowerCase().trim()
+      const skillCodeNorm = (skill.skillCode || '').toLowerCase().trim()
 
-      if (matchedComp) {
-        const parentNodeId = `comp-${matchedComp.id}`
+      const matchingComps = relevantComps.filter((c) => {
+        if (c.id === 'comp-core') return true
+
+        if (Array.isArray(c.memberSkills) && c.memberSkills.length > 0) {
+          const matched = c.memberSkills.some((ms) => {
+            const msId = (ms.id || '').toLowerCase().trim()
+            const msCode = (ms.code || '').toLowerCase().trim()
+            return (
+              (skillIdNorm && (msId === skillIdNorm || msCode === skillIdNorm)) ||
+              (skillCodeNorm && (msId === skillCodeNorm || msCode === skillCodeNorm))
+            )
+          })
+          if (matched) return true
+        }
+
+        if (Array.isArray(c.skillIds) && c.skillIds.length > 0) {
+          return c.skillIds.some((sid) => {
+            const sidNorm = (sid || '').toLowerCase().trim()
+            return (
+              (skillIdNorm && sidNorm === skillIdNorm) ||
+              (skillCodeNorm && sidNorm === skillCodeNorm)
+            )
+          })
+        }
+
+        return false
+      })
+
+      matchingComps.forEach((comp) => {
+        const parentNodeId = `comp-${comp.id}`
         addEdgeSafely({
           id: `has-skill-${parentNodeId}-${skill.skillId}`,
           from: parentNodeId,
           to: skill.skillId,
-          title: `Member skill of ${matchedComp.name} (${Math.round(skill.targetMastery * 100)}% benchmark)`,
+          title: `Member skill of ${comp.name} (${formatRequiredKnowledge(skill.requiredKnowledgeLevels, t)})`,
           label: 'HAS_SKILL',
           font: { size: 8, color: '#16A34A', align: 'horizontal' },
           color: { color: '#86EFAC', highlight: '#16A34A', hover: '#15803D' },
@@ -618,7 +639,7 @@ export function TargetRoleGraphModal({
           dashes: false,
           width: 1.5,
         })
-      }
+      })
 
       // Directed edge: (:Level)-[:REQUIRES_SKILL {requiredScore}]->(:MicroSkill)
       const targetLevelNodeId = skill.level
@@ -630,7 +651,7 @@ export function TargetRoleGraphModal({
           id: `requires-skill-${targetLevelNodeId}-${skill.skillId}`,
           from: targetLevelNodeId,
           to: skill.skillId,
-          title: `Level Requirement: REQUIRES_SKILL (Target Mastery: ${Math.round(skill.targetMastery * 100)}%)`,
+          title: `Level Requirement: REQUIRES_SKILL (${formatRequiredKnowledge(skill.requiredKnowledgeLevels, t)})`,
           label: 'REQUIRES_SKILL',
           font: { size: 7, color: '#64748B', align: 'horizontal' },
           color: { color: '#CBD5E1', highlight: '#64748B', hover: '#475569' },
@@ -649,8 +670,8 @@ export function TargetRoleGraphModal({
           id: `prereq-${p.sourceSkillId}-${p.targetSkillId}-${pIdx}`,
           from: p.sourceSkillId,
           to: p.targetSkillId,
-          label: `HAS_SKILL_PREREQUISITE (≥ ${Math.round(p.minMastery * 100)}%)`,
-          title: `HAS_SKILL_PREREQUISITE: Requires ≥ ${Math.round(p.minMastery * 100)}% before learning`,
+          label: `${p.dependentKnowledgeLevel ?? 'Unclassified'} → ${p.prerequisiteKnowledgeLevel ?? 'Unclassified'}`,
+          title: `HAS_SKILL_PREREQUISITE: ${p.dependentKnowledgeLevel ?? 'Unclassified'} requires ${p.prerequisiteKnowledgeLevel ?? 'Unclassified'}`,
           font: {
             size: 8,
             color: '#DC2626',
@@ -808,7 +829,7 @@ export function TargetRoleGraphModal({
       }
       networkRef.current = null
     }
-  }, [graphData, layoutMode, loading, role, propLevels, roleId, selectedLevelFilter, searchQuery])
+  }, [graphData, layoutMode, loading, role, propLevels, roleId, selectedLevelFilter, searchQuery, t])
 
   return (
     <Dialog
@@ -1182,15 +1203,15 @@ export function TargetRoleGraphModal({
 
                     <div className="grid grid-cols-2 gap-2 p-2.5 rounded bg-muted/30 border border-border">
                       <div>
-                        <span className="text-[10px] text-muted-foreground block">Competency Domain</span>
+                        <span className="text-[10px] text-muted-foreground block">Status</span>
                         <Badge variant="outline" className="text-[10px] mt-0.5">
-                          {selectedNode.macroCompetencyCode}
+                          {selectedNode.status || 'ACTIVE'}
                         </Badge>
                       </div>
                       <div>
-                        <span className="text-[10px] text-muted-foreground block">Target Mastery</span>
+                        <span className="text-[10px] text-muted-foreground block">{t('roleKnowledge.requiredLevels')}</span>
                         <strong className="text-success text-xs font-bold block mt-0.5">
-                          {Math.round(selectedNode.targetMastery * 100)}%
+                          {formatRequiredKnowledge(selectedNode.requiredKnowledgeLevels, t)}
                         </strong>
                       </div>
                     </div>
@@ -1216,7 +1237,7 @@ export function TargetRoleGraphModal({
                                 {p.sourceSkillCode || p.sourceSkillId}
                               </span>
                               <Badge variant="primary" className="text-[10px]">
-                                ≥ {Math.round(p.minMastery * 100)}%
+                                {p.dependentKnowledgeLevel ?? 'Unclassified'} → {p.prerequisiteKnowledgeLevel ?? 'Unclassified'}
                               </Badge>
                             </div>
                           ))

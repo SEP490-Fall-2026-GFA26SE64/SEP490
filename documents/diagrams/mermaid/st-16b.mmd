@@ -1,0 +1,28 @@
+---
+title: "ST-16B - Question Availability Lifecycle"
+config: {"theme":"base","fontFamily":"Segoe UI, Arial, sans-serif","themeVariables":{"fontFamily":"Segoe UI, Arial, sans-serif","fontSize":"16px","primaryColor":"#ffffff","primaryTextColor":"#0f1729","primaryBorderColor":"#64748b","secondaryColor":"#fef3eb","tertiaryColor":"#ffffff","lineColor":"#64748b","textColor":"#0f1729","mainBkg":"#ffffff","background":"#ffffff","clusterBkg":"#ffffff","clusterBorder":"#64748b","edgeLabelBackground":"#ffffff","titleColor":"#0f1729","noteBkgColor":"#fef3eb","noteTextColor":"#0f1729","noteBorderColor":"#e6650f","labelColor":"#0f1729","compositeBackground":"#ffffff","compositeTitleBackground":"#ffffff","compositeBorder":"#64748b","altBackground":"#ffffff","nodeBorder":"#64748b","nodeTextColor":"#0f1729","cScale0":"#ffffff","cScaleLabel0":"#0f1729","cScale1":"#ffffff","cScaleLabel1":"#0f1729","cScale2":"#ffffff","cScaleLabel2":"#0f1729","cScale3":"#ffffff","cScaleLabel3":"#0f1729","cScale4":"#ffffff","cScaleLabel4":"#0f1729","cScale5":"#ffffff","cScaleLabel5":"#0f1729","cScale6":"#ffffff","cScaleLabel6":"#0f1729","cScale7":"#ffffff","cScaleLabel7":"#0f1729","cScale8":"#ffffff","cScaleLabel8":"#0f1729","cScale9":"#ffffff","cScaleLabel9":"#0f1729","cScale10":"#ffffff","cScaleLabel10":"#0f1729","cScale11":"#ffffff","cScaleLabel11":"#0f1729","secondaryBorderColor":"#64748b","tertiaryBorderColor":"#64748b","secondaryTextColor":"#0f1729","tertiaryTextColor":"#0f1729"},"state":{"nodeSpacing":42,"rankSpacing":64,"padding":16,"fontSize":16,"wrappingWidth":250}}
+---
+
+stateDiagram-v2
+  state "Not retired" as SDD_ST_16B_Available
+  state "Retirement requested" as SDD_ST_16B_RetirePending
+  state "Retired" as SDD_ST_16B_Retired
+  state "Reactivation requested" as SDD_ST_16B_ReactivatePending
+  [*] --> SDD_ST_16B_Available
+  SDD_ST_16B_Available --> SDD_ST_16B_RetirePending : Expert requests, published version exists
+  SDD_ST_16B_RetirePending --> SDD_ST_16B_Available : L and D returns with reason
+  SDD_ST_16B_RetirePending --> SDD_ST_16B_Retired : L and D confirms with reason
+  SDD_ST_16B_Retired --> SDD_ST_16B_ReactivatePending : Expert requests with reason
+  SDD_ST_16B_ReactivatePending --> SDD_ST_16B_Retired : L and D returns with reason
+  SDD_ST_16B_ReactivatePending --> SDD_ST_16B_Available : L and D confirms, published content eligible
+  classDef working fill:#fef3eb,stroke:#e6650f,color:#0f1729,stroke-width:1.5px
+  classDef accepted fill:#eaf6ef,stroke:#1a9e4a,color:#0f1729,stroke-width:1.5px
+  classDef attention fill:#fdf2f2,stroke:#dc2828,color:#0f1729,stroke-width:1.5px
+  class SDD_ST_16B_RetirePending,SDD_ST_16B_ReactivatePending working
+  class SDD_ST_16B_Available accepted
+  class SDD_ST_16B_Retired attention
+
+  note right of SDD_ST_16B_Available
+    Available publication alone does not prove policy capacity
+    Frozen papers retain original published versions
+  end note

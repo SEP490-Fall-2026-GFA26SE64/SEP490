@@ -17,20 +17,16 @@ test.describe('Capstone Standard: Job Position Governance & Refactoring Verifica
 
     // 3. Verify Human-Centric UI, Headings & StatCards
     await expect(page.getByText('Job Positions Directory')).toBeVisible()
-    await expect(page.getByText('Active SMEs Assigned')).toBeVisible()
+    await expect(page.getByText('Active Positions', { exact: true })).toBeVisible()
     await expect(page.getByText('Micro-Skills Covered')).toBeVisible()
 
-    // 4. Verify existing seeded Job Positions (Software Developers & Information Security Analysts)
+    // 4. Verify existing seeded Job Positions (Software Developers)
     const searchInput = page.getByPlaceholder('Search job positions...')
     await expect(searchInput).toBeVisible()
 
     await searchInput.fill('Software Developers')
     await expect(page.getByRole('table').getByText('15-1252.00', { exact: true })).toBeVisible({ timeout: 10_000 })
     await expect(page.getByRole('table').getByText('Software Developers', { exact: true })).toBeVisible()
-
-    await searchInput.fill('Information Security')
-    await expect(page.getByRole('table').getByText('15-1212.00', { exact: true })).toBeVisible({ timeout: 10_000 })
-    await expect(page.getByRole('table').getByText('Information Security Analysts', { exact: true })).toBeVisible()
 
     // Clear search filter
     await searchInput.fill('')

@@ -20,6 +20,7 @@ import org.springframework.dao.InvalidDataAccessApiUsageException;
 
 import java.time.Instant;
 import java.util.*;
+import org.springframework.data.domain.PageRequest;
 
 /** Learning content persistence (settings, assets, pathways, progress, notifications) through Spring Data JPA. */
 public final class JpaLearningContentAdapter implements LearningContentPort {
@@ -27,15 +28,21 @@ public final class JpaLearningContentAdapter implements LearningContentPort {
     private final LearningContentRepositories repositories;
     private final ObjectMapper json;
     @FunctionalInterface public interface GeneratedAssignment { boolean permits(String organization,String learner,String module); }
-    private final GeneratedAssignment generated;
+    @FunctionalInterface public interface ExactAssignment { boolean permits(String organization,String learner,String module,Integer revision); }
+    private final ExactAssignment generated;
+    private final boolean exactAdmission;
 
     public JpaLearningContentAdapter(LearningContentRepositories repositories, ObjectMapper json) {
-        this(repositories,json,(organization,learner,module)->false);
+        this(repositories,json,(organization,learner,module,revision)->false,false);
     }
     public JpaLearningContentAdapter(LearningContentRepositories repositories,ObjectMapper json,GeneratedAssignment generated) {
+        this(repositories,json,(organization,learner,module,revision)->generated.permits(organization,learner,module),false);
+    }
+    public JpaLearningContentAdapter(LearningContentRepositories repositories,ObjectMapper json,ExactAssignment generated,boolean exactAdmission) {
         this.repositories = repositories;
         this.json = json;
         this.generated = generated;
+        this.exactAdmission=exactAdmission;
     }
 
     private static String time(Instant value) {
@@ -68,11 +75,27 @@ public final class JpaLearningContentAdapter implements LearningContentPort {
     }
 
     @Override public List<SkillCompletion> completions(String org,String learner,String skill) {
-        return repositories.completions().find(org,learner,skill).stream().map(r ->
-                new SkillCompletion(r.skillId(),r.moduleId(),r.revision(),r.contentVersion(),time(r.completedAt()))).toList();
+        var rows=repositories.completions().knowledge(org,learner,skill,PageRequest.of(0,1001));
+        if(rows.size()>1000)throw new Failure(503,"Learning completion history exceeds the query limit");
+        return rows.stream().map(r->{
+            if(r.knowledgeLevel()==null)return new SkillCompletion(r.skillId(),r.moduleId(),r.revision(),r.contentVersion(),time(r.completedAt()));
+            var snapshot=decode(r.requirementSnapshot(),new TypeReference<Map<String,Object>>(){});
+            var outcomes=json.convertValue(snapshot.get("outcomeCodes"),new TypeReference<List<String>>(){});
+            return new SkillCompletion(r.skillId(),r.moduleId(),r.revision(),r.contentVersion(),time(r.completedAt()),r.knowledgeLevel(),
+                    Objects.toString(snapshot.get("skillVersion"),null),outcomes,Objects.toString(snapshot.get("skillName"),null));
+        }).toList();
     }
     @Override public void complete(String org,String learner,SkillCompletion proof) {
         repositories.completions().insert(org,learner,proof.moduleId(),proof.revision(),proof.skillId(),proof.contentVersion(),proof.completedAt());
+        if(proof.knowledgeLevel()!=null) {
+            var snapshot=Map.of("skillId",proof.skillId(),"skillName",proof.skillName(),"knowledgeLevel",proof.knowledgeLevel(),
+                    "skillVersion",proof.skillVersion(),"outcomeCodes",proof.outcomeCodes(),"contentVersion",proof.contentVersion());
+            repositories.completions().freezeRequirement(org,learner,proof.moduleId(),proof.revision(),proof.skillId(),proof.contentVersion(),proof.knowledgeLevel(),encode(snapshot));
+            var retained=repositories.completions().requirement(org,learner,proof.moduleId(),proof.revision(),proof.knowledgeLevel())
+                    .orElseThrow(()->new Failure(409,"Learning completion requirement does not match the original completion"));
+            if(!decode(retained,new TypeReference<Map<String,Object>>(){}).equals(snapshot))
+                throw new Failure(409,"Original learning completion scope is immutable");
+        }
     }
     @Override public boolean selfStudy(String org,String learner,String module) {
         return repositories.selfStudies().admitted(org,learner,module);
@@ -156,7 +179,7 @@ public final class JpaLearningContentAdapter implements LearningContentPort {
     /** Assets and external video verifications a lesson list refers to, read in at most two statements. */
     private record References(Map<UUID, Asset> assets, Map<String, Double> verified) {
         Optional<Asset> asset(String id) {
-            return assetId(id).map(assets::get);
+            return assetId(id).map(assets::get).filter(asset->!asset.objectKey().startsWith(asset.organizationId()+"/certificate-evidence/"));
         }
     }
 
@@ -314,7 +337,10 @@ public final class JpaLearningContentAdapter implements LearningContentPort {
 
     @Override
     public boolean assigned(String org, String learner, String module) {
-        return generated.permits(org, learner, module) || selfStudy(org, learner, module);
+        return generated.permits(org, learner, module,null) || !exactAdmission && selfStudy(org, learner, module);
+    }
+    @Override public boolean assignedRevision(String org,String learner,String module,int revision) {
+        return generated.permits(org,learner,module,revision) || !exactAdmission && selfStudy(org,learner,module);
     }
 
     @Override

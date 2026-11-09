@@ -38,14 +38,17 @@ public class QuestionBankConfiguration {
             public List<Choice> managers(Actor a){return members(a,"LD_MANAGER");}
             public void requireExpert(Actor a,UUID id){if(experts(a).stream().noneMatch(x->x.id().equals(id.toString())))throw new Failure(409,"Responsible Expert is not active in this organization");}
             public List<Choice> skills(Actor a){return skills.skills(a.organization().toString());}
+            public List<KnowledgeChoice> knowledge(Actor a){return skills.knowledge(a.organization().toString());}
             public String requireSkill(Actor a,String id){return skills.requireSkill(a.organization().toString(),id);}
+            public void requireOutcome(Actor a,String skill,String level,String outcome){skills.requireOutcome(a.organization().toString(),skill,level,outcome);}
 
         };
     }
     @Bean Store questionBankStore(com.adaptlearngraph.repository.QuestionBankJpaRepository banks,com.adaptlearngraph.repository.ItemVersionJpaRepository items,
             com.adaptlearngraph.repository.PostgresAdvisoryLocks locks,
-            @org.springframework.beans.factory.annotation.Qualifier(com.adaptlearngraph.constants.TransactionManagers.JPA) PlatformTransactionManager manager,ObjectMapper json){
-        return new com.adaptlearngraph.repository.JpaQuestionBankStore(banks,items,locks,new TransactionTemplate(manager),json);}
+            @org.springframework.beans.factory.annotation.Qualifier(com.adaptlearngraph.constants.TransactionManagers.JPA) PlatformTransactionManager manager,ObjectMapper json,
+            com.adaptlearngraph.repository.AssessmentItemKnowledgeMappingJpaRepository mappings){
+        return new com.adaptlearngraph.repository.JpaQuestionBankStore(banks,items,locks,new TransactionTemplate(manager),json,mappings);}
     @Bean com.adaptlearngraph.helper.ModelMapperRegistrar questionBankMappings() {
         return new com.adaptlearngraph.helper.QuestionBankMappings();
     }

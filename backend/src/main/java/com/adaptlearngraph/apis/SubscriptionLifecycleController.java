@@ -51,9 +51,11 @@ public class SubscriptionLifecycleController {
     @GetMapping("/api/v1/platform/workspaces")
     List<WorkspaceResponse> workspaces() { return lifecycle.workspaces(); }
     @PutMapping("/api/v1/platform/workspaces/{organizationId}/suspension")
-    void suspend(@PathVariable UUID organizationId,@RequestBody SuspensionRequest input) { lifecycle.suspend(organizationId,input.suspended()); }
+    void suspend(@PathVariable UUID organizationId,@Valid @RequestBody SuspensionRequest input) { lifecycle.suspend(organizationId,input.suspended()); }
     @GetMapping("/api/v1/organizations/{organizationId}/subscription/members")
     List<MemberResponse> members(@PathVariable UUID organizationId) { return lifecycle.members(organizationId); }
+    @GetMapping({"/api/v1/organizations/{organizationId}/subscription/my-assignment", "/api/v1/organizations/{organizationId}/subscription/members/me"})
+    MemberResponse myAssignment(@PathVariable UUID organizationId) { return lifecycle.myAssignment(organizationId); }
     @PutMapping("/api/v1/organizations/{organizationId}/subscription/members/{membershipId}")
     void member(@PathVariable UUID organizationId,@PathVariable UUID membershipId,@Valid @RequestBody MemberAccessRequest input) {
         lifecycle.changeMember(organizationId,membershipId,input);

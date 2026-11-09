@@ -2,6 +2,7 @@ import * as React from 'react'
 import {
   AlertTriangle,
   BookOpen,
+  Building2,
   CheckCircle2,
   Download,
   Edit3,
@@ -10,10 +11,8 @@ import {
   Plus,
   Power,
   Search,
-  Trash2,
   Upload,
   UserCheck,
-  UserPlus,
 } from 'lucide-react'
 import { Badge } from '../../../shared/components/ui/Badge'
 import { Button } from '../../../shared/components/ui/Button'
@@ -38,13 +37,16 @@ import { useToast } from '../../../shared/hooks/useToast'
 import { WorkspaceLayout } from '../../../shared/layouts/WorkspaceLayout'
 import { getActiveCompany, resolveWorkspaceOrgId } from '../../../shared/stores/companyStore'
 import { WorkspaceSessionContext } from '../../../shared/auth/workspaceSession'
-import { getOrganizationExperts, normalizeExpertId, type EligibleExpert } from '../data/ldManagerMockData'
-import { getMembers } from '../../subscription/subscriptionApi'
+import { getMembers, getReferences } from '../../subscription/subscriptionApi'
+import { fetchDepartments, updateDepartmentApi, createDepartmentApi, linkJobPositionToDepartment } from '../../../shared/api/departmentApi'
+import { loadDepartments, saveDepartments, updateDepartment } from '../../../shared/stores/departmentStore'
 import {
   createJobPosition,
   updateJobPosition,
   fetchJobPositions,
 } from '../../../shared/api/jobPositionApi'
+import { workspaceFetch } from '../../../shared/api/workspaceFetch'
+import { resolveJobPositionForRole } from '../data/ldManagerMockData'
 
 export interface RiasecProfile {
   realistic: number
@@ -76,202 +78,7 @@ export interface JobPositionRecord {
   createdAt: string
 }
 
-const INITIAL_JOB_POSITIONS: JobPositionRecord[] = [
-  {
-    id: 'occ-15125200',
-    code: '15-1252.00',
-    name: 'Software Developers',
-    jobZone: 4,
-    description: 'Research, design, and develop computer and network software, clean hexagonal microservices, and distributed systems.',
-    status: 'active',
-    assignedExperts: [
-      {
-        id: 'expert-chen',
-        name: 'Dr. Sarah Chen',
-        email: 'sarah.chen@adaptlearn.internal',
-        title: 'Senior AI & Knowledge Architect',
-      },
-    ],
-    microSkillCount: 24,
-    moduleCount: 24,
-    interests: {
-      realistic: 0.435,
-      investigative: 0.842,
-      artistic: 0.228,
-      social: 0.135,
-      enterprising: 0.145,
-      conventional: 0.77,
-    },
-    createdAt: '2026-08-15',
-  },
-  {
-    id: 'occ-15124300',
-    code: '15-1243.00',
-    name: 'Database Architects',
-    jobZone: 4,
-    description: 'Design enterprise data models, transactional knowledge graphs, graph neural networks, and semantic ontologies.',
-    status: 'active',
-    assignedExperts: [
-      {
-        id: 'expert-vance',
-        name: 'Marcus Vance',
-        email: 'marcus.vance@adaptlearn.internal',
-        title: 'Principal Graph Database Architect',
-      },
-    ],
-    microSkillCount: 18,
-    moduleCount: 18,
-    interests: {
-      realistic: 0.272,
-      investigative: 0.772,
-      artistic: 0.193,
-      social: 0.152,
-      enterprising: 0.28,
-      conventional: 0.853,
-    },
-    createdAt: '2026-08-20',
-  },
-  {
-    id: 'occ-15125300',
-    code: '15-1253.00',
-    name: 'Software Quality Assurance Analysts and Testers',
-    jobZone: 4,
-    description: 'Develop and execute automated test suites, regression pipelines, and test-driven verification workflows across applications.',
-    status: 'active',
-    assignedExperts: [
-      {
-        id: 'expert-chen',
-        name: 'Dr. Sarah Chen',
-        email: 'sarah.chen@adaptlearn.internal',
-        title: 'Senior AI & Knowledge Architect',
-      },
-      {
-        id: 'expert-rivera',
-        name: 'Alex Rivera',
-        email: 'alex.rivera@adaptlearn.internal',
-        title: 'Staff Cloud Infrastructure Engineer',
-      },
-    ],
-    microSkillCount: 15,
-    moduleCount: 15,
-    interests: {
-      realistic: 0.467,
-      investigative: 0.793,
-      artistic: 0.115,
-      social: 0.088,
-      enterprising: 0.095,
-      conventional: 0.778,
-    },
-    createdAt: '2026-09-01',
-  },
-  {
-    id: 'occ-15129908',
-    code: '15-1299.08',
-    name: 'Computer Systems Engineers/Architects',
-    jobZone: 4,
-    description: 'Design systems architecture, distributed multi-cloud orchestration, reliable message queuing architectures, and hardware-software interfaces.',
-    status: 'active',
-    assignedExperts: [
-      {
-        id: 'expert-rivera',
-        name: 'Alex Rivera',
-        email: 'alex.rivera@adaptlearn.internal',
-        title: 'Staff Cloud Infrastructure Engineer',
-      },
-    ],
-    microSkillCount: 16,
-    moduleCount: 16,
-    interests: {
-      realistic: 0.517,
-      investigative: 0.743,
-      artistic: 0.147,
-      social: 0.183,
-      enterprising: 0.338,
-      conventional: 0.793,
-    },
-    createdAt: '2026-09-05',
-  },
-  {
-    id: 'occ-15121200',
-    code: '15-1212.00',
-    name: 'Information Security Analysts',
-    jobZone: 4,
-    description: 'Zero-trust architecture, cryptographic identity models, network boundary security, and enterprise AI compliance frameworks.',
-    status: 'active',
-    assignedExperts: [],
-    microSkillCount: 12,
-    moduleCount: 12,
-    interests: {
-      realistic: 0.427,
-      investigative: 0.733,
-      artistic: 0.057,
-      social: 0.185,
-      enterprising: 0.308,
-      conventional: 0.847,
-    },
-    createdAt: '2026-09-10',
-  },
-]
-
-const JOB_POSITION_PRESETS: ImportPreset[] = [
-  {
-    id: 'preset-standard-tech',
-    name: 'Standard Technology Job Positions',
-    description: 'Includes Software Developers, Database Architects, and Security Analysts.',
-    badge: 'Technology',
-    itemCount: 3,
-    previewSnippet: JSON.stringify(
-      [
-        { code: '15-1252.00', name: 'Software Developers', microSkillCount: 24, moduleCount: 24 },
-        { code: '15-1243.00', name: 'Database Architects', microSkillCount: 18, moduleCount: 18 },
-        { code: '15-1212.00', name: 'Information Security Analysts', microSkillCount: 12, moduleCount: 12 },
-      ],
-      null,
-      2
-    ),
-    payload: [
-      {
-        id: `occ-imp-${Date.now()}-1`,
-        code: '15-1252.00',
-        name: 'Software Developers',
-        jobZone: 4,
-        description: 'Scalable backend systems, clean hexagonal microservices, and high-concurrency event loops.',
-        status: 'active' as const,
-        assignedExperts: [],
-        microSkillCount: 24,
-        moduleCount: 24,
-        interests: { realistic: 0.435, investigative: 0.842, artistic: 0.228, social: 0.135, enterprising: 0.145, conventional: 0.77 },
-        createdAt: new Date().toISOString().split('T')[0],
-      },
-      {
-        id: `occ-imp-${Date.now()}-2`,
-        code: '15-1243.00',
-        name: 'Database Architects',
-        jobZone: 4,
-        description: 'Design enterprise data models, knowledge graphs, and multidimensional analytics.',
-        status: 'active' as const,
-        assignedExperts: [],
-        microSkillCount: 18,
-        moduleCount: 18,
-        interests: { realistic: 0.272, investigative: 0.772, artistic: 0.193, social: 0.152, enterprising: 0.28, conventional: 0.853 },
-        createdAt: new Date().toISOString().split('T')[0],
-      },
-      {
-        id: `occ-imp-${Date.now()}-3`,
-        code: '15-1212.00',
-        name: 'Information Security Analysts',
-        jobZone: 4,
-        description: 'Zero-trust architecture, cryptographic identity models, and enterprise AI compliance frameworks.',
-        status: 'active' as const,
-        assignedExperts: [],
-        microSkillCount: 12,
-        moduleCount: 12,
-        interests: { realistic: 0.427, investigative: 0.733, artistic: 0.057, social: 0.185, enterprising: 0.308, conventional: 0.847 },
-        createdAt: new Date().toISOString().split('T')[0],
-      },
-    ],
-  },
-]
+const JOB_POSITION_PRESETS: ImportPreset[] = []
 
 const PAGE_SIZE = 8
 const JOB_POSITIONS_STORAGE_PREFIX = 'adaptlearn_jobPositions_v2_'
@@ -315,13 +122,204 @@ export function JobPositionsManagementPage() {
   const activeCompany = getActiveCompany()
   const orgId = resolveWorkspaceOrgId(session?.identity?.organizationId || activeCompany?.id)
 
-  const isTechnova = orgId === 'e0000000-0000-0000-0000-000000000001' || orgId === 'comp-technova' || orgId === 'default-org'
+  const isAdministrator = Boolean(
+    session?.identity?.roles?.includes('ORGANIZATION_ADMINISTRATOR') ||
+    session?.identity?.roles?.includes('PLATFORM_ADMINISTRATOR')
+  )
+  const isLdManager = !isAdministrator && Boolean(
+    session?.identity?.roles?.includes('LD_MANAGER') ||
+    (typeof window !== 'undefined' && (window.location.pathname.includes('/manager/') || window.location.pathname.includes('/ld-manager/')))
+  )
 
-  const [jobPositions, setJobPositions] = React.useState<JobPositionRecord[]>(() => {
-    const stored = getStoredJobPositions(orgId)
-    if (stored) return stored
-    return isTechnova ? INITIAL_JOB_POSITIONS : []
+  const [managerDepartment, setManagerDepartment] = React.useState<{
+    id: string
+    code?: string
+    name: string
+    jobPositionCodes: string[]
+  } | null>(() => {
+    try {
+      const localDepts = loadDepartments(orgId)
+      const activeEmail = session?.identity?.email
+      if (activeEmail) {
+        const assignmentRaw =
+          typeof window !== 'undefined'
+            ? localStorage.getItem(`alg_employee_assignment_${activeEmail.toLowerCase().trim()}`)
+            : null
+        if (assignmentRaw) {
+          const assignment = JSON.parse(assignmentRaw)
+          const matched = localDepts.find(
+            (d) =>
+              (assignment.departmentId &&
+                (d.id === assignment.departmentId || d.code === assignment.departmentId)) ||
+              (assignment.departmentName &&
+                d.name?.trim().toLowerCase() === assignment.departmentName.trim().toLowerCase())
+          )
+          if (matched) {
+            return {
+              id: matched.id,
+              code: matched.code,
+              name: matched.name,
+              jobPositionCodes: matched.linkedJobPositions || [],
+            }
+          }
+        }
+        const matchedHead = localDepts.find(
+          (d) => d.headEmail?.toLowerCase() === activeEmail.toLowerCase()
+        )
+        if (matchedHead) {
+          return {
+            id: matchedHead.id,
+            code: matchedHead.code,
+            name: matchedHead.name,
+            jobPositionCodes: matchedHead.linkedJobPositions || [],
+          }
+        }
+      }
+    } catch {}
+    return null
   })
+
+  React.useEffect(() => {
+    let isMounted = true
+    const loadManagerDept = async () => {
+      try {
+        const [members, depts, refs] = await Promise.all([
+          getMembers(orgId).catch(() => []),
+          fetchDepartments(orgId).catch(() => []),
+          getReferences(orgId).catch(() => []),
+        ])
+        const currentMember = (members || []).find(
+          (m) =>
+            (session?.identity?.accountId && m.accountId === session?.identity?.accountId) ||
+            (session?.identity?.email && m.email?.toLowerCase() === session?.identity?.email?.toLowerCase())
+        )
+        const localDepts = loadDepartments(orgId)
+
+        // Merge departments from Neo4j, Postgres references, and localStorage
+        const deptMap = new Map<string, any>()
+        for (const ld of localDepts) {
+          const key = (ld.name || ld.code || ld.id).toLowerCase().trim()
+          deptMap.set(key, { ...ld, jobPositionCodes: ld.linkedJobPositions || [] })
+        }
+        for (const ref of refs || []) {
+          if (ref.departmentId || ref.departmentName) {
+            const key = (ref.departmentName || ref.departmentId).toLowerCase().trim()
+            if (!deptMap.has(key)) {
+              deptMap.set(key, {
+                id: ref.departmentId,
+                code: ref.departmentName,
+                name: ref.departmentName,
+                jobPositionCodes: [],
+                linkedJobPositions: [],
+              })
+            }
+          }
+        }
+        for (const d of depts || []) {
+          const key = (d.name || d.code || d.id).toLowerCase().trim()
+          const existing = deptMap.get(key)
+          const serverCodes = d.jobPositionCodes || (d as any).linkedJobPositions || []
+          deptMap.set(key, {
+            ...existing,
+            ...d,
+            jobPositionCodes: serverCodes,
+            linkedJobPositions: serverCodes,
+          })
+        }
+        const effectiveDepts = Array.from(deptMap.values())
+
+        let matched: any = null
+
+        let localAssignmentObj: any = null
+        if (session?.identity?.email) {
+          try {
+            const raw = localStorage.getItem(`alg_employee_assignment_${session.identity.email.toLowerCase().trim()}`)
+            if (raw) localAssignmentObj = JSON.parse(raw)
+          } catch {}
+        }
+
+        const targetDeptId = localAssignmentObj?.departmentId || currentMember?.departmentId
+        const targetDeptName = localAssignmentObj?.departmentName || currentMember?.departmentName
+
+        if (targetDeptId || targetDeptName) {
+          matched = effectiveDepts.find((d) => {
+            if (targetDeptId) {
+              if (d.id === targetDeptId || d.code === targetDeptId) return true
+              if ((d as any).uuid === targetDeptId || (d as any).uuidCode === targetDeptId) return true
+            }
+            if (targetDeptName && d.name) {
+              if (d.name.trim().toLowerCase() === targetDeptName.trim().toLowerCase()) return true
+            }
+            return false
+          })
+
+          if (!matched && targetDeptName) {
+            matched = {
+              id: targetDeptId || `dept-${targetDeptName.toLowerCase().replace(/\s+/g, '-')}`,
+              code: targetDeptName || 'DPT',
+              name: targetDeptName,
+              jobPositionCodes: [],
+              linkedJobPositions: [],
+            }
+            if (!localAssignmentObj) {
+              createDepartmentApi(orgId, {
+                id: matched.id,
+                code: matched.code,
+                name: matched.name,
+                headEmail: session?.identity?.email || '',
+                headOfDepartment: session?.identity?.fullName || session?.identity?.email || '',
+                status: 'ACTIVE',
+              }).catch(() => {})
+            }
+          }
+        }
+
+        // Secondary fallback: Match headEmail ONLY if user has no assigned department anywhere
+        if (!matched && session?.identity?.email) {
+          matched = effectiveDepts.find(
+            (d) => (d as any).headEmail?.toLowerCase() === session?.identity?.email?.toLowerCase()
+          )
+        }
+
+        if (matched && isMounted) {
+          const serverCodes = (matched as any).jobPositionCodes ?? (matched as any).linkedJobPositions
+          let effectiveCodes: string[] = []
+          if (Array.isArray(serverCodes) && (matched as any).createdAt !== undefined) {
+            effectiveCodes = serverCodes
+          } else {
+            const localDeptMatch = localDepts.find(
+              (ld) =>
+                ld.id === matched.id ||
+                ld.code === matched.code ||
+                ld.name?.toLowerCase() === matched.name?.toLowerCase()
+            )
+            effectiveCodes = (serverCodes && serverCodes.length > 0) ? serverCodes : (localDeptMatch?.linkedJobPositions || [])
+          }
+          setManagerDepartment({
+            id: matched.id,
+            code: matched.code,
+            name: matched.name,
+            jobPositionCodes: effectiveCodes,
+          })
+        } else if (!matched && isMounted) {
+          setManagerDepartment(null)
+        }
+      } catch {
+        // Leave current or null
+      }
+    }
+    loadManagerDept()
+    window.addEventListener('departments_updated', loadManagerDept)
+    window.addEventListener('adaptlearn_job_positions_updated', loadManagerDept)
+    return () => {
+      isMounted = false
+      window.removeEventListener('departments_updated', loadManagerDept)
+      window.removeEventListener('adaptlearn_job_positions_updated', loadManagerDept)
+    }
+  }, [orgId, session?.identity?.accountId, session?.identity?.email, isLdManager])
+
+  const [jobPositions, setJobPositions] = React.useState<JobPositionRecord[]>([])
+  const [isLoading, setIsLoading] = React.useState(true)
   const [searchQuery, setSearchQuery] = React.useState('')
   const [statusFilter, setStatusFilter] = React.useState<'ALL' | 'active' | 'inactive'>('ALL')
   const [currentPage, setCurrentPage] = React.useState(1)
@@ -331,8 +329,15 @@ export function JobPositionsManagementPage() {
     (updater: JobPositionRecord[] | ((prev: JobPositionRecord[]) => JobPositionRecord[])) => {
       setJobPositions((prev) => {
         const next = typeof updater === 'function' ? updater(prev) : updater
-        setStoredJobPositions(orgId, next)
-        return next
+        const seen = new Set<string>()
+        const deduplicated = next.filter((item) => {
+          const key = (item.code || item.id || '').toUpperCase().trim()
+          if (!key || seen.has(key)) return false
+          seen.add(key)
+          return true
+        })
+        setStoredJobPositions(orgId, deduplicated)
+        return deduplicated
       })
     },
     [orgId]
@@ -341,79 +346,79 @@ export function JobPositionsManagementPage() {
   // Live database fetching from Neo4j merged with local state
   const fetchLiveJobPositions = React.useCallback(async () => {
     try {
-      const data = await fetchJobPositions(orgId)
+      const [data, members] = await Promise.all([
+        fetchJobPositions(orgId).catch(() => []),
+        getMembers(orgId).catch(() => []),
+      ])
+
       if (Array.isArray(data)) {
         if (data.length === 0) {
-          const currentStored = getStoredJobPositions(orgId)
-          if (currentStored && currentStored.length > 0) {
-            setJobPositions(currentStored)
-          } else {
-            setJobPositions(isTechnova ? INITIAL_JOB_POSITIONS : [])
-          }
+          const currentStored = getStoredJobPositions(orgId) || []
+          setJobPositions(currentStored)
           return
         }
 
-        const currentStored = getStoredJobPositions(orgId) || (isTechnova ? INITIAL_JOB_POSITIONS : [])
+        const currentStored = getStoredJobPositions(orgId) || []
         const storedByCode = new Map(currentStored.map((o) => [o.code, o]))
 
-          const mapped: JobPositionRecord[] = data.map((item: {
-            id?: string
-            code?: string
-            name?: string
-            title?: string
-            jobZone?: number
-            description?: string
-            status?: string
-            assignedExperts?: Array<{ id: string; name?: string; email?: string; title?: string }>
-            microSkillCount?: number
-            moduleCount?: number
-            roles?: Array<{ skillCount?: number }>
-            interests?: RiasecProfile
-            createdAt?: string
-          }) => {
-            const code = item.code || item.id || ''
-            const localMatch = storedByCode.get(code)
-            const initialMatch = isTechnova ? INITIAL_JOB_POSITIONS.find((o) => o.code === code) : undefined
+        // Dynamic expert lookup from live organization members
+        const expertsByPositionCode = new Map<string, AssignedExpert[]>()
+        for (const member of members || []) {
+          const isExpert = (member.roles || []).some((r: string) =>
+            r.toUpperCase().includes('EXPERT')
+          )
+          const posRef = member.jobPositionReferenceId || member.jobPositionName
+          if (posRef) {
+            const list = expertsByPositionCode.get(posRef) || []
+            list.push({
+              id: member.membershipId || member.accountId || member.email,
+              name: member.fullName || member.email,
+              email: member.email,
+              title: isExpert ? 'Subject Matter Expert' : 'Domain Specialist',
+            })
+            expertsByPositionCode.set(posRef, list)
+          }
+        }
 
-            // Preserve assigned experts: local user edits > initial assignments > backend
-            const effectiveExperts =
-              localMatch && localMatch.assignedExperts && localMatch.assignedExperts.length > 0
-                ? localMatch.assignedExperts
-                : initialMatch && initialMatch.assignedExperts && initialMatch.assignedExperts.length > 0
-                ? initialMatch.assignedExperts
-                : (item.assignedExperts || []).map((e) => ({
-                    id: e.id,
-                    name: e.name || e.id,
-                    email: e.email || `${e.id}@technova.internal`,
-                    title: e.title || 'Domain Specialist',
-                  }))
+        const mapped: JobPositionRecord[] = data.map((item: any) => {
+          const code = item.code || item.id || ''
+          const localMatch = storedByCode.get(code)
+          const dynamicExperts =
+            expertsByPositionCode.get(code) ||
+            (item.name ? expertsByPositionCode.get(item.name) : []) ||
+            []
 
-            return {
-              id: item.id || item.code || '',
-              code,
-              name: item.name || item.title || '',
-              jobZone: item.jobZone || 4,
-              description: item.description || localMatch?.description || initialMatch?.description || '',
-              status: localMatch?.status || (String(item.status || 'ACTIVE').toLowerCase() === 'inactive' ? 'inactive' : 'active'),
-              assignedExperts: effectiveExperts,
-              microSkillCount: item.microSkillCount || (item.roles ? item.roles.reduce((acc: number, r) => acc + (r.skillCount || 0), 0) : 0),
-              moduleCount: item.moduleCount || (item.roles ? item.roles.length * 3 : 0),
-              interests: item.interests || localMatch?.interests || initialMatch?.interests || {
-                realistic: 0.4,
-                investigative: 0.8,
-                artistic: 0.2,
-                social: 0.2,
-                enterprising: 0.3,
-                conventional: 0.7,
-              },
-              createdAt: item.createdAt || localMatch?.createdAt || new Date().toISOString().split('T')[0],
-            }
-          })
+          const effectiveExperts =
+            localMatch && localMatch.assignedExperts && localMatch.assignedExperts.length > 0
+              ? localMatch.assignedExperts
+              : dynamicExperts
 
-          // Also keep any custom jobPositions created by the user that are not in the backend
-          const backendCodes = new Set(mapped.map((m) => m.code))
-          const customCreated = currentStored.filter((s) => !backendCodes.has(s.code))
-          const merged = [...customCreated, ...mapped]
+          return {
+            id: item.id || item.code || '',
+            code,
+            name: item.name || item.title || '',
+            jobZone: item.jobZone || 4,
+            description: item.description || localMatch?.description || '',
+            status: localMatch?.status || (String(item.status || 'ACTIVE').toLowerCase() === 'inactive' ? 'inactive' : 'active'),
+            assignedExperts: effectiveExperts,
+            microSkillCount: item.microSkillCount || (item.roles ? item.roles.reduce((acc: number, r: any) => acc + (r.skillCount || 0), 0) : 0),
+            moduleCount: item.roleCount || item.moduleCount || (item.roles ? item.roles.length * 3 : 0),
+            interests: item.interests || localMatch?.interests || {
+              realistic: item.interestRealistic ?? 0.4,
+              investigative: item.interestInvestigative ?? 0.8,
+              artistic: item.interestArtistic ?? 0.2,
+              social: item.interestSocial ?? 0.2,
+              enterprising: item.interestEnterprising ?? 0.3,
+              conventional: item.interestConventional ?? 0.7,
+            },
+            createdAt: item.createdAt || localMatch?.createdAt || new Date().toISOString().split('T')[0],
+          }
+        })
+
+        // Also keep any custom jobPositions created by the user that are not in the backend
+        const backendCodes = new Set(mapped.map((m) => m.code))
+        const customCreated = currentStored.filter((s) => !backendCodes.has(s.code))
+        const merged = [...customCreated, ...mapped]
 
         setJobPositions(merged)
         setStoredJobPositions(orgId, merged)
@@ -421,8 +426,10 @@ export function JobPositionsManagementPage() {
       }
     } catch (e) {
       console.warn('Failed to fetch live jobPositions:', e)
+    } finally {
+      setIsLoading(false)
     }
-  }, [orgId, isTechnova])
+  }, [orgId])
 
   React.useEffect(() => {
     fetchLiveJobPositions()
@@ -464,17 +471,32 @@ export function JobPositionsManagementPage() {
   // Deactivate Confirmation Modal
   const [jobPositionToDeactivate, setJobPositionToDeactivate] = React.useState<JobPositionRecord | null>(null)
 
-  // Assign Expert Modal State
-  const [isAssignModalOpen, setIsAssignModalOpen] = React.useState(false)
-  const [selectedJobPositionForAssign, setSelectedJobPositionForAssign] = React.useState<JobPositionRecord | null>(null)
-  const [newlyAssignedIds, setNewlyAssignedIds] = React.useState<Set<string>>(new Set())
-  const [assignedFilter, setAssignedFilter] = React.useState<'ALL' | 'NEW'>('ALL')
-  const [selectedAvailableIds, setSelectedAvailableIds] = React.useState<Set<string>>(new Set())
-  const [availableExpertSearch, setAvailableExpertSearch] = React.useState('')
+  // Department-scoped list for L&D Managers; full catalog for administrators or unassigned L&D managers
+  const scopedJobPositions = React.useMemo(() => {
+    if (!isLdManager) {
+      return jobPositions
+    }
+    if (!managerDepartment) {
+      return []
+    }
+    const allowedCodes = new Set(
+      (managerDepartment.jobPositionCodes || []).map((c) => c.toLowerCase().trim())
+    )
+    if (allowedCodes.size === 0) {
+      return []
+    }
+    return jobPositions.filter((o) => {
+      const code = (o.code || '').toLowerCase().trim()
+      const id = (o.id || '').toLowerCase().trim()
+      const baseCode = code.replace(/\.00$/, '')
+      const allowedBaseMatches = Array.from(allowedCodes).some((c) => c.replace(/\.00$/, '') === baseCode)
+      return allowedCodes.has(code) || allowedCodes.has(id) || allowedBaseMatches
+    })
+  }, [jobPositions, isLdManager, managerDepartment])
 
   // Filtered List
   const filteredJobPositions = React.useMemo(() => {
-    return jobPositions
+    return scopedJobPositions
       .filter((o) => {
         const matchesSearch =
           o.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -489,7 +511,7 @@ export function JobPositionsManagementPage() {
         if (timeA !== timeB) return timeB - timeA
         return (b.id || '').localeCompare(a.id || '')
       })
-  }, [jobPositions, searchQuery, statusFilter])
+  }, [scopedJobPositions, searchQuery, statusFilter])
 
   // Pagination
   const totalPages = Math.max(1, Math.ceil(filteredJobPositions.length / PAGE_SIZE))
@@ -506,7 +528,19 @@ export function JobPositionsManagementPage() {
   const handleOpenCreate = () => {
     setEditingJobPosition(null)
     setOccName('')
-    setOccCode(`15-${(1250 + jobPositions.length + 1).toString().padStart(4, '0')}.00`)
+
+    // Generate unique code that doesn't collide with ANY existing job position
+    const existingCodes = new Set(
+      jobPositions.map((p) => p.code.toLowerCase().trim())
+    )
+    let nextNum = 1251
+    while (
+      existingCodes.has(`15-${nextNum.toString().padStart(4, '0')}.00`) ||
+      existingCodes.has(`15-${nextNum}.00`)
+    ) {
+      nextNum++
+    }
+    setOccCode(`15-${nextNum.toString().padStart(4, '0')}.00`)
     setOccJobZone(4)
     setOccDescription('')
     setOccInterests({
@@ -544,12 +578,46 @@ export function JobPositionsManagementPage() {
     if (!occName.trim() || !occCode.trim()) return
 
     const orgId = resolveWorkspaceOrgId(session?.identity?.organizationId || activeCompany?.id)
+    const codeUpper = occCode.trim().toUpperCase()
 
-    if (editingJobPosition) {
+    // Guard against duplicate codes
+    if (!editingJobPosition) {
+      const duplicate = jobPositions.find(
+        (p) => p.code.toLowerCase().trim() === codeUpper.toLowerCase().trim()
+      )
+      if (duplicate) {
+        toast({
+          title: 'Duplicate Job Position Code',
+          description: `A job position with code ${codeUpper} already exists ("${duplicate.name}"). Each job position must have a unique code.`,
+          variant: 'destructive',
+        })
+        return
+      }
+    } else if (editingJobPosition.code.toUpperCase() !== codeUpper) {
+      const duplicate = jobPositions.find(
+        (p) =>
+          p.id !== editingJobPosition.id &&
+          p.code.toLowerCase().trim() === codeUpper.toLowerCase().trim()
+      )
+      if (duplicate) {
+        toast({
+          title: 'Duplicate Job Position Code',
+          description: `A job position with code ${codeUpper} already exists ("${duplicate.name}"). Please use a different code.`,
+          variant: 'destructive',
+        })
+        return
+      }
+    }
+    // Close modal immediately and capture editing state
+    setIsJobPositionModalOpen(false)
+    const currentEditing = editingJobPosition
+    setEditingJobPosition(null)
+
+    if (currentEditing) {
       try {
-        await updateJobPosition(orgId, editingJobPosition.id, {
+        await updateJobPosition(orgId, currentEditing.id, {
           name: occName.trim(),
-          code: occCode.trim().toUpperCase(),
+          code: codeUpper,
           jobZone: occJobZone,
           interestRealistic: occInterests.realistic,
           interestInvestigative: occInterests.investigative,
@@ -560,11 +628,11 @@ export function JobPositionsManagementPage() {
         })
         setAndSaveJobPositions((prev) =>
           prev.map((o) =>
-            o.id === editingJobPosition.id
+            o.id === currentEditing.id
               ? {
                   ...o,
                   name: occName.trim(),
-                  code: occCode.trim().toUpperCase(),
+                  code: codeUpper,
                   jobZone: occJobZone,
                   description: occDescription.trim(),
                   interests: occInterests,
@@ -586,7 +654,6 @@ export function JobPositionsManagementPage() {
         return
       }
     } else {
-      const codeUpper = occCode.trim().toUpperCase()
       const newOcc: JobPositionRecord = {
         id: codeUpper,
         code: codeUpper,
@@ -615,9 +682,70 @@ export function JobPositionsManagementPage() {
           status: 'ACTIVE',
         })
         setAndSaveJobPositions((prev) => [newOcc, ...prev])
+
+        // Automatically assign created job position to the manager's department
+        if (managerDepartment) {
+          const nextCodes = Array.from(
+            new Set([
+              ...(managerDepartment.jobPositionCodes || []),
+              newOcc.code,
+              newOcc.code.toLowerCase(),
+              newOcc.code.replace(/\.00$/, ''),
+              newOcc.code.replace(/\.00$/, '').toLowerCase(),
+            ])
+          )
+          setManagerDepartment((prev) => (prev ? { ...prev, jobPositionCodes: nextCodes } : prev))
+
+          try {
+            const depts = loadDepartments(orgId)
+            const targetDept = depts.find(
+              (d) =>
+                d.id === managerDepartment.id ||
+                d.code === managerDepartment.id ||
+                (managerDepartment as any).code === d.code ||
+                d.name.toLowerCase() === managerDepartment.name.toLowerCase()
+            )
+            if (targetDept) {
+              const currentLinked = targetDept.linkedJobPositions || []
+              if (!currentLinked.includes(newOcc.code)) {
+                const nextLinked = [...currentLinked, newOcc.code]
+                updateDepartment(targetDept.id, { linkedJobPositions: nextLinked }, orgId)
+                await linkJobPositionToDepartment(orgId, targetDept.id, newOcc.code).catch(() => {})
+                await linkJobPositionToDepartment(orgId, targetDept.code, newOcc.code).catch(() => {})
+                await updateDepartmentApi(orgId, targetDept.id, {
+                  code: targetDept.code,
+                  name: targetDept.name,
+                  linkedJobPositions: nextLinked,
+                }).catch(() => {})
+                window.dispatchEvent(new Event('departments_updated'))
+              }
+            } else {
+              const createdDeptRecord = {
+                id: managerDepartment.id,
+                code: (managerDepartment as any).code || managerDepartment.name.toUpperCase().slice(0, 8),
+                name: managerDepartment.name,
+                description: '',
+                headOfDepartment: '',
+                headEmail: session?.identity?.email || '',
+                status: 'active' as const,
+                linkedJobPositions: [newOcc.code],
+                organizationId: orgId,
+                createdAt: new Date().toISOString(),
+              }
+              const currentDepts = loadDepartments(orgId)
+              saveDepartments([createdDeptRecord, ...currentDepts], orgId)
+              await linkJobPositionToDepartment(orgId, managerDepartment.id, newOcc.code).catch(() => {})
+              window.dispatchEvent(new Event('departments_updated'))
+            }
+          } catch (e) {
+            console.warn('Failed to update department linked job positions:', e)
+          }
+        }
+        window.dispatchEvent(new Event('adaptlearn_job_positions_updated'))
+
         toast({
           title: 'Job Position Created',
-          description: `Added ${newOcc.name} (${newOcc.code}) to the job position catalog.`,
+          description: `Added ${newOcc.name} (${newOcc.code}) to ${managerDepartment ? managerDepartment.name : 'the catalog'}.`,
           variant: 'success',
         })
       } catch (err: unknown) {
@@ -629,12 +757,159 @@ export function JobPositionsManagementPage() {
         return
       }
     }
-    setIsJobPositionModalOpen(false)
+  }
+
+  // Check whether a job position has any non-unpublished target roles assigned to it
+  const getActiveTargetRolesForJobPosition = React.useCallback(
+    async (occ: JobPositionRecord): Promise<string[]> => {
+      const normalizeOccCode = (c?: string) =>
+        (c || '').trim().toLowerCase().replace(/\.00$/, '')
+      const targetOccCode = normalizeOccCode(occ.code)
+      if (!targetOccCode) return []
+
+      let metaMap: Record<
+        string,
+        {
+          jobPositionCode?: string
+          jobPositionTitle?: string
+          status?: string
+        }
+      > = {}
+      try {
+        const rawMeta = localStorage.getItem('adaptlearn_target_role_meta_' + orgId)
+        if (rawMeta) {
+          metaMap = JSON.parse(rawMeta)
+        }
+      } catch {}
+
+      const currentActiveComp = getActiveCompany()
+      const storeRoles = currentActiveComp?.targetRoles || []
+
+      let backendRoles: Record<string, unknown>[] = []
+      try {
+        const res = await workspaceFetch(`/api/v1/organizations/${orgId}/target-roles`, {
+          headers: {
+            'X-User-Role': 'LD_MANAGER',
+          },
+        })
+        if (res.ok) {
+          const data = await res.json()
+          if (Array.isArray(data)) {
+            backendRoles = data as Record<string, unknown>[]
+          }
+        }
+      } catch {}
+
+      const activeRoleTitles: string[] = []
+      const seenLineageCodes = new Set<string>()
+
+      for (const r of backendRoles) {
+        const rawStatus = String(r.status || '').toLowerCase()
+        if (rawStatus === 'superseded') continue
+
+        const rCode = String(r.code || '').trim().toUpperCase()
+        const rId = String(r.id || '').trim()
+        const rVersion = String(r.version || '1.0').trim()
+        const rTitle = String(r.name || r.title || rCode).trim()
+
+        const meta = metaMap[rCode] || metaMap[rId]
+        const storeRole = storeRoles.find(
+          (tr) =>
+            tr.id === rId ||
+            (tr.code?.toUpperCase() === rCode && String(tr.version || '1.0') === rVersion),
+        )
+
+        const explicitJobPositionCode =
+          typeof r.jobPositionCode === 'string' && r.jobPositionCode
+            ? r.jobPositionCode
+            : meta?.jobPositionCode || storeRole?.jobPositionCode
+
+        const resolvedOcc = resolveJobPositionForRole(
+          {
+            code: rCode,
+            title: rTitle,
+            familyCode: String(r.familyCode || ''),
+            jobPositionCode: explicitJobPositionCode,
+          },
+          orgId,
+        )
+        const effectiveOccCode = normalizeOccCode(explicitJobPositionCode || resolvedOcc.code)
+
+        if (effectiveOccCode === targetOccCode) {
+          seenLineageCodes.add(`${rCode}::${rVersion}`)
+          const isUnpublished = rawStatus === 'unpublished'
+          if (!isUnpublished) {
+            activeRoleTitles.push(`${rTitle} (${rCode})`)
+          }
+        }
+      }
+
+      for (const sr of storeRoles) {
+        const srCode = String(sr.code || '').trim().toUpperCase()
+        const srVersion = String(sr.version || '1.0').trim()
+        if (seenLineageCodes.has(`${srCode}::${srVersion}`)) continue
+        if (
+          backendRoles.some(
+            (br) => String(br.code || '').trim().toUpperCase() === srCode,
+          )
+        ) {
+          continue
+        }
+
+        const meta = metaMap[srCode] || metaMap[sr.id]
+        const explicitJobPositionCode = sr.jobPositionCode || meta?.jobPositionCode
+        const resolvedOcc = resolveJobPositionForRole(
+          {
+            code: srCode,
+            title: sr.title,
+            familyCode: sr.familyCode,
+            jobPositionCode: explicitJobPositionCode,
+          },
+          orgId,
+        )
+        const effectiveOccCode = normalizeOccCode(explicitJobPositionCode || resolvedOcc.code)
+
+        if (effectiveOccCode === targetOccCode) {
+          const isUnpublished =
+            meta?.status === 'unpublished' || sr.status === 'unpublished'
+          if (!isUnpublished) {
+            activeRoleTitles.push(`${sr.title} (${srCode})`)
+          }
+        }
+      }
+
+      return activeRoleTitles
+    },
+    [orgId],
+  )
+
+  const handleRequestDeactivate = async (occ: JobPositionRecord) => {
+    const activeRoles = await getActiveTargetRolesForJobPosition(occ)
+    if (activeRoles.length > 0) {
+      toast({
+        title: 'Cannot Deactivate Job Position',
+        description: `${occ.name} (${occ.code}) still has active target role(s) assigned to it. Please unpublish all associated target roles before deactivating.`,
+        variant: 'destructive',
+      })
+      return
+    }
+    setJobPositionToDeactivate(occ)
   }
 
   // Toggle Job Position Active Status
   const handleToggleStatus = async (occ: JobPositionRecord) => {
     const nextStatus = occ.status === 'active' ? 'inactive' : 'active'
+    if (nextStatus === 'inactive') {
+      const activeRoles = await getActiveTargetRolesForJobPosition(occ)
+      if (activeRoles.length > 0) {
+        toast({
+          title: 'Cannot Deactivate Job Position',
+          description: `${occ.name} (${occ.code}) still has active target role(s) assigned to it. Please unpublish all associated target roles before deactivating.`,
+          variant: 'destructive',
+        })
+        return
+      }
+    }
     const orgId = resolveWorkspaceOrgId(session?.identity?.organizationId || activeCompany?.id)
     try {
       await updateJobPosition(orgId, occ.id, {
@@ -657,189 +932,6 @@ export function JobPositionsManagementPage() {
         variant: 'destructive',
       })
     }
-  }
-
-  // Open Assign Expert Modal
-  const handleOpenAssignExpert = (occ: JobPositionRecord) => {
-    setSelectedJobPositionForAssign(occ)
-    setNewlyAssignedIds(new Set())
-    setSelectedAvailableIds(new Set())
-    setAvailableExpertSearch('')
-    setAssignedFilter('ALL')
-    setIsAssignModalOpen(true)
-  }
-
-  // Active jobPosition instance in assign modal
-  const activeJobPositionInModal = React.useMemo(() => {
-    if (!selectedJobPositionForAssign) return null
-    return jobPositions.find((o) => o.id === selectedJobPositionForAssign.id) || selectedJobPositionForAssign
-  }, [jobPositions, selectedJobPositionForAssign])
-
-  const assignedExpertsInModal = activeJobPositionInModal?.assignedExperts || []
-
-  // Filter assigned experts in modal
-  const displayedAssignedExperts = React.useMemo(() => {
-    if (assignedFilter === 'NEW') {
-      return assignedExpertsInModal.filter((e) => newlyAssignedIds.has(e.id))
-    }
-    return assignedExpertsInModal
-  }, [assignedExpertsInModal, assignedFilter, newlyAssignedIds])
-
-  // Available experts for this organization (synced with real workspace members)
-  const [orgExperts, setOrgExperts] = React.useState<EligibleExpert[]>(() => getOrganizationExperts(orgId))
-
-  React.useEffect(() => {
-    let isMounted = true
-    const loadOrgMembers = async () => {
-      try {
-        const members = await getMembers(orgId).catch(() => [])
-        const expertMembers = (members || []).filter(
-          (m) => m.active && (m.roles.includes("DOMAIN_EXPERT") || m.roles.includes("EXPERT"))
-        )
-        if (expertMembers.length > 0) {
-          const mapped: EligibleExpert[] = expertMembers.map((m) => ({
-            id: m.accountId,
-            name: m.fullName || m.email,
-            title: m.jobPositionName || m.departmentName || "Domain Expert",
-            email: m.email,
-          }))
-          if (typeof localStorage !== "undefined") {
-            localStorage.setItem("adaptlearn_org_experts_" + orgId, JSON.stringify(mapped))
-          }
-          if (isMounted) {
-            setOrgExperts(mapped)
-          }
-        } else {
-          const fallback = getOrganizationExperts(orgId)
-          if (isMounted) setOrgExperts(fallback)
-        }
-      } catch {
-        const fallback = getOrganizationExperts(orgId)
-        if (isMounted) setOrgExperts(fallback)
-      }
-    }
-    loadOrgMembers()
-    return () => { isMounted = false }
-  }, [orgId])
-
-  // Available experts not yet assigned to this job position
-  const availableExperts = React.useMemo(() => {
-    const assignedIds = new Set(assignedExpertsInModal.map((ae) => normalizeExpertId(ae.id)))
-    return orgExperts.filter((exp) => !assignedIds.has(normalizeExpertId(exp.id))).filter((exp) => {
-      if (!availableExpertSearch.trim()) return true
-      const q = availableExpertSearch.toLowerCase()
-      return exp.name.toLowerCase().includes(q) || exp.title.toLowerCase().includes(q)
-    })
-  }, [orgExperts, assignedExpertsInModal, availableExpertSearch])
-
-  // Toggle select all available
-  const handleToggleSelectAllAvailable = () => {
-    if (availableExperts.length === 0) return
-    const allSelected = availableExperts.every((exp) => selectedAvailableIds.has(exp.id))
-    if (allSelected) {
-      setSelectedAvailableIds(new Set())
-    } else {
-      setSelectedAvailableIds(new Set(availableExperts.map((exp) => exp.id)))
-    }
-  }
-
-  // Toggle individual available expert selection
-  const handleToggleSelectAvailable = (id: string) => {
-    setSelectedAvailableIds((prev) => {
-      const next = new Set(prev)
-      if (next.has(id)) {
-        next.delete(id)
-      } else {
-        next.add(id)
-      }
-      return next
-    })
-  }
-
-  // Add single expert
-  const handleAddSingleExpert = (expert: EligibleExpert) => {
-    if (!selectedJobPositionForAssign) return
-    setAndSaveJobPositions((prev) =>
-      prev.map((o) => {
-        if (o.id !== selectedJobPositionForAssign.id) return o
-        if (o.assignedExperts.some((ae) => normalizeExpertId(ae.id) === normalizeExpertId(expert.id))) return o
-        return {
-          ...o,
-          assignedExperts: [
-            ...o.assignedExperts,
-            {
-              id: expert.id,
-              name: expert.name,
-              email: expert.email || `${expert.id}@adaptlearn.internal`,
-              title: expert.title,
-            },
-          ],
-        }
-      })
-    )
-    setNewlyAssignedIds((prev) => new Set([...prev, expert.id]))
-    setSelectedAvailableIds((prev) => {
-      const next = new Set(prev)
-      next.delete(expert.id)
-      return next
-    })
-    toast({
-      title: 'Expert Assigned',
-      description: `${expert.name} assigned to ${selectedJobPositionForAssign.name}.`,
-      variant: 'success',
-    })
-  }
-
-  // Add selected experts
-  const handleAddSelectedAvailable = () => {
-    if (!selectedJobPositionForAssign || selectedAvailableIds.size === 0) return
-    const expertsToAdd = availableExperts.filter((exp) => selectedAvailableIds.has(exp.id))
-    const newlyAdded = expertsToAdd.map((exp) => ({
-      id: exp.id,
-      name: exp.name,
-      email: exp.email || `${exp.id}@adaptlearn.internal`,
-      title: exp.title,
-    }))
-
-    setAndSaveJobPositions((prev) =>
-      prev.map((o) => {
-        if (o.id !== selectedJobPositionForAssign.id) return o
-        return {
-          ...o,
-          assignedExperts: [...o.assignedExperts, ...newlyAdded],
-        }
-      })
-    )
-    setNewlyAssignedIds((prev) => new Set([...prev, ...expertsToAdd.map((e) => e.id)]))
-    setSelectedAvailableIds(new Set())
-    toast({
-      title: 'Selected Experts Assigned',
-      description: `Added ${newlyAdded.length} expert(s) to ${selectedJobPositionForAssign.name}.`,
-      variant: 'success',
-    })
-  }
-
-  // Remove Expert from Job Position
-  const handleRemoveExpert = (occId: string, expertId: string, expertName: string) => {
-    setAndSaveJobPositions((prev) =>
-      prev.map((o) => {
-        if (o.id !== occId) return o
-        return {
-          ...o,
-          assignedExperts: o.assignedExperts.filter((ae) => normalizeExpertId(ae.id) !== normalizeExpertId(expertId)),
-        }
-      })
-    )
-    setNewlyAssignedIds((prev) => {
-      const next = new Set(prev)
-      next.delete(expertId)
-      return next
-    })
-    toast({
-      title: 'Expert Removed',
-      description: `Removed ${expertName} from jobPosition.`,
-      variant: 'info',
-    })
   }
 
   // Import handler
@@ -887,6 +979,34 @@ export function JobPositionsManagementPage() {
     }
 
     setAndSaveJobPositions((prev) => [...validJobPositions, ...prev])
+
+    if (managerDepartment && validJobPositions.length > 0) {
+      const importedCodes = validJobPositions.map((p) => p.code)
+      const nextCodes = Array.from(new Set([...(managerDepartment.jobPositionCodes || []), ...importedCodes]))
+      setManagerDepartment((prev) => (prev ? { ...prev, jobPositionCodes: nextCodes } : prev))
+
+      try {
+        const depts = loadDepartments(orgId)
+        const targetDept = depts.find(
+          (d) =>
+            d.id === managerDepartment.id ||
+            d.code === managerDepartment.id ||
+            d.name.toLowerCase() === managerDepartment.name.toLowerCase()
+        )
+        if (targetDept) {
+          const currentLinked = targetDept.linkedJobPositions || []
+          const nextLinked = Array.from(new Set([...currentLinked, ...importedCodes]))
+          updateDepartment(targetDept.id, { linkedJobPositions: nextLinked }, orgId)
+          for (const code of importedCodes) {
+            linkJobPositionToDepartment(orgId, targetDept.id, code).catch(() => {})
+          }
+          window.dispatchEvent(new Event('departments_updated'))
+        }
+      } catch (e) {
+        console.warn('Failed to link imported positions to manager department:', e)
+      }
+    }
+
     toast({
       title: 'JobPositions Imported',
       description: `Successfully imported ${validJobPositions.length} jobPosition(s) into catalog.`,
@@ -895,16 +1015,11 @@ export function JobPositionsManagementPage() {
     setIsImportModalOpen(false)
   }
 
-  // Aggregate Metrics
-  const totalJobPositions = jobPositions.length
-  const totalAssignedExperts = new Set(jobPositions.flatMap((o) => o.assignedExperts.map((ae) => ae.id))).size
-  const totalMicroSkills = jobPositions.reduce((acc, o) => acc + o.microSkillCount, 0)
-  const unassignedCount = jobPositions.filter((o) => o.assignedExperts.length === 0).length
-
-  const activeCount = jobPositions.filter((o) => o.status === 'active').length
-  const inactiveCount = jobPositions.filter((o) => o.status === 'inactive').length
-
-  const newlyAssignedCount = assignedExpertsInModal.filter((e) => newlyAssignedIds.has(e.id)).length
+  // Aggregate Metrics (scoped to manager's department if LD_MANAGER)
+  const totalJobPositions = scopedJobPositions.length
+  const totalMicroSkills = scopedJobPositions.reduce((acc, o) => acc + o.microSkillCount, 0)
+  const activeCount = scopedJobPositions.filter((o) => o.status === 'active').length
+  const inactiveCount = scopedJobPositions.filter((o) => o.status === 'inactive').length
 
   return (
     <WorkspaceLayout>
@@ -941,36 +1056,36 @@ export function JobPositionsManagementPage() {
             variant="gradient"
             icon={<FolderTree className="h-4 w-4 text-primary" />}
             title="Job Positions"
-            value={`${totalJobPositions} Job Positions`}
+            value={isLoading ? '—' : `${totalJobPositions} Job Positions`}
             valueClassName="text-primary"
-            description="Active industry classifications"
+            description="Industry classifications"
           />
 
           <StatCard
             variant="gradient"
             icon={<UserCheck className="h-4 w-4 text-success" />}
-            title="Active SMEs Assigned"
-            value={`${totalAssignedExperts} Experts`}
+            title="Active Positions"
+            value={isLoading ? '—' : `${activeCount} Active`}
             valueClassName="text-success"
-            description="Guiding domain competencies"
+            description="Governed in organization"
           />
 
           <StatCard
             variant="gradient"
             icon={<BookOpen className="h-4 w-4 text-warning" />}
             title="Micro-Skills Covered"
-            value={`${totalMicroSkills} Skills`}
+            value={isLoading ? '—' : `${totalMicroSkills} Skills`}
             valueClassName="text-warning"
             description="Across all job positions"
           />
 
           <StatCard
             variant="gradient"
-            icon={<AlertTriangle className="h-4 w-4 text-destructive" />}
-            title="Unassigned Job Positions"
-            value={`${unassignedCount} Job Positions`}
-            valueClassName="text-destructive"
-            description="Awaiting expert assignment"
+            icon={<AlertTriangle className="h-4 w-4 text-muted-foreground" />}
+            title="Inactive Positions"
+            value={isLoading ? '—' : `${inactiveCount} Inactive`}
+            valueClassName="text-muted-foreground"
+            description="Suspended classifications"
           />
         </div>
 
@@ -984,7 +1099,9 @@ export function JobPositionsManagementPage() {
                   Job Positions Directory
                 </CardTitle>
                 <CardDescription>
-                  Browse and govern knowledge domains, track SME coverage, and assign domain leads.
+                  {isLdManager && managerDepartment
+                    ? `Browse and govern job position classifications and skill footprints for ${managerDepartment.name}.`
+                    : 'Browse and govern job position classifications, skill footprints, and competency scopes across departments.'}
                 </CardDescription>
               </div>
 
@@ -1019,12 +1136,19 @@ export function JobPositionsManagementPage() {
           </CardHeader>
 
           <CardContent className="p-0">
-            {jobPositions.length === 0 ? (
+            {isLoading ? (
+              <div className="text-center py-16 text-muted-foreground">
+                <div className="inline-block animate-spin rounded-full h-8 w-8 border-2 border-primary border-t-transparent mb-3" />
+                <p className="text-sm font-medium">Loading job positions from database...</p>
+              </div>
+            ) : scopedJobPositions.length === 0 ? (
               <div className="p-12 text-center text-muted-foreground space-y-3">
                 <FolderTree className="h-10 w-10 mx-auto text-muted-foreground/40" />
-                <p className="text-base font-semibold text-foreground">No job positions created yet</p>
+                <p className="text-base font-semibold text-foreground">No job positions found</p>
                 <p className="text-xs text-muted-foreground max-w-sm mx-auto">
-                  Import job positions from the catalog or create custom job positions to start structuring competency requirements.
+                  {isLdManager && managerDepartment
+                    ? `No job positions are currently associated with ${managerDepartment.name}.`
+                    : 'Import job positions from the catalog or create custom job positions to start structuring competency requirements.'}
                 </p>
                 <div className="pt-2">
                   <Button variant="primary" size="sm" onClick={() => setIsImportModalOpen(true)} className="gap-2">
@@ -1048,7 +1172,6 @@ export function JobPositionsManagementPage() {
                       <th className="py-2.5 px-3">JOB POSITION &amp; SCOPE</th>
                       <th className="py-2.5 px-3 text-center">MICRO-SKILLS</th>
                       <th className="py-2.5 px-3 text-center">MODULES</th>
-                      <th className="py-2.5 px-3">ASSIGNED EXPERTS</th>
                       <th className="py-2.5 px-3">STATUS</th>
                       <th className="py-2.5 px-3 text-right">ACTIONS</th>
                     </tr>
@@ -1072,36 +1195,6 @@ export function JobPositionsManagementPage() {
                           <span className="font-semibold text-foreground">{occ.moduleCount}</span> modules
                         </td>
                         <td className="py-3 px-3">
-                          {occ.assignedExperts.length > 0 ? (
-                            <div className="flex items-center gap-1.5 flex-wrap">
-                              <div className="flex items-center gap-1.5">
-                                <div className="h-6 w-6 rounded-full bg-primary/10 text-primary font-bold text-[10px] flex items-center justify-center shrink-0">
-                                  {occ.assignedExperts[0].name.slice(0, 2).toUpperCase()}
-                                </div>
-                                <span className="text-xs font-medium text-foreground">
-                                  {occ.assignedExperts[0].name}
-                                </span>
-                              </div>
-
-                              {occ.assignedExperts.length > 1 && (
-                                <button
-                                  type="button"
-                                  onClick={() => handleOpenAssignExpert(occ)}
-                                  className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-secondary text-primary font-semibold text-[10px] border border-primary/20 cursor-pointer hover:bg-secondary-hover transition-colors"
-                                  title={`+${occ.assignedExperts.length - 1} more: ${occ.assignedExperts
-                                    .slice(1)
-                                    .map((e) => e.name)
-                                    .join(', ')}`}
-                                >
-                                  +{occ.assignedExperts.length - 1}
-                                </button>
-                              )}
-                            </div>
-                          ) : (
-                            <span className="text-[11px] text-muted-foreground italic">Unassigned</span>
-                          )}
-                        </td>
-                        <td className="py-3 px-3">
                           {occ.status === 'active' ? (
                             <Badge variant="success">ACTIVE</Badge>
                           ) : (
@@ -1120,18 +1213,6 @@ export function JobPositionsManagementPage() {
                               aria-label="View Details & RIASEC"
                             >
                               <Eye className="h-4 w-4 text-primary" />
-                            </Button>
-
-                            {/* Assign Experts */}
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="h-8 w-8 p-0"
-                              onClick={() => handleOpenAssignExpert(occ)}
-                              title="Assign Experts"
-                              aria-label="Assign Experts"
-                            >
-                              <UserPlus className="h-4 w-4 text-foreground" />
                             </Button>
 
                             {/* Edit Job Position */}
@@ -1157,7 +1238,7 @@ export function JobPositionsManagementPage() {
                               }`}
                               onClick={() => {
                                 if (occ.status === 'active') {
-                                  setJobPositionToDeactivate(occ)
+                                  handleRequestDeactivate(occ)
                                 } else {
                                   handleToggleStatus(occ)
                                 }
@@ -1331,36 +1412,6 @@ export function JobPositionsManagementPage() {
                   </div>
                 </div>
               </div>
-
-              {/* Assigned Experts List */}
-              <div>
-                <span className="text-[11px] font-bold text-foreground uppercase tracking-wider block mb-1.5">
-                  Assigned Subject Matter Experts ({viewingDetailsJobPosition.assignedExperts.length})
-                </span>
-                {viewingDetailsJobPosition.assignedExperts.length === 0 ? (
-                  <p className="text-xs text-muted-foreground italic">No experts assigned yet.</p>
-                ) : (
-                  <div className="space-y-1.5">
-                    {viewingDetailsJobPosition.assignedExperts.map((exp) => (
-                      <div
-                        key={exp.id}
-                        className="p-2 rounded-lg border border-border bg-background flex items-center justify-between"
-                      >
-                        <div className="flex items-center gap-2">
-                          <div className="h-6 w-6 rounded-full bg-primary/10 text-primary font-bold text-[10px] flex items-center justify-center">
-                            {exp.name.slice(0, 2).toUpperCase()}
-                          </div>
-                          <div>
-                            <div className="font-semibold text-foreground text-xs">{exp.name}</div>
-                            <div className="text-[11px] text-muted-foreground">{exp.title}</div>
-                          </div>
-                        </div>
-                        <span className="font-mono text-[10px] text-muted-foreground">{exp.email}</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
             </div>
 
             <DialogFooter className="shrink-0 pt-3 border-t border-border mt-3 flex items-center justify-between sm:justify-between w-full">
@@ -1378,7 +1429,7 @@ export function JobPositionsManagementPage() {
                   const occ = viewingDetailsJobPosition
                   setViewingDetailsJobPosition(null)
                   if (occ.status === 'active') {
-                    setJobPositionToDeactivate(occ)
+                    handleRequestDeactivate(occ)
                   } else {
                     handleToggleStatus(occ)
                   }
@@ -1436,6 +1487,25 @@ export function JobPositionsManagementPage() {
 
         <form onSubmit={handleSaveJobPosition} className="flex flex-col flex-1 min-h-0 overflow-hidden">
           <div className="flex-1 overflow-y-auto pr-1.5 space-y-3.5 py-1 text-xs min-h-0">
+            {managerDepartment && (
+              <div className="p-2.5 rounded-lg border border-primary/20 bg-secondary/30 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Building2 className="h-4 w-4 text-primary shrink-0" />
+                  <div>
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block">
+                      Assigned Department
+                    </span>
+                    <span className="text-xs font-semibold text-foreground">
+                      {managerDepartment.name}
+                    </span>
+                  </div>
+                </div>
+                <Badge variant="outline" className="text-primary border-primary/30 text-[10px] font-bold">
+                  AUTO-LINKED
+                </Badge>
+              </div>
+            )}
+
             {/* Card 1: Taxonomy & Identification */}
             <div className="p-3.5 rounded-lg border border-border bg-card space-y-3">
               <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block">
@@ -1648,15 +1718,13 @@ export function JobPositionsManagementPage() {
                 <span>{jobPositionToDeactivate.microSkillCount} Skills</span>
                 <span>•</span>
                 <span>{jobPositionToDeactivate.moduleCount} Modules</span>
-                <span>•</span>
-                <span>{jobPositionToDeactivate.assignedExperts.length} Assigned Experts</span>
               </div>
             </div>
 
             <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/25 text-xs flex items-start gap-2.5">
               <AlertTriangle className="h-4 w-4 shrink-0 text-destructive mt-0.5" />
               <div className="text-[11.5px] leading-relaxed text-foreground">
-                <strong className="text-destructive font-semibold">Operational Impact:</strong> Deactivating this job position will suspend new module and pathway associations. Existing Subject Matter Expert assignments and historical learning data will be preserved.
+                <strong className="text-destructive font-semibold">Operational Impact:</strong> Deactivating this job position will suspend new module and pathway associations. Historical learning data will be preserved.
               </div>
             </div>
           </div>
@@ -1682,223 +1750,6 @@ export function JobPositionsManagementPage() {
         </DialogFooter>
       </Dialog>
 
-      {/* ASSIGN EXPERTS MODAL (DUAL TABLE DESIGN WITH SELECTION, ADD ALL, AND NEW BADGE/FILTER) */}
-      <Dialog open={isAssignModalOpen} onOpenChange={setIsAssignModalOpen} className="max-w-3xl">
-        <DialogHeader>
-          <DialogTitle className="text-base font-bold flex items-center gap-2">
-            <UserPlus className="h-5 w-5 text-primary" />
-            {activeJobPositionInModal?.name}
-          </DialogTitle>
-          <DialogDescription className="text-xs text-muted-foreground">
-            Assign and manage domain experts responsible for reviewing skills within this job position.
-          </DialogDescription>
-        </DialogHeader>
-
-        <div className="space-y-6 py-3 max-h-[70vh] overflow-y-auto pr-1">
-          {/* Table 1: Currently Assigned Experts */}
-          <div className="space-y-2.5">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                  Currently Assigned Experts ({assignedExpertsInModal.length})
-                </h3>
-                {newlyAssignedCount > 0 && (
-                  <Badge
-                    variant="outline"
-                    className="text-[10px] font-semibold bg-primary/10 text-primary border-primary/25 hover:bg-primary hover:text-white transition-colors"
-                  >
-                    +{newlyAssignedCount} Added This Session
-                  </Badge>
-                )}
-              </div>
-
-              {/* Filter: All vs New Only */}
-              <div className="flex items-center gap-1.5 bg-muted/40 border border-border rounded-md px-2 py-0.5 text-xs">
-                <span className="text-[11px] text-muted-foreground font-medium">Filter:</span>
-                <select
-                  value={assignedFilter}
-                  onChange={(e) => setAssignedFilter(e.target.value as 'ALL' | 'NEW')}
-                  className="text-xs bg-transparent text-foreground border-0 focus:outline-none cursor-pointer font-medium"
-                >
-                  <option value="ALL">All ({assignedExpertsInModal.length})</option>
-                  <option value="NEW">New ({newlyAssignedCount})</option>
-                </select>
-              </div>
-            </div>
-
-            {displayedAssignedExperts.length === 0 ? (
-              <div className="p-4 text-center text-xs text-muted-foreground border border-dashed border-border rounded-lg bg-muted/10">
-                {assignedFilter === 'NEW'
-                  ? 'No newly added experts in this session. Add experts from the table below.'
-                  : 'No experts currently assigned to this job position. Use the table below to add experts.'}
-              </div>
-            ) : (
-              <div className="border border-border rounded-lg overflow-hidden bg-card">
-                <table className="w-full text-left text-xs border-collapse">
-                  <thead>
-                    <tr className="border-b border-border bg-muted/40 text-muted-foreground uppercase text-[11px] font-semibold">
-                      <th className="py-2 px-3">Expert</th>
-                      <th className="py-2 px-3">Professional Title</th>
-                      <th className="py-2 px-3 text-right">Remove</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-border">
-                    {displayedAssignedExperts.map((exp) => (
-                      <tr key={exp.id} className="hover:bg-muted/20 transition-colors">
-                        <td className="py-2 px-3">
-                          <div className="flex items-center gap-2">
-                            <div className="h-6 w-6 rounded-full bg-primary/10 text-primary font-bold text-[10px] flex items-center justify-center shrink-0">
-                              {exp.name.slice(0, 2).toUpperCase()}
-                            </div>
-                            <div className="flex items-center gap-1.5">
-                              <div>
-                                <div className="font-semibold text-foreground flex items-center gap-1.5">
-                                  <span>{exp.name}</span>
-                                  {newlyAssignedIds.has(exp.id) && (
-                                    <Badge
-                                      variant="primary"
-                                      className="bg-primary/10 text-primary text-[10px] font-bold py-0 px-1.5 border border-primary/25"
-                                    >
-                                      NEW
-                                    </Badge>
-                                  )}
-                                </div>
-                                <div className="text-[11px] text-muted-foreground">{exp.email}</div>
-                              </div>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="py-2 px-3 text-muted-foreground">
-                          {exp.title}
-                        </td>
-                        <td className="py-2 px-3 text-right">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-                            onClick={() => handleRemoveExpert(activeJobPositionInModal!.id, exp.id, exp.name)}
-                            title={`Remove ${exp.name}`}
-                          >
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </Button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
-
-          {/* Table 2: Available Experts to Add */}
-          <div className="space-y-2.5">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                Available Experts to Add ({availableExperts.length})
-              </h3>
-
-              <div className="flex items-center gap-2 flex-wrap">
-                <div className="relative w-44">
-                  <Search className="absolute left-2.5 top-2 h-3 w-3 text-muted-foreground" />
-                  <input
-                    type="text"
-                    placeholder="Filter available..."
-                    value={availableExpertSearch}
-                    onChange={(e) => setAvailableExpertSearch(e.target.value)}
-                    className="w-full pl-7 pr-2.5 py-1 text-xs rounded-md bg-background border border-border text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
-                  />
-                </div>
-
-                {/* Add Selected Option */}
-                <Button
-                  variant="primary"
-                  size="sm"
-                  leftIcon={<UserPlus className="h-3.5 w-3.5" />}
-                  onClick={handleAddSelectedAvailable}
-                  disabled={selectedAvailableIds.size === 0}
-                  className="text-xs h-7 font-semibold shadow-2xs"
-                >
-                  Add Selected{selectedAvailableIds.size > 0 ? ` (${selectedAvailableIds.size})` : ''}
-                </Button>
-              </div>
-            </div>
-
-            {availableExperts.length === 0 ? (
-              <div className="p-4 text-center text-xs text-muted-foreground border border-dashed border-border rounded-lg bg-muted/10">
-                {orgExperts.length === assignedExpertsInModal.length
-                  ? 'All eligible experts in the organization are already assigned to this job position.'
-                  : 'No available experts matching filter.'}
-              </div>
-            ) : (
-              <div className="border border-border rounded-lg overflow-hidden bg-card max-h-56 overflow-y-auto">
-                <table className="w-full text-left text-xs border-collapse">
-                  <thead className="sticky top-0 bg-muted/90 backdrop-blur-xs z-10">
-                    <tr className="border-b border-border text-muted-foreground uppercase text-[11px] font-semibold">
-                      <th className="py-2 px-3 w-8">
-                        <input
-                          type="checkbox"
-                          checked={availableExperts.length > 0 && availableExperts.every((e) => selectedAvailableIds.has(e.id))}
-                          onChange={handleToggleSelectAllAvailable}
-                          className="rounded border-border accent-primary cursor-pointer h-3.5 w-3.5 mt-0.5"
-                          title="Select / Unselect all available experts"
-                        />
-                      </th>
-                      <th className="py-2 px-3">Expert</th>
-                      <th className="py-2 px-3">Professional Title</th>
-                      <th className="py-2 px-3 text-right">Action</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-border">
-                    {availableExperts.map((exp) => (
-                      <tr key={exp.id} className="hover:bg-muted/20 transition-colors">
-                        <td className="py-2 px-3 w-8">
-                          <input
-                            type="checkbox"
-                            checked={selectedAvailableIds.has(exp.id)}
-                            onChange={() => handleToggleSelectAvailable(exp.id)}
-                            className="rounded border-border accent-primary cursor-pointer h-3.5 w-3.5 mt-0.5"
-                          />
-                        </td>
-                        <td className="py-2 px-3">
-                          <div className="flex items-center gap-2">
-                            <div className="h-6 w-6 rounded-full bg-muted text-muted-foreground font-bold text-[10px] flex items-center justify-center shrink-0">
-                              {exp.name.slice(0, 2).toUpperCase()}
-                            </div>
-                            <div>
-                              <div className="font-semibold text-foreground">{exp.name}</div>
-                              <div className="text-[11px] text-muted-foreground">{exp.email || `${exp.id}@adaptlearn.internal`}</div>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="py-2 px-3 text-muted-foreground">
-                          {exp.title}
-                        </td>
-                        <td className="py-2 px-3 text-right">
-                          <Button
-                            variant="secondary"
-                            size="sm"
-                            leftIcon={<Plus className="h-3.5 w-3.5" />}
-                            onClick={() => handleAddSingleExpert(exp)}
-                            className="text-xs h-7 px-2.5 font-semibold text-primary"
-                          >
-                            Add
-                          </Button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
-        </div>
-
-        <DialogFooter className="pt-2">
-          <Button variant="primary" size="sm" onClick={() => setIsAssignModalOpen(false)}>
-            Done
-          </Button>
-        </DialogFooter>
-      </Dialog>
     </WorkspaceLayout>
   )
 }

@@ -1,7 +1,7 @@
 ---
-title: "Competency Ontology"
+title: "CERD-03 - Catalog requirements and exclusive provision"
 config:
-  layout: elk
+  layout: dagre
   look: classic
   theme: base
   fontFamily: "Arial, sans-serif"
@@ -9,21 +9,11 @@ config:
   themeVariables: {background: "#ffffff", primaryColor: "#ffffff", primaryTextColor: "#0f172a", primaryBorderColor: "#334155", lineColor: "#334155", textColor: "#0f172a", edgeLabelBackground: "#ffffff", fontSize: "18px"}
   er: {nodeSpacing: 36, rankSpacing: 65, minEntityWidth: 140, diagramPadding: 24}
 ---
+
 erDiagram
-  C03_User["User"]
-  C03_Department["Department"]
-  C03_Job Position["Job Position"]
-  C03_Role["Target Role"]
-  C03_Level["Level"]
-  C03_Competency["Competency"]
-  C03_Skill["Skill"]
-  C03_Module["Learning Module"]
-  C03_Department }o--o{ C03_Job Position : "covers"
-  C03_Job Position ||--o{ C03_Role : "contains"
-  C03_Role |o--o{ C03_User : "selected by"
-  C03_Role ||--o{ C03_Level : "defines"
-  C03_Level ||--o{ C03_Competency : "requires"
-  C03_Competency }o--o{ C03_Skill : "groups"
-  C03_Level }o--o{ C03_Skill : "requires"
-  C03_Module }o--o{ C03_Skill : "teaches"
-  C03_Skill }o--o{ C03_Skill : "has prerequisite"
+  direction TB
+  TargetRole ||--o{ MemberLevel : "owns actual levels"
+  MemberLevel }o--o{ MicroSkill : "explicit requiredKnowledgeLevels"
+  MicroSkill ||--o{ LearningModule : "exact compatible alternatives"
+  MicroSkill ||--o{ Certificate : "REQUIRES_CERTIFICATE per configured pair"
+  MicroSkill }o--o{ MicroSkill : "knowledge prerequisite pair"

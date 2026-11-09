@@ -24,14 +24,16 @@ public final class JpaQuestionBankStore implements Store {
     private final PostgresAdvisoryLocks locks;
     private final TransactionTemplate tx;
     private final ObjectMapper json;
+    private final AssessmentItemKnowledgeMappingJpaRepository mappings;
 
     public JpaQuestionBankStore(QuestionBankJpaRepository banks, ItemVersionJpaRepository items, PostgresAdvisoryLocks locks,
-            TransactionTemplate tx, ObjectMapper json) {
+            TransactionTemplate tx, ObjectMapper json, AssessmentItemKnowledgeMappingJpaRepository mappings) {
         this.banks = banks;
         this.items = items;
         this.locks = locks;
         this.tx = tx;
         this.json = json;
+        this.mappings = mappings;
     }
 
     @Override
@@ -43,13 +45,24 @@ public final class JpaQuestionBankStore implements Store {
             locks.lock("question-bank:" + actor.organization());
             var existing = banks.lockDocument(actor.organization());
             QuestionBank bank = existing.isEmpty() ? initialize(actor) : decode(existing.getFirst());
-            if (items.spansOtherBanks(bank.id)) throw new Failure(409, "Legacy item identity spans multiple banks; explicit reconciliation required");
+            if(!actor.organization().equals(bank.organization))throw new Failure(403,"Question Bank organization changed");
             String before = encode(bank);
+            var owned=banks.banksOf(actor.organization());
+            if(!owned.contains(bank.id))throw new Failure(403,"Question Bank owner changed");
+            for(var source:owned) {
+                if(items.spansOtherBanks(source))throw new Failure(409,"Legacy item identity spans multiple banks; explicit reconciliation required");
+                banks.registerScope(actor.organization(),source);
+            }
+            for(var question:bank.questions) {
+                if(question.sourceBankId==null)question.sourceBankId=bank.id;
+                if(!owned.contains(question.sourceBankId))throw new Failure(403,"Question source bank is outside this organization");
+            }
+            for(var source:owned)if(bank.questions.stream().noneMatch(q->source.equals(q.sourceBankId)))adopt(bank,List.of(source));
             var result = command.apply(bank);
             String after = encode(bank);
             if (existing.isEmpty() || !before.equals(after)) {
-                project(bank);
                 banks.saveDocument(actor.organization(), bank.id, after);
+                project(bank,existing.isEmpty()?null:decode(before));
             }
             return result;
         });
@@ -57,27 +70,36 @@ public final class JpaQuestionBankStore implements Store {
 
     private QuestionBank initialize(Actor actor) {
         var owned = banks.banksOf(actor.organization());
-        if (owned.size() > 1) throw new Failure(409, "Multiple legacy banks need explicit administrator resolution; no data was merged");
         var bank = new QuestionBank();
         bank.organization = actor.organization();
         bank.name = "Organization Question Bank";
-        if (owned.isEmpty()) {
-            bank.id = UUID.randomUUID();
+        if (owned.size()!=1) {
+            bank.id = UUID.nameUUIDFromBytes(("organization-question-bank:v1:"+actor.organization()).getBytes(StandardCharsets.UTF_8));
+            if(!owned.contains(bank.id))
             banks.insert(new QuestionBankEntity(bank.id, bank.name, actor.id()));
         } else {
             bank.id = owned.getFirst();
             bank.name = banks.name(bank.id).orElseThrow();
         }
-        for (var row : items.definitionsOf(bank.id)) {
+        adopt(bank,owned);
+        return bank;
+    }
+    private void adopt(QuestionBank bank,List<UUID> sources) {
+        if(sources.size()>100)throw new Failure(422,"Question Bank source limit exceeded");
+        for(var source:sources) for (var row : items.definitionsOf(source)) {
+            if(bank.questions.size()>10000)throw new Failure(422,"Question Bank item limit exceeded");
             UUID id = row.itemId();
             var q = bank.questions.stream().filter(x -> x.id.equals(id)).findFirst().orElse(null);
             if (q == null) {
                 q = new Question();
                 q.id = id;
+                q.sourceBankId=source;
                 q.code = "Q-" + id.toString().toUpperCase(Locale.ROOT);
                 q.revision = 1;
                 bank.questions.add(q);
             }
+            if(!source.equals(q.sourceBankId))throw new Failure(409,"Legacy item identity spans multiple banks; explicit reconciliation required");
+            if(q.versions.stream().anyMatch(v->v.id.equals(row.itemVersionId())))continue;
             var v = new Version();
             v.id = row.itemVersionId();
             v.number = row.version();
@@ -99,31 +121,41 @@ public final class JpaQuestionBankStore implements Store {
             }
             q.versions.add(v);
         }
-        return bank;
     }
 
-    private void project(QuestionBank bank) {
+    private void project(QuestionBank bank,QuestionBank previous) {
+        var prior=new java.util.HashMap<UUID,Question>();if(previous!=null)previous.questions.forEach(q->prior.put(q.id,q));
         for (var q : bank.questions) {
-            if (banks.projectIdentity(q.id, bank.id, q.code, q.retired) != 1) {
+            var old=prior.get(q.id);
+            if(old!=null && encode(old).equals(encode(q)))continue;
+            UUID source=q.sourceBankId==null?bank.id:q.sourceBankId;
+            if (banks.projectIdentity(q.id, source, q.code, q.retired) != 1) {
                 throw new Failure(409, "Question identity changed; explicit reconciliation required");
             }
             for (var v : q.versions) {
                 if (!"PUBLISHED".equals(v.state)) continue;
-                var states = items.states(v.id, q.id, bank.id, v.number);
+                var oldVersion=old==null?null:old.versions.stream().filter(x->x.id.equals(v.id)&&"PUBLISHED".equals(x.state)).findFirst().orElse(null);
+                if(oldVersion!=null) {
+                    if(!oldVersion.content.equals(v.content))throw new Failure(409,"Published question definitions are immutable");
+                    continue;
+                }
+                var states = items.states(v.id, q.id, source, v.number);
                 if (states.contains("PUBLISHED")) continue; // Existing immutable legacy definitions keep their original bytes/hash.
                 var options = new ArrayList<Map<String, String>>();
                 for (int i = 0; i < 4; i++) options.add(Map.of("id", String.valueOf((char) ('A' + i)), "text", v.content.options().get(i)));
                 String response = encode(Map.of("type", "SINGLE_CHOICE", "options", options));
                 String key = encode(Map.of("correctOptionId", String.valueOf((char) ('A' + v.content.correctAnswer()))));
-                String hash = sha256(encode(List.of(bank.id, q.id, v.number, v.content.prompt(), response, key, v.content.skillId(),
-                        v.content.skillName(), v.content.difficulty())));
+                String hash = sha256(encode(List.of(source, q.id, v.number, v.content.prompt(), response, key, v.content.skillId(),
+                        v.content.skillName(), v.content.knowledgeLevel(), v.content.outcomeCode(),v.content.mandatory())));
                 if (states.contains("DRAFT")) {
                     if (items.publishDraft(v.id, v.content.prompt(), response, key, hash, v.content.skillId(), v.content.skillName(),
                             v.content.difficulty()) != 1) throw new Failure(409, "Legacy draft changed during approval");
-                    continue;
-                }
-                items.insert(new ItemVersionEntity(v.id, q.id, v.number, bank.id, v.content.prompt(), response, key, "PUBLISHED", hash,
-                        v.content.skillId(), v.content.skillName(), v.content.difficulty()));
+                } else items.insert(new ItemVersionEntity(v.id, q.id, v.number, source, v.content.prompt(), response, key, "PUBLISHED", hash,
+                        v.content.skillId(), v.content.skillName(), null));
+                mappings.insert(new com.adaptlearngraph.entities.AssessmentItemKnowledgeMappingEntity(v.id,bank.organization,source,
+                        v.content.skillId(),v.content.knowledgeLevel(),v.content.outcomeCode(),v.content.mandatory(),v.number,
+                        sha256(encode(List.of(v.id,bank.organization,v.content.skillId(),v.content.knowledgeLevel(),
+                                v.content.outcomeCode(),v.content.mandatory(),v.number)))));
             }
         }
         for (var notice : bank.notices) {

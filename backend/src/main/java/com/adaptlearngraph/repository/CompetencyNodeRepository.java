@@ -15,6 +15,24 @@ import org.springframework.transaction.annotation.Transactional;
  */
 public interface CompetencyNodeRepository extends Repository<CompetencyNode, String> {
 
+    @Query("""
+            MATCH (c:Competency)
+            WHERE c.organizationId = $organizationId
+              AND (toUpper(c.code) = toUpper($code) OR toUpper(c.id) = toUpper($code))
+            RETURN count(c) > 0 AS exists
+            """)
+    boolean existsByCode(@Param("organizationId") String organizationId, @Param("code") String code);
+
+    @Query("""
+            MATCH (c:Competency)
+            WHERE c.organizationId = $organizationId
+              AND c.id <> $id
+              AND (toUpper(c.code) = toUpper($code) OR toUpper(c.id) = toUpper($code))
+            RETURN count(c) > 0 AS exists
+            """)
+    boolean existsByCodeAndIdNot(@Param("organizationId") String organizationId, @Param("code") String code,
+            @Param("id") String id);
+
     // MERGE with distinct ON CREATE / ON MATCH sets (organizationId, version and reviewStatus only on create).
     @Transactional(TransactionManagers.NEO4J)
     @Query("""
@@ -38,11 +56,14 @@ public interface CompetencyNodeRepository extends Repository<CompetencyNode, Str
             @Param("attainmentRule") String attainmentRule, @Param("status") String status,
             @Param("version") String version);
 
-    // Relationship write: both endpoints must belong to the same organization.
+    // Relationship write: both endpoints matched inside the organization or platform template.
     @Transactional(TransactionManagers.NEO4J)
     @Query("""
-            MATCH (l:Level {id: $levelId}), (c:Competency {id: $compId})
-            WHERE l.organizationId = $organizationId AND c.organizationId = $organizationId
+            MATCH (l:Level), (c:Competency)
+            WHERE (l.organizationId IS NULL OR l.organizationId = $organizationId)
+              AND (c.organizationId IS NULL OR c.organizationId = $organizationId)
+              AND (l.id = $levelId OR l.code = $levelId OR toLower(l.name) = toLower($levelId))
+              AND (c.id = $compId OR c.code = $compId OR toLower(c.id) = toLower($compId) OR toLower(coalesce(c.code, '')) = toLower($compId))
             MERGE (l)-[r:HAS_COMPETENCY]->(c)
             ON CREATE SET r.status = 'ACTIVE', r.version = '0.11.0'
             """)
@@ -57,23 +78,29 @@ public interface CompetencyNodeRepository extends Repository<CompetencyNode, Str
             """)
     void unlinkAllSkills(@Param("id") String id, @Param("organizationId") String organizationId);
 
-    // Skills are referenced by id or code.
+    // Skills are referenced by id or code with case-insensitive resilience.
     @Transactional(TransactionManagers.NEO4J)
     @Query("""
             MATCH (c:Competency {id: $id})-[r:HAS_SKILL]->(s:MicroSkill)
             WHERE c.organizationId = $organizationId
-              AND NOT (s.id IN $skillIds OR coalesce(s.code, '') IN $skillIds)
+              AND NOT (s.id IN $skillIds OR coalesce(s.code, '') IN $skillIds
+                       OR toLower(s.id) IN [x IN $skillIds | toLower(x)]
+                       OR toLower(coalesce(s.code, '')) IN [x IN $skillIds | toLower(x)])
             DELETE r
             """)
     void unlinkSkillsExcept(@Param("id") String id, @Param("skillIds") List<String> skillIds,
             @Param("organizationId") String organizationId);
 
-    // Relationship write: UNWIND batch, both endpoints matched inside the same organization before MERGE.
+    // Relationship write: UNWIND batch, both endpoints matched inside the same organization or platform catalog before MERGE.
     @Transactional(TransactionManagers.NEO4J)
     @Query("""
             UNWIND $skillIds AS sid
             MATCH (c:Competency {id: $id}) WHERE c.organizationId = $organizationId
-            MATCH (s:MicroSkill) WHERE s.organizationId = $organizationId AND (s.id = sid OR coalesce(s.code, '') = sid)
+            MATCH (s:MicroSkill)
+            WHERE (s.organizationId IS NULL OR s.organizationId = $organizationId)
+              AND (s.id = sid OR s.code = sid
+                   OR toLower(s.id) = toLower(sid)
+                   OR toLower(coalesce(s.code, '')) = toLower(sid))
             WITH DISTINCT c, s
             MERGE (c)-[r:HAS_SKILL]->(s)
             ON CREATE SET r.status = 'ACTIVE', r.version = '0.11.0'

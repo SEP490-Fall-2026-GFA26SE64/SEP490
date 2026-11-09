@@ -7,14 +7,11 @@ import {
   Clock,
   RefreshCw,
   Search,
-  SlidersHorizontal,
   TrendingUp,
   X,
 } from 'lucide-react'
 import {
-  fetchMacroCompetencies,
   fetchMicroSkills,
-  type MacroCompetencyDto,
   type MicroSkillDto,
 } from '../../../shared/api/microSkillApi'
 import { Badge } from '../../../shared/components/ui/Badge'
@@ -24,7 +21,6 @@ import { cn } from '../../../shared/lib/utils'
 import { useEmployeeLearningState } from '../../../shared/hooks/useEmployeeLearningState'
 import {
   Dialog,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -33,7 +29,7 @@ import { EmptyState } from '../../../shared/components/ui/EmptyState'
 import { Pagination } from '../../../shared/components/ui/Pagination'
 import { ConfirmationModal } from '../../../shared/components/ui/ConfirmationModal'
 import { WorkspaceSessionContext } from '../../../shared/auth/workspaceSession'
-import { getActiveCompanyId } from '../../../shared/stores/companyStore'
+import { getActiveCompanyId, getActiveCompany } from '../../../shared/stores/companyStore'
 import { TARGET_ROLE_ROADMAPS } from '../data/roadmapData'
 
 interface EnrichedSkill extends MicroSkillDto {
@@ -41,24 +37,12 @@ interface EnrichedSkill extends MicroSkillDto {
   durationLabel: string
   durationBracket: '< 2 Hours' | '2-5 Hours' | '6-15 Hours' | '15+ Hours'
   level: 'Beginner' | 'Intermediate' | 'Advanced'
-  macroName: string
 }
 
 const DURATION_BRACKETS = ['All Durations', '< 2 Hours', '2-5 Hours', '6-15 Hours', '15+ Hours'] as const
 const LEVEL_OPTIONS = ['All', 'Beginner', 'Intermediate', 'Advanced'] as const
 
-const CANONICAL_MACROS: Record<string, string> = {
-  KNOWLEDGE: 'Knowledge',
-  COMMUNICATION: 'Communication',
-  INNOVATION: 'Innovation',
-  RESPONSIBLE_AI: 'Responsible AI',
-  AI_LITERACY: 'AI literacy',
-  GEN_AI: 'Generative AI',
-  MACHINE_LEARNING: 'Machine Learning',
-  LEADERSHIP: 'Leadership and Management',
-}
-
-function calculateSkillMetadata(skill: MicroSkillDto, macroMap: Map<string, string>): EnrichedSkill {
+function calculateSkillMetadata(skill: MicroSkillDto): EnrichedSkill {
   const hash = (skill.code || skill.name).split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)
   
   let durationHours = (hash % 18) + 2
@@ -79,16 +63,12 @@ function calculateSkillMetadata(skill: MicroSkillDto, macroMap: Map<string, stri
   if (durationHours <= 4) level = 'Beginner'
   else if (durationHours >= 12) level = 'Advanced'
 
-  const macroCode = skill.macroCompetencyCode || 'KNOWLEDGE'
-  const macroName = macroMap.get(macroCode) || CANONICAL_MACROS[macroCode] || macroCode
-
   return {
     ...skill,
     durationHours,
     durationLabel: `${durationHours} Hours`,
     durationBracket,
     level,
-    macroName,
   }
 }
 
@@ -105,7 +85,6 @@ function getSearchFromLocation(): string {
 
 export function UpskillSkillsPanel() {
   const { profile, isSkillTracked, trackSkill, untrackSkill } = useEmployeeLearningState()
-  const [macroCompetencies, setMacroCompetencies] = React.useState<MacroCompetencyDto[]>([])
   const [skills, setSkills] = React.useState<EnrichedSkill[]>([])
   const session = React.useContext(WorkspaceSessionContext)
   const [isLoading, setIsLoading] = React.useState(true)
@@ -114,7 +93,6 @@ export function UpskillSkillsPanel() {
   // Filters state
   const initialSearch = getSearchFromLocation()
   const [searchQuery, setSearchQuery] = React.useState(initialSearch)
-  const [selectedTopic, setSelectedTopic] = React.useState<string>('All')
   const [selectedLevel, setSelectedLevel] = React.useState<string>('All')
   const [selectedDuration, setSelectedDuration] = React.useState<string>('All Durations')
   const [selectedStatus, setSelectedStatus] = React.useState<'All' | 'Active' | 'Done'>('All')
@@ -178,11 +156,7 @@ export function UpskillSkillsPanel() {
 
   React.useEffect(() => {
     setCurrentPage(1)
-  }, [searchQuery, selectedTopic, selectedLevel, selectedDuration, selectedStatus])
-  
-  // Topic Modal state
-  const [isTopicModalOpen, setIsTopicModalOpen] = React.useState(false)
-  const [tempTopic, setTempTopic] = React.useState<string>('All')
+  }, [searchQuery, selectedLevel, selectedDuration, selectedStatus])
 
   // Detail Modal state
   const [detailSkill, setDetailSkill] = React.useState<EnrichedSkill | null>(null)
@@ -195,51 +169,47 @@ export function UpskillSkillsPanel() {
     try {
       const orgId = session?.identity?.organizationId || getActiveCompanyId() || 'e0000000-0000-0000-0000-000000000001'
       
-      const [macrosData, skillsData] = await Promise.all([
-        fetchMacroCompetencies(orgId).catch(() => [] as MacroCompetencyDto[]),
-        fetchMicroSkills(orgId).catch(() => [] as MicroSkillDto[]),
-      ])
-
-      const macroMap = new Map<string, string>(Object.entries(CANONICAL_MACROS))
-      macrosData.forEach((m) => {
-        macroMap.set(m.code, m.name)
-      })
+      const skillsData = await fetchMicroSkills(orgId).catch(() => [] as MicroSkillDto[])
 
       // Strictly deduplicate micro-skills by unique code or id so that duplicate entries cannot collide
+      const activeCompSkills = (getActiveCompany()?.microSkills || []).map((ms) => ({
+        id: ms.id,
+        code: ms.code || ms.id,
+        name: ms.name,
+        description: ms.description,
+        status: ms.status || 'ACTIVE',
+        updatedAt: ms.updatedAt,
+      }))
+      const combinedSkills = [...skillsData, ...activeCompSkills]
+
       const uniqueSkillsMap = new Map<string, MicroSkillDto>()
-      for (const s of skillsData) {
-        const key = s.code || s.id
-        if (!uniqueSkillsMap.has(key)) {
+      for (const s of combinedSkills) {
+        const key = (s.code || s.id || '').trim().toUpperCase()
+        if (key && !uniqueSkillsMap.has(key)) {
           uniqueSkillsMap.set(key, s)
         }
       }
       const uniqueSkills = Array.from(uniqueSkillsMap.values())
 
-      const enriched = uniqueSkills.map((s) => calculateSkillMetadata(s, macroMap))
-      setMacroCompetencies(macrosData)
+      const enriched = uniqueSkills.map((s) => calculateSkillMetadata(s))
+      // Sort with newest created/updated skills first so recently added skills are immediately visible on page 1
+      enriched.sort((a, b) => {
+        const timeA = new Date(a.updatedAt || a.createdAt || '2026-01-01T00:00:00Z').getTime()
+        const timeB = new Date(b.updatedAt || b.createdAt || '2026-01-01T00:00:00Z').getTime()
+        if (timeA !== timeB) return timeB - timeA
+        return a.name.localeCompare(b.name)
+      })
       setSkills(enriched)
     } catch {
       setIsError(true)
     } finally {
       setIsLoading(false)
     }
-  }, [])
+  }, [session?.identity?.organizationId])
 
   React.useEffect(() => {
     void loadData()
   }, [loadData])
-
-  // Topic options: exclusively the 8 Macro-Competency Domains
-  const topicOptions = React.useMemo(() => {
-    const set = new Set<string>()
-    macroCompetencies.forEach((m) => {
-      if (m.name) set.add(m.name)
-    })
-    if (set.size === 0) {
-      Object.values(CANONICAL_MACROS).forEach((n) => set.add(n))
-    }
-    return ['All', ...Array.from(set)]
-  }, [macroCompetencies])
 
   // Filter skills
   const filteredSkills = React.useMemo(() => {
@@ -249,14 +219,6 @@ export function UpskillSkillsPanel() {
         if (!isSkillTracked(item.name)) return false
       } else if (selectedStatus === 'Done') {
         if (!isSkillDone(item)) return false
-      }
-
-      // Topic match: compare against item.macroName or macroCompetencyCode
-      if (selectedTopic !== 'All') {
-        const matchesTopic =
-          item.macroName.toLowerCase() === selectedTopic.toLowerCase() ||
-          item.macroCompetencyCode?.toLowerCase() === selectedTopic.toLowerCase()
-        if (!matchesTopic) return false
       }
 
       // Level match
@@ -275,24 +237,22 @@ export function UpskillSkillsPanel() {
         const matchesSearch =
           item.name.toLowerCase().includes(q) ||
           (item.description && item.description.toLowerCase().includes(q)) ||
-          item.macroName.toLowerCase().includes(q)
+          (item.code && item.code.toLowerCase().includes(q))
         if (!matchesSearch) return false
       }
 
       return true
     })
-  }, [skills, selectedStatus, selectedTopic, selectedLevel, selectedDuration, searchQuery, isSkillTracked, isSkillDone])
+  }, [skills, selectedStatus, selectedLevel, selectedDuration, searchQuery, isSkillTracked, isSkillDone])
 
   const hasFilters =
     searchQuery.trim().length > 0 ||
-    selectedTopic !== 'All' ||
     selectedLevel !== 'All' ||
     selectedDuration !== 'All Durations' ||
     selectedStatus !== 'All'
 
   const clearFilters = () => {
     setSearchQuery('')
-    setSelectedTopic('All')
     setSelectedLevel('All')
     setSelectedDuration('All Durations')
     setSelectedStatus('All')
@@ -320,16 +280,6 @@ export function UpskillSkillsPanel() {
     catalogRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
 
-  const openTopicModal = () => {
-    setTempTopic(selectedTopic)
-    setIsTopicModalOpen(true)
-  }
-
-  const applyTopicModal = () => {
-    setSelectedTopic(tempTopic)
-    setIsTopicModalOpen(false)
-  }
-
   return (
     <section ref={catalogRef} className="space-y-4" aria-labelledby="skills-catalog-heading">
       {/* Unified Search & Filter Toolbar matching Roles tab layout */}
@@ -341,7 +291,7 @@ export function UpskillSkillsPanel() {
             id="skill-search"
             type="search"
             maxLength={100}
-            placeholder="Search skills by name, topic..."
+            placeholder="Search skills by name or description..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full rounded-lg border border-border bg-background py-2 pl-9 pr-8 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
@@ -386,26 +336,6 @@ export function UpskillSkillsPanel() {
               <option value="Done" className="bg-card text-foreground">Done</option>
             </select>
           </div>
-
-          {/* Topic Modal Trigger Button */}
-          <button
-            type="button"
-            onClick={openTopicModal}
-            className={cn(
-              "h-9 px-3 rounded-lg border inline-flex items-center gap-2 text-xs transition-all cursor-pointer shadow-2xs select-none",
-              selectedTopic !== 'All'
-                ? "border-primary/50 bg-primary/5 text-primary hover:bg-primary/10"
-                : "border-border bg-background hover:bg-muted/60 text-foreground"
-            )}
-            title="Filter by Topic / Competency"
-          >
-            <SlidersHorizontal size={13} className={selectedTopic !== 'All' ? 'text-primary' : 'text-muted-foreground'} />
-            <span className="text-muted-foreground font-normal">Topic:</span>
-            <span className="font-semibold text-foreground truncate max-w-[120px]">
-              {selectedTopic === 'All' ? 'All' : selectedTopic}
-            </span>
-            <ChevronDown size={13} className="text-muted-foreground ml-0.5 shrink-0" />
-          </button>
 
           {/* Level Filter Dropdown Pill */}
           <div
@@ -497,7 +427,7 @@ export function UpskillSkillsPanel() {
       ) : filteredSkills.length === 0 ? (
         <EmptyState
           title="No skills match your filters"
-          description="Try broadening your search, level, or topic filter to see available skills."
+          description="Try broadening your search, level, or duration filter to see available skills."
           action={
             <Button variant="outline" size="sm" onClick={clearFilters}>
               Clear filters
@@ -520,11 +450,8 @@ export function UpskillSkillsPanel() {
                   )}
                 >
                   <div className="p-5 space-y-2.5">
-                    {/* Badges: Competency Domain & Level */}
-                    <div className="flex items-center justify-between gap-2">
-                      <Badge variant="secondary" className="text-[11px] font-semibold text-primary truncate max-w-[170px]">
-                        {skill.macroName}
-                      </Badge>
+                    {/* Badges: Level & Status */}
+                    <div className="flex items-center justify-end gap-2">
                       <div className="flex items-center gap-1.5">
                         {isDone ? (
                           <Badge
@@ -618,7 +545,7 @@ export function UpskillSkillsPanel() {
                           variant="secondary"
                           size="sm"
                           className="text-xs h-7.5 px-3 text-primary hover:bg-primary hover:text-white transition-colors cursor-pointer"
-                          onClick={() => trackSkill(skill.name, skill.macroCompetencyCode, skill.level)}
+                          onClick={() => trackSkill(skill.name, skill.level)}
                         >
                           Choose
                         </Button>
@@ -644,77 +571,6 @@ export function UpskillSkillsPanel() {
         </div>
       )}
 
-      {/* Filter by Competency / Topic Modal Popup */}
-      <Dialog
-        open={isTopicModalOpen}
-        onOpenChange={setIsTopicModalOpen}
-        className="max-w-md p-6"
-        ariaLabel="Filter by Competency / Topic"
-      >
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <SlidersHorizontal size={18} className="text-primary" />
-            Filter by Competency / Topic
-          </DialogTitle>
-          <DialogDescription>
-            Choose a competency domain or topic to focus your skills view.
-          </DialogDescription>
-        </DialogHeader>
-
-        <div className="space-y-3 my-2 max-h-[50vh] overflow-y-auto pr-1">
-          <div className="flex flex-wrap gap-2">
-            {topicOptions.map((topic) => {
-              const active = tempTopic === topic
-              return (
-                <button
-                  key={topic}
-                  type="button"
-                  onClick={() => setTempTopic(topic)}
-                  className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-150 flex items-center gap-1.5 cursor-pointer ${
-                    active
-                      ? 'bg-primary text-white shadow-2xs'
-                      : 'bg-muted/50 hover:bg-muted text-foreground border border-border/70'
-                  }`}
-                >
-                  {active && <Check size={12} strokeWidth={3} />}
-                  <span>{topic === 'All' ? 'All Topics' : topic}</span>
-                </button>
-              )
-            })}
-          </div>
-        </div>
-
-        <DialogFooter className="flex items-center justify-between gap-2 pt-3 border-t border-border">
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={() => setTempTopic('All')}
-            className="text-xs text-muted-foreground"
-          >
-            Reset to All
-          </Button>
-          <div className="flex items-center gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => setIsTopicModalOpen(false)}
-            >
-              Cancel
-            </Button>
-            <Button
-              type="button"
-              variant="primary"
-              size="sm"
-              onClick={applyTopicModal}
-            >
-              Apply Filter
-            </Button>
-          </div>
-        </DialogFooter>
-      </Dialog>
-
       {/* Skill Detail Dialog (Clean without code) */}
       {detailSkill && (
         <Dialog
@@ -725,9 +581,6 @@ export function UpskillSkillsPanel() {
         >
           <DialogHeader>
             <div className="flex items-center gap-2 mb-1 flex-wrap">
-              <Badge variant="secondary" className="text-xs">
-                {detailSkill.macroName}
-              </Badge>
               <Badge variant="outline" className="text-xs">
                 {detailSkill.level}
               </Badge>
@@ -829,7 +682,7 @@ export function UpskillSkillsPanel() {
                 variant="primary"
                 size="sm"
                 onClick={() => {
-                  trackSkill(detailSkill.name, detailSkill.macroCompetencyCode, detailSkill.level)
+                  trackSkill(detailSkill.name, detailSkill.level)
                   setDetailSkill(null)
                 }}
                 className="cursor-pointer"

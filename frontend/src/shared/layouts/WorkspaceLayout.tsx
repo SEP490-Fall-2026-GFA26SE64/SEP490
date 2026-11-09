@@ -242,6 +242,11 @@ export function WorkspaceLayout({ children, identity: suppliedIdentity, onSignOu
         href: '/expert/assessment-bank',
         icon: <FileQuestion size={15} />,
       },
+        {
+          label: t('scopedPolicy.skillTitle'),
+          href: '/expert/skill-assessment-config',
+          icon: <Sliders size={15} />,
+        },
       {
         label: t('nav.serverStatus'),
         href: '/system-status?portal=expert',
@@ -465,7 +470,7 @@ export function WorkspaceLayout({ children, identity: suppliedIdentity, onSignOu
       return path === '/ld-manager/target-roles' || path === '/manager/target-roles'
     }
     if (itemHref === '/ld-manager/baseline-config') {
-      return path === '/ld-manager/baseline-config' || path === '/manager/baseline-config'
+      return path === '/ld-manager/baseline-config' || path === '/manager/baseline-config' || path.startsWith('/ld-manager/baseline-assessments')
     }
     if (itemHref === '/ld-manager/users') {
       return path === '/ld-manager/users' || path === '/admin/users'
@@ -681,6 +686,12 @@ export function WorkspaceLayout({ children, identity: suppliedIdentity, onSignOu
                   <div className="px-4 py-3 border-b border-border bg-muted/25">
                     <p className="text-sm font-bold text-foreground leading-snug truncate">{userProfile.name}</p>
                     <p className="text-xs text-muted-foreground truncate font-mono mt-0.5">{userProfile.email}</p>
+                    {identity?.organizationName && (
+                      <p className="text-xs text-primary font-medium mt-1 flex items-center gap-1.5">
+                        <Building size={12} className="shrink-0" />
+                        <span className="truncate">{identity.organizationName}</span>
+                      </p>
+                    )}
                   </div>
 
                   {/* Active Organization Switcher for Multi-Tenant Testing */}

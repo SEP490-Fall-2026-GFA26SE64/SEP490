@@ -1,7 +1,7 @@
 ---
-title: "Pathways & Reporting"
+title: "CERD-04 - Requirement roots, learning and certificate decisions"
 config:
-  layout: elk
+  layout: dagre
   look: classic
   theme: base
   fontFamily: "Arial, sans-serif"
@@ -9,25 +9,16 @@ config:
   themeVariables: {background: "#ffffff", primaryColor: "#ffffff", primaryTextColor: "#0f172a", primaryBorderColor: "#334155", lineColor: "#334155", textColor: "#0f172a", edgeLabelBackground: "#ffffff", fontSize: "18px"}
   er: {nodeSpacing: 36, rankSpacing: 65, minEntityWidth: 140, diagramPadding: 24}
 ---
+
 erDiagram
-  C04_Organization["Organization"]
-  C04_User["User"]
-  C04_Pathway["Learning Pathway"]
-  C04_Module["Learning Module"]
-  C04_Review["Review"]
-  C04_Progress["Learning Progress"]
-  C04_Report["Learning Report"]
-  C04_Cost["Training Cost"]
-  C04_Benefit["Monetary Benefit"]
-  C04_User ||--o{ C04_Pathway : "owns"
-  C04_Pathway }o--o{ C04_Module : "contains"
-  C04_User ||--o{ C04_Review : "performs"
-  C04_Pathway ||--o{ C04_Review : "receives"
-  C04_User ||--o{ C04_Progress : "makes"
-  C04_Module ||--o{ C04_Progress : "records"
-  C04_Organization ||--o{ C04_Report : "has"
-  C04_Report }o--o{ C04_Progress : "summarizes"
-  C04_Organization ||--o{ C04_Cost : "incurs"
-  C04_Organization ||--o{ C04_Benefit : "realizes"
-  C04_Report }o--o{ C04_Cost : "includes"
-  C04_Report }o--o{ C04_Benefit : "includes"
+  direction TB
+  RoleSelection ||--o{ RequirementSnapshot : "immutable exact input"
+  RequirementSnapshot ||--o{ PathwayRequest : "binds target on confirmation"
+  PathwayRequest ||--o{ PathwayRevision : "approval and event lineage"
+  PathwayRevision ||--o{ RequirementStep : "REQUIRED or PARALLEL_SUPPLEMENT"
+  RequirementStep ||--o{ ModuleOption : "eligible compatible choices"
+  ModuleOption }o..o{ OriginalLearningProgress : "module revision context not owner FK"
+  RequirementStep ||..o{ CertificateSubmission : "frozen JSON request and step context"
+  CertificateSubmission ||--o| CertificateDecision : "one exact assigned review"
+  RequirementStep ||--o{ BypassDecision : "waiver is not evidence"
+  RequirementStep }o--o{ RequirementStep : "assessed dependencies exclude parallel work"

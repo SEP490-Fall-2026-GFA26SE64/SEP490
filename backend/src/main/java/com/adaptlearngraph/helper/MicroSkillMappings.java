@@ -18,10 +18,11 @@ public final class MicroSkillMappings implements ModelMapperRegistrar {
                     source.getCode(),
                     source.getName(),
                     source.getDescription(),
-                    source.getMacroCompetencyCode(),
                     source.getStatus().name(),
                     source.getCreatedAt(),
-                    source.getUpdatedAt());
+                    source.getUpdatedAt(), source.getVersion(), source.getProvision().moduleOnlyKnowledgeLevels(),
+                    source.getProvision().certificateOnlyKnowledgeLevels(), source.getProvision().foundationOutcomeCodes(),
+                    source.getProvision().intermediateOutcomeCodes(), source.getProvision().advancedOutcomeCodes());
         });
         mapper.typeMap(PrerequisiteEdge.class, PrerequisiteResponse.class)
                 .setConverter(context -> PrerequisiteResponse.fromDomain(context.getSource()));
