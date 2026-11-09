@@ -7,7 +7,6 @@ import {
   Edit3,
   Eye,
   Plus,
-  Power,
   Search,
   Trash2,
 } from 'lucide-react'
@@ -474,40 +473,18 @@ export function DepartmentsManagementPage() {
     await fetchLiveDepartments()
   }
 
-  // Toggle Department Status (Active <-> Inactive)
-  const handleToggleStatus = async (dept: DepartmentRecord) => {
-    const nextStatus = dept.status === 'active' ? 'inactive' : 'active'
-    updateDepartment(dept.id, { status: nextStatus }, orgId)
-    setDepartments((prev) =>
-      prev.map((d) => (d.id === dept.id || d.code === dept.code ? { ...d, status: nextStatus } : d))
-    )
-
-    try {
-      await updateDepartmentApi(orgId, dept.id, {
-        code: dept.code,
-        name: dept.name,
-        description: dept.description,
-        headOfDepartment: dept.headOfDepartment,
-        headEmail: dept.headEmail,
-        status: nextStatus.toUpperCase(),
-        linkedJobPositions: dept.linkedJobPositions,
-      })
-    } catch {}
-
-    toast({
-      title: nextStatus === 'active' ? 'Department Activated' : 'Department Deactivated',
-      description: `${dept.name} is now ${nextStatus}.`,
-      variant: nextStatus === 'active' ? 'success' : 'warning',
-    })
-    fetchLiveDepartments()
-  }
-
-  // Delete Department
+  // Delete Department with full cascade & member unassignment
   const handleConfirmDelete = async () => {
     if (!deptToDelete) return
     const targetDept = deptToDelete
-    setIsDeleteModalOpen(false)
-    setDeptToDelete(null)
+    setIsSubmitting(true)
+
+    try {
+      await deleteDepartmentApi(orgId, targetDept.id)
+    } catch (err: unknown) {
+      console.warn('Delete department error:', err)
+    }
+
     deleteDepartment(targetDept.id, orgId)
     setDepartments((prev) =>
       prev.filter((d) => d.id !== targetDept.id && d.code !== targetDept.id && d.code !== targetDept.code)
@@ -518,12 +495,46 @@ export function DepartmentsManagementPage() {
       variant: 'destructive',
     })
 
+    // Clean up local target role metadata & member assignment caches referencing this department
     try {
-      await deleteDepartmentApi(orgId, targetDept.id)
-    } catch (err: unknown) {
-      console.warn('Neo4j delete department error:', err)
-    }
-    fetchLiveDepartments()
+      if (typeof localStorage !== 'undefined') {
+        const deptKeys = [targetDept.id, targetDept.code, targetDept.name]
+          .filter(Boolean)
+          .map((s) => s.toLowerCase().trim())
+        const keysToRemove: string[] = []
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i)
+          if (!key) continue
+          if (key.startsWith('alg_employee_assignment_')) {
+            try {
+              const val = JSON.parse(localStorage.getItem(key) || '{}')
+              const valDeptId = (val.departmentId || '').toLowerCase().trim()
+              const valDeptName = (val.departmentName || '').toLowerCase().trim()
+              if (deptKeys.includes(valDeptId) || deptKeys.includes(valDeptName)) {
+                keysToRemove.push(key)
+              }
+            } catch {}
+          } else if (key.startsWith('adaptlearn_target_role_meta_')) {
+            try {
+              const val = JSON.parse(localStorage.getItem(key) || '{}')
+              const valDeptId = (val.departmentId || '').toLowerCase().trim()
+              const valDept = (val.department || '').toLowerCase().trim()
+              if (deptKeys.includes(valDeptId) || deptKeys.includes(valDept)) {
+                keysToRemove.push(key)
+              }
+            } catch {}
+          }
+        }
+        keysToRemove.forEach((k) => localStorage.removeItem(k))
+      }
+    } catch {}
+
+    setIsSubmitting(false)
+    setIsDeleteModalOpen(false)
+    setDeptToDelete(null)
+    window.dispatchEvent(new Event('departments_updated'))
+    window.dispatchEvent(new Event('alg_roles_updated'))
+    await fetchLiveDepartments()
   }
 
   return (
@@ -712,26 +723,6 @@ export function DepartmentsManagementPage() {
                                 aria-label="Edit Department"
                               >
                                 <Edit3 className="h-4 w-4 text-foreground" />
-                              </Button>
-
-                              {/* Toggle Active / Inactive */}
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className={`h-8 w-8 p-0 ${
-                                  dept.status === 'active'
-                                    ? 'text-warning hover:bg-warning/10'
-                                    : 'text-success hover:bg-success/10'
-                                }`}
-                                onClick={() => handleToggleStatus(dept)}
-                                title={dept.status === 'active' ? 'Deactivate Department' : 'Activate Department'}
-                                aria-label={dept.status === 'active' ? 'Deactivate Department' : 'Activate Department'}
-                              >
-                                {dept.status === 'active' ? (
-                                  <Power className="h-4 w-4 text-warning" />
-                                ) : (
-                                  <CheckCircle2 className="h-4 w-4 text-success" />
-                                )}
                               </Button>
 
                               {/* Delete Department */}
@@ -1113,8 +1104,8 @@ export function DepartmentsManagementPage() {
             Delete Department
           </DialogTitle>
           <DialogDescription className="text-xs text-muted-foreground">
-            Are you sure you want to remove <strong className="text-foreground">{deptToDelete?.name}</strong>?
-            Any connected job position relationships in Neo4j will be detached. This action cannot be undone.
+            Are you sure you want to delete <strong className="text-foreground">{deptToDelete?.name}</strong>?
+            Associated target roles and levels will be removed, and all assigned workforce members will return to having no department assigned. Linked job positions will be preserved. This action cannot be undone.
           </DialogDescription>
         </DialogHeader>
 

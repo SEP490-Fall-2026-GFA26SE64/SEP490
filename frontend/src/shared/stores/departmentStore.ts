@@ -195,7 +195,7 @@ export function deleteDepartment(id: string, orgId?: string) {
   const effectiveOrg = orgId || getActiveCompany()?.id || 'e0000000-0000-0000-0000-000000000001'
   const current = loadDepartments(effectiveOrg)
   const updated = current.filter((d) => d.id !== id && d.code !== id)
-  saveDepartments(updated, effectiveOrg)
+  saveDepartments(updated, effectiveOrg, false)
 }
 
 export function reassignEmployeeDepartment(userEmail: string, newDeptName: string) {

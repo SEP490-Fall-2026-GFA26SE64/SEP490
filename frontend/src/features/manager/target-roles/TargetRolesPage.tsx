@@ -274,7 +274,8 @@ export function TargetRolesPage() {
   // Master roles state
 
   const [roles, setRoles] = React.useState<TargetRoleModel[]>([])
-  const [isLoading, setIsLoading] = React.useState(true)
+  const [isRolesLoading, setIsRolesLoading] = React.useState(true)
+  const [isDeptLoading, setIsDeptLoading] = React.useState(true)
   const [searchQuery, setSearchQuery] = React.useState('')
   const [statusFilter, setStatusFilter] = React.useState<
     | 'all'
@@ -443,6 +444,8 @@ export function TargetRolesPage() {
     session?.identity?.roles?.includes('LD_MANAGER') ||
     (typeof window !== 'undefined' && (window.location.pathname.includes('/manager/') || window.location.pathname.includes('/ld-manager/')))
   )
+
+  const isLoading = isRolesLoading || (isLdManager && isDeptLoading)
 
   const [managerDepartment, setManagerDepartment] = React.useState<{
     id: string
@@ -630,6 +633,10 @@ export function TargetRolesPage() {
         }
       } catch {
         // Leave current or null
+      } finally {
+        if (isMounted) {
+          setIsDeptLoading(false)
+        }
       }
     }
     loadManagerDept()
@@ -676,15 +683,17 @@ export function TargetRolesPage() {
       (managerDepartment?.jobPositionCodes || []).map((c) => c.toLowerCase().trim())
     )
     const filteredPositions =
-      isLdManager && managerDepartment
-        ? activePositions.filter((occ) => {
-            const code = (occ.code || '').toLowerCase().trim()
-            const baseCode = code.replace(/\.00$/, '')
-            return (
-              allowedCodes.has(code) ||
-              Array.from(allowedCodes).some((c) => c.replace(/\.00$/, '') === baseCode)
-            )
-          })
+      isLdManager
+        ? managerDepartment
+          ? activePositions.filter((occ) => {
+              const code = (occ.code || '').toLowerCase().trim()
+              const baseCode = code.replace(/\.00$/, '')
+              return (
+                allowedCodes.has(code) ||
+                Array.from(allowedCodes).some((c) => c.replace(/\.00$/, '') === baseCode)
+              )
+            })
+          : []
         : activePositions
 
     return filteredPositions.map((occ) => ({
@@ -986,7 +995,7 @@ export function TargetRolesPage() {
       console.warn('Failed to fetch target roles:', err)
     } finally {
       isFetchingRef.current = false
-      setIsLoading(false)
+      setIsRolesLoading(false)
     }
   }, [orgId])
 
@@ -1269,15 +1278,17 @@ export function TargetRolesPage() {
   // 1. Hide unsubmitted expert successor drafts until submitted
   // 2. Hide target roles not in the L&D Manager's assigned department
   const managerVisibleRoles = React.useMemo(() => {
-    const allowedJobPositionCodes = new Set(
-      (managerDepartment?.jobPositionCodes || []).map((c) => c.toLowerCase().trim())
-    )
-    const deptName = managerDepartment?.name?.toLowerCase().trim()
-    const deptId = managerDepartment?.id?.toLowerCase().trim()
+    if (isLdManager) {
+      if (isDeptLoading || !managerDepartment) {
+        return []
+      }
+      const allowedJobPositionCodes = new Set(
+        (managerDepartment.jobPositionCodes || []).map((c) => c.toLowerCase().trim())
+      )
+      const deptName = managerDepartment.name?.toLowerCase().trim()
+      const deptId = managerDepartment.id?.toLowerCase().trim()
 
-    return roles.filter((r) => {
-      // If user is L&D Manager with an assigned department, scope roles to that department; otherwise show all organization roles
-      if (isLdManager && managerDepartment) {
+      return roles.filter((r) => {
         const roleDept = (r.department || '').toLowerCase().trim()
         const roleDeptId = (r.departmentId || '').toLowerCase().trim()
         const matchesDept = Boolean(
@@ -1292,16 +1303,12 @@ export function TargetRolesPage() {
           (allowedJobPositionCodes.has(occCode) ||
             Array.from(allowedJobPositionCodes).some((c) => c.replace(/\.00$/, '') === baseOccCode))
 
-        if (allowedJobPositionCodes.size > 0 || deptName || deptId) {
-          if (!matchesJobPosition && !matchesDept) {
-            return false
-          }
-        }
-      }
+        return matchesJobPosition || matchesDept
+      })
+    }
 
-      return true
-    })
-  }, [roles, isLdManager, managerDepartment])
+    return roles
+  }, [roles, isLdManager, managerDepartment, isDeptLoading])
 
   // Filtered and sorted roles: Drafts always immediately below their previous published version
 
@@ -1393,38 +1400,33 @@ export function TargetRolesPage() {
       (managerDepartment?.jobPositionCodes || []).map((c) => c.toLowerCase().trim())
     )
     const departmentPositions =
-      isLdManager && managerDepartment
-        ? latestPositions.filter((occ) => {
-            const code = (occ.code || '').toLowerCase().trim()
-            const baseCode = code.replace(/\.00$/, '')
-            return (
-              allowedCodes.has(code) ||
-              Array.from(allowedCodes).some((c) => c.replace(/\.00$/, '') === baseCode)
-            )
-          })
+      isLdManager
+        ? managerDepartment
+          ? latestPositions.filter((occ) => {
+              const code = (occ.code || '').toLowerCase().trim()
+              const baseCode = code.replace(/\.00$/, '')
+              return (
+                allowedCodes.has(code) ||
+                Array.from(allowedCodes).some((c) => c.replace(/\.00$/, '') === baseCode)
+              )
+            })
+          : []
         : latestPositions
-    const defaultOcc =
-      (departmentPositions.length > 0 ? departmentPositions[0] : null) ||
-      latestPositions[0] ||
-      availableJobPositions[0] || {
-        code: '15-1252.00',
-        name: 'Software Developers',
-        description:
-          'Research, design, and develop computer and network software or specialized utility programs.',
-        profiles: ['DEV'],
-      }
-    const eligibleExperts = getEligibleExpertsForJobPosition(
-      defaultOcc.code,
-      orgId,
-      managerDepartment,
-      orgExperts,
-    )
+    const defaultOcc = departmentPositions.length > 0 ? departmentPositions[0] : null
+    const eligibleExperts = defaultOcc
+      ? getEligibleExpertsForJobPosition(
+          defaultOcc.code,
+          orgId,
+          managerDepartment,
+          orgExperts,
+        )
+      : []
     setRoleForm({
       code: `ROLE-${Math.random().toString(36).substring(2, 6).toUpperCase()}`,
       title: '',
-      jobPositionCode: defaultOcc.code,
-      scope: defaultOcc.description,
-      familyCode: defaultOcc.profiles?.[0] || 'DEV',
+      jobPositionCode: defaultOcc?.code || '',
+      scope: defaultOcc?.description || '',
+      familyCode: defaultOcc?.profiles?.[0] || 'DEV',
       track: 'PROFESSIONAL',
       levelNames: ['Senior', 'Middle', 'Junior'],
       levelDurations: {
@@ -1433,7 +1435,7 @@ export function TargetRolesPage() {
         Junior: '3 months',
       },
       assignedExpertId: eligibleExperts[0]?.id || orgExperts[0]?.id || '',
-      description: defaultOcc.description,
+      description: defaultOcc?.description || '',
     })
 
     setIsCreateRoleModalOpen(true)
@@ -1446,6 +1448,16 @@ export function TargetRolesPage() {
       toast({
         title: 'Validation Error',
         description: 'Role Code and Title are strictly required.',
+        variant: 'destructive',
+      })
+
+      return
+    }
+
+    if (!roleForm.jobPositionCode?.trim()) {
+      toast({
+        title: 'Validation Error',
+        description: 'Job Position is mandatory. Please select an active job position.',
         variant: 'destructive',
       })
 
@@ -1472,15 +1484,16 @@ export function TargetRolesPage() {
       session?.identity?.organizationId || activeComp?.id,
     )
     let generatedId = `role-${Date.now()}`
-    const selectedOcc =
-      availableJobPositions.find((o) => o.code === roleForm.jobPositionCode) ||
-      availableJobPositions[0] || {
-        code: roleForm.jobPositionCode || '15-1252.00',
-        name: 'Software Developers',
-        description:
-          'Research, design, and develop computer and network software or specialized utility programs.',
-        profiles: ['DEV'],
-      }
+    const selectedOcc = availableJobPositions.find((o) => o.code === roleForm.jobPositionCode)
+    if (!selectedOcc) {
+      toast({
+        title: 'Validation Error',
+        description: 'A valid active job position is required to create a target role.',
+        variant: 'destructive',
+      })
+
+      return
+    }
     const roleCode = roleForm.code.trim().toUpperCase()
     const backendStatus = targetStatus === 'sent' ? 'SENT' : 'DRAFT'
     const assignedExpert =
@@ -1810,6 +1823,16 @@ export function TargetRolesPage() {
       return
     }
 
+    if (!editRoleForm.jobPositionCode?.trim()) {
+      toast({
+        title: 'Validation Error',
+        description: 'Job Position is strictly required.',
+        variant: 'destructive',
+      })
+
+      return
+    }
+
     const orgId = resolveWorkspaceOrgId(
       session?.identity?.organizationId || activeComp?.id,
     )
@@ -1818,15 +1841,16 @@ export function TargetRolesPage() {
       findEligibleExpert(editRoleForm.assignedExpertId, orgId) ||
       ELIGIBLE_EXPERTS.find((e) => e.id === editRoleForm.assignedExpertId)
     const expertName = assignedExpert?.name || 'Assigned Expert'
-    const selectedOcc =
-      availableJobPositions.find((o) => o.code === editRoleForm.jobPositionCode) ||
-      availableJobPositions[0] || {
-        code: editRoleForm.jobPositionCode || '15-1252.00',
-        name: 'Software Developers',
-        description:
-          'Research, design, and develop computer and network software or specialized utility programs.',
-        profiles: ['DEV'],
-      }
+    const selectedOcc = availableJobPositions.find((o) => o.code === editRoleForm.jobPositionCode)
+    if (!selectedOcc) {
+      toast({
+        title: 'Validation Error',
+        description: 'A valid active job position is required.',
+        variant: 'destructive',
+      })
+
+      return
+    }
     const newStatus =
       targetStatus === 'sent'
         ? 'SENT'
@@ -2472,15 +2496,21 @@ export function TargetRolesPage() {
             ) : filteredRoles.length === 0 ? (
               <div className="text-center py-12 text-muted-foreground">
                 <AlertCircle className="h-8 w-8 mx-auto mb-2 text-muted-foreground/60" />
-                <p className="text-sm font-semibold">No target roles found.</p>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="mt-3"
-                  onClick={() => setStatusFilter('all')}
-                >
-                  Reset Filter
-                </Button>
+                <p className="text-sm font-semibold">
+                  {isLdManager && !managerDepartment
+                    ? 'No department assigned. Please contact your workspace administrator to assign you to a department.'
+                    : 'No target roles found.'}
+                </p>
+                {(!isLdManager || Boolean(managerDepartment)) && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="mt-3"
+                    onClick={() => setStatusFilter('all')}
+                  >
+                    Reset Filter
+                  </Button>
+                )}
               </div>
             ) : (
               <>
@@ -3093,6 +3123,18 @@ export function TargetRolesPage() {
               </Badge>
             </div>
 
+            {jobPositionOptions.length === 0 && (
+              <div role="status" className="rounded-lg border border-warning/40 bg-warning/5 p-3 text-body-sm text-foreground flex items-start gap-2.5 my-2">
+                <AlertTriangle className="h-4 w-4 text-warning shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-semibold text-xs text-foreground">No active job positions available</p>
+                  <p className="text-[11.5px] text-muted-foreground mt-0.5">
+                    Target roles must belong to an active job position. Please create or link a job position before creating target roles.
+                  </p>
+                </div>
+              </div>
+            )}
+
             <div className="pt-1">
               <label className="text-[11px] font-semibold text-foreground block mb-1">
                 Job Position <span className="text-destructive">*</span>
@@ -3100,15 +3142,18 @@ export function TargetRolesPage() {
 
               <Combobox
                 size="sm"
-
                 clearable={false}
-
+                disabled={jobPositionOptions.length === 0}
                 options={jobPositionOptions}
-
                 value={roleForm.jobPositionCode}
-
                 onChange={(val) => {
-                  if (!val) return
+                  if (!val) {
+                    setRoleForm((prev) => ({
+                      ...prev,
+                      jobPositionCode: '',
+                    }))
+                    return
+                  }
 
                   const occ =
                     availableJobPositions.find((o) => o.code === val) ||
@@ -3136,9 +3181,7 @@ export function TargetRolesPage() {
                     description: prev.description || occ?.description || '',
                   }))
                 }}
-
-                placeholder="Select Job Position..."
-
+                placeholder={jobPositionOptions.length === 0 ? 'No job positions available' : 'Select Job Position...'}
                 searchPlaceholder="Search job position..."
               />
             </div>
@@ -3385,6 +3428,12 @@ export function TargetRolesPage() {
             <Button
               variant="outline"
               size="sm"
+              disabled={
+                !roleForm.code.trim() ||
+                !roleForm.title.trim() ||
+                !roleForm.jobPositionCode.trim() ||
+                jobPositionOptions.length === 0
+              }
               onClick={() => handleCreateRoleSubmit('draft')}
             >
               Save as Draft
@@ -3392,11 +3441,14 @@ export function TargetRolesPage() {
 
             <Button
               variant="primary"
-
               size="sm"
-
               leftIcon={<Send className="h-4 w-4" />}
-
+              disabled={
+                !roleForm.code.trim() ||
+                !roleForm.title.trim() ||
+                !roleForm.jobPositionCode.trim() ||
+                jobPositionOptions.length === 0
+              }
               onClick={() => handleCreateRoleSubmit('sent')}
             >
               Create &amp; Send to Expert
@@ -4278,6 +4330,7 @@ export function TargetRolesPage() {
                       <Button
                         variant="outline"
                         size="sm"
+                        disabled={!editRoleForm.title.trim() || !editRoleForm.jobPositionCode.trim()}
                         onClick={() => handleSaveEditRole('draft')}
                       >
                         Save Changes
@@ -4286,6 +4339,7 @@ export function TargetRolesPage() {
                         variant="primary"
                         size="sm"
                         leftIcon={<Send className="h-4 w-4" />}
+                        disabled={!editRoleForm.title.trim() || !editRoleForm.jobPositionCode.trim()}
                         onClick={() => handleSaveEditRole('sent')}
                       >
                         {isSentRole || isFeedbackRole
@@ -4313,6 +4367,7 @@ export function TargetRolesPage() {
                       <Button
                         variant="outline"
                         size="sm"
+                        disabled={!editRoleForm.title.trim() || !editRoleForm.jobPositionCode.trim()}
                         onClick={() => handleSaveEditRole('draft')}
                       >
                         Save Changes
@@ -4321,6 +4376,7 @@ export function TargetRolesPage() {
                         variant="primary"
                         size="sm"
                         leftIcon={<Send className="h-4 w-4" />}
+                        disabled={!editRoleForm.title.trim() || !editRoleForm.jobPositionCode.trim()}
                         onClick={() => handleSaveEditRole('sent')}
                       >
                         Save & Re-dispatch to Expert
