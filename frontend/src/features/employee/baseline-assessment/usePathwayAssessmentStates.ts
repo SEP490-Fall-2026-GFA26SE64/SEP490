@@ -2,7 +2,7 @@ import { useContext } from 'react'
 import { useQueries, type Query } from '@tanstack/react-query'
 import type { RuleModuleOption, RulePathway, RuleStep } from '../../../shared/api/requirementPathway'
 import { WorkspaceSessionContext } from '../../../shared/auth/workspaceSession'
-import { readContextAttempt, type BaselineAttempt } from './baselineApi'
+import { readModuleHistory, type BaselineAttempt } from './baselineApi'
 
 export type AssessmentState = 'loading' | 'unavailable' | 'notStarted' | 'inProgress' | 'failed' | 'passed' | 'prerequisites'
 const optionKey = (step: RuleStep, option: RuleModuleOption) => `${step.id}:${option.moduleId}:${option.moduleRevision}`
@@ -12,15 +12,15 @@ export const targetFor = (pathway: RulePathway, step: RuleStep, option: RuleModu
 export function usePathwayAssessmentStates(pathway: RulePathway, preview: boolean) {
   const identity = useContext(WorkspaceSessionContext)?.identity
   const options = pathway.steps.flatMap(step => step.options.filter(option => option.completedAt && step.state !== 'BYPASSED').map(option => ({ step, option })))
-  const queries = useQueries({ queries: options.map(({ step, option }) => ({
-    queryKey: ['skillAssessmentState', identity?.organizationId, identity?.accountId, targetFor(pathway, step, option), pathway.revision],
-    queryFn: ({ signal }: { signal: AbortSignal }) => readContextAttempt(targetFor(pathway, step, option), 'SKILL_ASSESSMENT', signal),
+  const queries = useQueries({ queries: options.map(({ option }) => ({
+    queryKey: ['moduleSkillAttempts', identity?.organizationId, identity?.accountId, option.moduleId, option.moduleRevision],
+    queryFn: ({ signal }: { signal: AbortSignal }) => readModuleHistory(option.moduleId, option.moduleRevision, signal),
     enabled: !preview && !pathway.archived && Boolean(identity?.accountId), retry: false, staleTime: 0, gcTime: 0,
-    refetchInterval: (query: Query<BaselineAttempt | null>) => query.state.data?.state === 'IN_PROGRESS' ? 5000 : false,
+    refetchInterval: (query: Query<BaselineAttempt[]>) => query.state.data?.some(attempt => attempt.state === 'IN_PROGRESS') ? 5000 : false,
   })) })
   const states = new Map<string, AssessmentState>()
   options.forEach(({ step, option }, index) => {
-    const query = queries[index], attempt = query.data
+    const query = queries[index], attempt = query.data?.find(item => item.target.selectionId === pathway.selectionId && item.target.selectionRevision === pathway.selectionRevision && item.target.stepId === step.id)
     states.set(optionKey(step, option), query.isError ? 'unavailable' : query.isPending ? 'loading' : !attempt ? 'notStarted' : attempt.state === 'IN_PROGRESS' ? 'inProgress'
       : attempt.results.length > 0 && attempt.results.every(result => result.passed && !result.vetoTriggered) ? 'passed'
       : attempt.results.some(result => attempt.groups.some(group => group.id === result.groupId && group.role === 'MAIN') && result.passed)

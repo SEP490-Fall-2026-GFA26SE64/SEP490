@@ -166,9 +166,16 @@ public final class RuleAssessmentAttemptService {
         var a=actor();return interactive(a,()->readLocked(a,id));
     }
     public List<View> history(int page,int size) {
+        return history(page,size,null,null);
+    }
+    public List<View> history(int page,int size,String moduleId,Integer moduleRevision) {
         var a=actor();if(page<0 || size<1 || size>100)throw new Failure(400,"INVALID_REQUEST");
+        if((moduleId==null)!=(moduleRevision==null) || moduleId!=null
+                && (moduleId.isBlank() || moduleId.length()>200 || moduleRevision<1))throw new Failure(400,"INVALID_REQUEST");
         return selections.transaction(a,()->{
-            reauthorize(a);var result=attempts.history(a.organizationId(),a.learnerId(),PageRequest.of(page,size)).stream()
+            reauthorize(a);var rows=moduleId==null?attempts.history(a.organizationId(),a.learnerId(),PageRequest.of(page,size)):
+                    attempts.moduleHistory(a.organizationId(),a.learnerId(),moduleId,moduleRevision,PageRequest.of(page,size));
+            var result=rows.stream()
                     .map(row->readLocked(a,row.getId())).toList();reauthorize(a);return result;
         });
     }

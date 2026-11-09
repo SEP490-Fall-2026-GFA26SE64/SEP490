@@ -130,7 +130,7 @@ function OwnedCurrentRolePanel({ scope }: { scope: string }) {
     })}</div>
     {filtered.length > 0 && <Card className="overflow-hidden"><Pagination currentPage={currentPage} totalPages={pageCount} totalItems={filtered.length} pageSize={12} disabled={blocked} onPageChange={setPage} itemLabel={t('upskillingUi.roles')}
       labels={{ navigation: t('adaptiveBaseline.paging.navigation'), first: t('adaptiveBaseline.paging.first'), previous: t('adaptiveBaseline.paging.previous'), next: t('adaptiveBaseline.paging.next'), last: t('adaptiveBaseline.paging.last'), showing: t('adaptiveBaseline.paging.showing'), of: t('adaptiveBaseline.paging.of') }} /></Card>}
-    <Dialog open={selected !== null} className="max-w-md sm:max-w-lg" onOpenChange={open => { if (!open && !blocked) setSelected(null) }} ariaLabel={tr('confirmTitle')} closeLabel={tr('cancel')}>
+    <Dialog open={selected !== null} className="max-w-lg sm:max-w-xl" onOpenChange={open => { if (!open && !blocked) setSelected(null) }} ariaLabel={tr('confirmTitle')} closeLabel={tr('cancel')}>
       <DialogHeader>
         <DialogTitle className="flex items-center gap-2">
           <Target size={18} className="shrink-0 text-primary" aria-hidden="true" />
@@ -140,7 +140,7 @@ function OwnedCurrentRolePanel({ scope }: { scope: string }) {
           {tr(view.data?.selection ? 'changeNotice' : 'chooseNotice')}
         </DialogDescription>
       </DialogHeader>
-      <DialogBody className="space-y-4">
+      <DialogBody className="space-y-4 px-1 py-1">
       <div className="space-y-1 rounded-lg border border-border bg-muted/20 p-3.5">
         <Text variant="body-sm" tone="foreground" className="break-words font-semibold text-sm">
           {selected?.name}

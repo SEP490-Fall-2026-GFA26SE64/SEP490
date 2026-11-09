@@ -39,6 +39,12 @@ export const readResult = (id: string, signal?: AbortSignal) => request('/' + en
   return result as BaselineResult
 }, { signal })
 export const readHistory = (signal?: AbortSignal, page = 0) => request('/history?page=' + page + '&size=20', value => list(value, parseAttempt), { signal })
+export const readModuleHistory = (moduleId: string, moduleRevision: number, signal?: AbortSignal, page = 0) =>
+  request('/history?' + new URLSearchParams({ moduleId, moduleRevision: String(moduleRevision), page: String(page), size: '20' }), value => {
+    const attempts = list(value, parseAttempt)
+    if (attempts.some(attempt => attempt.purpose !== 'SKILL_ASSESSMENT' || attempt.target.moduleId !== moduleId || attempt.target.moduleRevision !== moduleRevision)) throw Error()
+    return attempts
+  }, { signal })
 export const readContextAttempt = (target: AssessmentTarget, purpose: AssessmentPurpose, signal?: AbortSignal) => {
   const params = new URLSearchParams({ selectionId: target.selectionId, selectionRevision: String(target.selectionRevision), purpose })
   if (target.stepId) params.set('stepId', target.stepId)
