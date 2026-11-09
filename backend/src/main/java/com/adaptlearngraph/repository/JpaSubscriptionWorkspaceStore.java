@@ -230,10 +230,10 @@ public final class JpaSubscriptionWorkspaceStore implements SubscriptionWorkspac
                 throw new SubscriptionFailure(SubscriptionFailure.Code.REFERENCE_DATA_REQUIRED, "Employee department and jobPosition are required.");
             }
             boolean accountActive = data.accounts().active(member.accountId()).orElse(false);
-            boolean wasSeat = accountActive && member.active() && member.roles().contains("EMPLOYEE");
-            boolean newSeat = accountActive && active && roles.contains("EMPLOYEE");
+            boolean wasSeat = accountActive && member.active() && !member.roles().contains("ORGANIZATION_ADMINISTRATOR");
+            boolean newSeat = accountActive && active && !roles.contains("ORGANIZATION_ADMINISTRATOR");
             if (newSeat && !wasSeat && used(organizationId) >= summary(organizationId, now).admissionLimit()) {
-                throw new SubscriptionFailure(SubscriptionFailure.Code.CAPACITY_EXCEEDED, "No Employee seat is available.");
+                throw new SubscriptionFailure(SubscriptionFailure.Code.CAPACITY_EXCEEDED, "No seat is available.");
             }
             data.memberships().changeActive(organizationId, memberId, active, now);
             data.roles().deleteOf(memberId);

@@ -48,7 +48,9 @@ export async function fetchCompetencies(
     code: item.code || item.id,
     skillIds: item.memberSkills
       ? Array.from(
-          new Set(item.memberSkills.map((s) => s.id || s.code).filter(Boolean)),
+          new Set(
+            item.memberSkills.flatMap((s) => [s.id, s.code]).filter(Boolean),
+          ),
         )
       : item.skillIds || [],
     memberSkills: item.memberSkills || [],

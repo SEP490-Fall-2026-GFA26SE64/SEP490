@@ -208,12 +208,7 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
                     duration = levelDurations.get(String.valueOf(rank));
                 }
             }
-            if (duration == null || duration.isBlank()) {
-                if (name.equalsIgnoreCase("Senior") || rank == 1) duration = "6 months";
-                else if (name.equalsIgnoreCase("Middle") || rank == 2) duration = "4 months";
-                else if (name.equalsIgnoreCase("Junior") || rank == 3) duration = "3 months";
-                else duration = "2 months";
-            }
+            duration = normalizeDurationToIntegerMonths(duration, rank, name);
 
             Map<String, Object> item = new HashMap<>();
             item.put("id", levelId);
@@ -329,6 +324,25 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
         }
     }
 
+    private String normalizeDurationToIntegerMonths(String rawDuration, long rank, String name) {
+        if (rawDuration == null || rawDuration.isBlank()) {
+            if (name.equalsIgnoreCase("Senior") || rank == 1) return "6 months";
+            if (name.equalsIgnoreCase("Middle") || rank == 2) return "4 months";
+            if (name.equalsIgnoreCase("Junior") || rank == 3) return "3 months";
+            return "2 months";
+        }
+        java.util.regex.Matcher m = java.util.regex.Pattern.compile("(\\d+(?:\\.\\d+)?)").matcher(rawDuration.trim());
+        if (m.find()) {
+            try {
+                double val = Double.parseDouble(m.group(1));
+                int rounded = (int) Math.round(val);
+                if (rounded < 1) rounded = 1;
+                return rounded + " months";
+            } catch (Exception ignored) {
+            }
+        }
+        return rawDuration.trim();
+    }
     private String resolveGraphCode(String roleId, String orgId, String rawCode, String version) {
         if (roles.countCodeHolders(rawCode, roleId) == 0) {
             return rawCode;
@@ -450,18 +464,6 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
                     .bind(updatedAt.toString()).to("updatedAt")
                     .run();
 
-            // Also link Competency -> HAS_SKILL -> MicroSkill if level has competencies
-            client.query("""
-                    MATCH (r:TargetRole {id: $roleId})-[:HAS_LEVEL]->(l:Level)-[:HAS_COMPETENCY]->(c:Competency)
-                    MATCH (l)-[:REQUIRES_SKILL]->(s:MicroSkill)
-                    WHERE (c.organizationId IS NULL OR c.organizationId = $organizationId)
-                    WITH DISTINCT c, s
-                    MERGE (c)-[hs:HAS_SKILL]->(s)
-                    ON CREATE SET hs.status = 'ACTIVE', hs.version = '0.11.0'
-                    """)
-                    .bind(roleId).to("roleId")
-                    .bind(organizationId).to("organizationId")
-                    .run();
         }
     }
 

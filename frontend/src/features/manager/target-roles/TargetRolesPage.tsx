@@ -63,8 +63,8 @@ import {
 import { useToast } from '../../../shared/hooks/useToast'
 import { WorkspaceLayout } from '../../../shared/layouts/WorkspaceLayout'
 import { WorkspaceSessionContext } from '../../../shared/auth/workspaceSession'
-import { getMembers, request } from '../../subscription/subscriptionApi'
-import { fetchDepartments, updateDepartmentApi, linkJobPositionToDepartment } from '../../../shared/api/departmentApi'
+import { getMembers, getReferences, request } from '../../subscription/subscriptionApi'
+import { fetchDepartments, updateDepartmentApi, createDepartmentApi, linkJobPositionToDepartment } from '../../../shared/api/departmentApi'
 import { loadDepartments, updateDepartment } from '../../../shared/stores/departmentStore'
 import {
   getActiveCompany,
@@ -153,19 +153,30 @@ interface RoleMetadata {
   status?: TargetRoleModel['status']
 }
 
+function parseDurationNumber(val?: string | number, defaultNum = 6): number {
+  if (val === undefined || val === null || val === '') return defaultNum
+  const match = String(val).match(/\d+/)
+  if (match) {
+    const parsed = parseInt(match[0], 10)
+    return isNaN(parsed) || parsed < 1 ? defaultNum : parsed
+  }
+  return defaultNum
+}
+
 function resolveLevelDuration(
   role: Pick<TargetRoleModel, 'levelDurations'>,
   levelName: string,
   index: number,
 ): string {
+  const defaultMonths = index === 0 ? 6 : index === 1 ? 4 : index === 2 ? 3 : 2
   const direct = role.levelDurations?.[levelName]
-  if (direct && direct.trim()) return direct.trim()
+  if (direct && direct.trim()) return `${parseDurationNumber(direct, defaultMonths)} months`
   if (role.levelDurations) {
     const matchedKey = Object.keys(role.levelDurations).find(
       (k) => k.toLowerCase().trim() === levelName.toLowerCase().trim(),
     )
     if (matchedKey && role.levelDurations[matchedKey]?.trim()) {
-      return role.levelDurations[matchedKey].trim()
+      return `${parseDurationNumber(role.levelDurations[matchedKey], defaultMonths)} months`
     }
   }
   const lower = levelName.toLowerCase()
@@ -435,23 +446,46 @@ export function TargetRolesPage() {
 
   const [managerDepartment, setManagerDepartment] = React.useState<{
     id: string
+    code?: string
     name: string
     jobPositionCodes: string[]
   } | null>(() => {
     try {
-      const localDepts = loadDepartments()
-      const activeEmail =
-        (typeof window !== 'undefined' && localStorage.getItem('adaptlearn_last_active_email')) ||
-        'manager@technova.com'
-      const matched =
-        localDepts.find((d) => d.headEmail?.toLowerCase() === activeEmail?.toLowerCase()) ||
-        localDepts.find((d) => d.code === 'ENG-CLOUD') ||
-        localDepts[0]
-      if (matched) {
-        return {
-          id: matched.id,
-          name: matched.name,
-          jobPositionCodes: matched.linkedJobPositions || [],
+      const localDepts = loadDepartments(orgId)
+      const activeEmail = session?.identity?.email
+      if (activeEmail) {
+        const assignmentRaw =
+          typeof window !== 'undefined'
+            ? localStorage.getItem(`alg_employee_assignment_${activeEmail.toLowerCase().trim()}`)
+            : null
+        if (assignmentRaw) {
+          const assignment = JSON.parse(assignmentRaw)
+          const matched = localDepts.find(
+            (d) =>
+              (assignment.departmentId &&
+                (d.id === assignment.departmentId || d.code === assignment.departmentId)) ||
+              (assignment.departmentName &&
+                d.name?.trim().toLowerCase() === assignment.departmentName.trim().toLowerCase())
+          )
+          if (matched) {
+            return {
+              id: matched.id,
+              code: matched.code,
+              name: matched.name,
+              jobPositionCodes: matched.linkedJobPositions || [],
+            }
+          }
+        }
+        const matchedHead = localDepts.find(
+          (d) => d.headEmail?.toLowerCase() === activeEmail.toLowerCase()
+        )
+        if (matchedHead) {
+          return {
+            id: matchedHead.id,
+            code: matchedHead.code,
+            name: matchedHead.name,
+            jobPositionCodes: matchedHead.linkedJobPositions || [],
+          }
         }
       }
     } catch {}
@@ -462,65 +496,140 @@ export function TargetRolesPage() {
     let isMounted = true
     const loadManagerDept = async () => {
       try {
-        const [members, depts] = await Promise.all([
+        const [members, depts, refs] = await Promise.all([
           getMembers(orgId).catch(() => []),
           fetchDepartments(orgId).catch(() => []),
+          getReferences(orgId).catch(() => []),
         ])
         const currentMember = (members || []).find(
-          (m) => m.accountId === session?.identity?.accountId || m.email === session?.identity?.email
+          (m) =>
+            (session?.identity?.accountId && m.accountId === session?.identity?.accountId) ||
+            (session?.identity?.email && m.email?.toLowerCase() === session?.identity?.email?.toLowerCase())
         )
-        const localDepts = loadDepartments()
-        const effectiveDepts = (depts && depts.length > 0) ? depts : localDepts
+        const localDepts = loadDepartments(orgId)
 
-        let matched = effectiveDepts.find(
-          (d) => d.id === currentMember?.departmentId || d.name === currentMember?.departmentName || d.code === currentMember?.departmentId
-        )
+        // Merge departments from Neo4j, Postgres references, and localStorage
+        const deptMap = new Map<string, any>()
+        for (const ld of localDepts) {
+          const key = (ld.name || ld.code || ld.id).toLowerCase().trim()
+          deptMap.set(key, { ...ld, jobPositionCodes: ld.linkedJobPositions || [] })
+        }
+        for (const ref of refs || []) {
+          if (ref.departmentId || ref.departmentName) {
+            const key = (ref.departmentName || ref.departmentId).toLowerCase().trim()
+            if (!deptMap.has(key)) {
+              deptMap.set(key, {
+                id: ref.departmentId,
+                code: ref.departmentName,
+                name: ref.departmentName,
+                jobPositionCodes: [],
+                linkedJobPositions: [],
+              })
+            }
+          }
+        }
+        for (const d of depts || []) {
+          const key = (d.name || d.code || d.id).toLowerCase().trim()
+          const existing = deptMap.get(key)
+          const serverCodes = d.jobPositionCodes || (d as any).linkedJobPositions || []
+          deptMap.set(key, {
+            ...existing,
+            ...d,
+            jobPositionCodes: serverCodes,
+            linkedJobPositions: serverCodes,
+          })
+        }
+        const effectiveDepts = Array.from(deptMap.values())
 
-        if (!matched && currentMember?.departmentName) {
-          matched = effectiveDepts.find(d => d.name.toLowerCase() === currentMember.departmentName?.toLowerCase())
+        let matched: any = null
+
+        let localAssignmentObj: any = null
+        if (session?.identity?.email) {
+          try {
+            const raw = localStorage.getItem(`alg_employee_assignment_${session.identity.email.toLowerCase().trim()}`)
+            if (raw) localAssignmentObj = JSON.parse(raw)
+          } catch {}
         }
 
+        const targetDeptId = localAssignmentObj?.departmentId || currentMember?.departmentId
+        const targetDeptName = localAssignmentObj?.departmentName || currentMember?.departmentName
+
+        if (targetDeptId || targetDeptName) {
+          matched = effectiveDepts.find((d) => {
+            if (targetDeptId) {
+              if (d.id === targetDeptId || d.code === targetDeptId) return true
+              if ((d as any).uuid === targetDeptId || (d as any).uuidCode === targetDeptId) return true
+            }
+            if (targetDeptName && d.name) {
+              if (d.name.trim().toLowerCase() === targetDeptName.trim().toLowerCase()) return true
+            }
+            return false
+          })
+
+          if (!matched && targetDeptName) {
+            matched = {
+              id: targetDeptId || `dept-${targetDeptName.toLowerCase().replace(/\s+/g, '-')}`,
+              code: targetDeptName || 'DPT',
+              name: targetDeptName,
+              jobPositionCodes: [],
+              linkedJobPositions: [],
+            }
+            if (!localAssignmentObj) {
+              createDepartmentApi(orgId, {
+                id: matched.id,
+                code: matched.code,
+                name: matched.name,
+                headEmail: session?.identity?.email || '',
+                headOfDepartment: session?.identity?.fullName || session?.identity?.email || '',
+                status: 'ACTIVE',
+              }).catch(() => {})
+            }
+          }
+        }
+
+        // Secondary fallback: Match headEmail ONLY if user has no assigned department anywhere
         if (!matched && session?.identity?.email) {
           matched = effectiveDepts.find(
             (d) => (d as any).headEmail?.toLowerCase() === session?.identity?.email?.toLowerCase()
           )
         }
 
-        if (!matched && effectiveDepts.length > 0) {
-          matched = effectiveDepts[0]
-        }
-
         if (matched && isMounted) {
-          const serverCodes = (matched as any).jobPositionCodes || (matched as any).linkedJobPositions || []
-          const localDeptMatch = localDepts.find((ld) => ld.id === matched.id || ld.code === matched.code)
-          const localCodes = localDeptMatch?.linkedJobPositions || []
-          const mergedCodes = Array.from(new Set([...serverCodes, ...localCodes]))
+          const serverCodes = (matched as any).jobPositionCodes ?? (matched as any).linkedJobPositions
+          let effectiveCodes: string[] = []
+          if (Array.isArray(serverCodes) && (matched as any).createdAt !== undefined) {
+            effectiveCodes = serverCodes
+          } else {
+            const localDeptMatch = localDepts.find(
+              (ld) =>
+                ld.id === matched.id ||
+                ld.code === matched.code ||
+                ld.name?.toLowerCase() === matched.name?.toLowerCase()
+            )
+            effectiveCodes = (serverCodes && serverCodes.length > 0) ? serverCodes : (localDeptMatch?.linkedJobPositions || [])
+          }
           setManagerDepartment((prev) => {
             if (
               prev &&
               prev.id === matched.id &&
               prev.name === matched.name &&
-              prev.jobPositionCodes.length === mergedCodes.length &&
-              prev.jobPositionCodes.every((c, i) => c === mergedCodes[i])
+              prev.jobPositionCodes.length === effectiveCodes.length &&
+              prev.jobPositionCodes.every((c, i) => c === effectiveCodes[i])
             ) {
               return prev
             }
             return {
               id: matched.id,
+              code: matched.code,
               name: matched.name,
-              jobPositionCodes: mergedCodes,
+              jobPositionCodes: effectiveCodes,
             }
           })
+        } else if (!matched && isMounted) {
+          setManagerDepartment(null)
         }
       } catch {
-        const localDepts = loadDepartments()
-        if (localDepts.length > 0 && isMounted) {
-          setManagerDepartment({
-            id: localDepts[0].id,
-            name: localDepts[0].name,
-            jobPositionCodes: localDepts[0].linkedJobPositions || [],
-          })
-        }
+        // Leave current or null
       }
     }
     loadManagerDept()
@@ -634,7 +743,7 @@ export function TargetRolesPage() {
             orgId,
           )
 
-          const localDepts = loadDepartments()
+          const localDepts = loadDepartments(orgId)
           const matchedDept = localDepts.find((d) =>
             (d.linkedJobPositions || []).some(
               (p) => p.replace(/\.00$/, '').toLowerCase().trim() === occ.code.replace(/\.00$/, '').toLowerCase().trim()
@@ -1167,11 +1276,8 @@ export function TargetRolesPage() {
     const deptId = managerDepartment?.id?.toLowerCase().trim()
 
     return roles.filter((r) => {
-      // If user is L&D Manager, only show roles in that department
-      if (isLdManager) {
-        if (!managerDepartment) {
-          return false
-        }
+      // If user is L&D Manager with an assigned department, scope roles to that department; otherwise show all organization roles
+      if (isLdManager && managerDepartment) {
         const roleDept = (r.department || '').toLowerCase().trim()
         const roleDeptId = (r.departmentId || '').toLowerCase().trim()
         const matchesDept = Boolean(
@@ -1186,8 +1292,10 @@ export function TargetRolesPage() {
           (allowedJobPositionCodes.has(occCode) ||
             Array.from(allowedJobPositionCodes).some((c) => c.replace(/\.00$/, '') === baseOccCode))
 
-        if (!matchesJobPosition && !matchesDept) {
-          return false
+        if (allowedJobPositionCodes.size > 0 || deptName || deptId) {
+          if (!matchesJobPosition && !matchesDept) {
+            return false
+          }
         }
       }
 
@@ -1424,7 +1532,7 @@ export function TargetRolesPage() {
 
       if (managerDepartment.id) {
         try {
-          const depts = loadDepartments()
+          const depts = loadDepartments(orgId)
           const targetDept = depts.find(
             (d) => d.id === managerDepartment.id || d.code === managerDepartment.id
           )
@@ -1432,7 +1540,7 @@ export function TargetRolesPage() {
             const currentLinked = targetDept.linkedJobPositions || []
             if (!currentLinked.includes(selectedOcc.code)) {
               const nextLinked = [...currentLinked, selectedOcc.code]
-              updateDepartment(targetDept.id, { linkedJobPositions: nextLinked })
+              updateDepartment(targetDept.id, { linkedJobPositions: nextLinked }, orgId)
               linkJobPositionToDepartment(orgId, targetDept.id, selectedOcc.code).catch(() => {})
               updateDepartmentApi(orgId, targetDept.id, {
                 code: targetDept.code,
@@ -3132,23 +3240,30 @@ export function TargetRolesPage() {
 
                   <div className="flex items-center gap-1.5 shrink-0">
                     <span className="text-[11px] text-muted-foreground whitespace-nowrap">Est. Duration:</span>
-                    <input
-                      type="text"
-                      value={roleForm.levelDurations?.[name] ?? (idx === 0 ? '6 months' : idx === 1 ? '4 months' : idx === 2 ? '3 months' : '2 months')}
-                      onChange={(e) => {
-                        const val = e.target.value
-                        setRoleForm((prev) => ({
-                          ...prev,
-                          levelDurations: {
-                            ...(prev.levelDurations || {}),
-                            [name]: val,
-                          },
-                        }))
-                      }}
-                      placeholder="e.g. 6 months"
-                      className="w-24 px-2 py-1 text-xs rounded border border-border bg-background text-foreground font-medium focus:ring-1 focus:ring-primary focus:outline-none"
-                      title="Estimated Level Duration"
-                    />
+                    <div className="inline-flex items-center rounded border border-border bg-background focus-within:ring-1 focus-within:ring-primary focus-within:border-primary overflow-hidden">
+                      <input
+                        type="number"
+                        min={1}
+                        step={1}
+                        value={parseDurationNumber(roleForm.levelDurations?.[name], idx === 0 ? 6 : idx === 1 ? 4 : idx === 2 ? 3 : 2)}
+                        onChange={(e) => {
+                          const raw = e.target.value.replace(/\D/g, '')
+                          const num = raw ? Math.max(1, parseInt(raw, 10)) : 1
+                          setRoleForm((prev) => ({
+                            ...prev,
+                            levelDurations: {
+                              ...(prev.levelDurations || {}),
+                              [name]: `${num} months`,
+                            },
+                          }))
+                        }}
+                        className="w-12 px-2 py-1 text-xs bg-transparent text-foreground font-semibold text-center focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                        title="Estimated Level Duration"
+                      />
+                      <span className="px-1.5 py-1 text-xs text-muted-foreground font-medium bg-muted/40 border-l border-border select-none">
+                        months
+                      </span>
+                    </div>
                   </div>
 
                   {roleForm.levelNames.length > 1 && (
@@ -3868,28 +3983,35 @@ export function TargetRolesPage() {
 
                         <div className="flex items-center gap-1.5 shrink-0">
                           <span className="text-[11px] text-muted-foreground whitespace-nowrap">Est. Duration:</span>
-                          <input
-                            type="text"
-                            disabled={isSubmittedRole || isPublishedRole}
-                            value={editRoleForm.levelDurations?.[name] ?? (idx === 0 ? '6 months' : idx === 1 ? '4 months' : idx === 2 ? '3 months' : '2 months')}
-                            onChange={(e) => {
-                              const val = e.target.value
-                              setEditRoleForm((prev) => ({
-                                ...prev,
-                                levelDurations: {
-                                  ...(prev.levelDurations || {}),
-                                  [name]: val,
-                                },
-                              }))
-                            }}
-                            placeholder="e.g. 6 months"
-                            className={`w-24 px-2 py-1 text-xs rounded border border-border bg-background text-foreground font-medium focus:ring-1 focus:ring-primary focus:outline-none ${
-                              isSubmittedRole || isPublishedRole
-                                ? 'bg-muted/50 cursor-not-allowed opacity-80'
-                                : ''
-                            }`}
-                            title="Estimated Level Duration"
-                          />
+                          <div className={`inline-flex items-center rounded border border-border bg-background focus-within:ring-1 focus-within:ring-primary focus-within:border-primary overflow-hidden ${
+                            isSubmittedRole || isPublishedRole
+                              ? 'bg-muted/50 cursor-not-allowed opacity-80'
+                              : ''
+                          }`}>
+                            <input
+                              type="number"
+                              min={1}
+                              step={1}
+                              disabled={isSubmittedRole || isPublishedRole}
+                              value={parseDurationNumber(editRoleForm.levelDurations?.[name], idx === 0 ? 6 : idx === 1 ? 4 : idx === 2 ? 3 : 2)}
+                              onChange={(e) => {
+                                const raw = e.target.value.replace(/\D/g, '')
+                                const num = raw ? Math.max(1, parseInt(raw, 10)) : 1
+                                setEditRoleForm((prev) => ({
+                                  ...prev,
+                                  levelDurations: {
+                                    ...(prev.levelDurations || {}),
+                                    [name]: `${num} months`,
+                                  },
+                                }))
+                              }}
+                              className="w-12 px-2 py-1 text-xs bg-transparent text-foreground font-semibold text-center focus:outline-none disabled:cursor-not-allowed [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                              title="Estimated Level Duration"
+                            />
+                            <span className="px-1.5 py-1 text-xs text-muted-foreground font-medium bg-muted/40 border-l border-border select-none">
+                              months
+                            </span>
+                          </div>
                         </div>
 
                         {!isSubmittedRole &&

@@ -10,7 +10,6 @@ import {
   Power,
   Search,
   Trash2,
-  Users,
 } from 'lucide-react'
 import { Combobox, type ComboboxOption } from '../../../shared/components/ui/Combobox'
 import { Badge } from '../../../shared/components/ui/Badge'
@@ -33,12 +32,12 @@ import { WorkspaceSessionContext } from '../../../shared/auth/workspaceSession'
 import {
   getActiveCompany,
   resolveWorkspaceOrgId,
-  type CompanyRecord,
 } from '../../../shared/stores/companyStore'
 import {
   createDepartment,
   deleteDepartment,
   loadDepartments,
+  saveDepartments,
   updateDepartment,
   type DepartmentRecord,
 } from '../../../shared/stores/departmentStore'
@@ -47,6 +46,7 @@ import {
   createDepartmentApi,
   updateDepartmentApi,
   deleteDepartmentApi,
+  unlinkJobPositionFromDepartment,
   type DepartmentDto,
 } from '../../../shared/api/departmentApi'
 import {
@@ -75,9 +75,8 @@ export function DepartmentsManagementPage() {
   const activeCompany = getActiveCompany()
   const orgId = resolveWorkspaceOrgId(session?.identity?.organizationId || activeCompany?.id)
 
-  const [departments, setDepartments] = React.useState<DepartmentRecord[]>(loadDepartments)
+  const [departments, setDepartments] = React.useState<DepartmentRecord[]>(() => loadDepartments(orgId))
   const [availableJobPositions, setAvailableJobPositions] = React.useState<JobPosition[]>([])
-  const [company, setCompany] = React.useState<CompanyRecord>(getActiveCompany)
   const [searchQuery, setSearchQuery] = React.useState('')
   const [statusFilter, setStatusFilter] = React.useState<'ALL' | 'active' | 'inactive'>('ALL')
   const [currentPage, setCurrentPage] = React.useState(1)
@@ -115,7 +114,7 @@ export function DepartmentsManagementPage() {
   const fetchLiveDepartments = React.useCallback(async () => {
     try {
       const data = await fetchDepartments(orgId)
-      if (Array.isArray(data) && data.length > 0) {
+      if (Array.isArray(data)) {
         const mapped: DepartmentRecord[] = data.map((d: DepartmentDto) => ({
           id: d.id,
           code: d.code,
@@ -129,13 +128,24 @@ export function DepartmentsManagementPage() {
           createdAt: d.createdAt || '2026-11-04',
           updatedAt: d.updatedAt,
         }))
-        setDepartments(mapped)
+
+        // Merge live data with any locally created departments for this org
+        const localDepts = loadDepartments(orgId)
+        const liveIds = new Set(mapped.map((m) => m.id))
+        const liveCodes = new Set(mapped.map((m) => m.code.toUpperCase()))
+        const localOnly = localDepts.filter(
+          (loc) => !liveIds.has(loc.id) && !liveCodes.has(loc.code.toUpperCase())
+        )
+        const merged = [...mapped, ...localOnly]
+
+        setDepartments(merged)
+        saveDepartments(merged, orgId, false)
         return
       }
     } catch {
       // Offline fallback: load from departmentStore
     }
-    setDepartments(loadDepartments())
+    setDepartments(loadDepartments(orgId))
   }, [orgId])
 
   // Load available job positions for selection and linking (merging localStorage & live Neo4j)
@@ -145,13 +155,20 @@ export function DepartmentsManagementPage() {
     // Priority 1: Check localStorage directly for user-created job positions from L&D manager
     try {
       if (typeof localStorage !== 'undefined') {
+        const isDemo = orgId === 'e0000000-0000-0000-0000-000000000001'
         const keys = [
           'adaptlearn_jobPositions_v2_' + orgId,
           'adaptlearn_job_positions_v2_' + orgId,
-          'adaptlearn_jobPositions_v2_e0000000-0000-0000-0000-000000000001',
-          'adaptlearn_job_positions_v2_e0000000-0000-0000-0000-000000000001',
-          'adaptlearn_jobPositions_v2_',
-          'adaptlearn_job_positions_v2_',
+          ...(isDemo
+            ? [
+                'adaptlearn_jobPositions_v2_comp-technova',
+                'adaptlearn_job_positions_v2_comp-technova',
+                'adaptlearn_jobPositions_v2_e0000000-0000-0000-0000-000000000001',
+                'adaptlearn_job_positions_v2_e0000000-0000-0000-0000-000000000001',
+                'adaptlearn_jobPositions_v2_',
+                'adaptlearn_job_positions_v2_',
+              ]
+            : []),
         ]
         for (const k of keys) {
           const raw = localStorage.getItem(k)
@@ -217,13 +234,12 @@ export function DepartmentsManagementPage() {
   const reloadData = React.useCallback(() => {
     fetchLiveDepartments()
     loadJobPositions()
-    setCompany(getActiveCompany())
   }, [fetchLiveDepartments, loadJobPositions])
 
   React.useEffect(() => {
     let timeoutId: any = null
     const handleStorage = (e: StorageEvent) => {
-      if (e.key && (e.key === 'adaptlearn_departments_v1' || e.key === 'adaptlearn_departments_v2')) {
+      if (e.key && (e.key.startsWith('adaptlearn_departments_') || e.key === 'adaptlearn_departments_v1')) {
         clearTimeout(timeoutId)
         timeoutId = setTimeout(() => {
           reloadData()
@@ -245,9 +261,13 @@ export function DepartmentsManagementPage() {
     }
   }, [reloadData])
 
-  // Filter departments by search and status
+  // Filter departments by search, status, and current organization
   const filteredDepartments = React.useMemo(() => {
     return departments.filter((d) => {
+      if (d.organizationId && orgId && d.organizationId !== orgId) {
+        return false
+      }
+
       const matchesSearch =
         d.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         d.code.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -260,7 +280,7 @@ export function DepartmentsManagementPage() {
 
       return matchesSearch && matchesStatus
     })
-  }, [departments, searchQuery, statusFilter])
+  }, [departments, orgId, searchQuery, statusFilter])
 
   const sortedDepartments = React.useMemo(() => {
     return [...filteredDepartments].sort((a, b) => {
@@ -277,11 +297,13 @@ export function DepartmentsManagementPage() {
   }, [sortedDepartments, currentPage, pageSize])
 
   // KPIs
-  const totalDepts = departments.length
-  const activeCount = departments.filter((d) => d.status === 'active').length
-  const inactiveCount = departments.filter((d) => d.status === 'inactive').length
-  const totalConnectedJobPositions = new Set(departments.flatMap((d) => d.linkedJobPositions)).size
-  const totalAssignedMembers = company.users.length
+  const orgDepartments = React.useMemo(() => {
+    return departments.filter((d) => !d.organizationId || !orgId || d.organizationId === orgId)
+  }, [departments, orgId])
+  const totalDepts = orgDepartments.length
+  const activeCount = orgDepartments.filter((d) => d.status === 'active').length
+  const inactiveCount = orgDepartments.filter((d) => d.status === 'inactive').length
+  const totalConnectedJobPositions = new Set(orgDepartments.flatMap((d) => d.linkedJobPositions)).size
 
   // Handlers
   const handleOpenCreate = () => {
@@ -334,6 +356,16 @@ export function DepartmentsManagementPage() {
     const codeClean = formCode.trim().toUpperCase()
 
     if (editingDept) {
+      // Explicitly unlink any job positions removed by the admin
+      const previousCodes = editingDept.linkedJobPositions || []
+      const removedCodes = previousCodes.filter((c) => !selectedJobPositions.includes(c))
+      for (const code of removedCodes) {
+        await unlinkJobPositionFromDepartment(orgId, editingDept.id, code).catch(() => {})
+        if (codeClean !== editingDept.id) {
+          await unlinkJobPositionFromDepartment(orgId, codeClean, code).catch(() => {})
+        }
+      }
+
       try {
         await updateDepartmentApi(orgId, editingDept.id, {
           id: editingDept.id,
@@ -349,14 +381,40 @@ export function DepartmentsManagementPage() {
         console.warn('Neo4j department update error, updating local store:', err)
       }
 
-      updateDepartment(editingDept.id, {
-        name: formName.trim(),
-        code: codeClean,
-        description: formDescription.trim(),
-        headOfDepartment: editingDept.headOfDepartment || '',
-        headEmail: editingDept.headEmail || '',
-        linkedJobPositions: selectedJobPositions,
-      })
+      updateDepartment(
+        editingDept.id,
+        {
+          name: formName.trim(),
+          code: codeClean,
+          description: formDescription.trim(),
+          headOfDepartment: editingDept.headOfDepartment || '',
+          headEmail: editingDept.headEmail || '',
+          linkedJobPositions: selectedJobPositions,
+        },
+        orgId
+      )
+
+      window.dispatchEvent(new Event('departments_updated'))
+      window.dispatchEvent(
+        new CustomEvent('adaptlearn_job_positions_updated', {
+          detail: { organizationId: orgId },
+        })
+      )
+
+      setDepartments((prev) =>
+        prev.map((d) =>
+          d.id === editingDept.id || d.code === editingDept.code
+            ? {
+                ...d,
+                name: formName.trim(),
+                code: codeClean,
+                description: formDescription.trim(),
+                linkedJobPositions: selectedJobPositions,
+                updatedAt: new Date().toISOString(),
+              }
+            : d
+        )
+      )
 
       toast({
         title: 'Department Updated',
@@ -365,6 +423,28 @@ export function DepartmentsManagementPage() {
       })
     } else {
       const newId = `dept-${codeClean.toLowerCase().replace(/[^a-z0-9]/g, '-')}`
+      const newDeptRecord = createDepartment(
+        {
+          name: formName.trim(),
+          code: codeClean,
+          description: formDescription.trim(),
+          headOfDepartment: '',
+          headEmail: '',
+          status: 'active',
+          linkedJobPositions: selectedJobPositions,
+        },
+        orgId
+      )
+
+      // Optimistically update React state immediately
+      setDepartments((prev) => [
+        newDeptRecord,
+        ...prev.filter((d) => d.id !== newDeptRecord.id && d.code !== newDeptRecord.code),
+      ])
+      setCurrentPage(1)
+      setSearchQuery('')
+      setStatusFilter('ALL')
+
       try {
         await createDepartmentApi(orgId, {
           id: newId,
@@ -377,22 +457,13 @@ export function DepartmentsManagementPage() {
           linkedJobPositions: selectedJobPositions,
         })
       } catch (err: unknown) {
-        console.warn('Neo4j department create error, creating in local store:', err)
+        console.warn('Neo4j department create error, saved in local store:', err)
       }
 
-      createDepartment({
-        name: formName.trim(),
-        code: codeClean,
-        description: formDescription.trim(),
-        headOfDepartment: '',
-        headEmail: '',
-        status: 'active',
-        linkedJobPositions: selectedJobPositions,
-      })
 
       toast({
         title: 'Department Created',
-        description: `Created ${formName} (${codeClean}) and synchronized with Neo4j.`,
+        description: `Created ${formName} (${codeClean}) successfully.`,
         variant: 'success',
       })
     }
@@ -406,6 +477,11 @@ export function DepartmentsManagementPage() {
   // Toggle Department Status (Active <-> Inactive)
   const handleToggleStatus = async (dept: DepartmentRecord) => {
     const nextStatus = dept.status === 'active' ? 'inactive' : 'active'
+    updateDepartment(dept.id, { status: nextStatus }, orgId)
+    setDepartments((prev) =>
+      prev.map((d) => (d.id === dept.id || d.code === dept.code ? { ...d, status: nextStatus } : d))
+    )
+
     try {
       await updateDepartmentApi(orgId, dept.id, {
         code: dept.code,
@@ -418,7 +494,6 @@ export function DepartmentsManagementPage() {
       })
     } catch {}
 
-    updateDepartment(dept.id, { status: nextStatus })
     toast({
       title: nextStatus === 'active' ? 'Department Activated' : 'Department Deactivated',
       description: `${dept.name} is now ${nextStatus}.`,
@@ -433,7 +508,10 @@ export function DepartmentsManagementPage() {
     const targetDept = deptToDelete
     setIsDeleteModalOpen(false)
     setDeptToDelete(null)
-    deleteDepartment(targetDept.id)
+    deleteDepartment(targetDept.id, orgId)
+    setDepartments((prev) =>
+      prev.filter((d) => d.id !== targetDept.id && d.code !== targetDept.id && d.code !== targetDept.code)
+    )
     toast({
       title: 'Department Removed',
       description: `${targetDept.name} has been removed from the directory.`,
@@ -468,8 +546,8 @@ export function DepartmentsManagementPage() {
           }
         />
 
-        {/* 4 KPI StatCards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* 3 KPI StatCards */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <StatCard
             variant="gradient"
             icon={<Building2 className="h-4 w-4 text-primary" />}
@@ -495,15 +573,7 @@ export function DepartmentsManagementPage() {
             value={`${totalConnectedJobPositions} Positions`}
             valueClassName="text-warning"
             description="Mapped industry roles"
-          />
 
-          <StatCard
-            variant="gradient"
-            icon={<Users className="h-4 w-4 text-primary" />}
-            title="Workforce Members"
-            value={`${totalAssignedMembers} Members`}
-            valueClassName="text-primary"
-            description="Enrolled across units"
           />
         </div>
 
@@ -558,7 +628,7 @@ export function DepartmentsManagementPage() {
           </CardHeader>
 
           <CardContent className="p-0">
-            {departments.length === 0 ? (
+            {orgDepartments.length === 0 ? (
               <div className="p-12 text-center text-muted-foreground space-y-3">
                 <Building2 className="h-10 w-10 mx-auto text-muted-foreground/40" />
                 <p className="text-base font-semibold text-foreground">No departments created yet</p>
@@ -702,11 +772,11 @@ export function DepartmentsManagementPage() {
         )}
       </div>
 
-      {/* ENLARGED CREATE / EDIT DEPARTMENT MODAL */}
+      {/* CREATE / EDIT DEPARTMENT MODAL */}
       <Dialog
         open={isFormModalOpen}
         onOpenChange={setIsFormModalOpen}
-        className="max-w-4xl w-full min-h-[640px] max-h-[92vh] flex flex-col p-8 overflow-hidden"
+        className="max-w-4xl w-full max-h-[90vh] flex flex-col p-6 sm:p-8 overflow-hidden"
       >
         <DialogHeader className="shrink-0 mb-4">
           <div className="flex items-center justify-between pr-4">

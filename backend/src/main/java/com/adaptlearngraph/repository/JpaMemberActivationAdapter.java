@@ -152,7 +152,7 @@ public final class JpaMemberActivationAdapter implements MemberActivationUseCase
             var summary = workspaces.summary(organization, now);
             if (!"ACTIVE".equals(status) || !"ACTIVE".equals(summary.subscriptionStatus())) throw new SubscriptionFailure(SubscriptionFailure.Code.FORBIDDEN, "Workspace activation is unavailable while expired or suspended.");
             validator.validate(organization, roles, activation.departmentId(), activation.jobPositionReferenceId(), false);
-            if (roles.contains("EMPLOYEE") && summary.usedSeats() >= summary.admissionLimit()) throw new SubscriptionFailure(SubscriptionFailure.Code.CAPACITY_EXCEEDED, "No Employee seat is available. Contact your administrator.");
+            if (!roles.contains("ORGANIZATION_ADMINISTRATOR") && summary.usedSeats() >= summary.admissionLimit()) throw new SubscriptionFailure(SubscriptionFailure.Code.CAPACITY_EXCEEDED, "No seat is available. Contact your administrator.");
             security.lockEmail(activation.email());
             if (security.accountExists(activation.email())) throw new SubscriptionFailure(SubscriptionFailure.Code.CONFLICT, "The account already exists.");
             UUID account = UUID.randomUUID();
