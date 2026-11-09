@@ -329,6 +329,15 @@ function syncEmployeeAssignmentCache(member: Member): void {
 export async function getMembers(organization: string): Promise<Member[]> {
   return list(await request(`/api/v1/organizations/${organization}/subscription/members`), parseMember)
 }
+export async function getMyAssignment(organization: string): Promise<Member | null> {
+  try {
+    const raw = await request(`/api/v1/organizations/${organization}/subscription/my-assignment`)
+    if (!raw) return null
+    return parseMember(raw)
+  } catch {
+    return null
+  }
+}
 function parseMember(value: unknown): Member {
   const v = object(value)
   const rawJpName = nullable(v.jobPositionName, text)

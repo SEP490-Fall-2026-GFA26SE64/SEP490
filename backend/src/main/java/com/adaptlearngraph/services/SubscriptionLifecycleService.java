@@ -89,6 +89,17 @@ public final class SubscriptionLifecycleService implements SubscriptionLifecycle
         return workspaces.members(organizationId);
     }
     @Override
+    public Member myAssignment(UUID organizationId) {
+        var currentContext = identity.current();
+        if (currentContext == null || currentContext.actor() == null) return null;
+        var actor = currentContext.actor();
+        workspaces.require(actor, organizationId, Action.WORKSPACE, clock.instant());
+        return workspaces.members(organizationId).stream()
+                .filter(m -> actor.accountId() != null && actor.accountId().equals(m.accountId()))
+                .findFirst()
+                .orElse(null);
+    }
+    @Override
     public void changeMember(UUID organizationId,UUID member,boolean active,Set<String> roles,long revision) {
         workspaces.changeMember(identity.current().actor(),organizationId,member,active,roles,revision,clock.instant());
     }

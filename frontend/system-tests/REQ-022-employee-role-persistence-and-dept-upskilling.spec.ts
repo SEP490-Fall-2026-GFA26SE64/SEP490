@@ -200,6 +200,14 @@ test.describe('Employee Target Role & Level Persistence and Department-Scoped Up
       })
     })
 
+    await page.route(`**/api/v1/organizations/${ORG_ID}/subscription/my-assignment`, async route => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify(storedMemberRow),
+      })
+    })
+
     let lastSavedPayload: Record<string, unknown> | null = null
     await page.route(`**/api/v1/organizations/${ORG_ID}/subscription/members/${ALEX_MEMBER_ID}/profile`, async route => {
       const body = route.request().postDataJSON() as Record<string, unknown>
