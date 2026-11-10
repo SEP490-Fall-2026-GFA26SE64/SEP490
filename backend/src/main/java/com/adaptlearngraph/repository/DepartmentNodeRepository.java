@@ -48,6 +48,16 @@ public interface DepartmentNodeRepository extends Repository<DepartmentNode, Str
     @Query("""
             MATCH (d:Department {organizationId: $organizationId})
             WHERE d.id = $idOrCode OR d.code = $idOrCode
+            OPTIONAL MATCH (d)-[:HAS_JOB_POSITION]->(jp:JobPosition)-[:HAS_ROLE]->(tr1:TargetRole)
+              WHERE tr1.organizationId = $organizationId
+            OPTIONAL MATCH (tr2:TargetRole {organizationId: $organizationId})
+              WHERE tr2.departmentId = d.id OR tr2.departmentId = d.code
+            WITH d, [r IN (collect(DISTINCT tr1) + collect(DISTINCT tr2)) WHERE r IS NOT NULL] AS roles
+            UNWIND (CASE WHEN size(roles) = 0 THEN [null] ELSE roles END) AS tr
+            OPTIONAL MATCH (tr)-[:HAS_LEVEL]->(lvl:Level)
+            WITH d, collect(DISTINCT tr) AS distinctRoles, collect(DISTINCT lvl) AS distinctLevels
+            FOREACH (l IN distinctLevels | DETACH DELETE l)
+            FOREACH (r IN distinctRoles | DETACH DELETE r)
             DETACH DELETE d
             """)
     void deleteByIdOrCode(@Param("organizationId") String organizationId, @Param("idOrCode") String idOrCode);

@@ -110,7 +110,7 @@ export function ProfilePage() {
   const [assignment, setAssignment] = React.useState<EmployeeAssignmentData | null>(() => {
     if (typeof localStorage === 'undefined') return null
     try {
-      const email = (sessionIdentity?.email || localStorage.getItem(`user_email_${activeActor}`) || '').toLowerCase().trim()
+      const email = (sessionIdentity?.email || '').toLowerCase().trim()
       if (email) {
         const raw = localStorage.getItem(`alg_employee_assignment_${email}`)
         if (raw) return JSON.parse(raw) as EmployeeAssignmentData
@@ -123,8 +123,8 @@ export function ProfilePage() {
     let cancelled = false
     async function loadBackendAssignment() {
       try {
-        let userEmail = (sessionIdentity?.email || profile.email || '').toLowerCase().trim()
-        let orgId = sessionIdentity?.organizationId || resolveWorkspaceOrgId()
+        let userEmail = (sessionIdentity?.email || '').toLowerCase().trim()
+        let orgId = sessionIdentity?.organizationId || ''
 
         if (!userEmail || !orgId) {
           const authRes = await workspaceFetch('/api/v1/workspace-auth/current')
@@ -144,6 +144,10 @@ export function ProfilePage() {
           }
         }
 
+        if (!orgId) {
+          orgId = resolveWorkspaceOrgId()
+        }
+
         // 1. Fetch self assignment from backend (accessible to employee, expert, ld, admin)
         if (orgId) {
           try {
@@ -154,16 +158,22 @@ export function ProfilePage() {
               const myData = await myRes.json()
               if (myData && !cancelled) {
                 const decoded = decodeJobPositionWithTargetRole(myData.jobPositionName)
-                setAssignment({
+                const resolvedAssignment: EmployeeAssignmentData = {
                   departmentId: myData.departmentId || null,
                   departmentName: myData.departmentName || null,
                   jobPositionCode: myData.jobPositionReferenceId || null,
-                  jobPositionName: decoded.cleanJobPositionName || null,
+                  jobPositionName: decoded.cleanJobPositionName || myData.jobPositionName || null,
                   roleId: myData.targetRoleId || decoded.targetRoleId || null,
                   roleCode: myData.targetRoleCode || decoded.targetRoleCode || null,
                   roleTitle: myData.targetRoleName || decoded.targetRoleName || null,
                   level: myData.targetRoleLevel || decoded.targetRoleLevel || null,
-                })
+                }
+                setAssignment(resolvedAssignment)
+                if (userEmail) {
+                  try {
+                    localStorage.setItem(`alg_employee_assignment_${userEmail}`, JSON.stringify(resolvedAssignment))
+                  } catch {}
+                }
                 return
               }
             }
@@ -184,16 +194,22 @@ export function ProfilePage() {
                 )
                 if (matched && !cancelled) {
                   const decoded = decodeJobPositionWithTargetRole(matched.jobPositionName)
-                  setAssignment({
+                  const resolvedAssignment: EmployeeAssignmentData = {
                     departmentId: matched.departmentId || null,
                     departmentName: matched.departmentName || null,
                     jobPositionCode: matched.jobPositionReferenceId || null,
-                    jobPositionName: decoded.cleanJobPositionName || null,
+                    jobPositionName: decoded.cleanJobPositionName || matched.jobPositionName || null,
                     roleId: matched.targetRoleId || decoded.targetRoleId || null,
                     roleCode: matched.targetRoleCode || decoded.targetRoleCode || null,
                     roleTitle: matched.targetRoleName || decoded.targetRoleName || null,
                     level: matched.targetRoleLevel || decoded.targetRoleLevel || null,
-                  })
+                  }
+                  setAssignment(resolvedAssignment)
+                  if (userEmail) {
+                    try {
+                      localStorage.setItem(`alg_employee_assignment_${userEmail}`, JSON.stringify(resolvedAssignment))
+                    } catch {}
+                  }
                   return
                 }
               }
@@ -472,7 +488,7 @@ export function ProfilePage() {
                         Assigned Department
                       </span>
                       <span className="text-xs font-medium text-foreground block mt-0.5" data-testid="profile-department-name">
-                        {assignment?.departmentName || profile.department || 'Unassigned'}
+                        {assignment?.departmentName || 'Unassigned'}
                       </span>
                     </div>
 

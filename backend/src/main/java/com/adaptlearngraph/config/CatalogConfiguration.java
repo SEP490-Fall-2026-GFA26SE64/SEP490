@@ -104,8 +104,14 @@ public class CatalogConfiguration {
 
     @Bean
     public DepartmentApplicationService departmentApplicationService(
-            GetDepartmentsUseCase getDepartmentsUseCase, ModelMapper modelMapper) {
-        return new DepartmentApplicationService(getDepartmentsUseCase, modelMapper);
+            GetDepartmentsUseCase getDepartmentsUseCase, ModelMapper modelMapper,
+            ObjectProvider<com.adaptlearngraph.repository.DepartmentReferenceJpaRepository> referencesProvider,
+            @org.springframework.beans.factory.annotation.Qualifier(com.adaptlearngraph.constants.TransactionManagers.JPA)
+            ObjectProvider<org.springframework.transaction.PlatformTransactionManager> jpaManagerProvider) {
+        org.springframework.transaction.PlatformTransactionManager ptm = jpaManagerProvider.getIfAvailable();
+        org.springframework.transaction.support.TransactionTemplate tx = ptm != null
+                ? new org.springframework.transaction.support.TransactionTemplate(ptm) : null;
+        return new DepartmentApplicationService(getDepartmentsUseCase, modelMapper, referencesProvider.getIfAvailable(), tx);
     }
 
     @Bean

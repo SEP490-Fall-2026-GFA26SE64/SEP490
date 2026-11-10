@@ -11,7 +11,12 @@ import type { RoleFlowView } from './currentRoleFlowApi'
 
 export function CurrentRoleSummary({ view, onDetails, disabled = false }: { view: RoleFlowView; onDetails: () => void; disabled?: boolean }) {
   const { t } = useTranslation()
-  const placement = view.placement ?? null
+  const placement = view.placement ?? (view.startingPlacement ? {
+    roleId: view.startingPlacement.role.id,
+    roleCode: view.startingPlacement.role.code,
+    roleName: view.startingPlacement.role.name,
+    levelName: view.assignedLevel ?? null,
+  } : null)
   const selection = view.selection
   const activeLevel = selection?.role.levels.find(level => level.id === selection.levelId)
 

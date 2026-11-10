@@ -12,6 +12,7 @@ public record MicroSkillNode(
         @Id String id,
         @Property("organizationId") String organizationId,
         @Property("code") String code,
+        @Property("sourceId") String sourceId,
         @Property("name") String name,
         @Property("description") String description,
         @Property("definition") String definition,

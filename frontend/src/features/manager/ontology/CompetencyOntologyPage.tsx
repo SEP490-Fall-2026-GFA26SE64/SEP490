@@ -193,10 +193,13 @@ function OwnedCompetencyOntologyPage() {
 
   // State for active tab
   const [activeTab, setActiveTab] = React.useState('graph')
-  // Target Roles State for Explore Graph Authoring
+  // Target Roles State for Explore Graph Authoring (only DRAFT or REJECTED)
   const [targetRoles, setTargetRoles] = React.useState<TargetRoleModel[]>(() => {
     const active = getActiveCompany()
-    return active?.targetRoles ?? []
+    return (active?.targetRoles ?? []).filter((r) => {
+      const s = (r.status || '').toLowerCase()
+      return s === 'draft' || s === 'rejected' || s === 'reject'
+    })
   })
 
   const handleUpdateTargetRole = React.useCallback(async (updatedRole: TargetRoleModel) => {
@@ -396,9 +399,15 @@ function OwnedCompetencyOntologyPage() {
               description: String(r.description || ''),
               responsibilities: Array.isArray(r.responsibilities) ? r.responsibilities : [],
               version: String(r.version || '1.0'),
-              status: (String(r.status || '').toLowerCase() === 'active'
-                ? 'published'
-                : String(r.status || 'draft').toLowerCase()) as TargetRoleModel['status'],
+              status: (String(r.status || '').toLowerCase() === 'draft' || String(r.status || '').toLowerCase() === 'sent'
+                ? 'draft'
+                : String(r.status || '').toLowerCase() === 'rejected'
+                  ? 'rejected'
+                  : String(r.status || '').toLowerCase() === 'submitted'
+                    ? 'submitted'
+                    : String(r.status || '').toLowerCase() === 'unpublished'
+                      ? 'unpublished'
+                      : 'published') as TargetRoleModel['status'],
               rejectionReason: String(r.rejectionReason || ''),
               levels: Array.isArray(r.levels) && r.levels.length > 0 ? r.levels : ['Senior', 'Middle', 'Junior'],
               levelCompetencies: (r.levelCompetencies as Record<string, string[]>) || {},
@@ -407,21 +416,40 @@ function OwnedCompetencyOntologyPage() {
               activeEnrollments: 0,
               updatedAt: String(r.updatedAt || new Date().toISOString()),
             }))
-            setTargetRoles(mappedRoles)
+
+            const customRoles = active?.targetRoles || []
+            const mergedRoles = [...mappedRoles]
+            for (const custom of customRoles) {
+              const customKey = (custom.code || custom.id || '').toUpperCase()
+              if (!mergedRoles.some((r) => (r.code || r.id || '').toUpperCase() === customKey)) {
+                mergedRoles.unshift(custom)
+              }
+            }
+            const filteredRoles = mergedRoles.filter((r) => {
+              const s = (r.status || '').toLowerCase()
+              return s === 'draft' || s === 'rejected' || s === 'reject'
+            })
+            setTargetRoles(filteredRoles)
           }
         }
       } catch {
         setMicroSkills(active?.microSkills ?? [])
         setCompetencies(active?.competencies ?? [])
         setPrerequisites([])
+        setTargetRoles((active?.targetRoles ?? []).filter((r) => {
+          const s = (r.status || '').toLowerCase()
+          return s === 'draft' || s === 'rejected' || s === 'reject'
+        }))
       }
   }, [effectiveOrgId, accountId])
 
   React.useEffect(() => {
     handleSync()
     window.addEventListener('active_company_changed', handleSync)
+    window.addEventListener('target_roles_updated', handleSync)
     return () => {
       window.removeEventListener('active_company_changed', handleSync)
+      window.removeEventListener('target_roles_updated', handleSync)
     }
   }, [handleSync])
 
@@ -847,7 +875,6 @@ function OwnedCompetencyOntologyPage() {
     const orgId = effectiveOrgId
 
     try {
-      if (!edge.dependentKnowledgeLevel || !edge.prerequisiteKnowledgeLevel) throw new Error('This legacy edge needs catalog repair before exact removal.')
       await deletePrerequisite(orgId, edge.sourceSkillId, edge.targetSkillId, edge.dependentKnowledgeLevel, edge.prerequisiteKnowledgeLevel)
       saveAndSetPrerequisites((prev) =>
         prev.filter((p) => p.id !== edge.id)

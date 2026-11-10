@@ -659,8 +659,8 @@ export function getEligibleExpertsForJobPosition(
     const expDeptId = (exp.departmentId || '').toLowerCase().trim();
     const expDeptName = (exp.departmentName || '').toLowerCase().trim();
 
-    // If expert has no department assigned, exclude when department scope is active
-    if (!expDeptId && !expDeptName) return false;
+    // If expert has no department assigned, treat as organization-wide expert
+    if (!expDeptId && !expDeptName) return true;
 
     // Check if expert's department matches targetDeptTokens directly
     if (expDeptId && targetDeptTokens.has(expDeptId)) return true;
@@ -695,7 +695,7 @@ export function getEligibleExpertsForJobPosition(
     return false;
   };
 
-  const candidateExperts = hasDeptScope
+  const candidateExperts = (hasDeptScope && allExperts.some(isExpertInDept))
     ? allExperts.filter(isExpertInDept)
     : allExperts;
 
@@ -778,8 +778,8 @@ export function getEligibleExpertsForJobPosition(
   }
 
   // Fallback: If no expert in candidates specifically matched this job position code,
-  // return the department-scoped candidates (never cross-department experts)
-  return candidateExperts;
+  // return candidate experts if available, otherwise return all organization experts
+  return candidateExperts.length > 0 ? candidateExperts : allExperts;
 }
 
 export interface CompetencyModel {
