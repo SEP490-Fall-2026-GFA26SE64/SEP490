@@ -92,9 +92,9 @@ test.describe('Capstone Standard: REQ-017 & REQ-018 Target Roles & Competency On
 
     // Verify catalog title and stat cards for Expert
     await expect(page.getByText('Target Role Version Catalog')).toBeVisible()
+    await expect(page.getByText('TOTAL TARGET ROLES')).toBeVisible()
     await expect(page.getByText('SUBMITTED ROLES')).toBeVisible()
     await expect(page.getByText('PUBLISHED ROLES')).toBeVisible()
-    await expect(page.getByText('CONFIGURED MICRO-SKILLS')).toBeVisible()
 
     // Verify Role#1 is visible in Ben's catalog
     const roleRow = page.locator('tr').filter({ hasText: 'Role#1' }).first()

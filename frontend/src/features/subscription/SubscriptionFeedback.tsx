@@ -9,9 +9,16 @@ export function useCopy() {
 }
 export function Failure({ error, retry }: { error: unknown; retry?: () => void }) {
   const c = useCopy()
+  const raw = error instanceof Error ? error.message : c('The request failed.', 'Yêu cầu thất bại.')
+  const message = /registration storage is unavailable/i.test(raw)
+    ? c('Service is temporarily unavailable. Please retry in a few moments.', 'Hệ thống tạm thời không khả dụng. Vui lòng thử lại sau giây lát.')
+    : /network error|failed to fetch/i.test(raw)
+      ? c('Unable to connect to the server. Please check your connection and try again.', 'Không thể kết nối với máy chủ. Vui lòng kiểm tra mạng và thử lại.')
+      : raw
+
   return <div role="alert" className="space-y-3 rounded-lg border border-destructive/30 bg-card p-4">
     <p className="font-semibold">{c('Unable to complete this operation', 'Không thể hoàn tất thao tác')}</p>
-    <p className="text-body-sm">{error instanceof Error ? error.message : c('The request failed.', 'Yêu cầu thất bại.')}</p>
+    <p className="text-body-sm">{message}</p>
     {error instanceof SubscriptionApiError && [401, 403].includes(error.status) &&
       <p><Link className="text-primary underline" to="/login">{c('Workspace sign in', 'Đăng nhập không gian làm việc')}</Link>
         {' · '}<Link className="text-primary underline" to="/guest/resume">{c('Resume registration', 'Tiếp tục đăng ký')}</Link></p>}

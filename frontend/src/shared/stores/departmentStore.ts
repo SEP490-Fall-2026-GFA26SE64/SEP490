@@ -177,7 +177,8 @@ export function saveDepartments(departments: DepartmentRecord[], orgId?: string,
 
 export function createDepartment(
   data: Omit<DepartmentRecord, 'id' | 'createdAt' | 'organizationId'> & { id?: string },
-  orgId?: string
+  orgId?: string,
+  notify = true
 ): DepartmentRecord {
   const effectiveOrg = orgId || getActiveCompany()?.id || 'e0000000-0000-0000-0000-000000000001'
   const current = loadDepartments(effectiveOrg)
@@ -190,7 +191,7 @@ export function createDepartment(
     status: data.status || 'active',
     createdAt: new Date().toISOString().slice(0, 10),
   }
-  saveDepartments([newDept, ...current], effectiveOrg)
+  saveDepartments([newDept, ...current], effectiveOrg, notify)
   return newDept
 }
 

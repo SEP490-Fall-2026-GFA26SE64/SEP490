@@ -22,13 +22,12 @@ import {
   EyeOff,
   FileCheck,
   History,
-  Layers,
   Network as NetworkIcon,
   Plus,
   Search,
   Send,
   Trash2,
-  Upload,
+  User,
   XCircle,
 } from 'lucide-react'
 import * as React from 'react'
@@ -2366,22 +2365,7 @@ export function TargetRolesPage() {
           actions={
             <div className="flex items-center gap-2">
               <Button
-                variant="outline"
-
-                size="sm"
-
-                leftIcon={<Upload className="h-4 w-4" />}
-
-                onClick={() => setIsImportModalOpen(true)}
-
-                className="bg-secondary text-primary border border-primary/20 hover:bg-secondary/80 font-semibold shadow-2xs"
-              >
-                Import
-              </Button>
-
-              <Button
                 variant="primary"
-
                 size="sm"
 
                 leftIcon={<Plus className="h-4 w-4" />}
@@ -2466,21 +2450,16 @@ export function TargetRolesPage() {
                 </CardDescription>
               </div>
 
-              {/* Search and Status Filters - Guaranteed 1 Single Row */}
-
-              <div className="flex items-center gap-2.5 shrink-0 flex-nowrap overflow-x-auto pb-0.5">
+              {/* Search and Status Filters */}
+              <div className="flex items-center gap-2.5 shrink-0 flex-wrap py-0.5">
                 <div className="relative w-48 sm:w-56 shrink-0">
                   <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
                   <input
                     type="text"
-
                     placeholder="Search roles..."
-
                     value={searchQuery}
-
                     onChange={(e) => setSearchQuery(e.target.value)}
-
-                    className="w-full pl-8 pr-3 py-1.5 text-xs rounded-lg bg-background border border-border text-foreground focus:outline-none focus:ring-1 focus:ring-primary shadow-2xs"
+                    className="w-full pl-8 pr-3 py-1.5 text-xs rounded-lg bg-background border border-border text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary shadow-2xs transition-colors"
                   />
                 </div>
 
@@ -4657,12 +4636,21 @@ export function TargetRolesPage() {
 
           className="max-w-5xl w-full h-[88vh] max-h-[88vh] flex flex-col p-6 overflow-hidden"
         >
-          <DialogHeader className="shrink-0 mb-3">
-            <div className="flex items-center justify-between pr-4">
-              <DialogTitle className="text-base font-bold flex items-center gap-2">
-                <Briefcase className="h-5 w-5 text-primary shrink-0" />
-                <span>{viewingDetailsRole.title}</span>
-              </DialogTitle>
+          <DialogHeader className="shrink-0 mb-3 space-y-2">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0 border border-primary/20">
+                  <Briefcase className="h-5 w-5" />
+                </div>
+                <div>
+                  <DialogTitle className="text-lg font-bold text-foreground flex items-center gap-2 flex-wrap">
+                    <span>Target Role Details: {viewingDetailsRole.title}</span>
+                    <span className="font-mono text-xs px-2 py-0.5 rounded-md bg-muted text-muted-foreground border border-border font-semibold">
+                      {viewingDetailsRole.code} • v{viewingDetailsRole.version}
+                    </span>
+                  </DialogTitle>
+                </div>
+              </div>
 
               {(() => {
                 const viewEffStatus =
@@ -4673,21 +4661,24 @@ export function TargetRolesPage() {
                     variant={
                       viewEffStatus === 'published'
                         ? 'success'
-                        : viewEffStatus === 'feedback'
+                        : viewEffStatus === 'unpublished'
                           ? 'outline'
-                          : viewEffStatus === 'rejected'
-                            ? 'destructive'
-                            : 'warning'
+                          : viewEffStatus === 'feedback'
+                            ? 'outline'
+                            : viewEffStatus === 'rejected'
+                              ? 'destructive'
+                              : 'warning'
                     }
-
                     className={
-                      viewEffStatus === 'feedback'
-                        ? 'bg-amber-500/15 !text-black border-amber-500/30 font-bold dark:!text-black text-xs'
-                        : viewEffStatus === 'submitted'
-                          ? 'bg-sky-500/10 text-sky-600 border-sky-500/20 font-bold dark:text-sky-400 text-xs'
-                          : viewEffStatus === 'sent'
-                            ? 'bg-[#EA580C] text-white border-transparent font-bold text-xs hover:bg-[#C2410C]'
-                            : 'font-bold text-xs'
+                      viewEffStatus === 'unpublished'
+                        ? 'border-muted-foreground/40 text-muted-foreground font-bold text-xs'
+                        : viewEffStatus === 'feedback'
+                          ? 'bg-amber-500/15 !text-black border-amber-500/30 font-bold dark:!text-black text-xs'
+                          : viewEffStatus === 'submitted'
+                            ? 'bg-sky-500/10 text-sky-600 border-sky-500/20 font-bold dark:text-sky-400 text-xs'
+                            : viewEffStatus === 'sent'
+                              ? 'bg-[#EA580C] text-white border-transparent font-bold text-xs hover:bg-[#C2410C]'
+                              : 'font-bold text-xs'
                     }
                   >
                     {viewEffStatus.toUpperCase()}
@@ -4697,14 +4688,12 @@ export function TargetRolesPage() {
             </div>
 
             <DialogDescription className="text-xs text-muted-foreground">
-              Comprehensive role specifications, level-by-level competency
-              requirements, and workforce alignment.
+              Comprehensive role specifications, competency requirements, and benchmark proficiency levels.
             </DialogDescription>
           </DialogHeader>
 
-          <div className="flex-1 overflow-y-auto pr-1.5 space-y-4 text-xs min-h-0">
+          <div className="flex-1 overflow-y-auto [scrollbar-gutter:stable] pr-1.5 space-y-4 text-xs min-h-0">
             {/* Rejection / Feedback Notice */}
-
             {(() => {
               const viewEffStatus =
                 getManagerEffectiveStatus(viewingDetailsRole)
@@ -4749,299 +4738,268 @@ export function TargetRolesPage() {
               return null
             })()}
 
-            {/* Job Position & Ontology Levels Banner */}
-
+            {/* Unified Role Overview Card */}
             {(() => {
               const occ = resolveJobPositionForRole(viewingDetailsRole, orgId)
+              const expId = viewingDetailsRole.assignedExpertId
+              const exp = expId
+                ? orgExperts.find((e) => e.id === expId) ||
+                  findEligibleExpert(expId, orgId, orgExperts) ||
+                  (isTechnova ? ELIGIBLE_EXPERTS.find((e) => e.id === expId) : undefined)
+                : undefined
+              const assignedExpert = exp ? exp.name : (viewingDetailsRole.assignedExpertName || 'Unassigned')
+
+              const detailRoleLevels =
+                viewingDetailsRole.levels && viewingDetailsRole.levels.length > 0
+                  ? viewingDetailsRole.levels
+                  : ['Senior', 'Middle', 'Junior']
+
+              const allLevelCompIds = new Set<string>()
+              if (viewingDetailsRole.levelCompetencies) {
+                Object.values(viewingDetailsRole.levelCompetencies).forEach((cList) => {
+                  if (Array.isArray(cList)) cList.forEach((c) => allLevelCompIds.add(c))
+                })
+              }
+              if (viewingDetailsRole.competencyIds) {
+                viewingDetailsRole.competencyIds.forEach((c) => allLevelCompIds.add(c))
+              }
+              const totalDistinctComps = allLevelCompIds.size
+              const totalConfiguredSkills = viewingDetailsRole.skillTargets?.length || 0
 
               return (
-                <div className="space-y-3">
-                  <div className="p-3.5 rounded-lg border border-primary/20 bg-primary/5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                    <div>
+                <div className="p-4 rounded-xl border border-border bg-card space-y-3.5 shadow-2xs">
+                  {/* Top Row: Job Position & Assigned Domain Expert */}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-border/70">
+                    <div className="space-y-1">
                       <div className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">
-                        Job Position
+                        Industry Job Position &amp; Classification
                       </div>
-
-                      <div className="text-sm font-bold text-foreground flex items-center gap-2 mt-0.5">
-                        <span>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-sm font-bold text-foreground">
                           {viewingDetailsRole.jobPositionTitle || occ.name}
                         </span>
                         <Badge
                           variant="outline"
-                          className="font-mono text-xs font-semibold text-primary border-primary/30"
+                          className="font-mono text-xs font-semibold text-primary border-primary/30 bg-primary/5"
                         >
                           {viewingDetailsRole.jobPositionCode || occ.code}
                         </Badge>
+                        <Badge variant="secondary" className="text-[10px] font-semibold">
+                          Job Zone 4 · Considerable Preparation
+                        </Badge>
                       </div>
-
-                      <p className="text-[11px] text-muted-foreground mt-1 max-w-xl">
-                        {occ.description}
-                      </p>
                     </div>
 
-                    <div className="shrink-0 text-right sm:border-l sm:border-border sm:pl-4">
-                      <Badge
-                        variant="secondary"
-                        className="text-[10px] font-semibold"
-                      >
-                        Job Zone 4
-                      </Badge>
-
-                      <div className="text-[10px] text-muted-foreground mt-1">
-                        Considerable Preparation
+                    <div className="shrink-0 flex items-center gap-2 sm:border-l sm:border-border sm:pl-4">
+                      <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-muted-foreground shrink-0 border border-border/80">
+                        <User className="h-4 w-4" />
+                      </div>
+                      <div>
+                        <div className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">
+                          Assigned Expert
+                        </div>
+                        <div
+                          className="text-xs font-semibold text-foreground truncate max-w-[200px]"
+                          title={assignedExpert}
+                        >
+                          {assignedExpert}
+                        </div>
                       </div>
                     </div>
                   </div>
 
-                  {/* Role Mastery Levels */}
+                  {/* Middle Row: Role Objective & Scope */}
+                  <div className="space-y-1">
+                    <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                      Role Objective &amp; Scope
+                    </div>
+                    <p className="text-foreground leading-relaxed text-xs">
+                      {viewingDetailsRole.description ||
+                        viewingDetailsRole.scope ||
+                        'Specialist responsible for enterprise prompt pipelines, agentic orchestration, and domain knowledge injection. Awaiting domain expert micro-skill configuration.'}
+                    </p>
+                  </div>
 
-                  <div className="p-3 rounded-lg border border-border bg-card space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[11px] font-bold text-foreground">
-                        {t('roleKnowledge.memberLevels')}
-                      </span>
+                  {/* Core Responsibilities if any */}
+                  {viewingDetailsRole.responsibilities &&
+                    viewingDetailsRole.responsibilities.length > 0 && (
+                      <div className="pt-2 border-t border-border/60 space-y-1.5">
+                        <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                          Core Responsibilities ({viewingDetailsRole.responsibilities.length})
+                        </div>
+                        <div className="flex flex-wrap gap-1.5">
+                          {viewingDetailsRole.responsibilities.map((resp, idx) => (
+                            <span
+                              key={idx}
+                              className="inline-flex items-center px-2 py-0.5 rounded-md bg-muted/60 text-muted-foreground text-[11px] border border-border/70"
+                            >
+                              • {resp}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
 
-                      <span className="text-[10px] text-muted-foreground font-semibold">
-                        {viewingDetailsRole.levels?.length || 3} Progressive
-                        Levels
-                      </span>
+                  {/* Bottom Row: Key Metrics Summary Strip */}
+                  <div className="grid grid-cols-3 gap-2.5 pt-3 border-t border-border/70">
+                    <div className="p-2.5 rounded-lg bg-muted/30 border border-border/60 text-center">
+                      <div className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">
+                        Mastery Ladder
+                      </div>
+                      <div className="text-sm font-bold text-foreground mt-0.5">
+                        {detailRoleLevels.length} Progressive Levels
+                      </div>
                     </div>
 
-                    <div className="flex flex-wrap gap-2">
-                      {(viewingDetailsRole.levels &&
-                      viewingDetailsRole.levels.length > 0
-                        ? viewingDetailsRole.levels
-                        : ['Senior', 'Middle', 'Junior']
-                      ).map((lvlName, idx) => {
-                        const lvlDuration = resolveLevelDuration(viewingDetailsRole, lvlName, idx)
-                        return (
-                          <div
-                            key={idx}
-                            className="flex items-center gap-1.5 p-2 rounded-md bg-muted/30 border border-border/80"
-                          >
-                            <Badge
-                              variant="secondary"
-                              className="text-[9px] py-0 px-1 font-mono"
-                            >
-                              Rank {idx + 1}
-                            </Badge>
-                            <span className="font-bold text-foreground text-xs">
-                              {lvlName}
-                            </span>
-                            <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-primary bg-primary/10 border border-primary/20 px-1.5 py-0.5 rounded font-mono">
-                              <Clock className="h-2.5 w-2.5" />
-                              {lvlDuration}
-                            </span>
-                          </div>
-                        )
-                      })}
+                    <div className="p-2.5 rounded-lg bg-muted/30 border border-border/60 text-center">
+                      <div className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">
+                        Total Competencies
+                      </div>
+                      <div className="text-sm font-bold text-foreground mt-0.5">
+                        {totalDistinctComps} Clusters
+                      </div>
+                    </div>
+
+                    <div className="p-2.5 rounded-lg bg-muted/30 border border-border/60 text-center">
+                      <div className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">
+                        Total Micro-skills
+                      </div>
+                      <div className="text-sm font-bold text-foreground mt-0.5">
+                        {totalConfiguredSkills} Configured Targets
+                      </div>
                     </div>
                   </div>
                 </div>
               )
             })()}
 
-            {/* Meta Grid */}
+            {/* View Mode Toggle: Specifications vs Version Diff */}
+            <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-border">
+              <div className="inline-flex p-0.5 rounded-lg bg-muted border border-border">
+                <button
+                  type="button"
+                  onClick={() => setDetailViewMode('specs')}
+                  className={`px-3 py-1 rounded-md text-xs font-semibold transition-all cursor-pointer ${
+                    detailViewMode === 'specs'
+                      ? 'bg-card text-foreground font-bold shadow-2xs border border-border/80'
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  Architecture Specifications
+                </button>
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 text-xs">
-              <div className="p-2.5 rounded-lg border border-border bg-card">
-                <span className="text-[10px] text-muted-foreground uppercase font-bold block">
-                  Role Code
-                </span>
-                <span className="font-mono font-bold text-foreground mt-0.5 block">
-                  {viewingDetailsRole.code}
-                </span>
+                <button
+                  type="button"
+                  onClick={() => setDetailViewMode('diff')}
+                  className={`px-3 py-1 rounded-md text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer ${
+                    detailViewMode === 'diff'
+                      ? 'bg-card text-foreground font-bold shadow-2xs border border-border/80'
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  <Diff className="h-3.5 w-3.5 text-primary" />
+                  <span>Version Changes (Diff)</span>
+                </button>
               </div>
 
-              <div className="p-2.5 rounded-lg border border-border bg-card">
-                <span className="text-[10px] text-muted-foreground uppercase font-bold block">
-                  Version
-                </span>
-                <span className="font-mono font-bold text-foreground mt-0.5 block">
-                  v{viewingDetailsRole.version}
-                </span>
-              </div>
-
-              <div className="p-2.5 rounded-lg border border-border bg-card col-span-2 sm:col-span-1">
-                <span className="text-[10px] text-muted-foreground uppercase font-bold block">
-                  Assigned Domain Expert
-                </span>
-                <span className="font-semibold text-primary mt-0.5 truncate block">
-                  {(() => {
-                    const expId = viewingDetailsRole.assignedExpertId
-                    const exp = expId
-                      ? orgExperts.find((e) => e.id === expId) ||
-                        findEligibleExpert(expId, orgId, orgExperts) ||
-                        (isTechnova ? ELIGIBLE_EXPERTS.find((e) => e.id === expId) : undefined)
-                      : undefined
-                    return exp ? exp.name : 'Unassigned'
-                  })()}
-                </span>
-              </div>
-            </div>
-
-            {/* Role Scope & Operational Objectives */}
-
-            <div className="p-3 rounded-lg border border-border bg-muted/20 space-y-1.5 text-xs">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block">
-                Role Scope &amp; Summary
+              <span className="text-[11px] text-muted-foreground font-medium">
+                {detailViewMode === 'diff'
+                  ? 'Compare against previous baseline'
+                  : 'Level Competencies & Micro-skill Requirements'}
               </span>
-
-              <p className="text-foreground leading-relaxed">
-                {viewingDetailsRole.scope ||
-                  viewingDetailsRole.description ||
-                  'Defines standardized competency requirements and skill milestones for this enterprise role profile.'}
-              </p>
             </div>
 
-            {/* Level-Specific Competencies & Micro-skills Breakdown */}
+            {detailViewMode === 'diff' ? (
+              <TargetRoleVersionDiff
+                currentRole={viewingDetailsRole}
+                allRoles={managerVisibleRoles}
+                competencies={companyCompetencies}
+                microSkills={companyMicroSkills}
+              />
+            ) : (
+              <>
+                {/* Dynamic Target Role Levels & Competency Matrix */}
+                {(() => {
+                  const detailRoleLevels =
+                    viewingDetailsRole.levels &&
+                    viewingDetailsRole.levels.length > 0
+                      ? viewingDetailsRole.levels
+                      : ['Senior', 'Middle', 'Junior']
 
-            {(() => {
-              const detailRoleLevels =
-                viewingDetailsRole.levels &&
-                viewingDetailsRole.levels.length > 0
-                  ? viewingDetailsRole.levels
-                  : ['Senior', 'Middle', 'Junior']
+                  const hasExplicitLevelComps = Boolean(
+                    viewingDetailsRole.levelCompetencies &&
+                      Object.keys(viewingDetailsRole.levelCompetencies).length >
+                        0 &&
+                      Object.values(viewingDetailsRole.levelCompetencies).some(
+                        (list) => Array.isArray(list) && list.length > 0,
+                      ),
+                  )
 
-              const hasExplicitLevelComps = Boolean(
-                viewingDetailsRole.levelCompetencies &&
-                Object.keys(viewingDetailsRole.levelCompetencies).length > 0 &&
-                Object.values(viewingDetailsRole.levelCompetencies).some(
-                  (list) => Array.isArray(list) && list.length > 0,
-                ),
-              )
-
-              return (
-                <div className="space-y-3 pt-1">
-                  {/* View Mode Toggle: Specifications vs Version Diff */}
-
-                  <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-border">
-                    <div className="inline-flex p-0.5 rounded-lg bg-muted border border-border">
-                      <button
-                        type="button"
-
-                        onClick={() => setDetailViewMode('specs')}
-
-                        className={`px-3 py-1 rounded-md text-xs font-semibold transition-all cursor-pointer ${
-                          detailViewMode === 'specs'
-                            ? 'bg-card text-foreground shadow-2xs'
-                            : 'text-muted-foreground hover:text-foreground'
-                        }`}
-                      >
-                        Architecture Specifications
-                      </button>
-
-                      <button
-                        type="button"
-
-                        onClick={() => setDetailViewMode('diff')}
-
-                        className={`px-3 py-1 rounded-md text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer ${
-                          detailViewMode === 'diff'
-                            ? 'bg-card text-foreground font-bold shadow-2xs border border-border/80'
-                            : 'text-muted-foreground hover:text-foreground'
-                        }`}
-                      >
-                        <Diff className="h-3.5 w-3.5 text-primary" />
-                        <span>Version Changes (Diff)</span>
-                      </button>
-                    </div>
-
-                    <span className="text-[11px] text-muted-foreground font-medium">
-                      {detailViewMode === 'specs'
-                        ? 'Inspect levels, competencies & skills'
-                        : 'Compare against previous baseline'}
-                    </span>
-                  </div>
-
-                  {detailViewMode === 'diff' ? (
-                    <TargetRoleVersionDiff
-                      currentRole={viewingDetailsRole}
-
-                      allRoles={managerVisibleRoles}
-
-                      competencies={companyCompetencies}
-
-                      microSkills={companyMicroSkills}
-                    />
-                  ) : (
-                    <>
+                  return (
+                    <div className="space-y-2.5">
                       <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
-                          <Layers className="h-4 w-4 text-primary" />
-                          Level Competencies &amp; Micro-skill Requirements
-                        </span>
-
-                        <span className="text-[11px] text-muted-foreground font-medium">
-                          Select level to inspect isolated competencies &amp;
-                          skills
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                          Target Role Levels &amp; Competency Matrix
                         </span>
                       </div>
 
-                      {/* Level Tabs */}
-
-                      <div className="flex items-center gap-1.5 flex-wrap">
+                      <div className="flex items-center gap-2 overflow-x-auto pb-1 flex-nowrap">
                         <button
                           type="button"
-
                           onClick={() => setSelectedDetailLevelTab('ALL')}
-
-                          className={`px-3 py-1 rounded-md text-xs font-semibold border transition-all cursor-pointer ${
+                          className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all cursor-pointer shrink-0 ${
                             selectedDetailLevelTab === 'ALL'
                               ? 'bg-primary text-primary-foreground border-primary shadow-xs'
-                              : 'bg-card text-muted-foreground hover:bg-muted/30 border-border'
+                              : 'bg-card text-foreground hover:bg-muted/50 border-border'
                           }`}
                         >
                           All Levels Overview
                         </button>
 
                         {detailRoleLevels.map((lvl, lIdx) => {
-                          const lvlComps =
-                            viewingDetailsRole.levelCompetencies?.[lvl] ||
-                            (!hasExplicitLevelComps &&
-                            lvl === detailRoleLevels[0]
-                              ? viewingDetailsRole.competencyIds
-                              : []) ||
-                            []
-                          const lvlSkills =
-                            viewingDetailsRole.skillTargets.filter(
-                              (st) => (st.level || detailRoleLevels[0]) === lvl,
-                            )
-                          const isSelected = selectedDetailLevelTab === lvl
                           const lvlDuration = resolveLevelDuration(viewingDetailsRole, lvl, lIdx)
+                          const isSelected = selectedDetailLevelTab === lvl
 
                           return (
                             <button
                               key={lvl}
-
                               type="button"
-
                               onClick={() => setSelectedDetailLevelTab(lvl)}
-
-                              className={`px-3 py-1 rounded-md text-xs font-semibold border transition-all flex items-center gap-1.5 cursor-pointer ${
+                              className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all cursor-pointer flex items-center gap-1.5 shrink-0 ${
                                 isSelected
                                   ? 'bg-primary text-primary-foreground border-primary shadow-xs'
-                                  : 'bg-card text-foreground hover:bg-muted/30 border-border'
+                                  : 'bg-card text-foreground hover:bg-muted/50 border-border'
                               }`}
                             >
-                              <span>{lvl}</span>
                               <span
-                                className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono ${isSelected ? 'bg-primary-foreground/20 text-primary-foreground' : 'bg-muted text-muted-foreground'}`}
+                                className={`text-[10px] px-1.5 py-0.5 rounded font-mono font-bold ${
+                                  isSelected
+                                    ? 'bg-primary-foreground/20 text-primary-foreground'
+                                    : 'bg-muted text-muted-foreground'
+                                }`}
                               >
-                                {lvlDuration} · {lvlSkills.length} skills · {lvlComps.length}{' '}
-                                comps
+                                Rank {lIdx + 1}
+                              </span>
+                              <span className="font-semibold">{lvl}</span>
+                              <span
+                                className={`text-[10px] font-mono ${
+                                  isSelected
+                                    ? 'text-primary-foreground/80'
+                                    : 'text-muted-foreground'
+                                }`}
+                              >
+                                ({lvlDuration})
                               </span>
                             </button>
                           )
                         })}
                       </div>
 
-                      {/* Content for All Levels or Selected Level */}
-
+                      {/* Level Details View */}
                       {selectedDetailLevelTab === 'ALL' ? (
-                        <div className="space-y-3">
+                        <div className="space-y-4">
                           {detailRoleLevels.map((lvl, lIdx) => {
-                            const lvlComps =
+                            const compIds =
                               viewingDetailsRole.levelCompetencies?.[lvl] ||
                               (!hasExplicitLevelComps &&
                               lvl === detailRoleLevels[0]
@@ -5058,118 +5016,234 @@ export function TargetRolesPage() {
                             return (
                               <div
                                 key={lvl}
-                                className="p-3.5 rounded-lg border border-border bg-card space-y-2.5"
+                                className="rounded-xl border border-border bg-card overflow-hidden shadow-2xs"
                               >
-                                <div className="flex items-center justify-between pb-1.5 border-b border-border flex-wrap gap-2">
-                                  <div className="flex items-center gap-2">
+                                {/* Level Card Header */}
+                                <div className="bg-muted/40 border-b border-border px-4 py-2.5 flex items-center justify-between flex-wrap gap-2">
+                                  <div className="flex items-center gap-2.5">
                                     <Badge
                                       variant="secondary"
-                                      className="font-mono text-[10px]"
+                                      className="font-mono text-[10px] px-1.5 py-0.5"
                                     >
                                       Rank {lIdx + 1}
                                     </Badge>
-                                    <span className="font-bold text-foreground text-xs">
+                                    <span className="font-bold text-foreground text-sm">
                                       {lvl} Level
                                     </span>
-                                    <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-primary bg-primary/10 border border-primary/20 px-2 py-0.5 rounded-full font-mono">
+                                    <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary bg-primary/10 border border-primary/20 px-2.5 py-0.5 rounded-full font-mono">
                                       <Clock className="h-3 w-3" />
                                       Est. Duration: {lvlDuration}
                                     </span>
                                   </div>
 
-                                  <span className="text-[11px] text-muted-foreground font-mono">
-                                    {lvlSkills.length} skills configured ·{' '}
-                                    {lvlComps.length} competencies
-                                  </span>
+                                  <div className="flex items-center gap-2 text-xs text-muted-foreground font-mono">
+                                    <span className="font-medium">
+                                      {compIds.length} Competencies
+                                    </span>
+                                    <span>•</span>
+                                    <span className="font-medium">
+                                      {lvlSkills.length} Micro-skills
+                                    </span>
+                                  </div>
                                 </div>
 
-                                {/* Competencies for this Level */}
-
-                                <div>
-                                  <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block mb-1">
-                                    Level Competencies ({lvlComps.length})
-                                  </span>
-
-                                  {lvlComps.length === 0 ? (
-                                    <span className="text-[11px] text-muted-foreground italic">
-                                      No competencies assigned to {lvl} level.
-                                    </span>
-                                  ) : (
-                                    <div className="flex flex-wrap gap-1.5">
-                                      {lvlComps.map((cid) => {
-                                        const comp = companyCompetencies.find(
-                                          (c) => c.id === cid || c.code === cid,
-                                        )
-
-                                        return (
-                                          <span
-                                            key={cid}
-
-                                            className="px-2 py-0.5 rounded bg-secondary text-primary font-medium text-[11px] border border-primary/20"
-                                          >
-                                            {comp
-                                              ? `${comp.code}: ${comp.name}`
-                                              : cid}
-                                          </span>
-                                        )
-                                      })}
+                                <div className="p-4 space-y-3.5">
+                                  {/* Required Competencies */}
+                                  <div className="space-y-1.5">
+                                    <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                                      Required Competencies ({compIds.length})
                                     </div>
-                                  )}
+
+                                    {compIds.length === 0 ? (
+                                      <p className="text-[11px] text-muted-foreground italic">
+                                        No competencies configured for this level.
+                                      </p>
+                                    ) : (
+                                      <div className="flex flex-wrap gap-2">
+                                        {compIds.map((cid) => {
+                                          const comp = companyCompetencies.find(
+                                            (c) => c.id === cid || c.code === cid,
+                                          )
+                                          return (
+                                            <div
+                                              key={cid}
+                                              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-muted/40 border border-border text-xs"
+                                            >
+                                              <span className="font-mono font-bold text-primary">
+                                                {comp?.code || cid}
+                                              </span>
+                                              <span className="text-muted-foreground">|</span>
+                                              <span className="font-medium text-foreground">
+                                                {comp?.name || cid}
+                                              </span>
+                                            </div>
+                                          )
+                                        })}
+                                      </div>
+                                    )}
+                                  </div>
+
+                                  {/* Configured Micro-skills Table */}
+                                  <div className="space-y-1.5">
+                                    <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                                      Configured Micro-skills ({lvlSkills.length})
+                                    </div>
+
+                                    {lvlSkills.length === 0 ? (
+                                      <p className="text-[11px] text-muted-foreground italic">
+                                        No micro-skills configured for this level.
+                                      </p>
+                                    ) : (
+                                      <div className="border border-border rounded-lg overflow-hidden">
+                                        <table className="w-full text-left text-xs">
+                                          <thead className="bg-muted/50 border-b border-border text-[10px] uppercase font-bold text-muted-foreground">
+                                            <tr>
+                                              <th className="py-2 px-3 font-semibold">
+                                                Skill Code &amp; Name
+                                              </th>
+                                              <th className="py-2 px-3 text-center font-semibold w-48">
+                                                {t('roleKnowledge.required')}
+                                              </th>
+                                            </tr>
+                                          </thead>
+                                          <tbody className="divide-y divide-border/60">
+                                            {lvlSkills.map((st) => (
+                                              <tr
+                                                key={st.skillId || st.skillCode}
+                                                className="hover:bg-muted/20 transition-colors"
+                                              >
+                                                <td className="py-2 px-3">
+                                                  <span className="font-mono font-bold text-foreground mr-2 bg-muted/60 px-1.5 py-0.5 rounded border border-border/60">
+                                                    {st.skillCode}
+                                                  </span>
+                                                  <span className="text-foreground font-medium">
+                                                    {st.skillName}
+                                                  </span>
+                                                </td>
+                                                <td className="py-2 px-3 text-center">
+                                                  <Badge
+                                                    variant="outline"
+                                                    className="font-mono text-xs font-bold text-primary border-primary/30 bg-primary/5"
+                                                  >
+                                                    {formatRequiredKnowledge(
+                                                      st.requiredKnowledgeLevels,
+                                                      t,
+                                                      st.level || lvl,
+                                                    )}
+                                                  </Badge>
+                                                </td>
+                                              </tr>
+                                            ))}
+                                          </tbody>
+                                        </table>
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            )
+                          })}
+                        </div>
+                      ) : (
+                        // Single level active view
+                        (() => {
+                          const lvl = selectedDetailLevelTab
+                          const selectedIdx = Math.max(0, detailRoleLevels.indexOf(lvl))
+                          const selectedDur = resolveLevelDuration(viewingDetailsRole, lvl, selectedIdx)
+                          const compIds =
+                            viewingDetailsRole.levelCompetencies?.[lvl] ||
+                            (!hasExplicitLevelComps &&
+                            lvl === detailRoleLevels[0]
+                              ? viewingDetailsRole.competencyIds
+                              : []) ||
+                            []
+                          const lvlSkills =
+                            viewingDetailsRole.skillTargets.filter(
+                              (st) => (st.level || detailRoleLevels[0]) === lvl,
+                            )
+
+                          return (
+                            <div className="rounded-xl border border-border bg-card overflow-hidden shadow-2xs">
+                              {/* Level Card Header */}
+                              <div className="bg-muted/40 border-b border-border px-4 py-3 flex items-center justify-between flex-wrap gap-2">
+                                <div className="flex items-center gap-2.5">
+                                  <Badge
+                                    variant="secondary"
+                                    className="font-mono text-[10px] px-1.5 py-0.5"
+                                  >
+                                    Rank {selectedIdx + 1}
+                                  </Badge>
+                                  <span className="font-bold text-foreground text-sm">
+                                    {lvl} Level Architecture
+                                  </span>
+                                  <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary bg-primary/10 border border-primary/20 px-2.5 py-0.5 rounded-full font-mono">
+                                    <Clock className="h-3 w-3" />
+                                    Est. Duration: {selectedDur}
+                                  </span>
                                 </div>
 
-                                {/* Micro-skills for this Level */}
-
-                                <div>
-                                  <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block mb-1">
-                                    Required Micro-skills ({lvlSkills.length})
+                                <div className="flex items-center gap-2 text-xs text-muted-foreground font-mono">
+                                  <span className="font-medium">
+                                    {compIds.length} Competencies
                                   </span>
+                                  <span>•</span>
+                                  <span className="font-medium">
+                                    {lvlSkills.length} Micro-skills
+                                  </span>
+                                </div>
+                              </div>
 
-                                  {lvlSkills.length === 0 ? (
-                                    <span className="text-[11px] text-muted-foreground italic">
-                                      No micro-skills configured for {lvl}{' '}
-                                      level.
-                                    </span>
+                              <div className="p-4 space-y-4">
+                                {/* Competencies Table */}
+                                <div className="space-y-1.5">
+                                  <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                                    Required Competencies for {lvl} ({compIds.length})
+                                  </div>
+
+                                  {compIds.length === 0 ? (
+                                    <div className="p-4 rounded-lg border border-dashed border-border text-center text-xs text-muted-foreground">
+                                      No competencies configured for {lvl} level yet.
+                                    </div>
                                   ) : (
-                                    <div className="rounded border border-border overflow-hidden">
+                                    <div className="border border-border rounded-lg overflow-hidden">
                                       <table className="w-full text-left text-xs">
-                                        <thead className="bg-muted/40 border-b border-border text-[10px] uppercase font-bold text-muted-foreground">
+                                        <thead className="bg-muted/50 border-b border-border text-[10px] uppercase font-bold text-muted-foreground">
                                           <tr>
-                                            <th className="py-1.5 px-2.5">
-                                              Skill Code &amp; Title
+                                            <th className="py-2 px-3 font-semibold w-1/3">
+                                              Code &amp; Name
                                             </th>
-                                            <th className="py-1.5 px-2.5 text-center w-28">
-                                              {t('roleKnowledge.required')}
+                                            <th className="py-2 px-3 font-semibold">
+                                              Description
                                             </th>
                                           </tr>
                                         </thead>
-
-                                        <tbody className="divide-y divide-border">
-                                          {lvlSkills.map((st) => {
-                                            const skill =
-                                              companyMicroSkills.find(
-                                                (s) =>
-                                                  s.id === st.skillId ||
-                                                  s.code === st.skillCode,
-                                              )
-
+                                        <tbody className="divide-y divide-border/60">
+                                          {compIds.map((cid) => {
+                                            const comp = companyCompetencies.find(
+                                              (c) =>
+                                                c.id === cid || c.code === cid,
+                                            )
                                             return (
                                               <tr
-                                                key={st.skillId || st.skillCode}
-                                                className="hover:bg-muted/20"
+                                                key={cid}
+                                                className="hover:bg-muted/20 transition-colors"
                                               >
-                                                <td className="py-1.5 px-2.5">
-                                                  <span className="font-mono font-bold text-primary mr-1">
-                                                    {st.skillCode ||
-                                                      skill?.code}
-                                                  </span>
-                                                  <span className="text-foreground">
-                                                    {st.skillName ||
-                                                      skill?.name}
-                                                  </span>
+                                                <td className="py-2.5 px-3 align-top">
+                                                  <div className="font-mono font-bold text-primary">
+                                                    {comp?.code || cid}
+                                                  </div>
+                                                  <div className="font-semibold text-foreground mt-0.5">
+                                                    {comp?.name || cid}
+                                                  </div>
                                                 </td>
-
-                                                <td className="py-1.5 px-2.5 text-center font-mono font-bold text-primary">
-                                                  {formatRequiredKnowledge(st.requiredKnowledgeLevels, t, st.level || lvl)}
+                                                <td className="py-2.5 px-3 align-top text-muted-foreground">
+                                                  <div
+                                                    className="line-clamp-2 text-xs text-muted-foreground leading-relaxed break-words"
+                                                    title={comp?.description}
+                                                  >
+                                                    {comp?.description ||
+                                                      'Core knowledge and functional capability cluster.'}
+                                                  </div>
                                                 </td>
                                               </tr>
                                             )
@@ -5179,162 +5253,73 @@ export function TargetRolesPage() {
                                     </div>
                                   )}
                                 </div>
-                              </div>
-                            )
-                          })}
-                        </div>
-                      ) : (
-                        <div className="p-3.5 rounded-lg border border-border bg-card space-y-3">
-                          {(() => {
-                            const selectedIdx = Math.max(0, detailRoleLevels.indexOf(selectedDetailLevelTab))
-                            const selectedDur = resolveLevelDuration(viewingDetailsRole, selectedDetailLevelTab, selectedIdx)
-                            return (
-                              <div className="flex items-center justify-between pb-2 border-b border-border flex-wrap gap-2">
-                                <div className="flex items-center gap-2">
-                                  <Badge variant="secondary" className="font-mono text-[10px]">
-                                    Rank {selectedIdx + 1}
-                                  </Badge>
-                                  <span className="font-bold text-foreground text-xs">
-                                    {selectedDetailLevelTab} Level
-                                  </span>
-                                  <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-primary bg-primary/10 border border-primary/20 px-2 py-0.5 rounded-full font-mono">
-                                    <Clock className="h-3 w-3" />
-                                    Est. Duration: {selectedDur}
-                                  </span>
-                                </div>
-                              </div>
-                            )
-                          })()}
 
-                          {/* Competencies for selected Level */}
-
-                          <div>
-                            <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block mb-1.5">
-                              Assigned Competencies for {selectedDetailLevelTab}
-                            </span>
-
-                            {(() => {
-                              const lvlComps =
-                                viewingDetailsRole.levelCompetencies?.[
-                                  selectedDetailLevelTab
-                                ] ||
-                                (!hasExplicitLevelComps &&
-                                selectedDetailLevelTab === detailRoleLevels[0]
-                                  ? viewingDetailsRole.competencyIds
-                                  : []) ||
-                                []
-
-                              if (lvlComps.length === 0) {
-                                return (
-                                  <div className="text-[11px] text-muted-foreground italic">
-                                    No competencies assigned to{' '}
-                                    {selectedDetailLevelTab}.
+                                {/* Micro-skills Table */}
+                                <div className="space-y-1.5">
+                                  <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                                    Configured Micro-skills for {lvl} ({lvlSkills.length})
                                   </div>
-                                )
-                              }
 
-                              return (
-                                <div className="flex flex-wrap gap-1.5">
-                                  {lvlComps.map((cid) => {
-                                    const comp = companyCompetencies.find(
-                                      (c) => c.id === cid || c.code === cid,
-                                    )
-
-                                    return (
-                                      <span
-                                        key={cid}
-                                        className="px-2.5 py-1 rounded bg-secondary text-primary font-medium text-xs border border-primary/20"
-                                      >
-                                        {comp
-                                          ? `${comp.code}: ${comp.name}`
-                                          : cid}
-                                      </span>
-                                    )
-                                  })}
-                                </div>
-                              )
-                            })()}
-                          </div>
-
-                          {/* Micro-skills Table for selected Level */}
-
-                          <div>
-                            <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block mb-1.5">
-                              Target Micro-skills for {selectedDetailLevelTab}
-                            </span>
-
-                            {(() => {
-                              const lvlSkills =
-                                viewingDetailsRole.skillTargets.filter(
-                                  (st) =>
-                                    (st.level || detailRoleLevels[0]) ===
-                                    selectedDetailLevelTab,
-                                )
-
-                              if (lvlSkills.length === 0) {
-                                return (
-                                  <div className="text-[11px] text-muted-foreground italic">
-                                    No micro-skills configured for{' '}
-                                    {selectedDetailLevelTab}.
-                                  </div>
-                                )
-                              }
-
-                              return (
-                                <div className="rounded-lg border border-border overflow-hidden">
-                                  <table className="w-full text-left text-xs">
-                                    <thead className="bg-muted/40 border-b border-border text-[10px] uppercase font-bold text-muted-foreground">
-                                      <tr>
-                                        <th className="py-2 px-3">
-                                          Skill Code &amp; Title
-                                        </th>
-                                        <th className="py-2 px-3 text-center w-32">
-                                          {t('roleKnowledge.required')}
-                                        </th>
-                                      </tr>
-                                    </thead>
-
-                                    <tbody className="divide-y divide-border">
-                                      {lvlSkills.map((st) => {
-                                        const skill = companyMicroSkills.find(
-                                          (s) =>
-                                            s.id === st.skillId ||
-                                            s.code === st.skillCode,
-                                        )
-
-                                        return (
-                                          <tr
-                                            key={st.skillId || st.skillCode}
-                                            className="hover:bg-muted/20"
-                                          >
-                                            <td className="py-2 px-3">
-                                              <span className="font-mono font-bold text-primary mr-1.5">
-                                                {st.skillCode || skill?.code}
-                                              </span>
-                                              <span className="text-foreground">
-                                                {st.skillName || skill?.name}
-                                              </span>
-                                            </td>
-
-                                            <td className="py-2 px-3 text-center font-mono font-bold text-primary">
-                                              {formatRequiredKnowledge(st.requiredKnowledgeLevels, t, st.level || selectedDetailLevelTab)}
-                                            </td>
+                                  {lvlSkills.length === 0 ? (
+                                    <div className="p-4 rounded-lg border border-dashed border-border text-center text-xs text-muted-foreground">
+                                      No micro-skills configured for {lvl} level yet.
+                                    </div>
+                                  ) : (
+                                    <div className="border border-border rounded-lg overflow-hidden">
+                                      <table className="w-full text-left text-xs">
+                                        <thead className="bg-muted/50 border-b border-border text-[10px] uppercase font-bold text-muted-foreground">
+                                          <tr>
+                                            <th className="py-2 px-3 font-semibold">
+                                              Skill Code &amp; Name
+                                            </th>
+                                            <th className="py-2 px-3 text-center font-semibold w-48">
+                                              {t('roleKnowledge.required')}
+                                            </th>
                                           </tr>
-                                        )
-                                      })}
-                                    </tbody>
-                                  </table>
+                                        </thead>
+                                        <tbody className="divide-y divide-border/60">
+                                          {lvlSkills.map((st) => (
+                                            <tr
+                                              key={st.skillId || st.skillCode}
+                                              className="hover:bg-muted/20 transition-colors"
+                                            >
+                                              <td className="py-2.5 px-3">
+                                                <span className="font-mono font-bold text-foreground mr-2 bg-muted/60 px-1.5 py-0.5 rounded border border-border/60">
+                                                  {st.skillCode}
+                                                </span>
+                                                <span className="text-foreground font-medium">
+                                                  {st.skillName}
+                                                </span>
+                                              </td>
+                                              <td className="py-2.5 px-3 text-center">
+                                                <Badge
+                                                  variant="outline"
+                                                  className="font-mono text-xs font-bold text-primary border-primary/30 bg-primary/5"
+                                                >
+                                                  {formatRequiredKnowledge(
+                                                    st.requiredKnowledgeLevels,
+                                                    t,
+                                                    st.level || selectedDetailLevelTab,
+                                                  )}
+                                                </Badge>
+                                              </td>
+                                            </tr>
+                                          ))}
+                                        </tbody>
+                                      </table>
+                                    </div>
+                                  )}
                                 </div>
-                              )
-                            })()}
-                          </div>
-                        </div>
+                              </div>
+                            </div>
+                          )
+                        })()
                       )}
-                    </>
-                  )}
-                </div>
-              )
-            })()}
+                    </div>
+                  )
+                })()}
+              </>
+            )}
           </div>
 
           <DialogFooter className="shrink-0 pt-3 border-t border-border mt-3 flex items-center justify-between sm:justify-between w-full">

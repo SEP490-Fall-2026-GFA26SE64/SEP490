@@ -115,7 +115,14 @@ export function DepartmentsManagementPage() {
     try {
       const data = await fetchDepartments(orgId)
       if (Array.isArray(data)) {
-        const mapped: DepartmentRecord[] = data.map((d: DepartmentDto) => ({
+        const seen = new Set<string>()
+        const uniqueData = data.filter((d: DepartmentDto) => {
+          const key = (d.code || d.id || '').toUpperCase()
+          if (!key || seen.has(key)) return false
+          seen.add(key)
+          return true
+        })
+        const mapped: DepartmentRecord[] = uniqueData.map((d: DepartmentDto) => ({
           id: d.id,
           code: d.code,
           name: d.name,
@@ -149,9 +156,16 @@ export function DepartmentsManagementPage() {
           }).catch(() => {})
         }
         const merged = [...mapped, ...localOnly]
+        const mergedSeen = new Set<string>()
+        const dedupedMerged = merged.filter((d) => {
+          const key = (d.code || d.id || '').toUpperCase()
+          if (!key || mergedSeen.has(key)) return false
+          mergedSeen.add(key)
+          return true
+        })
 
-        setDepartments(merged)
-        saveDepartments(merged, orgId, false)
+        setDepartments(dedupedMerged)
+        saveDepartments(dedupedMerged, orgId, false)
         return
       }
     } catch {
@@ -275,9 +289,18 @@ export function DepartmentsManagementPage() {
 
   // Filter departments by search, status, and current organization
   const filteredDepartments = React.useMemo(() => {
+    const seen = new Set<string>()
     return departments.filter((d) => {
       if (d.organizationId && orgId && d.organizationId !== orgId) {
         return false
+      }
+
+      const key = (d.code || d.id || '').toUpperCase()
+      if (key && seen.has(key)) {
+        return false
+      }
+      if (key) {
+        seen.add(key)
       }
 
       const matchesSearch =
@@ -446,7 +469,8 @@ export function DepartmentsManagementPage() {
           status: 'active',
           linkedJobPositions: selectedJobPositions,
         },
-        orgId
+        orgId,
+        false
       )
 
       // Optimistically update React state immediately
@@ -556,8 +580,8 @@ export function DepartmentsManagementPage() {
       <div className="space-y-6">
         {/* Top Header */}
         <PageHeader
-          title="Departments Management"
-          description="Structure organizational business units and connect job positions across your workforce."
+          title="Departments"
+          description="Organize company departments, assign leadership, and track team competency coverage across your business units."
           actions={
             <Button
               variant="primary"
@@ -579,7 +603,7 @@ export function DepartmentsManagementPage() {
             title="Total Departments"
             value={`${totalDepts} Departments`}
             valueClassName="text-primary"
-            description="Active organizational units"
+            description="Company business departments"
           />
 
           <StatCard
@@ -588,7 +612,7 @@ export function DepartmentsManagementPage() {
             title="Active Departments"
             value={`${activeCount} Active`}
             valueClassName="text-success"
-            description="Operating business units"
+            description="Active operational units"
           />
 
           <StatCard
@@ -597,8 +621,7 @@ export function DepartmentsManagementPage() {
             title="Connected Job Positions"
             value={`${totalConnectedJobPositions} Positions`}
             valueClassName="text-warning"
-            description="Mapped industry roles"
-
+            description="Linked industry job positions"
           />
         </div>
 
@@ -609,17 +632,17 @@ export function DepartmentsManagementPage() {
               <div>
                 <CardTitle className="flex items-center gap-2">
                   <Building2 className="h-4 w-4 text-primary" />
-                  Departments Directory
+                  Department Directory
                 </CardTitle>
                 <CardDescription>
-                  Browse and govern organizational units and manage connected job positions.
+                  View and manage company departments and their associated job positions.
                 </CardDescription>
               </div>
 
               {/* Search & Filter Toolbar */}
-              <div className="flex items-center gap-2.5 flex-wrap">
+              <div className="flex items-center gap-2.5 flex-wrap py-0.5">
                 <div className="relative w-56">
-                  <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
+                  <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
                   <input
                     type="text"
                     placeholder="Search departments..."
@@ -628,7 +651,7 @@ export function DepartmentsManagementPage() {
                       setSearchQuery(e.target.value)
                       setCurrentPage(1)
                     }}
-                    className="w-full pl-8 pr-3 py-1.5 text-xs rounded-lg bg-background border border-border text-foreground focus:outline-none focus:ring-1 focus:ring-primary shadow-2xs"
+                    className="w-full pl-8 pr-3 py-1.5 text-xs rounded-lg bg-background border border-border text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary shadow-2xs transition-colors"
                   />
                 </div>
 
@@ -658,7 +681,7 @@ export function DepartmentsManagementPage() {
                 <Building2 className="h-10 w-10 mx-auto text-muted-foreground/40" />
                 <p className="text-base font-semibold text-foreground">No departments created yet</p>
                 <p className="text-xs text-muted-foreground max-w-sm mx-auto">
-                  Create your first organizational department to structure teams and connect job positions.
+                  Add your first department to start structuring teams and assigning managers.
                 </p>
                 <div className="pt-2">
                   <Button variant="primary" size="sm" onClick={handleOpenCreate} className="gap-2">
@@ -797,7 +820,7 @@ export function DepartmentsManagementPage() {
             </Badge>
           </div>
           <DialogDescription className="text-xs text-muted-foreground">
-            Structure internal business units and connect job positions across your workforce.
+            Define department details and connect relevant industry job positions.
           </DialogDescription>
         </DialogHeader>
 
@@ -822,7 +845,7 @@ export function DepartmentsManagementPage() {
                     className="font-mono text-xs"
                   />
                   <span className="text-[10px] text-muted-foreground mt-0.5 block">
-                    Unique uppercase department code identifier.
+                    Unique code used to identify this department across your organization.
                   </span>
                 </div>
 
@@ -839,7 +862,7 @@ export function DepartmentsManagementPage() {
                     className="text-xs"
                   />
                   <span className="text-[10px] text-muted-foreground mt-0.5 block">
-                    Official organization business unit title.
+                    Official name of the department.
                   </span>
                 </div>
               </div>
@@ -868,7 +891,7 @@ export function DepartmentsManagementPage() {
                   Connected Job Positions Alignment ({selectedJobPositions.length})
                 </span>
                 <span className="text-[10px] text-muted-foreground font-normal">
-                  Align recognized industry job positions to this department in Neo4j
+                  Connect industry job positions to define the scope and competencies of this department
                 </span>
               </div>
 
@@ -1025,7 +1048,7 @@ export function DepartmentsManagementPage() {
                 )}
               </div>
               <p className="text-body-sm text-muted-foreground">
-                {selectedDeptForDetails?.description || 'Organizational business unit scope and connected competencies.'}
+                {selectedDeptForDetails?.description || 'Department scope, responsibilities, and connected competencies.'}
               </p>
             </div>
           </div>
@@ -1084,7 +1107,7 @@ export function DepartmentsManagementPage() {
               </div>
             ) : (
               <p className="text-muted-foreground text-xs italic">
-                No job positions currently connected to this unit.
+                No job positions currently connected to this department.
               </p>
             )}
           </div>
