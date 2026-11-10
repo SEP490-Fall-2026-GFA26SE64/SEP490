@@ -1,11 +1,14 @@
 package com.adaptlearngraph.apis;
 
 import com.adaptlearngraph.endpoints.ApiEndpoints;
+import com.adaptlearngraph.exception.RegistrationFailure;
 import com.adaptlearngraph.jwt.WorkspaceSessions;
+import com.adaptlearngraph.services.PasswordResetUseCase;
 import com.adaptlearngraph.services.WorkspaceAuthenticationUseCase;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
@@ -21,9 +24,12 @@ import org.springframework.web.bind.annotation.*;
 public class WorkspaceAuthenticationController {
     private static final String ENROLLMENT = "WORKSPACE_ENROLLMENT";
     private final WorkspaceAuthenticationUseCase authentication;
+    private final PasswordResetUseCase passwordReset;
 
-    public WorkspaceAuthenticationController(WorkspaceAuthenticationUseCase authentication) {
+    public WorkspaceAuthenticationController(WorkspaceAuthenticationUseCase authentication,
+                                             PasswordResetUseCase passwordReset) {
         this.authentication = authentication;
+        this.passwordReset = passwordReset;
     }
 
     @ModelAttribute
@@ -82,6 +88,41 @@ public class WorkspaceAuthenticationController {
         if (session != null) session.invalidate();
     }
 
+    @PostMapping("/forgot-password")
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    void forgotPassword(@Valid @RequestBody ForgotPassword input, HttpServletRequest request) {
+        passwordReset.requestReset(input.email(), request.getRemoteAddr());
+    }
+
+    @PostMapping("/reset-password")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    void resetPassword(@Valid @RequestBody ResetPassword input, HttpServletRequest request) {
+        passwordReset.resetPassword(input.token(), input.password(), request.getRemoteAddr());
+        var session = request.getSession(false);
+        if (session != null) session.invalidate();
+    }
+
+    @PostMapping("/change-password")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    void changePassword(@Valid @RequestBody ChangePassword input, HttpServletRequest request) {
+        var principal = WorkspaceSessions.principal(request);
+        if (principal == null) {
+            throw new RegistrationFailure(RegistrationFailure.Code.UNAUTHENTICATED, "Sign in to change password.");
+        }
+        passwordReset.changePassword(principal.accountId(), input.currentPassword(), input.newPassword());
+        var session = request.getSession(false);
+        if (session != null) session.invalidate();
+    }
+
+    record ForgotPassword(@NotBlank @Size(max = 254) String email) {
+        @Override public String toString() { return "ForgotPassword[redacted]"; }
+    }
+    record ResetPassword(@NotBlank @Size(max = 64) String token, @NotBlank @Size(max = 256) String password) {
+        @Override public String toString() { return "ResetPassword[redacted]"; }
+    }
+    record ChangePassword(@NotBlank @Size(max = 256) String currentPassword, @NotBlank @Size(max = 256) String newPassword) {
+        @Override public String toString() { return "ChangePassword[redacted]"; }
+    }
     record SignIn(@NotNull @Size(max = 254) String email, @NotNull @Size(max = 256) String password) {
         @Override public String toString() { return "SignIn[redacted]"; }
     }

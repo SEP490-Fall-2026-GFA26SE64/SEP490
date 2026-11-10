@@ -31,6 +31,14 @@ public interface WorkspaceAccountProfileJpaRepository
             """)
     int beginRecovery(@Param("accountId") UUID accountId);
 
+    @Modifying(flushAutomatically = true, clearAutomatically = true)
+    @Transactional(TransactionManagers.JPA)
+    @Query("""
+            update WorkspaceAccountProfileEntity p set p.authVersion = p.authVersion + 1
+            where p.accountId = :accountId
+            """)
+    int revokeSessions(@Param("accountId") UUID accountId);
+
     @Query("select p.authVersion from WorkspaceAccountProfileEntity p where p.accountId = :accountId")
     Optional<Long> authVersion(@Param("accountId") UUID accountId);
 

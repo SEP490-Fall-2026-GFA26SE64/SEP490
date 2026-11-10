@@ -27,7 +27,6 @@ import {
 import { getActiveCompany, resolveWorkspaceOrgId } from '../../../shared/stores/companyStore'
 
 const ROLES = ['EMPLOYEE', 'DOMAIN_EXPERT', 'LD_MANAGER', 'ORGANIZATION_ADMINISTRATOR'] as const
-const selectClass = 'h-10 w-full rounded-md border border-border bg-card px-3 text-body-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary'
 type Copy = ReturnType<typeof useCopy>
 
 function roleName(role: string, c: Copy) {
@@ -662,70 +661,107 @@ function UserDirectory({ identity, organization, principal }: { identity: Identi
       )}
       {notice && (
         <p role="status" className="rounded-lg border border-success/30 bg-card p-3">
-          {notice === 'membership' ? c('Membership updated.', 'Đã cập nhật membership.') :
+          {notice === 'membership' ? c('Membership updated.', 'Đã cập nhật vai trò thành viên.') :
             notice === 'saved' ? c('User details saved.', 'Đã lưu thông tin người dùng.') :
-              c('Activation email queued. Inbox delivery is not yet confirmed.', 'Đã xếp hàng email kích hoạt. Chưa xác nhận thư đến hộp thư.')}
+              c('Activation invitation dispatched. The user can activate their account using the link in their email.', 'Lời mời kích hoạt đã được gửi. Người dùng có thể kích hoạt tài khoản qua liên kết trong email.')}
         </p>
       )}
       {resend.isError && <Failure error={resend.error} />}
       {incomplete ? <Loading /> : failure ? <Failure error={failure} retry={() => void refresh()} /> : (
         <>
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-            <StatCard title={c('Members', 'Thành viên')} value={members.data?.length ?? 0} icon={<Users size={16} />} />
             <StatCard
-              title={c('Active memberships', 'Thành viên hoạt động')}
-              value={(members.data ?? []).filter(member => member.active && member.accountActive).length}
-              icon={<UserCheck size={18} className="text-success" aria-hidden="true" />}
+              variant="gradient"
+              icon={<Users className="h-4 w-4 text-primary" />}
+              title={c('Total Members', 'Tổng thành viên')}
+              value={`${members.data?.length ?? 0} ${c('Members', 'Thành viên')}`}
+              valueClassName="text-primary"
+              description={c('Enrolled workspace users', 'Thành viên trong không gian')}
             />
-            <StatCard title={c('Awaiting activation', 'Chờ kích hoạt')} value={invitations.data?.length ?? 0} icon={<Mail size={16} />} />
             <StatCard
-              title={c('Seats used / admission limit', 'Ghế thành viên đang dùng / giới hạn')}
-              value={`${summary.data?.usedSeats ?? 0} / ${summary.data?.admissionLimit ?? 0}`}
+              variant="gradient"
+              icon={<UserCheck className="h-4 w-4 text-success" />}
+              title={c('Active Members', 'Thành viên hoạt động')}
+              value={`${(members.data ?? []).filter(member => member.active && member.accountActive).length} ${c('Active', 'Hoạt động')}`}
+              valueClassName="text-success"
+              description={c('Verified active accounts', 'Tài khoản hoạt động chính thức')}
+            />
+            <StatCard
+              variant="gradient"
+              icon={<Mail className="h-4 w-4 text-warning" />}
+              title={c('Awaiting Activation', 'Chờ kích hoạt')}
+              value={`${invitations.data?.length ?? 0} ${c('Pending', 'Chờ duyệt')}`}
+              valueClassName="text-warning"
+              description={c('Pending email invitations', 'Lời mời đang chờ kích hoạt')}
+            />
+            <StatCard
+              variant="gradient"
+              icon={<ShieldCheck className="h-4 w-4 text-primary" />}
+              title={c('Seat Usage', 'Sử dụng ghế')}
+              value={`${summary.data?.usedSeats ?? 0} / ${summary.data?.admissionLimit ?? 0} ${c('Seats', 'Ghế')}`}
+              valueClassName="text-primary"
+              description={c('Allocated subscription capacity', 'Dung lượng gói thành viên')}
             />
           </div>
 
           <Card>
-            <CardHeader className="gap-4">
-              <div className="flex flex-wrap items-center justify-between gap-3">
+            <CardHeader>
+              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                 <div className="space-y-1">
-                  <CardTitle className="flex items-center gap-2">
-                    <Users size={18} className="text-primary" aria-hidden="true" />
-                    {c('User directory', 'Danh sách người dùng')}
-                  </CardTitle>
+                  <div className="flex items-center gap-2">
+                    <CardTitle className="flex items-center gap-2">
+                      <Users size={18} className="text-primary" aria-hidden="true" />
+                      {c('User directory', 'Danh sách người dùng')}
+                    </CardTitle>
+                    <Badge variant="outline">{filtered.length} {c('users', 'người dùng')}</Badge>
+                  </div>
                   <CardDescription>
                     {c('People, roles and workspace access in one place.', 'Quản lý thành viên, vai trò và quyền truy cập tập trung.')}
                   </CardDescription>
                 </div>
-                <Badge variant="outline">{filtered.length} {c('users', 'người dùng')}</Badge>
-              </div>
-              <div className="grid gap-3 rounded-lg border border-border bg-muted/30 p-3 md:grid-cols-[minmax(200px,1fr)_180px_200px]">
-                <Input
-                  aria-label={c('Search users', 'Tìm người dùng')}
-                  placeholder={c('Search name or email…', 'Tìm tên hoặc email…')}
-                  leftIcon={<Search size={16} aria-hidden="true" />}
-                  value={search}
-                  onChange={event => { setSearch(event.target.value); setPage(1) }}
-                />
-                <select
-                  aria-label={c('Filter by role', 'Lọc theo vai trò')}
-                  className={selectClass}
-                  value={role}
-                  onChange={event => { setRole(event.target.value); setPage(1) }}
-                >
-                  <option value="">{c('All roles', 'Tất cả vai trò')}</option>
-                  {ROLES.map(value => <option key={value} value={value}>{roleName(value, c)}</option>)}
-                </select>
-                <select
-                  aria-label={c('Filter by status', 'Lọc theo trạng thái')}
-                  className={selectClass}
-                  value={status}
-                  onChange={event => { setStatus(event.target.value); setPage(1) }}
-                >
-                  <option value="">{c('All statuses', 'Tất cả trạng thái')}</option>
-                  {['ACTIVE', 'INACTIVE', 'PENDING', 'EXPIRED', 'ACCOUNT_DISABLED'].map(value => (
-                    <option key={value} value={value}>{statusName(value, c)}</option>
-                  ))}
-                </select>
+
+                {/* Search & Filter Toolbar */}
+                <div className="flex items-center gap-2.5 flex-wrap py-0.5">
+                  <div className="relative w-56">
+                    <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
+                    <input
+                      type="text"
+                      aria-label={c('Search users', 'Tìm người dùng')}
+                      placeholder={c('Search name or email…', 'Tìm tên hoặc email…')}
+                      value={search}
+                      onChange={event => { setSearch(event.target.value); setPage(1) }}
+                      className="w-full pl-8 pr-3 py-1.5 text-xs rounded-lg bg-background border border-border text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary shadow-2xs transition-colors"
+                    />
+                  </div>
+
+                  <div className="flex items-center gap-1.5 bg-background border border-border rounded-lg px-2.5 py-1.5 shadow-2xs">
+                    <span className="text-[11px] text-muted-foreground font-medium">{c('Role:', 'Vai trò:')}</span>
+                    <select
+                      aria-label={c('Filter by role', 'Lọc theo vai trò')}
+                      className="text-xs bg-transparent text-foreground border-0 focus:outline-none cursor-pointer font-medium"
+                      value={role}
+                      onChange={event => { setRole(event.target.value); setPage(1) }}
+                    >
+                      <option value="">{c('All roles', 'Tất cả vai trò')}</option>
+                      {ROLES.map(value => <option key={value} value={value}>{roleName(value, c)}</option>)}
+                    </select>
+                  </div>
+
+                  <div className="flex items-center gap-1.5 bg-background border border-border rounded-lg px-2.5 py-1.5 shadow-2xs">
+                    <span className="text-[11px] text-muted-foreground font-medium">{c('Status:', 'Trạng thái:')}</span>
+                    <select
+                      aria-label={c('Filter by status', 'Lọc theo trạng thái')}
+                      className="text-xs bg-transparent text-foreground border-0 focus:outline-none cursor-pointer font-medium"
+                      value={status}
+                      onChange={event => { setStatus(event.target.value); setPage(1) }}
+                    >
+                      <option value="">{c('All statuses', 'Tất cả trạng thái')}</option>
+                      {['ACTIVE', 'INACTIVE', 'PENDING', 'EXPIRED', 'ACCOUNT_DISABLED'].map(value => (
+                        <option key={value} value={value}>{statusName(value, c)}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
               </div>
             </CardHeader>
             <CardContent className="p-0">
@@ -793,10 +829,10 @@ function UserDirectory({ identity, organization, principal }: { identity: Identi
                           </Badge>
                           {row.invitation && (
                             <p className="mt-2 text-caption text-muted-foreground">
-                              {row.invitation.deliveryStatus === 'SENT' ? c('SMTP accepted', 'SMTP đã tiếp nhận') :
+                              {row.invitation.deliveryStatus === 'SENT' ? c('Invitation sent', 'Đã gửi lời mời') :
                                 row.invitation.deliveryStatus === 'FAILED' ? c('Delivery failed', 'Gửi thư thất bại') :
-                                  row.invitation.deliveryStatus === 'NOT_REQUESTED' ? c('Delivery not scheduled', 'Chưa lên lịch gửi thư') :
-                                    c('Delivery queued', 'Đang chờ gửi thư')}
+                                  row.invitation.deliveryStatus === 'NOT_REQUESTED' ? c('Delivery pending', 'Chờ gửi thư') :
+                                    c('Queued for delivery', 'Đang chờ gửi')}
                             </p>
                           )}
                         </td>
@@ -1899,8 +1935,8 @@ function UserForm({
       <DialogHeader className="shrink-0 mb-4">
         <DialogTitle className="text-section font-bold">{title}</DialogTitle>
         <DialogDescription>
-          {member ? c('Update the workspace profile and assignments. Activated email and credentials remain unchanged.', 'Cập nhật hồ sơ và phân công. Email đã kích hoạt và thông tin bảo mật không đổi.') :
-            c('The recipient receives an activation link and chooses their own password. No seat is consumed until activation.', 'Người nhận được liên kết kích hoạt và tự đặt mật khẩu. Chưa tính ghế cho đến khi kích hoạt.')}
+          {member ? c('Update team member details, department assignments, and job roles.', 'Cập nhật thông tin thành viên, phân công phòng ban và vị trí công việc.') :
+            c('Send an invitation link for the user to set their password and join your workspace. Seats are counted once activated.', 'Gửi liên kết mời để người dùng tự tạo mật khẩu và tham gia không gian làm việc. Ghế thành viên chỉ tính sau khi kích hoạt.')}
         </DialogDescription>
       </DialogHeader>
 
@@ -2248,9 +2284,9 @@ function UserForm({
                   options={employeeLevelOptions}
                   value={targetRoleLevel}
                   onChange={(val) => setTargetRoleLevel(val)}
-                  placeholder={targetRoleId ? c('Select initial level...', 'Chọn level khởi điểm...') : c('Select role first...', 'Chọn role trước...')}
-                  searchPlaceholder={c('Search level...', 'Tìm level...')}
-                  emptyMessage={c('No levels available', 'Không có level nào')}
+                  placeholder={targetRoleId ? c('Select starting level...', 'Chọn cấp độ khởi điểm...') : c('Select target role first...', 'Chọn vị trí mục tiêu trước...')}
+                  searchPlaceholder={c('Search level...', 'Tìm cấp độ...')}
+                  emptyMessage={c('No levels available', 'Không có cấp độ nào')}
                 />
               </div>
             </div>
@@ -2299,7 +2335,7 @@ function UserForm({
         {referenceError != null && <Failure error={referenceError} />}
         {!referenceLoading && !referenceError && references.length === 0 && (
           <p role="status" className="text-body-sm text-muted-foreground">
-            {c('Employee creation requires real department and job position data from the upstream catalog. No sample values will be substituted.', 'Tạo Nhân viên cần dữ liệu phòng ban và vị trí công việc thực từ danh mục. Không thay bằng dữ liệu mẫu.')}
+            {c('Employee accounts must be assigned to an active department and job position. Please configure departments and job positions in workspace settings before adding employees.', 'Tài khoản nhân viên cần được phân công vào phòng ban và vị trí công việc. Vui lòng thiết lập phòng ban và vị trí công việc trước khi tạo nhân viên.')}
           </p>
         )}
         {save.isError && <Failure error={save.error} />}

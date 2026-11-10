@@ -65,7 +65,6 @@ export function WorkspaceLoginPage() {
         <div className="razor-input-wrapper">
           <Input id="workspace-email" className="razor-input" autoComplete="username" type="email" required
             placeholder={c('Enter your email', 'Nhập email của bạn')} value={email} onChange={event => setEmail(event.target.value)} />
-          <span className="razor-input-circle-icon" aria-hidden="true" />
         </div>
         <label className="sr-only" htmlFor="workspace-password">{c('Password', 'Mật khẩu')}</label>
         <div className="razor-input-wrapper">
@@ -76,6 +75,14 @@ export function WorkspaceLoginPage() {
             onClick={() => setShowPassword(!showPassword)}>
             {showPassword ? c('Hide', 'Ẩn') : c('Show', 'Hiện')}
           </Button>
+        </div>
+        <div className="flex items-center justify-end -mt-1 mb-2">
+          <Link
+            to="/forgot-password"
+            className="text-xs text-primary hover:underline font-medium"
+          >
+            {c('Forgot password?', 'Quên mật khẩu?')}
+          </Link>
         </div>
         <Button type="submit" className="razor-submit-btn" isLoading={signIn.isPending}>{c('Sign in', 'Đăng nhập')}</Button>
       </form> : session.stage === 'SIGN_IN_REQUIRED' ? <div className="space-y-3">
