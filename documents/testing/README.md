@@ -1,5 +1,8 @@
 # Test Documentation
 
+> [!IMPORTANT]
+> **Target Role Flow Index & Detailed Test Cases (Report 5)**: See [TARGET_ROLE_FLOW_INDEX.md](TARGET_ROLE_FLOW_INDEX.md) for the consolidated cross-reference and step-by-step specifications of all 22 committed automated test cases (20 feature tests across 10 core functions, 1 end-to-end workflow test, and 1 state transition test) mapped to their Excel sheets, UI portals, and Playwright test suites.
+
 **2026-10-29 C4, selected pathway review/read:** [current evidence and acceptance mapping](system/REQ-002-041-042-workspace-integration.md#c4-review-evidence-synchronization--2026-10-29), [plan disposition](REQ-041-042-initial-pathway-test-plan.md#c3-review-r1-executed-disposition). REQ-019-F01/REQ-020-F01/F02 plus direct REQ-042-F01/REQ-004-F01 only: final **BE160/FE49/real-system2 Passed**,0 final failures/errors/skips; BE includes29 real integration and39 regression, FE includes5 regression. Unit/mock and API/security evidence are separated from real adapters/browser; reruns are not added. Original guard failure, separately approved C2 one-line repair and passing retest are retained. E04–E06/protected learning execution deferred, production owners Open, native browser drag Not run. C4 ran document checks only; C5 not started.
 
 **2026-10-28 transfer review:** [baseline→own approved pathway view reconciliation](system/REQ-041-042-v011-handoff-review.md) records source/doc alignment, remaining planner/Compose/fixture/session blockers and next-session read/report/OK gate. Learning execution is outside this milestone; a manual walkthrough document/setup follows OK, executable tests require separate C3. No new execution/pass claim.

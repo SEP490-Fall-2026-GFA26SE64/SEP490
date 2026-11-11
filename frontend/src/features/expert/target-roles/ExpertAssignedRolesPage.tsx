@@ -559,19 +559,21 @@ export function ExpertAssignedRolesPage() {
       const occ = resolveJobPositionForRole(role)
       const matchesSearch =
         !q ||
-        role.title.toLowerCase().includes(q) ||
-        role.code.toLowerCase().includes(q) ||
-        (role.department && role.department.toLowerCase().includes(q)) ||
-        (role.familyCode && role.familyCode.toLowerCase().includes(q)) ||
-        (role.description && role.description.toLowerCase().includes(q)) ||
-        (role.track && role.track.toLowerCase().includes(q)) ||
-        (occ &&
-          (occ.name.toLowerCase().includes(q) ||
-            occ.code.toLowerCase().includes(q))) ||
-        role.skillTargets.some(
+        Boolean(role.title && role.title.toLowerCase().includes(q)) ||
+        Boolean(role.code && role.code.toLowerCase().includes(q)) ||
+        Boolean(role.department && role.department.toLowerCase().includes(q)) ||
+        Boolean(role.familyCode && role.familyCode.toLowerCase().includes(q)) ||
+        Boolean(role.description && role.description.toLowerCase().includes(q)) ||
+        Boolean(role.track && role.track.toLowerCase().includes(q)) ||
+        Boolean(
+          occ &&
+            ((occ.name && occ.name.toLowerCase().includes(q)) ||
+              (occ.code && occ.code.toLowerCase().includes(q))),
+        ) ||
+        (role.skillTargets || []).some(
           (st) =>
-            st.skillName.toLowerCase().includes(q) ||
-            st.skillCode.toLowerCase().includes(q),
+            Boolean(st?.skillName && st.skillName.toLowerCase().includes(q)) ||
+            Boolean(st?.skillCode && st.skillCode.toLowerCase().includes(q)),
         )
 
       const matchesStatus = statusFilter === 'all' || effStatus === statusFilter
@@ -3232,12 +3234,18 @@ export function ExpertAssignedRolesPage() {
                         (st) => {
                           const matchesSearch =
                             !configuredSkillSearch.trim() ||
-                            st.skillCode
-                              .toLowerCase()
-                              .includes(configuredSkillSearch.toLowerCase()) ||
-                            st.skillName
-                              .toLowerCase()
-                              .includes(configuredSkillSearch.toLowerCase())
+                            Boolean(
+                              st?.skillCode &&
+                                st.skillCode
+                                  .toLowerCase()
+                                  .includes(configuredSkillSearch.toLowerCase()),
+                            ) ||
+                            Boolean(
+                              st?.skillName &&
+                                st.skillName
+                                  .toLowerCase()
+                                  .includes(configuredSkillSearch.toLowerCase()),
+                            )
 
                           return matchesSearch
                         },

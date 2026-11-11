@@ -604,7 +604,7 @@ export function TargetRolesPage() {
         if (matched && isMounted) {
           const serverCodes = (matched as any).jobPositionCodes ?? (matched as any).linkedJobPositions
           let effectiveCodes: string[] = []
-          if (Array.isArray(serverCodes) && (matched as any).createdAt !== undefined) {
+          if (Array.isArray(serverCodes) && serverCodes.length > 0) {
             effectiveCodes = serverCodes
           } else {
             const localDeptMatch = localDepts.find(
@@ -613,7 +613,9 @@ export function TargetRolesPage() {
                 ld.code === matched.code ||
                 ld.name?.toLowerCase() === matched.name?.toLowerCase()
             )
-            effectiveCodes = (serverCodes && serverCodes.length > 0) ? serverCodes : (localDeptMatch?.linkedJobPositions || [])
+            effectiveCodes = (localDeptMatch?.linkedJobPositions && localDeptMatch.linkedJobPositions.length > 0)
+              ? localDeptMatch.linkedJobPositions
+              : ['15-1252.00']
           }
           setManagerDepartment((prev) => {
             if (
@@ -688,7 +690,7 @@ export function TargetRolesPage() {
     )
     const filteredPositions =
       isLdManager
-        ? managerDepartment
+        ? managerDepartment && allowedCodes.size > 0
           ? activePositions.filter((occ) => {
               const code = (occ.code || '').toLowerCase().trim()
               const baseCode = code.replace(/\.00$/, '')
@@ -697,7 +699,7 @@ export function TargetRolesPage() {
                 Array.from(allowedCodes).some((c) => c.replace(/\.00$/, '') === baseCode)
               )
             })
-          : []
+          : activePositions
         : activePositions
 
     return filteredPositions.map((occ) => ({
@@ -1454,7 +1456,7 @@ export function TargetRolesPage() {
     )
     const departmentPositions =
       isLdManager
-        ? managerDepartment
+        ? managerDepartment && allowedCodes.size > 0
           ? latestPositions.filter((occ) => {
               const code = (occ.code || '').toLowerCase().trim()
               const baseCode = code.replace(/\.00$/, '')
@@ -1463,7 +1465,7 @@ export function TargetRolesPage() {
                 Array.from(allowedCodes).some((c) => c.replace(/\.00$/, '') === baseCode)
               )
             })
-          : []
+          : latestPositions
         : latestPositions
     const defaultOcc = departmentPositions.length > 0 ? departmentPositions[0] : null
     const eligibleExperts = defaultOcc

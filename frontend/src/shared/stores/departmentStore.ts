@@ -1,4 +1,4 @@
-import { getActiveCompany, updateActiveCompany } from './companyStore'
+import { getActiveCompany, updateActiveCompany, resolveWorkspaceOrgId } from './companyStore'
 
 export interface DepartmentRecord {
   id: string
@@ -35,7 +35,7 @@ export function generateDepartmentId(): string {
 }
 
 export function getDepartmentStorageKey(orgId?: string): string {
-  const effectiveOrg = orgId || getActiveCompany()?.id || 'e0000000-0000-0000-0000-000000000001'
+  const effectiveOrg = resolveWorkspaceOrgId(orgId) || getActiveCompany()?.id || 'e0000000-0000-0000-0000-000000000001'
   return `${STORAGE_KEY_DEPARTMENTS_PREFIX}${effectiveOrg}`
 }
 
@@ -103,7 +103,7 @@ export const INITIAL_DEPARTMENTS: DepartmentRecord[] = [
 ]
 
 export function loadDepartments(orgId?: string): DepartmentRecord[] {
-  const effectiveOrg = orgId || getActiveCompany()?.id || 'e0000000-0000-0000-0000-000000000001'
+  const effectiveOrg = resolveWorkspaceOrgId(orgId) || getActiveCompany()?.id || 'e0000000-0000-0000-0000-000000000001'
   const key = getDepartmentStorageKey(effectiveOrg)
 
   try {
@@ -155,7 +155,7 @@ export function loadDepartments(orgId?: string): DepartmentRecord[] {
 }
 
 export function saveDepartments(departments: DepartmentRecord[], orgId?: string, notify = true) {
-  const effectiveOrg = orgId || getActiveCompany()?.id || 'e0000000-0000-0000-0000-000000000001'
+  const effectiveOrg = resolveWorkspaceOrgId(orgId) || getActiveCompany()?.id || 'e0000000-0000-0000-0000-000000000001'
   const key = getDepartmentStorageKey(effectiveOrg)
 
   try {
@@ -180,7 +180,7 @@ export function createDepartment(
   orgId?: string,
   notify = true
 ): DepartmentRecord {
-  const effectiveOrg = orgId || getActiveCompany()?.id || 'e0000000-0000-0000-0000-000000000001'
+  const effectiveOrg = resolveWorkspaceOrgId(orgId) || getActiveCompany()?.id || 'e0000000-0000-0000-0000-000000000001'
   const current = loadDepartments(effectiveOrg)
   const codeClean = data.code.trim().toUpperCase()
   const newDept: DepartmentRecord = {
@@ -196,7 +196,7 @@ export function createDepartment(
 }
 
 export function updateDepartment(id: string, updates: Partial<DepartmentRecord>, orgId?: string) {
-  const effectiveOrg = orgId || getActiveCompany()?.id || 'e0000000-0000-0000-0000-000000000001'
+  const effectiveOrg = resolveWorkspaceOrgId(orgId) || getActiveCompany()?.id || 'e0000000-0000-0000-0000-000000000001'
   const current = loadDepartments(effectiveOrg)
   const idLower = (id || '').toLowerCase().trim()
   const codeLower = (updates.code || id || '').toLowerCase().trim()
@@ -222,7 +222,7 @@ export function updateDepartment(id: string, updates: Partial<DepartmentRecord>,
 }
 
 export function deleteDepartment(id: string, orgId?: string) {
-  const effectiveOrg = orgId || getActiveCompany()?.id || 'e0000000-0000-0000-0000-000000000001'
+  const effectiveOrg = resolveWorkspaceOrgId(orgId) || getActiveCompany()?.id || 'e0000000-0000-0000-0000-000000000001'
   const current = loadDepartments(effectiveOrg)
   const updated = current.filter((d) => d.id !== id && d.code !== id)
   saveDepartments(updated, effectiveOrg, false)

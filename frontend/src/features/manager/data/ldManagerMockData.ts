@@ -582,6 +582,18 @@ export function getAvailableJobPositions(organizationId?: string, includeInactiv
     }
   } catch { }
 
+  if (isTechnova && codeMap.size === 0) {
+    codeMap.set('15-1252.00', {
+      code: '15-1252.00',
+      name: 'Software Developers',
+      description: 'Research, design, and develop computer and network software or specialized utility programs.',
+      jobZone: 4,
+      profiles: ['DEV'],
+      assignedExpertIds: [],
+      status: 'active',
+    });
+  }
+
   return Array.from(codeMap.values()).filter((p) => includeInactive || p.status !== 'inactive');
 }
 
