@@ -1,0 +1,3 @@
+{"status":"UP"}/adapt-learn-graph-dev-api-1 running healthy
+/adapt-learn-graph-dev-neo4j-1 running healthy
+/module-assessment-test-api-1 exited unhealthy

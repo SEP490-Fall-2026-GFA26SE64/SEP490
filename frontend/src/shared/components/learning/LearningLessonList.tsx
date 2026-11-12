@@ -5,6 +5,7 @@ import { Badge } from '../ui/Badge'
 import { Heading } from '../typography/Heading'
 import { LessonBody } from './LessonBody'
 import { LessonVideo } from './LessonVideo'
+import '../../styles/learningReader.css'
 
 /** Read-only ordered lessons for version review and content previews. */
 export function LearningLessonList({
@@ -24,7 +25,7 @@ export function LearningLessonList({
     )
   return (
     <div
-      className="space-y-4"
+      className="learner-reader space-y-4"
       aria-label={vi ? 'Danh sách bài học' : 'Lessons'}
     >
       {lessons.map((lesson, index) => {
@@ -59,10 +60,11 @@ export function LearningLessonList({
                   </div>
                 </div>
                 {lesson.type === 'TEXT' ? (
-                  <LessonBody
+                  <div className="learner-reading-body"><LessonBody
+                    presentation="document"
                     body={lesson.body ?? ''}
                     format={lesson.bodyFormat ?? 'MARKDOWN'}
-                  />
+                  /></div>
                 ) : (
                   <LessonVideo lesson={lesson} />
                 )}

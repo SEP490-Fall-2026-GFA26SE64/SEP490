@@ -1,15 +1,18 @@
 import { useEffect, useState } from 'react'
 import { moduleRequest } from '../../api/moduleAuthoringApi'
 import { Button } from '../ui/Button'
+import { LessonDocument } from './LessonDocument'
 import { useTranslation } from '../../i18n/LanguageContext'
 export function LessonBody({
   body,
   format,
   onReady,
+  presentation = 'standard',
 }: {
   body: string
   format: string
   onReady?: () => void
+  presentation?: 'standard' | 'document'
 }) {
   const { language } = useTranslation()
   const vi = language === 'vi'
@@ -58,7 +61,7 @@ export function LessonBody({
     <div role="status" className="h-32 animate-pulse rounded bg-muted">
       {vi ? 'Đang tải bài…' : 'Loading lesson…'}
     </div>
-  ) : (
+  ) : presentation === 'document' ? <LessonDocument html={html} vi={vi} /> : (
     <div
       className="break-words leading-relaxed [&_h1]:mb-3 [&_h1]:text-section [&_h2]:my-3 [&_h2]:text-subsection [&_h3]:my-3 [&_h3]:font-semibold [&_p]:my-3 [&_ul]:list-disc [&_ol]:list-decimal [&_li]:ml-6 [&_pre]:overflow-x-auto [&_pre]:rounded [&_pre]:bg-muted [&_pre]:p-4 [&_table]:w-full [&_td]:border [&_td]:border-border [&_td]:p-2 [&_th]:border [&_th]:border-border [&_th]:p-2 [&_img]:max-w-full [&_a]:text-primary [&_a]:underline"
       dangerouslySetInnerHTML={{ __html: html }}

@@ -34,7 +34,7 @@ export function Toaster() {
   return (
     <div
       aria-live="polite"
-      className="fixed bottom-4 right-4 z-50 flex flex-col space-y-2 max-w-sm w-full pointer-events-none p-2"
+      className="fixed bottom-4 left-4 right-4 z-[100] flex w-auto flex-col space-y-2 max-w-sm sm:left-auto sm:w-full pointer-events-none p-2"
     >
       {toasts.map((toast) => {
         const style = toastVariantStyles[toast.variant || 'default']

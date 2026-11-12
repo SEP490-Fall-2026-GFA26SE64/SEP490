@@ -1,0 +1,17 @@
+{
+  "eligibleSkills": 79,
+  "skillsWithThreeKnowledgeLevels": 79,
+  "configuredLevelOutcomeSets": 237,
+  "formOptionsIncludingPlaceholder": 80,
+  "example": {
+    "skillId": "MS-FS04",
+    "skillName": "use query languages",
+    "knowledgeLevel": "FOUNDATION",
+    "outcomeCodes": [
+      "MS_FS04_FOUNDATION"
+    ]
+  },
+  "browserErrors": [],
+  "ldDepartmentPreserved": true,
+  "testModuleCreated": false
+}

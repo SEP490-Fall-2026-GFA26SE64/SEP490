@@ -287,6 +287,8 @@ docker compose -f compose.dev.yml ps
 
 Dev frontend: `http://127.0.0.1:8088`; API: `http://127.0.0.1:18080`; PostgreSQL host port `15432`; Neo4j Browser: `http://127.0.0.1:7474` (Bolt `7687`). The dev Compose file uses explicit local-only fallback passwords; override them with `.env` for a shared development machine. The raw backend default is `local` and needs reachable databases plus `DB_PASSWORD` and `NEO4J_PASSWORD`. The `starter` profile is an intentional no-database test mode, not the deployed API.
 
+The dev Neo4j service uses a 256 MiB initial JVM heap, a 512 MiB maximum heap and a 256 MiB page cache, leaving room for the API and other services in a shared local Docker VM. These bounds are local development settings; production memory configuration is unchanged.
+
 For production-mode Compose, supply nonempty `DB_PASSWORD` and `NEO4J_PASSWORD` in a private `.env` or secret-injection environment, then run:
 
 ```powershell

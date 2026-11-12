@@ -1,45 +1,35 @@
 import type { ReactNode } from 'react'
-import type { CatalogModule } from '../../../shared/api/moduleAuthoringApi'
-import { Dialog, DialogHeader, DialogTitle, DialogFooter } from '../../../shared/components/ui/Dialog'
+import type { CatalogModule, CatalogChoice, ModuleContent } from '../../../shared/api/moduleAuthoringApi'
+import { Dialog, DialogBody, DialogHeader, DialogTitle, DialogFooter } from '../../../shared/components/ui/Dialog'
+import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '../../../shared/components/ui/Accordion'
+import { Badge } from '../../../shared/components/ui/Badge'
+import { Button } from '../../../shared/components/ui/Button'
+import { CopyableId } from '../../../shared/components/ui/CopyableId'
 import { Heading } from '../../../shared/components/typography/Heading'
 import { useTranslation } from '../../../shared/i18n/LanguageContext'
+import { LearningLessonList } from '../../../shared/components/learning/LearningLessonList'
+import { ModuleMarkdown } from '../../../shared/components/ui/ModuleMarkdown'
+import './moduleManagement.css'
 
-export function CatalogModuleDetails({ module, hasHistory, onClose, actions }: { module: CatalogModule | null; hasHistory: boolean; onClose: () => void; actions?: ReactNode }) {
-  const { language } = useTranslation()
-  const copy = (en: string, vi: string) => language === 'vi' ? vi : en
-  const labels: Record<string, string> = {
-    id: copy('ID', 'Mã'), version: copy('Catalog version', 'Phiên bản danh mục'), status: copy('Lifecycle', 'Vòng đời'),
-    reviewStatus: copy('Review', 'Duyệt'), reviewedBy: copy('Reviewed by', 'Người duyệt'), reviewedAt: copy('Reviewed at', 'Thời điểm duyệt'),
-    title: copy('Title', 'Tên module'), moduleType: copy('Module type', 'Loại module'), contentUri: copy('Content location', 'Địa chỉ nội dung'),
-    contentType: copy('Content format', 'Định dạng nội dung'), contentVersion: copy('Content version', 'Phiên bản nội dung'),
-    duration: copy('Duration (minutes)', 'Thời lượng (phút)'),
-    knowledgeLevel: copy('Knowledge level', 'Mức kiến thức'),
-    skillVersion: copy('Skill version', 'Phiên bản kỹ năng'),
-  }
-  const values: Record<string, string> = {
-    DRAFT: copy('Draft', 'Bản nháp'), ACTIVE: copy('Active', 'Đang hoạt động'), ARCHIVED: copy('Archived', 'Đã lưu trữ'),
-    APPROVED: copy('Approved', 'Đã duyệt'), NEEDS_EXPERT_REVIEW: copy('Not approved', 'Chưa được duyệt'), REJECTED: copy('Changes requested', 'Cần chỉnh sửa'),
-    LESSON_AND_PRACTICE: copy('Lesson and practice', 'Bài học và thực hành'), RESOURCE_GUIDED_PRACTICE: copy('Resource-guided practice', 'Thực hành theo tài liệu'),
-    FOUNDATION: copy('Foundation', 'Nền tảng'), INTERMEDIATE: copy('Intermediate', 'Trung cấp'), ADVANCED: copy('Advanced', 'Nâng cao'),
-  }
-  const fields = (entries: [string, string | number | null][]) => <dl className="grid gap-3 sm:grid-cols-2">{entries.map(([key, value]) => <div key={key}>
-    <dt className="text-muted-foreground">{labels[key] ?? key}</dt>
-    <dd className="break-words [overflow-wrap:anywhere]">{value === null || value === '' ? copy('Not recorded', 'Chưa có thông tin') : typeof value === 'string' ? values[value] ?? value : new Intl.NumberFormat(language === 'vi' ? 'vi-VN' : 'en-US').format(value)}</dd>
-  </div>)}</dl>
-  return <Dialog open={module !== null} onOpenChange={open => { if (!open) onClose() }} className="max-w-3xl" ariaLabel={copy('Catalog module details', 'Chi tiết module trong danh mục')}>
-    <DialogHeader><DialogTitle>{module?.title ?? module?.metadata.id}</DialogTitle></DialogHeader>
-    {module && <div className="space-y-5 overflow-y-auto px-1 text-[length:var(--text-body-sm)]">
-      {!hasHistory && <p className="rounded-lg border border-border bg-muted p-3 text-muted-foreground">{copy('No edit history has been recorded for this module.', 'Module này chưa có lịch sử chỉnh sửa được ghi nhận.')}</p>}
-      {fields(Object.entries({ ...module.metadata, title: module.title, moduleType: module.moduleType, contentUri: module.contentUri, contentType: module.contentType, contentVersion: module.contentVersion, duration: module.duration, knowledgeLevel: module.knowledgeLevel, skillVersion: module.skillVersion }))}
-      {fields(Object.entries({ knowledgeLevel: module.knowledgeLevel ?? null, skillVersion: module.skillVersion ?? null }))}
-      <Heading level={3} size="subsection">{copy('Skills taught', 'Kỹ năng được giảng dạy')}</Heading>
-      {!module.teachings.length && <p className="text-muted-foreground">{copy('No skills have been mapped yet.', 'Chưa có kỹ năng được liên kết.')}</p>}
-      {module.teachings.map((teaching, index) => <section key={`${teaching.skillId}:${index}`} className="space-y-3 rounded-lg border border-border p-3">
-        <Heading level={4} size="card" className="break-words">{teaching.skillName ?? teaching.skillId}</Heading>
-        <p className="break-all text-muted-foreground">{teaching.skillId}</p>
-        {fields(Object.entries({ ...teaching.metadata }))}
-      </section>)}
-    </div>}
-    {actions && <DialogFooter>{actions}</DialogFooter>}
-  </Dialog>
+export function CatalogModuleDetails({ module, hasHistory, onClose, actions, staff = [], onOpenAuthoring, embedded = false, content, review, authoringLabel }: { module: CatalogModule | null; hasHistory: boolean; onClose: () => void; actions?: ReactNode; staff?: CatalogChoice[]; onOpenAuthoring?: () => void; embedded?: boolean; content?: ModuleContent; review?: { by: string | null; at: string | null }; authoringLabel?: string }) {
+ const { language } = useTranslation(); const vi = language === 'vi'
+ const copy = (en: string, vn: string) => vi ? vn : en
+ const values: Record<string, string> = { DRAFT: copy('Draft', 'Bản nháp'), ACTIVE: copy('Active', 'Đang hoạt động'), ARCHIVED: copy('Archived', 'Đã lưu trữ'), APPROVED: copy('Approved', 'Đã duyệt'), NEEDS_EXPERT_REVIEW: copy('Not approved', 'Chưa được duyệt'), REJECTED: copy('Changes requested', 'Cần chỉnh sửa'), LESSON_AND_PRACTICE: copy('Lesson and practice', 'Bài học và thực hành'), RESOURCE_GUIDED_PRACTICE: copy('Resource-guided practice', 'Thực hành theo tài liệu'), FOUNDATION: copy('Foundation', 'Nền tảng'), INTERMEDIATE: copy('Intermediate', 'Trung cấp'), ADVANCED: copy('Advanced', 'Nâng cao') }
+ const value = (v: string | number | null | undefined) => v == null || v === '' ? '—' : typeof v === 'number' ? new Intl.NumberFormat(vi ? 'vi-VN' : 'en-GB').format(v) : values[v] ?? v
+ const person = (id: string | null) => !id ? '—' : staff.find(p => p.id === id)?.name ?? copy('Person unavailable', 'Chưa có thông tin người dùng')
+ const fields = (items: [string, string | number | null | undefined][]) => <dl className="grid grid-cols-2 gap-x-5 gap-y-3 text-sm">{items.map(([label, data]) => <div key={label} className="min-w-0"><dt className="mb-1 text-xs text-muted-foreground">{label}</dt><dd className={`break-words [overflow-wrap:anywhere] ${data == null || data === '' || data === '—' ? 'text-muted-foreground' : 'font-medium'}`}>{value(data)}</dd></div>)}</dl>
+ const body = module && <div className="space-y-5 px-0.5 py-2 text-foreground">
+   <section aria-label={copy('Overview', 'Tổng quan')} className="space-y-3"><Heading level={3} size="card">{copy('Overview', 'Tổng quan')}</Heading>{fields([[copy('Module type', 'Loại module'), module.moduleType], [copy('Duration (minutes)', 'Thời lượng (phút)'), module.duration], [copy('Knowledge level', 'Mức kiến thức'), module.knowledgeLevel], [copy('Catalog version', 'Phiên bản danh mục'), module.metadata.version], [copy('Content version', 'Phiên bản nội dung'), module.contentVersion]])}</section>
+   <section aria-label={copy('Skill alignment', 'Liên kết kỹ năng')} className="space-y-3 border-t border-border pt-4"><Heading level={3} size="card">{copy('Skill alignment', 'Liên kết kỹ năng')}</Heading>{!module.teachings.length ? <p className="text-xs text-muted-foreground">{copy('No skills have been mapped yet.', 'Chưa có kỹ năng được liên kết.')}</p> : module.teachings.map((teaching, index) => <div key={`${teaching.skillId}:${index}`} className="rounded-lg border border-border bg-muted/20 p-3"><p className="text-sm font-semibold">{teaching.skillName?.trim() || copy('Skill name unavailable', 'Chưa có tên kỹ năng')}</p><CopyableId code={teaching.skillId} entity={copy('skill ID', 'mã kỹ năng')} vi={vi} /></div>)}{fields([[copy('Skill version', 'Phiên bản kỹ năng'), module.skillVersion]])}</section>
+   <section aria-label={copy('Learning content', 'Nội dung học')} className="space-y-2 border-t border-border pt-4"><Heading level={3} size="card">{copy('Learning content', 'Nội dung học')}</Heading>{content ? <>{content.lessons ? <><p className="text-xs text-muted-foreground">{content.lessons.length} {copy('lessons in this revision', 'bài học trong phiên bản này')}</p><LearningLessonList lessons={content.lessons} headingLevel={4} /></> : content.markdown ? <ModuleMarkdown markdown={content.markdown} /> : <p className="text-xs text-muted-foreground">{copy('Lesson data is unavailable for this revision.', 'Chưa có dữ liệu bài học của phiên bản này.')}</p>}</> : <p className="text-xs leading-relaxed text-muted-foreground">{copy('Lesson details are not included in this catalog record. Workspace lessons are available after authoring or intake.', 'Bản danh mục này không chứa dữ liệu bài học. Có thể xem bài học trong không gian soạn thảo sau khi tạo hoặc tiếp nhận module.')}</p>}{onOpenAuthoring && <Button variant="outline" size="sm" onClick={onOpenAuthoring}>{authoringLabel ?? copy('View workspace lessons & history', 'Xem bài học và lịch sử soạn thảo')}</Button>}</section>
+   <section aria-label={copy('Review information', 'Thông tin duyệt')} className="space-y-3 border-t border-border pt-4"><Heading level={3} size="card">{copy('Review information', 'Thông tin duyệt')}</Heading>{fields([[copy('Reviewed by', 'Người duyệt'), person(review ? review.by : module.metadata.reviewedBy)], [copy('Reviewed at', 'Thời điểm duyệt'), (review ? review.at : module.metadata.reviewedAt) && Number.isFinite(Date.parse((review ? review.at : module.metadata.reviewedAt)!)) ? new Date((review ? review.at : module.metadata.reviewedAt)!).toLocaleString(vi ? 'vi-VN' : 'en-GB') : null]])}{!hasHistory && <p className="text-xs text-muted-foreground">{copy('No edit history has been recorded for this module.', 'Module này chưa có lịch sử chỉnh sửa được ghi nhận.')}</p>}</section>
+   <Accordion><AccordionItem value="technical"><AccordionTrigger>{copy('Technical metadata', 'Thông tin kỹ thuật')}</AccordionTrigger><AccordionContent><div className="space-y-4 pt-2">{fields([[copy('Content location', 'Địa chỉ nội dung'), module.contentUri], [copy('Content format', 'Định dạng nội dung'), module.contentType]])}{module.teachings.map((teaching, index) => <section key={index} className="space-y-2"><p className="text-xs font-semibold">{copy('Skill relationship', 'Quan hệ kỹ năng')} · {teaching.skillId}</p>{fields([[copy('Relationship ID', 'Mã quan hệ'), teaching.metadata.id], [copy('Relationship catalog version', 'Phiên bản danh mục quan hệ'), teaching.metadata.version], [copy('Lifecycle', 'Vòng đời'), teaching.metadata.status], [copy('Review', 'Duyệt'), teaching.metadata.reviewStatus], [copy('Reviewer ID', 'Mã người duyệt'), teaching.metadata.reviewedBy], [copy('Reviewed at', 'Thời điểm duyệt'), teaching.metadata.reviewedAt]])}</section>)}</div></AccordionContent></AccordionItem></Accordion>
+  </div>
+
+ if (embedded) return body
+ return <Dialog open={module !== null} onOpenChange={open => { if (!open) onClose() }} className="module-management-dialog max-w-3xl max-h-[88dvh]" ariaLabel={copy('Catalog module details', 'Chi tiết module trong danh mục')}>
+  <DialogHeader><DialogTitle>{module?.title?.trim() || copy('Untitled module', 'Module chưa có tên')}</DialogTitle>{module && <><CopyableId code={module.metadata.id} entity={copy('module ID', 'mã module')} vi={vi} /><div className="flex flex-wrap gap-x-5 gap-y-2 pt-2 text-xs"><div><span className="mr-2 text-muted-foreground">{copy('Lifecycle', 'Vòng đời')}</span><Badge variant={module.metadata.status === 'ACTIVE' ? 'success' : 'outline'}>{value(module.metadata.status)}</Badge></div><div><span className="mr-2 text-muted-foreground">{copy('Review', 'Duyệt')}</span><Badge variant={module.metadata.reviewStatus === 'APPROVED' ? 'success' : module.metadata.reviewStatus === 'REJECTED' ? 'destructive' : 'warning'}>{value(module.metadata.reviewStatus)}</Badge></div></div></>}</DialogHeader>
+  <DialogBody>{body}</DialogBody>
+  <DialogFooter>{actions}<Button variant="outline" size="sm" onClick={onClose}>{copy('Close', 'Đóng')}</Button></DialogFooter>
+ </Dialog>
 }

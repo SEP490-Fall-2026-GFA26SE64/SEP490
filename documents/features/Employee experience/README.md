@@ -112,6 +112,8 @@ Current source implements the local rule flow and versioned mappings described i
 | 8. Postconditions | One successful alternative satisfies a requirement; optional choices/history remain. Viewing grants no completion. |
 | 9. Acceptance Criteria | Requirement-root graph/timeline keeps current visual design; exact approved scope, separate evidence states, full retake, safe recalculation and request-onset target lock. |
 
+The Employee module lesson route uses a dedicated reading layout with the shared workspace navbar, module progress and collapsible syllabus. The compact document view uses a single module title, light active/completed syllabus states and heading-derived in-page navigation on wide screens; narrow screens keep a single reading column. Global feature navigation is omitted on this route; returning to a normal workspace page restores it. Lesson selection, completion rules and assessment access retain their existing owners.
+
 The new contract supersedes the initial-view-only scope. Approval alone does not establish readiness or protected content access. The [technical read contract](../../technical/initial-pathway/Adaptive%20pathway/View%20Adaptive%20Pathway.md) separates implemented projection, owner learning dependencies and actual evidence.
 
 <a id="fr-06-07"></a>

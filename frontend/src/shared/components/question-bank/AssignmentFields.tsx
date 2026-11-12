@@ -1,0 +1,16 @@
+import { useId, useState } from 'react'
+import type { BankSession } from '../../api/questionBankApi'
+import { Heading } from '../typography/Heading'
+import { Text } from '../typography/Text'
+import { Input } from '../ui/Input'
+import { FormField } from '../ui/FormField'
+import { RadioGroup, RadioGroupItem } from '../ui/RadioGroup'
+import { ResponsibleExpert } from './ResponsibleExpert'
+export function AssignmentFields({ currentOwner, selectedOwner, reason, session, busy, vi, onOwner, onReason }: {
+ currentOwner: string | null; selectedOwner: string; reason: string; session: BankSession | null; busy: boolean; vi: boolean; onOwner: (id: string) => void; onReason: (reason: string) => void
+}) {
+ const [search, setSearch] = useState(''), id = useId()
+ const copy = (en: string, vn: string) => vi ? vn : en
+ const matches = (session?.experts ?? []).filter(expert => expert.name.toLocaleLowerCase().includes(search.trim().toLocaleLowerCase()))
+ return <div className="space-y-5"><section className="space-y-2"><Heading level={3} size="card">{copy('Current responsibility', 'Người phụ trách hiện tại')}</Heading><ResponsibleExpert owner={currentOwner} session={session} vi={vi} /></section><section className="space-y-3"><FormField label={copy('Find an Expert', 'Tìm Expert')}><Input aria-label={copy('Search experts', 'Tìm Expert theo tên')} placeholder={copy('Search by name…', 'Tìm theo tên…')} value={search} disabled={busy} onChange={event => setSearch(event.target.value)} /></FormField><Text variant="caption" className="text-muted-foreground">{copy('Only eligible Experts in this organization are listed.', 'Chỉ hiển thị Expert đủ điều kiện trong tổ chức.')}</Text><RadioGroup aria-label={copy('Responsible Expert', 'Expert phụ trách')} disabled={busy} value={selectedOwner} onChange={onOwner} className="max-h-64 overflow-y-auto rounded-lg border border-border p-2">{matches.map(expert => <label key={expert.id} htmlFor={id + expert.id} className="flex cursor-pointer items-center gap-3 rounded-md p-2 hover:bg-muted"><RadioGroupItem id={id + expert.id} name={id + '-owner'} value={expert.id} aria-label={expert.name} /><ResponsibleExpert owner={expert.id} session={session} vi={vi} /></label>)}{!matches.length && <Text role="status" variant="body-sm" className="p-3 text-muted-foreground">{copy('No Experts match this search.', 'Không có Expert phù hợp.')}</Text>}</RadioGroup></section><section className="space-y-2 rounded-lg bg-muted/40 p-3"><Text variant="caption" className="text-muted-foreground">{copy('Confirm responsibility will be assigned to', 'Xác nhận phân công cho')}</Text><ResponsibleExpert owner={selectedOwner || null} session={session} vi={vi} /></section><FormField label={copy('Assignment reason *', 'Lý do phân công *')}><textarea aria-label={copy('Assignment reason', 'Lý do phân công')} aria-required="true" className="min-h-24 w-full rounded-lg border border-border bg-card p-3 text-body-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary" value={reason} disabled={busy} maxLength={2000} onChange={event => onReason(event.target.value)} /></FormField><Text variant="caption" className="text-muted-foreground">{copy('A reason is required and will be recorded in activity history.', 'Lý do là bắt buộc và sẽ được ghi vào lịch sử hoạt động.')}</Text></div>
+}

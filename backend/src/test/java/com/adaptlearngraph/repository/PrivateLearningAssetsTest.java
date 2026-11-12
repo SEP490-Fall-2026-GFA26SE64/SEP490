@@ -55,6 +55,22 @@ class PrivateLearningAssetsTest {
     }
 
     @Test
+    void codeLanguageSurvivesWithoutPreservingExecutableOrArbitraryClasses() {
+        var assets = new PrivateLearningAssets("http://localhost:9000", "test-key", "test-secret", "test", content, verifications);
+        String html = assets.sanitizedHtml("<pre><code class='evil language-java extra' onclick='alert(1)' style='color:red'>x &lt; y</code></pre>"
+                + "<code class='language-&quot;onload=bad'>plain</code><code class='injected'>text</code>");
+        assertTrue(html.contains("class=\"language-java\""));
+        assertFalse(html.contains("evil"));
+        assertFalse(html.contains("extra"));
+        assertFalse(html.contains("onclick"));
+        assertFalse(html.contains("style="));
+        assertFalse(html.contains("onload"));
+        assertFalse(html.contains("injected"));
+        assertTrue(html.contains("x &lt; y"));
+        assertTrue(assets.renderMarkdown("```cypher\nMATCH (n) RETURN n\n```").contains("class=\"language-cypher\""));
+    }
+
+    @Test
     void traversalZipIsRejectedBeforeAnyPersistentWrite() throws Exception {
         var port = mock(ModuleAuthoringPort.class);
         when(port.actor()).thenReturn(new Actor("expert", "org", Set.of("EXPERT")));

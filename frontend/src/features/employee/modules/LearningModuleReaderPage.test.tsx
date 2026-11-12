@@ -180,8 +180,8 @@ afterEach(() => {
   cleanup()
   vi.unstubAllGlobals()
 })
-describe('R6 original lesson reader frame', () => {
-  it('uses the original top bar, syllabus, large reading area and next-item footer with real completion writes', async () => {
+describe('Learner content workspace', () => {
+  it('renders the real module, syllabus and reading area with persisted completion and next navigation', async () => {
     mount()
     await screen.findByRole('heading', { name: 'Read' })
     expect(screen.getByTestId('original-lesson-reader')).toBeTruthy()
@@ -189,13 +189,13 @@ describe('R6 original lesson reader frame', () => {
       name: 'Module syllabus',
     })
     expect(
-      within(syllabus).getByRole('heading', { name: 'Actual approved module' }),
+      within(syllabus).getByText('Actual approved module'),
     ).toBeTruthy()
     await within(
       screen.getByRole('region', { name: 'Lesson content' }),
     ).findByText('Actual reading body')
     expect(screen.queryByRole('button', { name: 'Take Module Exam' })).toBeNull()
-    expect(screen.getByRole('button', { name: 'Skill learning status' })).toBeTruthy()
+    expect(screen.queryByRole('button', { name: 'Skill learning status' })).toBeNull()
     expect(
       screen
         .getByRole('link', { name: 'Back to Pathway' })
@@ -213,7 +213,7 @@ describe('R6 original lesson reader frame', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Mark as completed' }))
     await screen.findByRole('button', { name: 'Lesson completed' })
     expect(progress.find((p) => p.lessonId === 'one')?.completedAt).toBeTruthy()
-    fireEvent.click(screen.getByRole('button', { name: 'Go to next item' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Next lesson' }))
     await screen.findByRole('heading', { name: 'Watch' })
     expect(
       (
@@ -224,6 +224,45 @@ describe('R6 original lesson reader frame', () => {
     ).toBe(true)
     expect(screen.getByText(/Watched 0%/)).toBeTruthy()
     expect(screen.queryByRole('button', { name: 'Take Module Exam' })).toBeNull()
+  })
+  it('collapses the syllabus without changing the current lesson or progress', async () => {
+    mount()
+    await screen.findByRole('heading', { name: 'Read' })
+    expect(screen.getByRole('heading', { level: 1, name: 'Actual approved module' })).toBeTruthy()
+    expect(screen.queryByRole('navigation', { name: 'Learning breadcrumb' })).toBeNull()
+    const toggle = screen.getByRole('button', { name: 'Hide lessons' })
+    expect(toggle.getAttribute('aria-expanded')).toBe('true')
+    fireEvent.click(toggle)
+    expect(screen.queryByRole('complementary', { name: 'Module syllabus' })).toBeNull()
+    expect(screen.getByRole('heading', { name: 'Read' })).toBeTruthy()
+    fireEvent.click(screen.getByRole('button', { name: 'Show lessons' }))
+    expect(screen.getByRole('complementary', { name: 'Module syllabus' })).toBeTruthy()
+    expect(progress.every(p => !p.completedAt)).toBe(true)
+  })
+  it('keeps the lesson open when a progress save fails on navigation', async () => {
+    const implementation = vi.mocked(moduleRequest).getMockImplementation()!
+    mount()
+    await screen.findByRole('heading', { name: 'Read' })
+    vi.mocked(moduleRequest).mockImplementation(async (path, method, ...args) => {
+      if (method === 'PUT') throw new Error('Progress could not be saved')
+      return implementation(path, method, ...args)
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'Next lesson' }))
+    await waitFor(() => expect(screen.getAllByRole('alert').some(alert => alert.textContent?.includes('Progress could not be saved'))).toBe(true))
+    expect(screen.getByRole('heading', { name: 'Read' })).toBeTruthy()
+    expect(screen.queryByRole('heading', { name: 'Watch' })).toBeNull()
+    vi.mocked(moduleRequest).mockImplementation(implementation)
+    fireEvent.click(screen.getByRole('button', { name: 'Next lesson' }))
+    await screen.findByRole('heading', { name: 'Watch' })
+    fireEvent.click(screen.getByRole('button', { name: 'Previous lesson' }))
+    await screen.findByRole('heading', { name: 'Read' })
+  })
+  it('shows an empty module without invented lessons or completion', async () => {
+    vi.mocked(moduleRequest).mockResolvedValue({ ...view, revision: { ...view.revision, payload: { ...view.revision.payload, content: { ...view.revision.payload.content, lessons: [] } } }, progress: [] })
+    mount()
+    await screen.findByRole('heading', { name: 'No lessons available' })
+    expect(screen.queryByRole('button', { name: 'Mark as completed' })).toBeNull()
+    expect(screen.getByText('Duration unavailable')).toBeTruthy()
   })
   it('resumes the server-selected lesson instead of a sample lesson', async () => {
     const implementation = vi.mocked(moduleRequest).getMockImplementation()!
