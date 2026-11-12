@@ -25,8 +25,8 @@ describe('Module Skill selection and list presentation', () => {
   it('uses eligible editor choices while preserving browse choices and details', async () => {
     setup()
     await screen.findByRole('heading', {name: 'Learn databases'}, {timeout:10000})
-    expect(screen.queryByText('MODULE-INTERNAL-ID')).toBeNull()
-    expect(screen.getByText('Skill taught: Approved SQL skill')).toBeTruthy()
+    expect(screen.getByRole('button', {name:'Copy ID MODULE-INTERNAL-ID'})).toBeTruthy()
+    expect(within(screen.getByTestId('module-row')).getByText('Approved SQL skill')).toBeTruthy()
     expect(within(screen.getByRole('group',{name:'Available skills'})).getByRole('heading',{name:'1'})).toBeTruthy()
     expect(within(screen.getByLabelText('Skill', {exact: true})).getByRole('option', {name:'Pending skill'})).toBeTruthy()
     fireEvent.click(screen.getByRole('button', {name: 'View module'}))
@@ -52,15 +52,15 @@ describe('Module Skill selection and list presentation', () => {
   it('does not substitute IDs when title or Skill mapping is missing', async () => {
     setup([], {...catalogModule, title:'', teachings:[]})
     expect(await screen.findByRole('heading', {name:'Untitled module'}, {timeout:10000})).toBeTruthy()
-    expect(screen.getByText('Skill taught: No skill linked')).toBeTruthy()
-    expect(screen.queryByText('MODULE-INTERNAL-ID')).toBeNull()
+    expect(within(screen.getByTestId('module-row')).getAllByText('—').length).toBeGreaterThan(0)
+    expect(screen.getByRole('button', {name:'Copy ID MODULE-INTERNAL-ID'})).toBeTruthy()
   })
   it('requires replacing a formerly selected Skill that is no longer eligible when editing', async () => {
     const content = {id:'content',title:'Lesson',markdown:'Body',contentType:'text/markdown',contentVersion:'1',jobPositionIds:[],createdBy:'expert',createdAt:'2026-11-09T00:00:00Z',lessons:[]}
     const payload = {...catalogModule, teachings:[{...catalogModule.teachings[0],skillId:'pending',skillName:'Pending skill'}],content}
     const doc: ModuleDocument = {id:metadata.id,organizationId:'org',jobPositionIds:[],createdBy:'expert',createdAt:'2026-11-09T00:00:00Z',lockVersion:1,everReleased:false,archived:false,releasedRevision:null,history:[],revisions:[{number:1,state:'DRAFT',payload,editedBy:'expert',editedAt:'2026-11-09T00:00:00Z',decidedBy:null,decidedAt:null,feedback:null}]}
     setup(undefined,catalogModule,doc)
-    fireEvent.click(await screen.findByRole('button',{name:'Edit'},{timeout:10000}))
+    fireEvent.click(await screen.findByRole('button',{name:'Actions for MODULE-INTERNAL-ID'},{timeout:10000})); fireEvent.click(screen.getByRole('button',{name:'Edit'}))
     const dialog=screen.getByRole('dialog',{name:'Module editor'})
     expect(within(dialog).getByText(/The selected skill is no longer eligible/)).toBeTruthy()
     expect((within(dialog).getByRole('button',{name:'Save draft'}) as HTMLButtonElement).disabled).toBe(true)

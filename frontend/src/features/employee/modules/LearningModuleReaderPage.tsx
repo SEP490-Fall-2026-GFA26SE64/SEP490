@@ -6,19 +6,19 @@ import { SkillLearningPanel } from './SkillLearningPanel'
 import { AssessmentStatus, SkillAssessmentEntry } from '../baseline-assessment/SkillAssessmentEntry'
 import { usePathwayAssessmentStates } from '../baseline-assessment/usePathwayAssessmentStates'
 import { useCallback, useContext, useEffect, useEffectEvent, useRef, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
+import type { MouseEvent } from 'react'
+import { LearningReaderHeader } from './LearningReaderHeader'
+import { LearningLessonSidebar } from './LearningLessonSidebar'
+import '../../../shared/styles/learningReader.css'
 import {
-  Award,
   Check,
-  CheckCircle2,
-  Circle,
   ChevronLeft,
   ChevronRight,
 } from 'lucide-react'
-import { WorkspaceLayout } from '../../../shared/layouts/WorkspaceLayout'
+import { LearnerLessonLayout } from '../../../shared/layouts/LearnerLessonLayout'
 import { Button } from '../../../shared/components/ui/Button'
 import { Badge } from '../../../shared/components/ui/Badge'
-import { Progress } from '../../../shared/components/ui/Progress'
 import { Heading } from '../../../shared/components/typography/Heading'
 import {
   Dialog,
@@ -39,11 +39,17 @@ import { useTranslation } from '../../../shared/i18n/LanguageContext'
 /** Existing sidebar/reading/player/next-lesson layout, connected to versioned server content. */
 export function LearningModuleReaderPage() {
   const { moduleId = '' } = useParams()
-  return <LearningModuleReader key={moduleId} moduleId={moduleId} />
+  const identity = useContext(WorkspaceSessionContext)?.identity
+  return <LearningModuleReader key={`${identity?.organizationId}:${identity?.accountId}:${moduleId}`} moduleId={moduleId} />
 }
 function LearningModuleReader({ moduleId }: { moduleId: string }) {
   const { language } = useTranslation()
   const vi = language === 'vi'
+  const navigate = useNavigate()
+  const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [saving, setSaving] = useState(0)
+  const [unsaved, setUnsaved] = useState(false)
+  const failedWrite = useRef<{ lessonId: string; revision: number; patch: Record<string, number | boolean> } | null>(null)
   const [view, setView] = useState<LearningView | null>(null)
   const [active, setActive] = useState('')
   const [loading, setLoading] = useState(true)
@@ -78,6 +84,7 @@ function LearningModuleReader({ moduleId }: { moduleId: string }) {
       abort.signal,
     )
       .then((result) => {
+        if (abort.signal.aborted) return
         setView(result)
         setActive(
           result.activeLessonId &&
@@ -97,6 +104,12 @@ function LearningModuleReader({ moduleId }: { moduleId: string }) {
       })
     return () => abort.abort()
   }, [moduleId, attempt])
+  useEffect(() => {
+    if (!saving && !unsaved) return
+    const warn = (event: BeforeUnloadEvent) => { event.preventDefault(); event.returnValue = '' }
+    window.addEventListener('beforeunload', warn)
+    return () => window.removeEventListener('beforeunload', warn)
+  }, [saving, unsaved])
   const lessons = view?.revision.payload.content.lessons ?? []
   const current = lessons.find((l) => l.id === active)
   const progress = view?.progress.find((p) => p.lessonId === active)
@@ -112,28 +125,28 @@ function LearningModuleReader({ moduleId }: { moduleId: string }) {
       if (!revisionNumber || !active) return Promise.resolve()
       const revision = revisionNumber
       const lessonId = active
+      setSaving(count => count + 1)
       const work = request.current
         .catch(() => undefined)
         .then(async () => {
-          const result = await moduleRequest<LessonProgress>(
-            `/learning/${encodeURIComponent(moduleId)}/lessons/${encodeURIComponent(lessonId)}/progress`,
-            'PUT',
-            { revision, positionSeconds: 0, ...patch },
-          )
-          setView((old) =>
-            old?.revision.number === revision
-              ? {
-                  ...old,
-                  progress: [
-                    ...old.progress.filter((p) => p.lessonId !== lessonId),
-                    result,
-                  ],
-                }
-              : old,
-          )
+          const persist = async (write: { lessonId: string; revision: number; patch: Record<string, number | boolean> }) => {
+            failedWrite.current = write
+            setUnsaved(true)
+            const result = await moduleRequest<LessonProgress>(
+              `/learning/${encodeURIComponent(moduleId)}/lessons/${encodeURIComponent(write.lessonId)}/progress`,
+              'PUT', { revision: write.revision, positionSeconds: 0, ...write.patch },
+            )
+            failedWrite.current = null
+            setUnsaved(false)
+            setView(old => old?.revision.number === write.revision ? { ...old, progress: [...old.progress.filter(p => p.lessonId !== write.lessonId), result] } : old)
+          }
+          // Retry an unacknowledged write before a later sample or navigation can replace it.
+          if (failedWrite.current) await persist(failedWrite.current)
+          await persist({ lessonId, revision, patch })
         })
-      request.current = work
-      return work
+      const tracked = work.finally(() => setSaving(count => count - 1))
+      request.current = tracked
+      return tracked
     },
     [revisionNumber, active, moduleId],
   )
@@ -143,7 +156,7 @@ function LearningModuleReader({ moduleId }: { moduleId: string }) {
     lastSent.current = 0
     videoPosition.current = progress?.positionSeconds ?? 0
     if (!active) return
-    void update({ positionSeconds: progress?.positionSeconds ?? 0 }).catch(
+    void Promise.resolve().then(() => update({ positionSeconds: progress?.positionSeconds ?? 0 })).catch(
       (e: unknown) =>
         setError(e instanceof Error ? e.message : 'Cannot save progress'),
     )
@@ -168,30 +181,35 @@ function LearningModuleReader({ moduleId }: { moduleId: string }) {
     observer.observe(target)
     return () => observer.disconnect()
   }, [active, current?.body, current?.type, bodyReady, update])
-  const changeLesson = (id: string) => {
+  const flushProgress = async () => {
+    if (!current) { await request.current; return }
     const interval = pending.current
-    pending.current = null
-    if (current?.type === 'VIDEO')
-      void update({
-        positionSeconds: videoPosition.current,
-        ...(interval
-          ? { segmentStart: interval.start, segmentEnd: interval.end }
-          : {}),
-      }).catch((e: unknown) =>
-        setError(e instanceof Error ? e.message : 'Cannot save progress'),
-      )
-    setReadEnd(false)
-    setBodyReady(false)
-    setVideoFailed(false)
-    setActive(id)
-    setError('')
+    await update({
+      positionSeconds: current.type === 'VIDEO' ? videoPosition.current : (progress?.positionSeconds ?? 0),
+      ...(current.type === 'VIDEO' && interval ? { segmentStart: interval.start, segmentEnd: interval.end } : {}),
+      ...(current.type === 'TEXT' && readEnd ? { reachedEnd: true } : {}),
+    })
+    if (pending.current === interval) pending.current = null
+  }
+  const changeLesson = (id: string) => {
+    if (id === active) return
+    void run(async () => {
+      await flushProgress()
+      setReadEnd(false)
+      setBodyReady(false)
+      setVideoFailed(false)
+      setActive(id)
+    })
+  }
+  const exitReader = (event: MouseEvent<HTMLAnchorElement>, destination: string) => {
+    // Modified clicks retain ordinary link behavior without changing this reader.
+    if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0) return
+    event.preventDefault()
+    void run(async () => { await flushProgress(); navigate(destination) })
   }
   const completed = lessons.filter((lesson) =>
     view?.progress.some((p) => p.lessonId === lesson.id && p.completedAt),
   ).length
-  const percent = lessons.length
-    ? Math.round((completed / lessons.length) * 100)
-    : 0
   const watched =
     progress?.watchedIntervals.reduce(
       (total, interval) => total + interval.end - interval.start,
@@ -219,42 +237,25 @@ function LearningModuleReader({ moduleId }: { moduleId: string }) {
   const activeIndex = lessons.findIndex((lesson) => lesson.id === active)
   const isLast = activeIndex === lessons.length - 1
   return (
-    <WorkspaceLayout>
+    <LearnerLessonLayout>
       <div
-        className="flex min-h-screen min-w-0 flex-col bg-background text-foreground"
+        className="learner-reader flex min-w-0 flex-col overflow-clip bg-card text-foreground"
         data-testid="original-lesson-reader"
       >
-        <header className="sticky top-0 z-30 flex flex-wrap items-center justify-between gap-3 border-b border-border bg-card px-4 py-2.5 shadow-2xs sm:px-6">
-          <Link
-            to="/employee/pathway"
-            className="inline-flex min-h-10 items-center gap-1.5 rounded-md px-3 text-body-sm font-semibold text-foreground hover:bg-muted hover:text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
-          >
-            <ChevronLeft
-              size={16}
-              className="shrink-0 text-primary"
-              aria-hidden="true"
-            />
-            {vi ? 'Về lộ trình' : 'Back to Pathway'}
-          </Link>
-          <div className="flex flex-wrap items-center gap-3.5">
-            <div className="flex items-center gap-2 text-caption font-medium text-muted-foreground">
-              <span>
-                {completed}/{lessons.length} {vi ? 'hoàn thành' : 'Completed'}
-              </span>
-              <Progress value={percent} variant="success" className="w-24" />
-            </div>
-            <Button variant="outline" size="sm" disabled={!view || view.revision.payload.teachings.length !== 1} onClick={() => document.getElementById('skill-learning-status')?.focus()} className="gap-1.5">
-              <Award size={15} aria-hidden="true" />
-              {vi ? 'Trạng thái học kỹ năng' : 'Skill learning status'}
-            </Button>
-          </div>
-        </header>
+        <LearningReaderHeader title={view?.revision.payload.title ?? (vi ? 'Nội dung học' : 'Learning content')} completed={completed} total={lessons.length} remainingSeconds={lessons.reduce((seconds, lesson) => {
+          const saved = view?.progress.find(p => p.lessonId === lesson.id)
+          if (saved?.completedAt) return seconds
+          const covered = lesson.type === 'VIDEO' ? (saved?.watchedIntervals.reduce((sum, interval) => sum + interval.end - interval.start, 0) ?? 0) : 0
+          return seconds + Math.max(0, lesson.durationSeconds - covered)
+        }, 0)} sidebarOpen={sidebarOpen} busy={busy} saving={saving > 0} vi={vi} onToggle={() => setSidebarOpen(open => !open)} onExit={exitReader} />
+
         {error && (
           <div
             role="alert"
             className="space-y-2 border-b border-destructive bg-card p-3 text-destructive"
           >
             <p>{error}</p>
+            {view && unsaved && <Button variant="outline" disabled={busy} onClick={() => void run(flushProgress)}>{vi ? 'Thử lưu lại tiến độ' : 'Retry saving progress'}</Button>}
             {!view && (
               <Button
                 variant="outline"
@@ -282,105 +283,15 @@ function LearningModuleReader({ moduleId }: { moduleId: string }) {
           view && (
             <>
               <div className="flex min-w-0 flex-1 flex-col md:flex-row">
-                <aside
-                  className="z-20 flex w-full shrink-0 flex-col border-r border-border bg-card md:w-80 lg:w-84"
-                  aria-label={vi ? 'Danh sách bài học' : 'Module syllabus'}
-                >
-                  <div className="space-y-1.5 border-b border-border bg-muted/20 p-4 sm:p-5">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <Badge
-                        variant="primary"
-                        className="max-w-full whitespace-normal break-all font-mono text-[length:var(--text-eyebrow)] font-bold"
-                      >
-                        {moduleId}
-                      </Badge>
-                      <span className="text-caption text-muted-foreground">
-                        {lessons.length} {vi ? 'bài học' : 'Lessons'}
-                      </span>
-                    </div>
-                    <Heading level={2} size="card" className="break-words">
-                      {view.revision.payload.title}
-                    </Heading>
-                    <p className="text-caption text-muted-foreground">
-                      {completed}/{lessons.length} · {percent}%{' '}
-                      {percent === 100
-                        ? vi
-                          ? 'Đã hoàn thành nội dung'
-                          : 'Content completed'
-                        : ''}
-                    </p>
-                  </div>
-                  <nav
-                    aria-label={vi ? 'Bài học trong module' : 'Module lessons'}
-                    className="flex-1 divide-y divide-border/60 overflow-y-auto py-2"
-                  >
-                    {lessons.map((lesson, index) => {
-                      const done = view.progress.some(
-                        (p) => p.lessonId === lesson.id && p.completedAt,
-                      )
-                      return (
-                        <button
-                          key={lesson.id}
-                          type="button"
-                          aria-current={
-                            active === lesson.id ? 'step' : undefined
-                          }
-                          onClick={() => changeLesson(lesson.id)}
-                          className={`flex w-full items-start gap-2 border-l-4 px-4 py-5 text-left transition-colors ${active === lesson.id ? 'border-primary bg-secondary font-semibold text-primary' : 'border-transparent text-foreground hover:bg-muted'}`}
-                        >
-                          {done ? (
-                            <CheckCircle2
-                              size={18}
-                              className="mt-0.5 shrink-0 text-success"
-                              aria-hidden="true"
-                            />
-                          ) : (
-                            <Circle
-                              size={18}
-                              className="mt-0.5 shrink-0 text-muted-foreground"
-                              aria-hidden="true"
-                            />
-                          )}
-                          <span className="min-w-0">
-                            <span className="block break-words text-body-sm">
-                              {index + 1}. {lesson.title}
-                            </span>
-                            <span className="mt-1 block text-caption font-normal text-muted-foreground">
-                              {lesson.type === 'TEXT'
-                                ? vi
-                                  ? 'Bài đọc'
-                                  : 'Reading'
-                                : 'Video'}{' '}
-                              · {Math.ceil(lesson.durationSeconds / 60)}{' '}
-                              {vi ? 'phút' : 'min'}
-                            </span>
-                          </span>
-                        </button>
-                      )
-                    })}
-                  </nav>
-                  <div className="space-y-2 border-t border-border p-4">
-                    <p className="text-caption text-muted-foreground">
-                      {vi ? 'Phiên bản' : 'Version'} {view.revision.number}
-                    </p>
-                    {view.latestRevision != null &&
-                      view.latestRevision > view.revision.number && (
-                        <Button
-                          variant="outline"
-                          onClick={() => setSwitching(true)}
-                        >
-                          {vi ? 'Có phiên bản mới' : 'New version available'}
-                        </Button>
-                      )}
-                  </div>
-                </aside>
+                {sidebarOpen && <LearningLessonSidebar title={view.revision.payload.title} lessons={lessons} progress={view.progress} active={active} completed={completed} revision={view.revision.number} newer={view.latestRevision != null && view.latestRevision > view.revision.number} busy={busy} vi={vi} onSelect={changeLesson} onSwitch={() => setSwitching(true)} />}
                 <div
-                  className="flex min-w-0 flex-1 flex-col overflow-y-auto bg-background p-4 sm:p-6 lg:p-8"
+                  className="min-w-0 flex-1 bg-card p-4 sm:p-6 lg:px-10 lg:py-8"
                   aria-label={vi ? 'Nội dung bài học' : 'Lesson content'}
                   role="region"
                 >
+                  {!current && <div role="status" className="rounded-xl border border-border bg-card p-6"><Heading level={2} size="card">{vi ? 'Chưa có bài học' : 'No lessons available'}</Heading><p className="mt-2 text-body-sm text-muted-foreground">{vi ? 'Module này chưa có nội dung để học. Quay lại lộ trình hoặc báo cho Expert phụ trách.' : 'This module has no available lessons. Return to your pathway or contact the responsible Expert.'}</p></div>}
                   {current && (
-                    <div className="flex flex-1 flex-col justify-between space-y-8 rounded-2xl border border-border bg-card p-6 shadow-xs sm:p-8 lg:p-12">
+                    <article aria-labelledby="learning-lesson-title" className="learning-document-page mx-auto flex w-full max-w-6xl flex-col space-y-6 py-2">
                       <div className="space-y-6">
                         {current.type === 'VIDEO' && (
                           <div className="overflow-hidden rounded-xl bg-muted shadow-xs">
@@ -468,6 +379,7 @@ function LearningModuleReader({ moduleId }: { moduleId: string }) {
                             {vi ? 'phút' : 'min'}
                           </p>
                           <Heading
+                            id="learning-lesson-title"
                             level={1}
                             size="page"
                             className="break-words"
@@ -477,11 +389,12 @@ function LearningModuleReader({ moduleId }: { moduleId: string }) {
                         </div>
                         {current.type === 'TEXT' && (
                           <>
-                            <LessonBody
+                            <div className="learner-reading-body"><LessonBody
+                              presentation="document"
                               body={current.body ?? ''}
                               format={current.bodyFormat ?? 'HTML'}
                               onReady={() => setBodyReady(true)}
-                            />
+                            /></div>
                             <div
                               ref={bodyEnd}
                               className="h-1"
@@ -497,9 +410,12 @@ function LearningModuleReader({ moduleId }: { moduleId: string }) {
                             : `${vi ? 'Đã xem' : 'Watched'} ${Math.min(100, Math.floor((watched / current.durationSeconds) * 100))}% · ${vi ? 'Cần xem ít nhất 90% để xác nhận hoàn thành.' : 'Watch at least 90% before marking completed.'}`}
                         </p>
                       </div>
-                      <div className="mt-auto flex flex-col justify-between gap-4 border-t border-border pt-8 sm:flex-row sm:flex-wrap sm:items-center">
+                      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border pt-4">
+                        <Button variant="outline" disabled={busy || activeIndex <= 0} onClick={() => changeLesson(lessons[activeIndex - 1].id)} leftIcon={<ChevronLeft size={16} aria-hidden="true" />}>
+                          {vi ? 'Bài trước' : 'Previous lesson'}
+                        </Button>
                         <Button
-                          variant="outline"
+                          variant={progress?.completedAt ? 'outline' : 'primary'}
                           disabled={
                             busy || !eligible || Boolean(progress?.completedAt)
                           }
@@ -515,7 +431,7 @@ function LearningModuleReader({ moduleId }: { moduleId: string }) {
                               })
                             })
                           }
-                          className={`self-start gap-1.5 text-body-sm font-semibold ${progress?.completedAt ? 'border-success/30 bg-success/15 text-success' : ''}`}
+                          className={`gap-1.5 text-body-sm font-semibold ${progress?.completedAt ? 'border-success/30 bg-success/15 text-success' : ''}`}
                         >
                           <Check size={14} aria-hidden="true" />
                           {progress?.completedAt
@@ -528,22 +444,23 @@ function LearningModuleReader({ moduleId }: { moduleId: string }) {
                         </Button>
                         {!isLast ? (
                           <Button
-                            variant="primary"
+                            variant={progress?.completedAt ? 'primary' : 'outline'}
                             disabled={busy}
                             onClick={() =>
                               changeLesson(lessons[activeIndex + 1].id)
                             }
                             rightIcon={<ChevronRight size={16} />}
-                            className="self-start px-6 font-bold shadow-xs sm:self-auto"
+                            className="font-semibold"
                           >
                             {vi
                               ? 'Chuyển sang bài tiếp theo'
-                              : 'Go to next item'}
+                              : 'Next lesson'}
                           </Button>
                         ) : (
                           <p className="text-body-sm text-muted-foreground" role="status">{vi ? 'Điều kiện thi kỹ năng được hiển thị bên dưới.' : 'Skill learning eligibility is shown below.'}</p>
                         )}
                       </div>
+                      {completed === lessons.length && lessons.length > 0 && <div role="status" className="rounded-lg border border-success/30 bg-success/10 p-4 text-body-sm"><p className="font-semibold text-success">{vi ? 'Đã hoàn thành nội dung module' : 'Module content completed'}</p><p className="mt-1 text-muted-foreground">{vi ? 'Tiếp tục đánh giá kỹ năng bên dưới. Hoàn thành nội dung chưa đồng nghĩa đã đạt kỹ năng.' : 'Continue to the Skill Assessment below. Content completion is separate from official skill achievement.'}</p></div>}
                       {view.revision.payload.teachings.length === 1 && <SkillLearningPanel skillId={view.revision.payload.teachings[0].skillId} skillName={view.revision.payload.teachings[0].skillName} moduleId={moduleId} completedLessons={view.progress.filter(p => p.completedAt !== null).length} />}
                       {lessons.length > 0 && completed === lessons.length && view.revision.payload.knowledgeLevel && view.revision.payload.teachings.length === 1 && <CompletedModuleAssessmentLink moduleId={moduleId} revision={view.revision.number} />}
                       {view.revision.payload.teachings.length !== 1 && <p role="status" className="text-body-sm text-muted-foreground">{vi ? 'Liên kết kỹ năng của phiên bản này cần được đối soát trước khi xác định điều kiện thi.' : 'This historical version needs skill mapping reconciliation before learning eligibility can be determined.'}</p>}
@@ -560,7 +477,7 @@ function LearningModuleReader({ moduleId }: { moduleId: string }) {
                           {vi ? 'Báo lỗi nội dung' : 'Report content issue'}
                         </Button>
                       </div>
-                    </div>
+                    </article>
                   )}
                 </div>
               </div>
@@ -648,6 +565,7 @@ function LearningModuleReader({ moduleId }: { moduleId: string }) {
               disabled={busy}
               onClick={() =>
                 void run(async () => {
+                  await flushProgress()
                   const result = await moduleRequest<LearningView>(
                     `/learning/${encodeURIComponent(moduleId)}/switch`,
                     'POST',
@@ -669,7 +587,7 @@ function LearningModuleReader({ moduleId }: { moduleId: string }) {
           </DialogFooter>
         </Dialog>
       </div>
-    </WorkspaceLayout>
+    </LearnerLessonLayout>
   )
 }
 

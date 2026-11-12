@@ -243,11 +243,20 @@ public final class PrivateLearningAssets implements LearningAssetPort {
                         html,
                         Safelist.relaxed()
                                 .addTags("pre", "code", "hr")
+                                .addAttributes("code", "class")
                                 .addAttributes("th", "colspan", "rowspan")
                                 .addAttributes("td", "colspan", "rowspan")
                                 .removeProtocols("a", "href", "ftp")
                                 .removeProtocols("img", "src", "http", "https"));
         var document = Jsoup.parseBodyFragment(clean);
+        // Preserve only fenced-code language metadata, never arbitrary authored CSS classes.
+        document.select("code[class]").forEach(code -> {
+            String language = Arrays.stream(code.className().split("\\s+"))
+                    .filter(value -> value.matches("language-[A-Za-z0-9_+-]{1,40}"))
+                    .findFirst().orElse("");
+            if (language.isEmpty()) code.removeAttr("class");
+            else code.attr("class", language);
+        });
         document.select("img")
                 .forEach(
                         image -> {

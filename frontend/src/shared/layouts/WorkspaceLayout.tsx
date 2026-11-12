@@ -62,11 +62,13 @@ const TRUSTED_ACTOR: Record<string, ActorRole | undefined> = {
   LD_MANAGER: 'ld-manager', EMPLOYEE: 'employee',
 }
 
-export function WorkspaceLayout({ children, identity: suppliedIdentity, onSignOut: suppliedSignOut }: {
+export function WorkspaceLayout({ children, identity: suppliedIdentity, onSignOut: suppliedSignOut, variant = 'workspace' }: {
   children: ReactNode
+  variant?: 'workspace' | 'lesson'
   identity?: WorkspaceLayoutIdentity
   onSignOut?: () => Promise<unknown>
 }) {
+  const isLessonLayout = variant === 'lesson'
   const session = React.useContext(WorkspaceSessionContext)
   const identity = suppliedIdentity ?? session?.identity
   const onSignOut = suppliedSignOut ?? session?.onSignOut
@@ -281,7 +283,7 @@ export function WorkspaceLayout({ children, identity: suppliedIdentity, onSignOu
         icon: <FileQuestion size={15} />,
       },
       {
-        label: t('nav.contentApprovals', 'Content Approvals'),
+        label: t('nav.learningContent', 'Learning Content'),
         href: '/ld-manager/approvals',
         icon: <CheckCircle2 size={15} />,
       },
@@ -573,7 +575,7 @@ export function WorkspaceLayout({ children, identity: suppliedIdentity, onSignOu
         <div className="workspace-topbar">
           {/* Left: Sidebar Collapse/Expand Toggle + Brand + My Learning link */}
           <div className="flex items-center justify-start gap-2.5 sm:gap-3 shrink-0">
-            <button
+            {!isLessonLayout && <button
               type="button"
               onClick={toggleSidebar}
               className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
@@ -582,7 +584,7 @@ export function WorkspaceLayout({ children, identity: suppliedIdentity, onSignOu
               aria-expanded={!isSidebarCollapsed}
             >
               {isSidebarCollapsed ? <PanelLeftOpen size={19} /> : <PanelLeftClose size={19} />}
-            </button>
+            </button>}
             <Link className="brand shrink-0" to={brandHomeUrl}>
               <Network size={22} className="text-primary shrink-0" aria-hidden="true" />
               <span className="font-bold text-sm sm:text-base tracking-tight text-foreground truncate hidden md:inline">
@@ -779,9 +781,9 @@ export function WorkspaceLayout({ children, identity: suppliedIdentity, onSignOu
       </header>
 
       {/* Workspace Body: Sidebar + Main Content */}
-      <div className="workspace-body">
+      <div className={`workspace-body${isLessonLayout ? ' module-reading-mode' : ''}`}>
         {/* Collapsible Left Sidebar */}
-        <aside
+        {!isLessonLayout && <aside
           className={`workspace-sidebar ${isSidebarCollapsed ? 'collapsed' : 'expanded'}`}
           aria-label="Sidebar navigation"
         >
@@ -807,10 +809,10 @@ export function WorkspaceLayout({ children, identity: suppliedIdentity, onSignOu
               )
             })}
           </nav>
-        </aside>
+        </aside>}
 
         {/* Main Content Area */}
-        <main className="workspace-main">{children}</main>
+        <main className={`workspace-main${isLessonLayout ? ' module-reading-main' : ''}`}>{children}</main>
       </div>
     </div>
   )

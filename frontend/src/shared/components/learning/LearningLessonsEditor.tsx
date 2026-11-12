@@ -2,7 +2,8 @@ import { newLesson } from '../../lib/learningLessons'
 import { lazy, Suspense, useEffect, useState } from 'react'
 import { Button } from '../ui/Button'
 import { Input } from '../ui/Input'
-import { Card, CardContent } from '../ui/Card'
+import { PanelLeftClose, PanelLeftOpen, FileText, PlayCircle, Plus } from 'lucide-react'
+import { Dialog, DialogHeader, DialogTitle, DialogBody } from '../ui/Dialog'
 import { FormField } from '../ui/FormField'
 import {
   moduleRequest,
@@ -18,6 +19,9 @@ const RichLessonEditor = lazy(() =>
 )
 import { LessonVideo } from './LessonVideo'
 import { LessonBody } from './LessonBody'
+import { LearningPreviewReader } from './LearningContentPreview'
+import '../../styles/learningAuthoring.css'
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '../ui/Tabs'
 export function LearningLessonsEditor({
   lessons,
   onChange,
@@ -31,6 +35,17 @@ export function LearningLessonsEditor({
 }) {
   const { language } = useTranslation()
   const vi = language === 'vi'
+  const [tab, setTab] = useState('edit')
+  const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [fullPreview, setFullPreview] = useState(false)
+  const [mobile, setMobile] = useState(false)
+  const activeLesson = lessons.find(lesson => lesson.id === selectedId) ?? lessons[0]
+  const selectLesson = (id: string) => setSelectedId(id)
+  const addLesson = (type: 'TEXT' | 'VIDEO') => {
+    const lesson = newLesson(type)
+    onChange([...lessons, lesson]); setSelectedId(lesson.id); setTab('edit')
+  }
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
   const [preview, setPreview] = useState<string | null>(null)
@@ -53,18 +68,36 @@ export function LearningLessonsEditor({
     onChange(next)
   }
   return (
-    <div className="space-y-4">
-      <p className="text-sm text-muted-foreground">
-        {vi
-          ? 'Thêm bài Text hoặc Video, rồi sắp xếp theo thứ tự. Có thể lưu nháp để làm tiếp.'
-          : 'Add Text or Video lessons and arrange their order. Save a draft to continue later.'}
-      </p>
-      {lessons.map((lesson, index) => (
-        <Card key={lesson.id}>
-          <CardContent className="space-y-3 pt-4">
+    <div className="learning-authoring-workspace">
+      <div className={`learning-authoring-layout ${sidebarOpen ? '' : 'learning-authoring-layout--focused'}`}>
+        {sidebarOpen && <aside className="learning-authoring-sidebar" aria-label={vi ? 'Danh sách bài đang soạn' : 'Authoring lessons'}>
+          <div className="flex items-center justify-between gap-2 px-3 py-2"><strong className="text-body font-semibold text-foreground">{vi ? 'Bài học' : 'Lessons'}</strong><Button type="button" variant="ghost" size="sm" aria-expanded={true} aria-controls="authoring-lesson-list" aria-label={vi ? 'Thu gọn danh sách bài' : 'Collapse lesson list'} onClick={() => setSidebarOpen(false)}><PanelLeftClose size={16} aria-hidden="true" /></Button></div>
+          <nav id="authoring-lesson-list" className="space-y-1 p-2" aria-label={vi ? 'Chọn bài để soạn' : 'Select lesson to edit'}>
+            {lessons.map((item, position) => <Button type="button" key={item.id} disabled={disabled || busy} aria-current={item.id === activeLesson?.id ? 'step' : undefined} variant={item.id === activeLesson?.id ? 'secondary' : 'ghost'} className="h-auto min-h-14 w-full items-start justify-start gap-2 whitespace-normal text-left" onClick={() => selectLesson(item.id)}>
+              {item.type === 'TEXT' ? <FileText size={16} className="mt-1 shrink-0" aria-hidden="true" /> : <PlayCircle size={16} className="mt-1 shrink-0" aria-hidden="true" />}<span className="min-w-0 break-words"><span className="block">{position + 1}. {item.title || (vi ? 'Chưa có tiêu đề' : 'Untitled')}</span><span className="mt-1 block text-caption text-muted-foreground">{item.type === 'TEXT' ? (vi ? 'Bài đọc' : 'Reading') : 'Video'}</span></span>
+            </Button>)}
+          </nav>
+          <div className="space-y-2 border-t border-border p-3"><Button type="button" variant="ghost" className="w-full justify-start" disabled={disabled || busy} onClick={() => addLesson('TEXT')}><Plus size={16} aria-hidden="true" />{vi ? 'Thêm bài Text' : 'Add Text lesson'}</Button><Button type="button" variant="ghost" className="w-full justify-start" disabled={disabled || busy} onClick={() => addLesson('VIDEO')}><Plus size={16} aria-hidden="true" />{vi ? 'Thêm bài Video' : 'Add Video lesson'}</Button></div>
+        </aside>}
+        <Tabs value={tab} onValueChange={setTab} className="min-w-0">
+          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border p-3">
+            {!sidebarOpen && <Button type="button" variant="ghost" size="sm" aria-expanded={false} aria-controls="authoring-lesson-list" onClick={() => setSidebarOpen(true)}><PanelLeftOpen size={16} aria-hidden="true" />{vi ? 'Hiện danh sách bài' : 'Show lesson list'}</Button>}
+            <TabsList aria-label={vi ? 'Soạn và xem trước' : 'Authoring views'} className="h-auto min-h-10 w-auto flex-wrap">
+              <TabsTrigger value="edit" disabled={busy}>{vi ? 'Soạn nội dung' : 'Edit content'}</TabsTrigger>
+              <TabsTrigger value="learner" disabled={busy}>{vi ? 'Xem như học viên' : 'View as learner'}</TabsTrigger>
+            </TabsList>
+            <Button type="button" variant="outline" size="sm" disabled={busy || !activeLesson} onClick={() => setFullPreview(true)}>{vi ? 'Mở xem toàn màn hình' : 'Open full preview'}</Button>
+          </div>
+          <TabsContent value="learner" className="p-4"><p className="mb-3 text-caption text-muted-foreground">{vi ? 'Bản đang soạn · Xem thử, không ghi tiến độ học' : 'Current draft · Preview, no learning progress is saved'}</p><LearningPreviewReader lessons={lessons} selected={activeLesson?.id ?? null} onSelect={selectLesson} mobile={mobile} onMobileChange={setMobile} showSyllabus={false} /></TabsContent>
+          <TabsContent value="edit">
+            <div className="space-y-4 p-4 sm:p-6">
+              {!activeLesson && <p role="status" className="text-body-sm text-muted-foreground">{vi ? 'Thêm một bài đọc hoặc video để bắt đầu.' : 'Add a Reading or Video lesson to start.'}</p>}
+      {activeLesson && [activeLesson].map(lesson => {
+        const index = lessons.findIndex(item => item.id === lesson.id)
+        return <section key={lesson.id} className="space-y-4" aria-label={vi ? 'Bài đang soạn' : 'Current lesson editor'}>
             <div className="flex flex-wrap items-center justify-between gap-2">
               <strong>
-                {index + 1}. {lesson.type}
+                {index + 1}. {lesson.type === 'TEXT' ? (vi ? 'Bài đọc' : 'Reading') : 'Video'}
               </strong>
               <div className="flex gap-1">
                 <Button
@@ -97,6 +130,7 @@ export function LearningLessonsEditor({
                 </Button>
               </div>
             </div>
+            <div className={lesson.type === 'TEXT' ? 'grid items-end gap-4 sm:grid-cols-[minmax(0,1fr)_16rem]' : ''}>
             <FormField label={vi ? 'Tiêu đề bài học' : 'Lesson title'}>
               <Input
                 maxLength={240}
@@ -104,6 +138,33 @@ export function LearningLessonsEditor({
                 onChange={(e) => update(lesson.id, { title: e.target.value })}
               />
             </FormField>
+              {lesson.type === 'TEXT' && (
+                <FormField
+                  label={
+                    vi
+                      ? 'Thời gian đọc (phút, bỏ trống để ước tính)'
+                      : 'Reading minutes (leave blank to estimate)'
+                  }
+                >
+                  <Input
+                    type="number"
+                    step="any"
+                    min={0.001}
+                    value={
+                      lesson.durationSource === 'MANUAL'
+                        ? lesson.durationSeconds / 60
+                        : ''
+                    }
+                    onChange={(e) =>
+                      update(lesson.id, {
+                        durationSeconds: Number(e.target.value) * 60,
+                        durationSource: e.target.value ? 'MANUAL' : 'ESTIMATED',
+                      })
+                    }
+                  />
+                </FormField>
+              )}
+            </div>
             {lesson.type === 'TEXT' ? (
               <>
                 {lesson.bodyFormat === 'HTML' ? (
@@ -156,30 +217,7 @@ export function LearningLessonsEditor({
                     </Button>
                   </>
                 )}
-                <FormField
-                  label={
-                    vi
-                      ? 'Thời gian đọc (phút, bỏ trống để ước tính)'
-                      : 'Reading minutes (leave blank to estimate)'
-                  }
-                >
-                  <Input
-                    type="number"
-                    step="any"
-                    min={0.001}
-                    value={
-                      lesson.durationSource === 'MANUAL'
-                        ? lesson.durationSeconds / 60
-                        : ''
-                    }
-                    onChange={(e) =>
-                      update(lesson.id, {
-                        durationSeconds: Number(e.target.value) * 60,
-                        durationSource: e.target.value ? 'MANUAL' : 'ESTIMATED',
-                      })
-                    }
-                  />
-                </FormField>
+
               </>
             ) : (
               <>
@@ -361,36 +399,28 @@ export function LearningLessonsEditor({
               {vi ? 'Xem trước bài học' : 'Preview lesson'}
             </Button>
             {preview === lesson.id && lesson.type === 'TEXT' && lesson.body && (
-              <LessonBody
+              <div className="learner-reader"><div className="learner-reading-body"><LessonBody
+                presentation="document"
                 body={lesson.body}
                 format={lesson.bodyFormat ?? 'HTML'}
-              />
+              /></div></div>
             )}
-          </CardContent>
-        </Card>
-      ))}
-      <div className="flex gap-2">
-        <Button
-          variant="outline"
-          disabled={disabled || busy}
-          onClick={() => onChange([...lessons, newLesson('TEXT')])}
-        >
-          {vi ? 'Thêm bài Text' : 'Add Text lesson'}
-        </Button>
-        <Button
-          variant="outline"
-          disabled={disabled || busy}
-          onClick={() => onChange([...lessons, newLesson('VIDEO')])}
-        >
-          {vi ? 'Thêm bài Video' : 'Add Video lesson'}
-        </Button>
-      </div>
+        </section>
+      })}
       {busy && <p role="status">{vi ? 'Đang xử lý…' : 'Processing…'}</p>}
       {error && (
         <p role="alert" className="text-destructive">
           {error}
         </p>
       )}
+    </div>
+      </TabsContent>
+    </Tabs>
+      </div>
+      <Dialog open={fullPreview} onOpenChange={setFullPreview} size="wide" className="h-[94dvh] max-h-[94dvh] max-w-[96vw]" ariaLabel={vi ? 'Xem như học viên' : 'View as learner'}>
+        <DialogHeader><DialogTitle>{vi ? 'Xem như học viên · Bản đang soạn' : 'View as learner · Current draft'}</DialogTitle></DialogHeader>
+        <DialogBody><LearningPreviewReader lessons={lessons} selected={activeLesson?.id ?? null} onSelect={selectLesson} mobile={mobile} onMobileChange={setMobile} /></DialogBody>
+      </Dialog>
     </div>
   )
 }

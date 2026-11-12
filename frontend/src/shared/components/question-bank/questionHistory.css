@@ -1,0 +1,8 @@
+/* Match Job Positions UI typography using the existing Tailwind theme tokens.
+   Scoped so question content, authoring and import previews retain their sizes. */
+.question-history { font-family: var(--font-body); }
+.question-history .heading--card { font-size: var(--text-base); }
+.question-history .text-body-default,
+.question-history .text-body-small { font-size: var(--text-sm); line-height: 1.45; }
+.question-history .text-caption { font-size: var(--text-xs); line-height: 1.45; }
+.question-history [aria-expanded="true"] { background: hsl(var(--muted) / 0.4); }

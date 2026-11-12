@@ -1,4 +1,4 @@
-import { useEditor, EditorContent } from '@tiptap/react'
+import { useEditor, EditorContent, useEditorState } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import Image from '@tiptap/extension-image'
 import { TableKit } from '@tiptap/extension-table'
@@ -10,6 +10,8 @@ import {
 } from '../../api/moduleAuthoringApi'
 import { useEffect, useState } from 'react'
 import { useTranslation } from '../../i18n/LanguageContext'
+import '../../styles/learningReader.css'
+import '../../styles/learningAuthoring.css'
 export function RichLessonEditor({
   html,
   onChange,
@@ -40,7 +42,7 @@ export function RichLessonEditor({
         'aria-multiline': 'true',
         'aria-label': vi ? 'Nội dung bài đọc' : 'Reading content',
         class:
-          'min-h-64 rounded-b-md border border-border bg-card p-4 outline-none [&_h1]:text-section [&_h2]:text-subsection [&_h3]:font-semibold [&_p]:my-2 [&_ul]:list-disc [&_ol]:list-decimal [&_li]:ml-6 [&_pre]:overflow-x-auto [&_pre]:bg-muted [&_pre]:p-3 [&_td]:border [&_td]:border-border [&_td]:p-2 [&_th]:border [&_th]:border-border [&_th]:p-2 [&_img]:max-w-full',
+          'lesson-document min-h-80 rounded-b-md border border-border bg-card p-4 sm:p-6 outline-none',
       },
     },
   })
@@ -51,14 +53,12 @@ export function RichLessonEditor({
   useEffect(() => {
     editor?.setEditable(!disabled)
   }, [editor, disabled])
+  useEffect(() => {
+    if (editor && !editor.isDestroyed && editor.schema && editor.getHTML() !== html) editor.commands.setContent(html, { emitUpdate: false })
+  }, [editor, html])
+  const textStyle = useEditorState({ editor, selector: ({ editor: current }) => !current || current.isDestroyed || !current.schema ? 'paragraph' : current.isActive('heading', { level: 2 }) ? 'heading2' : current?.isActive('heading', { level: 3 }) ? 'heading3' : current?.isActive('heading', { level: 1 }) ? 'heading1' : 'paragraph' })
   if (!editor) return null
   const toolbar: { label: string; run: () => void }[] = [
-    {
-      label: vi ? 'Tiêu đề' : 'Heading',
-      run: () => {
-        editor.chain().focus().toggleHeading({ level: 2 }).run()
-      },
-    },
     {
       label: vi ? 'Đậm' : 'Bold',
       run: () => {
@@ -107,6 +107,11 @@ export function RichLessonEditor({
         role="toolbar"
         aria-label={vi ? 'Định dạng bài viết' : 'Text formatting'}
       >
+        <select aria-label={vi ? 'Kiểu văn bản' : 'Text style'} className="min-h-9 max-w-full rounded-md border border-border bg-card px-3 text-body-sm" disabled={disabled} value={textStyle ?? 'paragraph'} onChange={event => {
+          const value = event.target.value
+          if (value === 'paragraph') editor.chain().focus().setParagraph().run()
+          else editor.chain().focus().setHeading({ level: value === 'heading1' ? 1 : value === 'heading2' ? 2 : 3 }).run()
+        }}><option value="paragraph">{vi ? 'Đoạn văn' : 'Paragraph'}</option><option value="heading1">{vi ? 'Tiêu đề cấp 1' : 'Heading 1'}</option><option value="heading2">{vi ? 'Tiêu đề mục' : 'Heading 2'}</option><option value="heading3">{vi ? 'Tiêu đề phụ' : 'Heading 3'}</option></select>
         {toolbar.map((item) => (
           <Button
             key={item.label}
@@ -119,7 +124,7 @@ export function RichLessonEditor({
           </Button>
         ))}
       </div>
-      <EditorContent editor={editor} />
+      <div className="learner-reader learner-reading-body learning-authoring-editor"><EditorContent editor={editor} /></div>
       <div className="flex flex-wrap items-center gap-2">
         <Input
           disabled={disabled}

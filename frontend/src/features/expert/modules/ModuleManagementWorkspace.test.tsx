@@ -7,7 +7,7 @@ import { ModuleMarkdown } from '../../../shared/components/ui/ModuleMarkdown'
 import { moduleRequest } from '../../../shared/api/moduleAuthoringApi'
 
 vi.mock('../../../shared/layouts/WorkspaceLayout', () => ({ WorkspaceLayout: ({ children }: { children: ReactNode }) => <>{children}</> }))
-vi.mock('../../../shared/i18n/LanguageContext', () => ({ useTranslation: () => ({ language: 'en' }) }))
+vi.mock('../../../shared/i18n/LanguageContext', () => ({ useTranslation: () => ({ language: 'en', t: (key: string) => key }) }))
 const jobPosition = { id: 'occ', name: 'Software Developers' }
 const content = { id: 'content', title: 'Lesson', markdown: '# Learn', jobPositionIds: ['occ'], createdBy: 'expert-a', createdAt: '2026-10-28T00:00:00Z', contentType: 'text/markdown', contentVersion: '1.0' }
 function LocationProbe() { return <output aria-label="Current route">{useLocation().pathname}</output> }
@@ -20,6 +20,7 @@ beforeEach(() => {
     if (path.includes('/modules?') || path.includes('/module-list?')) return Response.json({ items: [], total: 0, page: 1, pageSize: 10 })
     if (path.endsWith('/catalog/Staff')) return Response.json([{ id: 'expert-a', name: 'expert-a' }])
     if (path.endsWith('/catalog/JobPosition')) return Response.json([])
+    if (path.endsWith('/catalog/ModuleSkill')) return Response.json([{ id: 'skill', name: 'SQL' }])
     if (path.endsWith('/catalog/MicroSkill')) return Response.json([{ id: 'skill', name: 'SQL' }])
     if (path.endsWith('/contents')) return Response.json([content])
     if (path.endsWith('/contents/lessons') && init?.method === 'POST') return Response.json(content)
@@ -64,11 +65,11 @@ describe('REQ-013 module workspace', () => {
     expect(within(nav).getByRole('link', { name: 'Modules' }).getAttribute('href')).toBe('/ld-manager/modules')
     expect(within(nav).queryByRole('link', { name: 'Learning content' })).toBeNull()
     fireEvent.click(within(nav).getByRole('link', { name: 'Modules' }))
-    expect(await screen.findByRole('heading', { name: 'Learning modules' })).toBeTruthy()
+    expect(await screen.findByRole('heading', { name: 'Learning Content' })).toBeTruthy()
     expect(screen.getByLabelText('Current route').textContent).toBe('/ld-manager/modules')
-    await screen.findByRole('button', { name: 'Details & history' })
+    await screen.findByRole('button', { name: 'View module' })
     expect(screen.queryByRole('button', { name: 'Approve and release' })).toBeNull()
-    fireEvent.click(screen.getByRole('button', { name: 'Details & history' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Actions for review-module' })); fireEvent.click(screen.getByRole('button', { name: 'Details & history' }))
     const dialog = await screen.findByRole('dialog', { name: 'Module details' })
     for (const label of ['Lesson 1: Introduction', 'Lesson 2: Practice video', 'Lesson 3: Summary']) expect(within(dialog).getByRole('region', { name: label })).toBeTruthy()
     expect(within(dialog).queryByText('Preview this content version')).toBeNull()
@@ -78,11 +79,12 @@ describe('REQ-013 module workspace', () => {
     expect(within(dialog).getByText(/Created by \/ Responsible Expert: expert-a/)).toBeTruthy()
     expect(screen.getByLabelText('Current route').textContent).toBe('/ld-manager/modules')
     fireEvent.click(within(dialog).getByRole('button', { name: 'Close dialog' }))
+    fireEvent.change(screen.getByLabelText('Show modules'), {target:{value:'all'}})
     fireEvent.change(screen.getByLabelText('Lifecycle'), { target: { value: 'ACTIVE' } })
     fireEvent.click(screen.getByRole('link', { name: 'Approvals' }))
-    expect(await screen.findByRole('heading', { name: 'Learning approvals' })).toBeTruthy()
+    expect(await screen.findByRole('heading', { name: 'Learning Content' })).toBeTruthy()
     expect(screen.getByLabelText('Current route').textContent).toBe('/ld-manager/approvals')
-    expect(await screen.findByRole('button', { name: 'Approve and release' })).toBeTruthy()
+    fireEvent.click(await screen.findByRole('button', { name: 'Review request' })); expect(await screen.findByRole('button', { name: 'Approve and release' })).toBeTruthy()
     expect(vi.mocked(fetch).mock.calls.some(([path]) => String(path).includes('pendingOnly=true'))).toBe(true)
     const queue = vi.mocked(fetch).mock.calls.find(([path]) => String(path).includes('pendingOnly=true'))
     expect(new URL(String(queue?.[0]), 'http://test').searchParams.get('status')).toBe('')
@@ -98,8 +100,8 @@ describe('REQ-013 module workspace', () => {
       return original(path, init)
     })
     render(<MemoryRouter><ModuleManagementWorkspace /></MemoryRouter>)
-    expect(await screen.findByText('View only')).toBeTruthy()
-    expect(screen.getByRole('button', { name: 'Details & history' })).toBeTruthy()
+    await screen.findByRole('button', { name: 'View module' })
+    fireEvent.click(screen.getByRole('button', { name: 'Actions for read-only' })); expect(screen.getByRole('button', { name: 'Details & history' })).toBeTruthy()
     for (const name of ['Edit', 'Submit for review', 'Delete draft']) expect(screen.queryByRole('button', { name })).toBeNull()
   })
   it('requires an explicit manager assignment before intake and retains errors for retry', async () => {
@@ -162,10 +164,10 @@ describe('REQ-013 module workspace', () => {
     fireEvent.click(screen.getByRole('button', { name: /^View module$/ }))
     const dialog = screen.getByRole('dialog', { name: 'Catalog module details' })
     expect(within(dialog).getByText('No edit history has been recorded for this module.')).toBeTruthy()
-    expect(within(dialog).getByText('https://example.org/lesson.md')).toBeTruthy()
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Technical metadata' })); expect(within(dialog).getByText('https://example.org/lesson.md')).toBeTruthy()
     expect(within(dialog).getByText('1.3')).toBeTruthy()
     expect(within(dialog).getByText('37')).toBeTruthy()
-    expect(within(dialog).getByText('123,456')).toBeTruthy()
+    expect(within(dialog).queryByText('123,456')).toBeNull()
     expect(within(dialog).getByText('EDGE-NEO')).toBeTruthy()
     expect(within(dialog).queryByText('Medium')).toBeNull()
     expect(within(dialog).queryByText(/Revision 1/)).toBeNull()
@@ -192,6 +194,70 @@ describe('REQ-013 module workspace', () => {
     expect((within(dialog).getByLabelText('Title') as HTMLInputElement).value).toBe('SQL practice')
     fireEvent.click(within(dialog).getByRole('button', { name: 'Cancel' }))
     expect(screen.queryByRole('dialog')).toBeNull()
+  })
+  it('saves the ordered lesson package before creating a draft without submitting it', async () => {
+    const original = vi.mocked(fetch).getMockImplementation()!
+    vi.mocked(fetch).mockImplementation(async (path, init) => {
+      if (String(path).endsWith('/modules') && init?.method === 'POST') { saved = JSON.parse(String(init.body)); return Response.json({ id: 'new-draft' }) }
+      return original(path, init)
+    })
+    render(<MemoryRouter><ModuleManagementWorkspace /></MemoryRouter>); await signIn()
+    fireEvent.click(screen.getByRole('button', { name: 'Create module' }))
+    const dialog = screen.getByRole('dialog', { name: 'Module editor' })
+    fireEvent.change(within(dialog).getByLabelText('Title'), { target: { value: 'Saved SQL draft' } })
+    fireEvent.change(within(dialog).getByLabelText('Skill'), { target: { value: 'skill' } })
+    fireEvent.change(within(dialog).getByLabelText('Knowledge level'), { target: { value: 'FOUNDATION' } })
+    fireEvent.submit(dialog.querySelector('form')!)
+    await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Module editor' })).toBeNull())
+    expect(saved).toMatchObject({title:'Saved SQL draft',contentId:'content',knowledgeLevel:'FOUNDATION',teachings:[{skillId:'skill'}]})
+    const calls = vi.mocked(fetch).mock.calls
+    const contentIndex = calls.findIndex(([path, init]) => String(path).endsWith('/contents/lessons') && init?.method === 'POST')
+    const saveIndex = calls.findIndex(([path, init]) => String(path).endsWith('/modules') && init?.method === 'POST')
+    expect(contentIndex).toBeGreaterThan(-1); expect(saveIndex).toBeGreaterThan(contentIndex)
+    expect(JSON.parse(String(calls[contentIndex][1]?.body)).lessons).toHaveLength(1)
+    expect(calls.some(([path]) => String(path).endsWith('/actions'))).toBe(false)
+  })
+  it('does not label a failed approval-queue load as an empty queue', async () => {
+    const original = vi.mocked(fetch).getMockImplementation()!
+    vi.mocked(fetch).mockImplementation(async (path, init) => {
+      if (String(path).endsWith('/session')) return Response.json({ id:'reviewer',organizationId:'org',roles:['LD_MANAGER'] })
+      if (String(path).includes('/modules?')) return Response.json({message:'Queue temporarily unavailable'},{status:503})
+      return original(path,init)
+    })
+    render(<MemoryRouter><ModuleManagementWorkspace mode="approvals" /></MemoryRouter>)
+    expect(await screen.findByText('Queue temporarily unavailable')).toBeTruthy()
+    expect(screen.queryByText('No requests need your attention. New submissions will appear here.')).toBeNull()
+  })
+  it('defaults manager Modules to server-filtered released catalog and previews the retained release rather than the pending draft', async () => {
+    const original = vi.mocked(fetch).getMockImplementation()!
+    const metadata={id:'released-module',version:'1',status:'ACTIVE',reviewStatus:'APPROVED',reviewedBy:'reviewer',reviewedAt:'2026-11-01T00:00:00Z'}
+    const releasedContent={...content,id:'released-content',markdown:'# Published lesson'}
+    const releasedPayload={metadata,title:'Published SQL',moduleType:'LESSON_AND_PRACTICE',contentUri:'module-content:released-content',contentType:'text/markdown',contentVersion:'1',duration:30,knowledgeLevel:'FOUNDATION',skillVersion:'1',teachings:[],content:releasedContent}
+    const doc={id:metadata.id,organizationId:'org',jobPositionIds:[],createdBy:'expert-a',createdAt:content.createdAt,lockVersion:3,everReleased:true,archived:false,releasedRevision:1,history:[],revisions:[{number:1,state:'RELEASED',payload:releasedPayload,editedBy:'expert-a',editedAt:content.createdAt,decidedBy:'reviewer',decidedAt:metadata.reviewedAt,feedback:null},{number:2,state:'SUBMITTED',payload:{...releasedPayload,title:'Draft SQL',contentUri:'module-content:draft-content',contentVersion:'2',content:{...content,id:'draft-content',markdown:'# Unapproved draft lesson'}},editedBy:'expert-a',editedAt:content.createdAt,decidedBy:null,decidedAt:null,feedback:null}]}
+    vi.mocked(fetch).mockImplementation(async(path,init)=>{
+      const url=String(path)
+      if(url.endsWith('/session'))return Response.json({id:'reviewer',organizationId:'org',roles:['LD_MANAGER']})
+      if(url.endsWith('/catalog/Expert'))return Response.json([])
+      if(url.includes('/module-list?'))return Response.json({items:[{module:releasedPayload,authoring:doc}],total:1,page:1,pageSize:10})
+      return original(path,init)
+    })
+    render(<MemoryRouter><ModuleManagementWorkspace /></MemoryRouter>)
+    await screen.findByRole('heading',{name:'Published SQL'})
+    expect(screen.queryByLabelText('Lifecycle')).toBeNull()
+    const queries=()=>vi.mocked(fetch).mock.calls.filter(([path])=>String(path).includes('/module-list?')).map(([path])=>new URL(String(path),'http://test').searchParams)
+    expect(queries().at(-1)?.get('status')).toBe('ACTIVE');expect(queries().at(-1)?.get('review')).toBe('APPROVED')
+    fireEvent.click(screen.getByRole('button',{name:'View module'}))
+    const dialog=screen.getByRole('dialog',{name:'Catalog module details'})
+    expect(within(dialog).getByRole('heading',{name:'Published lesson'})).toBeTruthy()
+    expect(within(dialog).queryByText('Unapproved draft lesson')).toBeNull()
+    expect(within(dialog).getByRole('button',{name:'View working revisions & history'})).toBeTruthy()
+    fireEvent.click(within(dialog).getByRole('button',{name:'Close'}))
+    fireEvent.change(screen.getByLabelText('Show modules'),{target:{value:'all'}})
+    await waitFor(()=>expect(queries().at(-1)?.get('review')).toBe(''))
+    expect(screen.getByLabelText('Lifecycle')).toBeTruthy()
+    fireEvent.click(screen.getByRole('button',{name:'Clear filters'}))
+    await waitFor(()=>expect(queries().at(-1)?.get('review')).toBe('APPROVED'))
+    expect((screen.getByLabelText('Show modules') as HTMLSelectElement).value).toBe('published')
   })
   it('never renders raw HTML or javascript links as executable content', () => {
     const { container } = render(<ModuleMarkdown markdown={'# Title\n<script>alert(1)</script>\n[x](javascript:alert(1))\n[video](https://example.org/video.mp4)'} />)

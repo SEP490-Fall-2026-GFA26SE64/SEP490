@@ -1,0 +1,21 @@
+.learning-authoring-workspace { min-width: 0; container: authoring / inline-size; border: 1px solid hsl(var(--border)); background: hsl(var(--card)); }
+.learning-authoring-layout { display: grid; grid-template-columns: minmax(0, 1fr); min-width: 0; }
+.learning-authoring-sidebar { min-width: 0; border-bottom: 1px solid hsl(var(--border)); background: hsl(var(--background)); }
+.learning-authoring-sidebar nav { max-height: 32vh; overflow-y: auto; }
+@container authoring (min-width: 720px) {
+  .learning-authoring-layout { grid-template-columns: 210px minmax(0, 1fr); }
+  .learning-authoring-layout--focused { grid-template-columns: minmax(0, 1fr); }
+  .learning-authoring-sidebar { border-bottom: 0; border-right: 1px solid hsl(var(--border)); }
+  .learning-authoring-sidebar nav { max-height: 60vh; }
+}
+.learning-content-preview .preview-reader-layout[data-syllabus="false"] { grid-template-columns: minmax(0, 1fr); }
+.learning-authoring-editor .lesson-document { max-width: none; font-size: var(--text-body); line-height: 1.85; }
+.learning-authoring-editor .lesson-document h1 { font-size: var(--text-section); font-weight: 600; line-height: 1.4; margin: 1.75em 0 .65em; }
+.learning-authoring-editor .lesson-document pre { overflow-x: auto; white-space: pre; padding: 1rem; border-radius: .5rem; background: hsl(var(--muted)); font-size: var(--text-body-sm); }
+
+.learning-authoring-sidebar button > span { min-width: 0; white-space: normal; }
+.learning-authoring-sidebar button span { overflow-wrap: anywhere; }
+
+@media (max-width: 639px) {
+  .learning-authoring-editor .lesson-document h1 { font-size: var(--text-subsection); }
+}
