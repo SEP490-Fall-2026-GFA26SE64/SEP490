@@ -116,7 +116,7 @@ export function CurrentRoleSummary({ view, onDetails, disabled = false }: { view
                   variant: 'outline',
                   className: `gap-2 border-primary/40 font-semibold text-primary hover:bg-secondary ${disabled ? 'pointer-events-none opacity-50' : ''}`,
                 })}
-                to="/employee/my-mastery"
+                to="/employee/overview#competency-profile"
                 aria-disabled={disabled || undefined}
                 tabIndex={disabled ? -1 : undefined}
                 onClick={event => {

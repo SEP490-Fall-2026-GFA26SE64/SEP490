@@ -173,6 +173,26 @@ export const en = {
     error: 'The request could not be completed. Refresh the current data or retry the same pending request.',
   },
   rulePathway: {
+    employeeLabels: {
+      zoom: 'Roadmap zoom', zoomOut: 'Zoom out', zoomIn: 'Zoom in', resetZoom: 'Reset zoom to 100%',
+      archived: 'Archived pathway', requirementsMet: 'Requirements met', required: 'Required', parallel: 'Additional learning', locked: 'Prerequisites pending', partiallyPassed: 'Partially passed',
+      partiallyPassedHelp: 'Main skill passed. Check prerequisite results.',
+      state: { NEEDS_SUPPLEMENTATION: 'To learn', NEEDS_EXPERT_ACTION: 'Expert review', IN_PROGRESS: 'In progress', FULFILLED: 'Requirement met', BYPASSED: 'Bypassed' },
+    },
+    detail: {
+      module: 'Module details', certificate: 'Certificate details', requirement: 'Skill requirement details', relatedRequirement: 'Related skill requirement',
+      skill: 'Skill', knowledge: 'Required knowledge level', role: 'Target Role', roleLevel: 'Target Role level', requirementStatus: 'Requirement achievement status',
+      explanation: 'What this requirement needs', moduleProgress: 'Module progress and actions', contentStatus: 'Learning content progress', assessmentStatus: 'Assessment result',
+      assessmentAfterContent: 'Assessment actions become available after this module’s learning content is completed.', actions: 'Module actions',
+    },
+    graph: {
+      requirement: 'Skill requirement', summary: 'Pathway essentials',
+      timelineHelp: 'Select a requirement to locate it in the graph. Display order does not establish prerequisites.',
+      help: 'Select a requirement to focus its module or certificate options.', expandAll: 'Expand all branches', focus: 'Focus selected branch', current: 'Current learning', details: 'Node details',
+      module: 'Module', certificate: 'Certificate', options: 'Options', selected: 'Selected',
+      roleEdges: 'Path line: requirements for this Role; display order does not indicate prerequisites.', optionEdges: 'Dashed lines: module or certificate options.',
+      certificateHelp: 'Open evidence submission or history in node details.',
+    },
     request: 'Request pathway', sendRequest: 'Send request', confirmNoLearning: 'Confirm no additional learning', requestHelp: 'Review the required skill levels before sending your pathway request.',
     required: 'Required learning', parallel: 'Parallel supplementation', parallelHelp: 'Retained from an earlier approved bypass. These requirements do not lock your current target.',
     alternatives: 'Choose one equivalent option', official: 'Officially achieved', contentComplete: 'Learning completed', started: 'In progress', notStarted: 'Not started',

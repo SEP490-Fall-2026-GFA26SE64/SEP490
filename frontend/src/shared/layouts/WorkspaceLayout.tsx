@@ -10,7 +10,6 @@ import {
   Building,
   Building2,
   CheckCircle2,
-  CheckSquare,
   ChevronDown,
   Compass,
   CreditCard,
@@ -192,11 +191,6 @@ export function WorkspaceLayout({ children, identity: suppliedIdentity, onSignOu
         icon: <LayoutDashboard size={15} />,
       },
       {
-        label: t('nav.gapAnalysis'),
-        href: '/employee/gap-analysis',
-        icon: <Award size={15} />,
-      },
-      {
         label: t('nav.upskilling'),
         href: '/employee/upskilling',
         icon: <Target size={15} />,
@@ -205,16 +199,6 @@ export function WorkspaceLayout({ children, identity: suppliedIdentity, onSignOu
         label: t('nav.pathway'),
         href: '/employee/pathway',
         icon: <GitFork size={15} />,
-      },
-      {
-        label: t('nav.assessmentQuiz'),
-        href: '/employee/assessment',
-        icon: <CheckSquare size={15} />,
-      },
-      {
-        label: t('nav.serverStatus'),
-        href: '/system-status?portal=employee',
-        icon: <Activity size={15} />,
       },
     ]
   } else if (isExpert) {

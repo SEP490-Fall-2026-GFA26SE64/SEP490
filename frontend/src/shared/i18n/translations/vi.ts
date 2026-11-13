@@ -175,6 +175,26 @@ export const vi: TranslationKeys = {
     error: 'Chưa hoàn thành yêu cầu. Tải dữ liệu hiện tại hoặc thử lại đúng yêu cầu đang chờ xác nhận.',
   },
   rulePathway: {
+    employeeLabels: {
+      zoom: 'Thu phóng lộ trình', zoomOut: 'Thu nhỏ', zoomIn: 'Phóng to', resetZoom: 'Đặt lại mức phóng 100%',
+      archived: 'Lộ trình đã lưu trữ', requirementsMet: 'Yêu cầu đã đạt', required: 'Bắt buộc', parallel: 'Học bổ sung', locked: 'Chờ đạt yêu cầu tiên quyết', partiallyPassed: 'Đạt một phần',
+      partiallyPassedHelp: 'Kỹ năng chính đã đạt. Cần xem kết quả các nhóm tiên đề.',
+      state: { NEEDS_SUPPLEMENTATION: 'Cần học', NEEDS_EXPERT_ACTION: 'Expert xem xét', IN_PROGRESS: 'Đang học', FULFILLED: 'Đã đạt yêu cầu', BYPASSED: 'Đã bypass' },
+    },
+    detail: {
+      module: 'Chi tiết module', certificate: 'Chi tiết chứng chỉ', requirement: 'Chi tiết yêu cầu kỹ năng', relatedRequirement: 'Yêu cầu kỹ năng liên quan',
+      skill: 'Kỹ năng', knowledge: 'Mức kiến thức cần đạt', role: 'Vị trí mục tiêu', roleLevel: 'Cấp độ vị trí mục tiêu', requirementStatus: 'Trạng thái đáp ứng yêu cầu',
+      explanation: 'Điều kiện đáp ứng yêu cầu này', moduleProgress: 'Tiến độ và thao tác với module', contentStatus: 'Tiến độ nội dung học', assessmentStatus: 'Kết quả đánh giá',
+      assessmentAfterContent: 'Các thao tác đánh giá sẽ khả dụng sau khi hoàn thành nội dung học của module này.', actions: 'Thao tác với module',
+    },
+    graph: {
+      requirement: 'Yêu cầu kỹ năng', summary: 'Thông tin lộ trình',
+      timelineHelp: 'Chọn yêu cầu để đưa graph tới node đó. Thứ tự hiển thị không tạo quan hệ tiên quyết.',
+      help: 'Chọn yêu cầu để mở các module hoặc chứng chỉ liên quan.', expandAll: 'Mở toàn bộ nhánh', focus: 'Về nhánh đang chọn', current: 'Đang học', details: 'Chi tiết node',
+      module: 'Module', certificate: 'Chứng chỉ', options: 'Lựa chọn', selected: 'Đang chọn',
+      roleEdges: 'Đường lộ trình: yêu cầu của Role; thứ tự hiển thị không thể hiện quan hệ tiên quyết.', optionEdges: 'Nét đứt: module hoặc chứng chỉ lựa chọn.',
+      certificateHelp: 'Mở phần nộp minh chứng hoặc lịch sử trong chi tiết node.',
+    },
     request: 'Yêu cầu tạo lộ trình', sendRequest: 'Gửi yêu cầu', confirmNoLearning: 'Xác nhận không cần học thêm', requestHelp: 'Kiểm tra các kỹ năng và mức kiến thức cần học trước khi gửi yêu cầu tạo lộ trình.',
     required: 'Yêu cầu học bắt buộc', parallel: 'Học bổ sung song song', parallelHelp: 'Được giữ lại từ quyết định bypass đã duyệt trước đó. Các yêu cầu này không khóa mục tiêu hiện tại.',
     alternatives: 'Chọn một phương án tương đương', official: 'Đã đạt chính thức', contentComplete: 'Đã hoàn thành nội dung học', started: 'Đang học', notStarted: 'Chưa bắt đầu',

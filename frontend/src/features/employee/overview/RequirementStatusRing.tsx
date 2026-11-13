@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useTranslation } from '../../../shared/i18n/LanguageContext'
 import { statusLabels, type OverviewPair, type RequirementStatus } from './roleOverviewData'
-const colors: Record<RequirementStatus, string> = { achieved: 'text-success', waiting: 'text-warning', learning: 'text-primary', baseline: 'text-muted-foreground', required: 'text-border' }
+const colors: Record<RequirementStatus, string> = { assessment_passed:'text-warning', review:'text-warning', bypassed:'text-muted-foreground', expert:'text-destructive', failed:'text-destructive', assessing:'text-primary', unavailable:'text-border', achieved: 'text-success', waiting: 'text-warning', learning: 'text-primary', baseline: 'text-success', required: 'text-border' }
 const statuses = Object.keys(statusLabels) as RequirementStatus[]
 export function RequirementStatusRing({ pairs }: { pairs: OverviewPair[] }) {
   const { language } = useTranslation(), vi = language === 'vi'
