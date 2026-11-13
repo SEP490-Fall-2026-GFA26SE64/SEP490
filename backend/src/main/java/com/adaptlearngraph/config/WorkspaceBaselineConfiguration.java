@@ -130,6 +130,12 @@ public class WorkspaceBaselineConfiguration {
             com.adaptlearngraph.repository.RuleKnowledgeProfileJpaRepository data,ObjectMapper json) {
         return new com.adaptlearngraph.services.RuleKnowledgeProfileService(identity,data,json);
     }
+    @Bean com.adaptlearngraph.services.KnowledgeJourneyService workspaceKnowledgeJourney(RoleBaselineFlow.Identity identity,
+            CurrentRoleSelectionStore selections,
+            com.adaptlearngraph.repository.KnowledgeJourneyJpaRepository data,com.adaptlearngraph.repository.Neo4jCypher graph,ObjectMapper json) {
+        return new com.adaptlearngraph.services.KnowledgeJourneyService(identity,selections,
+                new com.adaptlearngraph.repository.JpaKnowledgeJourneyReader(data,graph),json);
+    }
     @Bean com.adaptlearngraph.repository.AssessmentPolicyCatalog assessmentPolicyCatalog(com.adaptlearngraph.repository.Neo4jCypher graph,ObjectMapper json) {
         return new com.adaptlearngraph.repository.Neo4jAssessmentPolicyCatalog(graph,json);
     }
