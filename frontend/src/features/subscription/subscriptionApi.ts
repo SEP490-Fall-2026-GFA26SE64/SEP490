@@ -171,6 +171,15 @@ export async function getIdentity(): Promise<Identity | null> {
 export async function authenticate(path: string, payload: unknown): Promise<Identity> {
   return parseIdentity(await request(`/api/v1/workspace-auth/${path}`, 'POST', payload))
 }
+export async function requestForgotPassword(email: string): Promise<void> {
+  await request('/api/v1/workspace-auth/forgot-password', 'POST', { email })
+}
+export async function resetPassword(token: string, password: string): Promise<void> {
+  await request('/api/v1/workspace-auth/reset-password', 'POST', { token, password })
+}
+export async function changePassword(currentPassword: string, newPassword: string): Promise<void> {
+  await request('/api/v1/workspace-auth/change-password', 'POST', { currentPassword, newPassword })
+}
 export async function setupTotp(): Promise<{ manualSecret: string; email: string }> {
   const value = object(await request('/api/v1/workspace-auth/totp/setup', 'POST'))
   return { manualSecret: text(value.manualSecret), email: text(value.email) }

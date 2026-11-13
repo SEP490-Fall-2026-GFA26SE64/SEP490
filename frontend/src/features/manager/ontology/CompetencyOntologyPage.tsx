@@ -15,7 +15,6 @@ import {
   Search,
   ShieldCheck,
   Trash2,
-  Upload,
 } from 'lucide-react'
 import * as React from 'react'
 import { Badge } from '../../../shared/components/ui/Badge'
@@ -1195,15 +1194,6 @@ function OwnedCompetencyOntologyPage() {
         <PageHeader
           actions={
             <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                leftIcon={<Upload className="h-4 w-4" />}
-                onClick={() => setIsImportModalOpen(true)}
-                className="bg-secondary text-primary border border-primary/20 hover:bg-secondary/80 font-semibold shadow-2xs"
-              >
-                Import
-              </Button>
               {activeTab === 'skills' && (
                 <Button
                   variant="primary"
@@ -1312,8 +1302,8 @@ function OwnedCompetencyOntologyPage() {
                     </CardDescription>
                   </div>
 
-                  {/* Search and Filter Controls - Guaranteed 1 Single Row */}
-                  <div className="flex items-center gap-2.5 shrink-0 flex-nowrap overflow-x-auto pb-0.5">
+                  {/* Search and Filter Controls */}
+                  <div className="flex items-center gap-2.5 shrink-0 flex-wrap py-0.5">
                     <div className="relative w-44 sm:w-52 shrink-0">
                       <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
                       <input
@@ -1324,7 +1314,7 @@ function OwnedCompetencyOntologyPage() {
                           setSkillSearchQuery(e.target.value)
                           setSkillCurrentPage(1)
                         }}
-                        className="w-full pl-8 pr-3 py-1.5 text-xs rounded-lg bg-background border border-border text-foreground focus:outline-none focus:ring-1 focus:ring-primary shadow-2xs"
+                        className="w-full pl-8 pr-3 py-1.5 text-xs rounded-lg bg-background border border-border text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary shadow-2xs transition-colors"
                       />
                     </div>
 
@@ -1543,8 +1533,8 @@ function OwnedCompetencyOntologyPage() {
                     </CardDescription>
                   </div>
 
-                  {/* Search and Filters - Guaranteed 1 Single Row */}
-                  <div className="flex items-center gap-2.5 shrink-0 flex-nowrap overflow-x-auto pb-0.5">
+                  {/* Search and Filters */}
+                  <div className="flex items-center gap-2.5 shrink-0 flex-wrap py-0.5">
                     <div className="relative w-48 sm:w-56 shrink-0">
                       <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
                       <input
@@ -1555,7 +1545,7 @@ function OwnedCompetencyOntologyPage() {
                           setPrereqSearchQuery(e.target.value)
                           setPrereqCurrentPage(1)
                         }}
-                        className="w-full pl-8 pr-3 py-1.5 text-xs rounded-lg bg-background border border-border text-foreground focus:outline-none focus:ring-1 focus:ring-primary shadow-2xs"
+                        className="w-full pl-8 pr-3 py-1.5 text-xs rounded-lg bg-background border border-border text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary shadow-2xs transition-colors"
                       />
                     </div>
 
@@ -1719,7 +1709,7 @@ function OwnedCompetencyOntologyPage() {
                   </div>
 
                   {/* Search and Filter Controls */}
-                  <div className="flex items-center gap-2.5 shrink-0 flex-nowrap overflow-x-auto pb-0.5">
+                  <div className="flex items-center gap-2.5 shrink-0 flex-wrap py-0.5">
                     <div className="relative w-44 sm:w-52 shrink-0">
                       <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
                       <input
@@ -1730,7 +1720,7 @@ function OwnedCompetencyOntologyPage() {
                           setCompetencySearchQuery(e.target.value)
                           setCompetencyCurrentPage(1)
                         }}
-                        className="w-full pl-8 pr-3 py-1.5 text-xs rounded-lg bg-background border border-border text-foreground focus:outline-none focus:ring-1 focus:ring-primary shadow-2xs"
+                        className="w-full pl-8 pr-3 py-1.5 text-xs rounded-lg bg-background border border-border text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary shadow-2xs transition-colors"
                       />
                     </div>
 
@@ -2266,7 +2256,7 @@ function OwnedCompetencyOntologyPage() {
       <Dialog
         open={Boolean(viewingSkillDetails)}
         onOpenChange={(open) => !open && setViewingSkillDetails(null)}
-        className="max-w-2xl max-h-[90vh] overflow-y-auto"
+        className="max-w-3xl w-full h-[88vh] max-h-[88vh] flex flex-col p-6 overflow-hidden"
       >
         {viewingSkillDetails && (() => {
           const parentComps = competencies.filter((c) => c.skillIds.includes(viewingSkillDetails.id))
@@ -2287,206 +2277,326 @@ function OwnedCompetencyOntologyPage() {
           )
 
           return (
-            <div className="space-y-4">
-              <DialogHeader>
-                <div className="flex flex-wrap items-center justify-between gap-2.5">
-                  <DialogTitle className="flex items-center gap-2">
-                    <Layers className="h-5 w-5 text-primary shrink-0" />
-                    <span>Micro-skill Details: {viewingSkillDetails.name}</span>
-                  </DialogTitle>
-                  <div className="flex items-center gap-1.5 shrink-0">
-                    <Badge
-                      variant={viewingSkillDetails.status === 'ACTIVE' || viewingSkillDetails.status === 'published' ? 'success' : 'warning'}
-                    >
-                      {viewingSkillDetails.status || 'ACTIVE'}
-                    </Badge>
+            <div className="flex flex-col h-full overflow-hidden">
+              <DialogHeader className="shrink-0 mb-3 space-y-2">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-9 h-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0 border border-primary/20">
+                      <Layers className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <DialogTitle className="text-lg font-bold text-foreground flex items-center gap-2 flex-wrap">
+                        <span>{viewingSkillDetails.name}</span>
+                        <span className="font-mono text-xs px-2 py-0.5 rounded-md bg-muted text-muted-foreground border border-border font-semibold">
+                          {viewingSkillDetails.code}
+                        </span>
+                      </DialogTitle>
+                    </div>
                   </div>
+                  <Badge
+                    variant={viewingSkillDetails.status === 'ACTIVE' || viewingSkillDetails.status === 'published' ? 'success' : 'warning'}
+                    className="font-mono text-xs font-bold"
+                  >
+                    {viewingSkillDetails.status || 'ACTIVE'}
+                  </Badge>
                 </div>
-                <DialogDescription>
-                  View micro-skill details, mapped competencies, and role prerequisites.
+                <DialogDescription className="text-xs text-muted-foreground">
+                  View micro-skill details, mapped competencies, prerequisites, and curriculum bindings.
                 </DialogDescription>
               </DialogHeader>
 
-              <div className="space-y-5 text-xs flex-1">
-                <div className="grid grid-cols-2 gap-3 p-3 rounded-lg bg-muted/40 border border-border">
-                  <div>
-                    <span className="text-muted-foreground block text-[11px]">Skill Code</span>
-                    <strong className="font-mono text-foreground font-bold text-sm">{viewingSkillDetails.code}</strong>
+              <div className="flex-1 overflow-y-auto [scrollbar-gutter:stable] pr-1.5 space-y-4 text-xs min-h-0">
+                {/* Unified Overview Card */}
+                <div className="p-4 rounded-xl border border-border bg-card space-y-3.5 shadow-2xs">
+                  <div className="space-y-1">
+                    <div className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">
+                      Micro-skill Scope &amp; Description
+                    </div>
+                    <p className="text-foreground leading-relaxed text-xs">
+                      {viewingSkillDetails.description || 'No description provided.'}
+                    </p>
                   </div>
-                  <div>
-                    <span className="text-muted-foreground block text-[11px]">Status</span>
-                    <span className="text-foreground font-semibold">{viewingSkillDetails.status || 'ACTIVE'}</span>
-                  </div>
-                  <div className="col-span-2">
-                    <span className="text-muted-foreground block text-[11px]">Skill Name</span>
-                    <strong className="text-foreground text-sm font-semibold">{viewingSkillDetails.name}</strong>
-                  </div>
-                </div>
 
-                <div>
-                  <label className="font-semibold text-foreground block mb-1">Description</label>
-                  <div className="p-3 rounded-lg bg-card border border-border text-foreground leading-relaxed text-xs">
-                    {viewingSkillDetails.description || 'No description provided.'}
-                  </div>
-                </div>
-
-                {/* Parent Competencies */}
-                {parentComps.length > 0 && (
-                  <div>
-                    <span className="font-semibold text-foreground block mb-1.5">
-                      Parent Competencies ({parentComps.length})
-                    </span>
-                    <div className="flex flex-wrap gap-1.5">
-                      {parentComps.map((c) => (
-                        <span
-                          key={c.id}
-                          className="inline-flex items-center gap-1 px-2 py-1 rounded bg-card border border-border text-[11px] text-foreground font-medium"
-                        >
-                          <BookOpen className="h-3 w-3 text-primary" />
-                          <strong className="font-mono">{c.code}</strong> - {c.name}
-                        </span>
-                      ))}
+                  {/* Summary Metric Strip */}
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-3 border-t border-border/70">
+                    <div className="p-2.5 rounded-lg bg-muted/30 border border-border/60 text-center">
+                      <div className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">
+                        Competencies
+                      </div>
+                      <div className="text-sm font-bold text-foreground mt-0.5">
+                        {parentComps.length} Clusters
+                      </div>
+                    </div>
+                    <div className="p-2.5 rounded-lg bg-muted/30 border border-border/60 text-center">
+                      <div className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">
+                        Prerequisites
+                      </div>
+                      <div className="text-sm font-bold text-foreground mt-0.5">
+                        {incomingPrereqs.length} Requirements
+                      </div>
+                    </div>
+                    <div className="p-2.5 rounded-lg bg-muted/30 border border-border/60 text-center">
+                      <div className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">
+                        Target Roles
+                      </div>
+                      <div className="text-sm font-bold text-foreground mt-0.5">
+                        {boundRoles.length} Bindings
+                      </div>
+                    </div>
+                    <div className="p-2.5 rounded-lg bg-muted/30 border border-border/60 text-center">
+                      <div className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">
+                        Modules
+                      </div>
+                      <div className="text-sm font-bold text-foreground mt-0.5">
+                        {boundModules.length} Modules
+                      </div>
                     </div>
                   </div>
-                )}
+                </div>
 
-                {/* Relationship Lists: Prerequisites, Target Roles, Modules */}
-                <div className="space-y-3 pt-1">
-                  {/* 1. Prerequisites */}
-                  <div>
-                    <span className="font-semibold text-foreground block mb-1.5">
-                      Prerequisites ({incomingPrereqs.length})
-                    </span>
-                    {incomingPrereqs.length === 0 ? (
-                      <div className="p-2.5 rounded bg-muted/20 border border-border text-muted-foreground text-[11px]">
-                        0 prerequisites required (foundational micro-skill).
-                      </div>
-                    ) : (
-                      <div className="space-y-1.5">
-                        {incomingPrereqs.map((p) => {
-                          const srcSkill = microSkills.find(
-                            (s) => s.id === p.targetSkillId || s.code === p.targetSkillId || s.code === p.targetSkillCode
-                          )
-                          return (
-                            <div
-                              key={p.id}
-                              className="p-2 rounded bg-card border border-border text-[11px] flex items-center justify-between"
-                            >
-                              <span className="truncate">
-                                <strong className="font-mono text-primary mr-1">
-                                  {srcSkill?.code || p.targetSkillCode || p.targetSkillId}
-                                </strong>
-                                {srcSkill?.name || p.targetSkillName || 'Prerequisite Skill'}
-                              </span>
-                              <Badge variant="primary" className="text-[10px] shrink-0 font-mono">
-                                {p.dependentKnowledgeLevel ?? 'Unclassified'} → {p.prerequisiteKnowledgeLevel ?? 'Unclassified'}
-                              </Badge>
-                            </div>
-                          )
-                        })}
-                      </div>
-                    )}
+                {/* Parent Competencies Card */}
+                <div className="rounded-xl border border-border bg-card overflow-hidden shadow-2xs">
+                  <div className="bg-muted/40 border-b border-border px-4 py-2.5 flex items-center justify-between flex-wrap gap-2">
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-foreground text-sm">Parent Competencies</span>
+                      <Badge variant="secondary" className="font-mono text-[10px]">
+                        {parentComps.length}
+                      </Badge>
+                    </div>
+                    <span className="text-xs text-muted-foreground font-mono">Skill Clusters</span>
                   </div>
-
-                  {/* 2. Target Role Bindings */}
-                  <div>
-                    <span className="font-semibold text-foreground block mb-1.5">
-                      Target Role Bindings ({boundRoles.length})
-                    </span>
-                    {boundRoles.length === 0 ? (
-                      <div className="p-2.5 rounded bg-muted/20 border border-border text-muted-foreground text-[11px]">
-                        0 target roles bound to this micro-skill.
-                      </div>
+                  <div className="p-4">
+                    {parentComps.length === 0 ? (
+                      <p className="text-muted-foreground italic text-xs">No parent competencies mapped yet.</p>
                     ) : (
-                      <div className="space-y-1.5">
-                        {boundRoles.map((role) => {
-                          const target = (role.skillTargets || []).find(
-                            (st) => st.skillId === viewingSkillDetails.id || st.skillCode === viewingSkillDetails.code
-                          )
-                          return (
-                            <div
-                              key={role.id}
-                              className="p-2 rounded bg-card border border-border text-[11px] flex items-center justify-between gap-2"
-                            >
-                              <span className="truncate">
-                                <strong className="font-mono text-primary mr-1">{role.code}</strong>
-                                {role.title}
-                              </span>
-                              <div className="flex items-center gap-1.5 shrink-0">
-                                {target && (
-                                  <Badge variant="outline" className="text-[10px] font-mono">
-                                    Target: {target.threshold}%
-                                  </Badge>
-                                )}
-                                <Badge
-                                  variant={role.status === 'published' ? 'success' : 'secondary'}
-                                  className="text-[10px] capitalize"
-                                >
-                                  {role.status}
-                                </Badge>
-                              </div>
-                            </div>
-                          )
-                        })}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* 3. Module Bindings */}
-                  <div>
-                    <span className="font-semibold text-foreground block mb-1.5">
-                      Module Bindings ({boundModules.length})
-                    </span>
-                    {boundModules.length === 0 ? (
-                      <div className="p-2.5 rounded bg-muted/20 border border-border text-muted-foreground text-[11px]">
-                        0 learning modules bound to teach this micro-skill.
-                      </div>
-                    ) : (
-                      <div className="space-y-1.5">
-                        {boundModules.map((mod) => (
+                      <div className="flex flex-wrap gap-2">
+                        {parentComps.map((c) => (
                           <div
-                            key={mod.id}
-                            className="p-2 rounded bg-card border border-border text-[11px] flex items-center justify-between gap-2"
+                            key={c.id}
+                            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-muted/40 border border-border text-xs"
                           >
-                            <span className="truncate">
-                              <strong className="font-mono text-primary mr-1">{mod.code}</strong>
-                              {mod.title}
-                            </span>
-                            <div className="flex items-center gap-1.5 shrink-0">
-                              <span className="text-[10px] text-muted-foreground font-mono">
-                                v{mod.version}
-                              </span>
-                              <Badge
-                                variant={mod.status === 'published' ? 'success' : 'secondary'}
-                                className="text-[10px] capitalize"
-                              >
-                                {mod.status}
-                              </Badge>
-                            </div>
+                            <BookOpen className="h-3.5 w-3.5 text-primary" />
+                            <span className="font-mono font-bold text-primary">{c.code}</span>
+                            <span className="text-muted-foreground">|</span>
+                            <span className="font-medium text-foreground">{c.name}</span>
                           </div>
                         ))}
                       </div>
                     )}
                   </div>
                 </div>
+
+                {/* Prerequisites Card */}
+                <div className="rounded-xl border border-border bg-card overflow-hidden shadow-2xs">
+                  <div className="bg-muted/40 border-b border-border px-4 py-2.5 flex items-center justify-between flex-wrap gap-2">
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-foreground text-sm">Prerequisites &amp; Sequence</span>
+                      <Badge variant="secondary" className="font-mono text-[10px]">
+                        {incomingPrereqs.length}
+                      </Badge>
+                    </div>
+                    <span className="text-xs text-muted-foreground font-mono">Curriculum Unlocks</span>
+                  </div>
+                  <div className="p-4">
+                    {incomingPrereqs.length === 0 ? (
+                      <div className="p-3 rounded-lg border border-dashed border-border text-center text-muted-foreground text-xs">
+                        0 prerequisites required (foundational micro-skill).
+                      </div>
+                    ) : (
+                      <div className="border border-border rounded-lg overflow-hidden">
+                        <table className="w-full text-left text-xs">
+                          <thead className="bg-muted/50 border-b border-border text-[10px] uppercase font-bold text-muted-foreground">
+                            <tr>
+                              <th className="py-2 px-3 font-semibold">Prerequisite Skill</th>
+                              <th className="py-2 px-3 text-center font-semibold w-56">Knowledge Level Sequence</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-border/60">
+                            {incomingPrereqs.map((p) => {
+                              const srcSkill = microSkills.find(
+                                (s) => s.id === p.targetSkillId || s.code === p.targetSkillId || s.code === p.targetSkillCode
+                              )
+                              return (
+                                <tr key={p.id} className="hover:bg-muted/20 transition-colors">
+                                  <td className="py-2.5 px-3">
+                                    <span className="font-mono font-bold text-foreground mr-2 bg-muted/60 px-1.5 py-0.5 rounded border border-border/60">
+                                      {srcSkill?.code || p.targetSkillCode || p.targetSkillId}
+                                    </span>
+                                    <span className="text-foreground font-medium">
+                                      {srcSkill?.name || p.targetSkillName || 'Prerequisite Skill'}
+                                    </span>
+                                  </td>
+                                  <td className="py-2.5 px-3 text-center">
+                                    <Badge variant="outline" className="font-mono text-xs font-bold text-primary border-primary/30 bg-primary/5">
+                                      {p.dependentKnowledgeLevel ?? 'Unclassified'} → {p.prerequisiteKnowledgeLevel ?? 'Unclassified'}
+                                    </Badge>
+                                  </td>
+                                </tr>
+                              )
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Target Role Bindings Card */}
+                <div className="rounded-xl border border-border bg-card overflow-hidden shadow-2xs">
+                  <div className="bg-muted/40 border-b border-border px-4 py-2.5 flex items-center justify-between flex-wrap gap-2">
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-foreground text-sm">Target Role Bindings</span>
+                      <Badge variant="secondary" className="font-mono text-[10px]">
+                        {boundRoles.length}
+                      </Badge>
+                    </div>
+                    <span className="text-xs text-muted-foreground font-mono">Workforce Profiles</span>
+                  </div>
+                  <div className="p-4">
+                    {boundRoles.length === 0 ? (
+                      <div className="p-3 rounded-lg border border-dashed border-border text-center text-muted-foreground text-xs">
+                        0 target roles bound to this micro-skill.
+                      </div>
+                    ) : (
+                      <div className="border border-border rounded-lg overflow-hidden">
+                        <table className="w-full text-left text-xs">
+                          <thead className="bg-muted/50 border-b border-border text-[10px] uppercase font-bold text-muted-foreground">
+                            <tr>
+                              <th className="py-2 px-3 font-semibold">Role Code &amp; Title</th>
+                              <th className="py-2 px-3 text-center font-semibold w-40">Target Mastery</th>
+                              <th className="py-2 px-3 text-center font-semibold w-32">Status</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-border/60">
+                            {boundRoles.map((role) => {
+                              const target = (role.skillTargets || []).find(
+                                (st) => st.skillId === viewingSkillDetails.id || st.skillCode === viewingSkillDetails.code
+                              )
+                              return (
+                                <tr key={role.id} className="hover:bg-muted/20 transition-colors">
+                                  <td className="py-2.5 px-3">
+                                    <span className="font-mono font-bold text-foreground mr-2 bg-muted/60 px-1.5 py-0.5 rounded border border-border/60">
+                                      {role.code}
+                                    </span>
+                                    <span className="text-foreground font-medium">
+                                      {role.title}
+                                    </span>
+                                  </td>
+                                  <td className="py-2.5 px-3 text-center font-mono">
+                                    {target ? (
+                                      <Badge variant="outline" className="font-mono text-xs font-semibold">
+                                        {target.threshold}%
+                                      </Badge>
+                                    ) : (
+                                      <span className="text-muted-foreground">-</span>
+                                    )}
+                                  </td>
+                                  <td className="py-2.5 px-3 text-center">
+                                    <Badge
+                                      variant={role.status === 'published' ? 'success' : 'secondary'}
+                                      className="text-[10px] capitalize font-semibold"
+                                    >
+                                      {role.status}
+                                    </Badge>
+                                  </td>
+                                </tr>
+                              )
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Module Bindings Card */}
+                <div className="rounded-xl border border-border bg-card overflow-hidden shadow-2xs">
+                  <div className="bg-muted/40 border-b border-border px-4 py-2.5 flex items-center justify-between flex-wrap gap-2">
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-foreground text-sm">Learning Module Bindings</span>
+                      <Badge variant="secondary" className="font-mono text-[10px]">
+                        {boundModules.length}
+                      </Badge>
+                    </div>
+                    <span className="text-xs text-muted-foreground font-mono">Curriculum Delivery</span>
+                  </div>
+                  <div className="p-4">
+                    {boundModules.length === 0 ? (
+                      <div className="p-3 rounded-lg border border-dashed border-border text-center text-muted-foreground text-xs">
+                        0 learning modules bound to teach this micro-skill.
+                      </div>
+                    ) : (
+                      <div className="border border-border rounded-lg overflow-hidden">
+                        <table className="w-full text-left text-xs">
+                          <thead className="bg-muted/50 border-b border-border text-[10px] uppercase font-bold text-muted-foreground">
+                            <tr>
+                              <th className="py-2 px-3 font-semibold">Module Code &amp; Title</th>
+                              <th className="py-2 px-3 text-center font-semibold w-28">Version</th>
+                              <th className="py-2 px-3 text-center font-semibold w-32">Status</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-border/60">
+                            {boundModules.map((mod) => (
+                              <tr key={mod.id} className="hover:bg-muted/20 transition-colors">
+                                <td className="py-2.5 px-3">
+                                  <span className="font-mono font-bold text-foreground mr-2 bg-muted/60 px-1.5 py-0.5 rounded border border-border/60">
+                                    {mod.code}
+                                  </span>
+                                  <span className="text-foreground font-medium">
+                                    {mod.title}
+                                  </span>
+                                </td>
+                                <td className="py-2.5 px-3 text-center font-mono text-muted-foreground">
+                                  v{mod.version}
+                                </td>
+                                <td className="py-2.5 px-3 text-center">
+                                  <Badge
+                                    variant={mod.status === 'published' ? 'success' : 'secondary'}
+                                    className="text-[10px] capitalize font-semibold"
+                                  >
+                                    {mod.status}
+                                  </Badge>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
 
-              <DialogFooter>
-                <Button variant="outline" size="sm" onClick={() => setViewingSkillDetails(null)}>
-                  Close
-                </Button>
+              <DialogFooter className="shrink-0 pt-3 border-t border-border mt-3 flex items-center justify-between sm:justify-between w-full">
                 <Button
-                  variant="primary"
+                  variant="destructive"
                   size="sm"
-                  leftIcon={<Edit3 className="h-3 w-3" />}
                   onClick={() => {
-                    const skill = viewingSkillDetails
+                    const s = viewingSkillDetails
                     setViewingSkillDetails(null)
-                    handleOpenEditSkill(skill)
+                    setDeletingSkill(s)
                   }}
+                  leftIcon={<Trash2 className="h-3.5 w-3.5" />}
                 >
-                  Edit Micro-skill
+                  Delete Micro-skill
                 </Button>
+                <div className="flex items-center gap-2">
+                  <Button variant="outline" size="sm" onClick={() => setViewingSkillDetails(null)}>
+                    Close
+                  </Button>
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    leftIcon={<Edit3 className="h-3.5 w-3.5" />}
+                    onClick={() => {
+                      const skill = viewingSkillDetails
+                      setViewingSkillDetails(null)
+                      handleOpenEditSkill(skill)
+                    }}
+                  >
+                    Edit Micro-skill
+                  </Button>
+                </div>
               </DialogFooter>
             </div>
           )
@@ -2497,7 +2607,7 @@ function OwnedCompetencyOntologyPage() {
       <Dialog
         open={Boolean(viewingEdgeDetails)}
         onOpenChange={(open) => !open && setViewingEdgeDetails(null)}
-        className="max-w-xl w-full p-6 sm:p-7 overflow-hidden"
+        className="max-w-3xl w-full h-[88vh] max-h-[88vh] flex flex-col p-6 overflow-hidden"
       >
         {viewingEdgeDetails && (() => {
           const source = microSkills.find(
@@ -2509,50 +2619,46 @@ function OwnedCompetencyOntologyPage() {
           const pairLabel = `${viewingEdgeDetails.dependentKnowledgeLevel ?? 'Unclassified'} → ${viewingEdgeDetails.prerequisiteKnowledgeLevel ?? 'Unclassified'}`
 
           return (
-            <div className="space-y-6 flex-1 flex flex-col justify-between">
-              <DialogHeader>
+            <div className="flex flex-col h-full overflow-hidden">
+              <DialogHeader className="shrink-0 mb-3 space-y-2">
                 <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 text-primary flex items-center justify-center shrink-0">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-9 h-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0 border border-primary/20">
                       <GitBranch className="h-5 w-5" />
                     </div>
                     <div>
-                      <DialogTitle className="text-base font-bold text-foreground">
-                        Prerequisite Relationship Details
+                      <DialogTitle className="text-lg font-bold text-foreground flex items-center gap-2 flex-wrap">
+                        <span>Prerequisite Relationship Details</span>
+                        <span className="font-mono text-xs px-2 py-0.5 rounded-md bg-muted text-muted-foreground border border-border font-semibold">
+                          {pairLabel}
+                        </span>
                       </DialogTitle>
-                      <DialogDescription className="text-xs text-muted-foreground mt-0.5">
-                        Directed learning sequence governing skill progression and curriculum unlocks.
-                      </DialogDescription>
                     </div>
                   </div>
-                  <div className="flex items-center gap-1.5 shrink-0">
-                    <Badge
-                      variant="outline"
-                      className="font-bold tracking-wider text-[10px] uppercase border-border/80 bg-background text-foreground shadow-2xs px-2.5 py-0.5"
-                    >
-                      {pairLabel}
-                    </Badge>
-                    <Badge
-                      variant={viewingEdgeDetails.status === 'ACTIVE' ? 'success' : 'outline'}
-                      className="text-[10px] uppercase font-semibold"
-                    >
-                      {viewingEdgeDetails.status || 'ACTIVE'}
-                    </Badge>
-                  </div>
+                  <Badge
+                    variant={viewingEdgeDetails.status === 'ACTIVE' ? 'success' : 'outline'}
+                    className="font-mono text-xs font-bold"
+                  >
+                    {viewingEdgeDetails.status || 'ACTIVE'}
+                  </Badge>
                 </div>
+                <DialogDescription className="text-xs text-muted-foreground">
+                  Directed learning sequence governing skill progression and curriculum unlocks.
+                </DialogDescription>
               </DialogHeader>
 
-              <div className="space-y-5 text-xs flex-1">
+              <div className="flex-1 overflow-y-auto [scrollbar-gutter:stable] pr-1.5 space-y-4 text-xs min-h-0">
                 {/* Visual Sequence Pipeline Flow Banner */}
-                <div className="p-4 rounded-xl bg-muted/20 border border-border/80">
-                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+                <div className="p-4 rounded-xl bg-card border border-border shadow-2xs space-y-3">
+                  <div className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">
+                    Directed Graph Sequence
+                  </div>
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3.5 rounded-lg bg-muted/20 border border-border/80">
                     {/* Source Card */}
-                    <div className="flex-1 p-3.5 rounded-lg bg-card border border-border/90 shadow-2xs flex flex-col justify-between">
-                      <div className="flex items-center justify-between gap-2 mb-1.5">
-                        <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">
-                          Dependent Requirement
-                        </span>
-                      </div>
+                    <div className="flex-1 p-3 rounded-lg bg-card border border-border shadow-2xs">
+                      <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider block mb-1">
+                        Dependent Requirement
+                      </span>
                       <strong className="font-mono text-primary font-bold text-sm block">
                         {source?.code || viewingEdgeDetails.sourceSkillCode}
                       </strong>
@@ -2574,12 +2680,10 @@ function OwnedCompetencyOntologyPage() {
                     </div>
 
                     {/* Target Card */}
-                    <div className="flex-1 p-3.5 rounded-lg bg-card border border-border/90 shadow-2xs flex flex-col justify-between">
-                      <div className="flex items-center justify-between gap-2 mb-1.5">
-                        <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">
-                          Required Prerequisite
-                        </span>
-                      </div>
+                    <div className="flex-1 p-3 rounded-lg bg-card border border-border shadow-2xs">
+                      <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider block mb-1">
+                        Required Prerequisite
+                      </span>
                       <strong className="font-mono text-primary font-bold text-sm block">
                         {target?.code || viewingEdgeDetails.targetSkillCode}
                       </strong>
@@ -2591,77 +2695,81 @@ function OwnedCompetencyOntologyPage() {
                 </div>
 
                 {/* Metric Summary Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div className="p-3.5 rounded-xl bg-card border border-border shadow-2xs space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-muted-foreground text-[11px] font-medium">Knowledge level pair</span>
-                      <span className="font-mono font-bold text-primary text-sm">{pairLabel}</span>
-                    </div>
-                    <span className="text-[10.5px] text-muted-foreground block">
-                      Assessment checks these exact levels using the organization policy.
-                    </span>
+                <div className="p-4 rounded-xl border border-border bg-card shadow-2xs space-y-3">
+                  <div className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">
+                    Relationship Governance &amp; Policy
                   </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                    <div className="p-2.5 rounded-lg bg-muted/30 border border-border/60 text-center">
+                      <div className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">
+                        Knowledge Level Pair
+                      </div>
+                      <div className="text-xs font-mono font-bold text-primary mt-1">
+                        {pairLabel}
+                      </div>
+                    </div>
 
-                  <div className="p-3.5 rounded-xl bg-card border border-border shadow-2xs flex flex-col justify-between">
-                    <div>
-                      <span className="text-muted-foreground text-[11px] font-medium block">Relationship Status</span>
-                      <div className="flex items-center gap-2 mt-1.5">
+                    <div className="p-2.5 rounded-lg bg-muted/30 border border-border/60 text-center">
+                      <div className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">
+                        Enforcement Status
+                      </div>
+                      <div className="text-xs font-bold text-foreground mt-1 flex items-center justify-center gap-1.5">
                         <Badge
                           variant={viewingEdgeDetails.status === 'ACTIVE' ? 'success' : 'outline'}
-                          className="text-xs font-semibold"
+                          className="text-[10px] font-semibold"
                         >
                           {viewingEdgeDetails.status || 'ACTIVE'}
                         </Badge>
-                        <span className="text-[11px] text-muted-foreground">Enforced in adaptive graph</span>
+                        <span className="text-[11px] text-muted-foreground">Adaptive Graph</span>
                       </div>
                     </div>
-                    <span className="text-[10.5px] text-muted-foreground/80 mt-2 block">
-                      Updated {formatDate(viewingEdgeDetails.updatedAt || viewingEdgeDetails.createdAt)}
-                    </span>
+
+                    <div className="p-2.5 rounded-lg bg-muted/30 border border-border/60 text-center">
+                      <div className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">
+                        Last Audit / Update
+                      </div>
+                      <div className="text-xs font-semibold text-muted-foreground mt-1">
+                        {formatDate(viewingEdgeDetails.updatedAt || viewingEdgeDetails.createdAt)}
+                      </div>
+                    </div>
                   </div>
                 </div>
 
-                {/* Skill Descriptions Section */}
-                <div className="space-y-2.5">
-                  <div className="p-3.5 rounded-xl bg-card border border-border shadow-2xs space-y-1">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[11px] font-semibold text-foreground flex items-center gap-1.5">
+                {/* Skill Scope & Architectural Descriptions */}
+                <div className="space-y-3">
+                  <div className="rounded-xl border border-border bg-card overflow-hidden shadow-2xs">
+                    <div className="bg-muted/40 border-b border-border px-4 py-2.5 flex items-center justify-between">
+                      <div className="flex items-center gap-1.5 font-bold text-foreground text-xs">
                         <BookOpen className="h-3.5 w-3.5 text-primary" />
-                        <span>Prerequisite:</span>
-                        <span className="font-mono text-primary font-bold">
-                          {source?.code || viewingEdgeDetails.sourceSkillCode}
-                        </span>
-                        <span className="text-muted-foreground">
-                          — {source?.name || viewingEdgeDetails.sourceSkillName}
-                        </span>
-                      </span>
+                        <span>Prerequisite Skill Scope:</span>
+                        <span className="font-mono text-primary">{source?.code || viewingEdgeDetails.sourceSkillCode}</span>
+                        <span className="text-muted-foreground">— {source?.name || viewingEdgeDetails.sourceSkillName}</span>
+                      </div>
+                      <Badge variant="secondary" className="font-mono text-[10px]">Prerequisite</Badge>
                     </div>
-                    <p className="text-muted-foreground text-xs leading-relaxed pt-1">
+                    <div className="p-4 text-xs text-foreground leading-relaxed">
                       {source?.description || 'Foundational prerequisite capability and knowledge scope.'}
-                    </p>
+                    </div>
                   </div>
 
-                  <div className="p-3.5 rounded-xl bg-card border border-border shadow-2xs space-y-1">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[11px] font-semibold text-foreground flex items-center gap-1.5">
+                  <div className="rounded-xl border border-border bg-card overflow-hidden shadow-2xs">
+                    <div className="bg-muted/40 border-b border-border px-4 py-2.5 flex items-center justify-between">
+                      <div className="flex items-center gap-1.5 font-bold text-foreground text-xs">
                         <BookOpen className="h-3.5 w-3.5 text-primary" />
-                        <span>Target:</span>
-                        <span className="font-mono text-primary font-bold">
-                          {target?.code || viewingEdgeDetails.targetSkillCode}
-                        </span>
-                        <span className="text-muted-foreground">
-                          — {target?.name || viewingEdgeDetails.targetSkillName}
-                        </span>
-                      </span>
+                        <span>Target Skill Scope:</span>
+                        <span className="font-mono text-primary">{target?.code || viewingEdgeDetails.targetSkillCode}</span>
+                        <span className="text-muted-foreground">— {target?.name || viewingEdgeDetails.targetSkillName}</span>
+                      </div>
+                      <Badge variant="secondary" className="font-mono text-[10px]">Target Requirement</Badge>
                     </div>
-                    <p className="text-muted-foreground text-xs leading-relaxed pt-1">
+                    <div className="p-4 text-xs text-foreground leading-relaxed">
                       {target?.description || 'Advanced competency requiring verified mastery of prerequisite skill.'}
-                    </p>
+                    </div>
                   </div>
                 </div>
               </div>
 
-              <DialogFooter className="pt-2 border-t border-border mt-4 flex items-center justify-between gap-2">
+              <DialogFooter className="shrink-0 pt-3 border-t border-border mt-3 flex items-center justify-between sm:justify-between w-full">
                 <Button
                   variant="destructive"
                   size="sm"
@@ -2994,92 +3102,180 @@ function OwnedCompetencyOntologyPage() {
       <Dialog
         open={Boolean(viewingCompetencyDetails)}
         onOpenChange={(open) => !open && setViewingCompetencyDetails(null)}
-        className="max-w-xl max-h-[90vh] overflow-y-auto"
+        className="max-w-3xl w-full h-[88vh] max-h-[88vh] flex flex-col p-6 overflow-hidden"
       >
-        {viewingCompetencyDetails && (
-          <div className="space-y-4">
-            <DialogHeader>
-              <div className="flex flex-wrap items-center justify-between gap-2.5">
-                <DialogTitle className="flex items-center gap-2">
-                  <BookOpen className="h-5 w-5 text-primary shrink-0" />
-                  <span>{viewingCompetencyDetails.name}</span>
-                </DialogTitle>
-                <Badge variant={viewingCompetencyDetails.status?.toUpperCase() === 'DRAFT' ? 'warning' : 'success'} className="font-mono text-[10px]">
-                  {viewingCompetencyDetails.status || 'ACTIVE'}
-                </Badge>
+        {viewingCompetencyDetails && (() => {
+          const uniqueMemberSkills = Array.from(new Set((viewingCompetencyDetails.skillIds || []).map((sId) => {
+            const skill = microSkills.find((s) => s.id === sId || s.code === sId)
+            return skill ? skill.id : sId
+          }))).map((resolvedId) => {
+            const skill = microSkills.find((s) => s.id === resolvedId || s.code === resolvedId)
+            return {
+              id: resolvedId,
+              code: skill?.code || resolvedId,
+              name: skill?.name || 'Micro-skill',
+              description: skill?.description,
+            }
+          })
+
+          return (
+            <div className="flex flex-col h-full overflow-hidden">
+              <DialogHeader className="shrink-0 mb-3 space-y-2">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-9 h-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0 border border-primary/20">
+                      <BookOpen className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <DialogTitle className="text-lg font-bold text-foreground flex items-center gap-2 flex-wrap">
+                        <span>{viewingCompetencyDetails.name}</span>
+                        <span className="font-mono text-xs px-2 py-0.5 rounded-md bg-muted text-muted-foreground border border-border font-semibold">
+                          {viewingCompetencyDetails.code}
+                        </span>
+                      </DialogTitle>
+                    </div>
+                  </div>
+                  <Badge
+                    variant={viewingCompetencyDetails.status?.toUpperCase() === 'DRAFT' ? 'warning' : 'success'}
+                    className="font-mono text-xs font-bold"
+                  >
+                    {viewingCompetencyDetails.status || 'ACTIVE'}
+                  </Badge>
+                </div>
+                <DialogDescription className="text-xs text-muted-foreground">
+                  Domain competency definition, architectural scope, and mapped micro-skills.
+                </DialogDescription>
+              </DialogHeader>
+
+              <div className="flex-1 overflow-y-auto [scrollbar-gutter:stable] pr-1.5 space-y-4 text-xs min-h-0">
+                {/* Unified Overview Card */}
+                <div className="p-4 rounded-xl border border-border bg-card space-y-3.5 shadow-2xs">
+                  <div className="space-y-1">
+                    <div className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">
+                      Competency Scope &amp; Description
+                    </div>
+                    <p className="text-foreground leading-relaxed text-xs">
+                      {viewingCompetencyDetails.description || 'No description provided.'}
+                    </p>
+                  </div>
+
+                  {/* Summary Metric Strip */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-3 border-t border-border/70">
+                    <div className="p-2.5 rounded-lg bg-muted/30 border border-border/60 text-center">
+                      <div className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">
+                        Member Micro-skills
+                      </div>
+                      <div className="text-sm font-bold text-foreground mt-0.5">
+                        {uniqueMemberSkills.length} Mapped Skills
+                      </div>
+                    </div>
+                    <div className="p-2.5 rounded-lg bg-muted/30 border border-border/60 text-center">
+                      <div className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">
+                        Competency Code
+                      </div>
+                      <div className="text-xs font-mono font-bold text-primary mt-1">
+                        {viewingCompetencyDetails.code}
+                      </div>
+                    </div>
+                    <div className="p-2.5 rounded-lg bg-muted/30 border border-border/60 text-center">
+                      <div className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">
+                        Status
+                      </div>
+                      <div className="text-xs font-bold text-foreground mt-1">
+                        <Badge
+                          variant={viewingCompetencyDetails.status?.toUpperCase() === 'DRAFT' ? 'warning' : 'success'}
+                          className="text-[10px] font-semibold"
+                        >
+                          {viewingCompetencyDetails.status || 'ACTIVE'}
+                        </Badge>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Member Micro-skills Card */}
+                <div className="rounded-xl border border-border bg-card overflow-hidden shadow-2xs">
+                  <div className="bg-muted/40 border-b border-border px-4 py-2.5 flex items-center justify-between flex-wrap gap-2">
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-foreground text-sm">Member Micro-skills</span>
+                      <Badge variant="secondary" className="font-mono text-[10px]">
+                        {uniqueMemberSkills.length}
+                      </Badge>
+                    </div>
+                    <span className="text-xs text-muted-foreground font-mono">Curriculum Units</span>
+                  </div>
+                  <div className="p-4">
+                    {uniqueMemberSkills.length === 0 ? (
+                      <p className="text-muted-foreground italic text-xs">No micro-skills mapped yet.</p>
+                    ) : (
+                      <div className="border border-border rounded-lg overflow-hidden">
+                        <table className="w-full text-left text-xs">
+                          <thead className="bg-muted/50 border-b border-border text-[10px] uppercase font-bold text-muted-foreground">
+                            <tr>
+                              <th className="py-2 px-3 font-semibold">Skill Code &amp; Name</th>
+                              <th className="py-2 px-3 text-center font-semibold w-36">Classification</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-border/60">
+                            {uniqueMemberSkills.map((item) => (
+                              <tr key={item.id} className="hover:bg-muted/20 transition-colors">
+                                <td className="py-2.5 px-3">
+                                  <span className="font-mono font-bold text-foreground mr-2 bg-muted/60 px-1.5 py-0.5 rounded border border-border/60">
+                                    {item.code}
+                                  </span>
+                                  <span className="text-foreground font-medium">
+                                    {item.name}
+                                  </span>
+                                </td>
+                                <td className="py-2.5 px-3 text-center">
+                                  <Badge variant="outline" className="font-mono text-[10px] font-semibold text-primary border-primary/25 bg-primary/5">
+                                    Member Skill
+                                  </Badge>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
-              <DialogDescription className="text-xs font-mono text-primary font-bold">
-                {viewingCompetencyDetails.code}
-              </DialogDescription>
-            </DialogHeader>
 
-            <div className="space-y-3 text-xs">
-              <div className="p-3.5 rounded-lg bg-card border border-border shadow-2xs">
-                <span className="text-muted-foreground text-[10.5px] uppercase font-bold tracking-wider block mb-1">
-                  Scope &amp; Description
-                </span>
-                <p className="text-foreground leading-relaxed">
-                  {viewingCompetencyDetails.description || 'No description provided.'}
-                </p>
-              </div>
-
-
-
-              <div className="p-3.5 rounded-lg bg-card border border-border shadow-2xs">
-                {(() => {
-                  const uniqueMemberSkills = Array.from(new Set((viewingCompetencyDetails.skillIds || []).map((sId) => {
-                    const skill = microSkills.find((s) => s.id === sId || s.code === sId)
-                    return skill ? skill.id : sId
-                  }))).map((resolvedId) => {
-                    const skill = microSkills.find((s) => s.id === resolvedId || s.code === resolvedId)
-                    return {
-                      id: resolvedId,
-                      code: skill?.code || resolvedId,
-                      name: skill?.name || 'Micro-skill',
-                    }
-                  })
-
-                  return (
-                    <>
-                      <span className="text-muted-foreground text-[10.5px] uppercase font-bold tracking-wider block mb-2">
-                        Member Micro-skills ({uniqueMemberSkills.length})
-                      </span>
-                      {uniqueMemberSkills.length === 0 ? (
-                        <p className="text-muted-foreground italic">No micro-skills mapped yet.</p>
-                      ) : (
-                        <div className="space-y-1.5 max-h-48 overflow-y-auto">
-                          {uniqueMemberSkills.map((item) => (
-                            <div key={item.id} className="flex items-center gap-2 p-1.5 rounded bg-muted/40 border border-border/60">
-                              <span className="font-mono text-primary font-bold text-xs">{item.code}</span>
-                              <span className="text-foreground text-xs truncate">{item.name}</span>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </>
-                  )
-                })()}
-              </div>
+              <DialogFooter className="shrink-0 pt-3 border-t border-border mt-3 flex items-center justify-between sm:justify-between w-full">
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => {
+                    const comp = viewingCompetencyDetails
+                    setViewingCompetencyDetails(null)
+                    setDeletingCompetency(comp)
+                  }}
+                  leftIcon={<Trash2 className="h-3.5 w-3.5" />}
+                >
+                  Delete Competency
+                </Button>
+                <div className="flex items-center gap-2">
+                  <Button variant="outline" size="sm" onClick={() => setViewingCompetencyDetails(null)}>
+                    Close
+                  </Button>
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    leftIcon={<Edit3 className="h-3.5 w-3.5" />}
+                    onClick={() => {
+                      const comp = viewingCompetencyDetails
+                      setViewingCompetencyDetails(null)
+                      handleOpenEditCompetency(comp)
+                    }}
+                  >
+                    Edit Competency
+                  </Button>
+                </div>
+              </DialogFooter>
             </div>
-
-            <DialogFooter className="pt-2 border-t border-border mt-4 flex items-center justify-between gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  const comp = viewingCompetencyDetails
-                  setViewingCompetencyDetails(null)
-                  handleOpenEditCompetency(comp)
-                }}
-              >
-                Edit Competency
-              </Button>
-              <Button variant="outline" size="sm" onClick={() => setViewingCompetencyDetails(null)}>
-                Close
-              </Button>
-            </DialogFooter>
-          </div>
-        )}
+          )
+        })()}
       </Dialog>
 
       <ConfirmationModal

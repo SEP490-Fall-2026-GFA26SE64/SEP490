@@ -25,8 +25,6 @@ Modified ModuleManagementWorkspace, shared LearningLessonsEditor, RichLessonEdit
 Screenshot `/tmp/module-authoring-laptop.png` is outside the repository and was visually inspected. No untracked images remain in Git status. Save requests and auth/image responses were fixture-backed: this verifies UI behavior and request contents, not actual backend persistence, real-tenant asset authorization or production rollout. The prior broader real-runtime learning-workspace upgrade remains a separate pending slice.
 
 Manual runtime follow-up: create a draft with eligible Skill/knowledge, add reading/video and an authorized image, switch lessons/tabs and full preview, reorder, save/reopen and verify the same content/order. Submit using the existing module action and inspect the exact revision as L&D; an Employee viewing that same released version should retain the same rendering under existing version-pin rules.
-<<<<<<< Updated upstream
-=======
 
 ## UI merge verification into main — 2026-11-13
 
@@ -48,4 +46,3 @@ Earlier attempts retained outside Git: `/tmp/module-detail-preview-browser-20261
 Visual review: `/tmp/module-authoring-toolbar-20261113.png` and `/tmp/module-detail-learner-preview-20261113.png` were inspected; no screenshot, trace or browser cache was added to the repository. The final build passed; scoped lint has no errors and two existing state-in-effect warnings. No backend/API/schema/dependency changes. API authorization, real database persistence and production rollout are not newly certified by fixture-backed UI checks.
 
 Manual follow-up on the real local stack: sign in as Expert; create a Reading lesson; insert a selected-text HTTPS link and image; Escape should keep the form open. Switch View as learner, desktop/mobile and full preview. Save and reopen the same module. As Expert and L&D, open its catalog detail and a working/historical revision; confirm the content/version labels and image match the chosen snapshot. Missing snapshots should show unavailable content. Confirm learner progress is unchanged by staff previews and review/history actions remain available. This real-stack follow-up is **Not run** for this frontend-only slice.
->>>>>>> Stashed changes

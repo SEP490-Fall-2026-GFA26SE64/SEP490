@@ -84,6 +84,20 @@ public class WorkspaceAuthenticationConfiguration {
     }
 
     @Bean
+    com.adaptlearngraph.services.PasswordResetUseCase passwordReset(
+            com.adaptlearngraph.repository.AccountJpaRepository accounts,
+            com.adaptlearngraph.repository.PasswordResetJpaRepository resets,
+            com.adaptlearngraph.repository.WorkspaceAccountProfileJpaRepository profiles,
+            com.adaptlearngraph.repository.OrganizationRegistrationJpaRepository registrations,
+            com.adaptlearngraph.repository.RegistrationSecrets secrets,
+            com.adaptlearngraph.repository.RegistrationStore security,
+            com.adaptlearngraph.helper.RegistrationMailDelivery mail,
+            @org.springframework.beans.factory.annotation.Value("${subscription.public-url:http://127.0.0.1:8088}") String publicUrl) {
+        return new com.adaptlearngraph.services.PasswordResetService(
+                accounts, resets, profiles, registrations, secrets, security, mail, Clock.systemUTC(), publicUrl);
+    }
+
+    @Bean
     @Order(-10)
     SecurityFilterChain workspaceAuthenticationSecurity(HttpSecurity http) throws Exception {
         return http.securityMatcher("/api/v1/workspace-auth/**")
@@ -92,7 +106,10 @@ public class WorkspaceAuthenticationConfiguration {
                         .requestMatchers(HttpMethod.POST, "/api/v1/workspace-auth/sign-in", "/api/v1/workspace-auth/sign-out",
                                 "/api/v1/workspace-auth/totp/verify", "/api/v1/workspace-auth/totp/setup",
                                 "/api/v1/workspace-auth/totp/confirm", "/api/v1/workspace-auth/recovery",
-                                "/api/v1/workspace-auth/activate").permitAll()
+                                "/api/v1/workspace-auth/activate",
+                                "/api/v1/workspace-auth/forgot-password",
+                                "/api/v1/workspace-auth/reset-password",
+                                "/api/v1/workspace-auth/change-password").permitAll()
                         .anyRequest().denyAll())
                 .exceptionHandling(exceptions -> exceptions.accessDeniedHandler((request, response, exception) -> {
                     response.setStatus(403);

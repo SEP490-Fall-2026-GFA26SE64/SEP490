@@ -67,6 +67,11 @@ public interface AccountJpaRepository extends Repository<AccountEntity, UUID>, I
             nativeQuery = true)
     int bindOrganization(@Param("account") UUID accountId, @Param("organization") UUID organizationId);
 
+    @org.springframework.data.jpa.repository.Modifying(flushAutomatically = true, clearAutomatically = true)
+    @org.springframework.transaction.annotation.Transactional(com.adaptlearngraph.constants.TransactionManagers.JPA)
+    @Query("UPDATE AccountEntity a SET a.passwordHash = :hash WHERE a.accountId = :accountId")
+    int updatePasswordHash(@Param("accountId") UUID accountId, @Param("hash") String newPasswordHash);
+
     @Query("select a.active from AccountEntity a where a.accountId = :account")
     Optional<Boolean> active(@Param("account") UUID accountId);
     @Query("select a.identifier from AccountEntity a where a.accountId = :account")

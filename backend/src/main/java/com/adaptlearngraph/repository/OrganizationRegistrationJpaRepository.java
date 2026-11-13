@@ -100,6 +100,14 @@ public interface OrganizationRegistrationJpaRepository
             """)
     int beginRecovery(@Param("accountId") UUID accountId, @Param("now") Instant now);
 
+    @Modifying(flushAutomatically = true, clearAutomatically = true)
+    @Transactional(TransactionManagers.JPA)
+    @Query("""
+            update OrganizationRegistrationEntity r set r.authVersion = r.authVersion + 1, r.updatedAt = :now
+            where r.accountId = :accountId
+            """)
+    int revokeSessions(@Param("accountId") UUID accountId, @Param("now") Instant now);
+
     @Query("select r.authVersion from OrganizationRegistrationEntity r where r.accountId = :accountId")
     Optional<Long> authVersion(@Param("accountId") UUID accountId);
 

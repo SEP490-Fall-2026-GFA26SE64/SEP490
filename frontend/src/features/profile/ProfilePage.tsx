@@ -1,11 +1,10 @@
 import * as React from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useTranslation } from '../../shared/i18n/LanguageContext'
 import {
   Award,
   Briefcase,
   Building,
-  Check,
   CheckCircle2,
   Eye,
   EyeOff,
@@ -15,7 +14,6 @@ import {
   Shield,
   ShieldCheck,
   Sparkles,
-  User,
   UserCheck,
 } from 'lucide-react'
 import { Heading } from '../../shared/components/typography/Heading'
@@ -27,11 +25,9 @@ import { PageHeader } from '../../shared/components/ui/PageHeader'
 import { useToast } from '../../shared/hooks/useToast'
 import { WorkspaceLayout } from '../../shared/layouts/WorkspaceLayout'
 import { WorkspaceSessionContext } from '../../shared/auth/workspaceSession'
-import { decodeJobPositionWithTargetRole } from '../subscription/subscriptionApi'
+import { decodeJobPositionWithTargetRole, changePassword } from '../subscription/subscriptionApi'
 import {
   getUserProfile,
-  updateUserPassword,
-  updateUserProfileName,
   type ActorRole,
 } from '../../shared/stores/userProfileStore'
 import { workspaceFetch } from '../../shared/api/workspaceFetch'
@@ -51,6 +47,7 @@ interface EmployeeAssignmentData {
 export function ProfilePage() {
   const { language } = useTranslation()
   const { toast } = useToast()
+  const navigate = useNavigate()
   const session = React.useContext(WorkspaceSessionContext)
   const sessionIdentity = session?.identity
 
@@ -102,7 +99,6 @@ export function ProfilePage() {
           ...prev.details.slice(1),
         ],
       }))
-      setFullNameInput(name)
     }
   }, [sessionIdentity])
 
@@ -139,7 +135,6 @@ export function ProfilePage() {
                 email: userEmail,
                 initials: authData.fullName.split(' ').filter(Boolean).map((s: string) => s[0]).join('').slice(0, 2).toUpperCase() || 'U',
               }))
-              setFullNameInput(authData.fullName)
             }
           }
         }
@@ -236,25 +231,22 @@ export function ProfilePage() {
     }
   }, [sessionIdentity?.email, sessionIdentity?.organizationId, profile.email, activeActor])
 
-  // Editable Name State
-  const [fullNameInput, setFullNameInput] = React.useState(profile.name)
-  const [isSavingName, setIsSavingName] = React.useState(false)
-
   // Change Password Form State
+  const [currentPasswordInput, setCurrentPasswordInput] = React.useState('')
   const [newPasswordInput, setNewPasswordInput] = React.useState('')
   const [confirmPasswordInput, setConfirmPasswordInput] = React.useState('')
 
+  const [showCurrentInput, setShowCurrentInput] = React.useState(false)
   const [showNewInput, setShowNewInput] = React.useState(false)
   const [showConfirmInput, setShowConfirmInput] = React.useState(false)
 
   const [isChangingPassword, setIsChangingPassword] = React.useState(false)
 
-  // Listen to profile / password events across windows or tabs
+  // Listen to profile updates across windows or tabs
   React.useEffect(() => {
     const handleProfileUpdate = () => {
       const updated = getUserProfile(activeActor)
       setProfile(updated)
-      setFullNameInput(updated.name)
     }
 
     window.addEventListener('user_profile_updated', handleProfileUpdate)
@@ -263,39 +255,32 @@ export function ProfilePage() {
     }
   }, [activeActor])
 
-  // Save Full Name
-  const handleSaveName = (e: React.FormEvent) => {
+  // Handle Change Password Form Submission
+  const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault()
-    const trimmed = fullNameInput.trim()
-    if (!trimmed) {
+
+    if (!currentPasswordInput) {
       toast({
-        title: 'Full Name Required',
-        description: 'Please provide a valid full name for your profile.',
+        title: language === 'vi' ? 'Thiếu mật khẩu hiện tại' : 'Current Password Required',
+        description: language === 'vi' ? 'Vui lòng nhập mật khẩu hiện tại của bạn.' : 'Please enter your current password.',
         variant: 'destructive',
       })
       return
     }
 
-    setIsSavingName(true)
-    setTimeout(() => {
-      updateUserProfileName(activeActor, trimmed)
-      setIsSavingName(false)
+    if (!newPasswordInput || newPasswordInput.length < 12 || newPasswordInput.length > 128) {
       toast({
-        title: 'Profile Updated',
-        description: `Full name updated to "${trimmed}".`,
-        variant: 'success',
+        title: language === 'vi' ? 'Mật khẩu mới không hợp lệ' : 'Invalid New Password',
+        description: language === 'vi' ? 'Mật khẩu mới phải có từ 12 đến 128 ký tự.' : 'New password must contain between 12 and 128 characters.',
+        variant: 'destructive',
       })
-    }, 300)
-  }
+      return
+    }
 
-  // Handle Change Password Form Submission
-  const handleChangePassword = (e: React.FormEvent) => {
-    e.preventDefault()
-
-    if (!newPasswordInput || newPasswordInput.length < 6) {
+    if (newPasswordInput === currentPasswordInput) {
       toast({
-        title: 'Invalid New Password',
-        description: 'New password must contain at least 6 characters.',
+        title: language === 'vi' ? 'Mật khẩu trùng lặp' : 'Password Unchanged',
+        description: language === 'vi' ? 'Mật khẩu mới phải khác mật khẩu hiện tại.' : 'New password must be different from your current password.',
         variant: 'destructive',
       })
       return
@@ -303,8 +288,8 @@ export function ProfilePage() {
 
     if (newPasswordInput !== confirmPasswordInput) {
       toast({
-        title: 'Passwords Do Not Match',
-        description: 'The new password and confirmation password must match exactly.',
+        title: language === 'vi' ? 'Mật khẩu không khớp' : 'Passwords Do Not Match',
+        description: language === 'vi' ? 'Mật khẩu mới và xác nhận mật khẩu phải trùng khớp.' : 'The new password and confirmation password must match exactly.',
         variant: 'destructive',
       })
       return
@@ -312,43 +297,71 @@ export function ProfilePage() {
 
     setIsChangingPassword(true)
 
-    setTimeout(() => {
-      updateUserPassword(profile.email, newPasswordInput)
+    try {
+      await changePassword(currentPasswordInput, newPasswordInput)
+      setCurrentPasswordInput('')
       setNewPasswordInput('')
       setConfirmPasswordInput('')
       setIsChangingPassword(false)
 
       toast({
-        title: 'Password Changed Successfully',
-        description: 'Your account security credentials have been updated.',
+        title: language === 'vi' ? 'Đổi mật khẩu thành công' : 'Password Changed Successfully',
+        description: language === 'vi'
+          ? 'Tất cả các phiên đăng nhập đã được chấm dứt để bảo mật. Đang chuyển về trang đăng nhập...'
+          : 'All active sessions have been terminated for security. Redirecting to sign in...',
         variant: 'success',
       })
-    }, 600)
+
+      setTimeout(() => {
+        navigate('/login')
+      }, 1500)
+    } catch (err: unknown) {
+      setIsChangingPassword(false)
+      const message = err instanceof Error ? err.message : (language === 'vi' ? 'Không thể cập nhật mật khẩu.' : 'Unable to update password.')
+      toast({
+        title: language === 'vi' ? 'Đổi mật khẩu thất bại' : 'Password Change Failed',
+        description: message,
+        variant: 'destructive',
+      })
+    }
   }
 
   // Reset Change Password form
   const handleResetPasswordForm = () => {
+    setCurrentPasswordInput('')
     setNewPasswordInput('')
     setConfirmPasswordInput('')
+    setShowCurrentInput(false)
+    setShowNewInput(false)
+    setShowConfirmInput(false)
   }
 
   return (
     <WorkspaceLayout>
       <div className="space-y-6 pb-12 max-w-7xl mx-auto px-4 sm:px-6">
-        {/* Actions Bar */}
+        {/* Top Header */}
         <PageHeader
+          title={language === 'vi' ? 'Hồ sơ cá nhân' : 'My Profile'}
+          description={
+            language === 'vi'
+              ? 'Xem thông tin định danh không gian làm việc, phân công chuyên môn và quản lý bảo mật tài khoản.'
+              : 'View your workspace identity, organizational placement, and manage account security credentials.'
+          }
           actions={
             <div className="flex items-center gap-2">
               <Badge variant="secondary" className="px-3 py-1 font-semibold text-primary">
                 <ShieldCheck size={13} className="mr-1.5 inline" /> {profile.portal}
               </Badge>
+              <Badge variant="outline" className="font-mono text-xs text-success border-success/30 bg-success/5">
+                <CheckCircle2 size={11} className="mr-1 text-success inline" /> {language === 'vi' ? 'Tài khoản hoạt động' : 'Active Account'}
+              </Badge>
             </div>
           }
         />
 
-        {/* Responsive Grid */}
+        {/* Balanced 2-Column Responsive Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-          {/* Left Column: Profile Identity & Details */}
+          {/* Left Column: Identity & Security Standards (5 cols) */}
           <div className="lg:col-span-5 space-y-6">
             {/* User Identity Card */}
             <Card className="border-border shadow-xs overflow-hidden">
@@ -359,149 +372,186 @@ export function ProfilePage() {
                   <div className="h-20 w-20 rounded-2xl bg-card text-primary border-2 border-primary/20 flex items-center justify-center font-bold text-2xl shadow-md ring-4 ring-background">
                     {profile.initials}
                   </div>
-                  <Badge variant="outline" className="font-mono text-xs text-success border-success/30 bg-success/5">
-                    <CheckCircle2 size={11} className="mr-1 text-success" /> Active Account
+                  <Badge variant="outline" className="text-muted-foreground text-[11px] font-medium flex items-center gap-1">
+                    <Lock size={11} className="text-primary" />
+                    <span>{language === 'vi' ? 'Quản lý bởi Admin' : 'Admin Governed'}</span>
                   </Badge>
                 </div>
 
                 <div>
-                  <Heading level={2} size="section" className="text-foreground">
+                  <Heading level={2} size="section" className="text-foreground font-bold">
                     {profile.name}
                   </Heading>
-                  <p className="text-sm font-mono text-muted-foreground flex items-center gap-1.5 mt-0.5">
-                    <Mail size={13} /> {profile.email}
+                  <p className="text-sm font-mono text-muted-foreground flex items-center gap-1.5 mt-1">
+                    <Mail size={13} className="text-primary/70 shrink-0" /> {profile.email}
                   </p>
                 </div>
 
-                <div className="mt-4 pt-4 border-t border-border flex items-center justify-between text-xs text-muted-foreground">
-                  <span className="flex items-center gap-1.5 font-medium">
-                    <Building size={14} className="text-primary" /> Organization
-                  </span>
-                  <span className="font-bold text-foreground truncate max-w-[200px]">
-                    {profile.details[0]?.value}
-                  </span>
+                <div className="mt-4 pt-4 border-t border-border space-y-2.5 text-xs">
+                  <div className="flex items-center justify-between text-muted-foreground">
+                    <span className="flex items-center gap-1.5 font-medium">
+                      <Building size={14} className="text-primary" /> {language === 'vi' ? 'Tổ chức' : 'Organization'}
+                    </span>
+                    <span className="font-semibold text-foreground truncate max-w-[200px]">
+                      {profile.details[0]?.value}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center justify-between text-muted-foreground">
+                    <span className="flex items-center gap-1.5 font-medium">
+                      <Briefcase size={14} className="text-primary" /> {language === 'vi' ? 'Vị trí công việc' : 'Assigned Job Position'}
+                    </span>
+                    <span className="font-semibold text-foreground truncate max-w-[200px]" title={assignment?.jobPositionName || 'Unassigned'}>
+                      {assignment?.jobPositionName || (language === 'vi' ? 'Chưa phân công' : 'Unassigned')}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center justify-between text-muted-foreground">
+                    <span className="flex items-center gap-1.5 font-medium">
+                      <Shield size={14} className="text-primary" /> {language === 'vi' ? 'Cổng truy cập' : 'Portal Access'}
+                    </span>
+                    <span className="font-semibold text-foreground">
+                      {profile.portal}
+                    </span>
+                  </div>
                 </div>
 
-                <div className="mt-2.5 pt-2.5 border-t border-border/50 flex items-center justify-between text-xs text-muted-foreground">
-                  <span className="flex items-center gap-1.5 font-medium">
-                    <Briefcase size={14} className="text-primary" /> Assigned Job Position
-                  </span>
-                  <span className="font-semibold text-foreground truncate max-w-[200px]" title={assignment?.jobPositionName || 'Unassigned'}>
-                    {assignment?.jobPositionName || 'Unassigned'}
-                  </span>
-                </div>
-                {sessionIdentity?.roles?.includes('EMPLOYEE') && <Link to="/employee/my-mastery" className={buttonVariants({ variant: 'outline', className: 'mt-4 gap-2 text-primary' })}><Award size={16} />{language === 'vi' ? 'Xem hồ sơ kiến thức' : 'View knowledge profile'}</Link>}
+                {sessionIdentity?.roles?.includes('EMPLOYEE') && (
+                  <Link
+                    to="/employee/my-mastery"
+                    className={buttonVariants({ variant: 'outline', className: 'mt-4 w-full gap-2 text-primary' })}
+                  >
+                    <Award size={16} />
+                    {language === 'vi' ? 'Xem hồ sơ kiến thức & năng lực' : 'View knowledge profile'}
+                  </Link>
+                )}
               </CardContent>
             </Card>
 
-            {/* Editable Profile Name Card */}
+            {/* Credential Protection & Standards Card */}
             <Card className="border-border shadow-xs">
               <CardHeader className="pb-3">
                 <CardTitle className="text-base flex items-center gap-2">
-                  <UserCheck size={16} className="text-primary" /> Personal Information
+                  <ShieldCheck size={16} className="text-primary" /> {language === 'vi' ? 'Bảo mật & Quyền riêng tư tài khoản' : 'Password Security & Privacy'}
                 </CardTitle>
                 <CardDescription>
-                  Update your display name visible across team matrices and learning pathways.
+                  {language === 'vi'
+                    ? 'Các tiêu chuẩn bảo vệ dữ liệu và bảo mật đăng nhập áp dụng cho tài khoản của bạn.'
+                    : 'Enterprise security and data protection standards applied to your account.'}
                 </CardDescription>
               </CardHeader>
-              <CardContent>
-                <form onSubmit={handleSaveName} className="space-y-4">
-                  <div className="space-y-1.5">
-                    <label
-                      htmlFor="full-name-input"
-                      className="text-xs font-bold uppercase tracking-wider text-muted-foreground"
-                    >
-                      Full Name
-                    </label>
-                    <Input
-                      id="full-name-input"
-                      value={fullNameInput}
-                      onChange={(e) => setFullNameInput(e.target.value)}
-                      placeholder="Enter your full name"
-                      leftIcon={<User size={15} />}
-                    />
+              <CardContent className="space-y-3 text-xs text-muted-foreground">
+                <div className="flex items-start gap-2.5 p-3 rounded-lg bg-muted/30 border border-border">
+                  <Lock size={15} className="text-primary shrink-0 mt-0.5" />
+                  <div>
+                    <strong className="text-foreground block">
+                      {language === 'vi' ? 'Bảo mật thông tin đăng nhập tuyệt đối' : 'Strict Credential Privacy'}
+                    </strong>
+                    {language === 'vi'
+                      ? 'Mật khẩu được lưu trữ an toàn một chiều và không ai có thể xem hay khôi phục, kể cả quản trị viên hệ thống.'
+                      : 'Passwords are securely stored with one-way encryption and cannot be viewed or retrieved by anyone, including administrators.'}
                   </div>
+                </div>
 
-                  <div className="space-y-1.5">
-                    <label
-                      htmlFor="email-address-input"
-                      className="text-xs font-bold uppercase tracking-wider text-muted-foreground"
-                    >
-                      Email Address (Sign In ID)
-                    </label>
-                    <Input
-                      id="email-address-input"
-                      value={profile.email}
-                      readOnly
-                      disabled
-                      leftIcon={<Mail size={15} />}
-                      className="bg-muted/40 font-mono text-xs cursor-not-allowed"
-                    />
-                    <p className="text-[11px] text-muted-foreground mt-0.5">
-                      Your enterprise email is anchored to your organization identity.
-                    </p>
+                <div className="flex items-start gap-2.5 p-3 rounded-lg bg-muted/30 border border-border">
+                  <Sparkles size={15} className="text-primary shrink-0 mt-0.5" />
+                  <div>
+                    <strong className="text-foreground block">
+                      {language === 'vi' ? 'Hủy phiên đăng nhập tức thì' : 'Immediate Session Revocation'}
+                    </strong>
+                    {language === 'vi'
+                      ? 'Khi đổi mật khẩu, toàn bộ phiên đăng nhập đang hoạt động trên các thiết bị sẽ được tự động đăng xuất để bảo vệ an toàn cho tài khoản.'
+                      : 'When your password is updated, all active sign-in sessions across devices are immediately terminated to protect your account.'}
                   </div>
+                </div>
 
-                  <Button
-                    type="submit"
-                    variant="primary"
-                    size="sm"
-                    disabled={isSavingName || fullNameInput.trim() === profile.name}
-                    className="w-full"
-                    leftIcon={<Check size={14} />}
-                  >
-                    {isSavingName ? 'Saving...' : 'Save Name Changes'}
-                  </Button>
-                </form>
+                <div className="flex items-start gap-2.5 p-3 rounded-lg bg-secondary/30 border border-primary/20 text-xs">
+                  <UserCheck size={15} className="text-primary shrink-0 mt-0.5" />
+                  <div>
+                    <strong className="text-foreground block">
+                      {language === 'vi' ? 'Chính sách quản lý định danh người dùng' : 'Institutional Identity Governance'}
+                    </strong>
+                    {language === 'vi'
+                      ? 'Để đảm bảo tính xác thực của chứng chỉ đào tạo và hồ sơ kiểm toán tổ chức, họ tên và email đăng nhập của bạn được quản lý trực tiếp bởi Quản trị viên tổ chức (Admin).'
+                      : 'To guarantee verified records across pathways and audit reports, member names and registered emails are maintained exclusively by your Workspace Administrator.'}
+                  </div>
+                </div>
               </CardContent>
             </Card>
+          </div>
 
+          {/* Right Column: Organizational Placement & Password Management (7 cols) */}
+          <div className="lg:col-span-7 space-y-6">
             {/* Assigned Job Position & Career Placement Card */}
             <Card className="border-border shadow-xs" data-testid="profile-assigned-position-card">
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-base flex items-center gap-2">
-                    <Briefcase size={16} className="text-primary" /> Assigned Job Position & Placement
+                    <Briefcase size={16} className="text-primary" /> {language === 'vi' ? 'Vị trí công việc & Phân công lộ trình' : 'Assigned Job Position & Placement'}
                   </CardTitle>
                   <Badge variant="outline" className="text-primary border-primary/30 text-[10px] font-bold">
                     ADMIN ASSIGNED
                   </Badge>
                 </div>
                 <CardDescription>
-                  Enterprise role governance, industry classification, and starting career placement assigned by your workspace administrator.
+                  {language === 'vi'
+                    ? 'Thông tin phân công vị trí ngành, phòng ban và cấp bậc khởi điểm được thiết lập bởi Quản trị viên.'
+                    : 'Enterprise role governance, industry classification, and starting career placement assigned by your workspace administrator.'}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-3 text-xs">
+                {/* Official Member Name & Sign-in Email */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="p-3 rounded-lg border border-border bg-muted/20">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block">
+                      {language === 'vi' ? 'Họ và tên thành viên' : 'Official Full Name'}
+                    </span>
+                    <span className="text-sm font-semibold text-foreground block mt-1 break-words">
+                      {profile.name}
+                    </span>
+                  </div>
+
+                  <div className="p-3 rounded-lg border border-border bg-muted/20">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block">
+                      {language === 'vi' ? 'Email tài khoản (Tên đăng nhập)' : 'Sign-in Account Email'}
+                    </span>
+                    <span className="text-sm font-mono font-medium text-foreground block mt-1 break-all">
+                      {profile.email}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Industry Job Position and Department Placement */}
                 <div className="p-3 rounded-lg border border-border bg-muted/20 space-y-2.5">
                   <div>
                     <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block">
-                      Industry Job Position
+                      {language === 'vi' ? 'Vị trí công việc ngành (O*NET)' : 'Industry Job Position'}
                     </span>
                     <strong className="text-sm font-semibold text-foreground block mt-0.5" data-testid="profile-job-position-name">
-                      {assignment?.jobPositionName || assignment?.jobPositionCode || 'Unassigned'}
+                      {assignment?.jobPositionName || assignment?.jobPositionCode || (language === 'vi' ? 'Chưa phân công' : 'Unassigned')}
                     </strong>
                   </div>
 
                   <div className="pt-2 border-t border-border/50 grid grid-cols-1 sm:grid-cols-2 gap-2">
                     <div>
                       <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block">
-                        Assigned Department
+                        {language === 'vi' ? 'Phòng ban trực thuộc' : 'Assigned Department'}
                       </span>
                       <span className="text-xs font-medium text-foreground block mt-0.5" data-testid="profile-department-name">
-                        {assignment?.departmentName || 'Unassigned'}
+                        {assignment?.departmentName || (language === 'vi' ? 'Chưa phân công' : 'Unassigned')}
                       </span>
                     </div>
 
                     <div>
                       <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block">
-                        Starting Career Placement
+                        {language === 'vi' ? 'Cấp bậc phân công khởi điểm' : 'Starting Career Placement'}
                       </span>
                       <span className="text-xs font-medium text-primary flex items-center gap-1.5 mt-0.5" data-testid="profile-role-level">
                         <Award size={13} className="shrink-0" />
                         <span>
                           {assignment?.roleTitle
                             ? `${assignment.roleTitle}${assignment.level ? ` · ${assignment.level}` : ''}`
-                            : 'Unassigned'}
+                            : (language === 'vi' ? 'Chưa phân công' : 'Unassigned')}
                         </span>
                       </span>
                     </div>
@@ -510,50 +560,60 @@ export function ProfilePage() {
               </CardContent>
             </Card>
 
-            {/* Workspace & Role Metadata */}
-            <Card className="border-border shadow-xs">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base flex items-center gap-2">
-                  <Shield size={16} className="text-primary" /> Role & Permissions
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2.5 text-xs">
-                {profile.details.map((item) => (
-                  <div
-                    key={item.label}
-                    className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 py-1.5 border-b border-border/50 last:border-0"
-                  >
-                    <span className="text-muted-foreground font-medium">{item.label}</span>
-                    <strong className="text-foreground text-right">{item.value}</strong>
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Right Column: Change Password & Security Standards */}
-          <div className="lg:col-span-7 space-y-6">
             {/* Change Password Form Card */}
             <Card className="border-border shadow-xs">
               <CardHeader className="pb-3">
                 <CardTitle className="text-base flex items-center gap-2">
-                  <KeyRound size={16} className="text-primary" /> Change Password
+                  <KeyRound size={16} className="text-primary" /> {language === 'vi' ? 'Đổi mật khẩu' : 'Change Password'}
                 </CardTitle>
                 <CardDescription>
-                  Enter your desired new password below to update your security credentials. To protect your account, existing passwords cannot be viewed or retrieved.
+                  {language === 'vi'
+                    ? 'Nhập mật khẩu hiện tại và mật khẩu mới để cập nhật thông tin bảo mật cho tài khoản của bạn.'
+                    : 'Enter your current password and a new password to update your account security credentials.'}
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleChangePassword} className="space-y-4">
+                  {/* Field 0: Current Password */}
+                  <div className="space-y-1.5">
+                    <label
+                      htmlFor="current-password-input"
+                      className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center justify-between"
+                    >
+                      <span>{language === 'vi' ? 'Mật khẩu hiện tại *' : 'Current Password *'}</span>
+                    </label>
+                    <div className="relative flex items-center w-full">
+                      <Input
+                        id="current-password-input"
+                        type={showCurrentInput ? 'text' : 'password'}
+                        value={currentPasswordInput}
+                        onChange={(e) => setCurrentPasswordInput(e.target.value)}
+                        placeholder={language === 'vi' ? 'Nhập mật khẩu hiện tại' : 'Enter your current password'}
+                        leftIcon={<KeyRound size={15} />}
+                        className="pr-10"
+                        disabled={isChangingPassword}
+                        required
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowCurrentInput((prev) => !prev)}
+                        className="absolute right-3 text-muted-foreground hover:text-foreground cursor-pointer"
+                        title={showCurrentInput ? 'Hide' : 'Show'}
+                      >
+                        {showCurrentInput ? <EyeOff size={15} /> : <Eye size={15} />}
+                      </button>
+                    </div>
+                  </div>
+
                   {/* Field 1: New Password */}
                   <div className="space-y-1.5">
                     <label
                       htmlFor="new-password-input"
                       className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center justify-between"
                     >
-                      <span>New Password *</span>
+                      <span>{language === 'vi' ? 'Mật khẩu mới *' : 'New Password *'}</span>
                       <span className="text-[11px] font-normal normal-case text-muted-foreground">
-                        Min. 6 characters
+                        {language === 'vi' ? 'Từ 12–128 ký tự' : '12–128 characters'}
                       </span>
                     </label>
                     <div className="relative flex items-center w-full">
@@ -562,9 +622,11 @@ export function ProfilePage() {
                         type={showNewInput ? 'text' : 'password'}
                         value={newPasswordInput}
                         onChange={(e) => setNewPasswordInput(e.target.value)}
-                        placeholder="Create strong new password"
+                        placeholder={language === 'vi' ? 'Tạo mật khẩu mới mạnh mẽ' : 'Create strong new password'}
                         leftIcon={<KeyRound size={15} />}
                         className="pr-10"
+                        disabled={isChangingPassword}
+                        required
                       />
                       <button
                         type="button"
@@ -583,7 +645,7 @@ export function ProfilePage() {
                       htmlFor="confirm-password-input"
                       className="text-xs font-bold uppercase tracking-wider text-muted-foreground"
                     >
-                      Confirm New Password *
+                      {language === 'vi' ? 'Xác nhận mật khẩu mới *' : 'Confirm New Password *'}
                     </label>
                     <div className="relative flex items-center w-full">
                       <Input
@@ -591,9 +653,11 @@ export function ProfilePage() {
                         type={showConfirmInput ? 'text' : 'password'}
                         value={confirmPasswordInput}
                         onChange={(e) => setConfirmPasswordInput(e.target.value)}
-                        placeholder="Re-enter new password"
+                        placeholder={language === 'vi' ? 'Nhập lại mật khẩu mới' : 'Re-enter new password'}
                         leftIcon={<KeyRound size={15} />}
                         className="pr-10"
+                        disabled={isChangingPassword}
+                        required
                       />
                       <button
                         type="button"
@@ -614,10 +678,10 @@ export function ProfilePage() {
                       >
                         {newPasswordInput === confirmPasswordInput ? (
                           <>
-                            <CheckCircle2 size={13} /> Passwords match
+                            <CheckCircle2 size={13} /> {language === 'vi' ? 'Mật khẩu khớp' : 'Passwords match'}
                           </>
                         ) : (
-                          <>Passwords do not match</>
+                          <>{language === 'vi' ? 'Mật khẩu không khớp' : 'Passwords do not match'}</>
                         )}
                       </p>
                     )}
@@ -631,55 +695,30 @@ export function ProfilePage() {
                       size="sm"
                       disabled={
                         isChangingPassword ||
+                        !currentPasswordInput ||
                         !newPasswordInput ||
                         !confirmPasswordInput ||
                         newPasswordInput !== confirmPasswordInput ||
-                        newPasswordInput.length < 6
+                        newPasswordInput.length < 12 ||
+                        newPasswordInput === currentPasswordInput
                       }
                       leftIcon={<Lock size={14} />}
                     >
-                      {isChangingPassword ? 'Updating Password...' : 'Change Password'}
+                      {isChangingPassword
+                        ? (language === 'vi' ? 'Đang cập nhật mật khẩu...' : 'Updating Password...')
+                        : (language === 'vi' ? 'Đổi mật khẩu' : 'Change Password')}
                     </Button>
                     <Button
                       type="button"
                       variant="outline"
                       size="sm"
                       onClick={handleResetPasswordForm}
-                      disabled={isChangingPassword || (!newPasswordInput && !confirmPasswordInput)}
+                      disabled={isChangingPassword || (!currentPasswordInput && !newPasswordInput && !confirmPasswordInput)}
                     >
-                      Reset Form
+                      {language === 'vi' ? 'Đặt lại biểu mẫu' : 'Reset Form'}
                     </Button>
                   </div>
                 </form>
-              </CardContent>
-            </Card>
-
-            {/* Credential Protection & Standards Card */}
-            <Card className="border-border shadow-xs">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base flex items-center gap-2">
-                  <ShieldCheck size={16} className="text-primary" /> Credential Protection & Standards
-                </CardTitle>
-                <CardDescription>
-                  Enterprise authentication and data isolation standards applied to your account.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-3 text-xs text-muted-foreground">
-                <div className="flex items-start gap-2.5 p-3 rounded-lg bg-muted/30 border border-border">
-                  <Lock size={15} className="text-primary shrink-0 mt-0.5" />
-                  <div>
-                    <strong className="text-foreground block">Zero-Knowledge Credential Policy</strong>
-                    Existing passwords are encrypted using one-way cryptographic hashing and cannot be viewed, revealed, or retrieved by any user or administrator.
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-2.5 p-3 rounded-lg bg-muted/30 border border-border">
-                  <Sparkles size={15} className="text-primary shrink-0 mt-0.5" />
-                  <div>
-                    <strong className="text-foreground block">Zero-Trust Credential & Session Sync</strong>
-                    Updated credentials synchronize instantaneously across all portals (Employee, Expert, L&D Manager, Administrator) within your enterprise.
-                  </div>
-                </div>
               </CardContent>
             </Card>
           </div>

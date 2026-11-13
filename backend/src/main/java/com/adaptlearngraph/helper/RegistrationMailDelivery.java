@@ -38,4 +38,13 @@ public final class RegistrationMailDelivery implements RegistrationDelivery {
                 "This single-use link expires 10 minutes after the request. Do not share it. If unexpected, ignore this email."),
                 "X-Activation-Event", eventId);
     }
+
+    public void sendPasswordReset(String recipient, String link, UUID eventId) throws MessagingException {
+        requireConfigured();
+        mail.send(recipient, TransactionalEmail.render("Reset your Adapt-Learn-Graph password",
+                "A password reset was requested for your workspace account.",
+                null, Map.of(), "Reset my password", link,
+                "This single-use link expires 15 minutes after the request. If you did not request this, you can safely ignore this email."),
+                "X-Password-Reset-Event", eventId);
+    }
 }

@@ -4,14 +4,14 @@ import {
   BookOpen,
   Building2,
   CheckCircle2,
-  Download,
+  Compass,
   Edit3,
   Eye,
   FolderTree,
   Plus,
   Power,
   Search,
-  Upload,
+  User,
   UserCheck,
 } from 'lucide-react'
 import { Badge } from '../../../shared/components/ui/Badge'
@@ -1017,7 +1017,6 @@ export function JobPositionsManagementPage() {
 
   // Aggregate Metrics (scoped to manager's department if LD_MANAGER)
   const totalJobPositions = scopedJobPositions.length
-  const totalMicroSkills = scopedJobPositions.reduce((acc, o) => acc + o.microSkillCount, 0)
   const activeCount = scopedJobPositions.filter((o) => o.status === 'active').length
   const inactiveCount = scopedJobPositions.filter((o) => o.status === 'inactive').length
 
@@ -1028,15 +1027,6 @@ export function JobPositionsManagementPage() {
         <PageHeader
           actions={
             <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                leftIcon={<Upload className="h-4 w-4" />}
-                onClick={() => setIsImportModalOpen(true)}
-                className="bg-secondary text-primary border border-primary/20 hover:bg-secondary/80 font-semibold shadow-2xs"
-              >
-                Import
-              </Button>
               <Button
                 variant="primary"
                 size="sm"
@@ -1051,7 +1041,7 @@ export function JobPositionsManagementPage() {
         />
 
         {/* Aggregate KPI StatCards (Variant gradient identical to Target Roles) */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <StatCard
             variant="gradient"
             icon={<FolderTree className="h-4 w-4 text-primary" />}
@@ -1068,15 +1058,6 @@ export function JobPositionsManagementPage() {
             value={isLoading ? '—' : `${activeCount} Active`}
             valueClassName="text-success"
             description="Governed in organization"
-          />
-
-          <StatCard
-            variant="gradient"
-            icon={<BookOpen className="h-4 w-4 text-warning" />}
-            title="Micro-Skills Covered"
-            value={isLoading ? '—' : `${totalMicroSkills} Skills`}
-            valueClassName="text-warning"
-            description="Across all job positions"
           />
 
           <StatCard
@@ -1106,15 +1087,15 @@ export function JobPositionsManagementPage() {
               </div>
 
               {/* Search & Filter Toolbar */}
-              <div className="flex items-center gap-2.5 flex-wrap">
+              <div className="flex items-center gap-2.5 flex-wrap py-0.5">
                 <div className="relative w-56">
-                  <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
+                  <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
                   <input
                     type="text"
                     placeholder="Search job positions..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-8 pr-3 py-1.5 text-xs rounded-lg bg-background border border-border text-foreground focus:outline-none focus:ring-1 focus:ring-primary shadow-2xs"
+                    className="w-full pl-8 pr-3 py-1.5 text-xs rounded-lg bg-background border border-border text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary shadow-2xs transition-colors"
                   />
                 </div>
 
@@ -1148,12 +1129,12 @@ export function JobPositionsManagementPage() {
                 <p className="text-xs text-muted-foreground max-w-sm mx-auto">
                   {isLdManager && managerDepartment
                     ? `No job positions are currently associated with ${managerDepartment.name}.`
-                    : 'Import job positions from the catalog or create custom job positions to start structuring competency requirements.'}
+                    : 'Create job positions to start structuring competency requirements.'}
                 </p>
                 <div className="pt-2">
-                  <Button variant="primary" size="sm" onClick={() => setIsImportModalOpen(true)} className="gap-2">
-                    <Download className="h-4 w-4" />
-                    Import Job Positions
+                  <Button variant="primary" size="sm" onClick={handleOpenCreate} className="gap-2">
+                    <Plus className="h-4 w-4" />
+                    Create Job Position
                   </Button>
                 </div>
               </div>
@@ -1295,121 +1276,289 @@ export function JobPositionsManagementPage() {
       />
 
       {/* VIEW DETAILS MODAL (WITH RIASEC INTEREST PROFILE) */}
-      <Dialog open={!!viewingDetailsJobPosition} onOpenChange={() => setViewingDetailsJobPosition(null)} className="max-w-xl max-h-[88vh] flex flex-col p-6 overflow-hidden">
+      <Dialog open={!!viewingDetailsJobPosition} onOpenChange={() => setViewingDetailsJobPosition(null)} className="max-w-3xl w-full h-[88vh] max-h-[88vh] flex flex-col p-6 overflow-hidden">
         {viewingDetailsJobPosition && (
           <>
-            <DialogHeader className="shrink-0 mb-3">
-              <div className="flex items-center justify-between gap-3">
-                <DialogTitle className="text-base font-bold flex items-center gap-2">
-                  <FolderTree className="h-4 w-4 text-primary" />
-                  {viewingDetailsJobPosition.name}
-                </DialogTitle>
+            <DialogHeader className="shrink-0 mb-3 space-y-2">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-9 h-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0 border border-primary/20">
+                    <BookOpen className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <DialogTitle className="text-lg font-bold text-foreground flex items-center gap-2 flex-wrap">
+                      <span>Job Position Details: {viewingDetailsJobPosition.name}</span>
+                      <span className="font-mono text-xs px-2 py-0.5 rounded-md bg-muted text-muted-foreground border border-border font-semibold">
+                        {viewingDetailsJobPosition.code}
+                      </span>
+                    </DialogTitle>
+                  </div>
+                </div>
+
                 <Badge variant={viewingDetailsJobPosition.status === 'active' ? 'success' : 'outline'}>
                   {viewingDetailsJobPosition.status.toUpperCase()}
                 </Badge>
               </div>
               <DialogDescription className="text-xs text-muted-foreground">
-                View Details &amp; RIASEC profile
+                Standardized occupational specifications, skill footprint, and RIASEC vocational orientation.
               </DialogDescription>
             </DialogHeader>
 
-            <div className="flex-1 overflow-y-auto pr-1.5 space-y-3.5 py-1 text-xs min-h-0">
-              {/* Description Box */}
-              <div className="p-3 rounded-lg border border-border bg-muted/20">
-                <span className="text-[11px] font-bold text-foreground uppercase tracking-wider block mb-1">
-                  Scope &amp; Domain Description
-                </span>
-                <p className="text-muted-foreground leading-relaxed text-xs">
-                  {viewingDetailsJobPosition.description}
-                </p>
-              </div>
-
-              {/* Coverage Metrics */}
-              <div className="grid grid-cols-2 gap-3">
-                <div className="p-2.5 rounded-lg border border-border bg-background">
-                  <span className="text-[11px] text-muted-foreground block">Micro-Skills</span>
-                  <strong className="text-foreground text-sm font-semibold">{viewingDetailsJobPosition.microSkillCount} Skills</strong>
-                </div>
-                <div className="p-2.5 rounded-lg border border-border bg-background">
-                  <span className="text-[11px] text-muted-foreground block">Instructional Modules</span>
-                  <strong className="text-foreground text-sm font-semibold">{viewingDetailsJobPosition.moduleCount} Modules</strong>
-                </div>
-              </div>
-
-              {/* RIASEC Profile Visualizer */}
-              <div className="p-3.5 rounded-xl border border-primary/20 bg-secondary/20 space-y-2.5">
-                <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-bold text-primary uppercase tracking-wider">
-                    RIASEC Profile
-                  </span>
-                </div>
-
-                <div className="space-y-2">
-                  {/* Realistic */}
+            <div className="flex-1 overflow-y-auto [scrollbar-gutter:stable] pr-1.5 space-y-4 text-xs min-h-0">
+              {/* Unified Job Position Overview Card */}
+              <div className="p-4 rounded-xl border border-border bg-card space-y-3.5 shadow-2xs">
+                {/* Top Row: Classification & Job Zone */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-border/70">
                   <div className="space-y-1">
-                    <div className="flex justify-between text-[11px]">
-                      <span className="text-foreground font-medium">Realistic (R) — Hands-on / Technical</span>
-                      <span className="font-mono font-bold text-foreground">
-                        {((viewingDetailsJobPosition.interests?.realistic || 0) * 100).toFixed(0)}%
-                      </span>
+                    <div className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">
+                      Industry Occupational Standard
                     </div>
-                    <Progress value={(viewingDetailsJobPosition.interests?.realistic || 0) * 100} className="h-1.5" />
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-sm font-bold text-foreground">
+                        {viewingDetailsJobPosition.name}
+                      </span>
+                      <Badge
+                        variant="outline"
+                        className="font-mono text-xs font-semibold text-primary border-primary/30 bg-primary/5"
+                      >
+                        {viewingDetailsJobPosition.code}
+                      </Badge>
+                      <Badge variant="secondary" className="text-[10px] font-semibold">
+                        Job Zone {viewingDetailsJobPosition.jobZone || 4} · Considerable Preparation
+                      </Badge>
+                    </div>
                   </div>
+
+                  {viewingDetailsJobPosition.assignedExperts && viewingDetailsJobPosition.assignedExperts.length > 0 && (
+                    <div className="shrink-0 flex items-center gap-2 sm:border-l sm:border-border sm:pl-4">
+                      <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-muted-foreground shrink-0 border border-border/80">
+                        <User className="h-4 w-4" />
+                      </div>
+                      <div>
+                        <div className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">
+                          Assigned Experts
+                        </div>
+                        <div className="text-xs font-semibold text-foreground truncate max-w-[200px]" title={viewingDetailsJobPosition.assignedExperts.map(e => e.name).join(', ')}>
+                          {viewingDetailsJobPosition.assignedExperts.map(e => e.name).join(', ')}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Middle Row: Scope & Domain Description */}
+                <div className="space-y-1">
+                  <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                    Scope &amp; Domain Description
+                  </div>
+                  <p className="text-foreground leading-relaxed text-xs">
+                    {viewingDetailsJobPosition.description ||
+                      'Standardized industry job classification defining knowledge requirements, competency boundaries, and vocational competencies.'}
+                  </p>
+                </div>
+
+                {/* Bottom Row: Key Metrics Summary Strip */}
+                <div className="grid grid-cols-3 gap-2.5 pt-3 border-t border-border/70">
+                  <div className="p-2.5 rounded-lg bg-muted/30 border border-border/60 text-center">
+                    <div className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">
+                      Micro-Skills
+                    </div>
+                    <div className="text-sm font-bold text-foreground mt-0.5">
+                      {viewingDetailsJobPosition.microSkillCount} Skills Covered
+                    </div>
+                  </div>
+
+                  <div className="p-2.5 rounded-lg bg-muted/30 border border-border/60 text-center">
+                    <div className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">
+                      Learning Modules
+                    </div>
+                    <div className="text-sm font-bold text-foreground mt-0.5">
+                      {viewingDetailsJobPosition.moduleCount} Modules Linked
+                    </div>
+                  </div>
+
+                  <div className="p-2.5 rounded-lg bg-muted/30 border border-border/60 text-center">
+                    <div className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">
+                      Governance Status
+                    </div>
+                    <div className="text-sm font-bold text-foreground mt-0.5 capitalize">
+                      {viewingDetailsJobPosition.status}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* RIASEC Profile Visualizer Card */}
+              <div className="p-4 rounded-xl border border-border bg-card space-y-3.5 shadow-2xs">
+                <div className="flex items-center justify-between pb-2 border-b border-border flex-wrap gap-2">
+                  <div className="flex items-center gap-2">
+                    <div className="w-7 h-7 rounded-md bg-primary/10 text-primary flex items-center justify-center shrink-0 border border-primary/20">
+                      <Compass className="h-4 w-4" />
+                    </div>
+                    <div>
+                      <span className="text-xs font-bold text-foreground block">
+                        RIASEC Vocational Interest Architecture
+                      </span>
+                      <p className="text-[11px] text-muted-foreground">
+                        Standardized Holland Code distribution across cognitive and occupational traits
+                      </p>
+                    </div>
+                  </div>
+                  <Badge variant="outline" className="font-mono text-[10px] text-primary border-primary/30 bg-primary/5">
+                    Holland Hexagon Model
+                  </Badge>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                  {/* Realistic */}
+                  {(() => {
+                    const pct = Math.round((viewingDetailsJobPosition.interests?.realistic || 0) * 100)
+                    const isHigh = pct >= 50
+                    return (
+                      <div className="p-3 rounded-lg border border-border/70 bg-muted/20 space-y-1.5">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-1.5">
+                            <Badge variant={isHigh ? 'primary' : 'secondary'} className="font-mono text-[10px] px-1.5 py-0 font-bold">
+                              R
+                            </Badge>
+                            <span className="text-xs font-semibold text-foreground">Realistic</span>
+                          </div>
+                          <span className={`font-mono text-xs font-bold ${isHigh ? 'text-primary' : 'text-foreground'}`}>
+                            {pct}%
+                          </span>
+                        </div>
+                        <Progress value={pct} variant={isHigh ? 'primary' : undefined} className="h-1.5" />
+                        <p className="text-[10px] text-muted-foreground">
+                          Practical, hands-on, tool &amp; technology execution
+                        </p>
+                      </div>
+                    )
+                  })()}
 
                   {/* Investigative */}
-                  <div className="space-y-1">
-                    <div className="flex justify-between text-[11px]">
-                      <span className="text-foreground font-medium">Investigative (I) — Analytical / Problem-Solving</span>
-                      <span className="font-mono font-bold text-primary">
-                        {((viewingDetailsJobPosition.interests?.investigative || 0) * 100).toFixed(0)}%
-                      </span>
-                    </div>
-                    <Progress value={(viewingDetailsJobPosition.interests?.investigative || 0) * 100} variant="primary" className="h-1.5" />
-                  </div>
+                  {(() => {
+                    const pct = Math.round((viewingDetailsJobPosition.interests?.investigative || 0) * 100)
+                    const isHigh = pct >= 50
+                    return (
+                      <div className="p-3 rounded-lg border border-border/70 bg-muted/20 space-y-1.5">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-1.5">
+                            <Badge variant={isHigh ? 'primary' : 'secondary'} className="font-mono text-[10px] px-1.5 py-0 font-bold">
+                              I
+                            </Badge>
+                            <span className="text-xs font-semibold text-foreground">Investigative</span>
+                          </div>
+                          <span className={`font-mono text-xs font-bold ${isHigh ? 'text-primary' : 'text-foreground'}`}>
+                            {pct}%
+                          </span>
+                        </div>
+                        <Progress value={pct} variant={isHigh ? 'primary' : undefined} className="h-1.5" />
+                        <p className="text-[10px] text-muted-foreground">
+                          Analytical, research-driven, deep problem-solving
+                        </p>
+                      </div>
+                    )
+                  })()}
 
                   {/* Artistic */}
-                  <div className="space-y-1">
-                    <div className="flex justify-between text-[11px]">
-                      <span className="text-foreground font-medium">Artistic (A) — Design / Expression</span>
-                      <span className="font-mono font-bold text-foreground">
-                        {((viewingDetailsJobPosition.interests?.artistic || 0) * 100).toFixed(0)}%
-                      </span>
-                    </div>
-                    <Progress value={(viewingDetailsJobPosition.interests?.artistic || 0) * 100} className="h-1.5" />
-                  </div>
+                  {(() => {
+                    const pct = Math.round((viewingDetailsJobPosition.interests?.artistic || 0) * 100)
+                    const isHigh = pct >= 50
+                    return (
+                      <div className="p-3 rounded-lg border border-border/70 bg-muted/20 space-y-1.5">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-1.5">
+                            <Badge variant={isHigh ? 'primary' : 'secondary'} className="font-mono text-[10px] px-1.5 py-0 font-bold">
+                              A
+                            </Badge>
+                            <span className="text-xs font-semibold text-foreground">Artistic</span>
+                          </div>
+                          <span className={`font-mono text-xs font-bold ${isHigh ? 'text-primary' : 'text-foreground'}`}>
+                            {pct}%
+                          </span>
+                        </div>
+                        <Progress value={pct} variant={isHigh ? 'primary' : undefined} className="h-1.5" />
+                        <p className="text-[10px] text-muted-foreground">
+                          Creative, innovative expression and design sensibility
+                        </p>
+                      </div>
+                    )
+                  })()}
 
                   {/* Social */}
-                  <div className="space-y-1">
-                    <div className="flex justify-between text-[11px]">
-                      <span className="text-foreground font-medium">Social (S) — Support / Helping</span>
-                      <span className="font-mono font-bold text-foreground">
-                        {((viewingDetailsJobPosition.interests?.social || 0) * 100).toFixed(0)}%
-                      </span>
-                    </div>
-                    <Progress value={(viewingDetailsJobPosition.interests?.social || 0) * 100} className="h-1.5" />
-                  </div>
+                  {(() => {
+                    const pct = Math.round((viewingDetailsJobPosition.interests?.social || 0) * 100)
+                    const isHigh = pct >= 50
+                    return (
+                      <div className="p-3 rounded-lg border border-border/70 bg-muted/20 space-y-1.5">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-1.5">
+                            <Badge variant={isHigh ? 'primary' : 'secondary'} className="font-mono text-[10px] px-1.5 py-0 font-bold">
+                              S
+                            </Badge>
+                            <span className="text-xs font-semibold text-foreground">Social</span>
+                          </div>
+                          <span className={`font-mono text-xs font-bold ${isHigh ? 'text-primary' : 'text-foreground'}`}>
+                            {pct}%
+                          </span>
+                        </div>
+                        <Progress value={pct} variant={isHigh ? 'primary' : undefined} className="h-1.5" />
+                        <p className="text-[10px] text-muted-foreground">
+                          Collaboration, team mentorship, and stakeholder support
+                        </p>
+                      </div>
+                    )
+                  })()}
 
                   {/* Enterprising */}
-                  <div className="space-y-1">
-                    <div className="flex justify-between text-[11px]">
-                      <span className="text-foreground font-medium">Enterprising (E) — Leadership / Persuasion</span>
-                      <span className="font-mono font-bold text-foreground">
-                        {((viewingDetailsJobPosition.interests?.enterprising || 0) * 100).toFixed(0)}%
-                      </span>
-                    </div>
-                    <Progress value={(viewingDetailsJobPosition.interests?.enterprising || 0) * 100} className="h-1.5" />
-                  </div>
+                  {(() => {
+                    const pct = Math.round((viewingDetailsJobPosition.interests?.enterprising || 0) * 100)
+                    const isHigh = pct >= 50
+                    return (
+                      <div className="p-3 rounded-lg border border-border/70 bg-muted/20 space-y-1.5">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-1.5">
+                            <Badge variant={isHigh ? 'primary' : 'secondary'} className="font-mono text-[10px] px-1.5 py-0 font-bold">
+                              E
+                            </Badge>
+                            <span className="text-xs font-semibold text-foreground">Enterprising</span>
+                          </div>
+                          <span className={`font-mono text-xs font-bold ${isHigh ? 'text-primary' : 'text-foreground'}`}>
+                            {pct}%
+                          </span>
+                        </div>
+                        <Progress value={pct} variant={isHigh ? 'primary' : undefined} className="h-1.5" />
+                        <p className="text-[10px] text-muted-foreground">
+                          Leadership, initiative, and strategic influence
+                        </p>
+                      </div>
+                    )
+                  })()}
 
                   {/* Conventional */}
-                  <div className="space-y-1">
-                    <div className="flex justify-between text-[11px]">
-                      <span className="text-foreground font-medium">Conventional (C) — Structured Data / Rules</span>
-                      <span className="font-mono font-bold text-primary">
-                        {((viewingDetailsJobPosition.interests?.conventional || 0) * 100).toFixed(0)}%
-                      </span>
-                    </div>
-                    <Progress value={(viewingDetailsJobPosition.interests?.conventional || 0) * 100} variant="primary" className="h-1.5" />
-                  </div>
+                  {(() => {
+                    const pct = Math.round((viewingDetailsJobPosition.interests?.conventional || 0) * 100)
+                    const isHigh = pct >= 50
+                    return (
+                      <div className="p-3 rounded-lg border border-border/70 bg-muted/20 space-y-1.5">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-1.5">
+                            <Badge variant={isHigh ? 'primary' : 'secondary'} className="font-mono text-[10px] px-1.5 py-0 font-bold">
+                              C
+                            </Badge>
+                            <span className="text-xs font-semibold text-foreground">Conventional</span>
+                          </div>
+                          <span className={`font-mono text-xs font-bold ${isHigh ? 'text-primary' : 'text-foreground'}`}>
+                            {pct}%
+                          </span>
+                        </div>
+                        <Progress value={pct} variant={isHigh ? 'primary' : undefined} className="h-1.5" />
+                        <p className="text-[10px] text-muted-foreground">
+                          Structured data, governance rules, and reliable processes
+                        </p>
+                      </div>
+                    )
+                  })()}
                 </div>
               </div>
             </div>

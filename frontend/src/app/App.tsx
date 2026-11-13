@@ -7,6 +7,8 @@ import { AdminDashboardPage } from '../features/administration/dashboard/AdminDa
 import { DesignSystemShowcasePage } from '../features/administration/design-system/DesignSystemShowcasePage'
 import { KnowledgeGraphPage } from '../features/administration/knowledge-graph/KnowledgeGraphPage'
 import { LoginPage } from '../features/auth/LoginPage'
+import { ForgotPasswordPage } from '../features/auth/ForgotPasswordPage'
+import { ResetPasswordPage } from '../features/auth/ResetPasswordPage'
 import { MemberActivationPage } from '../features/subscription/WorkspaceLoginPage'
 import { WorkspaceBoundary } from '../features/subscription/WorkspaceBoundary'
 import { AssessmentPage } from '../features/employee/assessment/AssessmentPage'
@@ -70,6 +72,8 @@ export default function App() {
             <Route path="/" element={<Suspense fallback={<div role="status" className="p-6 text-muted-foreground">Loading...</div>}><GuestLandingPage /></Suspense>} />
             <Route path="/home" element={<Navigate to="/" replace />} />
             <Route path="/login" element={<LoginPage />} />
+            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+            <Route path="/reset-password" element={<ResetPasswordPage />} />
             <Route path="/activate" element={<MemberActivationPage />} />
             <Route path="/active" element={<MemberActivationPage />} />
 
