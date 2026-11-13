@@ -13,7 +13,7 @@ public final class RequirementPathwayView {
             List<ModuleOption> options,CertificateReference certificate,boolean learningLocked) {}
     public record View(UUID requestId,UUID selectionId,long selectionRevision,String roleId,String roleName,String levelId,String levelName,
             String generationStatus,String reviewStatus,String reasonCode,Long revision,String contentHash,boolean archived,
-            boolean targetReleased,List<RequirementStep> steps,List<Dependency> dependencies) {}
+            boolean targetReleased,List<RequirementStep> steps,List<Dependency> dependencies,PathwayTiming.View timing) {}
     private final Actors actors;private final RequirementPathwayJpaRepository rules;private final RequirementPathwayRevisions revisions;
     private final RequirementPathwayAdmissionService admission;private final RequirementPathwayAccess access;
     public RequirementPathwayView(Actors actors,RequirementPathwayJpaRepository rules,RequirementPathwayRevisions revisions,
@@ -58,6 +58,6 @@ public final class RequirementPathwayView {
         return new View(row.getRequestId(),row.getSelectionId(),row.getSelectionRevision(),binding.roleId(),binding.roleName(),binding.levelId(),binding.levelName(),
                 row.getGenerationStatus(),row.getReviewStatus(),row.getReasonCode(),row.getCurrentRevision(),row.getContentHash(),row.getArchivedAt()!=null,
                 row.getCurrentRevision()!=null && plan.targetReleased() && ("APPROVED".equals(row.getReviewStatus()) || "NO_LEARNING_REQUIRED".equals(row.getGenerationStatus())),
-                List.copyOf(visible),plan.dependencies());
+                List.copyOf(visible),plan.dependencies(),revisions.timing(row));
     }
 }

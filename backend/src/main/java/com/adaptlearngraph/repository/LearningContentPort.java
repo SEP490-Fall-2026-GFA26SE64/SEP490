@@ -62,6 +62,8 @@ public interface LearningContentPort {
     void published(String organizationId, String moduleId, int revision, String title);
 
     List<Notification> notifications(String organizationId, String actorId);
+    boolean observeNotification(String organizationId,String actorId,String id);
+    List<Notification> pendingNotifications(String organizationId,String actorId);
 
     void readNotification(String organizationId, String actorId, String id);
 }

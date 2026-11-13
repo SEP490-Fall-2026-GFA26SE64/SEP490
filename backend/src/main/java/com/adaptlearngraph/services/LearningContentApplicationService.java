@@ -142,6 +142,8 @@ public class LearningContentApplicationService {
     public void read(String id) {
         content.read(id);
     }
+    public boolean observe(String id) { return content.observe(id); }
+    public List<NotificationResponse> pendingNotifications() { return list(content.pendingNotifications(),NotificationResponse.class); }
 
     private <D> D map(Object source, Class<D> type) {
         return source == null ? null : mapper.map(source, type);

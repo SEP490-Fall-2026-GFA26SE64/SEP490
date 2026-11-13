@@ -114,8 +114,16 @@ public class WorkspaceBaselineConfiguration {
             @org.springframework.beans.factory.annotation.Qualifier(com.adaptlearngraph.constants.TransactionManagers.JPA) PlatformTransactionManager manager,ObjectMapper json,
             org.springframework.beans.factory.ObjectProvider<com.adaptlearngraph.services.RequirementPathwayRecalculationService> pathways,
             com.adaptlearngraph.repository.AuditEventJpaRepository audit) {
-        return new com.adaptlearngraph.services.RuleAssessmentOutcomeService(effects,attempts,selections,outbox,new TransactionTemplate(manager),json,(attempt,event,groups)->{
-            if("SKILL_ASSESSMENT".equals(attempt.getPurpose()))pathways.getObject().assessed(attempt,event,groups);
+        return new com.adaptlearngraph.services.RuleAssessmentOutcomeService(effects,attempts,selections,outbox,new TransactionTemplate(manager),json,new com.adaptlearngraph.services.RuleAssessmentOutcomeService.PathwayEffects(){
+            @Override public void apply(com.adaptlearngraph.entities.RuleAssessmentAttemptEntity attempt,UUID event,List<com.adaptlearngraph.repository.RuleAssessmentOutcomeJpaRepository.GroupRow> groups) {
+                if("SKILL_ASSESSMENT".equals(attempt.getPurpose()))pathways.getObject().assessed(attempt,event,groups);
+            }
+            @Override public Optional<com.adaptlearngraph.services.RuleAssessmentOutcomeService.PathwayBefore> before(com.adaptlearngraph.entities.RuleAssessmentAttemptEntity attempt) {
+                return "SKILL_ASSESSMENT".equals(attempt.getPurpose())?pathways.getObject().before(attempt):Optional.empty();
+            }
+            @Override public void notify(com.adaptlearngraph.entities.RuleAssessmentAttemptEntity attempt,UUID event,Optional<com.adaptlearngraph.services.RuleAssessmentOutcomeService.PathwayBefore> before) {
+                if("SKILL_ASSESSMENT".equals(attempt.getPurpose()))pathways.getObject().notify(attempt,event,before);
+            }
         },audit);
     }
     @Bean com.adaptlearngraph.services.RuleKnowledgeProfileService workspaceKnowledgeProfile(RoleBaselineFlow.Identity identity,

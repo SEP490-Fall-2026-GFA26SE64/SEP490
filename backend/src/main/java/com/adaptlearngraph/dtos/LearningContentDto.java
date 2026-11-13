@@ -39,7 +39,7 @@ public final class LearningContentDto {
                                        List<ProgressResponse> progress) {}
 
     public record NotificationResponse(String id, String kind, String moduleId, String title, String body, String createdAt,
-                                       String readAt) {}
+                                       String readAt,String deepLink,String toastObservedAt) {}
 
     public record ImportRowResponse(String moduleId, int excelRow, ModuleInput module, List<LessonResponse> lessons,
                                     Long expectedVersion) {}

@@ -460,12 +460,19 @@ public final class JpaLearningContentAdapter implements LearningContentPort {
                             r.title(),
                             r.body(),
                             time(r.createdAt()),
-                            time(r.readAt())));
+                            time(r.readAt()),r.deepLink(),time(r.toastObservedAt())));
         return result;
     }
 
     @Override
     public void readNotification(String org, String actor, String id) {
         repositories.notifications().markRead(org, actor, uuid(id));
+    }
+    @Override public boolean observeNotification(String org,String actor,String id) {
+        return repositories.notifications().observe(org,actor,uuid(id))==1;
+    }
+    @Override public List<Notification> pendingNotifications(String org,String actor) {
+        return repositories.notifications().pendingToast(org,actor).stream().map(r->new Notification(r.id().toString(),r.kind(),r.moduleId(),
+                r.title(),r.body(),time(r.createdAt()),time(r.readAt()),r.deepLink(),time(r.toastObservedAt()))).toList();
     }
 }

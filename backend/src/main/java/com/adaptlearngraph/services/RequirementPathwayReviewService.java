@@ -12,6 +12,7 @@ import java.util.function.Supplier;
 public final class RequirementPathwayReviewService {
     public record Expected(long revision,String contentHash) {}
     public record Bypass(Expected expected,UUID stepId,String reason) {}
+    public record Reject(Expected expected,String reason) {}
     public record Summary(UUID requestId,UUID learnerId,String learnerName,String roleName,String levelName,String generationStatus,
             String reviewStatus,String reasonCode,Long revision,String contentHash) {}
     public record Candidate(UUID stepId,Option module) {}
@@ -59,7 +60,7 @@ public final class RequirementPathwayReviewService {
         var providers=row.getArchivedAt()!=null?null:validation.providers(row,plan);
         return new Detail(summary(row,names.isEmpty()?null:names.getFirst()),plan,validation.check(row),row.getArchivedAt()!=null,
                 providers==null?List.of():candidates(plan,providers),providers==null?List.of():providers.related(),
-                row.getArchivedAt()!=null || !"AWAITING_EXPERT_REVIEW".equals(row.getReviewStatus())?List.of():reorderableSteps(row,plan),
+                row.getArchivedAt()!=null || !Set.of("AWAITING_EXPERT_REVIEW","REJECTED").contains(row.getReviewStatus())?List.of():reorderableSteps(row,plan),
                 providers==null?List.of():plan.steps().stream().filter(step->canBypass(step,providers)).map(Step::id).toList());
     }
     private static boolean canBypass(Step step,RulePathwayCatalog.Snapshot fresh) {
@@ -91,7 +92,7 @@ public final class RequirementPathwayReviewService {
         return List.copyOf(result);
     }
     private Plan selectedPlan(RequirementPathwayJpaRepository.Row row,Selection command) {
-        if(!"AWAITING_EXPERT_REVIEW".equals(row.getReviewStatus()))throw new Failure(409,"PATHWAY_NOT_AWAITING_REVIEW");
+        if(!Set.of("AWAITING_EXPERT_REVIEW","REJECTED").contains(row.getReviewStatus()))throw new Failure(409,"PATHWAY_NOT_AWAITING_REVIEW");
         if(command.selections()==null || command.selections().size()>1000)throw new Failure(400,"INVALID_MODULE_SELECTION");
         var original=revisions.read(row);var available=candidates(row,original);var requested=new HashMap<UUID,List<ModuleKey>>();
         for(var selection:command.selections()) {
@@ -193,12 +194,17 @@ public final class RequirementPathwayReviewService {
         String hash=RoleBaselineFlow.hash(revisions.encode(Arrays.asList(id,expected)));
         return owned(actor,id,assignment,()->{
             var retained=replay(actor,"RULE_APPROVE",key,hash);if(retained.isPresent())return retained.get();
-            var row=editable(actor,id,expected);if(!"AWAITING_EXPERT_REVIEW".equals(row.getReviewStatus()))throw new Failure(409,"PATHWAY_NOT_AWAITING_REVIEW");
+            var row=editable(actor,id,expected);if(!Set.of("AWAITING_EXPERT_REVIEW","REJECTED").contains(row.getReviewStatus()))throw new Failure(409,"PATHWAY_NOT_AWAITING_REVIEW");
             var checked=validation.check(row);if(!checked.valid())throw new Failure(422,"PATHWAY_VALIDATION_REQUIRED");
             reauthorize(actor,id,assignment);
-            data.approvals().insert(new InitialPathwayApprovalEntity(id,row.getCurrentRevision(),row.getContentHash(),actor.organizationId(),actor.accountId(),assignment.id(),assignment.version(),clock.clock()));
+            var selected=selections.current(new RoleBaselineFlow.Actor(row.getOrganizationId(),row.getLearnerId()))
+                    .filter(value->value.selectionId().equals(row.getSelectionId()) && value.revision()==row.getSelectionRevision())
+                    .orElseThrow(()->new Failure(409,"STALE_SELECTION"));
+            var approvedAt=new PathwayTiming(rules,clock).firstApproval(row,selected.role(),selected.levelId(),revisions);
+            data.approvals().insert(new InitialPathwayApprovalEntity(id,row.getCurrentRevision(),row.getContentHash(),actor.organizationId(),actor.accountId(),assignment.id(),assignment.version(),approvedAt));
             if(data.current().approve(actor.organizationId(),row.getLearnerId(),id,row.getCurrentRevision(),row.getContentHash())!=1)throw new Failure(409,"STALE_PATHWAY_REVISION");
             revisions.event(row,row.getCurrentRevision(),"RULE_PATHWAY_APPROVED",actor.accountId(),Map.of("assignmentId",assignment.id(),"assignmentVersion",assignment.version()));
+            revisions.complete(row,revisions.read(row),"APPROVED");
             return retain(actor,"RULE_APPROVE",key,hash,rules.own(actor.organizationId(),row.getLearnerId(),id).orElseThrow());
         });
     }
@@ -213,6 +219,21 @@ public final class RequirementPathwayReviewService {
         }catch(com.adaptlearngraph.exception.InitialPathwayFailure changed) {
             if(changed.status()>=500)throw changed;return new ReviewState("AWAITING_EXPERT_REVIEW",null);
         }
+    }
+    public Receipt reject(UUID id,String key,Reject command) {
+        var actor=expert();var assignment=assignments.require(actor,id);InitialPathwayPorts.commandKey(key);
+        if(command==null || command.reason()==null || command.reason().isBlank() || command.reason().length()>4000)
+            throw new Failure(400,"REJECTION_REASON_REQUIRED");
+        String hash=RoleBaselineFlow.hash(revisions.encode(Arrays.asList(id,command)));
+        return owned(actor,id,assignment,()->{
+            var retained=replay(actor,"RULE_REJECT",key,hash);if(retained.isPresent())return retained.get();
+            var row=editable(actor,id,command.expected());
+            if(!"AWAITING_EXPERT_REVIEW".equals(row.getReviewStatus()))throw new Failure(409,"PATHWAY_NOT_AWAITING_REVIEW");
+            reauthorize(actor,id,assignment);
+            if(rules.reject(actor.organizationId(),row.getLearnerId(),id,row.getCurrentRevision())!=1)throw new Failure(409,"STALE_PATHWAY_REVISION");
+            revisions.event(row,row.getCurrentRevision(),"RULE_PATHWAY_REJECTED",actor.accountId(),Map.of("reason",command.reason().trim()));
+            return retain(actor,"RULE_REJECT",key,hash,rules.own(actor.organizationId(),row.getLearnerId(),id).orElseThrow());
+        });
     }
     public Receipt bypass(UUID id,String key,Bypass command) {
         var actor=expert();var assignment=assignments.require(actor,id);InitialPathwayPorts.commandKey(key);

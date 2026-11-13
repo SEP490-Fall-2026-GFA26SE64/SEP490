@@ -47,9 +47,13 @@ public final class Neo4jAuthoredCatalog implements AuthoredCatalogPort {
                         OPTIONAL MATCH (parent:JobPosition)-[m:HAS_ROLE]->(r)
                         WHERE m.status='ACTIVE' AND parent.status='ACTIVE'
                         WITH o,r,collect(DISTINCT parent.id) AS parents
+                        OPTIONAL MATCH (r)-[h:HAS_LEVEL]->(l:Level)
+                        WHERE h.status='ACTIVE' AND l.status='ACTIVE'
+                          AND all(n IN [h,l] WHERE n.organizationId IS NULL OR n.organizationId IN $owners)
+                        WITH o,r,parents,collect(DISTINCT properties(l)) AS timings
                         OPTIONAL MATCH (r)-[q:REQUIRES_SKILL]->(s:MicroSkill)
                         RETURN properties(o) AS o,elementId(o) AS oi,properties(r) AS r,elementId(r) AS ri,
-                               parents,properties(q) AS q,properties(s) AS s
+                               parents,timings,properties(q) AS q,properties(s) AS s
                         ORDER BY r.id,q.level,s.id LIMIT $maximum
                         """,Map.of("jobPosition",jobPosition,"roles",binding.roleIds(),"owners",List.copyOf(binding.sourceOwners()),"maximum",maximum+1));
                 if(rows.isEmpty() || rows.size()>maximum)throw invalid();
@@ -103,9 +107,12 @@ public final class Neo4jAuthoredCatalog implements AuthoredCatalogPort {
                     var r=entry.getValue();var levels=new ArrayList<Level>();int rank=0;
                     for(String label:r.get("levels").asList(Value::asString)) {
                         var skills=requirements.getOrDefault(entry.getKey(),Map.of()).getOrDefault(label,Map.of());
-                        levels.add(new Level(label,label,label,++rank,"","ALL_MANDATORY_SKILLS",List.copyOf(skills.values())));
+                        var timing=rows.stream().filter(row->entry.getKey().equals(row.get("r").get("id").asString())).findFirst().orElseThrow()
+                                .get("timings").asList(v->v).stream().filter(v->label.equals(v.get("name").asString(null))).toList();
+                        String duration=timing.size()==1?timing.getFirst().get("duration").asString(null):null;
+                        levels.add(new Level(label,label,label,++rank,"","ALL_MANDATORY_SKILLS",List.copyOf(skills.values()),duration));
                     }
-                    result.add(new Role(entry.getKey(),text(r,"code"),text(r,"name"),r.get("description").asString(""),jobPosition,name,catalogVersion,fingerprint,levels));
+                    result.add(new Role(entry.getKey(),text(r,"code"),text(r,"name"),r.get("description").asString(""),jobPosition,name,catalogVersion,fingerprint,levels,text(r,"version")));
                 }
                 return new Projection(org,jobPosition,name,fingerprint,binding.bindingRevision(),result,roleVersions,skillVersions);
             }));

@@ -75,7 +75,9 @@ public final class CertificateReviewService {
                 audit.insert(new com.adaptlearngraph.entities.AuditEventEntity(UUID.randomUUID(),actor.accountId(),"certificate","KNOWLEDGE_EVIDENCE_ACCEPTED",evidence,"1",clock.clock(),"ACCEPTED",id));
                 effects.resolveReviews(actor.organizationId(),row.getLearnerId(),evidence);
             }
-            revisions.event(request,frozen.pathwayRevision(),"CERTIFICATE_"+command.decision(),actor.accountId(),Map.of("submissionId",id,"decisionId",decision,"reason",command.reason().trim()));
+            revisions.event(request,frozen.pathwayRevision(),"CERTIFICATE_"+command.decision(),actor.accountId(),
+                    Map.of("submissionId",id,"decisionId",decision,"reason",command.reason().trim(),"certificateName",frozen.certificate().name(),
+                            "skillName",frozen.requirement().skillName(),"knowledgeLevel",frozen.requirement().knowledgeLevel(),"stepId",frozen.stepId()));
             var result=new Receipt(200,hash,revisions.encode(views.view(submissions.inOrganization(actor.organizationId(),id).orElseThrow())));
             receipts.save(actor,"CERTIFICATE_DECIDE","CERTIFICATE_REVIEW",key,result);return result;
         });

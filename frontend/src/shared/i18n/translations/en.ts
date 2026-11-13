@@ -275,6 +275,8 @@ export const en = {
     confidence: 'Confidence', level: 'Role level', confirm: 'Confirm Role and prepare pathway', confirmNoGap: 'Confirm Role', cancel: 'Cancel', refresh: 'Refresh', loading: 'Loading…',
     retry: 'Retry', retryExact: 'Retry the same request', uncertain: 'The outcome is uncertain. Retry this request to recover its saved result.',
     baseline: 'A baseline is needed for this Job Position. Choose the Role to continue with your assessment.', chooseBaseline: 'Continue to baseline',
+    durationUnavailable: 'The selected Role version has no valid duration snapshot. Approval was not saved. Contact your learning team to repair the target; the current pathway is retained.',
+    rejectionReason: 'Reason for rejecting this pathway',
     unavailable: 'This pathway is unavailable right now. Please try again or contact your learning team.', setup: 'This learning plan cannot be prepared yet. Please contact your learning team.',
     denied: 'Use an authorized account for this view.', stale: 'The plan or Role has changed. Refresh to review the latest information.', empty: 'No pathway has been confirmed yet.',
     roles: 'Review Roles', approved: 'Approved', awaiting: 'Awaiting review', noAssignments: 'No assigned pathways to review', search: 'Search Role or Level', searchModules: 'Search modules or skills',
@@ -298,7 +300,7 @@ export const en = {
     cycleIssue: 'The dependencies cannot be ordered safely.', internalIssue: 'This module needs a verified internal learning sequence.',
     resourceIssue: 'The plan could not be completed within the configured limits.', validationIssue: 'This plan needs further review before confirmation.',
     noLearningHelp: 'No additional mandatory learning is needed for these requirements. This is not a certification.', unknownHelp: 'No compatible baseline evidence is available for unknown skills. Unknown mandatory skills need foundational learning.',
-    state: { PENDING: 'Your request is being prepared', GENERATING: 'Your pathway is being prepared', SUCCEEDED: 'Your pathway is ready for review', AWAITING_EXPERT_REVIEW: 'Your pathway is awaiting review', APPROVED: 'Approved', UNRESOLVED: 'Learning content needs review', BLOCKED: 'Your pathway needs attention', FAILED_RETRYABLE: 'Preparation was interrupted', STALE: 'This plan needs an update', ARCHIVED: 'Archived', NO_LEARNING_REQUIRED: 'No additional mandatory learning needed', VALID: 'Ready for confirmation', AVAILABLE: 'Available', LOCKED: 'Prerequisite not ready', UNAVAILABLE: 'Currently unavailable', NONE: 'No proposal yet' },
+    state: { PENDING: 'Your request is being prepared', GENERATING: 'Your pathway is being prepared', SUCCEEDED: 'Your pathway is ready for review', AWAITING_EXPERT_REVIEW: 'Your pathway is awaiting review', REJECTED: 'Rejected; awaiting Expert revision', APPROVED: 'Approved', UNRESOLVED: 'Learning content needs review', BLOCKED: 'Your pathway needs attention', FAILED_RETRYABLE: 'Preparation was interrupted', STALE: 'This plan needs an update', ARCHIVED: 'Archived', NO_LEARNING_REQUIRED: 'No additional mandatory learning needed', VALID: 'Ready for confirmation', AVAILABLE: 'Available', LOCKED: 'Prerequisite not ready', UNAVAILABLE: 'Currently unavailable', NONE: 'No proposal yet' },
   },
   baselineIntegration: {
     readiness: 'Baseline is not ready. Your organization needs an authorized job position catalog, published questions and a promoted scoring model. No assessment has been started.',

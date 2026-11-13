@@ -277,6 +277,8 @@ export const vi: TranslationKeys = {
     confidence: 'Độ tin cậy', level: 'Cấp độ của vị trí', confirm: 'Xác nhận vị trí và tạo lộ trình', confirmNoGap: 'Xác nhận vị trí', cancel: 'Hủy', refresh: 'Tải lại', loading: 'Đang tải…',
     retry: 'Thử lại', retryExact: 'Thử lại yêu cầu này', uncertain: 'Chưa xác định được kết quả. Thử lại đúng yêu cầu này để lấy kết quả đã lưu.',
     baseline: 'Bạn cần đánh giá đầu vào cho vị trí công việc này. Chọn vị trí để tiếp tục làm bài đánh giá.', chooseBaseline: 'Tiếp tục đánh giá đầu vào',
+    durationUnavailable: 'Phiên bản Role đã chọn thiếu thời lượng hợp lệ trong snapshot. Chưa lưu phê duyệt. Liên hệ bộ phận đào tạo để xử lý; lộ trình hiện tại được giữ nguyên.',
+    rejectionReason: 'Lý do từ chối lộ trình',
     unavailable: 'Hiện chưa xem được lộ trình. Vui lòng thử lại hoặc liên hệ bộ phận phụ trách đào tạo.', setup: 'Chưa thể chuẩn bị kế hoạch học này. Vui lòng liên hệ bộ phận phụ trách đào tạo.',
     denied: 'Vui lòng dùng tài khoản có quyền xem nội dung này.', stale: 'Kế hoạch hoặc vị trí đã thay đổi. Tải lại để xem thông tin mới nhất.', empty: 'Bạn chưa xác nhận lộ trình học.',
     roles: 'Xem các vị trí', approved: 'Đã duyệt', awaiting: 'Chờ duyệt', noAssignments: 'Không có lộ trình được phân công cần duyệt', search: 'Tìm vị trí hoặc cấp độ', searchModules: 'Tìm học phần hoặc kỹ năng',
@@ -300,7 +302,7 @@ export const vi: TranslationKeys = {
     cycleIssue: 'Chưa thể sắp xếp an toàn các quan hệ tiên quyết.', internalIssue: 'Học phần này cần trình tự học nội bộ đã được xác nhận.',
     resourceIssue: 'Chưa thể hoàn thành kế hoạch trong giới hạn xử lý đã cấu hình.', validationIssue: 'Kế hoạch cần được xem lại trước khi xác nhận.',
     noLearningHelp: 'Không cần học thêm kỹ năng bắt buộc theo bộ yêu cầu này. Đây không phải chứng nhận năng lực.', unknownHelp: 'Các kỹ năng chưa xác định chưa có bằng chứng đầu vào tương thích. Kỹ năng bắt buộc chưa xác định cần được học nền tảng.',
-    state: { PENDING: 'Đang chuẩn bị yêu cầu', GENERATING: 'Đang tạo lộ trình học', SUCCEEDED: 'Lộ trình đã sẵn sàng để duyệt', AWAITING_EXPERT_REVIEW: 'Lộ trình học đang chờ duyệt', APPROVED: 'Đã duyệt', UNRESOLVED: 'Cần xem lại nội dung học', BLOCKED: 'Lộ trình cần được xử lý', FAILED_RETRYABLE: 'Quá trình tạo lộ trình bị gián đoạn', STALE: 'Kế hoạch cần được cập nhật', ARCHIVED: 'Đã lưu trữ', NO_LEARNING_REQUIRED: 'Không cần học thêm kỹ năng bắt buộc', VALID: 'Sẵn sàng xác nhận', AVAILABLE: 'Có thể học', LOCKED: 'Chưa sẵn sàng về kỹ năng tiên quyết', UNAVAILABLE: 'Hiện chưa khả dụng', NONE: 'Chưa có bản đề xuất' },
+    state: { PENDING: 'Đang chuẩn bị yêu cầu', GENERATING: 'Đang tạo lộ trình học', SUCCEEDED: 'Lộ trình đã sẵn sàng để duyệt', AWAITING_EXPERT_REVIEW: 'Lộ trình học đang chờ duyệt', REJECTED: 'Bị từ chối; chờ Expert chỉnh sửa', APPROVED: 'Đã duyệt', UNRESOLVED: 'Cần xem lại nội dung học', BLOCKED: 'Lộ trình cần được xử lý', FAILED_RETRYABLE: 'Quá trình tạo lộ trình bị gián đoạn', STALE: 'Kế hoạch cần được cập nhật', ARCHIVED: 'Đã lưu trữ', NO_LEARNING_REQUIRED: 'Không cần học thêm kỹ năng bắt buộc', VALID: 'Sẵn sàng xác nhận', AVAILABLE: 'Có thể học', LOCKED: 'Chưa sẵn sàng về kỹ năng tiên quyết', UNAVAILABLE: 'Hiện chưa khả dụng', NONE: 'Chưa có bản đề xuất' },
   },
   baselineIntegration: {
     readiness: 'Chưa đủ dữ liệu baseline. Tổ chức cần danh mục vị trí công việc được cấp quyền, câu hỏi đã xuất bản và mô hình chấm điểm hợp lệ. Chưa có bài đánh giá nào được bắt đầu.',

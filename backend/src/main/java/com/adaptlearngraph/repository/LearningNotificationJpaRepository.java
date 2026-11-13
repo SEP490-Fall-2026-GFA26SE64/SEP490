@@ -18,10 +18,10 @@ import org.springframework.transaction.annotation.Transactional;
  */
 public interface LearningNotificationJpaRepository extends Repository<LearningNotificationEntity, UUID> {
 
-    record Row(UUID id, String kind, String moduleId, String title, String body, Instant createdAt, Instant readAt) {}
+    record Row(UUID id, String kind, String moduleId, String title, String body, Instant createdAt, Instant readAt,String deepLink,Instant toastObservedAt) {}
 
     record MailJob(UUID id, String kind, String moduleId, String title, String body, String recipient, String slug,
-                   Integer attempts) {
+                   Integer attempts,String deepLink) {
         @Override public String toString() { return "LearningMailJob[id=" + id + "]"; }
     }
 
@@ -34,17 +34,30 @@ public interface LearningNotificationJpaRepository extends Repository<LearningNo
     int notify(@Param("id") UUID id, @Param("organization") String organizationId, @Param("recipient") String recipientId,
             @Param("key") String eventKey, @Param("kind") String kind, @Param("module") String moduleId,
             @Param("title") String title, @Param("body") String body);
+    @Modifying(flushAutomatically=true) @Transactional(TransactionManagers.JPA)
+    @Query(value="""
+            INSERT INTO platform.learning_notification(id,organization_id,recipient_id,event_key,kind,title,body,deep_link)
+            VALUES (:id,:org,:recipient,:key,:kind,:title,:body,:link)
+            ON CONFLICT (recipient_id,event_key) DO NOTHING
+            """,nativeQuery=true)
+    int pathway(@Param("id") UUID id,@Param("org") String org,@Param("recipient") String recipient,@Param("key") String key,
+                @Param("kind") String kind,@Param("title") String title,@Param("body") String body,@Param("link") String link);
 
     @Query("select new com.adaptlearngraph.repository.LearningNotificationJpaRepository$Row(n.id, n.kind, n.moduleId, n.title,"
-            + " n.body, n.createdAt, n.readAt) from LearningNotificationEntity n"
+            + " n.body, n.createdAt, n.readAt,n.deepLink,n.toastObservedAt) from LearningNotificationEntity n"
             + " where n.organizationId = :organization and n.recipientId = :recipient order by n.createdAt desc limit 100")
     List<Row> latest(@Param("organization") String organizationId, @Param("recipient") String recipientId);
+    @Query("select new com.adaptlearngraph.repository.LearningNotificationJpaRepository$Row(n.id,n.kind,n.moduleId,n.title,n.body,n.createdAt,n.readAt,n.deepLink,n.toastObservedAt) from LearningNotificationEntity n where n.organizationId=:org and n.recipientId=:recipient and n.deepLink is not null and n.toastObservedAt is null order by n.createdAt,n.id limit 5")
+    List<Row> pendingToast(@Param("org") String org,@Param("recipient") String recipient);
 
     @Modifying(flushAutomatically = true, clearAutomatically = true)
     @Transactional(TransactionManagers.JPA)
     @Query("update LearningNotificationEntity n set n.readAt = coalesce(n.readAt, current_timestamp)"
             + " where n.organizationId = :organization and n.recipientId = :recipient and n.id = :id")
     int markRead(@Param("organization") String organizationId, @Param("recipient") String recipientId, @Param("id") UUID id);
+    @Modifying(flushAutomatically=true) @Transactional(TransactionManagers.JPA)
+    @Query("update LearningNotificationEntity n set n.toastObservedAt=current_timestamp where n.organizationId=:org and n.recipientId=:recipient and n.id=:id and n.toastObservedAt is null")
+    int observe(@Param("org") String org,@Param("recipient") String recipient,@Param("id") UUID id);
 
     /** Oldest due, unsent notification of an active recipient (database clock), skipping rows another worker holds. */
     // Native: FOR UPDATE OF n SKIP LOCKED claim with now()-based scheduling.
@@ -60,7 +73,7 @@ public interface LearningNotificationJpaRepository extends Repository<LearningNo
             select new com.adaptlearngraph.repository.LearningNotificationJpaRepository$MailJob(n.id, n.kind, n.moduleId, n.title,
                 n.body, a.identifier,
                 (select w.slug from OrganizationWorkspaceEntity w where cast(w.organizationId as String) = n.organizationId),
-                n.mailAttempts)
+                n.mailAttempts,n.deepLink)
             from LearningNotificationEntity n
             join AccountEntity a on cast(a.accountId as String) = n.recipientId and cast(a.organizationId as String) = n.organizationId
             where n.id = :id
