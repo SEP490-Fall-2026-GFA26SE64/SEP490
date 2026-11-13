@@ -1035,13 +1035,13 @@ function UserDirectory({ identity, organization, principal }: { identity: Identi
               </div>
             </div>
 
-            {/* Card 4: Assigned Target Role & Level (for Employees) */}
+            {/* Card 4: Assigned Current Role & Level (for Employees) */}
             {detail.roles.some(r => r.toUpperCase() === 'EMPLOYEE') && (
               <div className="rounded-xl border border-border bg-card p-4 space-y-3 shadow-2xs">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2 font-semibold text-foreground text-xs uppercase tracking-wider text-muted-foreground">
                     <Target className="h-4 w-4 text-primary" />
-                    {c('Assigned Target Role & Level (Career Placement)', 'Vai trò mục tiêu & Cấp độ (Định hướng nghề nghiệp)')}
+                    {c('Assigned Current Role & Level', 'Vai trò & Cấp độ hiện tại')}
                   </div>
                   {detail.targetRoleCode && (
                     <Badge variant="secondary" className="font-mono text-xs">
@@ -2235,13 +2235,13 @@ function UserForm({
           </div>
         )}
 
-        {/* SECTION 3: Initial Target Role & Level (Career Placement for Employee) */}
+        {/* SECTION 3: Current Role & Level for Employee */}
         {employee && (
           <div className="p-4 rounded-xl border border-border bg-card space-y-3.5 relative shadow-2xs">
             <div className="font-semibold text-foreground flex items-center justify-between">
               <span className="flex items-center gap-2 text-xs font-semibold">
                 <Target className="h-4 w-4 text-primary" />
-                {c('Assigned Target Role & Level (Career Placement)', 'Gán Target Role & Level khởi điểm')} ({targetRoleId ? 1 : 0})
+                {c('Assigned Current Role & Level', 'Gán vai trò & cấp độ hiện tại')} ({targetRoleId ? 1 : 0})
               </span>
               <span className="text-[11px] text-muted-foreground font-normal">
                 {c('Available in organization catalog', 'Có sẵn trong danh mục tổ chức')}

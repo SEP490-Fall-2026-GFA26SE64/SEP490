@@ -119,6 +119,57 @@ export const getExpertEffectiveStatus = (
   return 'draft'
 }
 
+export interface CompetencyDomainCategory {
+  id: string
+  label: string
+  prefixes: string[]
+}
+
+export const COMPETENCY_DOMAIN_CATEGORIES: CompetencyDomainCategory[] = [
+  { id: 'testing', label: 'Testing & Quality Assurance', prefixes: ['TAUTO', 'TEXEC', 'TDES'] },
+  { id: 'development', label: 'Software Development', prefixes: ['DEV'] },
+  { id: 'architecture', label: 'Architecture & Systems', prefixes: ['ARCH'] },
+  { id: 'devops', label: 'DevOps & Infrastructure', prefixes: ['DELIV', 'INFRA', 'OPS'] },
+  { id: 'data', label: 'Data & Governance', prefixes: ['DPIPE', 'DMOD', 'DQ', 'DGOV'] },
+  { id: 'security', label: 'Security & Compliance', prefixes: ['SGOV', 'SUP'] },
+  { id: 'ui', label: 'UI/UX Design', prefixes: ['UI'] },
+]
+
+export const getCompetencyDomainCategory = (comp: { code?: string; name?: string }): string => {
+  const code = (comp.code || '').toUpperCase()
+  const parts = code.split('-')
+  const domainCode = parts.length > 1 ? parts[1] : ''
+
+  for (const cat of COMPETENCY_DOMAIN_CATEGORIES) {
+    if (cat.prefixes.includes(domainCode)) return cat.id
+  }
+
+  const name = (comp.name || '').toLowerCase()
+  if (name.includes('test') || name.includes('qa') || name.includes('automation')) return 'testing'
+  if (name.includes('development') || name.includes('develop') || name.includes('software engineer') || name.includes('implementation')) return 'development'
+  if (name.includes('architecture') || name.includes('architect') || name.includes('solution')) return 'architecture'
+  if (name.includes('devops') || name.includes('cloud') || name.includes('infrastructure') || name.includes('delivery') || name.includes('operations')) return 'devops'
+  if (name.includes('data') || name.includes('pipeline') || name.includes('analytics')) return 'data'
+  if (name.includes('security') || name.includes('compliance') || name.includes('governance')) return 'security'
+  if (name.includes('ui') || name.includes('ux') || name.includes('interface')) return 'ui'
+
+  return 'other'
+}
+
+export const getCompetencyLevel = (comp: { code?: string; name?: string }): string => {
+  const code = (comp.code || '').toUpperCase()
+  const parts = code.split('-')
+  const levelPart = parts.length > 2 ? parts[2] : ''
+  const name = (comp.name || '').toLowerCase()
+
+  if (levelPart.startsWith('S') || name.startsWith('senior') || name.includes(' senior ')) return 'Senior'
+  if (levelPart.startsWith('M') || name.startsWith('middle') || name.includes(' middle ')) return 'Middle'
+  if (levelPart.startsWith('J') || name.startsWith('junior') || name.includes(' junior ')) return 'Junior'
+  if (levelPart.startsWith('F') || name.startsWith('fresher') || name.includes(' fresher ')) return 'Fresher'
+
+  return 'General'
+}
+
 function resolveLevelDuration(
   role: Pick<TargetRoleModel, 'levelDurations'>,
   levelName: string,
@@ -918,6 +969,10 @@ export function ExpertAssignedRolesPage() {
     })
   }
 
+  // Filter states for authoring modal competency dropdown
+  const [compDomainFilter, setCompDomainFilter] = React.useState<string>('all')
+  const [compLevelFilter, setCompLevelFilter] = React.useState<string>('all')
+
   const currentRoleLevels = React.useMemo(() => {
     return authoringRole?.levels && authoringRole.levels.length > 0
       ? authoringRole.levels
@@ -1265,23 +1320,85 @@ export function ExpertAssignedRolesPage() {
     }
   }, [missingPrereqCodesForSelectedLevels.size, filterOnlyPrereqUnlocks])
 
+  // Filter available competencies based on Domain Category and Level filters
+  const filteredAvailableCompetencies = React.useMemo(() => {
+    return availableCompetencies.filter((comp) => {
+      // 1. Domain Category filter
+      if (compDomainFilter !== 'all') {
+        const domain = getCompetencyDomainCategory(comp)
+        if (domain !== compDomainFilter) return false
+      }
+
+      // 2. Level filter
+      if (compLevelFilter !== 'all') {
+        const level = getCompetencyLevel(comp)
+        if (level.toLowerCase() !== compLevelFilter.toLowerCase()) return false
+      }
+
+      return true
+    })
+  }, [availableCompetencies, compDomainFilter, compLevelFilter])
+
+  const compDomainOptions: ComboboxOption[] = React.useMemo(() => {
+    const list: ComboboxOption[] = [
+      {
+        value: 'all',
+        label: `All Domains (${availableCompetencies.length})`,
+      },
+    ]
+
+    COMPETENCY_DOMAIN_CATEGORIES.forEach((cat) => {
+      const count = availableCompetencies.filter(
+        (c) => getCompetencyDomainCategory(c) === cat.id,
+      ).length
+      list.push({
+        value: cat.id,
+        label: `${cat.label} (${count})`,
+      })
+    })
+
+    return list
+  }, [availableCompetencies])
+
+  const compLevelOptions: ComboboxOption[] = React.useMemo(() => {
+    return [
+      { value: 'all', label: 'All Levels' },
+      { value: 'Senior', label: 'Senior' },
+      { value: 'Middle', label: 'Middle' },
+      { value: 'Junior', label: 'Junior' },
+      { value: 'Fresher', label: 'Fresher' },
+    ]
+  }, [])
+
+  // Clear selected competency if it gets filtered out by active domain/level filters
+  React.useEffect(() => {
+    if (newCompetencyId) {
+      const stillPresent = filteredAvailableCompetencies.some(
+        (c) => c.id === newCompetencyId || c.code === newCompetencyId,
+      )
+      if (!stillPresent) {
+        setNewCompetencyId('')
+      }
+    }
+  }, [filteredAvailableCompetencies, newCompetencyId])
+
   // Count how many available competencies unlock at least one missing prerequisite
   const missingPrereqCompetenciesCount = React.useMemo(() => {
     if (missingPrereqCodesForSelectedLevels.size === 0) return 0
-    return availableCompetencies.filter((comp) => {
+    return filteredAvailableCompetencies.filter((comp) => {
       return Array.from(missingPrereqCodesForSelectedLevels).some((code) => {
         const parentComps = getParentCompetenciesForSkill(code)
         return parentComps.some((c) => c.id === comp.id || c.code === comp.code)
       })
     }).length
   }, [
-    availableCompetencies,
+    filteredAvailableCompetencies,
     missingPrereqCodesForSelectedLevels,
     getParentCompetenciesForSkill,
   ])
 
   const competencyOptions: ComboboxOption[] = React.useMemo(() => {
-    const list = availableCompetencies.map((comp) => {
+    const list = filteredAvailableCompetencies.map((comp) => {
       const memberSkillNames = (comp.memberSkills || []).map(
         (m) => m.name || m.code || m.id,
       )
@@ -1327,7 +1444,7 @@ export function ExpertAssignedRolesPage() {
 
     return sorted.map((s) => s.option)
   }, [
-    availableCompetencies,
+    filteredAvailableCompetencies,
     missingPrereqCodesForSelectedLevels,
     getParentCompetenciesForSkill,
     filterOnlyPrereqUnlocks,
@@ -1540,6 +1657,10 @@ export function ExpertAssignedRolesPage() {
     setConfiguredSkillSearch('')
 
     setConfiguredCompetencySearch('')
+
+    setCompDomainFilter('all')
+
+    setCompLevelFilter('all')
 
     setFilterOnlyPrereqUnlocks(false)
 
@@ -2805,32 +2926,92 @@ export function ExpertAssignedRolesPage() {
                   {authoringRole.status !== 'published' &&
                     authoringRole.status !== 'unpublished' &&
                     authoringRole.status !== 'submitted' && (
-                      <div className="space-y-1.5">
-                        <label className="text-[11px] font-semibold text-foreground block">
-                          Select Competency for {selectedLevelNamesLabel}
-                        </label>
-
-                        <div className="flex items-center gap-2">
-                          <div className="flex-1">
+                      <div className="space-y-2.5">
+                        {/* Domain Category & Level Filter Toolbar */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 p-2.5 rounded-lg bg-muted/40 border border-border">
+                          <div className="space-y-1">
+                            <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground block">
+                              Domain Category
+                            </label>
                             <Combobox
                               size="sm"
                               clearable={false}
-                              options={competencyOptions}
-                              value={newCompetencyId}
-                              onChange={(val) => setNewCompetencyId(val)}
-                              placeholder={
-                                filterOnlyPrereqUnlocks
-                                  ? `Showing ${missingPrereqCompetenciesCount} competencies unlocking missing prereqs...`
-                                  : `Search & select competency for ${selectedLevelNamesLabel}...`
-                              }
-                              searchPlaceholder="Search by competency code or title..."
-                              emptyMessage={
-                                filterOnlyPrereqUnlocks
-                                  ? 'No available competencies unlock the missing prerequisites. Click the filter button to show all.'
-                                  : `All competencies are already assigned to ${selectedLevelNamesLabel}`
-                              }
+                              options={compDomainOptions}
+                              value={compDomainFilter}
+                              onChange={(val) => setCompDomainFilter(val || 'all')}
+                              placeholder="Select Domain Category..."
+                              searchPlaceholder="Search domain..."
                             />
                           </div>
+
+                          <div className="space-y-1">
+                            <div className="flex items-center justify-between">
+                              <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground block">
+                                Competency Level
+                              </label>
+                              {(compDomainFilter !== 'all' || compLevelFilter !== 'all') && (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setCompDomainFilter('all')
+                                    setCompLevelFilter('all')
+                                  }}
+                                  className="text-[10px] text-primary hover:underline font-semibold cursor-pointer"
+                                >
+                                  Reset Filters
+                                </button>
+                              )}
+                            </div>
+                            <Combobox
+                              size="sm"
+                              clearable={false}
+                              options={compLevelOptions}
+                              value={compLevelFilter}
+                              onChange={(val) => setCompLevelFilter(val || 'all')}
+                              placeholder="Select Level..."
+                              searchPlaceholder="Search level..."
+                            />
+                          </div>
+                        </div>
+
+                        {/* Competency Selection Input and Buttons */}
+                        <div className="space-y-1">
+                          <div className="flex items-center justify-between">
+                            <label className="text-[11px] font-semibold text-foreground block">
+                              Select Competency for {selectedLevelNamesLabel}
+                            </label>
+                            {filteredAvailableCompetencies.length !== availableCompetencies.length && (
+                              <span className="text-[10px] text-muted-foreground font-medium">
+                                Showing {filteredAvailableCompetencies.length} of {availableCompetencies.length}
+                              </span>
+                            )}
+                          </div>
+
+                          <div className="flex items-center gap-2">
+                            <div className="flex-1">
+                              <Combobox
+                                size="sm"
+                                clearable={false}
+                                options={competencyOptions}
+                                value={newCompetencyId}
+                                onChange={(val) => setNewCompetencyId(val)}
+                                placeholder={
+                                  filterOnlyPrereqUnlocks
+                                    ? `Showing ${missingPrereqCompetenciesCount} competencies unlocking missing prereqs...`
+                                    : filteredAvailableCompetencies.length === 0
+                                      ? 'No competencies match selected filters'
+                                      : `Search & select competency for ${selectedLevelNamesLabel}...`
+                                }
+                                searchPlaceholder="Search by competency code or title..."
+                                emptyMessage={
+                                  filterOnlyPrereqUnlocks
+                                    ? 'No available competencies unlock the missing prerequisites. Click the filter button to show all.'
+                                    : filteredAvailableCompetencies.length === 0
+                                      ? 'No competencies match active Domain & Level filters.'
+                                      : `All competencies are already assigned to ${selectedLevelNamesLabel}`
+                                }
+                              />
+                            </div>
 
                           {(missingPrereqCodesForSelectedLevels.size > 0 ||
                             filterOnlyPrereqUnlocks) && (
@@ -2891,6 +3072,7 @@ export function ExpertAssignedRolesPage() {
                             Add Competency
                           </Button>
                         </div>
+                      </div>
 
                         {filterOnlyPrereqUnlocks && (
                           <div className="flex items-center justify-between text-[11px] text-muted-foreground pt-0.5 px-0.5">
