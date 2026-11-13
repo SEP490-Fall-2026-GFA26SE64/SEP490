@@ -6,7 +6,7 @@ import { Button } from '../../../shared/components/ui/Button'
 import { Badge } from '../../../shared/components/ui/Badge'
 import { Card, CardContent, CardHeader } from '../../../shared/components/ui/Card'
 import { Dialog, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../../../shared/components/ui/Dialog'
-import { RadioGroup, RadioGroupItem } from '../../../shared/components/ui/RadioGroup'
+import { AssessmentQuestionContent } from '../../../shared/components/ui/AssessmentQuestionContent'
 import { useTranslation } from '../../../shared/i18n/LanguageContext'
 import { answerCommand, submitCommand, type BaselineAttempt, type BaselineCommand } from './baselineApi'
 
@@ -60,15 +60,7 @@ export function BaselineAttemptPanel({ attempt, seconds, locked, busy = false, r
       <Card aria-busy={busy} className="min-w-0 lg:col-span-3"><CardHeader className="border-b border-border p-5"><div className="flex flex-wrap gap-2"><Badge variant="outline">{ui('question')} {item?.position ?? '—'}</Badge>{review && <Badge variant="secondary">{ui('review')}</Badge>}</div></CardHeader>
     <CardContent key={`${attempt.revision}:${position}`} className="space-y-4 p-5">
       <Text variant="caption">{tr('timerNotice')}</Text>
-      {expired ? <p role="status">{tr('expired')}</p> : item ? <fieldset disabled={locked || review} className="min-w-0 space-y-5">
-        <legend className="mb-5 whitespace-pre-wrap break-words text-body-sm font-semibold">{item.prompt}</legend>
-        <RadioGroup value={item.selectedOptionId ?? choice} onChange={setChoice} disabled={locked || review} aria-label={tr('chooseAnswer')}>
-          {item.options.map(option => <label key={option.id} htmlFor={`baseline-option-${option.id}`} className={`flex items-start gap-3 rounded-lg border p-4 text-body-sm ${option.id === (item.selectedOptionId ?? choice) ? 'border-primary bg-secondary' : 'border-border'} ${review || locked ? '' : 'cursor-pointer hover:bg-muted'}`}>
-            <RadioGroupItem id={`baseline-option-${option.id}`} name="baseline-answer" value={option.id} />
-            <span className="whitespace-pre-wrap break-words">{option.text}</span>
-          </label>)}
-        </RadioGroup>
-      </fieldset> : <p role="status">{tr('refreshNeeded')}</p>}
+      {expired ? <p role="status">{tr('expired')}</p> : item ? <AssessmentQuestionContent idPrefix="baseline" prompt={item.prompt} options={item.options} value={item.selectedOptionId ?? choice} onChange={setChoice} disabled={locked || review} answerLabel={tr('chooseAnswer')} /> : <p role="status">{tr('refreshNeeded')}</p>}
     </CardContent>
       <div className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-t border-border bg-card p-5">
         <Button variant="outline" disabled={index <= 0} leftIcon={<ArrowLeft size={16} />} onClick={() => setPosition(attempt.items[index - 1].position)}>{ui('previous')}</Button>

@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 import type { CatalogModule, CatalogChoice, ModuleContent } from '../../../shared/api/moduleAuthoringApi'
 import { Dialog, DialogBody, DialogHeader, DialogTitle, DialogFooter } from '../../../shared/components/ui/Dialog'
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '../../../shared/components/ui/Accordion'
@@ -7,12 +7,15 @@ import { Button } from '../../../shared/components/ui/Button'
 import { CopyableId } from '../../../shared/components/ui/CopyableId'
 import { Heading } from '../../../shared/components/typography/Heading'
 import { useTranslation } from '../../../shared/i18n/LanguageContext'
+import { LearningContentPreview } from "../../../shared/components/learning/LearningContentPreview"
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "../../../shared/components/ui/Tabs"
 import { LearningLessonList } from '../../../shared/components/learning/LearningLessonList'
 import { ModuleMarkdown } from '../../../shared/components/ui/ModuleMarkdown'
 import './moduleManagement.css'
 
-export function CatalogModuleDetails({ module, hasHistory, onClose, actions, staff = [], onOpenAuthoring, embedded = false, content, review, authoringLabel }: { module: CatalogModule | null; hasHistory: boolean; onClose: () => void; actions?: ReactNode; staff?: CatalogChoice[]; onOpenAuthoring?: () => void; embedded?: boolean; content?: ModuleContent; review?: { by: string | null; at: string | null }; authoringLabel?: string }) {
+export function CatalogModuleDetails({ module, hasHistory, onClose, actions, staff = [], onOpenAuthoring, embedded = false, content, review, authoringLabel, information, history, previewLabel }: { module: CatalogModule | null; hasHistory: boolean; onClose: () => void; actions?: ReactNode; staff?: CatalogChoice[]; onOpenAuthoring?: () => void; embedded?: boolean; content?: ModuleContent; review?: { by: string | null; at: string | null }; authoringLabel?: string; information?: ReactNode; history?: ReactNode; previewLabel?: string }) {
  const { language } = useTranslation(); const vi = language === 'vi'
+ const [tab, setTab] = useState("information")
  const copy = (en: string, vn: string) => vi ? vn : en
  const values: Record<string, string> = { DRAFT: copy('Draft', 'Bản nháp'), ACTIVE: copy('Active', 'Đang hoạt động'), ARCHIVED: copy('Archived', 'Đã lưu trữ'), APPROVED: copy('Approved', 'Đã duyệt'), NEEDS_EXPERT_REVIEW: copy('Not approved', 'Chưa được duyệt'), REJECTED: copy('Changes requested', 'Cần chỉnh sửa'), LESSON_AND_PRACTICE: copy('Lesson and practice', 'Bài học và thực hành'), RESOURCE_GUIDED_PRACTICE: copy('Resource-guided practice', 'Thực hành theo tài liệu'), FOUNDATION: copy('Foundation', 'Nền tảng'), INTERMEDIATE: copy('Intermediate', 'Trung cấp'), ADVANCED: copy('Advanced', 'Nâng cao') }
  const value = (v: string | number | null | undefined) => v == null || v === '' ? '—' : typeof v === 'number' ? new Intl.NumberFormat(vi ? 'vi-VN' : 'en-GB').format(v) : values[v] ?? v
@@ -26,10 +29,32 @@ export function CatalogModuleDetails({ module, hasHistory, onClose, actions, sta
    <Accordion><AccordionItem value="technical"><AccordionTrigger>{copy('Technical metadata', 'Thông tin kỹ thuật')}</AccordionTrigger><AccordionContent><div className="space-y-4 pt-2">{fields([[copy('Content location', 'Địa chỉ nội dung'), module.contentUri], [copy('Content format', 'Định dạng nội dung'), module.contentType]])}{module.teachings.map((teaching, index) => <section key={index} className="space-y-2"><p className="text-xs font-semibold">{copy('Skill relationship', 'Quan hệ kỹ năng')} · {teaching.skillId}</p>{fields([[copy('Relationship ID', 'Mã quan hệ'), teaching.metadata.id], [copy('Relationship catalog version', 'Phiên bản danh mục quan hệ'), teaching.metadata.version], [copy('Lifecycle', 'Vòng đời'), teaching.metadata.status], [copy('Review', 'Duyệt'), teaching.metadata.reviewStatus], [copy('Reviewer ID', 'Mã người duyệt'), teaching.metadata.reviewedBy], [copy('Reviewed at', 'Thời điểm duyệt'), teaching.metadata.reviewedAt]])}</section>)}</div></AccordionContent></AccordionItem></Accordion>
   </div>
 
- if (embedded) return body
- return <Dialog open={module !== null} onOpenChange={open => { if (!open) onClose() }} className="module-management-dialog max-w-3xl max-h-[88dvh]" ariaLabel={copy('Catalog module details', 'Chi tiết module trong danh mục')}>
+ const previewLessons = content?.lessons ?? (content?.markdown ? [{
+   id: content.id, title: module?.title ?? content.title, type: "TEXT" as const,
+   body: content.markdown, bodyFormat: "MARKDOWN" as const,
+   durationSeconds: (module?.duration ?? 0) * 60, durationSource: "MANUAL" as const,
+   videoSource: null, assetId: null, videoUrl: null,
+ }] : null)
+ const presentation = <Tabs value={tab} onValueChange={setTab} className="min-w-0">
+   <TabsList aria-label={copy("Module detail sections", "Nội dung chi tiết module")} className="mb-3 h-auto flex-wrap">
+     <TabsTrigger value="information">{copy("Module information", "Thông tin module")}</TabsTrigger>
+     <TabsTrigger value="learner">{copy("View as learner", "Xem như học viên")}</TabsTrigger>
+     <TabsTrigger value="history">{copy("Version history", "Lịch sử phiên bản")}</TabsTrigger>
+   </TabsList>
+   <TabsContent value="information" className="space-y-4">{information}{body}</TabsContent>
+   <TabsContent value="learner">{previewLessons && content ? <LearningContentPreview
+     key={`${module?.metadata.id}:${content.id}:${content.contentVersion}`}
+     lessons={previewLessons}
+     label={previewLabel ?? `${copy("Content version", "Phiên bản nội dung")} ${content.contentVersion} · ${value(module?.metadata.status)}`}
+   /> : <p role="status" className="rounded-lg border border-border bg-muted/20 p-4 text-body-sm text-muted-foreground">
+     {copy("Lesson data is unavailable for this revision.", "Chưa có dữ liệu bài học của phiên bản này.")}
+   </p>}</TabsContent>
+   <TabsContent value="history">{history ?? <p className="text-body-sm text-muted-foreground">{copy("No revision history is included in this record.", "Bản ghi này không có dữ liệu lịch sử phiên bản.")}</p>}</TabsContent>
+ </Tabs>
+ if (embedded) return presentation
+ return <Dialog open={module !== null} onOpenChange={open => { if (!open) onClose() }} className="module-management-dialog w-[96vw] max-w-7xl max-h-[94dvh]" ariaLabel={copy('Catalog module details', 'Chi tiết module trong danh mục')}>
   <DialogHeader><DialogTitle>{module?.title?.trim() || copy('Untitled module', 'Module chưa có tên')}</DialogTitle>{module && <><CopyableId code={module.metadata.id} entity={copy('module ID', 'mã module')} vi={vi} /><div className="flex flex-wrap gap-x-5 gap-y-2 pt-2 text-xs"><div><span className="mr-2 text-muted-foreground">{copy('Lifecycle', 'Vòng đời')}</span><Badge variant={module.metadata.status === 'ACTIVE' ? 'success' : 'outline'}>{value(module.metadata.status)}</Badge></div><div><span className="mr-2 text-muted-foreground">{copy('Review', 'Duyệt')}</span><Badge variant={module.metadata.reviewStatus === 'APPROVED' ? 'success' : module.metadata.reviewStatus === 'REJECTED' ? 'destructive' : 'warning'}>{value(module.metadata.reviewStatus)}</Badge></div></div></>}</DialogHeader>
-  <DialogBody>{body}</DialogBody>
+  <DialogBody>{presentation}</DialogBody>
   <DialogFooter>{actions}<Button variant="outline" size="sm" onClick={onClose}>{copy('Close', 'Đóng')}</Button></DialogFooter>
  </Dialog>
 }

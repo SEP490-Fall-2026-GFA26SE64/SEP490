@@ -55,7 +55,7 @@ for(const width of [1440,1280,768,390])test(`A1 queue, exact revision, compariso
  const panel=await open(page,'publish'),overview=panel.getByRole('region',{name:'Request overview'})
  await expect(overview.getByText('Actual Submitter',{exact:true})).toBeVisible();await expect(overview.getByText('Responsible Expert',{exact:true})).toHaveCount(2)
  await expect(panel.getByRole('region',{name:'Lesson 1: Recorded lesson'})).toBeVisible()
- await panel.getByRole('tab',{name:'History & comparison',exact:true}).click()
+ await panel.getByRole('tab',{name:'Version history',exact:true}).click()
  await expect(panel.getByRole('definition').filter({hasText:'Released publish'})).toBeVisible()
  await panel.getByRole('button',{name:'View released content snapshot',exact:true}).click()
  await expect(panel.getByText('Recorded released lesson.',{exact:true})).toBeVisible({timeout:45000})

@@ -12,7 +12,12 @@ public interface LearningImportUseCase {
             int excelRow,
             Save module,
             List<Lesson> lessons,
-            Long expectedVersion) {}
+            Long expectedVersion,
+            String moduleRef) {
+        public Row(String moduleId, int excelRow, Save module, List<Lesson> lessons, Long expectedVersion) {
+            this(moduleId, excelRow, module, lessons, expectedVersion, null);
+        }
+    }
 
     record Problem(String moduleId, int row, String reason) {}
 

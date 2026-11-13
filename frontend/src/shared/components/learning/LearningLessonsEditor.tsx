@@ -48,7 +48,6 @@ export function LearningLessonsEditor({
   }
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
-  const [preview, setPreview] = useState<string | null>(null)
   const [played, setPlayed] = useState<Record<string, number>>({})
   const [verified, setVerified] = useState<Record<string, string>>({})
   useEffect(() => {
@@ -388,22 +387,6 @@ export function LearningLessonsEditor({
                   </>
                 )}
               </>
-            )}
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() =>
-                setPreview(preview === lesson.id ? null : lesson.id)
-              }
-            >
-              {vi ? 'Xem trước bài học' : 'Preview lesson'}
-            </Button>
-            {preview === lesson.id && lesson.type === 'TEXT' && lesson.body && (
-              <div className="learner-reader"><div className="learner-reading-body"><LessonBody
-                presentation="document"
-                body={lesson.body}
-                format={lesson.bodyFormat ?? 'HTML'}
-              /></div></div>
             )}
         </section>
       })}

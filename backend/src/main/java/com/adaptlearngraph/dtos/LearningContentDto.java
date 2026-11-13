@@ -42,7 +42,11 @@ public final class LearningContentDto {
                                        String readAt) {}
 
     public record ImportRowResponse(String moduleId, int excelRow, ModuleInput module, List<LessonResponse> lessons,
-                                    Long expectedVersion) {}
+                                    Long expectedVersion, String moduleRef) {
+        public ImportRowResponse(String moduleId, int excelRow, ModuleInput module, List<LessonResponse> lessons, Long expectedVersion) {
+            this(moduleId, excelRow, module, lessons, expectedVersion, null);
+        }
+    }
 
     public record ImportProblemResponse(String moduleId, int row, String reason) {}
 

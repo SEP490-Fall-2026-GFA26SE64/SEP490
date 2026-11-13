@@ -1,4 +1,6 @@
 import { test, expect, type Page } from '@playwright/test'
+import { tinyMp4 } from './support/tinyMp4'
+const videoId = '22345678-1234-1234-1234-123456789012'
 const assetId = '12345678-1234-1234-1234-123456789012'
 const assetPath = `/api/v1/module-management/assets/${assetId}`
 const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/WQAAAABJRU5ErkJggg==', 'base64')
@@ -15,19 +17,36 @@ async function fixture(page: Page, actor: 'expert' | 'manager') {
   const writes: string[] = [], previews: string[] = [], errors: string[] = []
   page.on('pageerror', error => errors.push(error.message))
   const savedContents: { lessons: { id: string; title: string; body: string }[] }[] = [], savedModules: Record<string, unknown>[] = []
+  const importCommands: Record<string, unknown>[] = []
   const doc = snapshot()
+  const imported = [structuredClone(doc), structuredClone(doc)]
+  imported.forEach((saved, index) => {
+    saved.id = `${index === 0 ? '9' : '8'}dbd6e72-0d10-4787-949b-ab094904b255`
+    saved.revisions = [saved.revisions[1]]
+    saved.revisions[0].number = 1; saved.revisions[0].state = 'DRAFT'
+    saved.revisions[0].payload.metadata.id = saved.id
+    saved.revisions[0].payload.title = index === 0 ? 'Reference import module' : 'Second saved import module'
+  })
+  imported[0].revisions[0].payload.content.lessons = [imported[0].revisions[0].payload.content.lessons[0], { ...imported[0].revisions[0].payload.content.lessons[0], id: 'video', title: 'Imported video', type: 'VIDEO', body: '', videoSource: 'UPLOAD', assetId: videoId } as never]
+  imported[1].revisions[0].payload.content.lessons = [{ ...imported[1].revisions[0].payload.content.lessons[0], body: '<p>Second saved import body.</p>' }]
   await page.addInitScript(() => localStorage.setItem('app_language', 'en'))
   await page.route('**/api/**', async route => {
     const req = route.request(), path = new URL(req.url()).pathname
     if (path.includes('/learning/') || path.endsWith('/actions') || (path.endsWith('/modules') && req.method() !== 'GET')) writes.push(`${req.method()} ${path}`)
     if (path.endsWith('/workspace-auth/current')) return route.fulfill({ json: { accountId: actor, organizationId: 'org', email: `${actor}@example.test`, fullName: actor, roles: [actor === 'expert' ? 'DOMAIN_EXPERT' : 'LD_MANAGER'], stage: 'COMPLETE', workspaceReady: true, workspaceSlug: 'preview-test' } })
     if (path.endsWith('/csrf')) return route.fulfill({ json: { headerName: 'X-CSRF-TOKEN', token: 'test-only' } })
+    if (path.endsWith('/imports') && req.method() === 'POST') return route.fulfill({ json: { id: 'import-batch', modules: imported.map((saved, index) => ({ moduleId: saved.id, moduleRef: `M${index + 1}`, excelRow: index + 2, module: { title: saved.revisions[0].payload.title }, lessons: saved.revisions[0].payload.content.lessons, expectedVersion: null })), errors: [], ownedDuplicates: [], committed: false } })
+    if (path.endsWith('/imports/import-batch/commit')) {
+      importCommands.push(req.postDataJSON())
+      return route.fulfill({ json: imported })
+    }
     if (path.endsWith('/subscription/access')) return route.fulfill({ json: {} })
     if (path.endsWith('/session')) return route.fulfill({ json: { id: actor, organizationId: 'org', roles: [actor === 'expert' ? 'EXPERT' : 'LD_MANAGER'] } })
     if (path.endsWith('/contents/lessons') && req.method() === 'POST') { const data = req.postDataJSON(); savedContents.push(data); return route.fulfill({ json: { ...doc.revisions[1].payload.content, ...data, id: 'saved-content' } }) }
     if (path.endsWith('/modules') && req.method() === 'POST') { savedModules.push(req.postDataJSON()); return route.fulfill({ json: doc }) }
     if (path.endsWith('/assets') && req.method() === 'POST') return route.fulfill({ json: { id: assetId, filename: 'shared-diagram.png', mediaType: 'image/png', byteSize: png.length, durationSeconds: null } })
     if (path === assetPath) return route.fulfill({ contentType: 'image/png', body: png })
+    if (path.endsWith('/assets/' + videoId)) return route.fulfill({ contentType: 'video/mp4', body: tinyMp4 })
     if (path.endsWith('/text/preview')) { const body = req.postDataJSON().body; previews.push(body); return route.fulfill({ json: { html: body } }) }
     if (path.endsWith('/catalog/Staff')) return route.fulfill({ json: [{ id: 'expert', name: 'Expert' }, { id: 'manager', name: 'Manager' }] })
     if (path.endsWith('/catalog/ModuleSkill') || path.endsWith('/catalog/MicroSkill')) return route.fulfill({ json: [{ id: 'skill', name: 'Graph modeling' }] })
@@ -37,8 +56,63 @@ async function fixture(page: Page, actor: 'expert' | 'manager') {
     if (path.endsWith('/modules/preview-module')) return route.fulfill({ json: doc })
     return route.fulfill({ status: 404, json: { message: 'Outside isolated preview fixture' } })
   })
-  return { writes, previews, errors, savedContents, savedModules }
+  return { writes, previews, errors, savedContents, savedModules, importCommands }
 }
+
+for (const width of [1440, 390]) test(`Import preview shows batch reference and server-generated identity at ${width}`, async ({ page }) => {
+  await page.setViewportSize({ width, height: 950 })
+  const state = await fixture(page, 'expert')
+  await page.goto('/workspace/preview-test/expert/modules')
+  await page.getByRole('button', { name: 'Import', exact: true }).click()
+  await page.getByLabel('Module import file', { exact: true }).setInputFiles({ name: 'modules.xlsx', mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', buffer: Buffer.from('fixture upload; parser covered in Java') })
+  await expect(page.getByText('Reference import module', { exact: true })).toBeVisible()
+  await expect(page.getByText('M1 · row 2 · 2 lessons', { exact: true })).toBeVisible()
+  await expect(page.getByText('Generated module ID: 9dbd6e72-0d10-4787-949b-ab094904b255', { exact: true })).toBeVisible()
+  await page.getByRole('list', { name: 'Modules in import', exact: true }).getByRole('button', { name: 'View as learner', exact: true }).first().click()
+  const review = page.getByRole('dialog', { name: 'Review module preview', exact: true })
+  await expect(review.getByText('Exact requested revision body.', { exact: true })).toBeVisible()
+  await expect(review.getByText('Import review · Not yet confirmed · Preview — no learning progress is saved', { exact: true })).toBeVisible()
+  await review.getByRole('button', { name: /2\. Imported video/ }).click()
+  await expect.poll(() => review.locator('video').evaluate((el: HTMLVideoElement) => el.readyState >= 1 && el.duration > 0)).toBe(true)
+  expect(state.importCommands).toHaveLength(0)
+  await review.getByRole('button', { name: 'Open full preview', exact: true }).click()
+  const fullReview = page.getByRole('dialog', { name: 'View as learner', exact: true })
+  await expect(fullReview.locator('video')).toBeVisible()
+  await fullReview.getByRole('button', { name: 'Close dialog', exact: true }).click()
+  await review.getByRole('button', { name: 'Back to import review', exact: true }).click()
+  await expect(review).toHaveCount(0)
+  if (width === 1440) await page.screenshot({ path: '/tmp/sep490-review-module-buttons.png' })
+  await page.getByRole('button', { name: 'Continue import', exact: true }).click()
+  await expect(page.getByText(/Existing modules are not updated/)).toBeVisible()
+  await page.getByRole('button', { name: 'Confirm import', exact: true }).click()
+  await expect.poll(() => state.importCommands.length).toBe(1)
+  expect(state.importCommands[0]).toEqual({ confirmOwnedDuplicates: false })
+  const result = page.getByRole('dialog', { name: 'Import modules', exact: true })
+  await expect(result.getByRole('heading', { name: 'Import completed · 2 draft modules', exact: true })).toBeVisible()
+  await expect(result.getByText('Exact requested revision body.', { exact: true })).toBeVisible()
+  await expect(result.getByRole('img', { name: 'shared-diagram.png' })).toHaveAttribute('src', assetPath)
+  await result.getByRole('button', { name: /2\. Imported video/ }).click()
+  const video = result.locator('video')
+  await expect(video).toHaveAttribute('src', '/api/v1/module-management/assets/' + videoId)
+  await expect.poll(() => video.evaluate((el: HTMLVideoElement) => el.readyState >= 1 && el.duration > 0)).toBe(true)
+  await video.evaluate((el: HTMLVideoElement) => el.play())
+  await expect.poll(() => video.evaluate((el: HTMLVideoElement) => el.currentTime)).toBeGreaterThan(0)
+  await result.getByRole('button', { name: 'Open full preview', exact: true }).click()
+  const full = page.getByRole('dialog', { name: 'View as learner', exact: true })
+  await expect(full.locator('video')).toHaveAttribute('src', '/api/v1/module-management/assets/' + videoId)
+  await full.getByRole('button', { name: 'Close dialog', exact: true }).click()
+  if (width < 1024) await result.getByLabel('Select imported module', { exact: true }).selectOption('8dbd6e72-0d10-4787-949b-ab094904b255')
+  else await result.getByRole('button', { name: /2\. Second saved import module/ }).click()
+  await expect(result.getByText('Second saved import body.', { exact: true })).toBeVisible()
+  await result.getByRole('button', { name: 'Mobile', exact: true }).click()
+  expect((await result.locator('[data-preview-viewport="mobile"]').boundingBox())!.width).toBeLessThanOrEqual(390)
+  expect(await result.evaluate(el => el.scrollWidth <= el.clientWidth)).toBe(true)
+  expect(state.writes).toEqual([])
+  if (width === 1440) await page.screenshot({ path: '/tmp/sep490-post-import-modules.png' })
+  await result.getByRole('button', { name: 'Back to modules', exact: true }).click()
+  await expect(result).toHaveCount(0)
+  expect(state.errors).toEqual([])
+})
 for (const width of [1440, 390]) {
   test(`Expert current draft, uploaded image and learner preview at ${width}`, async ({ page }) => {
     await page.setViewportSize({ width, height: 950 })
@@ -49,8 +123,30 @@ for (const width of [1440, 390]) {
     await editor.getByRole('tab', { name: 'Learning content', exact: true }).click()
     await editor.getByLabel('Lesson title', { exact: true }).fill('Unsaved learner lesson')
     await editor.getByRole('textbox', { name: 'Reading content', exact: true }).fill('Unsaved authored explanation.')
+    await editor.getByRole('button', { name: 'Bold', exact: true }).click()
+    await expect(editor.getByRole('button', { name: 'Bold', exact: true })).toHaveAttribute('aria-pressed', 'true')
+    await editor.getByRole('button', { name: 'Bold', exact: true }).click()
+    await editor.getByRole('textbox', { name: 'Reading content', exact: true }).press('End')
+    await editor.getByRole('textbox', { name: 'Reading content', exact: true }).press('Enter')
+    await expect(editor.getByRole('button', { name: 'Preview lesson', exact: true })).toHaveCount(0)
+    const toolbar = editor.getByRole('toolbar', { name: 'Text formatting' })
+    if (width < 640) await toolbar.getByRole('button', { name: 'More formatting', exact: true }).click()
+    await expect(toolbar.getByRole('button', { name: 'Insert image', exact: true })).toBeVisible()
+    await expect(editor.getByLabel('Link URL', { exact: true })).toHaveCount(0)
+    await toolbar.getByRole('button', { name: 'Insert link', exact: true }).click()
+    await editor.getByLabel('Link URL', { exact: true }).fill('javascript:alert(1)')
+    await editor.getByRole('button', { name: 'Apply', exact: true }).click()
+    await expect(editor.getByRole('alert')).toContainText('valid HTTPS')
+    await editor.getByLabel('Link URL', { exact: true }).fill('https://example.org/lesson')
+    await editor.getByLabel('Link URL', { exact: true }).press('Enter')
+    await expect(editor.locator('.tiptap a')).toHaveAttribute('href', 'https://example.org/lesson')
+    await toolbar.getByRole('button', { name: 'Insert link', exact: true }).click()
+    await editor.getByLabel('Link URL', { exact: true }).press('Escape')
+    await expect(editor).toBeVisible()
+    await expect(editor.getByLabel('Link URL', { exact: true })).toHaveCount(0)
     await editor.getByLabel('Add image', { exact: true }).setInputFiles({ name: 'shared-diagram.png', mimeType: 'image/png', buffer: png })
     await expect(editor.getByRole('img', { name: 'shared-diagram.png' })).toBeVisible()
+    if (width === 1440) await page.screenshot({ path: '/tmp/module-authoring-toolbar-20261113.png' })
     await editor.getByRole('tab', { name: 'View as learner', exact: true }).click()
     await expect(editor.getByRole('heading', { name: 'Unsaved learner lesson', exact: true })).toBeVisible()
     await expect(editor.getByText('Unsaved authored explanation.', { exact: true })).toBeVisible()
@@ -77,6 +173,13 @@ for (const width of [1440, 390]) {
     await page.goto('/workspace/preview-test/ld-manager/approvals')
     await page.getByRole('button', { name: 'Review request', exact: true }).click()
     const panel = page.getByRole('dialog', { name: 'Review module request', exact: true })
+    const bounds = (await panel.boundingBox())!
+    expect(Math.abs(bounds.x + bounds.width / 2 - width / 2)).toBeLessThan(2)
+    if (width === 1440) expect(bounds.width).toBeGreaterThan(1100)
+    await expect(panel.getByRole('tab', { name: 'Module information', exact: true })).toBeVisible()
+    await expect(panel.getByRole('tab', { name: 'Version history', exact: true })).toBeVisible()
+    await expect(panel.getByRole('region', { name: 'Request overview' }).getByRole('term').filter({ hasText: /^Responsible Expert$/ }).locator('..').getByRole('definition')).toHaveText('Expert')
+    if (width === 1440) await page.screenshot({ path: '/tmp/module-approval-centered-20261113.png' })
     await panel.getByRole('tab', { name: 'View as learner', exact: true }).click()
     await expect(panel.getByText(/Reviewing revision 2/)).toBeVisible()
     await expect(panel.getByText('Exact requested revision body.', { exact: true })).toBeVisible()
@@ -102,6 +205,47 @@ for (const width of [1440, 390]) {
     expect(state.errors).toEqual([])
   })
 }
+
+for (const actor of ['expert', 'manager'] as const) for (const width of [1440, 390]) test(`Catalog learner preview preserves released snapshot for ${actor} at ${width}`, async ({ page }) => {
+  await page.setViewportSize({ width, height: 950 })
+  const state = await fixture(page, actor)
+  const doc = snapshot()
+  const released = doc.revisions[0].payload
+  released.metadata.status = 'ACTIVE'
+  released.metadata.reviewStatus = 'APPROVED'
+  released.content.contentVersion = '1'
+  await page.route(/\/module-list\?/, route => route.fulfill({ json: { items: [{ module: released, authoring: doc }], total: 1, page: 1, pageSize: 10 } }))
+  await page.goto(`/workspace/preview-test/${actor === 'expert' ? 'expert' : 'ld-manager'}/modules`)
+  if (actor === 'manager') await expect(page.getByTestId('module-row').locator('td').nth(6).getByText('Expert', { exact: true })).toHaveCount(0)
+  if (actor === 'expert') await expect(page.getByTestId('module-row').locator('td').nth(6).getByText('Expert', { exact: true })).toBeVisible()
+  await page.getByRole('button', { name: 'View module', exact: true }).click()
+  const detail = page.getByRole('dialog', { name: 'Catalog module details' })
+  const bounds = (await detail.boundingBox())!
+  expect(Math.abs(bounds.x + bounds.width / 2 - width / 2)).toBeLessThan(2)
+  await expect(detail.getByRole('tab', { name: 'Version history', exact: true })).toBeVisible()
+  await detail.getByRole('tab', { name: 'View as learner', exact: true }).click()
+  await expect(detail.getByText('Old released body only.', { exact: true })).toBeVisible()
+  await expect(detail.getByRole('heading', { name: 'Old released lesson', exact: true })).toHaveCSS('font-size', width < 640 ? '22px' : '28px')
+  await expect(detail.getByText('Exact requested revision body.', { exact: true })).toHaveCount(0)
+  await expect(detail.getByText(/Content version 1/)).toBeVisible()
+  await detail.getByRole('button', { name: 'Mobile', exact: true }).click()
+  expect((await detail.locator('[data-preview-viewport="mobile"]').boundingBox())!.width).toBeLessThanOrEqual(390)
+  await detail.getByRole('button', { name: 'Open full preview', exact: true }).click()
+  const full = page.getByRole('dialog', { name: 'View as learner', exact: true })
+  await expect(full.getByText('Old released body only.', { exact: true })).toBeVisible()
+  await full.getByRole('button', { name: 'Close dialog', exact: true }).click()
+  await detail.getByRole('button', { name: 'Desktop', exact: true }).click()
+  expect(await detail.evaluate(el => el.scrollWidth <= el.clientWidth)).toBe(true)
+  if (actor === 'expert' && width === 1440) await page.screenshot({ path: '/tmp/module-detail-learner-preview-20261113.png' })
+  await detail.getByRole('tab', { name: 'Module information', exact: true }).click()
+  await detail.getByRole('button', { name: /View .*history/ }).click()
+  const revisions = page.getByRole('dialog', { name: 'Module details', exact: true })
+  await revisions.getByRole('tab', { name: 'View as learner', exact: true }).click()
+  await expect(revisions.getByText('Exact requested revision body.', { exact: true })).toBeVisible()
+  await expect(revisions.getByText('Old released body only.', { exact: true })).toHaveCount(0)
+  expect(state.writes).toEqual([])
+  expect(state.errors).toEqual([])
+})
 
 for (const width of [1440, 1280, 390]) test(`Wide authoring: single editor, stable lessons, validation and draft payload at ${width}`, async ({ page }) => {
   await page.setViewportSize({ width, height: 950 })

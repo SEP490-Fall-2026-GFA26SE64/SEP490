@@ -1,13 +1,13 @@
 .module-management-dialog { font-family: var(--font-body); }
-.module-management-dialog h2,
-.module-management-dialog .heading--subsection,
-.module-management-dialog .heading--card { font-size: var(--text-base); }
-.module-management-dialog label { font-size: var(--text-xs); }
-.module-management-dialog input,
-.module-management-dialog select,
-.module-management-dialog textarea { font-size: var(--text-sm); }
-.module-management-dialog .text-body-sm { font-size: var(--text-xs); }
-.module-management-dialog .text-body-small,
-.module-management-dialog .text-body-default { font-size: var(--text-sm); }
-.module-management-dialog .text-caption { font-size: var(--text-xs); }
+.module-management-dialog h2:not(.learner-reader *),
+.module-management-dialog .heading--subsection:not(.learner-reader *),
+.module-management-dialog .heading--card:not(.learner-reader *) { font-size: var(--text-base); }
+.module-management-dialog label:not(.learner-reader *) { font-size: var(--text-xs); }
+.module-management-dialog input:not(.learner-reader *),
+.module-management-dialog select:not(.learner-reader *),
+.module-management-dialog textarea:not(.learner-reader *) { font-size: var(--text-sm); }
+.module-management-dialog .text-body-sm:not(.learner-reader *) { font-size: var(--text-xs); }
+.module-management-dialog .text-body-small:not(.learner-reader *),
+.module-management-dialog .text-body-default:not(.learner-reader *) { font-size: var(--text-sm); }
+.module-management-dialog .text-caption:not(.learner-reader *) { font-size: var(--text-xs); }
 .module-filters label { font-size: var(--text-xs); }

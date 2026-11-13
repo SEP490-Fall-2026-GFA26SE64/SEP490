@@ -12,7 +12,7 @@ export interface LessonProgress { lessonId: string; positionSeconds: number; wat
 export interface LearningView { revision: ModuleRevision; latestRevision: number | null; activeLessonId: string | null; progress: LessonProgress[] }
 export interface ManualPathway { id: string; learnerId: string; expertId: string; title: string; moduleIds: string[]; confirmedAt: string }
 export interface LearningNotification { id: string; kind: string; moduleId: string; title: string; body: string; createdAt: string; readAt: string | null }
-export interface ImportPreview { id: string; modules: { moduleId: string; excelRow: number; module: ModuleSave; lessons: LearningLesson[]; expectedVersion: number | null }[]; errors: { moduleId: string; row: number; reason: string }[]; ownedDuplicates: string[]; committed: boolean }
+export interface ImportPreview { id: string; modules: { moduleId: string; moduleRef?: string | null; excelRow: number; module: ModuleSave; lessons: LearningLesson[]; expectedVersion: number | null }[]; errors: { moduleId: string; row: number; reason: string }[]; ownedDuplicates: string[]; committed: boolean }
 export async function uploadLearningFile<T>(path: string, file: File): Promise<T> {
   const body = new FormData(); body.append('file', file)
   const response = await workspaceFetch(`/api/v1/module-management${path}`, { method: 'POST', body })
