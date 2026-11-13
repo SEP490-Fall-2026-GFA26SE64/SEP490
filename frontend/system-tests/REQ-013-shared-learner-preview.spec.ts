@@ -71,6 +71,15 @@ for (const width of [1440, 390]) test(`Import preview shows batch reference and 
   await page.getByRole('list', { name: 'Modules in import', exact: true }).getByRole('button', { name: 'View as learner', exact: true }).first().click()
   const review = page.getByRole('dialog', { name: 'Review module preview', exact: true })
   await expect(review.getByText('Exact requested revision body.', { exact: true })).toBeVisible()
+  await expect(review.locator('.preview-workspace-toolbar').getByRole('group', { name: 'Preview size' })).toBeVisible()
+  await expect(review.getByRole('heading', { name: 'Contents', exact: true })).toBeVisible()
+  const lessonRow = review.locator('.preview-lesson-row').first()
+  await expect(lessonRow.locator('.preview-lesson-meta')).toHaveText('Reading · 2 min')
+  const bounds = (await lessonRow.boundingBox())!, infoBounds = (await lessonRow.getByRole('button', { name: 'Show full lesson title 1' }).boundingBox())!
+  expect(infoBounds.x + infoBounds.width).toBeLessThanOrEqual(bounds.x + bounds.width)
+  expect(await review.evaluate(el => el.scrollWidth <= el.clientWidth)).toBe(true)
+  await page.screenshot({ path: `/tmp/sep490-polished-preview-${width}.png` })
+
   await expect(review.getByText('Import review · Not yet confirmed · Preview — no learning progress is saved', { exact: true })).toBeVisible()
   await review.getByRole('button', { name: /2\. Imported video/ }).click()
   await expect.poll(() => review.locator('video').evaluate((el: HTMLVideoElement) => el.readyState >= 1 && el.duration > 0)).toBe(true)
@@ -217,7 +226,7 @@ for (const actor of ['expert', 'manager'] as const) for (const width of [1440, 3
   await page.route(/\/module-list\?/, route => route.fulfill({ json: { items: [{ module: released, authoring: doc }], total: 1, page: 1, pageSize: 10 } }))
   await page.goto(`/workspace/preview-test/${actor === 'expert' ? 'expert' : 'ld-manager'}/modules`)
   if (actor === 'manager') await expect(page.getByTestId('module-row').locator('td').nth(6).getByText('Expert', { exact: true })).toHaveCount(0)
-  if (actor === 'expert') await expect(page.getByTestId('module-row').locator('td').nth(6).getByText('Expert', { exact: true })).toBeVisible()
+  if (actor === 'expert') await expect(page.getByTestId('module-row').locator('td').nth(6).getByText('Expert', { exact: true })).toHaveCount(0)
   await page.getByRole('button', { name: 'View module', exact: true }).click()
   const detail = page.getByRole('dialog', { name: 'Catalog module details' })
   const bounds = (await detail.boundingBox())!
@@ -304,4 +313,61 @@ for (const width of [1440, 1280, 390]) test(`Wide authoring: single editor, stab
   expect(state.savedModules[0]).toMatchObject({ title: 'Wide authored module', contentId: 'saved-content', knowledgeLevel: 'FOUNDATION' })
   expect(state.writes.every(write => !write.includes('/learning/'))).toBe(true)
   expect(state.errors).toEqual([])
+})
+
+
+for (const width of [1600, 390]) test(`Fixed lesson rows retain full long titles at ${width}`, async ({ page }) => {
+  await page.setViewportSize({ width, height: 950 })
+  const state = await fixture(page, 'expert')
+  const longTitle = 'Viết charter cho một phiên khám phá và kiểm tra khả năng hiển thị tên bài học rất dài '.repeat(8) + 'X'.repeat(160)
+  const doc = snapshot(), lessons = doc.revisions[1].payload.content.lessons
+  lessons[0].title = longTitle
+  await page.route('**/module-management/imports', route => route.fulfill({ json: { id: 'long-preview', modules: [{ moduleId: 'long-module', moduleRef: 'LONG', excelRow: 2, module: { title: 'Long title module' }, lessons, expectedVersion: null }], errors: [], ownedDuplicates: [], committed: false } }))
+  await page.goto('/workspace/preview-test/expert/modules')
+  await page.getByRole('button', { name: 'Import', exact: true }).click()
+  await page.getByLabel('Module import file', { exact: true }).setInputFiles({ name: 'long.xlsx', mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', buffer: Buffer.from('fixture') })
+  await page.getByRole('button', { name: 'View as learner', exact: true }).click()
+  const dialog = page.getByRole('dialog', { name: 'Review module preview', exact: true })
+  const rows = dialog.locator('.preview-lesson-row')
+  const first = (await rows.nth(0).boundingBox())!, second = (await rows.nth(1).boundingBox())!
+  expect(first.height).toBe(second.height)
+  expect(first.width).toBe(second.width)
+  await expect(dialog.getByRole('heading', { name: longTitle, exact: true })).toBeVisible()
+  expect(await dialog.evaluate(el => el.scrollWidth <= el.clientWidth)).toBe(true)
+  await rows.first().getByRole('button', { name: `1. ${longTitle}`, exact: true }).focus()
+  await expect(rows.first().getByRole('tooltip')).toBeVisible()
+  await dialog.getByRole('button', { name: 'Show full lesson title 1', exact: true }).click()
+  const titleDialog = page.getByRole('dialog', { name: 'Full lesson title', exact: true })
+  await expect(titleDialog.getByText(longTitle, { exact: true })).toBeVisible()
+  expect(await titleDialog.evaluate(el => el.scrollWidth <= el.clientWidth)).toBe(true)
+  await titleDialog.getByRole('button', { name: 'Close dialog', exact: true }).click()
+  await dialog.getByRole('button', { name: '2. Second requested lesson', exact: true }).click()
+  await expect(dialog.getByText('Second current lesson body.', { exact: true })).toBeVisible()
+  expect(state.importCommands).toEqual([])
+  expect(state.writes).toEqual([])
+})
+
+for (const width of [1280, 1440, 1800, 390]) for (const language of ['en', 'vi']) test(`Expert module directory keeps desktop table and compact badges at ${width} ${language}`, async ({ page }) => {
+  await page.setViewportSize({ width, height: 1000 })
+  await fixture(page, 'expert')
+  await page.addInitScript(lang => localStorage.setItem('app_language', lang), language)
+  const doc = snapshot()
+  await page.route('**/module-management/module-list*', route => route.fulfill({ json: { items: [{ module: doc.revisions[1].payload, authoring: doc }], total: 1, page: 1, pageSize: 10 } }))
+  await page.goto('/workspace/preview-test/expert/modules')
+  const row = page.getByTestId('module-row')
+  await expect(row).toBeVisible()
+  await expect(row).toHaveCSS('display', width >= 768 ? 'table-row' : 'grid')
+  if (width >= 768) {
+    await expect(page.locator('.module-directory thead')).toBeVisible()
+    expect((await row.boundingBox())!.height).toBeLessThan(160)
+  }
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true)
+  if (width === 1440) await page.screenshot({ path: `/tmp/sep490-module-table-restored-${language}.png` })
+  await expect(row.locator('td').nth(6).getByText('Expert', { exact: true })).toHaveCount(0)
+  await expect(row.locator('td').nth(5).getByText(language === 'vi' ? 'Chưa duyệt' : 'Not approved', { exact: true })).toBeVisible()
+  for (const index of [4,5,6]) {
+    const badge = row.locator('td').nth(index).locator(':scope > div').first()
+    await expect(badge).toHaveCSS('white-space', 'nowrap')
+    expect(await badge.evaluate(el => el.scrollWidth <= el.clientWidth)).toBe(true)
+  }
 })

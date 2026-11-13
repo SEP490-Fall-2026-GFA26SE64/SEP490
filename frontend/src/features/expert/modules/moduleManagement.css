@@ -11,3 +11,7 @@
 .module-management-dialog .text-body-default:not(.learner-reader *) { font-size: var(--text-sm); }
 .module-management-dialog .text-caption:not(.learner-reader *) { font-size: var(--text-xs); }
 .module-filters label { font-size: var(--text-xs); }
+
+.module-directory td:nth-child(5), .module-directory td:nth-child(6), .module-directory td:nth-child(7),
+.module-directory th:nth-child(5), .module-directory th:nth-child(6), .module-directory th:nth-child(7) { text-align: center; }
+.module-directory td:nth-child(5) > div, .module-directory td:nth-child(6) > div, .module-directory td:nth-child(7) > div { min-height: 1.75rem; max-width: 100%; justify-content: center; white-space: nowrap; font-size: var(--text-caption); line-height: 1.25rem; }

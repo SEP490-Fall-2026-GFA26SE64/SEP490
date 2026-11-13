@@ -245,3 +245,9 @@ FR-05.05 now requires exactly one Skill for each authored/imported Module; a Ski
 The Module editor presents Skill selection before learning content so the Expert chooses the teaching target before composing lessons.
 
 The current Module payload/projection adds knowledgeLevel, skillVersion and outcomeCodes to the single-Skill rule; new documents omit price under V61. Exact completion is recorded in a sidecar and checked by rule exam admission. Optional same-Skill study remains constrained by accepted module access, rather than granting every same-Skill provider. Certificate flow source exists separately; the older dataset audit/results above retain their historical scope.
+
+### Module directory and staff preview layout
+
+Expert Module directory omits the creator subtitle under Workflow, while identities remain available in details/history. Vietnamese status labels use compact wording and consistent centered single-line badges; desktop and tablet retain the compact table with horizontal scrolling inside the directory when required; mobile screens use the card layout. Shared staff learner preview keeps lesson navigation items at a fixed size. Long titles wrap within the bounded item, with the complete name available on hover/focus or through the information button on touch. The selected lesson heading retains its full title and wraps within the reading area. Selection and preview do not write learner progress.
+
+Staff learner preview groups read-only status, device sizing and full-screen controls in a compact toolbar. Lesson navigation shows a fixed card with number, Reading/Video type, actual duration and an internal full-title information action. The selected card has a primary marker. Shared document spacing and selected contents-link styling keep the reading hierarchy consistent with Employee rendering. Imported text remains intact; the viewer does not remove duplicate authored headings or generate replacement lesson content.
