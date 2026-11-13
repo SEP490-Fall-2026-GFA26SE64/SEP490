@@ -24,7 +24,11 @@ public interface RequirementPathwayJpaRepository extends Repository<InitialPathw
             SELECT r.request_id AS requestId,r.organization_id AS organizationId,r.learner_id AS learnerId,r.selection_id AS selectionId,
                 r.selection_revision AS selectionRevision,r.planning_input_hash AS planningInputHash,r.frozen_input::text AS frozenInput,
                 r.generation_status AS generationStatus,r.reason_code AS reasonCode,r.created_at AS createdAt,r.flow_version AS flowVersion,
+                r.frozen_input#>>'{input,binding,roleName}' AS roleName,r.frozen_input#>>'{input,binding,levelName}' AS levelName,
                 c.current_revision AS currentRevision,c.review_status AS reviewStatus,c.archived_at AS archivedAt,
+                c.timing_duration_months AS timingDurationMonths,c.timing_started_at AS timingStartedAt,
+                c.timing_deadline_at AS timingDeadlineAt,c.timing_completed_at AS timingCompletedAt,c.timing_on_time AS timingOnTime,
+                EXISTS (SELECT 1 FROM platform.initial_pathway_approval a WHERE a.request_id=r.request_id AND a.organization_id=r.organization_id) AS previouslyApproved,
                 v.content_hash AS contentHash,v.content::text AS content,v.approval_basis_revision AS approvalBasisRevision,v.run_id AS runId
             FROM platform.initial_pathway_request r JOIN platform.initial_pathway_current c ON c.request_id=r.request_id
                 AND c.organization_id=r.organization_id AND c.learner_id=r.learner_id
@@ -35,7 +39,49 @@ public interface RequirementPathwayJpaRepository extends Repository<InitialPathw
         UUID getRequestId();UUID getOrganizationId();UUID getLearnerId();UUID getSelectionId();long getSelectionRevision();
         String getPlanningInputHash();String getFrozenInput();String getGenerationStatus();String getReasonCode();Instant getCreatedAt();String getFlowVersion();
         Long getCurrentRevision();String getReviewStatus();Instant getArchivedAt();String getContentHash();String getContent();Long getApprovalBasisRevision();UUID getRunId();
+        Integer getTimingDurationMonths();Instant getTimingStartedAt();Instant getTimingDeadlineAt();Instant getTimingCompletedAt();Boolean getTimingOnTime();boolean getPreviouslyApproved();
+        String getRoleName();String getLevelName();
     }
+    @Modifying @Transactional(TransactionManagers.JPA)
+    @Query(value="""
+            UPDATE platform.initial_pathway_current c SET timing_duration_months=:months,timing_basis=CAST(:basis AS jsonb),
+                timing_started_at=:start,timing_deadline_at=:deadline
+            WHERE c.organization_id=:org AND c.learner_id=:learner AND c.request_id=:request AND c.timing_started_at IS NULL
+                AND NOT EXISTS (SELECT 1 FROM platform.initial_pathway_approval a WHERE a.request_id=c.request_id AND a.organization_id=c.organization_id)
+            """,nativeQuery=true)
+    int startTiming(@Param("org") UUID org,@Param("learner") UUID learner,@Param("request") UUID request,@Param("months") int months,
+                    @Param("basis") String basis,@Param("start") Instant start,@Param("deadline") Instant deadline);
+    @Modifying @Transactional(TransactionManagers.JPA)
+    @Query(value="""
+            UPDATE platform.initial_pathway_current SET timing_completed_at=:now,
+                timing_on_time=CASE WHEN timing_deadline_at IS NULL THEN NULL ELSE :now<=timing_deadline_at END
+            WHERE organization_id=:org AND learner_id=:learner AND request_id=:request AND review_status='APPROVED'
+                AND timing_completed_at IS NULL
+            """,nativeQuery=true)
+    int completeTiming(@Param("org") UUID org,@Param("learner") UUID learner,@Param("request") UUID request,@Param("now") Instant now);
+    @Query(value="""
+            SELECT greatest(coalesce(c.timing_started_at,(SELECT min(a.confirmed_at) FROM platform.initial_pathway_approval a
+                    WHERE a.request_id=c.request_id AND a.organization_id=c.organization_id)),
+                (SELECT max(CASE WHEN s.state='FULFILLED' THEN e.achieved_at ELSE b.decided_at END)
+                 FROM platform.pathway_requirement_step s
+                 LEFT JOIN platform.skill_knowledge_evidence e ON e.id=s.fulfilled_evidence_id
+                    AND e.organization_id=s.organization_id AND e.learner_id=s.learner_id
+                 LEFT JOIN LATERAL (SELECT max(x.decided_at) AS decided_at FROM platform.pathway_requirement_bypass x
+                    WHERE x.request_id=s.request_id AND x.step_id=s.step_id AND x.revision<=s.revision
+                        AND x.organization_id=s.organization_id AND x.learner_id=s.learner_id) b ON true
+                 WHERE s.request_id=c.request_id AND s.revision=:revision AND s.organization_id=c.organization_id
+                    AND s.learner_id=c.learner_id AND s.kind='REQUIRED'))
+            FROM platform.initial_pathway_current c WHERE c.organization_id=:org AND c.learner_id=:learner AND c.request_id=:request
+                AND c.current_revision=:revision AND c.review_status='APPROVED'
+            """,nativeQuery=true)
+    Optional<Instant> completionTime(@Param("org") UUID org,@Param("learner") UUID learner,@Param("request") UUID request,@Param("revision") long revision);
+    @Modifying @Transactional(TransactionManagers.JPA)
+    @Query(value="""
+            UPDATE platform.initial_pathway_current SET review_status='REJECTED'
+            WHERE organization_id=:org AND learner_id=:learner AND request_id=:request AND current_revision=:revision
+                AND review_status='AWAITING_EXPERT_REVIEW' AND archived_at IS NULL
+            """,nativeQuery=true)
+    int reject(@Param("org") UUID org,@Param("learner") UUID learner,@Param("request") UUID request,@Param("revision") long revision);
     @Query(value="SELECT EXISTS (SELECT 1 FROM platform.initial_pathway_revision WHERE organization_id=:org AND learner_id=:learner AND request_id=:request AND source_event_id=:event AND format_version=3)",nativeQuery=true)
     boolean sourceApplied(@Param("org") UUID org,@Param("learner") UUID learner,@Param("request") UUID request,@Param("event") UUID event);
     @Query(value="""

@@ -198,6 +198,10 @@ public class LearningContentController {
     public List<NotificationResponse> notifications() {
         return content.notifications();
     }
+    @PutMapping("/notifications/{id}/observed")
+    public boolean observe(@PathVariable String id) { return content.observe(id); }
+    @GetMapping("/notifications/unobserved")
+    public List<NotificationResponse> pendingNotifications() { return content.pendingNotifications(); }
 
     @PutMapping("/notifications/{id}/read")
     public ResponseEntity<Void> read(@PathVariable String id) {

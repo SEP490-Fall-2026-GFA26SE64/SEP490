@@ -54,7 +54,8 @@ public final class AssessmentPolicyController {
             byte[] bytes=request.getInputStream().readNBytes(262145);
             if(bytes.length>262144)throw new Failure(400,"INVALID_REQUEST");
             T value=mapper.readerFor(type).with(com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_MISSING_CREATOR_PROPERTIES)
-                    .with(com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES).readValue(bytes);
+                    .with(com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+                    .without(com.fasterxml.jackson.databind.DeserializationFeature.ACCEPT_FLOAT_AS_INT).readValue(bytes);
             if(value==null)throw new Failure(400,"INVALID_REQUEST");return value;
         }catch(java.io.IOException invalid){throw new Failure(400,"INVALID_REQUEST");}
     }

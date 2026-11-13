@@ -42,7 +42,7 @@ public final class LearningMailWorker {
                     if (job == null) return null;
                     try {
                         String path =
-                                job.kind().equals("CONTENT_ISSUE")
+                                job.deepLink()!=null ? job.deepLink() : job.kind().equals("CONTENT_ISSUE")
                                         ? "/expert/modules"
                                         : "/employee/modules/"
                                                 + java.net.URLEncoder.encode(
@@ -54,7 +54,7 @@ public final class LearningMailWorker {
                                         job.title(),
                                         job.body(),
                                         null,
-                                        Map.of("Module", job.moduleId()),
+                                        job.moduleId()==null?Map.of():Map.of("Module", job.moduleId()),
                                         "Open / Mở nội dung",
                                         publicUrl + com.adaptlearngraph.helper.WorkspaceLinks.path(job.slug(), path),
                                         "Sign in to review this update. / Đăng nhập để xem thông"

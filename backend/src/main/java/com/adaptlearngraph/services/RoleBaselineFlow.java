@@ -28,7 +28,12 @@ public final class RoleBaselineFlow {
         }
     }
     public record Role(String id, String code, String name, String scope, String jobPositionId,
-                       String jobPositionName, String catalogVersion, String fingerprint, List<Level> levels) {}
+                       String jobPositionName, String catalogVersion, String fingerprint, List<Level> levels,
+                       @com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL) String roleVersion) {
+        public Role(String id,String code,String name,String scope,String jobPositionId,String jobPositionName,String catalogVersion,String fingerprint,List<Level> levels) {
+            this(id,code,name,scope,jobPositionId,jobPositionName,catalogVersion,fingerprint,levels,null);
+        }
+    }
     public record Selection(UUID selectionId, Role role, long revision, Instant selectedAt, boolean available,String levelId) {
         public Selection(UUID id,Role role,long revision,Instant selectedAt,boolean available){this(id,role,revision,selectedAt,available,null);}
     }

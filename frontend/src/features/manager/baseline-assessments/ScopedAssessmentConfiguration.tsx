@@ -189,7 +189,7 @@ function ScopeWorkspace({ purpose, scopeKey, initialAction, onClose }: { purpose
   return <Dialog open size="wide" className="max-w-3xl border-primary/20" ariaLabel={t('scopedPolicy.skillTitle')} onOpenChange={open => { if (!open) back() }}>
     <DialogHeader className="mb-4 border-b border-border pb-4 pr-7"><DialogTitle><SlidersHorizontal className="h-5 w-5 text-primary" />{data ? `${data.scope.ownerName} \u00b7 ${t(`knowledgeLevel.${data.scope.levelId}`)}` : t('scopedPolicy.skillTitle')}</DialogTitle><DialogDescription>{t('scopedPolicy.skillTitle')}</DialogDescription></DialogHeader>
     <DialogBody className="space-y-4">
-    <div className="flex flex-wrap items-center justify-end gap-2"><Button variant="outline" className="min-w-24 border-border font-semibold shadow-xs" disabled={locked} onClick={back}>{t('baselineWizard.close')}</Button>
+    <div className="flex flex-wrap items-center justify-end gap-2">
       <Button variant="secondary" className="min-w-24 border border-primary/30 font-semibold" disabled={locked || editing} leftIcon={<RefreshCw size={14} aria-hidden="true" />} onClick={() => { setViewing(null); setReload(v => v + 1) }}>{t('scopedPolicy.refresh')}</Button></div>
     {notice && <Text role="status" tone="success">{t(`scopedPolicy.${notice}`)}</Text>}
     {mutationError != null && <ConfigError error={mutationError} />}

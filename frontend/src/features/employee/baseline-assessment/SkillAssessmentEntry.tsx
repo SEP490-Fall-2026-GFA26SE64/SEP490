@@ -13,7 +13,7 @@ import { targetFor, type AssessmentState } from './usePathwayAssessmentStates'
 import { attemptPath, BaselineError, executeCommand, readContextAttempt, readModuleHistory, startCommand, type BaselineCommand } from './baselineApi'
 
 
-export function AssessmentStatus({ state }: { state: AssessmentState | null }) {
+export function AssessmentStatus({ state, partialLabel }: { state: AssessmentState | null; partialLabel?: string }) {
   const { language } = useTranslation()
   if (!state) return null
   const labels: Record<AssessmentState, [string, string]> = {
@@ -22,7 +22,7 @@ export function AssessmentStatus({ state }: { state: AssessmentState | null }) {
     failed: ['Assessment not passed', 'Bài đánh giá chưa đạt'], passed: ['Assessment passed', 'Bài đánh giá đạt'],
     prerequisites: ['Main group passed · check prerequisite results', 'Nhóm chính đạt · xem kết quả tiền đề'],
   }
-  return <Badge variant={state === 'passed' ? 'success' : state === 'failed' ? 'destructive' : state === 'loading' || state === 'unavailable' ? 'outline' : 'warning'} className="whitespace-normal text-left">{labels[state][language === 'vi' ? 1 : 0]}</Badge>
+  return <Badge variant={state === 'passed' ? 'success' : state === 'failed' ? 'destructive' : state === 'loading' || state === 'unavailable' ? 'outline' : 'warning'} className="whitespace-normal text-left">{state === 'prerequisites' && partialLabel ? partialLabel : labels[state][language === 'vi' ? 1 : 0]}</Badge>
 }
 
 /** History only reads persisted attempts; starting/resuming/retaking requires a deliberate click. */

@@ -21,7 +21,12 @@ public final class RuleAssessmentOutcomeService {
     private final OutboxEventJpaRepository outbox;
     private final TransactionTemplate tx;
     private final ObjectMapper json;
-    @FunctionalInterface public interface PathwayEffects {void apply(RuleAssessmentAttemptEntity attempt,UUID event,List<RuleAssessmentOutcomeJpaRepository.GroupRow> groups);}
+    public record PathwayBefore(UUID requestId,com.adaptlearngraph.entities.domain.RequirementPathway.Plan plan) {}
+    @FunctionalInterface public interface PathwayEffects {
+        void apply(RuleAssessmentAttemptEntity attempt,UUID event,List<RuleAssessmentOutcomeJpaRepository.GroupRow> groups);
+        default Optional<PathwayBefore> before(RuleAssessmentAttemptEntity attempt){return Optional.empty();}
+        default void notify(RuleAssessmentAttemptEntity attempt,UUID event,Optional<PathwayBefore> before){}
+    }
     private final PathwayEffects pathways;
     private final AuditEventJpaRepository audit;
     public RuleAssessmentOutcomeService(RuleAssessmentOutcomeJpaRepository effects,RuleAssessmentAttemptJpaRepository attempts,
@@ -71,6 +76,7 @@ public final class RuleAssessmentOutcomeService {
                 if(row.getOfficialAtFinalization())officialAtFinish.add(requirement.key());
             }
         }
+        var pathwayBefore=pathways.before(a);
         pathways.apply(a,work.getEventId(),rows);
         boolean assignedLearningPending="SKILL_ASSESSMENT".equals(a.getPurpose()) && effects.assignedLearningPending(a.getOrganizationId(),a.getLearnerId(),a.getId());
         var decision=RuleAssessmentDecision.decide(Purpose.valueOf(a.getPurpose()),results,officialAtFinish,officialNow,assignedLearningPending);
@@ -92,6 +98,7 @@ public final class RuleAssessmentOutcomeService {
             // rather than leaving the current step yellow until the periodic refresh.
             if(evidenceEvent!=null)pathways.apply(a,evidenceEvent,rows);
         }
+        pathways.notify(a,work.getEventId(),pathwayBefore);
         if(decision.state()==RuleAssessmentDecision.State.WAITING_SUPPLEMENT) {
             effects.retry(work.getJobId(),"WAITING_REQUIRED_SUPPLEMENT");return;
         }

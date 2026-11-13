@@ -74,7 +74,7 @@ public interface InitialPathwayCurrentJpaRepository
     @Query("""
             update InitialPathwayCurrentEntity c set c.reviewStatus = 'APPROVED'
             where c.organizationId = :org and c.learnerId = :learner and c.requestId = :id and c.currentRevision = :revision
-              and c.reviewStatus = 'AWAITING_EXPERT_REVIEW' and c.archivedAt is null
+              and c.reviewStatus in ('AWAITING_EXPERT_REVIEW','REJECTED') and c.archivedAt is null
               and exists (select 1 from InitialPathwayRevisionEntity v where v.requestId = c.requestId and v.revision = :revision
                   and v.contentHash = :hash and v.validationStatus = 'VALID')
             """)

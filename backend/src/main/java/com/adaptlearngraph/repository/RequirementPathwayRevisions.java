@@ -13,8 +13,10 @@ public final class RequirementPathwayRevisions {
     public record Content(String flowVersion,Plan plan) {}
     private final InitialPathwayRepositories data;private final RequirementPathwayJpaRepository rules;
     private final RuleAssessmentAttemptJpaRepository clock;private final ObjectMapper json;
-    public RequirementPathwayRevisions(InitialPathwayRepositories data,RequirementPathwayJpaRepository rules,RuleAssessmentAttemptJpaRepository clock,ObjectMapper json) {
-        this.data=data;this.rules=rules;this.clock=clock;this.json=json;
+    private final com.adaptlearngraph.services.PathwayNotifications notifications;
+    public RequirementPathwayRevisions(InitialPathwayRepositories data,RequirementPathwayJpaRepository rules,RuleAssessmentAttemptJpaRepository clock,ObjectMapper json,
+            com.adaptlearngraph.services.PathwayNotifications notifications) {
+        this.data=data;this.rules=rules;this.clock=clock;this.json=json;this.notifications=notifications;
     }
     public long publish(RequirementPathwayJpaRepository.Row row,Plan plan,UUID run,String origin,UUID source,Long approvalBasis,String reviewStatus,UUID actor) {
         InitialJpa.requireTransaction();long revision=row.getCurrentRevision()==null?1:row.getCurrentRevision()+1;
@@ -27,7 +29,25 @@ public final class RequirementPathwayRevisions {
                 || rules.dependencies(row.getOrganizationId(),row.getLearnerId(),row.getRequestId(),revision,projection)!=plan.dependencies().size())throw new Failure(503,"REQUIREMENT_PROJECTION_INCOMPLETE");
         if(rules.publish(row.getOrganizationId(),row.getLearnerId(),row.getRequestId(),row.getCurrentRevision(),revision,reviewStatus)!=1)throw new Failure(409,"STALE_PATHWAY_REVISION");
         event(row,revision,"RULE_PATHWAY_REVISION_PUBLISHED",actor,Map.of("changeOrigin",origin,"contentHash",hash,"reviewStatus",reviewStatus));
+        if(!"ASSESSMENT".equals(origin))notifications.delta(row,revision,read(row),plan,origin,source);
+        complete(row,plan,reviewStatus,revision);
         return revision;
+    }
+    public com.adaptlearngraph.services.PathwayTiming.View timing(RequirementPathwayJpaRepository.Row row) {
+        return new com.adaptlearngraph.services.PathwayTiming(rules,clock).view(row);
+    }
+    public void complete(RequirementPathwayJpaRepository.Row row,Plan plan,String status) {
+        complete(row,plan,status,row.getCurrentRevision()==null?1:row.getCurrentRevision());
+    }
+    private void complete(RequirementPathwayJpaRepository.Row row,Plan plan,String status,long revision) {
+        if("APPROVED".equals(status) && plan.targetReleased()
+                && rules.completeTiming(row.getOrganizationId(),row.getLearnerId(),row.getRequestId(),
+                    rules.completionTime(row.getOrganizationId(),row.getLearnerId(),row.getRequestId(),revision)
+                        .orElseThrow(()->new Failure(503,"PATHWAY_COMPLETION_TIME_UNAVAILABLE")))==1)
+            event(row,revision,"RULE_PATHWAY_COMPLETED",null,Map.of());
+    }
+    public void recalculated(RequirementPathwayJpaRepository.Row row,long revision,Plan before,Plan after,UUID event) {
+        notifications.delta(row,revision,before,after,"ASSESSMENT",event);
     }
     public Plan read(RequirementPathwayJpaRepository.Row row) {
         if(row.getCurrentRevision()==null)return new Plan(List.of(),List.of());
@@ -47,6 +67,7 @@ public final class RequirementPathwayRevisions {
         var now=clock.clock();
         data.outbox().insert(new OutboxEventEntity(UUID.randomUUID(),type,row.getRequestId(),revision,payload,row.getRequestId(),now));
         data.audit().insert(new AuditEventEntity(UUID.randomUUID(),actor,"pathway",type,row.getRequestId(),Long.toString(revision),now,"ACCEPTED",row.getRequestId()));
+        notifications.event(row,revision,type,detail);
     }
     public String encode(Object value){try{return json.writeValueAsString(value);}catch(Exception invalid){throw new Failure(503,"PATHWAY_SNAPSHOT_INVALID");}}
 }

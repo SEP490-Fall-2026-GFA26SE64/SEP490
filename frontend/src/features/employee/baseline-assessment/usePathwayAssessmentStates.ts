@@ -20,11 +20,8 @@ export function usePathwayAssessmentStates(pathway: RulePathway, preview: boolea
   })) })
   const states = new Map<string, AssessmentState>()
   options.forEach(({ step, option }, index) => {
-    const query = queries[index], attempt = query.data?.find(item => item.target.selectionId === pathway.selectionId && item.target.selectionRevision === pathway.selectionRevision && item.target.stepId === step.id)
-    states.set(optionKey(step, option), query.isError ? 'unavailable' : query.isPending ? 'loading' : !attempt ? 'notStarted' : attempt.state === 'IN_PROGRESS' ? 'inProgress'
-      : attempt.results.length > 0 && attempt.results.every(result => result.passed && !result.vetoTriggered) ? 'passed'
-      : attempt.results.some(result => attempt.groups.some(group => group.id === result.groupId && group.role === 'MAIN') && result.passed)
-        && !attempt.results.some(result => result.vetoTriggered) ? 'prerequisites' : 'failed')
+    const query = queries[index]
+    states.set(optionKey(step, option), query.isError ? 'unavailable' : query.isPending ? 'loading' : moduleAssessmentState(query.data ?? [], pathway, step))
   })
   return (step: RuleStep, option?: RuleModuleOption): AssessmentState | null => {
     if (preview || pathway.archived || step.requirement.provision !== 'MODULE_ONLY') return null
@@ -35,4 +32,13 @@ export function usePathwayAssessmentStates(pathway: RulePathway, preview: boolea
     const priority: AssessmentState[] = ['passed', 'prerequisites', 'inProgress', 'failed', 'unavailable', 'loading', 'notStarted']
     return priority.find(state => available.includes(state)) ?? null
   }
+}
+
+/** Same exact-context outcome classification for Pathway, Overview and Profile. */
+export function moduleAssessmentState(attempts: BaselineAttempt[], pathway: RulePathway, step: RuleStep): AssessmentState {
+  const attempt = attempts.find(item => item.target.selectionId === pathway.selectionId && item.target.selectionRevision === pathway.selectionRevision && item.target.stepId === step.id)
+  return !attempt ? 'notStarted' : attempt.state === 'IN_PROGRESS' ? 'inProgress'
+    : attempt.results.length > 0 && attempt.results.every(result => result.passed && !result.vetoTriggered) ? 'passed'
+    : attempt.results.some(result => attempt.groups.some(group => group.id === result.groupId && group.role === 'MAIN') && result.passed)
+      && !attempt.results.some(result => result.vetoTriggered) ? 'prerequisites' : 'failed'
 }

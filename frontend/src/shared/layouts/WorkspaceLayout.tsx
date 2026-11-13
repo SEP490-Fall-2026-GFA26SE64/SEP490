@@ -10,7 +10,6 @@ import {
   Building,
   Building2,
   CheckCircle2,
-  CheckSquare,
   ChevronDown,
   Compass,
   CreditCard,
@@ -192,11 +191,6 @@ export function WorkspaceLayout({ children, identity: suppliedIdentity, onSignOu
         icon: <LayoutDashboard size={15} />,
       },
       {
-        label: t('nav.gapAnalysis'),
-        href: '/employee/gap-analysis',
-        icon: <Award size={15} />,
-      },
-      {
         label: t('nav.upskilling'),
         href: '/employee/upskilling',
         icon: <Target size={15} />,
@@ -205,16 +199,6 @@ export function WorkspaceLayout({ children, identity: suppliedIdentity, onSignOu
         label: t('nav.pathway'),
         href: '/employee/pathway',
         icon: <GitFork size={15} />,
-      },
-      {
-        label: t('nav.assessmentQuiz'),
-        href: '/employee/assessment',
-        icon: <CheckSquare size={15} />,
-      },
-      {
-        label: t('nav.serverStatus'),
-        href: '/system-status?portal=employee',
-        icon: <Activity size={15} />,
       },
     ]
   } else if (isExpert) {
@@ -652,10 +636,10 @@ export function WorkspaceLayout({ children, identity: suppliedIdentity, onSignOu
             <LanguageSwitcher />
 
             {/* Real-time Notification Bell & Dropdown */}
-            {trusted ? <button type="button" disabled className="p-2 text-muted-foreground opacity-50"
+            {trusted && !identity?.roles?.some(role => ['EMPLOYEE', 'DOMAIN_EXPERT', 'LD_MANAGER'].includes(role)) ? <button type="button" disabled className="p-2 text-muted-foreground opacity-50"
               aria-label={t('Notifications unavailable')} title={t('Notifications unavailable')}>
               <Bell size={18} aria-hidden="true" />
-            </button> : <NotificationDropdown />}
+            </button> : <NotificationDropdown key={`${identity?.organizationId}:${identity?.accountId}`} /> }
 
             {/* Account Menu Button */}
             <div ref={userMenuRef} className="workspace-account relative shrink-0">

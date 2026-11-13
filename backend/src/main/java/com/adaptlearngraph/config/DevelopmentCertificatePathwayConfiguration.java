@@ -34,7 +34,8 @@ public class DevelopmentCertificatePathwayConfiguration {
             long expected=Long.parseLong(env.getRequiredProperty("certificates.development-pathway.expected-revision"));
             var definitions=DevelopmentCertificateFixtures.read(json);
             var rules=beans.getBean(RequirementPathwayJpaRepository.class);
-            var revisions=new RequirementPathwayRevisions(InitialPathwayRepositories.from(beans::getBean),rules,beans.getBean(RuleAssessmentAttemptJpaRepository.class),json);
+            var revisions=new RequirementPathwayRevisions(InitialPathwayRepositories.from(beans::getBean),rules,beans.getBean(RuleAssessmentAttemptJpaRepository.class),json,
+                    new com.adaptlearngraph.services.PathwayNotifications(beans.getBean(LearningNotificationJpaRepository.class)));
             var organization=DevelopmentCertificateFixtures.ORGANIZATION;var learner=DevelopmentWorkspaceAccountBootstrap.EMPLOYEE_ACCOUNT_ID;
             var locks=new PostgresAdvisoryLocks(entityManager);
             new TransactionTemplate(manager).executeWithoutResult(tx->{

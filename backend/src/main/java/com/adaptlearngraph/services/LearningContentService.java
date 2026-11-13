@@ -318,4 +318,10 @@ public final class LearningContentService {
         Actor a = modules.actor();
         content.readNotification(a.organizationId(), a.id(), id);
     }
+    public boolean observe(String id) {
+        Actor a=modules.actor();return content.observeNotification(a.organizationId(),a.id(),id);
+    }
+    public List<Notification> pendingNotifications() {
+        Actor a=modules.actor();return content.pendingNotifications(a.organizationId(),a.id());
+    }
 }

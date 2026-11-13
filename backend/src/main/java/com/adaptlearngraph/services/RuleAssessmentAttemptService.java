@@ -28,7 +28,7 @@ public final class RuleAssessmentAttemptService {
         Context resolve(RoleBaselineFlow.Actor actor,Start command);
         void assertCurrent(RoleBaselineFlow.Actor actor,Context context);
     }
-    public record Question(int position,UUID itemVersionId,UUID groupId,String prompt,List<Option> options,String selectedOptionId) {}
+    public record Question(int position,UUID itemVersionId,UUID groupId,String prompt,List<Option> options,String selectedOptionId,boolean mandatory) {}
     public record GroupView(UUID id,String skillName,Requirement requirement,GroupRole role,int totalCount,int requiredCorrectCount,boolean mandatoryRequired) {}
     public record Target(UUID selectionId,long selectionRevision,String roleId,String roleName,String levelId,String levelName,
                          String jobPositionId,String jobPositionName,UUID stepId,String moduleId,Integer moduleRevision) {}
@@ -112,6 +112,7 @@ public final class RuleAssessmentAttemptService {
             if(!history.isEmpty() && now.isBefore(history.getFirst().getFinishedAt().plusSeconds(config.retakeWaitSeconds())))
                 throw new Failure(409,"RETAKE_NOT_YET_AVAILABLE");
             var groups=new ArrayList<Group>();int count=0;var random=new java.security.SecureRandom();
+            locks.lock("question-bank:"+a.organizationId());
             for(var need:context.groups()) {
                 GroupRule rule;try{rule=config.require(need.requirement());}catch(IllegalArgumentException missing){throw new Failure(422,"GROUP_POLICY_REQUIRED");}
                 if((count+=rule.totalCount())>maximum)throw new Failure(422,"PAPER_CAPACITY_EXCEEDED");
@@ -134,7 +135,7 @@ public final class RuleAssessmentAttemptService {
             for(var group:paper.groups()) {
                 var requirement=group.requirement();var rule=group.rule();
                 attempts.freezeGroup(id,group.id(),a.organizationId(),a.learnerId(),requirement.skillId(),requirement.knowledgeLevel().name(),
-                        write(requirement.outcomeCodes()),group.role().name(),rule.totalCount(),rule.requiredCorrectCount(),rule.mandatoryRequired(),rule.allWrongVeto());
+                        write(requirement.outcomeCodes()),group.role().name(),rule.totalCount(),rule.requiredCorrectCount(),rule.mandatoryRequired(),rule.allWrongVeto(),rule.mandatoryCount());
                 for(var item:group.items())attempts.freezeItem(id,group.id(),++position,a.organizationId(),item.itemVersionId(),
                         write(Map.of("optionIds",item.options().stream().map(Option::id).toList(),"contentHash",item.contentHash(),"mappingHash",item.mappingHash())),item.mandatory());
             }
@@ -246,8 +247,9 @@ public final class RuleAssessmentAttemptService {
         var groups=saved.paper().groups().stream().map(g->new GroupView(g.id(),Objects.requireNonNull(names.get(g.requirement().skillId())),g.requirement(),g.role(),g.rule().totalCount(),
                 g.rule().requiredCorrectCount(),g.rule().mandatoryRequired())).toList();
         var candidates=new HashMap<UUID,Candidate>();saved.paper().groups().forEach(g->g.items().forEach(i->candidates.put(i.itemVersionId(),i)));
+        var mandatoryGroups=new HashSet<UUID>();saved.paper().groups().stream().filter(g->g.rule().mandatoryRequired()).forEach(g->mandatoryGroups.add(g.id()));
         var questions=saved.rows().stream().map(i->new Question(i.getPosition(),i.getItemVersionId(),i.getGroupId(),i.getPrompt(),
-                candidates.get(i.getItemVersionId()).options(),saved.answers().get(i.getItemVersionId()))).toList();
+                candidates.get(i.getItemVersionId()).options(),saved.answers().get(i.getItemVersionId()),i.getMandatory() && mandatoryGroups.contains(i.getGroupId()))).toList();
         var results=new ArrayList<GroupResult>();
         if("FINALIZED".equals(row.getState())) {
             var stored=attempts.results(a.organizationId(),a.learnerId(),row.getId());
@@ -317,7 +319,7 @@ public final class RuleAssessmentAttemptService {
             var g=items.getFirst();
             List<String> outcomes;try{outcomes=json.readValue(g.getOutcomeCodes(),new TypeReference<List<String>>(){});}catch(Exception invalid){throw integrity();}
             var requirement=new Requirement(g.getSkillId(),KnowledgeLevel.valueOf(g.getKnowledgeLevel()),outcomes);
-            var rule=new GroupRule(g.getSkillId(),requirement.knowledgeLevel(),g.getTotalCount(),g.getRequiredCorrectCount(),g.getMandatoryRequired(),g.getAllWrongVeto());
+            var rule=new GroupRule(g.getSkillId(),requirement.knowledgeLevel(),g.getTotalCount(),g.getRequiredCorrectCount(),g.getMandatoryRequired(),g.getAllWrongVeto(),g.getMandatoryCount());
             var candidates=new ArrayList<Candidate>();
             for(var item:items) {
                 try {
