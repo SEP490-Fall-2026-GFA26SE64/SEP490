@@ -2,9 +2,10 @@ import type { TranslationKeys } from './en'
 
 export const vi: TranslationKeys = {
   skillWizard: {
+    quotaInvalid: 'Nhập số nguyên từ 0 đến số câu điểm liệt hiện có, không vượt tổng câu của nhóm. Cũng cần đủ câu thường cho các vị trí còn lại.',
     counts: 'Số câu và điều kiện đạt', countsHelp: 'Điền skill chính trước, sau đó đến từng skill tiên quyết. Mỗi nhóm có số câu và số câu đúng riêng.',
     main: 'Skill chính', prerequisite: 'Skill tiên quyết', next: 'Tiếp tục', saveActivate: 'Lưu & kích hoạt',
-    mandatoryHelp: 'Khi bật, phải đúng mọi câu bắt buộc trong nhóm này, kể cả khi đã đủ số câu đúng yêu cầu.', mandatoryCount: 'Số câu bắt buộc hiện có',
+    mandatoryHelp: '0 là không lấy câu điểm liệt. Phải đúng mọi câu điểm liệt được chọn; phần còn lại chỉ lấy từ câu thường.', mandatoryCount: 'Số câu điểm liệt hiện có', mandatoryQuota: 'Số câu điểm liệt cần lấy', ordinaryCount: 'Số câu thường hiện có', legacyMandatory: 'Quy tắc điểm liệt lịch sử; chọn số lượng cụ thể trước khi lưu phiên bản mới',
     vetoHelp: 'Nếu sai toàn bộ câu của nhóm tiên quyết này, phải làm lại cả bài dù skill chính đã đạt.',
     saveHelp: 'Lưu nháp để tiếp tục sau. Lưu & kích hoạt sẽ lưu trước rồi kiểm tra kích hoạt. Nếu kích hoạt không thành công, bản nháp đã lưu vẫn được giữ lại.',
   },
@@ -153,6 +154,7 @@ export const vi: TranslationKeys = {
       "PREREQUISITE_CYCLE": "Các định nghĩa tiền đề tạo thành chu trình, cần người quản lý danh mục kiểm tra.",
       "EXACT_SCOPE_GROUPS_REQUIRED": "Bản nháp phải chứa đúng các nhóm kỹ năng–mức kiến thức hiện tại của phạm vi này.",
       "POLICY_CONFIGURATION_REQUIRED": "Lưu bản nháp đầy đủ trước khi kích hoạt.",
+      "MANDATORY_COUNT_REQUIRED": "Chọn số câu điểm liệt cụ thể cho từng nhóm Skill Assessment trước khi lưu hoặc kích hoạt phiên bản này.",
       "INSUFFICIENT_APPROVED_GROUP_BANK": "Ngân hàng câu hỏi đã duyệt chưa đáp ứng số câu cho đúng Skill, mức kiến thức và phiên bản Skill. Bản nháp được giữ lại; phiên bản đang áp dụng không thay đổi.",
       "PAPER_CAPACITY_EXCEEDED": "Số câu cấu hình vượt giới hạn bài đánh giá được hỗ trợ.",
       "BANK_QUERY_LIMIT_EXCEEDED": "Ngân hàng câu hỏi vượt giới hạn tra cứu được hỗ trợ. Liên hệ người quản lý danh mục.",
@@ -335,11 +337,16 @@ export const vi: TranslationKeys = {
     completedHint: 'Hoàn thành hợp lệ nghĩa là đã thu thập đủ bằng chứng, không đồng nghĩa đáp ứng yêu cầu của vị trí.',
     profileSaved: 'Bài đánh giá này đã được ghi nhận trong hồ sơ thành thạo của bạn.', profilePending: 'Chưa xác nhận được cập nhật hồ sơ từ bài đánh giá này.', profileError: 'Chưa kiểm tra được trạng thái hồ sơ. Hãy thử lại.',
     navigation: 'Điều hướng câu hỏi', adaptiveHint: 'Đề đầy đủ đã được lưu. Khi quay lại, bạn tiếp tục cùng câu hỏi và hạn làm bài.',
-    savedHint: 'Đáp án đã gửi được lưu tự động và không thể thay đổi. Lựa chọn chưa gửi chưa được lưu.',
+    savedHint: 'Đáp án được lưu khi chuyển câu hoặc nộp bài. Hãy chờ lưu xong trước khi rời trang.',
     question: 'Câu hỏi', current: 'Câu hỏi hiện tại', previous: 'Câu trước', next: 'Câu tiếp theo', review: 'Xem lại đáp án đã gửi',
     answered: 'Đã trả lời', unanswered: 'Chưa trả lời', limit: 'Tổng số câu',
   },
   employeeBaseline: {
+    mandatoryQuestion: 'Câu điểm liệt', mandatoryLegend: '* Câu điểm liệt: phải trả lời đúng câu này.',
+    saveAnswer: 'Lưu đáp án', saveChanges: 'Lưu thay đổi', savedAnswer: 'Đáp án đã lưu', unsavedChanges: 'Thay đổi chưa lưu',
+    editAnswerHint: 'Bạn có thể sửa đáp án trước khi nộp hoặc hết giờ. Thay đổi tự lưu khi bạn chuyển câu.',
+    savingAnswer: 'Đang lưu đáp án…',
+    saveBeforeSubmit: 'Hãy lưu các đáp án đã sửa trước khi nộp bài.',
     insufficientEvidence: 'Bài nộp chưa có đủ bằng chứng để tính mastery. Profile của bạn chưa được cập nhật.',
     "unavailable": "Bài đánh giá nền tảng hiện chưa khả dụng. Hãy liên hệ quản trị viên để kiểm tra quyền truy cập và tình trạng bài đánh giá.",
     "scope": "Phạm vi đánh giá",

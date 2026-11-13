@@ -5,7 +5,7 @@ export interface AssessmentTarget { selectionId: string; selectionRevision: numb
 export interface Requirement { skillId: string; knowledgeLevel: string; outcomeCodes: string[] }
 export interface AssessmentGroup { id: string; skillName: string; requirement: Requirement; role: 'TARGET' | 'MAIN' | 'PREREQUISITE'; totalCount: number; requiredCorrectCount: number; mandatoryRequired: boolean }
 export interface GroupResult { groupId: string; correctCount: number; totalCount: number; mandatorySatisfied: boolean; passed: boolean; vetoTriggered: boolean; reasons: string[] }
-export interface PresentedItem { position: number; itemVersionId: string; groupId: string; prompt: string; options: { id: string; text: string }[]; selectedOptionId: string | null }
+export interface PresentedItem { position: number; itemVersionId: string; groupId: string; prompt: string; options: { id: string; text: string }[]; selectedOptionId: string | null; mandatory?: boolean }
 export interface BaselineAttempt {
   id: string; target: AssessmentTarget; jobPositionId: string; jobPositionName: string; roleId: string; roleName: string; levelId: string; levelName: string; purpose: AssessmentPurpose
   state: AttemptState; revision: number; startedAt: string; deadlineAt: string; observedAt: string; finishedAt: string | null; finishReason: string | null; previousAttemptId: string | null
@@ -86,7 +86,7 @@ function parseAttempt(value: unknown): BaselineAttempt {
   const items = list(v.questions, raw => {
     const i = object(raw), options = list(i.options, raw => { const o = object(raw); return { id: text(o.id), text: text(o.text) } }), selectedOptionId = nullable(i.selectedOptionId)
     if (options.length < 2 || new Set(options.map(o => o.id)).size !== options.length || selectedOptionId !== null && !options.some(o => o.id === selectedOptionId)) throw Error()
-    return { position: count(i.position, 1), itemVersionId: text(i.itemVersionId), groupId: text(i.groupId), prompt: text(i.prompt), options, selectedOptionId }
+    return { position: count(i.position, 1), itemVersionId: text(i.itemVersionId), groupId: text(i.groupId), prompt: text(i.prompt), options, selectedOptionId, mandatory: i.mandatory === undefined ? undefined : bool(i.mandatory) }
   })
   const results = list(v.results, raw => {
     const r = object(raw), correctCount = count(r.correctCount), totalCount = count(r.totalCount, 1)

@@ -15,13 +15,36 @@ public final class RuleAssessment {
         public String key(){return skillId+"\n"+knowledgeLevel;}
     }
     public record GroupRule(String skillId,KnowledgeLevel knowledgeLevel,int totalCount,int requiredCorrectCount,
-                            boolean mandatoryRequired,boolean allWrongVeto) {
+                            boolean mandatoryRequired,boolean allWrongVeto,
+                            @com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL) Integer mandatoryCount) {
+        public GroupRule(String skillId,KnowledgeLevel knowledgeLevel,int totalCount,int requiredCorrectCount,boolean mandatoryRequired,boolean allWrongVeto) {
+            this(skillId,knowledgeLevel,totalCount,requiredCorrectCount,mandatoryRequired,allWrongVeto,null);
+        }
         public GroupRule {
             text(skillId);Objects.requireNonNull(knowledgeLevel);
             if(totalCount<1 || totalCount>500 || requiredCorrectCount<1 || requiredCorrectCount>totalCount)
                 throw new IllegalArgumentException("Invalid group counts");
+            if(mandatoryCount!=null && (mandatoryCount<0 || mandatoryCount>totalCount || mandatoryRequired!=(mandatoryCount>0)))
+                throw new IllegalArgumentException("Invalid mandatory count");
         }
         public String key(){return skillId+"\n"+knowledgeLevel;}
+        @com.fasterxml.jackson.annotation.JsonCreator(mode=com.fasterxml.jackson.annotation.JsonCreator.Mode.DELEGATING)
+        public static GroupRule decode(com.fasterxml.jackson.databind.JsonNode node) {
+            var allowed=Set.of("skillId","knowledgeLevel","totalCount","requiredCorrectCount","mandatoryRequired","allWrongVeto","mandatoryCount");
+            if(!node.isObject())throw new IllegalArgumentException("Group object required");
+            node.fieldNames().forEachRemaining(name->{if(!allowed.contains(name))throw new IllegalArgumentException("Unknown group field");});
+            if(!node.path("skillId").isTextual() || !node.path("knowledgeLevel").isTextual()
+                    || !node.path("mandatoryRequired").isBoolean() || !node.path("allWrongVeto").isBoolean())
+                throw new IllegalArgumentException("Complete group rule required");
+            Integer quota=node.hasNonNull("mandatoryCount")?integer(node.get("mandatoryCount")):null;
+            return new GroupRule(node.get("skillId").textValue(),KnowledgeLevel.valueOf(node.get("knowledgeLevel").textValue()),
+                    integer(node.path("totalCount")),integer(node.path("requiredCorrectCount")),
+                    node.get("mandatoryRequired").booleanValue(),node.get("allWrongVeto").booleanValue(),quota);
+        }
+        private static int integer(com.fasterxml.jackson.databind.JsonNode value) {
+            if(!value.isIntegralNumber() || !value.canConvertToInt())throw new IllegalArgumentException("Integer count required");
+            return value.intValue();
+        }
     }
     public record Policy(int timeLimitSeconds,int retakeWaitSeconds,int maxAttempts,List<GroupRule> groups) {
         public Policy {
@@ -56,6 +79,8 @@ public final class RuleAssessment {
             if(!rule.key().equals(requirement.key()) || items.size()!=rule.totalCount()
                 || items.stream().anyMatch(i->!i.requirement().key().equals(requirement.key())))
                 throw new IllegalArgumentException("Paper does not match group");
+            if(rule.mandatoryCount()!=null && items.stream().filter(Candidate::mandatory).count()!=rule.mandatoryCount())
+                throw new IllegalArgumentException("Paper mandatory quota mismatch");
         }
     }
     public record GroupResult(UUID groupId,Requirement requirement,GroupRole role,int correctCount,int totalCount,
@@ -81,9 +106,17 @@ public final class RuleAssessment {
         if(pool.stream().map(Candidate::itemVersionId).distinct().count()!=pool.size())throw new IllegalArgumentException("Duplicate bank item");
         Collections.shuffle(pool,random);
         var chosen=new LinkedHashMap<UUID,Candidate>();
+        if(rule.mandatoryCount()!=null) {
+            int quota=rule.mandatoryCount();
+            for(var c:pool)if(c.mandatory() && chosen.size()<quota)chosen.put(c.itemVersionId(),c);
+            if(chosen.size()!=quota)throw new IllegalArgumentException("Insufficient mandatory bank");
+            for(var c:pool)if(!c.mandatory() && chosen.size()<rule.totalCount())chosen.put(c.itemVersionId(),c);
+            if(chosen.size()!=rule.totalCount())throw new IllegalArgumentException("Insufficient ordinary bank");
+        } else {
         for(var c:pool)if(c.mandatory() && (role!=GroupRole.TARGET || rule.mandatoryRequired()))chosen.put(c.itemVersionId(),c);
         if(chosen.size()>rule.totalCount() || pool.size()<rule.totalCount())throw new IllegalArgumentException("Insufficient approved group bank");
         for(var c:pool){if(chosen.size()==rule.totalCount())break;chosen.putIfAbsent(c.itemVersionId(),c);}
+        }
         var items=new ArrayList<>(chosen.values());Collections.shuffle(items,random);
         return new Group(UUID.randomUUID(),requirement,role,rule,items);
     }
