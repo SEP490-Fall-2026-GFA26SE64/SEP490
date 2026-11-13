@@ -182,6 +182,117 @@ public final class Neo4jWorkspaceCatalogWriter implements WorkspaceCatalogGraphW
                                 + "MERGE (a)-[r:" + parts[0] + " {id: row.id}]->(b) SET r = row.props",
                         Map.of("rows", group.getValue(), "organization", organizationId));
             }
+
+            // Align and enrich Competencies for the imported organization:
+            // 1. Assign job position code and title via role hierarchy
+            tx.execute("""
+                MATCH (jp:JobPosition {organizationId: $organization})-[:HAS_ROLE]->(tr:TargetRole {organizationId: $organization})-[:HAS_LEVEL]->(lvl:Level {organizationId: $organization})-[:HAS_COMPETENCY]->(c:Competency {organizationId: $organization})
+                SET c.jobPositionCode = coalesce(c.jobPositionCode, jp.code),
+                    c.jobPositionTitle = coalesce(c.jobPositionTitle, jp.name)
+            """, Map.of("organization", organizationId));
+
+            // 2. Semantic fallback for any competency not reached via role hierarchy
+            tx.execute("""
+                MATCH (c:Competency {organizationId: $organization})
+                WHERE c.jobPositionCode IS NULL OR c.jobPositionCode = '' OR c.jobPositionTitle IS NULL OR c.jobPositionTitle = ''
+                WITH c
+                OPTIONAL MATCH (jp_qa:JobPosition {organizationId: $organization, code: '15-1253.00'})
+                OPTIONAL MATCH (jp_data:JobPosition {organizationId: $organization, code: '15-1243.00'})
+                OPTIONAL MATCH (jp_cloud:JobPosition {organizationId: $organization, code: '15-1299.08'})
+                OPTIONAL MATCH (jp_sec:JobPosition {organizationId: $organization, code: '15-1212.00'})
+                OPTIONAL MATCH (jp_dev:JobPosition {organizationId: $organization, code: '15-1252.00'})
+                OPTIONAL MATCH (any_jp:JobPosition {organizationId: $organization})
+                WITH c,
+                     coalesce(jp_qa, jp_dev, any_jp) AS sel_jp_qa,
+                     coalesce(jp_data, jp_dev, any_jp) AS sel_jp_data,
+                     coalesce(jp_cloud, jp_dev, any_jp) AS sel_jp_cloud,
+                     coalesce(jp_sec, jp_dev, any_jp) AS sel_jp_sec,
+                     coalesce(jp_dev, any_jp) AS sel_jp_dev
+                SET c.jobPositionCode = CASE
+                        WHEN toUpper(coalesce(c.code, '')) CONTAINS 'TEXEC' OR toUpper(coalesce(c.code, '')) CONTAINS 'TAUTO' OR toUpper(coalesce(c.code, '')) CONTAINS 'TDES' OR toLower(c.name) CONTAINS 'test' OR toLower(c.name) CONTAINS 'quality' THEN sel_jp_qa.code
+                        WHEN toUpper(coalesce(c.code, '')) CONTAINS 'DPIPE' OR toUpper(coalesce(c.code, '')) CONTAINS 'DMOD' OR toUpper(coalesce(c.code, '')) CONTAINS 'DQ' OR toUpper(coalesce(c.code, '')) CONTAINS 'DGOV' OR toLower(c.name) CONTAINS 'data' THEN sel_jp_data.code
+                        WHEN toUpper(coalesce(c.code, '')) CONTAINS 'DELIV' OR toUpper(coalesce(c.code, '')) CONTAINS 'INFRA' OR toUpper(coalesce(c.code, '')) CONTAINS 'OPS' OR toUpper(coalesce(c.code, '')) CONTAINS 'ARCH' OR toLower(c.name) CONTAINS 'cloud' OR toLower(c.name) CONTAINS 'architecture' THEN sel_jp_cloud.code
+                        WHEN toUpper(coalesce(c.code, '')) CONTAINS 'SGOV' OR toUpper(coalesce(c.code, '')) CONTAINS 'SEC' OR toLower(c.name) CONTAINS 'security' THEN sel_jp_sec.code
+                        ELSE sel_jp_dev.code
+                    END,
+                    c.jobPositionTitle = CASE
+                        WHEN toUpper(coalesce(c.code, '')) CONTAINS 'TEXEC' OR toUpper(coalesce(c.code, '')) CONTAINS 'TAUTO' OR toUpper(coalesce(c.code, '')) CONTAINS 'TDES' OR toLower(c.name) CONTAINS 'test' OR toLower(c.name) CONTAINS 'quality' THEN sel_jp_qa.name
+                        WHEN toUpper(coalesce(c.code, '')) CONTAINS 'DPIPE' OR toUpper(coalesce(c.code, '')) CONTAINS 'DMOD' OR toUpper(coalesce(c.code, '')) CONTAINS 'DQ' OR toUpper(coalesce(c.code, '')) CONTAINS 'DGOV' OR toLower(c.name) CONTAINS 'data' THEN sel_jp_data.name
+                        WHEN toUpper(coalesce(c.code, '')) CONTAINS 'DELIV' OR toUpper(coalesce(c.code, '')) CONTAINS 'INFRA' OR toUpper(coalesce(c.code, '')) CONTAINS 'OPS' OR toUpper(coalesce(c.code, '')) CONTAINS 'ARCH' OR toLower(c.name) CONTAINS 'cloud' OR toLower(c.name) CONTAINS 'architecture' THEN sel_jp_cloud.name
+                        WHEN toUpper(coalesce(c.code, '')) CONTAINS 'SGOV' OR toUpper(coalesce(c.code, '')) CONTAINS 'SEC' OR toLower(c.name) CONTAINS 'security' THEN sel_jp_sec.name
+                        ELSE sel_jp_dev.name
+                    END
+            """, Map.of("organization", organizationId));
+
+            // 3. Deduplicate competencies with identical name in this organization:
+            // Rewire relationships to the canonical competency and remove duplicate nodes
+            tx.execute("""
+                MATCH (c:Competency {organizationId: $organization})
+                WITH c.name AS name, collect(c) AS comps
+                WHERE size(comps) > 1
+                WITH comps[0] AS canonical, comps[1..] AS duplicates
+                UNWIND duplicates AS dup
+                OPTIONAL MATCH (l:Level {organizationId: $organization})-[:HAS_COMPETENCY]->(dup)
+                WITH canonical, dup, collect(DISTINCT l) AS levels
+                FOREACH (lvl IN levels |
+                    MERGE (lvl)-[:HAS_COMPETENCY {id: 'copy-link:' + lvl.id + ':' + canonical.id, organizationId: $organization}]->(canonical)
+                )
+                WITH canonical, dup
+                OPTIONAL MATCH (dup)-[:HAS_SKILL]->(s:MicroSkill {organizationId: $organization})
+                WITH canonical, dup, collect(DISTINCT s) AS skills
+                FOREACH (sk IN skills |
+                    MERGE (canonical)-[:HAS_SKILL {id: 'copy-link:' + canonical.id + ':' + sk.id, organizationId: $organization}]->(sk)
+                )
+                DETACH DELETE dup
+            """, Map.of("organization", organizationId));
+
+            // 4. Refresh TargetRole competencyIds with the canonical competency IDs
+            tx.execute("""
+                MATCH (tr:TargetRole {organizationId: $organization})-[:HAS_LEVEL]->(lvl:Level)-[:HAS_COMPETENCY]->(c:Competency)
+                WITH tr, collect(DISTINCT c.id) AS canonicalCompIds
+                SET tr.competencyIds = canonicalCompIds
+            """, Map.of("organization", organizationId));
+
+            // 5. Assign departmentId and departmentName to competencies based on job position and department match
+            tx.execute("""
+                MATCH (c:Competency {organizationId: $organization})
+                WHERE c.departmentId IS NULL OR c.departmentId = '' OR c.departmentName IS NULL OR c.departmentName = ''
+                WITH c
+                OPTIONAL MATCH (d_qa:Department {organizationId: $organization}) WHERE toUpper(d_qa.code) CONTAINS 'QA' OR toLower(d_qa.name) CONTAINS 'quality' OR toLower(d_qa.name) CONTAINS 'test'
+                OPTIONAL MATCH (d_data:Department {organizationId: $organization}) WHERE toUpper(d_data.code) CONTAINS 'DATA' OR toLower(d_data.name) CONTAINS 'data' OR toLower(d_data.name) CONTAINS 'database'
+                OPTIONAL MATCH (d_cloud:Department {organizationId: $organization}) WHERE toUpper(d_cloud.code) CONTAINS 'CLOUD' OR toLower(d_cloud.name) CONTAINS 'cloud' OR toLower(d_cloud.name) CONTAINS 'infrastructure' OR toLower(d_cloud.name) CONTAINS 'devops'
+                OPTIONAL MATCH (d_sec:Department {organizationId: $organization}) WHERE toUpper(d_sec.code) CONTAINS 'SEC' OR toLower(d_sec.name) CONTAINS 'security' OR toLower(d_sec.name) CONTAINS 'compliance'
+                OPTIONAL MATCH (d_soft:Department {organizationId: $organization}) WHERE toUpper(d_soft.code) CONTAINS 'COG' OR toUpper(d_soft.code) CONTAINS 'DEV' OR toLower(d_soft.name) CONTAINS 'software' OR toLower(d_soft.name) CONTAINS 'engineering'
+                OPTIONAL MATCH (any_d:Department {organizationId: $organization})
+                WITH c,
+                     coalesce(d_qa, d_soft, any_d) AS sel_d_qa,
+                     coalesce(d_data, d_soft, any_d) AS sel_d_data,
+                     coalesce(d_cloud, d_soft, any_d) AS sel_d_cloud,
+                     coalesce(d_sec, d_soft, any_d) AS sel_d_sec,
+                     coalesce(d_soft, any_d) AS sel_d_soft
+                SET c.departmentId = CASE
+                        WHEN c.jobPositionCode = '15-1253.00' THEN sel_d_qa.id
+                        WHEN c.jobPositionCode = '15-1243.00' THEN sel_d_data.id
+                        WHEN c.jobPositionCode = '15-1299.08' THEN sel_d_cloud.id
+                        WHEN c.jobPositionCode = '15-1212.00' THEN sel_d_sec.id
+                        ELSE sel_d_soft.id
+                    END,
+                    c.departmentName = CASE
+                        WHEN c.jobPositionCode = '15-1253.00' THEN sel_d_qa.name
+                        WHEN c.jobPositionCode = '15-1243.00' THEN sel_d_data.name
+                        WHEN c.jobPositionCode = '15-1299.08' THEN sel_d_cloud.name
+                        WHEN c.jobPositionCode = '15-1212.00' THEN sel_d_sec.name
+                        ELSE sel_d_soft.name
+                    END
+            """, Map.of("organization", organizationId));
+
+            // 6. Clean any jobPositionTitle containing code prefixes so titles are strictly unified
+            tx.execute("""
+                MATCH (c:Competency {organizationId: $organization})
+                WHERE c.jobPositionTitle CONTAINS ' - '
+                SET c.jobPositionTitle = trim(split(c.jobPositionTitle, ' - ')[1])
+            """, Map.of("organization", organizationId));
+
             return null;
         });
     }

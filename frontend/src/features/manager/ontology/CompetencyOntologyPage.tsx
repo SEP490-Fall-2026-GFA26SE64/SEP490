@@ -5,6 +5,8 @@ import {
   ArrowDown,
   ArrowRight,
   BookOpen,
+  Briefcase,
+  Building2,
   Check,
   Edit3,
   Eye,
@@ -63,6 +65,9 @@ import {
   updateCompetency,
   deleteCompetency,
 } from '../../../shared/api/competencyApi'
+import { fetchDepartments, type DepartmentDto } from '../../../shared/api/departmentApi'
+import { fetchJobPositions, type JobPositionDto } from '../../../shared/api/jobPositionApi'
+import { getMembers, type Member } from '../../subscription/subscriptionApi'
 import {
   fetchPrerequisites,
   createPrerequisite,
@@ -179,6 +184,17 @@ const ONTOLOGY_PRESETS: ImportPreset[] = [
   },
 ]
 
+export function cleanJobPositionTitle(title?: string | null): string {
+  if (!title) return ''
+  return title.replace(/^[0-9A-Za-z.-]+\s*-\s*/, '').trim()
+}
+
+export function extractJobPositionCode(raw?: string | null): string {
+  if (!raw) return ''
+  const match = raw.match(/^([0-9A-Za-z.-]+)\s*-\s*/)
+  return match ? match[1].trim() : ''
+}
+
 export function CompetencyOntologyPage() {
   const identity = React.useContext(WorkspaceSessionContext)?.identity
   return <OwnedCompetencyOntologyPage key={`${identity?.organizationId ?? ''}:${identity?.accountId ?? ''}:${identity?.roles?.join(',') ?? ''}`} />
@@ -284,6 +300,28 @@ function OwnedCompetencyOntologyPage() {
   const [knowledgeForm, setKnowledgeForm] = React.useState(() => provisionForm())
   const [prerequisites, setPrerequisites] = React.useState<PrerequisiteEdge[]>([])
 
+  const [departments, setDepartments] = React.useState<DepartmentDto[]>([])
+  const [jobPositions, setJobPositions] = React.useState<JobPositionDto[]>([])
+  const [currentMember, setCurrentMember] = React.useState<Member | null>(null)
+  const [competencyDeptFilter, setCompetencyDeptFilter] = React.useState<string>('all')
+  const [competencyJobPosFilter, setCompetencyJobPosFilter] = React.useState<string>('all')
+
+  const isExpert = (session?.identity?.roles || []).includes('DOMAIN_EXPERT')
+  const localAssignment = React.useMemo(() => {
+    if (!session?.identity?.email) return null
+    try {
+      const raw = localStorage.getItem(`alg_employee_assignment_${session.identity.email.toLowerCase().trim()}`)
+      if (raw) return JSON.parse(raw)
+    } catch {}
+    return null
+  }, [session?.identity?.email])
+
+  const rawExpertJpTitle = currentMember?.jobPositionName || localAssignment?.jobPositionName || ''
+  const effectiveExpertDeptId = currentMember?.departmentId || localAssignment?.departmentId || ''
+  const effectiveExpertDeptName = currentMember?.departmentName || localAssignment?.departmentName || ''
+  const effectiveExpertJobPosTitle = cleanJobPositionTitle(rawExpertJpTitle)
+  const effectiveExpertJobPosCode = currentMember?.jobPositionReferenceId || localAssignment?.jobPositionReferenceId || extractJobPositionCode(rawExpertJpTitle) || ''
+
   
 
   const memberSkillComboboxOptions: ComboboxOption[] = React.useMemo(() => {
@@ -311,7 +349,7 @@ function OwnedCompetencyOntologyPage() {
       const orgId = effectiveOrgId
 
       try {
-        const [liveSkills, liveComps, livePrereqs, liveRolesRes] = await Promise.all([
+        const [liveSkills, liveComps, livePrereqs, liveRolesRes, liveDepts, liveJobPositions, liveMembers] = await Promise.all([
           fetchMicroSkills(orgId).catch(() => []),
           fetchCompetencies(orgId).catch(() => []),
           fetchPrerequisites(orgId).catch(() => []),
@@ -321,8 +359,21 @@ function OwnedCompetencyOntologyPage() {
               'X-User-Id': accountId,
             },
           }).catch(() => null),
+          fetchDepartments(orgId).catch(() => []),
+          fetchJobPositions(orgId).catch(() => []),
+          getMembers(orgId).catch(() => []),
         ])
         setLiveSkillDefinitions(Object.fromEntries(liveSkills.map(skill => [skill.id, skill])))
+        if (Array.isArray(liveDepts)) setDepartments(liveDepts)
+        if (Array.isArray(liveJobPositions)) setJobPositions(liveJobPositions)
+        if (Array.isArray(liveMembers)) {
+          const me = liveMembers.find(
+            (m) =>
+              (accountId && m.accountId === accountId) ||
+              (session?.identity?.email && m.email.toLowerCase() === session.identity.email.toLowerCase())
+          )
+          if (me) setCurrentMember(me)
+        }
 
         let resolvedSkills: MicroSkillModel[] = active?.microSkills ?? []
         if (liveSkills && liveSkills.length > 0) {
@@ -332,8 +383,8 @@ function OwnedCompetencyOntologyPage() {
             name: s.name,
             description: s.description || '',
             status: (s.status as MicroSkillModel['status']) || 'ACTIVE',
-            createdAt: s.createdAt || (active?.microSkills || []).find((item) => item.id === s.id || item.code === s.code)?.createdAt || '2026-01-01T00:00:00.000Z',
-            updatedAt: s.updatedAt || s.createdAt || (active?.microSkills || []).find((item) => item.id === s.id || item.code === s.code)?.updatedAt || '2026-01-01T00:00:00.000Z',
+            createdAt: s.createdAt || (active?.microSkills || []).find((item) => item.id === s.id || item.code === s.code)?.createdAt || '',
+            updatedAt: s.updatedAt || s.createdAt || (active?.microSkills || []).find((item) => item.id === s.id || item.code === s.code)?.updatedAt || '',
           }))
           setMicroSkills(resolvedSkills)
         } else {
@@ -349,17 +400,14 @@ function OwnedCompetencyOntologyPage() {
             status: (c.status as CompetencyModel['status']) || 'ACTIVE',
             skillIds: c.skillIds || [],
             levelCodes: c.levelCodes || [],
-            createdAt: (c as unknown as Record<string, unknown>).createdAt ? String((c as unknown as Record<string, unknown>).createdAt) : (active?.competencies || []).find((item) => item.id === c.id || item.code === c.code)?.createdAt || '2026-01-01T00:00:00.000Z',
-            updatedAt: (c as unknown as Record<string, unknown>).updatedAt ? String((c as unknown as Record<string, unknown>).updatedAt) : ((c as unknown as Record<string, unknown>).createdAt ? String((c as unknown as Record<string, unknown>).createdAt) : '2026-01-01T00:00:00.000Z'),
+            departmentId: c.departmentId ?? undefined,
+            departmentName: c.departmentName ?? undefined,
+            jobPositionCode: c.jobPositionCode ?? undefined,
+            jobPositionTitle: c.jobPositionTitle ?? undefined,
+            createdAt: c.createdAt || (c as unknown as Record<string, unknown>).createdAt ? String(c.createdAt || (c as unknown as Record<string, unknown>).createdAt) : (active?.competencies || []).find((item) => item.id === c.id || item.code === c.code)?.createdAt || '',
+            updatedAt: c.updatedAt || (c as unknown as Record<string, unknown>).updatedAt ? String(c.updatedAt || (c as unknown as Record<string, unknown>).updatedAt) : (c.createdAt || (active?.competencies || []).find((item) => item.id === c.id || item.code === c.code)?.updatedAt || ''),
           }))
-          const customComps = active?.competencies || []
-          const mergedComps = [...mappedComps]
-          for (const custom of customComps) {
-            if (!mergedComps.some((c) => c.id === custom.id || (custom.code && c.code === custom.code))) {
-              mergedComps.unshift(custom)
-            }
-          }
-          setCompetencies(mergedComps)
+          setCompetencies(mappedComps)
         } else {
           setCompetencies(active?.competencies ?? [])
         }
@@ -684,18 +732,16 @@ function OwnedCompetencyOntologyPage() {
         setCompetencies([...updatedCompetencies])
         updateActiveCompany((c) => ({ ...c, competencies: updatedCompetencies }))
 
-        saveAndSetMicroSkills((prev) =>
-          prev.map((s) =>
-            s.id === selectedSkill.id
-              ? {
-                  ...s,
-                  name: updated.name,
-                  description: updated.description || '',
-                  updatedAt: updated.updatedAt || new Date().toISOString(),
-                }
-              : s
-          )
-        )
+        const updatedSkill: MicroSkillModel = {
+          ...selectedSkill,
+          name: updated.name,
+          description: updated.description || '',
+          updatedAt: updated.updatedAt || new Date().toISOString(),
+        }
+        saveAndSetMicroSkills((prev) => [
+          updatedSkill,
+          ...prev.filter((s) => s.id !== selectedSkill.id),
+        ])
         setSkillCurrentPage(1)
         await handleSync()
         toast({ title: 'Micro-skill Updated', description: `Saved changes to ${selectedSkill.code}.`, variant: 'success' })
@@ -922,7 +968,7 @@ function OwnedCompetencyOntologyPage() {
           b.createdAt ? new Date(b.createdAt).getTime() : 0
         )
         if (timeA !== timeB) return timeB - timeA
-        return (b.code || b.id || '').localeCompare(a.code || a.id || '')
+        return (a.code || a.id || '').localeCompare(b.code || b.id || '')
       })
   }, [microSkills, skillSearchQuery, skillCompetencyFilter, competencies, skillSortBy])
 
@@ -978,7 +1024,21 @@ function OwnedCompetencyOntologyPage() {
           c.name.toLowerCase().includes(q) ||
           c.code.toLowerCase().includes(q) ||
           (c.description && c.description.toLowerCase().includes(q))
-        return matchesSearch
+        if (!matchesSearch) return false
+
+        if (competencyDeptFilter !== 'all') {
+          if (c.departmentId !== competencyDeptFilter && c.departmentName !== competencyDeptFilter) {
+            return false
+          }
+        }
+
+        if (competencyJobPosFilter !== 'all') {
+          if (c.jobPositionCode !== competencyJobPosFilter && c.jobPositionTitle !== competencyJobPosFilter) {
+            return false
+          }
+        }
+
+        return true
       })
       .sort((a, b) => {
         if (competencySortBy === 'title') return a.name.localeCompare(b.name)
@@ -992,9 +1052,61 @@ function OwnedCompetencyOntologyPage() {
           b.createdAt ? new Date(b.createdAt).getTime() : 0
         )
         if (timeA !== timeB) return timeB - timeA
-        return (b.code || b.id || '').localeCompare(a.code || a.id || '')
+        return (a.code || a.id || '').localeCompare(b.code || b.id || '')
       })
-  }, [competencies, competencySearchQuery, competencySortBy])
+  }, [competencies, competencySearchQuery, competencyDeptFilter, competencyJobPosFilter, competencySortBy])
+
+  const availableDeptOptions = React.useMemo(() => {
+    const map = new Map<string, { label: string; count: number }>()
+    departments.forEach((d) => {
+      map.set(d.id, { label: d.name, count: 0 })
+    })
+    competencies.forEach((c) => {
+      const key = c.departmentId || c.departmentName || 'unassigned'
+      const label = c.departmentName || (c.departmentId ? 'Department' : 'Unassigned')
+      const cur = map.get(key)
+      if (cur) {
+        cur.count += 1
+      } else {
+        map.set(key, { label, count: 1 })
+      }
+    })
+    const list: ComboboxOption[] = [
+      { value: 'all', label: 'All Departments' },
+    ]
+    map.forEach((val, key) => {
+      list.push({ value: key, label: val.label })
+    })
+    return list
+  }, [competencies, departments])
+
+  const availableJobPosOptions = React.useMemo(() => {
+    const map = new Map<string, { label: string; count: number }>()
+    jobPositions.forEach((jp) => {
+      map.set(jp.code, { label: cleanJobPositionTitle(jp.name), count: 0 })
+    })
+    competencies.forEach((c) => {
+      if (competencyDeptFilter !== 'all' && c.departmentId !== competencyDeptFilter && c.departmentName !== competencyDeptFilter) {
+        return
+      }
+      const key = c.jobPositionCode || c.jobPositionTitle || 'unassigned'
+      const rawLabel = c.jobPositionTitle || c.jobPositionCode || 'Unassigned'
+      const label = cleanJobPositionTitle(rawLabel)
+      const cur = map.get(key)
+      if (cur) {
+        cur.count += 1
+      } else {
+        map.set(key, { label, count: 1 })
+      }
+    })
+    const list: ComboboxOption[] = [
+      { value: 'all', label: 'All Job Positions' },
+    ]
+    map.forEach((val, key) => {
+      list.push({ value: key, label: val.label })
+    })
+    return list
+  }, [competencies, jobPositions, competencyDeptFilter])
 
   const competencyTotalPages = Math.max(1, Math.ceil(filteredCompetencies.length / competencyPageSize))
   const paginatedCompetencies = React.useMemo(() => {
@@ -1086,6 +1198,10 @@ function OwnedCompetencyOntologyPage() {
           description: competencyForm.description.trim(),
           status: competencyForm.status,
           skillIds: canonicalSkillIds,
+          departmentId: selectedCompetency.departmentId || effectiveExpertDeptId || undefined,
+          departmentName: selectedCompetency.departmentName || effectiveExpertDeptName || undefined,
+          jobPositionCode: selectedCompetency.jobPositionCode || effectiveExpertJobPosCode || undefined,
+          jobPositionTitle: selectedCompetency.jobPositionTitle || effectiveExpertJobPosTitle || undefined,
         })
         const updatedComp: CompetencyModel = {
           ...selectedCompetency,
@@ -1094,11 +1210,16 @@ function OwnedCompetencyOntologyPage() {
           description: updated.description || '',
           status: (updated.status as CompetencyModel['status']) || 'ACTIVE',
           skillIds: updated.skillIds || [],
+          departmentId: updated.departmentId || selectedCompetency.departmentId || effectiveExpertDeptId || undefined,
+          departmentName: updated.departmentName || selectedCompetency.departmentName || effectiveExpertDeptName || undefined,
+          jobPositionCode: updated.jobPositionCode || selectedCompetency.jobPositionCode || effectiveExpertJobPosCode || undefined,
+          jobPositionTitle: updated.jobPositionTitle || selectedCompetency.jobPositionTitle || effectiveExpertJobPosTitle || undefined,
           updatedAt: new Date().toISOString(),
         }
-        setCompetencies((prev) =>
-          prev.map((c) => (c.id === selectedCompetency.id ? updatedComp : c))
-        )
+        setCompetencies((prev) => [
+          updatedComp,
+          ...prev.filter((c) => c.id !== selectedCompetency.id),
+        ])
         updateActiveCompany((c) => ({
           ...c,
           competencies: (c.competencies || []).map((item) =>
@@ -1126,6 +1247,10 @@ function OwnedCompetencyOntologyPage() {
           description: competencyForm.description.trim(),
           status: competencyForm.status,
           skillIds: canonicalSkillIds,
+          departmentId: effectiveExpertDeptId || undefined,
+          departmentName: effectiveExpertDeptName || undefined,
+          jobPositionCode: effectiveExpertJobPosCode || undefined,
+          jobPositionTitle: effectiveExpertJobPosTitle || undefined,
         })
         const newComp: CompetencyModel = {
           id: created.id,
@@ -1134,6 +1259,10 @@ function OwnedCompetencyOntologyPage() {
           description: created.description || '',
           status: (created.status as CompetencyModel['status']) || 'ACTIVE',
           skillIds: created.skillIds || [],
+          departmentId: created.departmentId || effectiveExpertDeptId || undefined,
+          departmentName: created.departmentName || effectiveExpertDeptName || undefined,
+          jobPositionCode: created.jobPositionCode || effectiveExpertJobPosCode || undefined,
+          jobPositionTitle: created.jobPositionTitle || effectiveExpertJobPosTitle || undefined,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         }
@@ -1710,7 +1839,7 @@ function OwnedCompetencyOntologyPage() {
 
                   {/* Search and Filter Controls */}
                   <div className="flex items-center gap-2.5 shrink-0 flex-wrap py-0.5">
-                    <div className="relative w-44 sm:w-52 shrink-0">
+                    <div className="relative w-44 sm:w-48 shrink-0">
                       <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
                       <input
                         type="text"
@@ -1723,6 +1852,53 @@ function OwnedCompetencyOntologyPage() {
                         className="w-full pl-8 pr-3 py-1.5 text-xs rounded-lg bg-background border border-border text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary shadow-2xs transition-colors"
                       />
                     </div>
+
+                    {/* Department Filter */}
+                    <div className="w-48 shrink-0">
+                      <Combobox
+                        size="sm"
+                        clearable={false}
+                        options={availableDeptOptions}
+                        value={competencyDeptFilter}
+                        onChange={(val) => {
+                          setCompetencyDeptFilter(val || 'all')
+                          setCompetencyJobPosFilter('all')
+                          setCompetencyCurrentPage(1)
+                        }}
+                        placeholder="All Departments"
+                        searchPlaceholder="Filter department..."
+                      />
+                    </div>
+
+                    {/* Job Position Filter */}
+                    <div className="w-52 shrink-0">
+                      <Combobox
+                        size="sm"
+                        clearable={false}
+                        options={availableJobPosOptions}
+                        value={competencyJobPosFilter}
+                        onChange={(val) => {
+                          setCompetencyJobPosFilter(val || 'all')
+                          setCompetencyCurrentPage(1)
+                        }}
+                        placeholder="All Job Positions"
+                        searchPlaceholder="Filter position..."
+                      />
+                    </div>
+
+                    {(competencyDeptFilter !== 'all' || competencyJobPosFilter !== 'all') && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setCompetencyDeptFilter('all')
+                          setCompetencyJobPosFilter('all')
+                          setCompetencyCurrentPage(1)
+                        }}
+                        className="text-[11px] text-primary hover:underline font-semibold cursor-pointer px-1 py-1"
+                      >
+                        Reset
+                      </button>
+                    )}
 
                     <div className="flex items-center gap-1.5 bg-background border border-border rounded-lg px-2.5 py-1.5 shadow-2xs shrink-0">
                       <span className="text-[11px] text-muted-foreground font-medium">Sort:</span>
@@ -1744,17 +1920,19 @@ function OwnedCompetencyOntologyPage() {
                 {filteredCompetencies.length === 0 ? (
                   <div className="text-center py-16 text-muted-foreground">
                     <AlertCircle className="h-8 w-8 mx-auto mb-2 text-muted-foreground/60" />
-                    <p className="text-sm font-semibold">No competencies match your search.</p>
+                    <p className="text-sm font-semibold">No competencies match your search or filter.</p>
                     <Button
                       variant="outline"
                       size="sm"
                       className="mt-3"
                       onClick={() => {
                         setCompetencySearchQuery('')
+                        setCompetencyDeptFilter('all')
+                        setCompetencyJobPosFilter('all')
                         setCompetencyCurrentPage(1)
                       }}
                     >
-                      Clear Search
+                      Clear Filters
                     </Button>
                   </div>
                 ) : (
@@ -1773,6 +1951,7 @@ function OwnedCompetencyOntologyPage() {
                         <tbody className="divide-y divide-border">
                           {paginatedCompetencies.map((comp) => {
                             const isDraft = comp.status?.toUpperCase() === 'DRAFT'
+                            const isCrossDept = isExpert && Boolean(effectiveExpertDeptId) && Boolean(comp.departmentId) && comp.departmentId !== effectiveExpertDeptId
                             return (
                               <tr key={comp.id} className="hover:bg-muted/20">
                                 <td className="py-3 px-3 font-mono font-bold text-primary">
@@ -1782,6 +1961,20 @@ function OwnedCompetencyOntologyPage() {
                                   <div className="font-semibold text-foreground text-xs">{comp.name}</div>
                                   <div className="text-[11px] text-muted-foreground line-clamp-1 mt-0.5">
                                     {comp.description || 'Domain competency capability scope.'}
+                                  </div>
+                                  <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
+                                    {comp.departmentName && (
+                                      <Badge variant="outline" className="text-[10px] font-medium text-muted-foreground border-border py-0 px-1.5 bg-muted/30">
+                                        <Building2 className="w-2.5 h-2.5 mr-1 text-primary/70 inline" />
+                                        {comp.departmentName}
+                                      </Badge>
+                                    )}
+                                    {comp.jobPositionTitle && (
+                                      <Badge variant="secondary" className="text-[10px] font-medium py-0 px-1.5">
+                                        <Briefcase className="w-2.5 h-2.5 mr-1 text-primary inline" />
+                                        {cleanJobPositionTitle(comp.jobPositionTitle)}
+                                      </Badge>
+                                    )}
                                   </div>
                                 </td>
                                 <td className="py-3 px-3 text-center">
@@ -1814,9 +2007,10 @@ function OwnedCompetencyOntologyPage() {
                                     <Button
                                       variant="outline"
                                       size="sm"
-                                      className="h-8 w-8 p-0"
-                                      onClick={() => handleOpenEditCompetency(comp)}
-                                      title="Edit Competency"
+                                      className={cn("h-8 w-8 p-0", isCrossDept && "opacity-40 cursor-not-allowed")}
+                                      disabled={isCrossDept}
+                                      onClick={() => !isCrossDept && handleOpenEditCompetency(comp)}
+                                      title={isCrossDept ? `Only editable by experts in ${comp.departmentName || 'its assigned department'}` : "Edit Competency"}
                                       aria-label="Edit Competency"
                                     >
                                       <Edit3 className="h-4 w-4 text-foreground" />
@@ -2852,6 +3046,39 @@ function OwnedCompetencyOntologyPage() {
           </DialogHeader>
 
           <div className="space-y-5 text-xs flex-1">
+            {/* Department & Job Position Auto-Assignment Indicator */}
+            <div className="rounded-lg border border-border/80 bg-muted/30 p-3 space-y-2 shadow-2xs">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+                  <ShieldCheck className="h-3.5 w-3.5 text-primary" />
+                  Assigned Scope (Auto-Assigned from Domain Expert)
+                </span>
+                <Badge variant="outline" className="text-[10px] text-muted-foreground bg-background">
+                  Read-only
+                </Badge>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                <div className="flex items-start gap-2.5 p-2 rounded-md bg-background border border-border/60">
+                  <Building2 className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                  <div className="min-w-0">
+                    <div className="text-[10px] text-muted-foreground font-medium">Department</div>
+                    <div className="font-semibold text-foreground truncate">
+                      {selectedCompetency?.departmentName || effectiveExpertDeptName || 'Software Department'}
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-start gap-2.5 p-2 rounded-md bg-background border border-border/60">
+                  <Briefcase className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                  <div className="min-w-0">
+                    <div className="text-[10px] text-muted-foreground font-medium">Job Position</div>
+                    <div className="font-semibold text-foreground truncate">
+                      {cleanJobPositionTitle(selectedCompetency?.jobPositionTitle || effectiveExpertJobPosTitle) || 'Software Quality Assurance Analysts and Testers'}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             {/* Code & Status */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
               <div>

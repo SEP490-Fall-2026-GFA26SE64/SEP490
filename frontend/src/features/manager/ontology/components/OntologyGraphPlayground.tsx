@@ -963,6 +963,32 @@ function OntologyGraphPlaygroundInner({
             edgesToAdd.push(reqEdge)
           }
         })
+
+        // Also expand/connect required skills from role.skillTargets for this level
+        const matchingSkills = (role.skillTargets || []).filter(
+          (st: SkillTargetConfig) => st.level?.toLowerCase() === current.levelName!.toLowerCase()
+        )
+        matchingSkills.forEach((st, idx) => {
+          const s = microSkillsRef.current.find(
+            (sk) => sk.id === st.skillId || sk.code === st.skillCode || sk.code === st.skillId
+          )
+          if (s) {
+            if (!existingNodeIds.has(s.id)) {
+              const angle = ((matchingComps.length + idx) / Math.max(matchingComps.length + matchingSkills.length, 1)) * 2 * Math.PI
+              const pos = findClearSlot({
+                x: Math.round(centerPos.x + 280 * Math.cos(angle)),
+                y: Math.round(centerPos.y + 280 * Math.sin(angle)),
+              }, 'skill')
+              nodesToAdd.push(buildSkillNode(s, pos))
+              existingNodeIds.add(s.id)
+            }
+            const reqSkillEdge = buildRequiresSkillEdge(current.id, s.id, st.requiredKnowledgeLevels ?? [])
+            if (!existingEdgeIds.has(String(reqSkillEdge.id || ''))) {
+              existingEdgeIds.add(String(reqSkillEdge.id || ''))
+              edgesToAdd.push(reqSkillEdge)
+            }
+          }
+        })
       }
     
     } else if (current.nodeType === 'competency') {
@@ -1056,6 +1082,44 @@ function OntologyGraphPlaygroundInner({
         if (!existingEdgeIds.has(edgeId)) {
           existingEdgeIds.add(edgeId)
           edgesToAdd.push(buildPrereqEdge(p.sourceSkillId, p.targetSkillId, p.dependentKnowledgeLevel, p.prerequisiteKnowledgeLevel))
+        }
+      }
+    })
+
+    // Connect Level -> Competency (REQUIRES_COMPETENCY) and Level -> Skill (REQUIRES_SKILL) for visible levels
+    const allVisibleNodes = [...canvasNodesRef.current, ...nodesToAdd]
+    const allRoles = targetRolesRef.current || targetRoles || []
+
+    allVisibleNodes.forEach((node) => {
+      if (node.nodeType === 'level' && allFutureNodeIds.has(node.id)) {
+        const role = allRoles.find((r) => r.id === node.targetRoleId)
+        const lvlName = node.levelName || node.code
+        if (role && lvlName) {
+          const lvlComps = role.levelCompetencies?.[lvlName] || []
+          lvlComps.forEach((cId) => {
+            const comp = competenciesRef.current.find((c) => c.id === cId || c.code === cId)
+            if (comp && allFutureNodeIds.has(comp.id)) {
+              const edgeId = `requires-comp-${node.id}-${comp.id}`
+              if (!existingEdgeIds.has(edgeId)) {
+                existingEdgeIds.add(edgeId)
+                edgesToAdd.push(buildRequiresCompetencyEdge(node.id, comp.id))
+              }
+            }
+          })
+          ;(role.skillTargets || []).forEach((st) => {
+            if (st.level?.toLowerCase() === lvlName.toLowerCase()) {
+              const skill = microSkillsRef.current.find(
+                (s) => s.id === st.skillId || s.code === st.skillCode || s.code === st.skillId
+              )
+              if (skill && allFutureNodeIds.has(skill.id)) {
+                const edgeId = `requires-skill-${node.id}-${skill.id}`
+                if (!existingEdgeIds.has(edgeId)) {
+                  existingEdgeIds.add(edgeId)
+                  edgesToAdd.push(buildRequiresSkillEdge(node.id, skill.id, st.requiredKnowledgeLevels ?? []))
+                }
+              }
+            }
+          })
         }
       }
     })
@@ -1513,6 +1577,7 @@ function OntologyGraphPlaygroundInner({
 
     const newEdges: Edge[] = []
     const existingIds = new Set(canvasNodesRef.current.map((n) => n.id))
+    const allRoles = targetRolesRef.current || targetRoles || []
 
     if (newNode.nodeType === 'competency') {
       const comp = competencies.find((c) => c.id === newNode.id)
@@ -1522,7 +1587,18 @@ function OntologyGraphPlaygroundInner({
           if (target) newEdges.push(buildHasSkillEdge(newNode.id, target.id))
         })
       }
-    } else {
+      // Link to any Level nodes already on canvas that require this competency
+      canvasNodesRef.current.forEach((n) => {
+        if (n.nodeType === 'level') {
+          const r = allRoles.find((tr) => tr.id === n.targetRoleId)
+          const lvlName = n.levelName || n.code
+          const lvlComps = r?.levelCompetencies?.[lvlName] || []
+          if (lvlComps.includes(newNode.id) || (newNode.code && lvlComps.includes(newNode.code))) {
+            newEdges.push(buildRequiresCompetencyEdge(n.id, newNode.id))
+          }
+        }
+      })
+    } else if (newNode.nodeType === 'skill') {
       competencies.forEach((comp) => {
         if ((comp.skillIds || []).includes(newNode.id) || (comp.skillIds || []).includes(newNode.code)) {
           if (existingIds.has(comp.id)) newEdges.push(buildHasSkillEdge(comp.id, newNode.id))
@@ -1538,13 +1614,65 @@ function OntologyGraphPlaygroundInner({
           if (src) newEdges.push(buildPrereqEdge(src.id, newNode.id, p.dependentKnowledgeLevel, p.prerequisiteKnowledgeLevel))
         }
       })
+      // Link to any Level nodes already on canvas that require this skill
+      canvasNodesRef.current.forEach((n) => {
+        if (n.nodeType === 'level') {
+          const r = allRoles.find((tr) => tr.id === n.targetRoleId)
+          const lvlName = n.levelName || n.code
+          const st = (r?.skillTargets || []).find(
+            (target) =>
+              (target.skillId === newNode.id || target.skillCode === newNode.code || target.skillId === newNode.code) &&
+              target.level?.toLowerCase() === lvlName?.toLowerCase()
+          )
+          if (st) {
+            newEdges.push(buildRequiresSkillEdge(n.id, newNode.id, st.requiredKnowledgeLevels ?? []))
+          }
+        }
+      })
+    } else if (newNode.nodeType === 'level') {
+      const r = allRoles.find((tr) => tr.id === newNode.targetRoleId)
+      const lvlName = newNode.levelName || newNode.code
+      if (r && lvlName) {
+        // Link to role
+        const roleNode = canvasNodesRef.current.find((n) => n.id === r.id)
+        if (roleNode) {
+          newEdges.push(buildHasLevelEdge(roleNode.id, newNode.id))
+        }
+        // Link to competencies
+        const lvlComps = r.levelCompetencies?.[lvlName] || []
+        canvasNodesRef.current.forEach((n) => {
+          if (n.nodeType === 'competency' && (lvlComps.includes(n.id) || (n.code && lvlComps.includes(n.code)))) {
+            newEdges.push(buildRequiresCompetencyEdge(newNode.id, n.id))
+          }
+          if (n.nodeType === 'skill') {
+            const st = (r.skillTargets || []).find(
+              (target) =>
+                (target.skillId === n.id || target.skillCode === n.code || target.skillId === n.code) &&
+                target.level?.toLowerCase() === lvlName.toLowerCase()
+            )
+            if (st) {
+              newEdges.push(buildRequiresSkillEdge(newNode.id, n.id, st.requiredKnowledgeLevels ?? []))
+            }
+          }
+        })
+      }
     }
 
+    const seenNewEdgeIds = new Set<string>()
+    const uniqueNewEdges: Edge[] = []
+    newEdges.forEach((e) => {
+      const eId = String(e.id || '')
+      if (eId && !seenNewEdgeIds.has(eId) && !edgesDataSetRef.current?.get(eId)) {
+        seenNewEdgeIds.add(eId)
+        uniqueNewEdges.push(e)
+      }
+    })
+
     nodesDataSetRef.current.add(newNode)
-    if (newEdges.length > 0) edgesDataSetRef.current.add(newEdges)
+    if (uniqueNewEdges.length > 0) edgesDataSetRef.current.add(uniqueNewEdges)
 
     setCanvasNodes((prev) => [...prev, newNode])
-    if (newEdges.length > 0) setCanvasEdges((prev) => [...prev, ...newEdges])
+    if (uniqueNewEdges.length > 0) setCanvasEdges((prev) => [...prev, ...uniqueNewEdges])
     setSelectedNode(newNode)
 
     toast({
@@ -1650,9 +1778,15 @@ function OntologyGraphPlaygroundInner({
       const compIdToAdd = compNode.code || compNode.id
 
       if (currentLvlComps.includes(compIdToAdd) || currentLvlComps.includes(compNode.id)) {
+        const edgeId = `requires-comp-${levelNode.id}-${compNode.id}`
+        if (!edgesDataSetRef.current?.get(edgeId)) {
+          const newEdge = buildRequiresCompetencyEdge(levelNode.id, compNode.id)
+          edgesDataSetRef.current?.update(newEdge)
+          setCanvasEdges((prev) => prev.some((e) => e.id === newEdge.id) ? prev : [...prev, newEdge])
+        }
         toast({
-          title: 'Competency Already Connected',
-          description: `${compNode.code} is already assigned to ${levelName} level in ${role.code}.`,
+          title: 'Competency Connected',
+          description: `${compNode.code} is assigned to ${levelName} level in ${role.code}.`,
           variant: 'default',
         })
         handleCancelConnect()
@@ -1754,16 +1888,31 @@ function OntologyGraphPlaygroundInner({
       }
 
       const existingTargets: SkillTargetConfig[] = role.skillTargets || []
-      const alreadyLinked = existingTargets.some(
+      const existingTarget = existingTargets.find(
         (st: SkillTargetConfig) =>
-          (st.skillId === skillNode.id || st.skillCode === skillNode.code) &&
+          (st.skillId === skillNode.id || st.skillCode === skillNode.code || st.skillId === skillNode.code) &&
           st.level?.toLowerCase() === levelName.toLowerCase()
       )
 
-      if (alreadyLinked) {
+      if (existingTarget) {
+        const edgeId = `requires-skill-${levelNode.id}-${skillNode.id}`
+        if (!edgesDataSetRef.current?.get(edgeId)) {
+          const newEdge = buildRequiresSkillEdge(
+            levelNode.id,
+            skillNode.id,
+            existingTarget.requiredKnowledgeLevels ?? []
+          )
+          const nid = newEdge.id
+          if (nid !== undefined && edgesDataSetRef.current?.get(nid)) {
+            edgesDataSetRef.current.update(newEdge)
+          } else {
+            edgesDataSetRef.current?.add(newEdge)
+          }
+          setCanvasEdges((prev) => prev.some((e) => e.id === newEdge.id) ? prev : [...prev, newEdge])
+        }
         toast({
-          title: 'Skill Requirement Already Connected',
-          description: `${skillNode.code} is already configured as a required skill for ${levelName} level in ${role.code}.`,
+          title: 'Skill Requirement Connected',
+          description: `${skillNode.code} is connected as a required skill for ${levelName} level in ${role.code}.`,
           variant: 'default',
         })
         handleCancelConnect()
@@ -1815,6 +1964,17 @@ function OntologyGraphPlaygroundInner({
 
     const currentSkills = active.skillIds || []
     if (currentSkills.includes(skillNode.id) || currentSkills.includes(skillNode.code)) {
+      const edgeId = `has-skill-${compNode.id}-${skillNode.id}`
+      if (!edgesDataSetRef.current?.get(edgeId)) {
+        const newEdge = buildHasSkillEdge(compNode.id, skillNode.id)
+        const nid = newEdge.id
+        if (nid !== undefined && edgesDataSetRef.current?.get(nid)) {
+          edgesDataSetRef.current.update(newEdge)
+        } else {
+          edgesDataSetRef.current?.add(newEdge)
+        }
+        setCanvasEdges((prev) => prev.some((e) => e.id === newEdge.id) ? prev : [...prev, newEdge])
+      }
       toast({
         title: 'Already Mapped',
         description: `${skillNode.code} is already a member of ${compNode.name}.`,
@@ -1832,8 +1992,13 @@ function OntologyGraphPlaygroundInner({
       })
 
       const newEdge = buildHasSkillEdge(compNode.id, skillNode.id)
-      edgesDataSetRef.current.add(newEdge)
-      setCanvasEdges((prev) => [...prev, newEdge])
+      const nid = newEdge.id
+      if (nid !== undefined && edgesDataSetRef.current?.get(nid)) {
+        edgesDataSetRef.current.update(newEdge)
+      } else {
+        edgesDataSetRef.current?.add(newEdge)
+      }
+      setCanvasEdges((prev) => prev.some((e) => e.id === newEdge.id) ? prev : [...prev, newEdge])
       if (onRefreshData) await onRefreshData()
 
       toast({
@@ -1861,8 +2026,13 @@ function OntologyGraphPlaygroundInner({
         level: level.levelName || level.code, threshold: 0, requiredKnowledgeLevels: [...requiredKnowledge] }] }
       await onUpdateTargetRoleRef.current(updated)
       const edge = buildRequiresSkillEdge(level.id, skill.id, requiredKnowledge)
-      edgesDataSetRef.current.add(edge)
-      setCanvasEdges(previous => [...previous, edge])
+      const eid = edge.id
+      if (eid !== undefined && edgesDataSetRef.current?.get(eid)) {
+        edgesDataSetRef.current.update(edge)
+      } else {
+        edgesDataSetRef.current?.add(edge)
+      }
+      setCanvasEdges(previous => previous.some(e => e.id === edge.id) ? previous : [...previous, edge])
       setPendingRoleRequirement(null)
       toast({ title: 'Required knowledge saved', description: 'The Role requirement was accepted by the server.', variant: 'success' })
     } catch (error) {
@@ -1883,8 +2053,13 @@ function OntologyGraphPlaygroundInner({
       })
 
       const newEdge = buildPrereqEdge(pendingPrereq.source.id, pendingPrereq.target.id, dependentLevel, prerequisiteLevel)
-      edgesDataSetRef.current.add(newEdge)
-      setCanvasEdges((prev) => [...prev, newEdge])
+      const nid = newEdge.id
+      if (nid !== undefined && edgesDataSetRef.current?.get(nid)) {
+        edgesDataSetRef.current.update(newEdge)
+      } else {
+        edgesDataSetRef.current?.add(newEdge)
+      }
+      setCanvasEdges((prev) => prev.some((e) => e.id === newEdge.id) ? prev : [...prev, newEdge])
       if (onRefreshData) await onRefreshData()
 
       toast({

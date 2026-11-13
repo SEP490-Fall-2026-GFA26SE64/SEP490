@@ -89,6 +89,10 @@ import {
 } from '../../../shared/api/prerequisiteApi'
 import { TargetRoleGraphModal } from '../../manager/target-roles/components/TargetRoleGraphModal'
 import { TargetRoleVersionDiff } from '../../manager/target-roles/components/TargetRoleVersionDiff'
+import { cleanJobPositionTitle } from '../../manager/ontology/CompetencyOntologyPage'
+import { fetchJobPositions, type JobPositionDto } from '../../../shared/api/jobPositionApi'
+import { fetchDepartments, type DepartmentDto } from '../../../shared/api/departmentApi'
+import { Building2 } from 'lucide-react'
 
 export type ExpertRoleStatus =
   | 'published'
@@ -200,15 +204,22 @@ export function ExpertAssignedRolesPage() {
   const [realPrerequisites, setRealPrerequisites] = React.useState<
     PrerequisiteEdgeDto[]
   >([])
+  const [jobPositions, setJobPositions] = React.useState<JobPositionDto[]>([])
+  const [departments, setDepartments] = React.useState<DepartmentDto[]>([])
+
   const fetchSkills = React.useCallback(async () => {
     try {
-      const [skillsList, compsList, prereqsList] = await Promise.all([
+      const [skillsList, compsList, prereqsList, jpList, deptList] = await Promise.all([
         fetchMicroSkills(orgId).catch(() => []),
         fetchCompetencies(orgId).catch(() => []),
         fetchPrerequisites(orgId).catch(() => []),
+        fetchJobPositions(orgId).catch(() => []),
+        fetchDepartments(orgId).catch(() => []),
       ])
 
       if (prereqsList) setRealPrerequisites(prereqsList)
+      if (Array.isArray(jpList)) setJobPositions(jpList)
+      if (Array.isArray(deptList)) setDepartments(deptList)
 
       if (skillsList && skillsList.length > 0) {
         const mapped: MicroSkillModel[] = skillsList.map(
@@ -863,6 +874,8 @@ export function ExpertAssignedRolesPage() {
   const [newCompetencyId, setNewCompetencyId] = React.useState('')
   const [configuredCompetencySearch, setConfiguredCompetencySearch] =
     React.useState('')
+  const [compDeptFilter, setCompDeptFilter] = React.useState<string>('all')
+  const [compJobPosFilter, setCompJobPosFilter] = React.useState<string>('all')
 
   // Micro-Skill Authoring Modal State
 
@@ -1280,8 +1293,133 @@ export function ExpertAssignedRolesPage() {
     getParentCompetenciesForSkill,
   ])
 
+  const resolveCompJobPositionTitle = React.useCallback(
+    (comp: CompetencyDto): string => {
+      if (comp.jobPositionTitle) {
+        const cleaned = cleanJobPositionTitle(comp.jobPositionTitle)
+        if (cleaned) return cleaned
+      }
+      if (comp.jobPositionCode) {
+        const match = jobPositions.find(
+          (jp) =>
+            jp.code?.toLowerCase() === comp.jobPositionCode?.toLowerCase() ||
+            jp.id?.toLowerCase() === comp.jobPositionCode?.toLowerCase(),
+        )
+        if (match) return cleanJobPositionTitle(match.name)
+
+        if (comp.jobPositionCode === '15-1253.00') return 'Software Quality Assurance Analysts and Testers'
+        if (comp.jobPositionCode === '15-1243.00') return 'Database Architects'
+        if (comp.jobPositionCode === '15-1299.08') return 'Computer Systems Engineers/Architects'
+        if (comp.jobPositionCode === '15-1212.00') return 'Information Security Analysts'
+        if (comp.jobPositionCode === '15-1252.00') return 'Software Developers'
+      }
+      return ''
+    },
+    [jobPositions],
+  )
+
+  const resolveCompDepartmentName = React.useCallback(
+    (comp: CompetencyDto): string => {
+      if (comp.departmentName) return comp.departmentName
+      if (comp.departmentId) {
+        const match = departments.find(
+          (d) => d.id === comp.departmentId || d.code === comp.departmentId,
+        )
+        if (match) return match.name
+      }
+      return ''
+    },
+    [departments],
+  )
+
+  const compDeptOptions: ComboboxOption[] = React.useMemo(() => {
+    const map = new Map<string, { label: string; count: number }>()
+    availableCompetencies.forEach((comp) => {
+      const resolvedName = resolveCompDepartmentName(comp)
+      const key = comp.departmentId || resolvedName || 'unassigned'
+      const label = resolvedName || 'Unassigned Department'
+      const cur = map.get(key)
+      if (cur) {
+        cur.count += 1
+      } else {
+        map.set(key, { label, count: 1 })
+      }
+    })
+    const list: ComboboxOption[] = [
+      { value: 'all', label: 'All Departments' },
+    ]
+    map.forEach((val, key) => {
+      list.push({ value: key, label: val.label })
+    })
+    return list
+  }, [availableCompetencies, resolveCompDepartmentName])
+
+  const compJobPosOptions: ComboboxOption[] = React.useMemo(() => {
+    const map = new Map<string, { key: string; label: string; count: number }>()
+    availableCompetencies.forEach((comp) => {
+      const resolvedDept = resolveCompDepartmentName(comp)
+      if (
+        compDeptFilter !== 'all' &&
+        comp.departmentId !== compDeptFilter &&
+        comp.departmentName !== compDeptFilter &&
+        resolvedDept !== compDeptFilter
+      ) {
+        return
+      }
+
+      const cleanTitle = resolveCompJobPositionTitle(comp)
+      const displayLabel = cleanTitle || 'Unassigned Position'
+      const normKey = cleanTitle ? cleanTitle.toLowerCase().trim() : 'unassigned'
+
+      const cur = map.get(normKey)
+      if (cur) {
+        cur.count += 1
+      } else {
+        map.set(normKey, { key: cleanTitle || 'unassigned', label: displayLabel, count: 1 })
+      }
+    })
+
+    const list: ComboboxOption[] = [
+      { value: 'all', label: 'All Job Positions' },
+    ]
+    map.forEach((val) => {
+      list.push({ value: val.key, label: val.label })
+    })
+    return list
+  }, [availableCompetencies, compDeptFilter, resolveCompDepartmentName, resolveCompJobPositionTitle])
+
+  const filteredAvailableCompetencies = React.useMemo(() => {
+    return availableCompetencies.filter((comp) => {
+      if (compDeptFilter !== 'all') {
+        const resolvedDept = resolveCompDepartmentName(comp)
+        if (
+          comp.departmentId !== compDeptFilter &&
+          comp.departmentName !== compDeptFilter &&
+          resolvedDept !== compDeptFilter
+        ) {
+          return false
+        }
+      }
+      if (compJobPosFilter !== 'all') {
+        const cleanTitle = resolveCompJobPositionTitle(comp)
+        if (compJobPosFilter === 'unassigned') {
+          if (cleanTitle) return false
+        } else {
+          const filterLower = compJobPosFilter.toLowerCase().trim()
+          const matchesTitle = cleanTitle.toLowerCase().trim() === filterLower
+          const matchesCode = comp.jobPositionCode?.toLowerCase().trim() === filterLower
+          const matchesRaw = comp.jobPositionTitle?.toLowerCase().trim() === filterLower
+          if (!matchesTitle && !matchesCode && !matchesRaw) {
+            return false
+          }
+        }
+      }
+      return true
+    })
+  }, [availableCompetencies, compDeptFilter, compJobPosFilter, resolveCompDepartmentName, resolveCompJobPositionTitle])
+
   const competencyOptions: ComboboxOption[] = React.useMemo(() => {
-    const list = availableCompetencies.map((comp) => {
+    const list = filteredAvailableCompetencies.map((comp) => {
       const memberSkillNames = (comp.memberSkills || []).map(
         (m) => m.name || m.code || m.id,
       )
@@ -1298,7 +1436,13 @@ export function ExpertAssignedRolesPage() {
           ? ` · Skills: ${memberSkillNames.slice(0, 4).join(', ')}${memberSkillNames.length > 4 ? ` (+${memberSkillNames.length - 4} more)` : ''}`
           : ''
 
-      const baseDesc = comp.description ? `${comp.description}${memberSkillsDetails}` : `Domain Competency${memberSkillsDetails}`
+      const resolvedDept = resolveCompDepartmentName(comp)
+      const resolvedJp = resolveCompJobPositionTitle(comp)
+      const deptDetails = resolvedDept ? `[${resolvedDept}] ` : ''
+      const posDetails = resolvedJp ? `(${resolvedJp}) ` : ''
+      const baseDesc = comp.description
+        ? `${deptDetails}${posDetails}${comp.description}${memberSkillsDetails}`
+        : `${deptDetails}${posDetails}Domain Competency${memberSkillsDetails}`
 
       return {
         comp,
@@ -1327,7 +1471,7 @@ export function ExpertAssignedRolesPage() {
 
     return sorted.map((s) => s.option)
   }, [
-    availableCompetencies,
+    filteredAvailableCompetencies,
     missingPrereqCodesForSelectedLevels,
     getParentCompetenciesForSkill,
     filterOnlyPrereqUnlocks,
@@ -2805,32 +2949,95 @@ export function ExpertAssignedRolesPage() {
                   {authoringRole.status !== 'published' &&
                     authoringRole.status !== 'unpublished' &&
                     authoringRole.status !== 'submitted' && (
-                      <div className="space-y-1.5">
-                        <label className="text-[11px] font-semibold text-foreground block">
-                          Select Competency for {selectedLevelNamesLabel}
-                        </label>
-
-                        <div className="flex items-center gap-2">
-                          <div className="flex-1">
+                      <div className="space-y-2.5">
+                        {/* Department and Job Position Filters */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pb-1">
+                          <div>
+                            <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider block mb-1">
+                              Department
+                            </label>
                             <Combobox
                               size="sm"
                               clearable={false}
-                              options={competencyOptions}
-                              value={newCompetencyId}
-                              onChange={(val) => setNewCompetencyId(val)}
-                              placeholder={
-                                filterOnlyPrereqUnlocks
-                                  ? `Showing ${missingPrereqCompetenciesCount} competencies unlocking missing prereqs...`
-                                  : `Search & select competency for ${selectedLevelNamesLabel}...`
-                              }
-                              searchPlaceholder="Search by competency code or title..."
-                              emptyMessage={
-                                filterOnlyPrereqUnlocks
-                                  ? 'No available competencies unlock the missing prerequisites. Click the filter button to show all.'
-                                  : `All competencies are already assigned to ${selectedLevelNamesLabel}`
-                              }
+                              options={compDeptOptions}
+                              value={compDeptFilter}
+                              onChange={(val) => {
+                                setCompDeptFilter(val || 'all')
+                                setCompJobPosFilter('all')
+                              }}
+                              placeholder="All Departments"
+                              searchPlaceholder="Filter department..."
                             />
                           </div>
+
+                          <div>
+                            <div className="flex items-center justify-between mb-1">
+                              <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider block">
+                                Job Position
+                              </label>
+                              {(compDeptFilter !== 'all' || compJobPosFilter !== 'all') && (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setCompDeptFilter('all')
+                                    setCompJobPosFilter('all')
+                                  }}
+                                  className="text-[10px] text-primary hover:underline font-semibold cursor-pointer"
+                                >
+                                  Reset Filters
+                                </button>
+                              )}
+                            </div>
+                            <Combobox
+                              size="sm"
+                              clearable={false}
+                              options={compJobPosOptions}
+                              value={compJobPosFilter}
+                              onChange={(val) => setCompJobPosFilter(val || 'all')}
+                              placeholder="All Job Positions"
+                              searchPlaceholder="Filter position..."
+                            />
+                          </div>
+                        </div>
+
+                        {/* Competency Selector */}
+                        <div className="space-y-1">
+                          <div className="flex items-center justify-between">
+                            <label className="text-[11px] font-semibold text-foreground block">
+                              Select Competency for {selectedLevelNamesLabel}
+                            </label>
+                            {filteredAvailableCompetencies.length !== availableCompetencies.length && (
+                              <span className="text-[10px] text-muted-foreground font-medium">
+                                Showing {filteredAvailableCompetencies.length} of {availableCompetencies.length}
+                              </span>
+                            )}
+                          </div>
+
+                          <div className="flex items-center gap-2">
+                            <div className="flex-1">
+                              <Combobox
+                                size="sm"
+                                clearable={false}
+                                options={competencyOptions}
+                                value={newCompetencyId}
+                                onChange={(val) => setNewCompetencyId(val)}
+                                placeholder={
+                                  filterOnlyPrereqUnlocks
+                                    ? `Showing ${missingPrereqCompetenciesCount} competencies unlocking missing prereqs...`
+                                    : filteredAvailableCompetencies.length === 0
+                                      ? 'No competencies match selected filters'
+                                      : `Search & select competency for ${selectedLevelNamesLabel}...`
+                                }
+                                searchPlaceholder="Search by competency code or title..."
+                                emptyMessage={
+                                  filterOnlyPrereqUnlocks
+                                    ? 'No available competencies unlock the missing prerequisites. Click the filter button to show all.'
+                                    : filteredAvailableCompetencies.length === 0
+                                      ? 'No competencies match active Department & Job Position filters.'
+                                      : `All competencies are already assigned to ${selectedLevelNamesLabel}`
+                                }
+                              />
+                            </div>
 
                           {(missingPrereqCodesForSelectedLevels.size > 0 ||
                             filterOnlyPrereqUnlocks) && (
@@ -2910,6 +3117,7 @@ export function ExpertAssignedRolesPage() {
                             </button>
                           </div>
                         )}
+                        </div>
                       </div>
                     )}
 
@@ -3018,12 +3226,30 @@ export function ExpertAssignedRolesPage() {
                                     </td>
 
                                     <td className="py-2.5 px-3">
-                                      <span className="font-mono font-bold text-primary mr-1.5">
-                                        {code}
-                                      </span>
-                                      <span className="text-foreground font-medium">
-                                        {name}
-                                      </span>
+                                      <div className="flex items-center gap-1.5">
+                                        <span className="font-mono font-bold text-primary mr-1.5">
+                                          {code}
+                                        </span>
+                                        <span className="text-foreground font-medium">
+                                          {name}
+                                        </span>
+                                      </div>
+                                      {compObj && (resolveCompDepartmentName(compObj) || resolveCompJobPositionTitle(compObj)) && (
+                                        <div className="flex flex-wrap items-center gap-1.5 mt-1">
+                                          {resolveCompDepartmentName(compObj) && (
+                                            <Badge variant="outline" className="text-[10px] font-medium text-muted-foreground border-border py-0 px-1.5 bg-muted/30">
+                                              <Building2 className="w-2.5 h-2.5 mr-1 text-primary/70 inline" />
+                                              {resolveCompDepartmentName(compObj)}
+                                            </Badge>
+                                          )}
+                                          {resolveCompJobPositionTitle(compObj) && (
+                                            <Badge variant="secondary" className="text-[10px] font-medium py-0 px-1.5">
+                                              <Briefcase className="w-2.5 h-2.5 mr-1 text-primary inline" />
+                                              {resolveCompJobPositionTitle(compObj)}
+                                            </Badge>
+                                          )}
+                                        </div>
+                                      )}
                                     </td>
 
                                     <td className="py-2.5 px-3 text-muted-foreground">
