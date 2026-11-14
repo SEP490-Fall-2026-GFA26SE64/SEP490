@@ -6,6 +6,11 @@ import java.util.Optional;
 
 public interface CompetencyRepository {
     List<CompetencyRecord> findAllCompetencies(String organizationId, String search);
+
+    default List<CompetencyRecord> findAllCompetencies(String organizationId, String search, String departmentId, String jobPositionCode) {
+        return findAllCompetencies(organizationId, search);
+    }
+
     Optional<CompetencyRecord> findById(String organizationId, String id);
     boolean existsByOrganizationIdAndCode(String organizationId, String code);
     boolean existsByOrganizationIdAndCodeAndIdNot(String organizationId, String code, String id);

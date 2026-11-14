@@ -72,6 +72,20 @@ public class MicroSkillApplicationService {
     }
 
     private MicroSkillResponse toResponse(MicroSkill skill) {
-        return mapper.map(skill, MicroSkillResponse.class);
+        return new MicroSkillResponse(
+                skill.getId().toString(),
+                skill.getOrganizationId(),
+                skill.getCode(),
+                skill.getName(),
+                skill.getDescription(),
+                skill.getStatus().name(),
+                skill.getCreatedAt(),
+                skill.getUpdatedAt(),
+                skill.getVersion(),
+                skill.getProvision().moduleOnlyKnowledgeLevels(),
+                skill.getProvision().certificateOnlyKnowledgeLevels(),
+                skill.getProvision().foundationOutcomeCodes(),
+                skill.getProvision().intermediateOutcomeCodes(),
+                skill.getProvision().advancedOutcomeCodes());
     }
 }

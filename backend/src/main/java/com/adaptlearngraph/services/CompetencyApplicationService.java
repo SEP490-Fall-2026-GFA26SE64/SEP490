@@ -22,14 +22,20 @@ public class CompetencyApplicationService {
         return competencies.listCompetencies(organizationId, search).stream().map(this::toResponse).toList();
     }
 
+    public List<CompetencyResponse> listCompetencies(String organizationId, String search, String departmentId, String jobPositionCode) {
+        return competencies.listCompetencies(organizationId, search, departmentId, jobPositionCode).stream().map(this::toResponse).toList();
+    }
+
     public CompetencyResponse createCompetency(String organizationId, CreateCompetencyRequest request) {
         return toResponse(competencies.createCompetency(organizationId, request.code(), request.name(),
-                request.description(), request.skillIds(), request.levelId()));
+                request.description(), request.skillIds(), request.levelId(),
+                request.departmentId(), request.departmentName(), request.jobPositionCode(), request.jobPositionTitle()));
     }
 
     public CompetencyResponse updateCompetency(String organizationId, String id, UpdateCompetencyRequest request) {
         return toResponse(competencies.updateCompetency(organizationId, id, request.code(), request.name(),
-                request.description(), request.skillIds()));
+                request.description(), request.skillIds(),
+                request.departmentId(), request.departmentName(), request.jobPositionCode(), request.jobPositionTitle()));
     }
 
     public void deleteCompetency(String organizationId, String id) {

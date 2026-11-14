@@ -30,8 +30,14 @@ public final class CompetencyMappings implements ModelMapperRegistrar {
                     source.levelId(),
                     source.levelName(),
                     source.roleName(),
+                    source.departmentId(),
+                    source.departmentName(),
+                    source.jobPositionCode(),
+                    source.jobPositionTitle(),
                     memberSkills,
-                    source.memberSkills() != null ? source.memberSkills().size() : 0);
+                    source.memberSkills() != null ? source.memberSkills().size() : 0,
+                    source.createdAt(),
+                    source.updatedAt());
         });
     }
 }
