@@ -7,7 +7,7 @@ describe('trusted single-role entry', () => {
     ['LD_MANAGER', '/ld-manager/job-positions'],
     ['EMPLOYEE', '/employee/overview'],
     ['ORGANIZATION_ADMINISTRATOR', '/admin/subscription'],
-    ['PLATFORM_ADMINISTRATOR', '/platform-admin/subscriptions'],
+    ['PLATFORM_ADMINISTRATOR', '/platform-admin/organizations'],
   ])('routes %s to its own layout', (role, path) => {
     const selected = singleWorkspaceRole([role])
     expect(selected).toBe(role)

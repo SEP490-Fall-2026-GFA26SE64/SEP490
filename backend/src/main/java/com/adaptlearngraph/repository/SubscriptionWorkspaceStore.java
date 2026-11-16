@@ -23,11 +23,14 @@ public interface SubscriptionWorkspaceStore {
     record Summary(UUID organizationId, String organizationName, String workspaceStatus, String subscriptionStatus, PaidPeriod current,
                    PaidPeriod scheduled, int usedSeats, int allocatedSeats, int admissionLimit, List<PaymentOrder> paymentHistory) {}
     record Setup(UUID organizationId, String state, Instant readyAt, String failureCode) {}
-    record Workspace(UUID organizationId, String name, String status, String setupState,
+    record Workspace(UUID organizationId, String name, String status, String setupState, OrganizationProfile profile,
                      WorkspaceSubscription subscription, List<WorkspaceAdministrator> administrators) {}
+    record OrganizationProfile(String workspaceSlug, String industry, String headcount, String country, Instant createdAt) {}
     record WorkspaceSubscription(String status, CurrentPlan current) {}
     record CurrentPlan(String name, Instant startsAt, Instant endsAt) {}
-    record WorkspaceAdministrator(UUID accountId, String fullName, String email, boolean active, boolean accountActive) {}
+    /** {@code phone} is only known for the System Administrator who registered the organization. */
+    record WorkspaceAdministrator(UUID accountId, String fullName, String email, boolean active, boolean accountActive,
+                                  boolean systemAdministrator, String phone) {}
     record Member(UUID membershipId, UUID accountId, String fullName, String email, boolean active,
                   Set<String> roles, UUID departmentId, UUID jobPositionReferenceId, long revision,
                   String departmentName, String jobPositionName, boolean accountActive,

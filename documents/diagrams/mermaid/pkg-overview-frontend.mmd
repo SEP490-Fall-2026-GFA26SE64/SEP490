@@ -6,6 +6,7 @@ config:
   flowchart: {htmlLabels: false, curve: linear}
 ---
 flowchart LR
+  subgraph FrontendRoot["frontend/src"]
   subgraph Shared["shared"]
     SharedApi["api"]
     SharedAuth["auth"]
@@ -32,6 +33,7 @@ flowchart LR
     System["system"]
   end
   Assets["assets"]
+  end
 
   App -.-> Features
   App -.-> Shared

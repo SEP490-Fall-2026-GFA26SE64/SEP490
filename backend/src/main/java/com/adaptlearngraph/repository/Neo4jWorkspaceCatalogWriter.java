@@ -7,12 +7,10 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
@@ -23,7 +21,7 @@ import java.util.UUID;
  * UNWIND MERGE per (type, source label, target label) relationship group.
  */
 public final class Neo4jWorkspaceCatalogWriter implements WorkspaceCatalogGraphWriter {
-    private static final Set<String> LABELS = Set.of("JobPosition", "TargetRole", "Level", "Competency", "MicroSkill", "LearningModule");
+    private static final Set<String> LABELS = Set.of("JobPosition", "TargetRole", "Level", "Competency", "MicroSkill");
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
     private final java.util.function.Supplier<Neo4jCypher> graph;
 
@@ -51,19 +49,17 @@ public final class Neo4jWorkspaceCatalogWriter implements WorkspaceCatalogGraphW
 
         Map<String, List<String>> roleToLevels = new HashMap<>();
         Map<String, List<String>> levelToComps = new HashMap<>();
-        Map<String, List<String>> compToSkills = new HashMap<>();
+        Map<String, List<Edge>> levelRequirements = new HashMap<>();
         for (Edge edge : edges) {
             if ("HAS_LEVEL".equals(edge.type())) {
                 roleToLevels.computeIfAbsent(edge.fromId(), k -> new ArrayList<>()).add(edge.toId());
             } else if ("HAS_COMPETENCY".equals(edge.type())) {
                 levelToComps.computeIfAbsent(edge.fromId(), k -> new ArrayList<>()).add(edge.toId());
-            } else if ("HAS_SKILL".equals(edge.type())) {
-                compToSkills.computeIfAbsent(edge.fromId(), k -> new ArrayList<>()).add(edge.toId());
+            } else if ("REQUIRES_SKILL".equals(edge.type())) {
+                levelRequirements.computeIfAbsent(edge.fromId(), k -> new ArrayList<>()).add(edge);
             }
         }
 
-        Set<String> retainedLevelComps = new HashSet<>();
-        Set<String> retainedLevelSkills = new HashSet<>();
         var nodeRows = new LinkedHashMap<String, List<Map<String, Object>>>();
         for (Node node : nodes) {
             var properties = new LinkedHashMap<String, Object>();
@@ -85,17 +81,14 @@ public final class Neo4jWorkspaceCatalogWriter implements WorkspaceCatalogGraphW
                 Map<String, List<String>> levelComps = new LinkedHashMap<>();
                 Set<String> compIds = new LinkedHashSet<>();
                 List<Map<String, Object>> skillTargets = new ArrayList<>();
-                Set<String> seenSkillLevel = new HashSet<>();
 
                 List<String> lvlIds = roleToLevels.getOrDefault(node.id(), List.of());
                 for (String lvlId : lvlIds) {
                     Node lvlNode = nodeById.get(lvlId);
                     String lvlName = lvlNode != null && lvlNode.properties().get("name") != null
                             ? lvlNode.properties().get("name").toString().trim() : "Level";
-                    List<String> allCIds = levelToComps.getOrDefault(lvlId, List.of());
-                    List<String> cIds = allCIds.stream().limit(2).toList();
+                    List<String> cIds = levelToComps.getOrDefault(lvlId, List.of());
                     for (String cId : cIds) {
-                        retainedLevelComps.add(lvlId + ":" + cId);
                         String copiedCompId = ids.get(cId);
                         if (copiedCompId != null) {
                             levelComps.computeIfAbsent(lvlName, k -> new ArrayList<>()).add(copiedCompId);
@@ -103,46 +96,25 @@ public final class Neo4jWorkspaceCatalogWriter implements WorkspaceCatalogGraphW
                         }
                     }
 
-                    int levelSkillLimit = 3;
-                    int levelSkillCount = 0;
-                    for (int i = 0; i < cIds.size() && levelSkillCount < levelSkillLimit; i++) {
-                        String cId = cIds.get(i);
-                        List<String> allSIds = compToSkills.getOrDefault(cId, List.of());
-                        int maxForThisComp = (cIds.size() > 1 && i == 0) ? 2 : (levelSkillLimit - levelSkillCount);
-                        List<String> sIds = allSIds.stream().limit(maxForThisComp).toList();
-                        for (String sId : sIds) {
-                            if (levelSkillCount >= levelSkillLimit) break;
-                            retainedLevelSkills.add(lvlId + ":" + sId);
-                            levelSkillCount++;
-
-                            String copiedSkillId = ids.get(sId);
-                            Node sNode = nodeById.get(sId);
-                            if (copiedSkillId != null && sNode != null && seenSkillLevel.add(copiedSkillId + ":" + lvlName)) {
-                                String sCode = sNode.properties().get("code") != null ? sNode.properties().get("code").toString() : sId;
-                                String sName = Objects.toString(sNode.properties().get("name"), sCode);
-                                List<String> knowledgeLevels = new ArrayList<>();
-                                if ("Senior".equalsIgnoreCase(lvlName)) {
-                                    knowledgeLevels.addAll(List.of("INTERMEDIATE", "ADVANCED"));
-                                } else if ("Middle".equalsIgnoreCase(lvlName)) {
-                                    knowledgeLevels.add("INTERMEDIATE");
-                                } else {
-                                    knowledgeLevels.add("FOUNDATION");
-                                }
-                                skillTargets.add(Map.of(
-                                        "skillId", copiedSkillId,
-                                        "skillCode", sCode,
-                                        "skillName", sName,
-                                        "level", lvlName,
-                                        "requiredKnowledgeLevels", knowledgeLevels
-                                ));
-                            }
-                        }
+                    for (Edge requirement : levelRequirements.getOrDefault(lvlId, List.of())) {
+                        Node skill = nodeById.get(requirement.toId());
+                        if (skill == null) throw new IllegalArgumentException("Requirement skill must be copied");
+                        Object knowledge = requirement.properties().get("requiredKnowledgeLevels");
+                        var target = new LinkedHashMap<String, Object>();
+                        target.put("skillId", ids.get(skill.id()));
+                        target.put("skillCode", skill.code());
+                        target.put("skillName", skill.displayName());
+                        target.put("level", lvlName);
+                        target.put("requiredKnowledgeLevels", knowledge instanceof List<?> ? knowledge : List.of());
+                        skillTargets.add(target);
                     }
                 }
                 try {
                     properties.put("levelCompetencies", OBJECT_MAPPER.writeValueAsString(levelComps));
                     properties.put("skillTargets", OBJECT_MAPPER.writeValueAsString(skillTargets));
-                } catch (Exception ignored) {}
+                } catch (com.fasterxml.jackson.core.JsonProcessingException invalid) {
+                    throw new IllegalStateException("Copied role requirements cannot be serialized", invalid);
+                }
                 properties.put("competencyIds", new ArrayList<>(compIds));
             }
 
@@ -151,8 +123,6 @@ public final class Neo4jWorkspaceCatalogWriter implements WorkspaceCatalogGraphW
         var edgeRows = new LinkedHashMap<String, List<Map<String, Object>>>();
         for (Edge edge : edges) {
             if (!edge.type().matches("[A-Z_]+") || !ids.containsKey(edge.fromId()) || !ids.containsKey(edge.toId())) continue;
-            if ("HAS_COMPETENCY".equals(edge.type()) && !retainedLevelComps.isEmpty() && !retainedLevelComps.contains(edge.fromId() + ":" + edge.toId())) continue;
-            if ("REQUIRES_SKILL".equals(edge.type()) && !retainedLevelSkills.isEmpty() && !retainedLevelSkills.contains(edge.fromId() + ":" + edge.toId())) continue;
             var properties = new LinkedHashMap<String, Object>();
             edge.properties().forEach((key, value) -> { if (value != null) properties.put(key, value); });
             String sourceId = edge.id() != null ? edge.id() : edge.type() + ":" + edge.fromId() + ":" + edge.toId();

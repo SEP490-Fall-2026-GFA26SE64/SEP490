@@ -99,7 +99,7 @@ Current local source includes private content/progress, rule assessments/exact e
 **Diagram notes:**
 
 - Trusted workspace-baseline configuration is currently profile-gated to local and excluded from prod. This diagram does not claim production learning readiness.
-- MinIO, local LLM and incomplete business capabilities in the target image remain subject to the evidence and limitations below; their depiction does not establish live deployment or acceptance.
+- The private MinIO adapter exists in the local content slice. Local LLM and incomplete business capabilities in the target image remain subject to the evidence and limitations below; their depiction does not establish live deployment or acceptance.
 
 **Component Descriptions**
 
@@ -123,7 +123,7 @@ Current local source includes private content/progress, rule assessments/exact e
 
 The eight Service names describe logical functional groups, not independently deployed applications or a one-to-one Java package map. Notifications, audit and background processing are shared backend capabilities rather than a ninth service group.
 
-**Implementation boundaries:** The table describes the target responsibilities in the approved image. Connected identity/subscription and workspace-baseline slices do not establish completion of all learning, RIASEC, reporting or inference functions. Private asset adapter/MinIO source is implemented, with runtime acceptance separately dated; concrete local LLM remains a target integration; live payment/email acceptance is not certified here. The runtime web entry, schema migration and detailed data ownership remain described in the following design/deployment sections.
+**Implementation boundaries:** The table describes the target responsibilities in the approved image. Connected identity/subscription and workspace-baseline slices do not establish completion of all learning, RIASEC, reporting or inference functions. Private asset adapter/MinIO source is implemented, with runtime acceptance separately dated; YouTube/Vimeo lesson adapters exist in the local content slice. A concrete local LLM remains a target integration; live payment/email and production acceptance are not certified here. The runtime web entry, schema migration and detailed data ownership remain described in the following design/deployment sections.
 
 #### 1.1.2 Data ownership and consistency
 
@@ -150,7 +150,9 @@ PostgreSQL transactions cannot atomically commit arbitrary Neo4j, MinIO or exter
 | --- | --- | --- | --- |
 | payOS | Subscription checkout, status query and signed webhook | Merchant authentication headers; server-generated order code, exact amount, plan/item name, quantity, short description, expiry and return/cancel callback URLs. Query uses order/link identity. No learner answers, RIASEC, profile mastery or learning files are required. | Implemented adapter; `payos-java` **2.0.1**. Verify response/webhook signatures and order terms. Live merchant acceptance not run here. Credentials remain environment-injected and are not printed in reports. |
 | Gmail SMTP | Account verification and transactional email | Recipient email, verification code or activation link when applicable, safe account/payment/workflow notification content. | Required provider; implemented configurable SMTP via Spring Mail. SMTP is a protocol/service, not a pinned Gmail application version. STARTTLS is configured. Actual provider account/inbox delivery not evidenced by documentation inspection. |
-| MinIO, self-hosted | Private learning content/file storage | Authorized object bytes, organization-scoped object locator and metadata; no authentication password or raw payment secret. | Planned; server/client version not pinned, no service present in Compose. Proposed least-privilege backend access and expiring authorized downloads. |
+| YouTube | Approved external lesson-video verification and embedded playback | Approved video URL/ID, fixed-endpoint oEmbed request and browser-player requests/events; no learner assessment answers or mastery profile are intentionally sent. | Implemented verifier/player source using YouTube oEmbed and IFrame Player API. External service version is not pinned. Existing local evidence is not a new live-provider or production acceptance run. |
+| Vimeo | Approved external lesson-video verification and embedded playback | Approved video URL/ID, fixed-endpoint oEmbed request and browser-player requests/events; no learner assessment answers or mastery profile are intentionally sent. | Implemented verifier/player source using Vimeo oEmbed and Player API. External service version is not pinned; live Vimeo acceptance remains limited by the recorded provider restriction. |
+| MinIO, self-hosted | Internal private learning content/file storage | Authorized object bytes, organization-scoped object locator and metadata; no authentication password or raw payment secret. | Implemented [private asset adapter](../backend/src/main/java/com/adaptlearngraph/repository/PrivateLearningAssets.java); Java SDK **8.5.17** in the backend POM. Content APIs are local-profile-gated; the production Compose does not supply a MinIO service. Source presence does not certify production delivery. |
 | Local LLM, self-hosted | AI-assisted role guidance | Proposed minimized competency summary, normalized RIASEC vector, allowed role candidate IDs/requirements and non-identifying prompt context. | Planned; engine, model weights, quantization and version not selected in repository. Internal-only interface; no required third-party cloud AI API. |
 | GitHub | Source control and target CI/CD | Repository commits, pull-request metadata and proposed build/test artifacts; no runtime learner data is required. | Repository platform confirmed; Actions workflows and deployed registry are not evidenced. Secret material must never be committed or emitted in logs. |
 | O*NET / ESCO / SFIA / UK Government Digital and Data source materials | Offline ontology provenance/review | Dataset retrieval and citation, not runtime learner submissions. | O*NET 31.0 and SFIA 9 are documented dataset sources. Local ontology mappings are proposals, not official equivalence or license certification. |
@@ -189,7 +191,8 @@ For JavaScript dependencies, “manifest” is the declared range and “locked�
 | Containers/orchestration | Docker / Docker Compose | Compose files present; host engine/plugin versions not pinned | On-premises deployment approach; no Kubernetes requirement. |
 | Offline data tools | Python | Interpreter version not specified | Dataset validation/import/generation scripts, not a separate Python business backend. Python launcher was unavailable in this documentation session; Node was used for read-only metadata validation. |
 | Mobile | Native mobile framework | Not applicable | Web application only; responsive browser acceptance is proposed in SRS. |
-| Target storage/inference | MinIO / local LLM | Not selected or pinned | Must be declared with concrete versions before deployment claims. |
+| Private storage | MinIO | Java SDK **8.5.17**; server deployment is environment-specific | Private asset adapter exists; production storage setup and acceptance remain separate. |
+| Target inference | Local LLM | Engine/model version not selected | Must be declared with concrete versions before deployment claims. |
 
 Evidence: [frontend manifest](../frontend/package.json), [lockfile](../frontend/package-lock.json), [backend POM](../backend/pom.xml), [frontend Dockerfile](../frontend/Dockerfile), [backend Dockerfile](../backend/Dockerfile), [development Compose](../compose.dev.yml) and [production Compose](../compose.prod.yml).
 
@@ -254,7 +257,7 @@ The root namespace is `com.adaptlearngraph`. The checked-out backend uses `apis`
 
 ![Backend Package Overview](../documents/diagrams/mermaid/pkg-overview-backend.png)
 
-**Reading the overview:** Each top-level tabbed folder is an actual package relative to `com.adaptlearngraph`. The main row aligns `apis`, `services`, `repository` and `entities`; DTO support sits above, configuration and JWT support below. The `entities` folder contains its direct `domain` subpackage. The other six displayed packages have no direct subpackages, so no invented child packages or classes are added. Folder size does not encode class count. Orthogonal arrows use separate approach lanes and open heads outside folder borders, tabs and shadows.
+**Reading the overview:** The outermost UML folder is `com.adaptlearngraph`, enclosing all displayed packages and their dependencies. Its immediate child folders use names relative to that namespace. The main row aligns `apis`, `services`, `repository` and `entities`; DTO support sits above, configuration and JWT support below. The `entities` folder contains its direct `domain` subpackage. The other six displayed packages have no direct subpackages, so no invented child packages or classes are added. Folder size does not encode class count. Orthogonal arrows use separate approach lanes and open heads clear of child folder borders, tabs and shadows.
 
 Dotted arrows point from the importing package to its dependency, not along runtime request flow. Controllers import services and DTOs; services import repositories, entities and DTOs; repositories and DTOs import entities. Configuration imports services, repositories and JWT support; JWT support imports repositories and entities. These are selected imports, not a strict one-way layering claim: additional imports, including reverse dependencies, exist and are omitted for readability.
 
@@ -284,7 +287,7 @@ The [architecture test](../backend/src/test/java/com/adaptlearngraph/architectur
 
 In the TypeScript frontend, packages mean source-directory groups, not separately published npm packages. The overview retains the four principal groups and expands exactly one direct subdirectory level inside `features` and `shared`. The `app` and `assets` groups have no direct subdirectories. Deeper screens and component subdirectories remain collapsed. Dotted arrows show selected imports, not REST calls or an exhaustive dependency graph.
 
-The source root appears in the title, not as a fifth package. Arrows show `app` importing `features` and `shared`, plus `features` importing `shared`. The reverse `shared` dependency on `features` is also present in current source, for example [companyStore](../frontend/src/shared/stores/companyStore.ts); it is shown as an existing coupling, not a recommended architecture. `assets` remains visible without an invented import arrow.
+The outermost UML folder is `frontend/src`, enclosing `app`, `features`, `shared`, `assets` and all displayed dependencies. It is the source-directory root, not another published npm package. Arrows show `app` importing `features` and `shared`, plus `features` importing `shared`. The reverse `shared` dependency on `features` is also present in current source, for example [companyStore](../frontend/src/shared/stores/companyStore.ts); it is shown as an existing coupling, not a recommended architecture. `assets` remains visible without an invented import arrow.
 
 **Direct subpackages:** `features` contains `administration`, `auth`, `employee`, `expert`, `guest`, `manager`, `packages`, `platform-admin`, `profile`, `subscription` and `system`. `shared` contains `api`, `auth`, `components`, `hooks`, `i18n`, `layouts`, `lib`, `stores` and `styles`. These nested folders show containment; dependency arrows stay at the retained top-level granularity. The two directions between `features` and `shared` use separate horizontal lanes so neither arrowhead is hidden.
 
@@ -5817,9 +5820,29 @@ The frontend WF-04/WF-07 layouts and SRS field rules apply. Additional target co
 
 #### 3.3.2 Target role handoff sequence
 
+**Target role handoff class diagram**
+
+[Mermaid source: Target Role Handoff](../documents/diagrams/mermaid/cls-target-role-handoff.mmd)
+
+![Target Role Handoff - Current Implementation](../documents/diagrams/mermaid/cls-target-role-handoff.png)
+
+This class diagram and SEQ-05 trace the current implementation, not proposed workflow classes. L&D creation, Expert configuration/submission and L&D approval/rejection use the same organization target-role create/update API. Expert submission sends `SUBMITTED`; manager publication sends `ACTIVE`; manager rejection sends `REJECTED` with `rejectionReason`. The application service maps DTOs to use-case commands, TargetRoleService updates the domain object, and Neo4jTargetRoleRepository saves the role and synchronizes catalog relationships in its write transaction.
+
+| Class / responsibility | Specification |
+| --- | --- |
+| `OrganizationTargetRoleController` | Handles organization-scoped POST/GET/PUT, request validation, existing-role lookup, role-header checks and conditional Expert assignment comparison; maps missing roles, forbidden requests and duplicate identities to HTTP responses. |
+| `OrganizationTargetRoleApplicationService` | Maps create/update requests to commands, parses status/track, serializes requirements and maps domain results to TargetRoleResponse. |
+| `CreateTargetRoleUseCase` / `ViewTargetRolesUseCase` / `ManageTargetRoleUseCase` | Actual application interfaces used for create, query and update/delete operations. |
+| `TargetRoleService` | Implements the use-case interfaces; checks duplicate organization/code/version on creation, calls TargetRole.createNew or updateDetails and delegates persistence. |
+| `TargetRole` | Holds organization, Expert assignment, status/version, requirements, member Levels, competencies, durations and rejection reason. Assignment is a field in this flow, not the previously drawn separate assignment-history class. |
+| `TargetRoleRepository` / `Neo4jTargetRoleRepository` | Repository contract and Neo4j adapter. The adapter locates persisted identity, checks tenant ownership, merges role fields, synchronizes Levels/competencies/skills/member identities/JobPosition and supersedes other versions on ACTIVE/PUBLISHED saves. |
+| `TargetRoleNodeRepository` / `Neo4jClient` | Actual Spring Data query interface and graph client used by the adapter for node merging, identity queries and relationship synchronization. |
+
+**Source and limitations:** [Controller](../backend/src/main/java/com/adaptlearngraph/apis/OrganizationTargetRoleController.java), [application service](../backend/src/main/java/com/adaptlearngraph/services/OrganizationTargetRoleApplicationService.java), [use-case service](../backend/src/main/java/com/adaptlearngraph/services/TargetRoleService.java), [Neo4j adapter](../backend/src/main/java/com/adaptlearngraph/repository/Neo4jTargetRoleRepository.java), [Expert submission](../frontend/src/features/expert/target-roles/ExpertAssignedRolesPage.tsx) and [manager decisions](../frontend/src/features/manager/target-roles/TargetRolesPage.tsx). Current controller checks use request role/user headers, and Expert assignment comparison is conditional on a supplied user ID; they must not be depicted as the previously invented TrustedAssignmentGuard. Generic status updates are not an exact-hash submission/review aggregate. The source path does not provide the earlier proposed PostgreSQL workflow/outbox, immutable decision receipt or independent catalog-projection worker. Frontend local-store updates and incomplete HTTP/offline failure handling do not prove persisted success. These diagrams document current calls without certifying authorization completeness or changing code.
+
 [Mermaid source: SEQ-05](../documents/diagrams/mermaid/seq-05.mmd)
 
-![SEQ-05 - Required role handoff (planned completion)](../documents/diagrams/mermaid/seq-05.png)
+![SEQ-05 - Target Role Handoff - Current Low-Level Calls](../documents/diagrams/mermaid/seq-05.png)
 
 #### 3.3.3 Offering approval and private-content sequence
 

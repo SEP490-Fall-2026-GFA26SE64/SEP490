@@ -1,3 +1,10 @@
+{
+    servers {
+        # Keep X-Forwarded-Proto/For from a TLS-terminating host proxy (e.g. Nginx).
+        trusted_proxies static private_ranges
+    }
+}
+
 :80 {
     handle /api/* {
         reverse_proxy api:8080

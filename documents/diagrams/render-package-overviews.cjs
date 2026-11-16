@@ -56,6 +56,18 @@ for (const [parent, children] of [
   });
 }
 
+for (const [kind, rootId] of [['backend', 'BackendRoot'], ['frontend', 'FrontendRoot']]) {
+  const layout = layouts[kind];
+  for (const box of Object.values(layout.nodes)) { box[0] += 20; box[1] += 70; }
+  for (const route of Object.values(layout.routes)) {
+    for (const point of route) { point[0] += 20; point[1] += 70; }
+  }
+  layout.nodes[rootId] = [20, 65, layout.width, layout.height - 30];
+  layout.width += 40;
+  layout.height += 110;
+  layout.rootId = rootId;
+}
+
 function arrowhead(points) {
   const end = points[points.length - 1], before = points[points.length - 2];
   const length = Math.hypot(end[0] - before[0], end[1] - before[1]);
@@ -114,26 +126,44 @@ function render(kind) {
   assert.equal(stack.length, 0);
   const edges = [...source.matchAll(/^\s+(\w+) -\.-> (\w+)$/gm)].map(([, from, to]) => ({ from, to }));
   const layout = layouts[kind];
+  const rootNode = nodes.find(n => n.node === layout.rootId);
+  assert(rootNode && !rootNode.parent, 'Missing outermost package');
+  assert.equal(nodes.filter(n => !n.parent).length, 1, 'Every package must belong to the outermost package');
   assert.deepEqual(nodes.map(n => n.node).sort(), Object.keys(layout.nodes).sort());
   assert.deepEqual(edges.map(e => e.from + '>' + e.to).sort(), Object.keys(layout.routes).sort());
   for (const { node, label, parent } of nodes) {
-    const parentLabel = nodes.find(n => n.node === parent)?.label;
+    const relativeLabels = [];
+    let ancestor = nodes.find(n => n.node === node);
+    while (ancestor.node !== layout.rootId) {
+      relativeLabels.unshift(ancestor.label);
+      ancestor = nodes.find(n => n.node === ancestor.parent);
+      assert(ancestor, 'Package ancestry must reach the outermost package');
+    }
     const directory = kind === 'backend'
-      ? path.join(root, 'backend', 'src', 'main', 'java', 'com', 'adaptlearngraph', ...(parentLabel ? [parentLabel] : []), label)
-      : path.join(root, 'frontend', 'src', ...(parentLabel ? [parentLabel] : []), label);
+      ? path.join(root, 'backend', 'src', 'main', 'java', 'com', 'adaptlearngraph', ...relativeLabels)
+      : path.join(root, 'frontend', 'src', ...relativeLabels);
     assert(fs.statSync(directory).isDirectory(), 'Package directory missing: ' + directory);
     if (parent) {
       const [x, y, w, h] = layout.nodes[node], [px, py, pw, ph] = layout.nodes[parent];
       assert(x > px && y > py + 60 && x + w + 9 < px + pw && y + h + 9 < py + ph, 'Child outside parent: ' + node);
     }
   }
-  const obstacles = nodes.filter(n => !n.parent).flatMap(({ node }) => shapeBoxes(layout.nodes[node]).map(box => ({ node, box })));
+  const obstacles = nodes.filter(n => n.parent === layout.rootId).flatMap(({ node }) => shapeBoxes(layout.nodes[node]).map(box => ({ node, box })));
   for (const { from, to } of edges) {
     const points = layout.routes[from + '>' + to];
     const head = arrowhead(points);
     for (const point of [...points, ...head]) {
       assert(point[0] >= 20 && point[0] <= layout.width - 20);
       assert(point[1] >= 20 && point[1] <= layout.height - 20);
+      const [rx, ry, rw, rh] = layout.nodes[layout.rootId];
+      assert(point[0] > rx + 12 && point[0] < rx + rw - 12 && point[1] > ry + 60 && point[1] < ry + rh - 12, 'Dependency leaves outermost package');
+    }
+    function isAncestor(parentId, node) {
+      while (node.parent) {
+        if (node.parent === parentId) return true;
+        node = nodes.find(n => n.node === node.parent);
+      }
+      return false;
     }
     for (const segments of [points, head]) {
       for (let i = 1; i < segments.length; i++) {
@@ -149,24 +179,25 @@ function render(kind) {
   for (let i = 0; i < nodes.length; i++) {
     for (const other of nodes.slice(i + 1)) {
       const node = nodes[i];
-      if (node.parent === other.node || other.parent === node.node) continue;
+      if (isAncestor(node.node, other) || isAncestor(other.node, node)) continue;
       const [x, y, w, h] = layout.nodes[node.node], [ox, oy, ow, oh] = layout.nodes[other.node];
       assert(x + w + 9 <= ox || ox + ow + 9 <= x || y + h + 9 <= oy || oy + oh + 9 <= y, 'Overlapping packages');
     }
   }
   let svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${layout.width}" height="${layout.height}" viewBox="0 0 ${layout.width} ${layout.height}" role="img" aria-labelledby="title desc">
 <title id="title">${escape(title)}</title>
-<desc id="desc">Top-level UML package folders with one level of actual subpackages. Orthogonal dashed open arrows show selected imports. Arrowheads remain outside folders and shadows.</desc>
+<desc id="desc">Outermost UML package contains the principal packages and one level of actual subpackages. Orthogonal dashed open arrows show selected imports inside the root package. Arrowheads remain clear of child folders and shadows.</desc>
 <rect width="100%" height="100%" fill="white"/>
 <g font-family="Arial, sans-serif"><text x="40" y="32" font-size="18" fill="#333">${escape(title)}</text>`;
   for (const { node, label, parent } of nodes) {
     const [x, y, w, h] = layout.nodes[node];
-    const tab = Math.min(72, w * 0.4);
+    const tab = node === layout.rootId ? 240 : Math.min(72, w * 0.4);
+    const nested = parent && parent !== layout.rootId;
     svg += `<g data-node="${node}">
 <path d="M${x + 9} ${y + 28} h${w} v${h - 19} h-${w} Z" fill="#efefef"/>
 <rect x="${x}" y="${y}" width="${tab}" height="20" fill="white" stroke="#555" stroke-width="1.8"/>
 <rect x="${x}" y="${y + 19}" width="${w}" height="${h - 19}" fill="white" stroke="#555" stroke-width="1.8"/>
-<text x="${x + w / 2}" y="${y + (parent ? 39 : 50)}" text-anchor="middle" font-size="${parent ? 15 : 21}" font-weight="${parent ? 600 : 700}" fill="#222">${escape(label)}</text></g>`;
+<text x="${x + w / 2}" y="${y + (nested ? 39 : 50)}" text-anchor="middle" font-size="${nested ? 15 : 21}" font-weight="${nested ? 600 : 700}" fill="#222">${escape(label)}</text></g>`;
   }
   // Draw explicit heads last, outside all folders and shadows, rather than
   // SVG markers that can be cropped or painted over at package boundaries.

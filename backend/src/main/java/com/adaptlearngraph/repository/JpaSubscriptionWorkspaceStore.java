@@ -107,9 +107,15 @@ public final class JpaSubscriptionWorkspaceStore implements SubscriptionWorkspac
             var subscription = new WorkspaceSubscription(status, current == null ? null :
                     new CurrentPlan(current.name(), current.startsAt(), current.endsAt()));
             var admins = administrators.getOrDefault(row.organizationId(), List.of()).stream()
-                    .map(admin -> new WorkspaceAdministrator(admin.accountId(), admin.fullName(), admin.email(),
-                            Boolean.TRUE.equals(admin.active()), Boolean.TRUE.equals(admin.accountActive()))).toList();
-            return new Workspace(row.organizationId(), row.name(), row.status(), row.setupState(), subscription, admins);
+                    .map(admin -> {
+                        boolean registrant = admin.accountId().equals(row.registrantAccountId());
+                        return new WorkspaceAdministrator(admin.accountId(), admin.fullName(), admin.email(),
+                                Boolean.TRUE.equals(admin.active()), Boolean.TRUE.equals(admin.accountActive()),
+                                registrant, registrant ? row.registrantPhone() : null);
+                    }).toList();
+            var profile = new OrganizationProfile(row.workspaceSlug(), row.industry(), row.headcount(), row.country(),
+                    row.createdAt());
+            return new Workspace(row.organizationId(), row.name(), row.status(), row.setupState(), profile, subscription, admins);
         }).toList();
     }
 

@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link, useNavigate } from 'react-router-dom'
-import { Building2, CheckCircle2, KeyRound, Mail, ShieldCheck } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Building2, CheckCircle2, Eye, EyeOff, KeyRound, Mail, ShieldCheck, UserRound } from 'lucide-react'
 import { QRCodeSVG } from 'qrcode.react'
 import { Text } from '../../shared/components/typography/Text'
 import { Badge } from '../../shared/components/ui/Badge'
@@ -9,29 +9,46 @@ import { Button, buttonVariants } from '../../shared/components/ui/Button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../shared/components/ui/Card'
 import { Input } from '../../shared/components/ui/Input'
 import { PageHeader } from '../../shared/components/ui/PageHeader'
+import { Combobox } from '../../shared/components/ui/Combobox'
+import { useTranslation } from '../../shared/i18n/LanguageContext'
 import { GuestLayout } from './GuestLayout'
 import { GuestCatalogPicker } from './GuestCatalogPicker'
 import { useCopy } from '../subscription/SubscriptionFeedback'
 import {
-  confirmRegistrationTotp, getRegistration, HEADCOUNTS, INDUSTRIES, recoverRegistrationTotp,
+  confirmRegistrationTotp, getRegistration, COUNTRY_CODES, INDUSTRIES, recoverRegistrationTotp,
   registerOrganization, RegistrationApiError, resendRegistrationEmail, setupRegistrationTotp,
   signInRegistration, signOutRegistration, verifyRegistrationEmail, verifyRegistrationTotp,
   type Enrollment, type RegistrationFields, type RegistrationView,
 } from './registrationApi'
 
 const SESSION_QUERY = ['registration-session'] as const
-const SELECT_CLASS = 'h-10 w-full rounded-md border border-input bg-card px-3 text-body-sm text-foreground shadow-2xs focus:outline-none focus:ring-2 focus:ring-ring'
 const EMPTY_FORM: RegistrationFields = {
-  organizationName: '', subdomain: null, industry: null, headcount: null, adminName: '', adminEmail: '',
+  organizationName: '', subdomain: null, industry: null, headcount: null, adminName: '', adminEmail: '', country: null, adminPhone: null,
 }
 const FieldErrors = React.createContext<Record<string, string>>({})
 
 export function GuestRegisterPage({ mode = 'register' }: { mode?: 'register' | 'resume' }) {
   const c = useCopy()
+  const { language } = useTranslation()
   const navigate = useNavigate()
   const client = useQueryClient()
   const [form, setForm] = React.useState<RegistrationFields>(EMPTY_FORM)
   const [password, setPassword] = React.useState('')
+  const [showPassword, setShowPassword] = React.useState(false)
+  const [policiesAccepted, setPoliciesAccepted] = React.useState(false)
+  const [legalNotice, setLegalNotice] = React.useState(false)
+  const countries = React.useMemo(() => {
+    const names = new Intl.DisplayNames([language], { type: 'region' })
+    return COUNTRY_CODES.map(value => ({ value, label: names.of(value) ?? value }))
+      .sort((a, b) => a.label.localeCompare(b.label, language))
+  }, [language])
+  const industryLabels: Record<string, string> = {
+    'Software Engineering & AI': c('Software & artificial intelligence', 'Phần mềm & trí tuệ nhân tạo'),
+    'Cloud Infrastructure & DevOps': c('Cloud & DevOps', 'Điện toán đám mây & DevOps'),
+    'Data Engineering & Analytics': c('Data & analytics', 'Dữ liệu & phân tích'),
+    'Cybersecurity & Network Systems': c('Cybersecurity & networks', 'An ninh mạng & hệ thống mạng'),
+    'Enterprise Financial Technology': c('Financial technology', 'Công nghệ tài chính'),
+  }
   const [catalogSelection, setCatalogSelection] = React.useState<string[]>([])
   const [confirmation, setConfirmation] = React.useState('')
   const [signInEmail, setSignInEmail] = React.useState('')
@@ -45,6 +62,7 @@ export function GuestRegisterPage({ mode = 'register' }: { mode?: 'register' | '
   const [now, setNow] = React.useState(Date.now)
   const errorRef = React.useRef<HTMLDivElement>(null)
   const headingRef = React.useRef<HTMLDivElement>(null)
+  const focusedHeading = React.useRef('')
   const channelRef = React.useRef<BroadcastChannel | null>(null)
 
   const session = useQuery({
@@ -61,6 +79,7 @@ export function GuestRegisterPage({ mode = 'register' }: { mode?: 'register' | '
 
   const clearSecrets = React.useCallback(() => {
     setPassword('')
+    setShowPassword(false)
     setConfirmation('')
     setCode('')
     setEnrollment(null)
@@ -106,7 +125,7 @@ export function GuestRegisterPage({ mode = 'register' }: { mode?: 'register' | '
       const failure = error instanceof RegistrationApiError ? error
         : new RegistrationApiError(0, 'NETWORK_ERROR', 'Cannot reach the registration service. Check your connection and retry.')
       setFailure(failure)
-      if (failure.field && ['organizationName', 'subdomain', 'industry', 'headcount', 'catalogSelection'].includes(failure.field)) setEntryStep(1)
+      if (failure.field && ['organizationName', 'subdomain', 'industry', 'country', 'catalogSelection'].includes(failure.field)) setEntryStep(1)
       if (failure.status === 401) {
         clearSecrets()
         client.setQueryData(SESSION_QUERY, null)
@@ -122,22 +141,46 @@ export function GuestRegisterPage({ mode = 'register' }: { mode?: 'register' | '
     clearSecrets()
     setForm(EMPTY_FORM)
     setCatalogSelection([])
+    setPoliciesAccepted(false)
+    setLegalNotice(false)
     setFailure(null)
     setFieldErrors({})
     setEntryStep(1)
     channelRef.current?.postMessage('changed')
   }
 
+  function inputError(field: HTMLInputElement | HTMLSelectElement) {
+    const blankName = ['registration-organizationName', 'registration-adminName'].includes(field.id) && !field.value.trim()
+    const invalidPhone = field.id === 'registration-adminPhone' && field.value !== ''
+      && (!/^\+?[0-9 ()-]+$/.test(field.value) || !/^\+?[0-9]{7,15}$/.test(field.value.replace(/[ ()-]/g, '')))
+    if (field.validity.valid && !blankName && !invalidPhone) return null
+    const message = field.id === 'registration-policiesAccepted'
+      ? c('Agree to the Terms of Use and Privacy Policy to continue.', 'Đồng ý với Điều khoản sử dụng và Chính sách quyền riêng tư để tiếp tục.')
+      : invalidPhone ? c('Enter a valid phone number with 7–15 digits.', 'Nhập số điện thoại hợp lệ gồm 7–15 chữ số.')
+        : field.validity.valueMissing || blankName ? c('Please complete this field.', 'Vui lòng nhập thông tin này.')
+          : field.validity.typeMismatch ? c('Enter a valid email address.', 'Nhập địa chỉ email hợp lệ.')
+            : c('Check the format and length of this value.', 'Kiểm tra định dạng và độ dài của giá trị.')
+    return `${field.labels?.[0]?.textContent?.replace('*', '').trim() ?? ''}: ${message}`
+  }
+
+  function revalidateField(event: React.FocusEvent<HTMLFormElement>) {
+    const field = event.target
+    if (!(field instanceof HTMLInputElement) || !fieldErrors[field.id]) return
+    const next = { ...fieldErrors }
+    const message = inputError(field)
+    if (message) next[field.id] = message
+    else delete next[field.id]
+    setFieldErrors(next)
+    if (!Object.keys(next).length && failure?.code === 'INVALID_INPUT' && !failure.field) setFailure(null)
+  }
+
   function validateFields(event: React.FormEvent) {
     const errors: Record<string, string> = {}
     if (event.currentTarget instanceof HTMLFormElement) {
       for (const field of Array.from(event.currentTarget.elements)) {
-        if ((field instanceof HTMLInputElement || field instanceof HTMLSelectElement) &&
-          (!field.validity.valid || (['registration-organizationName', 'registration-adminName'].includes(field.id) && !field.value.trim()))) {
-          const message = field.validity.valueMissing || !field.value.trim() ? c('Please complete this field.', 'Vui lòng nhập thông tin này.')
-            : field.validity.typeMismatch ? c('Enter a valid email address.', 'Nhập địa chỉ email hợp lệ.')
-              : c('Check the format and length of this value.', 'Kiểm tra định dạng và độ dài của giá trị.')
-          errors[field.id] = `${field.labels?.[0]?.textContent?.replace('*', '').trim() ?? ''}: ${message}`
+        if (field instanceof HTMLInputElement || field instanceof HTMLSelectElement) {
+          const message = inputError(field)
+          if (message) errors[field.id] = message
         }
       }
     }
@@ -166,7 +209,7 @@ export function GuestRegisterPage({ mode = 'register' }: { mode?: 'register' | '
       setFailure(new RegistrationApiError(400, 'INVALID_INPUT', c('Use a password with 12-128 characters.', 'Sử dụng mật khẩu từ 12 đến 128 ký tự.'), 'password'))
       return
     }
-    command.mutate(async () => accept(await registerOrganization({ ...form, password, catalogSelection })))
+    command.mutate(async () => accept(await registerOrganization({ ...form, password, catalogSelection, policiesAccepted })))
   }
 
   function submitProof(event: React.FormEvent) {
@@ -194,7 +237,7 @@ export function GuestRegisterPage({ mode = 'register' }: { mode?: 'register' | '
       : {}
   }
 
-  function update(field: 'subdomain' | 'industry' | 'headcount', value: string) {
+  function update(field: 'subdomain' | 'industry' | 'country', value: string) {
     setForm(previous => ({ ...previous, [field]: value || null }))
   }
 
@@ -204,12 +247,15 @@ export function GuestRegisterPage({ mode = 'register' }: { mode?: 'register' | '
     ? Math.max(0, Math.ceil((Date.parse(view.resendAvailableAt) - now) / 1000)) : 0
   const step = !view ? entryStep : view.stage === 'VERIFY_EMAIL' ? 3 : 4
   const title = !view ? mode === 'resume' ? c('Resume your registration', 'Tiếp tục đăng ký') : entryStep === 1
-    ? c('Register your organization', 'Đăng ký tổ chức') : c('Create your administrator account', 'Tạo tài khoản quản trị viên')
+    ? c('Let’s set up your business', 'Thiết lập cho doanh nghiệp của bạn') : c('Create your administrator account', 'Tạo tài khoản quản trị viên')
     : view.stage === 'VERIFY_EMAIL' ? c('Verify your email', 'Xác thực email')
       : view.stage === 'COMPLETE' ? recoveryCodes ? c('Save your recovery codes', 'Lưu mã khôi phục') : c('Registration complete', 'Đăng ký hoàn tất')
         : isSetup ? c('Set up your authenticator', 'Thiết lập ứng dụng xác thực') : isRecovery ? c('Recover your authenticator', 'Khôi phục ứng dụng xác thực') : c('Verify your authenticator', 'Xác thực tài khoản')
 
   React.useEffect(() => {
+    const key = `${title}:${view?.stage ?? ''}`
+    if (focusedHeading.current === key) return
+    focusedHeading.current = key
     if (!failure) {
       headingRef.current?.focus({ preventScroll: true })
       window.scrollTo({ top: 0, behavior: 'instant' })
@@ -220,12 +266,13 @@ export function GuestRegisterPage({ mode = 'register' }: { mode?: 'register' | '
     <GuestLayout currentStep={step}>
       <FieldErrors.Provider value={{ ...fieldErrors, ...(failure?.field ? { [`registration-${failure.field}`]: failure.message } : {}),
         ...(failure && ['INVALID_PROOF', 'EXPIRED_PROOF'].includes(failure.code) ? { 'registration-proof': failure.message } : {}) }}>
-      <div className={`mx-auto space-y-5 ${!view && entryStep === 1 && mode === 'register' ? 'max-w-5xl' : 'max-w-3xl'}`}>
+      <div className="mx-auto max-w-4xl space-y-6">
         <div ref={headingRef} tabIndex={-1} className="outline-none">
           <PageHeader title={title} icon={<ShieldCheck aria-hidden="true" size={24} />}
-            description={entryStep === 1 && !view ? c('Tell us about your organization. Next, create the account that will manage your workspace.', 'Nhập thông tin tổ chức. Tiếp theo, tạo tài khoản quản lý không gian làm việc.')
+            description={entryStep === 1 && !view ? c('A few details to make your team feel at home. You’ll create your administrator account next.', 'Bắt đầu với thông tin doanh nghiệp. Ở bước tiếp theo, bạn sẽ tạo tài khoản quản lý không gian làm việc.')
               : view?.stage === 'COMPLETE' && !recoveryCodes ? c('Your registration is saved. Continue to choose a plan for your organization.', 'Đăng ký đã được lưu. Tiếp tục chọn gói phù hợp cho tổ chức.')
-                : c('Your progress is saved after account creation. Complete any required verification steps to continue.', 'Tiến trình được lưu sau khi tạo tài khoản. Hoàn thành các bước xác thực được yêu cầu để tiếp tục.')} />
+                : !view && mode === 'register' ? c('This account will manage your workspace, team members and subscription.', 'Tài khoản này dùng để quản lý không gian làm việc, thành viên và gói dịch vụ.')
+                  : c('Follow the steps below to securely continue your setup.', 'Làm theo hướng dẫn bên dưới để tiếp tục thiết lập an toàn.')} />
         </div>
 
         {failure && (
@@ -248,39 +295,40 @@ export function GuestRegisterPage({ mode = 'register' }: { mode?: 'register' | '
           </CardContent></Card>
         ) : !view ? (
           mode === 'register' ? (
-            <form noValidate onSubmit={submitRegistration} className="space-y-4">
-              <Card>
+            <form noValidate onSubmit={submitRegistration} onBlur={revalidateField} className="space-y-5 [&_input:not([type=checkbox])]:h-12 [&_input]:rounded-xl [&_button[role=combobox]]:h-12 [&_button[role=combobox]]:rounded-xl">
+              <Card className="overflow-visible rounded-2xl shadow-sm">
                 {entryStep === 1 && <>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2"><Building2 size={18} aria-hidden="true" />{c('Organization details', 'Thông tin tổ chức')}</CardTitle>
-                  <CardDescription>{c('Use your organization’s details. You may leave optional fields blank.', 'Sử dụng thông tin tổ chức. Có thể để trống các trường không bắt buộc.')}</CardDescription>
+                <CardHeader className="border-b border-border bg-muted/25 px-5 py-5 sm:px-7">
+                  <CardTitle className="flex items-center gap-3"><span className="flex size-10 items-center justify-center rounded-xl border border-primary/15 bg-secondary text-primary"><Building2 size={20} aria-hidden="true" /></span>{c('Business details', 'Thông tin doanh nghiệp')}</CardTitle>
+                  <CardDescription>{c('Fields marked * are required. You can leave the others blank.', 'Các trường có dấu * là bắt buộc. Bạn có thể để trống các trường còn lại.')}</CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <Field label="Organization Legal Name" id="registration-organizationName" required>
+                <CardContent className="space-y-6 px-5 py-6 sm:px-7">
+                  <div className="grid gap-5 sm:grid-cols-2">
+                    <div className="sm:col-span-2"><Field label="Business name" id="registration-organizationName" required>
                       <Input id="registration-organizationName" value={form.organizationName} maxLength={200}
+                        placeholder={c('e.g. Acme Learning', 'Ví dụ: Công ty Acme')}
                         autoComplete="organization" required {...fieldError('organizationName')}
                         onChange={event => setForm(previous => ({ ...previous, organizationName: event.target.value }))} />
+                    </Field></div>
+                    <Field label="Country" id="registration-country">
+                      <Combobox id="registration-country" role="combobox" aria-label={c('Country', 'Quốc gia')}
+                        options={countries} value={form.country ?? ''} onChange={value => update('country', value)}
+                        placeholder={c('Select a country', 'Chọn quốc gia')} searchPlaceholder={c('Search countries', 'Tìm quốc gia')}
+                        clearLabel={c('Clear country', 'Bỏ chọn quốc gia')} emptyMessage={c('No country found.', 'Không tìm thấy quốc gia.')}
+                        {...fieldError('country')} />
                     </Field>
-                    <Field label="Workspace URL Slug" id="registration-subdomain" hint="Optional. Leave empty for an automatically generated, reserved identifier.">
+                    <Field label="Industry" id="registration-industry">
+                      <Combobox id="registration-industry" role="combobox" aria-label={c('Industry', 'Lĩnh vực')}
+                        options={INDUSTRIES.map(value => ({ value, label: industryLabels[value] }))} value={form.industry ?? ''}
+                        onChange={value => update('industry', value)} placeholder={c('Select an industry', 'Chọn lĩnh vực')}
+                        searchPlaceholder={c('Search industries', 'Tìm lĩnh vực')} clearLabel={c('Clear industry', 'Bỏ chọn lĩnh vực')}
+                        emptyMessage={c('No industry found.', 'Không tìm thấy lĩnh vực.')} {...fieldError('industry')} />
+                    </Field>
+                    <div className="sm:col-span-2"><Field label="Workspace address" id="registration-subdomain" hint="Choose a short name for your workspace link, or leave it blank and we’ll create one for you.">
                       <Input id="registration-subdomain" value={form.subdomain ?? ''} maxLength={63}
-                        placeholder="e.g. acme-learning" autoCapitalize="none" spellCheck={false} {...fieldError('subdomain')}
+                        placeholder={c('e.g. acme-learning', 'Ví dụ: acme-learning')} autoCapitalize="none" spellCheck={false} {...fieldError('subdomain')}
                         onChange={event => update('subdomain', event.target.value)} />
-                    </Field>
-                    <Field label="Industry / Technology Domain" id="registration-industry">
-                      <select id="registration-industry" value={form.industry ?? ''} className={SELECT_CLASS}
-                        {...fieldError('industry')} onChange={event => update('industry', event.target.value)}>
-                        <option value="">{c('Not specified (optional)', 'Chưa chọn (không bắt buộc)')}</option>
-                        {INDUSTRIES.map(choice => <option key={choice}>{choice}</option>)}
-                      </select>
-                    </Field>
-                    <Field label="Estimated Engineering Headcount" id="registration-headcount" hint="Informational only; this does not allocate subscription seats.">
-                      <select id="registration-headcount" value={form.headcount ?? ''} className={SELECT_CLASS}
-                        {...fieldError('headcount')} onChange={event => update('headcount', event.target.value)}>
-                        <option value="">{c('Not specified (optional)', 'Chưa chọn (không bắt buộc)')}</option>
-                        {HEADCOUNTS.map(choice => <option key={choice}>{choice}</option>)}
-                      </select>
-                    </Field>
+                    </Field></div>
                   </div>
                   <div id="registration-catalogSelection">
                     <GuestCatalogPicker value={catalogSelection} onChange={setCatalogSelection} />
@@ -288,43 +336,70 @@ export function GuestRegisterPage({ mode = 'register' }: { mode?: 'register' | '
                 </CardContent>
                 </>}
                 {entryStep === 2 && <>
-                  <CardHeader>
-                    <CardTitle>{c('Administrator account', 'Tài khoản quản trị viên')}</CardTitle>
-                    <CardDescription>{c('Manage your workspace with this account. Use an email address you can access.', 'Quản lý không gian làm việc bằng tài khoản này. Sử dụng email bạn có thể truy cập.')}</CardDescription>
+                  <CardHeader className="border-b border-border bg-muted/25 px-5 py-5 sm:px-7">
+                    <CardTitle className="flex items-center gap-3"><span className="flex size-10 items-center justify-center rounded-xl border border-primary/15 bg-secondary text-primary"><UserRound size={20} aria-hidden="true" /></span>{c('System Administrator account', 'Tài khoản quản trị hệ thống')}</CardTitle>
+                    <CardDescription>{c('Use your own contact details and an email address you can access.', 'Sử dụng thông tin liên hệ của bạn và địa chỉ email bạn có thể truy cập.')}</CardDescription>
                   </CardHeader>
-                  <CardContent className="space-y-5">
+                  <CardContent className="space-y-5 px-5 py-6 sm:px-7">
                     <div className="flex items-center justify-between gap-3 rounded-lg border border-border bg-muted/40 px-4 py-3">
                       <span className="min-w-0 break-words text-body-sm font-medium">{form.organizationName}</span>
                       <Button type="button" variant="ghost" size="sm" onClick={() => { setEntryStep(1); setFailure(null); setFieldErrors({}) }}>{c('Edit', 'Sửa')}</Button>
                     </div>
-                    <div className="grid gap-4 sm:grid-cols-2">
-                      <Field label="Administrator Full Name" id="registration-adminName" required>
+                    <div className="grid gap-5 sm:grid-cols-2">
+                      <div className="sm:col-span-2"><Field label="Full name" id="registration-adminName" required>
                         <Input id="registration-adminName" value={form.adminName} autoComplete="name" maxLength={120}
                           required {...fieldError('adminName')}
                           onChange={event => setForm(previous => ({ ...previous, adminName: event.target.value }))} />
-                      </Field>
-                      <Field label="Work Email Address" id="registration-adminEmail" required>
-                        <Input id="registration-adminEmail" type="email" value={form.adminEmail} autoComplete="email"
+                      </Field></div>
+                      <Field label="Login email" id="registration-adminEmail" required>
+                        <Input id="registration-adminEmail" type="email" value={form.adminEmail} autoComplete="username"
                           maxLength={254} required {...fieldError('adminEmail')}
                           onChange={event => setForm(previous => ({ ...previous, adminEmail: event.target.value }))} />
                       </Field>
-                      <Field label="Password" id="registration-password" required hint="12-128 characters. Password managers and paste are supported.">
-                        <Input id="registration-password" type="password" value={password} autoComplete="new-password"
+                      <Field label="Phone number" id="registration-adminPhone" required>
+                        <Input id="registration-adminPhone" type="tel" inputMode="tel" autoComplete="tel"
+                          value={form.adminPhone ?? ''} required maxLength={40} placeholder={c('e.g. +84 901 234 567', 'Ví dụ: 0901 234 567')}
+                          {...fieldError('adminPhone')} onChange={event => setForm(previous => ({ ...previous, adminPhone: event.target.value }))} />
+                      </Field>
+                      <Field label="Password" id="registration-password" required hint="Use 12–128 characters. A longer passphrase is easier to remember.">
+                        <Input id="registration-password" type={showPassword ? 'text' : 'password'} value={password} autoComplete="new-password"
                           maxLength={256} required {...fieldError('password')} onChange={event => setPassword(event.target.value)} />
                       </Field>
                       <Field label="Confirm Password" id="registration-confirmation" required>
-                        <Input id="registration-confirmation" type="password" value={confirmation} autoComplete="new-password"
+                        <Input id="registration-confirmation" type={showPassword ? 'text' : 'password'} value={confirmation} autoComplete="new-password"
                           maxLength={256} required {...fieldError('confirmation')} onChange={event => setConfirmation(event.target.value)} />
                       </Field>
+                    </div>
+                    <Button type="button" variant="ghost" size="sm" aria-pressed={showPassword}
+                      onClick={() => setShowPassword(previous => !previous)} className="gap-2">
+                      {showPassword ? <EyeOff size={16} aria-hidden="true" /> : <Eye size={16} aria-hidden="true" />}
+                      {showPassword ? c('Hide passwords', 'Ẩn mật khẩu') : c('Show passwords', 'Hiện mật khẩu')}
+                    </Button>
+                    <div className="space-y-3 rounded-xl border border-border bg-muted/30 p-4">
+                      <div className="flex items-start gap-3">
+                        <input id="registration-policiesAccepted" type="checkbox" required checked={policiesAccepted}
+                          onChange={event => setPoliciesAccepted(event.target.checked)} {...fieldError('policiesAccepted')}
+                          className="mt-1 size-4 shrink-0 cursor-pointer rounded-sm accent-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2" />
+                        <label htmlFor="registration-policiesAccepted" className="cursor-pointer text-body-sm leading-relaxed">
+                          {c('I agree to the ', 'Tôi đồng ý với ')}
+                          <a href="#terms" onClick={event => { event.preventDefault(); setLegalNotice(true) }} className="rounded-sm font-semibold text-secondary-foreground underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">{c('Terms of Use', 'Điều khoản sử dụng')}</a>
+                          {c(' and ', ' và ')}
+                          <a href="#privacy" onClick={event => { event.preventDefault(); setLegalNotice(true) }} className="rounded-sm font-semibold text-secondary-foreground underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">{c('Privacy Policy', 'Chính sách quyền riêng tư')}</a>.
+                          <span aria-hidden="true" className="ml-1 text-destructive">*</span>
+                        </label>
+                      </div>
+                      <ConsentError />
+                      {legalNotice && <p role="status" className="text-caption text-muted-foreground">{c('This is a placeholder link. The document is not available in this version.', 'Đây là liên kết minh họa. Tài liệu chưa được cung cấp trong phiên bản này.')}</p>}
                     </div>
                   </CardContent>
                 </>}
               </Card>
               <div className="flex flex-wrap items-center justify-between gap-3">
                 {entryStep === 1 ? <Link to="/guest/resume" className="text-body-sm text-primary underline underline-offset-4">{c('Resume a saved registration', 'Tiếp tục đăng ký đã lưu')}</Link>
-                  : <Button type="button" variant="outline" onClick={() => { setEntryStep(1); setFailure(null); setFieldErrors({}) }}>{c('Back', 'Quay lại')}</Button>}
-                <Button type="submit" isLoading={command.isPending}>{entryStep === 1 ? c('Continue to account', 'Tiếp tục tạo tài khoản') : c('Save and continue', 'Lưu và tiếp tục')}</Button>
+                  : <Button type="button" variant="outline" className="gap-2" onClick={() => { setEntryStep(1); setFailure(null); setFieldErrors({}) }}><ArrowLeft size={16} aria-hidden="true" />{c('Back', 'Quay lại')}</Button>}
+                <Button type="submit" className="min-h-12 gap-2 rounded-xl px-6" isLoading={command.isPending}>{entryStep === 1 ? c('Continue to account', 'Tiếp tục tạo tài khoản') : c('Create account', 'Tạo tài khoản')}<ArrowRight size={17} aria-hidden="true" /></Button>
               </div>
+              <p className="text-caption text-muted-foreground">{c('Your progress will be saved once you create your account.', 'Tiến trình sẽ được lưu sau khi bạn tạo tài khoản.')}</p>
             </form>
           ) : (
             <form noValidate onSubmit={event => {
@@ -338,7 +413,7 @@ export function GuestRegisterPage({ mode = 'register' }: { mode?: 'register' | '
                   <CardDescription>{c('Sign in to resume your saved progress and complete any required verification.', 'Đăng nhập để tiếp tục tiến trình đã lưu và hoàn thành bước xác thực được yêu cầu.')}</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <Field label="Work Email Address" id="registration-adminEmail" required>
+                  <Field label="Login email" id="registration-adminEmail" required>
                     <Input id="registration-adminEmail" type="email" autoComplete="username" value={signInEmail}
                       maxLength={254} required onChange={event => setSignInEmail(event.target.value)} />
                   </Field>
@@ -375,14 +450,15 @@ export function GuestRegisterPage({ mode = 'register' }: { mode?: 'register' | '
             </CardHeader>
             <CardContent>
               <dl className="grid gap-4 sm:grid-cols-2">
-                <Detail label={c('Organization', 'Tổ chức')} value={view.fields.organizationName} />
-                <Detail label={c('Reserved workspace slug', 'Định danh không gian đã giữ chỗ')} value={view.fields.subdomain ?? ''} />
+                <Detail label={c('Business', 'Doanh nghiệp')} value={view.fields.organizationName} />
+                <Detail label={c('Workspace address', 'Địa chỉ không gian làm việc')} value={`/workspace/${view.fields.subdomain ?? ''}`} />
                 <Detail label={c('Administrator', 'Quản trị viên')} value={view.fields.adminName} />
-                <Detail label={c('Work email', 'Email')} value={view.fields.adminEmail} />
-                <Detail label={c('Industry', 'Lĩnh vực')} value={view.fields.industry ?? c('Not specified', 'Chưa cung cấp')} />
-                <Detail label={c('Headcount', 'Quy mô')} value={view.fields.headcount ?? c('Not specified', 'Chưa cung cấp')} />
+                <Detail label={c('Login email', 'Email đăng nhập')} value={view.fields.adminEmail} />
+                <Detail label={c('Phone number', 'Số điện thoại')} value={view.fields.adminPhone ?? c('Not provided', 'Chưa cung cấp')} />
+                <Detail label={c('Country', 'Quốc gia')} value={countries.find(option => option.value === view.fields?.country)?.label ?? c('Not specified', 'Chưa cung cấp')} />
+                <Detail label={c('Industry', 'Lĩnh vực')} value={view.fields.industry ? industryLabels[view.fields.industry] : c('Not specified', 'Chưa cung cấp')} />
               </dl>
-              <Text variant="body-sm" className="mt-5">{c('These committed details are read-only. Sign in and complete any required verification to view them again.', 'Thông tin đã lưu chỉ được xem. Đăng nhập và hoàn thành bước xác thực được yêu cầu để xem lại.')}</Text>
+              <Text variant="body-sm" className="mt-5">{c('You can sign in to return to this registration and continue setting up your workspace.', 'Bạn có thể đăng nhập lại để xem đăng ký này và tiếp tục thiết lập không gian làm việc.')}</Text>
               <Link className={buttonVariants({ className: 'mt-4 text-primary-foreground!' })} to="/guest/plans">
                 {c('Continue to subscription plans', 'Tiếp tục chọn gói')}
               </Link>
@@ -401,14 +477,14 @@ export function GuestRegisterPage({ mode = 'register' }: { mode?: 'register' | '
               {view.stage === 'VERIFY_EMAIL' && <>
                 <p role="status" className="text-body-sm">
                   {view.deliveryStatus === 'PENDING' ? c('Your verification email is queued for delivery.', 'Email xác thực đang chờ gửi.')
-                    : view.deliveryStatus === 'SENT' ? c('Email accepted by the mail server. Check your inbox and spam folder.', 'Máy chủ thư đã tiếp nhận email. Kiểm tra hộp thư đến và thư rác.')
+                    : view.deliveryStatus === 'SENT' ? c('Your verification email has been sent. Check your inbox and spam folder.', 'Email xác thực đã được gửi. Kiểm tra hộp thư đến và thư rác.')
                       : view.deliveryStatus === 'FAILED' ? c('The email could not be delivered. Request a new code when available.', 'Chưa gửi được email. Yêu cầu mã mới khi có thể.')
                         : c('Request an email code to continue.', 'Yêu cầu mã email để tiếp tục.')}
                 </p>
                 <Text variant="body-sm">{c('Use the latest six-digit code. It expires 10 minutes after it was requested. A new sign-in during unfinished MFA setup requires fresh email proof.', 'Sử dụng mã 6 chữ số mới nhất, có hiệu lực 10 phút. Nếu đăng nhập lại khi chưa thiết lập MFA xong, bạn cần mã email mới.')}</Text>
               </>}
               {isSetup && <>
-                {view.stage === 'SETUP_MFA_RECOVERY' && <p role="status" className="rounded-md bg-secondary p-3 text-body-sm">Previous sessions are revoked. Set up a new authenticator to restore access.</p>}
+                {view.stage === 'SETUP_MFA_RECOVERY' && <p role="status" className="rounded-md bg-secondary p-3 text-body-sm">{c('You have been signed out of other sessions. Set up a new authenticator to restore access.', 'Các phiên đăng nhập khác đã kết thúc. Thiết lập ứng dụng xác thực mới để khôi phục quyền truy cập.')}</p>}
                 {!enrollment ? (
                   <Button isLoading={command.isPending} onClick={() => command.mutate(async () => setEnrollment(await setupRegistrationTotp()))}>
                     {c('Set up authenticator', 'Thiết lập ứng dụng xác thực')}
@@ -451,8 +527,8 @@ export function GuestRegisterPage({ mode = 'register' }: { mode?: 'register' | '
               )}
               {(view.stage === 'CHALLENGE_MFA' || view.stage === 'RECOVERY_REQUIRED') && <>
                 <Text variant="body-sm">{isRecovery
-                  ? 'Recovery revokes existing sessions and requires a new authenticator. There is no email-only reset.'
-                  : 'Enter a current six-digit code. Previously accepted codes cannot be reused.'}</Text>
+                  ? c('Using a recovery code signs you out of other sessions. You’ll then set up a new authenticator.', 'Sử dụng mã khôi phục sẽ đăng xuất các phiên khác. Sau đó, bạn cần thiết lập ứng dụng xác thực mới.')
+                  : c('Enter the current six-digit code from your authenticator. Each code can only be used once.', 'Nhập mã 6 chữ số hiện tại từ ứng dụng xác thực. Mỗi mã chỉ được dùng một lần.')}</Text>
                 {view.stage === 'CHALLENGE_MFA' && <Button variant="link" onClick={() => {
                   setRecovering(previous => !previous)
                   setCode('')
@@ -481,27 +557,32 @@ function Field({ label, id, required, hint, children }: {
   const errors = React.useContext(FieldErrors)
   const c = useCopy()
   const labels: Record<string, string> = {
-    'Organization Legal Name': 'Tên pháp lý tổ chức', 'Workspace URL Slug': 'Định danh không gian',
-    'Industry / Technology Domain': 'Lĩnh vực hoạt động', 'Estimated Engineering Headcount': 'Quy mô đội ngũ dự kiến',
-    'Administrator Full Name': 'Họ tên quản trị viên', 'Work Email Address': 'Địa chỉ email',
+    'Business name': 'Tên doanh nghiệp', 'Workspace address': 'Địa chỉ không gian làm việc',
+    'Industry': 'Lĩnh vực', 'Country': 'Quốc gia', 'Phone number': 'Số điện thoại',
+    'Full name': 'Họ và tên', 'Login email': 'Email đăng nhập',
     'Password': 'Mật khẩu', 'Confirm Password': 'Xác nhận mật khẩu', 'Email verification code': 'Mã xác thực email',
     'Authenticator code': 'Mã từ ứng dụng xác thực', 'Recovery code': 'Mã khôi phục',
   }
   const hints: Record<string, string> = {
-    'Optional. Leave empty for an automatically generated, reserved identifier.': 'Không bắt buộc. Để trống để hệ thống tạo và giữ chỗ định danh.',
-    'Informational only; this does not allocate subscription seats.': 'Chỉ mang tính thông tin; không quyết định số chỗ của gói.',
-    '12-128 characters. Password managers and paste are supported.': 'Từ 12 đến 128 ký tự. Hỗ trợ trình quản lý mật khẩu và thao tác dán.',
+    'Choose a short name for your workspace link, or leave it blank and we’ll create one for you.': 'Chọn tên ngắn cho đường dẫn không gian làm việc, hoặc để trống để hệ thống tạo giúp bạn.',
+    'Use 12–128 characters. A longer passphrase is easier to remember.': 'Sử dụng 12–128 ký tự. Một cụm mật khẩu dài sẽ dễ nhớ hơn.',
   }
   return (
     <div className="min-w-0 space-y-1.5">
       <label htmlFor={id} className="block text-body-sm font-semibold">
-        {c(label, labels[label] ?? label)}{required && <span aria-hidden="true" className="ml-1 text-destructive">*</span>}
+        {c(label, labels[label] ?? label)}{required ? <span aria-hidden="true" className="ml-1 text-destructive">*</span> : <span className="ml-1.5 font-normal text-muted-foreground">({c('optional', 'không bắt buộc')})</span>}
       </label>
       {children}
       {errors[id] && <p id={`${id}-error`} className="text-caption text-destructive">{errors[id]}</p>}
       {hint && <Text variant="caption" className="block leading-relaxed">{c(hint, hints[hint] ?? hint)}</Text>}
     </div>
   )
+}
+
+function ConsentError() {
+  const errors = React.useContext(FieldErrors)
+  return errors['registration-policiesAccepted']
+    ? <p id="registration-policiesAccepted-error" className="text-caption text-destructive">{errors['registration-policiesAccepted']}</p> : null
 }
 
 function Detail({ label, value }: { label: string; value: string }) {

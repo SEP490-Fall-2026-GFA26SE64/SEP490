@@ -129,17 +129,31 @@ Native mobile applications, refunds/cancellation workflows, external marketplace
 
 ### 1.2 Product context and system boundary
 
-The System is the automated performer within the application boundary, not a seventh human role. External providers and their transferred data are declared in SDD section 1.1.
+The System Handler is the automated performer within the application boundary, not a seventh human role. The context circle represents the whole product, including its web client and backend, rather than a separate System Handler actor.
 
-**DFD convention and boundary:** This context view uses Yourdon-Coad notation: one circle labeled with the product name represents the entire Adapt-Learn-Graph platform; rectangles represent the six human actors, payOS and Gmail SMTP. Each visible arrow carries one named business data type, so Assessment results and Competency gaps are separate flows. A structured payload such as Organization registration details or Subscription payment request remains one data type, not one arrow per database field. The locally hosted LLM, private storage and databases are inside this product boundary and remain in the SDD architecture rather than this context view. The System is not a separate external actor.
+**DFD convention and boundary:** This context view uses Yourdon-Coad notation: one circle labeled with the product name represents the entire Adapt-Learn-Graph platform; rectangles represent six human actors and two external providers: payOS and Gmail SMTP. Each arrow carries one named business data type. A structured payload such as Role-Level selection or Subscription payment request remains one data type, not one arrow per database field. PostgreSQL, Neo4j, private MinIO storage and the planned locally hosted LLM belong inside the product boundary, not among external actors. Video-provider exchanges are omitted from this context view; implementation-level integrations remain documented in the SDD.
 
-**Reading this detailed context:** All 89 separately named flows are retained. Four external entities occupy each side of the central system, with 45 flows on the left and 44 on the right. ELK model-order settings keep this bilateral arrangement; fixed HTML label dimensions enlarge the central circle while keeping entity rectangles compact, without adding entities or intermediary processes. The minimum measured spacing between circle attachment points is 23 SVG units (previously 4), with no coincident points. The circle is within 10 SVG units of the midpoint between the entity columns. Vertical row alignment remains approximate because each entity has a different number of flows. Use SVG zoom to read this dense requirements view; it does not certify workflow implementation.
+**Reading this detailed context:** The refreshed view has 104 separately named flows, including starter-catalog selection, Question Bank review, Role-Level/pathway requests, certificate evidence and content issues. Four external entities occupy each side of the central system, with 47 flows on the left and 57 on the right. Job Position terminology is used consistently; ROI, training-cost and monetary-benefit flows are omitted from this context view. ELK model-order settings retain a bilateral arrangement; the larger central circle provides room for the added connections without introducing internal subprocesses. Open the SVG at full size to read this dense requirements view.
 
 **Notation references (checked 1 November 2026):** [Lucidchart - DFD symbols and Yourdon-Coad versus Gane-Sarson](https://lucid.co/diagram/dfd/symbols-and-notation), [Visual Paradigm - context scope and data-flow naming](https://www.visual-paradigm.com/guide/data-flow-diagram/what-is-data-flow-diagram/), and [Mermaid - circle, rectangle and labeled-arrow syntax](https://mermaid.js.org/syntax/flowchart.html).
 
 [Mermaid source: SRS-CONTEXT](../documents/diagrams/mermaid/srs-context.mmd)
 
 ![SRS-CONTEXT - System Context Diagram](../documents/diagrams/mermaid/srs-context.png)
+
+**Context coverage and implementation boundary**
+
+This is the required product context, not a claim that every exchange is currently implemented. Source inspection distinguishes connected slices from remaining targets:
+
+| Area | Context coverage and current limitation | Evidence |
+| --- | --- | --- |
+| Users and access | Six human roles retain their organization/assignment/entitlement limits. System Handler is internal automation; platform authority does not grant access to private learner evidence. | [Role homes](../frontend/src/shared/auth/workspaceRole.ts), [functional catalog](../documents/features/README.md). |
+| Onboarding and billing | Registration includes an optional starter catalog; payOS supplies checkout, verified notifications and status responses. Adapter source is not proof of a real payment. | [Registration graph picker](../frontend/src/features/guest/GuestCatalogPicker.tsx), [payment adapter](../backend/src/main/java/com/adaptlearngraph/helper/PayOsPaymentGateway.java). |
+| Platform organizations | Directory, administrators, paid coverage and suspend/reactivate are connected. Organization detail updates remain a Version 2 target; the current directory is read-only for profile fields. | [Platform administration boundary](../documents/features/Platform%20administration/README.md#current-implementation), [lifecycle API](../backend/src/main/java/com/adaptlearngraph/apis/SubscriptionLifecycleController.java). |
+| Catalog, content and Question Bank | JobPosition/Role-Level requirements, module/content submission and Question Bank responsibilities/review are separate exchanges. Question Bank endpoints are profile-gated; answer-bearing staff drafts are not sent to Employees. | [Question Bank API](../backend/src/main/java/com/adaptlearngraph/apis/QuestionBankController.java), [Question Bank rules](../documents/features/Assessment%20workflows/README.md#implemented-question-bank-subset--2026-10-30). |
+| Employee learning and evidence | Role-Level selection, gap review, pathway requests, learning progress and content-issue reporting are represented. Certificate evidence/review remains an approved target model, not an implemented certificate-submission API. | [Role/gap handoff](../frontend/src/features/employee/target-roles/InitialRoleGapDialog.tsx), [learning API](../backend/src/main/java/com/adaptlearngraph/apis/LearningContentController.java), [target logical model](Report4_Software%20Design%20Document.md#22-logical-database-design). |
+| Email provider | Configurable SMTP sends transactional mail; SMTP acceptance is not inbox delivery. Video-provider exchanges are intentionally outside this context view, without removing their implementation or changing the SDD service declaration. | [Mail adapter](../backend/src/main/java/com/adaptlearngraph/helper/TransactionalMailSender.java), [third-party declaration](Report4_Software%20Design%20Document.md#113-third-party-services-declaration). |
+| Internal services and remaining targets | React/Spring Boot, PostgreSQL, Neo4j, private assets and background jobs are internal. Local LLM guidance, complete RIASEC/skill-assessment integration, adaptive updates and actual ROI reporting remain subject to their recorded implementation gaps. No external AI, HR/payroll, certificate issuer or course marketplace is invented as a runtime integration. | [Architecture and implementation boundaries](../documents/ARCHITECTURE.md), [private asset adapter](../backend/src/main/java/com/adaptlearngraph/repository/PrivateLearningAssets.java), [Version 2](../documents/FA26SE267_KNOWLEDGE_GRAPH_BASED_ADAPTIVE_LEARNING__haht43_Version_2.md). |
 
 ### 1.3 Scope baseline versus implementation
 
@@ -168,7 +182,7 @@ Evidence precedence is Version 2 for intended scope, later approved decisions fo
 | 4 | L&D Manager | Manages job positions and Expert assignments, role creation/publication, baseline configuration, offering approval and development/ROI reporting. |
 | 5 | Expert | Authors skills, requirements, prerequisites, modules and assessments in assigned scope; submits work to L&D and confirms initial learning pathways. |
 | 6 | Employee | Manages own profile, completes assessments, reviews guidance and gaps, chooses a role, learns and tracks own progress. |
-| 7 | System | Internal automated performer: authentication, payments, provisioning, entitlements, assessment evaluation, competency/guidance/pathway/report generation, email and audit. |
+| 7 | System Handler (System) | Internal automated performer: authentication, payments, provisioning, entitlements, assessment evaluation, competency/guidance/pathway/report generation, email and audit. Not an external entity in the context diagram. |
 | 8 | payOS | External payment provider; returns authenticated payment observations and hosts checkout. |
 | 9 | SMTP email service | External delivery service for verification, activation and notifications; SMTP acceptance is not proof of inbox delivery. |
 | 10 | Internal inference service | Planned locally hosted LLM interface for role suggestions and explanations. It is not a human reviewer or an external source of mastery truth. |
@@ -444,7 +458,7 @@ Evidence precedence is Version 2 for intended scope, later approved decisions fo
 
 #### 3.1.1 Screens Flow
 
-The five flows below reflect the current [router](../frontend/src/app/App.tsx), [workspace navigation](../frontend/src/shared/layouts/WorkspaceLayout.tsx) and actual page/dialog components. They cover Guest, Expert, L&D Manager, System Administrator and Platform Administrator. The screen-description table covers these same flows; Employee requirements elsewhere in this SRS remain unchanged.
+The six flows below reflect the current [router](../frontend/src/app/App.tsx), [workspace navigation](../frontend/src/shared/layouts/WorkspaceLayout.tsx) and actual page/dialog components. They cover Guest, Employee, Expert, L&D Manager, System Administrator and Platform Administrator. The screen-description and authorization tables cover these same flows.
 
 **Notation and reading rules**
 
@@ -453,7 +467,7 @@ The five flows below reflect the current [router](../frontend/src/app/App.tsx), 
 - Diagram nodes and Screen Descriptions use **short screen names**, without URLs. Page/dialog shapes carry the notation rather than repeated "Dialog" labels. Route definitions remain in the linked router; in routing notes, `W` means `/workspace/:workspaceSlug`, as defined by [workspace paths](../frontend/src/shared/auth/workspacePaths.ts).
 - Sidebar choices are drawn once from the actor's default home for readability. They are sibling destinations, **not a required business sequence**. Actor-scoped pages using `WorkspaceLayout` share that navigation; dialog close/cancel returns to its owner page.
 - Registration steps, sign-in MFA/recovery, tabs, filters, profile forms and inline renewal/status panels remain inside their page. Aliases and Draft/version query parameters are not counted as new screens. Selected core dialogs are shown, not every import, metadata or warning overlay.
-- Default homes follow [role-home routing](../frontend/src/shared/auth/workspaceRole.ts): Expert target roles, L&D job positions, System Administrator subscription and Platform Administrator subscriptions. A validated `returnTo` can override the default after sign-in.
+- Default homes follow [role-home routing](../frontend/src/shared/auth/workspaceRole.ts): Employee learning overview, Expert target roles, L&D job positions, System Administrator subscription and Platform Administrator subscriptions. A validated `returnTo` can override the default after sign-in.
 - Route visibility is not an authorization grant. Trusted role, workspace, assignment, feature and entitlement guards can show blocked/unavailable states instead of page content.
 
 **Guest**
@@ -463,6 +477,18 @@ The five flows below reflect the current [router](../frontend/src/app/App.tsx), 
 ![SCREEN-GUEST - Guest page and dialog flow](../documents/diagrams/mermaid/screen-flow-guest.png)
 
 The optional initial-graph picker is a dialog in the **organization registration step**, not after completed registration. Checkout, payment result and onboarding status render related payment/setup panels; a paid state does not automatically navigate to another application page. The workspace-entry action requires an applied order and a READY workspace. payOS is a separately labeled external browser page, never an application dialog; development bypass is not evidence of a real payment.
+
+**Employee**
+
+[Mermaid source: SCREEN-EMPLOYEE](../documents/diagrams/mermaid/screen-flow-employee.mmd)
+
+![SCREEN-EMPLOYEE - Employee page and dialog flow](../documents/diagrams/mermaid/screen-flow-employee.png)
+
+Learning Overview is the default home. Upskilling contains Role and Skill tabs, not separate pages; Target Roles and the older guidance/skill URLs redirect into this surface. Gap Analysis redirects to Learning Overview. Baseline history, an active attempt and its result share Baseline Assessment, with the attempt identifier selecting the page state. My Mastery is reached through actual baseline/profile links rather than an invented sidebar item.
+
+Role selection returns to Upskilling; starting/resuming a baseline is a separate guarded action. Role Gap Review opens Learning Pathway only after successful confirmation, and generation, Expert-review, blocked and approved states remain on that page. Module entry is available only when the current pathway/content rules permit it. Completing a module does not automatically open an assessment or establish skill mastery.
+
+Assessment tabs, quiz-taking, RIASEC and results are inline states of Assessments. Selected core quiz dialogs are shown; the current quiz/RIASEC and independent skill-tracking UI still contains browser-local/prototype state, so these navigation controls do not certify a complete persisted assessment or independent-learning workflow. Skill Details returns to its catalog or pathway owner. Additional filter, help, untracking and RIASEC overlays are omitted from this main-navigation view. The server-status utility is omitted consistently with the other actor flows.
 
 **Expert**
 
@@ -504,11 +530,16 @@ The active Organizations route uses `PlatformWorkspacePage`, not the older `Plat
 | Shared sidebar/profile/sign-out controls | [WorkspaceLayout](../frontend/src/shared/layouts/WorkspaceLayout.tsx), [SubscriptionShell](../frontend/src/shared/components/ui/SubscriptionShell.tsx). |
 | Guest steps, graph dialog and checkout/status actions | [GuestRegisterPage](../frontend/src/features/guest/GuestRegisterPage.tsx), [GuestCatalogPicker](../frontend/src/features/guest/GuestCatalogPicker.tsx), [GuestSubscriptionPage](../frontend/src/features/subscription/GuestSubscriptionPage.tsx), [PaymentStatusPanel](../frontend/src/features/subscription/PaymentStatusPanel.tsx). |
 | Expert page/detail and core dialogs | [Assigned roles](../frontend/src/features/expert/target-roles/ExpertAssignedRolesPage.tsx), [pathway details](../frontend/src/features/expert/pathway-review/ExpertPathwayDetailPage.tsx), [content authoring](../frontend/src/features/expert/content/LearningContentAuthoringPage.tsx), [modules](../frontend/src/features/manager/modules/LearningModulesPage.tsx), [assessment bank](../frontend/src/features/manager/assessment-bank/AssessmentBankPage.tsx), [ontology](../frontend/src/features/manager/ontology/CompetencyOntologyPage.tsx). |
+| Employee role choice, gaps and baseline handoff | [Upskilling](../frontend/src/features/employee/target-roles/EmployeeTargetRolesPage.tsx), [role panel](../frontend/src/features/employee/target-roles/CurrentRolePanel.tsx), [baseline gate](../frontend/src/features/employee/target-roles/RoleBaselineGate.tsx), [gap dialog](../frontend/src/features/employee/target-roles/InitialRoleGapDialog.tsx). |
+| Employee baseline, results and mastery | [Baseline page](../frontend/src/features/employee/baseline-assessment/EmployeeBaselinePage.tsx), [submission dialog](../frontend/src/features/employee/baseline-assessment/BaselineAttemptPanel.tsx), [results/history](../frontend/src/features/employee/baseline-assessment/BaselineResults.tsx), [My Mastery](../frontend/src/features/employee/baseline-assessment/MyMasteryPage.tsx). |
+| Employee pathway, learning and assessment controls | [Pathway](../frontend/src/features/employee/pathway/InitialEmployeePathway.tsx), [module/skill details](../frontend/src/features/employee/components/InitialPathwayModules.tsx), [reader and content dialogs](../frontend/src/features/employee/modules/LearningModuleReaderPage.tsx), [assessment page](../frontend/src/features/employee/assessment/AssessmentPage.tsx), [catalog skill details](../frontend/src/features/employee/target-roles/UpskillSkillsPanel.tsx). |
 | L&D list/configuration and dialogs | [Job Positions](../frontend/src/features/manager/job-positions/JobPositionsManagementPage.tsx), [target roles](../frontend/src/features/manager/target-roles/TargetRolesPage.tsx), [baseline directory](../frontend/src/features/manager/baseline-assessments/AdaptiveBaselineDirectory.tsx), [baseline configuration](../frontend/src/features/manager/baseline-assessments/AdaptiveBaselinePage.tsx), [baseline preview](../frontend/src/features/manager/baseline-assessments/AdaptiveAssessmentPreview.tsx), [approvals](../frontend/src/features/manager/approvals/ContentApprovalQueuePage.tsx). |
 | Administrator member/department/billing screens | [User management](../frontend/src/features/administration/user-management/UserManagementPage.tsx), [departments](../frontend/src/features/administration/departments/DepartmentsManagementPage.tsx), [subscription](../frontend/src/features/administration/subscription/OrganizationSubscriptionPage.tsx). |
 | Active platform screens and plan dialog | [Platform workspace controls](../frontend/src/features/subscription/PlatformWorkspaceControls.tsx), [platform plans](../frontend/src/features/subscription/PlatformPlansPage.tsx), [platform activity](../frontend/src/features/platform-admin/PlatformActivityMonitoringPage.tsx). |
 
 The assessment/review branches of the Expert and L&D screen diagrams now include Skill-policy and certificate destinations, Role-Level scopes and saved-draft abandonment. Other screen branches retain their existing scope and limitations; diagram rendering is not runtime navigation acceptance.
+
+Verification is against the current source and local diagram/image rendering, **not a new end-to-end acceptance run**. The shared tenant profile page/sidebar still depends on a saved actor presentation in parts of the current implementation; the diagrams therefore do not promise a role-correct sidebar return from `W/profile`. Profile edit/password forms are inline. Backend persistence and the earlier implementation-status notes are not re-certified by this screen-flow revision. The historical [mixed screen-flow source](../documents/diagrams/mermaid/screen-flow.mmd) is retained but superseded by these six diagrams.
 
 #### 3.1.2 Screen Descriptions
 
@@ -538,7 +569,7 @@ WF-03 example
 +----------------+--------------------------------------------------------+
 ```
 
-The Screen column uses the exact names shown in the five screen-flow diagrams in section 3.1.1. Each row describes one page or dialog; shared names are listed once, giving 65 distinct entries. Permitted actions depend on the user's role and scope. The implementation and navigation limitations in section 3.1.1 still apply.
+The Screen column uses the exact names shown in the six screen-flow diagrams in section 3.1.1. Each row describes one page or dialog; shared names are listed once, giving 82 distinct entries. Permitted actions depend on the user's role and scope. The implementation and navigation limitations in section 3.1.1 still apply.
 
 | # | Feature | Screen | Description |
 | --- | --- | --- | --- |
@@ -560,7 +591,7 @@ The Screen column uses the exact names shown in the five screen-flow diagrams in
 | 16 | Platform Administration | Organizations | Display organization workspaces and provide inline suspension and reactivation controls for the Platform Administrator. |
 | 17 | Platform Monitoring | Platform Activity | Display platform activity records and provide search, severity filtering, pagination and export controls. |
 | 18 | Expert Role Review | Assigned Roles | List the Expert's assigned target roles and provide access to role details, skill configuration and graph views. |
-| 19 | Expert Role Review | Role Details | Open a read-only dialog displaying the selected target role's attributes and competency requirements. |
+| 19 | Role Browsing | Role Details | Open a read-only dialog displaying the selected target role's attributes and competency requirements within the actor's permitted catalog or assignment scope. |
 | 20 | Expert Role Review | Role Skills | Open a dialog to configure competency and skill requirements for an assigned target role. |
 | 21 | Expert Role Review | Role Graph | Open a dialog visualizing the selected role's competency and skill relationships. |
 | 22 | Pathway Review | Pathway Reviews | List pathways awaiting Expert review and open the selected pathway's detail page. |
@@ -607,6 +638,23 @@ The Screen column uses the exact names shown in the five screen-flow diagrams in
 | 63 | Organization Administration | Organization Settings | Display organization settings and provide the available inline configuration forms. |
 | 64 | Organization Administration | System Console | Display the organization administration overview and available operational information. |
 | 65 | Knowledge Graph | Knowledge Graph | Display the organization's knowledge graph and provide visualization and exploration controls. |
+| 66 | Employee Overview | Learning Overview | Display the Employee's learning overview, tracked skills and available pathway links; Gap Analysis is an alias of this page. |
+| 67 | Employee Upskilling | Upskilling | Browse Role and Skill tabs, review the current role selection and access baseline, gap-review and skill-tracking controls. |
+| 68 | Employee Role Selection | Role Selection | Open a dialog to choose a published organization Role and Level; confirmation saves the selection and returns to Upskilling. |
+| 69 | Employee Gap Review | Role Gap Review | Open a dialog to inspect Role-Level gaps, return to role selection when a baseline is required, or confirm a pathway request. |
+| 70 | Employee Learning | Learning Pathway | Display the Employee's role or independent-skill pathway, roadmap/timeline views and applicable generation, review and access states. |
+| 71 | Employee Skill Review | Skill Details | Open a catalog or pathway skill dialog; display context-appropriate definition, requirement or evidence information and return to the opening page. |
+| 72 | Employee Learning | Module Details | Open a pathway module dialog with content version, teaching coverage, prerequisites and an entry action when access is permitted. |
+| 73 | Employee Learning | Module Reader | Display authorized versioned lessons, persist supported content progress and provide pathway return, issue reporting and version-switch controls. |
+| 74 | Learning Support | Report Content Issue | Open a dialog to describe a lesson/content issue for the responsible Expert; successful submission or cancellation returns to the reader. |
+| 75 | Learning Content Versions | Switch Content Version | Open a dialog to confirm switching the reader to a newer version while retaining applicable progress and historical references. |
+| 76 | Employee Assessment | Assessments | Display assessment tabs, quiz/RIASEC sessions and inline results/history; current browser-local/prototype behavior is not a persistence guarantee. |
+| 77 | Employee Assessment | Quiz Details | Open a dialog showing the selected quiz information and provide the available begin/cancel actions. |
+| 78 | Employee Assessment | Submit Assessment | Open a dialog to confirm or cancel submitting the current quiz session, with the resulting state remaining on Assessments. |
+| 79 | Employee Assessment | Quit Assessment | Open a dialog to confirm quitting the current quiz session or continue answering on Assessments. |
+| 80 | Employee Baseline | Baseline Assessment | Display the baseline entry/history, active attempt or result according to the route and attempt state, subject to feature and access guards. |
+| 81 | Employee Baseline | Submit Baseline | Open a dialog to confirm submitting the current baseline attempt or return to its questions. |
+| 82 | Employee Profile | My Mastery | Display the Employee's baseline-derived profiles and source references, with links to attempt results, history or role selection. |
 
 All `W` paths use the workspace prefix defined above; the table does not imply that unprefixed tenant URLs remain valid. `W/employee/riasec` redirects to `W/employee/assessment?tab=baseline`; `W/employee/guidance` redirects to `W/employee/upskilling?tab=roles`; skill aliases redirect to the skills tab. `W/ld-manager/users` redirects to `W/admin/users` but does not authorize account management. Old workspace-scoped `/learner/*` and `/manager/*` aliases must not be counted as separate capabilities.
 
@@ -661,7 +709,7 @@ Guests may use public entry screens, valid invitation links and their own regist
 | &nbsp;&nbsp;Query and export platform activity |  | X |  |  |  |  |
 | **Assigned Roles** |  |  |  |  | X |  |
 | &nbsp;&nbsp;Query assigned target roles |  |  |  |  | X |  |
-| **Role Details** |  |  |  |  | X |  |
+| **Role Details** |  |  |  |  | X | X |
 | **Role Skills** |  |  |  |  | X |  |
 | &nbsp;&nbsp;Update and submit assigned role requirements |  |  |  |  | X |  |
 | **Role Graph** |  |  |  |  | X |  |
@@ -751,10 +799,44 @@ Guests may use public entry screens, valid invitation links and their own regist
 | &nbsp;&nbsp;Query managed organization administration and audit data |  |  | X |  |  |  |
 | **Knowledge Graph** |  |  | X |  |  |  |
 | &nbsp;&nbsp;Query the managed organization's knowledge graph |  |  | X |  |  |  |
+| **Learning Overview** |  |  |  |  |  | X |
+| &nbsp;&nbsp;View own learning overview and permitted pathway links |  |  |  |  |  | X |
+| **Upskilling** |  |  |  |  |  | X |
+| &nbsp;&nbsp;Browse permitted roles/skills and manage own learning choices |  |  |  |  |  | X |
+| **Role Selection** |  |  |  |  |  | X |
+| &nbsp;&nbsp;Select or change own Role-Level when the applicable rules permit |  |  |  |  |  | X |
+| **Role Gap Review** |  |  |  |  |  | X |
+| &nbsp;&nbsp;Review own gaps and confirm an authorized pathway request |  |  |  |  |  | X |
+| **Learning Pathway** |  |  |  |  |  | X |
+| &nbsp;&nbsp;View own pathway and access only permitted learning provision |  |  |  |  |  | X |
+| **Skill Details** |  |  |  |  |  | X |
+| &nbsp;&nbsp;Read permitted catalog skills and own pathway evidence |  |  |  |  |  | X |
+| **Module Details** |  |  |  |  |  | X |
+| &nbsp;&nbsp;Read own pathway module details without bypassing entry guards |  |  |  |  |  | X |
+| **Module Reader** |  |  |  |  |  | X |
+| &nbsp;&nbsp;Read authorized content and update own supported learning progress |  |  |  |  |  | X |
+| **Report Content Issue** |  |  |  |  |  | X |
+| &nbsp;&nbsp;Submit a content issue from an authorized learning context |  |  |  |  |  | X |
+| **Switch Content Version** |  |  |  |  |  | X |
+| &nbsp;&nbsp;Switch own permitted content version without rewriting history |  |  |  |  |  | X |
+| **Assessments** |  |  |  |  |  | X |
+| &nbsp;&nbsp;Access own eligible sessions and authorized assessment history |  |  |  |  |  | X |
+| **Quiz Details** |  |  |  |  |  | X |
+| &nbsp;&nbsp;Read an assessment's information within own permitted context |  |  |  |  |  | X |
+| **Submit Assessment** |  |  |  |  |  | X |
+| &nbsp;&nbsp;Confirm submission of own assessment answers |  |  |  |  |  | X |
+| **Quit Assessment** |  |  |  |  |  | X |
+| &nbsp;&nbsp;Quit or continue own active assessment session |  |  |  |  |  | X |
+| **Baseline Assessment** |  |  |  |  |  | X |
+| &nbsp;&nbsp;Take/resume an admitted baseline and view own history/results |  |  |  |  |  | X |
+| **Submit Baseline** |  |  |  |  |  | X |
+| &nbsp;&nbsp;Submit own active baseline under its pinned rules |  |  |  |  |  | X |
+| **My Mastery** |  |  |  |  |  | X |
+| &nbsp;&nbsp;Read own competency profiles and source-assessment references |  |  |  |  |  | X |
 
 Activities express required permission boundaries, not proof that every control is implemented on its screen. Training-cost and monetary-benefit recording retains the implementation limitations documented elsewhere. The external payOS screen is an authorized checkout handoff, not an application-managed page. Onboarding workspace entry changes the registration session into its verified System Administrator session; it does not grant a Guest access to Subscription.
 
-Employee learning screens are outside the five screen flows above. Employee permissions elsewhere in this SRS remain limited to their own role selections, assessment answers/results, mastery and learning resources; omission from this table does not remove those requirements.
+Employee screen permissions are limited to their own role selections, assessment answers/results, mastery and authorized learning resources. Catalog browsing does not grant role authoring, Expert approval or access to another Employee's private evidence; the source limitations in the Employee screen-flow notes still apply.
 
 Server-side account/session, organization membership, business role, assignment and entitlement checks are independent. UI visibility, browser company IDs, route aliases and role menus cannot supply authority. Platform administration is not a blanket permission to read assessment answers or private content. Recovery/billing permissions for expired or capacity-blocked workspaces must remain narrower than normal learning access.
 
@@ -778,83 +860,63 @@ Server-side account/session, organization membership, business role, assignment 
 
 #### 3.1.5 Entity Relationship Diagram
 
-The four **flow-scoped conceptual ERDs** cover ACT-05 only: Role–Level configuration, baseline/profile, skill provision and pathway learning. Subscription, payment, onboarding and ROI are outside these views. They show the current flow ownership and source-defined relationships, not an applied migration. Selected physical attributes and exact mapping references are in [SDD section 2.2](Report4_Software%20Design%20Document.md#22-logical-database-design).
+This single **conceptual data model** combines the ACT-05 learning ERDs and competency ontology. It shows 33 entities: 26 PostgreSQL-owned business concepts and seven Neo4j catalog definitions. Subscription, payment, onboarding, ROI and detailed content/Question Bank authoring remain outside this view. The diagram contains entity names, relationships and cardinalities only, not physical columns or a deployed schema.
 
-A separate **conceptual ontology** below the four ERDs describes the catalog structure used by the learning flow. It contains node names, relationships and cardinalities only; graph attributes and node/edge descriptions remain in [SDD section 2.4](Report4_Software%20Design%20Document.md#24-neo4j-design-and-controlled-import).
+[Mermaid source: CERD-UNIFIED](../documents/diagrams/mermaid/cerd-unified.mmd)
 
-Cardinality applies to these flow relationships. Account represents an existing authenticated actor; TargetRole is a professional goal, distinct from actor permissions.
+![CERD-UNIFIED - Learning and Competency Conceptual Data Model](../documents/diagrams/mermaid/cerd-unified.png)
 
-**1. Role-Level Selection and Baseline Configuration**
+**Reading rules**
 
-**Current diagram scope:** CERD-01–04 now separate scoped policy, frozen paper/group results, baseline diagnostics, official evidence and requirement-pathway ownership. They remain conceptual views, not deployed SQL schemas. CGRAPH-01 includes Certificate and the current provision relationship.
+- `Level` unifies the earlier RoleLevel, RoleMemberLevel and MemberLevel labels; `MicroSkill` unifies Skill and skill/knowledge catalog context. ImmutableVersion and ImmutablePolicy are represented once as `ImmutablePolicy`. No duplicate catalog or requirement node is introduced.
+- Neo4j owns `JobPosition`, `TargetRole`, `Level`, `Competency`, `MicroSkill`, `LearningModule` and `Certificate`. Each Module teaches exactly one MicroSkill; Certificate is connected from MicroSkill through `REQUIRES_CERTIFICATE` under the current source contract.
+- PostgreSQL owns identity, selection, policy versions, frozen assessments, diagnostics, official evidence, pathway state, original learning progress and certificate submissions/decisions. A baseline diagnostic does not become official achievement; bypass is a waiver, not evidence.
+- Dotted links show snapshot, projection or application-managed context relationships. In particular, links between PostgreSQL and Neo4j are references to catalog identities/versions, **not foreign keys or shared transactions between databases**. Existing dotted intra-store relationships retain their original meaning.
+- A conceptual entity can be an aggregate, immutable record or read projection rather than one physical table. LearningModule catalog definition belongs to Neo4j; authored content/version history and learner progress belong to PostgreSQL, while private file bytes remain in object storage.
 
-[Mermaid source: CERD-01](../documents/diagrams/mermaid/cerd-01.mmd)
-
-![CERD-01 - Role-Level Selection and Baseline Configuration](../documents/diagrams/mermaid/cerd-01.png)
-
-**2. Assessment and Role-Level Profile**
-
-[Mermaid source: CERD-02](../documents/diagrams/mermaid/cerd-02.mmd)
-
-![CERD-02 - Assessment and Role-Level Profile](../documents/diagrams/mermaid/cerd-02.png)
-
-ACT-10 Question Bank authoring is documented separately in Report4 LERD-06 and DB-10; the ACT-05 view above references published QuestionVersion identities.
-
-**3. Role Requirements and Learning Provision**
-
-[Mermaid source: CERD-03](../documents/diagrams/mermaid/cerd-03.mmd)
-
-![CERD-03 - Role Requirements and Learning Provision](../documents/diagrams/mermaid/cerd-03.png)
-
-ACT-04 Module/Content authoring is documented separately in Report4 LERD-05 and DB-09, including content packages and immutable revision snapshots.
-
-**4. Pathway Review, Learning and Bypass**
-
-[Mermaid source: CERD-04](../documents/diagrams/mermaid/cerd-04.mmd)
-
-![CERD-04 - Pathway Review, Learning and Bypass](../documents/diagrams/mermaid/cerd-04.png)
-
-**5. Conceptual Ontology**
-
-[Mermaid source: CGRAPH-01](../documents/diagrams/mermaid/cgraph-01.mmd)
-
-![CGRAPH-01 - Conceptual JobPosition Ontology](../documents/diagrams/mermaid/cgraph-01.png)
-
-The updated conceptual catalog shows `JobPosition`, `TargetRole`, `Level`, `Competency`, `MicroSkill`, `LearningModule` and `Certificate` via Skill→REQUIRES_CERTIFICATE. `JobPosition` is the current catalog label, not `Occupation`. `Level` and `MicroSkill` correspond conceptually to RoleLevel and Skill in the flow views; this does not define a new physical mapping. Each LearningModule teaches exactly one MicroSkill; a MicroSkill can have zero or multiple alternative Modules. Skill prerequisites are directed from the dependent skill to its prerequisite and must not contain cycles. Learner assessment results, profiles and progress are outside the catalog ontology. This view follows the current single-skill contract, not a claim of live database migration. `Certificate` is not a node in this catalog ontology: certificate definitions and submissions are modeled separately in CERD-03/04 and SDD LERD-03/04. Their use in ACT-05 does not imply a Certificate node or relationship in the current Neo4j catalog.
+Selected physical mappings are in [SDD section 2.2](Report4_Software%20Design%20Document.md#22-logical-database-design); graph fields are in [SDD section 2.4](Report4_Software%20Design%20Document.md#24-neo4j-design-and-controlled-import). ACT-10 Question Bank and ACT-04 Module/Content authoring remain documented separately in SDD LERD-05/06 and DB-09/10. The earlier CERD-01–04 and CGRAPH-01 assets remain historical references, no longer separate main diagrams here.
 
 **Entities Description**
 
-Each row describes one entity used by the four ACT-05 flow ERDs above. Existing shared identity/content entities are references to their owners, not replacement account or learning systems.
+The Database column identifies the authoritative store for every entity in the combined diagram. It describes current source-defined ownership, not a claim that every conceptual entity is a separately deployed table.
 
-| # | Entity | Description |
-| --- | --- | --- |
-| 1 | Organization | Existing tenant boundary. |
-| 2 | Account | Existing authenticated Employee, L&D or Expert reference; credentials remain outside the flow model. |
-| 3 | TargetRole | Published professional target role, distinct from actor permissions. |
-| 4 | RoleLevel | A Level belonging to a specific target Role. |
-| 5 | RoleSelection | Current and historical Employee Role-Level choices. |
-| 6 | ScopedPolicy | L&D configuration identity and active pointer scoped to Role-Level. |
-| 7 | ImmutablePolicy | Immutable validated configuration, including the exact assessed skill set and rules. |
-| 8 | Skill | Assessable catalog skill with versioned definition. |
-| 9 | Explicit catalog requirement | Explicit skill requirement for a Role-Level. |
-| 10 | QuestionVersion | Existing published question version; protected answer data remains server-side. |
-| 11 | AssessmentAttempt | Frozen baseline or skill-assessment context and timing. |
-| 12 | AssessmentItem | Presented immutable item and its exact requirement context. |
-| 13 | AssessmentAnswer | Accepted response for one presented item. |
-| 14 | GroupResult | Final per-skill result; invalid results do not initialize a valid profile. |
-| 15 | BaselineDiagnostic | Current rule profile is a read projection over actual diagnostics and separate official evidence/review; no baseline-derived official profile row. |
-| 16 | OfficialEvidence | Exact diagnostic/evidence/review entry with provenance, not an automatic baseline achievement. |
-| 17 | LearningModule | Existing approved module; exactly one taught skill. |
-| 18 | Certificate | Catalog certificate definition attached to an exact skill requirement. |
-| 19 | SkillPrerequisite | Exact dependent and prerequisite skill-level pair. |
-| 20 | CertificateSubmission | Employee evidence and genuine Expert decision for a certificate. |
-| 21 | PathwayRequest | Explicit request from the reviewed profile; errors retain the selected target. |
-| 22 | PathwayRevision | Generated, reviewed and automatically adapted pathway versions. |
-| 23 | PathwayStep | Required skill work, with module/certificate provision and bypass kept separate from achievement. |
-| 24 | StepOption | Eligible version-pinned Module alternatives for MODULE_ONLY; CERTIFICATE_ONLY binds one definition on the step, not mixed choices. |
-| 25 | PathwayReview | Actual Expert review of an exact pathway revision. |
-| 26 | LearningProgress | Existing content progress owner referenced by selected pathway option. |
-| 27 | PathwayBypass | Accepted missing-provision decision; never evidence of achievement. |
+| # | Entity | Description | Database |
+| --- | --- | --- | --- |
+| 1 | Organization | Tenant identity and ownership boundary. | PostgreSQL |
+| 2 | Account | Existing authenticated Employee, L&D Manager or Expert reference; not a replacement identity system. | PostgreSQL |
+| 3 | RoleSelection | Employee's current/historical Role-Level selection with pinned catalog context. | PostgreSQL |
+| 4 | ScopedPolicy | Assessment-policy identity scoped to organization, purpose and Role-Level or Skill/knowledge context. | PostgreSQL |
+| 5 | MutableDraft | Current editable policy draft before release. | PostgreSQL |
+| 6 | ImmutablePolicy | Validated immutable policy version with exact assessment rules and scope snapshot. | PostgreSQL |
+| 7 | ActivePointer | Reference to the active immutable policy version for its scope. | PostgreSQL |
+| 8 | AbandonedDraft | Retained abandoned baseline draft history, not an active configuration. | PostgreSQL |
+| 9 | FrozenAttempt | Baseline or skill-assessment attempt with pinned policy, context and timing. | PostgreSQL |
+| 10 | AssessmentGroup | TARGET, MAIN or PREREQUISITE group within a frozen paper. | PostgreSQL |
+| 11 | PresentedItem | Frozen delivered question/version mapping and position within its group. | PostgreSQL |
+| 12 | AcceptedAnswer | Accepted response and revision/replay context for a presented item. | PostgreSQL |
+| 13 | GroupResult | Immutable group score, pass/veto outcome and recorded reasons. | PostgreSQL |
+| 14 | BaselineDiagnostic | Baseline diagnostic result used in profile/gap projections, not official skill achievement. | PostgreSQL |
+| 15 | ExactCompletion | Immutable completion evidence for an exact Module revision and Skill/knowledge context. | PostgreSQL |
+| 16 | OfficialEvidence | Official skill achievement from qualifying learning/assessment or an approved certificate, with source provenance. | PostgreSQL |
+| 17 | CertificateDecision | Exact assigned Expert approval/rejection of a certificate submission. | PostgreSQL |
+| 18 | PrerequisiteReview | Review state for a discovered prerequisite shortage without automatic revocation of earlier evidence. | PostgreSQL |
+| 19 | RequirementSnapshot | Immutable selected Role-Level requirements and catalog/version input to pathway generation. | PostgreSQL |
+| 20 | PathwayRequest | Explicit pathway confirmation/request bound to the exact requirement snapshot. | PostgreSQL |
+| 21 | PathwayRevision | Versioned pathway state, Expert approval and event/override lineage; not a separate copied catalog. | PostgreSQL |
+| 22 | RequirementStep | REQUIRED or PARALLEL_SUPPLEMENT work with exact requirement, provision and evidence/bypass references. | PostgreSQL |
+| 23 | ModuleOption | Compatible version-pinned Module alternative for a module-only requirement; not a mixed certificate choice. | PostgreSQL |
+| 24 | OriginalLearningProgress | Original learner Module/lesson progress owner; pathway-option context does not create a second progress table. | PostgreSQL |
+| 25 | CertificateSubmission | Employee evidence with frozen certificate definition and request/step context. | PostgreSQL |
+| 26 | BypassDecision | Accepted missing-provision waiver; never evidence of skill achievement. | PostgreSQL |
+| 27 | JobPosition | Job Position catalog definition owning TargetRoles. | Neo4j |
+| 28 | TargetRole | Professional target role, distinct from an account's permission role. | Neo4j |
+| 29 | Level | Actual member Level belonging to one TargetRole and owning competencies/explicit skill requirements. | Neo4j |
+| 30 | Competency | Group of MicroSkills required by its owning Level; no independent learner score. | Neo4j |
+| 31 | MicroSkill | Versioned skill definition with exact knowledge/outcome provision and prerequisite relationships. | Neo4j |
+| 32 | LearningModule | Catalog provision teaching exactly one MicroSkill; content authoring/history and learner progress are stored separately in PostgreSQL. | Neo4j |
+| 33 | Certificate | Catalog definition assigned through REQUIRES_CERTIFICATE for a configured skill/knowledge pair; learner submissions and review decisions remain in PostgreSQL. | Neo4j |
+
+`REQUIRES_SKILL` and the skill prerequisite pair are Neo4j relationships, not additional entity tables. Existing QuestionVersion records and detailed content-authoring aggregates remain in their separate SDD views. Profile displays combine diagnostics and official evidence as a read projection rather than introducing another catalog node or baseline-created achievement record.
 
 ### 3.2 Organization Onboarding
 

@@ -21,13 +21,13 @@ public interface OrganizationRegistrationJpaRepository
     String ROW = "select new com.adaptlearngraph.repository.OrganizationRegistrationJpaRepository$Row("
             + "r.registrationId, r.accountId, r.organizationName, r.workspaceSlug, r.industry, r.headcount, r.adminName,"
             + " a.identifier, a.passwordHash, a.active, r.state, r.emailVerifiedAt, r.completedAt, r.authVersion,"
-            + " r.recoveryRequired, r.createdAt, r.updatedAt) from OrganizationRegistrationEntity r join r.account a ";
+            + " r.recoveryRequired, r.createdAt, r.updatedAt, r.country, r.adminPhone) from OrganizationRegistrationEntity r join r.account a ";
 
     /** Fresh (never persistence-context cached) registration joined with its account. */
     record Row(UUID registrationId, UUID accountId, String organizationName, String workspaceSlug, String industry,
                String headcount, String adminName, String identifier, String passwordHash, Boolean active, String state,
                Instant emailVerifiedAt, Instant completedAt, Long authVersion, Boolean recoveryRequired,
-               Instant createdAt, Instant updatedAt) {}
+               Instant createdAt, Instant updatedAt, String country, String adminPhone) {}
 
     @Query(ROW + "where a.normalizedIdentifier = :email")
     Optional<Row> findRowByEmail(@Param("email") String normalizedEmail);
@@ -49,14 +49,16 @@ public interface OrganizationRegistrationJpaRepository
     @Query(value = """
             INSERT INTO platform.organization_registration(
                 registration_id, account_id, organization_name, workspace_slug, industry, headcount,
-                admin_name, created_at, updated_at)
-            VALUES (:id, :accountId, :organizationName, :slug, :industry, :headcount, :adminName, :now, :now)
+                admin_name, created_at, updated_at, country, admin_phone, policies_accepted_at)
+            VALUES (:id, :accountId, :organizationName, :slug, :industry, :headcount, :adminName, :now, :now,
+                :country, :adminPhone, :now)
             ON CONFLICT (workspace_slug) DO NOTHING
             """, nativeQuery = true)
     int insertIfSlugFree(@Param("id") UUID id, @Param("accountId") UUID accountId,
             @Param("organizationName") String organizationName, @Param("slug") String slug,
             @Param("industry") String industry, @Param("headcount") String headcount,
-            @Param("adminName") String adminName, @Param("now") Instant now);
+            @Param("adminName") String adminName, @Param("now") Instant now,
+            @Param("country") String country, @Param("adminPhone") String adminPhone);
 
     @Modifying(flushAutomatically = true, clearAutomatically = true)
     @Transactional(TransactionManagers.JPA)

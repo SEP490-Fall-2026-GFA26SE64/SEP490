@@ -1,30 +1,61 @@
 ---
-title: "SEQ-05 - Required role handoff (planned completion)"
-config: {"theme":"base","fontFamily":"Segoe UI, Arial, sans-serif","themeVariables":{"fontFamily":"Segoe UI, Arial, sans-serif","fontSize":"16px","primaryColor":"#ffffff","primaryTextColor":"#0f1729","primaryBorderColor":"#64748b","secondaryColor":"#fef3eb","tertiaryColor":"#ffffff","lineColor":"#64748b","textColor":"#0f1729","mainBkg":"#ffffff","background":"#ffffff","clusterBkg":"#ffffff","clusterBorder":"#64748b","edgeLabelBackground":"#ffffff","titleColor":"#0f1729","noteBkgColor":"#fef3eb","noteTextColor":"#0f1729","noteBorderColor":"#e6650f","actorBkg":"#fef3eb","actorBorder":"#e6650f","actorTextColor":"#0f1729","actorLineColor":"#64748b","signalColor":"#64748b","signalTextColor":"#0f1729","labelBoxBkgColor":"#ffffff","labelBoxBorderColor":"#64748b","labelTextColor":"#0f1729","loopTextColor":"#0f1729","activationBkgColor":"#fef3eb","activationBorderColor":"#e6650f","sequenceNumberColor":"#ffffff","secondaryBorderColor":"#64748b","tertiaryBorderColor":"#64748b","secondaryTextColor":"#0f1729","tertiaryTextColor":"#0f1729"},"sequence":{"actorMargin":40,"width":170,"height":56,"diagramMarginX":24,"diagramMarginY":24,"boxMargin":12,"boxTextMargin":8,"noteMargin":16,"messageMargin":38,"mirrorActors":false,"wrap":true,"wrapPadding":12,"actorFontSize":15,"messageFontSize":14,"noteFontSize":14,"actorFontFamily":"Segoe UI, Arial, sans-serif","messageFontFamily":"Segoe UI, Arial, sans-serif","noteFontFamily":"Segoe UI, Arial, sans-serif"},"themeCSS":".actor-line { stroke-width: 1px; }"}
+title: "SEQ-05 - Target Role Handoff - Current Low-Level Calls"
+config:
+  theme: base
+  fontFamily: "Arial, sans-serif"
+  themeVariables: {background: "#ffffff", primaryColor: "#ffffff", primaryTextColor: "#0f172a", lineColor: "#64748b", actorBkg: "#fff5eb", actorBorder: "#ea580c", actorTextColor: "#0f172a", signalColor: "#64748b", signalTextColor: "#0f172a"}
+  sequence: {actorMargin: 35, messageMargin: 32, mirrorActors: false, wrap: true, width: 180}
 ---
-
 sequenceDiagram
   autonumber
-  actor SDD_SEQ_05_LD as L and D Manager
-  actor SDD_SEQ_05_Expert as Expert
-  participant SDD_SEQ_05_Workflow as Role workflow
-  participant SDD_SEQ_05_Guard as Trusted assignment guard
-  participant SDD_SEQ_05_DB as Workflow persistence
-  participant SDD_SEQ_05_Graph as Catalog projection
-  SDD_SEQ_05_LD->>SDD_SEQ_05_Workflow: create role and assign Expert
-  SDD_SEQ_05_Workflow->>SDD_SEQ_05_Guard: authorize organization and assignment
-  SDD_SEQ_05_Workflow->>SDD_SEQ_05_DB: save draft/assignment
-  SDD_SEQ_05_Expert->>SDD_SEQ_05_Workflow: save actual member Levels, explicit knowledge and duration
-  SDD_SEQ_05_Workflow->>SDD_SEQ_05_Guard: verify assigned author and revision
-  SDD_SEQ_05_Workflow->>SDD_SEQ_05_DB: save authored version
-  SDD_SEQ_05_Expert->>SDD_SEQ_05_Workflow: submit exact completed version
-  SDD_SEQ_05_Workflow->>SDD_SEQ_05_DB: record submission
-  SDD_SEQ_05_LD->>SDD_SEQ_05_Workflow: review submitted version
-  alt revision requested
-  SDD_SEQ_05_Workflow->>SDD_SEQ_05_DB: return with actual reviewer/time/feedback
-  SDD_SEQ_05_Workflow-->>SDD_SEQ_05_Expert: revision required
-  else publication approved
-  SDD_SEQ_05_Workflow->>SDD_SEQ_05_DB: record decision/publication + durable event
-  SDD_SEQ_05_Workflow->>SDD_SEQ_05_Graph: apply versioned authorized projection
-  SDD_SEQ_05_Workflow-->>SDD_SEQ_05_LD: available Role-Level projection or explicit failure
+  actor LD as L&D Manager
+  actor Expert as Expert
+  participant UI as TargetRolesPage / ExpertAssignedRolesPage
+  participant Ctrl as OrganizationTargetRoleController
+  participant App as OrganizationTargetRoleApplicationService
+  participant Svc as TargetRoleService
+  participant Repo as Neo4jTargetRoleRepository
+  participant Graph as Neo4jClient / Neo4j
+
+  LD->>UI: Create role and assign Expert
+  UI->>Ctrl: POST organization target-roles, CreateTargetRoleRequest
+  Ctrl->>App: createTargetRole(organizationId, request)
+  App->>Svc: createTargetRole(CreateTargetRoleCommand)
+  Svc->>Repo: existsByOrganizationIdAndCodeAndVersion(org, code, version)
+  Repo-->>Svc: exists
+  alt duplicate identity
+    Svc-->>Ctrl: DuplicateTargetRoleException
+    Ctrl-->>UI: 409 Conflict
+  else new role
+    Svc->>Svc: TargetRole.createNew(command)
+    Svc->>Repo: save(targetRole)
+    Repo->>Graph: Merge role and synchronize catalog relationships
+    Repo-->>Svc: TargetRole
+    Ctrl-->>UI: 201 Created
+  end
+
+  loop Save configuration, submit or record L&D decision
+    alt Expert configuration or submission
+      Expert->>UI: Save configuration or handleSubmitToManager
+      UI->>Ctrl: PUT roleId, configuration or status SUBMITTED
+    else L&D approval or rejection
+      LD->>UI: handleApproveAndPublishRole / handleConfirmManagerRejection
+      UI->>Ctrl: PUT roleId, status ACTIVE or REJECTED with reason
+    end
+    Ctrl->>App: getTargetRole(organizationId, roleId)
+    App-->>Ctrl: Existing role and assignedExpertId
+    Ctrl->>Ctrl: role-header checks, assignment comparison when userId supplied
+    alt denied or Expert role missing
+      Ctrl-->>UI: 403 Forbidden or 404 Not Found
+    else allowed request
+      Ctrl->>App: updateTargetRole(org, roleId, UpdateTargetRoleRequest)
+      App->>Svc: updateTargetRole(UpdateTargetRoleCommand)
+      Svc->>Repo: findById(org, roleId)
+      Repo-->>Svc: Existing TargetRole
+        Svc->>Svc: TargetRole.updateDetails(command fields)
+        Svc->>Repo: save(updated)
+        Repo->>Graph: Merge role, sync relationships, supersede if published
+        Repo-->>Svc: updated TargetRole
+        Ctrl-->>UI: 200 OK
+    end
   end

@@ -33,38 +33,68 @@ class PlatformCatalogServiceTest {
         return closure.edges().stream().map(Edge::id).collect(Collectors.toSet());
     }
 
-    @Test void roleBringsParentJobPositionSubtreePrerequisitesAndTeachingModules() {
-        var closure = service.closure(List.of("ROLE-A"));
+    @Test void explicitSelectionPreservesPruningAndNeverImportsModules() {
+        var closure = service.closure(List.of("ROLE-A", "LV-A1", "MS-A"));
+        assertThat(closure.nodeIds()).containsExactlyInAnyOrder("OCC-1", "ROLE-A", "LV-A1", "MS-A", "MS-P");
+        assertThat(closure.nodesByLabel()).doesNotContainKey("LearningModule");
+        assertThat(edges(closure)).containsExactlyInAnyOrder("REL-1", "REL-3", "REL-7", "REL-10");
+    }
+
+    @Test void levelAndCompetencyAreSelectableAndKeepTheirStructuralAncestors() {
+        assertThat(service.closure(List.of("LV-A1")).nodeIds())
+                .containsExactlyInAnyOrder("OCC-1", "ROLE-A", "LV-A1");
+        assertThat(service.closure(List.of("CMP-A1")).nodeIds())
+                .containsExactlyInAnyOrder("OCC-1", "ROLE-A", "LV-A1", "CMP-A1");
+        assertThatThrownBy(() -> service.closure(List.of("MOD-A"))).isInstanceOf(RegistrationFailure.class);
+    }
+
+    @Test void expandedBranchBringsOnlySelectedStructureAndPrerequisites() {
+        var closure = service.closure(List.of("OCC-1", "ROLE-A", "LV-A1", "CMP-A1", "MS-A", "MS-B"));
         assertThat(closure.nodeIds()).containsExactlyInAnyOrder(
-                "OCC-1", "ROLE-A", "LV-A1", "CMP-A1", "MS-A", "MS-B", "MS-P", "MOD-A", "MOD-P", "MOD-X");
+                "OCC-1", "ROLE-A", "LV-A1", "CMP-A1", "MS-A", "MS-B", "MS-P");
         assertThat(edges(closure)).containsExactlyInAnyOrder(
-                "REL-1", "REL-3", "REL-5", "REL-6", "REL-7", "REL-8", "REL-10", "REL-11", "REL-12", "REL-14");
-        assertThat(closure.nodesByLabel()).containsEntry("MicroSkill", 3).containsEntry("LearningModule", 3).containsEntry("JobPosition", 1);
+                "REL-1", "REL-3", "REL-5", "REL-6", "REL-7", "REL-8", "REL-10");
+        assertThat(closure.nodesByLabel()).containsEntry("MicroSkill", 3).doesNotContainKey("LearningModule");
         assertThat(closure.templateVersion()).isEqualTo("fixture-1");
         assertThat(closure.templateSha256()).matches("[0-9a-f]{64}");
     }
 
-    @Test void jobPositionCopiesItsWholeSubtreeOnly() {
+    @Test void selectingAParentDoesNotSilentlyRestorePrunedDescendants() {
         var closure = service.closure(List.of("OCC-2"));
-        assertThat(closure.nodeIds()).containsExactlyInAnyOrder("OCC-2", "ROLE-B", "LV-B1", "MS-X", "MOD-X");
-        assertThat(edges(closure)).containsExactlyInAnyOrder("REL-2", "REL-4", "REL-9", "REL-13");
+        assertThat(closure.nodeIds()).containsExactly("OCC-2");
+        assertThat(closure.edges()).isEmpty();
     }
 
-    @Test void skillBringsPrerequisitesAndProvidersWhileModuleBringsOnlyItsSkills() {
+    @Test void skillBringsPrerequisitesWithoutUnrelatedParentsOrProviders() {
         var skill = service.closure(List.of("MS-A"));
-        assertThat(skill.nodeIds()).containsExactlyInAnyOrder("MS-A", "MS-P", "MOD-A", "MOD-P");
-        assertThat(edges(skill)).containsExactlyInAnyOrder("REL-10", "REL-11", "REL-12");
-
-        var module = service.closure(List.of("MOD-X"));
-        assertThat(module.nodeIds()).containsExactlyInAnyOrder("MOD-X", "MS-X", "MS-B");
-        assertThat(edges(module)).containsExactlyInAnyOrder("REL-13", "REL-14");
+        assertThat(skill.nodeIds()).containsExactlyInAnyOrder("MS-A", "MS-P");
+        assertThat(edges(skill)).containsExactly("REL-10");
+        assertThat(skill.inclusions()).containsExactly(new PlatformCatalogService.Inclusion("MS-P", "PREREQUISITE", "MS-A"));
+        assertThat(service.closure(List.of("MS-P")).inclusions()).isEmpty();
     }
 
     @Test void onlyEdgesWithBothEndpointsCopiedAreReturned() {
-        var closure = service.closure(List.of("MOD-X", "ROLE-A", "ROLE-A"));
-        assertThat(closure.selected()).containsExactly("MOD-X", "ROLE-A");
+        var closure = service.closure(List.of("MS-X", "ROLE-A", "ROLE-A"));
+        assertThat(closure.selected()).containsExactly("MS-X", "ROLE-A");
         for (Edge edge : closure.edges()) assertThat(closure.nodeIds()).contains(edge.fromId(), edge.toId());
-        assertThat(edges(closure)).contains("REL-13", "REL-14");
+        assertThat(edges(closure)).containsExactly("REL-1");
+    }
+
+    @Test void sharedPrerequisitesRemainUntilTheirLastDependentIsRemoved() throws Exception {
+        var json = new ObjectMapper();
+        com.fasterxml.jackson.databind.node.ObjectNode root;
+        try (var input = getClass().getResourceAsStream("/platform-catalog/template-fixture.json")) {
+            root = (com.fasterxml.jackson.databind.node.ObjectNode) json.readTree(input);
+        }
+        root.withArray("relationships").addObject().put("id", "SHARED").put("type", "HAS_SKILL_PREREQUISITE")
+                .put("fromId", "MS-B").put("toId", "MS-P");
+        var template = new PlatformCatalogTemplate(json.writeValueAsBytes(root), json);
+        var shared = new PlatformCatalogService(() -> Optional.of(template));
+        assertThat(shared.closure(List.of("MS-A", "MS-B")).inclusions()).containsExactlyInAnyOrder(
+                new PlatformCatalogService.Inclusion("MS-P", "PREREQUISITE", "MS-A"),
+                new PlatformCatalogService.Inclusion("MS-P", "PREREQUISITE", "MS-B"));
+        assertThat(shared.closure(List.of("MS-B")).nodeIds()).containsExactlyInAnyOrder("MS-B", "MS-P");
+        assertThat(shared.closure(List.of("OCC-1")).nodeIds()).containsExactly("OCC-1");
     }
 
     @Test void emptySelectionCopiesNothingAndInvalidSelectionsAreRejected() {
@@ -72,7 +102,7 @@ class PlatformCatalogServiceTest {
         assertThat(empty.nodeIds()).isEmpty();
         assertThat(empty.relationshipCount()).isZero();
         assertThat(service.closure(null).nodeCount()).isZero();
-        for (var invalid : List.of(List.of("LV-A1"), List.of("UNKNOWN"), List.of(" "),
+        for (var invalid : List.of(List.of("MOD-A"), List.of("UNKNOWN"), List.of(" "),
                 IntStream.range(0, PlatformCatalogService.MAX_SELECTION + 1).mapToObj(i -> "N" + i).toList())) {
             assertThatThrownBy(() -> service.closure(invalid)).isInstanceOfSatisfying(RegistrationFailure.class,
                     failure -> assertThat(failure.field()).isEqualTo("catalogSelection"));
@@ -87,17 +117,14 @@ class PlatformCatalogServiceTest {
         assertThatThrownBy(unavailable::graph).isInstanceOf(RegistrationFailure.class);
     }
 
-    @Test void graphExposesSelectableNodesAndDerivedRoleRequirements() {
+    @Test void graphExposesFiveTypesAndActualRelationshipMetadata() {
         var graph = service.graph();
         assertThat(graph.nodes()).extracting(PlatformCatalogService.GraphNode::id)
-                .containsExactlyInAnyOrder("OCC-1", "OCC-2", "ROLE-A", "ROLE-B", "MS-A", "MS-B", "MS-P", "MS-X", "MOD-A", "MOD-P", "MOD-X");
-        assertThat(graph.edges()).contains(
-                new PlatformCatalogService.GraphEdge("ROLE-A", "MS-A", "REQUIRES"),
-                new PlatformCatalogService.GraphEdge("ROLE-A", "MS-B", "REQUIRES"),
-                new PlatformCatalogService.GraphEdge("ROLE-B", "MS-X", "REQUIRES"),
-                new PlatformCatalogService.GraphEdge("OCC-1", "ROLE-A", "HAS_ROLE"),
-                new PlatformCatalogService.GraphEdge("MS-A", "MS-P", "PREREQUISITE"),
-                new PlatformCatalogService.GraphEdge("MOD-X", "MS-B", "TEACHES"));
-        assertThat(graph.nodes()).filteredOn(n -> n.id().equals("MOD-A")).extracting(PlatformCatalogService.GraphNode::name).containsExactly("Module A");
+                .containsExactlyInAnyOrder("OCC-1", "OCC-2", "ROLE-A", "ROLE-B", "LV-A1", "LV-B1", "CMP-A1",
+                        "MS-A", "MS-B", "MS-P", "MS-X");
+        assertThat(graph.edges()).extracting(PlatformCatalogService.GraphEdge::id)
+                .containsExactlyInAnyOrder("REL-1", "REL-2", "REL-3", "REL-4", "REL-5", "REL-6", "REL-7", "REL-8", "REL-9", "REL-10");
+        assertThat(graph.edges()).filteredOn(e -> e.id().equals("REL-7")).singleElement().satisfies(edge ->
+                assertThat(edge.properties()).containsEntry("isMandatory", true).containsKey("requiredScore"));
     }
 }

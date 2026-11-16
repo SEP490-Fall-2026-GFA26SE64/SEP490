@@ -36,6 +36,12 @@ public class OrganizationRegistrationEntity {
     private String headcount;
     @Column(name = "admin_name", nullable = false)
     private String adminName;
+    @Column(name = "country")
+    private String country;
+    @Column(name = "admin_phone")
+    private String adminPhone;
+    @Column(name = "policies_accepted_at")
+    private Instant policiesAcceptedAt;
     @Column(name = "state")
     private String state;
     @Column(name = "email_verified_at")
@@ -66,6 +72,9 @@ public class OrganizationRegistrationEntity {
     public String getIndustry() { return industry; }
     public String getHeadcount() { return headcount; }
     public String getAdminName() { return adminName; }
+    public String getCountry() { return country; }
+    public String getAdminPhone() { return adminPhone; }
+    public Instant getPoliciesAcceptedAt() { return policiesAcceptedAt; }
     public String getState() { return state; }
     public Instant getEmailVerifiedAt() { return emailVerifiedAt; }
     public Instant getCompletedAt() { return completedAt; }

@@ -46,12 +46,14 @@ public final class SubscriptionDto {
                                   List<PaymentOrderResponse> paymentHistory) {}
 
     public record WorkspaceResponse(UUID organizationId, String name, String status, String setupState,
-                                    WorkspaceSubscriptionResponse subscription,
+                                    String workspaceSlug, String industry, String headcount, String country,
+                                    Instant createdAt, WorkspaceSubscriptionResponse subscription,
                                     List<WorkspaceAdministratorResponse> administrators) {}
     public record WorkspaceSubscriptionResponse(String status, CurrentPlanResponse current) {}
     public record CurrentPlanResponse(String name, Instant startsAt, Instant endsAt) {}
     public record WorkspaceAdministratorResponse(UUID accountId, String fullName, String email,
-                                                 boolean active, boolean accountActive) {}
+                                                 boolean active, boolean accountActive,
+                                                 boolean systemAdministrator, String phone) {}
 
     public record MemberResponse(UUID membershipId, UUID accountId, String fullName, String email, boolean active,
                                  Set<String> roles, UUID departmentId,

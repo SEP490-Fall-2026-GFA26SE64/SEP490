@@ -2,6 +2,8 @@ package com.adaptlearngraph.dtos;
 
 import com.adaptlearngraph.services.PlatformCatalogService;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.Size;
 import java.time.Instant;
 import java.util.List;
@@ -18,7 +20,9 @@ public final class RegistrationDto {
                                 @Size(max = 100) String industry, @Size(max = 100) String headcount,
                                 @NotNull @Size(max = 120) String adminName, @NotNull @Size(max = 254) String adminEmail,
                                 @NotNull @Size(max = 256) String password,
-                                @Size(max = PlatformCatalogService.MAX_SELECTION) List<@NotNull @Size(max = 128) String> catalogSelection) {
+                                @Size(max = PlatformCatalogService.MAX_SELECTION) List<@NotNull @Size(max = 128) String> catalogSelection,
+                                @Size(max = 2) String country, @NotBlank @Size(max = 40) String adminPhone,
+                                @NotNull @AssertTrue Boolean policiesAccepted) {
         @Override public String toString() { return "Signup[redacted]"; }
     }
 
@@ -31,7 +35,7 @@ public final class RegistrationDto {
     }
 
     public record FieldsResponse(String organizationName, String subdomain, String industry, String headcount,
-                                 String adminName, String adminEmail) {}
+                                 String adminName, String adminEmail, String country, String adminPhone) {}
 
     public record ViewResponse(UUID registrationId, String stage, String email, FieldsResponse fields,
                                String deliveryStatus, Instant resendAvailableAt, Instant emailVerifiedAt, Instant completedAt) {}

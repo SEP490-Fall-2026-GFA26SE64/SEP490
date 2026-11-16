@@ -6,6 +6,7 @@ config:
   flowchart: {htmlLabels: false, curve: linear}
 ---
 flowchart LR
+  subgraph BackendRoot["com.adaptlearngraph"]
   subgraph Entities["entities"]
     EntityDomain["domain"]
   end
@@ -15,6 +16,7 @@ flowchart LR
   Dtos["dtos"]
   Config["config"]
   Jwt["jwt"]
+  end
 
   Apis -.-> Services
   Apis -.-> Dtos

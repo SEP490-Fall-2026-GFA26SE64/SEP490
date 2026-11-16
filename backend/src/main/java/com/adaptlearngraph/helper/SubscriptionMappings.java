@@ -70,13 +70,16 @@ public final class SubscriptionMappings implements ModelMapperRegistrar {
             Workspace source = context.getSource();
             var subscription = source.subscription();
             var current = subscription.current();
+            var profile = source.profile();
             return new WorkspaceResponse(source.organizationId(), source.name(), source.status(), source.setupState(),
+                    profile.workspaceSlug(), profile.industry(), profile.headcount(), profile.country(), profile.createdAt(),
                     new com.adaptlearngraph.dtos.SubscriptionDto.WorkspaceSubscriptionResponse(subscription.status(),
                             current == null ? null : new com.adaptlearngraph.dtos.SubscriptionDto.CurrentPlanResponse(
                                     current.name(), current.startsAt(), current.endsAt())),
                     source.administrators().stream().map(admin ->
                             new com.adaptlearngraph.dtos.SubscriptionDto.WorkspaceAdministratorResponse(admin.accountId(),
-                                    admin.fullName(), admin.email(), admin.active(), admin.accountActive())).toList());
+                                    admin.fullName(), admin.email(), admin.active(), admin.accountActive(),
+                                    admin.systemAdministrator(), admin.phone())).toList());
         });
         mapper.typeMap(Member.class, MemberResponse.class).setConverter(context -> {
             Member source = context.getSource();

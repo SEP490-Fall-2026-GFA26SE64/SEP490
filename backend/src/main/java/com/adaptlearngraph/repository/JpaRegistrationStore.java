@@ -81,7 +81,7 @@ public final class JpaRegistrationStore implements RegistrationStore {
     @Override
     public boolean insertRegistration(UUID id, UUID accountId, RegistrationFields fields, String slug, Instant now) {
         return data.registrations().insertIfSlugFree(id, accountId, fields.organizationName(), slug, fields.industry(),
-                fields.headcount(), fields.adminName(), now) == 1;
+                fields.headcount(), fields.adminName(), now, fields.country(), fields.adminPhone()) == 1;
     }
 
     @Override
@@ -194,7 +194,7 @@ public final class JpaRegistrationStore implements RegistrationStore {
     private static Registration registration(OrganizationRegistrationJpaRepository.Row row) {
         return new Registration(row.registrationId(), row.accountId(),
                 new RegistrationFields(row.organizationName(), row.workspaceSlug(), row.industry(), row.headcount(),
-                        row.adminName(), row.identifier()),
+                        row.adminName(), row.identifier(), row.country(), row.adminPhone()),
                 row.passwordHash(), Boolean.TRUE.equals(row.active()), Registration.State.valueOf(row.state()),
                 row.emailVerifiedAt(), row.completedAt(), row.authVersion(), Boolean.TRUE.equals(row.recoveryRequired()),
                 row.createdAt(), row.updatedAt());

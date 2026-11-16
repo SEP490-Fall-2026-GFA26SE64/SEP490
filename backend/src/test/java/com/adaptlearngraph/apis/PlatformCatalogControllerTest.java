@@ -40,7 +40,7 @@ class PlatformCatalogControllerTest {
                 .andExpect(header().string("Cache-Control", containsString("public")))
                 .andExpect(jsonPath("$.version").value("fixture-1"))
                 .andExpect(jsonPath("$.nodes[*].label", everyItem(org.hamcrest.Matchers.in(
-                        new String[] {"JobPosition", "TargetRole", "MicroSkill", "LearningModule"}))))
+                        new String[] {"JobPosition", "TargetRole", "Level", "Competency", "MicroSkill"}))))
                 .andExpect(jsonPath("$.nodes[*].id", hasItem("ROLE-A")))
                 .andExpect(jsonPath("$.nodes[*]", everyItem(not(org.hamcrest.Matchers.hasKey("organizationId")))));
     }
@@ -48,13 +48,16 @@ class PlatformCatalogControllerTest {
     @Test
     void closureReturnsServerComputedCountsWithoutCaching() throws Exception {
         mvc(Optional.of(template())).perform(post(ApiEndpoints.REGISTRATION_CATALOG_CLOSURE)
-                        .contentType(MediaType.APPLICATION_JSON).content("{\"nodeIds\":[\"ROLE-A\"]}"))
+                        .contentType(MediaType.APPLICATION_JSON).content("{\"nodeIds\":[\"LV-A1\",\"MS-A\"]}"))
                 .andExpect(status().isOk())
                 .andExpect(header().string("Cache-Control", containsString("no-store")))
-                .andExpect(jsonPath("$.selected[0]").value("ROLE-A"))
-                .andExpect(jsonPath("$.nodeCount").value(10))
-                .andExpect(jsonPath("$.relationshipCount").value(10))
-                .andExpect(jsonPath("$.nodesByLabel.MicroSkill").value(3));
+                .andExpect(jsonPath("$.selected[0]").value("LV-A1"))
+                .andExpect(jsonPath("$.nodeCount").value(5))
+                .andExpect(jsonPath("$.relationshipCount").value(4))
+                .andExpect(jsonPath("$.nodesByLabel.MicroSkill").value(2))
+                .andExpect(jsonPath("$.nodeIds", hasItem("MS-P")))
+                .andExpect(jsonPath("$.inclusions[?(@.nodeId == 'MS-P')].reason", hasItem("PREREQUISITE")))
+                .andExpect(jsonPath("$.nodesByLabel.LearningModule").doesNotExist());
     }
 
     @Test
