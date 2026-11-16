@@ -23,14 +23,25 @@ public final class RequirementPathwayView {
     private Actor employee(){var actor=actors.require();actor.require(Role.EMPLOYEE);return actor;}
     public Optional<View> current() {
         var actor=employee();var rows=rules.current(actor.organizationId(),actor.accountId());
-        if(rows.size()>1)throw new Failure(503,"CURRENT_PATHWAY_INTEGRITY_FAILURE");return rows.stream().findFirst().map(this::view);
+        if(rows.size()>1)throw new Failure(503,"CURRENT_PATHWAY_INTEGRITY_FAILURE");return rows.stream().findFirst().map(row->owned(actor,row));
     }
     public View own(UUID id) {
-        var actor=employee();return view(rules.own(actor.organizationId(),actor.accountId(),id).orElseThrow(()->new Failure(404,"PATHWAY_NOT_FOUND")));
+        var actor=employee();return owned(actor,rules.own(actor.organizationId(),actor.accountId(),id).orElseThrow(()->new Failure(404,"PATHWAY_NOT_FOUND")));
     }
-    private View view(RequirementPathwayJpaRepository.Row row) {
-        var actor=employee();var binding=admission.decode(row).input().binding();var plan=revisions.read(row);
-        var progress=rules.progress(actor.organizationId(),actor.accountId(),revisions.encode(plan));
+    /** Read-only reporting projection of a learner's current pathway; the caller owns organization authorization. */
+    public Optional<View> currentFor(UUID organizationId,UUID learnerId) {
+        var rows=rules.current(organizationId,learnerId);
+        if(rows.size()>1)throw new Failure(503,"CURRENT_PATHWAY_INTEGRITY_FAILURE");
+        return rows.stream().findFirst().map(row->view(row,organizationId,learnerId));
+    }
+    private View owned(Actor actor,RequirementPathwayJpaRepository.Row row) {
+        var result=view(row,actor.organizationId(),actor.accountId());
+        if(!actor.equals(employee()))throw new Failure(403,"FORBIDDEN");
+        return result;
+    }
+    private View view(RequirementPathwayJpaRepository.Row row,UUID organizationId,UUID learnerId) {
+        var binding=admission.decode(row).input().binding();var plan=revisions.read(row);
+        var progress=rules.progress(organizationId,learnerId,revisions.encode(plan));
         if(progress.size()>100000)throw new Failure(503,"PATHWAY_PROGRESS_QUERY_LIMIT");
         var byOption=new HashMap<String,RequirementPathwayJpaRepository.Progress>();
         progress.forEach(item->byOption.put(item.getStepId()+"\n"+item.getModuleId()+"\n"+item.getModuleRevision(),item));
@@ -54,7 +65,6 @@ public final class RequirementPathwayView {
             visible.add(new RequirementStep(step.id(),step.requirement(),step.kind(),state,step.reason(),step.fulfilledEvidenceId(),List.copyOf(options),
                     accepted?step.certificate():null,!accepted || gated && !started));
         }
-        if(!actor.equals(employee()))throw new Failure(403,"FORBIDDEN");
         return new View(row.getRequestId(),row.getSelectionId(),row.getSelectionRevision(),binding.roleId(),binding.roleName(),binding.levelId(),binding.levelName(),
                 row.getGenerationStatus(),row.getReviewStatus(),row.getReasonCode(),row.getCurrentRevision(),row.getContentHash(),row.getArchivedAt()!=null,
                 row.getCurrentRevision()!=null && plan.targetReleased() && ("APPROVED".equals(row.getReviewStatus()) || "NO_LEARNING_REQUIRED".equals(row.getGenerationStatus())),

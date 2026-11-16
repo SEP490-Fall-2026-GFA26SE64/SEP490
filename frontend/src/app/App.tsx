@@ -28,9 +28,10 @@ import { ExpertAssignedRolesPage } from '../features/expert/target-roles/ExpertA
 import { ExpertPathwayReviewPage } from '../features/expert/guidance-review/ExpertGuidanceReviewPage'
 import { ExpertPathwayDetailPage } from '../features/expert/pathway-review/ExpertPathwayDetailPage'
 import { JobPositionsManagementPage } from '../features/manager/job-positions/JobPositionsManagementPage'
-import { Dashboard } from '../features/manager/learning-outcomes/Dashboard'
+import { DevelopmentDashboardPage } from '../features/manager/development/DevelopmentDashboardPage'
 import { TargetRolesPage } from '../features/manager/target-roles/TargetRolesPage'
-import { TeamMatrixPage } from '../features/manager/team-matrix/TeamMatrixPage'
+import { EmployeesPage } from '../features/manager/development/EmployeesPage'
+import { EmployeeDevelopmentPage } from '../features/manager/development/EmployeeDevelopmentPage'
 import { UserManagementPage } from '../features/administration/user-management/UserManagementPage'
 import { ProfilePage } from '../features/profile/ProfilePage'
 import { SystemStatusPage } from '../features/system/SystemStatusPage'
@@ -150,17 +151,19 @@ export default function App() {
               <Route path="/ld-manager/modules" />
             </Route>
             <Route path="/ld-manager/learning-content" element={<Navigate to="/ld-manager/modules" replace />} />
-            <Route path="/ld-manager/team-matrix" element={<TeamMatrixPage />} />
-            <Route path="/ld-manager/dashboard" element={<Dashboard />} />
+            <Route path="/ld-manager/employees" element={<EmployeesPage />} />
+            <Route path="/ld-manager/employees/:accountId" element={<EmployeeDevelopmentPage />} />
+            <Route path="/ld-manager/team-matrix" element={<Navigate to="/ld-manager/employees" replace />} />
+            <Route path="/ld-manager/dashboard" element={<DevelopmentDashboardPage />} />
             <Route path="/ld-manager/baseline-assessments" element={<AdaptiveBaselineRoute />} />
             <Route path="/ld-manager/baseline-assessments/:jobPositionId/*" element={<AdaptiveBaselineRoute />} />
             <Route path="/ld-manager/question-bank" element={<AssessmentBankPage />} />
             <Route path="/ld-manager/assessment-bank" element={<LegacyBaselineAssessmentRedirect />} />
-            <Route path="/ld-manager/learning-outcomes" element={<Dashboard />} />
+            <Route path="/ld-manager/learning-outcomes" element={<Navigate to="/ld-manager/dashboard" replace />} />
             <Route path="/ld-manager/baseline-config" element={<Navigate to="/ld-manager/baseline-assessments" replace />} />
             <Route path="/ld-manager/users" element={<Navigate to="/admin/users" replace />} />
-            <Route path="/ld-manager/roi-forecast" element={<Navigate to="/ld-manager/team-matrix" replace />} />
-            <Route path="/ld-manager/evaluations" element={<Navigate to="/ld-manager/team-matrix" replace />} />
+            <Route path="/ld-manager/roi-forecast" element={<Navigate to="/ld-manager/dashboard" replace />} />
+            <Route path="/ld-manager/evaluations" element={<Navigate to="/ld-manager/employees" replace />} />
 
             {/* Redirects from old L&D Manager / Manager routes to new Expert and L&D locations */}
             <Route path="/ld-manager/ontology" element={<Navigate to="/expert/ontology" replace />} />
@@ -174,8 +177,8 @@ export default function App() {
             <Route path="/manager/learning-outcomes" element={<Navigate to="/ld-manager/dashboard" replace />} />
             <Route path="/manager/target-roles" element={<Navigate to="/ld-manager/target-roles" replace />} />
             <Route path="/manager/users" element={<Navigate to="/ld-manager/users" replace />} />
-            <Route path="/manager/team-matrix" element={<Navigate to="/ld-manager/team-matrix" replace />} />
-            <Route path="/manager/roi-forecast" element={<Navigate to="/ld-manager/team-matrix" replace />} />
+            <Route path="/manager/team-matrix" element={<Navigate to="/ld-manager/employees" replace />} />
+            <Route path="/manager/roi-forecast" element={<Navigate to="/ld-manager/dashboard" replace />} />
 
             {/* 4. Administrator routes (Taxonomy, Knowledge Graph, Departments, Settings, Subscription, Design System) */}
             <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />

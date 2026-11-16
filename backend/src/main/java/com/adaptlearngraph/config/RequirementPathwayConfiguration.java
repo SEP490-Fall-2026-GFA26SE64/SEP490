@@ -1,6 +1,7 @@
 package com.adaptlearngraph.config;
 
 import com.adaptlearngraph.constants.TransactionManagers;
+import com.adaptlearngraph.entities.domain.SubscriptionAccessPolicy;
 import com.adaptlearngraph.repository.*;
 import com.adaptlearngraph.repository.InitialPathwayPorts.*;
 import com.adaptlearngraph.services.*;
@@ -71,6 +72,26 @@ public class RequirementPathwayConfiguration {
             RulePathwayCatalog catalog,ModuleAuthoringPort modules,ObjectMapper json){return new RequirementPathwayAccess(actors,selections,rules,revisions,admission,assignments,data,catalog,modules,json);}
     @Bean RequirementPathwayView requirementPathwayView(Actors actors,RequirementPathwayJpaRepository rules,RequirementPathwayRevisions revisions,
             RequirementPathwayAdmissionService admission,RequirementPathwayAccess access){return new RequirementPathwayView(actors,rules,revisions,admission,access);}
+    /** FR-04.07: the trusted, entitled L&D Manager session supplies the only organization the report may read. */
+    @Bean EmployeeDevelopmentReportService.Managers developmentReportManagers(SubscriptionIdentity identity,SubscriptionWorkspaceStore workspaces){
+        return ()->{
+            try {
+                var trusted=identity.current().actor();
+                if(trusted.organizationId()==null || trusted.roles().size()!=1 || !trusted.roles().contains(SubscriptionAccessPolicy.Role.LD_MANAGER))
+                    throw new com.adaptlearngraph.exception.InitialPathwayFailure(403,"FORBIDDEN");
+                workspaces.require(trusted,trusted.organizationId(),SubscriptionAccessPolicy.Action.WORKSPACE,java.time.Clock.systemUTC().instant());
+                return trusted.organizationId();
+            }catch(com.adaptlearngraph.exception.SubscriptionFailure invalid) {
+                throw new com.adaptlearngraph.exception.InitialPathwayFailure(invalid.code()==com.adaptlearngraph.exception.SubscriptionFailure.Code.UNAUTHENTICATED?401:403,"UNAUTHORIZED_WORKSPACE");
+            }catch(com.adaptlearngraph.exception.RegistrationFailure invalid) {
+                throw new com.adaptlearngraph.exception.InitialPathwayFailure(invalid.code()==com.adaptlearngraph.exception.RegistrationFailure.Code.UNAUTHENTICATED?401:403,"UNAUTHORIZED_WORKSPACE");
+            }
+        };
+    }
+    @Bean EmployeeDevelopmentReportService employeeDevelopmentReportService(EmployeeDevelopmentReportService.Managers managers,SubscriptionWorkspaceStore workspaces,
+            CurrentRoleSelectionStore selections,DevelopmentReportJpaRepository reports,RequirementPathwayView view,RequirementPathwayAdmissionService admission){
+        return new EmployeeDevelopmentReportService(managers,workspaces,selections,reports,view,admission);
+    }
     @Bean RequirementPathwayRecalculationService requirementPathwayRecalculation(RequirementPathwayJpaRepository rules,RequirementPathwayRevisions revisions,
             RequirementPathwayPlanningService planning,RequirementPathwayReviewService review,ObjectMapper json){return new RequirementPathwayRecalculationService(rules,revisions,planning,review,json);}
     @Bean RequirementPathwayRefreshService requirementPathwayRefresh(RequirementPathwayRefreshJpaRepository jobs,RequirementPathwayJpaRepository rules,
