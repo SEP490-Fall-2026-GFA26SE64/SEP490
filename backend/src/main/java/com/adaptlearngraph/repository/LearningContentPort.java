@@ -9,6 +9,7 @@ public interface LearningContentPort {
     List<SkillCompletion> completions(String organizationId, String learnerId, String skillId);
     void complete(String organizationId, String learnerId, SkillCompletion completion);
     boolean selfStudy(String organizationId, String learnerId, String moduleId);
+    default boolean selfStudyRevision(String organizationId,String learnerId,String moduleId,int revision) {return false;}
     void admitSelfStudy(String organizationId, String learnerId, String moduleId, int revision, String skillId);
 
     Limits limits();

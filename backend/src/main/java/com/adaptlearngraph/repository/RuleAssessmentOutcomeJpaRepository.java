@@ -103,6 +103,14 @@ public interface RuleAssessmentOutcomeJpaRepository extends Repository<RuleAsses
             @Param("attempt") UUID attempt,@Param("group") UUID group);
     @Modifying @Transactional(TransactionManagers.JPA)
     @Query(value="""
+            INSERT INTO platform.skill_knowledge_review(id,organization_id,learner_id,skill_id,knowledge_level,attempt_id,group_id,state,reason,created_at)
+            VALUES (:id,:org,:learner,:skill,:level,:attempt,:group,'NEED_REVIEW','OFFICIAL_KNOWLEDGE_GROUP_FAILED',clock_timestamp())
+            ON CONFLICT(attempt_id,group_id) DO NOTHING
+            """,nativeQuery=true)
+    int reviewMain(@Param("id") UUID id,@Param("org") UUID org,@Param("learner") UUID learner,@Param("skill") String skill,@Param("level") String level,
+            @Param("attempt") UUID attempt,@Param("group") UUID group);
+    @Modifying @Transactional(TransactionManagers.JPA)
+    @Query(value="""
             INSERT INTO platform.skill_knowledge_evidence(id,organization_id,learner_id,skill_id,knowledge_level,requirement_snapshot,
                 source_kind,source_id,source_version,achieved_at)
             SELECT :id,a.organization_id,a.learner_id,s.skill_id,s.knowledge_level,CAST(:snapshot AS jsonb),'MODULE_ASSESSMENT',a.id,:sourceVersion,clock_timestamp()
@@ -123,6 +131,24 @@ public interface RuleAssessmentOutcomeJpaRepository extends Repository<RuleAsses
             @Param("sourceVersion") long sourceVersion,@Param("skill") String skill,@Param("level") String level,@Param("snapshot") String snapshot,
             @Param("request") UUID request,@Param("pathwayRevision") long pathwayRevision,@Param("step") UUID step,
             @Param("module") String module,@Param("moduleRevision") int moduleRevision,@Param("contentVersion") String contentVersion);
+    @Modifying @Transactional(TransactionManagers.JPA)
+    @Query(value="""
+            INSERT INTO platform.skill_knowledge_evidence(id,organization_id,learner_id,skill_id,knowledge_level,requirement_snapshot,source_kind,source_id,source_version,achieved_at)
+            SELECT :id,a.organization_id,a.learner_id,c.skill_id,p.knowledge_level,CAST(:snapshot AS jsonb),'MODULE_ASSESSMENT',a.id,:sourceVersion,clock_timestamp()
+            FROM platform.rule_assessment_attempt a
+            JOIN platform.learning_module_completion c ON c.organization_id=CAST(a.organization_id AS text) AND c.learner_id=CAST(a.learner_id AS text)
+                AND c.module_id=a.context_snapshot #>> '{context,moduleId}' AND c.revision=CAST(a.context_snapshot #>> '{context,moduleRevision}' AS integer)
+                AND c.content_version=a.context_snapshot #>> '{context,contentVersion}' AND c.skill_id=:skill
+            JOIN platform.learning_completion_requirement p ON p.organization_id=c.organization_id AND p.learner_id=c.learner_id
+                AND p.module_id=c.module_id AND p.revision=c.revision AND p.knowledge_level=:level
+            JOIN platform.learning_self_study ss ON ss.organization_id=c.organization_id AND ss.learner_id=c.learner_id AND ss.module_id=c.module_id AND ss.revision=c.revision AND ss.skill_id=c.skill_id
+            WHERE a.id=:attempt AND a.organization_id=:org AND a.learner_id=:learner AND a.purpose='SKILL_ASSESSMENT' AND a.state='FINALIZED'
+                AND a.context_snapshot #>> '{context,learningContext}'='INDEPENDENT_SKILL'
+                AND p.requirement_snapshot->>'skillVersion'=CAST(:snapshot AS jsonb)->>'skillVersion'
+            ON CONFLICT(organization_id,learner_id,skill_id,knowledge_level,source_kind,source_id,source_version) DO NOTHING
+            """,nativeQuery=true)
+    int independentEvidence(@Param("id") UUID id,@Param("org") UUID org,@Param("learner") UUID learner,@Param("attempt") UUID attempt,
+            @Param("sourceVersion") long sourceVersion,@Param("skill") String skill,@Param("level") String level,@Param("snapshot") String snapshot);
     @Query(value="""
             SELECT id FROM platform.skill_knowledge_evidence WHERE organization_id=:org AND learner_id=:learner AND source_id=:attempt
                 AND source_kind='MODULE_ASSESSMENT' AND source_version=:sourceVersion AND skill_id=:skill AND knowledge_level=:level

@@ -17,10 +17,12 @@ public final class RuleKnowledgeProfileService {
     public RuleKnowledgeProfileService(RoleBaselineFlow.Identity identity,RuleKnowledgeProfileJpaRepository data,ObjectMapper json) {
         this.identity=identity;this.data=data;this.json=json;
     }
-    public Page read(String kind,int page) {
+    public Page read(String kind,int page) {return read(kind,page,null);}
+    public Page read(String kind,int page,String skillId) {
         var actor=identity.requireEmployee();
         if(!Set.of("ALL","DIAGNOSTIC","EVIDENCE","REVIEW").contains(kind) || page<0 || page>250)throw new Failure(400,"INVALID_REQUEST");
-        var rows=data.page(actor.organizationId(),actor.learnerId(),kind,21,page*20);
+        if(skillId!=null && (skillId.isBlank() || skillId.length()>200))throw new Failure(400,"INVALID_REQUEST");
+        var rows=skillId==null?data.page(actor.organizationId(),actor.learnerId(),kind,21,page*20):data.page(actor.organizationId(),actor.learnerId(),kind,skillId,21,page*20);
         var items=rows.stream().limit(20).map(row->new Entry(row.getKind(),row.getId(),row.getSkillId(),row.getSkillName(),KnowledgeLevel.valueOf(row.getKnowledgeLevel()),
                 row.getSkillVersion(),List.of(),row.getObservedAt(),row.getPurpose(),row.getAttemptId(),row.getCorrectCount(),row.getTotalCount(),
                 row.getPassed(),row.getMandatorySatisfied(),row.getVetoTriggered(),strings(row.getReasons()),row.getSourceKind(),row.getSourceId(),row.getReviewState())).toList();

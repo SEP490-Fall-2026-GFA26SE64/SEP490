@@ -51,9 +51,13 @@ public class ModuleAuthoringConfiguration {
             @Qualifier(TransactionManagers.JPA) PlatformTransactionManager manager,
             ObjectMapper mapper, LearningModuleNodeRepository modules, Neo4jClient neo4j,
             @Qualifier(TransactionManagers.NEO4J) PlatformTransactionManager graphTransactions,
-            @Value("${module-authoring.organization-id:comp-technova}") String organization) {
+            @Value("${module-authoring.organization-id:comp-technova}") String organization, org.springframework.beans.factory.ObjectProvider<com.adaptlearngraph.services.RoleBaselineFlow.Identity> workspaceIdentity) {
         return new JpaModuleAuthoringAdapter(ModuleAuthoringRepositories.from(beans::getBean, locks), new TransactionTemplate(manager),
-                mapper, new Neo4jModuleCatalogGraph(modules, neo4j, graphTransactions), organization);
+                mapper, new Neo4jModuleCatalogGraph(modules, neo4j, graphTransactions), organization,()->{
+                    var identity=workspaceIdentity.getIfAvailable();if(identity==null)throw new ModuleAuthoringService.Failure(401,"Sign in to continue");
+                    var employee=identity.requireEmployee();
+                    return new com.adaptlearngraph.entities.domain.ModuleAuthoring.Actor(employee.learnerId().toString(),employee.organizationId().toString(),java.util.Set.of("EMPLOYEE"));
+                });
     }
     @Bean
     @org.springframework.boot.autoconfigure.condition.ConditionalOnProperty(name="learning.mail.enabled",havingValue="true")
@@ -78,13 +82,22 @@ public class ModuleAuthoringConfiguration {
     @Bean LearningContentPort learningContentPort(ListableBeanFactory beans, ObjectMapper mapper, ModuleAuthoringPort modules,
             org.springframework.beans.factory.ObjectProvider<com.adaptlearngraph.services.InitialPathwayAccess> pathways,
             org.springframework.beans.factory.ObjectProvider<com.adaptlearngraph.services.RequirementPathwayAccess> requirements,
-            org.springframework.core.env.Environment environment) {
+            org.springframework.core.env.Environment environment, org.springframework.beans.factory.ObjectProvider<com.adaptlearngraph.repository.IndependentSkillAdmission> independent) {
         boolean exact=environment.acceptsProfiles(org.springframework.core.env.Profiles.of("workspace-baseline & !local-baseline-demo & !prod"));
         return new JpaLearningContentAdapter(LearningContentRepositories.from(beans::getBean),mapper,(organization,learner,module,revision)->{
             var actor=modules.actor();
             if(!organization.equals(actor.organizationId()) || !learner.equals(actor.id()) || !actor.roles().contains("EMPLOYEE")) return false;
             try {
-                if(exact) {var access=requirements.getIfAvailable();return access!=null && access.permits(module,revision);}
+                if(exact) {
+                    var access=requirements.getIfAvailable();
+                    if(access!=null && access.permits(module,revision))return true;
+                    var doc=modules.lock(organization,module).orElse(null);if(doc==null)return false;
+                    var pin=modules.pinned(organization,learner,module);
+                    int number=revision!=null?revision:pin.orElse(-1);
+                    var packageRevision=doc.revisions().stream().filter(r->r.number()==number).findFirst().orElse(null);
+                    boolean admitted=beans.getBean(com.adaptlearngraph.repository.LearningSelfStudyJpaRepository.class).admittedRevision(organization,learner,module,number);
+                    return admitted && packageRevision!=null && independent.getObject().reason(actor,doc,packageRevision)==null;
+                }
                 var access=pathways.getIfAvailable();if(access==null)return false;access.requireCurrentEntry(module);return true;
             } catch(com.adaptlearngraph.repository.InitialPathwayPorts.Failure denied){
                 if(denied.status()>=500)throw new ModuleAuthoringService.Failure(503,"Pathway authorization is temporarily unavailable");return false;
@@ -109,8 +122,13 @@ public class ModuleAuthoringConfiguration {
     @Bean com.adaptlearngraph.services.SkillLearningApplicationService skillLearningApplicationService(com.adaptlearngraph.services.SkillLearningService learning) {
         return new com.adaptlearngraph.services.SkillLearningApplicationService(learning);
     }
-    @Bean com.adaptlearngraph.services.SkillLearningService skillLearningService(ModuleAuthoringPort modules, LearningContentPort learning) {
-        return new com.adaptlearngraph.services.SkillLearningService(modules,learning);
+    @Bean com.adaptlearngraph.services.SkillLearningService skillLearningService(ModuleAuthoringPort modules, LearningContentPort learning, com.adaptlearngraph.repository.IndependentSkillAdmission admission) {
+        return new com.adaptlearngraph.services.SkillLearningService(modules,learning,admission);
+    }
+    @Bean com.adaptlearngraph.repository.IndependentSkillAdmission independentSkillAdmission(
+            com.adaptlearngraph.repository.Neo4jCypher graph,com.adaptlearngraph.repository.RuleAssessmentContextJpaRepository evidence,
+            org.springframework.beans.factory.ObjectProvider<com.adaptlearngraph.services.RequirementPathwayAccess> pathway) {
+        return new com.adaptlearngraph.repository.IndependentSkillAdmission(graph,evidence,pathway.getIfAvailable());
     }
     @Bean LearningContentService learningContentService(ModuleAuthoringPort port, LearningContentPort content, ModuleAuthoringService modules) { return new LearningContentService(port, content, modules); }
 }

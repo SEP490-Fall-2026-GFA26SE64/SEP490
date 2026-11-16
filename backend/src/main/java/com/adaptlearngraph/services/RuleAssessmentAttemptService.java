@@ -18,7 +18,10 @@ import org.springframework.transaction.support.TransactionTemplate;
 public final class RuleAssessmentAttemptService {
     private static final org.slf4j.Logger LOG=org.slf4j.LoggerFactory.getLogger(RuleAssessmentAttemptService.class);
     public record Start(Purpose purpose,UUID expectedSelectionId,long expectedSelectionRevision,
-                        UUID previousAttemptId,UUID stepId,String moduleId,Integer moduleRevision) {}
+                        UUID previousAttemptId,UUID stepId,String moduleId,Integer moduleRevision) {
+        public boolean independent() {return purpose==Purpose.SKILL_ASSESSMENT && expectedSelectionId==null && expectedSelectionRevision==0 && stepId==null && moduleId!=null && !moduleId.isBlank() && moduleRevision!=null && moduleRevision>0;}
+        public boolean validContext() {return independent() || expectedSelectionId!=null && expectedSelectionRevision>0;}
+    }
     public record Answer(long expectedRevision,int position,UUID itemVersionId,String selectedOptionId) {}
     public record Need(Requirement requirement,GroupRole role) {}
     public record Context(UUID selectionId,long selectionRevision,String contextKey,String snapshot,List<Need> groups) {
@@ -65,7 +68,7 @@ public final class RuleAssessmentAttemptService {
     public void authorize(){actor();}
     private void reauthorize(RoleBaselineFlow.Actor a){if(!a.equals(actor()))throw new Failure(403,"FORBIDDEN");}
     public View latest(Start command) {
-        var a=actor();if(command==null || command.purpose()==null || command.expectedSelectionId()==null || command.expectedSelectionRevision()<1)throw new Failure(400,"INVALID_REQUEST");
+        var a=actor();if(command==null || command.purpose()==null || !command.validContext())throw new Failure(400,"INVALID_REQUEST");
         var context=contexts.resolve(a,command);
         var id=selections.transaction(a,()->{
             reauthorize(a);contexts.assertCurrent(a,context);
@@ -75,8 +78,7 @@ public final class RuleAssessmentAttemptService {
         return id.map(this::resume).orElse(null);
     }
     public View start(Start command,UUID key) {
-        var a=actor();if(command==null || command.purpose()==null || key==null || command.expectedSelectionId()==null
-                || command.expectedSelectionRevision()<1)throw new Failure(400,"INVALID_REQUEST");
+        var a=actor();if(command==null || command.purpose()==null || key==null || !command.validContext())throw new Failure(400,"INVALID_REQUEST");
         String resource="ASSESSMENT_START",hash=RoleBaselineFlow.hash(write(command));
         // Replays hash the client command, never a newly changed catalog/policy/evidence snapshot.
         var retained=selections.transaction(a,()->{reauthorize(a);return receipt(a,"RULE_START",resource,key,hash);});
@@ -238,8 +240,8 @@ public final class RuleAssessmentAttemptService {
         try {
             var context=json.readTree(row.getContextSnapshot()).get("context");
             var start=json.treeToValue(context.get("start"),Start.class);
-            target=new Target(row.getSelectionId(),row.getSelectionRevision(),context.get("roleId").asText(),context.get("roleName").asText(),
-                    context.get("levelId").asText(),context.get("levelName").asText(),context.get("jobPositionId").asText(),context.get("jobPositionName").asText(),
+            target=new Target(row.getSelectionId(),row.getSelectionRevision(),context.path("roleId").asText(""),context.path("roleName").asText(""),
+                    context.path("levelId").asText(""),context.path("levelName").asText(""),context.path("jobPositionId").asText(""),context.path("jobPositionName").asText(""),
                     start.stepId(),start.moduleId(),start.moduleRevision());
             for(var definition:context.get("requirements"))names.put(definition.get("requirement").get("skillId").asText(),definition.get("skillName").asText());
         }catch(Exception invalid){throw integrity();}

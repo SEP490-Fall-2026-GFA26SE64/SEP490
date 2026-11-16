@@ -87,12 +87,13 @@ public class WorkspaceBaselineConfiguration {
     @Bean com.adaptlearngraph.services.RuleAssessmentAttemptService.Contexts workspaceKnowledgeContexts(
             CurrentRoleSelectionStore selections,RoleBaselineFlow.Catalog roles,com.adaptlearngraph.repository.Neo4jCypher graph,
             com.adaptlearngraph.repository.RuleAssessmentContextJpaRepository evidence,ObjectMapper json,Environment environment,
-            org.springframework.beans.factory.ObjectProvider<com.adaptlearngraph.services.RequirementPathwayAccess> pathways) {
+            org.springframework.beans.factory.ObjectProvider<com.adaptlearngraph.services.RequirementPathwayAccess> pathways,
+            com.adaptlearngraph.repository.ModuleAuthoringPort modules,com.adaptlearngraph.repository.LearningContentPort learning,com.adaptlearngraph.repository.IndependentSkillAdmission admission) {
         return new com.adaptlearngraph.repository.CurrentRoleKnowledgeCatalog(selections,roles,graph,evidence,json,
                 environment.getProperty("assessment.rule.max-groups",Integer.class,1000),step->{
                     try{pathways.getObject().requireAssessment(step);}
                     catch(com.adaptlearngraph.exception.InitialPathwayFailure denied){throw new com.adaptlearngraph.services.AssessmentPolicyService.Failure(denied.status(),denied.code());}
-                });
+                }).independent(modules,learning,admission);
     }
     @Bean com.adaptlearngraph.services.RuleAssessmentAttemptService workspaceRuleAttempts(
             RoleBaselineFlow.Identity identity,CurrentRoleSelectionStore selections,

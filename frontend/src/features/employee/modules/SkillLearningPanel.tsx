@@ -28,7 +28,7 @@ export function SkillLearningPanel({ skillId, skillName, moduleId, completedLess
   }, [skillId, key, vi])
   const alternatives = state?.modules.filter(m => m.moduleId !== moduleId) ?? []
   async function open(m: OptionalSkillModule) {
-    if (busy) return
+    if (busy || m.unavailableReason) return
     setBusy(m.moduleId); setActionError(null)
     try {
       await startSkillModule(skillId, m.moduleId)
@@ -47,7 +47,7 @@ export function SkillLearningPanel({ skillId, skillName, moduleId, completedLess
       {state.eligibility.qualifyingCompletion && <p className="text-caption text-muted-foreground">{vi ? 'Bằng chứng' : 'Completion evidence'}: {state.eligibility.qualifyingCompletion.moduleId} · {vi ? 'phiên bản' : 'revision'} {state.eligibility.qualifyingCompletion.revision}</p>}
       <Heading level={4} size="card">{vi ? 'Module cùng kỹ năng để học thêm' : 'More modules for this skill'}</Heading>
       {!alternatives.length && <p className="text-body-sm text-muted-foreground">{vi ? 'Chưa có module khác được duyệt cho kỹ năng này.' : 'No other approved modules are available for this skill.'}</p>}
-      <ul className="space-y-2">{alternatives.map(m => <li key={m.moduleId} className="flex flex-col items-stretch gap-2 rounded-lg border border-border p-3 sm:flex-row sm:items-center sm:justify-between"><span className="min-w-0 flex-1 break-words text-body-sm">{m.title}</span><div className="flex flex-wrap items-center gap-2">{m.completed && <Badge variant="success">{vi ? 'Đã hoàn thành' : 'Completed'}</Badge>}<Button variant="outline" size="sm" disabled={Boolean(busy)} onClick={() => void open(m)}>{busy === m.moduleId ? (vi ? 'Đang mở…' : 'Opening…') : m.started ? (vi ? 'Học tiếp' : 'Continue learning') : (vi ? 'Học thêm' : 'Study module')}</Button></div></li>)}</ul>
+      <ul className="space-y-2">{alternatives.map(m => <li key={m.moduleId} className="flex flex-col items-stretch gap-2 rounded-lg border border-border p-3 sm:flex-row sm:items-center sm:justify-between"><span className="min-w-0 flex-1 break-words text-body-sm">{m.title}{m.unavailableReason && <span className="mt-1 block text-caption text-muted-foreground">{vi ? 'Module chưa đủ điều kiện học.' : 'Module learning requirements are not met.'}</span>}</span><div className="flex flex-wrap items-center gap-2">{m.completed && <Badge variant="success">{vi ? 'Đã hoàn thành' : 'Completed'}</Badge>}<Button variant="outline" size="sm" disabled={Boolean(busy) || Boolean(m.unavailableReason)} onClick={() => void open(m)}>{busy === m.moduleId ? (vi ? 'Đang mở…' : 'Opening…') : m.started ? (vi ? 'Học tiếp' : 'Continue learning') : (vi ? 'Học thêm' : 'Study module')}</Button></div></li>)}</ul>
     </>}
   </section>
 }

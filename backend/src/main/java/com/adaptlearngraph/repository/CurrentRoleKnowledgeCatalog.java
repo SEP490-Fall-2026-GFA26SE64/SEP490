@@ -28,8 +28,37 @@ public final class CurrentRoleKnowledgeCatalog implements Contexts {
         this.authorizeStep=authorizeStep;
         if(maximum<1 || maximum>1000)throw new IllegalArgumentException("Invalid assessment group capacity");
     }
+    private ModuleAuthoringPort independentModules;
+    private LearningContentPort independentLearning;
+    private com.adaptlearngraph.services.SkillLearningService.Admission independentAdmission;
+    public CurrentRoleKnowledgeCatalog independent(ModuleAuthoringPort modules,LearningContentPort learning,com.adaptlearngraph.services.SkillLearningService.Admission admission) {
+        this.independentModules=modules;this.independentLearning=learning;this.independentAdmission=admission;return this;
+    }
+    private Context independentContext(RoleBaselineFlow.Actor actor,Start command) {
+        if(independentModules==null)throw new Failure(503,"INDEPENDENT_ASSESSMENT_UNAVAILABLE");
+        return independentModules.transaction(()->{
+            var trusted=independentModules.actor();
+            if(!trusted.organizationId().equals(actor.organizationId().toString()) || !trusted.id().equals(actor.learnerId().toString()) || !trusted.roles().contains("EMPLOYEE"))throw new Failure(403,"FORBIDDEN");
+            var doc=independentModules.lock(trusted.organizationId(),command.moduleId()).orElseThrow(()->new Failure(404,"MODULE_NOT_FOUND"));
+            var revision=doc.revisions().stream().filter(v->v.number()==command.moduleRevision()).findFirst().orElseThrow(()->new Failure(409,"LEARNING_PACKAGE_UNAVAILABLE"));
+            String reason=independentAdmission.reason(trusted,doc,revision);if(reason!=null)throw new Failure(403,reason);
+            if(!independentLearning.selfStudyRevision(trusted.organizationId(),trusted.id(),doc.id(),revision.number()) || !independentLearning.assignedRevision(trusted.organizationId(),trusted.id(),doc.id(),revision.number()))throw new Failure(403,"INDEPENDENT_LEARNING_REQUIRED");
+            var p=revision.payload();String skill=p.teachings().getFirst().skillId();
+            var proof=independentLearning.completions(trusted.organizationId(),trusted.id(),skill).stream().filter(c->c.moduleId().equals(doc.id()) && c.revision()==revision.number()
+                && c.contentVersion().equals(p.contentVersion()) && p.knowledgeLevel().name().equals(c.knowledgeLevel()) && p.skillVersion().equals(c.skillVersion())).findFirst()
+                .orElseThrow(()->new Failure(409,"EXACT_LEARNING_COMPLETION_REQUIRED"));
+            var main=definition(actor,skill,p.knowledgeLevel());if(!main.mode().equals("MODULE_ONLY"))throw new Failure(409,"PROVISION_CHANGED");
+            var definitions=new ArrayList<Definition>();var needs=new ArrayList<Need>();definitions.add(main);needs.add(new Need(main.requirement(),GroupRole.MAIN));
+            prerequisiteClosure(actor,main,definitions,needs);
+            var snapshot=new LinkedHashMap<String,Object>();snapshot.put("learningContext","INDEPENDENT_SKILL");snapshot.put("organizationId",actor.organizationId());snapshot.put("learnerId",actor.learnerId());
+            snapshot.put("purpose",command.purpose());snapshot.put("start",command);snapshot.put("moduleId",doc.id());snapshot.put("moduleRevision",revision.number());snapshot.put("contentVersion",p.contentVersion());
+            snapshot.put("completionAt",proof.completedAt());snapshot.put("requirements",definitions);snapshot.put("officialExemptionEvidenceIds",List.of());snapshot.put("unresolvedRequirements",List.of());
+            return new Context(null,0,"INDEPENDENT_SKILL:"+doc.id()+":"+revision.number(),write(snapshot),needs);
+        });
+    }
     private record Definition(Requirement requirement,String skillName,String skillVersion,String mode) {}
     @Override public Context resolve(RoleBaselineFlow.Actor actor,Start command) {
+        if(command.independent())return independentContext(actor,command);
         var selection=selections.current(actor).orElseThrow(()->new Failure(409,"SELECTION_REQUIRED"));
         if(!selection.selectionId().equals(command.expectedSelectionId()) || selection.revision()!=command.expectedSelectionRevision())
             throw new Failure(409,"STALE_SELECTION");

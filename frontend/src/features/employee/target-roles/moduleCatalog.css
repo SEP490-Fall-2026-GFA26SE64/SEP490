@@ -1,0 +1,44 @@
+.learning-catalog { container-type: inline-size; }
+.catalog-table { position: relative; overflow: hidden; border: 1px solid hsl(var(--border)); border-radius: 10px; background: hsl(var(--card)); }
+.catalog-columns { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); }
+.catalog-row { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 10px 12px; padding: 18px; border-bottom: 1px solid hsl(var(--border)); align-items: center; }
+.catalog-row:last-child { border-bottom: 0; }
+.catalog-row:hover { background: hsl(var(--muted) / .2); }
+.catalog-title { grid-column: 1 / -1; display: flex; gap: 12px; align-items: center; min-width: 0; }
+.catalog-title h3 { overflow-wrap: anywhere; line-height: 1.45; }
+.catalog-book { display: grid; place-items: center; flex-shrink: 0; width: 34px; height: 38px; border: 1px solid hsl(var(--border)); border-radius: 6px; background: hsl(var(--card)); color: hsl(var(--muted-foreground)); }
+.catalog-mobile-skill { margin-top: 3px; font-size: var(--text-caption); color: hsl(var(--muted-foreground)); overflow-wrap: anywhere; }
+.catalog-owner { display: none; font-size: var(--text-body-sm); color: hsl(var(--muted-foreground)); overflow-wrap: anywhere; }
+.catalog-level { grid-column: 1; grid-row: 2; }
+.catalog-progress { grid-column: 1; grid-row: 3; min-width: 0; }
+.catalog-state { display: flex; gap: 7px; align-items: center; font-size: var(--text-caption); color: hsl(var(--muted-foreground)); }
+.catalog-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; background: hsl(var(--muted-foreground)); }
+.catalog-state.progress .catalog-dot { background: hsl(var(--warning)); }
+.catalog-state.done .catalog-dot { background: hsl(var(--success)); }
+.catalog-state.done { color: hsl(var(--foreground)); }
+.catalog-reason { margin-top: 5px; font-size: var(--text-caption); color: hsl(var(--muted-foreground)); overflow-wrap: anywhere; }
+.catalog-action { grid-column: 2; grid-row: 2 / 4; justify-self: end; align-self: end; }
+.catalog-action button { min-height: 38px; gap: 8px; font-size: var(--text-caption); white-space: normal; }
+.catalog-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(min(100%,280px),1fr)); gap: 16px; }
+.catalog-card { display: flex; flex-direction: column; gap: 12px; padding: 20px; border: 1px solid hsl(var(--border)); border-radius: 10px; background: hsl(var(--card)); }
+.catalog-card .catalog-level { order: -1; }
+.catalog-card .catalog-mobile-skill { display: block; }
+.catalog-card .catalog-owner { display: none; }
+.catalog-card .catalog-progress { margin-top: 4px; }
+.catalog-card .catalog-action { margin-top: auto; padding-top: 4px; align-self: start; }
+@container (min-width: 900px) {
+  .catalog-table .catalog-columns,.catalog-table .catalog-row { display: grid; grid-template-columns: minmax(220px,2fr) minmax(90px,.8fr) minmax(115px,.85fr) minmax(130px,1fr) 135px; gap: 18px; padding: 0 20px; }
+  .catalog-table .catalog-columns { position: static; width: auto; height: auto; clip: auto; min-height: 44px; align-items: center; background: hsl(var(--muted) / .5); border-bottom: 1px solid hsl(var(--border)); color: hsl(var(--muted-foreground)); font-size: var(--text-caption); }
+  .catalog-table .catalog-columns span:last-child { text-align: right; }
+  .catalog-table .catalog-row { min-height: 90px; padding-block: 16px; }
+  .catalog-table .catalog-title,.catalog-table .catalog-level,.catalog-table .catalog-progress,.catalog-table .catalog-action { grid-column: auto; grid-row: auto; }
+  .catalog-table .catalog-owner { display: block; }
+  .catalog-table .catalog-mobile-skill { display: none; }
+  .catalog-table .catalog-action { align-self: center; }
+}
+
+/* Preserve the Skill column for assistive technology in the compact row layout. */
+.catalog-table .catalog-owner { display: block; position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); }
+@container (min-width: 900px) {
+  .catalog-table .catalog-owner { position: static; width: auto; height: auto; overflow: visible; clip: auto; }
+}

@@ -71,12 +71,21 @@ public final class RuleAssessmentOutcomeService {
                 if(row.getOfficialAtFinalization())officialAtFinish.add(requirement.key());
             }
         }
-        pathways.apply(a,work.getEventId(),rows);
-        boolean assignedLearningPending="SKILL_ASSESSMENT".equals(a.getPurpose()) && effects.assignedLearningPending(a.getOrganizationId(),a.getLearnerId(),a.getId());
+        boolean independent="INDEPENDENT_SKILL".equals(context.path("learningContext").asText());
+        if(!independent)pathways.apply(a,work.getEventId(),rows);
+        boolean assignedLearningPending=!independent && "SKILL_ASSESSMENT".equals(a.getPurpose()) && effects.assignedLearningPending(a.getOrganizationId(),a.getLearnerId(),a.getId());
         var decision=RuleAssessmentDecision.decide(Purpose.valueOf(a.getPurpose()),results,officialAtFinish,officialNow,assignedLearningPending);
-        for(var review:decision.reviews()) {
+        var reviews=new ArrayList<>(decision.reviews());
+        if(independent) for(int i=0;i<rows.size();i++) {
+            var row=rows.get(i);
+            if("MAIN".equals(row.getRole()) && row.getOfficialAtFinalization() && !row.getPassed())reviews.add(results.get(i));
+        }
+        for(var review:reviews) {
             UUID id=UUID.randomUUID();
-            if(effects.review(id,a.getOrganizationId(),a.getLearnerId(),review.requirement().skillId(),review.requirement().knowledgeLevel().name(),a.getId(),review.groupId())==1) {
+            int recorded=review.role()==GroupRole.MAIN
+                    ?effects.reviewMain(id,a.getOrganizationId(),a.getLearnerId(),review.requirement().skillId(),review.requirement().knowledgeLevel().name(),a.getId(),review.groupId())
+                    :effects.review(id,a.getOrganizationId(),a.getLearnerId(),review.requirement().skillId(),review.requirement().knowledgeLevel().name(),a.getId(),review.groupId());
+            if(recorded==1) {
                 var now=attempts.clock();
                 outbox.insert(new OutboxEventEntity(UUID.randomUUID(),"SKILL_KNOWLEDGE_NEED_REVIEW",id,1,
                         Map.of("organizationId",a.getOrganizationId(),"learnerId",a.getLearnerId(),"attemptId",a.getId(),"groupId",review.groupId()),a.getId(),now));
@@ -90,7 +99,7 @@ public final class RuleAssessmentOutcomeService {
             // The first recalculation discovers mandatory supplements before the decision.
             // Reconcile again with the real accepted evidence in this same transaction,
             // rather than leaving the current step yellow until the periodic refresh.
-            if(evidenceEvent!=null)pathways.apply(a,evidenceEvent,rows);
+            if(evidenceEvent!=null && !independent)pathways.apply(a,evidenceEvent,rows);
         }
         if(decision.state()==RuleAssessmentDecision.State.WAITING_SUPPLEMENT) {
             effects.retry(work.getJobId(),"WAITING_REQUIRED_SUPPLEMENT");return;
@@ -103,12 +112,16 @@ public final class RuleAssessmentOutcomeService {
         var snapshot=new LinkedHashMap<String,Object>();
         snapshot.put("skillVersion",definition.get("skillVersion").asText());snapshot.put("skillName",definition.get("skillName").asText());
         snapshot.put("attemptId",attempt.getId());snapshot.put("groupId",main.groupId());
-        for(var field:List.of("selectionId","selectionRevision","requestId","pathwayRevision","stepId","moduleId","moduleRevision","contentVersion")) {
+        boolean independent="INDEPENDENT_SKILL".equals(context.path("learningContext").asText());
+        snapshot.put("learningContext",independent?"INDEPENDENT_SKILL":"ROLE_PATHWAY");
+        var fields=independent?List.of("moduleId","moduleRevision","contentVersion"):List.of("selectionId","selectionRevision","requestId","pathwayRevision","stepId","moduleId","moduleRevision","contentVersion");
+        for(var field:fields) {
             if(context.path(field).isMissingNode() || context.path(field).isNull())throw integrity();snapshot.put(field,json.convertValue(context.get(field),Object.class));
         }
         snapshot.put("policyId",attempt.getPolicyId());snapshot.put("policyHash",attempt.getPolicyHash());
         snapshot.put("assessmentFinishedAt",attempt.getFinishedAt());
-        int inserted=effects.evidence(UUID.randomUUID(),attempt.getOrganizationId(),attempt.getLearnerId(),attempt.getId(),work.getSourceRevision(),
+        int inserted=independent?effects.independentEvidence(UUID.randomUUID(),attempt.getOrganizationId(),attempt.getLearnerId(),attempt.getId(),work.getSourceRevision(),
+                requirement.skillId(),requirement.knowledgeLevel().name(),write(snapshot)):effects.evidence(UUID.randomUUID(),attempt.getOrganizationId(),attempt.getLearnerId(),attempt.getId(),work.getSourceRevision(),
                 requirement.skillId(),requirement.knowledgeLevel().name(),write(snapshot),UUID.fromString(context.get("requestId").asText()),
                 context.get("pathwayRevision").asLong(),UUID.fromString(context.get("stepId").asText()),context.get("moduleId").asText(),
                 context.get("moduleRevision").asInt(),context.get("contentVersion").asText());

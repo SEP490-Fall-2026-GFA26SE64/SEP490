@@ -40,9 +40,10 @@ public interface RuleKnowledgeProfileJpaRepository extends Repository<RuleAssess
                 outcome_codes::text AS outcomeCodes,observed_at AS observedAt,purpose,attempt_id AS attemptId,correct_count AS correctCount,
                 total_count AS totalCount,passed,mandatory_satisfied AS mandatorySatisfied,veto_triggered AS vetoTriggered,reasons::text AS reasons,
                 source_kind AS sourceKind,source_id AS sourceId,review_state AS reviewState
-            FROM entries WHERE (:kind='ALL' OR kind=:kind) ORDER BY observed_at DESC,kind,id LIMIT :limit OFFSET :offset
+            FROM entries WHERE (:kind='ALL' OR kind=:kind) AND (CAST(:skill AS text) IS NULL OR skill_id=CAST(:skill AS text)) ORDER BY observed_at DESC,kind,id LIMIT :limit OFFSET :offset
             """,nativeQuery=true)
-    List<Row> page(@Param("org") UUID org,@Param("learner") UUID learner,@Param("kind") String kind,@Param("limit") int limit,@Param("offset") int offset);
+    List<Row> page(@Param("org") UUID org,@Param("learner") UUID learner,@Param("kind") String kind,@Param("skill") String skill,@Param("limit") int limit,@Param("offset") int offset);
+    default List<Row> page(UUID org,UUID learner,String kind,int limit,int offset) {return page(org,learner,kind,null,limit,offset);}
     interface Row {
         String getKind();UUID getId();String getSkillId();String getKnowledgeLevel();String getSkillName();String getSkillVersion();String getOutcomeCodes();
         Instant getObservedAt();String getPurpose();UUID getAttemptId();Integer getCorrectCount();Integer getTotalCount();Boolean getPassed();

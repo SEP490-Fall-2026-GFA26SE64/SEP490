@@ -1,7 +1,7 @@
+import { IndependentSkillAssessmentEntry } from '../baseline-assessment/IndependentSkillAssessmentEntry'
 import { useQuery } from '@tanstack/react-query'
 import { WorkspaceSessionContext } from '../../../shared/auth/workspaceSession'
 import { readRulePathway, type RulePathway, type RuleStep, type RuleModuleOption } from '../../../shared/api/requirementPathway'
-import { InitialPathwayFeedback } from '../../../shared/components/InitialPathwayFeedback'
 import { SkillLearningPanel } from './SkillLearningPanel'
 import { AssessmentStatus, SkillAssessmentEntry } from '../baseline-assessment/SkillAssessmentEntry'
 import { usePathwayAssessmentStates } from '../baseline-assessment/usePathwayAssessmentStates'
@@ -597,12 +597,12 @@ function CompletedModuleAssessmentLink({ moduleId, revision }: { moduleId: strin
   const query = useQuery({ queryKey: ['initialPathway', scope, 'moduleAssessmentEntry', moduleId, revision], queryFn: ({ signal }) => readRulePathway(null, signal), enabled: Boolean(identity?.organizationId && identity?.accountId), retry: false, gcTime: 0,
     refetchInterval: current => !current.state.error && current.state.data && !current.state.data.archived ? 5000 : false })
   if (query.isPending) return <p className="text-body-sm text-muted-foreground" role="status">{t('initialPathway.loading')}</p>
-  if (query.error) return <InitialPathwayFeedback error={query.error} onRetry={() => void query.refetch()} />
+  if (query.error) return <IndependentSkillAssessmentEntry moduleId={moduleId} revision={revision} />
   const pathway = query.data
-  if (!pathway || pathway.archived) return null
+  if (!pathway || pathway.archived) return <IndependentSkillAssessmentEntry moduleId={moduleId} revision={revision} />
   const step = pathway.steps.find(step => step.state !== 'BYPASSED' && step.options.some(option => option.moduleId === moduleId && option.moduleRevision === revision))
   const option = step?.options.find(option => option.moduleId === moduleId && option.moduleRevision === revision)
-  if (!step || !option) return null
+  if (!step || !option) return <IndependentSkillAssessmentEntry moduleId={moduleId} revision={revision} />
   if (!option.completedAt) return <Button size="sm" variant="outline" onClick={() => void query.refetch()}>{t('initialPathway.refresh')}</Button>
   return <ReaderModuleAssessment pathway={pathway} step={step} option={option} />
 }

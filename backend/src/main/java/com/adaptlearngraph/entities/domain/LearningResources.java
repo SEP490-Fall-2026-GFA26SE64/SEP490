@@ -93,8 +93,20 @@ public final class LearningResources {
     }
     public record SkillEligibility(String skillId, boolean eligible, String reason,
             SkillCompletion qualifyingCompletion) {}
-    public record OptionalModule(String moduleId, String title, String contentVersion,
-            boolean started, boolean completed) {}
+    public record OptionalModule(String moduleId,String title,String contentVersion,boolean started,boolean completed,
+                                 String unavailableReason,KnowledgeLevel knowledgeLevel,String skillVersion) {
+        public OptionalModule(String moduleId,String title,String contentVersion,boolean started,boolean completed) {
+            this(moduleId,title,contentVersion,started,completed,null,null,null);
+        }
+        public OptionalModule(String moduleId,String title,String contentVersion,boolean started,boolean completed,String unavailableReason) {
+            this(moduleId,title,contentVersion,started,completed,unavailableReason,null,null);
+        }
+    }
+
+    public record ModuleSearchItem(String skillId,String skillName,OptionalModule module) {}
+    public record ModuleSearchPage(List<ModuleSearchItem> items,int page,int pageSize,int totalItems) {
+        public ModuleSearchPage {items=List.copyOf(items);}
+    }
 
     public record LearningView(
             ModuleAuthoring.Revision revision,

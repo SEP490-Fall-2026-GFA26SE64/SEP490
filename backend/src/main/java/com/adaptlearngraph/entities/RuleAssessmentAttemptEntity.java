@@ -14,7 +14,7 @@ public class RuleAssessmentAttemptEntity {
     @Column(name="learner_id",nullable=false) private UUID learnerId;
     @Column(nullable=false) private String purpose;
     @Column(name="context_key",nullable=false) private String contextKey;
-    @Column(name="selection_id",nullable=false) private UUID selectionId;
+    @Column(name="selection_id") private UUID selectionId;
     @Column(name="selection_revision",nullable=false) private long selectionRevision;
     @Column(name="policy_id",nullable=false) private UUID policyId;
     @Column(name="policy_hash",nullable=false,columnDefinition=PostgresColumnTypes.CONTENT_HASH) private String policyHash;

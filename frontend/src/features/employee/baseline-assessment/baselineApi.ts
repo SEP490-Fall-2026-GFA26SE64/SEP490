@@ -1,7 +1,7 @@
 import { workspaceFetch } from '../../../shared/api/workspaceFetch'
 export type AssessmentPurpose = 'BASELINE' | 'SKILL_ASSESSMENT'
 export type AttemptState = 'IN_PROGRESS' | 'FINALIZED'
-export interface AssessmentTarget { selectionId: string; selectionRevision: number; stepId?: string | null; moduleId?: string | null; moduleRevision?: number | null }
+export interface AssessmentTarget { selectionId: string | null; selectionRevision: number; stepId?: string | null; moduleId?: string | null; moduleRevision?: number | null }
 export interface Requirement { skillId: string; knowledgeLevel: string; outcomeCodes: string[] }
 export interface AssessmentGroup { id: string; skillName: string; requirement: Requirement; role: 'TARGET' | 'MAIN' | 'PREREQUISITE'; totalCount: number; requiredCorrectCount: number; mandatoryRequired: boolean }
 export interface GroupResult { groupId: string; correctCount: number; totalCount: number; mandatorySatisfied: boolean; passed: boolean; vetoTriggered: boolean; reasons: string[] }
@@ -46,7 +46,7 @@ export const readModuleHistory = (moduleId: string, moduleRevision: number, sign
     return attempts
   }, { signal })
 export const readContextAttempt = (target: AssessmentTarget, purpose: AssessmentPurpose, signal?: AbortSignal) => {
-  const params = new URLSearchParams({ selectionId: target.selectionId, selectionRevision: String(target.selectionRevision), purpose })
+  const params = new URLSearchParams({ selectionRevision: String(target.selectionRevision), purpose }); if (target.selectionId) params.set('selectionId', target.selectionId)
   if (target.stepId) params.set('stepId', target.stepId)
   if (target.moduleId) params.set('moduleId', target.moduleId)
   if (target.moduleRevision) params.set('moduleRevision', String(target.moduleRevision))
@@ -78,6 +78,7 @@ function requirement(value: unknown): Requirement {
 function parseAttempt(value: unknown): BaselineAttempt {
   const v = object(value), target = object(v.target), purpose = text(v.purpose), state = text(v.state)
   if (!['BASELINE', 'SKILL_ASSESSMENT'].includes(purpose) || !['IN_PROGRESS', 'FINALIZED'].includes(state)) throw Error()
+  if (target.selectionId === null && (purpose !== 'SKILL_ASSESSMENT' || target.selectionRevision !== 0 || target.stepId !== null || typeof target.moduleId !== 'string' || !target.moduleId.trim() || typeof target.moduleRevision !== 'number' || target.moduleRevision < 1)) throw Error()
   const groups = list(v.groups, raw => {
     const g = object(raw), role = text(g.role), totalCount = count(g.totalCount, 1), requiredCorrectCount = count(g.requiredCorrectCount, 1)
     if (!['TARGET', 'MAIN', 'PREREQUISITE'].includes(role) || requiredCorrectCount > totalCount) throw Error()
@@ -101,9 +102,9 @@ function parseAttempt(value: unknown): BaselineAttempt {
     || state === 'IN_PROGRESS' && (finishedAt !== null || finishReason !== null || results.length !== 0)) throw Error()
   for (const g of groups) if (items.filter(i => i.groupId === g.id).length !== g.totalCount) throw Error()
   if (new Set(results.map(r => r.groupId)).size !== results.length || results.some(r => !groups.some(g => g.id === r.groupId && g.totalCount === r.totalCount))) throw Error()
-  return { id: text(v.attemptId), target: { selectionId: text(target.selectionId), selectionRevision: count(target.selectionRevision, 1),
+  return { id: text(v.attemptId), target: { selectionId: nullable(target.selectionId), selectionRevision: count(target.selectionRevision, target.selectionId === null && purpose === 'SKILL_ASSESSMENT' ? 0 : 1),
     stepId: nullable(target.stepId), moduleId: nullable(target.moduleId), moduleRevision: target.moduleRevision === null ? null : count(target.moduleRevision, 1) },
-    jobPositionId: text(target.jobPositionId), jobPositionName: text(target.jobPositionName), roleId: text(target.roleId), roleName: text(target.roleName), levelId: text(target.levelId), levelName: text(target.levelName),
+    jobPositionId: target.selectionId === null ? (typeof target.jobPositionId === 'string' ? target.jobPositionId : '') : text(target.jobPositionId), jobPositionName: target.selectionId === null ? (typeof target.jobPositionName === 'string' ? target.jobPositionName : '') : text(target.jobPositionName), roleId: target.selectionId === null ? (typeof target.roleId === 'string' ? target.roleId : '') : text(target.roleId), roleName: target.selectionId === null ? (typeof target.roleName === 'string' ? target.roleName : '') : text(target.roleName), levelId: target.selectionId === null ? (typeof target.levelId === 'string' ? target.levelId : '') : text(target.levelId), levelName: target.selectionId === null ? (typeof target.levelName === 'string' ? target.levelName : '') : text(target.levelName),
     purpose: purpose as AssessmentPurpose, state: state as AttemptState, revision: count(v.revision, 1), startedAt, deadlineAt, observedAt, finishedAt, finishReason,
     previousAttemptId: nullable(v.previousAttemptId), expired: state !== 'IN_PROGRESS' || Date.parse(observedAt) >= Date.parse(deadlineAt),
     maxQuestions: items.length, answeredCount: items.filter(i => i.selectedOptionId !== null).length, items, groups, results }
