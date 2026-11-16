@@ -14,7 +14,7 @@ public final class RegistrationMappings implements ModelMapperRegistrar {
         mapper.typeMap(RegistrationFields.class, FieldsResponse.class).setConverter(context -> {
             RegistrationFields source = context.getSource();
             return new FieldsResponse(source.organizationName(), source.subdomain(), source.industry(),
-                    source.headcount(), source.adminName(), source.adminEmail());
+                    source.headcount(), source.adminName(), source.adminEmail(), source.country(), source.adminPhone());
         });
         mapper.typeMap(RegistrationUseCase.View.class, ViewResponse.class).setConverter(context -> {
             RegistrationUseCase.View source = context.getSource();

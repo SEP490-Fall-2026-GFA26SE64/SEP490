@@ -22,19 +22,32 @@ export interface CompetencyDto {
   levelId?: string | null
   levelName?: string
   roleName?: string
+  departmentId?: string | null
+  departmentName?: string | null
+  jobPositionCode?: string | null
+  jobPositionTitle?: string | null
   memberSkills?: CompetencyMemberSkill[]
   memberSkillCount?: number
   skillIds?: string[]
   levelCodes?: string[]
+  createdAt?: string
+  updatedAt?: string
 }
 
 export async function fetchCompetencies(
   orgId: string,
   search?: string,
+  departmentId?: string,
+  jobPositionCode?: string,
 ): Promise<CompetencyDto[]> {
-  const query = search ? `?search=${encodeURIComponent(search)}` : ''
+  const params = new URLSearchParams()
+  if (search) params.set('search', search)
+  if (departmentId && departmentId !== 'all') params.set('departmentId', departmentId)
+  if (jobPositionCode && jobPositionCode !== 'all') params.set('jobPositionCode', jobPositionCode)
+  const qs = params.toString() ? `?${params.toString()}` : ''
+
   const res = await fetch(
-    `/api/v1/organizations/${encodeURIComponent(normalizeOrg(orgId))}/competencies${query}`,
+    `/api/v1/organizations/${encodeURIComponent(normalizeOrg(orgId))}/competencies${qs}`,
   )
 
   if (!res.ok) {
@@ -67,6 +80,10 @@ export async function createCompetency(
     skillIds?: string[]
     levelId?: string
     status?: string
+    departmentId?: string | null
+    departmentName?: string | null
+    jobPositionCode?: string | null
+    jobPositionTitle?: string | null
   },
 ): Promise<CompetencyDto> {
   const res = await fetch(
@@ -79,6 +96,10 @@ export async function createCompetency(
         name: payload.name,
         description: payload.description || '',
         levelId: payload.levelId,
+        departmentId: payload.departmentId,
+        departmentName: payload.departmentName,
+        jobPositionCode: payload.jobPositionCode,
+        jobPositionTitle: payload.jobPositionTitle,
         skillIds: payload.skillIds || [],
       }),
     },
@@ -112,6 +133,10 @@ export async function updateCompetency(
     description?: string
     skillIds?: string[]
     status?: string
+    departmentId?: string | null
+    departmentName?: string | null
+    jobPositionCode?: string | null
+    jobPositionTitle?: string | null
   },
 ): Promise<CompetencyDto> {
   const res = await fetch(
@@ -123,6 +148,10 @@ export async function updateCompetency(
         code: payload.code,
         name: payload.name,
         description: payload.description || '',
+        departmentId: payload.departmentId,
+        departmentName: payload.departmentName,
+        jobPositionCode: payload.jobPositionCode,
+        jobPositionTitle: payload.jobPositionTitle,
         skillIds: payload.skillIds || [],
       }),
     },
@@ -153,12 +182,11 @@ export async function deleteCompetency(
 ): Promise<void> {
   const res = await fetch(
     `/api/v1/organizations/${encodeURIComponent(normalizeOrg(orgId))}/competencies/${encodeURIComponent(id)}`,
-    {
-      method: 'DELETE',
-    },
+    { method: 'DELETE' },
   )
 
   if (!res.ok) {
-    throw new Error(`Failed to delete competency: ${res.statusText}`)
+    const errorBody = await res.json().catch(() => null)
+    throw new Error(errorBody?.message || `Failed to delete competency: ${res.statusText}`)
   }
 }

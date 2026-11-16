@@ -174,14 +174,14 @@ class RegistrationPostgresIntegrationTest {
         var catalog = new com.adaptlearngraph.services.PlatformCatalogService(() -> java.util.Optional.of(template));
         var selecting = new RegistrationService(store, crypto, () -> {}, clock,
                 com.adaptlearngraph.entities.domain.IntegrationPolicy.ENABLED, catalog);
-        var actor = selecting.register(fields(email(), null), PASSWORD, address, java.util.List.of("ROLE-A", "MOD-X", "ROLE-A"));
+        var actor = selecting.register(fields(email(), null), PASSWORD, address, java.util.List.of("ROLE-A", "LV-A1", "ROLE-A"));
         var row = jdbc.queryForMap("""
                 SELECT s.template_version, s.template_sha256, array_to_string(s.selected_node_ids, ',') AS ids
                 FROM platform.registration_catalog_selection s JOIN platform.organization_registration r USING (registration_id)
                 WHERE r.account_id = ?
                 """, actor.accountId());
         assertThat(row).containsEntry("template_version", "fixture-1").containsEntry("template_sha256", template.sha256())
-                .containsEntry("ids", "ROLE-A,MOD-X");
+                .containsEntry("ids", "ROLE-A,LV-A1");
 
         var empty = selecting.register(fields(email(), null), PASSWORD, address, java.util.List.of());
         assertThat(jdbc.queryForObject("""
@@ -190,7 +190,7 @@ class RegistrationPostgresIntegrationTest {
                 """, Integer.class, empty.accountId())).isZero();
 
         String rejected = email();
-        assertFailure(Code.INVALID_INPUT, () -> selecting.register(fields(rejected, null), PASSWORD, address, java.util.List.of("LV-A1")));
+        assertFailure(Code.INVALID_INPUT, () -> selecting.register(fields(rejected, null), PASSWORD, address, java.util.List.of("MOD-A")));
         assertThat(jdbc.queryForObject("SELECT count(*) FROM platform.account WHERE normalized_identifier=?", Integer.class, rejected)).isZero();
     }
 
@@ -198,7 +198,7 @@ class RegistrationPostgresIntegrationTest {
     void commitsEveryFieldAndPreservesNullsWithoutProvisioning() {
         String email = email();
         var fields = new RegistrationFields("Acme Learning", null, "Software Engineering & AI",
-                "51 - 200 employees", "Test Owner", email);
+                "51 - 200 employees", "Test Owner", email, "VN", "+84 901 234 567");
         var actor = service.register(fields, PASSWORD, address);
         var saved = store.transaction(() -> store.lockRegistration(actor.accountId()));
         assertThat(saved.fields().organizationName()).isEqualTo("Acme Learning");
@@ -207,6 +207,10 @@ class RegistrationPostgresIntegrationTest {
         assertThat(saved.fields().headcount()).isEqualTo(fields.headcount());
         assertThat(saved.fields().adminName()).isEqualTo("Test Owner");
         assertThat(saved.fields().adminEmail()).isEqualTo(email);
+        assertThat(saved.fields().country()).isEqualTo("VN");
+        assertThat(saved.fields().adminPhone()).isEqualTo("+84901234567");
+        assertThat(jdbc.queryForObject("SELECT policies_accepted_at FROM platform.organization_registration WHERE account_id=?",
+                Timestamp.class, actor.accountId()).toInstant()).isEqualTo(clock.instant());
         assertThat(saved.emailVerifiedAt()).isNull();
         assertThat(saved.completedAt()).isNull();
         assertThat(saved.createdAt()).isEqualTo(clock.instant());
@@ -221,9 +225,24 @@ class RegistrationPostgresIntegrationTest {
         var optional = store.transaction(() -> store.lockRegistration(nullable.accountId()));
         assertThat(optional.fields().industry()).isNull();
         assertThat(optional.fields().headcount()).isNull();
+        assertThat(optional.fields().country()).isNull();
+        assertThat(optional.fields().adminPhone()).isNull();
         assertThat(jdbc.queryForObject("""
                 SELECT payload::text FROM platform.outbox_event WHERE aggregate_id = ?
                 """, String.class, actor.accountId())).doesNotContain(emailCode(actor), PASSWORD);
+    }
+
+    @Test
+    void legacyRegistrationRemainsReadableWithoutInventingContactOrConsent() {
+        var actor = service.register(fields(email(), null), PASSWORD, address);
+        jdbc.update("UPDATE platform.organization_registration SET policies_accepted_at=NULL WHERE account_id=?",
+                actor.accountId());
+        var saved = store.transaction(() -> store.lockRegistration(actor.accountId()));
+        assertThat(saved.fields().country()).isNull();
+        assertThat(saved.fields().adminPhone()).isNull();
+        assertThat(jdbc.queryForObject("SELECT policies_accepted_at FROM platform.organization_registration WHERE account_id=?",
+                Timestamp.class, actor.accountId())).isNull();
+        assertThat(service.signIn(saved.fields().adminEmail(), PASSWORD, address).accountId()).isEqualTo(actor.accountId());
     }
 
     @Test

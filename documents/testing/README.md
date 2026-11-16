@@ -35,6 +35,10 @@ Documentation-only checks do not establish backend/frontend behavior. Revised ru
 
 ## Existing Test Guides and Evidence
 
+### Guided Starter Catalog, 2026-11-12
+
+[Unit/API/components](unit/REQ-060-061-starter-catalog-20261112.md), [real persistence](integration/REQ-060-061-starter-catalog-20261112.md) and [browser/manual checks](system/REQ-060-061-starter-catalog-20261112.md) cover five selectable catalog types, guided dialog/filtering, pruned explicit selection, required prerequisites, no module/certificate imports and exact preview-to-copy parity. Final scoped results: **45 backend, 24 frontend and 5 Playwright tests passed**; build/scoped lint passed. Standard Maven test compilation and two unrelated whole-repository architecture rules remain non-green; no full-repository or production pass is implied.
+
 ### Multi-organization Workspaces and Starter Catalog, 2026-11-02
 
 [Unit/API/frontend](unit/REQ-060-061-multi-org-workspace-20261102.md), [real persistence](integration/REQ-060-061-multi-org-workspace-20261102.md) and [system/screenshots/manual checks](system/REQ-060-061-multi-org-workspace-20261102.md) cover `/workspace/{slug}` routing, legacy redirects, foreign/unknown slug isolation without tenant requests, organization-scoped catalog APIs, the registration catalog picker and the post-payment catalog copy that gates workspace readiness. Results: **659 backend tests** passed; frontend 292 passed with 6 unrelated failures (5 identical on unmodified HEAD, 1 load-only timeout that passes alone); build and lint passed; **8 real-API Playwright journeys** passed at desktop and mobile.

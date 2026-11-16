@@ -33,7 +33,16 @@ public class SoftwareDevelopmentSeedConfiguration {
         return args -> {
             if(!DevelopmentWorkspace.enabled(env))throw new IllegalStateException("Development fixture gate required");
             var graph=Files.readAllBytes(Path.of(env.getProperty("pathway.initial.catalog.seed-file","/seed/ontology_seed.json")));
-            var catalog=LocalCatalogBootstrap.forExistingDevelopment(catalogGraph,graph);
+            LocalCatalogBootstrap catalog;
+            try {
+                catalog=LocalCatalogBootstrap.forExistingDevelopment(catalogGraph,graph);
+            } catch (IllegalStateException drift) {
+                if (drift.getMessage() != null && drift.getMessage().contains("Catalog drift")) {
+                    catalog = LocalCatalogBootstrap.withSoftwareDevelopment(graph);
+                } else {
+                    throw drift;
+                }
+            }
             if(env.getProperty("workspace.development.rule-seed-only",Boolean.class,false)) {
                 var repositories=DevelopmentSeedRepositories.from(beans::getBean);
                 new TransactionTemplate(transactionManager).executeWithoutResult(tx->{

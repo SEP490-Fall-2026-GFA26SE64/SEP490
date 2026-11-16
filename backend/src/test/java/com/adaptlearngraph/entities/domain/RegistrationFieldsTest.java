@@ -72,4 +72,26 @@ class RegistrationFieldsTest {
     private static RegistrationFields fields(String name, String slug, String industry, String headcount) {
         return new RegistrationFields(name, slug, industry, headcount, "Owner", " Owner@Example.Test ");
     }
+
+    @Test
+    void normalizesCountryAndPhoneWhileKeepingLegacyNulls() {
+        var fields = new RegistrationFields("Acme", null, null, null, "Owner", "owner@example.test",
+                " vn ", "+84 (901) 234-567");
+        assertThat(fields.country()).isEqualTo("VN");
+        assertThat(fields.adminPhone()).isEqualTo("+84901234567");
+        assertThat(fields("Acme", null, null, null).country()).isNull();
+        assertThat(fields("Acme", null, null, null).adminPhone()).isNull();
+        assertThat(RegistrationFields.normalizePhone("0901 234 567")).isEqualTo("0901234567");
+    }
+
+    @Test
+    void rejectsUnknownCountriesAndMalformedPhones() {
+        assertThatThrownBy(() -> new RegistrationFields("Acme", null, null, null,
+                "Owner", "owner@example.test", "ZZ", null))
+                .isInstanceOf(RegistrationFailure.class).extracting("field").isEqualTo("country");
+        for (String phone : new String[]{"", "123456", "1".repeat(16), "++84901234567", "phone0901234567", "090/1234567"}) {
+            assertThatThrownBy(() -> RegistrationFields.normalizePhone(phone))
+                    .isInstanceOf(RegistrationFailure.class).extracting("field").isEqualTo("adminPhone");
+        }
+    }
 }

@@ -802,6 +802,10 @@ export interface CompetencyModel {
   status: 'DRAFT' | 'ACTIVE' | 'RETIRED' | 'draft' | 'published' | 'archived'
   skillIds: string[] // HAS_SKILL links
   levelCodes?: string[]
+  departmentId?: string | null
+  departmentName?: string | null
+  jobPositionCode?: string | null
+  jobPositionTitle?: string | null
   createdAt?: string
   updatedAt?: string
 }

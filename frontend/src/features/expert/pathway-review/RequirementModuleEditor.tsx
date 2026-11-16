@@ -38,7 +38,7 @@ export function RequirementModuleEditor({ id, scope, detail, disabled, onCommand
   const [pointer, setPointer] = useState<{ x: number; y: number } | null>(null)
   const checkFlight = useRef(false), changeRevision = useRef(0)
   const dirty = JSON.stringify(chosen) !== JSON.stringify(initial) || JSON.stringify(stepOrder) !== JSON.stringify(detail.plan.steps.map(step => step.id))
-  const editable = !detail.archived && detail.status.reviewStatus === 'AWAITING_EXPERT_REVIEW' && Boolean(detail.status.revision)
+  const editable = !detail.archived && ['AWAITING_EXPERT_REVIEW', 'REJECTED'].includes(detail.status.reviewStatus) && Boolean(detail.status.revision)
   const blocked = disabled || checking || !editable
   const modules = new Map<string, RuleModuleOption>()
   detail.plan.steps.forEach(step => step.options.forEach(module => modules.set(step.id + '\n' + optionKey(module), module)))

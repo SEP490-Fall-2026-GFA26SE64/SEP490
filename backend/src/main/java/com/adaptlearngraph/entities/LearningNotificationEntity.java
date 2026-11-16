@@ -26,8 +26,12 @@ public class LearningNotificationEntity {
     private String eventKey;
     @Column(name = "kind", nullable = false)
     private String kind;
-    @Column(name = "module_id", nullable = false)
+    @Column(name = "module_id")
     private String moduleId;
+    @Column(name = "deep_link")
+    private String deepLink;
+    @Column(name = "toast_observed_at")
+    private Instant toastObservedAt;
     @Column(name = "title", nullable = false)
     private String title;
     @Column(name = "body", nullable = false)

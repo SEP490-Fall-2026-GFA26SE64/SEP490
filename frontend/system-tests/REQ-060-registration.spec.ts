@@ -96,18 +96,20 @@ async function nextTotp(secret: string, previous: string): Promise<string> {
 
 async function signup(page: Page, email: string, slug?: string) {
   await page.goto('/guest/register')
-  await page.getByLabel('Organization Legal Name', { exact: false }).fill('Browser Test Organization')
-  if (slug) await page.getByLabel('Workspace URL Slug', { exact: true }).fill(slug)
-  await expect(page.getByLabel('Administrator Full Name', { exact: false })).toHaveCount(0)
+  await page.getByLabel('Business name', { exact: false }).fill('Browser Test Organization')
+  if (slug) await page.getByLabel('Workspace address', { exact: false }).fill(slug)
+  await expect(page.getByLabel('Full name', { exact: false })).toHaveCount(0)
   await page.getByRole('button', { name: 'Continue to account', exact: true }).click()
-  await page.getByLabel('Administrator Full Name', { exact: false }).fill('Browser Test Owner')
-  await page.getByLabel('Work Email Address', { exact: false }).fill(email)
+  await page.getByLabel('Full name', { exact: false }).fill('Browser Test Owner')
+  await page.getByLabel('Login email', { exact: false }).fill(email)
+  await page.getByLabel('Phone number', { exact: false }).fill('+84 901 234 567')
+  await page.getByRole('checkbox', { name: /I agree/ }).check()
   await page.getByLabel('Password', { exact: false }).first().fill(PASSWORD)
   await page.getByLabel('Confirm Password', { exact: false }).fill(PASSWORD)
 }
 
 async function verifyAndEnroll(page: Page, request: APIRequestContext, email: string) {
-  await page.getByRole('button', { name: 'Save and continue' }).click()
+  await page.getByRole('button', { name: 'Create account' }).click()
   await expect(page.getByRole('heading', { name: 'Verify your email', exact: true })).toBeVisible()
   await page.reload()
   await expect(page.getByRole('heading', { name: 'Verify your email', exact: true })).toBeVisible()
@@ -130,7 +132,7 @@ async function verifyAndEnroll(page: Page, request: APIRequestContext, email: st
 
 async function signIn(page: Page, email: string, heading = 'Verify your authenticator') {
   await page.goto('/guest/resume')
-  await page.getByLabel('Work Email Address', { exact: false }).fill(email)
+  await page.getByLabel('Login email', { exact: false }).fill(email)
   await page.getByLabel('Password', { exact: false }).fill(PASSWORD)
   await page.getByRole('button', { name: 'Continue securely' }).click()
   await expect(page.getByRole('heading', { name: heading, exact: true })).toBeVisible()
@@ -148,18 +150,23 @@ test('desktop registration persists fields, requires MFA, and recovers without p
   const slug = `browser-${randomUUID().slice(0, 8)}`
   await signup(page, email, slug)
   await page.getByRole('button', { name: 'Back', exact: true }).click()
-  await page.getByLabel('Industry / Technology Domain').selectOption('Cloud Infrastructure & DevOps')
-  await page.getByLabel('Estimated Engineering Headcount').selectOption('51 - 200 employees')
+  await page.getByRole('combobox', { name: 'Industry', exact: true }).click()
+  await page.getByRole('option', { name: 'Cloud & DevOps', exact: true }).click()
+  await page.getByRole('combobox', { name: 'Country', exact: true }).click()
+  await page.getByRole('textbox', { name: 'Search countries' }).fill('Vietnam')
+  await page.getByRole('option', { name: 'Vietnam', exact: true }).click()
   await page.screenshot({ path: testInfo.outputPath('registration-organization-step.png'), fullPage: true })
   await page.getByRole('button', { name: 'Continue to account', exact: true }).click()
   await page.screenshot({ path: testInfo.outputPath('registration-desktop-form.png'), fullPage: true,
     mask: [page.locator('input[type="password"]')] })
   const factors = await verifyAndEnroll(page, request, email)
   await page.reload()
-  await expect(page.getByText(slug, { exact: true })).toBeVisible()
-  await expect(page.getByText('Cloud Infrastructure & DevOps', { exact: true })).toBeVisible()
+  await expect(page.getByText(`/workspace/${slug}`, { exact: true })).toBeVisible()
+  await expect(page.getByText('Cloud & DevOps', { exact: true })).toBeVisible()
   const saved = record(await (await page.request.get(`${API}/current`)).json())
-  expect(record(saved.fields).headcount).toBe('51 - 200 employees')
+  expect(record(saved.fields).headcount).toBeNull()
+  expect(record(saved.fields).country).toBe('VN')
+  expect(record(saved.fields).adminPhone).toBe('+84901234567')
   expect(saved.registrationId).toBeTruthy()
   await page.getByRole('button', { name: 'Sign out of registration' }).click()
   await signIn(page, email)
@@ -200,7 +207,7 @@ test('mobile registration generates a slug, preserves nullable fields and never 
   const email = `mobile-${randomUUID()}@example.test`
   await signup(page, email)
   await page.getByRole('button', { name: 'Back', exact: true }).click()
-  await expect(page.getByLabel('Workspace URL Slug', { exact: true })).not.toHaveAttribute('required')
+  await expect(page.getByLabel('Workspace address', { exact: false })).not.toHaveAttribute('required')
   await page.getByRole('button', { name: 'Continue to account', exact: true }).click()
   await verifyAndEnroll(page, request, email)
   const state = record(await (await page.request.get(`${API}/current`)).json())
@@ -232,10 +239,10 @@ test('loading, connection failure and invalid input are explicit and preserve en
   await page.unroute(`**${API}/current`)
   await page.getByRole('button', { name: 'Retry connection' }).click()
   await signup(page, `invalid-${randomUUID()}@example.test`, 'admin')
-  await page.getByRole('button', { name: 'Save and continue' }).click()
+  await page.getByRole('button', { name: 'Create account' }).click()
   await expect(page.getByRole('alert')).toContainText('excluding reserved names')
-  await expect(page.getByLabel('Organization Legal Name', { exact: false })).toHaveValue('Browser Test Organization')
-  await expect(page.getByLabel('Workspace URL Slug', { exact: true })).toHaveValue('admin')
+  await expect(page.getByLabel('Business name', { exact: false })).toHaveValue('Browser Test Organization')
+  await expect(page.getByLabel('Workspace address', { exact: false })).toHaveValue('admin')
   await expect(page.getByRole('alert')).toBeFocused()
   await page.evaluate(() => window.scrollTo(0, 0))
   await page.screenshot({ path: testInfo.outputPath('registration-mobile-validation.png'), fullPage: true,
@@ -274,7 +281,7 @@ test('expired email proof and expired session show actionable errors without gra
     await signIn(page, email, 'Verify your email')
   } else {
     await signup(page, email)
-    await page.getByRole('button', { name: 'Save and continue' }).click()
+    await page.getByRole('button', { name: 'Create account' }).click()
   }
   await expect(page.getByRole('heading', { name: 'Verify your email', exact: true })).toBeVisible()
   const code = await emailCode(request, email)

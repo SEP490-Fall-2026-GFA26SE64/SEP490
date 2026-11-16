@@ -1,50 +1,54 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1510" height="760" viewBox="0 0 1510 760" role="img" aria-labelledby="title desc">
+<svg xmlns="http://www.w3.org/2000/svg" width="1550" height="870" viewBox="0 0 1550 870" role="img" aria-labelledby="title desc">
 <title id="title">Backend Package Overview - com.adaptlearngraph</title>
-<desc id="desc">Top-level UML package folders with one level of actual subpackages. Orthogonal dashed open arrows show selected imports. Arrowheads remain outside folders and shadows.</desc>
+<desc id="desc">Outermost UML package contains the principal packages and one level of actual subpackages. Orthogonal dashed open arrows show selected imports inside the root package. Arrowheads remain clear of child folders and shadows.</desc>
 <rect width="100%" height="100%" fill="white"/>
-<g font-family="Arial, sans-serif"><text x="40" y="32" font-size="18" fill="#333">Backend Package Overview - com.adaptlearngraph</text><g data-node="Entities">
-<path d="M1199 288 h260 v231 h-260 Z" fill="#efefef"/>
-<rect x="1190" y="260" width="72" height="20" fill="white" stroke="#555" stroke-width="1.8"/>
-<rect x="1190" y="279" width="260" height="231" fill="white" stroke="#555" stroke-width="1.8"/>
-<text x="1320" y="310" text-anchor="middle" font-size="21" font-weight="700" fill="#222">entities</text></g><g data-node="EntityDomain">
-<path d="M1229 378 h200 v71 h-200 Z" fill="#efefef"/>
-<rect x="1220" y="350" width="72" height="20" fill="white" stroke="#555" stroke-width="1.8"/>
-<rect x="1220" y="369" width="200" height="71" fill="white" stroke="#555" stroke-width="1.8"/>
-<text x="1320" y="389" text-anchor="middle" font-size="15" font-weight="600" fill="#222">domain</text></g><g data-node="Apis">
-<path d="M69 308 h200 v71 h-200 Z" fill="#efefef"/>
-<rect x="60" y="280" width="72" height="20" fill="white" stroke="#555" stroke-width="1.8"/>
-<rect x="60" y="299" width="200" height="71" fill="white" stroke="#555" stroke-width="1.8"/>
-<text x="160" y="330" text-anchor="middle" font-size="21" font-weight="700" fill="#222">apis</text></g><g data-node="Services">
-<path d="M419 308 h220 v71 h-220 Z" fill="#efefef"/>
-<rect x="410" y="280" width="72" height="20" fill="white" stroke="#555" stroke-width="1.8"/>
-<rect x="410" y="299" width="220" height="71" fill="white" stroke="#555" stroke-width="1.8"/>
-<text x="520" y="330" text-anchor="middle" font-size="21" font-weight="700" fill="#222">services</text></g><g data-node="Repository">
-<path d="M789 308 h240 v71 h-240 Z" fill="#efefef"/>
-<rect x="780" y="280" width="72" height="20" fill="white" stroke="#555" stroke-width="1.8"/>
-<rect x="780" y="299" width="240" height="71" fill="white" stroke="#555" stroke-width="1.8"/>
-<text x="900" y="330" text-anchor="middle" font-size="21" font-weight="700" fill="#222">repository</text></g><g data-node="Dtos">
-<path d="M419 98 h220 v71 h-220 Z" fill="#efefef"/>
-<rect x="410" y="70" width="72" height="20" fill="white" stroke="#555" stroke-width="1.8"/>
-<rect x="410" y="89" width="220" height="71" fill="white" stroke="#555" stroke-width="1.8"/>
-<text x="520" y="120" text-anchor="middle" font-size="21" font-weight="700" fill="#222">dtos</text></g><g data-node="Config">
-<path d="M419 598 h220 v71 h-220 Z" fill="#efefef"/>
-<rect x="410" y="570" width="72" height="20" fill="white" stroke="#555" stroke-width="1.8"/>
-<rect x="410" y="589" width="220" height="71" fill="white" stroke="#555" stroke-width="1.8"/>
-<text x="520" y="620" text-anchor="middle" font-size="21" font-weight="700" fill="#222">config</text></g><g data-node="Jwt">
-<path d="M789 598 h240 v71 h-240 Z" fill="#efefef"/>
-<rect x="780" y="570" width="72" height="20" fill="white" stroke="#555" stroke-width="1.8"/>
-<rect x="780" y="589" width="240" height="71" fill="white" stroke="#555" stroke-width="1.8"/>
-<text x="900" y="620" text-anchor="middle" font-size="21" font-weight="700" fill="#222">jwt</text></g><path data-edge="Apis&gt;Services" d="M276 335 L394 335" fill="none" stroke="#555" stroke-width="1.6" stroke-dasharray="6 5"/>
-<path data-arrowhead="Apis&gt;Services" d="M382 341 L394 335 L382 329" fill="none" stroke="#555" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path data-edge="Apis&gt;Dtos" d="M160 283 L160 125 L394 125" fill="none" stroke="#555" stroke-width="1.6" stroke-dasharray="6 5"/>
-<path data-arrowhead="Apis&gt;Dtos" d="M382 131 L394 125 L382 119" fill="none" stroke="#555" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path data-edge="Services&gt;Repository" d="M646 335 L764 335" fill="none" stroke="#555" stroke-width="1.6" stroke-dasharray="6 5"/>
-<path data-arrowhead="Services&gt;Repository" d="M752 341 L764 335 L752 329" fill="none" stroke="#555" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path data-edge="Services&gt;Entities" d="M646 310 L700 310 L700 230 L1320 230 L1320 263" fill="none" stroke="#555" stroke-width="1.6" stroke-dasharray="6 5"/>
-<path data-arrowhead="Services&gt;Entities" d="M1314 251 L1320 263 L1326 251" fill="none" stroke="#555" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path data-edge="Services&gt;Dtos" d="M520 283 L520 185" fill="none" stroke="#555" stroke-width="1.6" stroke-dasharray="6 5"/>
-<path data-arrowhead="Services&gt;Dtos" d="M526 197 L520 185 L514 197" fill="none" stroke="#555" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path data-edge="Repository&gt;Entities" d="M1036 335 L1174 335" fill="none" stroke="#555" stroke-width="1.6" stroke-dasharray="6 5"/>
-<path data-arrowhead="Repository&gt;Entities" d="M1162 341 L1174 335 L1162 329" fill="none" stroke="#555" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path data-edge="Dtos&gt;Entities" d="M646 125 L1400 125 L1400 263" fill="none" stroke="#555" stroke-width="1.6" stroke-dasharray="6 5"/>
-<path data-arrowhead="Dtos&gt;Entities" d="M1394 251 L1400 263 L1406 251" fill="none" stroke="#555" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path data-edge="Config&gt;Services" d="M520 573 L520 395" fill="none" stroke="#555" stroke-width="1.6" stroke-dasharray="6 5"/>
-<path data-arrowhead="Config&gt;Services" d="M526 407 L520 395 L514 407" fill="none" stroke="#555" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path data-edge="Config&gt;Repository" d="M646 625 L720 625 L720 460 L850 460 L850 395" fill="none" stroke="#555" stroke-width="1.6" stroke-dasharray="6 5"/>
-<path data-arrowhead="Config&gt;Repository" d="M856 407 L850 395 L844 407" fill="none" stroke="#555" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path data-edge="Config&gt;Jwt" d="M646 650 L764 650" fill="none" stroke="#555" stroke-width="1.6" stroke-dasharray="6 5"/>
-<path data-arrowhead="Config&gt;Jwt" d="M752 656 L764 650 L752 644" fill="none" stroke="#555" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path data-edge="Jwt&gt;Repository" d="M900 573 L900 395" fill="none" stroke="#555" stroke-width="1.6" stroke-dasharray="6 5"/>
-<path data-arrowhead="Jwt&gt;Repository" d="M906 407 L900 395 L894 407" fill="none" stroke="#555" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path data-edge="Jwt&gt;Entities" d="M1036 625 L1390 625 L1390 535" fill="none" stroke="#555" stroke-width="1.6" stroke-dasharray="6 5"/>
-<path data-arrowhead="Jwt&gt;Entities" d="M1396 547 L1390 535 L1384 547" fill="none" stroke="#555" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><text x="40" y="720" font-size="14" fill="#555">Nested folders: direct subpackages only. Packages with no subpackages remain at their current level.</text>
-<text x="40" y="742" font-size="14" fill="#555">Dashed arrow: importing package to dependency. Only selected imports are shown.</text></g></svg>
+<g font-family="Arial, sans-serif"><text x="40" y="32" font-size="18" fill="#333">Backend Package Overview - com.adaptlearngraph</text><g data-node="BackendRoot">
+<path d="M29 93 h1510 v711 h-1510 Z" fill="#efefef"/>
+<rect x="20" y="65" width="240" height="20" fill="white" stroke="#555" stroke-width="1.8"/>
+<rect x="20" y="84" width="1510" height="711" fill="white" stroke="#555" stroke-width="1.8"/>
+<text x="775" y="115" text-anchor="middle" font-size="21" font-weight="700" fill="#222">com.adaptlearngraph</text></g><g data-node="Entities">
+<path d="M1219 358 h260 v231 h-260 Z" fill="#efefef"/>
+<rect x="1210" y="330" width="72" height="20" fill="white" stroke="#555" stroke-width="1.8"/>
+<rect x="1210" y="349" width="260" height="231" fill="white" stroke="#555" stroke-width="1.8"/>
+<text x="1340" y="380" text-anchor="middle" font-size="21" font-weight="700" fill="#222">entities</text></g><g data-node="EntityDomain">
+<path d="M1249 448 h200 v71 h-200 Z" fill="#efefef"/>
+<rect x="1240" y="420" width="72" height="20" fill="white" stroke="#555" stroke-width="1.8"/>
+<rect x="1240" y="439" width="200" height="71" fill="white" stroke="#555" stroke-width="1.8"/>
+<text x="1340" y="459" text-anchor="middle" font-size="15" font-weight="600" fill="#222">domain</text></g><g data-node="Apis">
+<path d="M89 378 h200 v71 h-200 Z" fill="#efefef"/>
+<rect x="80" y="350" width="72" height="20" fill="white" stroke="#555" stroke-width="1.8"/>
+<rect x="80" y="369" width="200" height="71" fill="white" stroke="#555" stroke-width="1.8"/>
+<text x="180" y="400" text-anchor="middle" font-size="21" font-weight="700" fill="#222">apis</text></g><g data-node="Services">
+<path d="M439 378 h220 v71 h-220 Z" fill="#efefef"/>
+<rect x="430" y="350" width="72" height="20" fill="white" stroke="#555" stroke-width="1.8"/>
+<rect x="430" y="369" width="220" height="71" fill="white" stroke="#555" stroke-width="1.8"/>
+<text x="540" y="400" text-anchor="middle" font-size="21" font-weight="700" fill="#222">services</text></g><g data-node="Repository">
+<path d="M809 378 h240 v71 h-240 Z" fill="#efefef"/>
+<rect x="800" y="350" width="72" height="20" fill="white" stroke="#555" stroke-width="1.8"/>
+<rect x="800" y="369" width="240" height="71" fill="white" stroke="#555" stroke-width="1.8"/>
+<text x="920" y="400" text-anchor="middle" font-size="21" font-weight="700" fill="#222">repository</text></g><g data-node="Dtos">
+<path d="M439 168 h220 v71 h-220 Z" fill="#efefef"/>
+<rect x="430" y="140" width="72" height="20" fill="white" stroke="#555" stroke-width="1.8"/>
+<rect x="430" y="159" width="220" height="71" fill="white" stroke="#555" stroke-width="1.8"/>
+<text x="540" y="190" text-anchor="middle" font-size="21" font-weight="700" fill="#222">dtos</text></g><g data-node="Config">
+<path d="M439 668 h220 v71 h-220 Z" fill="#efefef"/>
+<rect x="430" y="640" width="72" height="20" fill="white" stroke="#555" stroke-width="1.8"/>
+<rect x="430" y="659" width="220" height="71" fill="white" stroke="#555" stroke-width="1.8"/>
+<text x="540" y="690" text-anchor="middle" font-size="21" font-weight="700" fill="#222">config</text></g><g data-node="Jwt">
+<path d="M809 668 h240 v71 h-240 Z" fill="#efefef"/>
+<rect x="800" y="640" width="72" height="20" fill="white" stroke="#555" stroke-width="1.8"/>
+<rect x="800" y="659" width="240" height="71" fill="white" stroke="#555" stroke-width="1.8"/>
+<text x="920" y="690" text-anchor="middle" font-size="21" font-weight="700" fill="#222">jwt</text></g><path data-edge="Apis&gt;Services" d="M296 405 L414 405" fill="none" stroke="#555" stroke-width="1.6" stroke-dasharray="6 5"/>
+<path data-arrowhead="Apis&gt;Services" d="M402 411 L414 405 L402 399" fill="none" stroke="#555" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path data-edge="Apis&gt;Dtos" d="M180 353 L180 195 L414 195" fill="none" stroke="#555" stroke-width="1.6" stroke-dasharray="6 5"/>
+<path data-arrowhead="Apis&gt;Dtos" d="M402 201 L414 195 L402 189" fill="none" stroke="#555" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path data-edge="Services&gt;Repository" d="M666 405 L784 405" fill="none" stroke="#555" stroke-width="1.6" stroke-dasharray="6 5"/>
+<path data-arrowhead="Services&gt;Repository" d="M772 411 L784 405 L772 399" fill="none" stroke="#555" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path data-edge="Services&gt;Entities" d="M666 380 L720 380 L720 300 L1340 300 L1340 333" fill="none" stroke="#555" stroke-width="1.6" stroke-dasharray="6 5"/>
+<path data-arrowhead="Services&gt;Entities" d="M1334 321 L1340 333 L1346 321" fill="none" stroke="#555" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path data-edge="Services&gt;Dtos" d="M540 353 L540 255" fill="none" stroke="#555" stroke-width="1.6" stroke-dasharray="6 5"/>
+<path data-arrowhead="Services&gt;Dtos" d="M546 267 L540 255 L534 267" fill="none" stroke="#555" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path data-edge="Repository&gt;Entities" d="M1056 405 L1194 405" fill="none" stroke="#555" stroke-width="1.6" stroke-dasharray="6 5"/>
+<path data-arrowhead="Repository&gt;Entities" d="M1182 411 L1194 405 L1182 399" fill="none" stroke="#555" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path data-edge="Dtos&gt;Entities" d="M666 195 L1420 195 L1420 333" fill="none" stroke="#555" stroke-width="1.6" stroke-dasharray="6 5"/>
+<path data-arrowhead="Dtos&gt;Entities" d="M1414 321 L1420 333 L1426 321" fill="none" stroke="#555" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path data-edge="Config&gt;Services" d="M540 643 L540 465" fill="none" stroke="#555" stroke-width="1.6" stroke-dasharray="6 5"/>
+<path data-arrowhead="Config&gt;Services" d="M546 477 L540 465 L534 477" fill="none" stroke="#555" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path data-edge="Config&gt;Repository" d="M666 695 L740 695 L740 530 L870 530 L870 465" fill="none" stroke="#555" stroke-width="1.6" stroke-dasharray="6 5"/>
+<path data-arrowhead="Config&gt;Repository" d="M876 477 L870 465 L864 477" fill="none" stroke="#555" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path data-edge="Config&gt;Jwt" d="M666 720 L784 720" fill="none" stroke="#555" stroke-width="1.6" stroke-dasharray="6 5"/>
+<path data-arrowhead="Config&gt;Jwt" d="M772 726 L784 720 L772 714" fill="none" stroke="#555" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path data-edge="Jwt&gt;Repository" d="M920 643 L920 465" fill="none" stroke="#555" stroke-width="1.6" stroke-dasharray="6 5"/>
+<path data-arrowhead="Jwt&gt;Repository" d="M926 477 L920 465 L914 477" fill="none" stroke="#555" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path data-edge="Jwt&gt;Entities" d="M1056 695 L1410 695 L1410 605" fill="none" stroke="#555" stroke-width="1.6" stroke-dasharray="6 5"/>
+<path data-arrowhead="Jwt&gt;Entities" d="M1416 617 L1410 605 L1404 617" fill="none" stroke="#555" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><text x="40" y="830" font-size="14" fill="#555">Nested folders: direct subpackages only. Packages with no subpackages remain at their current level.</text>
+<text x="40" y="852" font-size="14" fill="#555">Dashed arrow: importing package to dependency. Only selected imports are shown.</text></g></svg>

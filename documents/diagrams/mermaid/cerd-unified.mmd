@@ -1,0 +1,96 @@
+---
+title: "Unified Conceptual Data Model - Learning and Competency"
+config:
+  layout: elk
+  look: classic
+  theme: base
+  fontFamily: "Arial, sans-serif"
+  themeVariables: {background: "#ffffff", primaryColor: "#ffffff", primaryTextColor: "#0f172a", primaryBorderColor: "#334155", lineColor: "#334155", textColor: "#0f172a", fontSize: "18px"}
+  er: {nodeSpacing: 60, rankSpacing: 100, minEntityWidth: 150, diagramPadding: 40}
+---
+erDiagram
+  direction LR
+  %% Neo4j catalog definitions; aliases MemberLevel and RoleMemberLevel unify as Level.
+  JobPosition
+  TargetRole
+  Level
+  Competency
+  MicroSkill
+  LearningModule
+  Certificate
+  %% PostgreSQL business state, immutable snapshots and learner evidence.
+  Organization
+  Account
+  RoleSelection
+  ScopedPolicy
+  MutableDraft
+  ImmutablePolicy
+  ActivePointer
+  AbandonedDraft
+  FrozenAttempt
+  AssessmentGroup
+  PresentedItem
+  AcceptedAnswer
+  GroupResult
+  BaselineDiagnostic
+  ExactCompletion
+  OfficialEvidence
+  CertificateDecision
+  PrerequisiteReview
+  RequirementSnapshot
+  PathwayRequest
+  PathwayRevision
+  RequirementStep
+  ModuleOption
+  OriginalLearningProgress
+  CertificateSubmission
+  BypassDecision
+
+  JobPosition ||--o{ TargetRole : "HAS_ROLE"
+  TargetRole ||--o{ Level : "HAS_LEVEL"
+  Level ||--o{ Competency : "HAS_COMPETENCY"
+  Competency }o--o{ MicroSkill : "HAS_SKILL"
+  Level }o--o{ MicroSkill : "REQUIRES_SKILL explicit knowledge levels"
+  LearningModule }o--|| MicroSkill : "TEACHES exactly one Skill"
+  MicroSkill }o--o{ MicroSkill : "PREREQUISITE level pair"
+  MicroSkill ||--o{ Certificate : "REQUIRES_CERTIFICATE"
+
+  Organization ||--o{ Account : "contains actors"
+  Account ||--o{ RoleSelection : "owns selections"
+  Organization ||--o{ ScopedPolicy : "owns purpose and scope"
+  Level ||..o{ ScopedPolicy : "BASELINE scope snapshot"
+  MicroSkill ||..o{ ScopedPolicy : "SKILL_ASSESSMENT knowledge snapshot"
+  TargetRole ||..o{ RoleSelection : "selected role snapshot"
+  Level ||..o{ RoleSelection : "selected level snapshot"
+  ScopedPolicy ||--o| MutableDraft : "one current draft"
+  ScopedPolicy ||--o{ ImmutablePolicy : "scope-local numbering"
+  ImmutablePolicy ||--o| ActivePointer : "exact active version"
+  ScopedPolicy ||--o{ AbandonedDraft : "saved baseline history"
+
+  RoleSelection ||--o{ FrozenAttempt : "owned exact context"
+  ImmutablePolicy ||--o{ FrozenAttempt : "pinned version"
+  FrozenAttempt ||--|{ AssessmentGroup : "TARGET or MAIN and PREREQUISITE"
+  AssessmentGroup ||--|{ PresentedItem : "frozen mapped versions"
+  PresentedItem ||--o| AcceptedAnswer : "revision and replay"
+  AssessmentGroup ||--o| GroupResult : "immutable score and veto"
+  GroupResult ||..o{ BaselineDiagnostic : "BASELINE only"
+  ExactCompletion ||..o{ OfficialEvidence : "with qualifying Skill assessment"
+  CertificateDecision ||..o{ OfficialEvidence : "assigned Expert approval"
+  GroupResult ||..o{ PrerequisiteReview : "NEED_REVIEW without revocation"
+
+  RoleSelection ||--o{ RequirementSnapshot : "immutable exact input"
+  RequirementSnapshot ||--o{ PathwayRequest : "binds target on confirmation"
+  PathwayRequest ||--o{ PathwayRevision : "approval and event lineage"
+  PathwayRevision ||--o{ RequirementStep : "REQUIRED or PARALLEL_SUPPLEMENT"
+  RequirementStep ||--o{ ModuleOption : "eligible compatible choices"
+  ModuleOption }o..o{ OriginalLearningProgress : "module revision context not owner FK"
+  RequirementStep ||..o{ CertificateSubmission : "frozen JSON request and step context"
+  CertificateSubmission ||--o| CertificateDecision : "one exact assigned review"
+  RequirementStep ||--o{ BypassDecision : "waiver is not evidence"
+  RequirementStep }o--o{ RequirementStep : "assessed dependencies exclude parallel work"
+  LearningModule ||..o{ ModuleOption : "catalog content snapshot"
+  LearningModule ||..o{ ExactCompletion : "completed module revision snapshot"
+  MicroSkill ||..o{ RequirementSnapshot : "required knowledge snapshot"
+  Certificate ||..o{ CertificateSubmission : "exact definition snapshot"
+
+  %% Dotted cross-store edges are application-managed snapshots, never cross-store FKs.

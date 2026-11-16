@@ -1,0 +1,291 @@
+# On-premises deployment stack used by .github/workflows/deploy.yml.
+# Runs the full product composition (same Spring profiles as compose.dev.yml) from
+# prebuilt Docker Hub images, with live SMTP + PayOS, HTTPS public URL and no
+# database/graph/storage ports published to the host. Host Nginx terminates TLS
+# and proxies to the web container on 127.0.0.1:${WEB_PORT}.
+#
+# Server layout (created by the workflow under $APP_DIR):
+#   compose.deploy.yml, .env (operator-managed), docker/*.sh, seed/*.json
+name: adapt-learn-graph
+
+x-backend-image: &backend-image ${DOCKERHUB_USERNAME:?Set DOCKERHUB_USERNAME}/adapt-learn-graph-backend:${IMAGE_TAG:-latest}
+x-backend-environment: &backend-environment
+  DB_URL: jdbc:postgresql://postgres:5432/adapt_learn_graph
+  DB_USER: adapt_learn_graph
+  DB_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD}
+  NEO4J_URI: bolt://neo4j:7687
+  NEO4J_USER: neo4j
+  NEO4J_PASSWORD: ${NEO4J_PASSWORD:?Set NEO4J_PASSWORD}
+  TARGET_SELECTION_LOCAL_ASSESSMENT_IN_PROGRESS: "false"
+  SPRING_FLYWAY_LOCATIONS: classpath:db/workspace-migration
+  CATALOG_SEED_ENABLED: "false"
+  WORKSPACE_DEVELOPMENT_RULE_SEED_ONLY: "true"
+  ASSESSMENT_BASELINE_LEGACYAUTHORING_ENABLED: "false"
+  BASELINE_ANSWER_REVIEW_ENABLED: "false"
+  ASSESSMENT_BASELINE_IRTADMINISTRATION_ENABLED: "false"
+  JAVA_TOOL_OPTIONS: ${JAVA_TOOL_OPTIONS:--XX:MaxRAMPercentage=70}
+x-seed-environment: &seed-environment
+  WORKSPACE_DEVELOPMENT_FIXTURES_ENABLED: "true"
+  WORKSPACE_DEVELOPMENT_FIXTURES_PASSWORD: ${WORKSPACE_DEVELOPMENT_PASSWORD:?Set WORKSPACE_DEVELOPMENT_PASSWORD}
+  SPRING_MAIN_WEB_APPLICATION_TYPE: none
+
+services:
+  minio:
+    # Built from official source by the deploy workflow (deploy/minio/Dockerfile); upstream images were withdrawn.
+    image: ${MINIO_IMAGE:-${DOCKERHUB_USERNAME:?Set DOCKERHUB_USERNAME}/adapt-learn-graph-minio:RELEASE.2025-04-22T22-12-26Z}
+    command: [server, /data]
+    environment:
+      MINIO_ROOT_USER: ${LEARNING_ASSETS_ACCESS_KEY:?Set LEARNING_ASSETS_ACCESS_KEY}
+      MINIO_ROOT_PASSWORD: ${LEARNING_ASSETS_SECRET_KEY:?Set LEARNING_ASSETS_SECRET_KEY}
+      MINIO_BROWSER: "off"
+    volumes:
+      - learning_assets:/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:9000/minio/health/live >/dev/null || wget -q -O /dev/null http://localhost:9000/minio/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:17.6-alpine
+    environment:
+      POSTGRES_DB: adapt_learn_graph
+      POSTGRES_USER: adapt_learn_graph
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U adapt_learn_graph -d adapt_learn_graph"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    restart: unless-stopped
+
+  neo4j:
+    image: neo4j:5.26-community
+    entrypoint: ["tini", "-g", "--", "/bin/bash", "/catalog-bootstrap/start-catalog.sh"]
+    stop_grace_period: 120s
+    environment:
+      NEO4J_AUTH: neo4j/${NEO4J_PASSWORD:?Set NEO4J_PASSWORD}
+      NEO4J_server_memory_heap_initial__size: ${NEO4J_HEAP_INITIAL:-512m}
+      NEO4J_server_memory_heap_max__size: ${NEO4J_HEAP_MAX:-1g}
+      NEO4J_server_memory_pagecache_size: ${NEO4J_PAGECACHE:-512m}
+    volumes:
+      - neo4j_data:/data
+      - catalog_state:/catalog-state
+      - ./docker/start-catalog.sh:/catalog-bootstrap/start-catalog.sh:ro
+    healthcheck:
+      test: ["CMD-SHELL", "cypher-shell -u neo4j -p \"$${NEO4J_AUTH#*/}\" 'RETURN 1' > /dev/null"]
+      interval: 10s
+      timeout: 10s
+      retries: 18
+      start_period: 45s
+    restart: unless-stopped
+
+  migrate:
+    image: *backend-image
+    environment:
+      <<: *backend-environment
+      SPRING_PROFILES_ACTIVE: local,migrate
+    depends_on:
+      postgres:
+        condition: service_healthy
+      neo4j:
+        condition: service_healthy
+    restart: "no"
+
+  seed:
+    image: *backend-image
+    entrypoint: ["/bin/sh", "-ec", "java -jar /app/app.jar; touch /catalog-state/imported-v011"]
+    environment:
+      <<: [*backend-environment, *seed-environment]
+      SPRING_PROFILES_ACTIVE: local,local-demo-seed,workspace-development
+      ASSESSMENT_BASELINE_LOCALDEMO_SEEDENABLED: "true"
+    volumes:
+      - ./seed/ontology_seed-skill-level.json:/seed/ontology_seed.json:ro
+      - ./seed/catalog-scope-v09.json:/seed/catalog-scope.json:ro
+      - catalog_state:/catalog-state
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    restart: "no"
+
+  workspace-seed:
+    image: *backend-image
+    environment:
+      <<: [*backend-environment, *seed-environment]
+      SPRING_PROFILES_ACTIVE: local,workspace-development,workspace-seed
+    depends_on:
+      seed:
+        condition: service_completed_successfully
+    restart: "no"
+
+  catalog-ready:
+    image: neo4j:5.26-community
+    entrypoint: ["/bin/bash", "/catalog-bootstrap/wait-catalog.sh"]
+    environment:
+      NEO4J_PASSWORD: ${NEO4J_PASSWORD:?Set NEO4J_PASSWORD}
+    volumes:
+      - catalog_state:/catalog-state:ro
+      - ./docker/wait-catalog.sh:/catalog-bootstrap/wait-catalog.sh:ro
+    depends_on:
+      seed:
+        condition: service_completed_successfully
+    restart: "no"
+
+  se-seed:
+    image: *backend-image
+    environment:
+      <<: [*backend-environment, *seed-environment]
+      SPRING_PROFILES_ACTIVE: local,workspace-development,software-development-seed
+    volumes:
+      - ./seed/ontology_seed-skill-level.json:/seed/ontology_seed.json:ro
+    depends_on:
+      workspace-seed:
+        condition: service_completed_successfully
+      catalog-ready:
+        condition: service_completed_successfully
+    restart: "no"
+
+  api:
+    image: *backend-image
+    environment:
+      <<: *backend-environment
+      SPRING_PROFILES_ACTIVE: local,workspace-baseline,workspace-development
+      WORKSPACE_MIGRATION_LOCATION: classpath:db/workspace-migration
+      WORKSPACE_DEVELOPMENT_FIXTURES_ENABLED: "true"
+      ASSESSMENT_BASELINE_LOCALDEMO_ENABLED: "false"
+      PATHWAY_LOCAL_AUTH_BYPASS_ENABLED: "false"
+      # TLS ends at host Nginx; honor its X-Forwarded-* headers (relayed by Caddy).
+      SERVER_FORWARD_HEADERS_STRATEGY: framework
+      # Integrations: always live in this deployment.
+      PAYOS_ENABLED: "true"
+      EMAIL_VERIFICATION_ENABLED: ${EMAIL_VERIFICATION_ENABLED:-true}
+      MFA_ENABLED: ${MFA_ENABLED:-true}
+      REGISTRATION_MAIL_WORKER_ENABLED: "true"
+      LEARNING_MAIL_ENABLED: ${LEARNING_MAIL_ENABLED:-true}
+      SUBSCRIPTION_WORKER_ENABLED: "true"
+      # SMTP reachability is verified by the deploy script; a mail outage must not mark the API unhealthy.
+      MANAGEMENT_HEALTH_MAIL_ENABLED: "false"
+      REGISTRATION_ENCRYPTION_KEY: ${REGISTRATION_ENCRYPTION_KEY:?Set REGISTRATION_ENCRYPTION_KEY}
+      REGISTRATION_HMAC_KEY: ${REGISTRATION_HMAC_KEY:?Set REGISTRATION_HMAC_KEY}
+      REGISTRATION_COOKIE_SECURE: "true"
+      SMTP_HOST: ${SMTP_HOST:?Set SMTP_HOST}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USERNAME: ${SMTP_USERNAME:?Set SMTP_USERNAME}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:?Set SMTP_PASSWORD}
+      SMTP_FROM: ${SMTP_FROM:?Set SMTP_FROM}
+      SMTP_AUTH: ${SMTP_AUTH:-true}
+      SMTP_STARTTLS: ${SMTP_STARTTLS:-true}
+      PAYOS_CLIENT_ID: ${PAYOS_CLIENT_ID:?Set PAYOS_CLIENT_ID}
+      PAYOS_API_KEY: ${PAYOS_API_KEY:?Set PAYOS_API_KEY}
+      PAYOS_CHECKSUM_KEY: ${PAYOS_CHECKSUM_KEY:?Set PAYOS_CHECKSUM_KEY}
+      SUBSCRIPTION_PUBLIC_URL: ${PUBLIC_URL:?Set PUBLIC_URL, e.g. https://adaptlearn.id.vn}
+      LEARNING_ASSETS_ENDPOINT: http://minio:9000
+      LEARNING_ASSETS_ACCESS_KEY: ${LEARNING_ASSETS_ACCESS_KEY:?Set LEARNING_ASSETS_ACCESS_KEY}
+      LEARNING_ASSETS_SECRET_KEY: ${LEARNING_ASSETS_SECRET_KEY:?Set LEARNING_ASSETS_SECRET_KEY}
+      LEARNING_ASSETS_BUCKET: ${LEARNING_ASSETS_BUCKET:-learning-content}
+      PATHWAY_INITIAL_ENABLED: "true"
+      PATHWAY_INITIAL_CATALOG_ALLOW_REVIEW_SEED: "true"
+      PATHWAY_INITIAL_CATALOG_MAX_REQUIREMENT_ROWS: "1891"
+      PATHWAY_INITIAL_LOCAL_ASSIGNMENT_ENABLED: "true"
+      PATHWAY_INITIAL_LOCAL_ASSIGNMENT_ROLE_IDS: ""
+      PATHWAY_INITIAL_LOCAL_ASSIGNMENT_MAX_PATHWAYS: "5000"
+      PATHWAY_INITIAL_LOCAL_PLANNING_ENABLED: "true"
+      PATHWAY_INITIAL_READINESS_VERSION: local-baseline-prerequisite-v1
+      PATHWAY_INITIAL_SEARCH_VERSION: compose-v011-bounded-v1
+      PATHWAY_INITIAL_SEARCH_MAX_CLOSURE_NODES: "128"
+      PATHWAY_INITIAL_SEARCH_MAX_CLOSURE_EDGES: "256"
+      PATHWAY_INITIAL_SEARCH_MAX_PROVIDERS: "2048"
+      PATHWAY_INITIAL_SEARCH_BATCH_SIZE: "32"
+      PATHWAY_INITIAL_SEARCH_MAX_STATES: "250000"
+      PATHWAY_INITIAL_WORKER_ENABLED: "true"
+      PATHWAY_INITIAL_WORKER_VERSION: compose-worker-v1
+      PATHWAY_INITIAL_WORKER_LEASE_MS: "300000"
+      PATHWAY_INITIAL_WORKER_MAX_ATTEMPTS: "3"
+      PATHWAY_INITIAL_WORKER_MINIMUM_BACKOFF_MS: "2000"
+      PATHWAY_INITIAL_WORKER_MAXIMUM_BACKOFF_MS: "30000"
+      PATHWAY_INITIAL_WORKER_POLL_INTERVAL_MS: "2000"
+    volumes:
+      - ./seed/ontology_seed-skill-level.json:/seed/ontology_seed.json:ro
+      - ./seed/ontology_seed-v010.json:/seed/baseline-history-v010.json:ro
+      - ./seed/ontology_seed-v08.json:/seed/baseline-history-v08.json:ro
+      - ./seed/question-bank-v1.json:/seed/baseline-bank-v08.json:ro
+    depends_on:
+      se-seed:
+        condition: service_completed_successfully
+      workspace-seed:
+        condition: service_completed_successfully
+      catalog-ready:
+        condition: service_completed_successfully
+      minio:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:8080/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 60s
+    restart: unless-stopped
+
+  knowledge-seed:
+    image: *backend-image
+    environment:
+      <<: [*backend-environment, *seed-environment]
+      SPRING_PROFILES_ACTIVE: local,workspace-development,knowledge-bank-seed
+      QUESTION_BANK_DEVELOPMENT_SEED_ENABLED: "true"
+    volumes:
+      - ./seed/ontology_seed-skill-level.json:/seed/ontology_seed.json:ro
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: "no"
+
+  module-knowledge-seed:
+    image: *backend-image
+    environment:
+      <<: [*backend-environment, *seed-environment]
+      SPRING_PROFILES_ACTIVE: local,workspace-development,module-knowledge-seed
+      MODULES_DEVELOPMENT_SEED_ENABLED: "true"
+      MODULES_DEVELOPMENT_SEED_MANIFEST: /seed/module-knowledge.json
+    volumes:
+      - ./seed/development-complete-release.json:/seed/module-knowledge.json:ro
+    depends_on:
+      knowledge-seed:
+        condition: service_completed_successfully
+    restart: "no"
+
+  platform-seed:
+    profiles: ["tools"]
+    image: *backend-image
+    environment:
+      <<: *backend-environment
+      SPRING_PROFILES_ACTIVE: local,platform-bootstrap
+      SPRING_MAIN_WEB_APPLICATION_TYPE: none
+      PLATFORM_ADMIN_SEED_EMAIL: ${PLATFORM_ADMIN_SEED_EMAIL:-}
+      PLATFORM_ADMIN_SEED_PASSWORD: ${PLATFORM_ADMIN_SEED_PASSWORD:-}
+    restart: "no"
+
+  web:
+    image: ${DOCKERHUB_USERNAME:?Set DOCKERHUB_USERNAME}/adapt-learn-graph-frontend:${IMAGE_TAG:-latest}
+    depends_on:
+      api:
+        condition: service_healthy
+      module-knowledge-seed:
+        condition: service_completed_successfully
+    ports:
+      - "127.0.0.1:${WEB_PORT:-8088}:80"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1/ || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+    restart: unless-stopped
+
+volumes:
+  learning_assets:
+  postgres_data:
+  neo4j_data:
+  catalog_state:

@@ -80,10 +80,10 @@ public final class CurrentRoleCatalog implements Catalog {
                     var skills=row.get("skills").asList(v->new Skill(v.get("id").asString(),v.get("code").asString(null),v.get("name").asString(),v.get("requiredKnowledgeLevels").asList(Value::asString),v.get("mandatory").asBoolean()));
                     if(skills.isEmpty() && !demoReview) throw new IllegalStateException("Role Level requirements unavailable");
                     var level=new Level(l.get("id").asString(),l.get("code").asString("LV"),l.get("name").asString(),l.get("rank").asInt(1),
-                            l.get("context").asString(""),l.get("attainmentRule").asString("ALL_MANDATORY_SKILLS"),skills);
+                            l.get("context").asString(""),l.get("attainmentRule").asString("ALL_MANDATORY_SKILLS"),skills,l.get("duration").asString(null));
                     var existing=result.get(id); var levels=new ArrayList<Level>(existing==null?List.of():existing.levels());levels.add(level);
                     result.put(id,new Role(id,r.get("code").asString(),r.get("name").asString(),r.get("scope").asString(""),occ,
-                            o.get("name").asString(),o.get("version").asString("0.12.0"),snapshot.fingerprint(),List.copyOf(levels)));
+                            o.get("name").asString(),o.get("version").asString("0.12.0"),snapshot.fingerprint(),List.copyOf(levels),r.get("version").asString(null)));
                 }
                 for(var entry:validated.entrySet()) {
                     var projected=new HashMap<String,Set<String>>();

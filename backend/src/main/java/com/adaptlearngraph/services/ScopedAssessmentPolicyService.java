@@ -22,7 +22,7 @@ public final class ScopedAssessmentPolicyService {
     public record Version(UUID id,long version,Policy configuration,String catalogHash,Instant createdAt) {}
     public record AbandonedDraft(UUID id,long revision,Policy configuration,String catalogHash,Instant updatedAt,
                                  BaselinePolicyEditor.Progress editorState,Instant abandonedAt) {}
-    public record GroupCapacity(String skillId,com.adaptlearngraph.entities.domain.KnowledgeLevel knowledgeLevel,int minQuestions,int maxQuestions,int mandatoryQuestions) {}
+    public record GroupCapacity(String skillId,com.adaptlearngraph.entities.domain.KnowledgeLevel knowledgeLevel,int minQuestions,int maxQuestions,int mandatoryQuestions,int ordinaryQuestions) {}
     public record Workspace(Scope scope,Draft draft,Version active,long activationRevision,List<Version> versions,long totalVersions,
                             List<BaselinePolicyEditor.Capacity> capacities,int maxPaperItems,List<AbandonedDraft> abandonedDrafts,long totalAbandonedDrafts,List<GroupCapacity> groupCapacities) {
         public Workspace {
@@ -122,10 +122,13 @@ public final class ScopedAssessmentPolicyService {
         var a=actor(purpose);if(command==null || command.draftId()==null || command.expectedRevision()<1 || command.configuration()==null)throw new Failure(400,"INVALID_REQUEST");
         return mutate(a,purpose,key,"SAVE_SCOPED_DRAFT",command.commandKey(),command,scope->{
             current(scope,command.expectedCatalogHash());validate(scope,command.configuration());
+            locks.lock("question-bank:"+a.organizationId());
             if(purpose==Purpose.BASELINE)editor.validatePolicy(a.organizationId(),scope,command.configuration());
             else for(var capacity:groupCapacities(a.organizationId(),scope)) {
                 var rule=command.configuration().groups().stream().filter(g->g.skillId().equals(capacity.skillId()) && g.knowledgeLevel()==capacity.knowledgeLevel()).findFirst().orElseThrow();
                 if(rule.totalCount()<capacity.minQuestions() || rule.totalCount()>capacity.maxQuestions())throw new Failure(422,"QUESTION_COUNT_OUT_OF_RANGE");
+                if(rule.mandatoryCount()>capacity.mandatoryQuestions() || rule.totalCount()-rule.mandatoryCount()>capacity.ordinaryQuestions())
+                    throw new Failure(422,"INSUFFICIENT_APPROVED_GROUP_BANK");
             }
             if(scopes.update(a.organizationId(),purpose.name(),key,command.draftId(),command.expectedRevision(),write(command.configuration()),scope.catalogHash(),a.accountId())!=1)
                 throw new Failure(409,"STALE_POLICY_DRAFT");
@@ -232,9 +235,9 @@ public final class ScopedAssessmentPolicyService {
             var need=group.requirement();
             var pool=bank.eligible(organization,need.skillId(),need.knowledgeLevel().name(),group.skillVersion(),maximum+1);
             int mandatory=(int)pool.stream().filter(AssessmentItemKnowledgeMappingJpaRepository.Candidate::getMandatory).count();
-            int minimum=mandatory;
+            int minimum=1;
             result.add(new GroupCapacity(need.skillId(),need.knowledgeLevel(),Math.max(1,minimum),
-                    pool.size()<=maximum?Math.min(500,pool.size()):0,mandatory));
+                    pool.size()<=maximum?Math.min(500,pool.size()):0,mandatory,pool.size()-mandatory));
         }
         return List.copyOf(result);
     }
@@ -248,17 +251,23 @@ public final class ScopedAssessmentPolicyService {
         var keys=scope.groups().stream().map(g->g.requirement().key()).collect(java.util.stream.Collectors.toSet());
         if(!keys.equals(policy.groups().stream().map(GroupRule::key).collect(java.util.stream.Collectors.toSet())))throw new Failure(422,"EXACT_SCOPE_GROUPS_REQUIRED");
         if(scope.purpose()==Purpose.BASELINE && policy.groups().stream().anyMatch(GroupRule::allWrongVeto))throw new Failure(422,"BASELINE_VETO_NOT_APPLICABLE");
+        if(scope.purpose()==Purpose.SKILL_ASSESSMENT && policy.groups().stream().anyMatch(g->g.mandatoryCount()==null))
+            throw new Failure(422,"MANDATORY_COUNT_REQUIRED");
     }
     private void readiness(SubscriptionAccessPolicy.Actor a,Scope scope,Policy policy) {
+        locks.lock("question-bank:"+a.organizationId());
         if(!scope.ready())throw new Failure(422,"SCOPE_REQUIREMENTS_NOT_READY");
         int total=0;
         for(var group:scope.groups()) {
             var rule=policy.require(group.requirement().assessmentRequirement());total+=rule.totalCount();if(total>maximum)throw new Failure(422,"PAPER_CAPACITY_EXCEEDED");
             var pool=bank.eligible(a.organizationId(),group.requirement().skillId(),group.requirement().knowledgeLevel().name(),group.skillVersion(),maximum+1);
-            long mandatory=scope.purpose()==Purpose.BASELINE?0:pool.stream().filter(AssessmentItemKnowledgeMappingJpaRepository.Candidate::getMandatory).count();
+            long mandatory=pool.stream().filter(AssessmentItemKnowledgeMappingJpaRepository.Candidate::getMandatory).count();
             if(pool.size()>maximum)throw new Failure(422,"BANK_QUERY_LIMIT_EXCEEDED");
-            long minimum=mandatory;
-            if(pool.size()<rule.totalCount() || minimum>rule.totalCount())throw new Failure(422,"INSUFFICIENT_APPROVED_GROUP_BANK");
+            if(rule.mandatoryCount()!=null) {
+                if(mandatory<rule.mandatoryCount() || pool.size()-mandatory<rule.totalCount()-rule.mandatoryCount())
+                    throw new Failure(422,"INSUFFICIENT_APPROVED_GROUP_BANK");
+            } else if(pool.size()<rule.totalCount() || (scope.purpose()==Purpose.SKILL_ASSESSMENT && mandatory>rule.totalCount()))
+                throw new Failure(422,"INSUFFICIENT_APPROVED_GROUP_BANK");
         }
     }
     private Scope require(SubscriptionAccessPolicy.Actor a,Purpose purpose,String key) {

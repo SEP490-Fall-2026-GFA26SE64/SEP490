@@ -121,5 +121,5 @@ public final class LearningResources {
             String title,
             String body,
             String createdAt,
-            String readAt) {}
+            String readAt,String deepLink,String toastObservedAt) {}
 }

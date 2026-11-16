@@ -25,6 +25,7 @@ describe('registration API', () => {
     const input = {
       organizationName: 'Acme', subdomain: null, industry: null, headcount: null,
       adminName: 'Owner', adminEmail: 'owner@example.test', password: 'long password',
+      country: null, adminPhone: '0901234567', policiesAccepted: true,
     }
     expect(await registerOrganization(input)).toEqual(pending)
     expect(fetch).toHaveBeenNthCalledWith(2, '/api/v1/registration', expect.objectContaining({
@@ -53,10 +54,23 @@ describe('registration API', () => {
     const completed = { ...pending, registrationId: 'registration', stage: 'COMPLETE',
       completedAt: '2026-10-30T12:00:00Z', fields: {
         organizationName: 'Acme', subdomain: 'acme-dev', industry: null, headcount: null,
-        adminName: 'Owner', adminEmail: pending.email,
+        adminName: 'Owner', adminEmail: pending.email, country: null, adminPhone: null,
       } }
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(response(completed)))
     expect(await getRegistration()).toEqual(completed)
+  })
+
+  it('reads persisted contact values but rejects invalid country or phone values', async () => {
+    const fields = { organizationName: 'Acme', subdomain: 'acme-dev', industry: null, headcount: null,
+      adminName: 'Owner', adminEmail: pending.email, country: 'VN', adminPhone: '+84901234567' }
+    const complete = { ...pending, registrationId: 'registration', stage: 'COMPLETE',
+      completedAt: '2026-11-13T00:00:00Z', fields }
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(response(complete))
+      .mockResolvedValueOnce(response({ ...complete, fields: { ...fields, country: 'ZZ' } }))
+      .mockResolvedValueOnce(response({ ...complete, fields: { ...fields, adminPhone: 'invalid' } })))
+    expect((await getRegistration())?.fields).toEqual(fields)
+    await expect(getRegistration()).rejects.toMatchObject({ code: 'INVALID_RESPONSE' })
+    await expect(getRegistration()).rejects.toMatchObject({ code: 'INVALID_RESPONSE' })
   })
 
   it('requires exactly ten unique recovery codes', async () => {

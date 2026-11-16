@@ -1,0 +1,95 @@
+{
+  "format": "DEVELOPMENT_APP_DEV_MANDATORY_V1",
+  "developmentOnly": true,
+  "publicationSource": "DEVELOPMENT_SEED",
+  "publisherId": "dadcdc29-1cf2-36d1-9252-9e46c6d8413a",
+  "baseManifestSha256": "c484c658c292ab1ee3eb51d35436ecdd5122a79c82bbfdf6eabf751bb9abfedb",
+  "roleId": "ROLE-F72E5464F9B3",
+  "limitations": "Additive development-only content, not reviewed or calibrated production questions. No changes to existing published questions.",
+  "items": [
+    {
+      "id": "a4d00001-1110-4000-8000-000000000001",
+      "versionId": "a4d10001-1110-4000-8000-000000000001",
+      "content": {
+        "skillId": "MS-FS04",
+        "skillName": "use query languages",
+        "knowledgeLevel": "INTERMEDIATE",
+        "prompt": "A tenant-scoped payroll report uses a parameter supplied by the browser. Which approach prevents SQL injection while preserving tenant isolation?",
+        "options": [
+          "Bind the value as a query parameter and obtain the tenant predicate from the authenticated server context.",
+          "Concatenate the value after removing spaces.",
+          "Trust a tenant ID received in the request body.",
+          "Remove the tenant predicate when the report returns no rows."
+        ],
+        "correctAnswer": 0,
+        "explanation": "Parameterized values prevent treating user input as SQL; tenant ownership must come from the trusted authenticated context.",
+        "difficulty": null,
+        "mandatory": true,
+        "skillVersion": "0.12.1"
+      }
+    },
+    {
+      "id": "a4d00002-1110-4000-8000-000000000001",
+      "versionId": "a4d10002-1110-4000-8000-000000000001",
+      "content": {
+        "skillId": "MS-FS04",
+        "skillName": "use query languages",
+        "knowledgeLevel": "INTERMEDIATE",
+        "prompt": "A report must list customers with no orders, including when an order row has a NULL customer reference. Which query form safely expresses the requirement?",
+        "options": [
+          "Use customer_id NOT IN an unfiltered subquery that may return NULL.",
+          "Use a correlated NOT EXISTS subquery comparing each order to the current customer.",
+          "Use an INNER JOIN without a filter.",
+          "Select all customers whenever any order reference is NULL."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Correlated NOT EXISTS checks the absence of matching orders without the NULL ambiguity of NOT IN.",
+        "difficulty": null,
+        "mandatory": true,
+        "skillVersion": "0.12.1"
+      }
+    },
+    {
+      "id": "a4d00003-1110-4000-8000-000000000001",
+      "versionId": "a4d10003-1110-4000-8000-000000000001",
+      "content": {
+        "skillId": "MS-FS05",
+        "skillName": "integrate system components",
+        "knowledgeLevel": "FOUNDATION",
+        "prompt": "An integration consumer receives the same payment event twice. Which basic contract prevents the business effect being applied twice?",
+        "options": [
+          "Identify the event with a stable ID and handle the effect idempotently.",
+          "Apply every delivery as a new payment.",
+          "Disable authentication for repeated messages.",
+          "Generate a new event ID on every retry."
+        ],
+        "correctAnswer": 0,
+        "explanation": "A stable event identity and idempotent effect let delivery retries recover safely without duplicating the business operation.",
+        "difficulty": null,
+        "mandatory": true,
+        "skillVersion": "0.12.1"
+      }
+    },
+    {
+      "id": "a4d00004-1110-4000-8000-000000000001",
+      "versionId": "a4d10004-1110-4000-8000-000000000001",
+      "content": {
+        "skillId": "MS-FS06",
+        "skillName": "debug software",
+        "knowledgeLevel": "INTERMEDIATE",
+        "prompt": "A production-like error report includes a user's authentication token. What is an appropriate first debugging action?",
+        "options": [
+          "Post the complete token to a shared issue.",
+          "Disable authorization globally until the error disappears.",
+          "Reproduce with a minimal sanitized input and correlate server logs using a non-secret request ID.",
+          "Replace the user's data before investigating."
+        ],
+        "correctAnswer": 2,
+        "explanation": "A minimal sanitized reproduction and request correlation preserve diagnostic evidence without exposing credentials or altering unrelated data.",
+        "difficulty": null,
+        "mandatory": true,
+        "skillVersion": "0.12.1"
+      }
+    }
+  ]
+}

@@ -42,8 +42,9 @@ public class RequirementPathwayConfiguration {
             LearningContentPort content,LearningAssetPort files,Receipts receipts,OutboxEventJpaRepository outbox,RuleAssessmentAttemptJpaRepository clock,RuleAssessmentOutcomeJpaRepository effects,AuditEventJpaRepository audit){
         return new CertificateReviewService(actors,assignments,selections,submissions,views,rules,revisions,content,files,receipts,outbox,clock,effects,audit);
     }
+    @Bean PathwayNotifications pathwayNotifications(LearningNotificationJpaRepository notifications){return new PathwayNotifications(notifications);}
     @Bean RequirementPathwayRevisions requirementPathwayRevisions(InitialPathwayRepositories data,RequirementPathwayJpaRepository rules,
-            RuleAssessmentAttemptJpaRepository clock,ObjectMapper json){return new RequirementPathwayRevisions(data,rules,clock,json);}
+            RuleAssessmentAttemptJpaRepository clock,ObjectMapper json,PathwayNotifications notifications){return new RequirementPathwayRevisions(data,rules,clock,json,notifications);}
     @Bean RequirementPathwayAdmissionService requirementPathwayAdmission(Actors actors,RoleBaselineFlow.Catalog roles,CurrentRoleSelectionStore selections,
             RulePathwayCatalog catalog,RequirementPathwayJpaRepository rules,InitialPathwayRepositories data,PathwayRequirementSnapshotJpaRepository snapshots,
             RuleAssessmentAttemptJpaRepository attempts,RuleAssessmentOutcomeJpaRepository groups,Receipts receipts,RequirementPathwayRevisions revisions,ObjectMapper json){

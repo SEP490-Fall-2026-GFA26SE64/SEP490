@@ -67,7 +67,7 @@ public final class LearningContentMappings implements ModelMapperRegistrar {
         mapper.typeMap(Notification.class, NotificationResponse.class).setConverter(context -> {
             Notification source = context.getSource();
             return new NotificationResponse(source.id(), source.kind(), source.moduleId(), source.title(), source.body(),
-                    source.createdAt(), source.readAt());
+                    source.createdAt(), source.readAt(),source.deepLink(),source.toastObservedAt());
         });
         mapper.typeMap(Row.class, ImportRowResponse.class).setConverter(context -> {
             Row source = context.getSource();

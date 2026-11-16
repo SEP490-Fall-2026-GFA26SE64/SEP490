@@ -44,17 +44,32 @@ public interface CompetencyNodeRepository extends Repository<CompetencyNode, Str
                           c.attainmentRule = $attainmentRule,
                           c.status = $status,
                           c.version = $version,
-                          c.reviewStatus = 'APPROVED'
+                          c.reviewStatus = 'APPROVED',
+                          c.departmentId = $departmentId,
+                          c.departmentName = $departmentName,
+                          c.jobPositionCode = $jobPositionCode,
+                          c.jobPositionTitle = $jobPositionTitle,
+                          c.createdAt = datetime(),
+                          c.updatedAt = datetime()
             ON MATCH SET c.code = $code,
                          c.name = $name,
                          c.description = $description,
                          c.attainmentRule = $attainmentRule,
-                         c.status = $status
+                         c.status = $status,
+                         c.departmentId = CASE WHEN $departmentId IS NOT NULL AND $departmentId <> '' THEN $departmentId ELSE c.departmentId END,
+                         c.departmentName = CASE WHEN $departmentName IS NOT NULL AND $departmentName <> '' THEN $departmentName ELSE c.departmentName END,
+                         c.jobPositionCode = CASE WHEN $jobPositionCode IS NOT NULL AND $jobPositionCode <> '' THEN $jobPositionCode ELSE c.jobPositionCode END,
+                         c.jobPositionTitle = CASE WHEN $jobPositionTitle IS NOT NULL AND $jobPositionTitle <> '' THEN $jobPositionTitle ELSE c.jobPositionTitle END,
+                         c.updatedAt = datetime()
             """)
     void merge(@Param("id") String id, @Param("organizationId") String organizationId, @Param("code") String code,
             @Param("name") String name, @Param("description") String description,
             @Param("attainmentRule") String attainmentRule, @Param("status") String status,
-            @Param("version") String version);
+            @Param("version") String version,
+            @Param("departmentId") String departmentId,
+            @Param("departmentName") String departmentName,
+            @Param("jobPositionCode") String jobPositionCode,
+            @Param("jobPositionTitle") String jobPositionTitle);
 
     // Relationship write: both endpoints matched inside the organization or platform template.
     @Transactional(TransactionManagers.NEO4J)

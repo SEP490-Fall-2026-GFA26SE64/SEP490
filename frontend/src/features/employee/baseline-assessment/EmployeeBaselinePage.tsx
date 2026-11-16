@@ -37,7 +37,7 @@ function EmployeeBaselinePage({ attemptId }: { attemptId?: string }) {
   return <WorkspaceLayout><div className="min-w-0 space-y-5 pb-8">
     <Heading level={1} className="sr-only">{tr('title')}</Heading>
     <div className="flex flex-wrap justify-end gap-2">
-      <Link className={buttonVariants({ variant: 'primary', size: 'sm', className: 'gap-2 font-semibold' })} to="/employee/my-mastery"><BookOpenCheck size={15} aria-hidden="true" />{t('baselineUi.myMastery')}</Link>
+      <Link className={buttonVariants({ variant: 'primary', size: 'sm', className: 'gap-2 font-semibold' })} to="/employee/overview#competency-profile"><BookOpenCheck size={15} aria-hidden="true" />{t('baselineUi.myMastery')}</Link>
     </div>
     {state.busy && state.attempt?.state !== 'IN_PROGRESS' && <LoadingCard label={tr('loading')} />}
     {state.error && <div role="alert" className="space-y-2 rounded-md border border-border p-4">

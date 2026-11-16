@@ -100,6 +100,133 @@ class CompetencyServiceTest {
         assertEquals("Updated Desc", updated.description());
     }
 
+    @Test
+    @DisplayName("Creates competency with department and job position metadata")
+    void createsCompetencyWithDepartmentAndJobPosition() {
+        CompetencyRecord created = service.createCompetency(
+                "org-1",
+                "COMP-QA-01",
+                "Automated Testing",
+                "QA testing competency",
+                List.of(),
+                null,
+                "dept-qa-01",
+                "Quality Engineering & Assurance",
+                "15-1253.00",
+                "Software Quality Assurance Analysts and Testers"
+        );
+
+        assertNotNull(created.id());
+        assertEquals("dept-qa-01", created.departmentId());
+        assertEquals("Quality Engineering & Assurance", created.departmentName());
+        assertEquals("15-1253.00", created.jobPositionCode());
+        assertEquals("Software Quality Assurance Analysts and Testers", created.jobPositionTitle());
+    }
+
+    @Test
+    @DisplayName("Allows updating competency when expert department and job position match")
+    void allowsUpdatingCompetencyWhenDepartmentAndJobPositionMatch() {
+        CompetencyRecord comp = service.createCompetency(
+                "org-1",
+                "COMP-QA-01",
+                "Automated Testing",
+                "QA testing competency",
+                List.of(),
+                null,
+                "dept-qa-01",
+                "Quality Engineering & Assurance",
+                "15-1253.00",
+                "Software Quality Assurance Analysts and Testers"
+        );
+
+        CompetencyRecord updated = service.updateCompetency(
+                "org-1",
+                comp.id(),
+                "COMP-QA-01",
+                "Automated Testing Refined",
+                "Updated desc",
+                List.of(),
+                "dept-qa-01",
+                "Quality Engineering & Assurance",
+                "15-1253.00",
+                "Software Quality Assurance Analysts and Testers"
+        );
+
+        assertEquals("Automated Testing Refined", updated.name());
+        assertEquals("dept-qa-01", updated.departmentId());
+        assertEquals("15-1253.00", updated.jobPositionCode());
+    }
+
+    @Test
+    @DisplayName("Rejects updating competency when expert department does not match")
+    void rejectsUpdatingCompetencyWhenDepartmentMismatches() {
+        CompetencyRecord comp = service.createCompetency(
+                "org-1",
+                "COMP-QA-01",
+                "Automated Testing",
+                "QA testing competency",
+                List.of(),
+                null,
+                "dept-qa-01",
+                "Quality Engineering & Assurance",
+                "15-1253.00",
+                "Software Quality Assurance Analysts and Testers"
+        );
+
+        IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> service.updateCompetency(
+                        "org-1",
+                        comp.id(),
+                        "COMP-QA-01",
+                        "Hacked Name",
+                        "Desc",
+                        List.of(),
+                        "dept-dev-01", // Mismatched department!
+                        "Engineering & Cognitive Systems",
+                        "15-1253.00",
+                        "Software Quality Assurance Analysts and Testers"
+                )
+        );
+
+        assertEquals("Domain experts can only edit competencies assigned to their own department.", ex.getMessage());
+    }
+
+    @Test
+    @DisplayName("Rejects updating competency when expert job position does not match")
+    void rejectsUpdatingCompetencyWhenJobPositionMismatches() {
+        CompetencyRecord comp = service.createCompetency(
+                "org-1",
+                "COMP-QA-01",
+                "Automated Testing",
+                "QA testing competency",
+                List.of(),
+                null,
+                "dept-qa-01",
+                "Quality Engineering & Assurance",
+                "15-1253.00",
+                "Software Quality Assurance Analysts and Testers"
+        );
+
+        IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> service.updateCompetency(
+                        "org-1",
+                        comp.id(),
+                        "COMP-QA-01",
+                        "Hacked Name",
+                        "Desc",
+                        List.of(),
+                        "dept-qa-01",
+                        "Quality Engineering & Assurance",
+                        "15-1252.00", // Mismatched job position!
+                        "Software Developers"
+                )
+        );
+
+        assertEquals("Domain experts can only edit competencies assigned to their own job position.", ex.getMessage());
+    }
+
     private static class InMemoryCompetencyRepository implements CompetencyRepository {
         final List<CompetencyRecord> competencies = new ArrayList<>();
 

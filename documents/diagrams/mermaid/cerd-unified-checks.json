@@ -1,0 +1,16 @@
+{
+  "nodes": 33,
+  "labels": 43,
+  "width": 5491,
+  "height": 1746,
+  "clipped": 0,
+  "labelNodeCollisions": [],
+  "labelLabelCollisions": [],
+  "edgeNodeCollisions": [],
+  "validXml": true,
+  "postgresEntities": 26,
+  "neo4jEntities": 7,
+  "originalRelationshipCoverage": "Passed",
+  "entityDescriptions": "Passed",
+  "pageErrors": []
+}

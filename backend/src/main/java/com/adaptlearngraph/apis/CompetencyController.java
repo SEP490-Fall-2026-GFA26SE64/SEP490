@@ -36,8 +36,10 @@ public class CompetencyController {
     @GetMapping
     public ResponseEntity<List<CompetencyResponse>> listCompetencies(
             @PathVariable("organizationId") String organizationId,
-            @RequestParam(value = "search", required = false) String search) {
-        return ResponseEntity.ok(competencies.listCompetencies(organizationId, search));
+            @RequestParam(value = "search", required = false) String search,
+            @RequestParam(value = "departmentId", required = false) String departmentId,
+            @RequestParam(value = "jobPositionCode", required = false) String jobPositionCode) {
+        return ResponseEntity.ok(competencies.listCompetencies(organizationId, search, departmentId, jobPositionCode));
     }
 
     @PostMapping
@@ -70,6 +72,13 @@ public class CompetencyController {
                 "message", ex.getMessage(),
                 "organizationId", ex.getOrganizationId(),
                 "code", ex.getCode()));
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<?> handleIllegalArgument(IllegalArgumentException ex) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of(
+                "error", "Forbidden",
+                "message", ex.getMessage()));
     }
 
     @ExceptionHandler(NoSuchElementException.class)

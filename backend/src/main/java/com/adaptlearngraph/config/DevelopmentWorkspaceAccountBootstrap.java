@@ -340,6 +340,94 @@ public final class DevelopmentWorkspaceAccountBootstrap implements ApplicationRu
                     END
                     """, Map.of());
 
+                // 6. Assign Department and JobPosition to all Competencies via role hierarchy
+                tx.execute("""
+                    MATCH (d:Department)-[:HAS_JOB_POSITION]->(jp:JobPosition)-[:HAS_ROLE]->(tr:TargetRole)-[:HAS_LEVEL]->(l:Level)-[:HAS_COMPETENCY]->(c:Competency)
+                    SET c.departmentId = d.id,
+                        c.departmentName = d.name,
+                        c.jobPositionCode = jp.code,
+                        c.jobPositionTitle = jp.name
+                    """, Map.of());
+
+                // Fallback for any competencies not directly reachable via complete role tree
+                tx.execute("""
+                    MATCH (c:Competency)
+                    WHERE c.departmentId IS NULL OR c.departmentId = ''
+                    WITH c
+                    OPTIONAL MATCH (d_soft:Department {organizationId: c.organizationId}) WHERE d_soft.code = 'ENG-COG' OR d_soft.code = 'DPT-01'
+                    OPTIONAL MATCH (jp_dev:JobPosition {organizationId: c.organizationId, code: '15-1252.00'})
+                    OPTIONAL MATCH (d_qa:Department {organizationId: c.organizationId}) WHERE d_qa.code = 'ENG-QA' OR (d_qa.code = 'DPT-01' AND NOT EXISTS { MATCH (other:Department {organizationId: c.organizationId, code: 'ENG-QA'}) })
+                    OPTIONAL MATCH (jp_qa:JobPosition {organizationId: c.organizationId, code: '15-1253.00'})
+                    OPTIONAL MATCH (d_data:Department {organizationId: c.organizationId}) WHERE d_data.code = 'ENG-DATA' OR d_data.code = 'DPT-02'
+                    OPTIONAL MATCH (jp_data:JobPosition {organizationId: c.organizationId, code: '15-1243.00'})
+                    OPTIONAL MATCH (d_cloud:Department {organizationId: c.organizationId, code: 'ENG-CLOUD'})
+                    OPTIONAL MATCH (jp_cloud:JobPosition {organizationId: c.organizationId, code: '15-1299.08'})
+                    OPTIONAL MATCH (d_sec:Department {organizationId: c.organizationId, code: 'ENG-SEC'})
+                    OPTIONAL MATCH (jp_sec:JobPosition {organizationId: c.organizationId, code: '15-1212.00'})
+                    WITH c,
+                         coalesce(d_qa, d_soft) AS sel_d_qa, coalesce(jp_qa, jp_dev) AS sel_jp_qa,
+                         coalesce(d_data, d_soft) AS sel_d_data, coalesce(jp_data, jp_dev) AS sel_jp_data,
+                         coalesce(d_cloud, d_soft) AS sel_d_cloud, coalesce(jp_cloud, jp_dev) AS sel_jp_cloud,
+                         coalesce(d_sec, d_soft) AS sel_d_sec, coalesce(jp_sec, jp_dev) AS sel_jp_sec,
+                         d_soft AS sel_d_soft, jp_dev AS sel_jp_dev
+                    SET c.departmentId = CASE
+                            WHEN toUpper(coalesce(c.code, '')) CONTAINS 'TEXEC' OR toUpper(coalesce(c.code, '')) CONTAINS 'TAUTO' OR toUpper(coalesce(c.code, '')) CONTAINS 'TDES' OR toLower(c.name) CONTAINS 'test' OR toLower(c.name) CONTAINS 'quality' THEN sel_d_qa.id
+                            WHEN toUpper(coalesce(c.code, '')) CONTAINS 'DPIPE' OR toUpper(coalesce(c.code, '')) CONTAINS 'DMOD' OR toUpper(coalesce(c.code, '')) CONTAINS 'DQ' OR toUpper(coalesce(c.code, '')) CONTAINS 'DGOV' OR toLower(c.name) CONTAINS 'data' THEN sel_d_data.id
+                            WHEN toUpper(coalesce(c.code, '')) CONTAINS 'DELIV' OR toUpper(coalesce(c.code, '')) CONTAINS 'INFRA' OR toUpper(coalesce(c.code, '')) CONTAINS 'OPS' OR toLower(c.name) CONTAINS 'cloud' OR toLower(c.name) CONTAINS 'devops' THEN sel_d_cloud.id
+                            WHEN toUpper(coalesce(c.code, '')) CONTAINS 'SGOV' OR toUpper(coalesce(c.code, '')) CONTAINS 'SEC' OR toLower(c.name) CONTAINS 'security' THEN sel_d_sec.id
+                            ELSE sel_d_soft.id
+                        END,
+                        c.departmentName = CASE
+                            WHEN toUpper(coalesce(c.code, '')) CONTAINS 'TEXEC' OR toUpper(coalesce(c.code, '')) CONTAINS 'TAUTO' OR toUpper(coalesce(c.code, '')) CONTAINS 'TDES' OR toLower(c.name) CONTAINS 'test' OR toLower(c.name) CONTAINS 'quality' THEN sel_d_qa.name
+                            WHEN toUpper(coalesce(c.code, '')) CONTAINS 'DPIPE' OR toUpper(coalesce(c.code, '')) CONTAINS 'DMOD' OR toUpper(coalesce(c.code, '')) CONTAINS 'DQ' OR toUpper(coalesce(c.code, '')) CONTAINS 'DGOV' OR toLower(c.name) CONTAINS 'data' THEN sel_d_data.name
+                            WHEN toUpper(coalesce(c.code, '')) CONTAINS 'DELIV' OR toUpper(coalesce(c.code, '')) CONTAINS 'INFRA' OR toUpper(coalesce(c.code, '')) CONTAINS 'OPS' OR toLower(c.name) CONTAINS 'cloud' OR toLower(c.name) CONTAINS 'devops' THEN sel_d_cloud.name
+                            WHEN toUpper(coalesce(c.code, '')) CONTAINS 'SGOV' OR toUpper(coalesce(c.code, '')) CONTAINS 'SEC' OR toLower(c.name) CONTAINS 'security' THEN sel_d_sec.name
+                            ELSE sel_d_soft.name
+                        END,
+                        c.jobPositionCode = CASE
+                            WHEN toUpper(coalesce(c.code, '')) CONTAINS 'TEXEC' OR toUpper(coalesce(c.code, '')) CONTAINS 'TAUTO' OR toUpper(coalesce(c.code, '')) CONTAINS 'TDES' OR toLower(c.name) CONTAINS 'test' OR toLower(c.name) CONTAINS 'quality' THEN sel_jp_qa.code
+                            WHEN toUpper(coalesce(c.code, '')) CONTAINS 'DPIPE' OR toUpper(coalesce(c.code, '')) CONTAINS 'DMOD' OR toUpper(coalesce(c.code, '')) CONTAINS 'DQ' OR toUpper(coalesce(c.code, '')) CONTAINS 'DGOV' OR toLower(c.name) CONTAINS 'data' THEN sel_jp_data.code
+                            WHEN toUpper(coalesce(c.code, '')) CONTAINS 'DELIV' OR toUpper(coalesce(c.code, '')) CONTAINS 'INFRA' OR toUpper(coalesce(c.code, '')) CONTAINS 'OPS' OR toLower(c.name) CONTAINS 'cloud' OR toLower(c.name) CONTAINS 'devops' THEN sel_jp_cloud.code
+                            WHEN toUpper(coalesce(c.code, '')) CONTAINS 'SGOV' OR toUpper(coalesce(c.code, '')) CONTAINS 'SEC' OR toLower(c.name) CONTAINS 'security' THEN sel_jp_sec.code
+                            ELSE sel_jp_dev.code
+                        END,
+                        c.jobPositionTitle = CASE
+                            WHEN toUpper(coalesce(c.code, '')) CONTAINS 'TEXEC' OR toUpper(coalesce(c.code, '')) CONTAINS 'TAUTO' OR toUpper(coalesce(c.code, '')) CONTAINS 'TDES' OR toLower(c.name) CONTAINS 'test' OR toLower(c.name) CONTAINS 'quality' THEN sel_jp_qa.name
+                            WHEN toUpper(coalesce(c.code, '')) CONTAINS 'DPIPE' OR toUpper(coalesce(c.code, '')) CONTAINS 'DMOD' OR toUpper(coalesce(c.code, '')) CONTAINS 'DQ' OR toUpper(coalesce(c.code, '')) CONTAINS 'DGOV' OR toLower(c.name) CONTAINS 'data' THEN sel_jp_data.name
+                            WHEN toUpper(coalesce(c.code, '')) CONTAINS 'DELIV' OR toUpper(coalesce(c.code, '')) CONTAINS 'INFRA' OR toUpper(coalesce(c.code, '')) CONTAINS 'OPS' OR toLower(c.name) CONTAINS 'cloud' OR toLower(c.name) CONTAINS 'devops' THEN sel_jp_cloud.name
+                            WHEN toUpper(coalesce(c.code, '')) CONTAINS 'SGOV' OR toUpper(coalesce(c.code, '')) CONTAINS 'SEC' OR toLower(c.name) CONTAINS 'security' THEN sel_jp_sec.name
+                            ELSE sel_jp_dev.name
+                        END
+                    """, Map.of());
+
+                // 7. Deduplicate duplicate competencies with identical name within each organization
+                tx.execute("""
+                    MATCH (c:Competency)
+                    WITH c.organizationId AS orgId, c.name AS name, collect(c) AS comps
+                    WHERE size(comps) > 1
+                    WITH orgId, comps[0] AS canonical, comps[1..] AS duplicates
+                    UNWIND duplicates AS dup
+                    OPTIONAL MATCH (l:Level {organizationId: orgId})-[:HAS_COMPETENCY]->(dup)
+                    WITH orgId, canonical, dup, collect(DISTINCT l) AS levels
+                    FOREACH (lvl IN levels |
+                        MERGE (lvl)-[:HAS_COMPETENCY {id: 'copy-link:' + lvl.id + ':' + canonical.id, organizationId: orgId}]->(canonical)
+                    )
+                    WITH orgId, canonical, dup
+                    OPTIONAL MATCH (dup)-[:HAS_SKILL]->(s:MicroSkill)
+                    WITH orgId, canonical, dup, collect(DISTINCT s) AS skills
+                    FOREACH (sk IN skills |
+                        MERGE (canonical)-[:HAS_SKILL {id: 'copy-link:' + canonical.id + ':' + sk.id, organizationId: orgId}]->(sk)
+                    )
+                    DETACH DELETE dup
+                    """, Map.of());
+
+                // 8. Refresh TargetRole competencyIds with the canonical competency IDs
+                tx.execute("""
+                    MATCH (tr:TargetRole)-[:HAS_LEVEL]->(lvl:Level)-[:HAS_COMPETENCY]->(c:Competency)
+                    WITH tr, collect(DISTINCT c.id) AS canonicalCompIds
+                    SET tr.competencyIds = canonicalCompIds
+                    """, Map.of());
+
                 return true;
             });
             log.info("Neo4j departments, job positions, and target roles aligned for TechNova organization {}", TECHNOVA_ORG_ID);

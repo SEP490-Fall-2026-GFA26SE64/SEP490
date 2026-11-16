@@ -96,10 +96,12 @@ class SubscriptionMappingsTest {
                 7, 50, 50, List.of(mapper.map(order, PaymentOrderResponse.class))));
         assertNoSensitiveComponents(SummaryResponse.class);
 
-        var workspace = new Workspace(organizationId, "Acme", "ACTIVE", "READY",
+        var emptyProfile = new com.adaptlearngraph.repository.SubscriptionWorkspaceStore.OrganizationProfile(
+                "acme", null, null, null, null);
+        var workspace = new Workspace(organizationId, "Acme", "ACTIVE", "READY", emptyProfile,
                 new com.adaptlearngraph.repository.SubscriptionWorkspaceStore.WorkspaceSubscription("NONE", null), List.of());
         assertThat(mapper.map(workspace, WorkspaceResponse.class))
-                .isEqualTo(new WorkspaceResponse(organizationId, "Acme", "ACTIVE", "READY",
+                .isEqualTo(new WorkspaceResponse(organizationId, "Acme", "ACTIVE", "READY", "acme", null, null, null, null,
                         new com.adaptlearngraph.dtos.SubscriptionDto.WorkspaceSubscriptionResponse("NONE", null), List.of()));
 
         var member = new Member(UUID.randomUUID(), UUID.randomUUID(), "Ada Lovelace", "ada@example.test", true,
@@ -124,12 +126,22 @@ class SubscriptionMappingsTest {
         var current = new com.adaptlearngraph.repository.SubscriptionWorkspaceStore.CurrentPlan(
                 "Purchased Starter", Instant.parse("2026-11-01T00:00:00Z"), Instant.parse("2026-12-01T00:00:00Z"));
         var admin = new com.adaptlearngraph.repository.SubscriptionWorkspaceStore.WorkspaceAdministrator(
-                UUID.randomUUID(), null, "admin@example.test", false, true);
-        var workspace = new Workspace(UUID.randomUUID(), "Acme", "SUSPENDED", "READY",
+                UUID.randomUUID(), null, "admin@example.test", false, true, true, "+84901234567");
+        var createdAt = Instant.parse("2026-10-30T02:00:00Z");
+        var profile = new com.adaptlearngraph.repository.SubscriptionWorkspaceStore.OrganizationProfile(
+                "acme", "Software Engineering & AI", "21 - 50 employees", "VN", createdAt);
+        var workspace = new Workspace(UUID.randomUUID(), "Acme", "SUSPENDED", "READY", profile,
                 new com.adaptlearngraph.repository.SubscriptionWorkspaceStore.WorkspaceSubscription("ACTIVE", current),
                 List.of(admin));
 
         var response = mapper.map(workspace, WorkspaceResponse.class);
+        assertThat(response.workspaceSlug()).isEqualTo("acme");
+        assertThat(response.industry()).isEqualTo("Software Engineering & AI");
+        assertThat(response.headcount()).isEqualTo("21 - 50 employees");
+        assertThat(response.country()).isEqualTo("VN");
+        assertThat(response.createdAt()).isEqualTo(createdAt);
+        assertThat(response.administrators().getFirst().systemAdministrator()).isTrue();
+        assertThat(response.administrators().getFirst().phone()).isEqualTo("+84901234567");
         assertThat(response.subscription().status()).isEqualTo("ACTIVE");
         assertThat(response.subscription().current().name()).isEqualTo(current.name());
         assertThat(response.subscription().current().startsAt()).isEqualTo(current.startsAt());

@@ -1,0 +1,22 @@
+{
+  "width": 3983,
+  "height": 2997,
+  "nodes": 9,
+  "circles": 1,
+  "edges": 104,
+  "edgeLabels": 104,
+  "clipped": 0,
+  "labelNodeCollisions": [],
+  "labelLabelCollisions": [],
+  "edgeNodeCollisions": [],
+  "misplacedEntities": [],
+  "minimumCirclePortGap": 23.65,
+  "coincidentCirclePorts": 0,
+  "validXml": true,
+  "externalEntities": 8,
+  "humanActors": 6,
+  "providers": 2,
+  "leftFlows": 47,
+  "rightFlows": 57,
+  "pageErrors": []
+}

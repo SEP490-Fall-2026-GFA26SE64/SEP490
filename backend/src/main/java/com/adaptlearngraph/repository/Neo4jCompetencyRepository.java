@@ -33,7 +33,13 @@ public class Neo4jCompetencyRepository implements CompetencyRepository {
                    levelId,
                    coalesce(levelName, '') AS levelName,
                    coalesce(roleName, '') AS roleName,
-                   skills
+                   coalesce(c.departmentId, '') AS departmentId,
+                   coalesce(c.departmentName, '') AS departmentName,
+                   coalesce(c.jobPositionCode, '') AS jobPositionCode,
+                   coalesce(c.jobPositionTitle, '') AS jobPositionTitle,
+                   skills,
+                   coalesce(toString(c.createdAt), '') AS createdAt,
+                   coalesce(toString(c.updatedAt), '') AS updatedAt
             """;
     // Neo4jClient: one statement per list joining the owning level/role and collecting member skills into a row.
     private static final String LIST = """
@@ -44,6 +50,8 @@ public class Neo4jCompetencyRepository implements CompetencyRepository {
                OR toLower(c.id) CONTAINS toLower($search)
                OR toLower(coalesce(c.code, '')) CONTAINS toLower($search)
                OR toLower(coalesce(c.description, '')) CONTAINS toLower($search))
+              AND ($departmentId IS NULL OR $departmentId = '' OR c.departmentId = $departmentId)
+              AND ($jobPositionCode IS NULL OR $jobPositionCode = '' OR c.jobPositionCode = $jobPositionCode)
             """ + PROJECTION + """
             ORDER BY coalesce(c.code, c.name) ASC
             """;
@@ -67,9 +75,16 @@ public class Neo4jCompetencyRepository implements CompetencyRepository {
 
     @Override
     public List<CompetencyRecord> findAllCompetencies(String organizationId, String search) {
+        return findAllCompetencies(organizationId, search, null, null);
+    }
+
+    @Override
+    public List<CompetencyRecord> findAllCompetencies(String organizationId, String search, String departmentId, String jobPositionCode) {
         Map<String, Object> parameters = Map.of(
                 "organizationId", organizationId != null ? organizationId : "",
-                "search", search != null ? search.trim() : "");
+                "search", search != null ? search.trim() : "",
+                "departmentId", departmentId != null ? departmentId.trim() : "",
+                "jobPositionCode", jobPositionCode != null ? jobPositionCode.trim() : "");
         return reads.execute(status -> new ArrayList<>(client.query(LIST).bindAll(parameters)
                 .fetchAs(CompetencyRecord.class).mappedBy((types, row) -> mapRecord(row)).all()));
     }
@@ -103,7 +118,8 @@ public class Neo4jCompetencyRepository implements CompetencyRepository {
         return writes.execute(status -> {
             Neo4jTenantGuard.requireOwnedOrAbsent(client, "Competency", record.id(), organization);
             competencies.merge(record.id(), organization, record.code(), record.name(), record.description(),
-                    record.attainmentRule(), record.status(), record.version());
+                    record.attainmentRule(), record.status(), record.version(),
+                    record.departmentId(), record.departmentName(), record.jobPositionCode(), record.jobPositionTitle());
 
             if (levelId != null && !levelId.isBlank()) {
                 competencies.linkLevel(levelId, Objects.requireNonNull(record.id()), organization);
@@ -162,7 +178,13 @@ public class Neo4jCompetencyRepository implements CompetencyRepository {
                 record.containsKey("levelId") && !record.get("levelId").isNull() ? record.get("levelId").asString() : null,
                 record.get("levelName").asString(),
                 record.get("roleName").asString(),
-                skills
+                record.containsKey("departmentId") && !record.get("departmentId").isNull() ? record.get("departmentId").asString() : "",
+                record.containsKey("departmentName") && !record.get("departmentName").isNull() ? record.get("departmentName").asString() : "",
+                record.containsKey("jobPositionCode") && !record.get("jobPositionCode").isNull() ? record.get("jobPositionCode").asString() : "",
+                record.containsKey("jobPositionTitle") && !record.get("jobPositionTitle").isNull() ? record.get("jobPositionTitle").asString() : "",
+                skills,
+                record.containsKey("createdAt") && !record.get("createdAt").isNull() ? record.get("createdAt").asString() : "",
+                record.containsKey("updatedAt") && !record.get("updatedAt").isNull() ? record.get("updatedAt").asString() : ""
         );
     }
 }

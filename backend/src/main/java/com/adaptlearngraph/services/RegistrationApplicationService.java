@@ -36,8 +36,14 @@ public class RegistrationApplicationService {
     }
 
     public ViewResponse register(SignupRequest input, HttpServletRequest request) {
+        if (!Boolean.TRUE.equals(input.policiesAccepted())) {
+            throw RegistrationFailure.invalid("policiesAccepted", "Agree to the Terms of Use and Privacy Policy to continue.");
+        }
+        if (input.adminPhone() == null || input.adminPhone().isBlank()) {
+            throw RegistrationFailure.invalid("adminPhone", "Enter your phone number.");
+        }
         var fields = new RegistrationFields(input.organizationName(), input.subdomain(), input.industry(),
-                input.headcount(), input.adminName(), input.adminEmail());
+                input.headcount(), input.adminName(), input.adminEmail(), input.country(), input.adminPhone());
         var actor = registration.register(fields, input.password(), request.getRemoteAddr(),
                 input.catalogSelection() == null ? List.of() : input.catalogSelection());
         establish(request, actor);

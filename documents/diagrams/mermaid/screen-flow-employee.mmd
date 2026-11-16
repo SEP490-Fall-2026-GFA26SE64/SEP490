@@ -1,0 +1,82 @@
+---
+title: "Employee Screen Flow"
+config:
+  layout: elk
+  theme: base
+  look: classic
+  fontFamily: "Arial, sans-serif"
+  themeVariables: {background: "#ffffff", primaryColor: "#ffffff", primaryTextColor: "#000000", primaryBorderColor: "#000000", lineColor: "#000000", edgeLabelBackground: "#ffffff", fontSize: "16px"}
+  flowchart: {htmlLabels: true, curve: linear, nodeSpacing: 42, rankSpacing: 90, padding: 18, diagramPadding: 32}
+---
+flowchart LR
+  EMP_Login["Login"]
+  EMP_Overview["Learning Overview"]
+  EMP_Upskilling["Upskilling"]
+  EMP_RoleDetails("Role Details")
+  EMP_RoleSelection("Role Selection")
+  EMP_Gaps("Role Gap Review")
+  EMP_Pathway["Learning Pathway"]
+  EMP_SkillDetails("Skill Details")
+  EMP_ModuleDetails("Module Details")
+  EMP_Reader["Module Reader"]
+  EMP_Issue("Report Content Issue")
+  EMP_Version("Switch Content Version")
+  EMP_Assessments["Assessments"]
+  EMP_Quiz("Quiz Details")
+  EMP_SubmitQuiz("Submit Assessment")
+  EMP_QuitQuiz("Quit Assessment")
+  EMP_Baseline["Baseline Assessment"]
+  EMP_SubmitBaseline("Submit Baseline")
+  EMP_Mastery["My Mastery"]
+  EMP_Profile["Profile"]
+
+  EMP_Login -->|"Continue"| EMP_Overview
+  EMP_Overview -->|"Upskilling"| EMP_Upskilling
+  EMP_Overview -->|"Learning pathway"| EMP_Pathway
+  EMP_Overview -->|"Assessments"| EMP_Assessments
+  EMP_Overview -->|"User menu"| EMP_Profile
+  EMP_Overview -->|"Logout"| EMP_Login
+  EMP_Profile -.->|"Direct access"| EMP_Overview
+  EMP_Upskilling -->|"View role"| EMP_RoleDetails
+  EMP_RoleDetails -->|"Close"| EMP_Upskilling
+  EMP_Upskilling -->|"Choose Role and Level"| EMP_RoleSelection
+  EMP_RoleSelection -->|"Confirm / cancel"| EMP_Upskilling
+  EMP_Upskilling -->|"Review gaps"| EMP_Gaps
+  EMP_Gaps -->|"Close"| EMP_Upskilling
+  EMP_Gaps -->|"Baseline required"| EMP_RoleSelection
+  EMP_Gaps -->|"Confirm pathway request"| EMP_Pathway
+  EMP_Upskilling -->|"Start / resume / history"| EMP_Baseline
+  EMP_Baseline -->|"Choose role"| EMP_Upskilling
+  EMP_Baseline -->|"Submit answers"| EMP_SubmitBaseline
+  EMP_SubmitBaseline -->|"Confirm / cancel"| EMP_Baseline
+  EMP_Baseline -->|"My mastery"| EMP_Mastery
+  EMP_Mastery -->|"History / view result"| EMP_Baseline
+  EMP_Mastery -->|"Choose role when empty"| EMP_Upskilling
+  EMP_Baseline -->|"Other assessments"| EMP_Assessments
+  EMP_Assessments -->|"Choose role when required"| EMP_Upskilling
+  EMP_Pathway -->|"Choose Role / Skill"| EMP_Upskilling
+  EMP_Pathway -->|"View skill"| EMP_SkillDetails
+  EMP_SkillDetails -->|"Close pathway details"| EMP_Pathway
+  EMP_Upskilling -->|"View skill"| EMP_SkillDetails
+  EMP_SkillDetails -->|"Close catalog / track skill"| EMP_Upskilling
+  EMP_Pathway -->|"View module"| EMP_ModuleDetails
+  EMP_ModuleDetails -->|"Close"| EMP_Pathway
+  EMP_ModuleDetails -->|"Learn if permitted"| EMP_Reader
+  EMP_Reader -->|"Back to pathway"| EMP_Pathway
+  EMP_Reader -->|"Report content issue"| EMP_Issue
+  EMP_Issue -->|"Send / cancel"| EMP_Reader
+  EMP_Reader -->|"Switch version"| EMP_Version
+  EMP_Version -->|"Confirm / keep current"| EMP_Reader
+  EMP_Assessments -->|"View quiz"| EMP_Quiz
+  EMP_Quiz -->|"Begin / cancel"| EMP_Assessments
+  EMP_Assessments -->|"Submit answers"| EMP_SubmitQuiz
+  EMP_SubmitQuiz -->|"Confirm / cancel"| EMP_Assessments
+  EMP_Assessments -->|"Quit session"| EMP_QuitQuiz
+  EMP_QuitQuiz -->|"Quit / continue"| EMP_Assessments
+
+  %% Shared navigation is drawn once from Learning Overview, not a mandatory sequence.
+  %% Role/Skill tabs, questions, results and pathway statuses stay on their owner page.
+  %% Role and module access require the current workspace, feature and access guards.
+  %% Shared Skill Details returns to the page that opened that dialog.
+  %% Current legacy quiz/skill-tracking UI is not evidence of server-side persistence.
+  classDef default fill:#ffffff,stroke:#000000,color:#000000,stroke-width:1px

@@ -62,4 +62,18 @@ public final class RequirementPathwayRecalculationService {
         }catch(com.adaptlearngraph.exception.InitialPathwayFailure failure){throw failure;}
         catch(Exception invalid){throw new Failure(503,"ASSESSMENT_PATHWAY_RECALCULATION_FAILED");}
     }
+    public Optional<RuleAssessmentOutcomeService.PathwayBefore> before(RuleAssessmentAttemptEntity attempt) {
+        InitialJpa.requireTransaction();if(!"SKILL_ASSESSMENT".equals(attempt.getPurpose()))return Optional.empty();
+        try {
+            UUID id=UUID.fromString(json.readTree(attempt.getContextSnapshot()).path("context").path("requestId").asText());
+            var row=rules.lock(attempt.getOrganizationId(),id).orElseThrow(()->new Failure(503,"ASSESSED_PATHWAY_NOT_FOUND"));
+            if(!row.getLearnerId().equals(attempt.getLearnerId()))throw new Failure(503,"ASSESSED_PATHWAY_SCOPE_INVALID");
+            return row.getArchivedAt()!=null?Optional.empty():Optional.of(new RuleAssessmentOutcomeService.PathwayBefore(id,revisions.read(row)));
+        }catch(java.io.IOException invalid){throw new Failure(503,"ASSESSMENT_PATHWAY_RECALCULATION_FAILED");}
+    }
+    public void notify(RuleAssessmentAttemptEntity attempt,UUID event,Optional<RuleAssessmentOutcomeService.PathwayBefore> before) {
+        if(before.isEmpty())return;
+        var saved=before.get();var row=rules.own(attempt.getOrganizationId(),attempt.getLearnerId(),saved.requestId()).orElseThrow();
+        revisions.recalculated(row,row.getCurrentRevision(),saved.plan(),revisions.read(row),event);
+    }
 }

@@ -32,21 +32,21 @@ export function PlanCatalog({ base, principal, replacesOrderId, onCreated, disab
   if (plans.isError) return <Failure error={plans.error} retry={() => void plans.refetch()} />
   return <section className="space-y-4" aria-label={c('Subscription plans', 'Các gói đăng ký')}>
     {plans.data.length === 0 && <p>{c('No plans are available. Contact the platform administrator.', 'Chưa có gói. Liên hệ quản trị viên nền tảng.')}</p>}
-    <p className="max-w-3xl text-body-sm leading-relaxed text-muted-foreground">{c('Choose the capacity that fits your team. The displayed price covers the full selected period. Complete the required steps to prepare your workspace.', 'Chọn quy mô phù hợp với đội ngũ. Giá hiển thị áp dụng cho toàn bộ kỳ đã chọn. Hoàn thành các bước được yêu cầu để chuẩn bị không gian làm việc.')}</p>
+    <p className="max-w-3xl text-body-sm leading-relaxed text-muted-foreground">{c('The price shown is the total for the full plan duration. You can review your selection before creating a payment order.', 'Giá hiển thị là tổng tiền cho toàn bộ thời hạn gói. Bạn có thể kiểm tra lựa chọn trước khi tạo đơn thanh toán.')}</p>
     <div className="grid gap-5 md:grid-cols-3">
-      {plans.data.map(plan => <Card key={plan.planId} className="flex h-full flex-col overflow-hidden transition-shadow hover:shadow-md">
-        <CardHeader className="border-b border-border bg-muted/20"><CardTitle>{plan.terms.name}</CardTitle>
+      {plans.data.map(plan => <Card key={plan.planId} className="flex h-full flex-col overflow-hidden rounded-2xl shadow-sm transition-shadow hover:shadow-md">
+        <CardHeader className="border-b border-border bg-muted/20"><CardTitle className="text-[length:var(--text-card)]">{plan.terms.name}</CardTitle>
           <Heading level={3} size="page" className="pt-2 tabular-nums">{plan.terms.priceVnd.toLocaleString('vi-VN')} <span className="text-sm font-medium text-muted-foreground">VND</span></Heading>
-          <p className="text-caption text-muted-foreground">{c('Total for', 'Tổng cộng cho')} {plan.terms.durationMonths} {c('calendar month(s)', 'tháng theo lịch')}</p>
+          <p className="text-caption text-muted-foreground">{c('Total for', 'Tổng cộng cho')} {plan.terms.durationMonths} {c(plan.terms.durationMonths === 1 ? 'month' : 'months', 'tháng')}</p>
         </CardHeader>
         <CardContent className="flex flex-1 flex-col gap-5 pt-5">
           <p className="text-body-sm leading-relaxed text-muted-foreground">{plan.terms.description}</p>
           <ul className="space-y-3 text-body-sm">
-            <li className="flex items-center gap-2"><Users size={17} className="text-primary" aria-hidden="true" />{plan.terms.employeeSeats} {c('Employee seats', 'chỗ Nhân viên')}</li>
-            <li className="flex items-center gap-2"><CalendarDays size={17} className="text-primary" aria-hidden="true" />{plan.terms.durationMonths} {c('calendar month(s)', 'tháng theo lịch')}</li>
-            <li className="flex items-center gap-2"><Check size={17} className="text-success" aria-hidden="true" />{c('Organization workspace', 'Không gian cho tổ chức')}</li>
+            <li className="flex items-center gap-2"><Users size={17} className="text-primary" aria-hidden="true" />{plan.terms.employeeSeats} {c('employee accounts', 'tài khoản nhân viên')}</li>
+            <li className="flex items-center gap-2"><CalendarDays size={17} className="text-primary" aria-hidden="true" />{plan.terms.durationMonths} {c(plan.terms.durationMonths === 1 ? 'month' : 'months', 'tháng')}</li>
+            <li className="flex items-center gap-2"><Check size={17} className="text-success" aria-hidden="true" />{c('Your own business workspace', 'Không gian làm việc riêng')}</li>
           </ul>
-          <Button className="mt-auto w-full" disabled={disabled || create.isPending} onClick={() => {
+          <Button className="mt-auto min-h-11 w-full rounded-xl" disabled={disabled || create.isPending} onClick={() => {
             create.reset(); setSelection({ plan, key: crypto.randomUUID() })
           }}>{c('Select', 'Chọn')} {plan.terms.name}</Button>
         </CardContent>
@@ -59,7 +59,7 @@ export function PlanCatalog({ base, principal, replacesOrderId, onCreated, disab
         {selection && <div className="space-y-3">
           <div className="space-y-2 rounded-xl border border-border bg-muted/30 p-4">
             <p className="text-subsection font-semibold">{selection.plan.terms.name}</p>
-            <p className="text-body-sm text-muted-foreground">{selection.plan.terms.durationMonths} {c('month(s)', 'tháng')} · {selection.plan.terms.employeeSeats} {c('Employee seats', 'chỗ Nhân viên')}</p>
+            <p className="text-body-sm text-muted-foreground">{selection.plan.terms.durationMonths} {c(selection.plan.terms.durationMonths === 1 ? 'month' : 'months', 'tháng')} · {selection.plan.terms.employeeSeats} {c('employee accounts', 'tài khoản nhân viên')}</p>
             <Heading level={3} size="section" className="border-t border-border pt-3">{selection.plan.terms.priceVnd.toLocaleString('vi-VN')} VND</Heading>
           </div>
           <p>{c('If payment is required, the payOS checkout expires in 30 minutes. Follow its bank transfer instructions.', 'Nếu cần thanh toán, đơn payOS hết hạn sau 30 phút. Làm theo hướng dẫn chuyển khoản tại trang thanh toán.')}</p>

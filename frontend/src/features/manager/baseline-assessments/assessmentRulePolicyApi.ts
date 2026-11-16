@@ -1,7 +1,7 @@
 import { adaptiveHttp } from './adaptiveBaselineApi'
 export type AssessmentPurpose = 'BASELINE' | 'SKILL_ASSESSMENT'
 export type KnowledgeLevel = 'FOUNDATION' | 'INTERMEDIATE' | 'ADVANCED'
-export interface RuleGroup { skillId: string; knowledgeLevel: KnowledgeLevel; totalCount: number; requiredCorrectCount: number; mandatoryRequired: boolean; allWrongVeto: boolean }
+export interface RuleGroup { skillId: string; knowledgeLevel: KnowledgeLevel; totalCount: number; requiredCorrectCount: number; mandatoryRequired: boolean; allWrongVeto: boolean; mandatoryCount?: number | null }
 export interface RulePolicy { timeLimitSeconds: number; retakeWaitSeconds: number; maxAttempts: number; groups: RuleGroup[] }
 export interface RulePolicyVersion { id: string; purpose: AssessmentPurpose; version: number; configuration: RulePolicy; hash: string; createdBy: string; createdAt: string }
 export interface RulePolicyState { purpose: AssessmentPurpose; active: RulePolicyVersion | null; activationRevision: number }
@@ -25,7 +25,9 @@ export function rulePolicy(value: unknown): RulePolicy {
     if (level !== 'FOUNDATION' && level !== 'INTERMEDIATE' && level !== 'ADVANCED') throw new Error('Invalid knowledge level')
     const totalCount = integer(g.totalCount, 1), requiredCorrectCount = integer(g.requiredCorrectCount, 1)
     if (totalCount > 500 || requiredCorrectCount > totalCount || typeof g.mandatoryRequired !== 'boolean' || typeof g.allWrongVeto !== 'boolean') throw new Error('Invalid group rule')
-    return { skillId: text(g.skillId), knowledgeLevel: level, totalCount, requiredCorrectCount, mandatoryRequired: g.mandatoryRequired, allWrongVeto: g.allWrongVeto }
+    const mandatoryCount = g.mandatoryCount == null ? null : integer(g.mandatoryCount, 0)
+    if (mandatoryCount !== null && (mandatoryCount > totalCount || g.mandatoryRequired !== (mandatoryCount > 0))) throw new Error('Invalid mandatory quota')
+    return { skillId: text(g.skillId), knowledgeLevel: level, totalCount, requiredCorrectCount, mandatoryRequired: g.mandatoryRequired, allWrongVeto: g.allWrongVeto, ...(mandatoryCount === null ? {} : { mandatoryCount }) }
   })
   if (new Set(groups.map(g => `${g.skillId}:${g.knowledgeLevel}`)).size !== groups.length) throw new Error('Configure unique skill and knowledge groups')
   return { timeLimitSeconds: integer(p.timeLimitSeconds, 1), retakeWaitSeconds: integer(p.retakeWaitSeconds, 0), maxAttempts: integer(p.maxAttempts, 1), groups }

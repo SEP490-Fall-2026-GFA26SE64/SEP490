@@ -54,12 +54,12 @@ public interface RuleAssessmentAttemptJpaRepository extends Repository<RuleAsses
     @Modifying @Transactional(TransactionManagers.JPA)
     @Query(value="""
             INSERT INTO platform.rule_assessment_group(attempt_id,group_id,organization_id,learner_id,skill_id,knowledge_level,
-                outcome_codes,group_role,total_count,required_correct_count,mandatory_required,all_wrong_veto)
-            VALUES (:attempt,:group,:org,:learner,:skill,:level,CAST(:outcomes AS jsonb),:role,:total,:correct,:mandatory,:veto)
+                outcome_codes,group_role,total_count,required_correct_count,mandatory_required,all_wrong_veto,mandatory_count)
+            VALUES (:attempt,:group,:org,:learner,:skill,:level,CAST(:outcomes AS jsonb),:role,:total,:correct,:mandatory,:veto,:mandatoryCount)
             """,nativeQuery=true)
     int freezeGroup(@Param("attempt") UUID attempt,@Param("group") UUID group,@Param("org") UUID org,@Param("learner") UUID learner,
             @Param("skill") String skill,@Param("level") String level,@Param("outcomes") String outcomes,@Param("role") String role,
-            @Param("total") int total,@Param("correct") int correct,@Param("mandatory") boolean mandatory,@Param("veto") boolean veto);
+            @Param("total") int total,@Param("correct") int correct,@Param("mandatory") boolean mandatory,@Param("veto") boolean veto,@Param("mandatoryCount") Integer mandatoryCount);
     @Modifying @Transactional(TransactionManagers.JPA)
     @Query(value="""
             INSERT INTO platform.rule_assessment_item(attempt_id,group_id,item_position,organization_id,item_version_id,frozen_item,mandatory)
@@ -70,7 +70,7 @@ public interface RuleAssessmentAttemptJpaRepository extends Repository<RuleAsses
     @Query(value="""
             SELECT g.group_id AS groupId,g.skill_id AS skillId,g.knowledge_level AS knowledgeLevel,g.outcome_codes::text AS outcomeCodes,
                 g.group_role AS role,g.total_count AS totalCount,g.required_correct_count AS requiredCorrectCount,
-                g.mandatory_required AS mandatoryRequired,g.all_wrong_veto AS allWrongVeto,
+                g.mandatory_required AS mandatoryRequired,g.all_wrong_veto AS allWrongVeto,g.mandatory_count AS mandatoryCount,
                 i.item_position AS position,i.item_version_id AS itemVersionId,i.frozen_item::text AS frozenItem,i.mandatory AS mandatory,
                 d.prompt AS prompt,d.response_schema::text AS responseSchema,d.protected_key::text AS protectedKey,
                 d.content_hash AS contentHash,m.mapping_hash AS mappingHash,m.outcome_code AS outcomeCode,
@@ -86,7 +86,7 @@ public interface RuleAssessmentAttemptJpaRepository extends Repository<RuleAsses
     List<PaperRow> paper(@Param("org") UUID org,@Param("learner") UUID learner,@Param("id") UUID id);
     interface PaperRow {
         UUID getGroupId();String getSkillId();String getKnowledgeLevel();String getOutcomeCodes();String getRole();
-        int getTotalCount();int getRequiredCorrectCount();boolean getMandatoryRequired();boolean getAllWrongVeto();
+        int getTotalCount();int getRequiredCorrectCount();boolean getMandatoryRequired();boolean getAllWrongVeto();Integer getMandatoryCount();
         int getPosition();UUID getItemVersionId();String getFrozenItem();boolean getMandatory();String getPrompt();
         String getResponseSchema();String getProtectedKey();String getContentHash();String getMappingHash();String getOutcomeCode();String getAnswer();
     }

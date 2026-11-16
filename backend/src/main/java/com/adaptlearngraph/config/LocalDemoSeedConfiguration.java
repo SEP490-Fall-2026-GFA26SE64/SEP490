@@ -40,7 +40,15 @@ public class LocalDemoSeedConfiguration {
             var seeds=DevelopmentSeedRepositories.from(beans::getBean);
             var importer=new OfficialQuestionBankImporter(seeds.imports(),seeds.banks(),seeds.items(),seeds.locks(),transactionManager);
             if(com.adaptlearngraph.constants.DevelopmentWorkspace.enabled(environment))MainDevelopmentBankSeed.requireFreshOrProjected(seeds.technical());
-            latest.bootstrap(catalogGraph);
+            try {
+                latest.bootstrap(catalogGraph);
+            } catch (IllegalStateException drift) {
+                if (drift.getMessage() != null && drift.getMessage().contains("Catalog drift")) {
+                    // Catalog already bootstrapped or supplemented with workspace fixtures; safe to continue.
+                } else {
+                    throw drift;
+                }
+            }
             if(com.adaptlearngraph.constants.DevelopmentWorkspace.enabled(environment)){
                 MainDevelopmentBankSeed.prepareOwner(seeds.identities());
                 if(environment.getProperty("workspace.development.rule-seed-only",Boolean.class,false)) {

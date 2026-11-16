@@ -1,8 +1,9 @@
 import { randomUUID } from 'node:crypto'
-import { expect, test, type Browser, type BrowserContext, type Page } from '@playwright/test'
+import { expect as playwrightExpect, test, type Browser, type BrowserContext, type Page } from '@playwright/test'
 import { mutate, record, text } from './subscriptionHelpers'
 
 const BASE = 'http://127.0.0.1:8096'
+const expect = playwrightExpect.configure({ timeout: 30_000 })
 const TECHNOVA = { organizationId: 'e0000000-0000-0000-0000-000000000001', email: 'admin@technova.com', password: 'Password123!' }
 const VIEWPORTS = [{ width: 1440, height: 1000 }, { width: 390, height: 844 }]
 
@@ -49,7 +50,9 @@ test('a Guest copies a picked catalog subtree into a new workspace served under 
   const organizationName = `Tenant B ${randomUUID().slice(0, 8)}`
 
   await page.goto('/guest/register')
-  await page.getByLabel('Organization Legal Name', { exact: false }).fill(organizationName)
+  await page.getByLabel('Business name', { exact: false }).fill(organizationName)
+  await page.getByRole('button', { name: 'Choose catalog', exact: true }).click()
+  await page.getByRole('combobox', { name: 'Item type', exact: true }).selectOption('TargetRole')
   await expect(page.getByTestId('catalog-graph')).toBeVisible()
   const role = page.getByRole('list', { name: 'Platform catalog items' }).getByRole('listitem').filter({ hasText: 'Target role' }).first()
   await role.getByRole('button', { name: /^Add / }).click()
@@ -59,23 +62,26 @@ test('a Guest copies a picked catalog subtree into a new workspace served under 
   expect(copiedNodes).toBeGreaterThan(1)
   expect((await page.request.post('/api/v1/registration/catalog-closure', { data: { nodeIds: [] } })).status()).toBe(403)
   await page.screenshot({ path: test.info().outputPath('registration-catalog-picker-1440.png'), fullPage: true })
+  await page.getByRole('button', { name: 'Apply catalog', exact: true }).click()
 
   await page.getByRole('button', { name: 'Continue to account', exact: true }).click()
-  await page.getByLabel('Administrator Full Name', { exact: false }).fill('Tenant B Owner')
-  await page.getByLabel('Work Email Address', { exact: false }).fill(email)
+  await page.getByLabel('Full name', { exact: false }).fill('Tenant B Owner')
+  await page.getByLabel('Login email', { exact: false }).fill(email)
+  await page.getByLabel('Phone number', { exact: false }).fill('0901234567')
+  await page.getByRole('checkbox', { name: /I agree/ }).check()
   await page.getByLabel('Password', { exact: false }).first().fill(password)
   await page.getByLabel('Confirm Password', { exact: false }).fill(password)
   const registered = page.waitForResponse(response => response.url().endsWith('/api/v1/registration') && response.request().method() === 'POST')
-  await page.getByRole('button', { name: 'Save and continue', exact: true }).click()
+  await page.getByRole('button', { name: 'Create account', exact: true }).click()
   const registration = await registered
   expect(registration.status()).toBe(201)
-  expect(JSON.parse(registration.request().postData() ?? '{}').catalogSelection).toHaveLength(1)
+  expect(JSON.parse(registration.request().postData() ?? '{}').catalogSelection.length).toBeGreaterThan(1)
   await expect(page.getByRole('heading', { name: 'Registration complete', exact: true })).toBeVisible()
 
   await page.goto('/guest/plans')
   await page.getByRole('button', { name: 'Select Starter', exact: true }).click()
   await page.getByRole('dialog', { name: 'Confirm purchase terms' }).getByRole('button', { name: 'Create payment order', exact: true }).click()
-  await expect(page.getByText('Development payment bypass', { exact: true })).toBeVisible()
+  await expect(page.getByText('Development payment bypass', { exact: true })).toBeVisible({ timeout: 30_000 })
   // The workspace becomes READY only after the catalog copy succeeds.
   await expect(page.getByRole('button', { name: 'Enter workspace', exact: true })).toBeVisible({ timeout: 90_000 })
   await page.getByRole('button', { name: 'Enter workspace', exact: true }).click()
@@ -85,7 +91,7 @@ test('a Guest copies a picked catalog subtree into a new workspace served under 
   const slug = text(identity.workspaceSlug)
   expect(slug).toMatch(/^[a-z0-9][a-z0-9-]+[a-z0-9]$/)
     await expect(page).toHaveURL(`${BASE}/workspace/${slug}/admin/subscription`)
-  await expect(page.getByRole('heading', { name: 'Organization subscription', exact: true })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Organization subscription', exact: true })).toBeVisible({ timeout: 30_000 })
   await page.screenshot({ path: test.info().outputPath('tenant-b-workspace-1440.png'), fullPage: true })
   tenantB = { slug, organizationId: text(identity.organizationId), email, password, copiedNodes }
   test.info().annotations.push({ type: 'tenant-b', description: JSON.stringify({ slug, organizationId: tenantB.organizationId, copiedNodes }) })

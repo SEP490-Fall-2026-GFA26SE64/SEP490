@@ -34,7 +34,8 @@ class PlatformWorkspaceDirectoryTest {
     void usesOneTimeBoundaryAndBatchedQueriesPreservingNullableNamesAndInactiveAdmins() {
         var ids = List.of(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID());
         when(organizations.withWorkspaces()).thenReturn(ids.stream()
-                .map(id -> new OrganizationJpaRepository.Listed(id, "Organization", "SUSPENDED", "READY")).toList());
+                .map(id -> new OrganizationJpaRepository.Listed(id, "Organization", "SUSPENDED", "READY",
+                        "org", null, null, null, null, null, null)).toList());
         var admin = new OrganizationMembershipJpaRepository.Administrator(ids.getFirst(), UUID.randomUUID(),
                 null, "admin@example.test", false, true);
         when(memberships.administrators(ids)).thenReturn(List.of(admin));
@@ -49,7 +50,8 @@ class PlatformWorkspaceDirectoryTest {
         assertThat(result.getFirst().status()).isEqualTo("SUSPENDED");
         assertThat(result.getFirst().subscription().current().name()).isEqualTo("Purchased plan");
         assertThat(result.getFirst().administrators()).containsExactly(
-                new SubscriptionWorkspaceStore.WorkspaceAdministrator(admin.accountId(), null, admin.email(), false, true));
+                new SubscriptionWorkspaceStore.WorkspaceAdministrator(admin.accountId(), null, admin.email(), false, true,
+                        false, null));
         assertThat(result.subList(1, 4)).allSatisfy(workspace -> {
             assertThat(workspace.subscription().current()).isNull();
             assertThat(workspace.administrators()).isEmpty();
@@ -57,5 +59,28 @@ class PlatformWorkspaceDirectoryTest {
         verify(memberships).administrators(ids);
         verify(subscriptions).directoryPeriods(ids);
         verifyNoMoreInteractions(memberships, subscriptions);
+    }
+
+    @Test
+    void attachesRegistrationPhoneOnlyToRegisteringSystemAdministratorAndKeepsProfile() {
+        var organizationId = UUID.randomUUID();
+        var registrant = UUID.randomUUID();
+        var createdAt = Instant.parse("2026-10-30T02:00:00Z");
+        when(organizations.withWorkspaces()).thenReturn(List.of(new OrganizationJpaRepository.Listed(organizationId,
+                "Acme", "ACTIVE", "READY", "acme", "Software Engineering & AI", "21 - 50 employees", "VN", createdAt,
+                registrant, "+84901234567")));
+        var other = UUID.randomUUID();
+        when(memberships.administrators(List.of(organizationId))).thenReturn(List.of(
+                new OrganizationMembershipJpaRepository.Administrator(organizationId, registrant, "Owner", "owner@acme.test", true, true),
+                new OrganizationMembershipJpaRepository.Administrator(organizationId, other, "Second", "second@acme.test", true, true)));
+        when(subscriptions.directoryPeriods(List.of(organizationId))).thenReturn(List.of());
+
+        var workspace = store().workspaces(NOW).getFirst();
+
+        assertThat(workspace.profile()).isEqualTo(new SubscriptionWorkspaceStore.OrganizationProfile(
+                "acme", "Software Engineering & AI", "21 - 50 employees", "VN", createdAt));
+        assertThat(workspace.administrators()).containsExactly(
+                new SubscriptionWorkspaceStore.WorkspaceAdministrator(registrant, "Owner", "owner@acme.test", true, true, true, "+84901234567"),
+                new SubscriptionWorkspaceStore.WorkspaceAdministrator(other, "Second", "second@acme.test", true, true, false, null));
     }
 }

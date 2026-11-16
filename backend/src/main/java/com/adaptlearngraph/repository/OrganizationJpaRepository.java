@@ -15,7 +15,9 @@ import org.springframework.transaction.annotation.Transactional;
 public interface OrganizationJpaRepository extends Repository<OrganizationEntity, UUID>, InsertOnlyRepository<OrganizationEntity> {
     record Access(String status, String setupState, Boolean paid) {}
 
-    record Listed(UUID organizationId, String name, String status, String setupState) {}
+    record Listed(UUID organizationId, String name, String status, String setupState, String workspaceSlug,
+                  String industry, String headcount, String country, Instant createdAt,
+                  UUID registrantAccountId, String registrantPhone) {}
 
     /** Serializes membership changes of one organization (former {@code SELECT ... FOR UPDATE}). */
     @Query(value = "SELECT organization_id FROM platform.organization WHERE organization_id = :organizationId FOR UPDATE",
@@ -39,8 +41,10 @@ public interface OrganizationJpaRepository extends Repository<OrganizationEntity
     Optional<Access> access(@Param("organizationId") UUID organizationId, @Param("now") Instant now);
 
     @Query("""
-            select new com.adaptlearngraph.repository.OrganizationJpaRepository$Listed(o.organizationId, o.name, o.status, w.setupState)
+            select new com.adaptlearngraph.repository.OrganizationJpaRepository$Listed(o.organizationId, o.name, o.status,
+                w.setupState, w.slug, r.industry, r.headcount, r.country, o.createdAt, r.accountId, r.adminPhone)
             from OrganizationEntity o join OrganizationWorkspaceEntity w on w.organizationId = o.organizationId
+            left join OrganizationRegistrationEntity r on r.registrationId = w.registrationId
             order by o.createdAt desc
             """)
     List<Listed> withWorkspaces();

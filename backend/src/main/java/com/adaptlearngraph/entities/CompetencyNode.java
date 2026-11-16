@@ -15,5 +15,9 @@ public record CompetencyNode(
         @Property("attainmentRule") String attainmentRule,
         @Property("status") String status,
         @Property("version") String version,
-        @Property("reviewStatus") String reviewStatus) {
+        @Property("reviewStatus") String reviewStatus,
+        @Property("departmentId") String departmentId,
+        @Property("departmentName") String departmentName,
+        @Property("jobPositionCode") String jobPositionCode,
+        @Property("jobPositionTitle") String jobPositionTitle) {
 }
