@@ -47,7 +47,7 @@ export async function workspaceLogin(page: Page, account: Account) {
     expect(response.ok()).toBeTruthy()
     stage = text(record(await response.json()).stage)
     return stage
-  }).toMatch(/^(COMPLETE|CHALLENGE_MFA)$/)
+  }, { timeout: 15000, message: 'Real workspace sign-in establishes the authenticated session' }).toMatch(/^(COMPLETE|CHALLENGE_MFA)$/)
   if (stage === 'CHALLENGE_MFA') {
     await page.getByLabel('Authenticator code', { exact: true }).fill(totp(account.totpSecret))
     await page.getByRole('button', { name: 'Verify', exact: true }).click()

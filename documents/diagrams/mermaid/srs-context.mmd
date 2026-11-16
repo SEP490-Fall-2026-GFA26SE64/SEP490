@@ -8,18 +8,20 @@ flowchart LR
   SystemAdmin["<div style='width:220px;height:56px;display:flex;align-items:center;justify-content:center'>System Administrator</div>"]
   Manager["<div style='width:220px;height:56px;display:flex;align-items:center;justify-content:center'>L&amp;D Manager</div>"]
   Email["<div style='width:220px;height:56px;display:flex;align-items:center;justify-content:center'>Gmail SMTP</div>"]
-  System(("<div style='width:750px;height:750px;display:flex;align-items:center;justify-content:center'>Adapt-Learn-Graph<br/>Knowledge Graph-Based Adaptive Learning and Competency Intelligence Platform</div>"))
+  System(("<div style='width:1000px;height:1000px;display:flex;align-items:center;justify-content:center'>Adapt-Learn-Graph<br/>Knowledge Graph-Based Adaptive Learning and Competency Intelligence Platform</div>"))
   Expert["<div style='width:220px;height:56px;display:flex;align-items:center;justify-content:center'>Expert</div>"]
   PlatformAdmin["<div style='width:220px;height:56px;display:flex;align-items:center;justify-content:center'>Platform Administrator</div>"]
   Employee["<div style='width:220px;height:56px;display:flex;align-items:center;justify-content:center'>Employee</div>"]
   PayOS["<div style='width:220px;height:56px;display:flex;align-items:center;justify-content:center'>payOS</div>"]
   Guest -->|"Organization registration details"| System
+  Guest -->|"Starter catalog selection"| System
   Guest -->|"Administrator account details"| System
   Guest -->|"Email verification code"| System
   Guest -->|"Subscription plan selection"| System
   Guest -->|"Subscription purchase request"| System
   Guest -->|"Onboarding status request"| System
   System -->|"Subscription plan catalog"| Guest
+  System -->|"Starter catalog preview"| Guest
   System -->|"Registration status"| Guest
   System -->|"Checkout link"| Guest
   System -->|"Payment status"| Guest
@@ -48,22 +50,22 @@ flowchart LR
   System -->|"Payment history"| SystemAdmin
   System -->|"Workspace audit records"| SystemAdmin
   Manager -->|"Job Position details"| System
-  Manager -->|"Expert job position assignments"| System
+  Manager -->|"Expert Job Position assignments"| System
   Manager -->|"Target role details"| System
   Manager -->|"Target role publication decision"| System
   Manager -->|"Role-Level Baseline policy"| System
   Manager -->|"Learning offering approval decision"| System
-  Manager -->|"Training cost records"| System
-  Manager -->|"Monetary benefit records"| System
+  Manager -->|"Question responsibility assignments"| System
+  Manager -->|"Question review decisions"| System
   Manager -->|"Development report filters"| System
   System -->|"Submitted role configurations"| Manager
   System -->|"Submitted learning offerings"| Manager
+  System -->|"Submitted questions"| Manager
   System -->|"Employee competency profiles"| Manager
   System -->|"Employee skill gaps"| Manager
   System -->|"Employee assessment outcomes"| Manager
   System -->|"Employee learning progress"| Manager
   System -->|"Department development summaries"| Manager
-  System -->|"Training ROI reports"| Manager
   Expert -->|"Micro-skill definitions"| System
   Expert -->|"Skill prerequisites"| System
   Expert -->|"Role competency requirements"| System
@@ -71,28 +73,41 @@ flowchart LR
   Expert -->|"Learning module details"| System
   Expert -->|"Learning content"| System
   Expert -->|"Skill-knowledge assessment policy"| System
+  Expert -->|"Question drafts"| System
+  Expert -->|"Question review submissions"| System
   Expert -->|"Learning offering submission"| System
   Expert -->|"Initial pathway review decisions"| System
+  Expert -->|"Certificate review decisions"| System
   System -->|"Assigned target roles"| Expert
+  System -->|"Assigned question responsibilities"| Expert
   System -->|"Role revision feedback"| Expert
   System -->|"Offering revision feedback"| Expert
+  System -->|"Question review feedback"| Expert
   System -->|"Initial learning pathways"| Expert
+  System -->|"Certificate submissions"| Expert
+  System -->|"Content issue reports"| Expert
   Employee -->|"Personal profile changes"| System
   Employee -->|"Baseline assessment answers"| System
-  Employee -->|"Module assessment answers"| System
+  Employee -->|"Learning assessment answers"| System
   Employee -->|"RIASEC assessment answers"| System
-  Employee -->|"Selected target role"| System
+  Employee -->|"Role-Level selection"| System
+  Employee -->|"Pathway creation request"| System
   Employee -->|"Independent skill selection"| System
   Employee -->|"Learning activity records"| System
+  Employee -->|"Certificate evidence"| System
+  Employee -->|"Content issue reports"| System
   System -->|"Group diagnostics and official evidence"| Employee
   System -->|"Competency profile"| Employee
   System -->|"Competency gaps"| Employee
   System -->|"RIASEC interest profile"| Employee
   System -->|"Target role suggestions"| Employee
   System -->|"Role guidance explanations"| Employee
+  System -->|"Published Role-Level catalog"| Employee
+  System -->|"Skill catalog"| Employee
   System -->|"Learning pathway"| Employee
   System -->|"Learning content"| Employee
   System -->|"Learning progress"| Employee
+  System -->|"Certificate review outcomes"| Employee
   System -->|"Subscription payment request"| PayOS
   System -->|"Payment status query"| PayOS
   PayOS -->|"Checkout link"| System

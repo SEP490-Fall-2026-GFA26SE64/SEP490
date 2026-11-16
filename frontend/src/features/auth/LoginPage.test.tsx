@@ -158,6 +158,17 @@ describe('Workspace login appearance and authentication', () => {
     expect(fetcher).toHaveBeenCalledWith('/api/v1/workspace-auth/sign-out', expect.objectContaining({ method: 'POST' }))
   })
 
+  it('continues a completed Platform Administrator login to the organization directory', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(response({
+      ...signedIn, organizationId: null, workspaceSlug: null, roles: ['PLATFORM_ADMINISTRATOR'],
+    })))
+    const assign = vi.fn()
+    vi.stubGlobal('location', { ...window.location, assign })
+    renderPage()
+    await userEvent.setup().click(await screen.findByRole('button', { name: 'Continue to workspace' }))
+    expect(assign).toHaveBeenCalledWith('/platform-admin/organizations')
+  })
+
   it.each([
     ['/workspace/acme/admin/users?tab=invites', '/workspace/acme/admin/users?tab=invites'],
     ['/admin/users', '/workspace/acme/admin/users'],

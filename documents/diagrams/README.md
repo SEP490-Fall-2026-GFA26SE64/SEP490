@@ -1,5 +1,23 @@
 # Architecture Diagrams
 
+## Target Role handoff - current source 2026-11-08
+
+The [handoff class diagram](mermaid/cls-target-role-handoff.mmd) ([PNG](mermaid/cls-target-role-handoff.png), [SVG](mermaid/cls-target-role-handoff.svg)) now uses actual controller/application/use-case/domain/repository classes, replacing the proposed workflow classes. [SEQ-05](mermaid/seq-05.mmd) ([PNG](mermaid/seq-05.png), [SVG](mermaid/seq-05.svg)) traces request/DTO-command mapping, duplicate lookup, domain creation/update, Neo4j identity/merge and catalog synchronization. The Expert sends SUBMITTED and manager publication/rejection sends ACTIVE/REJECTED through the generic PUT path; ACTIVE/PUBLISHED triggers version supersession in the adapter.
+
+Report 4 section 3.3.2 records the current limitations: conditional header-based assignment checks, frontend local-store/failure handling, and absence of the previously proposed exact-hash review receipt and PostgreSQL workflow/outbox. This source-based documentation is not a security or runtime acceptance verdict. No application code or schema was changed. Both diagrams were parsed/rendered locally and SVG XML checked.
+
+## Unified conceptual data model - 2026-11-08
+
+SRS section 3.1.5 displays one combined model instead of four flow ERDs and a separate ontology: [CERD-UNIFIED source](mermaid/cerd-unified.mmd), [SVG](mermaid/cerd-unified.svg), [PNG](mermaid/cerd-unified.png), [checks](mermaid/cerd-unified-checks.json). All 33 displayed concepts have one description in a single table with a Database column: 26 PostgreSQL business-state/evidence concepts and seven Neo4j catalog definitions. Existing Level aliases and immutable-policy aliases are consolidated; Certificate definition belongs to Neo4j while submission/decision belongs to PostgreSQL. Cross-store links are dotted catalog/version snapshots, never database-enforced foreign keys.
+
+The original CERD-01/02/03/04 and CGRAPH-01 assets remain unchanged as historical/detail references. The unified view preserves their relationship coverage while representing catalog requirement/prerequisite pairs as edges rather than introducing extra requirement nodes. It remains conceptual: no fields, PK/FK rows, database migration or changed runtime behavior.
+
+```powershell
+node documents\diagrams\render-unified-conceptual.cjs C:\path\to\mermaid.min.js
+```
+
+[The renderer](render-unified-conceptual.cjs) validates original relationship coverage after alias consolidation, all entity/store descriptions, a single SRS image, Mermaid parsing, SVG XML and label/node/edge clearance. Open the SVG at full size for the combined view.
+
 ## Adaptive flow diagrams - source alignment 2026-11-08
 
 The existing ACT-05, scoped policy/paper/evidence ERDs, requirement pathway ERDs, class/sequence/state views and direct catalog/module/Question Bank dependencies now describe source at commit `84cfb6f1`. Canonical Mermaid sources and sibling SVG/PNG exports are synchronized; Report 3 uses the updated fixed-column swimlanes and Report 4 state aliases are refreshed. PostgreSQL views show selected source-defined columns through V62, not live DB captures. Catalog IDs remain cross-store snapshots, not SQL foreign keys into Neo4j.
@@ -11,6 +29,31 @@ Baseline diagnostics, official evidence and prerequisite review flags are separa
 
 ACT-04 now covers the Module, one MicroSkill mapping and ordered learning content. Assessment configuration is outside the submitted approval package. Canonical and swimlane ACT-04 assets, SEQ-06 and the UC-B submission dependency are synchronized with Reports 1–4. Prior dated entries retain their original scope.
 
+## System context refresh - 2026-11-06
+
+After synchronizing main to `e0b4856d`, SRS-CONTEXT was checked against the project manifests, active routes, the 14-domain functional catalog, provider adapters and deployment configuration. The current context keeps the six human actors, payOS and configurable Gmail SMTP. YouTube/Vimeo and their video exchanges are omitted from this view as requested, without changing their implementation-level declaration in the SDD. PostgreSQL, Neo4j, private MinIO assets and the planned local LLM remain internal.
+
+[Source](mermaid/srs-context.mmd) · [SVG](mermaid/srs-context.svg) · [PNG](mermaid/srs-context.png) · [Layout checks](mermaid/srs-context-checks.json)
+
+The view has one product circle, eight external-entity rectangles and 104 named data flows (47 left / 57 right). It includes starter-catalog selection, Question Bank ownership/review, Role-Level/pathway requests, certificate evidence/review and content-issue reports. Job Position terminology replaces Occupation; ROI, training-cost and monetary-benefit flows are omitted from this context view. SRS section 1.2 separates connected slices from remaining targets; SDD section 1.1.3 retains implementation-level provider details and the existing private-asset adapter. Required organization-profile editing is retained as a target, not falsely attributed to the current read-only directory. Certificate, local-inference and broader learning/reporting targets are not promoted to completed implementations.
+
+```powershell
+node documents\diagrams\render-srs-context.cjs C:\path\to\mermaid.min.js
+```
+
+The [renderer](render-srs-context.cjs) verifies every flow crosses the product boundary, all 104 arrows/labels are rendered, four external entities sit on each side, SVG XML is valid, no text is clipped, no label overlaps another label/node and no path crosses a node. It also checks that Occupation and financial/ROI labels are absent from the source. Circle attachment spacing and coincident points are recorded in the layout checks. No new application, live-provider or production acceptance is claimed. The uncommitted Employee screen-flow work and upstream ontology/report changes are preserved.
+
+## Employee screen flow - 2026-11-06
+
+Report 3 section 3.1.1 now includes the sixth actor flow, [SCREEN-EMPLOYEE source](mermaid/screen-flow-employee.mmd), [SVG](mermaid/screen-flow-employee.svg) and [PNG](mermaid/screen-flow-employee.png). It follows the existing white/black page-and-dialog notation: nine routed page types and 11 selected dialogs, with 43 verified navigation/dialog connections. Tabs, baseline attempt/results, aliases and pending/blocked states are not invented as additional pages.
+
+The flow covers Learning Overview, Upskilling role/gap/baseline handoffs, Learning Pathway/module entry, content issue/version dialogs, Assessments and My Mastery. It preserves current feature/access guards and explicitly distinguishes browser-local quiz/skill-tracking UI from completed persisted workflows. Screen Descriptions now cover 82 distinct names across all six actor flows; the required authorization matrix includes the Employee-only additions and scoped read access to shared Role Details.
+
+```powershell
+node documents\diagrams\render-employee-screen-flow.cjs C:\path\to\mermaid.min.js
+```
+
+[The renderer](render-employee-screen-flow.cjs) checks all 20 screen names against their descriptions and Employee permissions, Mermaid parsing, all 43 edges/labels, SVG XML, canvas clipping, label collisions and navigation paths crossing screen nodes. Local rendering and visual inspection passed; no new application end-to-end or persistence certification is claimed. The other five actor diagrams remain unchanged.
 
 ## Report 3 business swimlanes - 2026-11-06
 
@@ -49,6 +92,8 @@ node documents\diagrams\render-ontology-diagram.cjs C:\path\to\plantuml.jar grap
 The 2026-11-08 catalog exports use `neo4j.puml` as their single canonical image source. `mermaid/graph-01.svg` and `.png` are identical compatibility copies, not separate renders. All six supplied label-property lists and seven directed relationships are shown; source-defined Certificate/REQUIRES_CERTIFICATE are marked as absent from the supplied capture. See [schema scope](../neo4j_schema.md#diagram-scope--2026-11-08). No import or runtime migration is performed. The conceptual CGRAPH-01 renderer still accepts a Mermaid bundle and `cgraph-01`.
 
 ## Package overview style - 2026-11-06
+
+The 2026-11-08 revision adds the outermost UML package folders `com.adaptlearngraph` and `frontend/src`. Each root encloses every displayed descendant and dependency; existing child package labels, relative positions and import edges are preserved. The renderer validates root ancestry and containment, including arrowheads, while excluding ancestor/descendant containment from sibling-overlap checks. Both SVG/PNG exports passed: backend nine folders/12 dependencies and frontend 25 folders/four dependencies, with no clipped labels/arrowheads or sibling overlaps.
 
 Report 4 section 1.2 uses white UML package folders, subtle offset shadows and dashed open-arrow import dependencies, matching the supplied visual reference. The backend retains seven actual packages under `com.adaptlearngraph` and adds the direct `entities.domain` subpackage. The frontend retains four principal source directories and adds all 11 direct `features` and nine direct `shared` subdirectories. Packages without subdirectories are not given invented children. Arrows remain selected top-level imports, including the existing `shared` to `features` coupling, not runtime flow or an exhaustive layering contract.
 

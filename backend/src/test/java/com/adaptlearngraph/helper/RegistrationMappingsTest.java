@@ -32,7 +32,7 @@ class RegistrationMappingsTest {
         Instant verified = Instant.parse("2026-11-03T10:20:00Z");
         Instant completed = Instant.parse("2026-11-03T10:30:00Z");
         var fields = new RegistrationFields("Acme Learning", "acme-learning", "Software Engineering & AI",
-                "21 - 50 employees", "Ada Admin", "Ada@Example.test");
+                "21 - 50 employees", "Ada Admin", "Ada@Example.test", "VN", "+84 901 234 567");
         var view = new RegistrationUseCase.View(registrationId, "COMPLETE", "ada@example.test", fields, "SENT",
                 resend, verified, completed);
 
@@ -40,7 +40,7 @@ class RegistrationMappingsTest {
 
         assertThat(response).isEqualTo(new ViewResponse(registrationId, "COMPLETE", "ada@example.test",
                 new FieldsResponse("Acme Learning", "acme-learning", "Software Engineering & AI", "21 - 50 employees",
-                        "Ada Admin", "ada@example.test"),
+                        "Ada Admin", "ada@example.test", "VN", "+84901234567"),
                 "SENT", resend, verified, completed));
         assertNoSensitiveComponents(ViewResponse.class);
         assertNoSensitiveComponents(FieldsResponse.class);
@@ -74,7 +74,8 @@ class RegistrationMappingsTest {
 
     @Test
     void requestAndCompletionBodiesRedactSecretsFromToString() {
-        var signup = new SignupRequest("Acme", null, null, null, "Ada", "ada@example.test", "correct horse battery", List.of());
+        var signup = new SignupRequest("Acme", null, null, null, "Ada", "ada@example.test",
+                "correct horse battery", List.of(), "VN", "0901234567", true);
         var signIn = new SignInRequest("ada@example.test", "correct horse battery");
         var proof = new ProofRequest("123456");
         var completion = new CompletionResponse(null, List.of("RECOVERY-CODE-1"));

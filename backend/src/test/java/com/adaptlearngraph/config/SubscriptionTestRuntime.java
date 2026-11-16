@@ -180,6 +180,11 @@ public final class SubscriptionTestRuntime {
                         VALUES (?,'Current Directory Administrator',now())
                         ON CONFLICT (account_id) DO UPDATE SET full_name=EXCLUDED.full_name
                         """, accountId);
+                jdbc.update("""
+                        UPDATE platform.organization_registration
+                        SET industry='Data Engineering & Analytics', headcount='21 - 50 employees', country='VN', admin_phone='+84901234567'
+                        WHERE registration_id=?
+                        """, registrationId);
                 if ("EXPIRED".equals(coverage))
                     jdbc.update("UPDATE platform.organization_membership SET active=false WHERE account_id=?", accountId);
             }

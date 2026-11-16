@@ -35,13 +35,16 @@ public class PlatformCatalogController {
     ResponseEntity<ClosureView> closure(@RequestBody Selection input) {
         var closure = catalog.closure(input == null ? List.of() : input.nodeIds());
         return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(new ClosureView(closure.templateVersion(),
-                closure.selected(), closure.nodeCount(), closure.relationshipCount(), closure.nodesByLabel()));
+                closure.selected(), closure.nodeCount(), closure.relationshipCount(), closure.nodesByLabel(),
+                closure.nodeIds().stream().toList(), closure.edges().stream().map(PlatformCatalogService::graphEdge).toList(),
+                closure.inclusions()));
     }
 
     record Selection(@Size(max = PlatformCatalogService.MAX_SELECTION) List<String> nodeIds) {
     }
 
     record ClosureView(String templateVersion, List<String> selected, int nodeCount, int relationshipCount,
-                       Map<String, Integer> nodesByLabel) {
+                       Map<String, Integer> nodesByLabel, List<String> nodeIds,
+                       List<PlatformCatalogService.GraphEdge> edges, List<PlatformCatalogService.Inclusion> inclusions) {
     }
 }

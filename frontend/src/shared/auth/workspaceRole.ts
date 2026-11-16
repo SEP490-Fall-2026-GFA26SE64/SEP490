@@ -1,5 +1,5 @@
 export const ROLE_HOME = {
-  PLATFORM_ADMINISTRATOR: '/platform-admin/subscriptions',
+  PLATFORM_ADMINISTRATOR: '/platform-admin/organizations',
   ORGANIZATION_ADMINISTRATOR: '/admin/subscription',
   DOMAIN_EXPERT: '/expert/target-roles',
   LD_MANAGER: '/ld-manager/job-positions',

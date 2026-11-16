@@ -3,12 +3,14 @@ package com.adaptlearngraph.entities.domain;
 import com.adaptlearngraph.exception.RegistrationFailure;
 import java.text.Normalizer;
 import java.util.Locale;
+import java.util.Arrays;
 import java.util.Set;
 import java.util.regex.Pattern;
 
 public record RegistrationFields(
         String organizationName, String subdomain, String industry, String headcount,
-        String adminName, String adminEmail) {
+        String adminName, String adminEmail, String country, String adminPhone) {
+    public static final Set<String> COUNTRIES = Set.copyOf(Arrays.asList(Locale.getISOCountries()));
     public static final Set<String> INDUSTRIES = Set.of(
             "Software Engineering & AI", "Cloud Infrastructure & DevOps",
             "Data Engineering & Analytics", "Cybersecurity & Network Systems",
@@ -23,6 +25,11 @@ public record RegistrationFields(
                     + "[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?"
                     + "(?:\\.[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?)+");
 
+    public RegistrationFields(String organizationName, String subdomain, String industry, String headcount,
+                              String adminName, String adminEmail) {
+        this(organizationName, subdomain, industry, headcount, adminName, adminEmail, null, null);
+    }
+
     public RegistrationFields {
         organizationName = required(organizationName, "organizationName", 200);
         adminName = required(adminName, "adminName", 120);
@@ -33,6 +40,9 @@ public record RegistrationFields(
         }
         industry = choice(industry, INDUSTRIES, "industry");
         headcount = choice(headcount, HEADCOUNTS, "headcount");
+        country = country == null || country.isBlank() ? null : country.strip().toUpperCase(Locale.ROOT);
+        country = choice(country, COUNTRIES, "country");
+        adminPhone = normalizePhone(adminPhone);
         subdomain = subdomain == null || subdomain.isBlank() ? null : subdomain.strip().toLowerCase(Locale.ROOT);
         if (subdomain != null && (!SLUG.matcher(subdomain).matches() || RESERVED.contains(subdomain))) {
             throw RegistrationFailure.invalid("subdomain",
@@ -42,6 +52,18 @@ public record RegistrationFields(
 
     public static String normalizeEmail(String email) {
         return email == null ? "" : email.strip().toLowerCase(Locale.ROOT);
+    }
+
+    public static String normalizePhone(String phone) {
+        if (phone == null) return null;
+        if (phone.length() > 40 || !phone.matches("\\+?[0-9 ()-]+")) {
+            throw RegistrationFailure.invalid("adminPhone", "Enter a valid phone number with 7-15 digits.");
+        }
+        String normalized = phone.replaceAll("[ ()-]", "");
+        if (!normalized.matches("\\+?[0-9]{7,15}")) {
+            throw RegistrationFailure.invalid("adminPhone", "Enter a valid phone number with 7-15 digits.");
+        }
+        return normalized;
     }
 
     public static void validatePassword(String password) {

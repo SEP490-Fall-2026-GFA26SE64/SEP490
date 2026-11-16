@@ -31,8 +31,12 @@ export interface Summary {
 }
 export interface Workspace {
   organizationId: string; name: string; status: string; setupState: string
+  workspaceSlug: string | null; industry: string | null; headcount: string | null; country: string | null; createdAt: string | null
   subscription: { status: string; current: { name: string; startsAt: string; endsAt: string } | null }
-  administrators: { accountId: string; fullName: string | null; email: string; active: boolean; accountActive: boolean }[]
+  administrators: {
+    accountId: string; fullName: string | null; email: string; active: boolean; accountActive: boolean
+    systemAdministrator: boolean; phone: string | null
+  }[]
 }
 export interface Member {
   membershipId: string; fullName: string | null; email: string; active: boolean; roles: string[]; revision: number
@@ -88,6 +92,7 @@ function boolean(value: unknown): boolean {
   return value
 }
 function nullable<T>(value: unknown, parse: (value: unknown) => T): T | null { return value === null ? null : parse(value) }
+function optional<T>(value: unknown, parse: (value: unknown) => T): T | null { return value == null ? null : parse(value) }
 function list<T>(value: unknown, parse: (value: unknown) => T): T[] {
   if (!Array.isArray(value)) throw new Error('Invalid server list.')
   return value.map(parse)
@@ -212,6 +217,8 @@ export async function getWorkspaces(): Promise<Workspace[]> {
     const subscription = object(v.subscription)
     return {
       organizationId: text(v.organizationId), name: text(v.name), status: text(v.status), setupState: text(v.setupState),
+      workspaceSlug: optional(v.workspaceSlug, text), industry: optional(v.industry, text),
+      headcount: optional(v.headcount, text), country: optional(v.country, text), createdAt: optional(v.createdAt, text),
       subscription: { status: text(subscription.status), current: nullable(subscription.current, value => {
         const period = object(value)
         return { name: text(period.name), startsAt: text(period.startsAt), endsAt: text(period.endsAt) }
@@ -219,7 +226,8 @@ export async function getWorkspaces(): Promise<Workspace[]> {
       administrators: list(v.administrators, value => {
         const admin = object(value)
         return { accountId: text(admin.accountId), fullName: nullable(admin.fullName, text), email: text(admin.email),
-          active: boolean(admin.active), accountActive: boolean(admin.accountActive) }
+          active: boolean(admin.active), accountActive: boolean(admin.accountActive),
+          systemAdministrator: admin.systemAdministrator === true, phone: optional(admin.phone, text) }
       }),
     }
   })

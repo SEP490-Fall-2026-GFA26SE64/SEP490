@@ -128,6 +128,10 @@ class RegistrationApiIntegrationTest {
         assertThat(completed.statusCode()).isEqualTo(200);
         JsonNode completion = body(completed);
         assertThat(completion.path("registration").path("stage").asText()).isEqualTo("COMPLETE");
+        assertThat(completion.path("registration").path("fields").path("country").asText()).isEqualTo("VN");
+        assertThat(completion.path("registration").path("fields").path("adminPhone").asText()).isEqualTo("+84901234567");
+        assertThat(jdbc.queryForObject("SELECT policies_accepted_at FROM platform.organization_registration WHERE account_id=?",
+                java.sql.Timestamp.class, account)).isNotNull();
         assertThat(completion.path("recoveryCodes")).hasSize(10);
         assertThat(get(owner, "/current").body()).doesNotContain("passwordHash", "manualSecret", "recoveryCodes", "encrypted");
         assertThat(jdbc.queryForObject("SELECT count(*) FROM platform.registration_session WHERE principal_name = ?",
@@ -190,6 +194,30 @@ class RegistrationApiIntegrationTest {
                 Integer.class, account)).isEqualTo(1);
     }
 
+    @Test
+    void requiresPhoneAndExplicitConsentBeforeCreatingAnyAccount() throws Exception {
+        String email = email();
+        var input = (com.fasterxml.jackson.databind.node.ObjectNode) json.readTree(signup(email));
+        input.remove("policiesAccepted");
+        assertThat(post(owner, "", input.toString()).statusCode()).isEqualTo(400);
+        input.put("policiesAccepted", false);
+        assertThat(post(owner, "", input.toString()).statusCode()).isEqualTo(400);
+        input.put("policiesAccepted", true);
+        input.remove("adminPhone");
+        assertThat(post(owner, "", input.toString()).statusCode()).isEqualTo(400);
+        input.put("adminPhone", "invalid phone");
+        var badPhone = post(owner, "", input.toString());
+        assertThat(badPhone.statusCode()).isEqualTo(400);
+        assertThat(body(badPhone).path("field").asText()).isEqualTo("adminPhone");
+        input.put("adminPhone", "0901234567");
+        input.put("country", "ZZ");
+        assertThat(post(owner, "", input.toString()).statusCode()).isEqualTo(400);
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM platform.account WHERE normalized_identifier=?",
+                Integer.class, email)).isZero();
+        input.remove("country");
+        assertThat(post(owner, "", input.toString()).statusCode()).isEqualTo(201);
+    }
+
     private HttpResponse<String> get(HttpClient browser, String path) throws Exception {
         return browser.send(HttpRequest.newBuilder(uri(path)).GET().build(), HttpResponse.BodyHandlers.ofString());
     }
@@ -205,7 +233,8 @@ class RegistrationApiIntegrationTest {
     private JsonNode body(HttpResponse<String> response) throws Exception { return json.readTree(response.body()); }
     private String signup(String email) throws Exception {
         return json.writeValueAsString(Map.of("organizationName", "API Test Organization", "adminName", "API Owner",
-                "adminEmail", email, "password", PASSWORD));
+                "adminEmail", email, "password", PASSWORD, "country", "VN",
+                "adminPhone", "+84 (901) 234-567", "policiesAccepted", true));
     }
     private static String email() { return UUID.randomUUID() + "@example.test"; }
     private static HttpClient browser() {

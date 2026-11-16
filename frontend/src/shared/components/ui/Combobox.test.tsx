@@ -1,6 +1,8 @@
-import { describe, it, expect } from 'vitest'
-import { render, screen, fireEvent } from '@testing-library/react'
+import { describe, it, expect, vi, afterEach } from 'vitest'
+import { render, screen, fireEvent, cleanup } from '@testing-library/react'
 import { Combobox } from './Combobox'
+
+afterEach(cleanup)
 
 describe('Combobox', () => {
   it('filters options based on search query', () => {
@@ -27,5 +29,26 @@ describe('Combobox', () => {
     expect(screen.queryByText('COMP-ARCH-J01 - Architecture')).toBeNull()
     expect(screen.queryByText('COMP-DEV-J01 - Development')).toBeNull()
     expect(screen.getByText('COMP-DATA-J01 - Data')).toBeTruthy()
+  })
+
+  it('supports keyboard selection and Escape without submitting the containing form', () => {
+    const change = vi.fn()
+    const submit = vi.fn()
+    render(<form onSubmit={submit}><Combobox role="combobox" aria-label="Country"
+      options={[{ value: 'VN', label: 'Vietnam' }, { value: 'US', label: 'United States' }]}
+      onChange={change} /></form>)
+    const trigger = screen.getByRole('combobox', { name: 'Country' })
+    fireEvent.keyDown(trigger, { key: 'ArrowDown' })
+    const search = screen.getByRole('textbox', { name: 'Search options...' })
+    fireEvent.keyDown(search, { key: 'ArrowDown' })
+    expect(document.activeElement).toBe(screen.getByRole('option', { name: 'Vietnam' }))
+    fireEvent.click(document.activeElement!)
+    expect(change).toHaveBeenCalledWith('VN')
+    expect(document.activeElement).toBe(trigger)
+    expect(submit).not.toHaveBeenCalled()
+    fireEvent.click(trigger)
+    fireEvent.keyDown(screen.getByRole('textbox'), { key: 'Escape' })
+    expect(screen.queryByRole('listbox')).toBeNull()
+    expect(document.activeElement).toBe(trigger)
   })
 })

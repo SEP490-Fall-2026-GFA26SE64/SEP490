@@ -59,7 +59,7 @@ export function PaymentStatusPanel({ status, guest, principal, base, refresh }:
             </a>}
             {!settled && expired && <p role="status" className="rounded-lg bg-muted p-3 text-body-sm">{c('The checkout deadline has passed. Check payment status before trying again; a delayed transfer may still be processing.', 'Đã quá hạn thanh toán. Kiểm tra trạng thái trước khi thử lại; giao dịch chậm có thể vẫn đang được xử lý.')}</p>}
             {order.paymentStatus === 'PARTIAL' && <p role="status" className="rounded-lg border border-warning/40 p-3 text-body-sm">{c('The full amount has not been verified. Do not create another order; check this payment first.', 'Chưa xác minh đủ số tiền. Không tạo đơn mới; hãy kiểm tra giao dịch này trước.')}</p>}
-            {!settled && <Button variant="outline" className="w-full" isLoading={reconcile.isPending} onClick={() => reconcile.mutate()}>{c('Reconcile payment', 'Kiểm tra thanh toán')}</Button>}
+            {!settled && <Button variant="outline" className="w-full" isLoading={reconcile.isPending} onClick={() => reconcile.mutate()}>{c('Check payment status', 'Kiểm tra trạng thái thanh toán')}</Button>}
             {!bypassed && <p className="flex items-center gap-2 text-caption text-muted-foreground"><ShieldCheck size={15} aria-hidden="true" />{c('Only verified payment records activate your subscription.', 'Gói chỉ được kích hoạt sau khi xác minh thanh toán.')}</p>}
           </CardContent>
         </Card>

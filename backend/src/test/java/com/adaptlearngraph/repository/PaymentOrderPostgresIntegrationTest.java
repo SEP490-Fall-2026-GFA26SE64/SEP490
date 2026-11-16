@@ -400,7 +400,15 @@ class PaymentOrderPostgresIntegrationTest {
         UUID org = context.actor().organizationId();
         var current = workspaces.summary(org, NOW).current();
         jdbc.update("UPDATE platform.organization SET status='SUSPENDED' WHERE organization_id=?", org);
+        jdbc.update("UPDATE platform.organization_registration SET admin_phone='+84901234567', country='VN' WHERE account_id=?",
+                context.actor().accountId());
         var active = workspaces.workspaces(NOW).stream().filter(w -> w.organizationId().equals(org)).findFirst().orElseThrow();
+        assertEquals(jdbc.queryForObject("SELECT slug FROM platform.organization_workspace WHERE organization_id=?",
+                String.class, org), active.profile().workspaceSlug());
+        assertEquals("VN", active.profile().country());
+        assertNotNull(active.profile().createdAt());
+        assertTrue(active.administrators().getFirst().systemAdministrator());
+        assertEquals("+84901234567", active.administrators().getFirst().phone());
         assertEquals("SUSPENDED", active.status());
         assertEquals("ACTIVE", active.subscription().status());
         assertEquals(current.terms().name(), active.subscription().current().name());

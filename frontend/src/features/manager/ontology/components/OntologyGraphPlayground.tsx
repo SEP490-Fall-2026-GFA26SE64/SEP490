@@ -34,6 +34,7 @@ import { type CompetencyModel, type MicroSkillModel, type PrerequisiteEdge, type
 import { getActiveCompany, updateActiveCompany } from '../../../../shared/stores/companyStore'
 import { createPrerequisite, deletePrerequisite, reversePrerequisite } from '../../../../shared/api/prerequisiteApi'
 import { updateCompetency } from '../../../../shared/api/competencyApi'
+import { ontologyNodeStyle } from '../../../../shared/components/ui/ontologyGraphStyle'
 
 export interface OntologyGraphPlaygroundProps {
   microSkills: MicroSkillModel[]
@@ -209,6 +210,7 @@ function OntologyGraphPlaygroundInner({
       borderWidth: 2,
       x: pos?.x,
       y: pos?.y,
+      ...ontologyNodeStyle('targetRole', r.code || r.id, r.title, isCompact),
     }
   }
 
@@ -243,6 +245,7 @@ function OntologyGraphPlaygroundInner({
       borderWidth: 1.5,
       x: pos?.x,
       y: pos?.y,
+      ...ontologyNodeStyle('level', levelName, levelName, isCompact),
     }
   }
 
@@ -320,6 +323,7 @@ function OntologyGraphPlaygroundInner({
       borderWidth: 1.5,
       x: pos?.x,
       y: pos?.y,
+      ...ontologyNodeStyle('competency', c.code || c.id, c.name, isCompact),
     }
   }
 
@@ -352,6 +356,7 @@ function OntologyGraphPlaygroundInner({
       borderWidth: 1.5,
       x: pos?.x,
       y: pos?.y,
+      ...ontologyNodeStyle('skill', s.code, s.name, isCompact),
     }
   }
 
@@ -393,65 +398,14 @@ function OntologyGraphPlaygroundInner({
   }
 
   function getNodeTheme(n: PlaygroundCustomNode, isCompact: boolean) {
-    if (n.nodeType === 'targetRole') {
-      return {
-        color: {
-          background: '#FFF7ED',
-          border: '#EA580C',
-          highlight: { background: '#FFEDD5', border: '#C2410C' },
-          hover: { background: '#FFEDD5', border: '#EA580C' },
-        },
-        fontColor: '#0F172A',
-        fontSize: isCompact ? 9.5 : 13,
-        label: isCompact ? (n.code || n.id) : `<b>${n.code || n.id}</b>`,
-        margin: isCompact ? { top: 6, right: 10, bottom: 6, left: 10 } : { top: 12, right: 16, bottom: 12, left: 16 },
-        widthConstraint: isCompact ? { maximum: 130 } : { maximum: 200 },
-      }
-    }
-    if (n.nodeType === 'level') {
-      const lvl = n.levelName || n.code
-      return {
-        color: {
-          background: '#EEF2FF',
-          border: '#4F46E5',
-          highlight: { background: '#E0E7FF', border: '#4338CA' },
-          hover: { background: '#E0E7FF', border: '#4F46E5' },
-        },
-        fontColor: '#1E1B4B',
-        fontSize: isCompact ? 9 : 11,
-        label: isCompact ? lvl : `<b>${lvl}</b>`,
-        margin: isCompact ? { top: 4, right: 8, bottom: 4, left: 8 } : { top: 8, right: 14, bottom: 8, left: 14 },
-        widthConstraint: isCompact ? { maximum: 100 } : { maximum: 160 },
-      }
-    }
-    if (n.nodeType === 'competency') {
-      return {
-        color: {
-          background: '#FAF5FF',
-          border: '#9333EA',
-          highlight: { background: '#F3E8FF', border: '#7E22CE' },
-          hover: { background: '#F3E8FF', border: '#9333EA' },
-        },
-        fontColor: '#581C87',
-        fontSize: isCompact ? 9 : 11,
-        label: isCompact ? (n.code || n.id) : `<b>${n.code || n.id}</b>\n${n.name}`,
-        margin: isCompact ? { top: 4, right: 8, bottom: 4, left: 8 } : { top: 8, right: 14, bottom: 8, left: 14 },
-        widthConstraint: isCompact ? { maximum: 110 } : { maximum: 220 },
-      }
-    }
-    // skill
+    const style = ontologyNodeStyle(n.nodeType, n.levelName || n.code || n.id, n.name, isCompact)
     return {
-      color: {
-        background: '#F0FDF4',
-        border: '#16A34A',
-        highlight: { background: '#DCFCE7', border: '#15803D' },
-        hover: { background: '#DCFCE7', border: '#16A34A' },
-      },
-      fontColor: '#0F172A',
-      fontSize: isCompact ? 9 : 11,
-      label: isCompact ? n.code : `<b>${n.code}</b>\n${n.name}`,
-      margin: isCompact ? { top: 4, right: 8, bottom: 4, left: 8 } : { top: 8, right: 14, bottom: 8, left: 14 },
-      widthConstraint: isCompact ? { maximum: 100 } : { maximum: 200 },
+      color: style.color,
+      fontColor: typeof style.font === 'object' ? style.font.color : undefined,
+      fontSize: typeof style.font === 'object' ? style.font.size : undefined,
+      label: style.label,
+      margin: style.margin,
+      widthConstraint: style.widthConstraint,
     }
   }
 

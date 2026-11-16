@@ -1,0 +1,89 @@
+---
+title: "Target Role Handoff - Current Implementation"
+config:
+  layout: elk
+  theme: base
+  look: classic
+  fontFamily: "Arial, sans-serif"
+  themeVariables: {background: "#ffffff", primaryColor: "#ffffff", primaryTextColor: "#0f172a", primaryBorderColor: "#64748b", lineColor: "#64748b", fontSize: "16px"}
+  class: {hideEmptyMembersBox: true, nodeSpacing: 60, rankSpacing: 90, diagramPadding: 32}
+---
+classDiagram
+  direction LR
+  class OrganizationTargetRoleController {
+    +createTargetRole()
+    +getTargetRole()
+    +updateTargetRole()
+  }
+  class OrganizationTargetRoleApplicationService {
+    +createTargetRole()
+    +getTargetRole()
+    +updateTargetRole()
+  }
+  class CreateTargetRoleUseCase {
+    <<interface>>
+    +createTargetRole()
+  }
+  class ViewTargetRolesUseCase {
+    <<interface>>
+    +listTargetRoles()
+    +getTargetRole()
+  }
+  class ManageTargetRoleUseCase {
+    <<interface>>
+    +updateTargetRole()
+    +deleteTargetRole()
+  }
+  class TargetRoleService {
+    +createTargetRole()
+    +getTargetRole()
+    +updateTargetRole()
+  }
+  class TargetRole {
+    -organizationId
+    -assignedExpertId
+    -status
+    -version
+    -skillTargets
+    -levels
+    -levelCompetencies
+    -levelDurations
+    -rejectionReason
+    +createNew()
+    +updateDetails()
+  }
+  class TargetRoleRepository {
+    <<interface>>
+    +existsByOrganizationIdAndCodeAndVersion()
+    +findById()
+    +save()
+  }
+  class Neo4jTargetRoleRepository {
+    +findById()
+    +save()
+    -syncLevels()
+    -syncLevelCompetencies()
+    -syncSkillRelationships()
+    -syncMemberLevelIdentities()
+    -syncJobPositionRelationship()
+  }
+  class TargetRoleNodeRepository {
+    <<interface>>
+    +existsByCodeAndVersion()
+    +findPersistedId()
+    +merge()
+    +supersedeOtherVersions()
+  }
+  class Neo4jClient
+  OrganizationTargetRoleController --> OrganizationTargetRoleApplicationService
+  OrganizationTargetRoleApplicationService --> CreateTargetRoleUseCase
+  OrganizationTargetRoleApplicationService --> ViewTargetRolesUseCase
+  OrganizationTargetRoleApplicationService --> ManageTargetRoleUseCase
+  TargetRoleService ..|> CreateTargetRoleUseCase
+  TargetRoleService ..|> ViewTargetRolesUseCase
+  TargetRoleService ..|> ManageTargetRoleUseCase
+  TargetRoleService --> TargetRoleRepository
+  TargetRoleService ..> TargetRole : createNew and updateDetails
+  Neo4jTargetRoleRepository ..|> TargetRoleRepository
+  Neo4jTargetRoleRepository --> TargetRoleNodeRepository
+  Neo4jTargetRoleRepository --> Neo4jClient : graph synchronization

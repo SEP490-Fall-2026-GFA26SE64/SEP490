@@ -1,0 +1,169 @@
+name: Deploy Adapt-Learn-Graph
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+# Never run two rollouts against the same server at once; let an in-flight deploy finish.
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+env:
+  BACKEND_IMAGE: ${{ secrets.DOCKERHUB_USERNAME }}/adapt-learn-graph-backend
+  FRONTEND_IMAGE: ${{ secrets.DOCKERHUB_USERNAME }}/adapt-learn-graph-frontend
+  MINIO_IMAGE: ${{ secrets.DOCKERHUB_USERNAME }}/adapt-learn-graph-minio
+  # Must match the default tag in compose.deploy.yml.
+  MINIO_RELEASE: RELEASE.2025-04-22T22-12-26Z
+  DOMAIN: adaptlearn.id.vn
+  PUBLIC_URL: https://adaptlearn.id.vn
+
+jobs:
+  build-and-push-images:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # Context is the repo root: backend/Dockerfile copies backend/ and the root .dockerignore applies.
+      - name: Build and push backend
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./backend/Dockerfile
+          push: true
+          tags: |
+            ${{ env.BACKEND_IMAGE }}:latest
+            ${{ env.BACKEND_IMAGE }}:${{ github.sha }}
+          cache-from: type=registry,ref=${{ env.BACKEND_IMAGE }}:buildcache
+          cache-to: type=registry,ref=${{ env.BACKEND_IMAGE }}:buildcache,mode=max
+
+      # VITE_* flags are inlined at build time and must match the backend profiles in compose.deploy.yml.
+      - name: Build and push frontend
+        uses: docker/build-push-action@v6
+        with:
+          context: ./frontend
+          file: ./frontend/Dockerfile
+          push: true
+          build-args: |
+            VITE_ADAPTIVE_BASELINE_ENABLED=true
+            VITE_EMPLOYEE_ADAPTIVE_BASELINE_ENABLED=true
+            VITE_LOCAL_BASELINE_DEMO_ENABLED=false
+          tags: |
+            ${{ env.FRONTEND_IMAGE }}:latest
+            ${{ env.FRONTEND_IMAGE }}:${{ github.sha }}
+          cache-from: type=registry,ref=${{ env.FRONTEND_IMAGE }}:buildcache
+          cache-to: type=registry,ref=${{ env.FRONTEND_IMAGE }}:buildcache,mode=max
+
+      # Upstream MinIO no longer publishes images/binaries; build the pinned release from source once.
+      - name: Check MinIO image
+        id: minio
+        shell: bash
+        run: |
+          if docker buildx imagetools inspect "${MINIO_IMAGE}:${MINIO_RELEASE}" >/dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Build and push MinIO
+        if: steps.minio.outputs.exists != 'true'
+        uses: docker/build-push-action@v6
+        with:
+          context: ./deploy/minio
+          push: true
+          build-args: |
+            MINIO_RELEASE=${{ env.MINIO_RELEASE }}
+          tags: ${{ env.MINIO_IMAGE }}:${{ env.MINIO_RELEASE }}
+
+  deploy:
+    needs: build-and-push-images
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    permissions:
+      contents: read
+    environment:
+      name: production
+      url: ${{ env.PUBLIC_URL }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Assemble deployment bundle
+        shell: bash
+        run: |
+          set -euo pipefail
+          B=bundle
+          mkdir -p "$B/deploy/nginx" "$B/deploy/scripts" "$B/docker" "$B/seed"
+          cp compose.deploy.yml "$B/"
+          cp deploy/.env.example "$B/deploy/.env.example"
+          cp "deploy/nginx/${DOMAIN}.conf" "$B/deploy/nginx/"
+          cp deploy/scripts/remote-deploy.sh "$B/deploy/scripts/"
+          cp docker/dev/start-catalog.sh docker/dev/wait-catalog.sh "$B/docker/"
+          cp documents/dataset/import/ontology_seed-skill-level.json "$B/seed/"
+          cp documents/dataset/import/ontology_seed-v010.json "$B/seed/"
+          cp documents/dataset/question-bank/15-1212.00/catalog-scope-v09.json "$B/seed/"
+          cp documents/dataset/question-bank/15-1212.00/historical/ontology_seed-v08.json "$B/seed/"
+          cp documents/dataset/question-bank/15-1212.00/historical/question-bank-v1.json "$B/seed/"
+          cp documents/dataset/module-knowledge/development-complete-release.json "$B/seed/"
+          tar -czf deploy-bundle.tgz -C "$B" .
+          ls -la deploy-bundle.tgz
+
+      - name: Add SSH key
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Add server to known_hosts
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p ~/.ssh
+          ssh-keyscan -p "${{ secrets.VPS_PORT || '22' }}" -H "${{ secrets.VPS_HOST }}" >> ~/.ssh/known_hosts
+
+      - name: Upload bundle and roll out
+        shell: bash
+        env:
+          VPS: ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}
+          SSH_PORT: ${{ secrets.VPS_PORT || '22' }}
+          APP_DIR: ${{ secrets.VPS_APP_DIR || '/opt/adapt-learn-graph' }}
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          ssh -p "$SSH_PORT" "$VPS" "mkdir -p '$APP_DIR'"
+          scp -P "$SSH_PORT" deploy-bundle.tgz "$VPS:$APP_DIR/deploy-bundle.tgz"
+          # .env and data volumes on the server are never overwritten by the bundle.
+          ssh -p "$SSH_PORT" "$VPS" \
+            "cd '$APP_DIR' && tar -xzf deploy-bundle.tgz && rm -f deploy-bundle.tgz && \
+             DOCKERHUB_USERNAME='$DOCKERHUB_USERNAME' IMAGE_TAG='$IMAGE_TAG' DOMAIN='$DOMAIN' \
+             bash deploy/scripts/remote-deploy.sh"
+
+      - name: External smoke check
+        shell: bash
+        run: |
+          set -euo pipefail
+          for _ in $(seq 1 6); do
+            if curl -fsS -o /dev/null --max-time 20 "$PUBLIC_URL/" \
+              && curl -fsS -o /dev/null --max-time 20 "$PUBLIC_URL/api/v1/registration/csrf"; then
+              echo "$PUBLIC_URL is up"; exit 0
+            fi
+            sleep 10
+          done
+          echo "$PUBLIC_URL is not reachable from the Internet (DNS, firewall/port-forward 80/443)." >&2
+          exit 1

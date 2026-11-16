@@ -48,3 +48,9 @@ An upstream-main database that already applied main's original V37 is **not** in
 ## Workspace catalog import — V47 (2026-11-02)
 
 `V47__workspace_catalog_import.sql` is identical in `db/migration`, `db/workspace-migration` and `db/module-migration`. It adds `platform.registration_catalog_selection` (one row per registration: template version/sha256 and 1–300 selected platform node ids) and `platform.workspace_catalog_import` (one row per organization: state PENDING/SUCCEEDED/FAILED, attempts, next attempt and lease, template version/sha256, copied node/relationship counts, failure code). No existing rows are changed; organizations provisioned before V47 have no import row and keep their current readiness. [Architecture](../ARCHITECTURE.md#multi-organization-workspaces-and-starter-catalog--2026-11-02).
+
+## Registration contact and form consent — V66 (2026-11-13)
+
+All three source lineages append identical `V66__registration_contact_and_consent.sql` after main's `V65__password_reset.sql`. It was first authored as V65, which collided with main's V65; it is renumbered V66 before any shared deployment. Applied migrations are unchanged. V66 adds nullable `country varchar(2)`, `admin_phone varchar(16)` and `policies_accepted_at timestamptz` to `platform.organization_registration`, with format checks for non-null country/phone. There are no defaults, backfills or new Neo4j fields. Existing records remain valid without fabricated contact/consent data; required phone and consent apply to new signup requests.
+
+The timestamp records the actual new signup form acceptance. Legal hyperlinks are intentionally placeholders; this migration does not establish acceptance of versioned legal documents. Continue selecting the exact installed lineage, never a combined location list.

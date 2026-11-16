@@ -1,106 +1,110 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1430" height="940" viewBox="0 0 1430 940" role="img" aria-labelledby="title desc">
+<svg xmlns="http://www.w3.org/2000/svg" width="1470" height="1050" viewBox="0 0 1470 1050" role="img" aria-labelledby="title desc">
 <title id="title">Frontend Package Overview - frontend/src</title>
-<desc id="desc">Top-level UML package folders with one level of actual subpackages. Orthogonal dashed open arrows show selected imports. Arrowheads remain outside folders and shadows.</desc>
+<desc id="desc">Outermost UML package contains the principal packages and one level of actual subpackages. Orthogonal dashed open arrows show selected imports inside the root package. Arrowheads remain clear of child folders and shadows.</desc>
 <rect width="100%" height="100%" fill="white"/>
-<g font-family="Arial, sans-serif"><text x="40" y="32" font-size="18" fill="#333">Frontend Package Overview - frontend/src</text><g data-node="Shared">
-<path d="M859 338 h520 v521 h-520 Z" fill="#efefef"/>
-<rect x="850" y="310" width="72" height="20" fill="white" stroke="#555" stroke-width="1.8"/>
-<rect x="850" y="329" width="520" height="521" fill="white" stroke="#555" stroke-width="1.8"/>
-<text x="1110" y="360" text-anchor="middle" font-size="21" font-weight="700" fill="#222">shared</text></g><g data-node="SharedApi">
-<path d="M887 473 h220 v33 h-220 Z" fill="#efefef"/>
-<rect x="878" y="445" width="72" height="20" fill="white" stroke="#555" stroke-width="1.8"/>
-<rect x="878" y="464" width="220" height="33" fill="white" stroke="#555" stroke-width="1.8"/>
-<text x="988" y="484" text-anchor="middle" font-size="15" font-weight="600" fill="#222">api</text></g><g data-node="SharedAuth">
-<path d="M1131 473 h220 v33 h-220 Z" fill="#efefef"/>
-<rect x="1122" y="445" width="72" height="20" fill="white" stroke="#555" stroke-width="1.8"/>
-<rect x="1122" y="464" width="220" height="33" fill="white" stroke="#555" stroke-width="1.8"/>
-<text x="1232" y="484" text-anchor="middle" font-size="15" font-weight="600" fill="#222">auth</text></g><g data-node="SharedComponents">
-<path d="M887 535 h220 v33 h-220 Z" fill="#efefef"/>
-<rect x="878" y="507" width="72" height="20" fill="white" stroke="#555" stroke-width="1.8"/>
-<rect x="878" y="526" width="220" height="33" fill="white" stroke="#555" stroke-width="1.8"/>
-<text x="988" y="546" text-anchor="middle" font-size="15" font-weight="600" fill="#222">components</text></g><g data-node="SharedHooks">
-<path d="M1131 535 h220 v33 h-220 Z" fill="#efefef"/>
-<rect x="1122" y="507" width="72" height="20" fill="white" stroke="#555" stroke-width="1.8"/>
-<rect x="1122" y="526" width="220" height="33" fill="white" stroke="#555" stroke-width="1.8"/>
-<text x="1232" y="546" text-anchor="middle" font-size="15" font-weight="600" fill="#222">hooks</text></g><g data-node="SharedI18n">
-<path d="M887 597 h220 v33 h-220 Z" fill="#efefef"/>
-<rect x="878" y="569" width="72" height="20" fill="white" stroke="#555" stroke-width="1.8"/>
-<rect x="878" y="588" width="220" height="33" fill="white" stroke="#555" stroke-width="1.8"/>
-<text x="988" y="608" text-anchor="middle" font-size="15" font-weight="600" fill="#222">i18n</text></g><g data-node="SharedLayouts">
-<path d="M1131 597 h220 v33 h-220 Z" fill="#efefef"/>
-<rect x="1122" y="569" width="72" height="20" fill="white" stroke="#555" stroke-width="1.8"/>
-<rect x="1122" y="588" width="220" height="33" fill="white" stroke="#555" stroke-width="1.8"/>
-<text x="1232" y="608" text-anchor="middle" font-size="15" font-weight="600" fill="#222">layouts</text></g><g data-node="SharedLib">
-<path d="M887 659 h220 v33 h-220 Z" fill="#efefef"/>
-<rect x="878" y="631" width="72" height="20" fill="white" stroke="#555" stroke-width="1.8"/>
-<rect x="878" y="650" width="220" height="33" fill="white" stroke="#555" stroke-width="1.8"/>
-<text x="988" y="670" text-anchor="middle" font-size="15" font-weight="600" fill="#222">lib</text></g><g data-node="SharedStores">
-<path d="M1131 659 h220 v33 h-220 Z" fill="#efefef"/>
-<rect x="1122" y="631" width="72" height="20" fill="white" stroke="#555" stroke-width="1.8"/>
-<rect x="1122" y="650" width="220" height="33" fill="white" stroke="#555" stroke-width="1.8"/>
-<text x="1232" y="670" text-anchor="middle" font-size="15" font-weight="600" fill="#222">stores</text></g><g data-node="SharedStyles">
-<path d="M887 721 h220 v33 h-220 Z" fill="#efefef"/>
-<rect x="878" y="693" width="72" height="20" fill="white" stroke="#555" stroke-width="1.8"/>
-<rect x="878" y="712" width="220" height="33" fill="white" stroke="#555" stroke-width="1.8"/>
-<text x="988" y="732" text-anchor="middle" font-size="15" font-weight="600" fill="#222">styles</text></g><g data-node="App">
-<path d="M609 98 h250 v71 h-250 Z" fill="#efefef"/>
-<rect x="600" y="70" width="72" height="20" fill="white" stroke="#555" stroke-width="1.8"/>
-<rect x="600" y="89" width="250" height="71" fill="white" stroke="#555" stroke-width="1.8"/>
-<text x="725" y="120" text-anchor="middle" font-size="21" font-weight="700" fill="#222">app</text></g><g data-node="Features">
-<path d="M69 338 h520 v521 h-520 Z" fill="#efefef"/>
-<rect x="60" y="310" width="72" height="20" fill="white" stroke="#555" stroke-width="1.8"/>
-<rect x="60" y="329" width="520" height="521" fill="white" stroke="#555" stroke-width="1.8"/>
-<text x="320" y="360" text-anchor="middle" font-size="21" font-weight="700" fill="#222">features</text></g><g data-node="Administration">
-<path d="M97 473 h220 v33 h-220 Z" fill="#efefef"/>
-<rect x="88" y="445" width="72" height="20" fill="white" stroke="#555" stroke-width="1.8"/>
-<rect x="88" y="464" width="220" height="33" fill="white" stroke="#555" stroke-width="1.8"/>
-<text x="198" y="484" text-anchor="middle" font-size="15" font-weight="600" fill="#222">administration</text></g><g data-node="Auth">
-<path d="M341 473 h220 v33 h-220 Z" fill="#efefef"/>
-<rect x="332" y="445" width="72" height="20" fill="white" stroke="#555" stroke-width="1.8"/>
-<rect x="332" y="464" width="220" height="33" fill="white" stroke="#555" stroke-width="1.8"/>
-<text x="442" y="484" text-anchor="middle" font-size="15" font-weight="600" fill="#222">auth</text></g><g data-node="Employee">
-<path d="M97 535 h220 v33 h-220 Z" fill="#efefef"/>
-<rect x="88" y="507" width="72" height="20" fill="white" stroke="#555" stroke-width="1.8"/>
-<rect x="88" y="526" width="220" height="33" fill="white" stroke="#555" stroke-width="1.8"/>
-<text x="198" y="546" text-anchor="middle" font-size="15" font-weight="600" fill="#222">employee</text></g><g data-node="Expert">
-<path d="M341 535 h220 v33 h-220 Z" fill="#efefef"/>
-<rect x="332" y="507" width="72" height="20" fill="white" stroke="#555" stroke-width="1.8"/>
-<rect x="332" y="526" width="220" height="33" fill="white" stroke="#555" stroke-width="1.8"/>
-<text x="442" y="546" text-anchor="middle" font-size="15" font-weight="600" fill="#222">expert</text></g><g data-node="Guest">
-<path d="M97 597 h220 v33 h-220 Z" fill="#efefef"/>
-<rect x="88" y="569" width="72" height="20" fill="white" stroke="#555" stroke-width="1.8"/>
-<rect x="88" y="588" width="220" height="33" fill="white" stroke="#555" stroke-width="1.8"/>
-<text x="198" y="608" text-anchor="middle" font-size="15" font-weight="600" fill="#222">guest</text></g><g data-node="Manager">
-<path d="M341 597 h220 v33 h-220 Z" fill="#efefef"/>
-<rect x="332" y="569" width="72" height="20" fill="white" stroke="#555" stroke-width="1.8"/>
-<rect x="332" y="588" width="220" height="33" fill="white" stroke="#555" stroke-width="1.8"/>
-<text x="442" y="608" text-anchor="middle" font-size="15" font-weight="600" fill="#222">manager</text></g><g data-node="Packages">
-<path d="M97 659 h220 v33 h-220 Z" fill="#efefef"/>
-<rect x="88" y="631" width="72" height="20" fill="white" stroke="#555" stroke-width="1.8"/>
-<rect x="88" y="650" width="220" height="33" fill="white" stroke="#555" stroke-width="1.8"/>
-<text x="198" y="670" text-anchor="middle" font-size="15" font-weight="600" fill="#222">packages</text></g><g data-node="PlatformAdmin">
-<path d="M341 659 h220 v33 h-220 Z" fill="#efefef"/>
-<rect x="332" y="631" width="72" height="20" fill="white" stroke="#555" stroke-width="1.8"/>
-<rect x="332" y="650" width="220" height="33" fill="white" stroke="#555" stroke-width="1.8"/>
-<text x="442" y="670" text-anchor="middle" font-size="15" font-weight="600" fill="#222">platform-admin</text></g><g data-node="Profile">
-<path d="M97 721 h220 v33 h-220 Z" fill="#efefef"/>
-<rect x="88" y="693" width="72" height="20" fill="white" stroke="#555" stroke-width="1.8"/>
-<rect x="88" y="712" width="220" height="33" fill="white" stroke="#555" stroke-width="1.8"/>
-<text x="198" y="732" text-anchor="middle" font-size="15" font-weight="600" fill="#222">profile</text></g><g data-node="Subscription">
-<path d="M341 721 h220 v33 h-220 Z" fill="#efefef"/>
-<rect x="332" y="693" width="72" height="20" fill="white" stroke="#555" stroke-width="1.8"/>
-<rect x="332" y="712" width="220" height="33" fill="white" stroke="#555" stroke-width="1.8"/>
-<text x="442" y="732" text-anchor="middle" font-size="15" font-weight="600" fill="#222">subscription</text></g><g data-node="System">
-<path d="M97 783 h220 v33 h-220 Z" fill="#efefef"/>
-<rect x="88" y="755" width="72" height="20" fill="white" stroke="#555" stroke-width="1.8"/>
-<rect x="88" y="774" width="220" height="33" fill="white" stroke="#555" stroke-width="1.8"/>
-<text x="198" y="794" text-anchor="middle" font-size="15" font-weight="600" fill="#222">system</text></g><g data-node="Assets">
-<path d="M69 98 h220 v71 h-220 Z" fill="#efefef"/>
-<rect x="60" y="70" width="72" height="20" fill="white" stroke="#555" stroke-width="1.8"/>
-<rect x="60" y="89" width="220" height="71" fill="white" stroke="#555" stroke-width="1.8"/>
-<text x="170" y="120" text-anchor="middle" font-size="21" font-weight="700" fill="#222">assets</text></g><path data-edge="App&gt;Features" d="M584 125 L320 125 L320 313" fill="none" stroke="#555" stroke-width="1.6" stroke-dasharray="6 5"/>
-<path data-arrowhead="App&gt;Features" d="M314 301 L320 313 L326 301" fill="none" stroke="#555" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path data-edge="App&gt;Shared" d="M866 125 L1110 125 L1110 313" fill="none" stroke="#555" stroke-width="1.6" stroke-dasharray="6 5"/>
-<path data-arrowhead="App&gt;Shared" d="M1104 301 L1110 313 L1116 301" fill="none" stroke="#555" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path data-edge="Features&gt;Shared" d="M596 390 L834 390" fill="none" stroke="#555" stroke-width="1.6" stroke-dasharray="6 5"/>
-<path data-arrowhead="Features&gt;Shared" d="M822 396 L834 390 L822 384" fill="none" stroke="#555" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path data-edge="Shared&gt;Features" d="M834 450 L596 450" fill="none" stroke="#555" stroke-width="1.6" stroke-dasharray="6 5"/>
-<path data-arrowhead="Shared&gt;Features" d="M608 444 L596 450 L608 456" fill="none" stroke="#555" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><text x="40" y="900" font-size="14" fill="#555">Nested folders: direct subpackages only. Packages with no subpackages remain at their current level.</text>
-<text x="40" y="922" font-size="14" fill="#555">Dashed arrow: importing package to dependency. Only selected imports are shown.</text></g></svg>
+<g font-family="Arial, sans-serif"><text x="40" y="32" font-size="18" fill="#333">Frontend Package Overview - frontend/src</text><g data-node="FrontendRoot">
+<path d="M29 93 h1430 v891 h-1430 Z" fill="#efefef"/>
+<rect x="20" y="65" width="240" height="20" fill="white" stroke="#555" stroke-width="1.8"/>
+<rect x="20" y="84" width="1430" height="891" fill="white" stroke="#555" stroke-width="1.8"/>
+<text x="735" y="115" text-anchor="middle" font-size="21" font-weight="700" fill="#222">frontend/src</text></g><g data-node="Shared">
+<path d="M879 408 h520 v521 h-520 Z" fill="#efefef"/>
+<rect x="870" y="380" width="72" height="20" fill="white" stroke="#555" stroke-width="1.8"/>
+<rect x="870" y="399" width="520" height="521" fill="white" stroke="#555" stroke-width="1.8"/>
+<text x="1130" y="430" text-anchor="middle" font-size="21" font-weight="700" fill="#222">shared</text></g><g data-node="SharedApi">
+<path d="M907 543 h220 v33 h-220 Z" fill="#efefef"/>
+<rect x="898" y="515" width="72" height="20" fill="white" stroke="#555" stroke-width="1.8"/>
+<rect x="898" y="534" width="220" height="33" fill="white" stroke="#555" stroke-width="1.8"/>
+<text x="1008" y="554" text-anchor="middle" font-size="15" font-weight="600" fill="#222">api</text></g><g data-node="SharedAuth">
+<path d="M1151 543 h220 v33 h-220 Z" fill="#efefef"/>
+<rect x="1142" y="515" width="72" height="20" fill="white" stroke="#555" stroke-width="1.8"/>
+<rect x="1142" y="534" width="220" height="33" fill="white" stroke="#555" stroke-width="1.8"/>
+<text x="1252" y="554" text-anchor="middle" font-size="15" font-weight="600" fill="#222">auth</text></g><g data-node="SharedComponents">
+<path d="M907 605 h220 v33 h-220 Z" fill="#efefef"/>
+<rect x="898" y="577" width="72" height="20" fill="white" stroke="#555" stroke-width="1.8"/>
+<rect x="898" y="596" width="220" height="33" fill="white" stroke="#555" stroke-width="1.8"/>
+<text x="1008" y="616" text-anchor="middle" font-size="15" font-weight="600" fill="#222">components</text></g><g data-node="SharedHooks">
+<path d="M1151 605 h220 v33 h-220 Z" fill="#efefef"/>
+<rect x="1142" y="577" width="72" height="20" fill="white" stroke="#555" stroke-width="1.8"/>
+<rect x="1142" y="596" width="220" height="33" fill="white" stroke="#555" stroke-width="1.8"/>
+<text x="1252" y="616" text-anchor="middle" font-size="15" font-weight="600" fill="#222">hooks</text></g><g data-node="SharedI18n">
+<path d="M907 667 h220 v33 h-220 Z" fill="#efefef"/>
+<rect x="898" y="639" width="72" height="20" fill="white" stroke="#555" stroke-width="1.8"/>
+<rect x="898" y="658" width="220" height="33" fill="white" stroke="#555" stroke-width="1.8"/>
+<text x="1008" y="678" text-anchor="middle" font-size="15" font-weight="600" fill="#222">i18n</text></g><g data-node="SharedLayouts">
+<path d="M1151 667 h220 v33 h-220 Z" fill="#efefef"/>
+<rect x="1142" y="639" width="72" height="20" fill="white" stroke="#555" stroke-width="1.8"/>
+<rect x="1142" y="658" width="220" height="33" fill="white" stroke="#555" stroke-width="1.8"/>
+<text x="1252" y="678" text-anchor="middle" font-size="15" font-weight="600" fill="#222">layouts</text></g><g data-node="SharedLib">
+<path d="M907 729 h220 v33 h-220 Z" fill="#efefef"/>
+<rect x="898" y="701" width="72" height="20" fill="white" stroke="#555" stroke-width="1.8"/>
+<rect x="898" y="720" width="220" height="33" fill="white" stroke="#555" stroke-width="1.8"/>
+<text x="1008" y="740" text-anchor="middle" font-size="15" font-weight="600" fill="#222">lib</text></g><g data-node="SharedStores">
+<path d="M1151 729 h220 v33 h-220 Z" fill="#efefef"/>
+<rect x="1142" y="701" width="72" height="20" fill="white" stroke="#555" stroke-width="1.8"/>
+<rect x="1142" y="720" width="220" height="33" fill="white" stroke="#555" stroke-width="1.8"/>
+<text x="1252" y="740" text-anchor="middle" font-size="15" font-weight="600" fill="#222">stores</text></g><g data-node="SharedStyles">
+<path d="M907 791 h220 v33 h-220 Z" fill="#efefef"/>
+<rect x="898" y="763" width="72" height="20" fill="white" stroke="#555" stroke-width="1.8"/>
+<rect x="898" y="782" width="220" height="33" fill="white" stroke="#555" stroke-width="1.8"/>
+<text x="1008" y="802" text-anchor="middle" font-size="15" font-weight="600" fill="#222">styles</text></g><g data-node="App">
+<path d="M629 168 h250 v71 h-250 Z" fill="#efefef"/>
+<rect x="620" y="140" width="72" height="20" fill="white" stroke="#555" stroke-width="1.8"/>
+<rect x="620" y="159" width="250" height="71" fill="white" stroke="#555" stroke-width="1.8"/>
+<text x="745" y="190" text-anchor="middle" font-size="21" font-weight="700" fill="#222">app</text></g><g data-node="Features">
+<path d="M89 408 h520 v521 h-520 Z" fill="#efefef"/>
+<rect x="80" y="380" width="72" height="20" fill="white" stroke="#555" stroke-width="1.8"/>
+<rect x="80" y="399" width="520" height="521" fill="white" stroke="#555" stroke-width="1.8"/>
+<text x="340" y="430" text-anchor="middle" font-size="21" font-weight="700" fill="#222">features</text></g><g data-node="Administration">
+<path d="M117 543 h220 v33 h-220 Z" fill="#efefef"/>
+<rect x="108" y="515" width="72" height="20" fill="white" stroke="#555" stroke-width="1.8"/>
+<rect x="108" y="534" width="220" height="33" fill="white" stroke="#555" stroke-width="1.8"/>
+<text x="218" y="554" text-anchor="middle" font-size="15" font-weight="600" fill="#222">administration</text></g><g data-node="Auth">
+<path d="M361 543 h220 v33 h-220 Z" fill="#efefef"/>
+<rect x="352" y="515" width="72" height="20" fill="white" stroke="#555" stroke-width="1.8"/>
+<rect x="352" y="534" width="220" height="33" fill="white" stroke="#555" stroke-width="1.8"/>
+<text x="462" y="554" text-anchor="middle" font-size="15" font-weight="600" fill="#222">auth</text></g><g data-node="Employee">
+<path d="M117 605 h220 v33 h-220 Z" fill="#efefef"/>
+<rect x="108" y="577" width="72" height="20" fill="white" stroke="#555" stroke-width="1.8"/>
+<rect x="108" y="596" width="220" height="33" fill="white" stroke="#555" stroke-width="1.8"/>
+<text x="218" y="616" text-anchor="middle" font-size="15" font-weight="600" fill="#222">employee</text></g><g data-node="Expert">
+<path d="M361 605 h220 v33 h-220 Z" fill="#efefef"/>
+<rect x="352" y="577" width="72" height="20" fill="white" stroke="#555" stroke-width="1.8"/>
+<rect x="352" y="596" width="220" height="33" fill="white" stroke="#555" stroke-width="1.8"/>
+<text x="462" y="616" text-anchor="middle" font-size="15" font-weight="600" fill="#222">expert</text></g><g data-node="Guest">
+<path d="M117 667 h220 v33 h-220 Z" fill="#efefef"/>
+<rect x="108" y="639" width="72" height="20" fill="white" stroke="#555" stroke-width="1.8"/>
+<rect x="108" y="658" width="220" height="33" fill="white" stroke="#555" stroke-width="1.8"/>
+<text x="218" y="678" text-anchor="middle" font-size="15" font-weight="600" fill="#222">guest</text></g><g data-node="Manager">
+<path d="M361 667 h220 v33 h-220 Z" fill="#efefef"/>
+<rect x="352" y="639" width="72" height="20" fill="white" stroke="#555" stroke-width="1.8"/>
+<rect x="352" y="658" width="220" height="33" fill="white" stroke="#555" stroke-width="1.8"/>
+<text x="462" y="678" text-anchor="middle" font-size="15" font-weight="600" fill="#222">manager</text></g><g data-node="Packages">
+<path d="M117 729 h220 v33 h-220 Z" fill="#efefef"/>
+<rect x="108" y="701" width="72" height="20" fill="white" stroke="#555" stroke-width="1.8"/>
+<rect x="108" y="720" width="220" height="33" fill="white" stroke="#555" stroke-width="1.8"/>
+<text x="218" y="740" text-anchor="middle" font-size="15" font-weight="600" fill="#222">packages</text></g><g data-node="PlatformAdmin">
+<path d="M361 729 h220 v33 h-220 Z" fill="#efefef"/>
+<rect x="352" y="701" width="72" height="20" fill="white" stroke="#555" stroke-width="1.8"/>
+<rect x="352" y="720" width="220" height="33" fill="white" stroke="#555" stroke-width="1.8"/>
+<text x="462" y="740" text-anchor="middle" font-size="15" font-weight="600" fill="#222">platform-admin</text></g><g data-node="Profile">
+<path d="M117 791 h220 v33 h-220 Z" fill="#efefef"/>
+<rect x="108" y="763" width="72" height="20" fill="white" stroke="#555" stroke-width="1.8"/>
+<rect x="108" y="782" width="220" height="33" fill="white" stroke="#555" stroke-width="1.8"/>
+<text x="218" y="802" text-anchor="middle" font-size="15" font-weight="600" fill="#222">profile</text></g><g data-node="Subscription">
+<path d="M361 791 h220 v33 h-220 Z" fill="#efefef"/>
+<rect x="352" y="763" width="72" height="20" fill="white" stroke="#555" stroke-width="1.8"/>
+<rect x="352" y="782" width="220" height="33" fill="white" stroke="#555" stroke-width="1.8"/>
+<text x="462" y="802" text-anchor="middle" font-size="15" font-weight="600" fill="#222">subscription</text></g><g data-node="System">
+<path d="M117 853 h220 v33 h-220 Z" fill="#efefef"/>
+<rect x="108" y="825" width="72" height="20" fill="white" stroke="#555" stroke-width="1.8"/>
+<rect x="108" y="844" width="220" height="33" fill="white" stroke="#555" stroke-width="1.8"/>
+<text x="218" y="864" text-anchor="middle" font-size="15" font-weight="600" fill="#222">system</text></g><g data-node="Assets">
+<path d="M89 168 h220 v71 h-220 Z" fill="#efefef"/>
+<rect x="80" y="140" width="72" height="20" fill="white" stroke="#555" stroke-width="1.8"/>
+<rect x="80" y="159" width="220" height="71" fill="white" stroke="#555" stroke-width="1.8"/>
+<text x="190" y="190" text-anchor="middle" font-size="21" font-weight="700" fill="#222">assets</text></g><path data-edge="App&gt;Features" d="M604 195 L340 195 L340 383" fill="none" stroke="#555" stroke-width="1.6" stroke-dasharray="6 5"/>
+<path data-arrowhead="App&gt;Features" d="M334 371 L340 383 L346 371" fill="none" stroke="#555" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path data-edge="App&gt;Shared" d="M886 195 L1130 195 L1130 383" fill="none" stroke="#555" stroke-width="1.6" stroke-dasharray="6 5"/>
+<path data-arrowhead="App&gt;Shared" d="M1124 371 L1130 383 L1136 371" fill="none" stroke="#555" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path data-edge="Features&gt;Shared" d="M616 460 L854 460" fill="none" stroke="#555" stroke-width="1.6" stroke-dasharray="6 5"/>
+<path data-arrowhead="Features&gt;Shared" d="M842 466 L854 460 L842 454" fill="none" stroke="#555" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path data-edge="Shared&gt;Features" d="M854 520 L616 520" fill="none" stroke="#555" stroke-width="1.6" stroke-dasharray="6 5"/>
+<path data-arrowhead="Shared&gt;Features" d="M628 514 L616 520 L628 526" fill="none" stroke="#555" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><text x="40" y="1010" font-size="14" fill="#555">Nested folders: direct subpackages only. Packages with no subpackages remain at their current level.</text>
+<text x="40" y="1032" font-size="14" fill="#555">Dashed arrow: importing package to dependency. Only selected imports are shown.</text></g></svg>

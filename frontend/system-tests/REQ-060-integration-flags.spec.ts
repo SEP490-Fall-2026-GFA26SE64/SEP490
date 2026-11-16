@@ -34,15 +34,17 @@ for (const viewport of [{ width: 1440, height: 1000 }, { width: 390, height: 844
     const email = `flags-${randomUUID()}@example.test`
     const password = 'Isolated integration flags password!'
     await page.goto('/guest/register')
-    await page.getByLabel('Organization Legal Name', { exact: false }).fill('Integration Flags Organization')
+    await page.getByLabel('Business name', { exact: false }).fill('Integration Flags Organization')
     await page.getByRole('button', { name: 'Continue to account', exact: true }).click()
-    await page.getByLabel('Administrator Full Name', { exact: false }).fill('Isolated Flags Owner')
-    await page.getByLabel('Work Email Address', { exact: false }).fill(email)
+    await page.getByLabel('Full name', { exact: false }).fill('Isolated Flags Owner')
+    await page.getByLabel('Login email', { exact: false }).fill(email)
+    await page.getByLabel('Phone number', { exact: false }).fill('0901234567')
+    await page.getByRole('checkbox', { name: /I agree/ }).check()
     await page.getByLabel('Password', { exact: false }).first().fill(password)
     await page.getByLabel('Confirm Password', { exact: false }).fill(password)
     const registered = page.waitForResponse(response => response.url().endsWith('/api/v1/registration')
       && response.request().method() === 'POST')
-    await page.getByRole('button', { name: 'Save and continue', exact: true }).click()
+    await page.getByRole('button', { name: 'Create account', exact: true }).click()
     expect((await registered).status()).toBe(201)
     await expect(page.getByRole('heading', { name: 'Registration complete', exact: true })).toBeVisible()
     const saved = await page.request.get('/api/v1/registration/current')
@@ -76,7 +78,7 @@ for (const viewport of [{ width: 1440, height: 1000 }, { width: 390, height: 844
     expect((await outsider.request.get(orderPath)).status()).toBe(401)
     expect((await mutate(outsider.request, '/api/v1/registration', {
       organizationName: 'Isolated outsider', adminName: 'Other Owner',
-      adminEmail: `outsider-${randomUUID()}@example.test`, password,
+      adminEmail: `outsider-${randomUUID()}@example.test`, password, adminPhone: '0901234567', policiesAccepted: true,
     })).status()).toBe(201)
     expect((await outsider.request.get(orderPath)).status()).toBe(403)
     await outsider.close()
