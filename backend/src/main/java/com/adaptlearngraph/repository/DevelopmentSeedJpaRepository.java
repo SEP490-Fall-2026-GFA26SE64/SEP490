@@ -405,8 +405,8 @@ public interface DevelopmentSeedJpaRepository extends Repository<OrganizationEnt
                 created_at, expires_at
             ) VALUES (
                 :order, :intent, :createdBy, 1, :plan, :planVersion,
-                'Enterprise Plan', 'Enterprise Plan Bootstrap', 24500000, 'VND', 12, 200,
-                :idempotencyKey, '0000000000000000000000000000000000000000000000000000000000000000', 'PAID', 24500000, now(),
+                'Enterprise Plan',                 'Enterprise Plan Bootstrap', 24500, 'VND', 12, 200,
+                                :idempotencyKey, '0000000000000000000000000000000000000000000000000000000000000000', 'PAID', 24500, now(),
                 now(), now() + interval '30 minutes'
             ) ON CONFLICT (order_id) DO NOTHING
             """, nativeQuery = true)

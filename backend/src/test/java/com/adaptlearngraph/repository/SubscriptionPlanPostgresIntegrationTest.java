@@ -99,8 +99,8 @@ class SubscriptionPlanPostgresIntegrationTest {
             start.countDown();
             assertNotEquals(first.get(15, TimeUnit.SECONDS), second.get(15, TimeUnit.SECONDS));
         }
-        assertEquals(2, jdbc.queryForObject("SELECT count(*) FROM platform.subscription_plan_version WHERE plan_id = ?",
-                Integer.class, before.planId()));
+        assertEquals(before.revision() + 1, jdbc.queryForObject("SELECT count(*) FROM platform.subscription_plan_version WHERE plan_id = ?",
+                Long.class, before.planId()));
     }
 
     @Test

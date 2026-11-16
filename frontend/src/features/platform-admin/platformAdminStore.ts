@@ -45,8 +45,8 @@ export const DEFAULT_PLANS: PlatformSubscriptionPlan[] = [
     description: 'Perfect for small engineering teams starting competency intelligence and graph upskilling.',
     priceUsdMonthly: 199,
     priceUsdAnnual: 159,
-    priceVndMonthly: 4900000,
-    priceVndAnnual: 3900000,
+    priceVndMonthly: 4900,
+    priceVndAnnual: 3900,
     seatLimit: 20,
     features: [
       'Up to 20 Employee seats',
@@ -66,8 +66,8 @@ export const DEFAULT_PLANS: PlatformSubscriptionPlan[] = [
     description: 'Ideal for scaling engineering departments with dedicated L&D managers and experts.',
     priceUsdMonthly: 499,
     priceUsdAnnual: 399,
-    priceVndMonthly: 12250000,
-    priceVndAnnual: 9800000,
+    priceVndMonthly: 12250,
+    priceVndAnnual: 9800,
     seatLimit: 50,
     popular: true,
     features: [
@@ -88,8 +88,8 @@ export const DEFAULT_PLANS: PlatformSubscriptionPlan[] = [
     description: 'Complete competency intelligence platform for enterprise-scale software engineering organizations.',
     priceUsdMonthly: 999,
     priceUsdAnnual: 799,
-    priceVndMonthly: 24500000,
-    priceVndAnnual: 19600000,
+    priceVndMonthly: 24500,
+    priceVndAnnual: 19600,
     seatLimit: 200,
     features: [
       'Up to 200 Employee seats',
@@ -112,7 +112,7 @@ export const INITIAL_AUDIT_LOGS: PlatformAuditEvent[] = [
     organizationName: 'TechNova Cognitive Labs',
     actor: 'system',
     action: 'SUBSCRIPTION_RENEWAL_CONFIRMED',
-    details: 'PayOS webhook confirmed monthly subscription renewal for Enterprise Tier (VND 24,500,000).',
+    details: 'PayOS webhook confirmed monthly subscription renewal for Enterprise Tier (VND 24,500).',
     severity: 'success',
   },
   {

@@ -43,7 +43,7 @@ class SubscriptionSchemaIntegrationTest {
                      """)) {
             String[] names = {"Starter", "Growth", "Enterprise"};
             int[] seats = {20, 50, 200};
-            long[] prices = {4_900_000, 12_250_000, 24_500_000};
+            long[] prices = {4_900, 12_250, 24_500};
             for (int i = 0; i < names.length; i++) {
                 assertTrue(rows.next());
                 assertEquals(names[i], rows.getString("name"));
@@ -53,10 +53,20 @@ class SubscriptionSchemaIntegrationTest {
                 assertEquals("VND", rows.getString("currency"));
                 assertEquals(1, rows.getInt("duration_months"));
                 assertEquals(seats[i], rows.getInt("employee_seats"));
-                assertEquals(1, rows.getLong("revision"));
+                assertEquals(2, rows.getLong("revision"));
                 assertNotNull(rows.getTimestamp("created_at"));
                 assertNull(rows.getObject("created_by"));
                 assertEquals("SYSTEM", rows.getString("creation_source"));
+            }
+            assertFalse(rows.next());
+        }
+        try (var connection = connection(); var statement = connection.createStatement();
+             var rows = statement.executeQuery("""
+                     SELECT price_vnd FROM platform.subscription_plan_version WHERE revision = 1 ORDER BY employee_seats
+                     """)) {
+            for (long original : new long[]{4_900_000, 12_250_000, 24_500_000}) {
+                assertTrue(rows.next());
+                assertEquals(original, rows.getLong("price_vnd"));
             }
             assertFalse(rows.next());
         }
