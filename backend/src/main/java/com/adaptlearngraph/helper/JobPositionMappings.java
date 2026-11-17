@@ -15,16 +15,11 @@ public final class JobPositionMappings implements ModelMapperRegistrar {
                     source.code(),
                     source.name(),
                     source.jobZone(),
-                    source.interestRealistic(),
-                    source.interestInvestigative(),
-                    source.interestArtistic(),
-                    source.interestSocial(),
-                    source.interestEnterprising(),
-                    source.interestConventional(),
                     source.status(),
                     source.version(),
                     source.roleCount(),
-                    source.microSkillCount());
+                    source.microSkillCount(),source.description(),source.interestRealistic(),source.interestInvestigative(),
+                    source.interestArtistic(),source.interestSocial(),source.interestEnterprising(),source.interestConventional());
         });
     }
 }

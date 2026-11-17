@@ -1,17 +1,29 @@
 import { workspaceFetch as fetch } from './workspaceFetch'
 import { requireOrganizationId } from './organizationScope'
 
+export class JobPositionApiError extends Error {
+  status: number
+  code: string
+  constructor(status: number, code: string) { super(code); this.name = 'JobPositionApiError'; this.status = status; this.code = code }
+}
+async function requireOk(response: Response) {
+  if (response.ok) return
+  const body = await response.json().catch(() => null)
+  throw new JobPositionApiError(response.status, typeof body?.code === 'string' ? body.code : 'CATALOG_UNAVAILABLE')
+}
+
 export interface JobPositionDto {
+  description?: string | null
+  interestRealistic?: number | null
+  interestInvestigative?: number | null
+  interestArtistic?: number | null
+  interestSocial?: number | null
+  interestEnterprising?: number | null
+  interestConventional?: number | null
   id: string
   code: string
   name: string
   jobZone: number
-  interestRealistic: number
-  interestInvestigative: number
-  interestArtistic: number
-  interestSocial: number
-  interestEnterprising: number
-  interestConventional: number
   status: string
   version: string
   roleCount: number
@@ -19,16 +31,17 @@ export interface JobPositionDto {
 }
 
 export interface SaveJobPositionPayload {
+  description?: string
+  interestRealistic?: number | null
+  interestInvestigative?: number | null
+  interestArtistic?: number | null
+  interestSocial?: number | null
+  interestEnterprising?: number | null
+  interestConventional?: number | null
   id?: string
   code: string
   name: string
   jobZone?: number
-  interestRealistic?: number
-  interestInvestigative?: number
-  interestArtistic?: number
-  interestSocial?: number
-  interestEnterprising?: number
-  interestConventional?: number
   status?: string
   version?: string
 }
@@ -42,9 +55,7 @@ export async function fetchJobPositions(orgId: string): Promise<JobPositionDto[]
   const res = await fetch(`/api/v1/organizations/${encodeURIComponent(effectiveOrg)}/job-positions`, {
     headers: { Accept: 'application/json' },
   })
-  if (!res.ok) {
-    throw new Error(`Failed to fetch job positions: ${res.statusText}`)
-  }
+  await requireOk(res)
   return res.json()
 }
 
@@ -61,9 +72,7 @@ export async function createJobPosition(
     },
     body: JSON.stringify(payload),
   })
-  if (!res.ok) {
-    throw new Error(`Failed to create job position: ${res.statusText}`)
-  }
+  await requireOk(res)
   return res.json()
 }
 
@@ -81,9 +90,7 @@ export async function updateJobPosition(
     },
     body: JSON.stringify(payload),
   })
-  if (!res.ok) {
-    throw new Error(`Failed to update job position: ${res.statusText}`)
-  }
+  await requireOk(res)
   return res.json()
 }
 
@@ -92,7 +99,5 @@ export async function deleteJobPosition(orgId: string, id: string): Promise<void
   const res = await fetch(`/api/v1/organizations/${encodeURIComponent(effectiveOrg)}/job-positions/${encodeURIComponent(id)}`, {
     method: 'DELETE',
   })
-  if (!res.ok) {
-    throw new Error(`Failed to delete job position: ${res.statusText}`)
-  }
+  await requireOk(res)
 }

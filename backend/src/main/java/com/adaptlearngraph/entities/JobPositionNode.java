@@ -12,13 +12,11 @@ public record JobPositionNode(
         @Property("code") String code,
         @Property("name") String name,
         @Property("jobZone") Long jobZone,
-        @Property("interestRealistic") Double interestRealistic,
-        @Property("interestInvestigative") Double interestInvestigative,
-        @Property("interestArtistic") Double interestArtistic,
-        @Property("interestSocial") Double interestSocial,
-        @Property("interestEnterprising") Double interestEnterprising,
-        @Property("interestConventional") Double interestConventional,
         @Property("status") String status,
-        @Property("version") String version) {
+        @Property("version") String version,
+        @Property("description") String description,
+        @Property("interestRealistic") Long interestRealistic,@Property("interestInvestigative") Long interestInvestigative,
+        @Property("interestArtistic") Long interestArtistic,@Property("interestSocial") Long interestSocial,
+        @Property("interestEnterprising") Long interestEnterprising,@Property("interestConventional") Long interestConventional) {
 }
 
