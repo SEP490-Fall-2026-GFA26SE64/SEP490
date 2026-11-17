@@ -4,14 +4,15 @@ This document is the authoritative test specification and cross-reference index 
 
 ---
 
-## Committed Test Cases Overview (22 Total Automated Test Cases)
+## Committed Test Cases Overview (22 Total Automated Test Cases + 1 NFR Benchmark)
 
-| Test type | Count | Automated in CI | Responsible member(s) | Playwright Test Spec |
+| Test type | Count | Automated in CI | Responsible member(s) | Test Spec Reference |
 |:---|:---:|:---:|:---|:---|
 | *Feature tests (≥ 3 per feature)* | 20 | 20 | Nguyễn Anh Khôi | [`REQ-WF02-report5-flow.spec.ts`](../../frontend/system-tests/REQ-WF02-report5-flow.spec.ts) |
 | *End-to-end workflow test (≥ 1)* | 1 | 1 | Nguyễn Anh Khôi | [`REQ-WF02-e2e-workflow.spec.ts`](../../frontend/system-tests/REQ-WF02-e2e-workflow.spec.ts) |
 | *State transition tests (≥ 1 per transition)* | 1 | 1 | Nguyễn Anh Khôi | [`REQ-WF02-state-transitions.spec.ts`](../../frontend/system-tests/REQ-WF02-state-transitions.spec.ts) |
-| **Total for this workflow** | **22** | **22** | **Nguyễn Anh Khôi** | **All 22 automated end-to-end** |
+| *Non-Functional Requirement (NFR-P02 Performance)* | 1 (4 queries × 10 runs) | 1 | Nguyễn Anh Khôi | [`GraphQueryPerformanceBenchmarkTest.java`](../../backend/src/test/java/com/adaptlearngraph/repository/GraphQueryPerformanceBenchmarkTest.java) |
+| **Total for this workflow** | **23** | **23** | **Nguyễn Anh Khôi** | **All 23 automated and verified** |
 
 ---
 
@@ -645,7 +646,249 @@ END-TO-END WORKFLOW & STATE TRANSITION SUITE (COMMITTED CAPSTONE TEST CASES)
 
 ---
 
-## 4. How to Execute Tests
+## 4. Non-Functional Requirement: NFR-P02 (Performance — Graph Queries)
+
+```
+================================================================================
+NON-FUNCTIONAL REQUIREMENT SPECIFICATION: NFR-P02
+Quality Attribute: Performance — Graph Queries
+Responsible Member: Nguyễn Anh Khôi
+Automated Benchmark Suite: GraphQueryPerformanceBenchmarkTest.java
+Target SLA: Every selected query runs within 1.0 s (1000 ms) after warm-up
+================================================================================
+```
+
+### 4.1 Requirement Specification & Evaluation Criteria
+- **Requirement ID:** `NFR-P02`
+- **Quality Attribute:** Performance — graph queries
+- **Specification:** Execution time of selected Role, Skill, prerequisite and pathway catalog queries. Every selected query run within 1 s after warm-up on the recorded catalog.
+- **Benchmark Protocol:**
+  - Select 4 representative queries:
+    1. **Target Role Query (`Q1`):** Role hierarchical traversal with progressive mastery levels, competencies, and required micro-skills.
+    2. **Skill & Taxonomy Query (`Q2`):** Micro-skill and competency taxonomy retrieval with certification prerequisites.
+    3. **Prerequisite Query (`Q3`):** Directed skill prerequisite DAG traversal & multi-hop reachability check.
+    4. **Pathway Catalog Query (`Q4`):** Adaptive baseline pathway catalog multi-entity expansion (`JobPosition -> TargetRole -> Level -> MicroSkill`).
+  - Warm each query (3 warm-up runs discarded) to prime query plan caches and JVM execution paths.
+  - Record 10 runs per query with fixed parameters on the recorded catalog snapshot.
+  - Measure graph execution time in milliseconds, including result consumption; exclude full HTTP/UI network transport.
+  - Retain all timings (Runs 1 to 10, Min, Max, Mean, Median p50, 95th Percentile p95).
+  - Assert that all measured executions meet the strict threshold of **≤ 1.0 s (< 1000 ms)**.
+- **Responsible Member:** Nguyễn Anh Khôi
+
+### 4.2 Recorded Catalog Snapshot & Benchmark Environment
+The benchmark was executed against the live Docker Compose environment (`compose.dev.yml`) with the official seeded organization `TechNova Cognitive Labs` (`e0000000-0000-0000-0000-000000000001`):
+- **Graph Database Engine:** Neo4j Community Kernel `5.26.31`
+- **Total Graph Nodes:** `1,098` nodes
+  - `LearningModule`: 504
+  - `Level`: 242
+  - `MicroSkill`: 147
+  - `Competency`: 108
+  - `TargetRole`: 80
+  - `JobPosition`: 8
+  - `Department`: 7
+  - `Certificate`: 2
+- **Total Graph Relationships:** `4,486` edges
+  - `REQUIRES_SKILL`: 2,185
+  - `HAS_SKILL`: 736
+  - `HAS_COMPETENCY`: 645
+  - `TEACHES`: 504
+  - `HAS_LEVEL`: 242
+  - `HAS_ROLE`: 82
+  - `HAS_SKILL_PREREQUISITE`: 79
+  - `HAS_JOB_POSITION`: 11
+  - `REQUIRES_CERTIFICATE`: 2
+- **Hardware / Host Runtime:** Intel / AMD x86_64, Windows 11 host with Docker Desktop Linux container, Java 21 LTS runtime.
+
+### 4.3 Representative Cypher Queries & Parameters
+
+#### Query 1 (Q1): Target Role Hierarchical Traversal
+- **Purpose:** Traverses a Target Role by code, expanding progressive mastery levels (`HAS_LEVEL`), competency groupings (`HAS_COMPETENCY`), and member micro-skill requirements (`REQUIRES_SKILL`, `HAS_SKILL`).
+- **Fixed Parameters:** `organizationId = "e0000000-0000-0000-0000-000000000001"`, `code = "APPLICATION_DEVELOPER"`
+- **Cypher Statement:**
+```cypher
+MATCH (r:TargetRole)
+WHERE r.organizationId = $organizationId AND (r.code = $code OR r.baseCode = $code)
+OPTIONAL MATCH (r)-[:HAS_LEVEL]->(l:Level)
+WITH r, l ORDER BY coalesce(l.rank, 999) ASC, l.name ASC
+WITH r, [x IN collect(DISTINCT CASE WHEN l IS NOT NULL THEN l.name END) WHERE x IS NOT NULL] AS graphLevels,
+     [x IN collect(DISTINCT CASE WHEN l IS NOT NULL THEN { name: l.name, duration: coalesce(l.duration, '') } END) WHERE x IS NOT NULL] AS graphLevelDetails
+OPTIONAL MATCH (r)-[:HAS_LEVEL]->(clvl:Level)-[:HAS_COMPETENCY]->(comp:Competency)
+WHERE (comp.organizationId IS NULL OR comp.organizationId = r.organizationId) AND coalesce(comp.status, 'ACTIVE') = 'ACTIVE'
+WITH r, graphLevels, graphLevelDetails,
+     [x IN collect(DISTINCT CASE WHEN comp IS NOT NULL THEN {
+         levelName: clvl.name,
+         competencyId: comp.id,
+         competencyCode: coalesce(comp.code, comp.id)
+     } END) WHERE x IS NOT NULL] AS graphCompetencies
+OPTIONAL MATCH (r)-[req:REQUIRES_SKILL]->(s:MicroSkill)
+WHERE req.status='ACTIVE' AND (s.organizationId IS NULL OR s.organizationId=r.organizationId) AND s.status='ACTIVE'
+WITH r, graphLevels, graphLevelDetails, graphCompetencies, [x IN collect(DISTINCT CASE WHEN s IS NOT NULL THEN {
+    skillId: s.id,
+    skillCode: s.code,
+    skillName: s.name,
+    level: coalesce(req.level, '')
+} END) WHERE x IS NOT NULL] AS directSkills
+OPTIONAL MATCH (r)-[:HAS_LEVEL]->(lvl:Level)-[:HAS_COMPETENCY]->(c:Competency)-[:HAS_SKILL]->(cs:MicroSkill)
+OPTIONAL MATCH (lvl)-[lreq:REQUIRES_SKILL]->(cs)
+WITH r, graphLevels, graphLevelDetails, graphCompetencies, directSkills, [x IN collect(DISTINCT CASE WHEN cs IS NOT NULL THEN {
+    skillId: cs.id,
+    skillCode: cs.code,
+    skillName: cs.name,
+    level: coalesce(lreq.level, lvl.name, '')
+} END) WHERE x IS NOT NULL] AS levelSkills
+WITH r, graphLevels, graphLevelDetails, graphCompetencies, CASE WHEN size(directSkills) > 0 THEN directSkills ELSE levelSkills END AS graphSkills
+RETURN r, graphSkills, graphLevels, graphLevelDetails, graphCompetencies
+```
+
+#### Query 2 (Q2): Micro-Skill & Competency Taxonomy Search
+- **Purpose:** Traverses micro-skills, their parent competencies, status filters, and certification requirements across the organization.
+- **Fixed Parameters:** `organizationId = "e0000000-0000-0000-0000-000000000001"`
+- **Cypher Statement:**
+```cypher
+MATCH (c:Competency)-[:HAS_SKILL]->(s:MicroSkill)
+WHERE (c.organizationId IS NULL OR c.organizationId = $organizationId)
+  AND (s.organizationId IS NULL OR s.organizationId = $organizationId)
+  AND coalesce(c.status, 'ACTIVE') = 'ACTIVE'
+  AND coalesce(s.status, 'ACTIVE') = 'ACTIVE'
+OPTIONAL MATCH (s)-[reqCert:REQUIRES_CERTIFICATE]->(cert:Certificate)
+RETURN s.id AS skillId, s.code AS skillCode, s.name AS skillName,
+       c.id AS competencyId, c.name AS competencyName,
+       collect(DISTINCT cert.name) AS certificates
+ORDER BY s.code ASC
+```
+
+#### Query 3 (Q3): Directed Skill Prerequisite DAG Traversal
+- **Purpose:** Traverses all active directed prerequisite relationships (`[:HAS_SKILL_PREREQUISITE]`), maps source and target skills, dependent and prerequisite knowledge levels, and evaluates transitive multi-hop prerequisite paths up to depth 5.
+- **Fixed Parameters:** `organizationId = "e0000000-0000-0000-0000-000000000001"`
+- **Cypher Statement:**
+```cypher
+MATCH (source:MicroSkill)-[rel:HAS_SKILL_PREREQUISITE]->(target:MicroSkill)
+WHERE (source.organizationId IS NULL OR source.organizationId = $organizationId)
+  AND (target.organizationId IS NULL OR target.organizationId = $organizationId)
+  AND coalesce(rel.status, 'ACTIVE') = 'ACTIVE'
+OPTIONAL MATCH path = (source)-[:HAS_SKILL_PREREQUISITE*1..5]->(ancestor:MicroSkill)
+RETURN source.code AS sourceCode, source.name AS sourceName,
+       target.code AS targetCode, target.name AS targetName,
+       rel.dependentKnowledgeLevel AS dependentLevel,
+       rel.prerequisiteKnowledgeLevel AS prerequisiteLevel,
+       length(path) AS depth
+ORDER BY source.code ASC, target.code ASC
+```
+
+#### Query 4 (Q4): Adaptive Baseline Pathway Catalog Snapshot
+- **Purpose:** Full multi-entity traversal across `JobPosition` -> `TargetRole` -> `Level` -> `MicroSkill` used by `Neo4jAdaptiveBaselineCatalogAdapter` to construct an employee's adaptive baseline learning pathway.
+- **Fixed Parameters:** `organization = "e0000000-0000-0000-0000-000000000001"`, `jobPosition = "OCC-15-1252.00"`
+- **Cypher Statement:**
+```cypher
+MATCH (jobPosition:JobPosition {id:$jobPosition}) WHERE jobPosition.status='ACTIVE'
+  AND (jobPosition.organizationId IS NULL OR jobPosition.organizationId=$organization)
+OPTIONAL MATCH (jobPosition)-[membership:HAS_ROLE]->(role:TargetRole)
+WHERE membership.status='ACTIVE' AND role.status IN ['ACTIVE','PUBLISHED']
+  AND (role.organizationId IS NULL OR role.organizationId=$organization)
+  AND (membership.organizationId IS NULL OR membership.organizationId=$organization)
+OPTIONAL MATCH (owner:JobPosition)-[ownership:HAS_ROLE]->(role)
+WHERE owner.status='ACTIVE' AND ownership.status='ACTIVE'
+WITH jobPosition,membership,role,collect(DISTINCT owner.id) AS owners
+OPTIONAL MATCH (role)-[roleLevel:HAS_LEVEL]->(level:Level)-[requirement:REQUIRES_SKILL]->(skill:MicroSkill)
+WHERE roleLevel.status='ACTIVE' AND level.status='ACTIVE' AND requirement.status='ACTIVE' AND skill.status='ACTIVE'
+  AND (roleLevel.organizationId IS NULL OR roleLevel.organizationId=$organization)
+  AND (level.organizationId IS NULL OR level.organizationId=$organization)
+  AND (requirement.organizationId IS NULL OR requirement.organizationId=$organization)
+  AND (skill.organizationId IS NULL OR skill.organizationId=$organization)
+RETURN elementId(jobPosition) AS jobPositionNode,elementId(role) AS roleNode,elementId(level) AS levelNode,elementId(skill) AS skillNode,
+       properties(jobPosition) AS jobPosition,properties(membership) AS membership,properties(role) AS role,
+       owners,properties(roleLevel) AS roleLevel,properties(level) AS level,
+       properties(requirement) AS requirement,properties(skill) AS skill
+```
+
+### 4.4 Measured Benchmark Results (10 Runs per Query)
+
+#### Summary Metrics Table
+| Query ID | Representative Query Description | Consumed Records | Min (ms) | Max (ms) | Mean (ms) | Median (p50) | P95 (ms) | Target SLA | Test Result |
+|:---:|:---|---:|---:|---:|---:|---:|---:|:---:|:---:|
+| **Q1** | **Target Role Hierarchical Traversal** | 1 | 20.26 ms | 87.81 ms | 29.78 ms | 23.15 ms | 87.81 ms | ≤ 1,000 ms | **PASSED** |
+| **Q2** | **Micro-Skill & Competency Taxonomy Search** | 330 | 25.58 ms | 64.76 ms | 33.26 ms | 28.83 ms | 64.76 ms | ≤ 1,000 ms | **PASSED** |
+| **Q3** | **Directed Skill Prerequisite DAG Traversal** | 540 | 19.44 ms | 37.30 ms | 26.88 ms | 26.45 ms | 37.30 ms | ≤ 1,000 ms | **PASSED** |
+| **Q4** | **Adaptive Baseline Pathway Catalog Snapshot** | 398 | 34.10 ms | 66.49 ms | 48.80 ms | 45.35 ms | 66.49 ms | ≤ 1,000 ms | **PASSED** |
+
+#### Detailed 10-Run Timing Matrix (Retained All Timings)
+| Run # | Q1: Role Query (ms) | Q2: Skill Query (ms) | Q3: Prerequisite Query (ms) | Q4: Pathway Query (ms) |
+|:---:|:---:|:---:|:---:|:---:|
+| **Run 1** | 27.07 ms | 37.39 ms | 28.63 ms | 62.98 ms |
+| **Run 2** | 22.86 ms | 28.30 ms | 24.89 ms | 58.71 ms |
+| **Run 3** | 24.98 ms | 34.02 ms | 28.64 ms | 51.67 ms |
+| **Run 4** | 26.11 ms | 26.52 ms | 27.55 ms | 45.97 ms |
+| **Run 5** | 22.58 ms | 26.64 ms | 24.69 ms | 44.72 ms |
+| **Run 6** | 23.43 ms | 25.58 ms | 19.44 ms | 42.24 ms |
+| **Run 7** | 21.98 ms | 29.35 ms | 25.72 ms | 41.92 ms |
+| **Run 8** | 87.81 ms | 64.76 ms | 37.30 ms | 66.49 ms |
+| **Run 9** | 20.26 ms | 31.82 ms | 27.18 ms | 39.22 ms |
+| **Run 10** | 20.69 ms | 28.26 ms | 24.77 ms | 34.10 ms |
+| **Mean** | **29.78 ms** | **33.26 ms** | **26.88 ms** | **48.80 ms** |
+| **p50 (Median)** | **23.15 ms** | **28.83 ms** | **26.45 ms** | **45.35 ms** |
+| **p95** | **87.81 ms** | **64.76 ms** | **37.30 ms** | **66.49 ms** |
+
+### 4.5 Formal Test Case Specification: TC-NFR-P02
+
+### TC-NFR-P02: Benchmark Execution Time of Selected Role, Skill, Prerequisite, and Pathway Catalog Queries (SLA ≤ 1.0 s)
+- **Test Case ID:** `TC-NFR-P02`
+- **Quality Attribute / Requirement:** NFR-P02 (Performance — Graph queries)
+- **Test Type:** Non-Functional Automated Performance Benchmark Test
+- **Responsible Member:** Nguyễn Anh Khôi
+- **Excel Reference:** `Report 5 / Quality Attributes / NFR-P02`
+- **Target Component:** Neo4j Graph Database Kernel (`5.26.31`) & Graph Repositories
+- **Pre-conditions:**
+  1. Docker Compose test environment (`compose.dev.yml`) is running with container `adapt-learn-graph-dev-neo4j-1`.
+  2. The recorded catalog is pre-seeded with at least 1,000 nodes and 4,000 relationships for workspace `TechNova Cognitive Labs` (`e0000000-0000-0000-0000-000000000001`).
+  3. Fixed query parameters configured for Target Role, Micro-Skill, Prerequisite DAG, and Adaptive Baseline Pathway.
+- **Test Data & Query Parameters:**
+  - Catalog Snapshot: 1,098 nodes, 4,486 relationships.
+  - Q1 (Target Role): `organizationId = "e0000000-0000-0000-0000-000000000001"`, `code = "APPLICATION_DEVELOPER"`
+  - Q2 (Skill Taxonomy): `organizationId = "e0000000-0000-0000-0000-000000000001"`
+  - Q3 (Prerequisite DAG): `organizationId = "e0000000-0000-0000-0000-000000000001"`
+  - Q4 (Pathway Catalog): `organization = "e0000000-0000-0000-0000-000000000001"`, `jobPosition = "OCC-15-1252.00"`
+- **Step-by-Step Procedure:**
+  1. Establish active Bolt driver connection to `bolt://127.0.0.1:7687` using credentials `neo4j` / `local-only-neo4j`.
+  2. Inspect and verify database metadata, version (`5.26.31`), total node counts (1,098), and relationship counts (4,486).
+  3. **Warm-up Phase:** Execute each of the 4 representative queries 3 times without recording timings to ensure Cypher query plans are compiled, cached in memory, and the JVM JIT compiler optimizes execution hot paths.
+  4. **Measurement Phase — Q1 (Target Role Hierarchical Traversal):**
+     - Record timestamp with nanosecond resolution (`System.nanoTime()`).
+     - Execute Cypher query and iterate/consume the entire returned record set.
+     - Record elapsed time in milliseconds ($t = \Delta \text{ns} / 10^6$).
+     - Repeat for exactly 10 sequential iterations.
+  5. **Measurement Phase — Q2 (Micro-Skill & Competency Taxonomy Search):**
+     - Repeat timed execution and full result consumption for 10 iterations.
+  6. **Measurement Phase — Q3 (Directed Skill Prerequisite DAG Traversal):**
+     - Repeat timed execution and full result consumption for 10 iterations.
+  7. **Measurement Phase — Q4 (Adaptive Baseline Pathway Catalog Snapshot):**
+     - Repeat timed execution and full result consumption for 10 iterations.
+  8. **Statistical Analysis & Verification:**
+     - Compute Min, Max, Mean (Average), Median (p50), and 95th Percentile (p95) for each query.
+     - Assert that every measured duration $t_i \le 1,000\text{ ms}$ (1.0 s).
+- **Expected Results:**
+  - All 4 queries return valid, complete record sets corresponding to the active catalog schema.
+  - 100% of measured query runs (40 out of 40 runs) complete execution and result consumption within 1.0 s (1,000 ms).
+  - No query timeouts, connection drops, or Cypher syntax/runtime exceptions occur.
+- **Actual Measured Results:**
+  - **Q1 (Role):** Min = 20.26 ms, Max = 87.81 ms, Mean = 29.78 ms, Median = 23.15 ms, p95 = 87.81 ms $\rightarrow$ **PASSED** (87.81 ms << 1,000 ms)
+  - **Q2 (Skill):** Min = 25.58 ms, Max = 64.76 ms, Mean = 33.26 ms, Median = 28.83 ms, p95 = 64.76 ms $\rightarrow$ **PASSED** (64.76 ms << 1,000 ms)
+  - **Q3 (Prerequisite):** Min = 19.44 ms, Max = 37.30 ms, Mean = 26.88 ms, Median = 26.45 ms, p95 = 37.30 ms $\rightarrow$ **PASSED** (37.30 ms << 1,000 ms)
+  - **Q4 (Pathway):** Min = 34.10 ms, Max = 66.49 ms, Mean = 48.80 ms, Median = 45.35 ms, p95 = 66.49 ms $\rightarrow$ **PASSED** (66.49 ms << 1,000 ms)
+  - Steady-state warm executions: 11.95 ms – 54.60 ms.
+- **Status:** **PASSED (100% SLA Compliance)**
+- **Automated Benchmark Spec:** [`backend/src/test/java/com/adaptlearngraph/repository/GraphQueryPerformanceBenchmarkTest.java`](../../backend/src/test/java/com/adaptlearngraph/repository/GraphQueryPerformanceBenchmarkTest.java)
+
+---
+
+### 4.6 Evaluation Analysis & Conclusion
+- **SLA Compliance:** Every individual query run across all 40 measured runs completed and was fully consumed in **≤ 87.81 ms**, well under **9%** of the 1,000 ms SLA upper boundary.
+- **Latency Distribution:** Average query latency spans between **26.88 ms** and **48.80 ms**, proving lightning-fast response times on multi-hop graph traversals across more than 1,000 nodes and 4,400 relationships.
+- **Verification Outcome:** **PASSED (100% compliance with NFR-P02)**.
+- **Automated Benchmark Spec:** [`backend/src/test/java/com/adaptlearngraph/repository/GraphQueryPerformanceBenchmarkTest.java`](../../backend/src/test/java/com/adaptlearngraph/repository/GraphQueryPerformanceBenchmarkTest.java)
+
+---
+
+## 5. How to Execute Tests
 
 ### Run Playwright System Tests (Report 5 Automated Test Suites)
 The automated test suites covering all 22 committed test cases are located in `frontend/system-tests/`:
@@ -673,12 +916,18 @@ npx --prefix frontend playwright test REQ-018-target-role-authoring-and-graph.sp
 npx --prefix frontend playwright test REQ-user-roles-unpublish-levels.spec.ts --config=frontend/playwright.system.config.ts
 ```
 
+### Run Non-Functional Performance Benchmark (NFR-P02 Graph Queries)
+```bash
+# Execute Graph Query Performance Benchmark against live Neo4j catalog
+java -cp "backend/target/classes;backend/target/test-classes;backend/target/deps/*" com.adaptlearngraph.repository.GraphQueryPerformanceBenchmarkTest
+```
+
 ### Run Backend Unit & Integration Tests
 ```bash
 # Run Target Role Lifecycle Domain Test
-./gradlew test --tests "com.adaptlearngraph.entities.domain.TargetRoleLifecycleTest"
+.\backend\mvnw.cmd test -Dtest=TargetRoleLifecycleTest
 
 # Run Neo4j Integration Test
-./gradlew test --tests "com.adaptlearngraph.services.TargetRoleAndMicroSkillNeo4jIntegrationTest"
+.\backend\mvnw.cmd test -Dtest=TargetRoleAndMicroSkillNeo4jIntegrationTest
 ```
 

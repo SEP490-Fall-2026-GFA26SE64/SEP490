@@ -12,6 +12,7 @@ import {
   CheckCircle2,
   ChevronDown,
   Compass,
+  Cpu,
   CreditCard,
   FileQuestion,
   FolderTree,
@@ -74,7 +75,8 @@ export function WorkspaceLayout({ children, identity: suppliedIdentity, onSignOu
   const location = useLocation()
   const navigate = useNavigate()
   const { toast } = useToast()
-  const { t } = useTranslation()
+  const { t, language } = useTranslation()
+  const isVi = language === 'vi'
   const path = location.pathname
   const trusted = identity !== undefined
   const [signingOut, setSigningOut] = React.useState(false)
@@ -349,6 +351,11 @@ export function WorkspaceLayout({ children, identity: suppliedIdentity, onSignOu
         icon: <Activity size={15} />,
       },
       {
+        label: t('nav.graphBenchmark', isVi ? 'Hiệu năng Đồ thị' : 'Graph Engine Benchmark'),
+        href: '/platform-admin/graph-benchmark',
+        icon: <Cpu size={15} />,
+      },
+      {
         label: t('nav.serverStatus'),
         href: '/system-status?portal=platform-admin',
         icon: <Server size={15} />,
@@ -495,6 +502,9 @@ export function WorkspaceLayout({ children, identity: suppliedIdentity, onSignOu
     }
     if (itemHref === '/platform-admin/activity') {
       return path === '/platform-admin/activity'
+    }
+    if (itemHref === '/platform-admin/graph-benchmark') {
+      return path === '/platform-admin/graph-benchmark'
     }
     return path === itemHref
   }

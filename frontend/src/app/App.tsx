@@ -1,5 +1,6 @@
 import { AdaptivePathwayPage } from '../features/employee/pathway/AdaptivePathwayPage'
 import { LearningUploadSettingsPage } from '../features/platform-admin/LearningUploadSettingsPage'
+import { PlatformGraphBenchmarkPage } from '../features/platform-admin/PlatformGraphBenchmarkPage'
 import { LearningModuleReaderPage } from '../features/employee/modules/LearningModuleReaderPage'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
@@ -198,6 +199,7 @@ export default function App() {
             <Route path="/platform-admin/subscriptions" element={<PlatformSubscriptionsConfigPage />} />
             <Route path="/platform-admin/learning-upload-settings" element={<LearningUploadSettingsPage />} />
             <Route path="/platform-admin/activity" element={<PlatformActivityMonitoringPage />} />
+            <Route path="/platform-admin/graph-benchmark" element={<PlatformGraphBenchmarkPage />} />
 
             {/* System Status route */}
             <Route path="/system-status" element={<SystemStatusPage />} />
