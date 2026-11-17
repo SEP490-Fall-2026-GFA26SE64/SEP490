@@ -28,11 +28,11 @@ test.describe('Platform Admin - Experiment 2 (RQ2) Graph Latency Benchmark Page'
     await page.goto('/platform-admin/graph-benchmark')
     await expect(page.locator('main')).toBeVisible()
 
-    // Assert Runtime Performance Statistics
+    // Assert 3 Runtime Performance Statistics Cards with comparative baseline
     await expect(page.getByText('Runtime', { exact: true })).toBeVisible()
     await expect(page.getByText('Mean Latency', { exact: true })).toBeVisible()
     await expect(page.getByText('P95 Latency', { exact: true })).toBeVisible()
-    await expect(page.getByText(/Standard Deviation/i)).toBeVisible()
+    await expect(page.getByText(/Baseline benchmark|Đo kiểm cơ sở/i).first()).toBeVisible()
 
     // Assert Step-by-Step Runtime Breakdown is immediately visible under the stat cards
     await expect(page.getByText(/Step-by-Step Runtime Breakdown/i)).toBeVisible()
@@ -94,8 +94,8 @@ test.describe('Platform Admin - Experiment 2 (RQ2) Graph Latency Benchmark Page'
     await expect(page.getByText('< 100ms SLA').first()).toBeVisible()
     await expect(page.getByText('P95 Latency')).toBeVisible()
 
-    // Verify Standard Deviation KPI appears
-    await expect(page.getByText(/Standard Deviation/i)).toBeVisible()
+    // Verify comparative metrics against previous benchmark run appear in stat cards
+    await expect(page.getByText(/vs previous|so với lần trước/i).first()).toBeVisible()
 
     // Verify Refined Step-by-Step Runtime Breakdown
     await expect(page.getByText(/Step 1: Index Lookup|Bước 1/i)).toBeVisible()
