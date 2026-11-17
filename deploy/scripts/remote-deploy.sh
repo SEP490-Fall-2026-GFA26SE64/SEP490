@@ -37,7 +37,7 @@ log "Validating $(pwd)/.env"
 [ -f .env ] || fail "Missing $(pwd)/.env. Create it from deploy/.env.example and fill in real values."
 required=(PUBLIC_URL DB_PASSWORD NEO4J_PASSWORD LEARNING_ASSETS_ACCESS_KEY LEARNING_ASSETS_SECRET_KEY
   REGISTRATION_ENCRYPTION_KEY REGISTRATION_HMAC_KEY WORKSPACE_DEVELOPMENT_PASSWORD
-  SMTP_HOST SMTP_USERNAME SMTP_PASSWORD SMTP_FROM PAYOS_CLIENT_ID PAYOS_API_KEY PAYOS_CHECKSUM_KEY)
+  PLATFORM_ADMIN_SEED_EMAIL PLATFORM_ADMIN_SEED_PASSWORD SMTP_HOST SMTP_USERNAME SMTP_PASSWORD SMTP_FROM PAYOS_CLIENT_ID PAYOS_API_KEY PAYOS_CHECKSUM_KEY)
 missing=()
 for key in "${required[@]}"; do [ -n "$(env_get "$key")" ] || missing+=("$key"); done
 [ ${#missing[@]} -eq 0 ] || fail "Empty/missing keys in .env: ${missing[*]}"
@@ -86,7 +86,7 @@ log "Pulling images (tag ${IMAGE_TAG})"
 log "Starting stack (migrations and idempotent seed jobs run first; first boot can take several minutes)"
 if ! "${COMPOSE[@]}" up -d --remove-orphans; then
   "${COMPOSE[@]}" ps -a || true
-  for svc in migrate seed workspace-seed catalog-ready se-seed api knowledge-seed module-knowledge-seed; do
+  for svc in migrate seed workspace-seed catalog-ready se-seed platform-seed api knowledge-seed module-knowledge-seed; do
     printf '\n----- %s (last 60 lines)\n' "$svc"; "${COMPOSE[@]}" logs --no-color --tail 60 "$svc" 2>/dev/null || true
   done
   fail "docker compose up failed."

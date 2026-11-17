@@ -86,7 +86,7 @@ Run commands from `/opt/adapt-learn-graph`. `.env.release` records the deployed 
 alias dc='docker compose -f compose.deploy.yml --env-file .env --env-file .env.release'
 dc ps -a                                   # all seed jobs should be "Exited (0)"
 dc logs -f --tail 200 api
-dc --profile tools run --rm platform-seed  # one-off: create the platform admin from PLATFORM_ADMIN_SEED_*
+dc logs platform-seed                      # platform admin from PLATFORM_ADMIN_SEED_* (auto, every deploy)
 ```
 
 **Rollback.** Re-run the workflow for an earlier commit, or on the server:

@@ -735,6 +735,8 @@ class PaymentOrderPostgresIntegrationTest {
                 persistence.transactionManager(),email,secret);
         seed.run(null);
         seed.run(null);
+        new com.adaptlearngraph.config.PlatformAdministratorBootstrap(IdentityTestFixtures.platformSeeds(persistence),
+                persistence.transactionManager(),email,"rotated-platform-password").run(null);
         var identity=IdentityTestFixtures.identityStore(persistence)
                 .findByEmail(email).orElseThrow();
         assertEquals(Set.of("PLATFORM_ADMINISTRATOR"),identity.roles());

@@ -257,15 +257,18 @@ services:
         condition: service_completed_successfully
     restart: "no"
 
+  # Idempotent: creates the platform administrator on first deploy, no-op once it exists.
   platform-seed:
-    profiles: ["tools"]
     image: *backend-image
     environment:
       <<: *backend-environment
       SPRING_PROFILES_ACTIVE: local,platform-bootstrap
       SPRING_MAIN_WEB_APPLICATION_TYPE: none
-      PLATFORM_ADMIN_SEED_EMAIL: ${PLATFORM_ADMIN_SEED_EMAIL:-}
-      PLATFORM_ADMIN_SEED_PASSWORD: ${PLATFORM_ADMIN_SEED_PASSWORD:-}
+      PLATFORM_ADMIN_SEED_EMAIL: ${PLATFORM_ADMIN_SEED_EMAIL:?Set PLATFORM_ADMIN_SEED_EMAIL}
+      PLATFORM_ADMIN_SEED_PASSWORD: ${PLATFORM_ADMIN_SEED_PASSWORD:?Set PLATFORM_ADMIN_SEED_PASSWORD}
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
     restart: "no"
 
   web:
@@ -274,6 +277,8 @@ services:
       api:
         condition: service_healthy
       module-knowledge-seed:
+        condition: service_completed_successfully
+      platform-seed:
         condition: service_completed_successfully
     ports:
       - "127.0.0.1:${WEB_PORT:-8088}:80"
