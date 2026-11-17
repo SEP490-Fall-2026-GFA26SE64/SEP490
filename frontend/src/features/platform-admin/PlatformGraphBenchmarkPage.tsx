@@ -316,7 +316,6 @@ export function PlatformGraphBenchmarkPage() {
   const handleRunBenchmark = async (isManualClick = false) => {
     setIsRunning(true)
     if (isManualClick) {
-      setActiveTab('live-monitor')
       setBreakdownProgress(0)
     }
     try {
@@ -541,11 +540,11 @@ export function PlatformGraphBenchmarkPage() {
             <TabsList className="w-auto bg-muted p-1">
               <TabsTrigger value="live-monitor" className="gap-2 text-xs font-semibold">
                 <Activity size={14} />
-                <span>{isVi ? 'Giám sát Thực thi Trực tiếp' : 'Live Traversal & Monitor'}</span>
+                <span>{isVi ? 'Giám sát' : 'Monitor'}</span>
               </TabsTrigger>
               <TabsTrigger value="configuration" className="gap-2 text-xs font-semibold">
                 <Sliders size={14} />
-                <span>{isVi ? 'Cấu hình & Bộ mẫu Kiểm thử' : 'Benchmark Setup & Test Fixture Selection'}</span>
+                <span>{isVi ? 'Cấu hình Benchmark' : 'Benchmark Setup'}</span>
               </TabsTrigger>
             </TabsList>
 
@@ -573,104 +572,104 @@ export function PlatformGraphBenchmarkPage() {
             </div>
           </div>
 
+          {/* Runtime Performance Statistics (3 Comparative StatCards persistent across both tabs) */}
+          {(() => {
+            const currentRuntimeSec = benchmarkResult
+              ? (benchmarkResult.meanLatencyMs * benchmarkResult.totalRuns) / 1000
+              : liveStreamState.runningMeanMs > 0
+              ? (liveStreamState.runningMeanMs * liveStreamState.totalRuns) / 1000
+              : null
+
+            const prevRuntimeSec = previousBenchmarkResult
+              ? (previousBenchmarkResult.meanLatencyMs * previousBenchmarkResult.totalRuns) / 1000
+              : null
+
+            const runtimeDelta = computeDelta(currentRuntimeSec, prevRuntimeSec, 's', 2)
+
+            const currentMeanMs = benchmarkResult
+              ? benchmarkResult.meanLatencyMs
+              : liveStreamState.runningMeanMs > 0
+              ? liveStreamState.runningMeanMs
+              : null
+
+            const prevMeanMs = previousBenchmarkResult ? previousBenchmarkResult.meanLatencyMs : null
+            const meanDelta = computeDelta(currentMeanMs, prevMeanMs, 'ms', 2)
+
+            const currentP95Ms = benchmarkResult ? benchmarkResult.p95LatencyMs : null
+            const prevP95Ms = previousBenchmarkResult ? previousBenchmarkResult.p95LatencyMs : null
+            const p95Delta = computeDelta(currentP95Ms, prevP95Ms, 'ms', 2)
+
+            const prevScaleLabel =
+              previousBenchmarkResult && benchmarkResult && previousBenchmarkResult.scale !== benchmarkResult.scale
+                ? previousBenchmarkResult.scale.toUpperCase()
+                : undefined
+
+            return (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <StatCard
+                  title={isVi ? 'Thời gian Thực thi' : 'Runtime'}
+                  value={
+                    currentRuntimeSec != null
+                      ? `${currentRuntimeSec.toFixed(2)}s`
+                      : '—'
+                  }
+                  icon={<Clock className="text-primary" size={20} />}
+                  description={
+                    benchmarkResult
+                      ? isVi
+                        ? `${benchmarkResult.totalRuns} lượt truy vấn hoàn tất`
+                        : `${benchmarkResult.totalRuns} queries executed`
+                      : isVi
+                      ? 'Sẵn sàng khởi chạy'
+                      : 'Ready to execute'
+                  }
+                >
+                  <MetricComparisonRow
+                    delta={runtimeDelta}
+                    isVi={isVi}
+                    prevScaleLabel={prevScaleLabel}
+                  />
+                </StatCard>
+
+                <StatCard
+                  title={isVi ? 'Độ trễ Trung bình' : 'Mean Latency'}
+                  value={
+                    currentMeanMs != null
+                      ? `${currentMeanMs.toFixed(2)} ms`
+                      : '—'
+                  }
+                  icon={<Zap className="text-primary" size={20} />}
+                  description={isVi ? '< 100ms Chuẩn SLA' : '< 100ms SLA Target'}
+                >
+                  <MetricComparisonRow
+                    delta={meanDelta}
+                    isVi={isVi}
+                    prevScaleLabel={prevScaleLabel}
+                  />
+                </StatCard>
+
+                <StatCard
+                  title={isVi ? 'Phân vị 95 (P95)' : 'P95 Latency'}
+                  value={
+                    currentP95Ms != null
+                      ? `${currentP95Ms.toFixed(2)} ms`
+                      : '—'
+                  }
+                  icon={<Activity className="text-primary" size={20} />}
+                  description={isVi ? '95% lượt query hoàn tất' : '95% queries completed'}
+                >
+                  <MetricComparisonRow
+                    delta={p95Delta}
+                    isVi={isVi}
+                    prevScaleLabel={prevScaleLabel}
+                  />
+                </StatCard>
+              </div>
+            )
+          })()}
+
           <TabsContent value="live-monitor" className="space-y-5">
-            {/* 1. Runtime Performance Statistics (3 Comparative StatCards) */}
-            {(() => {
-              const currentRuntimeSec = benchmarkResult
-                ? (benchmarkResult.meanLatencyMs * benchmarkResult.totalRuns) / 1000
-                : liveStreamState.runningMeanMs > 0
-                ? (liveStreamState.runningMeanMs * liveStreamState.totalRuns) / 1000
-                : null
-
-              const prevRuntimeSec = previousBenchmarkResult
-                ? (previousBenchmarkResult.meanLatencyMs * previousBenchmarkResult.totalRuns) / 1000
-                : null
-
-              const runtimeDelta = computeDelta(currentRuntimeSec, prevRuntimeSec, 's', 2)
-
-              const currentMeanMs = benchmarkResult
-                ? benchmarkResult.meanLatencyMs
-                : liveStreamState.runningMeanMs > 0
-                ? liveStreamState.runningMeanMs
-                : null
-
-              const prevMeanMs = previousBenchmarkResult ? previousBenchmarkResult.meanLatencyMs : null
-              const meanDelta = computeDelta(currentMeanMs, prevMeanMs, 'ms', 2)
-
-              const currentP95Ms = benchmarkResult ? benchmarkResult.p95LatencyMs : null
-              const prevP95Ms = previousBenchmarkResult ? previousBenchmarkResult.p95LatencyMs : null
-              const p95Delta = computeDelta(currentP95Ms, prevP95Ms, 'ms', 2)
-
-              const prevScaleLabel =
-                previousBenchmarkResult && benchmarkResult && previousBenchmarkResult.scale !== benchmarkResult.scale
-                  ? previousBenchmarkResult.scale.toUpperCase()
-                  : undefined
-
-              return (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                  <StatCard
-                    title={isVi ? 'Thời gian Thực thi' : 'Runtime'}
-                    value={
-                      currentRuntimeSec != null
-                        ? `${currentRuntimeSec.toFixed(2)}s`
-                        : '—'
-                    }
-                    icon={<Clock className="text-primary" size={20} />}
-                    description={
-                      benchmarkResult
-                        ? isVi
-                          ? `${benchmarkResult.totalRuns} lượt truy vấn hoàn tất`
-                          : `${benchmarkResult.totalRuns} queries executed`
-                        : isVi
-                        ? 'Sẵn sàng khởi chạy'
-                        : 'Ready to execute'
-                    }
-                  >
-                    <MetricComparisonRow
-                      delta={runtimeDelta}
-                      isVi={isVi}
-                      prevScaleLabel={prevScaleLabel}
-                    />
-                  </StatCard>
-
-                  <StatCard
-                    title={isVi ? 'Độ trễ Trung bình' : 'Mean Latency'}
-                    value={
-                      currentMeanMs != null
-                        ? `${currentMeanMs.toFixed(2)} ms`
-                        : '—'
-                    }
-                    icon={<Zap className="text-primary" size={20} />}
-                    description={isVi ? '< 100ms Chuẩn SLA' : '< 100ms SLA Target'}
-                  >
-                    <MetricComparisonRow
-                      delta={meanDelta}
-                      isVi={isVi}
-                      prevScaleLabel={prevScaleLabel}
-                    />
-                  </StatCard>
-
-                  <StatCard
-                    title={isVi ? 'Phân vị 95 (P95)' : 'P95 Latency'}
-                    value={
-                      currentP95Ms != null
-                        ? `${currentP95Ms.toFixed(2)} ms`
-                        : '—'
-                    }
-                    icon={<Activity className="text-primary" size={20} />}
-                    description={isVi ? '95% lượt query hoàn tất' : '95% queries completed'}
-                  >
-                    <MetricComparisonRow
-                      delta={p95Delta}
-                      isVi={isVi}
-                      prevScaleLabel={prevScaleLabel}
-                    />
-                  </StatCard>
-                </div>
-              )
-            })()}
-
-            {/* 2. Step-by-Step Runtime Breakdown Card (Connected live to benchmark execution) */}
+            {/* 1. Step-by-Step Runtime Breakdown Card (Connected live to benchmark execution) */}
             <Card className="bg-card border-border shadow-xs">
               <CardHeader className="pb-3 border-b border-border/50">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">

@@ -28,25 +28,25 @@ test.describe('Platform Admin - Experiment 2 (RQ2) Graph Latency Benchmark Page'
     await page.goto('/platform-admin/graph-benchmark')
     await expect(page.locator('main')).toBeVisible()
 
-    // Assert 3 Runtime Performance Statistics Cards with comparative baseline
-    await expect(page.getByText('Runtime', { exact: true })).toBeVisible()
-    await expect(page.getByText('Mean Latency', { exact: true })).toBeVisible()
-    await expect(page.getByText('P95 Latency', { exact: true })).toBeVisible()
-    await expect(page.getByText(/Baseline benchmark|Đo kiểm cơ sở/i).first()).toBeVisible()
-
-    // Assert Step-by-Step Runtime Breakdown is immediately visible under the stat cards
+    // Assert Monitor Tab displays Step-by-Step Runtime Breakdown
     await expect(page.getByText(/Step-by-Step Runtime Breakdown/i)).toBeVisible()
     await expect(page.getByText(/Step 1: Index Lookup|Bước 1/i)).toBeVisible()
     await expect(page.getByText(/Step 3: Traversal|Bước 3/i)).toBeVisible()
 
-    // Assert Navigation Tabs
-    const liveTab = page.getByRole('tab', { name: /Live Traversal & Monitor|Giám sát Thực thi/i })
-    const setupTab = page.getByRole('tab', { name: /Benchmark Setup|Setup & Test Fixture|Cấu hình & Bộ mẫu/i })
+    // Assert Navigation Tabs: Monitor and Benchmark Setup
+    const liveTab = page.getByRole('tab', { name: /^Monitor$|^Giám sát$/i })
+    const setupTab = page.getByRole('tab', { name: /Benchmark Setup|Cấu hình Benchmark/i })
     await expect(liveTab).toBeVisible()
     await expect(setupTab).toBeVisible()
 
-    // Switch to Setup & Test Fixtures tab
+    // Switch to Benchmark Setup tab
     await setupTab.click()
+
+    // Assert 3 Runtime Performance Statistics Cards with comparative baseline in Benchmark Setup tab
+    await expect(page.getByText('Runtime', { exact: true })).toBeVisible()
+    await expect(page.getByText('Mean Latency', { exact: true })).toBeVisible()
+    await expect(page.getByText('P95 Latency', { exact: true })).toBeVisible()
+    await expect(page.getByText(/Baseline benchmark|Đo kiểm cơ sở/i).first()).toBeVisible()
 
     // Assert Parameter Controls & Setup Card
     await expect(page.getByRole('tabpanel').getByText(/Benchmark Setup & Test Fixture Selection|Kịch bản & Tập mẫu/i)).toBeVisible()
@@ -68,7 +68,7 @@ test.describe('Platform Admin - Experiment 2 (RQ2) Graph Latency Benchmark Page'
     await expect(page.locator('main')).toBeVisible()
 
     // Switch to Setup tab to configure scale and fixture
-    const setupTab = page.getByRole('tab', { name: /Benchmark Setup|Setup & Test Fixture|Cấu hình & Bộ mẫu/i })
+    const setupTab = page.getByRole('tab', { name: /Benchmark Setup|Cấu hình Benchmark/i })
     await setupTab.click()
 
     // Select 5k Nodes scale
@@ -96,6 +96,10 @@ test.describe('Platform Admin - Experiment 2 (RQ2) Graph Latency Benchmark Page'
 
     // Verify comparative metrics against previous benchmark run appear in stat cards
     await expect(page.getByText(/vs previous|so với lần trước/i).first()).toBeVisible()
+
+    // Switch to Monitor tab to inspect Step-by-Step Runtime Breakdown
+    const monitorTab = page.getByRole('tab', { name: /^Monitor$|^Giám sát$/i })
+    await monitorTab.click()
 
     // Verify Refined Step-by-Step Runtime Breakdown
     await expect(page.getByText(/Step 1: Index Lookup|Bước 1/i)).toBeVisible()
