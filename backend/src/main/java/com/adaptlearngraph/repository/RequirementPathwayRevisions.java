@@ -62,11 +62,20 @@ public final class RequirementPathwayRevisions {
         }catch(Exception invalid){throw new Failure(503,"PATHWAY_REVISION_INTEGRITY_FAILURE");}
     }
     public void event(RequirementPathwayJpaRepository.Row row,long revision,String type,UUID actor,Map<String,Object> detail) {
+        event(row,revision,type,actor,detail,row.getRequestId());
+    }
+    /** Several submissions/decisions may share one pathway revision; each submission owns its event identity. */
+    public void certificateEvent(RequirementPathwayJpaRepository.Row row,long revision,String type,UUID actor,UUID submission,Map<String,Object> detail) {
+        if(!Set.of("CERTIFICATE_EVIDENCE_SUBMITTED","CERTIFICATE_APPROVED","CERTIFICATE_REJECTED").contains(type)
+                || !submission.equals(detail.get("submissionId")))throw new IllegalArgumentException("Exact certificate submission event required");
+        event(row,revision,type,actor,detail,submission);
+    }
+    private void event(RequirementPathwayJpaRepository.Row row,long revision,String type,UUID actor,Map<String,Object> detail,UUID aggregate) {
         var payload=new LinkedHashMap<String,Object>(detail);payload.put("organizationId",row.getOrganizationId());payload.put("learnerId",row.getLearnerId());
         payload.put("requestId",row.getRequestId());payload.put("sourceRevision",revision);
         var now=clock.clock();
-        data.outbox().insert(new OutboxEventEntity(UUID.randomUUID(),type,row.getRequestId(),revision,payload,row.getRequestId(),now));
-        data.audit().insert(new AuditEventEntity(UUID.randomUUID(),actor,"pathway",type,row.getRequestId(),Long.toString(revision),now,"ACCEPTED",row.getRequestId()));
+        data.outbox().insert(new OutboxEventEntity(UUID.randomUUID(),type,aggregate,revision,payload,row.getRequestId(),now));
+        data.audit().insert(new AuditEventEntity(UUID.randomUUID(),actor,"pathway",type,aggregate,Long.toString(revision),now,"ACCEPTED",row.getRequestId()));
         notifications.event(row,revision,type,detail);
     }
     public String encode(Object value){try{return json.writeValueAsString(value);}catch(Exception invalid){throw new Failure(503,"PATHWAY_SNAPSHOT_INVALID");}}

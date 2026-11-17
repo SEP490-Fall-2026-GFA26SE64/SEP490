@@ -92,7 +92,7 @@ public final class CertificateSubmissionService {
             UUID id=UUID.randomUUID();submissions.submit(id,actor.organizationId(),actor.accountId(),step.requirement().skillId(),step.requirement().knowledgeLevel().name(),
                     step.certificate().id(),step.certificate().version(),revisions.encode(frozen),command.replacesSubmissionId());
             submissions.attachment(id,asset==null?"LINK":asset.mediaType().equals("application/pdf")?"PDF":"IMAGE",link,asset==null?null:asset.objectKey(),asset==null?null:asset.mediaType(),asset==null?null:asset.byteSize(),asset==null?null:asset.sha256());
-            revisions.event(selected.row(),selected.row().getCurrentRevision(),"CERTIFICATE_EVIDENCE_SUBMITTED",actor.accountId(),Map.of("submissionId",id,"stepId",step.id()));
+            revisions.certificateEvent(selected.row(),selected.row().getCurrentRevision(),"CERTIFICATE_EVIDENCE_SUBMITTED",actor.accountId(),id,Map.of("submissionId",id,"stepId",step.id()));
             var result=new Receipt(201,hash,revisions.encode(view(submissions.own(actor.organizationId(),actor.accountId(),id).orElseThrow())));
             receipts.save(actor,"CERTIFICATE_SUBMIT","CERTIFICATE",key,result);return result;
         });
