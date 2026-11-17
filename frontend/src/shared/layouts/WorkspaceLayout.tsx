@@ -249,6 +249,16 @@ export function WorkspaceLayout({ children, identity: suppliedIdentity, onSignOu
   } else if (isLdManager) {
     actorTabs = [
       {
+        label: t('nav.learningOutcomes'),
+        href: '/ld-manager/dashboard',
+        icon: <BarChart3 size={15} />,
+      },
+      {
+        label: t('nav.employees', 'Employees'),
+        href: '/ld-manager/employees',
+        icon: <Users size={15} />,
+      },
+      {
         label: t('nav.jobPositions', 'Job Positions'),
         href: '/ld-manager/job-positions',
         icon: <FolderTree size={15} />,
@@ -272,16 +282,6 @@ export function WorkspaceLayout({ children, identity: suppliedIdentity, onSignOu
         label: t('nav.learningContent', 'Learning Content'),
         href: '/ld-manager/approvals',
         icon: <CheckCircle2 size={15} />,
-      },
-      {
-        label: t('nav.teamMatrix'),
-        href: '/ld-manager/team-matrix',
-        icon: <Users size={15} />,
-      },
-      {
-        label: t('nav.learningOutcomes'),
-        href: '/ld-manager/learning-outcomes',
-        icon: <BarChart3 size={15} />,
       },
       {
         label: t('nav.serverStatus'),
@@ -450,8 +450,9 @@ export function WorkspaceLayout({ children, identity: suppliedIdentity, onSignOu
     if (itemHref === '/expert/assessment-bank') {
       return path === '/expert/assessment-bank' || path === '/ld-manager/assessment-bank' || path === '/manager/assessment-bank'
     }
-    if (itemHref === '/ld-manager/learning-outcomes') {
+    if (itemHref === '/ld-manager/dashboard') {
       return (
+        path === '/ld-manager/dashboard' ||
         path === '/ld-manager/learning-outcomes' ||
         path === '/ld-manager' ||
         path === '/manager/learning-outcomes' ||
@@ -473,8 +474,8 @@ export function WorkspaceLayout({ children, identity: suppliedIdentity, onSignOu
     if (itemHref === '/ld-manager/users') {
       return path === '/ld-manager/users' || path === '/admin/users'
     }
-    if (itemHref === '/ld-manager/team-matrix') {
-      return path === '/ld-manager/team-matrix' || path === '/manager/team-matrix'
+    if (itemHref === '/ld-manager/employees') {
+      return path === '/ld-manager/employees' || path.startsWith('/ld-manager/employees/') || path === '/ld-manager/team-matrix' || path === '/manager/team-matrix'
     }
     if (itemHref === '/admin/dashboard') {
       return path === '/admin/dashboard' || path === '/admin'
@@ -559,7 +560,7 @@ export function WorkspaceLayout({ children, identity: suppliedIdentity, onSignOu
     : isExpert
     ? '/expert/assigned-roles'
     : isLdManager
-    ? '/ld-manager/learning-outcomes'
+    ? '/ld-manager/dashboard'
     : '/admin/dashboard'
 
   return (

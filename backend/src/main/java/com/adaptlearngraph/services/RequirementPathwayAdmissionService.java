@@ -49,6 +49,18 @@ public final class RequirementPathwayAdmissionService {
         var actor=employee();
             reauthorize(actor);
             var selected=selections.current(owner(actor)).orElseThrow(()->new Failure(409,"SELECTION_REQUIRED"));
+            var result=project(actor,selected);
+            reauthorize(actor);
+            var latest=selections.current(owner(actor)).orElseThrow(()->new Failure(409,"STALE_SELECTION"));
+            if(!latest.selectionId().equals(selected.selectionId()) || latest.revision()!=selected.revision())throw new Failure(409,"STALE_SELECTION");
+            return result;
+    }
+    /** Same read-only projection for a same-organization learner; the caller owns reporting authorization. Empty without a target. */
+    public Optional<Overview> overviewFor(UUID organizationId,UUID learnerId) {
+        var learner=new Actor(organizationId,learnerId,Role.EMPLOYEE);
+        return selections.current(owner(learner)).map(selected->project(learner,selected));
+    }
+    private Overview project(Actor actor,RoleBaselineFlow.Selection selected) {
             var bound=current(actor).filter(row->row.getSelectionId().equals(selected.selectionId()) && row.getSelectionRevision()==selected.revision());
             var input=bound.isPresent()?decode(bound.get()).input():prepare(actor,selected.role().id(),selected.levelId()).input();
             var plan=bound.map(revisions::read);
@@ -62,9 +74,6 @@ public final class RequirementPathwayAdmissionService {
             });
             var baseline=input.baseline()==null?List.<String>of():input.baseline().passed().entrySet().stream()
                     .filter(entry->Boolean.TRUE.equals(entry.getValue())).map(Map.Entry::getKey).sorted().toList();
-            reauthorize(actor);
-            var latest=selections.current(owner(actor)).orElseThrow(()->new Failure(409,"STALE_SELECTION"));
-            if(!latest.selectionId().equals(selected.selectionId()) || latest.revision()!=selected.revision())throw new Failure(409,"STALE_SELECTION");
             return new Overview(selected.selectionId(),selected.revision(),List.copyOf(target),List.copyOf(achieved),baseline);
     }
     public Preview preview(String roleId,String levelId) {

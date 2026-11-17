@@ -33,6 +33,7 @@ function requirement(v: unknown): RuleRequirement {
 function certificate(v: unknown): RuleCertificate { const c = object(v), url = new URL(text(c.referenceUrl)); if (url.protocol !== 'https:' || url.username || url.password) throw Error(); return { id: text(c.id), version: text(c.version), name: text(c.name), referenceUrl: url.href } }
 export const parseRuleRequirement = requirement
 export const parseRuleCertificate = certificate
+export const parseRulePathway = (v: unknown) => pathway(v)
 function step(v: unknown, review = false): RuleStep {
   const s = object(v)
   return { id: text(s.id), requirement: requirement(s.requirement), kind: oneOf(s.kind, ['REQUIRED', 'PARALLEL_SUPPLEMENT'] as const), state: oneOf(s.state, ['NEEDS_SUPPLEMENTATION', 'NEEDS_EXPERT_ACTION', 'IN_PROGRESS', 'FULFILLED', 'BYPASSED'] as const), reason: text(s.reason), fulfilledEvidenceId: nullable(s.fulfilledEvidenceId, text),

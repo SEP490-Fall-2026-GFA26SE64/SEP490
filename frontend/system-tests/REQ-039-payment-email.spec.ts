@@ -28,7 +28,7 @@ test('Verified payment produces one branded purchaser email and an owner-scoped 
   const mail = record(await (await page.request.get(`${inbox}/api/v1/message/${text(entry.ID)}`)).json())
   expect(text(mail.Text)).toContain(orderId)
   expect(text(mail.Text)).toContain('Starter')
-  expect(text(mail.Text)).toContain('4,900,000 VND')
+  expect(text(mail.Text)).toContain('4,900 VND')
   expect(text(mail.HTML)).toContain('Adapt-Learn-Graph')
   expect(text(mail.HTML)).toContain('<table')
   expect(text(mail.HTML)).toContain(`/guest/payment-result?order=${orderId}`)

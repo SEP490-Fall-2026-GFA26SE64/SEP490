@@ -34,8 +34,16 @@ export function usePathwayAssessmentStates(pathway: RulePathway, preview: boolea
   }
 }
 
+/** Minimal attempt shape used for classification; employee attempts and L&D report attempts both satisfy it. */
+export interface AttemptOutcomeLike {
+  target: { selectionId: string; selectionRevision: number; stepId?: string | null }
+  state: string
+  results: { groupId: string; passed: boolean; vetoTriggered: boolean }[]
+  groups: { id: string; role: string }[]
+}
+
 /** Same exact-context outcome classification for Pathway, Overview and Profile. */
-export function moduleAssessmentState(attempts: BaselineAttempt[], pathway: RulePathway, step: RuleStep): AssessmentState {
+export function moduleAssessmentState(attempts: AttemptOutcomeLike[], pathway: Pick<RulePathway, 'selectionId' | 'selectionRevision'>, step: Pick<RuleStep, 'id'>): AssessmentState {
   const attempt = attempts.find(item => item.target.selectionId === pathway.selectionId && item.target.selectionRevision === pathway.selectionRevision && item.target.stepId === step.id)
   return !attempt ? 'notStarted' : attempt.state === 'IN_PROGRESS' ? 'inProgress'
     : attempt.results.length > 0 && attempt.results.every(result => result.passed && !result.vetoTriggered) ? 'passed'

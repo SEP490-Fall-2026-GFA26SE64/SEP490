@@ -107,6 +107,17 @@ curl_q -fsS -o /dev/null --max-time 15 "http://127.0.0.1:${WEB_PORT}/api/v1/regi
   || fail "API not reachable through the web proxy."
 echo "Local checks OK"
 
+# The SMTP preflight runs on the host network; the API runs on the stack's bridge, which a host
+# DOCKER-USER firewall can block independently (README: "Outbound firewall").
+log "Checking outbound SMTP and PayOS from the app network"
+app_net="$("${DOCKER[@]}" inspect -f '{{range $k, $v := .NetworkSettings.Networks}}{{$k}}{{end}}' "$("${COMPOSE[@]}" ps -q api)")"
+curl_app() { "${DOCKER[@]}" run --rm -i --network "$app_net" "$CURL_IMAGE" "$@"; }
+printf '%s\n' "$smtp_cfg" | curl_app "${smtp_args[@]}" >/dev/null \
+  || fail "SMTP is reachable from the host but not from Docker network ${app_net}. Allow outbound traffic from bridge br-adaptlearn in the DOCKER-USER firewall chain."
+curl_app -sS -o /dev/null --max-time 20 https://api-merchant.payos.vn \
+  || fail "PayOS API is not reachable from Docker network ${app_net}. Allow outbound traffic from bridge br-adaptlearn in the DOCKER-USER firewall chain."
+echo "Outbound OK"
+
 # ---------------------------------------------------------------- nginx
 log "Installing Nginx site ${DOMAIN}"
 $SUDO mkdir -p /etc/nginx/sites-available /etc/nginx/sites-enabled /var/www/certbot

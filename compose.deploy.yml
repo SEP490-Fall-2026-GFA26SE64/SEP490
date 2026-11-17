@@ -284,6 +284,13 @@ services:
       retries: 6
     restart: unless-stopped
 
+# Fixed bridge name so host firewall rules can allow this stack's outbound traffic
+# (SMTP, PayOS) independent of the subnet Docker assigns. See deploy/README.md.
+networks:
+  default:
+    driver_opts:
+      com.docker.network.bridge.name: br-adaptlearn
+
 volumes:
   learning_assets:
   postgres_data:

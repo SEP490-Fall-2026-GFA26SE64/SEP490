@@ -35,6 +35,10 @@ Documentation-only checks do not establish backend/frontend behavior. Revised ru
 
 ## Existing Test Guides and Evidence
 
+### FR-04.07 L&D employee development monitoring, 2026-11-16
+
+[Unit/API/components](unit/FR-04-07-ld-employee-development-20261116.md), [integration](integration/FR-04-07-ld-employee-development-20261116.md) and [browser/manual checks](system/FR-04-07-ld-employee-development-20261116.md) cover the read-only L&D report (employee list, competency/gaps, assessment outcomes, pathway progress, department summaries, department/job-position filters). Results: **5 backend unit, 7 frontend and 5 Playwright tests passed** on an isolated Compose stack; dedicated Testcontainers query test Not run. ROI/costs/reporting period are outside this slice.
+
 ### Guided Starter Catalog, 2026-11-12
 
 [Unit/API/components](unit/REQ-060-061-starter-catalog-20261112.md), [real persistence](integration/REQ-060-061-starter-catalog-20261112.md) and [browser/manual checks](system/REQ-060-061-starter-catalog-20261112.md) cover five selectable catalog types, guided dialog/filtering, pruned explicit selection, required prerequisites, no module/certificate imports and exact preview-to-copy parity. Final scoped results: **45 backend, 24 frontend and 5 Playwright tests passed**; build/scoped lint passed. Standard Maven test compilation and two unrelated whole-repository architecture rules remain non-green; no full-repository or production pass is implied.

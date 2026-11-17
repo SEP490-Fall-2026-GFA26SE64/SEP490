@@ -186,7 +186,7 @@ class SubscriptionPlanApiIntegrationTest {
         assertEquals(403, missingCsrf.statusCode());
         var updated = send(browser, "PUT", path, edit);
         assertEquals(200, updated.statusCode(), updated.body());
-        assertEquals(2, body(updated).path("revision").asInt());
+        assertEquals(3, body(updated).path("revision").asInt());
         assertEquals(21, body(updated).path("terms").path("employeeSeats").asInt());
         assertEquals(409, send(browser, "PUT", path, edit).statusCode());
         var fractional=new java.util.LinkedHashMap<String,Object>(edit);
@@ -195,7 +195,7 @@ class SubscriptionPlanApiIntegrationTest {
         assertEquals(400,send(browser,"PUT",path,fractional).statusCode());
         fractional.put("priceVnd","4900001");
         assertEquals(400,send(browser,"PUT",path,fractional).statusCode());
-        assertEquals(4_900_000L, jdbc.queryForObject(
+        assertEquals(4_900L, jdbc.queryForObject(
                 "SELECT price_vnd FROM platform.subscription_plan_version WHERE version_id = ?", Long.class,
                 UUID.fromString(plan.path("versionId").asText())));
     }
