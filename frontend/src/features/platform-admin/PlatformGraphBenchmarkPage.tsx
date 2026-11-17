@@ -634,18 +634,18 @@ export function PlatformGraphBenchmarkPage() {
                   )
                 })()}
 
-                {/* 4 Sleek Step Cards with dynamic highlight during execution */}
+                {/* 4 Sleek Step Cards with dynamic highlight during execution and bright harmonious surfaces */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                   {/* Step 1 */}
                   <div
                     className={`p-3 rounded-lg space-y-1 transition-all duration-200 border ${
                       activeExecutionStep === 1
-                        ? 'bg-blue-50/70 dark:bg-blue-950/40 border-blue-500 ring-2 ring-blue-500/30 shadow-xs'
-                        : 'bg-muted/30 border-border'
+                        ? 'bg-blue-100/70 dark:bg-blue-950/50 border-blue-500 ring-2 ring-blue-500/40 shadow-sm'
+                        : 'bg-blue-50/50 dark:bg-blue-950/20 border-blue-200/70 dark:border-blue-900/40 shadow-xs'
                     }`}
                   >
                     <div className="flex items-center justify-between">
-                      <span className={`text-xs font-bold flex items-center gap-1.5 ${activeExecutionStep === 1 ? 'text-blue-700 dark:text-blue-300' : 'text-foreground'}`}>
+                      <span className={`text-xs font-bold flex items-center gap-1.5 ${activeExecutionStep === 1 ? 'text-blue-700 dark:text-blue-300' : 'text-blue-900 dark:text-blue-300'}`}>
                         <span>{isVi ? 'Bước 1: Tra cứu Chỉ mục' : 'Step 1: Index Lookup'}</span>
                         {activeExecutionStep === 1 && (
                           <span className="inline-block w-1.5 h-1.5 rounded-full bg-blue-500 animate-ping" />
@@ -655,7 +655,7 @@ export function PlatformGraphBenchmarkPage() {
                         {breakdownProgress > 0 && activeBreakdown.totalMeanMs > 0 ? `${activeBreakdown.indexLookupMs.toFixed(2)} ms` : '—'}
                       </span>
                     </div>
-                    <div className="text-[10px] text-muted-foreground font-mono">
+                    <div className="text-[10px] text-blue-700/80 dark:text-blue-400 font-mono">
                       {breakdownProgress > 0 && activeBreakdown.totalMeanMs > 0
                         ? `${((activeBreakdown.indexLookupMs / activeBreakdown.totalMeanMs) * 100).toFixed(1)}% of runtime`
                         : '—'}
@@ -671,12 +671,12 @@ export function PlatformGraphBenchmarkPage() {
                   <div
                     className={`p-3 rounded-lg space-y-1 transition-all duration-200 border ${
                       activeExecutionStep === 2
-                        ? 'bg-amber-50/70 dark:bg-amber-950/40 border-amber-500 ring-2 ring-amber-500/30 shadow-xs'
-                        : 'bg-muted/30 border-border'
+                        ? 'bg-amber-100/70 dark:bg-amber-950/50 border-amber-500 ring-2 ring-amber-500/40 shadow-sm'
+                        : 'bg-amber-50/50 dark:bg-amber-950/20 border-amber-200/70 dark:border-amber-900/40 shadow-xs'
                     }`}
                   >
                     <div className="flex items-center justify-between">
-                      <span className={`text-xs font-bold flex items-center gap-1.5 ${activeExecutionStep === 2 ? 'text-amber-700 dark:text-amber-300' : 'text-foreground'}`}>
+                      <span className={`text-xs font-bold flex items-center gap-1.5 ${activeExecutionStep === 2 ? 'text-amber-700 dark:text-amber-300' : 'text-amber-900 dark:text-amber-300'}`}>
                         <span>{isVi ? 'Bước 2: Khởi tạo Hàng đợi' : 'Step 2: Queue Init'}</span>
                         {activeExecutionStep === 2 && (
                           <span className="inline-block w-1.5 h-1.5 rounded-full bg-amber-500 animate-ping" />
@@ -686,7 +686,7 @@ export function PlatformGraphBenchmarkPage() {
                         {breakdownProgress > 0 && activeBreakdown.totalMeanMs > 0 ? `${activeBreakdown.queueInitMs.toFixed(2)} ms` : '—'}
                       </span>
                     </div>
-                    <div className="text-[10px] text-muted-foreground font-mono">
+                    <div className="text-[10px] text-amber-700/80 dark:text-amber-400 font-mono">
                       {breakdownProgress > 0 && activeBreakdown.totalMeanMs > 0
                         ? `${((activeBreakdown.queueInitMs / activeBreakdown.totalMeanMs) * 100).toFixed(1)}% of runtime`
                         : '—'}
@@ -702,12 +702,12 @@ export function PlatformGraphBenchmarkPage() {
                   <div
                     className={`p-3 rounded-lg space-y-1 transition-all duration-200 border ${
                       activeExecutionStep === 3
-                        ? 'bg-primary/10 border-primary ring-2 ring-primary/40 shadow-xs'
-                        : 'bg-primary/[0.04] border-primary/30'
+                        ? 'bg-primary/15 border-primary ring-2 ring-primary/40 shadow-xs'
+                        : 'bg-orange-50/50 dark:bg-orange-950/20 border-orange-200/70 dark:border-orange-900/40 shadow-xs'
                     }`}
                   >
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-primary flex items-center gap-1.5">
+                      <span className={`text-xs font-bold flex items-center gap-1.5 ${activeExecutionStep === 3 ? 'text-primary' : 'text-orange-900 dark:text-orange-300'}`}>
                         <span>{isVi ? 'Bước 3: Duyệt Đồ thị (3–5 hops)' : 'Step 3: Traversal (3-5 hops)'}</span>
                         {activeExecutionStep === 3 && (
                           <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary animate-ping" />
@@ -717,9 +717,9 @@ export function PlatformGraphBenchmarkPage() {
                         {breakdownProgress > 0 && activeBreakdown.totalMeanMs > 0 ? `${activeBreakdown.traversalMs.toFixed(2)} ms` : '—'}
                       </span>
                     </div>
-                    <div className="text-[10px] text-primary/80 font-mono font-semibold">
+                    <div className="text-[10px] text-orange-700/80 dark:text-orange-400 font-mono">
                       {breakdownProgress > 0 && activeBreakdown.totalMeanMs > 0
-                        ? `${((activeBreakdown.traversalMs / activeBreakdown.totalMeanMs) * 100).toFixed(1)}% of runtime (Primary phase)`
+                        ? `${((activeBreakdown.traversalMs / activeBreakdown.totalMeanMs) * 100).toFixed(1)}% of runtime${activeExecutionStep === 3 ? ' (Primary phase)' : ''}`
                         : '—'}
                     </div>
                     <p className="text-[11px] text-muted-foreground leading-relaxed">
@@ -733,12 +733,12 @@ export function PlatformGraphBenchmarkPage() {
                   <div
                     className={`p-3 rounded-lg space-y-1 transition-all duration-200 border ${
                       activeExecutionStep === 4
-                        ? 'bg-emerald-50/70 dark:bg-emerald-950/40 border-success ring-2 ring-success/30 shadow-xs'
-                        : 'bg-muted/30 border-border'
+                        ? 'bg-emerald-100/70 dark:bg-emerald-950/50 border-success ring-2 ring-success/40 shadow-sm'
+                        : 'bg-emerald-50/50 dark:bg-emerald-950/20 border-emerald-200/70 dark:border-emerald-900/40 shadow-xs'
                     }`}
                   >
                     <div className="flex items-center justify-between">
-                      <span className={`text-xs font-bold flex items-center gap-1.5 ${activeExecutionStep === 4 ? 'text-emerald-700 dark:text-emerald-300' : 'text-foreground'}`}>
+                      <span className={`text-xs font-bold flex items-center gap-1.5 ${activeExecutionStep === 4 ? 'text-emerald-700 dark:text-emerald-300' : 'text-emerald-900 dark:text-emerald-300'}`}>
                         <span>{isVi ? 'Bước 4: Tái dựng Đường đi' : 'Step 4: Path Reconstruction'}</span>
                         {activeExecutionStep === 4 && (
                           <span className="inline-block w-1.5 h-1.5 rounded-full bg-success animate-ping" />
@@ -748,7 +748,7 @@ export function PlatformGraphBenchmarkPage() {
                         {breakdownProgress > 0 && activeBreakdown.totalMeanMs > 0 ? `${activeBreakdown.pathReconstructionMs.toFixed(2)} ms` : '—'}
                       </span>
                     </div>
-                    <div className="text-[10px] text-muted-foreground font-mono">
+                    <div className="text-[10px] text-emerald-700/80 dark:text-emerald-400 font-mono">
                       {breakdownProgress > 0 && activeBreakdown.totalMeanMs > 0
                         ? `${((activeBreakdown.pathReconstructionMs / activeBreakdown.totalMeanMs) * 100).toFixed(1)}% of runtime`
                         : '—'}
