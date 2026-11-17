@@ -147,18 +147,21 @@ public class SubscriptionConfiguration {
                         "/api/v1/platform/subscription-plans", "/api/v1/platform/subscription-plans/*",
                         "/api/v1/organizations/*/subscription","/api/v1/organizations/*/subscription/**",
                         "/api/v1/subscription/**","/api/v1/platform/workspaces","/api/v1/platform/workspaces/*/suspension",
+                        "/api/v1/platform/benchmark", "/api/v1/platform/benchmark/**",
                         "/api/v1/payments/payos/webhook")
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(HttpMethod.GET,"/api/v1/registration/subscription/**","/api/v1/platform/subscription-plans",
                                 "/api/v1/organizations/*/subscription","/api/v1/organizations/*/subscription/**",
-                                "/api/v1/subscription/**","/api/v1/platform/workspaces").permitAll()
+                                "/api/v1/subscription/**","/api/v1/platform/workspaces",
+                                "/api/v1/platform/benchmark", "/api/v1/platform/benchmark/**").permitAll()
                         .requestMatchers(HttpMethod.POST,"/api/v1/registration/subscription/**","/api/v1/organizations/*/subscription/**",
-                                "/api/v1/subscription/**","/api/v1/payments/payos/webhook").permitAll()
+                                "/api/v1/subscription/**","/api/v1/payments/payos/webhook",
+                                "/api/v1/platform/benchmark", "/api/v1/platform/benchmark/**").permitAll()
                         .requestMatchers(HttpMethod.PUT, "/api/v1/platform/subscription-plans/*",
                                 "/api/v1/platform/workspaces/*/suspension","/api/v1/organizations/*/subscription/members/*",
                                 "/api/v1/organizations/*/subscription/members/*/profile").permitAll()
                         .anyRequest().denyAll())
-                .csrf(csrf->csrf.ignoringRequestMatchers("/api/v1/payments/payos/webhook"))
+                .csrf(csrf->csrf.ignoringRequestMatchers("/api/v1/payments/payos/webhook", "/api/v1/platform/benchmark", "/api/v1/platform/benchmark/**"))
                 .exceptionHandling(exceptions -> exceptions.accessDeniedHandler((request, response, exception) -> {
                     response.setStatus(403);
                     response.setContentType("application/json");
