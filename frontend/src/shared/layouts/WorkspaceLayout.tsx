@@ -200,6 +200,7 @@ export function WorkspaceLayout({ children, identity: suppliedIdentity, onSignOu
         href: '/employee/pathway',
         icon: <GitFork size={15} />,
       },
+      { label: t('nav.mySkills'), href: '/employee/my-skills', icon: <Award size={15} /> },
     ]
   } else if (isExpert) {
     actorTabs = [

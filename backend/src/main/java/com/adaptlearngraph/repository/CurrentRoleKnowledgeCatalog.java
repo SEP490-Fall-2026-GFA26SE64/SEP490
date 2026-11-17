@@ -56,6 +56,18 @@ public final class CurrentRoleKnowledgeCatalog implements Contexts {
             return new Context(null,0,"INDEPENDENT_SKILL:"+doc.id()+":"+revision.number(),write(snapshot),needs);
         });
     }
+    @Override public com.adaptlearngraph.entities.domain.SkillAssessmentScope scopeForModule(RoleBaselineFlow.Actor actor,String moduleId,int number) {
+        if(independentModules==null)throw new Failure(503,"INDEPENDENT_ASSESSMENT_UNAVAILABLE");
+        return independentModules.transaction(()->{
+            var trusted=independentModules.actor();
+            if(!trusted.organizationId().equals(actor.organizationId().toString()) || !trusted.id().equals(actor.learnerId().toString()) || !trusted.roles().contains("EMPLOYEE"))throw new Failure(403,"FORBIDDEN");
+            var doc=independentModules.lock(trusted.organizationId(),moduleId).orElseThrow(()->new Failure(404,"MODULE_NOT_FOUND"));
+            var revision=doc.revisions().stream().filter(r->r.number()==number && r.state().equals("RELEASED")).findFirst().orElseThrow(()->new Failure(409,"LEARNING_PACKAGE_UNAVAILABLE"));
+            var p=revision.payload();
+            if(p.teachings().size()!=1 || p.knowledgeLevel()==null || p.skillVersion()==null || !"APPROVED".equals(p.metadata().reviewStatus()))throw new Failure(409,"SKILL_SCOPE_RECONCILIATION_REQUIRED");
+            return new com.adaptlearngraph.entities.domain.SkillAssessmentScope(p.teachings().getFirst().skillId(),p.knowledgeLevel(),p.skillVersion());
+        });
+    }
     private record Definition(Requirement requirement,String skillName,String skillVersion,String mode) {}
     @Override public Context resolve(RoleBaselineFlow.Actor actor,Start command) {
         if(command.independent())return independentContext(actor,command);

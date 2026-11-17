@@ -84,3 +84,27 @@ The main local environment was backed up and updated to the new image with appro
 ### Catalog presentation follow-up — 16 November 2026
 
 The approved professional library presentation reuses the same search API and learning authority. Shared PageHeader/controls, staged filter dialog and removable chips replace the always-expanded filter form. Module list/cards share one record projection and live admission reasons; the responsive table keeps semantic headers/Skill ownership. No illustrative duration is invented from the HTML prototype. Empty tracking-summary presentation is compacted locally, without changing stored tracked skills or Role state. [Current visual verification/manual checklist](../testing/system/FR-06.07-catalog-design-20261116.md) distinguishes the passing UI/local slice from pre-existing Role/fullCI failures.
+
+
+### Skills-list / module-card navigation follow-up
+
+The approved presentation now uses responsive Skills rows and defaults module search to cards. Selecting a Skill renders the existing per-Skill module projection and knowledge/achievement tabs inline, reusing the same trusted APIs instead of a selection modal. Explicit Back retains the surrounding catalog state; entry/back manage keyboard focus. Existing per-Skill Foundation default, exact level/version evidence and admission are preserved. Grid sizing remains stable for a single module. No new API/schema/authority or fabricated metadata was added. [R5 evidence](../testing/system/FR-06.07-catalog-design-20261116.md#r5--approved-skills-list--in-page-module-cards) supersedes earlier modal/card presentation descriptions, without rewriting historical runs.
+
+
+### Catalog assessment action — 17 November 2026
+
+Module list/search now expose actual pinned/released `moduleRevision`; legacy constructors may retain null, and the UI never guesses a revision. Completed eligible cards reuse `CompletedModuleAssessmentLink` from the Reader, resolving the exact current pathway context or independent context. Compact presentation retains explicit start/resume/retake and server errors; Reader retains result/history controls. Rendering only reads context; POST start remains explicit and retains existing idempotency/policy rules. Incomplete, locked or revisionless modules cannot initiate an assessment from the catalog. No new schema or achievement calculation is introduced.
+
+Local uses a compatibility backport because merged migration numbering differs from the preserved database. The notification polling endpoint from merged frontend is absent locally (404); this is outside the assessment slice. [Current evidence and manual checklist](../testing/system/FR-06.07-08-module-assessment-cta-20261117.md).
+
+
+### Skill-level assessment placement follow-up — 17 November 2026
+
+Supersedes the preceding catalog card placement only. `SkillLevelAssessmentPanel` belongs to each selected Skill knowledge-level tab above its learning modules. Only completed, currently available modules at the selected current Skill version and level with an actual positive revision can supply completion context. One eligible completion is used directly; multiple require an explicit labeled choice. The existing Reader resolver and assessment history/start/resume/retake services are reused. History and attempt limits remain scoped to the chosen module/revision, not consolidated by Skill/level. Module catalog cards no longer render assessment entries; global search offers View skill at the module knowledge level. Reader assessment entry is unchanged. No new schema, bank filtering, scoring, authority or persistence operation. [Follow-up verification](../testing/system/FR-06.07-08-skill-level-assessment-20261117.md).
+
+
+### My Skills achievement summary — 17 November 2026
+
+`/employee/my-skills` is an Employee summary independent of the selected Role, linked from the Employee menu and Profile. It reuses the existing organization/learner-scoped knowledge-profile API and `groupKnowledgeEntries`. Only official EVIDENCE creates a displayed level; DIAGNOSTIC records are excluded. Pathway and independent module outcomes already use the same evidence store, so no new persistence or source-origin guess is needed. Skill/version/level keys deduplicate chips while keeping distinct evidence, recorded dates and existing assessment-result links. Certificate evidence legitimately has no attempt link. Unresolved REVIEW annotates retained achievement within its exact Skill/version/level.
+
+The client exhausts paginated profile history before declaring the summary/search complete, with explicit partial/error/limit messages through the existing page250 boundary. Achievements at a higher level never infer lower levels; historical Skill versions remain separate. Queries and component state are scoped to trusted organization/account; non-Employees do not issue summary reads and401/403 hides cached rows. Existing Overview and My mastery redirect are preserved. No new endpoint, schema, scoring rule or source-kind field is introduced. [Verification and manual checklist](../testing/system/FR-06.05-09-my-skills-20261117.md).

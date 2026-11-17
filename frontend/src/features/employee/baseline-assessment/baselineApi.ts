@@ -109,3 +109,41 @@ function parseAttempt(value: unknown): BaselineAttempt {
     previousAttemptId: nullable(v.previousAttemptId), expired: state !== 'IN_PROGRESS' || Date.parse(observedAt) >= Date.parse(deadlineAt),
     maxQuestions: items.length, answeredCount: items.filter(i => i.selectedOptionId !== null).length, items, groups, results }
 }
+
+export interface SkillAssessmentScope { skillId: string; knowledgeLevel: 'FOUNDATION' | 'INTERMEDIATE' | 'ADVANCED'; skillVersion: string }
+export type SkillScopeLocator = SkillAssessmentScope | { moduleId: string; moduleRevision: number }
+export interface SkillAttemptSummary {
+  id: string; target: AssessmentTarget & { roleName: string }; state: AttemptState; startedAt: string; deadlineAt: string
+  finishedAt: string | null; finishReason: string | null; previousAttemptId: string | null
+}
+export interface SkillScopeHistory {
+  scope: SkillAssessmentScope; items: SkillAttemptSummary[]; activeAttempts: SkillAttemptSummary[]; totalAttempts: number; unresolvedAttempts: number
+  page: number; pageSize: number; hasMore: boolean; previousAttemptId: string | null; maxAttempts: number | null
+  retakeAvailableAt: string | null; policyIssue: string | null; observedAt: string
+}
+function skillSummary(value: unknown): SkillAttemptSummary {
+  const r = object(value), target = object(r.target), state = text(r.state)
+  if (!['IN_PROGRESS', 'FINALIZED'].includes(state)) throw Error()
+  const startedAt = date(r.startedAt), deadlineAt = date(r.deadlineAt), finishedAt = r.finishedAt === null ? null : date(r.finishedAt), finishReason = nullable(r.finishReason)
+  if (Date.parse(deadlineAt) <= Date.parse(startedAt) || state === 'IN_PROGRESS' && (finishedAt !== null || finishReason !== null) || state === 'FINALIZED' && (!finishedAt || !['SUBMITTED', 'DEADLINE'].includes(finishReason ?? ''))) throw Error()
+  return { id: text(r.attemptId), state: state as AttemptState, startedAt, deadlineAt, finishedAt, finishReason, previousAttemptId: nullable(r.previousAttemptId), target: {
+    selectionId: nullable(target.selectionId), selectionRevision: count(target.selectionRevision), stepId: nullable(target.stepId), moduleId: nullable(target.moduleId), moduleRevision: target.moduleRevision === null ? null : count(target.moduleRevision, 1), roleName: typeof target.roleName === 'string' ? target.roleName : '',
+  } }
+}
+export function readSkillScope(locator: SkillScopeLocator, signal?: AbortSignal, page = 0): Promise<SkillScopeHistory> {
+  const params = new URLSearchParams({ page: String(page), size: '20' })
+  if ('skillId' in locator) { params.set('skillId', locator.skillId); params.set('knowledgeLevel', locator.knowledgeLevel); params.set('skillVersion', locator.skillVersion) }
+  else { params.set('moduleId', locator.moduleId); params.set('moduleRevision', String(locator.moduleRevision)) }
+  return request('/skill-scope/history?' + params, value => {
+    const r = object(value), scope = object(r.scope), knowledgeLevel = text(scope.knowledgeLevel)
+    if (!['FOUNDATION', 'INTERMEDIATE', 'ADVANCED'].includes(knowledgeLevel)) throw Error()
+    const identity: SkillAssessmentScope = { skillId: text(scope.skillId), knowledgeLevel: knowledgeLevel as SkillAssessmentScope['knowledgeLevel'], skillVersion: text(scope.skillVersion) }
+    if ('skillId' in locator && (identity.skillId !== locator.skillId || identity.knowledgeLevel !== locator.knowledgeLevel || identity.skillVersion !== locator.skillVersion)) throw Error()
+    const items = list(r.items, skillSummary), activeAttempts = list(r.activeAttempts, skillSummary), totalAttempts = count(r.totalAttempts), pageSize = count(r.pageSize, 1), maxAttempts = r.maxAttempts === null ? null : count(r.maxAttempts, 1)
+    const policyIssue = nullable(r.policyIssue)
+    if (count(r.page) !== page || pageSize !== 20 || items.length > pageSize || activeAttempts.length > 1000 || totalAttempts < activeAttempts.length || items.length > totalAttempts
+      || new Set(items.map(a => a.id)).size !== items.length || new Set(activeAttempts.map(a => a.id)).size !== activeAttempts.length || activeAttempts.some(a => a.state !== 'IN_PROGRESS') || !policyIssue && maxAttempts === null) throw Error()
+    return { scope: identity, items, activeAttempts, totalAttempts, unresolvedAttempts: count(r.unresolvedAttempts), page, pageSize, hasMore: bool(r.hasMore), previousAttemptId: nullable(r.previousAttemptId), maxAttempts,
+      retakeAvailableAt: r.retakeAvailableAt === null ? null : date(r.retakeAvailableAt), policyIssue, observedAt: date(r.observedAt) }
+  }, { signal })
+}

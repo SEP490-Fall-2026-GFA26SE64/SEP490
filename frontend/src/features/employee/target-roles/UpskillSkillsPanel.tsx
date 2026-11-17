@@ -1,7 +1,7 @@
-import { useContext, useEffect, useState } from 'react'
+import { useContext, useEffect, useRef, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
-import { Search, SlidersHorizontal, List, LayoutGrid, X, ArrowRight, Info } from 'lucide-react'
+import { Search, SlidersHorizontal, List, LayoutGrid, X, ArrowRight, ArrowLeft, Info } from 'lucide-react'
 import { WorkspaceSessionContext } from '../../../shared/auth/workspaceSession'
 import { useWorkspaceSlug, workspaceUrl } from '../../../shared/auth/workspacePaths'
 import { useTranslation } from '../../../shared/i18n/LanguageContext'
@@ -17,7 +17,7 @@ import { Dialog, DialogBody, DialogHeader, DialogTitle, DialogFooter } from '../
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '../../../shared/components/ui/Tabs'
 import { Combobox } from '../../../shared/components/ui/Combobox'
 import { Pagination } from '../../../shared/components/ui/Pagination'
-import { UpskillingCatalogCard } from './UpskillingCatalogCard'
+import { SkillLevelAssessmentPanel } from './SkillLevelAssessmentPanel'
 import { ModuleCatalogResults } from './ModuleCatalogResults'
 import { Heading } from '../../../shared/components/typography/Heading'
 
@@ -33,7 +33,7 @@ function ScopedSkillsPanel() {
   const scope = `${identity?.organizationId}/${identity?.accountId}`
   const [search, setSearch] = useState(() => new URLSearchParams(window.location.search).get('search') ?? '')
   const [resultType, setResultType] = useState('SKILL')
-  const [view, setView] = useState<'list' | 'grid'>('list')
+  const [view, setView] = useState<'list' | 'grid'>('grid')
   const [filterOpen, setFilterOpen] = useState(false)
   const [draftSkill, setDraftSkill] = useState(''), [draftLevel, setDraftLevel] = useState('')
   const [ownerSkill, setOwnerSkill] = useState('')
@@ -44,10 +44,15 @@ function ScopedSkillsPanel() {
   function resetPages() { setModulePage(0); setSkillPage(0) }
   const showSkills = resultType !== 'MODULE', showModules = resultType !== 'SKILL'
   const [selected, setSelected] = useState<MicroSkillDto | null>(null)
+  const selectedRegion = useRef<HTMLElement>(null), returnSkill = useRef('')
+  useEffect(() => {
+    if (selected) selectedRegion.current?.focus()
+    else if (returnSkill.current) document.getElementById(returnSkill.current)?.focus()
+  }, [selected])
   const [level, setLevel] = useState<KnowledgeLevel>('FOUNDATION')
   const [busy, setBusy] = useState(''), [actionError, setActionError] = useState('')
   const catalog = useQuery({ queryKey: ['individualSkills', scope], queryFn: () => fetchMicroSkills(identity!.organizationId!), enabled: Boolean(identity?.organizationId), retry: false, gcTime: 0 })
-  const moduleResults = useQuery({ queryKey: ['individualModuleSearch', scope, debouncedSearch, ownerSkill, moduleLevel, modulePage], queryFn: ({ signal }) => searchSkillModules(debouncedSearch, ownerSkill, moduleLevel, modulePage, signal), enabled: Boolean(identity?.organizationId) && showModules && search === debouncedSearch, retry: false, gcTime: 0 })
+  const moduleResults = useQuery({ queryKey: ['individualModuleSearch', scope, debouncedSearch, ownerSkill, moduleLevel, modulePage], queryFn: ({ signal }) => searchSkillModules(debouncedSearch, ownerSkill, moduleLevel, modulePage, signal), enabled: Boolean(identity?.organizationId) && showModules && !selected && search === debouncedSearch, retry: false, gcTime: 0 })
   const provision = useQuery({ queryKey: ['individualSkillModules', scope, selected?.id], queryFn: ({ signal }) => readSkillModules(selected!.id, signal), enabled: Boolean(selected), retry: false, gcTime: 0 })
   const profile = useQuery({ queryKey: ['individualSkillKnowledge', scope, selected?.id, selected?.version], queryFn: ({ signal }) => readSkillKnowledgeProfile(selected!.id, signal), enabled: Boolean(selected), retry: false, gcTime: 0, refetchInterval: selected ? 5000 : false })
   const modules = provision.isError ? [] : provision.data ?? []
@@ -60,7 +65,7 @@ function ScopedSkillsPanel() {
     PREREQUISITE_NOT_MET: vi ? 'Chưa đạt kiến thức tiên quyết.' : 'Prerequisite knowledge has not been achieved.',
     SKILL_VERSION_CHANGED: vi ? 'Nội dung cần cập nhật theo phiên bản kỹ năng.' : 'Content needs to match the current skill version.',
   }
-  function select(skill: MicroSkillDto) { setSelected(skill); setLevel('FOUNDATION'); setActionError('') }
+  function select(skill: MicroSkillDto, returnId = `skill-action-${encodeURIComponent(skill.id)}`) { returnSkill.current = returnId; setSelected(skill); setLevel('FOUNDATION'); setActionError(''); setFilterOpen(false) }
   async function open(skillId: string, module: OptionalSkillModule) {
     if (busy || module.unavailableReason || !module.knowledgeLevel || !module.skillVersion) return
     setBusy(module.moduleId); setActionError('')
@@ -72,6 +77,7 @@ function ScopedSkillsPanel() {
     finally { setBusy('') }
   }
   return <section className="space-y-4" aria-label={vi ? 'Học kỹ năng độc lập' : 'Individual skills'}>
+    {!selected && <>
     <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 rounded-lg border border-border bg-card p-2 sm:flex sm:gap-3">
       <label htmlFor="skill-search" className="sr-only">{vi ? 'Tìm kỹ năng hoặc module' : 'Search skills or modules'}</label>
       <div className="relative col-span-2 min-w-0 flex-1"><Search aria-hidden="true" className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" /><Input id="skill-search" type="search" className="border-0 bg-transparent pl-9 shadow-none" value={search} maxLength={100} onChange={e => { setSearch(e.target.value); resetPages() }} placeholder={vi ? 'Tìm kỹ năng hoặc module…' : 'Search skills or modules…'} /></div>
@@ -97,30 +103,33 @@ function ScopedSkillsPanel() {
     {catalog.isPending && identity?.organizationId && <p role="status" className="text-body-sm text-muted-foreground">{vi ? 'Đang tải kỹ năng…' : 'Loading skills…'}</p>}
     {catalog.isError && <div role="alert" className="space-y-2"><p>{vi ? 'Không tải được danh sách kỹ năng.' : 'Could not load skills.'}</p><Button variant="outline" onClick={() => void catalog.refetch()}>{vi ? 'Thử lại' : 'Retry'}</Button></div>}
     {showSkills && catalog.isSuccess && !visible.length && <p className="rounded-xl border border-border bg-card p-5 text-body-sm text-muted-foreground">{vi ? 'Không có kỹ năng phù hợp.' : 'No matching skills.'}</p>}
-    {showSkills && <section className="space-y-3" aria-label="Skills"><div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">{visible.slice(skillPage * 20, (skillPage + 1) * 20).map(skill => <UpskillingCatalogCard key={skill.id} footerDivider={false} title={skill.name} description={skill.description}
-      badges={<Badge variant="secondary" className="max-w-full whitespace-normal break-words">{skill.code}</Badge>}
-      actions={<Button size="sm" variant="primary" onClick={() => select(skill)}>{vi ? 'Xem module' : 'View modules'}</Button>} />)}</div><Pagination currentPage={skillPage + 1} totalPages={Math.ceil(visible.length / 20)} totalItems={visible.length} pageSize={20} locale={vi ? 'vi' : 'en'} onPageChange={value => setSkillPage(value - 1)} /></section>}
+    {showSkills && visible.length > 0 && <section className="space-y-3" aria-label="Skills"><div className="overflow-hidden rounded-lg border border-border bg-card" role="list">{visible.slice(skillPage * 20, (skillPage + 1) * 20).map(skill => <div key={skill.id} role="listitem" className="flex min-w-0 flex-col gap-3 border-b border-border p-4 last:border-b-0 sm:flex-row sm:items-center sm:justify-between sm:gap-5 sm:px-5">
+      <div className="min-w-0 space-y-1.5"><div className="flex flex-wrap items-center gap-2"><Badge variant="secondary" className="max-w-full break-words whitespace-normal">{skill.code}</Badge><Heading level={3} size="card" className="break-words">{skill.name}</Heading></div>{skill.description && <p className="line-clamp-2 break-words text-body-sm text-muted-foreground">{skill.description}</p>}</div>
+      <Button id={`skill-action-${encodeURIComponent(skill.id)}`} size="sm" variant="primary" className="shrink-0 self-start gap-2 sm:self-center" onClick={() => select(skill)}>{vi ? 'Xem modules' : 'View modules'}<ArrowRight size={14} aria-hidden="true" /></Button>
+    </div>)}</div><Pagination currentPage={skillPage + 1} totalPages={Math.ceil(visible.length / 20)} totalItems={visible.length} pageSize={20} locale={vi ? 'vi' : 'en'} onPageChange={value => setSkillPage(value - 1)} /></section>}
     {actionError && !selected && <p role="alert" className="text-body-sm text-destructive">{actionError}</p>}
     {showModules && <section aria-label="Modules" className="space-y-3"><div className="flex items-center justify-between gap-3"><Heading level={2} size="card">{moduleResults.isSuccess && search === debouncedSearch ? `${moduleResults.data.totalItems} ${vi || moduleResults.data.totalItems === 1 ? 'module' : 'modules'}` : 'Modules'}</Heading><div role="group" aria-label={vi ? 'Kiểu hiển thị' : 'Display mode'} className="flex gap-0.5 rounded-md border border-border bg-card p-0.5"><Button size="sm" variant="ghost" className={`px-2 ${view === 'list' ? 'bg-muted' : 'text-muted-foreground'}`} aria-label={vi ? 'Hiển thị danh sách' : 'List view'} aria-pressed={view === 'list'} onClick={() => setView('list')}><List size={17} aria-hidden="true" /></Button><Button size="sm" variant="ghost" className={`px-2 ${view === 'grid' ? 'bg-muted' : 'text-muted-foreground'}`} aria-label={vi ? 'Hiển thị thẻ' : 'Card view'} aria-pressed={view === 'grid'} onClick={() => setView('grid')}><LayoutGrid size={17} aria-hidden="true" /></Button></div></div>
       {(moduleResults.isPending || search !== debouncedSearch) && <p role="status">{vi ? 'Đang tìm module…' : 'Searching modules…'}</p>}
       {moduleResults.isError && search === debouncedSearch && <div role="alert" className="space-y-2"><p>{vi ? 'Không tải được module.' : 'Could not load module results.'}</p><Button variant="outline" onClick={() => void moduleResults.refetch()}>{vi ? 'Thử lại' : 'Retry module search'}</Button></div>}
       {moduleResults.isSuccess && search === debouncedSearch && <>
         {!moduleResults.data.items.length && <p className="rounded-lg border border-border bg-card p-4 text-body-sm text-muted-foreground">{vi ? 'Không có module phù hợp. Thử đổi từ khóa hoặc xóa bộ lọc.' : 'No matching modules. Try another search or reset the filters.'}</p>}
-        {moduleResults.data.items.length > 0 && <ModuleCatalogResults items={moduleResults.data.items} view={view} vi={vi} busy={busy} labels={labels} reasons={reasons} onOpen={({ skillId, module }) => void open(skillId, module)} />}
+        {moduleResults.data.items.length > 0 && <ModuleCatalogResults items={moduleResults.data.items} view={view} vi={vi} busy={busy} labels={labels} reasons={reasons} onOpen={({ skillId, module }) => void open(skillId, module)} onViewSkill={item => { const skill = catalog.data?.find(s => s.id === item.skillId); if (skill) { select(skill, `module-skill-${encodeURIComponent(item.module.moduleId)}`); setLevel(item.module.knowledgeLevel ?? 'FOUNDATION') } }} />}
         <Pagination currentPage={modulePage + 1} totalPages={Math.ceil(moduleResults.data.totalItems / moduleResults.data.pageSize)} totalItems={moduleResults.data.totalItems} pageSize={moduleResults.data.pageSize} locale={vi ? 'vi' : 'en'} disabled={moduleResults.isFetching} onPageChange={value => setModulePage(value - 1)} />
       </>}
     </section>}
     <p className="flex items-start gap-2 text-caption text-muted-foreground"><Info size={15} className="mt-0.5 shrink-0" aria-hidden="true" /><span>{vi ? 'Hoàn thành nội dung trước khi làm Skill Assessment. Achievement được ghi nhận khi đánh giá đạt.' : 'Complete module content before the Skill Assessment. Official achievement is awarded after a passing assessment.'}</span></p>
-    <Dialog open={Boolean(selected)} onOpenChange={value => { if (!value && !busy) setSelected(null) }} size="wide" ariaLabel={selected?.name}>
-      <DialogHeader><DialogTitle>{selected?.name}</DialogTitle></DialogHeader><DialogBody>
+    </>}
+    {selected && <section ref={selectedRegion} tabIndex={-1} className="space-y-4 outline-none" aria-label={vi ? 'Modules của skill' : 'Skill modules'}>
+      <Button variant="ghost" size="sm" className="gap-2 text-muted-foreground" disabled={Boolean(busy)} onClick={() => { setSelected(null); setActionError('') }}><ArrowLeft size={15} aria-hidden="true" />{vi ? 'Quay lại danh sách Skills' : 'Back to skills'}</Button>
+      <div className="space-y-2"><div className="flex flex-wrap items-center gap-2"><Badge variant="secondary">{selected.code}</Badge><Heading level={2} size="subsection" className="break-words">{selected.name}</Heading></div>{selected.description && <p className="text-body-sm text-muted-foreground">{selected.description}</p>}</div>
         <div className="space-y-4">
-          <p className="text-body-sm text-muted-foreground">{vi ? 'Chọn mức kiến thức, sau đó chọn một module phù hợp để học và thi. Hoàn thành nội dung chưa đồng nghĩa đã đạt kỹ năng.' : 'Choose a knowledge level, then a compatible module to study and assess. Content completion alone does not award achievement.'}</p>
+          <p className="text-body-sm text-muted-foreground">{vi ? 'Chọn mức kiến thức, học một module phù hợp, rồi làm Skill Assessment ở mức đó. Hoàn thành nội dung chưa đồng nghĩa đã đạt kỹ năng.' : 'Choose a knowledge level, study a compatible module, then take the Skill Assessment for that level. Content completion alone does not award achievement.'}</p>
           {selected?.version && <p className="text-caption text-muted-foreground">{vi ? 'Trạng thái cho phiên bản kỹ năng: ' : 'Achievement status for skill version: '}{selected.version}</p>}
           {profile.isError && <div role="alert" className="space-y-2"><p className="text-body-sm text-destructive">{vi ? 'Chưa tải được achievement. Trạng thái đạt chưa xác định.' : 'Achievement could not be loaded. Achievement status is unknown.'}</p><Button variant="outline" size="sm" onClick={() => void profile.refetch()}>{vi ? 'Tải lại achievement' : 'Retry achievement'}</Button></div>}
           <Tabs value={level} onValueChange={value => { setLevel(value as KnowledgeLevel); void provision.refetch() }}>
             <TabsList className="h-auto items-stretch" aria-label={vi ? 'Mức kiến thức' : 'Knowledge level'}>{INDIVIDUAL_KNOWLEDGE_LEVELS.map(item => {
               const state = individualKnowledgeState(entries, selected?.id ?? '', selected?.version, item)
-              return <TabsTrigger key={item} value={item} className="min-w-0 flex-1 flex-col gap-1 whitespace-normal px-2 py-2"><span className="break-words">{labels[item]}</span><Badge variant={state.status === 'achieved' || state.status === 'review' ? 'outline' : 'secondary'} className={`whitespace-normal text-[length:var(--text-caption)] ${state.status === 'achieved' ? 'border-success/30 bg-success/10' : state.status === 'review' ? 'border-warning/30 bg-warning/10' : ''}`}>{profile.isPending ? (vi ? 'Đang kiểm tra…' : 'Checking…') : statusLabels[state.status]}</Badge></TabsTrigger>
+              return <TabsTrigger key={item} value={item} className="min-w-0 flex-1 flex-col gap-1 whitespace-normal px-2 py-2 data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground"><span className="break-words">{labels[item]}</span><Badge variant={state.status === 'achieved' || state.status === 'review' ? 'outline' : 'secondary'} className={`whitespace-normal text-[length:var(--text-caption)] ${state.status === 'achieved' ? 'border-success/30 bg-success/10' : state.status === 'review' ? 'border-warning/30 bg-warning/10' : ''}`}>{profile.isPending ? (vi ? 'Đang kiểm tra…' : 'Checking…') : statusLabels[state.status]}</Badge></TabsTrigger>
             })}</TabsList>
             {INDIVIDUAL_KNOWLEDGE_LEVELS.map(item => {
               const options = modules.filter(module => module.knowledgeLevel === item)
@@ -130,18 +139,15 @@ function ScopedSkillsPanel() {
                 {provision.isPending && <p role="status">{vi ? 'Đang tải module…' : 'Loading modules…'}</p>}
                 {provision.isError && <div role="alert" className="space-y-2"><p className="text-body-sm text-destructive">{vi ? 'Không tải được module. Hãy thử lại.' : 'Could not load modules. Please retry.'}</p><Button variant="outline" disabled={Boolean(busy)} onClick={() => void provision.refetch()}>{vi ? 'Thử lại' : 'Retry'}</Button></div>}
                 {provision.isSuccess && !options.length && <p className="text-body-sm text-muted-foreground">{vi ? 'Chưa có module đã duyệt ở mức kiến thức này.' : 'No approved modules are available at this knowledge level.'}</p>}
-                {options.map(module => <div key={module.moduleId} className="space-y-3 rounded-lg border border-border bg-card p-4">
-                  <div className="flex flex-wrap items-start justify-between gap-2"><Heading level={4} size="card">{module.title}</Heading><Badge variant="outline">{labels[item]}</Badge>{module.completed && <Badge variant="outline" className="border-success/30 bg-success/10">{vi ? 'Đã học xong' : 'Content completed'}</Badge>}</div>
-                  {module.unavailableReason && <p className="text-body-sm text-muted-foreground">{reasons[module.unavailableReason] ?? (vi ? 'Module chưa sẵn sàng: ' : 'Module unavailable: ') + module.unavailableReason}</p>}
-                  <Button disabled={Boolean(busy) || Boolean(module.unavailableReason) || !module.skillVersion} onClick={() => selected && void open(selected.id, module)}>{busy === module.moduleId ? (vi ? 'Đang mở…' : 'Opening…') : module.started ? (vi ? 'Học tiếp' : 'Continue learning') : (vi ? 'Bắt đầu học' : 'Start learning')}</Button>
-                </div>)}
+                {provision.isSuccess && <SkillLevelAssessmentPanel key={`${selected.id}:${selected.version}:${item}`} skillId={selected.id} modules={options} skillVersion={selected.version} level={item} levelLabel={labels[item]} vi={vi} />}
+                {options.length > 0 && <ModuleCatalogResults items={options.map(module => ({ skillId: selected.id, skillName: selected.name, module }))} view="grid" vi={vi} busy={busy} labels={labels} reasons={reasons} onOpen={({ skillId, module }) => void open(skillId, module)} />}
+
               </TabsContent>
             })}
           </Tabs>
           {modules.some(module => !module.knowledgeLevel) && <p className="text-body-sm text-muted-foreground">{vi ? 'Một số module chưa cấu hình mức kiến thức; chưa thể dùng cho luồng học này.' : 'Some modules have no configured knowledge level and cannot be used in this learning flow.'}</p>}
           {actionError && <p role="alert" className="text-body-sm text-destructive">{actionError}</p>}
         </div>
-      </DialogBody>
-    </Dialog>
+    </section>}
   </section>
 }

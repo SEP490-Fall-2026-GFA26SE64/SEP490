@@ -13,11 +13,11 @@ public final class SkillLearningApplicationService {
                 new CompletionResponse(p.skillId(),p.moduleId(),p.revision(),p.contentVersion(),p.completedAt(),p.knowledgeLevel(),p.skillVersion(),p.outcomeCodes(),p.skillName()));
     }
     public List<ModuleResponse> modules(String skill) {
-        return learning.modules(skill).stream().map(m->new ModuleResponse(m.moduleId(),m.title(),m.contentVersion(),m.started(),m.completed(),m.unavailableReason(),m.knowledgeLevel()==null?null:m.knowledgeLevel().name(),m.skillVersion())).toList();
+        return learning.modules(skill).stream().map(m->new ModuleResponse(m.moduleId(),m.title(),m.contentVersion(),m.started(),m.completed(),m.unavailableReason(),m.knowledgeLevel()==null?null:m.knowledgeLevel().name(),m.skillVersion(),m.moduleRevision())).toList();
     }
     public SearchResponse search(String search,String skill,String level,int page) {
         var result=learning.search(search,skill,level,page);
-        return new SearchResponse(result.items().stream().map(item->{var m=item.module();return new SearchItemResponse(item.skillId(),item.skillName(),new ModuleResponse(m.moduleId(),m.title(),m.contentVersion(),m.started(),m.completed(),m.unavailableReason(),m.knowledgeLevel()==null?null:m.knowledgeLevel().name(),m.skillVersion()));}).toList(),result.page(),result.pageSize(),result.totalItems());
+        return new SearchResponse(result.items().stream().map(item->{var m=item.module();return new SearchItemResponse(item.skillId(),item.skillName(),new ModuleResponse(m.moduleId(),m.title(),m.contentVersion(),m.started(),m.completed(),m.unavailableReason(),m.knowledgeLevel()==null?null:m.knowledgeLevel().name(),m.skillVersion(),m.moduleRevision()));}).toList(),result.page(),result.pageSize(),result.totalItems());
     }
     public void start(String skill,String module) {learning.start(skill,module);}
 }

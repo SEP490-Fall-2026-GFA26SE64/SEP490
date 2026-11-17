@@ -425,6 +425,9 @@ export function ProfilePage() {
                     {language === 'vi' ? 'Xem hồ sơ kiến thức & năng lực' : 'View knowledge profile'}
                   </Link>
                 )}
+                {sessionIdentity?.roles?.includes('EMPLOYEE') && (
+                  <Link to="/employee/my-skills" className={buttonVariants({ variant: 'outline', className: 'mt-2 w-full gap-2 text-primary' })}><Award size={16} aria-hidden="true" />{language === 'vi' ? 'Kỹ năng đã đạt của tôi' : 'My achieved skills'}</Link>
+                )}
               </CardContent>
             </Card>
 

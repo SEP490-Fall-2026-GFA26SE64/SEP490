@@ -59,7 +59,7 @@ public final class SkillLearningService {
                         Revision r=pin.flatMap(n->d.revisions().stream().filter(v->v.number()==n).findFirst()).orElse(d.released());
                         if(!teaches(r,skill))return java.util.stream.Stream.empty();
                         boolean completed=proofs.stream().anyMatch(p->p.moduleId().equals(d.id()) && p.revision()==r.number());
-                        return java.util.stream.Stream.of(new OptionalModule(d.id(),r.payload().title(),r.payload().contentVersion(),pin.isPresent(),completed,admission.reason(a,d,r),r.payload().knowledgeLevel(),r.payload().skillVersion()));
+                        return java.util.stream.Stream.of(new OptionalModule(d.id(),r.payload().title(),r.payload().contentVersion(),pin.isPresent(),completed,admission.reason(a,d,r),r.payload().knowledgeLevel(),r.payload().skillVersion(),r.number()));
                     }).toList();
         });
     }
@@ -95,7 +95,7 @@ public final class SkillLearningService {
                 var p=c.revision().payload();
                 var completed=proofs.computeIfAbsent(c.skill(),skill->learning.completions(actor.organizationId(),actor.id(),skill)).stream()
                     .anyMatch(proof->proof.moduleId().equals(c.document().id()) && proof.revision()==c.revision().number());
-                var module=new OptionalModule(c.document().id(),p.title(),p.contentVersion(),c.started(),completed,admission.reason(actor,c.document(),c.revision()),p.knowledgeLevel(),p.skillVersion());
+                var module=new OptionalModule(c.document().id(),p.title(),p.contentVersion(),c.started(),completed,admission.reason(actor,c.document(),c.revision()),p.knowledgeLevel(),p.skillVersion(),c.revision().number());
                 return new ModuleSearchItem(c.skill(),skills.get(c.skill()),module);
             }).toList();
             return new ModuleSearchPage(items,page,20,candidates.size());

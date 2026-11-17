@@ -153,4 +153,38 @@ class IndependentSkillFlowTest {
         assertEquals(403,assertThrows(ModuleAuthoringService.Failure.class,()->service.search("",null,null,0)).status());
     }
 
+    @Test void assessmentRevisionProjectionUsesActualPinAndPreservesUnknownLegacyRevision() {
+        var modules=mock(ModuleAuthoringPort.class);var learning=mock(LearningContentPort.class);
+        when(modules.actor()).thenReturn(new Actor("employee","org",Set.of("EMPLOYEE")));
+        when(modules.transaction(any())).thenAnswer(c->c.<Supplier<?>>getArgument(0).get());
+        when(modules.catalog("MicroSkill")).thenReturn(List.of(new Choice("skill","Skill")));
+        when(modules.catalog("ModuleSkill")).thenReturn(List.of(new Choice("skill","Skill")));
+        var old=module();var newer=new Revision(2,"RELEASED",old.released().payload(),"expert","2026-11-17T00:00:00Z","expert","2026-11-17T00:00:00Z",null);
+        var doc=new Document("m","org",List.of(),"expert","2026-11-15T00:00:00Z",2,true,false,2,List.of(old.released(),newer),List.of());
+        when(modules.documents("org")).thenReturn(List.of(doc));when(modules.pinned("org","employee","m")).thenReturn(Optional.of(1));
+        when(learning.completions("org","employee","skill")).thenReturn(List.of());
+        var service=new SkillLearningService(modules,learning,(a,d,r)->null);var api=new SkillLearningApplicationService(service);
+        assertEquals(Integer.valueOf(1),api.modules("skill").getFirst().moduleRevision());
+        assertEquals(Integer.valueOf(1),api.search("","skill",null,0).items().getFirst().module().moduleRevision());
+        when(modules.pinned("org","employee","m")).thenReturn(Optional.empty());
+        assertEquals(Integer.valueOf(2),api.modules("skill").getFirst().moduleRevision());
+        assertEquals(Integer.valueOf(2),api.search("","skill",null,0).items().getFirst().module().moduleRevision());
+        assertNull(new com.adaptlearngraph.entities.domain.LearningResources.OptionalModule("legacy","Legacy","1",false,false).moduleRevision());
+        assertThrows(IllegalArgumentException.class,()->new com.adaptlearngraph.entities.domain.LearningResources.OptionalModule("m","M","1",false,false,null,KnowledgeLevel.FOUNDATION,"v1",0));
+        verify(modules,never()).pin(anyString(),anyString(),anyString(),anyInt());
+    }
+
+    @Test void moduleScopeReadUsesTrustedReleasedMetadataWithoutRequiringNewLearning() {
+        var organization=UUID.randomUUID();var learner=UUID.randomUUID();var modules=mock(ModuleAuthoringPort.class);var learning=mock(LearningContentPort.class);
+        when(modules.actor()).thenReturn(new Actor(learner.toString(),organization.toString(),Set.of("EMPLOYEE")));
+        when(modules.transaction(any())).thenAnswer(c->c.<Supplier<?>>getArgument(0).get());
+        when(modules.lock(organization.toString(),"m")).thenReturn(Optional.of(module()));
+        var selections=mock(CurrentRoleSelectionStore.class);var graph=mock(Neo4jCypher.class);
+        var catalog=new CurrentRoleKnowledgeCatalog(selections,mock(RoleBaselineFlow.Catalog.class),graph,mock(RuleAssessmentContextJpaRepository.class),new com.fasterxml.jackson.databind.ObjectMapper(),100).independent(modules,learning,(a,d,r)->null);
+        var scope=catalog.scopeForModule(new RoleBaselineFlow.Actor(organization,learner),"m",1);
+        assertEquals("skill",scope.skillId());assertEquals("v1",scope.skillVersion());assertEquals(KnowledgeLevel.FOUNDATION,scope.knowledgeLevel());
+        verifyNoInteractions(learning,selections,graph);
+        assertEquals(409,assertThrows(AssessmentPolicyService.Failure.class,()->catalog.scopeForModule(new RoleBaselineFlow.Actor(organization,learner),"m",2)).status);
+    }
+
 }

@@ -1,10 +1,6 @@
-import { IndependentSkillAssessmentEntry } from '../baseline-assessment/IndependentSkillAssessmentEntry'
-import { useQuery } from '@tanstack/react-query'
+import { CompletedModuleAssessmentLink } from '../baseline-assessment/CompletedModuleAssessmentLink'
 import { WorkspaceSessionContext } from '../../../shared/auth/workspaceSession'
-import { readRulePathway, type RulePathway, type RuleStep, type RuleModuleOption } from '../../../shared/api/requirementPathway'
 import { SkillLearningPanel } from './SkillLearningPanel'
-import { AssessmentStatus, SkillAssessmentEntry } from '../baseline-assessment/SkillAssessmentEntry'
-import { usePathwayAssessmentStates } from '../baseline-assessment/usePathwayAssessmentStates'
 import { useCallback, useContext, useEffect, useEffectEvent, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import type { MouseEvent } from 'react'
@@ -18,7 +14,6 @@ import {
 } from 'lucide-react'
 import { LearnerLessonLayout } from '../../../shared/layouts/LearnerLessonLayout'
 import { Button } from '../../../shared/components/ui/Button'
-import { Badge } from '../../../shared/components/ui/Badge'
 import { Heading } from '../../../shared/components/typography/Heading'
 import {
   Dialog,
@@ -589,26 +584,4 @@ function LearningModuleReader({ moduleId }: { moduleId: string }) {
       </div>
     </LearnerLessonLayout>
   )
-}
-
-function CompletedModuleAssessmentLink({ moduleId, revision }: { moduleId: string; revision: number }) {
-  const { t } = useTranslation(), identity = useContext(WorkspaceSessionContext)?.identity
-  const scope = `${identity?.organizationId}:${identity?.accountId}:${identity?.roles?.join(',')}`
-  const query = useQuery({ queryKey: ['initialPathway', scope, 'moduleAssessmentEntry', moduleId, revision], queryFn: ({ signal }) => readRulePathway(null, signal), enabled: Boolean(identity?.organizationId && identity?.accountId), retry: false, gcTime: 0,
-    refetchInterval: current => !current.state.error && current.state.data && !current.state.data.archived ? 5000 : false })
-  if (query.isPending) return <p className="text-body-sm text-muted-foreground" role="status">{t('initialPathway.loading')}</p>
-  if (query.error) return <IndependentSkillAssessmentEntry moduleId={moduleId} revision={revision} />
-  const pathway = query.data
-  if (!pathway || pathway.archived) return <IndependentSkillAssessmentEntry moduleId={moduleId} revision={revision} />
-  const step = pathway.steps.find(step => step.state !== 'BYPASSED' && step.options.some(option => option.moduleId === moduleId && option.moduleRevision === revision))
-  const option = step?.options.find(option => option.moduleId === moduleId && option.moduleRevision === revision)
-  if (!step || !option) return <IndependentSkillAssessmentEntry moduleId={moduleId} revision={revision} />
-  if (!option.completedAt) return <Button size="sm" variant="outline" onClick={() => void query.refetch()}>{t('initialPathway.refresh')}</Button>
-  return <ReaderModuleAssessment pathway={pathway} step={step} option={option} />
-}
-
-function ReaderModuleAssessment({ pathway, step, option }: { pathway: RulePathway; step: RuleStep; option: RuleModuleOption }) {
-  const { t } = useTranslation()
-  const assessmentState = usePathwayAssessmentStates({ ...pathway, steps: [{ ...step, options: [option] }] }, false)
-  return <div className="space-y-2"><Badge variant={step.state === 'FULFILLED' ? 'success' : 'warning'}>{t('rulePathway.official')}: {t('rulePathway.state.' + step.state)}</Badge><AssessmentStatus state={assessmentState(step, option)} /><SkillAssessmentEntry pathway={pathway} step={step} option={option} /></div>
 }

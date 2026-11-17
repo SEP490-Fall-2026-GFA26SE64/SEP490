@@ -164,6 +164,8 @@ Verification: [unit](../../testing/unit/REQ-014-question-bank.md), [PostgreSQL i
 
 ### FR-06.08: Complete learning and assessments
 
+The Skill knowledge-level assessment section and Reader use shared assessment history, attempt limits and cooldown across Pathway and Individual Skill for the same Employee, organization, Skill, knowledge level and Skill version. Selecting a completed eligible module supplies learning evidence for a new paper without resetting history. Identifiable historical attempts count toward the shared allowance; original source, results and achievements remain intact. Multiple existing active papers can each be resumed and prevent a new paper until normal completion or original deadline handling. Unknown historical scope requires reconciliation. Exact learning admission, question selection, scoring and Baseline behavior remain authoritative; errors preserve progress.
+
 | Field | Description |
 | --- | --- |
 | 1. Requirement ID | FR-06.08 |
