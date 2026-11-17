@@ -14,4 +14,10 @@
 
 .module-directory td:nth-child(5), .module-directory td:nth-child(6), .module-directory td:nth-child(7),
 .module-directory th:nth-child(5), .module-directory th:nth-child(6), .module-directory th:nth-child(7) { text-align: center; }
-.module-directory td:nth-child(5) > div, .module-directory td:nth-child(6) > div, .module-directory td:nth-child(7) > div { min-height: 1.75rem; max-width: 100%; justify-content: center; white-space: nowrap; font-size: var(--text-caption); line-height: 1.25rem; }
+.module-directory td:nth-child(5) > div, .module-directory td:nth-child(6) > div, .module-directory td:nth-child(7) > div { min-height: 1.75rem; max-width: 100%; justify-content: center; white-space: normal; text-align: center; font-size: var(--text-caption); line-height: 1.25rem; }
+
+@media (min-width: 768px) {
+  .module-directory th:nth-child(-n+7),
+  .module-directory td:nth-child(-n+7) { text-align: center; vertical-align: top; }
+  .module-directory td:first-child > div { justify-content: center; }
+}
