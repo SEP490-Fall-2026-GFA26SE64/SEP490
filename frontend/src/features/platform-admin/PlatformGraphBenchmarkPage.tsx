@@ -640,18 +640,18 @@ export function PlatformGraphBenchmarkPage() {
                   <div
                     className={`p-3 rounded-lg space-y-1 transition-all duration-200 border ${
                       activeExecutionStep === 1
-                        ? 'bg-sky-50 dark:bg-sky-950/40 border-sky-400 ring-2 ring-sky-400/30 shadow-xs'
+                        ? 'bg-blue-500/10 border-blue-500 ring-2 ring-blue-500/30 shadow-xs'
                         : 'bg-card border-border'
                     }`}
                   >
                     <div className="flex items-center justify-between">
-                      <span className={`text-xs font-bold flex items-center gap-1.5 ${activeExecutionStep === 1 ? 'text-sky-700 dark:text-sky-300' : 'text-foreground'}`}>
+                      <span className={`text-xs font-bold flex items-center gap-1.5 ${activeExecutionStep === 1 ? 'text-blue-600' : 'text-foreground'}`}>
                         <span>{isVi ? 'Bước 1: Tra cứu Chỉ mục' : 'Step 1: Index Lookup'}</span>
                         {activeExecutionStep === 1 && (
-                          <span className="inline-block w-1.5 h-1.5 rounded-full bg-sky-500 animate-ping" />
+                          <span className="inline-block w-1.5 h-1.5 rounded-full bg-blue-500 animate-ping" />
                         )}
                       </span>
-                      <span className="text-xs font-mono font-bold text-sky-600 dark:text-sky-400">
+                      <span className="text-xs font-mono font-bold text-blue-600">
                         {breakdownProgress > 0 && activeBreakdown.totalMeanMs > 0 ? `${activeBreakdown.indexLookupMs.toFixed(2)} ms` : '—'}
                       </span>
                     </div>
@@ -671,18 +671,18 @@ export function PlatformGraphBenchmarkPage() {
                   <div
                     className={`p-3 rounded-lg space-y-1 transition-all duration-200 border ${
                       activeExecutionStep === 2
-                        ? 'bg-amber-50 dark:bg-amber-950/40 border-amber-400 ring-2 ring-amber-400/30 shadow-xs'
+                        ? 'bg-amber-500/10 border-amber-500 ring-2 ring-amber-500/30 shadow-xs'
                         : 'bg-card border-border'
                     }`}
                   >
                     <div className="flex items-center justify-between">
-                      <span className={`text-xs font-bold flex items-center gap-1.5 ${activeExecutionStep === 2 ? 'text-amber-700 dark:text-amber-300' : 'text-foreground'}`}>
+                      <span className={`text-xs font-bold flex items-center gap-1.5 ${activeExecutionStep === 2 ? 'text-amber-600' : 'text-foreground'}`}>
                         <span>{isVi ? 'Bước 2: Khởi tạo Hàng đợi' : 'Step 2: Queue Init'}</span>
                         {activeExecutionStep === 2 && (
                           <span className="inline-block w-1.5 h-1.5 rounded-full bg-amber-500 animate-ping" />
                         )}
                       </span>
-                      <span className="text-xs font-mono font-bold text-amber-600 dark:text-amber-400">
+                      <span className="text-xs font-mono font-bold text-amber-600">
                         {breakdownProgress > 0 && activeBreakdown.totalMeanMs > 0 ? `${activeBreakdown.queueInitMs.toFixed(2)} ms` : '—'}
                       </span>
                     </div>
@@ -733,18 +733,18 @@ export function PlatformGraphBenchmarkPage() {
                   <div
                     className={`p-3 rounded-lg space-y-1 transition-all duration-200 border ${
                       activeExecutionStep === 4
-                        ? 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-400 ring-2 ring-emerald-400/30 shadow-xs'
+                        ? 'bg-emerald-500/10 border-emerald-500 ring-2 ring-emerald-500/30 shadow-xs'
                         : 'bg-card border-border'
                     }`}
                   >
                     <div className="flex items-center justify-between">
-                      <span className={`text-xs font-bold flex items-center gap-1.5 ${activeExecutionStep === 4 ? 'text-emerald-700 dark:text-emerald-300' : 'text-foreground'}`}>
+                      <span className={`text-xs font-bold flex items-center gap-1.5 ${activeExecutionStep === 4 ? 'text-emerald-600' : 'text-foreground'}`}>
                         <span>{isVi ? 'Bước 4: Tái dựng Đường đi' : 'Step 4: Path Reconstruction'}</span>
                         {activeExecutionStep === 4 && (
                           <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping" />
                         )}
                       </span>
-                      <span className="text-xs font-mono font-bold text-emerald-600 dark:text-emerald-400">
+                      <span className="text-xs font-mono font-bold text-emerald-600">
                         {breakdownProgress > 0 && activeBreakdown.totalMeanMs > 0 ? `${activeBreakdown.pathReconstructionMs.toFixed(2)} ms` : '—'}
                       </span>
                     </div>
