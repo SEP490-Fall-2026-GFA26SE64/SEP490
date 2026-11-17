@@ -25,6 +25,9 @@ const STORAGE_KEY = 'app_language'
 const originalTextMap = new WeakMap<Node, string>()
 
 function walkAndTranslate(node: Node, lang: Language) {
+  // Pinned instruments and per-turn evidence already carry their own locale.
+  const element = node instanceof Element ? node : node.parentElement
+  if (element?.closest('[data-i18n-skip]')) return
   if (node.nodeType === Node.TEXT_NODE) {
     const raw = node.nodeValue || ''
     const trimmed = raw.trim()

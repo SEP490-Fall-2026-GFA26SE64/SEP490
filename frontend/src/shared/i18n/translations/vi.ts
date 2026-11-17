@@ -1,6 +1,33 @@
 import type { TranslationKeys } from './en'
 
 export const vi: TranslationKeys = {
+  riasecUi: {
+    "title": "Sở thích nghề nghiệp",
+    "intro": "Khám phá sở thích làm việc qua 60 hoạt động. Trả lời theo mức độ yêu thích, không phải khả năng, đào tạo hay thu nhập. Không có đỗ/trượt hoặc giới hạn thời gian.",
+    "sourceLink": "Nguồn câu hỏi",
+    "sources": "Nguồn và điều chỉnh",
+    "start": "Bắt đầu làm bài",
+    "retake": "Làm lại",
+    "unavailable": "Bài làm chưa khả dụng.",
+    "back": "Quay lại",
+    "next": "Tiếp",
+    "previous": "Trước",
+    "activity": "Hoạt động",
+    "answered": "Đã trả lời",
+    "navigator": "Điều hướng câu hỏi",
+    "currentActivity": "Câu hiện tại",
+    "instructions": "Hướng dẫn",
+    "review": "Xem lại câu trả lời",
+    "submit": "Hoàn thành bài",
+    "cancel": "Hủy",
+    "clear": "Xóa câu trả lời",
+    "saved": "Đã lưu",
+    "error": "Chưa thể hoàn tất yêu cầu.",
+    "filteredPosition": "Lọc theo vị trí",
+    "clearPosition": "Bỏ lọc vị trí",
+    "noPositionRoles": "Vị trí này chưa có Role đã xuất bản.",
+    "profileUnavailable": "Vị trí chưa khả dụng."
+},
   skillWizard: {
     quotaInvalid: 'Nhập số nguyên từ 0 đến số câu điểm liệt hiện có, không vượt tổng câu của nhóm. Cũng cần đủ câu thường cho các vị trí còn lại.',
     counts: 'Số câu và điều kiện đạt', countsHelp: 'Điền skill chính trước, sau đó đến từng skill tiên quyết. Mỗi nhóm có số câu và số câu đúng riêng.',
@@ -386,7 +413,7 @@ export const vi: TranslationKeys = {
     explore: 'Khám phá vị trí công việc này', loading: 'Đang tải…', answered: 'Câu trả lời đã chấp nhận', maximum: 'tối đa', remaining: 'Thời gian còn lại',
     timerNotice: 'Đồng hồ chỉ là ước tính. Máy chủ quyết định hạn chót; câu trả lời đến từ thời điểm đó trở đi không được chấp nhận.',
     expired: 'Đang kiểm tra hạn chót và kết quả trên máy chủ…', chooseAnswer: 'Chọn một câu trả lời', saveNext: 'Lưu trả lời và tiếp tục',
-    submit: 'Nộp bài đánh giá', submitConfirm: 'Nộp và kết thúc bài? Nếu chưa đủ bằng chứng để tính mastery cho mọi kỹ năng, bài sẽ được ghi nhận là chưa đạt và profile mastery không được cập nhật.',
+    submit: 'Nộp bài đánh giá', submitConfirm: 'Nộp và kết thúc bài đánh giá? Các câu trả lời đã lưu sẽ được chấm theo quy tắc đã cấu hình cho từng kỹ năng và cấp độ kiến thức. Câu chưa trả lời không được tính điểm. Bạn không thể sửa câu trả lời sau khi nộp.',
     cancel: 'Hủy', confirm: 'Xác nhận nộp', refresh: 'Tải lại từ máy chủ', refreshNeeded: 'Tải lại để lấy câu hỏi hiện tại.',
     retry: 'Gửi lại đúng yêu cầu', retryNotice: 'Chưa rõ kết quả. Gửi lại dùng nguyên yêu cầu trước. Giữ trang này đến khi xử lý xong; tải lại trang sẽ khôi phục trạng thái đã lưu trên máy chủ.',
     requestError: 'Không thể hoàn tất yêu cầu. Tải lại từ máy chủ trước khi tiếp tục.',

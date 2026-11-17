@@ -13,7 +13,7 @@ import { Pagination } from '../../../shared/components/ui/Pagination'
 import { LoadingCard } from '../../../shared/components/ui/LoadingCard'
 import { Text } from '../../../shared/components/typography/Text'
 import { useTranslation } from '../../../shared/i18n/LanguageContext'
-import { assignedRankForRole, chooseCurrentRole, currentRoles, prepareRoleChoice, readRoleFlow, RoleFlowError, type CurrentRole, type RoleChoiceCommand } from './currentRoleFlowApi'
+import { assignedRankForRole, chooseCurrentRole, currentRoles, prepareRoleChoice, readRoleFlow, jobPositionLabel, RoleFlowError, type CurrentRole, type RoleChoiceCommand } from './currentRoleFlowApi'
 import { EmptyState } from '../../../shared/components/ui/EmptyState'
 import { CurrentRoleCard } from './CurrentRoleCard'
 import { CurrentRoleSummary } from './CurrentRoleSummary'
@@ -28,18 +28,20 @@ export function CurrentRolePanel() {
 function OwnedCurrentRolePanel({ scope }: { scope: string }) {
   const { t, language } = useTranslation(), tr = (key: string) => t(`roleFlow.${key}`)
   const queryClient = useQueryClient(), [params, setParams] = useSearchParams()
-  const roles = useQuery({ queryKey: ['currentRoleCatalog', scope], queryFn: ({ signal }) => currentRoles(signal), retry: false })
+  const jobPosition = params.get('jobPositionId') ?? ''
+  const positionLabel = useQuery({ queryKey: ['jobPositionLabel', scope, jobPosition], queryFn: ({ signal }) => jobPositionLabel(jobPosition, signal), enabled: Boolean(jobPosition), retry: false })
+  const roles = useQuery({ queryKey: ['currentRoleCatalog', scope, jobPosition], queryFn: ({ signal }) => currentRoles(signal, jobPosition), retry: false })
   const view = useQuery({ queryKey: ['currentRoleFlow', scope], queryFn: ({ signal }) => readRoleFlow(signal), retry: false })
   const [selected, setSelected] = useState<CurrentRole | null>(null)
   const [levelId, setLevelId] = useState('')
   const [details, setDetails] = useState<{ role: CurrentRole; selectedLevelId?: string } | null>(null)
   const [command, setCommand] = useState<RoleChoiceCommand | null>(null)
   const [busy, setBusy] = useState(false), [error, setError] = useState<RoleFlowError | null>(null)
-  const [jobPosition, setJobPosition] = useState(''), [sort, setSort] = useState('jobPosition'), [page, setPage] = useState(1)
+  const [sort, setSort] = useState('jobPosition'), [page, setPage] = useState(1)
   const [status, setStatus] = useState('all')
   const lock = useRef(false), committed = useRef(false)
   const search = params.get('search') ?? ''
-  const filtered = (roles.data ?? []).filter(role => (status !== 'selected' || role.id === view.data?.selection?.role.id) && (!jobPosition || role.jobPositionId === jobPosition) && (role.name + ' ' + role.jobPositionName).toLowerCase().includes(search.toLowerCase()))
+  const filtered = (roles.isError ? [] : roles.data ?? []).filter(role => (status !== 'selected' || role.id === view.data?.selection?.role.id) && (!jobPosition || role.jobPositionId === jobPosition) && (role.name + ' ' + role.jobPositionName).toLowerCase().includes(search.toLowerCase()))
     .sort((a, b) => (sort === 'jobPosition' ? a.jobPositionName.localeCompare(b.jobPositionName, language) : 0) || a.name.localeCompare(b.name, language))
   const pageCount = Math.max(1, Math.ceil(filtered.length / 12)), currentPage = Math.min(page, pageCount)
   const visible = filtered.slice((currentPage - 1) * 12, currentPage * 12)
@@ -84,7 +86,7 @@ function OwnedCurrentRolePanel({ scope }: { scope: string }) {
   }
   return <section aria-label={t('upskillingUi.roleCatalog')} className="min-w-0 space-y-5">
     {(roles.isPending || view.isPending) && <LoadingCard label={tr('loading')} />}
-    {(roles.isError || view.isError) && <EmployeeAccessNotice error={roles.error ?? view.error} message={tr(roles.isError ? 'catalogError' : 'statusError')}
+    {(roles.isError || view.isError) && <EmployeeAccessNotice error={roles.error ?? view.error} message={jobPosition && roles.error instanceof RoleFlowError ? t(`riasecUi.states.${roles.error.code}`, tr('catalogError')) : tr(roles.isError ? 'catalogError' : 'statusError')}
       retrying={roles.isFetching || view.isFetching} onRetry={() => void refresh()} />}
     {view.data && !view.isError && <CurrentRoleSummary view={view.data} disabled={blocked} onDetails={() => { if (view.data?.selection) setDetails({ role: view.data.selection.role, selectedLevelId: view.data.selection.levelId ?? undefined }) }} />}
     {error && !selected && <div className="space-y-3 rounded-lg border border-destructive/30 bg-destructive/5 p-3" role="alert"><Text variant="body-sm" tone="destructive">{t(`roleFlow.errors.${error.code}`, tr('statusError'))}</Text>{error.code === 'TARGET_ROLE_LEVEL_LOCKED' && <Link to="/employee/pathway?view=role" className={buttonVariants({ variant: 'primary', size: 'sm' })}>{t('roleFlow.viewPathway')}</Link>}</div>}
@@ -112,16 +114,20 @@ function OwnedCurrentRolePanel({ scope }: { scope: string }) {
         </div>
       </div>
       <div className="flex items-center gap-2">
-        {(search || status !== 'all' || sort !== 'jobPosition') && <Button size="sm" variant="ghost" disabled={blocked} onClick={() => {
-          const query = new URLSearchParams(params); query.delete('search'); setParams(query, { replace: true })
-          setJobPosition(''); setSort('jobPosition'); setStatus('all'); setPage(1)
+        {(search || jobPosition || status !== 'all' || sort !== 'jobPosition') && <Button size="sm" variant="ghost" disabled={blocked} onClick={() => {
+          const query = new URLSearchParams(params); query.delete('search'); query.delete('jobPositionId'); setParams(query, { replace: true })
+          setSort('jobPosition'); setStatus('all'); setPage(1)
         }}>{t('upskillingUi.clearFilters')}</Button>}
         <Button size="icon" variant="ghost" className="h-9 w-9" aria-label={tr('refresh')} title={tr('refresh')} disabled={blocked} onClick={() => void refresh()}><RefreshCw size={16} /></Button>
       </div>
     </CardContent></Card>
+    {jobPosition && <div className="flex flex-wrap items-center gap-2 rounded-lg border border-border bg-secondary/40 p-3" role="status">
+      <Text variant="body-sm">{t('riasecUi.filteredPosition')}: {(!positionLabel.isError && positionLabel.data) || (!roles.isError && roles.data?.find(role => role.jobPositionId === jobPosition)?.jobPositionName) || t('riasecUi.profileUnavailable')}</Text>
+      <Button variant="ghost" size="sm" disabled={blocked} onClick={() => { const query = new URLSearchParams(params); query.delete('jobPositionId'); setParams(query, { replace: true }); setPage(1) }}>{t('riasecUi.clearPosition')}</Button>
+    </div>}
     {!roles.isPending && !roles.isError && filtered.length === 0 && <EmptyState icon={<Target size={24} />}
       title={t('upskillingUi.noResults')}
-      description={roles.data?.length === 0 ? tr('catalogEmptyHint') : t('upskillingUi.noResultsHint')} />}
+      description={jobPosition && roles.data?.length === 0 ? t('riasecUi.noPositionRoles') : roles.data?.length === 0 ? tr('catalogEmptyHint') : t('upskillingUi.noResultsHint')} />}
     <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">{visible.map(role => {
       const active = Boolean(view.data?.selection?.available && view.data.selection.role.id === role.id)
       return <CurrentRoleCard key={role.id} role={role} active={active}

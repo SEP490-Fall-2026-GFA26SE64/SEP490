@@ -13,6 +13,7 @@ import { ResetPasswordPage } from '../features/auth/ResetPasswordPage'
 import { MemberActivationPage } from '../features/subscription/WorkspaceLoginPage'
 import { WorkspaceBoundary } from '../features/subscription/WorkspaceBoundary'
 import { AssessmentPage } from '../features/employee/assessment/AssessmentPage'
+import { RiasecRedirect } from '../features/employee/riasec/riasecNavigation'
 import { EmployeeBaselineRoute } from '../features/employee/baseline-assessment/EmployeeBaselinePage'
 import { MyMasteryPage } from '../features/employee/baseline-assessment/MyMasteryPage'
 import { EmployeeOverviewPage } from '../features/employee/overview/EmployeeOverviewPage'
@@ -96,7 +97,7 @@ export default function App() {
             <Route path="/employee/overview" element={<EmployeeOverviewPage />} />
             <Route path="/employee/upskilling" element={<EmployeeUpskillingPage />} />
             <Route path="/employee/target-roles" element={<EmployeeTargetRolesPage />} />
-            <Route path="/employee/riasec" element={<Navigate to="/employee/assessment?tab=baseline" replace />} />
+            <Route path="/employee/riasec" element={<RiasecRedirect />} />
             <Route path="/employee/guidance" element={<Navigate to="/employee/upskilling?tab=roles" replace />} />
             <Route path="/employee/pathway" element={<AdaptivePathwayPage />} />
             <Route path="/employee/modules/:moduleId" element={<LearningModuleReaderPage />} />
@@ -118,7 +119,7 @@ export default function App() {
             <Route path="/learner/overview" element={<Navigate to="/employee/overview" replace />} />
             <Route path="/learner/upskilling" element={<Navigate to="/employee/upskilling" replace />} />
             <Route path="/learner/target-roles" element={<Navigate to="/employee/target-roles" replace />} />
-            <Route path="/learner/riasec" element={<Navigate to="/employee/riasec" replace />} />
+            <Route path="/learner/riasec" element={<RiasecRedirect />} />
             <Route path="/learner/pathway" element={<Navigate to="/employee/pathway" replace />} />
             <Route path="/learner/modules/:moduleId" element={<LearningModuleReaderPage />} />
             <Route path="/learner/skills-catalog" element={<Navigate to="/employee/skills-catalog" replace />} />
