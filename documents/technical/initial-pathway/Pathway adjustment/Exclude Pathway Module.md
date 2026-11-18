@@ -1,5 +1,7 @@
 # Exclude a requirement module option — source-policy boundary
 
+> **Current source reconciliation — 2026-11-18 (`2c2468b5`):** [the active ordered flow/API/schema contract](../../Organization%20Rule%20Assessment%20and%20Pathway.md#current-flow-2026-11-18) supersedes older confirmation-pending/source-gap observations here. Role-derived Skill policy editing, module-context retakes/quota papers, unstarted-option reduction with started protection, fresh missing-provision-only bypass, reject/repair/approve, first-approval UTC timing and same-transaction evidence recalculation are present in source. Legacy numeric/OC designs and original evidence retain their date/scope; no runtime verdict or finding closure is added.
+
 REQ-020-F02; assigned Expert. Exclusion never waives the requirement.
 
 Source checkpoint: HEAD `61d334c`, 2026-11-07. Confirmed contract and source implementation are distinguished below; current composition is local/workspace-baseline and excludes prod/demo. [Complete field/key/API and conflict mapping](../../Organization%20Rule%20Assessment%20and%20Pathway.md) owns the shared technical detail. Applied DB state and full runtime behavior were not verified in this documentation task.

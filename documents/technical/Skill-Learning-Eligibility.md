@@ -1,5 +1,7 @@
 # Single-Skill Modules and learning eligibility handoff
 
+> **Current source reconciliation — 2026-11-18 (`2c2468b5`):** [the active ordered flow/API/schema contract](Organization%20Rule%20Assessment%20and%20Pathway.md#current-flow-2026-11-18) supersedes older confirmation-pending/source-gap observations here. Role-derived Skill policy editing, module-context retakes/quota papers, unstarted-option reduction with started protection, fresh missing-provision-only bypass, reject/repair/approve, first-approval UTC timing and same-transaction evidence recalculation are present in source. Legacy numeric/OC designs and original evidence retain their date/scope; no runtime verdict or finding closure is added.
+
 Approved scope: 2026-11-05, r2. The original r2 handoff covered Skill-only learning eligibility. Current source adds exact knowledge/Skill-version completion and current accepted-option access; complete rule-exam admission is owned by CurrentRoleKnowledgeCatalog/RuleAssessmentContextJpaRepository and the rule engine, not this Boolean API.
 
 ## Catalog and authoring

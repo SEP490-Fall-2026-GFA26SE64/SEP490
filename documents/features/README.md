@@ -1,5 +1,19 @@
 # Functional Requirements Catalog
 
+## Baseline/pathway rule-flow update — 2026-11-18
+
+Current local source `2c2468b5` includes scoped L&D Role–Level baseline and Role-derived Expert Skill–knowledge configuration, mandatory-question quotas, full frozen papers, exact official evidence, request-bound targets, Expert reduce/reject/approve, UTC first-approval timing and durable prerequisite recalculation/provision refresh. Matching is org+Skill+knowledge+Skill version; Outcome Codes/price/numeric mastery optimizer are not active filters. Retry allowance/wait is module-context specific. Outcome processing recalculates again after genuine evidence within the learner transaction; histories, exclusions and valid approval basis are retained.
+
+[Authoritative ordered flow/API/worker/schema mapping](../technical/Organization%20Rule%20Assessment%20and%20Pathway.md#current-flow-2026-11-18) · [Assessment schema](../diagrams/postgresql-assessment.svg) · [Pathway schema](../diagrams/postgresql-pathway.svg) · [Flow image](../diagrams/baseline-pathway-flow.svg). These are current source-defined selected views through workspace V64, not a live DB capture. Older confirmation-pending/OC/V62 snapshots below keep historical scope. RIASEC documentation remains separate. This update runs no runtime/tests, migrates no data and makes no new release claim.
+
+<a id="riasec-current-implementation--2026-11-18"></a>
+
+## RIASEC current implementation — 2026-11-18
+
+Local opt-in source `2c2468b5`: [Assessment](Assessment%20workflows/README.md#riasec-personal-assessment--current-implementation-2026-11-18) owns 60 EN/VI activities, autosave/takeover, six raw 0–40 scores and current/history/7-day inactive/recovery/permanent deletion. [Guidance](Role%20guidance/README.md#riasec-job-position-exploration) owns durable internal AI selection of up to 3 ACTIVE same-org Job Positions with saved English explanations. [Catalog](Departments%20and%20occupations/README.md#riasec-job-position-profiles) owns six optional all-or-none integer 0–40 Neo4j properties; [Employee experience](Employee%20experience/README.md#overview-riasec-tab) owns Overview RIASEC and the history dialog.
+
+These sections replace older prototype, normalized/cosine/Department-only, chat and explicit-explanation designs. Interest results do not update mastery, choose Roles or require Expert guidance review. Other dated snapshots retain their scope. Latest history/permanent-delete changes have build/static evidence only; this reconciliation adds no runtime verdict.
+
 **Source:** [Capstone Register Version 2](../FA26SE267_KNOWLEDGE_GRAPH_BASED_ADAPTIVE_LEARNING__haht43_Version_2.md), section 3.2(c), Functional Requirements.
 
 **Aligned:** 2026-10-28. **Coverage:** 48 source requirements, six human actors and the automated System, across 14 domains.
@@ -14,11 +28,11 @@ The [current technical contract](../technical/Organization%20Rule%20Assessment%2
 
 | Owning feature | Current source scope / limitation |
 | --- | --- |
-| Assessment workflows | L&D Baseline org+Role+member Level; Expert Skill Assessment org+Skill+knowledge shared across modules. Scoped drafts/active/history, deadline finalization, frozen full papers and group scoring exist. Per-Skill Expert assignment remains incomplete. |
+| Assessment workflows | L&D Baseline org+Role+member Level; Expert Skill Assessment org+Skill+knowledge shared across modules. Scoped drafts/active/history, deadline finalization, frozen full papers and group scoring exist. Skill-policy authorization now follows active assigned Roles; no separate direct Skill assignment is required. |
 | Adaptive engine | Actual diagnostics versus official exact evidence, immutable requirement snapshots, generation/recalculation/refresh and original approval lineage exist. Full recovery/concurrency runtime acceptance remains unverified. |
-| Role catalog / guidance | Explicit requiredKnowledgeLevels, real member Level and request-onset Role–Level lock exist in the adaptive path. Legacy catalog authoring/publication and AI suggestions remain separate partial/missing capabilities. |
-| Learning catalog / Employee experience | Exactly one Skill/knowledge/outcome module target; real pinned lessons/progress and exact completion sidecar. Requirement roots branch to alternatives/certificate; module cards carry assessment badges. Generic independent assessment context is incomplete. |
-| Pathway review | Actual assigned Expert check/save selection/order/approval, bypass/refresh and certificate review exist. Generation includes all eligible options; Role-assigned Expert may reduce them during review. Code confirmation remains pending. |
+| Role catalog / guidance | Explicit requiredKnowledgeLevels, real member Level and request-onset Role–Level lock exist in the adaptive path. Legacy catalog authoring/publication retains its separate limits; current RIASEC Job Position AI exploration is described above. |
+| Learning catalog / Employee experience | Exactly one Skill/knowledge/Skill-version module target; real pinned lessons/progress and exact completion sidecar. Requirement roots branch to alternatives/certificate; module cards carry assessment badges. Generic independent assessment context is incomplete. |
+| Pathway review | Actual assigned Expert check/save selection/order/approval, bypass/refresh and certificate review exist. Generation includes all eligible options; Role-assigned Expert may reduce them during review. Current review source permits unstarted-option reduction and protects started choices. |
 | Notifications / reporting | Rule result/evidence/pathway audit/outbox/jobs exist. Broad mail coverage, administrator audit readers and actual ROI aggregation are not established by those events. |
 
 ### Reading Rules
