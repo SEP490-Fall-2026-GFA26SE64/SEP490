@@ -44,6 +44,18 @@ Create `/opt/adapt-learn-graph/.env` from [.env.example](.env.example), fill in 
 
 If the Docker Hub repositories are private, run `docker login` once as the deploy user on the server.
 
+### Outbound firewall
+
+The stack runs on the Docker bridge `br-adaptlearn`, which has a fixed name set in [compose.deploy.yml](../compose.deploy.yml). If the host restricts container traffic with a whitelist in the `DOCKER-USER` chain that ends in `-j DROP`, allow this bridge out to the Internet while blocking private ranges. Without that rule, SMTP mail and PayOS calls time out from the API even though they work from the host. Replace `eno3` with the server's uplink interface (`ip route show default`):
+
+```bash
+sudo iptables -I DOCKER-USER 1 -i br-adaptlearn -o eno3 -j ACCEPT
+for net in 192.168.0.0/16 172.16.0.0/12 10.0.0.0/8; do sudo iptables -I DOCKER-USER 1 -i br-adaptlearn -d "$net" -j DROP; done
+# Persist the same lines in /etc/iptables/rules.v4 (netfilter-persistent) or your firewall manager.
+```
+
+The rollout verifies SMTP and PayOS from the app network and fails with a firewall hint if they are blocked.
+
 ## GitHub configuration
 
 Repository **Settings → Secrets and variables → Actions** (the deploy job uses the `production` environment, which can also hold these secrets and add required reviewers):
@@ -74,7 +86,7 @@ Run commands from `/opt/adapt-learn-graph`. `.env.release` records the deployed 
 alias dc='docker compose -f compose.deploy.yml --env-file .env --env-file .env.release'
 dc ps -a                                   # all seed jobs should be "Exited (0)"
 dc logs -f --tail 200 api
-dc --profile tools run --rm platform-seed  # one-off: create the platform admin from PLATFORM_ADMIN_SEED_*
+dc logs platform-seed                      # platform admin from PLATFORM_ADMIN_SEED_* (auto, every deploy)
 ```
 
 **Rollback.** Re-run the workflow for an earlier commit, or on the server:

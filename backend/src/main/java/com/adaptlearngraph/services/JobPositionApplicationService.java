@@ -23,7 +23,7 @@ public class JobPositionApplicationService {
 
     public JobPositionResponse createJobPosition(String organizationId, SaveJobPositionRequest request) {
         String code = request.code() != null ? request.code().trim() : "";
-        String id = request.id() != null && !request.id().isBlank() ? request.id().trim() : code;
+        String id = request.id() != null && !request.id().isBlank() ? request.id().trim() : null;
         return toResponse(jobPositions.saveJobPosition(organizationId, jobPosition(id, code, request)));
     }
 

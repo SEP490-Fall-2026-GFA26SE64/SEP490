@@ -18,12 +18,14 @@ public final class ApiEndpoints {
     public static final String COMPETENCY = API_V1 + "/organizations/{organizationId}/competencies";
     public static final String CURRENT_ROLE_FLOW = API_V1 + "/employee";
     public static final String INITIAL_PATHWAY = API_V1;
+    public static final String LD_EMPLOYEE_DEVELOPMENT = API_V1 + "/ld/development";
     public static final String IRT_ADMINISTRATION = API_V1 + "/admin/irt/banks/{bankId}/models/{modelId}";
     public static final String LEARNING_CONTENT = API_V1 + "/module-management";
     public static final String LEARNING_MODULE = API_V1 + "/organizations/{organizationId}/modules";
     public static final String MICRO_SKILL = API_V1 + "/organizations/{organizationId}/micro-skills";
     public static final String MODULE_AUTHORING = API_V1 + "/module-management";
     public static final String ORGANIZATION_TARGET_ROLE = API_V1 + "/organizations/{organizationId}/target-roles";
+    public static final String PLATFORM_BENCHMARK = API_V1 + "/platform/benchmark";
     public static final String PLATFORM_CATALOG = API_V1 + "/platform-catalog";
     public static final String PREREQUISITE = API_V1 + "/organizations/{organizationId}/prerequisites";
     public static final String QUESTION_BANK = API_V1 + "/question-bank";

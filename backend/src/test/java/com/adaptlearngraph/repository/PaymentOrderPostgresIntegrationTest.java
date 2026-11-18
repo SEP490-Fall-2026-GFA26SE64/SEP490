@@ -30,7 +30,7 @@ import org.testcontainers.containers.PostgreSQLContainer;
 class PaymentOrderPostgresIntegrationTest {
     private static final PostgreSQLContainer<?> POSTGRES = new PostgreSQLContainer<>("postgres:17.6-alpine");
     private static final UUID PLAN = UUID.fromString("10000000-0000-4000-8000-000000000001");
-    private static final UUID VERSION = UUID.fromString("20000000-0000-4000-8000-000000000001");
+    private static UUID VERSION;
     private static final Instant NOW = Instant.parse("2026-10-22T12:00:00.123456Z");
     private static JdbcTemplate jdbc;
     private static JpaPaymentOrderStore orders;
@@ -45,6 +45,7 @@ class PaymentOrderPostgresIntegrationTest {
         var source = new DriverManagerDataSource(POSTGRES.getJdbcUrl(), POSTGRES.getUsername(), POSTGRES.getPassword());
         Flyway.configure().dataSource(source).locations("classpath:db/workspace-migration").load().migrate();
         jdbc = new JdbcTemplate(source);
+        VERSION = jdbc.queryForObject("SELECT current_version_id FROM platform.subscription_plan WHERE plan_id=?", UUID.class, PLAN);
         transactions=new TransactionTemplate(new DataSourceTransactionManager(source));
         persistence = com.adaptlearngraph.support.JpaTestContext.start(source);
         orders = new JpaPaymentOrderStore(IdentityTestFixtures.subscriptionRepositories(persistence), IdentityTestFixtures.jpaTransactions(persistence));
@@ -90,7 +91,7 @@ class PaymentOrderPostgresIntegrationTest {
         var order = orders.create(registrant(), command(UUID.randomUUID(), null), NOW);
         processing.record(observation(order, "PENDING", 0L, "VND", "QUERY"), NOW);
         assertThrows(SubscriptionFailure.class, () -> development.bypassForDevelopment(order.orderId(), NOW));
-        processing.record(observation(order, "PAID", 4_900_000L, "VND", "WEBHOOK"), NOW);
+        processing.record(observation(order, "PAID", 4_900L, "VND", "WEBHOOK"), NOW);
         assertThrows(SubscriptionFailure.class, () -> development.bypassForDevelopment(order.orderId(), NOW));
         assertEquals("PAID", orders.find(order.orderId()).orElseThrow().paymentStatus());
     }
@@ -100,7 +101,7 @@ class PaymentOrderPostgresIntegrationTest {
         jdbc.update("UPDATE platform.processing_job SET next_retry_at=? WHERE handler='PAYMENT_CONFIRMATION_EMAIL'",
                 java.sql.Timestamp.from(NOW.plusSeconds(86400)));
         var order = orders.create(registrant(), command(UUID.randomUUID(), null), NOW);
-        var success = observation(order, "PAID", 4_900_000L, "VND", "WEBHOOK");
+        var success = observation(order, "PAID", 4_900L, "VND", "WEBHOOK");
         processing.record(success, NOW);
         var sender = org.mockito.Mockito.mock(org.springframework.mail.javamail.JavaMailSender.class);
         var message = new jakarta.mail.internet.MimeMessage(jakarta.mail.Session.getInstance(new java.util.Properties()));
@@ -145,7 +146,7 @@ class PaymentOrderPostgresIntegrationTest {
     @Test
     void confirmedPaymentQueuesOneMailAndMailFailureCannotUndoApplication() {
         var order = orders.create(registrant(), command(UUID.randomUUID(), null), NOW);
-        var success = observation(order, "PAID", 4_900_000L, "VND", "WEBHOOK");
+        var success = observation(order, "PAID", 4_900L, "VND", "WEBHOOK");
         processing.record(success, NOW);
         processing.record(success, NOW.plusSeconds(1));
         assertEquals(1, jdbc.queryForObject("""
@@ -168,7 +169,7 @@ class PaymentOrderPostgresIntegrationTest {
         var order = orders.create(context, command(UUID.randomUUID(), null), NOW);
         assertEquals("Starter", order.terms().name());
         assertEquals("Organization workspace subscription for up to 20 Employee seats.", order.terms().description());
-        assertEquals(4_900_000L, order.terms().priceVnd());
+        assertEquals(4_900L, order.terms().priceVnd());
         assertEquals("VND", order.terms().currency());
         assertEquals(1, order.terms().durationMonths());
         assertEquals(20, order.terms().employeeSeats());
@@ -387,7 +388,7 @@ class PaymentOrderPostgresIntegrationTest {
         Instant expired=workspaces.summary(org,NOW.plusSeconds(1)).current().endsAt().plusSeconds(10);
         var renewal=orders.create(context,new Command(org,PLAN,VERSION,UUID.randomUUID(),null),expired);
         jdbc.update("UPDATE platform.organization SET status='SUSPENDED' WHERE organization_id=?",org);
-        processing.record(observation(renewal,"PAID",4900000L,"VND","WEBHOOK"),expired.plusSeconds(5));
+        processing.record(observation(renewal,"PAID",4_900L,"VND","WEBHOOK"),expired.plusSeconds(5));
         processing.apply(renewal.orderId(),expired.plusSeconds(20));
         var summary=workspaces.summary(org,expired.plusSeconds(21));
         assertEquals(expired.plusSeconds(20),summary.current().startsAt());
@@ -426,9 +427,9 @@ class PaymentOrderPostgresIntegrationTest {
     void oneProviderTransactionReferenceCannotFundTwoOrders() {
         var first=orders.create(registrant(),command(UUID.randomUUID(),null),NOW);
         var second=orders.create(registrant(),command(UUID.randomUUID(),null),NOW);
-        var payment=observation(first,"PAID",4_900_000L,"VND","WEBHOOK");
+        var payment=observation(first,"PAID",4_900L,"VND","WEBHOOK");
         processing.record(payment,NOW);
-        var reused=observation(second,"PAID",4_900_000L,"VND","WEBHOOK");
+        var reused=observation(second,"PAID",4_900L,"VND","WEBHOOK");
         processing.record(new Observation(reused.orderCode(),reused.paymentLinkId(),reused.amount(),reused.paidAmount(),
                 reused.currency(),reused.status(),payment.reference(),null,reused.providerPaidAt(),reused.source(),reused.payloadDigest()),NOW);
         assertEquals("PAID",orders.find(first.orderId()).orElseThrow().paymentStatus());
@@ -463,7 +464,7 @@ class PaymentOrderPostgresIntegrationTest {
         var org=context.actor().organizationId();
         var before=workspaces.summary(org,NOW.plusSeconds(1));
         var renewal=orders.create(context,new Command(org,PLAN,VERSION,UUID.randomUUID(),null),NOW.plusSeconds(2));
-        processing.record(observation(renewal,"PAID",4_900_000L,"VND","WEBHOOK"),NOW.plusSeconds(3));
+        processing.record(observation(renewal,"PAID",4_900L,"VND","WEBHOOK"),NOW.plusSeconds(3));
         processing.apply(renewal.orderId(),NOW.plusSeconds(4));
         var after=workspaces.summary(org,NOW.plusSeconds(5));
         assertEquals(before.current().endsAt(),after.current().endsAt());
@@ -504,7 +505,7 @@ class PaymentOrderPostgresIntegrationTest {
     void interruptedApplicationRollsBackAndRetryCreatesOnePeriod() {
         var owner=registrant();
         var order=orders.create(owner,command(UUID.randomUUID(),null),NOW);
-        processing.record(observation(order,"PAID",4_900_000L,"VND","WEBHOOK"),NOW);
+        processing.record(observation(order,"PAID",4_900L,"VND","WEBHOOK"),NOW);
         jdbc.execute("""
                 CREATE FUNCTION platform.test_reject_period() RETURNS trigger LANGUAGE plpgsql AS $$
                 BEGIN RAISE EXCEPTION 'isolated interruption'; END; $$;
@@ -558,7 +559,7 @@ class PaymentOrderPostgresIntegrationTest {
         var copied = registrant();
         registrations.saveCatalogSelection(copied.registrationId(), "0.11.0", sha, List.of("ROLE-A", "MS-B"), NOW);
         var order = orders.create(copied, command(UUID.randomUUID(), null), NOW);
-        processing.record(observation(order, "PAID", 4_900_000L, "VND", "WEBHOOK"), NOW);
+        processing.record(observation(order, "PAID", 4_900L, "VND", "WEBHOOK"), NOW);
         processing.apply(order.orderId(), NOW);
         var setup = workspaces.setup(copied.registrationId());
         assertEquals("PROVISIONING", setup.state());
@@ -582,7 +583,7 @@ class PaymentOrderPostgresIntegrationTest {
         var failing = registrant();
         registrations.saveCatalogSelection(failing.registrationId(), "0.11.0", sha, List.of("ROLE-A"), NOW);
         var failedOrder = orders.create(failing, command(UUID.randomUUID(), null), NOW);
-        processing.record(observation(failedOrder, "PAID", 4_900_000L, "VND", "WEBHOOK"), NOW);
+        processing.record(observation(failedOrder, "PAID", 4_900L, "VND", "WEBHOOK"), NOW);
         processing.apply(failedOrder.orderId(), NOW);
         var retried = imports.claim(NOW.plusSeconds(1)).orElseThrow();
         imports.retry(retried, "CATALOG_COPY_FAILED", NOW.plusSeconds(60), NOW.plusSeconds(1));
@@ -596,7 +597,7 @@ class PaymentOrderPostgresIntegrationTest {
 
         var empty = registrant();
         var emptyOrder = orders.create(empty, command(UUID.randomUUID(), null), NOW);
-        processing.record(observation(emptyOrder, "PAID", 4_900_000L, "VND", "WEBHOOK"), NOW);
+        processing.record(observation(emptyOrder, "PAID", 4_900L, "VND", "WEBHOOK"), NOW);
         processing.apply(emptyOrder.orderId(), NOW);
         assertEquals("READY", workspaces.setup(empty.registrationId()).state(), "No selection keeps immediate readiness");
         assertEquals(0, jdbc.queryForObject("SELECT count(*) FROM platform.workspace_catalog_import WHERE registration_id=?",
@@ -691,7 +692,7 @@ class PaymentOrderPostgresIntegrationTest {
     private static Context provisioned() {
         var owner=registrant();
         var order=orders.create(owner,command(UUID.randomUUID(),null),NOW);
-        processing.record(observation(order,"PAID",4_900_000L,"VND","WEBHOOK"),NOW);
+        processing.record(observation(order,"PAID",4_900L,"VND","WEBHOOK"),NOW);
         processing.apply(order.orderId(),NOW);
         var org=workspaces.setup(owner.registrationId()).organizationId();
         return new Context(new Actor(owner.actor().accountId(),org,true,true,
@@ -734,6 +735,8 @@ class PaymentOrderPostgresIntegrationTest {
                 persistence.transactionManager(),email,secret);
         seed.run(null);
         seed.run(null);
+        new com.adaptlearngraph.config.PlatformAdministratorBootstrap(IdentityTestFixtures.platformSeeds(persistence),
+                persistence.transactionManager(),email,"rotated-platform-password").run(null);
         var identity=IdentityTestFixtures.identityStore(persistence)
                 .findByEmail(email).orElseThrow();
         assertEquals(Set.of("PLATFORM_ADMINISTRATOR"),identity.roles());
@@ -786,7 +789,7 @@ class PaymentOrderPostgresIntegrationTest {
     void duplicateVerifiedPaymentProvisionsExactlyOnceAndStartsAtReadiness() {
         var context = registrant();
         var order = orders.create(context, command(UUID.randomUUID(), null), NOW);
-        var success = observation(order, "PAID", 4_900_000L, "VND", "WEBHOOK");
+        var success = observation(order, "PAID", 4_900L, "VND", "WEBHOOK");
         processing.record(success, NOW.plusSeconds(2000));
         processing.record(success, NOW.plusSeconds(2001));
         assertEquals("PAID", orders.find(order.orderId()).orElseThrow().paymentStatus());
@@ -804,7 +807,7 @@ class PaymentOrderPostgresIntegrationTest {
     void mismatchedCurrencyCannotActivateAndLateReplacedPaymentIsAnException() {
         var context = registrant();
         var order = orders.create(context, command(UUID.randomUUID(), null), NOW);
-        processing.record(observation(order, "PAID", 4_900_000L, "USD", "WEBHOOK"), NOW);
+        processing.record(observation(order, "PAID", 4_900L, "USD", "WEBHOOK"), NOW);
         processing.apply(order.orderId(), NOW);
         assertEquals("EXCEPTION", orders.find(order.orderId()).orElseThrow().paymentStatus());
         assertEquals(0, jdbc.queryForObject("SELECT count(*) FROM platform.outbox_event WHERE aggregate_id=? AND event_type='SUBSCRIPTION_PAYMENT_CONFIRMED'",
@@ -814,7 +817,7 @@ class PaymentOrderPostgresIntegrationTest {
         var old = orders.create(other, command(UUID.randomUUID(), null), NOW);
         processing.record(observation(old, "EXPIRED", 0L, null, "QUERY"), NOW.plusSeconds(1801));
         orders.create(other, command(UUID.randomUUID(), old.orderId()), NOW.plusSeconds(1802));
-        processing.record(observation(old, "PAID", 4_900_000L, "VND", "WEBHOOK"), NOW.plusSeconds(1803));
+        processing.record(observation(old, "PAID", 4_900L, "VND", "WEBHOOK"), NOW.plusSeconds(1803));
         assertEquals("EXCEPTION", orders.find(old.orderId()).orElseThrow().paymentStatus());
         assertEquals("CONFLICTING_LATE_PAYMENT", orders.find(old.orderId()).orElseThrow().failureCode());
     }
@@ -823,7 +826,7 @@ class PaymentOrderPostgresIntegrationTest {
     void paidObservationSurvivesOlderUnpaidEventsAndPartialMoneyCannotBeForgotten() {
         var context = registrant();
         var order = orders.create(context, command(UUID.randomUUID(), null), NOW);
-        processing.record(observation(order, "PAID", 4_900_000L, "VND", "WEBHOOK"), NOW);
+        processing.record(observation(order, "PAID", 4_900L, "VND", "WEBHOOK"), NOW);
         processing.record(observation(order, "EXPIRED", 0L, "VND", "QUERY"), NOW.plusSeconds(1));
         assertEquals("PAID", orders.find(order.orderId()).orElseThrow().paymentStatus());
         var partial = orders.create(registrant(), command(UUID.randomUUID(), null), NOW);

@@ -42,10 +42,10 @@ public final class PlatformAdministratorBootstrap implements ApplicationRunner {
             if(existing.isPresent()) {
                 var account=existing.get();
                 if(!Boolean.TRUE.equals(account.active()) || account.organizationId()!=null
-                        || !Boolean.TRUE.equals(account.platformAdministrator()) || Boolean.TRUE.equals(account.registered())
-                        || !passwords.passwordMatches(password,account.passwordHash())) {
-                    throw new IllegalStateException("Seed identity conflicts with an existing account or credentials. No account was changed.");
+                        || !Boolean.TRUE.equals(account.platformAdministrator()) || Boolean.TRUE.equals(account.registered())) {
+                    throw new IllegalStateException("Seed identity conflicts with an existing account. No account was changed.");
                 }
+                // Runs on every deploy: an existing administrator keeps the password it may have changed since seeding.
                 return;
             }
             seeds.create(normalized,passwords.hashPassword(password));

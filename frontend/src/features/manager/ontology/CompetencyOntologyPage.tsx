@@ -343,6 +343,21 @@ function OwnedCompetencyOntologyPage() {
     }))
   }, [microSkills])
 
+  // Helper to reliably compute the unique canonical member skill count for a competency
+  const getUniqueMemberSkillsCount = React.useCallback(
+    (comp: CompetencyModel): number => {
+      if (!comp.skillIds || comp.skillIds.length === 0) return 0
+      const uniqueIds = new Set(
+        comp.skillIds.map((sId) => {
+          const skill = microSkills.find((s) => s.id === sId || s.code === sId)
+          return skill ? skill.id : sId
+        })
+      )
+      return uniqueIds.size
+    },
+    [microSkills]
+  )
+
   // Synchronize state when active company scope changes & fetch live from Neo4j
   const handleSync = React.useCallback(async () => {
       const active = getActiveCompany()
@@ -392,24 +407,45 @@ function OwnedCompetencyOntologyPage() {
         }
 
         if (liveComps && liveComps.length > 0) {
-          const mappedComps: CompetencyModel[] = liveComps.map((c) => ({
-            id: c.id,
-            code: c.code || c.id,
-            name: c.name,
-            description: c.description || '',
-            status: (c.status as CompetencyModel['status']) || 'ACTIVE',
-            skillIds: c.skillIds || [],
-            levelCodes: c.levelCodes || [],
-            departmentId: c.departmentId ?? undefined,
-            departmentName: c.departmentName ?? undefined,
-            jobPositionCode: c.jobPositionCode ?? undefined,
-            jobPositionTitle: c.jobPositionTitle ?? undefined,
-            createdAt: c.createdAt || (c as unknown as Record<string, unknown>).createdAt ? String(c.createdAt || (c as unknown as Record<string, unknown>).createdAt) : (active?.competencies || []).find((item) => item.id === c.id || item.code === c.code)?.createdAt || '',
-            updatedAt: c.updatedAt || (c as unknown as Record<string, unknown>).updatedAt ? String(c.updatedAt || (c as unknown as Record<string, unknown>).updatedAt) : (c.createdAt || (active?.competencies || []).find((item) => item.id === c.id || item.code === c.code)?.updatedAt || ''),
-          }))
+          const mappedComps: CompetencyModel[] = liveComps.map((c) => {
+            const canonicalSkillIds: string[] = Array.from(
+              new Set(
+                (c.skillIds || []).map((sid: string) => {
+                  const match = resolvedSkills.find((s) => s.id === sid || s.code === sid)
+                  return (match ? match.id : sid) as string
+                })
+              )
+            )
+            return {
+              id: c.id,
+              code: c.code || c.id,
+              name: c.name,
+              description: c.description || '',
+              status: (c.status as CompetencyModel['status']) || 'ACTIVE',
+              skillIds: canonicalSkillIds,
+              levelCodes: c.levelCodes || [],
+              departmentId: c.departmentId ?? undefined,
+              departmentName: c.departmentName ?? undefined,
+              jobPositionCode: c.jobPositionCode ?? undefined,
+              jobPositionTitle: c.jobPositionTitle ?? undefined,
+              createdAt: c.createdAt || (c as unknown as Record<string, unknown>).createdAt ? String(c.createdAt || (c as unknown as Record<string, unknown>).createdAt) : (active?.competencies || []).find((item) => item.id === c.id || item.code === c.code)?.createdAt || '',
+              updatedAt: c.updatedAt || (c as unknown as Record<string, unknown>).updatedAt ? String(c.updatedAt || (c as unknown as Record<string, unknown>).updatedAt) : (c.createdAt || (active?.competencies || []).find((item) => item.id === c.id || item.code === c.code)?.updatedAt || ''),
+            }
+          })
           setCompetencies(mappedComps)
         } else {
-          setCompetencies(active?.competencies ?? [])
+          const fallbackComps: CompetencyModel[] = (active?.competencies ?? []).map((c) => ({
+            ...c,
+            skillIds: Array.from(
+              new Set(
+                (c.skillIds || []).map((sid: string) => {
+                  const match = resolvedSkills.find((s) => s.id === sid || s.code === sid)
+                  return (match ? match.id : sid) as string
+                })
+              )
+            ),
+          }))
+          setCompetencies(fallbackComps)
         }
 
         if (livePrereqs && livePrereqs.length > 0) {
@@ -1984,7 +2020,7 @@ function OwnedCompetencyOntologyPage() {
                                     onClick={() => setViewingCompetencyDetails(comp)}
                                     title="Click to view member skills"
                                   >
-                                    {comp.skillIds?.length || 0} skills
+                                    {getUniqueMemberSkillsCount(comp)} skills
                                   </Badge>
                                 </td>
                                 <td className="py-3 px-3 text-center">

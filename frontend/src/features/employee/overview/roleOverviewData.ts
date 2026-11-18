@@ -1,7 +1,7 @@
 import { readModuleHistory } from '../baseline-assessment/baselineApi'
-import { moduleAssessmentState, type AssessmentState } from '../baseline-assessment/usePathwayAssessmentStates'
+import { moduleAssessmentState, type AssessmentState, type AttemptOutcomeLike } from '../baseline-assessment/usePathwayAssessmentStates'
 import { request } from '../../../shared/api/initialPathway'
-import { parseRuleRequirement, readRulePathway, type RuleRequirement, type RuleStep } from '../../../shared/api/requirementPathway'
+import { parseRuleRequirement, readRulePathway, type RulePathway, type RuleRequirement, type RuleStep } from '../../../shared/api/requirementPathway'
 import { readRoleFlow } from '../target-roles/currentRoleFlowApi'
 import type { CompetencySkillProfile } from '../data/employeeOverviewData'
 
@@ -18,6 +18,10 @@ export interface OverviewPair { requirement: RuleRequirement; status: Requiremen
 export interface OverviewSkill extends Omit<CompetencySkillProfile, 'bktConfidence'> { pairs: OverviewPair[] }
 export const requirementMet = (status: RequirementStatus) => status === 'achieved' || status === 'baseline'
 const key = (r: RuleRequirement) => JSON.stringify([r.skillId, r.skillVersion, r.knowledgeLevel])
+/** Module assessment history key; `null` history means the owner could not be read. */
+export const moduleHistoryKey = (moduleId: string, moduleRevision: number) => JSON.stringify([moduleId, moduleRevision])
+export interface OverviewSelection { selectionId: string; revision: number; roleName: string; skillCode?: (skillId: string) => string | undefined }
+export interface OverviewSummary { target: RuleRequirement[]; achieved: Set<string>; baseline: Set<string> }
 export async function readRoleOverview(signal?: AbortSignal) {
   const flow = await readRoleFlow(signal)
   const selection = flow.selection
@@ -33,11 +37,16 @@ export async function readRoleOverview(signal?: AbortSignal) {
     }, { signal }), readRulePathway(null, signal),
   ])
   if (pathway && (pathway.selectionId !== selection.selectionId || pathway.selectionRevision !== selection.revision || pathway.archived || pathway.roleId !== selection.role.id || pathway.levelId !== selection.levelId)) throw Error('STALE_SELECTION')
-  const moduleReads = new Map((pathway?.steps ?? []).flatMap(step => step.options.filter(option=>option.completedAt && step.state!=='BYPASSED').map(option=>[JSON.stringify([option.moduleId,option.moduleRevision]), option] as const)))
-  const histories = new Map(await Promise.all([...moduleReads].map(async ([id, option]) => {
+  const moduleReads = new Map((pathway?.steps ?? []).flatMap(step => step.options.filter(option=>option.completedAt && step.state!=='BYPASSED').map(option=>[moduleHistoryKey(option.moduleId,option.moduleRevision), option] as const)))
+  const histories = new Map<string, AttemptOutcomeLike[] | null>(await Promise.all([...moduleReads].map(async ([id, option]) => {
     try { return [id, await readModuleHistory(option.moduleId,option.moduleRevision,signal)] as const }
     catch (error) { if (signal?.aborted || (error && typeof error==='object' && 'status' in error && [401,403].includes(Number(error.status)))) throw error; return [id, null] as const }
   })))
+  const codes = new Map(selection.role.levels.flatMap(level=>level.skills).map(skill=>[skill.id, skill.code ?? undefined] as const))
+  return { flow, ...composeRoleOverview({ selectionId: selection.selectionId, revision: selection.revision, roleName: selection.role.name, skillCode: id => codes.get(id) }, summary, pathway, histories) }
+}
+/** Pure requirement classification shared by the employee Overview and the L&D employee report. */
+export function composeRoleOverview(selection: OverviewSelection, summary: OverviewSummary, pathway: RulePathway | null, histories: Map<string, AttemptOutcomeLike[] | null>) {
   // Exact requirement identity; target scope never grows, extended scope follows the saved plan.
   const target = new Map(summary.target.map(requirement=>[key(requirement),requirement]))
   const extended = new Map(target)
@@ -47,7 +56,7 @@ export async function readRoleOverview(signal?: AbortSignal) {
     const step = ownSteps.find(step=>step.kind==='REQUIRED') ?? ownSteps[0]
     const baselinePassed = target.has(key(requirement)) && summary.baseline.has(requirement.skillId+'\n'+requirement.knowledgeLevel)
     const waiting = Boolean(step && pathway?.dependencies.some(edge=>edge.dependentStepId===step.id && pathway.steps.some(p=>p.id===edge.prerequisiteStepId && p.state!=='FULFILLED' && p.state!=='BYPASSED')))
-    const assessmentStates: AssessmentState[] = step && pathway ? step.options.filter(option=>option.completedAt).map(option=>{const history=histories.get(JSON.stringify([option.moduleId,option.moduleRevision]));return history ? moduleAssessmentState(history,pathway,step) : 'unavailable'}) : []
+    const assessmentStates: AssessmentState[] = step && pathway ? step.options.filter(option=>option.completedAt).map(option=>{const history=histories.get(moduleHistoryKey(option.moduleId,option.moduleRevision));return history ? moduleAssessmentState(history,pathway,step) : 'unavailable'}) : []
     const assessment = (['passed','prerequisites','inProgress','failed','unavailable','notStarted'] as const).find(state=>assessmentStates.includes(state))
     const needsReview = Boolean(step && step.state!=='FULFILLED' && step.state!=='BYPASSED' && (baselinePassed || target.has(key(requirement)) && summary.achieved.has(requirement.skillId+'\n'+requirement.knowledgeLevel)))
     // A current learning gap takes precedence over a historical Baseline pass.
@@ -64,8 +73,8 @@ export async function readRoleOverview(signal?: AbortSignal) {
   const pairs = allPairs.filter(pair=>pair.origin==='target')
   const group = (items: OverviewPair[]): OverviewSkill[] => [...new Set(items.map(pair=>pair.requirement.skillId))].map(id=>{
     const own=items.filter(pair=>pair.requirement.skillId===id),achieved=own.filter(pair=>requirementMet(pair.status)).length
-    return {id,name:own[0].requirement.skillName,skillCode:selection.role.levels.flatMap(level=>level.skills).find(skill=>skill.id===id)?.code??undefined,category:selection.role.name,
+    return {id,name:own[0].requirement.skillName,skillCode:selection.skillCode?.(id),category:selection.roleName,
       estimatedMastery:Math.round(100*achieved/own.length),targetRoleRequirement:100,status:achieved===own.length?'mastered':own.some(pair=>['waiting','learning','assessing'].includes(pair.status))?'in_progress':'critical_gap',pairs:own}
   })
-  return {flow,pathway,pairs,skills:group(pairs),allPairs,allSkills:group(allPairs)}
+  return {pathway,pairs,skills:group(pairs),allPairs,allSkills:group(allPairs)}
 }
