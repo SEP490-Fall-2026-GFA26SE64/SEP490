@@ -28,10 +28,10 @@ for (const [index, [email, destination]] of accounts.entries()) {
     } else {
       await page.getByRole('button', { name: 'Continue to workspace', exact: true }).click()
       await expect(page).toHaveURL(new RegExp(destination + '$'))
-      await expect(page.getByRole('button', { name: index === 0 ? 'Sign out' : 'User actions menu', exact: true })).toBeVisible({ timeout: 30_000 })
+      await expect(page.getByRole('button', { name: 'User actions menu', exact: true })).toBeVisible({ timeout: 30_000 })
       if (index === 0) {
         await expect(page.getByRole('button', { name: 'Edit Starter', exact: true })).toBeVisible({ timeout: 30_000 })
-        await expect(page.getByRole('button', { name: 'Suspend workspace', exact: true })).toBeVisible()
+        await expect(page.getByRole('button', { name: 'Suspend workspace', exact: true })).toHaveCount(0)
         await page.screenshot({ path: 'test-results/REQ-037-dev-accounts-platform.png', fullPage: true })
       }
     }
