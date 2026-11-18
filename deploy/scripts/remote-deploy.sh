@@ -41,6 +41,10 @@ required=(PUBLIC_URL DB_PASSWORD NEO4J_PASSWORD LEARNING_ASSETS_ACCESS_KEY LEARN
 missing=()
 for key in "${required[@]}"; do [ -n "$(env_get "$key")" ] || missing+=("$key"); done
 [ ${#missing[@]} -eq 0 ] || fail "Empty/missing keys in .env: ${missing[*]}"
+# Both workspace-seed and se-seed reject shorter passwords. Check before touching the stack.
+workspace_password="$(env_get WORKSPACE_DEVELOPMENT_PASSWORD)"
+[ "${#workspace_password}" -ge 12 ] || fail "WORKSPACE_DEVELOPMENT_PASSWORD must contain at least 12 characters (workspace-seed/se-seed requirement)."
+unset workspace_password
 
 PUBLIC_URL="$(env_get PUBLIC_URL)"; PUBLIC_URL="${PUBLIC_URL%/}"
 [[ "$PUBLIC_URL" == https://* ]] || fail "PUBLIC_URL must be https:// (PayOS callbacks and secure cookies require it)."
@@ -84,13 +88,22 @@ log "Pulling images (tag ${IMAGE_TAG})"
 "${COMPOSE[@]}" pull --quiet
 
 log "Starting stack (migrations and idempotent seed jobs run first; first boot can take several minutes)"
-if ! "${COMPOSE[@]}" up -d --remove-orphans; then
+rollout_log="$(mktemp)"
+trap 'rm -f "$rollout_log"' EXIT
+if ! "${COMPOSE[@]}" up -d --remove-orphans 2>&1 | tee "$rollout_log"; then
   "${COMPOSE[@]}" ps -a || true
   for svc in migrate seed workspace-seed catalog-ready se-seed platform-seed api knowledge-seed module-knowledge-seed; do
     printf '\n----- %s (last 60 lines)\n' "$svc"; "${COMPOSE[@]}" logs --no-color --tail 60 "$svc" 2>/dev/null || true
   done
+  # Keep the actual Compose error visible after the lengthy Spring seed logs.
+  printf '\n===== Original Docker Compose failure (last 25 lines) =====\n'
+  tail -n 25 "$rollout_log"
+  printf '\n===== Container status after failed rollout =====\n'
+  "${COMPOSE[@]}" ps -a || true
   fail "docker compose up failed."
 fi
+rm -f "$rollout_log"
+trap - EXIT
 
 log "Waiting for web container health"
 web_id="$("${COMPOSE[@]}" ps -q web)"
