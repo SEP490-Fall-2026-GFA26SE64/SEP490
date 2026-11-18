@@ -22,6 +22,13 @@ export default defineConfig(({ mode }) => ({
     },
   },
 
+  // The dev server pre-bundles ExcelJS, so it needs the same Buffer injection as the build.
+  optimizeDeps: {
+    rolldownOptions: {
+      transform: { inject: { Buffer: [path.resolve(import.meta.dirname, './node_modules/buffer/index.js'), 'Buffer'] } },
+    },
+  },
+
   build: {
     rolldownOptions: {
       // ExcelJS checks Buffer identity; imports and injected globals must share one implementation.

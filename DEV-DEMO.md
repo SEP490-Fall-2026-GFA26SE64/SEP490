@@ -44,6 +44,10 @@ Startup order is migrate ? exact v0.12 graph / retained 135-item baseline bank i
 
 The public **development-only** default password is `Workspace-Development-490!`. Set `WORKSPACE_DEVELOPMENT_PASSWORD` before first startup to use another development password. Repeated seed refuses account/password/role/resource drift instead of overwriting it. Sign out and sign in to switch actors; URL/menu/localStorage never changes server authority. These accounts are not production credentials. The seed supplies no Organization Administrator or paid order. A tightly scoped development WORKSPACE entitlement grants these three fixture members access without creating a payment/subscription history; normal billing/admin actions and other tenants retain the real checks.
 
+## Demo reset (`/reset`)
+
+Opening **http://127.0.0.1:8088/reset** (no sign-in) calls `POST /api/v1/demo/reset`. It deletes every organization except the seeded TechNova organization, together with its accounts, pending invitations, registrations, org-scoped rows, Neo4j nodes and MinIO objects, then shows the removed counts. Seed/platform accounts are kept. Use it to recycle the scripted demo in [Demo/Demo.md](Demo/Demo.md). It is destructive and unauthenticated: never expose it on an environment with real customer data.
+
 ## Actual journey to verify
 
 1. Sign in as L&D and open `/ld-manager/baseline-assessments`. Choose Information Security Analysts; configure bounds, Save, Preview and Activate a genuine full-Job Position Blueprint. The fixture has 15 skills/135 DRAFT items; the current reference minimum requires 45 answers. Use the capacity/readiness shown by the server.

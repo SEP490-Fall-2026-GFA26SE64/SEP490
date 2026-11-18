@@ -65,6 +65,7 @@ const OrganizationSubscriptionPage = lazy(() => import('../features/administrati
 const LdModuleWorkspaceRoute = lazy(() => import('../features/manager/approvals/ContentApprovalQueuePage').then(module => ({ default: module.LdModuleWorkspaceRoute })))
 
 const GuestLandingPage = lazy(() => import('../features/guest/GuestLandingPage').then(module => ({ default: module.GuestLandingPage })))
+const DemoResetPage = lazy(() => import('../features/demo-reset/DemoResetPage').then(module => ({ default: module.DemoResetPage })))
 
 export default function App() {
   // Workspace pages live under /workspace/{slug}; the router basename keeps in-app paths workspace-relative.
@@ -82,6 +83,7 @@ export default function App() {
             <Route path="/login" element={<LoginPage />} />
             <Route path="/forgot-password" element={<ForgotPasswordPage />} />
             <Route path="/reset-password" element={<ResetPasswordPage />} />
+            <Route path="/reset" element={<DemoResetPage />} />
             <Route path="/activate" element={<MemberActivationPage />} />
             <Route path="/active" element={<MemberActivationPage />} />
 
