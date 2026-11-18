@@ -36,7 +36,7 @@ export function usePathwayAssessmentStates(pathway: RulePathway, preview: boolea
 
 /** Minimal attempt shape used for classification; employee attempts and L&D report attempts both satisfy it. */
 export interface AttemptOutcomeLike {
-  target: { selectionId: string; selectionRevision: number; stepId?: string | null }
+  target: { selectionId: string | null; selectionRevision: number; stepId?: string | null }
   state: string
   results: { groupId: string; passed: boolean; vetoTriggered: boolean }[]
   groups: { id: string; role: string }[]
