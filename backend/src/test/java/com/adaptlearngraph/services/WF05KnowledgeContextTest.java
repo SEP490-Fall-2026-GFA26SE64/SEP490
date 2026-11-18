@@ -32,6 +32,26 @@ class WF05KnowledgeContextTest {
         contexts=new CurrentRoleKnowledgeCatalog(selections,org->List.of(role),graph,evidence,new ObjectMapper().findAndRegisterModules(),1000,id->assertThat(id).isEqualTo(step));
     }
     RuleAssessmentAttemptService.Start start(Purpose p,String module){return new RuleAssessmentAttemptService.Start(p,selected.selectionId(),1,null,p==Purpose.BASELINE?null:step,module,module==null?null:1);}
+    @Test void unconfiguredLegacySkillCannotBecomeExemptBaselineOrEmptyPathway(){
+        var skills=List.of(new RoleBaselineFlow.Skill("A","A","A",List.of("FOUNDATION"),true),
+                new RoleBaselineFlow.Skill("B","B","B",List.of(),true));
+        var role=new RoleBaselineFlow.Role("R","R","R","Scope","J","Job","v1","a".repeat(64),
+                List.of(new RoleBaselineFlow.Level("L","L","Senior",1,"Context","All",skills)));
+        var incomplete=new CurrentRoleKnowledgeCatalog(selections,org->List.of(role),graph,evidence,new ObjectMapper(),1000);
+        assertThatThrownBy(()->incomplete.resolve(actor,start(Purpose.BASELINE,null)))
+                .isInstanceOfSatisfying(AssessmentPolicyService.Failure.class,f->{assertThat(f.status).isEqualTo(422);assertThat(f.code).isEqualTo("ROLE_REQUIREMENTS_NOT_CONFIGURED");});
+        var attempts=mock(RuleAssessmentAttemptJpaRepository.class);
+        var policies=mock(ScopedAssessmentPolicyJpaRepository.class);
+        var groups=mock(RuleAssessmentOutcomeJpaRepository.class);
+        var progress=new RuleBaselineProgress(selections,incomplete,attempts,policies,groups,new ObjectMapper());
+        assertThat(progress.progress(actor,role,Set.of("A","B")).state()).isEqualTo("BASELINE_UNAVAILABLE");
+        verifyNoInteractions(attempts,policies,groups);
+        var modules=mock(ModuleAuthoringPort.class);
+        var pathways=new RulePathwayCatalog(graph,modules,new ObjectMapper());
+        assertThatThrownBy(()->pathways.resolve(actor,role,"L"))
+                .isInstanceOfSatisfying(InitialPathwayPorts.Failure.class,f->{assertThat(f.status()).isEqualTo(422);assertThat(f.code()).isEqualTo("ROLE_REQUIREMENTS_NOT_CONFIGURED");});
+        verifyNoInteractions(graph,evidence,modules);
+    }
     @Test @DisplayName("TC-WF05-F06 context: only current-version official proof exempts exact baseline requirement")
     void exemptions(){var official=mock(RuleAssessmentContextJpaRepository.Official.class);var id=UUID.randomUUID();when(official.getId()).thenReturn(id);
         when(evidence.official(actor.organizationId(),actor.learnerId(),"A","FOUNDATION","v1")).thenReturn(List.of(official));

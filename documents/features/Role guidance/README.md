@@ -93,7 +93,7 @@ Keep current Role list/details/selection UI, shared design and EN/VI; use Role i
 | 4. Actor | Employee |
 | 5. Preconditions | Trusted entitled Employee, available organization Role/member Level and current selection context; changed target requires no request-bound unfinished mandatory work. |
 | 6. Main Flow | Optionally inspect RIASEC result, AI-suggested positions and saved explanations; browse published Roles; inspect explicit requirements and compatible evidence; choose/confirm Role and member Level; request pathway with exact binding and target lock. |
-| 7. Alternative / Exception Flows | Active assessment or unfinished mandatory pathway work blocks target change; same-target is a no-op; browsing never replaces binding. AI suggestions remain a separate capability. |
+| 7. Alternative / Exception Flows | Active assessment or unfinished mandatory pathway work blocks target change; same-target is a no-op; browsing never replaces binding. Legacy Roles with missing explicit knowledge requirements remain browsable, but baseline and pathway generation remain unavailable until those requirements are configured. AI suggestions remain a separate capability. |
 | 8. Postconditions | Selection/request/history is retained coherently; release follows completion/approved-bypass rule, not arbitrary archive. |
 | 9. Acceptance Criteria | All server/UI paths lock Role AND Level from request submission, including pending review; preserve attempts/profile and re-evaluate bypass on next target. |
 
