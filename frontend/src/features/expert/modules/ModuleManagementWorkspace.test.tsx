@@ -83,7 +83,7 @@ describe('REQ-013 module workspace', () => {
     expect(screen.getByLabelText('Current route').textContent).toBe('/ld-manager/modules')
     fireEvent.click(within(dialog).getByRole('button', { name: 'Close dialog' }))
     fireEvent.change(screen.getByLabelText('Show modules'), {target:{value:'all'}})
-    fireEvent.change(screen.getByLabelText('Lifecycle'), { target: { value: 'ACTIVE' } })
+    fireEvent.change(screen.getByLabelText('Status'), { target: { value: 'ACTIVE' } })
     fireEvent.click(screen.getByRole('link', { name: 'Approvals' }))
     expect(await screen.findByRole('heading', { name: 'Learning Content' })).toBeTruthy()
     expect(screen.getByLabelText('Current route').textContent).toBe('/ld-manager/approvals')
@@ -91,7 +91,7 @@ describe('REQ-013 module workspace', () => {
     expect(vi.mocked(fetch).mock.calls.some(([path]) => String(path).includes('pendingOnly=true'))).toBe(true)
     const queue = vi.mocked(fetch).mock.calls.find(([path]) => String(path).includes('pendingOnly=true'))
     expect(new URL(String(queue?.[0]), 'http://test').searchParams.get('status')).toBe('')
-    expect(screen.queryByLabelText('Lifecycle')).toBeNull()
+    expect(screen.queryByLabelText('Status')).toBeNull()
     expect(screen.queryByText('Catalog intake permissions')).toBeNull()
   })
   it('shows another Expert module and history without edit, submit or delete controls', async () => {
@@ -246,7 +246,16 @@ describe('REQ-013 module workspace', () => {
     })
     render(<MemoryRouter><ModuleManagementWorkspace /></MemoryRouter>)
     await screen.findByRole('heading',{name:'Published SQL'})
-    expect(screen.queryByLabelText('Lifecycle')).toBeNull()
+    expect(screen.queryByLabelText('Status')).toBeNull()
+    expect(screen.getAllByRole('columnheader').map(h => h.textContent)).toEqual([
+      'Module',
+      'Responsible person',
+      'Skill taught',
+      'Knowledge level',
+      'Duration',
+      'Status',
+      'Action',
+    ])
     const queries=()=>vi.mocked(fetch).mock.calls.filter(([path])=>String(path).includes('/module-list?')).map(([path])=>new URL(String(path),'http://test').searchParams)
     expect(queries().at(-1)?.get('status')).toBe('ACTIVE');expect(queries().at(-1)?.get('review')).toBe('APPROVED')
     fireEvent.click(screen.getByRole('button',{name:'View module'}))
@@ -257,7 +266,9 @@ describe('REQ-013 module workspace', () => {
     fireEvent.click(within(dialog).getByRole('button',{name:'Close'}))
     fireEvent.change(screen.getByLabelText('Show modules'),{target:{value:'all'}})
     await waitFor(()=>expect(queries().at(-1)?.get('review')).toBe(''))
-    expect(screen.getByLabelText('Lifecycle')).toBeTruthy()
+    expect(screen.getByLabelText('Status')).toBeTruthy()
+    fireEvent.change(screen.getByLabelText('Status'), { target: { value: 'NEEDS_EXPERT_REVIEW' } })
+    await waitFor(()=>expect(queries().at(-1)?.get('review')).toBe('NEEDS_EXPERT_REVIEW'))
     fireEvent.click(screen.getByRole('button',{name:'Clear filters'}))
     await waitFor(()=>expect(queries().at(-1)?.get('review')).toBe('APPROVED'))
     expect((screen.getByLabelText('Show modules') as HTMLSelectElement).value).toBe('published')

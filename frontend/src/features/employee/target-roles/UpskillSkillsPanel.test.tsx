@@ -2,7 +2,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { act } from 'react'
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
-import { MemoryRouter } from 'react-router-dom'
+import { MemoryRouter, useLocation } from 'react-router-dom'
 import { WorkspaceSessionContext } from '../../../shared/auth/workspaceSession'
 import { readSkillKnowledgeProfile } from '../baseline-assessment/knowledgeProfileApi'
 import { UpskillSkillsPanel } from './UpskillSkillsPanel'
@@ -14,8 +14,12 @@ vi.mock('../../../shared/i18n/LanguageContext', () => ({ useTranslation: () => (
 vi.mock('../baseline-assessment/knowledgeProfileApi', () => ({ readSkillKnowledgeProfile: vi.fn() }))
 beforeEach(() => { vi.mocked(readSkillKnowledgeProfile).mockResolvedValue([]) })
 afterEach(cleanup)
-function mount() {
-  return render(<QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } })}><MemoryRouter><WorkspaceSessionContext.Provider value={{ identity: { accountId: 'learner', organizationId: 'org', fullName: 'Employee', email: 'test@example.test', organizationName: 'Org' }, onSignOut: async () => {} }}><UpskillSkillsPanel /></WorkspaceSessionContext.Provider></MemoryRouter></QueryClientProvider>)
+function LocationProbe() {
+  const loc = useLocation()
+  return <output data-testid="nav-location">{loc.pathname}{loc.search}</output>
+}
+function mount(initialEntry = '/') {
+  return render(<QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } })}><MemoryRouter initialEntries={[initialEntry]}><WorkspaceSessionContext.Provider value={{ identity: { accountId: 'learner', organizationId: 'org', fullName: 'Employee', email: 'test@example.test', organizationName: 'Org' }, onSignOut: async () => {} }}><LocationProbe /><UpskillSkillsPanel /></WorkspaceSessionContext.Provider></MemoryRouter></QueryClientProvider>)
 }
 it('lists actual modules, preserves locked state and starts the selected eligible module', async () => {
   vi.mocked(fetchMicroSkills).mockResolvedValue([{ id: 'java', code: 'JAVA', name: 'Java', status: 'ACTIVE', version: 'v1' }])
@@ -155,4 +159,22 @@ it('uses a Skills list and in-page module cards, restoring search and focus on b
   expect((screen.getByRole('searchbox') as HTMLInputElement).value).toBe('Java')
   expect(screen.getAllByRole('listitem')).toHaveLength(1)
   expect(screen.getByRole('button', { name: 'View modules' })).toBe(document.activeElement)
+})
+
+it('restores selected skill and knowledge level from URL query params and passes upskilling origin when opening a module', async () => {
+  vi.mocked(fetchMicroSkills).mockResolvedValue([{ id: 'java', code: 'JAVA', name: 'Java', status: 'ACTIVE', version: 'v1' }])
+  vi.mocked(readSkillModules).mockResolvedValue([
+    { moduleId: 'adv-mod', title: 'Advanced Java Module', knowledgeLevel: 'ADVANCED', skillVersion: 'v1', contentVersion: '1', started: false, completed: false },
+  ])
+  vi.mocked(startSkillModule).mockResolvedValue()
+  mount('/employee/upskilling?tab=skills&skillId=java&level=ADVANCED')
+  expect(await screen.findByRole('heading', { name: 'Advanced Java Module' })).toBeTruthy()
+  expect(screen.getByRole('tab', { name: /Advanced/ }).getAttribute('data-state')).toBe('active')
+  await act(async () => {
+    fireEvent.click(screen.getByRole('button', { name: 'Start learning' }))
+  })
+  await waitFor(() => expect(startSkillModule).toHaveBeenCalledWith('java', 'adv-mod'))
+  expect(screen.getByTestId('nav-location').textContent).toBe(
+    '/employee/modules/adv-mod?from=upskilling&skillId=java&level=ADVANCED',
+  )
 })
