@@ -392,6 +392,8 @@ export const en = {
     mandatoryQuestion: 'Mandatory question', mandatoryLegend: '* Mandatory question: this answer must be correct.',
     saveAnswer: 'Save answer', saveChanges: 'Save changes', savedAnswer: 'Saved answer', unsavedChanges: 'Unsaved changes',
     editAnswerHint: 'You can change answers before submission or the deadline. Changes save automatically when you switch questions.',
+    keyboardHint: 'Number keys: choose an answer · Enter: save and go to the next question',
+    keyboardLastHint: 'Number keys: choose an answer · Enter: save and review submission',
     savingAnswer: 'Saving answer?',
     saveBeforeSubmit: 'Save your changed answers before submitting.',
     insufficientEvidence: 'This submission did not have enough evidence to calculate mastery. Your profile has not been updated.',

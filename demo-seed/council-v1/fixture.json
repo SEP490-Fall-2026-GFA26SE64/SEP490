@@ -1,0 +1,1754 @@
+{
+  "format": "COUNCIL_DEMO_V1",
+  "developmentOnly": true,
+  "organizationId": "e0000000-0000-0000-0000-000000000001",
+  "managerId": "a0000000-0000-0000-0000-000000000001",
+  "expertId": "a0000000-0000-0000-0000-000000000002",
+  "jobPositionId": "OCC-DEMO-COUNCIL-V1",
+  "roleId": "ROLE-DEMO-COUNCIL-V1",
+  "nextRoleId": "ROLE-DEMO-NEXT-V1",
+  "departmentId": "320dbdaf-016d-51a5-b4a4-7caa26fee156",
+  "referenceId": "5281c51c-c324-502c-8f3f-1af3f0418c19",
+  "jobPositionReferenceId": "0594cfc4-0321-5d9e-be08-0e7ccc0e805d",
+  "limitations": "Synthetic standalone fixture. No learner responses, achievements, pathways, bypass decisions or approvals.",
+  "nodes": [
+    {
+      "label": "Department",
+      "properties": {
+        "id": "320dbdaf-016d-51a5-b4a4-7caa26fee156",
+        "version": "0.12.0",
+        "status": "ACTIVE",
+        "reviewStatus": "APPROVED",
+        "reviewSource": "DEVELOPMENT_SEED",
+        "fixtureSource": "COUNCIL_DEMO_V1",
+        "organizationId": "e0000000-0000-0000-0000-000000000001",
+        "reviewedBy": "DEVELOPMENT_SEED",
+        "reviewedAt": "2026-11-18T00:00:00Z",
+        "name": "Council Demo — Development",
+        "code": "COUNCIL_DEMO"
+      }
+    },
+    {
+      "label": "JobPosition",
+      "properties": {
+        "id": "OCC-DEMO-COUNCIL-V1",
+        "version": "0.12.0",
+        "status": "ACTIVE",
+        "reviewStatus": "APPROVED",
+        "reviewSource": "DEVELOPMENT_SEED",
+        "fixtureSource": "COUNCIL_DEMO_V1",
+        "organizationId": "e0000000-0000-0000-0000-000000000001",
+        "reviewedBy": "DEVELOPMENT_SEED",
+        "reviewedAt": "2026-11-18T00:00:00Z",
+        "code": "DEMO-COUNCIL-V1",
+        "name": "Council Demo — Application Engineering",
+        "jobZone": 4,
+        "description": "Isolated demonstration of learning, prerequisites and certificate evidence; synthetic interest profile.",
+        "interestRealistic": 20,
+        "interestInvestigative": 36,
+        "interestArtistic": 26,
+        "interestSocial": 16,
+        "interestEnterprising": 18,
+        "interestConventional": 30
+      }
+    },
+    {
+      "label": "MicroSkill",
+      "properties": {
+        "id": "MS-DEMO-01",
+        "version": "0.12.1",
+        "status": "ACTIVE",
+        "reviewStatus": "APPROVED",
+        "reviewSource": "DEVELOPMENT_SEED",
+        "fixtureSource": "COUNCIL_DEMO_V1",
+        "organizationId": "e0000000-0000-0000-0000-000000000001",
+        "reviewedBy": "DEVELOPMENT_SEED",
+        "reviewedAt": "2026-11-18T00:00:00Z",
+        "name": "Unit testing",
+        "definition": "Council demo: Unit testing. Synthetic fixture, not a production qualification.",
+        "provisionMode": "MODULE_ONLY",
+        "foundationOutcomeLabels": [
+          "Explain Unit testing"
+        ],
+        "intermediateOutcomeLabels": [
+          "Apply Unit testing"
+        ],
+        "advancedOutcomeLabels": [
+          "Evaluate Unit testing"
+        ]
+      }
+    },
+    {
+      "label": "MicroSkill",
+      "properties": {
+        "id": "MS-DEMO-02",
+        "version": "0.12.1",
+        "status": "ACTIVE",
+        "reviewStatus": "APPROVED",
+        "reviewSource": "DEVELOPMENT_SEED",
+        "fixtureSource": "COUNCIL_DEMO_V1",
+        "organizationId": "e0000000-0000-0000-0000-000000000001",
+        "reviewedBy": "DEVELOPMENT_SEED",
+        "reviewedAt": "2026-11-18T00:00:00Z",
+        "name": "Database transactions",
+        "definition": "Council demo: Database transactions. Synthetic fixture, not a production qualification.",
+        "provisionMode": "MODULE_ONLY",
+        "foundationOutcomeLabels": [
+          "Explain Database transactions"
+        ],
+        "intermediateOutcomeLabels": [
+          "Apply Database transactions"
+        ],
+        "advancedOutcomeLabels": [
+          "Evaluate Database transactions"
+        ]
+      }
+    },
+    {
+      "label": "MicroSkill",
+      "properties": {
+        "id": "MS-DEMO-03",
+        "version": "0.12.1",
+        "status": "ACTIVE",
+        "reviewStatus": "APPROVED",
+        "reviewSource": "DEVELOPMENT_SEED",
+        "fixtureSource": "COUNCIL_DEMO_V1",
+        "organizationId": "e0000000-0000-0000-0000-000000000001",
+        "reviewedBy": "DEVELOPMENT_SEED",
+        "reviewedAt": "2026-11-18T00:00:00Z",
+        "name": "Refactoring",
+        "definition": "Council demo: Refactoring. Synthetic fixture, not a production qualification.",
+        "provisionMode": "MODULE_ONLY",
+        "foundationOutcomeLabels": [
+          "Explain Refactoring"
+        ],
+        "intermediateOutcomeLabels": [
+          "Apply Refactoring"
+        ],
+        "advancedOutcomeLabels": [
+          "Evaluate Refactoring"
+        ]
+      }
+    },
+    {
+      "label": "MicroSkill",
+      "properties": {
+        "id": "MS-DEMO-04",
+        "version": "0.12.1",
+        "status": "ACTIVE",
+        "reviewStatus": "APPROVED",
+        "reviewSource": "DEVELOPMENT_SEED",
+        "fixtureSource": "COUNCIL_DEMO_V1",
+        "organizationId": "e0000000-0000-0000-0000-000000000001",
+        "reviewedBy": "DEVELOPMENT_SEED",
+        "reviewedAt": "2026-11-18T00:00:00Z",
+        "name": "Input validation certificate",
+        "definition": "Council demo: Input validation certificate. Synthetic fixture, not a production qualification.",
+        "provisionMode": "CERTIFICATE_ONLY",
+        "foundationOutcomeLabels": [
+          "Explain Input validation certificate"
+        ],
+        "intermediateOutcomeLabels": [
+          "Apply Input validation certificate"
+        ],
+        "advancedOutcomeLabels": [
+          "Evaluate Input validation certificate"
+        ]
+      }
+    },
+    {
+      "label": "MicroSkill",
+      "properties": {
+        "id": "MS-DEMO-05",
+        "version": "0.12.1",
+        "status": "ACTIVE",
+        "reviewStatus": "APPROVED",
+        "reviewSource": "DEVELOPMENT_SEED",
+        "fixtureSource": "COUNCIL_DEMO_V1",
+        "organizationId": "e0000000-0000-0000-0000-000000000001",
+        "reviewedBy": "DEVELOPMENT_SEED",
+        "reviewedAt": "2026-11-18T00:00:00Z",
+        "name": "SQL query fundamentals",
+        "definition": "Council demo: SQL query fundamentals. Synthetic fixture, not a production qualification.",
+        "provisionMode": "MODULE_ONLY",
+        "foundationOutcomeLabels": [
+          "Explain SQL query fundamentals"
+        ],
+        "intermediateOutcomeLabels": [
+          "Apply SQL query fundamentals"
+        ],
+        "advancedOutcomeLabels": [
+          "Evaluate SQL query fundamentals"
+        ]
+      }
+    },
+    {
+      "label": "TargetRole",
+      "properties": {
+        "id": "ROLE-DEMO-COUNCIL-V1",
+        "version": "0.12.0",
+        "status": "ACTIVE",
+        "reviewStatus": "APPROVED",
+        "reviewSource": "DEVELOPMENT_SEED",
+        "fixtureSource": "COUNCIL_DEMO_V1",
+        "organizationId": "e0000000-0000-0000-0000-000000000001",
+        "reviewedBy": "DEVELOPMENT_SEED",
+        "reviewedAt": "2026-11-18T00:00:00Z",
+        "code": "ROLE_DEMO_COUNCIL_V1",
+        "name": "Application Developer — Council Demo",
+        "scope": "Explicit demo fixture",
+        "levels": [
+          "M"
+        ],
+        "competencyIds": [
+          "ROLE-DEMO-COUNCIL-V1-COMP"
+        ],
+        "assignedExpertId": "a0000000-0000-0000-0000-000000000002",
+        "assignedExpertName": "Dr. Sarah Chen"
+      }
+    },
+    {
+      "label": "Level",
+      "properties": {
+        "id": "ROLE-DEMO-COUNCIL-V1-M",
+        "version": "0.12.0",
+        "status": "ACTIVE",
+        "reviewStatus": "APPROVED",
+        "reviewSource": "DEVELOPMENT_SEED",
+        "fixtureSource": "COUNCIL_DEMO_V1",
+        "organizationId": "e0000000-0000-0000-0000-000000000001",
+        "reviewedBy": "DEVELOPMENT_SEED",
+        "reviewedAt": "2026-11-18T00:00:00Z",
+        "code": "M",
+        "name": "Middle",
+        "rank": 2,
+        "duration": "4 months",
+        "context": "Council demo",
+        "attainmentRule": "ALL_MANDATORY_SKILLS"
+      }
+    },
+    {
+      "label": "Competency",
+      "properties": {
+        "id": "ROLE-DEMO-COUNCIL-V1-COMP",
+        "version": "0.12.0",
+        "status": "ACTIVE",
+        "reviewStatus": "APPROVED",
+        "reviewSource": "DEVELOPMENT_SEED",
+        "fixtureSource": "COUNCIL_DEMO_V1",
+        "organizationId": "e0000000-0000-0000-0000-000000000001",
+        "reviewedBy": "DEVELOPMENT_SEED",
+        "reviewedAt": "2026-11-18T00:00:00Z",
+        "code": "ROLE-DEMO-COUNCIL-V1-COMP",
+        "name": "Application Developer — Council Demo capability",
+        "description": "Controlled end-to-end demonstration",
+        "attainmentRule": "ALL_MEMBER_SKILLS_AT_OWNING_LEVEL",
+        "departmentId": "320dbdaf-016d-51a5-b4a4-7caa26fee156",
+        "departmentName": "Council Demo — Development",
+        "jobPositionId": "OCC-DEMO-COUNCIL-V1",
+        "jobPositionCode": "DEMO-COUNCIL-V1",
+        "jobPositionTitle": "Council Demo — Application Engineering"
+      }
+    },
+    {
+      "label": "TargetRole",
+      "properties": {
+        "id": "ROLE-DEMO-NEXT-V1",
+        "version": "0.12.0",
+        "status": "ACTIVE",
+        "reviewStatus": "APPROVED",
+        "reviewSource": "DEVELOPMENT_SEED",
+        "fixtureSource": "COUNCIL_DEMO_V1",
+        "organizationId": "e0000000-0000-0000-0000-000000000001",
+        "reviewedBy": "DEVELOPMENT_SEED",
+        "reviewedAt": "2026-11-18T00:00:00Z",
+        "code": "ROLE_DEMO_NEXT_V1",
+        "name": "Application Developer — Next Target Demo",
+        "scope": "Explicit demo fixture",
+        "levels": [
+          "M"
+        ],
+        "competencyIds": [
+          "ROLE-DEMO-NEXT-V1-COMP"
+        ],
+        "assignedExpertId": "a0000000-0000-0000-0000-000000000002",
+        "assignedExpertName": "Dr. Sarah Chen"
+      }
+    },
+    {
+      "label": "Level",
+      "properties": {
+        "id": "ROLE-DEMO-NEXT-V1-M",
+        "version": "0.12.0",
+        "status": "ACTIVE",
+        "reviewStatus": "APPROVED",
+        "reviewSource": "DEVELOPMENT_SEED",
+        "fixtureSource": "COUNCIL_DEMO_V1",
+        "organizationId": "e0000000-0000-0000-0000-000000000001",
+        "reviewedBy": "DEVELOPMENT_SEED",
+        "reviewedAt": "2026-11-18T00:00:00Z",
+        "code": "M",
+        "name": "Middle",
+        "rank": 2,
+        "duration": "4 months",
+        "context": "Council demo",
+        "attainmentRule": "ALL_MANDATORY_SKILLS"
+      }
+    },
+    {
+      "label": "Competency",
+      "properties": {
+        "id": "ROLE-DEMO-NEXT-V1-COMP",
+        "version": "0.12.0",
+        "status": "ACTIVE",
+        "reviewStatus": "APPROVED",
+        "reviewSource": "DEVELOPMENT_SEED",
+        "fixtureSource": "COUNCIL_DEMO_V1",
+        "organizationId": "e0000000-0000-0000-0000-000000000001",
+        "reviewedBy": "DEVELOPMENT_SEED",
+        "reviewedAt": "2026-11-18T00:00:00Z",
+        "code": "ROLE-DEMO-NEXT-V1-COMP",
+        "name": "Application Developer — Next Target Demo capability",
+        "description": "Controlled end-to-end demonstration",
+        "attainmentRule": "ALL_MEMBER_SKILLS_AT_OWNING_LEVEL",
+        "departmentId": "320dbdaf-016d-51a5-b4a4-7caa26fee156",
+        "departmentName": "Council Demo — Development",
+        "jobPositionId": "OCC-DEMO-COUNCIL-V1",
+        "jobPositionCode": "DEMO-COUNCIL-V1",
+        "jobPositionTitle": "Council Demo — Application Engineering"
+      }
+    },
+    {
+      "label": "Certificate",
+      "properties": {
+        "id": "CERT-DEMO-INPUT-V1",
+        "version": "1",
+        "status": "ACTIVE",
+        "reviewStatus": "APPROVED",
+        "reviewSource": "DEVELOPMENT_SEED",
+        "fixtureSource": "COUNCIL_DEMO_V1",
+        "organizationId": "e0000000-0000-0000-0000-000000000001",
+        "reviewedBy": "DEVELOPMENT_SEED",
+        "reviewedAt": "2026-11-18T00:00:00Z",
+        "name": "Council demo — Input validation evidence",
+        "description": "Demo reference; this definition does not grant employee evidence.",
+        "knowledgeLevel": "INTERMEDIATE",
+        "skillVersion": "0.12.1",
+        "referenceUrl": "https://owasp.org/www-project-web-security-testing-guide/",
+        "source": "DEVELOPMENT_SEED"
+      }
+    },
+    {
+      "label": "LearningModule",
+      "properties": {
+        "id": "MOD-DEMO-A1",
+        "version": "0.12.0",
+        "status": "ACTIVE",
+        "reviewStatus": "APPROVED",
+        "reviewSource": "DEVELOPMENT_SEED",
+        "fixtureSource": "COUNCIL_DEMO_V1",
+        "organizationId": "e0000000-0000-0000-0000-000000000001",
+        "reviewedBy": "DEVELOPMENT_SEED",
+        "reviewedAt": "2026-11-18T00:00:00Z",
+        "title": "Unit testing — boundary cases",
+        "moduleType": "LESSON_AND_PRACTICE",
+        "contentUri": "content/demo/MOD-DEMO-A1.md",
+        "contentType": "text/markdown",
+        "contentVersion": "1.0",
+        "duration": 3,
+        "knowledgeLevel": "INTERMEDIATE",
+        "skillVersion": "0.12.1"
+      }
+    },
+    {
+      "label": "LearningModule",
+      "properties": {
+        "id": "MOD-DEMO-A2",
+        "version": "0.12.0",
+        "status": "ACTIVE",
+        "reviewStatus": "APPROVED",
+        "reviewSource": "DEVELOPMENT_SEED",
+        "fixtureSource": "COUNCIL_DEMO_V1",
+        "organizationId": "e0000000-0000-0000-0000-000000000001",
+        "reviewedBy": "DEVELOPMENT_SEED",
+        "reviewedAt": "2026-11-18T00:00:00Z",
+        "title": "Unit testing — isolated dependencies",
+        "moduleType": "LESSON_AND_PRACTICE",
+        "contentUri": "content/demo/MOD-DEMO-A2.md",
+        "contentType": "text/markdown",
+        "contentVersion": "1.0",
+        "duration": 3,
+        "knowledgeLevel": "INTERMEDIATE",
+        "skillVersion": "0.12.1"
+      }
+    },
+    {
+      "label": "LearningModule",
+      "properties": {
+        "id": "MOD-DEMO-B1",
+        "version": "0.12.0",
+        "status": "ACTIVE",
+        "reviewStatus": "APPROVED",
+        "reviewSource": "DEVELOPMENT_SEED",
+        "fixtureSource": "COUNCIL_DEMO_V1",
+        "organizationId": "e0000000-0000-0000-0000-000000000001",
+        "reviewedBy": "DEVELOPMENT_SEED",
+        "reviewedAt": "2026-11-18T00:00:00Z",
+        "title": "Database transactions — atomic transfers",
+        "moduleType": "LESSON_AND_PRACTICE",
+        "contentUri": "content/demo/MOD-DEMO-B1.md",
+        "contentType": "text/markdown",
+        "contentVersion": "1.0",
+        "duration": 3,
+        "knowledgeLevel": "INTERMEDIATE",
+        "skillVersion": "0.12.1"
+      }
+    },
+    {
+      "label": "LearningModule",
+      "properties": {
+        "id": "MOD-DEMO-P1",
+        "version": "0.12.0",
+        "status": "ACTIVE",
+        "reviewStatus": "APPROVED",
+        "reviewSource": "DEVELOPMENT_SEED",
+        "fixtureSource": "COUNCIL_DEMO_V1",
+        "organizationId": "e0000000-0000-0000-0000-000000000001",
+        "reviewedBy": "DEVELOPMENT_SEED",
+        "reviewedAt": "2026-11-18T00:00:00Z",
+        "title": "SQL — parameters and tenant predicates",
+        "moduleType": "LESSON_AND_PRACTICE",
+        "contentUri": "content/demo/MOD-DEMO-P1.md",
+        "contentType": "text/markdown",
+        "contentVersion": "1.0",
+        "duration": 3,
+        "knowledgeLevel": "INTERMEDIATE",
+        "skillVersion": "0.12.1"
+      }
+    }
+  ],
+  "relationships": [
+    {
+      "type": "HAS_JOB_POSITION",
+      "fromId": "320dbdaf-016d-51a5-b4a4-7caa26fee156",
+      "toId": "OCC-DEMO-COUNCIL-V1",
+      "properties": {
+        "id": "REL-DEMO-e4e85f56-957b-5780-8706-8c35dff7d51a",
+        "version": "0.12.0",
+        "status": "ACTIVE",
+        "reviewStatus": "APPROVED",
+        "reviewSource": "DEVELOPMENT_SEED",
+        "fixtureSource": "COUNCIL_DEMO_V1",
+        "organizationId": "e0000000-0000-0000-0000-000000000001",
+        "reviewedBy": "DEVELOPMENT_SEED",
+        "reviewedAt": "2026-11-18T00:00:00Z"
+      }
+    },
+    {
+      "type": "HAS_ROLE",
+      "fromId": "OCC-DEMO-COUNCIL-V1",
+      "toId": "ROLE-DEMO-COUNCIL-V1",
+      "properties": {
+        "id": "REL-DEMO-204f7983-c14e-59b6-8016-66ed3b79b935",
+        "version": "0.12.0",
+        "status": "ACTIVE",
+        "reviewStatus": "APPROVED",
+        "reviewSource": "DEVELOPMENT_SEED",
+        "fixtureSource": "COUNCIL_DEMO_V1",
+        "organizationId": "e0000000-0000-0000-0000-000000000001",
+        "reviewedBy": "DEVELOPMENT_SEED",
+        "reviewedAt": "2026-11-18T00:00:00Z"
+      }
+    },
+    {
+      "type": "HAS_LEVEL",
+      "fromId": "ROLE-DEMO-COUNCIL-V1",
+      "toId": "ROLE-DEMO-COUNCIL-V1-M",
+      "properties": {
+        "id": "REL-DEMO-938f5b06-b8cc-502e-9d8f-bfb851fe4bc5",
+        "version": "0.12.0",
+        "status": "ACTIVE",
+        "reviewStatus": "APPROVED",
+        "reviewSource": "DEVELOPMENT_SEED",
+        "fixtureSource": "COUNCIL_DEMO_V1",
+        "organizationId": "e0000000-0000-0000-0000-000000000001",
+        "reviewedBy": "DEVELOPMENT_SEED",
+        "reviewedAt": "2026-11-18T00:00:00Z"
+      }
+    },
+    {
+      "type": "HAS_COMPETENCY",
+      "fromId": "ROLE-DEMO-COUNCIL-V1-M",
+      "toId": "ROLE-DEMO-COUNCIL-V1-COMP",
+      "properties": {
+        "id": "REL-DEMO-e1343ac2-341a-55b3-a8fd-3c936f791a12",
+        "version": "0.12.0",
+        "status": "ACTIVE",
+        "reviewStatus": "APPROVED",
+        "reviewSource": "DEVELOPMENT_SEED",
+        "fixtureSource": "COUNCIL_DEMO_V1",
+        "organizationId": "e0000000-0000-0000-0000-000000000001",
+        "reviewedBy": "DEVELOPMENT_SEED",
+        "reviewedAt": "2026-11-18T00:00:00Z"
+      }
+    },
+    {
+      "type": "REQUIRES_SKILL",
+      "fromId": "ROLE-DEMO-COUNCIL-V1-M",
+      "toId": "MS-DEMO-01",
+      "properties": {
+        "id": "REL-DEMO-82c42eff-ad4d-51a5-8d09-a2dc5b1ea44a",
+        "version": "0.12.0",
+        "status": "ACTIVE",
+        "reviewStatus": "APPROVED",
+        "reviewSource": "DEVELOPMENT_SEED",
+        "fixtureSource": "COUNCIL_DEMO_V1",
+        "organizationId": "e0000000-0000-0000-0000-000000000001",
+        "reviewedBy": "DEVELOPMENT_SEED",
+        "reviewedAt": "2026-11-18T00:00:00Z",
+        "isMandatory": true,
+        "requiredKnowledgeLevels": [
+          "INTERMEDIATE"
+        ]
+      }
+    },
+    {
+      "type": "HAS_SKILL",
+      "fromId": "ROLE-DEMO-COUNCIL-V1-COMP",
+      "toId": "MS-DEMO-01",
+      "properties": {
+        "id": "REL-DEMO-2d1a20b4-97b6-5d42-a421-73614d1baeed",
+        "version": "0.12.0",
+        "status": "ACTIVE",
+        "reviewStatus": "APPROVED",
+        "reviewSource": "DEVELOPMENT_SEED",
+        "fixtureSource": "COUNCIL_DEMO_V1",
+        "organizationId": "e0000000-0000-0000-0000-000000000001",
+        "reviewedBy": "DEVELOPMENT_SEED",
+        "reviewedAt": "2026-11-18T00:00:00Z"
+      }
+    },
+    {
+      "type": "REQUIRES_SKILL",
+      "fromId": "ROLE-DEMO-COUNCIL-V1-M",
+      "toId": "MS-DEMO-02",
+      "properties": {
+        "id": "REL-DEMO-a9ad4830-d2cf-5660-8166-f25f1bb6540a",
+        "version": "0.12.0",
+        "status": "ACTIVE",
+        "reviewStatus": "APPROVED",
+        "reviewSource": "DEVELOPMENT_SEED",
+        "fixtureSource": "COUNCIL_DEMO_V1",
+        "organizationId": "e0000000-0000-0000-0000-000000000001",
+        "reviewedBy": "DEVELOPMENT_SEED",
+        "reviewedAt": "2026-11-18T00:00:00Z",
+        "isMandatory": true,
+        "requiredKnowledgeLevels": [
+          "INTERMEDIATE"
+        ]
+      }
+    },
+    {
+      "type": "HAS_SKILL",
+      "fromId": "ROLE-DEMO-COUNCIL-V1-COMP",
+      "toId": "MS-DEMO-02",
+      "properties": {
+        "id": "REL-DEMO-7089a97a-8d93-57ed-9caf-7ed5116c4a6f",
+        "version": "0.12.0",
+        "status": "ACTIVE",
+        "reviewStatus": "APPROVED",
+        "reviewSource": "DEVELOPMENT_SEED",
+        "fixtureSource": "COUNCIL_DEMO_V1",
+        "organizationId": "e0000000-0000-0000-0000-000000000001",
+        "reviewedBy": "DEVELOPMENT_SEED",
+        "reviewedAt": "2026-11-18T00:00:00Z"
+      }
+    },
+    {
+      "type": "REQUIRES_SKILL",
+      "fromId": "ROLE-DEMO-COUNCIL-V1-M",
+      "toId": "MS-DEMO-03",
+      "properties": {
+        "id": "REL-DEMO-868faf33-9671-57da-8bd9-80eccc7946ab",
+        "version": "0.12.0",
+        "status": "ACTIVE",
+        "reviewStatus": "APPROVED",
+        "reviewSource": "DEVELOPMENT_SEED",
+        "fixtureSource": "COUNCIL_DEMO_V1",
+        "organizationId": "e0000000-0000-0000-0000-000000000001",
+        "reviewedBy": "DEVELOPMENT_SEED",
+        "reviewedAt": "2026-11-18T00:00:00Z",
+        "isMandatory": true,
+        "requiredKnowledgeLevels": [
+          "INTERMEDIATE"
+        ]
+      }
+    },
+    {
+      "type": "HAS_SKILL",
+      "fromId": "ROLE-DEMO-COUNCIL-V1-COMP",
+      "toId": "MS-DEMO-03",
+      "properties": {
+        "id": "REL-DEMO-b80fe8f5-90bb-5c33-b69f-bcd0e2936ab9",
+        "version": "0.12.0",
+        "status": "ACTIVE",
+        "reviewStatus": "APPROVED",
+        "reviewSource": "DEVELOPMENT_SEED",
+        "fixtureSource": "COUNCIL_DEMO_V1",
+        "organizationId": "e0000000-0000-0000-0000-000000000001",
+        "reviewedBy": "DEVELOPMENT_SEED",
+        "reviewedAt": "2026-11-18T00:00:00Z"
+      }
+    },
+    {
+      "type": "REQUIRES_SKILL",
+      "fromId": "ROLE-DEMO-COUNCIL-V1-M",
+      "toId": "MS-DEMO-04",
+      "properties": {
+        "id": "REL-DEMO-ab57104d-dbd2-5bf2-bfbd-1fe12bb49a53",
+        "version": "0.12.0",
+        "status": "ACTIVE",
+        "reviewStatus": "APPROVED",
+        "reviewSource": "DEVELOPMENT_SEED",
+        "fixtureSource": "COUNCIL_DEMO_V1",
+        "organizationId": "e0000000-0000-0000-0000-000000000001",
+        "reviewedBy": "DEVELOPMENT_SEED",
+        "reviewedAt": "2026-11-18T00:00:00Z",
+        "isMandatory": true,
+        "requiredKnowledgeLevels": [
+          "INTERMEDIATE"
+        ]
+      }
+    },
+    {
+      "type": "HAS_SKILL",
+      "fromId": "ROLE-DEMO-COUNCIL-V1-COMP",
+      "toId": "MS-DEMO-04",
+      "properties": {
+        "id": "REL-DEMO-299cdbdf-41ae-56c4-bd89-192a2b9cb7cc",
+        "version": "0.12.0",
+        "status": "ACTIVE",
+        "reviewStatus": "APPROVED",
+        "reviewSource": "DEVELOPMENT_SEED",
+        "fixtureSource": "COUNCIL_DEMO_V1",
+        "organizationId": "e0000000-0000-0000-0000-000000000001",
+        "reviewedBy": "DEVELOPMENT_SEED",
+        "reviewedAt": "2026-11-18T00:00:00Z"
+      }
+    },
+    {
+      "type": "REQUIRES_SKILL",
+      "fromId": "ROLE-DEMO-COUNCIL-V1-M",
+      "toId": "MS-DEMO-05",
+      "properties": {
+        "id": "REL-DEMO-bde6cc63-33d1-5cdb-9fd3-7dadebc85915",
+        "version": "0.12.0",
+        "status": "ACTIVE",
+        "reviewStatus": "APPROVED",
+        "reviewSource": "DEVELOPMENT_SEED",
+        "fixtureSource": "COUNCIL_DEMO_V1",
+        "organizationId": "e0000000-0000-0000-0000-000000000001",
+        "reviewedBy": "DEVELOPMENT_SEED",
+        "reviewedAt": "2026-11-18T00:00:00Z",
+        "isMandatory": true,
+        "requiredKnowledgeLevels": [
+          "INTERMEDIATE"
+        ]
+      }
+    },
+    {
+      "type": "HAS_SKILL",
+      "fromId": "ROLE-DEMO-COUNCIL-V1-COMP",
+      "toId": "MS-DEMO-05",
+      "properties": {
+        "id": "REL-DEMO-83d0739b-5af4-50d9-9782-9526035d57fe",
+        "version": "0.12.0",
+        "status": "ACTIVE",
+        "reviewStatus": "APPROVED",
+        "reviewSource": "DEVELOPMENT_SEED",
+        "fixtureSource": "COUNCIL_DEMO_V1",
+        "organizationId": "e0000000-0000-0000-0000-000000000001",
+        "reviewedBy": "DEVELOPMENT_SEED",
+        "reviewedAt": "2026-11-18T00:00:00Z"
+      }
+    },
+    {
+      "type": "HAS_ROLE",
+      "fromId": "OCC-DEMO-COUNCIL-V1",
+      "toId": "ROLE-DEMO-NEXT-V1",
+      "properties": {
+        "id": "REL-DEMO-e4512589-44ca-5f78-93cc-ad74de51079c",
+        "version": "0.12.0",
+        "status": "ACTIVE",
+        "reviewStatus": "APPROVED",
+        "reviewSource": "DEVELOPMENT_SEED",
+        "fixtureSource": "COUNCIL_DEMO_V1",
+        "organizationId": "e0000000-0000-0000-0000-000000000001",
+        "reviewedBy": "DEVELOPMENT_SEED",
+        "reviewedAt": "2026-11-18T00:00:00Z"
+      }
+    },
+    {
+      "type": "HAS_LEVEL",
+      "fromId": "ROLE-DEMO-NEXT-V1",
+      "toId": "ROLE-DEMO-NEXT-V1-M",
+      "properties": {
+        "id": "REL-DEMO-b63c71eb-805e-56ca-9bae-9dfed3179ab9",
+        "version": "0.12.0",
+        "status": "ACTIVE",
+        "reviewStatus": "APPROVED",
+        "reviewSource": "DEVELOPMENT_SEED",
+        "fixtureSource": "COUNCIL_DEMO_V1",
+        "organizationId": "e0000000-0000-0000-0000-000000000001",
+        "reviewedBy": "DEVELOPMENT_SEED",
+        "reviewedAt": "2026-11-18T00:00:00Z"
+      }
+    },
+    {
+      "type": "HAS_COMPETENCY",
+      "fromId": "ROLE-DEMO-NEXT-V1-M",
+      "toId": "ROLE-DEMO-NEXT-V1-COMP",
+      "properties": {
+        "id": "REL-DEMO-40fd302e-7b70-5365-a127-8590fccf3dfd",
+        "version": "0.12.0",
+        "status": "ACTIVE",
+        "reviewStatus": "APPROVED",
+        "reviewSource": "DEVELOPMENT_SEED",
+        "fixtureSource": "COUNCIL_DEMO_V1",
+        "organizationId": "e0000000-0000-0000-0000-000000000001",
+        "reviewedBy": "DEVELOPMENT_SEED",
+        "reviewedAt": "2026-11-18T00:00:00Z"
+      }
+    },
+    {
+      "type": "REQUIRES_SKILL",
+      "fromId": "ROLE-DEMO-NEXT-V1-M",
+      "toId": "MS-DEMO-01",
+      "properties": {
+        "id": "REL-DEMO-fd75ca0c-76db-573d-8b5a-b51ad379a61c",
+        "version": "0.12.0",
+        "status": "ACTIVE",
+        "reviewStatus": "APPROVED",
+        "reviewSource": "DEVELOPMENT_SEED",
+        "fixtureSource": "COUNCIL_DEMO_V1",
+        "organizationId": "e0000000-0000-0000-0000-000000000001",
+        "reviewedBy": "DEVELOPMENT_SEED",
+        "reviewedAt": "2026-11-18T00:00:00Z",
+        "isMandatory": true,
+        "requiredKnowledgeLevels": [
+          "INTERMEDIATE"
+        ]
+      }
+    },
+    {
+      "type": "HAS_SKILL",
+      "fromId": "ROLE-DEMO-NEXT-V1-COMP",
+      "toId": "MS-DEMO-01",
+      "properties": {
+        "id": "REL-DEMO-67dece61-d307-54ac-805a-f9c2d4ca2ab6",
+        "version": "0.12.0",
+        "status": "ACTIVE",
+        "reviewStatus": "APPROVED",
+        "reviewSource": "DEVELOPMENT_SEED",
+        "fixtureSource": "COUNCIL_DEMO_V1",
+        "organizationId": "e0000000-0000-0000-0000-000000000001",
+        "reviewedBy": "DEVELOPMENT_SEED",
+        "reviewedAt": "2026-11-18T00:00:00Z"
+      }
+    },
+    {
+      "type": "HAS_SKILL_PREREQUISITE",
+      "fromId": "MS-DEMO-02",
+      "toId": "MS-DEMO-05",
+      "properties": {
+        "id": "REL-DEMO-5c3c0aed-3e68-5ee2-a8cf-04ad91321215",
+        "version": "0.12.0",
+        "status": "ACTIVE",
+        "reviewStatus": "APPROVED",
+        "reviewSource": "DEVELOPMENT_SEED",
+        "fixtureSource": "COUNCIL_DEMO_V1",
+        "organizationId": "e0000000-0000-0000-0000-000000000001",
+        "reviewedBy": "DEVELOPMENT_SEED",
+        "reviewedAt": "2026-11-18T00:00:00Z",
+        "dependentKnowledgeLevel": "INTERMEDIATE",
+        "prerequisiteKnowledgeLevel": "INTERMEDIATE"
+      }
+    },
+    {
+      "type": "REQUIRES_CERTIFICATE",
+      "fromId": "MS-DEMO-04",
+      "toId": "CERT-DEMO-INPUT-V1",
+      "properties": {
+        "id": "REL-DEMO-c8374b65-fdaf-5053-8105-d3f55697515f",
+        "version": "0.12.0",
+        "status": "ACTIVE",
+        "reviewStatus": "APPROVED",
+        "reviewSource": "DEVELOPMENT_SEED",
+        "fixtureSource": "COUNCIL_DEMO_V1",
+        "organizationId": "e0000000-0000-0000-0000-000000000001",
+        "reviewedBy": "DEVELOPMENT_SEED",
+        "reviewedAt": "2026-11-18T00:00:00Z"
+      }
+    },
+    {
+      "type": "TEACHES",
+      "fromId": "MOD-DEMO-A1",
+      "toId": "MS-DEMO-01",
+      "properties": {
+        "id": "REL-DEMO-eb67266b-3e5a-5485-bf62-f3a23512de58",
+        "version": "0.12.0",
+        "status": "ACTIVE",
+        "reviewStatus": "APPROVED",
+        "reviewSource": "DEVELOPMENT_SEED",
+        "fixtureSource": "COUNCIL_DEMO_V1",
+        "organizationId": "e0000000-0000-0000-0000-000000000001",
+        "reviewedBy": "DEVELOPMENT_SEED",
+        "reviewedAt": "2026-11-18T00:00:00Z"
+      }
+    },
+    {
+      "type": "TEACHES",
+      "fromId": "MOD-DEMO-A2",
+      "toId": "MS-DEMO-01",
+      "properties": {
+        "id": "REL-DEMO-153b73e8-5f19-54b8-b1bf-be0b7ba2388c",
+        "version": "0.12.0",
+        "status": "ACTIVE",
+        "reviewStatus": "APPROVED",
+        "reviewSource": "DEVELOPMENT_SEED",
+        "fixtureSource": "COUNCIL_DEMO_V1",
+        "organizationId": "e0000000-0000-0000-0000-000000000001",
+        "reviewedBy": "DEVELOPMENT_SEED",
+        "reviewedAt": "2026-11-18T00:00:00Z"
+      }
+    },
+    {
+      "type": "TEACHES",
+      "fromId": "MOD-DEMO-B1",
+      "toId": "MS-DEMO-02",
+      "properties": {
+        "id": "REL-DEMO-ebeda1ea-5e5a-585c-802d-7cd138c70002",
+        "version": "0.12.0",
+        "status": "ACTIVE",
+        "reviewStatus": "APPROVED",
+        "reviewSource": "DEVELOPMENT_SEED",
+        "fixtureSource": "COUNCIL_DEMO_V1",
+        "organizationId": "e0000000-0000-0000-0000-000000000001",
+        "reviewedBy": "DEVELOPMENT_SEED",
+        "reviewedAt": "2026-11-18T00:00:00Z"
+      }
+    },
+    {
+      "type": "TEACHES",
+      "fromId": "MOD-DEMO-P1",
+      "toId": "MS-DEMO-05",
+      "properties": {
+        "id": "REL-DEMO-57bbeabe-27e9-5a3c-8392-7799f62e74be",
+        "version": "0.12.0",
+        "status": "ACTIVE",
+        "reviewStatus": "APPROVED",
+        "reviewSource": "DEVELOPMENT_SEED",
+        "fixtureSource": "COUNCIL_DEMO_V1",
+        "organizationId": "e0000000-0000-0000-0000-000000000001",
+        "reviewedBy": "DEVELOPMENT_SEED",
+        "reviewedAt": "2026-11-18T00:00:00Z"
+      }
+    }
+  ],
+  "modules": [
+    {
+      "id": "MOD-DEMO-A1",
+      "organizationId": "e0000000-0000-0000-0000-000000000001",
+      "jobPositionIds": [
+        "OCC-DEMO-COUNCIL-V1"
+      ],
+      "createdBy": "DEVELOPMENT_SEED",
+      "createdAt": "2026-11-18T00:00:00Z",
+      "lockVersion": 1,
+      "everReleased": true,
+      "archived": false,
+      "releasedRevision": 1,
+      "revisions": [
+        {
+          "number": 1,
+          "state": "RELEASED",
+          "payload": {
+            "metadata": {
+              "id": "MOD-DEMO-A1",
+              "version": "0.12.0",
+              "status": "ACTIVE",
+              "reviewStatus": "APPROVED",
+              "reviewedBy": "DEVELOPMENT_SEED",
+              "reviewedAt": "2026-11-18T00:00:00Z"
+            },
+            "title": "Unit testing — boundary cases",
+            "moduleType": "LESSON_AND_PRACTICE",
+            "contentUri": "content/demo/MOD-DEMO-A1.md",
+            "contentType": "text/markdown",
+            "contentVersion": "1.0",
+            "duration": 3,
+            "teachings": [
+              {
+                "metadata": {
+                  "id": "REL-DEMO-eb67266b-3e5a-5485-bf62-f3a23512de58",
+                  "version": "0.12.0",
+                  "status": "ACTIVE",
+                  "reviewStatus": "APPROVED",
+                  "reviewedBy": "DEVELOPMENT_SEED",
+                  "reviewedAt": "2026-11-18T00:00:00Z"
+                },
+                "skillId": "MS-DEMO-01",
+                "skillName": "Unit testing"
+              }
+            ],
+            "content": {
+              "id": "CONTENT-MOD-DEMO-A1",
+              "title": "Unit testing — boundary cases",
+              "markdown": "# Unit testing — boundary cases\n\nAn order discount applies only at a subtotal of 100 or higher. Test 99, 100 and 101 independently. Use fixed inputs, assert the exact output and keep external services out of the unit test.\n\nPractice: write arrange/act/assert cases for the three boundaries. A test that only calls the function without an assertion cannot detect a wrong discount.\n\nRead to the end, then explicitly mark this lesson complete. Learning completion alone does not award the Skill.\n\nDevelopment demo content; not human-reviewed production training.\n",
+              "contentType": "text/markdown",
+              "contentVersion": "1.0",
+              "jobPositionIds": [
+                "OCC-DEMO-COUNCIL-V1"
+              ],
+              "createdBy": "DEVELOPMENT_SEED",
+              "createdAt": "2026-11-18T00:00:00Z",
+              "lessons": [
+                {
+                  "id": "MOD-DEMO-A1-TEXT",
+                  "title": "Unit testing — boundary cases",
+                  "type": "TEXT",
+                  "body": "# Unit testing — boundary cases\n\nAn order discount applies only at a subtotal of 100 or higher. Test 99, 100 and 101 independently. Use fixed inputs, assert the exact output and keep external services out of the unit test.\n\nPractice: write arrange/act/assert cases for the three boundaries. A test that only calls the function without an assertion cannot detect a wrong discount.\n\nRead to the end, then explicitly mark this lesson complete. Learning completion alone does not award the Skill.\n\nDevelopment demo content; not human-reviewed production training.\n",
+                  "bodyFormat": "MARKDOWN",
+                  "durationSeconds": 180,
+                  "durationSource": "ESTIMATED",
+                  "videoSource": null,
+                  "assetId": null,
+                  "videoUrl": null
+                }
+              ]
+            },
+            "knowledgeLevel": "INTERMEDIATE",
+            "outcomeCodes": [],
+            "skillVersion": "0.12.1"
+          },
+          "editedBy": "DEVELOPMENT_SEED",
+          "editedAt": "2026-11-18T00:00:00Z",
+          "decidedBy": null,
+          "decidedAt": null,
+          "feedback": null
+        }
+      ],
+      "history": [
+        {
+          "sequence": 1,
+          "revision": 1,
+          "action": "DEVELOPMENT_SEED_PUBLISHED",
+          "actorId": "DEVELOPMENT_SEED",
+          "occurredAt": "2026-11-18T00:00:00Z",
+          "detail": "Council fixture. No human review claimed."
+        }
+      ],
+      "intake": null
+    },
+    {
+      "id": "MOD-DEMO-A2",
+      "organizationId": "e0000000-0000-0000-0000-000000000001",
+      "jobPositionIds": [
+        "OCC-DEMO-COUNCIL-V1"
+      ],
+      "createdBy": "DEVELOPMENT_SEED",
+      "createdAt": "2026-11-18T00:00:00Z",
+      "lockVersion": 1,
+      "everReleased": true,
+      "archived": false,
+      "releasedRevision": 1,
+      "revisions": [
+        {
+          "number": 1,
+          "state": "RELEASED",
+          "payload": {
+            "metadata": {
+              "id": "MOD-DEMO-A2",
+              "version": "0.12.0",
+              "status": "ACTIVE",
+              "reviewStatus": "APPROVED",
+              "reviewedBy": "DEVELOPMENT_SEED",
+              "reviewedAt": "2026-11-18T00:00:00Z"
+            },
+            "title": "Unit testing — isolated dependencies",
+            "moduleType": "LESSON_AND_PRACTICE",
+            "contentUri": "content/demo/MOD-DEMO-A2.md",
+            "contentType": "text/markdown",
+            "contentVersion": "1.0",
+            "duration": 3,
+            "teachings": [
+              {
+                "metadata": {
+                  "id": "REL-DEMO-153b73e8-5f19-54b8-b1bf-be0b7ba2388c",
+                  "version": "0.12.0",
+                  "status": "ACTIVE",
+                  "reviewStatus": "APPROVED",
+                  "reviewedBy": "DEVELOPMENT_SEED",
+                  "reviewedAt": "2026-11-18T00:00:00Z"
+                },
+                "skillId": "MS-DEMO-01",
+                "skillName": "Unit testing"
+              }
+            ],
+            "content": {
+              "id": "CONTENT-MOD-DEMO-A2",
+              "title": "Unit testing — isolated dependencies",
+              "markdown": "# Unit testing — isolated dependencies\n\nA payment calculation must be tested without contacting the payment gateway. Replace the gateway with a controlled test double and assert the calculation and intended interaction.\n\nPractice: test success and rejection independently. Reset fixtures between cases so test order cannot affect outcomes.\n\nRead to the end, then explicitly mark this lesson complete. Learning completion alone does not award the Skill.\n\nDevelopment demo content; not human-reviewed production training.\n",
+              "contentType": "text/markdown",
+              "contentVersion": "1.0",
+              "jobPositionIds": [
+                "OCC-DEMO-COUNCIL-V1"
+              ],
+              "createdBy": "DEVELOPMENT_SEED",
+              "createdAt": "2026-11-18T00:00:00Z",
+              "lessons": [
+                {
+                  "id": "MOD-DEMO-A2-TEXT",
+                  "title": "Unit testing — isolated dependencies",
+                  "type": "TEXT",
+                  "body": "# Unit testing — isolated dependencies\n\nA payment calculation must be tested without contacting the payment gateway. Replace the gateway with a controlled test double and assert the calculation and intended interaction.\n\nPractice: test success and rejection independently. Reset fixtures between cases so test order cannot affect outcomes.\n\nRead to the end, then explicitly mark this lesson complete. Learning completion alone does not award the Skill.\n\nDevelopment demo content; not human-reviewed production training.\n",
+                  "bodyFormat": "MARKDOWN",
+                  "durationSeconds": 180,
+                  "durationSource": "ESTIMATED",
+                  "videoSource": null,
+                  "assetId": null,
+                  "videoUrl": null
+                }
+              ]
+            },
+            "knowledgeLevel": "INTERMEDIATE",
+            "outcomeCodes": [],
+            "skillVersion": "0.12.1"
+          },
+          "editedBy": "DEVELOPMENT_SEED",
+          "editedAt": "2026-11-18T00:00:00Z",
+          "decidedBy": null,
+          "decidedAt": null,
+          "feedback": null
+        }
+      ],
+      "history": [
+        {
+          "sequence": 1,
+          "revision": 1,
+          "action": "DEVELOPMENT_SEED_PUBLISHED",
+          "actorId": "DEVELOPMENT_SEED",
+          "occurredAt": "2026-11-18T00:00:00Z",
+          "detail": "Council fixture. No human review claimed."
+        }
+      ],
+      "intake": null
+    },
+    {
+      "id": "MOD-DEMO-B1",
+      "organizationId": "e0000000-0000-0000-0000-000000000001",
+      "jobPositionIds": [
+        "OCC-DEMO-COUNCIL-V1"
+      ],
+      "createdBy": "DEVELOPMENT_SEED",
+      "createdAt": "2026-11-18T00:00:00Z",
+      "lockVersion": 1,
+      "everReleased": true,
+      "archived": false,
+      "releasedRevision": 1,
+      "revisions": [
+        {
+          "number": 1,
+          "state": "RELEASED",
+          "payload": {
+            "metadata": {
+              "id": "MOD-DEMO-B1",
+              "version": "0.12.0",
+              "status": "ACTIVE",
+              "reviewStatus": "APPROVED",
+              "reviewedBy": "DEVELOPMENT_SEED",
+              "reviewedAt": "2026-11-18T00:00:00Z"
+            },
+            "title": "Database transactions — atomic transfers",
+            "moduleType": "LESSON_AND_PRACTICE",
+            "contentUri": "content/demo/MOD-DEMO-B1.md",
+            "contentType": "text/markdown",
+            "contentVersion": "1.0",
+            "duration": 3,
+            "teachings": [
+              {
+                "metadata": {
+                  "id": "REL-DEMO-ebeda1ea-5e5a-585c-802d-7cd138c70002",
+                  "version": "0.12.0",
+                  "status": "ACTIVE",
+                  "reviewStatus": "APPROVED",
+                  "reviewedBy": "DEVELOPMENT_SEED",
+                  "reviewedAt": "2026-11-18T00:00:00Z"
+                },
+                "skillId": "MS-DEMO-02",
+                "skillName": "Database transactions"
+              }
+            ],
+            "content": {
+              "id": "CONTENT-MOD-DEMO-B1",
+              "title": "Database transactions — atomic transfers",
+              "markdown": "# Database transactions — atomic transfers\n\nA transfer debits one account and credits another. Put both updates in one database transaction. Commit only when both succeed; roll back both on failure.\n\nPractice: inject failure after the debit and verify both balances are unchanged. Repeating a request needs a stable idempotency key so the transfer is not applied twice.\n\nRead to the end, then explicitly mark this lesson complete. Learning completion alone does not award the Skill.\n\nDevelopment demo content; not human-reviewed production training.\n",
+              "contentType": "text/markdown",
+              "contentVersion": "1.0",
+              "jobPositionIds": [
+                "OCC-DEMO-COUNCIL-V1"
+              ],
+              "createdBy": "DEVELOPMENT_SEED",
+              "createdAt": "2026-11-18T00:00:00Z",
+              "lessons": [
+                {
+                  "id": "MOD-DEMO-B1-TEXT",
+                  "title": "Database transactions — atomic transfers",
+                  "type": "TEXT",
+                  "body": "# Database transactions — atomic transfers\n\nA transfer debits one account and credits another. Put both updates in one database transaction. Commit only when both succeed; roll back both on failure.\n\nPractice: inject failure after the debit and verify both balances are unchanged. Repeating a request needs a stable idempotency key so the transfer is not applied twice.\n\nRead to the end, then explicitly mark this lesson complete. Learning completion alone does not award the Skill.\n\nDevelopment demo content; not human-reviewed production training.\n",
+                  "bodyFormat": "MARKDOWN",
+                  "durationSeconds": 180,
+                  "durationSource": "ESTIMATED",
+                  "videoSource": null,
+                  "assetId": null,
+                  "videoUrl": null
+                }
+              ]
+            },
+            "knowledgeLevel": "INTERMEDIATE",
+            "outcomeCodes": [],
+            "skillVersion": "0.12.1"
+          },
+          "editedBy": "DEVELOPMENT_SEED",
+          "editedAt": "2026-11-18T00:00:00Z",
+          "decidedBy": null,
+          "decidedAt": null,
+          "feedback": null
+        }
+      ],
+      "history": [
+        {
+          "sequence": 1,
+          "revision": 1,
+          "action": "DEVELOPMENT_SEED_PUBLISHED",
+          "actorId": "DEVELOPMENT_SEED",
+          "occurredAt": "2026-11-18T00:00:00Z",
+          "detail": "Council fixture. No human review claimed."
+        }
+      ],
+      "intake": null
+    },
+    {
+      "id": "MOD-DEMO-P1",
+      "organizationId": "e0000000-0000-0000-0000-000000000001",
+      "jobPositionIds": [
+        "OCC-DEMO-COUNCIL-V1"
+      ],
+      "createdBy": "DEVELOPMENT_SEED",
+      "createdAt": "2026-11-18T00:00:00Z",
+      "lockVersion": 1,
+      "everReleased": true,
+      "archived": false,
+      "releasedRevision": 1,
+      "revisions": [
+        {
+          "number": 1,
+          "state": "RELEASED",
+          "payload": {
+            "metadata": {
+              "id": "MOD-DEMO-P1",
+              "version": "0.12.0",
+              "status": "ACTIVE",
+              "reviewStatus": "APPROVED",
+              "reviewedBy": "DEVELOPMENT_SEED",
+              "reviewedAt": "2026-11-18T00:00:00Z"
+            },
+            "title": "SQL — parameters and tenant predicates",
+            "moduleType": "LESSON_AND_PRACTICE",
+            "contentUri": "content/demo/MOD-DEMO-P1.md",
+            "contentType": "text/markdown",
+            "contentVersion": "1.0",
+            "duration": 3,
+            "teachings": [
+              {
+                "metadata": {
+                  "id": "REL-DEMO-57bbeabe-27e9-5a3c-8392-7799f62e74be",
+                  "version": "0.12.0",
+                  "status": "ACTIVE",
+                  "reviewStatus": "APPROVED",
+                  "reviewedBy": "DEVELOPMENT_SEED",
+                  "reviewedAt": "2026-11-18T00:00:00Z"
+                },
+                "skillId": "MS-DEMO-05",
+                "skillName": "SQL query fundamentals"
+              }
+            ],
+            "content": {
+              "id": "CONTENT-MOD-DEMO-P1",
+              "title": "SQL — parameters and tenant predicates",
+              "markdown": "# SQL — parameters and tenant predicates\n\nUse a parameterized query for user-supplied values. Obtain tenant identity from the authenticated server context and apply it in the WHERE predicate. A browser-supplied tenant ID does not establish ownership.\n\nPractice: query orders with WHERE organization_id = :trusted_org AND order_id = :order_id. Try an order belonging to another organization and confirm no row is returned.\n\nRead to the end, then explicitly mark this lesson complete. Learning completion alone does not award the Skill.\n\nDevelopment demo content; not human-reviewed production training.\n",
+              "contentType": "text/markdown",
+              "contentVersion": "1.0",
+              "jobPositionIds": [
+                "OCC-DEMO-COUNCIL-V1"
+              ],
+              "createdBy": "DEVELOPMENT_SEED",
+              "createdAt": "2026-11-18T00:00:00Z",
+              "lessons": [
+                {
+                  "id": "MOD-DEMO-P1-TEXT",
+                  "title": "SQL — parameters and tenant predicates",
+                  "type": "TEXT",
+                  "body": "# SQL — parameters and tenant predicates\n\nUse a parameterized query for user-supplied values. Obtain tenant identity from the authenticated server context and apply it in the WHERE predicate. A browser-supplied tenant ID does not establish ownership.\n\nPractice: query orders with WHERE organization_id = :trusted_org AND order_id = :order_id. Try an order belonging to another organization and confirm no row is returned.\n\nRead to the end, then explicitly mark this lesson complete. Learning completion alone does not award the Skill.\n\nDevelopment demo content; not human-reviewed production training.\n",
+                  "bodyFormat": "MARKDOWN",
+                  "durationSeconds": 180,
+                  "durationSource": "ESTIMATED",
+                  "videoSource": null,
+                  "assetId": null,
+                  "videoUrl": null
+                }
+              ]
+            },
+            "knowledgeLevel": "INTERMEDIATE",
+            "outcomeCodes": [],
+            "skillVersion": "0.12.1"
+          },
+          "editedBy": "DEVELOPMENT_SEED",
+          "editedAt": "2026-11-18T00:00:00Z",
+          "decidedBy": null,
+          "decidedAt": null,
+          "feedback": null
+        }
+      ],
+      "history": [
+        {
+          "sequence": 1,
+          "revision": 1,
+          "action": "DEVELOPMENT_SEED_PUBLISHED",
+          "actorId": "DEVELOPMENT_SEED",
+          "occurredAt": "2026-11-18T00:00:00Z",
+          "detail": "Council fixture. No human review claimed."
+        }
+      ],
+      "intake": null
+    }
+  ],
+  "items": [
+    {
+      "id": "a0b7787f-bea9-5d94-a578-d6c5c2afae5e",
+      "versionId": "24c4757a-4b82-5195-a187-f4eccb08a1dc",
+      "content": {
+        "prompt": "Which test detects a discount boundary defect?",
+        "options": [
+          "Call the discount function without asserting.",
+          "Assert results for totals 99, 100 and 101 independently.",
+          "Only verify a page loads.",
+          "Reuse the previous test output."
+        ],
+        "correctAnswer": 1,
+        "skillId": "MS-DEMO-01",
+        "skillName": "Unit testing",
+        "difficulty": null,
+        "explanation": "Assert results for totals 99, 100 and 101 independently.",
+        "knowledgeLevel": "INTERMEDIATE",
+        "outcomeCode": null,
+        "mandatory": false,
+        "skillVersion": "0.12.1"
+      }
+    },
+    {
+      "id": "e5eb59d8-05dd-57d2-8bd5-66f75331b7aa",
+      "versionId": "4a95c61d-5b97-539a-99a7-c1f04fb7f717",
+      "content": {
+        "prompt": "How should a unit test handle a payment dependency?",
+        "options": [
+          "Call the live provider.",
+          "Use a controlled test double and assert the expected behavior.",
+          "Disable assertions when offline.",
+          "Depend on a previous payment."
+        ],
+        "correctAnswer": 1,
+        "skillId": "MS-DEMO-01",
+        "skillName": "Unit testing",
+        "difficulty": null,
+        "explanation": "Use a controlled test double and assert the expected behavior.",
+        "knowledgeLevel": "INTERMEDIATE",
+        "outcomeCode": null,
+        "mandatory": false,
+        "skillVersion": "0.12.1"
+      }
+    },
+    {
+      "id": "3748e60f-c35a-5757-84ff-22a6a41c97b1",
+      "versionId": "13390b00-9fa4-5673-bd3d-4148ed236813",
+      "content": {
+        "prompt": "What keeps unit tests independent of execution order?",
+        "options": [
+          "Share mutable global state.",
+          "Create fresh fixtures and explicit assertions for each case.",
+          "Run only the last test.",
+          "Ignore failures after a successful run."
+        ],
+        "correctAnswer": 1,
+        "skillId": "MS-DEMO-01",
+        "skillName": "Unit testing",
+        "difficulty": null,
+        "explanation": "Create fresh fixtures and explicit assertions for each case.",
+        "knowledgeLevel": "INTERMEDIATE",
+        "outcomeCode": null,
+        "mandatory": false,
+        "skillVersion": "0.12.1"
+      }
+    },
+    {
+      "id": "4c50de24-d5df-574b-8f4a-f9dbc4fa107b",
+      "versionId": "d3437e79-2fa2-5c51-ad45-773e0fe289cd",
+      "content": {
+        "prompt": "MANDATORY: a test passes without asserting the returned discount. What repairs it?",
+        "options": [
+          "Rename the test.",
+          "Assert the exact expected discount for a fixed input.",
+          "Increase the timeout.",
+          "Skip the boundary input."
+        ],
+        "correctAnswer": 1,
+        "skillId": "MS-DEMO-01",
+        "skillName": "Unit testing",
+        "difficulty": null,
+        "explanation": "Assert the exact expected discount for a fixed input.",
+        "knowledgeLevel": "INTERMEDIATE",
+        "outcomeCode": null,
+        "mandatory": true,
+        "skillVersion": "0.12.1"
+      }
+    },
+    {
+      "id": "bb656b5a-8b4f-5a19-8bb5-b32adbe27de0",
+      "versionId": "a4b27fb0-ae7d-56bf-b43a-80fca4fe1ba5",
+      "content": {
+        "prompt": "A transfer debit succeeds but its credit fails. What preserves atomicity?",
+        "options": [
+          "Keep the debit.",
+          "Roll back both updates in the same transaction.",
+          "Commit before the credit.",
+          "Retry only the debit."
+        ],
+        "correctAnswer": 1,
+        "skillId": "MS-DEMO-02",
+        "skillName": "Database transactions",
+        "difficulty": null,
+        "explanation": "Roll back both updates in the same transaction.",
+        "knowledgeLevel": "INTERMEDIATE",
+        "outcomeCode": null,
+        "mandatory": false,
+        "skillVersion": "0.12.1"
+      }
+    },
+    {
+      "id": "d5b9cdd6-cc44-5db3-9a95-da5d4fafd07d",
+      "versionId": "7e5acef2-8fca-532f-a253-6711f65383f1",
+      "content": {
+        "prompt": "When should a transfer transaction commit?",
+        "options": [
+          "After the first update.",
+          "After every required update succeeds.",
+          "Before validating the destination.",
+          "On any caught exception."
+        ],
+        "correctAnswer": 1,
+        "skillId": "MS-DEMO-02",
+        "skillName": "Database transactions",
+        "difficulty": null,
+        "explanation": "After every required update succeeds.",
+        "knowledgeLevel": "INTERMEDIATE",
+        "outcomeCode": null,
+        "mandatory": false,
+        "skillVersion": "0.12.1"
+      }
+    },
+    {
+      "id": "5bf719b9-f40b-5d0d-a174-856b4cd53177",
+      "versionId": "df43f647-a946-5b15-8ca7-6d83b9f1280d",
+      "content": {
+        "prompt": "A client retries a timed-out transfer. What prevents duplicate application?",
+        "options": [
+          "Generate a new key for every retry.",
+          "Reuse a stable idempotency key and retain the accepted outcome.",
+          "Ignore account balances.",
+          "Apply both requests then inspect manually."
+        ],
+        "correctAnswer": 1,
+        "skillId": "MS-DEMO-02",
+        "skillName": "Database transactions",
+        "difficulty": null,
+        "explanation": "Reuse a stable idempotency key and retain the accepted outcome.",
+        "knowledgeLevel": "INTERMEDIATE",
+        "outcomeCode": null,
+        "mandatory": false,
+        "skillVersion": "0.12.1"
+      }
+    },
+    {
+      "id": "28dff134-d8c4-5d71-a0d4-b21439cf7784",
+      "versionId": "63fdbf3b-fe22-5950-8787-51b51aef321b",
+      "content": {
+        "prompt": "MANDATORY: a failed credit must not leave a completed debit. What is required?",
+        "options": [
+          "Separate transactions for each update.",
+          "One transaction with rollback on failure.",
+          "Commit debit in a finally block.",
+          "Treat the error as success."
+        ],
+        "correctAnswer": 1,
+        "skillId": "MS-DEMO-02",
+        "skillName": "Database transactions",
+        "difficulty": null,
+        "explanation": "One transaction with rollback on failure.",
+        "knowledgeLevel": "INTERMEDIATE",
+        "outcomeCode": null,
+        "mandatory": true,
+        "skillVersion": "0.12.1"
+      }
+    },
+    {
+      "id": "d6995772-39a5-5ce5-a00b-bbaf6cd439a7",
+      "versionId": "7c920752-7e8a-555e-843a-b28a96335af0",
+      "content": {
+        "prompt": "What should a behavior-preserving refactor keep stable?",
+        "options": [
+          "All internal variable names.",
+          "Observable behavior verified by tests.",
+          "Every original private method.",
+          "The number of source lines."
+        ],
+        "correctAnswer": 1,
+        "skillId": "MS-DEMO-03",
+        "skillName": "Refactoring",
+        "difficulty": null,
+        "explanation": "Observable behavior verified by tests.",
+        "knowledgeLevel": "INTERMEDIATE",
+        "outcomeCode": null,
+        "mandatory": false,
+        "skillVersion": "0.12.1"
+      }
+    },
+    {
+      "id": "ed53689c-1a0d-5632-a389-f082f11ef621",
+      "versionId": "d98eda1b-a602-5a62-a4c4-17327253f526",
+      "content": {
+        "prompt": "What is a safe first step before restructuring a legacy calculation?",
+        "options": [
+          "Delete its tests.",
+          "Capture current expected behavior with focused tests.",
+          "Change outputs and structure together.",
+          "Disable validation."
+        ],
+        "correctAnswer": 1,
+        "skillId": "MS-DEMO-03",
+        "skillName": "Refactoring",
+        "difficulty": null,
+        "explanation": "Capture current expected behavior with focused tests.",
+        "knowledgeLevel": "INTERMEDIATE",
+        "outcomeCode": null,
+        "mandatory": false,
+        "skillVersion": "0.12.1"
+      }
+    },
+    {
+      "id": "7e5c8cc5-3942-5d2f-9dd7-9eb059e85fea",
+      "versionId": "48fb9bf3-71b4-539d-a97e-9d8da74d53b5",
+      "content": {
+        "prompt": "How should a refactor be reviewed?",
+        "options": [
+          "Only compare file sizes.",
+          "Inspect small changes and rerun behavior checks.",
+          "Approve after formatting.",
+          "Ignore public API changes."
+        ],
+        "correctAnswer": 1,
+        "skillId": "MS-DEMO-03",
+        "skillName": "Refactoring",
+        "difficulty": null,
+        "explanation": "Inspect small changes and rerun behavior checks.",
+        "knowledgeLevel": "INTERMEDIATE",
+        "outcomeCode": null,
+        "mandatory": false,
+        "skillVersion": "0.12.1"
+      }
+    },
+    {
+      "id": "0b288ef7-2c99-5fed-803d-777691fa62c9",
+      "versionId": "9d9ad04a-ad58-509b-8efb-8406ed00dfd6",
+      "content": {
+        "prompt": "Which query construction handles an untrusted order identifier safely?",
+        "options": [
+          "Bind it as a parameter and apply the authenticated tenant predicate.",
+          "Concatenate it into SQL.",
+          "Trust the tenant ID from the browser.",
+          "Remove the ownership predicate when empty."
+        ],
+        "correctAnswer": 0,
+        "skillId": "MS-DEMO-05",
+        "skillName": "SQL query fundamentals",
+        "difficulty": null,
+        "explanation": "Bind it as a parameter and apply the authenticated tenant predicate.",
+        "knowledgeLevel": "INTERMEDIATE",
+        "outcomeCode": null,
+        "mandatory": false,
+        "skillVersion": "0.12.1"
+      }
+    },
+    {
+      "id": "672e0f21-b4e1-50c4-bc00-db5647611a3b",
+      "versionId": "54f5e69a-d6a5-5cfa-acd2-00ae9ae031aa",
+      "content": {
+        "prompt": "Where should the SQL tenant predicate obtain organization identity?",
+        "options": [
+          "The authenticated server context.",
+          "An editable browser field.",
+          "The first row in the table.",
+          "A query string chosen by the caller."
+        ],
+        "correctAnswer": 0,
+        "skillId": "MS-DEMO-05",
+        "skillName": "SQL query fundamentals",
+        "difficulty": null,
+        "explanation": "The authenticated server context.",
+        "knowledgeLevel": "INTERMEDIATE",
+        "outcomeCode": null,
+        "mandatory": false,
+        "skillVersion": "0.12.1"
+      }
+    },
+    {
+      "id": "b6d10ce6-61e6-5bad-8f1d-5413d4e33a74",
+      "versionId": "98073dba-db0a-5f68-8b8b-19666e5658ea",
+      "content": {
+        "prompt": "An order belongs to a different tenant. What should the scoped SELECT return?",
+        "options": [
+          "No accessible row for the current tenant.",
+          "The foreign row with its ID hidden.",
+          "Every row so the browser can filter.",
+          "The first matching order regardless of tenant."
+        ],
+        "correctAnswer": 0,
+        "skillId": "MS-DEMO-05",
+        "skillName": "SQL query fundamentals",
+        "difficulty": null,
+        "explanation": "No accessible row for the current tenant.",
+        "knowledgeLevel": "INTERMEDIATE",
+        "outcomeCode": null,
+        "mandatory": false,
+        "skillVersion": "0.12.1"
+      }
+    },
+    {
+      "id": "f716cf93-392e-5988-9159-f39553665c29",
+      "versionId": "ff482c28-f2f4-50f8-ad65-136fa6949a18",
+      "content": {
+        "prompt": "MANDATORY: how do you keep a cross-tenant order inaccessible?",
+        "options": [
+          "Apply the trusted organization predicate as well as the parameterized order ID.",
+          "Check only that the user is signed in.",
+          "Use a client-supplied tenant ID.",
+          "Filter results only in React."
+        ],
+        "correctAnswer": 0,
+        "skillId": "MS-DEMO-05",
+        "skillName": "SQL query fundamentals",
+        "difficulty": null,
+        "explanation": "Apply the trusted organization predicate as well as the parameterized order ID.",
+        "knowledgeLevel": "INTERMEDIATE",
+        "outcomeCode": null,
+        "mandatory": true,
+        "skillVersion": "0.12.1"
+      }
+    }
+  ],
+  "learners": [
+    {
+      "id": "edf5139c-1d42-5842-a053-0cbccb2a27fa",
+      "membershipId": "2068b132-d1d9-542c-8396-5b0851af8cec",
+      "email": "council-01@demo.invalid",
+      "name": "Council rehearsal 01"
+    },
+    {
+      "id": "8e81ab51-d7d6-56fd-a8dd-dbb638168491",
+      "membershipId": "2be4a4c3-d83f-5415-8ef5-bde15e705451",
+      "email": "council-02@demo.invalid",
+      "name": "Council rehearsal 02"
+    },
+    {
+      "id": "8c08567f-ad49-54c3-b9b2-1461070ea92b",
+      "membershipId": "a707dd6f-4639-5950-af03-4dadae6b03a0",
+      "email": "council-03@demo.invalid",
+      "name": "Council rehearsal 03"
+    },
+    {
+      "id": "e16aae22-5d76-517e-b4b8-5c6cd3f64818",
+      "membershipId": "7c75dc1b-721c-526f-96ad-fe5f93d426e5",
+      "email": "council-04@demo.invalid",
+      "name": "Council rehearsal 04"
+    },
+    {
+      "id": "6efb95d6-6874-5779-b692-f6f1d1087cac",
+      "membershipId": "cdd58948-c0ed-5d51-b9db-3754f6da1a15",
+      "email": "council-05@demo.invalid",
+      "name": "Council rehearsal 05"
+    },
+    {
+      "id": "372e8edc-76ef-5cbd-9ac2-91826ad14187",
+      "membershipId": "2aed37e0-fe32-50ab-9c70-03a1e77cca59",
+      "email": "council-06@demo.invalid",
+      "name": "Council rehearsal 06"
+    },
+    {
+      "id": "610476eb-0b39-5c4d-90e2-4b848c7346ea",
+      "membershipId": "a1a0e261-b319-54a1-918d-306b6aef9843",
+      "email": "council-07@demo.invalid",
+      "name": "Council rehearsal 07"
+    },
+    {
+      "id": "7717d7de-c959-57f2-be8e-f128723f5946",
+      "membershipId": "b2a952d6-c328-5748-ae4f-c186387e6575",
+      "email": "council-08@demo.invalid",
+      "name": "Council rehearsal 08"
+    },
+    {
+      "id": "12c182ab-36f2-5ece-80ef-5ad3760f50ce",
+      "membershipId": "3a3b0f01-2180-5bcb-ab87-e3eb3e1f6faf",
+      "email": "council-09@demo.invalid",
+      "name": "Council rehearsal 09"
+    },
+    {
+      "id": "3c496f26-cec8-5397-a58f-fbf164d85775",
+      "membershipId": "ee2f2fc4-dade-5124-b663-42b642084db1",
+      "email": "council-10@demo.invalid",
+      "name": "Council rehearsal 10"
+    },
+    {
+      "id": "0856a0e5-d249-5575-afe8-a37efe5ee2b4",
+      "membershipId": "2d168465-75b8-5563-a07f-947131844199",
+      "email": "council-11@demo.invalid",
+      "name": "Council presentation — clean account"
+    }
+  ],
+  "policies": [
+    {
+      "purpose": "SKILL_ASSESSMENT",
+      "ownerId": "MS-DEMO-01",
+      "levelId": "INTERMEDIATE",
+      "configuration": {
+        "timeLimitSeconds": 300,
+        "retakeWaitSeconds": 0,
+        "maxAttempts": 3,
+        "groups": [
+          {
+            "skillId": "MS-DEMO-01",
+            "knowledgeLevel": "INTERMEDIATE",
+            "totalCount": 3,
+            "requiredCorrectCount": 2,
+            "mandatoryCount": 1,
+            "mandatoryRequired": true,
+            "allWrongVeto": false
+          }
+        ]
+      }
+    },
+    {
+      "purpose": "SKILL_ASSESSMENT",
+      "ownerId": "MS-DEMO-02",
+      "levelId": "INTERMEDIATE",
+      "configuration": {
+        "timeLimitSeconds": 300,
+        "retakeWaitSeconds": 0,
+        "maxAttempts": 3,
+        "groups": [
+          {
+            "skillId": "MS-DEMO-02",
+            "knowledgeLevel": "INTERMEDIATE",
+            "totalCount": 3,
+            "requiredCorrectCount": 2,
+            "mandatoryCount": 1,
+            "mandatoryRequired": true,
+            "allWrongVeto": false
+          },
+          {
+            "skillId": "MS-DEMO-05",
+            "knowledgeLevel": "INTERMEDIATE",
+            "totalCount": 3,
+            "requiredCorrectCount": 2,
+            "mandatoryCount": 0,
+            "mandatoryRequired": false,
+            "allWrongVeto": false
+          }
+        ]
+      }
+    },
+    {
+      "purpose": "SKILL_ASSESSMENT",
+      "ownerId": "MS-DEMO-05",
+      "levelId": "INTERMEDIATE",
+      "configuration": {
+        "timeLimitSeconds": 300,
+        "retakeWaitSeconds": 0,
+        "maxAttempts": 3,
+        "groups": [
+          {
+            "skillId": "MS-DEMO-05",
+            "knowledgeLevel": "INTERMEDIATE",
+            "totalCount": 3,
+            "requiredCorrectCount": 2,
+            "mandatoryCount": 1,
+            "mandatoryRequired": true,
+            "allWrongVeto": false
+          }
+        ]
+      }
+    },
+    {
+      "purpose": "BASELINE",
+      "ownerId": "ROLE-DEMO-COUNCIL-V1",
+      "levelId": "ROLE-DEMO-COUNCIL-V1-M",
+      "configuration": {
+        "timeLimitSeconds": 600,
+        "retakeWaitSeconds": 0,
+        "maxAttempts": 3,
+        "groups": [
+          {
+            "skillId": "MS-DEMO-01",
+            "knowledgeLevel": "INTERMEDIATE",
+            "totalCount": 3,
+            "requiredCorrectCount": 2,
+            "mandatoryRequired": false,
+            "allWrongVeto": false
+          },
+          {
+            "skillId": "MS-DEMO-02",
+            "knowledgeLevel": "INTERMEDIATE",
+            "totalCount": 3,
+            "requiredCorrectCount": 2,
+            "mandatoryRequired": false,
+            "allWrongVeto": false
+          },
+          {
+            "skillId": "MS-DEMO-03",
+            "knowledgeLevel": "INTERMEDIATE",
+            "totalCount": 3,
+            "requiredCorrectCount": 2,
+            "mandatoryRequired": false,
+            "allWrongVeto": false
+          },
+          {
+            "skillId": "MS-DEMO-05",
+            "knowledgeLevel": "INTERMEDIATE",
+            "totalCount": 3,
+            "requiredCorrectCount": 2,
+            "mandatoryRequired": false,
+            "allWrongVeto": false
+          }
+        ]
+      }
+    }
+  ]
+}

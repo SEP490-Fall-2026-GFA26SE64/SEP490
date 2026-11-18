@@ -394,6 +394,8 @@ export const vi: TranslationKeys = {
     mandatoryQuestion: 'Câu điểm liệt', mandatoryLegend: '* Câu điểm liệt: phải trả lời đúng câu này.',
     saveAnswer: 'Lưu đáp án', saveChanges: 'Lưu thay đổi', savedAnswer: 'Đáp án đã lưu', unsavedChanges: 'Thay đổi chưa lưu',
     editAnswerHint: 'Bạn có thể sửa đáp án trước khi nộp hoặc hết giờ. Thay đổi tự lưu khi bạn chuyển câu.',
+    keyboardHint: 'Phím số: chọn đáp án · Enter: lưu và sang câu tiếp',
+    keyboardLastHint: 'Phím số: chọn đáp án · Enter: lưu và xem lại trước khi nộp',
     savingAnswer: 'Đang lưu đáp án…',
     saveBeforeSubmit: 'Hãy lưu các đáp án đã sửa trước khi nộp bài.',
     insufficientEvidence: 'Bài nộp chưa có đủ bằng chứng để tính mastery. Profile của bạn chưa được cập nhật.',

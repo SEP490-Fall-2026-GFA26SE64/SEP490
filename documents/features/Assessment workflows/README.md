@@ -10,6 +10,8 @@
 
 ## Baseline and Skill Assessment — source update, 2026-11-18
 
+**Keyboard controls — 2026-11-18:** the shared Employee baseline/Skill Assessment panel now supports number keys to select displayed answers and Enter to save and advance after server acceptance. The final question opens explicit submission confirmation. State, duplicate/repeat, modifier/IME and editing-control guards retain the original command lifecycle. [Verification](../../testing/system/assessment-keyboard-20261118.md): 10 component tests and 5 isolated Chrome journeys passed; build/scoped lint passed. This is browser interaction evidence, not new live assessment persistence acceptance.
+
 At `2c2468b5`, scoped configuration, Role-derived Expert Skill access, draft-first directories, module-specific retake contexts and mandatory-question quotas exist in active local source. [Ordered flow/API/worker/schema contract](../../technical/Organization%20Rule%20Assessment%20and%20Pathway.md#current-flow-2026-11-18) supersedes older code-confirmation notes here. RIASEC below remains a separate workflow.
 
 L&D configures BASELINE per org+Role+member Level; assigned-Role Experts share SKILL_ASSESSMENT per org+Skill+knowledge. Save draft is distinct from activation; immutable policy versions, pointer revisions, catalog hashes, abandoned drafts and command receipts preserve history. New Skill policies explicitly configure mandatoryCount for every MAIN/prerequisite group; exactly that many mandatory plus the remaining ordinary items are sampled within totalCount. All sampled mandatory answers must be correct when quota > 0, alongside the independent requiredCorrectCount. Baseline editor has no mandatory/veto condition. Legacy frozen null-quota papers retain their original semantics.
