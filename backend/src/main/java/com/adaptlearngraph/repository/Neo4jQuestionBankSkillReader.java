@@ -31,8 +31,8 @@ public final class Neo4jQuestionBankSkillReader {
     }
 
     public List<Choice> skills(String organizationId) {
-        return read("MATCH (s:MicroSkill) WHERE s.organizationId=$organization AND s.status='ACTIVE' AND s.reviewStatus='APPROVED' RETURN DISTINCT s.id AS id,s.name AS name ORDER BY name,id",
-                Map.of("organization", organization(organizationId)), row -> new Choice(row.get("id").asString(), row.get("name").asString()));
+        return read("MATCH (s:MicroSkill) WHERE s.organizationId=$organization AND s.status='ACTIVE' AND s.reviewStatus='APPROVED' RETURN DISTINCT s.id AS id,s.name AS name,s.code AS code ORDER BY name,id",
+                Map.of("organization", organization(organizationId)), row -> new Choice(row.get("id").asString(), row.get("name").asString(), row.get("code").isNull() ? null : row.get("code").asString()));
     }
 
     public String requireSkill(String organizationId, String id) {

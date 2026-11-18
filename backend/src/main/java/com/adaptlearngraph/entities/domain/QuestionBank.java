@@ -79,7 +79,9 @@ public final class QuestionBank {
         public boolean manager() { return "LD_MANAGER".equals(role); }
         public boolean expert() { return "DOMAIN_EXPERT".equals(role); }
     }
-    public record Choice(String id, String name) {}
+    public record Choice(String id, String name, String code) {
+        public Choice(String id, String name) { this(id, name, null); }
+    }
     public record KnowledgeChoice(String skillId,String knowledgeLevel,List<Choice> outcomes) {}
     public static final class Failure extends RuntimeException {
         private final int status;
