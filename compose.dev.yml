@@ -20,6 +20,31 @@ x-backend-environment: &backend-environment
   ASSESSMENT_BASELINE_IRTADMINISTRATION_ENABLED: "false"
 
 services:
+  riasec-ollama:
+    image: ollama/ollama@sha256:910d0d8107b538fb0894e63163eb195de0cc7aefcbc666dc62d3b18f71124592
+    environment:
+      OLLAMA_NO_CLOUD: "true"
+      OLLAMA_NUM_PARALLEL: "1"
+      OLLAMA_MAX_LOADED_MODELS: "1"
+      OLLAMA_CONTEXT_LENGTH: "8192"
+      OLLAMA_KEEP_ALIVE: "5m"
+      OLLAMA_MAX_QUEUE: "1"
+      OLLAMA_VULKAN: "0"
+    mem_limit: ${RIASEC_OLLAMA_MEMORY:-5g}
+    cpus: ${RIASEC_OLLAMA_CPUS:-2}
+    volumes: [riasec_models_v2:/root/.ollama]
+    networks: [riasec_private]
+    restart: unless-stopped
+  riasec-model-pull:
+    image: ollama/ollama@sha256:910d0d8107b538fb0894e63163eb195de0cc7aefcbc666dc62d3b18f71124592
+    profiles: [riasec-setup]
+    entrypoint: [/bin/sh, -ec]
+    command:
+      - 'ollama serve & server=$$!; trap "kill $$server" EXIT; until ollama list >/dev/null 2>&1; do sleep 1; done; ollama pull qwen3:4b-instruct-2507-q4_K_M'
+    volumes: [riasec_models_v2:/root/.ollama]
+    networks: [default]
+    mem_limit: ${RIASEC_OLLAMA_MEMORY:-5g}
+    cpus: ${RIASEC_OLLAMA_CPUS:-2}
   minio:
     image: ${MINIO_IMAGE:-minio/minio:RELEASE.2025-04-22T22-12-26Z}
     command: [server, /data]
@@ -165,10 +190,14 @@ services:
     restart: "no"
 
   api:
+    networks: [default, riasec_private]
     image: adapt-learn-graph-backend:dev
     build: *backend-build
     environment:
       <<: *backend-environment
+      RIASEC_ENABLED: "true"
+      RIASEC_OLLAMA_URL: http://riasec-ollama:11434
+      RIASEC_MODEL: qwen3:4b-instruct-2507-q4_K_M
       SPRING_PROFILES_ACTIVE: local,workspace-baseline,workspace-development
       WORKSPACE_MIGRATION_LOCATION: classpath:db/workspace-migration
       WORKSPACE_DEVELOPMENT_FIXTURES_ENABLED: "true"
@@ -317,6 +346,7 @@ services:
       - "127.0.0.1:${WEB_PORT:-8088}:5173"
 
 volumes:
+  riasec_models_v2:
   local_learning_assets:
   postgres_data:
   neo4j_data:
@@ -327,3 +357,7 @@ volumes:
   neo4j_workspace_v011_data:
   workspace_catalog_v011_bootstrap:
   workspace_security:
+
+networks:
+  riasec_private:
+    internal: true

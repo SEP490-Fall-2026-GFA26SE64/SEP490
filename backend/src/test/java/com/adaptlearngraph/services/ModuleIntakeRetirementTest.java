@@ -17,6 +17,8 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+// Exercises retained historical compatibility and retired API rejection.
+@SuppressWarnings("deprecation")
 class ModuleIntakeRetirementTest {
     @Test void oldJavaEntryPointsCannotWriteForAnyActor() {
         var port = mock(ModuleAuthoringPort.class);

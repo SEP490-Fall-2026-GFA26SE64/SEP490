@@ -36,6 +36,10 @@ export function BaselineAttemptPanel({ attempt, seconds, locked, busy = false, r
     setDrafts(previous => ({ attemptId: attempt.id, values: { ...(previous.attemptId === attempt.id ? previous.values : {}), [item.position]: { base: item.selectedOptionId, choice: value } } }))
   }
   const navigationRef = useRef<HTMLElement>(null), currentQuestionRef = useRef<HTMLButtonElement>(null)
+  const questionRef = useRef<HTMLDivElement>(null), commandPending = useRef(false)
+  useLayoutEffect(() => {
+    questionRef.current?.focus({ preventScroll: true })
+  }, [attempt.id, position])
   useLayoutEffect(() => {
     const list = navigationRef.current, current = currentQuestionRef.current
     if (!list || !current) return
@@ -47,11 +51,12 @@ export function BaselineAttemptPanel({ attempt, seconds, locked, busy = false, r
   const transition = useRef<{ attemptId: string; position: number; choice: string; destination: number | 'submit' } | null>(null)
   const expired = attempt.expired || seconds <= 0
   const changeQuestion = (destination: number | 'submit') => {
-    if (busy || (typeof destination === 'number' && destination === position)) return
+    if (busy || commandPending.current || (typeof destination === 'number' && destination === position)) return
     if (changed && item) {
       if (locked || expired || !item.options.some(option => option.id === choice)) return
       transition.current = { attemptId: attempt.id, position: item.position, choice, destination }
-      void run(answerCommand(attempt, item, choice))
+      commandPending.current = true
+      void run(answerCommand(attempt, item, choice)).finally(() => { commandPending.current = false })
       return
     }
     if (destination === 'submit') { if (!locked && !expired) setConfirm(true) }
@@ -59,13 +64,30 @@ export function BaselineAttemptPanel({ attempt, seconds, locked, busy = false, r
   }
   useEffect(() => {
     const requested = transition.current
-    if (!requested || requested.attemptId !== attempt.id || locked || expired) return
+    if (!requested || requested.attemptId !== attempt.id || busy || locked || expired) return
     if (attempt.items.find(value => value.position === requested.position)?.selectedOptionId !== requested.choice) return
     transition.current = null
+    // oxlint-disable-next-line react/set-state-in-effect -- Apply navigation only after the server acknowledges the saved answer.
     if (requested.destination === 'submit') setConfirm(true)
     else setNavigation({ attemptId: attempt.id, position: requested.destination })
-  }, [attempt, locked, expired])
-  return <div className="min-w-0 space-y-5">
+  }, [attempt, busy, locked, expired])
+  return <div className="min-w-0 space-y-5" onKeyDown={event => {
+    if (event.defaultPrevented || event.repeat || event.nativeEvent.isComposing || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return
+    const target = event.target
+    if (target instanceof Element && target.closest('[role="dialog"], textarea, select, [contenteditable="true"], input:not([type="radio"])')) return
+    if (confirm || busy || commandPending.current || locked || expired || attempt.state !== 'IN_PROGRESS' || !item) return
+    const option = /^[0-9]$/.test(event.key) ? item.options[event.key === '0' ? 9 : Number(event.key) - 1] : undefined
+    if (option) {
+      event.preventDefault()
+      setChoice(option.id)
+      questionRef.current?.focus({ preventScroll: true })
+      return
+    }
+    if (event.key !== 'Enter' || (target instanceof Element && target.closest('button, a, summary'))) return
+    event.preventDefault()
+    if (!choice) return
+    changeQuestion(index === attempt.items.length - 1 ? 'submit' : attempt.items[index + 1].position)
+  }}>
     <Card><CardContent className="flex flex-wrap items-center justify-between gap-4 p-5">
       <div className="min-w-0 space-y-2"><Badge variant="outline">{attempt.purpose === 'BASELINE' ? (t('knowledgeAssessment.baseline')) : t('knowledgeAssessment.skill')}</Badge><Heading level={2} size="card">{attempt.target.selectionId ? `${attempt.roleName} · ${attempt.levelName}` : attempt.groups.find(g => g.role === 'MAIN')?.skillName}</Heading>
         </div>
@@ -91,10 +113,11 @@ export function BaselineAttemptPanel({ attempt, seconds, locked, busy = false, r
             <Button className="w-full" disabled={locked || expired} onClick={() => changeQuestion('submit')}>{tr('submit')}</Button></div>
         </CardContent></Card>
       <Card aria-busy={busy} className="min-w-0 lg:col-span-3"><CardHeader className="border-b border-border p-5"><div className="flex flex-wrap gap-2"><Badge variant="outline">{ui('question')} {item?.position ?? '—'}{item?.mandatory && <span aria-hidden="true" className="ml-1 font-bold">*</span>}</Badge>{changed ? <Badge variant="warning">{tr('unsavedChanges')}</Badge> : review && <Badge variant="secondary">{tr('savedAnswer')}</Badge>}</div></CardHeader>
-    <CardContent key={`${attempt.revision}:${position}`} className="space-y-4 p-5">
+    <CardContent className="p-5"><div ref={questionRef} tabIndex={-1} className="space-y-4 focus-visible:outline-none">
       <Text variant="caption">{tr('timerNotice')}</Text>
-      {expired ? <p role="status">{tr('expired')}</p> : item ? <AssessmentQuestionContent mandatory={item.mandatory} mandatoryLabel={tr('mandatoryQuestion')} idPrefix="baseline" prompt={item.prompt} options={item.options} value={choice} onChange={setChoice} disabled={locked} answerLabel={tr('chooseAnswer')} /> : <p role="status">{tr('refreshNeeded')}</p>}
-    </CardContent>
+      {expired ? <p role="status">{tr('expired')}</p> : item ? <AssessmentQuestionContent mandatory={item.mandatory} mandatoryLabel={tr('mandatoryQuestion')} idPrefix="baseline" prompt={item.prompt} options={item.options} value={choice} onChange={setChoice} disabled={locked} answerLabel={tr('chooseAnswer')} showOptionShortcuts /> : <p role="status">{tr('refreshNeeded')}</p>}
+      {!expired && item && attempt.state === 'IN_PROGRESS' && <Text variant="caption">{tr(index === attempt.items.length - 1 ? 'keyboardLastHint' : 'keyboardHint')}</Text>}
+    </div></CardContent>
       <div className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-t border-border bg-card p-5">
         <Button variant="outline" disabled={busy || index <= 0} leftIcon={<ArrowLeft size={16} />} onClick={() => changeQuestion(attempt.items[index - 1].position)}>{ui('previous')}</Button>
         <div className="flex flex-wrap gap-2"><Button variant="outline" disabled={busy || index >= attempt.items.length - 1} rightIcon={<ArrowRight size={16} />} onClick={() => changeQuestion(attempt.items[index + 1].position)}>{ui('next')}</Button>

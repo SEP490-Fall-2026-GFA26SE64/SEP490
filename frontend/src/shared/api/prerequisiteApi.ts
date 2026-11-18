@@ -113,7 +113,7 @@ export async function fetchTargetRoleGraph(
   roleId: string
 ): Promise<TargetRoleGraphDto> {
   const res = await fetch(
-    `/api/v1/organizations/${encodeURIComponent(normalizeOrg(organizationId))}/target-roles/${encodeURIComponent(roleId)}/graph`,
+    `/api/v1/organizations/${encodeURIComponent(normalizeOrg(organizationId))}/roles/${encodeURIComponent(roleId)}/graph`,
     {
       headers: {
         Accept: 'application/json',

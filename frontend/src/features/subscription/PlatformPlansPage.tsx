@@ -15,7 +15,8 @@ import { Heading } from '../../shared/components/typography/Heading'
 import { Text } from '../../shared/components/typography/Text'
 import { WorkspaceLayout } from '../../shared/layouts/WorkspaceLayout'
 import { getIdentity, getPlans, request, updatePlan, type Plan, type Terms } from './subscriptionApi'
-import { Failure, Loading, useCopy } from './SubscriptionFeedback'
+import { Failure, Loading } from "./SubscriptionFeedback";
+import { useCopy } from "./SubscriptionFeedback.helpers";
 
 const signOut = () => request('/api/v1/workspace-auth/sign-out', 'POST')
 

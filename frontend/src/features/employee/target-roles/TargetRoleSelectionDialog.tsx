@@ -1,3 +1,4 @@
+import { useResettableState } from '../../../shared/hooks/useResettableState'
 import React from 'react'
 import { AlertCircle, ArrowRight, CheckCircle2, ShieldAlert, Target, TrendingUp } from 'lucide-react'
 import { getActiveCompany } from '../../../shared/stores/companyStore'
@@ -46,6 +47,8 @@ interface TargetRoleSelectionDialogProps {
   currentLevel?: string | null
 }
 
+const DEFAULT_ROLE_LEVELS = ['Senior', 'Middle', 'Junior']
+
 export function TargetRoleSelectionDialog({
   choice,
   currentSelection,
@@ -66,7 +69,7 @@ export function TargetRoleSelectionDialog({
   const roleLevels =
     matchedRole?.levels && matchedRole.levels.length > 0
       ? matchedRole.levels
-      : ['Senior', 'Middle', 'Junior']
+      : DEFAULT_ROLE_LEVELS
 
   const isSameRole = Boolean(
     currentRole &&
@@ -85,13 +88,8 @@ export function TargetRoleSelectionDialog({
     return higherLevel || ''
   }, [roleLevels, isSameRole, currentRank])
 
-  const [selectedLevel, setSelectedLevel] = React.useState<string>('')
+  const [selectedLevel, setSelectedLevel] = useResettableState<string>(defaultSelectableLevel, [choice, defaultSelectableLevel])
 
-  React.useEffect(() => {
-    if (choice) {
-      setSelectedLevel(defaultSelectableLevel)
-    }
-  }, [choice, defaultSelectableLevel])
 
   return (
     <Dialog

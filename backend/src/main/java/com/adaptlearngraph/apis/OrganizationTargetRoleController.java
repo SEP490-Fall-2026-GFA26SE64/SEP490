@@ -27,7 +27,7 @@ import java.util.Map;
 import java.util.Optional;
 
 @RestController
-@RequestMapping(ApiEndpoints.ORGANIZATION_TARGET_ROLE)
+@RequestMapping({ApiEndpoints.ORGANIZATION_TARGET_ROLE, ApiEndpoints.ORGANIZATION_ROLE})
 public class OrganizationTargetRoleController {
     private static final String DRAFT = "DRAFT";
     private static final String ACTIVE = "ACTIVE";
@@ -47,12 +47,12 @@ public class OrganizationTargetRoleController {
 
         if (!isAuthorizedManager(userRole) && !isDomainExpert(userRole)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(Map.of("error", "Forbidden", "message", "Only L&D Managers, Administrators, and Domain Experts can create target roles"));
+                    .body(Map.of("error", "Forbidden", "message", "Only L&D Managers, Administrators, and Domain Experts can create roles"));
         }
 
         TargetRoleResponse response = targetRoles.createTargetRole(organizationId, request);
 
-        return ResponseEntity.created(URI.create("/api/v1/organizations/" + organizationId + "/target-roles/" + response.id()))
+        return ResponseEntity.created(URI.create("/api/v1/organizations/" + organizationId + "/roles/" + response.id()))
                 .body(response);
     }
 
@@ -73,7 +73,7 @@ public class OrganizationTargetRoleController {
 
         if (!isManager && !isExpert && !isEmployee) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(Map.of("error", "Forbidden", "message", "Only L&D Managers, Administrators, Domain Experts, and Employees can view organization target roles"));
+                    .body(Map.of("error", "Forbidden", "message", "Only L&D Managers, Administrators, Domain Experts, and Employees can view organization roles"));
         }
 
         String effectiveExpertFilter = assignedExpertId;
@@ -102,7 +102,7 @@ public class OrganizationTargetRoleController {
 
         if (!isManager && !isExpert && !isEmployee) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(Map.of("error", "Forbidden", "message", "Only L&D Managers, Administrators, Domain Experts, and Employees can view target roles"));
+                    .body(Map.of("error", "Forbidden", "message", "Only L&D Managers, Administrators, Domain Experts, and Employees can view roles"));
         }
 
         Optional<TargetRoleResponse> roleOpt = targetRoles.getTargetRole(organizationId, roleId);
@@ -115,7 +115,7 @@ public class OrganizationTargetRoleController {
         if (isExpert && !isManager) {
             if (userId != null && !userId.isBlank() && !isSameExpert(userId.trim(), role.assignedExpertId())) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                        .body(Map.of("error", "Forbidden", "message", "Domain Expert is not assigned to this target role"));
+                        .body(Map.of("error", "Forbidden", "message", "Domain Expert is not assigned to this role"));
             }
         }
 
@@ -135,7 +135,7 @@ public class OrganizationTargetRoleController {
 
         if (!isManager && !isExpert) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(Map.of("error", "Forbidden", "message", "Only L&D Managers, Administrators, and assigned Domain Experts can update target roles"));
+                    .body(Map.of("error", "Forbidden", "message", "Only L&D Managers, Administrators, and assigned Domain Experts can update roles"));
         }
 
         TargetRoleResponse existingRole = targetRoles.getTargetRole(organizationId, roleId).orElse(null);
@@ -146,21 +146,21 @@ public class OrganizationTargetRoleController {
             }
             if (userId != null && !userId.isBlank() && !isSameExpert(userId.trim(), existingRole.assignedExpertId())) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                        .body(Map.of("error", "Forbidden", "message", "Domain Expert is not assigned to this target role"));
+                        .body(Map.of("error", "Forbidden", "message", "Domain Expert is not assigned to this role"));
             }
         }
 
         boolean rejecting = request.status() != null && !request.status().isBlank()
                 && REJECTED.equals(request.status().trim().toUpperCase());
         if (isExpert && !isManager && existingRole != null && !REJECTED.equals(existingRole.status()) && rejecting) {
-            return ResponseEntity.badRequest().body(Map.of("error", "Bad Request", "message", "Domain Experts can no longer reject target roles"));
+            return ResponseEntity.badRequest().body(Map.of("error", "Bad Request", "message", "Domain Experts can no longer reject roles"));
         }
 
         boolean unpublishing = request.status() != null && !request.status().isBlank()
                 && "UNPUBLISHED".equalsIgnoreCase(request.status().trim());
         if (isExpert && !isManager && unpublishing) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(Map.of("error", "Forbidden", "message", "Only L&D Managers can unpublish target roles"));
+                    .body(Map.of("error", "Forbidden", "message", "Only L&D Managers can unpublish roles"));
         }
 
         return targetRoles.updateTargetRole(organizationId, roleId, request)
@@ -176,7 +176,7 @@ public class OrganizationTargetRoleController {
 
         if (!isAuthorizedManager(userRole) && !isDomainExpert(userRole)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(Map.of("error", "Forbidden", "message", "You do not have permission to delete target roles"));
+                    .body(Map.of("error", "Forbidden", "message", "You do not have permission to delete roles"));
         }
 
         Optional<TargetRoleResponse> existingOpt = targetRoles.getTargetRole(organizationId, roleId);
@@ -188,12 +188,12 @@ public class OrganizationTargetRoleController {
         if (isAuthorizedManager(userRole) && !isAdministrator(userRole)) {
             if (!DRAFT.equals(existing.status())) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                        .body(Map.of("error", "Forbidden", "message", "L&D Managers can only delete target roles in DRAFT status"));
+                        .body(Map.of("error", "Forbidden", "message", "L&D Managers can only delete roles in DRAFT status"));
             }
         } else if (isDomainExpert(userRole) && !isAdministrator(userRole)) {
             if (!DRAFT.equals(existing.status()) && !ACTIVE.equals(existing.status())) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                        .body(Map.of("error", "Forbidden", "message", "Experts can only delete target roles in DRAFT or PUBLISHED status"));
+                        .body(Map.of("error", "Forbidden", "message", "Experts can only delete roles in DRAFT or PUBLISHED status"));
             }
         }
 

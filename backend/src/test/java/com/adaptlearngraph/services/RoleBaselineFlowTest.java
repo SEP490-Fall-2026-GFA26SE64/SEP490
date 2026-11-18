@@ -17,7 +17,7 @@ class RoleBaselineFlowTest {
  final Baseline baseline=mock(Baseline.class);
  final RoleBaselineFlow flow=new RoleBaselineFlow(identity,catalog,store,baseline);
  final Role role=role("role-a",0,5);
- final Selection selected=new Selection(new UUID(0,20),role,1,Instant.EPOCH,true);
+ final Selection selected=new Selection(new UUID(0,20),role,1,Instant.EPOCH,true,"level-role-a");
  @BeforeEach void setup() {
   when(identity.requireEmployee()).thenReturn(actor);
   when(catalog.roles(actor.organizationId())).thenReturn(List.of(role,role("role-b",5,10),role("role-c",10,15)));
@@ -29,10 +29,10 @@ class RoleBaselineFlowTest {
   assertThat(role.levels().getFirst().skills()).hasSize(6);
   verifyNoInteractions(store,baseline);
  }
- @Test void rb06And08FullJobPositionUnionDeduplicatesSharedSkill() {
-  var expected=new HashSet<String>();for(int i=0;i<15;i++)expected.add("skill-"+i);
-  when(baseline.progress(actor,role,expected)).thenReturn(new Progress("BASELINE_REQUIRED",15,14,null,1));
-  assertThat(flow.view().progress()).isEqualTo(new Progress("BASELINE_REQUIRED",15,14,null,1));
+ @Test void rb06And08SelectedLevelDeduplicatesSharedSkills() {
+  var expected=new HashSet<String>();for(int i=0;i<5;i++)expected.add("skill-"+i);
+  when(baseline.progress(actor,role,expected)).thenReturn(new Progress("BASELINE_REQUIRED",5,4,null,1));
+  assertThat(flow.view().progress()).isEqualTo(new Progress("BASELINE_REQUIRED",5,4,null,1));
   verify(baseline).progress(actor,role,expected);
   verify(store,never()).select(any(),any(),anyString(),anyString());
  }
@@ -45,13 +45,14 @@ class RoleBaselineFlowTest {
   verifyNoInteractions(baseline);
  }
  @Test void rb08EmptyUnionFailsClosed() {
-  when(catalog.roles(actor.organizationId())).thenReturn(List.of(new Role("role-a","A","A","scope","jobPosition-a","A","v1","f",List.of())));
+  when(catalog.roles(actor.organizationId())).thenReturn(List.of(new Role("role-a","A","A","scope","jobPosition-a","A","v1","f",List.of(new Level("level-role-a","L","Junior",1,"Context","ALL",List.of())))));
   failure(503,"DEPENDENCY_UNAVAILABLE",flow::view);verifyNoInteractions(baseline);
  }
- @Test void rb05ReplayPrecedesCatalogAndStaleChecks() {
+ @Test void rb05ReplayRevalidatesCatalogBeforeReturningTheRetainedTuple() {
   when(store.replay(eq(actor),eq("retry"),anyString())).thenReturn(Optional.of(selected));
   assertThat(flow.choose(role.id(),null,"retry")).isEqualTo(selected);
-  verifyNoInteractions(catalog,baseline);
+  verify(catalog).roles(actor.organizationId());verifyNoInteractions(baseline);
+  verify(store,never()).current(any());
  }
  @Test void rb05StaleSelectionNeverMutates() {
   failure(409,"STALE_SELECTION",()->flow.choose("role-b",null,"key"));
@@ -61,7 +62,7 @@ class RoleBaselineFlowTest {
  @Test void rb13ActiveAttemptBlocksChangeAndAllowsSameRole() {
   when(store.assessmentActive(actor)).thenReturn(true);
   failure(409,"ASSESSMENT_IN_PROGRESS",()->flow.choose("role-b",selected.selectionId(),"change"));
-  when(store.select(eq(actor),eq(role),eq("noop"),anyString())).thenReturn(selected);
+  when(store.select(eq(actor),eq(role),eq("level-role-a"),eq("noop"),anyString())).thenReturn(selected);
   assertThat(flow.choose(role.id(),selected.selectionId(),"noop")).isEqualTo(selected);
  }
  @Test void rb16ReauthorizesBeforeReplay() {
@@ -83,8 +84,8 @@ class RoleBaselineFlowTest {
  }
  static Role role(String id,int start,int end) {
   var skills=new ArrayList<Skill>();
-  for(int i=start;i<end;i++)skills.add(new Skill("skill-"+i,"S"+i,"Skill "+i,.7,true));
-  skills.add(new Skill("skill-0","S0","Skill 0",.7,true));
+  for(int i=start;i<end;i++)skills.add(new Skill("skill-"+i,"S"+i,"Skill "+i,List.of("FOUNDATION"),true));
+  skills.add(new Skill("skill-0","S0","Skill 0",List.of("FOUNDATION"),true));
   return new Role(id,id,id,"Scope","jobPosition-a","JobPosition A","v1","fixture-f15-v1",
    List.of(new Level("level-"+id,"L1","Junior",1,"Context","ALL",skills)));
  }

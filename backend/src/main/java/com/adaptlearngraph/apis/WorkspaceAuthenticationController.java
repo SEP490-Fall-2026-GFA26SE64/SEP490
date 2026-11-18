@@ -109,7 +109,7 @@ public class WorkspaceAuthenticationController {
         if (principal == null) {
             throw new RegistrationFailure(RegistrationFailure.Code.UNAUTHENTICATED, "Sign in to change password.");
         }
-        passwordReset.changePassword(principal.accountId(), input.currentPassword(), input.newPassword());
+        passwordReset.changePasswordForSession(principal, input.currentPassword(), input.newPassword());
         var session = request.getSession(false);
         if (session != null) session.invalidate();
     }

@@ -1,6 +1,14 @@
 import { expect, test, type Page } from '@playwright/test'
 
 async function loginAs(page: Page, email: string, password = 'Password123!') {
+  await page.context().clearCookies()
+  await page.goto('/login')
+  await page.evaluate(() => {
+    try {
+      localStorage.clear()
+      sessionStorage.clear()
+    } catch {}
+  })
   await page.goto('/login')
   await page.getByPlaceholder('Enter your email').fill(email)
   await page.locator('input[type="password"]').fill(password)
@@ -131,8 +139,8 @@ test.describe('Report 5: WF02 Target Role Flow & Competency Ontology E2E Verific
     await expect(page.locator('main')).toBeVisible()
 
     // Verify catalog header and metrics
-    await expect(page.getByText('Target Role Version Catalog')).toBeVisible()
-    await expect(page.getByText('TOTAL ROLE PROFILES')).toBeVisible()
+    await expect(page.getByText(/Role Version Catalog/i)).toBeVisible()
+    await expect(page.getByText(/TOTAL ROLE PROFILES|Total Roles/i)).toBeVisible()
     await expect(page.getByText('PUBLISHED VERSIONS')).toBeVisible()
 
     // TC-WF02-F11: Check Create Target Role modal department scoping
@@ -176,8 +184,8 @@ test.describe('Report 5: WF02 Target Role Flow & Competency Ontology E2E Verific
     await page.goto('/workspace/workspace-development/expert/target-roles')
     await expect(page.locator('main')).toBeVisible()
 
-    await expect(page.getByText('Target Role Version Catalog')).toBeVisible()
-    await expect(page.getByText('TOTAL TARGET ROLES')).toBeVisible()
+    await expect(page.getByText(/Role Version Catalog/i)).toBeVisible()
+    await expect(page.getByText(/Total Roles|TOTAL TARGET ROLES/i)).toBeVisible()
 
     // TC-WF02-F16: Assert Domain Expert CANNOT unpublish target roles
     const unpublishButtons = page.locator('button[title="Unpublish Target Role"], button[aria-label="Unpublish Target Role"]')

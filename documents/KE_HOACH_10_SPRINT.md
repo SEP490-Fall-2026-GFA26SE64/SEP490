@@ -1,5 +1,7 @@
 # Kế hoạch 10 sprint (4 người)
 
+> **RIASEC clarification 18/11/2026:** baseline/Expert-reviewed guidance order in this superseded snapshot is not the current RIASEC gate. Implemented interest exploration is optional, independent of baseline/Role and directly visible to Employee, without Expert guidance-review approval. [Current features](features/README.md#riasec-current-implementation--2026-11-18). No owners/estimates/sprint dates are reapproved here.
+
 > **Superseded planning snapshot, 2026-10-21:** The dated scope, priorities and estimates below are not the current backlog. Use [Version 2](FA26SE267_KNOWLEDGE_GRAPH_BASED_ADAPTIVE_LEARNING__haht43_Version_2.md) and the [current contracts](features/README.md). Replanning dates/capacity is a separate task; this documentation alignment does not approve a replacement schedule.
 
 ## Kế hoạch phạm vi hiện hành - 2026-10-14

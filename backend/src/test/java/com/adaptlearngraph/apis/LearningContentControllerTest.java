@@ -55,7 +55,7 @@ class LearningContentControllerTest {
                                 + "\"changedBy\":\"forged\",\"changedAt\":\"2000-01-01T00:00:00Z\"}"))
                 .andExpect(status().isOk())
                 .andExpect(content().json("{\"videoBytes\":104857600,\"imageBytes\":2097152,\"zipBytes\":104857600,"
-                        + "\"version\":4,\"changedBy\":\"admin-1\",\"changedAt\":\"2026-10-02T00:00:00Z\"}", true));
+                        + "\"version\":4,\"changedBy\":\"admin-1\",\"changedAt\":\"2026-10-02T00:00:00Z\"}", org.springframework.test.json.JsonCompareMode.STRICT));
         verify(service).limits(new Limits(104857600, 2097152, 104857600, 3, null, null));
 
         mvc.perform(put(PATH + "/upload-settings").contentType("application/json")
@@ -83,7 +83,7 @@ class LearningContentControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().json("{\"id\":\"asset-1\",\"organizationId\":\"org-1\",\"createdBy\":\"expert-1\","
                         + "\"objectKey\":\"org-1/asset-1\",\"filename\":\"a.png\",\"mediaType\":\"image/png\",\"byteSize\":10,"
-                        + "\"sha256\":\"" + "e".repeat(64) + "\",\"durationSeconds\":null,\"createdAt\":\"2026-10-01T00:00:00Z\"}", true));
+                        + "\"sha256\":\"" + "e".repeat(64) + "\",\"durationSeconds\":null,\"createdAt\":\"2026-10-01T00:00:00Z\"}", org.springframework.test.json.JsonCompareMode.STRICT));
     }
 
     @Test

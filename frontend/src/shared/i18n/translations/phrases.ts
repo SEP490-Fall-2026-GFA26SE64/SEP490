@@ -380,9 +380,16 @@ export const viPhrases: Record<string, string> = {
   // ==========================================
   // MANAGER: TARGET ROLES BUILDER
   // ==========================================
-  'Target Roles Architecture': 'Kiến trúc vai trò mục tiêu',
-  'New Target Role': 'Tạo vai trò mục tiêu mới',
-  'Create Target Role': 'Tạo vai trò mục tiêu',
+  'Roles Architecture': 'Kiến trúc vai trò',
+  'New Role': 'Tạo vai trò mới',
+  'Create Role': 'Tạo vai trò',
+  'Set up career levels for this role (e.g., Junior, Middle, Senior) and the expected time (in months) an employee needs to study and reach each level.':
+    'Thiết lập các cấp bậc nghề nghiệp (ví dụ: Junior, Middle, Senior) và thời gian học tập dự kiến (theo tháng) để nhân viên đạt chuẩn cấp độ đó.',
+  'Expected study time (in months) for an employee to master the skills required for this level':
+    'Thời gian học tập dự kiến (theo tháng) để nhân viên làm chủ các kỹ năng yêu cầu cho cấp bậc này',
+  'Target Roles Architecture': 'Kiến trúc vai trò',
+  'New Target Role': 'Tạo vai trò mới',
+  'Create Target Role': 'Tạo vai trò',
   'Role Title & Code': 'Tên vai trò & Mã',
   'Target Threshold': 'Ngưỡng đạt mục tiêu',
   'Skill Targets': 'Kỹ năng mục tiêu',
@@ -424,9 +431,12 @@ export const viPhrases: Record<string, string> = {
   // ==========================================
   // EXPERT: ASSIGNED ROLES
   // ==========================================
-  'Assigned Target Roles': 'Vai trò mục tiêu được giao',
-  'Assigned Target Roles Catalog': 'Danh mục vai trò mục tiêu được giao',
-  'Review target roles assigned to your domain expertise by L&D Managers and configure required micro-skill proficiency thresholds.': 'Xem xét các vai trò mục tiêu được Quản lý Đào tạo giao cho chuyên môn của bạn và thiết lập ngưỡng chuẩn vi kỹ năng.',
+  'Assigned Roles': 'Vai trò được giao',
+  'Assigned Roles Catalog': 'Danh mục vai trò được giao',
+  'Review roles assigned to your domain expertise by L&D Managers and configure required micro-skill proficiency thresholds.': 'Xem xét các vai trò được Quản lý Đào tạo giao cho chuyên môn của bạn và thiết lập ngưỡng chuẩn vi kỹ năng.',
+  'Assigned Target Roles': 'Vai trò được giao',
+  'Assigned Target Roles Catalog': 'Danh mục vai trò được giao',
+  'Review target roles assigned to your domain expertise by L&D Managers and configure required micro-skill proficiency thresholds.': 'Xem xét các vai trò được Quản lý Đào tạo giao cho chuyên môn của bạn và thiết lập ngưỡng chuẩn vi kỹ năng.',
   'Drafts Awaiting Skills': 'Bản nháp chờ cấu hình kỹ năng',
   'Configured Skill Targets': 'Mục tiêu kỹ năng đã cấu hình',
   'Assigned Domain Focus': 'Lĩnh vực chuyên môn phụ trách',

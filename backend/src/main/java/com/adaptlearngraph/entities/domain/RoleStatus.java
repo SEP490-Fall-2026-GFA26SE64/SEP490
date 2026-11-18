@@ -2,6 +2,7 @@ package com.adaptlearngraph.entities.domain;
 
 public enum RoleStatus {
     DRAFT,
+    STAGED,
     SENT,
     SUBMITTED,
     REJECTED,

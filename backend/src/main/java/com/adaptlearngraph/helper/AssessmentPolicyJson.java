@@ -7,11 +7,10 @@ import com.fasterxml.jackson.databind.*;
 public final class AssessmentPolicyJson implements AssessmentPolicyService.Encoding {
     private final ObjectMapper json;
     public AssessmentPolicyJson(ObjectMapper source) {
-        json=source.copy().enable(JsonParser.Feature.STRICT_DUPLICATE_DETECTION)
+        json=source.copy().setConfig(source.getDeserializationConfig().without(MapperFeature.ALLOW_COERCION_OF_SCALARS)).enable(JsonParser.Feature.STRICT_DUPLICATE_DETECTION)
                 .enable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,DeserializationFeature.FAIL_ON_TRAILING_TOKENS,
                         DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES,DeserializationFeature.FAIL_ON_MISSING_CREATOR_PROPERTIES)
                 .disable(DeserializationFeature.ACCEPT_FLOAT_AS_INT)
-                .disable(MapperFeature.ALLOW_COERCION_OF_SCALARS)
                 .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
     }
     public String write(Object value){try{return json.writeValueAsString(value);}catch(Exception invalid){throw new IllegalStateException("Policy encoding unavailable");}}

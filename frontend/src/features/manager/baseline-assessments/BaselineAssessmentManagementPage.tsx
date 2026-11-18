@@ -1,29 +1,29 @@
 import {
-  AlertCircle,
-  ArrowRight,
-  CheckCircle2,
-  ClipboardCheck,
-  FileQuestion,
-  RefreshCw,
-  Search,
+AlertCircle,
+ArrowRight,
+CheckCircle2,
+ClipboardCheck,
+FileQuestion,
+RefreshCw,
+Search,
 } from 'lucide-react'
 import * as React from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Badge } from '../../../shared/components/ui/Badge'
 import { Button } from '../../../shared/components/ui/Button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../../shared/components/ui/Card'
+import { Card,CardContent,CardDescription,CardHeader,CardTitle } from '../../../shared/components/ui/Card'
 import { EmptyState } from '../../../shared/components/ui/EmptyState'
 import { Input } from '../../../shared/components/ui/Input'
 import { PageHeader } from '../../../shared/components/ui/PageHeader'
 import { Pagination } from '../../../shared/components/ui/Pagination'
-import { useTranslation } from '../../../shared/i18n/LanguageContext'
+import { useTranslation } from "../../../shared/i18n/LanguageContext"
 import { WorkspaceLayout } from '../../../shared/layouts/WorkspaceLayout'
 import {
-  BaselineAssessmentManagementApiError,
-  type BaselineAssessmentJobPosition,
-  type BaselineAssessmentStatus,
-  type PendingStage,
-  listBaselineAssessmentJobPositions,
+BaselineAssessmentManagementApiError,
+listBaselineAssessmentJobPositions,
+type BaselineAssessmentJobPosition,
+type BaselineAssessmentStatus,
+type PendingStage,
 } from './baselineAssessmentManagementApi'
 
 const PAGE_SIZE = 12
@@ -51,6 +51,7 @@ export function BaselineAssessmentManagementPage() {
 
   React.useEffect(() => {
     const controller = new AbortController()
+    // oxlint-disable-next-line react/set-state-in-effect -- Synchronize the pending state of the external data request when its scope changes.
     setLoading(true)
     setError(null)
     void listBaselineAssessmentJobPositions({ search, status, sort, page, size: PAGE_SIZE, signal: controller.signal })

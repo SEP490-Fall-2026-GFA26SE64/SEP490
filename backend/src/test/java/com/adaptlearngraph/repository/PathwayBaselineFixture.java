@@ -41,7 +41,7 @@ final class PathwayBaselineFixture {
         });
         blueprints=new JpaAdaptiveBlueprintStore(AdaptiveBlueprintRepositories.from(persistence::bean,new PostgresAdvisoryLocks(persistence.bean(jakarta.persistence.EntityManager.class))),json,persistence.transactionManager());
         version=blueprints.inTransaction(SCOPE,()->{
-            blueprints.ensureIdentity(SCOPE,MANAGER);var v=new Version(SCOPE,blueprints.nextVersion(SCOPE),config(),"Fixture JobPosition","fixture-f3-v1",PINS,roles(),MANAGER,NOW);
+            blueprints.ensureIdentity(SCOPE,MANAGER);var v=new Version(SCOPE,blueprints.nextVersion(SCOPE),new Configuration("Historical exploration",new Bounds(9,540),Map.of("role-a",new Bounds(6,360),"role-b",new Bounds(6,360))),"Fixture JobPosition","fixture-f3-v1",PINS,roles(),MANAGER,NOW);
             blueprints.insertVersion(SCOPE,v);
             var activation=new Activation(SCOPE,1,Optional.of(v.id()),MANAGER,NOW);
             blueprints.saveActivation(SCOPE,0,activation);blueprints.appendActivationEvent(SCOPE,activation,com.adaptlearngraph.repository.AdaptiveBlueprintStore.Operation.FINALIZE,"C3 fixture input");return v;

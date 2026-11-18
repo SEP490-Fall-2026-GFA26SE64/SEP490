@@ -1,12 +1,13 @@
 import { useState } from 'react'
-import type { OptionalSkillModule } from '../../../shared/api/skillLearningApi'
 import type { KnowledgeLevel } from '../../../shared/api/requirementPathway'
+import type { OptionalSkillModule } from '../../../shared/api/skillLearningApi'
+import { Heading } from '../../../shared/components/typography/Heading'
 import { Badge } from '../../../shared/components/ui/Badge'
 import { Combobox } from '../../../shared/components/ui/Combobox'
-import { Heading } from '../../../shared/components/typography/Heading'
-import { SharedSkillAssessmentEntry } from '../baseline-assessment/SharedSkillAssessmentEntry'
 import { BaselineError } from '../baseline-assessment/baselineApi'
-import { CompletedModuleAssessmentLink, targetForCompletedModule } from '../baseline-assessment/CompletedModuleAssessmentLink'
+import { CompletedModuleAssessmentLink } from "../baseline-assessment/CompletedModuleAssessmentLink"
+import { targetForCompletedModule } from "../baseline-assessment/CompletedModuleAssessmentLink.helpers"
+import { SharedSkillAssessmentEntry } from '../baseline-assessment/SharedSkillAssessmentEntry'
 
 type SkillPanelProps = { skillId: string; modules: OptionalSkillModule[]; skillVersion?: string | null; level: KnowledgeLevel; levelLabel: string; vi: boolean }
 export function SkillLevelAssessmentPanel(props: SkillPanelProps) {

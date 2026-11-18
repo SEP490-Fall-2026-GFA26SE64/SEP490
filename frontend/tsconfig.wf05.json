@@ -1,0 +1,10 @@
+{
+  "extends": "./tsconfig.app.json",
+  "compilerOptions": { "tsBuildInfoFile": "./node_modules/.tmp/wf05.tsbuildinfo" },
+  "include": [
+    "src/features/employee/target-roles/currentRoleFlowApi.ts",
+    "src/features/employee/target-roles/WF05ServerRoleFlow.test.ts",
+    "src/features/employee/baseline-assessment/WF05AssessmentStates.test.tsx",
+    "src/features/manager/ontology/WF05ProvisionForm.test.ts"
+  ]
+}

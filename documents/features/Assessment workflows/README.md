@@ -8,28 +8,91 @@
 
 **Contract basis:** confirmed behavior plus the later L&D Role–Level / Expert Skill–knowledge configuration decisions. Historical evidence retains its original scope; it is not a fresh passing result.
 
+## Baseline and Skill Assessment — source update, 2026-11-18
+
+**Keyboard controls — 2026-11-18:** the shared Employee baseline/Skill Assessment panel now supports number keys to select displayed answers and Enter to save and advance after server acceptance. The final question opens explicit submission confirmation. State, duplicate/repeat, modifier/IME and editing-control guards retain the original command lifecycle. [Verification](../../testing/system/assessment-keyboard-20261118.md): 10 component tests and 5 isolated Chrome journeys passed; build/scoped lint passed. This is browser interaction evidence, not new live assessment persistence acceptance.
+
+At `2c2468b5`, scoped configuration, Role-derived Expert Skill access, draft-first directories, module-specific retake contexts and mandatory-question quotas exist in active local source. [Ordered flow/API/worker/schema contract](../../technical/Organization%20Rule%20Assessment%20and%20Pathway.md#current-flow-2026-11-18) supersedes older code-confirmation notes here. RIASEC below remains a separate workflow.
+
+L&D configures BASELINE per org+Role+member Level; assigned-Role Experts share SKILL_ASSESSMENT per org+Skill+knowledge. Save draft is distinct from activation; immutable policy versions, pointer revisions, catalog hashes, abandoned drafts and command receipts preserve history. New Skill policies explicitly configure mandatoryCount for every MAIN/prerequisite group; exactly that many mandatory plus the remaining ordinary items are sampled within totalCount. All sampled mandatory answers must be correct when quota > 0, alongside the independent requiredCorrectCount. Baseline editor has no mandatory/veto condition. Legacy frozen null-quota papers retain their original semantics.
+
+New question/module/evidence matching is Skill+knowledge+Skill version in the trusted organization, with no Outcome Code filter. V63 sidecars and V64 mandatory_count are reflected in the [current schema](../../diagrams/postgresql-assessment.svg). Actual module completion + accepted pathway option admits MAIN + all configured prerequisite groups. Retake allowance/wait is keyed by selection/step/module/revision; equivalent module 1 cannot exhaust module 2. Scores freeze before durable outcome processing; WAITING_SUPPLEMENT is not a failed or discarded paper. No new tests/runtime actions occur in this document update.
+
 ## Current Implementation
 
-**Source-inspected:** HEAD `61d334c`, 2026-11-07. Implemented below means code exists in the gated local workspace composition; no executable or learner checks were run in this documentation task.
+**Current rule-flow source inspected:** `2c2468b5`,2026-11-18. Code presence is distinguished from dated runtime evidence; this task adds no executable/runtime result.
 
 | Requirement | Classification | Current behavior and limit |
 | --- | --- | --- |
 | FR-04.05 | Implemented; runtime unverified here | L&D manages org+Role+member Level baseline directory, one draft, immutable scoped versions and one active pointer. Partial editor save is separate from complete-and-activate; abandoned drafts remain history. |
-| FR-05.06 | Partial | Responsible Expert authors exact Skill/knowledge/outcome/mandatory questions; L&D reviews immutable publication. Expert separately configures org+Skill+knowledge Skill Assessment shared by equivalent modules. Role-derived Skill-policy authorization needs code confirmation; separate direct Skill assignment is not required. |
+| FR-05.06 | Partial | Responsible Expert authors exact Skill/knowledge/outcome/mandatory questions; L&D reviews immutable publication. Expert separately configures org+Skill+knowledge Skill Assessment shared by equivalent modules. Current catalog restricts policy editing to Skills required by assigned active Roles; no direct Skill assignment is required. |
 | FR-06.02 | Implemented; runtime unverified here | Selected Role–Level baseline freezes groups/questions/policy/deadline, resumes accepted answers and returns group diagnostics. Compatible official evidence exempts exact groups; certificate-only needs use evidence, not questions. |
-| FR-06.03 | Prototype | Routed questionnaire remains browser-side RIASEC; no persisted interest/inference pipeline is established. |
+| FR-06.03 | Implemented local opt-in; source re-inspected 2026-11-18 | Overview owns 60 EN/VI activities, server autosave/takeover, raw 0–40 scores, current/history/inactive/recovery and durable AI. Latest history/permanent-delete UI has build/static evidence only. |
 | FR-06.08 | Implemented local path; remaining branches unverified | Exact completed accepted module option admits MAIN + all prerequisite groups. Content completion differs from official achievement; supplementation/veto/full retakes remain explicit. |
 | FR-07.05 | Implemented local rule engine | RuleAssessmentAttemptService/RuleAssessment score persisted groups, auto-finalize at server deadline and queue idempotent downstream effects. Legacy IRT services are not this route's fallback. |
 
-**Entry points:** L&D `/ld-manager/baseline-assessments` and `/ld-manager/question-bank`; Expert `/expert/assessment-bank` and `/expert/skill-assessment-config`; Employee selected Roles, `/employee/baseline-assessment`, `/employee/baseline-assessment/:attemptId`, `/employee/my-mastery`, `/employee/modules/:moduleId`. Reader-to-assessment uses the exact step/module/revision. Retake conflicts remain inline. Legacy configuration URLs redirect; RIASEC redirects to the consolidated assessment prototype.
+**Entry points:** L&D `/ld-manager/baseline-assessments` and `/ld-manager/question-bank`; Expert `/expert/assessment-bank` and `/expert/skill-assessment-config`; Employee selected Roles, `/employee/baseline-assessment`, `/employee/baseline-assessment/:attemptId`, `/employee/my-mastery`, `/employee/modules/:moduleId`. Reader-to-assessment uses the exact step/module/revision. Retake conflicts remain inline. Legacy configuration URLs redirect; RIASEC entries redirect to `/employee/overview?tab=riasec`.
 
 **Sources:** [ScopedAssessmentPolicyService](../../../backend/src/main/java/com/adaptlearngraph/services/ScopedAssessmentPolicyService.java), [RuleAssessmentAttemptService](../../../backend/src/main/java/com/adaptlearngraph/services/RuleAssessmentAttemptService.java), [CurrentRoleKnowledgeCatalog](../../../backend/src/main/java/com/adaptlearngraph/repository/CurrentRoleKnowledgeCatalog.java), [RuleAssessmentOutcomeService](../../../backend/src/main/java/com/adaptlearngraph/services/RuleAssessmentOutcomeService.java), [QuestionBankService](../../../backend/src/main/java/com/adaptlearngraph/services/QuestionBankService.java). Session/tenant/entitlement, owner/revision/retry and answer-key boundaries are enforced in the relevant services; this is not certification of every security branch.
+
+<a id="riasec-local-bilingual-assessment--target-contract-2026-11-15"></a>
+
+<a id="riasec-personal-assessment--current-implementation-2026-11-18"></a>
+
+## RIASEC personal assessment — current implementation, 2026-11-18
+
+**Source inspected:** `2c2468b5`. The confirmed 17 November implementation supersedes the earlier 15–16 November designs. This optional Employee interest workflow is independent of baseline, Skill Assessment, selected Role, mastery and pathway. It has no pass/fail, timer or permanent retake lock.
+
+### Instrument and scoring
+
+- [Local manifest](../../../frontend/src/features/employee/riasec/riasecInstrument.ts): `alg-riasec-60-en-vi-v1`,60 EN/VI work activities, ten per R/I/A/S/E/C; stable application IDs R01–R10 through C01–C10. It records the pinned Short Form PDF URL, retrieval date/hash, item mapping, project translation revision and license/modification notices. Current active UI does not render those notice fields; see [source limits](../Employee%20experience/README.md#current-riasec-source-limits). This combines PDF activities with five responses and an unvalidated project translation; no external questionnaire/translation call is made.
+- Responses: integer 0 Strongly dislike,1 Dislike,2 Unsure,3 Like,4 Strongly like. Unanswered is absent, never default Unsure. Language changes preserve item IDs/answers.
+- [RiasecRules](../../../backend/src/main/java/com/adaptlearngraph/entities/domain/RiasecRules.java) validates all 60 known IDs at submit and sums ten responses per dimension. Only six **raw integers 0–40** and scoring version `onet-short-form-0-4-sum-v1` are persisted. There is no stored normalized vector, percentage, percentile, AI scoring or mastery write.
+- The rich manifest is frontend-bundled; the backend pins version constants and ID/response rules. V74 stores no manifest archive, draft instrument version or submission locale. Multi-instrument draft migration/historical manifest replay are not implemented.
+
+### Owner, draft and submit
+
+All operations derive organization/account from `RoleBaselineFlow.Identity.requireEmployee()` (authenticated active entitled Employee); no client owner or manager personal-results API is accepted. Controller/config require `local,workspace-baseline`, exclude `local-baseline-demo`/`prod`, and require `riasec.enabled=true`.
+
+One `platform.riasec_workspace` row per organization/account holds at most one non-expiring draft, partial answers, revision, editor UUID and update time. Start resumes an existing draft. Saves replace its answer map under owner-row lock with expected draft/revision/editor checks. Explicit takeover increments revision and fences the former editor. No discard/expiry command exists. Browser results are not promoted; pending unsaved answers remain in the current tab and can be lost on closing before save succeeds.
+
+Review and confirmation precede submit. Under one transaction the server scores **saved** answers, inserts a result, queues AI and clears the draft. Draft UUID becomes `result_id`: replay while the owned receipt is retained returns that same ID. The command carries editor/draft/revision, not trusted client scores. Starting another draft preserves the previous current result.
+
+### Current, history and retention
+
+Current is newest active submission by `submitted_at DESC,result_id DESC`, independently of the viewed result. The radar exposes raw 0–40 values through hover/touch/keyboard and preserves all six equal scores without deriving a unique Holland code. Current comparison details show names and paired scores, but no separate leading-group/meaning summary, boundary-tie disclosure or equal/zero-profile notice is rendered. Those earlier confirmed presentation directions must not be described as completed current UI. Zero/equal profiles are valid saved results and may enter AI; no zero-norm/cosine rejection rule applies.
+
+Overview provides assessment/current/history/inactive summary cards and one searchable/filterable history dialog. Confirmed View opens active history without changing current; inactive rows have no View action. Inactive (soft delete), Recover and permanent Delete have distinct confirmations. Recovery is allowed for **seven days after deletion**, preserves scores/AI snapshots and does not rerun AI. Current is recomputed from original submission time, so restoring an older result need not make it current. Deleting again restarts the seven-day clock. Permanent delete accepts only an owned unexpired inactive result; scheduled cleanup removes expired inactive rows.
+
+New assessment and restore reject any own queued/processing AI; delete/purge reject a running target result. Only the current active FAILED result may retry AI. The latest history/permanent-delete follow-up has build/type-check/lint evidence, without fresh browser/executable verification.
+
+### API and storage
+
+Base `/api/v1/employee/riasec`; successful/mapped failure responses use no-store, with existing session/CSRF security.
+
+| Method / suffix | Purpose |
+| --- | --- |
+| GET base | Own draft/results/currentId, current active position IDs and catalog availability |
+| POST /draft | Start/resume with editorId |
+| PUT /draft | Save answers with editorId/draftId/revision |
+| POST /draft/takeover | Claim latest draft with expected revision |
+| POST /submit | Finalize saved answers; return stable receipt ID |
+| DELETE /results/{id} | Mark inactive |
+| POST /results/{id}/restore | Restore within seven days |
+| DELETE /results/{id}/permanent | Permanently remove an inactive result |
+| POST /results/{id}/retry | Requeue current FAILED AI only |
+
+Invalid/incomplete requests return400; draft/editor conflicts, running AI and non-retryable actions409; missing/expired owned results are unavailable; persistence failures503. [Controller](../../../backend/src/main/java/com/adaptlearngraph/apis/RiasecController.java), [service](../../../backend/src/main/java/com/adaptlearngraph/services/RiasecService.java), [store](../../../backend/src/main/java/com/adaptlearngraph/repository/RiasecStore.java) define exact codes/guards.
+
+Forward [workspace V74](../../../backend/src/main/resources/db/workspace-migration/V74__riasec_personal_exploration.sql) creates only `riasec_workspace` and `riasec_result`: [storage schema](../../diagrams/riasec-storage.svg). Answers/scores/version/time remain immutable until owner deletion; AI and retention fields change through their lifecycle. Result includes status/deadline/run fence/model/prompt/recommendation JSON/failure code. No second editable Job Position catalog, baseline/profile reuse or Neo4j learner node is created. Retired migrations/data are not restored; the migration SQL retains its historical V72 pre-application comments after renumbering to V74.
+
+Canonical entry is `/employee/overview?tab=riasec`; standalone/learner and recognized Assessment RIASEC entries redirect there. Remaining AssessmentPage prototype constants are excluded from active quiz/result lists. [Employee surface](../Employee%20experience/README.md#overview-riasec-tab), [AI](../Role%20guidance/README.md#riasec-job-position-exploration), [profile fields](../Departments%20and%20occupations/README.md#riasec-job-position-profiles) own related boundaries. This documentation task runs no application/tests; adaptation, general AI quality and production readiness remain unvalidated.
 
 ## Requirements
 
 ### Shared engine, scope and policy
 
-The responsible Expert authors question content, key/explanation and exact Skill + knowledge + outcome/mandatory mapping; L&D reviews question publication. L&D owns BASELINE configuration per organization + Role + actual member Level. Expert owns SKILL_ASSESSMENT per organization + Skill + knowledge level, shared across equivalent modules. The shared engine does not merge their drafts, activation pointers or version counters. No arbitrary policy scripting is accepted.
+The responsible Expert authors question content, key/explanation and exact Skill + knowledge + Skill version/mandatory mapping; L&D reviews question publication. L&D owns BASELINE configuration per organization + Role + actual member Level. Expert owns SKILL_ASSESSMENT per organization + Skill + knowledge level, shared across equivalent modules. The shared engine does not merge their drafts, activation pointers or version counters. No arbitrary policy scripting is accepted.
 
 Knowledge levels are FOUNDATION / INTERMEDIATE / ADVANCED, distinct from Role member Level and legacy EASY/MEDIUM/HARD difficulty. No level implies another. MAIN/PREREQUISITE is a group's role in a paper, not a fixed question type.
 
@@ -42,7 +105,7 @@ The shared engine validates coverage, samples, persists/resumes and scores. It d
 
 L&D and Expert maintain their separately owned BASELINE and SKILL_ASSESSMENT scopes, active versions and time limits. Both automatically finalize at their server deadline. Baseline editor configures common count/pass settings per knowledge level across its target Skills plus timer/retake limits; baseline mandatory and veto flags are false. Expert configures Skill Assessment group counts/pass/mandatory and optional all-wrong prerequisite veto, plus its own timer/retake limits. Values come from the organization; 7/10 is an example, not a default. A group must meet its own threshold AND configured mandatory conditions. No aggregate score offsets another group's failure.
 
-Mandatory questions count inside the configured total: include matching approved mandatory items first, then randomly fill from the same skill/knowledge/outcome bank without duplicates. Validate mandatory count fits the total, bank sufficiency and achievable conditions/thresholds. Missing/invalid policy or insufficient bank gives an explicit unavailable/configuration outcome, never a partial successful paper or questions borrowed from another group. Current validation bounds groups to 1–500 questions and up to 1,000 unique groups; the configured paper ceiling defaults to 1,000 items. Count, capacity, bank coverage and exact catalog hashes are rechecked before activation/start.
+Mandatory quota counts inside total: new Skill policies sample exactly mandatoryCount approved mandatory items and fill the remainder from ordinary items in the same Skill/knowledge/Skill-version bank, without duplicates. Quota0 means ordinary-only sampling. Legacy null-quota frozen papers keep their earlier selection semantics. Validate mandatory count fits the total, bank sufficiency and achievable conditions/thresholds. Missing/invalid policy or insufficient bank gives an explicit unavailable/configuration outcome, never a partial successful paper or questions borrowed from another group. Current validation bounds groups to 1–500 questions and up to 1,000 unique groups; the configured paper ceiling defaults to 1,000 items. Count, capacity, bank coverage and exact catalog hashes are rechecked before activation/start.
 
 Correct = 1; incorrect/unanswered = 0. Negative/partial credit, IRT ability/SE/confidence/calibration, BKT mastery updates and numeric target-gap subtraction are outside the new active flow. Scores describe the sampled paper, not a percentage of all workplace competence.
 
@@ -60,7 +123,7 @@ Business states distinguish not assessed, unavailable/insufficient bank, in prog
 
 Expert Skill-policy editing follows assigned Roles: an Expert may configure Skills contained in any Role they are assigned, and Experts of different Roles sharing the Skill edit one common Skill-knowledge policy. A separate direct Skill assignment is not required. Enforce trusted organization/membership/entitlement, Role-derived scope and revision/replay checks.
 
-Saved draft scopes precede unconfigured scopes. Equivalent modules use common policy parameters, but max-attempt allowance and retake waiting time apply separately to each module's authorized learning context. Module 1 cannot exhaust or delay module 2, and prior Skill achievement does not itself block another eligible module's assessment. Each module still requires its own qualifying completion/access and retry conditions. This is confirmed policy; code confirmation is deferred.
+Saved draft scopes precede unconfigured scopes. Equivalent modules use common policy parameters, but max-attempt allowance and retake waiting time apply separately to each module's authorized learning context. Module 1 cannot exhaust or delay module 2, and prior Skill achievement does not itself block another eligible module's assessment. Each module still requires its own qualifying completion/access and retry conditions. This is confirmed policy and is present in CurrentRoleKnowledgeCatalog context keys and RuleAssessmentAttemptService counters/wait guards at the 18 November source checkpoint; runtime acceptance remains version-scoped.
 
 ### Prerequisite results and full retake
 
@@ -103,7 +166,7 @@ The current routed configuration/Question Bank/reader flows reuse the existing v
 | 2. Requirement Name | Manage module assessments |
 | 3. Description | The Expert shall author versioned questions mapped to Skill/knowledge/outcome and configure Skill Assessment for organization+Skill+knowledge, including MAIN and all configured prerequisite groups; equivalent modules use that same policy. |
 | 4. Actor | Expert |
-| 5. Preconditions | Trusted authorized same-organization Expert; current ownership/assignment and eligible skill/knowledge/outcome references. |
+| 5. Preconditions | Trusted authorized same-organization Expert; current ownership/assignment and eligible Skill/knowledge/Skill-version references. |
 | 6. Main Flow | Author content/key/explanation and mandatory designation; map exact scope; submit through existing L&D question review; configure and activate the exact Skill–knowledge policy after complete bank/readiness checks. |
 | 7. Alternative / Exception Flows | Incomplete drafts stay drafts; missing bank, incompatible outcomes or stale/unapproved versions cannot produce a ready paper. Protect staff answers. |
 | 8. Postconditions | Approved versioned questions/coverage are available to the shared engine; historical attempts keep original definitions. |
@@ -152,13 +215,13 @@ Verification: [unit](../../testing/unit/REQ-014-question-bank.md), [PostgreSQL i
 | --- | --- |
 | 1. Requirement ID | FR-06.03 |
 | 2. Requirement Name | Complete RIASEC assessment |
-| 3. Description | The Employee shall complete the RIASEC interest assessment and submit answers. |
+| 3. Description | The Employee shall complete the local EN/VI 60-item Short Form-based interest assessment and retain server-scored results independently of learning assessments. |
 | 4. Actor | Employee |
-| 5. Preconditions |  |
-| 6. Main Flow |  |
-| 7. Alternative / Exception Flows |  |
-| 8. Postconditions |  |
-| 9. Acceptance Criteria |  |
+| 5. Preconditions | Trusted active entitled Employee membership; locally available pinned instrument. AI and target selection are not required. |
+| 6. Main Flow | Start/resume a revisioned draft; answer/review 60 items in EN/VI; submit once; inspect six scores and own immutable history; optionally explore job positions or retake. |
+| 7. Alternative / Exception Flows | Reject incomplete/invalid/stale submission; recover uncertain outcomes by replay; preserve draft on save failure; expose access/service errors and uninformative results explicitly. |
+| 8. Postconditions | Own tenant-scoped answers, six raw 0–40 scores and versions are saved; AI has separate recoverable state and results support inactive/recovery/permanent deletion. |
+| 9. Acceptance Criteria | Exactly ten mapped items per dimension, 0–4 coding and 0–40 raw sums; locale-independent scores; no neutral default, browser-result promotion, duplicate finalization or changes to baseline/competency/Role–Level/pathway. |
 
 <a id="fr-06-08"></a>
 
@@ -239,4 +302,4 @@ Question import uses Upload, Validate and Confirm steps, shown by a compact circ
 
 ### Skill Assessment learning prerequisite — source 2026-11-07
 
-All lessons complete records immutable module/content/Skill provenance and an exact knowledge/outcome sidecar. Rule exam admission additionally requires the current accepted pathway step/option, matching module revision/content/Skill version/knowledge/outcomes and trusted Employee context. The retained skill-only eligibility API is informational, not complete exam authorization. [Current technical contract](../../technical/Skill-Learning-Eligibility.md).
+All lessons complete records immutable module/content/Skill provenance and an exact knowledge/Skill-version sidecar. Rule exam admission additionally requires the current accepted pathway step/option, matching module revision/content/Skill version/knowledge and trusted Employee context. The retained skill-only eligibility API is informational, not complete exam authorization. [Current technical contract](../../technical/Skill-Learning-Eligibility.md).

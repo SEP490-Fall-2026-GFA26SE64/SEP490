@@ -78,7 +78,7 @@ public final class JpaAdaptiveAttemptResultQuery implements Results {
         AssessmentScope publicScope = policy != null ? AssessmentScope.JOB_POSITION
                 : result[TARGET_ROLE_ID] == null ? AssessmentScope.EARLIER_JOB_POSITION : AssessmentScope.EARLIER_ROLE;
         return new Header((UUID) result[ATTEMPT_ID], (String) result[JOB_POSITION_ID],
-                (String) result[JOB_POSITION_NAME], (String) result[PURPOSE],
+                (String) result[JOB_POSITION_NAME], AdaptiveAttemptRows.publicPurpose((String) result[PURPOSE]).name(),
                 (String) result[TARGET_ROLE_ID], (String) result[ROLE_NAME], (String) result[STATE],
                 (String) result[COMPLETION_REASON], AdaptiveAttemptRows.instant(result[STARTED_AT]),
                 Objects.requireNonNull(AdaptiveAttemptRows.instant(result[FINISHED_AT])), (UUID) result[REPLACES_ATTEMPT_ID],

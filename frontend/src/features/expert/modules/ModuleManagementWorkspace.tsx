@@ -29,11 +29,11 @@ import { WorkspaceLayout } from '../../../shared/layouts/WorkspaceLayout'
 import { useTranslation } from '../../../shared/i18n/LanguageContext'
 import { moduleRequest, type CatalogChoice, type ModuleActor, type ModuleCatalogItem, type ModuleCatalogPage, type ModuleContent, type ModuleDocument, type ModulePage, type ModuleRevision, type ModuleSave } from '../../../shared/api/moduleAuthoringApi'
 
-import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '../../../shared/components/ui/Accordion'
+import { Eye } from 'lucide-react'
+import { Accordion,AccordionContent,AccordionItem,AccordionTrigger } from '../../../shared/components/ui/Accordion'
 import { CopyableId } from '../../../shared/components/ui/CopyableId'
 import { RowActions } from '../../../shared/components/ui/RowActions'
-import { useToast } from '../../../shared/hooks/useToast'
-import { Eye } from 'lucide-react'
+import { useToast } from "../../../shared/hooks/useToast"
 import { CatalogModuleDetails } from './CatalogModuleDetails'
 
 type Mode = 'modules' | 'content' | 'approvals' | 'learning'
@@ -82,7 +82,12 @@ function OwnedModuleManagementWorkspace({ mode, managerShell = false }: { mode: 
   const [pageNumber, setPageNumber] = useState(1)
   const [allModuleStatuses, setAllModuleStatuses] = useState(false)
   const [filters, setFilters] = useState({ search: searchParams.get('search') ?? '', status: '', review: '', type: '', skill: '' })
-  useEffect(() => { const query = searchParams.get('search'); if (query !== null) { setPageNumber(1); setFilters(old => ({ ...old, search: query })) } }, [searchParams])
+  const query = searchParams.get('search')
+  const [previousQuery, setPreviousQuery] = useState(query)
+  if (previousQuery !== query) {
+    setPreviousQuery(query)
+    if (query !== null) { setPageNumber(1); setFilters(old => ({ ...old, search: query })) }
+  }
   const [search, setSearch] = useState(filters.search)
   useEffect(() => {
     const timeout = setTimeout(() => setSearch(filters.search), 180)
@@ -181,6 +186,7 @@ function OwnedModuleManagementWorkspace({ mode, managerShell = false }: { mode: 
 
   useEffect(() => {
     const controller = new AbortController()
+    // oxlint-disable-next-line react/set-state-in-effect -- Synchronize the pending state of the external data request when its scope changes.
     void load(controller.signal)
     return () => controller.abort()
   }, [load])
@@ -293,27 +299,6 @@ function OwnedModuleManagementWorkspace({ mode, managerShell = false }: { mode: 
 
   const displayedPage = mode === 'modules' ? catalogPage : page
   const listItems: ModuleCatalogItem[] = loading && managerLearning ? [] : mode === 'modules' ? catalogPage.items : page.items.map(doc => ({ module: latest(doc).payload, authoring: doc }))
-
-  const roleComboboxOptions = targetRoles.map(role => {
-    const pos = jobPositions.find(p => p.id === role.familyCode || p.id === role.jobPositionId)
-    return {
-      value: role.id,
-      label: role.name,
-      description: pos?.name,
-    }
-  })
-
-  const filteredEditorSkills = moduleSkills.filter(skill => {
-    if (filterTargetRole) {
-      const role = targetRoles.find(r => r.id === filterTargetRole)
-      const skillIds = [
-        ...(role?.requirements?.map(req => req.skillId).filter(Boolean) ?? []),
-        ...(role?.skillTargets?.map(st => st.skillId).filter(Boolean) ?? []),
-      ]
-      if (skillIds.length > 0 && !skillIds.includes(skill.id)) return false
-    }
-    return true
-  })
   const statusFilterValue = filters.status === 'ACTIVE' && filters.review === 'APPROVED'
     ? 'RELEASED'
     : filters.status || filters.review || ''
@@ -371,6 +356,27 @@ function OwnedModuleManagementWorkspace({ mode, managerShell = false }: { mode: 
       needsContent: false,
     }
   }
+
+  const roleComboboxOptions = targetRoles.map(role => {
+    const pos = jobPositions.find(p => p.id === role.familyCode || p.id === role.jobPositionId)
+    return {
+      value: role.id,
+      label: role.name,
+      description: pos?.name,
+    }
+  })
+
+  const filteredEditorSkills = moduleSkills.filter(skill => {
+    if (filterTargetRole) {
+      const role = targetRoles.find(r => r.id === filterTargetRole)
+      const skillIds = [
+        ...(role?.requirements?.map(req => req.skillId).filter(Boolean) ?? []),
+        ...(role?.skillTargets?.map(st => st.skillId).filter(Boolean) ?? []),
+      ]
+      if (skillIds.length > 0 && !skillIds.includes(skill.id)) return false
+    }
+    return true
+  })
 
   const historyView = (doc: ModuleDocument) => <section className="space-y-3 border-t border-border pt-4"><Heading level={3} size="card">{copy('Change history', 'Lịch sử thay đổi')}</Heading>{!doc.history.length && <p className="text-xs text-muted-foreground">{copy('No edit history has been recorded for this module.', 'Module này chưa có lịch sử chỉnh sửa được ghi nhận.')}</p>}{doc.history.map(e => <div key={e.sequence} className="space-y-1 border-l-2 border-border pl-3 text-xs"><p className="font-medium text-foreground">{person(e.actorId)} · {eventLabels[e.action.replaceAll('-', '_')] ?? e.action} · {copy('Revision', 'Phiên bản')} {e.revision}</p><p className="text-muted-foreground">{formatTime(e.occurredAt)}</p>{e.action === 'EDIT' && e.detail?.startsWith('Changed: ') && <p>{copy('Changed', 'Đã thay đổi')}: {e.detail.slice(9).split(', ').map(field => fieldLabels[field] ?? field).join(', ')}</p>}{['RETURN', 'OWNER_ASSIGNED'].includes(e.action) && e.detail && <p>{e.detail}</p>}{e.action === 'OWNER_TRANSFERRED' && <p>{copy('Previous', 'Trước')}: {person(e.previousResponsibleExpertId)} {e.previousResponsibleExpertId && `(${e.previousResponsibleExpertId})`} → {copy('New', 'Mới')}: {person(e.responsibleExpertId)} {e.responsibleExpertId && `(${e.responsibleExpertId})`}</p>}</div>)}</section>
 

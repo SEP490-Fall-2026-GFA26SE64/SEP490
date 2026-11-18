@@ -70,7 +70,7 @@ public final class Neo4jQuestionBankSkillReader {
         AsyncSession session = null;
         CompletableFuture<List<T>> result = null;
         try {
-            session = driver.asyncSession(SessionConfig.forDatabase(database));
+            session = driver.session(AsyncSession.class,SessionConfig.forDatabase(database));
             result = session.executeReadAsync(tx -> tx.runAsync(query, parameters)
                     .thenCompose(cursor -> cursor.listAsync(mapper)),
                     TransactionConfig.builder().withTimeout(timeout).build()).toCompletableFuture();

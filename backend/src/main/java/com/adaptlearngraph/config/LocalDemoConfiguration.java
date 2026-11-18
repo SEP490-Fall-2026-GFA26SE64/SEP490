@@ -33,6 +33,8 @@ import org.springframework.context.annotation.*;
 @ConditionalOnWebApplication(type=ConditionalOnWebApplication.Type.SERVLET)
 @ConditionalOnProperty(prefix="assessment.baseline.local-demo",name="enabled",havingValue="true")
 @org.springframework.context.annotation.Import(PersistenceConfiguration.class)
+// The isolated demo implements the historical numeric-baseline promotion contract.
+@SuppressWarnings("deprecation")
 public class LocalDemoConfiguration {
     @Bean LocalDemoIdentity localDemoIdentity(org.springframework.core.env.Environment environment) {
         var expert=environment.getProperty("pathway.local-auth-bypass.expert-account-id",UUID.class);

@@ -8,6 +8,12 @@
 
 Each record below corresponds to one source bullet. Unspecified fields are intentionally blank; they are not approved designs or completed acceptance criteria. See the [catalog rules](../README.md#reading-rules) and [complete source coverage](../README.md#source-coverage).
 
+## Pathway in-app notifications — source update, 2026-11-18
+
+PathwayNotifications writes deduplicated owned learning_notification rows in the same PG transaction for approval, rejection, REQUIRED completion and certificate decisions. Assessment recalculation sends PATHWAY_RECALCULATED only when module/certificate provision was added; bypass-related additions use their separate semantic notice. Content names/step/provenance and an Employee pathway deep link are retained. This is not general workflow email/SMTP completion.
+
+V64 adds deep_link and toast_observed_at; module_id may be NULL only with a valid Employee deep link. Toast observation differs from unread/read state and does not prove exactly-once UI display. Audit/outbox/source receipts preserve actual actors/versions and retries. [Flow/storage contract](../../technical/Organization%20Rule%20Assessment%20and%20Pathway.md#current-flow-2026-11-18). Existing mail/audit-reader limitations remain scoped below; no new delivery/runtime result is claimed.
+
 ## Current Implementation
 
 **Source-inspected:** 2026-10-28. See the [implementation legend](../README.md#current-implementation-overview). The existing email-branding reference below remains applicable.
@@ -29,7 +35,7 @@ Accepted assessment finalization, official evidence/certificate decision, scoped
 
 Business decisions and recoverable notification intent must remain consistent. Retry/replay cannot duplicate achievement, remediation, bypass or a target change; delivery outage remains visible/retryable without undoing the accepted decision. Notify only authorized intended recipients; a success toast/email is not proof of current learning access or completed processing.
 
-Exact event names, recipient/channel routing, transport payloads, storage/outbox mechanics and retention policy remain open for define C2. Existing audit/email history and failures remain preserved. [Expert decision rules](../Pathway%20review/README.md#consistency-target-binding-and-visual-continuity) and [attempt rules](../Assessment%20workflows/README.md#attempt-resume-history-and-result-contract) define the business outcomes; no general notification redesign is included.
+Current pathway in-app event kinds, recipient/deep-link/dedup and toast storage are implemented as described above; broader email channel coverage and general retention policy remain separately open. Existing audit/email history and failures remain preserved. [Expert decision rules](../Pathway%20review/README.md#consistency-target-binding-and-visual-continuity) and [attempt rules](../Assessment%20workflows/README.md#attempt-resume-history-and-result-contract) define the business outcomes; no general notification redesign is included.
 
 ## Requirements
 

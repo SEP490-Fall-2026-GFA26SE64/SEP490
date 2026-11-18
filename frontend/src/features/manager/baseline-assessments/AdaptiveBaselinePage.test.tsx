@@ -1,3 +1,5 @@
+// These fixtures exercise the retained demo pathway adapter; rule-pathway tests use the default mode.
+vi.mock('../../../shared/api/requirementPathway', async original => ({ ...await original<typeof import('../../../shared/api/requirementPathway')>(), rulePathwaysEnabled: false }))
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 import { MemoryRouter, Route, Routes, useNavigate } from 'react-router-dom'

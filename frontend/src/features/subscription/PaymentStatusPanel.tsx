@@ -2,10 +2,12 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ArrowUpRight, CheckCircle2, Clock3, ShieldCheck } from 'lucide-react'
-import { Button, buttonVariants } from '../../shared/components/ui/Button'
+import { Button } from "../../shared/components/ui/Button";
+import { buttonVariants } from "../../shared/components/ui/Button";
 import { Card, CardContent, CardHeader, CardTitle } from '../../shared/components/ui/Card'
 import { enterWorkspace, reconcileOrder, type Status } from './subscriptionApi'
-import { Failure, StateLabel, useCopy } from './SubscriptionFeedback'
+import { Failure, StateLabel } from "./SubscriptionFeedback";
+import { useCopy } from "./SubscriptionFeedback.helpers";
 import { PlanCatalog } from './PlanCatalog'
 import { PaymentReceipt } from './PaymentReceipt'
 import { isWorkspaceSlug, workspaceUrl } from '../../shared/auth/workspacePaths'

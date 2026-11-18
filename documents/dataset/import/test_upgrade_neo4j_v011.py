@@ -10,7 +10,8 @@ from upgrade_neo4j_v011 import LocalGraph, payload_snapshot, plan_upgrade
 class UpgradePlanTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        folder = Path(__file__).resolve().parent
+        from historical_test_catalog import original_review_root
+        folder = original_review_root()
         cls.baseline = payload_snapshot(json.loads((folder / 'ontology_seed.json').read_text()))
         cls.release = payload_snapshot(json.loads((folder / 'ontology_seed-v011.json').read_text()))
 

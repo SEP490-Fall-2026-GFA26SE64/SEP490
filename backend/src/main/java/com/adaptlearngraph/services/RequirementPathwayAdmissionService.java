@@ -207,4 +207,6 @@ public final class RequirementPathwayAdmissionService {
     }
     private <T>T read(String value,Class<T> type){try{return json.readValue(value,type);}catch(Exception invalid){throw new Failure(503,"REQUIREMENT_SNAPSHOT_INVALID");}}
     private com.fasterxml.jackson.databind.JsonNode readTree(String value){try{return json.readTree(value);}catch(Exception invalid){throw new Failure(503,"REQUIREMENT_SNAPSHOT_INVALID");}}
+    public RequirementPathwayHttpReceipt confirmHttp(String key,Confirm command) { return RequirementPathwayHttpReceipt.from(confirm(key,command)); }
+    public RequirementPathwayHttpReceipt retryHttp(UUID id,String key) { return RequirementPathwayHttpReceipt.from(retry(id,key)); }
 }

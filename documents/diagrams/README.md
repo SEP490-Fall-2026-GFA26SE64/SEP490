@@ -1,5 +1,35 @@
 # Architecture Diagrams
 
+## Baseline / pathway / Skill Assessment — source update 2026-11-18
+
+The current local source at `2c2468b5` is mapped in [the ordered flow/API/DDL contract](../technical/Organization%20Rule%20Assessment%20and%20Pathway.md#current-flow-2026-11-18). The prior through-V62/63 views below are superseded for these active selected fields:
+
+| View | PlantUML | SVG | PNG |
+| --- | --- | --- | --- |
+| Config, frozen papers, quotas, replay and evidence | [Assessment source](postgresql-assessment.puml) | [Assessment](postgresql-assessment.svg) | [Assessment](postgresql-assessment.png) |
+| Requirement revisions, approval/timing, certificate and in-app notice | [Pathway source](postgresql-pathway.puml) | [Pathway](postgresql-pathway.svg) | [Pathway](postgresql-pathway.png) |
+| Baseline to Skill Assessment and recalculation | [Ordered flow source](baseline-pathway-flow.puml) | [Flow](baseline-pathway-flow.svg) | [Flow](baseline-pathway-flow.png) |
+
+Assessment shows 15 selected tables; pathway shows 13. Every displayed field/type was checked against workspace migration source through V64. Physical arrows identify parent→referencing child; composite scope keys are summarized by numbered FK labels/map, with off-view identity/catalog references intentionally omitted. V63 Skill-version binding, V64 nullable frozen quota, six timing fields, REJECTED and in-app deep-link/toast observation are represented. Assessed sources in revision JSON are distinguished from dependency.assessed_source; no fake step column, editable profile catalog or cross-store FK is introduced.
+
+These are selected current source definitions, not a live database inventory or a claim that all migrations/workers are applied/enabled. Old DB-xx captures, schema-catalog JSON, conceptual/state/target diagrams retain original lineage/date. RIASEC/V72 exports remain unchanged. Native SVG layouts read the checked-in PlantUML fields, with PNG produced by the existing sharp module; no browser/test runner, dependency installation or runtime service is used. Exact-layout renderer and inspection receipt are workspace artifacts in `.tools/baseline-pathway-docs-20261118/`; PlantUML remains independently renderable with a different automatic layout.
+
+## RIASEC source update — 2026-11-18
+
+Source `2c2468b5` supersedes earlier RIASEC prototype/inference gaps. Current figures:
+
+| View | Source | SVG | PNG |
+| --- | --- | --- | --- |
+| Neo4j catalog | [PlantUML](neo4j.puml), [Mermaid companion](mermaid/graph-01.mmd) | [Catalog](neo4j.svg) | [Catalog](neo4j.png) |
+| Personal storage and graph boundary | [V72 storage](riasec-storage.puml) | [Storage](riasec-storage.svg) | [Storage](riasec-storage.png) |
+| Server scoring and asynchronous AI | [Runtime flow](riasec-flow.puml) | [Flow](riasec-flow.svg) | [Flow](riasec-flow.png) |
+
+Neo4j JobPosition adds optional description and six **Integer 0–40** interests (all six or none on explicit save). Other node fields, relationship directions/properties and source-only Certificate retain the prior capture scope. No new RIASEC graph node/edge is added. The GRAPH-01 SVG/PNG aliases are byte-identical to the catalog exports. PostgreSQL V72 has two personal tables, not a second editable Job Position catalog; copied recommendation IDs are not cross-store FKs. Existing older PostgreSQL images/catalog JSON retain their original scope, not a V72 capture.
+
+These exports use a native SVG layout and the already available sharp rasterizer; no renderer was installed and no browser/test runner was used. The layout renderer and exact reproduction receipt are outside the product in the workspace artifact `.tools/riasec-docs-20261118/`. Checked-in PlantUML defines the same fields/connections and remains independently renderable with PlantUML; its automatic layout may differ. Existing `render-ontology-diagram.cjs <local-plantuml.jar>` remains a separate PlantUML export option. New SVGs were XML/geometry checked and PNGs visually inspected; this is document validation only, with no live DB/application acceptance.
+
+See [current architecture](../ARCHITECTURE.md#riasec-personal-exploration) and [schema/source scope](../neo4j_schema.md#riasec-current-source). Older dated diagrams and reports below remain scoped references; their omitted RIASEC details do not define the new execution flow.
+
 ## Target Role handoff - current source 2026-11-08
 
 The [handoff class diagram](mermaid/cls-target-role-handoff.mmd) ([PNG](mermaid/cls-target-role-handoff.png), [SVG](mermaid/cls-target-role-handoff.svg)) now uses actual controller/application/use-case/domain/repository classes, replacing the proposed workflow classes. [SEQ-05](mermaid/seq-05.mmd) ([PNG](mermaid/seq-05.png), [SVG](mermaid/seq-05.svg)) traces request/DTO-command mapping, duplicate lookup, domain creation/update, Neo4j identity/merge and catalog synchronization. The Expert sends SUBMITTED and manager publication/rejection sends ACTIVE/REJECTED through the generic PUT path; ACTIVE/PUBLISHED triggers version supersession in the adapter.

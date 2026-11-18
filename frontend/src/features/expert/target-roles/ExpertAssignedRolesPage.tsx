@@ -1,7 +1,9 @@
+import { useResettableState } from '../../../shared/hooks/useResettableState'
 import {
   AlertCircle,
   AlertTriangle,
   Briefcase,
+  Building2,
   Check,
   CheckCircle2,
   ChevronDown,
@@ -9,8 +11,10 @@ import {
   Clock,
   CornerDownRight,
   Diff,
-  Eye,
   Edit3,
+  Eye,
+  FileCheck,
+  Filter,
   History,
   Layers,
   Lock,
@@ -19,109 +23,83 @@ import {
   Search,
   Send,
   Sliders,
-  Filter,
   Trash2,
   User,
   X,
   XCircle,
 } from 'lucide-react'
 import * as React from 'react'
-import { cn } from '../../../shared/lib/utils'
+import {
+fetchCompetencies,
+type CompetencyDto,
+} from '../../../shared/api/competencyApi'
+import { fetchDepartments,type DepartmentDto } from '../../../shared/api/departmentApi'
+import { fetchJobPositions,type JobPositionDto } from '../../../shared/api/jobPositionApi'
+import { fetchMicroSkills } from '../../../shared/api/microSkillApi'
+import {
+fetchPrerequisites,
+type PrerequisiteEdgeDto,
+} from '../../../shared/api/prerequisiteApi'
+import { workspaceFetch as fetch } from '../../../shared/api/workspaceFetch'
+import { WorkspaceSessionContext } from '../../../shared/auth/workspaceSession'
 import { Badge } from '../../../shared/components/ui/Badge'
 import { Button } from '../../../shared/components/ui/Button'
-import { PageHeader } from '../../../shared/components/ui/PageHeader'
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
+Card,
+CardContent,
+CardDescription,
+CardHeader,
+CardTitle,
 } from '../../../shared/components/ui/Card'
-import { Pagination } from '../../../shared/components/ui/Pagination'
 import {
-  Dialog,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '../../../shared/components/ui/Dialog'
-import { StatCard } from '../../../shared/components/ui/StatCard'
-import { useToast } from '../../../shared/hooks/useToast'
-import { WorkspaceLayout } from '../../../shared/layouts/WorkspaceLayout'
-import {
-  getActiveCompany,
-  updateActiveCompany,
-  resolveWorkspaceOrgId,
-} from '../../../shared/stores/companyStore'
-import { WorkspaceSessionContext } from '../../../shared/auth/workspaceSession'
-import { getMembers } from '../../subscription/subscriptionApi'
-import { workspaceFetch as fetch } from '../../../shared/api/workspaceFetch'
-import {
-  ELIGIBLE_EXPERTS,
-  normalizeExpertId,
-  findEligibleExpert,
-  getOrganizationExperts,
-  type EligibleExpert,
-  resolveJobPositionForRole,
-  compareRoleVersions,
-  formatDate,
-  sortTargetRolesWithDraftsBelowPublished,
-  type MicroSkillModel,
-  type SkillTargetConfig,
-  type TargetRoleModel,
-} from '../../manager/data/ldManagerMockData'
-import {
-  Combobox,
-  type ComboboxOption,
+Combobox,
+type ComboboxOption,
 } from '../../../shared/components/ui/Combobox'
-import { fetchMicroSkills } from '../../../shared/api/microSkillApi'
-import { roleRequirements } from '../../manager/target-roles/roleRequirements'
-import { formatRequiredKnowledge } from '../../manager/target-roles/roleKnowledgePresentation'
-import { useTranslation } from '../../../shared/i18n/LanguageContext'
+import {
+Dialog,
+DialogDescription,
+DialogFooter,
+DialogHeader,
+DialogTitle,
+} from '../../../shared/components/ui/Dialog'
+import { PageHeader } from '../../../shared/components/ui/PageHeader'
+import { Pagination } from '../../../shared/components/ui/Pagination'
+import { StatCard } from '../../../shared/components/ui/StatCard'
+import { useToast } from "../../../shared/hooks/useToast"
+import { useTranslation } from "../../../shared/i18n/LanguageContext"
+import { WorkspaceLayout } from '../../../shared/layouts/WorkspaceLayout'
+import { cn } from '../../../shared/lib/utils'
+import {
+getActiveCompany,
+resolveWorkspaceOrgId,
+updateActiveCompany,
+} from '../../../shared/stores/companyStore'
+import {
+compareRoleVersions,
+ELIGIBLE_EXPERTS,
+findEligibleExpert,
+formatDate,
+getOrganizationExperts,
+normalizeExpertId,
+resolveJobPositionForRole,
+sortTargetRolesWithDraftsBelowPublished,
+type EligibleExpert,
+type MicroSkillModel,
+type SkillTargetConfig,
+type TargetRoleModel,
+} from '../../manager/data/ldManagerMockData'
+import { cleanJobPositionTitle } from "../../manager/ontology/CompetencyOntologyPage.helpers"
 import { RequiredKnowledgePicker } from '../../manager/target-roles/components/RequiredKnowledgePicker'
-import {
-  fetchCompetencies,
-  type CompetencyDto,
-} from '../../../shared/api/competencyApi'
-import {
-  fetchPrerequisites,
-  type PrerequisiteEdgeDto,
-} from '../../../shared/api/prerequisiteApi'
 import { TargetRoleGraphModal } from '../../manager/target-roles/components/TargetRoleGraphModal'
 import { TargetRoleVersionDiff } from '../../manager/target-roles/components/TargetRoleVersionDiff'
-import { cleanJobPositionTitle } from '../../manager/ontology/CompetencyOntologyPage'
-import { fetchJobPositions, type JobPositionDto } from '../../../shared/api/jobPositionApi'
-import { fetchDepartments, type DepartmentDto } from '../../../shared/api/departmentApi'
-import { Building2 } from 'lucide-react'
-
-export type ExpertRoleStatus =
-  | 'published'
-  | 'unpublished'
-  | 'submitted'
-  | 'sent'
-  | 'approved'
-  | 'draft'
-  | 'feedback'
-  | 'rejected'
-
-export const getExpertEffectiveStatus = (
-  role: TargetRoleModel,
-): ExpertRoleStatus => {
-  if (role.status === 'published') return 'published'
-  if (role.status === 'unpublished') return 'unpublished'
-
-  if (role.status === 'submitted') return 'submitted'
-
-  // When L&D manager sends to expert, expert sees status draft (not dispatched)
-
-  if (role.status === 'sent') return 'draft'
-
-  if (role.status === 'rejected') {
-    return 'rejected'
-  }
-
-  return 'draft'
-}
+import { RolePublicationReadinessView } from '../../manager/target-roles/components/RolePublicationReadinessView'
+import { fetchLearningModules, type LearningModuleDto } from '../../../shared/api/learningModuleApi'
+import { bankRequest, type BankView, type BankQuestion } from '../../../shared/api/questionBankApi'
+import { checkRoleReadiness } from '../../manager/target-roles/roleReadiness'
+import { formatRequiredKnowledge } from '../../manager/target-roles/roleKnowledgePresentation'
+import { roleRequirements } from '../../manager/target-roles/roleRequirements'
+import { getMembers } from '../../subscription/subscriptionApi'
+import { getExpertEffectiveStatus } from './ExpertAssignedRolesPage.helpers'
 
 function resolveLevelDuration(
   role: Pick<TargetRoleModel, 'levelDurations'>,
@@ -144,6 +122,8 @@ function resolveLevelDuration(
   if (lower.includes('junior') || index === 2) return '3 months'
   return '2 months'
 }
+
+const DEFAULT_ROLE_LEVELS = ['Senior', 'Middle', 'Junior']
 
 export function ExpertAssignedRolesPage() {
   const { t } = useTranslation()
@@ -246,6 +226,7 @@ export function ExpertAssignedRolesPage() {
   }, [orgId])
 
   React.useEffect(() => {
+    // oxlint-disable-next-line react/set-state-in-effect -- Synchronize the pending state of the external data request when its scope changes.
     fetchSkills()
   }, [fetchSkills])
 
@@ -294,7 +275,7 @@ export function ExpertAssignedRolesPage() {
         orgExperts[0]?.id ||
         ELIGIBLE_EXPERTS[0].id
       const res = await fetch(
-        `/api/v1/organizations/${orgId}/target-roles?assignedExpertId=${encodeURIComponent(effectiveExpert)}`,
+        `/api/v1/organizations/${orgId}/roles?assignedExpertId=${encodeURIComponent(effectiveExpert)}`,
         {
           headers: {
             'X-User-Role': 'DOMAIN_EXPERT',
@@ -462,12 +443,13 @@ export function ExpertAssignedRolesPage() {
     }
   }, [
     orgId,
-    currentExpertId,
-    session?.identity?.accountId,
-    session?.identity?.email,
+    orgExperts,
+    selectedExpertId,
+    session,
   ])
 
   React.useEffect(() => {
+    // oxlint-disable-next-line react/set-state-in-effect -- Synchronize the pending state of the external data request when its scope changes.
     fetchAssignedRoles()
   }, [fetchAssignedRoles])
 
@@ -510,7 +492,7 @@ export function ExpertAssignedRolesPage() {
 
   const [searchQuery, setSearchQuery] = React.useState('')
   const [statusFilter, setStatusFilter] = React.useState<
-    'all' | 'published' | 'unpublished' | 'approved' | 'draft' | 'feedback' | 'rejected'
+    'all' | 'published' | 'unpublished' | 'submitted' | 'sent' | 'draft' | 'feedback' | 'rejected'
   >('all')
 
   const [expandedLineages, setExpandedLineages] = React.useState<
@@ -556,7 +538,7 @@ export function ExpertAssignedRolesPage() {
     })
 
     return sortTargetRolesWithDraftsBelowPublished(expertRoles, sortBy)
-  }, [roles, currentExpertId, orgExperts, session?.identity?.email, sortBy])
+  }, [roles, currentExpertId, orgExperts, session, sortBy])
 
   const filteredRoles = React.useMemo(() => {
     const sorted = sortTargetRolesWithDraftsBelowPublished(
@@ -595,14 +577,11 @@ export function ExpertAssignedRolesPage() {
 
   // Pagination states
 
-  const [currentPage, setCurrentPage] = React.useState(1)
-  const pageSize = 10
+    const pageSize = 10
 
   // Reset page when filter/search/expert/sort changes
 
-  React.useEffect(() => {
-    setCurrentPage(1)
-  }, [searchQuery, statusFilter, selectedExpertId, sortBy])
+  const [currentPage, setCurrentPage] = useResettableState(1, [searchQuery, statusFilter, selectedExpertId, sortBy])
 
   // Visible roles considering collapsed/expanded lineages
 
@@ -638,7 +617,7 @@ export function ExpertAssignedRolesPage() {
     return visibleRoles.slice(start, start + pageSize)
   }, [visibleRoles, currentPage, pageSize])
 
-  // Aggregate Metrics: Expert views published, approved, draft, feedback, and rejected roles
+  // Aggregate Metrics: Expert views published, submitted, draft, sent, feedback, and rejected roles
 
   const publishedCount = assignedRoles.filter(
     (r) => getExpertEffectiveStatus(r) === 'published',
@@ -646,8 +625,11 @@ export function ExpertAssignedRolesPage() {
   const unpublishedCount = assignedRoles.filter(
     (r) => getExpertEffectiveStatus(r) === 'unpublished',
   ).length
-  const approvedCount = assignedRoles.filter(
-    (r) => getExpertEffectiveStatus(r) === 'approved',
+  const submittedCount = assignedRoles.filter(
+    (r) => getExpertEffectiveStatus(r) === 'submitted',
+  ).length
+  const sentCount = assignedRoles.filter(
+    (r) => getExpertEffectiveStatus(r) === 'sent',
   ).length
   const draftCount = assignedRoles.filter(
     (r) => getExpertEffectiveStatus(r) === 'draft',
@@ -657,14 +639,35 @@ export function ExpertAssignedRolesPage() {
   ).length
 
   // Target Role Details Modal State (Read-only view of role architecture)
-
+  const [authoringRole, setAuthoringRole] = React.useState<TargetRoleModel | null>(null)
   const [viewingDetailsRole, setViewingDetailsRole] =
     React.useState<TargetRoleModel | null>(null)
-  const [detailViewMode, setDetailViewMode] = React.useState<'specs' | 'diff'>(
-    'specs',
-  )
+  const [detailViewMode, setDetailViewMode] = React.useState<
+    'specs' | 'readiness' | 'diff'
+  >('specs')
   const [selectedDetailLevelTab, setSelectedDetailLevelTab] =
     React.useState<string>('ALL')
+
+  const [validationModules, setValidationModules] = React.useState<LearningModuleDto[]>([])
+  const [validationBankQuestions, setValidationBankQuestions] = React.useState<BankQuestion[]>([])
+  const [isLoadingValidationContent, setIsLoadingValidationContent] = React.useState(false)
+
+  React.useEffect(() => {
+    if (viewingDetailsRole || authoringRole) {
+      setIsLoadingValidationContent(true)
+      Promise.all([
+        fetchLearningModules(orgId).catch(() => [] as LearningModuleDto[]),
+        bankRequest<BankView>('', undefined).catch(() => null),
+      ])
+        .then(([mods, bank]) => {
+          setValidationModules(mods)
+          setValidationBankQuestions(bank?.questions || [])
+        })
+        .finally(() => {
+          setIsLoadingValidationContent(false)
+        })
+    }
+  }, [viewingDetailsRole?.id, authoringRole?.id, orgId])
   const [graphRole, setGraphRole] = React.useState<TargetRoleModel | null>(null)
   const [deletingRole, setDeletingRole] =
     React.useState<TargetRoleModel | null>(null)
@@ -677,7 +680,7 @@ export function ExpertAssignedRolesPage() {
     setIsDeleting(true)
     try {
       const res = await fetch(
-        `/api/v1/organizations/${orgId}/target-roles/${role.id}`,
+        `/api/v1/organizations/${orgId}/roles/${role.id}`,
         {
           method: 'DELETE',
           headers: {
@@ -687,7 +690,7 @@ export function ExpertAssignedRolesPage() {
         },
       )
       if (!res.ok) {
-        throw new Error('Failed to delete target role')
+        throw new Error('Failed to delete role')
       }
       await fetchAssignedRoles()
       saveAndSetRoles((prev) => prev.filter((r) => r.id !== role.id))
@@ -698,7 +701,7 @@ export function ExpertAssignedRolesPage() {
       toast({
         title:
           role.status === 'published'
-            ? 'Target Role Deleted'
+            ? 'Role Deleted'
             : 'Draft Role Discarded',
         description: `${role.title} (${role.code} v${role.version}) has been permanently deleted.`,
         variant: 'info',
@@ -706,7 +709,7 @@ export function ExpertAssignedRolesPage() {
     } catch {
       toast({
         title: 'Delete Failed',
-        description: 'Unable to delete target role. Please try again.',
+        description: 'Unable to delete role. Please try again.',
         variant: 'destructive',
       })
     } finally {
@@ -780,7 +783,7 @@ export function ExpertAssignedRolesPage() {
     setExpandedLineages((prev) => ({ ...prev, [lineageKey]: true }))
 
     try {
-      const res = await fetch(`/api/v1/organizations/${orgId}/target-roles`, {
+      const res = await fetch(`/api/v1/organizations/${orgId}/roles`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -849,7 +852,7 @@ export function ExpertAssignedRolesPage() {
 
     const createdFallback: TargetRoleModel = {
       ...role,
-      id: `${role.code}-v${nextVersion}-${Date.now()}`,
+      id: `${role.code}-v${nextVersion}`,
       version: nextVersion,
       status: 'draft',
       levels: inheritedLevels,
@@ -879,9 +882,7 @@ export function ExpertAssignedRolesPage() {
 
   // Micro-Skill Authoring Modal State
 
-  const [authoringRole, setAuthoringRole] =
-    React.useState<TargetRoleModel | null>(null)
-  const [isAuthoringModalOpen, setIsAuthoringModalOpen] = React.useState(false)
+    const [isAuthoringModalOpen, setIsAuthoringModalOpen] = React.useState(false)
   const [configuredSkillSearch, setConfiguredSkillSearch] = React.useState('')
   const [selectedAuthoringLevels, setSelectedAuthoringLevels] = React.useState<
     string[]
@@ -931,11 +932,7 @@ export function ExpertAssignedRolesPage() {
     })
   }
 
-  const currentRoleLevels = React.useMemo(() => {
-    return authoringRole?.levels && authoringRole.levels.length > 0
-      ? authoringRole.levels
-      : ['Senior', 'Middle', 'Junior']
-  }, [authoringRole])
+  const currentRoleLevels = authoringRole?.levels?.length ? authoringRole.levels : DEFAULT_ROLE_LEVELS
 
   const isAllLevelsSelected = React.useMemo(() => {
     return (
@@ -1021,7 +1018,7 @@ export function ExpertAssignedRolesPage() {
   }, [realCompetencies, commonCompetencyIds])
 
   // Auto-select first common competency if current selection is invalid
-  React.useEffect(() => {
+  {
     if (commonCompObjects.length > 0) {
       if (
         !selectedParentCompId ||
@@ -1031,15 +1028,15 @@ export function ExpertAssignedRolesPage() {
       ) {
         setSelectedParentCompId(commonCompObjects[0].id)
       }
-    } else {
+    } else if (selectedParentCompId !== '') {
       setSelectedParentCompId('')
     }
-  }, [commonCompObjects, selectedParentCompId])
+  }
 
   // Two-step confirmation state for unassigned prerequisites
 
   const [isAwaitingPrereqConfirmation, setIsAwaitingPrereqConfirmation] =
-    React.useState(false)
+    useResettableState(false, [authoringRole?.id, authoringRole?.skillTargets.length])
   const prereqConfirmTimerRef = React.useRef<ReturnType<
     typeof setTimeout
   > | null>(null)
@@ -1178,20 +1175,11 @@ export function ExpertAssignedRolesPage() {
     if (prereqConfirmTimerRef.current)
       clearTimeout(prereqConfirmTimerRef.current)
 
-    setIsAwaitingPrereqConfirmation(false)
   }, [authoringRole?.id, authoringRole?.skillTargets.length])
 
-  React.useEffect(() => {
-    if (availableSkills.length > 0) {
-      setNewSkillId((prev) =>
-        availableSkills.some((s) => s.id === prev)
-          ? prev
-          : availableSkills[0].id,
-      )
-    } else {
-      setNewSkillId('')
-    }
-  }, [availableSkills])
+  const availableSkillId = availableSkills.some(skill => skill.id === newSkillId)
+    ? newSkillId : availableSkills[0]?.id ?? ''
+  if (newSkillId !== availableSkillId) setNewSkillId(availableSkillId)
 
   const skillOptions: ComboboxOption[] = React.useMemo(() => {
     return availableSkills.map((skill) => ({
@@ -1269,14 +1257,14 @@ export function ExpertAssignedRolesPage() {
   }, [authoringRoleMissingPrereqs, selectedAuthoringLevels])
 
   // Automatically clear missing prerequisites filter if the selected levels have no missing prerequisites
-  React.useEffect(() => {
+  {
     if (
       missingPrereqCodesForSelectedLevels.size === 0 &&
       filterOnlyPrereqUnlocks
     ) {
       setFilterOnlyPrereqUnlocks(false)
     }
-  }, [missingPrereqCodesForSelectedLevels.size, filterOnlyPrereqUnlocks])
+  }
 
   // Count how many available competencies unlock at least one missing prerequisite
   const missingPrereqCompetenciesCount = React.useMemo(() => {
@@ -1470,12 +1458,7 @@ export function ExpertAssignedRolesPage() {
     })
 
     return sorted.map((s) => s.option)
-  }, [
-    filteredAvailableCompetencies,
-    missingPrereqCodesForSelectedLevels,
-    getParentCompetenciesForSkill,
-    filterOnlyPrereqUnlocks,
-  ])
+  }, [filteredAvailableCompetencies, missingPrereqCodesForSelectedLevels, getParentCompetenciesForSkill, filterOnlyPrereqUnlocks, resolveCompJobPositionTitle, resolveCompDepartmentName])
 
   // Add competency strictly to all currently selected levels, or a specific targeted level
   const handleAddCompetency = (compId: string, targetLevel?: string) => {
@@ -1794,7 +1777,7 @@ export function ExpertAssignedRolesPage() {
       )
 
       const res = await fetch(
-        `/api/v1/organizations/${orgId}/target-roles/${authoringRole.id}`,
+        `/api/v1/organizations/${orgId}/roles/${authoringRole.id}`,
         {
           method: 'PUT',
           headers: {
@@ -1867,6 +1850,21 @@ export function ExpertAssignedRolesPage() {
 
     if (!role) return
 
+    const readiness = checkRoleReadiness(
+      role,
+      validationModules,
+      validationBankQuestions,
+    )
+    if (!readiness.isOverallReady) {
+      toast({
+        title: 'Validation Requirements Incomplete',
+        description:
+          'Before submitting to the L&D Manager, all career levels must have competencies and micro-skills, and all micro-skills must have learning modules and question bank coverage.',
+        variant: 'destructive',
+      })
+      return
+    }
+
     if (role.skillTargets.length === 0) {
       toast({
         title: 'Micro-skills Required',
@@ -1890,7 +1888,7 @@ export function ExpertAssignedRolesPage() {
     )
 
     try {
-      await fetch(`/api/v1/organizations/${orgId}/target-roles/${role.id}`, {
+      await fetch(`/api/v1/organizations/${orgId}/roles/${role.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -1937,6 +1935,21 @@ export function ExpertAssignedRolesPage() {
 
   const handleInitiateSubmitToManager = () => {
     if (!authoringRole) return
+
+    const readiness = checkRoleReadiness(
+      authoringRole,
+      validationModules,
+      validationBankQuestions,
+    )
+    if (!readiness.isOverallReady) {
+      toast({
+        title: 'Validation Requirements Incomplete',
+        description:
+          'Before submitting to the L&D Manager, all career levels must have competencies and micro-skills, and all micro-skills must have learning modules and question bank coverage.',
+        variant: 'destructive',
+      })
+      return
+    }
 
     if (authoringRole.skillTargets.length === 0) {
       toast({
@@ -1987,7 +2000,7 @@ export function ExpertAssignedRolesPage() {
     <WorkspaceLayout>
       <div className="space-y-6 pb-16">
         <PageHeader
-          title="Assigned Target Roles"
+          title="Assigned Roles"
           description="Review assigned job roles, configure level-isolated competencies, and select explicit knowledge requirements."
         />
 
@@ -1997,7 +2010,7 @@ export function ExpertAssignedRolesPage() {
           <StatCard
             variant="gradient"
             icon={<Briefcase className="h-4 w-4 text-primary" />}
-            title="Total Target Roles"
+            title="Total Roles"
             value={assignedRoles.length.toString()}
             valueClassName="text-primary"
             description="Assigned role profiles"
@@ -2007,7 +2020,7 @@ export function ExpertAssignedRolesPage() {
             variant="gradient"
             icon={<Clock className="h-4 w-4 text-sky-500" />}
             title="Submitted Roles"
-            value={approvedCount.toString()}
+            value={submittedCount.toString()}
             valueClassName="text-sky-600 dark:text-sky-400"
             description="Submitted to L&D for confirmation"
           />
@@ -2039,7 +2052,7 @@ export function ExpertAssignedRolesPage() {
               <div className="min-w-0 pr-2">
                 <CardTitle className="flex items-center gap-2">
                   <Briefcase className="h-4 w-4 text-primary shrink-0" />
-                  <span>Target Role Version Catalog</span>
+                  <span>Role Version Catalog</span>
                 </CardTitle>
 
                 <CardDescription>
@@ -2087,7 +2100,8 @@ export function ExpertAssignedRolesPage() {
                           | 'all'
                           | 'published'
                           | 'unpublished'
-                          | 'approved'
+                                                    | 'submitted'
+                          | 'sent'
                           | 'draft'
                           | 'feedback'
                           | 'rejected',
@@ -2099,16 +2113,17 @@ export function ExpertAssignedRolesPage() {
                     className="text-xs bg-transparent text-foreground border-0 focus:outline-none cursor-pointer font-medium"
                   >
                     <option value="all">All ({assignedRoles.length})</option>
+                    <option value="sent">Sent to Me ({sentCount})</option>
+                    <option value="draft">Drafts ({draftCount})</option>
+                    <option value="submitted">
+                      Submitted ({submittedCount})
+                    </option>
                     <option value="published">
                       Published ({publishedCount})
                     </option>
                     <option value="unpublished">
                       Unpublished ({unpublishedCount})
                     </option>
-                    <option value="approved">
-                      Submitted ({approvedCount})
-                    </option>
-                    <option value="draft">Drafts ({draftCount})</option>
                     <option value="rejected">Rejected ({rejectedCount})</option>
                   </select>
                 </div>
@@ -2124,7 +2139,7 @@ export function ExpertAssignedRolesPage() {
                       setSortBy(e.target.value as 'latest' | 'title')
                     }
 
-                    aria-label="Sort Target Roles"
+                    aria-label="Sort Roles"
 
                     className="text-xs bg-transparent text-foreground border-0 focus:outline-none cursor-pointer font-medium"
                   >
@@ -2141,17 +2156,17 @@ export function ExpertAssignedRolesPage() {
               <div className="text-center py-16 text-muted-foreground">
                 <div className="inline-block animate-spin rounded-full h-8 w-8 border-2 border-primary border-t-transparent mb-3" />
                 <p className="text-sm font-medium">
-                  Loading target roles from database...
+                  Loading roles from database...
                 </p>
               </div>
             ) : visibleRoles.length === 0 ? (
               <div className="text-center py-12 text-muted-foreground">
                 <AlertCircle className="h-8 w-8 mx-auto mb-2 text-muted-foreground/60" />
-                <p className="text-sm font-semibold">No target roles found.</p>
+                <p className="text-sm font-semibold">No roles found.</p>
                 <p className="text-xs text-muted-foreground mt-1 max-w-sm mx-auto">
                   {searchQuery || statusFilter !== 'all'
-                    ? 'No target roles match your active search query or status filter.'
-                    : 'No target roles are currently assigned to your expert profile.'}
+                    ? 'No roles match your active search query or status filter.'
+                    : 'No roles are currently assigned to your expert profile.'}
                 </p>
 
                 {(searchQuery || statusFilter !== 'all') && (
@@ -2197,7 +2212,6 @@ export function ExpertAssignedRolesPage() {
                         const isDraft = effStatus === 'draft'
                         const isSubmitted = effStatus === 'submitted'
                         const isSent = effStatus === 'sent'
-                        const isApproved = effStatus === 'approved'
                         const isFeedback = effStatus === 'feedback'
                         const isRejected = effStatus === 'rejected'
                         const isPublished = effStatus === 'published'
@@ -2440,15 +2454,24 @@ export function ExpertAssignedRolesPage() {
                                 </Badge>
                               )}
 
-                              {isSent && <Badge variant="warning">DRAFT</Badge>}
-
-                              {isApproved && (
-                                <Badge
-                                  variant="success"
-                                  className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20 font-bold dark:text-emerald-400"
-                                >
-                                  APPROVED
-                                </Badge>
+                              {isSent && (
+                                <div className="flex items-center gap-1.5 flex-wrap">
+                                  <Badge
+                                    variant="primary"
+                                    className="bg-[#EA580C] text-white border-transparent font-bold hover:bg-[#C2410C]"
+                                  >
+                                    SENT
+                                  </Badge>
+                                  {Boolean(role.isStaffingEnabled) && (
+                                    <Badge
+                                      variant="outline"
+                                      className="text-[9px] py-0 px-1 font-semibold text-indigo-700 dark:text-indigo-400 border-indigo-500/30 bg-indigo-500/10 whitespace-nowrap"
+                                      title="Staffing Enabled: Staged for employee assignment in organization administration"
+                                    >
+                                      STAGED FOR STAFFING
+                                    </Badge>
+                                  )}
+                                </div>
                               )}
 
                               {(isFeedback || isRejected) && (
@@ -2620,12 +2643,16 @@ export function ExpertAssignedRolesPage() {
       {authoringRole &&
         (() => {
           const authoringEffStatus = getExpertEffectiveStatus(authoringRole)
-          const isAuthoringApproved = authoringEffStatus === 'approved'
           const isAuthoringFeedback = authoringEffStatus === 'feedback'
           const isAuthoringRejected = authoringEffStatus === 'rejected'
           const cleanAuthoringRejectionReason = (
             authoringRole.rejectionReason || ''
           ).replace(/^\[(EXPERT|LD_MANAGER)\]:\s*/, '')
+          const authoringReadiness = checkRoleReadiness(
+            authoringRole,
+            validationModules,
+            validationBankQuestions,
+          )
 
           return (
             <Dialog
@@ -2645,15 +2672,14 @@ export function ExpertAssignedRolesPage() {
                 <div className="flex flex-wrap items-center justify-between gap-2.5">
                   <DialogTitle className="flex items-center gap-2">
                     <Sliders className="h-5 w-5 text-primary shrink-0" />
-                    <span>Configure Skills: {authoringRole.title}</span>
+                    <span>Edit Role: {authoringRole.title}</span>
                   </DialogTitle>
 
                   <Badge
                     variant={
                       authoringRole.status === 'sent'
                         ? 'outline'
-                        : authoringEffStatus === 'published' ||
-                            isAuthoringApproved
+                        : authoringEffStatus === 'published'
                           ? 'success'
                           : isAuthoringRejected || isAuthoringFeedback
                             ? 'destructive'
@@ -2663,8 +2689,7 @@ export function ExpertAssignedRolesPage() {
                     className={
                       authoringRole.status === 'sent'
                         ? 'bg-[#EA580C] text-white border-transparent font-bold hover:bg-[#C2410C]'
-                        : isAuthoringApproved
-                          ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20 font-bold dark:text-emerald-400'
+                        
                           : isAuthoringRejected || isAuthoringFeedback
                             ? 'font-bold'
                             : 'font-bold'
@@ -2804,7 +2829,7 @@ export function ExpertAssignedRolesPage() {
                   <div className="flex items-center justify-between flex-wrap gap-2">
                     <div className="flex items-center gap-3 flex-wrap">
                       <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block">
-                        Target Role Levels — Select Level To Configure
+                        Role Levels — Select Level To Configure
                       </span>
 
                       <label className="flex items-center gap-1.5 text-xs text-foreground cursor-pointer font-medium">
@@ -3774,91 +3799,101 @@ export function ExpertAssignedRolesPage() {
               </div>
 
               <DialogFooter className="shrink-0 flex items-center justify-between sm:justify-between w-full pt-3 border-t border-border mt-2">
-                <Button
-                  variant="outline"
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      if (prereqConfirmTimerRef.current)
+                        clearTimeout(prereqConfirmTimerRef.current)
 
-                  size="sm"
+                      setIsAwaitingPrereqConfirmation(false)
+                      setIsAuthoringModalOpen(false)
+                      setAuthoringRole(null)
+                    }}
+                  >
+                    Close
+                  </Button>
 
-                  onClick={() => {
-                    if (prereqConfirmTimerRef.current)
-                      clearTimeout(prereqConfirmTimerRef.current)
-
-                    setIsAwaitingPrereqConfirmation(false)
-
-                    setIsAuthoringModalOpen(false)
-
-                    setAuthoringRole(null)
-                  }}
-                >
-                  Close
-                </Button>
-
-                {!isAuthoringApproved &&
-                  authoringRole.status !== 'published' && (
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="outline"
-
-                        size="sm"
-
-                        disabled={isSavingDraft}
-
-                        onClick={() => {
-                          if (prereqConfirmTimerRef.current)
-                            clearTimeout(prereqConfirmTimerRef.current)
-
-                          setIsAwaitingPrereqConfirmation(false)
-
-                          handleSaveAuthoringDraft()
-                        }}
-
-                        className="font-semibold"
-                      >
-                        {isSavingDraft ? 'Saving Draft...' : 'Save Draft'}
-                      </Button>
-
-                      {isAwaitingPrereqConfirmation ? (
-                        <Button
-                          variant="primary"
-
-                          size="sm"
-
-                          onClick={handleInitiateSubmitToManager}
-
-                          className="font-semibold shadow-md bg-amber-600 hover:bg-amber-700 text-white border-amber-600 animate-pulse transition-all duration-200"
-
-                          leftIcon={<AlertTriangle className="h-4 w-4" />}
-
-                          title="Click again within 6 seconds to confirm submission with unassigned prerequisites"
-                        >
-                          Confirm Submit ({authoringRoleMissingPrereqs.length}{' '}
-                          Missing Prereq
-                          {authoringRoleMissingPrereqs.length > 1 ? 's' : ''})
-                        </Button>
-                      ) : (
-                        <Button
-                          variant="primary"
-
-                          size="sm"
-
-                          disabled={
-                            authoringRole.skillTargets.length === 0 ||
-                            isSavingDraft
-                          }
-
-                          onClick={handleInitiateSubmitToManager}
-
-                          className="font-semibold shadow-2xs"
-
-                          leftIcon={<Send className="h-4 w-4" />}
-                        >
-                          {isAuthoringFeedback || isAuthoringRejected
-                            ? 'Re-submit to L&D Manager'
-                            : 'Submit to L&D Manager'}
-                        </Button>
-                      )}
-                    </div>
+                  {!authoringReadiness.isOverallReady ? (
+                    <span
+                      className="text-xs !text-black dark:!text-white bg-amber-500/15 border border-amber-500/30 px-2.5 py-1 rounded-md flex items-center gap-1.5 font-bold cursor-help"
+                      title={authoringReadiness.missingSummary.join('; ')}
+                    >
+                      <AlertCircle className="h-3.5 w-3.5 !text-black dark:!text-white shrink-0" />
+                      <span>
+                        Validation required: {authoringReadiness.missingSummary.length} issue{authoringReadiness.missingSummary.length > 1 ? 's' : ''} to resolve
+                      </span>
+                    </span>
+                  ) : (
+                    <span className="text-xs text-emerald-700 bg-emerald-500/10 border border-emerald-500/30 px-2.5 py-1 rounded-md flex items-center gap-1.5 font-medium">
+                      <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
+                      <span>Validation passed: Ready to submit</span>
+                    </span>
                   )}
+                </div>
+
+                {authoringRole.status !== 'published' && (
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={isSavingDraft}
+                      onClick={() => {
+                        if (prereqConfirmTimerRef.current)
+                          clearTimeout(prereqConfirmTimerRef.current)
+
+                        setIsAwaitingPrereqConfirmation(false)
+                        handleSaveAuthoringDraft()
+                      }}
+                      className="font-semibold"
+                    >
+                      {isSavingDraft ? 'Saving Draft...' : 'Save Draft'}
+                    </Button>
+
+                    {isAwaitingPrereqConfirmation ? (
+                      <Button
+                        variant="primary"
+                        size="sm"
+                        disabled={!authoringReadiness.isOverallReady}
+                        onClick={handleInitiateSubmitToManager}
+                        className="font-semibold shadow-md bg-amber-600 hover:bg-amber-700 text-white border-amber-600 animate-pulse transition-all duration-200"
+                        leftIcon={<AlertTriangle className="h-4 w-4" />}
+                        title={
+                          !authoringReadiness.isOverallReady
+                            ? `Cannot submit: ${authoringReadiness.missingSummary.join('; ')}`
+                            : "Click again within 6 seconds to confirm submission with unassigned prerequisites"
+                        }
+                      >
+                        Confirm Submit ({authoringRoleMissingPrereqs.length}{' '}
+                        Missing Prereq
+                        {authoringRoleMissingPrereqs.length > 1 ? 's' : ''})
+                      </Button>
+                    ) : (
+                      <Button
+                        variant="primary"
+                        size="sm"
+                        disabled={
+                          !authoringReadiness.isOverallReady ||
+                          authoringRole.skillTargets.length === 0 ||
+                          isSavingDraft
+                        }
+                        onClick={handleInitiateSubmitToManager}
+                        className="font-semibold shadow-2xs"
+                        leftIcon={<Send className="h-4 w-4" />}
+                        title={
+                          !authoringReadiness.isOverallReady
+                            ? `Validation required before submitting: ${authoringReadiness.missingSummary.join('; ')}`
+                            : undefined
+                        }
+                      >
+                        {isAuthoringFeedback || isAuthoringRejected
+                          ? 'Re-submit to L&D Manager'
+                          : 'Submit to L&D Manager'}
+                      </Button>
+                    )}
+                  </div>
+                )}
               </DialogFooter>
             </Dialog>
           )
@@ -3882,7 +3917,7 @@ export function ExpertAssignedRolesPage() {
                 </div>
                 <div>
                   <DialogTitle className="text-lg font-bold text-foreground flex items-center gap-2 flex-wrap">
-                    <span>Target Role Details: {viewingDetailsRole.title}</span>
+                    <span>Role Details: {viewingDetailsRole.title}</span>
                     <span className="font-mono text-xs px-2 py-0.5 rounded-md bg-muted text-muted-foreground border border-border font-semibold">
                       {viewingDetailsRole.code} • v{viewingDetailsRole.version}
                     </span>
@@ -3893,30 +3928,40 @@ export function ExpertAssignedRolesPage() {
               {(() => {
                 const viewEffStatus = getExpertEffectiveStatus(viewingDetailsRole)
                 return (
-                  <Badge
-                    variant={
-                      viewEffStatus === 'published' || viewEffStatus === 'approved'
-                        ? 'success'
-                        : viewEffStatus === 'unpublished'
-                          ? 'outline'
-                          : viewEffStatus === 'feedback'
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <Badge
+                      variant={
+                        viewEffStatus === 'published'
+                          ? 'success'
+                          : viewEffStatus === 'unpublished'
                             ? 'outline'
-                            : viewEffStatus === 'rejected'
-                              ? 'destructive'
-                              : 'warning'
-                    }
-                    className={
-                      viewEffStatus === 'unpublished'
-                        ? 'border-muted-foreground/40 text-muted-foreground font-bold text-xs'
-                        : viewEffStatus === 'approved'
-                          ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20 font-bold dark:text-emerald-400 text-xs'
+                            : viewEffStatus === 'feedback'
+                              ? 'outline'
+                              : viewEffStatus === 'rejected'
+                                ? 'destructive'
+                                : 'warning'
+                      }
+                      className={
+                        viewEffStatus === 'unpublished'
+                          ? 'border-muted-foreground/40 text-muted-foreground font-bold text-xs'
                           : viewEffStatus === 'feedback'
                             ? 'bg-amber-500/15 !text-black border-amber-500/30 font-bold dark:!text-black text-xs'
-                            : 'font-bold text-xs'
-                    }
-                  >
-                    {viewEffStatus.toUpperCase()}
-                  </Badge>
+                            : viewEffStatus === 'sent'
+                              ? 'bg-[#EA580C] text-white border-transparent font-bold text-xs hover:bg-[#C2410C]'
+                              : 'font-bold text-xs'
+                      }
+                    >
+                      {viewEffStatus.toUpperCase()}
+                    </Badge>
+                    {viewEffStatus === 'sent' && viewingDetailsRole.isStaffingEnabled && (
+                      <Badge
+                        variant="outline"
+                        className="bg-indigo-500/10 text-indigo-700 border-indigo-500/30 font-bold dark:text-indigo-400 text-xs"
+                      >
+                        STAGED FOR STAFFING
+                      </Badge>
+                    )}
+                  </div>
                 )
               })()}
             </div>
@@ -3926,7 +3971,59 @@ export function ExpertAssignedRolesPage() {
             </DialogDescription>
           </DialogHeader>
 
-          <div className="flex-1 overflow-y-auto [scrollbar-gutter:stable] pr-1.5 space-y-4 text-xs min-h-0">
+          {/* Top-Level Tabs: Specifications / Publication Readiness / Version Changes (Diff) */}
+          <div className="flex flex-wrap items-center justify-between gap-2.5 pb-2.5 border-b border-border shrink-0">
+            <div className="inline-flex p-1 rounded-xl bg-muted/60 border border-border gap-1">
+              <button
+                type="button"
+                onClick={() => setDetailViewMode('specs')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
+                  detailViewMode === 'specs'
+                    ? 'bg-card text-foreground font-bold shadow-2xs border border-border/80'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                <Layers className="h-3.5 w-3.5 text-primary" />
+                <span>Architecture Specifications</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setDetailViewMode('readiness')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
+                  detailViewMode === 'readiness'
+                    ? 'bg-card text-foreground font-bold shadow-2xs border border-border/80'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                <FileCheck className="h-3.5 w-3.5 text-primary" />
+                <span>Publication Readiness &amp; Validation</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setDetailViewMode('diff')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
+                  detailViewMode === 'diff'
+                    ? 'bg-card text-foreground font-bold shadow-2xs border border-border/80'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                <Diff className="h-3.5 w-3.5 text-primary" />
+                <span>Version Changes (Diff)</span>
+              </button>
+            </div>
+
+            <span className="text-[11px] text-muted-foreground font-medium hidden sm:inline-block">
+              {detailViewMode === 'diff'
+                ? 'Compare against previous baseline'
+                : detailViewMode === 'readiness'
+                  ? 'Automated readiness and coverage audit'
+                  : 'Level Competencies & Micro-skill Requirements'}
+            </span>
+          </div>
+
+          <div className="flex-1 overflow-y-auto [scrollbar-gutter:stable] pr-1.5 space-y-4 text-xs min-h-0 pt-2">
             {/* Rejection / Revision Feedback Callout */}
             {(() => {
               const viewEffStatus = getExpertEffectiveStatus(viewingDetailsRole)
@@ -3971,7 +4068,24 @@ export function ExpertAssignedRolesPage() {
               return null
             })()}
 
-            {/* Unified Role Overview Card */}
+            {detailViewMode === 'readiness' ? (
+              <RolePublicationReadinessView
+                role={viewingDetailsRole}
+                modules={validationModules}
+                bankQuestions={validationBankQuestions}
+                isLoading={isLoadingValidationContent}
+                actor="expert"
+              />
+            ) : detailViewMode === 'diff' ? (
+              <TargetRoleVersionDiff
+                currentRole={viewingDetailsRole}
+                allRoles={assignedRoles}
+                competencies={realCompetencies}
+                microSkills={companyMicroSkills}
+              />
+            ) : (
+              <>
+                {/* Unified Role Overview Card */}
             {(() => {
               const occ = resolveJobPositionForRole(viewingDetailsRole)
               const assignedExpert =
@@ -4015,9 +4129,6 @@ export function ExpertAssignedRolesPage() {
                           className="font-mono text-xs font-semibold text-primary border-primary/30 bg-primary/5"
                         >
                           {viewingDetailsRole.jobPositionCode || occ.code}
-                        </Badge>
-                        <Badge variant="secondary" className="text-[10px] font-semibold">
-                          Job Zone 4 · Considerable Preparation
                         </Badge>
                       </div>
                     </div>
@@ -4104,54 +4215,6 @@ export function ExpertAssignedRolesPage() {
               )
             })()}
 
-            {/* View Mode Toggle: Specifications vs Version Diff */}
-            <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-border">
-              <div className="inline-flex p-0.5 rounded-lg bg-muted border border-border">
-                <button
-                  type="button"
-                  onClick={() => setDetailViewMode('specs')}
-                  className={`px-3 py-1 rounded-md text-xs font-semibold transition-all cursor-pointer ${
-                    detailViewMode === 'specs'
-                      ? 'bg-card text-foreground font-bold shadow-2xs border border-border/80'
-                      : 'text-muted-foreground hover:text-foreground'
-                  }`}
-                >
-                  Architecture Specifications
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setDetailViewMode('diff')}
-                  className={`px-3 py-1 rounded-md text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer ${
-                    detailViewMode === 'diff'
-                      ? 'bg-card text-foreground font-bold shadow-2xs border border-border/80'
-                      : 'text-muted-foreground hover:text-foreground'
-                  }`}
-                >
-                  <Diff className="h-3.5 w-3.5 text-primary" />
-                  <span>Version Changes (Diff)</span>
-                </button>
-              </div>
-
-              <span className="text-[11px] text-muted-foreground font-medium">
-                {detailViewMode === 'diff'
-                  ? 'Compare against previous baseline'
-                  : 'Level Competencies & Micro-skill Requirements'}
-              </span>
-            </div>
-
-            {detailViewMode === 'diff' ? (
-              <TargetRoleVersionDiff
-                currentRole={viewingDetailsRole}
-
-                allRoles={assignedRoles}
-
-                competencies={realCompetencies}
-
-                microSkills={companyMicroSkills}
-              />
-            ) : (
-              <>
                 {/* Dynamic Target Role Levels & Competency Matrix */}
                 {(() => {
                   const detailRoleLevels =
@@ -4173,11 +4236,11 @@ export function ExpertAssignedRolesPage() {
                     <div className="space-y-2.5">
                       <div className="flex items-center justify-between">
                         <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-                          Target Role Levels &amp; Competency Matrix
+                          Role Levels &amp; Competency Matrix
                         </span>
                       </div>
 
-                      <div className="flex items-center gap-2 overflow-x-auto pb-1 flex-nowrap">
+                      <div className="flex items-center gap-1.5 overflow-x-auto pb-1 flex-wrap scrollbar-hidden">
                         <button
                           type="button"
                           onClick={() => setSelectedDetailLevelTab('ALL')}
@@ -4625,8 +4688,8 @@ export function ExpertAssignedRolesPage() {
               </DialogTitle>
               <DialogDescription>
                 {deletingRole.status === 'published'
-                  ? 'Are you sure you want to delete this published target role?'
-                  : 'Are you sure you want to discard this draft target role?'}
+                  ? 'Are you sure you want to delete this published role?'
+                  : 'Are you sure you want to discard this draft role?'}
               </DialogDescription>
             </DialogHeader>
 

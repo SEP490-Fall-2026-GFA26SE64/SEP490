@@ -23,6 +23,11 @@ public class JobPositionService implements GetJobPositionsUseCase {
     }
 
     @Override
+    public JobPosition saveChange(String organizationId, com.adaptlearngraph.entities.domain.JobPositionChange change) {
+        return repository.saveChange(organizationId, change);
+    }
+
+    @Override
     public void deleteJobPosition(String organizationId, String idOrCode) {
         repository.delete(organizationId, idOrCode);
     }

@@ -27,8 +27,8 @@ import { Button } from '../../../../shared/components/ui/Button'
 import { Combobox } from '../../../../shared/components/ui/Combobox'
 import { RequiredKnowledgePicker } from '../../target-roles/components/RequiredKnowledgePicker'
 import { Dialog, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '../../../../shared/components/ui/Dialog'
-import { useToast } from '../../../../shared/hooks/useToast'
-import { useTranslation } from '../../../../shared/i18n/LanguageContext'
+import { useToast } from "../../../../shared/hooks/useToast";
+import { useTranslation } from "../../../../shared/i18n/LanguageContext";
 import { cn } from '../../../../shared/lib/utils'
 import { type CompetencyModel, type MicroSkillModel, type PrerequisiteEdge, type TargetRoleModel, type SkillTargetConfig } from '../../data/ldManagerMockData'
 import { getActiveCompany, updateActiveCompany } from '../../../../shared/stores/companyStore'
@@ -131,11 +131,11 @@ function OntologyGraphPlaygroundInner({
   const prerequisitesRef = React.useRef(prerequisites)
   const targetRolesRef = React.useRef(targetRoles)
   const onUpdateTargetRoleRef = React.useRef(onUpdateTargetRole)
-  microSkillsRef.current = microSkills
-  competenciesRef.current = competencies
-  prerequisitesRef.current = prerequisites
-  targetRolesRef.current = targetRoles
-  onUpdateTargetRoleRef.current = onUpdateTargetRole
+  React.useLayoutEffect(() => { microSkillsRef.current = microSkills }, [microSkills])
+  React.useLayoutEffect(() => { competenciesRef.current = competencies }, [competencies])
+  React.useLayoutEffect(() => { prerequisitesRef.current = prerequisites }, [prerequisites])
+  React.useLayoutEffect(() => { targetRolesRef.current = targetRoles }, [targetRoles])
+  React.useLayoutEffect(() => { onUpdateTargetRoleRef.current = onUpdateTargetRole }, [onUpdateTargetRole])
 
   // Fast vis-data DataSets for 60fps graph manipulation
   const nodesDataSetRef = React.useRef<DataSet<PlaygroundCustomNode>>(new DataSet<PlaygroundCustomNode>([]))
@@ -147,8 +147,8 @@ function OntologyGraphPlaygroundInner({
   const canvasNodesRef = React.useRef<PlaygroundCustomNode[]>([])
   const canvasEdgesRef = React.useRef<Edge[]>([])
 
-  canvasNodesRef.current = canvasNodes
-  canvasEdgesRef.current = canvasEdges
+  React.useLayoutEffect(() => { canvasNodesRef.current = canvasNodes }, [canvasNodes])
+  React.useLayoutEffect(() => { canvasEdgesRef.current = canvasEdges }, [canvasEdges])
 
   // Selection & Mode State
   const [selectedNode, setSelectedNode] = React.useState<PlaygroundCustomNode | null>(null)
@@ -161,8 +161,8 @@ function OntologyGraphPlaygroundInner({
   const [connectSourceNode, setConnectSourceNode] = React.useState<PlaygroundCustomNode | null>(null)
   const isConnectModeRef = React.useRef(false)
   const connectSourceNodeRef = React.useRef<PlaygroundCustomNode | null>(null)
-  isConnectModeRef.current = isConnectMode
-  connectSourceNodeRef.current = connectSourceNode
+  React.useLayoutEffect(() => { isConnectModeRef.current = isConnectMode }, [isConnectMode])
+  React.useLayoutEffect(() => { connectSourceNodeRef.current = connectSourceNode }, [connectSourceNode])
 
   const handleNodeClickForConnectRef = React.useRef<(targetNode: PlaygroundCustomNode) => Promise<void>>(async () => {})
 
@@ -712,7 +712,7 @@ function OntologyGraphPlaygroundInner({
 
     if (current.nodeType === 'targetRole') {
       const activeComp = getActiveCompany()
-      const allRoles = (targetRolesRef.current || targetRoles || [])
+      const allRoles = (targetRolesRef.current || [])
       const role =
         allRoles.find((r: TargetRoleModel) => r.id === current.id || r.code === current.code) ||
         activeComp?.targetRoles?.find((r: TargetRoleModel) => r.id === current.id || r.code === current.code)
@@ -886,7 +886,7 @@ function OntologyGraphPlaygroundInner({
       }
     } else if (current.nodeType === 'level') {
       const roleId = current.targetRoleId
-      const allRoles = (targetRolesRef.current || targetRoles || [])
+      const allRoles = (targetRolesRef.current || [])
       const role = allRoles.find((r) => r.id === roleId)
       if (role && current.levelName) {
         const baseCode = (role.stableId || role.code || '').split('#')[0].trim().toUpperCase()
@@ -1126,18 +1126,18 @@ function OntologyGraphPlaygroundInner({
       description: `Added ${uniqueNodesToAdd.length} connected node${uniqueNodesToAdd.length === 1 ? '' : 's'} around ${current.code}.`,
       variant: 'success',
     })
-  }, [findClearSlot, toast])
+  }, [findClearSlot, toast, targetRoles])
 
   const applyLODRef = React.useRef(applyLOD)
-  applyLODRef.current = applyLOD
+  React.useLayoutEffect(() => { applyLODRef.current = applyLOD }, [applyLOD])
   const applyNeighborDimmingRef = React.useRef(applyNeighborDimming)
-  applyNeighborDimmingRef.current = applyNeighborDimming
+  React.useLayoutEffect(() => { applyNeighborDimmingRef.current = applyNeighborDimming }, [applyNeighborDimming])
   const clearNeighborDimmingRef = React.useRef(clearNeighborDimming)
-  clearNeighborDimmingRef.current = clearNeighborDimming
+  React.useLayoutEffect(() => { clearNeighborDimmingRef.current = clearNeighborDimming }, [clearNeighborDimming])
   const handleExpandNeighborsRef = React.useRef(handleExpandNeighbors)
-  handleExpandNeighborsRef.current = handleExpandNeighbors
+  React.useLayoutEffect(() => { handleExpandNeighborsRef.current = handleExpandNeighbors }, [handleExpandNeighbors])
   const resolveNoOverlapRef = React.useRef(resolveNoOverlap)
-  resolveNoOverlapRef.current = resolveNoOverlap
+  React.useLayoutEffect(() => { resolveNoOverlapRef.current = resolveNoOverlap }, [resolveNoOverlap])
 
   // Initialize vis-network once on mount
   React.useEffect(() => {
@@ -1485,7 +1485,7 @@ function OntologyGraphPlaygroundInner({
 
     let newNode: PlaygroundCustomNode
     if (item.type === 'targetRole') {
-      const fullRole = (targetRolesRef.current || targetRoles || []).find((r) => r.id === item.id || r.code === item.code)
+      const fullRole = (targetRolesRef.current || []).find((r) => r.id === item.id || r.code === item.code)
       const rawStatus = (fullRole?.status || (item as unknown as { status?: string }).status || 'DRAFT').trim().toUpperCase()
       if (rawStatus !== 'DRAFT' && rawStatus !== 'REJECTED' && rawStatus !== 'REJECT') {
         toast({ title: 'Cannot add role', description: 'Only Draft or Rejected target roles can be explored on the graph.', variant: 'destructive' })
@@ -1692,6 +1692,64 @@ function OntologyGraphPlaygroundInner({
     clearNeighborDimming()
   }
 
+  async function handleLinkSkillToCompetency(compNode: PlaygroundCustomNode, skillNode: PlaygroundCustomNode) {
+    const active = competencies.find((c) => c.id === compNode.id)
+    if (!active) return
+
+    const currentSkills = active.skillIds || []
+    if (currentSkills.includes(skillNode.id) || currentSkills.includes(skillNode.code)) {
+      const edgeId = `has-skill-${compNode.id}-${skillNode.id}`
+      if (!edgesDataSetRef.current?.get(edgeId)) {
+        const newEdge = buildHasSkillEdge(compNode.id, skillNode.id)
+        const nid = newEdge.id
+        if (nid !== undefined && edgesDataSetRef.current?.get(nid)) {
+          edgesDataSetRef.current.update(newEdge)
+        } else {
+          edgesDataSetRef.current?.add(newEdge)
+        }
+        setCanvasEdges((prev) => prev.some((e) => e.id === newEdge.id) ? prev : [...prev, newEdge])
+      }
+      toast({
+        title: 'Already Mapped',
+        description: `${skillNode.code} is already a member of ${compNode.name}.`,
+        variant: 'default',
+      })
+      return
+    }
+
+    try {
+      const updatedList = [...currentSkills, skillNode.id]
+      await updateCompetency(organizationId, compNode.id, {
+        name: active.name,
+        description: active.description,
+        skillIds: updatedList,
+      })
+
+      const newEdge = buildHasSkillEdge(compNode.id, skillNode.id)
+      const nid = newEdge.id
+      if (nid !== undefined && edgesDataSetRef.current?.get(nid)) {
+        edgesDataSetRef.current.update(newEdge)
+      } else {
+        edgesDataSetRef.current?.add(newEdge)
+      }
+      setCanvasEdges((prev) => prev.some((e) => e.id === newEdge.id) ? prev : [...prev, newEdge])
+      if (onRefreshData) await onRefreshData()
+
+      toast({
+        title: 'Relationship Created',
+        description: `Mapped ${skillNode.code} to ${compNode.name} (HAS_SKILL).`,
+        variant: 'success',
+      })
+    } catch (e) {
+      console.error(e)
+      toast({
+        title: 'Mapping Failed',
+        description: 'Failed to persist HAS_SKILL relationship to server.',
+        variant: 'destructive',
+      })
+    }
+  }
+
   const handleNodeClickForConnect = async (targetNode: PlaygroundCustomNode) => {
     const sourceNode = connectSourceNodeRef.current || connectSourceNode
     if (!sourceNode) return
@@ -1716,7 +1774,7 @@ function OntologyGraphPlaygroundInner({
 
       const roleId = levelNode.targetRoleId
       const levelName = levelNode.levelName || levelNode.code
-      const role = (targetRolesRef.current || targetRoles || []).find((r) => r.id === roleId)
+      const role = (targetRolesRef.current || []).find((r) => r.id === roleId)
 
       if (!role) {
         toast({
@@ -1775,7 +1833,7 @@ function OntologyGraphPlaygroundInner({
       }))
 
       try {
-        await fetch(`/api/v1/organizations/${organizationId}/target-roles/${role.id}`, {
+        await fetch(`/api/v1/organizations/${organizationId}/roles/${role.id}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -1808,7 +1866,7 @@ function OntologyGraphPlaygroundInner({
       const roleId = levelNode.targetRoleId
       const levelName = levelNode.levelName || levelNode.code
       const role =
-        (targetRolesRef.current || targetRoles || []).find((r: TargetRoleModel) => r.id === roleId) ||
+        (targetRolesRef.current || []).find((r: TargetRoleModel) => r.id === roleId) ||
         getActiveCompany()?.targetRoles?.find((r: TargetRoleModel) => r.id === roleId)
 
       if (!role) {
@@ -1910,65 +1968,8 @@ function OntologyGraphPlaygroundInner({
     handleCancelConnect()
   }
 
-  handleNodeClickForConnectRef.current = handleNodeClickForConnect
+  React.useLayoutEffect(() => { handleNodeClickForConnectRef.current = handleNodeClickForConnect })
 
-  const handleLinkSkillToCompetency = async (compNode: PlaygroundCustomNode, skillNode: PlaygroundCustomNode) => {
-    const active = competencies.find((c) => c.id === compNode.id)
-    if (!active) return
-
-    const currentSkills = active.skillIds || []
-    if (currentSkills.includes(skillNode.id) || currentSkills.includes(skillNode.code)) {
-      const edgeId = `has-skill-${compNode.id}-${skillNode.id}`
-      if (!edgesDataSetRef.current?.get(edgeId)) {
-        const newEdge = buildHasSkillEdge(compNode.id, skillNode.id)
-        const nid = newEdge.id
-        if (nid !== undefined && edgesDataSetRef.current?.get(nid)) {
-          edgesDataSetRef.current.update(newEdge)
-        } else {
-          edgesDataSetRef.current?.add(newEdge)
-        }
-        setCanvasEdges((prev) => prev.some((e) => e.id === newEdge.id) ? prev : [...prev, newEdge])
-      }
-      toast({
-        title: 'Already Mapped',
-        description: `${skillNode.code} is already a member of ${compNode.name}.`,
-        variant: 'default',
-      })
-      return
-    }
-
-    try {
-      const updatedList = [...currentSkills, skillNode.id]
-      await updateCompetency(organizationId, compNode.id, {
-        name: active.name,
-        description: active.description,
-        skillIds: updatedList,
-      })
-
-      const newEdge = buildHasSkillEdge(compNode.id, skillNode.id)
-      const nid = newEdge.id
-      if (nid !== undefined && edgesDataSetRef.current?.get(nid)) {
-        edgesDataSetRef.current.update(newEdge)
-      } else {
-        edgesDataSetRef.current?.add(newEdge)
-      }
-      setCanvasEdges((prev) => prev.some((e) => e.id === newEdge.id) ? prev : [...prev, newEdge])
-      if (onRefreshData) await onRefreshData()
-
-      toast({
-        title: 'Relationship Created',
-        description: `Mapped ${skillNode.code} to ${compNode.name} (HAS_SKILL).`,
-        variant: 'success',
-      })
-    } catch (e) {
-      console.error(e)
-      toast({
-        title: 'Mapping Failed',
-        description: 'Failed to persist HAS_SKILL relationship to server.',
-        variant: 'destructive',
-      })
-    }
-  }
 
   const confirmRoleRequirement = async () => {
     if (!pendingRoleRequirement || !requiredKnowledge.length || savingRequirement) return
@@ -2095,7 +2096,7 @@ function OntologyGraphPlaygroundInner({
         if (levelNode && compNode) {
           const roleId = levelNode.targetRoleId
           const levelName = levelNode.levelName || levelNode.code
-          const role = (targetRolesRef.current || targetRoles || []).find((r) => r.id === roleId)
+          const role = (targetRolesRef.current || []).find((r) => r.id === roleId)
           if (role) {
             const currentLvlComps = role.levelCompetencies?.[levelName] || []
             const updatedLvlComps = currentLvlComps.filter(
@@ -2130,7 +2131,7 @@ function OntologyGraphPlaygroundInner({
           const roleId = levelNode.targetRoleId
           const levelName = levelNode.levelName || levelNode.code
           const role =
-            (targetRolesRef.current || targetRoles || []).find((r: TargetRoleModel) => r.id === roleId) ||
+            (targetRolesRef.current || []).find((r: TargetRoleModel) => r.id === roleId) ||
             getActiveCompany()?.targetRoles?.find((r: TargetRoleModel) => r.id === roleId)
           if (role) {
             const updatedSkillTargets = (role.skillTargets || []).filter(
@@ -2203,9 +2204,7 @@ function OntologyGraphPlaygroundInner({
 
     if (filterType === 'all' || filterType === 'targetRole') {
       const activeRoles = getActiveCompany()?.targetRoles || []
-      const propRoles = targetRolesRef.current && targetRolesRef.current.length > 0
-        ? targetRolesRef.current
-        : targetRoles || []
+      const propRoles = targetRoles || []
 
       const roleMap = new Map<string, TargetRoleModel>()
       // Seed with local active roles first, then live propRoles overrides

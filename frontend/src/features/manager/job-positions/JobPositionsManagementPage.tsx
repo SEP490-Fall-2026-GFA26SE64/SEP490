@@ -1,10 +1,11 @@
+import { useResettableState } from '../../../shared/hooks/useResettableState'
 import * as React from 'react'
+import { useTranslation } from "../../../shared/i18n/LanguageContext";
 import {
   AlertTriangle,
   BookOpen,
   Building2,
   CheckCircle2,
-  Compass,
   Edit3,
   Eye,
   FolderTree,
@@ -20,7 +21,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../..
 import { Input } from '../../../shared/components/ui/Input'
 import { PageHeader } from '../../../shared/components/ui/PageHeader'
 import { Pagination } from '../../../shared/components/ui/Pagination'
-import { Progress } from '../../../shared/components/ui/Progress'
 import { StatCard } from '../../../shared/components/ui/StatCard'
 import {
   Dialog,
@@ -33,7 +33,7 @@ import {
   QuickConfigImportModal,
   type ImportPreset,
 } from '../../../shared/components/import/QuickConfigImportModal'
-import { useToast } from '../../../shared/hooks/useToast'
+import { useToast } from "../../../shared/hooks/useToast";
 import { WorkspaceLayout } from '../../../shared/layouts/WorkspaceLayout'
 import { getActiveCompany, resolveWorkspaceOrgId } from '../../../shared/stores/companyStore'
 import { WorkspaceSessionContext } from '../../../shared/auth/workspaceSession'
@@ -48,14 +48,6 @@ import {
 import { workspaceFetch } from '../../../shared/api/workspaceFetch'
 import { resolveJobPositionForRole } from '../data/ldManagerMockData'
 
-export interface RiasecProfile {
-  realistic: number
-  investigative: number
-  artistic: number
-  social: number
-  enterprising: number
-  conventional: number
-}
 
 export interface AssignedExpert {
   id: string
@@ -65,6 +57,7 @@ export interface AssignedExpert {
 }
 
 export interface JobPositionRecord {
+  interests?: Record<string, number | null>
   id: string
   code: string // Job position code, e.g. 15-1252.00
   name: string
@@ -74,13 +67,14 @@ export interface JobPositionRecord {
   assignedExperts: AssignedExpert[]
   microSkillCount: number
   moduleCount: number
-  interests: RiasecProfile
   createdAt: string
 }
 
 const JOB_POSITION_PRESETS: ImportPreset[] = []
 
 const PAGE_SIZE = 8
+const INTEREST_FIELDS = ['interestRealistic', 'interestInvestigative', 'interestArtistic', 'interestSocial', 'interestEnterprising', 'interestConventional'] as const
+const INTEREST_LABELS = ['R · Realistic', 'I · Investigative', 'A · Artistic', 'S · Social', 'E · Enterprising', 'C · Conventional']
 const JOB_POSITIONS_STORAGE_PREFIX = 'adaptlearn_jobPositions_v2_'
 const JOB_POSITIONS_STORAGE_PREFIX_SNAKE = 'adaptlearn_job_positions_v2_'
 
@@ -112,9 +106,11 @@ const setStoredJobPositions = (organizationId: string, data: JobPositionRecord[]
 
 export function JobPositionsManagementPage() {
   const { toast } = useToast()
+  const { t, language } = useTranslation()
   const session = React.useContext(WorkspaceSessionContext)
   const activeCompany = getActiveCompany()
   const orgId = resolveWorkspaceOrgId(session?.identity?.organizationId || activeCompany?.id)
+  const [savingJob, setSavingJob] = React.useState(false)
 
   const isAdministrator = Boolean(
     session?.identity?.roles?.includes('ORGANIZATION_ADMINISTRATOR') ||
@@ -310,14 +306,13 @@ export function JobPositionsManagementPage() {
       window.removeEventListener('departments_updated', loadManagerDept)
       window.removeEventListener('adaptlearn_job_positions_updated', loadManagerDept)
     }
-  }, [orgId, session?.identity?.accountId, session?.identity?.email, isLdManager])
+  }, [orgId, session?.identity?.accountId, session?.identity?.email, isLdManager, session?.identity?.fullName])
 
   const [jobPositions, setJobPositions] = React.useState<JobPositionRecord[]>([])
   const [isLoading, setIsLoading] = React.useState(true)
   const [searchQuery, setSearchQuery] = React.useState('')
   const [statusFilter, setStatusFilter] = React.useState<'ALL' | 'active' | 'inactive'>('ALL')
-  const [currentPage, setCurrentPage] = React.useState(1)
-
+  
   // Synchronized state and persistent storage updater
   const setAndSaveJobPositions = React.useCallback(
     (updater: JobPositionRecord[] | ((prev: JobPositionRecord[]) => JobPositionRecord[])) => {
@@ -392,19 +387,12 @@ export function JobPositionsManagementPage() {
             code,
             name: item.name || item.title || '',
             jobZone: item.jobZone || 4,
+            interests: Object.fromEntries(INTEREST_FIELDS.map(key => [key, item[key] ?? null])),
             description: item.description || localMatch?.description || '',
             status: localMatch?.status || (String(item.status || 'ACTIVE').toLowerCase() === 'inactive' ? 'inactive' : 'active'),
             assignedExperts: effectiveExperts,
             microSkillCount: item.microSkillCount || (item.roles ? item.roles.reduce((acc: number, r: any) => acc + (r.skillCount || 0), 0) : 0),
             moduleCount: item.roleCount || item.moduleCount || (item.roles ? item.roles.length * 3 : 0),
-            interests: item.interests || localMatch?.interests || {
-              realistic: item.interestRealistic ?? 0.4,
-              investigative: item.interestInvestigative ?? 0.8,
-              artistic: item.interestArtistic ?? 0.2,
-              social: item.interestSocial ?? 0.2,
-              enterprising: item.interestEnterprising ?? 0.3,
-              conventional: item.interestConventional ?? 0.7,
-            },
             createdAt: item.createdAt || localMatch?.createdAt || new Date().toISOString().split('T')[0],
           }
         })
@@ -426,6 +414,7 @@ export function JobPositionsManagementPage() {
   }, [orgId])
 
   React.useEffect(() => {
+    // oxlint-disable-next-line react/set-state-in-effect -- Synchronize the pending state of the external data request when its scope changes.
     fetchLiveJobPositions()
   }, [fetchLiveJobPositions])
 
@@ -450,15 +439,7 @@ export function JobPositionsManagementPage() {
   const [occCode, setOccCode] = React.useState('')
   const [occJobZone, setOccJobZone] = React.useState(4)
   const [occDescription, setOccDescription] = React.useState('')
-  const [occInterests, setOccInterests] = React.useState<RiasecProfile>({
-    realistic: 0.4,
-    investigative: 0.75,
-    artistic: 0.2,
-    social: 0.15,
-    enterprising: 0.25,
-    conventional: 0.8,
-  })
-
+  const [occInterests, setOccInterests] = React.useState<Record<string, string>>({})
   // View Details Modal (Includes RIASEC profile view)
   const [viewingDetailsJobPosition, setViewingDetailsJobPosition] = React.useState<JobPositionRecord | null>(null)
 
@@ -509,14 +490,12 @@ export function JobPositionsManagementPage() {
 
   // Pagination
   const totalPages = Math.max(1, Math.ceil(filteredJobPositions.length / PAGE_SIZE))
+  const [currentPage, setCurrentPage] = useResettableState(1, [searchQuery, statusFilter])
   const paginatedJobPositions = React.useMemo(() => {
     const startIndex = (currentPage - 1) * PAGE_SIZE
     return filteredJobPositions.slice(startIndex, startIndex + PAGE_SIZE)
   }, [filteredJobPositions, currentPage])
 
-  React.useEffect(() => {
-    setCurrentPage(1)
-  }, [searchQuery, statusFilter])
 
   // Open Create Modal
   const handleOpenCreate = () => {
@@ -537,14 +516,7 @@ export function JobPositionsManagementPage() {
     setOccCode(`15-${nextNum.toString().padStart(4, '0')}.00`)
     setOccJobZone(4)
     setOccDescription('')
-    setOccInterests({
-      realistic: 0.4,
-      investigative: 0.75,
-      artistic: 0.2,
-      social: 0.15,
-      enterprising: 0.25,
-      conventional: 0.8,
-    })
+    setOccInterests({})
     setIsJobPositionModalOpen(true)
   }
 
@@ -555,131 +527,37 @@ export function JobPositionsManagementPage() {
     setOccCode(occ.code)
     setOccJobZone(occ.jobZone)
     setOccDescription(occ.description)
-    setOccInterests(occ.interests || {
-      realistic: 0.4,
-      investigative: 0.75,
-      artistic: 0.2,
-      social: 0.15,
-      enterprising: 0.25,
-      conventional: 0.8,
-    })
+    setOccInterests(Object.fromEntries(INTEREST_FIELDS.map(key => [key, occ.interests?.[key] == null ? '' : String(occ.interests[key])])))
     setIsJobPositionModalOpen(true)
   }
 
-  // Save Job Position
   const handleSaveJobPosition = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!occName.trim() || !occCode.trim()) return
-
-    const orgId = resolveWorkspaceOrgId(session?.identity?.organizationId || activeCompany?.id)
-    const codeUpper = occCode.trim().toUpperCase()
-
-    // Guard against duplicate codes
-    if (!editingJobPosition) {
-      const duplicate = jobPositions.find(
-        (p) => p.code.toLowerCase().trim() === codeUpper.toLowerCase().trim()
-      )
-      if (duplicate) {
-        toast({
-          title: 'Duplicate Job Position Code',
-          description: `A job position with code ${codeUpper} already exists ("${duplicate.name}"). Each job position must have a unique code.`,
-          variant: 'destructive',
-        })
-        return
-      }
-    } else if (editingJobPosition.code.toUpperCase() !== codeUpper) {
-      const duplicate = jobPositions.find(
-        (p) =>
-          p.id !== editingJobPosition.id &&
-          p.code.toLowerCase().trim() === codeUpper.toLowerCase().trim()
-      )
-      if (duplicate) {
-        toast({
-          title: 'Duplicate Job Position Code',
-          description: `A job position with code ${codeUpper} already exists ("${duplicate.name}"). Please use a different code.`,
-          variant: 'destructive',
-        })
-        return
-      }
-    }
-    // Close modal immediately and capture editing state
-    setIsJobPositionModalOpen(false)
-    const currentEditing = editingJobPosition
-    setEditingJobPosition(null)
-
-    if (currentEditing) {
-      try {
-        await updateJobPosition(orgId, currentEditing.id, {
-          name: occName.trim(),
-          code: codeUpper,
-          jobZone: occJobZone,
-          interestRealistic: occInterests.realistic,
-          interestInvestigative: occInterests.investigative,
-          interestArtistic: occInterests.artistic,
-          interestSocial: occInterests.social,
-          interestEnterprising: occInterests.enterprising,
-          interestConventional: occInterests.conventional,
-        })
-        setAndSaveJobPositions((prev) =>
-          prev.map((o) =>
-            o.id === currentEditing.id
-              ? {
-                  ...o,
-                  name: occName.trim(),
-                  code: codeUpper,
-                  jobZone: occJobZone,
-                  description: occDescription.trim(),
-                  interests: occInterests,
-                }
-              : o
-          )
-        )
-        toast({
-          title: 'Job Position Updated',
-          description: `Successfully modified ${occName}.`,
-          variant: 'success',
-        })
-      } catch (err: unknown) {
-        toast({
-          title: 'Update Failed',
-          description: err instanceof Error ? err.message : 'Failed to update job position on server.',
-          variant: 'destructive',
-        })
-        return
-      }
-    } else {
+    if (savingJob) return
+    setSavingJob(true)
+    try {
+      const codeUpper = occCode.trim().toUpperCase()
+      if (!occName.trim() || !codeUpper) return
+      if (jobPositions.some(p => p.code.toUpperCase() === codeUpper && p.id !== editingJobPosition?.id)) throw new Error('A job position with this code already exists.')
+      const filled = INTEREST_FIELDS.filter(key => (occInterests[key] ?? '').trim() !== '')
+      if (filled.length !== 0 && filled.length !== 6) throw new Error('Enter all six RIASEC scores or leave all six blank.')
+      if (filled.some(key => !/^\d+$/.test(occInterests[key]) || Number(occInterests[key]) > 40)) throw new Error('RIASEC scores must be integers from 0 to 40.')
+      const payload = { code: codeUpper, name: occName.trim(), jobZone: occJobZone, description: occDescription.trim(), ...Object.fromEntries(INTEREST_FIELDS.map(key => [key, filled.length ? Number(occInterests[key]) : null])), ...(editingJobPosition ? {} : { status: 'ACTIVE' }) }
+      const accepted = editingJobPosition ? await updateJobPosition(orgId, editingJobPosition.id, payload) : await createJobPosition(orgId, payload)
+      const existing = jobPositions.find(p => p.id === accepted.id)
       const newOcc: JobPositionRecord = {
-        id: codeUpper,
-        code: codeUpper,
-        name: occName.trim(),
-        jobZone: occJobZone,
-        description: occDescription.trim(),
-        status: 'active',
-        assignedExperts: [],
-        microSkillCount: 0,
-        moduleCount: 0,
-        interests: occInterests,
-        createdAt: new Date().toISOString(),
+        id: accepted.id, code: accepted.code, name: accepted.name, jobZone: accepted.jobZone,
+        interests: Object.fromEntries(INTEREST_FIELDS.map(key => [key, accepted[key] ?? null])),
+        description: occDescription.trim(), status: accepted.status?.toUpperCase() === 'INACTIVE' ? 'inactive' : 'active',
+        assignedExperts: existing?.assignedExperts ?? [], microSkillCount: accepted.microSkillCount,
+        moduleCount: existing?.moduleCount ?? 0, createdAt: existing?.createdAt ?? new Date().toISOString(),
       }
-      try {
-        const created = await createJobPosition(orgId, {
-          code: newOcc.code,
-          name: newOcc.name,
-          jobZone: newOcc.jobZone,
-          interestRealistic: occInterests.realistic,
-          interestInvestigative: occInterests.investigative,
-          interestArtistic: occInterests.artistic,
-          interestSocial: occInterests.social,
-          interestEnterprising: occInterests.enterprising,
-          interestConventional: occInterests.conventional,
-          status: 'ACTIVE',
-        })
-        const createdRecord: JobPositionRecord = {
-          ...newOcc,
-          id: created.id || newOcc.id,
-        }
-        setAndSaveJobPositions((prev) => [createdRecord, ...prev])
-
+      setAndSaveJobPositions(prev => editingJobPosition?.id
+        ? prev.map(record => record.id === accepted.id ? { ...record, ...newOcc } : record)
+        : [newOcc, ...prev.filter(record => record.id !== accepted.id)])
+      setIsJobPositionModalOpen(false)
+      setEditingJobPosition(null)
+      if (!editingJobPosition?.id) {
         // Automatically assign created job position to the manager's department
         if (managerDepartment) {
           const nextCodes = Array.from(
@@ -738,22 +616,12 @@ export function JobPositionsManagementPage() {
             console.warn('Failed to update department linked job positions:', e)
           }
         }
-        window.dispatchEvent(new Event('adaptlearn_job_positions_updated'))
-
-        toast({
-          title: 'Job Position Created',
-          description: `Added ${newOcc.name} (${newOcc.code}) to ${managerDepartment ? managerDepartment.name : 'the catalog'}.`,
-          variant: 'success',
-        })
-      } catch (err: unknown) {
-        toast({
-          title: 'Creation Failed',
-          description: err instanceof Error ? err.message : 'Failed to save job position.',
-          variant: 'destructive',
-        })
-        return
       }
-    }
+      window.dispatchEvent(new Event('adaptlearn_job_positions_updated'))
+      toast({ title: t('riasecUi.saved'), description: accepted.name, variant: 'success' })
+    } catch (err: unknown) {
+      toast({ title: t('riasecUi.error'), description: err instanceof Error ? err.message : t('riasecUi.error'), variant: 'destructive' })
+    } finally { setSavingJob(false) }
   }
 
   // Check whether a job position has any non-unpublished target roles assigned to it
@@ -784,7 +652,7 @@ export function JobPositionsManagementPage() {
 
       let backendRoles: Record<string, unknown>[] = []
       try {
-        const res = await workspaceFetch(`/api/v1/organizations/${orgId}/target-roles`, {
+        const res = await workspaceFetch(`/api/v1/organizations/${orgId}/roles`, {
           headers: {
             'X-User-Role': 'LD_MANAGER',
           },
@@ -954,14 +822,6 @@ export function JobPositionsManagementPage() {
         assignedExperts: Array.isArray(item.assignedExperts) ? (item.assignedExperts as JobPositionRecord['assignedExperts']) : [],
         microSkillCount: Number(item.microSkillCount) || 0,
         moduleCount: Number(item.moduleCount) || 0,
-        interests: (item.interests as JobPositionRecord['interests']) || {
-          realistic: 0.4,
-          investigative: 0.75,
-          artistic: 0.2,
-          social: 0.15,
-          enterprising: 0.25,
-          conventional: 0.8,
-        },
         createdAt: String(item.createdAt || new Date().toISOString().split('T')[0]),
       })
     }
@@ -1320,9 +1180,6 @@ export function JobPositionsManagementPage() {
                       >
                         {viewingDetailsJobPosition.code}
                       </Badge>
-                      <Badge variant="secondary" className="text-[10px] font-semibold">
-                        Job Zone {viewingDetailsJobPosition.jobZone || 4} · Considerable Preparation
-                      </Badge>
                     </div>
                   </div>
 
@@ -1354,6 +1211,7 @@ export function JobPositionsManagementPage() {
                   </p>
                 </div>
 
+                <div className="space-y-2"><h3 className="text-body-sm font-semibold">RIASEC interests · 0–40</h3><div className="grid grid-cols-2 gap-2 sm:grid-cols-3">{INTEREST_FIELDS.map((key, i) => <div key={key} className="rounded-lg border border-border p-3 text-body-sm">{INTEREST_LABELS[i]}: {viewingDetailsJobPosition.interests?.[key] ?? '—'}</div>)}</div></div>
                 {/* Bottom Row: Key Metrics Summary Strip */}
                 <div className="grid grid-cols-3 gap-2.5 pt-3 border-t border-border/70">
                   <div className="p-2.5 rounded-lg bg-muted/30 border border-border/60 text-center">
@@ -1385,179 +1243,7 @@ export function JobPositionsManagementPage() {
                 </div>
               </div>
 
-              {/* RIASEC Profile Visualizer Card */}
-              <div className="p-4 rounded-xl border border-border bg-card space-y-3.5 shadow-2xs">
-                <div className="flex items-center justify-between pb-2 border-b border-border flex-wrap gap-2">
-                  <div className="flex items-center gap-2">
-                    <div className="w-7 h-7 rounded-md bg-primary/10 text-primary flex items-center justify-center shrink-0 border border-primary/20">
-                      <Compass className="h-4 w-4" />
-                    </div>
-                    <div>
-                      <span className="text-xs font-bold text-foreground block">
-                        RIASEC Vocational Interest Architecture
-                      </span>
-                      <p className="text-[11px] text-muted-foreground">
-                        Standardized Holland Code distribution across cognitive and occupational traits
-                      </p>
-                    </div>
-                  </div>
-                  <Badge variant="outline" className="font-mono text-[10px] text-primary border-primary/30 bg-primary/5">
-                    Holland Hexagon Model
-                  </Badge>
-                </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-                  {/* Realistic */}
-                  {(() => {
-                    const pct = Math.round((viewingDetailsJobPosition.interests?.realistic || 0) * 100)
-                    const isHigh = pct >= 50
-                    return (
-                      <div className="p-3 rounded-lg border border-border/70 bg-muted/20 space-y-1.5">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-1.5">
-                            <Badge variant={isHigh ? 'primary' : 'secondary'} className="font-mono text-[10px] px-1.5 py-0 font-bold">
-                              R
-                            </Badge>
-                            <span className="text-xs font-semibold text-foreground">Realistic</span>
-                          </div>
-                          <span className={`font-mono text-xs font-bold ${isHigh ? 'text-primary' : 'text-foreground'}`}>
-                            {pct}%
-                          </span>
-                        </div>
-                        <Progress value={pct} variant={isHigh ? 'primary' : undefined} className="h-1.5" />
-                        <p className="text-[10px] text-muted-foreground">
-                          Practical, hands-on, tool &amp; technology execution
-                        </p>
-                      </div>
-                    )
-                  })()}
-
-                  {/* Investigative */}
-                  {(() => {
-                    const pct = Math.round((viewingDetailsJobPosition.interests?.investigative || 0) * 100)
-                    const isHigh = pct >= 50
-                    return (
-                      <div className="p-3 rounded-lg border border-border/70 bg-muted/20 space-y-1.5">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-1.5">
-                            <Badge variant={isHigh ? 'primary' : 'secondary'} className="font-mono text-[10px] px-1.5 py-0 font-bold">
-                              I
-                            </Badge>
-                            <span className="text-xs font-semibold text-foreground">Investigative</span>
-                          </div>
-                          <span className={`font-mono text-xs font-bold ${isHigh ? 'text-primary' : 'text-foreground'}`}>
-                            {pct}%
-                          </span>
-                        </div>
-                        <Progress value={pct} variant={isHigh ? 'primary' : undefined} className="h-1.5" />
-                        <p className="text-[10px] text-muted-foreground">
-                          Analytical, research-driven, deep problem-solving
-                        </p>
-                      </div>
-                    )
-                  })()}
-
-                  {/* Artistic */}
-                  {(() => {
-                    const pct = Math.round((viewingDetailsJobPosition.interests?.artistic || 0) * 100)
-                    const isHigh = pct >= 50
-                    return (
-                      <div className="p-3 rounded-lg border border-border/70 bg-muted/20 space-y-1.5">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-1.5">
-                            <Badge variant={isHigh ? 'primary' : 'secondary'} className="font-mono text-[10px] px-1.5 py-0 font-bold">
-                              A
-                            </Badge>
-                            <span className="text-xs font-semibold text-foreground">Artistic</span>
-                          </div>
-                          <span className={`font-mono text-xs font-bold ${isHigh ? 'text-primary' : 'text-foreground'}`}>
-                            {pct}%
-                          </span>
-                        </div>
-                        <Progress value={pct} variant={isHigh ? 'primary' : undefined} className="h-1.5" />
-                        <p className="text-[10px] text-muted-foreground">
-                          Creative, innovative expression and design sensibility
-                        </p>
-                      </div>
-                    )
-                  })()}
-
-                  {/* Social */}
-                  {(() => {
-                    const pct = Math.round((viewingDetailsJobPosition.interests?.social || 0) * 100)
-                    const isHigh = pct >= 50
-                    return (
-                      <div className="p-3 rounded-lg border border-border/70 bg-muted/20 space-y-1.5">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-1.5">
-                            <Badge variant={isHigh ? 'primary' : 'secondary'} className="font-mono text-[10px] px-1.5 py-0 font-bold">
-                              S
-                            </Badge>
-                            <span className="text-xs font-semibold text-foreground">Social</span>
-                          </div>
-                          <span className={`font-mono text-xs font-bold ${isHigh ? 'text-primary' : 'text-foreground'}`}>
-                            {pct}%
-                          </span>
-                        </div>
-                        <Progress value={pct} variant={isHigh ? 'primary' : undefined} className="h-1.5" />
-                        <p className="text-[10px] text-muted-foreground">
-                          Collaboration, team mentorship, and stakeholder support
-                        </p>
-                      </div>
-                    )
-                  })()}
-
-                  {/* Enterprising */}
-                  {(() => {
-                    const pct = Math.round((viewingDetailsJobPosition.interests?.enterprising || 0) * 100)
-                    const isHigh = pct >= 50
-                    return (
-                      <div className="p-3 rounded-lg border border-border/70 bg-muted/20 space-y-1.5">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-1.5">
-                            <Badge variant={isHigh ? 'primary' : 'secondary'} className="font-mono text-[10px] px-1.5 py-0 font-bold">
-                              E
-                            </Badge>
-                            <span className="text-xs font-semibold text-foreground">Enterprising</span>
-                          </div>
-                          <span className={`font-mono text-xs font-bold ${isHigh ? 'text-primary' : 'text-foreground'}`}>
-                            {pct}%
-                          </span>
-                        </div>
-                        <Progress value={pct} variant={isHigh ? 'primary' : undefined} className="h-1.5" />
-                        <p className="text-[10px] text-muted-foreground">
-                          Leadership, initiative, and strategic influence
-                        </p>
-                      </div>
-                    )
-                  })()}
-
-                  {/* Conventional */}
-                  {(() => {
-                    const pct = Math.round((viewingDetailsJobPosition.interests?.conventional || 0) * 100)
-                    const isHigh = pct >= 50
-                    return (
-                      <div className="p-3 rounded-lg border border-border/70 bg-muted/20 space-y-1.5">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-1.5">
-                            <Badge variant={isHigh ? 'primary' : 'secondary'} className="font-mono text-[10px] px-1.5 py-0 font-bold">
-                              C
-                            </Badge>
-                            <span className="text-xs font-semibold text-foreground">Conventional</span>
-                          </div>
-                          <span className={`font-mono text-xs font-bold ${isHigh ? 'text-primary' : 'text-foreground'}`}>
-                            {pct}%
-                          </span>
-                        </div>
-                        <Progress value={pct} variant={isHigh ? 'primary' : undefined} className="h-1.5" />
-                        <p className="text-[10px] text-muted-foreground">
-                          Structured data, governance rules, and reliable processes
-                        </p>
-                      </div>
-                    )
-                  })()}
-                </div>
-              </div>
             </div>
 
             <DialogFooter className="shrink-0 pt-3 border-t border-border mt-3 flex items-center justify-between sm:justify-between w-full">
@@ -1607,7 +1293,7 @@ export function JobPositionsManagementPage() {
       </Dialog>
 
       {/* CREATE / EDIT JOB_POSITION MODAL (WITH RIASEC EDITING) */}
-      <Dialog open={isJobPositionModalOpen} onOpenChange={setIsJobPositionModalOpen} className="max-w-2xl max-h-[90vh] flex flex-col p-6 overflow-hidden">
+      <Dialog open={isJobPositionModalOpen} onOpenChange={open => { if (!savingJob) setIsJobPositionModalOpen(open) }} className="max-w-2xl h-[90dvh] max-h-[90dvh] flex flex-col p-6 overflow-hidden">
         <DialogHeader className="shrink-0 mb-3">
           <div className="flex items-center justify-between pr-4">
             <DialogTitle className="text-base font-bold flex items-center gap-2">
@@ -1626,13 +1312,14 @@ export function JobPositionsManagementPage() {
           </div>
           <DialogDescription className="text-xs text-muted-foreground">
             {editingJobPosition
-              ? 'Update job position details, career interest weights, and preparation requirements.'
+              ? 'Update job position details and preparation requirements.'
               : 'Define an industry job position to organize job roles, competencies, and skill pathways.'}
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSaveJobPosition} className="flex flex-col flex-1 min-h-0 overflow-hidden">
-          <div className="flex-1 overflow-y-auto pr-1.5 space-y-3.5 py-1 text-xs min-h-0">
+          <form onSubmit={e => void handleSaveJobPosition(e)} className="flex flex-col flex-1 min-h-0 overflow-hidden">
+          <div tabIndex={0} aria-label={language === 'vi' ? 'Thông tin vị trí' : 'Job position details'} className="min-h-0 flex-1 overflow-y-auto overscroll-contain pr-1.5">
+          <fieldset disabled={savingJob} className="min-w-0 space-y-3.5 py-1 text-xs">
             {managerDepartment && (
               <div className="p-2.5 rounded-lg border border-primary/20 bg-secondary/30 flex items-center justify-between">
                 <div className="flex items-center gap-2">
@@ -1685,31 +1372,6 @@ export function JobPositionsManagementPage() {
                   />
                 </div>
               </div>
-
-              <div>
-                <div className="flex items-center justify-between mb-1">
-                  <label className="text-[11px] font-semibold text-foreground block">
-                    Job Zone (1–5)
-                  </label>
-                  <span className="text-[10.5px] text-muted-foreground">
-                    {occJobZone <= 2
-                      ? 'Zone 1-2: Moderate Preparation'
-                      : occJobZone === 3
-                      ? 'Zone 3: Medium Preparation'
-                      : occJobZone === 4
-                      ? 'Zone 4: Considerable Preparation (BSc / 2–4 yrs)'
-                      : 'Zone 5: Extensive Preparation (MSc / PhD)'}
-                  </span>
-                </div>
-                <Input
-                  type="number"
-                  min={1}
-                  max={5}
-                  value={occJobZone}
-                  onChange={(e) => setOccJobZone(Number(e.target.value))}
-                  className="font-mono text-xs w-28 shadow-2xs"
-                />
-              </div>
             </div>
 
             {/* Card 2: Job Position Scope & Summary */}
@@ -1728,102 +1390,12 @@ export function JobPositionsManagementPage() {
               </span>
             </div>
 
-            {/* Card 3: RIASEC Profile Calibration with Live Visual Feedback */}
-            <div className="p-3.5 rounded-xl border border-primary/20 bg-secondary/20 space-y-3">
-              <div className="flex items-center justify-between">
-                <div>
-                  <span className="text-[11px] font-bold text-primary uppercase tracking-wider block">
-                    Career Interest Alignment (Holland RIASEC)
-                  </span>
-                  <span className="text-[10.5px] text-muted-foreground">
-                    Fine-tune interest compatibility scores to personalize role recommendations for learners.
-                  </span>
-                </div>
-                <Badge variant="outline" className="text-[10px] font-mono border-primary/30 text-primary bg-card/60 shrink-0">
-                  0% – 100%
-                </Badge>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
-                {[
-                  { key: 'realistic' as const, code: 'Realistic (R)', desc: 'Hands-on / Technical' },
-                  { key: 'investigative' as const, code: 'Investigative (I)', desc: 'Analytical / Problem-Solving' },
-                  { key: 'artistic' as const, code: 'Artistic (A)', desc: 'Design / Expression' },
-                  { key: 'social' as const, code: 'Social (S)', desc: 'Support / Helping' },
-                  { key: 'enterprising' as const, code: 'Enterprising (E)', desc: 'Leadership / Persuasion' },
-                  { key: 'conventional' as const, code: 'Conventional (C)', desc: 'Structured Data / Rules' },
-                ].map((dim) => {
-                  const rawVal = occInterests[dim.key] ?? 0
-                  const percentVal = Math.round(rawVal * 100)
-
-                  return (
-                    <div
-                      key={dim.key}
-                      className="p-2.5 rounded-lg border border-border/80 bg-card shadow-2xs space-y-2"
-                    >
-                      <div className="flex items-center justify-between gap-2">
-                        <div className="min-w-0">
-                          <span className="text-xs font-semibold text-foreground block truncate">
-                            {dim.code}
-                          </span>
-                          <span className="text-[10.5px] text-muted-foreground block truncate">
-                            {dim.desc}
-                          </span>
-                        </div>
-
-                        {/* Direct manual percent input */}
-                        <div className="flex items-center gap-1 shrink-0 bg-muted/40 px-1.5 py-0.5 rounded border border-border">
-                          <input
-                            type="number"
-                            min={0}
-                            max={100}
-                            step={1}
-                            value={percentVal}
-                            onChange={(e) => {
-                              const val = e.target.value === '' ? 0 : Number(e.target.value)
-                              const clamped = Math.min(100, Math.max(0, isNaN(val) ? 0 : val))
-                              setOccInterests((prev) => ({
-                                ...prev,
-                                [dim.key]: Number((clamped / 100).toFixed(3)),
-                              }))
-                            }}
-                            className="w-8 text-right text-xs font-mono font-bold bg-transparent text-foreground focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                            aria-label={`${dim.code} percentage`}
-                          />
-                          <span className="text-xs font-bold text-muted-foreground">%</span>
-                        </div>
-                      </div>
-
-                      {/* Live visual progress meter matching View Details */}
-                      <Progress value={percentVal} variant="primary" className="h-1.5" />
-
-                      {/* Volume-Style Slider (Drag Left & Right) */}
-                      <div className="pt-0.5">
-                        <input
-                          type="range"
-                          min={0}
-                          max={100}
-                          step={1}
-                          value={percentVal}
-                          onChange={(e) => {
-                            const num = Number(e.target.value) || 0
-                            setOccInterests((prev) => ({
-                              ...prev,
-                              [dim.key]: Number((num / 100).toFixed(3)),
-                            }))
-                          }}
-                          style={{
-                            background: `linear-gradient(to right, hsl(var(--primary)) 0%, hsl(var(--primary)) ${percentVal}%, #FFFFFF ${percentVal}%, #FFFFFF 100%)`,
-                          }}
-                          className="w-full h-2.5 rounded-lg appearance-none cursor-pointer accent-primary border border-border shadow-xs"
-                          aria-label={`${dim.code} slider`}
-                        />
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
+            <div className="space-y-3 rounded-lg border border-border bg-card p-4">
+              <h3 className="text-body font-semibold">{language === 'vi' ? 'Sở thích RIASEC' : 'RIASEC interests'} · 0–40</h3>
+              <p className="text-body-sm text-muted-foreground">{language === 'vi' ? 'Nhập đủ sáu điểm nguyên hoặc để trống cả sáu. Hồ sơ thiếu điểm không được dùng cho gợi ý AI. Điểm mô tả sở thích nghề nghiệp, không phải năng lực.' : 'Enter all six integer scores, or leave all blank. Incomplete profiles are excluded from AI suggestions. Scores describe occupational interests, not competence.'}</p>
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">{INTEREST_FIELDS.map((key, i) => <label key={key} className="space-y-1 text-body-sm">{INTEREST_LABELS[i]}<Input type="number" min={0} max={40} step={1} value={occInterests[key] ?? ''} onChange={e => setOccInterests(prev => ({ ...prev, [key]: e.target.value }))} /></label>)}</div>
             </div>
+          </fieldset>
           </div>
 
           <DialogFooter className="shrink-0 pt-3 border-t border-border mt-3">
@@ -1835,7 +1407,7 @@ export function JobPositionsManagementPage() {
             >
               Cancel
             </Button>
-            <Button variant="primary" size="sm" type="submit">
+            <Button variant="primary" size="sm" type="submit" isLoading={savingJob} disabled={savingJob}>
               {editingJobPosition ? 'Save Changes' : 'Create Job Position'}
             </Button>
           </DialogFooter>

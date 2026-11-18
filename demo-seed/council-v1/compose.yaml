@@ -1,0 +1,112 @@
+name: sep490-council-demo
+
+x-backend: &backend
+  DB_URL: jdbc:postgresql://postgres:5432/adapt_learn_graph_council_demo
+  DB_USER: adapt_learn_graph
+  DB_PASSWORD: ${COUNCIL_DB_PASSWORD:?Set COUNCIL_DB_PASSWORD}
+  NEO4J_URI: bolt://neo4j:7687
+  NEO4J_USER: neo4j
+  NEO4J_PASSWORD: ${COUNCIL_NEO4J_PASSWORD:?Set COUNCIL_NEO4J_PASSWORD}
+  SPRING_FLYWAY_LOCATIONS: classpath:db/workspace-migration
+  CATALOG_SEED_ENABLED: "false"
+
+services:
+  postgres:
+    image: postgres:17.6-alpine
+    environment:
+      POSTGRES_DB: adapt_learn_graph_council_demo
+      POSTGRES_USER: adapt_learn_graph
+      POSTGRES_PASSWORD: ${COUNCIL_DB_PASSWORD:?Set COUNCIL_DB_PASSWORD}
+    ports: ["127.0.0.1:29432:5432"]
+    volumes: [postgres:/var/lib/postgresql/data]
+    healthcheck:
+      test: [CMD-SHELL, "pg_isready -U adapt_learn_graph -d adapt_learn_graph_council_demo"]
+      interval: 3s
+      timeout: 5s
+      retries: 30
+  neo4j:
+    image: neo4j:5.26-community
+    environment:
+      NEO4J_AUTH: neo4j/${COUNCIL_NEO4J_PASSWORD:?Set COUNCIL_NEO4J_PASSWORD}
+    ports: ["127.0.0.1:29747:7474", "127.0.0.1:29687:7687"]
+    volumes: [neo4j:/data]
+    healthcheck:
+      test: [CMD-SHELL, "cypher-shell -u neo4j -p \"$${NEO4J_AUTH#*/}\" 'RETURN 1' >/dev/null"]
+      interval: 5s
+      timeout: 10s
+      retries: 30
+  migrate:
+    image: adapt-learn-graph-council:dev
+    build: {context: ../.., dockerfile: backend/Dockerfile}
+    environment:
+      <<: *backend
+      SPRING_PROFILES_ACTIVE: local,migrate
+    depends_on:
+      postgres: {condition: service_healthy}
+      neo4j: {condition: service_healthy}
+    restart: "no"
+  minio:
+    image: ${MINIO_IMAGE:-minio/minio:RELEASE.2025-04-22T22-12-26Z}
+    command: server /data
+    environment:
+      MINIO_ROOT_USER: council-demo
+      MINIO_ROOT_PASSWORD: ${COUNCIL_ASSETS_PASSWORD:?Set COUNCIL_ASSETS_PASSWORD}
+    volumes: [assets:/data]
+  api:
+    image: adapt-learn-graph-council:dev
+    build: {context: ../.., dockerfile: backend/Dockerfile}
+    environment:
+      <<: *backend
+      SPRING_PROFILES_ACTIVE: local,workspace-baseline
+      SPRING_CONFIG_ADDITIONAL_LOCATION: file:/app/council-demo.properties
+      PATHWAY_INITIAL_ENABLED: "true"
+      PATHWAY_INITIAL_WORKER_ENABLED: "true"
+      PATHWAY_INITIAL_WORKER_VERSION: council-demo-v1
+      PATHWAY_INITIAL_WORKER_LEASE_MS: "300000"
+      PATHWAY_INITIAL_WORKER_MAX_ATTEMPTS: "3"
+      PATHWAY_INITIAL_WORKER_MINIMUM_BACKOFF_MS: "2000"
+      PATHWAY_INITIAL_WORKER_MAXIMUM_BACKOFF_MS: "30000"
+      PATHWAY_INITIAL_WORKER_POLL_INTERVAL_MS: "1000"
+      LEARNING_ASSETS_ENDPOINT: http://minio:9000
+      LEARNING_ASSETS_ACCESS_KEY: council-demo
+      LEARNING_ASSETS_SECRET_KEY: ${COUNCIL_ASSETS_PASSWORD:?Set COUNCIL_ASSETS_PASSWORD}
+      LEARNING_ASSETS_BUCKET: council-learning
+      REGISTRATION_ENCRYPTION_KEY: ${COUNCIL_ENCRYPTION_KEY:?Set private base64 32-byte key}
+      REGISTRATION_HMAC_KEY: ${COUNCIL_HMAC_KEY:?Set private base64 32-byte key}
+      SUBSCRIPTION_WORKER_ENABLED: "false"
+      PAYOS_ENABLED: "false"
+      EMAIL_VERIFICATION_ENABLED: "false"
+      REGISTRATION_EMAIL_VERIFICATION_ENABLED: "false"
+      MFA_ENABLED: "false"
+      REGISTRATION_MFA_ENABLED: "false"
+      REGISTRATION_MAIL_WORKER_ENABLED: "false"
+      MANAGEMENT_HEALTH_MAIL_ENABLED: "false"
+      RIASEC_ENABLED: ${COUNCIL_RIASEC_ENABLED:-false}
+      RIASEC_OLLAMA_URL: http://riasec-ollama:11434
+      RIASEC_MODEL: qwen3:4b-instruct-2507-q4_K_M
+    volumes: ["./runtime.properties:/app/council-demo.properties:ro"]
+    ports: ["127.0.0.1:29080:8080"]
+    depends_on:
+      migrate: {condition: service_completed_successfully}
+      minio: {condition: service_started}
+  web:
+    build: {context: ../../frontend, dockerfile: Dockerfile, target: dev}
+    environment:
+      API_PROXY_TARGET: http://api:8080
+      VITE_EMPLOYEE_ADAPTIVE_BASELINE_ENABLED: "true"
+      VITE_ADAPTIVE_BASELINE_ENABLED: "true"
+      VITE_LOCAL_BASELINE_DEMO_ENABLED: "false"
+    ports: ["127.0.0.1:29088:5173"]
+    depends_on: [api]
+  riasec-ollama:
+    profiles: [riasec]
+    image: ollama/ollama@sha256:910d0d8107b538fb0894e63163eb195de0cc7aefcbc666dc62d3b18f71124592
+    cpus: 2
+    mem_limit: 5g
+    volumes: [riasec_models:/root/.ollama]
+
+volumes:
+  postgres:
+  neo4j:
+  assets:
+  riasec_models:

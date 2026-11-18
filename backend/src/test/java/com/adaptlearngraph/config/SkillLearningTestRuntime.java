@@ -37,7 +37,7 @@ public final class SkillLearningTestRuntime {
                         if(modules.documents(org).stream().anyMatch(d->d.current().payload().title().equals(title)))continue;
                         Content c=new Content("skill-learning-content-"+index,title,"# Learn SQL\nRead the fixture lesson and confirm completion.","text/markdown","1",List.of(),modules.actor().id(),java.time.Instant.now().toString());
                         modules.transaction(()->{modules.saveContent(org,c);return null;});
-                        var d=authoring.create(new Save(title,"LESSON_AND_PRACTICE",c.id(),5,new BigDecimal("1000"),List.of(),List.of(new TeachingInput("QB-TEST-SQL"))));
+                        var d=authoring.create(new Save(title, "LESSON_AND_PRACTICE", c.id(), 5, List.of(), List.of(new TeachingInput("QB-TEST-SQL"))));
                         d=authoring.action(d.id(),d.lockVersion(),"submit",null);
                         as("ld",org,"LD_MANAGER");d=authoring.action(d.id(),d.lockVersion(),"approve",null);
                         if(index==1) {

@@ -26,11 +26,11 @@ class WorkspaceBaselineResourcesIntegrationTest {
             jdbc.update("INSERT INTO platform.account(account_id,organization_id,identifier,normalized_identifier,password_hash) VALUES (?,?,'fixture','fixture','test-only')", owner, other);
             jdbc.update("INSERT INTO platform.department_reference(department_id,organization_id,name,active) VALUES (?,?,'A',true),(?,?,'B',true)", department,org,foreignDepartment,other);
             jdbc.update("""
-                    INSERT INTO platform.job_position_department_reference(job_position_reference_id,job_position_id,organization_id,department_id,name,active)
+                    INSERT INTO platform.occupation_department_reference(occupation_reference_id,occupation_id,organization_id,department_id,name,active)
                     VALUES (?,?,?,?,'A',true),(?,?,?,?,'B',true)
                     """, reference,UUID.randomUUID(),org,department,foreignReference,UUID.randomUUID(),other,foreignDepartment);
             var migration = Flyway.configure().dataSource(source).locations("classpath:db/workspace-migration").load();
-            assertThat(migration.migrate().migrationsExecuted).isEqualTo(35);
+            assertThat(migration.migrate().migrationsExecuted).isEqualTo(61);
             assertThat(migration.migrate().migrationsExecuted).isZero();
             migration.validate();
             assertThat(jdbc.queryForList("SELECT version,checksum FROM flyway_schema_history WHERE installed_rank<=12 ORDER BY installed_rank")).isEqualTo(checksums);

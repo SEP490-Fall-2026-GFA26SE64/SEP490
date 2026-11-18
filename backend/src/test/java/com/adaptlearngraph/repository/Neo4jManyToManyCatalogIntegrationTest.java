@@ -18,7 +18,7 @@ import static com.adaptlearngraph.dtos.OfficialQuestionBankManifest.*;
 
 class Neo4jManyToManyCatalogIntegrationTest {
     @Test void persistsEveryFieldAndSupportsBothTeachingDirectionsWithoutWeakeningSnapshotChecks() throws Exception {
-        var data = JSON.readTree(Files.readAllBytes(Path.of("../documents/dataset/import/ontology_seed.json")));
+        var data = JSON.readTree(com.adaptlearngraph.support.HistoricalCatalogFixtures.manyToMany());
         var labels = Map.of("JobPositions", "JobPosition", "TargetRoles", "TargetRole", "Levels", "Level",
                 "Competencies", "Competency", "MicroSkills", "MicroSkill", "LearningModules", "LearningModule");
         try (var neo4j = new Neo4jContainer<>("neo4j:5.26-community")
