@@ -41,11 +41,11 @@ public final class ModuleAuthoringService {
     }
     private void owner(Actor actor, Document doc) {
         expert(actor);
-        if (!actor.id().equals(doc.createdBy())) throw new Failure(403, "Only the responsible Expert can manage this module");
+        if (!actor.id().equals(doc.responsibleExpertId())) throw new Failure(403, "Only the responsible Expert can manage this module");
     }
     private Document require(Actor actor, String id) {
         Document doc = port.lock(actor.organizationId(), id).orElseThrow(() -> new Failure(404, "Module not found"));
-        if (!visible(actor, doc.jobPositionIds())) throw new Failure(404, "Module not found");
+        if (!actor.organizationId().equals(doc.organizationId()) || !visible(actor, doc.jobPositionIds())) throw new Failure(404, "Module not found");
         return doc;
     }
     public Actor session() { return port.actor(); }
@@ -78,7 +78,7 @@ public final class ModuleAuthoringService {
                 || !visible(actor, jobPositions)) throw new Failure(403, "An assigned jobPosition is required");
         Set<String> known = new HashSet<>(port.catalog("JobPosition").stream().map(Choice::id).toList());
         if (!known.containsAll(jobPositions)) throw new Failure(400, "Unknown jobPosition");
-        // JobPosition grants constrain creation scope; only createdBy authorizes Module mutations.
+        // JobPosition grants constrain creation scope; only responsibleExpertId authorizes Module mutations.
         if (!actor.manager() && !port.jobPositions(actor).containsAll(jobPositions)) throw new Failure(403, "Cannot create membership outside assigned jobPositions");
     }
     public Page list(String search, String status, String review, String type, String skill, int page) {
@@ -107,13 +107,11 @@ public final class ModuleAuthoringService {
             authorized.put(doc.id(), doc);
         }
         Set<String> managed = new HashSet<>(port.managedModuleIds());
-        Map<String, Intake> intakes = new HashMap<>();
-        for (Intake intake : port.intakes(actor.organizationId())) if (visible(actor, intake.jobPositionIds())) intakes.put(intake.moduleId(), intake);
         Map<String, CatalogItem> combined = new HashMap<>();
         for (CatalogModule module : port.graphModules(actor.organizationId())) {
             String id = module.metadata().id();
             // Shared ontology modules are browsable; authored packages retain their organization/scope boundary.
-            if (!managed.contains(id) || authorized.containsKey(id)) combined.put(id, new CatalogItem(module, authorized.get(id), intakes.get(id)));
+            if (!managed.contains(id) || authorized.containsKey(id)) combined.put(id, new CatalogItem(module, authorized.get(id)));
         }
         for (Document doc : authorized.values()) {
             if (!combined.containsKey(doc.id())) {
@@ -141,61 +139,16 @@ public final class ModuleAuthoringService {
         return port.graphModules(actor.organizationId()).stream().filter(m -> m.metadata().id().equals(id))
                 .findFirst().orElseThrow(() -> new Failure(404, "Catalog module not found"));
     }
-    public Intake assignIntake(String id, List<String> jobPositions) { return assignIntake(id, jobPositions, null); }
-    public Intake assignIntake(String id, List<String> jobPositions, String expectedAssignedAt) {
-        return assignIntake(id, jobPositions, expectedAssignedAt, null);
-    }
-    public Intake assignIntake(String id, List<String> jobPositions, String expectedAssignedAt, String expertId) {
-        Actor actor = staff(); manager(actor); scope(actor, jobPositions);
-        List<Choice> experts = port.catalog("Expert");
-        String responsible = expertId == null && experts.size() == 1 ? experts.getFirst().id() : expertId;
-        if (responsible == null || experts.stream().noneMatch(e -> e.id().equals(responsible))) {
-            throw new Failure(400, "Select one active responsible Expert");
-        }
-        return port.transaction(() -> {
-            port.lockCatalogIdentity(id);
-            if (port.managedModuleIds().contains(id)) throw new Failure(409, "Module already managed. Reload the catalog.");
-            Intake previous = port.intakes(actor.organizationId()).stream().filter(i -> i.moduleId().equals(id)).findFirst().orElse(null);
-            if (port.intakeExists(id) && (previous == null || previous.acceptedBy() != null || !Objects.equals(previous.assignedAt(), expectedAssignedAt))) throw new Failure(409, "Module assignment changed or belongs to another workflow. Reload the catalog.");
-            CatalogModule source = source(actor, id);
-            if (!"ACTIVE".equals(source.metadata().status())) throw new Failure(409, "Only active catalog modules can be received");
-            String now = ModuleAuthoring.now();
-            List<Event> history = previous == null ? new ArrayList<>() : new ArrayList<>(previous.history());
-            history.add(new Event(history.size() + 1, 1, "ASSIGN_INTAKE", actor.id(), now, "Responsible Expert: " + responsible + "; jobPositions: " + String.join(", ", jobPositions)));
-            Intake intake = new Intake(id, actor.organizationId(), jobPositions, actor.id(), now, source, null, null, history, responsible);
-            port.saveIntake(intake); return intake;
-        });
-    }
-    public Document acceptIntake(String id) {
-        Actor actor = staff(); expert(actor);
-        return port.transaction(() -> {
-            port.lockCatalogIdentity(id);
-            Intake assigned = port.intakes(actor.organizationId()).stream().filter(i -> i.moduleId().equals(id))
-                    .findFirst().orElseThrow(() -> new Failure(404, "Module assignment not found"));
-            if (!actor.id().equals(assigned.expertId())) throw new Failure(403, "Only the assigned Expert can receive this module");
-            if (assigned.acceptedBy() != null || port.managedModuleIds().contains(id)) throw new Failure(409, "Module already received. Reload the catalog.");
-            CatalogModule source = source(actor, id);
-            if (!source.equals(assigned.source())) throw new Failure(409, "Catalog changed since assignment. Ask L&D to refresh the assignment.");
-            String now = ModuleAuthoring.now();
-            Content content = new Content(UUID.randomUUID().toString(), source.title(), port.importedMarkdown(source.contentUri()),
-                    source.contentType(), source.contentVersion(), assigned.jobPositionIds(), null, now);
-            var teachings = source.teachings().stream().map(t -> new Teaching(draftMetadata(t.metadata()), t.skillId(), t.skillName(), t.teachingFocus(), t.difficultyLevel())).toList();
-            var payload = new ModuleAuthoring.Package(draftMetadata(source.metadata()), source.title(), source.moduleType(), source.contentUri(),
-                    source.contentType(), source.contentVersion(), source.duration() == null ? 0 : source.duration(), teachings, content,
-                    source.knowledgeLevel(),source.outcomeCodes(),source.skillVersion());
-            Intake accepted = new Intake(id, actor.organizationId(), assigned.jobPositionIds(), assigned.assignedBy(), assigned.assignedAt(), source, actor.id(), now, assigned.history(), assigned.expertId());
-            Revision revision = new Revision(1, "DRAFT", payload, actor.id(), now, null, null, null);
-            List<Event> history = new ArrayList<>(assigned.history());
-            history.add(new Event(history.size() + 1, 1, "INTAKE", actor.id(), now, "Received imported catalog module; original creator unknown"));
-            Document doc = new Document(id, actor.organizationId(), assigned.jobPositionIds(), actor.id(), now, 1, false, false, null,
-                    List.of(revision), history, accepted);
-            port.saveContent(actor.organizationId(), content); port.saveIntake(accepted); port.save(doc); return doc;
-        });
-    }
-    private Metadata draftMetadata(Metadata source) {
-        ModuleAuthoring.text(source.id(), "source id", 200); ModuleAuthoring.text(source.version(), "source version", 100);
-        return new Metadata(source.id(), source.version(), "DRAFT", "NEEDS_EXPERT_REVIEW", null, null);
-    }
+    /** Retired compatibility entry point; module imports now create owned drafts directly. */
+    @Deprecated
+    public Intake assignIntake(String id, List<String> jobPositions) { throw intakeRetired(); }
+    @Deprecated
+    public Intake assignIntake(String id, List<String> jobPositions, String expectedAssignedAt) { throw intakeRetired(); }
+    @Deprecated
+    public Intake assignIntake(String id, List<String> jobPositions, String expectedAssignedAt, String expertId) { throw intakeRetired(); }
+    @Deprecated
+    public Document acceptIntake(String id) { throw intakeRetired(); }
+    private Failure intakeRetired() { return new Failure(410, "Module intake has been removed. Import or create an owned module draft instead."); }
     public Document importModule(String id, Save input, boolean confirmed, Long expected) {
         Actor actor = staff(); expert(actor);
         if (id == null || !id.matches("[A-Za-z0-9_-]{1,100}")) throw new Failure(400, "Invalid module code");
@@ -280,6 +233,23 @@ public final class ModuleAuthoringService {
             return changed(doc, revision, actor, "EDIT", changes.isEmpty() ? "Saved unchanged package" : "Changed: " + String.join(", ", changes), doc.archived(), doc.releasedRevision());
         });
     }
+    public Document transferResponsibility(String id, long expected, String expertId) {
+        Actor actor = staff(); manager(actor);
+        if (expertId == null || expertId.isBlank()) throw new Failure(400, "Select an active responsible Expert");
+        return port.transaction(() -> {
+            Document doc = require(actor, id); check(doc, expected);
+            if (port.catalog("Expert").stream().noneMatch(expert -> expert.id().equals(expertId)))
+                throw new Failure(400, "Select an active Expert in this organization");
+            if (Objects.equals(doc.responsibleExpertId(), expertId)) return doc;
+            List<Event> history = new ArrayList<>(doc.history());
+            history.add(new Event(history.size() + 1, doc.current().number(), "OWNER_TRANSFERRED", actor.id(),
+                    ModuleAuthoring.now(), "Responsible Expert changed", doc.responsibleExpertId(), expertId));
+            Document result = new Document(doc.id(), doc.organizationId(), doc.jobPositionIds(), doc.createdBy(),
+                    doc.createdAt(), doc.lockVersion() + 1, doc.everReleased(), doc.archived(), doc.releasedRevision(),
+                    doc.revisions(), history, doc.intake(), expertId);
+            port.save(result); return result;
+        });
+    }
     private void check(Document doc, long expected) { if (doc.lockVersion() != expected) throw new Failure(409, "Module changed. Reload and review the latest revision"); }
     public Document action(String id, long expected, String action, String feedback) {
         Actor actor = staff();
@@ -343,7 +313,7 @@ public final class ModuleAuthoringService {
         if (revision.number() == doc.current().number()) revisions.set(revisions.size() - 1, revision); else revisions.add(revision);
         List<Event> history = new ArrayList<>(doc.history()); history.add(new Event(history.size() + 1, revision.number(), action, actor.id(), ModuleAuthoring.now(), detail));
         Document result = new Document(doc.id(), doc.organizationId(), doc.jobPositionIds(), doc.createdBy(), doc.createdAt(), doc.lockVersion() + 1,
-                doc.everReleased() || released != null, archived, released, revisions, history, doc.intake());
+                doc.everReleased() || released != null, archived, released, revisions, history, doc.intake(), doc.responsibleExpertId());
         port.save(result); return result;
     }
     public void delete(String id, long expected) {

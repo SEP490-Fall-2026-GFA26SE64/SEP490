@@ -35,8 +35,8 @@ public class LearningContentController {
     @GetMapping("/imports/template")
     public ResponseEntity<byte[]> template() {
         return new FileDownloadResponse(
-                        "learning-modules.xlsx",
-                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                        "module-template.zip",
+                        "application/zip",
                         content.importTemplate())
                 .toResponseEntity();
     }

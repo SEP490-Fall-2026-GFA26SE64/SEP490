@@ -91,7 +91,7 @@ public final class ModuleAuthoringMappings implements ModelMapperRegistrar {
         mapper.typeMap(Event.class, EventResponse.class).setConverter(context -> {
             Event source = context.getSource();
             return new EventResponse(source.sequence(), source.revision(), source.action(), source.actorId(),
-                    source.occurredAt(), source.detail());
+                    source.occurredAt(), source.detail(), source.previousResponsibleExpertId(), source.responsibleExpertId());
         });
         mapper.typeMap(CatalogTeaching.class, CatalogTeachingResponse.class).setConverter(context -> {
             CatalogTeaching source = context.getSource();
@@ -117,7 +117,7 @@ public final class ModuleAuthoringMappings implements ModelMapperRegistrar {
             return new DocumentResponse(source.id(), source.organizationId(), source.jobPositionIds(), source.createdBy(),
                     source.createdAt(), source.lockVersion(), source.everReleased(), source.archived(),
                     source.releasedRevision(), list(context, source.revisions(), RevisionResponse.class),
-                    list(context, source.history(), EventResponse.class), nested(context, source.intake(), IntakeResponse.class));
+                    list(context, source.history(), EventResponse.class), nested(context, source.intake(), IntakeResponse.class), source.responsibleExpertId());
         });
         mapper.typeMap(Page.class, PageResponse.class).setConverter(context -> {
             Page source = context.getSource();

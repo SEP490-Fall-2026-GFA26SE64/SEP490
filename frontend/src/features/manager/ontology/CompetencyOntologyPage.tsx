@@ -1956,7 +1956,7 @@ function OwnedCompetencyOntologyPage() {
                 {filteredCompetencies.length === 0 ? (
                   <div className="text-center py-16 text-muted-foreground">
                     <AlertCircle className="h-8 w-8 mx-auto mb-2 text-muted-foreground/60" />
-                    <p className="text-sm font-semibold">No competencies match your search or filter.</p>
+                    <p className="text-sm font-semibold">No competencies match your search.</p>
                     <Button
                       variant="outline"
                       size="sm"

@@ -12,7 +12,7 @@ export interface LessonProgress { lessonId: string; positionSeconds: number; wat
 export interface LearningView { revision: ModuleRevision; latestRevision: number | null; activeLessonId: string | null; progress: LessonProgress[] }
 export interface ManualPathway { id: string; learnerId: string; expertId: string; title: string; moduleIds: string[]; confirmedAt: string }
 export interface LearningNotification { id: string; kind: string; moduleId: string | null; title: string; body: string; createdAt: string; readAt: string | null; deepLink: string | null; toastObservedAt: string | null }
-export interface ImportPreview { id: string; modules: { moduleId: string; excelRow: number; module: ModuleSave; lessons: LearningLesson[]; expectedVersion: number | null }[]; errors: { moduleId: string; row: number; reason: string }[]; ownedDuplicates: string[]; committed: boolean }
+export interface ImportPreview { id: string; modules: { moduleId: string; moduleRef?: string | null; excelRow: number; module: ModuleSave; lessons: LearningLesson[]; expectedVersion: number | null }[]; errors: { moduleId: string; row: number; reason: string }[]; ownedDuplicates: string[]; committed: boolean }
 export async function uploadLearningFile<T>(path: string, file: File): Promise<T> {
   const body = new FormData(); body.append('file', file)
   const response = await workspaceFetch(`/api/v1/module-management${path}`, { method: 'POST', body })
@@ -22,8 +22,8 @@ export async function uploadLearningFile<T>(path: string, file: File): Promise<T
 export interface ModuleContent { id: string; title: string; markdown: string; contentType: string; contentVersion: string; jobPositionIds: string[]; createdBy: string | null; createdAt: string; lessons?: LearningLesson[] }
 export interface ModulePackage { metadata: ModuleMetadata; title: string; moduleType: string; contentUri: string; contentType: string; contentVersion: string; duration: number; teachings: ModuleTeaching[]; content: ModuleContent; knowledgeLevel: string | null; outcomeCodes?: string[]; skillVersion: string | null }
 export interface ModuleRevision { number: number; state: string; payload: ModulePackage; editedBy: string; editedAt: string; decidedBy: string | null; decidedAt: string | null; feedback: string | null }
-export interface ModuleEvent { sequence: number; revision: number; action: string; actorId: string; occurredAt: string; detail: string | null }
-export interface ModuleDocument { id: string; organizationId: string; jobPositionIds: string[]; createdBy: string | null; createdAt: string; lockVersion: number; everReleased: boolean; archived: boolean; releasedRevision: number | null; revisions: ModuleRevision[]; history: ModuleEvent[]; intake?: ModuleIntake | null }
+export interface ModuleEvent { sequence: number; revision: number; action: string; actorId: string; occurredAt: string; detail: string | null; previousResponsibleExpertId?: string | null; responsibleExpertId?: string | null }
+export interface ModuleDocument { id: string; organizationId: string; jobPositionIds: string[]; createdBy: string | null; responsibleExpertId?: string | null; createdAt: string; lockVersion: number; everReleased: boolean; archived: boolean; releasedRevision: number | null; revisions: ModuleRevision[]; history: ModuleEvent[]; intake?: ModuleIntake | null }
 export interface ModuleSave { title: string; moduleType: string; contentId: string; duration: number; jobPositionIds?: string[]; teachings: TeachingInput[]; knowledgeLevel?: string | null; outcomeCodes?: string[] }
 export interface ModulePage { items: ModuleDocument[]; total: number; page: number; pageSize: number }
 export type CatalogMetadata = { [Key in keyof ModuleMetadata]: ModuleMetadata[Key] | null }

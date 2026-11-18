@@ -294,7 +294,7 @@ public final class LearningContentService {
                     Document d = modules.lock(a.organizationId(), id).orElseThrow();
                     content.notify(
                             a.organizationId(),
-                            d.createdBy(),
+                            d.responsibleExpertId(),
                             "issue:" + a.id() + ":" + command,
                             "CONTENT_ISSUE",
                             id,

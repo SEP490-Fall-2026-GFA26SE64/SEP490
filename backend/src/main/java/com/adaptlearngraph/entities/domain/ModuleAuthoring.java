@@ -100,16 +100,29 @@ public final class ModuleAuthoring {
     }
     public record Revision(int number, String state, Package payload, String editedBy, String editedAt,
                            String decidedBy, String decidedAt, String feedback) {}
-    public record Event(int sequence, int revision, String action, String actorId, String occurredAt, String detail) {}
+    public record Event(int sequence, int revision, String action, String actorId, String occurredAt, String detail,
+                        String previousResponsibleExpertId, String responsibleExpertId) {
+        public Event(int sequence, int revision, String action, String actorId, String occurredAt, String detail) {
+            this(sequence, revision, action, actorId, occurredAt, detail, null, null);
+        }
+    }
     public record Document(String id, String organizationId, List<String> jobPositionIds,
                            String createdBy, String createdAt, long lockVersion, boolean everReleased,
-                           boolean archived, Integer releasedRevision, List<Revision> revisions, List<Event> history, Intake intake) {
+                           boolean archived, Integer releasedRevision, List<Revision> revisions, List<Event> history, Intake intake, String responsibleExpertId) {
+        public Document(String id, String organizationId, List<String> jobPositionIds, String createdBy, String createdAt,
+                        long lockVersion, boolean everReleased, boolean archived, Integer releasedRevision,
+                        List<Revision> revisions, List<Event> history, Intake intake) {
+            this(id, organizationId, jobPositionIds, createdBy, createdAt, lockVersion, everReleased, archived,
+                    releasedRevision, revisions, history, intake, createdBy);
+        }
         public Document(String id, String organizationId, List<String> jobPositionIds, String createdBy, String createdAt,
                         long lockVersion, boolean everReleased, boolean archived, Integer releasedRevision,
                         List<Revision> revisions, List<Event> history) {
             this(id, organizationId, jobPositionIds, createdBy, createdAt, lockVersion, everReleased, archived, releasedRevision, revisions, history, null);
         }
         public Document {
+            // Old snapshots have no separate owner; retain their existing authorization identity.
+            if (responsibleExpertId == null) responsibleExpertId = createdBy;
             jobPositionIds = List.copyOf(jobPositionIds); revisions = List.copyOf(revisions); history = List.copyOf(history);
         }
         public Revision current() { return revisions.get(revisions.size() - 1); }

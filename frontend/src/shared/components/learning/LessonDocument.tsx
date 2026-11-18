@@ -1,4 +1,4 @@
-import { createElement, useId, useMemo, type ReactNode } from 'react'
+import { createElement, useId, useMemo, useState, type ReactNode } from 'react'
 import { Info, Lightbulb, TriangleAlert, Bookmark } from 'lucide-react'
 import { LessonCodeBlock } from './LessonCodeBlock'
 
@@ -13,6 +13,7 @@ const callouts = {
 /** Enhances server-sanitized HTML, preserving the existing CommonMark/security boundary. */
 export function LessonDocument({ html, vi }: { html: string; vi: boolean }) {
   const prefix = useId()
+  const [selectedSection, setSelectedSection] = useState<string | null>(null)
   const content = useMemo(() => {
     const document = new DOMParser().parseFromString(html, 'text/html')
     const sections = Array.from(document.body.querySelectorAll('h1, h2, h3'))
@@ -71,12 +72,14 @@ export function LessonDocument({ html, vi }: { html: string; vi: boolean }) {
     }
     return { body: children(document.body, 'lesson'), sections }
   }, [html, vi, prefix])
+  const activeSection = content.sections.some(section => section.id === selectedSection) ? selectedSection : content.sections[0]?.id
   return <div className="lesson-document-layout">
     <div className="lesson-document">{content.body}</div>
     {content.sections.length > 1 && <nav className="lesson-page-contents" aria-label={vi ? 'Trong bài này' : 'On this page'}>
       <p className="text-eyebrow font-bold uppercase tracking-wide text-muted-foreground">{vi ? 'Trong bài này' : 'On this page'}</p>
-      <ul>{content.sections.map(section => <li key={section.id}><a className={section.nested ? 'lesson-contents-nested' : undefined} href={`#${section.id}`} onClick={event => {
+      <ul>{content.sections.map(section => <li key={section.id}><a aria-current={section.id === activeSection ? 'location' : undefined} className={section.nested ? 'lesson-contents-nested' : undefined} href={`#${section.id}`} onClick={event => {
         event.preventDefault()
+        setSelectedSection(section.id)
         const target = document.getElementById(section.id)
         target?.scrollIntoView({ block: 'start', behavior: 'instant' })
         target?.focus({ preventScroll: true })

@@ -19,21 +19,38 @@ public final class JpaModuleAuthoringAdapter implements ModuleAuthoringPort {
     private final ObjectMapper mapper;
     private final Neo4jModuleCatalogGraph graph;
     private final String organizationId;
+    private final Supplier<Actor> workspaceEmployee;
     /** {@code transactions} must run on the JPA transaction manager so repository calls join the advisory-locked transaction. */
     public JpaModuleAuthoringAdapter(ModuleAuthoringRepositories repositories, TransactionTemplate transactions, ObjectMapper mapper, Neo4jModuleCatalogGraph graph, String organizationId) {
+        this(repositories,transactions,mapper,graph,organizationId,null);
+    }
+    public JpaModuleAuthoringAdapter(ModuleAuthoringRepositories repositories,TransactionTemplate transactions,ObjectMapper mapper,Neo4jModuleCatalogGraph graph,String organizationId,Supplier<Actor> workspaceEmployee) {
         this.repositories = repositories; this.transactions = transactions; this.mapper = mapper; this.graph = graph; this.organizationId = organizationId;
+        this.workspaceEmployee=workspaceEmployee;
     }
     @Override public Actor actor() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth == null || !auth.isAuthenticated() || auth.getName().equals("anonymousUser")) throw new Failure(401, "Sign in to continue");
+        if (auth == null || !auth.isAuthenticated() || auth.getName().equals("anonymousUser")) {
+            // Assessment routes authenticate through the trusted workspace session rather than the module filter.
+            if(workspaceEmployee!=null)return workspaceEmployee.get();
+            throw new Failure(401, "Sign in to continue");
+        }
         Set<String> roles = new HashSet<>(); auth.getAuthorities().forEach(a -> roles.add(a.getAuthority().replaceFirst("^ROLE_", "")));
         String actorOrganization = auth.getDetails() instanceof Map<?, ?> details && details.get("organizationId") instanceof String org ? org : organizationId;
         return new Actor(auth.getName(), actorOrganization, roles);
     }
     @Override public <T> T transaction(Supplier<T> work) {
         return transactions.execute(status -> {
+            Actor current=actor();
+            // Workspace identity takes an account lock. Always take it before the organization
+            // lock, including routes already authenticated by the module filter.
+            if(current.roles().contains("EMPLOYEE") && workspaceEmployee!=null) {
+                Actor verified=workspaceEmployee.get();
+                if(!current.id().equals(verified.id()) || !current.organizationId().equals(verified.organizationId()) || !verified.roles().contains("EMPLOYEE"))
+                    throw new Failure(403,"Employee identity changed");
+            }
             // Serialize coverage/grant/publication checks for the organization across API instances.
-            repositories.locks().lock(actor().organizationId() + ":module-authoring");
+            repositories.locks().lock(current.organizationId() + ":module-authoring");
             return work.get();
         });
     }

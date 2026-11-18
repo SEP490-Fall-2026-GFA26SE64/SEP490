@@ -84,6 +84,8 @@ Current source implements the local rule flow and versioned mappings described i
 
 ### FR-06.05: Review competency profile and gaps
 
+Employees can open **My Skills** from their menu or Profile to view officially achieved levels across pathway and individual learning. Search and level filters retain exact Skill versions; each attained level opens its recorded evidence. Diagnostics never award a displayed level, higher levels do not imply lower ones, and review annotations retain prior achievement. [Local verification and checklist](../../testing/system/FR-06.05-09-my-skills-20261117.md).
+
 | Field | Description |
 | --- | --- |
 | 1. Requirement ID | FR-06.05 |
@@ -120,6 +122,8 @@ The new contract supersedes the initial-view-only scope. Approval alone does not
 
 ### FR-06.07: Learn an individual skill
 
+Each selected Skill knowledge-level tab has one Skill Assessment section above its learning modules. Completed eligible modules at the current Skill version provide learning evidence; multiple eligible completions require an explicit choice. Module cards retain learning/review actions. Assessment history and retake limits remain specific to the selected module/revision; viewing the catalog never starts an exam. [Local slice evidence](../../testing/system/FR-06.07-08-skill-level-assessment-20261117.md).
+
 | Field | Description |
 | --- | --- |
 | 1. Requirement ID | FR-06.07 |
@@ -135,6 +139,8 @@ The new contract supersedes the initial-view-only scope. Approval alone does not
 <a id="fr-06-09"></a>
 
 ### FR-06.09: Track learning progress
+
+My Skills provides the achieved-only summary; ongoing study and content completion remain in the learning views. Partial or unavailable achievement history stays explicit instead of implying a missing achievement.
 
 | Field | Description |
 | --- | --- |

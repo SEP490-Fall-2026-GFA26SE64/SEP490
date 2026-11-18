@@ -19,7 +19,7 @@ export function BaselineResultPanel({ result, locked, run, error }: { result: Ba
   return <Card className={sufficient ? 'overflow-hidden border-success/40' : 'overflow-hidden border-warning/50'}>
     <CardHeader className={sufficient ? 'border-b border-success/20 bg-success/5 p-5' : 'border-b border-warning/30 bg-warning/5 p-5'}>
       <Text variant="eyebrow">{copy('Assessment result', 'Kết quả đánh giá')}</Text>
-      <Heading level={2} size="subsection" className="break-words">{result.roleName} · {result.levelName}</Heading>
+      <Heading level={2} size="subsection" className="break-words">{result.target.selectionId ? `${result.roleName} · ${result.levelName}` : result.groups.find(g => g.role === 'MAIN')?.skillName}</Heading>
       <div className="flex flex-wrap gap-2"><Badge variant="outline">{result.purpose === 'BASELINE' ? copy('Baseline', 'Đánh giá đầu vào') : copy('Skill Assessment', 'Đánh giá kỹ năng')}</Badge><Badge variant={sufficient ? 'success' : 'warning'}>{sufficient ? copy('All skills passed', 'Đạt tất cả kỹ năng') : copy('Not all skills passed', 'Chưa đạt tất cả kỹ năng')}</Badge></div>
     </CardHeader>
     <CardContent className="space-y-6 p-5">
@@ -69,7 +69,7 @@ export function BaselineResultPanel({ result, locked, run, error }: { result: Ba
       <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border pt-4">
         <Button variant="outline" size="sm" disabled={locked} onClick={() => void run(startCommand(result.target, result.purpose, result.id))}>{copy('Retake assessment', 'Làm lại bài đánh giá')}</Button>
         {result.purpose === 'SKILL_ASSESSMENT' && <Link className={buttonVariants({ variant: 'primary', size: 'sm', className: 'gap-2' })} to="/employee/pathway?view=role"><ArrowLeft size={15} aria-hidden="true" />{copy('Back to pathway', 'Trở về lộ trình')}</Link>}
-        {result.purpose === 'BASELINE' && <RolePathwayRequest key={result.target.selectionId} selectionId={result.target.selectionId} disabled={locked} />}
+        {result.purpose === 'BASELINE' && result.target.selectionId && <RolePathwayRequest key={result.target.selectionId} selectionId={result.target.selectionId} disabled={locked} />}
       </div>
       {error && <Text role="alert" variant="body-sm" tone="destructive" className="rounded-md border border-destructive/30 bg-destructive/5 p-3">{t('employeeBaseline.errors.' + error.code, t('employeeBaseline.requestError'))}</Text>}
       </section>
@@ -98,7 +98,7 @@ function OwnedBaselineHistory({ module }: { module?: ModuleHistoryScope }) {
     {loading ? <LoadingCard label={tr('loading')} /> : error ? <Text variant="body-sm" tone="destructive" role="alert">{tr('historyError')}</Text> : items.length === 0 ? <EmptyState bordered={false} title={module ? (vi ? 'Chưa có lượt đánh giá cho module này' : 'No assessments for this module yet') : tr('emptyHistory')} description={module ? undefined : tr('historyEmptyHint')}
       action={<Link className={buttonVariants({ variant: 'outline', size: 'sm' })} to="/employee/upskilling?tab=roles">{tr('backToStart')}</Link>} />
       : <ul className="space-y-3">{items.map(item => <li key={item.id} className="flex flex-wrap items-center justify-between gap-4 rounded-lg border border-border bg-background/60 p-4"><div className="min-w-0 space-y-2">
-        <Link className="break-words font-semibold text-foreground underline-offset-4 hover:text-primary hover:underline" to={attemptPath(item.id)}>{item.roleName} · {item.levelName}</Link>
+        <Link className="break-words font-semibold text-foreground underline-offset-4 hover:text-primary hover:underline" to={attemptPath(item.id)}>{item.target.selectionId ? `${item.roleName} · ${item.levelName}` : item.groups.find(g => g.role === 'MAIN')?.skillName}</Link>
         <div className="flex flex-wrap gap-2"><Badge variant="outline">{item.purpose === 'BASELINE' ? (vi ? 'Đánh giá đầu vào' : 'Baseline') : (vi ? 'Đánh giá kỹ năng' : 'Skill Assessment')}</Badge><Badge variant={item.state === 'IN_PROGRESS' ? 'warning' : 'success'}>{item.state === 'IN_PROGRESS' ? (vi ? 'Đang làm' : 'In progress') : (vi ? 'Đã kết thúc' : 'Finished')}</Badge></div>
         <Text variant="caption" className="text-muted-foreground"><time dateTime={item.finishedAt ?? item.startedAt}>{new Date(item.finishedAt ?? item.startedAt).toLocaleString(vi ? 'vi-VN' : 'en-GB')}</time></Text>
       </div><Link className={buttonVariants({ variant: 'primary', size: 'sm', className: 'gap-2 font-semibold' })} to={attemptPath(item.id)}>{t('baselineUi.viewResult')}<ArrowUpRight size={14} aria-hidden="true" /></Link></li>)}</ul>}

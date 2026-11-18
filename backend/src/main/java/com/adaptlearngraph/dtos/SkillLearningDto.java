@@ -6,5 +6,7 @@ public final class SkillLearningDto {
     public record CompletionResponse(String skillId,String moduleId,int revision,String contentVersion,String completedAt,
                                      String knowledgeLevel,String skillVersion,java.util.List<String> outcomeCodes,String skillName) {}
     public record EligibilityResponse(String skillId,boolean eligible,String reason,CompletionResponse qualifyingCompletion) {}
-    public record ModuleResponse(String moduleId,String title,String contentVersion,boolean started,boolean completed) {}
+    public record SearchItemResponse(String skillId,String skillName,ModuleResponse module) {}
+    public record SearchResponse(java.util.List<SearchItemResponse> items,int page,int pageSize,int totalItems) {}
+    public record ModuleResponse(String moduleId,String title,String contentVersion,boolean started,boolean completed,String unavailableReason,String knowledgeLevel,String skillVersion,Integer moduleRevision) {}
 }

@@ -72,7 +72,7 @@ public final class LearningContentMappings implements ModelMapperRegistrar {
         mapper.typeMap(Row.class, ImportRowResponse.class).setConverter(context -> {
             Row source = context.getSource();
             return new ImportRowResponse(source.moduleId(), source.excelRow(), nested(context, source.module(), ModuleInput.class),
-                    list(context, source.lessons(), LessonResponse.class), source.expectedVersion());
+                    list(context, source.lessons(), LessonResponse.class), source.expectedVersion(), source.moduleRef());
         });
         mapper.typeMap(Problem.class, ImportProblemResponse.class).setConverter(context -> {
             Problem source = context.getSource();

@@ -101,6 +101,9 @@ public final class JpaLearningContentAdapter implements LearningContentPort {
     @Override public boolean selfStudy(String org,String learner,String module) {
         return repositories.selfStudies().admitted(org,learner,module);
     }
+    @Override public boolean selfStudyRevision(String org,String learner,String module,int revision) {
+        return repositories.selfStudies().admittedRevision(org,learner,module,revision);
+    }
     @Override public void admitSelfStudy(String org,String learner,String module,int revision,String skill) {
         repositories.selfStudies().admit(org,learner,module,revision,skill);
     }

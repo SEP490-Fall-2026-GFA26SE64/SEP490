@@ -14,6 +14,7 @@ import { MemberActivationPage } from '../features/subscription/WorkspaceLoginPag
 import { WorkspaceBoundary } from '../features/subscription/WorkspaceBoundary'
 import { AssessmentPage } from '../features/employee/assessment/AssessmentPage'
 import { EmployeeBaselineRoute } from '../features/employee/baseline-assessment/EmployeeBaselinePage'
+import { MySkillsPage } from '../features/employee/baseline-assessment/MySkillsPage'
 import { MyMasteryPage } from '../features/employee/baseline-assessment/MyMasteryPage'
 import { EmployeeOverviewPage } from '../features/employee/overview/EmployeeOverviewPage'
 import { EmployeeTargetRolesPage, EmployeeUpskillingPage } from '../features/employee/target-roles/EmployeeTargetRolesPage'
@@ -106,6 +107,7 @@ export default function App() {
             <Route path="/employee/gap-analysis" element={<Navigate to="/employee/overview" replace />} />
             <Route path="/employee/assessment" element={<AssessmentPage />} />
             <Route path="/employee/baseline-assessment" element={<EmployeeBaselineRoute />} />
+            <Route path="/employee/my-skills" element={<MySkillsPage />} />
             <Route path="/employee/my-mastery" element={<MyMasteryPage />} />
             <Route path="/employee/baseline-assessment/:attemptId" element={<EmployeeBaselineRoute />} />
             <Route path="/employee/profile" element={<Navigate to="/profile" replace />} />

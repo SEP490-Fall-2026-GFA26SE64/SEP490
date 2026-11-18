@@ -8,12 +8,13 @@ import { useEmployeeLearningState } from '../../../shared/hooks/useEmployeeLearn
 
 import { ConfirmationModal } from '../../../shared/components/ui/ConfirmationModal'
 
-export function ActiveSkillSummary() {
+export function ActiveSkillSummary({ compactEmpty = false }: { compactEmpty?: boolean }) {
   const { trackedSkills, untrackSkill, clearTrackedSkills } = useEmployeeLearningState()
   const [isExpanded, setIsExpanded] = React.useState(false)
   const [skillToUntrack, setSkillToUntrack] = React.useState<string | null>(null)
   const [isConfirmAllOpen, setIsConfirmAllOpen] = React.useState(false)
 
+  if (trackedSkills.length === 0 && compactEmpty) return null
   if (trackedSkills.length === 0) {
     return (
       <Card>

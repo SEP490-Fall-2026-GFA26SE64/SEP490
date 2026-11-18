@@ -52,7 +52,7 @@ export function EmployeeUpskillingPage() {
         <CurrentRolePanel />
       </div>
       <TabsContent value="skills" id="upskilling-skills-panel" role="tabpanel" aria-labelledby="upskilling-skills-tab" className="min-w-0 space-y-5">
-        <ActiveSkillSummary />
+        <ActiveSkillSummary compactEmpty />
         <UpskillSkillsPanel />
       </TabsContent>
     </Tabs>

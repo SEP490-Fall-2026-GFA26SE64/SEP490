@@ -1,23 +1,41 @@
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { afterEach, expect, it, vi } from 'vitest'
 import { LearningImportPanel } from './LearningImportPanel'
 import { moduleRequest, uploadLearningFile } from '../../../shared/api/moduleAuthoringApi'
 vi.mock('../../../shared/i18n/LanguageContext', () => ({ useTranslation: () => ({language:'en'}) }))
 vi.mock('../../../shared/api/moduleAuthoringApi', () => ({ moduleRequest:vi.fn(), uploadLearningFile:vi.fn() }))
 afterEach(() => { cleanup(); vi.resetAllMocks() })
-const batch = {id:'batch',modules:[{moduleId:'MOD-1',excelRow:2,module:{title:'SQL lesson'},lessons:[],expectedVersion:1}],errors:[],ownedDuplicates:['MOD-1'],committed:false}
-it('reviews owned duplicates, requires confirmation and commits the existing contract', async () => {
+const batch = {id:'batch',modules:[{moduleId:'MOD-1',moduleRef:'M1',excelRow:2,module:{title:'SQL lesson'},lessons:[],expectedVersion:null}],errors:[],ownedDuplicates:[],committed:false}
+it('opens learner preview in Review without committing and returns to the same batch', async () => {
+ vi.mocked(uploadLearningFile).mockResolvedValue({...batch,modules:[{...batch.modules[0],lessons:[{id:'read',title:'File reading',type:'TEXT',body:'<p>File review body</p>',bodyFormat:'HTML',durationSeconds:60}]}]})
+ vi.mocked(moduleRequest).mockImplementation(async (path, _method, data) => {
+  if(path !== '/text/preview') throw new Error('Unexpected mutation')
+  return {html:(data as {body:string}).body} as never
+ })
+ render(<LearningImportPanel onImported={vi.fn()} />)
+ fireEvent.change(screen.getByLabelText('Module import file'),{target:{files:[new File(['test'],'modules.zip')]}})
+ fireEvent.click(await screen.findByRole('button',{name:'View as learner'}))
+ const preview=screen.getByRole('dialog',{name:'Review module preview'})
+ expect(await within(preview).findByText('File review body')).toBeTruthy()
+ expect(within(preview).getByText(/Not yet confirmed/)).toBeTruthy()
+ expect(vi.mocked(moduleRequest).mock.calls.every(([path])=>path==='/text/preview')).toBe(true)
+ fireEvent.click(within(preview).getByRole('button',{name:'Back to import review'}))
+ expect(screen.queryByRole('dialog',{name:'Review module preview'})).toBeNull()
+ expect(screen.getByText('SQL lesson')).toBeTruthy()
+ expect((screen.getByRole('button',{name:'Continue import'}) as HTMLButtonElement).disabled).toBe(false)
+})
+it('reviews batch references and generated IDs, then confirms creation without overwrite', async () => {
  vi.mocked(uploadLearningFile).mockResolvedValue(batch)
- vi.mocked(moduleRequest).mockResolvedValue({})
+ vi.mocked(moduleRequest).mockResolvedValue([])
  const imported=vi.fn(); render(<LearningImportPanel onImported={imported} />)
- fireEvent.change(screen.getByLabelText('Module import file'),{target:{files:[new File(['test'],'modules.xlsx')]}})
+ fireEvent.change(screen.getByLabelText('Module import file'),{target:{files:[new File(['test'],'modules.zip')]}})
  await screen.findByText('SQL lesson')
  expect(imported).not.toHaveBeenCalled()
  fireEvent.click(screen.getByRole('button',{name:'Continue import'}))
- expect(screen.getByText(/Import creates new draft revisions/)).toBeTruthy()
+ expect(screen.getByText(/system-generated IDs/)).toBeTruthy()
  expect(moduleRequest).not.toHaveBeenCalled()
  fireEvent.click(screen.getByRole('button',{name:'Confirm import'}))
- await waitFor(()=>expect(moduleRequest).toHaveBeenCalledWith('/imports/batch/commit','POST',{confirmOwnedDuplicates:true}))
+ await waitFor(()=>expect(moduleRequest).toHaveBeenCalledWith('/imports/batch/commit','POST',{confirmOwnedDuplicates:false}))
  await waitFor(()=>expect(imported).toHaveBeenCalledOnce())
  expect(screen.getByText('Imported. Submit the drafts for review.')).toBeTruthy()
 })
@@ -25,7 +43,7 @@ it('blocks an invalid whole batch and preserves the preview after a failed refre
  vi.mocked(uploadLearningFile).mockResolvedValue({...batch,errors:[{moduleId:'MOD-1',row:2,reason:'Skill not eligible'}]})
  vi.mocked(moduleRequest).mockRejectedValue(new Error('Refresh unavailable'))
  render(<LearningImportPanel onImported={vi.fn()} />)
- fireEvent.change(screen.getByLabelText('Module import file'),{target:{files:[new File(['test'],'bad.xlsx')]}})
+ fireEvent.change(screen.getByLabelText('Module import file'),{target:{files:[new File(['test'],'bad.zip')]}})
  await screen.findByText('Skill not eligible')
  expect((screen.getByRole('button',{name:'Continue import'}) as HTMLButtonElement).disabled).toBe(true)
  fireEvent.click(screen.getByRole('button',{name:'Validate again'}))
@@ -36,7 +54,7 @@ it('blocks an invalid whole batch and preserves the preview after a failed refre
 })
 it('retains the server error on commit and allows a deliberate retry', async () => {
  vi.mocked(uploadLearningFile).mockResolvedValue(batch)
- vi.mocked(moduleRequest).mockRejectedValueOnce(new Error('Batch changed. Refresh validation.')).mockResolvedValueOnce({})
+ vi.mocked(moduleRequest).mockRejectedValueOnce(new Error('Batch changed. Refresh validation.')).mockResolvedValueOnce([])
  const imported=vi.fn(); render(<LearningImportPanel onImported={imported} />)
  fireEvent.change(screen.getByLabelText('Module import file'),{target:{files:[new File(['test'],'modules.zip')]}})
  await screen.findByText('SQL lesson')
@@ -44,7 +62,7 @@ it('retains the server error on commit and allows a deliberate retry', async () 
  fireEvent.click(screen.getByRole('button',{name:'Confirm import'}))
  expect(await screen.findByRole('alert')).toHaveProperty('textContent','Batch changed. Refresh validation.')
  expect(imported).not.toHaveBeenCalled()
- expect(screen.getByText(/Your modules already exist/)).toBeTruthy()
+ expect(screen.getByText(/system-generated IDs/)).toBeTruthy()
  fireEvent.click(screen.getByRole('button',{name:'Confirm import'}))
  await waitFor(()=>expect(imported).toHaveBeenCalledOnce())
 })
@@ -68,10 +86,22 @@ it('uploads a dropped ZIP once, blocks further drops while busy and enters Revie
 it('shows a dropped-file upload error and permits choosing another file', async () => {
  vi.mocked(uploadLearningFile).mockRejectedValueOnce(new Error('Unsupported file format')).mockResolvedValueOnce(batch)
  render(<LearningImportPanel onImported={vi.fn()} />)
- fireEvent.drop(screen.getByText('Drag and drop your file here').parentElement!,{dataTransfer:{files:[new File(['bad'],'bad.txt')]}})
+ fireEvent.drop(screen.getByText('Drag and drop your file here').parentElement!,{dataTransfer:{files:[new File(['bad'],'bad.zip')]}})
  expect(await screen.findByRole('alert')).toHaveProperty('textContent','Unsupported file format')
  expect((screen.getByRole('button',{name:'Browse files'}) as HTMLButtonElement).disabled).toBe(false)
- expect(screen.getByLabelText('Module import file').getAttribute('accept')).toBe('.xlsx,.zip')
- fireEvent.change(screen.getByLabelText('Module import file'),{target:{files:[new File(['good'],'retry.xlsx')]}})
+ expect(screen.getByLabelText('Module import file').getAttribute('accept')).toBe('.zip')
+ fireEvent.change(screen.getByLabelText('Module import file'),{target:{files:[new File(['good'],'retry.zip')]}})
  expect(await screen.findByText('SQL lesson')).toBeTruthy()
+})
+
+it('downloads a ZIP template and rejects standalone Excel or RAR before uploading', () => {
+ render(<LearningImportPanel onImported={vi.fn()} />)
+ const link=screen.getByRole('link',{name:'Download ZIP template and bilingual instructions'})
+ expect(link.getAttribute('href')).toBe('/api/v1/module-management/imports/template')
+ const input=screen.getByLabelText('Module import file')
+ expect(input.getAttribute('accept')).toBe('.zip')
+ fireEvent.change(input,{target:{files:[new File(['legacy'],'module.xlsx')]}})
+ expect(screen.getByRole('alert').textContent).toContain('Use the new ZIP template')
+ fireEvent.change(input,{target:{files:[new File(['rar'],'module.rar')]}})
+ expect(uploadLearningFile).not.toHaveBeenCalled()
 })

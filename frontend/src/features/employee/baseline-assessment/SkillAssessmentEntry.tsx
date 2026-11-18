@@ -1,3 +1,4 @@
+import { SharedSkillAssessmentEntry } from './SharedSkillAssessmentEntry'
 import { useContext, useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
@@ -25,8 +26,13 @@ export function AssessmentStatus({ state, partialLabel }: { state: AssessmentSta
   return <Badge variant={state === 'passed' ? 'success' : state === 'failed' ? 'destructive' : state === 'loading' || state === 'unavailable' ? 'outline' : 'warning'} className="whitespace-normal text-left">{state === 'prerequisites' && partialLabel ? partialLabel : labels[state][language === 'vi' ? 1 : 0]}</Badge>
 }
 
+type SkillEntryProps = { pathway: RulePathway; step: RuleStep; option: RuleModuleOption; onLockChange?: (locked: boolean) => void; disabled?: boolean; compact?: boolean }
+export function SkillAssessmentEntry(props: SkillEntryProps) {
+  return <SharedSkillAssessmentEntry locator={{ moduleId: props.option.moduleId, moduleRevision: props.option.moduleRevision }} getNewTarget={async () => targetFor(props.pathway, props.step, props.option)} disabled={props.disabled || !props.option.completedAt} onLockChange={props.onLockChange} legacy={<LegacySkillAssessmentEntry {...props} />} />
+}
+
 /** History only reads persisted attempts; starting/resuming/retaking requires a deliberate click. */
-export function SkillAssessmentEntry({ pathway, step, option, onLockChange, disabled = false }: { pathway: RulePathway; step: RuleStep; option: RuleModuleOption; onLockChange?: (locked: boolean) => void; disabled?: boolean }) {
+function LegacySkillAssessmentEntry({ pathway, step, option, onLockChange, disabled = false, compact = false }: { pathway: RulePathway; step: RuleStep; option: RuleModuleOption; onLockChange?: (locked: boolean) => void; disabled?: boolean; compact?: boolean }) {
   const { t, language } = useTranslation(), navigate = useNavigate(), vi = language === 'vi'
   const identity = useContext(WorkspaceSessionContext)?.identity
   const [historyOpen, setHistoryOpen] = useState(false)
@@ -71,7 +77,7 @@ export function SkillAssessmentEntry({ pathway, step, option, onLockChange, disa
           : latest?.state === 'FINALIZED' ? (vi ? 'Làm lại Skill Assessment' : 'Retake Skill Assessment')
           : latest?.state === 'IN_PROGRESS' ? (vi ? 'Tiếp tục Skill Assessment' : 'Resume Skill Assessment') : t('rulePathway.assessment')}
       </Button>
-      {Boolean(history.data?.length) && <Button size="sm" variant="outline" disabled={busy || Boolean(pending)} onClick={() => setHistoryOpen(true)}>{vi ? 'Lịch sử làm bài' : 'Assessment history'}</Button>}
+      {!compact && Boolean(history.data?.length) && <Button size="sm" variant="outline" disabled={busy || Boolean(pending)} onClick={() => setHistoryOpen(true)}>{vi ? 'Lịch sử làm bài' : 'Assessment history'}</Button>}
       {history.isError && <Button size="sm" variant="outline" disabled={busy || history.isFetching} onClick={() => void history.refetch()}>{t('employeeBaseline.retry')}</Button>}
     </div>
     {history.isError && <Text variant="body-sm" role="alert">{vi ? 'Chưa tải được lịch sử đánh giá của module. Hãy tải lại trước khi bắt đầu lượt mới.' : 'Could not load this module’s assessment history. Retry before starting a new attempt.'}</Text>}

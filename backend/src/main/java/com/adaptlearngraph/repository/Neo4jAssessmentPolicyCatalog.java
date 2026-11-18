@@ -25,7 +25,7 @@ public final class Neo4jAssessmentPolicyCatalog implements AssessmentPolicyCatal
     @Override public Discovery discoverForEditor(UUID organization,Purpose purpose,UUID expert) {
         if(purpose==Purpose.BASELINE)return discover(organization,purpose);
         var owners=graph.read(5,tx->{
-            var rows=tx.list("""
+            var rows=tx.records("""
                     MATCH (r:TargetRole {organizationId:$org,assignedExpertId:$expert})-[h:HAS_LEVEL]->(l:Level)
                     MATCH (l)-[q:REQUIRES_SKILL]->(s:MicroSkill {organizationId:$org})
                     WHERE r.status IN ['ACTIVE','PUBLISHED'] AND h.status='ACTIVE' AND l.status='ACTIVE'
@@ -43,28 +43,16 @@ public final class Neo4jAssessmentPolicyCatalog implements AssessmentPolicyCatal
         return new Discovery(discovery.scopes().stream().filter(scope->owners.contains(scope.ownerId())).toList(),
                 discovery.issues().stream().filter(issue->owners.contains(issue.ownerId())).toList());
     }
-    @Override public Discovery discover(UUID organization,Purpose purpose) {
+    private record Snapshot(List<org.neo4j.driver.Record> skills,List<org.neo4j.driver.Record> missing,
+                            List<org.neo4j.driver.Record> roles,List<org.neo4j.driver.Record> prerequisites) {}
+    /** Keep the coherent bounded database read separate from CPU-only scope construction/hashing. */
+    private Snapshot snapshot(UUID organization,Purpose purpose) {
         return graph.read(5,tx->{
             var params=Map.<String,Object>of("org",organization.toString());
-            var rows=tx.list("MATCH (s:MicroSkill {organizationId:$org}) WHERE s.status='ACTIVE' RETURN properties(s) AS skill ORDER BY s.id LIMIT 10001",params);
-            if(rows.size()>10000)throw capacity();
-            var skills=new TreeMap<String,Skill>();
-            for(var row:rows) {
-                var s=row.get("skill");var outcomes=new EnumMap<KnowledgeLevel,List<String>>(KnowledgeLevel.class);
-                outcomes.put(KnowledgeLevel.FOUNDATION,List.of());
-                outcomes.put(KnowledgeLevel.INTERMEDIATE,List.of());
-                outcomes.put(KnowledgeLevel.ADVANCED,List.of());
-                SkillProvisionMode mode=null;boolean invalidMode=false;
-                if(!s.get("provisionMode").isNull())try{mode=SkillProvisionMode.valueOf(s.get("provisionMode").asString());}
-                catch(IllegalArgumentException invalid){invalidMode=true;}
-                var skill=new Skill(text(s,"id"),text(s,"name"),s.get("version").asString(""),mode,invalidMode,
-                        list(s,"moduleOnlyKnowledgeLevels"),list(s,"certificateOnlyKnowledgeLevels"),outcomes,
-                        "APPROVED".equals(s.get("reviewStatus").asString("")));
-                if(skills.putIfAbsent(skill.id(),skill)!=null)throw new Failure(503,"AMBIGUOUS_CATALOG_IDENTITY");
-            }
-            var result=new ArrayList<Scope>();var issues=new ArrayList<Issue>();
+            var skills=tx.records("MATCH (s:MicroSkill {organizationId:$org}) WHERE s.status='ACTIVE' RETURN s{.id,.name,.version,.provisionMode,.moduleOnlyKnowledgeLevels,.certificateOnlyKnowledgeLevels,.reviewStatus} AS skill ORDER BY s.id LIMIT 10001",params);
+            if(skills.size()>10000)throw capacity();
             if(purpose==Purpose.BASELINE) {
-                var missing=tx.list("""
+                var missing=tx.records("""
                         MATCH (r:TargetRole {organizationId:$org})
                         WHERE NOT r.status IN ['ARCHIVED','DELETED','INACTIVE','SUPERSEDED']
                         UNWIND coalesce(r.levels,[]) AS token
@@ -79,9 +67,7 @@ public final class Neo4jAssessmentPolicyCatalog implements AssessmentPolicyCatal
                         RETURN r.id AS id,r.name AS name,token AS level LIMIT 10001
                         """,params);
                 if(missing.size()>10000)throw capacity();
-                for(var row:missing)issues.add(new Issue(row.get("id").asString(),row.get("name").asString(),
-                        row.get("level").asString(),"CATALOG_MEMBER_LEVEL_IDENTITY_REQUIRED"));
-                var roles=tx.list("""
+                var roles=tx.records("""
                         MATCH (r:TargetRole {organizationId:$org})-[h:HAS_LEVEL]->(l:Level)
                         WHERE NOT r.status IN ['ARCHIVED','DELETED','INACTIVE','SUPERSEDED']
                           AND h.status='ACTIVE' AND l.status='ACTIVE'
@@ -89,70 +75,96 @@ public final class Neo4jAssessmentPolicyCatalog implements AssessmentPolicyCatal
                           AND (h.organizationId IS NULL OR h.organizationId=$org)
                         OPTIONAL MATCH (l)-[q:REQUIRES_SKILL]->(s:MicroSkill {organizationId:$org})
                         WHERE q.status='ACTIVE' AND (q.organizationId IS NULL OR q.organizationId=$org)
-                        RETURN properties(r) AS role,l.id AS levelId,l.name AS levelName,coalesce(l.rank,0) AS rank,
-                            properties(q) AS requirement,s.id AS skillId
-                        LIMIT 50001
+                        RETURN r{.id,.name,.version,.status} AS role,l.id AS levelId,l.name AS levelName,coalesce(l.rank,0) AS rank,
+                            s.id AS skillId,q{.requiredKnowledgeLevels} AS requirement LIMIT 50001
                         """,params);
                 if(roles.size()>50000)throw capacity();
-                var levels=new LinkedHashMap<String,RoleLevel>();
-                for(var row:roles) {
-                    var r=row.get("role");String id=text(r,"id"),level=row.get("levelId").asString();
-                    var key=AssessmentPolicyScope.key(purpose,id,level);
-                    var entry=levels.computeIfAbsent(key,k->new RoleLevel(id,text(r,"name"),level,row.get("levelName").asString(),
-                            row.get("rank").asInt(),r.get("version").asString(""),r.get("status").asString(""),new ArrayList<>(),new TreeSet<>()));
-                    if(!row.get("skillId").isNull()) {
-                        var required=list(row.get("requirement"),"requiredKnowledgeLevels");
-                        if(required.isEmpty())entry.problems().add("EXACT_KNOWLEDGE_CONFIGURATION_REQUIRED");
-                        else for(String knowledge:required) {
-                            try{KnowledgeLevel.valueOf(knowledge);entry.needs().add(new Need(row.get("skillId").asString(),knowledge));}
-                            catch(IllegalArgumentException invalid){entry.problems().add("INVALID_KNOWLEDGE_CONFIGURATION");}
-                        }
-                    }
-                }
-                for(var role:levels.values()) {
-                    var groups=new LinkedHashMap<String,GroupSpec>();var problems=new TreeSet<>(role.problems());
-                    if(!Set.of("ACTIVE","PUBLISHED").contains(role.status()))problems.add("CATALOG_NOT_PUBLISHED");
-                    if(role.version().isBlank())problems.add("EXACT_KNOWLEDGE_CONFIGURATION_REQUIRED");
-                    for(var need:role.needs()) {
-                        var skill=skills.get(need.skill());
-                        if(skill==null){problems.add("OWNED_SKILL_CONFIGURATION_REQUIRED");continue;}
-                        var knowledge=KnowledgeLevel.valueOf(need.level());
-                        if(provision(skill,knowledge)==SkillProvisionMode.CERTIFICATE_ONLY)continue;
-                        add(skill,knowledge,groups);
-                    }
-                    result.add(scope(purpose,role.id(),role.name(),role.level(),role.levelName(),role.rank(),role.version()+":"+role.status(),groups,problems));
-                }
-            } else {
-                var edges=tx.list("""
+                return new Snapshot(skills,missing,roles,List.of());
+            }
+            var edges=tx.records("""
                         MATCH (s:MicroSkill {organizationId:$org})-[p:HAS_SKILL_PREREQUISITE]->(b:MicroSkill {organizationId:$org})
                         WHERE s.status='ACTIVE' AND p.status='ACTIVE' AND (p.organizationId IS NULL OR p.organizationId=$org)
                         RETURN s.id AS skill,p.dependentKnowledgeLevel AS level,b.id AS prerequisite,p.prerequisiteKnowledgeLevel AS prerequisiteLevel LIMIT 50001
                         """,params);
-                if(edges.size()>50000)throw capacity();
-                var prerequisites=new HashMap<String,List<Edge>>();var invalidPrerequisites=new HashSet<String>();
-                for(var row:edges) {
-                    String source=row.get("skill").asString();Edge edge;
-                    try {
-                        edge=new Edge(source,KnowledgeLevel.valueOf(row.get("level").asString("")),row.get("prerequisite").asString(),KnowledgeLevel.valueOf(row.get("prerequisiteLevel").asString("")));
-                    }catch(RuntimeException malformed) {
-                        // Unknown endpoints affect every level of this source Skill and
-                        // all transitive consumers. Never infer levels from legacy scores.
-                        invalidPrerequisites.add(source);continue;
+            if(edges.size()>50000)throw capacity();
+            return new Snapshot(skills,List.of(),List.of(),edges);
+        });
+    }
+    @Override public Discovery discover(UUID organization,Purpose purpose) {
+        var snapshot=snapshot(organization,purpose);
+        var skills=new TreeMap<String,Skill>();
+        for(var row:snapshot.skills()) {
+            var s=row.get("skill");var outcomes=new EnumMap<KnowledgeLevel,List<String>>(KnowledgeLevel.class);
+            outcomes.put(KnowledgeLevel.FOUNDATION,List.of());
+            outcomes.put(KnowledgeLevel.INTERMEDIATE,List.of());
+            outcomes.put(KnowledgeLevel.ADVANCED,List.of());
+            SkillProvisionMode mode=null;boolean invalidMode=false;
+            if(!s.get("provisionMode").isNull())try{mode=SkillProvisionMode.valueOf(s.get("provisionMode").asString());}
+            catch(IllegalArgumentException invalid){invalidMode=true;}
+            var skill=new Skill(text(s,"id"),text(s,"name"),s.get("version").asString(""),mode,invalidMode,
+                    list(s,"moduleOnlyKnowledgeLevels"),list(s,"certificateOnlyKnowledgeLevels"),outcomes,
+                    "APPROVED".equals(s.get("reviewStatus").asString("")));
+            if(skills.putIfAbsent(skill.id(),skill)!=null)throw new Failure(503,"AMBIGUOUS_CATALOG_IDENTITY");
+        }
+        var result=new ArrayList<Scope>();var issues=new ArrayList<Issue>();
+        if(purpose==Purpose.BASELINE) {
+            var missing=snapshot.missing();
+            for(var row:missing)issues.add(new Issue(row.get("id").asString(),row.get("name").asString(),
+                    row.get("level").asString(),"CATALOG_MEMBER_LEVEL_IDENTITY_REQUIRED"));
+            var roles=snapshot.roles();
+            var levels=new LinkedHashMap<String,RoleLevel>();
+            for(var row:roles) {
+                var r=row.get("role");String id=text(r,"id"),level=row.get("levelId").asString();
+                var key=AssessmentPolicyScope.key(purpose,id,level);
+                var entry=levels.computeIfAbsent(key,k->new RoleLevel(id,text(r,"name"),level,row.get("levelName").asString(),
+                        row.get("rank").asInt(),r.get("version").asString(""),r.get("status").asString(""),new ArrayList<>(),new TreeSet<>()));
+                if(!row.get("skillId").isNull()) {
+                    var required=list(row.get("requirement"),"requiredKnowledgeLevels");
+                    if(required.isEmpty())entry.problems().add("EXACT_KNOWLEDGE_CONFIGURATION_REQUIRED");
+                    else for(String knowledge:required) {
+                        try{KnowledgeLevel.valueOf(knowledge);entry.needs().add(new Need(row.get("skillId").asString(),knowledge));}
+                        catch(IllegalArgumentException invalid){entry.problems().add("INVALID_KNOWLEDGE_CONFIGURATION");}
                     }
-                    prerequisites.computeIfAbsent(edge.skill()+"\n"+edge.level(),k->new ArrayList<>()).add(edge);
-                }
-                // Resolve current common-mode and explicit historical per-level mappings alike.
-                for(var skill:skills.values())for(var level:KnowledgeLevel.values()) {
-                    if(provision(skill,level)!=SkillProvisionMode.MODULE_ONLY)continue;
-                    String knowledge=level.name();var groups=new LinkedHashMap<String,GroupSpec>();var problems=new TreeSet<String>();
-                    expand(skill.id(),level,skills,prerequisites,invalidPrerequisites,groups,new HashSet<>(),new HashSet<>(),problems);
-                    result.add(scope(purpose,skill.id(),skill.name(),knowledge,knowledge,level.ordinal(),skill.version(),groups,problems));
-                    if(result.size()>10000)throw capacity();
                 }
             }
-            if(result.size()>10000 || result.stream().map(Scope::key).distinct().count()!=result.size())throw capacity();
-            return new Discovery(result,issues);
-        });
+            for(var role:levels.values()) {
+                var groups=new LinkedHashMap<String,GroupSpec>();var problems=new TreeSet<>(role.problems());
+                if(!Set.of("ACTIVE","PUBLISHED").contains(role.status()))problems.add("CATALOG_NOT_PUBLISHED");
+                if(role.version().isBlank())problems.add("EXACT_KNOWLEDGE_CONFIGURATION_REQUIRED");
+                for(var need:role.needs()) {
+                    var skill=skills.get(need.skill());
+                    if(skill==null){problems.add("OWNED_SKILL_CONFIGURATION_REQUIRED");continue;}
+                    var knowledge=KnowledgeLevel.valueOf(need.level());
+                    if(provision(skill,knowledge)==SkillProvisionMode.CERTIFICATE_ONLY)continue;
+                    add(skill,knowledge,groups);
+                }
+                result.add(scope(purpose,role.id(),role.name(),role.level(),role.levelName(),role.rank(),role.version()+":"+role.status(),groups,problems));
+            }
+        } else {
+            var edges=snapshot.prerequisites();
+            var prerequisites=new HashMap<String,List<Edge>>();var invalidPrerequisites=new HashSet<String>();
+            for(var row:edges) {
+                String source=row.get("skill").asString();Edge edge;
+                try {
+                    edge=new Edge(source,KnowledgeLevel.valueOf(row.get("level").asString("")),row.get("prerequisite").asString(),KnowledgeLevel.valueOf(row.get("prerequisiteLevel").asString("")));
+                }catch(RuntimeException malformed) {
+                    // Unknown endpoints affect every level of this source Skill and
+                    // all transitive consumers. Never infer levels from legacy scores.
+                    invalidPrerequisites.add(source);continue;
+                }
+                prerequisites.computeIfAbsent(edge.skill()+"\n"+edge.level(),k->new ArrayList<>()).add(edge);
+            }
+            // Resolve current common-mode and explicit historical per-level mappings alike.
+            for(var skill:skills.values())for(var level:KnowledgeLevel.values()) {
+                if(provision(skill,level)!=SkillProvisionMode.MODULE_ONLY)continue;
+                String knowledge=level.name();var groups=new LinkedHashMap<String,GroupSpec>();var problems=new TreeSet<String>();
+                expand(skill.id(),level,skills,prerequisites,invalidPrerequisites,groups,new HashSet<>(),new HashSet<>(),problems);
+                result.add(scope(purpose,skill.id(),skill.name(),knowledge,knowledge,level.ordinal(),skill.version(),groups,problems));
+                if(result.size()>10000)throw capacity();
+            }
+        }
+        if(result.size()>10000 || result.stream().map(Scope::key).distinct().count()!=result.size())throw capacity();
+        return new Discovery(result,issues);
     }
     private void expand(String id,KnowledgeLevel level,Map<String,Skill> skills,Map<String,List<Edge>> edges,Set<String> invalidPrerequisites,
                         Map<String,GroupSpec> groups,Set<String> visiting,Set<String> visited,Set<String> problems) {

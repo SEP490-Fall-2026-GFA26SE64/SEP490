@@ -1,721 +1,153 @@
-import * as React from 'react'
-import {
-  BarChart2,
-  Check,
-  CheckCircle2,
-  ChevronDown,
-  Clock,
-  RefreshCw,
-  Search,
-  TrendingUp,
-  X,
-} from 'lucide-react'
-import {
-  fetchMicroSkills,
-  type MicroSkillDto,
-} from '../../../shared/api/microSkillApi'
-import { Badge } from '../../../shared/components/ui/Badge'
-import { Button } from '../../../shared/components/ui/Button'
-import { Card, CardContent } from '../../../shared/components/ui/Card'
-import { cn } from '../../../shared/lib/utils'
-import { useEmployeeLearningState } from '../../../shared/hooks/useEmployeeLearningState'
-import {
-  Dialog,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '../../../shared/components/ui/Dialog'
-import { EmptyState } from '../../../shared/components/ui/EmptyState'
-import { Pagination } from '../../../shared/components/ui/Pagination'
-import { ConfirmationModal } from '../../../shared/components/ui/ConfirmationModal'
+import { useContext, useEffect, useRef, useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
+import { useNavigate } from 'react-router-dom'
+import { Search, SlidersHorizontal, List, LayoutGrid, X, ArrowRight, ArrowLeft, Info } from 'lucide-react'
 import { WorkspaceSessionContext } from '../../../shared/auth/workspaceSession'
-import { getActiveCompanyId, getActiveCompany } from '../../../shared/stores/companyStore'
-import { TARGET_ROLE_ROADMAPS } from '../data/roadmapData'
-
-interface EnrichedSkill extends MicroSkillDto {
-  durationHours: number
-  durationLabel: string
-  durationBracket: '< 2 Hours' | '2-5 Hours' | '6-15 Hours' | '15+ Hours'
-  level: 'Beginner' | 'Intermediate' | 'Advanced'
-}
-
-const DURATION_BRACKETS = ['All Durations', '< 2 Hours', '2-5 Hours', '6-15 Hours', '15+ Hours'] as const
-const LEVEL_OPTIONS = ['All', 'Beginner', 'Intermediate', 'Advanced'] as const
-
-function calculateSkillMetadata(skill: MicroSkillDto): EnrichedSkill {
-  const hash = (skill.code || skill.name).split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)
-  
-  let durationHours = (hash % 18) + 2
-  if (skill.code === 'PROMPT_PATTERNS' || skill.code === 'AI_LITERACY') durationHours = 2
-  else if (skill.code === 'GEMINI_MODELS' || skill.code === 'AI_ENABLEMENT') durationHours = 4
-  else if (skill.code === 'RESPONSIBLE_AI_PRIN') durationHours = 3
-  else if (skill.code === 'MS-PY-001') durationHours = 8
-  else if (skill.code === 'MS-DL-001') durationHours = 14
-  else if (skill.code === 'JAVA_CORE') durationHours = 16
-
-  let durationBracket: EnrichedSkill['durationBracket'] = '2-5 Hours'
-  if (durationHours < 2) durationBracket = '< 2 Hours'
-  else if (durationHours <= 5) durationBracket = '2-5 Hours'
-  else if (durationHours <= 15) durationBracket = '6-15 Hours'
-  else durationBracket = '15+ Hours'
-
-  let level: EnrichedSkill['level'] = 'Intermediate'
-  if (durationHours <= 4) level = 'Beginner'
-  else if (durationHours >= 12) level = 'Advanced'
-
-  return {
-    ...skill,
-    durationHours,
-    durationLabel: `${durationHours} Hours`,
-    durationBracket,
-    level,
-  }
-}
-
-const PAGE_SIZE = 12
-
-function getSearchFromLocation(): string {
-  if (typeof window === 'undefined') return ''
-  try {
-    return new URLSearchParams(window.location.search).get('search') ?? ''
-  } catch {
-    return ''
-  }
-}
+import { useWorkspaceSlug, workspaceUrl } from '../../../shared/auth/workspacePaths'
+import { useTranslation } from '../../../shared/i18n/LanguageContext'
+import { fetchMicroSkills, type MicroSkillDto } from '../../../shared/api/microSkillApi'
+import { readSkillModules, searchSkillModules, startSkillModule, type OptionalSkillModule } from '../../../shared/api/skillLearningApi'
+import { readSkillKnowledgeProfile } from '../baseline-assessment/knowledgeProfileApi'
+import { INDIVIDUAL_KNOWLEDGE_LEVELS, individualKnowledgeState } from './individualSkillKnowledge'
+import type { KnowledgeLevel } from '../../../shared/api/requirementPathway'
+import { Button } from '../../../shared/components/ui/Button'
+import { Input } from '../../../shared/components/ui/Input'
+import { Badge } from '../../../shared/components/ui/Badge'
+import { Dialog, DialogBody, DialogHeader, DialogTitle, DialogFooter } from '../../../shared/components/ui/Dialog'
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '../../../shared/components/ui/Tabs'
+import { Combobox } from '../../../shared/components/ui/Combobox'
+import { Pagination } from '../../../shared/components/ui/Pagination'
+import { SkillLevelAssessmentPanel } from './SkillLevelAssessmentPanel'
+import { ModuleCatalogResults } from './ModuleCatalogResults'
+import { Heading } from '../../../shared/components/typography/Heading'
 
 export function UpskillSkillsPanel() {
-  const { profile, isSkillTracked, trackSkill, untrackSkill } = useEmployeeLearningState()
-  const [skills, setSkills] = React.useState<EnrichedSkill[]>([])
-  const session = React.useContext(WorkspaceSessionContext)
-  const [isLoading, setIsLoading] = React.useState(true)
-  const [isError, setIsError] = React.useState(false)
+  const identity = useContext(WorkspaceSessionContext)?.identity
+  return <ScopedSkillsPanel key={`${identity?.organizationId}/${identity?.accountId}`} />
+}
 
-  // Filters state
-  const initialSearch = getSearchFromLocation()
-  const [searchQuery, setSearchQuery] = React.useState(initialSearch)
-  const [selectedLevel, setSelectedLevel] = React.useState<string>('All')
-  const [selectedDuration, setSelectedDuration] = React.useState<string>('All Durations')
-  const [selectedStatus, setSelectedStatus] = React.useState<'All' | 'Active' | 'Done'>('All')
-  const [currentPage, setCurrentPage] = React.useState(1)
-
-  const isSkillDone = React.useCallback(
-    (skill: EnrichedSkill) => {
-      const prevSkills = profile?.previousSkills || []
-      return prevSkills.some(
-        (ps) =>
-          (ps.status === 'completed' || ps.masteryScore >= 85) &&
-          (ps.skillName.toLowerCase() === skill.name.toLowerCase() ||
-            (skill.code && ps.skillKey.toLowerCase() === skill.code.toLowerCase()) ||
-            ps.skillKey.toLowerCase() === skill.name.toLowerCase())
-      )
-    },
-    [profile?.previousSkills]
-  )
-
-  // Determine skills that are already in the employee's active role learning pathway
-  const pathwaySkillKeys = React.useMemo(() => {
-    const keys = new Set<string>()
-    const defaultRoadmap = TARGET_ROLE_ROADMAPS['ai-knowledge-architect']
-    if (defaultRoadmap) {
-      for (const m of defaultRoadmap.modules) {
-        for (const sk of m.microSkills) {
-          keys.add(sk.name.toLowerCase().trim())
-          if (sk.skillCode) keys.add(sk.skillCode.toLowerCase().trim())
-        }
-      }
-    }
-    // Also include common pathway competencies
-    keys.add('rdf triplestore data model')
-    keys.add('sparql 1.1 query engine')
-    keys.add('declarative cypher match & merge')
-    keys.add('index-free adjacency & schema constraints')
-    keys.add('graph neural networks & node embeddings')
-    keys.add('dynamic knowledge tracing & pedagogical modeling')
-    keys.add('prompt engineering patterns')
-    keys.add('gemini multimodal reasoning')
-    return keys
-  }, [])
-
-  const isSkillInPathway = React.useCallback(
-    (skill: EnrichedSkill) => {
-      const name = skill.name.toLowerCase().trim()
-      const code = (skill.code || '').toLowerCase().trim()
-      return pathwaySkillKeys.has(name) || pathwaySkillKeys.has(code)
-    },
-    [pathwaySkillKeys]
-  )
-
-  React.useEffect(() => {
-    const handleLocationChange = () => {
-      setSearchQuery(getSearchFromLocation())
-      setCurrentPage(1)
-    }
-    window.addEventListener('popstate', handleLocationChange)
-    return () => window.removeEventListener('popstate', handleLocationChange)
-  }, [])
-
-  React.useEffect(() => {
-    setCurrentPage(1)
-  }, [searchQuery, selectedLevel, selectedDuration, selectedStatus])
-
-  // Detail Modal state
-  const [detailSkill, setDetailSkill] = React.useState<EnrichedSkill | null>(null)
-  // Untrack confirmation state
-  const [skillToUntrack, setSkillToUntrack] = React.useState<string | null>(null)
-
-  const loadData = React.useCallback(async () => {
-    setIsLoading(true)
-    setIsError(false)
+function ScopedSkillsPanel() {
+  const identity = useContext(WorkspaceSessionContext)?.identity
+  const { language } = useTranslation(), vi = language === 'vi'
+  const navigate = useNavigate(), slug = useWorkspaceSlug()
+  const scope = `${identity?.organizationId}/${identity?.accountId}`
+  const [search, setSearch] = useState(() => new URLSearchParams(window.location.search).get('search') ?? '')
+  const [resultType, setResultType] = useState('SKILL')
+  const [view, setView] = useState<'list' | 'grid'>('grid')
+  const [filterOpen, setFilterOpen] = useState(false)
+  const [draftSkill, setDraftSkill] = useState(''), [draftLevel, setDraftLevel] = useState('')
+  const [ownerSkill, setOwnerSkill] = useState('')
+  const [moduleLevel, setModuleLevel] = useState('')
+  const [modulePage, setModulePage] = useState(0), [skillPage, setSkillPage] = useState(0)
+  const [debouncedSearch, setDebouncedSearch] = useState(search)
+  useEffect(() => { const timer = setTimeout(() => setDebouncedSearch(search), 300); return () => clearTimeout(timer) }, [search])
+  function resetPages() { setModulePage(0); setSkillPage(0) }
+  const showSkills = resultType !== 'MODULE', showModules = resultType !== 'SKILL'
+  const [selected, setSelected] = useState<MicroSkillDto | null>(null)
+  const selectedRegion = useRef<HTMLElement>(null), returnSkill = useRef('')
+  useEffect(() => {
+    if (selected) selectedRegion.current?.focus()
+    else if (returnSkill.current) document.getElementById(returnSkill.current)?.focus()
+  }, [selected])
+  const [level, setLevel] = useState<KnowledgeLevel>('FOUNDATION')
+  const [busy, setBusy] = useState(''), [actionError, setActionError] = useState('')
+  const catalog = useQuery({ queryKey: ['individualSkills', scope], queryFn: () => fetchMicroSkills(identity!.organizationId!), enabled: Boolean(identity?.organizationId), retry: false, gcTime: 0 })
+  const moduleResults = useQuery({ queryKey: ['individualModuleSearch', scope, debouncedSearch, ownerSkill, moduleLevel, modulePage], queryFn: ({ signal }) => searchSkillModules(debouncedSearch, ownerSkill, moduleLevel, modulePage, signal), enabled: Boolean(identity?.organizationId) && showModules && !selected && search === debouncedSearch, retry: false, gcTime: 0 })
+  const provision = useQuery({ queryKey: ['individualSkillModules', scope, selected?.id], queryFn: ({ signal }) => readSkillModules(selected!.id, signal), enabled: Boolean(selected), retry: false, gcTime: 0 })
+  const profile = useQuery({ queryKey: ['individualSkillKnowledge', scope, selected?.id, selected?.version], queryFn: ({ signal }) => readSkillKnowledgeProfile(selected!.id, signal), enabled: Boolean(selected), retry: false, gcTime: 0, refetchInterval: selected ? 5000 : false })
+  const modules = provision.isError ? [] : provision.data ?? []
+  const entries = profile.isError ? null : profile.data ?? null
+  const visible = (catalog.data ?? []).filter(s => s.status === 'ACTIVE' && `${s.name} ${s.code} ${s.description ?? ''}`.toLowerCase().includes(search.trim().toLowerCase()))
+  const labels: Record<KnowledgeLevel, string> = { FOUNDATION: vi ? 'Nền tảng' : 'Foundation', INTERMEDIATE: vi ? 'Trung cấp' : 'Intermediate', ADVANCED: vi ? 'Nâng cao' : 'Advanced' }
+  const statusLabels = { achieved: vi ? 'Đã đạt' : 'Achieved', review: vi ? 'Cần xem xét' : 'Needs review', notAchieved: vi ? 'Chưa đạt' : 'Not achieved', unavailable: vi ? 'Chưa có dữ liệu' : 'Unavailable' }
+  const reasons: Record<string, string> = {
+    PATHWAY_MODULE_LOCKED: vi ? 'Module đang bị khóa trong lộ trình.' : 'This module is locked in your pathway.',
+    PREREQUISITE_NOT_MET: vi ? 'Chưa đạt kiến thức tiên quyết.' : 'Prerequisite knowledge has not been achieved.',
+    SKILL_VERSION_CHANGED: vi ? 'Nội dung cần cập nhật theo phiên bản kỹ năng.' : 'Content needs to match the current skill version.',
+  }
+  function select(skill: MicroSkillDto, returnId = `skill-action-${encodeURIComponent(skill.id)}`) { returnSkill.current = returnId; setSelected(skill); setLevel('FOUNDATION'); setActionError(''); setFilterOpen(false) }
+  async function open(skillId: string, module: OptionalSkillModule) {
+    if (busy || module.unavailableReason || !module.knowledgeLevel || !module.skillVersion) return
+    setBusy(module.moduleId); setActionError('')
     try {
-      const orgId = session?.identity?.organizationId || getActiveCompanyId() || 'e0000000-0000-0000-0000-000000000001'
-      
-      const skillsData = await fetchMicroSkills(orgId).catch(() => [] as MicroSkillDto[])
-
-      // Strictly deduplicate micro-skills by unique code or id so that duplicate entries cannot collide
-      const activeCompSkills = (getActiveCompany()?.microSkills || []).map((ms) => ({
-        id: ms.id,
-        code: ms.code || ms.id,
-        name: ms.name,
-        description: ms.description,
-        status: ms.status || 'ACTIVE',
-        updatedAt: ms.updatedAt,
-      }))
-      const combinedSkills = [...skillsData, ...activeCompSkills]
-
-      const uniqueSkillsMap = new Map<string, MicroSkillDto>()
-      for (const s of combinedSkills) {
-        const key = (s.code || s.id || '').trim().toUpperCase()
-        if (key && !uniqueSkillsMap.has(key)) {
-          uniqueSkillsMap.set(key, s)
-        }
-      }
-      const uniqueSkills = Array.from(uniqueSkillsMap.values())
-
-      const enriched = uniqueSkills.map((s) => calculateSkillMetadata(s))
-      // Sort with newest created/updated skills first so recently added skills are immediately visible on page 1
-      enriched.sort((a, b) => {
-        const timeA = new Date(a.updatedAt || a.createdAt || '2026-01-01T00:00:00Z').getTime()
-        const timeB = new Date(b.updatedAt || b.createdAt || '2026-01-01T00:00:00Z').getTime()
-        if (timeA !== timeB) return timeB - timeA
-        return a.name.localeCompare(b.name)
-      })
-      setSkills(enriched)
-    } catch {
-      setIsError(true)
-    } finally {
-      setIsLoading(false)
-    }
-  }, [session?.identity?.organizationId])
-
-  React.useEffect(() => {
-    void loadData()
-  }, [loadData])
-
-  // Filter skills
-  const filteredSkills = React.useMemo(() => {
-    return skills.filter((item) => {
-      // Status match (Active, Done)
-      if (selectedStatus === 'Active') {
-        if (!isSkillTracked(item.name)) return false
-      } else if (selectedStatus === 'Done') {
-        if (!isSkillDone(item)) return false
-      }
-
-      // Level match
-      if (selectedLevel !== 'All') {
-        if (item.level !== selectedLevel) return false
-      }
-
-      // Duration match
-      if (selectedDuration !== 'All Durations') {
-        if (item.durationBracket !== selectedDuration) return false
-      }
-
-      // Search match
-      if (searchQuery.trim()) {
-        const q = searchQuery.toLowerCase().trim()
-        const matchesSearch =
-          item.name.toLowerCase().includes(q) ||
-          (item.description && item.description.toLowerCase().includes(q)) ||
-          (item.code && item.code.toLowerCase().includes(q))
-        if (!matchesSearch) return false
-      }
-
-      return true
-    })
-  }, [skills, selectedStatus, selectedLevel, selectedDuration, searchQuery, isSkillTracked, isSkillDone])
-
-  const hasFilters =
-    searchQuery.trim().length > 0 ||
-    selectedLevel !== 'All' ||
-    selectedDuration !== 'All Durations' ||
-    selectedStatus !== 'All'
-
-  const clearFilters = () => {
-    setSearchQuery('')
-    setSelectedLevel('All')
-    setSelectedDuration('All Durations')
-    setSelectedStatus('All')
-    setCurrentPage(1)
+      await startSkillModule(skillId, module.moduleId)
+      const path = '/employee/modules/' + encodeURIComponent(module.moduleId)
+      void navigate(slug ? workspaceUrl(slug, path) : path)
+    } catch (cause) { setActionError(cause instanceof Error ? cause.message : (vi ? 'Không thể mở module.' : 'Cannot open module.')) }
+    finally { setBusy('') }
   }
-
-  const totalItems = filteredSkills.length
-  const totalPages = Math.ceil(totalItems / PAGE_SIZE)
-
-  React.useEffect(() => {
-    if (currentPage > totalPages && totalPages > 0) {
-      setCurrentPage(1)
-    }
-  }, [currentPage, totalPages])
-
-  const paginatedSkills = React.useMemo(() => {
-    const start = (currentPage - 1) * PAGE_SIZE
-    return filteredSkills.slice(start, start + PAGE_SIZE)
-  }, [filteredSkills, currentPage])
-
-  const catalogRef = React.useRef<HTMLElement | null>(null)
-
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page)
-    catalogRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-  }
-
-  return (
-    <section ref={catalogRef} className="space-y-4" aria-labelledby="skills-catalog-heading">
-      {/* Unified Search & Filter Toolbar matching Roles tab layout */}
-      <div className="flex flex-col gap-2.5 rounded-xl border border-border bg-card p-3 shadow-2xs md:flex-row md:items-center">
-        {/* Search Input */}
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
-          <input
-            id="skill-search"
-            type="search"
-            maxLength={100}
-            placeholder="Search skills by name or description..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full rounded-lg border border-border bg-background py-2 pl-9 pr-8 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
-          />
-          {searchQuery && (
-            <button
-              type="button"
-              onClick={() => setSearchQuery('')}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-0.5 rounded cursor-pointer"
-              title="Clear search"
-            >
-              <X size={13} />
-            </button>
-          )}
-        </div>
-
-        {/* Filter Controls Group */}
-        <div className="flex flex-wrap items-center gap-2">
-          {/* Status Filter Dropdown Pill */}
-          <div
-            className={cn(
-              "relative h-9 px-3 rounded-lg border inline-flex items-center gap-2 text-xs transition-all cursor-pointer shadow-2xs select-none",
-              selectedStatus !== 'All'
-                ? "border-primary/50 bg-primary/5 text-primary hover:bg-primary/10"
-                : "border-border bg-background hover:bg-muted/60 text-foreground"
-            )}
-          >
-            <CheckCircle2 size={13} className={selectedStatus !== 'All' ? 'text-primary' : 'text-muted-foreground'} />
-            <span className="text-muted-foreground font-normal">Status:</span>
-            <span className="font-semibold text-foreground">
-              {selectedStatus === 'All' ? 'All' : selectedStatus}
-            </span>
-            <ChevronDown size={13} className="text-muted-foreground ml-0.5 shrink-0" />
-            <select
-              aria-label="Filter by status"
-              value={selectedStatus}
-              onChange={(e) => setSelectedStatus(e.target.value as 'All' | 'Active' | 'Done')}
-              className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
-            >
-              <option value="All" className="bg-card text-foreground">All</option>
-              <option value="Active" className="bg-card text-foreground">Active</option>
-              <option value="Done" className="bg-card text-foreground">Done</option>
-            </select>
-          </div>
-
-          {/* Level Filter Dropdown Pill */}
-          <div
-            className={cn(
-              "relative h-9 px-3 rounded-lg border inline-flex items-center gap-2 text-xs transition-all cursor-pointer shadow-2xs select-none",
-              selectedLevel !== 'All'
-                ? "border-primary/50 bg-primary/5 text-primary hover:bg-primary/10"
-                : "border-border bg-background hover:bg-muted/60 text-foreground"
-            )}
-          >
-            <BarChart2 size={13} className={selectedLevel !== 'All' ? 'text-primary' : 'text-muted-foreground'} />
-            <span className="text-muted-foreground font-normal">Level:</span>
-            <span className="font-semibold text-foreground">
-              {selectedLevel === 'All' ? 'All levels' : selectedLevel}
-            </span>
-            <ChevronDown size={13} className="text-muted-foreground ml-0.5 shrink-0" />
-            <select
-              aria-label="Filter by level"
-              value={selectedLevel}
-              onChange={(e) => setSelectedLevel(e.target.value)}
-              className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
-            >
-              {LEVEL_OPTIONS.map((lvl) => (
-                <option key={lvl} value={lvl} className="bg-card text-foreground">
-                  {lvl === 'All' ? 'All levels' : lvl}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Duration Filter Dropdown Pill */}
-          <div
-            className={cn(
-              "relative h-9 px-3 rounded-lg border inline-flex items-center gap-2 text-xs transition-all cursor-pointer shadow-2xs select-none",
-              selectedDuration !== 'All Durations'
-                ? "border-primary/50 bg-primary/5 text-primary hover:bg-primary/10"
-                : "border-border bg-background hover:bg-muted/60 text-foreground"
-            )}
-          >
-            <Clock size={13} className={selectedDuration !== 'All Durations' ? 'text-primary' : 'text-muted-foreground'} />
-            <span className="text-muted-foreground font-normal">Duration:</span>
-            <span className="font-semibold text-foreground">
-              {selectedDuration}
-            </span>
-            <ChevronDown size={13} className="text-muted-foreground ml-0.5 shrink-0" />
-            <select
-              aria-label="Filter by duration"
-              value={selectedDuration}
-              onChange={(e) => setSelectedDuration(e.target.value)}
-              className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
-            >
-              {DURATION_BRACKETS.map((bracket) => (
-                <option key={bracket} value={bracket} className="bg-card text-foreground">
-                  {bracket}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Clear Filters Button */}
-          {hasFilters && (
-            <button
-              type="button"
-              onClick={clearFilters}
-              className="h-9 px-3 rounded-lg border border-border bg-background hover:bg-destructive/10 hover:text-destructive hover:border-destructive/30 text-xs font-medium text-muted-foreground transition-colors cursor-pointer inline-flex items-center gap-1.5 shadow-2xs"
-            >
-              <X size={13} />
-              <span>Reset</span>
-            </button>
-          )}
-        </div>
+  return <section className="space-y-4" aria-label={vi ? 'Học kỹ năng độc lập' : 'Individual skills'}>
+    {!selected && <>
+    <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 rounded-lg border border-border bg-card p-2 sm:flex sm:gap-3">
+      <label htmlFor="skill-search" className="sr-only">{vi ? 'Tìm kỹ năng hoặc module' : 'Search skills or modules'}</label>
+      <div className="relative col-span-2 min-w-0 flex-1"><Search aria-hidden="true" className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" /><Input id="skill-search" type="search" className="border-0 bg-transparent pl-9 shadow-none" value={search} maxLength={100} onChange={e => { setSearch(e.target.value); resetPages() }} placeholder={vi ? 'Tìm kỹ năng hoặc module…' : 'Search skills or modules…'} /></div>
+      <div role="group" aria-label={vi ? 'Loại kết quả' : 'Result type'} className="flex gap-0.5 rounded-md bg-muted p-1">
+        {[['SKILL', 'Skills'], ['MODULE', 'Modules'], ['ALL', vi ? 'Tất cả' : 'All']].map(([value, name]) => <Button key={value} variant="ghost" size="sm" aria-pressed={resultType === value} className={`min-h-9 flex-1 px-3 text-body-sm ${resultType === value ? 'bg-card text-foreground shadow-xs' : 'text-muted-foreground'}`} onClick={() => { setResultType(value); resetPages() }}>{name}</Button>)}
       </div>
+      {showModules && <Button variant="outline" className="gap-2" aria-haspopup="dialog" onClick={() => { setDraftSkill(ownerSkill); setDraftLevel(moduleLevel); setFilterOpen(true) }}><SlidersHorizontal size={16} aria-hidden="true" />{vi ? 'Bộ lọc' : 'Filters'}{Boolean(ownerSkill || moduleLevel) && <Badge variant="secondary">{Number(Boolean(ownerSkill)) + Number(Boolean(moduleLevel))}</Badge>}</Button>}
+    </div>
+    {showModules && Boolean(ownerSkill || moduleLevel || search) && <div className="flex flex-wrap items-center gap-2" aria-label={vi ? 'Bộ lọc đang áp dụng' : 'Applied filters'}>
+      {ownerSkill && <Button variant="outline" size="sm" className="gap-2 font-normal" aria-label={vi ? 'Xóa bộ lọc skill' : 'Remove skill filter'} onClick={() => { setOwnerSkill(''); resetPages() }}>{catalog.data?.find(s => s.id === ownerSkill)?.name ?? ownerSkill}<X size={13} aria-hidden="true" /></Button>}
+      {moduleLevel && <Button variant="outline" size="sm" className="gap-2 font-normal" aria-label={vi ? 'Xóa bộ lọc level' : 'Remove level filter'} onClick={() => { setModuleLevel(''); resetPages() }}>{labels[moduleLevel as KnowledgeLevel]}<X size={13} aria-hidden="true" /></Button>}
+      <Button variant="link" size="sm" className="text-muted-foreground" onClick={() => { setSearch(''); setOwnerSkill(''); setModuleLevel(''); setResultType('SKILL'); resetPages() }}>{vi ? 'Xóa tất cả' : 'Reset filters'}</Button>
+    </div>}
+    <Dialog open={filterOpen} onOpenChange={setFilterOpen} className="overflow-visible" ariaLabel={vi ? 'Lọc module' : 'Filter modules'} closeLabel={vi ? 'Đóng bộ lọc' : 'Close filters'}>
+      <DialogHeader><DialogTitle>{vi ? 'Lọc module' : 'Filter modules'}</DialogTitle></DialogHeader>
+      <DialogBody className="space-y-5 overflow-visible"><p className="text-body-sm text-muted-foreground">{vi ? 'Thu hẹp nội dung theo kỹ năng và mức kiến thức.' : 'Narrow modules by skill and knowledge level.'}</p>
+        <div className="space-y-2"><label htmlFor="module-skill" className="text-body-sm font-medium">{vi ? 'Thuộc skill' : 'Belongs to skill'}</label><Combobox id="module-skill" value={draftSkill} placeholder={vi ? 'Tất cả skill' : 'All skills'} searchPlaceholder={vi ? 'Tìm skill…' : 'Find skill…'} options={(catalog.data ?? []).filter(s => s.status === 'ACTIVE').map(s => ({ value: s.id, label: s.name, description: s.code }))} onChange={setDraftSkill} /></div>
+        <div className="space-y-2"><label htmlFor="module-level" className="text-body-sm font-medium">{vi ? 'Mức kiến thức của module' : 'Module knowledge level'}</label><Combobox id="module-level" value={draftLevel} placeholder={vi ? 'Tất cả level' : 'All levels'} options={INDIVIDUAL_KNOWLEDGE_LEVELS.map(value => ({ value, label: labels[value] }))} onChange={setDraftLevel} /></div>
+      </DialogBody>
+      <DialogFooter className="sm:justify-between"><Button variant="ghost" onClick={() => { setDraftSkill(''); setDraftLevel('') }}>{vi ? 'Xóa bộ lọc' : 'Clear filters'}</Button><Button className="gap-2" onClick={() => { setOwnerSkill(draftSkill); setModuleLevel(draftLevel); resetPages(); setFilterOpen(false) }}>{vi ? 'Xem kết quả' : 'Show results'}<ArrowRight size={15} aria-hidden="true" /></Button></DialogFooter>
+    </Dialog>
+    {!identity?.organizationId && <p role="alert">{vi ? 'Cần đăng nhập vào tổ chức.' : 'Sign in to your workspace.'}</p>}
+    {catalog.isPending && identity?.organizationId && <p role="status" className="text-body-sm text-muted-foreground">{vi ? 'Đang tải kỹ năng…' : 'Loading skills…'}</p>}
+    {catalog.isError && <div role="alert" className="space-y-2"><p>{vi ? 'Không tải được danh sách kỹ năng.' : 'Could not load skills.'}</p><Button variant="outline" onClick={() => void catalog.refetch()}>{vi ? 'Thử lại' : 'Retry'}</Button></div>}
+    {showSkills && catalog.isSuccess && !visible.length && <p className="rounded-xl border border-border bg-card p-5 text-body-sm text-muted-foreground">{vi ? 'Không có kỹ năng phù hợp.' : 'No matching skills.'}</p>}
+    {showSkills && visible.length > 0 && <section className="space-y-3" aria-label="Skills"><div className="overflow-hidden rounded-lg border border-border bg-card" role="list">{visible.slice(skillPage * 20, (skillPage + 1) * 20).map(skill => <div key={skill.id} role="listitem" className="flex min-w-0 flex-col gap-3 border-b border-border p-4 last:border-b-0 sm:flex-row sm:items-center sm:justify-between sm:gap-5 sm:px-5">
+      <div className="min-w-0 space-y-1.5"><div className="flex flex-wrap items-center gap-2"><Badge variant="secondary" className="max-w-full break-words whitespace-normal">{skill.code}</Badge><Heading level={3} size="card" className="break-words">{skill.name}</Heading></div>{skill.description && <p className="line-clamp-2 break-words text-body-sm text-muted-foreground">{skill.description}</p>}</div>
+      <Button id={`skill-action-${encodeURIComponent(skill.id)}`} size="sm" variant="primary" className="shrink-0 self-start gap-2 sm:self-center" onClick={() => select(skill)}>{vi ? 'Xem modules' : 'View modules'}<ArrowRight size={14} aria-hidden="true" /></Button>
+    </div>)}</div><Pagination currentPage={skillPage + 1} totalPages={Math.ceil(visible.length / 20)} totalItems={visible.length} pageSize={20} locale={vi ? 'vi' : 'en'} onPageChange={value => setSkillPage(value - 1)} /></section>}
+    {actionError && !selected && <p role="alert" className="text-body-sm text-destructive">{actionError}</p>}
+    {showModules && <section aria-label="Modules" className="space-y-3"><div className="flex items-center justify-between gap-3"><Heading level={2} size="card">{moduleResults.isSuccess && search === debouncedSearch ? `${moduleResults.data.totalItems} ${vi || moduleResults.data.totalItems === 1 ? 'module' : 'modules'}` : 'Modules'}</Heading><div role="group" aria-label={vi ? 'Kiểu hiển thị' : 'Display mode'} className="flex gap-0.5 rounded-md border border-border bg-card p-0.5"><Button size="sm" variant="ghost" className={`px-2 ${view === 'list' ? 'bg-muted' : 'text-muted-foreground'}`} aria-label={vi ? 'Hiển thị danh sách' : 'List view'} aria-pressed={view === 'list'} onClick={() => setView('list')}><List size={17} aria-hidden="true" /></Button><Button size="sm" variant="ghost" className={`px-2 ${view === 'grid' ? 'bg-muted' : 'text-muted-foreground'}`} aria-label={vi ? 'Hiển thị thẻ' : 'Card view'} aria-pressed={view === 'grid'} onClick={() => setView('grid')}><LayoutGrid size={17} aria-hidden="true" /></Button></div></div>
+      {(moduleResults.isPending || search !== debouncedSearch) && <p role="status">{vi ? 'Đang tìm module…' : 'Searching modules…'}</p>}
+      {moduleResults.isError && search === debouncedSearch && <div role="alert" className="space-y-2"><p>{vi ? 'Không tải được module.' : 'Could not load module results.'}</p><Button variant="outline" onClick={() => void moduleResults.refetch()}>{vi ? 'Thử lại' : 'Retry module search'}</Button></div>}
+      {moduleResults.isSuccess && search === debouncedSearch && <>
+        {!moduleResults.data.items.length && <p className="rounded-lg border border-border bg-card p-4 text-body-sm text-muted-foreground">{vi ? 'Không có module phù hợp. Thử đổi từ khóa hoặc xóa bộ lọc.' : 'No matching modules. Try another search or reset the filters.'}</p>}
+        {moduleResults.data.items.length > 0 && <ModuleCatalogResults items={moduleResults.data.items} view={view} vi={vi} busy={busy} labels={labels} reasons={reasons} onOpen={({ skillId, module }) => void open(skillId, module)} onViewSkill={item => { const skill = catalog.data?.find(s => s.id === item.skillId); if (skill) { select(skill, `module-skill-${encodeURIComponent(item.module.moduleId)}`); setLevel(item.module.knowledgeLevel ?? 'FOUNDATION') } }} />}
+        <Pagination currentPage={modulePage + 1} totalPages={Math.ceil(moduleResults.data.totalItems / moduleResults.data.pageSize)} totalItems={moduleResults.data.totalItems} pageSize={moduleResults.data.pageSize} locale={vi ? 'vi' : 'en'} disabled={moduleResults.isFetching} onPageChange={value => setModulePage(value - 1)} />
+      </>}
+    </section>}
+    <p className="flex items-start gap-2 text-caption text-muted-foreground"><Info size={15} className="mt-0.5 shrink-0" aria-hidden="true" /><span>{vi ? 'Hoàn thành nội dung trước khi làm Skill Assessment. Achievement được ghi nhận khi đánh giá đạt.' : 'Complete module content before the Skill Assessment. Official achievement is awarded after a passing assessment.'}</span></p>
+    </>}
+    {selected && <section ref={selectedRegion} tabIndex={-1} className="space-y-4 outline-none" aria-label={vi ? 'Modules của skill' : 'Skill modules'}>
+      <Button variant="ghost" size="sm" className="gap-2 text-muted-foreground" disabled={Boolean(busy)} onClick={() => { setSelected(null); setActionError('') }}><ArrowLeft size={15} aria-hidden="true" />{vi ? 'Quay lại danh sách Skills' : 'Back to skills'}</Button>
+      <div className="space-y-2"><div className="flex flex-wrap items-center gap-2"><Badge variant="secondary">{selected.code}</Badge><Heading level={2} size="subsection" className="break-words">{selected.name}</Heading></div>{selected.description && <p className="text-body-sm text-muted-foreground">{selected.description}</p>}</div>
+        <div className="space-y-4">
+          <p className="text-body-sm text-muted-foreground">{vi ? 'Chọn mức kiến thức, học một module phù hợp, rồi làm Skill Assessment ở mức đó. Hoàn thành nội dung chưa đồng nghĩa đã đạt kỹ năng.' : 'Choose a knowledge level, study a compatible module, then take the Skill Assessment for that level. Content completion alone does not award achievement.'}</p>
+          {selected?.version && <p className="text-caption text-muted-foreground">{vi ? 'Trạng thái cho phiên bản kỹ năng: ' : 'Achievement status for skill version: '}{selected.version}</p>}
+          {profile.isError && <div role="alert" className="space-y-2"><p className="text-body-sm text-destructive">{vi ? 'Chưa tải được achievement. Trạng thái đạt chưa xác định.' : 'Achievement could not be loaded. Achievement status is unknown.'}</p><Button variant="outline" size="sm" onClick={() => void profile.refetch()}>{vi ? 'Tải lại achievement' : 'Retry achievement'}</Button></div>}
+          <Tabs value={level} onValueChange={value => { setLevel(value as KnowledgeLevel); void provision.refetch() }}>
+            <TabsList className="h-auto items-stretch" aria-label={vi ? 'Mức kiến thức' : 'Knowledge level'}>{INDIVIDUAL_KNOWLEDGE_LEVELS.map(item => {
+              const state = individualKnowledgeState(entries, selected?.id ?? '', selected?.version, item)
+              return <TabsTrigger key={item} value={item} className="min-w-0 flex-1 flex-col gap-1 whitespace-normal px-2 py-2 data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground"><span className="break-words">{labels[item]}</span><Badge variant={state.status === 'achieved' || state.status === 'review' ? 'outline' : 'secondary'} className={`whitespace-normal text-[length:var(--text-caption)] ${state.status === 'achieved' ? 'border-success/30 bg-success/10' : state.status === 'review' ? 'border-warning/30 bg-warning/10' : ''}`}>{profile.isPending ? (vi ? 'Đang kiểm tra…' : 'Checking…') : statusLabels[state.status]}</Badge></TabsTrigger>
+            })}</TabsList>
+            {INDIVIDUAL_KNOWLEDGE_LEVELS.map(item => {
+              const options = modules.filter(module => module.knowledgeLevel === item)
+              const state = individualKnowledgeState(entries, selected?.id ?? '', selected?.version, item)
+              return <TabsContent key={item} value={item} className="space-y-3 pt-3">
+                {state.achieved && state.needsReview && <p className="text-body-sm text-muted-foreground">{vi ? 'Achievement đã đạt vẫn được giữ. Kết quả đánh giá gần nhất cần được xem xét.' : 'Your existing achievement is retained. A later assessment result needs review.'}</p>}
+                {provision.isPending && <p role="status">{vi ? 'Đang tải module…' : 'Loading modules…'}</p>}
+                {provision.isError && <div role="alert" className="space-y-2"><p className="text-body-sm text-destructive">{vi ? 'Không tải được module. Hãy thử lại.' : 'Could not load modules. Please retry.'}</p><Button variant="outline" disabled={Boolean(busy)} onClick={() => void provision.refetch()}>{vi ? 'Thử lại' : 'Retry'}</Button></div>}
+                {provision.isSuccess && !options.length && <p className="text-body-sm text-muted-foreground">{vi ? 'Chưa có module đã duyệt ở mức kiến thức này.' : 'No approved modules are available at this knowledge level.'}</p>}
+                {provision.isSuccess && <SkillLevelAssessmentPanel key={`${selected.id}:${selected.version}:${item}`} skillId={selected.id} modules={options} skillVersion={selected.version} level={item} levelLabel={labels[item]} vi={vi} />}
+                {options.length > 0 && <ModuleCatalogResults items={options.map(module => ({ skillId: selected.id, skillName: selected.name, module }))} view="grid" vi={vi} busy={busy} labels={labels} reasons={reasons} onOpen={({ skillId, module }) => void open(skillId, module)} />}
 
-      {/* Skills Grid */}
-      {isLoading ? (
-        <div role="status" className="rounded-xl border border-border bg-card p-8 text-center text-sm text-muted-foreground">
-          Loading skills...
-        </div>
-      ) : isError ? (
-        <Card className="border-destructive/30">
-          <CardContent className="flex flex-col items-center justify-center p-8 text-center space-y-3">
-            <p className="text-sm font-semibold text-foreground">Failed to load skills</p>
-            <p className="text-xs text-muted-foreground">Unable to fetch verified micro-skills from the server.</p>
-            <Button variant="outline" size="sm" onClick={() => void loadData()} leftIcon={<RefreshCw size={14} />}>
-              Retry
-            </Button>
-          </CardContent>
-        </Card>
-      ) : filteredSkills.length === 0 ? (
-        <EmptyState
-          title="No skills match your filters"
-          description="Try broadening your search, level, or duration filter to see available skills."
-          action={
-            <Button variant="outline" size="sm" onClick={clearFilters}>
-              Clear filters
-            </Button>
-          }
-        />
-      ) : (
-        <div className="space-y-5">
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {paginatedSkills.map((skill) => {
-              const isTracked = isSkillTracked(skill.name)
-              const isDone = isSkillDone(skill)
-              return (
-                <Card
-                  key={skill.id}
-                  className={cn(
-                    "flex flex-col justify-between hover:shadow-md transition-all duration-150 border-border bg-card group",
-                    !isDone && isTracked && "border-primary/50 ring-1 ring-primary/20",
-                    isDone && "border-success/30 bg-card hover:border-success/50"
-                  )}
-                >
-                  <div className="p-5 space-y-2.5">
-                    {/* Badges: Level & Status */}
-                    <div className="flex items-center justify-end gap-2">
-                      <div className="flex items-center gap-1.5">
-                        {isDone ? (
-                          <Badge
-                            variant="outline"
-                            className="text-[10px] whitespace-nowrap text-success border-success/30 bg-success/5 font-semibold gap-1"
-                          >
-                            <CheckCircle2 size={11} className="text-success shrink-0" />
-                            <span>Done</span>
-                          </Badge>
-                        ) : isTracked ? (
-                          <Badge variant="success" className="text-[10px] whitespace-nowrap">
-                            Active skill
-                          </Badge>
-                        ) : null}
-                        <span
-                          className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                            skill.level === 'Beginner'
-                              ? 'bg-success/10 text-success'
-                              : skill.level === 'Intermediate'
-                              ? 'bg-warning/15 text-black border border-warning/30'
-                              : 'bg-primary/10 text-primary'
-                          }`}
-                        >
-                          {skill.level}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Skill Name (without code) */}
-                    <h3 className="text-sm font-bold text-foreground group-hover:text-primary transition-colors leading-snug">
-                      {skill.name}
-                    </h3>
-
-                    {/* Description */}
-                    <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
-                      {skill.description || 'Verified organizational micro-skill for role capability enhancement.'}
-                    </p>
-                  </div>
-
-                  {/* Card Footer matching Roles cards */}
-                  <div className="px-5 py-3 border-t border-border bg-muted/10 flex items-center justify-between gap-2 mt-auto">
-                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-medium">
-                      <Clock size={13} className="text-muted-foreground" />
-                      <span>{skill.durationLabel}</span>
-                    </div>
-                    <div className="flex items-center gap-1.5">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="text-xs h-7.5 px-3"
-                        onClick={() => setDetailSkill(skill)}
-                      >
-                        View details
-                      </Button>
-                      {isSkillInPathway(skill) ? (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          disabled
-                          className="text-xs h-7.5 px-3 bg-muted/60 text-muted-foreground border-border cursor-not-allowed opacity-75 font-semibold"
-                          title="This skill is already part of your active target role learning pathway."
-                        >
-                          <CheckCircle2 size={12} className="mr-1 text-primary shrink-0" />
-                          <span>In Pathway</span>
-                        </Button>
-                      ) : isDone ? (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          disabled
-                          className="text-xs h-7.5 px-3 bg-success/5 text-success border-success/30 cursor-default font-semibold opacity-95"
-                          title="You have already completed this micro-skill."
-                        >
-                          <CheckCircle2 size={12} className="mr-1 text-success shrink-0" />
-                          <span>Done</span>
-                        </Button>
-                      ) : isTracked ? (
-                        <Button
-                          variant="secondary"
-                          size="sm"
-                          className="text-xs h-7.5 px-3 bg-success/10 text-success hover:bg-destructive/10 hover:text-destructive border border-success/30 hover:border-destructive/30 transition-all cursor-pointer group/btn"
-                          onClick={() => setSkillToUntrack(skill.name)}
-                          title="Click to untrack skill"
-                        >
-                          <Check size={12} strokeWidth={3} className="group-hover/btn:hidden" />
-                          <span className="group-hover/btn:hidden font-semibold">Active</span>
-                          <span className="hidden group-hover/btn:inline font-semibold">Untrack</span>
-                        </Button>
-                      ) : (
-                        <Button
-                          variant="secondary"
-                          size="sm"
-                          className="text-xs h-7.5 px-3 text-primary hover:bg-primary hover:text-white transition-colors cursor-pointer"
-                          onClick={() => trackSkill(skill.name, skill.level)}
-                        >
-                          Choose
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-                </Card>
-              )
+              </TabsContent>
             })}
-          </div>
-
-          {totalItems > 0 && (
-            <Pagination
-              currentPage={currentPage}
-              totalPages={totalPages}
-              totalItems={totalItems}
-              pageSize={PAGE_SIZE}
-              onPageChange={handlePageChange}
-              itemLabel="skills"
-              className="rounded-xl border border-border"
-            />
-          )}
+          </Tabs>
+          {modules.some(module => !module.knowledgeLevel) && <p className="text-body-sm text-muted-foreground">{vi ? 'Một số module chưa cấu hình mức kiến thức; chưa thể dùng cho luồng học này.' : 'Some modules have no configured knowledge level and cannot be used in this learning flow.'}</p>}
+          {actionError && <p role="alert" className="text-body-sm text-destructive">{actionError}</p>}
         </div>
-      )}
-
-      {/* Skill Detail Dialog (Clean without code) */}
-      {detailSkill && (
-        <Dialog
-          open={Boolean(detailSkill)}
-          onOpenChange={(open) => !open && setDetailSkill(null)}
-          className="max-w-lg p-6"
-          ariaLabel="Skill Details"
-        >
-          <DialogHeader>
-            <div className="flex items-center gap-2 mb-1 flex-wrap">
-              <Badge variant="outline" className="text-xs">
-                {detailSkill.level}
-              </Badge>
-              {isSkillDone(detailSkill) && (
-                <Badge
-                  variant="outline"
-                  className="text-xs text-success border-success/30 bg-success/5 font-semibold gap-1"
-                >
-                  <CheckCircle2 size={11} className="text-success shrink-0" />
-                  <span>Done</span>
-                </Badge>
-              )}
-            </div>
-            <DialogTitle className="text-lg font-bold">{detailSkill.name}</DialogTitle>
-          </DialogHeader>
-
-          <div className="space-y-4 my-2 text-xs">
-            <div>
-              <span className="font-semibold text-foreground block mb-1">Overview</span>
-              <p className="text-muted-foreground leading-relaxed">
-                {detailSkill.description ||
-                  'Comprehensive micro-skill covering essential engineering principles, hands-on application, and real-world implementation.'}
-              </p>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3 p-3 rounded-lg bg-muted/30 border border-border">
-              <div>
-                <span className="text-muted-foreground block text-[11px]">Estimated Duration</span>
-                <span className="font-bold text-foreground text-sm flex items-center gap-1 mt-0.5">
-                  <Clock size={14} className="text-primary" /> {detailSkill.durationLabel}
-                </span>
-              </div>
-              <div>
-                <span className="text-muted-foreground block text-[11px]">Proficiency Target</span>
-                <span className="font-bold text-foreground text-sm flex items-center gap-1 mt-0.5">
-                  <TrendingUp size={14} className="text-success" /> Level 3 (Applied)
-                </span>
-              </div>
-            </div>
-
-            <div>
-              <span className="font-semibold text-foreground block mb-1.5">Learning Objectives</span>
-              <ul className="space-y-1.5 text-muted-foreground">
-                <li className="flex items-start gap-2">
-                  <span className="h-1.5 w-1.5 rounded-full bg-primary mt-1.5 shrink-0" />
-                  <span>Domain foundations and operational patterns for {detailSkill.name}.</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="h-1.5 w-1.5 rounded-full bg-primary mt-1.5 shrink-0" />
-                  <span>Cross-functional alignment and integration into target role responsibilities.</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="h-1.5 w-1.5 rounded-full bg-primary mt-1.5 shrink-0" />
-                  <span>Verification via baseline assessments and adaptive quizzes.</span>
-                </li>
-              </ul>
-            </div>
-          </div>
-
-          <DialogFooter className="flex items-center justify-between gap-2">
-            <Button variant="outline" size="sm" onClick={() => setDetailSkill(null)}>
-              Close
-            </Button>
-            {isSkillInPathway(detailSkill) ? (
-              <Button
-                variant="outline"
-                size="sm"
-                disabled
-                className="bg-muted/60 text-muted-foreground border-border cursor-not-allowed opacity-75 font-semibold"
-              >
-                <CheckCircle2 size={13} className="mr-1 text-primary" />
-                <span>In Active Pathway</span>
-              </Button>
-            ) : isSkillDone(detailSkill) ? (
-              <Button
-                variant="outline"
-                size="sm"
-                disabled
-                className="bg-success/5 text-success border-success/30 cursor-default font-semibold opacity-95"
-              >
-                <CheckCircle2 size={13} className="mr-1 text-success" />
-                <span>Done</span>
-              </Button>
-            ) : isSkillTracked(detailSkill.name) ? (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  const name = detailSkill.name
-                  setDetailSkill(null)
-                  setSkillToUntrack(name)
-                }}
-                className="text-destructive hover:bg-destructive/10 hover:border-destructive/30 cursor-pointer"
-              >
-                Untrack Skill
-              </Button>
-            ) : (
-              <Button
-                variant="primary"
-                size="sm"
-                onClick={() => {
-                  trackSkill(detailSkill.name, detailSkill.level)
-                  setDetailSkill(null)
-                }}
-                className="cursor-pointer"
-              >
-                Track This Skill
-              </Button>
-            )}
-          </DialogFooter>
-        </Dialog>
-      )}
-
-      {/* Confirmation Modal for Untrack */}
-      <ConfirmationModal
-        open={Boolean(skillToUntrack)}
-        onOpenChange={(open) => {
-          if (!open) setSkillToUntrack(null)
-        }}
-        title="Untrack Skill"
-        description={
-          <span>
-            Are you sure you want to stop tracking <strong className="text-foreground">{skillToUntrack}</strong>? You can re-track it at any time from the catalog.
-          </span>
-        }
-        confirmText="Untrack"
-        cancelText="Cancel"
-        variant="destructive"
-        onConfirm={() => {
-          if (skillToUntrack) {
-            untrackSkill(skillToUntrack)
-            setSkillToUntrack(null)
-          }
-        }}
-      />
-    </section>
-  )
+    </section>}
+  </section>
 }

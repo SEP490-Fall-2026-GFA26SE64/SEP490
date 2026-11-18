@@ -21,6 +21,22 @@ public interface RuleAssessmentAttemptJpaRepository extends Repository<RuleAsses
             @Param("purpose") String purpose,@Param("context") String context,Pageable page);
     @Query("select count(a) from RuleAssessmentAttemptEntity a where a.organizationId=:org and a.learnerId=:learner and a.purpose=:purpose and a.contextKey=:context")
     long contextCount(@Param("org") UUID org,@Param("learner") UUID learner,@Param("purpose") String purpose,@Param("context") String context);
+    @Query(value="SELECT count(*) FROM platform.rule_assessment_attempt a WHERE a.organization_id=:org AND a.learner_id=:learner AND a.purpose='SKILL_ASSESSMENT' AND platform.rule_skill_attempt_scope(a.id)=jsonb_build_array(CAST(:skill AS text),CAST(:level AS text),CAST(:version AS text))",nativeQuery=true)
+    long skillCount(@Param("org") UUID org,@Param("learner") UUID learner,@Param("skill") String skill,@Param("level") String level,@Param("version") String version);
+    @Query(value="SELECT a.* FROM platform.rule_assessment_attempt a WHERE a.organization_id=:org AND a.learner_id=:learner AND a.purpose='SKILL_ASSESSMENT' AND platform.rule_skill_attempt_scope(a.id)=jsonb_build_array(CAST(:skill AS text),CAST(:level AS text),CAST(:version AS text)) ORDER BY a.started_at DESC,a.id LIMIT :limit OFFSET :offset",nativeQuery=true)
+    List<RuleAssessmentAttemptEntity> skillHistory(@Param("org") UUID org,@Param("learner") UUID learner,@Param("skill") String skill,@Param("level") String level,@Param("version") String version,@Param("limit") int limit,@Param("offset") int offset);
+    @Query(value="SELECT a.* FROM platform.rule_assessment_attempt a WHERE a.organization_id=:org AND a.learner_id=:learner AND a.purpose='SKILL_ASSESSMENT' AND a.state='IN_PROGRESS' AND platform.rule_skill_attempt_scope(a.id)=jsonb_build_array(CAST(:skill AS text),CAST(:level AS text),CAST(:version AS text)) ORDER BY a.started_at DESC,a.id LIMIT 1001",nativeQuery=true)
+    List<RuleAssessmentAttemptEntity> skillActive(@Param("org") UUID org,@Param("learner") UUID learner,@Param("skill") String skill,@Param("level") String level,@Param("version") String version);
+    @Query(value="SELECT a.* FROM platform.rule_assessment_attempt a WHERE a.organization_id=:org AND a.learner_id=:learner AND a.purpose='SKILL_ASSESSMENT' AND a.state='FINALIZED' AND platform.rule_skill_attempt_scope(a.id)=jsonb_build_array(CAST(:skill AS text),CAST(:level AS text),CAST(:version AS text)) ORDER BY a.finished_at DESC,a.started_at DESC,a.id LIMIT 1",nativeQuery=true)
+    List<RuleAssessmentAttemptEntity> skillLatestFinished(@Param("org") UUID org,@Param("learner") UUID learner,@Param("skill") String skill,@Param("level") String level,@Param("version") String version);
+    @Query(value="""
+        SELECT count(*) FROM platform.rule_assessment_attempt a
+        WHERE a.organization_id=:org AND a.learner_id=:learner AND a.purpose='SKILL_ASSESSMENT'
+          AND platform.rule_skill_attempt_scope(a.id) IS NULL
+          AND (NOT EXISTS(SELECT 1 FROM platform.rule_assessment_group g WHERE g.attempt_id=a.id AND g.group_role='MAIN')
+            OR EXISTS(SELECT 1 FROM platform.rule_assessment_group g WHERE g.attempt_id=a.id AND g.group_role='MAIN' AND g.skill_id=:skill AND g.knowledge_level=:level))
+        """,nativeQuery=true)
+    long unresolvedSkillCount(@Param("org") UUID org,@Param("learner") UUID learner,@Param("skill") String skill,@Param("level") String level);
     @Query("select a from RuleAssessmentAttemptEntity a where a.organizationId=:org and a.learnerId=:learner order by a.startedAt desc,a.id")
     List<RuleAssessmentAttemptEntity> history(@Param("org") UUID org,@Param("learner") UUID learner,Pageable page);
     @Query(value="""

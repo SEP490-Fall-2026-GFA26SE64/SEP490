@@ -28,10 +28,23 @@ public final class RuleAssessmentController {
         return ok(attempts.start(decode(body,Start.class),key));
     }
     @GetMapping("/{id}") public ResponseEntity<View> resume(@PathVariable UUID id){return ok(attempts.resume(id));}
-    @GetMapping("/context") public ResponseEntity<View> context(@RequestParam UUID selectionId,@RequestParam long selectionRevision,
+    @GetMapping("/context") public ResponseEntity<View> context(@RequestParam(required=false) UUID selectionId,@RequestParam(defaultValue="0") long selectionRevision,
             @RequestParam com.adaptlearngraph.entities.domain.RuleAssessment.Purpose purpose,@RequestParam(required=false) UUID stepId,
             @RequestParam(required=false) String moduleId,@RequestParam(required=false) Integer moduleRevision){
         return ok(attempts.latest(new Start(purpose,selectionId,selectionRevision,null,stepId,moduleId,moduleRevision)));
+    }
+    @GetMapping("/skill-scope/history") public ResponseEntity<SkillHistory> skillScope(@RequestParam(required=false) String skillId,
+            @RequestParam(required=false) String knowledgeLevel,@RequestParam(required=false) String skillVersion,
+            @RequestParam(required=false) String moduleId,@RequestParam(required=false) Integer moduleRevision,
+            @RequestParam(defaultValue="0") int page,@RequestParam(defaultValue="20") int size) {
+        attempts.authorize();
+        boolean bySkill=skillId!=null || knowledgeLevel!=null || skillVersion!=null;
+        if(bySkill) {
+            if(skillId==null || knowledgeLevel==null || skillVersion==null || moduleId!=null || moduleRevision!=null)throw new Failure(400,"INVALID_REQUEST");
+            return ok(attempts.skillHistory(skillId,knowledgeLevel,skillVersion,page,size));
+        }
+        if(moduleId==null || moduleRevision==null)throw new Failure(400,"INVALID_REQUEST");
+        return ok(attempts.moduleSkillHistory(moduleId,moduleRevision,page,size));
     }
     @GetMapping("/{id}/result") public ResponseEntity<View> result(@PathVariable UUID id){return ok(attempts.resume(id));}
     @GetMapping("/history") public ResponseEntity<List<View>> history(@RequestParam(defaultValue="0") int page,@RequestParam(defaultValue="20") int size,
@@ -49,6 +62,10 @@ public final class RuleAssessmentController {
         catch(java.io.IOException invalid){throw new Failure(400,"INVALID_REQUEST");}
     }
     private <T>ResponseEntity<T> ok(T value){return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(value);}
+    @ExceptionHandler(com.adaptlearngraph.services.ModuleAuthoringService.Failure.class)
+    ResponseEntity<Map<String,String>> moduleAccess(com.adaptlearngraph.services.ModuleAuthoringService.Failure f) {
+        return failure(new Failure(f.status(),f.status()==401?"UNAUTHENTICATED":f.status()==403?"FORBIDDEN":"MODULE_UNAVAILABLE"));
+    }
     @ExceptionHandler(Failure.class) ResponseEntity<Map<String,String>> failure(Failure f){return ResponseEntity.status(f.status).cacheControl(CacheControl.noStore()).body(Map.of("code",f.code));}
     @ExceptionHandler(com.adaptlearngraph.services.RoleBaselineFlow.Failure.class) ResponseEntity<Map<String,String>> selection(com.adaptlearngraph.services.RoleBaselineFlow.Failure f){return failure(new Failure(f.status,f.code));}
     @ExceptionHandler(com.adaptlearngraph.services.AdaptiveAttemptUseCase.Failure.class) ResponseEntity<Map<String,String>> identity(com.adaptlearngraph.services.AdaptiveAttemptUseCase.Failure f){return failure(new Failure(switch(f.code()){case UNAUTHENTICATED->401;case FORBIDDEN->403;default->503;},f.code().name()));}
