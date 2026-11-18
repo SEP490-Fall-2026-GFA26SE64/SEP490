@@ -12,6 +12,11 @@ import org.springframework.http.HttpStatus;
 public class SkillLearningController {
     private final SkillLearningApplicationService learning;
     public SkillLearningController(SkillLearningApplicationService learning) {this.learning=learning;}
+    @GetMapping("/modules")
+    public SearchResponse search(@RequestParam(defaultValue="") String search,@RequestParam(required=false) String skillId,
+            @RequestParam(required=false) String knowledgeLevel,@RequestParam(defaultValue="0") int page) {
+        return learning.search(search,skillId,knowledgeLevel,page);
+    }
     @GetMapping("/{skillId}/assessment-eligibility")
     public EligibilityResponse eligibility(@PathVariable String skillId) {
         return learning.eligibility(skillId);

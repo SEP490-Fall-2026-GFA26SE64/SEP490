@@ -8,9 +8,8 @@ public final class RiasecRules {
     public static final List<String> DIMENSIONS = List.of("R","I","A","S","E","C");
     public static final String INSTRUMENT = "alg-riasec-60-en-vi-v1";
     public static final String SCORING = "onet-short-form-0-4-sum-v1";
-    public static final class Failure extends RuntimeException {
-        public final int status; public final String code;
-        public Failure(int status,String code) { super(code);this.status=status;this.code=code; }
+    public static final class Failure extends com.adaptlearngraph.exception.RiasecFailure {
+        public Failure(int status,String code) { super(status,code); }
     }
     public static void validateAnswers(Map<String,Integer> answers,boolean complete) {
         if(answers==null || answers.size()>60 || (complete && answers.size()!=60))throw new Failure(400,"INCOMPLETE_ANSWERS");

@@ -89,6 +89,6 @@ class QuestionBankControllerTest {
         mvc.perform(get(PATH))
                 .andExpect(status().isConflict())
                 .andExpect(header().string("Cache-Control", "no-store"))
-                .andExpect(content().json("{\"message\":\"Question changed. Reload.\"}", true));
+                .andExpect(content().json("{\"message\":\"Question changed. Reload.\"}", org.springframework.test.json.JsonCompareMode.STRICT));
     }
 }

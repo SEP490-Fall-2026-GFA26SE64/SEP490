@@ -1,13 +1,24 @@
 .module-management-dialog { font-family: var(--font-body); }
-.module-management-dialog h2,
-.module-management-dialog .heading--subsection,
-.module-management-dialog .heading--card { font-size: var(--text-base); }
-.module-management-dialog label { font-size: var(--text-xs); }
-.module-management-dialog input,
-.module-management-dialog select,
-.module-management-dialog textarea { font-size: var(--text-sm); }
-.module-management-dialog .text-body-sm { font-size: var(--text-xs); }
-.module-management-dialog .text-body-small,
-.module-management-dialog .text-body-default { font-size: var(--text-sm); }
-.module-management-dialog .text-caption { font-size: var(--text-xs); }
+.module-management-dialog h2:not(.learner-reader *),
+.module-management-dialog .heading--subsection:not(.learner-reader *),
+.module-management-dialog .heading--card:not(.learner-reader *) { font-size: var(--text-base); }
+.module-management-dialog label:not(.learner-reader *) { font-size: var(--text-xs); }
+.module-management-dialog input:not(.learner-reader *),
+.module-management-dialog select:not(.learner-reader *),
+.module-management-dialog textarea:not(.learner-reader *) { font-size: var(--text-sm); }
+.module-management-dialog .text-body-sm:not(.learner-reader *) { font-size: var(--text-xs); }
+.module-management-dialog .text-body-small:not(.learner-reader *),
+.module-management-dialog .text-body-default:not(.learner-reader *) { font-size: var(--text-sm); }
+.module-management-dialog .text-caption:not(.learner-reader *) { font-size: var(--text-xs); }
 .module-filters label { font-size: var(--text-xs); }
+
+.module-directory td:nth-child(6), .module-directory td:nth-child(7), .module-directory td:nth-child(8),
+.module-directory th:nth-child(6), .module-directory th:nth-child(7), .module-directory th:nth-child(8) { text-align: center; }
+.module-directory td:nth-child(6) > div, .module-directory td:nth-child(7) > div, .module-directory td:nth-child(8) > div { min-height: 1.75rem; max-width: 100%; justify-content: center; white-space: normal; text-align: center; font-size: var(--text-caption); line-height: 1.25rem; }
+
+@media (min-width: 768px) {
+  .module-directory th:nth-child(-n+8),
+  .module-directory td:nth-child(-n+8) { text-align: center; vertical-align: top; }
+  .module-directory td:nth-child(2) { text-align: left; }
+  .module-directory td:first-child > div { justify-content: center; }
+}

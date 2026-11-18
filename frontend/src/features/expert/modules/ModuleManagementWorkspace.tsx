@@ -1,36 +1,37 @@
-import { publishedModuleRevision } from './publishedModulePresentation'
-import { ModuleApprovalQueue } from './ModuleApprovalQueue'
-import { ModuleApprovalReview } from './ModuleApprovalReview'
+import { BookOpen,ClipboardCheck,FileText,Layers,Plus,Upload } from 'lucide-react'
+import { useCallback,useContext,useEffect,useRef,useState } from 'react'
+import { Link,useNavigate,useParams,useSearchParams } from 'react-router-dom'
+import type { LearningLesson } from '../../../shared/api/moduleAuthoringApi'
+import { moduleRequest,type CatalogChoice,type ModuleActor,type ModuleCatalogItem,type ModuleCatalogPage,type ModuleContent,type ModuleDocument,type ModulePage,type ModuleRevision,type ModuleSave } from '../../../shared/api/moduleAuthoringApi'
+import { WorkspaceSessionContext } from '../../../shared/auth/workspaceSession'
+import { LearningLessonList } from '../../../shared/components/learning/LearningLessonList'
+import { LearningLessonsEditor } from '../../../shared/components/learning/LearningLessonsEditor'
+import { Heading } from '../../../shared/components/typography/Heading'
+import { Badge,type BadgeProps } from '../../../shared/components/ui/Badge'
+import { Button } from "../../../shared/components/ui/Button"
+import { buttonVariants } from "../../../shared/components/ui/Button"
+import { Card,CardContent,CardHeader,CardTitle } from '../../../shared/components/ui/Card'
+import { Dialog,DialogBody,DialogFooter,DialogHeader,DialogTitle } from '../../../shared/components/ui/Dialog'
+import { FormField as Field } from '../../../shared/components/ui/FormField'
+import { Input } from '../../../shared/components/ui/Input'
+import { ModuleMarkdown } from '../../../shared/components/ui/ModuleMarkdown'
+import { PageHeader } from '../../../shared/components/ui/PageHeader'
+import { Pagination } from '../../../shared/components/ui/Pagination'
+import { StatCard } from '../../../shared/components/ui/StatCard'
+import { Tabs,TabsContent,TabsList,TabsTrigger } from '../../../shared/components/ui/Tabs'
+import { useTranslation } from "../../../shared/i18n/LanguageContext"
+import { WorkspaceLayout } from '../../../shared/layouts/WorkspaceLayout'
 import { newLesson } from '../../../shared/lib/learningLessons'
 import { LearningImportPanel } from './LearningImportPanel'
-import { LearningLessonsEditor } from '../../../shared/components/learning/LearningLessonsEditor'
-import { LearningLessonList } from '../../../shared/components/learning/LearningLessonList'
-import type { LearningLesson } from '../../../shared/api/moduleAuthoringApi'
-import { useCallback, useContext, useEffect, useRef, useState } from 'react'
-import { WorkspaceSessionContext } from '../../../shared/auth/workspaceSession'
-import { BookOpen, ClipboardCheck, FileText, Layers, Plus, Upload } from 'lucide-react'
-import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
-import { PageHeader } from '../../../shared/components/ui/PageHeader'
-import { StatCard } from '../../../shared/components/ui/StatCard'
-import { Card, CardContent, CardHeader, CardTitle } from '../../../shared/components/ui/Card'
-import { Button, buttonVariants } from '../../../shared/components/ui/Button'
-import { Badge, type BadgeProps } from '../../../shared/components/ui/Badge'
-import { Input } from '../../../shared/components/ui/Input'
-import { Dialog, DialogBody, DialogHeader, DialogTitle, DialogFooter } from '../../../shared/components/ui/Dialog'
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '../../../shared/components/ui/Tabs'
-import { Pagination } from '../../../shared/components/ui/Pagination'
-import { ModuleMarkdown } from '../../../shared/components/ui/ModuleMarkdown'
-import { FormField as Field } from '../../../shared/components/ui/FormField'
-import { Heading } from '../../../shared/components/typography/Heading'
-import { WorkspaceLayout } from '../../../shared/layouts/WorkspaceLayout'
-import { useTranslation } from '../../../shared/i18n/LanguageContext'
-import { moduleRequest, type CatalogChoice, type ModuleActor, type ModuleCatalogItem, type ModuleCatalogPage, type ModuleContent, type ModuleDocument, type ModulePage, type ModuleRevision, type ModuleSave } from '../../../shared/api/moduleAuthoringApi'
+import { ModuleApprovalQueue } from './ModuleApprovalQueue'
+import { ModuleApprovalReview } from './ModuleApprovalReview'
+import { publishedModuleRevision } from './publishedModulePresentation'
 
-import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '../../../shared/components/ui/Accordion'
+import { Eye } from 'lucide-react'
+import { Accordion,AccordionContent,AccordionItem,AccordionTrigger } from '../../../shared/components/ui/Accordion'
 import { CopyableId } from '../../../shared/components/ui/CopyableId'
 import { RowActions } from '../../../shared/components/ui/RowActions'
-import { useToast } from '../../../shared/hooks/useToast'
-import { Eye } from 'lucide-react'
+import { useToast } from "../../../shared/hooks/useToast"
 import { CatalogModuleDetails } from './CatalogModuleDetails'
 
 type Mode = 'modules' | 'content' | 'approvals' | 'learning'
@@ -70,25 +71,28 @@ function OwnedModuleManagementWorkspace({ mode, managerShell = false }: { mode: 
   const [notice, setNotice] = useState('')
   const [page, setPage] = useState<ModulePage>({ items: [], total: 0, page: 1, pageSize: 10 })
   const [catalogPage, setCatalogPage] = useState<ModuleCatalogPage>({ items: [], total: 0, page: 1, pageSize: 10 })
-  const [intakeSelection, setIntakeSelection] = useState<ModuleCatalogItem | null>(null)
-  const [intakeJobPositions, setIntakeJobPositions] = useState<string[]>([])
-  const [intakeExpert, setIntakeExpert] = useState('')
+  const [responsibilityDoc, setResponsibilityDoc] = useState<ModuleDocument | null>(null)
+  const [responsibilityTarget, setResponsibilityTarget] = useState('')
+  const [experts, setExperts] = useState<CatalogChoice[]>([])
   const [staff, setStaff] = useState<CatalogChoice[]>([])
   const [catalogSelection, setCatalogSelection] = useState<ModuleCatalogItem | null>(null)
   const [pageNumber, setPageNumber] = useState(1)
   const [allModuleStatuses, setAllModuleStatuses] = useState(false)
   const [filters, setFilters] = useState({ search: searchParams.get('search') ?? '', status: '', review: '', type: '', skill: '' })
-  useEffect(() => { const query = searchParams.get('search'); if (query !== null) { setPageNumber(1); setFilters(old => ({ ...old, search: query })) } }, [searchParams])
+  const query = searchParams.get('search')
+  const [previousQuery, setPreviousQuery] = useState(query)
+  if (previousQuery !== query) {
+    setPreviousQuery(query)
+    if (query !== null) { setPageNumber(1); setFilters(old => ({ ...old, search: query })) }
+  }
   const [search, setSearch] = useState(filters.search)
   useEffect(() => {
     const timeout = setTimeout(() => setSearch(filters.search), 180)
     return () => clearTimeout(timeout)
   }, [filters.search])
-  const [jobPositions, setJobPositions] = useState<CatalogChoice[]>([])
   const [skills, setSkills] = useState<CatalogChoice[]>([])
   const [moduleSkills, setModuleSkills] = useState<CatalogChoice[]>([])
   const [contents, setContents] = useState<ModuleContent[]>([])
-  const [experts, setExperts] = useState<CatalogChoice[]>([])
   const [selected, setSelected] = useState<ModuleDocument | null>(null)
   const [conflict, setConflict] = useState<ModuleDocument | null>(null)
   const [editing, setEditing] = useState(false)
@@ -105,7 +109,7 @@ function OwnedModuleManagementWorkspace({ mode, managerShell = false }: { mode: 
   const expert = actor?.roles.includes('EXPERT') ?? false
   const managerLearning = (manager || managerShell) && ['modules', 'approvals'].includes(mode)
   const publishedOnly = manager && mode === 'modules' && !allModuleStatuses
-  const canManage = (doc: ModuleDocument) => expert && doc.createdBy === actor?.id
+  const canManage = (doc: ModuleDocument) => expert && (doc.responsibleExpertId ?? doc.createdBy) === actor?.id
   const formatTime = (value: string | null | undefined) => value && Number.isFinite(Date.parse(value)) ? new Intl.DateTimeFormat(language === 'vi' ? 'vi-VN' : 'en-GB', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value)) : '—'
   const person = (id: string | null | undefined) => id ? staff.find(p => p.id === id)?.name ?? (id === 'DEVELOPMENT_SEED' ? copy('Development seed', 'Dữ liệu mẫu dev') : copy('Person unavailable', 'Chưa có thông tin người dùng')) : '—'
 
@@ -145,17 +149,16 @@ function OwnedModuleManagementWorkspace({ mode, managerShell = false }: { mode: 
         const listRequest = mode === 'modules'
           ? moduleRequest<ModuleCatalogPage>(`/module-list?${query}`, 'GET', undefined, signal).then(setCatalogPage)
           : mode === 'content' ? Promise.resolve() : moduleRequest<ModulePage>(`/modules?${query}`, 'GET', undefined, signal).then(setPage)
-        const [, nextJobPositions, nextSkills, nextContents, nextStaff, nextExperts, nextModuleSkills] = await Promise.all([
+        const [, nextSkills, nextContents, nextStaff, nextModuleSkills, nextExperts] = await Promise.all([
           listRequest,
-          moduleRequest<CatalogChoice[]>('/catalog/JobPosition', 'GET', undefined, signal),
           moduleRequest<CatalogChoice[]>('/catalog/MicroSkill', 'GET', undefined, signal),
           actor.roles.includes('LD_MANAGER') && mode !== 'content' ? Promise.resolve(null) : moduleRequest<ModuleContent[]>('/contents', 'GET', undefined, signal),
           moduleRequest<CatalogChoice[]>('/catalog/Staff', 'GET', undefined, signal),
-          actor.roles.includes('LD_MANAGER') ? moduleRequest<CatalogChoice[]>('/catalog/Expert', 'GET', undefined, signal) : Promise.resolve([]),
           actor.roles.includes('EXPERT') ? moduleRequest<CatalogChoice[]>('/catalog/ModuleSkill', 'GET', undefined, signal) : Promise.resolve([]),
+          actor.roles.includes('LD_MANAGER') ? moduleRequest<CatalogChoice[]>('/catalog/Expert', 'GET', undefined, signal) : Promise.resolve([]),
         ])
-        setJobPositions(nextJobPositions); setSkills(nextSkills); if (nextContents) setContents(nextContents); setStaff(Array.isArray(nextStaff) ? nextStaff : []); setCatalogReady(true)
-        setExperts(nextExperts); setModuleSkills(nextModuleSkills)
+        setSkills(nextSkills); if (nextContents) setContents(nextContents); setStaff(Array.isArray(nextStaff) ? nextStaff : []); setCatalogReady(true)
+        setModuleSkills(nextModuleSkills); setExperts(nextExperts)
       }
     } catch (failure) { if (!signal?.aborted) setError(errorText(failure)) }
     finally { if (!signal?.aborted) setLoading(false) }
@@ -163,6 +166,7 @@ function OwnedModuleManagementWorkspace({ mode, managerShell = false }: { mode: 
 
   useEffect(() => {
     const controller = new AbortController()
+    // oxlint-disable-next-line react/set-state-in-effect -- Synchronize the pending state of the external data request when its scope changes.
     void load(controller.signal)
     return () => controller.abort()
   }, [load])
@@ -203,7 +207,7 @@ function OwnedModuleManagementWorkspace({ mode, managerShell = false }: { mode: 
   const stateLabels: Record<string, string> = {
     FOUNDATION: copy('Foundation', 'Nền tảng'), INTERMEDIATE: copy('Intermediate', 'Trung cấp'), ADVANCED: copy('Advanced', 'Nâng cao'),
     DRAFT: copy('Draft', 'Bản nháp'), ACTIVE: copy('Active', 'Đang sử dụng'), ARCHIVED: copy('Archived', 'Đã lưu trữ'),
-    NEEDS_EXPERT_REVIEW: copy('Not approved', 'Chưa được duyệt'), APPROVED: copy('Approved', 'Đã duyệt'), REJECTED: copy('Changes requested', 'Cần chỉnh sửa'),
+    NEEDS_EXPERT_REVIEW: copy('Not approved', 'Chưa duyệt'), APPROVED: copy('Approved', 'Đã duyệt'), REJECTED: copy('Changes requested', 'Cần chỉnh sửa'),
     SUBMITTED: copy('Submitted', 'Đã gửi duyệt'), RETURNED: copy('Returned for changes', 'Yêu cầu chỉnh sửa'), RELEASED: copy('Released', 'Đã phát hành'),
     PUBLISH_PENDING: copy('Awaiting publication', 'Chờ phát hành'), ARCHIVE_PENDING: copy('Archiving', 'Đang lưu trữ'), ARCHIVE_REQUESTED: copy('Archive requested', 'Đã yêu cầu lưu trữ'),
     LESSON_AND_PRACTICE: copy('Lesson and practice', 'Bài học và thực hành'), RESOURCE_GUIDED_PRACTICE: copy('Resource-guided practice', 'Thực hành theo tài liệu'),
@@ -211,7 +215,7 @@ function OwnedModuleManagementWorkspace({ mode, managerShell = false }: { mode: 
     'text/markdown': copy('Reading', 'Bài đọc'),
     'application/vnd.adapt-learning.lessons+json': copy('Text and Video lessons', 'Bài học Text và Video'),
   }
-  const eventLabels: Record<string, string> = { HISTORY_RESTORED: copy('Earlier assignment history retained', 'Đã giữ lịch sử phân công trước đây'), OWNER_ASSIGNED: copy('Responsible Expert assigned', 'Đã gán Expert phụ trách'), ASSIGN_INTAKE: copy('Assigned for intake', 'Phân công tiếp nhận'), INTAKE: copy('Received imported module', 'Tiếp nhận module nhập vào'), CREATE: copy('Created', 'Đã tạo'), EDIT: copy('Edited', 'Đã sửa'), SUBMIT: copy('Submitted for review', 'Đã gửi duyệt'), RETURN: copy('Returned for changes', 'Đã yêu cầu chỉnh sửa'), APPROVE: copy('Approved', 'Đã duyệt'), RETRY: copy('Retried publication', 'Đã thử phát hành lại'), REQUEST_ARCHIVE: copy('Requested archive', 'Đã yêu cầu lưu trữ'), APPROVE_ARCHIVE: copy('Approved archive', 'Đã duyệt lưu trữ'), RESTORE: copy('Restored to draft', 'Đã khôi phục bản nháp'), RELEASED: copy('Released', 'Đã phát hành'), ARCHIVED: copy('Archived', 'Đã lưu trữ') }
+  const eventLabels: Record<string, string> = { OWNER_TRANSFERRED: copy('Responsible Expert changed', 'Đã đổi người phụ trách'), HISTORY_RESTORED: copy('Earlier assignment history retained', 'Đã giữ lịch sử phân công trước đây'), OWNER_ASSIGNED: copy('Responsible Expert assigned', 'Đã gán Expert phụ trách'), ASSIGN_INTAKE: copy('Assigned for intake', 'Phân công tiếp nhận'), INTAKE: copy('Received imported module', 'Tiếp nhận module nhập vào'), CREATE: copy('Created', 'Đã tạo'), EDIT: copy('Edited', 'Đã sửa'), SUBMIT: copy('Submitted for review', 'Đã gửi duyệt'), RETURN: copy('Returned for changes', 'Đã yêu cầu chỉnh sửa'), APPROVE: copy('Approved', 'Đã duyệt'), RETRY: copy('Retried publication', 'Đã thử phát hành lại'), REQUEST_ARCHIVE: copy('Requested archive', 'Đã yêu cầu lưu trữ'), APPROVE_ARCHIVE: copy('Approved archive', 'Đã duyệt lưu trữ'), RESTORE: copy('Restored to draft', 'Đã khôi phục bản nháp'), RELEASED: copy('Released', 'Đã phát hành'), ARCHIVED: copy('Archived', 'Đã lưu trữ') }
   function ask(doc: ModuleDocument, action: string) { setConfirm({ doc, action }); setFeedback(''); setError('') }
   function controls(doc: ModuleDocument, includeDetails = true) {
     const state = latest(doc).state
@@ -230,20 +234,75 @@ function OwnedModuleManagementWorkspace({ mode, managerShell = false }: { mode: 
     }
     return <>
       {includeDetails && <Button variant="outline" size="sm" disabled={busy || contentBusy} onClick={() => void run(async () => { setSelected(await moduleRequest<ModuleDocument>(`/modules/${doc.id}`)); setEditing(false) })}>{copy('Details & history', 'Chi tiết và lịch sử')}</Button>}
+      {manager && <Button variant="outline" size="sm" disabled={busy || contentBusy} onClick={() => { setResponsibilityDoc(doc); setResponsibilityTarget(''); setSelected(null); setError('') }}>{copy('Change responsible person', 'Đổi người phụ trách')}</Button>}
       {canManage(doc) && ['DRAFT', 'RETURNED', 'RELEASED'].includes(state) && <Button variant="outline" size="sm" disabled={busy || contentBusy} onClick={() => openEditor(doc)}>{copy('Edit', 'Chỉnh sửa')}</Button>}
       {actions.map(action => <Button variant={mode === 'approvals' && ['approve', 'approve-archive'].includes(action) ? 'primary' : 'outline'} size="sm" disabled={busy || contentBusy} key={action} onClick={() => ask(doc, action)}>{actionLabels[action]}</Button>)}
     </>
   }
-  const scopeSelector = (value: string[], onChange: (values: string[]) => void, disabled = false) => <select multiple required className={control} disabled={disabled} value={value} onChange={e => onChange(Array.from(e.target.selectedOptions, option => option.value))}>
-    {jobPositions.map(o => <option key={o.id} value={o.id}>{o.name}</option>)}
-  </select>
   const moduleHome = manager ? '/ld-manager/modules' : '/expert/modules'
   const title = managerLearning ? copy('Learning Content', 'Nội dung học tập') : mode === 'content' ? manager ? copy('Learning content', 'Nội dung học tập') : copy('Content Studio', 'Biên soạn nội dung') : mode === 'approvals' ? copy('Content Approvals', 'Duyệt nội dung') : mode === 'learning' ? copy('Module lessons', 'Nội dung bài học') : copy('Learning modules', 'Quản lý module học')
 
   const displayedPage = mode === 'modules' ? catalogPage : page
   const listItems: ModuleCatalogItem[] = loading && managerLearning ? [] : mode === 'modules' ? catalogPage.items : page.items.map(doc => ({ module: latest(doc).payload, authoring: doc }))
+  const statusFilterValue = filters.status === 'ACTIVE' && filters.review === 'APPROVED'
+    ? 'RELEASED'
+    : filters.status || filters.review || ''
+  const applyStatusFilter = (value: string) => {
+    setPageNumber(1)
+    if (value === 'RELEASED') setFilters(old => ({ ...old, status: 'ACTIVE', review: 'APPROVED' }))
+    else if (value === 'ACTIVE' || value === 'DRAFT' || value === 'ARCHIVED') setFilters(old => ({ ...old, status: value, review: '' }))
+    else if (value === 'NEEDS_EXPERT_REVIEW' || value === 'REJECTED') setFilters(old => ({ ...old, status: '', review: value }))
+    else setFilters(old => ({ ...old, status: '', review: '' }))
+  }
+  const resolveItemStatus = (item: ModuleCatalogItem) => {
+    const needsContent = Boolean(
+      item.authoring &&
+      (!latest(item.authoring).payload.content.lessons?.length ||
+        latest(item.authoring).payload.content.lessons?.some(
+          l => !l.title.trim() || !l.durationSeconds || (l.type === 'TEXT' && !l.body?.replace(/<[^>]*>/g, '').trim()) || (l.type === 'VIDEO' && !(l.assetId || l.videoUrl))
+        ))
+    )
+    if (publishedOnly) {
+      const workingState = item.authoring && latest(item.authoring).state !== 'RELEASED'
+        ? `${copy('Working workflow', 'Trạng thái soạn thảo')}: ${stateLabels[latest(item.authoring).state] ?? latest(item.authoring).state}`
+        : null
+      return {
+        label: item.authoring?.releasedRevision != null ? `${copy('Published revision', 'Bản phát hành')} ${item.authoring.releasedRevision}` : copy('Released', 'Đã phát hành'),
+        variant: 'success' as BadgeProps['variant'],
+        note: workingState,
+        needsContent: false,
+      }
+    }
+    if (item.authoring) {
+      const state = latest(item.authoring).state
+      const note = item.authoring.releasedRevision != null && state !== 'RELEASED'
+        ? `${copy('Published revision', 'Bản phát hành')} ${item.authoring.releasedRevision}`
+        : null
+      return {
+        label: stateLabels[state] ?? state,
+        variant: statusVariant(state),
+        note,
+        needsContent,
+      }
+    }
+    const metaStatus = item.module.metadata.status
+    const metaReview = item.module.metadata.reviewStatus
+    if (metaStatus === 'ACTIVE' && metaReview === 'APPROVED') {
+      return { label: copy('Released', 'Đã phát hành'), variant: 'success' as BadgeProps['variant'], note: copy('No authoring record', 'Chưa có hồ sơ soạn thảo'), needsContent: false }
+    }
+    if (metaStatus === 'ACTIVE' && metaReview === 'NEEDS_EXPERT_REVIEW') {
+      return { label: `${stateLabels.ACTIVE} · ${stateLabels.NEEDS_EXPERT_REVIEW}`, variant: 'warning' as BadgeProps['variant'], note: copy('No authoring record', 'Chưa có hồ sơ soạn thảo'), needsContent: false }
+    }
+    const fallback = metaReview === 'REJECTED' ? metaReview : (metaStatus || metaReview || '')
+    return {
+      label: stateLabels[fallback] ?? (fallback || '—'),
+      variant: statusVariant(fallback),
+      note: copy('No authoring record', 'Chưa có hồ sơ soạn thảo'),
+      needsContent: false,
+    }
+  }
 
-  const historyView = (doc: ModuleDocument) => <section className="space-y-3 border-t border-border pt-4"><Heading level={3} size="card">{copy('Change history', 'Lịch sử thay đổi')}</Heading>{!doc.history.length && <p className="text-xs text-muted-foreground">{copy('No edit history has been recorded for this module.', 'Module này chưa có lịch sử chỉnh sửa được ghi nhận.')}</p>}{doc.history.map(e => <div key={e.sequence} className="space-y-1 border-l-2 border-border pl-3 text-xs"><p className="font-medium text-foreground">{person(e.actorId)} · {eventLabels[e.action.replaceAll('-', '_')] ?? e.action} · {copy('Revision', 'Phiên bản')} {e.revision}</p><p className="text-muted-foreground">{formatTime(e.occurredAt)}</p>{e.action === 'EDIT' && e.detail?.startsWith('Changed: ') && <p>{copy('Changed', 'Đã thay đổi')}: {e.detail.slice(9).split(', ').map(field => fieldLabels[field] ?? field).join(', ')}</p>}{['RETURN', 'OWNER_ASSIGNED'].includes(e.action) && e.detail && <p>{e.detail}</p>}</div>)}</section>
+  const historyView = (doc: ModuleDocument) => <section className="space-y-3 border-t border-border pt-4"><Heading level={3} size="card">{copy('Change history', 'Lịch sử thay đổi')}</Heading>{!doc.history.length && <p className="text-xs text-muted-foreground">{copy('No edit history has been recorded for this module.', 'Module này chưa có lịch sử chỉnh sửa được ghi nhận.')}</p>}{doc.history.map(e => <div key={e.sequence} className="space-y-1 border-l-2 border-border pl-3 text-xs"><p className="font-medium text-foreground">{person(e.actorId)} · {eventLabels[e.action.replaceAll('-', '_')] ?? e.action} · {copy('Revision', 'Phiên bản')} {e.revision}</p><p className="text-muted-foreground">{formatTime(e.occurredAt)}</p>{e.action === 'EDIT' && e.detail?.startsWith('Changed: ') && <p>{copy('Changed', 'Đã thay đổi')}: {e.detail.slice(9).split(', ').map(field => fieldLabels[field] ?? field).join(', ')}</p>}{['RETURN', 'OWNER_ASSIGNED'].includes(e.action) && e.detail && <p>{e.detail}</p>}{e.action === 'OWNER_TRANSFERRED' && <p>{copy('Previous', 'Trước')}: {person(e.previousResponsibleExpertId)} {e.previousResponsibleExpertId && `(${e.previousResponsibleExpertId})`} → {copy('New', 'Mới')}: {person(e.responsibleExpertId)} {e.responsibleExpertId && `(${e.responsibleExpertId})`}</p>}</div>)}</section>
 
   return <WorkspaceLayout><div className="relative space-y-5 text-[length:var(--text-body)] text-foreground">
     {expert && mode === 'modules' && <Heading level={1} className="sr-only">{title}</Heading>}
@@ -267,7 +326,7 @@ function OwnedModuleManagementWorkspace({ mode, managerShell = false }: { mode: 
         {[{path:moduleHome,active:mode==='modules',icon:<BookOpen className="size-4" aria-hidden="true"/>,label:copy('Modules','Module')},{path:'/ld-manager/approvals',active:mode==='approvals',icon:<ClipboardCheck className="size-4" aria-hidden="true"/>,label:copy('Approvals','Chờ duyệt')}].map(tab=><Link key={tab.path} to={tab.path} aria-current={tab.active?'page':undefined} className={buttonVariants({variant:'ghost',size:'sm',className:`gap-2 rounded-none border-b-2 shadow-none ${tab.active?'border-primary text-primary':'border-transparent text-muted-foreground'}`})} onClick={()=>setPageNumber(1)}>{tab.icon}{tab.label}</Link>)}
       </nav>}
       {loading && !managerLearning && <span role="status" className="sr-only">{copy('Loading', 'Đang tải')}</span>}
-      {expert && mode === 'modules' && <Dialog open={moduleImportOpen} onOpenChange={open => { if (!moduleImportBusy) setModuleImportOpen(open) }} className="module-management-dialog max-w-3xl max-h-[88dvh]" ariaLabel={copy('Import modules', 'Nhập module')} closeLabel={copy('Close import', 'Đóng cửa sổ nhập')}>
+      {expert && mode === 'modules' && <Dialog open={moduleImportOpen} onOpenChange={open => { if (!moduleImportBusy) setModuleImportOpen(open) }} className="module-management-dialog w-[96vw] max-w-7xl max-h-[94dvh]" ariaLabel={copy('Import modules', 'Nhập module')} closeLabel={copy('Close import', 'Đóng cửa sổ nhập')}>
         <DialogHeader><DialogTitle>{copy('Import modules and lessons', 'Import module và bài học')}</DialogTitle></DialogHeader>
         <LearningImportPanel embedded showHeading={false} onClose={() => setModuleImportOpen(false)} onBusyChange={setModuleImportBusy} onImported={() => void load()} />
       </Dialog>}
@@ -287,31 +346,47 @@ function OwnedModuleManagementWorkspace({ mode, managerShell = false }: { mode: 
             {mode !== 'approvals' && <StatCard variant="gradient" icon={<Layers className="h-4 w-4 text-warning" aria-hidden="true" />} role="group" aria-label={copy('Available skills', 'Kỹ năng hiện có')} title={copy('Available skills', 'Kỹ năng hiện có')} value={expert ? moduleSkills.length : skills.length} valueClassName="text-warning" description={expert ? copy('Skills available for module authoring', 'Kỹ năng có thể chọn khi soạn module') : copy('Skills in the module catalog', 'Kỹ năng trong danh mục module')} />}
           </div>}
 
-          <div className={`module-filters grid grid-cols-1 items-end gap-2 rounded-lg border border-border bg-card p-3 sm:grid-cols-2 ${manager && mode === 'modules' ? publishedOnly ? 'xl:grid-cols-4' : 'xl:grid-cols-3' : mode === 'approvals' ? 'xl:grid-cols-3' : 'xl:grid-cols-5'}`}>
+          <div className={`module-filters grid grid-cols-1 items-end gap-2 rounded-lg border border-border bg-card p-3 sm:grid-cols-2 ${manager && mode === 'modules' ? publishedOnly ? 'xl:grid-cols-4' : 'xl:grid-cols-5' : mode === 'approvals' ? 'xl:grid-cols-3' : 'xl:grid-cols-4'}`}>
             {manager && mode === 'modules' && <Field label={copy('Show modules','Hiển thị module')}><select className="h-8 w-full rounded-md border border-border bg-card px-2 text-xs focus-visible:ring-2 focus-visible:ring-ring" value={allModuleStatuses?'all':'published'} onChange={event=>{setAllModuleStatuses(event.target.value==='all');setFilters(old=>({...old,status:'',review:''}));setPageNumber(1)}}><option value="published">{copy('Published modules','Module đã phát hành')}</option><option value="all">{copy('All statuses','Tất cả trạng thái')}</option></select></Field>}
             <Field label={copy('Search name or ID', 'Tìm theo tên hoặc ID')}><Input className="h-8 text-xs" value={filters.search} onChange={e => { setPageNumber(1); setFilters({ ...filters, search: e.target.value }) }} /></Field>
-            {(mode === 'approvals' || publishedOnly ? ['type', 'skill'] as const : ['status', 'review', 'type', 'skill'] as const).map(key => <Field key={key} label={key === 'status' ? copy('Lifecycle', 'Vòng đời') : key === 'review' ? copy('Review', 'Duyệt') : key === 'type' ? copy('Module type', 'Loại module') : copy('Skill', 'Kỹ năng')}><select className="h-8 w-full min-w-0 rounded-md border border-border bg-background px-2 text-xs text-foreground focus-visible:ring-2 focus-visible:ring-ring" value={filters[key]} onChange={e => { setPageNumber(1); setFilters({ ...filters, [key]: e.target.value }) }}><option value="">{copy('All', 'Tất cả')}</option>
-              {(key === 'skill' ? skills.map(s => ({ value: s.id, label: s.name })) : (key === 'status' ? ['DRAFT', 'ACTIVE', 'ARCHIVED'] : key === 'review' ? ['NEEDS_EXPERT_REVIEW', 'APPROVED', 'REJECTED'] : ['LESSON_AND_PRACTICE', 'RESOURCE_GUIDED_PRACTICE']).map(value => ({ value, label: stateLabels[value] ?? value }))).map(option => <option value={option.value} key={option.value}>{option.label}</option>)}
+            {mode !== 'approvals' && !publishedOnly && (
+              <Field label={copy('Status', 'Trạng thái')}>
+                <select className="h-8 w-full min-w-0 rounded-md border border-border bg-background px-2 text-xs text-foreground focus-visible:ring-2 focus-visible:ring-ring" value={statusFilterValue} onChange={e => applyStatusFilter(e.target.value)}>
+                  <option value="">{copy('All', 'Tất cả')}</option>
+                  <option value="RELEASED">{copy('Released', 'Đã phát hành')}</option>
+                  <option value="ACTIVE">{copy('Active', 'Đang sử dụng')}</option>
+                  <option value="NEEDS_EXPERT_REVIEW">{copy('Pending review', 'Chờ duyệt')}</option>
+                  <option value="REJECTED">{copy('Changes requested', 'Cần chỉnh sửa')}</option>
+                  <option value="DRAFT">{copy('Draft', 'Bản nháp')}</option>
+                  <option value="ARCHIVED">{copy('Archived', 'Đã lưu trữ')}</option>
+                </select>
+              </Field>
+            )}
+            {(['type', 'skill'] as const).map(key => <Field key={key} label={key === 'type' ? copy('Module type', 'Loại module') : copy('Skill', 'Kỹ năng')}><select className="h-8 w-full min-w-0 rounded-md border border-border bg-background px-2 text-xs text-foreground focus-visible:ring-2 focus-visible:ring-ring" value={filters[key]} onChange={e => { setPageNumber(1); setFilters({ ...filters, [key]: e.target.value }) }}><option value="">{copy('All', 'Tất cả')}</option>
+              {(key === 'skill' ? skills.map(s => ({ value: s.id, label: s.name })) : ['LESSON_AND_PRACTICE', 'RESOURCE_GUIDED_PRACTICE'].map(value => ({ value, label: stateLabels[value] ?? value }))).map(option => <option value={option.value} key={option.value}>{option.label}</option>)}
             </select></Field>)}
           </div>
           {(Object.values(filters).some(Boolean) || manager && mode === 'modules' && allModuleStatuses) && <div className="flex justify-end"><Button variant="ghost" size="sm" onClick={() => { setFilters({ search: '', status: '', review: '', type: '', skill: '' }); if(manager && mode === 'modules') setAllModuleStatuses(false); setPageNumber(1) }}>{copy('Clear filters', 'Xoá bộ lọc')}</Button></div>}
           {loading && managerLearning && <div role="status" aria-label={copy('Loading learning content', 'Đang tải nội dung học tập')} className="space-y-3 rounded-lg border border-border bg-card p-4"><span className="sr-only">{copy('Loading learning content…', 'Đang tải nội dung học tập…')}</span>{[1,2,3].map(row=><div key={row} aria-hidden="true" className="h-12 animate-pulse rounded-md bg-muted"/>)}</div>}
           {!loading && !listItems.length && (!managerLearning || catalogReady && !error) && <Card><CardContent className="space-y-3 pt-6"><p>{mode === 'approvals' ? Object.values(filters).some(Boolean) ? copy('No requests match your filters. Clear filters to see pending requests.', 'Không có yêu cầu phù hợp. Xoá bộ lọc để xem hàng đợi.') : copy('No requests need your attention. New submissions will appear here.', 'Chưa có yêu cầu cần xử lý. Các module được gửi duyệt sẽ xuất hiện tại đây.') : manager ? publishedOnly && !Object.values(filters).some(Boolean) ? copy('No published modules yet. Approved publication requests will appear here after release.', 'Chưa có module đã phát hành. Yêu cầu được duyệt sẽ xuất hiện ở đây sau khi phát hành thành công.') : copy('No modules match your filters. Try another search.', 'Không có module phù hợp. Hãy thử tìm kiếm hoặc bộ lọc khác.') : copy('No modules match this view. Try changing your filters, or prepare content for a new module.', 'Chưa có module phù hợp. Hãy thử bộ lọc khác hoặc chuẩn bị nội dung cho module mới.')}</p></CardContent></Card>}
-          {mode === 'approvals' && listItems.length > 0 ? <ModuleApprovalQueue documents={page.items} showHeading={false} total={page.total} loading={loading} busy={busy || contentBusy} vi={language === 'vi'} copy={copy} person={person} formatTime={formatTime} labels={stateLabels} onReview={doc => void run(async () => { setSelected(await moduleRequest<ModuleDocument>(`/modules/${doc.id}`)); setEditing(false) })} /> : mode === 'modules' && listItems.length > 0 ? <Card>{!managerLearning && <CardHeader className="p-4"><CardTitle>{copy('Module Directory', 'Danh sách module')}</CardTitle></CardHeader>}<CardContent className={managerLearning?'p-3':'px-3 pb-3'}><div className="overflow-hidden rounded-lg border border-border"><table className="block w-full table-fixed text-left text-xs xl:table"><caption className="sr-only">{copy('Module Directory', 'Danh sách module')}</caption><thead className="hidden bg-muted/40 text-[11px] uppercase text-muted-foreground xl:table-header-group"><tr>{[copy('Module', 'Module'), copy('Skill taught', 'Kỹ năng được dạy'), copy('Knowledge level', 'Mức kiến thức'), copy('Duration', 'Thời lượng'), copy('Lifecycle', 'Vòng đời'), copy('Review', 'Duyệt'), copy('Workflow', 'Soạn thảo'), copy('Action', 'Thao tác')].map((label, index) => <th key={label} className={`px-2 py-2.5 font-semibold ${['w-[25%]', 'w-[17%]', 'w-[10%]', 'w-[7%]', 'w-[9%]', 'w-[11%]', 'w-[11%]', 'w-[10%]'][index]} ${index === 7 ? 'text-center' : ''}`}>{label}</th>)}</tr></thead><tbody className="block divide-y divide-border xl:table-row-group">{listItems.map(item => <tr key={item.module.metadata.id} data-testid="module-row" className="grid grid-cols-2 items-start gap-3 p-3 hover:bg-muted/20 xl:table-row xl:p-0">
-            <td className="col-span-2 min-w-0 xl:px-2 xl:py-3"><Heading level={2} size="card" style={{ fontSize: 'var(--text-sm)' }} className="line-clamp-2 break-words">{item.module.title?.trim() || copy('Untitled module', 'Module chưa có tên')}</Heading><CopyableId code={item.module.metadata.id} compact vi={language === 'vi'} entity={copy('module ID', 'mã module')} />{item.authoring && latest(item.authoring).payload.title !== item.module.title && <p className="mt-1 text-xs text-muted-foreground">{copy('Working revision', 'Bản đang soạn')}: {latest(item.authoring).payload.title}</p>}</td>
-            <td className="col-span-2 min-w-0 break-words xl:px-2 xl:py-3"><span className="mb-1 block text-muted-foreground xl:hidden">{copy('Skill taught', 'Kỹ năng được dạy')}</span>{item.module.teachings.length ? item.module.teachings.map(teaching => teaching.skillName?.trim() || copy('Skill name unavailable', 'Chưa có tên kỹ năng')).join(', ') : '—'}</td>
-            <td className="min-w-0 xl:px-2 xl:py-3"><span className="mb-1 block text-muted-foreground xl:hidden">{copy('Knowledge level', 'Mức kiến thức')}</span><span className="whitespace-nowrap">{stateLabels[item.module.knowledgeLevel ?? ''] ?? item.module.knowledgeLevel ?? '—'}</span></td>
-            <td className="xl:px-2 xl:py-3"><span className="mb-1 block text-muted-foreground xl:hidden">{copy('Duration', 'Thời lượng')}</span>{item.module.duration == null ? '—' : `${item.module.duration} ${copy('min', 'phút')}`}</td>
-            <td className="xl:px-2 xl:py-3"><span className="mb-1 block text-muted-foreground xl:hidden">{copy('Lifecycle', 'Vòng đời')}</span><Badge className="whitespace-normal" variant={statusVariant(item.module.metadata.status)}>{stateLabels[item.module.metadata.status ?? ''] ?? item.module.metadata.status ?? '—'}</Badge></td>
-            <td className="xl:px-2 xl:py-3"><span className="mb-1 block text-muted-foreground xl:hidden">{copy('Review', 'Duyệt')}</span><Badge className="whitespace-normal" variant={statusVariant(item.module.metadata.reviewStatus)}>{stateLabels[item.module.metadata.reviewStatus ?? ''] ?? item.module.metadata.reviewStatus ?? '—'}</Badge></td>
-            <td className="min-w-0 xl:px-2 xl:py-3"><span className="mb-1 block text-muted-foreground xl:hidden">{copy('Workflow', 'Soạn thảo')}</span>{publishedOnly ? <><Badge variant="success" className="whitespace-normal">{item.authoring?.releasedRevision!=null?`${copy('Published revision','Bản phát hành')} ${item.authoring.releasedRevision}`:copy('Catalog release','Bản danh mục đã phát hành')}</Badge>{item.authoring && latest(item.authoring).state!=='RELEASED' && <p className="mt-1 text-xs text-muted-foreground">{copy('Working workflow','Trạng thái soạn thảo')}: {stateLabels[latest(item.authoring).state]??latest(item.authoring).state}</p>}</> : <Badge className="whitespace-normal" variant={item.authoring ? statusVariant(latest(item.authoring).state) : 'outline'}>{item.authoring ? stateLabels[latest(item.authoring).state] ?? latest(item.authoring).state : item.intake ? copy('Awaiting Expert intake', 'Chờ Expert tiếp nhận') : copy('Not received', 'Chưa tiếp nhận')}</Badge>}{item.authoring && <p className="mt-1 break-words text-muted-foreground">{person(item.authoring.createdBy)}</p>}{!publishedOnly && item.authoring && (!latest(item.authoring).payload.content.lessons?.length || latest(item.authoring).payload.content.lessons?.some(l => !l.title.trim() || !l.durationSeconds || l.type === 'TEXT' && !l.body?.replace(/<[^>]*>/g, '').trim() || l.type === 'VIDEO' && !(l.assetId || l.videoUrl))) && <p className="mt-1 text-muted-foreground">{copy('Needs content', 'Cần bổ sung nội dung')}</p>}{item.authoring?.createdBy === 'DEVELOPMENT_SEED' && <p className="mt-1 text-muted-foreground">{copy('Development seed', 'Dữ liệu mẫu dev')}</p>}</td>
-            <td className="col-span-2 xl:px-1 xl:py-3"><div className="flex items-center justify-center gap-1.5 [&>button]:shrink-0"><Button variant="outline" size="icon" className="size-8" title={copy('View module', 'Xem module')} aria-label={copy('View module', 'Xem module')} onClick={() => setCatalogSelection(item)}><Eye className="size-4 text-primary" aria-hidden="true" /></Button>{(item.authoring || expert && (item.module.knowledgeLevel || item.intake?.expertId === actor?.id)) && <RowActions label={`${copy('Actions for', 'Thao tác cho')} ${item.module.metadata.id}`} compact disabled={busy || contentBusy}><div className="flex flex-wrap gap-2">{item.authoring && controls(item.authoring)}{expert && item.module.knowledgeLevel && item.module.teachings.length === 1 && <Link to={'/expert/skill-assessment-config?' + new URLSearchParams({ owner: item.module.teachings[0].skillId, level: item.module.knowledgeLevel }).toString()} className={buttonVariants({ variant: 'secondary', size: 'sm' })}>{t('scopedPolicy.skillTitle')}</Link>}{!item.authoring && expert && item.intake?.expertId === actor?.id && !item.intake.acceptedBy && <Button variant="outline" size="sm" disabled={busy || contentBusy} onClick={() => { setIntakeSelection(item); setIntakeJobPositions(item.intake?.jobPositionIds ?? []); setIntakeExpert(item.intake?.expertId ?? ''); setError('') }}>{copy('Receive for editing', 'Tiếp nhận chỉnh sửa')}</Button>}</div></RowActions>}</div></td>
-          </tr>)}</tbody></table></div></CardContent></Card> : <>          {listItems.map(item => <Card key={item.module.metadata.id}><CardContent className="space-y-3 pt-5"><div className="flex flex-wrap justify-between gap-2"><div className="min-w-0"><Heading level={2} size="card" className="break-words">{item.module.title?.trim() || copy('Untitled module', 'Module chưa có tên')}</Heading><p className="break-words text-body-sm text-muted-foreground">{copy('Skill taught', 'Kỹ năng được dạy')}: {item.module.teachings.length ? item.module.teachings.map(teaching => teaching.skillName?.trim() || copy('Skill name unavailable', 'Chưa có tên kỹ năng')).join(', ') : copy('No skill linked', 'Chưa liên kết kỹ năng')}</p><div className="mt-2 flex flex-wrap gap-2">{item.module.knowledgeLevel && <Badge variant="secondary">{stateLabels[item.module.knowledgeLevel] ?? item.module.knowledgeLevel}</Badge>}{item.authoring?.createdBy === 'DEVELOPMENT_SEED' && <Badge variant="outline">{copy('Development seed', 'Dữ liệu mẫu dev')}</Badge>}</div></div>
-            <div className="flex flex-wrap items-start gap-2"><Badge variant={statusVariant(item.module.metadata.status)}>{item.module.metadata.status ? stateLabels[item.module.metadata.status] ?? item.module.metadata.status : copy('Lifecycle not recorded', 'Chưa có vòng đời')}</Badge><Badge variant={statusVariant(item.module.metadata.reviewStatus)}>{item.module.metadata.reviewStatus ? stateLabels[item.module.metadata.reviewStatus] ?? item.module.metadata.reviewStatus : copy('Review not recorded', 'Chưa có thông tin duyệt')}</Badge>{!item.authoring && <Badge variant="warning">{item.intake ? copy('Awaiting Expert intake', 'Chờ Expert tiếp nhận') : copy('Not received', 'Chưa tiếp nhận')}</Badge>}{item.authoring && (!latest(item.authoring).payload.content.lessons?.length || latest(item.authoring).payload.content.lessons?.some(l => !l.title.trim() || !l.durationSeconds || l.type === 'TEXT' && !l.body?.replace(/<[^>]*>/g, '').trim() || l.type === 'VIDEO' && !(l.assetId || l.videoUrl))) && <Badge variant="warning">{copy('Needs content', 'Cần bổ sung nội dung')}</Badge>}{item.authoring && <Badge variant={statusVariant(latest(item.authoring).state)}>{stateLabels[latest(item.authoring).state] ?? latest(item.authoring).state}</Badge>}</div></div>
+          {mode === 'approvals' && listItems.length > 0 ? <ModuleApprovalQueue documents={page.items} showHeading={false} total={page.total} loading={loading} busy={busy || contentBusy} vi={language === 'vi'} copy={copy} person={person} formatTime={formatTime} labels={stateLabels} onReview={doc => void run(async () => { setSelected(await moduleRequest<ModuleDocument>(`/modules/${doc.id}`)); setEditing(false) })} /> : mode === 'modules' && listItems.length > 0 ? <Card>{!managerLearning && <CardHeader className="p-4"><CardTitle>{copy('Module Directory', 'Danh sách module')}</CardTitle></CardHeader>}<CardContent className={managerLearning?'p-3':'px-3 pb-3'}><div className="overflow-x-auto rounded-lg border border-border"><table className="module-directory block w-full md:min-w-[920px] table-fixed text-left text-xs md:table"><caption className="sr-only">{copy('Module Directory', 'Danh sách module')}</caption><thead className="hidden bg-muted/40 text-[11px] uppercase text-muted-foreground md:table-header-group"><tr>{[copy('Module', 'Module'), copy('Responsible person', 'Người phụ trách'), copy('Skill taught', 'Kỹ năng được dạy'), copy('Knowledge level', 'Mức kiến thức'), copy('Duration', 'Thời lượng'), copy('Status', 'Trạng thái'), copy('Action', 'Thao tác')].map((label, index) => <th key={label} className={`px-2.5 py-2.5 font-semibold ${['w-[24%]', 'w-[14%]', 'w-[18%]', 'w-[11%]', 'w-[9%]', 'w-[14%]', 'w-[10%]'][index]} ${index === 6 ? 'text-center' : ''}`}>{label}</th>)}</tr></thead><tbody className="block divide-y divide-border md:table-row-group">{listItems.map(item => {
+            const statusInfo = resolveItemStatus(item)
+            return <tr key={item.module.metadata.id} data-testid="module-row" className="grid grid-cols-2 items-start gap-3 p-3 hover:bg-muted/20 md:table-row md:p-0">
+            <td className="col-span-2 min-w-0 md:px-2.5 md:py-3"><Heading level={2} size="card" style={{ fontSize: 'var(--text-sm)' }} className="line-clamp-2 break-words text-left">{item.module.title?.trim() || copy('Untitled module', 'Module chưa có tên')}</Heading><CopyableId code={item.module.metadata.id} compact vi={language === 'vi'} entity={copy('module ID', 'mã module')} />{item.authoring && latest(item.authoring).payload.title !== item.module.title && <p className="mt-1 text-xs text-muted-foreground">{copy('Working revision', 'Bản đang soạn')}: {latest(item.authoring).payload.title}</p>}</td>
+            <td className="col-span-2 min-w-0 break-words text-left md:px-2.5 md:py-3"><span className="mb-1 block text-muted-foreground md:hidden">{copy('Responsible person', 'Người phụ trách')}</span>{person(item.authoring?.responsibleExpertId ?? item.authoring?.createdBy)}</td>
+            <td className="col-span-2 min-w-0 break-words md:px-2.5 md:py-3"><span className="mb-1 block text-muted-foreground md:hidden">{copy('Skill taught', 'Kỹ năng được dạy')}</span>{item.module.teachings.length ? item.module.teachings.map(teaching => teaching.skillName?.trim() || copy('Skill name unavailable', 'Chưa có tên kỹ năng')).join(', ') : '—'}</td>
+            <td className="min-w-0 md:px-2.5 md:py-3"><span className="mb-1 block text-muted-foreground md:hidden">{copy('Knowledge level', 'Mức kiến thức')}</span><span className="whitespace-nowrap">{stateLabels[item.module.knowledgeLevel ?? ''] ?? item.module.knowledgeLevel ?? '—'}</span></td>
+            <td className="md:px-2.5 md:py-3"><span className="mb-1 block text-muted-foreground md:hidden">{copy('Duration', 'Thời lượng')}</span>{item.module.duration == null ? '—' : `${item.module.duration} ${copy('min', 'phút')}`}</td>
+            <td className="min-w-0 md:px-2.5 md:py-3" data-testid="module-status"><span className="mb-1 block text-muted-foreground md:hidden">{copy('Status', 'Trạng thái')}</span><Badge className="whitespace-normal" variant={statusInfo.variant}>{statusInfo.label}</Badge>{statusInfo.note && <p className="mt-1 text-xs text-muted-foreground">{statusInfo.note}</p>}{statusInfo.needsContent && <p className="mt-1 text-xs text-muted-foreground">{copy('Needs content', 'Cần bổ sung nội dung')}</p>}</td>
+            <td className="col-span-2 md:px-1 md:py-3"><div className="flex items-center justify-center gap-1.5 [&>button]:shrink-0"><Button variant="outline" size="icon" className="size-8" title={copy('View module', 'Xem module')} aria-label={copy('View module', 'Xem module')} onClick={() => setCatalogSelection(item)}><Eye className="size-4 text-primary" aria-hidden="true" /></Button>{(item.authoring || expert && item.module.knowledgeLevel) && <RowActions label={`${copy('Actions for', 'Thao tác cho')} ${item.module.metadata.id}`} compact disabled={busy || contentBusy}><div className="flex flex-wrap gap-2">{item.authoring && controls(item.authoring)}{expert && item.module.knowledgeLevel && item.module.teachings.length === 1 && <Link to={'/expert/skill-assessment-config?' + new URLSearchParams({ owner: item.module.teachings[0].skillId, level: item.module.knowledgeLevel }).toString()} className={buttonVariants({ variant: 'secondary', size: 'sm' })}>{t('scopedPolicy.skillTitle')}</Link>}</div></RowActions>}</div></td>
+          </tr>})}</tbody></table></div></CardContent></Card> : <>          {listItems.map(item => {
+            const statusInfo = resolveItemStatus(item)
+            return <Card key={item.module.metadata.id}><CardContent className="space-y-3 pt-5"><div className="flex flex-wrap justify-between gap-2"><div className="min-w-0"><Heading level={2} size="card" className="break-words">{item.module.title?.trim() || copy('Untitled module', 'Module chưa có tên')}</Heading><p className="break-words text-body-sm text-muted-foreground">{copy('Skill taught', 'Kỹ năng được dạy')}: {item.module.teachings.length ? item.module.teachings.map(teaching => teaching.skillName?.trim() || copy('Skill name unavailable', 'Chưa có tên kỹ năng')).join(', ') : copy('No skill linked', 'Chưa liên kết kỹ năng')}</p><div className="mt-2 flex flex-wrap gap-2">{item.module.knowledgeLevel && <Badge variant="secondary">{stateLabels[item.module.knowledgeLevel] ?? item.module.knowledgeLevel}</Badge>}</div></div>
+            <div className="flex flex-wrap items-start gap-2"><Badge variant={statusInfo.variant}>{statusInfo.label}</Badge>{statusInfo.needsContent && <Badge variant="warning">{copy('Needs content', 'Cần bổ sung nội dung')}</Badge>}</div></div>
             <p className="text-[length:var(--text-body-sm)] text-muted-foreground">{item.module.duration ?? '—'} {copy('minutes', 'phút')} · · {copy('Catalog version', 'Phiên bản danh mục')} {item.module.metadata.version ?? '—'}</p>
             {item.authoring && latest(item.authoring).payload.title !== item.module.title && <p className="break-words text-[length:var(--text-body-sm)]">{copy('Working revision', 'Phiên bản đang chỉnh sửa')}: {latest(item.authoring).payload.title}</p>}
             {item.authoring && <div className="space-y-1 text-[length:var(--text-body-sm)] text-muted-foreground">
-              <p>{copy('Created by / Responsible Expert', 'Người tạo / Expert phụ trách')}: {person(item.authoring.createdBy)}</p>
+              <p>{copy('Responsible person', 'Người phụ trách')}: {person(item.authoring.responsibleExpertId ?? item.authoring.createdBy)}</p><p>{copy('Created/imported by', 'Người tạo/nhập')}: {person(item.authoring.createdBy)}</p>
               <p>{copy('Last edited', 'Sửa gần nhất')}: {person(latest(item.authoring).editedBy)} · {formatTime(latest(item.authoring).editedAt)}</p>
               {latest(item.authoring).decidedBy && <p>{copy('Reviewed by', 'Người duyệt')}: {person(latest(item.authoring).decidedBy)} · {formatTime(latest(item.authoring).decidedAt)}</p>}
               {expert && !canManage(item.authoring) && <Badge variant="outline">{copy('View only', 'Chỉ xem')}</Badge>}
@@ -321,37 +396,15 @@ function OwnedModuleManagementWorkspace({ mode, managerShell = false }: { mode: 
               {expert && item.module.knowledgeLevel && item.module.teachings.length === 1 && <Link to={'/expert/skill-assessment-config?' + new URLSearchParams({ owner: item.module.teachings[0].skillId, level: item.module.knowledgeLevel }).toString()} className={buttonVariants({ variant: 'secondary', size: 'sm', className: 'border border-primary/20 font-semibold' })}>{t('scopedPolicy.skillTitle')}</Link>}
               {item.authoring && controls(item.authoring)}
             </div>
-            {!item.authoring && <div className="space-y-2">
-              <p className="text-[length:var(--text-body-sm)] text-muted-foreground">{item.intake ? copy('Waiting for an assigned Expert to receive this module.', 'Đang chờ chuyên gia được phân công tiếp nhận module.') : copy('Not received into the editing and approval workflow.', 'Chưa tiếp nhận vào quy trình chỉnh sửa và duyệt.')}</p>
-              {item.intake && <p className="text-[length:var(--text-body-sm)]">{copy('Related job positions', 'Vị trí công việc liên quan')}: {item.intake.jobPositionIds.map(id => jobPositions.find(o => o.id === id)?.name ?? id).join(', ')}</p>}
-              {(expert && item.intake?.expertId === actor?.id && !item.intake?.acceptedBy) && <Button variant="outline" size="sm" disabled={busy || contentBusy} onClick={() => { setIntakeSelection(item); setIntakeJobPositions(item.intake?.jobPositionIds ?? []); setIntakeExpert(item.intake?.expertId ?? (experts.length === 1 ? experts[0].id : '')); setError('') }}>{manager ? item.intake ? copy('Update intake assignment', 'Cập nhật phân công tiếp nhận') : copy('Assign for intake', 'Phân công tiếp nhận') : copy('Receive for editing', 'Tiếp nhận chỉnh sửa')}</Button>}
-            </div>}
-          </CardContent></Card>)}
+            {!item.authoring && <p className="text-body-sm text-muted-foreground">{copy('No authoring record', 'Chưa có hồ sơ soạn thảo')}</p>}
+          </CardContent></Card>})}
           </>}
           <Pagination className="max-w-full [&_nav]:max-w-full [&_nav]:flex-wrap [&_nav]:justify-center [&_nav>div]:flex-wrap [&_nav>div]:justify-center" currentPage={displayedPage.page} totalPages={Math.ceil(displayedPage.total / displayedPage.pageSize)} totalItems={displayedPage.total} pageSize={displayedPage.pageSize} onPageChange={setPageNumber} disabled={busy || contentBusy || loading} itemLabel={copy('modules', 'module')} labels={{ navigation: copy('Pagination', 'Phân trang'), first: copy('First page', 'Trang đầu'), previous: copy('Prev', 'Trước'), next: copy('Next', 'Tiếp'), last: copy('Last page', 'Trang cuối'), showing: copy('Showing', 'Hiển thị'), of: copy('of', 'trên') }} />
         </>}
       </>}
     </>}
 
-    <Dialog open={intakeSelection !== null} onOpenChange={open => { if (!busy && !contentBusy && !open) setIntakeSelection(null) }} ariaLabel={manager ? copy('Assign for intake', 'Phân công tiếp nhận') : copy('Receive for editing', 'Tiếp nhận chỉnh sửa')}>
-      <DialogHeader><DialogTitle>{manager ? copy('Assign responsible Expert', 'Phân công Expert phụ trách') : copy('Receive imported module', 'Tiếp nhận module nhập vào')}</DialogTitle></DialogHeader>
-      <form className="space-y-4 overflow-y-auto" onSubmit={event => { event.preventDefault(); if (!intakeSelection) return; const item = intakeSelection; void run(async () => {
-        if (manager) await moduleRequest(`/catalog-modules/${encodeURIComponent(item.module.metadata.id)}/assignment`, 'POST', { expertId: intakeExpert, jobPositionIds: intakeJobPositions, expectedAssignedAt: item.intake?.assignedAt ?? null })
-        else {
-          const doc = await moduleRequest<ModuleDocument>(`/catalog-modules/${encodeURIComponent(item.module.metadata.id)}/accept`, 'POST')
-          setIntakeSelection(null); await load(); openEditor(doc); return
-        }
-        setIntakeSelection(null); await load(); setNotice(copy('Assigned. Only the selected Expert can receive and manage this module.', 'Đã phân công. Chỉ Expert được chọn có thể tiếp nhận và quản lý module.'))
-      }) }}>
-        <p className="break-words">{intakeSelection?.module.title}</p>
-        <p className="text-[length:var(--text-body-sm)] text-muted-foreground">{copy('The selected Expert will manage this module. Its source and earlier history are retained. Changes require approval before publication.', 'Expert được chọn chịu trách nhiệm quản lý module. Giữ nguyên nguồn và lịch sử trước đây. Mọi thay đổi cần được duyệt trước khi phát hành.')}</p>
-        {error && <p role="alert" tabIndex={-1} className="text-destructive">{error}</p>}
-        {manager && <Field label={copy('Responsible Expert', 'Expert phụ trách')}><select required className={control} disabled={busy || contentBusy} value={intakeExpert} onChange={event => setIntakeExpert(event.target.value)}><option value="">{copy('Select one Expert', 'Chọn một Expert')}</option>{experts.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}</select></Field>}
-        {manager && <Field label={copy('Related job positions', 'Vị trí công việc liên quan')}>{scopeSelector(intakeJobPositions, setIntakeJobPositions, busy)}</Field>}
-        <DialogFooter><Button type="button" variant="outline" disabled={busy || contentBusy} onClick={() => setIntakeSelection(null)}>{copy('Cancel', 'Hủy')}</Button><Button type="submit" disabled={busy || contentBusy}>{manager ? copy('Assign', 'Phân công') : copy('Receive module', 'Tiếp nhận module')}</Button></DialogFooter>
-      </form>
-    </Dialog>
-    <CatalogModuleDetails content={publishedOnly && catalogSelection ? publishedModuleRevision(catalogSelection)?.payload.content : undefined} authoringLabel={publishedOnly ? copy('View working revisions & history', 'Xem bản soạn thảo và lịch sử') : undefined} module={catalogSelection?.module ?? null} hasHistory={catalogSelection?.authoring !== null && catalogSelection !== null} staff={staff} onOpenAuthoring={catalogSelection?.authoring ? () => { const doc = catalogSelection.authoring!; setCatalogSelection(null); void run(async () => { setSelected(await moduleRequest<ModuleDocument>(`/modules/${doc.id}`)); setEditing(false) }) } : undefined} onClose={() => setCatalogSelection(null)} actions={manager && catalogSelection && !catalogSelection.authoring && !catalogSelection.intake?.acceptedBy ? <Button disabled={busy || contentBusy} onClick={() => { const item = catalogSelection; setCatalogSelection(null); setIntakeSelection(item); setIntakeJobPositions(item.intake?.jobPositionIds ?? []); setIntakeExpert(item.intake?.expertId ?? (experts.length === 1 ? experts[0].id : '')); setError('') }}>{catalogSelection.intake ? copy('Update intake assignment', 'Cập nhật phân công tiếp nhận') : copy('Assign for intake', 'Phân công tiếp nhận')}</Button> : undefined} />
+    <CatalogModuleDetails history={catalogSelection?.authoring ? historyView(catalogSelection.authoring) : undefined} content={catalogSelection ? publishedModuleRevision(catalogSelection)?.payload.content ?? catalogSelection.authoring?.revisions.find(revision => revision.payload.contentUri === catalogSelection.module.contentUri && revision.payload.contentVersion === catalogSelection.module.contentVersion)?.payload.content : undefined} authoringLabel={publishedOnly ? copy('View working revisions & history', 'Xem bản soạn thảo và lịch sử') : undefined} module={catalogSelection?.module ?? null} hasHistory={catalogSelection?.authoring !== null && catalogSelection !== null} staff={staff} onOpenAuthoring={catalogSelection?.authoring ? () => { const doc = catalogSelection.authoring!; setCatalogSelection(null); void run(async () => { setSelected(await moduleRequest<ModuleDocument>(`/modules/${doc.id}`)); setEditing(false) }) } : undefined} onClose={() => setCatalogSelection(null)} />
     <Dialog open={editing} onOpenChange={open => { if (!busy && !contentBusy) { setEditing(open); if (!open) setSelected(null) } }} size="wide" className="module-authoring-dialog h-[96dvh] max-h-[96dvh] max-w-[96vw] p-4 sm:p-6" ariaLabel={copy('Module editor', 'Chỉnh sửa module')}>
       <DialogHeader><DialogTitle>{selected ? copy('Create a revised package', 'Chỉnh sửa gói học') : copy('Create module', 'Tạo module')}</DialogTitle></DialogHeader>
       <form className="flex min-h-0 flex-1 flex-col" onInvalidCapture={event => {
@@ -397,15 +450,42 @@ function OwnedModuleManagementWorkspace({ mode, managerShell = false }: { mode: 
       </form>
     </Dialog>
 
-    <Dialog open={Boolean(selected) && !editing} onOpenChange={open => { if (!open) setSelected(null) }} className={mode === 'approvals' ? 'module-management-dialog h-dvh max-h-dvh max-w-3xl rounded-none' : 'module-management-dialog max-w-3xl max-h-[88dvh]'} containerClassName={mode === 'approvals' ? 'justify-end p-0 sm:p-0' : undefined} ariaLabel={mode === 'approvals' ? copy('Review module request', 'Duyệt yêu cầu module') : copy('Module details', 'Chi tiết module')}>
-      <DialogHeader><DialogTitle>{selected && latest(selected).payload.title}</DialogTitle>{selected && <div className="flex flex-wrap items-center gap-2"><CopyableId code={selected.id} vi={language === 'vi'} entity={copy('module ID', 'mã module')} /><span className="text-xs text-muted-foreground">{copy('Lifecycle', 'Vòng đời')}</span><Badge variant={statusVariant(latest(selected).payload.metadata.status)}>{stateLabels[latest(selected).payload.metadata.status] ?? latest(selected).payload.metadata.status}</Badge><span className="text-xs text-muted-foreground">{copy('Review', 'Duyệt')}</span><Badge variant={statusVariant(latest(selected).payload.metadata.reviewStatus)}>{stateLabels[latest(selected).payload.metadata.reviewStatus] ?? latest(selected).payload.metadata.reviewStatus}</Badge><span className="text-xs text-muted-foreground">{copy('Workflow', 'Soạn thảo')}</span><Badge variant={statusVariant(latest(selected).state)}>{stateLabels[latest(selected).state] ?? latest(selected).state}</Badge></div>}</DialogHeader>
+    <Dialog open={Boolean(selected) && !editing} onOpenChange={open => { if (!open) setSelected(null) }} className="module-management-dialog w-[96vw] max-w-7xl max-h-[94dvh]" ariaLabel={mode === 'approvals' ? copy('Review module request', 'Duyệt yêu cầu module') : copy('Module details', 'Chi tiết module')}>
+      <DialogHeader><DialogTitle>{selected && latest(selected).payload.title}</DialogTitle>{selected && <div className="flex flex-wrap items-center gap-2"><CopyableId code={selected.id} vi={language === 'vi'} entity={copy('module ID', 'mã module')} /><span className="text-xs text-muted-foreground">{copy('Status', 'Trạng thái')}</span><Badge variant={statusVariant(latest(selected).state)}>{stateLabels[latest(selected).state] ?? latest(selected).state}</Badge>{selected.releasedRevision != null && latest(selected).state !== 'RELEASED' && <span className="text-xs text-muted-foreground">({copy('Published revision', 'Bản phát hành')} {selected.releasedRevision})</span>}</div>}</DialogHeader>
       {selected && mode === 'approvals' ? <ModuleApprovalReview key={selected.id + ':' + selected.lockVersion} doc={selected} staff={staff} person={person} formatTime={formatTime} labels={stateLabels} history={historyView(selected)} copy={copy} /> : selected && <DialogBody className="space-y-4 py-2">
-        <section className="space-y-2 text-xs"><p>{copy('Created by / Responsible Expert', 'Người tạo / Expert phụ trách')}: {person(selected.createdBy)}{!selected.intake && <> · {formatTime(selected.createdAt)}</>}</p><p>{copy('Released revision', 'Phiên bản đã phát hành')}: {selected.releasedRevision ?? '—'}</p></section>
+        <CatalogModuleDetails key={selected.id + "-" + selected.lockVersion}
+          module={latest(selected).payload} content={latest(selected).payload.content}
+          review={{by:latest(selected).decidedBy,at:latest(selected).decidedAt}}
+          embedded hasHistory={selected.history.length>0} onClose={()=>{}} staff={staff}
+          previewLabel={`${copy("Revision", "Phiên bản")} ${latest(selected).number} · ${stateLabels[latest(selected).state] ?? latest(selected).state}`}
+          information={<>
+        <section className="space-y-2 text-xs"><p>{copy('Responsible person', 'Người phụ trách')}: {person(selected.responsibleExpertId ?? selected.createdBy)}</p><p>{copy('Created/imported by', 'Người tạo/nhập')}: {person(selected.createdBy)}{!selected.intake && <> · {formatTime(selected.createdAt)}</>}</p><p>{copy('Released revision', 'Phiên bản đã phát hành')}: {selected.releasedRevision ?? '—'}</p><p>{copy('Revision', 'Phiên bản')}: {latest(selected).number} · {stateLabels[latest(selected).state] ?? latest(selected).state}</p><p>{copy('Last edited', 'Sửa gần nhất')}: {person(latest(selected).editedBy)} · {formatTime(latest(selected).editedAt)}</p>{latest(selected).feedback && <p className="rounded-md bg-muted/40 p-3">{latest(selected).feedback}</p>}</section>
         {selected.intake && <section className="space-y-2 rounded-lg bg-muted/30 p-3 text-xs"><p>{copy('Source', 'Nguồn')}: {copy('Imported catalog', 'Danh mục nhập vào')} · {selected.intake.source.metadata.id}</p><p>{copy('Assigned by', 'Người phân công')}: {person(selected.intake.assignedBy)} · {formatTime(selected.intake.assignedAt)}</p><p>{copy('Received by', 'Người tiếp nhận')}: {person(selected.intake.acceptedBy)} · {formatTime(selected.intake.acceptedAt)}</p><Button variant="outline" size="sm" onClick={() => { setCatalogSelection({ module: selected.intake!.source, authoring: selected, intake: selected.intake }); setSelected(null) }}>{copy('View original catalog record', 'Xem bản danh mục gốc')}</Button></section>}
-        <Accordion defaultValue={[String(latest(selected).number)]}>{[...selected.revisions].reverse().map(revision => <AccordionItem key={revision.number} value={String(revision.number)}><AccordionTrigger>{copy('Revision', 'Phiên bản')} {revision.number} · {stateLabels[revision.state] ?? revision.state}</AccordionTrigger><AccordionContent><div className="space-y-4 pt-2"><p className="text-xs text-muted-foreground">{copy('Edited by', 'Người sửa')}: {person(revision.editedBy)} · {formatTime(revision.editedAt)}</p>{revision.feedback && <p className="rounded-md bg-muted/40 p-3 text-sm">{revision.feedback}</p>}<CatalogModuleDetails module={revision.payload} content={revision.payload.content} review={{ by: revision.decidedBy, at: revision.decidedAt }} embedded hasHistory={true} onClose={() => {}} staff={staff} /></div></AccordionContent></AccordionItem>)}</Accordion>
-        {historyView(selected)}
+          </>}
+          history={<div className="space-y-4">
+            {historyView(selected)}
+        <Accordion>{[...selected.revisions].reverse().filter(revision => revision.number !== latest(selected).number).map(revision => <AccordionItem key={revision.number} value={String(revision.number)}><AccordionTrigger>{copy('Revision', 'Phiên bản')} {revision.number} · {stateLabels[revision.state] ?? revision.state}</AccordionTrigger><AccordionContent><div className="space-y-4 pt-2"><p className="text-xs text-muted-foreground">{copy('Edited by', 'Người sửa')}: {person(revision.editedBy)} · {formatTime(revision.editedAt)}</p>{revision.feedback && <p className="rounded-md bg-muted/40 p-3 text-sm">{revision.feedback}</p>}<CatalogModuleDetails module={revision.payload} content={revision.payload.content} review={{ by: revision.decidedBy, at: revision.decidedAt }} embedded hasHistory={true} onClose={() => {}} staff={staff} /></div></AccordionContent></AccordionItem>)}</Accordion>          </div>}
+        />
       </DialogBody>}
       <DialogFooter><div className="flex flex-1 flex-wrap gap-2">{selected && controls(selected, false)}</div><Button size="sm" variant="outline" onClick={() => setSelected(null)}>{copy('Close', 'Đóng')}</Button></DialogFooter>
+    </Dialog>
+
+    <Dialog open={responsibilityDoc !== null} onOpenChange={open => { if (!open && !busy) setResponsibilityDoc(null) }} ariaLabel={copy('Change responsible person', 'Đổi người phụ trách')}>
+      <DialogHeader><DialogTitle>{copy('Change responsible person', 'Đổi người phụ trách')}</DialogTitle></DialogHeader>
+      <form className="space-y-4" onSubmit={event => { event.preventDefault(); if (!responsibilityDoc || !responsibilityTarget) return; const doc = responsibilityDoc; void run(async () => {
+        await moduleRequest<ModuleDocument>(`/modules/${encodeURIComponent(doc.id)}/responsible-expert`, 'PUT', { expectedVersion: doc.lockVersion, expertId: responsibilityTarget })
+        setResponsibilityDoc(null); setCatalogSelection(null); await load(); setNotice(copy('Responsible person changed. The previous owner is retained in history.', 'Đã đổi người phụ trách. Người phụ trách trước được giữ trong lịch sử.'))
+      }) }}>
+        <DialogBody className="space-y-4">
+          <p className="break-words text-body-sm">{responsibilityDoc && latest(responsibilityDoc).payload.title}</p>
+          <p className="text-body-sm">{copy('Current responsible person', 'Người phụ trách hiện tại')}: {person(responsibilityDoc?.responsibleExpertId ?? responsibilityDoc?.createdBy)}</p>
+          <Field label={copy('New responsible person', 'Người phụ trách mới')}><select className={control} required value={responsibilityTarget} disabled={busy} onChange={event => setResponsibilityTarget(event.target.value)}><option value="">{copy('Select an Expert', 'Chọn Expert')}</option>{experts.filter(expert => expert.id !== (responsibilityDoc?.responsibleExpertId ?? responsibilityDoc?.createdBy)).map(expert => <option key={expert.id} value={expert.id}>{expert.name}</option>)}</select></Field>
+          {!experts.some(expert => expert.id !== (responsibilityDoc?.responsibleExpertId ?? responsibilityDoc?.createdBy)) && <p role="status" className="text-body-sm text-muted-foreground">{copy('No other active Expert is available in this organization.', 'Không có Expert đang hoạt động khác trong tổ chức.')}</p>}
+          <p className="text-body-sm text-muted-foreground">{copy('Editing responsibility will move to the selected Expert. The creator, content and previous owners remain recorded.', 'Quyền chỉnh sửa chuyển sang Expert được chọn. Người tạo, nội dung và lịch sử người phụ trách được giữ nguyên.')}</p>
+          {error && <p role="alert" className="text-body-sm text-destructive">{error}</p>}
+        </DialogBody>
+        <DialogFooter><Button type="button" variant="outline" disabled={busy} onClick={() => setResponsibilityDoc(null)}>{copy('Cancel', 'Hủy')}</Button><Button type="submit" disabled={busy || !responsibilityTarget}>{copy('Confirm transfer', 'Xác nhận chuyển giao')}</Button></DialogFooter>
+      </form>
     </Dialog>
 
     <Dialog open={contentOpen} onOpenChange={open => { if (!busy) setContentOpen(open) }} className="max-w-3xl" ariaLabel={copy('Create content', 'Tạo nội dung')}>

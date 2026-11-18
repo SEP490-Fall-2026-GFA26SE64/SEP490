@@ -6,7 +6,7 @@ import {
   waitFor,
   within,
 } from '@testing-library/react'
-import { MemoryRouter, Route, Routes } from 'react-router-dom'
+import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { ReactNode } from 'react'
 import { LearningModuleReaderPage } from './LearningModuleReaderPage'
@@ -119,14 +119,20 @@ const view: LearningView = {
 }
 
 let progress: LessonProgress[]
-function mount() {
+function LocationEcho() {
+  const loc = useLocation()
+  return <output data-testid="dest-url">{loc.pathname}{loc.search}</output>
+}
+function mount(initialEntry = '/employee/modules/real-module') {
   render(
-    <MemoryRouter initialEntries={['/employee/modules/real-module']}>
+    <MemoryRouter initialEntries={[initialEntry]}>
       <Routes>
         <Route
           path="/employee/modules/:moduleId"
           element={<LearningModuleReaderPage />}
         />
+        <Route path="/employee/upskilling" element={<LocationEcho />} />
+        <Route path="/employee/pathway" element={<LocationEcho />} />
       </Routes>
     </MemoryRouter>,
   )
@@ -287,5 +293,61 @@ describe('Learner content workspace', () => {
     expect(screen.queryByRole('complementary')).toBeNull()
     fireEvent.click(screen.getByRole('button', { name: 'Retry' }))
     await screen.findByRole('heading', { name: 'Read' })
+  })
+  it('shows Back to Skill when opened from Upskilling and omits inline Take Skill Assessment on completion', async () => {
+    vi.mocked(moduleRequest).mockImplementation(async (path) => {
+      if (path.endsWith('/begin'))
+        return {
+          ...view,
+          activeLessonId: 'one',
+          progress: [
+            {
+              lessonId: 'one',
+              positionSeconds: 0,
+              watchedIntervals: [],
+              reachedEnd: true,
+              completedAt: '2026-10-29T00:01:00Z',
+              updatedAt: '2026-10-29T00:01:00Z',
+              coverageUpdatedAt: null,
+            },
+            {
+              lessonId: 'two',
+              positionSeconds: 100,
+              watchedIntervals: [{ start: 0, end: 100 }],
+              reachedEnd: true,
+              completedAt: '2026-10-29T00:02:00Z',
+              updatedAt: '2026-10-29T00:02:00Z',
+              coverageUpdatedAt: null,
+            },
+          ],
+        }
+      if (path === '/text/preview') return { html: '<p>Actual reading body</p>' }
+      return {
+        lessonId: 'one',
+        positionSeconds: 0,
+        watchedIntervals: [],
+        reachedEnd: true,
+        completedAt: '2026-10-29T00:01:00Z',
+        updatedAt: '2026-10-29T00:01:00Z',
+        coverageUpdatedAt: null,
+      }
+    })
+    mount('/employee/modules/real-module?from=upskilling&skillId=skill&level=FOUNDATION')
+    await screen.findByRole('heading', { name: 'Read' })
+    const backLink = screen.getByRole('link', { name: 'Back to Skill' })
+    expect(backLink.getAttribute('href')).toBe(
+      '/employee/upskilling?tab=skills&skillId=skill&level=FOUNDATION',
+    )
+    expect(screen.queryByRole('link', { name: 'Back to Pathway' })).toBeNull()
+    expect(screen.getByText('Module content completed')).toBeTruthy()
+    expect(screen.queryByRole('button', { name: /Take Skill Assessment|Retake Skill Assessment|Resume Skill Assessment/ })).toBeNull()
+    expect(screen.queryByRole('region', { name: 'Skill learning eligibility and optional modules' })).toBeNull()
+    const ctaButton = screen.getByRole('button', { name: 'Back to Skill' })
+    fireEvent.click(ctaButton)
+    await waitFor(() =>
+      expect(screen.getByTestId('dest-url').textContent).toBe(
+        '/employee/upskilling?tab=skills&skillId=skill&level=FOUNDATION',
+      ),
+    )
   })
 })

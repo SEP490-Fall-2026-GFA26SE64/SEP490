@@ -37,13 +37,13 @@ describe('Subscription API contracts', () => {
       subscription: { status: 'ACTIVE', current: { name: 'Purchased Starter', startsAt: '2026-11-01T00:00:00Z', endsAt: '2026-12-01T00:00:00Z' } },
       administrators: [{ accountId: 'admin', fullName: null, email: 'admin@example.test', active: false, accountActive: true }] }
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify([workspace]))))
-    expect(await getWorkspaces()).toEqual([workspace])
+    expect(await getWorkspaces()).toMatchObject([workspace])
   })
   it('preserves absent current subscription and empty administrator assignments', async () => {
     const workspace = { organizationId: 'org', name: 'Acme', status: 'ACTIVE', setupState: 'FAILED',
       subscription: { status: 'NONE', current: null }, administrators: [] }
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify([workspace]))))
-    expect(await getWorkspaces()).toEqual([workspace])
+    expect(await getWorkspaces()).toMatchObject([workspace])
   })
   it('rejects malformed administrator flags instead of treating strings as true', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify([{

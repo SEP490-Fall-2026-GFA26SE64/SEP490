@@ -36,8 +36,8 @@ import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { GlobalSearchbar } from '../components/ui/GlobalSearchbar'
 import { LanguageSwitcher } from '../components/ui/LanguageSwitcher'
 import { NotificationDropdown } from '../components/ui/NotificationDropdown'
-import { useToast } from '../hooks/useToast'
-import { useTranslation } from '../i18n/LanguageContext'
+import { useToast } from "../hooks/useToast";
+import { useTranslation } from "../i18n/LanguageContext";
 import { Badge } from '../components/ui/Badge'
 import {
   getActiveCompany,
@@ -202,6 +202,7 @@ export function WorkspaceLayout({ children, identity: suppliedIdentity, onSignOu
         href: '/employee/pathway',
         icon: <GitFork size={15} />,
       },
+      { label: t('nav.mySkills'), href: '/employee/my-skills', icon: <Award size={15} /> },
     ]
   } else if (isExpert) {
     actorTabs = [
@@ -459,8 +460,8 @@ export function WorkspaceLayout({ children, identity: suppliedIdentity, onSignOu
         path === '/manager'
       )
     }
-    if (itemHref === '/ld-manager/job-positions' || itemHref === '/ld-manager/job-positions') {
-      return path === '/ld-manager/job-positions' || path === '/ld-manager/job-positions' || path === '/ld-manager/disciplines'
+    if (itemHref === '/ld-manager/job-positions') {
+      return path === '/ld-manager/job-positions' || path === '/ld-manager/disciplines'
     }
     if (itemHref === '/ld-manager/approvals') {
       return ['/ld-manager/approvals', '/ld-manager/modules', '/ld-manager/learning-content'].includes(path)
@@ -524,6 +525,7 @@ export function WorkspaceLayout({ children, identity: suppliedIdentity, onSignOu
   React.useEffect(() => {
     const saved = localStorage.getItem(`sidebar_collapsed_${activeActor}`)
     if (trusted && window.matchMedia('(max-width: 768px)').matches) {
+      // oxlint-disable-next-line react/set-state-in-effect -- Restore the sidebar preference from localStorage and the current media query.
       setIsSidebarCollapsed(true)
     } else if (saved !== null) {
       setIsSidebarCollapsed(saved === 'true')

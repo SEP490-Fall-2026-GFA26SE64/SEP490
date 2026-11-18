@@ -1,5 +1,6 @@
+import { useResettableState } from '../../../shared/hooks/useResettableState'
 import * as React from 'react'
-import { useTranslation } from '../../../shared/i18n/LanguageContext'
+import { useTranslation } from "../../../shared/i18n/LanguageContext";
 import {
   AlertTriangle,
   BookOpen,
@@ -32,7 +33,7 @@ import {
   QuickConfigImportModal,
   type ImportPreset,
 } from '../../../shared/components/import/QuickConfigImportModal'
-import { useToast } from '../../../shared/hooks/useToast'
+import { useToast } from "../../../shared/hooks/useToast";
 import { WorkspaceLayout } from '../../../shared/layouts/WorkspaceLayout'
 import { getActiveCompany, resolveWorkspaceOrgId } from '../../../shared/stores/companyStore'
 import { WorkspaceSessionContext } from '../../../shared/auth/workspaceSession'
@@ -91,14 +92,8 @@ const setStoredJobPositions = (organizationId: string, data: JobPositionRecord[]
   try {
     const serialized = JSON.stringify(data)
     const effectiveOrg = organizationId || 'e0000000-0000-0000-0000-000000000001'
-    localStorage.setItem(`${JOB_POSITIONS_STORAGE_PREFIX}${organizationId}`, serialized)
-    localStorage.setItem(`${JOB_POSITIONS_STORAGE_PREFIX_SNAKE}${organizationId}`, serialized)
     localStorage.setItem(`${JOB_POSITIONS_STORAGE_PREFIX}${effectiveOrg}`, serialized)
     localStorage.setItem(`${JOB_POSITIONS_STORAGE_PREFIX_SNAKE}${effectiveOrg}`, serialized)
-    localStorage.setItem(`${JOB_POSITIONS_STORAGE_PREFIX}e0000000-0000-0000-0000-000000000001`, serialized)
-    localStorage.setItem(`${JOB_POSITIONS_STORAGE_PREFIX_SNAKE}e0000000-0000-0000-0000-000000000001`, serialized)
-    localStorage.setItem('adaptlearn_jobPositions_v2_', serialized)
-    localStorage.setItem('adaptlearn_job_positions_v2_', serialized)
     if (typeof window !== 'undefined') {
       window.dispatchEvent(
         new CustomEvent('adaptlearn_job_positions_updated', {
@@ -311,14 +306,13 @@ export function JobPositionsManagementPage() {
       window.removeEventListener('departments_updated', loadManagerDept)
       window.removeEventListener('adaptlearn_job_positions_updated', loadManagerDept)
     }
-  }, [orgId, session?.identity?.accountId, session?.identity?.email, isLdManager])
+  }, [orgId, session?.identity?.accountId, session?.identity?.email, isLdManager, session?.identity?.fullName])
 
   const [jobPositions, setJobPositions] = React.useState<JobPositionRecord[]>([])
   const [isLoading, setIsLoading] = React.useState(true)
   const [searchQuery, setSearchQuery] = React.useState('')
   const [statusFilter, setStatusFilter] = React.useState<'ALL' | 'active' | 'inactive'>('ALL')
-  const [currentPage, setCurrentPage] = React.useState(1)
-
+  
   // Synchronized state and persistent storage updater
   const setAndSaveJobPositions = React.useCallback(
     (updater: JobPositionRecord[] | ((prev: JobPositionRecord[]) => JobPositionRecord[])) => {
@@ -420,6 +414,7 @@ export function JobPositionsManagementPage() {
   }, [orgId])
 
   React.useEffect(() => {
+    // oxlint-disable-next-line react/set-state-in-effect -- Synchronize the pending state of the external data request when its scope changes.
     fetchLiveJobPositions()
   }, [fetchLiveJobPositions])
 
@@ -495,14 +490,12 @@ export function JobPositionsManagementPage() {
 
   // Pagination
   const totalPages = Math.max(1, Math.ceil(filteredJobPositions.length / PAGE_SIZE))
+  const [currentPage, setCurrentPage] = useResettableState(1, [searchQuery, statusFilter])
   const paginatedJobPositions = React.useMemo(() => {
     const startIndex = (currentPage - 1) * PAGE_SIZE
     return filteredJobPositions.slice(startIndex, startIndex + PAGE_SIZE)
   }, [filteredJobPositions, currentPage])
 
-  React.useEffect(() => {
-    setCurrentPage(1)
-  }, [searchQuery, statusFilter])
 
   // Open Create Modal
   const handleOpenCreate = () => {
@@ -549,7 +542,7 @@ export function JobPositionsManagementPage() {
       const filled = INTEREST_FIELDS.filter(key => (occInterests[key] ?? '').trim() !== '')
       if (filled.length !== 0 && filled.length !== 6) throw new Error('Enter all six RIASEC scores or leave all six blank.')
       if (filled.some(key => !/^\d+$/.test(occInterests[key]) || Number(occInterests[key]) > 40)) throw new Error('RIASEC scores must be integers from 0 to 40.')
-      const payload = { code: codeUpper, name: occName.trim(), jobZone: occJobZone, description: occDescription.trim(), ...Object.fromEntries(INTEREST_FIELDS.map(key => [key, filled.length ? Number(occInterests[key]) : null])), ...(editingJobPosition ? {} : { id: codeUpper, status: 'ACTIVE' }) }
+      const payload = { code: codeUpper, name: occName.trim(), jobZone: occJobZone, description: occDescription.trim(), ...Object.fromEntries(INTEREST_FIELDS.map(key => [key, filled.length ? Number(occInterests[key]) : null])), ...(editingJobPosition ? {} : { status: 'ACTIVE' }) }
       const accepted = editingJobPosition ? await updateJobPosition(orgId, editingJobPosition.id, payload) : await createJobPosition(orgId, payload)
       const existing = jobPositions.find(p => p.id === accepted.id)
       const newOcc: JobPositionRecord = {

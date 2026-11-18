@@ -112,6 +112,7 @@ describe('Administrator page ownership', () => {
     show()
     await screen.findByText('Actual Employee')
     expect(screen.getByRole('button', { name: 'Create User' })).toHaveProperty('disabled', true)
+    expect(screen.getByRole('button', { name: 'Import Excel' })).toHaveProperty('disabled', true)
     expect(screen.getByRole('button', { name: 'Edit' })).toHaveProperty('disabled', true)
     expect(screen.getByRole('button', { name: 'Deactivate' })).toHaveProperty('disabled', false)
   })

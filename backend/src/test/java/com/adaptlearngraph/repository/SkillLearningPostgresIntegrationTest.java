@@ -32,7 +32,7 @@ class SkillLearningPostgresIntegrationTest {
                 }
                 var flyway=Flyway.configure().dataSource(source).locations("filesystem:src/main/resources/db/"+lineage).load();flyway.migrate();
                 assertEquals(1,jdbc.queryForObject("SELECT count(*) FROM platform.learning_module_completion",Integer.class));
-                assertTrue(jdbc.queryForObject("SELECT document=?::jsonb FROM platform.module_authoring WHERE module_id='complete'",Boolean.class,document));
+                assertTrue(jdbc.queryForObject("SELECT document-'responsibleExpertId'=?::jsonb FROM platform.module_authoring WHERE module_id='complete'",Boolean.class,document));
                 try(var context=JpaTestContext.start(source)) {
                     var completions=context.bean(LearningModuleCompletionJpaRepository.class);
                     var admission=context.bean(LearningSelfStudyJpaRepository.class);

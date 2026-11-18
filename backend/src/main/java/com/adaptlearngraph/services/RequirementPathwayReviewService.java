@@ -266,4 +266,9 @@ public final class RequirementPathwayReviewService {
             return retain(actor,"RULE_REFRESH",key,hash,rules.own(actor.organizationId(),row.getLearnerId(),id).orElseThrow());
         });
     }
+    public RequirementPathwayHttpReceipt saveSelectionHttp(UUID id,String key,Selection command) { return RequirementPathwayHttpReceipt.from(saveSelection(id,key,command)); }
+    public RequirementPathwayHttpReceipt approveHttp(UUID id,String key,Expected expected) { return RequirementPathwayHttpReceipt.from(approve(id,key,expected)); }
+    public RequirementPathwayHttpReceipt rejectHttp(UUID id,String key,Reject command) { return RequirementPathwayHttpReceipt.from(reject(id,key,command)); }
+    public RequirementPathwayHttpReceipt bypassHttp(UUID id,String key,Bypass command) { return RequirementPathwayHttpReceipt.from(bypass(id,key,command)); }
+    public RequirementPathwayHttpReceipt refreshHttp(UUID id,String key,Expected expected) { return RequirementPathwayHttpReceipt.from(refresh(id,key,expected)); }
 }

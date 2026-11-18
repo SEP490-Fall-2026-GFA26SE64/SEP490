@@ -9,7 +9,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
@@ -26,14 +26,14 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@org.springframework.context.annotation.Import({ModelMapperConfiguration.class, JobPositionMappings.class, JobPositionApplicationService.class})
+@org.springframework.context.annotation.Import({ModelMapperConfiguration.class, JobPositionMappings.class, JobPositionControllerTest.Services.class})
 @WebMvcTest(controllers = JobPositionController.class)
 class JobPositionControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean
+    @MockitoBean
     private GetJobPositionsUseCase getJobPositionsUseCase;
 
     @Test
@@ -41,8 +41,8 @@ class JobPositionControllerTest {
     @DisplayName("GET /api/v1/organizations/{orgId}/job-positions returns mapped list of job positions")
     void listJobPositions_returnsList() throws Exception {
         List<JobPosition> positions = List.of(
-                new JobPosition("pos-1", "15-1252.00", "Software Developers", 4, 16.0, 84.0, 22.0, 13.0, 14.0, 77.0, "ACTIVE", "0.9.0", 3, 12),
-                new JobPosition("pos-2", "15-1243.00", "Database Architects", 4, 10.0, 75.0, 15.0, 20.0, 30.0, 80.0, "ACTIVE", "0.9.0", 2, 8)
+                new JobPosition("pos-1", "15-1252.00", "Software Developers", 4, "ACTIVE", "0.9.0", 3, 12, null, 16, 40, 22, 13, 14, 40),
+                new JobPosition("pos-2", "15-1243.00", "Database Architects", 4, "ACTIVE", "0.9.0", 2, 8, null, 10, 40, 15, 20, 30, 40)
         );
 
         given(getJobPositionsUseCase.listJobPositions("org-technova")).willReturn(positions);
@@ -62,7 +62,7 @@ class JobPositionControllerTest {
     @DisplayName("GET /api/v1/organizations/{orgId}/job-positions backward compatible alias returns mapped list")
     void listJobPositions_aliasReturnsList() throws Exception {
         List<JobPosition> positions = List.of(
-                new JobPosition("pos-1", "15-1252.00", "Software Developers", 4, 16.0, 84.0, 22.0, 13.0, 14.0, 77.0, "ACTIVE", "0.9.0", 3, 12)
+                new JobPosition("pos-1", "15-1252.00", "Software Developers", 4, "ACTIVE", "0.9.0", 3, 12, null, 16, 40, 22, 13, 14, 40)
         );
 
         given(getJobPositionsUseCase.listJobPositions("org-technova")).willReturn(positions);
@@ -78,8 +78,8 @@ class JobPositionControllerTest {
     @WithMockUser
     @DisplayName("POST /api/v1/organizations/{orgId}/job-positions creates job position")
     void createJobPosition_success() throws Exception {
-        JobPosition created = new JobPosition("15-1252.00", "15-1252.00", "Software Developers", 4, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, "ACTIVE", "0.9.0", 0, 0);
-        given(getJobPositionsUseCase.saveJobPosition(eq("org-technova"), any(JobPosition.class))).willReturn(created);
+        JobPosition created = new JobPosition("15-1252.00", "15-1252.00", "Software Developers", 4, "ACTIVE", "0.9.0", 0, 0, null, 0, 0, 0, 0, 0, 0);
+        given(getJobPositionsUseCase.saveChange(eq("org-technova"), any(com.adaptlearngraph.entities.domain.JobPositionChange.class))).willReturn(created);
 
         mockMvc.perform(post("/api/v1/organizations/org-technova/job-positions")
                         .with(csrf())
@@ -103,6 +103,14 @@ class JobPositionControllerTest {
         mockMvc.perform(delete("/api/v1/organizations/org-technova/job-positions/15-1252.00")
                         .with(csrf()))
                 .andExpect(status().isNoContent());
+    }
+
+    @org.springframework.boot.test.context.TestConfiguration(proxyBeanMethods = false)
+    static class Services {
+        @org.springframework.context.annotation.Bean
+        JobPositionApplicationService service(GetJobPositionsUseCase port, org.modelmapper.ModelMapper mapper) {
+            return new JobPositionApplicationService(port, mapper, org -> "manager-test");
+        }
     }
 }
 

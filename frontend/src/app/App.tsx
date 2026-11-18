@@ -1,55 +1,7 @@
-import { AdaptivePathwayPage } from '../features/employee/pathway/AdaptivePathwayPage'
-import { LearningUploadSettingsPage } from '../features/platform-admin/LearningUploadSettingsPage'
-import { PlatformGraphBenchmarkPage } from '../features/platform-admin/PlatformGraphBenchmarkPage'
-import { LearningModuleReaderPage } from '../features/employee/modules/LearningModuleReaderPage'
+import { lazy, Suspense } from 'react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
-import { AdminDashboardPage } from '../features/administration/dashboard/AdminDashboardPage'
-import { DesignSystemShowcasePage } from '../features/administration/design-system/DesignSystemShowcasePage'
-import { KnowledgeGraphPage } from '../features/administration/knowledge-graph/KnowledgeGraphPage'
-import { LoginPage } from '../features/auth/LoginPage'
-import { ForgotPasswordPage } from '../features/auth/ForgotPasswordPage'
-import { ResetPasswordPage } from '../features/auth/ResetPasswordPage'
-import { MemberActivationPage } from '../features/subscription/WorkspaceLoginPage'
 import { WorkspaceBoundary } from '../features/subscription/WorkspaceBoundary'
-import { AssessmentPage } from '../features/employee/assessment/AssessmentPage'
-import { RiasecRedirect } from '../features/employee/riasec/riasecNavigation'
-import { EmployeeBaselineRoute } from '../features/employee/baseline-assessment/EmployeeBaselinePage'
-import { MyMasteryPage } from '../features/employee/baseline-assessment/MyMasteryPage'
-import { EmployeeOverviewPage } from '../features/employee/overview/EmployeeOverviewPage'
-import { EmployeeTargetRolesPage, EmployeeUpskillingPage } from '../features/employee/target-roles/EmployeeTargetRolesPage'
-import { AssessmentBankPage } from '../features/manager/assessment-bank/AssessmentBankPage'
-import { AdaptiveBaselineRoute } from '../features/manager/baseline-assessments/AdaptiveBaselinePage'
-import { SkillAssessmentConfigurationPage } from '../features/manager/baseline-assessments/ScopedAssessmentConfiguration'
-import { LegacyBaselineAssessmentRedirect } from '../features/manager/baseline-assessments/LegacyBaselineAssessmentRedirect'
-import { LearningModulesPage } from '../features/manager/modules/LearningModulesPage'
-import { CompetencyOntologyPage } from '../features/manager/ontology/CompetencyOntologyPage'
-import { CertificatesPage } from '../features/expert/certificates/CertificatesPage'
-import { LearningContentAuthoringPage } from '../features/expert/content/LearningContentAuthoringPage'
-import { ExpertAssignedRolesPage } from '../features/expert/target-roles/ExpertAssignedRolesPage'
-import { ExpertPathwayReviewPage } from '../features/expert/guidance-review/ExpertGuidanceReviewPage'
-import { ExpertPathwayDetailPage } from '../features/expert/pathway-review/ExpertPathwayDetailPage'
-import { JobPositionsManagementPage } from '../features/manager/job-positions/JobPositionsManagementPage'
-import { DevelopmentDashboardPage } from '../features/manager/development/DevelopmentDashboardPage'
-import { TargetRolesPage } from '../features/manager/target-roles/TargetRolesPage'
-import { EmployeesPage } from '../features/manager/development/EmployeesPage'
-import { EmployeeDevelopmentPage } from '../features/manager/development/EmployeeDevelopmentPage'
-import { UserManagementPage } from '../features/administration/user-management/UserManagementPage'
-import { ProfilePage } from '../features/profile/ProfilePage'
-import { SystemStatusPage } from '../features/system/SystemStatusPage'
-import { GuestRegisterPage } from '../features/guest/GuestRegisterPage'
-import { SubscriptionPlansPage } from '../features/guest/SubscriptionPlansPage'
-import { PayOsCheckoutPage } from '../features/guest/PayOsCheckoutPage'
-import { GuestSubscriptionPage } from '../features/subscription/GuestSubscriptionPage'
-import { AdminPaymentResultPage } from '../features/subscription/AdminPaymentResultPage'
-import { WorkspaceProvisioningPage } from '../features/guest/WorkspaceProvisioningPage'
-import { PlatformWorkspacePage } from '../features/subscription/PlatformWorkspaceControls'
-import { PlatformSubscriptionsConfigPage } from '../features/platform-admin/PlatformSubscriptionsConfigPage'
-import { PlatformActivityMonitoringPage } from '../features/platform-admin/PlatformActivityMonitoringPage'
-import { DepartmentsManagementPage } from '../features/administration/departments/DepartmentsManagementPage'
-import { OrganizationSettingsPage } from '../features/administration/settings/OrganizationSettingsPage'
-import { OrganizationSubscriptionPage } from '../features/administration/subscription/OrganizationSubscriptionPage'
-import { LdModuleWorkspaceRoute } from '../features/manager/approvals/ContentApprovalQueuePage'
 import { Toaster } from '../shared/components/ui/Toast'
 import { ToastProvider } from '../shared/hooks/useToast'
 import { LanguageProvider } from '../shared/i18n/LanguageContext'
@@ -58,6 +10,58 @@ import { WorkspaceSlugContext, workspaceBase } from '../shared/auth/workspacePat
 const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: false, staleTime: 30_000 } },
 })
+
+const AdaptivePathwayPage = lazy(() => import('../features/employee/pathway/AdaptivePathwayPage').then(module => ({ default: module.AdaptivePathwayPage })))
+const LearningUploadSettingsPage = lazy(() => import('../features/platform-admin/LearningUploadSettingsPage').then(module => ({ default: module.LearningUploadSettingsPage })))
+const PlatformGraphBenchmarkPage = lazy(() => import('../features/platform-admin/PlatformGraphBenchmarkPage').then(module => ({ default: module.PlatformGraphBenchmarkPage })))
+const LearningModuleReaderPage = lazy(() => import('../features/employee/modules/LearningModuleReaderPage').then(module => ({ default: module.LearningModuleReaderPage })))
+const AdminDashboardPage = lazy(() => import('../features/administration/dashboard/AdminDashboardPage').then(module => ({ default: module.AdminDashboardPage })))
+const DesignSystemShowcasePage = lazy(() => import('../features/administration/design-system/DesignSystemShowcasePage').then(module => ({ default: module.DesignSystemShowcasePage })))
+const KnowledgeGraphPage = lazy(() => import('../features/administration/knowledge-graph/KnowledgeGraphPage').then(module => ({ default: module.KnowledgeGraphPage })))
+const LoginPage = lazy(() => import('../features/auth/LoginPage').then(module => ({ default: module.LoginPage })))
+const ForgotPasswordPage = lazy(() => import('../features/auth/ForgotPasswordPage').then(module => ({ default: module.ForgotPasswordPage })))
+const ResetPasswordPage = lazy(() => import('../features/auth/ResetPasswordPage').then(module => ({ default: module.ResetPasswordPage })))
+const MemberActivationPage = lazy(() => import('../features/subscription/WorkspaceLoginPage').then(module => ({ default: module.MemberActivationPage })))
+const AssessmentPage = lazy(() => import('../features/employee/assessment/AssessmentPage').then(module => ({ default: module.AssessmentPage })))
+const RiasecRedirect = lazy(() => import('../features/employee/riasec/riasecNavigation').then(module => ({ default: module.RiasecRedirect })))
+const EmployeeBaselineRoute = lazy(() => import('../features/employee/baseline-assessment/EmployeeBaselinePage').then(module => ({ default: module.EmployeeBaselineRoute })))
+const MySkillsPage = lazy(() => import('../features/employee/baseline-assessment/MySkillsPage').then(module => ({ default: module.MySkillsPage })))
+const MyMasteryPage = lazy(() => import('../features/employee/baseline-assessment/MyMasteryPage').then(module => ({ default: module.MyMasteryPage })))
+const EmployeeOverviewPage = lazy(() => import('../features/employee/overview/EmployeeOverviewPage').then(module => ({ default: module.EmployeeOverviewPage })))
+const EmployeeTargetRolesPage = lazy(() => import('../features/employee/target-roles/EmployeeTargetRolesPage').then(module => ({ default: module.EmployeeTargetRolesPage })))
+const EmployeeUpskillingPage = lazy(() => import('../features/employee/target-roles/EmployeeTargetRolesPage').then(module => ({ default: module.EmployeeUpskillingPage })))
+const AssessmentBankPage = lazy(() => import('../features/manager/assessment-bank/AssessmentBankPage').then(module => ({ default: module.AssessmentBankPage })))
+const AdaptiveBaselineRoute = lazy(() => import('../features/manager/baseline-assessments/AdaptiveBaselinePage').then(module => ({ default: module.AdaptiveBaselineRoute })))
+const SkillAssessmentConfigurationPage = lazy(() => import('../features/manager/baseline-assessments/ScopedAssessmentConfiguration').then(module => ({ default: module.SkillAssessmentConfigurationPage })))
+const LegacyBaselineAssessmentRedirect = lazy(() => import('../features/manager/baseline-assessments/LegacyBaselineAssessmentRedirect').then(module => ({ default: module.LegacyBaselineAssessmentRedirect })))
+const LearningModulesPage = lazy(() => import('../features/manager/modules/LearningModulesPage').then(module => ({ default: module.LearningModulesPage })))
+const CompetencyOntologyPage = lazy(() => import('../features/manager/ontology/CompetencyOntologyPage').then(module => ({ default: module.CompetencyOntologyPage })))
+const CertificatesPage = lazy(() => import('../features/expert/certificates/CertificatesPage').then(module => ({ default: module.CertificatesPage })))
+const LearningContentAuthoringPage = lazy(() => import('../features/expert/content/LearningContentAuthoringPage').then(module => ({ default: module.LearningContentAuthoringPage })))
+const ExpertAssignedRolesPage = lazy(() => import('../features/expert/target-roles/ExpertAssignedRolesPage').then(module => ({ default: module.ExpertAssignedRolesPage })))
+const ExpertPathwayReviewPage = lazy(() => import('../features/expert/guidance-review/ExpertGuidanceReviewPage').then(module => ({ default: module.ExpertPathwayReviewPage })))
+const ExpertPathwayDetailPage = lazy(() => import('../features/expert/pathway-review/ExpertPathwayDetailPage').then(module => ({ default: module.ExpertPathwayDetailPage })))
+const JobPositionsManagementPage = lazy(() => import('../features/manager/job-positions/JobPositionsManagementPage').then(module => ({ default: module.JobPositionsManagementPage })))
+const DevelopmentDashboardPage = lazy(() => import('../features/manager/development/DevelopmentDashboardPage').then(module => ({ default: module.DevelopmentDashboardPage })))
+const TargetRolesPage = lazy(() => import('../features/manager/target-roles/TargetRolesPage').then(module => ({ default: module.TargetRolesPage })))
+const EmployeesPage = lazy(() => import('../features/manager/development/EmployeesPage').then(module => ({ default: module.EmployeesPage })))
+const EmployeeDevelopmentPage = lazy(() => import('../features/manager/development/EmployeeDevelopmentPage').then(module => ({ default: module.EmployeeDevelopmentPage })))
+const UserManagementPage = lazy(() => import('../features/administration/user-management/UserManagementPage').then(module => ({ default: module.UserManagementPage })))
+const ProfilePage = lazy(() => import('../features/profile/ProfilePage').then(module => ({ default: module.ProfilePage })))
+const SystemStatusPage = lazy(() => import('../features/system/SystemStatusPage').then(module => ({ default: module.SystemStatusPage })))
+const GuestRegisterPage = lazy(() => import('../features/guest/GuestRegisterPage').then(module => ({ default: module.GuestRegisterPage })))
+const SubscriptionPlansPage = lazy(() => import('../features/guest/SubscriptionPlansPage').then(module => ({ default: module.SubscriptionPlansPage })))
+const PayOsCheckoutPage = lazy(() => import('../features/guest/PayOsCheckoutPage').then(module => ({ default: module.PayOsCheckoutPage })))
+const GuestSubscriptionPage = lazy(() => import('../features/subscription/GuestSubscriptionPage').then(module => ({ default: module.GuestSubscriptionPage })))
+const AdminPaymentResultPage = lazy(() => import('../features/subscription/AdminPaymentResultPage').then(module => ({ default: module.AdminPaymentResultPage })))
+const WorkspaceProvisioningPage = lazy(() => import('../features/guest/WorkspaceProvisioningPage').then(module => ({ default: module.WorkspaceProvisioningPage })))
+const PlatformWorkspacePage = lazy(() => import('../features/subscription/PlatformWorkspaceControls').then(module => ({ default: module.PlatformWorkspacePage })))
+const PlatformSubscriptionsConfigPage = lazy(() => import('../features/platform-admin/PlatformSubscriptionsConfigPage').then(module => ({ default: module.PlatformSubscriptionsConfigPage })))
+const PlatformActivityMonitoringPage = lazy(() => import('../features/platform-admin/PlatformActivityMonitoringPage').then(module => ({ default: module.PlatformActivityMonitoringPage })))
+const DepartmentsManagementPage = lazy(() => import('../features/administration/departments/DepartmentsManagementPage').then(module => ({ default: module.DepartmentsManagementPage })))
+const OrganizationSettingsPage = lazy(() => import('../features/administration/settings/OrganizationSettingsPage').then(module => ({ default: module.OrganizationSettingsPage })))
+const OrganizationSubscriptionPage = lazy(() => import('../features/administration/subscription/OrganizationSubscriptionPage').then(module => ({ default: module.OrganizationSubscriptionPage })))
+const LdModuleWorkspaceRoute = lazy(() => import('../features/manager/approvals/ContentApprovalQueuePage').then(module => ({ default: module.LdModuleWorkspaceRoute })))
 
 const GuestLandingPage = lazy(() => import('../features/guest/GuestLandingPage').then(module => ({ default: module.GuestLandingPage })))
 
@@ -70,9 +74,9 @@ export default function App() {
         <LanguageProvider>
           <BrowserRouter basename={workspace?.basename}>
           <WorkspaceSlugContext.Provider value={workspace?.slug ?? null}>
-          <WorkspaceBoundary><Routes>
+          <WorkspaceBoundary><Suspense fallback={<div role="status" className="p-6 text-muted-foreground">Loading...</div>}><Routes>
             {/* Auth routes */}
-            <Route path="/" element={<Suspense fallback={<div role="status" className="p-6 text-muted-foreground">Loading...</div>}><GuestLandingPage /></Suspense>} />
+            <Route path="/" element={<GuestLandingPage />} />
             <Route path="/home" element={<Navigate to="/" replace />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/forgot-password" element={<ForgotPasswordPage />} />
@@ -107,6 +111,7 @@ export default function App() {
             <Route path="/employee/gap-analysis" element={<Navigate to="/employee/overview" replace />} />
             <Route path="/employee/assessment" element={<AssessmentPage />} />
             <Route path="/employee/baseline-assessment" element={<EmployeeBaselineRoute />} />
+            <Route path="/employee/my-skills" element={<MySkillsPage />} />
             <Route path="/employee/my-mastery" element={<MyMasteryPage />} />
             <Route path="/employee/baseline-assessment/:attemptId" element={<EmployeeBaselineRoute />} />
             <Route path="/employee/profile" element={<Navigate to="/profile" replace />} />
@@ -144,7 +149,6 @@ export default function App() {
 
             {/* 3. L&D Manager routes (JobPositions, Target Roles, Approvals, Team Matrix, Outcomes, Users) */}
             <Route path="/ld-manager" element={<Navigate to="/ld-manager/dashboard" replace />} />
-            <Route path="/ld-manager/job-positions" element={<JobPositionsManagementPage />} />
             <Route path="/ld-manager/job-positions" element={<JobPositionsManagementPage />} />
             <Route path="/ld-manager/disciplines" element={<Navigate to="/ld-manager/job-positions" replace />} />
             <Route path="/ld-manager/target-roles" element={<TargetRolesPage />} />
@@ -210,7 +214,7 @@ export default function App() {
 
             {/* Fallback */}
             <Route path="*" element={<Navigate to="/employee/overview" replace />} />
-          </Routes></WorkspaceBoundary>
+          </Routes></Suspense></WorkspaceBoundary>
           </WorkspaceSlugContext.Provider>
           <Toaster />
         </BrowserRouter>
@@ -219,4 +223,3 @@ export default function App() {
     </QueryClientProvider>
   )
 }
-import { lazy, Suspense } from 'react'

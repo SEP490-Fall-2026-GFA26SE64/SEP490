@@ -29,9 +29,9 @@ function entry(value: unknown): KnowledgeEntry {
   if (kind === 'REVIEW' && !['NEED_REVIEW', 'RESOLVED'].includes(result.reviewState ?? '')) throw Error()
   return result
 }
-export async function readKnowledgeProfile(page: number, signal?: AbortSignal): Promise<KnowledgePage> {
+export async function readKnowledgeProfile(page: number, signal?: AbortSignal, skillId?: string): Promise<KnowledgePage> {
   let response: Response
-  try { response = await workspaceFetch(`/api/v1/employee/knowledge-profile?page=${page}`, { signal }) }
+  try { response = await workspaceFetch(`/api/v1/employee/knowledge-profile?page=${page}${skillId ? '&skillId=' + encodeURIComponent(skillId) : ''}`, { signal }) }
   catch (cause) { if (signal?.aborted) throw cause; throw new RoleFlowError('NETWORK_ERROR') }
   const value: unknown = await response.json().catch(() => { throw new RoleFlowError('INVALID_RESPONSE', response.status) })
   if (!response.ok) throw new RoleFlowError(typeof object(value).code === 'string' ? String(object(value).code) : 'DEPENDENCY_UNAVAILABLE', response.status)
@@ -40,4 +40,17 @@ export async function readKnowledgeProfile(page: number, signal?: AbortSignal): 
     if (!Array.isArray(data.items) || data.items.length > 20 || number(data.page) !== page || number(data.pageSize) !== 20) throw Error()
     return { items: data.items.map(entry), page, pageSize: 20, hasMore: boolean(data.hasMore) }
   } catch { throw new RoleFlowError('INVALID_RESPONSE', response.status) }
+}
+
+
+/** Read the selected Skill only; never truncate history and infer missing achievement from a partial page. */
+export async function readSkillKnowledgeProfile(skillId: string, signal?: AbortSignal): Promise<KnowledgeEntry[]> {
+  const entries: KnowledgeEntry[] = []
+  for (let page = 0; page <= 250; page++) {
+    const data = await readKnowledgeProfile(page, signal, skillId)
+    if (data.items.some(entry => entry.skillId !== skillId)) throw new RoleFlowError('INVALID_RESPONSE')
+    entries.push(...data.items)
+    if (!data.hasMore) return entries
+  }
+  throw new RoleFlowError('PROFILE_HISTORY_LIMIT')
 }

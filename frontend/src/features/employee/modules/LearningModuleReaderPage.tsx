@@ -1,24 +1,18 @@
-import { useQuery } from '@tanstack/react-query'
 import { WorkspaceSessionContext } from '../../../shared/auth/workspaceSession'
-import { readRulePathway, type RulePathway, type RuleStep, type RuleModuleOption } from '../../../shared/api/requirementPathway'
-import { InitialPathwayFeedback } from '../../../shared/components/InitialPathwayFeedback'
-import { SkillLearningPanel } from './SkillLearningPanel'
-import { AssessmentStatus, SkillAssessmentEntry } from '../baseline-assessment/SkillAssessmentEntry'
-import { usePathwayAssessmentStates } from '../baseline-assessment/usePathwayAssessmentStates'
 import { useCallback, useContext, useEffect, useEffectEvent, useRef, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import type { MouseEvent } from 'react'
 import { LearningReaderHeader } from './LearningReaderHeader'
 import { LearningLessonSidebar } from './LearningLessonSidebar'
 import '../../../shared/styles/learningReader.css'
 import {
+  ArrowRight,
   Check,
   ChevronLeft,
   ChevronRight,
 } from 'lucide-react'
 import { LearnerLessonLayout } from '../../../shared/layouts/LearnerLessonLayout'
 import { Button } from '../../../shared/components/ui/Button'
-import { Badge } from '../../../shared/components/ui/Badge'
 import { Heading } from '../../../shared/components/typography/Heading'
 import {
   Dialog,
@@ -46,6 +40,7 @@ function LearningModuleReader({ moduleId }: { moduleId: string }) {
   const { language } = useTranslation()
   const vi = language === 'vi'
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [saving, setSaving] = useState(0)
   const [unsaved, setUnsaved] = useState(false)
@@ -236,6 +231,19 @@ function LearningModuleReader({ moduleId }: { moduleId: string }) {
   }
   const activeIndex = lessons.findIndex((lesson) => lesson.id === active)
   const isLast = activeIndex === lessons.length - 1
+  const fromUpskilling = searchParams.get('from') === 'upskilling'
+  const targetSkillId = searchParams.get('skillId') || (view?.revision.payload.teachings.length === 1 ? view.revision.payload.teachings[0].skillId : '')
+  const targetLevel = searchParams.get('level') || view?.revision.payload.knowledgeLevel || ''
+  const upskillSearch = (() => {
+    const params = new URLSearchParams({ tab: 'skills' })
+    if (targetSkillId) params.set('skillId', targetSkillId)
+    if (targetLevel) params.set('level', targetLevel)
+    return params.toString()
+  })()
+  const returnDestination = fromUpskilling ? `/employee/upskilling?${upskillSearch}` : '/employee/pathway'
+  const returnLabel = fromUpskilling
+    ? (targetSkillId ? (vi ? 'Quay lại kỹ năng' : 'Back to Skill') : (vi ? 'Về trang Kỹ năng' : 'Back to Upskilling'))
+    : (vi ? 'Về lộ trình' : 'Back to Pathway')
   return (
     <LearnerLessonLayout>
       <div
@@ -247,7 +255,7 @@ function LearningModuleReader({ moduleId }: { moduleId: string }) {
           if (saved?.completedAt) return seconds
           const covered = lesson.type === 'VIDEO' ? (saved?.watchedIntervals.reduce((sum, interval) => sum + interval.end - interval.start, 0) ?? 0) : 0
           return seconds + Math.max(0, lesson.durationSeconds - covered)
-        }, 0)} sidebarOpen={sidebarOpen} busy={busy} saving={saving > 0} vi={vi} onToggle={() => setSidebarOpen(open => !open)} onExit={exitReader} />
+        }, 0)} sidebarOpen={sidebarOpen} busy={busy} saving={saving > 0} vi={vi} backTo={returnDestination} backLabel={returnLabel} onToggle={() => setSidebarOpen(open => !open)} onExit={exitReader} />
 
         {error && (
           <div
@@ -289,7 +297,7 @@ function LearningModuleReader({ moduleId }: { moduleId: string }) {
                   aria-label={vi ? 'Nội dung bài học' : 'Lesson content'}
                   role="region"
                 >
-                  {!current && <div role="status" className="rounded-xl border border-border bg-card p-6"><Heading level={2} size="card">{vi ? 'Chưa có bài học' : 'No lessons available'}</Heading><p className="mt-2 text-body-sm text-muted-foreground">{vi ? 'Module này chưa có nội dung để học. Quay lại lộ trình hoặc báo cho Expert phụ trách.' : 'This module has no available lessons. Return to your pathway or contact the responsible Expert.'}</p></div>}
+                  {!current && <div role="status" className="rounded-xl border border-border bg-card p-6"><Heading level={2} size="card">{vi ? 'Chưa có bài học' : 'No lessons available'}</Heading><p className="mt-2 text-body-sm text-muted-foreground">{fromUpskilling ? (vi ? 'Module này chưa có nội dung để học. Quay lại trang kỹ năng hoặc báo cho Expert phụ trách.' : 'This module has no available lessons. Return to your skill modules or contact the responsible Expert.') : (vi ? 'Module này chưa có nội dung để học. Quay lại lộ trình hoặc báo cho Expert phụ trách.' : 'This module has no available lessons. Return to your pathway or contact the responsible Expert.')}</p></div>}
                   {current && (
                     <article aria-labelledby="learning-lesson-title" className="learning-document-page mx-auto flex w-full max-w-6xl flex-col space-y-6 py-2">
                       <div className="space-y-6">
@@ -457,13 +465,33 @@ function LearningModuleReader({ moduleId }: { moduleId: string }) {
                               : 'Next lesson'}
                           </Button>
                         ) : (
-                          <p className="text-body-sm text-muted-foreground" role="status">{vi ? 'Điều kiện thi kỹ năng được hiển thị bên dưới.' : 'Skill learning eligibility is shown below.'}</p>
+                          <p className="text-body-sm text-muted-foreground" role="status">{vi ? 'Bài học cuối trong module này.' : 'Final lesson in this module.'}</p>
                         )}
                       </div>
-                      {completed === lessons.length && lessons.length > 0 && <div role="status" className="rounded-lg border border-success/30 bg-success/10 p-4 text-body-sm"><p className="font-semibold text-success">{vi ? 'Đã hoàn thành nội dung module' : 'Module content completed'}</p><p className="mt-1 text-muted-foreground">{vi ? 'Tiếp tục đánh giá kỹ năng bên dưới. Hoàn thành nội dung chưa đồng nghĩa đã đạt kỹ năng.' : 'Continue to the Skill Assessment below. Content completion is separate from official skill achievement.'}</p></div>}
-                      {view.revision.payload.teachings.length === 1 && <SkillLearningPanel skillId={view.revision.payload.teachings[0].skillId} skillName={view.revision.payload.teachings[0].skillName} moduleId={moduleId} completedLessons={view.progress.filter(p => p.completedAt !== null).length} />}
-                      {lessons.length > 0 && completed === lessons.length && view.revision.payload.knowledgeLevel && view.revision.payload.teachings.length === 1 && <CompletedModuleAssessmentLink moduleId={moduleId} revision={view.revision.number} />}
-                      {view.revision.payload.teachings.length !== 1 && <p role="status" className="text-body-sm text-muted-foreground">{vi ? 'Liên kết kỹ năng của phiên bản này cần được đối soát trước khi xác định điều kiện thi.' : 'This historical version needs skill mapping reconciliation before learning eligibility can be determined.'}</p>}
+                      {completed === lessons.length && lessons.length > 0 && (
+                        <div role="status" className="flex flex-col gap-3 rounded-lg border border-success/30 bg-success/10 p-4 text-body-sm sm:flex-row sm:items-center sm:justify-between">
+                          <div className="space-y-1">
+                            <p className="font-semibold text-success">{vi ? 'Đã hoàn thành nội dung module' : 'Module content completed'}</p>
+                            <p className="text-muted-foreground">
+                              {fromUpskilling
+                                ? (vi ? 'Bạn đã hoàn thành toàn bộ bài học của module này. Quay lại trang kỹ năng để kiểm tra điều kiện và làm bài đánh giá kỹ năng (Skill Assessment) khi sẵn sàng.' : 'You have completed all lessons in this module. Return to the skill details page to review your eligibility and take the Skill Assessment when ready.')
+                                : (vi ? 'Bạn đã hoàn thành toàn bộ bài học của module này. Quay lại lộ trình học tập để tiếp tục bước tiếp theo hoặc làm bài đánh giá kỹ năng (Skill Assessment).' : 'You have completed all lessons in this module. Return to your learning pathway to continue or take the Skill Assessment when ready.')}
+                            </p>
+                          </div>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            disabled={busy}
+                            onClick={() => void run(async () => { await flushProgress(); navigate(returnDestination) })}
+                            rightIcon={<ArrowRight size={15} aria-hidden="true" />}
+                            className="shrink-0 self-start border-success/40 bg-card text-foreground hover:bg-success/15 sm:self-center"
+                          >
+                            {fromUpskilling
+                              ? (targetSkillId ? (vi ? 'Quay lại kỹ năng' : 'Back to Skill') : (vi ? 'Về trang Kỹ năng' : 'Back to Upskilling'))
+                              : (vi ? 'Về lộ trình' : 'Back to Pathway')}
+                          </Button>
+                        </div>
+                      )}
                       <div className="flex justify-end">
                         <Button
                           variant="ghost"
@@ -589,26 +617,4 @@ function LearningModuleReader({ moduleId }: { moduleId: string }) {
       </div>
     </LearnerLessonLayout>
   )
-}
-
-function CompletedModuleAssessmentLink({ moduleId, revision }: { moduleId: string; revision: number }) {
-  const { t } = useTranslation(), identity = useContext(WorkspaceSessionContext)?.identity
-  const scope = `${identity?.organizationId}:${identity?.accountId}:${identity?.roles?.join(',')}`
-  const query = useQuery({ queryKey: ['initialPathway', scope, 'moduleAssessmentEntry', moduleId, revision], queryFn: ({ signal }) => readRulePathway(null, signal), enabled: Boolean(identity?.organizationId && identity?.accountId), retry: false, gcTime: 0,
-    refetchInterval: current => !current.state.error && current.state.data && !current.state.data.archived ? 5000 : false })
-  if (query.isPending) return <p className="text-body-sm text-muted-foreground" role="status">{t('initialPathway.loading')}</p>
-  if (query.error) return <InitialPathwayFeedback error={query.error} onRetry={() => void query.refetch()} />
-  const pathway = query.data
-  if (!pathway || pathway.archived) return null
-  const step = pathway.steps.find(step => step.state !== 'BYPASSED' && step.options.some(option => option.moduleId === moduleId && option.moduleRevision === revision))
-  const option = step?.options.find(option => option.moduleId === moduleId && option.moduleRevision === revision)
-  if (!step || !option) return null
-  if (!option.completedAt) return <Button size="sm" variant="outline" onClick={() => void query.refetch()}>{t('initialPathway.refresh')}</Button>
-  return <ReaderModuleAssessment pathway={pathway} step={step} option={option} />
-}
-
-function ReaderModuleAssessment({ pathway, step, option }: { pathway: RulePathway; step: RuleStep; option: RuleModuleOption }) {
-  const { t } = useTranslation()
-  const assessmentState = usePathwayAssessmentStates({ ...pathway, steps: [{ ...step, options: [option] }] }, false)
-  return <div className="space-y-2"><Badge variant={step.state === 'FULFILLED' ? 'success' : 'warning'}>{t('rulePathway.official')}: {t('rulePathway.state.' + step.state)}</Badge><AssessmentStatus state={assessmentState(step, option)} /><SkillAssessmentEntry pathway={pathway} step={step} option={option} /></div>
 }

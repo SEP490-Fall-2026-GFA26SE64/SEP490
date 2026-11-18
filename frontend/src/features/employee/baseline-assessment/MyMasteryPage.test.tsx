@@ -1,42 +1,27 @@
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
-import { afterEach, beforeEach, expect, it, vi } from 'vitest'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { MemoryRouter } from 'react-router-dom'
+import { cleanup, fireEvent, render, screen } from '@testing-library/react'
+import { afterEach, expect, it, vi } from 'vitest'
+import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom'
 import { MyMasteryPage } from './MyMasteryPage'
 import { BaselineResultPanel } from './BaselineResults'
 import type { BaselineResult } from './baselineApi'
-import { readMyMastery } from '../target-roles/currentRoleFlowApi'
-vi.mock('../target-roles/currentRoleFlowApi', async () => ({ ...await vi.importActual('../target-roles/currentRoleFlowApi'), readMyMastery: vi.fn() }))
-vi.mock('./baselineApi', async () => ({ ...await vi.importActual('./baselineApi'), employeeBaselineEnabled: true }))
-vi.mock('../../../shared/layouts/WorkspaceLayout', () => ({ WorkspaceLayout: ({ children }: { children: React.ReactNode }) => <div>{children}</div> }))
+
 vi.mock('../../../shared/i18n/LanguageContext', () => ({ useTranslation: () => ({ language: 'en', t: (key: string) => key }) }))
-const profile = { jobPositionId: 'occ-a', jobPositionName: 'Original JobPosition', attemptId: 'attempt-v1', baselineVersion: 1, initializedAt: '2026-10-23T00:00:00Z', skills: [{ id: 's1', name: 'Original Skill', mastery: 0, confidence: 'LOW' }] }
-function show(node = <MyMasteryPage />) { render(<QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } })}><MemoryRouter>{node}</MemoryRouter></QueryClientProvider>) }
-beforeEach(() => vi.mocked(readMyMastery).mockResolvedValue([profile]))
+vi.mock('../target-roles/RolePathwayRequest', () => ({ RolePathwayRequest: () => null }))
 afterEach(cleanup)
-it('MM01/03 keeps valid zero mastery, source version and original result link', async () => {
- show(); await screen.findByText('Original Skill')
- expect(screen.getByRole('heading', { level: 1 }).classList.contains('sr-only')).toBe(true)
- expect(screen.getByRole('progressbar').getAttribute('aria-valuenow')).toBe('0')
- expect(screen.getByText(/roleFlow.baselineVersion.*1/)).toBeTruthy()
- expect(screen.getByRole('link', { name: 'baselineUi.viewResult' }).getAttribute('href')).toContain('attempt-v1')
+
+function Destination() {
+  const location = useLocation()
+  return <output>{location.pathname + location.search + location.hash}</output>
+}
+it.each(['', '?tab=roles', '?search=retained'])('preserves the mastery bookmark query while opening the overview profile: %s', async query => {
+  render(<MemoryRouter initialEntries={['/employee/my-mastery' + query]}><Routes>
+    <Route path="/employee/my-mastery" element={<MyMasteryPage />} />
+    <Route path="/employee/overview" element={<Destination />} />
+  </Routes></MemoryRouter>)
+  expect(await screen.findByText('/employee/overview' + query + '#competency-profile')).toBeTruthy()
 })
-it('MM01 empty profiles show an empty state, never fake zero mastery', async () => {
- vi.mocked(readMyMastery).mockResolvedValue([]); show(); await screen.findByText('baselineUi.empty')
- expect(screen.queryByRole('progressbar')).toBeNull()
-})
-it('MM02 dependency failure has explicit retry and recovers', async () => {
- vi.mocked(readMyMastery).mockRejectedValueOnce(Error('outage')).mockResolvedValueOnce([profile])
- show(); await screen.findByRole('alert'); fireEvent.click(screen.getByRole('button', { name: 'roleFlow.retry' }))
- await screen.findByText('Original Skill'); expect(readMyMastery).toHaveBeenCalledTimes(2)
-})
-it('MM01 multiple profiles retain separate original versions', async () => {
- vi.mocked(readMyMastery).mockResolvedValue([profile, { ...profile, jobPositionId: 'occ-b', jobPositionName: 'Other JobPosition', baselineVersion: 2, attemptId: 'attempt-v2' }])
- show(); await screen.findByText('Other JobPosition')
- expect(screen.getAllByRole('link', { name: 'baselineUi.viewResult' }).map(a => a.getAttribute('href'))).toEqual(['/employee/baseline-assessment/attempt-v1', '/employee/baseline-assessment/attempt-v2'])
-})
-it('MM03 raw assessment score remains separate from zero mastery and no retake', async () => {
- const result: BaselineResult = {
+
+const result: BaselineResult = {
    id: 'attempt-v1',
    target: { selectionId: 's1', selectionRevision: 1 },
    jobPositionId: 'occ-a',
@@ -48,10 +33,10 @@ it('MM03 raw assessment score remains separate from zero mastery and no retake',
    purpose: 'BASELINE',
    state: 'FINALIZED',
    revision: 1,
-   startedAt: profile.initializedAt,
-   deadlineAt: profile.initializedAt,
-   observedAt: profile.initializedAt,
-   finishedAt: profile.initializedAt,
+   startedAt: '2026-10-23T00:00:00Z',
+   deadlineAt: '2026-10-23T00:00:00Z',
+   observedAt: '2026-10-23T00:00:00Z',
+   finishedAt: '2026-10-23T00:00:00Z',
    finishReason: 'SUBMITTED',
    previousAttemptId: null,
    expired: false,
@@ -61,16 +46,26 @@ it('MM03 raw assessment score remains separate from zero mastery and no retake',
    groups: [],
    results: [],
  }
- show(<BaselineResultPanel result={result} locked={false} run={vi.fn()} />)
- await screen.findByText('baselineUi.profileSaved')
- expect(screen.getByText('100.0%')).toBeTruthy(); expect(screen.getByRole('progressbar').getAttribute('aria-valuenow')).toBe('0')
- expect(screen.getByText('employeeBaseline.noRetake')).toBeTruthy()
- expect(screen.queryByText('employeeBaseline.startReplacement')).toBeNull()
+
+it('keeps a finalized result separate from the retired numeric mastery profile', () => {
+  render(<MemoryRouter><BaselineResultPanel result={result} locked={false} run={vi.fn()} /></MemoryRouter>)
+  expect(screen.getByText('Results by skill')).toBeTruthy()
+  expect(screen.getByText(/does not mark pathway requirements as met/)).toBeTruthy()
+  expect(screen.queryByRole('progressbar')).toBeNull()
+  expect(screen.queryByText('100.0%')).toBeNull()
 })
-it('MM05 help is keyboard focusable and explains profile update limits', async () => {
- show(); await screen.findByText('Original Skill')
- const help=screen.getByRole('button', { name: 'baselineUi.helpTitle' }); help.focus(); expect(document.activeElement).toBe(help)
- fireEvent.click(help); expect(screen.getByRole('dialog')).toBeTruthy()
- expect(screen.getByText('baselineUi.profileUpdateHelp')).toBeTruthy()
- fireEvent.keyDown(document, { key: 'Escape' }); await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull())
+it('starts a complete retake with the original selection and source attempt', () => {
+  const run = vi.fn().mockResolvedValue(undefined)
+  render(<MemoryRouter><BaselineResultPanel result={result} locked={false} run={run} /></MemoryRouter>)
+  fireEvent.click(screen.getByRole('button', { name: 'Retake assessment' }))
+  expect(run).toHaveBeenCalledTimes(1)
+  expect(JSON.parse(run.mock.calls[0][0].body)).toMatchObject({ purpose: 'BASELINE', expectedSelectionId: result.target.selectionId, expectedSelectionRevision: result.target.selectionRevision, previousAttemptId: result.id })
+})
+it('locks retake while a command is pending', () => {
+  const run = vi.fn().mockResolvedValue(undefined)
+  render(<MemoryRouter><BaselineResultPanel result={result} locked run={run} /></MemoryRouter>)
+  const retake = screen.getByRole('button', { name: 'Retake assessment' }) as HTMLButtonElement
+  expect(retake.disabled).toBe(true)
+  fireEvent.click(retake)
+  expect(run).not.toHaveBeenCalled()
 })

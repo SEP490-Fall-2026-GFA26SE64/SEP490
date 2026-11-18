@@ -129,6 +129,7 @@ public interface ItemVersionJpaRepository extends Repository<ItemVersionEntity, 
             SELECT item_version_id, micro_skill_id, micro_skill_name_snapshot,
                    difficulty, content_hash, prompt, response_schema::text AS response_schema_json
             FROM latest_published
+            WHERE difficulty IS NOT NULL -- Rule-bank items have no numeric-baseline difficulty.
             ORDER BY micro_skill_id, difficulty, item_version_id
             """, nativeQuery = true)
     List<Object[]> publishedCandidates(@Param("skillIds") java.util.Collection<String> microSkillIds);

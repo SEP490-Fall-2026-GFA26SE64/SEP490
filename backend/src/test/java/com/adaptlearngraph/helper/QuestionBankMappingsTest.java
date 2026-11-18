@@ -84,8 +84,7 @@ class QuestionBankMappingsTest {
 
         var contentDto = contentDto();
         assertThat(response).isEqualTo(new ViewResponse(BANK, "Java bank", List.of(new QuestionResponse(QUESTION, "Q-001",
-                AUTHOR, T1, AUTHOR, 7, false, "Please review", List.of(new VersionResponse(VERSION, 2, "IN_REVIEW", contentDto,
-                        AUTHOR, T1, AUTHOR, T2, REVIEWER, T3, "Clarified", Map.of(REVIEWER, "2026-10-03T08:00:00Z"))))),
+                AUTHOR, T1, AUTHOR, 7, false, "Please review", List.of(new VersionResponse(VERSION, 2, "IN_REVIEW", contentDto, AUTHOR, T1, AUTHOR, T2, REVIEWER, T3, "Clarified", Map.of(REVIEWER, "2026-10-03T08:00:00Z"), null)))),
                 List.of(new AuditResponse(uuid(6), QUESTION, VERSION, "SUBMIT", AUTHOR, T2, "ready", contentDto))));
         assertThat(components(ViewResponse.class)).doesNotContain("organization", "notices", "imports");
         String body = json.writeValueAsString(response);
@@ -94,11 +93,8 @@ class QuestionBankMappingsTest {
 
     @Test
     void sessionNoticeAndImportBatchCopyEveryValue() {
-        var session = new Session(new Actor(AUTHOR, ORGANIZATION, "DOMAIN_EXPERT"), List.of(new Choice("s1", "Java")),
-                List.of(new Choice("e1", "Expert")), List.of(new Choice("p1", "Person")), 500, 10_485_760L);
-        assertThat(mapper.map(session, SessionResponse.class)).isEqualTo(new SessionResponse(
-                new ActorResponse(AUTHOR, ORGANIZATION, "DOMAIN_EXPERT"), List.of(new ChoiceResponse("s1", "Java")),
-                List.of(new ChoiceResponse("e1", "Expert")), List.of(new ChoiceResponse("p1", "Person")), 500, 10_485_760L));
+        var session = new Session(new Actor(AUTHOR, ORGANIZATION, "DOMAIN_EXPERT"), List.of(new Choice("s1", "Java")), List.of(new Choice("e1", "Expert")), List.of(new Choice("p1", "Person")), 500, 10_485_760L, List.of());
+        assertThat(mapper.map(session, SessionResponse.class)).isEqualTo(new SessionResponse(new ActorResponse(AUTHOR, ORGANIZATION, "DOMAIN_EXPERT"), List.of(new ChoiceResponse("s1", "Java")), List.of(new ChoiceResponse("e1", "Expert")), List.of(new ChoiceResponse("p1", "Person")), 500, 10_485_760L, List.of()));
 
         var notice = new Notice();
         notice.id = uuid(7);
@@ -128,16 +124,16 @@ class QuestionBankMappingsTest {
 
     @Test
     void contentRequestNormalizesMissingOptionsLikeTheDomain() {
-        assertThat(new ContentDto("p", null, null, null, null, null, null).options()).isEmpty();
+        assertThat(new ContentDto("p", null, null, null, null, null, null, false, null).options()).isEmpty();
         assertThat(new Content("p", null, null, null, null, null, null).options()).isEmpty();
     }
 
     private static Content content() {
-        return new Content("Which keyword?", List.of("A", "B", "C", "D"), 2, "skill-java", "Java", "EASY", "Because B");
+        return new Content("Which keyword?", List.of("A", "B", "C", "D"), 2, "skill-java", "Java", null, "Because B", "FOUNDATION", "O1", false);
     }
 
     private static ContentDto contentDto() {
-        return new ContentDto("Which keyword?", List.of("A", "B", "C", "D"), 2, "skill-java", "Java", "EASY", "Because B");
+        return new ContentDto("Which keyword?", List.of("A", "B", "C", "D"), 2, "skill-java", "Java", "FOUNDATION", "O1", false, "Because B");
     }
 
     private static List<String> components(Class<?> type) {

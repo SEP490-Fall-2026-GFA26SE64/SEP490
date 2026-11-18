@@ -25,6 +25,7 @@ it.each([
   const hrefs = screen.getAllByRole('link').map(link => link.getAttribute('href'))
   expect(hrefs).toContain(statusLink)
   expect(hrefs).not.toContain('/employee/overview')
+  expect(hrefs).not.toContain('/employee/my-skills')
 })
 it.each(['/ld-manager/modules','/ld-manager/approvals'])('groups %s under Learning Content with Approvals as its entry', path => {
   vi.stubGlobal('fetch',vi.fn(async()=>new Response('{}',{status:404})))
@@ -51,6 +52,7 @@ it.each(['workspace', 'lesson'] as const)('renders %s navigation structurally an
       </WorkspaceLayout>
     </MemoryRouter>
   </LanguageProvider></ToastProvider></QueryClientProvider>)
+  if (variant === 'workspace') expect(screen.getByRole('link', { name: 'My Skills' }).getAttribute('href')).toBe('/employee/my-skills')
   expect(screen.getByRole('banner')).toBeTruthy()
   expect(screen.getByRole('link', { name: 'My Learning' })).toBeTruthy()
   expect(screen.queryByRole('complementary', { name: 'Sidebar navigation' }) !== null).toBe(variant === 'workspace')

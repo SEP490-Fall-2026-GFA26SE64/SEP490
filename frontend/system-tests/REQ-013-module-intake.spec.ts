@@ -12,7 +12,8 @@ async function login(page: Page, email: string, path: string) {
   await expect(page).not.toHaveURL(/\/login$/)
   await page.goto(path, { waitUntil: 'domcontentloaded' })
 }
-test('REQ-013/053: assign one imported module, receive, edit, submit and approve with source attribution', async ({ page, request }) => {
+// Historical journey retained for reference; assignment/acceptance was retired on 2026-11-18.
+test.skip('Historical REQ-013/053: retired module intake journey', async ({ page, request }) => {
   test.setTimeout(360_000)
   await expect.poll(() => request.get('/api/v1/system/status').then(response => response.ok()).catch(() => false), { timeout: 90_000 }).toBeTruthy()
   const jobPositions = await (await request.get(`${root}/catalog/JobPosition`, { headers: ld })).json() as { id: string }[]

@@ -12,7 +12,12 @@ public interface LearningImportUseCase {
             int excelRow,
             Save module,
             List<Lesson> lessons,
-            Long expectedVersion) {}
+            Long expectedVersion,
+            String moduleRef) {
+        public Row(String moduleId, int excelRow, Save module, List<Lesson> lessons, Long expectedVersion) {
+            this(moduleId, excelRow, module, lessons, expectedVersion, null);
+        }
+    }
 
     record Problem(String moduleId, int row, String reason) {}
 
@@ -21,7 +26,12 @@ public interface LearningImportUseCase {
             List<Row> modules,
             List<Problem> errors,
             List<String> ownedDuplicates,
-            boolean committed) {}
+            boolean committed,
+            String format) {
+        public Preview(String id, List<Row> modules, List<Problem> errors, List<String> ownedDuplicates, boolean committed) {
+            this(id, modules, errors, ownedDuplicates, committed, "DOCX_ZIP_V1");
+        }
+    }
 
     byte[] template();
 

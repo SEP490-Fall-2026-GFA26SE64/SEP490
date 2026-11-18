@@ -9,6 +9,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.*;
 
 /** Exact main-seed projections, activated only by the explicit development gate. */
+// Compatibility adapter retains historical promoted numeric-baseline pins.
+@SuppressWarnings("deprecation")
 public final class MainDevelopmentTechnicalVersions implements AdaptiveTechnicalVersionPort {
     private record Seed(String jobPosition,VersionPins pins,String hash,String artifact,Map<UUID,ItemParameter> items){}
     private final AdaptiveTechnicalVersionPort delegate;private final DevelopmentTechnicalVersionJpaRepository versions;

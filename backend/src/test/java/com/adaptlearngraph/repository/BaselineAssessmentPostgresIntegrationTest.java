@@ -157,11 +157,11 @@ class BaselineAssessmentPostgresIntegrationTest {
     }
 
     @Test
-    void migratesThroughV47AndSecondMigrationRunIsNoOp() {
-        assertThat(flyway.info().current().getVersion().getVersion()).isEqualTo("47");
+    void migratesThroughV74AndSecondMigrationRunIsNoOp() {
+        assertThat(flyway.info().current().getVersion().getVersion()).isEqualTo("74");
         assertThat(flyway.migrate().migrationsExecuted).isZero();
         assertThat(jdbc.queryForObject(
-                "SELECT count(*) FROM flyway_schema_history WHERE success", Long.class)).isEqualTo(47L);
+                "SELECT count(*) FROM flyway_schema_history WHERE success", Long.class)).isEqualTo(72L);
     }
 
     @Test

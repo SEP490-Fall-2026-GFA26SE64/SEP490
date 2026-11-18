@@ -35,7 +35,7 @@ it('keeps current content separate from historical comparison and recorded snaps
  expect(within(overview).getByText('editor')).toBeTruthy()
  expect(screen.getByText('Previously recorded feedback')).toBeTruthy()
  expect(screen.queryByText('Released title')).toBeNull()
- fireEvent.click(screen.getByRole('tab',{name:'History & comparison'}))
+ fireEvent.click(screen.getByRole('tab',{name:'Version history'}))
  expect(screen.getByText('Released title')).toBeTruthy();expect(screen.getByText('Requested title')).toBeTruthy()
  expect(screen.getByText('Actual recorded timeline')).toBeTruthy()
  expect(screen.getByRole('button',{name:'View released content snapshot'})).toBeTruthy()
@@ -43,7 +43,7 @@ it('keeps current content separate from historical comparison and recorded snaps
 it('states absent released snapshots without fabricating one',()=>{
  const doc=document();doc.releasedRevision=99
  render(<ModuleApprovalReview doc={doc} staff={[]} person={id=>id??'—'} formatTime={date=>date??'—'} labels={{}} history={null} copy={en=>en}/>)
- fireEvent.click(screen.getByRole('tab',{name:'History & comparison'}))
+ fireEvent.click(screen.getByRole('tab',{name:'Version history'}))
  expect(screen.getByText('The released revision snapshot is unavailable.')).toBeTruthy()
  expect(screen.queryByRole('button',{name:'View released content snapshot'})).toBeNull()
 })

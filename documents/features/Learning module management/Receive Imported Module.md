@@ -1,3 +1,5 @@
+> **Retired on 2026-11-18:** Assignment and acceptance are no longer available in the UI or HTTP API. Create/Excel/ZIP import establish the responsible creator/importer directly. The following describes historical behavior only; persisted source snapshots/history remain supported. See [current contract](../Learning%20catalog/README.md).
+
 > **Historical local implementation:** Current source requirements are in [Learning Catalog](../Learning%20catalog/README.md). Pre-merge V27/V28 references describe the old database; combined-source migrations are V33/V34. See [architecture](../../ARCHITECTURE.md#merge-migration-boundary--2026-10-29).
 
 # Tiếp nhận module từ danh mục Neo4j

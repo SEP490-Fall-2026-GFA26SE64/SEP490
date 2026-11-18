@@ -1,23 +1,14 @@
 import * as React from 'react'
+import type { Language } from './LanguageContext'
+import { LanguageContext,useTranslation } from './LanguageContext'
 import { en } from './translations/en'
-import { vi } from './translations/vi'
 import { viPhrases } from './translations/phrases'
-
-export type Language = 'en' | 'vi'
+import { vi } from './translations/vi'
 
 const translations: Record<Language, typeof en> = {
   en,
   vi,
 }
-
-interface LanguageContextValue {
-  language: Language
-  setLanguage: (lang: Language) => void
-  toggleLanguage: () => void
-  t: (keyOrPhrase: string, fallback?: string) => string
-}
-
-const LanguageContext = React.createContext<LanguageContextValue | undefined>(undefined)
 
 const STORAGE_KEY = 'app_language'
 
@@ -240,16 +231,6 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     </LanguageContext.Provider>
   )
 }
-
-export function useTranslation() {
-  const context = React.useContext(LanguageContext)
-  if (!context) {
-    throw new Error('useTranslation must be used within a LanguageProvider')
-  }
-  return context
-}
-
-export const useI18n = useTranslation
 
 export function T({ children, fallback }: { children: React.ReactNode; fallback?: string }) {
   const { t } = useTranslation()

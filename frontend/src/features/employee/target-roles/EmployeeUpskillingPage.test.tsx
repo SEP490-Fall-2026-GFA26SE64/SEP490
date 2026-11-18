@@ -12,9 +12,9 @@ vi.mock('../../../shared/layouts/WorkspaceLayout', () => ({ WorkspaceLayout: ({ 
 vi.mock('./ActiveSkillSummary', () => ({ ActiveSkillSummary: () => <div>Existing skill summary</div> }))
 vi.mock('./UpskillSkillsPanel', () => ({ UpskillSkillsPanel: () => <div>Existing skills flow</div> }))
 vi.mock('../../../shared/i18n/LanguageContext', () => ({ useTranslation: () => ({ language: 'en', t: (key: string) => key }) }))
-const role: CurrentRole = { id: 'role-a', code: 'A', name: 'Role A', scope: 'Original scope', jobPositionId: 'occ-a', jobPositionName: 'JobPosition A', catalogVersion: 'f1', fingerprint: 'f1', levels: [] }
-const empty: RoleFlowView = { selection: null, progress: { state: 'SELECT_ROLE', requiredCount: 0, coveredCount: 0, attemptId: null, baselineVersion: null } }
-const selected: RoleFlowView = { selection: { selectionId: 'sel-1', role, revision: 1, selectedAt: '2026-10-24T00:00:00Z', available: true }, progress: { state: 'BASELINE_REQUIRED', requiredCount: 15, coveredCount: 0, attemptId: null, baselineVersion: 1 } }
+const role: CurrentRole = { id: 'role-a', code: 'A', name: 'Role A', scope: 'Original scope', jobPositionId: 'occ-a', jobPositionName: 'JobPosition A', catalogVersion: 'f1', fingerprint: 'f1', levels: [{ id: 'l1', code: 'L1', name: 'Junior', rank: 1, context: 'Context', attainmentRule: 'ALL', skills: [] }] }
+const empty: RoleFlowView = { targetLocked: false, selection: null, progress: { state: 'SELECT_ROLE', requiredCount: 0, coveredCount: 0, attemptId: null, baselineVersion: null } }
+const selected: RoleFlowView = { targetLocked: false, selection: { selectionId: 'sel-1', role, revision: 1, selectedAt: '2026-10-24T00:00:00Z', available: true }, progress: { state: 'BASELINE_REQUIRED', requiredCount: 15, coveredCount: 0, attemptId: null, baselineVersion: 1 } }
 function show(query = '') { render(<QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } })}><MemoryRouter initialEntries={['/employee/upskilling' + query]}><EmployeeUpskillingPage /></MemoryRouter></QueryClientProvider>) }
 beforeEach(() => { vi.mocked(api.currentRoles).mockResolvedValue([role]); vi.mocked(api.readRoleFlow).mockResolvedValue(empty) })
 afterEach(cleanup)
@@ -45,7 +45,7 @@ it('RB05/11 unknown Role selection survives Skills round trip with identical req
   fireEvent.click(within(dialog).getByRole('button', { name: 'roleFlow.retry' }))
   await waitFor(() => expect(api.chooseCurrentRole).toHaveBeenCalledTimes(2))
   expect(vi.mocked(api.chooseCurrentRole).mock.calls[1][0]).toEqual(vi.mocked(api.chooseCurrentRole).mock.calls[0][0])
-  expect(JSON.parse(vi.mocked(api.chooseCurrentRole).mock.calls[0][0].body)).toEqual({ roleId: 'role-a', expectedCurrentSelectionId: null })
+  expect(JSON.parse(vi.mocked(api.chooseCurrentRole).mock.calls[0][0].body)).toEqual({ roleId: 'role-a', expectedCurrentSelectionId: null, levelId: 'l1' })
 })
 it('RB12/16 pending baseline start survives summary collapse and tab changes; retries exact server-scoped command', async () => {
   vi.mocked(api.readRoleFlow).mockResolvedValue(selected)
@@ -59,5 +59,5 @@ it('RB12/16 pending baseline start survives summary collapse and tab changes; re
   fireEvent.click(screen.getByRole('button', { name: 'roleFlow.retry' }))
   await waitFor(() => expect(baseline.executeCommand).toHaveBeenCalledTimes(2))
   const calls = vi.mocked(baseline.executeCommand).mock.calls
-  expect(calls[1][0]).toBe(calls[0][0]); expect(JSON.parse(calls[0][0].body)).toEqual({ entry: 'SELECTED_ROLE' })
+  expect(calls[1][0]).toBe(calls[0][0]); expect(JSON.parse(calls[0][0].body)).toMatchObject({ purpose: 'BASELINE', expectedSelectionId: 'sel-1', expectedSelectionRevision: 1 })
 })

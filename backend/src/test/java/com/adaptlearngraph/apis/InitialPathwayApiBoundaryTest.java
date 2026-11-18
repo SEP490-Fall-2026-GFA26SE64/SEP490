@@ -26,10 +26,19 @@ import org.springframework.test.web.servlet.MockMvc;
 
 /** Real MVC parsing and workspace SecurityFilterChain; actor/application ports are unit doubles. */
 @WebMvcTest(controllers=InitialPathwayController.class,properties={"pathway.initial.enabled=true","assessment.baseline.workspace.enabled=true"})
-@Import({WorkspaceInitialPathwaySecurity.class, com.adaptlearngraph.config.ModelMapperConfiguration.class,
+@Import({WorkspaceInitialPathwaySecurity.class, InitialPathwayApiBoundaryTest.DemoAdapter.class, com.adaptlearngraph.config.ModelMapperConfiguration.class,
         com.adaptlearngraph.helper.InitialPathwayMappings.class, com.adaptlearngraph.services.InitialPathwayApplicationService.class})
 @ActiveProfiles({"local","workspace-baseline"})
 class InitialPathwayApiBoundaryTest {
+    // Explicitly register the retained demo adapter for parser/security boundary tests.
+    // Production activation is verified separately by InitialPathwayActivationTest.
+    @org.springframework.boot.test.context.TestConfiguration(proxyBeanMethods = false)
+    static class DemoAdapter {
+        @org.springframework.context.annotation.Bean
+        InitialPathwayController demoAdapter(com.adaptlearngraph.services.InitialPathwayApplicationService service, com.fasterxml.jackson.databind.ObjectMapper json) {
+            return new InitialPathwayController(service, json);
+        }
+    }
     @Autowired MockMvc mvc;
     @MockitoBean RoleGapPreview gaps;@MockitoBean InitialPathwayAdmission admission;
     @MockitoBean InitialPathwayReview review;@MockitoBean InitialPathwayView view;@MockitoBean Actors actors;

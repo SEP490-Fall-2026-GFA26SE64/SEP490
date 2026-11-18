@@ -1,6 +1,6 @@
 package com.adaptlearngraph.apis;
 
-import com.adaptlearngraph.entities.domain.RiasecRules.Failure;
+import com.adaptlearngraph.exception.RiasecFailure;
 import com.adaptlearngraph.services.*;
 import com.adaptlearngraph.services.RiasecService.Edit;
 import com.fasterxml.jackson.databind.*;
@@ -28,7 +28,7 @@ public final class RiasecController {
     @PostMapping("/results/{id}/restore") public ResponseEntity<?> restore(@PathVariable UUID id){service.restore(id);return ok(Map.of());}
     @PostMapping("/results/{id}/retry") public ResponseEntity<?> retry(@PathVariable UUID id){service.retry(id);return ok(Map.of());}
     private <T>T decode(String body,Class<T> type){
-        if(body==null || body.length()>12000)throw new Failure(400,"INVALID_REQUEST");
+        if(body==null || body.length()>12000)throw new RiasecFailure(400,"INVALID_REQUEST");
         try {
             var tree=json.readTree(body);if(tree==null || !tree.isObject())throw new IllegalArgumentException();
             if(tree.has("revision") && (!tree.path("revision").isIntegralNumber() || !tree.path("revision").canConvertToLong() || tree.path("revision").longValue()<0))throw new IllegalArgumentException();
@@ -37,10 +37,10 @@ public final class RiasecController {
                 for(var v:tree.path("answers"))if(!v.isIntegralNumber() || !v.canConvertToInt())throw new IllegalArgumentException();
             }
             return json.readerFor(type).with(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES).without(DeserializationFeature.ACCEPT_FLOAT_AS_INT).readValue(body);
-        }catch(Exception invalid){throw new Failure(400,"INVALID_REQUEST");}
+        }catch(Exception invalid){throw new RiasecFailure(400,"INVALID_REQUEST");}
     }
-    @ExceptionHandler(Failure.class) public ResponseEntity<?> failure(Failure e){return ResponseEntity.status(e.status).cacheControl(CacheControl.noStore()).body(Map.of("code",e.code));}
-    @ExceptionHandler(RoleBaselineFlow.Failure.class) public ResponseEntity<?> actor(RoleBaselineFlow.Failure e){return failure(new Failure(e.status,e.code));}
-    @ExceptionHandler({org.springframework.dao.DataAccessException.class,org.springframework.transaction.TransactionException.class}) public ResponseEntity<?> unavailable(Exception e){return failure(new Failure(503,"RIASEC_UNAVAILABLE"));}
+    @ExceptionHandler(RiasecFailure.class) public ResponseEntity<?> failure(RiasecFailure e){return ResponseEntity.status(e.status).cacheControl(CacheControl.noStore()).body(Map.of("code",e.code));}
+    @ExceptionHandler(RoleBaselineFlow.Failure.class) public ResponseEntity<?> actor(RoleBaselineFlow.Failure e){return failure(new RiasecFailure(e.status,e.code));}
+    @ExceptionHandler({org.springframework.dao.DataAccessException.class,org.springframework.transaction.TransactionException.class}) public ResponseEntity<?> unavailable(Exception e){return failure(new RiasecFailure(503,"RIASEC_UNAVAILABLE"));}
     private static <T>ResponseEntity<T> ok(T body){return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(body);}
 }

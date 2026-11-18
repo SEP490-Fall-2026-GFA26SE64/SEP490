@@ -6,6 +6,8 @@ import java.util.*;
 import java.util.function.Supplier;
 
 /** Adapter extends the existing string-ID selection owner; it does not clone its write algorithm. */
+// Retained numeric adapter deliberately fails closed when a current knowledge-level skill has no numeric target.
+@SuppressWarnings("deprecation")
 public final class CurrentSelectionCoordination implements Coordination {
     private final CurrentRoleSelectionStore store; private final RoleBaselineFlow.Catalog catalog;
     public CurrentSelectionCoordination(CurrentRoleSelectionStore store,RoleBaselineFlow.Catalog catalog) { this.store=store; this.catalog=catalog; }

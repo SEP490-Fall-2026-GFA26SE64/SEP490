@@ -36,6 +36,11 @@ public final class RequirementPathwayAccess {
             catch(Failure denied) {if(denied.status()>=500)throw denied;return false;}
         });
     }
+    public boolean containsModule(String moduleId) {
+        var actor=actors.require();actor.require(Role.EMPLOYEE);
+        return rules.current(actor.organizationId(),actor.accountId()).stream()
+            .anyMatch(row->revisions.read(row).steps().stream().anyMatch(step->step.options().stream().anyMatch(option->option.moduleId().equals(moduleId))));
+    }
     private Void requireModule(Actor actor,RoleBaselineFlow.Actor owner,String moduleId,Integer requestedRevision) {
         if(!actor.equals(actors.require()))throw new Failure(403,"FORBIDDEN");
         var document=modules.lock(actor.organizationId().toString(),moduleId).orElseThrow(()->new Failure(404,"MODULE_NOT_FOUND"));

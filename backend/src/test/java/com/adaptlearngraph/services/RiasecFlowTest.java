@@ -31,7 +31,7 @@ class RiasecFlowTest {
         postgres=new PostgreSQLContainer<>("postgres:17.6-alpine");postgres.start();
         var ds=new DriverManagerDataSource(postgres.getJdbcUrl(),postgres.getUsername(),postgres.getPassword());
         db=new JdbcTemplate(ds);db.execute("CREATE SCHEMA platform; CREATE TABLE platform.account(account_id uuid PRIMARY KEY)");
-        new ResourceDatabasePopulator(new ClassPathResource("db/workspace-migration/V72__riasec_personal_exploration.sql")).execute(ds);
+        new ResourceDatabasePopulator(new ClassPathResource("db/workspace-migration/V74__riasec_personal_exploration.sql")).execute(ds);
         store=new RiasecStore(db,new TransactionTemplate(new DataSourceTransactionManager(ds)),json);
     }
     @AfterAll static void stop(){if(postgres!=null)postgres.stop();}

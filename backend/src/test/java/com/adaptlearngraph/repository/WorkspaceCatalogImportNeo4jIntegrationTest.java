@@ -112,7 +112,7 @@ class WorkspaceCatalogImportNeo4jIntegrationTest {
                 persistence.transactionManager()).findAll(a)).hasSize(1);
 
         var foreign = jobPositions.findAllJobPositions(a).getFirst();
-        assertThatThrownBy(() -> jobPositions.save(b, foreign)).isInstanceOf(CrossTenantWriteException.class);
+        assertThatThrownBy(() -> jobPositions.saveChange(b, new com.adaptlearngraph.entities.domain.JobPositionChange(foreign.id(), foreign.code(), foreign.name(), foreign.jobZone(), foreign.status(), foreign.version(), "manager-b", false, null, null))).isInstanceOf(CrossTenantWriteException.class);
         assertThat(jobPositions.findByIdOrCode(a, foreign.id())).get().extracting(JobPosition::name).isEqualTo("JobPosition One");
         assertThat(jobPositions.findByIdOrCode(b, foreign.id())).isEmpty();
     }
@@ -169,8 +169,10 @@ class WorkspaceCatalogImportNeo4jIntegrationTest {
         var statements = appender.list.stream()
                 .filter(event -> event.getLoggerName().equals("org.springframework.data.neo4j.cypher"))
                 .map(ILoggingEvent::getFormattedMessage).toList();
-        assertThat(statements).hasSize((int) (2 * labelGroups + edgeGroups));
-        assertThat(statements).allSatisfy(statement -> assertThat(statement).contains("UNWIND $"));
+        int batches = (int) (2 * labelGroups + edgeGroups);
+        assertThat(statements).hasSize(batches + 6); // Six organization-scoped enrichment passes.
+        assertThat(statements.subList(0, batches)).allSatisfy(statement -> assertThat(statement).contains("UNWIND $"));
+        assertThat(statements.subList(batches, statements.size())).allSatisfy(statement -> assertThat(statement).contains("organizationId: $organization"));
         assertThat(count("MATCH (n {organizationId:$org}) RETURN count(n)", Map.of("org", organization))).isEqualTo(nodes.size());
         assertThat(count("MATCH ()-[r {organizationId:$org}]->() RETURN count(r)", Map.of("org", organization)))
                 .isEqualTo(closure.edges().size());

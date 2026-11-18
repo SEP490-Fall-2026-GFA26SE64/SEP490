@@ -21,7 +21,7 @@
 <text x="66" y="585" font-size="16.352201257861633" font-weight="400" fill="#0f172a">Interest edits preserve learning-catalog fingerprints</text>
 <rect x="660" y="460" width="470" height="189" rx="8" fill="#f8fafc" stroke="#64748b" stroke-width="1.5"/>
 <rect x="660" y="460" width="470" height="48" rx="8" fill="#e0e7ff" stroke="#64748b" stroke-width="1.5"/>
-<text x="676" y="491" font-size="21" font-weight="650" fill="#0f172a">PostgreSQL V72</text>
+<text x="676" y="491" font-size="21" font-weight="650" fill="#0f172a">PostgreSQL V74</text>
 <text x="676" y="535" font-size="17" font-weight="400" fill="#0f172a">riasec_workspace / riasec_result</text>
 <text x="676" y="560" font-size="17" font-weight="400" fill="#0f172a">Saved answers/scores before AI</text>
 <text x="676" y="585" font-size="17" font-weight="400" fill="#0f172a">AI status, run UUID and deadline</text>

@@ -105,8 +105,8 @@ class WF05SkillOutcomePersistenceTest {
         assertThat(p.a.selections.targetLocked(p.a.current)).isFalse();outcomes.runBatch();
         assertThat(WF05PolicyPersistenceTest.sql.queryForObject("SELECT count(*) FROM platform.rule_assessment_attempt WHERE organization_id=? AND learner_id=? AND purpose='SKILL_ASSESSMENT'",Integer.class,p.a.f.org,p.a.f.actor)).isEqualTo(3);
     }
-    @Test @DisplayName("TC-WF05-F10 persistence: exhausting A1 retry allowance does not consume or delay A2 allowance")
-    void independentModuleRetryBudget() throws Exception {
+    @Test @DisplayName("Shared skill scope: module A2 retains A1 history and cannot bypass its retry allowance")
+    void sharedSkillRetryBudgetCannotBeBypassedThroughAnotherModule() throws Exception {
         var f=p.a.f;var workspace=policies.get("S-A");var scope=workspace.scope();
         var draft=f.service.create(Purpose.SKILL_ASSESSMENT,scope.key(),new ScopedAssessmentPolicyService.Create(UUID.randomUUID(),workspace.activationRevision()));
         var saved=f.service.save(Purpose.SKILL_ASSESSMENT,scope.key(),new ScopedAssessmentPolicyService.Save(UUID.randomUUID(),draft.draft().id(),draft.draft().revision(),scope.catalogHash(),
@@ -115,8 +115,9 @@ class WF05SkillOutcomePersistenceTest {
         for(int i=0;i<30&&!p.revisions.read(p.row()).targetReleased();i++)outcomes.runBatch();
         assertThat(p.revisions.read(p.row()).targetReleased()).isTrue();
         assertThatThrownBy(()->assess("S-A",moduleA,first.attemptId(),false)).hasMessageContaining("RETAKE_LIMIT_REACHED");
-        var independent=assess("S-A",moduleA2,null,false);assertThat(independent.attemptId()).isNotEqualTo(first.attemptId());assertThat(independent.previousAttemptId()).isNull();
-        assertThat(assessments.history(0,20,moduleA2,1)).extracting(RuleAssessmentAttemptService.View::attemptId).containsExactly(independent.attemptId());
+        assertThatThrownBy(()->assess("S-A",moduleA2,null,false)).hasMessageContaining("RETAKE_CONTEXT_CHANGED");
+        assertThatThrownBy(()->assess("S-A",moduleA2,first.attemptId(),false)).hasMessageContaining("RETAKE_LIMIT_REACHED");
+        assertThat(assessments.skillHistory("S-A","FOUNDATION","v1",0,20).items()).extracting(RuleAssessmentAttemptService.AttemptSummary::attemptId).containsExactly(first.attemptId());
     }
     @Test @DisplayName("TC-WF05-S05 persistence: failed prior-official prerequisite opens NEED_REVIEW and preserves immutable evidence")
     void priorOfficialPrerequisiteNeedsReview() throws Exception {

@@ -1,8 +1,6 @@
 package com.adaptlearngraph.apis;
 
-import com.adaptlearngraph.entities.domain.CertificateCatalog;
 import com.adaptlearngraph.exception.InitialPathwayFailure;
-import com.adaptlearngraph.repository.InitialPathwayPorts.Receipt;
 import com.adaptlearngraph.services.*;
 import com.fasterxml.jackson.databind.*;
 import java.nio.charset.StandardCharsets;
@@ -24,17 +22,17 @@ public final class CertificateController {
                 .enable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES).enable(DeserializationFeature.FAIL_ON_TRAILING_TOKENS);
     }
     @GetMapping("/expert/certificates")ResponseEntity<?> catalog(@RequestParam(defaultValue="0")int offset,@RequestParam(defaultValue="20")int limit,@RequestParam(defaultValue="")String q,@RequestParam(defaultValue="")String level){return ok(catalog.list(offset,limit,q,level));}
-    @PostMapping(value="/expert/certificates",consumes="application/json")ResponseEntity<?> create(@RequestHeader("Idempotency-Key")UUID key,@RequestBody String body){return ResponseEntity.status(201).cacheControl(CacheControl.noStore()).body(catalog.create(key,parse(body,CertificateCatalog.Create.class)));}
+    @PostMapping(value="/expert/certificates",consumes="application/json")ResponseEntity<?> create(@RequestHeader("Idempotency-Key")UUID key,@RequestBody String body){return ResponseEntity.status(201).cacheControl(CacheControl.noStore()).body(catalog.createHttp(key,parse(body,CertificateCatalogService.CreateInput.class)));}
     @GetMapping("/employee/pathways/{request}/certificate-submissions")ResponseEntity<?> history(@PathVariable UUID request,@RequestParam UUID stepId,
             @RequestParam(defaultValue="0")int offset,@RequestParam(defaultValue="20")int limit){return ok(submissions.history(request,stepId,offset,limit));}
-    @PostMapping(value="/employee/pathways/{request}/certificate-submissions",consumes="application/json")ResponseEntity<?> submit(@PathVariable UUID request,@RequestHeader("Idempotency-Key")String key,@RequestBody String body){return receipt(submissions.submit(request,key,parse(body,CertificateSubmissionService.Submit.class)));}
+    @PostMapping(value="/employee/pathways/{request}/certificate-submissions",consumes="application/json")ResponseEntity<?> submit(@PathVariable UUID request,@RequestHeader("Idempotency-Key")String key,@RequestBody String body){return receipt(submissions.submitHttp(request,key,parse(body,CertificateSubmissionService.Submit.class)));}
     @PostMapping(value="/employee/pathways/{request}/certificate-uploads",consumes="multipart/form-data")ResponseEntity<?> upload(@PathVariable UUID request,@RequestHeader("Idempotency-Key")String key,
             @RequestParam long revision,@RequestParam String contentHash,@RequestParam UUID stepId,@RequestParam String sha256,@RequestParam("file")MultipartFile file){
-        return receipt(submissions.upload(request,key,new CertificateSubmissionService.Expected(revision,contentHash,stepId),file.getOriginalFilename(),file.getSize(),sha256,file));
+        return receipt(submissions.uploadHttp(request,key,new CertificateSubmissionService.Expected(revision,contentHash,stepId),file.getOriginalFilename(),file.getSize(),sha256,file));
     }
     @GetMapping("/expert/certificate-submissions")ResponseEntity<?> queue(@RequestParam(defaultValue="0")int offset,@RequestParam(defaultValue="20")int limit,@RequestParam(defaultValue="PENDING")String status){return ok(review.queue(offset,limit,status));}
     @GetMapping("/expert/certificate-submissions/{id}")ResponseEntity<?> detail(@PathVariable UUID id){return ok(review.detail(id));}
-    @PostMapping(value="/expert/certificate-submissions/{id}/decision",consumes="application/json")ResponseEntity<?> decide(@PathVariable UUID id,@RequestHeader("Idempotency-Key")String key,@RequestBody String body){return receipt(review.decide(id,key,parse(body,CertificateReviewService.Decide.class)));}
+    @PostMapping(value="/expert/certificate-submissions/{id}/decision",consumes="application/json")ResponseEntity<?> decide(@PathVariable UUID id,@RequestHeader("Idempotency-Key")String key,@RequestBody String body){return receipt(review.decideHttp(id,key,parse(body,CertificateReviewService.Decide.class)));}
     @GetMapping({"/employee/certificate-submissions/{id}/file","/expert/certificate-submissions/{id}/file"})ResponseEntity<InputStreamResource> file(@PathVariable UUID id){
         var download=review.file(id);var input=download.open().get();
         return ResponseEntity.ok().cacheControl(CacheControl.noStore()).header("X-Content-Type-Options","nosniff")
@@ -42,7 +40,7 @@ public final class CertificateController {
                 .contentType(MediaType.parseMediaType(download.mediaType())).contentLength(download.byteSize()).body(new InputStreamResource(input));
     }
     private <T>T parse(String body,Class<T> type){if(body.length()>16384)throw new InitialPathwayFailure(400,"INVALID_REQUEST");try{T value=json.readValue(body,type);if(value==null)throw new IllegalArgumentException();return value;}catch(Exception invalid){throw new InitialPathwayFailure(400,"INVALID_REQUEST");}}
-    private ResponseEntity<String> receipt(Receipt result){return ResponseEntity.status(result.status()).cacheControl(CacheControl.noStore()).contentType(MediaType.APPLICATION_JSON).body(result.responseJson());}
+    private ResponseEntity<String> receipt(CertificateHttpReceipt result){return ResponseEntity.status(result.status()).cacheControl(CacheControl.noStore()).contentType(MediaType.APPLICATION_JSON).body(result.responseJson());}
     private <T>ResponseEntity<T> ok(T value){return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(value);}
     @ExceptionHandler(InitialPathwayFailure.class)ResponseEntity<?> failure(InitialPathwayFailure failure){return ResponseEntity.status(failure.status()).cacheControl(CacheControl.noStore()).body(Map.of("code",failure.code(),"retryable",failure.retryable(),"correlationId",failure.correlationId()));}
     @ExceptionHandler(ModuleAuthoringService.Failure.class)ResponseEntity<?> storage(ModuleAuthoringService.Failure failure){return failure(new InitialPathwayFailure(failure.status(),failure.status()==413?"FILE_EXCEEDS_CURRENT_UPLOAD_LIMIT":failure.status()>=500?"PRIVATE_UPLOAD_UNAVAILABLE":"PRIVATE_UPLOAD_REJECTED"));}

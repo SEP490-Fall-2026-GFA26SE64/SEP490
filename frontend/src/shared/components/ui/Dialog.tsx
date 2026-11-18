@@ -49,7 +49,7 @@ export function Dialog({ open, onOpenChange, children, className, containerClass
   }, [open])
   React.useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
-      if (e.key === 'Escape' && open && dialogStack.at(-1) === identity.current) {
+      if (e.key === 'Escape' && !e.defaultPrevented && open && dialogStack.at(-1) === identity.current) {
         onOpenChange(false)
       }
     }

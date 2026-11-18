@@ -15,6 +15,21 @@ import static org.assertj.core.api.Assertions.*;
 
 class RiasecApiTest {
     ObjectMapper json=new ObjectMapper().findAndRegisterModules();
+    @Test void generatedCatalogIdsAreScopedToOrganizationAndKeepTrustedWrites() throws Exception {
+        var port=mock(GetJobPositionsUseCase.class);var mapper=new ModelMapper();new JobPositionMappings().register(mapper);
+        var service=new JobPositionApplicationService(port,mapper,org->"MANAGER");
+        when(port.saveChange(anyString(),any())).thenAnswer(call -> {
+            JobPositionChange change=call.getArgument(1);
+            assertThat(change.authorId()).isEqualTo("MANAGER");
+            return new JobPosition(change.id(),change.code(),change.name(),4,"ACTIVE","v1",0,0);
+        });
+        var request=json.readValue("{\"code\":\"ENGINEER\",\"name\":\"Engineer\"}",SaveJobPositionRequest.class);
+        var first=service.createJobPosition("ORG-A",request);
+        var second=service.createJobPosition("ORG-B",request);
+        assertThat(first.id()).isNotEqualTo(second.id());
+        assertThat(service.createJobPosition("ORG-A",request).id()).isEqualTo(first.id());
+        verify(port,never()).saveJobPosition(anyString(),any());
+    }
     @Test void requestCannotChooseTenantActorOrCoerceFractionalAnswers() throws Exception {
         var service=mock(RiasecService.class);var mvc=MockMvcBuilders.standaloneSetup(new RiasecController(service,json)).build();
         for(String body:new String[]{"{\"editorId\":null,\"organizationId\":\"spoof\"}","{\"answers\":{\"R01\":1.2}}","{\"answers\":{\"R01\":\"2\"}}","{\"revision\":1.5}"})

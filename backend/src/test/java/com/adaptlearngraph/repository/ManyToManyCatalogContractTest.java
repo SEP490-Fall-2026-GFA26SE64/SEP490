@@ -25,7 +25,7 @@ class ManyToManyCatalogContractTest {
         assertEquals(previous.items(), current.items());
         assertEquals(previous.questionBank(), current.questionBank());
         assertEquals(sha256(scopeBytes), current.scopeSha256());
-        assertEquals(sha256(Files.readAllBytes(ROOT.resolve("documents/dataset/import/ontology_seed.json"))),
+        assertEquals(sha256(com.adaptlearngraph.support.HistoricalCatalogFixtures.manyToMany()),
                 scope.sourceSha256());
         var release = JSON.readTree(Files.readAllBytes(directory.resolve("release-manifest-v09.json")));
         assertEquals(sha256(manifestBytes), release.path("manifestSha256").asText());

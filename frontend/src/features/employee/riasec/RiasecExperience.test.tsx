@@ -24,7 +24,7 @@ beforeEach(() => {
 afterEach(() => { cleanup(); vi.restoreAllMocks(); vi.clearAllMocks() })
 const show = () => render(<MemoryRouter><RiasecExperience scope="ORG:EMPLOYEE" active enabled /></MemoryRouter>)
 it('serial autosave retains rapid edits and uses the accepted revision', async () => {
-  show(); fireEvent.click(await screen.findByText('start')); await screen.findByText('Answer 3')
+  show(); fireEvent.click(await screen.findByRole('button', { name: 'Start assessment' })); fireEvent.click(await screen.findByRole('button', { name: 'Confirm' })); await screen.findByText('Answer 3')
   let finish!: (d: Draft) => void
   const implementation = vi.mocked(riasecRequest).getMockImplementation()!
   let intercepted = false

@@ -1,38 +1,28 @@
-import * as React from 'react'
 import {
-  ArrowRight,
-  Check,
-  CheckCircle2,
-  Filter,
-  GitBranch,
-  Layers,
-  MinusCircle,
-  PlusCircle,
-  RotateCcw,
-  Sliders,
+ArrowRight,
+Check,
+CheckCircle2,
+Filter,
+GitBranch,
+Layers,
+MinusCircle,
+PlusCircle,
+RotateCcw,
+Sliders,
 } from 'lucide-react'
+import * as React from 'react'
 import { Badge } from '../../../../shared/components/ui/Badge'
 import { Button } from '../../../../shared/components/ui/Button'
-import type { TargetRoleModel, SkillTargetConfig } from '../../data/ldManagerMockData'
-import { useTranslation } from '../../../../shared/i18n/LanguageContext'
+import { useTranslation } from "../../../../shared/i18n/LanguageContext"
+import type { SkillTargetConfig,TargetRoleModel } from '../../data/ldManagerMockData'
 import { formatRequiredKnowledge } from '../roleKnowledgePresentation'
+import { compareRoleVersions } from './TargetRoleVersionDiff.helpers'
 
 export interface TargetRoleVersionDiffProps {
   currentRole: TargetRoleModel
   allRoles: TargetRoleModel[]
   competencies?: Array<{ id: string; code?: string; name: string; description?: string }>
   microSkills?: Array<{ id: string; code: string; name: string }>
-}
-
-export function compareRoleVersions(vA: string = '1.0', vB: string = '1.0'): number {
-  const partsA = vA.split('.').map((p) => parseInt(p, 10) || 0)
-  const partsB = vB.split('.').map((p) => parseInt(p, 10) || 0)
-  for (let i = 0; i < Math.max(partsA.length, partsB.length); i++) {
-    const a = partsA[i] || 0
-    const b = partsB[i] || 0
-    if (a !== b) return a - b
-  }
-  return 0
 }
 
 export type DiffFilterType = 'ALL' | 'ADDED' | 'REMOVED' | 'MODIFIED' | 'UNCHANGED'

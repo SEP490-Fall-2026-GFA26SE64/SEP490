@@ -22,7 +22,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
@@ -40,7 +40,7 @@ class BaselineAssessmentManagementControllerTest {
     private static final UUID ASSESSMENT_VERSION_ID = new UUID(0L, 1);
 
     @Autowired private MockMvc mvc;
-    @MockBean private BaselineAssessmentManagementUseCase management;
+    @MockitoBean private BaselineAssessmentManagementUseCase management;
 
     @Test
     void listPassesServerSideQueryAndReturnsLifecycleSummary() throws Exception {

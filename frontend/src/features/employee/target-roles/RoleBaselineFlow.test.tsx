@@ -10,8 +10,8 @@ vi.mock('./currentRoleFlowApi', async () => ({ ...await vi.importActual('./curre
 vi.mock('../baseline-assessment/useBaselineAttempt', () => ({ useBaselineAttempt: () => ({ locked: false, busy: false, error: null, pending: null, run: vi.fn() }) }))
 vi.mock('../../../shared/i18n/LanguageContext', () => ({ useTranslation: () => ({ language: 'en', t: (key: string) => key }) }))
 const role: CurrentRole = { id: 'role-a', code: 'A', name: 'Role A', scope: 'Build APIs', jobPositionId: 'occ-a', jobPositionName: 'JobPosition A', catalogVersion: 'f1', fingerprint: 'f1', levels: [{ id: 'l1', code: 'L1', name: 'Junior', rank: 1, context: 'Context', attainmentRule: 'ALL', skills: [{ id: 's1', code: 'S1', name: 'Skill 1', requiredKnowledgeLevels: ['FOUNDATION'], requiredScore: .7, mandatory: true }] }] }
-const empty: RoleFlowView = { selection: null, progress: { state: 'SELECT_ROLE', requiredCount: 0, coveredCount: 0, attemptId: null, baselineVersion: null } }
-const selected: RoleFlowView = { selection: { selectionId: 'sel-1', role, levelId: 'l1', revision: 1, selectedAt: '2026-10-23T00:00:00Z', available: true }, progress: { state: 'BASELINE_REQUIRED', requiredCount: 15, coveredCount: 14, attemptId: null, baselineVersion: 1 } }
+const empty: RoleFlowView = { targetLocked: false, selection: null, progress: { state: 'SELECT_ROLE', requiredCount: 0, coveredCount: 0, attemptId: null, baselineVersion: null } }
+const selected: RoleFlowView = { targetLocked: false, selection: { selectionId: 'sel-1', role, levelId: 'l1', revision: 1, selectedAt: '2026-10-23T00:00:00Z', available: true }, progress: { state: 'BASELINE_REQUIRED', requiredCount: 15, coveredCount: 14, attemptId: null, baselineVersion: 1 } }
 function show(node = <CurrentRolePanel />, path = '/') {
  const client = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } })
  render(<QueryClientProvider client={client}><MemoryRouter initialEntries={[path]}>{node}</MemoryRouter></QueryClientProvider>)

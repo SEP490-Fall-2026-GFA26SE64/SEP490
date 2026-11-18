@@ -18,17 +18,22 @@ import org.springframework.transaction.support.TransactionTemplate;
 /** Real PG transactions/migrations; catalog, bank and subscription ports are controlled fixtures, not UI acceptance. */
 class WF05PolicyPersistenceTest {
     static JpaTestContext db; static JdbcTemplate sql;
+    static org.testcontainers.containers.PostgreSQLContainer<?> isolated;
     UUID org,actor,otherActor; SubscriptionAccessPolicy.Actor current;
     AssessmentPolicyCatalog catalog; AssessmentItemKnowledgeMappingJpaRepository bank;
     ScopedAssessmentPolicyService service; Scope baseline,other,skill,unconfigured;
     final ObjectMapper json=new ObjectMapper().findAndRegisterModules();
     @BeforeAll static void start(){
         String url=System.getenv("WF05_JDBC_URL");
-        if(!"jdbc:postgresql://127.0.0.1:35432/wf05_p1".equals(url))throw new IllegalStateException("WF05 requires its explicit isolated PostgreSQL on 35432; dev DB forbidden");
+        if(url==null || url.isBlank()) {
+            isolated=new org.testcontainers.containers.PostgreSQLContainer<>("postgres:17.6-alpine")
+                    .withDatabaseName("wf05_p1").withUsername("wf05").withPassword("wf05-isolated");
+            isolated.start();url=isolated.getJdbcUrl();
+        } else if(!"jdbc:postgresql://127.0.0.1:35432/wf05_p1".equals(url))throw new IllegalStateException("WF05 requires its explicit isolated PostgreSQL on 35432; dev DB forbidden");
         Flyway.configure().dataSource(url,"wf05","wf05-isolated").locations("classpath:db/workspace-migration").load().migrate();
         db=JpaTestContext.start(url,"wf05","wf05-isolated");sql=new JdbcTemplate(db.dataSource());
     }
-    @AfterAll static void stop(){if(db!=null)db.close();}
+    @AfterAll static void stop(){if(db!=null){db.close();db=null;}if(isolated!=null){isolated.stop();isolated=null;}}
     Scope scope(Purpose purpose,String owner,String level){var requirement=new ConfigurationRequirement("S-A",KnowledgeLevel.FOUNDATION,List.of("OUT-1"));
         return new Scope(AssessmentPolicyScope.key(purpose,owner,level),purpose,owner,owner,level,level,level,1,"a".repeat(64),
             List.of(new GroupSpec(requirement,"Skill A","v1",SkillProvisionMode.MODULE_ONLY,List.of())),true,List.of());}

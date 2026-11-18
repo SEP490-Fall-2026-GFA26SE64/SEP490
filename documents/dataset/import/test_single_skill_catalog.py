@@ -5,7 +5,8 @@ import unittest
 from validate_single_skill_catalog import validate, snapshot
 from upgrade_neo4j_v012 import plan_upgrade
 
-ROOT=Path(__file__).resolve().parent
+from historical_test_catalog import catalog_root
+ROOT=catalog_root()
 class SingleSkillCatalogTest(unittest.TestCase):
     def test_release_content_audit_and_provider_counts(self):
         data,report=validate(ROOT/'ontology_seed-v012.json')
@@ -24,6 +25,11 @@ class SingleSkillCatalogTest(unittest.TestCase):
         with self.assertRaises(ValueError):plan_upgrade(drift,old,new)
         self.assertNotEqual(old,drift)
 class WorkspaceCutoverTest(unittest.TestCase):
+    def setUp(self):
+        from unittest.mock import patch
+        patcher = patch('upgrade_workspace_v012.ROOT', ROOT)
+        patcher.start()
+        self.addCleanup(patcher.stop)
     def fixture(self):
         from upgrade_workspace_v012 import ORG, expected
         base=snapshot(json.loads((ROOT/'ontology_seed-v011.json').read_text()))

@@ -41,7 +41,12 @@ public final class ModuleAuthoringDto {
     public record RevisionResponse(int number, String state, PackageResponse payload, String editedBy, String editedAt,
                                    String decidedBy, String decidedAt, String feedback) {}
 
-    public record EventResponse(int sequence, int revision, String action, String actorId, String occurredAt, String detail) {}
+    public record EventResponse(int sequence, int revision, String action, String actorId, String occurredAt, String detail,
+                                String previousResponsibleExpertId, String responsibleExpertId) {
+        public EventResponse(int sequence, int revision, String action, String actorId, String occurredAt, String detail) {
+            this(sequence, revision, action, actorId, occurredAt, detail, null, null);
+        }
+    }
 
     public record CatalogTeachingResponse(MetadataResponse metadata, String skillId, String skillName) {}
 
@@ -55,7 +60,15 @@ public final class ModuleAuthoringDto {
     public record DocumentResponse(String id, String organizationId, List<String> jobPositionIds, String createdBy,
                                    String createdAt, long lockVersion, boolean everReleased, boolean archived,
                                    Integer releasedRevision, List<RevisionResponse> revisions, List<EventResponse> history,
-                                   IntakeResponse intake) {}
+                                   IntakeResponse intake, String responsibleExpertId) {
+        public DocumentResponse(String id, String organizationId, List<String> jobPositionIds, String createdBy,
+                                String createdAt, long lockVersion, boolean everReleased, boolean archived,
+                                Integer releasedRevision, List<RevisionResponse> revisions, List<EventResponse> history,
+                                IntakeResponse intake) {
+            this(id, organizationId, jobPositionIds, createdBy, createdAt, lockVersion, everReleased, archived,
+                    releasedRevision, revisions, history, intake, createdBy);
+        }
+    }
 
     public record PageResponse(List<DocumentResponse> items, int total, int page, int pageSize) {}
 

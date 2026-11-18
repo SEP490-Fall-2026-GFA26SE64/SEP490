@@ -42,6 +42,9 @@ public final class CertificateReviewService {
         var frozen=views.decode(row);var assignment=assignments.require(actor,frozen.requestId());var result=views.view(row);
         reauthorize(actor,frozen.requestId(),assignment);return result;
     }
+    public CertificateHttpReceipt decideHttp(UUID id,String key,Decide command) {
+        return CertificateHttpReceipt.from(decide(id,key,command));
+    }
     public Receipt decide(UUID id,String key,Decide command) {
         var actor=expert();InitialPathwayPorts.commandKey(key);UUID retry;
         try{retry=UUID.fromString(key);}catch(RuntimeException invalid){throw new Failure(400,"INVALID_IDEMPOTENCY_KEY");}

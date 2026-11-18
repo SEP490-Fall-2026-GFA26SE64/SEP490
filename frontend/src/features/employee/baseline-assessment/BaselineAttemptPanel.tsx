@@ -6,7 +6,7 @@ import { Button } from '../../../shared/components/ui/Button'
 import { Badge } from '../../../shared/components/ui/Badge'
 import { Card, CardContent, CardHeader } from '../../../shared/components/ui/Card'
 import { Dialog, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../../../shared/components/ui/Dialog'
-import { RadioGroup, RadioGroupItem } from '../../../shared/components/ui/RadioGroup'
+import { AssessmentQuestionContent } from '../../../shared/components/ui/AssessmentQuestionContent'
 import { useTranslation } from '../../../shared/i18n/LanguageContext'
 import { answerCommand, submitCommand, type BaselineAttempt, type BaselineCommand } from './baselineApi'
 
@@ -67,7 +67,7 @@ export function BaselineAttemptPanel({ attempt, seconds, locked, busy = false, r
   }, [attempt, locked, expired])
   return <div className="min-w-0 space-y-5">
     <Card><CardContent className="flex flex-wrap items-center justify-between gap-4 p-5">
-      <div className="min-w-0 space-y-2"><Badge variant="outline">{attempt.purpose === 'BASELINE' ? (t('knowledgeAssessment.baseline')) : t('knowledgeAssessment.skill')}</Badge><Heading level={2} size="card">{attempt.roleName} · {attempt.levelName}</Heading>
+      <div className="min-w-0 space-y-2"><Badge variant="outline">{attempt.purpose === 'BASELINE' ? (t('knowledgeAssessment.baseline')) : t('knowledgeAssessment.skill')}</Badge><Heading level={2} size="card">{attempt.target.selectionId ? `${attempt.roleName} · ${attempt.levelName}` : attempt.groups.find(g => g.role === 'MAIN')?.skillName}</Heading>
         </div>
       <div className="flex items-center gap-3 rounded-lg border border-border bg-secondary p-4"><Clock className="text-primary" size={20} />
         <div><Text variant="caption">{tr('remaining')}</Text><span role="timer" className="block font-mono font-semibold">{Math.floor(Math.max(0, seconds) / 60)}:{String(Math.max(0, seconds) % 60).padStart(2, '0')}</span></div></div>
@@ -92,15 +92,8 @@ export function BaselineAttemptPanel({ attempt, seconds, locked, busy = false, r
         </CardContent></Card>
       <Card aria-busy={busy} className="min-w-0 lg:col-span-3"><CardHeader className="border-b border-border p-5"><div className="flex flex-wrap gap-2"><Badge variant="outline">{ui('question')} {item?.position ?? '—'}{item?.mandatory && <span aria-hidden="true" className="ml-1 font-bold">*</span>}</Badge>{changed ? <Badge variant="warning">{tr('unsavedChanges')}</Badge> : review && <Badge variant="secondary">{tr('savedAnswer')}</Badge>}</div></CardHeader>
     <CardContent key={`${attempt.revision}:${position}`} className="space-y-4 p-5">
-      {expired ? <p role="status">{tr('expired')}</p> : item ? <fieldset disabled={locked} className="min-w-0 space-y-5">
-        <legend className="mb-5 whitespace-pre-wrap break-words text-body-sm font-semibold">{item.mandatory && <><span aria-hidden="true" className="mr-1 font-bold">*</span><span className="sr-only">{tr('mandatoryQuestion')}. </span></>}{item.prompt}</legend>
-        <RadioGroup value={choice} onChange={setChoice} disabled={locked} aria-label={tr('chooseAnswer')}>
-          {item.options.map(option => <label key={option.id} htmlFor={`baseline-option-${option.id}`} className={`flex items-start gap-3 rounded-lg border p-4 text-body-sm ${option.id === choice ? 'border-primary bg-secondary' : 'border-border'} ${locked ? '' : 'cursor-pointer hover:bg-muted'}`}>
-            <RadioGroupItem id={`baseline-option-${option.id}`} name="baseline-answer" value={option.id} />
-            <span className="whitespace-pre-wrap break-words">{option.text}</span>
-          </label>)}
-        </RadioGroup>
-      </fieldset> : <p role="status">{tr('refreshNeeded')}</p>}
+      <Text variant="caption">{tr('timerNotice')}</Text>
+      {expired ? <p role="status">{tr('expired')}</p> : item ? <AssessmentQuestionContent mandatory={item.mandatory} mandatoryLabel={tr('mandatoryQuestion')} idPrefix="baseline" prompt={item.prompt} options={item.options} value={choice} onChange={setChoice} disabled={locked} answerLabel={tr('chooseAnswer')} /> : <p role="status">{tr('refreshNeeded')}</p>}
     </CardContent>
       <div className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-t border-border bg-card p-5">
         <Button variant="outline" disabled={busy || index <= 0} leftIcon={<ArrowLeft size={16} />} onClick={() => changeQuestion(attempt.items[index - 1].position)}>{ui('previous')}</Button>

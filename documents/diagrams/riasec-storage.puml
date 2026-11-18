@@ -3,7 +3,7 @@
 left to right direction
 skinparam classAttributeIconSize 0
 skinparam shadowing false
-title RIASEC source-defined storage / workspace V72 / 2026-11-18
+title RIASEC source-defined storage / workspace V74 / 2026-11-18
 class Account {
   account_id: UUID [PK; reference stub]
 }

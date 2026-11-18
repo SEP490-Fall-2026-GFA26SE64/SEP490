@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1630" height="1320" viewBox="0 0 1630 1320" font-family="Segoe UI,Arial,sans-serif"><defs><marker id="arrow" markerWidth="10" markerHeight="9" refX="9" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9" fill="#334155"/></marker></defs><rect width="100%" height="100%" fill="#fff"/>
-<text x="50" y="45" font-size="26" font-weight="650" fill="#0f172a">RIASEC storage — PostgreSQL V72 and Neo4j ownership</text>
+<text x="50" y="45" font-size="26" font-weight="650" fill="#0f172a">RIASEC storage — PostgreSQL V74 and Neo4j ownership</text>
 <text x="50" y="78" font-size="16" font-weight="400" fill="#475569">Source-defined tables and application rules at 2c2468b5; no fresh runtime schema capture.</text>
 <rect x="50" y="130" width="570" height="239" rx="8" fill="#f8fafc" stroke="#64748b" stroke-width="1.5"/>
 <rect x="50" y="130" width="570" height="48" rx="8" fill="#e0e7ff" stroke="#64748b" stroke-width="1.5"/>

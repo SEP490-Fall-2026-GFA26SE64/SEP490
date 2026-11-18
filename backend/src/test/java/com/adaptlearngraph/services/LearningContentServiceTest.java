@@ -45,20 +45,11 @@ class LearningContentServiceTest {
     @BeforeEach
     void setup() {
         when(modules.actor()).thenAnswer(c -> actor);
+        when(content.assignedRevision("org","learner","module",2)).thenReturn(true);
         when(modules.transaction(any())).thenAnswer(c -> c.<Supplier<?>>getArgument(0).get());
         var meta = new Metadata("module", "1", "ACTIVE", "APPROVED", "reviewer", "time");
         var payload =
-                new ModuleAuthoring.Package(
-                        meta,
-                        "Module",
-                        "LESSON_AND_PRACTICE",
-                        "module-content:c",
-                        LearningContent.MANIFEST_TYPE,
-                        "1",
-                        3,
-                        new BigDecimal("1000"),
-                        List.of(new Teaching(meta, "skill", "Skill", "PRIMARY", "LOW")),
-                        new Content(
+                new ModuleAuthoring.Package(meta, "Module", "LESSON_AND_PRACTICE", "module-content:c", LearningContent.MANIFEST_TYPE, "1", 3, List.of(new Teaching(meta, "skill", "Skill", "PRIMARY", "LOW")), new Content(
                                 "c",
                                 "Title",
                                 "",
@@ -289,7 +280,6 @@ class LearningContentServiceTest {
                         LearningContent.MANIFEST_TYPE,
                         "2",
                         p.duration(),
-                        p.price(),
                         p.teachings(),
                         newContent);
         var next = new Revision(2, "RELEASED", payload, "expert", "time", "reviewer", "time", null);

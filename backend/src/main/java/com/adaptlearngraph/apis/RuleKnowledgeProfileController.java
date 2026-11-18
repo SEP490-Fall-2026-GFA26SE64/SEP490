@@ -16,9 +16,10 @@ import java.util.Map;
 public final class RuleKnowledgeProfileController {
     private final RuleKnowledgeProfileService profiles;
     public RuleKnowledgeProfileController(RuleKnowledgeProfileService profiles){this.profiles=profiles;}
-    @GetMapping public ResponseEntity<RuleKnowledgeProfileService.Page> read(@RequestParam(defaultValue="ALL") String kind,@RequestParam(defaultValue="0") int page) {
-        return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(profiles.read(kind,page));
+    @GetMapping public ResponseEntity<RuleKnowledgeProfileService.Page> read(@RequestParam(defaultValue="ALL") String kind,@RequestParam(defaultValue="0") int page,@RequestParam(required=false) String skillId) {
+        return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(profiles.read(kind,page,skillId));
     }
+    public ResponseEntity<RuleKnowledgeProfileService.Page> read(String kind,int page) {return read(kind,page,null);}
     @ExceptionHandler(Failure.class) ResponseEntity<Map<String,String>> failure(Failure e){return ResponseEntity.status(e.status).cacheControl(CacheControl.noStore()).body(Map.of("code",e.code));}
     @ExceptionHandler(com.adaptlearngraph.services.RoleBaselineFlow.Failure.class)
     ResponseEntity<Map<String,String>> identity(com.adaptlearngraph.services.RoleBaselineFlow.Failure e){return failure(new Failure(e.status,e.code));}

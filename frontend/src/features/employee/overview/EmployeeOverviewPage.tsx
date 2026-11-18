@@ -1,23 +1,23 @@
-import { useOverviewSectionScroll } from './useOverviewSectionScroll'
-import { useContext, useEffect, useRef, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { Link, useSearchParams } from 'react-router-dom'
-import { RiasecExperience } from '../riasec/RiasecExperience'
-import { Award, ChartColumnIncreasing, LayoutDashboard, Calendar, CheckCircle2, ChevronDown, Clock3, Sparkles, Target } from 'lucide-react'
+import { Award,Calendar,ChartColumnIncreasing,CheckCircle2,ChevronDown,Clock3,LayoutDashboard,Sparkles,Target } from 'lucide-react'
+import { useContext,useRef,useState } from 'react'
+import { Link,useSearchParams } from 'react-router-dom'
 import { WorkspaceSessionContext } from '../../../shared/auth/workspaceSession'
-import { Button } from '../../../shared/components/ui/Button'
-import { Tabs, TabsList, TabsTrigger } from '../../../shared/components/ui/Tabs'
-import { Progress } from '../../../shared/components/ui/Progress'
-import { StatCard } from '../../../shared/components/ui/StatCard'
 import { Heading } from '../../../shared/components/typography/Heading'
 import { Text } from '../../../shared/components/typography/Text'
+import { Button } from '../../../shared/components/ui/Button'
+import { Progress } from '../../../shared/components/ui/Progress'
+import { StatCard } from '../../../shared/components/ui/StatCard'
+import { Tabs,TabsList,TabsTrigger } from '../../../shared/components/ui/Tabs'
+import { useTranslation } from "../../../shared/i18n/LanguageContext"
 import { WorkspaceLayout } from '../../../shared/layouts/WorkspaceLayout'
-import { useTranslation } from '../../../shared/i18n/LanguageContext'
 import { employeeBaselineEnabled } from '../baseline-assessment/baselineApi'
-import { readRoleOverview, statusLabels, requirementMet } from './roleOverviewData'
 import { CompetencyProfile } from '../baseline-assessment/CompetencyProfile'
+import { RiasecExperience } from '../riasec/RiasecExperience'
 import { CompetencyStatusSummary } from './CompetencyStatusSummary'
 import './EmployeeOverviewPage.css'
+import { readRoleOverview,requirementMet,statusLabels } from './roleOverviewData'
+import { useOverviewSectionScroll } from './useOverviewSectionScroll'
 
 export function EmployeeOverviewPage() {
   const identity = useContext(WorkspaceSessionContext)?.identity
@@ -32,7 +32,7 @@ function OwnedEmployeeOverview() {
   const [params, setParams] = useSearchParams()
   const tab = params.get('tab') === 'riasec' ? 'riasec' : 'overview'
   const [riasecOpened, setRiasecOpened] = useState(tab === 'riasec')
-  useEffect(() => { if (tab === 'riasec') setRiasecOpened(true) }, [tab])
+  if (tab === 'riasec' && !riasecOpened) setRiasecOpened(true)
   const setTab = (value: 'overview' | 'riasec') => {
     if (value === 'riasec') setRiasecOpened(true)
     setParams(previous => { const next = new URLSearchParams(previous); next.set('tab', value); return next })

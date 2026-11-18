@@ -73,14 +73,18 @@ describe('REQ-013 module workspace', () => {
     const dialog = await screen.findByRole('dialog', { name: 'Module details' })
     for (const label of ['Lesson 1: Introduction', 'Lesson 2: Practice video', 'Lesson 3: Summary']) expect(within(dialog).getByRole('region', { name: label })).toBeTruthy()
     expect(within(dialog).queryByText('Preview this content version')).toBeNull()
+    fireEvent.click(within(dialog).getByRole('tab', { name: 'Module information' }))
+    expect(within(dialog).getByText(/Responsible person: expert-a/)).toBeTruthy()
+    fireEvent.click(within(dialog).getByRole('tab', { name: 'View as learner' }))
     expect(await within(dialog).findByText('First review body')).toBeTruthy()
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Next lesson' }))
+    expect(dialog.querySelector('video')?.getAttribute('src')).toContain('/assets/asset')
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Next lesson' }))
     expect(await within(dialog).findByText('Last review body')).toBeTruthy()
-    expect(within(dialog).getByRole('region', { name: 'Lesson 2: Practice video' }).querySelector('video')?.getAttribute('src')).toContain('/assets/asset')
-    expect(within(dialog).getByText(/Created by \/ Responsible Expert: expert-a/)).toBeTruthy()
     expect(screen.getByLabelText('Current route').textContent).toBe('/ld-manager/modules')
     fireEvent.click(within(dialog).getByRole('button', { name: 'Close dialog' }))
     fireEvent.change(screen.getByLabelText('Show modules'), {target:{value:'all'}})
-    fireEvent.change(screen.getByLabelText('Lifecycle'), { target: { value: 'ACTIVE' } })
+    fireEvent.change(screen.getByLabelText('Status'), { target: { value: 'ACTIVE' } })
     fireEvent.click(screen.getByRole('link', { name: 'Approvals' }))
     expect(await screen.findByRole('heading', { name: 'Learning Content' })).toBeTruthy()
     expect(screen.getByLabelText('Current route').textContent).toBe('/ld-manager/approvals')
@@ -88,7 +92,7 @@ describe('REQ-013 module workspace', () => {
     expect(vi.mocked(fetch).mock.calls.some(([path]) => String(path).includes('pendingOnly=true'))).toBe(true)
     const queue = vi.mocked(fetch).mock.calls.find(([path]) => String(path).includes('pendingOnly=true'))
     expect(new URL(String(queue?.[0]), 'http://test').searchParams.get('status')).toBe('')
-    expect(screen.queryByLabelText('Lifecycle')).toBeNull()
+    expect(screen.queryByLabelText('Status')).toBeNull()
     expect(screen.queryByText('Catalog intake permissions')).toBeNull()
   })
   it('shows another Expert module and history without edit, submit or delete controls', async () => {
@@ -104,7 +108,7 @@ describe('REQ-013 module workspace', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Actions for read-only' })); expect(screen.getByRole('button', { name: 'Details & history' })).toBeTruthy()
     for (const name of ['Edit', 'Submit for review', 'Delete draft']) expect(screen.queryByRole('button', { name })).toBeNull()
   })
-  it('requires an explicit manager assignment before intake and retains errors for retry', async () => {
+  it('keeps imported catalog records read-only after intake retirement', async () => {
     const original = vi.mocked(fetch).getMockImplementation()!
     const module = { metadata: { id: 'imported', version: '0.11.0', status: 'ACTIVE', reviewStatus: 'NEEDS_EXPERT_REVIEW', reviewedBy: null, reviewedAt: null }, title: 'Imported lesson', moduleType: 'LESSON_AND_PRACTICE', contentUri: 'content/modules/lesson.md', contentType: 'text/markdown', contentVersion: '1.0', duration: 30, price: 100000, teachings: [] }
     vi.mocked(fetch).mockImplementation(async (path, init) => {
@@ -119,23 +123,10 @@ describe('REQ-013 module workspace', () => {
     })
     render(<MemoryRouter><ModuleManagementWorkspace /></MemoryRouter>)
     fireEvent.click(await screen.findByRole('button', { name: 'View module' }))
-    fireEvent.click(await screen.findByRole('button', { name: 'Assign for intake' }))
-    let dialog = screen.getByRole('dialog', { name: 'Assign for intake' })
-    await within(dialog).findByRole('option', { name: 'Software Developers' })
-    expect(within(dialog).getByLabelText('Related job positions').hasAttribute('required')).toBe(true)
-    fireEvent.click(within(dialog).getByRole('button', { name: 'Cancel' }))
-    expect(screen.queryByRole('dialog')).toBeNull()
-    fireEvent.click(screen.getByRole('button', { name: 'View module' }))
-    fireEvent.click(screen.getByRole('button', { name: 'Assign for intake' }))
-    dialog = screen.getByRole('dialog', { name: 'Assign for intake' })
-    await within(dialog).findByRole('option', { name: 'Expert A' })
-    fireEvent.change(within(dialog).getByLabelText('Responsible Expert'), { target: { value: 'expert-a' } })
-    fireEvent.change(within(dialog).getByLabelText('Related job positions'), { target: { value: 'occ' } })
-    fireEvent.submit(within(dialog).getByRole('button', { name: /^Assign$/ }).closest('form')!)
-    expect(await within(dialog).findByRole('alert')).toHaveProperty('textContent', 'Assignment changed. Reload the catalog.')
-    const request = vi.mocked(fetch).mock.calls.find(([path]) => String(path).endsWith('/assignment'))
-    expect(JSON.parse(String(request?.[1]?.body))).toEqual({ expertId: 'expert-a', jobPositionIds: ['occ'], expectedAssignedAt: null })
+    expect(screen.getByRole('dialog')).toBeTruthy()
+    expect(screen.queryByRole('button', { name: 'Assign for intake' })).toBeNull()
     expect(screen.queryByRole('button', { name: 'Approve and release' })).toBeNull()
+    expect(vi.mocked(fetch).mock.calls.some(([path, init]) => String(path).endsWith('/assignment') && init?.method === 'POST')).toBe(false)
   })
   it('loads real scoped choices and provides a useful empty state', async () => {
     render(<MemoryRouter><ModuleManagementWorkspace /></MemoryRouter>); await signIn()
@@ -243,7 +234,16 @@ describe('REQ-013 module workspace', () => {
     })
     render(<MemoryRouter><ModuleManagementWorkspace /></MemoryRouter>)
     await screen.findByRole('heading',{name:'Published SQL'})
-    expect(screen.queryByLabelText('Lifecycle')).toBeNull()
+    expect(screen.queryByLabelText('Status')).toBeNull()
+    expect(screen.getAllByRole('columnheader').map(h => h.textContent)).toEqual([
+      'Module',
+      'Responsible person',
+      'Skill taught',
+      'Knowledge level',
+      'Duration',
+      'Status',
+      'Action',
+    ])
     const queries=()=>vi.mocked(fetch).mock.calls.filter(([path])=>String(path).includes('/module-list?')).map(([path])=>new URL(String(path),'http://test').searchParams)
     expect(queries().at(-1)?.get('status')).toBe('ACTIVE');expect(queries().at(-1)?.get('review')).toBe('APPROVED')
     fireEvent.click(screen.getByRole('button',{name:'View module'}))
@@ -254,7 +254,9 @@ describe('REQ-013 module workspace', () => {
     fireEvent.click(within(dialog).getByRole('button',{name:'Close'}))
     fireEvent.change(screen.getByLabelText('Show modules'),{target:{value:'all'}})
     await waitFor(()=>expect(queries().at(-1)?.get('review')).toBe(''))
-    expect(screen.getByLabelText('Lifecycle')).toBeTruthy()
+    expect(screen.getByLabelText('Status')).toBeTruthy()
+    fireEvent.change(screen.getByLabelText('Status'), { target: { value: 'NEEDS_EXPERT_REVIEW' } })
+    await waitFor(()=>expect(queries().at(-1)?.get('review')).toBe('NEEDS_EXPERT_REVIEW'))
     fireEvent.click(screen.getByRole('button',{name:'Clear filters'}))
     await waitFor(()=>expect(queries().at(-1)?.get('review')).toBe('APPROVED'))
     expect((screen.getByLabelText('Show modules') as HTMLSelectElement).value).toBe('published')

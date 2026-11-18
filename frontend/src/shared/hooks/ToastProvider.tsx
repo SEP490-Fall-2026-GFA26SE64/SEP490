@@ -1,22 +1,6 @@
 import * as React from 'react'
-
-export type ToastVariant = 'default' | 'success' | 'warning' | 'destructive' | 'info'
-
-export interface ToastItem {
-  id: string
-  title?: string
-  description: string
-  variant?: ToastVariant
-  duration?: number
-}
-
-interface ToastContextValue {
-  toasts: ToastItem[]
-  toast: (toast: Omit<ToastItem, 'id'>) => void
-  dismiss: (id: string) => void
-}
-
-const ToastContext = React.createContext<ToastContextValue | undefined>(undefined)
+import type { ToastItem } from './useToast'
+import { ToastContext } from './useToast'
 
 export function ToastProvider({ children }: { children: React.ReactNode }) {
   const [toasts, setToasts] = React.useState<ToastItem[]>([])
@@ -45,15 +29,4 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
       {children}
     </ToastContext.Provider>
   )
-}
-
-const noopToastContext: ToastContextValue = {
-  toasts: [],
-  toast: () => {},
-  dismiss: () => {},
-}
-
-export function useToast() {
-  const context = React.useContext(ToastContext)
-  return context ?? noopToastContext
 }

@@ -22,6 +22,9 @@ public final class Neo4jCypher {
     public interface Statements {
         List<Record> list(String cypher, Map<String, ?> parameters);
 
+        /** Already-typed primitive bindings and driver Records, without entity/result conversion. */
+        default List<Record> records(String cypher,Map<String,?> parameters) { return list(cypher,parameters); }
+
         default List<Record> list(String cypher) {
             return list(cypher, Map.of());
         }
@@ -55,6 +58,11 @@ public final class Neo4jCypher {
             @Override
             public List<Record> list(String cypher, Map<String, ?> parameters) {
                 return List.copyOf(query(cypher, parameters).fetchAs(Record.class).mappedBy((types, row) -> row).all());
+            }
+
+            @Override
+            public List<Record> records(String cypher,Map<String,?> parameters) {
+                return List.copyOf(client.getQueryRunner().run(cypher,new java.util.HashMap<String,Object>(parameters)).list());
             }
 
             @Override

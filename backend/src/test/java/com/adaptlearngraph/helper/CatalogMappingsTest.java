@@ -51,11 +51,9 @@ class CatalogMappingsTest {
     @Test
     void mapsJobPositions() {
         ModelMapper mapper = ModelMapperFactory.create(List.of(new JobPositionMappings()));
-        var jobPosition = new JobPosition("occ-1", "15-1252.00", "Software Developer", 4, 0.1, 0.9, 0.3, 0.2, 0.4, 0.5,
-                "ACTIVE", "1.0.0", 3, 12);
+        var jobPosition = new JobPosition("occ-1", "15-1252.00", "Software Developer", 4, "ACTIVE", "1.0.0", 3, 12, null, 4, 36, 12, 8, 16, 20);
 
-        assertThat(mapper.map(jobPosition, JobPositionResponse.class)).isEqualTo(new JobPositionResponse("occ-1",
-                "15-1252.00", "Software Developer", 4, 0.1, 0.9, 0.3, 0.2, 0.4, 0.5, "ACTIVE", "1.0.0", 3, 12));
+        assertThat(mapper.map(jobPosition, JobPositionResponse.class)).isEqualTo(new JobPositionResponse("occ-1", "15-1252.00", "Software Developer", 4, "ACTIVE", "1.0.0", 3, 12, null, 4, 36, 12, 8, 16, 20));
     }
 
     @Test
@@ -83,14 +81,12 @@ class CatalogMappingsTest {
 
         MicroSkillResponse response = mapper.map(skill, MicroSkillResponse.class);
 
-        assertThat(response).isEqualTo(new MicroSkillResponse(new MicroSkillId(skillId).toString(), "org-a", "JAVA_CORE",
-                "Java Core", "Basics", "DRAFT", CREATED, UPDATED));
+        assertThat(response).isEqualTo(new MicroSkillResponse(new MicroSkillId(skillId).toString(), "org-a", "JAVA_CORE", "Java Core", "Basics", "DRAFT", CREATED, UPDATED, null, List.of(), List.of(), List.of(), List.of(), List.of()));
         assertThat(json.writeValueAsString(response)).contains("\"organizationId\":\"org-a\"").doesNotContain("org-b");
 
         var edge = new PrerequisiteEdge("s1", "JAVA_CORE", "Java Core", "s2", "SPRING", "Spring", 0.6,
                 SkillStatus.ACTIVE, CREATED, UPDATED);
-        assertThat(mapper.map(edge, PrerequisiteResponse.class)).isEqualTo(new PrerequisiteResponse("s1", "JAVA_CORE",
-                "Java Core", "s2", "SPRING", "Spring", 0.6, "ACTIVE", CREATED.toString(), UPDATED.toString()));
+        assertThat(mapper.map(edge, PrerequisiteResponse.class)).isEqualTo(new PrerequisiteResponse("s1", "JAVA_CORE", "Java Core", "s2", "SPRING", "Spring", null, null, "ACTIVE", CREATED.toString(), UPDATED.toString()));
     }
 
     @Test

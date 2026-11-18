@@ -7,6 +7,8 @@ import com.adaptlearngraph.entities.domain.JobPositionChange;
 import com.adaptlearngraph.entities.domain.CatalogFailure;
 import java.util.List;
 import java.util.Objects;
+import java.nio.charset.StandardCharsets;
+import java.util.UUID;
 import org.modelmapper.ModelMapper;
 
 /** DTO boundary of the organization job position catalog API. */
@@ -32,7 +34,8 @@ public class JobPositionApplicationService {
         String author = access.requireManager(organizationId);
         if (request == null) throw new CatalogFailure(400, "INVALID_REQUEST");
         String code = request.code() != null ? request.code().trim() : "";
-        String id = request.id() != null && !request.id().isBlank() ? request.id().trim() : code;
+        String id = request.id() != null && !request.id().isBlank() ? request.id().trim()
+                : UUID.nameUUIDFromBytes((organizationId + ":job-position:" + code).getBytes(StandardCharsets.UTF_8)).toString();
         return toResponse(jobPositions.saveChange(organizationId, change(id, code, request, author, true)));
     }
 

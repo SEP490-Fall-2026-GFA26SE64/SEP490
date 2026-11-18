@@ -6,7 +6,6 @@ import com.adaptlearngraph.dtos.ModuleAuthoringDto.ChoiceResponse;
 import com.adaptlearngraph.dtos.ModuleAuthoringDto.ContentResponse;
 import com.adaptlearngraph.dtos.ModuleAuthoringDto.DocumentResponse;
 import com.adaptlearngraph.dtos.ModuleAuthoringDto.GrantResponse;
-import com.adaptlearngraph.dtos.ModuleAuthoringDto.IntakeResponse;
 import com.adaptlearngraph.dtos.ModuleAuthoringDto.LessonRequest;
 import com.adaptlearngraph.dtos.ModuleAuthoringDto.ModuleInput;
 import com.adaptlearngraph.dtos.ModuleAuthoringDto.PageResponse;
@@ -73,16 +72,12 @@ public class ModuleAuthoringApplicationService {
         return map(modules.catalogList(search, status, review, type, skill, page), CatalogPageResponse.class);
     }
 
-    public IntakeResponse assignIntake(String id, List<String> jobPositionIds, String expectedAssignedAt, String expertId) {
-        return map(modules.assignIntake(id, jobPositionIds, expectedAssignedAt, expertId), IntakeResponse.class);
-    }
-
-    public DocumentResponse acceptIntake(String id) {
-        return document(modules.acceptIntake(id));
-    }
-
     public DocumentResponse create(ModuleInput input) {
         return document(modules.create(save(input)));
+    }
+
+    public DocumentResponse transferResponsibility(String id, long expectedVersion, String expertId) {
+        return document(modules.transferResponsibility(id, expectedVersion, expertId));
     }
 
     public DocumentResponse update(String id, long expectedVersion, ModuleInput input) {

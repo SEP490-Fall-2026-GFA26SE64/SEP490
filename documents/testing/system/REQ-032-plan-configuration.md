@@ -15,3 +15,17 @@ All six commercial fields and concurrent version/history/audit behavior have [Po
 Evidence: SL-AC05/15/16. Screenshot: `frontend/test-results/subscription-final/REQ-032-.../plan-administration-mobile.png`.
 
 No production Platform Administrator was created. The opt-in `platform-bootstrap` operator profile exists for a previously verified, MFA-enrolled account; executing it against retained/live data requires separate authorization.
+
+## 2026-11-18 — Platform Admin sidebar layout and plan-only scope
+
+**URL:** `http://127.0.0.1:8092/platform-admin/subscriptions` (isolated `adapt-learn-graph-subscription-test` stack; reused the existing `subscription-test` API image because rebuilding is blocked by an unrelated backend test compile error in `SkillLearningServiceTest` → `Package.price()`).
+
+Change: the page now renders inside the Platform Administrator `WorkspaceLayout` (sidebar + user menu) and no longer embeds the Organizations table/suspension controls; it shows only plan overview stats, plan cards and the versioned edit dialog.
+
+| Check | Result |
+| --- | --- |
+| `npx tsc -p tsconfig.app.json --noEmit`, `npm run build`, `oxlint` on changed files | Passed |
+| Playwright (temporary verification spec, UI password login with synthetic MFA-enrolled Platform Administrator): sidebar `Portal feature tabs` shows Organizations + active Subscriptions link; no `Search organizations` searchbox or `Suspend workspace` button; one plan card per API plan; edit → save new version → reload shows the new description; VI heading `Gói đăng ký`; 390px mobile capture; original terms restored via expected version; no page errors | Passed |
+| `REQ-032-plan-configuration.spec.ts` (updated with the layout/scope assertions) | Not Run to completion — the shared `workspaceLogin` helper's `/workspace-auth/current` poll does not match the two-week-old API image; the UI login itself succeeds |
+
+Screenshots inspected: desktop, edit dialog and mobile (VI) under `frontend/test-results/tmp-platform-subscriptions-*/`.

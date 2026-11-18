@@ -53,6 +53,12 @@ public final class CertificateSubmissionService {
     private Optional<Receipt> replay(Actor actor,String operation,String key,String hash) {
         var found=receipts.find(actor,operation,"CERTIFICATE",key);if(found.isPresent() && !hash.equals(found.get().bodyHash()))throw new Failure(409,"IDEMPOTENCY_CONFLICT");return found;
     }
+    public CertificateHttpReceipt uploadHttp(UUID request,String key,Expected expected,String filename,long size,String sha256,org.springframework.core.io.InputStreamSource source) {
+        return CertificateHttpReceipt.from(upload(request,key,expected,filename,size,sha256,source));
+    }
+    public CertificateHttpReceipt submitHttp(UUID request,String key,Submit command) {
+        return CertificateHttpReceipt.from(submit(request,key,command));
+    }
     public Receipt upload(UUID request,String key,Expected expected,String filename,long size,String sha256,InputStreamSource source) {
         var actor=employee();InitialPathwayPorts.commandKey(key);
         if(filename==null || filename.isBlank() || filename.length()>255 || size<1 || size>10485760 || sha256==null || !sha256.matches("[0-9a-f]{64}"))throw new Failure(400,"INVALID_CERTIFICATE_UPLOAD");

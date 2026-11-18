@@ -25,6 +25,8 @@ class ModuleAuthoringServiceTest {
         actor = new Actor("expert-a", "org", Set.of("EXPERT")); documents = new HashMap<>(); pins = new HashMap<>();
         content = new Content("content", "Lesson", "# Learn\nPractice the task.", "text/markdown", "1.0", List.of("occ"), "expert-a", ModuleAuthoring.now());
         when(port.actor()).thenAnswer(call -> actor);
+        when(port.requireKnowledge(eq("org"),eq("skill"),eq("FOUNDATION"),any())).thenReturn(
+                new KnowledgeDefinition(com.adaptlearngraph.entities.domain.KnowledgeLevel.FOUNDATION,"1.0",List.of()));
         when(port.transaction(any())).thenAnswer(call -> call.<Supplier<?>>getArgument(0).get());
         when(port.jobPositions(any())).thenReturn(List.of("occ"));
         when(port.catalog("Expert")).thenReturn(List.of(new Choice("expert-a", "Expert A")));
@@ -32,6 +34,7 @@ class ModuleAuthoringServiceTest {
         when(port.catalog("MicroSkill")).thenReturn(List.of(new Choice("skill", "Skill"), new Choice("support", "Supporting skill")));
         when(port.contents("org")).thenReturn(List.of(content));
         when(port.lock(anyString(), anyString())).thenAnswer(call -> Optional.ofNullable(documents.get(call.getArgument(1))));
+        when(port.managedModuleIds()).thenAnswer(call -> List.copyOf(documents.keySet()));
         when(port.documents("org")).thenAnswer(call -> List.copyOf(documents.values()));
         doAnswer(call -> { Document d = call.getArgument(0); documents.put(d.id(), d); return null; }).when(port).save(any());
         doAnswer(call -> { Document d = call.getArgument(0); documents.remove(d.id()); return null; }).when(port).delete(any());
@@ -39,77 +42,9 @@ class ModuleAuthoringServiceTest {
         when(port.pinned(anyString(), anyString(), anyString())).thenAnswer(call -> Optional.ofNullable(pins.get(call.getArgument(1) + ":" + call.getArgument(2))));
         doAnswer(call -> { pins.put(call.getArgument(1) + ":" + call.getArgument(2), call.getArgument(3)); return null; }).when(port).pin(anyString(), anyString(), anyString(), anyInt());
     }
-    Save input(String title) { return new Save(title, "LESSON_AND_PRACTICE", "content", 90, new BigDecimal("200000"), List.of("occ"),
-            List.of(new TeachingInput("skill"))); }
+    Save input(String title) { return new Save(title, "LESSON_AND_PRACTICE", "content", 90, List.of("occ"), List.of(new TeachingInput("skill")), "FOUNDATION", List.of()); }
     CatalogModule graph(String id, String title) {
-        return new CatalogModule(new Metadata(id, "0.11.0", "ACTIVE", "NEEDS_EXPERT_REVIEW", null, null), title,
-                "RESOURCE_GUIDED_PRACTICE", "https://example.org/lesson", "text/markdown", "1.3", 37,
-                new BigDecimal("123456"), List.of(new CatalogTeaching(new Metadata("edge-" + id, "0.11.0", "ACTIVE", "NEEDS_EXPERT_REVIEW", null, null), "skill", "Skill", "PRIMARY", "MEDIUM")));
-    }
-    Map<String, Intake> intakeFixtures() {
-        Map<String, Intake> intakes = new HashMap<>();
-        when(port.intakes(anyString())).thenAnswer(c -> intakes.values().stream().filter(i -> i.organizationId().equals(c.getArgument(0))).toList());
-        when(port.intakeExists(anyString())).thenAnswer(c -> intakes.containsKey(c.getArgument(0)));
-        doAnswer(c -> { Intake i = c.getArgument(0); intakes.put(i.moduleId(), i); return null; }).when(port).saveIntake(any());
-        when(port.managedModuleIds()).thenAnswer(c -> List.copyOf(documents.keySet()));
-        when(port.graphModules("org")).thenReturn(List.of(graph("legacy", "Imported lesson")));
-        when(port.importedMarkdown(anyString())).thenReturn("# Imported lesson\nReal source Markdown.");
-        return intakes;
-    }
-    @Test void intakePreservesIdentitySourceAndAssignsOneResponsibleCreator() {
-        intakeFixtures(); manager();
-        Intake assigned = service.assignIntake("legacy", List.of("occ"));
-        assertEquals("ld-reviewer", assigned.assignedBy()); assertNull(assigned.acceptedBy());
-        assertThrows(ModuleAuthoringService.Failure.class, () -> service.acceptIntake("legacy"));
-        actor = new Actor("expert-a", "org", Set.of("EXPERT"));
-        Document doc = service.acceptIntake("legacy");
-        assertEquals("legacy", doc.id()); assertEquals("expert-a", doc.createdBy()); assertEquals("expert-a", doc.intake().acceptedBy());
-        assertEquals(assigned.source(), doc.intake().source()); assertEquals("INTAKE", doc.history().getLast().action());
-        assertEquals("edge-legacy", doc.current().payload().teachings().getFirst().metadata().id());
-        assertEquals(assigned.source().contentUri(), doc.current().payload().contentUri());
-        assertEquals("1.3", doc.current().payload().contentVersion()); assertEquals("DRAFT", doc.current().state());
-        assertNull(doc.current().payload().content().createdBy()); assertTrue(doc.current().payload().content().markdown().contains("Real source"));
-        verify(port, never()).project(any(), any(), anyBoolean());
-        assertThrows(ModuleAuthoringService.Failure.class, () -> service.acceptIntake("legacy"));
-        final Document accepted = doc;
-        assertThrows(ModuleAuthoringService.Failure.class, () -> service.delete(accepted.id(), accepted.lockVersion()));
-        doc = release(doc); assertEquals("RELEASED", doc.current().state()); assertEquals("expert-a", doc.createdBy());
-        assertEquals(assigned.source(), doc.intake().source()); verify(port).project(any(), any(), eq(false));
-    }
-    @Test void intakeRejectsUnassignedForeignDuplicateAndDriftWithoutWrites() {
-        var intakes = intakeFixtures();
-        assertThrows(ModuleAuthoringService.Failure.class, () -> service.assignIntake("legacy", List.of("occ")));
-        manager(); service.assignIntake("legacy", List.of("occ"));
-        assertThrows(ModuleAuthoringService.Failure.class, () -> service.assignIntake("legacy", List.of("occ")));
-        actor = new Actor("foreign", "foreign-org", Set.of("LD_MANAGER"));
-        assertThrows(ModuleAuthoringService.Failure.class, () -> service.assignIntake("legacy", List.of("occ")));
-        actor = new Actor("expert-b", "org", Set.of("EXPERT"));
-        when(port.jobPositions(any())).thenReturn(List.of());
-        assertEquals(403, assertThrows(ModuleAuthoringService.Failure.class, () -> service.acceptIntake("legacy")).status());
-        actor = new Actor("expert-a", "org", Set.of("EXPERT"));
-        when(port.jobPositions(any())).thenReturn(List.of("occ"));
-        when(port.graphModules("org")).thenReturn(List.of(graph("legacy", "Changed externally")));
-        assertThrows(ModuleAuthoringService.Failure.class, () -> service.acceptIntake("legacy"));
-        assertNull(intakes.get("legacy").acceptedBy()); verify(port, never()).save(any()); verify(port, never()).saveContent(anyString(), any());
-    }
-    @Test void managerCanRefreshUnacceptedAssignmentWithTokenAndAudit() {
-        intakeFixtures(); manager(); Intake first = service.assignIntake("legacy", List.of("occ"));
-        // The assignment timestamp is the concurrency token; ensure the refresh observes a later clock value.
-        while (first.assignedAt().equals(java.time.Instant.now().toString())) Thread.onSpinWait();
-        when(port.graphModules("org")).thenReturn(List.of(graph("legacy", "Refreshed source")));
-        Intake refreshed = service.assignIntake("legacy", List.of("occ"), first.assignedAt());
-        assertEquals("Refreshed source", refreshed.source().title()); assertEquals(2, refreshed.history().size());
-        assertThrows(ModuleAuthoringService.Failure.class, () -> service.assignIntake("legacy", List.of("occ"), first.assignedAt()));
-        actor = new Actor("expert-a", "org", Set.of("EXPERT"));
-        Document doc = service.acceptIntake("legacy"); assertEquals(3, doc.history().size());
-        manager(); assertThrows(ModuleAuthoringService.Failure.class, () -> service.assignIntake("legacy", List.of("occ"), refreshed.assignedAt()));
-    }
-    @Test void intakeDoesNotInventContentWhenSourceIsMissing() {
-        intakeFixtures(); manager(); service.assignIntake("legacy", List.of("occ"));
-        actor = new Actor("expert-a", "org", Set.of("EXPERT"));
-        when(port.importedMarkdown(anyString())).thenThrow(new ModuleAuthoringService.Failure(409, "Source missing"));
-        assertThrows(ModuleAuthoringService.Failure.class, () -> service.acceptIntake("legacy"));
-        verify(port, never()).saveContent(anyString(), any()); verify(port, never()).save(any());
+        return new CatalogModule(new Metadata(id, "0.11.0", "ACTIVE", "NEEDS_EXPERT_REVIEW", null, null), title, "RESOURCE_GUIDED_PRACTICE", "https://example.org/lesson", "text/markdown", "1.3", 37, List.of(new CatalogTeaching(new Metadata("edge-" + id, "0.11.0", "ACTIVE", "NEEDS_EXPERT_REVIEW", null, null), "skill", "Skill", "PRIMARY", "MEDIUM")));
     }
     @Test void listsSharedNeo4jCatalogWithoutFabricatingHistoryAndCombinesScopedDraftsOnce() {
         Document own = service.create(input("Draft"));
@@ -119,7 +54,7 @@ class ModuleAuthoringServiceTest {
         assertEquals(2, result.total());
         CatalogItem legacy = result.items().stream().filter(i -> i.module().metadata().id().equals("legacy")).findFirst().orElseThrow();
         assertNull(legacy.authoring()); assertNull(legacy.module().metadata().reviewedBy());
-        assertEquals(37, legacy.module().duration()); assertEquals(new BigDecimal("123456"), legacy.module().price());
+        assertEquals(37, legacy.module().duration()); assertFalse(new com.fasterxml.jackson.databind.ObjectMapper().valueToTree(legacy.module()).has("price"));
         assertEquals(own.id(), result.items().stream().filter(i -> i.authoring() != null).findFirst().orElseThrow().authoring().id());
         assertEquals(1, service.catalogList("published", "ACTIVE", "NEEDS_EXPERT_REVIEW", "RESOURCE_GUIDED_PRACTICE", "skill", 1).total());
         assertEquals(0, service.catalogList("", "", "APPROVED", "", "", 1).total());
@@ -133,7 +68,7 @@ class ModuleAuthoringServiceTest {
         assertEquals(23, result.total()); assertEquals(10, result.items().size()); assertEquals("Lesson 10", result.items().getFirst().module().title());
         assertEquals(3, service.catalogList("", "", "", "", "", 999).page());
         Save base = input("No jobPosition");
-        Document independent = service.create(new Save(base.title(), base.moduleType(), base.contentId(), base.duration(), base.price(), null, base.teachings()));
+        Document independent = service.create(new Save(base.title(), base.moduleType(), base.contentId(), base.duration(), null, base.teachings(), base.knowledgeLevel(), base.outcomeCodes()));
         assertTrue(independent.jobPositionIds().isEmpty());
         assertTrue(service.content("Independent content", "# Existing body", null).jobPositionIds().isEmpty());
         actor = new Actor("learner", "org", Set.of("EMPLOYEE"));
@@ -151,7 +86,7 @@ class ModuleAuthoringServiceTest {
         assertEquals("expert-a", second.createdBy()); assertEquals("expert-a", second.current().editedBy());
         assertEquals("First", second.revisions().getFirst().payload().title());
         assertEquals("Second", second.current().payload().title()); assertEquals(2, second.revisions().size());
-        var p = second.current().payload(); assertEquals(90, p.duration()); assertEquals(new BigDecimal("200000"), p.price());
+        var p = second.current().payload(); assertEquals(90, p.duration()); assertFalse(new com.fasterxml.jackson.databind.ObjectMapper().valueToTree(p).has("price"));
         assertEquals("module-content:content", p.contentUri()); assertEquals("text/markdown", p.contentType()); assertEquals("1.0", p.contentVersion());
         assertEquals("0.12.0", p.metadata().version()); assertEquals("DRAFT", p.metadata().status());
         assertEquals("NEEDS_EXPERT_REVIEW", p.metadata().reviewStatus()); assertNull(p.metadata().reviewedBy()); assertNull(p.metadata().reviewedAt());
@@ -164,14 +99,14 @@ class ModuleAuthoringServiceTest {
         assertEquals("expert-a", second.history().getLast().actorId());
         assertThrows(ModuleAuthoringService.Failure.class, () -> service.update(first.id(), first.lockVersion(), input("Stale")));
     }
-    @Test void rejectsMissingMultipleAndDuplicateSkillsAndNonpositivePrice() {
+    @Test void rejectsMissingMultipleAndDuplicateSkillsAndNonpositiveDuration() {
         Save valid = input("Test");
         for (List<TeachingInput> mappings : List.of(List.<TeachingInput>of(),
                 List.of(new TeachingInput("skill", "PRIMARY", "LOW"), new TeachingInput("support", "PRIMARY", "LOW")),
                 List.of(new TeachingInput("skill", "PRIMARY", "LOW"), new TeachingInput("skill", "SUPPORTING", "LOW")))) {
-            assertThrows(Failure.class, () -> service.create(new Save(valid.title(), valid.moduleType(), valid.contentId(), valid.duration(), valid.price(), valid.jobPositionIds(), mappings)));
+            assertThrows(Failure.class, () -> service.create(new Save(valid.title(), valid.moduleType(), valid.contentId(), valid.duration(), valid.jobPositionIds(), mappings, valid.knowledgeLevel(), valid.outcomeCodes())));
         }
-        assertThrows(IllegalArgumentException.class, () -> service.create(new Save("T", valid.moduleType(), valid.contentId(), 1, BigDecimal.ZERO, valid.jobPositionIds(), valid.teachings())));
+        assertThrows(IllegalArgumentException.class, () -> service.create(new Save("T", valid.moduleType(), valid.contentId(), 0, valid.jobPositionIds(), valid.teachings(), valid.knowledgeLevel(), valid.outcomeCodes())));
     }
     @Test void sameJobPositionDoesNotGrantWriteAccessToAnotherExpert() {
         content = new Content("content", "Shared lesson", "# Shared", "text/markdown", "1.0", List.of("occ", "other"), "expert-a", ModuleAuthoring.now());
@@ -179,7 +114,7 @@ class ModuleAuthoringServiceTest {
         when(port.catalog("JobPosition")).thenReturn(List.of(new Choice("occ", "First jobPosition"), new Choice("other", "Other jobPosition")));
         when(port.jobPositions(any())).thenReturn(List.of("occ", "other"));
         Save base = input("Shared");
-        Save shared = new Save(base.title(), base.moduleType(), base.contentId(), base.duration(), base.price(), List.of("occ", "other"), base.teachings());
+        Save shared = new Save(base.title(), base.moduleType(), base.contentId(), base.duration(), List.of("occ", "other"), base.teachings(), base.knowledgeLevel(), base.outcomeCodes());
         Document doc = service.create(shared);
         actor = new Actor("expert-b", "org", Set.of("EXPERT"));
         when(port.jobPositions(any())).thenReturn(List.of("other"));
@@ -199,7 +134,7 @@ class ModuleAuthoringServiceTest {
         assertEquals(1, service.list("", "", "", "", "", 1).total());
         assertEquals(id, service.detail(id).id());
         Save base = input("No jobPosition");
-        Document independent = service.create(new Save(base.title(), base.moduleType(), base.contentId(), base.duration(), base.price(), null, base.teachings()));
+        Document independent = service.create(new Save(base.title(), base.moduleType(), base.contentId(), base.duration(), null, base.teachings(), base.knowledgeLevel(), base.outcomeCodes()));
         assertTrue(independent.jobPositionIds().isEmpty());
         assertTrue(service.content("Independent content", "# Existing body", null).jobPositionIds().isEmpty());
         when(port.jobPositions(any())).thenReturn(List.of("occ"));
@@ -215,7 +150,7 @@ class ModuleAuthoringServiceTest {
         documents.put(legacy.id(), legacy);
         when(port.jobPositions(any())).thenReturn(List.of());
         Save base = input("Updated without jobPosition");
-        Document updated = service.update(legacy.id(), legacy.lockVersion(), new Save(base.title(), base.moduleType(), base.contentId(), base.duration(), base.price(), null, base.teachings()));
+        Document updated = service.update(legacy.id(), legacy.lockVersion(), new Save(base.title(), base.moduleType(), base.contentId(), base.duration(), null, base.teachings(), base.knowledgeLevel(), base.outcomeCodes()));
         assertEquals(List.of("old-jobPosition"), updated.jobPositionIds());
         assertEquals(legacy.revisions().getFirst(), updated.revisions().getFirst());
         assertEquals("content", updated.current().payload().content().id());

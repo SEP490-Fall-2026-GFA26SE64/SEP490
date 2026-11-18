@@ -23,19 +23,19 @@ import static org.mockito.Mockito.*;
 class QuestionBankPersistenceIntegrationTest {
     final UUID org=UUID.randomUUID(),foreign=UUID.randomUUID(),expert=UUID.randomUUID(),peer=UUID.randomUUID(),ld=UUID.randomUUID(),foreignExpert=UUID.randomUUID();
     JdbcTemplate jdbc;JpaQuestionBankStore store;TransactionTemplate transactions;com.adaptlearngraph.support.JpaTestContext persistence;
-    Content body(String prompt){return new Content(prompt,List.of("One","Two","Three","Four"),0,"skill","Skill","EASY","Explanation");}
-    Catalog catalog=new Catalog(){public List<Choice>skills(Actor a){return List.of(new Choice("skill","Skill"));}public String requireSkill(Actor a,String id){if(!"skill".equals(id))throw new Failure(400,"Invalid skill");return "Skill";}public List<Choice>experts(Actor a){return List.of(new Choice(expert.toString(),"Expert"),new Choice(peer.toString(),"Peer"));}public List<Choice>managers(Actor a){return List.of(new Choice(ld.toString(),"L&D"));}public void requireExpert(Actor a,UUID id){if(!List.of(expert,peer).contains(id))throw new Failure(409,"Invalid Expert");}};
+    Content body(String prompt){return new Content(prompt,List.of("One","Two","Three","Four"),0,"skill","Skill",null,"Explanation","FOUNDATION",null,false);}
+    Catalog catalog=new Catalog(){public String requireKnowledge(Actor a,String skill,String level){ requireSkill(a,skill); if(!Set.of("FOUNDATION","INTERMEDIATE","ADVANCED").contains(level))throw new Failure(400,"Invalid knowledge");return "1.0";}public List<Choice>skills(Actor a){return List.of(new Choice("skill","Skill"));}public String requireSkill(Actor a,String id){if(!"skill".equals(id))throw new Failure(400,"Invalid skill");return "Skill";}public List<Choice>experts(Actor a){return List.of(new Choice(expert.toString(),"Expert"),new Choice(peer.toString(),"Peer"));}public List<Choice>managers(Actor a){return List.of(new Choice(ld.toString(),"L&D"));}public void requireExpert(Actor a,UUID id){if(!List.of(expert,peer).contains(id))throw new Failure(409,"Invalid Expert");}};
     QuestionBankService service(UUID id,UUID organization,String role){return new QuestionBankService(()->new Actor(id,organization,role),catalog,store,Clock.systemUTC());}
     void member(UUID id,UUID organization,String role){transactions.executeWithoutResult(status->{UUID m=UUID.randomUUID();jdbc.update("INSERT INTO platform.account(account_id,organization_id,identifier,normalized_identifier,password_hash) VALUES (?,?,?,?, 'test-only')",id,organization,id+"@example.test",id+"@example.test");jdbc.update("INSERT INTO platform.organization_membership(membership_id,account_id,organization_id,active,created_at,updated_at) VALUES (?,?,?,true,now(),now())",m,id,organization);jdbc.update("INSERT INTO platform.organization_membership_role VALUES (?,?)",m,role);});}
     void action(QuestionBankService service,UUID id,String action){var q=service.read().questions().stream().filter(x->x.id.equals(id)).findFirst().orElseThrow();service.command(new Command(id,q.revision,action,"Reason",null));}
     void assertCatalogDeadlineReleasesTransaction(QuestionBankService author) {
         var driver=mock(org.neo4j.driver.Driver.class);var session=mock(org.neo4j.driver.async.AsyncSession.class);
-        when(driver.asyncSession(any(org.neo4j.driver.SessionConfig.class))).thenReturn(session);
+        when(driver.session(eq(org.neo4j.driver.async.AsyncSession.class),any(org.neo4j.driver.SessionConfig.class))).thenReturn(session);
         when(session.<List<String>>executeReadAsync(any(),any(org.neo4j.driver.TransactionConfig.class)))
                 .thenReturn(new CompletableFuture<>());
         when(session.closeAsync()).thenReturn(new CompletableFuture<>());
         var reader=new Neo4jQuestionBankSkillReader(driver,"neo4j",Duration.ofMillis(50));
-        Catalog unavailable=new Catalog(){
+        Catalog unavailable=new Catalog(){public String requireKnowledge(Actor a,String skill,String level){return catalog.requireKnowledge(a,skill,level);}
             public List<Choice> skills(Actor a){return reader.skills(a.organization().toString());}
             public String requireSkill(Actor a,String id){return reader.requireSkill(a.organization().toString(),id);}
             public List<Choice> experts(Actor a){return catalog.experts(a);}
@@ -60,9 +60,9 @@ class QuestionBankPersistenceIntegrationTest {
             UUID bank=UUID.randomUUID(),legacy=UUID.randomUUID();jdbc.update("INSERT INTO platform.question_bank(question_bank_id,name,created_by) VALUES (?,'Existing bank',?)",bank,expert);
             jdbc.update("INSERT INTO platform.item_version(item_version_id,item_id,version,question_bank_id,prompt,response_schema,protected_key,content_hash) VALUES (?,?,1,?,'Legacy','{\"type\":\"SINGLE_CHOICE\",\"options\":[]}'::jsonb,'{}'::jsonb,?)",legacy,legacy,bank,"a".repeat(64));
             var legacyBytes=jdbc.queryForObject("SELECT row_to_json(i)::text FROM platform.item_version i WHERE item_version_id=?",String.class,legacy);
-            var flyway=Flyway.configure().dataSource(source).locations("classpath:db/workspace-migration").load();assertEquals(12,flyway.migrate().migrationsExecuted);assertEquals(0,flyway.migrate().migrationsExecuted);
+            var flyway=Flyway.configure().dataSource(source).locations("classpath:db/workspace-migration").load();assertEquals(38,flyway.migrate().migrationsExecuted);assertEquals(0,flyway.migrate().migrationsExecuted);
             assertEquals(before,jdbc.queryForList("SELECT version,checksum FROM flyway_schema_history WHERE installed_rank<=35 ORDER BY installed_rank"));
-            persistence=com.adaptlearngraph.support.JpaTestContext.start(source);var tx=new TransactionTemplate(persistence.transactionManager());store=new JpaQuestionBankStore(persistence.bean(com.adaptlearngraph.repository.QuestionBankJpaRepository.class),persistence.bean(com.adaptlearngraph.repository.ItemVersionJpaRepository.class),new com.adaptlearngraph.repository.PostgresAdvisoryLocks(persistence.bean(jakarta.persistence.EntityManager.class)),tx,new ObjectMapper().findAndRegisterModules());
+            persistence=com.adaptlearngraph.support.JpaTestContext.start(source);var tx=new TransactionTemplate(persistence.transactionManager());store=new JpaQuestionBankStore(persistence.bean(com.adaptlearngraph.repository.QuestionBankJpaRepository.class),persistence.bean(com.adaptlearngraph.repository.ItemVersionJpaRepository.class),new com.adaptlearngraph.repository.PostgresAdvisoryLocks(persistence.bean(jakarta.persistence.EntityManager.class)),tx,new ObjectMapper().findAndRegisterModules(),persistence.bean(com.adaptlearngraph.repository.AssessmentItemKnowledgeMappingJpaRepository.class));
             var author=service(expert,org,"DOMAIN_EXPERT");var manager=service(ld,org,"LD_MANAGER");
             var adopted=author.read();assertEquals(bank,adopted.id());var old=adopted.questions().getFirst();assertEquals("Q-"+legacy.toString().toUpperCase(Locale.ROOT),old.code);assertNull(old.owner);assertNull(old.createdBy);assertNull(old.createdAt);
             assertCatalogDeadlineReleasesTransaction(author);
@@ -76,7 +76,9 @@ class QuestionBankPersistenceIntegrationTest {
             author.save(new Save(draft.id,draft.revision,draft.code,body("Complete"),false));action(author,draft.id,"SUBMIT");action(manager,draft.id,"VIEW");action(manager,draft.id,"APPROVE");
             var published=manager.read().questions().stream().filter(q->q.id.equals(draft.id)).findFirst().orElseThrow();var v=published.versions.getLast();
             assertEquals(expert,published.createdBy);assertEquals(expert,published.owner);assertNotNull(published.createdAt);assertEquals(expert,v.editedBy);assertNotNull(v.editedAt);assertEquals(expert,v.submittedBy);assertNotNull(v.submittedAt);assertEquals(ld,v.reviewedBy);assertNotNull(v.reviewedAt);
-            var item=jdbc.queryForMap("SELECT * FROM platform.item_version WHERE item_version_id=?",v.id);for(String field:List.of("item_id","version","question_bank_id","prompt","response_schema","protected_key","publication_state","content_hash","micro_skill_id","micro_skill_name_snapshot","difficulty"))assertNotNull(item.get(field),field);
+            var item=jdbc.queryForMap("SELECT * FROM platform.item_version WHERE item_version_id=?",v.id);for(String field:List.of("item_id","version","question_bank_id","prompt","response_schema","protected_key","publication_state","content_hash","micro_skill_id","micro_skill_name_snapshot"))assertNotNull(item.get(field),field);
+            assertNull(item.get("difficulty")); // Difficulty is retired for rule assessments.
+            assertEquals("FOUNDATION",jdbc.queryForObject("SELECT knowledge_level FROM platform.assessment_item_knowledge_mapping WHERE item_version_id=?",String.class,v.id));
             assertEquals("PUBLISHED",item.get("publication_state"));assertEquals(64,item.get("content_hash").toString().length());assertTrue(item.get("protected_key").toString().contains("A"));assertTrue(manager.read().history().stream().anyMatch(a->a.action().equals("APPROVED")));
             var foreignService=service(foreignExpert,foreign,"DOMAIN_EXPERT");assertTrue(foreignService.read().questions().isEmpty());assertThrows(Failure.class,()->foreignService.command(new Command(draft.id,published.revision,"ASSIGN","Wrong org",foreignExpert)));
             action(author,draft.id,"SUCCESSOR");var latest=author.read().questions().getLast();long expected=latest.revision;
@@ -88,9 +90,10 @@ class QuestionBankPersistenceIntegrationTest {
             assertThrows(Failure.class,()->manager.approve(new Bulk(List.of(new Command(a.id,a.revision,"APPROVE",null,null),new Command(b.id,b.revision,"APPROVE",null,null)))));
             assertEquals(snapshot,jdbc.queryForObject("SELECT document::text FROM platform.question_bank_workspace WHERE organization_id=?",String.class,org));
             action(author,draft.id,"REQUEST_RETIRE");action(manager,draft.id,"CONFIRM_AVAILABILITY");assertTrue(jdbc.queryForObject("SELECT retired FROM platform.question_bank_identity WHERE question_id=?",Boolean.class,draft.id));
-            var candidates=new JpaBaselineAssessmentDraftStore(persistence.bean(com.adaptlearngraph.repository.ItemVersionJpaRepository.class),persistence.bean(com.adaptlearngraph.repository.AssessmentVersionJpaRepository.class),persistence.bean(com.adaptlearngraph.repository.AssessmentItemJpaRepository.class),persistence.bean(com.adaptlearngraph.repository.BaselineAssessmentSeriesJpaRepository.class),persistence.bean(com.adaptlearngraph.repository.BaselineBlueprintJpaRepository.class),persistence.bean(com.adaptlearngraph.repository.BaselineBlueprintVersionJpaRepository.class));assertTrue(candidates.findPublishedCandidates(Set.of("skill")).isEmpty());
+            var candidates=persistence.bean(com.adaptlearngraph.repository.AssessmentItemKnowledgeMappingJpaRepository.class);
+            assertEquals(0,candidates.availableCount(org,"skill","FOUNDATION","1.0"));
             assertEquals("PUBLISHED",jdbc.queryForObject("SELECT publication_state FROM platform.item_version WHERE item_version_id=?",String.class,v.id));
-            action(author,draft.id,"REQUEST_REACTIVATE");action(manager,draft.id,"CONFIRM_AVAILABILITY");assertEquals(1,candidates.findPublishedCandidates(Set.of("skill")).size());
+            action(author,draft.id,"REQUEST_REACTIVATE");action(manager,draft.id,"CONFIRM_AVAILABILITY");assertEquals(1,candidates.availableCount(org,"skill","FOUNDATION","1.0"));
             int beforeImport=author.read().questions().size();
             var preview=author.preview(new Preview(List.of(new Row(null,body("Generated import")))));
             assertTrue(preview.generatedCodes);assertTrue(preview.errors.isEmpty());String importedCode=preview.rows.getFirst().code();

@@ -9,7 +9,7 @@ Draft, review, confirmations, filtered history" as UI
 component "RiasecController / RiasecService
 Trusted Employee org/account
 Draft revision/editor, owner lock, stable submit receipt" as API
-database "PostgreSQL V72
+database "PostgreSQL V74
 riasec_workspace / riasec_result
 Answers, scores, AI jobs, snapshots, retention" as PG
 component "Riasec worker + maintenance
