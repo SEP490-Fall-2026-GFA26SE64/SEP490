@@ -1,5 +1,7 @@
 # Phân công feature/function cho 4 người
 
+> **RIASEC clarification 18/11/2026:** baseline/Expert-reviewed guidance order in this superseded snapshot is not the current RIASEC gate. Implemented interest exploration is optional, independent of baseline/Role and directly visible to Employee, without Expert guidance-review approval. [Current features](features/README.md#riasec-current-implementation--2026-11-18). No owners/estimates/sprint dates are reapproved here.
+
 > **Superseded allocation snapshot, 2026-10-21:** The assignments and function paths below describe older scope. Version 2 section 3.2(g) contains the confirmed S1-S4 technical ownership; use that [source](FA26SE267_KNOWLEDGE_GRAPH_BASED_ADAPTIVE_LEARNING__haht43_Version_2.md) and the [current contracts](features/README.md). Repaired links do not reapprove these older allocations or estimates.
 
 ## Phân công hiện hành - 2026-10-14
