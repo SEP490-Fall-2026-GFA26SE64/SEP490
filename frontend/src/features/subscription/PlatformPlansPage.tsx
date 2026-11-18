@@ -49,7 +49,7 @@ function PlanCatalogAdministration({ principal }: { principal: string }) {
   const prices = rows.map(plan => plan.terms.priceVnd)
 
   return <section className="min-w-0 space-y-6">
-    <PageHeader title={c('Subscription plans', 'Gói đăng ký')}
+    <PageHeader forceShowTitle title={c('Subscription plans', 'Gói đăng ký')}
       description={c('Configure the plans organizations can purchase: name, description, price, duration and Employee-seat limit.',
         'Cấu hình các gói mà tổ chức có thể mua: tên, mô tả, giá, thời hạn và giới hạn chỗ Nhân viên.')} />
 

@@ -29,7 +29,7 @@ export function SubscriptionShell({ title, children, onSignOut }: { title: strin
       </div>
     </header>
     <main className="mx-auto max-w-7xl space-y-5 px-4 py-6 sm:px-6">
-      <PageHeader title={title} />
+      <PageHeader forceShowTitle title={title} />
       {error && <p role="alert" className="text-destructive">{error}</p>}
       {children}
     </main>
