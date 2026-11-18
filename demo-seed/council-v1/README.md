@@ -136,7 +136,7 @@ $env:COUNCIL_RIASEC_ENABLED='true'
 docker compose --env-file local/council-demo-v1/private.env -f demo-seed/council-v1/compose.yaml up -d --no-deps api
 ```
 
-Ollama/model ở volume demo riêng, không public port. Cần đủ RAM/CPU và đo latency tại máy chạy. Dùng `/employee/overview?tab=riasec`; quy trình 54/60 câu và bảng điểm ở [plan](../../DEMO-SEED-PLAN.md#8-riasec-demo-ngắn-trên-luồng-hiện-tại). Raw scores cố định được; không bảo đảm AI text/rank/latency giống 10/10. Nhánh này chưa chạy thực tế ở môi trường demo mới.
+Ollama/model ở volume demo riêng, không public port. Cần đủ RAM/CPU và đo latency tại máy chạy. Dùng `/employee/overview?tab=riasec` để demo luồng RIASEC. Raw scores cố định được; không bảo đảm AI text/rank/latency giống 10/10. Nhánh này chưa chạy thực tế ở môi trường demo mới.
 
 ## 7. Giới hạn đã biết và bước đưa vào bộ chính
 
