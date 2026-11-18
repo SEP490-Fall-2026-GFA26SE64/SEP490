@@ -1,0 +1,46 @@
+@startuml
+!pragma layout smetana
+skinparam componentStyle rectangle
+skinparam shadowing false
+title RIASEC local opt-in flow / current source 2026-11-18
+component "Overview RIASEC
+60 EN/VI activities; raw 0..40 radar
+Draft, review, confirmations, filtered history" as UI
+component "RiasecController / RiasecService
+Trusted Employee org/account
+Draft revision/editor, owner lock, stable submit receipt" as API
+database "PostgreSQL V72
+riasec_workspace / riasec_result
+Answers, scores, AI jobs, snapshots, retention" as PG
+component "Riasec worker + maintenance
+Single global PROCESSING claim
+Run/status/deadline fence; timeout / 7-day cleanup" as Worker
+component "RiasecCatalog
+ACTIVE same-org Job Positions
+Six native integers 0..40; no Department filter" as Catalog
+database "Neo4j JobPosition
+Metadata + six optional all-or-none interests
+No personal answers/results" as Graph
+component "Private Ollama /api/chat
+qwen3:4b-instruct-2507-q4_K_M
+Up to 3 supplied IDs; English explanations" as AI
+component "Existing published Role browser
+Explore more filters jobPositionId
+Employee explicitly chooses Role / Level" as Roles
+UI --> API : session/CSRF; no client owner/scores
+API --> PG : owner transaction / save / submit
+PG --> Worker : claim QUEUED job
+Worker --> Catalog : current catalog at claim/retry
+Catalog --> Graph : trusted organization query
+Worker --> AI : only six Employee scores + candidate metadata/profiles
+AI --> Worker : IDs / dense ranks / two dimensions / explanation
+Worker --> PG : validate; copy original scores; persist snapshot
+UI --> Roles : Explore more with current active ID; existing access/lock rules
+note bottom of Worker
+  QUEUED -> PROCESSING -> SUCCEEDED / FAILED
+  Queue 20min; processing 8min; HTTP 7min; maintenance 15sec.
+  Success including zero suggestions is final.
+  Only current FAILED result can explicitly retry.
+  No cosine, chat, Role/Skill/history input or learning-state write.
+end note
+@enduml
