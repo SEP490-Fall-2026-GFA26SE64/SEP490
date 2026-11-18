@@ -558,6 +558,9 @@ public final class ExcelLearningImport implements LearningImportUseCase {
         port.catalog("MicroSkill").forEach(c -> {
             available.put(c.id().toLowerCase(Locale.ROOT), c.id());
             available.put(c.name().toLowerCase(Locale.ROOT), c.id());
+            if (c.code() != null && !c.code().isBlank()) {
+                available.put(c.code().toLowerCase(Locale.ROOT), c.id());
+            }
         });
         for (var row : p.modules())
             try {
