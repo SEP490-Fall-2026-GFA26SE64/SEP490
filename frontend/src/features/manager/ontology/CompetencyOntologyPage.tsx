@@ -10,6 +10,7 @@ import {
   Check,
   Edit3,
   Eye,
+  FileSpreadsheet,
   Filter,
   GitBranch,
   Layers,
@@ -18,6 +19,7 @@ import {
   ShieldCheck,
   Trash2,
 } from 'lucide-react'
+import { OntologyExcelImportModal } from './components/OntologyExcelImportModal'
 import * as React from 'react'
 import { Badge } from '../../../shared/components/ui/Badge'
 import { Button } from '../../../shared/components/ui/Button'
@@ -218,7 +220,7 @@ function OwnedCompetencyOntologyPage() {
   })
 
   const handleUpdateTargetRole = React.useCallback(async (updatedRole: TargetRoleModel) => {
-      const response = await fetch(`/api/v1/organizations/${effectiveOrgId}/target-roles/${updatedRole.id}`, {
+      const response = await fetch(`/api/v1/organizations/${effectiveOrgId}/roles/${updatedRole.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -272,6 +274,8 @@ function OwnedCompetencyOntologyPage() {
 
   // Competency CRUD Modals
   const [isCompetencyModalOpen, setIsCompetencyModalOpen] = React.useState(false)
+  const [isExcelImportModalOpen, setIsExcelImportModalOpen] = React.useState(false)
+  const [excelImportMode, setExcelImportMode] = React.useState<'competency' | 'micro-skill'>('competency')
   const [selectedCompetency, setSelectedCompetency] = React.useState<CompetencyModel | null>(null)
   const [deletingCompetency, setDeletingCompetency] = React.useState<CompetencyModel | null>(null)
   const [viewingCompetencyDetails, setViewingCompetencyDetails] = React.useState<CompetencyModel | null>(null)
@@ -368,7 +372,7 @@ function OwnedCompetencyOntologyPage() {
           fetchMicroSkills(orgId).catch(() => []),
           fetchCompetencies(orgId).catch(() => []),
           fetchPrerequisites(orgId).catch(() => []),
-          fetch(`/api/v1/organizations/${orgId}/target-roles`, {
+          fetch(`/api/v1/organizations/${orgId}/roles`, {
             headers: {
               'X-User-Role': 'DOMAIN_EXPERT',
               'X-User-Id': accountId,
@@ -1360,26 +1364,54 @@ function OwnedCompetencyOntologyPage() {
           actions={
             <div className="flex items-center gap-2">
               {activeTab === 'skills' && (
-                <Button
-                  variant="primary"
-                  size="sm"
-                  leftIcon={<Plus className="h-4 w-4" />}
-                  onClick={handleOpenCreateSkill}
-                  className="font-semibold shadow-2xs"
-                >
-                  Create
-                </Button>
+                <>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    leftIcon={<FileSpreadsheet className="h-4 w-4 text-primary" />}
+                    onClick={() => {
+                      setExcelImportMode('micro-skill')
+                      setIsExcelImportModalOpen(true)
+                    }}
+                    className="font-semibold shadow-2xs"
+                  >
+                    Import Excel
+                  </Button>
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    leftIcon={<Plus className="h-4 w-4" />}
+                    onClick={handleOpenCreateSkill}
+                    className="font-semibold shadow-2xs"
+                  >
+                    Create
+                  </Button>
+                </>
               )}
               {activeTab === 'competencies' && (
-                <Button
-                  variant="primary"
-                  size="sm"
-                  leftIcon={<Plus className="h-4 w-4" />}
-                  onClick={handleOpenCreateCompetency}
-                  className="font-semibold shadow-2xs"
-                >
-                  Create
-                </Button>
+                <>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    leftIcon={<FileSpreadsheet className="h-4 w-4 text-primary" />}
+                    onClick={() => {
+                      setExcelImportMode('competency')
+                      setIsExcelImportModalOpen(true)
+                    }}
+                    className="font-semibold shadow-2xs"
+                  >
+                    Import Excel
+                  </Button>
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    leftIcon={<Plus className="h-4 w-4" />}
+                    onClick={handleOpenCreateCompetency}
+                    className="font-semibold shadow-2xs"
+                  >
+                    Create
+                  </Button>
+                </>
               )}
               {activeTab === 'prerequisites' && (
                 <Button
@@ -3565,6 +3597,16 @@ function OwnedCompetencyOntologyPage() {
         presets={ONTOLOGY_PRESETS}
         onImport={handleImportOntology}
         sampleJsonPlaceholder={`{\n  "competencies": [\n    {\n      "code": "COMP-LLM-01",\n      "name": "Transformer Architectures & Attention Mechanisms",\n      "description": "Deep understanding of self-attention matrices and transformer layers."\n    }\n  ],\n  "microSkills": [\n    {\n      "code": "SKILL-ATTN-01",\n      "name": "Implement Multi-Head Scaled Dot-Product Attention",\n      "description": "Derives queries, keys, values tensors and computes masked softmax weights."\n    }\n  ]\n}`}
+      />
+
+      <OntologyExcelImportModal
+        open={isExcelImportModalOpen}
+        onOpenChange={setIsExcelImportModalOpen}
+        mode={excelImportMode}
+        organizationId={effectiveOrgId}
+        existingCompetencies={competencies}
+        existingMicroSkills={microSkills}
+        onImportSuccess={handleSync}
       />
     </WorkspaceLayout>
   )

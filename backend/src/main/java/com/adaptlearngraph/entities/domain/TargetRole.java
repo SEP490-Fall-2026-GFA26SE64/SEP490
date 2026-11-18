@@ -425,6 +425,29 @@ public final class TargetRole {
         return updateDetails(name, familyCode, track, assignedExpertId, description, this.status, this.version, this.skillTargets, this.rejectionReason);
     }
 
+    public TargetRole stage() {
+        return new TargetRole(
+                this.id,
+                this.organizationId,
+                this.code,
+                this.name,
+                this.familyCode,
+                this.track,
+                this.assignedExpertId,
+                this.description,
+                this.responsibilities,
+                RoleStatus.STAGED,
+                this.version,
+                this.skillTargets,
+                this.createdAt,
+                Instant.now(),
+                this.rejectionReason,
+                this.levels,
+                this.levelCompetencies,
+                this.competencyIds,
+                this.levelDurations);
+    }
+
     public TargetRole markSent() {
         return new TargetRole(
                 this.id,

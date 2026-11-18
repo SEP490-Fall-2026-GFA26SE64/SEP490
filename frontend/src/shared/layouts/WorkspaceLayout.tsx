@@ -208,7 +208,7 @@ export function WorkspaceLayout({ children, identity: suppliedIdentity, onSignOu
     actorTabs = [
       {
         label: t('nav.targetRoles'),
-        href: '/expert/target-roles',
+        href: '/expert/roles',
         icon: <Briefcase size={15} />,
       },
       {
@@ -266,7 +266,7 @@ export function WorkspaceLayout({ children, identity: suppliedIdentity, onSignOu
       },
       {
         label: t('nav.targetRoles'),
-        href: '/ld-manager/target-roles',
+        href: '/ld-manager/roles',
         icon: <Briefcase size={15} />,
       },
       {
@@ -436,8 +436,8 @@ export function WorkspaceLayout({ children, identity: suppliedIdentity, onSignOu
     if (itemHref === '/employee/assessment' || itemHref === '/learner/assessment') {
       return path === '/employee/assessment' || path === '/learner/assessment' || path === '/assessment'
     }
-    if (itemHref === '/expert/target-roles' || itemHref === '/expert/assigned-roles') {
-      return path === '/expert/target-roles' || path === '/expert/assigned-roles'
+    if (itemHref === '/expert/roles' || itemHref === '/expert/target-roles' || itemHref === '/expert/assigned-roles') {
+      return path === '/expert/roles' || path === '/expert/target-roles' || path === '/expert/assigned-roles'
     }
     if (itemHref === '/expert/pathway-review' || itemHref === '/expert/guidance-review') {
       return path === '/expert/pathway-review' || path === '/expert/guidance-review'
@@ -466,8 +466,13 @@ export function WorkspaceLayout({ children, identity: suppliedIdentity, onSignOu
     if (itemHref === '/ld-manager/approvals') {
       return ['/ld-manager/approvals', '/ld-manager/modules', '/ld-manager/learning-content'].includes(path)
     }
-    if (itemHref === '/ld-manager/target-roles') {
-      return path === '/ld-manager/target-roles' || path === '/manager/target-roles'
+    if (itemHref === '/ld-manager/roles' || itemHref === '/ld-manager/target-roles') {
+      return (
+        path === '/ld-manager/roles' ||
+        path === '/ld-manager/target-roles' ||
+        path === '/manager/target-roles' ||
+        path === '/manager/roles'
+      )
     }
     if (itemHref === '/ld-manager/baseline-config') {
       return path === '/ld-manager/baseline-config' || path === '/manager/baseline-config' || path.startsWith('/ld-manager/baseline-assessments')

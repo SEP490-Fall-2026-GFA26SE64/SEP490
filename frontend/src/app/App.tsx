@@ -129,10 +129,11 @@ export default function App() {
             <Route path="/learner/profile" element={<Navigate to="/profile" replace />} />
             <Route path="/assessment" element={<Navigate to="/employee/assessment" replace />} />
 
-            {/* 2. Expert routes (Target Roles, Ontology, Modules, Assessment Bank) */}
-            <Route path="/expert" element={<Navigate to="/expert/target-roles" replace />} />
-            <Route path="/expert/target-roles" element={<ExpertAssignedRolesPage />} />
-            <Route path="/expert/assigned-roles" element={<Navigate to="/expert/target-roles" replace />} />
+            {/* 2. Expert routes (Roles, Ontology, Modules, Assessment Bank) */}
+            <Route path="/expert" element={<Navigate to="/expert/roles" replace />} />
+            <Route path="/expert/roles" element={<ExpertAssignedRolesPage />} />
+            <Route path="/expert/target-roles" element={<Navigate to="/expert/roles" replace />} />
+            <Route path="/expert/assigned-roles" element={<Navigate to="/expert/roles" replace />} />
             <Route path="/expert/pathway-review" element={<ExpertPathwayReviewPage />} />
             <Route path="/expert/pathway-review/:pathwayId" element={<ExpertPathwayDetailPage />} />
             <Route path="/expert/guidance-review" element={<Navigate to="/expert/pathway-review" replace />} />
@@ -148,7 +149,8 @@ export default function App() {
             <Route path="/ld-manager/job-positions" element={<JobPositionsManagementPage />} />
             <Route path="/ld-manager/job-positions" element={<JobPositionsManagementPage />} />
             <Route path="/ld-manager/disciplines" element={<Navigate to="/ld-manager/job-positions" replace />} />
-            <Route path="/ld-manager/target-roles" element={<TargetRolesPage />} />
+            <Route path="/ld-manager/roles" element={<TargetRolesPage />} />
+            <Route path="/ld-manager/target-roles" element={<Navigate to="/ld-manager/roles" replace />} />
             <Route element={<LdModuleWorkspaceRoute />}>
               <Route path="/ld-manager/approvals" />
               <Route path="/ld-manager/modules" />
@@ -178,7 +180,8 @@ export default function App() {
             <Route path="/manager/job-positions" element={<Navigate to="/ld-manager/job-positions" replace />} />
             <Route path="/manager" element={<Navigate to="/ld-manager/dashboard" replace />} />
             <Route path="/manager/learning-outcomes" element={<Navigate to="/ld-manager/dashboard" replace />} />
-            <Route path="/manager/target-roles" element={<Navigate to="/ld-manager/target-roles" replace />} />
+            <Route path="/manager/roles" element={<Navigate to="/ld-manager/roles" replace />} />
+            <Route path="/manager/target-roles" element={<Navigate to="/ld-manager/roles" replace />} />
             <Route path="/manager/users" element={<Navigate to="/ld-manager/users" replace />} />
             <Route path="/manager/team-matrix" element={<Navigate to="/ld-manager/employees" replace />} />
             <Route path="/manager/roi-forecast" element={<Navigate to="/ld-manager/dashboard" replace />} />

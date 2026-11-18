@@ -1062,7 +1062,7 @@ export function TargetRoleGraphModal({
         <div className="absolute bottom-4 right-4 z-20 flex flex-wrap items-center gap-3 bg-card/90 backdrop-blur-md px-3.5 py-2 rounded-xl border border-border text-[11px] text-muted-foreground shadow-sm pointer-events-auto">
           <div className="flex items-center gap-1.5 font-medium text-foreground">
             <span className="h-2.5 w-2.5 rounded-sm bg-orange-500/20 border border-orange-500 inline-block" />
-            <span>Target Role</span>
+            <span>Role</span>
           </div>
           <div className="flex items-center gap-1.5 font-medium text-foreground">
             <span className="h-2.5 w-2.5 rounded-sm bg-indigo-500/20 border border-indigo-500 inline-block" />

@@ -12,7 +12,7 @@ export function LearningReaderHeader({ title, completed, total, remainingSeconds
   const label = backLabel ?? (vi ? 'Về lộ trình' : 'Back to Pathway')
   return <header className="learning-module-bar border-b border-border bg-card px-4 py-3 lg:px-6">
     <Link aria-disabled={busy} to={destination} onClick={event => onExit(event, destination)} className="inline-flex min-h-10 shrink-0 items-center gap-2 rounded-md text-body-sm text-muted-foreground hover:text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"><ArrowLeft size={16} aria-hidden="true" />{label}</Link>
-    <PageHeader title={title} className="learning-module-title min-w-0 flex-1 border-0 pb-0 [&_h1]:text-card [&_h1]:break-words" />
+    <PageHeader forceShowTitle title={title} className="learning-module-title min-w-0 flex-1 border-0 pb-0 [&_h1]:text-card [&_h1]:break-words" />
     <div className="learning-module-progress flex items-center gap-3 text-caption text-muted-foreground">
       <span className="inline-flex shrink-0 items-center gap-1.5"><BookOpen size={14} aria-hidden="true" />{completed}/{total} {vi ? 'bài hoàn thành' : 'lessons completed'}</span>
       <Progress value={percent} variant="success" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={percent} className="h-1.5 w-24" aria-label={vi ? 'Tiến độ nội dung module' : 'Module content progress'} />

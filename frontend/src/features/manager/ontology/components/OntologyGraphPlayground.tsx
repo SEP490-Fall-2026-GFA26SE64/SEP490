@@ -1775,7 +1775,7 @@ function OntologyGraphPlaygroundInner({
       }))
 
       try {
-        await fetch(`/api/v1/organizations/${organizationId}/target-roles/${role.id}`, {
+        await fetch(`/api/v1/organizations/${organizationId}/roles/${role.id}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',

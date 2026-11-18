@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping(ApiEndpoints.TARGET_ROLE_GRAPH)
+@RequestMapping({ApiEndpoints.TARGET_ROLE_GRAPH, ApiEndpoints.ORGANIZATION_ROLE_GRAPH})
 public class TargetRoleGraphController {
 
     private final GetTargetRoleGraphUseCase getTargetRoleGraphUseCase;

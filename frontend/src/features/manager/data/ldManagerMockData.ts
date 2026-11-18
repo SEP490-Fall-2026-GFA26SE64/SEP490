@@ -27,7 +27,8 @@ export interface TargetRoleModel {
   description: string
   responsibilities?: string[]
   version: string
-  status: 'draft' | 'submitted' | 'sent' | 'rejected' | 'published' | 'unpublished'
+  status: 'draft' | 'staged' | 'submitted' | 'sent' | 'rejected' | 'approved' | 'published' | 'unpublished'
+  isStaffingEnabled?: boolean
   rejectionReason?: string
   competencyIds: string[]
   skillTargets: SkillTargetConfig[]

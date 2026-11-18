@@ -784,7 +784,7 @@ export function JobPositionsManagementPage() {
 
       let backendRoles: Record<string, unknown>[] = []
       try {
-        const res = await workspaceFetch(`/api/v1/organizations/${orgId}/target-roles`, {
+        const res = await workspaceFetch(`/api/v1/organizations/${orgId}/roles`, {
           headers: {
             'X-User-Role': 'LD_MANAGER',
           },
@@ -1320,9 +1320,6 @@ export function JobPositionsManagementPage() {
                       >
                         {viewingDetailsJobPosition.code}
                       </Badge>
-                      <Badge variant="secondary" className="text-[10px] font-semibold">
-                        Job Zone {viewingDetailsJobPosition.jobZone || 4} · Considerable Preparation
-                      </Badge>
                     </div>
                   </div>
 
@@ -1684,31 +1681,6 @@ export function JobPositionsManagementPage() {
                     className="text-xs shadow-2xs"
                   />
                 </div>
-              </div>
-
-              <div>
-                <div className="flex items-center justify-between mb-1">
-                  <label className="text-[11px] font-semibold text-foreground block">
-                    Job Zone (1–5)
-                  </label>
-                  <span className="text-[10.5px] text-muted-foreground">
-                    {occJobZone <= 2
-                      ? 'Zone 1-2: Moderate Preparation'
-                      : occJobZone === 3
-                      ? 'Zone 3: Medium Preparation'
-                      : occJobZone === 4
-                      ? 'Zone 4: Considerable Preparation (BSc / 2–4 yrs)'
-                      : 'Zone 5: Extensive Preparation (MSc / PhD)'}
-                  </span>
-                </div>
-                <Input
-                  type="number"
-                  min={1}
-                  max={5}
-                  value={occJobZone}
-                  onChange={(e) => setOccJobZone(Number(e.target.value))}
-                  className="font-mono text-xs w-28 shadow-2xs"
-                />
               </div>
             </div>
 
