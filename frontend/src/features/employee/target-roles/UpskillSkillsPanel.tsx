@@ -1,9 +1,8 @@
 import { useContext, useEffect, useRef, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Search, SlidersHorizontal, List, LayoutGrid, X, ArrowRight, ArrowLeft, Info } from 'lucide-react'
 import { WorkspaceSessionContext } from '../../../shared/auth/workspaceSession'
-import { useWorkspaceSlug, workspaceUrl } from '../../../shared/auth/workspacePaths'
 import { useTranslation } from '../../../shared/i18n/LanguageContext'
 import { fetchMicroSkills, type MicroSkillDto } from '../../../shared/api/microSkillApi'
 import { readSkillModules, searchSkillModules, startSkillModule, type OptionalSkillModule } from '../../../shared/api/skillLearningApi'
@@ -29,9 +28,10 @@ export function UpskillSkillsPanel() {
 function ScopedSkillsPanel() {
   const identity = useContext(WorkspaceSessionContext)?.identity
   const { language } = useTranslation(), vi = language === 'vi'
-  const navigate = useNavigate(), slug = useWorkspaceSlug()
+  const navigate = useNavigate()
+  const [searchParams, setSearchParams] = useSearchParams()
   const scope = `${identity?.organizationId}/${identity?.accountId}`
-  const [search, setSearch] = useState(() => new URLSearchParams(window.location.search).get('search') ?? '')
+  const [search, setSearch] = useState(() => searchParams.get('search') ?? new URLSearchParams(window.location.search).get('search') ?? '')
   const [resultType, setResultType] = useState('SKILL')
   const [view, setView] = useState<'list' | 'grid'>('grid')
   const [filterOpen, setFilterOpen] = useState(false)
@@ -44,14 +44,32 @@ function ScopedSkillsPanel() {
   function resetPages() { setModulePage(0); setSkillPage(0) }
   const showSkills = resultType !== 'MODULE', showModules = resultType !== 'SKILL'
   const [selected, setSelected] = useState<MicroSkillDto | null>(null)
-  const selectedRegion = useRef<HTMLElement>(null), returnSkill = useRef('')
+  const selectedRegion = useRef<HTMLElement>(null), returnSkill = useRef(''), restoredSkillId = useRef('')
   useEffect(() => {
     if (selected) selectedRegion.current?.focus()
     else if (returnSkill.current) document.getElementById(returnSkill.current)?.focus()
   }, [selected])
-  const [level, setLevel] = useState<KnowledgeLevel>('FOUNDATION')
+  const urlSkillId = searchParams.get('skillId') ?? ''
+  const urlLevel = searchParams.get('level')
+  const [level, setLevel] = useState<KnowledgeLevel>(() =>
+    urlLevel && INDIVIDUAL_KNOWLEDGE_LEVELS.includes(urlLevel as KnowledgeLevel) ? (urlLevel as KnowledgeLevel) : 'FOUNDATION'
+  )
   const [busy, setBusy] = useState(''), [actionError, setActionError] = useState('')
   const catalog = useQuery({ queryKey: ['individualSkills', scope], queryFn: () => fetchMicroSkills(identity!.organizationId!), enabled: Boolean(identity?.organizationId), retry: false, gcTime: 0 })
+  useEffect(() => {
+    if (!urlSkillId) {
+      restoredSkillId.current = ''
+      return
+    }
+    if (selected || restoredSkillId.current === urlSkillId) return
+    const match = (catalog.data ?? []).find(s => s.id === urlSkillId && s.status === 'ACTIVE')
+    if (!match) return
+    restoredSkillId.current = urlSkillId
+    setSelected(match)
+    if (urlLevel && INDIVIDUAL_KNOWLEDGE_LEVELS.includes(urlLevel as KnowledgeLevel)) {
+      setLevel(urlLevel as KnowledgeLevel)
+    }
+  }, [urlSkillId, urlLevel, catalog.data, selected])
   const moduleResults = useQuery({ queryKey: ['individualModuleSearch', scope, debouncedSearch, ownerSkill, moduleLevel, modulePage], queryFn: ({ signal }) => searchSkillModules(debouncedSearch, ownerSkill, moduleLevel, modulePage, signal), enabled: Boolean(identity?.organizationId) && showModules && !selected && search === debouncedSearch, retry: false, gcTime: 0 })
   const provision = useQuery({ queryKey: ['individualSkillModules', scope, selected?.id], queryFn: ({ signal }) => readSkillModules(selected!.id, signal), enabled: Boolean(selected), retry: false, gcTime: 0 })
   const profile = useQuery({ queryKey: ['individualSkillKnowledge', scope, selected?.id, selected?.version], queryFn: ({ signal }) => readSkillKnowledgeProfile(selected!.id, signal), enabled: Boolean(selected), retry: false, gcTime: 0, refetchInterval: selected ? 5000 : false })
@@ -71,8 +89,9 @@ function ScopedSkillsPanel() {
     setBusy(module.moduleId); setActionError('')
     try {
       await startSkillModule(skillId, module.moduleId)
-      const path = '/employee/modules/' + encodeURIComponent(module.moduleId)
-      void navigate(slug ? workspaceUrl(slug, path) : path)
+      const query = new URLSearchParams({ from: 'upskilling', skillId, level: module.knowledgeLevel })
+      const path = `/employee/modules/${encodeURIComponent(module.moduleId)}?${query.toString()}`
+      void navigate(path)
     } catch (cause) { setActionError(cause instanceof Error ? cause.message : (vi ? 'Không thể mở module.' : 'Cannot open module.')) }
     finally { setBusy('') }
   }
@@ -120,7 +139,16 @@ function ScopedSkillsPanel() {
     <p className="flex items-start gap-2 text-caption text-muted-foreground"><Info size={15} className="mt-0.5 shrink-0" aria-hidden="true" /><span>{vi ? 'Hoàn thành nội dung trước khi làm Skill Assessment. Achievement được ghi nhận khi đánh giá đạt.' : 'Complete module content before the Skill Assessment. Official achievement is awarded after a passing assessment.'}</span></p>
     </>}
     {selected && <section ref={selectedRegion} tabIndex={-1} className="space-y-4 outline-none" aria-label={vi ? 'Modules của skill' : 'Skill modules'}>
-      <Button variant="ghost" size="sm" className="gap-2 text-muted-foreground" disabled={Boolean(busy)} onClick={() => { setSelected(null); setActionError('') }}><ArrowLeft size={15} aria-hidden="true" />{vi ? 'Quay lại danh sách Skills' : 'Back to skills'}</Button>
+      <Button variant="ghost" size="sm" className="gap-2 text-muted-foreground" disabled={Boolean(busy)} onClick={() => {
+        setSelected(null)
+        setActionError('')
+        if (searchParams.has('skillId') || searchParams.has('level')) {
+          const next = new URLSearchParams(searchParams)
+          next.delete('skillId')
+          next.delete('level')
+          setSearchParams(next, { replace: true })
+        }
+      }}><ArrowLeft size={15} aria-hidden="true" />{vi ? 'Quay lại danh sách Skills' : 'Back to skills'}</Button>
       <div className="space-y-2"><div className="flex flex-wrap items-center gap-2"><Badge variant="secondary">{selected.code}</Badge><Heading level={2} size="subsection" className="break-words">{selected.name}</Heading></div>{selected.description && <p className="text-body-sm text-muted-foreground">{selected.description}</p>}</div>
         <div className="space-y-4">
           <p className="text-body-sm text-muted-foreground">{vi ? 'Chọn mức kiến thức, học một module phù hợp, rồi làm Skill Assessment ở mức đó. Hoàn thành nội dung chưa đồng nghĩa đã đạt kỹ năng.' : 'Choose a knowledge level, study a compatible module, then take the Skill Assessment for that level. Content completion alone does not award achievement.'}</p>
