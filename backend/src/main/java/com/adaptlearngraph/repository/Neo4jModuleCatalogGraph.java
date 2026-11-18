@@ -104,8 +104,8 @@ public final class Neo4jModuleCatalogGraph {
                 ? "n.status='ACTIVE' AND n.reviewStatus='APPROVED'" : "n.status <> 'ARCHIVED'";
         return reads.execute(status -> new ArrayList<>(client.query("MATCH (n:" + label
                         + ") WHERE n.organizationId=$organization AND " + eligibility
-                        + " AND n.id IS NOT NULL AND n.name IS NOT NULL RETURN n.id AS id,n.name AS name ORDER BY name")
-                .bind(organization).to("organization").fetchAs(Choice.class).mappedBy((types, r) -> new Choice(r.get("id").asString(), r.get("name").asString())).all()));
+                        + " AND n.id IS NOT NULL AND n.name IS NOT NULL RETURN n.id AS id,n.name AS name,n.code AS code ORDER BY name")
+                .bind(organization).to("organization").fetchAs(Choice.class).mappedBy((types, r) -> new Choice(r.get("id").asString(), r.get("name").asString(), r.get("code").isNull() ? null : r.get("code").asString())).all()));
     }
 
     public KnowledgeDefinition requireKnowledge(String organization,String skill,String level,List<String> outcomes) {

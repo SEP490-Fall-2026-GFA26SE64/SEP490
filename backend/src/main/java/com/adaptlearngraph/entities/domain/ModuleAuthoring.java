@@ -12,7 +12,9 @@ public final class ModuleAuthoring {
         public boolean manager() { return roles.contains("LD_MANAGER"); }
         public boolean expert() { return roles.contains("EXPERT"); }
     }
-    public record Choice(String id, String name) {}
+    public record Choice(String id, String name, String code) {
+        public Choice(String id, String name) { this(id, name, null); }
+    }
     public record Metadata(String id, String version, String status, String reviewStatus,
                            String reviewedBy, String reviewedAt) {
         public Metadata approved(String actor, String time, String lifecycle) {

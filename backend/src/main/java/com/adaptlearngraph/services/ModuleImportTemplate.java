@@ -114,7 +114,7 @@ final class ModuleImportTemplate {
             table(module, isEn ? MODULE_HEADERS_EN : MODULE_HEADERS, heading);
             table(lesson, isEn ? LESSON_HEADERS_EN : LESSON_HEADERS, heading);
             table(catalog, isEn ? List.of("Skill Code", "Skill Name") : List.of("Mã Skill", "Tên Skill"), heading);
-            int row = 1; for (var skill : skills) values(catalog, row++, normal, skill.id(), skill.name());
+            int row = 1; for (var skill : skills) values(catalog, row++, normal, skillCode(skill), skill.name());
             catalog.setColumnWidth(0, 20 * 256); catalog.setColumnWidth(1, 75 * 256);
             for (int i = 0; i < 2; i++) {
                 Scope scope = scopes.get(i);
@@ -126,7 +126,7 @@ final class ModuleImportTemplate {
                         ? (scope.level().equals("FOUNDATION") ? "Foundation" : "Intermediate")
                         : levelLabel(scope.level());
                 String typeStr = isEn ? "Lesson and practice" : "Bài học và thực hành";
-                values(module, i + 1, normal, "M" + (i + 1), title, scope.skill().id(), levelStr, typeStr, i == 0 ? 20 : 35);
+                values(module, i + 1, normal, "M" + (i + 1), title, skillCode(scope.skill()), levelStr, typeStr, i == 0 ? 20 : 35);
                 values(lesson, i * 2 + 1, normal, "M" + (i + 1), 1,
                         isEn ? (i == 0 ? "Core Concepts" : "Practice and Results") : (i == 0 ? "Khái niệm nền tảng" : "Lập mục tiêu và ghi nhận kết quả"),
                         isEn ? "Reading" : "Bài đọc", "lesson/" + (i == 0 ? "qa08-khai-niem.docx" : "qa08-thuc-hanh.docx"));
@@ -241,4 +241,7 @@ final class ModuleImportTemplate {
             Limits: configured platform size limits, at most 5000 rows per sheet, 200 lessons per module and 2000 ZIP entries. Do not password-protect the ZIP or Office documents.
             Only Modules and Lessons are import data. HuongDan, InstructionsEN and DanhMuc are supporting sheets.
             """; }
+    private static String skillCode(Choice skill) {
+        return skill.code() != null && !skill.code().isBlank() ? skill.code() : skill.id();
+    }
 }
