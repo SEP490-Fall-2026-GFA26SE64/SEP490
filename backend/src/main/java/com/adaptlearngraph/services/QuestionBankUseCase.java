@@ -10,7 +10,11 @@ public interface QuestionBankUseCase {
     record Command(UUID id, long expectedRevision, String action, String reason, UUID owner) {}
     record Bulk(List<Command> questions) {}
     record Preview(List<Row> rows) {}
-    record Confirmation(UUID batch, boolean acknowledgeWarnings, boolean confirmSuccessors) {}
+    record Confirmation(UUID batch, boolean acknowledgeWarnings, boolean confirmSuccessors, boolean submitForReview) {
+        public Confirmation(UUID batch, boolean acknowledgeWarnings, boolean confirmSuccessors) {
+            this(batch, acknowledgeWarnings, confirmSuccessors, false);
+        }
+    }
     Session session();
     View read();
     View save(Save input);

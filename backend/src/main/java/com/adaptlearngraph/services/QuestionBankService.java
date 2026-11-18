@@ -155,7 +155,18 @@ public final class QuestionBankService implements QuestionBankUseCase {
             for(var row:batch.rows){var existing=b.questions.stream().filter(x->x.code.equals(row.code())).findFirst().orElse(null);var nowMatches=duplicates(b,row.content(),existing==null?null:existing.id).stream().filter(c->!batchCodes.contains(c)).collect(java.util.stream.Collectors.toSet());var seenMatches=batch.matching.getOrDefault(row.code(),List.of()).stream().filter(c->!batchCodes.contains(c)).collect(java.util.stream.Collectors.toSet());require(nowMatches.equals(seenMatches),409,row.code()+": matching content changed since preview; upload again");}
             for(var row:batch.rows) {
                 require(!containsCode(b,row.code()),409,"Generated code conflict. Upload the file again.");
-                create(b,a,row.code(),content(a,row.content(),false));
+                var created=create(b,a,row.code(),content(a,row.content(),false));
+                if(input.submitForReview()) {
+                    var v=latest(created);
+                    v.content=content(a,v.content,true);
+                    v.state="SUBMITTED";
+                    v.submittedBy=a.id();
+                    v.submittedAt=clock.instant();
+                    v.viewed.clear();
+                    audit(b,created,v,a,"SUBMITTED",null);
+                    notifyManagers(b,a,"Question awaiting review",created.code);
+                    created.revision++;
+                }
             }batch.committed=true;return view(b);});
     }
     @Override public List<Notice> notices() {var a=actor();return store.atomic(a,b->b.notices.stream().filter(n->a.id().equals(n.recipient)).toList());}

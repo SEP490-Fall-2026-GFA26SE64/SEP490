@@ -28,7 +28,11 @@ public final class QuestionBankDto {
 
     public record ActorResponse(UUID id, UUID organization, String role) {}
 
-    public record ChoiceResponse(String id, String name) {}
+    public record ChoiceResponse(String id, String name, String code) {
+        public ChoiceResponse(String id, String name) {
+            this(id, name, null);
+        }
+    }
 
     public record SessionResponse(ActorResponse actor, List<ChoiceResponse> skills, List<ChoiceResponse> experts,
                                   List<ChoiceResponse> people, int maxImportRows, long maxImportBytes,List<KnowledgeChoiceResponse> knowledge) {}

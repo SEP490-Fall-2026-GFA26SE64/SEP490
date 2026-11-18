@@ -44,7 +44,7 @@ public final class QuestionBankMappings implements ModelMapperRegistrar {
             return new ActorResponse(source.id(), source.organization(), source.role());
         });
         mapper.typeMap(Choice.class, ChoiceResponse.class).setConverter(context ->
-                new ChoiceResponse(context.getSource().id(), context.getSource().name()));
+                new ChoiceResponse(context.getSource().id(), context.getSource().name(), context.getSource().code()));
         mapper.typeMap(Session.class, SessionResponse.class).setConverter(context -> {
             Session source = context.getSource();
             return new SessionResponse(nested(context, source.actor(), ActorResponse.class),
