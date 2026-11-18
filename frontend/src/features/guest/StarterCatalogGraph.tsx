@@ -61,7 +61,7 @@ function edgeMode(edge: { from: string; to: string }, selected: Set<string>, foc
 }
 
 function CatalogGraph({ catalog, ids, selected, focused, onFocus, onClearFocus, onExplore, copy, labels = CATALOG_LABELS, readOnly = false,
-  ariaLabel, showPrerequisiteLegend = true }: {
+  ariaLabel, showPrerequisiteLegend = true, labelCopy = CATALOG_LABEL_COPY }: {
   catalog: PlatformCatalog
   ids: Set<string>
   selected: Set<string>
@@ -74,6 +74,8 @@ function CatalogGraph({ catalog, ids, selected, focused, onFocus, onClearFocus, 
   labels?: CatalogNodeLabel[]
   /** Viewing mode without a "your catalog" selection. */
   readOnly?: boolean
+  /** Overrides node type names in the legend and tooltips. */
+  labelCopy?: typeof CATALOG_LABEL_COPY
   /** Overrides the default accessible description of the canvas. */
   ariaLabel?: string
   /** Read-only legends show the prerequisite edge style unless the graph has no prerequisites. */
@@ -84,7 +86,8 @@ function CatalogGraph({ catalog, ids, selected, focused, onFocus, onClearFocus, 
   const network = React.useRef<Network | null>(null)
   const handlers = React.useRef({ onFocus, onClearFocus, onExplore })
   const copyRef = React.useRef(copy)
-  React.useEffect(() => { handlers.current = { onFocus, onClearFocus, onExplore }; copyRef.current = copy }, [onFocus, onClearFocus, onExplore, copy])
+  const labelCopyRef = React.useRef(labelCopy)
+  React.useEffect(() => { handlers.current = { onFocus, onClearFocus, onExplore }; copyRef.current = copy; labelCopyRef.current = labelCopy }, [onFocus, onClearFocus, onExplore, copy, labelCopy])
   const [failure, setFailure] = React.useState(false)
   const [attempt, setAttempt] = React.useState(0)
   const [fullscreen, setFullscreen] = React.useState(false)
@@ -211,7 +214,7 @@ function CatalogGraph({ catalog, ids, selected, focused, onFocus, onClearFocus, 
       view.current.metrics.set(node.id, measureNode(measure, node.label, node.name))
     nodes.current.add(added.map(node => ({
       id: node.id, shape: 'custom', size: (view.current.metrics.get(node.id)?.width ?? NODE_SPECS[node.label].maxWidth) / 2,
-      title: `${node.name} · ${copyRef.current(...CATALOG_LABEL_COPY[node.label])}`, ...placed.get(node.id),
+      title: `${node.name} · ${copyRef.current(...labelCopyRef.current[node.label])}`, ...placed.get(node.id),
     })))
     const visibleEdges = catalog.edges.filter(edge => ids.has(edge.from) && ids.has(edge.to))
     const edgeIds = new Set(visibleEdges.map(edge => edge.id))
@@ -326,7 +329,7 @@ function CatalogGraph({ catalog, ids, selected, focused, onFocus, onClearFocus, 
         const Icon = LEGEND_ICONS[label]
         return <li key={label} className="inline-flex items-center gap-1.5">
           <Icon size={12} aria-hidden="true" className={LEGEND_TONE[label]}
-            fill={FILLED_LEGEND.has(label) ? 'currentColor' : 'none'} />{copy(...CATALOG_LABEL_COPY[label])}
+            fill={FILLED_LEGEND.has(label) ? 'currentColor' : 'none'} />{copy(...labelCopy[label])}
         </li>
       })}
       {readOnly ? showPrerequisiteLegend && <li className="inline-flex items-center gap-1.5">

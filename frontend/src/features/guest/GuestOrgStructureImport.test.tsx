@@ -52,7 +52,7 @@ describe('GuestOrgStructureImport', () => {
       .toEqual(['node My organization', 'node Engineering', 'node Developer', 'node Backend Developer', 'node Junior', 'node Senior', 'node Frontend Developer'])
     expect(screen.getAllByText('2', { selector: '*' }).length).toBeGreaterThan(0)
     await user.click(within(graph).getByRole('button', { name: 'node Junior' }))
-    const levelDetail = within(screen.getByRole('list', { name: 'Target roles using this level' })).getAllByRole('listitem').map(item => item.textContent)
+    const levelDetail = within(screen.getByRole('list', { name: 'Roles using this level' })).getAllByRole('listitem').map(item => item.textContent)
     expect(levelDetail).toEqual(['Backend Developer · rank 1', 'Frontend Developer · rank 2'])
     await user.click(within(graph).getByRole('button', { name: 'node My organization' }))
     expect(screen.getByTestId('org-structure-detail').textContent).toContain('1 × department')
@@ -71,7 +71,7 @@ describe('GuestOrgStructureImport', () => {
 
   it('lists server row errors in a focused summary and keeps Apply disabled', async () => {
     vi.mocked(structureApi.validateOrganizationStructure).mockRejectedValue(new structureApi.StructureRejectedError('File has errors',
-      [{ sheet: 'Levels', row: 3, column: 'Level rank', message: 'Rank 1 of target role BE is already used by level "Junior" (row 2).' }]))
+      [{ sheet: 'Levels', row: 3, column: 'Level rank', message: 'Rank 1 of role BE is already used by level "Junior" (row 2).' }]))
     const user = userEvent.setup()
     renderImport()
     await user.click(screen.getByRole('button', { name: /Import structure/ }))

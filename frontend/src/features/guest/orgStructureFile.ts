@@ -38,22 +38,22 @@ export const STRUCTURE_SHEETS: SheetSpec[] = [
     { field: 'code', header: 'Job position code', vi: 'Mã vị trí công việc', kind: 'code', width: 22, hint: 'Unique short code, e.g. DEV. Letters, digits, . _ - only.' },
     { field: 'name', header: 'Job position name', vi: 'Tên vị trí công việc', kind: 'name', width: 32, hint: 'Full name, up to 120 characters.' },
   ], examples: [['ENG', '', 'DEV', 'Software Developer'], ['QA', '', 'QA-ENG', 'QA Engineer']] },
-  { key: 'targetRoles', name: 'Target roles', vi: 'Vai trò mục tiêu', purpose: ['One row per target role, inside one job position.', 'Mỗi dòng là một vai trò mục tiêu thuộc một vị trí công việc.'], columns: [
+  { key: 'targetRoles', name: 'Roles', vi: 'Vai trò', purpose: ['One row per role, inside one job position.', 'Mỗi dòng là một vai trò thuộc một vị trí công việc.'], columns: [
     { field: 'jobPositionCode', header: 'Job position code', vi: 'Mã vị trí công việc', kind: 'ref', width: 22, hint: 'Pick a code from the Job positions sheet.' },
     { field: 'jobPositionName', header: 'Job position name', vi: 'Tên vị trí công việc', kind: 'lookup', width: 30, hint: '' },
-    { field: 'code', header: 'Target role code', vi: 'Mã vai trò mục tiêu', kind: 'code', width: 22, hint: 'Unique short code, e.g. BE-DEV. Letters, digits, . _ - only.' },
-    { field: 'name', header: 'Target role name', vi: 'Tên vai trò mục tiêu', kind: 'name', width: 30, hint: 'Full name, up to 120 characters.' },
-    { field: 'scope', header: 'Target role scope', vi: 'Phạm vi vai trò', kind: 'text', width: 56, hint: 'What this role is responsible for, up to 1000 characters.' },
+    { field: 'code', header: 'Role code', vi: 'Mã vai trò', kind: 'code', width: 22, hint: 'Unique short code, e.g. BE-DEV. Letters, digits, . _ - only.' },
+    { field: 'name', header: 'Role name', vi: 'Tên vai trò', kind: 'name', width: 30, hint: 'Full name, up to 120 characters.' },
+    { field: 'scope', header: 'Role scope', vi: 'Phạm vi vai trò', kind: 'text', width: 56, hint: 'What this role is responsible for, up to 1000 characters.' },
   ], examples: [
     ['DEV', '', 'BE-DEV', 'Backend Developer', 'Designs and builds server-side services and APIs.'],
     ['DEV', '', 'FE-DEV', 'Frontend Developer', 'Builds accessible web interfaces.'],
     ['QA-ENG', '', 'QA-AUTO', 'Automation Tester', 'Automates regression and API testing.'],
   ] },
-  { key: 'levels', name: 'Levels', vi: 'Cấp độ', purpose: ['One row per level of a target role.', 'Mỗi dòng là một cấp độ của vai trò mục tiêu.'], columns: [
-    { field: 'targetRoleCode', header: 'Target role code', vi: 'Mã vai trò mục tiêu', kind: 'ref', width: 22, hint: 'Pick a code from the Target roles sheet.' },
-    { field: 'targetRoleName', header: 'Target role name', vi: 'Tên vai trò mục tiêu', kind: 'lookup', width: 30, hint: '' },
-    { field: 'name', header: 'Level name', vi: 'Tên cấp độ', kind: 'name', width: 24, hint: 'E.g. Junior. Unique within the target role.' },
-    { field: 'rank', header: 'Level rank', vi: 'Thứ hạng cấp độ', kind: 'rank', width: 14, hint: 'Whole number 1-99, 1 = most junior. Unique within the target role.' },
+  { key: 'levels', name: 'Levels', vi: 'Cấp độ', purpose: ['One row per level of a role.', 'Mỗi dòng là một cấp độ của vai trò.'], columns: [
+    { field: 'targetRoleCode', header: 'Role code', vi: 'Mã vai trò', kind: 'ref', width: 22, hint: 'Pick a code from the Roles sheet.' },
+    { field: 'targetRoleName', header: 'Role name', vi: 'Tên vai trò', kind: 'lookup', width: 30, hint: '' },
+    { field: 'name', header: 'Level name', vi: 'Tên cấp độ', kind: 'name', width: 24, hint: 'E.g. Junior. Unique within the role.' },
+    { field: 'rank', header: 'Level rank', vi: 'Thứ hạng cấp độ', kind: 'rank', width: 14, hint: 'Whole number 1-99, 1 = most junior. Unique within the role.' },
   ], examples: [
     ['BE-DEV', '', 'Junior', 1], ['BE-DEV', '', 'Senior', 2], ['FE-DEV', '', 'Junior', 1],
     ['QA-AUTO', '', 'Junior', 1], ['QA-AUTO', '', 'Senior', 2],
@@ -64,7 +64,7 @@ export const STRUCTURE_SHEETS: SheetSpec[] = [
 const PARENT: Partial<Record<SheetKey, { sheet: string; code: string; name: string }>> = {
   jobPositions: { sheet: 'Departments', code: 'A', name: 'B' },
   targetRoles: { sheet: 'Job positions', code: 'C', name: 'D' },
-  levels: { sheet: 'Target roles', code: 'C', name: 'D' },
+  levels: { sheet: 'Roles', code: 'C', name: 'D' },
 }
 
 export type StructureFileProblem =
@@ -181,14 +181,14 @@ function validationFor(spec: SheetSpec, column: ColumnSpec, col: string): DataVa
     case 'name':
       if (spec.key === 'levels')
         return { ...base, type: 'custom', formulae: [`AND(LEN(${col}2)<=120,COUNTIFS($A$2:$A$${LAST_ROW},$A2,${range},${col}2)=1)`],
-          error: 'Level names must be unique within a target role and at most 120 characters.' }
+          error: 'Level names must be unique within a role and at most 120 characters.' }
       return { ...base, type: 'textLength', operator: 'lessThanOrEqual', formulae: [120], error: 'Use at most 120 characters.' }
     case 'text':
       return { ...base, type: 'textLength', operator: 'lessThanOrEqual', formulae: [1000], error: 'Use at most 1000 characters.' }
     case 'rank':
       return { ...base, type: 'custom',
         formulae: [`AND(ISNUMBER(${col}2),${col}2=INT(${col}2),${col}2>=1,${col}2<=99,COUNTIFS($A$2:$A$${LAST_ROW},$A2,${range},${col}2)=1)`],
-        error: 'Use a whole number from 1 to 99 that is not already used by another level of this target role.' }
+        error: 'Use a whole number from 1 to 99 that is not already used by another level of this role.' }
     default:
       return null
   }
@@ -271,9 +271,9 @@ function buildInstructions(workbook: Workbook) {
     'Every cell in an orange column is required. Grey columns show the matching name automatically and cannot be edited.',
     'Codes use letters, digits, ".", "_" and "-" (max 64) and must be unique within their sheet; upper/lower case is ignored.',
     'Reference columns offer a dropdown of codes from the previous sheet. Add parents first, then pick them.',
-    'Every department needs at least one job position, every job position at least one target role, and every target role at least one level.',
-    'Level rank is a whole number from 1 to 99 (1 = most junior). Level names and ranks must be unique within a target role.',
-    'Names: up to 120 characters. Department description and target role scope: up to 1000 characters. Up to 500 rows per sheet, file up to 1 MB.',
+    'Every department needs at least one job position, every job position at least one role, and every role at least one level.',
+    'Level rank is a whole number from 1 to 99 (1 = most junior). Level names and ranks must be unique within a role.',
+    'Names: up to 120 characters. Department description and role scope: up to 1000 characters. Up to 500 rows per sheet, file up to 1 MB.',
     'To remove a row, clear its cells. Replace or delete the example rows before uploading.',
   ]
   write(11, ['Rules'], { font: { bold: true, size: 13 } })

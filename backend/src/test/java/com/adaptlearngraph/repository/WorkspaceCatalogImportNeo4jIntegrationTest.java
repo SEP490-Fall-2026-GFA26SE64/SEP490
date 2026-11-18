@@ -88,6 +88,8 @@ class WorkspaceCatalogImportNeo4jIntegrationTest {
             assertThat(department.containsKey("headOfDepartment")).as("optional fields are not invented").isFalse();
             var role = session.run("MATCH (r:TargetRole {id:$id}) RETURN r", Map.of("id", roleA)).single().get("r").asNode();
             assertThat(role.get("scope").asString()).isEqualTo("TR-BE scope");
+            assertThat(role.get("status").asString()).as("imported roles are staged for staffing").isEqualTo("STAGED");
+            assertThat(department.get("status").asString()).isEqualTo("ACTIVE");
             assertThat(role.containsKey("assignedExpertId")).isFalse();
             var levels = session.run("MATCH (:TargetRole {id:$id})-[:HAS_LEVEL]->(l:Level) RETURN l.name AS name, l.rank AS rank, "
                     + "l.code AS code ORDER BY l.rank", Map.of("id", roleA)).list(row -> row.get("name").asString() + ":"

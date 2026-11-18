@@ -51,6 +51,8 @@ public final class Neo4jWorkspaceCatalogWriter implements WorkspaceCatalogGraphW
                 for (var role : job.targetRoles()) {
                     String roleId = importedId(organizationId, "TargetRole", role.code());
                     var roleProps = base(organizationId, roleId, role.code(), role.name(), timestamp);
+                    // Imported roles have no skill requirements yet: staged for staffing until L&D/Expert complete them.
+                    roleProps.put("status", "STAGED");
                     roleProps.put("title", role.name());
                     roleProps.put("scope", role.scope());
                     roleProps.put("description", role.scope());

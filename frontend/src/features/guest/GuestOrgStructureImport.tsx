@@ -16,6 +16,9 @@ import { StarterCatalogGraph } from './StarterCatalogGraph'
 
 type Copy = (en: string, vi: string) => string
 
+/** Registration import calls target roles simply "roles"; shared catalog screens keep their own wording. */
+const LABEL_COPY: typeof CATALOG_LABEL_COPY = { ...CATALOG_LABEL_COPY, TargetRole: ['Role', 'Vai trò'] }
+
 /** A structure the Guest applied to the registration form; the sheets are re-validated by the server on submit. */
 export interface AppliedOrgStructure { fileName: string; sheets: OrgStructureSheets; structure: OrganizationStructure }
 
@@ -46,8 +49,8 @@ function problemText(problem: StructureFileProblem, c: Copy): string {
 
 function Counts({ structure, c }: { structure: OrganizationStructure; c: Copy }) {
   const items: [string, number][] = [
-    [c(...CATALOG_LABEL_COPY.Department), structure.departmentCount], [c(...CATALOG_LABEL_COPY.JobPosition), structure.jobPositionCount],
-    [c(...CATALOG_LABEL_COPY.TargetRole), structure.targetRoleCount], [c(...CATALOG_LABEL_COPY.Level), distinctLevelCount(structure)],
+    [c(...LABEL_COPY.Department), structure.departmentCount], [c(...LABEL_COPY.JobPosition), structure.jobPositionCount],
+    [c(...LABEL_COPY.TargetRole), structure.targetRoleCount], [c(...LABEL_COPY.Level), distinctLevelCount(structure)],
   ]
   return <div className="flex flex-wrap gap-2" aria-label={c('Imported structure counts', 'Số lượng cấu trúc đã nhập')}>
     {items.map(([label, value]) => <Badge key={label} variant="outline">{label}: {value}</Badge>)}
@@ -65,8 +68,8 @@ export function GuestOrgStructureImport({ value, onChange }: { value: AppliedOrg
         </Heading>
         <Text variant="body-sm" className="text-muted-foreground">{value
           ? c(`Imported from ${value.fileName}. It is created in your workspace after payment.`, `Đã nhập từ ${value.fileName}. Cấu trúc được tạo trong workspace sau khi thanh toán.`)
-          : c('Import your departments, job positions, target roles and levels from a spreadsheet, or start empty.',
-            'Nhập phòng ban, vị trí công việc, vai trò mục tiêu và cấp độ từ bảng tính, hoặc bắt đầu trống.')}</Text>
+          : c('Import your departments, job positions, roles and levels from a spreadsheet, or start empty.',
+            'Nhập phòng ban, vị trí công việc, vai trò và cấp độ từ bảng tính, hoặc bắt đầu trống.')}</Text>
       </div>
       <div className="flex flex-wrap gap-2">
         {value && <Button type="button" variant="ghost" onClick={() => onChange(null)}><Trash2 size={16} aria-hidden="true" />{c('Remove', 'Gỡ bỏ')}</Button>}
@@ -227,7 +230,7 @@ function StructureView({ structure, c }: { structure: OrganizationStructure; c: 
     map.set(ORGANIZATION_NODE_ID, { node: graph.nodes[0], children: tree, detail: null })
     return map
   }, [tree, graph])
-  // A merged level node lists every target role that uses the level name, with that role's rank.
+  // A merged level node lists every role that uses the level name, with that role's rank.
   const levelUses = React.useMemo(() => {
     const uses = new Map<string, LevelUse[]>()
     for (const r of structure.departments.flatMap(d => d.jobPositions.flatMap(j => j.targetRoles)))
@@ -248,10 +251,10 @@ function StructureView({ structure, c }: { structure: OrganizationStructure; c: 
   return <div className="flex min-h-0 flex-1 flex-col gap-3">
     <div className="md:hidden"><Counts structure={structure} c={c} /></div>
     <div className="hidden grid-cols-4 gap-2 md:grid">
-      <StatCard title={c(...CATALOG_LABEL_COPY.Department)} value={structure.departmentCount} icon={<Building2 size={14} aria-hidden="true" />} />
-      <StatCard title={c(...CATALOG_LABEL_COPY.JobPosition)} value={structure.jobPositionCount} icon={<Users size={14} aria-hidden="true" />} />
-      <StatCard title={c(...CATALOG_LABEL_COPY.TargetRole)} value={structure.targetRoleCount} icon={<Network size={14} aria-hidden="true" />} />
-      <StatCard title={c(...CATALOG_LABEL_COPY.Level)} value={distinctLevelCount(structure)} icon={<Layers size={14} aria-hidden="true" />} />
+      <StatCard title={c(...LABEL_COPY.Department)} value={structure.departmentCount} icon={<Building2 size={14} aria-hidden="true" />} />
+      <StatCard title={c(...LABEL_COPY.JobPosition)} value={structure.jobPositionCount} icon={<Users size={14} aria-hidden="true" />} />
+      <StatCard title={c(...LABEL_COPY.TargetRole)} value={structure.targetRoleCount} icon={<Network size={14} aria-hidden="true" />} />
+      <StatCard title={c(...LABEL_COPY.Level)} value={distinctLevelCount(structure)} icon={<Layers size={14} aria-hidden="true" />} />
     </div>
     <div role="group" aria-label={c('Structure panels', 'Khu vực cấu trúc')} className="flex gap-1 rounded-lg bg-muted p-1 lg:hidden">
       {(['tree', 'graph'] as const).map(key => <Button key={key} type="button" size="sm" variant={mobileView === key ? 'primary' : 'ghost'}
@@ -279,21 +282,21 @@ function StructureView({ structure, c }: { structure: OrganizationStructure; c: 
             {c('Click a node to inspect it · scroll to zoom', 'Nhấn node để xem chi tiết · cuộn để phóng to')}</Text>
         </div>
         <StarterCatalogGraph catalog={graph} ids={ids} selected={none} focused={focused?.node} onFocus={setFocusedId}
-          onClearFocus={() => setFocusedId(undefined)} copy={c} labels={ORGANIZATION_STRUCTURE_LABELS} readOnly showPrerequisiteLegend={false}
+          onClearFocus={() => setFocusedId(undefined)} copy={c} labels={ORGANIZATION_STRUCTURE_LABELS} labelCopy={LABEL_COPY} readOnly showPrerequisiteLegend={false}
           ariaLabel={c('Imported organization structure graph. Arrow keys pan, plus and minus zoom. Use the structure list for keyboard navigation.',
             'Graph cấu trúc tổ chức đã nhập. Phím mũi tên để di chuyển, cộng/trừ để phóng to. Dùng danh sách cấu trúc để thao tác bằng bàn phím.')} />
         <div className="max-h-44 overflow-y-auto rounded-lg border border-border bg-card p-3 shadow-sm" data-testid="org-structure-detail">
           {focused ? <div className="space-y-1">
             <div className="flex flex-wrap items-center gap-2"><Heading level={4} size="card" className="break-words">{focused.node.name}</Heading>
-              <Badge variant="outline">{c(...CATALOG_LABEL_COPY[focused.node.label])}</Badge>
+              <Badge variant="outline">{c(...LABEL_COPY[focused.node.label])}</Badge>
               {focused.node.code && <Badge variant="secondary">{focused.node.code}</Badge>}
 </div>
             {focused.detail && <Text variant="body-sm" className="whitespace-pre-line text-muted-foreground">{focused.detail}</Text>}
-            {focused.node.label === 'Level' && <ul aria-label={c('Target roles using this level', 'Vai trò mục tiêu dùng cấp độ này')} className="flex flex-wrap gap-1.5">
+            {focused.node.label === 'Level' && <ul aria-label={c('Roles using this level', 'Vai trò dùng cấp độ này')} className="flex flex-wrap gap-1.5">
               {(levelUses.get(focused.node.id) ?? []).map(use => <li key={use.code}><Badge variant="secondary">{use.role} · {c(`rank ${use.rank}`, `hạng ${use.rank}`)}</Badge></li>)}</ul>}
             {focused.children.length > 0 && <Text variant="caption" className="text-muted-foreground">
-              {c(`${focused.children.length} × ${CATALOG_LABEL_COPY[focused.children[0].node.label][0].toLowerCase()}`,
-                `${focused.children.length} × ${CATALOG_LABEL_COPY[focused.children[0].node.label][1].toLowerCase()}`)}</Text>}
+              {c(`${focused.children.length} × ${LABEL_COPY[focused.children[0].node.label][0].toLowerCase()}`,
+                `${focused.children.length} × ${LABEL_COPY[focused.children[0].node.label][1].toLowerCase()}`)}</Text>}
           </div> : <Text variant="body-sm" className="text-muted-foreground">{c('Select a node or a structure item to see its code, description and levels.',
             'Chọn node hoặc mục trong cấu trúc để xem mã, mô tả và cấp độ.')}</Text>}
         </div>
@@ -321,7 +324,7 @@ function TreeRow({ item, depth, needle, collapsed, toggle, focusedId, onFocus, c
         <span className="min-w-0 flex-1 truncate"><span className="font-medium text-foreground">{item.node.name}</span>
           {item.rank !== undefined ? <span className="ml-1 text-caption text-muted-foreground">· {c(`rank ${item.rank}`, `hạng ${item.rank}`)}</span>
             : item.node.code && <span className="ml-1 text-caption text-muted-foreground">· {item.node.code}</span>}</span>
-        <span className="shrink-0 text-caption text-muted-foreground">{c(...CATALOG_LABEL_COPY[item.node.label])}</span>
+        <span className="shrink-0 text-caption text-muted-foreground">{c(...LABEL_COPY[item.node.label])}</span>
       </button>
     </div>
     {open && children.length > 0 && <ul role="group" className="space-y-0.5">

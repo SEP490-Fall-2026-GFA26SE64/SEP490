@@ -23,7 +23,7 @@ async function reloaded() {
 describe('organization structure workbook', () => {
   it('builds Instructions plus four styled data tabs with dropdowns, Excel validation and automatic name columns', async () => {
     const workbook = await reloaded()
-    expect(workbook.worksheets.map(sheet => sheet.name)).toEqual(['Instructions', 'Departments', 'Job positions', 'Target roles', 'Levels'])
+    expect(workbook.worksheets.map(sheet => sheet.name)).toEqual(['Instructions', 'Departments', 'Job positions', 'Roles', 'Levels'])
     for (const spec of STRUCTURE_SHEETS) {
       const sheet = workbook.getWorksheet(spec.name)!
       expect(spec.columns.map((_, index) => sheet.getRow(1).getCell(index + 1).value)).toEqual(spec.columns.map(column => column.header))
@@ -31,12 +31,12 @@ describe('organization structure workbook', () => {
     }
     expect(validationAt(workbook, 'Job positions', 'A2', 'A2:A501')).toMatchObject({ type: 'list', showErrorMessage: true })
     expect(validationAt(workbook, 'Job positions', 'A2', 'A2:A501').formulae[0]).toContain("'Departments'!$A$2")
-    expect(validationAt(workbook, 'Target roles', 'A2', 'A2:A501').formulae[0]).toContain("'Job positions'!$C$2")
-    expect(validationAt(workbook, 'Levels', 'A2', 'A2:A501').formulae[0]).toContain("'Target roles'!$C$2")
+    expect(validationAt(workbook, 'Roles', 'A2', 'A2:A501').formulae[0]).toContain("'Job positions'!$C$2")
+    expect(validationAt(workbook, 'Levels', 'A2', 'A2:A501').formulae[0]).toContain("'Roles'!$C$2")
     expect(validationAt(workbook, 'Departments', 'A2', 'A2:A501').formulae[0]).toContain('COUNTIF($A$2:$A$501,A2)=1')
     expect(validationAt(workbook, 'Levels', 'D2', 'D2:D501').formulae[0]).toContain('D2>=1,D2<=99')
     const lookup = workbook.getWorksheet('Levels')!.getCell('B501').value as { formula: string }
-    expect(lookup.formula).toContain("MATCH($A501,'Target roles'!$C$2:$C$501,0)")
+    expect(lookup.formula).toContain("MATCH($A501,'Roles'!$C$2:$C$501,0)")
     const levels = workbook.getWorksheet('Levels')!
     // Excel's default is locked, so only unlocked input cells carry an explicit protection flag.
     expect(levels.getCell('B2').protection?.locked).not.toBe(false)
@@ -77,7 +77,7 @@ describe('organization structure workbook', () => {
     const ExcelJS = await import('exceljs')
     const partial = new ExcelJS.Workbook()
     partial.addWorksheet('Departments').addRow(STRUCTURE_SHEETS[0].columns.map(column => column.header))
-    expect(await problem(parseStructureFile(await toFile(partial)))).toEqual({ code: 'missingSheets', missing: ['Job positions', 'Target roles', 'Levels'] })
+    expect(await problem(parseStructureFile(await toFile(partial)))).toEqual({ code: 'missingSheets', missing: ['Job positions', 'Roles', 'Levels'] })
 
     const template = await buildStructureTemplate()
     template.getWorksheet('Levels')!.getCell('D1').value = 'Rank'

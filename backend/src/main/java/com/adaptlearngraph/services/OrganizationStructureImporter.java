@@ -15,8 +15,8 @@ import java.util.regex.Pattern;
 
 /**
  * Validates and normalizes a Guest-uploaded organization structure workbook with four data sheets: Departments,
- * Job positions (referencing a department code), Target roles (referencing a job position code) and Levels (referencing
- * a target role code). Codes are case-insensitive and unique per sheet; every branch must reach at least one level.
+ * Job positions (referencing a department code), Roles (referencing a job position code) and Levels (referencing
+ * a role code). Codes are case-insensitive and unique per sheet; every branch must reach at least one level.
  * Any error rejects the whole workbook.
  */
 public final class OrganizationStructureImporter {
@@ -30,7 +30,7 @@ public final class OrganizationStructureImporter {
 
     public static final String DEPARTMENTS = "Departments";
     public static final String JOB_POSITIONS = "Job positions";
-    public static final String TARGET_ROLES = "Target roles";
+    public static final String TARGET_ROLES = "Roles";
     public static final String LEVELS = "Levels";
 
     static final String DEPARTMENT_CODE = "Department code";
@@ -38,9 +38,9 @@ public final class OrganizationStructureImporter {
     static final String DEPARTMENT_DESCRIPTION = "Department description";
     static final String JOB_POSITION_CODE = "Job position code";
     static final String JOB_POSITION_NAME = "Job position name";
-    static final String TARGET_ROLE_CODE = "Target role code";
-    static final String TARGET_ROLE_NAME = "Target role name";
-    static final String TARGET_ROLE_SCOPE = "Target role scope";
+    static final String TARGET_ROLE_CODE = "Role code";
+    static final String TARGET_ROLE_NAME = "Role name";
+    static final String TARGET_ROLE_SCOPE = "Role scope";
     static final String LEVEL_NAME = "Level name";
     static final String LEVEL_RANK = "Level rank";
 
@@ -135,7 +135,7 @@ public final class OrganizationStructureImporter {
             }
             var existing = roles.get(key(code));
             if (existing != null) {
-                errors.add(TARGET_ROLES, row, TARGET_ROLE_CODE, "Target role code " + code + " is already used in row " + existing.row + ".");
+                errors.add(TARGET_ROLES, row, TARGET_ROLE_CODE, "Role code " + code + " is already used in row " + existing.row + ".");
                 continue;
             }
             var role = new Role(row, code, name, scope);
@@ -154,14 +154,14 @@ public final class OrganizationStructureImporter {
             if (errors.size() > before) continue;
             var parent = roles.get(key(parentCode));
             if (parent == null) {
-                errors.add(LEVELS, row, TARGET_ROLE_CODE, "Target role code " + parentCode + " is not defined in the Target roles sheet.");
+                errors.add(LEVELS, row, TARGET_ROLE_CODE, "Role code " + parentCode + " is not defined in the Roles sheet.");
                 continue;
             }
             var sameName = parent.levelsByName.get(key(name));
             var sameRank = parent.levelsByRank.get(rank);
-            if (sameName != null) errors.add(LEVELS, row, LEVEL_NAME, "Level \"" + name + "\" is already defined for target role "
+            if (sameName != null) errors.add(LEVELS, row, LEVEL_NAME, "Level \"" + name + "\" is already defined for role "
                     + parent.code + " in row " + sameName.row + ".");
-            else if (sameRank != null) errors.add(LEVELS, row, LEVEL_RANK, "Rank " + rank + " of target role " + parent.code
+            else if (sameRank != null) errors.add(LEVELS, row, LEVEL_RANK, "Rank " + rank + " of role " + parent.code
                     + " is already used by level \"" + sameRank.name + "\" in row " + sameRank.row + ".");
             else {
                 var level = new Lvl(row, name, rank);
@@ -177,9 +177,9 @@ public final class OrganizationStructureImporter {
                         + " has no job positions. Add at least one in the Job positions sheet.");
             for (var job : jobs.values()) if (job.roles.isEmpty())
                 errors.add(JOB_POSITIONS, job.row, JOB_POSITION_CODE, "Job position " + job.code
-                        + " has no target roles. Add at least one in the Target roles sheet.");
+                        + " has no roles. Add at least one in the Roles sheet.");
             for (var role : roles.values()) if (role.levelsByRank.isEmpty())
-                errors.add(TARGET_ROLES, role.row, TARGET_ROLE_CODE, "Target role " + role.code
+                errors.add(TARGET_ROLES, role.row, TARGET_ROLE_CODE, "Role " + role.code
                         + " has no levels. Add at least one in the Levels sheet.");
         }
         if (!errors.isEmpty()) throw new OrganizationStructureInvalid(errors.list);

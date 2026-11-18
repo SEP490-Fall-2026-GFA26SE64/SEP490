@@ -58,8 +58,8 @@ class OrganizationStructureImporterTest {
         assertThat(where(blank)).containsExactly(
                 "Departments:4:Department code", "Departments:4:Department name", "Departments:4:Department description",
                 "Job positions:5:Department code", "Job positions:5:Job position code", "Job positions:5:Job position name",
-                "Target roles:6:Job position code", "Target roles:6:Target role code", "Target roles:6:Target role name",
-                "Target roles:6:Target role scope", "Levels:7:Target role code", "Levels:7:Level name", "Levels:7:Level rank");
+                "Roles:6:Job position code", "Roles:6:Role code", "Roles:6:Role name",
+                "Roles:6:Role scope", "Levels:7:Role code", "Levels:7:Level name", "Levels:7:Level rank");
     }
 
     @Test
@@ -82,8 +82,8 @@ class OrganizationStructureImporterTest {
         var errors = errors(request);
         assertThat(errors).extracting(e -> e.sheet() + ":" + e.row() + ":" + e.column()).containsExactly(
                 "Departments:3:Department code", "Job positions:3:Department code", "Job positions:4:Job position code",
-                "Target roles:3:Job position code", "Target roles:4:Target role code",
-                "Levels:3:Level name", "Levels:4:Level rank", "Levels:5:Target role code");
+                "Roles:3:Job position code", "Roles:4:Role code",
+                "Levels:3:Level name", "Levels:4:Level rank", "Levels:5:Role code");
         assertThat(errors.get(1).message()).isEqualTo("Department code HR is not defined in the Departments sheet.");
         assertThat(errors.get(6).message()).contains("already used by level \"Junior\" in row 2");
     }
@@ -96,7 +96,7 @@ class OrganizationStructureImporterTest {
                 List.of(role(2, "DEV", "BE"), role(3, "DEV", "FE")),
                 List.of(level(2, "BE", "Junior", "1")));
         assertThat(where(request)).containsExactly("Departments:3:Department code", "Job positions:3:Job position code",
-                "Target roles:3:Target role code");
+                "Roles:3:Role code");
         assertThat(where(new OrganizationStructureRequest(List.of(), List.of(job(2, "ENG", "DEV")), null, null)))
                 .containsExactly("Job positions:2:Department code");
     }

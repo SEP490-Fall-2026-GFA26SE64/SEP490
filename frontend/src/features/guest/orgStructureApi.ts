@@ -92,19 +92,19 @@ export async function validateOrganizationStructure(sheets: OrgStructureSheets, 
 }
 
 /** Graph-shaped view for the shared catalog graph; ids are derived from codes and stay stable across renders. */
-/** Display key that merges levels with the same name (case-insensitive) across target roles. */
+/** Display key that merges levels with the same name (case-insensitive) across roles. */
 export const levelKey = (name: string) => `level:${name.trim().toUpperCase()}`
 export const ORGANIZATION_NODE_ID = 'organization'
 
-/** Number of distinct level names; the review shows merged levels rather than one per target role. */
+/** Number of distinct level names; the review shows merged levels rather than one per role. */
 export function distinctLevelCount(structure: OrganizationStructure): number {
   return new Set(structure.departments.flatMap(d => d.jobPositions.flatMap(j => j.targetRoles.flatMap(r => r.levels.map(l => levelKey(l.name)))))).size
 }
 
 /**
  * Graph-shaped view for the shared catalog graph. A symbolic organization root links the departments, and levels
- * with the same name become one node linked from every target role that uses it. Display only: the stored structure
- * keeps one level per target role. Ids are derived from codes/names and stay stable across renders.
+ * with the same name become one node linked from every role that uses it. Display only: the stored structure
+ * keeps one level per role. Ids are derived from codes/names and stay stable across renders.
  */
 export function structureGraph(structure: OrganizationStructure, organizationName: string): PlatformCatalog {
   const nodes: CatalogNode[] = [{ id: ORGANIZATION_NODE_ID, label: 'Organization', name: organizationName, code: null, description: null }]
