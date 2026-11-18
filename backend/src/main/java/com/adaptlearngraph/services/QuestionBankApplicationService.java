@@ -50,6 +50,15 @@ public class QuestionBankApplicationService {
         return map(call(bank::session), SessionResponse.class);
     }
 
+    public byte[] template(String lang) {
+        var session = call(bank::session);
+        try {
+            return QuestionImportTemplate.build(session.skills(), session.knowledge(), lang);
+        } catch (java.io.IOException e) {
+            throw new Failure(500, "Failed to generate Excel template");
+        }
+    }
+
     public ViewResponse read() {
         return view(call(bank::read));
     }

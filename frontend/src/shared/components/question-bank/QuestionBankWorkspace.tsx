@@ -208,85 +208,10 @@ function OwnedQuestionBankWorkspace() {
     })
   }
   const template = (lang: 'vi' | 'en') => {
-    const isEn = lang === 'en'
-    const workbook = XLSX.utils.book_new()
-    const skillsList = session?.skills ?? []
-    const knowledgeList = session?.knowledge ?? []
-    const firstSkill = skillsList[0]
-    const firstCode = firstSkill ? (firstSkill.code || firstSkill.id) : 'MS-SEC01'
-    const firstLevel = firstSkill ? knowledgeList.find(k => k.skillId === firstSkill.id)?.knowledgeLevel ?? 'FOUNDATION' : 'FOUNDATION'
-    const levelLabel = (lvl: string) => isEn
-      ? ({ FOUNDATION: 'Foundation', INTERMEDIATE: 'Intermediate', ADVANCED: 'Advanced' }[lvl] ?? lvl)
-      : ({ FOUNDATION: 'Nền tảng', INTERMEDIATE: 'Trung cấp', ADVANCED: 'Nâng cao' }[lvl] ?? lvl)
-
-    const guideRows = isEn
-      ? [
-          ['QUESTION BANK EXCEL IMPORT GUIDE'],
-          ['1. Go to the "Questions" sheet to enter your questions. Keep row 1 column headers unchanged.'],
-          ['2. "Skill Code": Copy the exact Skill Code (e.g. ' + firstCode + ') from the "SkillCatalog" sheet.'],
-          ['3. "Correct Answer (A-D)": Enter A, B, C, or D (or leave blank when saving an incomplete draft).'],
-          ['4. "Knowledge Level": Enter Foundation, Intermediate, or Advanced (or FOUNDATION / INTERMEDIATE / ADVANCED).'],
-          ['5. "Mandatory (true/false)": Enter true / Yes if mandatory in Skill Assessment, or false / No (ignored by Baseline).'],
-          ['6. Question codes are generated automatically by the system after import.'],
-          ['7. Only the "Questions" sheet is imported; "InstructionsEN" and "SkillCatalog" are reference sheets.'],
-        ]
-      : [
-          ['HƯỚNG DẪN IMPORT CÂU HỎI TỪ EXCEL'],
-          ['1. Nhập danh sách câu hỏi vào sheet "Questions". Giữ nguyên dòng tiêu đề cột ở dòng 1.'],
-          ['2. Cột "Mã Skill": Lấy đúng Mã Skill ngắn gọn (ví dụ: ' + firstCode + ') từ sheet "DanhMuc".'],
-          ['3. Cột "Đáp án đúng (A-D)": Nhập A, B, C hoặc D (có thể để trống nếu chỉ lưu bản nháp).'],
-          ['4. Cột "Mức kiến thức": Nhập Nền tảng, Trung cấp hoặc Nâng cao (hoặc FOUNDATION / INTERMEDIATE / ADVANCED).'],
-          ['5. Cột "Bắt buộc (true/false)": Nhập true / Có nếu bắt buộc trong Skill Assessment, hoặc false / Không.'],
-          ['6. Mã câu hỏi được hệ thống tự động sinh khi lưu.'],
-          ['7. Chỉ sheet "Questions" được import; "HuongDan" và "DanhMuc" là sheet tham khảo.'],
-        ]
-    const guideSheet = XLSX.utils.aoa_to_sheet(guideRows)
-    guideSheet['!cols'] = [{ wch: 100 }]
-    XLSX.utils.book_append_sheet(workbook, guideSheet, isEn ? 'InstructionsEN' : 'HuongDan')
-
-    const qHeaders = isEn
-      ? ['Question Prompt', 'Option A', 'Option B', 'Option C', 'Option D', 'Correct Answer (A-D)', 'Skill Code', 'Knowledge Level', 'Mandatory (true/false)', 'Explanation']
-      : ['Nội dung câu hỏi', 'Đáp án A', 'Đáp án B', 'Đáp án C', 'Đáp án D', 'Đáp án đúng (A-D)', 'Mã Skill', 'Mức kiến thức', 'Bắt buộc (true/false)', 'Giải thích']
-    const sampleRow = isEn
-      ? [
-          `Sample question for ${firstSkill?.name ?? 'this skill'}: Which practice is recommended?`,
-          'Verify requirements and document key assumptions.',
-          'Skip validation to save time.',
-          'Ignore error handling in production.',
-          'Deploy without peer review.',
-          'A',
-          firstCode,
-          levelLabel(firstLevel),
-          'false',
-          'Documenting and verifying assumptions reduces risk.',
-        ]
-      : [
-          `Câu hỏi mẫu cho kỹ năng ${firstSkill?.name ?? 'này'}: Thực hành nào sau đây là phù hợp nhất?`,
-          'Kiểm tra yêu cầu và ghi nhận các giả định quan trọng.',
-          'Bỏ qua bước kiểm tra để tiết kiệm thời gian.',
-          'Không cần xử lý lỗi khi vận hành.',
-          'Triển khai trực tiếp không cần rà soát.',
-          'A',
-          firstCode,
-          levelLabel(firstLevel),
-          'false',
-          'Kiểm tra và ghi nhận giả định giúp giảm thiểu rủi ro.',
-        ]
-    const qSheet = XLSX.utils.aoa_to_sheet([qHeaders, sampleRow])
-    qSheet['!cols'] = [{ wch: 48 }, { wch: 28 }, { wch: 28 }, { wch: 28 }, { wch: 28 }, { wch: 20 }, { wch: 18 }, { wch: 18 }, { wch: 22 }, { wch: 40 }]
-    XLSX.utils.book_append_sheet(workbook, qSheet, 'Questions')
-
-    const catalogRows = skillsList.map(s => {
-      const levels = knowledgeList.filter(k => k.skillId === s.id).map(k => levelLabel(k.knowledgeLevel)).join(', ')
-      return isEn
-        ? { 'Skill Code': s.code || s.id, 'Skill Name': s.name, 'Configured Levels': levels || '—' }
-        : { 'Mã Skill': s.code || s.id, 'Tên Skill': s.name, 'Mức kiến thức hỗ trợ': levels || '—' }
-    })
-    const catalogSheet = XLSX.utils.json_to_sheet(catalogRows)
-    catalogSheet['!cols'] = [{ wch: 20 }, { wch: 52 }, { wch: 36 }]
-    XLSX.utils.book_append_sheet(workbook, catalogSheet, isEn ? 'SkillCatalog' : 'DanhMuc')
-
-    XLSX.writeFile(workbook, isEn ? 'question-bank-template-en.xlsx' : 'question-bank-template.xlsx')
+    const link = document.createElement('a')
+    link.href = lang === 'en' ? '/api/v1/question-bank/imports/template?lang=en' : '/api/v1/question-bank/imports/template'
+    link.download = lang === 'en' ? 'question-bank-template-en.xlsx' : 'question-bank-template.xlsx'
+    link.click()
   }
   const upload = (file: File) => void run(async () => {
     setReviewQuestionIndex(null); setPreview(null); setAckWarnings(false); setImportStep(0); setImportFile({ name: file.name, bytes: file.size }); setSourceRows([])

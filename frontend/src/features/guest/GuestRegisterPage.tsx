@@ -272,7 +272,7 @@ export function GuestRegisterPage({ mode = 'register' }: { mode?: 'register' | '
         ...(failure && ['INVALID_PROOF', 'EXPIRED_PROOF'].includes(failure.code) ? { 'registration-proof': failure.message } : {}) }}>
       <div className="mx-auto max-w-4xl space-y-6">
         <div ref={headingRef} tabIndex={-1} className="outline-none">
-          <PageHeader title={title} icon={<ShieldCheck aria-hidden="true" size={24} />}
+          <PageHeader forceShowTitle title={title} icon={<ShieldCheck aria-hidden="true" size={24} />}
             description={entryStep === 1 && !view ? c('A few details to make your team feel at home. You’ll create your administrator account next.', 'Bắt đầu với thông tin doanh nghiệp. Ở bước tiếp theo, bạn sẽ tạo tài khoản quản lý không gian làm việc.')
               : view?.stage === 'COMPLETE' && !recoveryCodes ? c('Your registration is saved. Continue to choose a plan for your organization.', 'Đăng ký đã được lưu. Tiếp tục chọn gói phù hợp cho tổ chức.')
                 : !view && mode === 'register' ? c('This account will manage your workspace, team members and subscription.', 'Tài khoản này dùng để quản lý không gian làm việc, thành viên và gói dịch vụ.')
