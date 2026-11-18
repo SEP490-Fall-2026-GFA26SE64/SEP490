@@ -1,3 +1,5 @@
+import type { OrgStructureSheets } from './orgStructureFile'
+
 export const INDUSTRIES = [
   'Software Engineering & AI',
   'Cloud Infrastructure & DevOps',
@@ -33,8 +35,8 @@ export interface RegistrationFields {
 export interface RegistrationInput extends RegistrationFields {
   password: string
   policiesAccepted: boolean
-  /** Platform catalog node ids to copy into the workspace after provisioning; empty starts with no catalog. */
-  catalogSelection?: string[]
+  /** Imported organization structure workbook sheets; the server validates them again. Null starts with no structure. */
+  organizationStructure?: OrgStructureSheets | null
 }
 
 export type RegistrationStage =

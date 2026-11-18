@@ -1,4 +1,5 @@
 import { expect as baseExpect, test } from '@playwright/test'
+import { waitForWorkspaceEntry } from './subscriptionHelpers'
 
 const expect = baseExpect.configure({ timeout: 15000 })
 test.setTimeout(180000)
@@ -10,9 +11,7 @@ async function loginAsPlatformAdmin(page: any) {
   await page.getByRole('button', { name: /Sign in|Đăng nhập/i }).click()
   
   // Wait for session to be complete
-  const continueBtn = page.getByRole('button', { name: /Continue to workspace|Tiếp tục vào không gian/i })
-  await expect(continueBtn).toBeVisible({ timeout: 15000 })
-  await continueBtn.click()
+  await waitForWorkspaceEntry(page)
   await page.waitForURL('**/platform-admin/**', { timeout: 15000 })
 }
 

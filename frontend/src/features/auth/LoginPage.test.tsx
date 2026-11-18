@@ -1,4 +1,4 @@
-import { cleanup, render, screen } from '@testing-library/react'
+import { cleanup, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { MemoryRouter } from 'react-router-dom'
@@ -29,7 +29,7 @@ describe('Workspace login appearance and authentication', () => {
   it('restores the original frame and assets without demo credentials or guest shortcuts', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(response({}, 401)))
     const { container } = renderPage()
-    expect(screen.getByRole('heading', { name: 'Enterprise Sign In' })).toBeTruthy()
+    expect(await screen.findByRole('heading', { name: 'Enterprise Sign In' })).toBeTruthy()
     expect(container.querySelector('.razor-login-page .razor-stage .razor-card')).toBeTruthy()
     const illustrations = container.querySelectorAll('.razor-illustration-img')
     expect(illustrations).toHaveLength(2)
@@ -62,12 +62,12 @@ describe('Workspace login appearance and authentication', () => {
     expect(screen.getByRole('heading', { name: 'Enterprise Sign In' })).toBeTruthy()
   })
 
-  it('keeps loading and credential errors inside the original frame', async () => {
+  it('shows the unified full-screen loader while checking the session and keeps credential errors inside the original frame', async () => {
     let respond: ((response: Response) => void) | undefined
     vi.stubGlobal('fetch', vi.fn(() => new Promise<Response>(resolve => { respond = resolve })))
     const { container } = renderPage()
     expect(screen.getByRole('status').textContent).toContain('Loading')
-    expect(container.querySelector('.razor-card [role="status"]')).toBeTruthy()
+    expect(container.querySelector('[data-page-loader="fullscreen"]')).toBeTruthy()
     respond?.(response({}, 401))
     expect(await screen.findByLabelText('Email')).toBeTruthy()
     vi.stubGlobal('fetch', vi.fn(async (path: string) => path.endsWith('/csrf') ? response(csrf) :
@@ -90,6 +90,8 @@ describe('Workspace login appearance and authentication', () => {
       throw new Error(`Unexpected authentication request: ${path}`)
     })
     vi.stubGlobal('fetch', fetcher)
+    const assign = vi.fn()
+    vi.stubGlobal('location', { ...window.location, assign })
     const { container } = renderPage()
     const user = userEvent.setup()
     await user.type(await screen.findByLabelText('Email'), 'admin@example.test')
@@ -103,11 +105,13 @@ describe('Workspace login appearance and authentication', () => {
     }))
     await user.type(proof, '123456')
     await user.click(screen.getByRole('button', { name: 'Verify' }))
-    expect(await screen.findByText('Authentication complete.')).toBeTruthy()
+    expect(await screen.findByText('Entering your workspace…')).toBeTruthy()
+    expect(container.querySelector('[data-page-loader="fullscreen"]')).toBeTruthy()
+    expect(screen.queryByText('Authentication complete.')).toBeNull()
     expect(fetcher).toHaveBeenCalledWith('/api/v1/workspace-auth/totp/verify', expect.objectContaining({
       method: 'POST', body: JSON.stringify({ code: '123456' }),
     }))
-    expect(screen.getByRole('button', { name: 'Continue to workspace' })).toBeTruthy()
+    await waitFor(() => expect(assign).toHaveBeenCalledWith('/workspace/acme/admin/subscription'))
     expect(localStorage.getItem('auth_user')).toBeNull()
     expect(localStorage.getItem('active_actor')).toBeNull()
   })
@@ -123,9 +127,12 @@ describe('Workspace login appearance and authentication', () => {
       throw new Error(`Unexpected recovery request: ${path}`)
     })
     vi.stubGlobal('fetch', fetcher)
+    const assign = vi.fn()
+    vi.stubGlobal('location', { ...window.location, assign })
     const { container } = renderPage()
     const user = userEvent.setup()
     await user.click(await screen.findByRole('button', { name: 'Use recovery code' }))
+    expect(screen.getByText('Enter one of the single-use recovery codes you saved. Each code works only once.')).toBeTruthy()
     await user.type(screen.getByLabelText('Recovery code'), '0'.repeat(32))
     await user.click(screen.getByRole('button', { name: 'Verify' }))
     await user.click(await screen.findByRole('button', { name: 'Set up authenticator' }))
@@ -134,10 +141,12 @@ describe('Workspace login appearance and authentication', () => {
     await user.click(screen.getByRole('button', { name: 'Confirm authenticator' }))
     const continueButton = await screen.findByRole('button', { name: 'Continue to workspace' })
     expect(continueButton).toHaveProperty('disabled', true)
-    expect(container.querySelector('pre')?.textContent).toBe(recoveryCodes.join('\n'))
+    const listed = within(screen.getByRole('list', { name: 'Recovery codes' })).getAllByRole('listitem')
+    expect(listed.map(item => item.querySelector('code')?.textContent)).toEqual(recoveryCodes)
+    expect(assign).not.toHaveBeenCalled()
     await user.click(screen.getByRole('button', { name: 'I saved the recovery codes' }))
-    expect(continueButton).toHaveProperty('disabled', false)
     expect(container.querySelector('[data-sensitive]')).toBeNull()
+    await waitFor(() => expect(assign).toHaveBeenCalledWith('/workspace/acme/admin/subscription'))
     expect(fetcher).toHaveBeenCalledWith('/api/v1/workspace-auth/recovery', expect.objectContaining({
       body: JSON.stringify({ code: '0'.repeat(32) }),
     }))
@@ -165,8 +174,35 @@ describe('Workspace login appearance and authentication', () => {
     const assign = vi.fn()
     vi.stubGlobal('location', { ...window.location, assign })
     renderPage()
-    await userEvent.setup().click(await screen.findByRole('button', { name: 'Continue to workspace' }))
-    expect(assign).toHaveBeenCalledWith('/platform-admin/organizations')
+    await waitFor(() => expect(assign).toHaveBeenCalledWith('/platform-admin/organizations'))
+  })
+
+  it('enters the workspace immediately after a valid password-only sign-in', async () => {
+    const employee = { ...signedIn, roles: ['EMPLOYEE'] }
+    vi.stubGlobal('fetch', vi.fn(async (path: string) => {
+      if (path.endsWith('/current')) return response({}, 401)
+      if (path.endsWith('/csrf')) return response(csrf)
+      if (path.endsWith('/sign-in')) return response(employee)
+      throw new Error(`Unexpected request: ${path}`)
+    }))
+    const assign = vi.fn()
+    vi.stubGlobal('location', { ...window.location, assign })
+    renderPage()
+    const user = userEvent.setup()
+    await user.type(await screen.findByLabelText('Email'), 'employee@example.test')
+    await user.type(screen.getByLabelText('Password'), 'valid-password')
+    await user.click(screen.getByRole('button', { name: 'Sign in' }))
+    await waitFor(() => expect(assign).toHaveBeenCalledTimes(1))
+    expect(assign.mock.calls[0][0]).toMatch(/^\/workspace\/acme\//)
+  })
+
+  it('does not navigate when the completed account has no valid workspace role', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(response({ ...signedIn, roles: [] })))
+    const assign = vi.fn()
+    vi.stubGlobal('location', { ...window.location, assign })
+    renderPage()
+    expect(await screen.findByText('Your account must have exactly one recognized role. Contact your administrator.')).toBeTruthy()
+    expect(assign).not.toHaveBeenCalled()
   })
 
   it.each([
@@ -179,8 +215,7 @@ describe('Workspace login appearance and authentication', () => {
     const assign = vi.fn()
     vi.stubGlobal('location', { ...window.location, assign })
     renderPage(<LoginPage />, `/login?next=${encodeURIComponent(next)}`)
-    await userEvent.setup().click(await screen.findByRole('button', { name: 'Continue to workspace' }))
-    expect(assign).toHaveBeenCalledWith(expected)
+    await waitFor(() => expect(assign).toHaveBeenCalledWith(expected))
   })
 
   it('reuses the workspace login frame for member activation', () => {

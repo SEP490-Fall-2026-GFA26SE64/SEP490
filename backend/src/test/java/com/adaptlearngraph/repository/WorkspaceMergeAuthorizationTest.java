@@ -106,6 +106,38 @@ class WorkspaceMergeAuthorizationTest {
         }
     }
 
+    @Test void onlyOrganizationAdministratorsReadTheKnowledgeGraph() throws Exception {
+        for (var role : new Role[]{Role.LD_MANAGER, Role.DOMAIN_EXPERT, Role.EMPLOYEE}) {
+            actor(role);
+            var chain = mock(FilterChain.class);
+            var response = new MockHttpServletResponse();
+            filter.doFilter(new MockHttpServletRequest("GET", "/api/v1/organizations/" + organization + "/knowledge-graph"), response, chain);
+            assertEquals(403, response.getStatus(), role.name());
+            verifyNoInteractions(chain);
+        }
+        actor(Role.ORGANIZATION_ADMINISTRATOR);
+        var chain = mock(FilterChain.class);
+        doAnswer(call -> {
+            assertEquals("ORGANIZATION_ADMINISTRATOR", ((HttpServletRequest) call.getArgument(0)).getHeader("X-User-Role"));
+            return null;
+        }).when(chain).doFilter(any(), any());
+        var response = new MockHttpServletResponse();
+        filter.doFilter(new MockHttpServletRequest("GET", "/api/v1/organizations/" + organization + "/knowledge-graph"), response, chain);
+        assertEquals(200, response.getStatus());
+        verify(chain).doFilter(any(), any());
+    }
+
+    @Test void administratorOfAnotherOrganizationCannotReadTheKnowledgeGraph() throws Exception {
+        actor(Role.ORGANIZATION_ADMINISTRATOR);
+        doThrow(new SubscriptionFailure(SubscriptionFailure.Code.FORBIDDEN, "Organization denied"))
+                .when(workspaces).require(any(), any(), any(), any());
+        var chain = mock(FilterChain.class);
+        var response = new MockHttpServletResponse();
+        filter.doFilter(new MockHttpServletRequest("GET", "/api/v1/organizations/" + UUID.randomUUID() + "/knowledge-graph"), response, chain);
+        assertEquals(403, response.getStatus());
+        verifyNoInteractions(chain);
+    }
+
     @Test void workspaceDenialStopsCrossOrganizationRequest() throws Exception {
         actor(Role.DOMAIN_EXPERT);
         doThrow(new SubscriptionFailure(SubscriptionFailure.Code.FORBIDDEN, "Organization denied"))

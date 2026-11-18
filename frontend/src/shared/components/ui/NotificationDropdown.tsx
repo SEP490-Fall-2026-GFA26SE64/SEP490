@@ -9,6 +9,7 @@ import { useTranslation } from '../../i18n/LanguageContext'
 import { Button } from './Button'
 import { useToast } from '../../hooks/useToast'
 import { isVisibleLearningNotification, learningNotificationPresentation } from '../../api/learningNotificationPresentation'
+import { PageLoader } from './PageLoader'
 export function NotificationDropdown() {
   const { language } = useTranslation()
   const vi = language === 'vi'
@@ -112,7 +113,7 @@ export function NotificationDropdown() {
           <h2 className="mb-3 font-semibold">
             {vi ? 'Thông báo' : 'Notifications'}
           </h2>
-          {loading && <p role="status">{vi ? 'Đang tải…' : 'Loading…'}</p>}
+          {loading && <PageLoader size="sm" label={vi ? 'Đang tải…' : 'Loading…'} />}
           {error && (
             <div role="alert">
               <p className="text-destructive">{error}</p>

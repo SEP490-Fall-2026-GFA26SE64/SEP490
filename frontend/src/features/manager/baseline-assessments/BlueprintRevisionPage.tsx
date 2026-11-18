@@ -27,6 +27,7 @@ getBaselineAssessmentWorkspace,
 saveBlueprintWorkingRevision,
 type BlueprintWorkingRevision,
 } from './baselineAssessmentManagementApi'
+import { PageLoader } from '../../../shared/components/ui/PageLoader'
 
 type BusyAction = 'save' | 'finalize' | 'generate' | 'abandon' | null
 
@@ -195,7 +196,7 @@ export function BlueprintRevisionPage() {
 
   return <WorkspaceLayout><div className="space-y-6 pb-16">
     <PageHeader icon={<FileEdit className="h-7 w-7" />} title={t('baselineAssessmentManagement.revision.title')} description={jobPositionName || t('baselineAssessmentManagement.revision.description')} actions={<Button variant="outline" size="sm" leftIcon={<ArrowLeft className="h-4 w-4" />} onClick={() => navigate(`${basePath}/blueprints`)}>{t('baselineAssessmentManagement.blueprints.backToVersions')}</Button>} />
-    {loading ? <div className="h-72 animate-pulse rounded-lg bg-muted/60" aria-busy="true" /> : error || !working ? <EmptyState icon={<AlertTriangle className="h-7 w-7" />} title={t('baselineAssessmentManagement.revision.unavailable')} description={error ?? t('baselineAssessmentManagement.revision.notFound')} /> : <>
+    {loading ? <PageLoader /> : error || !working ? <EmptyState icon={<AlertTriangle className="h-7 w-7" />} title={t('baselineAssessmentManagement.revision.unavailable')} description={error ?? t('baselineAssessmentManagement.revision.notFound')} /> : <>
       <Card><CardHeader><div className="flex flex-wrap items-start justify-between gap-3"><div><CardTitle>{t('baselineAssessmentManagement.revision.details')}</CardTitle><CardDescription>{t('baselineAssessmentManagement.revision.saveSemantics')}</CardDescription></div><div className="flex gap-2"><Badge variant="outline">{t('baselineAssessmentManagement.revision.revision').replace('{revision}', String(working.revision))}</Badge>{dirty && <Badge variant="warning">{t('baselineAssessmentManagement.revision.unsaved')}</Badge>}</div></div></CardHeader><CardContent><label className="block max-w-xl space-y-1 text-sm font-medium">{t('baselineBlueprint.blueprintName')}<Input value={name} disabled={busy !== null} onChange={(event) => { markEdited(); setName(event.target.value) }} /></label></CardContent></Card>
       {!capacity && <Card className="border-warning/50"><CardContent className="flex gap-3 pt-6 text-sm"><AlertTriangle className="h-5 w-5 shrink-0 text-warning" />{t('baselineBlueprint.capacityLoading')}</CardContent></Card>}
       <Card><CardHeader><CardTitle>{t('baselineAssessmentManagement.revision.configuration')}</CardTitle><CardDescription>{t('baselineAssessmentManagement.revision.configurationDescription')}</CardDescription></CardHeader><CardContent className="space-y-5"><BaselineRoleConfiguration key={`${working.workingRevisionId}-${working.revision}`} roles={roles} capacity={capacity} capacityIssues={capacityIssues} disabled={busy !== null} onCount={updateCount} onWeights={updateWeights} onApplyTotal={applyRoleTotal} onPendingInputChange={setRolePendingInput} />

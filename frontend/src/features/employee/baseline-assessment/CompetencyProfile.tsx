@@ -21,6 +21,7 @@ import { RoleFlowError } from '../target-roles/currentRoleFlowApi'
 import { MasteryJourneyGraph } from './MasteryJourneyGraph'
 import { readAssignedKnowledgeRole, readCurrentKnowledgeTarget } from './assignedKnowledgeRoleApi'
 import { KnowledgeHistoryPanel } from './KnowledgeHistoryPanel'
+import { PageLoader } from '../../../shared/components/ui/PageLoader'
 
 export function CompetencyProfile({onAssignedRoleClick}:{onAssignedRoleClick?:()=>void}) {
   const identity = useContext(WorkspaceSessionContext)?.identity
@@ -120,7 +121,7 @@ function OwnedKnowledgeProfile({onAssignedRoleClick}:{onAssignedRoleClick?:()=>v
             <Heading level={2} size="card">{copy('Evidence history', 'Lịch sử minh chứng')}</Heading><Text variant="caption">{recordsCount} {copy('items loaded','mục đã tải')}</Text>
             {historyIncomplete&&<Text variant="body-sm">{copy('Older evidence and results are not loaded yet. Load more before concluding that a skill has no recognition or assessment.', 'Còn minh chứng và kết quả cũ chưa được tải. Tải thêm trước khi kết luận kỹ năng chưa được công nhận hoặc chưa đánh giá.')}</Text>}
             <div className="flex flex-wrap gap-2"><KnowledgeHistoryPanel nodes={nodes} incomplete={historyIncomplete} unavailable={!profiles.data || profiles.isError} />{profiles.hasNextPage&&<Button variant="outline" size="sm" disabled={profiles.isFetching} isLoading={profiles.isFetchingNextPage} onClick={()=>void profiles.fetchNextPage()}>{copy('Load history','Tải lịch sử')}</Button>}</div>
-            {profiles.isPending&&<Text variant="body-sm" role="status">{copy('Loading','Đang tải')}</Text>}
+            {profiles.isPending&&<PageLoader label={copy('Loading…','Đang tải…')} />}
             {profiles.isError&&<ProfileRequestNotice error={profiles.error} retrying={profiles.isFetching} onRetry={()=>void(profiles.isFetchNextPageError?profiles.fetchNextPage():profiles.refetch())} />}
             {profiles.data?.pages.at(-1)?.page===250&&historyIncomplete&&<Text variant="caption">{copy('Limit reached: up to 5,020 knowledge records can be loaded.', 'Chạm ngưỡng: tối đa 5.020 bản ghi kiến thức.')}</Text>}
           </section>

@@ -52,7 +52,13 @@ export async function workspaceLogin(page: Page, account: Account) {
     await page.getByLabel('Authenticator code', { exact: true }).fill(totp(account.totpSecret))
     await page.getByRole('button', { name: 'Verify', exact: true }).click()
   }
-  await page.getByRole('button', { name: 'Continue to workspace' }).click()
+  await waitForWorkspaceEntry(page)
+}
+export function isWorkspaceEntryUrl(url: URL): boolean {
+  return /^\/(workspace\/[^/]+|platform-admin)\//.test(url.pathname)
+}
+export async function waitForWorkspaceEntry(page: Page, timeout = 30_000) {
+  await page.waitForURL(isWorkspaceEntryUrl, { timeout })
 }
 export async function purchase(page: Page) {
   await page.goto('/guest/plans')

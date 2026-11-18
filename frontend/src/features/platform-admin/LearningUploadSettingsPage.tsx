@@ -10,6 +10,7 @@ import { Input } from '../../shared/components/ui/Input'
 import { FormField } from '../../shared/components/ui/FormField'
 import { WorkspaceLayout } from '../../shared/layouts/WorkspaceLayout'
 import { useTranslation } from '../../shared/i18n/LanguageContext'
+import { PageLoader } from '../../shared/components/ui/PageLoader'
 export function LearningUploadSettingsPage() {
   const { language } = useTranslation()
   const vi = language === 'vi'
@@ -65,7 +66,7 @@ export function LearningUploadSettingsPage() {
           </p>
         )}
         {!settings ? (
-          <p role="status">{vi ? 'Đang tải cấu hình…' : 'Loading settings…'}</p>
+          <PageLoader label={vi ? 'Đang tải cấu hình…' : 'Loading settings…'} />
         ) : (
           <Card>
             <CardContent className="pt-5">

@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test'
+import { waitForWorkspaceEntry } from './subscriptionHelpers'
 
 async function loginAs(page: Page, email: string, password = 'Password123!') {
   await page.context().clearCookies()
@@ -14,9 +15,7 @@ async function loginAs(page: Page, email: string, password = 'Password123!') {
   await page.locator('input[type="password"]').fill(password)
   await page.getByRole('button', { name: 'Sign in', exact: true }).click()
   
-  const continueBtn = page.getByRole('button', { name: /Continue to workspace|Tiếp tục vào không gian/i })
-  await expect(continueBtn).toBeVisible({ timeout: 15_000 })
-  await continueBtn.click()
+  await waitForWorkspaceEntry(page)
   await expect(page).toHaveURL(/\/workspace\//, { timeout: 15_000 })
 }
 

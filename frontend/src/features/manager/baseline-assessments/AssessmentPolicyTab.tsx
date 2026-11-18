@@ -11,6 +11,7 @@ import { Text } from '../../../shared/components/typography/Text'
 import { useTranslation } from '../../../shared/i18n/LanguageContext'
 import { bankRequest, type BankSession } from '../../../shared/api/questionBankApi'
 import { getRulePolicy, listRulePolicies, rulePolicy, runRulePolicyCommand, type AssessmentPurpose, type RulePolicyState, type RulePolicyVersion, type RulePolicyCommand } from './assessmentRulePolicyApi'
+import { PageLoader } from '../../../shared/components/ui/PageLoader'
 
 const selectClass = 'w-full rounded-lg border border-border bg-background px-3 py-2 text-[length:var(--text-body-sm)] text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary'
 type GroupDraft = { skillId: string; knowledgeLevel: string; totalCount: string; requiredCorrectCount: string; mandatoryRequired: boolean; allWrongVeto: boolean }
@@ -63,7 +64,7 @@ function RulePolicyEditor({ purpose, onPendingChange, returnToBaseline }: { purp
   return <div className="space-y-5">
     {returnToBaseline && purpose === 'BASELINE' && <Button variant="outline" disabled={locked || !state?.active} onClick={() => navigate(returnToBaseline)}>{copy('Return to baseline', 'Trở lại đánh giá đầu vào')}</Button>}
     <Card><CardHeader><Heading level={2} size="section">{purpose === 'BASELINE' ? copy('Baseline policy', 'Cấu hình đánh giá đầu vào') : copy('Skill Assessment policy', 'Cấu hình đánh giá kỹ năng')}</Heading><Text>{copy('Set the assessment time and passing rules for each skill and knowledge level.', 'Cấu hình thời gian và quy tắc đạt cho từng kỹ năng và mức kiến thức.')}</Text></CardHeader><CardContent className="space-y-4">
-      {loading && <Text role="status">{copy('Loading…', 'Đang tải…')}</Text>}{error && <Text role="alert" tone="destructive">{error}</Text>}{notice && <Text role="status" tone="success">{notice}</Text>}
+      {loading && <PageLoader label={copy('Loading…', 'Đang tải…')} />}{error && <Text role="alert" tone="destructive">{error}</Text>}{notice && <Text role="status" tone="success">{notice}</Text>}
       {state && <Badge variant={state.active ? 'success' : 'warning'}>{state.active ? copy('Active version ', 'Phiên bản đang dùng ') + state.active.version : copy('No active policy', 'Chưa kích hoạt cấu hình')}</Badge>}
       {pending && !busy && <div className="space-y-2 rounded-lg border border-warning/40 bg-warning/5 p-4"><Text>{copy('The result is uncertain. Retry the same request.', 'Chưa xác định được kết quả. Hãy gửi lại yêu cầu cũ.')}</Text><Button variant="outline" onClick={() => void execute(pending)}>{copy('Retry', 'Thử lại')}</Button></div>}
       <Button variant="outline" disabled={busy} onClick={() => { setLoading(true); setReload(v => v + 1) }}>{copy('Refresh', 'Tải lại')}</Button>

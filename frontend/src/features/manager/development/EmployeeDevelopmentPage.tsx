@@ -28,6 +28,7 @@ import { assessmentPassRate, developmentStatus, initials, pathwayProgress, statu
 import { developmentErrorMessage, sectionMessage } from './developmentMessages'
 import { useEmployeeDevelopment } from './useDevelopment'
 import './development.css'
+import { PageLoader } from '../../../shared/components/ui/PageLoader'
 
 type Copy = (en: string, vi: string) => string
 const TABS = ['competency', 'gaps', 'pathway', 'assessments', 'achievements'] as const
@@ -84,7 +85,7 @@ function EmployeeDevelopment({ accountId }: { accountId: string | undefined }) {
   const view = useDevelopmentView(query.data)
   const back = <Link to={backTo} className="ld-back"><ArrowLeft className="size-4" />{copy('Back to employees', 'Quay lại danh sách nhân viên')}</Link>
 
-  if (query.isPending) return <div className="ld-dev-page">{back}<div className="ld-skeleton h-36" /><div className="ld-kpi-grid">{Array.from({ length: 4 }, (_, index) => <div key={index} className="ld-skeleton h-28" />)}</div><div className="ld-skeleton h-80" /></div>
+  if (query.isPending) return <div className="ld-dev-page">{back}<PageLoader /></div>
   if (query.isError || !view) return <div className="ld-dev-page">{back}<EmptyState icon={<AlertTriangle />} title={copy('Development profile could not be loaded', 'Chưa tải được hồ sơ phát triển')}
     description={developmentErrorMessage(query.error, copy)} action={<Button variant="outline" onClick={() => void query.refetch()}>{copy('Retry', 'Thử lại')}</Button>} /></div>
 

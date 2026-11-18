@@ -26,7 +26,6 @@ import {
   PanelLeftOpen,
   Server,
   Settings,
-  ShieldCheck,
   Sliders,
   Target,
   User,
@@ -293,9 +292,9 @@ export function WorkspaceLayout({ children, identity: suppliedIdentity, onSignOu
   } else if (isAdmin) {
     actorTabs = [
       {
-        label: t('nav.adminConsole', 'System Console'),
+        label: t('nav.adminConsole', 'Dashboard'),
         href: '/admin/dashboard',
-        icon: <ShieldCheck size={15} />,
+        icon: <LayoutDashboard size={15} />,
       },
       {
         label: t('nav.departments', 'Departments'),

@@ -1,4 +1,5 @@
 import { expect as baseExpect, test, type APIRequestContext, type Page } from '@playwright/test'
+import { waitForWorkspaceEntry } from './subscriptionHelpers'
 const expect = baseExpect.configure({ timeout: 60_000 })
 const root = '/api/v1/module-management'
 type Member = { accountId: string; email: string; password: string }
@@ -12,7 +13,7 @@ async function login(page: Page, member: Member, home: string) {
   await page.getByLabel('Email', { exact: true }).fill(member.email)
   await page.getByLabel('Password', { exact: true }).fill(member.password)
   await page.getByRole('button', { name: 'Sign in', exact: true }).click()
-  await page.getByRole('button', { name: 'Continue to workspace', exact: true }).click()
+  await waitForWorkspaceEntry(page)
   await page.goto(home, { waitUntil: 'domcontentloaded' })
 }
 test('merge: real role login, scoped module intake, CSRF, approval, reload and shared logout', async ({ page, request, browser, baseURL }) => {

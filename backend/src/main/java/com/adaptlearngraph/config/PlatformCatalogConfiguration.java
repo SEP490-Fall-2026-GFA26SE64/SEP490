@@ -58,9 +58,9 @@ public class PlatformCatalogConfiguration {
     @org.springframework.boot.autoconfigure.condition.ConditionalOnProperty(name = "workspace.catalog-import.enabled",
             havingValue = "true", matchIfMissing = true)
     com.adaptlearngraph.services.WorkspaceCatalogImportWorker workspaceCatalogImportWorker(
-            com.adaptlearngraph.repository.WorkspaceCatalogImportStore store, PlatformCatalogService catalog,
+            com.adaptlearngraph.repository.WorkspaceCatalogImportStore store,
             org.springframework.beans.factory.ObjectProvider<com.adaptlearngraph.repository.Neo4jCypher> graph) {
-        return new com.adaptlearngraph.services.WorkspaceCatalogImportWorker(store, catalog,
+        return new com.adaptlearngraph.services.WorkspaceCatalogImportWorker(store,
                 new com.adaptlearngraph.repository.Neo4jWorkspaceCatalogWriter(graph::getObject), java.time.Clock.systemUTC());
     }
 

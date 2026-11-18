@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test'
 import { createHmac } from 'node:crypto'
 import { execSync } from 'node:child_process'
+import { waitForWorkspaceEntry } from './subscriptionHelpers'
 
 const HMAC_KEY_BASE64 = 'aGhoaGhoaGhoaGhoaGhoaGhoaGhoaGhoaGhoaGhoaGg='
 const DEFAULT_EMPLOYEE_HASH = '{pbkdf2@SpringSecurity_v5_8}d4025b24e39cbea1cbbd36ce879dfba5dace12a8a2eeb81f71e6c21aa22f704c7286fd409dadf03f009b01e442df77f1'
@@ -119,9 +120,7 @@ test.describe('FR-07.01-F03 / FR-03.01-F04: Password Reset and Profile Password 
     await page.getByRole('button', { name: 'Sign in' }).click()
 
     // Verify employee workspace access
-    const continueBtn = page.getByRole('button', { name: 'Continue to workspace' })
-    await expect(continueBtn).toBeVisible({ timeout: 15000 })
-    await continueBtn.click()
+    await waitForWorkspaceEntry(page)
     await expect(page).toHaveURL(/overview|upskilling/)
 
     // 6. Cleanup: restore original password via profile
@@ -142,9 +141,7 @@ test.describe('FR-07.01-F03 / FR-03.01-F04: Password Reset and Profile Password 
     await page.getByLabel('Email', { exact: true }).fill('employee@technova.com')
     await page.getByLabel('Password', { exact: true }).fill('Password123!')
     await page.getByRole('button', { name: 'Sign in' }).click()
-    const continueBtn = page.getByRole('button', { name: 'Continue to workspace' })
-    await expect(continueBtn).toBeVisible({ timeout: 15000 })
-    await continueBtn.click()
+    await waitForWorkspaceEntry(page)
     await expect(page).toHaveURL(/overview|upskilling/)
 
     // 2. Navigate to Profile
@@ -182,9 +179,7 @@ test.describe('FR-07.01-F03 / FR-03.01-F04: Password Reset and Profile Password 
     // 7. Verify new password works
     await page.getByLabel('Password', { exact: true }).fill('NewSecurePassword123!')
     await page.getByRole('button', { name: 'Sign in' }).click()
-    const continueBtn2 = page.getByRole('button', { name: 'Continue to workspace' })
-    await expect(continueBtn2).toBeVisible({ timeout: 15000 })
-    await continueBtn2.click()
+    await waitForWorkspaceEntry(page)
     await expect(page).toHaveURL(/overview|upskilling/)
 
     // 8. Restore original password back to Password123!

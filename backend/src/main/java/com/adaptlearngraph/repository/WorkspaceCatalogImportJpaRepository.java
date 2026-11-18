@@ -3,7 +3,6 @@ package com.adaptlearngraph.repository;
 import com.adaptlearngraph.constants.TransactionManagers;
 import com.adaptlearngraph.entities.WorkspaceCatalogImportEntity;
 import java.time.Instant;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.Modifying;
@@ -17,11 +16,11 @@ import org.springframework.transaction.annotation.Transactional;
  * claim the same job; every completion is fenced by the claiming lease and the PENDING state.
  */
 public interface WorkspaceCatalogImportJpaRepository extends Repository<WorkspaceCatalogImportEntity, UUID>, InsertOnlyRepository<WorkspaceCatalogImportEntity> {
-    record Claimed(UUID organizationId, UUID registrationId, Integer attempts, List<String> selectedNodeIds) {}
+    /** {@code structure} is null for legacy jobs created from a platform catalog selection; they complete empty. */
+    record Claimed(UUID organizationId, UUID registrationId, Integer attempts, String structure) {}
 
     @Query(value = """
             SELECT c.organization_id FROM platform.workspace_catalog_import c
-            JOIN platform.registration_catalog_selection s USING (registration_id)
             WHERE c.state = 'PENDING' AND c.next_attempt_at <= :now AND (c.lease_until IS NULL OR c.lease_until < :now)
             ORDER BY c.created_at LIMIT 1 FOR UPDATE OF c SKIP LOCKED
             """, nativeQuery = true)
@@ -29,8 +28,8 @@ public interface WorkspaceCatalogImportJpaRepository extends Repository<Workspac
 
     @Query("""
             select new com.adaptlearngraph.repository.WorkspaceCatalogImportJpaRepository$Claimed(c.organizationId,
-                c.registrationId, c.attempts, s.selectedNodeIds)
-            from WorkspaceCatalogImportEntity c join RegistrationCatalogSelectionEntity s on s.registrationId = c.registrationId
+                c.registrationId, c.attempts, s.structure)
+            from WorkspaceCatalogImportEntity c left join RegistrationOrgStructureEntity s on s.registrationId = c.registrationId
             where c.organizationId = :organization
             """)
     Optional<Claimed> claimed(@Param("organization") UUID organizationId);

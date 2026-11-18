@@ -68,6 +68,7 @@ DialogHeader,
 DialogTitle,
 } from '../../../shared/components/ui/Dialog'
 import { PageHeader } from '../../../shared/components/ui/PageHeader'
+import { PageLoader } from '../../../shared/components/ui/PageLoader'
 import { Pagination } from '../../../shared/components/ui/Pagination'
 import { StatCard } from '../../../shared/components/ui/StatCard'
 import { useToast } from "../../../shared/hooks/useToast"
@@ -2615,12 +2616,7 @@ export function TargetRolesPage() {
 
           <CardContent className="p-0">
             {isLoading ? (
-              <div className="text-center py-16 text-muted-foreground">
-                <div className="inline-block animate-spin rounded-full h-8 w-8 border-2 border-primary border-t-transparent mb-3" />
-                <p className="text-sm font-medium">
-                  Loading target roles from database...
-                </p>
-              </div>
+              <PageLoader className="border-0 shadow-none" label="Loading target roles…" />
             ) : filteredRoles.length === 0 ? (
               <div className="text-center py-12 text-muted-foreground">
                 <AlertCircle className="h-8 w-8 mx-auto mb-2 text-muted-foreground/60" />

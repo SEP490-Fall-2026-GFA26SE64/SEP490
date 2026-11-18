@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test'
+import { waitForWorkspaceEntry } from './subscriptionHelpers'
 
 test.describe('REQ-011-F01 Mandatory Job Position & Target Role Privacy Scoping', () => {
   test.setTimeout(120_000)
@@ -11,7 +12,7 @@ test.describe('REQ-011-F01 Mandatory Job Position & Target Role Privacy Scoping'
     await page.getByPlaceholder('Enter your email').fill('manager@technova.com')
     await page.locator('input[type="password"]').fill('Password123!')
     await page.getByRole('button', { name: 'Sign in', exact: true }).click()
-    await page.getByRole('button', { name: 'Continue to workspace', exact: true }).click()
+    await waitForWorkspaceEntry(page)
 
     // 2. Navigate to L&D Manager Target Roles
     await page.goto('/ld-manager/target-roles')

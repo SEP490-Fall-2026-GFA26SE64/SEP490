@@ -1,9 +1,9 @@
 package com.adaptlearngraph.repository;
 
-import java.util.Collection;
+import com.adaptlearngraph.entities.domain.OrganizationStructure;
+import java.time.Instant;
 
-/** Writes a copied platform catalog subset into one organization's graph. */
+/** Writes a Guest-imported organization structure into one organization's graph. */
 public interface WorkspaceCatalogGraphWriter {
-    void copy(String organizationId, String templateVersion, Collection<PlatformCatalogTemplate.Node> nodes,
-              Collection<PlatformCatalogTemplate.Edge> edges);
+    void writeStructure(String organizationId, OrganizationStructure structure, Instant now);
 }

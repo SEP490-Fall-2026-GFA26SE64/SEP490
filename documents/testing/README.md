@@ -35,9 +35,17 @@ Documentation-only checks do not establish backend/frontend behavior. Revised ru
 
 ## Existing Test Guides and Evidence
 
+### Organization knowledge graph viewer, 2026-11-18
+
+[Unit/API/components](unit/ADMIN-organization-knowledge-graph-20261118.md), [Testcontainers Neo4j](integration/ADMIN-organization-knowledge-graph-20261118.md) and [browser/manual checks](system/ADMIN-organization-knowledge-graph-20261118.md) cover the Organization Administrator's read-only graph canvas at `/admin/knowledge-graph` (7 node types, prerequisites, filters, details, desktop/mobile) and Org-Admin-only same-organization API access. Results: **3 backend unit/API, 2 integration, 26 frontend (9 new) and 3 Playwright tests passed** on an isolated Compose stack. Pre-existing unrelated failures are listed in the unit evidence.
+
 ### FR-04.07 L&D employee development monitoring, 2026-11-16
 
 [Unit/API/components](unit/FR-04-07-ld-employee-development-20261116.md), [integration](integration/FR-04-07-ld-employee-development-20261116.md) and [browser/manual checks](system/FR-04-07-ld-employee-development-20261116.md) cover the read-only L&D report (employee list, competency/gaps, assessment outcomes, pathway progress, department summaries, department/job-position filters). Results: **5 backend unit, 7 frontend and 5 Playwright tests passed** on an isolated Compose stack; dedicated Testcontainers query test Not run. ROI/costs/reporting period are outside this slice.
+
+### Organization structure import, 2026-11-18
+
+[Unit/API/components](unit/REQ-060-org-structure-import-20261118.md), [Testcontainers persistence](integration/REQ-060-org-structure-import-20261118.md) and [browser/manual checks](system/REQ-060-org-structure-import-20261118.md) cover the Guest `.xlsx`/`.csv` Department → Job position → Target role → Level import that replaces the starter-catalog copy: row-level validation, review dialog, persistence and post-payment Neo4j provisioning. Results: **7 backend unit/architecture, 7 targeted integration, 45 frontend and 3 Playwright tests passed** on an isolated stack. Revision 2 replaced the flat sheet with a four-tab `.xlsx` template using Excel dropdowns and validation: **8 backend unit/architecture, targeted integration, 44 frontend and 3 Playwright tests passed**, and Excel 16 enforced the template's rules. Pre-existing unrelated failures (Maven test compilation, 2 seat tests, 1 register-page placeholder test) are listed in the evidence.
 
 ### Guided Starter Catalog, 2026-11-12
 

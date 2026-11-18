@@ -127,6 +127,22 @@ public class CompetencyConfiguration {
     }
 
     @Bean
+    public com.adaptlearngraph.repository.OrganizationKnowledgeGraphReader organizationKnowledgeGraphReader(
+            ObjectProvider<Driver> driverProvider, ObjectProvider<Neo4jClient> client,
+            @Qualifier(TransactionManagers.NEO4J) ObjectProvider<PlatformTransactionManager> transactions) {
+        if (driverProvider.getIfAvailable() != null) {
+            return new com.adaptlearngraph.repository.Neo4jOrganizationKnowledgeGraphReader(client.getObject(), transactions.getObject());
+        }
+        return organizationId -> new com.adaptlearngraph.entities.domain.OrganizationKnowledgeGraph(List.of(), List.of());
+    }
+
+    @Bean
+    public com.adaptlearngraph.services.OrganizationKnowledgeGraphService organizationKnowledgeGraphService(
+            com.adaptlearngraph.repository.OrganizationKnowledgeGraphReader reader) {
+        return new com.adaptlearngraph.services.OrganizationKnowledgeGraphService(reader);
+    }
+
+    @Bean
     public PrerequisiteService prerequisiteService(
             PrerequisiteRepository prerequisiteRepository,
             TargetRoleGraphPort targetRoleGraphPort) {

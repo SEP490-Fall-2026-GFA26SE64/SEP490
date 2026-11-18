@@ -75,7 +75,7 @@ class RegistrationMappingsTest {
     @Test
     void requestAndCompletionBodiesRedactSecretsFromToString() {
         var signup = new SignupRequest("Acme", null, null, null, "Ada", "ada@example.test",
-                "correct horse battery", List.of(), "VN", "0901234567", true);
+                "correct horse battery", null, "VN", "0901234567", true);
         var signIn = new SignInRequest("ada@example.test", "correct horse battery");
         var proof = new ProofRequest("123456");
         var completion = new CompletionResponse(null, List.of("RECOVERY-CODE-1"));

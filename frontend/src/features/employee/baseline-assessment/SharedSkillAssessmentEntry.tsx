@@ -7,6 +7,7 @@ import { Button, buttonVariants } from '../../../shared/components/ui/Button'
 import { Badge } from '../../../shared/components/ui/Badge'
 import { Dialog, DialogBody, DialogFooter, DialogHeader, DialogTitle } from '../../../shared/components/ui/Dialog'
 import { BaselineError, attemptPath, executeCommand, readSkillScope, startCommand, type AssessmentTarget, type BaselineCommand, type SkillScopeLocator } from './baselineApi'
+import { PageLoader } from '../../../shared/components/ui/PageLoader'
 
 /** Scoped read is independent of the module chosen as evidence for a NEW paper. Old servers keep their existing entry. */
 export function SharedSkillAssessmentEntry({ locator, getNewTarget, legacy, disabled = false, header, admission, onLockChange, panel = false }:  {
@@ -66,7 +67,7 @@ function OwnedSharedEntry({ locator, getNewTarget, legacy, disabled, header, adm
   return <section aria-label={panel ? 'Skill Assessment' : copy('Shared Skill Assessment', 'Skill Assessment dùng chung')} className={panel ? 'space-y-3 rounded-lg border border-primary/20 bg-card p-4 shadow-sm' : 'space-y-3'}>
     {header}
     <p className="text-caption text-muted-foreground">{copy('History and retake limits are shared across modules and learning pathways for this skill, level and version.', 'Lịch sử và giới hạn thi lại dùng chung giữa các module và luồng học cho cùng kỹ năng, mức kiến thức và phiên bản.')}</p>
-    {query.isPending && <p role="status" className="text-body-sm text-muted-foreground">{copy('Loading assessment history…', 'Đang tải lịch sử đánh giá…')}</p>}
+    {query.isPending && <PageLoader size="sm" label={copy('Loading assessment history…', 'Đang tải lịch sử đánh giá…')} />}
     {query.isError && <div role="alert" className="space-y-2"><p className="text-body-sm text-destructive">{copy('Could not fully load shared assessment history. Retry before starting a new attempt.', 'Chưa tải đầy đủ lịch sử đánh giá chung. Hãy thử lại trước khi mở bài mới.')}</p><Button size="sm" variant="outline" disabled={query.isFetching} onClick={() => void (query.isFetchNextPageError ? query.fetchNextPage() : query.refetch())}>{copy('Retry', 'Thử lại')}</Button></div>}
     {data && <>
       <p className="text-body-sm">{copy('Attempts used', 'Số lượt đã dùng')}: <strong>{data.totalAttempts}{data.maxAttempts !== null ? ` / ${data.maxAttempts}` : ''}</strong></p>

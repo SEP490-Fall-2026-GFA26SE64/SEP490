@@ -1,5 +1,6 @@
 package com.adaptlearngraph.services;
 
+import com.adaptlearngraph.entities.domain.OrganizationStructure;
 import com.adaptlearngraph.entities.domain.RegistrationActor;
 import com.adaptlearngraph.entities.domain.RegistrationFields;
 import java.time.Instant;
@@ -9,10 +10,11 @@ import java.util.UUID;
 public interface RegistrationUseCase {
     RegistrationActor register(RegistrationFields fields, String password, String address);
 
-    /** Registers and records the platform catalog items to copy into the workspace after provisioning. */
-    default RegistrationActor register(RegistrationFields fields, String password, String address, List<String> catalogSelection) {
-        if (catalogSelection != null && !catalogSelection.isEmpty())
-            throw new UnsupportedOperationException("Catalog selection is not supported");
+    /** Registers and records the imported organization structure to write into the workspace after provisioning. */
+    default RegistrationActor register(RegistrationFields fields, String password, String address,
+                                       OrganizationStructure organizationStructure) {
+        if (organizationStructure != null && !organizationStructure.isEmpty())
+            throw new UnsupportedOperationException("Organization structure import is not supported");
         return register(fields, password, address);
     }
     RegistrationActor signIn(String email, String password, String address);

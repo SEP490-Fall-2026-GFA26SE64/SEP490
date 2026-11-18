@@ -550,14 +550,14 @@ class PaymentOrderPostgresIntegrationTest {
     }
 
     @Test
-    void catalogSelectionKeepsWorkspaceProvisioningUntilTheCopySucceedsOrFails() {
+    void organizationStructureKeepsWorkspaceProvisioningUntilTheImportSucceedsOrFails() {
         var registrations = RegistrationPostgresIntegrationTest.registrationStore(persistence);
         var imports = new JpaWorkspaceCatalogImportStore(persistence.bean(WorkspaceCatalogImportJpaRepository.class),
                 persistence.bean(OrganizationWorkspaceJpaRepository.class), new TransactionTemplate(persistence.transactionManager()));
-        String sha = "b".repeat(64);
+        var structure = com.adaptlearngraph.services.OrganizationStructureFixtures.structure();
 
         var copied = registrant();
-        registrations.saveCatalogSelection(copied.registrationId(), "0.11.0", sha, List.of("ROLE-A", "MS-B"), NOW);
+        registrations.saveOrganizationStructure(copied.registrationId(), structure, NOW);
         var order = orders.create(copied, command(UUID.randomUUID(), null), NOW);
         processing.record(observation(order, "PAID", 4_900L, "VND", "WEBHOOK"), NOW);
         processing.apply(order.orderId(), NOW);
@@ -567,30 +567,30 @@ class PaymentOrderPostgresIntegrationTest {
 
         var job = imports.claim(NOW.plusSeconds(1)).orElseThrow();
         assertEquals(setup.organizationId(), job.organizationId());
-        assertEquals(List.of("ROLE-A", "MS-B"), job.selectedNodeIds());
+        assertEquals(structure, job.structure());
         assertEquals(1, job.attempt());
         assertTrue(imports.claim(NOW.plusSeconds(2)).isEmpty(), "A leased job is not claimed twice");
-        imports.succeed(job, "0.11.0", sha, 12, 20, NOW.plusSeconds(3));
+        imports.succeed(job, null, null, 12, 10, NOW.plusSeconds(3));
         assertEquals("READY", workspaces.setup(copied.registrationId()).state());
         var identity = IdentityTestFixtures.identityStore(persistence)
                 .findByEmail(copied.actor().accountId() + "@example.test").orElseThrow();
         assertEquals("order-" + copied.registrationId(), identity.workspaceSlug());
         assertEquals(setup.organizationId(), identity.organizationId());
-        assertEquals(List.of(java.util.Map.of("state", "SUCCEEDED", "node_count", 12, "relationship_count", 20)),
+        assertEquals(List.of(java.util.Map.of("state", "SUCCEEDED", "node_count", 12, "relationship_count", 10)),
                 jdbc.queryForList("SELECT state,node_count,relationship_count FROM platform.workspace_catalog_import WHERE organization_id=?",
                         setup.organizationId()));
 
         var failing = registrant();
-        registrations.saveCatalogSelection(failing.registrationId(), "0.11.0", sha, List.of("ROLE-A"), NOW);
+        registrations.saveOrganizationStructure(failing.registrationId(), structure, NOW);
         var failedOrder = orders.create(failing, command(UUID.randomUUID(), null), NOW);
         processing.record(observation(failedOrder, "PAID", 4_900L, "VND", "WEBHOOK"), NOW);
         processing.apply(failedOrder.orderId(), NOW);
         var retried = imports.claim(NOW.plusSeconds(1)).orElseThrow();
-        imports.retry(retried, "CATALOG_COPY_FAILED", NOW.plusSeconds(60), NOW.plusSeconds(1));
+        imports.retry(retried, "STRUCTURE_IMPORT_FAILED", NOW.plusSeconds(60), NOW.plusSeconds(1));
         assertTrue(imports.claim(NOW.plusSeconds(30)).isEmpty(), "Retry waits for its backoff");
         var last = imports.claim(NOW.plusSeconds(61)).orElseThrow();
         assertEquals(2, last.attempt());
-        imports.fail(last, "CATALOG_COPY_FAILED", NOW.plusSeconds(62));
+        imports.fail(last, "STRUCTURE_IMPORT_FAILED", NOW.plusSeconds(62));
         var failedSetup = workspaces.setup(failing.registrationId());
         assertEquals("FAILED", failedSetup.state());
         assertEquals("CATALOG_IMPORT_FAILED", failedSetup.failureCode());

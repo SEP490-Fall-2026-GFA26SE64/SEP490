@@ -32,6 +32,10 @@ The capture is an observed-property inventory, not the union of all optional sou
 
 Source cross-check: mounted [knowledge seed](dataset/import/ontology_seed-prerequisite-knowledge.json), [importer](dataset/import/import_neo4j.py), tenant [bootstrap](../backend/src/main/java/com/adaptlearngraph/config/LocalCatalogBootstrap.java), catalog node projections and Certificate writer. Historical inventories below keep their release-specific scope; their old counts/properties are not assertions about the supplied capture. PostgreSQL continues to own learner state and evidence.
 
+## Registration structure import — 2026-11-18
+
+A Guest-imported organization structure creates only `Department`, `JobPosition`, `TargetRole` and `Level` nodes linked by the existing `HAS_JOB_POSITION`, `HAS_ROLE` and `HAS_LEVEL` types. Written properties: every node `id`, `organizationId`, `code`, `name`, `status='ACTIVE'`, `version='1'`, `source='REGISTRATION_IMPORT'`, `createdAt`/`updatedAt` (ISO strings); Department `description`; TargetRole `title`, `scope`, `description` (= scope), empty `skillTargets`/`levelCompetencies`/`competencyIds`; Level `rank` (Long, from the file) and `attainmentRule='ALL_MANDATORY_SKILLS'`, with code `L{rank}`. Relationships carry `id`, `organizationId`, `status='ACTIVE'`, `version`. Department head/email, O*NET interest/job-zone values, competencies and skills are absent rather than invented. No constraint or migration changes in Neo4j; existing `Department` (V6) and per-label id constraints apply. [Writer](../backend/src/main/java/com/adaptlearngraph/repository/Neo4jWorkspaceCatalogWriter.java).
+
 ## Current source — 2026-11-07
 
 **Source mapping, not an applied Neo4j capture.** Current tenant readers/writers implement knowledge/provision/certificate fields; live graph metadata was not accessible in this task. Keep existing ontology topology; add only Certificate linked from Skill. No intermediate requirement node.

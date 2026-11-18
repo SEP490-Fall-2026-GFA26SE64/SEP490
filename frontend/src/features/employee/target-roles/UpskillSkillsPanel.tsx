@@ -6,6 +6,7 @@ import { fetchMicroSkills,type MicroSkillDto } from '../../../shared/api/microSk
 import type { KnowledgeLevel } from '../../../shared/api/requirementPathway'
 import { readSkillModules,searchSkillModules,startSkillModule,type OptionalSkillModule } from '../../../shared/api/skillLearningApi'
 import { WorkspaceSessionContext } from '../../../shared/auth/workspaceSession'
+import { PageLoader } from '../../../shared/components/ui/PageLoader'
 import { Heading } from '../../../shared/components/typography/Heading'
 import { Badge } from '../../../shared/components/ui/Badge'
 import { Button } from '../../../shared/components/ui/Button'
@@ -115,7 +116,7 @@ function ScopedSkillsPanel() {
       <DialogFooter className="sm:justify-between"><Button variant="ghost" onClick={() => { setDraftSkill(''); setDraftLevel('') }}>{vi ? 'Xóa bộ lọc' : 'Clear filters'}</Button><Button className="gap-2" onClick={() => { setOwnerSkill(draftSkill); setModuleLevel(draftLevel); resetPages(); setFilterOpen(false) }}>{vi ? 'Xem kết quả' : 'Show results'}<ArrowRight size={15} aria-hidden="true" /></Button></DialogFooter>
     </Dialog>
     {!identity?.organizationId && <p role="alert">{vi ? 'Cần đăng nhập vào tổ chức.' : 'Sign in to your workspace.'}</p>}
-    {catalog.isPending && identity?.organizationId && <p role="status" className="text-body-sm text-muted-foreground">{vi ? 'Đang tải kỹ năng…' : 'Loading skills…'}</p>}
+    {catalog.isPending && identity?.organizationId && <PageLoader label={vi ? 'Đang tải kỹ năng…' : 'Loading skills…'} />}
     {catalog.isError && <div role="alert" className="space-y-2"><p>{vi ? 'Không tải được danh sách kỹ năng.' : 'Could not load skills.'}</p><Button variant="outline" onClick={() => void catalog.refetch()}>{vi ? 'Thử lại' : 'Retry'}</Button></div>}
     {showSkills && catalog.isSuccess && !visible.length && <p className="rounded-xl border border-border bg-card p-5 text-body-sm text-muted-foreground">{vi ? 'Không có kỹ năng phù hợp.' : 'No matching skills.'}</p>}
     {showSkills && visible.length > 0 && <section className="space-y-3" aria-label="Skills"><div className="overflow-hidden rounded-lg border border-border bg-card" role="list">{visible.slice(skillPage * 20, (skillPage + 1) * 20).map(skill => <div key={skill.id} role="listitem" className="flex min-w-0 flex-col gap-3 border-b border-border p-4 last:border-b-0 sm:flex-row sm:items-center sm:justify-between sm:gap-5 sm:px-5">
@@ -124,7 +125,7 @@ function ScopedSkillsPanel() {
     </div>)}</div><Pagination currentPage={skillPage + 1} totalPages={Math.ceil(visible.length / 20)} totalItems={visible.length} pageSize={20} locale={vi ? 'vi' : 'en'} onPageChange={value => setSkillPage(value - 1)} /></section>}
     {actionError && !selected && <p role="alert" className="text-body-sm text-destructive">{actionError}</p>}
     {showModules && <section aria-label="Modules" className="space-y-3"><div className="flex items-center justify-between gap-3"><Heading level={2} size="card">{moduleResults.isSuccess && search === debouncedSearch ? `${moduleResults.data.totalItems} ${vi || moduleResults.data.totalItems === 1 ? 'module' : 'modules'}` : 'Modules'}</Heading><div role="group" aria-label={vi ? 'Kiểu hiển thị' : 'Display mode'} className="flex gap-0.5 rounded-md border border-border bg-card p-0.5"><Button size="sm" variant="ghost" className={`px-2 ${view === 'list' ? 'bg-muted' : 'text-muted-foreground'}`} aria-label={vi ? 'Hiển thị danh sách' : 'List view'} aria-pressed={view === 'list'} onClick={() => setView('list')}><List size={17} aria-hidden="true" /></Button><Button size="sm" variant="ghost" className={`px-2 ${view === 'grid' ? 'bg-muted' : 'text-muted-foreground'}`} aria-label={vi ? 'Hiển thị thẻ' : 'Card view'} aria-pressed={view === 'grid'} onClick={() => setView('grid')}><LayoutGrid size={17} aria-hidden="true" /></Button></div></div>
-      {(moduleResults.isPending || search !== debouncedSearch) && <p role="status">{vi ? 'Đang tìm module…' : 'Searching modules…'}</p>}
+      {(moduleResults.isPending || search !== debouncedSearch) && <PageLoader label={vi ? 'Đang tìm module…' : 'Searching modules…'} />}
       {moduleResults.isError && search === debouncedSearch && <div role="alert" className="space-y-2"><p>{vi ? 'Không tải được module.' : 'Could not load module results.'}</p><Button variant="outline" onClick={() => void moduleResults.refetch()}>{vi ? 'Thử lại' : 'Retry module search'}</Button></div>}
       {moduleResults.isSuccess && search === debouncedSearch && <>
         {!moduleResults.data.items.length && <p className="rounded-lg border border-border bg-card p-4 text-body-sm text-muted-foreground">{vi ? 'Không có module phù hợp. Thử đổi từ khóa hoặc xóa bộ lọc.' : 'No matching modules. Try another search or reset the filters.'}</p>}
@@ -160,7 +161,7 @@ function ScopedSkillsPanel() {
               const state = individualKnowledgeState(entries, selected?.id ?? '', selected?.version, item)
               return <TabsContent key={item} value={item} className="space-y-3 pt-3">
                 {state.achieved && state.needsReview && <p className="text-body-sm text-muted-foreground">{vi ? 'Achievement đã đạt vẫn được giữ. Kết quả đánh giá gần nhất cần được xem xét.' : 'Your existing achievement is retained. A later assessment result needs review.'}</p>}
-                {provision.isPending && <p role="status">{vi ? 'Đang tải module…' : 'Loading modules…'}</p>}
+                {provision.isPending && <PageLoader label={vi ? 'Đang tải module…' : 'Loading modules…'} />}
                 {provision.isError && <div role="alert" className="space-y-2"><p className="text-body-sm text-destructive">{vi ? 'Không tải được module. Hãy thử lại.' : 'Could not load modules. Please retry.'}</p><Button variant="outline" disabled={Boolean(busy)} onClick={() => void provision.refetch()}>{vi ? 'Thử lại' : 'Retry'}</Button></div>}
                 {provision.isSuccess && !options.length && <p className="text-body-sm text-muted-foreground">{vi ? 'Chưa có module đã duyệt ở mức kiến thức này.' : 'No approved modules are available at this knowledge level.'}</p>}
                 {provision.isSuccess && <SkillLevelAssessmentPanel key={`${selected.id}:${selected.version}:${item}`} skillId={selected.id} modules={options} skillVersion={selected.version} level={item} levelLabel={labels[item]} vi={vi} />}

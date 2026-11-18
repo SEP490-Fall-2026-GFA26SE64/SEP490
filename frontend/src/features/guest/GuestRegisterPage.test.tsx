@@ -6,16 +6,16 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { LanguageProvider } from '../../shared/i18n/LanguageContext'
 import { GuestRegisterPage } from './GuestRegisterPage'
 import * as api from './registrationApi'
-import * as catalogApi from './platformCatalogApi'
+import * as structureApi from './orgStructureApi'
+import { buildStructureTemplate } from './orgStructureFile'
 
 vi.mock('vis-network', () => ({
   Network: vi.fn(function Network() { return { on: vi.fn(), once: vi.fn(), destroy: vi.fn() } }),
 }))
 vi.mock('./StarterCatalogGraph', () => ({ StarterCatalogGraph: () => <div data-testid="catalog-graph" /> }))
-vi.mock('./platformCatalogApi', async importOriginal => ({
-  ...await importOriginal<typeof import('./platformCatalogApi')>(),
-  getPlatformCatalog: vi.fn(),
-  previewCatalogClosure: vi.fn(),
+vi.mock('./orgStructureApi', async importOriginal => ({
+  ...await importOriginal<typeof import('./orgStructureApi')>(),
+  validateOrganizationStructure: vi.fn(),
 }))
 
 vi.mock('./registrationApi', async importOriginal => ({
@@ -40,11 +40,11 @@ beforeEach(() => {
   vi.mocked(api.getRegistration).mockResolvedValue(null)
   vi.mocked(api.registerOrganization).mockResolvedValue(pending)
   vi.mocked(api.signOutRegistration).mockResolvedValue()
-  vi.mocked(catalogApi.getPlatformCatalog).mockResolvedValue({ version: 'v1', edges: [], nodes: [
-    { id: 'role-1', label: 'TargetRole', name: 'Backend Developer', code: 'BE' }] })
-  vi.mocked(catalogApi.previewCatalogClosure).mockImplementation(async ids => ({
-    templateVersion: 'v1', selected: ids, nodeCount: 1, relationshipCount: 0, nodesByLabel: { TargetRole: 1 },
-    nodeIds: ids, edges: [], inclusions: [] }))
+  vi.mocked(structureApi.validateOrganizationStructure).mockResolvedValue({
+    departmentCount: 1, jobPositionCount: 1, targetRoleCount: 1, levelCount: 1,
+    departments: [{ code: 'ENG', name: 'Engineering', description: 'Builds products', jobPositions: [{ code: 'DEV', name: 'Developer',
+      targetRoles: [{ code: 'BE', name: 'Backend Developer', scope: 'Server code', levels: [{ code: 'L1', name: 'Junior', rank: 1 }] }] }] }],
+  })
 })
 
 afterEach(() => {
@@ -112,23 +112,24 @@ describe('registration flow', () => {
     await screen.findByRole('heading', { name: 'Verify your email' })
     expect(api.registerOrganization).toHaveBeenCalledWith({
       organizationName: 'Acme Learning', subdomain: null, industry: null, headcount: null,
-      adminName: 'Test Owner', adminEmail: 'owner@example.test', password: 'long test password', catalogSelection: [],
+      adminName: 'Test Owner', adminEmail: 'owner@example.test', password: 'long test password', organizationStructure: null,
       country: null, adminPhone: '0901 234 567', policiesAccepted: true,
     })
     expect(screen.queryByText('Auto-fill Demo Code')).toBeNull()
     expect(localStorage.getItem('adaptlearn_guest_registration_draft')).toBeNull()
   })
 
-  it('submits the catalog items picked during the organization step', async () => {
+  it('submits the organization structure imported during the organization step', async () => {
     page()
     const user = userEvent.setup()
     await screen.findByLabelText(/Business name/)
     await user.type(screen.getByLabelText(/Business name/), 'Acme Learning')
-    await user.click(screen.getByRole('button', { name: 'Choose catalog' }))
-    await user.selectOptions(await screen.findByLabelText('Item type'), 'TargetRole')
-    await user.click(await screen.findByRole('button', { name: 'Add Backend Developer' }))
-    expect((await screen.findByText('Will copy 0 job positions, 1 target role, 0 competencies and 0 micro skills')).textContent).toBeTruthy()
-    await user.click(screen.getByRole('button', { name: 'Apply catalog' }))
+    await user.click(screen.getByRole('button', { name: /Import structure/ }))
+    const workbook = await buildStructureTemplate()
+    await user.upload(await screen.findByTestId('org-structure-file'), new File([await workbook.xlsx.writeBuffer()], 'structure.xlsx'))
+    expect(await screen.findByRole('treeitem', { name: /Engineering/ }, { timeout: 15_000 })).toBeTruthy()
+    await user.click(screen.getByRole('button', { name: /Apply structure/ }))
+    expect(screen.getByText(/Imported from structure.xlsx/)).toBeTruthy()
     await user.click(screen.getByRole('button', { name: 'Continue to account' }))
     for (const [label, value] of [
       [/Full name/, 'Test Owner'],
@@ -143,8 +144,10 @@ describe('registration flow', () => {
     await user.click(screen.getByRole('checkbox', { name: /I agree/ }))
     await user.click(screen.getByRole('button', { name: 'Create account' }))
     await screen.findByRole('heading', { name: 'Verify your email' })
-    expect(api.registerOrganization).toHaveBeenCalledWith(expect.objectContaining({ catalogSelection: ['role-1'] }))
-  })
+    expect(api.registerOrganization).toHaveBeenCalledWith(expect.objectContaining({ organizationStructure: expect.objectContaining({
+      departments: expect.arrayContaining([expect.objectContaining({ row: 2, code: 'ENG' })]),
+      levels: expect.arrayContaining([expect.objectContaining({ row: 2, targetRoleCode: 'BE-DEV', name: 'Junior', rank: '1' })]) }) }))
+  }, 30_000)
 
   it('preserves entered values and focuses the error summary for invalid password confirmation', async () => {
     page()

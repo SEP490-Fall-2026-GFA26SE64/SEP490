@@ -47,6 +47,7 @@ import {
 } from '../../../shared/api/jobPositionApi'
 import { workspaceFetch } from '../../../shared/api/workspaceFetch'
 import { resolveJobPositionForRole } from '../data/ldManagerMockData'
+import { PageLoader } from '../../../shared/components/ui/PageLoader'
 
 
 export interface AssignedExpert {
@@ -975,10 +976,7 @@ export function JobPositionsManagementPage() {
 
           <CardContent className="p-0">
             {isLoading ? (
-              <div className="text-center py-16 text-muted-foreground">
-                <div className="inline-block animate-spin rounded-full h-8 w-8 border-2 border-primary border-t-transparent mb-3" />
-                <p className="text-sm font-medium">Loading job positions from database...</p>
-              </div>
+              <PageLoader className="border-0 shadow-none" label="Loading job positions…" />
             ) : scopedJobPositions.length === 0 ? (
               <div className="p-12 text-center text-muted-foreground space-y-3">
                 <FolderTree className="h-10 w-10 mx-auto text-muted-foreground/40" />

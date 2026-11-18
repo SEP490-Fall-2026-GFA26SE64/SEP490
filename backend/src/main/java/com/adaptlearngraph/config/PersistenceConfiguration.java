@@ -85,7 +85,7 @@ public class PersistenceConfiguration {
                 beans.getBean(com.adaptlearngraph.repository.LearnerStateJpaRepository.class),
                 beans.getBean(com.adaptlearngraph.repository.DepartmentReferenceJpaRepository.class),
                 beans.getBean(com.adaptlearngraph.repository.OrganizationRegistrationJpaRepository.class),
-                beans.getBean(com.adaptlearngraph.repository.RegistrationCatalogSelectionJpaRepository.class),
+                beans.getBean(com.adaptlearngraph.repository.RegistrationOrgStructureJpaRepository.class),
                 beans.getBean(com.adaptlearngraph.repository.WorkspaceCatalogImportJpaRepository.class),
                 beans.getBean(com.adaptlearngraph.repository.SubscriptionJpaRepository.class),
                 beans.getBean(com.adaptlearngraph.repository.SubscriptionPeriodJpaRepository.class),

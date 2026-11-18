@@ -3,16 +3,12 @@ package com.adaptlearngraph.repository;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import ch.qos.logback.classic.Level;
-import ch.qos.logback.classic.Logger;
-import ch.qos.logback.classic.spi.ILoggingEvent;
-import ch.qos.logback.core.read.ListAppender;
 import com.adaptlearngraph.entities.domain.JobPosition;
+import com.adaptlearngraph.entities.domain.OrganizationStructure;
 import com.adaptlearngraph.exception.CrossTenantWriteException;
-import com.adaptlearngraph.services.PlatformCatalogService;
+import com.adaptlearngraph.services.OrganizationStructureFixtures;
 import com.adaptlearngraph.services.WorkspaceCatalogImportWorker;
 import com.adaptlearngraph.support.Neo4jTestContext;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
@@ -28,32 +24,27 @@ import org.junit.jupiter.api.TestInstance;
 import org.neo4j.driver.AuthTokens;
 import org.neo4j.driver.Driver;
 import org.neo4j.driver.GraphDatabase;
-import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.Neo4jContainer;
 
-/** Real Neo4j copy of the platform template into two organizations, including reads through tenant-scoped adapters. */
+/** Real Neo4j import of a Guest organization structure into two organizations, read through tenant-scoped adapters. */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class WorkspaceCatalogImportNeo4jIntegrationTest {
-    private static final List<String> BRANCH = List.of("OCC-1", "ROLE-A", "LV-A1", "CMP-A1", "MS-A", "MS-B");
+    private static final Instant NOW = Instant.parse("2026-11-18T00:00:00Z");
     private final Neo4jContainer<?> graph = new Neo4jContainer<>("neo4j:5.26-community");
+    private final OrganizationStructure structure = OrganizationStructureFixtures.structure();
     private Driver driver;
     private Neo4jTestContext persistence;
-    private PlatformCatalogTemplate template;
-    private PlatformCatalogService catalog;
     private Neo4jWorkspaceCatalogWriter writer;
 
     @BeforeAll
-    void start() throws Exception {
+    void start() {
         graph.start();
         driver = GraphDatabase.driver(graph.getBoltUrl(), AuthTokens.basic("neo4j", graph.getAdminPassword()));
         try (var session = driver.session()) {
-            for (String label : List.of("JobPosition", "TargetRole", "Level", "Competency", "MicroSkill", "LearningModule"))
+            for (String label : List.of("Department", "JobPosition", "TargetRole", "Level"))
                 session.run("CREATE CONSTRAINT IF NOT EXISTS FOR (n:" + label + ") REQUIRE n.id IS UNIQUE").consume();
+            session.run("CREATE CONSTRAINT IF NOT EXISTS FOR (n:Department) REQUIRE (n.organizationId, n.code) IS UNIQUE").consume();
         }
-        try (var input = getClass().getResourceAsStream("/platform-catalog/template-fixture.json")) {
-            template = new PlatformCatalogTemplate(input.readAllBytes(), new ObjectMapper());
-        }
-        catalog = new PlatformCatalogService(() -> Optional.of(template));
         persistence = Neo4jTestContext.start(driver);
         writer = new Neo4jWorkspaceCatalogWriter(persistence::cypher);
     }
@@ -65,11 +56,6 @@ class WorkspaceCatalogImportNeo4jIntegrationTest {
         graph.stop();
     }
 
-    private void copy(String organization, List<String> selection) {
-        var closure = catalog.closure(selection);
-        writer.copy(organization, closure.templateVersion(), closure.nodeIds().stream().map(template.nodes()::get).toList(), closure.edges());
-    }
-
     private long count(String query, Map<String, Object> parameters) {
         try (var session = driver.session()) {
             return session.run(query, parameters).single().get(0).asLong();
@@ -77,184 +63,79 @@ class WorkspaceCatalogImportNeo4jIntegrationTest {
     }
 
     @Test
-    void twoOrganizationsReceiveIndependentIdempotentCopiesReadOnlyThroughTheirOwnScope() {
+    void twoOrganizationsReceiveIndependentIdempotentStructuresReadOnlyThroughTheirOwnScope() {
         String a = UUID.randomUUID().toString(), b = UUID.randomUUID().toString();
-        copy(a, BRANCH);
-        copy(a, BRANCH);
-        copy(b, BRANCH);
+        writer.writeStructure(a, structure, NOW);
+        writer.writeStructure(a, structure, NOW.plusSeconds(5));
+        writer.writeStructure(b, structure, NOW);
 
         for (String org : List.of(a, b)) {
-            assertThat(count("MATCH (n {organizationId:$org}) RETURN count(n)", Map.of("org", org))).isEqualTo(7);
-            assertThat(count("MATCH ()-[r {organizationId:$org}]->() RETURN count(r)", Map.of("org", org))).isEqualTo(7);
+            assertThat(count("MATCH (n {organizationId:$org}) RETURN count(n)", Map.of("org", org))).isEqualTo(12);
+            assertThat(count("MATCH ()-[r {organizationId:$org}]->() RETURN count(r)", Map.of("org", org))).isEqualTo(10);
+            assertThat(count("MATCH (:Department {organizationId:$org})-[:HAS_JOB_POSITION]->(:JobPosition)-[:HAS_ROLE]->"
+                    + "(:TargetRole)-[:HAS_LEVEL]->(l:Level) RETURN count(l)", Map.of("org", org))).isEqualTo(5);
             assertThat(count("MATCH (x {organizationId:$org})-[r]-(y) WHERE coalesce(y.organizationId,'') <> $org RETURN count(r)",
                     Map.of("org", org))).as("no relationship crosses organizations").isZero();
         }
-        String roleA = Neo4jWorkspaceCatalogWriter.copiedId(a, "ROLE-A");
-        assertThat(roleA).isNotEqualTo(Neo4jWorkspaceCatalogWriter.copiedId(b, "ROLE-A"));
+        String roleA = Neo4jWorkspaceCatalogWriter.importedId(a, "TargetRole", "TR-BE");
+        assertThat(roleA).isNotEqualTo(Neo4jWorkspaceCatalogWriter.importedId(b, "TargetRole", "TR-BE"));
         try (var session = driver.session()) {
-            var level = session.run("MATCH (l:Level {sourceId:'LV-A1', organizationId:$org}) RETURN l", Map.of("org", a)).single().get("l").asNode();
-            assertThat(level.get("targetRoleId").asString()).isEqualTo(roleA);
-            assertThat(level.get("sourceTemplateVersion").asString()).isEqualTo("fixture-1");
+            var department = session.run("MATCH (d:Department {organizationId:$org, code:'ENG'}) RETURN d", Map.of("org", a))
+                    .single().get("d").asNode();
+            assertThat(department.get("name").asString()).isEqualTo("ENG name");
+            assertThat(department.get("description").asString()).isEqualTo("ENG description");
+            assertThat(department.get("status").asString()).isEqualTo("ACTIVE");
+            assertThat(department.containsKey("headOfDepartment")).as("optional fields are not invented").isFalse();
             var role = session.run("MATCH (r:TargetRole {id:$id}) RETURN r", Map.of("id", roleA)).single().get("r").asNode();
-            assertThat(role.get("reviewStatus").asString()).as("review state is copied, never invented").isEqualTo("NEEDS_EXPERT_REVIEW");
-            assertThat(role.get("code").asString()).isEqualTo("ROLE_A");
+            assertThat(role.get("scope").asString()).isEqualTo("TR-BE scope");
+            assertThat(role.containsKey("assignedExpertId")).isFalse();
+            var levels = session.run("MATCH (:TargetRole {id:$id})-[:HAS_LEVEL]->(l:Level) RETURN l.name AS name, l.rank AS rank, "
+                    + "l.code AS code ORDER BY l.rank", Map.of("id", roleA)).list(row -> row.get("name").asString() + ":"
+                    + row.get("rank").asLong() + ":" + row.get("code").asString());
+            assertThat(levels).containsExactly("Junior:1:L1", "Senior:2:L2");
         }
 
         var jobPositions = new Neo4jJobPositionRepository(persistence.bean(JobPositionNodeRepository.class),
                 persistence.client(), persistence.transactionManager());
-        assertThat(jobPositions.findAllJobPositions(a)).extracting(JobPosition::id).containsExactly(Neo4jWorkspaceCatalogWriter.copiedId(a, "OCC-1"));
-        assertThat(jobPositions.findAllJobPositions(b)).extracting(JobPosition::id).containsExactly(Neo4jWorkspaceCatalogWriter.copiedId(b, "OCC-1"));
+        assertThat(jobPositions.findAllJobPositions(a)).extracting(JobPosition::code).containsExactlyInAnyOrder("JP-DEV", "JP-QA");
         assertThat(jobPositions.findAllJobPositions("")).isEmpty();
-        var skills = persistence.bean(MicroSkillNodeRepository.class);
-        assertThat(new Neo4jMicroSkillRepository(skills, persistence.client(), persistence.mappingContext(),
-                persistence.transactionManager()).findAll(b)).hasSize(3);
-        assertThat(new Neo4jPrerequisiteRepository(skills, persistence.client(), persistence.mappingContext(),
-                persistence.transactionManager()).findAll(a)).hasSize(1);
-
         var foreign = jobPositions.findAllJobPositions(a).getFirst();
         assertThatThrownBy(() -> jobPositions.saveChange(b, new com.adaptlearngraph.entities.domain.JobPositionChange(foreign.id(), foreign.code(), foreign.name(), foreign.jobZone(), foreign.status(), foreign.version(), "manager-b", false, null, null))).isInstanceOf(CrossTenantWriteException.class);
-        assertThat(jobPositions.findByIdOrCode(a, foreign.id())).get().extracting(JobPosition::name).isEqualTo("JobPosition One");
         assertThat(jobPositions.findByIdOrCode(b, foreign.id())).isEmpty();
     }
 
     @Test
-    void copyIntoWorkspaceBNeverTouchesWorkspaceANodesPropertiesOrRelationships() {
-        String a = UUID.randomUUID().toString(), b = UUID.randomUUID().toString(), c = UUID.randomUUID().toString();
-        copy(a, BRANCH);
-        var before = snapshot(a);
-        assertThat(before).isNotEmpty();
-
-        copy(b, BRANCH);
-        copy(b, List.of("MS-A"));
-        assertThat(snapshot(a)).as("workspace A after copies into B").isEqualTo(before);
-        assertThat(count("MATCH (x {organizationId:$a})-[r]-(y {organizationId:$b}) RETURN count(r)", Map.of("a", a, "b", b)))
-                .as("no relationship connects A and B").isZero();
-
-        // A node owned by A that already carries C's deterministic copy id: the whole copy into C is rejected and rolled back.
-        String collision = Neo4jWorkspaceCatalogWriter.copiedId(c, "OCC-1");
+    void aCollidingForeignNodeRejectsAndRollsBackTheWholeImport() {
+        String a = UUID.randomUUID().toString(), c = UUID.randomUUID().toString();
+        writer.writeStructure(a, structure, NOW);
+        String collision = Neo4jWorkspaceCatalogWriter.importedId(c, "JobPosition", "JP-QA");
         try (var session = driver.session()) {
             session.run("CREATE (:JobPosition {id:$id, organizationId:$a, name:'Owned by A'})", Map.of("id", collision, "a", a)).consume();
         }
-        var withCollision = snapshot(a);
-        assertThatThrownBy(() -> copy(c, BRANCH)).isInstanceOf(CrossTenantWriteException.class);
-        assertThat(snapshot(a)).as("workspace A after a rejected copy into C").isEqualTo(withCollision);
-        assertThat(count("MATCH (n {organizationId:$c}) RETURN count(n)", Map.of("c", c))).as("rejected copy rolled back").isZero();
+        assertThatThrownBy(() -> writer.writeStructure(c, structure, NOW)).isInstanceOf(CrossTenantWriteException.class);
+        assertThat(count("MATCH (n {organizationId:$c}) RETURN count(n)", Map.of("c", c))).as("rejected import rolled back").isZero();
         assertThat(count("MATCH ()-[r {organizationId:$c}]->() RETURN count(r)", Map.of("c", c))).isZero();
+        assertThat(count("MATCH (n {organizationId:$a}) RETURN count(n)", Map.of("a", a))).isEqualTo(13);
     }
 
     @Test
-    void copyIssuesOneOwnershipCheckAndOneUnwindPerLabelAndOneUnwindPerRelationshipGroup() {
-        String organization = UUID.randomUUID().toString();
-        var closure = catalog.closure(BRANCH);
-        var nodes = closure.nodeIds().stream().map(template.nodes()::get).toList();
-        var labels = new java.util.HashMap<String, String>();
-        nodes.forEach(node -> labels.put(node.id(), node.label()));
-        long labelGroups = nodes.stream().map(PlatformCatalogTemplate.Node::label).distinct().count();
-        long edgeGroups = closure.edges().stream()
-                .map(edge -> edge.type() + "|" + labels.get(edge.fromId()) + "|" + labels.get(edge.toId())).distinct().count();
-        assertThat(nodes.size()).as("fixture has more rows than label groups").isGreaterThan((int) labelGroups);
-
-        var logger = (Logger) LoggerFactory.getLogger("org.springframework.data.neo4j.cypher");
-        Level previous = logger.getLevel();
-        var appender = new ListAppender<ILoggingEvent>();
-        appender.start();
-        logger.addAppender(appender);
-        logger.setLevel(Level.DEBUG);
-        try {
-            writer.copy(organization, closure.templateVersion(), nodes, closure.edges());
-        } finally {
-            logger.detachAppender(appender);
-            logger.setLevel(previous);
-        }
-        var statements = appender.list.stream()
-                .filter(event -> event.getLoggerName().equals("org.springframework.data.neo4j.cypher"))
-                .map(ILoggingEvent::getFormattedMessage).toList();
-        int batches = (int) (2 * labelGroups + edgeGroups);
-        assertThat(statements).hasSize(batches + 6); // Six organization-scoped enrichment passes.
-        assertThat(statements.subList(0, batches)).allSatisfy(statement -> assertThat(statement).contains("UNWIND $"));
-        assertThat(statements.subList(batches, statements.size())).allSatisfy(statement -> assertThat(statement).contains("organizationId: $organization"));
-        assertThat(count("MATCH (n {organizationId:$org}) RETURN count(n)", Map.of("org", organization))).isEqualTo(nodes.size());
-        assertThat(count("MATCH ()-[r {organizationId:$org}]->() RETURN count(r)", Map.of("org", organization)))
-                .isEqualTo(closure.edges().size());
-    }
-
-    private List<String> snapshot(String organization) {
-        try (var session = driver.session()) {
-            var nodes = session.run("""
-                    MATCH (n) WHERE n.organizationId = $org
-                    RETURN labels(n) AS labels, properties(n) AS props ORDER BY n.id
-                    """, Map.of("org", organization)).list(row -> row.asMap().toString());
-            var relationships = session.run("""
-                    MATCH (x)-[r]-(y) WHERE x.organizationId = $org
-                    RETURN x.id + '-' + type(r) + '-' + y.id AS key, startNode(r) = x AS outgoing, properties(r) AS props
-                    ORDER BY key, outgoing, r.id
-                    """, Map.of("org", organization)).list(row -> row.asMap().toString());
-            var result = new ArrayList<String>(nodes);
-            result.addAll(relationships);
-            return result;
-        }
-    }
-
-    @Test
-    void selectedRequirementsAreCopiedWithoutTrimmingOrInventingKnowledgeFromLevelNames() throws Exception {
-        var json = new ObjectMapper();
-        com.fasterxml.jackson.databind.node.ObjectNode root;
-        try (var input = getClass().getResourceAsStream("/platform-catalog/template-fixture.json")) {
-            root = (com.fasterxml.jackson.databind.node.ObjectNode) json.readTree(input);
-        }
-        var comps = root.withArray("Competencies");
-        var skills = root.withArray("MicroSkills");
-        var relations = root.withArray("relationships");
-        for (int i = 0; i < 4; i++) {
-            comps.addObject().put("id", "EX-C" + i).put("name", "Extra competency " + i).put("levelId", "LV-A1");
-            skills.addObject().put("id", "EX-S" + i).put("name", "Extra skill " + i);
-            relations.addObject().put("id", "EX-LC" + i).put("type", "HAS_COMPETENCY").put("fromId", "LV-A1").put("toId", "EX-C" + i);
-            relations.addObject().put("id", "EX-CS" + i).put("type", "HAS_SKILL").put("fromId", "EX-C" + i).put("toId", "EX-S" + i);
-            relations.addObject().put("id", "EX-LS" + i).put("type", "REQUIRES_SKILL").put("fromId", "LV-A1").put("toId", "EX-S" + i)
-                    .putArray("requiredKnowledgeLevels").add("ADVANCED");
-        }
-        var larger = new PlatformCatalogTemplate(json.writeValueAsBytes(root), json);
-        var service = new PlatformCatalogService(() -> Optional.of(larger));
-        var selected = larger.nodes().values().stream().filter(n -> PlatformCatalogService.SELECTABLE.contains(n.label()))
-                .map(PlatformCatalogTemplate.Node::id).toList();
-        var closure = service.closure(selected);
-        String org = UUID.randomUUID().toString();
-        var copied = closure.nodeIds().stream().map(larger.nodes()::get).toList();
-        writer.copy(org, closure.templateVersion(), copied, closure.edges());
-        writer.copy(org, closure.templateVersion(), copied, closure.edges());
-        assertThat(count("MATCH (n {organizationId:$org}) RETURN count(n)", Map.of("org", org))).isEqualTo(closure.nodeCount());
-        assertThat(count("MATCH ()-[r {organizationId:$org}]->() RETURN count(r)", Map.of("org", org))).isEqualTo(closure.relationshipCount());
-        assertThat(count("MATCH (n {organizationId:$org}) WHERE n:LearningModule OR n:Certificate RETURN count(n)", Map.of("org", org))).isZero();
-        try (var session = driver.session()) {
-            var role = session.run("MATCH (r:TargetRole {organizationId:$org, sourceId:'ROLE-A'}) RETURN r", Map.of("org", org)).single().get("r").asNode();
-            var projection = json.readTree(role.get("skillTargets").asString());
-            assertThat(projection.size()).isEqualTo(6);
-            for (var target : projection) if (target.get("skillId").asText().equals(Neo4jWorkspaceCatalogWriter.copiedId(org, "EX-S0")))
-                assertThat(target.get("requiredKnowledgeLevels").get(0).asText()).isEqualTo("ADVANCED");
-            assertThat(role.get("competencyIds").asList()).hasSize(5);
-            assertThat(count("MATCH (l:Level {organizationId:$org})-[r:REQUIRES_SKILL]->() WHERE r.requiredKnowledgeLevels=['ADVANCED'] RETURN count(r)", Map.of("org", org))).isEqualTo(4);
-        }
-    }
-
-    @Test
-    void workerCopiesSucceedsRejectsInvalidSelectionsAndRetriesUntilFailure() {
+    void workerWritesSucceedsEmptyLegacyJobsAndRetriesUntilFailure() {
         var store = new FakeStore();
-        var clock = Clock.fixed(Instant.parse("2026-11-02T00:00:00Z"), ZoneOffset.UTC);
+        var clock = Clock.fixed(NOW, ZoneOffset.UTC);
         String org = UUID.randomUUID().toString();
-        store.jobs.add(new WorkspaceCatalogImportStore.Job(UUID.fromString(org), UUID.randomUUID(), UUID.randomUUID(), 1, List.of("MS-A")));
-        store.jobs.add(new WorkspaceCatalogImportStore.Job(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), 1, List.of("MOD-A")));
-        var worker = new WorkspaceCatalogImportWorker(store, catalog, writer, clock);
-        worker.process();
-        assertThat(store.events).containsExactly("SUCCEEDED:2:1", "FAILED:CATALOG_SELECTION_INVALID");
-        assertThat(count("MATCH (n {organizationId:$org}) RETURN count(n)", Map.of("org", org))).isEqualTo(2);
+        store.jobs.add(new WorkspaceCatalogImportStore.Job(UUID.fromString(org), UUID.randomUUID(), UUID.randomUUID(), 1, structure));
+        store.jobs.add(new WorkspaceCatalogImportStore.Job(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), 1, null));
+        new WorkspaceCatalogImportWorker(store, writer, clock).process();
+        assertThat(store.events).containsExactly("SUCCEEDED:12:10", "SUCCEEDED:0:0");
+        assertThat(count("MATCH (n {organizationId:$org}) RETURN count(n)", Map.of("org", org))).isEqualTo(12);
 
-        var broken = new WorkspaceCatalogImportWorker(store, catalog, (o, v, n, e) -> { throw new IllegalStateException("graph down"); }, clock);
+        var broken = new WorkspaceCatalogImportWorker(store, (o, s, n) -> { throw new IllegalStateException("graph down"); }, clock);
         store.events.clear();
-        store.jobs.add(new WorkspaceCatalogImportStore.Job(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), 1, List.of("MS-A")));
+        store.jobs.add(new WorkspaceCatalogImportStore.Job(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), 1, structure));
         store.jobs.add(new WorkspaceCatalogImportStore.Job(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(),
-                WorkspaceCatalogImportWorker.MAX_ATTEMPTS, List.of("MS-A")));
+                WorkspaceCatalogImportWorker.MAX_ATTEMPTS, structure));
         broken.process();
-        assertThat(store.events).containsExactly("RETRY:CATALOG_COPY_FAILED", "FAILED:CATALOG_COPY_FAILED");
+        assertThat(store.events).containsExactly("RETRY:STRUCTURE_IMPORT_FAILED", "FAILED:STRUCTURE_IMPORT_FAILED");
     }
 
     private static final class FakeStore implements WorkspaceCatalogImportStore {

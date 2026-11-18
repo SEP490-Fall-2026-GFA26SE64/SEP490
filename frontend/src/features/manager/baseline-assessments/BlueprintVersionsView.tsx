@@ -34,6 +34,7 @@ import {
   generateAssessmentCandidate,
   startBlueprintWorkingRevision,
 } from './baselineAssessmentManagementApi'
+import { PageLoader } from '../../../shared/components/ui/PageLoader'
 
 export function BlueprintVersionsView() {
   const { jobPositionId = '', blueprintId, version } = useParams()
@@ -221,7 +222,7 @@ function BlueprintDetail({ blueprint, t, language, onBack }: { blueprint: Baseli
 }
 
 function Info({ label, value }: { label: string; value: string }) { return <div><dt className="text-xs text-muted-foreground">{label}</dt><dd className="mt-1 font-medium text-foreground">{value}</dd></div> }
-function WorkspaceLoading() { return <div className="space-y-3" aria-busy="true"><div className="h-10 animate-pulse rounded bg-muted/60" /><div className="h-52 animate-pulse rounded bg-muted/60" /></div> }
+function WorkspaceLoading() { return <PageLoader /> }
 function formatDate(value: string, language: 'en' | 'vi') { return new Intl.DateTimeFormat(language, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value)) }
 function projectionKey(value: BlueprintVersionSummary['projection']) { return { ACTIVE_SOURCE: 'activeSource', DRAFT_SOURCE: 'draftSource', CANDIDATE: 'candidate', HISTORICAL: 'historical' }[value] }
 function projectionVariant(value: BlueprintVersionSummary['projection']): 'success' | 'warning' | 'primary' | 'outline' { return value === 'ACTIVE_SOURCE' ? 'success' : value === 'CANDIDATE' || value === 'DRAFT_SOURCE' ? 'warning' : 'outline' }

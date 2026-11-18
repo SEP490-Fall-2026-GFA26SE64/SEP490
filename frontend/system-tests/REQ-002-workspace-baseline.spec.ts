@@ -1,5 +1,5 @@
 import { expect, test, type APIRequestContext, type Page } from '@playwright/test'
-import { confirmPayment, fixture, mutate, observe, purchase, record, registrationSession, text } from './subscriptionHelpers'
+import { confirmPayment, fixture, mutate, observe, purchase, record, registrationSession, text, waitForWorkspaceEntry } from './subscriptionHelpers'
 
 type Member = { email: string; password: string }
 type Tenant = { manager: Member; employee: Member; jobPositionId: string; roleId: string; organizationId: string }
@@ -31,8 +31,7 @@ async function login(page: Page, member: Member) {
   await page.getByLabel('Email', { exact: true }).fill(member.email)
   await page.getByLabel('Password', { exact: true }).fill(member.password)
   await page.getByRole('button', { name: 'Sign in', exact: true }).click()
-  await expect(page.getByText('Authentication complete.', { exact: true })).toBeVisible()
-  await page.getByRole('button', { name: 'Continue to workspace' }).click()
+  await waitForWorkspaceEntry(page)
 }
 async function command(request: APIRequestContext, path: string, data: unknown, method = 'POST', key = crypto.randomUUID()) {
   const csrf = record(await (await request.get('/api/v1/workspace-auth/csrf')).json())

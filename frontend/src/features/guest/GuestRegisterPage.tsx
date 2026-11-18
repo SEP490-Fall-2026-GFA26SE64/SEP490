@@ -13,8 +13,8 @@ import { Input } from '../../shared/components/ui/Input'
 import { PageHeader } from '../../shared/components/ui/PageHeader'
 import { useTranslation } from "../../shared/i18n/LanguageContext"
 import { useCopy } from "../subscription/SubscriptionFeedback.helpers"
-import { GuestCatalogPicker } from './GuestCatalogPicker'
 import { GuestLayout } from './GuestLayout'
+import { GuestOrgStructureImport,type AppliedOrgStructure } from './GuestOrgStructureImport'
 import {
 confirmRegistrationTotp,
 COUNTRY_CODES,
@@ -53,7 +53,7 @@ export function GuestRegisterPage({ mode = 'register' }: { mode?: 'register' | '
     'Cybersecurity & Network Systems': c('Cybersecurity & networks', 'An ninh mạng & hệ thống mạng'),
     'Enterprise Financial Technology': c('Financial technology', 'Công nghệ tài chính'),
   }
-  const [catalogSelection, setCatalogSelection] = React.useState<string[]>([])
+  const [orgStructure, setOrgStructure] = React.useState<AppliedOrgStructure | null>(null)
   const [confirmation, setConfirmation] = React.useState('')
   const [signInEmail, setSignInEmail] = React.useState('')
   const [code, setCode] = React.useState('')
@@ -129,7 +129,7 @@ export function GuestRegisterPage({ mode = 'register' }: { mode?: 'register' | '
       const failure = error instanceof RegistrationApiError ? error
         : new RegistrationApiError(0, 'NETWORK_ERROR', 'Cannot reach the registration service. Check your connection and retry.')
       setFailure(failure)
-      if (failure.field && ['organizationName', 'subdomain', 'industry', 'country', 'catalogSelection'].includes(failure.field)) setEntryStep(1)
+      if (failure.field && ['organizationName', 'subdomain', 'industry', 'country', 'organizationStructure'].includes(failure.field)) setEntryStep(1)
       if (failure.status === 401) {
         clearSecrets()
         client.setQueryData(SESSION_QUERY, null)
@@ -144,7 +144,7 @@ export function GuestRegisterPage({ mode = 'register' }: { mode?: 'register' | '
     client.setQueryData(SESSION_QUERY, next)
     clearSecrets()
     setForm(EMPTY_FORM)
-    setCatalogSelection([])
+    setOrgStructure(null)
     setPoliciesAccepted(false)
     setLegalNotice(false)
     setFailure(null)
@@ -213,7 +213,7 @@ export function GuestRegisterPage({ mode = 'register' }: { mode?: 'register' | '
       setFailure(new RegistrationApiError(400, 'INVALID_INPUT', c('Use a password with 12-128 characters.', 'Sử dụng mật khẩu từ 12 đến 128 ký tự.'), 'password'))
       return
     }
-    command.mutate(async () => accept(await registerOrganization({ ...form, password, catalogSelection, policiesAccepted })))
+    command.mutate(async () => accept(await registerOrganization({ ...form, password, organizationStructure: orgStructure?.sheets ?? null, policiesAccepted })))
   }
 
   function submitProof(event: React.FormEvent) {
@@ -334,8 +334,8 @@ export function GuestRegisterPage({ mode = 'register' }: { mode?: 'register' | '
                         onChange={event => update('subdomain', event.target.value)} />
                     </Field></div>
                   </div>
-                  <div id="registration-catalogSelection">
-                    <GuestCatalogPicker value={catalogSelection} onChange={setCatalogSelection} />
+                  <div id="registration-organizationStructure">
+                    <GuestOrgStructureImport value={orgStructure} onChange={setOrgStructure} />
                   </div>
                 </CardContent>
                 </>}

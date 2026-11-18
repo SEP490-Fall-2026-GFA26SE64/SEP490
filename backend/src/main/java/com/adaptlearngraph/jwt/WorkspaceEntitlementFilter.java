@@ -50,6 +50,8 @@ public final class WorkspaceEntitlementFilter extends OncePerRequestFilter {
                 boolean manager=actor.roles().contains(Role.LD_MANAGER);
                 boolean expert=actor.roles().contains(Role.DOMAIN_EXPERT);
                 boolean admin=actor.roles().contains(Role.ORGANIZATION_ADMINISTRATOR);
+                boolean knowledgeGraph=path.endsWith("/knowledge-graph");
+                if(knowledgeGraph && !admin) throw forbidden();
                 boolean isGetOrHead=!request.getMethod().equals("POST") && !request.getMethod().equals("PUT") && !request.getMethod().equals("DELETE") && !request.getMethod().equals("PATCH");
                 boolean isCatalogPath=path.contains("/micro-skills")
                         || path.contains("/competencies")
@@ -61,7 +63,7 @@ public final class WorkspaceEntitlementFilter extends OncePerRequestFilter {
                         || path.contains("/departments");
                 boolean employeeCatalogRead=isGetOrHead && isCatalogPath && actor.roles().contains(Role.EMPLOYEE);
                 if(!manager && !expert && !admin && !employeeCatalogRead) throw forbidden();
-                role=manager?"LD_MANAGER":expert?"DOMAIN_EXPERT":admin?"ORGANIZATION_ADMINISTRATOR":"EMPLOYEE";
+                role=knowledgeGraph?"ORGANIZATION_ADMINISTRATOR":manager?"LD_MANAGER":expert?"DOMAIN_EXPERT":admin?"ORGANIZATION_ADMINISTRATOR":"EMPLOYEE";
                 boolean write=!request.getMethod().equals("GET") && !request.getMethod().equals("HEAD");
                 if(write && (path.contains("/target-roles") || path.contains("/roles")) && request.getMethod().equals("POST") && !manager && !expert) throw forbidden();
                 if(write && (path.contains("/micro-skills") || path.contains("/prerequisites")) && !expert) throw forbidden();

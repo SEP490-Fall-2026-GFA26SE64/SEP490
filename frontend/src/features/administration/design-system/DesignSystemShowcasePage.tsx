@@ -28,6 +28,7 @@ import { EmptyState } from '../../../shared/components/ui/EmptyState'
 import { Input } from '../../../shared/components/ui/Input'
 import { PageHeader } from '../../../shared/components/ui/PageHeader'
 import { Progress } from '../../../shared/components/ui/Progress'
+import { PageLoader } from '../../../shared/components/ui/PageLoader'
 import { RadioGroup, RadioGroupItem } from '../../../shared/components/ui/RadioGroup'
 import { StatCard } from '../../../shared/components/ui/StatCard'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../../shared/components/ui/Tabs'
@@ -520,6 +521,12 @@ export function DesignSystemShowcasePage() {
                 <Progress value={82} label="Neo4j Cypher Query Mastery" showLabel variant="primary" />
                 <Progress value={65} label="GNN Node Embeddings Progress" showLabel variant="warning" />
                 <Progress value={100} label="RDF Triples Fundamentals" showLabel variant="success" />
+              </div>
+
+              <div className="space-y-2 pt-2 border-t border-border">
+                <label className="text-sm font-medium text-foreground">Page Loader (inline / compact)</label>
+                <PageLoader label="Loading workspace data…" />
+                <PageLoader size="sm" label="Loading notifications…" />
               </div>
 
               <div className="space-y-2 pt-2 border-t border-border">

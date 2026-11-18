@@ -15,6 +15,7 @@ import { DEVELOPMENT_STATUSES, filterEmployees, groupBy, statusLabels, statusTon
 import { useDevelopmentFilters, useDevelopmentReport } from './useDevelopment'
 import { developmentErrorMessage } from './developmentMessages'
 import './development.css'
+import { PageLoader } from '../../../shared/components/ui/PageLoader'
 
 export function DevelopmentDashboardPage() {
   return <WorkspaceLayout><DevelopmentDashboard /></WorkspaceLayout>
@@ -145,9 +146,5 @@ function Panel({ index, className, icon, title, subtitle, children }: { index: n
 }
 
 function DashboardSkeleton() {
-  return <div className="flex flex-col gap-4" aria-busy="true" aria-live="polite">
-    <div className="ld-skeleton h-16" />
-    <div className="ld-kpi-grid">{Array.from({ length: 6 }, (_, index) => <div key={index} className="ld-skeleton h-28" />)}</div>
-    <div className="ld-panel-grid"><div className="ld-skeleton ld-span-5 h-72" /><div className="ld-skeleton ld-span-7 h-72" /></div>
-  </div>
+  return <PageLoader />
 }

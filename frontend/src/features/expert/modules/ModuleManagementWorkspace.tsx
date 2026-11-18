@@ -35,6 +35,7 @@ import { CopyableId } from '../../../shared/components/ui/CopyableId'
 import { RowActions } from '../../../shared/components/ui/RowActions'
 import { useToast } from "../../../shared/hooks/useToast"
 import { CatalogModuleDetails } from './CatalogModuleDetails'
+import { PageLoader } from '../../../shared/components/ui/PageLoader'
 
 type Mode = 'modules' | 'content' | 'approvals' | 'learning'
 const control = 'min-h-10 w-full rounded-lg border border-border bg-card px-3 py-2 text-[length:var(--text-body-sm)] text-foreground focus:outline-none focus:ring-2 focus:ring-primary [color-scheme:light]'
@@ -398,7 +399,7 @@ function OwnedModuleManagementWorkspace({ mode, managerShell = false }: { mode: 
     {error && <div role="alert" tabIndex={-1} data-module-error className="rounded-lg border border-destructive bg-card p-3 text-[length:var(--text-body-sm)] text-destructive">{error}{actor && <Button variant="outline" size="sm" className="ml-3" disabled={busy || contentBusy || loading} onClick={() => void load()}>{copy('Reload latest data', 'Tải dữ liệu mới nhất')}</Button>}</div>}
     {notice && <p role="status" className="text-[length:var(--text-body-sm)] text-success">{notice}</p>}
     {!actor ? <Card><CardContent className="space-y-3 pt-6">
-      {sessionLoading ? <p role="status">{copy('Loading your session…', 'Đang tải phiên đăng nhập…')}</p> : <>
+      {sessionLoading ? <PageLoader label={copy('Loading your session…', 'Đang tải phiên đăng nhập…')} /> : <>
         <p>{copy('Continue with your workspace account from the main login page.', 'Tiếp tục bằng tài khoản hệ thống tại trang đăng nhập chung.')}</p>
         <Button onClick={() => navigate('/login')}>{copy('Go to login', 'Đến trang đăng nhập')}</Button>
         <Button variant="outline" onClick={() => { setSessionLoading(true); setError(''); setSessionAttempt(value => value + 1) }}>{copy('Retry', 'Thử lại')}</Button>
@@ -470,7 +471,7 @@ function OwnedModuleManagementWorkspace({ mode, managerShell = false }: { mode: 
             />
           </div>
 
-          {loading && managerLearning && <div role="status" aria-label={copy('Loading learning content', 'Đang tải nội dung học tập')} className="space-y-3 rounded-lg border border-border bg-card p-4"><span className="sr-only">{copy('Loading learning content…', 'Đang tải nội dung học tập…')}</span>{[1,2,3].map(row=><div key={row} aria-hidden="true" className="h-12 animate-pulse rounded-md bg-muted"/>)}</div>}
+          {loading && managerLearning && <PageLoader label={copy('Loading learning content?', '?ang t?i n?i dung h?c t?p?')} />}
           {mode === 'approvals' ? (
             listItems.length > 0 ? (
               <ModuleApprovalQueue documents={page.items} showHeading={true} total={page.total} loading={loading} busy={busy || contentBusy} vi={language === 'vi'} copy={copy} person={person} formatTime={formatTime} labels={stateLabels} onReview={doc => void run(async () => { setSelected(await moduleRequest<ModuleDocument>(`/modules/${doc.id}`)); setEditing(false) })} />

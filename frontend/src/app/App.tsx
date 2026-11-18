@@ -4,6 +4,7 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { WorkspaceBoundary } from '../features/subscription/WorkspaceBoundary'
 import { Toaster } from '../shared/components/ui/Toast'
 import { ToastProvider } from '../shared/hooks/useToast'
+import { PageLoader } from '../shared/components/ui/PageLoader'
 import { LanguageProvider } from '../shared/i18n/LanguageContext'
 import { WorkspaceSlugContext, workspaceBase } from '../shared/auth/workspacePaths'
 
@@ -76,7 +77,7 @@ export default function App() {
           <WorkspaceSlugContext.Provider value={workspace?.slug ?? null}>
           <WorkspaceBoundary><Suspense fallback={<div role="status" className="p-6 text-muted-foreground">Loading...</div>}><Routes>
             {/* Auth routes */}
-            <Route path="/" element={<GuestLandingPage />} />
+            <Route path="/" element={<Suspense fallback={<PageLoader variant="fullscreen" />}><GuestLandingPage /></Suspense>} />
             <Route path="/home" element={<Navigate to="/" replace />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/forgot-password" element={<ForgotPasswordPage />} />

@@ -37,6 +37,7 @@ import {
   type PathSample,
   type StepBreakdown,
 } from './graphBenchmarkApi'
+import { PageLoader } from '../../shared/components/ui/PageLoader'
 
 interface LiveStreamState {
   phase: 'idle' | 'warmup' | 'streaming' | 'completed'
@@ -1440,9 +1441,8 @@ export function PlatformGraphBenchmarkPage() {
                   <tbody className="divide-y divide-border/60">
                     {isPreviewLoading ? (
                       <tr>
-                        <td colSpan={6} className="py-6 text-center text-muted-foreground">
-                          <RefreshCw className="animate-spin inline-block mr-2" size={14} />
-                          {isVi ? 'Đang nạp danh sách cặp kiểm thử...' : 'Loading fixture test pairs...'}
+                        <td colSpan={6} className="py-4">
+                          <PageLoader size="sm" className="justify-center" label={isVi ? 'Đang nạp danh sách cặp kiểm thử…' : 'Loading fixture test pairs…'} />
                         </td>
                       </tr>
                     ) : paginatedPairs.length === 0 ? (

@@ -1,14 +1,20 @@
 import * as React from 'react'
-import { Check, Circle, Crosshair, Diamond, Hexagon, LayoutGrid, Maximize2, Minimize2, Square, Waypoints, ZoomIn, ZoomOut } from 'lucide-react'
+import { Award, BookOpen, Building2, Check, Circle, Crosshair, Diamond, Hexagon, LayoutGrid, Maximize2, Minimize2, Pentagon, Square, Waypoints, ZoomIn, ZoomOut } from 'lucide-react'
 import { DataSet } from 'vis-data'
 import { Network, type Edge, type Node, type NodeOptions } from 'vis-network'
 import { Button } from '../../shared/components/ui/Button'
 import { graphToken } from '../../shared/components/ui/ontologyGraphStyle'
 import { drawNode, measureNode, NODE_SPECS, readPalette, type GraphPalette } from './catalogGraphRenderer'
 import { CATALOG_LABEL_COPY, layoutCatalog, placeNewNodes, type Point } from './catalogSelection'
-import { CATALOG_LABELS, type CatalogNode, type PlatformCatalog } from './platformCatalogApi'
+import { CATALOG_LABELS, type CatalogNode, type CatalogNodeLabel, type PlatformCatalog } from './platformCatalogApi'
 
-const LEGEND_ICONS = { JobPosition: Square, TargetRole: Circle, Level: Diamond, Competency: Hexagon, MicroSkill: Circle }
+const LEGEND_ICONS = { Organization: Building2, Department: Pentagon, JobPosition: Square, TargetRole: Circle, Level: Diamond, Competency: Hexagon, MicroSkill: Circle, LearningModule: BookOpen, Certificate: Award }
+const LEGEND_TONE: Record<CatalogNodeLabel, string> = {
+  Organization: 'text-primary', Department: 'text-foreground',
+  JobPosition: 'text-primary', TargetRole: 'text-primary', Level: 'text-muted-foreground', Competency: 'text-primary',
+  MicroSkill: 'text-success', LearningModule: 'text-warning', Certificate: 'text-destructive',
+}
+const FILLED_LEGEND = new Set<CatalogNodeLabel>(['MicroSkill', 'JobPosition', 'Level'])
 const MIN_SCALE = 0.08
 const MAX_SCALE = 2.5
 // Restyling thousands of edges on every focus change blocks the main thread; beyond this only nodes dim.
@@ -21,25 +27,28 @@ type RenderState = {
   neighbourhood: Set<string> | null
   palette: GraphPalette | null
   metrics: Map<string, ReturnType<typeof measureNode>>
+  readOnly?: boolean
 }
 
 // Only paint properties change per mode: updating `smooth` makes vis-network rebuild every edge type.
 function edgeLook(type: string, mode: EdgeMode): Edge {
   const prerequisite = type === 'HAS_SKILL_PREREQUISITE'
+  const relation = prerequisite || type === 'TEACHES' || type === 'REQUIRES_CERTIFICATE'
+  const tone = prerequisite ? 'destructive' : type === 'TEACHES' ? 'warning' : 'muted-foreground'
   const color = mode === 'connected' ? graphToken('primary') : mode === 'catalog' ? graphToken('primary', 0.5)
-    : mode === 'dim' ? graphToken('muted-foreground', 0.08) : graphToken(prerequisite ? 'destructive' : 'muted-foreground', prerequisite ? 0.55 : 0.32)
+    : mode === 'dim' ? graphToken('muted-foreground', 0.08) : graphToken(tone, relation ? 0.55 : 0.32)
   return {
     color: { color, highlight: graphToken('primary'), hover: graphToken('primary'), inherit: false },
     width: mode === 'connected' ? 2.4 : mode === 'catalog' ? 1.6 : 1.1,
     // The left-to-right layout already shows hierarchy direction; arrowheads (and their costly border search) are kept where they add meaning.
-    arrows: { to: { enabled: prerequisite || mode === 'connected', type: 'arrow', scaleFactor: mode === 'connected' ? 0.55 : 0.4 } },
+    arrows: { to: { enabled: relation || mode === 'connected', type: 'arrow', scaleFactor: mode === 'connected' ? 0.55 : 0.4 } },
   }
 }
 
 function edgeShape(type: string): Edge {
   const prerequisite = type === 'HAS_SKILL_PREREQUISITE'
   return {
-    dashes: prerequisite ? [6, 5] : false,
+    dashes: prerequisite ? [6, 5] : type === 'TEACHES' ? [2, 4] : false,
     smooth: prerequisite ? { enabled: true, type: 'curvedCW', roundness: 0.25 }
       : { enabled: true, type: 'cubicBezier', forceDirection: 'horizontal', roundness: 0.5 },
   }
@@ -51,7 +60,8 @@ function edgeMode(edge: { from: string; to: string }, selected: Set<string>, foc
   return selected.has(edge.from) && selected.has(edge.to) ? 'catalog' : 'base'
 }
 
-function CatalogGraph({ catalog, ids, selected, focused, onFocus, onClearFocus, onExplore, copy }: {
+function CatalogGraph({ catalog, ids, selected, focused, onFocus, onClearFocus, onExplore, copy, labels = CATALOG_LABELS, readOnly = false,
+  ariaLabel, showPrerequisiteLegend = true }: {
   catalog: PlatformCatalog
   ids: Set<string>
   selected: Set<string>
@@ -60,6 +70,14 @@ function CatalogGraph({ catalog, ids, selected, focused, onFocus, onClearFocus, 
   onClearFocus?: () => void
   onExplore?: (id: string) => void
   copy: (en: string, vi: string) => string
+  /** Node types shown in the legend. */
+  labels?: CatalogNodeLabel[]
+  /** Viewing mode without a "your catalog" selection. */
+  readOnly?: boolean
+  /** Overrides the default accessible description of the canvas. */
+  ariaLabel?: string
+  /** Read-only legends show the prerequisite edge style unless the graph has no prerequisites. */
+  showPrerequisiteLegend?: boolean
 }) {
   const container = React.useRef<HTMLDivElement>(null)
   const frame = React.useRef<HTMLDivElement>(null)
@@ -80,6 +98,7 @@ function CatalogGraph({ catalog, ids, selected, focused, onFocus, onClearFocus, 
   React.useLayoutEffect(() => { styleInputs.current = { selected, focused } })
   const reduced = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches
   const inCatalog = React.useMemo(() => [...ids].filter(id => selected.has(id)).length, [ids, selected])
+  React.useLayoutEffect(() => { view.current.readOnly = readOnly; network.current?.redraw() }, [readOnly])
 
   // One stable renderer reads the latest state from a ref, so selection/focus changes only need a redraw.
   const renderer = React.useCallback(({ ctx, id, x, y, state }: {
@@ -102,7 +121,7 @@ function CatalogGraph({ catalog, ids, selected, focused, onFocus, onClearFocus, 
     }
     const palette = current.palette
     const nodeState = {
-      inCatalog: current.selected.has(node.id), hover: state.hover,
+      inCatalog: current.selected.has(node.id), hover: state.hover, badge: !current.readOnly,
       focused: state.selected || current.focusId === node.id,
       dimmed: !!current.neighbourhood && !current.neighbourhood.has(node.id),
     }
@@ -281,8 +300,11 @@ function CatalogGraph({ catalog, ids, selected, focused, onFocus, onClearFocus, 
 
   return <div ref={frame} className="starter-catalog-graph relative min-h-72 flex-1 overflow-hidden rounded-xl border border-border bg-card shadow-sm">
     <div ref={container} data-testid="catalog-graph" role="application" tabIndex={0}
-      aria-label={copy('Starter catalog graph. Arrow keys pan, plus and minus zoom. Use the item list and selection buttons for keyboard selection.',
-        'Graph catalog. Phím mũi tên để di chuyển, cộng/trừ để phóng to. Dùng danh sách và nút chọn để thao tác bằng bàn phím.')}
+      aria-label={ariaLabel ?? (readOnly
+        ? copy('Organization knowledge graph. Arrow keys pan, plus and minus zoom. Use the filters to change which nodes are shown.',
+          'Knowledge graph của tổ chức. Phím mũi tên để di chuyển, cộng/trừ để phóng to. Dùng bộ lọc để đổi các node hiển thị.')
+        : copy('Starter catalog graph. Arrow keys pan, plus and minus zoom. Use the item list and selection buttons for keyboard selection.',
+          'Graph catalog. Phím mũi tên để di chuyển, cộng/trừ để phóng to. Dùng danh sách và nút chọn để thao tác bằng bàn phím.'))}
       className="absolute inset-0 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
       style={{ backgroundImage: `radial-gradient(${graphToken('border')} 1px, transparent 1px)`, backgroundSize: '22px 22px' }} />
     <div role="toolbar" aria-label={copy('Graph controls', 'Điều khiển graph')}
@@ -292,30 +314,35 @@ function CatalogGraph({ catalog, ids, selected, focused, onFocus, onClearFocus, 
     </div>
     <div className="absolute right-3 top-3 flex items-center gap-2 rounded-full border border-border bg-card/95 px-3 py-1 text-caption text-muted-foreground shadow-sm backdrop-blur">
       <Waypoints size={14} aria-hidden="true" />
-      <span><span className="font-semibold text-foreground">{ids.size}</span> {copy('nodes', 'node')}</span>
-      <span aria-hidden="true" className="h-3 w-px bg-border" />
-      <span><span className="font-semibold text-primary">{inCatalog}</span> {copy('in catalog', 'trong catalog')}</span>
+      <span><span className="font-semibold text-foreground">{ids.size}</span> {copy(ids.size === 1 ? 'node' : 'nodes', 'node')}</span>
+      {!readOnly && <>
+        <span aria-hidden="true" className="h-3 w-px bg-border" />
+        <span><span className="font-semibold text-primary">{inCatalog}</span> {copy('in catalog', 'trong catalog')}</span>
+      </>}
     </div>
     <ul aria-label={copy('Graph node types', 'Loại node graph')}
       className="absolute bottom-3 left-3 flex max-w-[calc(100%-1.5rem)] flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border border-border bg-card/95 px-3 py-1.5 text-caption text-muted-foreground shadow-sm backdrop-blur">
-      {CATALOG_LABELS.map(label => {
+      {labels.map(label => {
         const Icon = LEGEND_ICONS[label]
         return <li key={label} className="inline-flex items-center gap-1.5">
-          <Icon size={12} aria-hidden="true" className={label === 'MicroSkill' ? 'text-success' : label === 'Level' ? 'text-muted-foreground' : 'text-primary'}
-            fill={label === 'MicroSkill' || label === 'JobPosition' || label === 'Level' ? 'currentColor' : 'none'} />{copy(...CATALOG_LABEL_COPY[label])}
+          <Icon size={12} aria-hidden="true" className={LEGEND_TONE[label]}
+            fill={FILLED_LEGEND.has(label) ? 'currentColor' : 'none'} />{copy(...CATALOG_LABEL_COPY[label])}
         </li>
       })}
-      <li className="inline-flex items-center gap-1.5 font-medium text-foreground">
+      {readOnly ? showPrerequisiteLegend && <li className="inline-flex items-center gap-1.5">
+        <span aria-hidden="true" className="w-4 border-t-2 border-dashed border-destructive/60" />{copy('Prerequisite', 'Tiên quyết')}
+      </li> : <li className="inline-flex items-center gap-1.5 font-medium text-foreground">
         <span aria-hidden="true" className="inline-flex h-3.5 w-3.5 items-center justify-center rounded-full bg-primary">
           <Check size={9} strokeWidth={3} className="text-primary-foreground" /></span>{copy('In your catalog', 'Trong catalog')}
-      </li>
+      </li>}
     </ul>
     {!ids.size && <div role="status" className="absolute inset-0 flex flex-col items-center justify-center gap-2 p-6 text-center">
       <span className="flex h-12 w-12 items-center justify-center rounded-full bg-muted text-muted-foreground"><Waypoints size={22} aria-hidden="true" /></span>
       <p className="text-body-sm text-muted-foreground">{copy('No graph items match these filters.', 'Không có node phù hợp với bộ lọc.')}</p>
     </div>}
     {failure && <div role="alert" className="absolute inset-x-3 bottom-14 rounded-lg border border-destructive/30 bg-card p-3 text-body-sm shadow-sm">
-      <p>{copy('Graph unavailable. You can still use the item list.', 'Graph chưa khả dụng. Bạn vẫn có thể chọn từ danh sách.')}</p>
+      <p>{readOnly ? copy('Graph unavailable. Retry to render it again.', 'Graph chưa khả dụng. Hãy thử hiển thị lại.')
+        : copy('Graph unavailable. You can still use the item list.', 'Graph chưa khả dụng. Bạn vẫn có thể chọn từ danh sách.')}</p>
       <Button type="button" size="sm" variant="outline" onClick={() => { setFailure(false); setAttempt(value => value + 1) }}>{copy('Retry graph', 'Thử lại graph')}</Button>
     </div>}
   </div>

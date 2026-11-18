@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link, useLocation } from 'react-router-dom'
 import { QRCodeSVG } from 'qrcode.react'
-import { CheckCircle2 } from 'lucide-react'
+import { CheckCircle2, Copy, KeyRound, ShieldAlert, Smartphone } from 'lucide-react'
 import { WorkspaceAuthLayout } from '../../shared/layouts/WorkspaceAuthLayout'
 import { Input } from '../../shared/components/ui/Input'
 import { Button } from '../../shared/components/ui/Button'
@@ -26,6 +26,7 @@ export function WorkspaceLoginPage() {
   const [recovery, setRecovery] = useState(false)
   const [codes, setCodes] = useState<string[]>([])
   const [secret, setSecret] = useState<{ manualSecret: string; email: string } | null>(null)
+  const [copied, setCopied] = useState<'idle' | 'done' | 'failed'>('idle')
   const session = identity ?? current.data
   const finish = (value: Identity) => {
     setIdentity(value); setCode(''); setPassword(''); cache.clear(); cache.setQueryData(['workspace-identity'], value); if (value.organizationId) { setActiveCompanyId(value.organizationId); }
@@ -45,15 +46,41 @@ export function WorkspaceLoginPage() {
     : isWorkspaceSlug(slug) ? safeReturnPath(next, slug) ?? workspaceUrl(slug, ROLE_HOME[role]) : null
   const enrolling = session?.stage === 'SETUP_MFA' || session?.stage === 'SETUP_MFA_RECOVERY'
   const errors = [current.error, signIn.error, verify.error, setup.error, confirm.error, restart.error].filter(Boolean)
+  // Recovery codes must be acknowledged before leaving the page; they are shown only once.
+  useEffect(() => {
+    if (ready && destination && codes.length === 0) window.location.assign(destination)
+  }, [ready, destination, codes.length])
+  const copyCodes = async () => {
+    try { await navigator.clipboard.writeText(codes.join('\n')); setCopied('done') } catch { setCopied('failed') }
+  }
+  if (current.isPending) return <Loading fullscreen />
+  if (ready && destination && codes.length === 0) return <Loading fullscreen label={c('Entering your workspace…', 'Đang vào không gian làm việc…')} />
   return <WorkspaceAuthLayout title={c('Enterprise Sign In', 'Đăng nhập doanh nghiệp')}
     description={c('Enter your work credentials to access the adaptive learning platform.',
       'Nhập thông tin tài khoản công việc để truy cập nền tảng học tập thích ứng.')}>
-      {current.isPending ? <Loading /> : ready ? <>
+      {ready ? <>
         <p role="status">{c('Authentication complete.', 'Xác thực hoàn tất.')}</p>
         {codes.length > 0 && <div className="space-y-3" data-sensitive>
-          <p>{c('Save these single-use recovery codes privately. They are shown only once.', 'Lưu riêng các mã khôi phục dùng một lần. Chỉ hiển thị lần này.')}</p>
-          <pre className="overflow-x-auto rounded border border-border bg-muted p-3 text-caption">{codes.join('\n')}</pre>
-          <Button onClick={() => setCodes([])}>{c('I saved the recovery codes', 'Tôi đã lưu mã khôi phục')}</Button>
+          <div className="flex gap-2 rounded-lg border border-warning/40 bg-warning/10 p-3 text-body-sm text-foreground">
+            <ShieldAlert className="mt-0.5 size-4 shrink-0 text-warning" aria-hidden="true" />
+            <p>{c('Save these single-use recovery codes privately. They are shown only once.', 'Lưu riêng các mã khôi phục dùng một lần. Chỉ hiển thị lần này.')}</p>
+          </div>
+          <div className="rounded-lg border border-border bg-muted p-3">
+            <div className="mb-2 flex items-center justify-between gap-2">
+              <span className="text-eyebrow font-bold uppercase text-muted-foreground">{c('Recovery codes', 'Mã khôi phục')} ({codes.length})</span>
+              <Button variant="ghost" size="sm" leftIcon={<Copy className="size-3.5" aria-hidden="true" />} onClick={() => void copyCodes()}>
+                {copied === 'done' ? c('Copied', 'Đã sao chép') : c('Copy all', 'Sao chép tất cả')}
+              </Button>
+            </div>
+            <ol aria-label={c('Recovery codes', 'Mã khôi phục')} className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
+              {codes.map((value, index) => <li key={value} className="flex min-w-0 items-center gap-2 rounded-md border border-border bg-card px-2 py-1.5">
+                <span className="w-5 shrink-0 text-right text-caption text-muted-foreground" aria-hidden="true">{index + 1}.</span>
+                <code className="min-w-0 break-all font-mono text-caption text-foreground">{value}</code>
+              </li>)}
+            </ol>
+            {copied === 'failed' && <p role="alert" className="mt-2 text-caption text-destructive">{c('Unable to copy. Select the codes and copy them manually.', 'Không thể sao chép. Hãy chọn các mã và sao chép thủ công.')}</p>}
+          </div>
+          <Button onClick={() => { setCodes([]); setCopied('idle') }}>{c('I saved the recovery codes', 'Tôi đã lưu mã khôi phục')}</Button>
         </div>}
         {!destination && <Failure error={new Error(!role
           ? c('Your account must have exactly one recognized role. Contact your administrator.', 'Tài khoản phải có đúng một vai trò hợp lệ. Liên hệ quản trị viên.')
@@ -104,10 +131,15 @@ export function WorkspaceLoginPage() {
           </form>}
       </div> : <form className="razor-form" onSubmit={event => { event.preventDefault(); verify.mutate() }}>
         <label className="block">{recovery ? c('Recovery code', 'Mã khôi phục') : c('Authenticator code', 'Mã xác thực')}
-          <span className="razor-input-wrapper"><Input className="razor-input" autoComplete="one-time-code" required value={code} onChange={event => setCode(event.target.value)} /></span>
+          <span className="razor-input-wrapper"><Input className={recovery ? 'razor-input font-mono tracking-wide' : 'razor-input'} autoComplete="one-time-code"
+            inputMode={recovery ? 'text' : 'numeric'} spellCheck={false} aria-describedby="workspace-code-hint" required value={code} onChange={event => setCode(event.target.value)} /></span>
         </label>
+        <p id="workspace-code-hint" className="-mt-1 text-caption text-muted-foreground">{recovery
+          ? c('Enter one of the single-use recovery codes you saved. Each code works only once.', 'Nhập một trong các mã khôi phục dùng một lần đã lưu. Mỗi mã chỉ dùng được một lần.')
+          : c('Enter the 6-digit code from your authenticator app.', 'Nhập mã 6 chữ số từ ứng dụng xác thực.')}</p>
         <Button type="submit" className="razor-submit-btn" isLoading={verify.isPending}>{c('Verify', 'Xác minh')}</Button>
-        <Button variant="link" onClick={() => { setRecovery(!recovery); setCode('') }}>{recovery ? c('Use authenticator', 'Dùng ứng dụng xác thực') : c('Use recovery code', 'Dùng mã khôi phục')}</Button>
+        <Button variant="link" leftIcon={recovery ? <Smartphone className="size-4" aria-hidden="true" /> : <KeyRound className="size-4" aria-hidden="true" />}
+          onClick={() => { setRecovery(!recovery); setCode('') }}>{recovery ? c('Use authenticator', 'Dùng ứng dụng xác thực') : c('Use recovery code', 'Dùng mã khôi phục')}</Button>
       </form>}
       {errors.map((error, index) => <Failure key={index} error={error} />)}
   </WorkspaceAuthLayout>

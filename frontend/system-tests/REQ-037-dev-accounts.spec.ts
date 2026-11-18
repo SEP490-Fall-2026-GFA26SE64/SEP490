@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { expect, test } from '@playwright/test'
+import { waitForWorkspaceEntry } from './subscriptionHelpers'
 
 const accounts = [
   ['platform.admin@example.test', '/platform-admin/subscriptions'],
@@ -26,7 +27,7 @@ for (const [index, [email, destination]] of accounts.entries()) {
       await expect(page.getByRole('button', { name: 'Set up authenticator', exact: true })).toBeVisible({ timeout: 30_000 })
       await expect(page.getByRole('button', { name: 'Continue to workspace', exact: true })).toHaveCount(0)
     } else {
-      await page.getByRole('button', { name: 'Continue to workspace', exact: true }).click()
+      await waitForWorkspaceEntry(page)
       await expect(page).toHaveURL(new RegExp(destination + '$'))
       await expect(page.getByRole('button', { name: 'User actions menu', exact: true })).toBeVisible({ timeout: 30_000 })
       if (index === 0) {

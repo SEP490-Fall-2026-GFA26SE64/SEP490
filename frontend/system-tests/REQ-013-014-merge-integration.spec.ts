@@ -2,6 +2,7 @@ import { test, expect as baseExpect, type APIRequestContext, type Page } from '@
 import { randomUUID } from 'node:crypto'
 import type { ModuleDocument, ModuleContent } from '../src/shared/api/moduleAuthoringApi'
 import type { BankView } from '../src/shared/api/questionBankApi'
+import { waitForWorkspaceEntry } from './subscriptionHelpers'
 
 const expect = baseExpect.configure({ timeout: 30_000 })
 const modules = '/api/v1/module-management'
@@ -44,7 +45,7 @@ test('merged module ownership, L&D routes/review and Question Bank automatic cod
   const signed = page.waitForResponse(response => response.url().endsWith('/workspace-auth/sign-in') && response.request().method() === 'POST', { timeout: 90_000 })
   await page.getByRole('button', { name: 'Sign in', exact: true }).click()
   expect((await signed).status()).toBe(200)
-  await expect(page.getByRole('button', { name: 'Continue to workspace' })).toBeVisible()
+  await waitForWorkspaceEntry(page)
   const title = `Merged module ${randomUUID().slice(0, 8)}`
   const contentResponse = await mutate(page.request, `${modules}/contents/lessons`, {
     title, lessons: [{ id: 'intro', title: 'Introduction', type: 'TEXT', body: '<p>Read the SQL example and explain the result before continuing.</p>', bodyFormat: 'HTML', durationSeconds: 60, durationSource: 'ESTIMATED', videoSource: null, assetId: null, videoUrl: null }],

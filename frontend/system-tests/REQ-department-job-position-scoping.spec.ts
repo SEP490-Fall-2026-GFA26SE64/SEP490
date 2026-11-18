@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test'
+import { waitForWorkspaceEntry } from './subscriptionHelpers'
 
 test.describe('Department Isolation & Automatic Job Position Assignment', () => {
   test.setTimeout(120_000)
@@ -31,7 +32,7 @@ test.describe('Department Isolation & Automatic Job Position Assignment', () => 
     await page.getByPlaceholder('Enter your email').fill('manager@technova.com')
     await page.locator('input[type="password"]').fill('Password123!')
     await page.getByRole('button', { name: 'Sign in', exact: true }).click()
-    await page.getByRole('button', { name: 'Continue to workspace', exact: true }).click()
+    await waitForWorkspaceEntry(page)
 
     await expect(page).toHaveURL(/.*\/ld-manager\/job-positions/)
     await expect(page.locator('main')).toBeVisible({ timeout: 15_000 })

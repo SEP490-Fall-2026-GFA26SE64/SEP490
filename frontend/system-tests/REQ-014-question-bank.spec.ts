@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto'
 import { expect, test, type Browser, type BrowserContext, type Page, type APIRequestContext } from '@playwright/test'
 import * as XLSX from 'xlsx'
 import type { BankSession, BankView } from '../src/shared/api/questionBankApi'
+import { waitForWorkspaceEntry } from './subscriptionHelpers'
 const root = '/api/v1/question-bank'
 const contexts: BrowserContext[] = []
 const password = 'question-bank-test-password' // isolated synthetic fixture, never a development account
@@ -21,7 +22,7 @@ async function login(browser: Browser, baseURL: string, role: string, org = 'a')
   const signed = page.waitForResponse(r => r.url().endsWith('/workspace-auth/sign-in') && r.request().method() === 'POST')
   await page.getByRole('button', { name: 'Sign in', exact: true }).click()
   expect((await signed).status()).toBe(200)
-  await expect(page.getByRole('button', { name: 'Continue to workspace', exact: true })).toBeVisible()
+  await waitForWorkspaceEntry(page)
   if (role !== 'employee') {
     // Open the protected bank after real sign-in; unrelated prototype home catalog calls
     // are outside this suite. The role/entitlement boundary still runs on this route.

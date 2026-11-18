@@ -745,7 +745,7 @@ export const vi: TranslationKeys = {
     learningOutcomes: 'Bảng điều khiển',
     baselineAssessments: 'Đánh giá đầu vào',
     userDirectory: 'Tài khoản người dùng',
-    adminConsole: 'Bảng điều khiển hệ thống',
+    adminConsole: 'Bảng điều khiển',
     employees: 'Nhân viên',
     roiForecast: 'Dự báo ROI',
     knowledgeGraph: 'Đồ thị tri thức',

@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test'
+import { waitForWorkspaceEntry } from './subscriptionHelpers'
 
 test.describe('Capstone Standard: Department Governance & User Assignment Verification', () => {
   test.setTimeout(120_000)
@@ -9,7 +10,7 @@ test.describe('Capstone Standard: Department Governance & User Assignment Verifi
     await page.getByPlaceholder('Enter your email').fill('admin@technova.com')
     await page.locator('input[type="password"]').fill('Password123!')
     await page.getByRole('button', { name: 'Sign in', exact: true }).click()
-    await page.getByRole('button', { name: 'Continue to workspace', exact: true }).click()
+    await waitForWorkspaceEntry(page)
 
     // 2. Navigate to Departments Management
     await page.goto('/admin/departments')
