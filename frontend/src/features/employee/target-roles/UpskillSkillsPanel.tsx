@@ -66,10 +66,6 @@ function ScopedSkillsPanel() {
       if (urlLevel && INDIVIDUAL_KNOWLEDGE_LEVELS.includes(urlLevel as KnowledgeLevel)) setLevel(urlLevel as KnowledgeLevel)
     }
   }
-<<<<<<< HEAD
-
-=======
->>>>>>> module-learning-manage-v2
   const moduleResults = useQuery({ queryKey: ['individualModuleSearch', scope, debouncedSearch, ownerSkill, moduleLevel, modulePage], queryFn: ({ signal }) => searchSkillModules(debouncedSearch, ownerSkill, moduleLevel, modulePage, signal), enabled: Boolean(identity?.organizationId) && showModules && !selected && search === debouncedSearch, retry: false, gcTime: 0 })
   const provision = useQuery({ queryKey: ['individualSkillModules', scope, selected?.id], queryFn: ({ signal }) => readSkillModules(selected!.id, signal), enabled: Boolean(selected), retry: false, gcTime: 0 })
   const profile = useQuery({ queryKey: ['individualSkillKnowledge', scope, selected?.id, selected?.version], queryFn: ({ signal }) => readSkillKnowledgeProfile(selected!.id, signal), enabled: Boolean(selected), retry: false, gcTime: 0, refetchInterval: selected ? 5000 : false })

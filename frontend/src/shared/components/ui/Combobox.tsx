@@ -181,11 +181,7 @@ export function Combobox({
         }}
         className={cn(
           'flex w-full items-center justify-between rounded-md border border-input bg-card text-foreground shadow-2xs transition-colors focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer text-left',
-<<<<<<< HEAD
-          size === 'sm' ? 'h-8 pl-2.5 pr-2 py-1 text-xs' : 'h-10 pl-3 pr-2.5 py-2 text-sm',
-=======
           size === 'sm' ? 'h-8 pl-2.5 pr-2 py-1 text-xs' : size === 'md' ? 'h-9 pl-3 pr-2.5 py-1.5 text-xs' : 'h-10 pl-3 pr-2.5 py-2 text-sm',
->>>>>>> module-learning-manage-v2
           isOpen && 'border-primary ring-1 ring-primary',
           ariaInvalid && 'border-destructive',
         )}

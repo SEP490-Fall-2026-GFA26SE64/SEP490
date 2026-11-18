@@ -83,15 +83,10 @@ describe('REQ-013 module workspace', () => {
     expect(await within(dialog).findByText('Last review body')).toBeTruthy()
     expect(screen.getByLabelText('Current route').textContent).toBe('/ld-manager/modules')
     fireEvent.click(within(dialog).getByRole('button', { name: 'Close dialog' }))
-<<<<<<< HEAD
-    fireEvent.change(screen.getByLabelText('Show modules'), {target:{value:'all'}})
-    fireEvent.change(screen.getByLabelText('Status'), { target: { value: 'ACTIVE' } })
-=======
     fireEvent.click(screen.getByLabelText('Show modules'))
     fireEvent.click(screen.getByRole('option', { name: 'All statuses' }))
     fireEvent.click(screen.getByLabelText('Status'))
     fireEvent.click(screen.getByRole('option', { name: 'Active' }))
->>>>>>> module-learning-manage-v2
     fireEvent.click(screen.getByRole('link', { name: 'Approvals' }))
     expect(await screen.findByRole('heading', { name: 'Learning Content' })).toBeTruthy()
     expect(screen.getByLabelText('Current route').textContent).toBe('/ld-manager/approvals')
@@ -299,12 +294,8 @@ describe('REQ-013 module workspace', () => {
     fireEvent.click(screen.getByRole('option', { name: 'All statuses' }))
     await waitFor(()=>expect(queries().at(-1)?.get('review')).toBe(''))
     expect(screen.getByLabelText('Status')).toBeTruthy()
-<<<<<<< HEAD
-    fireEvent.change(screen.getByLabelText('Status'), { target: { value: 'NEEDS_EXPERT_REVIEW' } })
-=======
     fireEvent.click(screen.getByLabelText('Status'))
     fireEvent.click(screen.getByRole('option', { name: 'Pending review' }))
->>>>>>> module-learning-manage-v2
     await waitFor(()=>expect(queries().at(-1)?.get('review')).toBe('NEEDS_EXPERT_REVIEW'))
     fireEvent.click(screen.getByRole('button',{name:'Clear filters'}))
     await waitFor(()=>expect(queries().at(-1)?.get('review')).toBe('APPROVED'))
