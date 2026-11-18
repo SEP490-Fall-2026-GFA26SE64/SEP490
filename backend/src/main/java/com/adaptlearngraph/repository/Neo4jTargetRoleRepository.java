@@ -485,11 +485,11 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
                                   req.version = coalesce(l.version, '0.12.0')
                     SET req.id = coalesce(req.id, l.id + '_REQ_' + s.id),
                         req.version = coalesce(req.version, l.version, '0.12.0'),
-                        req.targetMastery = toFloat(item.threshold) / 100.0,
-                        req.requiredScore = toFloat(item.threshold) / 100.0,
+                        req.requiredKnowledgeLevels = item.requiredKnowledgeLevels,
                         req.isMandatory = coalesce(req.isMandatory, true),
                         req.status = 'ACTIVE',
                         req.updatedAt = datetime($updatedAt)
+                    REMOVE req.targetMastery, req.requiredScore
                     """)
                     .bind(roleId).to("roleId")
                     .bind(organizationId).to("organizationId")

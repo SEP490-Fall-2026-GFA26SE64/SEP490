@@ -88,6 +88,8 @@ public final class CurrentRoleKnowledgeCatalog implements Contexts {
         var unresolved=new ArrayList<Map<String,String>>();
         if(command.purpose()==Purpose.BASELINE) {
             if(command.stepId()!=null || command.moduleId()!=null || command.moduleRevision()!=null)throw new Failure(400,"INVALID_REQUEST");
+            if(level.skills().isEmpty() || level.skills().stream().anyMatch(skill->skill.requiredKnowledgeLevels().isEmpty()))
+                throw new Failure(422,"ROLE_REQUIREMENTS_NOT_CONFIGURED");
             for(var skill:level.skills().stream().sorted(Comparator.comparing(RoleBaselineFlow.Skill::id)).toList())
                 for(var knowledge:skill.requiredKnowledgeLevels().stream().sorted().toList()) {
                 Definition definition;

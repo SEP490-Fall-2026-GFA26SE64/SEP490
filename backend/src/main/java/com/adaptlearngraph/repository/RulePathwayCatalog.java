@@ -36,6 +36,8 @@ public final class RulePathwayCatalog {
     }
     public Snapshot resolve(RoleBaselineFlow.Actor actor,RoleBaselineFlow.Role role,String levelId,List<Requirement> additional) {
         var level=role.levels().stream().filter(item->item.id().equals(levelId)).findFirst().orElseThrow(()->new Failure(409,"LEVEL_REQUIRED"));
+        if(level.skills().isEmpty() || level.skills().stream().anyMatch(skill->skill.requiredKnowledgeLevels().isEmpty()))
+            throw new Failure(422,"ROLE_REQUIREMENTS_NOT_CONFIGURED");
         var selectedIds=level.skills().stream().map(RoleBaselineFlow.Skill::id).collect(java.util.stream.Collectors.toSet());
         var requested=new TreeMap<String,Set<KnowledgeLevel>>();
         for(var skill:level.skills())for(var name:skill.requiredKnowledgeLevels())requested.computeIfAbsent(skill.id(),key->new TreeSet<>()).add(KnowledgeLevel.valueOf(name));

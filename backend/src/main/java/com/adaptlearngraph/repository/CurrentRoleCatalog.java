@@ -86,7 +86,8 @@ public final class CurrentRoleCatalog implements Catalog {
                 for(var row:rows) {
                     var o=row.get("o");var r=row.get("r");var l=row.get("l");String occ=o.get("id").asString(),id=r.get("id").asString();
                     var snapshot=validated.get(occ); if(snapshot==null || !snapshot.roles().containsKey(id)) continue;
-                    var skills=row.get("skills").asList(v->new Skill(v.get("id").asString(),v.get("code").asString(null),v.get("name").asString(),v.get("requiredKnowledgeLevels").asList(Value::asString),v.get("mandatory").asBoolean()));
+                    // Legacy requirements remain visible as unconfigured, never inferred from numeric thresholds.
+                    var skills=row.get("skills").asList(v->new Skill(v.get("id").asString(),v.get("code").asString(null),v.get("name").asString(),v.get("requiredKnowledgeLevels").asList(Value::asString,List.of()),v.get("mandatory").asBoolean()));
                     if(skills.isEmpty() && !demoReview) throw new IllegalStateException("Role Level requirements unavailable");
                     var level=new Level(l.get("id").asString(),l.get("code").asString("LV"),l.get("name").asString(),l.get("rank").asInt(1),
                             l.get("context").asString(""),l.get("attainmentRule").asString("ALL_MANDATORY_SKILLS"),skills,l.get("duration").asString(null));
