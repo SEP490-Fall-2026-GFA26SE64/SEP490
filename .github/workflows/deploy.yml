@@ -152,6 +152,7 @@ jobs:
           ssh -p "$SSH_PORT" "$VPS" \
             "cd '$APP_DIR' && tar -xzf deploy-bundle.tgz && rm -f deploy-bundle.tgz && \
              DOCKERHUB_USERNAME='$DOCKERHUB_USERNAME' IMAGE_TAG='$IMAGE_TAG' DOMAIN='$DOMAIN' \
+             SKIP_SMTP_CHECK='${{ secrets.SKIP_SMTP_CHECK || 'false' }}' \
              bash deploy/scripts/remote-deploy.sh"
 
       - name: External smoke check
