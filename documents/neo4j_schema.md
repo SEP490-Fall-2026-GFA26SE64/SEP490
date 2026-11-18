@@ -627,3 +627,7 @@ TargetRole API/domain no longer exposes `domainCode` or role-wide `seniority`; a
 The subsequent authorized V43 API update retained the complete immediate pre-update graph (1030 nodes,5160 relationships), verified by exact node/relationship property and endpoint comparison after startup. No graph import, historical property cleanup or seed was performed; [current system receipt](testing/system/REQ-001-013-014-main-20261101.md).
 
 L&D catalog/approval separation (2026-11-01) adds no Neo4j fields or relationships. Pending selection uses PostgreSQL current Module workflow states; the catalog projection, lessons and historical review records are retained. [Runtime/read verification](testing/integration/REQ-013-ld-approval-queue.md).
+
+### Module responsibility metadata — 2026-11-18
+
+Module creator/importer and responsible Expert remain PostgreSQL authoring-document metadata, not Neo4j catalog properties. `createdBy`/`createdAt` retain the recorded creator; `responsibleExpertId` is the mutable editing owner. Transfer history retains previous/new responsible IDs, the Manager actor and server time. Forward V70 initializes missing owners from recorded creators and preserves seed/null provenance. Module/TEACHES schema and content/review snapshots are unchanged; see [ownership/API contract](ARCHITECTURE.md#module-responsibility-transfer--2026-11-18).

@@ -6,7 +6,6 @@ import com.adaptlearngraph.dtos.ModuleAuthoringDto.ChoiceResponse;
 import com.adaptlearngraph.dtos.ModuleAuthoringDto.ContentResponse;
 import com.adaptlearngraph.dtos.ModuleAuthoringDto.DocumentResponse;
 import com.adaptlearngraph.dtos.ModuleAuthoringDto.GrantResponse;
-import com.adaptlearngraph.dtos.ModuleAuthoringDto.IntakeResponse;
 import com.adaptlearngraph.dtos.ModuleAuthoringDto.LessonRequest;
 import com.adaptlearngraph.dtos.ModuleAuthoringDto.ModuleInput;
 import com.adaptlearngraph.dtos.ModuleAuthoringDto.PageResponse;
@@ -54,16 +53,14 @@ public class ModuleAuthoringController {
             @RequestParam(defaultValue="") String status, @RequestParam(defaultValue="") String review,
             @RequestParam(defaultValue="") String type, @RequestParam(defaultValue="") String skill,
             @RequestParam(defaultValue="1") int page) { return service.catalogList(search, status, review, type, skill, page); }
-    public record IntakeInput(List<String> jobPositionIds, String expectedAssignedAt, String expertId) {}
-    @PostMapping("/catalog-modules/{id}/assignment") public ResponseEntity<IntakeResponse> assign(@PathVariable String id, @RequestBody IntakeInput input) {
-        return ResponseEntity.status(201).body(service.assignIntake(id, input.jobPositionIds(), input.expectedAssignedAt(), input.expertId()));
-    }
-    @PostMapping("/catalog-modules/{id}/accept") public ResponseEntity<DocumentResponse> accept(@PathVariable String id) {
-        return ResponseEntity.status(201).body(service.acceptIntake(id));
-    }
     @PostMapping("/modules") public ResponseEntity<DocumentResponse> create(@RequestBody ModuleInput input) { return ResponseEntity.status(201).body(service.create(input)); }
     @PutMapping("/modules/{id}") public DocumentResponse update(@PathVariable String id, @RequestBody UpdateInput input) { return service.update(id, input.expectedVersion(), input.value()); }
     @PostMapping("/modules/{id}/actions") public DocumentResponse action(@PathVariable String id, @RequestBody ActionInput input) { return service.action(id, input.expectedVersion(), input.action(), input.feedback()); }
+    public record ResponsibilityInput(long expectedVersion, String expertId) {}
+    @PutMapping("/modules/{id}/responsible-expert")
+    public DocumentResponse transferResponsibility(@PathVariable String id, @RequestBody ResponsibilityInput input) {
+        return service.transferResponsibility(id, input.expectedVersion(), input.expertId());
+    }
     @DeleteMapping("/modules/{id}") public ResponseEntity<Void> delete(@PathVariable String id, @RequestParam long expectedVersion) { service.delete(id, expectedVersion); return ResponseEntity.noContent().build(); }
     @GetMapping("/learning/{id}") public RevisionResponse learning(@PathVariable String id) { return service.learning(id, false); }
     @PostMapping("/learning/{id}/start") public RevisionResponse start(@PathVariable String id) { return service.learning(id, true); }

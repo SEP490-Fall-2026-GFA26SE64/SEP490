@@ -92,12 +92,22 @@ class ModuleAuthoringIntegrationTest {
                     session.run("MATCH (m:LearningModule {id:'legacy'}) SET m.contentUri='content/modules/MOD-FOCUS-SEC01-HIGH.md'").consume();
                 }
                 actor("reviewer", "LD_MANAGER");
-                Intake assigned = service.assignIntake("legacy", List.of("occ"), null, "expert-a");
+                // Historical persisted intake fixture: the retired intake API must not create this data.
+                CatalogModule source = adapter.graphModules("org").stream().filter(m -> m.metadata().id().equals("legacy")).findFirst().orElseThrow();
+                String now = java.time.Instant.now().toString();
+                Intake assigned = new Intake("legacy", "org", List.of("occ"), "reviewer", now, source, "expert-a", now, List.of(), "expert-a");
+                Content historicalContent = new Content("historical-content", source.title(), adapter.importedMarkdown(source.contentUri()),
+                        source.contentType(), source.contentVersion(), List.of("occ"), null, now);
+                var payload = new com.adaptlearngraph.entities.domain.ModuleAuthoring.Package(
+                        new Metadata("legacy", "0.11.0", "DRAFT", "NEEDS_EXPERT_REVIEW", null, null), source.title(), source.moduleType(),
+                        source.contentUri(), source.contentType(), source.contentVersion(), source.duration(),
+                        source.teachings().stream().map(t -> new Teaching(t.metadata(), t.skillId(), t.skillName(), t.teachingFocus(), t.difficultyLevel())).toList(),
+                        historicalContent, source.knowledgeLevel(), source.outcomeCodes(), source.skillVersion());
+                Document received = new Document("legacy", "org", List.of("occ"), "expert-a", now, 1, false, false, null,
+                        List.of(new Revision(1, "DRAFT", payload, "expert-a", now, null, null, null)), List.of(), assigned);
+                adapter.transaction(() -> { adapter.saveContent("org", historicalContent); adapter.saveIntake(assigned); adapter.save(received); return null; });
                 adapter.grant("org", "expert-a", "occ", true);
-                actor("unassigned", "EXPERT");
-                assertThrows(ModuleAuthoringService.Failure.class, () -> service.acceptIntake("legacy"));
                 actor("expert-a", "EXPERT");
-                Document received = service.acceptIntake("legacy");
                 assertEquals(received, service.detail("legacy")); assertEquals("expert-a", received.createdBy());
                 assertEquals(assigned.source(), received.intake().source());
                 assertEquals("expert-a", received.intake().acceptedBy()); assertNotNull(received.intake().acceptedAt());

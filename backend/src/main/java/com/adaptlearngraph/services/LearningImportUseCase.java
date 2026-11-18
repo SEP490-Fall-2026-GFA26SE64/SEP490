@@ -26,7 +26,12 @@ public interface LearningImportUseCase {
             List<Row> modules,
             List<Problem> errors,
             List<String> ownedDuplicates,
-            boolean committed) {}
+            boolean committed,
+            String format) {
+        public Preview(String id, List<Row> modules, List<Problem> errors, List<String> ownedDuplicates, boolean committed) {
+            this(id, modules, errors, ownedDuplicates, committed, "DOCX_ZIP_V1");
+        }
+    }
 
     byte[] template();
 

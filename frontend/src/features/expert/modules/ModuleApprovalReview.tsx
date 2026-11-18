@@ -16,7 +16,7 @@ export function ModuleApprovalReview({ doc, staff, person, formatTime, labels, h
     [copy('Reviewing revision','Phiên bản đang xem'),String(revision.number)],
     [copy('Submitted by','Người gửi'),person(request.event?.actorId)],
     [copy('Requested at','Thời điểm gửi'),formatTime(request.event?.occurredAt)],
-    [copy('Responsible Expert','Expert phụ trách'),person(doc.createdBy)],
+    [copy('Responsible Expert','Expert phụ trách'),person(doc.responsibleExpertId ?? doc.createdBy)],
     [copy('Last editor','Người sửa cuối'),person(revision.editedBy)],
     [copy('Last edited at','Thời điểm sửa cuối'),formatTime(revision.editedAt)],
     [copy('Released revision','Phiên bản đã phát hành'),doc.releasedRevision==null?'—':String(doc.releasedRevision)],
