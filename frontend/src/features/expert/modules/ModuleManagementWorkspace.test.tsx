@@ -73,7 +73,8 @@ describe('REQ-013 module workspace', () => {
     const dialog = await screen.findByRole('dialog', { name: 'Module details' })
     for (const label of ['Lesson 1: Introduction', 'Lesson 2: Practice video', 'Lesson 3: Summary']) expect(within(dialog).getByRole('region', { name: label })).toBeTruthy()
     expect(within(dialog).queryByText('Preview this content version')).toBeNull()
-    expect(within(dialog).getByText(/Created by \/ Responsible Expert: expert-a/)).toBeTruthy()
+    fireEvent.click(within(dialog).getByRole('tab', { name: 'Module information' }))
+    expect(within(dialog).getByText(/Responsible person: expert-a/)).toBeTruthy()
     fireEvent.click(within(dialog).getByRole('tab', { name: 'View as learner' }))
     expect(await within(dialog).findByText('First review body')).toBeTruthy()
     fireEvent.click(within(dialog).getByRole('button', { name: 'Next lesson' }))
@@ -107,7 +108,7 @@ describe('REQ-013 module workspace', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Actions for read-only' })); expect(screen.getByRole('button', { name: 'Details & history' })).toBeTruthy()
     for (const name of ['Edit', 'Submit for review', 'Delete draft']) expect(screen.queryByRole('button', { name })).toBeNull()
   })
-  it('requires an explicit manager assignment before intake and retains errors for retry', async () => {
+  it('keeps imported catalog records read-only after intake retirement', async () => {
     const original = vi.mocked(fetch).getMockImplementation()!
     const module = { metadata: { id: 'imported', version: '0.11.0', status: 'ACTIVE', reviewStatus: 'NEEDS_EXPERT_REVIEW', reviewedBy: null, reviewedAt: null }, title: 'Imported lesson', moduleType: 'LESSON_AND_PRACTICE', contentUri: 'content/modules/lesson.md', contentType: 'text/markdown', contentVersion: '1.0', duration: 30, price: 100000, teachings: [] }
     vi.mocked(fetch).mockImplementation(async (path, init) => {
@@ -122,23 +123,10 @@ describe('REQ-013 module workspace', () => {
     })
     render(<MemoryRouter><ModuleManagementWorkspace /></MemoryRouter>)
     fireEvent.click(await screen.findByRole('button', { name: 'View module' }))
-    fireEvent.click(await screen.findByRole('button', { name: 'Assign for intake' }))
-    let dialog = screen.getByRole('dialog', { name: 'Assign for intake' })
-    await within(dialog).findByRole('option', { name: 'Software Developers' })
-    expect(within(dialog).getByLabelText('Related job positions').hasAttribute('required')).toBe(true)
-    fireEvent.click(within(dialog).getByRole('button', { name: 'Cancel' }))
-    expect(screen.queryByRole('dialog')).toBeNull()
-    fireEvent.click(screen.getByRole('button', { name: 'View module' }))
-    fireEvent.click(screen.getByRole('button', { name: 'Assign for intake' }))
-    dialog = screen.getByRole('dialog', { name: 'Assign for intake' })
-    await within(dialog).findByRole('option', { name: 'Expert A' })
-    fireEvent.change(within(dialog).getByLabelText('Responsible Expert'), { target: { value: 'expert-a' } })
-    fireEvent.change(within(dialog).getByLabelText('Related job positions'), { target: { value: 'occ' } })
-    fireEvent.submit(within(dialog).getByRole('button', { name: /^Assign$/ }).closest('form')!)
-    expect(await within(dialog).findByRole('alert')).toHaveProperty('textContent', 'Assignment changed. Reload the catalog.')
-    const request = vi.mocked(fetch).mock.calls.find(([path]) => String(path).endsWith('/assignment'))
-    expect(JSON.parse(String(request?.[1]?.body))).toEqual({ expertId: 'expert-a', jobPositionIds: ['occ'], expectedAssignedAt: null })
+    expect(screen.getByRole('dialog')).toBeTruthy()
+    expect(screen.queryByRole('button', { name: 'Assign for intake' })).toBeNull()
     expect(screen.queryByRole('button', { name: 'Approve and release' })).toBeNull()
+    expect(vi.mocked(fetch).mock.calls.some(([path, init]) => String(path).endsWith('/assignment') && init?.method === 'POST')).toBe(false)
   })
   it('loads real scoped choices and provides a useful empty state', async () => {
     render(<MemoryRouter><ModuleManagementWorkspace /></MemoryRouter>); await signIn()

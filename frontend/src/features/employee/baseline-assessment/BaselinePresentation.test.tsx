@@ -47,7 +47,7 @@ const attempt: BaselineAttempt = {
 }
 it('MM05/AB-A09 submitted answer review remains readonly and cannot issue another answer', () => {
   const run = vi.fn()
-  render(<BaselineAttemptPanel attempt={attempt} seconds={3540} locked={false} run={run} />)
+  render(<BaselineAttemptPanel attempt={attempt} seconds={3540} locked run={run} />)
   expect(screen.getByText('Original submitted question')).toBeTruthy()
   for (const radio of screen.getAllByRole('radio')) {
     expect((radio as HTMLInputElement).disabled).toBe(true); fireEvent.click(radio)

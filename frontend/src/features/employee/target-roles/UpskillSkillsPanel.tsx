@@ -1,24 +1,24 @@
-import { useContext, useEffect, useRef, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { useNavigate, useSearchParams } from 'react-router-dom'
-import { Search, SlidersHorizontal, List, LayoutGrid, X, ArrowRight, ArrowLeft, Info } from 'lucide-react'
-import { WorkspaceSessionContext } from '../../../shared/auth/workspaceSession'
-import { useTranslation } from '../../../shared/i18n/LanguageContext'
-import { fetchMicroSkills, type MicroSkillDto } from '../../../shared/api/microSkillApi'
-import { readSkillModules, searchSkillModules, startSkillModule, type OptionalSkillModule } from '../../../shared/api/skillLearningApi'
-import { readSkillKnowledgeProfile } from '../baseline-assessment/knowledgeProfileApi'
-import { INDIVIDUAL_KNOWLEDGE_LEVELS, individualKnowledgeState } from './individualSkillKnowledge'
+import { ArrowLeft,ArrowRight,Info,LayoutGrid,List,Search,SlidersHorizontal,X } from 'lucide-react'
+import { useContext,useEffect,useRef,useState } from 'react'
+import { useNavigate,useSearchParams } from 'react-router-dom'
+import { fetchMicroSkills,type MicroSkillDto } from '../../../shared/api/microSkillApi'
 import type { KnowledgeLevel } from '../../../shared/api/requirementPathway'
-import { Button } from '../../../shared/components/ui/Button'
-import { Input } from '../../../shared/components/ui/Input'
-import { Badge } from '../../../shared/components/ui/Badge'
-import { Dialog, DialogBody, DialogHeader, DialogTitle, DialogFooter } from '../../../shared/components/ui/Dialog'
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '../../../shared/components/ui/Tabs'
-import { Combobox } from '../../../shared/components/ui/Combobox'
-import { Pagination } from '../../../shared/components/ui/Pagination'
-import { SkillLevelAssessmentPanel } from './SkillLevelAssessmentPanel'
-import { ModuleCatalogResults } from './ModuleCatalogResults'
+import { readSkillModules,searchSkillModules,startSkillModule,type OptionalSkillModule } from '../../../shared/api/skillLearningApi'
+import { WorkspaceSessionContext } from '../../../shared/auth/workspaceSession'
 import { Heading } from '../../../shared/components/typography/Heading'
+import { Badge } from '../../../shared/components/ui/Badge'
+import { Button } from '../../../shared/components/ui/Button'
+import { Combobox } from '../../../shared/components/ui/Combobox'
+import { Dialog,DialogBody,DialogFooter,DialogHeader,DialogTitle } from '../../../shared/components/ui/Dialog'
+import { Input } from '../../../shared/components/ui/Input'
+import { Pagination } from '../../../shared/components/ui/Pagination'
+import { Tabs,TabsContent,TabsList,TabsTrigger } from '../../../shared/components/ui/Tabs'
+import { useTranslation } from "../../../shared/i18n/LanguageContext"
+import { readSkillKnowledgeProfile } from '../baseline-assessment/knowledgeProfileApi'
+import { INDIVIDUAL_KNOWLEDGE_LEVELS,individualKnowledgeState } from './individualSkillKnowledge'
+import { ModuleCatalogResults } from './ModuleCatalogResults'
+import { SkillLevelAssessmentPanel } from './SkillLevelAssessmentPanel'
 
 export function UpskillSkillsPanel() {
   const identity = useContext(WorkspaceSessionContext)?.identity
@@ -44,7 +44,8 @@ function ScopedSkillsPanel() {
   function resetPages() { setModulePage(0); setSkillPage(0) }
   const showSkills = resultType !== 'MODULE', showModules = resultType !== 'SKILL'
   const [selected, setSelected] = useState<MicroSkillDto | null>(null)
-  const selectedRegion = useRef<HTMLElement>(null), returnSkill = useRef(''), restoredSkillId = useRef('')
+  const selectedRegion = useRef<HTMLElement>(null), returnSkill = useRef('')
+  const [restoredSkillId, setRestoredSkillId] = useState('')
   useEffect(() => {
     if (selected) selectedRegion.current?.focus()
     else if (returnSkill.current) document.getElementById(returnSkill.current)?.focus()
@@ -56,20 +57,16 @@ function ScopedSkillsPanel() {
   )
   const [busy, setBusy] = useState(''), [actionError, setActionError] = useState('')
   const catalog = useQuery({ queryKey: ['individualSkills', scope], queryFn: () => fetchMicroSkills(identity!.organizationId!), enabled: Boolean(identity?.organizationId), retry: false, gcTime: 0 })
-  useEffect(() => {
-    if (!urlSkillId) {
-      restoredSkillId.current = ''
-      return
-    }
-    if (selected || restoredSkillId.current === urlSkillId) return
+  if (!urlSkillId && restoredSkillId) setRestoredSkillId('')
+  if (urlSkillId && !selected && restoredSkillId !== urlSkillId) {
     const match = (catalog.data ?? []).find(s => s.id === urlSkillId && s.status === 'ACTIVE')
-    if (!match) return
-    restoredSkillId.current = urlSkillId
-    setSelected(match)
-    if (urlLevel && INDIVIDUAL_KNOWLEDGE_LEVELS.includes(urlLevel as KnowledgeLevel)) {
-      setLevel(urlLevel as KnowledgeLevel)
+    if (match) {
+      setRestoredSkillId(urlSkillId)
+      setSelected(match)
+      if (urlLevel && INDIVIDUAL_KNOWLEDGE_LEVELS.includes(urlLevel as KnowledgeLevel)) setLevel(urlLevel as KnowledgeLevel)
     }
-  }, [urlSkillId, urlLevel, catalog.data, selected])
+  }
+
   const moduleResults = useQuery({ queryKey: ['individualModuleSearch', scope, debouncedSearch, ownerSkill, moduleLevel, modulePage], queryFn: ({ signal }) => searchSkillModules(debouncedSearch, ownerSkill, moduleLevel, modulePage, signal), enabled: Boolean(identity?.organizationId) && showModules && !selected && search === debouncedSearch, retry: false, gcTime: 0 })
   const provision = useQuery({ queryKey: ['individualSkillModules', scope, selected?.id], queryFn: ({ signal }) => readSkillModules(selected!.id, signal), enabled: Boolean(selected), retry: false, gcTime: 0 })
   const profile = useQuery({ queryKey: ['individualSkillKnowledge', scope, selected?.id, selected?.version], queryFn: ({ signal }) => readSkillKnowledgeProfile(selected!.id, signal), enabled: Boolean(selected), retry: false, gcTime: 0, refetchInterval: selected ? 5000 : false })

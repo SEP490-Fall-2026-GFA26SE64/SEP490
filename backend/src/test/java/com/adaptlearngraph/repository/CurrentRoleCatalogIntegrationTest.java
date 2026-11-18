@@ -44,7 +44,7 @@ class CurrentRoleCatalogIntegrationTest {
   session.run("""
    MATCH (l:Level {id:$level})
    MERGE (s:MicroSkill {id:$skill}) ON CREATE SET s.code=$skill,s.name=$skill,s.version='fixture-v1',s.status='ACTIVE'
-   CREATE (l)-[:REQUIRES_SKILL {id:$edge,version:'fixture-v1',status:'ACTIVE',requiredScore:0.7,isMandatory:true}]->(s)
+   CREATE (l)-[:REQUIRES_SKILL {id:$edge,version:'fixture-v1',status:'ACTIVE',requiredKnowledgeLevels:['FOUNDATION'],requiredScore:0.7,isMandatory:true}]->(s)
    """,Map.of("level",level,"skill",skill,"edge",level+"-"+skill)).consume();
  }
  String snapshot(){

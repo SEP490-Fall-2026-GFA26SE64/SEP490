@@ -34,6 +34,17 @@ public final class AdaptiveAttemptRows {
                 .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
     }
 
+    // Keep the persisted code stable across the Occupation -> Job Position API rename.
+    static AdaptiveAttemptSnapshot.Purpose publicPurpose(String stored) {
+        return "OCCUPATION_EXPLORATION".equals(stored)
+                ? AdaptiveAttemptSnapshot.Purpose.JOB_POSITION_EXPLORATION
+                : AdaptiveAttemptSnapshot.Purpose.valueOf(stored);
+    }
+    static String storedPurpose(AdaptiveAttemptSnapshot.Purpose purpose) {
+        return purpose == AdaptiveAttemptSnapshot.Purpose.JOB_POSITION_EXPLORATION
+                ? "OCCUPATION_EXPLORATION" : purpose.name();
+    }
+
     AdaptiveAttempt header(AdaptiveAttemptJpaRepository.Row row) {
         var scope = new AdaptiveAttempt.Scope(row.organizationId(), row.learnerId(), row.jobPositionId());
         UUID id = row.attemptId();
@@ -41,7 +52,7 @@ public final class AdaptiveAttemptRows {
                 new AdaptiveBlueprint.VersionId(row.blueprintId(), row.blueprintVersion())).orElseThrow();
         Map<UUID, String> pool = new LinkedHashMap<>();
         data.pool().pool(scope.organizationId(), id).forEach(item -> pool.put(item.itemVersionId(), item.microSkillId()));
-        var snapshot = new AdaptiveAttemptSnapshot(blueprint, AdaptiveAttemptSnapshot.Purpose.valueOf(row.attemptPurpose()),
+        var snapshot = new AdaptiveAttemptSnapshot(blueprint, publicPurpose(row.attemptPurpose()),
                 Optional.ofNullable(row.targetRoleId()), Optional.ofNullable(row.targetSelectionRevision()), pool,
                 policy(row, scope.organizationId()));
         String expectedPolicy = blueprint.configuration().jobPositionBounds() == null ? null : AdaptiveBlueprint.ScopePolicy.FULL_JOB_POSITION_V2.name();
@@ -63,7 +74,7 @@ public final class AdaptiveAttemptRows {
         var blueprint = attempt.snapshot().blueprint();
         var policy = attempt.snapshot().assessmentPolicy();
         return new BaselineAdaptiveAttemptEntity(attempt.id(), attempt.scope().organizationId(), attempt.scope().learnerId(),
-                attempt.scope().jobPositionId(), attempt.snapshot().purpose().name(), attempt.snapshot().roleId().orElse(null),
+                attempt.scope().jobPositionId(), storedPurpose(attempt.snapshot().purpose()), attempt.snapshot().roleId().orElse(null),
                 attempt.snapshot().selectionRevision().orElse(null), blueprint.id().blueprintId(), blueprint.id().version(),
                 blueprint.pins().modelVersionId(), blueprint.pins().masteryMappingVersionId(), blueprint.pins().parameterSetId(),
                 blueprint.catalogFingerprint(), attempt.snapshot().bounds().maxQuestions(), attempt.snapshot().bounds().timeLimitSeconds(),

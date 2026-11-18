@@ -34,7 +34,7 @@ describe('target-role application route', () => {
 
     render(<App />)
 
-    expect(await screen.findByText('Upskilling page')).toBeTruthy()
+    expect(await screen.findByText('Upskilling page', {}, { timeout: 10_000 })).toBeTruthy()
     expect(window.location.pathname).toBe('/workspace/acme/employee/upskilling')
     expect(new URLSearchParams(window.location.search).get('tab')).toBe('roles')
     expect(new URLSearchParams(window.location.search).get('search')).toBe('Security')

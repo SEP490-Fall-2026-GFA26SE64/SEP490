@@ -1,30 +1,31 @@
 import {
-  AlertCircle,
-  Eye,
-  Filter,
-  GitBranch,
-  Maximize2,
-  Minimize2,
-  RefreshCw,
-  Search,
-  X,
-  ZoomIn,
-  ZoomOut,
+AlertCircle,
+Eye,
+Filter,
+GitBranch,
+Maximize2,
+Minimize2,
+RefreshCw,
+Search,
+X,
+ZoomIn,
+ZoomOut,
 } from 'lucide-react'
 import * as React from 'react'
-import { Network, type Options, type Node, type Edge } from 'vis-network'
-import { fetchTargetRoleGraph, type TargetRoleGraphDto, type TargetRoleGraphSkillDto } from '../../../../shared/api/prerequisiteApi'
-import { fetchCompetencies, type CompetencyDto } from '../../../../shared/api/competencyApi'
+import { Network,type Edge,type Node,type Options } from 'vis-network'
+import { fetchCompetencies,type CompetencyDto } from '../../../../shared/api/competencyApi'
+import { fetchTargetRoleGraph,type TargetRoleGraphDto,type TargetRoleGraphSkillDto } from '../../../../shared/api/prerequisiteApi'
 import { Badge } from '../../../../shared/components/ui/Badge'
 import { Button } from '../../../../shared/components/ui/Button'
 import { Dialog } from '../../../../shared/components/ui/Dialog'
+import { useTranslation } from "../../../../shared/i18n/LanguageContext"
 import { getActiveCompany } from '../../../../shared/stores/companyStore'
-import { useTranslation } from '../../../../shared/i18n/LanguageContext'
-import { formatRequiredKnowledge } from '../roleKnowledgePresentation'
 import {
-  type SkillTargetConfig,
-  type TargetRoleModel,
+type SkillTargetConfig,
+type TargetRoleModel,
 } from '../../data/ldManagerMockData'
+import { formatRequiredKnowledge } from '../roleKnowledgePresentation'
+import { extractCleanRoleCode } from './TargetRoleGraphModal.helpers'
 
 interface TargetRoleGraphModalProps {
   open: boolean
@@ -129,12 +130,6 @@ class GraphModalErrorBoundary extends React.Component<
     }
     return this.props.children
   }
-}
-
-export const extractCleanRoleCode = (raw?: string | null): string => {
-  if (!raw) return ''
-  const trimmed = String(raw).trim()
-  return trimmed.split('#')[0].trim() || trimmed
 }
 
 export function TargetRoleGraphModal({
@@ -280,6 +275,7 @@ export function TargetRoleGraphModal({
 
   React.useEffect(() => {
     if (open && roleId) {
+      // oxlint-disable-next-line react/set-state-in-effect -- Synchronize graph construction and its request lifecycle with the external renderer.
       loadGraph()
     } else {
       setGraphData(null)
@@ -827,6 +823,7 @@ export function TargetRoleGraphModal({
       }
     } catch (networkErr) {
       console.error('Failed to initialize vis-network:', networkErr)
+      // oxlint-disable-next-line react/set-state-in-effect -- Synchronize graph construction and its request lifecycle with the external renderer.
       setError('Unable to render visual graph. Please try switching layout or adjusting filters.')
     }
 
@@ -840,7 +837,7 @@ export function TargetRoleGraphModal({
       }
       networkRef.current = null
     }
-  }, [graphData, layoutMode, loading, role, propLevels, roleId, selectedLevelFilter, searchQuery, t])
+  }, [graphData, layoutMode, loading, role, propLevels, roleId, selectedLevelFilter, searchQuery, t, allCompetencies])
 
   return (
     <Dialog

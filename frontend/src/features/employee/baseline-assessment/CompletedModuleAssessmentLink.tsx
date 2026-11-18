@@ -1,31 +1,14 @@
-import { BaselineError, type AssessmentTarget } from './baselineApi'
-import { PathwayError } from '../../../shared/api/initialPathway'
-import { useContext } from 'react'
 import { useQuery } from '@tanstack/react-query'
+import { useContext } from 'react'
+import { readRulePathway,type RuleModuleOption,type RulePathway,type RuleStep } from '../../../shared/api/requirementPathway'
 import { WorkspaceSessionContext } from '../../../shared/auth/workspaceSession'
-import { readRulePathway, type RulePathway, type RuleStep, type RuleModuleOption } from '../../../shared/api/requirementPathway'
-import { useTranslation } from '../../../shared/i18n/LanguageContext'
 import { Badge } from '../../../shared/components/ui/Badge'
 import { Button } from '../../../shared/components/ui/Button'
+import { useTranslation } from "../../../shared/i18n/LanguageContext"
+import { matchingModule } from './CompletedModuleAssessmentLink.helpers'
 import { IndependentSkillAssessmentEntry } from './IndependentSkillAssessmentEntry'
-import { AssessmentStatus, SkillAssessmentEntry } from './SkillAssessmentEntry'
+import { AssessmentStatus,SkillAssessmentEntry } from './SkillAssessmentEntry'
 import { usePathwayAssessmentStates } from './usePathwayAssessmentStates'
-
-/** Reuse the same exact module/pathway matching for the admission snapshot of a NEW paper. */
-export async function targetForCompletedModule(moduleId: string, revision: number): Promise<AssessmentTarget> {
-  let pathway: RulePathway | null
-  try { pathway = await readRulePathway(null) } catch (cause) { if (cause instanceof PathwayError) throw new BaselineError(cause.code, cause.status); throw cause }
-  const match = matchingModule(pathway, moduleId, revision)
-  if (!match) return { selectionId: null, selectionRevision: 0, moduleId, moduleRevision: revision }
-  if (!match.option.completedAt) throw new BaselineError('EXACT_LEARNING_COMPLETION_REQUIRED', 409)
-  return { selectionId: pathway!.selectionId, selectionRevision: pathway!.selectionRevision, stepId: match.step.id, moduleId, moduleRevision: revision }
-}
-function matchingModule(pathway: RulePathway | null | undefined, moduleId: string, revision: number) {
-  if (!pathway || pathway.archived) return null
-  const step = pathway.steps.find(step => step.state !== 'BYPASSED' && step.options.some(option => option.moduleId === moduleId && option.moduleRevision === revision))
-  const option = step?.options.find(option => option.moduleId === moduleId && option.moduleRevision === revision)
-  return step && option ? { step, option } : null
-}
 
 /** Shared reader/catalog resolver: preserve the real assigned-pathway or independent assessment context. */
 export function CompletedModuleAssessmentLink({ moduleId, revision, compact = false }: { moduleId: string; revision: number; compact?: boolean }) {

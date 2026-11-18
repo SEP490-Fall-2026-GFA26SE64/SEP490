@@ -98,8 +98,22 @@ public class CatalogConfiguration {
 
     @Bean
     public JobPositionApplicationService jobPositionApplicationService(
-            GetJobPositionsUseCase getJobPositionsUseCase, ModelMapper modelMapper) {
-        return new JobPositionApplicationService(getJobPositionsUseCase, modelMapper);
+            GetJobPositionsUseCase getJobPositionsUseCase, ModelMapper modelMapper,
+            ObjectProvider<com.adaptlearngraph.repository.SubscriptionIdentity> identities,
+            ObjectProvider<com.adaptlearngraph.repository.SubscriptionWorkspaceStore> workspaces) {
+        return new JobPositionApplicationService(getJobPositionsUseCase, modelMapper, organization -> {
+            var identity = identities.getIfAvailable();
+            var store = workspaces.getIfAvailable();
+            if (identity == null || store == null) throw new com.adaptlearngraph.entities.domain.CatalogFailure(503, "CATALOG_AUTHORIZATION_UNAVAILABLE");
+            var actor = identity.current().actor();
+            if (actor.organizationId() == null || !actor.organizationId().toString().equals(organization)
+                    || !(actor.roles().contains(com.adaptlearngraph.entities.domain.SubscriptionAccessPolicy.Role.LD_MANAGER)
+                    || actor.roles().contains(com.adaptlearngraph.entities.domain.SubscriptionAccessPolicy.Role.ORGANIZATION_ADMINISTRATOR)))
+                throw new com.adaptlearngraph.entities.domain.CatalogFailure(403, "FORBIDDEN");
+            store.require(actor, actor.organizationId(), com.adaptlearngraph.entities.domain.SubscriptionAccessPolicy.Action.WORKSPACE,
+                    java.time.Instant.now());
+            return actor.accountId().toString();
+        });
     }
 
     @Bean
@@ -169,10 +183,11 @@ public class CatalogConfiguration {
     @Bean
     public com.adaptlearngraph.repository.JobPositionRepository jobPositionRepository(ObjectProvider<Driver> driverProvider,
             ObjectProvider<JobPositionNodeRepository> jobPositions, ObjectProvider<Neo4jClient> client,
-            @Qualifier(TransactionManagers.NEO4J) ObjectProvider<PlatformTransactionManager> transactions) {
+            @Qualifier(TransactionManagers.NEO4J) ObjectProvider<PlatformTransactionManager> transactions,
+            com.fasterxml.jackson.databind.ObjectMapper json) {
         Driver driver = driverProvider.getIfAvailable();
         if (driver != null) {
-            return new Neo4jJobPositionRepository(jobPositions.getObject(), client.getObject(), transactions.getObject());
+            return new Neo4jJobPositionRepository(jobPositions.getObject(), client.getObject(), transactions.getObject(), json);
         }
         return new com.adaptlearngraph.repository.JobPositionRepository() {
             @Override public java.util.List<com.adaptlearngraph.entities.domain.JobPosition> findAllJobPositions(String organizationId) { return java.util.List.of(); }

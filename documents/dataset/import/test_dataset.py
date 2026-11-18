@@ -5,7 +5,8 @@ from unittest.mock import patch
 from validate_dataset import validate
 from graph_payload import build_payload
 
-SEED=Path(__file__).with_name('ontology_seed-v011.json')
+from historical_test_catalog import original_review_root
+SEED=original_review_root()/'ontology_seed-v011.json'
 class CatalogContractTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -21,7 +22,7 @@ class CatalogContractTest(unittest.TestCase):
     def test_valid_payload_has_no_export_join_fields(self):
         nodes,edges,_=build_payload(self.data)
         self.assertEqual((len(nodes),len(edges)),(994,5121))
-        for _,props in nodes.values():self.assertFalse({'job positionId','targetRoleId','levelId','levelIds'} & props.keys())
+        for _,props in nodes.values():self.assertFalse({'jobPositionId','targetRoleId','levelId','levelIds'} & props.keys())
 
     def test_many_to_many_teaching_is_accepted(self):
         from collections import Counter
@@ -38,8 +39,8 @@ class CatalogContractTest(unittest.TestCase):
     def test_all_architecture_fields_are_present_and_populated(self):
         common={'id','version','status','reviewStatus','reviewedBy','reviewedAt'}
         fields={
-            'Job Positions':{'code','name','jobZone',*('interest'+n for n in ['Realistic','Investigative','Artistic','Social','Enterprising','Conventional'])},
-            'TargetRoles':{'code','name','scope','job positionId'},
+            'JobPositions':{'code','name','jobZone',*('interest'+n for n in ['Realistic','Investigative','Artistic','Social','Enterprising','Conventional'])},
+            'TargetRoles':{'code','name','scope','jobPositionId'},
             'Levels':{'code','name','rank','attainmentRule','targetRoleId'},
             'Competencies':{'name','description','attainmentRule','levelId'},
             'MicroSkills':{'name','definition'},
@@ -63,7 +64,7 @@ class CatalogContractTest(unittest.TestCase):
 
     def test_nonmodule_catalog_business_data_is_preserved(self):
         previous=json.loads((SEED.parent.parent/'question-bank/15-1212.00/historical/ontology_seed-v08.json').read_text())
-        for section in ['Job Positions','TargetRoles','Levels','Competencies','MicroSkills']:
+        for section in ['JobPositions','TargetRoles','Levels','Competencies','MicroSkills']:
             without_version=lambda rows:sorted(({k:v for k,v in r.items() if k not in {'version','context'}} for r in rows),key=lambda r:r['id'])
             self.assertEqual(without_version(previous[section]),without_version(self.data[section]))
 
@@ -156,9 +157,11 @@ class CatalogContractTest(unittest.TestCase):
         self.check_invalid(lambda d:d['Levels'][0].update(context='retired'),'Retired Level context')
 
     def test_module_estimates_are_diverse_and_reproducible(self):
-        from estimate_module_costs import estimate, MANIFEST
+        from estimate_module_costs import estimate
+        MANIFEST=SEED.parent.parent/'sources/local_review/module_effort_price_v011.json'
         manifest=json.loads(MANIFEST.read_text())
-        estimated=estimate(self.data)
+        with patch('estimate_module_costs.ROOT',SEED.parent):
+            estimated=estimate(self.data)
         self.assertEqual(manifest['modules'],estimated)
         lookup={row['moduleId']:row for row in estimated}
         for module in self.data['LearningModules']:
@@ -201,7 +204,7 @@ class CatalogContractTest(unittest.TestCase):
     def test_v010_catalog_and_all_non_teaching_relationships_preserved(self):
         old=json.loads(SEED.with_name('ontology_seed-v010.json').read_text())
         strip=lambda row:{k:v for k,v in row.items() if k!='version'}
-        for section in ['Job Positions','TargetRoles','Levels','Competencies','MicroSkills']:
+        for section in ['JobPositions','TargetRoles','Levels','Competencies','MicroSkills']:
             self.assertEqual([strip(r) for r in old[section]],[strip(r) for r in self.data[section]])
         new_modules={m['id']:m for m in self.data['LearningModules']}
         manifest=json.loads((SEED.parent.parent/'sources/local_review/teaching_focus_difficulty_v011.json').read_text())

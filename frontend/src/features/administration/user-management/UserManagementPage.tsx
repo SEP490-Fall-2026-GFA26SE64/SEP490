@@ -1,40 +1,45 @@
-import { useState, useMemo, useEffect } from 'react'
-import { Building2, Briefcase, Trash2, Plus, Search, Users, Mail, UserCheck, UserX, Eye, Pencil, ShieldCheck, User, Target, FileSpreadsheet } from 'lucide-react'
-import { UserImportDialog } from './import/UserImportDialog'
-import { Combobox, type ComboboxOption } from '../../../shared/components/ui/Combobox'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { AdminPageLayout } from '../AdminPageLayout'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../../../shared/components/ui/Card'
-import { Button } from '../../../shared/components/ui/Button'
-import { Input } from '../../../shared/components/ui/Input'
+import { useResettableState } from '../../../shared/hooks/useResettableState'
+import { useMutation,useQuery,useQueryClient } from '@tanstack/react-query'
+import { Briefcase,Building2,Eye,FileSpreadsheet,Mail,Pencil,Plus,Search,ShieldCheck,Target,Trash2,User,UserCheck,Users,UserX } from 'lucide-react'
+import { useEffect,useMemo,useState } from 'react'
+import { createDepartmentApi,fetchDepartments,updateDepartmentApi,type DepartmentDto } from '../../../shared/api/departmentApi'
+import { fetchJobPositions,type JobPositionDto } from '../../../shared/api/jobPositionApi'
 import { Badge } from '../../../shared/components/ui/Badge'
-import { StatCard } from '../../../shared/components/ui/StatCard'
+import { Button } from '../../../shared/components/ui/Button'
+import { Card,CardContent,CardDescription,CardHeader,CardTitle } from '../../../shared/components/ui/Card'
+import { Combobox,type ComboboxOption } from '../../../shared/components/ui/Combobox'
+import { Dialog,DialogDescription,DialogFooter,DialogHeader,DialogTitle } from '../../../shared/components/ui/Dialog'
+import { Input } from '../../../shared/components/ui/Input'
 import { Pagination } from '../../../shared/components/ui/Pagination'
-import { Dialog, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '../../../shared/components/ui/Dialog'
-import { useTranslation } from '../../../shared/i18n/LanguageContext'
-import { decodeJobPositionWithTargetRole, encodeJobPositionWithTargetRole, getIdentity, getMembers, getPendingActivations, getReferences, getSummary, request, updateMemberProfile,
-  type Identity, type Member, type PendingActivation, type Reference } from '../../subscription/subscriptionApi'
-import { Failure, Loading, useCopy } from '../../subscription/SubscriptionFeedback'
-import { loadDepartments, updateDepartment, type DepartmentRecord } from '../../../shared/stores/departmentStore'
-import { fetchDepartments, updateDepartmentApi, createDepartmentApi, type DepartmentDto } from '../../../shared/api/departmentApi'
-import { fetchJobPositions, type JobPositionDto } from '../../../shared/api/jobPositionApi'
+import { StatCard } from '../../../shared/components/ui/StatCard'
+import { useTranslation } from "../../../shared/i18n/LanguageContext"
+import { getActiveCompany,resolveWorkspaceOrgId } from '../../../shared/stores/companyStore'
+import { loadDepartments,updateDepartment,type DepartmentRecord } from '../../../shared/stores/departmentStore'
 import {
-  getAvailableJobPositions,
-  type JobPosition,
-  type TargetRoleModel,
+getAvailableJobPositions,
+type JobPosition,
+type TargetRoleModel,
 } from '../../manager/data/ldManagerMockData'
-import { getActiveCompany, resolveWorkspaceOrgId } from '../../../shared/stores/companyStore'
 import {
-  buildOrganizationTargetRoles,
-  fetchOrganizationTargetRoles,
-  jobPositionsForDepartment,
-  readTargetRoleMeta,
-  resolveDepartment,
-  resolveJobPosition,
-  targetRolesForEmployee,
-  toDeterministicUuid,
-  type DepartmentItem,
+encodeJobPositionWithTargetRole,getIdentity,getMembers,getPendingActivations,getReferences,getSummary,request,updateMemberProfile,
+type Identity,type Member,type PendingActivation,type Reference
+} from '../../subscription/subscriptionApi'
+import { Failure,Loading } from "../../subscription/SubscriptionFeedback"
+import { useCopy } from "../../subscription/SubscriptionFeedback.helpers"
+import { AdminPageLayout } from '../AdminPageLayout'
+import { UserImportDialog } from './import/UserImportDialog'
+import {
+buildOrganizationTargetRoles,
+fetchOrganizationTargetRoles,
+jobPositionsForDepartment,
+readTargetRoleMeta,
+resolveDepartment,
+resolveJobPosition,
+targetRolesForEmployee,
+toDeterministicUuid,
+type DepartmentItem,
 } from './userAssignmentOptions'
+import { resolveEmployeeTargetRoleAssignment } from './UserManagementPage.helpers'
 
 const ROLES = ['EMPLOYEE', 'DOMAIN_EXPERT', 'LD_MANAGER', 'ORGANIZATION_ADMINISTRATOR'] as const
 type Copy = ReturnType<typeof useCopy>
@@ -53,62 +58,6 @@ function statusName(status: string, c: Copy) {
     PENDING: ['Awaiting activation', 'Chờ kích hoạt'], EXPIRED: ['Activation expired', 'Kích hoạt hết hạn'],
   }
   return labels[status] ? c(...labels[status]) : status
-}
-
-
-export interface StoredEmployeeRoleAssignment {
-  roleId: string
-  roleCode: string
-  roleTitle: string
-  level: string
-  departmentId?: string
-  departmentName?: string
-  jobPositionCode?: string
-  jobPositionName?: string
-}
-
-export function resolveEmployeeTargetRoleAssignment(
-  member?: Pick<Member, 'email' | 'targetRoleId' | 'targetRoleCode' | 'targetRoleName' | 'targetRoleLevel' | 'departmentId' | 'departmentName' | 'jobPositionName'> | null,
-  fallbackEmail?: string | null,
-): StoredEmployeeRoleAssignment | null {
-  const decoded = decodeJobPositionWithTargetRole(member?.jobPositionName)
-  const effRoleId = member?.targetRoleId || decoded.targetRoleId
-  if (effRoleId) {
-    const rawLvl = member?.targetRoleLevel || decoded.targetRoleLevel || 'Junior'
-    const cleanLvl = rawLvl.replace(/^(?:rank|level)\s*\d+\s*:\s*/i, '').trim()
-    return {
-      roleId: effRoleId,
-      roleCode: member?.targetRoleCode || decoded.targetRoleCode || effRoleId,
-      roleTitle: member?.targetRoleName || decoded.targetRoleName || member?.targetRoleCode || effRoleId,
-      level: cleanLvl || 'Junior',
-      departmentId: member?.departmentId || undefined,
-      departmentName: member?.departmentName || undefined,
-      jobPositionName: decoded.cleanJobPositionName || member?.jobPositionName || undefined,
-    }
-  }
-  const email = (member?.email || fallbackEmail || '').toLowerCase().trim()
-  if (!email || typeof localStorage === 'undefined') return null
-  try {
-    const raw = localStorage.getItem(`alg_employee_assignment_${email}`)
-    if (!raw) return null
-    const parsed = JSON.parse(raw) as Partial<StoredEmployeeRoleAssignment>
-    const roleId = (parsed.roleId || parsed.roleCode || '').trim()
-    if (!roleId) return null
-    const rawLvl = (parsed.level || 'Junior').trim()
-    const cleanLvl = rawLvl.replace(/^(?:rank|level)\s*\d+\s*:\s*/i, '').trim()
-    return {
-      roleId,
-      roleCode: (parsed.roleCode || roleId).trim(),
-      roleTitle: (parsed.roleTitle || parsed.roleCode || roleId).trim(),
-      level: cleanLvl || 'Junior',
-      departmentId: parsed.departmentId,
-      departmentName: parsed.departmentName,
-      jobPositionCode: parsed.jobPositionCode,
-      jobPositionName: parsed.jobPositionName,
-    }
-  } catch {
-    return null
-  }
 }
 
 interface DirectoryRow {
@@ -204,19 +153,19 @@ function UserDirectory({ identity, organization, principal }: { identity: Identi
     onSuccess: async () => { await refresh(); setNotice('invited') },
   })
 
-  const [localDepts, setLocalDepts] = useState<DepartmentRecord[]>(() => loadDepartments(organization))
+  const storedDepartments = useMemo(() => loadDepartments(organization), [organization])
+  const [localDepts, setLocalDepts] = useResettableState<DepartmentRecord[]>(storedDepartments, [organization])
 
   const refetchLiveDepts = liveDeptsQuery.refetch
 
   useEffect(() => {
-    setLocalDepts(loadDepartments(organization))
     const handleUpdated = () => {
       setLocalDepts(loadDepartments(organization))
       refetchLiveDepts()
     }
     window.addEventListener('departments_updated', handleUpdated)
     return () => window.removeEventListener('departments_updated', handleUpdated)
-  }, [organization, refetchLiveDepts])
+  }, [organization, refetchLiveDepts, setLocalDepts])
   const localAllJobPositions = getAvailableJobPositions(organization, true)
 
   const allJobPositions = useMemo(() => {
@@ -341,7 +290,7 @@ function UserDirectory({ identity, organization, principal }: { identity: Identi
       }
     }
     return list
-  }, [liveDeptsQuery.data, localDepts, references.data])
+  }, [liveDeptsQuery.data, localDepts, references.data, organization])
 
   const rows: DirectoryRow[] = useMemo(() => {
     const list: DirectoryRow[] = []
@@ -1015,12 +964,12 @@ function UserForm({
   const initialDeptObj = useMemo(() => {
     if (!member?.departmentId && !member?.departmentName) return null
     return resolveDepartment(member.departmentId, member.departmentName, allDepartments)
-  }, [member?.departmentId, member?.departmentName, allDepartments])
+  }, [member, allDepartments])
 
   const initialJobObj = useMemo(() => {
     if (!member?.jobPositionReferenceId && !member?.jobPositionName) return null
     return resolveJobPosition(member.jobPositionReferenceId, member.jobPositionName, jobPositions)
-  }, [member?.jobPositionReferenceId, member?.jobPositionName, jobPositions])
+  }, [member, jobPositions])
 
   const [department, setDepartment] = useState(initialDeptObj?.id || member?.departmentId || '')
   const [jobPosition, setJobPosition] = useState(initialJobObj?.jobPositionReferenceId || initialJobObj?.code || member?.jobPositionReferenceId || '')
@@ -1041,7 +990,7 @@ function UserForm({
 
   const orgTargetRoles = useMemo<TargetRoleModel[]>(() => {
     return buildOrganizationTargetRoles(organization, activeComp, liveTargetRolesQuery.data, roleMetaByCode, jobPositions)
-  }, [activeComp?.targetRoles, liveTargetRolesQuery.data, roleMetaByCode])
+  }, [organization, activeComp, liveTargetRolesQuery.data, roleMetaByCode, jobPositions])
 
   const initialTargetRoleAssignment = useMemo(
     () => resolveEmployeeTargetRoleAssignment(member, member?.email),
@@ -1050,27 +999,19 @@ function UserForm({
   const [targetRoleId, setTargetRoleId] = useState(initialTargetRoleAssignment?.roleId || '')
   const [targetRoleLevel, setTargetRoleLevel] = useState(initialTargetRoleAssignment?.level || '')
 
-  useEffect(() => {
-    if (!initialTargetRoleAssignment || orgTargetRoles.length === 0) return
-    const matched = orgTargetRoles.find(
+  const matchedInitialRole = !initialTargetRoleAssignment ? undefined : orgTargetRoles.find(
       (r) =>
         r.id === initialTargetRoleAssignment.roleId ||
         r.code.trim().toUpperCase() === initialTargetRoleAssignment.roleCode.trim().toUpperCase() ||
         r.code.trim().toUpperCase() === initialTargetRoleAssignment.roleId.trim().toUpperCase() ||
         r.title.trim().toLowerCase() === initialTargetRoleAssignment.roleTitle.trim().toLowerCase(),
     )
-    if (matched) {
-      setTargetRoleId((prev) => {
-        if (!prev || prev === initialTargetRoleAssignment.roleId || prev === initialTargetRoleAssignment.roleCode) {
-          return matched.id
-        }
-        return prev
-      })
-      if (initialTargetRoleAssignment.level) {
-        setTargetRoleLevel((prev) => prev || initialTargetRoleAssignment.level)
-      }
-    }
-  }, [initialTargetRoleAssignment, orgTargetRoles])
+  const [resolvedInitialRole, setResolvedInitialRole] = useState<string | null>(null)
+  if (matchedInitialRole && initialTargetRoleAssignment && matchedInitialRole.id !== resolvedInitialRole) {
+    setResolvedInitialRole(matchedInitialRole.id)
+    if (!targetRoleId || targetRoleId === initialTargetRoleAssignment.roleId || targetRoleId === initialTargetRoleAssignment.roleCode) setTargetRoleId(matchedInitialRole.id)
+    if (!targetRoleLevel && initialTargetRoleAssignment.level) setTargetRoleLevel(initialTargetRoleAssignment.level)
+  }
 
   const employee = roles.includes('EMPLOYEE')
   const isLdManager = roles.includes('LD_MANAGER')

@@ -13,7 +13,7 @@ import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.SafeConstructor;
 
 class MigrationConfigurationTest {
-    @Test void everySelectableHistoryHasUniqueContinuousVersions() throws Exception {
+    @Test void everySelectableHistoryHasUniqueVersionsAndOnlyRetiredPricingGaps() throws Exception {
         for (String directory : new String[]{"migration", "workspace-migration", "module-migration"}) {
             var resource = getClass().getResource("/db/" + directory);
             assertNotNull(resource);
@@ -25,8 +25,12 @@ class MigrationConfigurationTest {
                     assertTrue(versions.add(version), directory + " duplicate V" + version);
                 }
             }
-            assertEquals(47, versions.size(), directory);
-            for (int version = 1; version <= 47; version++) assertTrue(versions.contains(version), directory);
+            int latest = Map.of("migration", 74, "workspace-migration", 75, "module-migration", 73).get(directory);
+            assertEquals(latest - 2, versions.size(), directory);
+            // V68/V69 were retired when pricing V67 was reconciled with assessment V71-V73.
+            for (int version = 1; version <= latest; version++) {
+                assertEquals(version != 68 && version != 69, versions.contains(version), directory + " V" + version);
+            }
         }
     }
 

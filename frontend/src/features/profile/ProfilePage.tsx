@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { useTranslation } from '../../shared/i18n/LanguageContext'
+import { useTranslation } from "../../shared/i18n/LanguageContext";
 import {
   Award,
   Briefcase,
@@ -18,11 +18,12 @@ import {
 } from 'lucide-react'
 import { Heading } from '../../shared/components/typography/Heading'
 import { Badge } from '../../shared/components/ui/Badge'
-import { Button, buttonVariants } from '../../shared/components/ui/Button'
+import { Button } from "../../shared/components/ui/Button";
+import { buttonVariants } from "../../shared/components/ui/Button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../../shared/components/ui/Card'
 import { Input } from '../../shared/components/ui/Input'
 import { PageHeader } from '../../shared/components/ui/PageHeader'
-import { useToast } from '../../shared/hooks/useToast'
+import { useToast } from "../../shared/hooks/useToast";
 import { WorkspaceLayout } from '../../shared/layouts/WorkspaceLayout'
 import { WorkspaceSessionContext } from '../../shared/auth/workspaceSession'
 import { decodeJobPositionWithTargetRole, changePassword } from '../subscription/subscriptionApi'
@@ -82,14 +83,16 @@ export function ProfilePage() {
     return base
   })
 
-  // Sync profile when sessionIdentity updates
-  React.useEffect(() => {
+  const [previousIdentity, setPreviousIdentity] = React.useState(sessionIdentity)
+  if (previousIdentity !== sessionIdentity) {
+    setPreviousIdentity(sessionIdentity)
     if (sessionIdentity) {
-      const email = sessionIdentity.email || profile.email
-      const name = sessionIdentity.fullName || profile.name
+      setProfile(prev => {
+      const email = sessionIdentity.email || prev.email
+      const name = sessionIdentity.fullName || prev.name
       const initials = name.split(' ').filter(Boolean).map(s => s[0]).join('').slice(0, 2).toUpperCase() || 'U'
-      const orgName = sessionIdentity.organizationName || profile.details[0]?.value || 'Enterprise Workspace'
-      setProfile(prev => ({
+      const orgName = sessionIdentity.organizationName || prev.details[0]?.value || 'Enterprise Workspace'
+      return ({
         ...prev,
         name,
         email,
@@ -98,9 +101,10 @@ export function ProfilePage() {
           { label: 'Department / Org', value: orgName },
           ...prev.details.slice(1),
         ],
-      }))
+      })
+      })
     }
-  }, [sessionIdentity])
+  }
 
   // Assigned Job Position & Placement State
   const [assignment, setAssignment] = React.useState<EmployeeAssignmentData | null>(() => {

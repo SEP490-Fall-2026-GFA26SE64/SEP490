@@ -1,33 +1,34 @@
-import * as React from 'react'
+import { useResettableState } from '../../../shared/hooks/useResettableState'
 import {
-  Activity,
-  CheckCircle2,
-  Clock,
-  Database,
-  Download,
-  Eye,
-  Search,
-  Settings2,
-  ShieldAlert,
-  ShieldCheck,
-  Sliders,
-  Users,
+Activity,
+CheckCircle2,
+Clock,
+Database,
+Download,
+Eye,
+Search,
+Settings2,
+ShieldAlert,
+ShieldCheck,
+Sliders,
+Users,
 } from 'lucide-react'
+import * as React from 'react'
 import { Badge } from '../../../shared/components/ui/Badge'
 import { Button } from '../../../shared/components/ui/Button'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../../../shared/components/ui/Card'
+import { Card,CardContent,CardDescription,CardHeader,CardTitle } from '../../../shared/components/ui/Card'
+import {
+Dialog,
+DialogDescription,
+DialogFooter,
+DialogHeader,
+DialogTitle,
+} from '../../../shared/components/ui/Dialog'
 import { Input } from '../../../shared/components/ui/Input'
 import { PageHeader } from '../../../shared/components/ui/PageHeader'
 import { Pagination } from '../../../shared/components/ui/Pagination'
 import { StatCard } from '../../../shared/components/ui/StatCard'
-import {
-  Dialog,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '../../../shared/components/ui/Dialog'
-import { useToast } from '../../../shared/hooks/useToast'
+import { useToast } from "../../../shared/hooks/useToast"
 import { WorkspaceLayout } from '../../../shared/layouts/WorkspaceLayout'
 import { getActiveCompany } from '../../../shared/stores/companyStore'
 import './AdminDashboardPage.css'
@@ -146,12 +147,9 @@ export function AdminDashboardPage() {
   const [searchQuery, setSearchQuery] = React.useState('')
   const [severityFilter, setSeverityFilter] = React.useState<string>('ALL')
   const [selectedAuditLog, setSelectedAuditLog] = React.useState<AuditLogRecord | null>(null)
-  const [auditCurrentPage, setAuditCurrentPage] = React.useState(1)
-  const auditPageSize = 10
+    const auditPageSize = 10
 
-  React.useEffect(() => {
-    setAuditCurrentPage(1)
-  }, [searchQuery, severityFilter])
+  const [auditCurrentPage, setAuditCurrentPage] = useResettableState(1, [searchQuery, severityFilter])
 
   const handleSaveConfig = (e: React.FormEvent) => {
     e.preventDefault()

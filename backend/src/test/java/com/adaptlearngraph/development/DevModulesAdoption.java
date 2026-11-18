@@ -23,6 +23,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.support.TransactionTemplate;
 
 /** User-authorized local snapshot adoption. Never runs from a web endpoint or normal startup. */
+// Exercises retained historical compatibility and retired API rejection.
+@SuppressWarnings("deprecation")
 public final class DevModulesAdoption {
     private static String env(String key) { return Objects.requireNonNull(System.getenv(key), key); }
     private static void actor(String id, String organization, String role) {

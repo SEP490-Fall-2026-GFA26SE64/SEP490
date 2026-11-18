@@ -18,7 +18,7 @@ it('R09 E03 preview maps saved ordinal order, dependencies and PREVIEW/null entr
   expect(roadmap.modules.map(m => m.module.id)).toEqual(['M-A', 'M-B'])
   expect(roadmap.status?.revisionContentHash).toBe('a'.repeat(64)); expect(roadmap.status?.revision).toBe(4)
   expect(roadmap.modules.every(m => m.accessState === 'PREVIEW' && m.entry === null)).toBe(true)
-  await userEvent.click(screen.getByRole('button', { name: 'pathway.adaptiveTimeline' }))
+  await userEvent.click(screen.getByRole('tab', { name: 'pathway.adaptiveTimeline' }))
   expect(observed.timeline.at(-1)).toEqual(roadmap)
   expect(roadmap.dependencies).toEqual([{ ...detail.revision.plan.dependencies[0], internal: false }])
   expect(fetcher).not.toHaveBeenCalled()

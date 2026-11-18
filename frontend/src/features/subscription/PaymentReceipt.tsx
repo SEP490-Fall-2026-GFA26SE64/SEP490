@@ -2,7 +2,8 @@ import { CreditCard, ReceiptText } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '../../shared/components/ui/Card'
 import { Badge } from '../../shared/components/ui/Badge'
 import { Heading } from '../../shared/components/typography/Heading'
-import { StateLabel, useCopy } from './SubscriptionFeedback'
+import { StateLabel } from "./SubscriptionFeedback";
+import { useCopy } from "./SubscriptionFeedback.helpers";
 import type { Order } from './subscriptionApi'
 
 export function PaymentReceipt({ order }: { order: Order }) {

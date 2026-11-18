@@ -1,20 +1,5 @@
 package com.adaptlearngraph.dtos;
 
-public record JobPositionResponse(
-        String id,
-        String code,
-        String name,
-        int jobZone,
-        double interestRealistic,
-        double interestInvestigative,
-        double interestArtistic,
-        double interestSocial,
-        double interestEnterprising,
-        double interestConventional,
-        String status,
-        String version,
-        int roleCount,
-        int microSkillCount
-) {
-}
-
+public record JobPositionResponse(String id,String code,String name,int jobZone,String status,String version,int roleCount,int microSkillCount,
+        String description,Integer interestRealistic,Integer interestInvestigative,Integer interestArtistic,
+        Integer interestSocial,Integer interestEnterprising,Integer interestConventional) {}

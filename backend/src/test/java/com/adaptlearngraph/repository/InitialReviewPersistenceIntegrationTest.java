@@ -43,6 +43,8 @@ import org.testcontainers.containers.*;
 
 /** Real PG+Neo4j adapters/transactions; explicit versioned owner fixtures, not production owner integration. */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+// Exercises retained historical compatibility and retired API rejection.
+@SuppressWarnings("deprecation")
 class InitialReviewPersistenceIntegrationTest {
     final PostgreSQLContainer<?> pg=new PostgreSQLContainer<>("postgres:17.6-alpine");
     final Neo4jContainer<?> graph=new Neo4jContainer<>("neo4j:5.26-community");
@@ -57,7 +59,7 @@ class InitialReviewPersistenceIntegrationTest {
         pg.start();graph.start();driver=GraphDatabase.driver(graph.getBoltUrl(),AuthTokens.basic("neo4j",graph.getAdminPassword()));
         graphContext=com.adaptlearngraph.support.Neo4jTestContext.start(driver);graphCypher=graphContext.cypher();
         var ds=new CountingTestDataSource(new DriverManagerDataSource(pg.getJdbcUrl(),pg.getUsername(),pg.getPassword()),preparedStatements);sql=new JdbcTemplate(ds);codec=new InitialRevisionCodec(json);
-        Flyway.configure().dataSource(ds).locations("classpath:db/workspace-migration").target("44").load().migrate();
+        Flyway.configure().dataSource(ds).locations("classpath:db/workspace-migration").target("73").load().migrate();
         baseline=new PathwayBaselineFixture(ds,json);var persistence=baseline.persistence;tx=new TransactionTemplate(persistence.transactionManager());repos=InitialPathwayRepositories.from(persistence::bean);
         store=new JpaInitialPathways(repos,codec,tx);receipts=new JpaInitialReceipts(persistence.bean(InitialPathwayReceiptJpaRepository.class));
         selections=new CurrentRoleSelectionStore(RoleSelectionRepositories.from(persistence::bean,new PostgresAdvisoryLocks(persistence.bean(jakarta.persistence.EntityManager.class))),json,tx);seedGraph();
@@ -101,7 +103,20 @@ class InitialReviewPersistenceIntegrationTest {
             var skills=List.of(new RoleBaselineFlow.Skill("s1","s1","Skill s1",1,true),new RoleBaselineFlow.Skill("s2","s2","Skill s2",1,true));
             var zero=List.of(new RoleBaselineFlow.Skill("s1","s1","Skill s1",0,true),new RoleBaselineFlow.Skill("s2","s2","Skill s2",0,true));
             var role=new RoleBaselineFlow.Role("role-a","role-a","Role A","Fixture",OCC,"Fixture JobPosition","fixture-v1","fixture-f3-v1",List.of(new RoleBaselineFlow.Level("level-a","level-a","Fixture Level",1,"Fixture","ALL_MANDATORY_SKILLS",skills),new RoleBaselineFlow.Level("level-no-gap","level-no-gap","Fixture no-gap",2,"Fixture","ALL_MANDATORY_SKILLS",zero)));
-            coordination=new CurrentSelectionCoordination(selections,org->org.equals(ORG)?List.of(role):List.of());
+            // This suite verifies retained numeric plans, using an explicit historical owner fixture.
+            // CurrentSelectionCoordination intentionally rejects retired numeric skill targets.
+            coordination=new Coordination(){
+                RoleBaselineFlow.Actor owner(Scope s){if(!ORG.equals(s.organizationId()))throw new Failure(404,"ROLE_NOT_AVAILABLE");return new RoleBaselineFlow.Actor(s.organizationId(),s.learnerId());}
+                Selection selected(RoleBaselineFlow.Selection value){return new Selection(value.selectionId(),value.revision(),value.role().id(),value.levelId());}
+                public <T>T transaction(Scope s,Supplier<T> work){return selections.transaction(owner(s),work);}
+                public Optional<Selection> current(Scope s){return selections.current(owner(s)).map(this::selected);}
+                public boolean assessmentActive(Scope s){return selections.assessmentActive(owner(s));}
+                public PreparedSelection prepare(Scope s,Binding b){
+                    owner(s);var expected=bindings.require(new Actor(s.organizationId(),s.learnerId(),Role.EMPLOYEE),b.roleId(),b.levelId());
+                    if(!expected.equals(b))throw new Failure(503,"INCOHERENT_ROLE_BINDING");
+                    return (key,hash)->selected(selections.selectForPathway(owner(s),role,b.levelId()));
+                }
+            };
             definitions=new ReadinessDefinitions(){public PrerequisiteNeed prerequisite(Scope s,Binding b,Edge e){var profile=profiles.require(s,OCC);var evidence=profile.evidence().get(e.prerequisiteSkillId());return new PrerequisiteNeed(evidence.mastery().compareTo(e.requiredScore())<0,false,InitialIdentity.hash("fixture-evidence",List.of(profile.profileHash(),e.prerequisiteSkillId(),e.requiredScore())),evidence.mastery(),null);}
                 public Optional<GateDefinition> gate(Scope s,Binding b,Provider p,Edge e){return Optional.of(new GateDefinition(p.moduleId(),e.dependentSkillId(),e.prerequisiteSkillId(),"fixture-gate:"+p.moduleId(),versions.get("readiness"),null));}};
             availability=(s,m,v)->{try(var session=driver.session()){return session.executeRead(t->t.run("MATCH (m:LearningModule {id:$id,contentVersion:$version,status:'ACTIVE',organizationId:$org}) RETURN count(m)=1 AS available",Map.of("id",m,"version",v,"org",s.organizationId().toString())).single().get("available").asBoolean());}};
@@ -122,7 +137,7 @@ class InitialReviewPersistenceIntegrationTest {
         InitialPathwayReview.Expected expected(){var r=current();return new InitialPathwayReview.Expected(r.revision(),r.contentHash());}
     }
     Map<String,String> digest(){var result=new TreeMap<String,String>();for(String table:sql.queryForList("SELECT tablename FROM pg_tables WHERE schemaname='platform' AND (tablename LIKE 'initial_%' OR tablename IN ('audit_event','outbox_event','employee_role_selection','employee_job_position_profile','baseline_attempt_response','baseline_attempt_skill_result')) ORDER BY tablename",String.class))result.put(table,sql.queryForObject("SELECT md5(coalesce(string_agg(to_jsonb(t)::text,',' ORDER BY to_jsonb(t)::text),'')) FROM platform."+table+" t",String.class));return result;}
-    @Test void P19_v44ToLatestPreservesFullExistingApprovedAggregateAndChecksums(){assertThat(after35).isEqualTo(before35);assertThat(sql.queryForList("SELECT version,checksum FROM public.flyway_schema_history WHERE success AND version::int<=44 ORDER BY installed_rank")).isEqualTo(oldChecksums);flyway.validate();assertThat(flyway.migrate().migrationsExecuted).isZero();assertThat(store.approved(retained.scope,retained.id,retained.current().revision(),retained.current().contentHash())).isTrue();}
+    @Test void P19_mainV73ToRiasecV74PreservesFullExistingApprovedAggregateAndChecksums(){assertThat(after35).isEqualTo(before35);assertThat(sql.queryForList("SELECT version,checksum FROM public.flyway_schema_history WHERE success AND version::int<=73 ORDER BY installed_rank")).isEqualTo(oldChecksums);flyway.validate();assertThat(flyway.migrate().migrationsExecuted).isZero();assertThat(store.approved(retained.scope,retained.id,retained.current().revision(),retained.current().contentHash())).isTrue();}
     @Test void R03_R14_realMoveCheckRepairAndExactApprovalRetainOrdinalsAndHistory(){
         var f=new Fixture(true);assertThat(f.revision().plan().modules()).extracting(InitialPlanning.Module::id).containsExactly("B","P","A");
         var before=digest();assertThatThrownBy(()->f.review.move(f.id,"inversion",new InitialPathwayReview.Move("A","UP",f.current().revision(),f.current().contentHash(),null))).isInstanceOf(InitialReviewOrder.Rejected.class);assertThat(digest()).isEqualTo(before);
@@ -250,14 +265,17 @@ class InitialReviewPersistenceIntegrationTest {
         long statements=preparedStatements.get();Arrays.sort(samples);assertThat(statements).isGreaterThan(0);assertThat(digest()).isEqualTo(before);
         System.out.printf(Locale.ROOT,"C3 REAL CHECK: needs=3 offers=4 selected=3 edges=1 budget=10000 warmup=3 samples=30 threads=1 JDBC_prepared=%d p50_ms=%.3f p95_ms=%.3f; graph statements/resources excluded; no SLA/p99 claim%n",statements,samples[14]/1e6,samples[28]/1e6);
     }
-    @Test void R11_selectionChangeBetweenPlanningAndCommitArchivesWithoutSavingPreparedEdit(){
-        var f=new Fixture(true);var command=f.edit("ALT");var guarded=f.reviewWith(f.builder,beforeSecondTransaction(f,()->changeSelection(f)));
-        assertThatThrownBy(()->guarded.edit(f.id,"selection-drift",command,true)).hasMessage("STALE_REVISION");
-        assertThat(f.current().review()).isEqualTo(Review.ARCHIVED);assertThat(count("initial_pathway_revision",f.id)).isOne();assertThat(count("initial_pathway_override",f.id)).isZero();assertThat(count("initial_pathway_approval",f.id)).isZero();assertThat(receiptCount(f.id)).isZero();
+    @Test void R11_boundTargetRejectsSelectionChangeBeforePreparedEdit(){
+        var f=new Fixture(true);var before=digest();var command=f.edit("ALT");var guarded=f.reviewWith(f.builder,beforeSecondTransaction(f,()->changeSelection(f)));
+        assertThatThrownBy(()->guarded.edit(f.id,"selection-drift",command,true)).hasMessage("TARGET_ROLE_LEVEL_LOCKED");
+        assertThat(digest()).isEqualTo(before);assertThat(f.current().review()).isNotEqualTo(Review.ARCHIVED);assertThat(count("initial_pathway_revision",f.id)).isOne();assertThat(count("initial_pathway_override",f.id)).isZero();assertThat(count("initial_pathway_approval",f.id)).isZero();assertThat(receiptCount(f.id)).isZero();
     }
-    @Test void P12_P13_dispatchCannotPublishAfterSelectionDriftAndRecoversSourceFailureAtCommit(){
-        var selected=new Fixture(false);selected.dispatch(beforeTransaction(selected,1,()->changeSelection(selected))).runOne();
-        assertThat(selected.current().review()).isEqualTo(Review.ARCHIVED);assertThat(selected.current().generation()).isEqualTo(Generation.STALE);assertThat(count("initial_pathway_revision",selected.id)).isZero();
+    @Test void P12_P13_dispatchRejectsBoundTargetChangeAndRecoversSourceFailureAtCommit(){
+        var selected=new Fixture(false);
+        assertThatThrownBy(()->selected.dispatch(beforeTransaction(selected,1,()->changeSelection(selected))).runOne()).hasMessage("TARGET_ROLE_LEVEL_LOCKED");
+        assertThat(selected.current().review()).isNotEqualTo(Review.ARCHIVED);assertThat(count("initial_pathway_revision",selected.id)).isZero();
+        sql.update("UPDATE platform.initial_pathway_request SET lease_expires_at=clock_timestamp()-interval '1 second' WHERE request_id=?",selected.id);
+        selected.dispatch(selected.coordination).runOne();assertThat(selected.current().generation()).isEqualTo(Generation.SUCCEEDED);
         var source=new Fixture(false);assertThatThrownBy(()->source.dispatch(beforeTransaction(source,1,()->source.sourceCurrent.set(false))).runOne()).hasMessage("FIXTURE_SOURCE_DRIFT");
         assertThat(source.current().generation()).isEqualTo(Generation.GENERATING);assertThat(count("initial_pathway_revision",source.id)).isZero();
         source.sourceCurrent.set(true);sql.update("UPDATE platform.initial_pathway_request SET lease_expires_at=clock_timestamp()-interval '1 second' WHERE request_id=?",source.id);

@@ -1,36 +1,37 @@
-import { publishedModuleRevision } from './publishedModulePresentation'
-import { ModuleApprovalQueue } from './ModuleApprovalQueue'
-import { ModuleApprovalReview } from './ModuleApprovalReview'
+import { BookOpen,ClipboardCheck,FileText,Layers,Plus,Upload } from 'lucide-react'
+import { useCallback,useContext,useEffect,useRef,useState } from 'react'
+import { Link,useNavigate,useParams,useSearchParams } from 'react-router-dom'
+import type { LearningLesson } from '../../../shared/api/moduleAuthoringApi'
+import { moduleRequest,type CatalogChoice,type ModuleActor,type ModuleCatalogItem,type ModuleCatalogPage,type ModuleContent,type ModuleDocument,type ModulePage,type ModuleRevision,type ModuleSave } from '../../../shared/api/moduleAuthoringApi'
+import { WorkspaceSessionContext } from '../../../shared/auth/workspaceSession'
+import { LearningLessonList } from '../../../shared/components/learning/LearningLessonList'
+import { LearningLessonsEditor } from '../../../shared/components/learning/LearningLessonsEditor'
+import { Heading } from '../../../shared/components/typography/Heading'
+import { Badge,type BadgeProps } from '../../../shared/components/ui/Badge'
+import { Button } from "../../../shared/components/ui/Button"
+import { buttonVariants } from "../../../shared/components/ui/Button"
+import { Card,CardContent,CardHeader,CardTitle } from '../../../shared/components/ui/Card'
+import { Dialog,DialogBody,DialogFooter,DialogHeader,DialogTitle } from '../../../shared/components/ui/Dialog'
+import { FormField as Field } from '../../../shared/components/ui/FormField'
+import { Input } from '../../../shared/components/ui/Input'
+import { ModuleMarkdown } from '../../../shared/components/ui/ModuleMarkdown'
+import { PageHeader } from '../../../shared/components/ui/PageHeader'
+import { Pagination } from '../../../shared/components/ui/Pagination'
+import { StatCard } from '../../../shared/components/ui/StatCard'
+import { Tabs,TabsContent,TabsList,TabsTrigger } from '../../../shared/components/ui/Tabs'
+import { useTranslation } from "../../../shared/i18n/LanguageContext"
+import { WorkspaceLayout } from '../../../shared/layouts/WorkspaceLayout'
 import { newLesson } from '../../../shared/lib/learningLessons'
 import { LearningImportPanel } from './LearningImportPanel'
-import { LearningLessonsEditor } from '../../../shared/components/learning/LearningLessonsEditor'
-import { LearningLessonList } from '../../../shared/components/learning/LearningLessonList'
-import type { LearningLesson } from '../../../shared/api/moduleAuthoringApi'
-import { useCallback, useContext, useEffect, useRef, useState } from 'react'
-import { WorkspaceSessionContext } from '../../../shared/auth/workspaceSession'
-import { BookOpen, ClipboardCheck, FileText, Layers, Plus, Upload } from 'lucide-react'
-import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
-import { PageHeader } from '../../../shared/components/ui/PageHeader'
-import { StatCard } from '../../../shared/components/ui/StatCard'
-import { Card, CardContent, CardHeader, CardTitle } from '../../../shared/components/ui/Card'
-import { Button, buttonVariants } from '../../../shared/components/ui/Button'
-import { Badge, type BadgeProps } from '../../../shared/components/ui/Badge'
-import { Input } from '../../../shared/components/ui/Input'
-import { Dialog, DialogBody, DialogHeader, DialogTitle, DialogFooter } from '../../../shared/components/ui/Dialog'
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '../../../shared/components/ui/Tabs'
-import { Pagination } from '../../../shared/components/ui/Pagination'
-import { ModuleMarkdown } from '../../../shared/components/ui/ModuleMarkdown'
-import { FormField as Field } from '../../../shared/components/ui/FormField'
-import { Heading } from '../../../shared/components/typography/Heading'
-import { WorkspaceLayout } from '../../../shared/layouts/WorkspaceLayout'
-import { useTranslation } from '../../../shared/i18n/LanguageContext'
-import { moduleRequest, type CatalogChoice, type ModuleActor, type ModuleCatalogItem, type ModuleCatalogPage, type ModuleContent, type ModuleDocument, type ModulePage, type ModuleRevision, type ModuleSave } from '../../../shared/api/moduleAuthoringApi'
+import { ModuleApprovalQueue } from './ModuleApprovalQueue'
+import { ModuleApprovalReview } from './ModuleApprovalReview'
+import { publishedModuleRevision } from './publishedModulePresentation'
 
-import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '../../../shared/components/ui/Accordion'
+import { Eye } from 'lucide-react'
+import { Accordion,AccordionContent,AccordionItem,AccordionTrigger } from '../../../shared/components/ui/Accordion'
 import { CopyableId } from '../../../shared/components/ui/CopyableId'
 import { RowActions } from '../../../shared/components/ui/RowActions'
-import { useToast } from '../../../shared/hooks/useToast'
-import { Eye } from 'lucide-react'
+import { useToast } from "../../../shared/hooks/useToast"
 import { CatalogModuleDetails } from './CatalogModuleDetails'
 
 type Mode = 'modules' | 'content' | 'approvals' | 'learning'
@@ -78,7 +79,12 @@ function OwnedModuleManagementWorkspace({ mode, managerShell = false }: { mode: 
   const [pageNumber, setPageNumber] = useState(1)
   const [allModuleStatuses, setAllModuleStatuses] = useState(false)
   const [filters, setFilters] = useState({ search: searchParams.get('search') ?? '', status: '', review: '', type: '', skill: '' })
-  useEffect(() => { const query = searchParams.get('search'); if (query !== null) { setPageNumber(1); setFilters(old => ({ ...old, search: query })) } }, [searchParams])
+  const query = searchParams.get('search')
+  const [previousQuery, setPreviousQuery] = useState(query)
+  if (previousQuery !== query) {
+    setPreviousQuery(query)
+    if (query !== null) { setPageNumber(1); setFilters(old => ({ ...old, search: query })) }
+  }
   const [search, setSearch] = useState(filters.search)
   useEffect(() => {
     const timeout = setTimeout(() => setSearch(filters.search), 180)
@@ -160,6 +166,7 @@ function OwnedModuleManagementWorkspace({ mode, managerShell = false }: { mode: 
 
   useEffect(() => {
     const controller = new AbortController()
+    // oxlint-disable-next-line react/set-state-in-effect -- Synchronize the pending state of the external data request when its scope changes.
     void load(controller.signal)
     return () => controller.abort()
   }, [load])

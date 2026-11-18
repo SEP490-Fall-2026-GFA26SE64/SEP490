@@ -1,0 +1,58 @@
+@startuml
+!pragma layout smetana
+skinparam componentStyle rectangle
+skinparam shadowing false
+title Baseline / Skill Assessment / pathway / recalculation - current local source 2026-11-18
+component "Scoped configuration
+L&D: org + Role/member Level baseline
+Expert: org + Skill/knowledge from assigned Roles
+Draft/version/activation; quota and retake parameters" as Config
+component "Selected Role baseline
+Only explicit MODULE_ONLY targets minus official evidence
+Frozen TARGET paper, timer, answers and group results
+Pass is diagnostic; no speculative prerequisite closure" as Baseline
+component "Confirm request + generation
+Expected selection/revision/planning hash
+Bind Role + Level; freeze planning input
+All valid options/certificate or explicit missing provision" as Request
+component "Assigned Expert review
+Reduce unstarted options / check / reject / approve
+First approval pins UTC calendar-month deadline
+Missing-provision-only bypass; original approval basis" as Review
+component "Approved module / certificate learning
+Exact version/content, accepted step and real progress
+Content completion is not official achievement
+Certificate decision is a separate evidence source" as Learning
+component "Skill Assessment
+MAIN + complete configured prerequisite closure
+Exact mandatory quota + ordinary questions
+Module-context allowance/wait; full new retake paper" as Exam
+component "Durable outcome job
+Recalculate actual failed nonofficial prerequisites first
+MAIN_FAILED / VETO / WAITING_SUPPLEMENT / READY
+Keep prior official evidence + NEED_REVIEW" as Outcome
+component "Genuine evidence + second recalculation
+Insert exact official evidence once when READY
+Recalculate again in the same learner transaction
+Preserve scores, dependencies, progress and receipts" as Evidence
+component "Provision/evidence refresh + immutable revisions
+Preserve completed steps, exclusions and valid approval
+Missing provision -> Expert action; invalid basis -> review
+Carried bypass roots stay parallel and non-gating" as Refresh
+Config --> Baseline : active BASELINE policy
+Baseline --> Request : diagnostic readiness + explicit confirm
+Request --> Review : proposal; no learning grant
+Review --> Learning : exact accepted revision
+Learning --> Exam : qualifying exact module completion
+Exam --> Outcome : finalized score + persisted job
+Outcome --> Evidence : READY with real required conditions
+Evidence --> Refresh : source-event history / current plan
+Refresh --> Learning : accepted live content/prerequisite guards
+Refresh --> Review : invalid approval basis / missing provision
+note bottom of Evidence
+  Learner/request locks, command/source receipts, revision CAS and retryable jobs.
+  Six V64 timing fields: first approval and real completion facts, no clock reset.
+  Transactional in-app decisions/added-provision notifications are not SMTP proof.
+  Neo4j is catalog only; PostgreSQL owns all private state/history. No distributed transaction.
+end note
+@enduml

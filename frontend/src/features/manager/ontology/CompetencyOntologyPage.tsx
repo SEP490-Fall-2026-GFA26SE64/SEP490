@@ -1,84 +1,86 @@
-import { workspaceFetch as fetch } from '../../../shared/api/workspaceFetch'
-import { OntologyGraphPlayground } from './components/OntologyGraphPlayground'
+import { useResettableState } from '../../../shared/hooks/useResettableState'
 import {
-  AlertCircle,
-  ArrowDown,
-  ArrowRight,
-  BookOpen,
-  Briefcase,
-  Building2,
-  Check,
-  Edit3,
-  Eye,
-  Filter,
-  GitBranch,
-  Layers,
-  Plus,
-  Search,
-  ShieldCheck,
-  Trash2,
+AlertCircle,
+ArrowDown,
+ArrowRight,
+BookOpen,
+Briefcase,
+Building2,
+Check,
+Edit3,
+Eye,
+Filter,
+GitBranch,
+Layers,
+Plus,
+Search,
+ShieldCheck,
+Trash2,
 } from 'lucide-react'
 import * as React from 'react'
-import { Badge } from '../../../shared/components/ui/Badge'
-import { Button } from '../../../shared/components/ui/Button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../../shared/components/ui/Card'
-import { Combobox, type ComboboxOption } from '../../../shared/components/ui/Combobox'
-import { ConfirmationModal } from '../../../shared/components/ui/ConfirmationModal'
-import { PageHeader } from '../../../shared/components/ui/PageHeader'
 import {
-  Dialog,
-  DialogBody,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '../../../shared/components/ui/Dialog'
-import { Pagination } from '../../../shared/components/ui/Pagination'
-import { StatCard } from '../../../shared/components/ui/StatCard'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../../shared/components/ui/Tabs'
+createCompetency,
+deleteCompetency,
+fetchCompetencies,
+updateCompetency,
+} from '../../../shared/api/competencyApi'
+import { fetchDepartments,type DepartmentDto } from '../../../shared/api/departmentApi'
+import { fetchJobPositions,type JobPositionDto } from '../../../shared/api/jobPositionApi'
 import {
-  QuickConfigImportModal,
-  type ImportPreset,
-} from '../../../shared/components/import/QuickConfigImportModal'
-import { useToast } from '../../../shared/hooks/useToast'
-import { cn } from '../../../shared/lib/utils'
-import { WorkspaceLayout } from '../../../shared/layouts/WorkspaceLayout'
+createMicroSkill,
+deleteMicroSkill,
+fetchMicroSkills,
+updateMicroSkill,
+type MicroSkillDto,
+} from '../../../shared/api/microSkillApi'
 import {
-  getActiveCompany,
-  updateActiveCompany,
-  resolveWorkspaceOrgId,
-} from '../../../shared/stores/companyStore'
+createPrerequisite,
+deletePrerequisite,
+fetchPrerequisites,
+} from '../../../shared/api/prerequisiteApi'
+import { workspaceFetch as fetch } from '../../../shared/api/workspaceFetch'
 import { WorkspaceSessionContext } from '../../../shared/auth/workspaceSession'
 import {
-  fetchMicroSkills,
-  createMicroSkill,
-  updateMicroSkill,
-  deleteMicroSkill,
-  type MicroSkillDto,
-} from '../../../shared/api/microSkillApi'
-import { SkillProvisionFields } from './SkillProvisionFields'
-import { provisionForm, provisionPayload } from './skillProvisionForm'
-import { roleRequirements } from '../target-roles/roleRequirements'
+QuickConfigImportModal,
+type ImportPreset,
+} from '../../../shared/components/import/QuickConfigImportModal'
+import { Badge } from '../../../shared/components/ui/Badge'
+import { Button } from '../../../shared/components/ui/Button'
+import { Card,CardContent,CardDescription,CardHeader,CardTitle } from '../../../shared/components/ui/Card'
+import { Combobox,type ComboboxOption } from '../../../shared/components/ui/Combobox'
+import { ConfirmationModal } from '../../../shared/components/ui/ConfirmationModal'
 import {
-  fetchCompetencies,
-  createCompetency,
-  updateCompetency,
-  deleteCompetency,
-} from '../../../shared/api/competencyApi'
-import { fetchDepartments, type DepartmentDto } from '../../../shared/api/departmentApi'
-import { fetchJobPositions, type JobPositionDto } from '../../../shared/api/jobPositionApi'
-import { getMembers, type Member } from '../../subscription/subscriptionApi'
+Dialog,
+DialogBody,
+DialogDescription,
+DialogFooter,
+DialogHeader,
+DialogTitle,
+} from '../../../shared/components/ui/Dialog'
+import { PageHeader } from '../../../shared/components/ui/PageHeader'
+import { Pagination } from '../../../shared/components/ui/Pagination'
+import { StatCard } from '../../../shared/components/ui/StatCard'
+import { Tabs,TabsContent,TabsList,TabsTrigger } from '../../../shared/components/ui/Tabs'
+import { useToast } from "../../../shared/hooks/useToast"
+import { WorkspaceLayout } from '../../../shared/layouts/WorkspaceLayout'
+import { cn } from '../../../shared/lib/utils'
 import {
-  fetchPrerequisites,
-  createPrerequisite,
-  deletePrerequisite,
-} from '../../../shared/api/prerequisiteApi'
+getActiveCompany,
+resolveWorkspaceOrgId,
+updateActiveCompany,
+} from '../../../shared/stores/companyStore'
+import { getMembers,type Member } from '../../subscription/subscriptionApi'
 import {
-  type CompetencyModel,
-  type MicroSkillModel,
-  type PrerequisiteEdge,
-  type TargetRoleModel,
+type CompetencyModel,
+type MicroSkillModel,
+type PrerequisiteEdge,
+type TargetRoleModel,
 } from '../data/ldManagerMockData'
+import { roleRequirements } from '../target-roles/roleRequirements'
+import { cleanJobPositionTitle,extractJobPositionCode } from './CompetencyOntologyPage.helpers'
+import { OntologyGraphPlayground } from './components/OntologyGraphPlayground'
+import { SkillProvisionFields } from './SkillProvisionFields'
+import { provisionForm,provisionPayload } from './skillProvisionForm'
 
 const ONTOLOGY_PRESETS: ImportPreset[] = [
   {
@@ -184,17 +186,6 @@ const ONTOLOGY_PRESETS: ImportPreset[] = [
   },
 ]
 
-export function cleanJobPositionTitle(title?: string | null): string {
-  if (!title) return ''
-  return title.replace(/^[0-9A-Za-z.-]+\s*-\s*/, '').trim()
-}
-
-export function extractJobPositionCode(raw?: string | null): string {
-  if (!raw) return ''
-  const match = raw.match(/^([0-9A-Za-z.-]+)\s*-\s*/)
-  return match ? match[1].trim() : ''
-}
-
 export function CompetencyOntologyPage() {
   const identity = React.useContext(WorkspaceSessionContext)?.identity
   return <OwnedCompetencyOntologyPage key={`${identity?.organizationId ?? ''}:${identity?.accountId ?? ''}:${identity?.roles?.join(',') ?? ''}`} />
@@ -247,8 +238,7 @@ function OwnedCompetencyOntologyPage() {
   // Search, filter, and pagination states for Tab 1 (Micro-skills)
   const [skillSearchQuery, setSkillSearchQuery] = React.useState('')
   const [skillSortBy, setSkillSortBy] = React.useState<'latest' | 'title' | 'code'>('latest')
-  const [skillCurrentPage, setSkillCurrentPage] = React.useState(1)
-  const [skillPageSize] = React.useState(10)
+    const [skillPageSize] = React.useState(10)
 
   const formatDate = React.useCallback((isoString?: string): string => {
     if (!isoString) return 'Recent'
@@ -260,9 +250,7 @@ function OwnedCompetencyOntologyPage() {
     }
   }, [])
 
-  React.useEffect(() => {
-    setSkillCurrentPage(1)
-  }, [skillSearchQuery, skillSortBy])
+  const [skillCurrentPage, setSkillCurrentPage] = useResettableState(1, [skillSearchQuery, skillSortBy])
 
   // Search, filter, and pagination states for Tab: Competencies
   const [competencySearchQuery, setCompetencySearchQuery] = React.useState('')
@@ -314,7 +302,7 @@ function OwnedCompetencyOntologyPage() {
       if (raw) return JSON.parse(raw)
     } catch {}
     return null
-  }, [session?.identity?.email])
+  }, [session])
 
   const rawExpertJpTitle = currentMember?.jobPositionName || localAssignment?.jobPositionName || ''
   const effectiveExpertDeptId = currentMember?.departmentId || localAssignment?.departmentId || ''
@@ -428,8 +416,8 @@ function OwnedCompetencyOntologyPage() {
               departmentName: c.departmentName ?? undefined,
               jobPositionCode: c.jobPositionCode ?? undefined,
               jobPositionTitle: c.jobPositionTitle ?? undefined,
-              createdAt: c.createdAt || (c as unknown as Record<string, unknown>).createdAt ? String(c.createdAt || (c as unknown as Record<string, unknown>).createdAt) : (active?.competencies || []).find((item) => item.id === c.id || item.code === c.code)?.createdAt || '',
-              updatedAt: c.updatedAt || (c as unknown as Record<string, unknown>).updatedAt ? String(c.updatedAt || (c as unknown as Record<string, unknown>).updatedAt) : (c.createdAt || (active?.competencies || []).find((item) => item.id === c.id || item.code === c.code)?.updatedAt || ''),
+              createdAt: c.createdAt ? String(c.createdAt) : (active?.competencies || []).find((item) => item.id === c.id || item.code === c.code)?.createdAt || '',
+              updatedAt: c.updatedAt ? String(c.updatedAt) : (c.createdAt || (active?.competencies || []).find((item) => item.id === c.id || item.code === c.code)?.updatedAt || ''),
             }
           })
           setCompetencies(mappedComps)
@@ -524,9 +512,10 @@ function OwnedCompetencyOntologyPage() {
           return s === 'draft' || s === 'rejected' || s === 'reject'
         }))
       }
-  }, [effectiveOrgId, accountId])
+  }, [effectiveOrgId, accountId, session])
 
   React.useEffect(() => {
+    // oxlint-disable-next-line react/set-state-in-effect -- Synchronize the pending state of the external data request when its scope changes.
     handleSync()
     window.addEventListener('active_company_changed', handleSync)
     window.addEventListener('target_roles_updated', handleSync)

@@ -10,7 +10,7 @@ import { ToastProvider } from '../../src/shared/hooks/useToast'
 import { LoginPage } from '../../src/features/auth/LoginPage'
 import { AdaptiveAssessmentPreview } from '../../src/features/manager/baseline-assessments/AdaptiveAssessmentPreview'
 import { previewFixture } from './ui-refresh.fixture'
-function Fixture() {
+export function Fixture() {
   const [open, setOpen] = useState(false)
   const mode = new URLSearchParams(window.location.search).get('mode')
   const preview = mode === 'empty' ? { feasible: true, shortages: [], sample: [] } : mode === 'infeasible' ? { feasible: false, sample: [], shortages: [{ roleId: null, microSkillId: null, kind: 'ITEM_CAPACITY' as const, required: 45, available: 0 }] } : previewFixture

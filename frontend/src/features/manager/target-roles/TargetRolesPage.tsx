@@ -1,142 +1,100 @@
-import { workspaceFetch as fetch } from '../../../shared/api/workspaceFetch'
-import { fetchJobPositions } from '../../../shared/api/jobPositionApi'
+import { useResettableState } from '../../../shared/hooks/useResettableState'
 import {
-  fetchCompetencies,
-  type CompetencyDto,
-} from '../../../shared/api/competencyApi'
-import {
-  AlertCircle,
-  AlertTriangle,
-  BookOpen,
-  Briefcase,
-  Building2,
-  Check,
-  CheckCircle2,
-  ChevronDown,
-  ChevronRight,
-  Clock,
-  CornerDownRight,
-  Diff,
-  Edit3,
-  Eye,
-  EyeOff,
-  FileCheck,
-  History,
-  Network as NetworkIcon,
-  Plus,
-  Search,
-  Send,
-  Trash2,
-  User,
-  XCircle,
+AlertCircle,
+AlertTriangle,
+BookOpen,
+Briefcase,
+Building2,
+Check,
+CheckCircle2,
+ChevronDown,
+ChevronRight,
+Clock,
+CornerDownRight,
+Diff,
+Edit3,
+Eye,
+EyeOff,
+FileCheck,
+History,
+Network as NetworkIcon,
+Plus,
+Search,
+Send,
+Trash2,
+User,
+XCircle,
 } from 'lucide-react'
 import * as React from 'react'
-import { TargetRoleGraphModal } from './components/TargetRoleGraphModal'
-import { TargetRoleVersionDiff } from './components/TargetRoleVersionDiff'
-import { missingRoleLevelRequirements, roleRequirements, validRequiredKnowledge } from './roleRequirements'
-import { formatRequiredKnowledge } from './roleKnowledgePresentation'
-import { useTranslation } from '../../../shared/i18n/LanguageContext'
+import {
+fetchCompetencies,
+type CompetencyDto,
+} from '../../../shared/api/competencyApi'
+import { createDepartmentApi,fetchDepartments,linkJobPositionToDepartment,updateDepartmentApi } from '../../../shared/api/departmentApi'
+import { fetchJobPositions } from '../../../shared/api/jobPositionApi'
+import { workspaceFetch as fetch } from '../../../shared/api/workspaceFetch'
+import { WorkspaceSessionContext } from '../../../shared/auth/workspaceSession'
+import {
+QuickConfigImportModal,
+type ImportPreset,
+} from '../../../shared/components/import/QuickConfigImportModal'
 import { Badge } from '../../../shared/components/ui/Badge'
 import { Button } from '../../../shared/components/ui/Button'
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
+Card,
+CardContent,
+CardDescription,
+CardHeader,
+CardTitle,
 } from '../../../shared/components/ui/Card'
-import { Pagination } from '../../../shared/components/ui/Pagination'
-import { PageHeader } from '../../../shared/components/ui/PageHeader'
 import {
-  Dialog,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '../../../shared/components/ui/Dialog'
-import { StatCard } from '../../../shared/components/ui/StatCard'
-import {
-  QuickConfigImportModal,
-  type ImportPreset,
-} from '../../../shared/components/import/QuickConfigImportModal'
-import { useToast } from '../../../shared/hooks/useToast'
-import { WorkspaceLayout } from '../../../shared/layouts/WorkspaceLayout'
-import { WorkspaceSessionContext } from '../../../shared/auth/workspaceSession'
-import { getMembers, getReferences, request } from '../../subscription/subscriptionApi'
-import { fetchDepartments, updateDepartmentApi, createDepartmentApi, linkJobPositionToDepartment } from '../../../shared/api/departmentApi'
-import { loadDepartments, updateDepartment } from '../../../shared/stores/departmentStore'
-import {
-  getActiveCompany,
-  resolveWorkspaceOrgId,
-  updateActiveCompany,
-} from '../../../shared/stores/companyStore'
-import {
-  ELIGIBLE_EXPERTS,
-  findEligibleExpert,
-  type JobPosition,
-  compareRoleVersions,
-  formatDate,
-  getAvailableJobPositions,
-  normalizeExpertId,
-  getEligibleExpertsForJobPosition,
-  getOrganizationExperts,
-  type EligibleExpert,
-  resolveJobPositionForRole,
-  sortTargetRolesWithDraftsBelowPublished,
-  type RoleLevelThresholds,
-  type CompetencyModel,
-  type TargetRoleModel,
-} from '../data/ldManagerMockData'
-import {
-  Combobox,
-  type ComboboxOption,
+Combobox,
+type ComboboxOption,
 } from '../../../shared/components/ui/Combobox'
-
-export const getExpertOptionsForJobPosition = (
-  jobPositionCode?: string,
-  organizationId?: string,
-  departmentScope?: { id?: string; code?: string; name?: string } | null,
-): ComboboxOption[] => {
-  const eligible = getEligibleExpertsForJobPosition(
-    jobPositionCode,
-    organizationId,
-    departmentScope,
-  )
-
-  return eligible.map((exp) => ({
-    value: exp.id,
-    label: exp.name,
-    description: exp.title,
-  }))
-}
+import {
+Dialog,
+DialogDescription,
+DialogFooter,
+DialogHeader,
+DialogTitle,
+} from '../../../shared/components/ui/Dialog'
+import { PageHeader } from '../../../shared/components/ui/PageHeader'
+import { Pagination } from '../../../shared/components/ui/Pagination'
+import { StatCard } from '../../../shared/components/ui/StatCard'
+import { useToast } from "../../../shared/hooks/useToast"
+import { useTranslation } from "../../../shared/i18n/LanguageContext"
+import { WorkspaceLayout } from '../../../shared/layouts/WorkspaceLayout'
+import {
+getActiveCompany,
+resolveWorkspaceOrgId,
+updateActiveCompany,
+} from '../../../shared/stores/companyStore'
+import { loadDepartments,updateDepartment } from '../../../shared/stores/departmentStore'
+import { getMembers,getReferences,request } from '../../subscription/subscriptionApi'
+import {
+compareRoleVersions,
+ELIGIBLE_EXPERTS,
+findEligibleExpert,
+formatDate,
+getAvailableJobPositions,
+getEligibleExpertsForJobPosition,
+getOrganizationExperts,
+normalizeExpertId,
+resolveJobPositionForRole,
+sortTargetRolesWithDraftsBelowPublished,
+type CompetencyModel,
+type EligibleExpert,
+type JobPosition,
+type RoleLevelThresholds,
+type TargetRoleModel,
+} from '../data/ldManagerMockData'
+import { TargetRoleGraphModal } from './components/TargetRoleGraphModal'
+import { TargetRoleVersionDiff } from './components/TargetRoleVersionDiff'
+import { formatRequiredKnowledge } from './roleKnowledgePresentation'
+import { missingRoleLevelRequirements,roleRequirements,validRequiredKnowledge } from './roleRequirements'
+import { getManagerEffectiveStatus } from './TargetRolesPage.helpers'
 
 const ROLE_PRESETS: ImportPreset[] = []
-
-export type ManagerRoleStatus =
-  | 'published'
-  | 'submitted'
-  | 'sent'
-  | 'draft'
-  | 'feedback'
-  | 'rejected'
-  | 'unpublished'
-
-export const getManagerEffectiveStatus = (
-  role: TargetRoleModel,
-): ManagerRoleStatus => {
-  if (role.status === 'published') return 'published'
-  if (role.status === 'unpublished') return 'unpublished'
-  if (role.status === 'submitted') return 'submitted'
-  if (role.status === 'sent') return 'sent'
-
-  if (role.status === 'rejected') {
-    return role.rejectionReason?.startsWith('[LD_MANAGER]:')
-      ? 'rejected'
-      : 'feedback'
-  }
-
-  return 'draft'
-}
 
 interface RoleMetadata {
   id?: string
@@ -357,6 +315,7 @@ export function TargetRolesPage() {
   }, [orgId])
 
   React.useEffect(() => {
+    // oxlint-disable-next-line react/set-state-in-effect -- Synchronize the pending state of the external data request when its scope changes.
     refreshAvailableJobPositions()
     let timeoutId: any = null
     const handleJobPositionsUpdated = (e?: StorageEvent | Event) => {
@@ -653,7 +612,7 @@ export function TargetRolesPage() {
       window.removeEventListener('departments_updated', loadManagerDept)
       window.removeEventListener('adaptlearn_job_positions_updated', loadManagerDept)
     }
-  }, [orgId, session?.identity?.accountId, session?.identity?.email])
+  }, [orgId, session?.identity?.accountId, session?.identity?.email, session?.identity?.fullName])
 
   const jobPositionOptions: ComboboxOption[] = React.useMemo(() => {
     const inactiveCodes = new Set<string>()
@@ -1026,9 +985,10 @@ export function TargetRolesPage() {
       isFetchingRef.current = false
       setIsRolesLoading(false)
     }
-  }, [orgId])
+  }, [orgId, isTechnova, orgExperts])
 
   React.useEffect(() => {
+    // oxlint-disable-next-line react/set-state-in-effect -- Synchronize the pending state of the external data request when its scope changes.
     fetchRoles()
   }, [fetchRoles])
 
@@ -1277,7 +1237,7 @@ export function TargetRolesPage() {
       }
     }
     return managerDepartment
-  }, [selectedRole?.department, selectedRole?.departmentId, managerDepartment])
+  }, [selectedRole, managerDepartment])
 
   const editExpertOptions: ComboboxOption[] = React.useMemo(() => {
     let list = getEligibleExpertsForJobPosition(
@@ -1312,7 +1272,7 @@ export function TargetRolesPage() {
       }
     }
     return options
-  }, [editRoleForm.jobPositionCode, orgId, editRoleDeptScope, orgExperts, selectedRole?.assignedExpertId])
+  }, [editRoleForm.jobPositionCode, orgId, editRoleDeptScope, orgExperts, selectedRole])
 
   // Sort criteria: defaults to 'latest' so newly created or updated roles go to the top
 
@@ -1320,14 +1280,11 @@ export function TargetRolesPage() {
 
   // Pagination states
 
-  const [currentPage, setCurrentPage] = React.useState(1)
-  const pageSize = 10
+    const pageSize = 10
 
   // Reset page when search/filter/sort changes
 
-  React.useEffect(() => {
-    setCurrentPage(1)
-  }, [searchQuery, statusFilter, sortBy])
+  const [currentPage, setCurrentPage] = useResettableState(1, [searchQuery, statusFilter, sortBy])
 
   // Base list of roles visible to L&D Manager:
   // 1. Hide unsubmitted expert successor drafts until submitted

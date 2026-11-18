@@ -3,7 +3,6 @@ package com.adaptlearngraph.apis;
 import com.adaptlearngraph.endpoints.ApiEndpoints;
 import com.adaptlearngraph.services.AssessmentPolicyService.Failure;
 import com.adaptlearngraph.services.ScopedAssessmentPolicyService;
-import com.adaptlearngraph.entities.domain.RuleAssessment.Purpose;
 import java.util.*;
 import org.springframework.boot.autoconfigure.condition.*;
 import org.springframework.context.annotation.Profile;
@@ -23,33 +22,33 @@ public final class AssessmentPolicyController {
             com.fasterxml.jackson.databind.ObjectMapper mapper){
         this.rules=rules;this.mapper=mapper;
     }
-    @GetMapping("/{purpose}/scopes") public ResponseEntity<?> directory(@PathVariable Purpose purpose,
+    @GetMapping("/{purpose}/scopes") public ResponseEntity<?> directory(@PathVariable String purpose,
             @RequestParam(defaultValue="") String search,@RequestParam(defaultValue="") String owner,@RequestParam(defaultValue="") String level,
             @RequestParam(defaultValue="") String status,@RequestParam(defaultValue="0") int page,@RequestParam(defaultValue="20") int size) {
-        return response(rules.directory(purpose,search,owner,level,status,page,size));
+        return response(rules.directoryHttp(purpose,search,owner,level,status,page,size));
     }
-    @GetMapping("/{purpose}/scopes/{key}") public ResponseEntity<?> workspace(@PathVariable Purpose purpose,@PathVariable String key,
-            @RequestParam(defaultValue="0") int page,@RequestParam(defaultValue="20") int size){return response(rules.read(purpose,key,page,size));}
-    @PostMapping("/{purpose}/scopes/{key}/draft") public ResponseEntity<?> create(@PathVariable Purpose purpose,@PathVariable String key,jakarta.servlet.http.HttpServletRequest request){
-        return response(rules.create(purpose,key,decodeRules(purpose,request,ScopedAssessmentPolicyService.Create.class)));
+    @GetMapping("/{purpose}/scopes/{key}") public ResponseEntity<?> workspace(@PathVariable String purpose,@PathVariable String key,
+            @RequestParam(defaultValue="0") int page,@RequestParam(defaultValue="20") int size){return response(rules.readHttp(purpose,key,page,size));}
+    @PostMapping("/{purpose}/scopes/{key}/draft") public ResponseEntity<?> create(@PathVariable String purpose,@PathVariable String key,jakarta.servlet.http.HttpServletRequest request){
+        return response(rules.createHttp(purpose,key,decodeRules(purpose,request,ScopedAssessmentPolicyService.Create.class)));
     }
-    @PutMapping("/{purpose}/scopes/{key}/draft") public ResponseEntity<?> save(@PathVariable Purpose purpose,@PathVariable String key,jakarta.servlet.http.HttpServletRequest request){
-        return response(rules.save(purpose,key,decodeRules(purpose,request,ScopedAssessmentPolicyService.Save.class)));
+    @PutMapping("/{purpose}/scopes/{key}/draft") public ResponseEntity<?> save(@PathVariable String purpose,@PathVariable String key,jakarta.servlet.http.HttpServletRequest request){
+        return response(rules.saveHttp(purpose,key,decodeRules(purpose,request,ScopedAssessmentPolicyService.Save.class)));
     }
-    @PutMapping("/{purpose}/scopes/{key}/draft/editor") public ResponseEntity<?> saveEditor(@PathVariable Purpose purpose,@PathVariable String key,jakarta.servlet.http.HttpServletRequest request){
-        return response(rules.saveEditor(purpose,key,decodeRules(purpose,request,ScopedAssessmentPolicyService.SaveEditor.class)));
+    @PutMapping("/{purpose}/scopes/{key}/draft/editor") public ResponseEntity<?> saveEditor(@PathVariable String purpose,@PathVariable String key,jakarta.servlet.http.HttpServletRequest request){
+        return response(rules.saveEditorHttp(purpose,key,decodeRules(purpose,request,ScopedAssessmentPolicyService.SaveEditor.class)));
     }
-    @PostMapping("/{purpose}/scopes/{key}/activation") public ResponseEntity<?> activate(@PathVariable Purpose purpose,@PathVariable String key,jakarta.servlet.http.HttpServletRequest request){
-        return response(rules.activate(purpose,key,decodeRules(purpose,request,ScopedAssessmentPolicyService.Activate.class)));
+    @PostMapping("/{purpose}/scopes/{key}/activation") public ResponseEntity<?> activate(@PathVariable String purpose,@PathVariable String key,jakarta.servlet.http.HttpServletRequest request){
+        return response(rules.activateHttp(purpose,key,decodeRules(purpose,request,ScopedAssessmentPolicyService.Activate.class)));
     }
-    @PostMapping("/{purpose}/scopes/{key}/completion") public ResponseEntity<?> complete(@PathVariable Purpose purpose,@PathVariable String key,jakarta.servlet.http.HttpServletRequest request){
-        return response(rules.complete(purpose,key,decodeRules(purpose,request,ScopedAssessmentPolicyService.Complete.class)));
+    @PostMapping("/{purpose}/scopes/{key}/completion") public ResponseEntity<?> complete(@PathVariable String purpose,@PathVariable String key,jakarta.servlet.http.HttpServletRequest request){
+        return response(rules.completeHttp(purpose,key,decodeRules(purpose,request,ScopedAssessmentPolicyService.Complete.class)));
     }
-    @PostMapping("/{purpose}/scopes/{key}/abandonment") public ResponseEntity<?> abandon(@PathVariable Purpose purpose,@PathVariable String key,jakarta.servlet.http.HttpServletRequest request){
-        return response(rules.abandon(purpose,key,decodeRules(purpose,request,ScopedAssessmentPolicyService.Abandon.class)));
+    @PostMapping("/{purpose}/scopes/{key}/abandonment") public ResponseEntity<?> abandon(@PathVariable String purpose,@PathVariable String key,jakarta.servlet.http.HttpServletRequest request){
+        return response(rules.abandonHttp(purpose,key,decodeRules(purpose,request,ScopedAssessmentPolicyService.Abandon.class)));
     }
-    private <T>T decodeRules(Purpose purpose,jakarta.servlet.http.HttpServletRequest request,Class<T> type) {
-        rules.authorize(purpose);
+    private <T>T decodeRules(String purpose,jakarta.servlet.http.HttpServletRequest request,Class<T> type) {
+        rules.authorizeHttp(purpose);
         try {
             byte[] bytes=request.getInputStream().readNBytes(262145);
             if(bytes.length>262144)throw new Failure(400,"INVALID_REQUEST");

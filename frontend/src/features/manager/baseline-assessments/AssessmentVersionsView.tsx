@@ -1,25 +1,25 @@
-import { AlertCircle, ArrowLeft, ClipboardCheck, FilePlus2, RotateCcw, Trash2 } from 'lucide-react'
+import { AlertCircle,ArrowLeft,ClipboardCheck,FilePlus2,RotateCcw,Trash2 } from 'lucide-react'
 import * as React from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useNavigate,useParams } from 'react-router-dom'
 import { Badge } from '../../../shared/components/ui/Badge'
 import { Button } from '../../../shared/components/ui/Button'
-import { Card, CardContent } from '../../../shared/components/ui/Card'
-import { Dialog, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../../../shared/components/ui/Dialog'
+import { Card,CardContent } from '../../../shared/components/ui/Card'
+import { Dialog,DialogDescription,DialogFooter,DialogHeader,DialogTitle } from '../../../shared/components/ui/Dialog'
 import { EmptyState } from '../../../shared/components/ui/EmptyState'
 import { Input } from '../../../shared/components/ui/Input'
 import { PageHeader } from '../../../shared/components/ui/PageHeader'
-import { Tabs, TabsList, TabsTrigger } from '../../../shared/components/ui/Tabs'
-import { useToast } from '../../../shared/hooks/useToast'
-import { useTranslation } from '../../../shared/i18n/LanguageContext'
+import { Tabs,TabsList,TabsTrigger } from '../../../shared/components/ui/Tabs'
+import { useToast } from "../../../shared/hooks/useToast"
+import { useTranslation } from "../../../shared/i18n/LanguageContext"
 import { WorkspaceLayout } from '../../../shared/layouts/WorkspaceLayout'
 import {
-  abandonPendingBlueprintChange,
-  BaselineAssessmentManagementApiError,
-  type AssessmentVersionSummary,
-  type BaselineAssessmentWorkspace,
-  generateAssessmentCandidate,
-  getBaselineAssessmentWorkspace,
-  restoreHistoricalAssessment,
+abandonPendingBlueprintChange,
+BaselineAssessmentManagementApiError,
+generateAssessmentCandidate,
+getBaselineAssessmentWorkspace,
+restoreHistoricalAssessment,
+type AssessmentVersionSummary,
+type BaselineAssessmentWorkspace,
 } from './baselineAssessmentManagementApi'
 
 type Filter = 'ALL' | 'OPEN' | 'ACTIVE' | 'HISTORY'
@@ -52,6 +52,7 @@ export function AssessmentVersionsView() {
     }
   }, [jobPositionId, t])
 
+  // oxlint-disable-next-line react/set-state-in-effect -- Synchronize the pending state of the external data request when its scope changes.
   React.useEffect(() => { void load() }, [load])
 
   const openCandidate = workspace?.assessmentVersions.find((item) => isOpen(item.effectiveState))

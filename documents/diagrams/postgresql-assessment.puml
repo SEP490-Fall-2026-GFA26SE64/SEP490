@@ -4,7 +4,7 @@ left to right direction
 hide empty members
 skinparam classAttributeIconSize 0
 skinparam shadowing false
-title postgresql-assessment - selected source-defined tables; not a live DB capture
+title Baseline and Skill Assessment - selected workspace source through V64 / 2026-11-18
 entity "assessment_rule_policy_draft" as assessment_rule_policy_draft {
   uuid organization_id <<PK>>
   text purpose <<PK>>
@@ -13,6 +13,9 @@ entity "assessment_rule_policy_draft" as assessment_rule_policy_draft {
   bigint revision
   jsonb configuration "NULLABLE"
   content_hash catalog_hash
+  jsonb editor_state "NULLABLE baseline only"
+  uuid updated_by
+  timestamptz updated_at
 }
 entity "assessment_rule_policy_version" as assessment_rule_policy_version {
   uuid id <<PK>>
@@ -22,6 +25,8 @@ entity "assessment_rule_policy_version" as assessment_rule_policy_version {
   bigint version
   content_hash catalog_hash "NULLABLE"
   jsonb configuration
+  text hash_domain
+  content_hash configuration_hash
 }
 entity "assessment_rule_scoped_activation" as assessment_rule_scoped_activation {
   uuid organization_id <<PK>>
@@ -35,11 +40,16 @@ entity "assessment_rule_abandoned_draft" as assessment_rule_abandoned_draft {
   uuid organization_id
   text purpose
   content_hash scope_key
+  jsonb configuration "NULLABLE"
+  jsonb editor_state "NULLABLE"
+  bigint revision
+  timestamptz abandoned_at
 }
 entity "assessment_rule_policy_version_number_history" as assessment_rule_policy_version_number_history {
   uuid policy_id <<PK>>
   content_hash scope_key
   bigint scoped_version
+  bigint previous_version
 }
 assessment_rule_policy_version --> assessment_rule_scoped_activation : same org purpose scope policy FK
 entity "assessment_item_knowledge_mapping" as assessment_item_knowledge_mapping {
@@ -74,6 +84,14 @@ entity "rule_assessment_attempt" as rule_assessment_attempt {
   timestamptz deadline_at
   text finish_reason "NULLABLE"
   text processing_status
+  text context_key
+  bigint selection_revision
+  content_hash policy_hash
+  jsonb context_snapshot
+  bigint revision
+  timestamptz started_at
+  timestamptz finished_at "NULLABLE"
+  uuid previous_attempt_id "NULLABLE"
 }
 entity "rule_assessment_group" as rule_assessment_group {
   uuid attempt_id <<PK>>
@@ -83,6 +101,10 @@ entity "rule_assessment_group" as rule_assessment_group {
   text group_role
   integer total_count
   integer required_correct_count
+  boolean mandatory_required
+  boolean all_wrong_veto
+  integer mandatory_count "NULLABLE legacy; V64"
+  jsonb outcome_codes "legacy; new arrays empty"
 }
 entity "rule_assessment_item" as rule_assessment_item {
   uuid attempt_id <<PK>>
@@ -97,6 +119,8 @@ entity "rule_assessment_answer" as rule_assessment_answer {
   jsonb response
   bigint revision
   uuid source_command
+  boolean is_correct
+  timestamptz accepted_at
 }
 entity "rule_assessment_group_result" as rule_assessment_group_result {
   uuid attempt_id <<PK>>
@@ -104,6 +128,10 @@ entity "rule_assessment_group_result" as rule_assessment_group_result {
   boolean passed
   boolean veto_triggered
   boolean mandatory_satisfied
+  integer correct_count
+  integer total_count
+  jsonb reasons
+  timestamptz finalized_at
 }
 entity "skill_knowledge_evidence" as skill_knowledge_evidence {
   uuid id <<PK>>
@@ -113,6 +141,9 @@ entity "skill_knowledge_evidence" as skill_knowledge_evidence {
   text knowledge_level
   text source_kind
   uuid source_id
+  jsonb requirement_snapshot
+  bigint source_version
+  timestamptz achieved_at
 }
 entity "skill_knowledge_review" as skill_knowledge_review {
   uuid id <<PK>>
@@ -120,12 +151,38 @@ entity "skill_knowledge_review" as skill_knowledge_review {
   uuid group_id
   text state
   uuid resolved_by_evidence_id "NULLABLE"
+  uuid organization_id
+  uuid learner_id
 }
 rule_assessment_attempt --> rule_assessment_group : owned attempt
 rule_assessment_group --> rule_assessment_item : composite group FK
-rule_assessment_item --> assessment_item_knowledge_mapping : exact immutable mapping FK
+assessment_item_knowledge_mapping --> rule_assessment_item : exact immutable mapping FK
 rule_assessment_item --> rule_assessment_answer : presented item FK
 rule_assessment_group --> rule_assessment_group_result : immutable result
 rule_assessment_group --> skill_knowledge_review : failed prerequisite FK
 skill_knowledge_evidence --> skill_knowledge_review : resolving evidence FK
+entity "rule_assessment_command" as rule_assessment_command {
+  uuid id <<PK>>
+  uuid organization_id
+  uuid actor_id
+  text operation
+  text resource
+  uuid retry_key
+  content_hash body_hash
+  jsonb outcome
+}
+assessment_rule_policy_version --> rule_assessment_attempt : exact org purpose policy FK
+assessment_rule_policy_version --> assessment_rule_policy_version_number_history : same org purpose scope FK
+rule_assessment_command --> rule_assessment_answer : source_command FK
+note bottom of rule_assessment_group
+  V64: mandatory_count 0..total; mandatory_required = (quota > 0).
+  New Skill policies require a quota; frozen legacy null remains readable.
+end note
+legend bottom
+  Selected physical columns, not a complete database capture.
+  Parent -> child = actual FK; composite ownership keys are summarized in labels.
+  Skill + knowledge + Skill version; legacy OC fields do not filter current pools.
+  Policy draft -> publication is a workflow, not an invented SQL FK.
+  Answers/scores freeze before outcome jobs; baseline is diagnostic, never official evidence.
+endlegend
 @enduml

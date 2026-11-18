@@ -16,7 +16,7 @@ class Neo4jQuestionBankSkillReaderTest {
     @Test void stalledResultAndCleanupCannotHoldCallerIndefinitely() {
         var driver=mock(Driver.class);var session=mock(AsyncSession.class);
         var pending=new CompletableFuture<List<String>>();
-        when(driver.asyncSession(any(SessionConfig.class))).thenReturn(session);
+        when(driver.session(eq(AsyncSession.class),any(SessionConfig.class))).thenReturn(session);
         when(session.<List<String>>executeReadAsync(any(),any(TransactionConfig.class))).thenReturn(pending);
         when(session.closeAsync()).thenReturn(new CompletableFuture<>());
         var reader=new Neo4jQuestionBankSkillReader(driver,"neo4j",Duration.ofMillis(40));
@@ -29,7 +29,7 @@ class Neo4jQuestionBankSkillReaderTest {
 
     @Test void anotherReadCanRecoverAfterAnUnavailableConnection() {
         var driver=mock(Driver.class);var failed=mock(AsyncSession.class);var healthy=mock(AsyncSession.class);
-        when(driver.asyncSession(any(SessionConfig.class))).thenReturn(failed,healthy);
+        when(driver.session(eq(AsyncSession.class),any(SessionConfig.class))).thenReturn(failed).thenReturn(healthy);
         when(failed.<List<String>>executeReadAsync(any(),any(TransactionConfig.class))).thenReturn(CompletableFuture.failedFuture(new IllegalStateException("Internal transport detail")));
         when(healthy.<List<String>>executeReadAsync(any(),any(TransactionConfig.class))).thenReturn(CompletableFuture.completedFuture(List.of("Approved skill")));
         when(failed.closeAsync()).thenReturn(CompletableFuture.completedFuture(null));
@@ -43,9 +43,9 @@ class Neo4jQuestionBankSkillReaderTest {
 
     @Test void missingAndAmbiguousSkillsRemainInvalidRatherThanInvented() {
         var driver=mock(Driver.class);var session=mock(AsyncSession.class);
-        when(driver.asyncSession(any(SessionConfig.class))).thenReturn(session);
+        when(driver.session(eq(AsyncSession.class),any(SessionConfig.class))).thenReturn(session);
         when(session.<List<String>>executeReadAsync(any(),any(TransactionConfig.class)))
-                .thenReturn(CompletableFuture.completedFuture(List.of()),CompletableFuture.completedFuture(List.of("One","Two")));
+                .thenReturn(CompletableFuture.completedFuture(List.of())).thenReturn(CompletableFuture.completedFuture(List.of("One","Two")));
         when(session.closeAsync()).thenReturn(CompletableFuture.completedFuture(null));
         var reader=new Neo4jQuestionBankSkillReader(driver,"neo4j",Duration.ofSeconds(1));
         assertEquals(400,assertThrows(Failure.class,()->reader.requireSkill("org-a","missing")).status());

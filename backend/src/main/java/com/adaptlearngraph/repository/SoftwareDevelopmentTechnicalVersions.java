@@ -8,6 +8,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.*;
 
 /** Activated only by DevelopmentTechnicalVersions wiring; exact SE tuple, never operational promotion. */
+// Compatibility adapter retains historical promoted numeric-baseline pins.
+@SuppressWarnings("deprecation")
 public final class SoftwareDevelopmentTechnicalVersions implements AdaptiveTechnicalVersionPort {
     private static final VersionPins PINS=new VersionPins(SoftwareDevelopmentSeed.id("model"),SoftwareDevelopmentSeed.id("mapping"),SoftwareDevelopmentSeed.id("parameters"));
     private final AdaptiveTechnicalVersionPort delegate;

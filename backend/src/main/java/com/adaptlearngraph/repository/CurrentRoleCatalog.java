@@ -25,18 +25,25 @@ public final class CurrentRoleCatalog implements Catalog {
         this.authored=Objects.requireNonNull(authored);
     }
     @Override public List<Role> roles(UUID org) {
+        return roles(org,false);
+    }
+    /** Exact tenant-only projection for RIASEC exploration; ordinary catalog behavior is retained. */
+    public List<Role> ownedRoles(UUID org) {
+        return roles(org,true);
+    }
+    private List<Role> roles(UUID org,boolean ownedOnly) {
         if(!organization.equals(org)) throw new Failure(403,"FORBIDDEN");
         var authoredScopes=new HashSet<>(authored.jobPositions(org));
         if(allowedJobPositions!=null)authoredScopes.retainAll(allowedJobPositions);
         Set<String> legacyScopes=null;
         if(allowedJobPositions!=null){var scopes=new HashSet<>(allowedJobPositions);scopes.removeAll(authoredScopes);legacyScopes=Set.copyOf(scopes);}
-        var result=new ArrayList<>(legacyRoles(org,legacyScopes,authoredScopes));
+        var result=new ArrayList<>(legacyRoles(org,legacyScopes,authoredScopes,ownedOnly));
         for(String jobPosition:new TreeSet<>(authoredScopes))result.addAll(com.adaptlearngraph.repository.AuthoredCatalogPort.scoped(authored.find(org,jobPosition)
                 .orElseThrow(()->new IllegalStateException("Explicit authored source unavailable")),org,jobPosition).roles());
         var ids=new HashSet<String>();for(var role:result)if(!ids.add(role.id()))throw new IllegalStateException("Ambiguous catalog Role");
         return List.copyOf(result);
     }
-    private List<Role> legacyRoles(UUID org,Set<String> allowedJobPositions,Set<String> excluded) {
+    private List<Role> legacyRoles(UUID org,Set<String> allowedJobPositions,Set<String> excluded,boolean ownedOnly) {
         if(allowedJobPositions!=null && allowedJobPositions.isEmpty())return List.of();
         // Neo4jClient: role/level rows with collected skill maps under tenant/shared and review filters.
         try {
@@ -46,19 +53,21 @@ public final class CurrentRoleCatalog implements Catalog {
                         WHERE o.status='ACTIVE' AND r.status IN ['ACTIVE','PUBLISHED'] AND m.status='ACTIVE' AND h.status='ACTIVE' AND l.status='ACTIVE'
                           AND (l.sourceFormat IS NULL OR l.sourceFormat<>'AUTHORED_ROLE_MEMBER_V1')
                           AND all(n IN [o,r,l,m,h] WHERE n.organizationId IS NULL OR n.organizationId=$org)
+                          AND (NOT $ownedOnly OR all(n IN [o,r,l,m,h] WHERE n.organizationId=$org))
                           AND ($unrestricted OR o.id IN $jobPositions)
                           AND NOT o.id IN $excluded
                           AND ($demoReview OR all(n IN [o,r,l,m,h] WHERE n.reviewStatus='APPROVED'))
                         OPTIONAL MATCH (l)-[q:REQUIRES_SKILL]->(s:MicroSkill)
                         WHERE q.status='ACTIVE' AND s.status='ACTIVE'
                           AND all(n IN [q,s] WHERE n.organizationId IS NULL OR n.organizationId=$org)
+                          AND (NOT $ownedOnly OR all(n IN [q,s] WHERE n.organizationId=$org))
                           AND ($demoReview OR all(n IN [q,s] WHERE n.reviewStatus='APPROVED'))
                         RETURN properties(o) AS o,properties(r) AS r,properties(l) AS l,
                             collect(DISTINCT CASE WHEN s IS NULL THEN null ELSE {
                               id:s.id,code:s.code,name:s.name,requiredKnowledgeLevels:q.requiredKnowledgeLevels,mandatory:q.isMandatory} END) AS skills
                         ORDER BY o.name,r.name,l.rank
                         """,Map.of("org",org.toString(),"unrestricted",allowedJobPositions==null,
-                                "jobPositions",allowedJobPositions==null?List.of():List.copyOf(allowedJobPositions),"demoReview",demoReview,"excluded",List.copyOf(excluded)));
+                                "jobPositions",allowedJobPositions==null?List.of():List.copyOf(allowedJobPositions),"demoReview",demoReview,"excluded",List.copyOf(excluded),"ownedOnly",ownedOnly));
                 Set<String> ids=new HashSet<>();
                 if(allowedJobPositions!=null) ids.addAll(allowedJobPositions);
                 else rows.forEach(r->ids.add(r.get("o").get("id").asString()));

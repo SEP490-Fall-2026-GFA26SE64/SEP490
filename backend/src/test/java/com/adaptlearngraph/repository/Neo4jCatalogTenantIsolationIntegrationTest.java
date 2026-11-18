@@ -113,6 +113,7 @@ class Neo4jCatalogTenantIsolationIntegrationTest {
     void resetGraph() {
         persistence.client().query("MATCH (n) DETACH DELETE n").run();
         persistence.client().query(FIXTURE).bindAll(Map.of("a", A, "b", B)).run();
+        persistence.client().query("MATCH (s:MicroSkill) SET s.reviewStatus='APPROVED',s.version='1.0',s.provisionMode='MODULE_ONLY',s.moduleOnlyKnowledgeLevels=['FOUNDATION']").run();
     }
 
     @Test
@@ -120,8 +121,8 @@ class Neo4jCatalogTenantIsolationIntegrationTest {
         var before = snapshot(A);
         Instant now = Instant.parse("2026-11-03T00:00:00Z");
 
-        assertThatThrownBy(() -> jobPositions.save(B,
-                new JobPosition("occ-a", "OCC_B", "Hijacked", 2, 1, 1, 1, 1, 1, 1, "ACTIVE", "1.0", 0, 0)))
+        assertThatThrownBy(() -> jobPositions.saveChange(B,
+                new com.adaptlearngraph.entities.domain.JobPositionChange("occ-a", "OCC_B", "Hijacked", 2, "ACTIVE", "1.0", "manager-b", false, null, null)))
                 .isInstanceOf(CrossTenantWriteException.class);
         assertThatThrownBy(() -> skills.save(new MicroSkill(MicroSkillId.fromString("skill-a1"), B, "SKILL_A1", "Hijacked",
                 "hijacked", SkillStatus.ACTIVE, now, now)))
@@ -131,7 +132,7 @@ class Neo4jCatalogTenantIsolationIntegrationTest {
                 .isInstanceOf(CrossTenantWriteException.class);
         assertThatThrownBy(() -> roles.save(new TargetRole(TargetRoleId.fromString("role-a"), B, "ROLE_A", "Hijacked", "FAM",
                 RoleTrack.PROFESSIONAL, "", "", List.of(), RoleStatus.ACTIVE, "1.0",
-                "[{\"skillCode\":\"SKILL_B1\",\"threshold\":80}]", now, now, null, List.of("Junior"), "{}", List.of())))
+                "[{\"skillCode\":\"SKILL_B1\",\"level\":\"Junior\",\"requiredKnowledgeLevels\":[\"FOUNDATION\"],\"threshold\":80}]", now, now, null, List.of("Junior"), "{}", List.of())))
                 .isInstanceOf(CrossTenantWriteException.class);
 
         assertThat(snapshot(A)).as("A's nodes, properties and relationships").isEqualTo(before);
@@ -158,9 +159,9 @@ class Neo4jCatalogTenantIsolationIntegrationTest {
         assertThat(prerequisites.hasPath(A, "skill-a1", "skill-a3")).isTrue();
 
         roles.save(TargetRole.createNew(B, "ROLE_B", "Role B", "FAM", RoleTrack.PROFESSIONAL, "", "Role B", "1.0",
-                RoleStatus.DRAFT, "[{\"skillCode\":\"SKILL_A1\",\"threshold\":70},"
-                        + "{\"skillId\":\"skill-a2\",\"skillCode\":\"SKILL_A2\",\"threshold\":70},"
-                        + "{\"skillCode\":\"SKILL_B1\",\"threshold\":90}]"));
+                RoleStatus.DRAFT, "[{\"skillCode\":\"SKILL_A1\",\"level\":\"Junior\",\"requiredKnowledgeLevels\":[\"FOUNDATION\"],\"threshold\":70},"
+                        + "{\"skillId\":\"skill-a2\",\"skillCode\":\"SKILL_A2\",\"level\":\"Junior\",\"requiredKnowledgeLevels\":[\"FOUNDATION\"],\"threshold\":70},"
+                        + "{\"skillCode\":\"SKILL_B1\",\"level\":\"Junior\",\"requiredKnowledgeLevels\":[\"FOUNDATION\"],\"threshold\":90}]"));
         assertThat(collectIds("MATCH (r:TargetRole {organizationId: $b})-[:REQUIRES_SKILL]->(s) RETURN collect(s.id) AS ids"))
                 .isEqualTo(List.of("skill-b1"));
 
@@ -189,7 +190,7 @@ class Neo4jCatalogTenantIsolationIntegrationTest {
         assertThat(snapshot(A)).as("A's module, its properties and TEACHES edges").isEqualTo(before);
 
         modules.save(B, new LearningModuleRecord("module-b", "module-b", "Module B", null, null, null, null, null, null, null,
-                15, List.of("skill-a1", "skill-b1"), List.of()));
+                15, List.of("skill-b1"), List.of()));
         assertThat(modules.findById(B, "module-b").orElseThrow().teachesSkillIds()).containsExactly("skill-b1");
 
         var crossOrganization = moduleDocument("module-b2", B, "skill-a1");
@@ -235,7 +236,7 @@ class Neo4jCatalogTenantIsolationIntegrationTest {
             assertThat(statements(appender, () -> assertThat(prerequisites.findAll(A)).hasSize(2))).hasSize(1);
             assertThat(statements(appender, () -> assertThat(competencies.findAllCompetencies(A, null)).hasSize(1))).hasSize(1);
             modules.save(A, new LearningModuleRecord("module-a2", "module-a2", "Module A2", null, null, null, null, null, null,
-                    null, 15, List.of("skill-a1", "skill-a2"), List.of()));
+                    null, 15, List.of("skill-a1"), List.of()));
             assertThat(statements(appender, () -> assertThat(modules.findAll(A)).hasSize(2))).hasSize(1);
             assertThat(statements(appender, () -> assertThat(moduleGraph.modules(A)).hasSize(2))).hasSize(1);
         } finally {
@@ -247,10 +248,8 @@ class Neo4jCatalogTenantIsolationIntegrationTest {
     private static Document moduleDocument(String id, String organization, String skillId) {
         String at = "2026-11-03T00:00:00Z";
         var teaching = new Teaching(new Metadata(id + "-" + skillId, "0.11.0", "ACTIVE", "APPROVED", "reviewer", at), skillId,
-                skillId, "PRIMARY", "LOW");
-        var payload = new ModuleAuthoring.Package(new Metadata(id, "0.11.0", "ACTIVE", "APPROVED", "reviewer", at), "Hijacked",
-                "LESSON_AND_PRACTICE", "module-content:" + id, "text/markdown", "1.0", 15, new BigDecimal("1000"),
-                List.of(teaching), null);
+                skillId);
+        var payload = new ModuleAuthoring.Package(new Metadata(id, "0.11.0", "ACTIVE", "APPROVED", "reviewer", at), "Hijacked", "LESSON_AND_PRACTICE", "module-content:" + id, "text/markdown", "1.0", 15, List.of(teaching), null, com.adaptlearngraph.entities.domain.KnowledgeLevel.FOUNDATION, List.of(), "1.0");
         var revision = new Revision(1, "RELEASED", payload, "expert", at, "reviewer", at, null);
         return new Document(id, organization, List.of(), "expert", at, 1, true, false, 1, List.of(revision), List.of());
     }
