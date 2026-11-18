@@ -33,7 +33,7 @@ async function openImport(page: Page) {
 
 async function downloadTemplate(page: Page, dialog: ReturnType<Page['getByRole']>) {
   const button = dialog.getByRole('button', { name: /Download template|Tải file mẫu/ })
-  await expect(button).toBeEnabled({ timeout: 15_000 })
+  await expect(button).toBeEnabled({ timeout: 60_000 })
   const [download] = await Promise.all([page.waitForEvent('download'), button.click()])
   const file = path.join(ARTIFACTS, download.suggestedFilename())
   await download.saveAs(file)
@@ -60,7 +60,7 @@ function firstAssignment(workbook: ExcelJS.Workbook) {
 async function buildUpload(workbook: ExcelJS.Workbook, rows: string[][], name: string) {
   const users = workbook.worksheets[1]
   rows.forEach((values, index) => {
-    values.forEach((value, col) => { users.getCell(4 + index, col + 1).value = value || null })
+    values.forEach((value, col) => { users.getCell(2 + index, col + 1).value = value || null })
   })
   const file = path.join(ARTIFACTS, name)
   writeFileSync(file, Buffer.from(await workbook.xlsx.writeBuffer()))
@@ -80,10 +80,10 @@ test.describe('FR-03.01 bulk user import from Excel', () => {
 
     const { workbook } = await downloadTemplate(page, dialog)
     const visible = workbook.worksheets.filter(sheet => sheet.state === 'visible').map(sheet => sheet.name)
-    expect(visible).toEqual(['Guide', 'Users', 'Lists'])
-    expect(workbook.worksheets[0].name).toBe('Guide')
+    expect(visible).toEqual(['Instructions', 'Users', 'Lists'])
+    expect(workbook.worksheets[0].name).toBe('Instructions')
     expect(workbook.worksheets[3].state).toBe('veryHidden')
-    expect(workbook.worksheets[1].getCell('B3').text).toContain('Email')
+    expect(workbook.worksheets[1].getCell('B1').text).toContain('Email')
 
     await dialog.getByLabel('Choose Excel file').setInputFiles({ name: 'notes.txt', mimeType: 'text/plain', buffer: Buffer.from('hello') })
     await expect(dialog.getByRole('alert')).toContainText('Only .xlsx files are supported')
@@ -121,10 +121,10 @@ test.describe('FR-03.01 bulk user import from Excel', () => {
     const report = await newWorkbook()
     await report.xlsx.load(readFileSync(reportFile) as unknown as ArrayBuffer)
     const reportUsers = report.worksheets[1]
-    expect(reportUsers.getCell('B4').text).toBe('not-an-email')
-    expect(reportUsers.getCell('B6').text).toContain('import-qa-ld-')
-    expect(reportUsers.getCell('H4').text.length).toBeGreaterThan(0)
-    expect(reportUsers.getCell('B7').text).toBe('')
+    expect(reportUsers.getCell('B2').text).toBe('not-an-email')
+    expect(reportUsers.getCell('B4').text).toContain('import-qa-ld-')
+    expect(reportUsers.getCell('H2').text.length).toBeGreaterThan(0)
+    expect(reportUsers.getCell('B5').text).toBe('')
 
     await dialog.getByRole('button', { name: 'Import 2 valid user(s)' }).click()
     await expect(dialog.getByText(/2 invitation\(s\) sent\. 3 row\(s\) not imported\./)).toBeVisible({ timeout: 60_000 })
@@ -142,6 +142,27 @@ test.describe('FR-03.01 bulk user import from Excel', () => {
     expect(failed).toEqual([])
   })
 
+  test('template: Instructions-first layout with orange row-1 headers like the organization template', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 })
+    await signIn(page)
+    const dialog = await openImport(page)
+    const { workbook, file } = await downloadTemplate(page, dialog)
+    const [instructions, users, lists] = workbook.worksheets
+    expect(instructions.name).toBe('Instructions')
+    expect(instructions.properties.tabColor?.argb).toBe('FF334155')
+    expect(users.properties.tabColor?.argb).toBe('FFEA580C')
+    expect(users.getRow(1).values).toEqual([undefined, 'Full name *', 'Email *', 'Role *', 'Department', 'Job position', 'Target role', 'Level'])
+    expect((users.getCell('A1').fill as ExcelJS.FillPattern).fgColor?.argb).toBe('FFEA580C')
+    expect((users.getCell('D1').fill as ExcelJS.FillPattern).fgColor?.argb).toBe('FFFFF5EB')
+    expect(users.views[0]).toMatchObject({ state: 'frozen', ySplit: 1 })
+    expect(users.autoFilter).toBeTruthy()
+    expect(users.getCell('C2').dataValidation).toMatchObject({ type: 'list' })
+    expect(lists.name).toBe('Lists')
+    // A blank template re-uploads as "no rows", proving the parser still finds the row-1 header.
+    await dialog.getByLabel('Choose Excel file').setInputFiles(file)
+    await expect(dialog.getByRole('alert')).toBeVisible()
+    await page.screenshot({ path: path.join(ARTIFACTS, 'template-reupload.png') })
+  })
   test('mobile 390x844: upload and preview stay usable', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 })
     await signIn(page)

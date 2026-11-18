@@ -32,6 +32,7 @@ import {
   type MicroSkillDto,
 } from '../../../../shared/api/microSkillApi'
 import { createPrerequisite } from '../../../../shared/api/prerequisiteApi'
+import { downloadOntologyTemplate } from './ontologyImportTemplate'
 
 export interface OntologyExcelImportModalProps {
   open: boolean
@@ -117,192 +118,14 @@ export function OntologyExcelImportModal({
     }
   }, [open])
 
-  // Download Sample Template with configured tabs
-  const handleDownloadTemplate = () => {
-    const workbook = XLSX.utils.book_new()
-
-    if (mode === 'competency') {
-      // Tab 1: Instructions & Guide
-      const instructionsData = [
-        ['COMPETENCY BULK IMPORT - USER GUIDE & INSTRUCTIONS'],
-        [''],
-        ['1. OVERVIEW'],
-        ['This template allows you to bulk import competencies and associate them with micro-skills.'],
-        ['This workbook has two data sheets: "Competencies" and "Competency_Skills".'],
-        [''],
-        ['2. DATA SHEETS & COLUMN SPECIFICATIONS'],
-        [''],
-        ['--- Sheet: Competencies (Required) ---'],
-        ['Column Name', 'Required?', 'Format / Type', 'Description & Example'],
-        ['Code', 'YES', 'Unique String', 'Unique code for the competency (e.g. COMP-SYS-01). Must not contain spaces.'],
-        ['Name', 'YES', 'Text (Max 255)', 'The descriptive title of the competency (e.g. System Architecture & Scalability).'],
-        ['Description', 'Optional', 'Text', 'Detailed overview of capabilities and observable mastery.'],
-        [''],
-        ['--- Sheet: Competency_Skills (Optional) ---'],
-        ['Column Name', 'Required?', 'Format / Type', 'Description & Example'],
-        ['Competency_Code', 'YES', 'String', 'The competency Code (e.g. COMP-SYS-01).'],
-        ['Micro_Skill_Code', 'YES', 'String', 'The code of an existing Micro-Skill to map to this competency (e.g. MS-SKILL01).'],
-        [''],
-        ['3. TIPS & RULES FOR IMPORT'],
-        ['• Do not modify or delete the sheet names ("Competencies", "Competency_Skills").'],
-        ['• The first row of each data sheet must contain the exact column headers.'],
-        ['• All Codes will be automatically trimmed and converted to uppercase upon import.'],
-        ['• Before saving, you will be able to review all parsed rows and any validation issues.'],
-      ]
-      const instructionsSheet = XLSX.utils.aoa_to_sheet(instructionsData)
-      instructionsSheet['!cols'] = [{ wch: 22 }, { wch: 12 }, { wch: 25 }, { wch: 60 }]
-      XLSX.utils.book_append_sheet(workbook, instructionsSheet, 'Instructions')
-
-      // Tab 2: Competencies
-      const compData = [
-        {
-          Code: 'COMP-SYS-01',
-          Name: 'System Architecture & Scalability',
-          Description: 'Ability to architect distributed systems, microservices, and fault-tolerant topologies.',
-        },
-        {
-          Code: 'COMP-SEC-01',
-          Name: 'Cloud & Infrastructure Security',
-          Description: 'Knowledge of identity access management, transport encryption, and vulnerability management.',
-        },
-      ]
-      const compSheet = XLSX.utils.json_to_sheet(compData)
-      compSheet['!cols'] = [{ wch: 18 }, { wch: 38 }, { wch: 65 }]
-      XLSX.utils.book_append_sheet(workbook, compSheet, 'Competencies')
-
-      // Tab 3: Competency Relations
-      const relData = [
-        {
-          Competency_Code: 'COMP-SYS-01',
-          Micro_Skill_Code: 'MS-SKILL01',
-        },
-        {
-          Competency_Code: 'COMP-SYS-01',
-          Micro_Skill_Code: 'MS-SKILL02',
-        },
-        {
-          Competency_Code: 'COMP-SEC-01',
-          Micro_Skill_Code: 'MS-SKILL03',
-        },
-      ]
-      const relSheet = XLSX.utils.json_to_sheet(relData)
-      relSheet['!cols'] = [{ wch: 22 }, { wch: 22 }]
-      XLSX.utils.book_append_sheet(workbook, relSheet, 'Competency_Skills')
-
-      XLSX.writeFile(workbook, 'Competency_Import_Template.xlsx')
-    } else {
-      // Tab 1: Instructions & Guide
-      const instructionsData = [
-        ['MICRO-SKILL BULK IMPORT - USER GUIDE & INSTRUCTIONS'],
-        [''],
-        ['1. OVERVIEW'],
-        ['This template allows you to bulk import Micro-Skills, configure learning verification modes for each knowledge tier,'],
-        ['associate skills with competencies, and establish prerequisite progression dependencies.'],
-        ['This workbook has three data sheets: "Micro_Skills", "Competency_Skills", and "Prerequisites".'],
-        [''],
-        ['2. DATA SHEETS & COLUMN SPECIFICATIONS'],
-        [''],
-        ['--- Sheet: Micro_Skills (Required) ---'],
-        ['Column Name', 'Required?', 'Accepted Values', 'Description & Example'],
-        ['Code', 'YES', 'Unique String', 'Unique code for the skill (e.g. MS-SKILL01). Must not contain spaces.'],
-        ['Name', 'YES', 'Text (Max 255)', 'The descriptive title of the micro-skill (e.g. Database Indexing & Query Optimization).'],
-        ['Description', 'Optional', 'Text', 'Clear summary of what the learner will study and demonstrate.'],
-        ['Foundation_Mode', 'Optional', 'Module, Certificate, or blank', 'Verification mode for Foundation level. Type "Module" or "Certificate" (or leave blank if none).'],
-        ['Intermediate_Mode', 'Optional', 'Module, Certificate, or blank', 'Verification mode for Intermediate level. Type "Module" or "Certificate" (or leave blank if none).'],
-        ['Advanced_Mode', 'Optional', 'Module, Certificate, or blank', 'Verification mode for Advanced level. Type "Module" or "Certificate" (or leave blank if none).'],
-        [''],
-        ['--- Sheet: Competency_Skills (Optional) ---'],
-        ['Column Name', 'Required?', 'Accepted Values', 'Description & Example'],
-        ['Competency_Code', 'YES', 'String', 'Code of the parent competency (e.g. COMP-SYS-01).'],
-        ['Micro_Skill_Code', 'YES', 'String', 'Code of the micro-skill to map (e.g. MS-SKILL01).'],
-        [''],
-        ['--- Sheet: Prerequisites (Optional) ---'],
-        ['Column Name', 'Required?', 'Accepted Values', 'Description & Example'],
-        ['Dependent_Skill_Code', 'YES', 'String', 'Code of the skill that requires prior knowledge (e.g. MS-SKILL02).'],
-        ['Dependent_Knowledge_Level', 'YES', 'Foundation, Intermediate, Advanced', 'Tier of the dependent skill that requires prerequisite mastery (e.g. Intermediate).'],
-        ['Prerequisite_Skill_Code', 'YES', 'String', 'Code of the required prerequisite skill (e.g. MS-SKILL01).'],
-        ['Prerequisite_Knowledge_Level', 'YES', 'Foundation, Intermediate, Advanced', 'Tier required in the prerequisite skill (e.g. Foundation).'],
-        [''],
-        ['3. TIPS & RULES FOR IMPORT'],
-        ['• Learning Modes: You can simply type "Module" or "Certificate" (or "Module Only", "Certificate Only"). Case does not matter!'],
-        ['• If a knowledge level is not covered or has no content, simply leave that column blank.'],
-        ['• Do not modify or delete the sheet names ("Micro_Skills", "Competency_Skills", "Prerequisites").'],
-        ['• The first row of each data sheet must contain the exact column headers.'],
-        ['• All Codes will be automatically trimmed and converted to uppercase upon import.'],
-        ['• Before saving, you will be able to review all parsed rows and any validation issues.'],
-      ]
-      const instructionsSheet = XLSX.utils.aoa_to_sheet(instructionsData)
-      instructionsSheet['!cols'] = [{ wch: 28 }, { wch: 12 }, { wch: 32 }, { wch: 65 }]
-      XLSX.utils.book_append_sheet(workbook, instructionsSheet, 'Instructions')
-
-      // Tab 2: Micro-skills
-      const skillData = [
-        {
-          Code: 'MS-SKILL01',
-          Name: 'Database Indexing & Query Optimization',
-          Description: 'Understand B-Tree indexes, composite keys, and analyze SQL execution plans.',
-          Foundation_Mode: 'Module',
-          Intermediate_Mode: 'Module',
-          Advanced_Mode: 'Certificate',
-        },
-        {
-          Code: 'MS-SKILL02',
-          Name: 'Asynchronous Event Processing',
-          Description: 'Design event-driven architectures with Kafka topics and consumer groups.',
-          Foundation_Mode: 'Module',
-          Intermediate_Mode: 'Certificate',
-          Advanced_Mode: '',
-        },
-        {
-          Code: 'MS-SKILL03',
-          Name: 'OAuth2 & JWT Token Security',
-          Description: 'Validate RS256 token signatures, claim scopes, and public key rotations.',
-          Foundation_Mode: '',
-          Intermediate_Mode: 'Module',
-          Advanced_Mode: 'Module',
-        },
-      ]
-      const skillSheet = XLSX.utils.json_to_sheet(skillData)
-      skillSheet['!cols'] = [{ wch: 18 }, { wch: 40 }, { wch: 65 }, { wch: 18 }, { wch: 20 }, { wch: 18 }]
-      XLSX.utils.book_append_sheet(workbook, skillSheet, 'Micro_Skills')
-
-      // Tab 3: Competency Relations
-      const relData = [
-        {
-          Competency_Code: 'COMP-SYS-01',
-          Micro_Skill_Code: 'MS-SKILL01',
-        },
-        {
-          Competency_Code: 'COMP-SYS-01',
-          Micro_Skill_Code: 'MS-SKILL02',
-        },
-      ]
-      const relSheet = XLSX.utils.json_to_sheet(relData)
-      relSheet['!cols'] = [{ wch: 22 }, { wch: 22 }]
-      XLSX.utils.book_append_sheet(workbook, relSheet, 'Competency_Skills')
-
-      // Tab 4: Prerequisites
-      const prereqData = [
-        {
-          Dependent_Skill_Code: 'MS-SKILL02',
-          Dependent_Knowledge_Level: 'Intermediate',
-          Prerequisite_Skill_Code: 'MS-SKILL01',
-          Prerequisite_Knowledge_Level: 'Foundation',
-        },
-        {
-          Dependent_Skill_Code: 'MS-SKILL03',
-          Dependent_Knowledge_Level: 'Advanced',
-          Prerequisite_Skill_Code: 'MS-SKILL01',
-          Prerequisite_Knowledge_Level: 'Intermediate',
-        },
-      ]
-      const prereqSheet = XLSX.utils.json_to_sheet(prereqData)
-      prereqSheet['!cols'] = [{ wch: 24 }, { wch: 28 }, { wch: 24 }, { wch: 28 }]
-      XLSX.utils.book_append_sheet(workbook, prereqSheet, 'Prerequisites')
-
-      XLSX.writeFile(workbook, 'MicroSkill_Import_Template.xlsx')
+  const handleDownloadTemplate = async () => {
+    try {
+      await downloadOntologyTemplate(mode)
+    } catch {
+      toast({ title: 'Template download failed', description: 'Please try again.', variant: 'destructive' })
     }
   }
+
 
   // Parse Excel File
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {

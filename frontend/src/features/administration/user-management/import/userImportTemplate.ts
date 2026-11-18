@@ -36,8 +36,8 @@ const COLOR = {
   destructiveTint: 'FFFEF2F2',
 }
 const FONT_NAME = 'Calibri'
-const FIRST_DATA_ROW = 4
-const HEADER_ROW = 3
+const FIRST_DATA_ROW = 2
+const HEADER_ROW = 1
 const OPTIONS_SHEET = 'Options'
 
 const fill = (argb: string): Fill => ({ type: 'pattern', pattern: 'solid', fgColor: { argb } })
@@ -84,13 +84,13 @@ function writeMerged(sheet: Worksheet, row: number, from: number, to: number, va
 }
 
 function sectionBanner(sheet: Worksheet, row: number, from: number, to: number, label: string) {
-  writeMerged(sheet, row, from, to, label, { font: font({ bold: true, size: 13, color: { argb: COLOR.white } }), fill: fill(COLOR.primary) })
+  writeMerged(sheet, row, from, to, label, { font: font({ bold: true, size: 13 }) })
   sheet.getRow(row).height = 24
 }
 
 function tableHeader(sheet: Worksheet, row: number, spans: [number, number, string][]) {
   for (const [from, to, label] of spans) {
-    writeMerged(sheet, row, from, to, label, { font: font({ bold: true, color: { argb: COLOR.white } }), fill: fill(COLOR.slate), border: true })
+    writeMerged(sheet, row, from, to, label, { font: font({ bold: true, color: { argb: COLOR.white } }), fill: fill(COLOR.primary), border: true })
   }
   sheet.getRow(row).height = 22
 }
@@ -146,110 +146,86 @@ function buildGuideSheet(workbook: Workbook, context: TemplateContext, sample: S
   const t = (en: string, vi: string) => txt(language, en, vi)
   const sheet = workbook.addWorksheet(SHEET_NAMES.guide[language], {
     views: [{ showGridLines: false }],
-    properties: { tabColor: { argb: COLOR.primary } },
+    properties: { tabColor: { argb: COLOR.slate } },
     pageSetup: { orientation: 'landscape', fitToPage: true, fitToWidth: 1, fitToHeight: 0 },
   })
-  const widths = [3, 24, 16, 22, 30, 34, 30, 16]
-  widths.forEach((width, index) => { sheet.getColumn(index + 1).width = width })
-  const first = 2
-  const last = 8
-  let row = 2
-
-  writeMerged(sheet, row, first, last, t('Bulk user import — instructions', 'Hướng dẫn nhập người dùng hàng loạt'), { font: font({ bold: true, size: 20, color: { argb: COLOR.primary } }), wrap: false })
-  sheet.getRow(row).height = 34
-  row++
-  const generated = (context.generatedAt ?? new Date()).toLocaleDateString(language === 'vi' ? 'vi-VN' : 'en-GB')
-  const org = context.organizationName ? `${t('Organization', 'Tổ chức')}: ${context.organizationName}  ·  ` : ''
-  writeMerged(sheet, row, first, last, `${org}${t('Generated', 'Ngày tạo')}: ${generated}  ·  ${t('Use with: User Accounts → Import Excel', 'Dùng tại: Tài khoản người dùng → Nhập Excel')}`, { font: font({ color: { argb: COLOR.textMuted } }) })
-  sheet.getRow(row).height = 20
-  row++
-  const purpose = t(
-    `Use this file to create up to ${MAX_IMPORT_ROWS} user accounts at once. Each valid row sends an activation invitation email; seats are counted only after the user activates.`,
-    `Dùng tệp này để tạo tối đa ${MAX_IMPORT_ROWS} tài khoản người dùng cùng lúc. Mỗi dòng hợp lệ sẽ gửi email mời kích hoạt; ghế thành viên chỉ được tính sau khi người dùng kích hoạt.`,
-  )
-  writeMerged(sheet, row, first, last, purpose, { font: font({ color: { argb: COLOR.text } }), fill: fill(COLOR.tint) })
-  sheet.getRow(row).height = fitHeight(purpose, mergedWidth(sheet, first, last)) + 6
-  row += 2
-
-  sectionBanner(sheet, row++, first, last, t('1. Steps', '1. Các bước thực hiện'))
+  ;[3, 24, 46, 70].forEach((width, index) => { sheet.getColumn(index + 1).width = width })
   const usersTab = SHEET_NAMES.users[language]
   const listsTab = SHEET_NAMES.lists[language]
-  const steps = [
-    t(`Open the "${usersTab}" tab. Enter one user per row, starting right below the header row.`, `Mở tab "${usersTab}". Nhập mỗi người dùng trên một dòng, bắt đầu ngay dưới dòng tiêu đề.`),
-    t('Fill every column marked with * (orange header). Use the drop-down lists for Role, Department, Job position, Target role and Level.', 'Điền đủ các cột có dấu * (tiêu đề màu cam). Dùng danh sách thả xuống cho Vai trò, Phòng ban, Vị trí công việc, Vai trò mục tiêu và Cấp độ.'),
-    t(`Check valid combinations in the "${listsTab}" tab: Department → Job position → Target role → Level.`, `Kiểm tra các tổ hợp hợp lệ ở tab "${listsTab}": Phòng ban → Vị trí công việc → Vai trò mục tiêu → Cấp độ.`),
-    t('Save the file as .xlsx, then on User Accounts click "Import Excel" and upload it.', 'Lưu tệp dạng .xlsx, sau đó tại trang Tài khoản người dùng bấm "Nhập Excel" và tải tệp lên.'),
-    t('Review the preview: valid rows are imported, rows with errors are skipped. Download the error report, fix it and import again.', 'Xem trước kết quả: dòng hợp lệ sẽ được nhập, dòng lỗi sẽ bị bỏ qua. Tải báo cáo lỗi, sửa và nhập lại.'),
+  const write = (row: number, values: string[], style: { font?: Partial<Font>; fill?: string; height?: number } = {}) => {
+    const r = sheet.getRow(row)
+    values.forEach((value, index) => {
+      const cell = r.getCell(index + 2)
+      cell.value = value
+      cell.font = font(style.font)
+      cell.alignment = { vertical: 'top', wrapText: true }
+      if (style.fill) cell.fill = fill(style.fill)
+    })
+    r.height = style.height ?? Math.max(20, ...values.map((value, index) => fitHeight(value, sheet.getColumn(index + 2).width ?? 10)))
+  }
+  const heading = (row: number, label: string) => write(row, [label], { font: { bold: true, size: 13 }, height: 22 })
+  const tableHead = (row: number, labels: string[]) => write(row, labels, { font: { bold: true, color: { argb: COLOR.white } }, fill: COLOR.primary, height: 22 })
+
+  write(2, [t('User import template', 'Mẫu nhập người dùng')], { font: { size: 18, bold: true, color: { argb: COLOR.primary } }, height: 30 })
+  const generated = (context.generatedAt ?? new Date()).toLocaleDateString(language === 'vi' ? 'vi-VN' : 'en-GB')
+  const org = context.organizationName ? `${t('Organization', 'Tổ chức')}: ${context.organizationName}  ·  ` : ''
+  write(3, [t(
+    `Fill the orange "${usersTab}" tab (up to ${MAX_IMPORT_ROWS} users), save the file as .xlsx and upload it in User Accounts → Import Excel. ${org}${t('Generated', 'Ngày tạo')}: ${generated}.`,
+    `Điền tab màu cam "${usersTab}" (tối đa ${MAX_IMPORT_ROWS} người dùng), lưu tệp dạng .xlsx và tải lên tại Tài khoản người dùng → Nhập Excel. ${org}${t('Generated', 'Ngày tạo')}: ${generated}.`,
+  )], { font: { color: { argb: COLOR.textMuted } }, height: 34 })
+  sheet.mergeCells('B2:D2')
+  sheet.mergeCells('B3:D3')
+
+  let row = 5
+  tableHead(row++, [t('Sheet', 'Tab'), t('One row means', 'Mỗi dòng là'), t('Columns', 'Các cột')])
+  const sheets: [string, string, string][] = [
+    [usersTab, t('One user to invite. Each valid row sends an activation email; seats are counted only after activation.', 'Một người dùng cần mời. Mỗi dòng hợp lệ gửi một email kích hoạt; ghế chỉ được tính sau khi kích hoạt.'),
+      IMPORT_COLUMNS.map(column => `${columnHeader(column, language)}${column.required ? '' : t(' - see rules', ' - xem quy tắc')}`).join('\n')],
+    [listsTab, t('Reference only: departments, job positions, Target roles and levels of your workspace.', 'Chỉ để tham khảo: phòng ban, vị trí công việc, vai trò mục tiêu và cấp độ của không gian làm việc.'), t('Not imported', 'Không được nhập')],
   ]
-  steps.forEach((step, index) => {
-    writeMerged(sheet, row, first, first, t(`Step ${index + 1}`, `Bước ${index + 1}`), { font: font({ bold: true, color: { argb: COLOR.primaryDark } }), fill: fill(COLOR.tint), border: true })
-    writeMerged(sheet, row, first + 1, last, step, { border: true })
-    sheet.getRow(row).height = fitHeight(step, mergedWidth(sheet, first + 1, last))
-    row++
-  })
+  sheets.forEach((values, index) => write(row++, values, { fill: index % 2 ? COLOR.canvas : COLOR.white }))
   row++
 
-  sectionBanner(sheet, row++, first, last, t('2. Columns', '2. Mô tả các cột'))
-  tableHeader(sheet, row++, [[2, 2, t('Column', 'Cột')], [3, 3, t('Required', 'Bắt buộc')], [4, 6, t('Description', 'Mô tả')], [7, 8, t('Example', 'Ví dụ')]])
+  heading(row++, t('Columns', 'Mô tả các cột'))
+  tableHead(row++, [t('Column', 'Cột'), t('Required', 'Bắt buộc'), t('Description and example', 'Mô tả và ví dụ')])
   IMPORT_COLUMNS.forEach((column, index) => {
     const copy = fieldCopy(column.field, language, sample)
     const required = column.required
       ? t('Yes', 'Có')
-      : column.field === 'department'
-        ? t('Yes (all roles)', 'Có (mọi vai trò)')
-        : column.field === 'jobPosition'
-          ? t('Depends on role', 'Tùy vai trò')
-          : t('No', 'Không')
-    tableRow(sheet, row++, [
-      [2, 2, columnHeader(column, language), font({ bold: true })],
-      [3, 3, required, font({ bold: column.required, color: { argb: column.required ? COLOR.primaryDark : COLOR.text } })],
-      [4, 6, copy.description],
-      [7, 8, copy.example || '—', font({ color: { argb: COLOR.textMuted } })],
-    ], index % 2 === 1)
+      : column.field === 'department' ? t('Yes (all roles)', 'Có (mọi vai trò)')
+        : column.field === 'jobPosition' ? t('Employee and Domain Expert', 'Nhân viên và Chuyên gia') : t('No', 'Không')
+    const example = copy.example ? `\n${t('Example', 'Ví dụ')}: ${copy.example}` : ''
+    write(row++, [columnHeader(column, language), required, `${copy.description}${example}`], { fill: index % 2 ? COLOR.canvas : COLOR.white })
   })
   row++
 
-  sectionBanner(sheet, row++, first, last, t('3. Rules by role', '3. Quy tắc theo vai trò'))
-  tableHeader(sheet, row++, [[2, 2, t('Role', 'Vai trò')], [3, 4, t('Department', 'Phòng ban')], [5, 5, t('Job position', 'Vị trí công việc')], [6, 8, t('Target role & Level', 'Vai trò mục tiêu & Cấp độ')]])
-  const required = t('Required', 'Bắt buộc')
-  const rules: [string, string, string, string][] = [
-    [roleLabel('EMPLOYEE', language), required, required, t('Optional. Level needs a Target role.', 'Không bắt buộc. Cấp độ cần có Vai trò mục tiêu.')],
-    [roleLabel('DOMAIN_EXPERT', language), required, required, t('Leave empty', 'Để trống')],
-    [roleLabel('LD_MANAGER', language), t('Required — becomes department head', 'Bắt buộc — trở thành trưởng phòng ban'), t('Leave empty', 'Để trống'), t('Leave empty', 'Để trống')],
+  const rules = [
+    t(`Enter one user per row in the "${usersTab}" tab, right below the header row. Use the drop-down lists for Role, Department, Job position, Target role and Level.`,
+      `Nhập mỗi người dùng một dòng trong tab "${usersTab}", ngay dưới dòng tiêu đề. Dùng danh sách thả xuống cho Vai trò, Phòng ban, Vị trí công việc, Vai trò mục tiêu và Cấp độ.`),
+    t(`${roleLabel('EMPLOYEE', language)}: department and job position are required; Target role is optional and Level needs a Target role.`,
+      `${roleLabel('EMPLOYEE', language)}: bắt buộc phòng ban và vị trí công việc; vai trò mục tiêu không bắt buộc, cấp độ cần có vai trò mục tiêu.`),
+    t(`${roleLabel('DOMAIN_EXPERT', language)}: department and job position are required; leave Target role and Level empty.`,
+      `${roleLabel('DOMAIN_EXPERT', language)}: bắt buộc phòng ban và vị trí công việc; để trống vai trò mục tiêu và cấp độ.`),
+    t(`${roleLabel('LD_MANAGER', language)}: department is required and the user becomes its head; leave the other columns empty.`,
+      `${roleLabel('LD_MANAGER', language)}: bắt buộc phòng ban và người dùng trở thành trưởng phòng ban; để trống các cột còn lại.`),
+    t(`Check valid combinations in the "${listsTab}" tab: Department → Job position → Target role → Level.`, `Kiểm tra các tổ hợp hợp lệ ở tab "${listsTab}": Phòng ban → Vị trí công việc → Vai trò mục tiêu → Cấp độ.`),
+    t('Each email may appear only once in the file and must not already have an account or a pending invitation. Administrator accounts cannot be imported.',
+      'Mỗi email chỉ xuất hiện một lần trong tệp và chưa có tài khoản hoặc lời mời đang chờ. Không thể nhập tài khoản Quản trị viên.'),
+    t('Do not rename the tabs or the header row. Lists reflect the workspace when this file was downloaded; download a new template after changing the structure.',
+      'Không đổi tên các tab hoặc dòng tiêu đề. Danh mục phản ánh cấu hình khi tải tệp; hãy tải mẫu mới sau khi thay đổi cơ cấu.'),
+    t('The preview imports valid rows and skips rows with errors. Download the error report, fix it and import again.',
+      'Màn hình xem trước nhập các dòng hợp lệ và bỏ qua dòng lỗi. Tải báo cáo lỗi, sửa và nhập lại.'),
   ]
-  rules.forEach(([role, dept, job, target], index) => {
-    tableRow(sheet, row++, [[2, 2, role, font({ bold: true })], [3, 4, dept], [5, 5, job], [6, 8, target]], index % 2 === 1)
-  })
-  row++
-
-  sectionBanner(sheet, row++, first, last, t('4. Example of valid rows', '4. Ví dụ các dòng hợp lệ'))
-  tableHeader(sheet, row++, IMPORT_COLUMNS.map((column, index) => [index + 2, index + 2, columnHeader(column, language)] as [number, number, string]))
-  const examples: string[][] = [
-    [t('An Nguyen', 'Nguyễn Văn An'), 'an.nguyen@company.com', roleLabel('EMPLOYEE', language), sample.department, sample.jobPosition, sample.targetRole, sample.level],
-    [t('Binh Tran', 'Trần Thị Bình'), 'binh.tran@company.com', roleLabel('DOMAIN_EXPERT', language), sample.department, sample.jobPosition, '', ''],
-    [t('Chau Pham', 'Phạm Minh Châu'), 'chau.pham@company.com', roleLabel('LD_MANAGER', language), sample.departmentAlt, '', '', ''],
-  ]
-  examples.forEach((values, index) => {
-    tableRow(sheet, row++, values.map((value, col) => [col + 2, col + 2, value] as [number, number, string]), index % 2 === 1)
-  })
-  const exampleNote = t('These examples are for reference only — they are not imported.', 'Các ví dụ trên chỉ để tham khảo — không được nhập vào hệ thống.')
-  writeMerged(sheet, row++, first, last, exampleNote, { font: font({ italic: true, color: { argb: COLOR.textMuted } }) })
-  row++
-
-  sectionBanner(sheet, row++, first, last, t('5. Important notes', '5. Lưu ý quan trọng'))
-  const notes = [
-    t(`Maximum ${MAX_IMPORT_ROWS} users per file. Split larger lists into several files.`, `Tối đa ${MAX_IMPORT_ROWS} người dùng mỗi tệp. Danh sách lớn hơn hãy chia thành nhiều tệp.`),
-    t('Do not rename the tabs or the header row, and do not insert columns before the header.', 'Không đổi tên các tab hoặc dòng tiêu đề, không chèn cột trước tiêu đề.'),
-    t('Each email may appear only once in the file and must not already have an account or a pending invitation.', 'Mỗi email chỉ xuất hiện một lần trong tệp và chưa có tài khoản hoặc lời mời đang chờ.'),
-    t('Administrator accounts cannot be created by import.', 'Không thể tạo tài khoản Quản trị viên bằng cách nhập tệp.'),
-    t('Lists reflect the workspace configuration when this file was downloaded. Download a new template after changing departments, job positions or Target roles.', 'Danh mục phản ánh cấu hình tại thời điểm tải tệp. Hãy tải mẫu mới sau khi thay đổi phòng ban, vị trí công việc hoặc vai trò mục tiêu.'),
-  ]
-  for (const note of notes) {
-    writeMerged(sheet, row, first, first, '•', { font: font({ bold: true, color: { argb: COLOR.primary } }), align: 'center' })
-    writeMerged(sheet, row, first + 1, last, note)
-    sheet.getRow(row).height = fitHeight(note, mergedWidth(sheet, first + 1, last))
+  heading(row++, t('Rules', 'Quy tắc'))
+  rules.forEach((rule, index) => {
+    sheet.mergeCells(`B${row}:D${row}`)
+    write(row, [`${index + 1}.  ${rule}`], { height: fitHeight(rule, 140) })
     row++
-  }
+  })
+  row++
+  heading(row++, t('Legend', 'Chú giải'))
+  write(row++, [t('Required', 'Bắt buộc'), t('Orange header, marked with *', 'Tiêu đề màu cam, có dấu *')], { fill: COLOR.tint })
+  write(row, [t('Depends on role / optional', 'Tùy vai trò / không bắt buộc'), t('Light orange header', 'Tiêu đề màu cam nhạt')], { fill: COLOR.muted })
 }
 
 interface OptionRanges { role: string; department?: string; jobPosition?: string; targetRole?: string; level?: string }
@@ -293,34 +269,22 @@ function buildUsersSheet(workbook: Workbook, context: TemplateContext, ranges: O
   const withErrors = Boolean(prefill)
   const lastCol = IMPORT_COLUMNS.length + (withErrors ? 1 : 0)
   const sheet = workbook.addWorksheet(SHEET_NAMES.users[language], {
-    views: [{ state: 'frozen', ySplit: HEADER_ROW, showGridLines: false }],
-    properties: { tabColor: { argb: COLOR.primaryDark } },
+    views: [{ state: 'frozen', ySplit: HEADER_ROW, activeCell: 'A2', showGridLines: false }],
+    properties: { tabColor: { argb: COLOR.primary } },
     pageSetup: { orientation: 'landscape', fitToPage: true, fitToWidth: 1, fitToHeight: 0 },
   })
   IMPORT_COLUMNS.forEach((column, index) => { sheet.getColumn(index + 1).width = column.width })
   if (withErrors) sheet.getColumn(lastCol).width = 60
 
-  const title = withErrors
-    ? t('Rows that were not imported — fix the highlighted issues and import this file again', 'Các dòng chưa được nhập — sửa lỗi được đánh dấu và nhập lại tệp này')
-    : t(`Users to create — one user per row (max ${MAX_IMPORT_ROWS})`, `Danh sách người dùng cần tạo — mỗi dòng một người (tối đa ${MAX_IMPORT_ROWS})`)
-  writeMerged(sheet, 1, 1, lastCol, title, { font: font({ bold: true, size: 14, color: { argb: COLOR.white } }), fill: fill(withErrors ? COLOR.destructive : COLOR.primary), wrap: false })
-  sheet.getRow(1).height = 30
-  const hint = t(
-    '* Orange headers are required. Use the drop-down lists. See the Guide and Lists tabs for rules and valid values.',
-    '* Tiêu đề màu cam là bắt buộc. Hãy chọn từ danh sách thả xuống. Xem tab Hướng dẫn và Danh mục để biết quy tắc và giá trị hợp lệ.',
-  )
-  writeMerged(sheet, 2, 1, lastCol, hint, { font: font({ size: 10, color: { argb: COLOR.textMuted } }), fill: fill(COLOR.tint) })
-  sheet.getRow(2).height = 22
-
   const headerRow = sheet.getRow(HEADER_ROW)
-  headerRow.height = 26
+  headerRow.height = 30
   IMPORT_COLUMNS.forEach((column, index) => {
     const cell = headerRow.getCell(index + 1)
     cell.value = columnHeader(column, language)
-    cell.font = font({ bold: true, color: { argb: COLOR.white } })
-    cell.fill = fill(column.required ? COLOR.primaryDark : COLOR.slate)
+    cell.font = font({ bold: true, color: { argb: column.required ? COLOR.white : COLOR.primaryDark } })
+    cell.fill = fill(column.required ? COLOR.primary : COLOR.tint)
     cell.alignment = { vertical: 'middle', horizontal: 'left', indent: 1 }
-    cell.border = thinBorder(COLOR.white)
+    cell.border = thinBorder(column.required ? COLOR.primaryDark : COLOR.border)
     cell.note = { texts: [{ text: headerNote(column.field, language, sample) }] }
   })
   if (withErrors) {
@@ -329,8 +293,10 @@ function buildUsersSheet(workbook: Workbook, context: TemplateContext, ranges: O
     cell.font = font({ bold: true, color: { argb: COLOR.white } })
     cell.fill = fill(COLOR.destructive)
     cell.alignment = { vertical: 'middle', horizontal: 'left', indent: 1 }
-    cell.border = thinBorder(COLOR.white)
+    cell.border = thinBorder(COLOR.destructive)
+    cell.note = { texts: [{ text: t('Rows that were not imported. Fix the issue shown here and import this file again.', 'Các dòng chưa được nhập. Sửa lỗi ghi ở cột này và nhập lại tệp.') }] }
   }
+  sheet.autoFilter = { from: { row: HEADER_ROW, column: 1 }, to: { row: HEADER_ROW, column: lastCol } }
 
   const validations: Partial<Record<ImportField, { range?: string; strict: boolean; message: string }>> = {
     role: { range: ranges.role, strict: true, message: t('Pick Employee, Domain Expert or L&D Manager.', 'Chọn Nhân viên, Chuyên gia hoặc Quản lý L&D.') },

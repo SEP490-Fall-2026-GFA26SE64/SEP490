@@ -36,7 +36,7 @@ export const IMPORT_COLUMNS: readonly ImportColumn[] = [
 ]
 
 export const SHEET_NAMES: Record<'guide' | 'users' | 'lists', Record<ImportLanguage, string>> = {
-  guide: { en: 'Guide', vi: 'Hướng dẫn' },
+  guide: { en: 'Instructions', vi: 'Hướng dẫn' },
   users: { en: 'Users', vi: 'Người dùng' },
   lists: { en: 'Lists', vi: 'Danh mục' },
 }

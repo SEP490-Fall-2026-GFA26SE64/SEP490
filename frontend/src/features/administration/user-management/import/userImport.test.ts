@@ -36,7 +36,7 @@ async function toBuffer(workbook: Awaited<ReturnType<typeof buildUserImportWorkb
 }
 
 describe('user import template', () => {
-  it('puts the Guide tab first, then Users and Lists, with a styled Users sheet and drop-downs', async () => {
+  it('puts the Instructions tab first, then Users and Lists, with an orange row-1 header and drop-downs', async () => {
     const workbook = await buildUserImportWorkbook({ language: 'vi', organizationName: 'Acme', catalog })
     const reloaded = new (await loadExcel()).Workbook()
     await reloaded.xlsx.load(await toBuffer(workbook))
@@ -45,10 +45,15 @@ describe('user import template', () => {
     expect(visible).toEqual(['Hướng dẫn', 'Người dùng', 'Danh mục'])
 
     const users = reloaded.getWorksheet('Người dùng')!
-    expect(users.getRow(3).values).toEqual([undefined, 'Họ và tên *', 'Email *', 'Vai trò *', 'Phòng ban', 'Vị trí công việc', 'Vai trò mục tiêu', 'Cấp độ'])
-    expect(users.views[0]).toMatchObject({ state: 'frozen', ySplit: 3 })
-    expect(users.getCell('C4').dataValidation).toMatchObject({ type: 'list', formulae: ['Options!$A$1:$A$3'] })
-    expect(users.getCell('D53').dataValidation).toMatchObject({ type: 'list', formulae: ['Options!$B$1:$B$2'] })
+    expect(users.getRow(1).values).toEqual([undefined, 'Họ và tên *', 'Email *', 'Vai trò *', 'Phòng ban', 'Vị trí công việc', 'Vai trò mục tiêu', 'Cấp độ'])
+    expect(users.getCell('A1').fill).toMatchObject({ fgColor: { argb: 'FFEA580C' } })
+    expect(users.getCell('D1').fill).toMatchObject({ fgColor: { argb: 'FFFFF5EB' } })
+    expect(users.views[0]).toMatchObject({ state: 'frozen', ySplit: 1 })
+    expect(users.getCell('C2').dataValidation).toMatchObject({ type: 'list', formulae: ['Options!$A$1:$A$3'] })
+    expect(users.getCell('D51').dataValidation).toMatchObject({ type: 'list', formulae: ['Options!$B$1:$B$2'] })
+
+    const english = await buildUserImportWorkbook({ language: 'en', catalog })
+    expect(english.worksheets[0].name).toBe('Instructions')
   })
 
   it('round-trips an error report and ignores its error column', async () => {
@@ -56,7 +61,7 @@ describe('user import template', () => {
       { values: { fullName: 'An Nguyen', email: 'an@company.com', role: 'Employee', department: 'ENG - Engineering', jobPosition: '15-1252.00 - Software Developers' }, error: 'Email already exists.' },
     ])
     const result = await parseUserImportFile(await toBuffer(workbook))
-    expect(result).toEqual({ ok: true, rows: [raw({ rowNumber: 4 })] })
+    expect(result).toEqual({ ok: true, rows: [raw({ rowNumber: 2 })] })
   })
 })
 

@@ -1,4 +1,6 @@
-import type { Borders, CellValue, DataValidation, Fill, Font, Workbook, Worksheet } from 'exceljs'
+import type { CellValue, DataValidation, Font, Workbook, Worksheet } from 'exceljs'
+import { EXCEL_COLOR as COLOR, columnLetter as letter, downloadWorkbook, excelFont as font, loadExcel, solid, thin,
+  type RangeValidations } from '../../shared/lib/excelTemplateStyle'
 
 export interface DepartmentRow { row: number; code: string; name: string; description: string }
 export interface JobPositionRow { row: number; departmentCode: string; code: string; name: string }
@@ -86,13 +88,6 @@ export class StructureFileError extends Error {
   }
 }
 
-type ExcelModule = typeof import('exceljs')
-
-async function loadExcel(): Promise<ExcelModule> {
-  const mod = await import('exceljs')
-  return ((mod as unknown as { default?: ExcelModule }).default ?? mod) as ExcelModule
-}
-
 const normalize = (value: string) => value.normalize('NFC').toLowerCase().replace(/[\s_*]+/g, ' ').trim()
 const HEADER_SCAN_ROWS = 10
 
@@ -152,17 +147,6 @@ export async function parseStructureFile(file: File): Promise<OrgStructureSheets
   if (STRUCTURE_SHEETS.every(spec => !result[spec.key].length)) throw new StructureFileError({ code: 'empty' })
   return result
 }
-
-// Workbook palette mirrors shared/styles/tokens.css (Excel needs ARGB).
-const COLOR = { primary: 'FFEA580C', primaryDark: 'FFC2410C', tint: 'FFFFF5EB', canvas: 'FFF8FAFC', muted: 'FFF1F5F9',
-  border: 'FFE2E8F0', text: 'FF0F172A', textMuted: 'FF64748B', slate: 'FF334155', white: 'FFFFFFFF' }
-const FONT = 'Calibri'
-const solid = (argb: string): Fill => ({ type: 'pattern', pattern: 'solid', fgColor: { argb } })
-const thin = (argb: string): Partial<Borders> => ({ top: { style: 'thin', color: { argb } }, bottom: { style: 'thin', color: { argb } },
-  left: { style: 'thin', color: { argb } }, right: { style: 'thin', color: { argb } } })
-const font = (extra: Partial<Font> = {}): Partial<Font> => ({ name: FONT, size: 11, color: { argb: COLOR.text }, ...extra })
-const letter = (index: number) => String.fromCharCode(65 + index)
-type RangeValidations = { dataValidations: { add(address: string, validation: DataValidation): void; model: Record<string, DataValidation> } }
 
 function validationFor(spec: SheetSpec, column: ColumnSpec, col: string): DataValidation | null {
   const range = `$${col}$2:$${col}$${LAST_ROW}`
@@ -297,15 +281,5 @@ export async function buildStructureTemplate(): Promise<Workbook> {
 }
 
 export async function downloadStructureTemplate(): Promise<void> {
-  const workbook = await buildStructureTemplate()
-  const blob = new Blob([await workbook.xlsx.writeBuffer()],
-    { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
-  const url = URL.createObjectURL(blob)
-  const anchor = document.createElement('a')
-  anchor.href = url
-  anchor.download = STRUCTURE_TEMPLATE_FILE
-  document.body.appendChild(anchor)
-  anchor.click()
-  anchor.remove()
-  setTimeout(() => URL.revokeObjectURL(url), 0)
+  await downloadWorkbook(await buildStructureTemplate(), STRUCTURE_TEMPLATE_FILE)
 }
