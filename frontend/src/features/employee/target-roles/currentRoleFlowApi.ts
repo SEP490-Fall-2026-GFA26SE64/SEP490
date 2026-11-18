@@ -14,7 +14,7 @@ export interface CurrentSkill {
   code: string | null
   name: string
   requiredKnowledgeLevels: string[]
-  requiredScore: number
+  requiredScore?: number
   mandatory: boolean
 }
 export interface CurrentLevel {
@@ -106,7 +106,7 @@ function role(value: unknown): CurrentRole {
           return {
             id: text(skill.id), code: optionalText(skill.code), name: text(skill.name),
             requiredKnowledgeLevels: array(skill.requiredKnowledgeLevels, text),
-            requiredScore: typeof skill.requiredScore === 'number' ? num(skill.requiredScore) : 0.7,
+            ...(typeof skill.requiredScore === 'number' ? { requiredScore: num(skill.requiredScore) } : {}),
             mandatory: bool(skill.mandatory),
           }
         }),
@@ -903,8 +903,16 @@ async function fetchDepartmentScopedPublishedRoles(): Promise<CurrentRole[]> {
   return inFlightRolesPromise
 }
 
-export const currentRoles = async (_signal?: AbortSignal): Promise<CurrentRole[]> => {
-  return await fetchDepartmentScopedPublishedRoles()
+export const currentRoles = async (_signal?: AbortSignal, jobPositionId?: string): Promise<CurrentRole[]> => {
+  const roles = import.meta.env.VITE_LOCAL_BASELINE_DEMO_ENABLED !== 'true'
+    ? await request('target-roles', { method: 'GET', signal: _signal }, value => array(value, role))
+    : await fetchDepartmentScopedPublishedRoles()
+  return jobPositionId ? roles.filter(role => role.jobPositionId === jobPositionId) : roles
+}
+
+export const jobPositionLabel = async (id: string, signal?: AbortSignal): Promise<string> => {
+  const roles = await currentRoles(signal, id)
+  return roles[0]?.jobPositionName ?? id
 }
 
 function buildSynthesizedSelection(
@@ -1076,6 +1084,19 @@ function buildActiveRoleSelection(
 }
 
 export const readRoleFlow = async (signal?: AbortSignal): Promise<RoleFlowView> => {
+  if (import.meta.env.VITE_LOCAL_BASELINE_DEMO_ENABLED !== 'true') {
+    return request('target-role-selection', { method: 'GET', signal }, value => {
+      const data = object(value), progress = object(data.progress)
+      const placement = data.placement == null ? null : object(data.placement)
+      return {
+        selection: data.selection === null ? null : selection(data.selection),
+        progress: { state: text(progress.state), requiredCount: num(progress.requiredCount), coveredCount: num(progress.coveredCount),
+          attemptId: optionalText(progress.attemptId), baselineVersion: progress.baselineVersion == null ? null : num(progress.baselineVersion) },
+        placement: placement ? { roleId: optionalText(placement.roleId), roleCode: optionalText(placement.roleCode), roleName: optionalText(placement.roleName), levelName: optionalText(placement.levelName) } : null,
+        targetLocked: data.targetLocked === undefined ? undefined : bool(data.targetLocked),
+      }
+    })
+  }
   const [ctx, deptRoles] = await Promise.all([
     resolveEmployeeDepartmentContext(),
     fetchDepartmentScopedPublishedRoles().catch(() => [] as CurrentRole[]),
@@ -1212,6 +1233,11 @@ export const prepareRoleChoice = (id: string, expected: string | null, levelId?:
   key: crypto.randomUUID(),
 })
 export const chooseCurrentRole = async (command: RoleChoiceCommand): Promise<CurrentSelection> => {
+  if (import.meta.env.VITE_LOCAL_BASELINE_DEMO_ENABLED !== 'true') {
+    return request('target-role-selection', {
+      method: 'PUT', headers: { 'Content-Type': 'application/json', 'Idempotency-Key': command.key }, body: command.body,
+    }, selection)
+  }
   const parsedBody = JSON.parse(command.body) as {
     roleId: string
     levelId?: string

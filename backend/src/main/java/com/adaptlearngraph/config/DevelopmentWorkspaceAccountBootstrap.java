@@ -321,12 +321,10 @@ public final class DevelopmentWorkspaceAccountBootstrap implements ApplicationRu
                     SET jp5.description = 'Zero-trust architecture, cryptographic identity models, network boundary security, and threat intelligence operations.'
                     WITH jp5
                     MATCH (jp6:JobPosition {code: '15-1259.00'})
-                    SET jp6.description = 'Cloud architecture, distributed microservices, and multi-region deployment infrastructure.',
-                        jp6.interestRealistic = 0.48, jp6.interestInvestigative = 0.79, jp6.interestArtistic = 0.15, jp6.interestSocial = 0.19, jp6.interestEnterprising = 0.27, jp6.interestConventional = 0.81
+                    SET jp6.description = 'Cloud architecture, distributed microservices, and multi-region deployment infrastructure.'
                     WITH jp6
                     MATCH (jp7:JobPosition {code: '15-1260.00'})
-                    SET jp7.description = 'Cloud automation, serverless computing, and containerization platforms.',
-                        jp7.interestRealistic = 0.5, jp7.interestInvestigative = 0.7, jp7.interestArtistic = 0.15, jp7.interestSocial = 0.2, jp7.interestEnterprising = 0.3, jp7.interestConventional = 0.8
+                    SET jp7.description = 'Cloud automation, serverless computing, and containerization platforms.'
                     """, Map.of());
 
                 // 5. Ensure all :Level nodes have default duration set according to rank

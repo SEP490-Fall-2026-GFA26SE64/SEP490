@@ -22,6 +22,8 @@ import java.math.BigDecimal;
 import java.util.*;
 import static org.junit.jupiter.api.Assertions.*;
 
+// Exercises retained historical compatibility and retired API rejection.
+@SuppressWarnings("deprecation")
 class ModuleAuthoringIntegrationTest {
     /** The tests use a minimal hand-made schema (text account keys), so the JPA context is not schema-validated. */
     private static JpaModuleAuthoringAdapter adapter(JpaTestContext persistence, Neo4jTestContext graph, String organization) {
@@ -53,11 +55,15 @@ class ModuleAuthoringIntegrationTest {
             jdbc.execute("INSERT INTO platform.organization_membership VALUES ('expert-a','expert-a','org',true)");
             jdbc.execute("INSERT INTO platform.organization_membership_role VALUES ('expert-a','DOMAIN_EXPERT')");
             new ResourceDatabasePopulator(new ClassPathResource("db/module-migration/V33__module_authoring.sql"), new ClassPathResource("db/module-migration/V34__module_catalog_intake.sql")).execute(ds);
+            jdbc.execute("ALTER TABLE platform.module_occupation_grant RENAME TO module_job_position_grant");
+            jdbc.execute("ALTER TABLE platform.module_job_position_grant RENAME COLUMN occupation_id TO job_position_id");
+            jdbc.execute("ALTER TABLE platform.module_grant_audit RENAME COLUMN occupation_id TO job_position_id");
+            jdbc.execute("CREATE TABLE platform.workspace_account_profile(account_id text PRIMARY KEY,full_name text)");
             try (var driver = GraphDatabase.driver(graph.getBoltUrl(), AuthTokens.basic("neo4j", graph.getAdminPassword()));
                     var persistence = JpaTestContext.startUnvalidated(ds); var graphContext = Neo4jTestContext.start(driver)) {
                 try (var session = driver.session()) {
                     session.run("""
-                        CREATE (s:MicroSkill {id:'skill',name:'Existing skill',organizationId:'org'})
+                        CREATE (s:MicroSkill {id:'skill',name:'Existing skill',organizationId:'org',status:'ACTIVE',reviewStatus:'APPROVED',version:'1.0',provisionMode:'MODULE_ONLY'})
                         CREATE (m:LearningModule {id:'legacy',organizationId:'org',title:'Existing lesson',version:'0.11.0',status:'ACTIVE',
                           reviewStatus:'APPROVED',reviewedBy:'reviewer',reviewedAt:'2026-10-28T00:00:00Z',
                           moduleType:'RESOURCE_GUIDED_PRACTICE',contentUri:'https://example.org/existing.md',
@@ -77,18 +83,18 @@ class ModuleAuthoringIntegrationTest {
                 assertEquals(new Metadata("legacy", "0.11.0", "ACTIVE", "APPROVED", "reviewer", "2026-10-28T00:00:00Z"), module.metadata());
                 assertEquals("Existing lesson", module.title()); assertEquals("RESOURCE_GUIDED_PRACTICE", module.moduleType());
                 assertEquals("https://example.org/existing.md", module.contentUri()); assertEquals("text/markdown", module.contentType());
-                assertEquals("1.3", module.contentVersion()); assertEquals(37, module.duration()); assertEquals(new BigDecimal("123456.5"), module.price());
+                assertEquals("1.3", module.contentVersion()); assertEquals(37, module.duration()); assertFalse(new com.fasterxml.jackson.databind.ObjectMapper().valueToTree(module).has("price"));
                 var edge = module.teachings().getFirst();
                 assertEquals(new Metadata("edge", "0.11.0", "ACTIVE", "APPROVED", "reviewer", "2026-10-28T00:00:00Z"), edge.metadata());
                 assertEquals("PRIMARY", edge.teachingFocus()); assertEquals("MEDIUM", edge.difficultyLevel());
                 assertEquals("skill", edge.skillId()); assertEquals("Existing skill", edge.skillName());
                 assertEquals(2, service.catalogList("", "", "", "", "", 1).total());
                 CatalogModule incomplete = service.catalogList("incomplete", "", "", "", "", 1).items().getFirst().module();
-                assertNull(incomplete.title()); assertNull(incomplete.price()); assertNull(incomplete.duration());
+                assertNull(incomplete.title()); assertFalse(new com.fasterxml.jackson.databind.ObjectMapper().valueToTree(incomplete).has("price")); assertNull(incomplete.duration());
                 assertNull(incomplete.metadata().reviewStatus()); assertTrue(incomplete.teachings().isEmpty());
                 assertEquals(0, jdbc.queryForObject("SELECT count(*) FROM platform.module_authoring", Integer.class));
                 try (var session = driver.session()) {
-                    session.run("CREATE (:JobPosition {id:'occ',name:'JobPosition',status:'ACTIVE'})").consume();
+                    session.run("CREATE (:JobPosition {id:'occ',name:'JobPosition',status:'ACTIVE',organizationId:'org'})").consume();
                     session.run("MATCH (m:LearningModule {id:'legacy'}) SET m.contentUri='content/modules/MOD-FOCUS-SEC01-HIGH.md'").consume();
                 }
                 actor("reviewer", "LD_MANAGER");
@@ -116,7 +122,10 @@ class ModuleAuthoringIntegrationTest {
                 assertEquals(assigned.source(), adapter.graphModules("org").stream().filter(m -> m.metadata().id().equals("legacy")).findFirst().orElseThrow());
                 assertThrows(ModuleAuthoringService.Failure.class, () -> service.acceptIntake("legacy"));
                 assertThrows(ModuleAuthoringService.Failure.class, () -> service.delete(received.id(), received.lockVersion()));
-                Document submitted = service.action("legacy", received.lockVersion(), "submit", null);
+                Document prepared = service.update("legacy", received.lockVersion(),
+                        new Save(source.title(),source.moduleType(),historicalContent.id(),source.duration(),List.of(),
+                                List.of(new TeachingInput("skill")),"FOUNDATION",List.of()));
+                Document submitted = service.action("legacy", prepared.lockVersion(), "submit", null);
                 actor("reviewer", "LD_MANAGER");
                 try (var session = driver.session()) { session.run("MATCH (m:LearningModule {id:'legacy'}) SET m.title='External change'").consume(); }
                 assertThrows(ModuleAuthoringService.Failure.class, () -> service.action("legacy", submitted.lockVersion(), "approve", null));
@@ -162,10 +171,14 @@ class ModuleAuthoringIntegrationTest {
             jdbc.execute("INSERT INTO platform.organization_membership SELECT account_id,account_id,organization_id,true FROM platform.account");
             jdbc.execute("INSERT INTO platform.organization_membership_role VALUES ('expert-a','DOMAIN_EXPERT'),('expert-b','DOMAIN_EXPERT'),('foreign-expert','DOMAIN_EXPERT'),('inactive-expert','DOMAIN_EXPERT')");
             new ResourceDatabasePopulator(new ClassPathResource("db/module-migration/V33__module_authoring.sql"), new ClassPathResource("db/module-migration/V34__module_catalog_intake.sql")).execute(ds);
+            jdbc.execute("ALTER TABLE platform.module_occupation_grant RENAME TO module_job_position_grant");
+            jdbc.execute("ALTER TABLE platform.module_job_position_grant RENAME COLUMN occupation_id TO job_position_id");
+            jdbc.execute("ALTER TABLE platform.module_grant_audit RENAME COLUMN occupation_id TO job_position_id");
+            jdbc.execute("CREATE TABLE platform.workspace_account_profile(account_id text PRIMARY KEY,full_name text)");
             try (var driver = GraphDatabase.driver(graph.getBoltUrl(), AuthTokens.basic("neo4j", graph.getAdminPassword()));
                     var persistence = JpaTestContext.startUnvalidated(ds); var graphContext = Neo4jTestContext.start(driver)) {
                 try (var session = driver.session()) {
-                    session.run("CREATE (:JobPosition {id:'occ',name:'JobPosition',status:'ACTIVE'}), (:MicroSkill {id:'skill',name:'Skill',status:'ACTIVE',organizationId:'org'}), (:MicroSkill {id:'support',name:'Support',status:'ACTIVE',organizationId:'org'})").consume();
+                    session.run("CREATE (:JobPosition {id:'occ',name:'JobPosition',status:'ACTIVE',organizationId:'org'}), (:MicroSkill {id:'skill',name:'Skill',status:'ACTIVE',organizationId:'org',reviewStatus:'APPROVED',version:'1.0',provisionMode:'MODULE_ONLY'}), (:MicroSkill {id:'support',name:'Support',status:'ACTIVE',organizationId:'org'})").consume();
                 }
                 var adapter = adapter(persistence, graphContext, "org");
                 var service = new ModuleAuthoringService(adapter);
@@ -173,8 +186,8 @@ class ModuleAuthoringIntegrationTest {
                 actor("expert-a", "EXPERT");
                 Content content = service.content("Lesson", "# A lesson\n[video](https://example.org/lesson.mp4)", null);
                 assertTrue(content.jobPositionIds().isEmpty());
-                Save input = new Save("Module", "LESSON_AND_PRACTICE", content.id(), 120, new BigDecimal("150000"), null, List.of(
-                        new TeachingInput("skill", "PRIMARY", "HIGH"), new TeachingInput("support", "SUPPORTING", "LOW")));
+                Save input = new Save("Module", "LESSON_AND_PRACTICE", content.id(), 120, null, List.of(
+                        new TeachingInput("skill")), "FOUNDATION", List.of());
                 Document doc = service.create(input);
                 assertTrue(doc.jobPositionIds().isEmpty());
                 assertEquals(doc, service.detail(doc.id()));
@@ -193,16 +206,16 @@ class ModuleAuthoringIntegrationTest {
                 try (var session = driver.session()) {
                     var row = session.run("MATCH (m:LearningModule {id:$id})-[t:TEACHES]->(s) RETURN properties(m) AS m,collect(properties(t)) AS edges", Map.of("id", doc.id())).single();
                     var m = row.get("m");
-                    assertEquals(14, m.size()); assertEquals("org", m.get("organizationId").asString());
-                    assertEquals(doc.id(), m.get("id").asString()); assertEquals("0.11.0", m.get("version").asString());
+                    assertEquals(15, m.size()); assertEquals("org", m.get("organizationId").asString());
+                    assertEquals(doc.id(), m.get("id").asString()); assertEquals("0.12.0", m.get("version").asString());
                     assertEquals("ACTIVE", m.get("status").asString()); assertEquals("APPROVED", m.get("reviewStatus").asString());
                     assertEquals("reviewer", m.get("reviewedBy").asString()); assertFalse(m.get("reviewedAt").asString().isBlank());
                     assertEquals("Module", m.get("title").asString()); assertEquals("LESSON_AND_PRACTICE", m.get("moduleType").asString());
                     assertEquals("module-content:" + content.id(), m.get("contentUri").asString()); assertEquals("text/markdown", m.get("contentType").asString());
-                    assertEquals("1.0", m.get("contentVersion").asString()); assertEquals(120, m.get("duration").asInt()); assertEquals(150000, m.get("price").asDouble());
+                    assertEquals("1.0", m.get("contentVersion").asString()); assertEquals(120, m.get("duration").asInt()); assertTrue(m.get("price").isNull()); assertEquals("FOUNDATION",m.get("knowledgeLevel").asString()); assertEquals("1.0",m.get("skillVersion").asString());
                     for (var edge : row.get("edges").values()) {
-                        assertEquals(8, edge.size());
-                        for (String field : List.of("id", "version", "status", "reviewStatus", "reviewedBy", "reviewedAt", "teachingFocus", "difficultyLevel")) assertFalse(edge.get(field).asString().isBlank());
+                        assertEquals(6, edge.size());
+                        for (String field : List.of("id", "version", "status", "reviewStatus", "reviewedBy", "reviewedAt")) assertFalse(edge.get(field).asString().isBlank());
                     }
                 }
                 actor("learner", "EMPLOYEE"); Revision pinned = service.learning(doc.id(), true);

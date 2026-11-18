@@ -1,11 +1,12 @@
+import { ArrowLeft,CheckCircle2,Mail } from 'lucide-react'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { CheckCircle2, ArrowLeft, Mail } from 'lucide-react'
-import { WorkspaceAuthLayout } from '../../shared/layouts/WorkspaceAuthLayout'
-import { Input } from '../../shared/components/ui/Input'
 import { Button } from '../../shared/components/ui/Button'
+import { Input } from '../../shared/components/ui/Input'
+import { WorkspaceAuthLayout } from '../../shared/layouts/WorkspaceAuthLayout'
 import { requestForgotPassword } from '../subscription/subscriptionApi'
-import { Failure, useCopy } from '../subscription/SubscriptionFeedback'
+import { Failure } from "../subscription/SubscriptionFeedback"
+import { useCopy } from "../subscription/SubscriptionFeedback.helpers"
 
 export function ForgotPasswordPage() {
   const c = useCopy()

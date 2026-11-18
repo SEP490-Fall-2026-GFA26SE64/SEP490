@@ -4,6 +4,13 @@ import { waitForWorkspaceEntry } from './subscriptionHelpers'
 async function loginAs(page: Page, email: string, password = 'Password123!') {
   await page.context().clearCookies()
   await page.goto('/login')
+  await page.evaluate(() => {
+    try {
+      localStorage.clear()
+      sessionStorage.clear()
+    } catch {}
+  })
+  await page.goto('/login')
   await page.getByPlaceholder('Enter your email').fill(email)
   await page.locator('input[type="password"]').fill(password)
   await page.getByRole('button', { name: 'Sign in', exact: true }).click()
@@ -80,22 +87,7 @@ test.describe('Report 5: WF02 State Transition Test (Target Role Lifecycle)', ()
       }
     }
 
-    // 3. Assign Domain Expert (Dr. Sarah Chen / expert@technova.com)
-    const expertTrigger = createModal.locator('button').filter({ hasText: /Select assigned domain expert|Select expert/i }).first()
-    if (await expertTrigger.isVisible().catch(() => false)) {
-      await expertTrigger.click()
-      const expertOption = page.locator('[role="option"]').filter({ hasText: /Dr\. Sarah Chen|expert@technova\.com|Domain Expert/i }).first()
-      if (await expertOption.isVisible().catch(() => false)) {
-        await expertOption.click()
-      } else {
-        const firstOpt = page.locator('[role="option"]').first()
-        if (await firstOpt.isVisible().catch(() => false)) {
-          await firstOpt.click()
-        }
-      }
-    }
-
-    // 4. Keep 1 level ("Senior") so single-skill mapping fully fulfills publication threshold
+    // 3. Keep 1 level ("Senior") so single-skill mapping fully fulfills publication threshold
     const removeBtns = createModal.locator('button[title="Remove Level"]')
     if ((await removeBtns.count()) >= 2) {
       await removeBtns.last().click()
@@ -107,10 +99,21 @@ test.describe('Report 5: WF02 State Transition Test (Target Role Lifecycle)', ()
       await page.waitForTimeout(300)
     }
 
+    // 4. Assign Domain Expert (Dr. Sarah Chen / expert@technova.com)
+    const expertTrigger = createModal.locator('button').filter({ hasText: /Unassigned/i }).first()
+    await expect(expertTrigger).toBeVisible()
+    await expertTrigger.click()
+    const expertOption = page.locator('[role="option"]').filter({ hasText: /Dr\. Sarah Chen/i }).first()
+    await expect(expertOption).toBeVisible({ timeout: 5_000 })
+    await expertOption.click()
+
     // 5. Submit form: "Create & Send to Expert"
-    const submitBtn = createModal.getByRole('button', { name: /Create & Send to Expert|Save as Draft/i }).last()
-    await expect(submitBtn).toBeEnabled()
-    await submitBtn.click()
+    const submitBtn = createModal.getByRole('button', { name: /Create & Send to Expert/i })
+    await expect(submitBtn).toBeEnabled({ timeout: 5_000 })
+    await Promise.all([
+      page.waitForResponse((res) => res.url().includes('/target-roles') && res.request().method() === 'POST').catch(() => null),
+      submitBtn.click(),
+    ])
     await expect(createModal).toHaveCount(0)
 
     // Verify role appears in Manager Catalog
@@ -124,10 +127,10 @@ test.describe('Report 5: WF02 State Transition Test (Target Role Lifecycle)', ()
     // Phase 2: DRAFT -> SUBMITTED (Domain Expert authors requirements & submits)
     // =========================================================================
     await loginAs(page, 'expert@technova.com')
-    await page.goto('/workspace/workspace-development/expert/target-roles')
+    await page.goto('/workspace/workspace-development/expert/roles')
     await expect(page.locator('main')).toBeVisible()
 
-    await expect(page.getByText(/Loading/i)).toHaveCount(0, { timeout: 15_000 }).catch(() => {})
+    await expect(page.getByText(/Loading/i)).toHaveCount(0, { timeout: 20_000 }).catch(() => {})
     await filterByRoleCode()
     const expertRoleRow = page.locator('table tbody tr').filter({ hasText: roleCode }).first()
     await expect(expertRoleRow).toBeVisible({ timeout: 15_000 })
@@ -141,30 +144,53 @@ test.describe('Report 5: WF02 State Transition Test (Target Role Lifecycle)', ()
     const configModal = page.locator('div[role="dialog"]')
     await expect(configModal).toBeVisible()
 
-    // Add a competency to fulfill requirements
+    // Add a competency with member micro-skills to fulfill requirements
     const compTrigger = configModal.locator('button').filter({ hasText: /Search & select competency|Select Competency/i }).first()
-    if (await compTrigger.isVisible().catch(() => false)) {
-      await compTrigger.click()
-      const firstComp = page.locator('[role="option"]').first()
-      if (await firstComp.isVisible().catch(() => false)) {
-        await firstComp.click()
-        const addCompBtn = configModal.getByRole('button', { name: /Add Competency/i })
-        if (await addCompBtn.isEnabled().catch(() => false)) {
-          await addCompBtn.click()
-        }
+    await expect(compTrigger).toBeVisible({ timeout: 10_000 })
+    await compTrigger.click()
+
+    // Search Architecture to select a competency that has micro-skills
+    const searchCompInput = page.locator('input[placeholder*="Search by competency"]').first()
+    if (await searchCompInput.isVisible().catch(() => false)) {
+      await searchCompInput.fill('Architecture')
+      await page.waitForTimeout(300)
+    }
+    const archCompOption = page.locator('[role="option"]').filter({ hasText: /Architecture|ARCH/i }).first()
+    if (await archCompOption.isVisible().catch(() => false)) {
+      await archCompOption.click()
+    } else {
+      const firstOption = page.locator('[role="option"]').first()
+      await expect(firstOption).toBeVisible({ timeout: 5_000 })
+      await firstOption.click()
+    }
+
+    const addCompBtn = configModal.getByRole('button', { name: /Add Competency/i })
+    await expect(addCompBtn).toBeEnabled({ timeout: 5_000 })
+    await addCompBtn.click()
+    await page.waitForTimeout(500)
+
+    // Select a micro-skill if not auto-selected
+    const skillTrigger = configModal.locator('button').filter({ hasText: /Select skill/i }).first()
+    if (await skillTrigger.isVisible().catch(() => false)) {
+      await skillTrigger.click()
+      const firstSkillOption = page.locator('[role="option"]').first()
+      if (await firstSkillOption.isVisible().catch(() => false)) {
+        await firstSkillOption.click()
       }
     }
 
-    // Select a knowledge level to enable Assign Skill
-    const levelBtn = configModal.getByRole('button', { name: /Intermediate|Foundation/i }).first()
-    if (await levelBtn.isVisible().catch(() => false)) {
-      await levelBtn.click()
-    }
+    // Select a knowledge level in RequiredKnowledgePicker to enable Assign Skill
+    const knowledgeGroup = configModal.locator('div[aria-label="Required knowledge levels"]')
+    await expect(knowledgeGroup).toBeVisible({ timeout: 10_000 })
+    const levelBtn = knowledgeGroup.getByRole('button', { name: /Foundation|Intermediate|Advanced/i }).first()
+    await expect(levelBtn).toBeVisible({ timeout: 5_000 })
+    await levelBtn.click()
 
     // Assign micro-skill target so skillTargets > 0
     const assignSkillBtn = configModal.getByRole('button', { name: /Assign Skill/i })
-    await expect(assignSkillBtn).toBeEnabled({ timeout: 5_000 })
+    await expect(assignSkillBtn).toBeEnabled({ timeout: 10_000 })
     await assignSkillBtn.click()
+    await page.waitForTimeout(400)
 
     // Save draft (persists micro-skill target and closes modal)
     const saveDraftBtn = configModal.getByRole('button', { name: /Save Draft/i })
@@ -244,10 +270,10 @@ test.describe('Report 5: WF02 State Transition Test (Target Role Lifecycle)', ()
     // Phase 4: REJECTED -> SUBMITTED (Expert reviews feedback and resubmits)
     // =========================================================================
     await loginAs(page, 'expert@technova.com')
-    await page.goto('/workspace/workspace-development/expert/target-roles')
+    await page.goto('/workspace/workspace-development/expert/roles')
     await expect(page.locator('main')).toBeVisible()
 
-    await expect(page.getByText(/Loading/i)).toHaveCount(0, { timeout: 15_000 }).catch(() => {})
+    await expect(page.getByText(/Loading/i)).toHaveCount(0, { timeout: 20_000 }).catch(() => {})
     await filterByRoleCode()
     const expertRevisionRow = page.locator('table tbody tr').filter({ hasText: roleCode }).first()
     await expect(expertRevisionRow).toBeVisible({ timeout: 15_000 })
@@ -268,7 +294,7 @@ test.describe('Report 5: WF02 State Transition Test (Target Role Lifecycle)', ()
     const resubmitBtn = reviseModal.getByRole('button', { name: /Re-submit to L&D Manager|Submit to L&D Manager/i })
     await expect(resubmitBtn).toBeEnabled()
     await Promise.all([
-      page.waitForResponse((res) => res.url().includes('/target-roles') && res.request().method() === 'PUT').catch(() => null),
+      page.waitForResponse((res) => (res.url().includes('/target-roles') || res.url().includes('/roles')) && res.request().method() === 'PUT').catch(() => null),
       resubmitBtn.click(),
     ])
     await expect(reviseModal).toHaveCount(0)

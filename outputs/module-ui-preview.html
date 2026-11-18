@@ -1,0 +1,1074 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Module UI/UX Preview — Adapt-Learn-Graph</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #EA580C;
+      --primary-hover: #C2410C;
+      --secondary: #FFF5EB;
+      --secondary-hover: #FEE6D4;
+      --background: #F8FAFC;
+      --muted: #F1F5F9;
+      --card: #FFFFFF;
+      --border: #E2E8F0;
+      --foreground: #0F172A;
+      --muted-foreground: #64748B;
+      --success: #16A34A;
+      --warning: #EAB308;
+      --destructive: #DC2626;
+    }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--background);
+      color: var(--foreground);
+      -webkit-font-smoothing: antialiased;
+    }
+    .stat-gradient-primary {
+      background: linear-gradient(135deg, #FFFFFF 0%, #FFF7ED 100%);
+    }
+    .stat-gradient-success {
+      background: linear-gradient(135deg, #FFFFFF 0%, #F0FDF4 100%);
+    }
+    .stat-gradient-warning {
+      background: linear-gradient(135deg, #FFFFFF 0%, #FEFCE8 100%);
+    }
+  </style>
+</head>
+<body class="min-h-screen">
+
+  <!-- Preview Switcher Top Bar (Only for Demo Review) -->
+  <div class="sticky top-0 z-40 border-b border-slate-200 bg-slate-900 text-white px-6 py-2.5 shadow-sm">
+    <div class="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center gap-2.5">
+        <span class="rounded-md bg-orange-600 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider">UI/UX Preview</span>
+        <span class="text-xs text-slate-300">Xem trước giao diện Module mới (đồng bộ Target Roles & Ontology)</span>
+      </div>
+      <div class="flex flex-wrap items-center gap-2">
+        <span class="text-[11px] text-slate-400 mr-1">Chế độ xem:</span>
+        <button onclick="setMode('expert')" id="btn-expert" class="mode-btn rounded-md px-3 py-1 text-xs font-medium transition-colors bg-orange-600 text-white">Expert — Module</button>
+        <button onclick="setMode('ld-modules')" id="btn-ld-modules" class="mode-btn rounded-md px-3 py-1 text-xs font-medium transition-colors bg-slate-800 text-slate-300 hover:bg-slate-700">L&amp;D — Modules</button>
+        <button onclick="setMode('ld-approvals')" id="btn-ld-approvals" class="mode-btn rounded-md px-3 py-1 text-xs font-medium transition-colors bg-slate-800 text-slate-300 hover:bg-slate-700">L&amp;D — Approvals</button>
+        <div class="h-4 w-px bg-slate-700 mx-1"></div>
+        <button onclick="toggleEmpty()" id="btn-empty" class="rounded-md border border-slate-600 px-2.5 py-1 text-xs font-medium text-slate-200 hover:bg-slate-800 transition-colors">
+          Xem Empty State: <span id="empty-label" class="font-semibold text-slate-400">TẮT</span>
+        </button>
+        <button onclick="openModal()" class="rounded-md bg-white/10 hover:bg-white/20 px-2.5 py-1 text-xs font-medium text-orange-300 transition-colors flex items-center gap-1.5">
+          <i data-lucide="sparkles" class="w-3.5 h-3.5"></i> Mở Modal Tạo Module mới
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Simulated App Shell -->
+  <div class="mx-auto max-w-7xl px-6 py-7 space-y-6">
+
+    <!-- 1. PAGE HEADER (Consistent across Expert & L&D) -->
+    <header class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div class="space-y-1">
+        <h1 id="page-title" class="text-[28px] font-bold tracking-tight text-slate-900 leading-tight">
+          Quản lý Module học tập
+        </h1>
+        <p id="page-desc" class="text-[15px] text-slate-500">
+          Xây dựng các gói học tập trung theo kỹ năng và theo dõi rõ ràng trạng thái từng phiên bản.
+        </p>
+      </div>
+      <div id="header-actions" class="flex flex-wrap items-center gap-2 shrink-0">
+        <button class="inline-flex items-center gap-2 rounded-lg border border-orange-200 bg-[#FFF5EB] px-3 py-2 text-xs font-semibold text-[#EA580C] hover:bg-[#FEE6D4] transition-colors">
+          <i data-lucide="clipboard-check" class="w-4 h-4"></i>
+          Cấu hình đánh giá kỹ năng
+        </button>
+        <button class="inline-flex items-center gap-2 rounded-lg border border-orange-200 bg-[#FFF5EB] px-3 py-2 text-xs font-semibold text-[#EA580C] hover:bg-[#FEE6D4] transition-colors shadow-2xs">
+          <i data-lucide="upload" class="w-4 h-4"></i>
+          Nhập file (ZIP)
+        </button>
+        <button onclick="openModal()" class="inline-flex items-center gap-2 rounded-lg bg-[#EA580C] px-3.5 py-2 text-xs font-semibold text-white hover:bg-[#C2410C] transition-colors shadow-2xs">
+          <i data-lucide="plus" class="w-4 h-4"></i>
+          Tạo module
+        </button>
+      </div>
+    </header>
+
+    <!-- 2. L&D TABS (Matching Competency Ontology rounded pill Tabs) -->
+    <div id="ld-tabs" class="hidden">
+      <div class="inline-flex items-center rounded-lg bg-[#F1F5F9] p-1 border border-slate-200/80">
+        <button onclick="setMode('ld-modules')" id="tab-ld-modules" class="inline-flex items-center gap-2 rounded-md px-3.5 py-1.5 text-xs font-semibold transition-all bg-white text-slate-900 shadow-xs">
+          <i data-lucide="book-open" class="w-3.5 h-3.5 text-[#EA580C]"></i>
+          Danh mục Module
+        </button>
+        <button onclick="setMode('ld-approvals')" id="tab-ld-approvals" class="inline-flex items-center gap-2 rounded-md px-3.5 py-1.5 text-xs font-medium transition-all text-slate-600 hover:text-slate-900">
+          <i data-lucide="clipboard-check" class="w-3.5 h-3.5"></i>
+          Hàng đợi duyệt
+          <span class="ml-0.5 rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-bold text-amber-800">4</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- 3. AGGREGATE KPI STAT CARDS (Now visible & consistent on BOTH Expert & L&D) -->
+    <div id="stat-cards" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div class="stat-gradient-primary rounded-xl border border-slate-200 p-4 shadow-2xs transition-all hover:shadow-xs">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-semibold text-slate-600" id="stat1-title">Tổng số Module</span>
+          <div class="rounded-lg bg-orange-100/80 p-1.5 text-[#EA580C]">
+            <i data-lucide="book-open" class="w-4 h-4"></i>
+          </div>
+        </div>
+        <div class="mt-2 text-2xl font-bold text-[#EA580C]" id="stat1-val">270</div>
+        <p class="mt-0.5 text-xs text-slate-500" id="stat1-desc">Phù hợp với bộ lọc hiện tại</p>
+      </div>
+
+      <div class="stat-gradient-success rounded-xl border border-slate-200 p-4 shadow-2xs transition-all hover:shadow-xs">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-semibold text-slate-600" id="stat2-title">Đã phát hành</span>
+          <div class="rounded-lg bg-emerald-100/80 p-1.5 text-[#16A34A]">
+            <i data-lucide="check-circle-2" class="w-4 h-4"></i>
+          </div>
+        </div>
+        <div class="mt-2 text-2xl font-bold text-[#16A34A]" id="stat2-val">246</div>
+        <p class="mt-0.5 text-xs text-slate-500" id="stat2-desc">Sẵn sàng gán vào lộ trình học tập</p>
+      </div>
+
+      <div class="stat-gradient-warning rounded-xl border border-slate-200 p-4 shadow-2xs transition-all hover:shadow-xs">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-semibold text-slate-600" id="stat3-title">Kỹ năng khả dụng</span>
+          <div class="rounded-lg bg-amber-100/80 p-1.5 text-[#CA8A04]">
+            <i data-lucide="layers" class="w-4 h-4"></i>
+          </div>
+        </div>
+        <div class="mt-2 text-2xl font-bold text-[#CA8A04]" id="stat3-val">79</div>
+        <p class="mt-0.5 text-xs text-slate-500" id="stat3-desc">Kỹ năng đã duyệt trong tổ chức</p>
+      </div>
+    </div>
+
+    <!-- 4. MAIN DIRECTORY CARD (Integrated Header + Filters + Flush Table, Zero Double-Border) -->
+    <div class="rounded-xl border border-slate-200 bg-white shadow-xs overflow-hidden">
+      <!-- CardHeader matching TargetRolesPage & CompetencyOntologyPage -->
+      <div class="border-b border-slate-200 px-5 py-4">
+        <div class="flex flex-col xl:flex-row xl:items-center justify-between gap-4">
+          <div class="min-w-0 pr-2">
+            <h2 class="flex items-center gap-2 text-[16px] font-semibold text-slate-900">
+              <i id="card-icon" data-lucide="book-open" class="w-4 h-4 text-[#EA580C] shrink-0"></i>
+              <span id="card-title">Danh sách Module</span>
+            </h2>
+            <p id="card-desc" class="mt-0.5 text-[13px] text-slate-500">
+              Tra cứu module đào tạo, kỹ năng liên kết và quản lý trạng thái phát hành.
+            </p>
+          </div>
+
+          <!-- Integrated Search & Pill Filters inside CardHeader -->
+          <div class="flex items-center gap-2.5 shrink-0 flex-wrap py-0.5">
+            <!-- Search with Icon -->
+            <div class="relative w-52 sm:w-60 shrink-0">
+              <i data-lucide="search" class="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none"></i>
+              <input
+                type="text"
+                id="search-input"
+                placeholder="Tìm tên hoặc mã module..."
+                class="w-full pl-8 pr-3 py-1.5 text-xs rounded-lg bg-[#F8FAFC] border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-[#EA580C] focus:ring-1 focus:ring-[#EA580C] transition-colors"
+              />
+            </div>
+
+            <!-- Status Pill Select (Modules mode) -->
+            <div id="filter-status-wrap" class="flex items-center gap-1.5 bg-[#F8FAFC] border border-slate-200 rounded-lg px-2.5 py-1.5 shrink-0 hover:border-slate-300 transition-colors">
+              <span class="text-[11px] text-slate-500 font-medium">Trạng thái:</span>
+              <select class="text-xs bg-transparent text-slate-900 border-0 focus:outline-none cursor-pointer font-medium">
+                <option value="">Tất cả</option>
+                <option value="RELEASED">Đã phát hành</option>
+                <option value="ACTIVE">Đang sử dụng</option>
+                <option value="NEEDS_EXPERT_REVIEW">Chờ duyệt</option>
+                <option value="REJECTED">Cần chỉnh sửa</option>
+                <option value="DRAFT">Bản nháp</option>
+                <option value="ARCHIVED">Đã lưu trữ</option>
+              </select>
+            </div>
+
+            <!-- Module Type Pill Select -->
+            <div id="filter-type-wrap" class="flex items-center gap-1.5 bg-[#F8FAFC] border border-slate-200 rounded-lg px-2.5 py-1.5 shrink-0 hover:border-slate-300 transition-colors">
+              <span class="text-[11px] text-slate-500 font-medium">Loại:</span>
+              <select class="text-xs bg-transparent text-slate-900 border-0 focus:outline-none cursor-pointer font-medium">
+                <option value="">Tất cả</option>
+                <option value="LESSON_AND_PRACTICE">Bài học &amp; thực hành</option>
+                <option value="RESOURCE_GUIDED_PRACTICE">Thực hành theo tài liệu</option>
+              </select>
+            </div>
+
+            <!-- Skill Pill Select -->
+            <div class="flex items-center gap-1.5 bg-[#F8FAFC] border border-slate-200 rounded-lg px-2.5 py-1.5 shrink-0 hover:border-slate-300 transition-colors">
+              <span class="text-[11px] text-slate-500 font-medium">Kỹ năng:</span>
+              <select class="text-xs bg-transparent text-slate-900 border-0 focus:outline-none cursor-pointer font-medium max-w-[140px] truncate">
+                <option value="">Tất cả (79)</option>
+                <option value="MS-SEC01">Analyse information security risks</option>
+                <option value="MS-DE01">Create data models</option>
+                <option value="MS-QA08">Exploratory testing</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CardContent p-0 (No Double Border!) -->
+      <div id="table-container" class="p-0 overflow-x-auto">
+        <!-- Modules Table -->
+        <table id="modules-table" class="w-full text-left text-xs border-collapse">
+          <thead>
+            <tr class="border-b border-slate-200 bg-[#F8FAFC] text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+              <th class="px-5 py-3 w-[28%]">Module</th>
+              <th class="px-4 py-3 w-[15%]">Người phụ trách</th>
+              <th class="px-4 py-3 w-[20%]">Kỹ năng được dạy</th>
+              <th class="px-4 py-3 w-[11%]">Mức kiến thức</th>
+              <th class="px-4 py-3 w-[8%]">Thời lượng</th>
+              <th class="px-4 py-3 w-[10%]">Trạng thái</th>
+              <th class="px-5 py-3 w-[8%] text-right">Thao tác</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            <!-- Row 1 -->
+            <tr class="hover:bg-slate-50/80 transition-colors group">
+              <td class="px-5 py-3.5">
+                <div class="font-semibold text-[13.5px] text-slate-900 leading-snug line-clamp-2">
+                  Analyse information security risks — Guided practice
+                </div>
+                <div class="mt-1 inline-flex items-center gap-1.5 text-[11px] text-slate-400 font-mono">
+                  <span>MOD-SEC01-ADVANCED-01</span>
+                  <button title="Sao chép mã" class="hover:text-[#EA580C] transition-colors">
+                    <i data-lucide="copy" class="w-3 h-3"></i>
+                  </button>
+                </div>
+              </td>
+              <td class="px-4 py-3.5 text-slate-700 font-medium">Development expert</td>
+              <td class="px-4 py-3.5 text-slate-700">Analyse information security risks</td>
+              <td class="px-4 py-3.5">
+                <span class="inline-flex items-center rounded-md bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-700">Nâng cao</span>
+              </td>
+              <td class="px-4 py-3.5 text-slate-600">450 phút</td>
+              <td class="px-4 py-3.5">
+                <span class="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-700">
+                  <span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
+                  Đã phát hành
+                </span>
+              </td>
+              <td class="px-5 py-3.5 text-right">
+                <div class="inline-flex items-center justify-end gap-1.5">
+                  <button class="inline-flex items-center justify-center w-8 h-8 rounded-lg border border-slate-200 bg-white text-[#EA580C] hover:bg-[#FFF5EB] hover:border-orange-200 transition-colors" title="Xem chi tiết">
+                    <i data-lucide="eye" class="w-4 h-4"></i>
+                  </button>
+                  <button class="inline-flex items-center justify-center w-8 h-8 rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-100 transition-colors" title="Thao tác khác">
+                    <i data-lucide="more-horizontal" class="w-4 h-4"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+
+            <!-- Row 2 -->
+            <tr class="hover:bg-slate-50/80 transition-colors group">
+              <td class="px-5 py-3.5">
+                <div class="font-semibold text-[13.5px] text-slate-900 leading-snug line-clamp-2">
+                  Create data models — Guided practice
+                </div>
+                <div class="mt-1 inline-flex items-center gap-1.5 text-[11px] text-slate-400 font-mono">
+                  <span>MOD-DE01-FOUNDATION-01</span>
+                  <button title="Sao chép mã" class="hover:text-[#EA580C] transition-colors">
+                    <i data-lucide="copy" class="w-3 h-3"></i>
+                  </button>
+                </div>
+              </td>
+              <td class="px-4 py-3.5 text-slate-700 font-medium">Nguyễn Minh An</td>
+              <td class="px-4 py-3.5 text-slate-700">Create data models</td>
+              <td class="px-4 py-3.5">
+                <span class="inline-flex items-center rounded-md bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-700">Nền tảng</span>
+              </td>
+              <td class="px-4 py-3.5 text-slate-600">210 phút</td>
+              <td class="px-4 py-3.5">
+                <span class="inline-flex items-center gap-1.5 rounded-full bg-amber-50 border border-amber-200 px-2.5 py-0.5 text-[11px] font-semibold text-amber-700">
+                  <span class="h-1.5 w-1.5 rounded-full bg-amber-500"></span>
+                  Chờ duyệt
+                </span>
+              </td>
+              <td class="px-5 py-3.5 text-right">
+                <div class="inline-flex items-center justify-end gap-1.5">
+                  <button class="inline-flex items-center justify-center w-8 h-8 rounded-lg border border-slate-200 bg-white text-[#EA580C] hover:bg-[#FFF5EB] hover:border-orange-200 transition-colors" title="Xem chi tiết">
+                    <i data-lucide="eye" class="w-4 h-4"></i>
+                  </button>
+                  <button class="inline-flex items-center justify-center w-8 h-8 rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-100 transition-colors" title="Thao tác khác">
+                    <i data-lucide="more-horizontal" class="w-4 h-4"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+
+            <!-- Row 3 -->
+            <tr class="hover:bg-slate-50/80 transition-colors group">
+              <td class="px-5 py-3.5">
+                <div class="font-semibold text-[13.5px] text-slate-900 leading-snug line-clamp-2">
+                  Exploratory testing in agile sprints — Workshop
+                </div>
+                <div class="mt-1 inline-flex items-center gap-1.5 text-[11px] text-slate-400 font-mono">
+                  <span>MOD-QA08-INTERMEDIATE-02</span>
+                  <button title="Sao chép mã" class="hover:text-[#EA580C] transition-colors">
+                    <i data-lucide="copy" class="w-3 h-3"></i>
+                  </button>
+                </div>
+              </td>
+              <td class="px-4 py-3.5 text-slate-700 font-medium">Trần Thu Hà</td>
+              <td class="px-4 py-3.5 text-slate-700">Exploratory testing</td>
+              <td class="px-4 py-3.5">
+                <span class="inline-flex items-center rounded-md bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-700">Trung cấp</span>
+              </td>
+              <td class="px-4 py-3.5 text-slate-600">90 phút</td>
+              <td class="px-4 py-3.5">
+                <span class="inline-flex items-center gap-1.5 rounded-full bg-slate-100 border border-slate-200 px-2.5 py-0.5 text-[11px] font-semibold text-slate-600">
+                  <span class="h-1.5 w-1.5 rounded-full bg-slate-400"></span>
+                  Bản nháp
+                </span>
+              </td>
+              <td class="px-5 py-3.5 text-right">
+                <div class="inline-flex items-center justify-end gap-1.5">
+                  <button class="inline-flex items-center justify-center w-8 h-8 rounded-lg border border-slate-200 bg-white text-[#EA580C] hover:bg-[#FFF5EB] hover:border-orange-200 transition-colors" title="Xem chi tiết">
+                    <i data-lucide="eye" class="w-4 h-4"></i>
+                  </button>
+                  <button class="inline-flex items-center justify-center w-8 h-8 rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-100 transition-colors" title="Thao tác khác">
+                    <i data-lucide="more-horizontal" class="w-4 h-4"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- Approvals Table (Shown in L&D Approvals mode) -->
+        <table id="approvals-table" class="hidden w-full text-left text-xs border-collapse">
+          <thead>
+            <tr class="border-b border-slate-200 bg-[#F8FAFC] text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+              <th class="px-5 py-3 w-[30%]">Module / Kỹ năng</th>
+              <th class="px-4 py-3 w-[16%]">Loại yêu cầu</th>
+              <th class="px-4 py-3 w-[10%]">Phiên bản</th>
+              <th class="px-4 py-3 w-[16%]">Người gửi</th>
+              <th class="px-4 py-3 w-[14%]">Thời điểm gửi</th>
+              <th class="px-4 py-3 w-[14%] text-right">Thao tác</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            <tr class="hover:bg-slate-50/80 transition-colors">
+              <td class="px-5 py-3.5">
+                <div class="font-semibold text-[13.5px] text-slate-900">Create data models — Guided practice</div>
+                <div class="mt-0.5 text-[11.5px] text-slate-500">Create data models · Nền tảng</div>
+              </td>
+              <td class="px-4 py-3.5 text-slate-700 font-medium">Phát hành phiên bản</td>
+              <td class="px-4 py-3.5"><span class="rounded-md bg-slate-100 px-2 py-0.5 font-mono text-[11px]">v2</span></td>
+              <td class="px-4 py-3.5 text-slate-700">Nguyễn Minh An</td>
+              <td class="px-4 py-3.5 text-slate-500">18/11/2026 14:20</td>
+              <td class="px-5 py-3.5 text-right">
+                <button class="inline-flex items-center gap-1.5 rounded-lg border border-orange-200 bg-[#FFF5EB] px-3 py-1.5 text-xs font-semibold text-[#EA580C] hover:bg-[#FEE6D4] transition-colors">
+                  <i data-lucide="eye" class="w-3.5 h-3.5"></i> Xem &amp; Duyệt
+                </button>
+              </td>
+            </tr>
+            <tr class="hover:bg-slate-50/80 transition-colors">
+              <td class="px-5 py-3.5">
+                <div class="font-semibold text-[13.5px] text-slate-900">Legacy Data Pipeline Basics</div>
+                <div class="mt-0.5 text-[11.5px] text-slate-500">Develop data processing applications · Nền tảng</div>
+              </td>
+              <td class="px-4 py-3.5 text-slate-700 font-medium">Lưu trữ module</td>
+              <td class="px-4 py-3.5"><span class="rounded-md bg-slate-100 px-2 py-0.5 font-mono text-[11px]">v1</span></td>
+              <td class="px-4 py-3.5 text-slate-700">Trần Thu Hà</td>
+              <td class="px-4 py-3.5 text-slate-500">18/11/2026 11:05</td>
+              <td class="px-5 py-3.5 text-right">
+                <button class="inline-flex items-center gap-1.5 rounded-lg border border-orange-200 bg-[#FFF5EB] px-3 py-1.5 text-xs font-semibold text-[#EA580C] hover:bg-[#FEE6D4] transition-colors">
+                  <i data-lucide="eye" class="w-3.5 h-3.5"></i> Xem &amp; Duyệt
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- Polished Empty State (Matches TargetRolesPage & Ontology) -->
+        <div id="empty-state" class="hidden py-16 px-6 text-center">
+          <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 text-slate-400 mb-3">
+            <i data-lucide="book-open" class="w-6 h-6"></i>
+          </div>
+          <h3 class="text-sm font-semibold text-slate-900">Không tìm thấy module nào phù hợp</h3>
+          <p class="mt-1 text-xs text-slate-500 max-w-md mx-auto">
+            Chưa có module nào khớp với từ khóa hoặc bộ lọc hiện tại. Hãy thử xóa bộ lọc hoặc tạo một module mới.
+          </p>
+          <div class="mt-4 flex items-center justify-center gap-2">
+            <button onclick="toggleEmpty()" class="rounded-lg border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 transition-colors">
+              Xoá bộ lọc
+            </button>
+            <button onclick="openModal()" class="rounded-lg bg-[#EA580C] px-3.5 py-1.5 text-xs font-semibold text-white hover:bg-[#C2410C] transition-colors">
+              Tạo module mới
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Clean Footer Pagination -->
+      <div id="table-footer" class="flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 bg-[#F8FAFC]/60 px-5 py-3 text-xs text-slate-500">
+        <span>Hiển thị <strong class="text-slate-800">1–10</strong> trên <strong class="text-slate-800">270</strong> module</span>
+        <div class="flex items-center gap-1">
+          <button class="rounded-md border border-slate-200 bg-white px-2.5 py-1 text-slate-400 cursor-not-allowed">Trước</button>
+          <button class="rounded-md bg-[#EA580C] px-2.5 py-1 font-semibold text-white">1</button>
+          <button class="rounded-md border border-slate-200 bg-white px-2.5 py-1 text-slate-700 hover:bg-slate-50">2</button>
+          <button class="rounded-md border border-slate-200 bg-white px-2.5 py-1 text-slate-700 hover:bg-slate-50">3</button>
+          <button class="rounded-md border border-slate-200 bg-white px-2.5 py-1 text-slate-700 hover:bg-slate-50">Tiếp</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL PREVIEW: Upgraded Create / Edit Module Dialog -->
+  <div id="module-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/50 backdrop-blur-[2px] p-4">
+    <div class="w-full max-w-3xl rounded-2xl border border-slate-200 bg-white shadow-xl overflow-hidden flex flex-col max-h-[90vh]">
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between border-b border-slate-200 px-6 py-4">
+        <div>
+          <h2 class="text-lg font-bold text-slate-900">Tạo module học tập mới</h2>
+          <p class="text-xs text-slate-500">Thiết lập thông tin chung, liên kết kỹ năng và biên soạn nội dung bài học.</p>
+        </div>
+        <button onclick="closeModal()" class="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition-colors">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Modal Tabs -->
+      <div class="border-b border-slate-100 bg-[#F8FAFC] px-6 py-2.5">
+        <div class="inline-flex rounded-lg bg-slate-200/70 p-0.5">
+          <button type="button" id="modal-tab-1" onclick="switchModalTab('details')" class="rounded-md bg-white px-3.5 py-1 text-xs font-semibold text-slate-900 shadow-2xs transition-all">1. Thông tin module</button>
+          <button type="button" id="modal-tab-2" onclick="switchModalTab('content')" class="rounded-md px-3.5 py-1 text-xs font-medium text-slate-600 hover:text-slate-900 transition-all flex items-center gap-1.5">
+            2. Nội dung học (Bài đọc / Video)
+            <span id="tab2-badge" class="rounded-full bg-orange-100 px-1.5 py-0.2 text-[10px] font-bold text-[#EA580C]">2 bài · 45p</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="overflow-y-auto p-6 space-y-5">
+        <!-- TAB 1 CONTENT: Module Details -->
+        <div id="modal-section-details" class="space-y-5">
+          <!-- Section 1: Basic Info Card -->
+          <section class="rounded-xl border border-slate-200/80 bg-[#F8FAFC]/60 p-4 space-y-4">
+            <div class="flex items-center gap-2 text-sm font-semibold text-slate-900">
+              <i data-lucide="file-text" class="w-4 h-4 text-[#EA580C]"></i>
+              Thông tin cơ bản
+            </div>
+            <div class="grid gap-4 sm:grid-cols-2">
+              <div class="sm:col-span-2 space-y-1.5">
+                <label class="block text-xs font-medium text-slate-700">Tên module <span class="text-red-500">*</span></label>
+                <input type="text" value="Thiết kế mô hình dữ liệu chuẩn hóa — Thực hành" class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-[#EA580C] focus:outline-none focus:ring-2 focus:ring-[#EA580C]/20" />
+              </div>
+              <div class="space-y-1.5">
+                <label class="block text-xs font-medium text-slate-700">Loại module</label>
+                <select class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-[#EA580C] focus:outline-none focus:ring-2 focus:ring-[#EA580C]/20">
+                  <option>Bài học và thực hành</option>
+                  <option>Thực hành theo tài liệu</option>
+                </select>
+              </div>
+
+              <!-- Option 1: Auto-Synchronized Duration -->
+              <div class="space-y-1.5">
+                <div class="flex items-center justify-between">
+                  <label class="block text-xs font-medium text-slate-700">Thời lượng module (phút)</label>
+                  <span class="inline-flex items-center gap-1 rounded bg-emerald-50 text-emerald-700 border border-emerald-200 px-1.5 py-0.5 text-[10px] font-semibold">
+                    <i data-lucide="zap" class="w-3 h-3"></i> Tự động tính từ bài học
+                  </span>
+                </div>
+                <div class="relative">
+                  <input
+                    type="number"
+                    id="auto-module-duration"
+                    value="45"
+                    readonly
+                    class="w-full rounded-lg border border-slate-200 bg-slate-100/80 px-3 py-2 text-sm font-semibold text-slate-800 cursor-not-allowed select-none"
+                  />
+                  <div class="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-medium text-slate-400">
+                    phút
+                  </div>
+                </div>
+                <p id="duration-helper-text" class="text-[11px] text-slate-500">
+                  Tổng thời lượng: <strong class="text-slate-700">1 bài đọc (15 phút)</strong> + <strong class="text-slate-700">1 video (30 phút)</strong> = <span class="font-bold text-[#EA580C]">45 phút</span>.
+                  <button type="button" onclick="switchModalTab('content')" class="ml-1 text-[#EA580C] hover:underline font-medium">Chỉnh sửa ở Tab 2 &rarr;</button>
+                </p>
+              </div>
+            </div>
+          </section>
+
+        <!-- Section 2: Skill Alignment Card with Category Filter, Searchable Combobox & Radio Pills -->
+        <section class="rounded-xl border border-slate-200/80 bg-[#F8FAFC]/60 p-4 space-y-4">
+          <div>
+            <div class="flex items-center gap-2 text-sm font-semibold text-slate-900">
+              <i data-lucide="layers" class="w-4 h-4 text-[#EA580C]"></i>
+              Liên kết kỹ năng
+            </div>
+            <p class="mt-0.5 text-xs text-slate-500">Mỗi module tập trung giảng dạy một kỹ năng cụ thể trong danh mục của tổ chức.</p>
+          </div>
+
+          <!-- Skill Filter Row: Filter by Competency/Domain + Search Input -->
+          <div class="grid gap-3 sm:grid-cols-3">
+            <!-- Filter by Domain/Category -->
+            <div class="space-y-1.5">
+              <label class="block text-xs font-medium text-slate-700">Lọc theo nhóm lĩnh vực</label>
+              <div class="relative">
+                <select id="skill-domain-filter" onchange="onDomainFilterChange(this.value)" class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs text-slate-900 focus:border-[#EA580C] focus:outline-none focus:ring-2 focus:ring-[#EA580C]/20 cursor-pointer font-medium">
+                  <option value="ALL">Tất cả lĩnh vực (79)</option>
+                  <option value="DE">Kỹ thuật Dữ liệu (DE - 14)</option>
+                  <option value="QA">Kiểm thử &amp; QA (QA - 12)</option>
+                  <option value="SEC">An toàn thông tin (SEC - 10)</option>
+                  <option value="ARC">Kiến trúc phần mềm (ARC - 11)</option>
+                  <option value="AI">Trí tuệ nhân tạo (AI - 10)</option>
+                  <option value="INF">Hạ tầng &amp; Cloud (INF - 12)</option>
+                  <option value="FS">Phát triển Fullstack (FS - 10)</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Searchable Combobox -->
+            <div class="sm:col-span-2 space-y-1.5 relative">
+              <div class="flex items-center justify-between">
+                <label class="block text-xs font-medium text-slate-700">Kỹ năng mục tiêu (MicroSkill) <span class="text-red-500">*</span></label>
+                <span id="skill-count-badge" class="text-[11px] font-medium text-slate-500">Hiển thị 79 kỹ năng</span>
+              </div>
+              <div class="relative">
+                <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none"></i>
+                <input
+                  type="text"
+                  id="skill-combobox-input"
+                  onfocus="openSkillDropdown()"
+                  oninput="filterSkills()"
+                  placeholder="Gõ tên hoặc mã kỹ năng để tìm kiếm..."
+                  class="w-full rounded-lg border border-slate-200 bg-white pl-9 pr-9 py-2 text-xs sm:text-sm text-slate-900 focus:border-[#EA580C] focus:outline-none focus:ring-2 focus:ring-[#EA580C]/20"
+                />
+                <button type="button" onclick="toggleSkillDropdown()" class="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600">
+                  <i data-lucide="chevrons-up-down" class="w-4 h-4"></i>
+                </button>
+              </div>
+
+              <!-- Quick Tag Filter Pills inside Combobox -->
+              <div id="skill-dropdown" class="hidden absolute z-20 mt-1 w-full rounded-xl border border-slate-200 bg-white p-2 shadow-xl">
+                <!-- Quick Category Filter Chips -->
+                <div class="mb-2 flex flex-wrap items-center gap-1.5 border-b border-slate-100 pb-2">
+                  <span class="text-[11px] text-slate-400 mr-1">Lọc nhanh:</span>
+                  <button type="button" onclick="setQuickChip('ALL')" class="quick-chip rounded-md px-2 py-0.5 text-[11px] font-semibold bg-orange-100 text-[#EA580C]" data-chip="ALL">Tất cả</button>
+                  <button type="button" onclick="setQuickChip('DE')" class="quick-chip rounded-md px-2 py-0.5 text-[11px] font-medium bg-slate-100 text-slate-600 hover:bg-slate-200" data-chip="DE">Data (DE)</button>
+                  <button type="button" onclick="setQuickChip('QA')" class="quick-chip rounded-md px-2 py-0.5 text-[11px] font-medium bg-slate-100 text-slate-600 hover:bg-slate-200" data-chip="QA">QA &amp; Test</button>
+                  <button type="button" onclick="setQuickChip('SEC')" class="quick-chip rounded-md px-2 py-0.5 text-[11px] font-medium bg-slate-100 text-slate-600 hover:bg-slate-200" data-chip="SEC">Bảo mật (SEC)</button>
+                  <button type="button" onclick="setQuickChip('ARC')" class="quick-chip rounded-md px-2 py-0.5 text-[11px] font-medium bg-slate-100 text-slate-600 hover:bg-slate-200" data-chip="ARC">Kiến trúc (ARC)</button>
+                </div>
+
+                <!-- Skill Options List -->
+                <div id="skill-options-list" class="max-h-48 overflow-y-auto space-y-0.5 pr-1">
+                  <!-- Data Engineering -->
+                  <button type="button" onclick="selectSkill('MS-DE01', 'Create data models', 'DE')" data-domain="DE" data-code="MS-DE01" data-name="Create data models" class="skill-item flex w-full items-center justify-between rounded-lg px-2.5 py-2 text-left text-xs hover:bg-[#FFF5EB] hover:text-[#EA580C] transition-colors">
+                    <div class="min-w-0 pr-2">
+                      <div class="font-medium text-slate-800">Create data models</div>
+                      <div class="text-[11px] text-slate-400">Thiết kế cấu trúc bảng và mô hình quan hệ</div>
+                    </div>
+                    <div class="flex items-center gap-1.5 shrink-0">
+                      <span class="rounded bg-sky-50 text-sky-700 border border-sky-200 px-1.5 py-0.5 text-[10px] font-semibold">DE</span>
+                      <span class="font-mono text-[11px] text-slate-400">MS-DE01</span>
+                    </div>
+                  </button>
+
+                  <button type="button" onclick="selectSkill('MS-DE02', 'Develop data processing applications', 'DE')" data-domain="DE" data-code="MS-DE02" data-name="Develop data processing applications" class="skill-item flex w-full items-center justify-between rounded-lg px-2.5 py-2 text-left text-xs hover:bg-[#FFF5EB] hover:text-[#EA580C] transition-colors">
+                    <div class="min-w-0 pr-2">
+                      <div class="font-medium text-slate-800">Develop data processing applications</div>
+                      <div class="text-[11px] text-slate-400">Xây dựng pipeline xử lý dữ liệu ETL/ELT</div>
+                    </div>
+                    <div class="flex items-center gap-1.5 shrink-0">
+                      <span class="rounded bg-sky-50 text-sky-700 border border-sky-200 px-1.5 py-0.5 text-[10px] font-semibold">DE</span>
+                      <span class="font-mono text-[11px] text-slate-400">MS-DE02</span>
+                    </div>
+                  </button>
+
+                  <button type="button" onclick="selectSkill('MS-DE13', 'Optimise warehouse workloads', 'DE')" data-domain="DE" data-code="MS-DE13" data-name="Optimise warehouse workloads" class="skill-item flex w-full items-center justify-between rounded-lg px-2.5 py-2 text-left text-xs hover:bg-[#FFF5EB] hover:text-[#EA580C] transition-colors">
+                    <div class="min-w-0 pr-2">
+                      <div class="font-medium text-slate-800">Optimise warehouse workloads</div>
+                      <div class="text-[11px] text-slate-400">Tối ưu truy vấn và chi phí lưu trữ kho dữ liệu</div>
+                    </div>
+                    <div class="flex items-center gap-1.5 shrink-0">
+                      <span class="rounded bg-sky-50 text-sky-700 border border-sky-200 px-1.5 py-0.5 text-[10px] font-semibold">DE</span>
+                      <span class="font-mono text-[11px] text-slate-400">MS-DE13</span>
+                    </div>
+                  </button>
+
+                  <!-- Quality Assurance -->
+                  <button type="button" onclick="selectSkill('MS-QA08', 'Exploratory testing', 'QA')" data-domain="QA" data-code="MS-QA08" data-name="Exploratory testing" class="skill-item flex w-full items-center justify-between rounded-lg px-2.5 py-2 text-left text-xs hover:bg-[#FFF5EB] hover:text-[#EA580C] transition-colors">
+                    <div class="min-w-0 pr-2">
+                      <div class="font-medium text-slate-800">Exploratory testing</div>
+                      <div class="text-[11px] text-slate-400">Kiểm thử thăm dò và phát hiện lỗi biên</div>
+                    </div>
+                    <div class="flex items-center gap-1.5 shrink-0">
+                      <span class="rounded bg-purple-50 text-purple-700 border border-purple-200 px-1.5 py-0.5 text-[10px] font-semibold">QA</span>
+                      <span class="font-mono text-[11px] text-slate-400">MS-QA08</span>
+                    </div>
+                  </button>
+
+                  <button type="button" onclick="selectSkill('MS-QA01', 'Design test specifications', 'QA')" data-domain="QA" data-code="MS-QA01" data-name="Design test specifications" class="skill-item flex w-full items-center justify-between rounded-lg px-2.5 py-2 text-left text-xs hover:bg-[#FFF5EB] hover:text-[#EA580C] transition-colors">
+                    <div class="min-w-0 pr-2">
+                      <div class="font-medium text-slate-800">Design test specifications</div>
+                      <div class="text-[11px] text-slate-400">Thiết kế kịch bản và ma trận kiểm thử</div>
+                    </div>
+                    <div class="flex items-center gap-1.5 shrink-0">
+                      <span class="rounded bg-purple-50 text-purple-700 border border-purple-200 px-1.5 py-0.5 text-[10px] font-semibold">QA</span>
+                      <span class="font-mono text-[11px] text-slate-400">MS-QA01</span>
+                    </div>
+                  </button>
+
+                  <!-- Security -->
+                  <button type="button" onclick="selectSkill('MS-SEC01', 'Analyse information security risks', 'SEC')" data-domain="SEC" data-code="MS-SEC01" data-name="Analyse information security risks" class="skill-item flex w-full items-center justify-between rounded-lg px-2.5 py-2 text-left text-xs hover:bg-[#FFF5EB] hover:text-[#EA580C] transition-colors">
+                    <div class="min-w-0 pr-2">
+                      <div class="font-medium text-slate-800">Analyse information security risks</div>
+                      <div class="text-[11px] text-slate-400">Đánh giá lỗ hổng và rủi ro an toàn thông tin</div>
+                    </div>
+                    <div class="flex items-center gap-1.5 shrink-0">
+                      <span class="rounded bg-rose-50 text-rose-700 border border-rose-200 px-1.5 py-0.5 text-[10px] font-semibold">SEC</span>
+                      <span class="font-mono text-[11px] text-slate-400">MS-SEC01</span>
+                    </div>
+                  </button>
+
+                  <!-- Architecture -->
+                  <button type="button" onclick="selectSkill('MS-ARC01', 'Model solution components and boundaries', 'ARC')" data-domain="ARC" data-code="MS-ARC01" data-name="Model solution components and boundaries" class="skill-item flex w-full items-center justify-between rounded-lg px-2.5 py-2 text-left text-xs hover:bg-[#FFF5EB] hover:text-[#EA580C] transition-colors">
+                    <div class="min-w-0 pr-2">
+                      <div class="font-medium text-slate-800">Model solution components and boundaries</div>
+                      <div class="text-[11px] text-slate-400">Mô hình hóa thành phần và ranh giới hệ thống</div>
+                    </div>
+                    <div class="flex items-center gap-1.5 shrink-0">
+                      <span class="rounded bg-indigo-50 text-indigo-700 border border-indigo-200 px-1.5 py-0.5 text-[10px] font-semibold">ARC</span>
+                      <span class="font-mono text-[11px] text-slate-400">MS-ARC01</span>
+                    </div>
+                  </button>
+
+                  <button type="button" onclick="selectSkill('MS-ARC03', 'Specify integration contracts', 'ARC')" data-domain="ARC" data-code="MS-ARC03" data-name="Specify integration contracts" class="skill-item flex w-full items-center justify-between rounded-lg px-2.5 py-2 text-left text-xs hover:bg-[#FFF5EB] hover:text-[#EA580C] transition-colors">
+                    <div class="min-w-0 pr-2">
+                      <div class="font-medium text-slate-800">Specify integration contracts</div>
+                      <div class="text-[11px] text-slate-400">Đặc tả giao thức tích hợp và API hợp đồng</div>
+                    </div>
+                    <div class="flex items-center gap-1.5 shrink-0">
+                      <span class="rounded bg-indigo-50 text-indigo-700 border border-indigo-200 px-1.5 py-0.5 text-[10px] font-semibold">ARC</span>
+                      <span class="font-mono text-[11px] text-slate-400">MS-ARC03</span>
+                    </div>
+                  </button>
+                </div>
+
+                <div id="no-skill-found" class="hidden py-4 text-center text-xs text-slate-400">
+                  Không tìm thấy kỹ năng nào khớp với bộ lọc hoặc từ khóa.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Knowledge Level Radio Cards -->
+          <div class="space-y-2">
+            <label class="block text-xs font-medium text-slate-700">Mức kiến thức <span class="text-red-500">*</span></label>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+              <label class="cursor-pointer">
+                <input type="radio" name="klevel" class="peer sr-only" checked />
+                <div class="rounded-xl border border-slate-200 bg-white p-3 transition-all peer-checked:border-[#EA580C] peer-checked:bg-[#FFF5EB] peer-checked:ring-1 peer-checked:ring-[#EA580C] hover:border-slate-300">
+                  <div class="text-xs font-semibold text-slate-900">Nền tảng</div>
+                  <div class="mt-0.5 text-[11px] text-slate-500">Kiến thức nhập môn &amp; cốt lõi</div>
+                </div>
+              </label>
+              <label class="cursor-pointer">
+                <input type="radio" name="klevel" class="peer sr-only" />
+                <div class="rounded-xl border border-slate-200 bg-white p-3 transition-all peer-checked:border-[#EA580C] peer-checked:bg-[#FFF5EB] peer-checked:ring-1 peer-checked:ring-[#EA580C] hover:border-slate-300">
+                  <div class="text-xs font-semibold text-slate-900">Trung cấp</div>
+                  <div class="mt-0.5 text-[11px] text-slate-500">Áp dụng vào bài toán thực tế</div>
+                </div>
+              </label>
+              <label class="cursor-pointer">
+                <input type="radio" name="klevel" class="peer sr-only" />
+                <div class="rounded-xl border border-slate-200 bg-white p-3 transition-all peer-checked:border-[#EA580C] peer-checked:bg-[#FFF5EB] peer-checked:ring-1 peer-checked:ring-[#EA580C] hover:border-slate-300">
+                  <div class="text-xs font-semibold text-slate-900">Nâng cao</div>
+                  <div class="mt-0.5 text-[11px] text-slate-500">Tối ưu &amp; xử lý tình huống phức tạp</div>
+                </div>
+              </label>
+            </div>
+          </div>
+        </section>
+        </div>
+
+        <!-- TAB 2 CONTENT: Learning Lessons (Direct Source for Module Duration) -->
+        <div id="modal-section-content" class="hidden space-y-4">
+          <div class="flex items-center justify-between">
+            <div>
+              <h3 class="text-sm font-semibold text-slate-900">Nội dung bài học &amp; Thời lượng</h3>
+              <p class="text-xs text-slate-500">Tổng thời lượng các bài học dưới đây sẽ <strong class="text-emerald-700 font-semibold">tự động đồng bộ</strong> thành Thời lượng của Module.</p>
+            </div>
+            <button type="button" onclick="addSampleLesson()" class="inline-flex items-center gap-1.5 rounded-lg border border-orange-200 bg-[#FFF5EB] px-3 py-1.5 text-xs font-semibold text-[#EA580C] hover:bg-[#FEE6D4] transition-colors">
+              <i data-lucide="plus" class="w-3.5 h-3.5"></i> Thêm bài học
+            </button>
+          </div>
+
+          <!-- Lessons List -->
+          <div id="lessons-interactive-list" class="space-y-3">
+            <!-- Lesson 1 -->
+            <div class="lesson-card rounded-xl border border-slate-200 bg-white p-4 shadow-2xs space-y-3 transition-all hover:border-slate-300">
+              <div class="flex items-start justify-between gap-3">
+                <div class="flex items-center gap-2.5">
+                  <div class="rounded-lg bg-orange-100 p-2 text-[#EA580C]">
+                    <i data-lucide="file-text" class="w-4 h-4"></i>
+                  </div>
+                  <div>
+                    <span class="text-[11px] font-semibold uppercase text-slate-400">Bài 1 · Bài đọc</span>
+                    <h4 class="text-xs font-semibold text-slate-900">Tổng quan và các khái niệm cốt lõi</h4>
+                  </div>
+                </div>
+                <div class="flex items-center gap-2">
+                  <div class="flex items-center gap-1 bg-[#F8FAFC] border border-slate-200 rounded-lg px-2 py-1">
+                    <span class="text-[11px] text-slate-500 font-medium">Thời lượng:</span>
+                    <input
+                      type="number"
+                      min="1"
+                      value="15"
+                      oninput="onLessonDurationChange()"
+                      class="lesson-duration-input w-12 bg-transparent text-xs font-bold text-slate-900 text-center border-0 focus:outline-none"
+                    />
+                    <span class="text-[11px] text-slate-500">phút</span>
+                  </div>
+                  <button type="button" onclick="removeLesson(this)" class="p-1 text-slate-400 hover:text-red-500 transition-colors" title="Xóa bài học">
+                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Lesson 2 -->
+            <div class="lesson-card rounded-xl border border-slate-200 bg-white p-4 shadow-2xs space-y-3 transition-all hover:border-slate-300">
+              <div class="flex items-start justify-between gap-3">
+                <div class="flex items-center gap-2.5">
+                  <div class="rounded-lg bg-blue-100 p-2 text-blue-600">
+                    <i data-lucide="video" class="w-4 h-4"></i>
+                  </div>
+                  <div>
+                    <span class="text-[11px] font-semibold uppercase text-slate-400">Bài 2 · Video thực hành</span>
+                    <h4 class="text-xs font-semibold text-slate-900">Thực hành thiết kế mô hình dữ liệu (Demo &amp; Lab)</h4>
+                  </div>
+                </div>
+                <div class="flex items-center gap-2">
+                  <div class="flex items-center gap-1 bg-[#F8FAFC] border border-slate-200 rounded-lg px-2 py-1">
+                    <span class="text-[11px] text-slate-500 font-medium">Thời lượng:</span>
+                    <input
+                      type="number"
+                      min="1"
+                      value="30"
+                      oninput="onLessonDurationChange()"
+                      class="lesson-duration-input w-12 bg-transparent text-xs font-bold text-slate-900 text-center border-0 focus:outline-none"
+                    />
+                    <span class="text-[11px] text-slate-500">phút</span>
+                  </div>
+                  <button type="button" onclick="removeLesson(this)" class="p-1 text-slate-400 hover:text-red-500 transition-colors" title="Xóa bài học">
+                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Total Banner inside Tab 2 -->
+          <div class="rounded-xl border border-emerald-200 bg-emerald-50/70 p-3.5 flex items-center justify-between text-xs text-emerald-900">
+            <div class="flex items-center gap-2">
+              <i data-lucide="check-circle" class="w-4 h-4 text-emerald-600 shrink-0"></i>
+              <span>Tổng cộng: <strong id="tab2-total-lessons">2 bài học</strong> · Thời lượng tích lũy: <strong id="tab2-total-minutes" class="text-base text-emerald-700">45 phút</strong></span>
+            </div>
+            <button type="button" onclick="switchModalTab('details')" class="font-semibold text-emerald-800 hover:underline">
+              Quay lại Tab 1 kiểm tra &rarr;
+            </button>
+          </div>
+        </div>
+
+      <!-- Modal Footer -->
+      <div class="flex items-center justify-between border-t border-slate-200 bg-[#F8FAFC] px-6 py-3.5">
+        <span class="text-xs text-slate-500">Lưu bản nháp trước, sau đó gửi duyệt để phát hành.</span>
+        <div class="flex items-center gap-2">
+          <button onclick="closeModal()" class="rounded-lg border border-slate-200 bg-white px-4 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50 transition-colors">Hủy</button>
+          <button onclick="closeModal()" class="rounded-lg bg-[#EA580C] px-4 py-2 text-xs font-semibold text-white hover:bg-[#C2410C] transition-colors">Lưu bản nháp</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    lucide.createIcons();
+
+    let currentMode = 'expert';
+    let isEmpty = false;
+
+    function setMode(mode) {
+      currentMode = mode;
+
+      // Update top bar buttons
+      document.querySelectorAll('.mode-btn').forEach(b => {
+        b.classList.remove('bg-orange-600', 'text-white');
+        b.classList.add('bg-slate-800', 'text-slate-300');
+      });
+      document.getElementById('btn-' + mode).classList.remove('bg-slate-800', 'text-slate-300');
+      document.getElementById('btn-' + mode).classList.add('bg-orange-600', 'text-white');
+
+      const isExpert = mode === 'expert';
+      const isApprovals = mode === 'ld-approvals';
+
+      // PageHeader
+      document.getElementById('header-actions').classList.toggle('hidden', !isExpert);
+      document.getElementById('ld-tabs').classList.toggle('hidden', isExpert);
+
+      if (isExpert) {
+        document.getElementById('page-title').textContent = 'Quản lý Module học tập';
+        document.getElementById('page-desc').textContent = 'Xây dựng các gói học tập trung theo kỹ năng và theo dõi rõ ràng trạng thái từng phiên bản.';
+      } else {
+        document.getElementById('page-title').textContent = 'Danh mục & Duyệt Module';
+        document.getElementById('page-desc').textContent = 'Tra cứu module đã phát hành trong tổ chức và xử lý các yêu cầu phê duyệt nội dung từ Expert.';
+      }
+
+      // L&D Tabs Active State
+      if (!isExpert) {
+        const tabMod = document.getElementById('tab-ld-modules');
+        const tabApp = document.getElementById('tab-ld-approvals');
+        if (isApprovals) {
+          tabApp.className = 'inline-flex items-center gap-2 rounded-md px-3.5 py-1.5 text-xs font-semibold transition-all bg-white text-slate-900 shadow-xs';
+          tabMod.className = 'inline-flex items-center gap-2 rounded-md px-3.5 py-1.5 text-xs font-medium transition-all text-slate-600 hover:text-slate-900';
+        } else {
+          tabMod.className = 'inline-flex items-center gap-2 rounded-md px-3.5 py-1.5 text-xs font-semibold transition-all bg-white text-slate-900 shadow-xs';
+          tabApp.className = 'inline-flex items-center gap-2 rounded-md px-3.5 py-1.5 text-xs font-medium transition-all text-slate-600 hover:text-slate-900';
+        }
+      }
+
+      // StatCards
+      if (isApprovals) {
+        document.getElementById('stat1-title').textContent = 'Yêu cầu chờ duyệt';
+        document.getElementById('stat1-val').textContent = '4';
+        document.getElementById('stat1-desc').textContent = 'Cần kiểm tra nội dung trước khi xử lý';
+        document.getElementById('stat2-title').textContent = 'Phát hành mới';
+        document.getElementById('stat2-val').textContent = '3';
+        document.getElementById('stat2-desc').textContent = 'Yêu cầu phát hành phiên bản mới';
+        document.getElementById('stat3-title').textContent = 'Yêu cầu lưu trữ';
+        document.getElementById('stat3-val').textContent = '1';
+        document.getElementById('stat3-desc').textContent = 'Module đề xuất ngừng sử dụng';
+      } else {
+        document.getElementById('stat1-title').textContent = 'Tổng số Module';
+        document.getElementById('stat1-val').textContent = '270';
+        document.getElementById('stat1-desc').textContent = 'Phù hợp với bộ lọc hiện tại';
+        document.getElementById('stat2-title').textContent = 'Đã phát hành';
+        document.getElementById('stat2-val').textContent = '246';
+        document.getElementById('stat2-desc').textContent = 'Sẵn sàng gán vào lộ trình học tập';
+        document.getElementById('stat3-title').textContent = 'Kỹ năng khả dụng';
+        document.getElementById('stat3-val').textContent = '79';
+        document.getElementById('stat3-desc').textContent = isExpert ? 'Kỹ năng có thể chọn khi soạn module' : 'Kỹ năng trong danh mục tổ chức';
+      }
+
+      // Card Header & Filters
+      document.getElementById('card-title').textContent = isApprovals ? 'Hàng đợi duyệt' : 'Danh sách Module';
+      document.getElementById('card-desc').textContent = isApprovals
+        ? 'Mở yêu cầu để kiểm tra chính xác phiên bản nội dung trước khi phê duyệt hoặc trả lại.'
+        : 'Tra cứu module đào tạo, kỹ năng liên kết và quản lý trạng thái phát hành.';
+      document.getElementById('filter-status-wrap').classList.toggle('hidden', isApprovals);
+      document.getElementById('filter-type-wrap').classList.toggle('hidden', isApprovals);
+
+      renderTableOrEmpty();
+    }
+
+    function toggleEmpty() {
+      isEmpty = !isEmpty;
+      const lbl = document.getElementById('empty-label');
+      lbl.textContent = isEmpty ? 'BẬT' : 'TẮT';
+      lbl.className = isEmpty ? 'font-semibold text-orange-400' : 'font-semibold text-slate-400';
+      renderTableOrEmpty();
+    }
+
+    function renderTableOrEmpty() {
+      const isApprovals = currentMode === 'ld-approvals';
+      document.getElementById('modules-table').classList.toggle('hidden', isEmpty || isApprovals);
+      document.getElementById('approvals-table').classList.toggle('hidden', isEmpty || !isApprovals);
+      document.getElementById('empty-state').classList.toggle('hidden', !isEmpty);
+      document.getElementById('table-footer').classList.toggle('hidden', isEmpty);
+    }
+
+    function openModal() {
+      const m = document.getElementById('module-modal');
+      m.classList.remove('hidden');
+      m.classList.add('flex');
+    }
+
+    function closeModal() {
+      const m = document.getElementById('module-modal');
+      m.classList.add('hidden');
+      m.classList.remove('flex');
+      document.getElementById('skill-dropdown').classList.add('hidden');
+    }
+
+    let activeDomain = 'ALL';
+
+    function openSkillDropdown() {
+      document.getElementById('skill-dropdown').classList.remove('hidden');
+      filterSkills();
+    }
+
+    function toggleSkillDropdown() {
+      const drop = document.getElementById('skill-dropdown');
+      if (drop.classList.contains('hidden')) {
+        openSkillDropdown();
+      } else {
+        drop.classList.add('hidden');
+      }
+    }
+
+    function onDomainFilterChange(domain) {
+      activeDomain = domain;
+      // Sync quick chips
+      updateQuickChips(domain);
+      filterSkills();
+    }
+
+    function setQuickChip(domain) {
+      activeDomain = domain;
+      // Sync select dropdown
+      document.getElementById('skill-domain-filter').value = domain;
+      updateQuickChips(domain);
+      filterSkills();
+    }
+
+    function updateQuickChips(domain) {
+      document.querySelectorAll('.quick-chip').forEach(btn => {
+        const isMatch = btn.getAttribute('data-chip') === domain;
+        if (isMatch) {
+          btn.className = 'quick-chip rounded-md px-2 py-0.5 text-[11px] font-semibold bg-orange-100 text-[#EA580C]';
+        } else {
+          btn.className = 'quick-chip rounded-md px-2 py-0.5 text-[11px] font-medium bg-slate-100 text-slate-600 hover:bg-slate-200';
+        }
+      });
+    }
+
+    function filterSkills() {
+      const query = (document.getElementById('skill-combobox-input').value || '').toLowerCase().trim();
+      const items = document.querySelectorAll('.skill-item');
+      let visibleCount = 0;
+
+      items.forEach(item => {
+        const itemDomain = item.getAttribute('data-domain');
+        const code = (item.getAttribute('data-code') || '').toLowerCase();
+        const name = (item.getAttribute('data-name') || '').toLowerCase();
+
+        const matchDomain = (activeDomain === 'ALL') || (itemDomain === activeDomain);
+        const matchQuery = !query || code.includes(query) || name.includes(query);
+
+        if (matchDomain && matchQuery) {
+          item.style.display = 'flex';
+          visibleCount++;
+        } else {
+          item.style.display = 'none';
+        }
+      });
+
+      document.getElementById('no-skill-found').classList.toggle('hidden', visibleCount > 0);
+      document.getElementById('skill-count-badge').textContent = `Hiển thị ${visibleCount} kỹ năng`;
+    }
+
+    function selectSkill(code, name, domain) {
+      document.getElementById('skill-combobox-input').value = `${name} (${code})`;
+      document.getElementById('skill-dropdown').classList.add('hidden');
+    }
+
+    // Modal Tab Navigation (Details vs Content)
+    function switchModalTab(tab) {
+      const isDetails = tab === 'details';
+      document.getElementById('modal-section-details').classList.toggle('hidden', !isDetails);
+      document.getElementById('modal-section-content').classList.toggle('hidden', isDetails);
+
+      const tab1 = document.getElementById('modal-tab-1');
+      const tab2 = document.getElementById('modal-tab-2');
+
+      if (isDetails) {
+        tab1.className = 'rounded-md bg-white px-3.5 py-1 text-xs font-semibold text-slate-900 shadow-2xs transition-all';
+        tab2.className = 'rounded-md px-3.5 py-1 text-xs font-medium text-slate-600 hover:text-slate-900 transition-all flex items-center gap-1.5';
+      } else {
+        tab2.className = 'rounded-md bg-white px-3.5 py-1 text-xs font-semibold text-slate-900 shadow-2xs transition-all flex items-center gap-1.5';
+        tab1.className = 'rounded-md px-3.5 py-1 text-xs font-medium text-slate-600 hover:text-slate-900 transition-all';
+      }
+    }
+
+    // Option 1: Auto-Synchronize Duration from Lessons to Module
+    function onLessonDurationChange() {
+      const inputs = document.querySelectorAll('.lesson-duration-input');
+      let totalMinutes = 0;
+      let lessonCount = 0;
+
+      inputs.forEach(input => {
+        const val = parseInt(input.value, 10);
+        if (!isNaN(val) && val > 0) {
+          totalMinutes += val;
+          lessonCount++;
+        }
+      });
+
+      // Update Tab 1 read-only input
+      document.getElementById('auto-module-duration').value = totalMinutes;
+
+      // Update Tab 1 helper text
+      document.getElementById('duration-helper-text').innerHTML =
+        `Tổng thời lượng tự động: <span class="font-bold text-[#EA580C]">${totalMinutes} phút</span> (tính từ ${lessonCount} bài học bên Tab 2). ` +
+        `<button type="button" onclick="switchModalTab('content')" class="ml-1 text-[#EA580C] hover:underline font-medium">Chỉnh sửa ở Tab 2 &rarr;</button>`;
+
+      // Update Tab 2 badge on the top tab button
+      document.getElementById('tab2-badge').textContent = `${lessonCount} bài · ${totalMinutes}p`;
+
+      // Update Tab 2 banner at the bottom
+      document.getElementById('tab2-total-lessons').textContent = `${lessonCount} bài học`;
+      document.getElementById('tab2-total-minutes').textContent = `${totalMinutes} phút`;
+    }
+
+    let sampleLessonCounter = 3;
+    function addSampleLesson() {
+      const list = document.getElementById('lessons-interactive-list');
+      const card = document.createElement('div');
+      card.className = 'lesson-card rounded-xl border border-slate-200 bg-white p-4 shadow-2xs space-y-3 transition-all hover:border-slate-300';
+      card.innerHTML = `
+        <div class="flex items-start justify-between gap-3">
+          <div class="flex items-center gap-2.5">
+            <div class="rounded-lg bg-orange-100 p-2 text-[#EA580C]">
+              <i data-lucide="file-text" class="w-4 h-4"></i>
+            </div>
+            <div>
+              <span class="text-[11px] font-semibold uppercase text-slate-400">Bài ${sampleLessonCounter} · Bài đọc</span>
+              <h4 class="text-xs font-semibold text-slate-900">Bài tập bổ trợ &amp; Kiểm tra nhanh</h4>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <div class="flex items-center gap-1 bg-[#F8FAFC] border border-slate-200 rounded-lg px-2 py-1">
+              <span class="text-[11px] text-slate-500 font-medium">Thời lượng:</span>
+              <input
+                type="number"
+                min="1"
+                value="10"
+                oninput="onLessonDurationChange()"
+                class="lesson-duration-input w-12 bg-transparent text-xs font-bold text-slate-900 text-center border-0 focus:outline-none"
+              />
+              <span class="text-[11px] text-slate-500">phút</span>
+            </div>
+            <button type="button" onclick="removeLesson(this)" class="p-1 text-slate-400 hover:text-red-500 transition-colors" title="Xóa bài học">
+              <i data-lucide="trash-2" class="w-4 h-4"></i>
+            </button>
+          </div>
+        </div>
+      `;
+      list.appendChild(card);
+      sampleLessonCounter++;
+      lucide.createIcons();
+      onLessonDurationChange();
+    }
+
+    function removeLesson(btn) {
+      const card = btn.closest('.lesson-card');
+      if (document.querySelectorAll('.lesson-card').length <= 1) {
+        alert('Module cần có ít nhất 1 bài học.');
+        return;
+      }
+      card.remove();
+      onLessonDurationChange();
+    }
+  </script>
+</body>
+</html>

@@ -60,7 +60,6 @@ test.describe('Capstone Standard: Department Governance & User Assignment Verifi
     expect(optionCount).toBeGreaterThanOrEqual(5)
 
     // Select the first job position and click Add Job Position
-    const selectedOptionText = await options.first().textContent()
     await options.first().click()
     await dialog.getByRole('button', { name: 'Add Job Position' }).click()
 

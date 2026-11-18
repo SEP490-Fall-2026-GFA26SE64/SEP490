@@ -9,7 +9,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -30,7 +30,7 @@ class TargetRoleGraphControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean
+    @MockitoBean
     private GetTargetRoleGraphUseCase getTargetRoleGraphUseCase;
 
     @Test
@@ -57,10 +57,10 @@ class TargetRoleGraphControllerTest {
                 .andExpect(jsonPath("$.track").value("Engineering"))
                 .andExpect(jsonPath("$.status").value("DRAFT"))
                 .andExpect(jsonPath("$.requiredSkills[0].skillId").value("s1"))
-                .andExpect(jsonPath("$.requiredSkills[0].targetMastery").value(0.70))
+                .andExpect(jsonPath("$.requiredSkills[0].targetMastery").doesNotExist())
                 .andExpect(jsonPath("$.prerequisites[0].sourceSkillId").value("s1"))
                 .andExpect(jsonPath("$.prerequisites[0].targetSkillId").value("s2"))
-                .andExpect(jsonPath("$.prerequisites[0].minMastery").value(0.60));
+                .andExpect(jsonPath("$.prerequisites[0].minMastery").doesNotExist());
     }
 
     @Test

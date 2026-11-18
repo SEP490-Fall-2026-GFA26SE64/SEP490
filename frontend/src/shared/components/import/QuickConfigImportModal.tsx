@@ -19,7 +19,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '../ui/Dialog'
-import { useToast } from '../../hooks/useToast'
+import { useToast } from "../../hooks/useToast";
 
 export interface ImportPreset {
   id: string
@@ -62,14 +62,16 @@ export function QuickConfigImportModal({
   const [importSource, setImportSource] = React.useState<'preset' | 'custom'>('custom')
 
   // Reset when dialog opens/closes
-  React.useEffect(() => {
+  const [wasOpen, setWasOpen] = React.useState(open)
+  if (wasOpen !== open) {
+    setWasOpen(open)
     if (!open) {
       setParsedRows([])
       setFileName('')
       setSheetName('')
       setIsDragging(false)
     }
-  }, [open])
+  }
 
   const processFile = (file: File) => {
     const validExtensions = ['.xlsx', '.xls', '.csv']

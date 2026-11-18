@@ -72,6 +72,9 @@ public final class Neo4jAdaptiveBaselineCatalogAdapter implements AdaptiveBaseli
                     throw new IllegalArgumentException("Ambiguous JobPosition identity");
                 }
                 Map<String, Object> jobPosition = sanitizeMap(rows.getFirst().get("jobPosition").asMap());
+                // Interest-profile edits must not invalidate existing Role/learning catalog snapshots.
+                jobPosition.keySet().removeAll(Set.of("interestRealistic","interestInvestigative","interestArtistic",
+                        "interestSocial","interestEnterprising","interestConventional"));
                 if (!published(jobPosition)) return Optional.empty();
                 String name = text(jobPosition, "name");
                 text(jobPosition, "id"); text(jobPosition, "version");

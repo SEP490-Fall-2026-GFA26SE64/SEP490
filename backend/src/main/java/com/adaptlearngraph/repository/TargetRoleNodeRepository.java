@@ -62,6 +62,7 @@ public interface TargetRoleNodeRepository extends Repository<TargetRoleNode, Str
     @Query("""
             MERGE (r:TargetRole {id: $id})
             ON CREATE SET
+                r:Role,
                 r.organizationId = $organizationId,
                 r.code = $graphCode,
                 r.baseCode = $rawCode,
@@ -81,6 +82,7 @@ public interface TargetRoleNodeRepository extends Repository<TargetRoleNode, Str
                 r.updatedAt = datetime($updatedAt),
                 r.rejectionReason = $rejectionReason
             ON MATCH SET
+                r:Role,
                 r.code = $graphCode,
                 r.baseCode = $rawCode,
                 r.name = $name,

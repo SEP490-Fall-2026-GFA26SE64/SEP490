@@ -23,7 +23,8 @@ import { fetchJobPositions } from '../../../shared/api/jobPositionApi'
 import { workspaceFetch } from '../../../shared/api/workspaceFetch'
 import { cn } from '../../../shared/lib/utils'
 import { getIdentity, getMembers, getPendingActivations, getSummary, type Identity } from '../../subscription/subscriptionApi'
-import { Failure, Loading, StateLabel, useCopy } from '../../subscription/SubscriptionFeedback'
+import { Failure, Loading, StateLabel } from '../../subscription/SubscriptionFeedback'
+import { useCopy } from '../../subscription/SubscriptionFeedback.helpers'
 import {
   DASHBOARD_ROLES,
   actionItems,

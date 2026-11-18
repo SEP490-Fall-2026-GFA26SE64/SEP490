@@ -18,7 +18,7 @@ function setup(role = 'LD_MANAGER', targets = [{id:'owner-a',name:'Expert A'},{i
   let doc = document()
   request.mockImplementation(async (path: string, method = 'GET', body?: {expertId:string; expectedVersion:number}) => {
     if (path === '/session') return {id:role === 'EXPERT'?'owner-a':'manager',organizationId:'org',roles:[role]}
-    if (path.startsWith('/module-list?')) return {items:[{module:doc.revisions[0].payload,authoring:doc}],total:1,page:1,pageSize:10}
+    if (path.startsWith('/module-list?') || path.startsWith('/modules?')) return {items:[{module:doc.revisions[0].payload,authoring:doc}],total:1,page:1,pageSize:10}
     if (path === '/catalog/Expert') return targets
     if (path === '/catalog/Staff') return [{id:'creator',name:'Original importer'},...targets]
     if (path === '/modules/module/responsible-expert' && method === 'PUT') {
@@ -40,8 +40,9 @@ it('shows current owner and submits only selected target with the current versio
   const dialog = screen.getByRole('dialog',{name:'Change responsible person'})
   expect((within(dialog).getByRole('button',{name:'Confirm transfer'}) as HTMLButtonElement).disabled).toBe(true)
   const select = within(dialog).getByLabelText('New responsible person')
-  expect(within(select).queryByRole('option',{name:'Expert A'})).toBeNull()
-  fireEvent.change(select,{target:{value:'owner-b'}})
+  fireEvent.click(select)
+  expect(within(dialog).queryByRole('option',{name:'Expert A'})).toBeNull()
+  fireEvent.click(within(dialog).getByRole('option',{name:'Expert B'}))
   fireEvent.click(within(dialog).getByRole('button',{name:'Confirm transfer'}))
   await waitFor(() => expect(request).toHaveBeenCalledWith('/modules/module/responsible-expert','PUT',{expectedVersion:7,expertId:'owner-b'}))
   await waitFor(() => expect(screen.queryByRole('dialog',{name:'Change responsible person'})).toBeNull())
@@ -58,7 +59,8 @@ it('retains dialog and reports stale version without claiming a successful trans
   setup('LD_MANAGER',undefined,true)
   fireEvent.click(await screen.findByRole('button',{name:'Change responsible person'}))
   const dialog=screen.getByRole('dialog',{name:'Change responsible person'})
-  fireEvent.change(within(dialog).getByLabelText('New responsible person'),{target:{value:'owner-b'}})
+  fireEvent.click(within(dialog).getByLabelText('New responsible person'))
+  fireEvent.click(within(dialog).getByRole('option',{name:'Expert B'}))
   fireEvent.click(within(dialog).getByRole('button',{name:'Confirm transfer'}))
   expect(await within(dialog).findByRole('alert')).toHaveProperty('textContent','Module changed. Reload and review the latest revision')
   expect(within(screen.getByTestId('module-row')).getByText('Expert A')).toBeTruthy()

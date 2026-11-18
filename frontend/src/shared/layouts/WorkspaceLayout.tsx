@@ -35,8 +35,8 @@ import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { GlobalSearchbar } from '../components/ui/GlobalSearchbar'
 import { LanguageSwitcher } from '../components/ui/LanguageSwitcher'
 import { NotificationDropdown } from '../components/ui/NotificationDropdown'
-import { useToast } from '../hooks/useToast'
-import { useTranslation } from '../i18n/LanguageContext'
+import { useToast } from "../hooks/useToast";
+import { useTranslation } from "../i18n/LanguageContext";
 import { Badge } from '../components/ui/Badge'
 import {
   getActiveCompany,
@@ -207,7 +207,7 @@ export function WorkspaceLayout({ children, identity: suppliedIdentity, onSignOu
     actorTabs = [
       {
         label: t('nav.targetRoles'),
-        href: '/expert/target-roles',
+        href: '/expert/roles',
         icon: <Briefcase size={15} />,
       },
       {
@@ -265,7 +265,7 @@ export function WorkspaceLayout({ children, identity: suppliedIdentity, onSignOu
       },
       {
         label: t('nav.targetRoles'),
-        href: '/ld-manager/target-roles',
+        href: '/ld-manager/roles',
         icon: <Briefcase size={15} />,
       },
       {
@@ -435,8 +435,8 @@ export function WorkspaceLayout({ children, identity: suppliedIdentity, onSignOu
     if (itemHref === '/employee/assessment' || itemHref === '/learner/assessment') {
       return path === '/employee/assessment' || path === '/learner/assessment' || path === '/assessment'
     }
-    if (itemHref === '/expert/target-roles' || itemHref === '/expert/assigned-roles') {
-      return path === '/expert/target-roles' || path === '/expert/assigned-roles'
+    if (itemHref === '/expert/roles' || itemHref === '/expert/target-roles' || itemHref === '/expert/assigned-roles') {
+      return path === '/expert/roles' || path === '/expert/target-roles' || path === '/expert/assigned-roles'
     }
     if (itemHref === '/expert/pathway-review' || itemHref === '/expert/guidance-review') {
       return path === '/expert/pathway-review' || path === '/expert/guidance-review'
@@ -459,14 +459,19 @@ export function WorkspaceLayout({ children, identity: suppliedIdentity, onSignOu
         path === '/manager'
       )
     }
-    if (itemHref === '/ld-manager/job-positions' || itemHref === '/ld-manager/job-positions') {
-      return path === '/ld-manager/job-positions' || path === '/ld-manager/job-positions' || path === '/ld-manager/disciplines'
+    if (itemHref === '/ld-manager/job-positions') {
+      return path === '/ld-manager/job-positions' || path === '/ld-manager/disciplines'
     }
     if (itemHref === '/ld-manager/approvals') {
       return ['/ld-manager/approvals', '/ld-manager/modules', '/ld-manager/learning-content'].includes(path)
     }
-    if (itemHref === '/ld-manager/target-roles') {
-      return path === '/ld-manager/target-roles' || path === '/manager/target-roles'
+    if (itemHref === '/ld-manager/roles' || itemHref === '/ld-manager/target-roles') {
+      return (
+        path === '/ld-manager/roles' ||
+        path === '/ld-manager/target-roles' ||
+        path === '/manager/target-roles' ||
+        path === '/manager/roles'
+      )
     }
     if (itemHref === '/ld-manager/baseline-config') {
       return path === '/ld-manager/baseline-config' || path === '/manager/baseline-config' || path.startsWith('/ld-manager/baseline-assessments')
@@ -524,6 +529,7 @@ export function WorkspaceLayout({ children, identity: suppliedIdentity, onSignOu
   React.useEffect(() => {
     const saved = localStorage.getItem(`sidebar_collapsed_${activeActor}`)
     if (trusted && window.matchMedia('(max-width: 768px)').matches) {
+      // oxlint-disable-next-line react/set-state-in-effect -- Restore the sidebar preference from localStorage and the current media query.
       setIsSidebarCollapsed(true)
     } else if (saved !== null) {
       setIsSidebarCollapsed(saved === 'true')

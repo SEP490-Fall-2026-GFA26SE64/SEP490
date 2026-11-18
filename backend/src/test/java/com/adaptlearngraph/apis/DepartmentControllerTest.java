@@ -9,7 +9,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
@@ -27,14 +27,14 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@org.springframework.context.annotation.Import({ModelMapperConfiguration.class, DepartmentMappings.class, DepartmentApplicationService.class})
+@org.springframework.context.annotation.Import({ModelMapperConfiguration.class, DepartmentMappings.class, DepartmentControllerTest.Services.class})
 @WebMvcTest(controllers = DepartmentController.class)
 class DepartmentControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean
+    @MockitoBean
     private GetDepartmentsUseCase getDepartmentsUseCase;
 
     @Test
@@ -104,6 +104,14 @@ class DepartmentControllerTest {
                                 }
                                 """))
                 .andExpect(status().isOk());
+    }
+
+    @org.springframework.boot.test.context.TestConfiguration(proxyBeanMethods = false)
+    static class Services {
+        @org.springframework.context.annotation.Bean
+        DepartmentApplicationService service(GetDepartmentsUseCase port, org.modelmapper.ModelMapper mapper) {
+            return new DepartmentApplicationService(port, mapper);
+        }
     }
 }
 

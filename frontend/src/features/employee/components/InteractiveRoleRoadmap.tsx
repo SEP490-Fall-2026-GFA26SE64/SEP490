@@ -1,43 +1,44 @@
-import { AssignedPathwayPresentation } from './AssignedPathwayPresentation'
-import type { AssignedPathwayViewProps } from '../modules/AssignedLearningPathways'
-import * as React from 'react'
-import type { PathwayView } from '../../../shared/api/initialPathway'
-import { InitialPathwayDetails, type PathwayDetailSelection } from './InitialPathwayModules'
-import { baselineTargetMet, pathwaySkill } from '../../../shared/api/initialPathwayMessages'
-import { useTranslation } from '../../../shared/i18n/LanguageContext'
-import { Heading } from '../../../shared/components/typography/Heading'
 import {
-  ArrowRight,
-  Award,
-  BookOpen,
-  Check,
-  CheckCircle2,
-  CircleDashed,
-  Clock,
-  Flame,
-  GitFork,
-  Layers,
-  Lock,
-  Search,
-  Sparkles,
-  Target,
-  Zap,
+ArrowRight,
+Award,
+BookOpen,
+Check,
+CheckCircle2,
+CircleDashed,
+Clock,
+Flame,
+GitFork,
+Layers,
+Lock,
+Search,
+Sparkles,
+Target,
+Zap,
 } from 'lucide-react'
+import * as React from 'react'
 import { Link } from 'react-router-dom'
-import { Badge, badgeVariants } from '../../../shared/components/ui/Badge'
+import type { PathwayView } from '../../../shared/api/initialPathway'
+import { baselineTargetMet,pathwaySkill } from '../../../shared/api/initialPathwayMessages'
+import { Heading } from '../../../shared/components/typography/Heading'
+import { Badge } from "../../../shared/components/ui/Badge"
+import { badgeVariants } from "../../../shared/components/ui/Badge"
 import { Button } from '../../../shared/components/ui/Button'
 import { Dialog } from '../../../shared/components/ui/Dialog'
 import { Progress } from '../../../shared/components/ui/Progress'
+import { useEmployeeLearningState } from '../../../shared/hooks/useEmployeeLearningState'
+import { useTranslation } from "../../../shared/i18n/LanguageContext"
 import { cn } from '../../../shared/lib/utils'
 import { getActiveCompany } from '../../../shared/stores/companyStore'
-import { useEmployeeLearningState } from '../../../shared/hooks/useEmployeeLearningState'
 import { normalizeRoleKey } from '../data/employeeOverviewData'
 import {
-  type LearningModuleNode,
-  type MicroSkillNode,
-  TARGET_ROLE_ROADMAPS,
-  type TargetRoleRoadmap,
+type LearningModuleNode,
+type MicroSkillNode,
+TARGET_ROLE_ROADMAPS,
+type TargetRoleRoadmap,
 } from '../data/roadmapData'
+import type { AssignedPathwayViewProps } from '../modules/AssignedLearningPathways'
+import { AssignedPathwayPresentation } from './AssignedPathwayPresentation'
+import { InitialPathwayDetails,type PathwayDetailSelection } from './InitialPathwayModules'
 import './InteractiveRoleRoadmap.css'
 
 export interface InteractiveRoleRoadmapProps {
@@ -202,7 +203,7 @@ function LegacyInteractiveRoleRoadmap({
       achievedSkills: modules.reduce((acc, m) => acc + m.microSkills.filter((s) => s.status === 'achieved').length, 0),
       modules,
     }
-  }, [activeCompany, selectedRoleKey, isSkillMode, profile.targetSkill, profile.targetSkillLevel, profile.targetRole])
+  }, [activeCompany, selectedRoleKey, isSkillMode, profile.targetSkill, profile.targetSkillLevel])
 
   // Derive counts from active company roadmap
   const totalMicroSkills = roadmapData.modules.reduce((acc, m) => acc + m.microSkills.length, 0)

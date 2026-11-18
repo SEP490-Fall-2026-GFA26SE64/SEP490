@@ -57,6 +57,7 @@ public final class WorkspaceEntitlementFilter extends OncePerRequestFilter {
                         || path.contains("/competencies")
                         || path.contains("/prerequisites")
                         || path.contains("/target-roles")
+                        || path.contains("/roles")
                         || path.contains("/modules")
                         || path.contains("/job-positions")
                         || path.contains("/departments");
@@ -64,11 +65,12 @@ public final class WorkspaceEntitlementFilter extends OncePerRequestFilter {
                 if(!manager && !expert && !admin && !employeeCatalogRead) throw forbidden();
                 role=knowledgeGraph?"ORGANIZATION_ADMINISTRATOR":manager?"LD_MANAGER":expert?"DOMAIN_EXPERT":admin?"ORGANIZATION_ADMINISTRATOR":"EMPLOYEE";
                 boolean write=!request.getMethod().equals("GET") && !request.getMethod().equals("HEAD");
-                if(write && path.contains("/target-roles") && request.getMethod().equals("POST") && !manager && !expert) throw forbidden();
+                if(write && (path.contains("/target-roles") || path.contains("/roles")) && request.getMethod().equals("POST") && !manager && !expert) throw forbidden();
                 if(write && (path.contains("/micro-skills") || path.contains("/prerequisites")) && !expert) throw forbidden();
                 if(write && (path.contains("/micro-skills") || path.contains("/prerequisites"))) role="DOMAIN_EXPERT";
-                if(expert && !manager && path.contains("/target-roles/")) {
-                    String id=path.substring(path.indexOf("/target-roles/")+"/target-roles/".length()).split("/",2)[0];
+                if(expert && !manager && (path.contains("/target-roles/") || path.contains("/roles/"))) {
+                    String prefix = path.contains("/roles/") ? "/roles/" : "/target-roles/";
+                    String id=path.substring(path.indexOf(prefix)+prefix.length()).split("/",2)[0];
                     var targetOpt=targetRoles.findById(organization.toString(),
                             com.adaptlearngraph.entities.domain.TargetRoleId.fromString(id));
                     if(targetOpt.isPresent()) {

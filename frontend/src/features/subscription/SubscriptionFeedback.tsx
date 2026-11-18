@@ -1,13 +1,8 @@
-import { Link } from 'react-router-dom'
-import { Button } from '../../shared/components/ui/Button'
-import { PageLoader } from '../../shared/components/ui/PageLoader'
-import { useTranslation } from '../../shared/i18n/LanguageContext'
-import { SubscriptionApiError } from './subscriptionApi'
-
-export function useCopy() {
-  const { language } = useTranslation()
-  return (en: string, vi: string) => language === 'vi' ? vi : en
-}
+import { Link } from 'react-router-dom';
+import { Button } from '../../shared/components/ui/Button';
+import { PageLoader } from '../../shared/components/ui/PageLoader';
+import { SubscriptionApiError } from './subscriptionApi';
+import { useCopy } from './SubscriptionFeedback.helpers';
 export function Failure({ error, retry }: { error: unknown; retry?: () => void }) {
   const c = useCopy()
   const raw = error instanceof Error ? error.message : c('The request failed.', 'Yêu cầu thất bại.')

@@ -70,7 +70,7 @@ class SingleSkillImportTest {
             assertEquals(4,book.getSheet("Lessons").getLastRowNum());
             assertEquals(4,book.getSheet("Modules").getDataValidations().size());
             assertEquals(3,book.getSheet("Lessons").getDataValidations().size());
-            for(int i=1;i<=4;i++){String path=book.getSheet("Lessons").getRow(i).getCell(5).getStringCellValue();assertTrue(entries.get(path).length>100,path);}
+            for(int i=1;i<=4;i++){String path=book.getSheet("Lessons").getRow(i).getCell(4).getStringCellValue();assertTrue(entries.get(path).length>100,path);}
         }
         var result=preview(zip(entries));assertTrue(result.errors().isEmpty(),result.errors().toString());
         assertEquals(2,result.modules().size());assertEquals(4,result.modules().stream().mapToInt(r->r.lessons().size()).sum());
@@ -87,7 +87,7 @@ class SingleSkillImportTest {
         assertEquals(List.of("M1","M2"),p.modules().stream().map(LearningImportUseCase.Row::moduleRef).toList());
         for(var row:p.modules()){assertDoesNotThrow(()->UUID.fromString(row.moduleId()));assertNull(row.expectedVersion());assertEquals("MS-QA08",row.module().teachings().getFirst().skillId());}
         assertEquals("FOUNDATION",p.modules().getFirst().module().knowledgeLevel());assertEquals("INTERMEDIATE",p.modules().get(1).module().knowledgeLevel());
-        assertEquals("L3",p.modules().get(1).lessons().getFirst().id());
+        assertEquals("M2_L1",p.modules().get(1).lessons().getFirst().id());
         assertEquals(p.modules().getFirst().moduleId(),service.validate(p.id()).modules().getFirst().moduleId());
         assertNotEquals(p.modules().getFirst().moduleId(),preview(bytes).modules().getFirst().moduleId());
         verify(modules,never()).save(any());verify(modules,never()).saveContent(anyString(),any());
@@ -105,22 +105,62 @@ class SingleSkillImportTest {
         assertTrue(assertThrows(ModuleAuthoringService.Failure.class,()->preview(old)).getMessage().contains("Template changed"));
     }
     @Test void duplicateUnknownAndInvalidReferencesReportRowsAndBlockEntireBatch()throws Exception {
-        for(String mode:List.of("module","lesson","order","unknown","blank","fraction")) {
+        for(String mode:List.of("module","order","unknown","blank","fraction")) {
             byte[] bytes=change(book->{var m=book.getSheet("Modules");var l=book.getSheet("Lessons");switch(mode){
                 case "module"->m.getRow(2).getCell(0).setCellValue("M1");
-                case "lesson"->l.getRow(2).getCell(1).setCellValue("L1");
-                case "order"->l.getRow(2).getCell(2).setCellValue(1);
+                case "order"->l.getRow(2).getCell(1).setCellValue(1);
                 case "unknown"->l.getRow(1).getCell(0).setCellValue("MISSING");
                 case "blank"->m.getRow(1).getCell(0).setCellValue("");
-                case "fraction"->l.getRow(1).getCell(2).setCellValue(1.5);
+                case "fraction"->l.getRow(1).getCell(1).setCellValue(1.5);
             }});
             var p=preview(bytes);assertFalse(p.errors().isEmpty(),mode);assertThrows(ModuleAuthoringService.Failure.class,()->service.commit(p.id(),false));
         }
         verifyNoInteractions(authoring);
     }
+    @Test void onlineVideoUrlsAreSupportedForLongVideos()throws Exception {
+        byte[] bytes=change(book->{
+            var l=book.getSheet("Lessons");
+            l.getRow(2).getCell(4).setCellValue("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
+        });
+        var p=preview(bytes);
+        assertTrue(p.errors().isEmpty(),p.errors().toString());
+        var videoLesson=p.modules().getFirst().lessons().get(1);
+        assertEquals("VIDEO",videoLesson.type());
+        assertEquals("YOUTUBE",videoLesson.videoSource());
+        assertEquals("https://www.youtube.com/watch?v=dQw4w9WgXcQ",videoLesson.videoUrl());
+    }
+    @Test void legacySixColumnLessonsSheetIsAccepted()throws Exception {
+        byte[] bytes=change(book->{
+            book.removeSheetAt(book.getSheetIndex("Lessons"));
+            var l=book.createSheet("Lessons");
+            var heading=book.getSheet("Modules").getRow(0).getCell(0).getCellStyle();
+            var row0=l.createRow(0);
+            List<String> legacyHeaders=List.of("Mã liên kết module","Mã liên kết bài học","Thứ tự","Tên bài học","Loại bài học","Tệp nội dung");
+            for(int i=0;i<legacyHeaders.size();i++){
+                var c=row0.createCell(i);c.setCellValue(legacyHeaders.get(i));c.setCellStyle(heading);
+            }
+            var row1=l.createRow(1);
+            row1.createCell(0).setCellValue("M1");
+            row1.createCell(1).setCellValue("LEGACY_L1");
+            row1.createCell(2).setCellValue(1);
+            row1.createCell(3).setCellValue("Legacy lesson");
+            row1.createCell(4).setCellValue("Bài đọc");
+            row1.createCell(5).setCellValue("lesson/qa08-khai-niem.docx");
+            var row2=l.createRow(2);
+            row2.createCell(0).setCellValue("M2");
+            row2.createCell(1).setCellValue("LEGACY_L2");
+            row2.createCell(2).setCellValue(1);
+            row2.createCell(3).setCellValue("Legacy lesson 2");
+            row2.createCell(4).setCellValue("Bài đọc");
+            row2.createCell(5).setCellValue("lesson/qa08-thuc-hanh.docx");
+        });
+        var p=preview(bytes);
+        assertTrue(p.errors().isEmpty(),p.errors().toString());
+        assertEquals("LEGACY_L1",p.modules().getFirst().lessons().getFirst().id());
+    }
     @Test void missingWrongTypeAndCorruptContentReportLessonRow()throws Exception {
         for(String path:List.of("lesson/missing.docx","video/qa08-minh-hoa.mp4","lesson/broken.docx")) {
-            var entries=unzip(change(book->book.getSheet("Lessons").getRow(1).getCell(5).setCellValue(path)));
+            var entries=unzip(change(book->book.getSheet("Lessons").getRow(1).getCell(4).setCellValue(path)));
             if(path.endsWith("broken.docx"))entries.put(path,"Not Word".getBytes(StandardCharsets.UTF_8));
             var p=preview(zip(entries));assertTrue(p.errors().stream().anyMatch(e->e.row()==2 && e.reason().startsWith("Lessons:")),p.errors().toString());
             assertThrows(ModuleAuthoringService.Failure.class,()->service.commit(p.id(),false));

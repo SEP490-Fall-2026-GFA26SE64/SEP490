@@ -18,6 +18,7 @@
     <jackson-bom.version>2.21.8</jackson-bom.version>
     <modelmapper.version>3.2.4</modelmapper.version>
     <modelmapper-module-record.version>1.0.0</modelmapper-module-record.version>
+    <argLine></argLine>
   </properties>
   <dependencies>
     <dependency><groupId>io.minio</groupId><artifactId>minio</artifactId><version>8.5.17</version></dependency>
@@ -122,6 +123,35 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
+  <profiles>
+    <profile>
+      <id>riasec</id>
+      <build><plugins>
+        <plugin><groupId>org.apache.maven.plugins</groupId><artifactId>maven-compiler-plugin</artifactId>
+          <configuration><testIncludes><testInclude>**/Riasec*Test.java</testInclude></testIncludes></configuration>
+        </plugin>
+        <plugin><groupId>org.apache.maven.plugins</groupId><artifactId>maven-surefire-plugin</artifactId>
+          <configuration><includes><include>**/Riasec*Test.java</include></includes><failIfNoTests>true</failIfNoTests></configuration>
+        </plugin>
+      </plugins></build>
+    </profile>
+    <profile>
+      <id>wf05</id>
+      <build><plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId><artifactId>maven-compiler-plugin</artifactId>
+          <configuration><testIncludes>
+            <testInclude>**/WF05*.java</testInclude>
+            <testInclude>**/support/JpaTestContext.java</testInclude>
+          </testIncludes></configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId><artifactId>maven-surefire-plugin</artifactId>
+          <configuration><includes><include>**/WF05*Test.java</include></includes><failIfNoTests>true</failIfNoTests></configuration>
+        </plugin>
+      </plugins></build>
+    </profile>
+  </profiles>
   <build>
     <finalName>adapt-learn-graph</finalName>
     <resources>
@@ -129,6 +159,27 @@
       <resource><directory>../documents/dataset/import</directory><targetPath>catalog-import</targetPath><includes><include>content/modules/*.md</include><include>ontology_seed-prerequisite-knowledge.json</include></includes></resource>
     </resources>
     <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <showDeprecation>true</showDeprecation>
+          <failOnWarning>true</failOnWarning>
+          <compilerArgs><arg>-Xlint:unchecked</arg></compilerArgs>
+        </configuration>
+      </plugin>
+      <!-- Load Mockito at JVM startup on Java 21 instead of dynamic self-attachment.
+           https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3 -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <executions><execution><id>test-agent-paths</id><goals><goal>properties</goal></goals></execution></executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration><argLine>@{argLine} -javaagent:"${org.mockito:mockito-core:jar}" -Xshare:off</argLine></configuration>
+      </plugin>
       <plugin>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>

@@ -19,8 +19,8 @@ import { EmptyState } from '../../../shared/components/ui/EmptyState'
 import { Input } from '../../../shared/components/ui/Input'
 import { PageHeader } from '../../../shared/components/ui/PageHeader'
 import { Tabs, TabsList, TabsTrigger } from '../../../shared/components/ui/Tabs'
-import { useToast } from '../../../shared/hooks/useToast'
-import { useTranslation } from '../../../shared/i18n/LanguageContext'
+import { useToast } from "../../../shared/hooks/useToast";
+import { useTranslation } from "../../../shared/i18n/LanguageContext";
 import { WorkspaceLayout } from '../../../shared/layouts/WorkspaceLayout'
 import { getBlueprintVersion, type BaselineBlueprint } from '../baseline-blueprints/baselineBlueprintApi'
 import { roleQuestionTotal } from '../baseline-blueprints/baselineBlueprintForm'
@@ -54,6 +54,7 @@ export function BlueprintVersionsView() {
 
   React.useEffect(() => {
     const controller = new AbortController()
+    // oxlint-disable-next-line react/set-state-in-effect -- Synchronize the pending state of the external data request when its scope changes.
     setLoading(true)
     setError(null)
     const blueprintVersion = Number(version)

@@ -1,61 +1,61 @@
+import {
+AlertTriangle,
+Briefcase,
+Building2,
+CheckCircle2,
+Edit3,
+Eye,
+Plus,
+Search,
+Trash2,
+} from 'lucide-react'
 import * as React from 'react'
 import {
-  AlertTriangle,
-  Building2,
-  Briefcase,
-  CheckCircle2,
-  Edit3,
-  Eye,
-  Plus,
-  Search,
-  Trash2,
-} from 'lucide-react'
-import { Combobox, type ComboboxOption } from '../../../shared/components/ui/Combobox'
+createDepartmentApi,
+deleteDepartmentApi,
+fetchDepartments,
+unlinkJobPositionFromDepartment,
+updateDepartmentApi,
+type DepartmentDto,
+} from '../../../shared/api/departmentApi'
+import {
+fetchJobPositions,
+type JobPositionDto,
+} from '../../../shared/api/jobPositionApi'
+import { WorkspaceSessionContext } from '../../../shared/auth/workspaceSession'
 import { Badge } from '../../../shared/components/ui/Badge'
 import { Button } from '../../../shared/components/ui/Button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../../shared/components/ui/Card'
+import { Card,CardContent,CardDescription,CardHeader,CardTitle } from '../../../shared/components/ui/Card'
+import { Combobox,type ComboboxOption } from '../../../shared/components/ui/Combobox'
 import {
-  Dialog,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
+Dialog,
+DialogDescription,
+DialogFooter,
+DialogHeader,
+DialogTitle,
 } from '../../../shared/components/ui/Dialog'
 import { Input } from '../../../shared/components/ui/Input'
 import { PageHeader } from '../../../shared/components/ui/PageHeader'
 import { Pagination } from '../../../shared/components/ui/Pagination'
 import { StatCard } from '../../../shared/components/ui/StatCard'
-import { useToast } from '../../../shared/hooks/useToast'
+import { useToast } from "../../../shared/hooks/useToast"
 import { WorkspaceLayout } from '../../../shared/layouts/WorkspaceLayout'
-import { WorkspaceSessionContext } from '../../../shared/auth/workspaceSession'
 import {
-  getActiveCompany,
-  resolveWorkspaceOrgId,
+getActiveCompany,
+resolveWorkspaceOrgId,
 } from '../../../shared/stores/companyStore'
 import {
-  createDepartment,
-  deleteDepartment,
-  generateDepartmentId,
-  loadDepartments,
-  saveDepartments,
-  updateDepartment,
-  type DepartmentRecord,
+createDepartment,
+deleteDepartment,
+generateDepartmentId,
+loadDepartments,
+saveDepartments,
+updateDepartment,
+type DepartmentRecord,
 } from '../../../shared/stores/departmentStore'
 import {
-  fetchDepartments,
-  createDepartmentApi,
-  updateDepartmentApi,
-  deleteDepartmentApi,
-  unlinkJobPositionFromDepartment,
-  type DepartmentDto,
-} from '../../../shared/api/departmentApi'
-import {
-  fetchJobPositions,
-  type JobPositionDto,
-} from '../../../shared/api/jobPositionApi'
-import {
-  getAvailableJobPositions,
-  type JobPosition,
+getAvailableJobPositions,
+type JobPosition,
 } from '../../manager/data/ldManagerMockData'
 
 function generateDepartmentCode(existingDepts: DepartmentRecord[]): string {
@@ -253,6 +253,7 @@ export function DepartmentsManagementPage() {
   }, [orgId])
 
   React.useEffect(() => {
+    // oxlint-disable-next-line react/set-state-in-effect -- Synchronize the pending state of the external data request when its scope changes.
     fetchLiveDepartments()
     loadJobPositions()
   }, [fetchLiveDepartments, loadJobPositions])

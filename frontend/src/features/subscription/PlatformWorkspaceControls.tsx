@@ -13,9 +13,10 @@ import { StatCard } from '../../shared/components/ui/StatCard'
 import { Heading } from '../../shared/components/typography/Heading'
 import { Text } from '../../shared/components/typography/Text'
 import { WorkspaceLayout } from '../../shared/layouts/WorkspaceLayout'
-import { useTranslation } from '../../shared/i18n/LanguageContext'
+import { useTranslation } from "../../shared/i18n/LanguageContext";
 import { getIdentity, getWorkspaces, request, type Workspace } from './subscriptionApi'
-import { Failure, Loading, StateLabel, useCopy } from './SubscriptionFeedback'
+import { Failure, Loading, StateLabel } from "./SubscriptionFeedback";
+import { useCopy } from "./SubscriptionFeedback.helpers";
 
 type Administrator = Workspace['administrators'][number]
 

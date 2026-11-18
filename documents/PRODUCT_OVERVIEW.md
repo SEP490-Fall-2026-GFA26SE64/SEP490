@@ -1,5 +1,21 @@
 # Adapt-Learn-Graph: Product Overview
 
+## Baseline/pathway rule-flow update — 2026-11-18
+
+Current local source `2c2468b5` includes scoped L&D Role–Level baseline and Role-derived Expert Skill–knowledge configuration, mandatory-question quotas, full frozen papers, exact official evidence, request-bound targets, Expert reduce/reject/approve, UTC first-approval timing and durable prerequisite recalculation/provision refresh. Matching is org+Skill+knowledge+Skill version; Outcome Codes/price/numeric mastery optimizer are not active filters. Retry allowance/wait is module-context specific. Outcome processing recalculates again after genuine evidence within the learner transaction; histories, exclusions and valid approval basis are retained.
+
+[Authoritative ordered flow/API/worker/schema mapping](technical/Organization%20Rule%20Assessment%20and%20Pathway.md#current-flow-2026-11-18) · [Assessment schema](diagrams/postgresql-assessment.svg) · [Pathway schema](diagrams/postgresql-pathway.svg) · [Flow image](diagrams/baseline-pathway-flow.svg). These are current source-defined selected views through workspace V64, not a live DB capture. Older confirmation-pending/OC/V62 snapshots below keep historical scope. RIASEC documentation remains separate. This update runs no runtime/tests, migrates no data and makes no new release claim.
+
+## RIASEC personal exploration — current source, 2026-11-18
+
+Implemented local opt-in source `2c2468b5`: Employee completes 60 local EN/VI activities, responses 0–4; server retains six raw integer sums 0–40 independently of baseline/Skill Assessment/Role/mastery. One server draft per account/org supports autosave and explicit takeover. Submitted results support current/history, confirmed inactive/recover/permanent-delete actions and 7-day inactive retention.
+
+At `/employee/overview?tab=riasec`, scores display before internal Ollama selects/ranks up to 3 ACTIVE same-org Job Positions with complete integer 0–40 profiles, allowing ties/zero suggestions. Saved English explanations use original-score comparisons. There is no cosine/Department-only matching, chat, automatic Role choice or Expert guidance-review gate. Explore more filters existing Role browsing; Employee explicitly chooses a published Role/member Level under existing rules.
+
+PostgreSQL workspace V72 owns drafts/results/durable AI jobs/snapshots; Neo4j owns six optional all-or-none Job Position interest properties. [Assessment](features/Assessment%20workflows/README.md#riasec-personal-assessment--current-implementation-2026-11-18), [AI guidance](features/Role%20guidance/README.md#riasec-job-position-exploration), [catalog fields](features/Departments%20and%20occupations/README.md#riasec-job-position-profiles), [architecture](ARCHITECTURE.md#riasec-personal-exploration), [storage diagram](diagrams/riasec-storage.svg), [runtime diagram](diagrams/riasec-flow.svg) define current boundaries.
+
+The rich manifest is frontend-bundled, not a backend manifest archive. Demo position profiles are not official normalized O*NET ratings. Earlier verification remains version-scoped; latest history/permanent-delete UI has build/static evidence without fresh browser/executable checks. This documentation task runs no application/tests/migration/seed. Adaptation, general AI quality, member performance and production readiness remain unvalidated.
+
 ## Assessment/pathway contract — source 2026-11-07
 
 The Employee selects Role/member Level with explicit skill–knowledge requirements. Baseline records diagnostics only for assessed skills; it does not infer prerequisite profile entries or official achievement. Skill assessment shares the engine with its own separate config/deadline and can discover missing prerequisites. Both persist attempts/resume/history and automatically finalize at deadline.

@@ -33,11 +33,12 @@ public class LearningContentController {
     }
 
     @GetMapping("/imports/template")
-    public ResponseEntity<byte[]> template() {
+    public ResponseEntity<byte[]> template(
+            @RequestParam(value = "lang", required = false) String lang) {
         return new FileDownloadResponse(
-                        "module-template.zip",
+                        "en".equalsIgnoreCase(lang) ? "module-template-en.zip" : "module-template.zip",
                         "application/zip",
-                        content.importTemplate())
+                        content.importTemplate(lang))
                 .toResponseEntity();
     }
 

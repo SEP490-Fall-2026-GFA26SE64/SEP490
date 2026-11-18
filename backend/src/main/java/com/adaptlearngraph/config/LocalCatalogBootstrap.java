@@ -17,11 +17,17 @@ public final class LocalCatalogBootstrap {
     public static final String MODULE_KNOWLEDGE_HASH="d6c520311b778b09447a23c03834bfb557617f7ecd566d7708d697ca923da172";
     public static final String SKILL_LEVEL_HASH="1f6c15983de4486ecee6dd3c0d764b19ddceee12252ad54ad7d016e839cbdb1d";
     public static final String SKILL_LEVEL_CRLF_HASH="183f50dd240ea5981625137c9ea38908e35f0dad2a8c3509e2a333b3ab2c6423";
+    // Forward RIASEC demo release: only the five Job Position interest vectors changed.
+    // Historical release pins stay intact; IDs and learning/assessment semantics are unchanged.
+    public static final String SKILL_LEVEL_RIASEC_HASH="475dd1d66241f55e427fe98d6ff478afa593593bff8c10cde825e0852eb14d38";
+    public static final String SKILL_LEVEL_RIASEC_CRLF_HASH="93e45cdeb2c945df30a3e4249be90565dc9c4727dbc0b93c0ce1baef84b007c4";
     public static final String PREREQUISITE_KNOWLEDGE_HASH="cc7e3d25549542f945d68eebaff49257190c49db232b076aa50a97893d216a53";
     public static final String PREREQUISITE_KNOWLEDGE_CRLF_HASH="94bfe3fb7b0586aaeb427b26484742c32d3dfb46f84316f08fbe9eddb08accfe";
     public static final String PREREQUISITE_KNOWLEDGE_LF_HASH="a73e9571b5a16cab37341cb34124db36062b0383168871b8b97fcabc9c7233f8";
     public static boolean isPrerequisiteKnowledgeHash(String hash) {
-        return SKILL_LEVEL_HASH.equals(hash) || SKILL_LEVEL_CRLF_HASH.equals(hash) || PREREQUISITE_KNOWLEDGE_HASH.equals(hash) || PREREQUISITE_KNOWLEDGE_CRLF_HASH.equals(hash) || PREREQUISITE_KNOWLEDGE_LF_HASH.equals(hash);
+        return SKILL_LEVEL_HASH.equals(hash) || SKILL_LEVEL_CRLF_HASH.equals(hash)
+                || SKILL_LEVEL_RIASEC_HASH.equals(hash) || SKILL_LEVEL_RIASEC_CRLF_HASH.equals(hash)
+                || PREREQUISITE_KNOWLEDGE_HASH.equals(hash) || PREREQUISITE_KNOWLEDGE_CRLF_HASH.equals(hash) || PREREQUISITE_KNOWLEDGE_LF_HASH.equals(hash);
     }
     private boolean moduleKnowledgeRelease() { return MODULE_KNOWLEDGE_HASH.equals(sourceHash) || isPrerequisiteKnowledgeHash(sourceHash); }
     private final String catalogVersion;

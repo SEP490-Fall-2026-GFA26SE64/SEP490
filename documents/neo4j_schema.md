@@ -1,12 +1,30 @@
 # Schema Neo4j — current source and historical inventory
 
-Current source update2026-11-09: Outcome Codes are retired from authoring, provider/question selection and evidence compatibility. Match the owned Skill + knowledge level + Skill version; retain release/review and content-version guards. Human-readable objectives remain. New Compose input is `ontology_seed-skill-level.json`; older captures/OC properties below remain historical only. The running Neo4j graph remains unchanged. The local PostgreSQL V63/API follow-up was applied after user approval; it preserves original immutable snapshots and learner data.
+> **Baseline/pathway consumer checkpoint 2026-11-18:** no new graph schema is introduced. Active consumers use explicit REQUIRES_SKILL.requiredKnowledgeLevels, exact prerequisite knowledge pairs, owned Skill version, one complete Skill/knowledge per released module and certificate-only definitions. Outcome Codes are excluded from matching; Level duration is interpreted as positive calendar months only when first approval pins PostgreSQL timing. [Current cross-store flow](technical/Organization%20Rule%20Assessment%20and%20Pathway.md#current-flow-2026-11-18). Existing graph topology/RIASEC updates remain unchanged.
+
+<a id="riasec-current-source"></a>
+
+## RIASEC — source hiện hành 18/11/2026
+
+Source `2c2468b5` lưu hồ sơ Job Position **chỉ trong Neo4j**. Sáu property `interestRealistic`, `interestInvestigative`, `interestArtistic`, `interestSocial`, `interestEnterprising`, `interestConventional` là **Integer 0–40**: có đủ sáu hoặc không có cả sáu khi ghi tường minh. Sáu số 0 hợp lệ; thiếu không coalesce thành 0. Neo4j dùng native integer 64-bit; API/Java Integer giới hạn 0–40, từ chối Double/Float dù không có phần lẻ.
+
+API bỏ cả sáu field thì giữ nguyên; sáu null tường minh xóa cả hồ sơ; còn lại phải đủ sáu số nguyên. AI đọc node ACTIVE cùng trusted organizationId, có ID/đủ sáu giá trị hợp lệ. Không lọc Department, norm khác 0 hay metadata provenance/hash. Chỉnh interest không thay learning-catalog fingerprint. Application/repository kiểm tra khoảng điểm/all-or-none; uniqueness constraint không tự bảo đảm các quy tắc này.
+
+JobPosition có thêm `description` tùy chọn trong CRUD/read/input AI. AI chỉ nhận metadata/hồ sơ Job Position và sáu điểm Employee; không đọc Role/Skill/lịch sử học. PostgreSQL workspace V74 lưu nháp, đáp án/điểm cá nhân, AI state và snapshot gợi ý JSON; không thêm node learner/bảng profile thứ hai. Position ID trong JSON không phải FK liên database.
+
+Hai seed `ontology_seed-skill-level.json` và `ontology_seed-prerequisite-knowledge.json` đã được duyệt thay 30 giá trị/file sang điểm demo 0–40. Receipt 17/11 ghi nhận cập nhật riêng 8 node local, không full seed. Điểm này **không phải** O*NET 31.0 đã chuẩn hóa/kiểm định. Phần v0.11/O*NET 0–1 bên dưới là lịch sử theo release, không phải API hiện tại và không cho phép tự chuyển đổi dữ liệu cũ.
+
+[Feature fields](features/Departments%20and%20occupations/README.md#riasec-job-position-profiles) · [AI](features/Role%20guidance/README.md#riasec-job-position-exploration) · [V74/Neo4j storage](diagrams/riasec-storage.svg). Hình catalog cập nhật description/sáu Integer theo source 18/11; topology và thuộc tính không liên quan giữ phạm vi capture cũ. Không phải capture live mới; đợt này không ghi DB/seed hoặc xác minh deployment constraint.
+
+Current source update 2026-11-09: Outcome Codes are retired from authoring, provider/question selection and evidence compatibility. Match the owned Skill + knowledge level + Skill version; retain release/review and content-version guards. Human-readable objectives remain. New Compose input is `ontology_seed-skill-level.json`; older captures/OC properties below remain historical only. The 2026-11-09 documentation update did not change the graph; the later approved RIASEC demo-profile application is separately scoped above. The local PostgreSQL V63/API follow-up was applied after user approval; it preserves original immutable snapshots and learner data.
 
 ![Current source-defined catalog](diagrams/neo4j.svg)
 
-### Diagram scope — 2026-11-08
+<a id="diagram-scope--2026-11-08"></a>
 
-The existing [PlantUML source](diagrams/neo4j.puml) generates both catalog image formats. All six captured labels now show the complete property lists supplied for this task, including `id: String [UNIQUE]`; the seven captured directed relationship types and their properties are preserved. Relationship properties are in the diagram legend. These are Neo4j properties, not SQL foreign keys. Uniqueness is source-defined by the importer's per-label id constraints; this documentation update does not verify their deployment.
+### Diagram scope — 2026-11-18 (RIASEC source overlay on 2026-11-08 capture)
+
+The [PlantUML source](diagrams/neo4j.puml) defines catalog fields/connections; the current native SVG layout reads those fields and exports SVG/PNG as described in the [diagram index](diagrams/README.md#riasec-source-update--2026-11-18). Six labels retain the supplied lists with the 18 November JobPosition overlay adding optional description and changing six interests from Double to Integer 0–40. Each includes `id: String [UNIQUE]`; the seven captured directed relationship types and their properties are preserved. Relationship properties are in the diagram legend. These are Neo4j properties, not SQL foreign keys. Uniqueness is source-defined by the importer's per-label id constraints; this documentation update does not verify their deployment.
 
 **Capture versus source.** The supplied capture has no `Certificate` label or `REQUIRES_CERTIFICATE` type. Both remain current source concepts in [CertificateCatalogRepository](../backend/src/main/java/com/adaptlearngraph/repository/CertificateCatalogRepository.java), with an [id uniqueness constraint](../backend/src/main/resources/db/neo4j/certificate-constraints.cypher); they remain visibly marked **source only**. The box lists exactly the writer's Certificate fields, including audit/idempotency strings. The relationship lists its create fields and optional replacement fields; it does not inherit an invented `id`, `version` or `reviewStatus`.
 

@@ -8,14 +8,22 @@
 
 **Contract basis:** confirmed behavior plus the later L&D Role–Level / Expert Skill–knowledge configuration decisions. Historical evidence retains its original scope; it is not a fresh passing result.
 
+## Current execution and recalculation — 2026-11-18
+
+Source `2c2468b5` implements accepted request/Role–Level binding, leased generation, Expert option reduction/rejection/approval, original approval lineage and module-context Skill Assessment. [Current full flow](../../technical/Organization%20Rule%20Assessment%20and%20Pathway.md#current-flow-2026-11-18) and [schema](../../diagrams/postgresql-pathway.svg) supersede older confirmation-pending observations.
+
+The outcome job recalculates from actual failed prerequisite groups before deciding READY/WAITING_SUPPLEMENT; a later passing retake never deletes already-discovered learning needs. Prior official evidence remains achieved with NEED_REVIEW. When READY, genuine module evidence is inserted once and a second recalculation occurs in the same learner transaction, so fulfilment does not wait for periodic refresh. Provision/evidence refresh preserves completed steps, explicit Expert exclusions, history and a still-valid original approval basis. Missing provision or invalid basis remains explicit; no diagnostic/bypass becomes official achievement.
+
+First real approval freezes UTC calendar-month duration/deadline; completion uses actual REQUIRED evidence/bypass decision times. Later revisions never restart the clock; old approvals remain untimed. REJECTED, generation state, requirement state and timing state are separate. Notifications store added provision and relevant decisions under dedup keys; a recalculation with no added module/certificate emits no added-provision toast. Current source evidence does not prove workers are enabled, all races, real runtime or production behavior.
+
 ## Current Implementation
 
-**Source-inspected:** HEAD `61d334c`, 2026-11-07. The local rule flow is implemented in code; runtime behavior was not exercised in this task.
+**Current rule-flow source inspected:** `2c2468b5`,2026-11-18. Code presence is distinguished from dated runtime evidence; this task adds no executable/runtime result.
 
 | Requirement | Classification | Current behavior / remaining limit |
 | --- | --- | --- |
 | FR-07.06 | Implemented local evidence path; runtime unverified here | RuleKnowledgeProfileService separates actual baseline diagnostics, compatible official MODULE_ASSESSMENT/CERTIFICATE evidence and NEED_REVIEW. Baseline and bypass never award ACHIEVED. No numeric mastery-gap update is used by this flow. |
-| FR-07.08 | Implemented local requirement path; code confirmation pending for confirmed policy | RequirementPathwayAdmission/Generation/Planning/Recalculation/Refresh services persist requirement roots, alternatives, assessed prerequisite supplementation, approval lineage and bypass/parallel provenance. Expert option reduction is now confirmed for review; certificate/backfill/parallel branches remain unverified. |
+| FR-07.08 | Implemented local requirement path; source aligned 2026-11-18; runtime limits retained | RequirementPathwayAdmission/Generation/Planning/Recalculation/Refresh services persist requirement roots, alternatives, assessed prerequisite supplementation, approval lineage and bypass/parallel provenance. Current review permits unstarted-option reduction with started-option protection; source includes evidence/refresh/parallel and timing paths, while runtime evidence remains version-scoped. |
 
 **Surfaces:** selected Role–Level preview, `/employee/pathway` and `/expert/pathway-review`. Source: [admission](../../../backend/src/main/java/com/adaptlearngraph/services/RequirementPathwayAdmissionService.java), [recalculation](../../../backend/src/main/java/com/adaptlearngraph/services/RequirementPathwayRecalculationService.java), [access](../../../backend/src/main/java/com/adaptlearngraph/services/RequirementPathwayAccess.java). The old numeric gap/optimizer classes and their dated designs are retained demo/research material, with disjoint active routing. They are not the workspace planning authority.
 
@@ -23,7 +31,7 @@
 
 ### Profile and evidence precedence
 
-Inputs are trusted Employee/organization, selected Role/member Level, explicit skill–knowledge/outcome requirements, coherent catalog/policy versions and evidence provenance. Preview reads change no selection, profile or pathway. Required knowledge levels are explicit; no inheritance or numeric subtraction applies.
+Inputs are trusted Employee/organization, selected Role/member Level, explicit Skill–knowledge–Skill-version requirements, coherent catalog/policy versions and evidence provenance. Preview reads change no selection, profile or pathway. Required knowledge levels are explicit; no inheritance or numeric subtraction applies.
 
 | Evidence/state | Planning effect | Official profile |
 | --- | --- | --- |
@@ -34,12 +42,12 @@ Inputs are trusted Employee/organization, selected Role/member Level, explicit s
 | Later failed prerequisite already officially achieved | NEED_REVIEW/optional review; veto can still block current main result. | Retain ACHIEVED; no forced prerequisite relearning or revocation. |
 | Approved scoped bypass | Waives this pathway requirement and can temporarily unlock dependents. | Still unmet/waived, never ACHIEVED. |
 
-Official compatibility includes exact organization/learner, skill/knowledge/outcomes and recognized evidence/version. Self-declared title and baseline scores are not official evidence. Diagnostic reuse is limited to the same unchanged request/context; no cross-target diagnostic exemption. No generalized expiry/revocation engine is added. Affected old dev evidence may be rebuilt rather than migrated.
+Official compatibility includes exact organization/learner, Skill/knowledge/Skill version and recognized evidence provenance. Self-declared title and baseline scores are not official evidence. Diagnostic reuse is limited to the same unchanged request/context; no cross-target diagnostic exemption. No generalized expiry/revocation engine is added. Affected old dev evidence may be rebuilt rather than migrated.
 
 ### Initial requirement steps and alternatives
 
 1. Read selected Role–Level requirements and exact official evidence; consume ready diagnostic groups for MODULE_ONLY and certificate status for CERTIFICATE_ONLY.
-2. Identify unmet target requirements actually established by diagnostics/evidence. Do not expand unassessed prerequisite closure from baseline; add shortages only when skill assessment discovers them. Deduplicate by exact requirement identity, not skill alone. Filter provision by knowledge/outcome equivalence, publication, access, content and versions.
+2. Identify unmet target requirements actually established by diagnostics/evidence. Do not expand unassessed prerequisite closure from baseline; add shortages only when skill assessment discovers them. Deduplicate by exact requirement identity, not skill alone. Filter provision by Skill/knowledge/Skill-version equivalence, publication, access, content and versions.
 3. Create requirement steps with ALL eligible interchangeable module alternatives or the single assigned certificate definition. Missing provision gives NEEDS_EXPERT_ACTION; cycles, unsupported mappings and incoherent versions remain unresolved, never silent omissions.
 4. Order dependencies only for established shortages; do not gate initial A learning on unassessed B. Newly discovered prerequisite needs after skill assessment use explicit dependency semantics. Independent requirements are not locked just because displayed later. No global quality/time/cost optimization, branch-and-bound or mastery-based difficulty selection.
 5. Persist all eligible choices for the selected Role's assigned Expert, who may remove some alternatives and approve valid requirements/order. Generation grants neither approval, content access nor completion.

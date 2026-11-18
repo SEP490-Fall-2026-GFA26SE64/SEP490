@@ -44,7 +44,7 @@ class CurrentRoleCatalogIntegrationTest {
   session.run("""
    MATCH (l:Level {id:$level})
    MERGE (s:MicroSkill {id:$skill}) ON CREATE SET s.code=$skill,s.name=$skill,s.version='fixture-v1',s.status='ACTIVE'
-   CREATE (l)-[:REQUIRES_SKILL {id:$edge,version:'fixture-v1',status:'ACTIVE',requiredScore:0.7,isMandatory:true}]->(s)
+   CREATE (l)-[:REQUIRES_SKILL {id:$edge,version:'fixture-v1',status:'ACTIVE',requiredKnowledgeLevels:['FOUNDATION'],requiredScore:0.7,isMandatory:true}]->(s)
    """,Map.of("level",level,"skill",skill,"edge",level+"-"+skill)).consume();
  }
  String snapshot(){
@@ -71,5 +71,36 @@ class CurrentRoleCatalogIntegrationTest {
  }
  @Test void rb17RepeatedReadsDoNotWriteCatalog(){
   var before=snapshot();assertThat(catalog.roles(ORG)).hasSize(3);catalog.roles(ORG);assertThat(snapshot()).isEqualTo(before);
+ }
+ @Test void legacyRequirementWithoutKnowledgeLevelsDoesNotHideCatalogOrInventRequirements(){
+  try(var s=driver.session()){
+   s.run("MATCH (:Level {id:'level-0'})-[q:REQUIRES_SKILL]->(:MicroSkill {id:'skill-0'}) REMOVE q.requiredKnowledgeLevels").consume();
+  }
+  var before=snapshot();
+  var roles=catalog.roles(ORG);
+  assertThat(roles).hasSize(3);
+  var skills=roles.getFirst().levels().getFirst().skills();
+  assertThat(skills.stream().filter(s->s.id().equals("skill-0")).findFirst().orElseThrow().requiredKnowledgeLevels()).isEmpty();
+  assertThat(skills.stream().filter(s->s.id().equals("skill-1")).findFirst().orElseThrow().requiredKnowledgeLevels()).containsExactly("FOUNDATION");
+  assertThat(snapshot()).isEqualTo(before);
+ }
+ @Test void savedRoleWritesExplicitKnowledgeRequirementsToLevelEdges(){
+  var repository=new Neo4jTargetRoleRepository(persistence.bean(TargetRoleNodeRepository.class),persistence.client(),persistence.mappingContext(),persistence.transactionManager());
+  var role=com.adaptlearngraph.entities.domain.TargetRole.createNew(ORG.toString(),"APP_DEV","Application Developer","O",
+    com.adaptlearngraph.entities.domain.RoleTrack.PROFESSIONAL,null,"Application scope",List.of(),"v1",
+    com.adaptlearngraph.entities.domain.RoleStatus.ACTIVE,
+    "[{\"skillId\":\"skill-0\",\"level\":\"Senior\",\"requiredKnowledgeLevels\":[\"INTERMEDIATE\",\"ADVANCED\"]}]",List.of("Senior"));
+  repository.save(role);
+  // Saving again deletes and recreates the Level requirements: both writes must preserve the enums.
+  repository.save(role);
+  try(var s=driver.session()){
+   var edges=s.run("MATCH (:TargetRole {id:$id})-[:HAS_LEVEL]->(:Level)-[q:REQUIRES_SKILL]->(:MicroSkill) RETURN properties(q) AS q",Map.of("id",role.getId().toString())).list();
+   assertThat(edges).hasSize(1);
+   assertThat(edges.getFirst().get("q").get("requiredKnowledgeLevels").asList(Value::asString)).containsExactly("INTERMEDIATE","ADVANCED");
+   assertThat(edges.getFirst().get("q").get("requiredScore").isNull()).isTrue();
+   assertThat(edges.getFirst().get("q").get("targetMastery").isNull()).isTrue();
+  }
+  var current=catalog.roles(ORG).stream().filter(r->r.id().equals(role.getId().toString())).findFirst().orElseThrow();
+  assertThat(current.levels().getFirst().skills().getFirst().requiredKnowledgeLevels()).containsExactly("INTERMEDIATE","ADVANCED");
  }
 }

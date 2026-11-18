@@ -7,7 +7,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '../../shared/component
 import { Button } from '../../shared/components/ui/Button'
 import { Dialog, DialogHeader, DialogTitle, DialogDescription } from '../../shared/components/ui/Dialog'
 import { createOrder, getPlans, type Plan, type Status } from './subscriptionApi'
-import { Failure, Loading, useCopy } from './SubscriptionFeedback'
+import { Failure, Loading } from "./SubscriptionFeedback";
+import { useCopy } from "./SubscriptionFeedback.helpers";
 
 export function PlanCatalog({ base, principal, replacesOrderId, onCreated, disabled = false }:
   { base: string; principal: string; replacesOrderId?: string; onCreated?: (status: Status) => void; disabled?: boolean }) {

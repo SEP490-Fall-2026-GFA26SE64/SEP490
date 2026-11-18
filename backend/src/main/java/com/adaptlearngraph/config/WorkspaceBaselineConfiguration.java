@@ -449,7 +449,7 @@ public class WorkspaceBaselineConfiguration {
         scheduler.setPoolSize(1); scheduler.setThreadNamePrefix("workspace-baseline-deadline-");
         return scheduler;
     }
-    @Bean @org.springframework.boot.autoconfigure.condition.ConditionalOnProperty(name="assessment.baseline.workspace.enabled",havingValue="true")
+    @Bean @org.springframework.boot.autoconfigure.condition.ConditionalOnExpression("${assessment.baseline.workspace.enabled:false} && ${workspace.runtime.background-workers-enabled:true}")
     SmartInitializingSingleton workspaceBaselineDeadlines(com.adaptlearngraph.services.RuleAssessmentAttemptService attempts,
             com.adaptlearngraph.services.RuleAssessmentOutcomeService outcomes,
             ThreadPoolTaskScheduler workspaceBaselineScheduler) {

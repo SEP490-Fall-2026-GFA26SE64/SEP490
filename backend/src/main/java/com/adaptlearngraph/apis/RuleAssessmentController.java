@@ -29,9 +29,9 @@ public final class RuleAssessmentController {
     }
     @GetMapping("/{id}") public ResponseEntity<View> resume(@PathVariable UUID id){return ok(attempts.resume(id));}
     @GetMapping("/context") public ResponseEntity<View> context(@RequestParam(required=false) UUID selectionId,@RequestParam(defaultValue="0") long selectionRevision,
-            @RequestParam com.adaptlearngraph.entities.domain.RuleAssessment.Purpose purpose,@RequestParam(required=false) UUID stepId,
+            @RequestParam String purpose,@RequestParam(required=false) UUID stepId,
             @RequestParam(required=false) String moduleId,@RequestParam(required=false) Integer moduleRevision){
-        return ok(attempts.latest(new Start(purpose,selectionId,selectionRevision,null,stepId,moduleId,moduleRevision)));
+        return ok(attempts.latestHttp(purpose,selectionId,selectionRevision,stepId,moduleId,moduleRevision));
     }
     @GetMapping("/skill-scope/history") public ResponseEntity<SkillHistory> skillScope(@RequestParam(required=false) String skillId,
             @RequestParam(required=false) String knowledgeLevel,@RequestParam(required=false) String skillVersion,

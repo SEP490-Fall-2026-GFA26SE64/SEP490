@@ -4,6 +4,13 @@ import { waitForWorkspaceEntry } from './subscriptionHelpers'
 async function loginAs(page: Page, email: string, password = 'Password123!') {
   await page.context().clearCookies()
   await page.goto('/login')
+  await page.evaluate(() => {
+    try {
+      localStorage.clear()
+      sessionStorage.clear()
+    } catch {}
+  })
+  await page.goto('/login')
   await page.getByPlaceholder('Enter your email').fill(email)
   await page.locator('input[type="password"]').fill(password)
   await page.getByRole('button', { name: 'Sign in', exact: true }).click()
@@ -72,9 +79,19 @@ test.describe('Report 5: WF02 End-to-End Workflow Test (Kịch bản Demo Capsto
       await lastLevelInput.fill('Fresher')
     }
 
+    // 3b. Assign Domain Expert (Dr. Sarah Chen / expert@technova.com)
+    const expertTrigger = createModal.locator('button').filter({ hasText: /^Unassigned/i }).first()
+    if (await expertTrigger.isVisible().catch(() => false)) {
+      await expertTrigger.click()
+      const expertOption = page.locator('[role="option"]').filter({ hasText: /Dr\. Sarah Chen/i }).first()
+      if (await expertOption.isVisible().catch(() => false)) {
+        await expertOption.click()
+      }
+    }
+
     // 4. Submit form to create and dispatch role to expert ("Create & Send to Expert")
-    const submitBtn = createModal.getByRole('button', { name: /Create & Send to Expert|Save as Draft/i }).last()
-    await expect(submitBtn).toBeEnabled()
+    const submitBtn = createModal.getByRole('button', { name: /Create & Send to Expert/i })
+    await expect(submitBtn).toBeEnabled({ timeout: 5_000 })
     await submitBtn.click()
 
     // Wait for modal to close
@@ -105,11 +122,12 @@ test.describe('Report 5: WF02 End-to-End Workflow Test (Kịch bản Demo Capsto
     // STEP 4 & 5: Expert logs in and configs micro-skills for Senior, Middle, Junior
     // =========================================================================
     await loginAs(page, 'expert@technova.com')
-    await page.goto('/workspace/workspace-development/expert/target-roles')
+    await page.goto('/workspace/workspace-development/expert/roles')
     await expect(page.locator('main')).toBeVisible()
+    await expect(page.getByText(/Loading roles/i)).toHaveCount(0, { timeout: 20_000 }).catch(() => {})
 
     const expertRoleRow = page.locator('table tbody tr').filter({ hasText: roleTitle }).first()
-    await expect(expertRoleRow).toBeVisible()
+    await expect(expertRoleRow).toBeVisible({ timeout: 15_000 })
 
     // Expert clicks Configure Micro-skills
     const configBtn = expertRoleRow.locator('button[title*="Micro-skills"]').first()
@@ -162,11 +180,12 @@ test.describe('Report 5: WF02 End-to-End Workflow Test (Kịch bản Demo Capsto
     // =========================================================================
     // STEP 7 & 8: Expert checks graph on Target Role page and submits to LD
     // =========================================================================
-    await page.goto('/workspace/workspace-development/expert/target-roles')
+    await page.goto('/workspace/workspace-development/expert/roles')
     await expect(page.locator('main')).toBeVisible()
+    await expect(page.getByText(/Loading roles/i)).toHaveCount(0, { timeout: 20_000 }).catch(() => {})
 
     const expertRowAgain = page.locator('table tbody tr').filter({ hasText: roleTitle }).first()
-    await expect(expertRowAgain).toBeVisible()
+    await expect(expertRowAgain).toBeVisible({ timeout: 15_000 })
 
     // Check Graph on target role row
     const expertGraphBtn = expertRowAgain.locator('button[title*="Knowledge Graph"], button[aria-label*="Knowledge Graph"]').first()

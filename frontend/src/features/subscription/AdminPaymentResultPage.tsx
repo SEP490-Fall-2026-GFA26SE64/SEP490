@@ -2,9 +2,10 @@ import { useQuery } from '@tanstack/react-query'
 import { Link, useSearchParams } from 'react-router-dom'
 import { AdminPageLayout } from '../administration/AdminPageLayout'
 import { getIdentity, getStatus } from './subscriptionApi'
-import { Failure, Loading, useCopy } from './SubscriptionFeedback'
+import { Failure, Loading } from "./SubscriptionFeedback";
+import { useCopy } from "./SubscriptionFeedback.helpers";
 import { PaymentStatusPanel } from './PaymentStatusPanel'
-import { buttonVariants } from '../../shared/components/ui/Button'
+import { buttonVariants } from "../../shared/components/ui/Button";
 
 export function AdminPaymentResultPage() {
   const c = useCopy()

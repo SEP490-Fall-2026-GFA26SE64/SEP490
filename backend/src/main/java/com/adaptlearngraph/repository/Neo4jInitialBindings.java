@@ -8,6 +8,8 @@ import java.util.function.IntSupplier;
 import static com.adaptlearngraph.helper.InitialCatalogMetadata.*;
 
 /** Reads exact bound Role/Level requirements. No Level inference, seed fallback, or review bypass. */
+// Retained numeric binding must reject current authored skills rather than infer numeric targets.
+@SuppressWarnings("deprecation")
 public final class Neo4jInitialBindings implements Bindings {
     private final RoleReferences references;private final Neo4jInitialGraph.PublishedSessions sessions;private final IntSupplier maximumRows;
     private final boolean localReview;

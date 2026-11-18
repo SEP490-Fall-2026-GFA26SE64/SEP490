@@ -12,6 +12,8 @@ export default defineConfig({
   test: {
     include: ['src/**/*.test.{ts,tsx}'],
     environment: 'jsdom',
+    // Bound jsdom workers so local Docker integration tests do not exhaust memory.
+    maxWorkers: 2,
     restoreMocks: true,
     clearMocks: true,
   },

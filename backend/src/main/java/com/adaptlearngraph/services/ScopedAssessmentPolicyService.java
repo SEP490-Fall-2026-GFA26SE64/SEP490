@@ -55,6 +55,16 @@ public final class ScopedAssessmentPolicyService {
         if(a.organizationId()==null || !a.roles().contains(required))throw new Failure(403,"FORBIDDEN");
         memberships.require(a,a.organizationId(),SubscriptionAccessPolicy.Action.WORKSPACE,Instant.now());return a;
     }
+    // HTTP scalars are converted here, keeping domain enums out of controller signatures.
+    public void authorizeHttp(String purpose){authorize(Purpose.valueOf(purpose));}
+    public Directory directoryHttp(String purpose,String search,String owner,String level,String status,int page,int size){return directory(Purpose.valueOf(purpose),search,owner,level,status,page,size);}
+    public Workspace readHttp(String purpose,String key,int page,int size){return read(Purpose.valueOf(purpose),key,page,size);}
+    public Workspace createHttp(String purpose,String key,Create command){return create(Purpose.valueOf(purpose),key,command);}
+    public Workspace saveHttp(String purpose,String key,Save command){return save(Purpose.valueOf(purpose),key,command);}
+    public Workspace saveEditorHttp(String purpose,String key,SaveEditor command){return saveEditor(Purpose.valueOf(purpose),key,command);}
+    public Workspace activateHttp(String purpose,String key,Activate command){return activate(Purpose.valueOf(purpose),key,command);}
+    public Workspace completeHttp(String purpose,String key,Complete command){return complete(Purpose.valueOf(purpose),key,command);}
+    public Workspace abandonHttp(String purpose,String key,Abandon command){return abandon(Purpose.valueOf(purpose),key,command);}
     public void authorize(Purpose purpose){actor(purpose);}
     private <T>T locked(SubscriptionAccessPolicy.Actor a,Purpose purpose,Supplier<T> work) {
         return tx.execute(status->{

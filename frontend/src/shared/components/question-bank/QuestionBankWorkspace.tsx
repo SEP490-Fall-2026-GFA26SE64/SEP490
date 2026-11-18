@@ -24,12 +24,15 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '..
 import { Badge } from '../ui/Badge'
 import { Button } from '../ui/Button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/Card'
+import { Combobox } from '../ui/Combobox'
 import { Dialog, DialogBody, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../ui/Dialog'
 import { EmptyState } from '../ui/EmptyState'
+import { FormField } from '../ui/FormField'
 import { Input } from '../ui/Input'
 import { LoadingCard } from '../ui/LoadingCard'
 import { PageHeader } from '../ui/PageHeader'
 import { Pagination } from '../ui/Pagination'
+import { Select } from '../ui/Select'
 import { QuestionImportUpload, ImportValidationSummary, type ImportFileInfo } from './QuestionImportPanels'
 import { StatCard } from '../ui/StatCard'
 
@@ -112,7 +115,32 @@ function OwnedQuestionBankWorkspace() {
   const openDetail = (q: BankQuestion) => { setDetailTab('content'); setMessage(''); setDetail(q.id); setVersionId(current(q).id) }
   const ask = (q: BankQuestion, name: string) => setAction({ q, name, reason: '', owner: q.owner ?? '' })
   const setContent = (patch: Partial<BankContent>) => setEditor(prev => prev ? { ...prev, content: { ...prev.content, ...patch } } : null)
-  const save = () => void run(async () => { if (!editor) return; setBank(await bankRequest<BankView>('/questions', { id: editor.id, expectedRevision: editor.revision, content: editor.content, acknowledgeDuplicates: editor.acknowledged })); setEditor(null); setMessage(copy('Draft saved.', 'Đã lưu bản nháp.')) })
+  const save = (submitAfterSave = false) => void run(async () => {
+    if (!editor) return
+    const nextBank = await bankRequest<BankView>('/questions', { id: editor.id, expectedRevision: editor.revision, content: editor.content, acknowledgeDuplicates: editor.acknowledged })
+    if (!submitAfterSave) {
+      setBank(nextBank)
+      setEditor(null)
+      setMessage(copy('Draft saved.', 'Đã lưu bản nháp.'))
+      return
+    }
+    const existingIds = new Set((bank?.questions ?? []).map(q => q.id))
+    const target = editor.id
+      ? nextBank.questions.find(q => q.id === editor.id)
+      : nextBank.questions.find(q => !existingIds.has(q.id)) ?? nextBank.questions.at(-1)
+    if (!target) {
+      setBank(nextBank)
+      setEditor(null)
+      setMessage(copy('Draft saved.', 'Đã lưu bản nháp.'))
+      return
+    }
+    setBank(nextBank)
+    setEditor(prev => prev ? { ...prev, id: target.id, revision: target.revision, code: target.code } : null)
+    const submittedBank = await bankRequest<BankView>('/commands', { id: target.id, expectedRevision: target.revision, action: 'SUBMIT', reason: '', owner: null })
+    setBank(submittedBank)
+    setEditor(null)
+    setMessage(copy('Question submitted for review.', 'Đã gửi duyệt câu hỏi.'))
+  })
   const approveSelected = () => {
     const issues = selected.flatMap(id => {
       const q = questions.find(item => item.id === id)
@@ -177,12 +205,12 @@ function OwnedQuestionBankWorkspace() {
         <StatCard variant="default" icon={<Layers className="h-4 w-4 text-primary" aria-hidden="true" />} valueClassName="text-primary" description={copy('Skills covered by your questions', 'Kỹ năng được bao phủ bởi câu hỏi')} title={copy('Micro-Skills Assessed', 'Kỹ năng được đánh giá')} value={new Set(questions.map(q => current(q).content.skillId).filter(Boolean)).size} />
       </div>
 
-        <Card><CardHeader className="border-b border-border p-4"><div className="flex flex-wrap items-center justify-between gap-3"><div><CardTitle className="flex items-center gap-2"><FileQuestion className="size-4 text-primary" />{copy('Question Bank Directory', 'Danh sách câu hỏi')}</CardTitle><CardDescription>{copy('Browse by MicroSkill, review versions and track responsibility.', 'Xem theo MicroSkill, theo dõi phiên bản và người phụ trách.')}</CardDescription></div><div className="grid w-full gap-2 sm:grid-cols-2 xl:grid-cols-5">
-          <Input aria-label={copy('Search questions', 'Tìm câu hỏi')} leftIcon={<Search className="size-4" />} placeholder={copy('Search questions…', 'Tìm câu hỏi…')} value={search} onChange={e => { setSearch(e.target.value); setPage(1) }} />
-          <select aria-label={copy('Filter skill', 'Lọc kỹ năng')} className={fieldClass} value={skill} onChange={e => { setSkill(e.target.value); setPage(1) }}><option value="all">{copy('All skills', 'Tất cả kỹ năng')}</option>{session.skills.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}</select>
-          <select aria-label={copy('Filter knowledge level', 'Lọc mức kiến thức')} className={fieldClass} value={levelFilter} onChange={e => { setLevelFilter(e.target.value); setPage(1) }}><option value="all">{copy('All knowledge levels', 'Tất cả mức kiến thức')}</option>{['FOUNDATION', 'INTERMEDIATE', 'ADVANCED', 'UNCLASSIFIED'].map(value => <option key={value} value={value}>{knowledgeLevel(value === 'UNCLASSIFIED' ? null : value)}</option>)}</select>
-          <select aria-label={copy('Filter status', 'Lọc trạng thái')} className={fieldClass} value={status} onChange={e => { setStatus(e.target.value); setPage(1) }}><option value="all">{copy('All states', 'Tất cả trạng thái')}</option>{['DRAFT', 'SUBMITTED', 'PUBLISHED', 'RETIRED'].map(s => <option key={s} value={s}>{s === 'RETIRED' ? copy('Retired', 'Ngừng sử dụng') : s === 'DRAFT' ? copy('Draft', 'Bản nháp') : s === 'SUBMITTED' ? copy('Pending review', 'Chờ duyệt') : copy('Published', 'Đã xuất bản')}</option>)}</select>
-          <select aria-label={copy('Filter responsible Expert', 'Lọc người phụ trách')} className={fieldClass} value={owner} onChange={e => { setOwner(e.target.value); setPage(1) }}><option value="all">{copy('All Experts', 'Tất cả Expert')}</option><option value="unassigned">{copy('Unassigned', 'Chưa phân công')}</option>{session.experts.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}</select>
+        <Card><CardHeader className="border-b border-border p-4"><div className="flex flex-col gap-3"><div><CardTitle className="flex items-center gap-2"><FileQuestion className="size-4 text-primary" />{copy('Question Bank Directory', 'Danh sách câu hỏi')}</CardTitle><CardDescription>{copy('Browse by MicroSkill, review versions and track responsibility.', 'Xem theo MicroSkill, theo dõi phiên bản và người phụ trách.')}</CardDescription></div><div className="grid w-full gap-2.5 sm:grid-cols-2 xl:grid-cols-5 items-end">
+          <FormField label={copy('Search', 'Tìm kiếm')}><Input className="h-8 text-xs bg-card" aria-label={copy('Search questions', 'Tìm câu hỏi')} leftIcon={<Search className="size-3.5" />} placeholder={copy('Search questions…', 'Tìm câu hỏi…')} value={search} onChange={e => { setSearch(e.target.value); setPage(1) }} /></FormField>
+          <FormField label="MicroSkill"><Combobox size="sm" clearable={false} aria-label={copy('Filter skill', 'Lọc kỹ năng')} value={skill} onChange={value => { setSkill(value); setPage(1) }} options={[{ value: 'all', label: copy('All skills', 'Tất cả kỹ năng') }, ...session.skills.map(s => ({ value: s.id, label: s.name }))]} placeholder={copy('All skills', 'Tất cả kỹ năng')} searchPlaceholder={copy('Search skill…', 'Tìm kỹ năng…')} emptyMessage={copy('No matching skill.', 'Không tìm thấy kỹ năng.')} /></FormField>
+          <FormField label={copy('Knowledge level', 'Mức kiến thức')}><Select size="sm" aria-label={copy('Filter knowledge level', 'Lọc mức kiến thức')} value={levelFilter} onChange={value => { setLevelFilter(value); setPage(1) }} options={[{ value: 'all', label: copy('All knowledge levels', 'Tất cả mức kiến thức') }, ...['FOUNDATION', 'INTERMEDIATE', 'ADVANCED', 'UNCLASSIFIED'].map(value => ({ value, label: knowledgeLevel(value === 'UNCLASSIFIED' ? null : value) }))]} /></FormField>
+          <FormField label={copy('Status', 'Trạng thái')}><Select size="sm" aria-label={copy('Filter status', 'Lọc trạng thái')} value={status} onChange={value => { setStatus(value); setPage(1) }} options={[{ value: 'all', label: copy('All states', 'Tất cả trạng thái') }, ...['DRAFT', 'SUBMITTED', 'PUBLISHED', 'RETIRED'].map(s => ({ value: s, label: s === 'RETIRED' ? copy('Retired', 'Ngừng sử dụng') : s === 'DRAFT' ? copy('Draft', 'Bản nháp') : s === 'SUBMITTED' ? copy('Pending review', 'Chờ duyệt') : copy('Published', 'Đã xuất bản') }))]} /></FormField>
+          <FormField label={copy('Responsible Expert', 'Expert phụ trách')}><Combobox size="sm" clearable={false} aria-label={copy('Filter responsible Expert', 'Lọc người phụ trách')} value={owner} onChange={value => { setOwner(value); setPage(1) }} options={[{ value: 'all', label: copy('All Experts', 'Tất cả Expert') }, { value: 'unassigned', label: copy('Unassigned', 'Chưa phân công') }, ...session.experts.map(s => ({ value: s.id, label: s.name }))]} placeholder={copy('All Experts', 'Tất cả Expert')} searchPlaceholder={copy('Search Expert…', 'Tìm Expert…')} emptyMessage={copy('No matching Expert.', 'Không tìm thấy Expert.')} /></FormField>
         </div></div></CardHeader><CardContent className="space-y-4 p-4">
           <div className="flex flex-wrap items-center justify-between gap-3"><Text variant="body-sm" className="text-muted-foreground">{copy(`Results: ${filtered.length} · ${Math.min((activePage - 1) * 20 + 1, filtered.length)}–${Math.min(activePage * 20, filtered.length)} shown`, `${filtered.length} câu hỏi · hiển thị ${Math.min((activePage - 1) * 20 + 1, filtered.length)}–${Math.min(activePage * 20, filtered.length)}`)}</Text>{(search || skill !== 'all' || levelFilter !== 'all' || status !== 'all' || owner !== 'all') && <Button variant="ghost" size="sm" onClick={() => { setSearch(''); setSkill('all'); setLevelFilter('all'); setStatus('all'); setOwner('all'); setPage(1) }}>{copy('Clear filters', 'Xoá bộ lọc')}</Button>}</div>
           <div className="flex flex-wrap gap-2" aria-label={copy('Active filters', 'Bộ lọc đang áp dụng')}>{[
@@ -204,13 +232,17 @@ function OwnedQuestionBankWorkspace() {
         <QuestionDraftForm content={editor.content} code={editor.id ? editor.code : null} skills={session?.skills ?? []} knowledgeLevels={knowledgeChoices.map(choice => choice.knowledgeLevel)} busy={busy} onChange={setContent} vi={vi} />
         {(editor.acknowledged || error.includes('Matching question content')) && <label className="flex gap-2 items-start"><input type="checkbox" checked={editor.acknowledged} disabled={busy} onChange={e => setEditor({ ...editor, acknowledged: e.target.checked })} /><Text as="span" variant="body-sm">{copy('Allow matching content under a different code after checking the duplicate warning.', 'Cho phép nội dung trùng dưới mã khác sau khi đã kiểm tra cảnh báo.')}</Text></label>}
         {error && <Text role="alert" className="text-destructive">{questionBankMessage(error, vi)}</Text>}
-      </DialogBody><DialogFooter><Button variant="outline" disabled={busy} onClick={() => setEditor(null)}>{copy('Cancel', 'Huỷ')}</Button><Button disabled={busy || !editor.content.prompt.trim() || !editor.content.skillId} onClick={save}>{busy ? copy('Saving…', 'Đang lưu…') : copy('Save draft', 'Lưu nháp')}</Button></DialogFooter></>}
+      </DialogBody><DialogFooter><Button variant="outline" disabled={busy} onClick={() => setEditor(null)}>{copy('Cancel', 'Huỷ')}</Button><Button variant="outline" disabled={busy || !editor.content.prompt.trim() || !editor.content.skillId} onClick={() => save(false)}>{busy ? copy('Saving…', 'Đang lưu…') : copy('Save draft', 'Lưu nháp')}</Button><Button disabled={busy || !editor.content.prompt.trim() || !editor.content.skillId} onClick={() => save(true)}>{copy('Submit for review', 'Gửi duyệt')}</Button></DialogFooter></>}
     </Dialog>
-    <Dialog ariaLabel={copy('Question details', 'Chi tiết câu hỏi')} open={!!detailQ} onOpenChange={open => { if (!open && !busy) setDetail(null) }} containerClassName="justify-end p-0 sm:p-0" className="h-dvh max-h-dvh max-w-2xl rounded-none border-y-0 border-r-0" closeLabel={copy('Close panel', 'Đóng bảng chi tiết')}>
+    <Dialog ariaLabel={copy('Question details', 'Chi tiết câu hỏi')} open={!!detailQ} onOpenChange={open => { if (!open && !busy) setDetail(null) }} className="w-[96vw] max-w-3xl max-h-[90dvh]" closeLabel={copy('Close panel', 'Đóng bảng chi tiết')}>
       {detailQ && detailV && <><DialogHeader><DialogTitle className="text-[length:var(--text-card)] font-semibold">{copy('Question details', 'Chi tiết câu hỏi')}</DialogTitle><DialogDescription>{copy('Review content, responsibility and recorded version history.', 'Xem nội dung, người phụ trách và lịch sử phiên bản được ghi nhận.')}</DialogDescription></DialogHeader>
       <Tabs value={detailTab} onValueChange={value => { setDetailTab(value); requestAnimationFrame(() => { const body = document.getElementById(detailBodyId); if (body) body.scrollTop = 0 }) }} className="flex min-h-0 flex-1 flex-col"><TabsList className="mb-3 h-10 shrink-0"><TabsTrigger value="content" className="min-w-0 flex-1 px-2 text-caption sm:text-body-sm">{copy('Question content', 'Nội dung câu hỏi')}</TabsTrigger><TabsTrigger value="history" className="min-w-0 flex-1 px-2 text-caption sm:text-body-sm">{copy('History & versions', 'Lịch sử & phiên bản')}</TabsTrigger></TabsList><DialogBody id={detailBodyId} className="focus-visible:outline-muted-foreground py-3"><TabsContent value="content" className="space-y-5">
         {message && <Text role="status" className="text-success">{message}</Text>}
-        <section aria-label={copy('Question overview', 'Tổng quan câu hỏi')} className="space-y-3">
+        <section aria-label={copy('Question content', 'Nội dung câu hỏi')} className="space-y-3">
+          <Heading level={3} size="card">{copy('Question content', 'Nội dung câu hỏi')}</Heading>
+          <QuestionContentPreview content={detailV.content} vi={vi} variant="details" />
+        </section>
+        <section aria-label={copy('Question overview', 'Tổng quan câu hỏi')} className="space-y-3 border-t border-border pt-4">
           <Heading level={3} size="card">{copy('Question overview', 'Tổng quan câu hỏi')}</Heading>
           <dl className="grid grid-cols-2 gap-x-5 gap-y-3 text-sm">
             <div className="col-span-2"><dt className="text-xs text-muted-foreground">{copy('Question ID', 'Mã câu hỏi')}</dt><dd><QuestionId code={detailQ.code} compact vi={vi} /></dd></div>
@@ -224,14 +256,13 @@ function OwnedQuestionBankWorkspace() {
           <div className="flex flex-wrap items-center justify-between gap-2"><Heading level={3} size="card">{copy('Responsibility', 'Phân công phụ trách')}</Heading>{manager && <Button variant="outline" size="sm" disabled={busy} onClick={() => ask(detailQ, 'ASSIGN')}>{detailQ.owner ? copy('Reassign Expert', 'Đổi Expert phụ trách') : copy('Assign Expert', 'Phân công Expert')}</Button>}</div>
           <div className="rounded-lg border border-border bg-muted/20 p-3"><Text variant="caption" className="mb-2 text-muted-foreground">{copy('Responsible Expert', 'Expert phụ trách')}</Text><ResponsibleExpert owner={detailQ.owner} session={session} vi={vi} compact />{detailQ.owner && !session?.experts.some(expert => expert.id === detailQ.owner) && <Text variant="caption" className="mt-1 text-muted-foreground">{copy('Current Expert role is unavailable.', 'Chưa có thông tin vai trò Expert hiện tại.')}</Text>}{!detailQ.owner && <Text variant="caption" className="mt-2 text-muted-foreground">{copy('An L&D Manager can assign an eligible Expert.', 'L&D Manager có thể phân công một Expert đủ điều kiện.')}</Text>}<Text variant="caption" className="mt-3 border-t border-border pt-2 text-muted-foreground">{copy('Latest recorded assignment change', 'Thay đổi phân công được ghi nhận gần nhất')}: {date(latestAssignment(bank?.history ?? [], detailQ.id))}</Text></div>
         </section>
-        <section aria-label={copy('Question content', 'Nội dung câu hỏi')} className="space-y-3 border-t border-border pt-4"><Heading level={3} size="card">{copy('Question content', 'Nội dung câu hỏi')}</Heading><QuestionContentPreview content={detailV.content} vi={vi} variant="details" /></section>
         <section aria-label={copy('Assessment configuration', 'Cấu hình đánh giá')} className="space-y-3 border-t border-border pt-4"><Heading level={3} size="card">{copy('Assessment configuration', 'Cấu hình đánh giá')}</Heading><dl className="space-y-3 text-sm"><div><dt className="text-xs text-muted-foreground">{copy('Mandatory in Skill Assessment', 'Bắt buộc trong Skill Assessment')}</dt><dd className="mt-1 font-medium">{detailV.content.mandatory ? copy('Yes', 'Có') : copy('No', 'Không')}</dd><dd className="mt-1 text-xs leading-relaxed text-muted-foreground">{copy('The matching Skill Assessment policy determines how mandatory questions are included.', 'Chính sách Skill Assessment tương ứng quy định cách sử dụng câu hỏi bắt buộc.')}</dd></div><div><dt className="text-xs text-muted-foreground">{copy('Baseline behavior', 'Cách sử dụng trong Baseline')}</dt><dd className="mt-1 leading-relaxed">{copy('Baseline uses its own selection policy. This mandatory setting does not apply to Baseline.', 'Baseline sử dụng chính sách chọn câu hỏi riêng. Thiết lập bắt buộc này không áp dụng cho Baseline.')}</dd></div></dl></section>
         {detailV.publicationSource === 'DEVELOPMENT_SEED' && <Badge variant="outline">{copy('Development seed · no human review asserted', 'Seed dev · không ghi nhận người dùng đã duyệt')}</Badge>}
         {detailV.reason && <div className="rounded-lg bg-muted/40 p-3"><Text variant="caption" className="mb-1 font-medium text-muted-foreground">{copy('Version note', 'Ghi chú phiên bản')}</Text><Text variant="body-sm" className="whitespace-pre-wrap break-words">{detailV.reason}</Text></div>}
       </TabsContent><TabsContent value="history" className="question-history space-y-4">
         <section aria-label={copy('Version information', 'Thông tin phiên bản')} className="space-y-3">
           <div className="flex flex-wrap items-center justify-between gap-2"><Heading level={3} size="card">{copy('Version information', 'Thông tin phiên bản')}</Heading><QuestionId code={detailQ.code} compact vi={vi} /></div>
-          <div className="flex flex-wrap items-end gap-2"><label className="block min-w-0 text-xs text-muted-foreground"><span className="mb-1 block">{copy('Version', 'Phiên bản')}</span><select className="h-8 max-w-full rounded-md border border-border bg-background px-2.5 text-xs text-foreground focus-visible:ring-2 focus-visible:ring-ring" aria-label={copy('Version', 'Phiên bản')} value={detailV.id} onChange={e => { setVersionId(e.target.value); setError('') }}>{detailQ.versions.map(v => <option key={v.id} value={v.id}>v{v.number}{v.id === current(detailQ).id ? copy(' · Latest', ' · Mới nhất') : copy(' · Historical', ' · Lịch sử')}</option>)}</select></label><div className="flex h-8 items-center"><Badge variant={detailV.state === 'PUBLISHED' ? 'success' : 'warning'}>{stateName(detailV)}</Badge></div></div>
+          <div className="flex flex-wrap items-end gap-2"><div className="w-48"><FormField label={copy('Version', 'Phiên bản')}><Select size="sm" aria-label={copy('Version', 'Phiên bản')} value={detailV.id} onChange={value => { setVersionId(value); setError('') }} options={detailQ.versions.map(v => ({ value: v.id, label: `v${v.number}${v.id === current(detailQ).id ? copy(' · Latest', ' · Mới nhất') : copy(' · Historical', ' · Lịch sử')}` }))} /></FormField></div><div className="flex h-8 items-center"><Badge variant={detailV.state === 'PUBLISHED' ? 'success' : 'warning'}>{stateName(detailV)}</Badge></div></div>
           <dl className="grid grid-cols-2 gap-x-4 gap-y-3 border-t border-border pt-3 text-sm">{[
             [copy('Creator', 'Người tạo'), detailQ.createdBy, detailQ.createdAt],
             [copy('Last Editor', 'Người sửa gần nhất'), detailV.editedBy, detailV.editedAt],

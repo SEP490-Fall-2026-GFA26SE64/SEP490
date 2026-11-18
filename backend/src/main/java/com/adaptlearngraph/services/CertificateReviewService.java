@@ -42,6 +42,9 @@ public final class CertificateReviewService {
         var frozen=views.decode(row);var assignment=assignments.require(actor,frozen.requestId());var result=views.view(row);
         reauthorize(actor,frozen.requestId(),assignment);return result;
     }
+    public CertificateHttpReceipt decideHttp(UUID id,String key,Decide command) {
+        return CertificateHttpReceipt.from(decide(id,key,command));
+    }
     public Receipt decide(UUID id,String key,Decide command) {
         var actor=expert();InitialPathwayPorts.commandKey(key);UUID retry;
         try{retry=UUID.fromString(key);}catch(RuntimeException invalid){throw new Failure(400,"INVALID_IDEMPOTENCY_KEY");}
@@ -75,7 +78,7 @@ public final class CertificateReviewService {
                 audit.insert(new com.adaptlearngraph.entities.AuditEventEntity(UUID.randomUUID(),actor.accountId(),"certificate","KNOWLEDGE_EVIDENCE_ACCEPTED",evidence,"1",clock.clock(),"ACCEPTED",id));
                 effects.resolveReviews(actor.organizationId(),row.getLearnerId(),evidence);
             }
-            revisions.event(request,frozen.pathwayRevision(),"CERTIFICATE_"+command.decision(),actor.accountId(),
+            revisions.certificateEvent(request,frozen.pathwayRevision(),"CERTIFICATE_"+command.decision(),actor.accountId(),id,
                     Map.of("submissionId",id,"decisionId",decision,"reason",command.reason().trim(),"certificateName",frozen.certificate().name(),
                             "skillName",frozen.requirement().skillName(),"knowledgeLevel",frozen.requirement().knowledgeLevel(),"stepId",frozen.stepId()));
             var result=new Receipt(200,hash,revisions.encode(views.view(submissions.inOrganization(actor.organizationId(),id).orElseThrow())));

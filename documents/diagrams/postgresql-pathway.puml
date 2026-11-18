@@ -4,7 +4,7 @@ top to bottom direction
 hide empty members
 skinparam classAttributeIconSize 0
 skinparam shadowing false
-title Requirement pathway and certificate - selected source-defined columns
+title Requirement pathway, timing and certificate - selected workspace source through V64 / 2026-11-18
 entity "pathway_requirement_snapshot" as pathway_requirement_snapshot {
   uuid id <<PK>>
   uuid organization_id
@@ -12,6 +12,7 @@ entity "pathway_requirement_snapshot" as pathway_requirement_snapshot {
   uuid selection_id
   bigint selection_revision
   content_hash content_hash
+  jsonb snapshot
 }
 entity "initial_pathway_request" as initial_pathway_request {
   uuid request_id <<PK>>
@@ -19,15 +20,19 @@ entity "initial_pathway_request" as initial_pathway_request {
   uuid learner_id
   uuid selection_id
   uuid requirement_snapshot_id "NULLABLE"
-  text flow_version "NULLABLE"
+  text flow_version
   text generation_status
+  bigint selection_revision
+  jsonb frozen_input
 }
 entity "initial_pathway_revision" as initial_pathway_revision {
   uuid request_id <<PK>>
   bigint revision <<PK>>
   content_hash content_hash
-  text change_origin "NULLABLE"
+  text change_origin
   bigint approval_basis_revision "NULLABLE"
+  uuid source_event_id "NULLABLE"
+  jsonb content
 }
 entity "pathway_requirement_step" as pathway_requirement_step {
   uuid request_id <<PK>>
@@ -39,6 +44,12 @@ entity "pathway_requirement_step" as pathway_requirement_step {
   text state
   uuid source_bypass_id "NULLABLE"
   uuid fulfilled_evidence_id "NULLABLE"
+  jsonb requirement_snapshot
+  text provision
+  integer ordinal
+  text reason
+  text certificate_id "NULLABLE"
+  text certificate_version "NULLABLE"
 }
 entity "pathway_requirement_option" as pathway_requirement_option {
   uuid request_id <<PK>>
@@ -62,6 +73,11 @@ entity "pathway_requirement_bypass" as pathway_requirement_bypass {
   uuid step_id
   uuid expert_id
   text reason
+  uuid organization_id
+  uuid learner_id
+  jsonb assignment_snapshot
+  uuid retry_key
+  timestamptz decided_at
 }
 entity "certificate_submission" as certificate_submission {
   uuid id <<PK>>
@@ -72,6 +88,7 @@ entity "certificate_submission" as certificate_submission {
   bigint revision
   text status
   jsonb definition_snapshot
+  uuid replaces_submission_id "NULLABLE"
 }
 entity "certificate_submission_attachment" as certificate_submission_attachment {
   uuid submission_id <<PK>>
@@ -96,4 +113,60 @@ pathway_requirement_step --> pathway_requirement_bypass : authorized source deci
 certificate_submission --> certificate_submission_attachment : one evidence form FK
 certificate_submission --> certificate_submission_decision : same submission revision owner FK
 note bottom of certificate_submission : Request and step context is frozen JSON, not an invented SQL FK.
+entity "initial_pathway_current" as initial_pathway_current {
+  uuid request_id <<PK, FK>>
+  uuid organization_id
+  uuid learner_id
+  uuid selection_id
+  bigint selection_revision
+  bigint current_revision "NULLABLE"
+  text review_status "includes REJECTED"
+  timestamptz archived_at "NULLABLE"
+  integer timing_duration_months "NULLABLE"
+  jsonb timing_basis "NULLABLE"
+  timestamptz timing_started_at "NULLABLE"
+  timestamptz timing_deadline_at "NULLABLE"
+  timestamptz timing_completed_at "NULLABLE"
+  boolean timing_on_time "NULLABLE"
+}
+entity "initial_pathway_approval" as initial_pathway_approval {
+  uuid request_id <<PK, FK>>
+  bigint revision <<PK, FK>>
+  content_hash content_hash
+  uuid expert_id
+  text assignment_id
+  text assignment_version
+  timestamptz confirmed_at
+}
+entity "learning_notification" as learning_notification {
+  uuid id <<PK>>
+  text organization_id
+  text recipient_id
+  text event_key
+  text kind
+  text module_id "NULLABLE after V64"
+  text deep_link "NULLABLE"
+  timestamptz toast_observed_at "NULLABLE"
+  timestamptz created_at
+}
+initial_pathway_request --> initial_pathway_current : owned request FK
+initial_pathway_revision --> initial_pathway_current : nullable current revision FK
+initial_pathway_revision --> initial_pathway_approval : exact revision hash owner FKs
+initial_pathway_revision --> initial_pathway_revision : nullable approval_basis_revision FK
+note bottom of initial_pathway_current
+  First real approval pins positive calendar months in UTC.
+  Six timing columns; later revisions cannot restart the clock.
+  Historical approvals stay untimed; completion facts are immutable.
+end note
+note bottom of learning_notification
+  Separate text-keyed notification owner, not a SQL FK to pathway.
+  module_id OR valid /employee/ deep_link is required after V64.
+  Dedup recipient/event; toast observation differs from read state.
+end note
+legend bottom
+  Selected columns through V64; not a complete or live schema capture.
+  Parent -> child = physical FK; edges may summarize composite ownership.
+  Certificate request/step references and notification deep links are JSON/text, NOT cross-store FKs.
+  Immutable revision/change_origin/source_event/approval basis preserve recalculation history.
+endlegend
 @enduml

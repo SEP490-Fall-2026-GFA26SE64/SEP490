@@ -1,31 +1,31 @@
-import { AlertCircle, ArrowLeft, CheckCircle2, Eye, EyeOff, FileEdit, RotateCcw, Send, ShieldOff, Trash2 } from 'lucide-react'
+import { AlertCircle,ArrowLeft,CheckCircle2,Eye,EyeOff,FileEdit,RotateCcw,Send,ShieldOff,Trash2 } from 'lucide-react'
 import * as React from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useNavigate,useParams } from 'react-router-dom'
 import { Badge } from '../../../shared/components/ui/Badge'
 import { Button } from '../../../shared/components/ui/Button'
-import { Card, CardContent } from '../../../shared/components/ui/Card'
-import { Dialog, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../../../shared/components/ui/Dialog'
+import { Card,CardContent } from '../../../shared/components/ui/Card'
+import { Dialog,DialogDescription,DialogFooter,DialogHeader,DialogTitle } from '../../../shared/components/ui/Dialog'
 import { EmptyState } from '../../../shared/components/ui/EmptyState'
 import { Input } from '../../../shared/components/ui/Input'
 import { PageHeader } from '../../../shared/components/ui/PageHeader'
-import { useToast } from '../../../shared/hooks/useToast'
-import { useTranslation } from '../../../shared/i18n/LanguageContext'
+import { useToast } from "../../../shared/hooks/useToast"
+import { useTranslation } from "../../../shared/i18n/LanguageContext"
 import { WorkspaceLayout } from '../../../shared/layouts/WorkspaceLayout'
 import { AssessmentManifestEditor } from './AssessmentManifestEditor'
 import {
-  abandonPendingBlueprintChange,
-  BaselineAssessmentManagementApiError,
-  disableActiveAssessment,
-  editAssessmentManifest,
-  getBaselineAssessmentWorkspace,
-  getManagedAssessmentVersion,
-  publishAssessmentCandidate,
-  replaceReviewedAssessmentCandidate,
-  restoreHistoricalAssessment,
-  revealProtectedAssessmentAnswers,
-  reviewAssessmentCandidate,
-  type ManagedAssessmentItem,
-  type ManagedAssessmentVersion,
+abandonPendingBlueprintChange,
+BaselineAssessmentManagementApiError,
+disableActiveAssessment,
+editAssessmentManifest,
+getBaselineAssessmentWorkspace,
+getManagedAssessmentVersion,
+publishAssessmentCandidate,
+replaceReviewedAssessmentCandidate,
+restoreHistoricalAssessment,
+revealProtectedAssessmentAnswers,
+reviewAssessmentCandidate,
+type ManagedAssessmentItem,
+type ManagedAssessmentVersion,
 } from './baselineAssessmentManagementApi'
 import { PageLoader } from '../../../shared/components/ui/PageLoader'
 
@@ -80,6 +80,7 @@ export function AssessmentVersionPage() {
     } finally { setLoading(false) }
   }, [assessmentVersionId, jobPositionId, t])
 
+  // oxlint-disable-next-line react/set-state-in-effect -- Synchronize the pending state of the external data request when its scope changes.
   React.useEffect(() => { void load() }, [load])
 
   const markTitle = (value: string) => { saveKey.current = null; setTitle(value); setDirty(true) }

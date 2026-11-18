@@ -88,7 +88,7 @@ public class PasswordResetService implements PasswordResetUseCase {
         UUID resetId = UUID.randomUUID();
         Instant expiresAt = now.plus(Duration.ofMinutes(15));
 
-        resets.save(new PasswordResetEntity(resetId, account.accountId(), digest, expiresAt, now));
+        resets.insert(new PasswordResetEntity(resetId, account.accountId(), digest, expiresAt, now));
 
         try {
             String resetLink = publicUrl + "/reset-password#token=" + token;
@@ -122,7 +122,7 @@ public class PasswordResetService implements PasswordResetUseCase {
         }
 
         reset.consume(now);
-        resets.save(reset);
+        // The digest-scoped query locks this managed entity until transaction commit.
 
         String newHash = secrets.hashPassword(newPassword);
         accounts.updatePasswordHash(reset.getAccountId(), newHash);
@@ -167,6 +167,12 @@ public class PasswordResetService implements PasswordResetUseCase {
 
         security.audit(accountId, "PASSWORD_CHANGED", "SUCCEEDED", now);
         log.info("Password successfully changed for account {}", accountId);
+    }
+    @Override
+    @Transactional
+    public void changePasswordForSession(com.adaptlearngraph.entities.domain.WorkspacePrincipal principal,
+            String currentPassword, String newPassword) {
+        changePassword(principal.accountId(), currentPassword, newPassword);
     }
 }
 

@@ -1,0 +1,2 @@
+# fixture.sha256 pins UTF-8/LF bytes on every checkout.
+* text eol=lf

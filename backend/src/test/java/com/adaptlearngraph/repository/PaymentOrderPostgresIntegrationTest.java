@@ -266,7 +266,7 @@ class PaymentOrderPostgresIntegrationTest {
         UUID org=context.actor().organizationId();
         for(int index=0;index<20;index++) employee(org,true);
         UUID id=employee(org,false);
-        workspaces.changeMember(context.actor(),org,id,true,Set.of("DOMAIN_EXPERT"),0,NOW);
+        workspaces.changeMember(context.actor(),org,id,true,Set.of("ORGANIZATION_ADMINISTRATOR"),0,NOW);
         var member=workspaces.members(org).stream().filter(m->m.membershipId().equals(id)).findFirst().orElseThrow();
         assertEquals(SubscriptionFailure.Code.CAPACITY_EXCEEDED,assertThrows(SubscriptionFailure.class,()->
                 workspaces.updateMember(context.actor(),org,id,new com.adaptlearngraph.entities.domain.MemberProfileUpdate(
@@ -769,19 +769,19 @@ class PaymentOrderPostgresIntegrationTest {
     }
 
     @Test
-    void replacingASingleRoleUpdatesSeatsAndInitializesLearnerStateWithoutErasingHistory() {
+    void replacingBillableRolesKeepsSeatUsageAndInitializesLearnerStateWithoutErasingHistory() {
         var owner=provisioned();
         UUID organization=owner.actor().organizationId();
         UUID member=employee(organization,true);
         UUID account=workspaces.members(organization).stream().filter(value->value.membershipId().equals(member))
                 .findFirst().orElseThrow().accountId();
         workspaces.changeMember(owner.actor(),organization,member,true,Set.of("DOMAIN_EXPERT"),0,NOW);
-        assertEquals(0,workspaces.summary(organization,NOW).usedSeats());
+        assertEquals(1,workspaces.summary(organization,NOW).usedSeats());
         workspaces.changeMember(owner.actor(),organization,member,true,Set.of("EMPLOYEE"),1,NOW);
         assertEquals(1,workspaces.summary(organization,NOW).usedSeats());
         assertEquals(1,jdbc.queryForObject("SELECT count(*) FROM platform.learner_state WHERE learner_id=?",Integer.class,account));
         workspaces.changeMember(owner.actor(),organization,member,true,Set.of("LD_MANAGER"),2,NOW);
-        assertEquals(0,workspaces.summary(organization,NOW).usedSeats());
+        assertEquals(1,workspaces.summary(organization,NOW).usedSeats());
         assertEquals(1,jdbc.queryForObject("SELECT count(*) FROM platform.learner_state WHERE learner_id=?",Integer.class,account));
     }
 

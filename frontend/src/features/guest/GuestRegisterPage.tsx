@@ -1,24 +1,28 @@
-import * as React from 'react'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Link, useNavigate } from 'react-router-dom'
-import { ArrowLeft, ArrowRight, Building2, CheckCircle2, Eye, EyeOff, KeyRound, Mail, ShieldCheck, UserRound } from 'lucide-react'
+import { useMutation,useQuery,useQueryClient } from '@tanstack/react-query'
+import { ArrowLeft,ArrowRight,Building2,CheckCircle2,Eye,EyeOff,KeyRound,Mail,ShieldCheck,UserRound } from 'lucide-react'
 import { QRCodeSVG } from 'qrcode.react'
+import * as React from 'react'
+import { Link,useNavigate } from 'react-router-dom'
 import { Text } from '../../shared/components/typography/Text'
 import { Badge } from '../../shared/components/ui/Badge'
-import { Button, buttonVariants } from '../../shared/components/ui/Button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../shared/components/ui/Card'
+import { Button } from "../../shared/components/ui/Button"
+import { buttonVariants } from "../../shared/components/ui/Button"
+import { Card,CardContent,CardDescription,CardHeader,CardTitle } from '../../shared/components/ui/Card'
+import { Combobox } from '../../shared/components/ui/Combobox'
 import { Input } from '../../shared/components/ui/Input'
 import { PageHeader } from '../../shared/components/ui/PageHeader'
-import { Combobox } from '../../shared/components/ui/Combobox'
-import { useTranslation } from '../../shared/i18n/LanguageContext'
+import { useTranslation } from "../../shared/i18n/LanguageContext"
+import { useCopy } from "../subscription/SubscriptionFeedback.helpers"
 import { GuestLayout } from './GuestLayout'
-import { GuestOrgStructureImport, type AppliedOrgStructure } from './GuestOrgStructureImport'
-import { useCopy } from '../subscription/SubscriptionFeedback'
+import { GuestOrgStructureImport,type AppliedOrgStructure } from './GuestOrgStructureImport'
 import {
-  confirmRegistrationTotp, getRegistration, COUNTRY_CODES, INDUSTRIES, recoverRegistrationTotp,
-  registerOrganization, RegistrationApiError, resendRegistrationEmail, setupRegistrationTotp,
-  signInRegistration, signOutRegistration, verifyRegistrationEmail, verifyRegistrationTotp,
-  type Enrollment, type RegistrationFields, type RegistrationView,
+confirmRegistrationTotp,
+COUNTRY_CODES,
+getRegistration,
+INDUSTRIES,recoverRegistrationTotp,
+registerOrganization,RegistrationApiError,resendRegistrationEmail,setupRegistrationTotp,
+signInRegistration,signOutRegistration,verifyRegistrationEmail,verifyRegistrationTotp,
+type Enrollment,type RegistrationFields,type RegistrationView,
 } from './registrationApi'
 
 const SESSION_QUERY = ['registration-session'] as const
@@ -389,6 +393,7 @@ export function GuestRegisterPage({ mode = 'register' }: { mode?: 'register' | '
                         </label>
                       </div>
                       <ConsentError />
+                      {legalNotice && <p role="status" className="text-caption text-muted-foreground">{c('This is a placeholder link. The document is not available in this version.', 'Đây là liên kết minh họa. Tài liệu chưa được cung cấp trong phiên bản này.')}</p>}
                     </div>
                   </CardContent>
                 </>}

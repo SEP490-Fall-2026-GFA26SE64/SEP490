@@ -100,7 +100,7 @@ class WorkspaceCatalogImportNeo4jIntegrationTest {
         assertThat(jobPositions.findAllJobPositions(a)).extracting(JobPosition::code).containsExactlyInAnyOrder("JP-DEV", "JP-QA");
         assertThat(jobPositions.findAllJobPositions("")).isEmpty();
         var foreign = jobPositions.findAllJobPositions(a).getFirst();
-        assertThatThrownBy(() -> jobPositions.save(b, foreign)).isInstanceOf(CrossTenantWriteException.class);
+        assertThatThrownBy(() -> jobPositions.saveChange(b, new com.adaptlearngraph.entities.domain.JobPositionChange(foreign.id(), foreign.code(), foreign.name(), foreign.jobZone(), foreign.status(), foreign.version(), "manager-b", false, null, null))).isInstanceOf(CrossTenantWriteException.class);
         assertThat(jobPositions.findByIdOrCode(b, foreign.id())).isEmpty();
     }
 

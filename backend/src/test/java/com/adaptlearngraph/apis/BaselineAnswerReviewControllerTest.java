@@ -17,7 +17,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
@@ -32,7 +32,7 @@ class BaselineAnswerReviewControllerTest {
     private static final UUID ITEM_ID = new UUID(0L, 2);
 
     @Autowired private MockMvc mvc;
-    @MockBean private BaselineAnswerReviewUseCase review;
+    @MockitoBean private BaselineAnswerReviewUseCase review;
 
     @Test
     void revealReturnsDedicatedProtectedPayloadWithNoStoreHeaders() throws Exception {

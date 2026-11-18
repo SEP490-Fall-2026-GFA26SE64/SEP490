@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { Input } from '../../../shared/components/ui/Input'
-import { useTranslation } from '../../../shared/i18n/LanguageContext'
+import { useTranslation } from "../../../shared/i18n/LanguageContext";
 import type { BlueprintRole } from './baselineBlueprintApi'
 import {
   difficulties,
@@ -28,20 +28,20 @@ export function BaselineWeightControl({
   const { t } = useTranslation()
   const [drafts, setDrafts] = React.useState<Partial<Record<WeightField, string>>>({})
   const [touched, setTouched] = React.useState<Partial<Record<WeightField, boolean>>>({})
-  const lastCommittedField = React.useRef<WeightField | undefined>(undefined)
+  const [lastCommittedField, setLastCommittedField] = React.useState<WeightField | undefined>(undefined)
   const weights = weightsFromRole(role)
 
   const commit = (field: WeightField) => {
     const raw = drafts[field]
     if (raw === undefined) return
     setTouched((current) => ({ ...current, [field]: true }))
-    const next = rebalanceWholeWeight(weights, field, raw, lastCommittedField.current)
+    const next = rebalanceWholeWeight(weights, field, raw, lastCommittedField)
     if (!next) return
     const remaining = omitKey(drafts, field)
     setDrafts(remaining)
     setTouched((current) => omitKey(current, field))
     onPendingChange(Object.keys(remaining).length > 0)
-    lastCommittedField.current = field
+    setLastCommittedField(field)
     onChange(next)
   }
 
@@ -56,7 +56,7 @@ export function BaselineWeightControl({
           const range = weightInputRange(field)
           const raw = drafts[field]
           const invalid = Boolean(touched[field]) && raw !== undefined
-            && rebalanceWholeWeight(weights, field, raw, lastCommittedField.current) === null
+            && rebalanceWholeWeight(weights, field, raw, lastCommittedField) === null
           const weightLabel = formatMessage(t('baselineBlueprint.role.scoreWeight'), {
             difficulty: t(`baselineBlueprint.difficulty.${difficulty}`),
           })

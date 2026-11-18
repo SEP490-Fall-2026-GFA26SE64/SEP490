@@ -1,0 +1,67 @@
+@startuml
+!pragma layout smetana
+left to right direction
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+title RIASEC source-defined storage / workspace V74 / 2026-11-18
+class Account {
+  account_id: UUID [PK; reference stub]
+}
+class RiasecWorkspace {
+  organization_id: UUID [PK]
+  account_id: UUID [PK, FK account]
+  draft_id: UUID [nullable]
+  answers: JSONB [required; default {}]
+  revision: BIGINT [required; default 0]
+  editor_id: UUID [nullable]
+  updated_at: TIMESTAMPTZ [required]
+}
+class RiasecResult {
+  result_id: UUID [PK; submitted draft UUID]
+  organization_id: UUID [FK owner pair]
+  account_id: UUID [FK owner pair]
+  answers: JSONB [required]
+  scores: JSONB [required; six raw 0..40]
+  instrument_version: TEXT [required]
+  scoring_version: TEXT [required]
+  submitted_at: TIMESTAMPTZ [required]
+  deleted_at: TIMESTAMPTZ [nullable]
+  ai_status: TEXT [required; four-state check]
+  ai_deadline: TIMESTAMPTZ [required]
+  run_id: UUID [required; completion fence]
+  model: TEXT [nullable]
+  prompt_version: TEXT [nullable]
+  recommendations: JSONB [nullable]
+  failure_code: TEXT [nullable]
+}
+class JobPosition {
+  id: String
+  organizationId: String
+  code / name / description / status
+  interestRealistic: Integer [0..40, optional]
+  interestInvestigative: Integer [0..40, optional]
+  interestArtistic: Integer [0..40, optional]
+  interestSocial: Integer [0..40, optional]
+  interestEnterprising: Integer [0..40, optional]
+  interestConventional: Integer [0..40, optional]
+}
+RiasecWorkspace --> Account : account_id FK
+RiasecResult --> RiasecWorkspace : composite owner FK
+JobPosition ..> RiasecResult : metadata/profile copied into JSON; NOT FK
+note bottom of RiasecWorkspace
+  Table: platform.riasec_workspace
+  One owner row; one optional non-expiring draft.
+  No instrument-version/manifest archive column.
+end note
+note bottom of RiasecResult
+  Table: platform.riasec_result
+  Current = newest active submitted_at/result_id, not a pointer.
+  Inactive: recover within 7 days, or explicit permanent delete.
+  JSON object checks: answers and scores; workspace answers.
+  Indexes: owner + submitted_at/result_id; queued jobs; deleted_at.
+end note
+note bottom of JobPosition
+  Neo4j only; six interests all present or all absent on explicit save.
+  Demo/organization values; not normalized official O*NET ratings.
+end note
+@enduml

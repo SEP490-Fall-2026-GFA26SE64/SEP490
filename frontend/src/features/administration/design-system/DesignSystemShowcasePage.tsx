@@ -628,6 +628,7 @@ export function DesignSystemShowcasePage() {
               <div className="p-4 rounded-xl border border-border bg-muted/20 space-y-4">
                 <Text variant="eyebrow">Shared PageHeader Component Example</Text>
                 <PageHeader
+                  forceShowTitle
                   icon={<Palette className="h-7 w-7 text-primary" />}
                   title="Example Feature Console"
                   description="Standardized typography, action alignment, and sub-text flow across all actor views."

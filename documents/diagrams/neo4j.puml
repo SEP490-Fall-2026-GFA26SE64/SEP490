@@ -6,7 +6,7 @@ skinparam classAttributeIconSize 0
 skinparam shadowing false
 skinparam nodesep 80
 skinparam ranksep 65
-title Neo4j catalog - current Skill / knowledge / version source; deployment not verified
+title Neo4j catalog - RIASEC source update 2026-11-18; no live capture
 class JobPosition {
   id: String [UNIQUE]
   code: String
@@ -16,12 +16,13 @@ class JobPosition {
   status: String
   reviewStatus: String
   jobZone: Long
-  interestRealistic: Double
-  interestInvestigative: Double
-  interestArtistic: Double
-  interestSocial: Double
-  interestEnterprising: Double
-  interestConventional: Double
+  description: String [optional]
+  interestRealistic: Integer [0..40, optional]
+  interestInvestigative: Integer [0..40, optional]
+  interestArtistic: Integer [0..40, optional]
+  interestSocial: Integer [0..40, optional]
+  interestEnterprising: Integer [0..40, optional]
+  interestConventional: Integer [0..40, optional]
 }
 class TargetRole {
   id: String [UNIQUE]
@@ -115,6 +116,12 @@ Level --> MicroSkill : REQUIRES_SKILL
 LearningModule --> MicroSkill : TEACHES
 MicroSkill --> MicroSkill : HAS_SKILL_PREREQUISITE
 MicroSkill --> Certificate : REQUIRES_CERTIFICATE
+note right of JobPosition
+  RIASEC: all six integer scores 0..40, or all absent.
+  Missing is not zero; six zeros are valid.
+  Current profiles are demo/organization values, not O*NET ratings.
+  Personal answers/results/AI snapshots belong to PostgreSQL V72.
+end note
 note bottom of MicroSkill
   Catalog only. PostgreSQL owns learner state and evidence.
   Match Skill + knowledge level + Skill version; no OC filters.

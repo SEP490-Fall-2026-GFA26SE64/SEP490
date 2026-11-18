@@ -7,7 +7,8 @@ import { WorkspaceAuthLayout } from '../../shared/layouts/WorkspaceAuthLayout'
 import { Input } from '../../shared/components/ui/Input'
 import { Button } from '../../shared/components/ui/Button'
 import { authenticate, completeTotp, getIdentity, setupTotp, request, type Identity } from './subscriptionApi'
-import { Failure, Loading, useCopy } from './SubscriptionFeedback'
+import { Failure, Loading } from "./SubscriptionFeedback";
+import { useCopy } from "./SubscriptionFeedback.helpers";
 import { ROLE_HOME, singleWorkspaceRole } from '../../shared/auth/workspaceRole'
 import { isWorkspaceSlug, safeReturnPath, workspaceUrl } from '../../shared/auth/workspacePaths'
 import { setActiveCompanyId } from '../../shared/stores/companyStore'

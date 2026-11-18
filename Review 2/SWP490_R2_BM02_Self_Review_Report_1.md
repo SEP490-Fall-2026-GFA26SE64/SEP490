@@ -5,6 +5,10 @@ SWP490 · CAPSTONE PROJECT · REVIEW 2 · BM02
 
 # SRS/SDD Self-Review Report – Review 2
 
+## RIASEC source clarification — 2026-11-18
+
+At `2c2468b5`, separate server-owned RIASEC scoring/storage and internal Ollama Job Position selection now exist: [current features](../documents/features/README.md#riasec-current-implementation--2026-11-18), [storage](../documents/diagrams/riasec-storage.svg), [runtime](../documents/diagrams/riasec-flow.svg). Earlier F02/F12/F18 statements about missing RIASEC source/unselected model are historical observations, not current implementation status. The original findings, evidence, estimates and dispositions below are retained; this clarification does not close findings, revise test plans or create a passing result. Current UI/source limitations and latest static-only evidence are recorded in the feature documents.
+
 ## Current source disposition — 2026-11-07
 
 The findings/estimates below are retained historical review records, not rewritten results. At HEAD `61d334c`, authoritative rule Skill papers/results, exact completion/evidence and requirement recalculation now exist in the local gated composition. Thus F13/F14's older missing-source observations no longer describe all current source; their end-to-end acceptance remains unverified. F18's stale architecture prose is corrected in Report4; LLM/ROI remain incomplete. Current limits include per-Skill policy assignment, eligible-option exclusion conflict, module-specific retake contexts, unverified certificate/bypass/parallel/backfill and unavailable applied DB metadata. No runtime/test result or finding closure is fabricated. [Current source contract](../documents/technical/Organization%20Rule%20Assessment%20and%20Pathway.md).

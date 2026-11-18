@@ -26,8 +26,8 @@ import { Badge } from '../../shared/components/ui/Badge'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '../../shared/components/ui/Tabs'
 import { Text } from '../../shared/components/typography/Text'
 import { WorkspaceLayout } from '../../shared/layouts/WorkspaceLayout'
-import { useTranslation } from '../../shared/i18n/LanguageContext'
-import { useToast } from '../../shared/hooks/useToast'
+import { useTranslation } from "../../shared/i18n/LanguageContext";
+import { useToast } from "../../shared/hooks/useToast";
 import { cn } from '../../shared/lib/utils'
 import {
   getFixturePreview,
@@ -177,6 +177,7 @@ export function PlatformGraphBenchmarkPage() {
   // Load fixture preview whenever scale or fixture set changes
   React.useEffect(() => {
     let isMounted = true
+    // oxlint-disable-next-line react/set-state-in-effect -- Synchronize the pending state of the external data request when its scope changes.
     setIsPreviewLoading(true)
     getFixturePreview(selectedScale, selectedFixtureSet, 1000)
       .then((pairs) => {
@@ -381,9 +382,12 @@ export function PlatformGraphBenchmarkPage() {
     }
   }
 
+  const runInitialBenchmark = React.useEffectEvent(() => { void handleRunBenchmark(false) })
+
   // Execute live benchmark against Neo4j on initial mount to display real data immediately
   React.useEffect(() => {
-    handleRunBenchmark(false)
+    // oxlint-disable-next-line react/set-state-in-effect -- Synchronize the pending state of the external data request when its scope changes.
+    runInitialBenchmark()
   }, [])
 
   const handleExportJson = () => {

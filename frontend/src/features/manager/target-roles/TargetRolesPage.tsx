@@ -1,9 +1,4 @@
-import { workspaceFetch as fetch } from '../../../shared/api/workspaceFetch'
-import { fetchJobPositions } from '../../../shared/api/jobPositionApi'
-import {
-  fetchCompetencies,
-  type CompetencyDto,
-} from '../../../shared/api/competencyApi'
+import { useResettableState } from '../../../shared/hooks/useResettableState'
 import {
   AlertCircle,
   AlertTriangle,
@@ -22,6 +17,7 @@ import {
   EyeOff,
   FileCheck,
   History,
+  Layers,
   Network as NetworkIcon,
   Plus,
   Search,
@@ -31,117 +27,89 @@ import {
   XCircle,
 } from 'lucide-react'
 import * as React from 'react'
-import { TargetRoleGraphModal } from './components/TargetRoleGraphModal'
-import { TargetRoleVersionDiff } from './components/TargetRoleVersionDiff'
-import { missingRoleLevelRequirements, roleRequirements, validRequiredKnowledge } from './roleRequirements'
-import { formatRequiredKnowledge } from './roleKnowledgePresentation'
-import { useTranslation } from '../../../shared/i18n/LanguageContext'
-import { Badge } from '../../../shared/components/ui/Badge'
-import { Button } from '../../../shared/components/ui/Button'
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '../../../shared/components/ui/Card'
-import { Pagination } from '../../../shared/components/ui/Pagination'
-import { PageHeader } from '../../../shared/components/ui/PageHeader'
+  fetchCompetencies,
+  type CompetencyDto,
+} from '../../../shared/api/competencyApi'
 import {
-  Dialog,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '../../../shared/components/ui/Dialog'
-import { StatCard } from '../../../shared/components/ui/StatCard'
+  createDepartmentApi,
+  fetchDepartments,
+  linkJobPositionToDepartment,
+  updateDepartmentApi,
+} from '../../../shared/api/departmentApi'
+import { fetchJobPositions } from '../../../shared/api/jobPositionApi'
+import { workspaceFetch as fetch } from '../../../shared/api/workspaceFetch'
+import { WorkspaceSessionContext } from '../../../shared/auth/workspaceSession'
 import {
   QuickConfigImportModal,
   type ImportPreset,
 } from '../../../shared/components/import/QuickConfigImportModal'
-import { useToast } from '../../../shared/hooks/useToast'
-import { WorkspaceLayout } from '../../../shared/layouts/WorkspaceLayout'
-import { WorkspaceSessionContext } from '../../../shared/auth/workspaceSession'
-import { getMembers, getReferences, request } from '../../subscription/subscriptionApi'
-import { fetchDepartments, updateDepartmentApi, createDepartmentApi, linkJobPositionToDepartment } from '../../../shared/api/departmentApi'
-import { loadDepartments, updateDepartment } from '../../../shared/stores/departmentStore'
+import { RolePublicationReadinessView } from './components/RolePublicationReadinessView'
+import { fetchLearningModules, type LearningModuleDto } from '../../../shared/api/learningModuleApi'
+import { bankRequest, type BankView, type BankQuestion } from '../../../shared/api/questionBankApi'
+import { Badge } from '../../../shared/components/ui/Badge'
+import { Button } from '../../../shared/components/ui/Button'
 import {
-  getActiveCompany,
-  resolveWorkspaceOrgId,
-  updateActiveCompany,
-} from '../../../shared/stores/companyStore'
+Card,
+CardContent,
+CardDescription,
+CardHeader,
+CardTitle,
+} from '../../../shared/components/ui/Card'
 import {
-  ELIGIBLE_EXPERTS,
-  findEligibleExpert,
-  type JobPosition,
-  compareRoleVersions,
-  formatDate,
-  getAvailableJobPositions,
-  normalizeExpertId,
-  getEligibleExpertsForJobPosition,
-  getOrganizationExperts,
-  type EligibleExpert,
-  resolveJobPositionForRole,
-  sortTargetRolesWithDraftsBelowPublished,
-  type RoleLevelThresholds,
-  type CompetencyModel,
-  type TargetRoleModel,
-} from '../data/ldManagerMockData'
-import {
-  Combobox,
-  type ComboboxOption,
+Combobox,
+type ComboboxOption,
 } from '../../../shared/components/ui/Combobox'
+import {
+Dialog,
+DialogDescription,
+DialogFooter,
+DialogHeader,
+DialogTitle,
+} from '../../../shared/components/ui/Dialog'
+import { PageHeader } from '../../../shared/components/ui/PageHeader'
 import { PageLoader } from '../../../shared/components/ui/PageLoader'
-
-export const getExpertOptionsForJobPosition = (
-  jobPositionCode?: string,
-  organizationId?: string,
-  departmentScope?: { id?: string; code?: string; name?: string } | null,
-): ComboboxOption[] => {
-  const eligible = getEligibleExpertsForJobPosition(
-    jobPositionCode,
-    organizationId,
-    departmentScope,
-  )
-
-  return eligible.map((exp) => ({
-    value: exp.id,
-    label: exp.name,
-    description: exp.title,
-  }))
-}
+import { Pagination } from '../../../shared/components/ui/Pagination'
+import { StatCard } from '../../../shared/components/ui/StatCard'
+import { useToast } from "../../../shared/hooks/useToast"
+import { useTranslation } from "../../../shared/i18n/LanguageContext"
+import { WorkspaceLayout } from '../../../shared/layouts/WorkspaceLayout'
+import {
+getActiveCompany,
+resolveWorkspaceOrgId,
+updateActiveCompany,
+} from '../../../shared/stores/companyStore'
+import { loadDepartments,updateDepartment } from '../../../shared/stores/departmentStore'
+import { getMembers,getReferences,request } from '../../subscription/subscriptionApi'
+import {
+compareRoleVersions,
+ELIGIBLE_EXPERTS,
+findEligibleExpert,
+formatDate,
+getAvailableJobPositions,
+getEligibleExpertsForJobPosition,
+getOrganizationExperts,
+normalizeExpertId,
+resolveJobPositionForRole,
+sortTargetRolesWithDraftsBelowPublished,
+type CompetencyModel,
+type EligibleExpert,
+type JobPosition,
+type RoleLevelThresholds,
+type TargetRoleModel,
+} from '../data/ldManagerMockData'
+import { TargetRoleGraphModal } from './components/TargetRoleGraphModal'
+import { TargetRoleVersionDiff } from './components/TargetRoleVersionDiff'
+import { formatRequiredKnowledge } from './roleKnowledgePresentation'
+import { missingRoleLevelRequirements,roleRequirements,validRequiredKnowledge } from './roleRequirements'
+import { getManagerEffectiveStatus, type ManagerRoleStatus } from './TargetRolesPage.helpers'
+export { getManagerEffectiveStatus, type ManagerRoleStatus }
 
 const ROLE_PRESETS: ImportPreset[] = []
-
-export type ManagerRoleStatus =
-  | 'published'
-  | 'submitted'
-  | 'sent'
-  | 'draft'
-  | 'feedback'
-  | 'rejected'
-  | 'unpublished'
-
-export const getManagerEffectiveStatus = (
-  role: TargetRoleModel,
-): ManagerRoleStatus => {
-  if (role.status === 'published') return 'published'
-  if (role.status === 'unpublished') return 'unpublished'
-  if (role.status === 'submitted') return 'submitted'
-  if (role.status === 'sent') return 'sent'
-
-  if (role.status === 'rejected') {
-    return role.rejectionReason?.startsWith('[LD_MANAGER]:')
-      ? 'rejected'
-      : 'feedback'
-  }
-
-  return 'draft'
-}
-
 interface RoleMetadata {
   id?: string
   code: string
+  title?: string
   jobPositionCode?: string
   jobPositionTitle?: string
   department?: string
@@ -151,6 +119,7 @@ interface RoleMetadata {
   levelNames?: string[]
   levelDurations?: Record<string, string>
   status?: TargetRoleModel['status']
+  isStaffingEnabled?: boolean
 }
 
 function parseDurationNumber(val?: string | number, defaultNum = 6): number {
@@ -280,6 +249,7 @@ export function TargetRolesPage() {
   const [statusFilter, setStatusFilter] = React.useState<
     | 'all'
     | 'published'
+    | 'staged'
     | 'draft'
     | 'submitted'
     | 'sent'
@@ -358,6 +328,7 @@ export function TargetRolesPage() {
   }, [orgId])
 
   React.useEffect(() => {
+    // oxlint-disable-next-line react/set-state-in-effect -- Synchronize the pending state of the external data request when its scope changes.
     refreshAvailableJobPositions()
     let timeoutId: any = null
     const handleJobPositionsUpdated = (e?: StorageEvent | Event) => {
@@ -654,7 +625,7 @@ export function TargetRolesPage() {
       window.removeEventListener('departments_updated', loadManagerDept)
       window.removeEventListener('adaptlearn_job_positions_updated', loadManagerDept)
     }
-  }, [orgId, session?.identity?.accountId, session?.identity?.email])
+  }, [orgId, session?.identity?.accountId, session?.identity?.email, session?.identity?.fullName])
 
   const jobPositionOptions: ComboboxOption[] = React.useMemo(() => {
     const inactiveCodes = new Set<string>()
@@ -856,12 +827,21 @@ export function TargetRolesPage() {
                 ? 'unpublished'
                 : String(r.status || '').toLowerCase() === 'submitted'
                 ? 'submitted'
+                : String(r.status || '').toLowerCase() === 'staged' || meta?.status === 'staged'
+                ? 'staged'
                 : String(r.status || '').toLowerCase() === 'sent'
                 ? 'sent'
                 : String(r.status || '').toLowerCase() === 'rejected'
                 ? 'rejected'
                 : 'draft'
             ) as TargetRoleModel['status'],
+            isStaffingEnabled: Boolean(
+              (r as any).isStaffingEnabled ||
+              meta?.isStaffingEnabled ||
+              storeRole?.isStaffingEnabled ||
+              String(r.status || '').toLowerCase() === 'staged' ||
+              meta?.status === 'staged'
+            ),
             rejectionReason: String(r.rejectionReason || ''),
             levelCompetencies:
               r.levelCompetencies && Object.keys(r.levelCompetencies).length > 0
@@ -894,14 +874,18 @@ export function TargetRolesPage() {
             activeEnrollments: 0,
             createdAt: r.createdAt
               ? String(r.createdAt)
-              : r.updatedAt
-                ? String(r.updatedAt)
-                : '2026-01-01T00:00:00Z',
+              : storeRole?.createdAt
+                ? String(storeRole.createdAt)
+                : r.updatedAt
+                  ? String(r.updatedAt)
+                  : new Date().toISOString(),
             updatedAt: r.updatedAt
               ? String(r.updatedAt)
-              : r.createdAt
-                ? String(r.createdAt)
-                : '2026-01-01T00:00:00Z',
+              : storeRole?.updatedAt
+                ? String(storeRole.updatedAt)
+                : r.createdAt
+                  ? String(r.createdAt)
+                  : new Date().toISOString(),
           }
         })
 
@@ -914,7 +898,7 @@ export function TargetRolesPage() {
             (s) =>
               !backendIds.has(s.id) &&
               !backendKeys.has(`${s.code.toUpperCase()}::${String(s.version || '1.0').trim()}`) &&
-              (s.status === 'draft' || s.status === 'sent' || s.status === 'submitted' || s.status === 'rejected'),
+              (s.status === 'draft' || s.status === 'staged' || s.status === 'sent' || s.status === 'submitted' || s.status === 'rejected'),
           )
           const rawCombined = [...localOnlyDrafts, ...mapped]
           const dedupedMap = new Map<string, TargetRoleModel>()
@@ -1027,9 +1011,10 @@ export function TargetRolesPage() {
       isFetchingRef.current = false
       setIsRolesLoading(false)
     }
-  }, [orgId])
+  }, [orgId, isTechnova, orgExperts])
 
   React.useEffect(() => {
+    // oxlint-disable-next-line react/set-state-in-effect -- Synchronize the pending state of the external data request when its scope changes.
     fetchRoles()
   }, [fetchRoles])
 
@@ -1146,9 +1131,34 @@ export function TargetRolesPage() {
     React.useState<TargetRoleModel | null>(null)
   const [viewingDetailsRole, setViewingDetailsRole] =
     React.useState<TargetRoleModel | null>(null)
-  const [detailViewMode, setDetailViewMode] = React.useState<'specs' | 'diff'>(
-    'specs',
-  )
+  const [detailViewMode, setDetailViewMode] = React.useState<
+    'specs' | 'readiness' | 'diff'
+  >('specs')
+  const [validationModules, setValidationModules] = React.useState<
+    LearningModuleDto[]
+  >([])
+  const [validationBankQuestions, setValidationBankQuestions] = React.useState<
+    BankQuestion[]
+  >([])
+  const [isLoadingValidationContent, setIsLoadingValidationContent] =
+    React.useState(false)
+
+  React.useEffect(() => {
+    if (viewingDetailsRole) {
+      setIsLoadingValidationContent(true)
+      Promise.all([
+        fetchLearningModules(orgId).catch(() => [] as LearningModuleDto[]),
+        bankRequest<BankView>('', undefined).catch(() => null),
+      ])
+        .then(([mods, bank]) => {
+          setValidationModules(mods)
+          setValidationBankQuestions(bank?.questions || [])
+        })
+        .finally(() => {
+          setIsLoadingValidationContent(false)
+        })
+    }
+  }, [viewingDetailsRole?.id, orgId])
   const [graphRole, setGraphRole] = React.useState<TargetRoleModel | null>(null)
   const [deletingRole, setDeletingRole] =
     React.useState<TargetRoleModel | null>(null)
@@ -1223,8 +1233,7 @@ export function TargetRolesPage() {
     code: '',
     title: '',
     jobPositionCode: '15-1252.00',
-    scope:
-      'Design, code, and test applications, systems software, and infrastructure pipelines.',
+    scope: '',
     familyCode: 'DEV',
     track: 'PROFESSIONAL' as 'PROFESSIONAL' | 'MANAGEMENT',
     levelNames: ['Senior', 'Middle', 'Junior'],
@@ -1235,6 +1244,7 @@ export function TargetRolesPage() {
     } as Record<string, string>,
     assignedExpertId: '',
     description: '',
+    isStaffingEnabled: false,
   })
 
   // Form states for editing role (L&D Manager view/edit scope)
@@ -1249,6 +1259,7 @@ export function TargetRolesPage() {
     levelDurations: {} as Record<string, string>,
     assignedExpertId: '',
     description: '',
+    isStaffingEnabled: false,
   })
 
   // Dynamic expert options filtered to experts certified for the selected jobPosition
@@ -1263,12 +1274,24 @@ export function TargetRolesPage() {
     if (list.length === 0 && orgExperts.length > 0) {
       list = orgExperts
     }
-    return list.map((exp) => ({
-      value: exp.id,
-      label: exp.name,
-      description: exp.title,
-    }))
+    const options: ComboboxOption[] = [
+      {
+        value: '',
+        label: 'Unassigned',
+        description: 'Can save as draft for now',
+      },
+      ...list.map((exp) => ({
+        value: exp.id,
+        label: exp.name,
+        description: exp.title,
+      })),
+    ]
+    return options
   }, [roleForm.jobPositionCode, orgId, managerDepartment, orgExperts])
+
+  const createEligibleExpertCount = React.useMemo(() => {
+    return createExpertOptions.filter((o) => Boolean(o.value)).length
+  }, [createExpertOptions])
 
   const editRoleDeptScope = React.useMemo(() => {
     if (selectedRole?.departmentId) {
@@ -1278,7 +1301,7 @@ export function TargetRolesPage() {
       }
     }
     return managerDepartment
-  }, [selectedRole?.department, selectedRole?.departmentId, managerDepartment])
+  }, [selectedRole, managerDepartment])
 
   const editExpertOptions: ComboboxOption[] = React.useMemo(() => {
     let list = getEligibleExpertsForJobPosition(
@@ -1290,11 +1313,18 @@ export function TargetRolesPage() {
     if (list.length === 0 && orgExperts.length > 0) {
       list = orgExperts
     }
-    const options = list.map((exp) => ({
-      value: exp.id,
-      label: exp.name,
-      description: exp.title,
-    }))
+    const options: ComboboxOption[] = [
+      {
+        value: '',
+        label: 'Unassigned',
+        description: 'Can save as draft for now',
+      },
+      ...list.map((exp) => ({
+        value: exp.id,
+        label: exp.name,
+        description: exp.title,
+      })),
+    ]
     if (selectedRole?.assignedExpertId) {
       const alreadyIncluded = options.some(
         (o) => normalizeExpertId(o.value) === normalizeExpertId(selectedRole.assignedExpertId)
@@ -1313,7 +1343,11 @@ export function TargetRolesPage() {
       }
     }
     return options
-  }, [editRoleForm.jobPositionCode, orgId, editRoleDeptScope, orgExperts, selectedRole?.assignedExpertId])
+  }, [editRoleForm.jobPositionCode, orgId, editRoleDeptScope, orgExperts, selectedRole])
+
+  const editEligibleExpertCount = React.useMemo(() => {
+    return editExpertOptions.filter((o) => Boolean(o.value)).length
+  }, [editExpertOptions])
 
   // Sort criteria: defaults to 'latest' so newly created or updated roles go to the top
 
@@ -1321,14 +1355,11 @@ export function TargetRolesPage() {
 
   // Pagination states
 
-  const [currentPage, setCurrentPage] = React.useState(1)
-  const pageSize = 10
+    const pageSize = 10
 
   // Reset page when search/filter/sort changes
 
-  React.useEffect(() => {
-    setCurrentPage(1)
-  }, [searchQuery, statusFilter, sortBy])
+  const [currentPage, setCurrentPage] = useResettableState(1, [searchQuery, statusFilter, sortBy])
 
   // Base list of roles visible to L&D Manager:
   // 1. Hide unsubmitted expert successor drafts until submitted
@@ -1433,6 +1464,9 @@ export function TargetRolesPage() {
   const draftRoles = managerVisibleRoles.filter(
     (r) => getManagerEffectiveStatus(r) === 'draft',
   ).length
+  const stagedRoles = managerVisibleRoles.filter(
+    (r) => getManagerEffectiveStatus(r) === 'staged',
+  ).length
   const sentRoles = managerVisibleRoles.filter(
     (r) => getManagerEffectiveStatus(r) === 'sent',
   ).length
@@ -1469,19 +1503,11 @@ export function TargetRolesPage() {
           : latestPositions
         : latestPositions
     const defaultOcc = departmentPositions.length > 0 ? departmentPositions[0] : null
-    const eligibleExperts = defaultOcc
-      ? getEligibleExpertsForJobPosition(
-          defaultOcc.code,
-          orgId,
-          managerDepartment,
-          orgExperts,
-        )
-      : []
     setRoleForm({
       code: `ROLE-${Math.random().toString(36).substring(2, 6).toUpperCase()}`,
       title: '',
       jobPositionCode: defaultOcc?.code || '',
-      scope: defaultOcc?.description || '',
+      scope: '',
       familyCode: defaultOcc?.profiles?.[0] || 'DEV',
       track: 'PROFESSIONAL',
       levelNames: ['Senior', 'Middle', 'Junior'],
@@ -1490,15 +1516,16 @@ export function TargetRolesPage() {
         Middle: '4 months',
         Junior: '3 months',
       },
-      assignedExpertId: eligibleExperts[0]?.id || orgExperts[0]?.id || '',
-      description: defaultOcc?.description || '',
+      assignedExpertId: '',
+      description: '',
+      isStaffingEnabled: false,
     })
 
     setIsCreateRoleModalOpen(true)
   }
 
   const handleCreateRoleSubmit = async (
-    targetStatus: 'draft' | 'sent' = 'draft',
+    targetStatus: 'draft' | 'staged' | 'sent' = 'draft',
   ) => {
     if (!roleForm.code.trim() || !roleForm.title.trim()) {
       toast({
@@ -1550,8 +1577,31 @@ export function TargetRolesPage() {
 
       return
     }
+    if (targetStatus === 'sent' && !roleForm.assignedExpertId) {
+      toast({
+        title: 'Expert Required',
+        description: 'Please select an assigned domain expert to dispatch this role for authoring.',
+        variant: 'warning',
+      })
+      return
+    }
+
+    const isStaffing = targetStatus === 'staged' || Boolean(roleForm.isStaffingEnabled)
     const roleCode = roleForm.code.trim().toUpperCase()
-    const backendStatus = targetStatus === 'sent' ? 'SENT' : 'DRAFT'
+    const roleEffectiveStatus: TargetRoleModel['status'] =
+      targetStatus === 'sent'
+        ? 'sent'
+        : targetStatus === 'staged'
+          ? 'staged'
+          : isStaffing
+            ? 'staged'
+            : 'draft'
+    const backendStatus =
+      targetStatus === 'sent'
+        ? 'SENT'
+        : roleEffectiveStatus === 'staged'
+          ? 'STAGED'
+          : 'DRAFT'
     const assignedExpert = roleForm.assignedExpertId
       ? orgExperts.find((e) => e.id === roleForm.assignedExpertId) ||
         findEligibleExpert(roleForm.assignedExpertId, orgId, orgExperts) ||
@@ -1566,7 +1616,7 @@ export function TargetRolesPage() {
       title: roleForm.title.trim(),
       jobPositionCode: selectedOcc.code,
       jobPositionTitle: selectedOcc.name,
-      scope: roleForm.scope || selectedOcc.description,
+      scope: roleForm.scope?.trim() || '',
       levels: roleForm.levelNames,
       levelDurations: roleForm.levelDurations,
       familyCode: roleForm.familyCode || selectedOcc.profiles[0] || 'DEV',
@@ -1576,10 +1626,10 @@ export function TargetRolesPage() {
       assignedExpertName: expertName || undefined,
       department: managerDepartment?.name || selectedOcc.name,
       departmentId: managerDepartment?.id,
-      description:
-        roleForm.scope || roleForm.description || selectedOcc.description,
+      description: roleForm.scope?.trim() || roleForm.description?.trim() || '',
       version: '1.0',
-      status: targetStatus === 'sent' ? 'sent' : 'draft',
+      status: roleEffectiveStatus,
+      isStaffingEnabled: isStaffing,
       competencyIds: [],
       skillTargets: [],
       activeEnrollments: 0,
@@ -1630,6 +1680,7 @@ export function TargetRolesPage() {
     saveTargetRoleMeta(orgId, {
       id: generatedId,
       code: roleCode,
+      title: roleForm.title.trim(),
       jobPositionCode: selectedOcc.code,
       jobPositionTitle: selectedOcc.name,
       department: managerDepartment?.name || selectedOcc.name,
@@ -1638,6 +1689,8 @@ export function TargetRolesPage() {
       assignedExpertName: expertName,
       levelNames: roleForm.levelNames,
       levelDurations: roleForm.levelDurations,
+      status: roleEffectiveStatus,
+      isStaffingEnabled: isStaffing,
     })
 
     // Persist locally immediately so the role never vanishes upon save draft
@@ -1653,12 +1706,16 @@ export function TargetRolesPage() {
     toast({
       title:
         targetStatus === 'sent'
-          ? 'Target Role Created & Sent to Expert'
-          : 'Target Role Draft Created',
+          ? (isStaffing ? 'Target Role Dispatched (Staffing Staged)' : 'Target Role Created & Sent to Expert')
+          : targetStatus === 'staged'
+            ? 'Target Role Staged for Staffing'
+            : 'Target Role Draft Created',
       description:
         targetStatus === 'sent'
-          ? `Role ${roleForm.title.trim()} (${roleCode}) created and dispatched to ${expertName}.`
-          : `Draft role ${roleCode} - ${roleForm.title.trim()} created and saved to catalog.`,
+          ? `Role ${roleForm.title.trim()} (${roleCode}) created and dispatched to ${expertName || 'expert'}.${isStaffing ? ' Staged for employee assignment in organization administration.' : ''}`
+          : targetStatus === 'staged'
+            ? `Role ${roleForm.title.trim()} (${roleCode}) is staged. Org Administrators can now assign this role and career levels to employees immediately.`
+            : `Draft role ${roleCode} - ${roleForm.title.trim()} created and saved to catalog.`,
       variant: 'success',
     })
 
@@ -1667,7 +1724,7 @@ export function TargetRolesPage() {
       code: `ROLE-${Math.random().toString(36).substring(2, 6).toUpperCase()}`,
       title: '',
       jobPositionCode: selectedOcc.code,
-      scope: selectedOcc.description,
+      scope: '',
       familyCode: selectedOcc.profiles?.[0] || 'DEV',
       track: 'PROFESSIONAL',
       levelNames: ['Senior', 'Middle', 'Junior'],
@@ -1677,7 +1734,8 @@ export function TargetRolesPage() {
         Junior: '3 months',
       },
       assignedExpertId: '',
-      description: selectedOcc.description,
+      description: '',
+      isStaffingEnabled: false,
     })
 
     try {
@@ -1690,9 +1748,8 @@ export function TargetRolesPage() {
           familyCode: selectedOcc.code,
           track: roleForm.track,
           responsibilities: [],
-          assignedExpertId: roleForm.assignedExpertId,
-          description:
-            roleForm.scope || roleForm.description || selectedOcc.description,
+          assignedExpertId: roleForm.assignedExpertId || undefined,
+          description: roleForm.scope?.trim() || roleForm.description?.trim() || '',
           competencyIds: [],
           levels: roleForm.levelNames,
           levelDurations: roleForm.levelDurations,
@@ -1708,6 +1765,7 @@ export function TargetRolesPage() {
         saveTargetRoleMeta(orgId, {
           id: String(createdData.id),
           code: roleCode,
+          title: roleForm.title.trim(),
           jobPositionCode: selectedOcc.code,
           jobPositionTitle: selectedOcc.name,
           department: managerDepartment?.name || selectedOcc.name,
@@ -1716,6 +1774,8 @@ export function TargetRolesPage() {
           assignedExpertName: expertName,
           levelNames: roleForm.levelNames,
           levelDurations: roleForm.levelDurations,
+          status: roleEffectiveStatus,
+          isStaffingEnabled: isStaffing,
         })
         saveAndSetRoles((prev) =>
           prev.map((r) => (r.code === roleCode ? newRole : r)),
@@ -1862,6 +1922,7 @@ export function TargetRolesPage() {
             },
       assignedExpertId: effectiveExpertId,
       description: role.description || role.scope || occ.description,
+      isStaffingEnabled: Boolean(role.isStaffingEnabled || role.status === 'staged'),
     })
 
     setIsSkillTargetsModalOpen(true)
@@ -1911,20 +1972,27 @@ export function TargetRolesPage() {
 
       return
     }
+    const isStaffing = Boolean(
+      selectedRole.isStaffingEnabled ||
+      selectedRole.status === 'staged' ||
+      (selectedRole as any).staged
+    )
     const newStatus =
       targetStatus === 'sent'
         ? 'SENT'
-        : selectedRole.status === 'published'
-          ? 'ACTIVE'
-          : selectedRole.status === 'unpublished'
-            ? 'UNPUBLISHED'
-            : selectedRole.status === 'sent'
-            ? 'SENT'
-            : selectedRole.status === 'submitted'
-              ? 'SUBMITTED'
-              : selectedRole.status === 'rejected'
-                ? 'REJECTED'
-                : 'DRAFT'
+        : selectedRole.status === 'staged'
+          ? 'STAGED'
+          : selectedRole.status === 'published'
+            ? 'ACTIVE'
+            : selectedRole.status === 'unpublished'
+              ? 'UNPUBLISHED'
+              : selectedRole.status === 'sent'
+              ? 'SENT'
+              : selectedRole.status === 'submitted'
+                ? 'SUBMITTED'
+                : selectedRole.status === 'rejected'
+                  ? 'REJECTED'
+                  : 'DRAFT'
 
     const updatedRole: TargetRoleModel = {
       ...selectedRole,
@@ -1952,8 +2020,24 @@ export function TargetRolesPage() {
         editRoleForm.description ||
         selectedOcc.description,
       status: targetStatus === 'sent' ? 'sent' : selectedRole.status,
+      isStaffingEnabled: isStaffing,
       updatedAt: new Date().toISOString(),
     }
+
+    saveTargetRoleMeta(orgId, {
+      id: updatedRole.id,
+      code: updatedRole.code,
+      jobPositionCode: selectedOcc.code,
+      jobPositionTitle: selectedOcc.name,
+      department: managerDepartment?.name || selectedOcc.name,
+      departmentId: managerDepartment?.id,
+      assignedExpertId: editRoleForm.assignedExpertId,
+      assignedExpertName: expertName,
+      levelNames: editRoleForm.levelNames,
+      levelDurations: editRoleForm.levelDurations,
+      status: updatedRole.status,
+      isStaffingEnabled: isStaffing,
+    })
 
     // 1. Immediately update local state and persistence
     saveAndSetRoles((prev) =>
@@ -2423,6 +2507,7 @@ export function TargetRolesPage() {
 
             value={isLoading ? '—' : (
               draftRoles +
+              stagedRoles +
               sentRoles +
               submittedRoles +
               feedbackRoles +
@@ -2431,7 +2516,7 @@ export function TargetRolesPage() {
 
             valueClassName="text-warning"
 
-            description={`${draftRoles} drafts · ${sentRoles} sent · ${submittedRoles} submitted · ${feedbackRoles} feedback`}
+            description={`${draftRoles} drafts · ${stagedRoles} staged · ${sentRoles} sent · ${submittedRoles} submitted`}
           />
         </div>
 
@@ -2478,6 +2563,7 @@ export function TargetRolesPage() {
                         e.target.value as
                           | 'all'
                           | 'published'
+                          | 'staged'
                           | 'draft'
                           | 'sent'
                           | 'submitted'
@@ -2496,6 +2582,7 @@ export function TargetRolesPage() {
                     <option value="unpublished">
                       Unpublished ({managerVisibleRoles.filter((r) => getManagerEffectiveStatus(r) === 'unpublished').length})
                     </option>
+                    <option value="staged">Staged ({stagedRoles})</option>
                     <option value="sent">Sent ({sentRoles})</option>
                     <option value="submitted">
                       Submitted ({submittedRoles})
@@ -2846,10 +2933,30 @@ export function TargetRolesPage() {
                                   </Badge>
                                 )}
 
-                                {isSent && (
-                                  <Badge className="bg-[#EA580C] text-white border-transparent font-bold hover:bg-[#C2410C]">
-                                    SENT
+                                {effStatus === 'staged' && (
+                                  <Badge
+                                    variant="outline"
+                                    className="bg-indigo-500/10 text-indigo-700 border-indigo-500/30 font-bold dark:text-indigo-400"
+                                  >
+                                    STAGED
                                   </Badge>
+                                )}
+
+                                {isSent && (
+                                  <div className="flex items-center gap-1.5 flex-wrap">
+                                    <Badge className="bg-[#EA580C] text-white border-transparent font-bold hover:bg-[#C2410C]">
+                                      SENT
+                                    </Badge>
+                                    {Boolean(role.isStaffingEnabled) && (
+                                      <Badge
+                                        variant="outline"
+                                        className="text-[9px] py-0 px-1 font-semibold text-indigo-700 dark:text-indigo-400 border-indigo-500/30 bg-indigo-500/10 whitespace-nowrap"
+                                        title="Staffing Enabled: Staged for employee assignment in organization administration"
+                                      >
+                                        STAGED FOR STAFFING
+                                      </Badge>
+                                    )}
+                                  </div>
                                 )}
 
                                 {isFeedback && (
@@ -2992,7 +3099,7 @@ export function TargetRolesPage() {
 
                                   {/* Delete Role */}
 
-                                  {isDraft && (
+                                  {(isDraft || effStatus === 'staged') && (
                                     <Button
                                       variant="outline"
                                       size="sm"
@@ -3001,8 +3108,8 @@ export function TargetRolesPage() {
                                         e.stopPropagation()
                                         setDeletingRole(role)
                                       }}
-                                      title="Delete Draft"
-                                      aria-label="Delete Draft"
+                                      title={effStatus === 'staged' ? "Delete Staged Role" : "Delete Draft"}
+                                      aria-label={effStatus === 'staged' ? "Delete Staged Role" : "Delete Draft"}
                                     >
                                       <Trash2 className="h-4 w-4" />
                                     </Button>
@@ -3191,9 +3298,6 @@ export function TargetRolesPage() {
                     return
                   }
 
-                  const occ =
-                    availableJobPositions.find((o) => o.code === val) ||
-                    availableJobPositions.find((o) => o.code === val)
                   const eligible = getEligibleExpertsForJobPosition(
                     val,
                     orgId,
@@ -3205,16 +3309,14 @@ export function TargetRolesPage() {
                       normalizeExpertId(e.id) ===
                       normalizeExpertId(roleForm.assignedExpertId),
                   )
-                  const newExpertId = isCurrentEligible
-                    ? roleForm.assignedExpertId
-                    : eligible[0]?.id || ''
+                  const newExpertId = isCurrentEligible ? roleForm.assignedExpertId : ''
 
                   setRoleForm((prev) => ({
                     ...prev,
                     jobPositionCode: val,
                     assignedExpertId: newExpertId,
-                    scope: prev.scope || occ?.description || '',
-                    description: prev.description || occ?.description || '',
+                    scope: prev.scope,
+                    description: prev.description,
                   }))
                 }}
                 placeholder={jobPositionOptions.length === 0 ? 'No job positions available' : 'Select Job Position...'}
@@ -3300,16 +3402,18 @@ export function TargetRolesPage() {
                     value={name}
 
                     onChange={(e) => {
-                      const newNames = [...roleForm.levelNames]
-                      const oldName = newNames[idx]
                       const newName = e.target.value
-                      newNames[idx] = newName
-                      const newDurations = { ...(roleForm.levelDurations || {}) }
-                      if (oldName && newDurations[oldName]) {
-                        newDurations[newName] = newDurations[oldName]
-                        delete newDurations[oldName]
-                      }
-                      setRoleForm({ ...roleForm, levelNames: newNames, levelDurations: newDurations })
+                      setRoleForm((prev) => {
+                        const newNames = [...prev.levelNames]
+                        const oldName = newNames[idx]
+                        newNames[idx] = newName
+                        const newDurations = { ...(prev.levelDurations || {}) }
+                        if (oldName && newDurations[oldName]) {
+                          newDurations[newName] = newDurations[oldName]
+                          delete newDurations[oldName]
+                        }
+                        return { ...prev, levelNames: newNames, levelDurations: newDurations }
+                      })
                     }}
 
                     placeholder={`e.g. ${idx === 0 ? 'Senior' : idx === 1 ? 'Middle' : idx === 2 ? 'Junior' : 'Foundational'}`}
@@ -3354,13 +3458,19 @@ export function TargetRolesPage() {
                       size="sm"
 
                       onClick={() => {
-                        const removedName = roleForm.levelNames[idx]
-                        const newNames = roleForm.levelNames.filter(
-                          (_, i) => i !== idx,
-                        )
-                        const newDurations = { ...(roleForm.levelDurations || {}) }
-                        delete newDurations[removedName]
-                        setRoleForm({ ...roleForm, levelNames: newNames, levelDurations: newDurations })
+                        setRoleForm((prev) => {
+                          const removedName = prev.levelNames[idx]
+                          const newNames = prev.levelNames.filter(
+                            (_, i) => i !== idx,
+                          )
+                          const newDurations = { ...(prev.levelDurations || {}) }
+                          if (removedName) delete newDurations[removedName]
+                          return {
+                            ...prev,
+                            levelNames: newNames,
+                            levelDurations: newDurations,
+                          }
+                        })
                       }}
 
                       className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
@@ -3386,8 +3496,8 @@ export function TargetRolesPage() {
               </span>
 
               <span className="text-[10px] text-primary font-medium">
-                {createExpertOptions.length} eligible expert
-                {createExpertOptions.length !== 1 ? 's' : ''} available for this
+                {createEligibleExpertCount} eligible expert
+                {createEligibleExpertCount !== 1 ? 's' : ''} available for this
                 job position
               </span>
             </div>
@@ -3396,17 +3506,17 @@ export function TargetRolesPage() {
               <Combobox
                 size="sm"
 
-                clearable={false}
+                clearable={true}
 
                 options={createExpertOptions}
 
                 value={roleForm.assignedExpertId}
 
                 onChange={(val) =>
-                  val && setRoleForm({ ...roleForm, assignedExpertId: val })
+                  setRoleForm({ ...roleForm, assignedExpertId: val || '' })
                 }
 
-                placeholder="Select assigned domain expert..."
+                placeholder="Unassigned"
 
                 searchPlaceholder="Search eligible expert for this job position..."
               />
@@ -3449,6 +3559,39 @@ export function TargetRolesPage() {
               />
             </div>
           </div>
+
+          {/* Card 6: Workforce Staffing Staging */}
+
+          <div className="p-3.5 rounded-lg border border-indigo-500/25 bg-indigo-500/5 space-y-2">
+            <div className="flex items-start gap-2.5">
+              <input
+                type="checkbox"
+                id="stageForStaffingCheckbox"
+                checked={roleForm.isStaffingEnabled}
+                onChange={(e) =>
+                  setRoleForm({
+                    ...roleForm,
+                    isStaffingEnabled: e.target.checked,
+                  })
+                }
+                className="mt-0.5 h-4 w-4 rounded border-border text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+              />
+              <label htmlFor="stageForStaffingCheckbox" className="text-xs cursor-pointer select-none">
+                <span className="font-semibold text-foreground flex items-center gap-1.5">
+                  <span>Stage for workforce staffing</span>
+                  <Badge
+                    variant="outline"
+                    className="text-[9px] py-0 px-1 font-semibold text-indigo-700 dark:text-indigo-400 border-indigo-500/30 bg-indigo-500/10"
+                  >
+                    STAFFING READY
+                  </Badge>
+                </span>
+                <span className="text-[11px] text-muted-foreground block mt-0.5 leading-relaxed">
+                  Make this target role and its configured career levels immediately available in Organization Administration so employees can be onboarded with this role and level before publication.
+                </span>
+              </label>
+            </div>
+          </div>
         </div>
 
         <DialogFooter className="shrink-0 pt-3 border-t border-border mt-3 flex items-center justify-between sm:justify-between w-full">
@@ -3476,6 +3619,22 @@ export function TargetRolesPage() {
             </Button>
 
             <Button
+              variant="secondary"
+              size="sm"
+              className="border border-indigo-500/30 bg-indigo-500/10 text-indigo-700 hover:bg-indigo-500/20 dark:text-indigo-300 font-semibold"
+              disabled={
+                !roleForm.code.trim() ||
+                !roleForm.title.trim() ||
+                !roleForm.jobPositionCode.trim() ||
+                jobPositionOptions.length === 0
+              }
+              title="Stage role immediately so Org Admin can assign employees to this role and levels before publication"
+              onClick={() => handleCreateRoleSubmit('staged')}
+            >
+              Save as Staged
+            </Button>
+
+            <Button
               variant="primary"
               size="sm"
               leftIcon={<Send className="h-4 w-4" />}
@@ -3483,7 +3642,13 @@ export function TargetRolesPage() {
                 !roleForm.code.trim() ||
                 !roleForm.title.trim() ||
                 !roleForm.jobPositionCode.trim() ||
+                !roleForm.assignedExpertId ||
                 jobPositionOptions.length === 0
+              }
+              title={
+                !roleForm.assignedExpertId
+                  ? 'Please select an assigned domain expert to dispatch this role'
+                  : undefined
               }
               onClick={() => handleCreateRoleSubmit('sent')}
             >
@@ -4156,8 +4321,8 @@ export function TargetRolesPage() {
                     </span>
 
                     <span className="text-[10px] text-primary font-medium">
-                      {editExpertOptions.length} eligible expert
-                      {editExpertOptions.length !== 1 ? 's' : ''} available for
+                      {editEligibleExpertCount} eligible expert
+                      {editEligibleExpertCount !== 1 ? 's' : ''} available for
                       this job position
                     </span>
                   </div>
@@ -4166,7 +4331,7 @@ export function TargetRolesPage() {
                     <Combobox
                       size="sm"
 
-                      clearable={false}
+                      clearable={true}
 
                       disabled={isSubmittedRole}
 
@@ -4175,14 +4340,13 @@ export function TargetRolesPage() {
                       value={editRoleForm.assignedExpertId}
 
                       onChange={(val) =>
-                        val &&
                         setEditRoleForm({
                           ...editRoleForm,
-                          assignedExpertId: val,
+                          assignedExpertId: val || '',
                         })
                       }
 
-                      placeholder="Select assigned domain expert..."
+                      placeholder="Unassigned"
 
                       searchPlaceholder="Search eligible expert for this job position..."
                     />
@@ -4655,32 +4819,46 @@ export function TargetRolesPage() {
                   getManagerEffectiveStatus(viewingDetailsRole)
 
                 return (
-                  <Badge
-                    variant={
-                      viewEffStatus === 'published'
-                        ? 'success'
-                        : viewEffStatus === 'unpublished'
-                          ? 'outline'
-                          : viewEffStatus === 'feedback'
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <Badge
+                      variant={
+                        viewEffStatus === 'published'
+                          ? 'success'
+                          : viewEffStatus === 'unpublished'
                             ? 'outline'
-                            : viewEffStatus === 'rejected'
-                              ? 'destructive'
-                              : 'warning'
-                    }
-                    className={
-                      viewEffStatus === 'unpublished'
-                        ? 'border-muted-foreground/40 text-muted-foreground font-bold text-xs'
-                        : viewEffStatus === 'feedback'
-                          ? 'bg-amber-500/15 !text-black border-amber-500/30 font-bold dark:!text-black text-xs'
-                          : viewEffStatus === 'submitted'
-                            ? 'bg-sky-500/10 text-sky-600 border-sky-500/20 font-bold dark:text-sky-400 text-xs'
-                            : viewEffStatus === 'sent'
-                              ? 'bg-[#EA580C] text-white border-transparent font-bold text-xs hover:bg-[#C2410C]'
-                              : 'font-bold text-xs'
-                    }
-                  >
-                    {viewEffStatus.toUpperCase()}
-                  </Badge>
+                            : viewEffStatus === 'staged'
+                              ? 'outline'
+                              : viewEffStatus === 'feedback'
+                                ? 'outline'
+                                : viewEffStatus === 'rejected'
+                                  ? 'destructive'
+                                  : 'warning'
+                      }
+                      className={
+                        viewEffStatus === 'unpublished'
+                          ? 'border-muted-foreground/40 text-muted-foreground font-bold text-xs'
+                          : viewEffStatus === 'staged'
+                            ? 'bg-indigo-500/10 text-indigo-700 border-indigo-500/30 font-bold dark:text-indigo-400 text-xs'
+                            : viewEffStatus === 'feedback'
+                              ? 'bg-amber-500/15 !text-black border-amber-500/30 font-bold dark:!text-black text-xs'
+                              : viewEffStatus === 'submitted'
+                                ? 'bg-sky-500/10 text-sky-600 border-sky-500/20 font-bold dark:text-sky-400 text-xs'
+                                : viewEffStatus === 'sent'
+                                  ? 'bg-[#EA580C] text-white border-transparent font-bold text-xs hover:bg-[#C2410C]'
+                                  : 'font-bold text-xs'
+                      }
+                    >
+                      {viewEffStatus.toUpperCase()}
+                    </Badge>
+                    {viewEffStatus === 'sent' && viewingDetailsRole.isStaffingEnabled && (
+                      <Badge
+                        variant="outline"
+                        className="bg-indigo-500/10 text-indigo-700 border-indigo-500/30 font-bold dark:text-indigo-400 text-xs"
+                      >
+                        STAGED FOR STAFFING
+                      </Badge>
+                    )}
+                  </div>
                 )
               })()}
             </div>
@@ -4690,7 +4868,59 @@ export function TargetRolesPage() {
             </DialogDescription>
           </DialogHeader>
 
-          <div className="flex-1 overflow-y-auto [scrollbar-gutter:stable] pr-1.5 space-y-4 text-xs min-h-0">
+          {/* Top-Level Tabs: Specifications / Publication Readiness / Version Changes (Diff) */}
+          <div className="flex flex-wrap items-center justify-between gap-2.5 pb-2.5 border-b border-border shrink-0">
+            <div className="inline-flex p-1 rounded-xl bg-muted/60 border border-border gap-1">
+              <button
+                type="button"
+                onClick={() => setDetailViewMode('specs')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
+                  detailViewMode === 'specs'
+                    ? 'bg-card text-foreground font-bold shadow-2xs border border-border/80'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                <Layers className="h-3.5 w-3.5 text-primary" />
+                <span>Architecture Specifications</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setDetailViewMode('readiness')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
+                  detailViewMode === 'readiness'
+                    ? 'bg-card text-foreground font-bold shadow-2xs border border-border/80'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                <FileCheck className="h-3.5 w-3.5 text-primary" />
+                <span>Publication Readiness &amp; Validation</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setDetailViewMode('diff')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
+                  detailViewMode === 'diff'
+                    ? 'bg-card text-foreground font-bold shadow-2xs border border-border/80'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                <Diff className="h-3.5 w-3.5 text-primary" />
+                <span>Version Changes (Diff)</span>
+              </button>
+            </div>
+
+            <span className="text-[11px] text-muted-foreground font-medium hidden sm:inline-block">
+              {detailViewMode === 'diff'
+                ? 'Compare against previous baseline'
+                : detailViewMode === 'readiness'
+                  ? 'Automated readiness and coverage audit'
+                  : 'Level Competencies & Micro-skill Requirements'}
+            </span>
+          </div>
+
+          <div className="flex-1 overflow-y-auto [scrollbar-gutter:stable] pr-1.5 space-y-4 text-xs min-h-0 pt-2">
             {/* Rejection / Feedback Notice */}
             {(() => {
               const viewEffStatus =
@@ -4736,7 +4966,24 @@ export function TargetRolesPage() {
               return null
             })()}
 
-            {/* Unified Role Overview Card */}
+            {detailViewMode === 'readiness' ? (
+              <RolePublicationReadinessView
+                role={viewingDetailsRole}
+                modules={validationModules}
+                bankQuestions={validationBankQuestions}
+                isLoading={isLoadingValidationContent}
+                actor="manager"
+              />
+            ) : detailViewMode === 'diff' ? (
+              <TargetRoleVersionDiff
+                currentRole={viewingDetailsRole}
+                allRoles={managerVisibleRoles}
+                competencies={companyCompetencies}
+                microSkills={companyMicroSkills}
+              />
+            ) : (
+              <>
+                {/* Unified Role Overview Card */}
             {(() => {
               const occ = resolveJobPositionForRole(viewingDetailsRole, orgId)
               const expId = viewingDetailsRole.assignedExpertId
@@ -4871,51 +5118,6 @@ export function TargetRolesPage() {
               )
             })()}
 
-            {/* View Mode Toggle: Specifications vs Version Diff */}
-            <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-border">
-              <div className="inline-flex p-0.5 rounded-lg bg-muted border border-border">
-                <button
-                  type="button"
-                  onClick={() => setDetailViewMode('specs')}
-                  className={`px-3 py-1 rounded-md text-xs font-semibold transition-all cursor-pointer ${
-                    detailViewMode === 'specs'
-                      ? 'bg-card text-foreground font-bold shadow-2xs border border-border/80'
-                      : 'text-muted-foreground hover:text-foreground'
-                  }`}
-                >
-                  Architecture Specifications
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setDetailViewMode('diff')}
-                  className={`px-3 py-1 rounded-md text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer ${
-                    detailViewMode === 'diff'
-                      ? 'bg-card text-foreground font-bold shadow-2xs border border-border/80'
-                      : 'text-muted-foreground hover:text-foreground'
-                  }`}
-                >
-                  <Diff className="h-3.5 w-3.5 text-primary" />
-                  <span>Version Changes (Diff)</span>
-                </button>
-              </div>
-
-              <span className="text-[11px] text-muted-foreground font-medium">
-                {detailViewMode === 'diff'
-                  ? 'Compare against previous baseline'
-                  : 'Level Competencies & Micro-skill Requirements'}
-              </span>
-            </div>
-
-            {detailViewMode === 'diff' ? (
-              <TargetRoleVersionDiff
-                currentRole={viewingDetailsRole}
-                allRoles={managerVisibleRoles}
-                competencies={companyCompetencies}
-                microSkills={companyMicroSkills}
-              />
-            ) : (
-              <>
                 {/* Dynamic Target Role Levels & Competency Matrix */}
                 {(() => {
                   const detailRoleLevels =
@@ -4941,7 +5143,7 @@ export function TargetRolesPage() {
                         </span>
                       </div>
 
-                      <div className="flex items-center gap-2 overflow-x-auto pb-1 flex-nowrap">
+                      <div className="flex items-center gap-1.5 overflow-x-auto pb-1 flex-wrap scrollbar-hidden">
                         <button
                           type="button"
                           onClick={() => setSelectedDetailLevelTab('ALL')}

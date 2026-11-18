@@ -1,3 +1,5 @@
+// These fixtures exercise the retained demo pathway adapter; rule-pathway tests use the default mode.
+vi.mock('../../../shared/api/requirementPathway', async original => ({ ...await original<typeof import('../../../shared/api/requirementPathway')>(), rulePathwaysEnabled: false }))
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'

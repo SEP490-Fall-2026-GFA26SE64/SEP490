@@ -30,7 +30,7 @@ class SharedSkillScopePostgresTest {
     static String write(Object o){try{return JSON.writeValueAsString(o);}catch(Exception e){throw new AssertionError(e);}}
     @BeforeAll static void start() {
         PG.start();ds=new DriverManagerDataSource(PG.getJdbcUrl(),PG.getUsername(),PG.getPassword());jdbc=new JdbcTemplate(ds);
-        Flyway.configure().dataSource(ds).locations("classpath:db/migration").target("68").load().migrate();
+        Flyway.configure().dataSource(ds).locations("classpath:db/migration").target("72").load().migrate();
         legacy=fixture();oldFinal=paper(legacy,"A","v1","FOUNDATION","FINALIZED",null,"old-final",false);
         oldA=paper(legacy,"A","v1","FOUNDATION","IN_PROGRESS",null,"old-active-A",false);
         oldB=paper(legacy,"B","v1","FOUNDATION","IN_PROGRESS",null,"old-active-B",true);
@@ -125,9 +125,9 @@ class SharedSkillScopePostgresTest {
         assertThrows(DataAccessException.class,()->paper(unresolved,"new","v1","FOUNDATION","IN_PROGRESS",null,"new-key",false));
         assertEquals(1,jdbc.queryForObject("SELECT count(*) FROM platform.rule_assessment_attempt WHERE organization_id=? AND learner_id=?",Integer.class,unresolved.org,unresolved.user));
     }
-    @Test void migrationAlsoPreservesTheRunningLocalLineageInAnIsolatedDatabase() {
+    @Test void migrationAlsoPreservesTheRunningLocalLineageInAnIsolatedDatabase() throws Exception {
         String migrations=System.getProperty("scope.compat.migrations");
-        assertNotNull(migrations,"Supply isolated old66 + new69 resources to verify local compatibility");
+        if(migrations==null)migrations=com.adaptlearngraph.support.HistoricalMigrationFixtures.sharedSkillScope().toString();
         jdbc.execute("CREATE DATABASE shared_scope_compat");
         var compatDs=new DriverManagerDataSource(PG.getJdbcUrl().replace("/"+PG.getDatabaseName(),"/shared_scope_compat"),PG.getUsername(),PG.getPassword());
         Flyway.configure().dataSource(compatDs).locations("filesystem:"+migrations).target("66").load().migrate();

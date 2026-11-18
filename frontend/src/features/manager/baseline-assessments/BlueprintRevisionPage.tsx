@@ -1,31 +1,31 @@
-import { AlertTriangle, ArrowLeft, CheckCircle2, FileCheck2, FileEdit, FilePlus2, Save, Trash2 } from 'lucide-react'
+import { AlertTriangle,ArrowLeft,CheckCircle2,FileCheck2,FileEdit,FilePlus2,Save,Trash2 } from 'lucide-react'
 import * as React from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useNavigate,useParams } from 'react-router-dom'
 import { Badge } from '../../../shared/components/ui/Badge'
 import { Button } from '../../../shared/components/ui/Button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../../shared/components/ui/Card'
-import { Dialog, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../../../shared/components/ui/Dialog'
+import { Card,CardContent,CardDescription,CardHeader,CardTitle } from '../../../shared/components/ui/Card'
+import { Dialog,DialogDescription,DialogFooter,DialogHeader,DialogTitle } from '../../../shared/components/ui/Dialog'
 import { EmptyState } from '../../../shared/components/ui/EmptyState'
 import { Input } from '../../../shared/components/ui/Input'
 import { PageHeader } from '../../../shared/components/ui/PageHeader'
-import { useToast } from '../../../shared/hooks/useToast'
-import { useTranslation } from '../../../shared/i18n/LanguageContext'
+import { useToast } from "../../../shared/hooks/useToast"
+import { useTranslation } from "../../../shared/i18n/LanguageContext"
 import { WorkspaceLayout } from '../../../shared/layouts/WorkspaceLayout'
-import { BaselineRoleConfiguration, type CountField } from '../baseline-blueprints/BaselineRoleConfiguration'
-import type { BaselineBlueprint, BlueprintCapacity, BlueprintRole } from '../baseline-blueprints/baselineBlueprintApi'
+import { BaselineRoleConfiguration,type CountField } from '../baseline-blueprints/BaselineRoleConfiguration'
+import type { BaselineBlueprint,BlueprintCapacity,BlueprintRole } from '../baseline-blueprints/baselineBlueprintApi'
 import { getJobPositionCapacity } from '../baseline-blueprints/baselineBlueprintApi'
-import { allocateRoleQuestionTotal, CapacityAllocationError, validateBlueprintCapacity } from '../baseline-blueprints/baselineBlueprintCapacity'
-import { hasWeightWithoutQuestions, rolesForBlueprintEditor, toBlueprintDraft } from '../baseline-blueprints/baselineBlueprintDraft'
+import { allocateRoleQuestionTotal,CapacityAllocationError,validateBlueprintCapacity } from '../baseline-blueprints/baselineBlueprintCapacity'
+import { hasWeightWithoutQuestions,rolesForBlueprintEditor,toBlueprintDraft } from '../baseline-blueprints/baselineBlueprintDraft'
 import { roleQuestionTotal } from '../baseline-blueprints/baselineBlueprintForm'
-import { isValidScoreWeights, weightsFromRole, type ScoreWeights } from '../baseline-blueprints/baselineBlueprintWeights'
+import { isValidScoreWeights,weightsFromRole,type ScoreWeights } from '../baseline-blueprints/baselineBlueprintWeights'
 import {
-  abandonPendingBlueprintChange,
-  BaselineAssessmentManagementApiError,
-  finalizeBlueprintWorkingRevision,
-  generateAssessmentCandidate,
-  getBaselineAssessmentWorkspace,
-  saveBlueprintWorkingRevision,
-  type BlueprintWorkingRevision,
+abandonPendingBlueprintChange,
+BaselineAssessmentManagementApiError,
+finalizeBlueprintWorkingRevision,
+generateAssessmentCandidate,
+getBaselineAssessmentWorkspace,
+saveBlueprintWorkingRevision,
+type BlueprintWorkingRevision,
 } from './baselineAssessmentManagementApi'
 import { PageLoader } from '../../../shared/components/ui/PageLoader'
 
@@ -56,6 +56,7 @@ export function BlueprintRevisionPage() {
 
   React.useEffect(() => {
     let active = true
+    // oxlint-disable-next-line react/set-state-in-effect -- Synchronize the pending state of the external data request when its scope changes.
     setLoading(true)
     void Promise.all([
       getBaselineAssessmentWorkspace(jobPositionId),

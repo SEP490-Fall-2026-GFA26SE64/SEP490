@@ -54,8 +54,7 @@ class ModuleAuthoringControllerTest {
                                 + "\"duration\":30,\"price\":150000.50,\"jobPositionIds\":[\"occ-1\"],"
                                 + "\"teachings\":[{\"skillId\":\"skill-1\",\"teachingFocus\":\"PRIMARY\",\"difficultyLevel\":\"LOW\"}]}"))
                 .andExpect(status().isCreated());
-        verify(service).create(new Save("Intro", "LESSON_AND_PRACTICE", "content-1", 30, new BigDecimal("150000.50"),
-                List.of("occ-1"), List.of(new TeachingInput("skill-1", "PRIMARY", "LOW"))));
+        verify(service).create(new Save("Intro", "LESSON_AND_PRACTICE", "content-1", 30, List.of("occ-1"), List.of(new TeachingInput("skill-1"))));
     }
 
     @Test

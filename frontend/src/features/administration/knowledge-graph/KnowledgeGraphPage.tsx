@@ -1,10 +1,10 @@
-﻿import * as React from 'react'
+import * as React from 'react'
 import { Waypoints } from 'lucide-react'
 import { PageHeader } from '../../../shared/components/ui/PageHeader'
 import { WorkspaceLayout } from '../../../shared/layouts/WorkspaceLayout'
 import { WorkspaceSessionContext } from '../../../shared/auth/workspaceSession'
 import { getActiveCompany, resolveWorkspaceOrgId } from '../../../shared/stores/companyStore'
-import { useCopy } from '../../subscription/SubscriptionFeedback'
+import { useCopy } from '../../subscription/SubscriptionFeedback.helpers'
 import { OrganizationKnowledgeGraphExplorer } from './OrganizationKnowledgeGraphExplorer'
 
 export function KnowledgeGraphPage() {

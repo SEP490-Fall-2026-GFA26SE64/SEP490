@@ -10,7 +10,7 @@
 
 ## Current Implementation
 
-**Source-inspected:** HEAD `61d334c`, 2026-11-07; source inspection only. See the [implementation legend](../README.md#current-implementation-overview). Real sign-in does not make these local learning/profile records authoritative.
+**Current rule-flow source inspected:** `2c2468b5`,2026-11-18. Code presence is distinguished from dated runtime evidence; this task adds no executable/runtime result.
 
 | Requirement | Status | Current behavior | Remaining boundary |
 | --- | --- | --- | --- |
@@ -18,7 +18,31 @@
 | [FR-06.05](#fr-06-05) | Partial | The Role gap dialog uses persisted baseline evidence and the authorized Role+Level gap API; the separate legacy gap-analysis screen retains prototype behavior. | RuleKnowledgeProfileService now reads diagnostics, official exact evidence and review flags; full runtime/production compatibility remains unverified here. |
 | [FR-06.06](#fr-06-06) | API-backed slice | Role roadmap/timeline reads the Employee's own exact approved pathway, ordered Modules and safe frozen baseline context. | Generated entry access now checks current approval, content version and prerequisites before serving real lessons/progress. Requirement-root alternatives, exact rule-assessment entry and assessment-driven supplementation now exist in source; full merged browser/certificate/bypass acceptance remains unverified; independent-skill prototype consumers are not recertified. |
 | [FR-06.07](#fr-06-07) | Partial | The Skills tab loads real micro-skills/macro competencies through catalog APIs and lets Employees track/untrack skills locally. | Duration/level metadata is synthesized in the browser; tracking and sample module/roadmap content are not a persisted independent-learning context with approved mapped content. |
-| [FR-06.09](#fr-06-09) | Prototype | Overview, history and assessment views show seeded/local completion, scores, previous roles/skills and pathway status. | Pathway option progress, rule attempt history and official profile have server projections; separate legacy overview/history widgets still use browser state and are not certified as a unified progress aggregate. |
+| [FR-06.09](#fr-06-09) | Partial; current Role flow server-backed | Role Overview reads own selection/target requirements, official evidence coverage and current requirement pathway. Rule attempt/module history, pathway timing and RIASEC history use their separate server owners. | Skill-mode/independent/legacy widgets retain their separate prototype limits; this is not one universal persisted progress aggregate or new runtime acceptance. |
+
+<a id="overview-riasec-tab"></a>
+
+### Overview RIASEC tab — implemented local surface, 2026-11-18
+
+`/employee/overview?tab=riasec` mounts [RiasecExperience](../../../frontend/src/features/employee/riasec/RiasecExperience.tsx) for trusted Employee org/account, independently of Role, graph, baseline and pathway. It stays mounted after opening; hidden tabs pause polling. Owner changes remount; accepted answers live in the server draft. Standalone/learner and recognized Assessment entries redirect here.
+
+Four summary cards show assessment entry/current/history/inactive. Start requires confirmation. The saved draft supports 60 EN/VI activities, autosave, explicit editor takeover, review and confirmed submit. Server raw 0–40 scores display before AI, with keyboard/touch/hover radar and up to three Job Position comparisons/details. UI is bilingual; generated explanations remain English.
+
+One history dialog offers date/ID search, current/history/inactive and AI-status filters, newest/oldest ordering and counts. Confirmed View opens only active results, changing the viewed radar but not server current. Inactive rows show their 7-day recovery deadline without View. Inactive/Recover/permanent Delete have distinct confirmations; recovery never reruns AI. Confirmed New assessment/Retry AI obey server guards; only current FAILED AI retries, and success including empty output is final.
+
+Explore more checks current active same-org position IDs, then navigates `/employee/upskilling?tab=roles&jobPositionId=...`; published Role/member Level choice remains explicit with existing locks/access. No chat, cosine percentage or mastery/pathway write is introduced. Save/conflict/network/catalog/AI states remain explicit; unsaved answers can be lost on closing before accepted save.
+
+[Assessment](../Assessment%20workflows/README.md#riasec-personal-assessment--current-implementation-2026-11-18) owns scoring/storage/API/retention; [guidance](../Role%20guidance/README.md#riasec-job-position-exploration) owns AI/candidates/snapshots. Earlier browser evidence predates latest history UI; that follow-up has build/static evidence only. This reconciliation adds no runtime/accessibility/production acceptance.
+
+### Current RIASEC source limits
+
+Direct source inspection at `2c2468b5` differs from earlier handoff prose in three presentation details:
+
+- Active RiasecRadarPanel only renders RiasecScoreRadar; comparison details show dimension names and original paired scores. A separate meaning/leading-group summary, boundary-tie disclosure and equal/zero-profile notice are absent. The six values themselves retain equality; no unique Holland code is calculated.
+- The manifest retains source/hash/translation/license/modification/validation metadata. Active RiasecExperience/RiasecAttemptPanel renders activity instructions, but does not read/render that source/adaptation notice metadata. Stored notices are not proof of a visible launch notice or validated adaptation.
+- Server GET exposes catalogAvailable, but the current frontend View type/component does not consume it. On a catalog-read failure the empty active-ID list disables Explore more with the same unavailable message used for removed/inactive positions; a dedicated catalog-outage state is not shown.
+
+These are source observations, not new runtime findings or an implementation authorization. Other interaction/accessibility behavior remains limited to its recorded version of evidence.
 
 ### Role pathway display — new direction
 
@@ -30,6 +54,14 @@ The hierarchy becomes **skill/requirement → module alternatives** (or the assi
 
 **Code references:** [profile prototype](../../../frontend/src/features/profile/ProfilePage.tsx), [browser learning state](../../../frontend/src/shared/hooks/useEmployeeLearningState.ts), [gap screen](../../../frontend/src/features/employee/components/CompetencyGapAnalysis.tsx), [pathway screen](../../../frontend/src/features/employee/pathway/AdaptivePathwayPage.tsx), [real skill reads/local tracking](../../../frontend/src/features/employee/target-roles/UpskillSkillsPanel.tsx), [overview](../../../frontend/src/features/employee/overview/EmployeeOverviewPage.tsx). See [Assessment workflows](../Assessment%20workflows/README.md#current-implementation) for module-reader and quiz limitations.
 
+## Baseline/pathway/Skill Assessment — source update, 2026-11-18
+
+Current source freezes baseline papers/timing, binds Role/Level at pathway request, shows only accepted learning choices and preserves exact per-module progress/assessment history. Admin placement and the learning target remain separate. Official evidence is exact Skill+knowledge+Skill version; baseline pass stays diagnostic. MAIN pass, content completion and official achievement are separate while mandatory supplements remain.
+
+PathwayTimingSummary displays NOT_STARTED, LEGACY_UNTIMED, IN_PROGRESS/OVERDUE or COMPLETED with UTC start/deadline/completion and on-time outcome. First actual approval starts the clock; later revision does not reset it. Expert rejection retains the bound target and no new proposal learning access is granted. Per-module Open/Resume/Retake/history uses server context and independent allowance/wait; a new retake includes every configured prerequisite group.
+
+Outcome processing may be pending even after a finalized score. Recalculation adds real prerequisite provision, accepts genuine evidence and refreshes the same requirement; optional/parallel work does not inflate REQUIRED progression. [Current ordered contract](../../technical/Organization%20Rule%20Assessment%20and%20Pathway.md#current-flow-2026-11-18). Source inspection is not new browser/runtime verification.
+
 ## Employee behavior for the new pathway
 
 ### Choose, learn, switch and resume
@@ -40,11 +72,11 @@ The hierarchy becomes **skill/requirement → module alternatives** (or the assi
 4. Take the [shared skill assessment](../Assessment%20workflows/README.md#shared-engine-scope-and-policy), including main and all prerequisite groups. Show each group result, veto/retake and required supplementation versus optional NEED_REVIEW.
 5. One successful module + assessment and required completion conditions satisfies the requirement. Other alternatives stay optional/accessible with independent history. Recalculation adds/reuses required steps automatically, showing missing provision/Expert action without sample fallback.
 
-Official achievements are exact skill/knowledge/outcomes from accepted learning+assessment or approved certificate. Baseline pass only skips initial module assignment; it never becomes official profile achievement. Later prerequisite failure of an officially achieved item shows NEED_REVIEW without revocation/mandatory relearning. Missing/not-assessed differs from failed.
+Official achievements are exact Skill/knowledge/Skill-version evidence from accepted learning+assessment or approved certificate. Baseline pass only skips initial module assignment; it never becomes official profile achievement. Later prerequisite failure of an officially achieved item shows NEED_REVIEW without revocation/mandatory relearning. Missing/not-assessed differs from failed.
 
 ### Certificate evidence and review
 
-For CERTIFICATE_ONLY, display the single assigned certificate definition, skill/knowledge/outcomes and reference URL. Employee submits a **link OR PDF OR picture** as evidence; all three forms must be supported but all three are not required together. Catalog reference URL is not the learner's evidence.
+For CERTIFICATE_ONLY, display the single assigned certificate definition, Skill/knowledge/Skill version and reference URL. Employee submits a **link OR PDF OR picture** as evidence; all three forms must be supported but all three are not required together. Catalog reference URL is not the learner's evidence.
 
 Input binds evidence to the Employee's exact organization/requirement and accepted definition/version. Server derives learner/organization/status; no editable reviewer/pass fields. Uploaded evidence stays private with access limited to the learner and authorized reviewers. Validate evidence form/content and authorized ownership; show upload/access failure with retry rather than a successful submission. Accept one HTTPS link OR one PDF OR one PNG/JPEG per submission; max 10 MiB/file subject to a tighter applicable existing limit. Validate actual media/size and private access; do not fetch remote URLs automatically. Replacement after rejection creates linked new-flow history; no generalized verification/expiry engine is included.
 
@@ -114,7 +146,7 @@ Employees can open **My Skills** from their menu or Profile to view officially a
 | 8. Postconditions | One successful alternative satisfies a requirement; optional choices/history remain. Viewing grants no completion. |
 | 9. Acceptance Criteria | Requirement-root graph/timeline keeps current visual design; exact approved scope, separate evidence states, full retake, safe recalculation and request-onset target lock. |
 
-The Employee module lesson route uses a dedicated reading layout with the shared workspace navbar, module progress and collapsible syllabus. The compact document view uses a single module title, light active/completed syllabus states and heading-derived in-page navigation on wide screens; narrow screens keep a single reading column. Global feature navigation is omitted on this route; returning to a normal workspace page restores it. Lesson selection, completion rules and assessment access retain their existing owners.
+The Employee module lesson route uses a dedicated reading layout with the shared workspace navbar, module progress and collapsible syllabus. The compact document view uses a single module title, light active/completed syllabus states and heading-derived in-page navigation on wide screens; narrow screens keep a single reading column. Global feature navigation is omitted on this route; returning to a normal workspace page restores it. Return navigation in the Reader header and completion banner is context-aware: opening a module from Upskilling preserves `from=upskilling`, `skillId` and `level` in URL query parameters and returns directly to that Skill and knowledge-level tab (`/employee/upskilling?tab=skills&skillId=...&level=...`), whereas Pathway and direct entries return to `/employee/pathway`. The Reader omits inline Skill Assessment controls and optional-module lists at the bottom of the lesson, directing completed learners back to their Skill or Pathway assessment surface. [Verification and checklist](../../testing/system/FR-06.06-07-08-reader-navigation-20261118.md).
 
 The new contract supersedes the initial-view-only scope. Approval alone does not establish readiness or protected content access. The [technical read contract](../../technical/initial-pathway/Adaptive%20pathway/View%20Adaptive%20Pathway.md) separates implemented projection, owner learning dependencies and actual evidence.
 
@@ -122,7 +154,7 @@ The new contract supersedes the initial-view-only scope. Approval alone does not
 
 ### FR-06.07: Learn an individual skill
 
-Each selected Skill knowledge-level tab has one Skill Assessment section above its learning modules. Completed eligible modules at the current Skill version provide learning evidence; multiple eligible completions require an explicit choice. Module cards retain learning/review actions. Assessment history and retake limits remain specific to the selected module/revision; viewing the catalog never starts an exam. [Local slice evidence](../../testing/system/FR-06.07-08-skill-level-assessment-20261117.md).
+Each selected Skill knowledge-level tab has one Skill Assessment section above its learning modules. Completed eligible modules at the current Skill version provide learning evidence; multiple eligible completions require an explicit choice. Module cards retain learning/review actions and pass `from=upskilling`, `skillId` and `level` when opening the Reader so returning from the Reader restores the selected Skill and knowledge-level tab. Assessment history and retake limits remain specific to the selected module/revision; viewing the catalog never starts an exam. [Local slice evidence](../../testing/system/FR-06.07-08-skill-level-assessment-20261117.md) · [Reader return navigation evidence](../../testing/system/FR-06.06-07-08-reader-navigation-20261118.md).
 
 | Field | Description |
 | --- | --- |

@@ -35,6 +35,8 @@ public interface LearningImportUseCase {
 
     byte[] template();
 
+    default byte[] template(String lang) { return template(); }
+
     Preview preview(String filename, long size, InputStream input);
 
     Preview validate(String id);

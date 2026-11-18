@@ -26,6 +26,7 @@ public final class ApiEndpoints {
     public static final String MODULE_AUTHORING = API_V1 + "/module-management";
     public static final String ORGANIZATION_TARGET_ROLE = API_V1 + "/organizations/{organizationId}/target-roles";
     public static final String ORGANIZATION_KNOWLEDGE_GRAPH = API_V1 + "/organizations/{organizationId}/knowledge-graph";
+    public static final String ORGANIZATION_ROLE = API_V1 + "/organizations/{organizationId}/roles";
     public static final String PLATFORM_BENCHMARK = API_V1 + "/platform/benchmark";
     public static final String PLATFORM_CATALOG = API_V1 + "/platform-catalog";
     public static final String PREREQUISITE = API_V1 + "/organizations/{organizationId}/prerequisites";
@@ -36,6 +37,7 @@ public final class ApiEndpoints {
     public static final String SYSTEM_STATUS = API_V1 + "/system";
     public static final String TARGET_ROLE = API_V1 + "/employee/target-roles";
     public static final String TARGET_ROLE_GRAPH = API_V1 + "/organizations/{organizationId}/target-roles/{roleId}/graph";
+    public static final String ORGANIZATION_ROLE_GRAPH = API_V1 + "/organizations/{organizationId}/roles/{roleId}/graph";
     public static final String TARGET_ROLE_SELECTION = API_V1 + "/employee/target-role-selection";
     public static final String WORKSPACE_AUTHENTICATION = API_V1 + "/workspace-auth";
     public static final String WORKSPACE_BASELINE_RESOURCE = API_V1 + "/ld/adaptive-baseline-resources/job-positions/{jobPositionId}";

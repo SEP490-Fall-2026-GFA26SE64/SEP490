@@ -220,13 +220,25 @@ export function resolveJobPosition(
 }
 
 export type CatalogJobPosition = { code: string; name: string; description?: string }
-export type TargetRoleMeta = Record<string, { jobPositionCode?: string; department?: string; levelNames?: string[]; status?: string }>
+export type TargetRoleMeta = Record<
+  string,
+  {
+    code?: string
+    title?: string
+    jobPositionCode?: string
+    jobPositionTitle?: string
+    department?: string
+    levelNames?: string[]
+    status?: string
+    isStaffingEnabled?: boolean
+  }
+>
 
 export async function fetchOrganizationTargetRoles(organization: string): Promise<Record<string, unknown>[]> {
   if (!organization) return []
   const targetOrgId = resolveWorkspaceOrgId(organization)
   try {
-    const res = await fetch(`/api/v1/organizations/${targetOrgId}/target-roles`, {
+    const res = await fetch(`/api/v1/organizations/${targetOrgId}/roles`, {
       method: 'GET',
       credentials: 'same-origin',
       headers: {
@@ -295,7 +307,7 @@ export async function fetchOrganizationTargetRoles(organization: string): Promis
 }
 
 export function readTargetRoleMeta(organization: string): TargetRoleMeta {
-  const map: Record<string, { jobPositionCode?: string; department?: string; levelNames?: string[]; status?: string }> = {}
+  const map: Record<string, { jobPositionCode?: string; department?: string; levelNames?: string[]; status?: string; isStaffingEnabled?: boolean }> = {}
   if (typeof localStorage === 'undefined') return map
   try {
     const resolvedOrg = resolveWorkspaceOrgId(organization)
@@ -312,7 +324,7 @@ export function readTargetRoleMeta(organization: string): TargetRoleMeta {
     for (const k of keys) {
       const raw = localStorage.getItem(k)
       if (!raw) continue
-      const parsed = JSON.parse(raw) as Record<string, { code?: string; jobPositionCode?: string; department?: string; levelNames?: string[]; status?: string }>
+      const parsed = JSON.parse(raw) as Record<string, { code?: string; jobPositionCode?: string; department?: string; levelNames?: string[]; status?: string; isStaffingEnabled?: boolean }>
       for (const [key, val] of Object.entries(parsed || {})) {
         if (val) {
           map[key.toUpperCase()] = val
@@ -349,6 +361,13 @@ export function buildOrganizationTargetRoles(
     const rawStatus = String(r.status || '').toLowerCase()
     const metaStatus = String(meta?.status || '').toLowerCase()
     const localStatus = String(localMatch?.status || '').toLowerCase()
+    const isStaffingEnabled = Boolean(
+      (r as any).isStaffingEnabled ||
+      meta?.isStaffingEnabled ||
+      localMatch?.isStaffingEnabled ||
+      rawStatus === 'staged' ||
+      metaStatus === 'staged'
+    )
     const mappedStatus: TargetRoleModel['status'] =
       metaStatus === 'unpublished' || rawStatus === 'unpublished' || localStatus === 'unpublished'
         ? 'unpublished'
@@ -356,11 +375,13 @@ export function buildOrganizationTargetRoles(
           ? 'published'
           : rawStatus === 'submitted'
             ? 'submitted'
-            : rawStatus === 'sent'
-              ? 'sent'
-              : rawStatus === 'rejected'
-                ? 'rejected'
-                : 'draft'
+            : rawStatus === 'staged' || metaStatus === 'staged'
+              ? 'staged'
+              : rawStatus === 'sent'
+                ? 'sent'
+                : rawStatus === 'rejected'
+                  ? 'rejected'
+                  : 'draft'
     const rawFamilyCode = r.familyCode ? String(r.familyCode).trim() : ''
     const familyNorm = rawFamilyCode.toUpperCase().replace(/^OCC-/, '').replace(/\.00$/, '')
     const familyAsJobPosCode =
@@ -382,6 +403,7 @@ export function buildOrganizationTargetRoles(
       description: String(r.description || localMatch?.description || ''),
       version: String(r.version || localMatch?.version || '1.0'),
       status: mappedStatus,
+      isStaffingEnabled,
       competencyIds: Array.isArray(r.competencyIds) ? (r.competencyIds as string[]) : localMatch?.competencyIds || [],
       skillTargets: Array.isArray(r.skillTargets)
         ? (r.skillTargets as TargetRoleModel['skillTargets'])
@@ -405,9 +427,15 @@ export function buildOrganizationTargetRoles(
     const meta = roleMetaByCode[codeKey] || roleMetaByCode[(role.id || '').toUpperCase()]
     const metaStatus = meta?.status?.toLowerCase()
     const status = (metaStatus === 'unpublished') ? 'unpublished' : role.status
+    const isStaffingEnabled = Boolean(
+      role.isStaffingEnabled ||
+      meta?.isStaffingEnabled ||
+      status === 'staged'
+    )
     const enriched: TargetRoleModel = {
       ...role,
       status,
+      isStaffingEnabled,
       jobPositionCode: role.jobPositionCode || meta?.jobPositionCode,
       department: role.department || meta?.department || '',
       levels:
@@ -425,28 +453,58 @@ export function buildOrganizationTargetRoles(
     isLiveFromBackend.add(codeKey)
   }
 
-  // 2. Only fall back to local-only roles if live backend returned nothing
-  if (liveMapped.length === 0) {
-    for (const role of localRoles) {
-      const codeKey = (role.code || '').trim().toUpperCase()
-      if (!codeKey || isLiveFromBackend.has(codeKey)) continue
-      const meta = roleMetaByCode[codeKey] || roleMetaByCode[(role.id || '').toUpperCase()]
-      const metaStatus = meta?.status?.toLowerCase()
-      const status = (metaStatus === 'unpublished') ? 'unpublished' : role.status
-      const enriched: TargetRoleModel = {
-        ...role,
-        status,
-        jobPositionCode: role.jobPositionCode || meta?.jobPositionCode,
-        department: role.department || meta?.department || '',
-        levels:
-          role.levels && role.levels.length > 0
-            ? role.levels
-            : meta?.levelNames || ['Senior', 'Middle', 'Junior'],
-      }
-      const existing = dedupedByCode.get(codeKey)
-      if (!existing) {
-        dedupedByCode.set(codeKey, enriched)
-      }
+  // 2. Also include local-only / staged roles that are not yet returned from live backend
+  for (const role of localRoles) {
+    const codeKey = (role.code || '').trim().toUpperCase()
+    if (!codeKey || isLiveFromBackend.has(codeKey)) continue
+    const meta = roleMetaByCode[codeKey] || roleMetaByCode[(role.id || '').toUpperCase()]
+    const metaStatus = meta?.status?.toLowerCase()
+    const status = (metaStatus === 'unpublished') ? 'unpublished' : (meta?.status as TargetRoleModel['status'] || role.status)
+    const isStaffingEnabled = Boolean(
+      role.isStaffingEnabled ||
+      meta?.isStaffingEnabled ||
+      status === 'staged'
+    )
+    const enriched: TargetRoleModel = {
+      ...role,
+      status,
+      isStaffingEnabled,
+      jobPositionCode: role.jobPositionCode || meta?.jobPositionCode,
+      department: role.department || meta?.department || '',
+      levels:
+        role.levels && role.levels.length > 0
+          ? role.levels
+          : meta?.levelNames || ['Senior', 'Middle', 'Junior'],
+    }
+    const existing = dedupedByCode.get(codeKey)
+    if (!existing) {
+      dedupedByCode.set(codeKey, enriched)
+    }
+  }
+
+  // 3. Include any roles stored in roleMetaByCode that are staged or staffing-enabled
+  for (const [keyOrId, meta] of Object.entries(roleMetaByCode)) {
+    const codeKey = (meta.code || keyOrId || '').trim().toUpperCase()
+    if (!codeKey || dedupedByCode.has(codeKey) || isLiveFromBackend.has(codeKey)) continue
+    const status = meta.status?.toLowerCase()
+    if (status === 'staged' || meta.isStaffingEnabled) {
+      dedupedByCode.set(codeKey, {
+        id: meta.code || codeKey,
+        stableId: meta.code || codeKey,
+        code: meta.code || codeKey,
+        title: (meta as any).title || (meta as any).jobPositionTitle || meta.code || codeKey,
+        department: meta.department || '',
+        jobPositionCode: meta.jobPositionCode,
+        description: '',
+        version: '1.0',
+        status: 'staged',
+        isStaffingEnabled: true,
+        competencyIds: [],
+        skillTargets: [],
+        levels: meta.levelNames && meta.levelNames.length > 0 ? meta.levelNames : ['Senior', 'Middle', 'Junior'],
+        activeEnrollments: 0,
+        updatedAt: new Date().toISOString(),
+      })
     }
   }
 
@@ -462,7 +520,15 @@ export function targetRolesForEmployee(
   jobPositions: CatalogJobPosition[],
   references: Reference[],
 ): TargetRoleModel[] {
-  if (!department && !selectedDeptObj) return []
+  // Allow published roles OR staged/staffing-enabled roles (for workforce assignment by Org Admin)
+  const eligibleRoles = orgTargetRoles.filter((r) => {
+    const s = String(r.status || '').toLowerCase()
+    return s === 'published' || s === 'active' || s === 'staged' || Boolean(r.isStaffingEnabled)
+  })
+
+  if (!department && !selectedDeptObj) {
+    return eligibleRoles.sort((a, b) => a.title.localeCompare(b.title))
+  }
 
   const normalizeOccCode = (c?: string) => (c || '').trim().toUpperCase().replace(/^OCC-/, '').replace(/\.00$/, '')
   const getRoleOccCode = (r: TargetRoleModel): string => {
@@ -471,12 +537,6 @@ export function targetRolesForEmployee(
     }
     return resolveJobPositionForRole(r, organization).code
   }
-
-  // Strictly published only: NEVER include unpublished, inactive, or draft roles
-  const publishedRoles = orgTargetRoles.filter((r) => {
-    const s = String(r.status || '').toLowerCase()
-    return s === 'published' || s === 'active'
-  })
 
   // 1. Resolve jobPosition code if selected
   let targetOccNorm = ''
@@ -511,15 +571,15 @@ export function targetRolesForEmployee(
     deptLinkedNorm.add('15-1212')
   }
 
-  // Filter strictly to published roles belonging to the selected job position (if it has roles) or selected department
+  // Filter to eligible roles belonging to the selected job position (if it has roles) or selected department
   if (targetOccNorm) {
-    const jpMatched = publishedRoles.filter((r) => normalizeOccCode(getRoleOccCode(r)) === targetOccNorm)
+    const jpMatched = eligibleRoles.filter((r) => normalizeOccCode(getRoleOccCode(r)) === targetOccNorm)
     if (jpMatched.length > 0) {
       return jpMatched.sort((a, b) => a.title.localeCompare(b.title))
     }
   }
 
-  const deptMatched = publishedRoles.filter((r) => {
+  const deptMatched = eligibleRoles.filter((r) => {
     const occNorm = normalizeOccCode(getRoleOccCode(r))
     const rDept = (r.department || '').toLowerCase().trim()
     return (
@@ -528,7 +588,7 @@ export function targetRolesForEmployee(
     )
   })
 
-  return deptMatched.sort((a, b) => a.title.localeCompare(b.title))
+  return (deptMatched.length > 0 ? deptMatched : eligibleRoles).sort((a, b) => a.title.localeCompare(b.title))
 }
 
 export function jobPositionsForDepartment(

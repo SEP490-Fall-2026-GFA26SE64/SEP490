@@ -1,5 +1,7 @@
 # Ontology — framework, fields and data provenance (0.11.0)
 
+> **Historical release scope; RIASEC update 2026-11-18:** normalized O*NET 0–1 ratings/workbook counts/validator-import statements below describe older releases. Current RIASEC API and two active skill-level/prerequisite-knowledge seeds use optional all-or-none integer 0–40 **demo** profiles, not official O*NET ratings. Old workbook/seed equality is not a claim about these current inputs. Use [current fields](../features/Departments%20and%20occupations/README.md#riasec-job-position-profiles)/[schema](../neo4j_schema.md#riasec-current-source). Historical import/validator commands are not a current profile conversion/reset procedure.
+
 Updated 28 October 2026. English catalog; all catalog definitions remain NEEDS_EXPERT_REVIEW. The user-authorized local application upgrade to v0.11.0 is recorded in [the execution receipt](NEO4J_V011_LOCAL_UPGRADE.md); historical authored modules and PostgreSQL pins were preserved.
 
 ## Files and framework

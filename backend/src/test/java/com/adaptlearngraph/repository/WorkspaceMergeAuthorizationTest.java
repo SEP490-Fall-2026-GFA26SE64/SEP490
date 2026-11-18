@@ -149,15 +149,22 @@ class WorkspaceMergeAuthorizationTest {
         verifyNoInteractions(chain);
     }
 
-    @Test void legacyOrganizationAliasesNoLongerResolveToADevelopmentOrganization() throws Exception {
+    @Test void developmentAliasesStillPassThroughTrustedWorkspaceAuthorization() throws Exception {
         actor(Role.LD_MANAGER);
-        for (var alias : new String[]{"comp-technova", "default-org", "technova"}) {
-            var chain = mock(FilterChain.class);
-            var response = new MockHttpServletResponse();
-            filter.doFilter(new MockHttpServletRequest("GET", "/api/v1/organizations/" + alias + "/modules"), response, chain);
-            assertEquals(400, response.getStatus(), alias);
-            verifyNoInteractions(chain);
+        UUID development=UUID.fromString("e0000000-0000-0000-0000-000000000001");
+        doThrow(new SubscriptionFailure(SubscriptionFailure.Code.FORBIDDEN,"Wrong organization"))
+                .when(workspaces).require(any(),eq(development),any(),any());
+        for(String alias:new String[]{"workspace-development","comp-technova","default-org"}) {
+            var chain=mock(FilterChain.class);var response=new MockHttpServletResponse();
+            filter.doFilter(new MockHttpServletRequest("GET","/api/v1/organizations/"+alias+"/modules"),response,chain);
+            assertEquals(403,response.getStatus(),alias);verifyNoInteractions(chain);
         }
-        verifyNoInteractions(workspaces);
+        verify(workspaces,times(3)).require(any(),eq(development),any(),any());
+    }
+    @Test void unknownAliasesAreRejectedBeforeWorkspaceAccess() throws Exception {
+        actor(Role.LD_MANAGER);
+        var chain=mock(FilterChain.class);var response=new MockHttpServletResponse();
+        filter.doFilter(new MockHttpServletRequest("GET","/api/v1/organizations/technova/modules"),response,chain);
+        assertEquals(400,response.getStatus());verifyNoInteractions(chain,workspaces);
     }
 }

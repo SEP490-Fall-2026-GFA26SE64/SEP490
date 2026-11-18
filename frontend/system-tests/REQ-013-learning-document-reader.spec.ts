@@ -18,10 +18,10 @@ async function fixture(page: Page, body = html, format: 'HTML' | 'MARKDOWN' = 'H
   ]
   const payload = { title: 'Graph modeling foundation', metadata: { id: 'reader-fixture', version: '1', status: 'ACTIVE', reviewStatus: 'APPROVED' }, moduleType: 'LESSON_AND_PRACTICE', contentUri: 'content:reader', contentType: 'text/markdown', contentVersion: '1', duration: 6, knowledgeLevel: 'FOUNDATION', skillVersion: '1', teachings: [{ skillId: 'skill-test', skillName: 'Graph modeling' }], content: { id: 'content-reader', title: 'Modeling', markdown: '', contentType: 'text/markdown', contentVersion: '1', jobPositionIds: [], createdBy: 'expert-test', createdAt: '2026-11-12T00:00:00Z', lessons } }
   await page.addInitScript(() => localStorage.setItem('app_language', 'en'))
-  await page.route('**/api/**', async route => {
+  await page.route('**/api/v1/**', async route => {
     const path = new URL(route.request().url()).pathname
     const data = route.request().method() === 'GET' ? null : route.request().postDataJSON()
-    if (path.endsWith('/workspace-auth/current')) return route.fulfill({ json: { accountId: 'employee-test', organizationId: 'org-test', email: 'reader@example.test', fullName: 'Reader Test', roles: ['EMPLOYEE'], stage: 'COMPLETE', workspaceReady: true, workspaceSlug: slug } })
+    if (path.endsWith('/workspace-auth/current')) return route.fulfill({ json: { accountId: 'employee-test', organizationId: 'e0000000-0000-0000-0000-000000000099', email: 'reader@example.test', fullName: 'Reader Test', roles: ['EMPLOYEE'], stage: 'COMPLETE', workspaceReady: true, workspaceSlug: slug } })
     if (path.endsWith('/csrf')) return route.fulfill({ json: { headerName: 'X-CSRF-TOKEN', token: 'test-only' } })
     if (path.endsWith('/subscription/access')) return route.fulfill({ json: {} })
     if (path.endsWith('/reader-fixture/begin')) return route.fulfill({ json: { revision: { number: 1, state: 'RELEASED', payload }, latestRevision: 1, activeLessonId: active, progress } })
@@ -107,3 +107,51 @@ for (const kind of ['short-markdown', 'long-markdown', 'plain'] as const) {
     expect(await page.locator('.learning-document-page').evaluate(e => getComputedStyle(e).boxShadow)).toBe('none')
   })
 }
+test('upskilling reader entry: context-aware Back to Skill, clean completion banner without inline assessment, and return to Skill tab', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 1000 })
+  const errors: string[] = []; page.on('pageerror', e => errors.push(e.message))
+  await fixture(page)
+  await page.route('**/api/v1/organizations/*/micro-skills', route =>
+    route.fulfill({ json: [{ id: 'skill-test', code: 'GRAPH-01', name: 'Graph modeling', status: 'ACTIVE', version: '1' }] })
+  )
+  await page.route('**/api/v1/module-management/skills/skill-test/modules', route =>
+    route.fulfill({ json: [{ moduleId: 'reader-fixture', title: 'Graph modeling foundation', knowledgeLevel: 'FOUNDATION', skillVersion: '1', contentVersion: '1', moduleRevision: 1, started: true, completed: true }] })
+  )
+  await page.route('**/api/v1/employee/knowledge-profile?*', route =>
+    route.fulfill({ json: { items: [], page: 0, pageSize: 20, hasMore: false } })
+  )
+  await page.route('**/api/v1/employee/baseline-attempts/skill-scope/history?*', route =>
+    route.fulfill({ json: { scope: { skillId: 'skill-test', knowledgeLevel: 'FOUNDATION', skillVersion: '1' }, items: [], activeAttempts: [], totalAttempts: 0, unresolvedAttempts: 0, page: 0, pageSize: 20, hasMore: false, previousAttemptId: null, maxAttempts: 3, retakeAvailableAt: null, policyIssue: null, observedAt: '2026-11-18T00:00:00Z' } })
+  )
+  await page.goto(`/workspace/${slug}/employee/modules/reader-fixture?from=upskilling&skillId=skill-test&level=FOUNDATION`)
+  await expect(page.getByRole('heading', { level: 1, name: 'Define and verify a learning graph' })).toBeVisible()
+  const backLink = page.getByRole('link', { name: 'Back to Skill', exact: true })
+  await expect(backLink).toHaveAttribute('href', `/workspace/${slug}/employee/upskilling?tab=skills&skillId=skill-test&level=FOUNDATION`)
+  await expect(page.getByRole('link', { name: 'Back to Pathway' })).toHaveCount(0)
+
+  const completeFirst = page.getByRole('button', { name: 'Mark as completed', exact: true })
+  await completeFirst.scrollIntoViewIfNeeded(); await expect(completeFirst).toBeEnabled(); await completeFirst.click()
+  await expect(page.getByRole('button', { name: 'Lesson completed', exact: true })).toBeVisible()
+  await page.getByRole('button', { name: 'Next lesson', exact: true }).click()
+  await expect(page.getByRole('heading', { level: 1, name: 'Apply the concepts' })).toBeVisible()
+  await expect(page.getByText('Final lesson in this module.', { exact: true })).toBeVisible()
+
+  const completeSecond = page.getByRole('button', { name: 'Mark as completed', exact: true })
+  await completeSecond.scrollIntoViewIfNeeded(); await expect(completeSecond).toBeEnabled(); await completeSecond.click()
+  await expect(page.getByText('Module content completed', { exact: true })).toBeVisible()
+  await expect(page.getByRole('button', { name: /Take Skill Assessment|Retake Skill Assessment|Resume Skill Assessment/ })).toHaveCount(0)
+  await expect(page.getByRole('region', { name: 'Skill learning eligibility and optional modules' })).toHaveCount(0)
+
+  await page.reload()
+  await expect(page.getByRole('link', { name: 'Back to Skill', exact: true })).toBeVisible()
+  const bannerCta = page.getByRole('button', { name: 'Back to Skill', exact: true })
+  await expect(bannerCta).toBeVisible()
+  await page.screenshot({ path: '/tmp/learning-reader-upskilling-complete.png', fullPage: true })
+  await bannerCta.click()
+
+  await expect(page).toHaveURL(new RegExp(`/workspace/${slug}/employee/upskilling\\?tab=skills&skillId=skill-test&level=FOUNDATION$`))
+  await expect(page.getByRole('region', { name: 'Skill modules', exact: true })).toBeVisible()
+  await expect(page.getByRole('region', { name: 'Skill Assessment', exact: true })).toBeVisible()
+  await page.screenshot({ path: '/tmp/learning-reader-upskilling-returned.png', fullPage: true })
+  expect(errors).toEqual([])
+})

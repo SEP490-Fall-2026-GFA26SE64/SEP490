@@ -21,10 +21,11 @@ export interface ComboboxProps {
   emptyMessage?: string
   disabled?: boolean
   className?: string
-  size?: 'default' | 'sm'
+  size?: 'default' | 'md' | 'sm'
   clearable?: boolean
   wrapOptions?: boolean
   onOpenChange?: (open: boolean) => void
+  onBlur?: () => void
   role?: 'combobox'
   'aria-label'?: string
   'aria-invalid'?: boolean
@@ -48,6 +49,7 @@ export function Combobox({
   clearable = true,
   wrapOptions = false,
   onOpenChange,
+  onBlur,
   role,
   'aria-label': ariaLabel,
   'aria-invalid': ariaInvalid,
@@ -55,17 +57,31 @@ export function Combobox({
   clearLabel = 'Clear selection',
 }: ComboboxProps) {
   const [isOpen, setIsOpenState] = React.useState(false)
+  const [openUpward, setOpenUpward] = React.useState(false)
+
+  const checkPlacement = React.useCallback(() => {
+    if (triggerRef.current) {
+      const rect = triggerRef.current.getBoundingClientRect()
+      const spaceBelow = window.innerHeight - rect.bottom
+      const spaceAbove = rect.top
+      setOpenUpward(spaceBelow < 240 && spaceAbove > spaceBelow)
+    }
+  }, [])
+
   const setIsOpen = React.useCallback(
     (val: boolean | ((prev: boolean) => boolean)) => {
       setIsOpenState((prev) => {
         const next = typeof val === 'function' ? val(prev) : val
+        if (next) {
+          checkPlacement()
+        }
         if (next !== prev) {
           onOpenChange?.(next)
         }
         return next
       })
     },
-    [onOpenChange]
+    [onOpenChange, checkPlacement]
   )
   const [searchQuery, setSearchQuery] = React.useState('')
   const containerRef = React.useRef<HTMLDivElement>(null)
@@ -139,7 +155,10 @@ export function Combobox({
   return (
     <div ref={containerRef} className={cn('relative w-full', className)}
       onBlur={event => {
-        if (!event.currentTarget.contains(event.relatedTarget)) setIsOpen(false)
+        if (!event.currentTarget.contains(event.relatedTarget)) {
+          setIsOpen(false)
+          onBlur?.()
+        }
       }}
       onKeyDown={event => {
         if (event.key === 'Escape' && isOpen) {
@@ -162,9 +181,8 @@ export function Combobox({
         }}
         className={cn(
           'flex w-full items-center justify-between rounded-md border border-input bg-card text-foreground shadow-2xs transition-colors focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer text-left',
-          size === 'sm' ? 'h-8 px-2.5 py-1 text-xs' : 'h-10 px-3 py-2 text-sm',
+          size === 'sm' ? 'h-8 pl-2.5 pr-2 py-1 text-xs' : size === 'md' ? 'h-9 pl-3 pr-2.5 py-1.5 text-xs' : 'h-10 pl-3 pr-2.5 py-2 text-sm',
           isOpen && 'border-primary ring-1 ring-primary',
-          clearable && hasSelection && !disabled && 'pr-16',
           ariaInvalid && 'border-destructive',
         )}
         aria-expanded={isOpen}
@@ -175,10 +193,31 @@ export function Combobox({
         aria-describedby={ariaDescribedBy}
         role={role}
       >
-        <span className={cn('truncate', !hasSelection && 'text-muted-foreground')}>
+        <span className={cn('truncate flex-1 min-w-0 mr-1.5', !hasSelection && 'text-muted-foreground')}>
           {triggerLabel}
         </span>
-        <div className="flex items-center space-x-1 shrink-0 ml-1.5">
+        <div className="flex items-center space-x-1 shrink-0 ml-auto">
+          {clearable && hasSelection && !disabled && (
+            <span
+              role="button"
+              tabIndex={0}
+              aria-label={clearLabel}
+              onClick={handleClear}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  handleClear(e as unknown as React.MouseEvent)
+                }
+              }}
+              className={cn(
+                'flex items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground cursor-pointer',
+                size === 'sm' ? 'size-4' : 'size-5'
+              )}
+            >
+              <X size={size === 'sm' ? 12 : 14} aria-hidden="true" />
+            </span>
+          )}
           <ChevronDown
             aria-hidden="true"
             className={cn(
@@ -189,14 +228,14 @@ export function Combobox({
           />
         </div>
       </button>
-      {clearable && hasSelection && !disabled && <button type="button" aria-label={clearLabel}
-        onClick={handleClear}
-        className="absolute right-8 top-1/2 flex size-7 -translate-y-1/2 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
-        <X size={14} aria-hidden="true" />
-      </button>}
 
       {isOpen && (
-        <div className="absolute top-full left-0 z-50 mt-1 max-h-60 w-full overflow-hidden rounded-md border border-border bg-popover text-popover-foreground shadow-lg animate-in fade-in-80">
+        <div
+          className={cn(
+            'absolute left-0 z-50 max-h-60 w-full overflow-hidden rounded-md border border-border bg-popover text-popover-foreground shadow-lg animate-in fade-in-80',
+            openUpward ? 'bottom-full mb-1' : 'top-full mt-1',
+          )}
+        >
           <div className={cn('flex items-center border-b border-border', size === 'sm' ? 'px-2.5 py-1.5' : 'px-3 py-2')}>
             <Search aria-hidden="true" className={cn('mr-2 shrink-0 text-muted-foreground', size === 'sm' ? 'h-3.5 w-3.5' : 'h-4 w-4')} />
             <input

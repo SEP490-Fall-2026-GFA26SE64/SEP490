@@ -181,9 +181,11 @@ function CatalogGraph({ catalog, ids, selected, focused, onFocus, onClearFocus, 
       observer.observe(target)
     } catch (error) {
       console.error('Starter catalog graph could not render', error)
+      // oxlint-disable-next-line react/set-state-in-effect -- Report a synchronous failure from constructing the external graph renderer.
       setFailure(true)
     }
-    return () => { observer?.disconnect(); network.current?.destroy(); network.current = null; edgeModes.current.clear() }
+    const modes = edgeModes.current
+    return () => { observer?.disconnect(); network.current?.destroy(); network.current = null; modes.clear() }
   }, [attempt, renderer])
 
   React.useEffect(() => {
@@ -267,20 +269,34 @@ function CatalogGraph({ catalog, ids, selected, focused, onFocus, onClearFocus, 
   const zoom = (factor: number) => network.current?.moveTo({
     scale: Math.min(MAX_SCALE, Math.max(MIN_SCALE, (network.current.getScale() || 1) * factor)), animation: animation() })
   const controls = [
-    { name: copy('Zoom in', 'Phóng to'), Icon: ZoomIn, action: () => zoom(1.25) },
-    { name: copy('Zoom out', 'Thu nhỏ'), Icon: ZoomOut, action: () => zoom(1 / 1.25) },
-    { name: copy('Fit graph', 'Vừa khung'), Icon: Crosshair, action: () => network.current?.fit({ animation: animation() }) },
-    { name: copy('Re-arrange layout', 'Sắp xếp lại bố cục'), Icon: LayoutGrid, action: () => {
-      nodes.current.update([...layoutCatalog(catalog, ids)].map(([id, point]) => ({ id, ...point })))
-      network.current?.fit({ animation: animation() })
-    } },
+    { name: copy('Zoom in', 'Phóng to'), Icon: ZoomIn, action: 0 },
+    { name: copy('Zoom out', 'Thu nhỏ'), Icon: ZoomOut, action: 1 },
+    { name: copy('Fit graph', 'Vừa khung'), Icon: Crosshair, action: 2 },
+    { name: copy('Re-arrange layout', 'Sắp xếp lại bố cục'), Icon: LayoutGrid, action: 3 },
     { name: fullscreen ? copy('Exit fullscreen', 'Thoát toàn màn hình') : copy('Fullscreen graph', 'Graph toàn màn hình'),
       Icon: fullscreen ? Minimize2 : Maximize2,
-      action: () => {
+      action: 4 },
+  ]
+  const handleControl = (action: number) => {
+    switch (action) {
+      case 0: zoom(1.25); break
+      case 1: zoom(1 / 1.25); break
+      case 2: network.current?.fit({ animation: animation() }); break
+      case 3: { 
+      nodes.current.update([...layoutCatalog(catalog, ids)].map(([id, point]) => ({ id, ...point })))
+      network.current?.fit({ animation: animation() })
+    
+        break
+      }
+      case 4: { 
         const request = document.fullscreenElement ? document.exitFullscreen() : frame.current?.requestFullscreen()
         request?.catch(error => { console.error('Catalog fullscreen failed', error); setFailure(true) })
-      } },
-  ]
+      
+        break
+      }
+    }
+  }
+
 
   return <div ref={frame} className="starter-catalog-graph relative min-h-72 flex-1 overflow-hidden rounded-xl border border-border bg-card shadow-sm">
     <div ref={container} data-testid="catalog-graph" role="application" tabIndex={0}
@@ -294,7 +310,7 @@ function CatalogGraph({ catalog, ids, selected, focused, onFocus, onClearFocus, 
     <div role="toolbar" aria-label={copy('Graph controls', 'Điều khiển graph')}
       className="absolute left-3 top-3 flex flex-col gap-0.5 rounded-lg border border-border bg-card/95 p-1 shadow-sm backdrop-blur">
       {controls.map(({ name, Icon, action }) => <Button key={name} type="button" size="sm" variant="ghost" aria-label={name} title={name}
-        className="h-8 w-8 p-0" onClick={action}><Icon size={16} aria-hidden="true" /></Button>)}
+        className="h-8 w-8 p-0" onClick={() => handleControl(action)}><Icon size={16} aria-hidden="true" /></Button>)}
     </div>
     <div className="absolute right-3 top-3 flex items-center gap-2 rounded-full border border-border bg-card/95 px-3 py-1 text-caption text-muted-foreground shadow-sm backdrop-blur">
       <Waypoints size={14} aria-hidden="true" />
