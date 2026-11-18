@@ -26,7 +26,7 @@ it('offers keyboard file browsing and accepts dropped files only when enabled', 
  expect(screen.getByText('questions.json')).toBeTruthy()
  expect(screen.getByRole('button', { name: 'Browse files' })).toBeTruthy()
  fireEvent.click(screen.getByRole('button', { name: 'Excel template' }))
- expect(template).toHaveBeenCalledWith('xlsx')
+ expect(template).toHaveBeenCalledWith('en')
  view.rerender(<QuestionImportUpload {...props} busy />)
  upload.mockClear()
  fireEvent.drop(screen.getByText('Drag and drop your file here').parentElement!, { dataTransfer: { files: [file] } })

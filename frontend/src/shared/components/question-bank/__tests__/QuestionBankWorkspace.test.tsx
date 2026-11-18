@@ -1,8 +1,18 @@
 import { render, screen, fireEvent, waitFor, cleanup, within } from '@testing-library/react'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 import type { ReactNode } from 'react'
+import * as XLSX from 'xlsx'
 import { QuestionBankWorkspace } from '../QuestionBankWorkspace'
 import { bankRequest, type BankView, type BankSession } from '../../../api/questionBankApi'
+
+function excelFile(rows: Record<string, unknown>[], name = 'questions.xlsx') {
+  const wb = XLSX.utils.book_new()
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(rows), 'Questions')
+  const buf = XLSX.write(wb, { type: 'array', bookType: 'xlsx' }) as ArrayBuffer
+  const file = new File([buf], name, { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
+  Object.defineProperty(file, 'arrayBuffer', { value: async () => buf })
+  return file
+}
 vi.mock('../../../layouts/WorkspaceLayout', () => ({ WorkspaceLayout: ({ children }: { children: ReactNode }) => <>{children}</> }))
 vi.mock('../../../i18n/LanguageContext', () => ({ useTranslation: () => ({ language: 'en' }) }))
 vi.mock('../../../api/questionBankApi', () => ({ bankRequest: vi.fn() }))
@@ -26,8 +36,7 @@ it('shows only questions from the confirmed import in the neutral learner simula
  vi.mocked(bankRequest).mockImplementation(async (path, data, signal) => path === '/imports/preview' ? { id: 'batch', rows, errors: [], warnings: [], expiresAt: '2027-01-01T00:00:00Z', committed: false, expected: {} } : path === '/imports/confirm' ? { ...bank, questions: [...bank.questions, ...saved] } : previous(path, data, signal))
  render(<QuestionBankWorkspace />)
  fireEvent.click(await screen.findByRole('button', { name: 'Import questions' }))
- const file = new File(['fixture'], 'questions.json', { type: 'application/json' })
- Object.defineProperty(file, 'text', { value: async () => JSON.stringify([{ prompt: 'First file question', skillId: 'skill' }, { prompt: 'Second file question', skillId: 'skill' }]) })
+ const file = excelFile([{ prompt: 'First file question', skillId: 'skill' }, { prompt: 'Second file question', skillId: 'skill' }])
  fireEvent.change(screen.getByLabelText('Select file'), { target: { files: [file] } })
  await screen.findByRole('button', { name: 'Continue to confirmation' })
  fireEvent.click(screen.getAllByRole('button', { name: 'View as test taker' })[1])
@@ -203,8 +212,7 @@ it('keeps import confirmation behind server validation and warning acknowledgeme
  render(<QuestionBankWorkspace />)
  fireEvent.click(await screen.findByRole('button', { name: /^Import questions$/ }))
  const dialog = screen.getByRole('dialog')
- const file = new File(['unused'], 'questions.json', { type: 'application/json' })
- Object.defineProperty(file, 'text', { value: async () => JSON.stringify([{ prompt: 'Imported', skillId: 'skill' }]) })
+ const file = excelFile([{ prompt: 'Imported', skillId: 'skill' }])
  fireEvent.change(within(dialog).getByLabelText('Select file'), { target: { files: [file] } })
  await within(dialog).findByRole('heading', { name: 'Resolve errors before continuing' })
  expect(within(dialog).getByRole('button', { name: 'Continue to confirmation' }).hasAttribute('disabled')).toBe(true)

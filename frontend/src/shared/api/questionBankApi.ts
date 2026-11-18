@@ -4,7 +4,7 @@ export interface BankVersion { id: string; number: number; state: 'DRAFT' | 'SUB
 export interface BankQuestion { id: string; code: string; createdBy: string | null; createdAt: string | null; owner: string | null; revision: number; retired: boolean; request: 'RETIRE' | 'REACTIVATE' | null; versions: BankVersion[] }
 export interface BankAudit { id: string; question: string; version: string | null; action: string; actor: string; at: string; reason: string | null; snapshot: BankContent | null }
 export interface BankView { id: string; name: string; questions: BankQuestion[]; history: BankAudit[] }
-export interface BankChoice { id: string; name: string }
+export interface BankChoice { id: string; name: string; code?: string | null }
 export interface BankKnowledgeChoice { skillId: string; knowledgeLevel: string; outcomes: BankChoice[] }
 export interface BankSession { actor: { id: string; organization: string; role: 'DOMAIN_EXPERT' | 'LD_MANAGER' }; skills: BankChoice[]; experts: BankChoice[]; people: BankChoice[]; maxImportRows: number; maxImportBytes: number; knowledge?: BankKnowledgeChoice[] }
 export interface BankNotice { id: string; recipient: string; title: string; body: string; createdAt: string; readAt: string | null }

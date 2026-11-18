@@ -14,7 +14,7 @@ import { useCallback, useContext, useEffect, useId, useRef, useState } from 'rea
 import { WorkspaceSessionContext } from '../../auth/workspaceSession'
 import { CheckCircle2, Clock, CornerUpLeft, UserCheck, Eye, Pencil, Power, FileQuestion, History, Layers, Plus, RefreshCw, Search, Upload, Bell } from 'lucide-react'
 import * as XLSX from 'xlsx'
-import { bankRequest, type BankAudit, type BankContent, type BankNotice, type BankPreview, type BankQuestion, type BankRow, type BankSession, type BankVersion, type BankView } from '../../api/questionBankApi'
+import { bankRequest, type BankAudit, type BankChoice, type BankContent, type BankNotice, type BankPreview, type BankQuestion, type BankRow, type BankSession, type BankVersion, type BankView } from '../../api/questionBankApi'
 import { questionBankMessage } from '../../api/questionBankMessages'
 import { useTranslation } from '../../i18n/LanguageContext'
 import { WorkspaceLayout } from '../../layouts/WorkspaceLayout'
@@ -41,20 +41,62 @@ const emptyContent = (): BankContent => ({ prompt: '', options: ['', '', '', '']
 const current = (q: BankQuestion) => q.versions[q.versions.length - 1]
 interface Editor { id: string | null; revision: number | null; code: string; content: BankContent; acknowledged: boolean }
 interface Action { q: BankQuestion; name: string; reason: string; owner: string }
-const headers = [ 'prompt', 'optionA', 'optionB', 'optionC', 'optionD', 'correctAnswer', 'skillId', 'knowledgeLevel', 'mandatory', 'explanation']
-function parseRows(value: unknown, maxRows: number): BankRow[] {
+const columnAliases: Record<string, string> = {
+  prompt: 'prompt', 'nội dung câu hỏi': 'prompt', 'question prompt': 'prompt',
+  optiona: 'optionA', 'đáp án a': 'optionA', 'option a': 'optionA',
+  optionb: 'optionB', 'đáp án b': 'optionB', 'option b': 'optionB',
+  optionc: 'optionC', 'đáp án c': 'optionC', 'option c': 'optionC',
+  optiond: 'optionD', 'đáp án d': 'optionD', 'option d': 'optionD',
+  correctanswer: 'correctAnswer', 'đáp án đúng (a-d)': 'correctAnswer', 'đáp án đúng': 'correctAnswer', 'correct answer (a-d)': 'correctAnswer', 'correct answer': 'correctAnswer',
+  skillid: 'skillCode', skillcode: 'skillCode', 'mã skill': 'skillCode', 'skill code': 'skillCode',
+  knowledgelevel: 'knowledgeLevel', 'mức kiến thức': 'knowledgeLevel', 'knowledge level': 'knowledgeLevel',
+  mandatory: 'mandatory', 'bắt buộc (true/false)': 'mandatory', 'bắt buộc': 'mandatory', 'mandatory (true/false)': 'mandatory',
+  explanation: 'explanation', 'giải thích': 'explanation',
+}
+const levelAliases: Record<string, string> = {
+  FOUNDATION: 'FOUNDATION', 'NỀN TẢNG': 'FOUNDATION',
+  INTERMEDIATE: 'INTERMEDIATE', 'TRUNG CẤP': 'INTERMEDIATE',
+  ADVANCED: 'ADVANCED', 'NÂNG CAO': 'ADVANCED',
+}
+function parseRows(value: unknown, maxRows: number, skills: BankChoice[] = []): BankRow[] {
   if (!Array.isArray(value) || !value.length || value.length > maxRows) throw new Error(`Import 1–${maxRows} questions / Nhập từ 1–${maxRows} câu hỏi`)
+  const skillLookup = new Map<string, string>()
+  for (const s of skills) {
+    skillLookup.set(s.id.toLowerCase(), s.id)
+    skillLookup.set(s.name.toLowerCase(), s.id)
+    if (s.code) skillLookup.set(s.code.toLowerCase(), s.id)
+  }
   return value.map((entry: unknown, index) => {
     if (!entry || typeof entry !== 'object' || Array.isArray(entry)) throw new Error(`Row ${index + 1}: invalid object`)
-    const row = entry as Record<string, unknown>
-    if ('code' in row) throw new Error('Question codes are generated automatically. Remove code and use the latest template.')
-    if (Object.keys(row).some(key => !headers.includes(key))) throw new Error(`Row ${index + 1}: use the template columns`)
-    const text = (key: string) => { const v = row[key]; if (v == null) return ''; if (typeof v !== 'string' && typeof v !== 'number') throw new Error(`Row ${index + 1}: invalid ${key}`); return String(v) }
+    const raw = entry as Record<string, unknown>
+    const row: Record<string, unknown> = {}
+    for (const [k, v] of Object.entries(raw)) {
+      if (k.trim().toLowerCase() === 'code') throw new Error('Question codes are generated automatically. Remove code and use the latest template.')
+      const canonical = columnAliases[k.trim().toLowerCase()]
+      if (!canonical) throw new Error(`Row ${index + 1}: use the template columns`)
+      row[canonical] = v
+    }
+    const text = (key: string) => { const v = row[key]; if (v == null) return ''; if (typeof v !== 'string' && typeof v !== 'number' && typeof v !== 'boolean') throw new Error(`Row ${index + 1}: invalid ${key}`); return String(v) }
     const answer = text('correctAnswer').trim().toUpperCase()
     if (answer && !/^[A-D]$/.test(answer)) throw new Error(`Row ${index + 1}: correctAnswer must be A–D, or blank for an incomplete draft`)
-    const mandatory = row.mandatory == null ? '' : String(row.mandatory).trim().toLowerCase()
-    if (!['', 'true', 'false'].includes(mandatory)) throw new Error(`Row ${index + 1}: mandatory must be true or false`)
-    return { content: { prompt: text('prompt'), options: ['A', 'B', 'C', 'D'].map(letter => text('option' + letter)), correctAnswer: /^[A-D]$/.test(answer) ? answer.charCodeAt(0) - 65 : null, skillId: text('skillId'), skillName: null, knowledgeLevel: text('knowledgeLevel') || null, mandatory: mandatory === 'true', explanation: text('explanation') } }
+    const mandatoryRaw = text('mandatory').trim().toLowerCase()
+    if (!['', 'true', 'false', 'có', 'không', 'yes', 'no'].includes(mandatoryRaw)) throw new Error(`Row ${index + 1}: mandatory must be true or false`)
+    const rawSkill = text('skillCode').trim()
+    const resolvedSkillId = rawSkill ? (skillLookup.get(rawSkill.toLowerCase()) ?? rawSkill) : ''
+    const rawLevel = text('knowledgeLevel').trim()
+    const resolvedLevel = rawLevel ? (levelAliases[rawLevel.toUpperCase()] ?? rawLevel) : null
+    return {
+      content: {
+        prompt: text('prompt'),
+        options: ['A', 'B', 'C', 'D'].map(letter => text('option' + letter)),
+        correctAnswer: /^[A-D]$/.test(answer) ? answer.charCodeAt(0) - 65 : null,
+        skillId: resolvedSkillId,
+        skillName: null,
+        knowledgeLevel: resolvedLevel,
+        mandatory: mandatoryRaw === 'true' || mandatoryRaw === 'có' || mandatoryRaw === 'yes',
+        explanation: text('explanation'),
+      },
+    }
   })
 }
 export function QuestionBankWorkspace() {
@@ -165,19 +207,99 @@ function OwnedQuestionBankWorkspace() {
       }
     })
   }
-  const template = (format: 'xlsx' | 'json') => {
-    if (format === 'xlsx') { const workbook = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(workbook, XLSX.utils.aoa_to_sheet([headers]), 'Questions'); XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet((session?.skills ?? []).map(s => ({ skillId: s.id, name: s.name }))), 'Skills'); XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet((session?.knowledge ?? []).map(k => ({ skillId: k.skillId, knowledgeLevel: k.knowledgeLevel }))), 'Knowledge levels'); XLSX.writeFile(workbook, 'question-bank-template.xlsx') }
-    else { const blob = new Blob([JSON.stringify([Object.fromEntries(headers.map(key => [key, '']))], null, 2)], { type: 'application/json' }); const url = URL.createObjectURL(blob), link = document.createElement('a'); link.href = url; link.download = 'question-bank-template.json'; link.click(); URL.revokeObjectURL(url) }
+  const template = (lang: 'vi' | 'en') => {
+    const isEn = lang === 'en'
+    const workbook = XLSX.utils.book_new()
+    const skillsList = session?.skills ?? []
+    const knowledgeList = session?.knowledge ?? []
+    const firstSkill = skillsList[0]
+    const firstCode = firstSkill ? (firstSkill.code || firstSkill.id) : 'MS-SEC01'
+    const firstLevel = firstSkill ? knowledgeList.find(k => k.skillId === firstSkill.id)?.knowledgeLevel ?? 'FOUNDATION' : 'FOUNDATION'
+    const levelLabel = (lvl: string) => isEn
+      ? ({ FOUNDATION: 'Foundation', INTERMEDIATE: 'Intermediate', ADVANCED: 'Advanced' }[lvl] ?? lvl)
+      : ({ FOUNDATION: 'Nền tảng', INTERMEDIATE: 'Trung cấp', ADVANCED: 'Nâng cao' }[lvl] ?? lvl)
+
+    const guideRows = isEn
+      ? [
+          ['QUESTION BANK EXCEL IMPORT GUIDE'],
+          ['1. Go to the "Questions" sheet to enter your questions. Keep row 1 column headers unchanged.'],
+          ['2. "Skill Code": Copy the exact Skill Code (e.g. ' + firstCode + ') from the "SkillCatalog" sheet.'],
+          ['3. "Correct Answer (A-D)": Enter A, B, C, or D (or leave blank when saving an incomplete draft).'],
+          ['4. "Knowledge Level": Enter Foundation, Intermediate, or Advanced (or FOUNDATION / INTERMEDIATE / ADVANCED).'],
+          ['5. "Mandatory (true/false)": Enter true / Yes if mandatory in Skill Assessment, or false / No (ignored by Baseline).'],
+          ['6. Question codes are generated automatically by the system after import.'],
+          ['7. Only the "Questions" sheet is imported; "InstructionsEN" and "SkillCatalog" are reference sheets.'],
+        ]
+      : [
+          ['HƯỚNG DẪN IMPORT CÂU HỎI TỪ EXCEL'],
+          ['1. Nhập danh sách câu hỏi vào sheet "Questions". Giữ nguyên dòng tiêu đề cột ở dòng 1.'],
+          ['2. Cột "Mã Skill": Lấy đúng Mã Skill ngắn gọn (ví dụ: ' + firstCode + ') từ sheet "DanhMuc".'],
+          ['3. Cột "Đáp án đúng (A-D)": Nhập A, B, C hoặc D (có thể để trống nếu chỉ lưu bản nháp).'],
+          ['4. Cột "Mức kiến thức": Nhập Nền tảng, Trung cấp hoặc Nâng cao (hoặc FOUNDATION / INTERMEDIATE / ADVANCED).'],
+          ['5. Cột "Bắt buộc (true/false)": Nhập true / Có nếu bắt buộc trong Skill Assessment, hoặc false / Không.'],
+          ['6. Mã câu hỏi được hệ thống tự động sinh khi lưu.'],
+          ['7. Chỉ sheet "Questions" được import; "HuongDan" và "DanhMuc" là sheet tham khảo.'],
+        ]
+    const guideSheet = XLSX.utils.aoa_to_sheet(guideRows)
+    guideSheet['!cols'] = [{ wch: 100 }]
+    XLSX.utils.book_append_sheet(workbook, guideSheet, isEn ? 'InstructionsEN' : 'HuongDan')
+
+    const qHeaders = isEn
+      ? ['Question Prompt', 'Option A', 'Option B', 'Option C', 'Option D', 'Correct Answer (A-D)', 'Skill Code', 'Knowledge Level', 'Mandatory (true/false)', 'Explanation']
+      : ['Nội dung câu hỏi', 'Đáp án A', 'Đáp án B', 'Đáp án C', 'Đáp án D', 'Đáp án đúng (A-D)', 'Mã Skill', 'Mức kiến thức', 'Bắt buộc (true/false)', 'Giải thích']
+    const sampleRow = isEn
+      ? [
+          `Sample question for ${firstSkill?.name ?? 'this skill'}: Which practice is recommended?`,
+          'Verify requirements and document key assumptions.',
+          'Skip validation to save time.',
+          'Ignore error handling in production.',
+          'Deploy without peer review.',
+          'A',
+          firstCode,
+          levelLabel(firstLevel),
+          'false',
+          'Documenting and verifying assumptions reduces risk.',
+        ]
+      : [
+          `Câu hỏi mẫu cho kỹ năng ${firstSkill?.name ?? 'này'}: Thực hành nào sau đây là phù hợp nhất?`,
+          'Kiểm tra yêu cầu và ghi nhận các giả định quan trọng.',
+          'Bỏ qua bước kiểm tra để tiết kiệm thời gian.',
+          'Không cần xử lý lỗi khi vận hành.',
+          'Triển khai trực tiếp không cần rà soát.',
+          'A',
+          firstCode,
+          levelLabel(firstLevel),
+          'false',
+          'Kiểm tra và ghi nhận giả định giúp giảm thiểu rủi ro.',
+        ]
+    const qSheet = XLSX.utils.aoa_to_sheet([qHeaders, sampleRow])
+    qSheet['!cols'] = [{ wch: 48 }, { wch: 28 }, { wch: 28 }, { wch: 28 }, { wch: 28 }, { wch: 20 }, { wch: 18 }, { wch: 18 }, { wch: 22 }, { wch: 40 }]
+    XLSX.utils.book_append_sheet(workbook, qSheet, 'Questions')
+
+    const catalogRows = skillsList.map(s => {
+      const levels = knowledgeList.filter(k => k.skillId === s.id).map(k => levelLabel(k.knowledgeLevel)).join(', ')
+      return isEn
+        ? { 'Skill Code': s.code || s.id, 'Skill Name': s.name, 'Configured Levels': levels || '—' }
+        : { 'Mã Skill': s.code || s.id, 'Tên Skill': s.name, 'Mức kiến thức hỗ trợ': levels || '—' }
+    })
+    const catalogSheet = XLSX.utils.json_to_sheet(catalogRows)
+    catalogSheet['!cols'] = [{ wch: 20 }, { wch: 52 }, { wch: 36 }]
+    XLSX.utils.book_append_sheet(workbook, catalogSheet, isEn ? 'SkillCatalog' : 'DanhMuc')
+
+    XLSX.writeFile(workbook, isEn ? 'question-bank-template-en.xlsx' : 'question-bank-template.xlsx')
   }
   const upload = (file: File) => void run(async () => {
     setReviewQuestionIndex(null); setPreview(null); setAckWarnings(false); setImportStep(0); setImportFile({ name: file.name, bytes: file.size }); setSourceRows([])
     if (file.size > (session?.maxImportBytes ?? 10485760)) throw new Error(copy('File exceeds the configured size limit.', 'File vượt quá dung lượng cho phép.'))
-    let rows: unknown
-    if (file.name.toLowerCase().endsWith('.json')) rows = JSON.parse(await file.text()) as unknown
-    else if (file.name.toLowerCase().endsWith('.xlsx')) { const workbook = XLSX.read(await file.arrayBuffer(), { type: 'array' }); if (workbook.SheetNames.length > 1 && (workbook.SheetNames.some(name => !['Questions', 'Skills', 'Knowledge levels'].includes(name)) || !workbook.SheetNames.includes('Questions'))) throw new Error(copy('Use Questions with optional Skills and Knowledge levels reference sheets.', 'Dùng Questions cùng các sheet tham chiếu Skills và Knowledge levels nếu có.')); rows = XLSX.utils.sheet_to_json<Record<string, unknown>>(workbook.Sheets[workbook.SheetNames.includes('Questions') ? 'Questions' : workbook.SheetNames[0]], { defval: '' }) }
-    else throw new Error(copy('Use .xlsx or .json.', 'Chỉ nhận .xlsx hoặc .json.'))
-    setSourceRows(Array.isArray(rows) ? rows.map((row, index) => file.name.toLowerCase().endsWith('.xlsx') && typeof row?.__rowNum__ === 'number' ? row.__rowNum__ + 1 : index + 1) : [])
-    setPreview(await bankRequest<BankPreview>('/imports/preview', { rows: parseRows(rows, session?.maxImportRows ?? 500) })); setImportStep(1)
+    if (!file.name.toLowerCase().endsWith('.xlsx')) throw new Error(copy('Use an Excel (.xlsx) file from the template.', 'Chỉ hỗ trợ file Excel (.xlsx) theo mẫu.'))
+    const workbook = XLSX.read(await file.arrayBuffer(), { type: 'array' })
+    const allowedSheets = new Set(['Questions', 'HuongDan', 'InstructionsEN', 'DanhMuc', 'SkillCatalog', 'Skills', 'Knowledge levels'])
+    if (workbook.SheetNames.length > 1 && (workbook.SheetNames.some(name => !allowedSheets.has(name)) || !workbook.SheetNames.includes('Questions'))) {
+      throw new Error(copy('Use the Questions sheet from the Excel template.', 'Sử dụng sheet Questions theo đúng mẫu Excel tải về.'))
+    }
+    const rows = XLSX.utils.sheet_to_json<Record<string, unknown>>(workbook.Sheets[workbook.SheetNames.includes('Questions') ? 'Questions' : workbook.SheetNames[0]], { defval: '' })
+    setSourceRows(Array.isArray(rows) ? rows.map((row, index) => typeof row?.__rowNum__ === 'number' ? row.__rowNum__ + 1 : index + 1) : [])
+    setPreview(await bankRequest<BankPreview>('/imports/preview', { rows: parseRows(rows, session?.maxImportRows ?? 500, session?.skills ?? []) })); setImportStep(1)
   })
   const actionNeedsReason = !!action && !['SUBMIT', 'APPROVE'].includes(action.name)
   const actions = (q: BankQuestion, includeDetails = true, includeAssignment = true, footer = false) => {
@@ -287,7 +409,7 @@ function OwnedQuestionBankWorkspace() {
     {importOpen && importStep === 1 && preview && reviewQuestionIndex !== null && <ImportedQuestionsPreview key={preview.id + ':' + reviewQuestionIndex} reviewRows={preview.rows} initialIndex={reviewQuestionIndex} onClose={() => setReviewQuestionIndex(null)} />}
     {importedQuestions !== null && <ImportedQuestionsPreview questions={importedQuestions} onClose={() => setImportedQuestions(null)} />}
     <Dialog open={importOpen} onOpenChange={open => { if (!busy) setImportOpen(open) }} className="max-w-3xl" closeLabel={copy('Close', 'Đóng')}>
-      <DialogHeader><DialogTitle className="text-[length:var(--text-card)] font-semibold">{copy('Import questions', 'Nhập câu hỏi')}</DialogTitle><DialogDescription>{copy(`Excel or JSON · ${(session?.maxImportBytes ?? 10485760) / 1048576} MB · ${session?.maxImportRows ?? 500} rows. Import creates drafts only.`, `Excel hoặc JSON · ${(session?.maxImportBytes ?? 10485760) / 1048576} MB · ${session?.maxImportRows ?? 500} dòng. Chỉ tạo bản nháp.`)}</DialogDescription></DialogHeader><div className="mb-4 shrink-0"><LinearStepper steps={[copy('Choose File', 'Chọn file'), copy('Review', 'Kiểm tra'), copy('Confirm', 'Xác nhận')]} currentStep={importStep} ariaLabel={copy('Import progress', 'Tiến trình nhập')} completedLabel={copy('Completed', 'Hoàn tất')} /></div><DialogBody className="focus-visible:outline-muted-foreground space-y-5 py-4">{busy && <Text role="status" className="text-muted-foreground">{copy('Processing your file…', 'Đang xử lý file…')}</Text>}{importStep === 0 && <section className="space-y-4"><QuestionImportUpload busy={busy} file={importFile} maxBytes={session?.maxImportBytes ?? 10485760} maxRows={session?.maxImportRows ?? 500} onUpload={upload} onTemplate={template} copy={copy} /><Text variant="body-sm">{copy('Import creates new questions with automatic codes. Use A–D for correctAnswer, a MicroSkill ID for skillId, FOUNDATION / INTERMEDIATE / ADVANCED for knowledgeLevel, and true / false for mandatory.', 'Import chỉ tạo câu hỏi mới, mã được sinh tự động. Dùng A–D cho correctAnswer, ID MicroSkill cho skillId và FOUNDATION / INTERMEDIATE / ADVANCED cho knowledgeLevel, mandatory (true / false).')}</Text><Accordion><AccordionItem value="import-skills"><AccordionTrigger>{copy('MicroSkill reference for import', 'Danh sách MicroSkill để nhập file')}</AccordionTrigger><AccordionContent><div className="max-h-52 overflow-auto space-y-2">{session?.skills.map(s => <Text key={s.id} variant="body-sm" className="break-words">{s.name} · <code>{s.id}</code></Text>)}</div></AccordionContent></AccordionItem></Accordion>
+      <DialogHeader><DialogTitle className="text-[length:var(--text-card)] font-semibold">{copy('Import questions', 'Nhập câu hỏi')}</DialogTitle><DialogDescription>{copy(`Excel (.xlsx) · ${(session?.maxImportBytes ?? 10485760) / 1048576} MB · ${session?.maxImportRows ?? 500} rows. Import creates drafts only.`, `Excel (.xlsx) · ${(session?.maxImportBytes ?? 10485760) / 1048576} MB · ${session?.maxImportRows ?? 500} dòng. Chỉ tạo bản nháp.`)}</DialogDescription></DialogHeader><div className="mb-4 shrink-0"><LinearStepper steps={[copy('Choose File', 'Chọn file'), copy('Review', 'Kiểm tra'), copy('Confirm', 'Xác nhận')]} currentStep={importStep} ariaLabel={copy('Import progress', 'Tiến trình nhập')} completedLabel={copy('Completed', 'Hoàn tất')} /></div><DialogBody className="focus-visible:outline-muted-foreground space-y-5 py-4">{busy && <Text role="status" className="text-muted-foreground">{copy('Processing your file…', 'Đang xử lý file…')}</Text>}{importStep === 0 && <section className="space-y-4"><QuestionImportUpload busy={busy} file={importFile} maxBytes={session?.maxImportBytes ?? 10485760} maxRows={session?.maxImportRows ?? 500} onUpload={upload} onTemplate={template} copy={copy} /><Text variant="body-sm">{copy('Download the bilingual Excel template (Vietnamese or English) with built-in instructions and the Skill catalog. Use Skill Code in the Questions sheet; question codes are generated automatically.', 'Tải mẫu Excel có hướng dẫn (Tiếng Việt hoặc Tiếng Anh) kèm danh mục Mã Skill. Điền Mã Skill vào sheet Questions; mã câu hỏi được hệ thống tự sinh.')}</Text><Accordion><AccordionItem value="import-skills"><AccordionTrigger>{copy('MicroSkill reference for import', 'Danh sách MicroSkill để nhập file')}</AccordionTrigger><AccordionContent><div className="max-h-52 overflow-auto space-y-2">{session?.skills.map(s => <Text key={s.id} variant="body-sm" className="break-words">{s.name} · <code>{s.code || s.id}</code></Text>)}</div></AccordionContent></AccordionItem></Accordion>
         </section>}{importStep > 0 && preview && <><div className="rounded-xl border border-border bg-muted/40 p-4 space-y-2"><Heading level={3}>{importStep === 1 ? copy('Review your questions', 'Kiểm tra câu hỏi') : copy('Ready to create drafts', 'Sẵn sàng tạo bản nháp')}</Heading><Text variant="body-sm" className="break-words">{importFile?.name}</Text>{importStep === 2 && <Text variant="body-sm">{copy('Confirm to add these questions as drafts. They will still need review before publication.', 'Xác nhận để thêm các câu hỏi dưới dạng bản nháp. Câu hỏi vẫn cần được duyệt trước khi xuất bản.')}</Text>}</div><ImportValidationSummary preview={preview} totalRows={sourceRows.length} copy={copy} /><Text variant="caption" className="text-muted-foreground">{copy('Preview expires', 'Bản kiểm tra hết hạn')}: {date(preview.expiresAt)}</Text>{preview.errors.length > 0 && <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-4 space-y-2"><Heading level={3}>{copy('Resolve errors before continuing', 'Sửa lỗi trước khi tiếp tục')}</Heading>{preview.errors.map((e, i) => <Text key={i} role="alert" className="text-destructive">{questionBankMessage(importIssueLocation(e, sourceRows, !!importFile?.name.toLowerCase().endsWith('.xlsx'), copy), vi)}</Text>)}</div>}{preview.warnings.length > 0 && <div className="rounded-xl border border-warning/30 bg-warning/10 p-4 space-y-2"><Heading level={3}>{copy('Warnings to review', 'Cảnh báo cần kiểm tra')}</Heading>{preview.warnings.map((w, i) => <Text key={i} className="text-warning">{questionBankMessage(w, vi)}</Text>)}</div>}<div className="max-h-64 overflow-auto rounded-lg border border-border p-3 space-y-2">{preview.rows.map((row, index) => <div key={row.code} className="space-y-2 border-b border-border py-3 last:border-b-0">{row.code ? <QuestionId code={row.code} vi={vi} /> : <Text variant="caption" className="text-muted-foreground">–</Text>}<Text variant="caption" className="text-muted-foreground">{session?.skills.find(skill => skill.id === row.content.skillId)?.name || row.content.skillId} · {knowledgeLevel(row.content.knowledgeLevel)}</Text><Text className="whitespace-pre-wrap break-words" variant="body-sm">{row.content.prompt}</Text>{importStep === 1 && <Button size="sm" variant="outline" disabled={busy} onClick={() => setReviewQuestionIndex(index)}>{copy('View as test taker', 'Xem như người làm bài')}</Button>}</div>)}</div>{preview.warnings.length > 0 && <label className="flex gap-2 rounded-lg border border-border p-3"><input type="checkbox" checked={ackWarnings} disabled={busy} onChange={e => setAckWarnings(e.target.checked)} />{copy('I reviewed and accept the warnings.', 'Tôi đã xem và xác nhận các cảnh báo.')}</label>}</>}
         {error && <Text role="alert" className="text-destructive">{questionBankMessage(importIssueLocation(error, sourceRows, !!importFile?.name.toLowerCase().endsWith('.xlsx'), copy), vi)}</Text>}
       </DialogBody><DialogFooter><Button variant="outline" disabled={busy} onClick={() => setImportOpen(false)}>{copy('Cancel', 'Huỷ')}</Button>{importStep > 0 && <Button variant="outline" disabled={busy} onClick={() => setImportStep(importStep - 1)}>{copy('Back', 'Quay lại')}</Button>}{importStep === 1 && <Button disabled={busy || !preview || preview.errors.length > 0 || preview.warnings.length > 0 && !ackWarnings} onClick={() => { setReviewQuestionIndex(null); setImportStep(2) }}>{copy('Continue to confirmation', 'Tiếp tục xác nhận')}</Button>}{importStep === 2 && <Button disabled={busy || !preview || preview.errors.length > 0 || preview.warnings.length > 0 && !ackWarnings} onClick={() => void run(async () => { if (!preview) return; const result = await bankRequest<BankView>('/imports/confirm', { batch: preview.id, acknowledgeWarnings: ackWarnings }); const codes = new Set(preview.rows.map(row => row.code)); setBank(result); setImportedQuestions(result.questions.filter(question => codes.has(question.code))); setPreview(null); setImportOpen(false); setMessage(copy('Import completed. Questions are saved as drafts.', 'Đã nhập câu hỏi dưới dạng bản nháp.')) })}>{busy ? copy('Processing…', 'Đang xử lý…') : copy('Confirm import', 'Xác nhận nhập')}</Button>}</DialogFooter>
