@@ -30,7 +30,7 @@ class SharedSkillScopePostgresTest {
     static String write(Object o){try{return JSON.writeValueAsString(o);}catch(Exception e){throw new AssertionError(e);}}
     @BeforeAll static void start() {
         PG.start();ds=new DriverManagerDataSource(PG.getJdbcUrl(),PG.getUsername(),PG.getPassword());jdbc=new JdbcTemplate(ds);
-        Flyway.configure().dataSource(ds).locations("classpath:db/migration").target("68").load().migrate();
+        Flyway.configure().dataSource(ds).locations("classpath:db/migration").target("72").load().migrate();
         legacy=fixture();oldFinal=paper(legacy,"A","v1","FOUNDATION","FINALIZED",null,"old-final",false);
         oldA=paper(legacy,"A","v1","FOUNDATION","IN_PROGRESS",null,"old-active-A",false);
         oldB=paper(legacy,"B","v1","FOUNDATION","IN_PROGRESS",null,"old-active-B",true);
