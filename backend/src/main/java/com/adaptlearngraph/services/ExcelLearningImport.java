@@ -303,7 +303,9 @@ public final class ExcelLearningImport implements LearningImportUseCase {
                             throw new Failure(400, "Enter one plain Skill code or name, for example MS-QA08, not JSON / Nhập một mã hoặc tên Skill, không dùng JSON");
                         String resolvedSkillId = skill.strip();
                         for (var c : port.catalog("MicroSkill")) {
-                            if (c.id().equalsIgnoreCase(resolvedSkillId) || c.name().equalsIgnoreCase(resolvedSkillId)) {
+                            if (c.id().equalsIgnoreCase(resolvedSkillId)
+                                    || c.name().equalsIgnoreCase(resolvedSkillId)
+                                    || (c.code() != null && c.code().equalsIgnoreCase(resolvedSkillId))) {
                                 resolvedSkillId = c.id();
                                 break;
                             }

@@ -106,7 +106,7 @@ export function PlatformWorkspaceControls({ principal }: { principal: string }) 
     {admin.phone ? <span className="break-all font-medium text-foreground">{admin.phone}</span> : <span className="italic">{notProvided}</span>}
   </p>
   return <section className="min-w-0 space-y-6">
-    <PageHeader title={c('Organizations', 'Tổ chức')}
+    <PageHeader forceShowTitle title={c('Organizations', 'Tổ chức')}
       description={c('Review each organization profile and its System Administrator. Workspace access and subscription coverage are managed separately.',
         'Xem hồ sơ tổ chức và Quản trị viên hệ thống của từng tổ chức. Quyền truy cập không gian và hiệu lực gói đăng ký được quản lý riêng.')} />
     {workspaces.isSuccess && <div role="region" aria-label={c('Organization overview', 'Tổng quan tổ chức')}

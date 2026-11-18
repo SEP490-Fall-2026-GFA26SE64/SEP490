@@ -32,6 +32,14 @@ public class QuestionBankController {
     @PostMapping("/approve") public ViewResponse approve(@RequestBody Bulk input){return bank.approve(input);}
     @PostMapping("/imports/preview") public ImportBatchResponse preview(@RequestBody PreviewRequest input){return bank.preview(input);}
     @PostMapping("/imports/confirm") public ViewResponse confirm(@RequestBody Confirmation input){return bank.confirm(input);}
+    @GetMapping("/imports/template")
+    public ResponseEntity<byte[]> template(@RequestParam(value = "lang", required = false) String lang) {
+        String filename = "en".equalsIgnoreCase(lang) ? "question-bank-template-en.xlsx" : "question-bank-template.xlsx";
+        return ResponseEntity.ok()
+                .header("Content-Disposition", "attachment; filename=\"" + filename + "\"")
+                .contentType(org.springframework.http.MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                .body(bank.template(lang));
+    }
     @GetMapping("/notifications") public List<NoticeResponse> notices(){return bank.notices();}
     @PostMapping("/notifications/{id}/read") public void markRead(@PathVariable UUID id){bank.markRead(id);}
     @ExceptionHandler(Failure.class) public ResponseEntity<Map<String,String>> failure(Failure e){return ResponseEntity.status(e.status()).header("Cache-Control","no-store").body(Map.of("message",e.getMessage()));}

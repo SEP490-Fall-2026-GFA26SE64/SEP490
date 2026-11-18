@@ -104,7 +104,7 @@ export function GuestLandingPage() {
                 <Text className="mb-5 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-secondary px-3 py-2 text-caption font-medium text-secondary-foreground">
                   <GitBranch size={15} aria-hidden="true" />{t('landing.eyebrow')}
                 </Text>
-                <PageHeader className="border-0 pb-0"
+                <PageHeader forceShowTitle className="border-0 pb-0"
                   title={<span className="block text-display leading-tight tracking-tight">
                     <span className="block">{t('landing.heroLine1')}</span>
                     <span className="block text-primary">{t('landing.heroLine2')}</span>

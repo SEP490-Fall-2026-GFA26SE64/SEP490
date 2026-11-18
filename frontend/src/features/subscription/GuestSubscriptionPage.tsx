@@ -22,7 +22,7 @@ export function GuestSubscriptionPage({ mode }: { mode: 'plans' | 'status' | 're
     refetchInterval: query => query.state.data?.applicationState === 'APPLIED' && query.state.data.workspace?.state === 'READY' ? false : 3000 })
   return <GuestLayout currentStep={order.data?.order ? ['PAID', 'DEV_BYPASSED'].includes(order.data.order.paymentStatus) ? 7 : 6 : 5}
     onSignOut={principal ? () => request('/api/v1/registration/sign-out', 'POST') : undefined}>
-    <PageHeader title={mode === 'result' ? c('Your payment summary', 'Kết quả thanh toán') : order.data?.order ? c('Your workspace is taking shape', 'Tiến trình thiết lập không gian làm việc') : c('Choose a plan for your team', 'Chọn gói dành cho đội ngũ')}
+    <PageHeader forceShowTitle title={mode === 'result' ? c('Your payment summary', 'Kết quả thanh toán') : order.data?.order ? c('Your workspace is taking shape', 'Tiến trình thiết lập không gian làm việc') : c('Choose a plan for your team', 'Chọn gói dành cho đội ngũ')}
       icon={order.data?.order ? <CreditCard size={24} aria-hidden="true" /> : <Layers3 size={24} aria-hidden="true" />}
       description={order.data?.order
         ? c('Track your payment and setup here. You can enter your workspace once it’s ready.', 'Theo dõi thanh toán và thiết lập tại đây. Bạn có thể truy cập khi không gian làm việc sẵn sàng.')

@@ -27,7 +27,7 @@ export function WorkspaceAuthLayout({ title, description, children }: {
           <img src="/illustrations/ill_left_opt.webp" alt="" className="razor-illustration-img" />
         </div>
         <Card className="razor-card">
-          <PageHeader className="razor-card-header" title={title} description={description} />
+          <PageHeader forceShowTitle className="razor-card-header" title={title} description={description} />
           <div className="razor-auth-content space-y-5">{children}</div>
         </Card>
         <div className="razor-illustration-right" aria-hidden="true">
