@@ -88,3 +88,18 @@ it('RB11/17 dependency failure stays unavailable and explicit retry recovers wit
  fireEvent.click(screen.getByRole('button',{name:'roleFlow.retry'})); await screen.findByText('Role A')
  expect(api.chooseCurrentRole).not.toHaveBeenCalled()
 })
+
+it('refreshes an unavailable selected baseline after configuration activation without changing the target', async () => {
+ vi.useFakeTimers()
+ try {
+  vi.mocked(api.readRoleFlow).mockResolvedValueOnce({ ...selected, progress: { ...selected.progress, state: 'BASELINE_UNAVAILABLE' } }).mockResolvedValue(selected)
+  show()
+  await act(async () => { await vi.advanceTimersByTimeAsync(10) })
+  expect(screen.queryByRole('button', { name: 'roleFlow.start' })).toBeNull()
+  await act(async () => { await vi.advanceTimersByTimeAsync(5010) })
+  await act(async () => { await vi.advanceTimersByTimeAsync(10) })
+  expect(api.readRoleFlow).toHaveBeenCalledTimes(2)
+  expect(screen.getByRole('button', { name: 'roleFlow.start' })).toBeTruthy()
+  expect(api.chooseCurrentRole).not.toHaveBeenCalled()
+ } finally { cleanup(); vi.useRealTimers() }
+})
