@@ -18,20 +18,20 @@ public class JobPositionController {
         this.jobPositions = Objects.requireNonNull(jobPositions, "jobPositions cannot be null");
     }
 
-    @GetMapping({"/api/v1/organizations/{organizationId}/job-positions", "/api/v1/organizations/{organizationId}/job-positions"})
+    @GetMapping("/api/v1/organizations/{organizationId}/job-positions")
     public ResponseEntity<List<JobPositionResponse>> listJobPositionsForOrganization(
             @PathVariable("organizationId") String organizationId) {
         return ResponseEntity.ok(jobPositions.listJobPositions(organizationId));
     }
 
-    @PostMapping({"/api/v1/organizations/{organizationId}/job-positions", "/api/v1/organizations/{organizationId}/job-positions"})
+    @PostMapping("/api/v1/organizations/{organizationId}/job-positions")
     public ResponseEntity<JobPositionResponse> createJobPosition(
             @PathVariable("organizationId") String organizationId,
             @RequestBody SaveJobPositionRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(jobPositions.createJobPosition(organizationId, request));
     }
 
-    @PutMapping({"/api/v1/organizations/{organizationId}/job-positions/{id}", "/api/v1/organizations/{organizationId}/job-positions/{id}"})
+    @PutMapping("/api/v1/organizations/{organizationId}/job-positions/{id}")
     public ResponseEntity<JobPositionResponse> updateJobPosition(
             @PathVariable("organizationId") String organizationId,
             @PathVariable("id") String id,
@@ -39,7 +39,7 @@ public class JobPositionController {
         return ResponseEntity.ok(jobPositions.updateJobPosition(organizationId, id, request));
     }
 
-    @DeleteMapping({"/api/v1/organizations/{organizationId}/job-positions/{id}", "/api/v1/organizations/{organizationId}/job-positions/{id}"})
+    @DeleteMapping("/api/v1/organizations/{organizationId}/job-positions/{id}")
     public ResponseEntity<Void> deleteJobPosition(
             @PathVariable("organizationId") String organizationId,
             @PathVariable("id") String id) {

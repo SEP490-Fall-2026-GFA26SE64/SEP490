@@ -98,14 +98,8 @@ const setStoredJobPositions = (organizationId: string, data: JobPositionRecord[]
   try {
     const serialized = JSON.stringify(data)
     const effectiveOrg = organizationId || 'e0000000-0000-0000-0000-000000000001'
-    localStorage.setItem(`${JOB_POSITIONS_STORAGE_PREFIX}${organizationId}`, serialized)
-    localStorage.setItem(`${JOB_POSITIONS_STORAGE_PREFIX_SNAKE}${organizationId}`, serialized)
     localStorage.setItem(`${JOB_POSITIONS_STORAGE_PREFIX}${effectiveOrg}`, serialized)
     localStorage.setItem(`${JOB_POSITIONS_STORAGE_PREFIX_SNAKE}${effectiveOrg}`, serialized)
-    localStorage.setItem(`${JOB_POSITIONS_STORAGE_PREFIX}e0000000-0000-0000-0000-000000000001`, serialized)
-    localStorage.setItem(`${JOB_POSITIONS_STORAGE_PREFIX_SNAKE}e0000000-0000-0000-0000-000000000001`, serialized)
-    localStorage.setItem('adaptlearn_jobPositions_v2_', serialized)
-    localStorage.setItem('adaptlearn_job_positions_v2_', serialized)
     if (typeof window !== 'undefined') {
       window.dispatchEvent(
         new CustomEvent('adaptlearn_job_positions_updated', {
@@ -668,8 +662,7 @@ export function JobPositionsManagementPage() {
         createdAt: new Date().toISOString(),
       }
       try {
-        await createJobPosition(orgId, {
-          id: newOcc.id,
+        const created = await createJobPosition(orgId, {
           code: newOcc.code,
           name: newOcc.name,
           jobZone: newOcc.jobZone,
@@ -681,7 +674,11 @@ export function JobPositionsManagementPage() {
           interestConventional: occInterests.conventional,
           status: 'ACTIVE',
         })
-        setAndSaveJobPositions((prev) => [newOcc, ...prev])
+        const createdRecord: JobPositionRecord = {
+          ...newOcc,
+          id: created.id || newOcc.id,
+        }
+        setAndSaveJobPositions((prev) => [createdRecord, ...prev])
 
         // Automatically assign created job position to the manager's department
         if (managerDepartment) {

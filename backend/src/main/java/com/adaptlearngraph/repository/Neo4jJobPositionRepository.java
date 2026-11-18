@@ -87,7 +87,9 @@ public class Neo4jJobPositionRepository implements JobPositionRepository {
                     o.interestEnterprising(), o.interestConventional(),
                     o.status() != null ? o.status() : "ACTIVE", o.version() != null ? o.version() : "0.9.0");
         });
-        return o;
+        return new JobPosition(id, o.code(), o.name(), o.jobZone(), o.interestRealistic(), o.interestInvestigative(),
+                o.interestArtistic(), o.interestSocial(), o.interestEnterprising(), o.interestConventional(),
+                o.status(), o.version(), o.roleCount(), o.microSkillCount());
     }
 
     @Override
