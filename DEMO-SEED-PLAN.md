@@ -71,13 +71,15 @@ Application Developer: `ROLE-F72E5464F9B3`; Middle: `LV-F72E5464F9B3-M`. Junior 
 
 ## 3. Việc phải xử lý trước khi thêm seed demo
 
-### 3.1 Catalog source đang không khớp bộ hash chấp nhận
+### 3.1 Catalog source và release RIASEC đã đối chiếu
+
+**Cập nhật sửa rollout 18/11/2026:** Đã đối chiếu với release trước RIASEC tại `a255caf0` (hash `1f6c1598…`): diff chỉ gồm 30 giá trị interest trên 5 Job Position, chuyển sang số nguyên 0–40. `LocalCatalogBootstrap` đăng ký byte pin riêng cho release RIASEC (LF `475dd1d6…`, CRLF `93e45cde…`), giữ các pin cũ; `.gitattributes` buộc catalog đóng gói dùng LF. `RiasecCatalogReleaseTest` chứng minh phần ngoài RIASEC giữ nguyên và từ chối source bị sửa; `RiasecCatalogBootstrapIntegrationTest` kiểm tra bootstrap/rerun trên Neo4j riêng và giữ nguyên profile khi nhận source khác. Các kiểm tra local đã pass; chưa xác nhận rollout lại trên VPS. Các phát hiện ban đầu dưới đây được giữ để truy vết.
 
 Compose mount `documents/dataset/import/ontology_seed-skill-level.json` vào `/seed/ontology_seed.json`.
 
-- SHA-256 bytes hiện tại: `93e45cdeb2c945df30a3e4249be90565dc9c4727dbc0b93c0ce1baef84b007c4`.
+- SHA-256 bytes tại thời điểm phát hiện (CRLF): `93e45cdeb2c945df30a3e4249be90565dc9c4727dbc0b93c0ce1baef84b007c4`.
 - Nếu chuẩn hóa LF: `475dd1d66241f55e427fe98d6ff478afa593593bff8c10cde825e0852eb14d38`.
-- Cả hai không nằm trong 12 hash constants của `LocalCatalogBootstrap` đã kiểm tra.
+- Trước bản sửa rollout, cả hai chưa nằm trong các hash constants được `LocalCatalogBootstrap` chấp nhận.
 - Constructor kiểm tra hash trước khi bootstrap; `LocalDemoSeedConfiguration` gọi constructor trước khối catch xử lý graph drift. Do đó đường seed này sẽ ném `Latest catalog source drift` với file hiện tại, dù catch phía sau có bỏ qua một số lỗi graph drift.
 
 Đây là **blocker xác định qua đối chiếu file và source**, chưa phải log của lần chạy mới. Cần rà diff release, phần interest profile và manifest liên quan, rồi đưa một release chính xác vào quy trình kiểm tra tương thích. Không sửa mỗi hash một cách mù quáng, không bỏ kiểm tra drift, không xóa volume để né lỗi. Đồng thời kiểm tra startup validator có chấp nhận các node/edge demo bổ sung sau restart hay không.
