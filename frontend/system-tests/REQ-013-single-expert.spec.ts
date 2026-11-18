@@ -3,6 +3,7 @@ import { randomUUID } from 'node:crypto'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { expect, test, type APIRequestContext, type Page } from '@playwright/test'
+import { waitForWorkspaceEntry } from './subscriptionHelpers'
 const root = '/api/v1/module-management'
 const settings = () => new Map(readFileSync(resolve(process.cwd(), '../local/dev-accounts/private.env'), 'utf8').split('\n').filter(Boolean).map(line => { const at = line.indexOf('='); return [line.slice(0, at), line.slice(at + 1)] }))
 function sql(command: string) {
@@ -17,7 +18,7 @@ async function login(page: Page, email: string, password: string, path: string) 
   await page.getByLabel('Email', { exact: true }).fill(email)
   await page.getByLabel('Password', { exact: true }).fill(password)
   await page.getByRole('button', { name: 'Sign in', exact: true }).click()
-  await page.getByRole('button', { name: 'Continue to workspace', exact: true }).click()
+  await waitForWorkspaceEntry(page)
   await page.goto(path)
 }
 test('one responsible Expert manages a module; another can only view its creator/editor/reviewer history', async ({ page, baseURL }) => {

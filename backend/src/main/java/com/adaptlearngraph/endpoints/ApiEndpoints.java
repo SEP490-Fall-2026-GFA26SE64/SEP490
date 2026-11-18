@@ -25,6 +25,7 @@ public final class ApiEndpoints {
     public static final String MICRO_SKILL = API_V1 + "/organizations/{organizationId}/micro-skills";
     public static final String MODULE_AUTHORING = API_V1 + "/module-management";
     public static final String ORGANIZATION_TARGET_ROLE = API_V1 + "/organizations/{organizationId}/target-roles";
+    public static final String ORGANIZATION_KNOWLEDGE_GRAPH = API_V1 + "/organizations/{organizationId}/knowledge-graph";
     public static final String PLATFORM_BENCHMARK = API_V1 + "/platform/benchmark";
     public static final String PLATFORM_CATALOG = API_V1 + "/platform-catalog";
     public static final String PREREQUISITE = API_V1 + "/organizations/{organizationId}/prerequisites";

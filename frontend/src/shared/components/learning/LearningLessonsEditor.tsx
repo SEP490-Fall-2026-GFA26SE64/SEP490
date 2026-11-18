@@ -1,6 +1,7 @@
 import { newLesson } from '../../lib/learningLessons'
 import { lazy, Suspense, useEffect, useState } from 'react'
 import { Button } from '../ui/Button'
+import { PageLoader } from '../ui/PageLoader'
 import { Input } from '../ui/Input'
 import { PanelLeftClose, PanelLeftOpen, FileText, PlayCircle, Plus } from 'lucide-react'
 import { Dialog, DialogHeader, DialogTitle, DialogBody } from '../ui/Dialog'
@@ -169,12 +170,7 @@ export function LearningLessonsEditor({
                 {lesson.bodyFormat === 'HTML' ? (
                   <Suspense
                     fallback={
-                      <div
-                        role="status"
-                        className="h-64 animate-pulse rounded bg-muted"
-                      >
-                        {vi ? 'Đang mở trình soạn thảo…' : 'Loading editor…'}
-                      </div>
+                      <PageLoader label={vi ? 'Đang mở trình soạn thảo…' : 'Loading editor…'} />
                     }
                   >
                     <RichLessonEditor

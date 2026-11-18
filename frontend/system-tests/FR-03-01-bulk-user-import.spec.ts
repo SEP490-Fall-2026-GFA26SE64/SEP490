@@ -2,6 +2,7 @@ import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
 import { expect, test, type Page } from '@playwright/test'
 import type ExcelJS from 'exceljs'
+import { waitForWorkspaceEntry } from './subscriptionHelpers'
 
 async function newWorkbook(): Promise<ExcelJS.Workbook> {
   // The Node entry of exceljs does not load under the Playwright transpiler; the browser bundle does.
@@ -18,8 +19,7 @@ async function signIn(page: Page) {
   await page.getByPlaceholder('Enter your email').fill('admin@technova.com')
   await page.locator('input[type="password"]').fill('Password123!')
   await page.getByRole('button', { name: 'Sign in', exact: true }).click()
-  const proceed = page.getByRole('button', { name: 'Continue to workspace', exact: true })
-  await proceed.click({ timeout: 10_000 }).catch(() => undefined)
+  await waitForWorkspaceEntry(page)
   await page.goto('/admin/users')
   await expect(page.getByRole('heading', { name: /User Accounts|Tài khoản người dùng/i })).toBeVisible({ timeout: 20_000 })
 }

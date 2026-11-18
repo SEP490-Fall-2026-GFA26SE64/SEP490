@@ -2,7 +2,7 @@ import { graphToken } from '../../shared/components/ui/ontologyGraphStyle'
 import type { CatalogNodeLabel } from './platformCatalogApi'
 
 export type GraphPalette = ReturnType<typeof readPalette>
-export type NodeState = { inCatalog: boolean; dimmed: boolean; focused: boolean; hover: boolean }
+export type NodeState = { inCatalog: boolean; dimmed: boolean; focused: boolean; hover: boolean; badge?: boolean }
 type Spec = { maxWidth: number; size: number; weight: number; lines: number; glyph: number; pill: boolean }
 type Metrics = { width: number; height: number; lines: string[]; font: string; spec: Spec }
 
@@ -12,11 +12,15 @@ const PAD_Y = 8
 const LINE_GAP = 3
 
 export const NODE_SPECS: Record<CatalogNodeLabel, Spec> = {
+  Organization: { maxWidth: 240, size: 14.5, weight: 700, lines: 2, glyph: 28, pill: true },
+  Department: { maxWidth: 240, size: 14, weight: 700, lines: 2, glyph: 26, pill: false },
   JobPosition: { maxWidth: 230, size: 13.5, weight: 600, lines: 2, glyph: 24, pill: false },
   TargetRole: { maxWidth: 210, size: 13, weight: 600, lines: 2, glyph: 22, pill: true },
   Level: { maxWidth: 140, size: 12.5, weight: 500, lines: 1, glyph: 18, pill: true },
   Competency: { maxWidth: 210, size: 13, weight: 500, lines: 2, glyph: 20, pill: false },
   MicroSkill: { maxWidth: 190, size: 12.5, weight: 400, lines: 2, glyph: 16, pill: true },
+  LearningModule: { maxWidth: 210, size: 12.5, weight: 500, lines: 2, glyph: 18, pill: false },
+  Certificate: { maxWidth: 200, size: 12.5, weight: 500, lines: 2, glyph: 18, pill: false },
 }
 
 export function readPalette() {
@@ -26,12 +30,16 @@ export function readPalette() {
     secondary: graphToken('secondary'), shadow: graphToken('foreground', 0.07), hoverShadow: graphToken('foreground', 0.18),
     halo: graphToken('primary', 0.2), onPrimary: graphToken('primary-foreground'),
     accent: {
+      Organization: graphToken('primary'), Department: graphToken('foreground'),
       JobPosition: graphToken('primary'), TargetRole: graphToken('primary'), Level: graphToken('muted-foreground'),
       Competency: graphToken('primary'), MicroSkill: graphToken('success'),
+      LearningModule: graphToken('warning'), Certificate: graphToken('destructive'),
     } as Record<CatalogNodeLabel, string>,
     tint: {
+      Organization: graphToken('primary', 0.16), Department: graphToken('foreground', 0.08),
       JobPosition: graphToken('primary', 0.14), TargetRole: graphToken('primary', 0.1), Level: graphToken('muted-foreground', 0.12),
       Competency: graphToken('primary', 0.1), MicroSkill: graphToken('success', 0.16),
+      LearningModule: graphToken('warning', 0.18), Certificate: graphToken('destructive', 0.12),
     } as Record<CatalogNodeLabel, string>,
     skillBorder: graphToken('success', 0.55),
   }
@@ -46,7 +54,7 @@ export function nodeLook(label: CatalogNodeLabel, state: NodeState, palette: Gra
     stroke: emphasis ? palette.primaryHover : state.inCatalog ? palette.primary : label === 'MicroSkill' ? palette.skillBorder : palette.border,
     lineWidth: state.inCatalog || emphasis ? 2 : 1.25,
     halo: state.focused,
-    check: state.inCatalog,
+    check: state.inCatalog && state.badge !== false,
   }
 }
 
@@ -112,10 +120,14 @@ function drawGlyph(ctx: CanvasRenderingContext2D, label: CatalogNodeLabel, cx: n
   ctx.fillStyle = palette.accent[label]
   ctx.strokeStyle = palette.accent[label]
   ctx.lineWidth = 1.75
-  if (label === 'JobPosition') { roundedRect(ctx, cx - r, cy - r, r * 2, r * 2, r * 0.45); ctx.fill() }
+  if (label === 'Organization') { ctx.beginPath(); ctx.arc(cx, cy, r * 1.2, 0, Math.PI * 2); ctx.stroke(); ctx.beginPath(); ctx.arc(cx, cy, r * 0.55, 0, Math.PI * 2); ctx.fill() }
+  else if (label === 'Department') { polygon(ctx, cx, cy + r * 0.1, r * 1.25, 5, -Math.PI / 2); ctx.stroke() }
+  else if (label === 'JobPosition') { roundedRect(ctx, cx - r, cy - r, r * 2, r * 2, r * 0.45); ctx.fill() }
   else if (label === 'TargetRole') { ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.stroke() }
   else if (label === 'Level') { polygon(ctx, cx, cy, r * 1.25, 4, 0); ctx.fill() }
   else if (label === 'Competency') { polygon(ctx, cx, cy, r * 1.15, 6, Math.PI / 6); ctx.stroke() }
+  else if (label === 'LearningModule') { roundedRect(ctx, cx - r * 1.1, cy - r * 0.85, r * 2.2, r * 1.7, r * 0.3); ctx.stroke() }
+  else if (label === 'Certificate') { polygon(ctx, cx, cy + r * 0.15, r * 1.2, 3, -Math.PI / 2); ctx.fill() }
   else { ctx.beginPath(); ctx.arc(cx, cy, size * 0.3, 0, Math.PI * 2); ctx.fill() }
 }
 

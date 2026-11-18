@@ -25,6 +25,7 @@ import {
   type PendingStage,
   listBaselineAssessmentJobPositions,
 } from './baselineAssessmentManagementApi'
+import { PageLoader } from '../../../shared/components/ui/PageLoader'
 
 const PAGE_SIZE = 12
 
@@ -300,9 +301,5 @@ function apiErrorMessage(cause: unknown, t: Translate) {
 }
 
 function LoadingRows() {
-  return (
-    <div className="space-y-3 p-4" aria-busy="true">
-      {[0, 1, 2, 3].map((row) => <div key={row} className="h-16 animate-pulse rounded-lg bg-muted/60" />)}
-    </div>
-  )
+  return <PageLoader className="m-4" />
 }

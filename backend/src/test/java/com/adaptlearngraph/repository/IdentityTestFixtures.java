@@ -27,7 +27,7 @@ public final class IdentityTestFixtures {
                 c.bean(AccountJpaRepository.class), c.bean(PlatformAdministratorJpaRepository.class),
                 c.bean(WorkspaceAccountProfileJpaRepository.class), c.bean(LearnerStateJpaRepository.class),
                 c.bean(DepartmentReferenceJpaRepository.class), c.bean(OrganizationRegistrationJpaRepository.class),
-                c.bean(RegistrationCatalogSelectionJpaRepository.class), c.bean(WorkspaceCatalogImportJpaRepository.class),
+                c.bean(RegistrationOrgStructureJpaRepository.class), c.bean(WorkspaceCatalogImportJpaRepository.class),
                 c.bean(SubscriptionJpaRepository.class), c.bean(SubscriptionPeriodJpaRepository.class),
                 c.bean(SubscriptionIntentJpaRepository.class), c.bean(PaymentOrderJpaRepository.class),
                 c.bean(PaymentObservationJpaRepository.class), c.bean(PaymentApplicationJpaRepository.class),

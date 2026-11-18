@@ -524,6 +524,23 @@
   box-shadow: none;
 }
 
+/* Browsers paint autofilled fields with their own tint; mask it with the card surface. */
+.razor-input-wrapper .razor-input:-webkit-autofill,
+.razor-input-wrapper .razor-input:-webkit-autofill:hover,
+.razor-input-wrapper .razor-input:-webkit-autofill:focus,
+.razor-input-wrapper .razor-input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 1000px hsl(var(--card)) inset;
+  box-shadow: 0 0 0 1000px hsl(var(--card)) inset;
+  -webkit-text-fill-color: hsl(var(--foreground));
+  caret-color: hsl(var(--foreground));
+  transition: background-color 9999s ease-in-out 0s;
+}
+
+.razor-input-wrapper .razor-input:autofill {
+  box-shadow: 0 0 0 1000px hsl(var(--card)) inset;
+  -webkit-text-fill-color: hsl(var(--foreground));
+}
+
 .razor-input-wrapper .razor-input::placeholder {
   color: hsl(var(--muted-foreground));
   font-size: var(--text-body);

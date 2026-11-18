@@ -17,7 +17,7 @@ export function AdminPaymentResultPage() {
   const base = `/api/v1/organizations/${owner?.organizationId}/subscription`
   const status = useQuery({ queryKey: ['payment-result', owner?.accountId, owner?.organizationId, orderId],
     queryFn: () => getStatus(base, orderId ?? undefined), enabled: eligible && !!orderId, refetchInterval: 3000 })
-  if (identity.isPending) return <Loading />
+  if (identity.isPending) return <Loading fullscreen />
   if (identity.isError) return <Failure error={identity.error} />
   if (!eligible || !owner?.accountId) return <div className="mx-auto max-w-xl space-y-4 p-6">
     <Failure error={new Error(c('Sign in as the organization administrator to view this payment.', 'Đăng nhập bằng tài khoản quản trị tổ chức để xem thanh toán.'))} />

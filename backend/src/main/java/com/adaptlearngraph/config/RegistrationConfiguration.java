@@ -62,7 +62,7 @@ public class RegistrationConfiguration {
     @Bean
     JpaRegistrationStore.Repositories registrationRepositories(com.adaptlearngraph.repository.AccountJpaRepository accounts,
             com.adaptlearngraph.repository.OrganizationRegistrationJpaRepository registrations,
-            com.adaptlearngraph.repository.RegistrationCatalogSelectionJpaRepository catalogSelections,
+            com.adaptlearngraph.repository.RegistrationOrgStructureJpaRepository orgStructures,
             com.adaptlearngraph.repository.RegistrationEmailVerificationJpaRepository emailProofs,
             com.adaptlearngraph.repository.AccountTotpJpaRepository totp,
             com.adaptlearngraph.repository.AccountRecoveryCodeJpaRepository recoveryCodes,
@@ -71,7 +71,7 @@ public class RegistrationConfiguration {
             com.adaptlearngraph.repository.ProcessingJobJpaRepository jobs,
             com.adaptlearngraph.repository.AuditEventJpaRepository audit,
             com.adaptlearngraph.repository.PostgresAdvisoryLocks locks) {
-        return new JpaRegistrationStore.Repositories(accounts, registrations, catalogSelections, emailProofs, totp,
+        return new JpaRegistrationStore.Repositories(accounts, registrations, orgStructures, emailProofs, totp,
                 recoveryCodes, rates, outbox, jobs, audit, locks);
     }
 
@@ -90,9 +90,8 @@ public class RegistrationConfiguration {
     @Bean
     RegistrationUseCase registrationUseCase(RegistrationStore store, RegistrationSecrets secrets,
                                            RegistrationMailDelivery delivery,
-                                           com.adaptlearngraph.entities.domain.IntegrationPolicy policy,
-                                           org.springframework.beans.factory.ObjectProvider<com.adaptlearngraph.services.PlatformCatalogService> catalog) {
-        return new RegistrationService(store, secrets, delivery, Clock.systemUTC(), policy, catalog.getIfAvailable());
+                                           com.adaptlearngraph.entities.domain.IntegrationPolicy policy) {
+        return new RegistrationService(store, secrets, delivery, Clock.systemUTC(), policy);
     }
 
     @Bean
@@ -121,7 +120,7 @@ public class RegistrationConfiguration {
                                 "/api/v1/registration/email/verify", "/api/v1/registration/totp/setup",
                                 "/api/v1/registration/totp/confirm", "/api/v1/registration/totp/verify",
                                 "/api/v1/registration/recovery", "/api/v1/registration/workspace-session",
-                                "/api/v1/registration/catalog-closure").permitAll()
+                                "/api/v1/registration/catalog-closure", "/api/v1/registration/org-structure/validate").permitAll()
                         .anyRequest().denyAll())
                 .exceptionHandling(exceptions -> exceptions.accessDeniedHandler((request, response, exception) -> {
                     response.setStatus(403);

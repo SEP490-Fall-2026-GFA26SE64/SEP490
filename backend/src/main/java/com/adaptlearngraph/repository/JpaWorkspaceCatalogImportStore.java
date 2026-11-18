@@ -30,7 +30,7 @@ public final class JpaWorkspaceCatalogImportStore implements WorkspaceCatalogImp
             if (organization.isEmpty()) return Optional.<Job>empty();
             var claimed = imports.claimed(organization.get()).orElseThrow();
             var job = new Job(claimed.organizationId(), claimed.registrationId(), UUID.randomUUID(), claimed.attempts() + 1,
-                    claimed.selectedNodeIds());
+                    claimed.structure() == null ? null : OrganizationStructureJson.read(claimed.structure()));
             imports.lease(job.organizationId(), job.lease(), now.plus(LEASE), now);
             return Optional.of(job);
         });

@@ -16,6 +16,7 @@ import { DEVELOPMENT_STATUSES, assessmentPassRate, developmentStatus, filterEmpl
 import { developmentErrorMessage } from './developmentMessages'
 import { useDevelopmentFilters, useDevelopmentReport } from './useDevelopment'
 import './development.css'
+import { PageLoader } from '../../../shared/components/ui/PageLoader'
 
 type SortKey = 'name' | 'progress' | 'passRate' | 'achieved' | 'activity'
 type SortState = { key: SortKey; direction: 1 | -1 }
@@ -66,7 +67,7 @@ function Employees() {
         <i aria-hidden="true" />{statusLabels[status][vi ? 1 : 0]}<strong>{withoutStatus.filter(employee => developmentStatus(employee) === status).length}</strong></button>)}
     </div>
 
-    {report.isPending ? <div className="ld-table-card p-4 space-y-3" aria-busy="true">{Array.from({ length: 6 }, (_, index) => <div key={index} className="ld-skeleton h-12" />)}</div>
+    {report.isPending ? <PageLoader />
       : report.isError ? <EmptyState icon={<AlertTriangle />} title={copy('Employees could not be loaded', 'Chưa tải được danh sách nhân viên')} description={developmentErrorMessage(report.error, copy)}
         action={<Button variant="outline" onClick={() => void report.refetch()}>{copy('Retry', 'Thử lại')}</Button>} />
       : !filtered.length ? <EmptyState icon={<Users />} title={all.length ? copy('No employees match these filters', 'Không có nhân viên phù hợp bộ lọc') : copy('No employees yet', 'Chưa có nhân viên')}

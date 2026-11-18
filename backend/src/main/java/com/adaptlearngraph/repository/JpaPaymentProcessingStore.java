@@ -221,7 +221,7 @@ public final class JpaPaymentProcessingStore implements PaymentProcessingStore {
         data.roles().insert(new OrganizationMembershipRoleEntity(member, "ORGANIZATION_ADMINISTRATOR"));
         data.workspaces().insert(new OrganizationWorkspaceEntity(UUID.randomUUID(), organization, order.registrationId(),
                 registration.workspaceSlug(), now));
-        if (data.catalogSelections().existsByRegistrationId(order.registrationId())) {
+        if (data.orgStructures().existsByRegistrationId(order.registrationId())) {
             data.catalogImports().insert(new WorkspaceCatalogImportEntity(organization, order.registrationId(), now));
         }
         data.subscriptions().insert(new SubscriptionEntity(UUID.randomUUID(), organization, now));

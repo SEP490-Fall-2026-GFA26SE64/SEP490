@@ -1,6 +1,7 @@
 import { execSync } from 'node:child_process'
 import { createHmac } from 'node:crypto'
 import { expect, test } from '@playwright/test'
+import { isWorkspaceEntryUrl, waitForWorkspaceEntry } from './subscriptionHelpers'
 
 function resetAdminMfa() {
   try {
@@ -41,13 +42,13 @@ test.describe('Capstone Standard: User Roles Enforcements, L&D Unpublish, Scopin
     await page.locator('input[type="password"]').fill('Password123!')
     await page.getByRole('button', { name: 'Sign in', exact: true }).click()
 
-    // Wait for the sign in mutation to settle to either MFA setup or Continue to workspace
+    // Wait for the sign in mutation to settle to either MFA setup or workspace entry
     const setupMfaBtn = page.getByRole('button', { name: /Set up authenticator|Thiết lập ứng dụng xác thực/i })
-    const continueBtn = page.getByRole('button', { name: /Continue to workspace|Tiếp tục vào không gian/i })
+    const entered = () => isWorkspaceEntryUrl(new URL(page.url()))
 
-    await expect(setupMfaBtn.or(continueBtn)).toBeVisible({ timeout: 15_000 })
+    await expect.poll(async () => entered() || await setupMfaBtn.isVisible(), { timeout: 15_000 }).toBe(true)
 
-    if (await setupMfaBtn.isVisible()) {
+    if (!entered() && await setupMfaBtn.isVisible()) {
       await setupMfaBtn.click()
       await expect(page.locator('.break-all')).toBeVisible({ timeout: 10_000 })
       const secret = (await page.locator('.break-all').innerText()).trim()
@@ -59,9 +60,7 @@ test.describe('Capstone Standard: User Roles Enforcements, L&D Unpublish, Scopin
       await savedCodesBtn.click()
     }
 
-    await expect(continueBtn).toBeVisible({ timeout: 10_000 })
-    await expect(continueBtn).toBeEnabled({ timeout: 10_000 })
-    await continueBtn.click()
+    await waitForWorkspaceEntry(page)
 
     // Navigate to User Accounts
     await page.goto('/admin/users')
@@ -124,7 +123,7 @@ test.describe('Capstone Standard: User Roles Enforcements, L&D Unpublish, Scopin
     await page.getByPlaceholder('Enter your email').fill('manager@technova.com')
     await page.locator('input[type="password"]').fill('Password123!')
     await page.getByRole('button', { name: 'Sign in', exact: true }).click()
-    await page.getByRole('button', { name: 'Continue to workspace', exact: true }).click()
+    await waitForWorkspaceEntry(page)
     await expect(page).toHaveURL(/\/workspace\//, { timeout: 15_000 })
 
     // 2.1 Verify Job Positions does not show Assigned Expert column
@@ -184,7 +183,7 @@ test.describe('Capstone Standard: User Roles Enforcements, L&D Unpublish, Scopin
     await page.getByPlaceholder('Enter your email').fill('expert@technova.com')
     await page.locator('input[type="password"]').fill('Password123!')
     await page.getByRole('button', { name: 'Sign in', exact: true }).click()
-    await page.getByRole('button', { name: 'Continue to workspace', exact: true }).click()
+    await waitForWorkspaceEntry(page)
     await expect(page).toHaveURL(/\/workspace\//, { timeout: 15_000 })
 
     // Navigate to Expert Target Roles
@@ -218,7 +217,7 @@ test.describe('Capstone Standard: User Roles Enforcements, L&D Unpublish, Scopin
     await page.getByPlaceholder('Enter your email').fill('employee@technova.com')
     await page.locator('input[type="password"]').fill('Password123!')
     await page.getByRole('button', { name: 'Sign in', exact: true }).click()
-    await page.getByRole('button', { name: 'Continue to workspace', exact: true }).click()
+    await waitForWorkspaceEntry(page)
 
     // Navigate to Employee Target Roles
     await page.goto('/employee/target-roles')

@@ -16,6 +16,7 @@ import { Dialog, DialogBody, DialogFooter, DialogHeader, DialogTitle } from '../
 import { readKnowledgeProfile } from './knowledgeProfileApi'
 import { achievedSkills } from './achievedSkills'
 import { attemptPath } from './baselineApi'
+import { PageLoader } from '../../../shared/components/ui/PageLoader'
 
 export function MySkillsPage() {
   return <WorkspaceLayout><MySkillsSummary /></WorkspaceLayout>
@@ -56,7 +57,7 @@ function OwnedMySkills() {
         <div className="min-w-0 space-y-1.5"><label htmlFor="my-skills-level" className="text-body-sm font-medium">{copy('Achieved level', 'Mức đã đạt')}</label><Combobox id="my-skills-level" aria-label={copy('Achieved level', 'Mức đã đạt')} clearable={false} value={level || 'ALL'} onChange={value => setLevel(value === 'ALL' ? '' : value)} options={[{ value: 'ALL', label: copy('All achieved levels', 'Tất cả mức đã đạt') }, ...['FOUNDATION', 'INTERMEDIATE', 'ADVANCED'].map(value => ({ value, label: t('knowledgeLevel.' + value) }))]} /></div>
       </Card>
       <div className="flex flex-wrap items-center justify-between gap-2"><p className="text-caption text-muted-foreground" role="status">{incomplete ? copy(`${skills.length} skill versions loaded. The summary is not complete yet.`, `Đã tải ${skills.length} phiên bản kỹ năng. Danh sách chưa đầy đủ.`) : copy(`${visible.length} skill versions with achieved levels`, `${visible.length} phiên bản kỹ năng có mức đã đạt`)}</p><Button size="sm" variant="ghost" disabled={profile.isFetching} onClick={() => void profile.refetch()}>{copy('Refresh', 'Tải lại')}</Button></div>
-      {profile.isFetching && <p role="status" className="text-body-sm text-muted-foreground">{copy('Loading achievement records…', 'Đang tải minh chứng đạt kỹ năng…')}</p>}
+      {profile.isFetching && <PageLoader size="sm" label={copy('Loading achievement records…', 'Đang tải minh chứng đạt kỹ năng…')} />}
       {profile.isError && <div role="alert" className="space-y-2 rounded-lg border border-border bg-card p-4"><p className="text-body-sm">{copy('Achievement records could not be fully loaded. Any records shown are incomplete; this does not mean other levels were not achieved.', 'Chưa tải được đầy đủ minh chứng. Các mục đang hiển thị chưa đầy đủ; không thể kết luận các mức khác chưa đạt.')}</p><Button variant="outline" size="sm" disabled={profile.isFetching} onClick={retry}>{copy('Retry', 'Thử lại')}</Button></div>}
       {limited && <p role="alert" className="text-body-sm text-muted-foreground">{copy('The history limit was reached. Search and filters cover loaded records only.', 'Đã chạm giới hạn tải lịch sử. Tìm kiếm và bộ lọc chỉ áp dụng cho các bản ghi đã tải.')}</p>}
       {visible.length > 0 && <Card><ul aria-label={copy('Achieved skills', 'Kỹ năng đã đạt')} className="divide-y divide-border">{visible.map(skill => <li key={skill.key} className="flex min-w-0 flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between sm:gap-5 sm:px-5">

@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { Button } from '../../shared/components/ui/Button'
+import { PageLoader } from '../../shared/components/ui/PageLoader'
 import { useTranslation } from '../../shared/i18n/LanguageContext'
 import { SubscriptionApiError } from './subscriptionApi'
 
@@ -25,9 +26,8 @@ export function Failure({ error, retry }: { error: unknown; retry?: () => void }
     {retry && <Button variant="outline" onClick={retry}>{c('Try again', 'Thử lại')}</Button>}
   </div>
 }
-export function Loading() {
-  const c = useCopy()
-  return <p role="status" className="rounded-lg border border-border bg-card p-5 text-muted-foreground">{c('Loading…', 'Đang tải…')}</p>
+export function Loading({ label, fullscreen = false }: { label?: string; fullscreen?: boolean }) {
+  return <PageLoader variant={fullscreen ? 'fullscreen' : 'inline'} label={label} />
 }
 export function StateLabel({ value }: { value: string }) {
   const c = useCopy()

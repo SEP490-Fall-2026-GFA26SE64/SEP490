@@ -1,6 +1,7 @@
 import { execSync } from 'node:child_process'
 import { createHmac } from 'node:crypto'
 import { test, expect } from '@playwright/test'
+import { isWorkspaceEntryUrl, waitForWorkspaceEntry } from './subscriptionHelpers'
 
 function resetAdminMfa() {
   try {
@@ -54,11 +55,11 @@ test.describe('Employee Target Role & Level Persistence and Department-Scoped Up
     await page.getByRole('button', { name: /Sign in|Đăng nhập/i }).click()
 
     const setupMfaBtn = page.getByRole('button', { name: /Set up authenticator|Thiết lập ứng dụng xác thực/i })
-    const continueBtn = page.getByRole('button', { name: /Continue to workspace|Tiếp tục vào không gian/i })
+    const entered = () => isWorkspaceEntryUrl(new URL(page.url()))
 
-    await expect(setupMfaBtn.or(continueBtn)).toBeVisible({ timeout: 15_000 })
+    await expect.poll(async () => entered() || await setupMfaBtn.isVisible(), { timeout: 15_000 }).toBe(true)
 
-    if (await setupMfaBtn.isVisible()) {
+    if (!entered() && await setupMfaBtn.isVisible()) {
       await setupMfaBtn.click()
       await expect(page.locator('.break-all')).toBeVisible({ timeout: 10_000 })
       const secret = (await page.locator('.break-all').innerText()).trim()
@@ -70,9 +71,7 @@ test.describe('Employee Target Role & Level Persistence and Department-Scoped Up
       await savedCodesBtn.click()
     }
 
-    await expect(continueBtn).toBeVisible({ timeout: 10_000 })
-    await expect(continueBtn).toBeEnabled({ timeout: 10_000 })
-    await continueBtn.click()
+    await waitForWorkspaceEntry(page)
 
     // Stateful PostgreSQL-backed member row simulation for TechNova's Alex Chen (ENG-CLOUD)
     // while all catalog APIs (/departments, /job-positions, /target-roles) hit the live Neo4j backend.

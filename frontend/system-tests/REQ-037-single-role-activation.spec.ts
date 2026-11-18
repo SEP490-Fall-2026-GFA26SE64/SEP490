@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
-import { activationLink, confirmPayment, fixture, mutate, observe, purchase, record, registrationSession, text, SUBSCRIPTION_INBOX } from './subscriptionHelpers'
+import { activationLink, confirmPayment, fixture, mutate, observe, purchase, record, registrationSession, text, SUBSCRIPTION_INBOX, waitForWorkspaceEntry } from './subscriptionHelpers'
 
 test.setTimeout(150000)
 test.beforeEach(async ({ page, baseURL }) => {
@@ -21,13 +21,12 @@ test('Seeded Platform Admin uses password only, real platform APIs and no organi
   await expect(page.getByRole('alert')).toBeVisible()
   await page.getByLabel('Password', { exact: true }).fill(text(account.password))
   await page.getByRole('button', { name: 'Sign in', exact: true }).click()
-  await expect(page.getByText('Authentication complete.', { exact: true })).toBeVisible()
+  await waitForWorkspaceEntry(page)
   await expect(page.getByLabel('Authenticator code')).toHaveCount(0)
   const identity = record(await (await page.request.get('/api/v1/workspace-auth/current')).json())
   expect(identity.roles).toEqual(['PLATFORM_ADMINISTRATOR'])
   expect(identity.mfaVerified).toBe(false)
   expect(identity.organizationId).toBeNull()
-  await page.getByRole('button', { name: 'Continue to workspace' }).click()
   await expect(page).toHaveURL(/\/platform-admin\/subscriptions$/)
   expect((await page.request.get('/api/v1/platform/subscription-plans')).status()).toBe(200)
   expect((await page.request.get('/api/v1/platform/workspaces')).status()).toBe(200)
@@ -97,9 +96,8 @@ for (const [role, label, destination] of [
     await member.getByLabel('Email', { exact: true }).fill(email)
     await member.getByLabel('Password', { exact: true }).fill(password)
     await member.getByRole('button', { name: 'Sign in', exact: true }).click()
-    await expect(member.getByText('Authentication complete.', { exact: true })).toBeVisible()
+    await waitForWorkspaceEntry(member)
     await expect(member.getByLabel('Authenticator code')).toHaveCount(0)
-    await member.getByRole('button', { name: 'Continue to workspace' }).click()
     await expect(member).toHaveURL(new RegExp(`${destination}$`))
     const actual = record(await (await member.request.get('/api/v1/workspace-auth/current')).json())
     expect(actual.roles).toEqual([role])

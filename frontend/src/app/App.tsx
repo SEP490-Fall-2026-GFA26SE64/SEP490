@@ -51,6 +51,7 @@ import { OrganizationSettingsPage } from '../features/administration/settings/Or
 import { OrganizationSubscriptionPage } from '../features/administration/subscription/OrganizationSubscriptionPage'
 import { LdModuleWorkspaceRoute } from '../features/manager/approvals/ContentApprovalQueuePage'
 import { Toaster } from '../shared/components/ui/Toast'
+import { PageLoader } from '../shared/components/ui/PageLoader'
 import { ToastProvider } from '../shared/hooks/useToast'
 import { LanguageProvider } from '../shared/i18n/LanguageContext'
 import { WorkspaceSlugContext, workspaceBase } from '../shared/auth/workspacePaths'
@@ -72,7 +73,7 @@ export default function App() {
           <WorkspaceSlugContext.Provider value={workspace?.slug ?? null}>
           <WorkspaceBoundary><Routes>
             {/* Auth routes */}
-            <Route path="/" element={<Suspense fallback={<div role="status" className="p-6 text-muted-foreground">Loading...</div>}><GuestLandingPage /></Suspense>} />
+            <Route path="/" element={<Suspense fallback={<PageLoader variant="fullscreen" />}><GuestLandingPage /></Suspense>} />
             <Route path="/home" element={<Navigate to="/" replace />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/forgot-password" element={<ForgotPasswordPage />} />

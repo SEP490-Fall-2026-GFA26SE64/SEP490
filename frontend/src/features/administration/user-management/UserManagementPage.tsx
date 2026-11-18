@@ -133,7 +133,7 @@ interface DirectoryRow {
 export function UserManagementPage() {
   const c = useCopy()
   const identity = useQuery({ queryKey: ['workspace-identity'], queryFn: getIdentity, staleTime: 0 })
-  if (identity.isPending) return <Loading />
+  if (identity.isPending) return <Loading fullscreen />
   if (identity.isError) return <Failure error={identity.error} />
   if (!identity.data?.accountId || !identity.data.organizationId || identity.data.stage !== 'COMPLETE' ||
     !identity.data.roles.includes('ORGANIZATION_ADMINISTRATOR')) {

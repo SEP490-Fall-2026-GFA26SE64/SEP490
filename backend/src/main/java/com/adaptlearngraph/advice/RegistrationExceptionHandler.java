@@ -4,7 +4,9 @@ import com.adaptlearngraph.apis.MemberActivationController;
 import com.adaptlearngraph.apis.RegistrationController;
 import com.adaptlearngraph.apis.RegistrationWorkspaceEntryController;
 import com.adaptlearngraph.apis.WorkspaceAuthenticationController;
+import com.adaptlearngraph.exception.OrganizationStructureInvalid;
 import com.adaptlearngraph.exception.RegistrationFailure;
+import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataAccessException;
@@ -38,6 +40,13 @@ public class RegistrationExceptionHandler {
                 failure.field(), failure.retryAfterSeconds()), headers, status);
     }
 
+    @ExceptionHandler(OrganizationStructureInvalid.class)
+    ResponseEntity<StructureErrorView> invalidStructure(OrganizationStructureInvalid failure) {
+        return ResponseEntity.badRequest().body(new StructureErrorView("INVALID_INPUT",
+                "The organization structure file contains errors. Fix them and upload the file again.",
+                "organizationStructure", 0, failure.errors()));
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     ResponseEntity<ErrorView> invalidFields(MethodArgumentNotValidException failure) {
         var field = failure.getBindingResult().getFieldErrors().stream().findFirst();
@@ -58,4 +67,7 @@ public class RegistrationExceptionHandler {
     }
 
     record ErrorView(String code, String message, String field, long retryAfterSeconds) {}
+
+    record StructureErrorView(String code, String message, String field, long retryAfterSeconds,
+                              List<OrganizationStructureInvalid.RowError> rowErrors) {}
 }

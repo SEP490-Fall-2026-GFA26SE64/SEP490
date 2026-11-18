@@ -13,6 +13,7 @@ import { WorkspaceLayout } from '../../../shared/layouts/WorkspaceLayout'
 import { useTranslation } from '../../../shared/i18n/LanguageContext'
 import { AssignedPathwayViews } from '../modules/AssignedLearningPathways'
 import { useAssignedLearningPathways } from '../modules/useAssignedLearningPathways'
+import { PageLoader } from '../../../shared/components/ui/PageLoader'
 
 export function ManualAssignedPathwayPage() {
   const [activeTab, setActiveTab] = useState('roadmap')
@@ -95,12 +96,7 @@ export function ManualAssignedPathwayPage() {
             }
           />
           {loading ? (
-            <div
-              role="status"
-              className="mt-4 h-48 animate-pulse rounded-xl border border-border bg-muted p-5"
-            >
-              {vi ? 'Đang tải lộ trình…' : 'Loading pathway…'}
-            </div>
+            <PageLoader className="mt-4" label={vi ? 'Đang tải lộ trình…' : 'Loading pathway…'} />
           ) : error ? (
             <div
               role="alert"

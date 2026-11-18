@@ -1,4 +1,5 @@
 import { expect, test, type APIRequestContext, type Page } from '@playwright/test'
+import { waitForWorkspaceEntry } from './subscriptionHelpers'
 
 /**
  * FR-04.07 Monitor employee development (L&D Manager). Runs against the isolated development Compose stack:
@@ -15,8 +16,7 @@ async function login(page: Page, email: string) {
   await page.getByLabel('Email', { exact: true }).fill(email)
   await page.getByLabel('Password', { exact: true }).fill(password)
   await page.getByRole('button', { name: 'Sign in', exact: true }).click()
-  await expect(page.getByText('Authentication complete.', { exact: true })).toBeVisible({ timeout: 30_000 })
-  await page.getByRole('button', { name: 'Continue to workspace' }).click()
+  await waitForWorkspaceEntry(page)
   await expect(page.getByRole('button', { name: 'User actions menu', exact: true })).toBeVisible({ timeout: 30_000 })
 }
 async function csrf(request: APIRequestContext) {

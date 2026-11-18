@@ -5,8 +5,9 @@ import com.adaptlearngraph.entities.AccountRecoveryCodeEntity;
 import com.adaptlearngraph.entities.AuditEventEntity;
 import com.adaptlearngraph.entities.OutboxEventEntity;
 import com.adaptlearngraph.entities.ProcessingJobEntity;
+import com.adaptlearngraph.entities.domain.OrganizationStructure;
 import com.adaptlearngraph.entities.domain.Registration;
-import com.adaptlearngraph.entities.RegistrationCatalogSelectionEntity;
+import com.adaptlearngraph.entities.RegistrationOrgStructureEntity;
 import com.adaptlearngraph.entities.domain.RegistrationFields;
 import com.adaptlearngraph.exception.RegistrationFailure;
 import java.time.Instant;
@@ -25,7 +26,7 @@ public final class JpaRegistrationStore implements RegistrationStore {
     private static final String EMAIL_EVENT = "REGISTRATION_EMAIL";
 
     public record Repositories(AccountJpaRepository accounts, OrganizationRegistrationJpaRepository registrations,
-                               RegistrationCatalogSelectionJpaRepository catalogSelections,
+                               RegistrationOrgStructureJpaRepository orgStructures,
                                RegistrationEmailVerificationJpaRepository emailProofs,
                                AccountTotpJpaRepository totp, AccountRecoveryCodeJpaRepository recoveryCodes,
                                RegistrationRateLimitJpaRepository rates, OutboxEventJpaRepository outbox,
@@ -85,10 +86,9 @@ public final class JpaRegistrationStore implements RegistrationStore {
     }
 
     @Override
-    public void saveCatalogSelection(UUID registrationId, String templateVersion, String templateSha256,
-                                     List<String> nodeIds, Instant now) {
-        data.catalogSelections().insert(new RegistrationCatalogSelectionEntity(registrationId, templateVersion, templateSha256,
-                nodeIds, now));
+    public void saveOrganizationStructure(UUID registrationId, OrganizationStructure structure, Instant now) {
+        data.orgStructures().insert(new RegistrationOrgStructureEntity(registrationId, OrganizationStructureJson.write(structure),
+                structure.nodeCount(), structure.relationshipCount(), now));
     }
 
     @Override

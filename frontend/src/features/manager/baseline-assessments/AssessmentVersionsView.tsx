@@ -21,6 +21,7 @@ import {
   getBaselineAssessmentWorkspace,
   restoreHistoricalAssessment,
 } from './baselineAssessmentManagementApi'
+import { PageLoader } from '../../../shared/components/ui/PageLoader'
 
 type Filter = 'ALL' | 'OPEN' | 'ACTIVE' | 'HISTORY'
 
@@ -103,7 +104,7 @@ export function AssessmentVersionsView() {
 
   return <WorkspaceLayout><div className="space-y-6 pb-16">
     <PageHeader icon={<ClipboardCheck className="h-7 w-7" />} title={workspace?.jobPositionName ?? t('baselineAssessmentManagement.workspaceTitle')} description={t('baselineAssessmentManagement.workspaceDescription')} actions={<Button variant="outline" size="sm" leftIcon={<ArrowLeft className="h-4 w-4" />} onClick={() => navigate('/ld-manager/baseline-assessments')}>{t('baselineAssessmentManagement.backToJobPositions')}</Button>} />
-    {error ? <EmptyState icon={<AlertCircle className="h-7 w-7" />} title={t('baselineAssessmentManagement.workspaceLoadFailed')} description={error} action={<Button size="sm" onClick={() => void load()}>{t('common.refresh')}</Button>} /> : loading || !workspace ? <div className="h-64 animate-pulse rounded-lg bg-muted/60" aria-busy="true" /> : <>
+    {error ? <EmptyState icon={<AlertCircle className="h-7 w-7" />} title={t('baselineAssessmentManagement.workspaceLoadFailed')} description={error} action={<Button size="sm" onClick={() => void load()}>{t('common.refresh')}</Button>} /> : loading || !workspace ? <PageLoader /> : <>
       <Tabs value="assessments" onValueChange={changeTab}><TabsList className="h-auto flex-wrap justify-start gap-1"><TabsTrigger value="blueprints">{t('baselineAssessmentManagement.tabs.blueprints')}</TabsTrigger><TabsTrigger value="assessments">{t('baselineAssessmentManagement.tabs.assessments')}</TabsTrigger></TabsList></Tabs>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between"><div><h2 className="text-lg font-semibold text-foreground">{t('baselineAssessmentManagement.assessments.title')}</h2><p className="text-sm text-muted-foreground">{t('baselineAssessmentManagement.assessments.description')}</p></div><div className="flex flex-wrap gap-2">{openCandidate && <Button variant="outline" size="sm" leftIcon={<Trash2 className="h-4 w-4" />} onClick={() => setAbandonOpen(true)}>{t('baselineAssessmentManagement.assessmentActions.abandon')}</Button>}<Button size="sm" leftIcon={<FilePlus2 className="h-4 w-4" />} disabled={!pendingBlueprint || Boolean(openCandidate) || Boolean(workspace.workingRevision)} isLoading={busy === 'generate'} onClick={() => void generate()}>{t('baselineAssessmentManagement.assessmentActions.generate')}</Button></div></div>
       {!pendingBlueprint && workspace.assessmentVersions.length === 0 && <Card className="border-warning/50 bg-warning/5"><CardContent className="pt-6 text-sm text-muted-foreground">{t('baselineAssessmentManagement.assessmentActions.finalizeFirst')}</CardContent></Card>}

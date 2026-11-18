@@ -74,7 +74,7 @@ class RegistrationPostgresIntegrationTest {
     static JpaRegistrationStore registrationStore(JpaTestContext context) {
         return new JpaRegistrationStore(new JpaRegistrationStore.Repositories(context.bean(AccountJpaRepository.class),
                 context.bean(OrganizationRegistrationJpaRepository.class),
-                context.bean(RegistrationCatalogSelectionJpaRepository.class),
+                context.bean(RegistrationOrgStructureJpaRepository.class),
                 context.bean(RegistrationEmailVerificationJpaRepository.class), context.bean(AccountTotpJpaRepository.class),
                 context.bean(AccountRecoveryCodeJpaRepository.class), context.bean(RegistrationRateLimitJpaRepository.class),
                 context.bean(OutboxEventJpaRepository.class), context.bean(ProcessingJobJpaRepository.class),
@@ -166,32 +166,23 @@ class RegistrationPostgresIntegrationTest {
     }
 
     @Test
-    void catalogSelectionIsPersistedWithTheRegistrationAndInvalidSelectionsCreateNothing() throws Exception {
-        PlatformCatalogTemplate template;
-        try (var input = getClass().getResourceAsStream("/platform-catalog/template-fixture.json")) {
-            template = new PlatformCatalogTemplate(input.readAllBytes(), new com.fasterxml.jackson.databind.ObjectMapper());
-        }
-        var catalog = new com.adaptlearngraph.services.PlatformCatalogService(() -> java.util.Optional.of(template));
-        var selecting = new RegistrationService(store, crypto, () -> {}, clock,
-                com.adaptlearngraph.entities.domain.IntegrationPolicy.ENABLED, catalog);
-        var actor = selecting.register(fields(email(), null), PASSWORD, address, java.util.List.of("ROLE-A", "LV-A1", "ROLE-A"));
+    void organizationStructureIsPersistedWithTheRegistrationAndEmptyImportStoresNothing() {
+        var structure = com.adaptlearngraph.services.OrganizationStructureFixtures.structure();
+        var actor = service.register(fields(email(), null), PASSWORD, address, structure);
         var row = jdbc.queryForMap("""
-                SELECT s.template_version, s.template_sha256, array_to_string(s.selected_node_ids, ',') AS ids
-                FROM platform.registration_catalog_selection s JOIN platform.organization_registration r USING (registration_id)
+                SELECT s.structure::text AS structure, s.node_count, s.relationship_count
+                FROM platform.registration_org_structure s JOIN platform.organization_registration r USING (registration_id)
                 WHERE r.account_id = ?
                 """, actor.accountId());
-        assertThat(row).containsEntry("template_version", "fixture-1").containsEntry("template_sha256", template.sha256())
-                .containsEntry("ids", "ROLE-A,LV-A1");
+        assertThat(row).containsEntry("node_count", 12).containsEntry("relationship_count", 10);
+        assertThat(OrganizationStructureJson.read((String) row.get("structure"))).isEqualTo(structure);
 
-        var empty = selecting.register(fields(email(), null), PASSWORD, address, java.util.List.of());
+        var empty = service.register(fields(email(), null), PASSWORD, address,
+                (com.adaptlearngraph.entities.domain.OrganizationStructure) null);
         assertThat(jdbc.queryForObject("""
-                SELECT count(*) FROM platform.registration_catalog_selection s JOIN platform.organization_registration r USING (registration_id)
+                SELECT count(*) FROM platform.registration_org_structure s JOIN platform.organization_registration r USING (registration_id)
                 WHERE r.account_id = ?
                 """, Integer.class, empty.accountId())).isZero();
-
-        String rejected = email();
-        assertFailure(Code.INVALID_INPUT, () -> selecting.register(fields(rejected, null), PASSWORD, address, java.util.List.of("MOD-A")));
-        assertThat(jdbc.queryForObject("SELECT count(*) FROM platform.account WHERE normalized_identifier=?", Integer.class, rejected)).isZero();
     }
 
     @Test

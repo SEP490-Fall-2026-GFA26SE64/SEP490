@@ -2,6 +2,8 @@ package com.adaptlearngraph.apis;
 
 import com.adaptlearngraph.dtos.RegistrationDto.CompletionResponse;
 import com.adaptlearngraph.dtos.RegistrationDto.EnrollmentResponse;
+import com.adaptlearngraph.dtos.RegistrationDto.OrganizationStructureRequest;
+import com.adaptlearngraph.dtos.RegistrationDto.OrganizationStructureView;
 import com.adaptlearngraph.dtos.RegistrationDto.ProofRequest;
 import com.adaptlearngraph.dtos.RegistrationDto.SignInRequest;
 import com.adaptlearngraph.dtos.RegistrationDto.SignupRequest;
@@ -12,7 +14,9 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
+import org.springframework.http.CacheControl;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.context.annotation.Profile;
 import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -45,6 +49,12 @@ public class RegistrationController {
     @ResponseStatus(HttpStatus.CREATED)
     ViewResponse register(@Valid @RequestBody SignupRequest input, HttpServletRequest request) {
         return registration.register(input, request);
+    }
+
+    /** Public, stateless validation of an uploaded organization structure before it is applied to the form. */
+    @PostMapping("/org-structure/validate")
+    ResponseEntity<OrganizationStructureView> validateOrganizationStructure(@Valid @RequestBody OrganizationStructureRequest input) {
+        return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(registration.previewOrganizationStructure(input));
     }
 
     @PostMapping("/sign-in")

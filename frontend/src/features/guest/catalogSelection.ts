@@ -1,10 +1,12 @@
-import { CATALOG_LABELS, type CatalogClosure, type CatalogEdge, type CatalogNode, type CatalogNodeLabel, type PlatformCatalog } from './platformCatalogApi'
+import { GRAPH_COLUMN_LABELS, type CatalogClosure, type CatalogEdge, type CatalogNode, type CatalogNodeLabel, type PlatformCatalog } from './platformCatalogApi'
 
 export const MAX_CATALOG_SELECTION = 300
 
 export const CATALOG_LABEL_COPY: Record<CatalogNodeLabel, [string, string]> = {
+  Organization: ['Organization', 'Tổ chức'], Department: ['Department', 'Phòng ban'],
   JobPosition: ['Job position', 'Vị trí công việc'], TargetRole: ['Target role', 'Vai trò mục tiêu'],
   Level: ['Level', 'Cấp độ'], Competency: ['Competency', 'Năng lực'], MicroSkill: ['Micro-skill', 'Kỹ năng nhỏ'],
+  LearningModule: ['Learning module', 'Học phần'], Certificate: ['Certificate', 'Chứng chỉ'],
 }
 
 export function groupByName<T extends { name: string }>(items: T[]): { name: string; items: T[] }[] {
@@ -41,7 +43,8 @@ export function catalogIndex(catalog: PlatformCatalog): CatalogIndex {
   for (const edge of catalog.edges) {
     push(index.outgoing, edge.from, edge)
     push(index.incoming, edge.to, edge)
-    if (edge.type !== 'HAS_SKILL_PREREQUISITE') push(index.children, edge.from, edge.to)
+    // A module teaches skills but is not part of a skill's branch, so it never widens hierarchy scopes.
+    if (edge.type !== 'HAS_SKILL_PREREQUISITE' && edge.type !== 'TEACHES') push(index.children, edge.from, edge.to)
   }
   indexes.set(catalog, index)
   return index
@@ -94,12 +97,22 @@ export function emptyClosure(): CatalogClosure {
     nodeIds: [], edges: [], inclusions: [] }
 }
 
-const STRUCTURAL = new Set(['HAS_ROLE', 'HAS_LEVEL', 'HAS_COMPETENCY', 'HAS_SKILL', 'REQUIRES_SKILL'])
+const STRUCTURAL = new Set(['HAS_DEPARTMENT', 'HAS_JOB_POSITION', 'HAS_ROLE', 'HAS_LEVEL', 'HAS_COMPETENCY', 'HAS_SKILL', 'REQUIRES_SKILL', 'REQUIRES_CERTIFICATE'])
 const COLUMN_GAP = 300
 const SUB_COLUMN_GAP = 230
 const ROW_GAP = 72
 
 export type Point = { x: number; y: number }
+
+/** Layout parent of each visible node: hierarchy links point downwards, while a module sits beside the skill it teaches. */
+function layoutParents(catalog: PlatformCatalog, ids: Set<string>): Map<string, string[]> {
+  const parents = new Map<string, string[]>()
+  for (const edge of catalog.edges) if (ids.has(edge.from) && ids.has(edge.to)) {
+    if (STRUCTURAL.has(edge.type)) push(parents, edge.to, edge.from)
+    else if (edge.type === 'TEACHES') push(parents, edge.from, edge.to)
+  }
+  return parents
+}
 
 /**
  * Positions only the nodes that are not on the canvas yet: children open in a column beside their parent,
@@ -111,17 +124,15 @@ export function placeNewNodes(catalog: PlatformCatalog, ids: Set<string>, existi
   if (!existing.size) return fallback
   const occupied = new Map(existing)
   const placed = new Map<string, Point>()
-  const parents = new Map<string, string[]>()
-  for (const edge of catalog.edges) if (STRUCTURAL.has(edge.type) && ids.has(edge.from) && ids.has(edge.to))
-    push(parents, edge.to, edge.from)
-  const depth = new Map(catalog.nodes.map(node => [node.id, CATALOG_LABELS.indexOf(node.label)]))
+  const parents = layoutParents(catalog, ids)
+  const depth = new Map(catalog.nodes.map(node => [node.id, GRAPH_COLUMN_LABELS.indexOf(node.label)]))
   // Anchor beside the most specific parent already on screen (e.g. Competency rather than Level).
   const parentOf = (id: string) => (parents.get(id) ?? []).filter(parent => occupied.has(parent))
     .sort((a, b) => (depth.get(b) ?? 0) - (depth.get(a) ?? 0))[0]
   const fresh = catalog.nodes.filter(node => ids.has(node.id) && !existing.has(node.id))
   const clear = (band: Point[], point: Point) => band.every(other =>
     Math.abs(other.x - point.x) >= SUB_COLUMN_GAP * 0.8 || Math.abs(other.y - point.y) >= ROW_GAP * 0.8)
-  for (const label of CATALOG_LABELS) {
+  for (const label of GRAPH_COLUMN_LABELS) {
     const groups = new Map<string, string[]>()
     for (const node of fresh) if (node.label === label) {
       const parent = parentOf(node.id)
@@ -154,13 +165,11 @@ export function placeNewNodes(catalog: PlatformCatalog, ids: Set<string>, existi
 
 /** Left-to-right columns per node type; each column is ordered by its parents' positions so branches stay aligned. */
 export function layoutCatalog(catalog: PlatformCatalog, ids: Set<string>): Map<string, Point> {
-  const parents = new Map<string, string[]>()
-  for (const edge of catalog.edges) if (STRUCTURAL.has(edge.type) && ids.has(edge.from) && ids.has(edge.to))
-    push(parents, edge.to, edge.from)
+  const parents = layoutParents(catalog, ids)
   const rank = new Map<string, number>()
   const positions = new Map<string, Point>()
   let x = 0
-  for (const label of CATALOG_LABELS) {
+  for (const label of GRAPH_COLUMN_LABELS) {
     const column = catalog.nodes.filter(node => node.label === label && ids.has(node.id))
     if (!column.length) continue
     const scores = new Map(column.map(node => {

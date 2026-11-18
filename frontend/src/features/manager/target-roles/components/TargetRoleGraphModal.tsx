@@ -25,6 +25,7 @@ import {
   type SkillTargetConfig,
   type TargetRoleModel,
 } from '../../data/ldManagerMockData'
+import { PageLoader } from '../../../../shared/components/ui/PageLoader'
 
 interface TargetRoleGraphModalProps {
   open: boolean
@@ -1041,9 +1042,8 @@ export function TargetRoleGraphModal({
 
         {/* Loading Overlay */}
         {loading && (
-          <div className="absolute inset-0 bg-background/80 backdrop-blur-xs flex flex-col items-center justify-center p-12 text-center text-muted-foreground gap-3 z-30 pointer-events-auto">
-            <RefreshCw className="h-7 w-7 animate-spin text-primary" />
-            <p className="text-sm font-medium">Loading target-role knowledge graph...</p>
+          <div className="absolute inset-0 bg-background/80 backdrop-blur-xs flex items-center justify-center p-6 z-30 pointer-events-auto">
+            <PageLoader className="w-full max-w-md" label="Loading target-role knowledge graph…" />
           </div>
         )}
 

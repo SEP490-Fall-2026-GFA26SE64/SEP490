@@ -10,6 +10,7 @@ import { Button } from '../../../shared/components/ui/Button'
 import { IndependentSkillAssessmentEntry } from './IndependentSkillAssessmentEntry'
 import { AssessmentStatus, SkillAssessmentEntry } from './SkillAssessmentEntry'
 import { usePathwayAssessmentStates } from './usePathwayAssessmentStates'
+import { PageLoader } from '../../../shared/components/ui/PageLoader'
 
 /** Reuse the same exact module/pathway matching for the admission snapshot of a NEW paper. */
 export async function targetForCompletedModule(moduleId: string, revision: number): Promise<AssessmentTarget> {
@@ -33,7 +34,7 @@ export function CompletedModuleAssessmentLink({ moduleId, revision, compact = fa
   const scope = `${identity?.organizationId}:${identity?.accountId}:${identity?.roles?.join(',')}`
   const query = useQuery({ queryKey: ['initialPathway', scope, 'moduleAssessmentEntry', moduleId, revision], queryFn: ({ signal }) => readRulePathway(null, signal), enabled: Boolean(identity?.organizationId && identity?.accountId), retry: false, gcTime: 0,
     refetchInterval: current => !current.state.error && current.state.data && !current.state.data.archived ? 5000 : false })
-  if (query.isPending) return <p className="text-body-sm text-muted-foreground" role="status">{t('initialPathway.loading')}</p>
+  if (query.isPending) return <PageLoader size="sm" label={t('initialPathway.loading')} />
   if (query.error) return <IndependentSkillAssessmentEntry moduleId={moduleId} revision={revision} compact={compact} />
   const pathway = query.data
   if (!pathway || pathway.archived) return <IndependentSkillAssessmentEntry moduleId={moduleId} revision={revision} compact={compact} />

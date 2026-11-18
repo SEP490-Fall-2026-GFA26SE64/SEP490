@@ -19,6 +19,7 @@ import type {
   LearningLimits,
 } from '../src/shared/api/moduleAuthoringApi'
 import * as XLSX from 'xlsx'
+import { waitForWorkspaceEntry } from './subscriptionHelpers'
 const root = '/api/v1/module-management'
 const r6Artifact = (name: string) =>
   fileURLToPath(
@@ -71,9 +72,7 @@ async function login(page: Page, role: number, path: string) {
   )
   await page.getByRole('button', { name: 'Sign in', exact: true }).click()
   expect((await signedIn).status()).toBe(200)
-  await page
-    .getByRole('button', { name: 'Continue to workspace', exact: true })
-    .click()
+  await waitForWorkspaceEntry(page)
   await page.goto(path)
 }
 async function signOut(page: Page) {
@@ -880,9 +879,7 @@ test('real second organization cannot read private content; peer cannot import a
       )
       await page.getByRole('button', { name: 'Sign in', exact: true }).click()
       expect((await response).status()).toBe(200)
-      await page
-        .getByRole('button', { name: 'Continue to workspace', exact: true })
-        .click()
+      await waitForWorkspaceEntry(page)
     }
     await fixtureLogin(foreignEmail)
     expect((await page.request.get(root + '/modules/' + doc.id)).status()).toBe(

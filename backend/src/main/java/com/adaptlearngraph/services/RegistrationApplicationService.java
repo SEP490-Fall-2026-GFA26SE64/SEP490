@@ -2,6 +2,8 @@ package com.adaptlearngraph.services;
 
 import com.adaptlearngraph.dtos.RegistrationDto.CompletionResponse;
 import com.adaptlearngraph.dtos.RegistrationDto.EnrollmentResponse;
+import com.adaptlearngraph.dtos.RegistrationDto.OrganizationStructureRequest;
+import com.adaptlearngraph.dtos.RegistrationDto.OrganizationStructureView;
 import com.adaptlearngraph.dtos.RegistrationDto.ProofRequest;
 import com.adaptlearngraph.dtos.RegistrationDto.SignInRequest;
 import com.adaptlearngraph.dtos.RegistrationDto.SignupRequest;
@@ -44,10 +46,15 @@ public class RegistrationApplicationService {
         }
         var fields = new RegistrationFields(input.organizationName(), input.subdomain(), input.industry(),
                 input.headcount(), input.adminName(), input.adminEmail(), input.country(), input.adminPhone());
-        var actor = registration.register(fields, input.password(), request.getRemoteAddr(),
-                input.catalogSelection() == null ? List.of() : input.catalogSelection());
+        var structure = input.organizationStructure() == null || input.organizationStructure().isEmpty()
+                ? null : OrganizationStructureImporter.validate(input.organizationStructure());
+        var actor = registration.register(fields, input.password(), request.getRemoteAddr(), structure);
         establish(request, actor);
         return view(actor);
+    }
+
+    public OrganizationStructureView previewOrganizationStructure(OrganizationStructureRequest input) {
+        return OrganizationStructureImporter.preview(input);
     }
 
     public ViewResponse signIn(SignInRequest input, HttpServletRequest request) {

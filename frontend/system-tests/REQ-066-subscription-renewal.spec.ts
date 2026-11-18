@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { activationLink, confirmPayment, fixture, mutate, observe, purchase, record, registrationSession, text, workspaceLogin, paymentEmails } from './subscriptionHelpers'
+import { activationLink, confirmPayment, fixture, mutate, observe, purchase, record, registrationSession, text, workspaceLogin, paymentEmails, waitForWorkspaceEntry } from './subscriptionHelpers'
 
 test.setTimeout(120000)
 test.beforeEach(async ({ page }) => page.addInitScript(() => localStorage.setItem('app_language', 'en')))
@@ -81,7 +81,7 @@ test('Employee activation uses captured email, requires assignments, consumes a 
   await employee.getByLabel('Email', { exact: true }).fill(email)
   await employee.getByLabel('Password', { exact: true }).fill('isolated employee password')
   await employee.getByRole('button', { name: 'Sign in', exact: true }).click()
-  await expect(employee.getByText('Authentication complete.', { exact: true })).toBeVisible()
+  await waitForWorkspaceEntry(employee)
   await expect(employee.getByLabel('Authenticator code')).toHaveCount(0)
   expect((await employee.request.get(`/api/v1/organizations/${org}/subscription`)).status()).toBe(403)
   const otherContext = await browser.newContext({ baseURL: 'http://127.0.0.1:8092' })

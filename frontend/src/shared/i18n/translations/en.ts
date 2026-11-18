@@ -714,7 +714,7 @@ export const en = {
     learningOutcomes: 'Dashboard',
     baselineAssessments: 'Baseline Assessments',
     userDirectory: 'User Accounts',
-    adminConsole: 'System Console',
+    adminConsole: 'Dashboard',
     employees: 'Employees',
     roiForecast: 'ROI Forecast',
     knowledgeGraph: 'Knowledge Graph',

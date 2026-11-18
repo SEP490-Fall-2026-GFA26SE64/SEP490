@@ -14,6 +14,7 @@ import {
 } from 'lucide-react'
 import { LearnerLessonLayout } from '../../../shared/layouts/LearnerLessonLayout'
 import { Button } from '../../../shared/components/ui/Button'
+import { PageLoader } from '../../../shared/components/ui/PageLoader'
 import { Heading } from '../../../shared/components/typography/Heading'
 import {
   Dialog,
@@ -271,9 +272,7 @@ function LearningModuleReader({ moduleId }: { moduleId: string }) {
           </p>
         )}
         {loading ? (
-          <div role="status" className="h-64 animate-pulse bg-muted p-5">
-            {vi ? 'Đang tải bài học…' : 'Loading lessons…'}
-          </div>
+          <PageLoader label={vi ? 'Đang tải bài học…' : 'Loading lessons…'} />
         ) : (
           view && (
             <>

@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test'
-import { fixture, mutate, observe, record, totp } from './subscriptionHelpers'
+import { fixture, mutate, observe, record, totp, waitForWorkspaceEntry } from './subscriptionHelpers'
 
 test.use({ trace: 'off', screenshot: 'off', video: 'off' })
 test.setTimeout(90000)
@@ -102,9 +102,10 @@ test('original login keeps real invalid-password, MFA, recovery and session-relo
   await page.getByRole('button', { name: 'Use authenticator', exact: true }).click()
   await page.getByLabel('Authenticator code', { exact: true }).fill(totp(account.totpSecret))
   await page.getByRole('button', { name: 'Verify', exact: true }).click()
-  await expect(page.getByText('Authentication complete.', { exact: true })).toBeVisible()
-  await page.reload()
-  await expect(page.getByText('Authentication complete.', { exact: true })).toBeVisible()
+  await waitForWorkspaceEntry(page)
+  await expect(page).toHaveURL(/\/platform-admin\/organizations$/)
+  await page.goto('/login')
+  await expect(page).toHaveURL(/\/platform-admin\/organizations$/)
   expect((await page.request.get('/api/v1/platform/subscription-plans')).status()).toBe(200)
   const current = record(await (await page.request.get('/api/v1/workspace-auth/current')).json())
   expect(current.accountId).toBe(account.accountId)
@@ -118,7 +119,7 @@ test('original login keeps real invalid-password, MFA, recovery and session-relo
   const signOut = await mutate(page.request, '/api/v1/workspace-auth/sign-out', {})
   expect(signOut.status()).toBe(204)
   expect((await page.request.get('/api/v1/workspace-auth/current')).status()).toBe(401)
-  await page.reload()
+  await page.goto('/login')
   await expect(page.getByLabel('Password', { exact: true })).toHaveValue('')
   expect(statuses.some(value => value.path.endsWith('/sign-in') && value.status === 401)).toBe(true)
   expect(statuses.some(value => value.path.endsWith('/recovery') && value.status === 400)).toBe(true)

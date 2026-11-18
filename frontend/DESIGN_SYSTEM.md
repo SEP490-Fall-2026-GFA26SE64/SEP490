@@ -96,3 +96,11 @@ All wording across the application must strictly adhere to the unified typograph
 
 ### Breadcrumb
 - Use `src/shared/components/ui/Breadcrumb.tsx` with `{ label, href }` items for clean hierarchical navigation.
+
+### Page Loading (single loading treatment)
+- Use `src/shared/components/ui/PageLoader.tsx` for every page transition and page-level data load; do not build ad-hoc spinners, pulse skeletons or "Loading…" text.
+- `variant="fullscreen"`: pre-workspace transitions (app boot, sign-in → workspace, route gating, redirects). The static splash in `frontend/index.html` uses the same markup so boot → React is seamless.
+- `variant="inline"` (default): data loads inside the workspace; the sidebar/header shell stays visible. `size="sm"` is a compact row for dropdowns and small panels.
+- `Loading` (`SubscriptionFeedback`) and `LoadingCard` are thin wrappers around `PageLoader`. Button busy states (`Button loading`) and upload/import progress keep their own indicators.
+- Visuals live in `src/shared/styles/pageLoader.css` (tokens only, `prefers-reduced-motion` respected, `role="status"`).
+- After 8 s (`PAGE_LOADER_SLOW_MS`) the loader explains that the server is slow; the fullscreen variant also offers **Reload page**. Gate loaders only on queries that are actually fetching (in TanStack Query v5 a disabled query reports `isPending`), so a loader can never wait forever.

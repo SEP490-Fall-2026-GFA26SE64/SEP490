@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test'
+import { waitForWorkspaceEntry } from './subscriptionHelpers'
 
 test.describe('REQ-002-F02 Baseline Assessment Creation & Activation Lifecycle', () => {
   test('L&D Manager configures, saves, previews, and activates an adaptive baseline assessment', async ({ page }) => {
@@ -7,7 +8,7 @@ test.describe('REQ-002-F02 Baseline Assessment Creation & Activation Lifecycle',
     await page.getByPlaceholder('Enter your email').fill('manager@technova.com')
     await page.locator('input[type="password"]').fill('Password123!')
     await page.getByRole('button', { name: 'Sign in', exact: true }).click()
-    await page.getByRole('button', { name: 'Continue to workspace', exact: true }).click()
+    await waitForWorkspaceEntry(page)
     await expect(page).toHaveURL(/.*\/ld-manager\/(dashboard|job-positions)/)
 
     // 2. Navigate to Baseline Assessments Management Directory

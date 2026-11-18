@@ -30,8 +30,9 @@ function replaceLocation(to: string) {
 }
 
 function LeaveWorkspace({ to }: { to: string }) {
+  const c = useCopy()
   useEffect(() => { replaceLocation(to) }, [to])
-  return <Loading />
+  return <Loading fullscreen label={c('Redirecting…', 'Đang chuyển hướng…')} />
 }
 
 function loginPath(next: string) {
@@ -54,7 +55,7 @@ function LegacyWorkspaceRedirect({ target }: { target: string }) {
       <Link className="text-primary underline" to="/login">{c('Sign in', 'Đăng nhập')}</Link>
     </SubscriptionShell>
   }
-  return <Loading />
+  return <Loading fullscreen label={c('Opening your workspace…', 'Đang mở không gian làm việc…')} />
 }
 
 function Protected({ path, slug, children }: { path: string; slug: string | null; children: ReactNode }) {
@@ -88,7 +89,9 @@ function Protected({ path, slug, children }: { path: string; slug: string | null
   const returnTo = slug !== null && isWorkspaceSlug(slug) ? `${workspaceUrl(slug, path)}${search}${hash}` : `${path}${search}${hash}`
   useEffect(() => { if (signedOut) replaceLocation(loginPath(returnTo)) }, [signedOut, returnTo])
 
-  if (signedOut) return <Loading />
+  if (signedOut) return <Loading fullscreen label={c('Redirecting to sign in…', 'Đang chuyển đến trang đăng nhập…')} />
+  const pending = identity.isPending || (gated && !billing && !platform && (users ? memberAccess.isPending : access.isPending))
+  if (pending) return <Loading fullscreen label={c('Opening your workspace…', 'Đang mở không gian làm việc…')} />
   if (identity.isSuccess && authenticated && home && ownWorkspace && role) {
     return <Navigate to={ROLE_HOME[role]} replace />
   }
@@ -110,8 +113,7 @@ function Protected({ path, slug, children }: { path: string; slug: string | null
   }
 
   return <SubscriptionShell title={c('Workspace access', 'Truy cập không gian')}>
-    {identity.isPending || (gated && (users ? memberAccess.isPending : access.isPending)) ? <Loading /> :
-      identity.isError || access.isError || memberAccess.isError ? <Failure error={identity.error ?? access.error ?? memberAccess.error} /> :
+    {identity.isError || access.isError || memberAccess.isError ? <Failure error={identity.error ?? access.error ?? memberAccess.error} /> :
         <p role="alert">{c('Your authenticated role cannot enter this workspace.', 'Vai trò xác thực của bạn không được vào không gian này.')}</p>}
     <Link className="text-primary underline" to="/login">{c('Sign in', 'Đăng nhập')}</Link>
     {roles.includes('ORGANIZATION_ADMINISTRATOR') && <Link className="ml-4 text-primary underline" to="/admin/subscription">{c('Subscription and recovery', 'Gói đăng ký và khôi phục')}</Link>}

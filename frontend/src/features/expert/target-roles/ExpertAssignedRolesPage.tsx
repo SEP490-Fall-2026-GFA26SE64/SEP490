@@ -93,6 +93,7 @@ import { cleanJobPositionTitle } from '../../manager/ontology/CompetencyOntology
 import { fetchJobPositions, type JobPositionDto } from '../../../shared/api/jobPositionApi'
 import { fetchDepartments, type DepartmentDto } from '../../../shared/api/departmentApi'
 import { Building2 } from 'lucide-react'
+import { PageLoader } from '../../../shared/components/ui/PageLoader'
 
 export type ExpertRoleStatus =
   | 'published'
@@ -2138,12 +2139,7 @@ export function ExpertAssignedRolesPage() {
 
           <CardContent className="p-0">
             {isLoading ? (
-              <div className="text-center py-16 text-muted-foreground">
-                <div className="inline-block animate-spin rounded-full h-8 w-8 border-2 border-primary border-t-transparent mb-3" />
-                <p className="text-sm font-medium">
-                  Loading target roles from database...
-                </p>
-              </div>
+              <PageLoader className="border-0 shadow-none" label="Loading target roles…" />
             ) : visibleRoles.length === 0 ? (
               <div className="text-center py-12 text-muted-foreground">
                 <AlertCircle className="h-8 w-8 mx-auto mb-2 text-muted-foreground/60" />

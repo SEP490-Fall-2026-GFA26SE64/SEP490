@@ -1,5 +1,6 @@
 package com.adaptlearngraph.repository;
 
+import com.adaptlearngraph.entities.domain.OrganizationStructure;
 import com.adaptlearngraph.entities.domain.Registration;
 import com.adaptlearngraph.entities.domain.RegistrationFields;
 import java.time.Instant;
@@ -16,7 +17,7 @@ public interface RegistrationStore {
     Registration lockRegistration(UUID accountId);
     void insertAccount(UUID accountId, String email, String passwordHash, Instant now);
     boolean insertRegistration(UUID id, UUID accountId, RegistrationFields fields, String slug, Instant now);
-    void saveCatalogSelection(UUID registrationId, String templateVersion, String templateSha256, List<String> nodeIds, Instant now);
+    void saveOrganizationStructure(UUID registrationId, OrganizationStructure structure, Instant now);
     Optional<EmailProof> emailProof(UUID accountId);
     void saveEmailProof(UUID accountId, EmailProof proof);
     void markEmailVerified(UUID accountId, Instant now);

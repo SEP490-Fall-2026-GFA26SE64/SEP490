@@ -5,9 +5,34 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#16705c" />
     <title>Adapt-Learn-Graph</title>
+    <link rel="stylesheet" href="/src/shared/styles/tokens.css" />
+    <link rel="stylesheet" href="/src/shared/styles/pageLoader.css" />
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <!-- Pre-boot splash; identical to <PageLoader variant="fullscreen" /> and replaced when React mounts. -->
+      <div role="status" aria-live="polite" data-page-loader="fullscreen" class="alg-loader alg-loader--fullscreen">
+        <div class="alg-loader__mark" aria-hidden="true">
+          <span class="alg-loader__halo"></span>
+          <span class="alg-loader__ring"></span>
+          <span class="alg-loader__core">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="16" y="16" width="6" height="6" rx="1" />
+              <rect x="2" y="16" width="6" height="6" rx="1" />
+              <rect x="9" y="2" width="6" height="6" rx="1" />
+              <path d="M5 16v-3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3" />
+              <path d="M12 12V8" />
+            </svg>
+          </span>
+        </div>
+        <p class="alg-loader__brand">Adapt-Learn-Graph</p>
+        <p class="alg-loader__label" id="boot-loader-label">Loading…</p>
+        <div class="alg-loader__bar" aria-hidden="true"></div>
+      </div>
+    </div>
+    <script>
+      try { if (localStorage.getItem('app_language') === 'vi') document.getElementById('boot-loader-label').textContent = 'Đang tải…' } catch (e) {}
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

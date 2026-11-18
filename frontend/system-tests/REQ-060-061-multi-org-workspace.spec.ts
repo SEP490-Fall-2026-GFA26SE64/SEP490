@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto'
+import { readFileSync } from 'node:fs'
 import { expect as playwrightExpect, test, type Browser, type BrowserContext, type Page } from '@playwright/test'
-import { mutate, record, text } from './subscriptionHelpers'
+import { mutate, record, text, waitForWorkspaceEntry } from './subscriptionHelpers'
 
 const BASE = 'http://127.0.0.1:8096'
 const expect = playwrightExpect.configure({ timeout: 30_000 })
@@ -43,7 +44,7 @@ async function signIn(browser: Browser, account: { email: string; password: stri
   return { context, page }
 }
 
-test('a Guest copies a picked catalog subtree into a new workspace served under its own slug', async ({ page }) => {
+test('a Guest imports an organization structure into a new workspace served under its own slug', async ({ page }) => {
   const seen = watch(page)
   const email = `tenant-b-${randomUUID()}@example.test`
   const password = 'Isolated tenant B password!'
@@ -51,18 +52,19 @@ test('a Guest copies a picked catalog subtree into a new workspace served under 
 
   await page.goto('/guest/register')
   await page.getByLabel('Business name', { exact: false }).fill(organizationName)
-  await page.getByRole('button', { name: 'Choose catalog', exact: true }).click()
-  await page.getByRole('combobox', { name: 'Item type', exact: true }).selectOption('TargetRole')
+  await page.getByRole('button', { name: 'Import structure', exact: true }).click()
+  await page.getByTestId('org-structure-file').setInputFiles({ name: 'tenant-b.xlsx',
+    mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    buffer: await (async () => {
+      const download = page.waitForEvent('download')
+      await page.getByRole('button', { name: 'Download template', exact: true }).click()
+      return readFileSync(await (await download).path())
+    })() })
   await expect(page.getByTestId('catalog-graph')).toBeVisible()
-  const role = page.getByRole('list', { name: 'Platform catalog items' }).getByRole('listitem').filter({ hasText: 'Target role' }).first()
-  await role.getByRole('button', { name: /^Add / }).click()
-  const summary = page.getByTestId('catalog-closure-summary')
-  await expect(summary).toHaveText(/\d+ items and \d+ relationships will be copied/)
-  const copiedNodes = Number((await summary.textContent())!.match(/^(\d+) items/)![1])
-  expect(copiedNodes).toBeGreaterThan(1)
-  expect((await page.request.post('/api/v1/registration/catalog-closure', { data: { nodeIds: [] } })).status()).toBe(403)
-  await page.screenshot({ path: test.info().outputPath('registration-catalog-picker-1440.png'), fullPage: true })
-  await page.getByRole('button', { name: 'Apply catalog', exact: true }).click()
+  const copiedNodes = 12
+  expect((await page.request.post('/api/v1/registration/org-structure/validate', { data: { rows: [] } })).status()).toBe(403)
+  await page.screenshot({ path: test.info().outputPath('registration-structure-import-1440.png'), fullPage: true })
+  await page.getByRole('button', { name: 'Apply structure', exact: true }).click()
 
   await page.getByRole('button', { name: 'Continue to account', exact: true }).click()
   await page.getByLabel('Full name', { exact: false }).fill('Tenant B Owner')
@@ -75,7 +77,7 @@ test('a Guest copies a picked catalog subtree into a new workspace served under 
   await page.getByRole('button', { name: 'Create account', exact: true }).click()
   const registration = await registered
   expect(registration.status()).toBe(201)
-  expect(JSON.parse(registration.request().postData() ?? '{}').catalogSelection.length).toBeGreaterThan(1)
+  expect(JSON.parse(registration.request().postData() ?? '{}').organizationStructure.departments).toHaveLength(2)
   await expect(page.getByRole('heading', { name: 'Registration complete', exact: true })).toBeVisible()
 
   await page.goto('/guest/plans')
@@ -160,7 +162,7 @@ test('a signed-out deep link signs in and returns only to the same workspace pat
   await page.getByLabel('Email', { exact: true }).fill(TECHNOVA.email)
   await page.getByLabel('Password', { exact: true }).fill(TECHNOVA.password)
   await page.getByRole('button', { name: 'Sign in', exact: true }).click()
-  await page.getByRole('button', { name: 'Continue to workspace', exact: true }).click()
+  await waitForWorkspaceEntry(page)
   await expect(page).toHaveURL(`${BASE}/workspace/${slugA}/admin/users?tab=invites`)
 
   expect((await mutate(page.request, '/api/v1/workspace-auth/sign-out', {})).status()).toBe(204)
@@ -168,7 +170,7 @@ test('a signed-out deep link signs in and returns only to the same workspace pat
   await page.getByLabel('Email', { exact: true }).fill(TECHNOVA.email)
   await page.getByLabel('Password', { exact: true }).fill(TECHNOVA.password)
   await page.getByRole('button', { name: 'Sign in', exact: true }).click()
-  await page.getByRole('button', { name: 'Continue to workspace', exact: true }).click()
+  await waitForWorkspaceEntry(page)
   await expect(page).toHaveURL(`${BASE}/workspace/${slugA}/admin/subscription`)
   await context.close()
 })
@@ -185,7 +187,7 @@ for (const [email, home] of [['admin@technova.com', '/admin/subscription'], ['ex
     await page.getByLabel('Email', { exact: true }).fill(email)
     await page.getByLabel('Password', { exact: true }).fill(TECHNOVA.password)
     await page.getByRole('button', { name: 'Sign in', exact: true }).click()
-    await page.getByRole('button', { name: 'Continue to workspace', exact: true }).click()
+    await waitForWorkspaceEntry(page)
     await expect(page).toHaveURL(new RegExp(`/workspace/${slugA}${home}`))
     await page.waitForLoadState('networkidle')
     const links = [...new Set(await page.locator('a[href^="/"]').evaluateAll(anchors => anchors.map(anchor => anchor.getAttribute('href') ?? '')))]

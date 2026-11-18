@@ -10,6 +10,7 @@ import { Card, CardContent } from '../../../shared/components/ui/Card'
 import { FormField } from '../../../shared/components/ui/FormField'
 import { Heading } from '../../../shared/components/typography/Heading'
 import { useTranslation } from '../../../shared/i18n/LanguageContext'
+import { PageLoader } from '../../../shared/components/ui/PageLoader'
 export function ManualPathwayPanel() {
   const { language } = useTranslation()
   const vi = language === 'vi'
@@ -61,7 +62,7 @@ export function ManualPathwayPanel() {
             : 'Choose an Employee and approved modules so they can start learning.'}
         </p>
         {loading ? (
-          <p role="status">{vi ? 'Đang tải lựa chọn…' : 'Loading choices…'}</p>
+          <PageLoader size="sm" label={vi ? 'Đang tải lựa chọn…' : 'Loading choices…'} />
         ) : (
           <form
             className="space-y-3"

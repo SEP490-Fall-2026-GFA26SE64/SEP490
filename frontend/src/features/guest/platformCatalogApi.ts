@@ -1,12 +1,15 @@
 import { RegistrationApiError } from './registrationApi'
 
-export type CatalogNodeLabel = 'JobPosition' | 'TargetRole' | 'Level' | 'Competency' | 'MicroSkill'
-export interface CatalogNode { id: string; label: CatalogNodeLabel; name: string; code: string | null; description?: string | null }
+export type CatalogNodeLabel = 'Organization' | 'Department' | 'JobPosition' | 'TargetRole' | 'Level' | 'Competency' | 'MicroSkill' | 'LearningModule' | 'Certificate'
+export interface CatalogNode {
+  id: string; label: CatalogNodeLabel; name: string; code: string | null; description?: string | null
+  status?: string | null; reviewStatus?: string | null
+}
 export interface CatalogEdge {
   id: string
   from: string
   to: string
-  type: 'HAS_ROLE' | 'HAS_LEVEL' | 'HAS_COMPETENCY' | 'HAS_SKILL' | 'REQUIRES_SKILL' | 'HAS_SKILL_PREREQUISITE'
+  type: 'HAS_DEPARTMENT' | 'HAS_JOB_POSITION' | 'HAS_ROLE' | 'HAS_LEVEL' | 'HAS_COMPETENCY' | 'HAS_SKILL' | 'REQUIRES_SKILL' | 'HAS_SKILL_PREREQUISITE' | 'TEACHES' | 'REQUIRES_CERTIFICATE'
   properties: Record<string, unknown>
 }
 export interface PlatformCatalog { version: string; nodes: CatalogNode[]; edges: CatalogEdge[] }
@@ -21,7 +24,14 @@ export interface CatalogClosure {
   inclusions: { nodeId: string; reason: 'ANCESTOR' | 'PREREQUISITE'; requiredBy: string }[]
 }
 
+/** Starter-catalog hierarchy; scope pickers rely on this exact order. */
 export const CATALOG_LABELS: CatalogNodeLabel[] = ['JobPosition', 'TargetRole', 'Level', 'Competency', 'MicroSkill']
+/** Organization knowledge graph adds learning content and certificates after the skill column. */
+export const KNOWLEDGE_GRAPH_LABELS: CatalogNodeLabel[] = [...CATALOG_LABELS, 'LearningModule', 'Certificate']
+/** Organization structure imported at registration: Department -> Job position -> Target role -> Level. */
+export const ORGANIZATION_STRUCTURE_LABELS: CatalogNodeLabel[] = ['Organization', 'Department', 'JobPosition', 'TargetRole', 'Level']
+/** Left-to-right graph column order for every node type. */
+export const GRAPH_COLUMN_LABELS: CatalogNodeLabel[] = ['Organization', 'Department', ...KNOWLEDGE_GRAPH_LABELS]
 const LABELS = new Set(CATALOG_LABELS)
 const EDGE_TYPES = new Set(['HAS_ROLE', 'HAS_LEVEL', 'HAS_COMPETENCY', 'HAS_SKILL', 'REQUIRES_SKILL', 'HAS_SKILL_PREREQUISITE'])
 

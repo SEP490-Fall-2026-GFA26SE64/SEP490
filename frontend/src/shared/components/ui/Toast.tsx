@@ -13,16 +13,17 @@ const toastVariantStyles: Record<ToastVariant, { container: string; icon: React.
     container: 'bg-secondary text-secondary-foreground border-primary/30 shadow-md',
     icon: <Info className="h-5 w-5 text-primary shrink-0" />,
   },
+  // Tint is layered as a background-image over the opaque card surface so page content never shows through.
   success: {
-    container: 'bg-success/10 text-success border-success/30 shadow-md',
+    container: 'bg-card bg-[linear-gradient(hsl(var(--success)/0.1),hsl(var(--success)/0.1))] text-success border-success/30 shadow-md',
     icon: <CheckCircle2 className="h-5 w-5 text-success shrink-0" />,
   },
   warning: {
-    container: 'bg-warning/10 text-foreground border-warning/40 shadow-md',
+    container: 'bg-card bg-[linear-gradient(hsl(var(--warning)/0.1),hsl(var(--warning)/0.1))] text-foreground border-warning/40 shadow-md',
     icon: <AlertTriangle className="h-5 w-5 text-warning shrink-0" />,
   },
   destructive: {
-    container: 'bg-destructive/10 text-destructive border-destructive/30 shadow-md',
+    container: 'bg-card bg-[linear-gradient(hsl(var(--destructive)/0.1),hsl(var(--destructive)/0.1))] text-destructive border-destructive/30 shadow-md',
     icon: <AlertCircle className="h-5 w-5 text-destructive shrink-0" />,
   },
 }

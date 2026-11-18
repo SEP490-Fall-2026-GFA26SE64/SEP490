@@ -18,6 +18,7 @@ import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.Base64;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import javax.crypto.spec.SecretKeySpec;
@@ -216,6 +217,54 @@ class RegistrationApiIntegrationTest {
                 Integer.class, email)).isZero();
         input.remove("country");
         assertThat(post(owner, "", input.toString()).statusCode()).isEqualTo(201);
+    }
+
+    @Test
+    void organizationStructureIsValidatedPubliclyWithCsrfAndInvalidFilesCreateNoAccount() throws Exception {
+        String valid = workbook("1", "2");
+        var withoutCsrf = owner.send(HttpRequest.newBuilder(uri("/org-structure/validate")).header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(valid)).build(), HttpResponse.BodyHandlers.ofString());
+        assertThat(withoutCsrf.statusCode()).isEqualTo(403);
+
+        var preview = post(owner, "/org-structure/validate", valid);
+        assertThat(preview.statusCode()).isEqualTo(200);
+        assertThat(preview.headers().firstValue("cache-control").orElseThrow()).contains("no-store");
+        var tree = body(preview);
+        assertThat(tree.path("departmentCount").asInt()).isEqualTo(1);
+        assertThat(tree.path("levelCount").asInt()).isEqualTo(2);
+        assertThat(tree.at("/departments/0/jobPositions/0/targetRoles/0/levels/1/name").asText()).isEqualTo("Senior");
+
+        String conflicting = workbook("1", "1");
+        var rejected = post(owner, "/org-structure/validate", conflicting);
+        assertThat(rejected.statusCode()).isEqualTo(400);
+        assertThat(body(rejected).path("field").asText()).isEqualTo("organizationStructure");
+        assertThat(body(rejected).at("/rowErrors/0/sheet").asText()).isEqualTo("Levels");
+        assertThat(body(rejected).at("/rowErrors/0/row").asInt()).isEqualTo(3);
+        assertThat(body(rejected).at("/rowErrors/0/column").asText()).isEqualTo("Level rank");
+
+        String email = email();
+        var input = (com.fasterxml.jackson.databind.node.ObjectNode) json.readTree(signup(email));
+        input.set("organizationStructure", json.readTree(conflicting));
+        assertThat(post(browser(), "", input.toString()).statusCode()).isEqualTo(400);
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM platform.account WHERE normalized_identifier=?",
+                Integer.class, email)).isZero();
+
+        input.set("organizationStructure", json.readTree(valid));
+        assertThat(post(browser(), "", input.toString()).statusCode()).isEqualTo(201);
+        assertThat(jdbc.queryForObject("""
+                SELECT s.node_count FROM platform.registration_org_structure s
+                JOIN platform.organization_registration r USING (registration_id)
+                JOIN platform.account a ON a.account_id = r.account_id WHERE a.normalized_identifier = ?
+                """, Integer.class, email)).isEqualTo(5);
+    }
+
+    private String workbook(String juniorRank, String seniorRank) throws Exception {
+        return json.writeValueAsString(Map.of(
+                "departments", List.of(Map.of("row", 2, "code", "ENG", "name", "Engineering", "description", "Builds products")),
+                "jobPositions", List.of(Map.of("row", 2, "departmentCode", "ENG", "code", "JP-DEV", "name", "Developer")),
+                "targetRoles", List.of(Map.of("row", 2, "jobPositionCode", "JP-DEV", "code", "TR-BE", "name", "Backend", "scope", "Server code")),
+                "levels", List.of(Map.of("row", 2, "targetRoleCode", "TR-BE", "name", "Junior", "rank", juniorRank),
+                        Map.of("row", 3, "targetRoleCode", "TR-BE", "name", "Senior", "rank", seniorRank))));
     }
 
     private HttpResponse<String> get(HttpClient browser, String path) throws Exception {

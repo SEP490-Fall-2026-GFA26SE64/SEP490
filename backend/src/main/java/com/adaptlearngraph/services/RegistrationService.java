@@ -13,6 +13,7 @@ import com.adaptlearngraph.exception.RegistrationFailure;
 import com.adaptlearngraph.exception.RegistrationFailure.Code;
 import com.adaptlearngraph.entities.domain.RegistrationFields;
 import com.adaptlearngraph.entities.domain.IntegrationPolicy;
+import com.adaptlearngraph.entities.domain.OrganizationStructure;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
@@ -29,21 +30,14 @@ public final class RegistrationService implements RegistrationUseCase {
     private final String dummyPasswordHash;
     private final AuthenticationAttemptGuard attempts;
     private final IntegrationPolicy policy;
-    private final PlatformCatalogService catalog;
 
     public RegistrationService(RegistrationStore store, RegistrationSecrets secrets,
                                RegistrationDelivery delivery, Clock clock) {
         this(store, secrets, delivery, clock, IntegrationPolicy.ENABLED);
     }
 
-    public RegistrationService(RegistrationStore store, RegistrationSecrets secrets,
-                               RegistrationDelivery delivery, Clock clock, IntegrationPolicy policy) {
-        this(store, secrets, delivery, clock, policy, null);
-    }
-
     public RegistrationService(RegistrationStore store, RegistrationSecrets secrets, RegistrationDelivery delivery,
-                               Clock clock, IntegrationPolicy policy, PlatformCatalogService catalog) {
-        this.catalog = catalog;
+                               Clock clock, IntegrationPolicy policy) {
         this.store = store;
         this.secrets = secrets;
         this.delivery = delivery;
@@ -55,16 +49,13 @@ public final class RegistrationService implements RegistrationUseCase {
 
     @Override
     public RegistrationActor register(RegistrationFields fields, String password, String address) {
-        return register(fields, password, address, List.of());
+        return register(fields, password, address, (OrganizationStructure) null);
     }
 
     @Override
-    public RegistrationActor register(RegistrationFields fields, String password, String address, List<String> catalogSelection) {
+    public RegistrationActor register(RegistrationFields fields, String password, String address,
+                                      OrganizationStructure organizationStructure) {
         requireReadyForEmail();
-        boolean selecting = catalogSelection != null && !catalogSelection.isEmpty();
-        if (selecting && catalog == null)
-            throw new RegistrationFailure(Code.SERVICE_UNAVAILABLE, "The platform catalog is unavailable.", "catalogSelection", 0);
-        var closure = selecting ? catalog.closure(catalogSelection) : null;
         RegistrationFields.validatePassword(password);
         consumeRequestLimit("signup:" + address, 10, Duration.ofHours(1));
         String passwordHash = secrets.hashPassword(password);
@@ -89,8 +80,8 @@ public final class RegistrationService implements RegistrationUseCase {
                 }
             }
             if (!inserted) throw new RegistrationFailure(Code.SERVICE_UNAVAILABLE, "Unable to reserve a slug. Try again.");
-            if (closure != null && !closure.selected().isEmpty())
-                store.saveCatalogSelection(registrationId, closure.templateVersion(), closure.templateSha256(), closure.selected(), now);
+            if (organizationStructure != null && !organizationStructure.isEmpty())
+                store.saveOrganizationStructure(registrationId, organizationStructure, now);
             if (policy.emailVerificationEnabled()) queueVerification(accountId, address, now);
             store.audit(accountId, "REGISTRATION_CREATED", "SUCCEEDED", now);
             return progressActor(store.lockRegistration(accountId),
