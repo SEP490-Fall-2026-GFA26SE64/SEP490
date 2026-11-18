@@ -2,6 +2,7 @@ import { LanguageProvider } from '../../../i18n/LanguageContext'
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, expect, it, vi } from 'vitest'
 import { ToastProvider } from '../../../hooks/useToast'
+import { LanguageProvider } from '../../../i18n/LanguageContext'
 import { Toaster } from '../../ui/Toast'
 import { QuestionId } from '../QuestionId'
 const descriptor = Object.getOwnPropertyDescriptor(navigator, 'clipboard')

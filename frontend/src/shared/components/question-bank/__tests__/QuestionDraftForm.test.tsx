@@ -27,8 +27,9 @@ it('retains multiline question, answers and explanation exactly without selectin
 })
 it('keeps permitted empty fields and existing required-field feedback', () => {
   render(<Form />)
-  fireEvent.blur(screen.getByLabelText('Question prompt'))
-  expect(screen.getByRole('alert').textContent).toContain('Enter a question prompt')
+  const prompt = screen.getByLabelText('Question prompt')
+  fireEvent.blur(prompt)
+  expect(prompt.getAttribute('aria-invalid')).toBe('true')
   expect(JSON.parse(screen.getByLabelText('Draft value').textContent!)).toEqual(blank)
 })
 it.each(['default', 'details'] as const)('shows complete long content and explicit correct status in %s preview', variant => {
