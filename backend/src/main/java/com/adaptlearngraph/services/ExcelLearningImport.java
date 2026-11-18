@@ -32,6 +32,7 @@ public final class ExcelLearningImport implements LearningImportUseCase {
     private final ObjectMapper json;
     private static final List<String> MODULE_COLUMNS = ModuleImportTemplate.MODULE_KEYS;
     private static final List<String> LESSON_COLUMNS = ModuleImportTemplate.LESSON_KEYS;
+    private static final List<String> LEGACY_LESSON_COLUMNS = List.of("moduleRef", "lessonId", "order", "title", "type", "contentPath");
     public ExcelLearningImport(
             ModuleAuthoringPort port,
             LearningContentPort content,
@@ -55,6 +56,9 @@ public final class ExcelLearningImport implements LearningImportUseCase {
 
     @Override
     public byte[] template() { return ModuleImportTemplate.create(port, actor()); }
+
+    @Override
+    public byte[] template(String lang) { return ModuleImportTemplate.create(port, actor(), lang); }
 
     private static String text(org.apache.poi.ss.usermodel.Row row, int col) {
         Cell c = row.getCell(col);
@@ -86,15 +90,82 @@ public final class ExcelLearningImport implements LearningImportUseCase {
         return result;
     }
 
-    private static void checkHeader(Sheet sheet, List<String> columns) {
+    private static boolean isLegacyLessonsSheet(Sheet sheet) {
+        if (sheet == null || sheet.getRow(0) == null) return false;
+        String col1 = text(sheet.getRow(0), 1);
+        return col1.equalsIgnoreCase("Mã liên kết bài học")
+                || col1.equalsIgnoreCase("Lesson Reference")
+                || col1.equalsIgnoreCase("Lesson Ref")
+                || col1.equalsIgnoreCase("Lesson ID");
+    }
+
+    private static boolean matchesModuleHeader(int col, String text) {
+        if (text == null) return false;
+        String clean = text.strip();
+        return switch (col) {
+            case 0 -> clean.equalsIgnoreCase("Mã liên kết module") || clean.equalsIgnoreCase("Module Reference") || clean.equalsIgnoreCase("Module Ref");
+            case 1 -> clean.equalsIgnoreCase("Tên module") || clean.equalsIgnoreCase("Module Title") || clean.equalsIgnoreCase("Title");
+            case 2 -> clean.equalsIgnoreCase("Mã Skill") || clean.equalsIgnoreCase("Skill Code") || clean.equalsIgnoreCase("Skill Code or Name") || clean.equalsIgnoreCase("Skill") || clean.equalsIgnoreCase("Tên Skill");
+            case 3 -> clean.equalsIgnoreCase("Mức kiến thức") || clean.equalsIgnoreCase("Knowledge Level") || clean.equalsIgnoreCase("Level");
+            case 4 -> clean.equalsIgnoreCase("Loại module") || clean.equalsIgnoreCase("Module Type") || clean.equalsIgnoreCase("Type");
+            case 5 -> clean.equalsIgnoreCase("Thời lượng (phút)") || clean.equalsIgnoreCase("Duration (minutes)") || clean.equalsIgnoreCase("Duration");
+            default -> false;
+        };
+    }
+
+    private static boolean matchesLessonHeader(int col, String text, boolean legacy) {
+        if (text == null) return false;
+        String clean = text.strip();
+        if (legacy) {
+            return switch (col) {
+                case 0 -> clean.equalsIgnoreCase("Mã liên kết module") || clean.equalsIgnoreCase("Module Reference") || clean.equalsIgnoreCase("Module Ref");
+                case 1 -> clean.equalsIgnoreCase("Mã liên kết bài học") || clean.equalsIgnoreCase("Lesson Reference") || clean.equalsIgnoreCase("Lesson Ref") || clean.equalsIgnoreCase("Lesson ID");
+                case 2 -> clean.equalsIgnoreCase("Thứ tự") || clean.equalsIgnoreCase("Order") || clean.equalsIgnoreCase("Lesson Order");
+                case 3 -> clean.equalsIgnoreCase("Tên bài học") || clean.equalsIgnoreCase("Lesson Title") || clean.equalsIgnoreCase("Title");
+                case 4 -> clean.equalsIgnoreCase("Loại bài học") || clean.equalsIgnoreCase("Lesson Type") || clean.equalsIgnoreCase("Type");
+                case 5 -> clean.equalsIgnoreCase("Tệp nội dung") || clean.equalsIgnoreCase("Content File") || clean.equalsIgnoreCase("Content Path") || clean.equalsIgnoreCase("File");
+                default -> false;
+            };
+        } else {
+            return switch (col) {
+                case 0 -> clean.equalsIgnoreCase("Mã liên kết module") || clean.equalsIgnoreCase("Module Reference") || clean.equalsIgnoreCase("Module Ref");
+                case 1 -> clean.equalsIgnoreCase("Thứ tự") || clean.equalsIgnoreCase("Order") || clean.equalsIgnoreCase("Lesson Order");
+                case 2 -> clean.equalsIgnoreCase("Tên bài học") || clean.equalsIgnoreCase("Lesson Title") || clean.equalsIgnoreCase("Title");
+                case 3 -> clean.equalsIgnoreCase("Loại bài học") || clean.equalsIgnoreCase("Lesson Type") || clean.equalsIgnoreCase("Type");
+                case 4 -> clean.equalsIgnoreCase("Tệp nội dung") || clean.equalsIgnoreCase("Content File") || clean.equalsIgnoreCase("Content Path") || clean.equalsIgnoreCase("File");
+                default -> false;
+            };
+        }
+    }
+
+    private static boolean checkHeader(Sheet sheet, boolean isModule) {
         if (sheet == null || sheet.getRow(0) == null)
             throw new Failure(400, "Missing Modules or Lessons sheet");
-        for (int i = 0; i < columns.size(); i++)
-            if (!columns.get(i).equals(text(sheet.getRow(0), i)))
-                throw new Failure(400, "Template changed. Download the current ZIP template with module.xlsx / Mẫu đã thay đổi. Tải lại mẫu ZIP chứa module.xlsx");
-        for (int i = columns.size(); i < sheet.getRow(0).getLastCellNum(); i++)
-            if (!text(sheet.getRow(0), i).isBlank()) throw new Failure(400, "Unexpected column. Download the current ZIP template / Cột không hợp lệ. Tải lại mẫu ZIP mới");
-        if (sheet.getLastRowNum() > 5000) throw new Failure(400, "Use at most 5000 rows per sheet");
+        if (isModule) {
+            for (int i = 0; i < 6; i++) {
+                if (!matchesModuleHeader(i, text(sheet.getRow(0), i)))
+                    throw new Failure(400, "Template changed. Download the current ZIP template with module.xlsx / Mẫu đã thay đổi. Tải lại mẫu ZIP chứa module.xlsx");
+            }
+            for (int i = 6; i < sheet.getRow(0).getLastCellNum(); i++) {
+                if (!text(sheet.getRow(0), i).isBlank())
+                    throw new Failure(400, "Unexpected column. Download the current ZIP template / Cột không hợp lệ. Tải lại mẫu ZIP mới");
+            }
+            if (sheet.getLastRowNum() > 5000) throw new Failure(400, "Use at most 5000 rows per sheet");
+            return false;
+        } else {
+            boolean legacy = isLegacyLessonsSheet(sheet);
+            int cols = legacy ? 6 : 5;
+            for (int i = 0; i < cols; i++) {
+                if (!matchesLessonHeader(i, text(sheet.getRow(0), i), legacy))
+                    throw new Failure(400, "Template changed. Download the current ZIP template with module.xlsx / Mẫu đã thay đổi. Tải lại mẫu ZIP chứa module.xlsx");
+            }
+            for (int i = cols; i < sheet.getRow(0).getLastCellNum(); i++) {
+                if (!text(sheet.getRow(0), i).isBlank())
+                    throw new Failure(400, "Unexpected column. Download the current ZIP template / Cột không hợp lệ. Tải lại mẫu ZIP mới");
+            }
+            if (sheet.getLastRowNum() > 5000) throw new Failure(400, "Use at most 5000 rows per sheet");
+            return legacy;
+        }
     }
 
     private static Path resolve(Path root, String relative) {
@@ -163,19 +234,30 @@ public final class ExcelLearningImport implements LearningImportUseCase {
             try (var book = new XSSFWorkbook(workbook.toFile())) {
                 Sheet moduleSheet = book.getSheet("Modules"),
                         lessonSheet = book.getSheet("Lessons");
-                checkHeader(moduleSheet, ModuleImportTemplate.MODULE_HEADERS);
-                checkHeader(lessonSheet, ModuleImportTemplate.LESSON_HEADERS);
+                checkHeader(moduleSheet, true);
+                boolean legacyLessons = checkHeader(lessonSheet, false);
+                List<String> lessonCols = legacyLessons ? LEGACY_LESSON_COLUMNS : LESSON_COLUMNS;
                 Set<String> lessonIds = new HashSet<>();
                 for (int i = 1; i <= lessonSheet.getLastRowNum(); i++) {
                     var row = lessonSheet.getRow(i);
                     if (row == null) continue;
                     try {
-                        var v = values(row, LESSON_COLUMNS);
+                        var v = values(row, lessonCols);
                         if (v.values().stream().allMatch(String::isBlank)) continue;
-                        if (!v.get("lessonId").matches("[A-Za-z0-9_-]{1,100}")) throw new Failure(400, "Use a lesson reference such as L1 / Dùng mã bài học như L1");
-                        if (!lessonIds.add(v.get("lessonId"))) throw new Failure(400, "Duplicate lesson reference / Mã bài học bị trùng");
-                        int order = Integer.parseInt(v.get("order"));
+                        int order = 1;
+                        try {
+                            order = Integer.parseInt(v.get("order"));
+                        } catch (Exception ex) {
+                            throw new Failure(400, "Lesson order must be a positive integer / Thứ tự bài học phải là số nguyên dương");
+                        }
                         if (order < 1) throw new Failure(400, "Lesson order must be positive / Thứ tự bài học phải lớn hơn 0");
+                        String rawLessonId = v.get("lessonId");
+                        String lessonId = (rawLessonId == null || rawLessonId.isBlank())
+                                ? v.get("moduleRef") + "_L" + order
+                                : rawLessonId;
+                        if (!lessonId.matches("[A-Za-z0-9_-]{1,100}")) throw new Failure(400, "Use a lesson reference such as L1 / Dùng mã bài học như L1");
+                        if (!lessonIds.add(lessonId)) throw new Failure(400, "Duplicate lesson reference / Mã bài học bị trùng: " + lessonId);
+                        v.put("lessonId", lessonId);
                         ModuleAuthoring.text(v.get("title"), "lesson title", 240);
                         v.put("excelRow", Integer.toString(i + 1));
                         grouped.computeIfAbsent(v.get("moduleRef"), k -> new ArrayList<>()).add(v);
@@ -218,17 +300,35 @@ public final class ExcelLearningImport implements LearningImportUseCase {
                         }
                         String skill = v.get("skillCode");
                         if (skill.isBlank() || skill.contains("[") || skill.contains("{") || skill.contains(","))
-                            throw new Failure(400, "Enter one plain Skill code, for example MS-QA08, not JSON / Nhập một mã Skill, không dùng JSON");
-                        List<TeachingInput> skills = List.of(new TeachingInput(skill));
-                        String level = ModuleImportTemplate.LEVELS.get(v.get("knowledgeLevel"));
-                        String type = ModuleImportTemplate.TYPES.get(v.get("moduleType"));
+                            throw new Failure(400, "Enter one plain Skill code or name, for example MS-QA08, not JSON / Nhập một mã hoặc tên Skill, không dùng JSON");
+                        String resolvedSkillId = skill.strip();
+                        for (var c : port.catalog("MicroSkill")) {
+                            if (c.id().equalsIgnoreCase(resolvedSkillId) || c.name().equalsIgnoreCase(resolvedSkillId)) {
+                                resolvedSkillId = c.id();
+                                break;
+                            }
+                        }
+                        List<TeachingInput> skills = List.of(new TeachingInput(resolvedSkillId));
+                        String level = ModuleImportTemplate.resolveLevel(v.get("knowledgeLevel"));
+                        String type = ModuleImportTemplate.resolveType(v.get("moduleType"));
                         if (level == null || type == null) throw new Failure(400, "Choose the knowledge level and module type from the template / Chọn mức kiến thức và loại module trong mẫu");
+                        int durationMinutes = 0;
+                        String rawDur = v.get("durationMinutes");
+                        if (rawDur != null && !rawDur.isBlank()) {
+                            try {
+                                durationMinutes = Integer.parseInt(rawDur);
+                            } catch (NumberFormatException ignored) {}
+                        }
+                        if (durationMinutes <= 0) {
+                            double totalSec = lessons.stream().mapToDouble(Lesson::durationSeconds).sum();
+                            durationMinutes = Math.max(1, (int) Math.ceil(totalSec / 60.0));
+                        }
                         Save save =
                                 new Save(
                                         v.get("title"),
                                         type,
                                         "",
-                                        Integer.parseInt(v.get("durationMinutes")),
+                                        durationMinutes,
                                         List.of(),
                                         skills,
                                         level,
@@ -347,28 +447,73 @@ public final class ExcelLearningImport implements LearningImportUseCase {
     }
 
     private Lesson lesson(Path root, Actor a, Map<String, String> l) throws IOException {
-        String kind = l.get("type"), relative = l.get("contentPath");
-        String folder, extension;
-        if (kind.equals("Bài đọc")) { folder = "lesson/"; extension = ".docx"; }
-        else if (kind.equals("Video")) { folder = "video/"; extension = ".mp4"; }
-        else throw new Failure(400, "Choose Bài đọc or Video / Chọn loại Bài đọc hoặc Video");
-        Path file = resolve(root, relative);
-        if (!relative.startsWith(folder) || !relative.toLowerCase(Locale.ROOT).endsWith(extension))
-            throw new Failure(400, "Use " + folder + "..." + extension + " for this lesson / Sai thư mục hoặc định dạng tệp bài học");
-        if (!Files.isRegularFile(file)) throw new Failure(400, "Missing content file / Không tìm thấy tệp: " + relative);
-        if (kind.equals("Bài đọc")) {
+        String kind = ModuleImportTemplate.resolveLessonType(l.get("type"));
+        if (kind == null) throw new Failure(400, "Choose Bài đọc (Reading) or Video / Chọn loại Bài đọc hoặc Video");
+        String relative = l.get("contentPath");
+        if (relative == null || relative.isBlank())
+            throw new Failure(400, "Missing content file or URL / Thiếu tệp nội dung hoặc đường dẫn video");
+        String trimmed = relative.strip();
+
+        if ("VIDEO".equals(kind)) {
+            if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) {
+                String provider;
+                try {
+                    var uri = java.net.URI.create(trimmed);
+                    String host = uri.getHost();
+                    if (host != null) {
+                        host = host.toLowerCase(Locale.ROOT);
+                        if (Set.of("youtube.com", "www.youtube.com", "youtu.be", "m.youtube.com").contains(host)) {
+                            provider = "YOUTUBE";
+                        } else if (Set.of("vimeo.com", "www.vimeo.com", "player.vimeo.com").contains(host)) {
+                            provider = "VIMEO";
+                        } else {
+                            throw new Failure(400, "Only YouTube and Vimeo HTTPS links are supported / Chỉ hỗ trợ liên kết YouTube và Vimeo");
+                        }
+                    } else {
+                        throw new Failure(400, "Invalid video URL / Đường dẫn video không hợp lệ");
+                    }
+                    LearningContent.validateVideoUrl(provider, trimmed);
+                } catch (IllegalArgumentException ex) {
+                    throw new Failure(400, ex.getMessage());
+                }
+                return new Lesson(l.get("lessonId"), l.get("title"), "VIDEO", null, null, 1800.0, "MANUAL", provider, null, trimmed);
+            }
+
+            String normalized = trimmed;
+            if (!normalized.startsWith("video/")) {
+                normalized = "video/" + normalized;
+            }
+            if (!normalized.toLowerCase(Locale.ROOT).endsWith(".mp4")) {
+                throw new Failure(400, "Use video/...mp4 or an HTTPS link for video lessons / Video phải dùng video/...mp4 hoặc đường dẫn HTTPS");
+            }
+            Path file = resolve(root, normalized);
+            if (!Files.isRegularFile(file)) throw new Failure(400, "Missing content file / Không tìm thấy tệp: " + normalized);
+            if (Files.size(file) > content.limits().videoBytes()) throw new Failure(413, "Video exceeds configured size / Video vượt dung lượng cho phép");
+            try (var in = Files.newInputStream(file)) {
+                var asset = files.upload(a.organizationId(), a.id(), file.getFileName().toString(), Files.size(file), in);
+                if (!"video/mp4".equals(asset.mediaType()) || asset.durationSeconds() == null || asset.durationSeconds() <= 0)
+                    throw new Failure(400, "Use a playable MP4 with a valid duration / Dùng MP4 phát được và có thời lượng hợp lệ");
+                return new Lesson(l.get("lessonId"), l.get("title"), "VIDEO", null, null, asset.durationSeconds(), "MEDIA", "UPLOAD", asset.id(), null);
+            }
+        }
+
+        if ("TEXT".equals(kind)) {
+            String normalized = trimmed;
+            if (!normalized.startsWith("lesson/")) {
+                normalized = "lesson/" + normalized;
+            }
+            if (!normalized.toLowerCase(Locale.ROOT).endsWith(".docx")) {
+                throw new Failure(400, "Use lesson/...docx for reading lessons / Bài đọc phải dùng lesson/...docx");
+            }
+            Path file = resolve(root, normalized);
+            if (!Files.isRegularFile(file)) throw new Failure(400, "Missing content file / Không tìm thấy tệp: " + normalized);
             String body = new WordLessonReader(files, a).read(file);
             int words = body.replaceAll("<[^>]+>", " ").strip().split("\\s+").length;
             double seconds = Math.max(60, Math.ceil(words / 200.0) * 60);
             return new Lesson(l.get("lessonId"), l.get("title"), "TEXT", body, "HTML", seconds, "ESTIMATED", null, null, null);
         }
-        if (Files.size(file) > content.limits().videoBytes()) throw new Failure(413, "Video exceeds configured size / Video vượt dung lượng cho phép");
-        try (var in = Files.newInputStream(file)) {
-            var asset = files.upload(a.organizationId(), a.id(), file.getFileName().toString(), Files.size(file), in);
-            if (!"video/mp4".equals(asset.mediaType()) || asset.durationSeconds() == null || asset.durationSeconds() <= 0)
-                throw new Failure(400, "Use a playable MP4 with a valid duration / Dùng MP4 phát được và có thời lượng hợp lệ");
-            return new Lesson(l.get("lessonId"), l.get("title"), "VIDEO", null, null, asset.durationSeconds(), "MEDIA", "UPLOAD", asset.id(), null);
-        }
+
+        throw new Failure(400, "Choose Bài đọc (Reading) or Video / Chọn loại Bài đọc hoặc Video");
     }
 
     private Preview load(String id, boolean lock) {
@@ -409,8 +554,11 @@ public final class ExcelLearningImport implements LearningImportUseCase {
         var docs = port.documents(a.organizationId());
         var managed = new HashSet<>(port.managedModuleIds());
         var graph = port.graphModules(a.organizationId());
-        Set<String> available = new HashSet<>();
-        port.catalog("MicroSkill").forEach(c -> available.add(c.id()));
+        Map<String, String> available = new HashMap<>();
+        port.catalog("MicroSkill").forEach(c -> {
+            available.put(c.id().toLowerCase(Locale.ROOT), c.id());
+            available.put(c.name().toLowerCase(Locale.ROOT), c.id());
+        });
         for (var row : p.modules())
             try {
                 if (row.moduleRef() == null || row.moduleRef().isBlank() || row.expectedVersion() != null)
@@ -433,13 +581,14 @@ public final class ExcelLearningImport implements LearningImportUseCase {
                 port.requireKnowledge(a.organizationId(), skills.getFirst().skillId(),
                         row.module().knowledgeLevel(), row.module().outcomeCodes());
                 for (var t : skills) {
+                    String actualSkillId = available.get(t.skillId().toLowerCase(Locale.ROOT));
+                    if (actualSkillId == null)
+                        throw new Failure(400, "Unknown skill: " + t.skillId());
                     new Teaching(
                             new Metadata(
                                     "validation", "1", "DRAFT", "NEEDS_EXPERT_REVIEW", null, null),
-                            t.skillId(),
+                            actualSkillId,
                             "");
-                    if (!available.contains(t.skillId()))
-                        throw new Failure(400, "Unknown skill: " + t.skillId());
                 }
             } catch (RuntimeException e) {
                 errors.add(new Problem(row.moduleRef() == null ? row.moduleId() : row.moduleRef(), row.excelRow(), e.getMessage()));

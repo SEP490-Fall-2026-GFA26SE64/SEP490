@@ -1,7 +1,8 @@
 import { LearningContentPreview } from '../../../shared/components/learning/LearningContentPreview'
 import { ImportedModulesPreview } from '../../../shared/components/learning/ImportedModulesPreview'
 import { useEffect, useRef, useState } from 'react'
-import { Download, FileArchive } from 'lucide-react'
+import { ChevronDown, Download, FileArchive } from 'lucide-react'
+import * as Popover from '@radix-ui/react-popover'
 import { cn } from '../../../shared/lib/utils'
 import { moduleRequest, uploadLearningFile, type ImportPreview, type ModuleDocument } from '../../../shared/api/moduleAuthoringApi'
 import { Button, buttonVariants } from '../../../shared/components/ui/Button'
@@ -22,6 +23,7 @@ export function LearningImportPanel({ onImported, showHeading = true, onBusyChan
  const [preview, setPreview] = useState<ImportPreview | null>(null)
  const [busy, setBusy] = useState(false), [step, setStep] = useState(0)
  const [fileInfo, setFileInfo] = useState<{ name: string; size: number } | null>(null)
+ const [templateMenuOpen, setTemplateMenuOpen] = useState(false)
  const [error, setError] = useState(''), [notice, setNotice] = useState('')
  const [played, setPlayed] = useState<Record<string, number>>({})
  const lock = useRef(false), errorRef = useRef<HTMLParagraphElement>(null)
@@ -48,7 +50,66 @@ export function LearningImportPanel({ onImported, showHeading = true, onBusyChan
    {busy && <p role="status" className="text-xs text-muted-foreground">{step === 0 ? copy('Uploading and validating…', 'Đang tải và kiểm tra…') : step === 2 ? copy('Importing batch…', 'Đang import…') : copy('Updating validation…', 'Đang cập nhật kiểm tra…')}</p>}
    {error && <p ref={errorRef} tabIndex={-1} role="alert" className="rounded-lg bg-destructive/5 p-3 text-sm text-destructive">{error}</p>}
    {notice && <p role="status" className="rounded-lg bg-success/5 p-3 text-sm text-success">{notice}</p>}
-   {step === 0 && <section aria-label={copy('Upload modules', 'Tải tệp module')} className="space-y-4"><p className="text-xs leading-relaxed text-muted-foreground">{copy('Download the ZIP template with English and Vietnamese instructions. Fill module.xlsx using one Skill code per module, put Word readings in lesson/ and MP4 videos in video/, then upload the ZIP. The file paths link each lesson automatically. Each import creates new drafts.', 'Tải mẫu ZIP có hướng dẫn tiếng Việt và tiếng Anh. Điền module.xlsx bằng một mã Skill cho mỗi module, đặt bài đọc Word trong lesson/ và video MP4 trong video/, rồi tải ZIP lên. Đường dẫn tệp tự ghép nội dung vào từng bài học. Mỗi lần import tạo bản nháp mới.')}</p><a className={cn(buttonVariants({ variant: 'secondary', size: 'sm' }), 'h-auto min-h-8 max-w-full gap-2 whitespace-normal text-left text-primary')} href="/api/v1/module-management/imports/template" download="module-template.zip"><Download className="size-4 shrink-0" aria-hidden="true" /><span>{copy('Download ZIP template and bilingual instructions', 'Tải mẫu ZIP và hướng dẫn Việt/Anh')}</span></a><div className="space-y-2"><p className="text-xs text-muted-foreground">{copy('ZIP (.zip) containing module.xlsx, lesson/ and video/', 'ZIP (.zip) chứa module.xlsx, lesson/ và video/')}</p><FileDropzone busy={busy} accept=".zip" label={copy('Module import file', 'File import module')} copy={copy} onFile={file => { if (!file.name.toLowerCase().endsWith('.zip')) { setPreview(null); setFileInfo({ name: file.name, size: file.size }); setNotice(''); setReviewModuleId(null); setError(copy('Use the new ZIP template. RAR and standalone Excel are not supported.', 'Dùng mẫu ZIP mới. Không hỗ trợ RAR hoặc Excel đơn lẻ.')); return } setFileInfo({ name: file.name, size: file.size }); setPlayed({}); setReviewModuleId(null); void run(async () => { setPreview(null); const result = await uploadLearningFile<ImportPreview>('/imports', file); setPreview(result); setStep(1) }) }} /></div></section>}
+   {step === 0 && <section aria-label={copy('Upload modules', 'Tải tệp module')} className="space-y-4">
+    <p className="text-xs leading-relaxed text-muted-foreground">{copy('Download the ZIP template with English and Vietnamese instructions. Fill module.xlsx using one Skill code per module, put Word readings in lesson/ and MP4 videos in video/, then upload the ZIP. The file paths link each lesson automatically. Each import creates new drafts.', 'Tải mẫu ZIP có hướng dẫn tiếng Việt và tiếng Anh. Điền module.xlsx bằng một mã Skill cho mỗi module, đặt bài đọc Word trong lesson/ và video MP4 trong video/, rồi tải ZIP lên. Đường dẫn tệp tự ghép nội dung vào từng bài học. Mỗi lần import tạo bản nháp mới.')}</p>
+    <div className="inline-flex items-center rounded-md border border-border shadow-2xs bg-secondary">
+      <a
+        className={cn(buttonVariants({ variant: 'secondary', size: 'sm' }), 'h-8 rounded-r-none border-r border-border gap-2 font-medium text-primary hover:bg-secondary-hover')}
+        href="/api/v1/module-management/imports/template"
+        download="module-template.zip"
+      >
+        <Download className="size-4 shrink-0" aria-hidden="true" />
+        <span>{copy('Download ZIP template and bilingual instructions', 'Tải mẫu ZIP và hướng dẫn')}</span>
+      </a>
+      <Popover.Root open={templateMenuOpen} onOpenChange={setTemplateMenuOpen}>
+        <Popover.Trigger asChild>
+          <button
+            type="button"
+            className="flex h-8 items-center justify-center rounded-r-md px-2 text-primary hover:bg-secondary-hover cursor-pointer focus:outline-none focus:ring-1 focus:ring-primary"
+            title={copy('Choose template language', 'Chọn ngôn ngữ mẫu')}
+            aria-label={copy('Choose template language', 'Chọn ngôn ngữ mẫu')}
+          >
+            <ChevronDown className="size-3.5" aria-hidden="true" />
+          </button>
+        </Popover.Trigger>
+        <Popover.Portal>
+          <Popover.Content
+            align="end"
+            sideOffset={4}
+            className="z-50 w-64 rounded-lg border border-border bg-card p-1.5 shadow-md focus:outline-none"
+          >
+            <div className="flex flex-col gap-1">
+              <a
+                href="/api/v1/module-management/imports/template"
+                download="module-template.zip"
+                onClick={() => setTemplateMenuOpen(false)}
+                className="flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-xs font-medium text-foreground hover:bg-muted transition-colors cursor-pointer"
+              >
+                <span className="text-sm">🇻🇳</span>
+                <div className="text-left">
+                  <div className="font-semibold">{copy('Vietnamese template', 'Mẫu Tiếng Việt')}</div>
+                  <div className="text-[10px] text-muted-foreground">{copy('module.xlsx + instructions', 'module.xlsx + hướng dẫn tiếng Việt')}</div>
+                </div>
+              </a>
+              <a
+                href="/api/v1/module-management/imports/template?lang=en"
+                download="module-template-en.zip"
+                onClick={() => setTemplateMenuOpen(false)}
+                className="flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-xs font-medium text-foreground hover:bg-muted transition-colors cursor-pointer"
+              >
+                <span className="text-sm">🇬🇧</span>
+                <div className="text-left">
+                  <div className="font-semibold">{copy('English template', 'Mẫu Tiếng Anh')}</div>
+                  <div className="text-[10px] text-muted-foreground">{copy('module.xlsx + English instructions', 'module.xlsx + hướng dẫn tiếng Anh')}</div>
+                </div>
+              </a>
+            </div>
+          </Popover.Content>
+        </Popover.Portal>
+      </Popover.Root>
+    </div>
+    <div className="space-y-2"><p className="text-xs text-muted-foreground">{copy('ZIP (.zip) containing module.xlsx, lesson/ and video/', 'ZIP (.zip) chứa module.xlsx, lesson/ và video/')}</p><FileDropzone busy={busy} accept=".zip" label={copy('Module import file', 'File import module')} copy={copy} onFile={file => { if (!file.name.toLowerCase().endsWith('.zip')) { setPreview(null); setFileInfo({ name: file.name, size: file.size }); setNotice(''); setReviewModuleId(null); setError(copy('Use the new ZIP template. RAR and standalone Excel are not supported.', 'Dùng mẫu ZIP mới. Không hỗ trợ RAR hoặc Excel đơn lẻ.')); return } setFileInfo({ name: file.name, size: file.size }); setPlayed({}); setReviewModuleId(null); void run(async () => { setPreview(null); const result = await uploadLearningFile<ImportPreview>('/imports', file); setPreview(result); setStep(1) }) }} /></div>
+   </section>}
    {fileInfo && <div className="flex min-w-0 items-start gap-2 rounded-lg border border-border p-3 text-xs"><FileArchive className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" /><div className="min-w-0"><p className="break-words font-medium">{fileInfo.name}</p><p className="mt-1 text-muted-foreground">{new Intl.NumberFormat(vi ? 'vi-VN' : 'en-GB', { maximumFractionDigits: 1 }).format(fileInfo.size / 1024)} KB · {busy ? copy('Processing', 'Đang xử lý') : preview ? copy('Server preview received', 'Đã nhận kết quả kiểm tra') : copy('Selected file', 'Tệp đã chọn')}</p></div></div>}
    {preview && step > 0 && <>
     <div className="grid grid-cols-3 gap-3 rounded-lg bg-muted/30 p-3 text-xs"><div><p className="text-muted-foreground">{copy('Modules parsed', 'Module đọc được')}</p><p className="mt-1 text-sm font-semibold">{preview.modules.length}</p></div><div><p className="text-muted-foreground">{copy('Validation issues', 'Lỗi kiểm tra')}</p><p className="mt-1 text-sm font-semibold">{preview.errors.length}</p></div><div><p className="text-muted-foreground">{copy('Lessons parsed', 'Bài học đọc được')}</p><p className="mt-1 text-sm font-semibold">{preview.modules.reduce((sum, row) => sum + row.lessons.length, 0)}</p></div></div>

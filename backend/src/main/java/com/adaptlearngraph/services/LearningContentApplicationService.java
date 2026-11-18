@@ -68,6 +68,10 @@ public class LearningContentApplicationService {
         return imports.template();
     }
 
+    public byte[] importTemplate(String lang) {
+        return imports.template(lang);
+    }
+
     public ImportPreviewResponse previewImport(String filename, long size, InputStream input) {
         return map(imports.preview(filename, size, input), ImportPreviewResponse.class);
     }
