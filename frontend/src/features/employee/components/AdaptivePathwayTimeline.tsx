@@ -1,21 +1,22 @@
-import { AssignedPathwayPresentation } from './AssignedPathwayPresentation'
-import type { AssignedPathwayViewProps } from '../modules/AssignedLearningPathways'
-import { CheckCircle2, ChevronRight, Lock, Sparkles, Zap } from 'lucide-react'
+import { useResettableState } from '../../../shared/hooks/useResettableState'
+import { CheckCircle2,ChevronRight,Lock,Sparkles,Zap } from 'lucide-react'
 import * as React from 'react'
+import { Link } from 'react-router-dom'
 import type { PathwayView } from '../../../shared/api/initialPathway'
-import { InitialPathwayDetails, type PathwayDetailSelection } from './InitialPathwayModules'
-import { baselineTargetMet, pathwaySkill } from '../../../shared/api/initialPathwayMessages'
-import { useTranslation } from '../../../shared/i18n/LanguageContext'
+import { baselineTargetMet,pathwaySkill } from '../../../shared/api/initialPathwayMessages'
 import { Heading } from '../../../shared/components/typography/Heading'
 import { Text } from '../../../shared/components/typography/Text'
-import { Card, CardContent, CardHeader } from '../../../shared/components/ui/Card'
-import { Link } from 'react-router-dom'
 import { Badge } from '../../../shared/components/ui/Badge'
 import { Button } from '../../../shared/components/ui/Button'
-import { useToast } from '../../../shared/hooks/useToast'
+import { Card,CardContent,CardHeader } from '../../../shared/components/ui/Card'
 import { useEmployeeLearningState } from '../../../shared/hooks/useEmployeeLearningState'
+import { useToast } from "../../../shared/hooks/useToast"
+import { useTranslation } from "../../../shared/i18n/LanguageContext"
 import { getActiveCompany } from '../../../shared/stores/companyStore'
 import { normalizeRoleKey } from '../data/employeeOverviewData'
+import type { AssignedPathwayViewProps } from '../modules/AssignedLearningPathways'
+import { AssignedPathwayPresentation } from './AssignedPathwayPresentation'
+import { InitialPathwayDetails,type PathwayDetailSelection } from './InitialPathwayModules'
 
 export interface PathwayStep {
   id: string
@@ -235,10 +236,7 @@ function LegacyAdaptivePathwayTimeline() {
     }))
   }, [activeCompany, profile.selectedViewType, profile.targetRole])
 
-  const [steps, setSteps] = React.useState<PathwayStep[]>(defaultSteps)
-  React.useEffect(() => {
-    setSteps(defaultSteps)
-  }, [defaultSteps])
+  const [steps, setSteps] = useResettableState<PathwayStep[]>(defaultSteps, [defaultSteps])
 
   const [hasTriggeredRemedy, setHasTriggeredRemedy] = React.useState(false)
   const { toast } = useToast()

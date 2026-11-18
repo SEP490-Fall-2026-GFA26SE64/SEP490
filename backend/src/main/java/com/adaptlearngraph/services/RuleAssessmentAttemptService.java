@@ -71,6 +71,9 @@ public final class RuleAssessmentAttemptService {
     private RoleBaselineFlow.Actor actor() {
         return identity.requireEmployee();
     }
+    public View latestHttp(String purpose,UUID selectionId,long selectionRevision,UUID stepId,String moduleId,Integer moduleRevision) {
+        return latest(new Start(Purpose.valueOf(purpose),selectionId,selectionRevision,null,stepId,moduleId,moduleRevision));
+    }
     public void authorize(){actor();}
     private void reauthorize(RoleBaselineFlow.Actor a){if(!a.equals(actor()))throw new Failure(403,"FORBIDDEN");}
     public View latest(Start command) {

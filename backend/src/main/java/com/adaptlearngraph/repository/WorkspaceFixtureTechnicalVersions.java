@@ -8,6 +8,8 @@ import com.adaptlearngraph.config.WorkspaceCatalogFixture.Bank;
 import java.util.*;
 
 /** Declared synthetic copies owned by each test tenant. The operational resolver is never relaxed. */
+// Compatibility adapter retains historical promoted numeric-baseline pins.
+@SuppressWarnings("deprecation")
 public final class WorkspaceFixtureTechnicalVersions implements AdaptiveTechnicalVersionPort {
     private final AdaptiveTechnicalVersionPort delegate;
     private final DevelopmentTechnicalVersionJpaRepository versions;

@@ -1,3 +1,4 @@
+import { useResettableState } from '../../../shared/hooks/useResettableState'
 import * as React from 'react'
 import {
   AlertCircle,
@@ -81,11 +82,14 @@ export function TargetRoleBrowsePanel() {
   const [searchInput, setSearchInput] = React.useState(initialSearch)
   const [search, setSearch] = React.useState(initialSearch)
   const [sortBy, setSortBy] = React.useState<'recommendation' | 'alphabetical'>('recommendation')
-  const [currentPage, setCurrentPage] = React.useState(1)
-  const [detailRoleId, setDetailRoleId] = React.useState<string | null>(null)
+    const [detailRoleId, setDetailRoleId] = React.useState<string | null>(null)
   const [pendingChoice, setPendingChoice] = React.useState<PendingTargetRoleChoice | null>(null)
   const pendingChoiceRef = React.useRef<PendingTargetRoleChoice | null>(null)
   const submissionInFlightRef = React.useRef(false)
+
+  const [statusFilter, setStatusFilter] = React.useState<'All' | 'Active' | 'Done'>('All')
+
+  const [currentPage, setCurrentPage] = useResettableState(1, [statusFilter, sortBy])
 
   React.useEffect(() => {
     const handleLocationChange = () => {
@@ -96,7 +100,7 @@ export function TargetRoleBrowsePanel() {
     }
     window.addEventListener('popstate', handleLocationChange)
     return () => window.removeEventListener('popstate', handleLocationChange)
-  }, [])
+  }, [setCurrentPage])
 
   React.useEffect(() => {
     const timeout = window.setTimeout(() => {
@@ -104,13 +108,8 @@ export function TargetRoleBrowsePanel() {
       setCurrentPage(1)
     }, 300)
     return () => window.clearTimeout(timeout)
-  }, [searchInput])
+  }, [searchInput, setCurrentPage])
 
-  const [statusFilter, setStatusFilter] = React.useState<'All' | 'Active' | 'Done'>('All')
-
-  React.useEffect(() => {
-    setCurrentPage(1)
-  }, [statusFilter, sortBy])
 
   const roles = useTargetRoles({ search })
   const selection = useTargetRoleSelection()
@@ -185,16 +184,12 @@ export function TargetRoleBrowsePanel() {
       sorted.sort((a, b) => a.name.localeCompare(b.name))
     }
     return sorted
-  }, [roles.data, statusFilter, sortBy, selection.data?.roleId, profile?.targetRole, profile?.previousRoles])
+  }, [roles.data, statusFilter, sortBy, selection.data?.roleId, profile])
 
   const totalItems = filteredRoles.length
   const totalPages = Math.ceil(totalItems / PAGE_SIZE)
 
-  React.useEffect(() => {
-    if (currentPage > totalPages && totalPages > 0) {
-      setCurrentPage(1)
-    }
-  }, [currentPage, totalPages])
+  if (currentPage > totalPages && totalPages > 0) setCurrentPage(1)
 
   const paginatedRoles = React.useMemo(() => {
     const start = (currentPage - 1) * PAGE_SIZE

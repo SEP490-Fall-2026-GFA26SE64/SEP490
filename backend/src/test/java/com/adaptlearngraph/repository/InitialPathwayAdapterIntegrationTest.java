@@ -39,8 +39,8 @@ class InitialPathwayAdapterIntegrationTest {
         flyway=Flyway.configure().dataSource(ds).locations("classpath:db/workspace-migration").load();flyway.migrate();
     }
     @AfterAll static void stop(){if(persistence!=null)persistence.close();if(PG.isRunning())PG.stop();}
-    @Test void R03_workspaceV34ToV47RetainsExistingReceiptAndAppliedChecksumsAndRerunsNoop() {
-        assertThat(flyway.info().current().getVersion().getVersion()).isEqualTo("47");flyway.validate();
+    @Test void R03_workspaceV34ToV75RetainsExistingReceiptAndAppliedChecksumsAndRerunsNoop() {
+        assertThat(flyway.info().current().getVersion().getVersion()).isEqualTo("75");flyway.validate();
         assertThat(sql.queryForMap("SELECT * FROM platform.initial_pathway_receipt WHERE resource='migration-retention'")).isEqualTo(retained);
         assertThat(sql.queryForList("SELECT version,checksum FROM public.flyway_schema_history WHERE success AND version::int<=34 ORDER BY installed_rank")).isEqualTo(checksums);
         assertThat(flyway.migrate().migrationsExecuted).isZero();

@@ -16,7 +16,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
@@ -46,7 +46,7 @@ class PrerequisiteControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @MockBean
+    @MockitoBean
     private ManagePrerequisiteUseCase managePrerequisiteUseCase;
 
     @Test
@@ -65,7 +65,7 @@ class PrerequisiteControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].sourceSkillCode").value("JAVA_CORE"))
                 .andExpect(jsonPath("$[0].targetSkillCode").value("SPRING_BOOT"))
-                .andExpect(jsonPath("$[0].minMastery").value(0.60));
+                .andExpect(jsonPath("$[0].minMastery").doesNotExist());
     }
 
     @Test
@@ -80,7 +80,7 @@ class PrerequisiteControllerTest {
 
         when(managePrerequisiteUseCase.createPrerequisite(any(CreatePrerequisiteCommand.class))).thenReturn(edge);
 
-        CreatePrerequisiteRequest request = new CreatePrerequisiteRequest("s1", "s2", 0.60, SkillStatusDto.ACTIVE);
+        CreatePrerequisiteRequest request = new CreatePrerequisiteRequest("s1", "s2", "FOUNDATION", "FOUNDATION", SkillStatusDto.ACTIVE);
 
         mockMvc.perform(post("/api/v1/organizations/org-1/prerequisites")
                         .with(csrf())
@@ -90,7 +90,7 @@ class PrerequisiteControllerTest {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.sourceSkillId").value("s1"))
                 .andExpect(jsonPath("$.targetSkillId").value("s2"))
-                .andExpect(jsonPath("$.minMastery").value(0.60));
+                .andExpect(jsonPath("$.minMastery").doesNotExist());
     }
 
     @Test
@@ -100,7 +100,7 @@ class PrerequisiteControllerTest {
         when(managePrerequisiteUseCase.createPrerequisite(any(CreatePrerequisiteCommand.class)))
                 .thenThrow(new PrerequisiteCycleException("Cyclic dependency"));
 
-        CreatePrerequisiteRequest request = new CreatePrerequisiteRequest("s1", "s2", 0.60, SkillStatusDto.ACTIVE);
+        CreatePrerequisiteRequest request = new CreatePrerequisiteRequest("s1", "s2", "FOUNDATION", "FOUNDATION", SkillStatusDto.ACTIVE);
 
         mockMvc.perform(post("/api/v1/organizations/org-1/prerequisites")
                         .with(csrf())
@@ -115,7 +115,7 @@ class PrerequisiteControllerTest {
     @WithMockUser
     @DisplayName("REQ-018-F02: POST returns 403 Forbidden for non-expert caller")
     void createPrerequisiteReturns403ForLearner() throws Exception {
-        CreatePrerequisiteRequest request = new CreatePrerequisiteRequest("s1", "s2", 0.60, SkillStatusDto.ACTIVE);
+        CreatePrerequisiteRequest request = new CreatePrerequisiteRequest("s1", "s2", "FOUNDATION", "FOUNDATION", SkillStatusDto.ACTIVE);
 
         mockMvc.perform(post("/api/v1/organizations/org-1/prerequisites")
                         .with(csrf())

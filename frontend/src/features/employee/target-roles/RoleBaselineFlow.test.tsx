@@ -10,8 +10,8 @@ vi.mock('./currentRoleFlowApi', async () => ({ ...await vi.importActual('./curre
 vi.mock('../baseline-assessment/useBaselineAttempt', () => ({ useBaselineAttempt: () => ({ locked: false, busy: false, error: null, pending: null, run: vi.fn() }) }))
 vi.mock('../../../shared/i18n/LanguageContext', () => ({ useTranslation: () => ({ language: 'en', t: (key: string) => key }) }))
 const role: CurrentRole = { id: 'role-a', code: 'A', name: 'Role A', scope: 'Build APIs', jobPositionId: 'occ-a', jobPositionName: 'JobPosition A', catalogVersion: 'f1', fingerprint: 'f1', levels: [{ id: 'l1', code: 'L1', name: 'Junior', rank: 1, context: 'Context', attainmentRule: 'ALL', skills: [{ id: 's1', code: 'S1', name: 'Skill 1', requiredKnowledgeLevels: ['FOUNDATION'], requiredScore: .7, mandatory: true }] }] }
-const empty: RoleFlowView = { selection: null, progress: { state: 'SELECT_ROLE', requiredCount: 0, coveredCount: 0, attemptId: null, baselineVersion: null } }
-const selected: RoleFlowView = { selection: { selectionId: 'sel-1', role, levelId: 'l1', revision: 1, selectedAt: '2026-10-23T00:00:00Z', available: true }, progress: { state: 'BASELINE_REQUIRED', requiredCount: 15, coveredCount: 14, attemptId: null, baselineVersion: 1 } }
+const empty: RoleFlowView = { targetLocked: false, selection: null, progress: { state: 'SELECT_ROLE', requiredCount: 0, coveredCount: 0, attemptId: null, baselineVersion: null } }
+const selected: RoleFlowView = { targetLocked: false, selection: { selectionId: 'sel-1', role, levelId: 'l1', revision: 1, selectedAt: '2026-10-23T00:00:00Z', available: true }, progress: { state: 'BASELINE_REQUIRED', requiredCount: 15, coveredCount: 14, attemptId: null, baselineVersion: 1 } }
 function show(node = <CurrentRolePanel />, path = '/') {
  const client = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } })
  render(<QueryClientProvider client={client}><MemoryRouter initialEntries={[path]}>{node}</MemoryRouter></QueryClientProvider>)
@@ -87,4 +87,19 @@ it('RB11/17 dependency failure stays unavailable and explicit retry recovers wit
  expect(screen.queryByText('upskillingUi.noResults')).toBeNull()
  fireEvent.click(screen.getByRole('button',{name:'roleFlow.retry'})); await screen.findByText('Role A')
  expect(api.chooseCurrentRole).not.toHaveBeenCalled()
+})
+
+it('refreshes an unavailable selected baseline after configuration activation without changing the target', async () => {
+ vi.useFakeTimers()
+ try {
+  vi.mocked(api.readRoleFlow).mockResolvedValueOnce({ ...selected, progress: { ...selected.progress, state: 'BASELINE_UNAVAILABLE' } }).mockResolvedValue(selected)
+  show()
+  await act(async () => { await vi.advanceTimersByTimeAsync(10) })
+  expect(screen.queryByRole('button', { name: 'roleFlow.start' })).toBeNull()
+  await act(async () => { await vi.advanceTimersByTimeAsync(5010) })
+  await act(async () => { await vi.advanceTimersByTimeAsync(10) })
+  expect(api.readRoleFlow).toHaveBeenCalledTimes(2)
+  expect(screen.getByRole('button', { name: 'roleFlow.start' })).toBeTruthy()
+  expect(api.chooseCurrentRole).not.toHaveBeenCalled()
+ } finally { cleanup(); vi.useRealTimers() }
 })

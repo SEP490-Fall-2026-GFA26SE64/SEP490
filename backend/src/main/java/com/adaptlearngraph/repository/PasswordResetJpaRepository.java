@@ -5,14 +5,16 @@ import com.adaptlearngraph.entities.PasswordResetEntity;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
-public interface PasswordResetJpaRepository extends JpaRepository<PasswordResetEntity, UUID> {
+public interface PasswordResetJpaRepository extends org.springframework.data.repository.Repository<PasswordResetEntity, UUID>,
+        InsertOnlyRepository<PasswordResetEntity> {
 
+    @Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT p FROM PasswordResetEntity p WHERE p.tokenDigest = :digest AND p.consumedAt IS NULL")
     Optional<PasswordResetEntity> findValidByDigest(@Param("digest") String tokenDigest);
 

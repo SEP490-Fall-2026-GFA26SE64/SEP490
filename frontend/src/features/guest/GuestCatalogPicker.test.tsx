@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { cleanup, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
@@ -35,7 +35,7 @@ const catalog: PlatformCatalog = {
 let selection: string[] = []
 function Harness() {
   const [value, setValue] = useState<string[]>([])
-  selection = value
+  useEffect(() => { selection = value }, [value])
   return <GuestCatalogPicker value={value} onChange={setValue} />
 }
 function show() {

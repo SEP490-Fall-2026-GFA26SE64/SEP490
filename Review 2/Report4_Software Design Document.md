@@ -1,5 +1,9 @@
 # Capstone Project Report
 
+> **Baseline/pathway source reconciliation 2026-11-18 (`2c2468b5`):** [current contract](../documents/technical/Organization%20Rule%20Assessment%20and%20Pathway.md#current-flow-2026-11-18) records implemented Role-derived policy editing, quota-based Skill papers/module retry contexts, Expert reduce/reject/approve, first-approval timing, same-transaction evidence recalculation and durable provision refresh. [Assessment](../documents/diagrams/postgresql-assessment.svg)/[pathway](../documents/diagrams/postgresql-pathway.svg)/[ordered flow](../documents/diagrams/baseline-pathway-flow.svg) are current selected source views through workspace V64. Older physical DB-xx captures/JSON/target diagrams remain dated references; their lack of later columns is not a current absence claim. Original test evidence and runtime acceptance limits are unchanged.
+
+> **RIASEC reconciliation 2026-11-18 (`2c2468b5`):** [current architecture](../documents/ARCHITECTURE.md#riasec-personal-exploration)/[features](../documents/features/README.md#riasec-current-implementation--2026-11-18) describe the local opt-in flow. Workspace V72 owns drafts/results/durable AI jobs; Neo4j owns integer 0–40 position profiles. [Storage](../documents/diagrams/riasec-storage.svg)/[runtime](../documents/diagrams/riasec-flow.svg) images are current source definitions, not new live captures. Other inventories/target diagrams keep their original scope. Latest history UI has build/static evidence only; no runtime acceptance is added.
+
 ## Report 4 - Software Design Document
 
 **Knowledge Graph-Based Adaptive Learning and Competency Intelligence Platform**  
@@ -90,7 +94,7 @@ All diagrams are displayed as **PNG images**, with links to their editable **Mer
 
 The current application is a **modular monolith** with a React web client and Java Spring Boot backend. API adapters invoke application use cases; use cases depend on domain types and output ports rather than database/provider implementations. PostgreSQL is the transaction/evidence store; Neo4j is the competency-catalog/traversal store. Background processing uses durable PostgreSQL outbox/job records.
 
-Current local source includes private content/progress, rule assessments/exact evidence and requirement-pathway review/recalculation/certificate workflows. Local inference, complete RIASEC and actual development/ROI aggregation remain separate incomplete scope; numeric knowledge tracing is not the active rule engine. The following user-approved image presents this **target logical architecture**. Its eight service groups are functional modules within one Spring Boot backend, not eight independently deployed microservices or proof that every capability is complete.
+Current local source includes private content/progress, rule assessments/exact evidence and requirement-pathway review/recalculation/certificate workflows. RIASEC/local inference is implemented in its separate local opt-in flow; actual development/ROI aggregation remains incomplete; numeric knowledge tracing is not the active rule engine. The following user-approved image presents this **target logical architecture**. Its eight service groups are functional modules within one Spring Boot backend, not eight independently deployed microservices or proof that every capability is complete.
 
 ![System Architecture - Source-defined adaptive flow](../documents/diagrams/mermaid/sys-01.png)
 
@@ -99,7 +103,7 @@ Current local source includes private content/progress, rule assessments/exact e
 **Diagram notes:**
 
 - Trusted workspace-baseline configuration is currently profile-gated to local and excluded from prod. This diagram does not claim production learning readiness.
-- The private MinIO adapter exists in the local content slice. Local LLM and incomplete business capabilities in the target image remain subject to the evidence and limitations below; their depiction does not establish live deployment or acceptance.
+- The private MinIO adapter exists in the local content slice. The local RIASEC LLM and other incomplete business capabilities retain the evidence and limits below; their depiction does not establish live deployment or acceptance.
 
 **Component Descriptions**
 
@@ -123,7 +127,7 @@ Current local source includes private content/progress, rule assessments/exact e
 
 The eight Service names describe logical functional groups, not independently deployed applications or a one-to-one Java package map. Notifications, audit and background processing are shared backend capabilities rather than a ninth service group.
 
-**Implementation boundaries:** The table describes the target responsibilities in the approved image. Connected identity/subscription and workspace-baseline slices do not establish completion of all learning, RIASEC, reporting or inference functions. Private asset adapter/MinIO source is implemented, with runtime acceptance separately dated; YouTube/Vimeo lesson adapters exist in the local content slice. A concrete local LLM remains a target integration; live payment/email and production acceptance are not certified here. The runtime web entry, schema migration and detailed data ownership remain described in the following design/deployment sections.
+**Implementation boundaries:** The table describes the target responsibilities in the approved image. Connected identity/subscription and workspace-baseline slices do not establish completion of all learning, RIASEC, reporting or inference functions. Private asset adapter/MinIO source is implemented, with runtime acceptance separately dated; YouTube/Vimeo lesson adapters exist in the local content slice. RIASEC now uses internal Ollama with `qwen3:4b-instruct-2507-q4_K_M` in the local opt-in composition; live payment/email and production acceptance are not certified here. The runtime web entry, schema migration and detailed data ownership remain described in the following design/deployment sections.
 
 #### 1.1.2 Data ownership and consistency
 
@@ -137,7 +141,7 @@ The eight Service names describe logical functional groups, not independently de
 | Diagnostics and official profile | PostgreSQL rule results + skill_knowledge_evidence/review | Baseline group diagnostics are not ACHIEVED; only qualified learning+assessment or assigned certificate approval creates exact official evidence. No numeric gap/IRT fallback. |
 | Module metadata, ordering and approval | Existing module authoring/content / PostgreSQL | Responsible Expert and L&D review immutable revisions; retryable graph projection releases exact single-Skill/knowledge/outcome content. Graph contentUri alone grants no access. |
 | Content objects | Existing private asset adapter/MinIO | Store object locator/version in relational metadata; authorize before object access. |
-| AI explanations | Target guidance service / approved persistence | Retain model/input provenance; do not let prose overwrite mastery. |
+| AI explanations | Riasec worker/client and platform.riasec_result | Persist model/prompt and immutable recommendation profile/comparison snapshots; no mastery writes. |
 | Pathway versions and Expert overrides | RequirementPathway services / PostgreSQL | Initial exact approval, automatic successor revisions/approval basis, source dedup, bypass and carried parallel provenance retain history; runtime branches remain unverified here. |
 | Costs, benefits and actual ROI | Target reporting/finance records / PostgreSQL | Existing `roi_scenario` is not a complete actual cost-benefit ledger. |
 | Audit and outbox events | PostgreSQL | Commit related mutation/event atomically where possible; asynchronous delivery is recoverable, not cross-store ACID. |
@@ -153,7 +157,7 @@ PostgreSQL transactions cannot atomically commit arbitrary Neo4j, MinIO or exter
 | YouTube | Approved external lesson-video verification and embedded playback | Approved video URL/ID, fixed-endpoint oEmbed request and browser-player requests/events; no learner assessment answers or mastery profile are intentionally sent. | Implemented verifier/player source using YouTube oEmbed and IFrame Player API. External service version is not pinned. Existing local evidence is not a new live-provider or production acceptance run. |
 | Vimeo | Approved external lesson-video verification and embedded playback | Approved video URL/ID, fixed-endpoint oEmbed request and browser-player requests/events; no learner assessment answers or mastery profile are intentionally sent. | Implemented verifier/player source using Vimeo oEmbed and Player API. External service version is not pinned; live Vimeo acceptance remains limited by the recorded provider restriction. |
 | MinIO, self-hosted | Internal private learning content/file storage | Authorized object bytes, organization-scoped object locator and metadata; no authentication password or raw payment secret. | Implemented [private asset adapter](../backend/src/main/java/com/adaptlearngraph/repository/PrivateLearningAssets.java); Java SDK **8.5.17** in the backend POM. Content APIs are local-profile-gated; the production Compose does not supply a MinIO service. Source presence does not certify production delivery. |
-| Local LLM, self-hosted | AI-assisted role guidance | Proposed minimized competency summary, normalized RIASEC vector, allowed role candidate IDs/requirements and non-identifying prompt context. | Planned; engine, model weights, quantization and version not selected in repository. Internal-only interface; no required third-party cloud AI API. |
+| Local LLM, self-hosted | RIASEC Job Position exploration | Six raw 0–40 Employee scores plus active same-org position IDs/metadata/profiles only; no competency/Role/Skill/history input. | Internal Ollama `/api/chat`, `qwen3:4b-instruct-2507-q4_K_M`; supplied IDs/ranks/English explanations validated and original scores copied server-side. |
 | GitHub | Source control and target CI/CD | Repository commits, pull-request metadata and proposed build/test artifacts; no runtime learner data is required. | Repository platform confirmed; Actions workflows and deployed registry are not evidenced. Secret material must never be committed or emitted in logs. |
 | O*NET / ESCO / SFIA / UK Government Digital and Data source materials | Offline ontology provenance/review | Dataset retrieval and citation, not runtime learner submissions. | O*NET 31.0 and SFIA 9 are documented dataset sources. Local ontology mappings are proposals, not official equivalence or license certification. |
 | Authentication provider | Authentication | No external identity-provider exchange required by current code; credentials are processed by the application. | Built-in Spring Security/session implementation, not a verified Auth0/Firebase/Keycloak integration. |
@@ -192,7 +196,7 @@ For JavaScript dependencies, “manifest” is the declared range and “locked�
 | Offline data tools | Python | Interpreter version not specified | Dataset validation/import/generation scripts, not a separate Python business backend. Python launcher was unavailable in this documentation session; Node was used for read-only metadata validation. |
 | Mobile | Native mobile framework | Not applicable | Web application only; responsive browser acceptance is proposed in SRS. |
 | Private storage | MinIO | Java SDK **8.5.17**; server deployment is environment-specific | Private asset adapter exists; production storage setup and acceptance remain separate. |
-| Target inference | Local LLM | Engine/model version not selected | Must be declared with concrete versions before deployment claims. |
+| Local RIASEC inference | Ollama | `qwen3:4b-instruct-2507-q4_K_M`; prompt `riasec-match-v6-interests-only` | Source/local sample; demo 2 CPU/5 GiB. General quality/member performance unmeasured. |
 
 Evidence: [frontend manifest](../frontend/package.json), [lockfile](../frontend/package-lock.json), [backend POM](../backend/pom.xml), [frontend Dockerfile](../frontend/Dockerfile), [backend Dockerfile](../backend/Dockerfile), [development Compose](../compose.dev.yml) and [production Compose](../compose.prod.yml).
 
@@ -240,7 +244,7 @@ Separate **AI used by the product** from **AI used during development**.
 | AI assistant using Copilot SDK in VS Code | This Review 2 requirements/design documentation, local source inspection and documentation consistency checks | Used for this task. The underlying model identifier/version is not recorded as verifiable repository metadata and is therefore **not declared as a guessed model**. | Team review/sign-off remains pending. Local source/schema was not sent to a public diagram renderer or external research service during this task. |
 | Repository agent/skill customizations | Intended specification, design, implementation, testing and review workflows | Customization files exist, but they do not prove which tool/model actually produced each historical change. A per-stage usage log is not evidenced. | Proposed log records tool, model/version, date, stage, output, human reviewer and verification. Existence of a skill is not proof of execution. |
 | Specific historical coding/testing/review models | Code generation, test generation and review | **Not evidenced**; team must supply the real tool/model list if required for final submission. No claim of Claude/GPT/Gemini use is inferred from filenames or optional instructions. | Do not fabricate model names, test outcomes or human approvals. |
-| Locally hosted language model | Product runtime role guidance | Required target; engine/model/weight version, quantization and prompt version **not selected in inspected runtime**. | Proposed internal inference API with minimized competency/interest data, authorized role IDs, validation and explicit failure behavior. |
+| Locally hosted language model | Local RIASEC Job Position exploration | Internal Ollama; `qwen3:4b-instruct-2507-q4_K_M`, prompt `riasec-match-v6-interests-only`. | Six raw Employee scores and active same-org position profiles only; validated IDs/ranks/English explanations, server-copied evidence, explicit failure/retry. No Role/Skill/history input. |
 | AI-assisted ontology/content preparation | Dataset design/content scaffolding | Catalog contains authored review materials; precise historical model provenance is not evidenced. All current v0.11 definitions remain `NEEDS_EXPERT_REVIEW`. | Do not label generated scaffolds as expert-approved courses or use missing reviewer identities/timestamps. |
 
 Before final institutional submission, the team should complete an AI usage register with factual model/version and stage information. This report supplies every required declaration field while visibly retaining “not evidenced” where no factual value is available.
@@ -5607,7 +5611,7 @@ The seven captured relationship types have the properties shown in the diagram l
 | --- | --- |
 | Common identity | The six captured labels have unique string `id`; the seven captured relationship types retain their listed id/version/status/review metadata. Source-only REQUIRES_CERTIFICATE has no writer-defined id/version/reviewStatus. Import validates IDs/endpoints and snapshot integrity. |
 | Review metadata | `NEEDS_EXPERT_REVIEW`, `APPROVED`, `REJECTED`; reviewer/time remain absent/null until real review. Dataset review is not interchangeable with L&D business publication. |
-| Job Position interests | Six normalized O*NET OI dimensions in [0,1], computed from source 1..7 scale as `(value - 1) / 6`. This is job positional interest data, not Employee mastery. |
+| Job Position interests | Current optional all-or-none Neo4j integers 0–40, with description metadata; missing stays absent. Active seeds are demo profiles, not official O*NET normalized ratings. Historical releases keep their provenance; interests are not mastery. |
 | Role/Level | Each TargetRole has one owning Job Position; current package has three Levels per role. Level-specific skill sets may differ/overlap without being nested. |
 | Competency | Group of required skills for its owning Level; no independent RIASEC or competency score is added. |
 | REQUIRES_SKILL | Requirement belongs to the Level-Skill pair; `requiredKnowledgeLevels` and retained metadata replace numeric target use in this flow. |
@@ -5631,7 +5635,7 @@ A controlled import must pin the chosen dataset path/version and compare counts/
 | Full department/job position/Expert lifecycle | Reference tables and baseline resource binding | Approved organization-owned aggregates and assignment history; forward migration preserving member/attempt references. |
 | Role submission and L&D publication | Legacy graph state and catalog references | Separate content/configuration version, submission, decision and publication identity; no fabricated mapping from legacy ACTIVE. |
 | Private learning offering | Existing module authoring/content/progress/private assets; exact knowledge completion sidecar | Full provider/runtime acceptance remains separately scoped; contentUri alone is not access authority. |
-| RIASEC/guidance | Prototype UI and job position interest vector | Versioned instrument result, minimized inference input/output provenance and authorized role recommendations. |
+| RIASEC/guidance | Local server-persisted 60-item raw 0–40 flow, V72 personal/job state and Neo4j integer profiles | AI suggests Job Positions; Role choice stays explicit. Latest history UI has build/static evidence only; general AI/psychometric/production acceptance remains unverified. |
 | Ongoing rule evidence/adaptation | Implemented local RuleAssessmentOutcome and RequirementPathway services with V52–V62 source schema | Full runtime/assignment/security/recovery acceptance remains unverified; numeric tracing/CBF research is separate. |
 | Realized ROI | Analytics/cohort and `roi_scenario` foundation | Actual costs/benefits ledger with period/currency/basis and versioned report calculation. |
 | Audit readers | Durable `audit_event` and selected events | Scoped administrator query contract, retention and privacy policy. |
@@ -5984,7 +5988,7 @@ Legacy `assessment_assignment` has ACTIVE/REVOKED/CLOSED and legacy blueprint wo
 | RequirementPathwayRecalculationService / PlanningService / RefreshService | Actual failed-group supplementation, compatible evidence/provision refresh, event dedup and immutable successor revisions with real approval basis. B discovered earlier still needs actual B learning/evidence after an A retake passes B. |
 | CertificateSubmissionService / CertificateReviewService | Exact immutable definition/submission, one private evidence form, actual assigned approve/reject/reason, once-only official evidence/outbox and private downloads. |
 | RuleKnowledgeProfileService | Separate diagnostics, official exact evidence and NEED_REVIEW; no numeric gap subtraction. |
-| Guidance/ROI | Full persisted AI guidance/RIASEC and realized ROI remain incomplete separate scope; depicted target services are not implemented by the rule engine. |
+| Guidance/ROI | Persisted RIASEC/Job Position AI is implemented separately from the rule engine; realized ROI remains incomplete. RIASEC does not feed mastery/pathway calculation. |
 
 #### 3.5.2 Current role selection and next-step sequence
 
@@ -6142,7 +6146,7 @@ Actual financial record approval/locking/retention is not specified by Version 2
 | Processing job / email delivery work | ST-21 | Handler-dependent durable state machine. |
 | Independent skill learning | ST-23 | Target business states corresponding to ACT-07; not persisted enums or a completed assessment integration. |
 | Plan version, provider observation, attempt response/result, audit/outbox event, command receipt | Immutable/versioned facts rather than independent status lifecycle | Created from an authorized event, retained for history/replay; correction creates a new version/event where the contract allows it. No artificial state machine is added. |
-| RIASEC profile, actual finance records and guidance result | Target lifecycle not yet approved | Preserve source/version/provenance; approve exact physical state/retake/correction rules before implementation. SRS and proposed sequences define business participation without claiming missing enums exist. |
+| RIASEC result/AI | Draft plus QUEUED/PROCESSING/SUCCEEDED/FAILED and nullable deleted_at; V72 | One draft per owner, stable submit receipt, newest active current,7-day inactive/recovery and inactive-only permanent delete. Only current FAILED AI retries; successful empty output is final. Finance remains separate. |
 
 ### 3.8 API and Error Contract Cross-Reference
 
@@ -6224,7 +6228,7 @@ Follow [testing guides](../documents/testing/README.md). Existing successful rec
 1. Open this SDD and the SRS in VS Code. Compare template numbered sections, then follow one FR through requirements, design, state and storage ownership.
 2. Inspect the migration ledger and any table's expanded dictionary. Compare PK/FK/check definitions with its linked original migration; do not use the obsolete stored JSON as current truth.
 3. Preview `SYS-01`, `GRAPH-01`, `ST-14` and each `DB-*` diagram locally with a Mermaid-capable Markdown viewer. External references in a grouped physical diagram are intentional.
-4. Verify that Nginx/MinIO/local LLM, staging and AI model/version declarations are visibly planned/not evidenced, while actual Caddy, versions and local baseline profile gates are explicit.
+4. Keep actual Caddy/local profile gates separate from target deployment and staging claims. Local RIASEC Ollama/model/prompt are now specified above; its limited local evidence does not establish production inference or general AI quality.
 5. For separately approved runtime review, use development default `http://127.0.0.1:8088` (or configured override), valid test identities and two isolated organizations. Expect missing baseline resources to block new starts rather than produce demo success.
 6. Supply real team AI-model records, hosting/branch policy and remaining product decisions before treating this review draft as a final signed institutional submission.
 

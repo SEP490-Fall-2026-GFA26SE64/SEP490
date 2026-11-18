@@ -1,5 +1,7 @@
 # Role Catalog and Publication
 
+> **Adaptive consumer update 2026-11-18:** baseline/pathway/Skill Assessment match trusted org + Skill + explicit knowledge level + Skill version; Outcome Codes are legacy compatibility fields, not active selection/evidence filters. Module price is retired; Level duration is frozen separately at first pathway approval. [Current consumer flow](../../technical/Organization%20Rule%20Assessment%20and%20Pathway.md#current-flow-2026-11-18) supersedes older outcome-based adaptive prose below without recertifying unrelated catalog authoring/publication.
+
 **Source alignment — 2026-11-07.** Confirmed behavior is distinguished from checked-in implementation below. [Current source/schema/API contract](../../technical/Organization%20Rule%20Assessment%20and%20Pathway.md) records local profile gates, exact ownership and remaining mismatches. Runtime/database acceptance is not established by this prose update.
 
 **Source:** [Version 2](../../FA26SE267_KNOWLEDGE_GRAPH_BASED_ADAPTIVE_LEARNING__haht43_Version_2.md), section 3.2(c), Functional Requirements.
@@ -31,16 +33,16 @@ Historical verification remains scoped to its original behavior: [target-role ma
 
 ### Explicit Role–Level skill requirements
 
-L&D retains Role management, Expert assignment and publication responsibility. The assigned Expert specifies each Role member Level's required skill + knowledge level(s) and defined outcomes. FOUNDATION / INTERMEDIATE / ADVANCED describe organization-defined knowledge, not job seniority. ADVANCED alone never implies lower levels. Current source already has member Levels; no new physical RoleLevel node is approved here.
+L&D retains Role management, Expert assignment and publication responsibility. The assigned Expert specifies each Role member Level's required Skill + explicit knowledge level(s), current Skill version and human-readable objectives. FOUNDATION / INTERMEDIATE / ADVANCED describe organization-defined knowledge, not job seniority. ADVANCED alone never implies lower levels. Current source already has member Levels; no new physical RoleLevel node is approved here.
 
-Business inputs are Role/member-Level identity and version, skill references, explicitly selected knowledge levels and outcomes. Organization, actor, assignment and review metadata are server-derived; clients cannot set approvers or learner achievement. Organization-wide skill–knowledge provision mode comes from [Learning catalog](../Learning%20catalog/README.md#provision-modes-and-certificate-definitions), not a conflicting per-Role copy.
+Business inputs are Role/member-Level identity and version, skill references, explicitly selected knowledge levels and Skill version. Organization, actor, assignment and review metadata are server-derived; clients cannot set approvers or learner achievement. Organization-wide skill–knowledge provision mode comes from [Learning catalog](../Learning%20catalog/README.md#provision-modes-and-certificate-definitions), not a conflicting per-Role copy.
 
 1. L&D assigns the Role; Expert reads its current configuration and member Levels.
-2. Expert explicitly selects skill–knowledge requirements/outcomes. Reject duplicate/foreign/unknown references and stale revisions; keep incomplete configuration visibly unresolved.
+2. Expert explicitly selects Skill–knowledge requirements. Reject duplicate/foreign/unknown references and stale revisions; keep incomplete configuration visibly unresolved.
 3. Expert submits the exact revision to L&D; return/revision/publication preserve responsibility split and history. Review exposes missing module/certificate coverage; absence is not an automatic achievement or fabricated provider.
 4. Baseline/planning consume coherent published requirements and retain their identity. Later changes cannot rewrite old attempts, approvals or official evidence.
 
-Outputs show required skills/knowledge levels, outcomes, revision/status and missing coverage. Numeric target mastery/requiredScore and gap subtraction are replaced in this flow. Legacy threshold/relative-importance fields do not supply another scoring or optimizer rule. Other consumers require an inventory before physical retirement; no global field deletion is authorized here.
+Outputs show required Skills/knowledge levels, Skill version, revision/status and missing coverage. Numeric target mastery/requiredScore and gap subtraction are replaced in this flow. Legacy threshold/relative-importance fields do not supply another scoring or optimizer rule. Other consumers require an inventory before physical retirement; no global field deletion is authorized here.
 
 Keep current Target Roles list/details/graph, components, tokens, fonts, sizes, spacing and layout. English uses Role; Vietnamese uses Vị trí / Vị trí làm việc mong muốn. Current Role screens already display Required Knowledge and save explicit selections. Existing sample/fallback and legacy catalog authorization remain separate limitations; the rule flow cannot approve them by inference.
 
@@ -89,7 +91,7 @@ Current source implements the local rule flow and versioned mappings described i
 | 3. Description | The assigned Expert shall manage each Role member Level's required skills and explicitly selected knowledge levels/outcomes, replacing numeric target mastery in this flow. |
 | 4. Actor | Expert |
 | 5. Preconditions | Trusted assigned Expert; same-organization Role/skills and current editable revision. |
-| 6. Main Flow | Select member Level; explicitly choose skill/knowledge/outcomes; validate; save revision and submit through FR-05.03. |
+| 6. Main Flow | Select member Level; explicitly choose Skill/knowledge/Skill version; validate; save revision and submit through FR-05.03. |
 | 7. Alternative / Exception Flows | No implicit inheritance or duplicate/foreign/stale references; missing coverage remains visible. |
 | 8. Postconditions | Versioned explicit requirements are available for L&D review; learner evidence is unchanged. |
 | 9. Acceptance Criteria | Knowledge level differs from seniority; numeric target/weight does not calculate gaps or choose module difficulty. |

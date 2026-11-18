@@ -39,35 +39,32 @@ class PrerequisiteServiceTest {
     @Test
     @DisplayName("REQ-018-F02: Creates prerequisite relationship successfully")
     void createsPrerequisiteSuccessfully() {
-        CreatePrerequisiteCommand cmd = new CreatePrerequisiteCommand(
-                "org-1", "skill-java", "skill-spring", 0.60, SkillStatus.ACTIVE);
+        CreatePrerequisiteCommand cmd = new CreatePrerequisiteCommand("org-1", "skill-java", "skill-spring", "FOUNDATION", "FOUNDATION", SkillStatus.ACTIVE);
 
         PrerequisiteEdge edge = service.createPrerequisite(cmd);
         assertNotNull(edge);
         assertEquals("skill-java", edge.sourceSkillId());
         assertEquals("skill-spring", edge.targetSkillId());
-        assertEquals(0.60, edge.minMastery());
+        assertEquals(com.adaptlearngraph.entities.domain.KnowledgeLevel.FOUNDATION, edge.dependentKnowledgeLevel());
+        assertEquals(com.adaptlearngraph.entities.domain.KnowledgeLevel.FOUNDATION, edge.prerequisiteKnowledgeLevel());
         assertEquals(1, prerequisiteRepository.edges.size());
     }
 
     @Test
     @DisplayName("REQ-018-F02: Rejects self-referencing prerequisite with 400 IllegalArgumentException")
     void rejectsSelfReferencingPrerequisite() {
-        CreatePrerequisiteCommand cmd = new CreatePrerequisiteCommand(
-                "org-1", "skill-java", "skill-java", 0.60, SkillStatus.ACTIVE);
+        CreatePrerequisiteCommand cmd = new CreatePrerequisiteCommand("org-1", "skill-java", "skill-java", "FOUNDATION", "FOUNDATION", SkillStatus.ACTIVE);
 
         assertThrows(IllegalArgumentException.class, () -> service.createPrerequisite(cmd));
     }
 
     @Test
-    @DisplayName("REQ-018-F02: Rejects minMastery outside [0.0, 1.0] range")
-    void rejectsInvalidMinMasteryRange() {
-        CreatePrerequisiteCommand invalidLow = new CreatePrerequisiteCommand(
-                "org-1", "skill-java", "skill-spring", -0.1, SkillStatus.ACTIVE);
+    @DisplayName("REQ-018-F02: Rejects invalid dependent and prerequisite knowledge levels")
+    void rejectsInvalidKnowledgeLevels() {
+        CreatePrerequisiteCommand invalidLow = new CreatePrerequisiteCommand("org-1", "skill-java", "skill-spring", "INVALID", "FOUNDATION", SkillStatus.ACTIVE);
         assertThrows(IllegalArgumentException.class, () -> service.createPrerequisite(invalidLow));
 
-        CreatePrerequisiteCommand invalidHigh = new CreatePrerequisiteCommand(
-                "org-1", "skill-java", "skill-spring", 1.5, SkillStatus.ACTIVE);
+        CreatePrerequisiteCommand invalidHigh = new CreatePrerequisiteCommand("org-1", "skill-java", "skill-spring", "FOUNDATION", "INVALID", SkillStatus.ACTIVE);
         assertThrows(IllegalArgumentException.class, () -> service.createPrerequisite(invalidHigh));
     }
 
@@ -75,19 +72,19 @@ class PrerequisiteServiceTest {
     @DisplayName("REQ-018-F02: Anti-cycle guard prevents cyclic dependency A -> B -> C -> A")
     void preventsCyclicDependencies() {
         // Create A -> B
-        service.createPrerequisite(new CreatePrerequisiteCommand("org-1", "skill-A", "skill-B", 0.5, SkillStatus.ACTIVE));
+        service.createPrerequisite(new CreatePrerequisiteCommand("org-1", "skill-A", "skill-B", "FOUNDATION", "FOUNDATION", SkillStatus.ACTIVE));
         // Create B -> C
-        service.createPrerequisite(new CreatePrerequisiteCommand("org-1", "skill-B", "skill-C", 0.5, SkillStatus.ACTIVE));
+        service.createPrerequisite(new CreatePrerequisiteCommand("org-1", "skill-B", "skill-C", "FOUNDATION", "FOUNDATION", SkillStatus.ACTIVE));
 
         // Attempt C -> A should be rejected with PrerequisiteCycleException
-        CreatePrerequisiteCommand cyclic = new CreatePrerequisiteCommand("org-1", "skill-C", "skill-A", 0.5, SkillStatus.ACTIVE);
+        CreatePrerequisiteCommand cyclic = new CreatePrerequisiteCommand("org-1", "skill-C", "skill-A", "FOUNDATION", "FOUNDATION", SkillStatus.ACTIVE);
         assertThrows(PrerequisiteCycleException.class, () -> service.createPrerequisite(cyclic));
     }
 
     @Test
     @DisplayName("REQ-018-F02: Deletes prerequisite relationship successfully")
     void deletesPrerequisiteSuccessfully() {
-        service.createPrerequisite(new CreatePrerequisiteCommand("org-1", "skill-A", "skill-B", 0.5, SkillStatus.ACTIVE));
+        service.createPrerequisite(new CreatePrerequisiteCommand("org-1", "skill-A", "skill-B", "FOUNDATION", "FOUNDATION", SkillStatus.ACTIVE));
         assertEquals(1, prerequisiteRepository.edges.size());
 
         service.deletePrerequisite("org-1", "skill-A", "skill-B");
@@ -153,6 +150,18 @@ class PrerequisiteServiceTest {
                     targetSkillId, targetSkillId, targetSkillId,
                     minMastery, status != null ? status : SkillStatus.ACTIVE,
                     now, now);
+            edges.add(edge);
+            return edge;
+        }
+
+        @Override
+        public PrerequisiteEdge savePrerequisite(String organizationId, String sourceSkillId, String targetSkillId,
+                com.adaptlearngraph.entities.domain.KnowledgeLevel dependentLevel,
+                com.adaptlearngraph.entities.domain.KnowledgeLevel prerequisiteLevel, SkillStatus status) {
+            if (hasPath(organizationId, targetSkillId, sourceSkillId)) throw new PrerequisiteCycleException("Cycle");
+            deletePrerequisite(organizationId, sourceSkillId, targetSkillId);
+            var edge = new PrerequisiteEdge(sourceSkillId, sourceSkillId, sourceSkillId, targetSkillId, targetSkillId,
+                    targetSkillId, 0, status, Instant.now(), Instant.now(), dependentLevel, prerequisiteLevel);
             edges.add(edge);
             return edge;
         }

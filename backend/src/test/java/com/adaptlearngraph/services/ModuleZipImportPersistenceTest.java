@@ -24,9 +24,15 @@ import static org.mockito.ArgumentMatchers.*;
 
 /** Real PostgreSQL transactions and MinIO bytes, using isolated actor/catalog/port fixtures. */
 class ModuleZipImportPersistenceTest {
+    private static java.util.concurrent.Future<String> minioImage() {
+        String image=System.getProperty("module.import.minio-image");
+        return image!=null ? java.util.concurrent.CompletableFuture.completedFuture(image)
+                : new org.testcontainers.images.builder.ImageFromDockerfile("adapt-learn-graph-test-minio:local",false)
+                    .withDockerfile(java.nio.file.Path.of("../deploy/minio/Dockerfile"));
+    }
     @Test void samplePackageRoundTripsAssetsAndDraftsAtomicallyWithoutPublishing()throws Exception {
         try(var pg=new PostgreSQLContainer<>("postgres:17.6-alpine");
-            var minio=new GenericContainer<>(DockerImageName.parse(System.getProperty("module.import.minio-image", "minio/minio:RELEASE.2025-04-22T22-12-26Z")))
+            var minio=new GenericContainer<>(minioImage())
                     .withEnv("MINIO_ROOT_USER","import-test").withEnv("MINIO_ROOT_PASSWORD","isolated-test-secret")
                     .withCommand("server","/data").withExposedPorts(9000)
                     .waitingFor(org.testcontainers.containers.wait.strategy.Wait.forHttp("/minio/health/live").forPort(9000))) {

@@ -40,11 +40,11 @@ public record WorkspaceCatalogFixture(String id,String fingerprint,Map<UUID,Map<
             if(!id.matches("[A-Za-z0-9-]{1,80}") || !root.path("organizations").isObject())
                 throw new IllegalArgumentException("Invalid workspace fixture manifest");
             var scopes=new HashMap<UUID,Map<String,String>>();
-            var entries=root.path("organizations").fields();
+            var entries=root.path("organizations").properties().iterator();
             while(entries.hasNext()) {
                 var entry=entries.next();var jobPositions=new HashMap<String,String>();
                 if(!entry.getValue().isObject())throw new IllegalArgumentException("Invalid fixture jobPositions");
-                var values=entry.getValue().fields();
+                var values=entry.getValue().properties().iterator();
                 while(values.hasNext()) {
                     var value=values.next();
                     if(!value.getKey().matches("OCC-[0-9]{2}-[0-9]{4}\\.[0-9]{2}")
@@ -57,11 +57,11 @@ public record WorkspaceCatalogFixture(String id,String fingerprint,Map<UUID,Map<
             }
             if(scopes.isEmpty())throw new IllegalArgumentException("Empty workspace fixture");
             var workspaces=new HashMap<UUID,Workspace>();
-            var workspaceEntries=root.path("workspaces").fields();
+            var workspaceEntries=root.path("workspaces").properties().iterator();
             while(workspaceEntries.hasNext()) {
                 var entry=workspaceEntries.next();var value=entry.getValue();
                 UUID org=UUID.fromString(entry.getKey()),expert=UUID.fromString(value.path("expertId").asText());
-                var metadata=new HashMap<String,Map<String,Object>>();var labels=value.path("nodeMetadata").fields();
+                var metadata=new HashMap<String,Map<String,Object>>();var labels=value.path("nodeMetadata").properties().iterator();
                 while(labels.hasNext()) {
                     var label=labels.next();
                     if(!Set.of("JobPosition","TargetRole","Level","MicroSkill").contains(label.getKey()) || !label.getValue().isObject())

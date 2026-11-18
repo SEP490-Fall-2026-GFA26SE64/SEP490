@@ -10,12 +10,12 @@
       "code": "15-1252.00",
       "name": "Software Developers",
       "jobZone": 4,
-      "interestRealistic": 0.435,
-      "interestInvestigative": 0.841667,
-      "interestArtistic": 0.228333,
-      "interestSocial": 0.135,
-      "interestEnterprising": 0.145,
-      "interestConventional": 0.77
+      "interestRealistic": 20,
+      "interestInvestigative": 36,
+      "interestArtistic": 26,
+      "interestSocial": 16,
+      "interestEnterprising": 18,
+      "interestConventional": 30
     },
     {
       "id": "OCC-15-1243.00",
@@ -27,12 +27,12 @@
       "code": "15-1243.00",
       "name": "Database Architects",
       "jobZone": 4,
-      "interestRealistic": 0.271667,
-      "interestInvestigative": 0.771667,
-      "interestArtistic": 0.193333,
-      "interestSocial": 0.151667,
-      "interestEnterprising": 0.28,
-      "interestConventional": 0.853333
+      "interestRealistic": 14,
+      "interestInvestigative": 34,
+      "interestArtistic": 18,
+      "interestSocial": 14,
+      "interestEnterprising": 22,
+      "interestConventional": 38
     },
     {
       "id": "OCC-15-1253.00",
@@ -44,12 +44,12 @@
       "code": "15-1253.00",
       "name": "Software Quality Assurance Analysts and Testers",
       "jobZone": 4,
-      "interestRealistic": 0.466667,
-      "interestInvestigative": 0.793333,
-      "interestArtistic": 0.115,
-      "interestSocial": 0.088333,
-      "interestEnterprising": 0.095,
-      "interestConventional": 0.778333
+      "interestRealistic": 22,
+      "interestInvestigative": 32,
+      "interestArtistic": 12,
+      "interestSocial": 16,
+      "interestEnterprising": 14,
+      "interestConventional": 36
     },
     {
       "id": "OCC-15-1299.08",
@@ -61,12 +61,12 @@
       "code": "15-1299.08",
       "name": "Computer Systems Engineers/Architects",
       "jobZone": 3,
-      "interestRealistic": 0.516667,
-      "interestInvestigative": 0.743333,
-      "interestArtistic": 0.146667,
-      "interestSocial": 0.183333,
-      "interestEnterprising": 0.338333,
-      "interestConventional": 0.793333
+      "interestRealistic": 28,
+      "interestInvestigative": 34,
+      "interestArtistic": 20,
+      "interestSocial": 18,
+      "interestEnterprising": 26,
+      "interestConventional": 30
     },
     {
       "id": "OCC-15-1212.00",
@@ -78,12 +78,12 @@
       "code": "15-1212.00",
       "name": "Information Security Analysts",
       "jobZone": 4,
-      "interestRealistic": 0.426667,
-      "interestInvestigative": 0.733333,
-      "interestArtistic": 0.056667,
-      "interestSocial": 0.185,
-      "interestEnterprising": 0.308333,
-      "interestConventional": 0.846667
+      "interestRealistic": 24,
+      "interestInvestigative": 36,
+      "interestArtistic": 12,
+      "interestSocial": 16,
+      "interestEnterprising": 22,
+      "interestConventional": 34
     }
   ],
   "TargetRoles": [

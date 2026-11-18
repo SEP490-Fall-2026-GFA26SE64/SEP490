@@ -1,5 +1,7 @@
 # Initial gap-to-pathway flow and data design
 
+> **Current source reconciliation — 2026-11-18 (`2c2468b5`):** [the active ordered flow/API/schema contract](../../Organization%20Rule%20Assessment%20and%20Pathway.md#current-flow-2026-11-18) supersedes older confirmation-pending/source-gap observations here. Role-derived Skill policy editing, module-context retakes/quota papers, unstarted-option reduction with started protection, fresh missing-provision-only bypass, reject/repair/approve, first-approval UTC timing and same-transaction evidence recalculation are present in source. Legacy numeric/OC designs and original evidence retain their date/scope; no runtime verdict or finding closure is added.
+
 **Current contract consolidated:** 2026-10-29. **Source inspected:** product cced745. Sections1–8 are the retained 29 October numeric design, including its then-current review rules; they are superseded for current requirement routing. Sections9–18 retain dated design/implementation history and existing link anchors; their old source-only, unapplied-migration, no-reorder and pending-runtime statements are historical, not the current contract. Detailed dated verification stays in the [workspace receipt](../../../testing/system/REQ-002-041-042-workspace-integration.md).
 
 ## Current source counterpart — 2026-11-07

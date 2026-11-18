@@ -1,5 +1,7 @@
 # Import ontology 0.11.0 into Neo4j
 
+> **Historical release scope; RIASEC update 2026-11-18:** normalized O*NET 0–1 ratings/workbook counts/validator-import statements below describe older releases. Current RIASEC API and two active skill-level/prerequisite-knowledge seeds use optional all-or-none integer 0–40 **demo** profiles, not official O*NET ratings. Old workbook/seed equality is not a claim about these current inputs. Use [current fields](../features/Departments%20and%20occupations/README.md#riasec-job-position-profiles)/[schema](../neo4j_schema.md#riasec-current-source). Historical import/validator commands are not a current profile conversion/reset procedure.
+
 The current seed has **994 nodes and 5,121 relationships**. It contains job position RIASEC, Level-owned competencies, 246 Modules, 79 Skills, 664 many-to-many TEACHES mappings and HAS_SKILL_PREREQUISITE. The standard importer accepts an empty/identical isolated graph. The explicitly authorized existing-local v09 upgrade uses the separately guarded procedure below; it is not an unrestricted release overlay.
 
 ## 1. Validate the local package

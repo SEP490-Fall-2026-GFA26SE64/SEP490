@@ -1,7 +1,9 @@
+import { useResettableState } from '../../../shared/hooks/useResettableState'
 import {
   AlertCircle,
   AlertTriangle,
   Briefcase,
+  Building2,
   Check,
   CheckCircle2,
   ChevronDown,
@@ -9,9 +11,10 @@ import {
   Clock,
   CornerDownRight,
   Diff,
-  Eye,
   Edit3,
+  Eye,
   FileCheck,
+  Filter,
   History,
   Layers,
   Lock,
@@ -20,107 +23,83 @@ import {
   Search,
   Send,
   Sliders,
-  Filter,
   Trash2,
   User,
   X,
   XCircle,
 } from 'lucide-react'
 import * as React from 'react'
-import { cn } from '../../../shared/lib/utils'
+import {
+fetchCompetencies,
+type CompetencyDto,
+} from '../../../shared/api/competencyApi'
+import { fetchDepartments,type DepartmentDto } from '../../../shared/api/departmentApi'
+import { fetchJobPositions,type JobPositionDto } from '../../../shared/api/jobPositionApi'
+import { fetchMicroSkills } from '../../../shared/api/microSkillApi'
+import {
+fetchPrerequisites,
+type PrerequisiteEdgeDto,
+} from '../../../shared/api/prerequisiteApi'
+import { workspaceFetch as fetch } from '../../../shared/api/workspaceFetch'
+import { WorkspaceSessionContext } from '../../../shared/auth/workspaceSession'
 import { Badge } from '../../../shared/components/ui/Badge'
 import { Button } from '../../../shared/components/ui/Button'
-import { PageHeader } from '../../../shared/components/ui/PageHeader'
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
+Card,
+CardContent,
+CardDescription,
+CardHeader,
+CardTitle,
 } from '../../../shared/components/ui/Card'
-import { Pagination } from '../../../shared/components/ui/Pagination'
 import {
-  Dialog,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '../../../shared/components/ui/Dialog'
-import { StatCard } from '../../../shared/components/ui/StatCard'
-import { useToast } from '../../../shared/hooks/useToast'
-import { WorkspaceLayout } from '../../../shared/layouts/WorkspaceLayout'
-import {
-  getActiveCompany,
-  updateActiveCompany,
-  resolveWorkspaceOrgId,
-} from '../../../shared/stores/companyStore'
-import { WorkspaceSessionContext } from '../../../shared/auth/workspaceSession'
-import { getMembers } from '../../subscription/subscriptionApi'
-import { workspaceFetch as fetch } from '../../../shared/api/workspaceFetch'
-import {
-  ELIGIBLE_EXPERTS,
-  normalizeExpertId,
-  findEligibleExpert,
-  getOrganizationExperts,
-  type EligibleExpert,
-  resolveJobPositionForRole,
-  compareRoleVersions,
-  formatDate,
-  sortTargetRolesWithDraftsBelowPublished,
-  type MicroSkillModel,
-  type SkillTargetConfig,
-  type TargetRoleModel,
-} from '../../manager/data/ldManagerMockData'
-import {
-  Combobox,
-  type ComboboxOption,
+Combobox,
+type ComboboxOption,
 } from '../../../shared/components/ui/Combobox'
-import { fetchMicroSkills } from '../../../shared/api/microSkillApi'
-import { roleRequirements } from '../../manager/target-roles/roleRequirements'
-import { formatRequiredKnowledge } from '../../manager/target-roles/roleKnowledgePresentation'
-import { useTranslation } from '../../../shared/i18n/LanguageContext'
+import {
+Dialog,
+DialogDescription,
+DialogFooter,
+DialogHeader,
+DialogTitle,
+} from '../../../shared/components/ui/Dialog'
+import { PageHeader } from '../../../shared/components/ui/PageHeader'
+import { Pagination } from '../../../shared/components/ui/Pagination'
+import { StatCard } from '../../../shared/components/ui/StatCard'
+import { useToast } from "../../../shared/hooks/useToast"
+import { useTranslation } from "../../../shared/i18n/LanguageContext"
+import { WorkspaceLayout } from '../../../shared/layouts/WorkspaceLayout'
+import { cn } from '../../../shared/lib/utils'
+import {
+getActiveCompany,
+resolveWorkspaceOrgId,
+updateActiveCompany,
+} from '../../../shared/stores/companyStore'
+import {
+compareRoleVersions,
+ELIGIBLE_EXPERTS,
+findEligibleExpert,
+formatDate,
+getOrganizationExperts,
+normalizeExpertId,
+resolveJobPositionForRole,
+sortTargetRolesWithDraftsBelowPublished,
+type EligibleExpert,
+type MicroSkillModel,
+type SkillTargetConfig,
+type TargetRoleModel,
+} from '../../manager/data/ldManagerMockData'
+import { cleanJobPositionTitle } from "../../manager/ontology/CompetencyOntologyPage.helpers"
 import { RequiredKnowledgePicker } from '../../manager/target-roles/components/RequiredKnowledgePicker'
-import {
-  fetchCompetencies,
-  type CompetencyDto,
-} from '../../../shared/api/competencyApi'
-import {
-  fetchPrerequisites,
-  type PrerequisiteEdgeDto,
-} from '../../../shared/api/prerequisiteApi'
 import { TargetRoleGraphModal } from '../../manager/target-roles/components/TargetRoleGraphModal'
 import { TargetRoleVersionDiff } from '../../manager/target-roles/components/TargetRoleVersionDiff'
 import { RolePublicationReadinessView } from '../../manager/target-roles/components/RolePublicationReadinessView'
-import { cleanJobPositionTitle } from '../../manager/ontology/CompetencyOntologyPage'
-import { fetchJobPositions, type JobPositionDto } from '../../../shared/api/jobPositionApi'
-import { fetchDepartments, type DepartmentDto } from '../../../shared/api/departmentApi'
 import { fetchLearningModules, type LearningModuleDto } from '../../../shared/api/learningModuleApi'
 import { bankRequest, type BankView, type BankQuestion } from '../../../shared/api/questionBankApi'
 import { checkRoleReadiness } from '../../manager/target-roles/roleReadiness'
-import { Building2 } from 'lucide-react'
-
-export type ExpertRoleStatus =
-  | 'published'
-  | 'unpublished'
-  | 'submitted'
-  | 'sent'
-  | 'draft'
-  | 'feedback'
-  | 'rejected'
-
-export const getExpertEffectiveStatus = (
-  role: TargetRoleModel,
-): ExpertRoleStatus => {
-  if (role.status === 'published' || (role.status as string) === 'ACTIVE') return 'published'
-  if (role.status === 'unpublished') return 'unpublished'
-  if (role.status === 'submitted' || role.status === 'approved' || (role.status as string) === 'APPROVED') return 'submitted'
-  if (role.status === 'sent') return 'sent'
-  if (role.status === 'rejected') {
-    return 'rejected'
-  }
-
-  return 'draft'
-}
+import { formatRequiredKnowledge } from '../../manager/target-roles/roleKnowledgePresentation'
+import { roleRequirements } from '../../manager/target-roles/roleRequirements'
+import { getMembers } from '../../subscription/subscriptionApi'
+import { getExpertEffectiveStatus } from './ExpertAssignedRolesPage.helpers'
 
 function resolveLevelDuration(
   role: Pick<TargetRoleModel, 'levelDurations'>,
@@ -143,6 +122,8 @@ function resolveLevelDuration(
   if (lower.includes('junior') || index === 2) return '3 months'
   return '2 months'
 }
+
+const DEFAULT_ROLE_LEVELS = ['Senior', 'Middle', 'Junior']
 
 export function ExpertAssignedRolesPage() {
   const { t } = useTranslation()
@@ -245,6 +226,7 @@ export function ExpertAssignedRolesPage() {
   }, [orgId])
 
   React.useEffect(() => {
+    // oxlint-disable-next-line react/set-state-in-effect -- Synchronize the pending state of the external data request when its scope changes.
     fetchSkills()
   }, [fetchSkills])
 
@@ -461,12 +443,13 @@ export function ExpertAssignedRolesPage() {
     }
   }, [
     orgId,
-    currentExpertId,
-    session?.identity?.accountId,
-    session?.identity?.email,
+    orgExperts,
+    selectedExpertId,
+    session,
   ])
 
   React.useEffect(() => {
+    // oxlint-disable-next-line react/set-state-in-effect -- Synchronize the pending state of the external data request when its scope changes.
     fetchAssignedRoles()
   }, [fetchAssignedRoles])
 
@@ -555,7 +538,7 @@ export function ExpertAssignedRolesPage() {
     })
 
     return sortTargetRolesWithDraftsBelowPublished(expertRoles, sortBy)
-  }, [roles, currentExpertId, orgExperts, session?.identity?.email, sortBy])
+  }, [roles, currentExpertId, orgExperts, session, sortBy])
 
   const filteredRoles = React.useMemo(() => {
     const sorted = sortTargetRolesWithDraftsBelowPublished(
@@ -594,14 +577,11 @@ export function ExpertAssignedRolesPage() {
 
   // Pagination states
 
-  const [currentPage, setCurrentPage] = React.useState(1)
-  const pageSize = 10
+    const pageSize = 10
 
   // Reset page when filter/search/expert/sort changes
 
-  React.useEffect(() => {
-    setCurrentPage(1)
-  }, [searchQuery, statusFilter, selectedExpertId, sortBy])
+  const [currentPage, setCurrentPage] = useResettableState(1, [searchQuery, statusFilter, selectedExpertId, sortBy])
 
   // Visible roles considering collapsed/expanded lineages
 
@@ -872,7 +852,7 @@ export function ExpertAssignedRolesPage() {
 
     const createdFallback: TargetRoleModel = {
       ...role,
-      id: `${role.code}-v${nextVersion}-${Date.now()}`,
+      id: `${role.code}-v${nextVersion}`,
       version: nextVersion,
       status: 'draft',
       levels: inheritedLevels,
@@ -952,11 +932,7 @@ export function ExpertAssignedRolesPage() {
     })
   }
 
-  const currentRoleLevels = React.useMemo(() => {
-    return authoringRole?.levels && authoringRole.levels.length > 0
-      ? authoringRole.levels
-      : ['Senior', 'Middle', 'Junior']
-  }, [authoringRole])
+  const currentRoleLevels = authoringRole?.levels?.length ? authoringRole.levels : DEFAULT_ROLE_LEVELS
 
   const isAllLevelsSelected = React.useMemo(() => {
     return (
@@ -1042,7 +1018,7 @@ export function ExpertAssignedRolesPage() {
   }, [realCompetencies, commonCompetencyIds])
 
   // Auto-select first common competency if current selection is invalid
-  React.useEffect(() => {
+  {
     if (commonCompObjects.length > 0) {
       if (
         !selectedParentCompId ||
@@ -1052,15 +1028,15 @@ export function ExpertAssignedRolesPage() {
       ) {
         setSelectedParentCompId(commonCompObjects[0].id)
       }
-    } else {
+    } else if (selectedParentCompId !== '') {
       setSelectedParentCompId('')
     }
-  }, [commonCompObjects, selectedParentCompId])
+  }
 
   // Two-step confirmation state for unassigned prerequisites
 
   const [isAwaitingPrereqConfirmation, setIsAwaitingPrereqConfirmation] =
-    React.useState(false)
+    useResettableState(false, [authoringRole?.id, authoringRole?.skillTargets.length])
   const prereqConfirmTimerRef = React.useRef<ReturnType<
     typeof setTimeout
   > | null>(null)
@@ -1199,20 +1175,11 @@ export function ExpertAssignedRolesPage() {
     if (prereqConfirmTimerRef.current)
       clearTimeout(prereqConfirmTimerRef.current)
 
-    setIsAwaitingPrereqConfirmation(false)
   }, [authoringRole?.id, authoringRole?.skillTargets.length])
 
-  React.useEffect(() => {
-    if (availableSkills.length > 0) {
-      setNewSkillId((prev) =>
-        availableSkills.some((s) => s.id === prev)
-          ? prev
-          : availableSkills[0].id,
-      )
-    } else {
-      setNewSkillId('')
-    }
-  }, [availableSkills])
+  const availableSkillId = availableSkills.some(skill => skill.id === newSkillId)
+    ? newSkillId : availableSkills[0]?.id ?? ''
+  if (newSkillId !== availableSkillId) setNewSkillId(availableSkillId)
 
   const skillOptions: ComboboxOption[] = React.useMemo(() => {
     return availableSkills.map((skill) => ({
@@ -1290,14 +1257,14 @@ export function ExpertAssignedRolesPage() {
   }, [authoringRoleMissingPrereqs, selectedAuthoringLevels])
 
   // Automatically clear missing prerequisites filter if the selected levels have no missing prerequisites
-  React.useEffect(() => {
+  {
     if (
       missingPrereqCodesForSelectedLevels.size === 0 &&
       filterOnlyPrereqUnlocks
     ) {
       setFilterOnlyPrereqUnlocks(false)
     }
-  }, [missingPrereqCodesForSelectedLevels.size, filterOnlyPrereqUnlocks])
+  }
 
   // Count how many available competencies unlock at least one missing prerequisite
   const missingPrereqCompetenciesCount = React.useMemo(() => {
@@ -1491,12 +1458,7 @@ export function ExpertAssignedRolesPage() {
     })
 
     return sorted.map((s) => s.option)
-  }, [
-    filteredAvailableCompetencies,
-    missingPrereqCodesForSelectedLevels,
-    getParentCompetenciesForSkill,
-    filterOnlyPrereqUnlocks,
-  ])
+  }, [filteredAvailableCompetencies, missingPrereqCodesForSelectedLevels, getParentCompetenciesForSkill, filterOnlyPrereqUnlocks, resolveCompJobPositionTitle, resolveCompDepartmentName])
 
   // Add competency strictly to all currently selected levels, or a specific targeted level
   const handleAddCompetency = (compId: string, targetLevel?: string) => {

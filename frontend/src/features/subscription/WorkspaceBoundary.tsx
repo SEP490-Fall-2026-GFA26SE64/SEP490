@@ -2,9 +2,10 @@ import { useEffect, useState, type ReactNode } from 'react'
 import { QueryClient, QueryClientProvider, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link, Navigate, useLocation } from 'react-router-dom'
 import { SubscriptionShell } from '../../shared/components/ui/SubscriptionShell'
-import { buttonVariants } from '../../shared/components/ui/Button'
+import { buttonVariants } from "../../shared/components/ui/Button";
 import { getIdentity, getSummary, request } from './subscriptionApi'
-import { Failure, Loading, useCopy } from './SubscriptionFeedback'
+import { Failure, Loading } from "./SubscriptionFeedback";
+import { useCopy } from "./SubscriptionFeedback.helpers";
 import { ROLE_HOME, singleWorkspaceRole } from '../../shared/auth/workspaceRole'
 import { WorkspaceSessionContext } from '../../shared/auth/workspaceSession'
 import { isSharedPath, isTenantPath, isWorkspaceSlug, useWorkspaceSlug, workspaceUrl } from '../../shared/auth/workspacePaths'

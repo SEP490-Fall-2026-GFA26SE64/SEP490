@@ -1,9 +1,4 @@
-import { workspaceFetch as fetch } from '../../../shared/api/workspaceFetch'
-import { fetchJobPositions } from '../../../shared/api/jobPositionApi'
-import {
-  fetchCompetencies,
-  type CompetencyDto,
-} from '../../../shared/api/competencyApi'
+import { useResettableState } from '../../../shared/hooks/useResettableState'
 import {
   AlertCircle,
   AlertTriangle,
@@ -32,118 +27,84 @@ import {
   XCircle,
 } from 'lucide-react'
 import * as React from 'react'
-import { TargetRoleGraphModal } from './components/TargetRoleGraphModal'
-import { TargetRoleVersionDiff } from './components/TargetRoleVersionDiff'
-import { RolePublicationReadinessView } from './components/RolePublicationReadinessView'
-import { fetchLearningModules, type LearningModuleDto } from '../../../shared/api/learningModuleApi'
-import { bankRequest, type BankView, type BankQuestion } from '../../../shared/api/questionBankApi'
-import { missingRoleLevelRequirements, roleRequirements, validRequiredKnowledge } from './roleRequirements'
-import { formatRequiredKnowledge } from './roleKnowledgePresentation'
-import { useTranslation } from '../../../shared/i18n/LanguageContext'
-import { Badge } from '../../../shared/components/ui/Badge'
-import { Button } from '../../../shared/components/ui/Button'
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '../../../shared/components/ui/Card'
-import { Pagination } from '../../../shared/components/ui/Pagination'
-import { PageHeader } from '../../../shared/components/ui/PageHeader'
+  fetchCompetencies,
+  type CompetencyDto,
+} from '../../../shared/api/competencyApi'
 import {
-  Dialog,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '../../../shared/components/ui/Dialog'
-import { StatCard } from '../../../shared/components/ui/StatCard'
+  createDepartmentApi,
+  fetchDepartments,
+  linkJobPositionToDepartment,
+  updateDepartmentApi,
+} from '../../../shared/api/departmentApi'
+import { fetchJobPositions } from '../../../shared/api/jobPositionApi'
+import { workspaceFetch as fetch } from '../../../shared/api/workspaceFetch'
+import { WorkspaceSessionContext } from '../../../shared/auth/workspaceSession'
 import {
   QuickConfigImportModal,
   type ImportPreset,
 } from '../../../shared/components/import/QuickConfigImportModal'
-import { useToast } from '../../../shared/hooks/useToast'
-import { WorkspaceLayout } from '../../../shared/layouts/WorkspaceLayout'
-import { WorkspaceSessionContext } from '../../../shared/auth/workspaceSession'
-import { getMembers, getReferences, request } from '../../subscription/subscriptionApi'
-import { fetchDepartments, updateDepartmentApi, createDepartmentApi, linkJobPositionToDepartment } from '../../../shared/api/departmentApi'
-import { loadDepartments, updateDepartment } from '../../../shared/stores/departmentStore'
+import { RolePublicationReadinessView } from './components/RolePublicationReadinessView'
+import { fetchLearningModules, type LearningModuleDto } from '../../../shared/api/learningModuleApi'
+import { bankRequest, type BankView, type BankQuestion } from '../../../shared/api/questionBankApi'
+import { Badge } from '../../../shared/components/ui/Badge'
+import { Button } from '../../../shared/components/ui/Button'
 import {
-  getActiveCompany,
-  resolveWorkspaceOrgId,
-  updateActiveCompany,
-} from '../../../shared/stores/companyStore'
+Card,
+CardContent,
+CardDescription,
+CardHeader,
+CardTitle,
+} from '../../../shared/components/ui/Card'
 import {
-  ELIGIBLE_EXPERTS,
-  findEligibleExpert,
-  type JobPosition,
-  compareRoleVersions,
-  formatDate,
-  getAvailableJobPositions,
-  normalizeExpertId,
-  getEligibleExpertsForJobPosition,
-  getOrganizationExperts,
-  type EligibleExpert,
-  resolveJobPositionForRole,
-  sortTargetRolesWithDraftsBelowPublished,
-  type RoleLevelThresholds,
-  type CompetencyModel,
-  type TargetRoleModel,
-} from '../data/ldManagerMockData'
-import {
-  Combobox,
-  type ComboboxOption,
+Combobox,
+type ComboboxOption,
 } from '../../../shared/components/ui/Combobox'
-
-export const getExpertOptionsForJobPosition = (
-  jobPositionCode?: string,
-  organizationId?: string,
-  departmentScope?: { id?: string; code?: string; name?: string } | null,
-): ComboboxOption[] => {
-  const eligible = getEligibleExpertsForJobPosition(
-    jobPositionCode,
-    organizationId,
-    departmentScope,
-  )
-
-  return eligible.map((exp) => ({
-    value: exp.id,
-    label: exp.name,
-    description: exp.title,
-  }))
-}
+import {
+Dialog,
+DialogDescription,
+DialogFooter,
+DialogHeader,
+DialogTitle,
+} from '../../../shared/components/ui/Dialog'
+import { PageHeader } from '../../../shared/components/ui/PageHeader'
+import { Pagination } from '../../../shared/components/ui/Pagination'
+import { StatCard } from '../../../shared/components/ui/StatCard'
+import { useToast } from "../../../shared/hooks/useToast"
+import { useTranslation } from "../../../shared/i18n/LanguageContext"
+import { WorkspaceLayout } from '../../../shared/layouts/WorkspaceLayout'
+import {
+getActiveCompany,
+resolveWorkspaceOrgId,
+updateActiveCompany,
+} from '../../../shared/stores/companyStore'
+import { loadDepartments,updateDepartment } from '../../../shared/stores/departmentStore'
+import { getMembers,getReferences,request } from '../../subscription/subscriptionApi'
+import {
+compareRoleVersions,
+ELIGIBLE_EXPERTS,
+findEligibleExpert,
+formatDate,
+getAvailableJobPositions,
+getEligibleExpertsForJobPosition,
+getOrganizationExperts,
+normalizeExpertId,
+resolveJobPositionForRole,
+sortTargetRolesWithDraftsBelowPublished,
+type CompetencyModel,
+type EligibleExpert,
+type JobPosition,
+type RoleLevelThresholds,
+type TargetRoleModel,
+} from '../data/ldManagerMockData'
+import { TargetRoleGraphModal } from './components/TargetRoleGraphModal'
+import { TargetRoleVersionDiff } from './components/TargetRoleVersionDiff'
+import { formatRequiredKnowledge } from './roleKnowledgePresentation'
+import { missingRoleLevelRequirements,roleRequirements,validRequiredKnowledge } from './roleRequirements'
+import { getManagerEffectiveStatus, type ManagerRoleStatus } from './TargetRolesPage.helpers'
+export { getManagerEffectiveStatus, type ManagerRoleStatus }
 
 const ROLE_PRESETS: ImportPreset[] = []
-
-export type ManagerRoleStatus =
-  | 'published'
-  | 'submitted'
-  | 'staged'
-  | 'sent'
-  | 'draft'
-  | 'feedback'
-  | 'rejected'
-  | 'unpublished'
-
-export const getManagerEffectiveStatus = (
-  role: TargetRoleModel,
-): ManagerRoleStatus => {
-  if (role.status === 'published' || (role.status as string) === 'ACTIVE' || (role.status as string) === 'PUBLISHED') return 'published'
-  if (role.status === 'unpublished' || (role.status as string) === 'UNPUBLISHED') return 'unpublished'
-  if (role.status === 'submitted' || (role.status as string) === 'SUBMITTED') return 'submitted'
-  if (role.status === 'staged' || (role.status as string) === 'STAGED') return 'staged'
-  if (role.status === 'sent' || (role.status as string) === 'SENT') return 'sent'
-
-  if (role.status === 'rejected') {
-    return role.rejectionReason?.startsWith('[LD_MANAGER]:')
-      ? 'rejected'
-      : 'feedback'
-  }
-
-  return 'draft'
-}
-
 interface RoleMetadata {
   id?: string
   code: string
@@ -366,6 +327,7 @@ export function TargetRolesPage() {
   }, [orgId])
 
   React.useEffect(() => {
+    // oxlint-disable-next-line react/set-state-in-effect -- Synchronize the pending state of the external data request when its scope changes.
     refreshAvailableJobPositions()
     let timeoutId: any = null
     const handleJobPositionsUpdated = (e?: StorageEvent | Event) => {
@@ -662,7 +624,7 @@ export function TargetRolesPage() {
       window.removeEventListener('departments_updated', loadManagerDept)
       window.removeEventListener('adaptlearn_job_positions_updated', loadManagerDept)
     }
-  }, [orgId, session?.identity?.accountId, session?.identity?.email])
+  }, [orgId, session?.identity?.accountId, session?.identity?.email, session?.identity?.fullName])
 
   const jobPositionOptions: ComboboxOption[] = React.useMemo(() => {
     const inactiveCodes = new Set<string>()
@@ -1048,9 +1010,10 @@ export function TargetRolesPage() {
       isFetchingRef.current = false
       setIsRolesLoading(false)
     }
-  }, [orgId])
+  }, [orgId, isTechnova, orgExperts])
 
   React.useEffect(() => {
+    // oxlint-disable-next-line react/set-state-in-effect -- Synchronize the pending state of the external data request when its scope changes.
     fetchRoles()
   }, [fetchRoles])
 
@@ -1337,7 +1300,7 @@ export function TargetRolesPage() {
       }
     }
     return managerDepartment
-  }, [selectedRole?.department, selectedRole?.departmentId, managerDepartment])
+  }, [selectedRole, managerDepartment])
 
   const editExpertOptions: ComboboxOption[] = React.useMemo(() => {
     let list = getEligibleExpertsForJobPosition(
@@ -1379,7 +1342,7 @@ export function TargetRolesPage() {
       }
     }
     return options
-  }, [editRoleForm.jobPositionCode, orgId, editRoleDeptScope, orgExperts, selectedRole?.assignedExpertId])
+  }, [editRoleForm.jobPositionCode, orgId, editRoleDeptScope, orgExperts, selectedRole])
 
   const editEligibleExpertCount = React.useMemo(() => {
     return editExpertOptions.filter((o) => Boolean(o.value)).length
@@ -1391,14 +1354,11 @@ export function TargetRolesPage() {
 
   // Pagination states
 
-  const [currentPage, setCurrentPage] = React.useState(1)
-  const pageSize = 10
+    const pageSize = 10
 
   // Reset page when search/filter/sort changes
 
-  React.useEffect(() => {
-    setCurrentPage(1)
-  }, [searchQuery, statusFilter, sortBy])
+  const [currentPage, setCurrentPage] = useResettableState(1, [searchQuery, statusFilter, sortBy])
 
   // Base list of roles visible to L&D Manager:
   // 1. Hide unsubmitted expert successor drafts until submitted

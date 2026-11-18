@@ -1,5 +1,9 @@
 # Capstone Project Report
 
+> **Baseline/pathway source reconciliation 2026-11-18 (`2c2468b5`):** [current contract](../documents/technical/Organization%20Rule%20Assessment%20and%20Pathway.md#current-flow-2026-11-18) records implemented Role-derived policy editing, quota-based Skill papers/module retry contexts, Expert reduce/reject/approve, first-approval timing, same-transaction evidence recalculation and durable provision refresh. [Assessment](../documents/diagrams/postgresql-assessment.svg)/[pathway](../documents/diagrams/postgresql-pathway.svg)/[ordered flow](../documents/diagrams/baseline-pathway-flow.svg) are current selected source views through workspace V64. Older physical DB-xx captures/JSON/target diagrams remain dated references; their lack of later columns is not a current absence claim. Original test evidence and runtime acceptance limits are unchanged.
+
+> **RIASEC reconciliation 2026-11-18 (`2c2468b5`):** optional local Employee flow now persists 60 EN/VI responses/raw 0–40 scores, autosave/takeover, current/history and 7-day inactive/recovery/permanent deletion at `/employee/overview?tab=riasec`. Internal AI directly selects up to 3 active same-org Job Positions; no cosine/Department-only ranking/chat/Expert guidance-review gate. [Current contracts](../documents/features/README.md#riasec-current-implementation--2026-11-18) supersede older RIASEC prototype descriptions. Latest history UI has build/static evidence only; unrelated dated limitations remain.
+
 ## Report 3 - Software Requirement Specification
 
 **Knowledge Graph-Based Adaptive Learning and Competency Intelligence Platform**  
@@ -164,7 +168,7 @@ This is the required product context, not a claim that every exchange is current
 | Department/job position management | Persisted administration and Expert assignments | Member assignment uses stored references; management screens remain browser-oriented prototypes. |
 | Role/skill catalog | Assigned authoring followed by L&D publication | Legacy CRUD code exists but is gated by `catalog.legacy-api.enabled=true`; it is not the default production-safe authoring service. Existing Expert publication conflicts with Version 2. |
 | Baseline | Authorized configuration, delivery, scoring and results | Local workspace rule composition uses exact scoped policy/catalog and approved mapped bank; no promoted IRT model is required by this active flow. Applied DB and full runtime acceptance remain unverified here. |
-| Other learning and AI | Module/RIASEC evidence, guidance, mastery updates and adaptive pathways | Rule papers/evidence, real lesson completion, requirement generation/review/recalculation and certificate source exist. Full RIASEC/AI, independent assessment and production behavior remain incomplete/unverified. |
+| Other learning and AI | Module/RIASEC evidence, guidance, mastery updates and adaptive pathways | Rule papers/evidence, real lesson completion, requirement generation/review/recalculation and certificate source exist. Separate local RIASEC scoring/storage/Ollama Job Position selection is implemented; its current presentation gaps are linked in the feature contract. Independent assessment and production behavior retain their earlier limits. |
 | Reporting/audit | Actual development, financial inputs and scoped audit views | Some durable events exist; connected ROI/cost-benefit ledger and broad audit dashboards are not evidenced. |
 | Deployment | On-premises Compose, Nginx and CI/CD | Development Compose and a Caddy-based production-shaped configuration exist. Nginx, staging and GitHub Actions delivery are planned, not evidenced. |
 
@@ -488,7 +492,7 @@ Learning Overview is the default home. Upskilling contains Role and Skill tabs, 
 
 Role selection returns to Upskilling; starting/resuming a baseline is a separate guarded action. Role Gap Review opens Learning Pathway only after successful confirmation, and generation, Expert-review, blocked and approved states remain on that page. Module entry is available only when the current pathway/content rules permit it. Completing a module does not automatically open an assessment or establish skill mastery.
 
-Assessment tabs, quiz-taking, RIASEC and results are inline states of Assessments. Selected core quiz dialogs are shown; the current quiz/RIASEC and independent skill-tracking UI still contains browser-local/prototype state, so these navigation controls do not certify a complete persisted assessment or independent-learning workflow. Skill Details returns to its catalog or pathway owner. Additional filter, help, untracking and RIASEC overlays are omitted from this main-navigation view. The server-status utility is omitted consistently with the other actor flows.
+Assessment tabs and non-RIASEC quiz/results remain inline states of Assessments; current RIASEC lives in Learning Overview. Selected core quiz dialogs are shown; the non-RIASEC quiz and independent skill-tracking UI still contains browser-local/prototype state, so these navigation controls do not certify a complete persisted assessment or independent-learning workflow. Skill Details returns to its catalog or pathway owner. Additional filter, help, untracking and RIASEC overlays are omitted from this main-navigation view. The server-status utility is omitted consistently with the other actor flows.
 
 **Expert**
 
@@ -648,7 +652,7 @@ The Screen column uses the exact names shown in the six screen-flow diagrams in 
 | 73 | Employee Learning | Module Reader | Display authorized versioned lessons, persist supported content progress and provide pathway return, issue reporting and version-switch controls. |
 | 74 | Learning Support | Report Content Issue | Open a dialog to describe a lesson/content issue for the responsible Expert; successful submission or cancellation returns to the reader. |
 | 75 | Learning Content Versions | Switch Content Version | Open a dialog to confirm switching the reader to a newer version while retaining applicable progress and historical references. |
-| 76 | Employee Assessment | Assessments | Display assessment tabs, quiz/RIASEC sessions and inline results/history; current browser-local/prototype behavior is not a persistence guarantee. |
+| 76 | Employee Assessment | Assessments | Display assessment tabs and non-RIASEC quizzes/results/history with existing limits; RIASEC redirects to the server-persisted Overview tab. |
 | 77 | Employee Assessment | Quiz Details | Open a dialog showing the selected quiz information and provide the available begin/cancel actions. |
 | 78 | Employee Assessment | Submit Assessment | Open a dialog to confirm or cancel submitting the current quiz session, with the resulting state remaining on Assessments. |
 | 79 | Employee Assessment | Quit Assessment | Open a dialog to confirm quitting the current quiz session or continue answering on Assessments. |
@@ -656,7 +660,7 @@ The Screen column uses the exact names shown in the six screen-flow diagrams in 
 | 81 | Employee Baseline | Submit Baseline | Open a dialog to confirm submitting the current baseline attempt or return to its questions. |
 | 82 | Employee Profile | My Mastery | Display the Employee's baseline-derived profiles and source references, with links to attempt results, history or role selection. |
 
-All `W` paths use the workspace prefix defined above; the table does not imply that unprefixed tenant URLs remain valid. `W/employee/riasec` redirects to `W/employee/assessment?tab=baseline`; `W/employee/guidance` redirects to `W/employee/upskilling?tab=roles`; skill aliases redirect to the skills tab. `W/ld-manager/users` redirects to `W/admin/users` but does not authorize account management. Old workspace-scoped `/learner/*` and `/manager/*` aliases must not be counted as separate capabilities.
+All `W` paths use the workspace prefix defined above; the table does not imply that unprefixed tenant URLs remain valid. `W/employee/riasec` redirects to `W/employee/overview?tab=riasec`; `W/employee/guidance` redirects to `W/employee/upskilling?tab=roles`; skill aliases redirect to the skills tab. `W/ld-manager/users` redirects to `W/admin/users` but does not authorize account management. Old workspace-scoped `/learner/*` and `/manager/*` aliases must not be counted as separate capabilities.
 
 #### 3.1.3 Screen Authorization
 
@@ -848,7 +852,7 @@ Server-side account/session, organization membership, business role, assignment 
 | 2 | Payments | Process payment, FR-07.02 | Create/query provider order, verify original signed webhook, retain observations and retry without duplicate application. |
 | 3 | Provisioning | Provision workspace, FR-07.03 | Atomically apply an eligible initial purchase to organization/workspace/membership/period records. |
 | 4 | Entitlements | Maintain access, FR-07.04 | Evaluate current paid period, administrative suspension and Employee-seat usage; preserve renewal intent. |
-| 5 | Assessment | Generate/evaluate, FR-07.05 | Pin versions/content, score server-side, finalize exactly once logically, and preserve result/history. Includes planned module and RIASEC evaluation. |
+| 5 | Assessment | Generate/evaluate, FR-07.05 | Pin versions/content, score server-side, finalize exactly once logically, and preserve result/history. RIASEC scoring is implemented separately in RiasecRules; other module branches retain their recorded scope. |
 | 6 | Competency | Update profiles/gaps, FR-07.06 | Use valid assessment evidence and a versioned model; do not substitute interests or activity completion for mastery. |
 | 7 | Guidance | Generate suggestions, FR-07.07 | Invoke planned local LLM with minimized input and expose suggestions directly to the Employee. |
 | 8 | Adaptation | Generate/recalculate pathways, FR-07.08 | Produce gap/prerequisite-aware modules; respect initial Expert confirmation and subsequent assessment-driven updates. |
@@ -1804,11 +1808,11 @@ The Database column identifies the authoritative store for every entity in the c
   - Scoring Version
 
 - **Functionalities:**
-  - Display the selected interest questionnaire.
-  - Accept and validate Employee responses.
-  - Calculate six interest dimensions using the defined scoring method.
-  - Display the interest profile and interpretation.
-  - Keep interest results separate from competency mastery.
+  - Start/resume 60 local EN/VI activities in Overview RIASEC.
+  - Autosave with revision/editor checks and explicit takeover.
+  - Confirm submit; server validates all 60 saved integer 0–4 responses and sums ten per dimension to raw 0–40.
+  - Display scores before AI; retain current/history and confirmed inactive/recover/permanent deletion with 7-day retention.
+  - Keep interests separate from mastery; AI suggests Job Positions and Employee chooses Role/Level separately.
 
 <a id="fr-06-08"></a>
 
@@ -1843,7 +1847,7 @@ The Database column identifies the authoritative store for every entity in the c
 - Accept only presented item/options under expected revision and server deadline. Resume can finalize an expired attempt; it never extends time.
 - Manual submit/deadline serialize one FINALIZED outcome with SUBMITTED/DEADLINE reason and per-group immutable results.
 - Write result/outbox/job/receipt consistently; downstream worker consumes accepted event idempotently, distinguishing WAITING_REQUIRED_SUPPLEMENT from scoring failure.
-- Current source bounds counts/capacity; RIASEC remains a separate browser prototype with no complete persisted calculation service.
+- Current source bounds counts/capacity; RIASEC now uses separate persisted V72 storage, server raw 0–40 scoring and durable AI jobs. It does not use the rule knowledge-assessment engine.
 
 
 ### 3.10 Role Guidance
@@ -2393,7 +2397,7 @@ Manual review procedure:
 | --- | --- |
 | Authoring/publication | Replace gated legacy role/skill writes with current-model, trusted assignment-scoped workflows and the Expert-submit/L&D-publish split. |
 | Learning/content | Approve persistent module/content bundle, private MinIO access and revision workflow design. |
-| AI/RIASEC | Select/version instrument and local model; approve minimized inference contract, failure handling and guidance entry ordering. |
+| AI/RIASEC | Local 60-item raw 0–40 flow and Ollama4B model/input/failure contract are implemented; adaptation, general AI quality and member performance remain unverified. |
 | Adaptive engine | Implement evidence-to-mastery, gap calculation, initial review and recalculation with replay/recovery semantics. |
 | Financial reporting | Approve actual costs/benefits schema, currency/period/zero-cost rules and realized-versus-scenario distinction. |
 | Operations | Confirm hosting, staging/production URLs, branch protections, CI/CD, backups/restore and AI development-use declaration. SDD contains labeled proposals, not invented deployment facts. |

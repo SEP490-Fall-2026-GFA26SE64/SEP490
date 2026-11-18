@@ -3,6 +3,7 @@
 documents/dataset/import/ontology_seed.json text eol=lf
 documents/dataset/import/ontology_seed-v012.json text eol=lf
 documents/dataset/import/ontology_seed-knowledge-bank.json text eol=lf
+documents/dataset/import/ontology_seed-skill-level.json text eol=lf
 backend/src/main/resources/db/seed/knowledge-question-bank.json text eol=lf
 documents/dataset/question-bank/knowledge-bank/*.tsv text eol=lf
 documents/dataset/question-bank/knowledge-bank/*.py text eol=lf

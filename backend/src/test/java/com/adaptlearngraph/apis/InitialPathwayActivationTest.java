@@ -21,6 +21,6 @@ class InitialPathwayActivationTest {
                 .withBean(ObjectMapper.class,ObjectMapper::new).withUserConfiguration(InitialPathwayController.class);
     }
     @Test void R13_productionAlwaysDeniesControllerEvenWhenFlagsEnabled(){context("local","workspace-baseline","prod").run(c->assertThat(c).doesNotHaveBean(InitialPathwayController.class));}
-    @Test void R13_flagOffAndMixedPersonaProfilesNeverActivateController(){context("local","workspace-baseline").withPropertyValues("pathway.initial.enabled=false").run(c->assertThat(c).doesNotHaveBean(InitialPathwayController.class));context("local","workspace-baseline","local-baseline-demo").run(c->assertThat(c).doesNotHaveBean(InitialPathwayController.class));}
-    @Test void R13_explicitWorkspaceProfileAndBothFlagsAreRequired(){context("local","workspace-baseline").run(c->assertThat(c).hasSingleBean(InitialPathwayController.class));context("local").run(c->assertThat(c).doesNotHaveBean(InitialPathwayController.class));}
+    @Test void R13_flagOffAndMixedPersonaProfilesNeverActivateController(){context("local","local-baseline-demo").withPropertyValues("pathway.initial.enabled=false").run(c->assertThat(c).doesNotHaveBean(InitialPathwayController.class));context("local","workspace-baseline","local-baseline-demo").run(c->assertThat(c).doesNotHaveBean(InitialPathwayController.class));}
+    @Test void R13_retainedAdapterRequiresExplicitDemoProfile(){context("local","local-baseline-demo").run(c->assertThat(c).hasSingleBean(InitialPathwayController.class));context("local","workspace-baseline").run(c->assertThat(c).doesNotHaveBean(InitialPathwayController.class));context("local").run(c->assertThat(c).doesNotHaveBean(InitialPathwayController.class));}
 }

@@ -6,6 +6,14 @@
 
 **Contract basis:** confirmed behavior plus the later L&D Role–Level / Expert Skill–knowledge configuration decisions. Historical evidence retains its original scope; it is not a fresh passing result.
 
+## Review/rejection/timing — source update, 2026-11-18
+
+`RequirementPathwayReviewService` at `2c2468b5` implements Role-assigned responsibility, fresh missing-provision-only bypass, supported module reduction/order, exact revision/hash approval and reasoned rejection. Unstarted eligible alternatives can be excluded; any started/completed option must remain. Emptying a client selection does not prove catalog provision is missing or permit bypass.
+
+Check/save accepts editable AWAITING_EXPERT_REVIEW or REJECTED proposals; rejection itself is accepted only from awaiting review. It retains the target, proposal, progress, reason/audit/notification and immutable decision receipt. Repair/selection save creates an awaiting-review successor; a valid rejected revision may also be approved after fresh validation. No automatic cancel/unlock is introduced.
+
+First valid approval freezes positive Level duration in calendar months/UTC and provenance; later approvals/recalculations preserve timing. Prior historical approval remains LEGACY_UNTIMED. No duration guess/backfill is added. [Detailed source/API/DDL](../../technical/Organization%20Rule%20Assessment%20and%20Pathway.md#current-flow-2026-11-18), [current schema](../../diagrams/postgresql-pathway.svg). This source reconciliation does not reopen earlier findings or add runtime/security acceptance.
+
 ## Requirements
 
 <a id="fr-05-07"></a>
@@ -26,15 +34,15 @@
 
 ### Review context and inputs
 
-Show scoped learner identity, bound Role/member Level, explicit skill–knowledge/outcomes, official achievement versus baseline diagnostics, unmet/bypassed needs, provision mode, equivalent module choices or assigned certificate, dependencies and actionable missing reasons. Duration/price are descriptive, not a global optimization objective. Numeric gaps, mastery-thirds difficulty and teachingFocus fallback no longer define valid choices. Protected answer keys, credentials and foreign learner data are not review fields.
+Show scoped learner identity, bound Role/member Level, explicit Skill–knowledge–Skill-version requirements, official achievement versus baseline diagnostics, unmet/bypassed needs, provision mode, equivalent module choices or assigned certificate, dependencies and actionable missing reasons. Module duration is descriptive; first approval separately pins Level calendar-month duration. Module price is retired from the active flow; no global optimization objective is added. Numeric gaps, mastery-thirds difficulty and teachingFocus fallback no longer define valid choices. Protected answer keys, credentials and foreign learner data are not review fields.
 
 Client supplies references, supported intent, expected revision/content identity, retry key and decision reason where required. The server derives organization, actor, assignment, eligibility, validation, reviewer/time and decision status. Neither a client-provided achieved profile nor an arbitrary approved status is accepted.
 
 ### Requirement coverage, alternatives and ordering
 
-Generation supplies ALL eligible interchangeable alternatives per requirement. Review validates exact skill/knowledge/outcome equivalence, publication/access/content versions and dependencies; it does not choose a cheaper optimal subset or require the Employee to complete every module.
+Generation supplies ALL eligible interchangeable alternatives per requirement. Review validates exact Skill/knowledge/Skill-version equivalence, publication/access/content versions and dependencies; it does not choose a cheaper optimal subset or require the Employee to complete every module.
 
-Expert may reduce the generated eligible module alternatives during review, using exact step/module/revision/content keys and preserving requirement coverage, history and existing progress. This is a confirmed choice rule, not an optimizer objective or waiver. Current source retains started-option protection; code confirmation must distinguish that safeguard from authorized removal of unstarted alternatives. A missing final provision stays unresolved unless the confirmed missing-provision-only bypass rule applies. After one qualified module and assessment fulfils the step, other eligible modules remain available for voluntary learning under normal access and their own assessment conditions. No separate neutral Remove endpoint is implied.
+Expert may reduce the generated eligible module alternatives during review, using exact step/module/revision/content keys and preserving requirement coverage, history and existing progress. This is a confirmed choice rule, not an optimizer objective or waiver. Current source permits removal of eligible unstarted alternatives and rejects removal of started/completed options with STARTED_MODULE_CANNOT_BE_EXCLUDED. A missing final provision stays unresolved unless the confirmed missing-provision-only bypass rule applies. After one qualified module and assessment fulfils the step, other eligible modules remain available for voluntary learning under normal access and their own assessment conditions. No separate neutral Remove endpoint is implied.
 
 Preserve user-controlled valid relative order, but prerequisites must precede dependents. Invalid moves leave state unchanged with reasons; unrelated requirements are not gated by mere display order. Current source allows explicit order only for unstarted, non-bypassed, unfulfilled and non-dependency-bound requirements; fixed positions cannot move. The existing visual system remains.
 
@@ -64,7 +72,7 @@ Retain current review queue/detail, list/dialog/actions, graph/timeline styling,
 
 ## Current Implementation
 
-Source-inspected at HEAD `61d334c` on 2026-11-07: RequirementPathwayReviewService now checks/saves exact per-step module selections and supported requirement order, approves revision/hash under actual assignment, and records bypass/refresh history. Source presence does not establish runtime acceptance of every branch. Acceptance remains limited to recorded evidence. Deployment dependencies, the Check-dialog lifecycle-guard gap and verification limits are in the [technical contract](../../technical/initial-pathway/Initial%20pathway%20review/Review%20Initial%20Adaptive%20Pathway.md) and [reconciliation receipt](../../testing/system/REQ-002-041-042-workspace-integration.md#scoped-document-and-source-reconciliation--2026-10-29).
+Source-inspected at HEAD `2c2468b5` on 2026-11-18 (older evidence remains date-scoped): RequirementPathwayReviewService now checks/saves exact per-step module selections and supported requirement order, approves revision/hash under actual assignment, and records bypass/refresh history. Source presence does not establish runtime acceptance of every branch. Acceptance remains limited to recorded evidence. The older Check-dialog lifecycle-guard observation is superseded by current selectedPlan checks for awaiting/rejected editable proposals. Earlier deployment/verification limits retain their dated scope in the [technical contract](../../technical/initial-pathway/Initial%20pathway%20review/Review%20Initial%20Adaptive%20Pathway.md) and [reconciliation receipt](../../testing/system/REQ-002-041-042-workspace-integration.md#scoped-document-and-source-reconciliation--2026-10-29).
 
 Entry points: `/expert/pathway-review` and `/expert/pathway-review/:pathwayId`. `/expert/guidance-review` redirects here; it is not another approval workflow. See [Include](../../technical/initial-pathway/Pathway%20adjustment/Include%20Pathway%20Module.md) and [Exclude](../../technical/initial-pathway/Pathway%20adjustment/Exclude%20Pathway%20Module.md).
 

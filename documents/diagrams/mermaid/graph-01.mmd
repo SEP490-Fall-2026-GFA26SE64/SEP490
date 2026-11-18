@@ -10,12 +10,13 @@ classDiagram
     status: String
     reviewStatus: String
     jobZone: Long
-    interestRealistic: Double
-    interestInvestigative: Double
-    interestArtistic: Double
-    interestSocial: Double
-    interestEnterprising: Double
-    interestConventional: Double
+    description: String [optional]
+    interestRealistic: Integer [0..40, optional]
+    interestInvestigative: Integer [0..40, optional]
+    interestArtistic: Integer [0..40, optional]
+    interestSocial: Integer [0..40, optional]
+    interestEnterprising: Integer [0..40, optional]
+    interestConventional: Integer [0..40, optional]
   }
   class TargetRole {
     id: String [UNIQUE]
@@ -122,3 +123,5 @@ classDiagram
 %% TEACHES: id: String; organizationId: String; version: String; status: String; reviewStatus: String; reviewSource: String
 %% HAS_SKILL_PREREQUISITE: id: String; organizationId: String; prerequisiteKnowledgeLevel: String; dependentKnowledgeLevel: String; version: String; status: String; reviewStatus: String; reviewSource: String
 %% REQUIRES_CERTIFICATE: organizationId: String; status: String; createdBy: String; createdAt: String; replacedBy: String; replacedByActor: String; replacedAt: String
+
+  note for JobPosition "RIASEC: all six integer0–40 or all absent; demo/organization profiles. Personal state belongs to PostgreSQL V72."

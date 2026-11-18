@@ -1,80 +1,67 @@
 package com.adaptlearngraph.apis;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-import com.adaptlearngraph.entities.domain.OrganizationAssessmentPolicy.Pin;
-import com.adaptlearngraph.entities.domain.OrganizationAssessmentPolicy.Saved;
-import com.adaptlearngraph.entities.domain.OrganizationAssessmentPolicy.State;
-import com.adaptlearngraph.entities.domain.OrganizationAssessmentPolicy.Values;
-import com.adaptlearngraph.entities.domain.OrganizationAssessmentPolicy.Version;
-import com.adaptlearngraph.helper.AssessmentPolicyJson;
-import com.adaptlearngraph.helper.AssessmentPolicyMappings;
-import com.adaptlearngraph.helper.ModelMapperFactory;
-import com.adaptlearngraph.services.AssessmentPolicyApplicationService;
-import com.adaptlearngraph.services.AssessmentPolicyUseCase;
+import com.adaptlearngraph.entities.domain.RuleAssessment.Purpose;
+import com.adaptlearngraph.services.AssessmentPolicyService.Failure;
+import com.adaptlearngraph.services.ScopedAssessmentPolicyService;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-/** Saving a policy version returns 201 (200 on replay); invalid values are rejected before the use case. */
+/** The current policy API is scoped by purpose and catalog key; request decoding follows authorization. */
 class AssessmentPolicyControllerTest {
-    private static final String PATH = "/api/v1/ld/adaptive-baseline-policy";
+    private static final String PATH = "/api/v1/assessment-policies/BASELINE/scopes/role-junior";
     private static final UUID KEY = new UUID(0L, 9);
-
-    private final AssessmentPolicyUseCase policies = mock(AssessmentPolicyUseCase.class);
+    private final ScopedAssessmentPolicyService policies = mock(ScopedAssessmentPolicyService.class);
     private final MockMvc mvc = MockMvcBuilders.standaloneSetup(new AssessmentPolicyController(
-            new AssessmentPolicyApplicationService(policies, ModelMapperFactory.create(List.of(new AssessmentPolicyMappings()))),
-            new AssessmentPolicyJson(new ObjectMapper()))).build();
+            policies, new ObjectMapper().findAndRegisterModules())).build();
 
-    @Test
-    void saveReturnsCreatedOrReplayedVersion() throws Exception {
-        var values = new Values(0.3, 0.35, 0.5, 2.0);
-        var version = new Version(new Pin(new UUID(0L, 1), new UUID(0L, 2), values.hash(), values), 3, new UUID(0L, 4),
-                Instant.parse("2026-10-05T10:00:00Z"));
-        when(policies.save(eq(KEY), eq(values))).thenReturn(new Saved(version, false), new Saved(version, true));
-        String body = "{\"commandKey\":\"" + KEY + "\",\"stopSe\":0.3,\"highConfidenceSe\":0.35,\"mediumConfidenceSe\":0.5,\"k\":2.0}";
-
-        mvc.perform(post(PATH + "/versions").contentType("application/json").content(body))
-                .andExpect(status().isCreated())
-                .andExpect(header().string("Cache-Control", "no-store"))
-                .andExpect(jsonPath("$.version.pin.values.k").value(2.0))
-                .andExpect(jsonPath("$.version.version").value(3))
-                .andExpect(jsonPath("$.noOp").value(false));
-        mvc.perform(post(PATH + "/versions").contentType("application/json").content(body))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.noOp").value(true));
+    private ScopedAssessmentPolicyService.Workspace workspace() {
+        return new ScopedAssessmentPolicyService.Workspace(null, null, null, 3, List.of(), 0,
+                List.of(), 100, List.of(), 0, List.of());
     }
 
     @Test
-    void invalidValuesAreRejectedBeforeSaving() throws Exception {
-        mvc.perform(post(PATH + "/versions").contentType("application/json")
-                        .content("{\"commandKey\":\"" + KEY + "\",\"stopSe\":0.3,\"highConfidenceSe\":0.5,\"mediumConfidenceSe\":0.4,\"k\":2.0}"))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value("INVALID_REQUEST"));
-        verify(policies, never()).save(any(), any());
+    void createDraftReturnsScopedWorkspaceAndReplaysTheSameCommand() throws Exception {
+        when(policies.createHttp(eq("BASELINE"), eq("role-junior"), any())).thenReturn(workspace());
+        String body = "{\"commandKey\":\"" + KEY + "\",\"expectedActivationRevision\":3}";
+        for (int attempt = 0; attempt < 2; attempt++) {
+            mvc.perform(post(PATH + "/draft").contentType("application/json").content(body))
+                    .andExpect(status().isOk()).andExpect(header().string("Cache-Control", "no-store"))
+                    .andExpect(jsonPath("$.activationRevision").value(3));
+        }
+        verify(policies, times(2)).createHttp("BASELINE", "role-junior", new ScopedAssessmentPolicyService.Create(KEY, 3));
     }
 
     @Test
-    void readReturnsTheActiveState() throws Exception {
-        when(policies.read()).thenReturn(new State(null, 0));
+    void rejectsMissingUnknownAndFractionalFieldsBeforeCreating() throws Exception {
+        for (String body : List.of("{}", "{\"commandKey\":\"" + KEY + "\",\"expectedActivationRevision\":1.5}",
+                "{\"commandKey\":\"" + KEY + "\",\"expectedActivationRevision\":3,\"organizationId\":\"spoof\"}")) {
+            mvc.perform(post(PATH + "/draft").contentType("application/json").content(body))
+                    .andExpect(status().isBadRequest()).andExpect(jsonPath("$.code").value("INVALID_REQUEST"));
+        }
+        verify(policies, never()).createHttp(any(), anyString(), any());
+    }
 
-        mvc.perform(get(PATH))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.activationRevision").value(0))
-                .andExpect(jsonPath("$.active").isEmpty());
+    @Test
+    void checksAuthorizationBeforeDecodingInvalidInput() throws Exception {
+        doThrow(new Failure(403, "FORBIDDEN")).when(policies).authorizeHttp("BASELINE");
+        mvc.perform(post(PATH + "/draft").contentType("application/json").content("not json"))
+                .andExpect(status().isForbidden()).andExpect(jsonPath("$.code").value("FORBIDDEN"));
+        verify(policies, never()).createHttp(any(), anyString(), any());
+    }
+
+    @Test
+    void readsTheRequestedScopeWithoutCaching() throws Exception {
+        when(policies.readHttp("BASELINE", "role-junior", 0, 20)).thenReturn(workspace());
+        mvc.perform(get(PATH)).andExpect(status().isOk()).andExpect(header().string("Cache-Control", "no-store"))
+                .andExpect(jsonPath("$.activationRevision").value(3)).andExpect(jsonPath("$.active").isEmpty());
     }
 }

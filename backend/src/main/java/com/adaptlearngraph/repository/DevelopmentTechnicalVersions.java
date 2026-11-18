@@ -6,6 +6,8 @@ import com.adaptlearngraph.constants.DevelopmentWorkspace;
 import java.util.*;
 
 /** Exact synthetic development tuple only; all other scopes retain the real operational lookup. */
+// Compatibility adapter retains historical promoted numeric-baseline pins.
+@SuppressWarnings("deprecation")
 public final class DevelopmentTechnicalVersions implements AdaptiveTechnicalVersionPort {
     private final AdaptiveTechnicalVersionPort delegate;
     private final VersionPins pins=new VersionPins(LocalDemoIdentity.id("model-v1"),LocalDemoIdentity.id("mapping-v1"),LocalDemoIdentity.id("fitted-v1"));

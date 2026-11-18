@@ -1,5 +1,7 @@
 # Learning Catalog and Approval
 
+> **Adaptive consumer update 2026-11-18:** baseline/pathway/Skill Assessment match trusted org + Skill + explicit knowledge level + Skill version; Outcome Codes are legacy compatibility fields, not active selection/evidence filters. Module price is retired; Level duration is frozen separately at first pathway approval. [Current consumer flow](../../technical/Organization%20Rule%20Assessment%20and%20Pathway.md#current-flow-2026-11-18) supersedes older outcome-based adaptive prose below without recertifying unrelated catalog authoring/publication.
+
 **Source alignment — 2026-11-07.** Confirmed behavior is distinguished from checked-in implementation below. [Current source/schema/API contract](../../technical/Organization%20Rule%20Assessment%20and%20Pathway.md) records local profile gates, exact ownership and remaining mismatches. Runtime/database acceptance is not established by this prose update.
 
 **Source:** [Version 2](../../FA26SE267_KNOWLEDGE_GRAPH_BASED_ADAPTIVE_LEARNING__haht43_Version_2.md), section 3.2(c), Functional Requirements.

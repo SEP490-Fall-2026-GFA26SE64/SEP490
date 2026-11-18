@@ -1,11 +1,12 @@
-import { useState, useMemo } from 'react'
-import { Link, useLocation } from 'react-router-dom'
-import { CheckCircle2, ArrowLeft } from 'lucide-react'
-import { WorkspaceAuthLayout } from '../../shared/layouts/WorkspaceAuthLayout'
-import { Input } from '../../shared/components/ui/Input'
+import { ArrowLeft,CheckCircle2 } from 'lucide-react'
+import { useMemo,useState } from 'react'
+import { Link,useLocation } from 'react-router-dom'
 import { Button } from '../../shared/components/ui/Button'
+import { Input } from '../../shared/components/ui/Input'
+import { WorkspaceAuthLayout } from '../../shared/layouts/WorkspaceAuthLayout'
 import { resetPassword } from '../subscription/subscriptionApi'
-import { Failure, useCopy } from '../subscription/SubscriptionFeedback'
+import { Failure } from "../subscription/SubscriptionFeedback"
+import { useCopy } from "../subscription/SubscriptionFeedback.helpers"
 
 export function ResetPasswordPage() {
   const c = useCopy()

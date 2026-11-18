@@ -1,22 +1,23 @@
-import { useOverviewSectionScroll } from './useOverviewSectionScroll'
-import { useContext, useRef, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { Link } from 'react-router-dom'
-import { Award, ChartColumnIncreasing, LayoutDashboard, Calendar, CheckCircle2, ChevronDown, Clock3, Sparkles, Target } from 'lucide-react'
+import { Award,Calendar,ChartColumnIncreasing,CheckCircle2,ChevronDown,Clock3,LayoutDashboard,Sparkles,Target } from 'lucide-react'
+import { useContext,useRef,useState } from 'react'
+import { Link,useSearchParams } from 'react-router-dom'
 import { WorkspaceSessionContext } from '../../../shared/auth/workspaceSession'
-import { Button } from '../../../shared/components/ui/Button'
-import { Tabs, TabsList, TabsTrigger } from '../../../shared/components/ui/Tabs'
-import { Progress } from '../../../shared/components/ui/Progress'
-import { StatCard } from '../../../shared/components/ui/StatCard'
 import { Heading } from '../../../shared/components/typography/Heading'
 import { Text } from '../../../shared/components/typography/Text'
+import { Button } from '../../../shared/components/ui/Button'
+import { Progress } from '../../../shared/components/ui/Progress'
+import { StatCard } from '../../../shared/components/ui/StatCard'
+import { Tabs,TabsList,TabsTrigger } from '../../../shared/components/ui/Tabs'
+import { useTranslation } from "../../../shared/i18n/LanguageContext"
 import { WorkspaceLayout } from '../../../shared/layouts/WorkspaceLayout'
-import { useTranslation } from '../../../shared/i18n/LanguageContext'
 import { employeeBaselineEnabled } from '../baseline-assessment/baselineApi'
-import { readRoleOverview, statusLabels, requirementMet } from './roleOverviewData'
 import { CompetencyProfile } from '../baseline-assessment/CompetencyProfile'
+import { RiasecExperience } from '../riasec/RiasecExperience'
 import { CompetencyStatusSummary } from './CompetencyStatusSummary'
 import './EmployeeOverviewPage.css'
+import { readRoleOverview,requirementMet,statusLabels } from './roleOverviewData'
+import { useOverviewSectionScroll } from './useOverviewSectionScroll'
 
 export function EmployeeOverviewPage() {
   const identity = useContext(WorkspaceSessionContext)?.identity
@@ -28,7 +29,14 @@ function OwnedEmployeeOverview() {
   const copy = (en: string, vn: string) => vi ? vn : en
   const identity = useContext(WorkspaceSessionContext)?.identity
   const enabled = Boolean(employeeBaselineEnabled && identity?.organizationId && identity?.accountId && identity.roles?.includes('EMPLOYEE'))
-  const [tab, setTab] = useState<'overview' | 'riasec'>('overview')
+  const [params, setParams] = useSearchParams()
+  const tab = params.get('tab') === 'riasec' ? 'riasec' : 'overview'
+  const [riasecOpened, setRiasecOpened] = useState(tab === 'riasec')
+  if (tab === 'riasec' && !riasecOpened) setRiasecOpened(true)
+  const setTab = (value: 'overview' | 'riasec') => {
+    if (value === 'riasec') setRiasecOpened(true)
+    setParams(previous => { const next = new URLSearchParams(previous); next.set('tab', value); return next })
+  }
   const rootRef=useRef<HTMLDivElement>(null)
   const alignGraph=useOverviewSectionScroll(rootRef,tab==='overview')
   const [expanded, setExpanded] = useState<string | null>(null)
@@ -66,13 +74,16 @@ function OwnedEmployeeOverview() {
             const next = event.key === 'Home' ? 'overview' : event.key === 'End' ? 'riasec' : value === 'overview' ? 'riasec' : 'overview'
             setTab(next)
             event.currentTarget.parentElement?.querySelector<HTMLButtonElement>(`[data-value="${next}"]`)?.focus()
-          }} data-value={value}>
+          }} data-value={value} id={`overview-${value}-tab`} aria-controls={`overview-${value}-panel`}>
           {value === 'overview' ? <LayoutDashboard size={15} aria-hidden="true" /> : <Sparkles size={15} aria-hidden="true" />}
           {value === 'overview' ? 'Overview' : 'RIASEC'}
         </TabsTrigger>)}
       </TabsList>
     </Tabs>
-    {tab === 'riasec' ? <section className="overview-progress-panel p-6"><Heading level={2} size="card">RIASEC</Heading><Text variant="body-sm">{copy('RIASEC content will be available in a later update.', 'Nội dung RIASEC sẽ được triển khai sau.')}</Text></section> : <>
+    <div hidden={tab !== 'riasec'} role="tabpanel" id="overview-riasec-panel" aria-labelledby="overview-riasec-tab" className="min-w-0">
+      {(riasecOpened || tab === 'riasec') && <RiasecExperience scope={`${identity?.organizationId}:${identity?.accountId}`} active={tab === 'riasec'} enabled={Boolean(identity?.organizationId && identity?.accountId && identity.roles?.includes('EMPLOYEE'))} />}
+    </div>
+    {tab === 'overview' && <div role="tabpanel" id="overview-overview-panel" aria-labelledby="overview-overview-tab" className="contents">
       <div className="overview-target-toolbar">
         <div className="overview-target-control"><Target size={18} className="text-primary" /><Text variant="caption">{copy('TARGET ROLE', 'VỊ TRÍ MỤC TIÊU')}</Text><span className="font-semibold">{selected?.role.name ?? copy('No Target Role selected', 'Chưa chọn vị trí mục tiêu')}</span><span className="overview-target-pill">{level?.name ?? unknown}</span></div>
         <div className="overview-timing-bar"><span><Calendar size={15} />{copy('Start', 'Bắt đầu')}: <strong>{date(timing?.startedAt)}</strong></span><span><Calendar size={15} />{copy('End', 'Kết thúc')}: <strong>{date(timing?.deadlineAt)}</strong></span><span><Clock3 size={15} />{copy('Duration', 'Thời gian')}: <strong className="text-primary">{duration}</strong></span>{timingState && <span>{timingState}</span>}</div>
@@ -109,7 +120,7 @@ function OwnedEmployeeOverview() {
         {!skills.length && <Text variant="body-sm" className="p-5">{copy('No target skills to compare yet.', 'Chưa có kỹ năng mục tiêu để đối chiếu.')}</Text>}
       </section>
       <footer className="overview-progress-caption"><Text variant="caption">{copy('Green includes Baseline-qualified levels and completed learning. Open a level to see how it was met.', 'Màu xanh gồm cấp độ đạt qua Baseline và hoàn tất học tập. Mở cấp độ để xem nguồn đáp ứng.')}</Text><Link to="/employee/pathway?view=role" className="text-primary">{copy('Open pathway', 'Mở lộ trình')} →</Link></footer>
-    </>}
+    </div>}
   </div>
 }
 

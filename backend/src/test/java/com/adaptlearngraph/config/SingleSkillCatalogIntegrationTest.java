@@ -10,7 +10,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class SingleSkillCatalogIntegrationTest {
     @Test void forwardReleaseImportsExactFieldsIsIdempotentAndRejectsExtraMappingDrift() throws Exception {
-        var source=new LocalCatalogBootstrap(Files.readAllBytes(Path.of("../documents/dataset/import/ontology_seed-v012.json")));
+        var source=new LocalCatalogBootstrap(com.adaptlearngraph.support.HistoricalCatalogFixtures.singleSkill());
         assertEquals("0.12.0",source.version());assertEquals(LocalCatalogBootstrap.SINGLE_SKILL_HASH,source.sourceHash());
         try(var container=new Neo4jContainer<>("neo4j:5.26-community")
                 .withEnv("NEO4J_server_memory_heap_initial__size","64m").withEnv("NEO4J_server_memory_heap_max__size","256m")
@@ -40,7 +40,7 @@ class SingleSkillCatalogIntegrationTest {
             container.start();try(var context=Neo4jTestContext.start(container.getBoltUrl(),"neo4j",container.getAdminPassword())) {
                 // Seed the exact retained source as isolated fixture data. Legacy bootstrap's unrelated byte pin remains strict.
                 var json=new com.fasterxml.jackson.databind.ObjectMapper();
-                var retained=json.readTree(Files.readAllBytes(Path.of("../documents/dataset/import/ontology_seed-v011.json")));
+                var retained=json.readTree(com.adaptlearngraph.support.HistoricalCatalogFixtures.reviewCatalog());
                 var labels=Map.of("JobPositions","JobPosition","TargetRoles","TargetRole","Levels","Level","Competencies","Competency","MicroSkills","MicroSkill","LearningModules","LearningModule");
                 for(var group:labels.entrySet()) {
                     var rows=new java.util.ArrayList<Map<String,Object>>();
@@ -60,15 +60,19 @@ class SingleSkillCatalogIntegrationTest {
                     context.cypher().write(tx->{tx.execute("UNWIND $rows AS row MATCH (a {id:row.from}),(b {id:row.to}) CREATE (a)-[r:"+type+"]->(b) SET r=row.props",Map.of("rows",rows));return true;});
                 }
                 Path root=Files.createTempDirectory("single-skill-upgrade-");Path backup=root.resolve("backup");
-                var process=new ProcessBuilder("python3",Path.of("../documents/dataset/import/upgrade_neo4j_v012.py").toAbsolutePath().normalize().toString(),
+                var fixture = com.adaptlearngraph.support.HistoricalCatalogFixtures.releaseDirectory();
+                var process=new ProcessBuilder("python", "-c",
+                        "import sys,pathlib; sys.path.insert(0,sys.argv.pop(1)); import upgrade_neo4j_v012 as upgrade; upgrade.ROOT=pathlib.Path(sys.argv.pop(1)); upgrade.main()",
+                        Path.of("../documents/dataset/import").toAbsolutePath().normalize().toString(), fixture.toString(),
                         "--url",container.getHttpUrl(),"--apply","--backup-dir",backup.toString());
                 process.environment().put("NEO4J_PASSWORD",container.getAdminPassword());
+                process.environment().put("PYTHONUTF8","1");
                 process.redirectErrorStream(true).redirectOutput(root.resolve("upgrade.log").toFile());
                 var child=process.start();
                 if(!child.waitFor(120,java.util.concurrent.TimeUnit.SECONDS)){child.destroyForcibly();fail("Isolated upgrade timed out");}
                 assertEquals(0,child.exitValue(),Files.readString(root.resolve("upgrade.log")));
                 assertTrue(Files.isRegularFile(backup.resolve("graph-before.json")));assertTrue(Files.isRegularFile(backup.resolve("graph-after.json")));
-                new LocalCatalogBootstrap(Files.readAllBytes(Path.of("../documents/dataset/import/ontology_seed-v012.json"))).verifySealed(context.cypher());
+                new LocalCatalogBootstrap(com.adaptlearngraph.support.HistoricalCatalogFixtures.singleSkill()).verifySealed(context.cypher());
             }
         }
     }

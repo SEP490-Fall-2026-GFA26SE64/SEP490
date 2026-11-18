@@ -2,7 +2,6 @@ package com.adaptlearngraph.apis;
 
 import com.adaptlearngraph.endpoints.ApiEndpoints;
 import com.adaptlearngraph.exception.InitialPathwayFailure;
-import com.adaptlearngraph.repository.InitialPathwayPorts.Receipt;
 import com.adaptlearngraph.services.*;
 import com.fasterxml.jackson.databind.*;
 import java.util.*;
@@ -25,26 +24,26 @@ public final class RequirementPathwayController {
     }
     @GetMapping("/employee/learning-overview") ResponseEntity<?> overview(){return ok(admission.overview());}
     @GetMapping("/employee/role-gaps") ResponseEntity<?> preview(@RequestParam String roleId,@RequestParam String levelId){return ok(admission.preview(roleId,levelId));}
-    @PostMapping("/employee/initial-pathway-requests") ResponseEntity<?> confirm(@RequestHeader("Idempotency-Key")String key,@RequestBody String body){return receipt(admission.confirm(key,parse(body,RequirementPathwayAdmissionService.Confirm.class)));}
+    @PostMapping("/employee/initial-pathway-requests") ResponseEntity<?> confirm(@RequestHeader("Idempotency-Key")String key,@RequestBody String body){return receipt(admission.confirmHttp(key,parse(body,RequirementPathwayAdmissionService.Confirm.class)));}
     @GetMapping("/employee/initial-pathway-requests/{id}") ResponseEntity<?> status(@PathVariable UUID id){return ok(view.own(id));}
-    @PostMapping("/employee/initial-pathway-requests/{id}/retry") ResponseEntity<?> retry(@PathVariable UUID id,@RequestHeader("Idempotency-Key")String key){return receipt(admission.retry(id,key));}
+    @PostMapping("/employee/initial-pathway-requests/{id}/retry") ResponseEntity<?> retry(@PathVariable UUID id,@RequestHeader("Idempotency-Key")String key){return receipt(admission.retryHttp(id,key));}
     @GetMapping("/employee/pathway") ResponseEntity<?> current(){return ok(view.current().orElse(null));}
     @GetMapping("/employee/pathways/{id}") ResponseEntity<?> own(@PathVariable UUID id){return ok(view.own(id));}
     @GetMapping("/expert/initial-pathways") ResponseEntity<?> queue(@RequestParam(defaultValue="0")int offset,@RequestParam(defaultValue="20")int limit){return ok(review.queue(offset,limit));}
     @GetMapping("/expert/initial-pathways/{id}") ResponseEntity<?> detail(@PathVariable UUID id){return ok(review.detail(id));}
     @GetMapping("/expert/initial-pathways/{id}/validation") ResponseEntity<?> validate(@PathVariable UUID id){return ok(review.detail(id).validation());}
     @PostMapping("/expert/initial-pathways/{id}/module-selection/check") ResponseEntity<?> checkSelection(@PathVariable UUID id,@RequestBody String body){return ok(review.checkSelection(id,parse(body,RequirementPathwayReviewService.Selection.class)));}
-    @PostMapping("/expert/initial-pathways/{id}/module-selection") ResponseEntity<?> saveSelection(@PathVariable UUID id,@RequestHeader("Idempotency-Key")String key,@RequestBody String body){return receipt(review.saveSelection(id,key,parse(body,RequirementPathwayReviewService.Selection.class)));}
-    @PostMapping("/expert/initial-pathways/{id}/confirmation") ResponseEntity<?> approve(@PathVariable UUID id,@RequestHeader("Idempotency-Key")String key,@RequestBody String body){return receipt(review.approve(id,key,parse(body,RequirementPathwayReviewService.Expected.class)));}
-    @PostMapping("/expert/initial-pathways/{id}/rejection") ResponseEntity<?> reject(@PathVariable UUID id,@RequestHeader("Idempotency-Key")String key,@RequestBody String body){return receipt(review.reject(id,key,parse(body,RequirementPathwayReviewService.Reject.class)));}
-    @PostMapping("/expert/initial-pathways/{id}/bypasses") ResponseEntity<?> bypass(@PathVariable UUID id,@RequestHeader("Idempotency-Key")String key,@RequestBody String body){return receipt(review.bypass(id,key,parse(body,RequirementPathwayReviewService.Bypass.class)));}
-    @PostMapping("/expert/initial-pathways/{id}/refresh") ResponseEntity<?> refresh(@PathVariable UUID id,@RequestHeader("Idempotency-Key")String key,@RequestBody String body){return receipt(review.refresh(id,key,parse(body,RequirementPathwayReviewService.Expected.class)));}
+    @PostMapping("/expert/initial-pathways/{id}/module-selection") ResponseEntity<?> saveSelection(@PathVariable UUID id,@RequestHeader("Idempotency-Key")String key,@RequestBody String body){return receipt(review.saveSelectionHttp(id,key,parse(body,RequirementPathwayReviewService.Selection.class)));}
+    @PostMapping("/expert/initial-pathways/{id}/confirmation") ResponseEntity<?> approve(@PathVariable UUID id,@RequestHeader("Idempotency-Key")String key,@RequestBody String body){return receipt(review.approveHttp(id,key,parse(body,RequirementPathwayReviewService.Expected.class)));}
+    @PostMapping("/expert/initial-pathways/{id}/rejection") ResponseEntity<?> reject(@PathVariable UUID id,@RequestHeader("Idempotency-Key")String key,@RequestBody String body){return receipt(review.rejectHttp(id,key,parse(body,RequirementPathwayReviewService.Reject.class)));}
+    @PostMapping("/expert/initial-pathways/{id}/bypasses") ResponseEntity<?> bypass(@PathVariable UUID id,@RequestHeader("Idempotency-Key")String key,@RequestBody String body){return receipt(review.bypassHttp(id,key,parse(body,RequirementPathwayReviewService.Bypass.class)));}
+    @PostMapping("/expert/initial-pathways/{id}/refresh") ResponseEntity<?> refresh(@PathVariable UUID id,@RequestHeader("Idempotency-Key")String key,@RequestBody String body){return receipt(review.refreshHttp(id,key,parse(body,RequirementPathwayReviewService.Expected.class)));}
     private <T>T parse(String body,Class<T> type){
         if(body.length()>262144)throw new InitialPathwayFailure(400,"INVALID_REQUEST");
         try{var value=json.readerFor(type).with(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES).readValue(body);if(value==null)throw new IllegalArgumentException();return type.cast(value);}
         catch(Exception invalid){throw new InitialPathwayFailure(400,"INVALID_REQUEST");}
     }
-    private ResponseEntity<String> receipt(Receipt result){return ResponseEntity.status(result.status()).contentType(MediaType.APPLICATION_JSON).cacheControl(CacheControl.noStore()).body(result.responseJson());}
+    private ResponseEntity<String> receipt(RequirementPathwayHttpReceipt result){return ResponseEntity.status(result.status()).contentType(MediaType.APPLICATION_JSON).cacheControl(CacheControl.noStore()).body(result.responseJson());}
     private <T>ResponseEntity<T> ok(T value){return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(value);}
     @ExceptionHandler(InitialPathwayFailure.class)ResponseEntity<?> failure(InitialPathwayFailure failure){return ResponseEntity.status(failure.status()).cacheControl(CacheControl.noStore()).body(Map.of("code",failure.code(),"retryable",failure.retryable(),"correlationId",failure.correlationId()));}
     @ExceptionHandler(RoleBaselineFlow.Failure.class)ResponseEntity<?> selection(RoleBaselineFlow.Failure failure){return failure(new InitialPathwayFailure(failure.status,failure.code));}

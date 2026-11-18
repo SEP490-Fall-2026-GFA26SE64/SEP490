@@ -4,7 +4,8 @@ import { GuestLayout } from '../guest/GuestLayout'
 import { PageHeader } from '../../shared/components/ui/PageHeader'
 import { getRegistration } from '../guest/registrationApi'
 import { getStatus, request } from './subscriptionApi'
-import { Failure, Loading, useCopy } from './SubscriptionFeedback'
+import { Failure, Loading } from "./SubscriptionFeedback";
+import { useCopy } from "./SubscriptionFeedback.helpers";
 import { PlanCatalog } from './PlanCatalog'
 import { PaymentStatusPanel } from './PaymentStatusPanel'
 import { CreditCard, Layers3 } from 'lucide-react'

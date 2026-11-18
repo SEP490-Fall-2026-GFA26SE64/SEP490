@@ -126,16 +126,14 @@ class ModuleAuthoringMappingsTest {
                 "2026-10-02T00:00:00Z", "2026-10-02T00:00:01Z");
         assertThat(mapper.map(new LearningView(revision(), 3, "lesson-1", List.of(progress)), LearningViewResponse.class))
                 .isEqualTo(new LearningViewResponse(revisionResponse(), 3, "lesson-1", List.of(progressResponse)));
-        assertThat(mapper.map(new Notification("n-1", "ISSUE", "module-1", "Title", "Body", "c", "r"), NotificationResponse.class))
-                .isEqualTo(new NotificationResponse("n-1", "ISSUE", "module-1", "Title", "Body", "c", "r"));
+        assertThat(mapper.map(new Notification("n-1", "ISSUE", "module-1", "Title", "Body", "c", "r", null, null), NotificationResponse.class))
+                .isEqualTo(new NotificationResponse("n-1", "ISSUE", "module-1", "Title", "Body", "c", "r", null, null));
 
-        var save = new Save("Intro", "LESSON_AND_PRACTICE", "content-1", 30, new BigDecimal("150000.50"), List.of("occ-1"),
-                List.of(new TeachingInput("skill-1", "PRIMARY", "LOW")));
+        var save = new Save("Intro", "LESSON_AND_PRACTICE", "content-1", 30, List.of("occ-1"), List.of(new TeachingInput("skill-1", "PRIMARY", "LOW")));
         var preview = new Preview("import-1", List.of(new Row("module-1", 2, save, List.of(lesson()), 4L)),
                 List.of(new Problem("module-2", 3, "Missing title")), List.of("module-1"), false);
         assertThat(mapper.map(preview, ImportPreviewResponse.class)).isEqualTo(new ImportPreviewResponse("import-1",
-                List.of(new ImportRowResponse("module-1", 2, new ModuleInput("Intro", "LESSON_AND_PRACTICE", "content-1", 30,
-                        new BigDecimal("150000.50"), List.of("occ-1"), List.of(new TeachingSelection("skill-1"))),
+                List.of(new ImportRowResponse("module-1", 2, new ModuleInput("Intro", "LESSON_AND_PRACTICE", "content-1", 30, List.of("occ-1"), List.of(new TeachingSelection("skill-1"))),
                         List.of(lessonResponse()), 4L)),
                 List.of(new ImportProblemResponse("module-2", 3, "Missing title")), List.of("module-1"), false));
     }
@@ -167,17 +165,14 @@ class ModuleAuthoringMappingsTest {
     private static Revision revision() {
         var content = new Content("content-1", "Intro", "Body text", "text/markdown", "1.0.0", List.of("occ-1"), "expert-1",
                 "2026-10-01T00:00:00Z", List.of(lesson()));
-        var pack = new Package(metadata(), "Intro", "LESSON_AND_PRACTICE", "content://content-1", "text/markdown", "1.0.0", 30,
-                new BigDecimal("150000.50"), List.of(new Teaching(metadata(), "skill-1", "Java", "PRIMARY", "LOW")), content);
+        var pack = new Package(metadata(), "Intro", "LESSON_AND_PRACTICE", "content://content-1", "text/markdown", "1.0.0", 30, List.of(new Teaching(metadata(), "skill-1", "Java", "PRIMARY", "LOW")), content);
         return new Revision(2, "RELEASED", pack, "expert-1", "2026-10-02T00:00:00Z", "manager-1", "2026-10-03T00:00:00Z", "ok");
     }
 
     private static RevisionResponse revisionResponse() {
         var content = new ContentResponse("content-1", "Intro", "Body text", "text/markdown", "1.0.0", List.of("occ-1"),
                 "expert-1", "2026-10-01T00:00:00Z", List.of(lessonResponse()));
-        var pack = new PackageResponse(metadataResponse(), "Intro", "LESSON_AND_PRACTICE", "content://content-1",
-                "text/markdown", "1.0.0", 30, new BigDecimal("150000.50"),
-                List.of(new TeachingResponse(metadataResponse(), "skill-1", "Java")), content);
+        var pack = new PackageResponse(metadataResponse(), "Intro", "LESSON_AND_PRACTICE", "content://content-1", "text/markdown", "1.0.0", 30, List.of(new TeachingResponse(metadataResponse(), "skill-1", "Java")), content, null, List.of(), null);
         return new RevisionResponse(2, "RELEASED", pack, "expert-1", "2026-10-02T00:00:00Z", "manager-1",
                 "2026-10-03T00:00:00Z", "ok");
     }
@@ -191,14 +186,11 @@ class ModuleAuthoringMappingsTest {
     }
 
     private static CatalogModule catalogModule() {
-        return new CatalogModule(metadata(), "Intro", "LESSON_AND_PRACTICE", "content://content-1", "text/markdown", "1.0.0",
-                30, new BigDecimal("150000.50"), List.of(new CatalogTeaching(metadata(), "skill-1", "Java", "PRIMARY", "LOW")));
+        return new CatalogModule(metadata(), "Intro", "LESSON_AND_PRACTICE", "content://content-1", "text/markdown", "1.0.0", 30, List.of(new CatalogTeaching(metadata(), "skill-1", "Java", "PRIMARY", "LOW")));
     }
 
     private static CatalogModuleResponse catalogModuleResponse() {
-        return new CatalogModuleResponse(metadataResponse(), "Intro", "LESSON_AND_PRACTICE", "content://content-1",
-                "text/markdown", "1.0.0", 30, new BigDecimal("150000.50"),
-                List.of(new CatalogTeachingResponse(metadataResponse(), "skill-1", "Java")));
+        return new CatalogModuleResponse(metadataResponse(), "Intro", "LESSON_AND_PRACTICE", "content://content-1", "text/markdown", "1.0.0", 30, List.of(new CatalogTeachingResponse(metadataResponse(), "skill-1", "Java")), null, List.of(), null);
     }
 
     private static Intake intake() {
