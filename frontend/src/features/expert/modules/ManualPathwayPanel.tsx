@@ -10,9 +10,11 @@ import { Card, CardContent } from '../../../shared/components/ui/Card'
 import { FormField } from '../../../shared/components/ui/FormField'
 import { Heading } from '../../../shared/components/typography/Heading'
 import { useTranslation } from '../../../shared/i18n/LanguageContext'
+import { useToast } from '../../../shared/hooks/useToast'
 import { PageLoader } from '../../../shared/components/ui/PageLoader'
 export function ManualPathwayPanel() {
   const { language } = useTranslation()
+  const { toast } = useToast()
   const vi = language === 'vi'
   const [employees, setEmployees] = useState<CatalogChoice[]>([])
   const [options, setOptions] = useState<CatalogChoice[]>([])
@@ -79,19 +81,29 @@ export function ManualPathwayPanel() {
                 moduleIds: modules,
               })
                 .then(() => {
-                  setNotice(
-                    vi
-                      ? 'Đã xác nhận lộ trình. Employee có thể mở học.'
-                      : 'Pathway confirmed. The Employee can now learn.',
-                  )
+                  const msg = vi
+                    ? 'Đã xác nhận lộ trình. Employee có thể mở học.'
+                    : 'Pathway confirmed. The Employee can now learn.'
+                  setNotice(msg)
+                  toast({
+                    title: vi ? 'Đã gán lộ trình' : 'Pathway Confirmed',
+                    description: msg,
+                    variant: 'success',
+                    duration: 3000,
+                  })
                   setTitle('')
                   setModules([])
                 })
-                .catch((e: unknown) =>
-                  setError(
-                    e instanceof Error ? e.message : 'Cannot assign pathway',
-                  ),
-                )
+                .catch((e: unknown) => {
+                  const err = e instanceof Error ? e.message : 'Cannot assign pathway'
+                  setError(err)
+                  toast({
+                    title: vi ? 'Lỗi gán lộ trình' : 'Pathway Assignment Failed',
+                    description: err,
+                    variant: 'destructive',
+                    duration: 4000,
+                  })
+                })
                 .finally(() => {
                   lock.current = false
                   setBusy(false)

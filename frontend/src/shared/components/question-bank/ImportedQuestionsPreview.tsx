@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { BankQuestion, BankRow, BankContent } from '../../api/questionBankApi'
 import { useTranslation } from '../../i18n/LanguageContext'
+import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '../ui/Accordion'
 import { AssessmentQuestionContent } from '../ui/AssessmentQuestionContent'
 import { Button } from '../ui/Button'
 import { Dialog, DialogHeader, DialogTitle, DialogBody, DialogFooter } from '../ui/Dialog'
@@ -12,12 +13,8 @@ function QuestionPreview({ content, vi }: { content: BankContent | undefined; vi
   const answer = typeof content.correctAnswer === 'number' && Number.isInteger(content.correctAnswer) && content.correctAnswer >= 0 && content.correctAnswer < content.options.length ? content.correctAnswer : null
   return <div className="min-w-0 space-y-5">
     <p className="text-caption text-muted-foreground">{content.knowledgeLevel ?? '—'} · {content.skillName ?? content.skillId}</p>
-    <section aria-label={vi ? 'Đáp án và giải thích dành cho người soạn / duyệt' : 'Staff answer key and explanation'} className="space-y-1 rounded-lg bg-success/5 p-3">
-      <p className="text-caption text-muted-foreground">{vi ? 'Chỉ dành cho người soạn / duyệt' : 'Staff only'}</p>
-      <p className="whitespace-pre-wrap [overflow-wrap:anywhere] text-body-sm font-semibold">{vi ? 'Đáp án đúng' : 'Correct answer'}: {answer === null ? (vi ? 'Chưa chọn' : 'Not selected') : `${String.fromCharCode(65 + answer)} — ${content.options[answer]}`}</p>
-      <p className="whitespace-pre-wrap [overflow-wrap:anywhere] text-body-sm">{vi ? 'Giải thích' : 'Explanation'}: {content.explanation?.trim() || (vi ? 'Chưa có giải thích.' : 'No explanation provided.')}</p>
-    </section>
     <AssessmentQuestionContent prompt={content.prompt || (vi ? 'Chưa nhập câu hỏi.' : 'Question prompt is empty.')} options={content.options.map((text, index) => ({ id: String(index), text: text || (vi ? 'Chưa nhập đáp án.' : 'Answer is empty.') }))} value={choice} onChange={setChoice} answerLabel={vi ? 'Chọn đáp án xem thử' : 'Preview answer choices'} />
+    <Accordion><AccordionItem value="answer"><AccordionTrigger>{vi ? 'Đáp án & giải thích — chỉ dành cho người soạn / duyệt' : 'Answer key & explanation — staff only'}</AccordionTrigger><AccordionContent><div className="space-y-1 rounded-lg bg-success/5 p-3"><p className="text-caption text-muted-foreground">{vi ? 'Chỉ dành cho người soạn / duyệt' : 'Staff only'}</p><p className="whitespace-pre-wrap [overflow-wrap:anywhere] text-body-sm font-semibold">{vi ? 'Đáp án đúng' : 'Correct answer'}: {answer === null ? (vi ? 'Chưa chọn' : 'Not selected') : `${String.fromCharCode(65 + answer)} — ${content.options[answer]}`}</p><p className="whitespace-pre-wrap [overflow-wrap:anywhere] text-body-sm">{content.explanation?.trim() || (vi ? 'Chưa có giải thích.' : 'No explanation provided.')}</p></div></AccordionContent></AccordionItem></Accordion>
   </div>
 }
 

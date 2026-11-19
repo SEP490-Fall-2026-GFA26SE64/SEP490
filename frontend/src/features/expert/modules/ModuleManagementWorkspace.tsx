@@ -9,7 +9,7 @@ import { LearningLessonList } from '../../../shared/components/learning/Learning
 import type { LearningLesson } from '../../../shared/api/moduleAuthoringApi'
 import { useCallback, useContext, useEffect, useRef, useState } from 'react'
 import { WorkspaceSessionContext } from '../../../shared/auth/workspaceSession'
-import { BookOpen, CheckCircle2, ClipboardCheck, Clock, Layers, Plus, Search, Upload, Zap } from 'lucide-react'
+import { BookOpen, CheckCheck, CheckCircle2, ClipboardCheck, Clock, Layers, Plus, Search, Upload, Zap } from 'lucide-react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { PageHeader } from '../../../shared/components/ui/PageHeader'
 import { StatCard } from '../../../shared/components/ui/StatCard'
@@ -33,6 +33,7 @@ import { moduleAuthoringMessage } from '../../../shared/api/moduleAuthoringMessa
 import { Eye } from 'lucide-react'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../../../shared/components/ui/Accordion'
 import { CopyableId } from '../../../shared/components/ui/CopyableId'
+import { cn } from '../../../shared/lib/utils'
 import { RowActions } from '../../../shared/components/ui/RowActions'
 import { useToast } from "../../../shared/hooks/useToast"
 import { CatalogModuleDetails } from './CatalogModuleDetails'
@@ -44,9 +45,9 @@ const latest = (doc: ModuleDocument) => doc.revisions[doc.revisions.length - 1]
 const initialForm = (): ModuleSave => ({ title: '', moduleType: 'LESSON_AND_PRACTICE', contentId: '', duration: 1, teachings: [{ skillId: '' }], knowledgeLevel: '' })
 const statusVariant = (state: string | null | undefined): BadgeProps['variant'] => {
   if (['APPROVED', 'ACTIVE', 'RELEASED'].includes(state ?? '')) return 'success'
-  if (['SUBMITTED', 'NEEDS_EXPERT_REVIEW', 'PUBLISH_PENDING', 'ARCHIVE_PENDING', 'ARCHIVE_REQUESTED'].includes(state ?? '')) return 'warning'
+  if (['SUBMITTED', 'NEEDS_EXPERT_REVIEW', 'PUBLISH_PENDING', 'ARCHIVE_PENDING', 'ARCHIVE_REQUESTED'].includes(state ?? '')) return 'primary'
   if (['REJECTED', 'RETURNED'].includes(state ?? '')) return 'destructive'
-  return state === 'DRAFT' ? 'outline' : 'outline'
+  return state === 'DRAFT' ? 'warning' : 'outline'
 }
 const errorText = (error: unknown) => error instanceof Error ? error.message : 'Unable to complete the request.'
 
@@ -361,8 +362,9 @@ function OwnedModuleManagementWorkspace({ mode, managerShell = false }: { mode: 
         ? `${copy('Working workflow', 'Trạng thái soạn thảo')}: ${stateLabels[latest(item.authoring).state] ?? latest(item.authoring).state}`
         : null
       return {
-        label: item.authoring?.releasedRevision != null ? `${copy('Published revision', 'Bản phát hành')} ${item.authoring.releasedRevision}` : copy('Released', 'Đã phát hành'),
+        label: 'PUBLISHED',
         variant: 'success' as BadgeProps['variant'],
+        className: 'font-semibold',
         note: workingState,
         needsContent: false,
       }
@@ -372,25 +374,30 @@ function OwnedModuleManagementWorkspace({ mode, managerShell = false }: { mode: 
       const note = item.authoring.releasedRevision != null && state !== 'RELEASED'
         ? `${copy('Published revision', 'Bản phát hành')} ${item.authoring.releasedRevision}`
         : null
+      const isPublished = ['RELEASED', 'ACTIVE', 'APPROVED'].includes(state)
+      const isDraft = state === 'DRAFT'
+      const isSubmitted = ['SUBMITTED', 'NEEDS_EXPERT_REVIEW', 'PUBLISH_PENDING'].includes(state)
+      const isReturned = ['RETURNED', 'REJECTED'].includes(state)
+      const isArchived = ['ARCHIVED', 'ARCHIVE_PENDING', 'ARCHIVE_REQUESTED'].includes(state)
+
       return {
-        label: stateLabels[state] ?? state,
-        variant: statusVariant(state),
+        label: isPublished ? 'PUBLISHED' : isDraft ? 'DRAFT' : isSubmitted ? 'SUBMITTED' : isReturned ? 'CHANGES REQUESTED' : isArchived ? 'ARCHIVED' : state,
+        variant: (isPublished ? 'success' : isDraft ? 'warning' : isSubmitted ? 'primary' : isReturned ? 'destructive' : 'outline') as BadgeProps['variant'],
+        className: isSubmitted ? 'bg-sky-500/10 text-sky-600 border-sky-500/20 font-bold dark:text-sky-400' : isArchived ? 'border-muted-foreground/40 text-muted-foreground font-bold' : 'font-semibold',
         note,
         needsContent,
       }
     }
     const metaStatus = item.module.metadata.status
     const metaReview = item.module.metadata.reviewStatus
-    if (metaStatus === 'ACTIVE' && metaReview === 'APPROVED') {
-      return { label: copy('Released', 'Đã phát hành'), variant: 'success' as BadgeProps['variant'], note: copy('No authoring record', 'Chưa có hồ sơ soạn thảo'), needsContent: false }
-    }
-    if (metaStatus === 'ACTIVE' && metaReview === 'NEEDS_EXPERT_REVIEW') {
-      return { label: `${stateLabels.ACTIVE} · ${stateLabels.NEEDS_EXPERT_REVIEW}`, variant: 'warning' as BadgeProps['variant'], note: copy('No authoring record', 'Chưa có hồ sơ soạn thảo'), needsContent: false }
-    }
-    const fallback = metaReview === 'REJECTED' ? metaReview : (metaStatus || metaReview || '')
+    const isPub = (metaStatus === 'ACTIVE' && metaReview === 'APPROVED') || metaStatus === 'RELEASED'
+    const isSub = metaStatus === 'ACTIVE' && metaReview === 'NEEDS_EXPERT_REVIEW'
+    const isRej = metaReview === 'REJECTED'
+    const isDft = metaStatus === 'DRAFT'
     return {
-      label: stateLabels[fallback] ?? (fallback || '—'),
-      variant: statusVariant(fallback),
+      label: isPub ? 'PUBLISHED' : isSub ? 'SUBMITTED' : isRej ? 'CHANGES REQUESTED' : isDft ? 'DRAFT' : 'ARCHIVED',
+      variant: (isPub ? 'success' : isSub ? 'primary' : isRej ? 'destructive' : isDft ? 'warning' : 'outline') as BadgeProps['variant'],
+      className: isSub ? 'bg-sky-500/10 text-sky-600 border-sky-500/20 font-bold dark:text-sky-400' : 'font-semibold',
       note: copy('No authoring record', 'Chưa có hồ sơ soạn thảo'),
       needsContent: false,
     }
@@ -519,18 +526,11 @@ function OwnedModuleManagementWorkspace({ mode, managerShell = false }: { mode: 
             <Card>
               <CardHeader className="border-b border-border p-4">
                 <div className="flex flex-col gap-3">
-                  <div className="flex flex-wrap items-center justify-between gap-2">
-                    <div>
-                      <CardTitle className="flex items-center gap-2"><BookOpen className="size-4 text-primary" aria-hidden="true" />{copy('Module Directory', 'Danh sách module')}</CardTitle>
-                      <CardDescription>
-                        {copy('Browse learning modules by MicroSkill, track revisions, and manage review status.', 'Tra cứu module theo MicroSkill, theo dõi phiên bản và trạng thái phê duyệt.')}
-                      </CardDescription>
-                    </div>
-                    {manager && Math.max(pendingCount, totalPendingApprovals) > 0 && (
-                      <Button size="sm" disabled={busy || contentBusy} onClick={() => void openBatchApproval()}>
-                        {copy('Batch approve', 'Duyệt hàng loạt')} ({Math.max(pendingCount, totalPendingApprovals)})
-                      </Button>
-                    )}
+                  <div>
+                    <CardTitle className="flex items-center gap-2"><BookOpen className="size-4 text-primary" aria-hidden="true" />{copy('Module Directory', 'Danh sách module')}</CardTitle>
+                    <CardDescription>
+                      {copy('Browse learning modules by MicroSkill, track revisions, and manage review status.', 'Tra cứu module theo MicroSkill, theo dõi phiên bản và trạng thái phê duyệt.')}
+                    </CardDescription>
                   </div>
                   <div className="flex flex-wrap items-end gap-2.5 pt-1">
                     <div className="min-w-[180px] flex-1 max-w-xs">
@@ -544,27 +544,24 @@ function OwnedModuleManagementWorkspace({ mode, managerShell = false }: { mode: 
                         />
                       </Field>
                     </div>
-                    {!publishedOnly && (
-                      <div className="w-40">
-                        <Field label={copy('Status', 'Trạng thái')}>
-                          <Select
-                            size="sm"
-                            aria-label={copy('Status', 'Trạng thái')}
-                            value={statusFilterValue}
-                            onChange={applyStatusFilter}
-                            options={[
-                              { value: '', label: copy('All', 'Tất cả') },
-                              { value: 'RELEASED', label: copy('Released', 'Đã phát hành') },
-                              { value: 'ACTIVE', label: copy('Active', 'Đang sử dụng') },
-                              { value: 'NEEDS_EXPERT_REVIEW', label: copy('Pending review', 'Chờ duyệt') },
-                              { value: 'REJECTED', label: copy('Changes requested', 'Cần chỉnh sửa') },
-                              { value: 'DRAFT', label: copy('Draft', 'Bản nháp') },
-                              { value: 'ARCHIVED', label: copy('Archived', 'Đã lưu trữ') },
-                            ]}
-                          />
-                        </Field>
-                      </div>
-                    )}
+                    <div className="w-40">
+                      <Field label={copy('Status', 'Trạng thái')}>
+                        <Select
+                          size="sm"
+                          aria-label={copy('Status', 'Trạng thái')}
+                          value={statusFilterValue}
+                          onChange={applyStatusFilter}
+                          options={[
+                            { value: '', label: copy('All', 'Tất cả') },
+                            { value: 'RELEASED', label: copy('Published', 'Đã xuất bản') },
+                            { value: 'NEEDS_EXPERT_REVIEW', label: copy('Pending review', 'Chờ duyệt') },
+                            { value: 'REJECTED', label: copy('Changes requested', 'Cần chỉnh sửa') },
+                            { value: 'DRAFT', label: copy('Draft', 'Bản nháp') },
+                            { value: 'ARCHIVED', label: copy('Archived', 'Đã lưu trữ') },
+                          ]}
+                        />
+                      </Field>
+                    </div>
                     <div className="w-48">
                       <Field label={copy('Module type', 'Loại module')}>
                         <Select
@@ -610,6 +607,20 @@ function OwnedModuleManagementWorkspace({ mode, managerShell = false }: { mode: 
                       >
                         {copy('Clear filters', 'Xoá bộ lọc')}
                       </Button>
+                    )}
+                    {manager && Math.max(pendingCount, totalPendingApprovals) > 0 && (
+                      <div className="ml-auto shrink-0 pb-0.5">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-8 gap-1.5 border-warning/50 bg-warning/10 text-warning hover:bg-warning/20 font-medium"
+                          disabled={busy || contentBusy}
+                          onClick={() => void openBatchApproval()}
+                        >
+                          <CheckCheck className="size-4" aria-hidden="true" />
+                          {copy('Batch approve', 'Duyệt hàng loạt')} ({Math.max(pendingCount, totalPendingApprovals)})
+                        </Button>
+                      </div>
                     )}
                   </div>
                   {Object.values(filters).some(Boolean) && (
@@ -689,7 +700,7 @@ function OwnedModuleManagementWorkspace({ mode, managerShell = false }: { mode: 
                               </td>
                               <td className="min-w-0 md:px-2.5 md:py-3" data-testid="module-status">
                                 <span className="mb-1 block text-muted-foreground md:hidden">{copy('Status', 'Trạng thái')}</span>
-                                <Badge className="whitespace-normal" variant={statusInfo.variant}>{statusInfo.label}</Badge>
+                                <Badge className={cn('whitespace-normal', statusInfo.className)} variant={statusInfo.variant}>{statusInfo.label}</Badge>
                                 {statusInfo.note && <p className="mt-1 text-xs text-muted-foreground">{statusInfo.note}</p>}
                                 {statusInfo.needsContent && <p className="mt-1 text-xs text-muted-foreground">{copy('Needs content', 'Cần bổ sung nội dung')}</p>}
                               </td>
@@ -929,7 +940,7 @@ function OwnedModuleManagementWorkspace({ mode, managerShell = false }: { mode: 
     </Dialog>
 
     <Dialog open={Boolean(selected) && !editing} onOpenChange={open => { if (!open) setSelected(null) }} className="module-management-dialog w-[96vw] max-w-7xl max-h-[94dvh]" ariaLabel={mode === 'approvals' ? copy('Review module request', 'Duyệt yêu cầu module') : copy('Module details', 'Chi tiết module')}>
-      <DialogHeader><DialogTitle>{selected && latest(selected).payload.title}</DialogTitle>{selected && <div className="flex flex-wrap items-center gap-2"><CopyableId code={selected.id} vi={language === 'vi'} entity={copy('module ID', 'mã module')} /><span className="text-xs text-muted-foreground">{copy('Status', 'Trạng thái')}</span><Badge variant={statusVariant(latest(selected).state)}>{stateLabels[latest(selected).state] ?? latest(selected).state}</Badge>{selected.releasedRevision != null && latest(selected).state !== 'RELEASED' && <span className="text-xs text-muted-foreground">({copy('Published revision', 'Bản phát hành')} {selected.releasedRevision})</span>}</div>}</DialogHeader>
+      <DialogHeader><DialogTitle>{selected && latest(selected).payload.title}</DialogTitle>{selected && <div className="flex flex-wrap items-center gap-2"><CopyableId code={selected.id} vi={language === 'vi'} entity={copy('module ID', 'mã module')} /><span className="text-xs text-muted-foreground">{copy('Status', 'Trạng thái')}</span><Badge variant={statusVariant(latest(selected).state)} className={cn(['SUBMITTED', 'NEEDS_EXPERT_REVIEW', 'PUBLISH_PENDING'].includes(latest(selected).state) && 'bg-sky-500/10 text-sky-600 border-sky-500/20 font-bold dark:text-sky-400', ['ARCHIVED', 'ARCHIVE_PENDING', 'ARCHIVE_REQUESTED'].includes(latest(selected).state) && 'border-muted-foreground/40 text-muted-foreground font-bold')}>{['RELEASED', 'ACTIVE', 'APPROVED'].includes(latest(selected).state) ? 'PUBLISHED' : latest(selected).state === 'DRAFT' ? 'DRAFT' : ['RETURNED', 'REJECTED'].includes(latest(selected).state) ? 'CHANGES REQUESTED' : ['ARCHIVED', 'ARCHIVE_PENDING', 'ARCHIVE_REQUESTED'].includes(latest(selected).state) ? 'ARCHIVED' : 'SUBMITTED'}</Badge>{selected.releasedRevision != null && latest(selected).state !== 'RELEASED' && <span className="text-xs text-muted-foreground">({copy('Published revision', 'Bản phát hành')} {selected.releasedRevision})</span>}</div>}</DialogHeader>
       {selected && mode === 'approvals' ? <ModuleApprovalReview key={selected.id + ':' + selected.lockVersion} doc={selected} staff={staff} person={person} formatTime={formatTime} labels={stateLabels} history={historyView(selected)} copy={copy} /> : selected && <DialogBody className="space-y-4 py-2">
         <CatalogModuleDetails key={selected.id + "-" + selected.lockVersion}
           module={latest(selected).payload} content={latest(selected).payload.content}

@@ -5,6 +5,7 @@ import { Badge } from '../../../shared/components/ui/Badge'
 import { Button } from '../../../shared/components/ui/Button'
 import { CopyableId } from '../../../shared/components/ui/CopyableId'
 import { approvalRequest } from './moduleApprovalPresentation'
+import { cn } from '../../../shared/lib/utils'
 
 type Copy = (en: string, vi: string) => string
 export function ModuleApprovalQueue({ documents, total, loading, showHeading = true, busy, onReview, person, formatTime, labels, copy, vi }: {
@@ -77,8 +78,8 @@ export function ModuleApprovalQueue({ documents, total, loading, showHeading = t
                       {formatTime(request.event?.occurredAt)}
                     </td>
                     <td className="xl:px-3 xl:py-3">
-                      <Badge variant="warning" className="whitespace-normal">
-                        {request.retry ? copy('Action needed', 'Cần xử lý') : copy('Awaiting review', 'Chờ duyệt')}
+                      <Badge variant={request.retry ? 'warning' : 'primary'} className={cn('whitespace-normal font-semibold', !request.retry && 'bg-sky-500/10 text-sky-600 border-sky-500/20 font-bold dark:text-sky-400')}>
+                        {request.retry ? 'ACTION NEEDED' : 'SUBMITTED'}
                       </Badge>
                       {request.retry && <p className="mt-1 text-muted-foreground">{labels[request.revision.state] ?? request.revision.state}</p>}
                     </td>

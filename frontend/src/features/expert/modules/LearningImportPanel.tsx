@@ -34,7 +34,16 @@ export function LearningImportPanel({ onImported, showHeading = true, onBusyChan
  const run = async (work: () => Promise<void>) => {
   if (lock.current) return
   lock.current = true; setBusy(true); setError(''); setNotice('')
-  try { await work() } catch (e) { setError(e instanceof Error ? e.message : 'Import failed') } finally { lock.current = false; setBusy(false) }
+  try { await work() } catch (e) {
+    const msg = e instanceof Error ? e.message : 'Import failed'
+    setError(msg)
+    toast({
+      title: copy('Import Failed', 'Nhập dữ liệu thất bại'),
+      description: localizeMessage(msg),
+      variant: 'destructive',
+      duration: 4000,
+    })
+  } finally { lock.current = false; setBusy(false) }
  }
  const commit = (submitAfterImport = false) => void run(async () => {
   if (!preview || preview.errors.length || preview.committed) return
@@ -57,7 +66,16 @@ export function LearningImportPanel({ onImported, showHeading = true, onBusyChan
     : submitAfterImport
     ? copy('Imported and submitted for review.', 'Đã import và gửi duyệt module.')
     : copy('Imported. Submit the drafts for review.', 'Đã import. Các bản nháp cần được gửi duyệt.')
-  setImportedModules(documents); setPreview(null); setStep(0); setNotice(message); setFileInfo(null); toast({ description: message, variant: submissionErrors.length ? 'warning' : 'success', duration: submissionErrors.length ? 10000 : 3000 }); onImported()
+  setImportedModules(documents); setPreview(null); setStep(0); setNotice(message); setFileInfo(null)
+  toast({
+    title: submissionErrors.length
+      ? copy('Import Completed with Warnings', 'Nhập module có cảnh báo')
+      : copy('Import Successful', 'Nhập module thành công'),
+    description: message,
+    variant: submissionErrors.length ? 'warning' : 'success',
+    duration: submissionErrors.length ? 10000 : 3000,
+  })
+  onImported()
  })
  if (importedModules !== null) return <ImportedModulesPreview modules={importedModules} notice={notice} onClose={onClose} />
  const reviewModule = step === 1 ? preview?.modules.find(row => row.moduleId === reviewModuleId) : undefined
@@ -132,7 +150,7 @@ export function LearningImportPanel({ onImported, showHeading = true, onBusyChan
         </Popover.Portal>
       </Popover.Root>
     </div>
-    <div className="space-y-2"><p className="text-xs text-muted-foreground">{copy('ZIP (.zip) containing module.xlsx, lesson/ and video/', 'ZIP (.zip) chứa module.xlsx, lesson/ và video/')}</p><FileDropzone busy={busy} accept=".zip" label={copy('Module import file', 'File import module')} copy={copy} onFile={file => { if (!file.name.toLowerCase().endsWith('.zip')) { setPreview(null); setFileInfo({ name: file.name, size: file.size }); setNotice(''); setReviewModuleId(null); setError(copy('Use the new ZIP template. RAR and standalone Excel are not supported.', 'Dùng mẫu ZIP mới. Không hỗ trợ RAR hoặc Excel đơn lẻ.')); return } setFileInfo({ name: file.name, size: file.size }); setPlayed({}); setReviewModuleId(null); void run(async () => { setPreview(null); const result = await uploadLearningFile<ImportPreview>('/imports', file); setPreview(result); setStep(1) }) }} /></div>
+    <div className="space-y-2"><p className="text-xs text-muted-foreground">{copy('ZIP (.zip) containing module.xlsx, lesson/ and video/', 'ZIP (.zip) chứa module.xlsx, lesson/ và video/')}</p><FileDropzone busy={busy} accept=".zip" label={copy('Module import file', 'File import module')} copy={copy} onFile={file => { if (!file.name.toLowerCase().endsWith('.zip')) { setPreview(null); setFileInfo({ name: file.name, size: file.size }); setNotice(''); setReviewModuleId(null); const err = copy('Use the new ZIP template. RAR and standalone Excel are not supported.', 'Dùng mẫu ZIP mới. Không hỗ trợ RAR hoặc Excel đơn lẻ.'); setError(err); toast({ title: copy('Invalid File Format', 'Định dạng tệp không hợp lệ'), description: err, variant: 'destructive', duration: 4000 }); return } setFileInfo({ name: file.name, size: file.size }); setPlayed({}); setReviewModuleId(null); void run(async () => { setPreview(null); const result = await uploadLearningFile<ImportPreview>('/imports', file); setPreview(result); setStep(1) }) }} /></div>
    </section>}
    {fileInfo && <div className="flex min-w-0 items-start gap-2 rounded-lg border border-border p-3 text-xs"><FileArchive className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" /><div className="min-w-0"><p className="break-words font-medium">{fileInfo.name}</p><p className="mt-1 text-muted-foreground">{new Intl.NumberFormat(vi ? 'vi-VN' : 'en-GB', { maximumFractionDigits: 1 }).format(fileInfo.size / 1024)} KB · {busy ? copy('Processing', 'Đang xử lý') : preview ? copy('Server preview received', 'Đã nhận kết quả kiểm tra') : copy('Selected file', 'Tệp đã chọn')}</p></div></div>}
    {preview && step > 0 && <>

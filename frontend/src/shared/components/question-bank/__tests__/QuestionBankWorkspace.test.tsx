@@ -19,7 +19,7 @@ vi.mock('../../../api/questionBankApi', () => ({ bankRequest: vi.fn() }))
 const body = { prompt: 'Persisted question', options: ['A1', 'B1', 'C1', 'D1'], correctAnswer: 0, skillId: 'skill', skillName: 'SQL', difficulty: 'EASY', explanation: 'Reason', knowledgeLevel: 'FOUNDATION', outcomeCode: 'SQL-01', mandatory: false }
 let bank: BankView, session: BankSession
 beforeEach(() => {
- session = { maxImportRows: 500, maxImportBytes: 10485760, actor: { id: 'expert', organization: 'org', role: 'DOMAIN_EXPERT' }, skills: [{ id: 'skill', name: 'SQL' }], experts: [{ id: 'expert', name: 'Alex' }], people: [{ id: 'expert', name: 'Alex' }] }
+ session = { maxImportRows: 500, maxImportBytes: 10485760, actor: { id: 'expert', organization: 'org', role: 'DOMAIN_EXPERT' }, skills: [{ id: 'skill', name: 'SQL' }], experts: [{ id: 'expert', name: 'Alex' }], people: [{ id: 'expert', name: 'Alex' }], knowledge: [{ skillId: 'skill', knowledgeLevel: 'FOUNDATION', mandatory: false }, { skillId: 'skill', knowledgeLevel: 'INTERMEDIATE', mandatory: false }, { skillId: 'skill', knowledgeLevel: 'ADVANCED', mandatory: false }] }
  bank = { id: 'bank', name: 'Bank', history: [], questions: [{ id: 'q', code: 'Q-1', createdBy: 'expert', createdAt: '2026-10-30T00:00:00Z', owner: 'expert', revision: 1, retired: false, request: null, versions: [{ id: 'v', number: 1, state: 'DRAFT', content: body, editedBy: 'expert', editedAt: '2026-10-30T00:00:00Z', submittedBy: null, submittedAt: null, reviewedBy: null, reviewedAt: null, reason: null, viewed: {} }] }] }
  vi.mocked(bankRequest).mockImplementation(async (path, data) => {
    if (path === '/session') return session
@@ -102,8 +102,16 @@ it('submits a new question directly from the create modal', async () => {
  fireEvent.click(await screen.findByRole('button', { name: /^Create question$/ }))
  const dialog = screen.getByRole('dialog')
  fireEvent.change(within(dialog).getByLabelText('Question prompt'), { target: { value: 'Ready question' } })
+ fireEvent.change(within(dialog).getByLabelText('Option A'), { target: { value: 'Answer 1' } })
+ fireEvent.change(within(dialog).getByLabelText('Option B'), { target: { value: 'Answer 2' } })
+ fireEvent.change(within(dialog).getByLabelText('Option C'), { target: { value: 'Answer 3' } })
+ fireEvent.change(within(dialog).getByLabelText('Option D'), { target: { value: 'Answer 4' } })
+ fireEvent.click(within(dialog).getByRole('radio', { name: 'Correct answer A' }))
  fireEvent.click(within(dialog).getByLabelText('MicroSkill'))
  fireEvent.click(within(dialog).getByRole('option', { name: /SQL/ }))
+ await waitFor(() => expect(within(dialog).getByRole('combobox', { name: 'Knowledge level' }).hasAttribute('disabled')).toBe(false))
+ fireEvent.click(within(dialog).getByRole('combobox', { name: 'Knowledge level' }))
+ fireEvent.click(await within(dialog).findByRole('option', { name: 'Foundation' }))
  fireEvent.click(within(dialog).getByRole('button', { name: 'Submit for review' }))
  await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull())
  expect(bankRequest).toHaveBeenCalledWith('/commands', { id: 'q-new', expectedRevision: 1, action: 'SUBMIT', reason: '', owner: null })
