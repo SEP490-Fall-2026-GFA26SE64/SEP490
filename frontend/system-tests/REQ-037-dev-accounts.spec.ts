@@ -6,7 +6,7 @@ import { waitForWorkspaceEntry } from './subscriptionHelpers'
 const accounts = [
   ['platform.admin@example.test', '/platform-admin/subscriptions'],
   ['org.admin@example.test', 'MFA'],
-  ['ld.manager@example.test', '/ld-manager/job-positions'],
+  ['ld.manager@example.test', '/ld-manager/dashboard'],
   ['expert@example.test', '/expert/target-roles'],
   ['employee@example.test', '/employee/overview'],
 ] as const

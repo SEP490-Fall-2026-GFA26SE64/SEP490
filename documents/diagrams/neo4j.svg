@@ -1,146 +1,259 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1650" height="2540" viewBox="0 0 1650 2540" font-family="Segoe UI,Arial,sans-serif"><defs><marker id="arrow" markerWidth="10" markerHeight="9" refX="9" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9" fill="#334155"/></marker></defs><rect width="100%" height="100%" fill="#fff"/>
-<text x="50" y="45" font-size="26" font-weight="650" fill="#0f172a">Neo4j catalog — current RIASEC profile contract</text>
-<text x="50" y="78" font-size="16" font-weight="400" fill="#475569">Source update 2026-11-18; other catalog fields/topology retain the prior capture scope. No live database capture.</text>
-<rect x="60" y="130" width="470" height="439" rx="8" fill="#f8fafc" stroke="#64748b" stroke-width="1.5"/>
-<rect x="60" y="130" width="470" height="48" rx="8" fill="#e0e7ff" stroke="#64748b" stroke-width="1.5"/>
-<text x="76" y="161" font-size="21" font-weight="650" fill="#0f172a">JobPosition</text>
-<text x="76" y="205" font-size="17" font-weight="400" fill="#0f172a">id: String [UNIQUE]</text>
-<text x="76" y="230" font-size="17" font-weight="400" fill="#0f172a">code: String</text>
-<text x="76" y="255" font-size="17" font-weight="400" fill="#0f172a">name: String</text>
-<text x="76" y="280" font-size="17" font-weight="400" fill="#0f172a">organizationId: String</text>
-<text x="76" y="305" font-size="17" font-weight="400" fill="#0f172a">version: String</text>
-<text x="76" y="330" font-size="17" font-weight="400" fill="#0f172a">status: String</text>
-<text x="76" y="355" font-size="17" font-weight="400" fill="#0f172a">reviewStatus: String</text>
-<text x="76" y="380" font-size="17" font-weight="400" fill="#0f172a">jobZone: Long</text>
-<text x="76" y="405" font-size="17" font-weight="400" fill="#0f172a">description: String [optional]</text>
-<text x="76" y="430" font-size="17" font-weight="400" fill="#0f172a">interestRealistic: Integer [0..40, optional]</text>
-<text x="76" y="455" font-size="16.89814814814815" font-weight="400" fill="#0f172a">interestInvestigative: Integer [0..40, optional]</text>
-<text x="76" y="480" font-size="17" font-weight="400" fill="#0f172a">interestArtistic: Integer [0..40, optional]</text>
-<text x="76" y="505" font-size="17" font-weight="400" fill="#0f172a">interestSocial: Integer [0..40, optional]</text>
-<text x="76" y="530" font-size="17" font-weight="400" fill="#0f172a">interestEnterprising: Integer [0..40, optional]</text>
-<text x="76" y="555" font-size="17" font-weight="400" fill="#0f172a">interestConventional: Integer [0..40, optional]</text>
-<rect x="620" y="130" width="410" height="314" rx="8" fill="#f8fafc" stroke="#64748b" stroke-width="1.5"/>
-<rect x="620" y="130" width="410" height="48" rx="8" fill="#e0e7ff" stroke="#64748b" stroke-width="1.5"/>
-<text x="636" y="161" font-size="21" font-weight="650" fill="#0f172a">TargetRole</text>
-<text x="636" y="205" font-size="17" font-weight="400" fill="#0f172a">id: String [UNIQUE]</text>
-<text x="636" y="230" font-size="17" font-weight="400" fill="#0f172a">code: String</text>
-<text x="636" y="255" font-size="17" font-weight="400" fill="#0f172a">name: String</text>
-<text x="636" y="280" font-size="17" font-weight="400" fill="#0f172a">organizationId: String</text>
-<text x="636" y="305" font-size="17" font-weight="400" fill="#0f172a">version: String</text>
-<text x="636" y="330" font-size="17" font-weight="400" fill="#0f172a">status: String</text>
-<text x="636" y="355" font-size="17" font-weight="400" fill="#0f172a">reviewStatus: String</text>
-<text x="636" y="380" font-size="17" font-weight="400" fill="#0f172a">scope: String</text>
-<text x="636" y="405" font-size="17" font-weight="400" fill="#0f172a">assignedExpertId: String</text>
-<text x="636" y="430" font-size="17" font-weight="400" fill="#0f172a">assignedExpertName: String</text>
-<rect x="1140" y="130" width="440" height="289" rx="8" fill="#f8fafc" stroke="#64748b" stroke-width="1.5"/>
-<rect x="1140" y="130" width="440" height="48" rx="8" fill="#e0e7ff" stroke="#64748b" stroke-width="1.5"/>
-<text x="1156" y="161" font-size="21" font-weight="650" fill="#0f172a">Level</text>
-<text x="1156" y="205" font-size="17" font-weight="400" fill="#0f172a">id: String [UNIQUE]</text>
-<text x="1156" y="230" font-size="17" font-weight="400" fill="#0f172a">code: String</text>
-<text x="1156" y="255" font-size="17" font-weight="400" fill="#0f172a">name: String</text>
-<text x="1156" y="280" font-size="17" font-weight="400" fill="#0f172a">organizationId: String</text>
-<text x="1156" y="305" font-size="17" font-weight="400" fill="#0f172a">version: String</text>
-<text x="1156" y="330" font-size="17" font-weight="400" fill="#0f172a">status: String</text>
-<text x="1156" y="355" font-size="17" font-weight="400" fill="#0f172a">reviewStatus: String</text>
-<text x="1156" y="380" font-size="17" font-weight="400" fill="#0f172a">rank: Long</text>
-<text x="1156" y="405" font-size="17" font-weight="400" fill="#0f172a">attainmentRule: String</text>
-<rect x="1140" y="750" width="440" height="289" rx="8" fill="#f8fafc" stroke="#64748b" stroke-width="1.5"/>
-<rect x="1140" y="750" width="440" height="48" rx="8" fill="#e0e7ff" stroke="#64748b" stroke-width="1.5"/>
-<text x="1156" y="781" font-size="21" font-weight="650" fill="#0f172a">Competency</text>
-<text x="1156" y="825" font-size="17" font-weight="400" fill="#0f172a">id: String [UNIQUE]</text>
-<text x="1156" y="850" font-size="17" font-weight="400" fill="#0f172a">code: String</text>
-<text x="1156" y="875" font-size="17" font-weight="400" fill="#0f172a">name: String</text>
-<text x="1156" y="900" font-size="17" font-weight="400" fill="#0f172a">description: String</text>
-<text x="1156" y="925" font-size="17" font-weight="400" fill="#0f172a">organizationId: String</text>
-<text x="1156" y="950" font-size="17" font-weight="400" fill="#0f172a">version: String</text>
-<text x="1156" y="975" font-size="17" font-weight="400" fill="#0f172a">status: String</text>
-<text x="1156" y="1000" font-size="17" font-weight="400" fill="#0f172a">reviewStatus: String</text>
-<text x="1156" y="1025" font-size="17" font-weight="400" fill="#0f172a">attainmentRule: String</text>
-<rect x="620" y="750" width="460" height="439" rx="8" fill="#f8fafc" stroke="#64748b" stroke-width="1.5"/>
-<rect x="620" y="750" width="460" height="48" rx="8" fill="#e0e7ff" stroke="#64748b" stroke-width="1.5"/>
-<text x="636" y="781" font-size="21" font-weight="650" fill="#0f172a">MicroSkill</text>
-<text x="636" y="825" font-size="17" font-weight="400" fill="#0f172a">id: String [UNIQUE]</text>
-<text x="636" y="850" font-size="17" font-weight="400" fill="#0f172a">name: String</text>
-<text x="636" y="875" font-size="17" font-weight="400" fill="#0f172a">definition: String</text>
-<text x="636" y="900" font-size="17" font-weight="400" fill="#0f172a">organizationId: String</text>
-<text x="636" y="925" font-size="17" font-weight="400" fill="#0f172a">version: String</text>
-<text x="636" y="950" font-size="17" font-weight="400" fill="#0f172a">status: String</text>
-<text x="636" y="975" font-size="17" font-weight="400" fill="#0f172a">reviewStatus: String</text>
-<text x="636" y="1000" font-size="17" font-weight="400" fill="#0f172a">reviewSource: String</text>
-<text x="636" y="1025" font-size="17" font-weight="400" fill="#0f172a">reviewedBy: String</text>
-<text x="636" y="1050" font-size="17" font-weight="400" fill="#0f172a">moduleOnlyKnowledgeLevels: String[]</text>
-<text x="636" y="1075" font-size="17" font-weight="400" fill="#0f172a">certificateOnlyKnowledgeLevels: String[]</text>
-<text x="636" y="1100" font-size="17" font-weight="400" fill="#0f172a">provisionMode: String [legacy common mode]</text>
-<text x="636" y="1125" font-size="17" font-weight="400" fill="#0f172a">foundationOutcomeLabels: String[]</text>
-<text x="636" y="1150" font-size="17" font-weight="400" fill="#0f172a">intermediateOutcomeLabels: String[]</text>
-<text x="636" y="1175" font-size="17" font-weight="400" fill="#0f172a">advancedOutcomeLabels: String[]</text>
-<rect x="60" y="750" width="470" height="414" rx="8" fill="#f8fafc" stroke="#64748b" stroke-width="1.5"/>
-<rect x="60" y="750" width="470" height="48" rx="8" fill="#e0e7ff" stroke="#64748b" stroke-width="1.5"/>
-<text x="76" y="781" font-size="21" font-weight="650" fill="#0f172a">LearningModule</text>
-<text x="76" y="825" font-size="17" font-weight="400" fill="#0f172a">id: String [UNIQUE]</text>
-<text x="76" y="850" font-size="17" font-weight="400" fill="#0f172a">title: String</text>
-<text x="76" y="875" font-size="17" font-weight="400" fill="#0f172a">organizationId: String</text>
-<text x="76" y="900" font-size="17" font-weight="400" fill="#0f172a">version: String</text>
-<text x="76" y="925" font-size="17" font-weight="400" fill="#0f172a">status: String</text>
-<text x="76" y="950" font-size="17" font-weight="400" fill="#0f172a">reviewStatus: String</text>
-<text x="76" y="975" font-size="17" font-weight="400" fill="#0f172a">reviewSource: String</text>
-<text x="76" y="1000" font-size="17" font-weight="400" fill="#0f172a">moduleType: String</text>
-<text x="76" y="1025" font-size="17" font-weight="400" fill="#0f172a">duration: Long</text>
-<text x="76" y="1050" font-size="17" font-weight="400" fill="#0f172a">knowledgeLevel: String</text>
-<text x="76" y="1075" font-size="17" font-weight="400" fill="#0f172a">skillVersion: String</text>
-<text x="76" y="1100" font-size="17" font-weight="400" fill="#0f172a">contentType: String</text>
-<text x="76" y="1125" font-size="17" font-weight="400" fill="#0f172a">contentUri: String</text>
-<text x="76" y="1150" font-size="17" font-weight="400" fill="#0f172a">contentVersion: String</text>
-<rect x="620" y="1430" width="500" height="439" rx="8" fill="#f8fafc" stroke="#64748b" stroke-width="1.5"/>
-<rect x="620" y="1430" width="500" height="48" rx="8" fill="#dcfce7" stroke="#64748b" stroke-width="1.5"/>
-<text x="636" y="1461" font-size="21" font-weight="650" fill="#0f172a">Certificate [source-defined]</text>
-<text x="636" y="1505" font-size="17" font-weight="400" fill="#0f172a">id: String [UNIQUE]</text>
-<text x="636" y="1530" font-size="17" font-weight="400" fill="#0f172a">organizationId: String</text>
-<text x="636" y="1555" font-size="17" font-weight="400" fill="#0f172a">version: String</text>
-<text x="636" y="1580" font-size="17" font-weight="400" fill="#0f172a">name: String</text>
-<text x="636" y="1605" font-size="17" font-weight="400" fill="#0f172a">description: String</text>
-<text x="636" y="1630" font-size="17" font-weight="400" fill="#0f172a">knowledgeLevel: String</text>
-<text x="636" y="1655" font-size="17" font-weight="400" fill="#0f172a">skillVersion: String</text>
-<text x="636" y="1680" font-size="17" font-weight="400" fill="#0f172a">referenceUrl: String</text>
-<text x="636" y="1705" font-size="17" font-weight="400" fill="#0f172a">status: String</text>
-<text x="636" y="1730" font-size="17" font-weight="400" fill="#0f172a">reviewStatus: String</text>
-<text x="636" y="1755" font-size="17" font-weight="400" fill="#0f172a">authoredBy: String</text>
-<text x="636" y="1780" font-size="17" font-weight="400" fill="#0f172a">authoredAt: String</text>
-<text x="636" y="1805" font-size="17" font-weight="400" fill="#0f172a">approvedBy: String</text>
-<text x="636" y="1830" font-size="17" font-weight="400" fill="#0f172a">approvedAt: String</text>
-<text x="636" y="1855" font-size="17" font-weight="400" fill="#0f172a">commandHash: String</text>
-<polyline points="530,230 620,230" fill="none" stroke="#334155" stroke-width="2" stroke-linejoin="round" marker-end="url(#arrow)"/>
-<text x="535" y="214" font-size="15" font-weight="600" fill="#334155">HAS_ROLE</text>
-<polyline points="1030,230 1140,230" fill="none" stroke="#334155" stroke-width="2" stroke-linejoin="round" marker-end="url(#arrow)"/>
-<text x="1038" y="214" font-size="15" font-weight="600" fill="#334155">HAS_LEVEL</text>
-<polyline points="1360,419 1360,750" fill="none" stroke="#334155" stroke-width="2" stroke-linejoin="round" marker-end="url(#arrow)"/>
-<text x="1370" y="560" font-size="15" font-weight="600" fill="#334155">HAS_COMPETENCY</text>
-<polyline points="1140,900 1080,900" fill="none" stroke="#334155" stroke-width="2" stroke-linejoin="round" marker-end="url(#arrow)"/>
-<text x="1085" y="868" font-size="13" font-weight="600" fill="#334155">HAS_</text>
-<text x="1085" y="886" font-size="13" font-weight="600" fill="#334155">SKILL</text>
-<polyline points="1140,400 1105,400 1105,615 850,615 850,750" fill="none" stroke="#334155" stroke-width="2" stroke-linejoin="round" marker-end="url(#arrow)"/>
-<text x="870" y="600" font-size="15" font-weight="600" fill="#334155">REQUIRES_SKILL</text>
-<polyline points="530,970 620,970" fill="none" stroke="#334155" stroke-width="2" stroke-linejoin="round" marker-end="url(#arrow)"/>
-<text x="535" y="953" font-size="15" font-weight="600" fill="#334155">TEACHES</text>
-<polyline points="1080,1070 1110,1070 1110,1260 990,1260 990,1189" fill="none" stroke="#334155" stroke-width="2" stroke-linejoin="round" marker-end="url(#arrow)"/>
-<text x="1125" y="1265" font-size="15" font-weight="600" fill="#334155">HAS_SKILL_PREREQUISITE</text>
-<polyline points="850,1189 850,1430" fill="none" stroke="#334155" stroke-width="2" stroke-linejoin="round" marker-end="url(#arrow)"/>
-<text x="865" y="1370" font-size="15" font-weight="600" fill="#334155">REQUIRES_CERTIFICATE</text>
-<rect x="60" y="589" width="730" height="112" rx="8" fill="#fff7ed" stroke="#fdba74" stroke-width="1.5"/>
-<text x="76" y="619" font-size="19" font-weight="650" fill="#9a3412">RIASEC profile rules</text>
-<text x="76" y="650" font-size="16" font-weight="400" fill="#0f172a">All six integer 0–40, or all absent; missing is not zero.</text>
-<text x="76" y="675" font-size="16" font-weight="400" fill="#0f172a">Six zeros are valid. Demo/organization profiles.</text>
-<rect x="60" y="1980" width="1520" height="112" rx="8" fill="#fff7ed" stroke="#fdba74" stroke-width="1.5"/>
-<text x="76" y="2010" font-size="19" font-weight="650" fill="#9a3412">Personal state belongs to PostgreSQL V72</text>
-<text x="76" y="2041" font-size="16" font-weight="400" fill="#0f172a">Draft, answers, six raw scores, history, AI jobs and snapshots.</text>
-<text x="76" y="2066" font-size="16" font-weight="400" fill="#0f172a">No personal results, learning progress or evidence on these catalog nodes.</text>
-<text x="60" y="2130" font-size="20" font-weight="650" fill="#0f172a">Relationship properties — no new RIASEC node or relationship</text>
-<text x="60" y="2170" font-size="17" font-weight="400" fill="#0f172a">HAS_ROLE / HAS_LEVEL / HAS_COMPETENCY / HAS_SKILL: id, version, status, reviewStatus (String)</text>
-<text x="60" y="2207" font-size="17" font-weight="400" fill="#0f172a">REQUIRES_SKILL: id, requiredKnowledgeLevels (String[]), isMandatory (Boolean), version, status, reviewStatus</text>
-<text x="60" y="2244" font-size="17" font-weight="400" fill="#0f172a">TEACHES: id, organizationId, version, status, reviewStatus, reviewSource (String)</text>
-<text x="60" y="2281" font-size="17" font-weight="400" fill="#0f172a">HAS_SKILL_PREREQUISITE: id, organizationId, prerequisiteKnowledgeLevel, dependentKnowledgeLevel,</text>
-<text x="60" y="2318" font-size="17" font-weight="400" fill="#0f172a">    version, status, reviewStatus, reviewSource (String)</text>
-<text x="60" y="2355" font-size="17" font-weight="400" fill="#0f172a">REQUIRES_CERTIFICATE: organizationId, status, createdBy, createdAt; optional replacedBy, replacedByActor, replacedAt (String)</text>
-<text x="60" y="2392" font-size="17" font-weight="400" fill="#0f172a">Timestamps remain ISO text. Certificate/REQUIRES_CERTIFICATE were absent from the earlier supplied capture.</text>
-<text x="60" y="2429" font-size="17" font-weight="400" fill="#0f172a">[UNIQUE] = source-defined ID constraint; deployment not verified. No cardinalities inferred from the capture.</text>
+<svg xmlns="http://www.w3.org/2000/svg" width="2180" height="2540" viewBox="0 0 2180 2540" font-family="Segoe UI,Arial,sans-serif">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="9" refX="9" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9" fill="#334155"/>
+    </marker>
+  </defs>
+  <rect width="100%" height="100%" fill="#ffffff"/>
+
+  <!-- Header -->
+  <text x="50" y="46" font-size="26" font-weight="650" fill="#0f172a">Neo4j Knowledge Graph Schema — Entities, Properties &amp; Relationships</text>
+  <text x="50" y="78" font-size="16" font-weight="400" fill="#475569">Updated 2026-11-19 — 8 Node Labels (Department, JobPosition, TargetRole, Level, Competency, MicroSkill, LearningModule, Certificate) &amp; 9 Directed Relationship Types</text>
+
+  <!-- 1. Department (x=50, y=120, w=420, h=365) -->
+  <rect x="50" y="120" width="420" height="365" rx="8" fill="#f8fafc" stroke="#64748b" stroke-width="1.5"/>
+  <rect x="50" y="120" width="420" height="46" rx="8" fill="#e0e7ff" stroke="#64748b" stroke-width="1.5"/>
+  <text x="66" y="150" font-size="20" font-weight="650" fill="#0f172a">Department</text>
+  <text x="66" y="192" font-size="16" fill="#0f172a">id: String [UNIQUE]</text>
+  <text x="66" y="217" font-size="16" fill="#0f172a">code: String [UNIQUE per org]</text>
+  <text x="66" y="242" font-size="16" fill="#0f172a">name: String</text>
+  <text x="66" y="267" font-size="16" fill="#0f172a">organizationId: String</text>
+  <text x="66" y="292" font-size="16" fill="#0f172a">description: String</text>
+  <text x="66" y="317" font-size="16" fill="#0f172a">headOfDepartment: String [optional]</text>
+  <text x="66" y="342" font-size="16" fill="#0f172a">headEmail: String [optional]</text>
+  <text x="66" y="367" font-size="16" fill="#0f172a">status: String (ACTIVE | INACTIVE)</text>
+  <text x="66" y="392" font-size="16" fill="#0f172a">version: String [optional]</text>
+  <text x="66" y="417" font-size="16" fill="#0f172a">source: String [optional]</text>
+  <text x="66" y="442" font-size="16" fill="#0f172a">createdAt: String (ISO-8601)</text>
+  <text x="66" y="467" font-size="16" fill="#0f172a">updatedAt: String (ISO-8601)</text>
+
+  <!-- 2. JobPosition (x=580, y=120, w=470, h=490) -->
+  <rect x="580" y="120" width="470" height="490" rx="8" fill="#f8fafc" stroke="#64748b" stroke-width="1.5"/>
+  <rect x="580" y="120" width="470" height="46" rx="8" fill="#e0e7ff" stroke="#64748b" stroke-width="1.5"/>
+  <text x="596" y="150" font-size="20" font-weight="650" fill="#0f172a">JobPosition</text>
+  <text x="596" y="192" font-size="16" fill="#0f172a">id: String [UNIQUE]</text>
+  <text x="596" y="217" font-size="16" fill="#0f172a">code: String [UNIQUE]</text>
+  <text x="596" y="242" font-size="16" fill="#0f172a">name: String</text>
+  <text x="596" y="267" font-size="16" fill="#0f172a">organizationId: String</text>
+  <text x="596" y="292" font-size="16" fill="#0f172a">version: String</text>
+  <text x="596" y="317" font-size="16" fill="#0f172a">status: String</text>
+  <text x="596" y="342" font-size="16" fill="#0f172a">reviewStatus: String [optional]</text>
+  <text x="596" y="367" font-size="16" fill="#0f172a">jobZone: Long</text>
+  <text x="596" y="392" font-size="16" fill="#0f172a">description: String [optional]</text>
+  <text x="596" y="417" font-size="16" fill="#0f172a">source: String [optional]</text>
+  <text x="596" y="442" font-size="16" fill="#0f172a">createdAt / updatedAt: String [optional]</text>
+  <text x="596" y="467" font-size="16" fill="#0f172a">interestRealistic: Integer [0..40, optional]</text>
+  <text x="596" y="492" font-size="16" fill="#0f172a">interestInvestigative: Integer [0..40, optional]</text>
+  <text x="596" y="517" font-size="16" fill="#0f172a">interestArtistic: Integer [0..40, optional]</text>
+  <text x="596" y="542" font-size="16" fill="#0f172a">interestSocial: Integer [0..40, optional]</text>
+  <text x="596" y="567" font-size="16" fill="#0f172a">interestEnterprising: Integer [0..40, optional]</text>
+  <text x="596" y="592" font-size="16" fill="#0f172a">interestConventional: Integer [0..40, optional]</text>
+
+  <!-- 3. TargetRole (x=1160, y=120, w=460, h=640) -->
+  <rect x="1160" y="120" width="460" height="640" rx="8" fill="#f8fafc" stroke="#64748b" stroke-width="1.5"/>
+  <rect x="1160" y="120" width="460" height="46" rx="8" fill="#e0e7ff" stroke="#64748b" stroke-width="1.5"/>
+  <text x="1176" y="150" font-size="20" font-weight="650" fill="#0f172a">TargetRole (:Role)</text>
+  <text x="1176" y="192" font-size="16" fill="#0f172a">id: String [UNIQUE]</text>
+  <text x="1176" y="217" font-size="16" fill="#0f172a">organizationId: String</text>
+  <text x="1176" y="242" font-size="16" fill="#0f172a">code: String [UNIQUE graph code]</text>
+  <text x="1176" y="267" font-size="16" fill="#0f172a">baseCode: String [lineage code]</text>
+  <text x="1176" y="292" font-size="16" fill="#0f172a">name: String</text>
+  <text x="1176" y="317" font-size="16" fill="#0f172a">title: String [legacy alias]</text>
+  <text x="1176" y="342" font-size="16" fill="#0f172a">familyCode: String</text>
+  <text x="1176" y="367" font-size="16" fill="#0f172a">track: String (PROFESSIONAL | MANAGEMENT)</text>
+  <text x="1176" y="392" font-size="16" fill="#0f172a">description: String</text>
+  <text x="1176" y="417" font-size="16" fill="#0f172a">scope: String</text>
+  <text x="1176" y="442" font-size="16" fill="#0f172a">responsibilities: String[]</text>
+  <text x="1176" y="467" font-size="16" fill="#0f172a">status: String (DRAFT..PUBLISHED..SUPERSEDED)</text>
+  <text x="1176" y="492" font-size="16" fill="#0f172a">isStaffingEnabled: Boolean</text>
+  <text x="1176" y="517" font-size="16" fill="#0f172a">version: String</text>
+  <text x="1176" y="542" font-size="16" fill="#0f172a">reviewStatus: String [optional]</text>
+  <text x="1176" y="567" font-size="16" fill="#0f172a">assignedExpertId: String [optional]</text>
+  <text x="1176" y="592" font-size="16" fill="#0f172a">assignedExpertName: String [optional]</text>
+  <text x="1176" y="617" font-size="16" fill="#0f172a">skillTargets: String [JSON]</text>
+  <text x="1176" y="642" font-size="16" fill="#0f172a">levelCompetencies: String [JSON]</text>
+  <text x="1176" y="667" font-size="16" fill="#0f172a">competencyIds: String[]</text>
+  <text x="1176" y="692" font-size="16" fill="#0f172a">rejectionReason: String [optional]</text>
+  <text x="1176" y="717" font-size="16" fill="#0f172a">source: String [optional]</text>
+  <text x="1176" y="742" font-size="16" fill="#0f172a">createdAt / updatedAt: DateTime | String</text>
+
+  <!-- 4. Level (x=1730, y=120, w=400, h=440) -->
+  <rect x="1730" y="120" width="400" height="440" rx="8" fill="#f8fafc" stroke="#64748b" stroke-width="1.5"/>
+  <rect x="1730" y="120" width="400" height="46" rx="8" fill="#e0e7ff" stroke="#64748b" stroke-width="1.5"/>
+  <text x="1746" y="150" font-size="20" font-weight="650" fill="#0f172a">Level</text>
+  <text x="1746" y="192" font-size="16" fill="#0f172a">id: String [UNIQUE]</text>
+  <text x="1746" y="217" font-size="16" fill="#0f172a">organizationId: String</text>
+  <text x="1746" y="242" font-size="16" fill="#0f172a">code: String (S | M | J | LV-n)</text>
+  <text x="1746" y="267" font-size="16" fill="#0f172a">name: String</text>
+  <text x="1746" y="292" font-size="16" fill="#0f172a">rank: Long</text>
+  <text x="1746" y="317" font-size="16" fill="#0f172a">duration: String (integer months)</text>
+  <text x="1746" y="342" font-size="16" fill="#0f172a">attainmentRule: String</text>
+  <text x="1746" y="367" font-size="16" fill="#0f172a">status: String</text>
+  <text x="1746" y="392" font-size="16" fill="#0f172a">version: String</text>
+  <text x="1746" y="417" font-size="16" fill="#0f172a">reviewStatus: String [optional]</text>
+  <text x="1746" y="442" font-size="16" fill="#0f172a">memberToken: String [optional]</text>
+  <text x="1746" y="467" font-size="16" fill="#0f172a">sourceFormat: String [optional]</text>
+  <text x="1746" y="492" font-size="16" fill="#0f172a">source: String [optional]</text>
+  <text x="1746" y="517" font-size="16" fill="#0f172a">createdAt: DateTime | String</text>
+  <text x="1746" y="542" font-size="16" fill="#0f172a">updatedAt: DateTime | String</text>
+
+  <!-- RIASEC & Org Structure Callout Box (x=50, y=635, w=1000, h=125) -->
+  <rect x="50" y="635" width="1000" height="125" rx="8" fill="#fff7ed" stroke="#fdba74" stroke-width="1.5"/>
+  <text x="68" y="665" font-size="18" font-weight="650" fill="#9a3412">Department &amp; JobPosition RIASEC Profile Rules</text>
+  <text x="68" y="694" font-size="15.5" fill="#0f172a">• Department owns JobPositions via HAS_JOB_POSITION; composite unique constraint on (organizationId, code).</text>
+  <text x="68" y="720" font-size="15.5" fill="#0f172a">• RIASEC: all six integer scores 0–40 or all absent on JobPosition; missing is not zero; six zeros are valid.</text>
+  <text x="68" y="746" font-size="15.5" fill="#0f172a">• Employee RIASEC drafts, answers, personal scores &amp; AI recommendations are stored in PostgreSQL V74.</text>
+
+  <!-- 5. LearningModule (x=50, y=880, w=480, h=490) -->
+  <rect x="50" y="880" width="480" height="490" rx="8" fill="#f8fafc" stroke="#64748b" stroke-width="1.5"/>
+  <rect x="50" y="880" width="480" height="46" rx="8" fill="#e0e7ff" stroke="#64748b" stroke-width="1.5"/>
+  <text x="66" y="910" font-size="20" font-weight="650" fill="#0f172a">LearningModule</text>
+  <text x="66" y="952" font-size="16" fill="#0f172a">id: String [UNIQUE]</text>
+  <text x="66" y="977" font-size="16" fill="#0f172a">organizationId: String</text>
+  <text x="66" y="1002" font-size="16" fill="#0f172a">title: String</text>
+  <text x="66" y="1027" font-size="16" fill="#0f172a">name: String [legacy alias]</text>
+  <text x="66" y="1052" font-size="16" fill="#0f172a">moduleType: String</text>
+  <text x="66" y="1077" font-size="16" fill="#0f172a">duration: Long / Integer (minutes)</text>
+  <text x="66" y="1102" font-size="16" fill="#0f172a">durationMinutes: Integer [legacy alias]</text>
+  <text x="66" y="1127" font-size="16" fill="#0f172a">knowledgeLevel: String</text>
+  <text x="66" y="1152" font-size="16" fill="#0f172a">skillVersion: String</text>
+  <text x="66" y="1177" font-size="16" fill="#0f172a">contentType: String</text>
+  <text x="66" y="1202" font-size="16" fill="#0f172a">contentUri: String</text>
+  <text x="66" y="1227" font-size="16" fill="#0f172a">contentVersion: String</text>
+  <text x="66" y="1252" font-size="16" fill="#0f172a">version: String</text>
+  <text x="66" y="1277" font-size="16" fill="#0f172a">status: String</text>
+  <text x="66" y="1302" font-size="16" fill="#0f172a">reviewStatus: String</text>
+  <text x="66" y="1327" font-size="16" fill="#0f172a">reviewSource: String [optional]</text>
+  <text x="66" y="1352" font-size="16" fill="#0f172a">reviewedBy / reviewedAt: String [optional]</text>
+
+  <!-- 6. MicroSkill (x=720, y=880, w=520, h=540) -->
+  <rect x="720" y="880" width="520" height="540" rx="8" fill="#f8fafc" stroke="#64748b" stroke-width="1.5"/>
+  <rect x="720" y="880" width="520" height="46" rx="8" fill="#e0e7ff" stroke="#64748b" stroke-width="1.5"/>
+  <text x="736" y="910" font-size="20" font-weight="650" fill="#0f172a">MicroSkill</text>
+  <text x="736" y="952" font-size="16" fill="#0f172a">id: String [UNIQUE]</text>
+  <text x="736" y="977" font-size="16" fill="#0f172a">organizationId: String</text>
+  <text x="736" y="1002" font-size="16" fill="#0f172a">code: String</text>
+  <text x="736" y="1027" font-size="16" fill="#0f172a">sourceId: String [optional]</text>
+  <text x="736" y="1052" font-size="16" fill="#0f172a">name: String</text>
+  <text x="736" y="1077" font-size="16" fill="#0f172a">description: String</text>
+  <text x="736" y="1102" font-size="16" fill="#0f172a">definition: String</text>
+  <text x="736" y="1127" font-size="16" fill="#0f172a">status: String</text>
+  <text x="736" y="1152" font-size="16" fill="#0f172a">version: String</text>
+  <text x="736" y="1177" font-size="16" fill="#0f172a">reviewStatus: String</text>
+  <text x="736" y="1202" font-size="16" fill="#0f172a">reviewSource: String [optional]</text>
+  <text x="736" y="1227" font-size="16" fill="#0f172a">reviewedBy / reviewedAt: String [optional]</text>
+  <text x="736" y="1252" font-size="16" fill="#0f172a">moduleOnlyKnowledgeLevels: String[]</text>
+  <text x="736" y="1277" font-size="16" fill="#0f172a">certificateOnlyKnowledgeLevels: String[]</text>
+  <text x="736" y="1302" font-size="16" fill="#0f172a">provisionMode: String [legacy common mode]</text>
+  <text x="736" y="1327" font-size="16" fill="#0f172a">foundationOutcomeLabels: String[] [optional]</text>
+  <text x="736" y="1352" font-size="16" fill="#0f172a">intermediateOutcomeLabels: String[] [optional]</text>
+  <text x="736" y="1377" font-size="16" fill="#0f172a">advancedOutcomeLabels: String[] [optional]</text>
+  <text x="736" y="1402" font-size="16" fill="#0f172a">createdAt / updatedAt: DateTime | String</text>
+
+  <!-- 7. Competency (x=1530, y=880, w=480, h=440) -->
+  <rect x="1530" y="880" width="480" height="440" rx="8" fill="#f8fafc" stroke="#64748b" stroke-width="1.5"/>
+  <rect x="1530" y="880" width="480" height="46" rx="8" fill="#e0e7ff" stroke="#64748b" stroke-width="1.5"/>
+  <text x="1546" y="910" font-size="20" font-weight="650" fill="#0f172a">Competency</text>
+  <text x="1546" y="952" font-size="16" fill="#0f172a">id: String [UNIQUE]</text>
+  <text x="1546" y="977" font-size="16" fill="#0f172a">organizationId: String</text>
+  <text x="1546" y="1002" font-size="16" fill="#0f172a">code: String [UNIQUE]</text>
+  <text x="1546" y="1027" font-size="16" fill="#0f172a">name: String</text>
+  <text x="1546" y="1052" font-size="16" fill="#0f172a">description: String</text>
+  <text x="1546" y="1077" font-size="16" fill="#0f172a">attainmentRule: String</text>
+  <text x="1546" y="1102" font-size="16" fill="#0f172a">status: String</text>
+  <text x="1546" y="1127" font-size="16" fill="#0f172a">version: String</text>
+  <text x="1546" y="1152" font-size="16" fill="#0f172a">reviewStatus: String</text>
+  <text x="1546" y="1177" font-size="16" fill="#0f172a">departmentId: String [optional]</text>
+  <text x="1546" y="1202" font-size="16" fill="#0f172a">departmentName: String [optional]</text>
+  <text x="1546" y="1227" font-size="16" fill="#0f172a">jobPositionCode: String [optional]</text>
+  <text x="1546" y="1252" font-size="16" fill="#0f172a">jobPositionTitle: String [optional]</text>
+  <text x="1546" y="1277" font-size="16" fill="#0f172a">createdAt / updatedAt: DateTime | String</text>
+
+  <!-- 8. Certificate (x=720, y=1560, w=520, h=435) -->
+  <rect x="720" y="1560" width="520" height="435" rx="8" fill="#f8fafc" stroke="#64748b" stroke-width="1.5"/>
+  <rect x="720" y="1560" width="520" height="46" rx="8" fill="#dcfce7" stroke="#64748b" stroke-width="1.5"/>
+  <text x="736" y="1590" font-size="20" font-weight="650" fill="#0f172a">Certificate</text>
+  <text x="736" y="1632" font-size="16" fill="#0f172a">id: String [UNIQUE]</text>
+  <text x="736" y="1657" font-size="16" fill="#0f172a">organizationId: String</text>
+  <text x="736" y="1682" font-size="16" fill="#0f172a">version: String</text>
+  <text x="736" y="1707" font-size="16" fill="#0f172a">name: String</text>
+  <text x="736" y="1732" font-size="16" fill="#0f172a">description: String</text>
+  <text x="736" y="1757" font-size="16" fill="#0f172a">knowledgeLevel: String</text>
+  <text x="736" y="1782" font-size="16" fill="#0f172a">skillVersion: String</text>
+  <text x="736" y="1807" font-size="16" fill="#0f172a">referenceUrl: String (HTTPS required)</text>
+  <text x="736" y="1832" font-size="16" fill="#0f172a">status: String</text>
+  <text x="736" y="1857" font-size="16" fill="#0f172a">reviewStatus: String</text>
+  <text x="736" y="1882" font-size="16" fill="#0f172a">authoredBy: String</text>
+  <text x="736" y="1907" font-size="16" fill="#0f172a">authoredAt: String</text>
+  <text x="736" y="1932" font-size="16" fill="#0f172a">approvedBy: String</text>
+  <text x="736" y="1957" font-size="16" fill="#0f172a">approvedAt: String</text>
+  <text x="736" y="1982" font-size="16" fill="#0f172a">commandHash: String</text>
+
+  <!-- TargetRole Lifecycle & Cross-Store Boundary Box (x=1320, y=1560, w=810, h=250) -->
+  <rect x="1320" y="1560" width="810" height="250" rx="8" fill="#fff7ed" stroke="#fdba74" stroke-width="1.5"/>
+  <text x="1338" y="1592" font-size="18" font-weight="650" fill="#9a3412">TargetRole Lifecycle &amp; Catalog Ownership Boundary</text>
+  <text x="1338" y="1624" font-size="15.5" fill="#0f172a">• TargetRole status lifecycle: DRAFT, STAGED, SENT, SUBMITTED, REJECTED,</text>
+  <text x="1338" y="1648" font-size="15.5" fill="#0f172a">  PUBLISHED (ACTIVE), UNPUBLISHED, SUPERSEDED.</text>
+  <text x="1338" y="1676" font-size="15.5" fill="#0f172a">• isStaffingEnabled is true for STAGED/SENT/SUBMITTED staffing roles and</text>
+  <text x="1338" y="1700" font-size="15.5" fill="#0f172a">  automatically cleared to false when PUBLISHED, ACTIVE, or REJECTED.</text>
+  <text x="1338" y="1728" font-size="15.5" fill="#0f172a">• Role levels live strictly as :Level nodes via :HAS_LEVEL (never on TargetRole.levels).</text>
+  <text x="1338" y="1756" font-size="15.5" fill="#0f172a">• Neo4j owns catalog definitions only; learner selections, assessment attempts,</text>
+  <text x="1338" y="1780" font-size="15.5" fill="#0f172a">  official evidence, certificate submissions &amp; pathways live in PostgreSQL.</text>
+
+  <!-- Directed Relationships -->
+  <!-- 1. Department -> JobPosition : HAS_JOB_POSITION -->
+  <polyline points="470,240 580,240" fill="none" stroke="#334155" stroke-width="2" stroke-linejoin="round" marker-end="url(#arrow)"/>
+  <text x="475" y="215" font-size="13.5" font-weight="600" fill="#334155">HAS_JOB_</text>
+  <text x="475" y="232" font-size="13.5" font-weight="600" fill="#334155">POSITION</text>
+
+  <!-- 2. JobPosition -> TargetRole : HAS_ROLE -->
+  <polyline points="1050,240 1160,240" fill="none" stroke="#334155" stroke-width="2" stroke-linejoin="round" marker-end="url(#arrow)"/>
+  <text x="1062" y="226" font-size="14.5" font-weight="600" fill="#334155">HAS_ROLE</text>
+
+  <!-- 3. TargetRole -> Level : HAS_LEVEL -->
+  <polyline points="1620,240 1730,240" fill="none" stroke="#334155" stroke-width="2" stroke-linejoin="round" marker-end="url(#arrow)"/>
+  <text x="1630" y="226" font-size="14.5" font-weight="600" fill="#334155">HAS_LEVEL</text>
+
+  <!-- 4. Level -> Competency : HAS_COMPETENCY -->
+  <polyline points="1930,560 1930,880" fill="none" stroke="#334155" stroke-width="2" stroke-linejoin="round" marker-end="url(#arrow)"/>
+  <text x="1942" y="720" font-size="14.5" font-weight="600" fill="#334155">HAS_COMPETENCY</text>
+
+  <!-- 5. Competency -> MicroSkill : HAS_SKILL -->
+  <polyline points="1530,1080 1240,1080" fill="none" stroke="#334155" stroke-width="2" stroke-linejoin="round" marker-end="url(#arrow)"/>
+  <text x="1340" y="1065" font-size="14.5" font-weight="600" fill="#334155">HAS_SKILL</text>
+
+  <!-- 6a. Level -> MicroSkill : REQUIRES_SKILL -->
+  <polyline points="1810,560 1810,825 1060,825 1060,880" fill="none" stroke="#334155" stroke-width="2" stroke-linejoin="round" marker-end="url(#arrow)"/>
+  <text x="1480" y="812" font-size="14.5" font-weight="600" fill="#334155">REQUIRES_SKILL (Level → MicroSkill)</text>
+
+  <!-- 6b. TargetRole -> MicroSkill : REQUIRES_SKILL [per level] -->
+  <polyline points="1390,760 1390,795 900,795 900,880" fill="none" stroke="#475569" stroke-width="2" stroke-dasharray="6,4" stroke-linejoin="round" marker-end="url(#arrow)"/>
+  <text x="920" y="784" font-size="14" font-weight="600" fill="#475569">REQUIRES_SKILL (TargetRole → MicroSkill, per level)</text>
+
+  <!-- 7. LearningModule -> MicroSkill : TEACHES -->
+  <polyline points="530,1080 720,1080" fill="none" stroke="#334155" stroke-width="2" stroke-linejoin="round" marker-end="url(#arrow)"/>
+  <text x="585" y="1065" font-size="14.5" font-weight="600" fill="#334155">TEACHES</text>
+
+  <!-- 8. MicroSkill -> MicroSkill : HAS_SKILL_PREREQUISITE -->
+  <polyline points="1240,1300 1310,1300 1310,1475 1130,1475 1130,1420" fill="none" stroke="#334155" stroke-width="2" stroke-linejoin="round" marker-end="url(#arrow)"/>
+  <text x="1322" y="1405" font-size="14.5" font-weight="600" fill="#334155">HAS_SKILL_PREREQUISITE</text>
+
+  <!-- 9. MicroSkill -> Certificate : REQUIRES_CERTIFICATE -->
+  <polyline points="980,1420 980,1560" fill="none" stroke="#334155" stroke-width="2" stroke-linejoin="round" marker-end="url(#arrow)"/>
+  <text x="994" y="1500" font-size="14.5" font-weight="600" fill="#334155">REQUIRES_CERTIFICATE</text>
+
+  <!-- Legend / Relationship Properties Section (y=2040..2490) -->
+  <rect x="50" y="2040" width="2080" height="450" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="74" y="2080" font-size="20" font-weight="650" fill="#0f172a">Relationship Properties &amp; Graph Constraints Inventory</text>
+  <text x="74" y="2120" font-size="16" fill="#0f172a">• HAS_JOB_POSITION (Department → JobPosition): id, organizationId, status, version, createdAt, updatedAt (String)</text>
+  <text x="74" y="2155" font-size="16" fill="#0f172a">• HAS_ROLE (JobPosition → TargetRole): id, organizationId, version, status, reviewStatus, updatedAt (DateTime | String)</text>
+  <text x="74" y="2190" font-size="16" fill="#0f172a">• HAS_LEVEL (TargetRole → Level): id, organizationId, version, status, reviewStatus, createdAt, updatedAt (DateTime | String)</text>
+  <text x="74" y="2225" font-size="16" fill="#0f172a">• HAS_COMPETENCY (Level → Competency) &amp; HAS_SKILL (Competency → MicroSkill): id, version, status, reviewStatus (String)</text>
+  <text x="74" y="2260" font-size="16" fill="#0f172a">• REQUIRES_SKILL (Level → MicroSkill &amp; TargetRole → MicroSkill): id, organizationId, level [on Role edge], requiredKnowledgeLevels (String[]),</text>
+  <text x="92" y="2288" font-size="16" fill="#0f172a">isMandatory (Boolean), version, status, reviewStatus, createdAt, updatedAt (DateTime | String)</text>
+  <text x="74" y="2323" font-size="16" fill="#0f172a">• TEACHES (LearningModule → MicroSkill): id, organizationId, version, status, reviewStatus, reviewSource, reviewedBy, reviewedAt (String; 1 Skill per Module)</text>
+  <text x="74" y="2358" font-size="16" fill="#0f172a">• HAS_SKILL_PREREQUISITE (MicroSkill → MicroSkill): id, organizationId, dependentKnowledgeLevel, prerequisiteKnowledgeLevel, version, status,</text>
+  <text x="92" y="2386" font-size="16" fill="#0f172a">reviewStatus, reviewSource, createdAt, updatedAt (DateTime | String)</text>
+  <text x="74" y="2421" font-size="16" fill="#0f172a">• REQUIRES_CERTIFICATE (MicroSkill → Certificate): organizationId, status, createdBy, createdAt; optional replacedBy, replacedByActor, replacedAt (String)</text>
+  <text x="74" y="2458" font-size="16" font-weight="600" fill="#334155">Constraints: per-label node id UNIQUE; JobPosition.code UNIQUE (V5); Department (organizationId, code) UNIQUE (V6); Competency.code UNIQUE; Certificate.id UNIQUE.</text>
 </svg>

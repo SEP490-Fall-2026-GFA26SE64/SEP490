@@ -2629,7 +2629,7 @@ export function TargetRolesPage() {
               <div className="min-w-0 pr-2">
                 <CardTitle className="flex items-center gap-2">
                   <Briefcase className="h-4 w-4 text-primary shrink-0" />
-                  <span>Target Role Version Catalog</span>
+                  <span>Role catalog</span>
                 </CardTitle>
 
                 <CardDescription>

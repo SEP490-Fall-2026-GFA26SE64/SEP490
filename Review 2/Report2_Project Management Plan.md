@@ -35,6 +35,7 @@
 | Date | A* M, D | In charge | Change Description |
 | --- | --- | --- | --- |
 | 01/11/2026 | A | Report preparation with AI assistance | Created the English Project Management Plan using the supplied report template and project documents. Retained the requested four-member functional allocation, reconciled product scope, and introduced explicit planning estimates, responsibilities, quality gates, and delivery assumptions. |
+| 19/11/2026 | M | Report preparation with AI assistance | Aligned current source boundary, database inventory, and RIASEC/Neo4j references with the latest 8-label Neo4j schema (`Department`, `JobPosition`, `TargetRole`, `Level`, `Competency`, `MicroSkill`, `LearningModule`, `Certificate`), 9 directed relationship patterns, and PostgreSQL V74 RIASEC personal storage. |
 
 *A - Added; M - Modified; D - Deleted.*
 
@@ -57,7 +58,7 @@ The plan uses the following project references:
 | [Architecture](../documents/ARCHITECTURE.md) and [Neo4j schema](../documents/neo4j_schema.md) | Technical boundaries, data ownership, persistence, and integration constraints. |
 | [Testing documentation](../documents/testing/README.md) | Verification levels, evidence requirements, and recorded limitations. |
 
-**Current source boundary (2026-11-07):** rule-flow services/schema definitions exist in the local gated composition; live DB, full certificate/bypass/parallel behavior and production acceptance remain unverified. This report does not update effort, completion dates, research results or team ownership from code presence. Member 3/4 allocations below are retained proposals; user-confirmed Person 3 REQ scope governs the current task and any conflicting S2/S4 allocation needs team reconciliation.
+**Current source boundary (2026-11-19):** rule-flow services/schema definitions and the 8-label Neo4j catalog (`Department`, `JobPosition`, `TargetRole`, `Level`, `Competency`, `MicroSkill`, `LearningModule`, `Certificate`) exist in the local gated composition; full certificate/bypass/parallel production acceptance remains separately scoped. This report does not update effort, completion dates, research results or team ownership from code presence. Member 3/4 allocations below are retained proposals; user-confirmed Person 3 REQ scope governs the current task and any conflicting S2/S4 allocation needs team reconciliation.
 
 **Planning basis.** The functional grouping of Member 1 to Member 4 follows the requested allocation document. That document and the sprint plan are retained planning snapshots, so this report does not treat their earlier exclusions, effort figures, or workflow rules as current product commitments. The allocation below is a proposed report-level arrangement, not a replacement for an approved technical ownership agreement. Member labels do not assume a name-to-number mapping.
 
@@ -70,7 +71,7 @@ The delivery scope includes:
 - Self-service organization registration, account verification, subscription selection and payment, workspace provisioning, renewal, and Employee-seat enforcement.
 - Platform and organization administration, accounts, roles, permissions, departments, job positions, and Expert assignments.
 - Expert configuration of target-role requirements, L&D publication, learning-module/content authoring, assessment question banks, and offering approval.
-- Baseline and Skill Assessment share execution but have separate policy ownership: L&D org+Role–Level and Expert org+Skill–knowledge. Timed frozen papers, exact group results, retakes/history and diagnostic versus official evidence are the current flow. RIASEC/Job Position AI is now implemented as a separate local opt-in V72 flow; see [current contracts](../documents/features/README.md#riasec-current-implementation--2026-11-18). It does not feed knowledge assessment/mastery, and its latest UI/general validation limits remain explicit. This source update does not rebaseline estimates or delivery dates.
+- Baseline and Skill Assessment share execution but have separate policy ownership: L&D org+Role–Level and Expert org+Skill–knowledge. Timed frozen papers, exact group results, retakes/history and diagnostic versus official evidence are the current flow. RIASEC/Job Position AI is now implemented as a separate local opt-in PostgreSQL V74 flow paired with Neo4j JobPosition integer 0–40 interest profiles; see [current contracts](../documents/features/README.md#riasec-current-implementation--2026-11-18). It does not feed knowledge assessment/mastery, and its latest UI/general validation limits remain explicit. This source update does not rebaseline estimates or delivery dates.
 - ACT-04 authoring and approval covers the Module, its single-MicroSkill mapping and ordered learning content. Assessment configuration/delivery is a separate workstream and is not part of the submitted approval package.
 - Explicit Skill/knowledge requirements, exact official evidence, requirement-root alternatives/certificate, initial Expert review and assessed-shortage supplementation/recalculation define the current adaptive flow. Old bypass work remains parallel/non-gating after target release. Numeric tracing/CBF obligations remain research commitments for explicit reconciliation, not implementation or result claims.
 - Employee pathway and competency visualization, approved learning-content access, individual-skill learning, and progress tracking.
@@ -502,7 +503,7 @@ This inventory distinguishes repository-backed tools from planned target integra
 | Category | Tools / Infrastructure |
 | --- | --- |
 | Technology | Java 21 and Spring Boot backend; React, TypeScript, and Vite frontend; shared Tailwind/UI components; `vis-network` for graph visualization. |
-| Database | PostgreSQL for organizations, memberships, subscriptions, workflows, assessments, progress, and reporting records; Neo4j for organization-scoped competency relationships and traversal. |
+| Database | PostgreSQL for organizations, memberships, subscriptions, workflows, assessments, RIASEC personal explorations, progress, and reporting records; Neo4j for organization-scoped knowledge-graph catalog entities (`Department`, `JobPosition`, `TargetRole`, `Level`, `Competency`, `MicroSkill`, `LearningModule`, `Certificate`) and 9 directed relationship patterns. |
 | Database change management | Flyway forward migrations; reproducible Neo4j imports and versioned projection/mapping records. |
 | File storage | MinIO is the planned private sample-content store; backend-controlled organization access and metadata contracts require verification. |
 | External/internal integrations | payOS payment adapter and SMTP email integration; internal local-LLM inference for role guidance is a planned capability requiring readiness and acceptance evidence. |

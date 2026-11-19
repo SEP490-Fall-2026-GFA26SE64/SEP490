@@ -34,6 +34,8 @@ test.describe('Department Isolation & Automatic Job Position Assignment', () => 
     await page.getByRole('button', { name: 'Sign in', exact: true }).click()
     await waitForWorkspaceEntry(page)
 
+    await expect(page).toHaveURL(/.*\/ld-manager\/dashboard/)
+    await page.goto(page.url().replace(/\/ld-manager\/dashboard.*$/, '/ld-manager/job-positions'))
     await expect(page).toHaveURL(/.*\/ld-manager\/job-positions/)
     await expect(page.locator('main')).toBeVisible({ timeout: 15_000 })
 

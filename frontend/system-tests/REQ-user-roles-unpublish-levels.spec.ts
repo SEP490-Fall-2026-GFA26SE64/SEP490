@@ -141,7 +141,7 @@ test.describe('Capstone Standard: User Roles Enforcements, L&D Unpublish, Scopin
     // 2.2 Verify Target Roles Create Modal: Level 1 Senior, no "(Highest)" text, and clean description
     await page.goto('/workspace/workspace-development/ld-manager/target-roles')
     await expect(page).toHaveURL(/.*\/ld-manager\/target-roles/)
-    await expect(page.getByText(/Target Role Version Catalog/i)).toBeVisible({ timeout: 15_000 })
+    await expect(page.getByText(/Role catalog/i)).toBeVisible({ timeout: 15_000 })
 
     const createRoleBtn = page.getByRole('button', { name: /Create/i }).first()
     await expect(createRoleBtn).toBeVisible({ timeout: 15_000 })
