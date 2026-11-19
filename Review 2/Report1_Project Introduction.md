@@ -15,6 +15,7 @@
 | Date | A*M, D | In charge | Change Description |
 | --- | --- | --- | --- |
 | 01 November 2026 | A | Report preparation | Created the English project introduction for Review 2 using the Report 1 template, approved project registration, product documentation, and publicly available research and product information. |
+| 19 November 2026 | M | Report preparation | Synchronized Knowledge Graph and Major Features overview with the latest Neo4j 8-label catalog schema (`Department`, `JobPosition`, `TargetRole`, `Level`, `Competency`, `MicroSkill`, `LearningModule`, `Certificate`), 9 relationship patterns, TargetRole staffing/authoring lifecycle, and RIASEC JobPosition guidance contract. |
 
 *A - Added; M - Modified; D - Deleted.*
 
@@ -36,7 +37,7 @@
 
 Adapt-Learn-Graph is proposed to help organizations connect three questions: what a role requires, what an employee can currently demonstrate, and what the employee should learn next. It brings role requirements, assessments, learning materials, and development progress into a shared organizational workspace. Each organization manages its own people and content, while employees receive learning guidance relevant to their development needs.[^P1][^P2]
 
-In business terms, the product's "knowledge graph" is a connected map of roles, skills, and learning resources. "Adaptive learning" means that an employee's recommended learning route can change as new assessment results become available. These capabilities are intended to make development more focused, understandable, and responsive than assigning the same fixed learning sequence to everyone.
+In business terms, the product's Neo4j "knowledge graph" is an organization-scoped connected map of eight catalog entity types — `Department`, `JobPosition` (with RIASEC career-interest profiles), `TargetRole`, `Level`, `Competency`, `MicroSkill` (with directed prerequisite relationships), `LearningModule` (one taught skill per module), and `Certificate` definitions — linked by nine directed relationship patterns. "Adaptive learning" means that an employee's recommended learning route can change as new assessment results become available. These capabilities are intended to make development more focused, understandable, and responsive than assigning the same fixed learning sequence to everyone.
 
 This report describes the proposed product and its intended scope. It is not a statement that every feature is complete, commercially available, or proven to improve workplace performance. Current documentation distinguishes working capabilities from partial implementations, demonstrations, and areas still requiring verification.[^P3]
 
@@ -193,15 +194,15 @@ The initial application and evaluation are bounded to Software Engineering compe
 
 5. **FE-05: Job Position and Expert assignment management.** Allow the L&D Manager to organize job positions within departments and assign Experts responsible for the relevant competency and learning content.
 
-6. **FE-06: Target role definition and publication.** Allow the L&D Manager to create and assign target roles, Experts to configure their competency requirements and submit them, and the L&D Manager to publish approved roles or return them for revision.
+6. **FE-06: Target role definition and publication.** Allow the L&D Manager to create, stage for workforce staffing, and assign target roles across multi-version lineages (`v1.0`, `v1.1`, ...), Experts to configure level-specific competencies and required knowledge levels (`FOUNDATION`, `INTERMEDIATE`, `ADVANCED`) and submit them, and the L&D Manager to publish approved roles (superseding earlier published versions and clearing staffing flags), unpublish roles, or return them for revision with feedback.
 
-7. **FE-07: Skill and prerequisite management.** Allow assigned Experts to maintain specific skills, proficiency expectations, and prerequisite relationships so that learning recommendations reflect the knowledge needed before progressing.
+7. **FE-07: Skill and prerequisite management.** Allow assigned Experts to maintain competencies, micro-skills, disjoint `MODULE_ONLY` / `CERTIFICATE_ONLY` knowledge-level provision modes, and directed knowledge-level prerequisite pairs (`dependentKnowledgeLevel -> prerequisiteKnowledgeLevel`) so that learning recommendations reflect the exact foundational knowledge needed before progressing.
 
-8. **FE-08: Learning modules, content, and approval.** Allow Experts to organize modules, map each module to one MicroSkill, maintain ordered learning materials, and submit the module/content package to the L&D Manager for approval or revision.
+8. **FE-08: Learning modules, content, and approval.** Allow Experts to organize modules, map each module to one MicroSkill at a specific `knowledgeLevel` and `skillVersion`, maintain ordered learning materials or certificate definitions, and submit the module/content package to the L&D Manager for approval or revision.
 
 9. **FE-09: Baseline and module assessments.** Allow the L&D Manager to configure baseline assessment coverage and rules, Experts to maintain module assessments, and Employees to complete assessments. Use separate scoped policies: L&D Baseline per Role–member Level and Expert Skill Assessment per Skill–knowledge, shared across equivalent modules. Persist timed papers/group results; baseline is diagnostic and official achievement requires qualifying learning+assessment or accepted certificate.
 
-10. **FE-10: Interest assessment and target role guidance.** Allow Employees to complete a RIASEC career-interest assessment, view AI-assisted role suggestions and explanations, and select or confirm a published role. Interests inform guidance; they do not establish skill mastery or determine a role on the employee's behalf.
+10. **FE-10: Interest assessment and target role guidance.** Allow Employees to complete a 60-item RIASEC career-interest assessment (raw scores 0–40 per dimension), view AI-assisted Job Position recommendations and explanations matched against Neo4j JobPosition RIASEC profiles (0–40), and explore, select, or confirm a published Target Role and Level. Interests inform guidance; they do not establish skill mastery or determine a role on the employee's behalf.
 
 11. **FE-11: Employee profiles and skill-gap visibility.** Allow Employees to maintain their profiles and see their estimated current competencies and the gaps between those competencies and a selected target role.
 

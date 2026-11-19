@@ -1,16 +1,33 @@
 %% Companion of ../neo4j.puml; canonical image exports use that PlantUML source.
 classDiagram
   direction TB
+  class Department {
+    id: String [UNIQUE]
+    code: String [UNIQUE per org]
+    name: String
+    organizationId: String
+    description: String
+    headOfDepartment: String [optional]
+    headEmail: String [optional]
+    status: String
+    version: String [optional]
+    source: String [optional]
+    createdAt: String
+    updatedAt: String
+  }
   class JobPosition {
     id: String [UNIQUE]
-    code: String
+    code: String [UNIQUE]
     name: String
     organizationId: String
     version: String
     status: String
-    reviewStatus: String
+    reviewStatus: String [optional]
     jobZone: Long
     description: String [optional]
+    source: String [optional]
+    createdAt: String [optional]
+    updatedAt: String [optional]
     interestRealistic: Integer [0..40, optional]
     interestInvestigative: Integer [0..40, optional]
     interestArtistic: Integer [0..40, optional]
@@ -20,72 +37,106 @@ classDiagram
   }
   class TargetRole {
     id: String [UNIQUE]
-    code: String
-    name: String
     organizationId: String
-    version: String
-    status: String
-    reviewStatus: String
+    code: String
+    baseCode: String
+    name: String
+    title: String [legacy alias]
+    familyCode: String
+    track: String
+    description: String
     scope: String
-    assignedExpertId: String
-    assignedExpertName: String
+    responsibilities: String[]
+    status: String
+    isStaffingEnabled: Boolean
+    version: String
+    reviewStatus: String [optional]
+    assignedExpertId: String [optional]
+    assignedExpertName: String [optional]
+    skillTargets: String [JSON]
+    levelCompetencies: String [JSON]
+    competencyIds: String[]
+    rejectionReason: String [optional]
+    source: String [optional]
+    createdAt: DateTime / String
+    updatedAt: DateTime / String
   }
   class Level {
     id: String [UNIQUE]
+    organizationId: String
     code: String
     name: String
-    organizationId: String
-    version: String
-    status: String
-    reviewStatus: String
     rank: Long
+    duration: String
     attainmentRule: String
+    status: String
+    version: String
+    reviewStatus: String [optional]
+    memberToken: String [optional]
+    sourceFormat: String [optional]
+    source: String [optional]
+    createdAt: DateTime / String
+    updatedAt: DateTime / String
   }
   class Competency {
     id: String [UNIQUE]
+    organizationId: String
     code: String
     name: String
     description: String
-    organizationId: String
-    version: String
-    status: String
-    reviewStatus: String
     attainmentRule: String
+    status: String
+    version: String
+    reviewStatus: String
+    departmentId: String [optional]
+    departmentName: String [optional]
+    jobPositionCode: String [optional]
+    jobPositionTitle: String [optional]
+    createdAt: DateTime / String [optional]
+    updatedAt: DateTime / String [optional]
   }
   class MicroSkill {
     id: String [UNIQUE]
-    name: String
-    definition: String
     organizationId: String
-    version: String
+    code: String
+    sourceId: String [optional]
+    name: String
+    description: String
+    definition: String
     status: String
+    version: String
     reviewStatus: String
-    reviewSource: String
-    reviewedBy: String
-    provisionMode: String
-    foundationOutcomeCodes: String[]
-    foundationOutcomeLabels: String[]
-    intermediateOutcomeCodes: String[]
-    intermediateOutcomeLabels: String[]
-    advancedOutcomeCodes: String[]
-    advancedOutcomeLabels: String[]
+    reviewSource: String [optional]
+    reviewedBy: String [optional]
+    reviewedAt: String [optional]
+    moduleOnlyKnowledgeLevels: String[]
+    certificateOnlyKnowledgeLevels: String[]
+    provisionMode: String [legacy common mode]
+    foundationOutcomeLabels: String[] [optional]
+    intermediateOutcomeLabels: String[] [optional]
+    advancedOutcomeLabels: String[] [optional]
+    createdAt: DateTime / String
+    updatedAt: DateTime / String
   }
   class LearningModule {
     id: String [UNIQUE]
-    title: String
     organizationId: String
-    version: String
-    status: String
-    reviewStatus: String
-    reviewSource: String
+    title: String
+    name: String [legacy alias]
     moduleType: String
     duration: Long
+    durationMinutes: Integer [legacy alias]
     knowledgeLevel: String
     skillVersion: String
     contentType: String
     contentUri: String
     contentVersion: String
-    outcomeCodes: String[]
+    version: String
+    status: String
+    reviewStatus: String
+    reviewSource: String [optional]
+    reviewedBy: String [optional]
+    reviewedAt: String [optional]
   }
   class Certificate {
     id: String [UNIQUE]
@@ -95,7 +146,6 @@ classDiagram
     description: String
     knowledgeLevel: String
     skillVersion: String
-    outcomeCodes: String[]
     referenceUrl: String
     status: String
     reviewStatus: String
@@ -105,23 +155,15 @@ classDiagram
     approvedAt: String
     commandHash: String
   }
+  Department --> JobPosition : HAS_JOB_POSITION
   JobPosition --> TargetRole : HAS_ROLE
   TargetRole --> Level : HAS_LEVEL
   Level --> Competency : HAS_COMPETENCY
   Competency --> MicroSkill : HAS_SKILL
   Level --> MicroSkill : REQUIRES_SKILL
+  TargetRole --> MicroSkill : REQUIRES_SKILL [per level]
   LearningModule --> MicroSkill : TEACHES
   MicroSkill --> MicroSkill : HAS_SKILL_PREREQUISITE
   MicroSkill --> Certificate : REQUIRES_CERTIFICATE
   note for MicroSkill "Catalog only. PostgreSQL owns learner state and evidence."
-  note for Certificate "Source-defined; not observed in supplied schema capture."
-%% HAS_ROLE: id: String; version: String; status: String; reviewStatus: String
-%% HAS_LEVEL: id: String; version: String; status: String; reviewStatus: String
-%% HAS_COMPETENCY: id: String; version: String; status: String; reviewStatus: String
-%% HAS_SKILL: id: String; version: String; status: String; reviewStatus: String
-%% REQUIRES_SKILL: id: String; requiredKnowledgeLevels: String[]; isMandatory: Boolean; version: String; status: String; reviewStatus: String
-%% TEACHES: id: String; organizationId: String; version: String; status: String; reviewStatus: String; reviewSource: String
-%% HAS_SKILL_PREREQUISITE: id: String; organizationId: String; prerequisiteKnowledgeLevel: String; dependentKnowledgeLevel: String; version: String; status: String; reviewStatus: String; reviewSource: String
-%% REQUIRES_CERTIFICATE: organizationId: String; status: String; createdBy: String; createdAt: String; replacedBy: String; replacedByActor: String; replacedAt: String
-
-  note for JobPosition "RIASEC: all six integer0–40 or all absent; demo/organization profiles. Personal state belongs to PostgreSQL V72."
+  note for JobPosition "RIASEC: all six integer 0–40 or all absent; demo/organization profiles. Personal state belongs to PostgreSQL V74."

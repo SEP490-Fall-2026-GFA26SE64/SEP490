@@ -61,6 +61,7 @@
 
 | Date | A*M, D | In charge | Change Description |
 | --- | --- | --- | --- |
+| 2026-11-19 | M | Documentation preparation with AI assistance | Synchronized Neo4j catalog entity descriptions and reading rules in Section 3.1.5 with the latest 8-label Neo4j schema (`Department`, `JobPosition`, `TargetRole`, `Level`, `Competency`, `MicroSkill`, `LearningModule`, `Certificate`), 9 directed relationship patterns, TargetRole staffing/authoring lifecycle, and integer 0–40 RIASEC JobPosition profiles. |
 | 2026-11-06 | M | Documentation preparation with AI assistance | Synchronized ACT-05 detailed requirements and role-change rules with the approved Role-Level target and SDD state views; clarified that Certificate is absent from the catalog ontology and modeled separately in flow ERDs. Documentation only. |
 | 2026-11-06 | M | Documentation preparation with AI assistance | Linked ACT-04/ACT-10 authoring logical/physical supplements and extended state views in Report4; retained the ACT-05 conceptual ERDs after upstream synchronization. |
 | 2026-11-06 | M | Documentation preparation with AI assistance | Updated approved ACT-05 Role-Level baseline flow, related state machines and flow-scoped ERDs; retained report styling and dated physical schema history. Documentation only; no runtime/schema change. |
@@ -873,12 +874,12 @@ This single **conceptual data model** combines the ACT-05 learning ERDs and comp
 **Reading rules**
 
 - `Level` unifies the earlier RoleLevel, RoleMemberLevel and MemberLevel labels; `MicroSkill` unifies Skill and skill/knowledge catalog context. ImmutableVersion and ImmutablePolicy are represented once as `ImmutablePolicy`. No duplicate catalog or requirement node is introduced.
-- Neo4j owns `JobPosition`, `TargetRole`, `Level`, `Competency`, `MicroSkill`, `LearningModule` and `Certificate`. Each Module teaches exactly one MicroSkill; Certificate is connected from MicroSkill through `REQUIRES_CERTIFICATE` under the current source contract.
-- PostgreSQL owns identity, selection, policy versions, frozen assessments, diagnostics, official evidence, pathway state, original learning progress and certificate submissions/decisions. A baseline diagnostic does not become official achievement; bypass is a waiver, not evidence.
+- Neo4j owns the learning/competency catalog entities shown here — `JobPosition`, `TargetRole`, `Level`, `Competency`, `MicroSkill`, `LearningModule` and `Certificate` — together with the organizational `Department` node (`Department -> HAS_JOB_POSITION -> JobPosition`, documented in SDD section 2.4). Each Module teaches exactly one MicroSkill at one `knowledgeLevel` and `skillVersion`; Certificate is connected from MicroSkill through `REQUIRES_CERTIFICATE` under the current source contract.
+- PostgreSQL owns identity, selection, policy versions, frozen assessments, diagnostics, official evidence, pathway state, original learning progress, RIASEC personal explorations (V74), and certificate submissions/decisions. A baseline diagnostic does not become official achievement; bypass is a waiver, not evidence.
 - Dotted links show snapshot, projection or application-managed context relationships. In particular, links between PostgreSQL and Neo4j are references to catalog identities/versions, **not foreign keys or shared transactions between databases**. Existing dotted intra-store relationships retain their original meaning.
 - A conceptual entity can be an aggregate, immutable record or read projection rather than one physical table. LearningModule catalog definition belongs to Neo4j; authored content/version history and learner progress belong to PostgreSQL, while private file bytes remain in object storage.
 
-Selected physical mappings are in [SDD section 2.2](Report4_Software%20Design%20Document.md#22-logical-database-design); graph fields are in [SDD section 2.4](Report4_Software%20Design%20Document.md#24-neo4j-design-and-controlled-import). ACT-10 Question Bank and ACT-04 Module/Content authoring remain documented separately in SDD LERD-05/06 and DB-09/10. The earlier CERD-01–04 and CGRAPH-01 assets remain historical references, no longer separate main diagrams here.
+Selected physical mappings are in [SDD section 2.2](Report4_Software%20Design%20Document.md#22-logical-database-design); complete 8-label Neo4j entity/property specifications are in [SDD section 2.4](Report4_Software%20Design%20Document.md#24-neo4j-design-and-controlled-import). ACT-10 Question Bank and ACT-04 Module/Content authoring remain documented separately in SDD LERD-05/06 and DB-09/10. The earlier CERD-01–04 and CGRAPH-01 assets remain historical references, no longer separate main diagrams here.
 
 **Entities Description**
 
@@ -912,15 +913,15 @@ The Database column identifies the authoritative store for every entity in the c
 | 24 | OriginalLearningProgress | Original learner Module/lesson progress owner; pathway-option context does not create a second progress table. | PostgreSQL |
 | 25 | CertificateSubmission | Employee evidence with frozen certificate definition and request/step context. | PostgreSQL |
 | 26 | BypassDecision | Accepted missing-provision waiver; never evidence of skill achievement. | PostgreSQL |
-| 27 | JobPosition | Job Position catalog definition owning TargetRoles. | Neo4j |
-| 28 | TargetRole | Professional target role, distinct from an account's permission role. | Neo4j |
-| 29 | Level | Actual member Level belonging to one TargetRole and owning competencies/explicit skill requirements. | Neo4j |
-| 30 | Competency | Group of MicroSkills required by its owning Level; no independent learner score. | Neo4j |
-| 31 | MicroSkill | Versioned skill definition with exact knowledge/outcome provision and prerequisite relationships. | Neo4j |
-| 32 | LearningModule | Catalog provision teaching exactly one MicroSkill; content authoring/history and learner progress are stored separately in PostgreSQL. | Neo4j |
-| 33 | Certificate | Catalog definition assigned through REQUIRES_CERTIFICATE for a configured skill/knowledge pair; learner submissions and review decisions remain in PostgreSQL. | Neo4j |
+| 27 | JobPosition | Job Position catalog definition (owned by a Neo4j Department via HAS_JOB_POSITION) owning TargetRoles via HAS_ROLE and storing optional description and six integer 0–40 RIASEC interest scores. | Neo4j |
+| 28 | TargetRole | Professional target role (:TargetRole/:Role) with multi-version lineage (baseCode, version), staffing/authoring status lifecycle (DRAFT, STAGED, SENT, SUBMITTED, REJECTED, PUBLISHED/ACTIVE, UNPUBLISHED, SUPERSEDED), isStaffingEnabled flag, familyCode, track, responsibilities, assignedExpertId, skillTargets, levelCompetencies, competencyIds, and rejectionReason. | Neo4j |
+| 29 | Level | Actual member Level node belonging to one TargetRole via HAS_LEVEL (rank, duration in integer months, attainmentRule, memberToken, sourceFormat) and owning competencies (HAS_COMPETENCY) and explicit skill requirements (REQUIRES_SKILL). | Neo4j |
+| 30 | Competency | Group of MicroSkills (HAS_SKILL) required by its owning Level, with optional department and job-position scoping metadata (departmentId, departmentName, jobPositionCode, jobPositionTitle); no independent learner score. | Neo4j |
+| 31 | MicroSkill | Versioned skill definition with code, description (definition), disjoint moduleOnlyKnowledgeLevels and certificateOnlyKnowledgeLevels (FOUNDATION, INTERMEDIATE, ADVANCED), and directed prerequisite relationships (HAS_SKILL_PREREQUISITE). | Neo4j |
+| 32 | LearningModule | Catalog provision teaching exactly one MicroSkill via TEACHES at an explicit knowledgeLevel and skillVersion; content authoring/history and learner progress are stored separately in PostgreSQL. | Neo4j |
+| 33 | Certificate | Catalog definition assigned through REQUIRES_CERTIFICATE (id, name, description, knowledgeLevel, skillVersion, HTTPS referenceUrl, authoredBy/approvedBy, commandHash) for a configured CERTIFICATE_ONLY skill/knowledge pair; learner submissions and review decisions remain in PostgreSQL. | Neo4j |
 
-`REQUIRES_SKILL` and the skill prerequisite pair are Neo4j relationships, not additional entity tables. Existing QuestionVersion records and detailed content-authoring aggregates remain in their separate SDD views. Profile displays combine diagnostics and official evidence as a read projection rather than introducing another catalog node or baseline-created achievement record.
+`REQUIRES_SKILL` (on both `Level -> MicroSkill` and `TargetRole -> MicroSkill`) and `HAS_SKILL_PREREQUISITE` are Neo4j relationships, not additional entity tables. Existing QuestionVersion records and detailed content-authoring aggregates remain in their separate SDD views. Profile displays combine diagnostics and official evidence as a read projection rather than introducing another catalog node or baseline-created achievement record.
 
 ### 3.2 Organization Onboarding
 
