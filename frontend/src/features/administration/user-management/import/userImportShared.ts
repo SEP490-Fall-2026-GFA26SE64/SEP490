@@ -31,7 +31,7 @@ export const IMPORT_COLUMNS: readonly ImportColumn[] = [
   { field: 'role', required: true, header: { en: 'Role', vi: 'Vai trò' }, width: 18 },
   { field: 'department', required: false, header: { en: 'Department', vi: 'Phòng ban' }, width: 32 },
   { field: 'jobPosition', required: false, header: { en: 'Job position', vi: 'Vị trí công việc' }, width: 40 },
-  { field: 'targetRole', required: false, header: { en: 'Target role', vi: 'Vai trò mục tiêu' }, width: 36 },
+  { field: 'targetRole', required: false, header: { en: 'Current role', vi: 'Vai trò hiện tại' }, width: 36 },
   { field: 'level', required: false, header: { en: 'Level', vi: 'Cấp độ' }, width: 14 },
 ]
 
@@ -65,6 +65,9 @@ for (const column of IMPORT_COLUMNS) {
   HEADER_LOOKUP.set(normalizeKey(column.header.vi), column.field)
   HEADER_LOOKUP.set(normalizeKey(column.field), column.field)
 }
+// Files downloaded before the column was renamed to "Current role".
+HEADER_LOOKUP.set(normalizeKey('Target role'), 'targetRole')
+HEADER_LOOKUP.set(normalizeKey('Vai trò mục tiêu'), 'targetRole')
 
 export function headerField(value: string): ImportField | null {
   return HEADER_LOOKUP.get(normalizeKey(value)) ?? null
@@ -89,7 +92,7 @@ export function stripLevelRank(value: string): string {
   return value.replace(/^(?:rank|level|hạng|cấp)\s*\d+\s*:\s*/i, '').trim()
 }
 
-/** Department → job position → Target role → levels, resolved with the same rules as the Create User form. */
+/** Department → job position → Current role → levels, resolved with the same rules as the Create User form. */
 export interface ImportCatalogTargetRole {
   role: TargetRoleModel
   label: string

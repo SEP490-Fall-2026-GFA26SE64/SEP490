@@ -7,8 +7,8 @@ import { observe, record, text } from './subscriptionHelpers'
 // Destructive: /reset removes every non-seed organization, so this spec only runs against a disposable stack.
 const STACK = process.env.DEMO_RESET_STACK ?? 'alg-demo'
 const DEMO = path.resolve('..', 'Demo')
-const ADMIN = { email: 'demo.inbox+admin@example.com', password: 'SaoMai@Demo2026', name: 'Trần Minh Quân', phone: '0901234567' }
-// Invitations go through real SMTP one row at a time, so an 11-row import can take minutes.
+const ADMIN = { email: 'demo.inbox+admin@example.com', password: 'Brightpath@Demo2026', name: 'Michael Carter', phone: '+1 415 555 0123' }
+// Invitations go through real SMTP one row at a time.
 test.setTimeout(900_000)
 
 test.beforeEach(async ({ page, baseURL }) => {
@@ -53,13 +53,13 @@ async function combobox(page: Page, name: string, option: string) {
 /** Steps 1-7 of the onboarding wizard with the values documented in Demo/Demo.md. */
 async function onboard(page: Page) {
   await page.goto('/guest/register')
-  await page.getByLabel('Business name', { exact: false }).fill('Sao Mai Software JSC')
-  await combobox(page, 'Country', 'Vietnam')
+  await page.getByLabel('Business name', { exact: false }).fill('Brightpath Technologies Inc.')
+  await combobox(page, 'Country', 'United States')
   await combobox(page, 'Industry', 'Software & artificial intelligence')
-  await page.getByLabel('Workspace address', { exact: false }).fill('saomai')
+  await page.getByLabel('Workspace address', { exact: false }).fill('brightpath')
   await page.getByRole('button', { name: 'Import structure', exact: true }).click()
   const dialog = page.getByRole('dialog', { name: 'Import organization structure' })
-  await page.getByTestId('org-structure-file').setInputFiles(demoFile('01_Org_Structure_SaoMai.xlsx'))
+  await page.getByTestId('org-structure-file').setInputFiles(demoFile('01_Org_Structure_Brightpath.xlsx'))
   await expect(dialog.getByRole('tree', { name: 'Imported organization structure' }).getByRole('treeitem')).toHaveCount(28, { timeout: 30_000 })
   await dialog.getByRole('button', { name: 'Apply structure', exact: true }).click()
   await expect(page.getByLabel('Imported structure counts')).toContainText('Department: 4')
@@ -79,18 +79,18 @@ async function onboard(page: Page) {
   await page.getByRole('dialog', { name: 'Confirm purchase terms' }).getByRole('button', { name: 'Create payment order', exact: true }).click()
   await expect(page.getByRole('button', { name: 'Enter workspace', exact: true })).toBeVisible({ timeout: 90_000 })
   await page.getByRole('button', { name: 'Enter workspace', exact: true }).click()
-  await expect(page).toHaveURL(/\/workspace\/saomai\/admin\/subscription$/, { timeout: 30_000 })
+  await expect(page).toHaveURL(/\/workspace\/brightpath\/admin\/subscription$/, { timeout: 30_000 })
 }
 
 async function importUsers(page: Page) {
-  await page.goto('/workspace/saomai/admin/users')
+  await page.goto('/workspace/brightpath/admin/users')
   await page.getByRole('button', { name: /^(Import Excel|Nhập Excel)$/ }).click()
   const dialog = page.getByRole('dialog', { name: /Import users from Excel/ })
   await expect(dialog.getByRole('button', { name: /Download template/ })).toBeEnabled({ timeout: 60_000 })
-  await dialog.getByLabel('Choose Excel file').setInputFiles(demoFile('02_Users_SaoMai.xlsx'))
-  await expect(dialog.getByText('11 valid', { exact: true })).toBeVisible({ timeout: 30_000 })
-  await dialog.getByRole('button', { name: 'Import 11 valid user(s)' }).click()
-  await expect(dialog.getByText(/11 invitation\(s\) sent\. 0 row\(s\) not imported\./)).toBeVisible({ timeout: 360_000 })
+  await dialog.getByLabel('Choose Excel file').setInputFiles(demoFile('02_Users_Brightpath.xlsx'))
+  await expect(dialog.getByText('3 valid', { exact: true })).toBeVisible({ timeout: 30_000 })
+  await dialog.getByRole('button', { name: 'Import 3 valid user(s)' }).click()
+  await expect(dialog.getByText(/3 invitation\(s\) sent\. 0 row\(s\) not imported\./)).toBeVisible({ timeout: 360_000 })
   await dialog.getByRole('button', { name: 'Done' }).click()
 }
 
@@ -104,13 +104,13 @@ test('the /reset page wipes an onboarded demo organization so the same slug and 
   await importUsers(page)
   // Imported users stay pending invitations until they activate, so only the administrator is an account.
   expect(psql(`SELECT count(*) FROM platform.account WHERE organization_id='${organization}'`)).toBe('1')
-  expect(psql(`SELECT count(*) FROM platform.workspace_activation WHERE organization_id='${organization}'`)).toBe('11')
+  expect(psql(`SELECT count(*) FROM platform.workspace_activation WHERE organization_id='${organization}'`)).toBe('3')
   await page.goto('/favicon.svg')
   await page.context().clearCookies()
 
   const result = await openReset(page)
   expect(result).toMatchObject({ organizationsRemoved: 1, accountsRemoved: 1, registrationsRemoved: 1, organizationsRetained: 1, warnings: [] })
-  expect(Number(result.relatedRowsRemoved)).toBeGreaterThanOrEqual(11)
+  expect(Number(result.relatedRowsRemoved)).toBeGreaterThanOrEqual(3)
   expect(Number(result.graphNodesRemoved)).toBeGreaterThan(0)
   await expect(page.getByText('1 seed organization kept')).toBeVisible()
   await page.screenshot({ path: test.info().outputPath('reset-done-1440.png'), fullPage: true })

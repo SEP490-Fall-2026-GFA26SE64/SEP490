@@ -151,7 +151,7 @@ test.describe('FR-03.01 bulk user import from Excel', () => {
     expect(instructions.name).toBe('Instructions')
     expect(instructions.properties.tabColor?.argb).toBe('FF334155')
     expect(users.properties.tabColor?.argb).toBe('FFEA580C')
-    expect(users.getRow(1).values).toEqual([undefined, 'Full name *', 'Email *', 'Role *', 'Department', 'Job position', 'Target role', 'Level'])
+    expect(users.getRow(1).values).toEqual([undefined, 'Full name *', 'Email *', 'Role *', 'Department', 'Job position', 'Current role', 'Level'])
     expect((users.getCell('A1').fill as ExcelJS.FillPattern).fgColor?.argb).toBe('FFEA580C')
     expect((users.getCell('D1').fill as ExcelJS.FillPattern).fgColor?.argb).toBe('FFFFF5EB')
     expect(users.views[0]).toMatchObject({ state: 'frozen', ySplit: 1 })

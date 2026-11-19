@@ -121,8 +121,8 @@ function fieldCopy(field: ImportField, language: ImportLanguage, sample: Sample)
     case 'role': return { description: t('Pick from the list: Employee, Domain Expert or L&D Manager.', 'Chọn từ danh sách: Nhân viên, Chuyên gia hoặc Quản lý L&D.'), example: roleLabel('EMPLOYEE', language) }
     case 'department': return { description: t('Required for every role. Pick from the list (see the Lists tab). An L&D Manager becomes the head of this department.', 'Bắt buộc với mọi vai trò. Chọn từ danh sách (xem tab Danh mục). Quản lý L&D sẽ trở thành trưởng phòng ban này.'), example: sample.department }
     case 'jobPosition': return { description: t('Required for Employee and Domain Expert; leave empty for L&D Manager. Must belong to the chosen department.', 'Bắt buộc với Nhân viên và Chuyên gia; để trống với Quản lý L&D. Phải thuộc phòng ban đã chọn.'), example: sample.jobPosition }
-    case 'targetRole': return { description: t('Optional, Employee only. A published Target role of the chosen job position.', 'Không bắt buộc, chỉ dùng cho Nhân viên. Vai trò mục tiêu đã xuất bản của vị trí đã chọn.'), example: sample.targetRole }
-    case 'level': return { description: t('Optional, needs a Target role. Leave empty to use the entry level of that role.', 'Không bắt buộc, cần có Vai trò mục tiêu. Để trống sẽ dùng cấp độ khởi điểm của vai trò.'), example: sample.level }
+    case 'targetRole': return { description: t('Optional, Employee only. The role the employee holds now: a published or staged role of the chosen job position.', 'Không bắt buộc, chỉ dùng cho Nhân viên. Vai trò nhân viên đang đảm nhận: vai trò đã xuất bản hoặc đã staged của vị trí đã chọn.'), example: sample.targetRole }
+    case 'level': return { description: t('Optional, needs a Current role. Leave empty to use the entry level of that role.', 'Không bắt buộc, cần có Vai trò hiện tại. Để trống sẽ dùng cấp độ khởi điểm của vai trò.'), example: sample.level }
   }
 }
 
@@ -181,7 +181,7 @@ function buildGuideSheet(workbook: Workbook, context: TemplateContext, sample: S
   const sheets: [string, string, string][] = [
     [usersTab, t('One user to invite. Each valid row sends an activation email; seats are counted only after activation.', 'Một người dùng cần mời. Mỗi dòng hợp lệ gửi một email kích hoạt; ghế chỉ được tính sau khi kích hoạt.'),
       IMPORT_COLUMNS.map(column => `${columnHeader(column, language)}${column.required ? '' : t(' - see rules', ' - xem quy tắc')}`).join('\n')],
-    [listsTab, t('Reference only: departments, job positions, Target roles and levels of your workspace.', 'Chỉ để tham khảo: phòng ban, vị trí công việc, vai trò mục tiêu và cấp độ của không gian làm việc.'), t('Not imported', 'Không được nhập')],
+    [listsTab, t('Reference only: departments, job positions, Current roles and levels of your workspace.', 'Chỉ để tham khảo: phòng ban, vị trí công việc, vai trò hiện tại và cấp độ của không gian làm việc.'), t('Not imported', 'Không được nhập')],
   ]
   sheets.forEach((values, index) => write(row++, values, { fill: index % 2 ? COLOR.canvas : COLOR.white }))
   row++
@@ -200,15 +200,15 @@ function buildGuideSheet(workbook: Workbook, context: TemplateContext, sample: S
   row++
 
   const rules = [
-    t(`Enter one user per row in the "${usersTab}" tab, right below the header row. Use the drop-down lists for Role, Department, Job position, Target role and Level.`,
-      `Nhập mỗi người dùng một dòng trong tab "${usersTab}", ngay dưới dòng tiêu đề. Dùng danh sách thả xuống cho Vai trò, Phòng ban, Vị trí công việc, Vai trò mục tiêu và Cấp độ.`),
-    t(`${roleLabel('EMPLOYEE', language)}: department and job position are required; Target role is optional and Level needs a Target role.`,
-      `${roleLabel('EMPLOYEE', language)}: bắt buộc phòng ban và vị trí công việc; vai trò mục tiêu không bắt buộc, cấp độ cần có vai trò mục tiêu.`),
-    t(`${roleLabel('DOMAIN_EXPERT', language)}: department and job position are required; leave Target role and Level empty.`,
-      `${roleLabel('DOMAIN_EXPERT', language)}: bắt buộc phòng ban và vị trí công việc; để trống vai trò mục tiêu và cấp độ.`),
+    t(`Enter one user per row in the "${usersTab}" tab, right below the header row. Use the drop-down lists for Role, Department, Job position, Current role and Level.`,
+      `Nhập mỗi người dùng một dòng trong tab "${usersTab}", ngay dưới dòng tiêu đề. Dùng danh sách thả xuống cho Vai trò, Phòng ban, Vị trí công việc, Vai trò hiện tại và Cấp độ.`),
+    t(`${roleLabel('EMPLOYEE', language)}: department and job position are required; Current role is optional and Level needs a Current role.`,
+      `${roleLabel('EMPLOYEE', language)}: bắt buộc phòng ban và vị trí công việc; vai trò hiện tại không bắt buộc, cấp độ cần có vai trò hiện tại.`),
+    t(`${roleLabel('DOMAIN_EXPERT', language)}: department and job position are required; leave Current role and Level empty.`,
+      `${roleLabel('DOMAIN_EXPERT', language)}: bắt buộc phòng ban và vị trí công việc; để trống vai trò hiện tại và cấp độ.`),
     t(`${roleLabel('LD_MANAGER', language)}: department is required and the user becomes its head; leave the other columns empty.`,
       `${roleLabel('LD_MANAGER', language)}: bắt buộc phòng ban và người dùng trở thành trưởng phòng ban; để trống các cột còn lại.`),
-    t(`Check valid combinations in the "${listsTab}" tab: Department → Job position → Target role → Level.`, `Kiểm tra các tổ hợp hợp lệ ở tab "${listsTab}": Phòng ban → Vị trí công việc → Vai trò mục tiêu → Cấp độ.`),
+    t(`Check valid combinations in the "${listsTab}" tab: Department → Job position → Current role → Level.`, `Kiểm tra các tổ hợp hợp lệ ở tab "${listsTab}": Phòng ban → Vị trí công việc → Vai trò hiện tại → Cấp độ.`),
     t('Each email may appear only once in the file and must not already have an account or a pending invitation. Administrator accounts cannot be imported.',
       'Mỗi email chỉ xuất hiện một lần trong tệp và chưa có tài khoản hoặc lời mời đang chờ. Không thể nhập tài khoản Quản trị viên.'),
     t('Do not rename the tabs or the header row. Lists reflect the workspace when this file was downloaded; download a new template after changing the structure.',
@@ -302,8 +302,8 @@ function buildUsersSheet(workbook: Workbook, context: TemplateContext, ranges: O
     role: { range: ranges.role, strict: true, message: t('Pick Employee, Domain Expert or L&D Manager.', 'Chọn Nhân viên, Chuyên gia hoặc Quản lý L&D.') },
     department: { range: ranges.department, strict: false, message: t('Pick a department from the list.', 'Hãy chọn phòng ban trong danh sách.') },
     jobPosition: { range: ranges.jobPosition, strict: false, message: t('Pick a job position of the chosen department.', 'Hãy chọn vị trí thuộc phòng ban đã chọn.') },
-    targetRole: { range: ranges.targetRole, strict: false, message: t('Pick a published Target role of the job position.', 'Hãy chọn vai trò mục tiêu đã xuất bản của vị trí.') },
-    level: { range: ranges.level, strict: false, message: t('Pick a level of the Target role.', 'Hãy chọn cấp độ của vai trò mục tiêu.') },
+    targetRole: { range: ranges.targetRole, strict: false, message: t('Pick a published or staged Current role of the job position.', 'Hãy chọn vai trò hiện tại đã xuất bản hoặc đã staged của vị trí.') },
+    level: { range: ranges.level, strict: false, message: t('Pick a level of the Current role.', 'Hãy chọn cấp độ của vai trò hiện tại.') },
   }
 
   const rowCount = Math.max(MAX_IMPORT_ROWS, prefill?.length ?? 0)
@@ -357,14 +357,14 @@ function buildListsSheet(workbook: Workbook, context: TemplateContext) {
   let row = 2
   writeMerged(sheet, row, 2, 5, t('Valid values', 'Danh mục giá trị hợp lệ'), { font: font({ bold: true, size: 18, color: { argb: COLOR.primary } }), wrap: false })
   sheet.getRow(row++).height = 30
-  writeMerged(sheet, row, 2, 5, t('Taken from your workspace when this file was downloaded. Read each line as Department → Job position → Target role → Levels (highest first).', 'Lấy từ cấu hình không gian làm việc khi tải tệp. Đọc mỗi dòng theo thứ tự Phòng ban → Vị trí công việc → Vai trò mục tiêu → Cấp độ (cao nhất trước).'), { font: font({ color: { argb: COLOR.textMuted } }) })
+  writeMerged(sheet, row, 2, 5, t('Taken from your workspace when this file was downloaded. Read each line as Department → Job position → Current role → Levels (highest first).', 'Lấy từ cấu hình không gian làm việc khi tải tệp. Đọc mỗi dòng theo thứ tự Phòng ban → Vị trí công việc → Vai trò hiện tại → Cấp độ (cao nhất trước).'), { font: font({ color: { argb: COLOR.textMuted } }) })
   sheet.getRow(row++).height = 34
   row++
 
   sectionBanner(sheet, row++, 2, 5, t('Roles', 'Vai trò'))
   tableHeader(sheet, row++, [[2, 2, t('Value to enter', 'Giá trị cần nhập')], [3, 5, t('Who it is for', 'Dành cho')]])
   const roleInfo: Record<(typeof IMPORT_ROLES)[number], string> = {
-    EMPLOYEE: t('Learners who follow learning paths. Needs department and job position; Target role is optional.', 'Người học theo lộ trình. Cần phòng ban và vị trí công việc; vai trò mục tiêu không bắt buộc.'),
+    EMPLOYEE: t('Learners who follow learning paths. Needs department and job position; Current role is optional.', 'Người học theo lộ trình. Cần phòng ban và vị trí công việc; vai trò hiện tại không bắt buộc.'),
     DOMAIN_EXPERT: t('Subject-matter experts who review content. Needs department and job position.', 'Chuyên gia nghiệp vụ duyệt nội dung. Cần phòng ban và vị trí công việc.'),
     LD_MANAGER: t('Learning & Development managers. Needs a department and becomes its head.', 'Quản lý đào tạo & phát triển. Cần phòng ban và sẽ trở thành trưởng phòng ban đó.'),
   }
@@ -373,8 +373,8 @@ function buildListsSheet(workbook: Workbook, context: TemplateContext) {
   })
   row++
 
-  sectionBanner(sheet, row++, 2, 5, t('Departments, job positions and Target roles', 'Phòng ban, vị trí công việc và vai trò mục tiêu'))
-  tableHeader(sheet, row++, [[2, 2, t('Department', 'Phòng ban')], [3, 3, t('Job position', 'Vị trí công việc')], [4, 4, t('Target role (Employee only)', 'Vai trò mục tiêu (chỉ Nhân viên)')], [5, 5, t('Levels', 'Cấp độ')]])
+  sectionBanner(sheet, row++, 2, 5, t('Departments, job positions and Current roles', 'Phòng ban, vị trí công việc và vai trò hiện tại'))
+  tableHeader(sheet, row++, [[2, 2, t('Department', 'Phòng ban')], [3, 3, t('Job position', 'Vị trí công việc')], [4, 4, t('Current role (Employee only)', 'Vai trò hiện tại (chỉ Nhân viên)')], [5, 5, t('Levels', 'Cấp độ')]])
   if (catalog.length === 0) {
     tableRow(sheet, row++, [[2, 5, t('No departments are configured yet. Configure departments and job positions before importing users.', 'Chưa có phòng ban nào. Hãy thiết lập phòng ban và vị trí công việc trước khi nhập người dùng.'), font({ italic: true, color: { argb: COLOR.textMuted } })]], false)
     return
@@ -391,7 +391,7 @@ function buildListsSheet(workbook: Workbook, context: TemplateContext) {
     lines.forEach(([jp, role, levels], lineIndex) => {
       const deptCell: [number, number, string, Partial<Font>?] = [2, 2, lineIndex === 0 ? entry.label : '', font({ bold: true })]
       const jpCell: [number, number, string, Partial<Font>?] = jp ? [3, 3, jp] : [3, 3, ...none('No job position linked', 'Chưa liên kết vị trí')]
-      const roleCell: [number, number, string, Partial<Font>?] = role ? [4, 4, role] : [4, 4, ...(jp ? none('No published Target role', 'Chưa có vai trò mục tiêu đã xuất bản') : ['', font()] as const)]
+      const roleCell: [number, number, string, Partial<Font>?] = role ? [4, 4, role] : [4, 4, ...(jp ? none('No available Current role', 'Chưa có vai trò hiện tại khả dụng') : ['', font()] as const)]
       tableRow(sheet, row++, [deptCell, jpCell, roleCell, [5, 5, levels]], zebra)
     })
   })

@@ -45,7 +45,7 @@ describe('user import template', () => {
     expect(visible).toEqual(['Hướng dẫn', 'Người dùng', 'Danh mục'])
 
     const users = reloaded.getWorksheet('Người dùng')!
-    expect(users.getRow(1).values).toEqual([undefined, 'Họ và tên *', 'Email *', 'Vai trò *', 'Phòng ban', 'Vị trí công việc', 'Vai trò mục tiêu', 'Cấp độ'])
+    expect(users.getRow(1).values).toEqual([undefined, 'Họ và tên *', 'Email *', 'Vai trò *', 'Phòng ban', 'Vị trí công việc', 'Vai trò hiện tại', 'Cấp độ'])
     expect(users.getCell('A1').fill).toMatchObject({ fgColor: { argb: 'FFEA580C' } })
     expect(users.getCell('D1').fill).toMatchObject({ fgColor: { argb: 'FFFFF5EB' } })
     expect(users.views[0]).toMatchObject({ state: 'frozen', ySplit: 1 })
@@ -94,6 +94,16 @@ describe('user import parser', () => {
     const result = await parseUserImportFile(await toBuffer(workbook))
     expect(result).toEqual({ ok: true, rows: [{ rowNumber: 3, fullName: 'Lan Pham', email: 'lan@company.com', role: 'L&D Manager', department: '', jobPosition: '', targetRole: '', level: '' }] })
   })
+
+  it('still reads the legacy "Target role" header of older templates', async () => {
+    const ExcelJS = await loadExcel()
+    const workbook = new ExcelJS.Workbook()
+    const sheet = workbook.addWorksheet('Users')
+    sheet.addRow(['Full name *', 'Email *', 'Role *', 'Target role', 'Level'])
+    sheet.addRow(['An Nguyen', 'an@company.com', 'Employee', 'SWE', 'Junior'])
+    const result = await parseUserImportFile(await toBuffer(workbook))
+    expect(result).toMatchObject({ ok: true, rows: [{ targetRole: 'SWE', level: 'Junior' }] })
+  })
 })
 
 describe('user import validation', () => {
@@ -121,14 +131,14 @@ describe('user import validation', () => {
     expect(rows[1].issues.map(issue => issue.message)).toEqual(['Email is duplicated with row 4.'])
   })
 
-  it('enforces the department → job position → target role → level chain', () => {
+  it('enforces the department → job position → current role → level chain', () => {
     expect(messages(raw({ department: '' }))).toContain('Department is required for this role.')
     expect(messages(raw({ jobPosition: '' }))).toEqual(['Job position is required for Employee and Domain Expert.'])
     expect(messages(raw({ department: 'HR - People' }))).toEqual(['Job position "15-1252.00 - Software Developers" does not belong to department HR - People.'])
-    expect(messages(raw({ targetRole: 'Data Scientist' }))).toEqual(['Target role "Data Scientist" is not published for job position 15-1252.00 - Software Developers.'])
+    expect(messages(raw({ targetRole: 'Data Scientist' }))).toEqual(['Current role "Data Scientist" is not published or staged for job position 15-1252.00 - Software Developers.'])
     expect(messages(raw({ targetRole: 'SWE', level: 'Principal' }))).toEqual(['Level must be one of: Senior, Middle, Junior.'])
-    expect(messages(raw({ level: 'Senior' }))).toEqual(['Level requires a Target role.'])
-    expect(messages(raw({ role: 'Domain Expert', targetRole: 'SWE' }))).toEqual(['Target role and Level apply only to Employee rows. Leave them empty.'])
+    expect(messages(raw({ level: 'Senior' }))).toEqual(['Level requires a Current role.'])
+    expect(messages(raw({ role: 'Domain Expert', targetRole: 'SWE' }))).toEqual(['Current role and Level apply only to Employee rows. Leave them empty.'])
   })
 
   it('lets an L&D manager row omit and ignore the job position', () => {

@@ -241,8 +241,8 @@ export function UserImportDialog(props: UserImportDialogProps) {
                 <h3 id="import-step-template" className="text-card font-semibold text-foreground">{c('Download the template', 'Tải file mẫu')}</h3>
               </div>
               <p className="text-body-sm text-muted-foreground">
-                {c('The template contains an Instructions tab with the rules, a Users tab to fill in, and a Lists tab with your current departments, job positions and Target roles.',
-                  'File mẫu gồm tab Hướng dẫn từng bước, tab Người dùng để điền thông tin và tab Danh mục chứa phòng ban, vị trí công việc, vai trò mục tiêu hiện có.')}
+                {c('The template contains an Instructions tab with the rules, a Users tab to fill in, and a Lists tab with your current departments, job positions and roles.',
+                  'File mẫu gồm tab Hướng dẫn từng bước, tab Người dùng để điền thông tin và tab Danh mục chứa phòng ban, vị trí công việc, vai trò hiện có.')}
               </p>
               <ul className="space-y-1 text-body-sm text-foreground">
                 <li className="flex gap-2"><CheckCircle2 size={16} className="mt-0.5 shrink-0 text-success" aria-hidden="true" />{c('Drop-down lists for role and assignments', 'Danh sách thả xuống cho vai trò và phân công')}</li>
