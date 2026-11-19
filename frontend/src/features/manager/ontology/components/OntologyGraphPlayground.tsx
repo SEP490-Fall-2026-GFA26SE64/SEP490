@@ -169,11 +169,6 @@ function OntologyGraphPlaygroundInner({
 
   const handleNodeClickForConnectRef = React.useRef<(targetNode: PlaygroundCustomNode) => Promise<void>>(async () => {})
 
-  // Prerequisite creation threshold dialog
-  const [isPrereqModalOpen, setIsPrereqModalOpen] = React.useState(false)
-  const [pendingPrereq, setPendingPrereq] = React.useState<{ source: PlaygroundCustomNode; target: PlaygroundCustomNode } | null>(null)
-  const [dependentLevel, setDependentLevel] = React.useState('')
-  const [prerequisiteLevel, setPrerequisiteLevel] = React.useState('')
   const [pendingRoleRequirement, setPendingRoleRequirement] = React.useState<{ role: TargetRoleModel; skill: PlaygroundCustomNode; level: PlaygroundCustomNode; parent: string } | null>(null)
   const [requiredKnowledge, setRequiredKnowledge] = React.useState<string[]>([])
   const [savingRequirement, setSavingRequirement] = React.useState(false)
@@ -381,16 +376,15 @@ function OntologyGraphPlaygroundInner({
     }
   }
 
-  function buildPrereqEdge(sourceSkillId: string, targetSkillId: string, dependent?: string | null, prerequisite?: string | null): Edge {
-    const pair = `${dependent ?? 'Unclassified'} → ${prerequisite ?? 'Unclassified'}`
+  function buildPrereqEdge(sourceSkillId: string, targetSkillId: string, _dependent?: string | null, _prerequisite?: string | null): Edge {
     return {
-      id: `prereq-${sourceSkillId}-${dependent}-${targetSkillId}-${prerequisite}`,
+      id: `prereq-${sourceSkillId}-${targetSkillId}`,
       from: sourceSkillId,
       to: targetSkillId,
-      label: pair,
-      title: `HAS_SKILL_PREREQUISITE: ${pair}`,
+      label: 'PREREQUISITE',
+      title: 'HAS_SKILL_PREREQUISITE: Skill prerequisite relationship',
       font: {
-        size: 9.5,
+        size: 8.5,
         color: '#DC2626',
         background: '#FEF2F2',
         strokeWidth: 0,
@@ -2276,11 +2270,36 @@ function OntologyGraphPlaygroundInner({
 
     // Branch 2: MicroSkill + MicroSkill (HAS_SKILL_PREREQUISITE)
     if (sourceNode.nodeType === 'skill' && targetNode.nodeType === 'skill') {
-      setPendingPrereq({ source: sourceNode, target: targetNode })
-      setDependentLevel('INTERMEDIATE')
-      setPrerequisiteLevel('FOUNDATION')
-      setIsPrereqModalOpen(true)
       handleCancelConnect()
+      try {
+        await createPrerequisite(organizationId, {
+          sourceSkillId: String(sourceNode.id),
+          targetSkillId: String(targetNode.id),
+        })
+
+        const newEdge = buildPrereqEdge(sourceNode.id, targetNode.id)
+        const nid = newEdge.id
+        if (nid !== undefined && edgesDataSetRef.current?.get(nid)) {
+          edgesDataSetRef.current.update(newEdge)
+        } else {
+          edgesDataSetRef.current?.add(newEdge)
+        }
+        setCanvasEdges((prev) => prev.some((e) => e.id === newEdge.id) ? prev : [...prev, newEdge])
+        if (onRefreshData) await onRefreshData()
+
+        toast({
+          title: 'Prerequisite Saved',
+          description: `${sourceNode.code} requires ${targetNode.code}.`,
+          variant: 'success',
+        })
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : 'Failed to save prerequisite'
+        toast({
+          title: 'Prerequisite Failed',
+          description: msg,
+          variant: 'destructive',
+        })
+      }
       return
     }
 
@@ -2319,46 +2338,6 @@ function OntologyGraphPlaygroundInner({
     } finally { setSavingRequirement(false) }
   }
 
-  // Save HAS_SKILL_PREREQUISITE via API
-  const handleConfirmPrerequisite = async () => {
-    if (!pendingPrereq) return
-    if (!dependentLevel || !prerequisiteLevel) return
-
-    try {
-      await createPrerequisite(organizationId, {
-        sourceSkillId: String(pendingPrereq.source.id),
-        targetSkillId: String(pendingPrereq.target.id),
-        dependentKnowledgeLevel: dependentLevel, prerequisiteKnowledgeLevel: prerequisiteLevel,
-      })
-
-      const newEdge = buildPrereqEdge(pendingPrereq.source.id, pendingPrereq.target.id, dependentLevel, prerequisiteLevel)
-      const nid = newEdge.id
-      if (nid !== undefined && edgesDataSetRef.current?.get(nid)) {
-        edgesDataSetRef.current.update(newEdge)
-      } else {
-        edgesDataSetRef.current?.add(newEdge)
-      }
-      setCanvasEdges((prev) => prev.some((e) => e.id === newEdge.id) ? prev : [...prev, newEdge])
-      if (onRefreshData) await onRefreshData()
-
-      toast({
-        title: 'Prerequisite Saved',
-        description: `${pendingPrereq.source.code} (${dependentLevel}) requires ${pendingPrereq.target.code} (${prerequisiteLevel}).`,
-        variant: 'success',
-      })
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Failed to save prerequisite'
-      toast({
-        title: 'Prerequisite Failed',
-        description: msg,
-        variant: 'destructive',
-      })
-    } finally {
-      setIsPrereqModalOpen(false)
-      setPendingPrereq(null)
-    }
-  }
-
   // Switch Edge Direction (Reverse arrow between nodes)
   const handleSwitchEdgeDirection = async (edge: Edge) => {
     if (!edge.from || !edge.to || edge.id === undefined) return
@@ -2368,14 +2347,24 @@ function OntologyGraphPlaygroundInner({
 
     try {
       if (String(edgeId).startsWith('prereq-')) {
-        const exact = prerequisitesRef.current.find(p => buildPrereqEdge(p.sourceSkillId, p.targetSkillId, p.dependentKnowledgeLevel, p.prerequisiteKnowledgeLevel).id === edgeId)
-        if (!exact?.dependentKnowledgeLevel || !exact.prerequisiteKnowledgeLevel) throw new Error('Select a classified exact prerequisite pair.')
-        const reversed = await reversePrerequisite(organizationId, { sourceSkillId: fromStr, targetSkillId: toStr,
-          dependentKnowledgeLevel: exact.dependentKnowledgeLevel, prerequisiteKnowledgeLevel: exact.prerequisiteKnowledgeLevel })
-        const replacement = buildPrereqEdge(reversed.sourceSkillId, reversed.targetSkillId, reversed.dependentKnowledgeLevel, reversed.prerequisiteKnowledgeLevel)
+        const exact = prerequisitesRef.current.find(
+          p => (p.sourceSkillId === fromStr && p.targetSkillId === toStr) ||
+               buildPrereqEdge(p.sourceSkillId, p.targetSkillId, p.dependentKnowledgeLevel, p.prerequisiteKnowledgeLevel).id === edgeId
+        )
+        const reversed = await reversePrerequisite(organizationId, {
+          sourceSkillId: fromStr,
+          targetSkillId: toStr,
+          dependentKnowledgeLevel: exact?.dependentKnowledgeLevel ?? undefined,
+          prerequisiteKnowledgeLevel: exact?.prerequisiteKnowledgeLevel ?? undefined,
+        })
+        const replacement = buildPrereqEdge(reversed.sourceSkillId, reversed.targetSkillId)
         edgesDataSetRef.current.remove(edgeId)
-        edgesDataSetRef.current.add(replacement)
-        setCanvasEdges(previous => [...previous.filter(item => item.id !== edgeId), replacement])
+        if (replacement.id !== undefined && edgesDataSetRef.current.get(replacement.id)) {
+          edgesDataSetRef.current.update(replacement)
+        } else {
+          edgesDataSetRef.current.add(replacement)
+        }
+        setCanvasEdges(previous => [...previous.filter(item => item.id !== edgeId && item.id !== replacement.id), replacement])
         setSelectedEdge(replacement)
         if (onRefreshData) await onRefreshData()
       } else {
@@ -2404,7 +2393,10 @@ function OntologyGraphPlaygroundInner({
 
     try {
       if (String(edgeId).startsWith('prereq-')) {
-        const exact = prerequisitesRef.current.find(p => buildPrereqEdge(p.sourceSkillId, p.targetSkillId, p.dependentKnowledgeLevel, p.prerequisiteKnowledgeLevel).id === edgeId)
+        const exact = prerequisitesRef.current.find(
+          p => (p.sourceSkillId === fromStr && p.targetSkillId === toStr) ||
+               buildPrereqEdge(p.sourceSkillId, p.targetSkillId, p.dependentKnowledgeLevel, p.prerequisiteKnowledgeLevel).id === edgeId
+        )
         await deletePrerequisite(organizationId, fromStr, toStr, exact?.dependentKnowledgeLevel, exact?.prerequisiteKnowledgeLevel)
         edgesDataSetRef.current.remove(edgeId)
         setCanvasEdges((prev) => prev.filter((e) => e.id !== edgeId))
@@ -2527,12 +2519,17 @@ function OntologyGraphPlaygroundInner({
     }> = []
 
     if (filterType === 'all' || filterType === 'targetRole') {
-      const propRoles = (targetRoles || []).filter(
-        (r) => r.title?.toLowerCase() !== 'testing1' && r.code?.toUpperCase() !== 'ROLE-07TM'
-      )
-      const activeRoles = (getActiveCompany()?.targetRoles || []).filter(
-        (r) => r.title?.toLowerCase() !== 'testing1' && r.code?.toUpperCase() !== 'ROLE-07TM'
-      )
+      const isRoleAllowedInPalette = (r: TargetRoleModel) => {
+        if (!r) return false
+        if (r.title?.toLowerCase() === 'testing1' || r.code?.toUpperCase() === 'ROLE-07TM') return false
+        const raw = String(r.status || 'DRAFT').trim().toUpperCase()
+        const isStaged = raw === 'STAGED' || (Boolean(r.isStaffingEnabled) && raw !== 'PUBLISHED' && raw !== 'ACTIVE' && raw !== 'REJECTED')
+        const eff = isStaged ? 'STAGED' : (raw === 'REJECT' || raw === 'REJECTED') ? 'REJECTED' : raw
+        return eff === 'DRAFT' || eff === 'STAGED' || eff === 'REJECTED'
+      }
+
+      const propRoles = (targetRoles || []).filter(isRoleAllowedInPalette)
+      const activeRoles = (getActiveCompany()?.targetRoles || []).filter(isRoleAllowedInPalette)
       // Prefer authoritative live propRoles if passed, otherwise active company roles
       const sourceRoles = propRoles.length > 0 ? propRoles : activeRoles
 
@@ -2556,19 +2553,10 @@ function OntologyGraphPlaygroundInner({
           if (!existing) {
             roleMap.set(key, r)
           } else {
-            // Pick the later version (e.g. v1.1 draft/rejected proposal over v1.0 published)
+            // Pick the later version
             const cmp = compareRoleVersions(r.version, existing.version)
             if (cmp > 0) {
               roleMap.set(key, r)
-            } else if (cmp === 0) {
-              // If equal version, prefer non-published proposals (draft, rejected, submitted) over published
-              const rStatus = String(r.status || '').toLowerCase()
-              const exStatus = String(existing.status || '').toLowerCase()
-              const rIsPub = rStatus === 'published' || rStatus === 'active'
-              const exIsPub = exStatus === 'published' || exStatus === 'active'
-              if (!rIsPub && exIsPub) {
-                roleMap.set(key, r)
-              }
             }
           }
         }
@@ -2590,6 +2578,11 @@ function OntologyGraphPlaygroundInner({
               : rawStatus === 'SUBMITTED'
                 ? 'SUBMITTED'
                 : 'DRAFT'
+
+        // Only draft, staged, and rejected roles can be authored/explored in the ontology palette
+        if (displayStatus !== 'DRAFT' && displayStatus !== 'STAGED' && displayStatus !== 'REJECTED') {
+          return
+        }
 
         const roleCode = r.code || r.id || ''
         const roleTitle = r.title || ''
@@ -3237,7 +3230,7 @@ function OntologyGraphPlaygroundInner({
             </span>
             <span className="flex items-center gap-1.5">
               <span className="h-0.5 w-3 bg-destructive border-t border-dashed border-destructive" />
-              <span>Prerequisite (exact levels)</span>
+              <span>Prerequisite</span>
             </span>
           </div>
         </div>
@@ -3247,106 +3240,6 @@ function OntologyGraphPlaygroundInner({
         <DialogHeader><DialogTitle>{copy('Required knowledge levels', 'Mức kiến thức bắt buộc')}</DialogTitle><DialogDescription>{pendingRoleRequirement?.role.title} · {pendingRoleRequirement?.level.levelName} · {pendingRoleRequirement?.skill.name}</DialogDescription></DialogHeader>
         <RequiredKnowledgePicker value={requiredKnowledge} onChange={setRequiredKnowledge} />
         <DialogFooter><Button variant="outline" size="sm" disabled={savingRequirement} onClick={() => setPendingRoleRequirement(null)}>{copy('Cancel', 'Hủy')}</Button><Button size="sm" disabled={!requiredKnowledge.length || savingRequirement} onClick={() => void confirmRoleRequirement()}>{copy('Save requirement', 'Lưu yêu cầu')}</Button></DialogFooter>
-      </Dialog>
-
-      {/* MODAL: EXACT PREREQUISITE CONFIG */}
-      <Dialog open={isPrereqModalOpen} onOpenChange={(open) => {
-        setIsPrereqModalOpen(open);
-        if (!open) setPendingPrereq(null);
-      }} className="max-w-md">
-        {pendingPrereq && (
-          <div className="space-y-4">
-            <DialogHeader>
-              <DialogTitle className="text-base font-bold text-foreground">
-                Set Exact Prerequisite
-              </DialogTitle>
-              <DialogDescription className="text-xs text-muted-foreground">
-                <strong>{pendingPrereq.source.code}</strong> requires <strong>{pendingPrereq.target.code}</strong> at the selected knowledge levels.
-              </DialogDescription>
-            </DialogHeader>
-
-            <div className="space-y-4 py-2">
-              <div>
-                <label className="font-semibold text-foreground block text-xs mb-1.5 flex items-center justify-between">
-                  <span>Dependent knowledge level</span>
-                  <span className="font-mono text-[11px] font-bold text-primary bg-primary/10 px-1.5 py-0.5 rounded">
-                    {pendingPrereq.source.code}
-                  </span>
-                </label>
-                <div className="grid grid-cols-3 gap-2">
-                  {(['FOUNDATION', 'INTERMEDIATE', 'ADVANCED'] as const).map((level) => {
-                    const isSelected = dependentLevel === level
-                    return (
-                      <button
-                        key={level}
-                        type="button"
-                        onClick={() => setDependentLevel(level)}
-                        className={cn(
-                          'py-2 px-3 rounded-lg text-xs font-semibold text-center border transition-all cursor-pointer select-none',
-                          isSelected
-                            ? 'border-primary bg-primary text-primary-foreground shadow-2xs font-bold'
-                            : 'border-border bg-card hover:bg-muted/60 text-foreground'
-                        )}
-                      >
-                        {level}
-                      </button>
-                    )
-                  })}
-                </div>
-              </div>
-
-              <div>
-                <label className="font-semibold text-foreground block text-xs mb-1.5 flex items-center justify-between">
-                  <span>Prerequisite knowledge level</span>
-                  <span className="font-mono text-[11px] font-bold text-emerald-700 dark:text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded">
-                    {pendingPrereq.target.code}
-                  </span>
-                </label>
-                <div className="grid grid-cols-3 gap-2">
-                  {(['FOUNDATION', 'INTERMEDIATE', 'ADVANCED'] as const).map((level) => {
-                    const isSelected = prerequisiteLevel === level
-                    return (
-                      <button
-                        key={level}
-                        type="button"
-                        onClick={() => setPrerequisiteLevel(level)}
-                        className={cn(
-                          'py-2 px-3 rounded-lg text-xs font-semibold text-center border transition-all cursor-pointer select-none',
-                          isSelected
-                            ? 'border-primary bg-primary text-primary-foreground shadow-2xs font-bold'
-                            : 'border-border bg-card hover:bg-muted/60 text-foreground'
-                        )}
-                      >
-                        {level}
-                      </button>
-                    )
-                  })}
-                </div>
-              </div>
-            </div>
-
-            <DialogFooter className="flex items-center justify-end gap-2 pt-3 border-t border-border mt-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  setIsPrereqModalOpen(false)
-                  setPendingPrereq(null)
-                }}
-              >
-                Cancel
-              </Button>
-              <Button
-                variant="primary"
-                size="sm"
-                disabled={!dependentLevel || !prerequisiteLevel}
-                onClick={handleConfirmPrerequisite}
-              >
-                Confirm Prerequisite
-              </Button>
-            </DialogFooter>
-          </div>
-        )}
       </Dialog>
     </div>
   )

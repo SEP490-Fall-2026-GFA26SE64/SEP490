@@ -58,8 +58,8 @@ public final class MemberActivationMailWorker {
                 mail.sendActivation(job.email(), publicUrl + "/activate#token=" + token, job.event());
                 sent = true;
             } catch (MailException | MessagingException | RegistrationFailure exception) {
-                LoggerFactory.getLogger(getClass()).warn("Member activation delivery failed for job {} ({})", job.id(),
-                        exception.getClass().getSimpleName());
+                LoggerFactory.getLogger(getClass()).warn("Member activation delivery failed for job {} ({}: {})", job.id(),
+                        exception.getClass().getSimpleName(), exception.getMessage(), exception);
                 failure = "SMTP_UNAVAILABLE";
             }
         }

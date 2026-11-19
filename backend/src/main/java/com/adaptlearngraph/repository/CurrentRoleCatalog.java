@@ -69,8 +69,8 @@ public final class CurrentRoleCatalog implements Catalog {
                         """,Map.of("org",org.toString(),"unrestricted",allowedJobPositions==null,
                                 "jobPositions",allowedJobPositions==null?List.of():List.copyOf(allowedJobPositions),"demoReview",demoReview,"excluded",List.copyOf(excluded),"ownedOnly",ownedOnly));
                 Set<String> ids=new HashSet<>();
-                if(allowedJobPositions!=null) ids.addAll(allowedJobPositions);
-                else rows.forEach(r->ids.add(r.get("o").get("id").asString()));
+                rows.forEach(r->ids.add(r.get("o").get("id").asString()));
+                if(allowedJobPositions!=null) ids.retainAll(allowedJobPositions);
                 if(ids.isEmpty()) return List.<Role>of();
                 var adapter=new Neo4jAdaptiveBaselineCatalogAdapter(graph,mapper,org,ids,demoReview);
                 var validated=new HashMap<String,com.adaptlearngraph.repository.AdaptiveBaselineCatalogPort.CatalogSnapshot>();

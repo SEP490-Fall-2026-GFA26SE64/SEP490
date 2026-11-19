@@ -131,8 +131,11 @@ export function NotificationDropdown() {
   useEffect(() => {
     active.current = true
     const controller = new AbortController()
-    void load()
-    void observe(controller.signal)
+    void Promise.resolve().then(() => {
+      if (controller.signal.aborted) return
+      void load()
+      void observe(controller.signal)
+    })
     const refresh = () => { void load(); void observe(controller.signal) }
     const timer = setInterval(refresh, 10000)
     window.addEventListener('online', refresh)

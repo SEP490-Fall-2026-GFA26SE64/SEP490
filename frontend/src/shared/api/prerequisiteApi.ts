@@ -42,8 +42,8 @@ export interface TargetRoleGraphDto {
 export interface CreatePrerequisitePayload {
   sourceSkillId: string
   targetSkillId: string
-  dependentKnowledgeLevel: string
-  prerequisiteKnowledgeLevel: string
+  dependentKnowledgeLevel?: string | null
+  prerequisiteKnowledgeLevel?: string | null
 }
 
 export async function fetchPrerequisites(organizationId: string): Promise<PrerequisiteEdgeDto[]> {

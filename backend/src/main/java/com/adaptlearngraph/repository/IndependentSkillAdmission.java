@@ -41,9 +41,16 @@ public final class IndependentSkillAdmission implements SkillLearningService.Adm
         for(var row:rows) {
             if(row.get("version").isNull() || !Objects.equals(row.get("version").asString(),version))return "SKILL_VERSION_CHANGED";
             if(row.get("skill").isNull())continue;
-            if(row.get("dependent").isNull() || row.get("prerequisite").isNull() || row.get("prerequisiteVersion").isNull())return "EXACT_PREREQUISITE_CONFIGURATION_REQUIRED";
-            if(!row.get("dependent").asString().equals(level))continue;
-            String next=row.get("skill").asString(),nextLevel=row.get("prerequisite").asString(),nextVersion=row.get("prerequisiteVersion").asString();
+            if(row.get("prerequisiteVersion").isNull())return "EXACT_PREREQUISITE_CONFIGURATION_REQUIRED";
+            String nextLevel;
+            if(row.get("dependent").isNull() && row.get("prerequisite").isNull()) {
+                nextLevel=level;
+            } else {
+                if(row.get("dependent").isNull() || row.get("prerequisite").isNull())return "EXACT_PREREQUISITE_CONFIGURATION_REQUIRED";
+                if(!row.get("dependent").asString().equals(level))continue;
+                nextLevel=row.get("prerequisite").asString();
+            }
+            String next=row.get("skill").asString(),nextVersion=row.get("prerequisiteVersion").asString();
             if(evidence.official(UUID.fromString(actor.organizationId()),UUID.fromString(actor.id()),next,nextLevel,nextVersion).isEmpty())return "PREREQUISITE_NOT_MET";
             String blocked=check(actor,next,nextLevel,nextVersion,visiting);if(blocked!=null)return blocked;
         }

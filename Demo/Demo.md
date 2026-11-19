@@ -182,61 +182,77 @@ Trang ontology → **Explore Graph**. File 04 cố ý chứa **2 cạnh sai** đ
 
 | # | Thao tác | Cạnh (Dependent ← Prerequisite) | Lý do |
 | --- | --- | --- | --- |
-| 1 | Chọn cạnh → **Switch Direction** | `MS-JAVA-OOP` Intermediate ← `MS-JAVA-STREAM` Foundation | Sai chiều: Streams cần OOP trước, không phải ngược lại |
-| 2 | Chọn cạnh → **Delete Relationship** | `MS-DOCKER` Foundation ← `MS-SPRING-WEB` Intermediate | Docker không phụ thuộc Spring MVC |
-| 3 | Kéo nối 2 node → **Set Exact Prerequisite** → **Confirm Prerequisite** | `MS-SPRING-TX` **Advanced** ← `MS-JAVA-CONC` **Intermediate** | Isolation/locking nâng cao cần hiểu concurrency |
-
-Ô nhập của thao tác 3:
-
-| Field | Giá trị |
-| --- | --- |
-| Dependent knowledge level | `Advanced` (của MS-SPRING-TX) |
-| Prerequisite knowledge level | `Intermediate` (của MS-JAVA-CONC) |
+| 1 | Chọn cạnh → **Switch Direction** | `MS-JAVA-OOP` ← `MS-JAVA-STREAM` | Sai chiều: Streams cần OOP trước, không phải ngược lại |
+| 2 | Chọn cạnh → **Delete Relationship** | `MS-DOCKER` ← `MS-SPRING-WEB` | Docker không phụ thuộc Spring MVC |
+| 3 | Bật **Connect Nodes** (hoặc kéo nối 2 node) | `MS-SPRING-TX` ← `MS-JAVA-CONC` | Tạo trực tiếp cạnh prerequisite giữa 2 micro-skill (không cần chọn knowledge level): Isolation/locking nâng cao cần hiểu concurrency |
 
 13 prerequisite đúng còn lại trong file (để tham khảo khi giải thích graph):
 
 ```text
-MS-JAVA-STREAM Intermediate ← MS-JAVA-COLL Foundation
-MS-JAVA-CONC   Intermediate ← MS-JAVA-OOP Intermediate
-MS-SPRING-DI   Foundation   ← MS-JAVA-OOP Foundation
-MS-SPRING-WEB  Intermediate ← MS-SPRING-DI Foundation
-MS-SPRING-WEB  Intermediate ← MS-REST-DESIGN Foundation
-MS-SPRING-DATA Intermediate ← MS-SPRING-DI Foundation
-MS-SPRING-DATA Intermediate ← MS-SQL-QUERY Foundation
-MS-SPRING-TX   Intermediate ← MS-SPRING-DATA Foundation
-MS-SQL-INDEX   Intermediate ← MS-SQL-QUERY Intermediate
-MS-DB-MIGRATE  Foundation   ← MS-SQL-QUERY Foundation
-MS-API-SEC     Intermediate ← MS-SPRING-WEB Intermediate
-MS-JUNIT       Intermediate ← MS-SPRING-DI Foundation
-MS-OBSERV      Intermediate ← MS-DOCKER Foundation
+MS-JAVA-STREAM ← MS-JAVA-COLL
+MS-JAVA-CONC   ← MS-JAVA-OOP
+MS-SPRING-DI   ← MS-JAVA-OOP
+MS-SPRING-WEB  ← MS-SPRING-DI
+MS-SPRING-WEB  ← MS-REST-DESIGN
+MS-SPRING-DATA ← MS-SPRING-DI
+MS-SPRING-DATA ← MS-SQL-QUERY
+MS-SPRING-TX   ← MS-SPRING-DATA
+MS-SQL-INDEX   ← MS-SQL-QUERY
+MS-DB-MIGRATE  ← MS-SQL-QUERY
+MS-API-SEC     ← MS-SPRING-WEB
+MS-JUNIT       ← MS-SPRING-DI
+MS-OBSERV      ← MS-DOCKER
 ```
 
 ## 7. Expert cấu hình micro-skill cho target role
 
-**Roles** (`/workspace/brightpath/expert/roles`) → role **JAVA-BE** → chọn từng level → **Add Competency** cho level → trong khối **Add Micro-skill Target** chọn **From Competency**, **Micro-skill**, tick **Required levels** → bấm assign. Mọi level phải có competency + micro-skill trước khi **Submit to L&D Manager** (có thể **Save Draft** giữa chừng).
+Mở **Roles** (`/workspace/brightpath/expert/roles`) → role **JAVA-BE – Java Backend Developer** → bấm **Configure Micro-skills** (biểu tượng cây bút).
 
-Bảng cấu hình (F = Foundation, I = Intermediate, A = Advanced; mức ghi là mức yêu cầu cao nhất):
+Cấu hình cây năng lực tinh gọn và chuẩn logic cấp bậc theo yêu cầu:
+- **Junior:** 1 Competency (1 micro-skill).
+- **Middle:** 2 Competencies (1 competency có 2 micro-skills, 1 competency có 1 micro-skill → tổng 3 micro-skills).
+- **Senior:** 2 Competencies (mỗi competency có đúng 2 micro-skills → tổng 4 micro-skills).
 
-| Competency | Micro-skill | Junior (1) | Middle (2) | Senior (3) |
-| --- | --- | --- | --- | --- |
-| COMP-JAVA-CORE | MS-JAVA-OOP | I | I | A |
-| COMP-JAVA-CORE | MS-JAVA-COLL | I | I | – |
-| COMP-JAVA-CORE | MS-JAVA-STREAM | F | I | A |
-| COMP-JAVA-CORE | MS-JAVA-CONC | – | F | A |
-| COMP-SPRING | MS-SPRING-DI | F | I | – |
-| COMP-SPRING | MS-SPRING-WEB | F | I | A |
-| COMP-SPRING | MS-SPRING-DATA | – | I | A |
-| COMP-SPRING | MS-SPRING-TX | – | F | A |
-| COMP-DATA | MS-SQL-QUERY | I | I | – |
-| COMP-DATA | MS-SQL-INDEX | – | F | A |
-| COMP-DATA | MS-DB-MIGRATE | – | F | I |
-| COMP-API | MS-REST-DESIGN | – | I | A |
-| COMP-API | MS-API-SEC | – | F | A |
-| COMP-QUALITY-OPS | MS-JUNIT | F | I | I |
-| COMP-QUALITY-OPS | MS-DOCKER | – | F | I |
-| COMP-QUALITY-OPS | MS-OBSERV | – | – | I |
+### Bước 7.1 – Gán Competency cho từng Role Level
 
-Competency theo level: Junior = JAVA-CORE, SPRING, DATA, QUALITY-OPS; Middle và Senior = cả 5 competency.
+1. **Gán Competency cốt lõi cho cả 3 levels**:
+   - Ở thanh chọn **Role Levels**, bấm **All Levels (3)** (hoặc tick **Multi-level edit** để chọn cả `Junior`, `Middle`, `Senior`).
+   - Trong ô **Select Competency**, chọn **`COMP-JAVA-CORE`** → bấm **Add Competency**.
+2. **Gán Competency đặc thù cho Middle và Senior**:
+   - Chọn riêng **`Middle`** → thêm **`COMP-DATA`** → bấm **Add Competency**. *(Middle có đúng 2 Competencies: `COMP-JAVA-CORE` và `COMP-DATA`).*
+   - Chọn riêng **`Senior`** → thêm **`COMP-SPRING`** → bấm **Add Competency**. *(Senior có đúng 2 Competencies: `COMP-JAVA-CORE` và `COMP-SPRING`).*
+
+*(Sau bước này: Junior có đúng 1 Competency, Middle có đúng 2 Competencies, Senior có đúng 2 Competencies).*
+
+### Bước 7.2 – Cấu hình Micro-skill Target cho từng level
+
+Chọn từng level (`Junior`, `Middle`, `Senior`), trong khối **Add Micro-skill Target** chọn **From Competency** → chọn **Micro-skill** → tick **Required levels** (`F` = Foundation, `I` = Intermediate, `A` = Advanced) → bấm **Assign Skill**:
+
+| Competency | Micro-skill | Junior (1) | Middle (2) | Senior (3) | Logic cấp bậc & vai trò demo |
+| --- | --- | :---: | :---: | :---: | --- |
+| **`COMP-JAVA-CORE`** | `MS-JAVA-OOP` | **F** | – | – | **Junior (1 skill duy nhất):** Nền tảng lập trình hướng đối tượng |
+| | `MS-JAVA-COLL` | – | **I** | – | **Middle (skill 1 của Core):** Cấu trúc dữ liệu & collections (học module & thi ở Phần 8) |
+| | `MS-JAVA-STREAM` | – | **I** | **A** | **Cùng skill nâng mức:** Middle cần mức Intermediate; Senior nâng lên mức Advanced (Functional streams & reactive) |
+| | `MS-JAVA-CONC` | – | – | **A** | **Senior (skill 2 của Core):** Xử lý đa luồng & lập trình đồng thời chuyên sâu |
+| **`COMP-DATA`** | `MS-SQL-INDEX` | – | **I** | – | **Middle (1 skill duy nhất của Data):** Đánh chỉ mục & tối ưu query (thi sai nền tảng sinh học bổ sung ở Phần 8) |
+| **`COMP-SPRING`** | `MS-SPRING-DATA` | – | – | **A** | **Senior (skill 1 của Spring):** Tối ưu truy xuất dữ liệu & ORM nâng cao |
+| | `MS-SPRING-TX` | – | – | **A** | **Senior (skill 2 của Spring):** Quản trị transaction phân tán & isolation |
+
+> **Kiểm tra chuẩn xác số lượng:**
+> - **Junior (1 Competency, 1 Micro-skill):**
+>   - `COMP-JAVA-CORE`: 1 skill (`MS-JAVA-OOP` [F]).
+> - **Middle (2 Competencies, 3 Micro-skills):**
+>   - `COMP-JAVA-CORE`: 2 skills (`MS-JAVA-COLL` [I], `MS-JAVA-STREAM` [I]).
+>   - `COMP-DATA`: 1 skill (`MS-SQL-INDEX` [I]).
+> - **Senior (2 Competencies, 4 Micro-skills):**
+>   - `COMP-JAVA-CORE`: 2 skills (`MS-JAVA-STREAM` [A], `MS-JAVA-CONC` [A]).
+>   - `COMP-SPRING`: 2 skills (`MS-SPRING-DATA` [A], `MS-SPRING-TX` [A]).
+>
+> *(Lưu ý: Nếu demo tiếp Phần 8 với đủ 4 tình huống bao gồm Expert Bypass và Certificate, ở level Middle gán thêm `MS-API-SEC` [F] và `MS-DOCKER` [F]).*
+
+### Bước 7.3 – Gửi cấu hình cho L&D Manager
+
+Khi cả 3 level đã hoàn tất cấu hình, bấm **Submit to L&D Manager** (hoặc **Save Draft** nếu muốn lưu nháp giữa chừng). Hệ thống gửi thẳng sang L&D Manager mà không bắt buộc kiểm tra hay cảnh báo thiếu prerequisite.
 
 ---
 
@@ -267,39 +283,40 @@ Mở lại `/reset` → toàn bộ Brightpath (workspace `brightpath`, admin và
 
 ## 8. Phần demo tiếp theo: từ import câu hỏi đến hoàn thành pathway
 
-Làm tiếp sau bước 7 ở trên. Phần này gồm 7 bước, dùng cùng một kịch bản: **Docker/Foundation là Certificate**, Docker/Intermediate vẫn là Module.
+Làm tiếp sau bước 7 ở trên. Phần này gồm 7 bước, dùng cùng một kịch bản: giữ nguyên loại trong file 04: **Docker/Foundation và Intermediate là Module; Advanced là Certificate**. Không cần sửa loại skill sau import.
 
 ### Trước khi import câu hỏi
 
-Đăng nhập **David Thompson** và hoàn tất các thay đổi sau trước khi dùng file 05–06:
+Đăng nhập **David Thompson**. Giữ nguyên loại Module/Certificate của tất cả skill từ file 04; không mở Edit để đổi Docker/Foundation.
 
-1. Mở **Ontology → Micro-skills → MS-DOCKER → Edit Micro-skill**. Chọn **Foundation = Certificate**, giữ **Intermediate = Module and assessment**, **Advanced = Certificate**, rồi **Save Changes**. File 04 vẫn để Foundation là Module nên cần thao tác này.
-2. Trong **Roles → JAVA-BE → Middle**, đổi yêu cầu **MS-SQL-INDEX** từ Foundation trong bảng bước 7 thành **Intermediate**, rồi lưu.
-3. Trong **Explore Graph**, thêm **MS-SQL-INDEX/Foundation cần MS-SQL-QUERY/Intermediate**. Giữ cạnh SQL Indexing/Intermediate cần SQL Querying/Intermediate đã có; không tạo cạnh tự nối hai mức của SQL Indexing.
-4. Hoàn tất lưu cấu hình skill, prerequisite và role, gửi role cho L&D theo màn hình. Nếu đã gửi, sửa và gửi lại theo quy trình.
+Để diễn tình huống recalculate bên dưới, hoàn tất cấu hình role và graph trước khi import nội dung:
 
-Mở lại Edit để kiểm tra Docker/Foundation đã lưu Certificate; đóng bằng Cancel hoặc nút đóng nếu không sửa gì. **Không đổi loại hoặc lưu chỉnh skill sau khi import bank:** version mới của toàn skill có thể làm câu hỏi cũ không còn hợp lệ.
+1. Trong **Roles → JAVA-BE → Middle**, đặt yêu cầu **MS-SQL-INDEX = Intermediate** thay cho Foundation trong bảng bước 7, rồi lưu. Đây là yêu cầu của role, không phải đổi loại skill trong file 04.
+2. Trong **Explore Graph**, kiểm tra các cạnh prerequisite đã được kết nối đúng giữa các micro-skill.
+3. Hoàn tất các thay đổi prerequisite ở bước 6 phía trên, lưu cấu hình role và gửi cho L&D theo màn hình.
+
+Sau khi import bank, không lưu chỉnh skill chỉ để mở ô baseline: version mới có thể làm câu hỏi theo version cũ không còn hợp lệ. Với luồng mới từ đầu, cứ dùng loại đã import từ 04 và bank 05 đi kèm.
 
 | File | Nội dung |
 | --- | --- |
-| [05_Question_Bank_Java_Backend.xlsx](./05_Question_Bank_Java_Backend.xlsx) | 190 câu / 38 nhóm skill–mức, không có Docker/Foundation |
-| [06_Learning_Modules_Java_Backend_Demo.zip](./06_Learning_Modules_Java_Backend_Demo.zip) | 5 module / 10 bài đọc; upload nguyên ZIP |
+| [05_Question_Bank_Java_Backend.xlsx](./05_Question_Bank_Java_Backend.xlsx) | 195 câu / 39 nhóm skill–mức, gồm Docker/Foundation và Intermediate |
+| [06_Learning_Modules_Java_Backend_Demo.zip](./06_Learning_Modules_Java_Backend_Demo.zip) | 6 module / 12 bài đọc; upload nguyên ZIP |
 
-Không cần ZIP bổ sung `02-after-bypass.zip`. Chuẩn bị link HTTPS hoặc PDF/ảnh bằng chứng Docker để Employee nộp ở bước 7 của phần này.
+Không cần ZIP bổ sung `02-after-bypass.zip`. Pathway Middle dùng Docker/Foundation theo Module. Certificate Docker/Advanced là nội dung riêng, không phải điều kiện hoàn thành Middle.
 
 ### Bước 1. Expert import câu hỏi
 
 1. Vào **Question Bank → Import Excel**, chọn `05_Question_Bank_Java_Backend.xlsx`.
-2. Kiểm tra preview: **190 câu / 38 nhóm skill–mức**, mỗi nhóm **4 câu thường + 1 mandatory**. Docker chỉ có **Intermediate**, không có Foundation.
+2. Kiểm tra preview: **195 câu / 39 nhóm skill–mức**, mỗi nhóm **4 câu thường + 1 mandatory**. Docker có cả **Foundation và Intermediate**, đúng hai mức Module trong file 04.
 3. Nếu không có lỗi, xác nhận import **một lần**, rồi gửi các Draft đi duyệt theo màn hình.
 4. Nếu đã import thành công nhưng gửi duyệt lỗi, mở các Draft đã tạo và gửi lại; không import lại cả file để tránh trùng câu hỏi.
 
-Không cần tự xóa dòng trong file 05. File đã chuẩn bị cho Docker/Foundation là Certificate.
+Import nguyên file 05; không xóa năm câu Docker/Foundation. Bank bao phủ đủ 39 nhóm Module của file 04; các mức Certificate không có câu hỏi.
 
 ### Bước 2. Expert import module và tạo certificate
 
 1. Vào **Modules → Import**, chọn nguyên file `06_Learning_Modules_Java_Backend_Demo.zip`; không giải nén để upload riêng từng bài.
-2. Kiểm tra preview **5 module, 10 lesson**, không lỗi.
+2. Kiểm tra preview **6 module, 12 lesson**, không lỗi.
 3. Chọn **Confirm & submit for review**. Nếu chọn **Confirm import**, mở các Draft vừa tạo rồi gửi duyệt.
 
 | Module | Skill / mức | Dùng để diễn |
@@ -309,36 +326,37 @@ Không cần tự xóa dòng trong file 05. File đã chuẩn bị cho Docker/Fo
 | SQL Indexing Intermediate Guided Practice | MS-SQL-INDEX / Intermediate | Thi sai nền tảng để sinh phần bổ sung |
 | SQL Indexing Foundation Guided Practice | MS-SQL-INDEX / Foundation | Học bổ sung mức thấp hơn |
 | SQL Querying Intermediate Guided Practice | MS-SQL-QUERY / Intermediate | Học bổ sung skill tiên quyết |
+| Docker Foundation Guided Practice | MS-DOCKER / Foundation | Học và đánh giá Docker nếu baseline chưa đạt |
 
-#### Tạo certificate Docker/Foundation
+#### Tạo certificate Docker/Advanced (tùy chọn)
 
 Mở **Certificates → Certificate catalog → Add**, chọn và nhập:
 
 | Field | Giá trị |
 | --- | --- |
 | Skill | Containerizing Services with Docker / MS-DOCKER |
-| Knowledge level | Foundation |
-| Name | Docker Foundation — Demo Certificate |
-| Mô tả và năng lực được chứng nhận | Nắm khái niệm image, container và Dockerfile. Biết build image, chạy container và giải thích cách đóng gói một dịch vụ Java đơn giản. |
+| Knowledge level | Advanced |
+| Name | Docker Advanced — Demo Certificate |
+| Mô tả và năng lực được chứng nhận | Thiết kế image nhiều giai đoạn, giảm kích thước image, cấu hình Docker Compose và giải thích lựa chọn cấu hình container cho dịch vụ Java. |
 | Reference URL | Link HTTPS tới tài liệu hoặc mẫu chứng chỉ đã chuẩn bị |
 
 Bấm **Continue → Confirm** rồi lưu. Tạo certificate trong catalog chưa công nhận Employee đã đạt.
 
-Nếu không thấy Docker/Foundation, kiểm tra lại phần chuẩn bị ở trên đã lưu thành công và mở lại màn Add. Không đổi Docker sang Module để xử lý lỗi thiếu câu hỏi.
+Docker/Foundation không xuất hiện trong Add Certificate là đúng, vì mức này dùng Module. Chỉ chọn Docker/Advanced vốn đã là Certificate trong file 04. Việc tạo catalog này không thêm yêu cầu chứng chỉ vào role Middle; không có bước nộp Docker/Foundation certificate trong luồng này.
 
 ### Bước 3. L&D duyệt và publish nội dung
 
 **Người làm:** Sarah Mitchell.
 
 1. Mở hàng đợi câu hỏi, kiểm tra các câu vừa gửi ở bước 1, rồi **Approve/Publish** theo màn hình.
-2. Mở quản lý module, xem nội dung của năm module, rồi duyệt và **Publish**.
+2. Mở quản lý module, xem nội dung của sáu module, rồi duyệt và **Publish**.
 3. Kiểm tra câu hỏi và module đã ở **Published**. Draft hoặc Submitted chưa dùng được để ra đề hoặc học.
 
-**Kết quả:** bank và năm module đã xuất bản. Certificate catalog đã tạo ở bước 2; bằng chứng của Employee chỉ được nộp và duyệt ở bước 7.
+**Kết quả:** bank và sáu module đã xuất bản. Nếu tạo catalog Docker/Advanced ở bước 2, đó là phần minh họa riêng; luồng Middle không yêu cầu Employee nộp chứng chỉ này.
 
 ### Bước 4. Expert kích hoạt Skill Assessment
 
-Đăng nhập **David Thompson**. Mở cấu hình cho bốn nhóm chính: **Java Collections/Intermediate**, **SQL Indexing/Intermediate**, **SQL Indexing/Foundation**, **SQL Querying/Intermediate**.
+Đăng nhập **David Thompson**. Mở cấu hình cho năm nhóm chính: **Java Collections/Intermediate**, **SQL Indexing/Intermediate**, **SQL Indexing/Foundation**, **SQL Querying/Intermediate**, **Docker/Foundation**.
 
 Với mỗi nhóm chính, nhập theo các nhóm mà màn hình liệt kê:
 
@@ -372,7 +390,7 @@ Quota mandatory bằng 0 dùng được khi đủ câu thường. Ví dụ tổn
 3. Trong **Time & retakes**, đặt thời gian **20 phút**, số lượt **3**, chờ thi lại **0 phút**.
 4. Sang **Review**, kiểm tra rồi **Activate**.
 
-“Limiting Skills” là các skill có ít câu hỏi hợp lệ nhất, không phải số skill được thêm. Nếu ô bị khóa ở 0, kiểm tra bank đã Published và khớp đúng skill, mức, version. Docker/Foundation là Certificate nên không cần câu hỏi baseline; Docker/Intermediate vẫn cần bank. Không đổi loại skill qua lại để mở ô nhập.
+“Limiting Skills” là các skill có ít câu hỏi hợp lệ nhất, không phải số skill được thêm. Nếu ô bị khóa ở 0, kiểm tra bank đã Published và khớp đúng skill, mức, version. Docker/Foundation và Intermediate đều cần câu hỏi Published theo đúng version; năm câu Foundation mới đã có trong file 05. Không đổi loại skill qua lại để mở ô nhập.
 
 #### L&D duyệt và publish JAVA-BE
 
@@ -380,7 +398,7 @@ Quota mandatory bằng 0 dùng được khi đủ câu thường. Ví dụ tổn
 2. Kiểm tra Middle có SQL Indexing/Intermediate và Docker/Foundation.
 3. Duyệt, chuyển **Active/Publish** theo màn hình. Nếu thiếu cấu hình, xử lý thông báo trước khi xác nhận lại.
 
-Với Middle theo bảng và chỉ chọn mức yêu cầu đã nêu, dự kiến baseline có **14 nhóm Module × 3 câu = 42 câu**; Docker/Foundation là yêu cầu chứng chỉ riêng. Đối chiếu phạm vi thực tế trước khi thi, không tự sửa dữ liệu kết quả để khớp con số dự kiến.
+Với Middle theo bảng bước 7, đối chiếu phạm vi thực tế trước khi thi, không tự sửa dữ liệu kết quả để khớp con số dự kiến.
 
 ### Bước 6. Employee làm RIASEC, baseline và yêu cầu pathway
 
@@ -398,8 +416,9 @@ Job position cần đủ sáu điểm tham chiếu; tính năng và dịch vụ 
 
 1. Vào **Upskilling → Roles → Java Backend Developer → Middle**, xác nhận chọn mục tiêu.
 2. Mở baseline. Với đúng bank demo này, chọn **A cho mọi câu** để tạo ba gap: Java Collections/Intermediate (đáp án B), SQL Indexing/Intermediate (C), API Security/Foundation (B).
-3. Nộp và xem chi tiết. Dự kiến **11/14 nhóm đạt, 3 nhóm chưa đạt**. Nếu khác, kiểm tra nhóm được thi và cấu hình thực tế.
-4. Docker/Foundation hiện riêng là **Yêu cầu chứng chỉ · không đánh giá trong baseline**. Tổng phần cần xử lý trong kịch bản là ba gap học và một chứng chỉ.
+3. Nộp và xem chi tiết theo phạm vi thực tế của bài thi.
+4. Docker/Foundation nằm trong bài baseline và dùng đáp án **A**. Theo cách chọn trên, nhóm này đạt; còn ba gap học, không có yêu cầu chứng chỉ Docker/Foundation.
+5. Nếu muốn diễn thêm phần học Docker, riêng các câu Docker/Foundation chọn **B** để cố ý sai. Khi đó dự kiến module Docker ở bước 2 sẽ dùng cho gap thứ tư.
 
 Các đáp án trên chỉ dùng tạo tình huống demo, không phải hướng dẫn làm bài thật.
 
@@ -439,15 +458,15 @@ Bypass giữ lại gap và lịch sử duyệt, chưa công nhận đạt skill.
 
 Nếu hết lượt hoặc chưa đến giờ thi lại, xử lý theo thông báo và policy; không reset dữ liệu để bỏ khóa. Nếu phát sinh thêm nhóm ngoài bảng, kiểm tra đúng cấu hình đang được áp dụng.
 
-#### 7.4. Employee nộp certificate, Expert duyệt và hoàn thành pathway
+#### 7.4. Học Docker nếu chưa đạt và hoàn thành pathway
 
-1. Employee mở **Docker/Foundation**, đọc mô tả năng lực và tài liệu tham khảo.
-2. Chọn nộp **link HTTPS** hoặc **PDF/ảnh** bằng chứng đã chuẩn bị, rồi xác nhận.
-3. Bài nộp ở **Pending** thì yêu cầu vẫn chưa hoàn thành. Không bấm nộp lại chỉ vì danh sách chưa tải xong.
-4. Đăng nhập **David Thompson → Certificates → Evidence review**, mở bài nộp của James Wilson, xem bằng chứng và ghi lý do khi duyệt.
-5. Nếu từ chối, Employee đọc lý do, sửa hồ sơ rồi nộp lại theo màn hình. Nếu duyệt đạt, Employee mở lại pathway để xem kết quả cập nhật.
-6. Khi các yêu cầu bắt buộc đã hoàn thành hoặc có quyết định bypass hợp lệ, pathway hoàn thành và được giữ trong lịch sử. Việc bypass vẫn không trở thành năng lực đã đạt.
-7. Kiểm tra nút chọn/đổi role đã mở theo trạng thái hiện tại. Có thể chọn mục tiêu tiếp theo; không xóa pathway cũ để bắt đầu lại.
+1. Nếu đã cố ý làm sai Docker/Foundation ở bước 6, Expert kiểm tra module **Docker Foundation Guided Practice** được chọn khi duyệt pathway. Employee mở module, học đủ hai bài rồi làm Skill Assessment.
+2. Với bank này, câu Docker/Foundation chọn **A**. Nếu có thêm nhóm do policy liệt kê, đọc đúng tên và dùng đáp án theo bank; không chọn A tùy tiện cho nhóm khác.
+3. Nếu Docker đã đạt ở baseline thì bỏ qua phần học này. Không nộp chứng chỉ để thay thế kết quả Module của Docker/Foundation.
+4. Khi các yêu cầu bắt buộc hoàn thành hoặc có quyết định bypass hợp lệ, xem trạng thái pathway và lịch sử. Bypass vẫn không trở thành năng lực đã đạt.
+5. Kiểm tra quyền chọn mục tiêu tiếp theo theo trạng thái hiện tại; giữ lại pathway cũ.
+
+Docker/Advanced Certificate chỉ được nộp và duyệt trong một pathway thực sự yêu cầu đúng skill/mức này. Role Middle ở kịch bản hiện tại không có yêu cầu đó, nên phần này không hướng dẫn nộp chứng chỉ Advanced để hoàn thành Middle.
 
 #### 7.5. Tình huống thêm nội dung sau bypass (tùy chọn)
 
@@ -473,7 +492,7 @@ tab **Job positions** đã có thêm sáu cột `RIASEC R`, `RIASEC I`, `RIASEC 
 
 ### Lưu ý khi dùng trên deploy
 
-- Chỉnh file local không cập nhật bank trên server. Tài liệu này dành cho luồng nhập mới theo thứ tự trên; không tự import lại toàn bank vào workspace đã có câu hỏi.
+- Chỉnh file local không cập nhật bank trên server. Tài liệu này dành cho luồng nhập mới theo thứ tự trên. Nếu deploy đã có 190 câu, chỉ bổ sung năm câu Docker/Foundation còn thiếu sau khi đối chiếu dữ liệu; không nhập trùng toàn bank.
 - Nếu đã sửa skill sau khi import bank, cần đối chiếu version và nội dung hiện có trước khi bổ sung; không sửa Excel hoặc đổi loại qua lại để che lỗi version.
 - Sau khi merge và workflow deploy hoàn tất, tải lại trang. Push nhánh fix chưa làm server đổi bản.
 - SMTP, storage, kết nối dữ liệu, worker và mô hình RIASEC phụ thuộc môi trường. Kiểm tra file tĩnh không chứng minh toàn bộ luồng đang chạy trên deploy.

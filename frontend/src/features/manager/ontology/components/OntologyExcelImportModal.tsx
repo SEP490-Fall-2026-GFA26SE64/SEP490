@@ -86,9 +86,7 @@ interface ParsedCompetencyRelationRow {
 
 interface ParsedPrerequisiteRow {
   dependentCode: string
-  dependentLevel: string
   prerequisiteCode: string
-  prerequisiteLevel: string
   isValid: boolean
   isConflicted: boolean
   conflictReason?: string
@@ -409,41 +407,24 @@ export function OntologyExcelImportModal({
         const prereqSheet = findSheet('Prerequisites', 'Prereqs', 'Dependencies')
         if (prereqSheet) {
           const prereqRaw: Record<string, unknown>[] = XLSX.utils.sheet_to_json(prereqSheet)
-          const validLevels = new Set(['FOUNDATION', 'INTERMEDIATE', 'ADVANCED'])
-
-          const normalizeLevel = (rawVal: unknown, defaultLevel: string) => {
-            const s = String(rawVal || defaultLevel).trim().toUpperCase()
-            if (s.startsWith('FOUND')) return 'FOUNDATION'
-            if (s.startsWith('INTER')) return 'INTERMEDIATE'
-            if (s.startsWith('ADV')) return 'ADVANCED'
-            return s
-          }
-
           const seenPrereqs = new Set<string>()
 
           const parsedPrereqs: ParsedPrerequisiteRow[] = prereqRaw.map((row) => {
             const dependentCode = String(row['Dependent_Skill_Code'] || row['Dependent Skill Code'] || row['dependent_skill_code'] || row['Dependent'] || '').trim().toUpperCase()
-            const rawDepLevel = row['Dependent_Knowledge_Level'] || row['Dependent Level'] || row['dependent_knowledge_level'] || 'INTERMEDIATE'
-            const dependentLevel = normalizeLevel(rawDepLevel, 'INTERMEDIATE')
-
             const prerequisiteCode = String(row['Prerequisite_Skill_Code'] || row['Prerequisite Skill Code'] || row['prerequisite_skill_code'] || row['Prerequisite'] || '').trim().toUpperCase()
-            const rawPrereqLevel = row['Prerequisite_Knowledge_Level'] || row['Prerequisite Level'] || row['prerequisite_knowledge_level'] || 'FOUNDATION'
-            const prerequisiteLevel = normalizeLevel(rawPrereqLevel, 'FOUNDATION')
 
             const errors: string[] = []
             if (!dependentCode) errors.push('Dependent skill code required')
             if (!prerequisiteCode) errors.push('Prerequisite skill code required')
-            if (dependentCode && prerequisiteCode && dependentCode === prerequisiteCode && dependentLevel === prerequisiteLevel) {
+            if (dependentCode && prerequisiteCode && dependentCode === prerequisiteCode) {
               errors.push('Self-loop prerequisite not allowed')
             }
-            if (!validLevels.has(dependentLevel)) errors.push(`Invalid dependent level: ${dependentLevel}`)
-            if (!validLevels.has(prerequisiteLevel)) errors.push(`Invalid prerequisite level: ${prerequisiteLevel}`)
 
             let isConflicted = false
             let conflictReason: string | undefined
 
             if (dependentCode && prerequisiteCode) {
-              const prereqKey = `${dependentCode}:${dependentLevel}->${prerequisiteCode}:${prerequisiteLevel}`
+              const prereqKey = `${dependentCode}->${prerequisiteCode}`
 
               const depSkill = existingMicroSkills.find(
                 (s) => (s.code || '').trim().toUpperCase() === dependentCode
@@ -459,18 +440,12 @@ export function OntologyExcelImportModal({
                 const matchTarget =
                   (prereqSkill && p.targetSkillId === prereqSkill.id) ||
                   (p.targetSkillCode && p.targetSkillCode.toUpperCase() === prerequisiteCode)
-                const matchDepLevel =
-                  !p.dependentKnowledgeLevel ||
-                  p.dependentKnowledgeLevel.toUpperCase() === dependentLevel.toUpperCase()
-                const matchTargetLevel =
-                  !p.prerequisiteKnowledgeLevel ||
-                  p.prerequisiteKnowledgeLevel.toUpperCase() === prerequisiteLevel.toUpperCase()
-                return Boolean(matchDep && matchTarget && matchDepLevel && matchTargetLevel)
+                return Boolean(matchDep && matchTarget)
               })
 
               if (alreadyInOrg) {
                 isConflicted = true
-                conflictReason = `Prerequisite dependency "${dependentCode} (${dependentLevel}) -> ${prerequisiteCode} (${prerequisiteLevel})" already exists in organization graph`
+                conflictReason = `Prerequisite dependency "${dependentCode} -> ${prerequisiteCode}" already exists in organization graph`
               } else if (seenPrereqs.has(prereqKey)) {
                 isConflicted = true
                 conflictReason = `Duplicate prerequisite dependency in workbook`
@@ -480,9 +455,7 @@ export function OntologyExcelImportModal({
 
             return {
               dependentCode,
-              dependentLevel,
               prerequisiteCode,
-              prerequisiteLevel,
               isValid: errors.length === 0,
               isConflicted,
               conflictReason,
@@ -673,8 +646,6 @@ export function OntologyExcelImportModal({
               await createPrerequisite(orgId, {
                 sourceSkillId: source.id,
                 targetSkillId: target.id,
-                dependentKnowledgeLevel: prereq.dependentLevel,
-                prerequisiteKnowledgeLevel: prereq.prerequisiteLevel,
               })
               prereqSuccessCount++
             } catch {
@@ -1133,12 +1104,10 @@ export function OntologyExcelImportModal({
                       {prereqRows.map((row, idx) => (
                         <tr key={idx} className={`hover:bg-muted/20 ${row.isConflicted ? 'bg-warning/5' : ''}`}>
                           <td className="py-2 px-3 text-foreground whitespace-nowrap">
-                            <span className="font-mono font-semibold">{row.dependentCode}</span>{' '}
-                            <span className="text-[10.5px] text-muted-foreground font-mono">({row.dependentLevel})</span>
+                            <span className="font-mono font-semibold">{row.dependentCode}</span>
                           </td>
                           <td className="py-2 px-3 text-foreground whitespace-nowrap">
-                            <span className="font-mono font-semibold">{row.prerequisiteCode}</span>{' '}
-                            <span className="text-[10.5px] text-muted-foreground font-mono">({row.prerequisiteLevel})</span>
+                            <span className="font-mono font-semibold">{row.prerequisiteCode}</span>
                           </td>
                           <td className="py-2 px-3 text-center whitespace-nowrap">
                             {row.isConflicted ? (

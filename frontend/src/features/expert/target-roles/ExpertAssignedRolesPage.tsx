@@ -14,7 +14,6 @@ import {
   Edit3,
   Eye,
   FileCheck,
-  Filter,
   History,
   Layers,
   Lock,
@@ -36,10 +35,6 @@ type CompetencyDto,
 import { fetchDepartments,type DepartmentDto } from '../../../shared/api/departmentApi'
 import { fetchJobPositions,type JobPositionDto } from '../../../shared/api/jobPositionApi'
 import { fetchMicroSkills } from '../../../shared/api/microSkillApi'
-import {
-fetchPrerequisites,
-type PrerequisiteEdgeDto,
-} from '../../../shared/api/prerequisiteApi'
 import { workspaceFetch as fetch } from '../../../shared/api/workspaceFetch'
 import { WorkspaceSessionContext } from '../../../shared/auth/workspaceSession'
 import { Badge } from '../../../shared/components/ui/Badge'
@@ -69,7 +64,6 @@ import { useToast } from "../../../shared/hooks/useToast"
 import { PageLoader } from '../../../shared/components/ui/PageLoader'
 import { useTranslation } from "../../../shared/i18n/LanguageContext"
 import { WorkspaceLayout } from '../../../shared/layouts/WorkspaceLayout'
-import { cn } from '../../../shared/lib/utils'
 import {
 getActiveCompany,
 resolveWorkspaceOrgId,
@@ -186,23 +180,18 @@ export function ExpertAssignedRolesPage() {
   const [realCompetencies, setRealCompetencies] = React.useState<
     CompetencyDto[]
   >([])
-  const [realPrerequisites, setRealPrerequisites] = React.useState<
-    PrerequisiteEdgeDto[]
-  >([])
   const [jobPositions, setJobPositions] = React.useState<JobPositionDto[]>([])
   const [departments, setDepartments] = React.useState<DepartmentDto[]>([])
 
   const fetchSkills = React.useCallback(async () => {
     try {
-      const [skillsList, compsList, prereqsList, jpList, deptList] = await Promise.all([
+      const [skillsList, compsList, jpList, deptList] = await Promise.all([
         fetchMicroSkills(orgId).catch(() => []),
         fetchCompetencies(orgId).catch(() => []),
-        fetchPrerequisites(orgId).catch(() => []),
         fetchJobPositions(orgId).catch(() => []),
         fetchDepartments(orgId).catch(() => []),
       ])
 
-      if (prereqsList) setRealPrerequisites(prereqsList)
       if (Array.isArray(jpList)) setJobPositions(jpList)
       if (Array.isArray(deptList)) setDepartments(deptList)
 
@@ -1092,14 +1081,6 @@ export function ExpertAssignedRolesPage() {
     }
   }
 
-  // Two-step confirmation state for unassigned prerequisites
-
-  const [isAwaitingPrereqConfirmation, setIsAwaitingPrereqConfirmation] =
-    useResettableState(false, [authoringRole?.id, authoringRole?.skillTargets.length])
-  const prereqConfirmTimerRef = React.useRef<ReturnType<
-    typeof setTimeout
-  > | null>(null)
-
   // Cascading: Expert MUST choose from micro-skills inside the selected assigned competency
   const availableSkills = React.useMemo(() => {
     if (
@@ -1176,66 +1157,6 @@ export function ExpertAssignedRolesPage() {
     commonCompObjects,
   ])
 
-  // Missing prerequisites across configured levels in authoring role
-
-  const authoringRoleMissingPrereqs = React.useMemo(() => {
-    if (
-      !authoringRole ||
-      !authoringRole.skillTargets ||
-      authoringRole.skillTargets.length === 0
-    )
-      return []
-
-    const missingList: Array<{
-      skillCode: string
-      prereqCode: string
-      level: string
-    }> = []
-    const seen = new Set<string>()
-
-    authoringRole.skillTargets.forEach((st) => {
-      const stLevel = st.level || currentRoleLevels[0]
-      const missing = realPrerequisites.filter((p) => {
-        const matchesSource =
-          p.sourceSkillId === st.skillId || p.sourceSkillCode === st.skillCode
-
-        if (!matchesSource) return false
-
-        const targetPresent = authoringRole.skillTargets.some(
-          (other) =>
-            (other.skillId === p.targetSkillId ||
-              other.skillCode === p.targetSkillCode) &&
-            (other.level === st.level || !other.level || !st.level),
-        )
-
-        return !targetPresent
-      })
-
-      missing.forEach((m) => {
-        const pCode = m.targetSkillCode || m.targetSkillId
-        const key = `${st.skillCode}:${pCode}:${stLevel}`
-        if (!seen.has(key)) {
-          seen.add(key)
-          missingList.push({
-            skillCode: st.skillCode,
-            prereqCode: pCode,
-            level: stLevel,
-          })
-        }
-      })
-    })
-
-    return missingList
-  }, [authoringRole, realPrerequisites, currentRoleLevels])
-
-  // Reset confirmation state when authoring role or its skills change
-
-  React.useEffect(() => {
-    if (prereqConfirmTimerRef.current)
-      clearTimeout(prereqConfirmTimerRef.current)
-
-  }, [authoringRole?.id, authoringRole?.skillTargets.length])
-
   const availableSkillId = availableSkills.some(skill => skill.id === newSkillId)
     ? newSkillId : availableSkills[0]?.id ?? ''
   if (newSkillId !== availableSkillId) setNewSkillId(availableSkillId)
@@ -1270,75 +1191,6 @@ export function ExpertAssignedRolesPage() {
       return true
     })
   }, [authoringRole, realCompetencies, selectedAuthoringLevels])
-
-  // Helper to find parent competencies for a micro-skill in ontology
-  const getParentCompetenciesForSkill = React.useCallback(
-    (skillIdOrCode: string): CompetencyDto[] => {
-      if (!skillIdOrCode) return []
-      const skillObj = companyMicroSkills.find(
-        (s) => s.id === skillIdOrCode || s.code === skillIdOrCode,
-      )
-      const targetId = skillObj?.id || skillIdOrCode
-      const targetCode = skillObj?.code || skillIdOrCode
-      const sourceComps: CompetencyDto[] =
-        realCompetencies.length > 0
-          ? realCompetencies
-          : ((activeCompany?.competencies || []) as unknown as CompetencyDto[])
-
-      return sourceComps.filter((c) => {
-        const inSkillIds =
-          (c.skillIds || []).includes(targetId) ||
-          (c.skillIds || []).includes(targetCode) ||
-          (c.skillIds || []).includes(skillIdOrCode)
-        const inMemberSkills = ((c as CompetencyDto).memberSkills || []).some(
-          (m: { id?: string; code?: string }) =>
-            m.id === targetId ||
-            m.code === targetCode ||
-            m.id === skillIdOrCode ||
-            m.code === skillIdOrCode,
-        )
-        return inSkillIds || inMemberSkills
-      })
-    },
-    [companyMicroSkills, realCompetencies, activeCompany],
-  )
-
-  const [filterOnlyPrereqUnlocks, setFilterOnlyPrereqUnlocks] =
-    React.useState(false)
-
-  // Prerequisite codes missing for the currently selected level(s)
-  const missingPrereqCodesForSelectedLevels = React.useMemo(() => {
-    return new Set(
-      authoringRoleMissingPrereqs
-        .filter((m) => selectedAuthoringLevels.includes(m.level))
-        .map((m) => m.prereqCode),
-    )
-  }, [authoringRoleMissingPrereqs, selectedAuthoringLevels])
-
-  // Automatically clear missing prerequisites filter if the selected levels have no missing prerequisites
-  {
-    if (
-      missingPrereqCodesForSelectedLevels.size === 0 &&
-      filterOnlyPrereqUnlocks
-    ) {
-      setFilterOnlyPrereqUnlocks(false)
-    }
-  }
-
-  // Count how many available competencies unlock at least one missing prerequisite
-  const missingPrereqCompetenciesCount = React.useMemo(() => {
-    if (missingPrereqCodesForSelectedLevels.size === 0) return 0
-    return availableCompetencies.filter((comp) => {
-      return Array.from(missingPrereqCodesForSelectedLevels).some((code) => {
-        const parentComps = getParentCompetenciesForSkill(code)
-        return parentComps.some((c) => c.id === comp.id || c.code === comp.code)
-      })
-    }).length
-  }, [
-    availableCompetencies,
-    missingPrereqCodesForSelectedLevels,
-    getParentCompetenciesForSkill,
-  ])
 
   const resolveCompJobPositionTitle = React.useCallback(
     (comp: CompetencyDto): string => {
@@ -1466,18 +1318,10 @@ export function ExpertAssignedRolesPage() {
   }, [availableCompetencies, compDeptFilter, compJobPosFilter, resolveCompDepartmentName, resolveCompJobPositionTitle])
 
   const competencyOptions: ComboboxOption[] = React.useMemo(() => {
-    const list = filteredAvailableCompetencies.map((comp) => {
+    return filteredAvailableCompetencies.map((comp) => {
       const memberSkillNames = (comp.memberSkills || []).map(
         (m) => m.name || m.code || m.id,
       )
-      const matchingPrereqs = Array.from(
-        missingPrereqCodesForSelectedLevels,
-      ).filter((code) => {
-        const parentComps = getParentCompetenciesForSkill(code)
-        return parentComps.some((c) => c.id === comp.id || c.code === comp.code)
-      })
-
-      const hasMissingPrereq = matchingPrereqs.length > 0
       const memberSkillsDetails =
         memberSkillNames.length > 0
           ? ` · Skills: ${memberSkillNames.slice(0, 4).join(', ')}${memberSkillNames.length > 4 ? ` (+${memberSkillNames.length - 4} more)` : ''}`
@@ -1492,32 +1336,12 @@ export function ExpertAssignedRolesPage() {
         : `${deptDetails}${posDetails}Domain Competency${memberSkillsDetails}`
 
       return {
-        comp,
-        hasMissingPrereq,
-        option: {
-          value: comp.id,
-          label: hasMissingPrereq
-            ? `${comp.code || comp.id} — ${comp.name} [Unlocks: ${matchingPrereqs.join(', ')}]`
-            : `${comp.code || comp.id} — ${comp.name}`,
-          description: hasMissingPrereq
-            ? `⭐ Unlocks prerequisite ${matchingPrereqs.join(', ')} · ${baseDesc}`
-            : baseDesc,
-        },
+        value: comp.id,
+        label: `${comp.code || comp.id} — ${comp.name}`,
+        description: baseDesc,
       }
     })
-
-    const filtered = filterOnlyPrereqUnlocks
-      ? list.filter((item) => item.hasMissingPrereq)
-      : list
-
-    const sorted = [...filtered].sort((a, b) => {
-      if (a.hasMissingPrereq && !b.hasMissingPrereq) return -1
-      if (!a.hasMissingPrereq && b.hasMissingPrereq) return 1
-      return 0
-    })
-
-    return sorted.map((s) => s.option)
-  }, [filteredAvailableCompetencies, missingPrereqCodesForSelectedLevels, getParentCompetenciesForSkill, filterOnlyPrereqUnlocks, resolveCompJobPositionTitle, resolveCompDepartmentName])
+  }, [filteredAvailableCompetencies, resolveCompJobPositionTitle, resolveCompDepartmentName])
 
   // Add competency strictly to all currently selected levels, or a specific targeted level
   const handleAddCompetency = (compId: string, targetLevel?: string) => {
@@ -1726,8 +1550,6 @@ export function ExpertAssignedRolesPage() {
     setConfiguredSkillSearch('')
 
     setConfiguredCompetencySearch('')
-
-    setFilterOnlyPrereqUnlocks(false)
 
     setIsAuthoringModalOpen(true)
   }
@@ -1993,8 +1815,6 @@ export function ExpertAssignedRolesPage() {
     })
   }
 
-  // Two-step submission initiation (checks unassigned prerequisites and prompts in-place)
-
   const handleInitiateSubmitToManager = () => {
     if (!authoringRole) return
 
@@ -2024,37 +1844,6 @@ export function ExpertAssignedRolesPage() {
 
       return
     }
-
-    // Step 1: If unassigned prerequisites exist and not yet in confirmation state, morph the button
-
-    if (
-      authoringRoleMissingPrereqs.length > 0 &&
-      !isAwaitingPrereqConfirmation
-    ) {
-      setIsAwaitingPrereqConfirmation(true)
-
-      if (prereqConfirmTimerRef.current)
-        clearTimeout(prereqConfirmTimerRef.current)
-
-      prereqConfirmTimerRef.current = setTimeout(() => {
-        setIsAwaitingPrereqConfirmation(false)
-      }, 6000)
-
-      toast({
-        title: 'Unassigned Prerequisites Detected',
-        description: `${authoringRoleMissingPrereqs.length} prerequisite skill(s) are missing from this role level. Click the button again within 6 seconds to confirm and submit anyway.`,
-        variant: 'default',
-      })
-
-      return
-    }
-
-    // Step 2: Second click or no missing prereqs -> execute submission
-
-    if (prereqConfirmTimerRef.current)
-      clearTimeout(prereqConfirmTimerRef.current)
-
-    setIsAwaitingPrereqConfirmation(false)
 
     handleSubmitConfigurationToManager(authoringRole)
   }
@@ -3151,101 +2940,31 @@ export function ExpertAssignedRolesPage() {
                                 value={newCompetencyId}
                                 onChange={(val) => setNewCompetencyId(val)}
                                 placeholder={
-                                  filterOnlyPrereqUnlocks
-                                    ? `Showing ${missingPrereqCompetenciesCount} competencies unlocking missing prereqs...`
-                                    : filteredAvailableCompetencies.length === 0
-                                      ? 'No competencies match selected filters'
-                                      : `Search & select competency for ${selectedLevelNamesLabel}...`
+                                  filteredAvailableCompetencies.length === 0
+                                    ? 'No competencies match selected filters'
+                                    : `Search & select competency for ${selectedLevelNamesLabel}...`
                                 }
                                 searchPlaceholder="Search by competency code or title..."
                                 emptyMessage={
-                                  filterOnlyPrereqUnlocks
-                                    ? 'No available competencies unlock the missing prerequisites. Click the filter button to show all.'
-                                    : filteredAvailableCompetencies.length === 0
-                                      ? 'No competencies match active Department & Job Position filters.'
-                                      : `All competencies are already assigned to ${selectedLevelNamesLabel}`
+                                  filteredAvailableCompetencies.length === 0
+                                    ? 'No competencies match active Department & Job Position filters.'
+                                    : `All competencies are already assigned to ${selectedLevelNamesLabel}`
                                 }
                               />
                             </div>
 
-                          {(missingPrereqCodesForSelectedLevels.size > 0 ||
-                            filterOnlyPrereqUnlocks) && (
                             <Button
                               type="button"
-                              variant={
-                                filterOnlyPrereqUnlocks
-                                  ? 'secondary'
-                                  : 'outline'
-                              }
+                              variant="primary"
                               size="sm"
-                              onClick={() =>
-                                setFilterOnlyPrereqUnlocks((prev) => !prev)
-                              }
-                              className={cn(
-                                'font-semibold text-xs whitespace-nowrap h-8 px-2.5 transition-all shadow-2xs shrink-0',
-                                filterOnlyPrereqUnlocks
-                                  ? 'border-primary/40 text-primary bg-secondary hover:bg-secondary-hover'
-                                  : 'text-muted-foreground hover:text-foreground border-border hover:bg-muted/50',
-                              )}
-                              leftIcon={
-                                <Filter
-                                  className={cn(
-                                    'h-3.5 w-3.5',
-                                    filterOnlyPrereqUnlocks
-                                      ? 'text-primary'
-                                      : 'text-muted-foreground',
-                                  )}
-                                />
-                              }
-                              title={
-                                filterOnlyPrereqUnlocks
-                                  ? 'Clear missing prerequisites filter'
-                                  : 'Filter dropdown to show only competencies that unlock missing prerequisites'
-                              }
+                              disabled={!newCompetencyId}
+                              onClick={() => handleAddCompetency(newCompetencyId)}
+                              className="font-semibold shadow-2xs whitespace-nowrap px-3 text-xs shrink-0"
+                              leftIcon={<Plus className="h-3.5 w-3.5" />}
                             >
-                              <span>
-                                {filterOnlyPrereqUnlocks
-                                  ? 'Filter Active'
-                                  : 'Missing Prereqs'}{' '}
-                                ({missingPrereqCompetenciesCount})
-                              </span>
-                              {filterOnlyPrereqUnlocks && (
-                                <X className="h-3 w-3 ml-1 text-primary" />
-                              )}
+                              Add Competency
                             </Button>
-                          )}
-
-                          <Button
-                            type="button"
-                            variant="primary"
-                            size="sm"
-                            disabled={!newCompetencyId}
-                            onClick={() => handleAddCompetency(newCompetencyId)}
-                            className="font-semibold shadow-2xs whitespace-nowrap px-3 text-xs shrink-0"
-                            leftIcon={<Plus className="h-3.5 w-3.5" />}
-                          >
-                            Add Competency
-                          </Button>
-                        </div>
-
-                        {filterOnlyPrereqUnlocks && (
-                          <div className="flex items-center justify-between text-[11px] text-muted-foreground pt-0.5 px-0.5">
-                            <span>
-                              Filtering {missingPrereqCompetenciesCount}{' '}
-                              {missingPrereqCompetenciesCount === 1
-                                ? 'competency'
-                                : 'competencies'}{' '}
-                              that unlock missing prerequisites
-                            </span>
-                            <button
-                              type="button"
-                              onClick={() => setFilterOnlyPrereqUnlocks(false)}
-                              className="text-primary hover:underline font-semibold flex items-center gap-1 cursor-pointer"
-                            >
-                              <X className="h-3 w-3" /> Clear Filter
-                            </button>
                           </div>
-                        )}
                         </div>
                       </div>
                     )}
@@ -3640,57 +3359,6 @@ export function ExpertAssignedRolesPage() {
                             <tbody className="divide-y divide-border">
                               {filteredTargets.map((st) => {
                                 const stLevel = st.level || currentRoleLevels[0]
-                                const prereqOf = Array.from(
-                                  new Map(
-                                    realPrerequisites
-                                      .filter(
-                                        (p) =>
-                                          (p.targetSkillId === st.skillId ||
-                                            p.targetSkillCode === st.skillCode) &&
-                                          displayedSkillTargets.some(
-                                            (other) =>
-                                              other.skillId === p.sourceSkillId ||
-                                              other.skillCode === p.sourceSkillCode,
-                                          ),
-                                      )
-                                      .map((p) => [p.sourceSkillCode || p.sourceSkillId, p]),
-                                  ).values(),
-                                )
-
-                                const requiresSkill = Array.from(
-                                  new Map(
-                                    realPrerequisites
-                                      .filter(
-                                        (p) =>
-                                          (p.sourceSkillId === st.skillId ||
-                                            p.sourceSkillCode === st.skillCode) &&
-                                          displayedSkillTargets.some(
-                                            (other) =>
-                                              other.skillId === p.targetSkillId ||
-                                              other.skillCode === p.targetSkillCode,
-                                          ),
-                                      )
-                                      .map((p) => [p.targetSkillCode || p.targetSkillId, p]),
-                                  ).values(),
-                                )
-
-                                const missingPrereqs = Array.from(
-                                  new Map(
-                                    realPrerequisites
-                                      .filter(
-                                        (p) =>
-                                          (p.sourceSkillId === st.skillId ||
-                                            p.sourceSkillCode === st.skillCode) &&
-                                          !displayedSkillTargets.some(
-                                            (other) =>
-                                              other.skillId === p.targetSkillId ||
-                                              other.skillCode === p.targetSkillCode,
-                                          ),
-                                      )
-                                      .map((p) => [p.targetSkillCode || p.targetSkillId, p]),
-                                  ).values(),
-                                )
-
                                 const isEditingThisSkill =
                                   editingSkillKey === `${st.skillId}-${stLevel}`
 
@@ -3716,72 +3384,6 @@ export function ExpertAssignedRolesPage() {
                                         <span className="text-muted-foreground">
                                           {st.skillName}
                                         </span>
-
-                                        {prereqOf.length > 0 && (
-                                          <Badge
-                                            variant="outline"
-                                            className="text-[9.5px] font-mono text-primary border-primary/30 bg-primary/5"
-                                          >
-                                            Prereq for{' '}
-                                            {prereqOf
-                                              .map(
-                                                (p) =>
-                                                  p.sourceSkillCode ||
-                                                  p.sourceSkillId,
-                                              )
-                                              .join(', ')}
-                                          </Badge>
-                                        )}
-
-                                        {requiresSkill.length > 0 && (
-                                          <Badge
-                                            variant="outline"
-                                            className="text-[9.5px] font-mono text-amber-600 border-amber-500/30 bg-amber-500/5"
-                                          >
-                                            Requires{' '}
-                                            {requiresSkill
-                                              .map(
-                                                (p) =>
-                                                  p.targetSkillCode ||
-                                                  p.targetSkillId,
-                                              )
-                                              .join(', ')}
-                                          </Badge>
-                                        )}
-
-                                        {missingPrereqs.length > 0 && (
-                                          <div className="flex flex-col gap-1 w-full mt-1">
-                                            {missingPrereqs.map((p) => {
-                                              const pCode =
-                                                p.targetSkillCode ||
-                                                p.targetSkillId
-                                              const prereqSkill =
-                                                companyMicroSkills.find(
-                                                  (s) =>
-                                                    s.id === pCode ||
-                                                    s.code === pCode,
-                                                )
-
-                                              return (
-                                                <div
-                                                  key={pCode}
-                                                  className="flex items-center gap-1.5 flex-wrap"
-                                                >
-                                                  <Badge
-                                                    variant="outline"
-                                                    className="text-[9.5px] font-mono text-destructive border-destructive/30 bg-destructive/5 flex items-center gap-1 py-0.5 px-1.5"
-                                                    title={`Prerequisite "${pCode}${prereqSkill ? ` — ${prereqSkill.name}` : ''}" is required. Use the filter toggle above to find and add its parent competency.`}
-                                                  >
-                                                    <AlertCircle className="h-3 w-3 shrink-0 text-destructive" />
-                                                    <span>
-                                                      Missing prereq: {pCode}
-                                                    </span>
-                                                  </Badge>
-                                                </div>
-                                              )
-                                            })}
-                                          </div>
-                                        )}
                                       </div>
                                     </td>
 
@@ -3908,10 +3510,6 @@ export function ExpertAssignedRolesPage() {
                     variant="outline"
                     size="sm"
                     onClick={() => {
-                      if (prereqConfirmTimerRef.current)
-                        clearTimeout(prereqConfirmTimerRef.current)
-
-                      setIsAwaitingPrereqConfirmation(false)
                       setIsAuthoringModalOpen(false)
                       setAuthoringRole(null)
                     }}
@@ -3960,10 +3558,6 @@ export function ExpertAssignedRolesPage() {
                       size="sm"
                       disabled={isSavingDraft}
                       onClick={() => {
-                        if (prereqConfirmTimerRef.current)
-                          clearTimeout(prereqConfirmTimerRef.current)
-
-                        setIsAwaitingPrereqConfirmation(false)
                         handleSaveAuthoringDraft()
                       }}
                       className="font-semibold"
@@ -3971,47 +3565,27 @@ export function ExpertAssignedRolesPage() {
                       {isSavingDraft ? 'Saving Draft...' : 'Save Draft'}
                     </Button>
 
-                    {isAwaitingPrereqConfirmation ? (
-                      <Button
-                        variant="primary"
-                        size="sm"
-                        disabled={!authoringReadiness.isOverallReady}
-                        onClick={handleInitiateSubmitToManager}
-                        className="font-semibold shadow-md bg-amber-600 hover:bg-amber-700 text-white border-amber-600 animate-pulse transition-all duration-200"
-                        leftIcon={<AlertTriangle className="h-4 w-4" />}
-                        title={
-                          !authoringReadiness.isOverallReady
-                            ? `Cannot submit: ${authoringReadiness.missingSummary.join('; ')}`
-                            : "Click again within 6 seconds to confirm submission with unassigned prerequisites"
-                        }
-                      >
-                        Confirm Submit ({authoringRoleMissingPrereqs.length}{' '}
-                        Missing Prereq
-                        {authoringRoleMissingPrereqs.length > 1 ? 's' : ''})
-                      </Button>
-                    ) : (
-                      <Button
-                        variant="primary"
-                        size="sm"
-                        disabled={
-                          !authoringReadiness.isOverallReady ||
-                          authoringRole.skillTargets.length === 0 ||
-                          isSavingDraft
-                        }
-                        onClick={handleInitiateSubmitToManager}
-                        className="font-semibold shadow-2xs"
-                        leftIcon={<Send className="h-4 w-4" />}
-                        title={
-                          !authoringReadiness.isOverallReady
-                            ? `Validation required before submitting: ${authoringReadiness.missingSummary.join('; ')}`
-                            : undefined
-                        }
-                      >
-                        {isAuthoringFeedback || isAuthoringRejected
-                          ? 'Re-submit to L&D Manager'
-                          : 'Submit to L&D Manager'}
-                      </Button>
-                    )}
+                    <Button
+                      variant="primary"
+                      size="sm"
+                      disabled={
+                        !authoringReadiness.isOverallReady ||
+                        authoringRole.skillTargets.length === 0 ||
+                        isSavingDraft
+                      }
+                      onClick={handleInitiateSubmitToManager}
+                      className="font-semibold shadow-2xs"
+                      leftIcon={<Send className="h-4 w-4" />}
+                      title={
+                        !authoringReadiness.isOverallReady
+                          ? `Validation required before submitting: ${authoringReadiness.missingSummary.join('; ')}`
+                          : undefined
+                      }
+                    >
+                      {isAuthoringFeedback || isAuthoringRejected
+                        ? 'Re-submit to L&D Manager'
+                        : 'Submit to L&D Manager'}
+                    </Button>
                   </div>
                 )}
               </DialogFooter>
