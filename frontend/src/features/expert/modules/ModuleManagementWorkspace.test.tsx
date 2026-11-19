@@ -275,12 +275,12 @@ describe('REQ-013 module workspace', () => {
     expect(screen.queryByLabelText('Status')).toBeNull()
     expect(screen.getAllByRole('columnheader').map(h => h.textContent)).toEqual([
       'Module',
-      'Responsible person',
-      'Skill taught',
+      'Responsible Expert',
+      'MicroSkill',
       'Knowledge level',
       'Duration',
       'Status',
-      'Action',
+      'Actions',
     ])
     const queries=()=>vi.mocked(fetch).mock.calls.filter(([path])=>String(path).includes('/module-list?')).map(([path])=>new URL(String(path),'http://test').searchParams)
     expect(queries().at(-1)?.get('status')).toBe('ACTIVE');expect(queries().at(-1)?.get('review')).toBe('APPROVED')

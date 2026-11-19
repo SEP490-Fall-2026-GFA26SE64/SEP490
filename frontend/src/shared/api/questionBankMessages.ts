@@ -16,9 +16,9 @@ export function questionBankMessage(value: string, vi: boolean): string {
     'Use letters, digits, dot, dash or underscore in question code': 'Mã câu hỏi chỉ dùng chữ cái, chữ số, dấu chấm, gạch ngang hoặc gạch dưới',
     'Request timed out. Reload the latest data before retrying.': 'Yêu cầu quá thời gian phản hồi. Hãy tải dữ liệu mới nhất trước khi thử lại.',
     'Unexpected server response. Reload and retry.': 'Phản hồi từ máy chủ chưa hợp lệ. Vui lòng tải lại và thử lại.',
-    'Question approved': 'Câu hỏi đã được duyệt', 'Question returned': 'Câu hỏi được trả lại',
+    'Question approved': 'Câu hỏi đã được duyệt', 'Questions approved': 'Các câu hỏi đã được duyệt', 'Question returned': 'Câu hỏi được trả lại',
     'Question assigned': 'Đã phân công câu hỏi', 'Question responsibility transferred': 'Đã chuyển người phụ trách câu hỏi',
-    'Question awaiting review': 'Câu hỏi đang chờ duyệt', 'Question availability request': 'Yêu cầu thay đổi trạng thái sử dụng câu hỏi',
+    'Question awaiting review': 'Câu hỏi đang chờ duyệt', 'Questions awaiting review': 'Các câu hỏi đang chờ duyệt', 'Question availability request': 'Yêu cầu thay đổi trạng thái sử dụng câu hỏi',
     'Question availability updated': 'Đã cập nhật trạng thái sử dụng câu hỏi', 'Question availability request returned': 'Yêu cầu thay đổi trạng thái sử dụng được trả lại',
     'Question changed. Reload and review the current version.': 'Câu hỏi đã thay đổi. Hãy tải lại và kiểm tra phiên bản mới nhất.',
     'Only the responsible Expert can change this question': 'Chỉ Expert phụ trách được thay đổi câu hỏi này',
@@ -38,6 +38,8 @@ export function questionBankMessage(value: string, vi: boolean): string {
     'Open this exact submitted version before approval': 'Cần xem đúng phiên bản đã gửi trước khi duyệt',
     'Open the current eligible submitted version': 'Cần xem phiên bản đang chờ duyệt và còn đủ điều kiện',
     'Question is not eligible for approval': 'Câu hỏi chưa đủ điều kiện để duyệt',
+    'This exact file was already imported': 'File này đã được import trước đó',
+    'No new questions to import (all rows already exist)': 'Không có câu hỏi mới nào để nhập (tất cả câu hỏi đã tồn tại)',
     'Import preview expired': 'Bản xem trước đã hết hạn, vui lòng tải file lại',
     'Acknowledge import warnings': 'Vui lòng xác nhận các cảnh báo import', 'Confirm successor creation': 'Vui lòng xác nhận tạo phiên bản mới',
     'Existing draft or submitted successor': 'Đã có bản nháp hoặc phiên bản đang chờ duyệt',
@@ -58,6 +60,9 @@ export function questionBankMessage(value: string, vi: boolean): string {
     'Unable to obtain workspace request protection. Sign in again.': 'Chưa xác thực được phiên làm việc. Vui lòng đăng nhập lại.',
   }
   let result = value
+  result = result.replace(/^Row (\d+): duplicate question in this file \(matches row (\d+)\)$/g, 'Dòng $1: trùng câu hỏi trong cùng file (trùng dòng $2)')
+  result = result.replace(/^(\d+) questions submitted \(([^)]+)\)$/g, 'Đã gửi duyệt $1 câu hỏi ($2)')
+  result = result.replace(/^(\d+) questions approved \(([^)]+)\)$/g, 'Đã duyệt $1 câu hỏi ($2)')
   for (const [en, vn] of Object.entries(phrases).sort((a,b) => b[0].length - a[0].length)) result = result.split(en).join(vn)
   return result.replace(/\bRow (\d+):/g, 'Dòng $1:')
 }

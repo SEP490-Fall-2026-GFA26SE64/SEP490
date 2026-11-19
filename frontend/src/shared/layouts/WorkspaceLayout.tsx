@@ -9,7 +9,6 @@ import {
   Briefcase,
   Building,
   Building2,
-  CheckCircle2,
   ChevronDown,
   Compass,
   Cpu,
@@ -279,9 +278,9 @@ export function WorkspaceLayout({ children, identity: suppliedIdentity, onSignOu
         icon: <FileQuestion size={15} />,
       },
       {
-        label: t('nav.learningContent', 'Learning Content'),
+        label: t('nav.modules'),
         href: '/ld-manager/modules',
-        icon: <CheckCircle2 size={15} />,
+        icon: <BookOpen size={15} />,
       },
       {
         label: t('nav.serverStatus'),

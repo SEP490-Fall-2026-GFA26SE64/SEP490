@@ -15,15 +15,31 @@ import { Select } from '../ui/Select'
 import { QuestionContentPreview } from './QuestionContentPreview'
 
 const control = 'min-h-9 w-full rounded-xl border border-border/80 bg-card px-3.5 py-2 text-body-sm text-foreground shadow-2xs transition-all placeholder:text-muted-foreground/60 hover:border-border focus-visible:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 disabled:opacity-50'
-export function QuestionDraftForm({ content, code, skills, knowledgeLevels, busy, onChange, vi }: {
+export function QuestionDraftForm({ content, code, skills, knowledgeLevels, busy, onChange, vi, showErrors = false }: {
   content: BankContent; code: string | null; skills: BankChoice[]; knowledgeLevels: string[]; busy: boolean
-  onChange: (patch: Partial<BankContent>) => void; vi: boolean
+  onChange: (patch: Partial<BankContent>) => void; vi: boolean; showErrors?: boolean
 }) {
   const copy = (en: string, vn: string) => vi ? vn : en
   const id = useId()
   const [touched, setTouched] = useState({ prompt: false, skill: false })
-  const promptError = touched.prompt && !content.prompt.trim()
-  const skillError = touched.skill && !content.skillId
+  const promptError = (touched.prompt || showErrors) && !content.prompt.trim()
+  const skillError = (touched.skill || showErrors) && !content.skillId
+  const levelError = showErrors && !content.knowledgeLevel
+  const answerError = showErrors && content.correctAnswer === null
+  const normalizedOptions = [0, 1, 2, 3].map(i => (content.options[i] ?? '').trim().toLowerCase())
+  const duplicatePairs: Array<[string, string]> = []
+  const duplicateIndices = new Set<number>()
+  const letters = ['A', 'B', 'C', 'D']
+  for (let i = 0; i < 4; i++) {
+    if (!normalizedOptions[i]) continue
+    for (let j = i + 1; j < 4; j++) {
+      if (normalizedOptions[i] === normalizedOptions[j]) {
+        duplicateIndices.add(i)
+        duplicateIndices.add(j)
+        duplicatePairs.push([letters[i], letters[j]])
+      }
+    }
+  }
   const levelName = (level: string) => ({ FOUNDATION: copy('Foundation', 'Nền tảng'), INTERMEDIATE: copy('Intermediate', 'Trung cấp'), ADVANCED: copy('Advanced', 'Nâng cao') })[level]
   const preview = (
     <aside aria-label={copy('Question preview', 'Xem trước câu hỏi')} className="min-w-0 rounded-xl border border-border/70 bg-muted/20 p-3.5 space-y-2.5">
@@ -66,13 +82,18 @@ export function QuestionDraftForm({ content, code, skills, knowledgeLevels, busy
           <RadioGroup aria-label={copy('Correct answer', 'Đáp án đúng')} value={content.correctAnswer === null ? '' : String(content.correctAnswer)} disabled={busy} onChange={value => onChange({ correctAnswer: Number(value) })} className="space-y-2">
             {['A', 'B', 'C', 'D'].map((letter, index) => {
               const isCorrect = content.correctAnswer === index
+              const isDuplicate = duplicateIndices.has(index)
+              const isMissing = showErrors && !(content.options[index] ?? '').trim()
+              const hasOptionError = isDuplicate || isMissing
               return (
                 <div
                   key={letter}
                   className={`flex items-center gap-2.5 rounded-xl border px-3 py-2 shadow-2xs transition-all focus-within:ring-2 ${
-                    isCorrect
-                      ? 'border-success/50 bg-success/5 focus-within:border-success focus-within:ring-success/20'
-                      : 'border-border/80 bg-card hover:border-border focus-within:border-primary focus-within:ring-primary/20'
+                    hasOptionError
+                      ? 'border-destructive bg-destructive/5 focus-within:border-destructive focus-within:ring-destructive/20'
+                      : isCorrect
+                        ? 'border-success/50 bg-success/5 focus-within:border-success focus-within:ring-success/20'
+                        : 'border-border/80 bg-card hover:border-border focus-within:border-primary focus-within:ring-primary/20'
                   }`}
                 >
                   <RadioGroupItem id={id + '-answer-' + index} name={id + '-correct-answer'} aria-label={copy(`Correct answer ${letter}`, `Đáp án đúng ${letter}`)} value={String(index)} />
@@ -97,6 +118,24 @@ export function QuestionDraftForm({ content, code, skills, knowledgeLevels, busy
               )
             })}
           </RadioGroup>
+          {duplicatePairs.length > 0 && (
+            <Text role="alert" variant="caption" className="text-destructive">
+              {copy(
+                `Duplicate answer options (${duplicatePairs.map(([a, b]) => `${a} & ${b}`).join(', ')}). Each option must be distinct.`,
+                `Đáp án bị trùng (${duplicatePairs.map(([a, b]) => `${a} & ${b}`).join(', ')}). Bốn lựa chọn phải khác nhau.`
+              )}
+            </Text>
+          )}
+          {showErrors && [0, 1, 2, 3].some(i => !(content.options[i] ?? '').trim()) && (
+            <Text role="alert" variant="caption" className="text-destructive">
+              {copy('Fill in all four answer options (A–D).', 'Vui lòng nhập đầy đủ cả 4 lựa chọn đáp án (A–D).')}
+            </Text>
+          )}
+          {answerError && (
+            <Text role="alert" variant="caption" className="text-destructive">
+              {copy('Select one correct answer before submitting.', 'Vui lòng chọn 1 đáp án đúng trước khi gửi duyệt.')}
+            </Text>
+          )}
         </div>
         <FormField label={copy('Answer explanation', 'Giải thích đáp án')}>
           <QuestionTextArea aria-label={copy('Answer explanation', 'Giải thích đáp án')} className={`${control} min-h-12 max-h-32`} rows={2} placeholder={copy('Optional explanation shown after answering…', 'Giải thích đáp án (tùy chọn)…')} value={content.explanation ?? ''} disabled={busy} onChange={e => onChange({ explanation: e.target.value })} />
@@ -131,21 +170,25 @@ export function QuestionDraftForm({ content, code, skills, knowledgeLevels, busy
                 </FormField>
                 {skillError && <Text id={id + '-skill-error'} role="alert" variant="caption" className="text-destructive">{copy('Choose a MicroSkill to save a draft.', 'Chọn MicroSkill để lưu nháp.')}</Text>}
               </div>
-              <FormField label={copy('Knowledge level', 'Mức kiến thức')}>
-                <Select
-                  size="md"
-                  aria-label={copy('Knowledge level', 'Mức kiến thức')}
-                  disabled={busy || !content.skillId || !knowledgeLevels.length}
-                  value={content.knowledgeLevel ?? ''}
-                  onChange={value => onChange({ knowledgeLevel: value || null })}
-                  placeholder={copy('Select level', 'Chọn mức')}
-                  options={(['FOUNDATION', 'INTERMEDIATE', 'ADVANCED'] as const).map(level => ({
-                    value: level,
-                    label: levelName(level) ?? level,
-                    disabled: !knowledgeLevels.includes(level),
-                  }))}
-                />
-              </FormField>
+              <div className="space-y-1.5">
+                <FormField label={copy('Knowledge level', 'Mức kiến thức')}>
+                  <Select
+                    size="md"
+                    aria-label={copy('Knowledge level', 'Mức kiến thức')}
+                    aria-invalid={!!levelError}
+                    disabled={busy || !content.skillId || !knowledgeLevels.length}
+                    value={content.knowledgeLevel ?? ''}
+                    onChange={value => onChange({ knowledgeLevel: value || null })}
+                    placeholder={copy('Select level', 'Chọn mức')}
+                    options={(['FOUNDATION', 'INTERMEDIATE', 'ADVANCED'] as const).map(level => ({
+                      value: level,
+                      label: levelName(level) ?? level,
+                      disabled: !knowledgeLevels.includes(level),
+                    }))}
+                  />
+                </FormField>
+                {levelError && <Text role="alert" variant="caption" className="text-destructive">{copy('Select a knowledge level before submitting.', 'Vui lòng chọn mức kiến thức trước khi gửi duyệt.')}</Text>}
+              </div>
             </div>
             {content.skillId && !knowledgeLevels.length && <Text role="status" variant="caption">{copy('This skill has no configured knowledge levels. Complete the catalog definition before classifying a question.', 'Kỹ năng này chưa có mức kiến thức được cấu hình. Cần hoàn thiện định nghĩa danh mục trước khi phân loại câu hỏi.')}</Text>}
             <label className="flex items-start gap-2.5 rounded-xl border border-border/80 bg-card p-3 text-body-sm cursor-pointer hover:bg-muted/30 transition-colors">
