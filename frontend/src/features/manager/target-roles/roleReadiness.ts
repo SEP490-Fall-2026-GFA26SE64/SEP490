@@ -27,18 +27,43 @@ export interface RoleReadinessResult {
   allSkillsValid: boolean
   isOverallReady: boolean
   missingSummary: string[]
+  isBypassed?: boolean
+}
+
+export const BYPASS_CONTENT_STORAGE_KEY = 'adapt_learn_graph_bypass_content_readiness'
+
+export function isContentReadinessBypassed(): boolean {
+  try {
+    return localStorage.getItem(BYPASS_CONTENT_STORAGE_KEY) === 'true'
+  } catch {
+    return false
+  }
+}
+
+export function setContentReadinessBypassed(bypassed: boolean): void {
+  try {
+    localStorage.setItem(BYPASS_CONTENT_STORAGE_KEY, String(bypassed))
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(
+        new CustomEvent('adapt_learn_graph_bypass_readiness_changed', { detail: bypassed })
+      )
+    }
+  } catch {}
 }
 
 /**
  * Validates role publication / submission readiness:
  * 1. Every defined career level must have >= 1 competency and >= 1 micro-skill.
  * 2. Every configured micro-skill must be covered by >= 1 learning module and >= 1 question bank item.
+ * (Optional bypass flag allows testing role lifecycle without blocking on content).
  */
 export function checkRoleReadiness(
   role: TargetRoleModel | null | undefined,
   modules: LearningModuleDto[],
   bankQuestions: BankQuestion[],
+  bypassContentCheck?: boolean,
 ): RoleReadinessResult {
+  const isBypassed = bypassContentCheck ?? isContentReadinessBypassed()
   if (!role) {
     return {
       levelValidation: [],
@@ -47,6 +72,7 @@ export function checkRoleReadiness(
       allSkillsValid: false,
       isOverallReady: false,
       missingSummary: ['No role provided'],
+      isBypassed,
     }
   }
 
@@ -105,8 +131,10 @@ export function checkRoleReadiness(
   const skillValidation: SkillReadiness[] = distinctSkillTargets.map((st) => {
     const sId = (st.skillId || '').toLowerCase()
     const sName = (st.skillName || '').toLowerCase()
-    const hasModule = taughtSkillIds.has(sId) || taughtSkillNames.has(sName)
-    const hasQuestions = questionSkillIds.has(sId)
+    const realHasModule = taughtSkillIds.has(sId) || taughtSkillNames.has(sName)
+    const realHasQuestions = questionSkillIds.has(sId)
+    const hasModule = isBypassed ? true : realHasModule
+    const hasQuestions = isBypassed ? true : realHasQuestions
     return {
       skillId: st.skillId,
       skillName: st.skillName || st.skillId,
@@ -117,7 +145,7 @@ export function checkRoleReadiness(
     }
   })
   const allSkillsValid =
-    skillValidation.length > 0 && skillValidation.every((sv) => sv.isReady)
+    skillValidation.length > 0 && (isBypassed || skillValidation.every((sv) => sv.isReady))
 
   const isOverallReady = allLevelsValid && allSkillsValid
 
@@ -136,7 +164,7 @@ export function checkRoleReadiness(
   if (!allSkillsValid) {
     if (skillValidation.length === 0) {
       missingSummary.push('No micro-skills configured')
-    } else {
+    } else if (!isBypassed) {
       const incompleteSkills = skillValidation
         .filter((sv) => !sv.isReady)
         .map((sv) => {
@@ -156,5 +184,6 @@ export function checkRoleReadiness(
     allSkillsValid,
     isOverallReady,
     missingSummary,
+    isBypassed,
   }
 }

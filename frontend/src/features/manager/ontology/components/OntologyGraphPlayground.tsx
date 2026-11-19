@@ -2,15 +2,17 @@ import {
   AlertCircle,
   ArrowLeftRight,
   Check,
-  ChevronLeft,
-  ChevronRight,
   Crosshair,
+  Filter,
   GripVertical,
   Layers,
   Link as LinkIcon,
+  Loader2,
   Maximize2,
   Minimize2,
   Network as NetworkIcon,
+  PanelLeftClose,
+  PanelLeftOpen,
   Plus,
   Search,
   Sparkles,
@@ -24,7 +26,6 @@ import { Network, type Options, type Node, type Edge } from 'vis-network'
 import { DataSet } from 'vis-data'
 import { Badge } from '../../../../shared/components/ui/Badge'
 import { Button } from '../../../../shared/components/ui/Button'
-import { Combobox } from '../../../../shared/components/ui/Combobox'
 import { RequiredKnowledgePicker } from '../../target-roles/components/RequiredKnowledgePicker'
 import { Dialog, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '../../../../shared/components/ui/Dialog'
 import { useToast } from "../../../../shared/hooks/useToast";
@@ -45,6 +46,7 @@ export interface OntologyGraphPlaygroundProps {
   organizationId: string
   activeTab?: string
   onRefreshData?: () => Promise<void>
+  isLoading?: boolean
 }
 
 export interface PlaygroundCustomNode extends Node {
@@ -118,6 +120,7 @@ function OntologyGraphPlaygroundInner({
   organizationId,
   activeTab,
   onRefreshData,
+  isLoading = false,
 }: OntologyGraphPlaygroundProps) {
   const { toast } = useToast()
   const { language } = useTranslation()
@@ -179,6 +182,9 @@ function OntologyGraphPlaygroundInner({
   const [isPaletteOpen, setIsPaletteOpen] = React.useState(true)
   const [searchQuery, setSearchQuery] = React.useState('')
   const [filterType, setFilterType] = React.useState<'all' | 'targetRole' | 'competency' | 'skill'>('all')
+
+  // Target Role Level Filter State
+  const [activeRoleLevelFilter, setActiveRoleLevelFilter] = React.useState<{ roleId: string; levelName: string | null } | null>(null)
 
   function buildTargetRoleNode(r: TargetRoleModel, pos?: { x: number; y: number }): PlaygroundCustomNode {
     const isCompact = isCompactViewRef.current
@@ -492,9 +498,11 @@ function OntologyGraphPlaygroundInner({
     const nodeUpdates = allNodes.map((n) => {
       const isConnected = connectedNodeIds.has(n.id)
       const theme = getNodeTheme(n, isCompact)
+      const isHidden = (n as { hidden?: boolean }).hidden ?? false
       if (isConnected) {
         return {
           id: n.id,
+          hidden: isHidden,
           opacity: 1,
           color: theme.color,
           font: {
@@ -507,6 +515,7 @@ function OntologyGraphPlaygroundInner({
       } else {
         return {
           id: n.id,
+          hidden: isHidden,
           opacity: 0.15,
           color: {
             background: 'rgba(248, 250, 252, 0.4)',
@@ -559,6 +568,7 @@ function OntologyGraphPlaygroundInner({
       const theme = getNodeTheme(n, isCompact)
       return {
         id: n.id,
+        hidden: (n as { hidden?: boolean }).hidden ?? false,
         opacity: 1,
         color: theme.color,
         font: {
@@ -1128,6 +1138,316 @@ function OntologyGraphPlaygroundInner({
     })
   }, [findClearSlot, toast, targetRoles])
 
+  // Helper to resolve the TargetRole associated with the currently selected node (role or level node)
+  const selectedRole = React.useMemo(() => {
+    if (!selectedNode) return null
+    const allRoles = targetRolesRef.current || targetRoles || []
+    const activeComp = getActiveCompany()
+    if (selectedNode.nodeType === 'targetRole') {
+      return (
+        allRoles.find((r) => r.id === selectedNode.id || r.code === selectedNode.code) ||
+        activeComp?.targetRoles?.find((r) => r.id === selectedNode.id || r.code === selectedNode.code) ||
+        null
+      )
+    }
+    if (selectedNode.nodeType === 'level' && selectedNode.targetRoleId) {
+      return (
+        allRoles.find((r) => r.id === selectedNode.targetRoleId) ||
+        activeComp?.targetRoles?.find((r) => r.id === selectedNode.targetRoleId) ||
+        null
+      )
+    }
+    return null
+  }, [selectedNode, targetRoles])
+
+  // Active role for filter toolbar (either currently selected or currently filtered)
+  const activeRoleForFilter = React.useMemo(() => {
+    if (selectedRole) return selectedRole
+    if (activeRoleLevelFilter?.roleId) {
+      const allRoles = targetRolesRef.current || targetRoles || []
+      const activeComp = getActiveCompany()
+      return (
+        allRoles.find((r) => r.id === activeRoleLevelFilter.roleId) ||
+        activeComp?.targetRoles?.find((r) => r.id === activeRoleLevelFilter.roleId) ||
+        null
+      )
+    }
+    return null
+  }, [selectedRole, activeRoleLevelFilter, targetRoles])
+
+  const activeRoleLevels = React.useMemo(() => {
+    if (!activeRoleForFilter) return []
+    const allRoles = targetRolesRef.current || targetRoles || []
+    const baseCode = (activeRoleForFilter.stableId || activeRoleForFilter.code || '').split('#')[0].trim().toUpperCase()
+    const lineageRoleWithComps = allRoles.find((r: TargetRoleModel) => {
+      const rBase = (r.stableId || r.code || '').split('#')[0].trim().toUpperCase()
+      return (
+        rBase === baseCode &&
+        ((r.levelCompetencies && Object.values(r.levelCompetencies).some((list) => Array.isArray(list) && list.length > 0)) ||
+          (r.competencyIds && r.competencyIds.length > 0))
+      )
+    })
+    const effectiveLevelCompetencies =
+      activeRoleForFilter.levelCompetencies &&
+      Object.values(activeRoleForFilter.levelCompetencies).some((list) => Array.isArray(list) && list.length > 0)
+        ? activeRoleForFilter.levelCompetencies
+        : lineageRoleWithComps?.levelCompetencies || {}
+
+    const configuredLevels = Array.isArray(activeRoleForFilter.levels) && activeRoleForFilter.levels.length > 0 ? activeRoleForFilter.levels : []
+    const levelNamesFromComps = Object.keys(effectiveLevelCompetencies)
+    const levelNamesFromSkills = (activeRoleForFilter.skillTargets || []).map((st: SkillTargetConfig) => st.level).filter(Boolean) as string[]
+    const combinedLevels = Array.from(new Set([...configuredLevels, ...levelNamesFromComps, ...levelNamesFromSkills]))
+    return combinedLevels.length > 0 ? combinedLevels : ['Junior', 'Middle', 'Senior', 'Fresher']
+  }, [activeRoleForFilter, targetRoles])
+
+  // Clear role filter completely (show all nodes/edges on canvas)
+  const handleClearRoleFilter = React.useCallback(() => {
+    setActiveRoleLevelFilter(null)
+    const allNodes = nodesDataSetRef.current.get()
+    const allEdges = edgesDataSetRef.current.get()
+    nodesDataSetRef.current.update(allNodes.map((n) => ({ id: n.id, hidden: false })))
+    edgesDataSetRef.current.update(allEdges.map((e) => ({ id: e.id, hidden: false })))
+    if (networkRef.current) {
+      networkRef.current.fit({
+        animation: { duration: 350, easingFunction: 'easeInOutQuad' },
+      })
+    }
+  }, [])
+
+  // Filter role level handler:
+  // - If levelName is provided (e.g. 'Junior'): only show that level, and ONLY the competencies & micro-skills required by that level.
+  // - If levelName is null ('All Levels'): show all levels of this role, and ONLY competencies & micro-skills that at least one level has.
+  const handleApplyRoleLevelFilter = React.useCallback(
+    (roleId: string, levelName: string | null) => {
+      const allRoles = targetRolesRef.current || targetRoles || []
+      const activeComp = getActiveCompany()
+      const role =
+        allRoles.find((r: TargetRoleModel) => r.id === roleId || r.code === roleId) ||
+        activeComp?.targetRoles?.find((r: TargetRoleModel) => r.id === roleId || r.code === roleId)
+
+      if (!role) return
+
+      // Ensure level nodes exist on canvas before filtering
+      const hasLevelNodes = canvasNodesRef.current.some(
+        (n) => n.nodeType === 'level' && (n.targetRoleId === role.id || n.id.startsWith(`level-${role.id}`))
+      )
+      if (!hasLevelNodes) {
+        handleExpandNeighbors(role.id)
+      }
+
+      // Track active filter (keeping roleId and levelName, where null means All Levels of this role)
+      setActiveRoleLevelFilter({ roleId: role.id, levelName })
+
+      const baseCode = (role.stableId || role.code || '').split('#')[0].trim().toUpperCase()
+      const lineageRoleWithComps = allRoles.find((r: TargetRoleModel) => {
+        const rBase = (r.stableId || r.code || '').split('#')[0].trim().toUpperCase()
+        return (
+          rBase === baseCode &&
+          ((r.levelCompetencies &&
+            Object.values(r.levelCompetencies).some((list) => Array.isArray(list) && list.length > 0)) ||
+            (r.competencyIds && r.competencyIds.length > 0) ||
+            (r.skillTargets && r.skillTargets.length > 0))
+        )
+      })
+      const effectiveLevelCompetencies: Record<string, string[]> =
+        role.levelCompetencies &&
+        Object.values(role.levelCompetencies).some((list) => Array.isArray(list) && list.length > 0)
+          ? role.levelCompetencies
+          : lineageRoleWithComps?.levelCompetencies || {}
+
+      const effectiveSkillTargets: SkillTargetConfig[] =
+        role.skillTargets && role.skillTargets.length > 0
+          ? role.skillTargets
+          : lineageRoleWithComps?.skillTargets || []
+
+      const currentNodes = canvasNodesRef.current
+      const allNodes = nodesDataSetRef.current.get()
+      const allEdges = edgesDataSetRef.current.get()
+
+      const allowedCompIds = new Set<string>()
+      const allowedSkillIds = new Set<string>()
+
+      if (levelName) {
+        // --- SPECIFIC LEVEL (e.g. 'Junior') ---
+        // 1. Competencies configured for this level
+        Object.entries(effectiveLevelCompetencies).forEach(([lvl, cids]) => {
+          if (lvl.toLowerCase() === levelName.toLowerCase() && Array.isArray(cids)) {
+            cids.forEach((cid) => {
+              allowedCompIds.add(String(cid).toUpperCase())
+              const fullComp = competenciesRef.current.find((c) => c.id === cid || c.code === cid)
+              if (fullComp) {
+                allowedCompIds.add(fullComp.id.toUpperCase())
+                if (fullComp.code) allowedCompIds.add(fullComp.code.toUpperCase())
+              }
+            })
+          }
+        })
+
+        // Also check canvas edges: (Level)-[:HAS_COMPETENCY]->(Competency)
+        const targetLevelNode = currentNodes.find(
+          (n) =>
+            n.nodeType === 'level' &&
+            (n.targetRoleId === role.id || n.id.startsWith(`level-${role.id}`)) &&
+            (n.levelName || n.code).toLowerCase() === levelName.toLowerCase()
+        )
+        if (targetLevelNode) {
+          canvasEdgesRef.current.forEach((e) => {
+            if (e.from === targetLevelNode.id) {
+              const compNode = currentNodes.find((n) => n.id === e.to && n.nodeType === 'competency')
+              if (compNode) {
+                allowedCompIds.add(compNode.id.toUpperCase())
+                if (compNode.code) allowedCompIds.add(compNode.code.toUpperCase())
+              }
+            }
+          })
+        }
+
+        // 2. Micro-skills configured for this specific level ONLY
+        effectiveSkillTargets.forEach((st: SkillTargetConfig) => {
+          if (st.level && st.level.toLowerCase() === levelName.toLowerCase()) {
+            if (st.skillId) allowedSkillIds.add(st.skillId.toUpperCase())
+            if (st.skillCode) allowedSkillIds.add(st.skillCode.toUpperCase())
+            const fullSkill = microSkillsRef.current.find(
+              (s) => s.id === st.skillId || s.code === st.skillCode || s.code === st.skillId
+            )
+            if (fullSkill) {
+              allowedSkillIds.add(fullSkill.id.toUpperCase())
+              if (fullSkill.code) allowedSkillIds.add(fullSkill.code.toUpperCase())
+            }
+          }
+        })
+
+        // Also check direct canvas edges: (Level)-[:REQUIRES_SKILL]->(Skill)
+        if (targetLevelNode) {
+          canvasEdgesRef.current.forEach((e) => {
+            if (e.from === targetLevelNode.id) {
+              const skillNode = currentNodes.find((n) => n.id === e.to && n.nodeType === 'skill')
+              if (skillNode) {
+                allowedSkillIds.add(skillNode.id.toUpperCase())
+                if (skillNode.code) allowedSkillIds.add(skillNode.code.toUpperCase())
+              }
+            }
+          })
+        }
+      } else {
+        // --- ALL LEVELS OF THIS ROLE ---
+        // "to only show the micro-skill and competency that they has (this mean that if 1 level has that comp or skill it will still show it)"
+        // 1. Competencies configured for AT LEAST ONE level of this role
+        Object.values(effectiveLevelCompetencies).forEach((cids) => {
+          if (Array.isArray(cids)) {
+            cids.forEach((cid) => {
+              allowedCompIds.add(String(cid).toUpperCase())
+              const fullComp = competenciesRef.current.find((c) => c.id === cid || c.code === cid)
+              if (fullComp) {
+                allowedCompIds.add(fullComp.id.toUpperCase())
+                if (fullComp.code) allowedCompIds.add(fullComp.code.toUpperCase())
+              }
+            })
+          }
+        })
+        ;(role.competencyIds || []).forEach((cid) => allowedCompIds.add(String(cid).toUpperCase()))
+        ;(lineageRoleWithComps?.competencyIds || []).forEach((cid) => allowedCompIds.add(String(cid).toUpperCase()))
+
+        const roleLevelNodes = currentNodes.filter(
+          (n) => n.nodeType === 'level' && (n.targetRoleId === role.id || n.id.startsWith(`level-${role.id}`))
+        )
+        const roleLevelNodeIds = new Set(roleLevelNodes.map((n) => n.id))
+
+        canvasEdgesRef.current.forEach((e) => {
+          if (roleLevelNodeIds.has(String(e.from))) {
+            const compNode = currentNodes.find((n) => n.id === e.to && n.nodeType === 'competency')
+            if (compNode) {
+              allowedCompIds.add(compNode.id.toUpperCase())
+              if (compNode.code) allowedCompIds.add(compNode.code.toUpperCase())
+            }
+          }
+        })
+
+        // 2. Micro-skills configured for AT LEAST ONE level of this role
+        effectiveSkillTargets.forEach((st: SkillTargetConfig) => {
+          if (st.skillId) allowedSkillIds.add(st.skillId.toUpperCase())
+          if (st.skillCode) allowedSkillIds.add(st.skillCode.toUpperCase())
+          const fullSkill = microSkillsRef.current.find(
+            (s) => s.id === st.skillId || s.code === st.skillCode || s.code === st.skillId
+          )
+          if (fullSkill) {
+            allowedSkillIds.add(fullSkill.id.toUpperCase())
+            if (fullSkill.code) allowedSkillIds.add(fullSkill.code.toUpperCase())
+          }
+        })
+
+        canvasEdgesRef.current.forEach((e) => {
+          if (roleLevelNodeIds.has(String(e.from))) {
+            const skillNode = currentNodes.find((n) => n.id === e.to && n.nodeType === 'skill')
+            if (skillNode) {
+              allowedSkillIds.add(skillNode.id.toUpperCase())
+              if (skillNode.code) allowedSkillIds.add(skillNode.code.toUpperCase())
+            }
+          }
+        })
+      }
+
+      // Compute node visibility
+      const visibleNodeIds: string[] = []
+      const nodeUpdates = allNodes.map((n) => {
+        let isHidden = true
+
+        if (n.nodeType === 'targetRole') {
+          // Show the active role
+          isHidden = (n.id !== role.id && n.code !== role.code)
+        } else if (n.nodeType === 'level') {
+          const isThisRoleLevel = n.targetRoleId === role.id || n.id.startsWith(`level-${role.id}`)
+          if (!isThisRoleLevel) {
+            isHidden = true
+          } else if (levelName) {
+            // Specific level
+            isHidden = (n.levelName || n.code).toLowerCase() !== levelName.toLowerCase()
+          } else {
+            // All levels of this role
+            isHidden = false
+          }
+        } else if (n.nodeType === 'competency') {
+          const compIdUpper = n.id.toUpperCase()
+          const compCodeUpper = (n.code || '').toUpperCase()
+          const hasComp = allowedCompIds.has(compIdUpper) || allowedCompIds.has(compCodeUpper)
+          isHidden = !hasComp
+        } else if (n.nodeType === 'skill') {
+          const skillIdUpper = n.id.toUpperCase()
+          const skillCodeUpper = (n.code || '').toUpperCase()
+          const hasSkill = allowedSkillIds.has(skillIdUpper) || allowedSkillIds.has(skillCodeUpper)
+          isHidden = !hasSkill
+        }
+
+        if (!isHidden) {
+          visibleNodeIds.push(n.id)
+        }
+        return { id: n.id, hidden: isHidden }
+      })
+
+      nodesDataSetRef.current.update(nodeUpdates)
+
+      // Compute edge visibility: edge is visible ONLY if both ends are visible
+      const visibleNodeIdSet = new Set(visibleNodeIds)
+      const edgeUpdates = allEdges.map((e) => {
+        const fromVisible = visibleNodeIdSet.has(String(e.from))
+        const toVisible = visibleNodeIdSet.has(String(e.to))
+        return {
+          id: e.id,
+          hidden: !fromVisible || !toVisible,
+        }
+      })
+      edgesDataSetRef.current.update(edgeUpdates)
+
+      if (networkRef.current && visibleNodeIds.length > 0) {
+        networkRef.current.fit({
+          nodes: visibleNodeIds,
+          animation: { duration: 400, easingFunction: 'easeInOutQuad' },
+        })
+      }
+    },
+    [handleExpandNeighbors, targetRoles]
+  )
+
   const applyLODRef = React.useRef(applyLOD)
   React.useLayoutEffect(() => { applyLODRef.current = applyLOD }, [applyLOD])
   const applyNeighborDimmingRef = React.useRef(applyNeighborDimming)
@@ -1296,6 +1616,7 @@ function OntologyGraphPlaygroundInner({
     setCanvasEdges([])
     setSelectedNode(null)
     setSelectedEdge(null)
+    setActiveRoleLevelFilter(null)
     toast({ title: 'Canvas Cleared', description: 'Removed all nodes from playground canvas.', variant: 'default' })
   }
 
@@ -1303,6 +1624,7 @@ function OntologyGraphPlaygroundInner({
   const handleLoadFocalSample = () => {
     nodesDataSetRef.current.clear()
     edgesDataSetRef.current.clear()
+    setActiveRoleLevelFilter(null)
 
     const topComps = competencies
       .slice()
@@ -1385,6 +1707,7 @@ function OntologyGraphPlaygroundInner({
   const handleLoadFullCatalog = () => {
     nodesDataSetRef.current.clear()
     edgesDataSetRef.current.clear()
+    setActiveRoleLevelFilter(null)
 
     const fullNodes: PlaygroundCustomNode[] = []
     const fullEdges: Edge[] = []
@@ -1487,10 +1810,7 @@ function OntologyGraphPlaygroundInner({
     if (item.type === 'targetRole') {
       const fullRole = (targetRolesRef.current || []).find((r) => r.id === item.id || r.code === item.code)
       const rawStatus = (fullRole?.status || (item as unknown as { status?: string }).status || 'DRAFT').trim().toUpperCase()
-      if (rawStatus !== 'DRAFT' && rawStatus !== 'REJECTED' && rawStatus !== 'REJECT') {
-        toast({ title: 'Cannot add role', description: 'Only Draft or Rejected target roles can be explored on the graph.', variant: 'destructive' })
-        return
-      }
+      const isStaged = rawStatus === 'STAGED' || (Boolean(fullRole?.isStaffingEnabled) && rawStatus !== 'PUBLISHED' && rawStatus !== 'ACTIVE' && rawStatus !== 'REJECTED')
       if (fullRole) {
         newNode = buildTargetRoleNode(fullRole, pos)
       } else {
@@ -1500,7 +1820,8 @@ function OntologyGraphPlaygroundInner({
           code: item.code,
           title: item.name,
           version: '1.0',
-          status: 'draft',
+          status: isStaged ? 'staged' : (rawStatus === 'PUBLISHED' || rawStatus === 'ACTIVE') ? 'published' : (rawStatus === 'REJECTED' || rawStatus === 'REJECT') ? 'rejected' : 'draft',
+          isStaffingEnabled: isStaged,
           competencyIds: [],
           skillTargets: [],
           activeEnrollments: 0,
@@ -1646,6 +1967,9 @@ function OntologyGraphPlaygroundInner({
     setCanvasEdges((prev) => prev.filter((e) => !connectedEdgeIds.includes(String(e.id))))
     setSelectedNode(null)
     clearNeighborDimming()
+    if (activeRoleLevelFilter?.roleId === nodeId) {
+      setActiveRoleLevelFilter(null)
+    }
     toast({ title: 'Node Removed', description: 'Removed node from playground canvas.', variant: 'default' })
   }
 
@@ -1953,8 +2277,8 @@ function OntologyGraphPlaygroundInner({
     // Branch 2: MicroSkill + MicroSkill (HAS_SKILL_PREREQUISITE)
     if (sourceNode.nodeType === 'skill' && targetNode.nodeType === 'skill') {
       setPendingPrereq({ source: sourceNode, target: targetNode })
-      setDependentLevel('')
-      setPrerequisiteLevel('')
+      setDependentLevel('INTERMEDIATE')
+      setPrerequisiteLevel('FOUNDATION')
       setIsPrereqModalOpen(true)
       handleCancelConnect()
       return
@@ -2203,24 +2527,69 @@ function OntologyGraphPlaygroundInner({
     }> = []
 
     if (filterType === 'all' || filterType === 'targetRole') {
-      const activeRoles = getActiveCompany()?.targetRoles || []
-      const propRoles = targetRoles || []
+      const propRoles = (targetRoles || []).filter(
+        (r) => r.title?.toLowerCase() !== 'testing1' && r.code?.toUpperCase() !== 'ROLE-07TM'
+      )
+      const activeRoles = (getActiveCompany()?.targetRoles || []).filter(
+        (r) => r.title?.toLowerCase() !== 'testing1' && r.code?.toUpperCase() !== 'ROLE-07TM'
+      )
+      // Prefer authoritative live propRoles if passed, otherwise active company roles
+      const sourceRoles = propRoles.length > 0 ? propRoles : activeRoles
+
+      const compareRoleVersions = (vA: string = '1.0', vB: string = '1.0') => {
+        const partsA = vA.replace(/^v/i, '').split('.').map((n) => parseInt(n, 10) || 0)
+        const partsB = vB.replace(/^v/i, '').split('.').map((n) => parseInt(n, 10) || 0)
+        const maxLen = Math.max(partsA.length, partsB.length)
+        for (let i = 0; i < maxLen; i++) {
+          const a = partsA[i] || 0
+          const b = partsB[i] || 0
+          if (a !== b) return a - b
+        }
+        return 0
+      }
 
       const roleMap = new Map<string, TargetRoleModel>()
-      // Seed with local active roles first, then live propRoles overrides
-      for (const r of [...activeRoles, ...propRoles]) {
+      for (const r of sourceRoles) {
         if (r && (r.id || r.code)) {
           const key = (r.code || r.id || '').trim().toUpperCase()
-          roleMap.set(key, r)
+          const existing = roleMap.get(key)
+          if (!existing) {
+            roleMap.set(key, r)
+          } else {
+            // Pick the later version (e.g. v1.1 draft/rejected proposal over v1.0 published)
+            const cmp = compareRoleVersions(r.version, existing.version)
+            if (cmp > 0) {
+              roleMap.set(key, r)
+            } else if (cmp === 0) {
+              // If equal version, prefer non-published proposals (draft, rejected, submitted) over published
+              const rStatus = String(r.status || '').toLowerCase()
+              const exStatus = String(existing.status || '').toLowerCase()
+              const rIsPub = rStatus === 'published' || rStatus === 'active'
+              const exIsPub = exStatus === 'published' || exStatus === 'active'
+              if (!rIsPub && exIsPub) {
+                roleMap.set(key, r)
+              }
+            }
+          }
         }
       }
 
       roleMap.forEach((r) => {
-        const rawStatus = (r.status || 'DRAFT').trim().toUpperCase()
-        const isDraftOrRejected = rawStatus === 'DRAFT' || rawStatus === 'REJECTED' || rawStatus === 'REJECT'
-        if (!isDraftOrRejected) {
-          return // Only target roles with status DRAFT or REJECTED are shown in explore graph ontology
+        if (r.title?.toLowerCase() === 'testing1' || r.code?.toUpperCase() === 'ROLE-07TM') {
+          return
         }
+        const rawStatus = (r.status || 'DRAFT').trim().toUpperCase()
+        const isStaged = rawStatus === 'STAGED' || (Boolean(r.isStaffingEnabled) && rawStatus !== 'PUBLISHED' && rawStatus !== 'ACTIVE' && rawStatus !== 'REJECTED')
+
+        const displayStatus = isStaged
+          ? 'STAGED'
+          : (rawStatus === 'REJECT' || rawStatus === 'REJECTED')
+            ? 'REJECTED'
+            : (rawStatus === 'PUBLISHED' || rawStatus === 'ACTIVE')
+              ? 'PUBLISHED'
+              : rawStatus === 'SUBMITTED'
+                ? 'SUBMITTED'
+                : 'DRAFT'
 
         const roleCode = r.code || r.id || ''
         const roleTitle = r.title || ''
@@ -2231,7 +2600,7 @@ function OntologyGraphPlaygroundInner({
             code: roleCode,
             name: roleTitle,
             description: r.description,
-            status: rawStatus === 'REJECT' ? 'REJECTED' : rawStatus,
+            status: displayStatus,
           })
         }
       })
@@ -2288,11 +2657,11 @@ function OntologyGraphPlaygroundInner({
             variant="outline"
             size="sm"
             onClick={() => setIsPaletteOpen((prev) => !prev)}
-            className="gap-1.5 text-xs font-semibold shadow-2xs"
-            title={isPaletteOpen ? 'Hide Node Palette' : 'Open Node Palette'}
+            className="h-8 w-8 p-0 shrink-0"
+            title={isPaletteOpen ? 'Collapse sidebar' : 'Expand sidebar'}
+            aria-label={isPaletteOpen ? 'Collapse sidebar' : 'Expand sidebar'}
           >
-            {isPaletteOpen ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-            <span>Palette ({paletteItems.length})</span>
+            {isPaletteOpen ? <PanelLeftClose className="h-4 w-4 text-muted-foreground" /> : <PanelLeftOpen className="h-4 w-4 text-muted-foreground" />}
           </Button>
 
           <div className="hidden sm:flex items-center gap-2 border-l border-border pl-3">
@@ -2303,6 +2672,12 @@ function OntologyGraphPlaygroundInner({
             <Badge variant="outline" className="font-mono text-[10px] text-muted-foreground">
               {canvasNodes.length} nodes on canvas
             </Badge>
+            {activeRoleLevelFilter?.levelName && (
+              <Badge variant="warning" className="font-mono text-[10px] flex items-center gap-1 font-semibold">
+                <Filter className="h-3 w-3" />
+                Level: {activeRoleLevelFilter.levelName}
+              </Badge>
+            )}
           </div>
         </div>
 
@@ -2465,7 +2840,12 @@ function OntologyGraphPlaygroundInner({
 
             {/* Draggable Items List */}
             <div className="flex-1 overflow-y-auto p-2 space-y-1.5">
-              {paletteItems.length === 0 ? (
+              {isLoading ? (
+                <div className="py-12 flex flex-col items-center justify-center text-center space-y-2.5 text-muted-foreground">
+                  <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                  <p className="text-xs font-medium">Fetching catalog from database...</p>
+                </div>
+              ) : paletteItems.length === 0 ? (
                 <div className="py-8 text-center text-xs text-muted-foreground">
                   No matching entities found.
                 </div>
@@ -2528,9 +2908,11 @@ function OntologyGraphPlaygroundInner({
                                 'text-[9px] font-bold px-1 py-0.5 rounded font-mono',
                                 item.status === 'PUBLISHED' || item.status === 'ACTIVE'
                                   ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400'
-                                  : item.status === 'REJECTED'
-                                    ? 'bg-destructive/15 text-destructive'
-                                    : 'bg-warning/15 text-warning'
+                                  : item.status === 'STAGED'
+                                    ? 'bg-indigo-500/15 text-indigo-700 dark:text-indigo-400'
+                                    : item.status === 'REJECTED'
+                                      ? 'bg-destructive/15 text-destructive'
+                                      : 'bg-warning/15 text-warning'
                               )}
                             >
                               {item.status}
@@ -2604,11 +2986,26 @@ function OntologyGraphPlaygroundInner({
             </div>
           )}
 
+          {/* Loading Indication Overlay */}
+          {isLoading && (
+            <div className="absolute inset-0 bg-background/85 backdrop-blur-xs flex flex-col items-center justify-center p-6 text-center space-y-3 z-30 animate-in fade-in duration-200">
+              <div className="p-3.5 rounded-full bg-primary/10 border border-primary/20 text-primary shadow-xs">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              </div>
+              <div className="space-y-1">
+                <p className="text-sm font-bold text-foreground">Fetching Knowledge Ontology...</p>
+                <p className="text-xs text-muted-foreground max-w-sm">
+                  Loading competencies, micro-skills, and graph relationships from the database. Please wait a moment.
+                </p>
+              </div>
+            </div>
+          )}
+
           {/* Canvas Drag Hint Overlay (Interactive Starting Points) */}
           <div
             className={cn(
               "absolute inset-0 flex flex-col items-center justify-center p-6 text-center space-y-4 transition-all duration-200",
-              canvasNodes.length > 0 ? "hidden opacity-0 pointer-events-none" : "flex opacity-100 pointer-events-auto"
+              canvasNodes.length > 0 || isLoading ? "hidden opacity-0 pointer-events-none" : "flex opacity-100 pointer-events-auto"
             )}
           >
             <div className="p-4 rounded-full bg-primary/10 border border-primary/20 text-primary shadow-xs">
@@ -2641,6 +3038,59 @@ function OntologyGraphPlaygroundInner({
               </Button>
             </div>
           </div>
+
+          {/* Top Floating Role Level Filter Bar */}
+          {activeRoleForFilter && activeRoleLevels.length > 0 && (
+            <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2 bg-card/95 backdrop-blur-md border border-border px-3.5 py-1.5 rounded-full shadow-lg animate-in fade-in slide-in-from-top-2">
+              <div className="flex items-center gap-1.5 text-xs font-semibold text-foreground border-r border-border pr-2.5">
+                <Filter className="h-3.5 w-3.5 text-primary" />
+                <span className="font-mono text-primary font-bold">{activeRoleForFilter.code}</span>
+                <span className="text-muted-foreground hidden sm:inline">Level:</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <button
+                  type="button"
+                  onClick={() => handleApplyRoleLevelFilter(activeRoleForFilter.id, null)}
+                  className={cn(
+                    'px-2.5 py-0.5 rounded-full text-xs font-semibold transition-colors',
+                    !activeRoleLevelFilter?.levelName
+                      ? 'bg-primary text-primary-foreground shadow-2xs'
+                      : 'text-muted-foreground hover:text-foreground hover:bg-muted/70'
+                  )}
+                >
+                  All Levels
+                </button>
+                {activeRoleLevels.map((lvl) => {
+                  const isSelected = activeRoleLevelFilter?.levelName?.toLowerCase() === lvl.toLowerCase()
+                  return (
+                    <button
+                      key={lvl}
+                      type="button"
+                      onClick={() => handleApplyRoleLevelFilter(activeRoleForFilter.id, lvl)}
+                      className={cn(
+                        'px-2.5 py-0.5 rounded-full text-xs font-semibold transition-colors',
+                        isSelected
+                          ? 'bg-primary text-primary-foreground shadow-2xs'
+                          : 'text-muted-foreground hover:text-foreground hover:bg-muted/70'
+                      )}
+                    >
+                      {lvl}
+                    </button>
+                  )
+                })}
+              </div>
+              {activeRoleLevelFilter && (
+                <button
+                  type="button"
+                  onClick={handleClearRoleFilter}
+                  className="ml-1 text-muted-foreground hover:text-foreground p-0.5 rounded-full transition-colors cursor-pointer"
+                  title="Clear role filter (Show all canvas items)"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              )}
+            </div>
+          )}
 
           {/* Node / Edge Details Floating Card */}
           {selectedNode && (
@@ -2815,14 +3265,67 @@ function OntologyGraphPlaygroundInner({
               </DialogDescription>
             </DialogHeader>
 
-            <div className="space-y-3 py-2">
-              {([['Dependent knowledge level', dependentLevel, setDependentLevel], ['Prerequisite knowledge level', prerequisiteLevel, setPrerequisiteLevel]] as const).map(([label, value, change]) => <div key={label}>
-                <label className="font-semibold text-foreground block text-xs mb-1.5">{label}</label>
-                <Combobox size="sm" clearable={false} value={value} onChange={change} placeholder="Select knowledge level" options={['FOUNDATION', 'INTERMEDIATE', 'ADVANCED'].map(level => ({ value: level, label: level }))} />
-              </div>)}
+            <div className="space-y-4 py-2">
+              <div>
+                <label className="font-semibold text-foreground block text-xs mb-1.5 flex items-center justify-between">
+                  <span>Dependent knowledge level</span>
+                  <span className="font-mono text-[11px] font-bold text-primary bg-primary/10 px-1.5 py-0.5 rounded">
+                    {pendingPrereq.source.code}
+                  </span>
+                </label>
+                <div className="grid grid-cols-3 gap-2">
+                  {(['FOUNDATION', 'INTERMEDIATE', 'ADVANCED'] as const).map((level) => {
+                    const isSelected = dependentLevel === level
+                    return (
+                      <button
+                        key={level}
+                        type="button"
+                        onClick={() => setDependentLevel(level)}
+                        className={cn(
+                          'py-2 px-3 rounded-lg text-xs font-semibold text-center border transition-all cursor-pointer select-none',
+                          isSelected
+                            ? 'border-primary bg-primary text-primary-foreground shadow-2xs font-bold'
+                            : 'border-border bg-card hover:bg-muted/60 text-foreground'
+                        )}
+                      >
+                        {level}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+
+              <div>
+                <label className="font-semibold text-foreground block text-xs mb-1.5 flex items-center justify-between">
+                  <span>Prerequisite knowledge level</span>
+                  <span className="font-mono text-[11px] font-bold text-emerald-700 dark:text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded">
+                    {pendingPrereq.target.code}
+                  </span>
+                </label>
+                <div className="grid grid-cols-3 gap-2">
+                  {(['FOUNDATION', 'INTERMEDIATE', 'ADVANCED'] as const).map((level) => {
+                    const isSelected = prerequisiteLevel === level
+                    return (
+                      <button
+                        key={level}
+                        type="button"
+                        onClick={() => setPrerequisiteLevel(level)}
+                        className={cn(
+                          'py-2 px-3 rounded-lg text-xs font-semibold text-center border transition-all cursor-pointer select-none',
+                          isSelected
+                            ? 'border-primary bg-primary text-primary-foreground shadow-2xs font-bold'
+                            : 'border-border bg-card hover:bg-muted/60 text-foreground'
+                        )}
+                      >
+                        {level}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
             </div>
 
-            <DialogFooter className="flex items-center justify-end gap-2 pt-2">
+            <DialogFooter className="flex items-center justify-end gap-2 pt-3 border-t border-border mt-2">
               <Button
                 variant="outline"
                 size="sm"
@@ -2833,7 +3336,12 @@ function OntologyGraphPlaygroundInner({
               >
                 Cancel
               </Button>
-              <Button variant="primary" size="sm" disabled={!dependentLevel || !prerequisiteLevel} onClick={handleConfirmPrerequisite}>
+              <Button
+                variant="primary"
+                size="sm"
+                disabled={!dependentLevel || !prerequisiteLevel}
+                onClick={handleConfirmPrerequisite}
+              >
                 Confirm Prerequisite
               </Button>
             </DialogFooter>

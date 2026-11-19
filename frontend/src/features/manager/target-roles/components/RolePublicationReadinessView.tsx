@@ -1,7 +1,11 @@
 import * as React from 'react'
 import { AlertCircle, CheckCircle2, Loader2, BookOpen } from 'lucide-react'
 import { Badge } from '../../../../shared/components/ui/Badge'
-import { checkRoleReadiness } from '../roleReadiness'
+import {
+  checkRoleReadiness,
+  isContentReadinessBypassed,
+  setContentReadinessBypassed,
+} from '../roleReadiness'
 import type { TargetRoleModel } from '../../data/ldManagerMockData'
 import type { LearningModuleDto } from '../../../../shared/api/learningModuleApi'
 import type { BankQuestion } from '../../../../shared/api/questionBankApi'
@@ -21,9 +25,22 @@ export function RolePublicationReadinessView({
   isLoading = false,
   actor = 'manager',
 }: RolePublicationReadinessViewProps) {
+  const [isBypassed, setIsBypassed] = React.useState(isContentReadinessBypassed)
+
+  React.useEffect(() => {
+    const handleBypassChanged = (e: Event) => {
+      const customEvent = e as CustomEvent<boolean>
+      setIsBypassed(customEvent.detail ?? isContentReadinessBypassed())
+    }
+    window.addEventListener('adapt_learn_graph_bypass_readiness_changed', handleBypassChanged)
+    return () => {
+      window.removeEventListener('adapt_learn_graph_bypass_readiness_changed', handleBypassChanged)
+    }
+  }, [])
+
   const readiness = React.useMemo(() => {
-    return checkRoleReadiness(role, modules, bankQuestions)
-  }, [role, modules, bankQuestions])
+    return checkRoleReadiness(role, modules, bankQuestions, isBypassed)
+  }, [role, modules, bankQuestions, isBypassed])
 
   const {
     levelValidation,
@@ -34,10 +51,10 @@ export function RolePublicationReadinessView({
   } = readiness
 
   return (
-    <div className="p-4 sm:p-5 rounded-xl border border-border bg-card space-y-4 shadow-2xs">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-3 border-b border-border/70">
+    <div className="p-4 sm:p-5 rounded-xl border border-border bg-card shadow-2xs flex flex-col flex-1 h-full min-h-0 space-y-4">
+      <div className="shrink-0 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-3 border-b border-border/70">
         <div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center flex-wrap gap-2">
             <span className="text-xs font-bold text-foreground">
               Publication Readiness &amp; Content Validation
             </span>
@@ -57,8 +74,14 @@ export function RolePublicationReadinessView({
               <Badge
                 variant="outline"
                 className="text-[10px] gap-1 py-0.5 bg-amber-500/15 !text-black dark:!text-white border-amber-500/30 font-bold"
+                style={{ color: '#000000' }}
               >
-                <AlertCircle className="h-3 w-3 !text-black dark:!text-white" /> Action Required
+                <AlertCircle className="h-3 w-3 !text-black dark:!text-white" style={{ color: '#000000' }} /> Action Required
+              </Badge>
+            )}
+            {isBypassed && (
+              <Badge variant="warning" className="text-[10px] py-0 px-2 font-semibold">
+                Dev Bypass Active
               </Badge>
             )}
           </div>
@@ -66,10 +89,25 @@ export function RolePublicationReadinessView({
             Automated verification of role levels, competencies, learning modules, and question bank coverage.
           </p>
         </div>
+
+        {/* Temporary Dev/Testing Bypass Toggle */}
+        <label className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground cursor-pointer select-none bg-muted/60 px-2.5 py-1 rounded-md border border-border shrink-0 self-start sm:self-auto">
+          <input
+            type="checkbox"
+            checked={isBypassed}
+            onChange={(e) => {
+              const val = e.target.checked
+              setIsBypassed(val)
+              setContentReadinessBypassed(val)
+            }}
+            className="accent-primary rounded h-3.5 w-3.5 cursor-pointer"
+          />
+          <span className="font-medium text-[11.5px]">Bypass Module &amp; Question Bank Check (Dev Testing)</span>
+        </label>
       </div>
 
       {/* 1. Level Architecture Checklist */}
-      <div className="space-y-2.5">
+      <div className="shrink-0 space-y-2.5">
         <div className="flex items-center justify-between text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
           <span className="flex items-center gap-1.5">
             <span className="flex items-center justify-center h-4 w-4 rounded-full bg-muted text-[10px] text-foreground font-semibold">
@@ -84,6 +122,7 @@ export function RolePublicationReadinessView({
                 ? 'text-[10px] py-0 px-2'
                 : 'text-[10px] py-0 px-2 bg-amber-500/15 !text-black dark:!text-white border-amber-500/30 font-bold'
             }
+            style={allLevelsValid ? undefined : { color: '#000000' }}
           >
             {levelValidation.filter((l) => l.isReady).length}/{levelValidation.length} Levels Complete
           </Badge>
@@ -109,8 +148,9 @@ export function RolePublicationReadinessView({
                   <Badge
                     variant="outline"
                     className="text-[10px] px-1.5 py-0 h-4 font-bold gap-1 bg-amber-500/15 !text-black dark:!text-white border-amber-500/30"
+                    style={{ color: '#000000' }}
                   >
-                    <AlertCircle className="h-2.5 w-2.5 !text-black dark:!text-white" /> Incomplete
+                    <AlertCircle className="h-2.5 w-2.5 !text-black dark:!text-white" style={{ color: '#000000' }} /> Incomplete
                   </Badge>
                 )}
               </div>
@@ -146,8 +186,8 @@ export function RolePublicationReadinessView({
       </div>
 
       {/* 2. Micro-skill Content Checklist */}
-      <div className="space-y-2.5 pt-2 border-t border-border/60">
-        <div className="flex items-center justify-between text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+      <div className="flex-1 flex flex-col min-h-0 space-y-2.5 pt-2 border-t border-border/60">
+        <div className="shrink-0 flex items-center justify-between text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
           <span className="flex items-center gap-1.5">
             <span className="flex items-center justify-center h-4 w-4 rounded-full bg-muted text-[10px] text-foreground font-semibold">
               2
@@ -161,13 +201,14 @@ export function RolePublicationReadinessView({
                 ? 'text-[10px] py-0 px-2'
                 : 'text-[10px] py-0 px-2 bg-amber-500/15 !text-black dark:!text-white border-amber-500/30 font-bold'
             }
+            style={allSkillsValid ? undefined : { color: '#000000' }}
           >
             {skillValidation.filter((s) => s.isReady).length}/{skillValidation.length} Skills Covered
           </Badge>
         </div>
 
         {skillValidation.length === 0 ? (
-          <div className="py-5 px-4 rounded-xl bg-muted/20 border border-dashed border-border/80 text-center flex flex-col items-center justify-center gap-1.5">
+          <div className="py-5 px-4 rounded-xl bg-muted/20 border border-dashed border-border/80 text-center flex flex-col items-center justify-center gap-1.5 flex-1 min-h-[140px]">
             <div className="h-8 w-8 rounded-full bg-muted/60 flex items-center justify-center text-muted-foreground">
               <BookOpen className="h-4 w-4" />
             </div>
@@ -177,7 +218,7 @@ export function RolePublicationReadinessView({
             </p>
           </div>
         ) : (
-          <div className="max-h-56 overflow-y-auto space-y-1.5 pr-1 [scrollbar-gutter:stable]">
+          <div className="flex-1 min-h-[140px] overflow-y-auto space-y-1.5 pr-1 [scrollbar-gutter:stable]">
             {skillValidation.map((sv) => (
               <div
                 key={sv.skillId}

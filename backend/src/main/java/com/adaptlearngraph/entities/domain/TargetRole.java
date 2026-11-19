@@ -25,6 +25,50 @@ public final class TargetRole {
     private final String levelCompetencies;
     private final List<String> competencyIds;
     private final Map<String, String> levelDurations;
+    private final boolean isStaffingEnabled;
+
+    public TargetRole(
+            TargetRoleId id,
+            String organizationId,
+            String code,
+            String name,
+            String familyCode,
+            RoleTrack track,
+            String assignedExpertId,
+            String description,
+            List<String> responsibilities,
+            RoleStatus status,
+            String version,
+            String skillTargets,
+            Instant createdAt,
+            Instant updatedAt,
+            String rejectionReason,
+            List<String> levels,
+            String levelCompetencies,
+            List<String> competencyIds,
+            Map<String, String> levelDurations,
+            boolean isStaffingEnabled) {
+        this.id = Objects.requireNonNull(id, "TargetRole id cannot be null");
+        this.organizationId = requireNonBlank(organizationId, "organizationId cannot be blank");
+        this.code = normalizeCode(code);
+        this.name = requireNonBlank(name, "name cannot be blank").trim();
+        this.familyCode = familyCode != null ? familyCode.trim().toUpperCase() : "JAVA_BACKEND";
+        this.track = Objects.requireNonNullElse(track, RoleTrack.PROFESSIONAL);
+        this.assignedExpertId = assignedExpertId != null ? assignedExpertId.trim() : "";
+        this.description = description != null ? description.trim() : "";
+        this.responsibilities = responsibilities != null ? List.copyOf(responsibilities) : List.of();
+        this.status = Objects.requireNonNullElse(status, RoleStatus.DRAFT);
+        this.version = (version != null && !version.isBlank()) ? version.trim() : "1.0";
+        this.skillTargets = (skillTargets != null && !skillTargets.isBlank()) ? skillTargets.trim() : "[]";
+        this.createdAt = Objects.requireNonNullElseGet(createdAt, Instant::now);
+        this.updatedAt = Objects.requireNonNullElseGet(updatedAt, Instant::now);
+        this.rejectionReason = (rejectionReason != null && !rejectionReason.isBlank()) ? rejectionReason.trim() : null;
+        this.levels = (levels != null && !levels.isEmpty()) ? List.copyOf(levels) : List.of("Senior", "Middle", "Junior");
+        this.levelCompetencies = (levelCompetencies != null && !levelCompetencies.isBlank()) ? levelCompetencies.trim() : "{}";
+        this.competencyIds = (competencyIds != null && !competencyIds.isEmpty()) ? List.copyOf(competencyIds) : List.of();
+        this.levelDurations = (levelDurations != null && !levelDurations.isEmpty()) ? Map.copyOf(levelDurations) : Map.of();
+        this.isStaffingEnabled = this.status == RoleStatus.STAGED || (isStaffingEnabled && this.status != RoleStatus.ACTIVE && this.status != RoleStatus.PUBLISHED && this.status != RoleStatus.REJECTED);
+    }
 
     public TargetRole(
             TargetRoleId id,
@@ -46,25 +90,7 @@ public final class TargetRole {
             String levelCompetencies,
             List<String> competencyIds,
             Map<String, String> levelDurations) {
-        this.id = Objects.requireNonNull(id, "TargetRole id cannot be null");
-        this.organizationId = requireNonBlank(organizationId, "organizationId cannot be blank");
-        this.code = normalizeCode(code);
-        this.name = requireNonBlank(name, "name cannot be blank").trim();
-        this.familyCode = familyCode != null ? familyCode.trim().toUpperCase() : "JAVA_BACKEND";
-        this.track = Objects.requireNonNullElse(track, RoleTrack.PROFESSIONAL);
-        this.assignedExpertId = assignedExpertId != null ? assignedExpertId.trim() : "";
-        this.description = description != null ? description.trim() : "";
-        this.responsibilities = responsibilities != null ? List.copyOf(responsibilities) : List.of();
-        this.status = Objects.requireNonNullElse(status, RoleStatus.DRAFT);
-        this.version = (version != null && !version.isBlank()) ? version.trim() : "1.0";
-        this.skillTargets = (skillTargets != null && !skillTargets.isBlank()) ? skillTargets.trim() : "[]";
-        this.createdAt = Objects.requireNonNullElseGet(createdAt, Instant::now);
-        this.updatedAt = Objects.requireNonNullElseGet(updatedAt, Instant::now);
-        this.rejectionReason = (rejectionReason != null && !rejectionReason.isBlank()) ? rejectionReason.trim() : null;
-        this.levels = (levels != null && !levels.isEmpty()) ? List.copyOf(levels) : List.of("Senior", "Middle", "Junior");
-        this.levelCompetencies = (levelCompetencies != null && !levelCompetencies.isBlank()) ? levelCompetencies.trim() : "{}";
-        this.competencyIds = (competencyIds != null && !competencyIds.isEmpty()) ? List.copyOf(competencyIds) : List.of();
-        this.levelDurations = (levelDurations != null && !levelDurations.isEmpty()) ? Map.copyOf(levelDurations) : Map.of();
+        this(id, organizationId, code, name, familyCode, track, assignedExpertId, description, responsibilities, status, version, skillTargets, createdAt, updatedAt, rejectionReason, levels, levelCompetencies, competencyIds, levelDurations, status == RoleStatus.STAGED);
     }
 
     public TargetRole(
@@ -332,7 +358,10 @@ public final class TargetRole {
                 levels != null && !levels.isEmpty() ? levels : this.levels,
                 levelCompetencies != null ? levelCompetencies : this.levelCompetencies,
                 competencyIds != null ? competencyIds : this.competencyIds,
-                levelDurations != null && !levelDurations.isEmpty() ? levelDurations : this.levelDurations);
+                levelDurations != null && !levelDurations.isEmpty() ? levelDurations : this.levelDurations,
+                status != null
+                        ? (status == RoleStatus.STAGED || (this.isStaffingEnabled && status != RoleStatus.ACTIVE && status != RoleStatus.PUBLISHED && status != RoleStatus.REJECTED))
+                        : (this.status == RoleStatus.STAGED || (this.isStaffingEnabled && this.status != RoleStatus.ACTIVE && this.status != RoleStatus.PUBLISHED && this.status != RoleStatus.REJECTED)));
     }
 
     public TargetRole updateDetails(
@@ -445,7 +474,8 @@ public final class TargetRole {
                 this.levels,
                 this.levelCompetencies,
                 this.competencyIds,
-                this.levelDurations);
+                this.levelDurations,
+                true);
     }
 
     public TargetRole markSent() {
@@ -468,7 +498,8 @@ public final class TargetRole {
                 this.levels,
                 this.levelCompetencies,
                 this.competencyIds,
-                this.levelDurations);
+                this.levelDurations,
+                this.status == RoleStatus.STAGED);
     }
 
     public TargetRole reject(String reason) {
@@ -630,5 +661,9 @@ public final class TargetRole {
 
     public Map<String, String> getLevelDurations() {
         return levelDurations;
+    }
+
+    public boolean isStaffingEnabled() {
+        return this.status == RoleStatus.STAGED || (this.isStaffingEnabled && this.status != RoleStatus.ACTIVE && this.status != RoleStatus.PUBLISHED && this.status != RoleStatus.REJECTED);
     }
 }

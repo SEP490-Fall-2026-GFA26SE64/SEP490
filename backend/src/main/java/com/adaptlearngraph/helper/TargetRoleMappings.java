@@ -56,6 +56,8 @@ public final class TargetRoleMappings implements ModelMapperRegistrar {
                 role.getRejectionReason(),
                 role.getLevels() != null && !role.getLevels().isEmpty() ? role.getLevels() : DEFAULT_LEVELS,
                 levelCompetencies,
-                competencyIds);
+                competencyIds,
+                role.getLevelDurations(),
+                role.isStaffingEnabled());
     }
 }

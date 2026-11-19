@@ -96,11 +96,15 @@ import { TargetRoleVersionDiff } from '../../manager/target-roles/components/Tar
 import { RolePublicationReadinessView } from '../../manager/target-roles/components/RolePublicationReadinessView'
 import { fetchLearningModules, type LearningModuleDto } from '../../../shared/api/learningModuleApi'
 import { bankRequest, type BankView, type BankQuestion } from '../../../shared/api/questionBankApi'
-import { checkRoleReadiness } from '../../manager/target-roles/roleReadiness'
+import {
+  checkRoleReadiness,
+  isContentReadinessBypassed,
+  setContentReadinessBypassed,
+} from '../../manager/target-roles/roleReadiness'
 import { formatRequiredKnowledge } from '../../manager/target-roles/roleKnowledgePresentation'
 import { roleRequirements } from '../../manager/target-roles/roleRequirements'
 import { getMembers } from '../../subscription/subscriptionApi'
-import { getExpertEffectiveStatus } from './ExpertAssignedRolesPage.helpers'
+import { getExpertEffectiveStatus, formatRoleVersion } from './ExpertAssignedRolesPage.helpers'
 
 function resolveLevelDuration(
   role: Pick<TargetRoleModel, 'levelDurations'>,
@@ -287,14 +291,33 @@ export function ExpertAssignedRolesPage() {
 
       if (res.ok) {
         const data = await res.json()
+        const metaMap: Record<string, { isStaffingEnabled?: boolean; assignedExpertId?: string; levelDurations?: Record<string, string>; status?: string }> = (() => {
+          try {
+            const raw = localStorage.getItem(`target_roles_meta_${orgId}`)
+            return raw ? JSON.parse(raw) : {}
+          } catch {
+            return {}
+          }
+        })()
         const mapped: TargetRoleModel[] = (
           data as Record<string, unknown>[]
         ).map((r) => {
+          const rCode = String(r.code || '').toUpperCase()
+          const rId = String(r.id || '')
+          const rVer = formatRoleVersion(String(r.version || '1.0'))
           const storeRole = (currentCompany?.targetRoles || []).find(
             (tr) =>
-              tr.id === String(r.id || '') ||
-              (tr.code === String(r.code || '') &&
-                tr.version === String(r.version || '1.0')),
+              tr.id === rId ||
+              (tr.code?.toUpperCase() === rCode &&
+                formatRoleVersion(tr.version) === rVer),
+          )
+          const meta = metaMap[rId] || metaMap[rCode]
+          const isStaffing = Boolean(
+            (r as Record<string, unknown>).isStaffingEnabled ||
+            meta?.isStaffingEnabled ||
+            storeRole?.isStaffingEnabled ||
+            String(r.status || '').toLowerCase() === 'staged' ||
+            meta?.status === 'staged'
           )
           const effectiveLevelComps =
             (r.levelCompetencies as Record<string, string[]>) ||
@@ -336,12 +359,13 @@ export function ExpertAssignedRolesPage() {
             responsibilities: Array.isArray(r.responsibilities)
               ? (r.responsibilities as string[])
               : [],
-            version: String(r.version || '1.0'),
+            version: formatRoleVersion(String(r.version || '1.0')),
             status: (String(r.status || '').toLowerCase() === 'active' || String(r.status || '').toLowerCase() === 'published'
               ? 'published'
               : String(r.status || '').toLowerCase() === 'unpublished'
                 ? 'unpublished'
                 : String(r.status || 'draft').toLowerCase()) as TargetRoleModel['status'],
+            isStaffingEnabled: isStaffing,
             rejectionReason: String(r.rejectionReason || ''),
             levelCompetencies: effectiveLevelComps,
             competencyIds: rawCompetencyIds,
@@ -372,14 +396,17 @@ export function ExpertAssignedRolesPage() {
 
         setRoles((prevRoles) => {
           return mapped.map((m) => {
+            const mCode = String(m.code || '').toUpperCase()
+            const mId = String(m.id || '')
+            const mVer = formatRoleVersion(m.version)
             const prev = prevRoles.find(
               (p) =>
-                p.id === m.id || (p.code === m.code && p.version === m.version),
+                p.id === mId || (p.code?.toUpperCase() === mCode && formatRoleVersion(p.version) === mVer),
             )
             const storeRole = (currentCompany?.targetRoles || []).find(
               (tr) =>
-                tr.id === m.id ||
-                (tr.code === m.code && tr.version === m.version),
+                tr.id === mId ||
+                (tr.code?.toUpperCase() === mCode && formatRoleVersion(tr.version) === mVer),
             )
             const prevLevelComps =
               m.levelCompetencies && Object.keys(m.levelCompetencies).length > 0
@@ -422,6 +449,7 @@ export function ExpertAssignedRolesPage() {
 
             return {
               ...m,
+              version: mVer,
               levels: effectiveLevels,
               levelDurations: effectiveLevelDurations,
               skillTargets: effectiveSkills,
@@ -493,7 +521,7 @@ export function ExpertAssignedRolesPage() {
 
   const [searchQuery, setSearchQuery] = React.useState('')
   const [statusFilter, setStatusFilter] = React.useState<
-    'all' | 'published' | 'unpublished' | 'submitted' | 'sent' | 'draft' | 'feedback' | 'rejected'
+    'all' | 'published' | 'unpublished' | 'submitted' | 'sent' | 'draft' | 'staged' | 'feedback' | 'rejected'
   >('all')
 
   const [expandedLineages, setExpandedLineages] = React.useState<
@@ -618,7 +646,7 @@ export function ExpertAssignedRolesPage() {
     return visibleRoles.slice(start, start + pageSize)
   }, [visibleRoles, currentPage, pageSize])
 
-  // Aggregate Metrics: Expert views published, submitted, draft, sent, feedback, and rejected roles
+  // Aggregate Metrics: Expert views published, submitted, staged, draft, feedback, and rejected roles
 
   const publishedCount = assignedRoles.filter(
     (r) => getExpertEffectiveStatus(r) === 'published',
@@ -629,8 +657,8 @@ export function ExpertAssignedRolesPage() {
   const submittedCount = assignedRoles.filter(
     (r) => getExpertEffectiveStatus(r) === 'submitted',
   ).length
-  const sentCount = assignedRoles.filter(
-    (r) => getExpertEffectiveStatus(r) === 'sent',
+  const stagedCount = assignedRoles.filter(
+    (r) => getExpertEffectiveStatus(r) === 'staged',
   ).length
   const draftCount = assignedRoles.filter(
     (r) => getExpertEffectiveStatus(r) === 'draft',
@@ -686,6 +714,15 @@ export function ExpertAssignedRolesPage() {
 
   // Delete Draft or Published Role for Domain Expert
   const handleDeleteRole = async (role: TargetRoleModel) => {
+    if (role.status === 'staged' || role.isStaffingEnabled) {
+      toast({
+        title: 'Delete Blocked',
+        description: 'Staged target roles cannot be deleted to preserve workforce staffing integrity.',
+        variant: 'destructive',
+      })
+      setDeletingRole(null)
+      return
+    }
     setIsDeleting(true)
     try {
       const res = await fetch(
@@ -899,6 +936,19 @@ export function ExpertAssignedRolesPage() {
   const [isMultiLevelMode, setIsMultiLevelMode] = React.useState(false)
 
   // Skill target form state
+
+  const [isBypassContentCheck, setIsBypassContentCheck] = React.useState(isContentReadinessBypassed)
+
+  React.useEffect(() => {
+    const handleBypassChanged = (e: Event) => {
+      const customEvent = e as CustomEvent<boolean>
+      setIsBypassContentCheck(customEvent.detail ?? isContentReadinessBypassed())
+    }
+    window.addEventListener('adapt_learn_graph_bypass_readiness_changed', handleBypassChanged)
+    return () => {
+      window.removeEventListener('adapt_learn_graph_bypass_readiness_changed', handleBypassChanged)
+    }
+  }, [])
 
   const [newSkillId, setNewSkillId] = React.useState('')
   const [newKnowledgeLevels, setNewKnowledgeLevels] = React.useState<string[]>([])
@@ -1807,7 +1857,9 @@ export function ExpertAssignedRolesPage() {
                 ? 'ACTIVE'
                 : updatedRole.status === 'rejected'
                   ? 'REJECTED'
-                  : 'DRAFT',
+                  : updatedRole.status === 'staged' || updatedRole.isStaffingEnabled
+                    ? 'STAGED'
+                    : 'DRAFT',
             skillTargets: roleRequirements(updatedRole.skillTargets),
             levels: updatedRole.levels,
             levelDurations: updatedRole.levelDurations,
@@ -1863,6 +1915,7 @@ export function ExpertAssignedRolesPage() {
       role,
       validationModules,
       validationBankQuestions,
+      isBypassContentCheck,
     )
     if (!readiness.isOverallReady) {
       toast({
@@ -1949,6 +2002,7 @@ export function ExpertAssignedRolesPage() {
       authoringRole,
       validationModules,
       validationBankQuestions,
+      isBypassContentCheck,
     )
     if (!readiness.isOverallReady) {
       toast({
@@ -2122,8 +2176,10 @@ export function ExpertAssignedRolesPage() {
                     className="text-xs bg-transparent text-foreground border-0 focus:outline-none cursor-pointer font-medium"
                   >
                     <option value="all">All ({assignedRoles.length})</option>
-                    <option value="sent">Sent to Me ({sentCount})</option>
                     <option value="draft">Drafts ({draftCount})</option>
+                    {stagedCount > 0 && (
+                      <option value="staged">Staged ({stagedCount})</option>
+                    )}
                     <option value="submitted">
                       Submitted ({submittedCount})
                     </option>
@@ -2357,7 +2413,7 @@ export function ExpertAssignedRolesPage() {
                                     variant="outline"
                                     className="text-[9px] py-0 px-1 font-mono text-muted-foreground border-border"
                                   >
-                                    Previous v{role.version}
+                                    Previous v{formatRoleVersion(role.version)}
                                   </Badge>
                                 )}
                               </div>
@@ -2367,7 +2423,7 @@ export function ExpertAssignedRolesPage() {
                                   variant="secondary"
                                   className="font-mono text-[10px] py-0 px-1"
                                 >
-                                  v{role.version}
+                                  v{formatRoleVersion(role.version)}
                                 </Badge>
 
                                 <span>
@@ -2442,49 +2498,96 @@ export function ExpertAssignedRolesPage() {
                             </td>
 
                             <td className="py-3 px-3">
-                              {isPublished && (
-                                <Badge variant="success">PUBLISHED</Badge>
-                              )}
+                              {(() => {
+                                const hasPublishedPredecessor = assignedRoles.some(
+                                  (r) =>
+                                    r.code?.toUpperCase() === role.code?.toUpperCase() &&
+                                    (r.status === 'published' || (r.status as string) === 'ACTIVE' || (r.status as string) === 'PUBLISHED') &&
+                                    r.id !== role.id
+                                )
+                                const showStagedPill = Boolean(role.isStaffingEnabled) && !hasPublishedPredecessor
 
-                              {isUnpublished && (
-                                <Badge variant="outline" className="border-muted-foreground/40 text-muted-foreground font-bold">
-                                  UNPUBLISHED
-                                </Badge>
-                              )}
+                                return (
+                                  <>
+                                    {isPublished && (
+                                      <Badge variant="success">PUBLISHED</Badge>
+                                    )}
 
-                              {isSubmitted && (
-                                <Badge variant="primary" className="font-bold">
-                                  SUBMITTED
-                                </Badge>
-                              )}
+                                    {isUnpublished && (
+                                      <Badge variant="outline" className="border-muted-foreground/40 text-muted-foreground font-bold">
+                                        UNPUBLISHED
+                                      </Badge>
+                                    )}
 
-                              {isSent && (
-                                <div className="flex items-center gap-1.5 flex-wrap">
-                                  <Badge
-                                    variant="primary"
-                                    className="bg-[#EA580C] text-white border-transparent font-bold hover:bg-[#C2410C]"
-                                  >
-                                    SENT
-                                  </Badge>
-                                  {Boolean(role.isStaffingEnabled) && (
-                                    <Badge
-                                      variant="outline"
-                                      className="text-[9px] py-0 px-1 font-semibold text-indigo-700 dark:text-indigo-400 border-indigo-500/30 bg-indigo-500/10 whitespace-nowrap"
-                                      title="Staffing Enabled: Staged for employee assignment in organization administration"
-                                    >
-                                      STAGED FOR STAFFING
-                                    </Badge>
-                                  )}
-                                </div>
-                              )}
+                                    {isSubmitted && (
+                                      <div className="flex items-center gap-1.5 flex-wrap">
+                                        <Badge variant="primary" className="font-bold">
+                                          SUBMITTED
+                                        </Badge>
+                                        {showStagedPill && (
+                                          <Badge
+                                            variant="outline"
+                                            className="text-[9px] py-0 px-1 font-semibold text-indigo-700 dark:text-indigo-400 border-indigo-500/30 bg-indigo-500/10 whitespace-nowrap"
+                                            title="Staffing Enabled: Staged for employee assignment in organization administration"
+                                          >
+                                            STAGED FOR STAFFING
+                                          </Badge>
+                                        )}
+                                      </div>
+                                    )}
 
-                              {(isFeedback || isRejected) && (
-                                <Badge variant="destructive">REJECTED</Badge>
-                              )}
+                                    {isSent && (
+                                      <div className="flex items-center gap-1.5 flex-wrap">
+                                        <Badge
+                                          variant="primary"
+                                          className="bg-[#EA580C] text-white border-transparent font-bold hover:bg-[#C2410C]"
+                                        >
+                                          SENT
+                                        </Badge>
+                                        {showStagedPill && (
+                                          <Badge
+                                            variant="outline"
+                                            className="text-[9px] py-0 px-1 font-semibold text-indigo-700 dark:text-indigo-400 border-indigo-500/30 bg-indigo-500/10 whitespace-nowrap"
+                                            title="Staffing Enabled: Staged for employee assignment in organization administration"
+                                          >
+                                            STAGED FOR STAFFING
+                                          </Badge>
+                                        )}
+                                      </div>
+                                    )}
 
-                              {isDraft && !isSent && (
-                                <Badge variant="warning">DRAFT</Badge>
-                              )}
+                                    {(isFeedback || isRejected) && (
+                                      <div className="flex items-center gap-1.5 flex-wrap">
+                                        <Badge variant="destructive">REJECTED</Badge>
+                                      </div>
+                                    )}
+
+                                    {effStatus === 'staged' && (
+                                      <Badge
+                                        variant="outline"
+                                        className="bg-indigo-500/10 text-indigo-700 border-indigo-500/30 font-bold dark:text-indigo-400"
+                                      >
+                                        STAGED
+                                      </Badge>
+                                    )}
+
+                                    {isDraft && (
+                                      <div className="flex items-center gap-1.5 flex-wrap">
+                                        <Badge variant="warning">DRAFT</Badge>
+                                        {showStagedPill && (
+                                          <Badge
+                                            variant="outline"
+                                            className="text-[9px] py-0 px-1 font-semibold text-indigo-700 dark:text-indigo-400 border-indigo-500/30 bg-indigo-500/10 whitespace-nowrap"
+                                            title="Staffing Enabled: Staged for employee assignment in organization administration"
+                                          >
+                                            STAGED FOR STAFFING
+                                          </Badge>
+                                        )}
+                                      </div>
+                                    )}
+                                  </>
+                                )
+                              })()}
                             </td>
 
                             <td className="py-3 px-3 text-right">
@@ -2553,10 +2656,11 @@ export function ExpertAssignedRolesPage() {
                                     </Button>
                                   )}
 
-                                {/* Configure Micro-skills (when in draft, sent, or rejected) */}
+                                {/* Configure Micro-skills (when in draft, sent, staged, or rejected) */}
 
                                 {(isDraft ||
                                   isSent ||
+                                  effStatus === 'staged' ||
                                   isFeedback ||
                                   isRejected) && (
                                   <Button
@@ -2589,7 +2693,7 @@ export function ExpertAssignedRolesPage() {
                                 )}
 
                                 {/* Delete Role (Draft or Published for Domain Expert) */}
-                                {(isDraft || isPublished) && (
+                                {(isDraft || isPublished) && !role.isStaffingEnabled && (
                                   <Button
                                     variant="outline"
                                     size="sm"
@@ -2656,6 +2760,7 @@ export function ExpertAssignedRolesPage() {
             authoringRole,
             validationModules,
             validationBankQuestions,
+            isBypassContentCheck,
           )
 
           return (
@@ -2681,28 +2786,23 @@ export function ExpertAssignedRolesPage() {
 
                   <Badge
                     variant={
-                      authoringRole.status === 'sent'
-                        ? 'outline'
-                        : authoringEffStatus === 'published'
-                          ? 'success'
+                      authoringEffStatus === 'published'
+                        ? 'success'
+                        : authoringEffStatus === 'staged'
+                          ? 'outline'
                           : isAuthoringRejected || isAuthoringFeedback
                             ? 'destructive'
                             : 'warning'
                     }
 
                     className={
-                      authoringRole.status === 'sent'
-                        ? 'bg-[#EA580C] text-white border-transparent font-bold hover:bg-[#C2410C]'
-                        
-                          : isAuthoringRejected || isAuthoringFeedback
-                            ? 'font-bold'
-                            : 'font-bold'
+                      authoringEffStatus === 'staged'
+                        ? 'bg-indigo-500/10 text-indigo-700 border-indigo-500/30 font-bold dark:text-indigo-400'
+                        : 'font-bold'
                     }
                   >
-                    v{authoringRole.version}{' '}
-                    {authoringRole.status === 'sent'
-                      ? 'SENT'
-                      : authoringEffStatus.toUpperCase()}
+                    v{formatRoleVersion(authoringRole.version)}{' '}
+                    {authoringEffStatus.toUpperCase()}
                   </Badge>
                 </div>
               </DialogHeader>
@@ -3821,11 +3921,12 @@ export function ExpertAssignedRolesPage() {
 
                   {!authoringReadiness.isOverallReady ? (
                     <span
-                      className="text-xs !text-black dark:!text-white bg-amber-500/15 border border-amber-500/30 px-2.5 py-1 rounded-md flex items-center gap-1.5 font-bold cursor-help"
+                      style={{ color: '#000000' }}
+                      className="text-xs text-black bg-amber-500/15 border border-amber-500/30 px-2.5 py-1 rounded-md flex items-center gap-1.5 font-bold cursor-help"
                       title={authoringReadiness.missingSummary.join('; ')}
                     >
-                      <AlertCircle className="h-3.5 w-3.5 !text-black dark:!text-white shrink-0" />
-                      <span>
+                      <AlertCircle className="h-3.5 w-3.5 text-black shrink-0" style={{ color: '#000000' }} />
+                      <span style={{ color: '#000000' }} className="text-black font-bold">
                         Validation required: {authoringReadiness.missingSummary.length} issue{authoringReadiness.missingSummary.length > 1 ? 's' : ''} to resolve
                       </span>
                     </span>
@@ -3835,6 +3936,21 @@ export function ExpertAssignedRolesPage() {
                       <span>Validation passed: Ready to submit</span>
                     </span>
                   )}
+
+                  {/* Temporary Dev/Testing Bypass Toggle */}
+                  <label className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground cursor-pointer select-none bg-muted/60 px-2.5 py-1 rounded-md border border-border">
+                    <input
+                      type="checkbox"
+                      checked={isBypassContentCheck}
+                      onChange={(e) => {
+                        const val = e.target.checked
+                        setIsBypassContentCheck(val)
+                        setContentReadinessBypassed(val)
+                      }}
+                      className="accent-primary rounded h-3.5 w-3.5 cursor-pointer"
+                    />
+                    <span className="font-medium text-[11px]">Bypass Module/Question Check</span>
+                  </label>
                 </div>
 
                 {authoringRole.status !== 'published' && (
@@ -3937,7 +4053,7 @@ export function ExpertAssignedRolesPage() {
                       variant={
                         viewEffStatus === 'published'
                           ? 'success'
-                          : viewEffStatus === 'unpublished'
+                          : viewEffStatus === 'unpublished' || viewEffStatus === 'staged'
                             ? 'outline'
                             : viewEffStatus === 'feedback'
                               ? 'outline'
@@ -3948,23 +4064,15 @@ export function ExpertAssignedRolesPage() {
                       className={
                         viewEffStatus === 'unpublished'
                           ? 'border-muted-foreground/40 text-muted-foreground font-bold text-xs'
-                          : viewEffStatus === 'feedback'
-                            ? 'bg-amber-500/15 !text-black border-amber-500/30 font-bold dark:!text-black text-xs'
-                            : viewEffStatus === 'sent'
-                              ? 'bg-[#EA580C] text-white border-transparent font-bold text-xs hover:bg-[#C2410C]'
+                          : viewEffStatus === 'staged'
+                            ? 'bg-indigo-500/10 text-indigo-700 border-indigo-500/30 font-bold dark:text-indigo-400 text-xs'
+                            : viewEffStatus === 'feedback'
+                              ? 'bg-amber-500/15 !text-black border-amber-500/30 font-bold dark:!text-black text-xs'
                               : 'font-bold text-xs'
                       }
                     >
                       {viewEffStatus.toUpperCase()}
                     </Badge>
-                    {viewEffStatus === 'sent' && viewingDetailsRole.isStaffingEnabled && (
-                      <Badge
-                        variant="outline"
-                        className="bg-indigo-500/10 text-indigo-700 border-indigo-500/30 font-bold dark:text-indigo-400 text-xs"
-                      >
-                        STAGED FOR STAFFING
-                      </Badge>
-                    )}
                   </div>
                 )
               })()}
@@ -4027,7 +4135,7 @@ export function ExpertAssignedRolesPage() {
             </span>
           </div>
 
-          <div className="flex-1 overflow-y-auto [scrollbar-gutter:stable] pr-1.5 space-y-4 text-xs min-h-0 pt-2">
+          <div className={`flex-1 ${detailViewMode === 'readiness' ? 'flex flex-col overflow-hidden' : 'overflow-y-auto'} [scrollbar-gutter:stable] pr-1.5 space-y-4 text-xs min-h-0 pt-2`}>
             {/* Rejection / Revision Feedback Callout */}
             {(() => {
               const viewEffStatus = getExpertEffectiveStatus(viewingDetailsRole)
@@ -4039,7 +4147,7 @@ export function ExpertAssignedRolesPage() {
 
               if (viewEffStatus === 'feedback') {
                 return (
-                  <div className="p-3.5 rounded-lg bg-amber-500/10 border border-amber-500/30 text-xs text-black flex items-start gap-2.5">
+                  <div className="p-3.5 rounded-lg bg-amber-500/10 border border-amber-500/30 text-xs text-black flex items-start gap-2.5 shrink-0">
                     <AlertTriangle className="h-5 w-5 shrink-0 mt-0.5 text-black" />
                     <div className="text-black">
                       <div className="font-bold text-black">
@@ -4055,7 +4163,7 @@ export function ExpertAssignedRolesPage() {
 
               if (viewEffStatus === 'rejected') {
                 return (
-                  <div className="p-3.5 rounded-lg bg-destructive/10 border border-destructive/25 text-xs text-destructive flex items-start gap-2.5">
+                  <div className="p-3.5 rounded-lg bg-destructive/10 border border-destructive/25 text-xs text-destructive flex items-start gap-2.5 shrink-0">
                     <AlertTriangle className="h-5 w-5 shrink-0 mt-0.5 text-destructive" />
                     <div>
                       <div className="font-bold text-foreground">

@@ -100,6 +100,11 @@ public class TargetRoleService implements CreateTargetRoleUseCase, ViewTargetRol
             return false;
         }
 
+        TargetRole existing = existingOpt.get();
+        if (existing.getStatus() == RoleStatus.STAGED || existing.isStaffingEnabled()) {
+            throw new IllegalArgumentException("Staged target roles cannot be deleted to preserve workforce staffing integrity.");
+        }
+
         // L&D Managers have the privilege to delete target roles (both DRAFT and PUBLISHED/ACTIVE)
         targetRoleRepository.deleteById(organizationId, roleId);
         return true;

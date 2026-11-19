@@ -416,7 +416,8 @@ Target Portal: /workspace/workspace-development/ld-manager/target-roles
   6. Update configuration and click `Submit for Review` again.
 - **Expected Results:**
   - Empty revision comments are rejected (feedback is required).
-  - Role lifecycle transitions correctly: `DRAFT -> SUBMITTED -> REJECTED -> SUBMITTED`.
+  - Role lifecycle transitions correctly: `DRAFT/SENT -> SUBMITTED -> REJECTED -> SUBMITTED`.
+  - On the L&D Manager table and details modal, a `REJECTED` role does not show the `Edit Target Role` button or `STAGED FOR STAFFING` pill, delegating revision to the assigned Domain Expert.
   - Expert receives visible feedback and can resubmit smoothly.
 - **Backend Test:** [`backend/src/test/java/com/adaptlearngraph/entities/domain/TargetRoleLifecycleTest.java`](file:///d:/Semesters/Fall2026/SEP490/Project/SEP490/backend/src/test/java/com/adaptlearngraph/entities/domain/TargetRoleLifecycleTest.java)
 
@@ -431,13 +432,13 @@ Target Portal: /workspace/workspace-development/ld-manager/target-roles
 - **Step-by-Step Procedure:**
   1. Log in as L&D Manager and click `Publish Role`.
   2. Confirm publication dialog.
-  3. Verify role row updates to `PUBLISHED` status badge.
+  3. Verify role row updates to `PUBLISHED` status badge and no longer displays the `STAGED FOR STAFFING` pill.
   4. Attempt to edit the published role (verify direct editing is locked).
   5. Click `Create Successor Draft` on the published role.
 - **Expected Results:**
-  - Role transitions to `PUBLISHED`; published version becomes immutable.
-  - Successor draft `v1.1` is spawned in `DRAFT` status inheriting all competencies and skills.
-  - Original `v1.0` remains active and published in the knowledge graph.
+  - Role transitions to `PUBLISHED`; published version becomes immutable and `STAGED FOR STAFFING` pill is removed on both L&D Manager and Expert tables.
+  - Successor draft `v1.1` is spawned in `DRAFT` status inheriting all competencies and skills, also without the `STAGED FOR STAFFING` pill since a published predecessor exists.
+  - Original `v1.0` remains active and published in the knowledge graph, and the Ontology Explorer reflects the latest version status (`PUBLISHED`, `DRAFT`, `SUBMITTED`, or `REJECTED`) instead of `STAGED`.
 - **Backend Test:** `backend/src/test/java/com/adaptlearngraph/services/TargetRoleAndMicroSkillNeo4jIntegrationTest.java`
 
 ```
@@ -505,14 +506,16 @@ Target Portal: /workspace/workspace-development/expert/ontology (Explore Graph T
   1. Target role with linked competencies and skills exists in Neo4j database.
 - **Step-by-Step Procedure:**
   1. Log in as Domain Expert or L&D Manager and open `/workspace/workspace-development/expert/ontology`.
-  2. Click the **Explore Graph** tab.
-  3. Verify clean canvas initialization (`0 nodes on canvas`, Zoom In/Out, Fit to Viewport toolbar).
-  4. In the entity palette, click `Roles` filter and click a Target Role card to place it on the canvas.
-  5. In the Node Inspector panel, click `Neighbors`.
-  6. Use Zoom In, Zoom Out, and Fit to Viewport controls.
+  2. Verify the 3 KPI summary stat cards (`Micro-skills`, `Competencies`, `Skill Prerequisites`) and loading state indicator while fetching from the database.
+  3. Click the **Explore Graph** tab.
+  4. Verify clean canvas initialization (`0 nodes on canvas`, icon-only sidebar collapse toggle, Zoom In/Out, Fit to Viewport toolbar).
+  5. In the entity palette, click `Roles` filter and click a Target Role card to place it on the canvas.
+  6. In the Node Inspector panel, click `Neighbors`, and use the top-center level filter bar (`All Levels` or specific level) to filter competencies and micro-skills belonging to that level.
+  7. Use Zoom In, Zoom Out, and Fit to Viewport controls.
 - **Expected Results:**
-  - Canvas initializes without errors; vis-network mounts cleanly.
+  - Canvas initializes without errors; vis-network mounts cleanly after database fetch completes.
   - Placing role renders 1 node; clicking `Neighbors` dynamically pulls and expands Levels (Rank 1 as Highest), Competencies, and Micro-skills (>1 nodes).
+  - Selecting a specific level (or `All Levels`) in the top-center filter bar displays only the competencies and micro-skills required by that level (or across the role's levels).
   - Directed edges (`[:REQUIRES_SKILL]`, `[:HAS_LEVEL]`) render with distinct colors.
   - Zoom and Fit controls smoothly adjust the camera viewport.
 - **Test Spec:** [`frontend/system-tests/REQ-017-F02-ontology-explore-graph.spec.ts`](file:///d:/Semesters/Fall2026/SEP490/Project/SEP490/frontend/system-tests/REQ-017-F02-ontology-explore-graph.spec.ts#L19-L90)
@@ -631,16 +634,16 @@ END-TO-END WORKFLOW & STATE TRANSITION SUITE (COMMITTED CAPSTONE TEST CASES)
 - **Pre-conditions:**
   1. Workspace active; user roles configured with proper RBAC.
 - **State Transition Matrix Verified:**
-  1. `[Initial] -> DRAFT`: L&D Manager authors draft role (`Save as Draft`).
-  2. `DRAFT -> SUBMITTED`: Domain Expert configures required mastery levels and clicks `Submit to L&D Manager`.
-  3. `SUBMITTED -> REJECTED`: L&D Manager reviews role, inputs revision guidance (`Please calibrate intermediate proficiency thresholds`), and confirms return. Status updates to `REJECTED` / `FEEDBACK`.
+  1. `[Initial] -> DRAFT / SENT`: L&D Manager authors role and dispatches to Domain Expert (`Create & Send to Expert`), synchronizing `SENT` status across L&D Manager and Domain Expert tables.
+  2. `DRAFT / SENT -> SUBMITTED`: Domain Expert configures required mastery levels and clicks `Submit to L&D Manager`.
+  3. `SUBMITTED -> REJECTED`: L&D Manager reviews role, inputs revision guidance (`Please calibrate intermediate proficiency thresholds`), and confirms return. Status updates to `REJECTED` without an `Edit Target Role` button on the L&D Manager table and without `STAGED FOR STAFFING`.
   4. `REJECTED -> SUBMITTED`: Expert inspects feedback, updates configuration, and resubmits to L&D Manager.
-  5. `SUBMITTED -> PUBLISHED`: L&D Manager approves role (`Approve & Publish`). Status updates to `PUBLISHED`.
+  5. `SUBMITTED -> PUBLISHED`: L&D Manager approves role (`Approve & Publish`). Status updates to `PUBLISHED` and removes any `STAGED FOR STAFFING` pill across both tables and later versions.
   6. `PUBLISHED -> UNPUBLISHED`: L&D Manager unpublishes role with operational confirmation dialog. Role transitions to `UNPUBLISHED` (or draft).
   7. **Visibility Isolation Assertion:** Employee account verifies role is removed/isolated from active upskilling catalog.
 - **Expected Results:**
-  - Every state transition strictly enforces access control and updates UI badges.
-  - Rejection feedback is preserved and surfaced to the Expert.
+  - Every state transition strictly enforces access control and updates UI badges consistently across L&D Manager, Domain Expert, and Ontology views.
+  - Rejection feedback is preserved and surfaced to the Expert, while L&D Manager cannot directly edit a rejected role awaiting expert revision.
   - Unpublished roles cannot be accessed or enrolled in by Employees.
 - **Automated Test Spec:** [`frontend/system-tests/REQ-WF02-state-transitions.spec.ts`](../../frontend/system-tests/REQ-WF02-state-transitions.spec.ts)
 
