@@ -170,7 +170,7 @@ public class OrganizationTargetRoleApplicationService {
                     resp.track(), resp.assignedExpertId(), resp.description(), resp.responsibilities(),
                     resp.status(), resp.version(), resp.skillTargets(), resp.createdAt(), resp.updatedAt(),
                     resp.rejectionReason(), resp.levels(), resp.levelCompetencies(), resp.competencyIds(),
-                    role.getLevelDurations());
+                    role.getLevelDurations(), role.isStaffingEnabled());
         }
         return resp;
     }

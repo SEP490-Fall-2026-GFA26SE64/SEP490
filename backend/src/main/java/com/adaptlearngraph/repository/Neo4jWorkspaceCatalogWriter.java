@@ -20,7 +20,7 @@ import java.util.function.Supplier;
  */
 public final class Neo4jWorkspaceCatalogWriter implements WorkspaceCatalogGraphWriter {
     static final String SOURCE = "REGISTRATION_IMPORT";
-    private static final String VERSION = "1";
+    private static final String VERSION = "1.0";
     private final Supplier<Neo4jCypher> graph;
 
     /** The graph is resolved lazily so the worker bean can be created before Neo4j is reachable. */
@@ -53,6 +53,7 @@ public final class Neo4jWorkspaceCatalogWriter implements WorkspaceCatalogGraphW
                     var roleProps = base(organizationId, roleId, role.code(), role.name(), timestamp);
                     // Imported roles have no skill requirements yet: staged for staffing until L&D/Expert complete them.
                     roleProps.put("status", "STAGED");
+                    roleProps.put("isStaffingEnabled", true);
                     roleProps.put("title", role.name());
                     roleProps.put("scope", role.scope());
                     roleProps.put("description", role.scope());

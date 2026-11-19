@@ -55,8 +55,8 @@ test.describe('Report 5: WF02 State Transition Test (Target Role Lifecycle)', ()
     // Phase 1: [Initial] -> DRAFT / SENT (Create role and dispatch to expert)
     // =========================================================================
     await loginAs(page, 'manager@technova.com')
-    await page.goto('/workspace/workspace-development/ld-manager/target-roles')
-    await expect(page.locator('main')).toBeVisible()
+    await page.goto('/workspace/workspace-development/ld-manager/roles')
+    await expect(page.locator('main')).toBeVisible({ timeout: 15_000 })
 
     const createBtn = page.getByRole('button', { name: /Create/i }).first()
     await expect(createBtn).toBeVisible()
@@ -216,8 +216,8 @@ test.describe('Report 5: WF02 State Transition Test (Target Role Lifecycle)', ()
     // Phase 3: SUBMITTED -> REJECTED (L&D Manager requests revision with feedback)
     // =========================================================================
     await loginAs(page, 'manager@technova.com')
-    await page.goto('/workspace/workspace-development/ld-manager/target-roles')
-    await expect(page.locator('main')).toBeVisible()
+    await page.goto('/workspace/workspace-development/ld-manager/roles')
+    await expect(page.locator('main')).toBeVisible({ timeout: 15_000 })
 
     await expect(page.getByText(/Loading/i)).toHaveCount(0, { timeout: 15_000 }).catch(() => {})
     await filterByRoleCode()
@@ -265,6 +265,8 @@ test.describe('Report 5: WF02 State Transition Test (Target Role Lifecycle)', ()
     const managerRejectedRow = page.locator('table tbody tr').filter({ hasText: roleCode }).first()
     await expect(managerRejectedRow).toBeVisible()
     await expect(managerRejectedRow.getByText(/REVISION|REJECTED|FEEDBACK/i).first()).toBeVisible()
+    await expect(managerRejectedRow.locator('button[title="Edit Target Role"]')).toHaveCount(0)
+    await expect(managerRejectedRow.getByText(/STAGED FOR STAFFING/i)).toHaveCount(0)
 
     // =========================================================================
     // Phase 4: REJECTED -> SUBMITTED (Expert reviews feedback and resubmits)
@@ -307,8 +309,8 @@ test.describe('Report 5: WF02 State Transition Test (Target Role Lifecycle)', ()
     // Phase 5: SUBMITTED -> PUBLISHED (L&D Manager approves and publishes)
     // =========================================================================
     await loginAs(page, 'manager@technova.com')
-    await page.goto('/workspace/workspace-development/ld-manager/target-roles')
-    await expect(page.locator('main')).toBeVisible()
+    await page.goto('/workspace/workspace-development/ld-manager/roles')
+    await expect(page.locator('main')).toBeVisible({ timeout: 15_000 })
 
     await expect(page.getByText(/Loading/i)).toHaveCount(0, { timeout: 15_000 }).catch(() => {})
     await filterByRoleCode()
@@ -333,6 +335,7 @@ test.describe('Report 5: WF02 State Transition Test (Target Role Lifecycle)', ()
     // Verify PUBLISHED state in manager table
     const publishedRow = page.locator('table tbody tr').filter({ hasText: roleCode }).first()
     await expect(publishedRow.getByText(/PUBLISHED/i)).toBeVisible({ timeout: 15_000 })
+    await expect(publishedRow.getByText(/STAGED FOR STAFFING/i)).toHaveCount(0)
 
     // =========================================================================
     // Phase 6: PUBLISHED -> UNPUBLISHED (L&D Manager unpublishes role)
@@ -355,7 +358,7 @@ test.describe('Report 5: WF02 State Transition Test (Target Role Lifecycle)', ()
     // Verify employee isolation: Unpublished role is NOT visible to employees
     await loginAs(page, 'employee@technova.com')
     await page.goto('/workspace/workspace-development/employee/target-roles')
-    await expect(page.locator('main')).toBeVisible()
+    await expect(page.locator('main')).toBeVisible({ timeout: 15_000 })
 
     const employeeRoleCard = page.locator('div, tr, article').filter({ hasText: roleCode })
     await expect(employeeRoleCard).toHaveCount(0)

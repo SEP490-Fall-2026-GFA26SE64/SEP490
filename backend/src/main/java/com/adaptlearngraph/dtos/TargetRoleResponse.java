@@ -23,7 +23,31 @@ public record TargetRoleResponse(
         List<String> levels,
         Map<String, List<String>> levelCompetencies,
         List<String> competencyIds,
-        Map<String, String> levelDurations) {
+        Map<String, String> levelDurations,
+        Boolean isStaffingEnabled) {
+
+    public TargetRoleResponse(
+            String id,
+            String organizationId,
+            String code,
+            String name,
+            String familyCode,
+            String track,
+            String assignedExpertId,
+            String description,
+            List<String> responsibilities,
+            String status,
+            String version,
+            List<Map<String, Object>> skillTargets,
+            Instant createdAt,
+            Instant updatedAt,
+            String rejectionReason,
+            List<String> levels,
+            Map<String, List<String>> levelCompetencies,
+            List<String> competencyIds,
+            Map<String, String> levelDurations) {
+        this(id, organizationId, code, name, familyCode, track, assignedExpertId, description, responsibilities, status, version, skillTargets, createdAt, updatedAt, rejectionReason, levels, levelCompetencies, competencyIds, levelDurations, "STAGED".equalsIgnoreCase(status));
+    }
 
     public TargetRoleResponse(
             String id,

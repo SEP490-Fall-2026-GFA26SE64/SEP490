@@ -40,6 +40,9 @@ test.describe('Report 5: WF02 Target Role Flow & Competency Ontology E2E Verific
     await compTabTrigger.click()
 
     await expect(page.getByText('Domain Competencies Catalog')).toBeVisible()
+    // Verify 3 KPI stat cards without the removed Mastery Levels stat card, and verify the unified Import button
+    await expect(page.getByText('Mastery Levels')).toHaveCount(0)
+    await expect(page.getByRole('button', { name: /^Import$/i }).first()).toBeVisible()
 
     // TC-WF02-F03: Search competencies by keyword
     const compSearchInput = page.getByPlaceholder('Search competencies...')
@@ -134,8 +137,9 @@ test.describe('Report 5: WF02 Target Role Flow & Competency Ontology E2E Verific
   // Group 3: Target Role Authoring & Department Scoping (TC-WF02-F10, F11)
   test('Group 3: Target Role Authoring - Department Scoping & Level Hierarchy Inspection', async ({ page }) => {
     await loginAs(page, 'manager@technova.com')
-    await page.goto('/workspace/workspace-development/ld-manager/target-roles')
-    await expect(page.locator('main')).toBeVisible()
+    await page.goto('/workspace/workspace-development/ld-manager/roles')
+    await expect(page.locator('main')).toBeVisible({ timeout: 15_000 })
+    await expect(page.getByText(/Loading target roles/i)).toHaveCount(0, { timeout: 20_000 }).catch(() => {})
 
     // Verify catalog header and metrics
     await expect(page.getByText(/Role Version Catalog/i)).toBeVisible()
@@ -162,8 +166,9 @@ test.describe('Report 5: WF02 Target Role Flow & Competency Ontology E2E Verific
     }
 
     // TC-WF02-F10: View details of existing role
+    await expect(page.getByText(/Loading target roles/i)).toHaveCount(0, { timeout: 20_000 }).catch(() => {})
     const firstRoleRow = page.locator('table tbody tr').first()
-    await expect(firstRoleRow).toBeVisible()
+    await expect(firstRoleRow).toBeVisible({ timeout: 15_000 })
     const viewBtn = firstRoleRow.locator('button[title="View Details"]')
     await expect(viewBtn).toBeVisible()
     await viewBtn.click()
@@ -180,8 +185,9 @@ test.describe('Report 5: WF02 Target Role Flow & Competency Ontology E2E Verific
   // Group 4: Domain Expert Configuration & RBAC Restrictions (TC-WF02-F12, F13, F16)
   test('Group 4: Domain Expert - Micro-skills Configuration Access and Unpublish RBAC Restriction', async ({ page }) => {
     await loginAs(page, 'expert@technova.com')
-    await page.goto('/workspace/workspace-development/expert/target-roles')
-    await expect(page.locator('main')).toBeVisible()
+    await page.goto('/workspace/workspace-development/expert/roles')
+    await expect(page.locator('main')).toBeVisible({ timeout: 15_000 })
+    await expect(page.getByText(/Loading roles/i)).toHaveCount(0, { timeout: 20_000 }).catch(() => {})
 
     await expect(page.getByText(/Role Version Catalog/i)).toBeVisible()
     await expect(page.getByText(/Total Roles|TOTAL TARGET ROLES/i)).toBeVisible()

@@ -11,18 +11,25 @@ export type ExpertRoleStatus =
   | 'draft'
   | 'feedback'
   | 'rejected'
+  | 'staged'
 
 export const getExpertEffectiveStatus = (
   role: TargetRoleModel,
 ): ExpertRoleStatus => {
-  if (role.status === 'published' || (role.status as string) === 'ACTIVE') return 'published'
-  if (role.status === 'unpublished') return 'unpublished'
-  if (role.status === 'submitted' || role.status === 'approved' || (role.status as string) === 'APPROVED') return 'submitted'
-  if (role.status === 'sent') return 'sent'
-  if (role.status === 'rejected') {
-    return 'rejected'
-  }
+  const s = (role.status || '').toLowerCase()
+  if (s === 'published' || s === 'active') return 'published'
+  if (s === 'unpublished') return 'unpublished'
+  if (s === 'submitted' || s === 'approved') return 'submitted'
+  if (s === 'rejected' || s === 'feedback') return 'rejected'
+  if (s === 'staged' || Boolean(role.isStaffingEnabled)) return 'staged'
+  if (s === 'sent') return 'draft'
 
   return 'draft'
 }
+
+export const formatRoleVersion = (version?: string): string => {
+  const v = String(version || '1.0').trim()
+  return v === '1' ? '1.0' : (v || '1.0')
+}
+
 

@@ -103,6 +103,7 @@ import { TargetRoleVersionDiff } from './components/TargetRoleVersionDiff'
 import { formatRequiredKnowledge } from './roleKnowledgePresentation'
 import { missingRoleLevelRequirements,roleRequirements,validRequiredKnowledge } from './roleRequirements'
 import { getManagerEffectiveStatus } from './TargetRolesPage.helpers'
+import { formatRoleVersion } from '../../expert/target-roles/ExpertAssignedRolesPage.helpers'
 
 const ROLE_PRESETS: ImportPreset[] = []
 interface RoleMetadata {
@@ -815,7 +816,10 @@ export function TargetRolesPage() {
             responsibilities: Array.isArray(r.responsibilities)
               ? (r.responsibilities as string[])
               : [],
-            version: String(r.version || '1.0'),
+            version: (() => {
+              const v = String(r.version || '1.0').trim()
+              return v === '1' ? '1.0' : v
+            })(),
             // The backend status is the single source of truth so every portal (L&D Manager,
             // Domain Expert, Employee) sees the same lifecycle state for each version.
             status: (
@@ -890,22 +894,24 @@ export function TargetRolesPage() {
 
         setRoles((prevRoles) => {
           const backendKeys = new Set(
-            mapped.map((m) => `${m.code.toUpperCase()}::${String(m.version || '1.0').trim()}`)
+            mapped.map((m) => `${m.code.toUpperCase()}::${formatRoleVersion(m.version)}`)
           )
           const backendIds = new Set(mapped.map((m) => m.id))
           const localOnlyDrafts = (currentActiveComp?.targetRoles || []).filter(
             (s) =>
               !backendIds.has(s.id) &&
-              !backendKeys.has(`${s.code.toUpperCase()}::${String(s.version || '1.0').trim()}`) &&
+              !backendKeys.has(`${s.code.toUpperCase()}::${formatRoleVersion(s.version)}`) &&
               (s.status === 'draft' || s.status === 'staged' || s.status === 'sent' || s.status === 'submitted' || s.status === 'rejected'),
-          )
+          ).map((s) => ({ ...s, version: formatRoleVersion(s.version) }))
           const rawCombined = [...localOnlyDrafts, ...mapped]
           const dedupedMap = new Map<string, TargetRoleModel>()
           for (const item of rawCombined) {
-            const key = `${String(item.code || '').trim().toUpperCase()}::${String(item.version || '1.0').trim()}`
+            const v = formatRoleVersion(item.version)
+            const normItem = item.version !== v ? { ...item, version: v } : item
+            const key = `${String(normItem.code || '').trim().toUpperCase()}::${v}`
             const existing = dedupedMap.get(key)
-            if (!existing || (String(existing.id || '').startsWith('role-') && !String(item.id || '').startsWith('role-'))) {
-              dedupedMap.set(key, item)
+            if (!existing || (String(existing.id || '').startsWith('role-') && !String(normItem.id || '').startsWith('role-'))) {
+              dedupedMap.set(key, normItem)
             }
           }
           const allRoles = Array.from(dedupedMap.values())
@@ -917,12 +923,12 @@ export function TargetRolesPage() {
 
             const prev = prevRoles.find(
               (p) =>
-                p.id === rId || (p.code.toUpperCase() === rCode && p.version === m.version),
+                p.id === rId || (p.code.toUpperCase() === rCode && formatRoleVersion(p.version) === formatRoleVersion(m.version)),
             )
             const storeRole = (currentActiveComp?.targetRoles || []).find(
               (tr) =>
                 tr.id === rId ||
-                (tr.code?.toUpperCase() === rCode && tr.version === m.version),
+                (tr.code?.toUpperCase() === rCode && formatRoleVersion(tr.version) === formatRoleVersion(m.version)),
             )
             const prevLevelComps =
               m.levelCompetencies && Object.keys(m.levelCompetencies).length > 0
@@ -1116,6 +1122,10 @@ export function TargetRolesPage() {
 
   const [isCreateRoleModalOpen, setIsCreateRoleModalOpen] =
     React.useState(false)
+  const [isConfirmStagedModalOpen, setIsConfirmStagedModalOpen] =
+    React.useState(false)
+  const [confirmStagedMode, setConfirmStagedMode] =
+    React.useState<'create' | 'edit'>('create')
   const [isMappingsModalOpen, setIsMappingsModalOpen] = React.useState(false)
   const [isSkillTargetsModalOpen, setIsSkillTargetsModalOpen] =
     React.useState(false)
@@ -1205,7 +1215,10 @@ export function TargetRolesPage() {
           description: String(
             item.description || 'Target career role definition',
           ).trim(),
-          version: String(item.version || '1.0'),
+          version: (() => {
+            const v = String(item.version || '1.0').trim()
+            return v === '1' ? '1.0' : v
+          })(),
           status:
             item.status === 'draft' ||
             item.status === 'submitted' ||
@@ -1530,6 +1543,75 @@ export function TargetRolesPage() {
     setIsCreateRoleModalOpen(true)
   }
 
+  const handlePromptSaveAsStaged = () => {
+    if (!roleForm.code.trim() || !roleForm.title.trim()) {
+      toast({
+        title: 'Validation Error',
+        description: 'Role Code and Title are strictly required.',
+        variant: 'destructive',
+      })
+      return
+    }
+
+    if (!roleForm.jobPositionCode?.trim()) {
+      toast({
+        title: 'Validation Error',
+        description: 'Job Position is mandatory. Please select an active job position.',
+        variant: 'destructive',
+      })
+      return
+    }
+
+    if (
+      roles.some(
+        (r) => r.code.toUpperCase() === roleForm.code.trim().toUpperCase(),
+      )
+    ) {
+      toast({
+        title: 'Duplicate Role Code',
+        description: `Role Code ${roleForm.code} already exists in the role catalog.`,
+        variant: 'destructive',
+      })
+      return
+    }
+
+    const selectedOcc = availableJobPositions.find((o) => o.code === roleForm.jobPositionCode)
+    if (!selectedOcc) {
+      toast({
+        title: 'Validation Error',
+        description: 'A valid active job position is required to create a target role.',
+        variant: 'destructive',
+      })
+      return
+    }
+
+    setConfirmStagedMode('create')
+    setIsConfirmStagedModalOpen(true)
+  }
+
+  const handlePromptEditSaveAsStaged = () => {
+    if (!editRoleForm.title.trim()) {
+      toast({
+        title: 'Validation Error',
+        description: 'Role Title is required.',
+        variant: 'destructive',
+      })
+      return
+    }
+
+    if (!editRoleForm.jobPositionCode?.trim()) {
+      toast({
+        title: 'Validation Error',
+        description: 'Job Position is mandatory. Please select an active job position.',
+        variant: 'destructive',
+      })
+      return
+    }
+
+    setConfirmStagedMode('edit')
+    setIsConfirmStagedModalOpen(true)
+  }
+
   const handleCreateRoleSubmit = async (
     targetStatus: 'draft' | 'staged' | 'sent' = 'draft',
   ) => {
@@ -1809,6 +1891,14 @@ export function TargetRolesPage() {
 
   // Delete Target Role (Draft or Published)
   const handleDeleteRole = async (role: TargetRoleModel) => {
+    if (role.status === 'staged' || role.isStaffingEnabled) {
+      toast({
+        title: 'Delete Blocked',
+        description: 'Staged target roles cannot be deleted to preserve workforce staffing integrity.',
+        variant: 'destructive',
+      })
+      return
+    }
     const orgId = resolveWorkspaceOrgId(
       session?.identity?.organizationId || activeComp?.id,
     )
@@ -1936,7 +2026,7 @@ export function TargetRolesPage() {
 
   // Save updated role attributes (L&D Manager scope)
 
-  const handleSaveEditRole = async (targetStatus?: 'draft' | 'sent') => {
+  const handleSaveEditRole = async (targetStatus?: 'draft' | 'sent' | 'staged') => {
     if (!selectedRole) return
 
     if (!editRoleForm.title.trim()) {
@@ -1981,12 +2071,13 @@ export function TargetRolesPage() {
     const isStaffing = Boolean(
       selectedRole.isStaffingEnabled ||
       selectedRole.status === 'staged' ||
+      targetStatus === 'staged' ||
       (selectedRole as any).staged
     )
     const newStatus =
       targetStatus === 'sent'
         ? 'SENT'
-        : selectedRole.status === 'staged'
+        : targetStatus === 'staged' || selectedRole.status === 'staged'
           ? 'STAGED'
           : selectedRole.status === 'published'
             ? 'ACTIVE'
@@ -2025,7 +2116,7 @@ export function TargetRolesPage() {
         editRoleForm.scope ||
         editRoleForm.description ||
         selectedOcc.description,
-      status: targetStatus === 'sent' ? 'sent' : selectedRole.status,
+      status: targetStatus === 'sent' ? 'sent' : targetStatus === 'staged' ? 'staged' : selectedRole.status,
       isStaffingEnabled: isStaffing,
       updatedAt: new Date().toISOString(),
     }
@@ -2066,7 +2157,9 @@ export function TargetRolesPage() {
       title:
         targetStatus === 'sent'
           ? 'Target Role Sent to Expert'
-          : 'Target Role Updated',
+          : targetStatus === 'staged'
+            ? 'Staged Role Saved'
+            : 'Target Role Updated',
       description:
         targetStatus === 'sent'
           ? `${updatedRole.title} (${updatedRole.code} v${updatedRole.version}) has been dispatched to ${expertName}.`
@@ -2090,6 +2183,7 @@ export function TargetRolesPage() {
             editRoleForm.description ||
             selectedOcc.description,
           status: newStatus,
+          isStaffingEnabled: isStaffing,
           version: selectedRole.version,
           skillTargets: roleRequirements(selectedRole.skillTargets),
           levels: editRoleForm.levelNames,
@@ -2175,6 +2269,7 @@ export function TargetRolesPage() {
       const updatedRole: TargetRoleModel = {
         ...role,
         status: 'published',
+        isStaffingEnabled: false,
         updatedAt: typeof saved.updatedAt === 'string' ? saved.updatedAt : role.updatedAt,
       }
       saveAndSetRoles((prev) =>
@@ -2815,7 +2910,7 @@ export function TargetRolesPage() {
                                       variant="outline"
                                       className="text-[9px] py-0 px-1 font-mono text-muted-foreground border-border"
                                     >
-                                      Previous v{role.version}
+                                      Previous v{formatRoleVersion(role.version)}
                                     </Badge>
                                   )}
                                 </div>
@@ -2825,7 +2920,7 @@ export function TargetRolesPage() {
                                     variant="secondary"
                                     className="font-mono text-[10px] py-0 px-1"
                                   >
-                                    v{role.version}
+                                    v{formatRoleVersion(role.version)}
                                   </Badge>
 
                                   <span>
@@ -2920,67 +3015,116 @@ export function TargetRolesPage() {
                               </td>
 
                               <td className="py-3 px-3">
-                                {isPublished && (
-                                  <Badge variant="success">PUBLISHED</Badge>
-                                )}
+                                {(() => {
+                                  const hasPublishedPredecessor = managerVisibleRoles.some(
+                                    (r) =>
+                                      r.code?.toUpperCase() === role.code?.toUpperCase() &&
+                                      (r.status === 'published' || (r.status as string) === 'ACTIVE' || (r.status as string) === 'PUBLISHED') &&
+                                      r.id !== role.id
+                                  )
+                                  const showStagedPill = Boolean(role.isStaffingEnabled) && !hasPublishedPredecessor
 
-                                {isUnpublished && (
-                                  <Badge variant="outline" className="border-muted-foreground/40 text-muted-foreground font-bold">
-                                    UNPUBLISHED
-                                  </Badge>
-                                )}
+                                  return (
+                                    <>
+                                      {isPublished && (
+                                        <Badge variant="success">PUBLISHED</Badge>
+                                      )}
 
-                                {isSubmitted && (
-                                  <Badge
-                                    variant="primary"
-                                    className="bg-sky-500/10 text-sky-600 border-sky-500/20 font-bold dark:text-sky-400"
-                                  >
-                                    SUBMITTED
-                                  </Badge>
-                                )}
+                                      {isUnpublished && (
+                                        <Badge variant="outline" className="border-muted-foreground/40 text-muted-foreground font-bold">
+                                          UNPUBLISHED
+                                        </Badge>
+                                      )}
 
-                                {effStatus === 'staged' && (
-                                  <Badge
-                                    variant="outline"
-                                    className="bg-indigo-500/10 text-indigo-700 border-indigo-500/30 font-bold dark:text-indigo-400"
-                                  >
-                                    STAGED
-                                  </Badge>
-                                )}
+                                      {isSubmitted && (
+                                        <div className="flex items-center gap-1.5 flex-wrap">
+                                          <Badge
+                                            variant="primary"
+                                            className="bg-sky-500/10 text-sky-600 border-sky-500/20 font-bold dark:text-sky-400"
+                                          >
+                                            SUBMITTED
+                                          </Badge>
+                                          {showStagedPill && (
+                                            <Badge
+                                              variant="outline"
+                                              className="text-[9px] py-0 px-1 font-semibold text-indigo-700 dark:text-indigo-400 border-indigo-500/30 bg-indigo-500/10 whitespace-nowrap"
+                                              title="Staffing Enabled: Staged for employee assignment in organization administration"
+                                            >
+                                              STAGED FOR STAFFING
+                                            </Badge>
+                                          )}
+                                        </div>
+                                      )}
 
-                                {isSent && (
-                                  <div className="flex items-center gap-1.5 flex-wrap">
-                                    <Badge className="bg-[#EA580C] text-white border-transparent font-bold hover:bg-[#C2410C]">
-                                      SENT
-                                    </Badge>
-                                    {Boolean(role.isStaffingEnabled) && (
-                                      <Badge
-                                        variant="outline"
-                                        className="text-[9px] py-0 px-1 font-semibold text-indigo-700 dark:text-indigo-400 border-indigo-500/30 bg-indigo-500/10 whitespace-nowrap"
-                                        title="Staffing Enabled: Staged for employee assignment in organization administration"
-                                      >
-                                        STAGED FOR STAFFING
-                                      </Badge>
-                                    )}
-                                  </div>
-                                )}
+                                      {effStatus === 'staged' && (
+                                        <Badge
+                                          variant="outline"
+                                          className="bg-indigo-500/10 text-indigo-700 border-indigo-500/30 font-bold dark:text-indigo-400"
+                                        >
+                                          STAGED
+                                        </Badge>
+                                      )}
 
-                                {isFeedback && (
-                                  <Badge
-                                    variant="outline"
-                                    className="bg-amber-500/15 !text-black border-amber-500/30 font-bold dark:!text-black"
-                                  >
-                                    FEEDBACK
-                                  </Badge>
-                                )}
+                                      {isSent && (
+                                        <div className="flex items-center gap-1.5 flex-wrap">
+                                          <Badge className="bg-[#EA580C] text-white border-transparent font-bold hover:bg-[#C2410C]">
+                                            SENT
+                                          </Badge>
+                                          {showStagedPill && (
+                                            <Badge
+                                              variant="outline"
+                                              className="text-[9px] py-0 px-1 font-semibold text-indigo-700 dark:text-indigo-400 border-indigo-500/30 bg-indigo-500/10 whitespace-nowrap"
+                                              title="Staffing Enabled: Staged for employee assignment in organization administration"
+                                            >
+                                              STAGED FOR STAFFING
+                                            </Badge>
+                                          )}
+                                        </div>
+                                      )}
 
-                                {isRejected && (
-                                  <Badge variant="destructive">REJECTED</Badge>
-                                )}
+                                      {isFeedback && (
+                                        <div className="flex items-center gap-1.5 flex-wrap">
+                                          <Badge
+                                            variant="outline"
+                                            className="bg-amber-500/15 !text-black border-amber-500/30 font-bold dark:!text-black"
+                                          >
+                                            FEEDBACK
+                                          </Badge>
+                                          {showStagedPill && (
+                                            <Badge
+                                              variant="outline"
+                                              className="text-[9px] py-0 px-1 font-semibold text-indigo-700 dark:text-indigo-400 border-indigo-500/30 bg-indigo-500/10 whitespace-nowrap"
+                                              title="Staffing Enabled: Staged for employee assignment in organization administration"
+                                            >
+                                              STAGED FOR STAFFING
+                                            </Badge>
+                                          )}
+                                        </div>
+                                      )}
 
-                                {isDraft && (
-                                  <Badge variant="warning">DRAFT</Badge>
-                                )}
+                                      {isRejected && (
+                                        <div className="flex items-center gap-1.5 flex-wrap">
+                                          <Badge variant="destructive">REJECTED</Badge>
+                                        </div>
+                                      )}
+
+                                      {isDraft && (
+                                        <div className="flex items-center gap-1.5 flex-wrap">
+                                          <Badge variant="warning">DRAFT</Badge>
+                                          {showStagedPill && (
+                                            <Badge
+                                              variant="outline"
+                                              className="text-[9px] py-0 px-1 font-semibold text-indigo-700 dark:text-indigo-400 border-indigo-500/30 bg-indigo-500/10 whitespace-nowrap"
+                                              title="Staffing Enabled: Staged for employee assignment in organization administration"
+                                            >
+                                              STAGED FOR STAFFING
+                                            </Badge>
+                                          )}
+                                        </div>
+                                      )}
+                                    </>
+                                  )
+                                })()}
                               </td>
 
                               <td className="py-3 px-3 text-right">
@@ -3029,9 +3173,9 @@ export function TargetRolesPage() {
                                     <NetworkIcon className="h-4 w-4 text-primary" />
                                   </Button>
 
-                                  {/* Edit Role (Draft/Feedback/Rejected/Published/Unpublished) - Lock editing only when Sent or Submitted */}
+                                  {/* Edit Role (Draft/Feedback/Published/Unpublished) - Lock editing when Sent, Submitted, or Rejected */}
 
-                                  {!isSent && !isSubmitted && (
+                                  {!isSent && !isSubmitted && !isRejected && (
                                     <Button
                                       variant="outline"
 
@@ -3105,7 +3249,7 @@ export function TargetRolesPage() {
 
                                   {/* Delete Role */}
 
-                                  {(isDraft || effStatus === 'staged') && (
+                                  {isDraft && !role.isStaffingEnabled && (
                                     <Button
                                       variant="outline"
                                       size="sm"
@@ -3114,8 +3258,8 @@ export function TargetRolesPage() {
                                         e.stopPropagation()
                                         setDeletingRole(role)
                                       }}
-                                      title={effStatus === 'staged' ? "Delete Staged Role" : "Delete Draft"}
-                                      aria-label={effStatus === 'staged' ? "Delete Staged Role" : "Delete Draft"}
+                                      title="Delete Draft"
+                                      aria-label="Delete Draft"
                                     >
                                       <Trash2 className="h-4 w-4" />
                                     </Button>
@@ -3565,39 +3709,6 @@ export function TargetRolesPage() {
               />
             </div>
           </div>
-
-          {/* Card 6: Workforce Staffing Staging */}
-
-          <div className="p-3.5 rounded-lg border border-indigo-500/25 bg-indigo-500/5 space-y-2">
-            <div className="flex items-start gap-2.5">
-              <input
-                type="checkbox"
-                id="stageForStaffingCheckbox"
-                checked={roleForm.isStaffingEnabled}
-                onChange={(e) =>
-                  setRoleForm({
-                    ...roleForm,
-                    isStaffingEnabled: e.target.checked,
-                  })
-                }
-                className="mt-0.5 h-4 w-4 rounded border-border text-indigo-600 focus:ring-indigo-500 cursor-pointer"
-              />
-              <label htmlFor="stageForStaffingCheckbox" className="text-xs cursor-pointer select-none">
-                <span className="font-semibold text-foreground flex items-center gap-1.5">
-                  <span>Stage for workforce staffing</span>
-                  <Badge
-                    variant="outline"
-                    className="text-[9px] py-0 px-1 font-semibold text-indigo-700 dark:text-indigo-400 border-indigo-500/30 bg-indigo-500/10"
-                  >
-                    STAFFING READY
-                  </Badge>
-                </span>
-                <span className="text-[11px] text-muted-foreground block mt-0.5 leading-relaxed">
-                  Make this target role and its configured career levels immediately available in Organization Administration so employees can be onboarded with this role and level before publication.
-                </span>
-              </label>
-            </div>
-          </div>
         </div>
 
         <DialogFooter className="shrink-0 pt-3 border-t border-border mt-3 flex items-center justify-between sm:justify-between w-full">
@@ -3613,6 +3724,23 @@ export function TargetRolesPage() {
             <Button
               variant="outline"
               size="sm"
+              className="border-2 border-indigo-600 bg-indigo-50 hover:bg-indigo-100 text-indigo-900 font-bold shadow-xs dark:bg-indigo-950 dark:text-indigo-100 dark:border-indigo-400"
+              style={{ color: '#312e81', borderColor: '#4f46e5', backgroundColor: '#eef2ff' }}
+              disabled={
+                !roleForm.code.trim() ||
+                !roleForm.title.trim() ||
+                !roleForm.jobPositionCode.trim() ||
+                jobPositionOptions.length === 0
+              }
+              title="Stage role immediately so Org Admin can assign employees to this role and levels before publication"
+              onClick={handlePromptSaveAsStaged}
+            >
+              Save as Staged
+            </Button>
+
+            <Button
+              variant="outline"
+              size="sm"
               disabled={
                 !roleForm.code.trim() ||
                 !roleForm.title.trim() ||
@@ -3622,22 +3750,6 @@ export function TargetRolesPage() {
               onClick={() => handleCreateRoleSubmit('draft')}
             >
               Save as Draft
-            </Button>
-
-            <Button
-              variant="secondary"
-              size="sm"
-              className="border border-indigo-500/30 bg-indigo-500/10 text-indigo-700 hover:bg-indigo-500/20 dark:text-indigo-300 font-semibold"
-              disabled={
-                !roleForm.code.trim() ||
-                !roleForm.title.trim() ||
-                !roleForm.jobPositionCode.trim() ||
-                jobPositionOptions.length === 0
-              }
-              title="Stage role immediately so Org Admin can assign employees to this role and levels before publication"
-              onClick={() => handleCreateRoleSubmit('staged')}
-            >
-              Save as Staged
             </Button>
 
             <Button
@@ -3661,6 +3773,106 @@ export function TargetRolesPage() {
               Create &amp; Send to Expert
             </Button>
           </div>
+        </DialogFooter>
+      </Dialog>
+
+      {/* 1B. CONFIRM SAVE AS STAGED MODAL */}
+      <Dialog
+        open={isConfirmStagedModalOpen}
+        onOpenChange={setIsConfirmStagedModalOpen}
+      >
+        <DialogHeader>
+          <DialogTitle className="text-base font-bold text-foreground flex items-center gap-2">
+            <AlertTriangle className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+            Stage Target Role for Workforce Staffing?
+          </DialogTitle>
+          <DialogDescription className="text-xs text-muted-foreground">
+            Please confirm before staging{' '}
+            <strong className="text-foreground">
+              {confirmStagedMode === 'create'
+                ? roleForm.title || roleForm.code
+                : editRoleForm.title || selectedRole?.code}
+            </strong>
+            .
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-3 py-2 text-xs">
+          <div className="p-3 rounded-lg border border-border bg-muted/20 space-y-1.5">
+            <div className="font-semibold text-foreground flex items-center justify-between">
+              <span>
+                {confirmStagedMode === 'create'
+                  ? roleForm.title
+                  : editRoleForm.title}
+              </span>
+              <span className="text-[11px] text-primary font-mono font-bold">
+                {confirmStagedMode === 'create'
+                  ? roleForm.code
+                  : selectedRole?.code}
+              </span>
+            </div>
+            <div className="text-[11px] text-muted-foreground flex items-center gap-2 flex-wrap">
+              <span>
+                {confirmStagedMode === 'create'
+                  ? availableJobPositions.find((o) => o.code === roleForm.jobPositionCode)?.name || roleForm.jobPositionCode
+                  : availableJobPositions.find((o) => o.code === editRoleForm.jobPositionCode)?.name || editRoleForm.jobPositionCode}
+              </span>
+              <span>•</span>
+              <span>
+                {confirmStagedMode === 'create'
+                  ? `${roleForm.levelNames.length} Career Levels`
+                  : `${editRoleForm.levelNames.length} Career Levels`}
+              </span>
+              {(selectedRole?.department || managerDepartment?.name) && (
+                <>
+                  <span>•</span>
+                  <span>
+                    {selectedRole?.department || managerDepartment?.name}
+                  </span>
+                </>
+              )}
+            </div>
+          </div>
+
+          <div className="p-3.5 rounded-lg bg-amber-500/10 border border-amber-500/30 text-xs flex items-start gap-2.5">
+            <AlertTriangle className="h-4 w-4 shrink-0 text-amber-600 dark:text-amber-500 mt-0.5" />
+            <div className="text-[11.5px] leading-relaxed text-foreground space-y-1">
+              <div>
+                <strong className="text-foreground font-semibold">
+                  Workforce Availability:
+                </strong>{' '}
+                This role and its configured career levels will immediately become available in Organization Administration so employees can be onboarded and assigned to it.
+              </div>
+              <div className="text-destructive font-medium">
+                <strong>Important Notice:</strong> Once staged, this target role cannot be deleted afterward to prevent breaking employee staffing assignments.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <DialogFooter className="pt-2 flex items-center justify-end gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setIsConfirmStagedModalOpen(false)}
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="primary"
+            size="sm"
+            className="border-2 border-indigo-600 bg-indigo-600 hover:bg-indigo-700 text-white font-bold shadow-xs dark:bg-indigo-600 dark:hover:bg-indigo-700"
+            onClick={() => {
+              setIsConfirmStagedModalOpen(false)
+              if (confirmStagedMode === 'create') {
+                handleCreateRoleSubmit('staged')
+              } else {
+                handleSaveEditRole('staged')
+              }
+            }}
+          >
+            Confirm &amp; Save as Staged
+          </Button>
         </DialogFooter>
       </Dialog>
 
@@ -3874,6 +4086,7 @@ export function TargetRolesPage() {
           const isUnpublishedRole = modalEffStatus === 'unpublished'
           const isFeedbackRole = modalEffStatus === 'feedback'
           const isRejectedRole = modalEffStatus === 'rejected'
+          const isStagedRole = modalEffStatus === 'staged'
           const isDraftRole =
             modalEffStatus === 'draft' || isFeedbackRole || isRejectedRole
           const cleanModalRejectionReason = (
@@ -3917,17 +4130,21 @@ export function TargetRolesPage() {
                               ? 'destructive'
                               : isSentRole
                                 ? 'outline'
-                                : 'warning'
+                                : isStagedRole
+                                  ? 'outline'
+                                  : 'warning'
                     }
 
                     className={
                       isSubmittedRole
                         ? 'bg-sky-500/10 text-sky-600 border-sky-500/20 font-bold dark:text-sky-400'
                         : isSentRole
-                          ? 'bg-amber-500/10 text-amber-600 border-amber-500/20 font-bold dark:text-amber-400'
-                          : isFeedbackRole
-                            ? 'bg-amber-500/15 !text-black border-amber-500/30 font-bold dark:!text-black'
-                            : ''
+                          ? 'bg-[#EA580C] text-white border-transparent font-bold hover:bg-[#C2410C]'
+                          : isStagedRole
+                            ? 'bg-indigo-500/10 text-indigo-700 border-indigo-500/30 font-bold dark:text-indigo-400'
+                            : isFeedbackRole
+                              ? 'bg-amber-500/15 !text-black border-amber-500/30 font-bold dark:!text-black'
+                              : ''
                     }
                   >
                     {modalEffStatus.toUpperCase()}
@@ -4542,6 +4759,17 @@ export function TargetRolesPage() {
                       <Button
                         variant="outline"
                         size="sm"
+                        className="border-2 border-indigo-600 bg-indigo-50 hover:bg-indigo-100 text-indigo-900 font-bold shadow-xs dark:bg-indigo-950 dark:text-indigo-100 dark:border-indigo-400"
+                        style={{ color: '#312e81', borderColor: '#4f46e5', backgroundColor: '#eef2ff' }}
+                        disabled={!editRoleForm.title.trim() || !editRoleForm.jobPositionCode.trim()}
+                        title="Stage role immediately so Org Admin can assign employees to this role and levels before publication"
+                        onClick={handlePromptEditSaveAsStaged}
+                      >
+                        Save as Staged
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
                         disabled={!editRoleForm.title.trim() || !editRoleForm.jobPositionCode.trim()}
                         onClick={() => handleSaveEditRole('draft')}
                       >
@@ -4559,6 +4787,41 @@ export function TargetRolesPage() {
                           : selectedRole.rejectionReason
                             ? 'Save & Re-send to Expert'
                             : 'Save & Send to Expert'}
+                      </Button>
+                    </div>
+                  </>
+                ) : isStagedRole ? (
+                  <>
+                    <div />
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setIsSkillTargetsModalOpen(false)
+                          setSelectedRole(null)
+                        }}
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="border-2 border-indigo-600 bg-indigo-50 hover:bg-indigo-100 text-indigo-900 font-bold shadow-xs dark:bg-indigo-950 dark:text-indigo-100 dark:border-indigo-400"
+                        style={{ color: '#312e81', borderColor: '#4f46e5', backgroundColor: '#eef2ff' }}
+                        disabled={!editRoleForm.title.trim() || !editRoleForm.jobPositionCode.trim()}
+                        onClick={() => handleSaveEditRole('staged')}
+                      >
+                        Save Staged
+                      </Button>
+                      <Button
+                        variant="primary"
+                        size="sm"
+                        leftIcon={<Send className="h-4 w-4" />}
+                        disabled={!editRoleForm.title.trim() || !editRoleForm.jobPositionCode.trim() || !editRoleForm.assignedExpertId}
+                        onClick={() => handleSaveEditRole('sent')}
+                      >
+                        Save &amp; Send to Expert
                       </Button>
                     </div>
                   </>
@@ -4814,7 +5077,7 @@ export function TargetRolesPage() {
                   <DialogTitle className="text-lg font-bold text-foreground flex items-center gap-2 flex-wrap">
                     <span>Target Role Details: {viewingDetailsRole.title}</span>
                     <span className="font-mono text-xs px-2 py-0.5 rounded-md bg-muted text-muted-foreground border border-border font-semibold">
-                      {viewingDetailsRole.code} • v{viewingDetailsRole.version}
+                      {viewingDetailsRole.code} • v{formatRoleVersion(viewingDetailsRole.version)}
                     </span>
                   </DialogTitle>
                 </div>
@@ -4856,7 +5119,7 @@ export function TargetRolesPage() {
                     >
                       {viewEffStatus.toUpperCase()}
                     </Badge>
-                    {viewEffStatus === 'sent' && viewingDetailsRole.isStaffingEnabled && (
+                    {viewEffStatus === 'sent' && viewingDetailsRole.isStaffingEnabled && !managerVisibleRoles.some(r => r.code?.toUpperCase() === viewingDetailsRole.code?.toUpperCase() && (r.status === 'published' || (r.status as string) === 'ACTIVE') && r.id !== viewingDetailsRole.id) && (
                       <Badge
                         variant="outline"
                         className="bg-indigo-500/10 text-indigo-700 border-indigo-500/30 font-bold dark:text-indigo-400 text-xs"
@@ -4926,7 +5189,7 @@ export function TargetRolesPage() {
             </span>
           </div>
 
-          <div className="flex-1 overflow-y-auto [scrollbar-gutter:stable] pr-1.5 space-y-4 text-xs min-h-0 pt-2">
+          <div className={`flex-1 ${detailViewMode === 'readiness' ? 'flex flex-col overflow-hidden' : 'overflow-y-auto'} [scrollbar-gutter:stable] pr-1.5 space-y-4 text-xs min-h-0 pt-2`}>
             {/* Rejection / Feedback Notice */}
             {(() => {
               const viewEffStatus =
@@ -4939,7 +5202,7 @@ export function TargetRolesPage() {
 
               if (viewEffStatus === 'feedback') {
                 return (
-                  <div className="p-3.5 rounded-lg bg-amber-500/10 border border-amber-500/30 text-xs text-black flex items-start gap-2.5">
+                  <div className="p-3.5 rounded-lg bg-amber-500/10 border border-amber-500/30 text-xs text-black flex items-start gap-2.5 shrink-0">
                     <AlertTriangle className="h-5 w-5 shrink-0 mt-0.5 text-black" />
                     <div className="text-black">
                       <div className="font-bold text-black">
@@ -4955,7 +5218,7 @@ export function TargetRolesPage() {
 
               if (viewEffStatus === 'rejected') {
                 return (
-                  <div className="p-3.5 rounded-lg bg-destructive/10 border border-destructive/25 text-xs text-destructive flex items-start gap-2.5">
+                  <div className="p-3.5 rounded-lg bg-destructive/10 border border-destructive/25 text-xs text-destructive flex items-start gap-2.5 shrink-0">
                     <AlertTriangle className="h-5 w-5 shrink-0 mt-0.5 text-destructive" />
                     <div>
                       <div className="font-bold text-foreground">
@@ -5633,7 +5896,8 @@ export function TargetRolesPage() {
               {viewingDetailsRole.status !== 'published' &&
                 viewingDetailsRole.status !== 'unpublished' &&
                 viewingDetailsRole.status !== 'submitted' &&
-                viewingDetailsRole.status !== 'sent' && (
+                viewingDetailsRole.status !== 'sent' &&
+                viewingDetailsRole.status !== 'rejected' && (
                   <Button
                     variant="primary"
 
@@ -5688,7 +5952,7 @@ export function TargetRolesPage() {
                 <div className="text-[11px] text-muted-foreground flex items-center gap-2">
                   <span>{deletingRole.track || 'PROFESSIONAL'}</span>
                   <span>•</span>
-                  <span>v{deletingRole.version}</span>
+                  <span>v{formatRoleVersion(deletingRole.version)}</span>
                   <span>•</span>
                   <span>{deletingRole.skillTargets?.length || 0} Skills</span>
                   <span>•</span>
@@ -5761,7 +6025,7 @@ export function TargetRolesPage() {
               <div className="p-3 rounded-lg border border-border bg-muted/20 space-y-1">
                 <div className="font-semibold text-foreground flex items-center justify-between">
                   <span>{roleToUnpublish.title}</span>
-                  <span className="text-[11px] text-muted-foreground font-mono">v{roleToUnpublish.version}</span>
+                  <span className="text-[11px] text-muted-foreground font-mono">v{formatRoleVersion(roleToUnpublish.version)}</span>
                 </div>
                 <div className="text-[11px] text-muted-foreground flex items-center gap-2">
                   <span>{roleToUnpublish.jobPositionTitle || roleToUnpublish.jobPositionCode || 'Unassigned'}</span>
@@ -5840,7 +6104,7 @@ export function TargetRolesPage() {
                     {managerRejectingRole.code}
                   </span>
                   <Badge variant="outline" className="text-[10px] font-mono">
-                    v{managerRejectingRole.version}
+                    v{formatRoleVersion(managerRejectingRole.version)}
                   </Badge>
                 </div>
 

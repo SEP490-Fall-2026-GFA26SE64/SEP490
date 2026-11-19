@@ -21,6 +21,7 @@ import org.springframework.test.web.servlet.MockMvc;
 class OrganizationKnowledgeGraphControllerTest {
     @Autowired
     private MockMvc mvc;
+    @SuppressWarnings("removal")
     @MockBean
     private OrganizationKnowledgeGraphService graphs;
 

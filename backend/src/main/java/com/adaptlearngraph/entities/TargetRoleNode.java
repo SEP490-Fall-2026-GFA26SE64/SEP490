@@ -33,5 +33,17 @@ public record TargetRoleNode(
         @Property("competencyIds") List<String> competencyIds,
         @Property("rejectionReason") String rejectionReason,
         @Property("createdAt") @ConvertWith(converter = LenientGraphInstantConverter.class) Instant createdAt,
-        @Property("updatedAt") @ConvertWith(converter = LenientGraphInstantConverter.class) Instant updatedAt) {
+        @Property("updatedAt") @ConvertWith(converter = LenientGraphInstantConverter.class) Instant updatedAt,
+        @Property("isStaffingEnabled") Boolean isStaffingEnabled) {
+
+    public TargetRoleNode(
+            String id, String organizationId, String code, String baseCode, String name, String title,
+            String familyCode, String track, String assignedExpertId, String description, String scope,
+            List<String> responsibilities, String status, String version, String skillTargets,
+            String levelCompetencies, List<String> competencyIds, String rejectionReason,
+            Instant createdAt, Instant updatedAt) {
+        this(id, organizationId, code, baseCode, name, title, familyCode, track, assignedExpertId, description, scope,
+                responsibilities, status, version, skillTargets, levelCompetencies, competencyIds, rejectionReason,
+                createdAt, updatedAt, "STAGED".equalsIgnoreCase(status));
+    }
 }

@@ -151,7 +151,7 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
             roles.merge(matchedId, organizationId, graphCode, rawCode, targetRole.getName(), targetRole.getFamilyCode(),
                     targetRole.getTrack().name(), targetRole.getAssignedExpertId(), targetRole.getDescription(),
                     targetRole.getResponsibilities() != null ? targetRole.getResponsibilities() : List.of(),
-                    targetRole.getStatus().name(), version, targetRole.getSkillTargets(),
+                    targetRole.getStatus().name(), targetRole.isStaffingEnabled(), version, targetRole.getSkillTargets(),
                     targetRole.getLevelCompetencies(),
                     targetRole.getCompetencyIds() != null ? targetRole.getCompetencyIds() : List.of(),
                     targetRole.getCreatedAt().toString(), updatedAt, targetRole.getRejectionReason());
@@ -689,7 +689,8 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
         Instant createdAt = node.createdAt() != null ? node.createdAt() : BASELINE;
         Instant updatedAt = node.updatedAt() != null ? node.updatedAt() : createdAt;
 
-        String version = node.version() != null ? node.version() : "1.0";
+        String rawVersion = node.version() != null && !node.version().isBlank() ? node.version().trim() : "1.0";
+        String version = "1".equals(rawVersion) ? "1.0" : rawVersion;
         String rejectionReason = node.rejectionReason();
         String skillTargets = node.skillTargets() != null ? node.skillTargets().trim() : "";
 
@@ -755,6 +756,9 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
             }
         }
 
+        RoleStatus parsedStatus = RoleStatus.fromString(statusStr);
+        boolean isStaffingEnabled = RoleStatus.STAGED.equals(parsedStatus) || (Boolean.TRUE.equals(node.isStaffingEnabled()) && !RoleStatus.ACTIVE.equals(parsedStatus) && !RoleStatus.PUBLISHED.equals(parsedStatus) && !RoleStatus.REJECTED.equals(parsedStatus));
+
         return new TargetRole(
                 TargetRoleId.fromString(idStr),
                 orgId,
@@ -774,7 +778,8 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
                 levels,
                 levelCompetencies,
                 competencyIds,
-                levelDurations);
+                levelDurations,
+                isStaffingEnabled);
     }
 
     private Map<String, List<String>> parseLevelCompetenciesJson(String json) {

@@ -115,6 +115,56 @@ class TargetRoleServiceTest {
     }
 
     @Test
+    @DisplayName("REQ-023: Rejects deletion of staged or staffing-enabled target roles")
+    void rejectsDeletionOfStagedOrStaffingEnabledRoles() {
+        TargetRole stagedRole = new TargetRole(
+                TargetRoleId.generate(),
+                "org-1",
+                "ROLE_STAGED",
+                "Staged Role",
+                "FAM",
+                RoleTrack.PROFESSIONAL,
+                "Description",
+                RoleStatus.STAGED,
+                java.time.Instant.now(),
+                java.time.Instant.now());
+        repository.save(stagedRole);
+
+        IllegalArgumentException exStaged = assertThrows(
+                IllegalArgumentException.class,
+                () -> service.deleteTargetRole("org-1", stagedRole.getId()));
+        org.junit.jupiter.api.Assertions.assertTrue(exStaged.getMessage().contains("preserve workforce staffing integrity"));
+
+        TargetRole staffingEnabledSentRole = new TargetRole(
+                TargetRoleId.generate(),
+                "org-1",
+                "ROLE_SENT_STAGED",
+                "Sent Staged Role",
+                "FAM",
+                RoleTrack.PROFESSIONAL,
+                "expert-1",
+                "Description",
+                List.of(),
+                RoleStatus.SENT,
+                "1.0",
+                "[]",
+                java.time.Instant.now(),
+                java.time.Instant.now(),
+                null,
+                List.of("Senior", "Middle"),
+                "{}",
+                List.of(),
+                java.util.Map.of(),
+                true);
+        repository.save(staffingEnabledSentRole);
+
+        IllegalArgumentException exStaffing = assertThrows(
+                IllegalArgumentException.class,
+                () -> service.deleteTargetRole("org-1", staffingEnabledSentRole.getId()));
+        org.junit.jupiter.api.Assertions.assertTrue(exStaffing.getMessage().contains("preserve workforce staffing integrity"));
+    }
+
+    @Test
     @DisplayName("REQ-023-F03: Updates TargetRole attributes successfully")
     void updatesTargetRoleSuccessfully() {
         TargetRole created = service.createTargetRole(new CreateTargetRoleCommand(

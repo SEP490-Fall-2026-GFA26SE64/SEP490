@@ -247,19 +247,30 @@ function deduplicateTargetRoles(roles?: TargetRoleModel[]): TargetRoleModel[] {
   const byCodeAndVersion = new Map<string, TargetRoleModel>()
   for (const r of roles) {
     if (!r || !r.code) continue
+    // Exclude obsolete/ghost test roles
+    if (
+      r.title?.toLowerCase() === 'testing1' ||
+      r.code?.toUpperCase() === 'ROLE-07TM' ||
+      String(r.id || '').includes('testing1')
+    ) {
+      continue
+    }
     const codeKey = r.code.trim().toUpperCase()
     const isTempId = String(r.id || '').startsWith('role-')
     if (isTempId && hasRealBackendIdForCode.has(codeKey)) {
       continue
     }
-    const verKey = `${codeKey}::${String(r.version || '1.0').trim()}`
+    const rawVer = String(r.version || '1.0').trim()
+    const normVer = rawVer === '1' ? '1.0' : (rawVer || '1.0')
+    const normalizedRole = r.version !== normVer ? { ...r, version: normVer } : r
+    const verKey = `${codeKey}::${normVer}`
     const existing = byCodeAndVersion.get(verKey)
     if (!existing) {
-      byCodeAndVersion.set(verKey, r)
+      byCodeAndVersion.set(verKey, normalizedRole)
     } else {
       const existingIsTemp = String(existing.id || '').startsWith('role-')
       if (existingIsTemp && !isTempId) {
-        byCodeAndVersion.set(verKey, { ...existing, ...r, id: r.id })
+        byCodeAndVersion.set(verKey, { ...existing, ...normalizedRole, id: r.id })
       }
     }
   }
@@ -272,7 +283,8 @@ export function loadCompanies(): CompanyRecord[] {
     if (raw) {
       const parsed = JSON.parse(raw)
       if (Array.isArray(parsed) && parsed.length > 0) {
-        return (parsed as CompanyRecord[]).map((comp) => {
+        let hasChanges = false
+        const mapped = (parsed as CompanyRecord[]).map((comp) => {
           let users = comp.users || []
           const isTechnova = comp.id === 'comp-technova' || comp.id === SEED_COMPANY_TECHNOVA.id
           if (isTechnova) {
@@ -291,11 +303,15 @@ export function loadCompanies(): CompanyRecord[] {
             }
           }
           const normalizedId = isTechnova ? SEED_COMPANY_TECHNOVA.id : (comp.id || SEED_COMPANY_TECHNOVA.id)
+          const dedupedRoles = deduplicateTargetRoles(comp.targetRoles)
+          if ((comp.targetRoles || []).length !== dedupedRoles.length) {
+            hasChanges = true
+          }
           return {
             ...comp,
             id: normalizedId,
             users,
-            targetRoles: deduplicateTargetRoles(comp.targetRoles),
+            targetRoles: dedupedRoles,
             microSkills: Array.isArray(comp.microSkills) ? comp.microSkills : [],
             competencies: Array.isArray(comp.competencies) ? comp.competencies : [],
             blueprints: Array.isArray(comp.blueprints)
@@ -305,6 +321,12 @@ export function loadCompanies(): CompanyRecord[] {
               : [],
           }
         })
+        if (hasChanges) {
+          try {
+            localStorage.setItem(STORAGE_KEY_COMPANIES, JSON.stringify(mapped))
+          } catch {}
+        }
+        return mapped
       }
     }
   } catch (e) {

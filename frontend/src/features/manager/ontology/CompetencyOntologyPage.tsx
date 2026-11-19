@@ -9,14 +9,14 @@ import {
   Check,
   Edit3,
   Eye,
-  FileSpreadsheet,
-  Filter,
   GitBranch,
   Layers,
+  Loader2,
   Plus,
   Search,
   ShieldCheck,
   Trash2,
+  Upload,
 } from 'lucide-react'
 import { OntologyExcelImportModal } from './components/OntologyExcelImportModal'
 import * as React from 'react'
@@ -201,12 +201,13 @@ function OwnedCompetencyOntologyPage() {
 
   // State for active tab
   const [activeTab, setActiveTab] = React.useState('graph')
-  // Target Roles State for Explore Graph Authoring (only DRAFT or REJECTED)
+  const [isLoading, setIsLoading] = React.useState(true)
+  // Target Roles State for Explore Graph Authoring
   const [targetRoles, setTargetRoles] = React.useState<TargetRoleModel[]>(() => {
     const active = getActiveCompany()
     return (active?.targetRoles ?? []).filter((r) => {
-      const s = (r.status || '').toLowerCase()
-      return s === 'draft' || s === 'rejected' || s === 'reject'
+      if (r.title?.toLowerCase() === 'testing1' || r.code?.toUpperCase() === 'ROLE-07TM') return false
+      return true
     })
   })
 
@@ -354,6 +355,7 @@ function OwnedCompetencyOntologyPage() {
   const handleSync = React.useCallback(async () => {
       const active = getActiveCompany()
       const orgId = effectiveOrgId
+      setIsLoading(true)
 
       try {
         const [liveSkills, liveComps, livePrereqs, liveRolesRes, liveDepts, liveJobPositions, liveMembers] = await Promise.all([
@@ -463,48 +465,63 @@ function OwnedCompetencyOntologyPage() {
         if (liveRolesRes && liveRolesRes.ok) {
           const rolesData = await liveRolesRes.json()
           if (Array.isArray(rolesData)) {
-            const mappedRoles: TargetRoleModel[] = rolesData.map((r: any) => ({
-              id: String(r.id || ''),
-              stableId: String(r.code || ''),
-              code: String(r.code || ''),
-              title: String(r.name || ''),
-              familyCode: String(r.familyCode || ''),
-              track: r.track || 'PROFESSIONAL',
-              assignedExpertId: r.assignedExpertId ? String(r.assignedExpertId) : undefined,
-              description: String(r.description || ''),
-              responsibilities: Array.isArray(r.responsibilities) ? r.responsibilities : [],
-              version: String(r.version || '1.0'),
-              status: (String(r.status || '').toLowerCase() === 'draft' || String(r.status || '').toLowerCase() === 'sent'
-                ? 'draft'
-                : String(r.status || '').toLowerCase() === 'rejected'
-                  ? 'rejected'
-                  : String(r.status || '').toLowerCase() === 'submitted'
-                    ? 'submitted'
-                    : String(r.status || '').toLowerCase() === 'unpublished'
-                      ? 'unpublished'
-                      : 'published') as TargetRoleModel['status'],
-              rejectionReason: String(r.rejectionReason || ''),
-              levels: Array.isArray(r.levels) && r.levels.length > 0 ? r.levels : ['Senior', 'Middle', 'Junior'],
-              levelCompetencies: (r.levelCompetencies as Record<string, string[]>) || {},
-              competencyIds: Array.isArray(r.competencyIds) ? r.competencyIds : [],
-              skillTargets: Array.isArray(r.skillTargets) ? r.skillTargets : [],
-              activeEnrollments: 0,
-              updatedAt: String(r.updatedAt || new Date().toISOString()),
-            }))
+            const mappedRoles: TargetRoleModel[] = rolesData.map((r: any) => {
+              const rawStatus = String(r.status || '').toLowerCase()
+              const isStaffing = rawStatus === 'staged' || (Boolean(r.isStaffingEnabled) && rawStatus !== 'published' && rawStatus !== 'active' && rawStatus !== 'rejected')
+              const effStatus = isStaffing || rawStatus === 'staged'
+                ? 'staged'
+                : rawStatus === 'draft' || rawStatus === 'sent'
+                  ? 'draft'
+                  : rawStatus === 'rejected'
+                    ? 'rejected'
+                    : rawStatus === 'submitted'
+                      ? 'submitted'
+                      : rawStatus === 'unpublished'
+                        ? 'unpublished'
+                        : 'published'
 
-            const customRoles = active?.targetRoles || []
-            const mergedRoles = [...mappedRoles]
-            for (const custom of customRoles) {
-              const customKey = (custom.code || custom.id || '').toUpperCase()
-              if (!mergedRoles.some((r) => (r.code || r.id || '').toUpperCase() === customKey)) {
-                mergedRoles.unshift(custom)
+              return {
+                id: String(r.id || ''),
+                stableId: String(r.code || ''),
+                code: String(r.code || ''),
+                title: String(r.name || ''),
+                familyCode: String(r.familyCode || ''),
+                track: r.track || 'PROFESSIONAL',
+                assignedExpertId: r.assignedExpertId ? String(r.assignedExpertId) : undefined,
+                description: String(r.description || ''),
+                responsibilities: Array.isArray(r.responsibilities) ? r.responsibilities : [],
+                version: String(r.version || '1.0'),
+                status: effStatus as TargetRoleModel['status'],
+                isStaffingEnabled: isStaffing,
+                rejectionReason: String(r.rejectionReason || ''),
+                levels: Array.isArray(r.levels) && r.levels.length > 0 ? r.levels : ['Senior', 'Middle', 'Junior'],
+                levelCompetencies: (r.levelCompetencies as Record<string, string[]>) || {},
+                competencyIds: Array.isArray(r.competencyIds) ? r.competencyIds : [],
+                skillTargets: Array.isArray(r.skillTargets) ? r.skillTargets : [],
+                activeEnrollments: 0,
+                updatedAt: String(r.updatedAt || new Date().toISOString()),
               }
-            }
-            const filteredRoles = mergedRoles.filter((r) => {
-              const s = (r.status || '').toLowerCase()
-              return s === 'draft' || s === 'rejected' || s === 'reject'
             })
-            setTargetRoles(filteredRoles)
+
+            const authorableRoles = mappedRoles.filter((r) => {
+              if (r.title?.toLowerCase() === 'testing1' || r.code?.toUpperCase() === 'ROLE-07TM') return false
+              return true
+            })
+            setTargetRoles(authorableRoles)
+
+            // Purge ghost/stale mock roles from activeCompany so outdated testing items don't linger
+            updateActiveCompany((comp) => {
+              const currentCompRoles = comp.targetRoles || []
+              const backendIds = new Set(mappedRoles.map((m) => m.id))
+              const backendCodes = new Set(mappedRoles.map((m) => m.code.toUpperCase()))
+              const validCompRoles = currentCompRoles.filter(
+                (cr) =>
+                  cr.title?.toLowerCase() !== 'testing1' &&
+                  cr.code?.toUpperCase() !== 'ROLE-07TM' &&
+                  (backendIds.has(cr.id) || backendCodes.has(cr.code.toUpperCase())),
+              )
+              return { ...comp, targetRoles: validCompRoles.length > 0 ? validCompRoles : mappedRoles }
+            })
           }
         }
       } catch {
@@ -512,9 +529,11 @@ function OwnedCompetencyOntologyPage() {
         setCompetencies(active?.competencies ?? [])
         setPrerequisites([])
         setTargetRoles((active?.targetRoles ?? []).filter((r) => {
-          const s = (r.status || '').toLowerCase()
-          return s === 'draft' || s === 'rejected' || s === 'reject'
+          if (r.title?.toLowerCase() === 'testing1' || r.code?.toUpperCase() === 'ROLE-07TM') return false
+          return true
         }))
+      } finally {
+        setIsLoading(false)
       }
   }, [effectiveOrgId, accountId, session])
 
@@ -1357,14 +1376,14 @@ function OwnedCompetencyOntologyPage() {
                   <Button
                     variant="outline"
                     size="sm"
-                    leftIcon={<FileSpreadsheet className="h-4 w-4 text-primary" />}
+                    leftIcon={<Upload className="h-4 w-4" aria-hidden="true" />}
                     onClick={() => {
                       setExcelImportMode('micro-skill')
                       setIsExcelImportModalOpen(true)
                     }}
-                    className="font-semibold shadow-2xs"
+                    className="bg-secondary text-primary border border-primary/20 hover:bg-secondary/80 font-semibold shadow-2xs"
                   >
-                    Import Excel
+                    Import
                   </Button>
                   <Button
                     variant="primary"
@@ -1382,14 +1401,14 @@ function OwnedCompetencyOntologyPage() {
                   <Button
                     variant="outline"
                     size="sm"
-                    leftIcon={<FileSpreadsheet className="h-4 w-4 text-primary" />}
+                    leftIcon={<Upload className="h-4 w-4" aria-hidden="true" />}
                     onClick={() => {
                       setExcelImportMode('competency')
                       setIsExcelImportModalOpen(true)
                     }}
-                    className="font-semibold shadow-2xs"
+                    className="bg-secondary text-primary border border-primary/20 hover:bg-secondary/80 font-semibold shadow-2xs"
                   >
-                    Import Excel
+                    Import
                   </Button>
                   <Button
                     variant="primary"
@@ -1418,12 +1437,12 @@ function OwnedCompetencyOntologyPage() {
         />
 
         {/* Aggregate KPI StatCards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <StatCard
             variant="gradient"
             icon={<Layers className="h-4 w-4 text-primary" />}
             title="Micro-skills"
-            value={microSkills.length.toString()}
+            value={isLoading ? <Loader2 className="h-6 w-6 animate-spin text-primary" /> : microSkills.length.toString()}
             valueClassName="text-primary"
             description="Target learning objectives and skills"
           />
@@ -1432,7 +1451,7 @@ function OwnedCompetencyOntologyPage() {
             variant="gradient"
             icon={<BookOpen className="h-4 w-4 text-success" />}
             title="Competencies"
-            value={competencies.length.toString()}
+            value={isLoading ? <Loader2 className="h-6 w-6 animate-spin text-success" /> : competencies.length.toString()}
             valueClassName="text-success"
             description="Role & level competency mappings"
           />
@@ -1441,18 +1460,9 @@ function OwnedCompetencyOntologyPage() {
             variant="gradient"
             icon={<GitBranch className="h-4 w-4 text-warning" />}
             title="Skill Prerequisites"
-            value={prerequisites.length.toString()}
+            value={isLoading ? <Loader2 className="h-6 w-6 animate-spin text-warning" /> : prerequisites.length.toString()}
             valueClassName="text-warning"
             description="Foundational learning sequences"
-          />
-
-          <StatCard
-            variant="gradient"
-            icon={<Filter className="h-4 w-4 text-primary" />}
-            title="Mastery Levels"
-            value="3 Tiers"
-            valueClassName="text-primary"
-            description="Junior · Middle · Senior"
           />
         </div>
 
@@ -1876,6 +1886,7 @@ function OwnedCompetencyOntologyPage() {
               organizationId={effectiveOrgId}
               activeTab={activeTab}
               onRefreshData={handleSync}
+              isLoading={isLoading}
             />
           </TabsContent>
 
@@ -3595,6 +3606,7 @@ function OwnedCompetencyOntologyPage() {
         organizationId={effectiveOrgId}
         existingCompetencies={competencies}
         existingMicroSkills={microSkills}
+        existingPrerequisites={prerequisites}
         onImportSuccess={handleSync}
       />
     </WorkspaceLayout>

@@ -103,11 +103,11 @@ class CatalogMappingsTest {
         assertThat(response).isEqualTo(new TargetRoleResponse(roleId.toString(), "org-a", "ROLE_BACKEND",
                 "Backend Engineer", "BACKEND", "MANAGEMENT", "expert-1", "Builds services", List.of("Own APIs"), "SENT",
                 "2.0", List.of(Map.of("skillId", "s1", "targetMastery", 0.8)), CREATED, UPDATED, "Needs work",
-                List.of("Senior"), Map.of("Senior", List.of("cmp-1")), List.of("cmp-1")));
+                List.of("Senior"), Map.of("Senior", List.of("cmp-1")), List.of("cmp-1"), Map.of(), false));
         assertThat(Arrays.stream(TargetRoleResponse.class.getRecordComponents()).map(c -> c.getName()).toList())
                 .containsExactly("id", "organizationId", "code", "name", "familyCode", "track", "assignedExpertId",
                         "description", "responsibilities", "status", "version", "skillTargets", "createdAt", "updatedAt",
-                        "rejectionReason", "levels", "levelCompetencies", "competencyIds", "levelDurations");
+                        "rejectionReason", "levels", "levelCompetencies", "competencyIds", "levelDurations", "isStaffingEnabled");
         assertThat(json.writeValueAsString(response)).contains("\"organizationId\":\"org-a\"");
 
         var minimal = new TargetRole(new TargetRoleId(roleId), "org-a", "R2", "Role two", null, null, null, null, null,
