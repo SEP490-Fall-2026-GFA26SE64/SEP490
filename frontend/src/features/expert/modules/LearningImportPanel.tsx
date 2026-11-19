@@ -14,15 +14,11 @@ import { LinearStepper } from '../../../shared/components/ui/LinearStepper'
 import { LessonVideo } from '../../../shared/components/learning/LessonVideo'
 import { useTranslation } from '../../../shared/i18n/LanguageContext'
 import { useToast } from '../../../shared/hooks/useToast'
+import { moduleAuthoringMessage } from '../../../shared/api/moduleAuthoringMessages'
 
 export function LearningImportPanel({ onImported, showHeading = true, onBusyChange, embedded = false, onClose }: { onImported: () => void; showHeading?: boolean; onBusyChange?: (busy: boolean) => void; embedded?: boolean; onClose?: () => void }) {
  const { language } = useTranslation(); const vi = language === 'vi'; const copy = (en: string, vn: string) => vi ? vn : en
- const localizeMessage = (raw: string) => {
-  const parts = raw.split(' / ')
-  if (parts.length === 2) return vi ? parts[1].trim() : parts[0].trim()
-  if (vi && raw.trim() === 'This exact file was already imported') return 'File này đã được import trước đó'
-  return raw
- }
+ const localizeMessage = (raw: string) => moduleAuthoringMessage(raw, vi)
  const { toast } = useToast()
  const [importedModules, setImportedModules] = useState<ModuleDocument[] | null>(null)
  const [reviewModuleId, setReviewModuleId] = useState<string | null>(null)

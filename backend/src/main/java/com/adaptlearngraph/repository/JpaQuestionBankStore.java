@@ -159,9 +159,6 @@ public final class JpaQuestionBankStore implements Store {
                 mappings.bindScope(v.id,v.content.skillVersion());
             }
         }
-        for (var notice : bank.notices) {
-            banks.queueNotice(notice.id, bank.organization, notice.recipient, notice.title, notice.body, notice.createdAt);
-        }
     }
 
     private QuestionBank decode(String value) {

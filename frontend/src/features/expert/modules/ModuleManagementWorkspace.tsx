@@ -28,6 +28,7 @@ import { Heading } from '../../../shared/components/typography/Heading'
 import { WorkspaceLayout } from '../../../shared/layouts/WorkspaceLayout'
 import { useTranslation } from '../../../shared/i18n/LanguageContext'
 import { moduleRequest, type CatalogChoice, type ModuleActor, type ModuleCatalogItem, type ModuleCatalogPage, type ModuleContent, type ModuleDocument, type ModulePage, type ModuleRevision, type ModuleSave } from '../../../shared/api/moduleAuthoringApi'
+import { moduleAuthoringMessage } from '../../../shared/api/moduleAuthoringMessages'
 
 import { Eye } from 'lucide-react'
 import { Accordion,AccordionContent,AccordionItem,AccordionTrigger } from '../../../shared/components/ui/Accordion'
@@ -72,7 +73,9 @@ function OwnedModuleManagementWorkspace({ mode, managerShell = false }: { mode: 
   const [loading, setLoading] = useState(false)
   const [catalogReady, setCatalogReady] = useState(false)
   const [error, setError] = useState('')
-  const [notice, setNotice] = useState('')
+  const setNotice = (msg: string) => {
+    if (msg) toast({ description: msg, variant: 'success', duration: 3000 })
+  }
   const [page, setPage] = useState<ModulePage>({ items: [], total: 0, page: 1, pageSize: 10 })
   const [catalogPage, setCatalogPage] = useState<ModuleCatalogPage>({ items: [], total: 0, page: 1, pageSize: 10 })
   const [responsibilityDoc, setResponsibilityDoc] = useState<ModuleDocument | null>(null)
@@ -222,7 +225,7 @@ function OwnedModuleManagementWorkspace({ mode, managerShell = false }: { mode: 
 
   async function run(work: () => Promise<void>) {
     if (mutation.current) return
-    mutation.current = true; setBusy(true); setError(''); setNotice('')
+    mutation.current = true; setBusy(true); setError('')
     try { await work() } catch (failure) { setError(errorText(failure)) }
     finally { mutation.current = false; setBusy(false) }
   }
@@ -424,8 +427,7 @@ function OwnedModuleManagementWorkspace({ mode, managerShell = false }: { mode: 
         <Button variant="primary" size="sm" leftIcon={<Plus className="h-4 w-4" aria-hidden="true" />} disabled={busy || contentBusy || loading || !catalogReady} onClick={() => openEditor()} className="font-semibold shadow-2xs">{copy('Create module', 'Tạo module')}</Button>
       </div> : undefined}
     />
-    {error && <div role="alert" tabIndex={-1} data-module-error className="rounded-lg border border-destructive bg-card p-3 text-[length:var(--text-body-sm)] text-destructive">{error}{actor && <Button variant="outline" size="sm" className="ml-3" disabled={busy || contentBusy || loading} onClick={() => void load()}>{copy('Reload latest data', 'Tải dữ liệu mới nhất')}</Button>}</div>}
-    {notice && <p role="status" className="text-[length:var(--text-body-sm)] text-success">{notice}</p>}
+    {error && <div role="alert" tabIndex={-1} data-module-error className="rounded-lg border border-destructive/30 bg-destructive/5 px-3 py-2 text-[length:var(--text-body-sm)] text-destructive">{moduleAuthoringMessage(error, language === 'vi')}{actor && <Button variant="outline" size="sm" className="ml-3" disabled={busy || contentBusy || loading} onClick={() => void load()}>{copy('Reload latest data', 'Tải dữ liệu mới nhất')}</Button>}</div>}
     {!actor ? <Card><CardContent className="space-y-3 pt-6">
       {sessionLoading ? <PageLoader label={copy('Loading your session…', 'Đang tải phiên đăng nhập…')} /> : <>
         <p>{copy('Continue with your workspace account from the main login page.', 'Tiếp tục bằng tài khoản hệ thống tại trang đăng nhập chung.')}</p>
@@ -784,7 +786,7 @@ function OwnedModuleManagementWorkspace({ mode, managerShell = false }: { mode: 
         }
       }} onSubmit={event => { event.preventDefault(); void run(() => saveModule(false)) }}>
         <DialogBody className="space-y-4 px-0.5 py-2">
-        {error && <p role="alert" tabIndex={-1} className="text-destructive">{error}</p>}
+        {error && <div role="alert" tabIndex={-1} className="rounded-lg border border-destructive/30 bg-destructive/5 px-3 py-2 text-xs text-destructive">{moduleAuthoringMessage(error, language === 'vi')}</div>}
         {error && selected && <Button type="button" variant="outline" disabled={busy || contentBusy} onClick={() => void run(async () => { setConflict(await moduleRequest<ModuleDocument>(`/modules/${selected.id}`)) })}>{copy('Compare with latest revision', 'So sánh với phiên bản mới nhất')}</Button>}
         {conflict && <div className="space-y-3 rounded-lg border border-border bg-muted p-3">
           <p className="font-semibold">{copy('Latest saved revision', 'Phiên bản đã lưu mới nhất')}: {latest(conflict).number} · {latest(conflict).editedBy}</p>
@@ -975,7 +977,7 @@ function OwnedModuleManagementWorkspace({ mode, managerShell = false }: { mode: 
         <Accordion>{[...selected.revisions].reverse().filter(revision => revision.number !== latest(selected).number).map(revision => <AccordionItem key={revision.number} value={String(revision.number)}><AccordionTrigger>{copy('Revision', 'Phiên bản')} {revision.number} · {stateLabels[revision.state] ?? revision.state}</AccordionTrigger><AccordionContent><div className="space-y-4 pt-2"><p className="text-xs text-muted-foreground">{copy('Edited by', 'Người sửa')}: {person(revision.editedBy)} · {formatTime(revision.editedAt)}</p>{revision.feedback && <p className="rounded-md bg-muted/40 p-3 text-sm">{revision.feedback}</p>}<CatalogModuleDetails module={revision.payload} content={revision.payload.content} review={{ by: revision.decidedBy, at: revision.decidedAt }} embedded hasHistory={true} onClose={() => {}} staff={staff} /></div></AccordionContent></AccordionItem>)}</Accordion>          </div>}
         />
       </DialogBody>}
-      <DialogFooter><div className="flex flex-1 flex-wrap gap-2">{selected && controls(selected, false)}{selected && mode === 'approvals' && latest(selected).state === 'SUBMITTED' && page.items.some(d => d.id !== selected.id && latest(d).state === 'SUBMITTED') && <Button size="sm" variant="secondary" disabled={busy || contentBusy} onClick={() => void run(async () => { const next = page.items.find(d => d.id !== selected.id && latest(d).state === 'SUBMITTED'); await moduleRequest<ModuleDocument>(`/modules/${encodeURIComponent(selected.id)}/actions`, 'POST', { expectedVersion: selected.lockVersion, action: 'approve', feedback: null }); await load(); if (next) { setSelected(await moduleRequest<ModuleDocument>(`/modules/${next.id}`)) } else { setSelected(null) } const msg = copy('Approved and moved to next module.', 'Đã duyệt và chuyển sang module tiếp theo.'); setNotice(msg); toast({ description: msg, variant: 'success', duration: 2500 }) })}>{copy('Approve & next', 'Duyệt & module tiếp')}</Button>}</div><Button size="sm" variant="outline" onClick={() => setSelected(null)}>{copy('Close', 'Đóng')}</Button></DialogFooter>
+      <DialogFooter><div className="flex flex-1 flex-wrap gap-2">{selected && controls(selected, false)}{selected && mode === 'approvals' && latest(selected).state === 'SUBMITTED' && page.items.some(d => d.id !== selected.id && latest(d).state === 'SUBMITTED') && <Button size="sm" variant="secondary" disabled={busy || contentBusy} onClick={() => void run(async () => { const next = page.items.find(d => d.id !== selected.id && latest(d).state === 'SUBMITTED'); await moduleRequest<ModuleDocument>(`/modules/${encodeURIComponent(selected.id)}/actions`, 'POST', { expectedVersion: selected.lockVersion, action: 'approve', feedback: null }); await load(); if (next) { setSelected(await moduleRequest<ModuleDocument>(`/modules/${next.id}`)) } else { setSelected(null) } toast({ description: copy('Approved and moved to next module.', 'Đã duyệt và chuyển sang module tiếp theo.'), variant: 'success', duration: 2500 }) })}>{copy('Approve & next', 'Duyệt & module tiếp')}</Button>}</div><Button size="sm" variant="outline" onClick={() => setSelected(null)}>{copy('Close', 'Đóng')}</Button></DialogFooter>
     </Dialog>
 
     <Dialog open={batchApprovalOpen} onOpenChange={open => { if (!open && !busy) setBatchApprovalOpen(false) }} size="wide" className="max-w-3xl max-h-[90dvh]" ariaLabel={copy('Batch approve modules', 'Duyệt hàng loạt module')}>
@@ -1054,13 +1056,11 @@ function OwnedModuleManagementWorkspace({ mode, managerShell = false }: { mode: 
                   return { id: f.id, title: found ? latest(found).payload.title : f.id, message: f.message }
                 }))
                 const msg = copy(`Approved ${result.approved.length} module(s); ${result.failed.length} failed.`, `Đã duyệt ${result.approved.length} module; ${result.failed.length} module bị lỗi.`)
-                setNotice(msg)
                 toast({ description: msg, variant: 'destructive', duration: 4000 })
               } else {
                 setBatchApprovalOpen(false)
                 setBatchApprovalIds([])
                 const msg = copy(`Approved and published ${result.approved.length} modules.`, `Đã duyệt và xuất bản ${result.approved.length} module.`)
-                setNotice(msg)
                 toast({ description: msg, variant: 'success', duration: 3000 })
               }
             })}>{busy ? copy('Approving…', 'Đang duyệt…') : `${copy('Approve selected', 'Duyệt đã chọn')} (${selectedVisible.length})`}</Button>
@@ -1096,7 +1096,7 @@ function OwnedModuleManagementWorkspace({ mode, managerShell = false }: { mode: 
           </Field>
           {!experts.some(expert => expert.id !== (responsibilityDoc?.responsibleExpertId ?? responsibilityDoc?.createdBy)) && <p role="status" className="text-body-sm text-muted-foreground">{copy('No other active Expert is available in this organization.', 'Không có Expert đang hoạt động khác trong tổ chức.')}</p>}
           <p className="text-body-sm text-muted-foreground">{copy('Editing responsibility will move to the selected Expert. The creator, content and previous owners remain recorded.', 'Quyền chỉnh sửa chuyển sang Expert được chọn. Người tạo, nội dung và lịch sử người phụ trách được giữ nguyên.')}</p>
-          {error && <p role="alert" className="text-body-sm text-destructive">{error}</p>}
+          {error && <div role="alert" className="rounded-lg border border-destructive/30 bg-destructive/5 px-3 py-2 text-xs text-destructive">{moduleAuthoringMessage(error, language === 'vi')}</div>}
         </DialogBody>
         <DialogFooter><Button type="button" variant="outline" disabled={busy} onClick={() => setResponsibilityDoc(null)}>{copy('Cancel', 'Hủy')}</Button><Button type="submit" disabled={busy || !responsibilityTarget}>{copy('Confirm transfer', 'Xác nhận chuyển giao')}</Button></DialogFooter>
       </form>
@@ -1105,7 +1105,7 @@ function OwnedModuleManagementWorkspace({ mode, managerShell = false }: { mode: 
     <Dialog open={contentOpen} onOpenChange={open => { if (!busy) setContentOpen(open) }} className="max-w-3xl" ariaLabel={copy('Create content', 'Tạo nội dung')}>
       <DialogHeader><DialogTitle>{copy('Create a content version', 'Tạo phiên bản nội dung')}</DialogTitle></DialogHeader>
       <form className="space-y-4 overflow-y-auto px-1" onSubmit={event => { event.preventDefault(); void run(async () => { await moduleRequest('/contents/lessons', 'POST', contentForm); setContentOpen(false); await load(); setNotice(copy('Content saved. It will be reviewed with its module.', 'Đã lưu nội dung. Nội dung sẽ được duyệt cùng module.')) }) }}>
-        {error && <p role="alert" tabIndex={-1} className="text-destructive">{error}</p>}
+        {error && <div role="alert" tabIndex={-1} className="rounded-lg border border-destructive/30 bg-destructive/5 px-3 py-2 text-xs text-destructive">{moduleAuthoringMessage(error, language === 'vi')}</div>}
         <fieldset disabled={busy || contentBusy} className="space-y-4"><Field label={copy('Title', 'Tiêu đề')}><Input required maxLength={240} value={contentForm.title} onChange={e => setContentForm({ ...contentForm, title: e.target.value })} /></Field>
         <LearningLessonsEditor onBusyChange={setContentBusy} disabled={busy || contentBusy} lessons={contentForm.lessons} onChange={lessons => setContentForm({ ...contentForm, lessons })} /></fieldset>
         <DialogFooter><Button type="button" variant="outline" disabled={busy || contentBusy} onClick={() => setContentOpen(false)}>{copy('Cancel', 'Hủy')}</Button><Button disabled={busy || contentBusy} type="submit">{copy('Save content', 'Lưu nội dung')}</Button></DialogFooter>
@@ -1116,7 +1116,7 @@ function OwnedModuleManagementWorkspace({ mode, managerShell = false }: { mode: 
       <DialogHeader><DialogTitle>{confirm && actionLabels[confirm.action]}</DialogTitle></DialogHeader>
       <p className="break-words text-[length:var(--text-body-sm)]">{confirm && latest(confirm.doc).payload.title}</p>
       {confirm?.action === 'delete' && <p className="mt-3 text-[length:var(--text-body-sm)] text-destructive">{copy('This permanently removes the unreferenced draft.', 'Thao tác này xóa vĩnh viễn bản nháp chưa được sử dụng.')}</p>}
-      {error && <p role="alert" tabIndex={-1} className="mt-3 text-destructive">{error}</p>}
+      {error && <div role="alert" tabIndex={-1} className="mt-3 rounded-lg border border-destructive/30 bg-destructive/5 px-3 py-2 text-xs text-destructive">{moduleAuthoringMessage(error, language === 'vi')}</div>}
       <form className="mt-3 space-y-3" onSubmit={event => { event.preventDefault(); if (!confirm) return; void run(async () => {
         if (confirm.action === 'delete') await moduleRequest(`/modules/${confirm.doc.id}?expectedVersion=${confirm.doc.lockVersion}`, 'DELETE')
         else await moduleRequest(`/modules/${confirm.doc.id}/actions`, 'POST', { expectedVersion: confirm.doc.lockVersion, action: confirm.action, feedback })
