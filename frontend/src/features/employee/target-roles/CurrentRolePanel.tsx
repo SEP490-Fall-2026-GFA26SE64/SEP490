@@ -31,9 +31,9 @@ function OwnedCurrentRolePanel({ scope }: { scope: string }) {
   const jobPosition = params.get('jobPositionId') ?? ''
   const positionLabel = useQuery({ queryKey: ['jobPositionLabel', scope, jobPosition], queryFn: ({ signal }) => jobPositionLabel(jobPosition, signal), enabled: Boolean(jobPosition), retry: false })
   const roles = useQuery({ queryKey: ['currentRoleCatalog', scope, jobPosition], queryFn: ({ signal }) => currentRoles(signal, jobPosition), retry: false })
-  const view = useQuery({ queryKey: ['currentRoleFlow', scope], queryFn: ({ signal }) => readRoleFlow(signal), retry: false, staleTime: 15_000, refetchOnWindowFocus: false,
+  const view = useQuery({ queryKey: ['currentRoleFlow', scope], queryFn: ({ signal }) => readRoleFlow(signal), retry: false, staleTime: 0, refetchOnWindowFocus: true,
     // An administrator may activate the configuration while this selected target stays open.
-    refetchInterval: query => !query.state.error && query.state.data?.selection?.available && query.state.data.progress.state === 'BASELINE_UNAVAILABLE' ? 15_000 : false,
+    refetchInterval: query => !query.state.error && query.state.data?.selection?.available && (query.state.data.targetLocked || query.state.data.progress.state === 'BASELINE_UNAVAILABLE') ? 15_000 : false,
   })
   const [selected, setSelected] = useState<CurrentRole | null>(null)
   const [levelId, setLevelId] = useState('')
@@ -50,7 +50,7 @@ function OwnedCurrentRolePanel({ scope }: { scope: string }) {
   const visible = filtered.slice((currentPage - 1) * 12, currentPage * 12)
   const blocked = busy || Boolean(command)
   const assessmentActive = view.data?.progress.state === 'RESUME'
-  async function refresh() { await Promise.all([roles.refetch(), view.refetch()]) }
+  async function refresh() { await Promise.all([roles.refetch(), view.refetch(), queryClient.invalidateQueries({ queryKey: ['initialPathway', scope] })]) }
   function choose(role: CurrentRole, chosenLevel?: string) {
     if (lock.current || command || !view.data) return
     if (view.data.targetLocked === undefined) {
@@ -140,7 +140,7 @@ function OwnedCurrentRolePanel({ scope }: { scope: string }) {
       <tbody className="divide-y divide-border">{visible.map(role => {
       const active = Boolean(view.data?.selection?.available && view.data.selection.role.id === role.id)
       return <CurrentRoleCard key={role.id} role={role} active={active} layout="row"
-        disabled={blocked || assessmentActive || !view.data || view.isError}
+        disabled={blocked || assessmentActive || view.data?.targetLocked !== false || !view.data || view.isError}
         onDetails={() => setDetails({ role, selectedLevelId: active ? view.data?.selection?.levelId ?? undefined : undefined })} onChoose={() => choose(role)} />
     })}</tbody></table></div></div>}
     {filtered.length > 0 && <Card className="overflow-hidden"><Pagination currentPage={currentPage} totalPages={pageCount} totalItems={filtered.length} pageSize={12} disabled={blocked} onPageChange={setPage} itemLabel={t('upskillingUi.roles')}
@@ -178,7 +178,7 @@ function OwnedCurrentRolePanel({ scope }: { scope: string }) {
         <Button variant="outline" size="sm" disabled={blocked} onClick={() => setSelected(null)}>
           {tr('cancel')}
         </Button>
-        <Button variant="primary" size="sm" disabled={busy || (!levelId && (selected?.levels?.length ?? 0) > 0) || error?.code === 'TARGET_ROLE_LEVEL_LOCKED'} onClick={() => void confirm(command ?? undefined)}>
+        <Button variant="primary" size="sm" disabled={busy || view.data?.targetLocked !== false || (!levelId && (selected?.levels?.length ?? 0) > 0) || error?.code === 'TARGET_ROLE_LEVEL_LOCKED'} onClick={() => void confirm(command ?? undefined)}>
           {tr(command ? 'retry' : 'confirm')}
         </Button>
       </DialogFooter>

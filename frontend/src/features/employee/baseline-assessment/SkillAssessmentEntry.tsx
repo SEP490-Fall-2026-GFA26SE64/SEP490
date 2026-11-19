@@ -1,4 +1,5 @@
 import { SharedSkillAssessmentEntry } from './SharedSkillAssessmentEntry'
+import { RequirementLockNotice } from '../components/RequirementLockNotice'
 import { useContext, useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
@@ -21,14 +22,16 @@ export function AssessmentStatus({ state, partialLabel }: { state: AssessmentSta
     loading: ['Checking assessment…', 'Đang kiểm tra bài đánh giá…'], unavailable: ['Assessment status unavailable', 'Chưa tải được trạng thái đánh giá'],
     notStarted: ['Assessment not taken', 'Chưa làm bài đánh giá'], inProgress: ['Assessment in progress', 'Đang làm bài đánh giá'],
     failed: ['Assessment not passed', 'Bài đánh giá chưa đạt'], passed: ['Assessment passed', 'Bài đánh giá đạt'],
+    veto: ['Prerequisite veto · retake required', 'Veto từ nhóm tiên quyết · cần thi lại'],
     prerequisites: ['Main group passed · check prerequisite results', 'Nhóm chính đạt · xem kết quả tiền đề'],
   }
-  return <Badge variant={state === 'passed' ? 'success' : state === 'failed' ? 'destructive' : state === 'loading' || state === 'unavailable' ? 'outline' : 'warning'} className="whitespace-normal text-left">{state === 'prerequisites' && partialLabel ? partialLabel : labels[state][language === 'vi' ? 1 : 0]}</Badge>
+  return <Badge variant={state === 'passed' ? 'success' : state === 'failed' || state === 'veto' ? 'destructive' : state === 'loading' || state === 'unavailable' ? 'outline' : 'warning'} className="whitespace-normal text-left">{state === 'prerequisites' && partialLabel ? partialLabel : labels[state][language === 'vi' ? 1 : 0]}</Badge>
 }
 
 type SkillEntryProps = { pathway: RulePathway; step: RuleStep; option: RuleModuleOption; onLockChange?: (locked: boolean) => void; disabled?: boolean; compact?: boolean }
 export function SkillAssessmentEntry(props: SkillEntryProps) {
-  return <SharedSkillAssessmentEntry locator={{ moduleId: props.option.moduleId, moduleRevision: props.option.moduleRevision }} getNewTarget={async () => targetFor(props.pathway, props.step, props.option)} disabled={props.disabled || !props.option.completedAt} onLockChange={props.onLockChange} legacy={<LegacySkillAssessmentEntry {...props} />} />
+  const disabled = props.disabled || props.step.learningLocked || !props.option.completedAt
+  return <div className="space-y-2"><RequirementLockNotice pathway={props.pathway} step={props.step} /><SharedSkillAssessmentEntry locator={{ moduleId: props.option.moduleId, moduleRevision: props.option.moduleRevision }} getNewTarget={async () => targetFor(props.pathway, props.step, props.option)} disabled={disabled} onLockChange={props.onLockChange} legacy={<LegacySkillAssessmentEntry {...props} disabled={disabled} />} /></div>
 }
 
 /** History only reads persisted attempts; starting/resuming/retaking requires a deliberate click. */

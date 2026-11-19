@@ -41,20 +41,27 @@ export function LearningImportPanel({ onImported, showHeading = true, onBusyChan
  const commit = (submitAfterImport = false) => void run(async () => {
   if (!preview || preview.errors.length || preview.committed) return
   const imported = await moduleRequest<ModuleDocument[]>(`/imports/${preview.id}/commit`, 'POST', { confirmOwnedDuplicates: false })
-  let documents = imported
+  setPreview({ ...preview, committed: true })
+  const documents = [...imported]
+  const submissionErrors: string[] = []
   if (submitAfterImport) {
-    const submitted: ModuleDocument[] = []
-    for (const doc of imported) {
-      submitted.push(await moduleRequest<ModuleDocument>('/commands', 'POST', { id: doc.id, expectedVersion: doc.lockVersion, action: 'submit', feedback: null }))
+    for (let index = 0; index < imported.length; index++) {
+      const doc = imported[index]
+      try {
+        documents[index] = await moduleRequest<ModuleDocument>(`/modules/${encodeURIComponent(doc.id)}/actions`, 'POST', { expectedVersion: doc.lockVersion, action: 'submit', feedback: null })
+      } catch (e) {
+        submissionErrors.push(e instanceof Error ? e.message : copy('Submission could not be confirmed.', 'Chưa xác nhận được kết quả gửi duyệt.'))
+      }
     }
-    documents = submitted
   }
-  const message = submitAfterImport
+  const message = submissionErrors.length
+    ? copy(`Import completed. ${imported.length - submissionErrors.length}/${imported.length} submissions confirmed. Check the module list before retrying submission; do not import this batch again.`, `Đã import. Xác nhận gửi duyệt ${imported.length - submissionErrors.length}/${imported.length} module. Kiểm tra danh sách trước khi gửi duyệt lại; không import lại gói này.`) + ` ${submissionErrors[0]}`
+    : submitAfterImport
     ? copy('Imported and submitted for review.', 'Đã import và gửi duyệt module.')
     : copy('Imported. Submit the drafts for review.', 'Đã import. Các bản nháp cần được gửi duyệt.')
-  setImportedModules(documents); setPreview(null); setStep(0); setNotice(message); setFileInfo(null); toast({ description: message, variant: 'success', duration: 3000 }); onImported()
+  setImportedModules(documents); setPreview(null); setStep(0); setNotice(message); setFileInfo(null); toast({ description: message, variant: submissionErrors.length ? 'warning' : 'success', duration: submissionErrors.length ? 10000 : 3000 }); onImported()
  })
- if (importedModules !== null) return <ImportedModulesPreview modules={importedModules} onClose={onClose} />
+ if (importedModules !== null) return <ImportedModulesPreview modules={importedModules} notice={notice} onClose={onClose} />
  const reviewModule = step === 1 ? preview?.modules.find(row => row.moduleId === reviewModuleId) : undefined
  const Wrapper = embedded ? 'div' : Card
  return <Wrapper className={cn('flex min-h-0 flex-1 flex-col', !embedded && 'max-h-[85dvh] p-4')}>

@@ -31,6 +31,10 @@ public final class CurrentRoleKnowledgeCatalog implements Contexts {
     private ModuleAuthoringPort independentModules;
     private LearningContentPort independentLearning;
     private com.adaptlearngraph.services.SkillLearningService.Admission independentAdmission;
+    private java.util.function.Consumer<com.adaptlearngraph.entities.domain.SkillAssessmentScope> scopeGuard=scope->{};
+    public CurrentRoleKnowledgeCatalog scopeGuard(java.util.function.Consumer<com.adaptlearngraph.entities.domain.SkillAssessmentScope> guard) {
+        this.scopeGuard=Objects.requireNonNull(guard);return this;
+    }
     public CurrentRoleKnowledgeCatalog independent(ModuleAuthoringPort modules,LearningContentPort learning,com.adaptlearngraph.services.SkillLearningService.Admission admission) {
         this.independentModules=modules;this.independentLearning=learning;this.independentAdmission=admission;return this;
     }
@@ -48,6 +52,7 @@ public final class CurrentRoleKnowledgeCatalog implements Contexts {
                 && c.contentVersion().equals(p.contentVersion()) && p.knowledgeLevel().name().equals(c.knowledgeLevel()) && p.skillVersion().equals(c.skillVersion())).findFirst()
                 .orElseThrow(()->new Failure(409,"EXACT_LEARNING_COMPLETION_REQUIRED"));
             var main=definition(actor,skill,p.knowledgeLevel());if(!main.mode().equals("MODULE_ONLY"))throw new Failure(409,"PROVISION_CHANGED");
+            requireFoundations(actor,main);
             var definitions=new ArrayList<Definition>();var needs=new ArrayList<Need>();definitions.add(main);needs.add(new Need(main.requirement(),GroupRole.MAIN));
             prerequisiteClosure(actor,main,definitions,needs);
             var snapshot=new LinkedHashMap<String,Object>();snapshot.put("learningContext","INDEPENDENT_SKILL");snapshot.put("organizationId",actor.organizationId());snapshot.put("learnerId",actor.learnerId());
@@ -110,6 +115,7 @@ public final class CurrentRoleKnowledgeCatalog implements Contexts {
                     command.stepId(),command.moduleId(),command.moduleRevision()).orElseThrow(()->new Failure(409,"EXACT_LEARNING_COMPLETION_REQUIRED"));
             authorizeStep.accept(command.stepId());
             var main=definition(actor,completed.getSkillId(),KnowledgeLevel.valueOf(completed.getKnowledgeLevel()));
+            requireFoundations(actor,main);
             if(!"MODULE_ONLY".equals(main.mode()))throw new Failure(409,"PATHWAY_PROVISION_CHANGED");
             try {
                 var expected=json.readTree(completed.getRequirementSnapshot());
@@ -135,6 +141,31 @@ public final class CurrentRoleKnowledgeCatalog implements Contexts {
         try {
             var command=json.treeToValue(json.readTree(context.snapshot()).get("start"),Start.class);
             if(!resolve(actor,command).snapshot().equals(context.snapshot()))throw new Failure(409,"ASSESSMENT_CONTEXT_CHANGED");
+        }catch(java.io.IOException invalid){throw new Failure(503,"CONTEXT_INTEGRITY_FAILURE");}
+    }
+    private void requireFoundations(RoleBaselineFlow.Actor actor,Definition main) {
+        if(evidence.foundationsPending(actor.organizationId(),actor.learnerId(),main.requirement().skillId(),main.requirement().knowledgeLevel().name(),main.skillVersion()))
+            throw new Failure(423,"REQUIRED_SUPPLEMENT_NOT_READY");
+    }
+    @Override public String admissionIssue(RoleBaselineFlow.Actor actor,com.adaptlearngraph.entities.domain.SkillAssessmentScope scope) {
+        try {
+            scopeGuard.accept(scope);
+            if(evidence.foundationsPending(actor.organizationId(),actor.learnerId(),scope.skillId(),scope.knowledgeLevel().name(),scope.skillVersion()))return "REQUIRED_SUPPLEMENT_NOT_READY";
+            return null;
+        }catch(Failure denied){if(denied.status>=500)throw denied;return denied.code;}
+    }
+    @Override public void assertAccessible(RoleBaselineFlow.Actor actor,String frozenContext) {
+        try {
+            var context=json.readTree(frozenContext).path("context");
+            if(!"SKILL_ASSESSMENT".equals(context.path("purpose").asText()))return;
+            var start=json.treeToValue(context.path("start"),Start.class);
+            if(start.independent()) {
+                var doc=independentModules.lock(actor.organizationId().toString(),start.moduleId()).orElseThrow(()->new Failure(404,"MODULE_NOT_FOUND"));
+                var revision=doc.revisions().stream().filter(item->item.number()==start.moduleRevision()).findFirst().orElseThrow(()->new Failure(409,"LEARNING_PACKAGE_UNAVAILABLE"));
+                var reason=independentAdmission.reason(independentModules.actor(),doc,revision);if(reason!=null)throw new Failure(423,reason);
+            } else authorizeStep.accept(start.stepId());
+            var main=json.treeToValue(context.path("requirements").get(0),Definition.class);
+            requireFoundations(actor,main);
         }catch(java.io.IOException invalid){throw new Failure(503,"CONTEXT_INTEGRITY_FAILURE");}
     }
     private Definition definition(RoleBaselineFlow.Actor actor,String skill,KnowledgeLevel level) {
@@ -167,7 +198,20 @@ public final class CurrentRoleKnowledgeCatalog implements Contexts {
             throw new Failure(422,"INVALID_PROVISION_CONFIGURATION");return Set.copyOf(levels);
     }
     private void prerequisiteClosure(RoleBaselineFlow.Actor actor,Definition current,List<Definition> definitions,List<Need> needs) {
-        expand(actor,current,new HashSet<>(),new HashSet<>(),definitions,needs);
+        var visiting=new HashSet<String>();var visited=new HashSet<String>();
+        expand(actor,current,visiting,visited,definitions,needs);
+        // Lower levels apply to MAIN only; cross-Skill scopes follow their explicit graph configuration.
+        for(var lower:KnowledgeLevel.values())if(lower.ordinal()<current.requirement().knowledgeLevel().ordinal()) {
+            Definition foundation;
+            try{foundation=definition(actor,current.requirement().skillId(),lower);}
+            catch(Failure missing){if("PROVISION_NOT_CONFIGURED".equals(missing.code))continue;throw missing;}
+            if(!"MODULE_ONLY".equals(foundation.mode()))continue;
+            if(definitions.stream().noneMatch(d->d.requirement().key().equals(foundation.requirement().key()))) {
+                definitions.add(foundation);needs.add(new Need(foundation.requirement(),GroupRole.PREREQUISITE));
+                if(definitions.size()>maximum)throw new Failure(422,"GROUP_CAPACITY_EXCEEDED");
+            }
+            expand(actor,foundation,visiting,visited,definitions,needs);
+        }
     }
     private void expand(RoleBaselineFlow.Actor actor,Definition current,Set<String> visiting,Set<String> visited,List<Definition> definitions,List<Need> needs) {
         String key=current.requirement().key();if(!visiting.add(key))throw new Failure(422,"PREREQUISITE_CYCLE");

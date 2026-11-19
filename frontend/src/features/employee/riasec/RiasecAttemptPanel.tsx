@@ -90,7 +90,7 @@ export function RiasecAttemptPanel({ attempt, manifest, answers, index, locked, 
           {answers.has(item.id) && <Badge variant="secondary">{ui('answered')}</Badge>}
         </div></CardHeader>
         <CardContent className="space-y-4 p-5">
-          <div ref={headingRef} tabIndex={-1}><Heading level={3} size="card" className="whitespace-pre-wrap break-words">{item.text[language]}</Heading></div>
+          <div ref={headingRef} tabIndex={-1} style={{ outline: 'none' }}><Heading level={3} size="card" className="whitespace-pre-wrap break-words">{item.text[language]}</Heading></div>
           <RadioGroup value={answers.has(item.id) ? String(answers.get(item.id)) : undefined} onChange={value => onRate(Number(value))}
             disabled={locked} aria-label={item.text[language]} className={saving ? '[&_input:disabled]:opacity-100' : undefined}>
             {manifest.responses.map((response, responseIndex) => <label key={response.code} htmlFor={`riasec-${attempt.attemptId}-${item.id}-${response.code}`}

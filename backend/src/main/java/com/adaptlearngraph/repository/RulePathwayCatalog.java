@@ -10,7 +10,8 @@ import java.util.*;
 
 /** Bounded current owned catalog plus the original published module document; no seed, percentage or shared-node fallback. */
 public final class RulePathwayCatalog {
-    public record Certificate(String id,String version,String name,String referenceUrl,List<String> outcomeCodes) {
+    public record Certificate(String id,String version,String name,String referenceUrl,List<String> outcomeCodes,@com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_EMPTY) String description) {
+        public Certificate(String id,String version,String name,String referenceUrl,List<String> outcomeCodes){this(id,version,name,referenceUrl,outcomeCodes,null);}
         public Certificate { referenceUrl=HttpsReference.require(referenceUrl);outcomeCodes=List.copyOf(outcomeCodes); }
     }
     public record Related(String skillId,KnowledgeLevel knowledgeLevel,Option module) {}
@@ -166,7 +167,7 @@ public final class RulePathwayCatalog {
             if(requirement.get().provision()!=Provision.CERTIFICATE_ONLY) {if(strictKeys.contains(key))throw new Failure(422,"PROVISION_MODE_CONFLICT");continue;}
             var outcomes=List.<String>of();
             if(!Objects.equals(text(source,"skillVersion"),requirement.get().skillVersion()))continue;
-            try{result.put(key,new Certificate(source.get("id").asString(),source.get("version").asString(),source.get("name").asString(),source.get("referenceUrl").asString(),outcomes));}
+            try{result.put(key,new Certificate(source.get("id").asString(),source.get("version").asString(),source.get("name").asString(),source.get("referenceUrl").asString(),outcomes,source.get("description").asString(null)));}
             catch(IllegalArgumentException invalid){if(strictKeys.contains(key))throw new Failure(422,"CERTIFICATE_DEFINITION_INVALID");}
         }
         return Collections.unmodifiableMap(result);

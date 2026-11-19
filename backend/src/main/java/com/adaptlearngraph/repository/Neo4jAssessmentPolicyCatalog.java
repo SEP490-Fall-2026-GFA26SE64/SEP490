@@ -159,6 +159,9 @@ public final class Neo4jAssessmentPolicyCatalog implements AssessmentPolicyCatal
                 if(provision(skill,level)!=SkillProvisionMode.MODULE_ONLY)continue;
                 String knowledge=level.name();var groups=new LinkedHashMap<String,GroupSpec>();var problems=new TreeSet<String>();
                 expand(skill.id(),level,skills,prerequisites,invalidPrerequisites,groups,new HashSet<>(),new HashSet<>(),problems);
+                // MAIN's configured lower levels are knowledge scopes, never graph self-edges.
+                for(var lower:KnowledgeLevel.values())if(lower.ordinal()<level.ordinal() && provision(skill,lower)==SkillProvisionMode.MODULE_ONLY)
+                    expand(skill.id(),lower,skills,prerequisites,invalidPrerequisites,groups,new HashSet<>(),new HashSet<>(),problems);
                 result.add(scope(purpose,skill.id(),skill.name(),knowledge,knowledge,level.ordinal(),skill.version(),groups,problems));
                 if(result.size()>10000)throw capacity();
             }

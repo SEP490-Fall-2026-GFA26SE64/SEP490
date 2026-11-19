@@ -59,7 +59,7 @@ public final class RuleBaselineProgress implements Baseline {
         }
         if(context.groups().isEmpty())return new Progress("BASELINE_NOT_REQUIRED",0,0,null,null);
         var policy=policies.active(actor.organizationId(),Purpose.BASELINE.name(),
-                com.adaptlearngraph.entities.domain.AssessmentPolicyScope.key(Purpose.BASELINE,role.id(),selection.levelId()));
+                com.adaptlearngraph.entities.domain.AssessmentPolicyScope.roleKey(role.id()));
         if(policy.isEmpty())return new Progress("BASELINE_UNAVAILABLE",context.groups().size(),0,null,null);
         try {
             var configuration=json.readValue(policy.get().getConfiguration(),Policy.class);

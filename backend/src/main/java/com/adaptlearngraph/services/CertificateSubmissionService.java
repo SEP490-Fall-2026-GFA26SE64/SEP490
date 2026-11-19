@@ -42,11 +42,11 @@ public final class CertificateSubmissionService {
         if(!Objects.equals(row.getCurrentRevision(),expected.revision()) || !expected.contentHash().equals(row.getContentHash()))throw new Failure(409,"STALE_PATHWAY_REVISION");
         var step=revisions.read(row).steps().stream().filter(item->item.id().equals(expected.stepId()) && item.requirement().provision()==Provision.CERTIFICATE_ONLY)
                 .findFirst().orElseThrow(()->new Failure(404,"CERTIFICATE_REQUIREMENT_NOT_FOUND"));
-        access.requireAccepted(row,step);
+        access.requireReady(row,step);
         if(step.state()==State.FULFILLED || !rules.official(actor.organizationId(),actor.accountId(),revisions.encode(List.of(step.requirement()))).isEmpty())throw new Failure(409,"REQUIREMENT_ALREADY_ACHIEVED");
         var input=admission.decode(row).input();var current=catalog.providers(owner(actor),input.roleSnapshot(),input.binding().levelId(),List.of(step.requirement()),Set.of(step.requirement().key()));
         var certificate=current.certificates().get(step.requirement().key());
-        if(certificate==null || step.certificate()==null || !step.certificate().equals(new CertificateReference(certificate.id(),certificate.version(),certificate.name(),certificate.referenceUrl())))
+        if(certificate==null || step.certificate()==null || !step.certificate().sameDefinition(new CertificateReference(certificate.id(),certificate.version(),certificate.name(),certificate.referenceUrl(),certificate.description())))
             throw new Failure(409,"CERTIFICATE_PROVISION_CHANGED");
         return new Context(row,step);
     }

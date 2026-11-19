@@ -66,7 +66,7 @@ public final class RequirementPathwayAdmissionService {
             var plan=bound.map(revisions::read);
             var target=input.target().stream().map(requirement->requirement.provision()!=Provision.UNCONFIGURED?requirement:
                     plan.stream().flatMap(value->value.steps().stream()).map(Step::requirement)
-                            .filter(value->value.key().equals(requirement.key())).findFirst().orElse(requirement)).toList();
+                            .filter(value->value.key().equals(requirement.key()) && value.provision()!=Provision.UNCONFIGURED).findFirst().orElse(requirement)).toList();
             var achieved=new TreeSet<String>();
             rules.official(actor.organizationId(),actor.accountId(),revisions.encode(target)).forEach(row->{
                 var proof=read(row.getRequirementSnapshot(),Requirement.class);
@@ -78,7 +78,16 @@ public final class RequirementPathwayAdmissionService {
     }
     public Preview preview(String roleId,String levelId) {
         var actor=employee();return selections.transaction(owner(actor),()->{
-            reauthorize(actor);var prepared=prepare(actor,roleId,levelId);var open=current(actor);
+            reauthorize(actor);var selected=selection(actor,roleId,levelId);var open=current(actor);
+            if(open.isPresent()) {
+                var row=open.get();
+                if(!row.getSelectionId().equals(selected.selectionId()) || row.getSelectionRevision()!=selected.revision())throw new Failure(409,"TARGET_PATHWAY_BOUND");
+                var plan=revisions.read(row);
+                return new Preview(selected.selectionId(),selected.revision(),roleId,levelId,row.getPlanningInputHash(),false,
+                        plan.steps().stream().filter(Step::blocking).map(Step::requirement).toList(),
+                        (int)plan.steps().stream().filter(step->step.kind()==Kind.PARALLEL_SUPPLEMENT).count(),row.getRequestId());
+            }
+            var prepared=prepare(actor,roleId,levelId);
             return new Preview(prepared.selection().selectionId(),prepared.selection().revision(),roleId,levelId,prepared.hash(),prepared.baselineRequired(),
                     prepared.input().required(),prepared.input().parallel().size(),open.map(RequirementPathwayJpaRepository.Row::getRequestId).orElse(null));
         });
@@ -149,7 +158,7 @@ public final class RequirementPathwayAdmissionService {
         var selection=selection(actor,roleId,levelId);
         var role=roles.roles(actor.organizationId()).stream().filter(item->item.id().equals(roleId)).findFirst().orElseThrow(()->new Failure(404,"ROLE_NOT_AVAILABLE"));
         var level=role.levels().stream().filter(item->item.id().equals(levelId)).findFirst().orElseThrow(()->new Failure(409,"LEVEL_REQUIRED"));
-        var carried=rules.carried(actor.organizationId(),actor.accountId(),selection.selectionId());
+        var carried=rules.carried(actor.organizationId(),actor.accountId());
         if(carried.size()>1000)throw new Failure(422,"PARALLEL_REQUIREMENT_CAPACITY");
         var parallel=new ArrayList<>(carried.stream().map(row->new Carried(row.getBypassId(),read(row.getRequirementSnapshot(),Requirement.class),row.getReason())).toList());
         var discovered=rules.parallelNeeds(actor.organizationId(),actor.accountId());

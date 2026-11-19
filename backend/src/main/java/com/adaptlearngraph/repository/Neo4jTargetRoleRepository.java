@@ -455,6 +455,11 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
 
         // Merge current REQUIRES_SKILL edges distinguishing per-level assignments when skills are provided
         if (!processedSkills.isEmpty()) {
+            // A routine Role save must not erase publication provenance of unchanged requirements.
+            var retainedRequirements = client.query("""
+                    MATCH (r:TargetRole {id:$roleId,organizationId:$organizationId})-[:HAS_LEVEL]->(l:Level)-[q:REQUIRES_SKILL]->(s:MicroSkill)
+                    RETURN l.id AS levelId,s.id AS skillId,properties(q) AS properties
+                    """).bind(roleId).to("roleId").bind(organizationId).to("organizationId").fetch().all();
             roles.deleteRequiredSkills(roleId, organizationId);
             client.query("""
                     MATCH (r:TargetRole {id: $roleId})-[:HAS_LEVEL]->(l:Level)-[req:REQUIRES_SKILL]->()
@@ -480,10 +485,14 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
                            OR toLower(s.id) = toLower(item.skillId))
                     WITH DISTINCT l, s, item
                     MERGE (l)-[req:REQUIRES_SKILL]->(s)
-                    ON CREATE SET req.createdAt = datetime($updatedAt),
+                    ON CREATE SET req += coalesce(head([old IN $retainedRequirements
+                        WHERE old.levelId=l.id AND old.skillId=s.id
+                          AND old.properties.requiredKnowledgeLevels=item.requiredKnowledgeLevels | old.properties]), {}),
+                                  req.createdAt = datetime($updatedAt),
                                   req.id = l.id + '_REQ_' + s.id,
                                   req.version = coalesce(l.version, '0.12.0')
-                    SET req.id = coalesce(req.id, l.id + '_REQ_' + s.id),
+                    SET req.organizationId = $organizationId,
+                        req.id = coalesce(req.id, l.id + '_REQ_' + s.id),
                         req.version = coalesce(req.version, l.version, '0.12.0'),
                         req.requiredKnowledgeLevels = item.requiredKnowledgeLevels,
                         req.isMandatory = coalesce(req.isMandatory, true),
@@ -494,6 +503,7 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
                     .bind(roleId).to("roleId")
                     .bind(organizationId).to("organizationId")
                     .bind(processedSkills).to("skills")
+                    .bind(retainedRequirements).to("retainedRequirements")
                     .bind(updatedAt.toString()).to("updatedAt")
                     .run();
 

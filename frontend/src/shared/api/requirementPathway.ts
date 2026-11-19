@@ -5,8 +5,8 @@ export interface PathwayTiming { state: string; durationMonths: number | null; s
 function timing(value: unknown): PathwayTiming { const v = object(value); return { state: oneOf(v.state, ['NOT_STARTED', 'LEGACY_UNTIMED', 'IN_PROGRESS', 'OVERDUE', 'COMPLETED'] as const), durationMonths: nullable(v.durationMonths, count), startedAt: nullable(v.startedAt, timestamp), deadlineAt: nullable(v.deadlineAt, timestamp), completedAt: nullable(v.completedAt, timestamp), onTime: nullable(v.onTime, bool), observedAt: timestamp(v.observedAt) } }
 export interface RuleRequirement { skillId: string; skillName: string; knowledgeLevel: KnowledgeLevel; skillVersion: string | null; outcomeCodes: string[]; provision: 'MODULE_ONLY' | 'CERTIFICATE_ONLY' | 'UNCONFIGURED' }
 export interface RuleModuleOption { moduleId: string; moduleRevision: number; contentVersion: string; title: string; startedAt: string | null; completedAt: string | null }
-export interface RuleCertificate { id: string; version: string; name: string; referenceUrl: string }
-export interface RuleStep { id: string; requirement: RuleRequirement; kind: 'REQUIRED' | 'PARALLEL_SUPPLEMENT'; state: 'NEEDS_SUPPLEMENTATION' | 'NEEDS_EXPERT_ACTION' | 'IN_PROGRESS' | 'FULFILLED' | 'BYPASSED'; reason: string; fulfilledEvidenceId: string | null; options: RuleModuleOption[]; certificate: RuleCertificate | null; learningLocked: boolean }
+export interface RuleCertificate { id: string; version: string; name: string; referenceUrl: string; description?: string }
+export interface RuleStep { id: string; requirement: RuleRequirement; kind: 'REQUIRED' | 'PARALLEL_SUPPLEMENT'; state: 'NEEDS_SUPPLEMENTATION' | 'NEEDS_EXPERT_ACTION' | 'IN_PROGRESS' | 'FULFILLED' | 'BYPASSED'; reason: string; fulfilledEvidenceId: string | null; options: RuleModuleOption[]; certificate: RuleCertificate | null; learningLocked: boolean; sourceBypassId?: string | null; bypassOrigin?: { requestId: string; roleName: string; levelName: string } | null }
 export interface RuleDependency { prerequisiteStepId: string; dependentStepId: string; attemptId: string; groupId: string }
 export interface RulePathway { requestId: string; selectionId: string; selectionRevision: number; roleId: string; roleName: string; levelId: string; levelName: string; generationStatus: string; reviewStatus: string; reasonCode: string | null; revision: number | null; contentHash: string | null; archived: boolean; targetReleased: boolean; steps: RuleStep[]; dependencies: RuleDependency[]; timing?: PathwayTiming | null }
 export interface RulePreview { selectionId: string; selectionRevision: number; roleId: string; levelId: string; inputHash: string; baselineRequired: boolean; required: RuleRequirement[]; parallelCount: number; currentRequestId: string | null }
@@ -30,15 +30,16 @@ function requirement(v: unknown): RuleRequirement {
   if (provision !== 'UNCONFIGURED' && (!skillVersion)) throw Error()
   return { skillId: text(r.skillId), skillName: text(r.skillName), knowledgeLevel: oneOf(r.knowledgeLevel, ['FOUNDATION', 'INTERMEDIATE', 'ADVANCED'] as const), skillVersion, outcomeCodes, provision }
 }
-function certificate(v: unknown): RuleCertificate { const c = object(v), url = new URL(text(c.referenceUrl)); if (url.protocol !== 'https:' || url.username || url.password) throw Error(); return { id: text(c.id), version: text(c.version), name: text(c.name), referenceUrl: url.href } }
+function certificate(v: unknown): RuleCertificate { const c = object(v), url = new URL(text(c.referenceUrl)); if (url.protocol !== 'https:' || url.username || url.password) throw Error(); return { id: text(c.id), version: text(c.version), name: text(c.name), referenceUrl: url.href, description: c.description == null ? '' : typeof c.description === 'string' && c.description.length <= 6000 ? c.description : (() => { throw Error() })() } }
 export const parseRuleRequirement = requirement
 export const parseRuleCertificate = certificate
 export const parseRulePathway = (v: unknown) => pathway(v)
 function step(v: unknown, review = false): RuleStep {
   const s = object(v)
+  const origin = s.bypassOrigin == null ? null : object(s.bypassOrigin)
   return { id: text(s.id), requirement: requirement(s.requirement), kind: oneOf(s.kind, ['REQUIRED', 'PARALLEL_SUPPLEMENT'] as const), state: oneOf(s.state, ['NEEDS_SUPPLEMENTATION', 'NEEDS_EXPERT_ACTION', 'IN_PROGRESS', 'FULFILLED', 'BYPASSED'] as const), reason: text(s.reason), fulfilledEvidenceId: nullable(s.fulfilledEvidenceId, text),
     options: list(s.options, v => { const o = object(v), revision = count(o.moduleRevision); if (!revision) throw Error(); return { moduleId: text(o.moduleId), moduleRevision: revision, contentVersion: text(o.contentVersion), title: text(o.title), startedAt: nullable(o.startedAt ?? null, timestamp), completedAt: nullable(o.completedAt ?? null, timestamp) } }),
-    certificate: nullable(s.certificate, certificate), learningLocked: review || bool(s.learningLocked) }
+    certificate: nullable(s.certificate, certificate), learningLocked: review || bool(s.learningLocked), sourceBypassId: nullable(s.sourceBypassId ?? null, text), bypassOrigin: origin ? { requestId: text(origin.requestId), roleName: text(origin.roleName), levelName: text(origin.levelName) } : null }
 }
 function dependency(v: unknown): RuleDependency { const d = object(v); return { prerequisiteStepId: text(d.prerequisiteStepId), dependentStepId: text(d.dependentStepId), attemptId: text(d.attemptId), groupId: text(d.groupId) } }
 function pathway(v: unknown): RulePathway | null {
@@ -48,6 +49,11 @@ function pathway(v: unknown): RulePathway | null {
 }
 // Spring's Optional.empty current view is HTTP200 with no body. Only this nullable read permits it.
 export const readRulePathway = (id?: string | null, signal?: AbortSignal) => request(id ? 'employee/pathways/' + encodeURIComponent(id) : 'employee/pathway', pathway, { signal }, !id)
+export interface BypassedGap { bypassId: string; sourceRequestId: string; roleName: string; levelName: string; requirement: RuleRequirement; reason: string; expertId: string; decidedAt: string; achieved: boolean; options: { moduleId: string; moduleRevision: number; title: string }[]; certificate: RuleCertificate | null }
+export const readBypassedGaps = (signal?: AbortSignal) => request('employee/bypassed-gaps', value => list(value, item => {
+  const gap = object(item)
+  return { bypassId: text(gap.bypassId), sourceRequestId: text(gap.sourceRequestId), roleName: text(gap.roleName), levelName: text(gap.levelName), requirement: requirement(gap.requirement), reason: text(gap.reason), expertId: text(gap.expertId), decidedAt: timestamp(gap.decidedAt), achieved: bool(gap.achieved), options: list(gap.options, item => { const option = object(item); return { moduleId: text(option.moduleId), moduleRevision: count(option.moduleRevision), title: text(option.title) } }), certificate: nullable(gap.certificate, certificate) } satisfies BypassedGap
+}), { signal })
 export const readRulePreview = (roleId: string, levelId: string, signal?: AbortSignal) => request('employee/role-gaps?roleId=' + encodeURIComponent(roleId) + '&levelId=' + encodeURIComponent(levelId), v => { const p = object(v); return { selectionId: text(p.selectionId), selectionRevision: count(p.selectionRevision), roleId: text(p.roleId), levelId: text(p.levelId), inputHash: text(p.inputHash), baselineRequired: bool(p.baselineRequired), required: list(p.required, requirement), parallelCount: count(p.parallelCount), currentRequestId: nullable(p.currentRequestId, text) } satisfies RulePreview }, { signal })
 export const ruleConfirmation = (p: RulePreview): PendingPathwayCommand => ({ path: 'employee/initial-pathway-requests', key: crypto.randomUUID(), body: JSON.stringify({ roleId: p.roleId, levelId: p.levelId, expectedSelectionId: p.selectionId, expectedSelectionRevision: p.selectionRevision, expectedInputHash: p.inputHash }) })
 function summary(v: unknown): RuleReviewSummary { const s = object(v); return { requestId: text(s.requestId), learnerId: text(s.learnerId), learnerName: text(s.learnerName), roleName: text(s.roleName), levelName: text(s.levelName), generationStatus: text(s.generationStatus), reviewStatus: text(s.reviewStatus), reasonCode: nullable(s.reasonCode, text), revision: nullable(s.revision, count), contentHash: nullable(s.contentHash, text) } }

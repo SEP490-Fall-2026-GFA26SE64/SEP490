@@ -18,6 +18,8 @@ public final class IndependentSkillAdmission implements SkillLearningService.Adm
         if(pathway==null)return "ACCESS_POLICY_UNAVAILABLE";
         if(pathway.containsModule(document.id()) && !pathway.permits(document.id(),revision.number()))return "PATHWAY_MODULE_LOCKED";
         var p=revision.payload();
+        if(p.teachings().size()==1)try{pathway.requireKnowledge(p.teachings().getFirst().skillId(),p.knowledgeLevel(),p.skillVersion());}
+        catch(com.adaptlearngraph.exception.InitialPathwayFailure denied){if(denied.status()>=500)throw denied;return denied.code();}
         if(document.archived() || p.teachings().size()!=1 || !"APPROVED".equals(p.metadata().reviewStatus()) || !"ACTIVE".equals(p.metadata().status()) || p.content().lessons().isEmpty()
             || p.content().lessons().stream().anyMatch(l->!l.complete()))return "MODULE_UNAVAILABLE";
         if(p.knowledgeLevel()==null)return "EXACT_KNOWLEDGE_CONFIGURATION_REQUIRED";

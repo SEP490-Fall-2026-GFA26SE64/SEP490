@@ -9,6 +9,35 @@ import org.springframework.data.repository.query.Param;
 /** Accepted evidence and real completed module choices; diagnostic scores are never official exemptions. */
 public interface RuleAssessmentContextJpaRepository extends Repository<RuleAssessmentAttemptEntity,UUID> {
     @Query(value="""
+            SELECT EXISTS (SELECT 1 FROM platform.rule_assessment_attempt a
+                JOIN platform.rule_assessment_group main ON main.attempt_id=a.id AND main.group_role='MAIN'
+                    AND main.organization_id=a.organization_id AND main.learner_id=a.learner_id
+                JOIN LATERAL jsonb_array_elements(a.context_snapshot->'context'->'requirements') definition
+                    ON definition->'requirement'->>'skillId'=main.skill_id AND definition->'requirement'->>'knowledgeLevel'=main.knowledge_level
+                WHERE a.organization_id=:org AND a.learner_id=:learner AND a.purpose='SKILL_ASSESSMENT'
+                    AND a.state='FINALIZED' AND a.processing_status='PENDING' AND main.skill_id=:skill AND definition->>'skillVersion'=:skillVersion)
+            """,nativeQuery=true)
+    boolean projectionPending(@Param("org") UUID org,@Param("learner") UUID learner,@Param("skill") String skill,@Param("skillVersion") String skillVersion);
+    /** Covers result-worker lag and all entry points sharing a Skill/level/version allowance. */
+    @Query(value="""
+            SELECT EXISTS (SELECT 1 FROM platform.rule_assessment_attempt a
+                JOIN platform.rule_assessment_group main ON main.attempt_id=a.id AND main.group_role='MAIN'
+                    AND main.organization_id=a.organization_id AND main.learner_id=a.learner_id
+                JOIN LATERAL jsonb_array_elements(a.context_snapshot->'context'->'requirements') main_definition
+                    ON main_definition->'requirement'->>'skillId'=main.skill_id AND main_definition->'requirement'->>'knowledgeLevel'=main.knowledge_level
+                JOIN platform.rule_assessment_group g ON g.attempt_id=a.id AND g.group_role='PREREQUISITE'
+                    AND g.organization_id=a.organization_id AND g.learner_id=a.learner_id
+                JOIN platform.rule_assessment_group_result score ON score.attempt_id=g.attempt_id AND score.group_id=g.group_id AND NOT score.passed
+                JOIN LATERAL jsonb_array_elements(a.context_snapshot->'context'->'requirements') definition
+                    ON definition->'requirement'->>'skillId'=g.skill_id AND definition->'requirement'->>'knowledgeLevel'=g.knowledge_level
+                WHERE a.organization_id=:org AND a.learner_id=:learner AND a.purpose='SKILL_ASSESSMENT' AND a.state='FINALIZED'
+                    AND main.skill_id=:skill AND main.knowledge_level=:level AND main_definition->>'skillVersion'=:skillVersion
+                    AND NOT EXISTS (SELECT 1 FROM platform.skill_knowledge_evidence e WHERE e.organization_id=a.organization_id AND e.learner_id=a.learner_id
+                        AND e.skill_id=g.skill_id AND e.knowledge_level=g.knowledge_level AND e.requirement_snapshot->>'skillVersion'=definition->>'skillVersion'))
+            """,nativeQuery=true)
+    boolean foundationsPending(@Param("org") UUID org,@Param("learner") UUID learner,@Param("skill") String skill,
+            @Param("level") String level,@Param("skillVersion") String skillVersion);
+    @Query(value="""
             SELECT e.id AS id,e.source_kind AS sourceKind,e.source_id AS sourceId,e.source_version AS sourceVersion,e.achieved_at AS achievedAt
             FROM platform.skill_knowledge_evidence e
             WHERE e.organization_id=:org AND e.learner_id=:learner AND e.skill_id=:skill AND e.knowledge_level=:level

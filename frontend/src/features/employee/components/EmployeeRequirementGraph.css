@@ -17,6 +17,7 @@
 .employee-graph-branch:nth-of-type(2n){left:-24px}
 .employee-graph-branch:nth-of-type(2n + 1){left:24px}
 .employee-graph-branch:last-child{margin-bottom:0}
+.employee-graph-branch.has-supplement-heading .employee-graph-requirement,.employee-graph-branch.has-supplement-heading .employee-graph-options{grid-row:2}
 .employee-graph-node{position:relative;width:100%;height:auto;min-width:0;min-height:4.5rem;padding:0.875rem;text-align:left;white-space:normal;font-size:var(--text-body-sm);line-height:1.5;overflow-wrap:anywhere;background:hsl(var(--card));transition:background-color 150ms ease,border-color 150ms ease,box-shadow 150ms ease}
 .employee-graph-node>span{display:block;min-width:0;width:100%;white-space:normal}
 .employee-graph-node .rounded-full{max-width:100%;white-space:normal;text-align:left}

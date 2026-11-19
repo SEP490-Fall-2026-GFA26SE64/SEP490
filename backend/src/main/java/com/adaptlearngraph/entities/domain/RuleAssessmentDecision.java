@@ -23,7 +23,8 @@ public final class RuleAssessmentDecision {
         var reviews=new ArrayList<GroupResult>();var supplements=new ArrayList<GroupResult>();
         for(var result:results)if(result.role()==GroupRole.PREREQUISITE && !result.passed()) {
             if(officialAtFinalization.contains(result.requirement().key()))reviews.add(result);
-            if(!officialNow.contains(result.requirement().key()))supplements.add(result);
+            // Later evidence unlocks a new paper; it cannot turn this failed paper into a pass.
+            if(!officialAtFinalization.contains(result.requirement().key()))supplements.add(result);
         }
         State state=!main.getFirst().passed()?State.MAIN_FAILED:
                 results.stream().anyMatch(GroupResult::vetoTriggered)?State.VETO_RETAKE_REQUIRED:

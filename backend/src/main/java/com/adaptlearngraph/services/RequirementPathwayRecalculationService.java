@@ -53,6 +53,24 @@ public final class RequirementPathwayRecalculationService {
                 if(parent.kind()==Kind.REQUIRED && dependencies.stream().noneMatch(edge->edge.prerequisiteStepId().equals(id) && edge.dependentStepId().equals(parent.id())))
                     dependencies.add(new Dependency(id,parent.id(),attempt.getId(),group.getGroupId()));
             }
+            // Contextual learning dependencies, not HAS_SKILL_PREREQUISITE self-edges:
+            // every failed cross-Skill prerequisite precedes the MAIN Skill's failed lower levels.
+            for(var target:List.copyOf(steps))if(target.kind()==Kind.REQUIRED) {
+                var foundations=steps.stream().filter(step->step.kind()==Kind.REQUIRED
+                        && step.requirement().skillId().equals(target.requirement().skillId())
+                        && step.requirement().knowledgeLevel().ordinal()<target.requirement().knowledgeLevel().ordinal()
+                        && step.assessedSources().stream().anyMatch(source->source.dependentStepId().equals(target.id()))).toList();
+                for(var foundation:foundations)for(var prerequisite:steps) {
+                    if(prerequisite.id().equals(foundation.id()) || prerequisite.kind()!=Kind.REQUIRED)continue;
+                    var source=prerequisite.assessedSources().stream().filter(item->item.dependentStepId().equals(target.id())).findFirst();
+                    if(source.isEmpty())continue;
+                    boolean otherSkill=!prerequisite.requirement().skillId().equals(target.requirement().skillId());
+                    boolean lower=prerequisite.requirement().skillId().equals(foundation.requirement().skillId())
+                            && prerequisite.requirement().knowledgeLevel().ordinal()<foundation.requirement().knowledgeLevel().ordinal();
+                    if((otherSkill || lower) && dependencies.stream().noneMatch(edge->edge.prerequisiteStepId().equals(prerequisite.id()) && edge.dependentStepId().equals(foundation.id())))
+                        dependencies.add(new Dependency(prerequisite.id(),foundation.id(),source.get().attemptId(),source.get().groupId()));
+                }
+            }
             // Retake passing B never removes a step or dependency discovered by an earlier actual failure.
             var next=planning.refresh(row,new Plan(steps,dependencies));
             if(!next.equals(original)) {

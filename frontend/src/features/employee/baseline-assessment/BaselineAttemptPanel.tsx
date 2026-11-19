@@ -111,7 +111,7 @@ export function BaselineAttemptPanel({ attempt, seconds, locked, busy = false, r
             <Button className="w-full" disabled={locked || expired} onClick={() => changeQuestion('submit')}>{tr('submit')}</Button></div>
         </CardContent></Card>
       <Card aria-busy={busy} className="min-w-0 lg:col-span-3"><CardHeader className="border-b border-border p-5"><div className="flex flex-wrap gap-2"><Badge variant="outline">{ui('question')} {item?.position ?? '—'}{item?.mandatory && <span aria-hidden="true" className="ml-1 font-bold">*</span>}</Badge>{changed ? <Badge variant="warning">{tr('unsavedChanges')}</Badge> : review && <Badge variant="secondary">{tr('savedAnswer')}</Badge>}</div></CardHeader>
-    <CardContent className="p-5"><div ref={questionRef} tabIndex={-1} className="space-y-4 focus-visible:outline-none">
+    <CardContent className="p-5"><div ref={questionRef} tabIndex={-1} className="space-y-4" style={{ outline: 'none' }}>
       {expired ? <p role="status">{tr('expired')}</p> : item ? <AssessmentQuestionContent mandatory={item.mandatory} mandatoryLabel={tr('mandatoryQuestion')} idPrefix="baseline" prompt={item.prompt} options={item.options} value={choice} onChange={setChoice} disabled={locked} answerLabel={tr('chooseAnswer')} /> : <p role="status">{tr('refreshNeeded')}</p>}
       {!expired && item && attempt.state === 'IN_PROGRESS' && <Text variant="caption">{tr(index === attempt.items.length - 1 ? 'keyboardLastHint' : 'keyboardHint')}</Text>}
     </div></CardContent>

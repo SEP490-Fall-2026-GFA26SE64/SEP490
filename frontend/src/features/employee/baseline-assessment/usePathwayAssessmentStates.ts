@@ -4,7 +4,7 @@ import type { RuleModuleOption, RulePathway, RuleStep } from '../../../shared/ap
 import { WorkspaceSessionContext } from '../../../shared/auth/workspaceSession'
 import { readModuleHistory, type BaselineAttempt } from './baselineApi'
 
-export type AssessmentState = 'loading' | 'unavailable' | 'notStarted' | 'inProgress' | 'failed' | 'passed' | 'prerequisites'
+export type AssessmentState = 'loading' | 'unavailable' | 'notStarted' | 'inProgress' | 'failed' | 'passed' | 'prerequisites' | 'veto'
 const optionKey = (step: RuleStep, option: RuleModuleOption) => `${step.id}:${option.moduleId}:${option.moduleRevision}`
 export const targetFor = (pathway: RulePathway, step: RuleStep, option: RuleModuleOption) => ({ selectionId: pathway.selectionId, selectionRevision: pathway.selectionRevision, stepId: step.id, moduleId: option.moduleId, moduleRevision: option.moduleRevision })
 
@@ -29,7 +29,7 @@ export function usePathwayAssessmentStates(pathway: RulePathway, preview: boolea
     if (step.state === 'BYPASSED') return null
     if (option) return option.completedAt ? states.get(optionKey(step, option)) ?? 'loading' : null
     const available = step.options.filter(item => item.completedAt).map(item => states.get(optionKey(step, item)) ?? 'loading')
-    const priority: AssessmentState[] = ['passed', 'prerequisites', 'inProgress', 'failed', 'unavailable', 'loading', 'notStarted']
+    const priority: AssessmentState[] = ['passed', 'prerequisites', 'inProgress', 'veto', 'failed', 'unavailable', 'loading', 'notStarted']
     return priority.find(state => available.includes(state)) ?? null
   }
 }
@@ -46,6 +46,8 @@ export interface AttemptOutcomeLike {
 export function moduleAssessmentState(attempts: AttemptOutcomeLike[], pathway: Pick<RulePathway, 'selectionId' | 'selectionRevision'>, step: Pick<RuleStep, 'id'>): AssessmentState {
   const attempt = attempts.find(item => item.target.selectionId === pathway.selectionId && item.target.selectionRevision === pathway.selectionRevision && item.target.stepId === step.id)
   return !attempt ? 'notStarted' : attempt.state === 'IN_PROGRESS' ? 'inProgress'
+    : attempt.results.some(result => attempt.groups.some(group => group.id === result.groupId && group.role === 'MAIN') && !result.passed) ? 'failed'
+    : attempt.results.some(result => result.vetoTriggered) ? 'veto'
     : attempt.results.length > 0 && attempt.results.every(result => result.passed && !result.vetoTriggered) ? 'passed'
     : attempt.results.some(result => attempt.groups.some(group => group.id === result.groupId && group.role === 'MAIN') && result.passed)
       && !attempt.results.some(result => result.vetoTriggered) ? 'prerequisites' : 'failed'

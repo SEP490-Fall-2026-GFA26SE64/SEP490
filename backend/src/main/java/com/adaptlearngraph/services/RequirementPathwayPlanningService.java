@@ -13,7 +13,10 @@ public final class RequirementPathwayPlanningService {
             RequirementPathwayRevisions revisions,ObjectMapper json) {this.catalog=catalog;this.rules=rules;this.admission=admission;this.revisions=revisions;this.json=json;}
     public Plan refresh(RequirementPathwayJpaRepository.Row row,Plan plan) {
         var input=admission.decode(row).input();var scope=new RoleBaselineFlow.Actor(row.getOrganizationId(),row.getLearnerId());
-        var requested=plan.steps().stream().filter(step->step.state()!=State.FULFILLED).map(Step::requirement).toList();
+        var carried=rules.carried(row.getOrganizationId(),row.getLearnerId());
+        if(carried.size()>1000)throw new InitialPathwayPorts.Failure(503,"BYPASS_HISTORY_LIMIT");
+        var requested=new ArrayList<>(plan.steps().stream().filter(step->step.state()!=State.FULFILLED).map(Step::requirement).toList());
+        for(var gap:carried)requested.add(requirement(gap.getRequirementSnapshot()));
         var strict=new HashSet<String>();plan.steps().stream().filter(step->step.kind()==Kind.REQUIRED && step.state()!=State.FULFILLED && step.state()!=State.BYPASSED)
                 .forEach(step->strict.add(step.requirement().key()));
         var fresh=catalog.providers(scope,input.roleSnapshot(),input.binding().levelId(),requested,strict);
@@ -25,6 +28,10 @@ public final class RequirementPathwayPlanningService {
             if(requirement.provision()==Provision.UNCONFIGURED && current!=null && current.provision()!=Provision.UNCONFIGURED)requirement=current;
             requirements.add(requirement);
         }
+        for(var gap:carried) {
+            var required=requirement(gap.getRequirementSnapshot());var current=byKey.get(required.key());
+            requirements.add(required.provision()==Provision.UNCONFIGURED && current!=null?current:required);
+        }
         var official=new HashMap<String,UUID>();
         rules.official(row.getOrganizationId(),row.getLearnerId(),revisions.encode(requirements)).forEach(proof->{
             try{official.put(json.readValue(proof.getRequirementSnapshot(),Requirement.class).proofKey(),proof.getEvidenceId());}
@@ -34,12 +41,21 @@ public final class RequirementPathwayPlanningService {
         var steps=new ArrayList<Step>();
         for(int i=0;i<plan.steps().size();i++) {
             var previous=plan.steps().get(i);if(previous.state()==State.FULFILLED){steps.add(previous);continue;}
+            var bypass=carried.stream().filter(gap->gap.getSourceRequestId().equals(row.getRequestId()) && gap.getSourceStepId().equals(previous.id())).findFirst();
+            if(previous.kind()==Kind.REQUIRED && bypass.isPresent()) {
+                // Earlier versions could reactivate this root when a provider appeared. Restore its retained bypass;
+                // the provider is carried separately and all original content progress remains in its own store.
+                var gap=bypass.get();
+                steps.add(previous.state()==State.BYPASSED?previous:new Step(previous.id(),requirement(gap.getRequirementSnapshot()),Kind.REQUIRED,null,
+                        State.BYPASSED,gap.getReason(),null,List.of(),null,previous.assessedSources()));
+                continue;
+            }
             var requirement=requirements.get(i);
             var next=RequirementPathwayGenerationService.step(row.getRequestId(),requirement,previous.kind(),previous.sourceBypassId(),fresh,official.get(requirement.proofKey()));
-            // An explicit bypass of already available work remains scoped. Only a previously missing provision is backfilled.
-            if(previous.state()==State.BYPASSED && (next.state()==State.NEEDS_EXPERT_ACTION || !previous.options().isEmpty() || previous.certificate()!=null)) {steps.add(previous);continue;}
+            // A bypass is historical resolution, never achievement or renewed mandatory learning.
+            if(previous.state()==State.BYPASSED) {steps.add(previous);continue;}
             var state=previous.state()==State.IN_PROGRESS && next.state()==State.NEEDS_SUPPLEMENTATION?State.IN_PROGRESS:next.state();
-            String reason=previous.state()==State.BYPASSED && next.state()!=State.FULFILLED?"PROVISION_AVAILABLE_AFTER_BYPASS":next.reason();
+            String reason=next.reason();
             // Retain original pins for continued reading when provision becomes stale; eligibility still requires fresh validation.
             var options=(next.state()==State.NEEDS_EXPERT_ACTION?previous.options():next.options()).stream()
                     .filter(option->!excluded.contains(option.moduleId())).toList();
@@ -49,6 +65,18 @@ public final class RequirementPathwayPlanningService {
             var certificate=next.state()==State.NEEDS_EXPERT_ACTION?previous.certificate():next.certificate();
             steps.add(new Step(previous.id(),requirement,previous.kind(),previous.sourceBypassId(),state,reason,next.fulfilledEvidenceId(),options,certificate,previous.assessedSources()));
         }
+        for(var gap:carried) {
+            var required=requirement(gap.getRequirementSnapshot());var current=byKey.get(required.key());
+            if(required.provision()==Provision.UNCONFIGURED && current!=null)required=current;
+            final var need=required;
+            if(steps.stream().anyMatch(step->step.kind()==Kind.PARALLEL_SUPPLEMENT && gap.getBypassId().equals(step.sourceBypassId()) && step.requirement().key().equals(need.key())))continue;
+            var next=RequirementPathwayGenerationService.step(row.getRequestId(),required,Kind.PARALLEL_SUPPLEMENT,gap.getBypassId(),fresh,official.get(required.proofKey()));
+            if(next.state()!=State.NEEDS_EXPERT_ACTION)steps.add(next);
+        }
         return new Plan(steps,plan.dependencies());
+    }
+    private Requirement requirement(String snapshot) {
+        try{return json.readValue(snapshot,Requirement.class);}
+        catch(Exception invalid){throw new InitialPathwayPorts.Failure(503,"BYPASS_SNAPSHOT_INVALID");}
     }
 }

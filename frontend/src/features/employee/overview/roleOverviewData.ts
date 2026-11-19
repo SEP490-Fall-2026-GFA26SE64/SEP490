@@ -61,19 +61,19 @@ export function composeRoleOverview(selection: OverviewSelection, summary: Overv
   for (const step of pathway?.steps ?? []) if (!extended.has(key(step.requirement))) extended.set(key(step.requirement),step.requirement)
   const allPairs: OverviewPair[] = [...extended.values()].map(requirement => {
     const ownSteps = pathway?.steps.filter(step=>key(step.requirement)===key(requirement)) ?? []
-    const step = ownSteps.find(step=>step.kind==='REQUIRED') ?? ownSteps[0]
+    const step = ownSteps.find(step=>step.state==='FULFILLED') ?? ownSteps.find(step=>step.kind==='REQUIRED') ?? ownSteps[0]
     const baselinePassed = target.has(key(requirement)) && summary.baseline.has(requirement.skillId+'\n'+requirement.knowledgeLevel)
-    const waiting = Boolean(step && pathway?.dependencies.some(edge=>edge.dependentStepId===step.id && pathway.steps.some(p=>p.id===edge.prerequisiteStepId && p.state!=='FULFILLED' && p.state!=='BYPASSED')))
+    const waiting = Boolean(step && pathway?.dependencies.some(edge=>edge.dependentStepId===step.id && pathway.steps.some(p=>p.id===edge.prerequisiteStepId && p.state!=='FULFILLED')))
     const assessmentStates: AssessmentState[] = step && pathway ? step.options.filter(option=>option.completedAt).map(option=>{const history=histories.get(moduleHistoryKey(option.moduleId,option.moduleRevision));return history ? moduleAssessmentState(history,pathway,step) : 'unavailable'}) : []
-    const assessment = (['passed','prerequisites','inProgress','failed','unavailable','notStarted'] as const).find(state=>assessmentStates.includes(state))
+    const assessment = (['passed','prerequisites','inProgress','veto','failed','unavailable','notStarted'] as const).find(state=>assessmentStates.includes(state))
     const needsReview = Boolean(step && step.state!=='FULFILLED' && step.state!=='BYPASSED' && (baselinePassed || target.has(key(requirement)) && summary.achieved.has(requirement.skillId+'\n'+requirement.knowledgeLevel)))
     // A current learning gap takes precedence over a historical Baseline pass.
     const status: RequirementStatus = step?.state==='FULFILLED' ? 'achieved'
-      : (!step || step.state==='BYPASSED') && baselinePassed ? 'baseline'
+      : !step && baselinePassed ? 'baseline'
       : step?.state==='BYPASSED' ? 'bypassed' : step?.state==='NEEDS_EXPERT_ACTION' ? 'expert'
       : !step && target.has(key(requirement)) && summary.achieved.has(requirement.skillId+'\n'+requirement.knowledgeLevel) ? 'achieved'
       : step?.learningLocked && !waiting ? 'review' : waiting || assessment==='prerequisites' ? 'waiting'
-      : assessment==='inProgress' ? 'assessing' : assessment==='failed' ? 'failed' : assessment==='unavailable' ? 'unavailable'
+      : assessment==='inProgress' ? 'assessing' : (assessment==='failed' || assessment==='veto') ? 'failed' : assessment==='unavailable' ? 'unavailable'
       : assessment==='passed' ? 'assessment_passed' : step?.state==='IN_PROGRESS' || step?.options.some(option=>option.startedAt) ? 'learning'
       : !requirement.skillVersion ? 'unavailable' : 'required'
     return {requirement,status,step,baselinePassed,needsReview,origin:target.has(key(requirement))?'target':'prerequisite'}

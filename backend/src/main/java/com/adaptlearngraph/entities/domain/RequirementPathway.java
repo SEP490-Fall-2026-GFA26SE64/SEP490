@@ -31,8 +31,12 @@ public final class RequirementPathway {
         public AssessedSource(UUID attemptId,UUID groupId,UUID dependentStepId){this(attemptId,groupId,dependentStepId,null);}
         public AssessedSource {Objects.requireNonNull(attemptId);Objects.requireNonNull(groupId);Objects.requireNonNull(dependentStepId);}
     }
-    public record CertificateReference(String id,String version,String name,String referenceUrl) {
-        public CertificateReference {text(id);text(version);text(name);referenceUrl=HttpsReference.require(referenceUrl);}
+    public record CertificateReference(String id,String version,String name,String referenceUrl,
+            @com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL) String description) {
+        public CertificateReference(String id,String version,String name,String referenceUrl){this(id,version,name,referenceUrl,null);}
+        public CertificateReference {text(id);text(version);text(name);referenceUrl=HttpsReference.require(referenceUrl);if(description!=null && description.length()>6000)throw new IllegalArgumentException("Certificate description too large");}
+        public boolean sameDefinition(CertificateReference other){return other!=null && id.equals(other.id) && version.equals(other.version) && name.equals(other.name) && referenceUrl.equals(other.referenceUrl);}
+
     }
     public record Step(UUID id,Requirement requirement,Kind kind,UUID sourceBypassId,State state,String reason,
             UUID fulfilledEvidenceId,List<Option> options,CertificateReference certificate,List<AssessedSource> assessedSources) {
@@ -78,6 +82,11 @@ public final class RequirementPathway {
             for(var id:byId.keySet())acyclic(id,next,visiting,visited);
         }
         public boolean targetReleased(){return steps.stream().noneMatch(Step::blocking);}
+        public List<Step> unmetPrerequisites(UUID dependent) {
+            return dependencies.stream().filter(edge->edge.dependentStepId().equals(dependent))
+                    .map(edge->steps.stream().filter(step->step.id().equals(edge.prerequisiteStepId())).findFirst().orElseThrow())
+                    .filter(step->step.state()!=State.FULFILLED).toList();
+        }
         public boolean readyForInitialApproval(){return steps.stream().noneMatch(step->step.kind()==Kind.REQUIRED && step.state()==State.NEEDS_EXPERT_ACTION);}
     }
     private static void acyclic(UUID id,Map<UUID,Set<UUID>> next,Set<UUID> visiting,Set<UUID> visited) {

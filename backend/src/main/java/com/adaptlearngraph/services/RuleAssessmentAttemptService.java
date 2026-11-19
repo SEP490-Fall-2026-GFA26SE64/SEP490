@@ -31,6 +31,8 @@ public final class RuleAssessmentAttemptService {
     public interface Contexts {
         Context resolve(RoleBaselineFlow.Actor actor,Start command);
         void assertCurrent(RoleBaselineFlow.Actor actor,Context context);
+        default void assertAccessible(RoleBaselineFlow.Actor actor,String frozenContext) {}
+        default String admissionIssue(RoleBaselineFlow.Actor actor,SkillAssessmentScope scope){return null;}
         default SkillAssessmentScope scopeForModule(RoleBaselineFlow.Actor actor,String moduleId,int revision) { throw new Failure(503,"SKILL_SCOPE_UNAVAILABLE"); }
     }
     public record Question(int position,UUID itemVersionId,UUID groupId,String prompt,List<Option> options,String selectedOptionId,boolean mandatory) {}
@@ -255,6 +257,7 @@ public final class RuleAssessmentAttemptService {
                 if(latest.isPresent())available=latest.get().getFinishedAt().plusSeconds(config.retakeWaitSeconds());
             }catch(Failure missing){issue=missing.code;}
             catch(org.springframework.dao.DataAccessException | org.neo4j.driver.exceptions.Neo4jException unavailable){issue="DEPENDENCY_UNAVAILABLE";}
+            var admission=contexts.admissionIssue(a,scope);if(admission!=null)issue=admission;
             var result=new SkillHistory(scope,rows.stream().limit(size).map(this::summary).toList(),active.stream().map(this::summary).toList(),
                 skillCount(a,scope),unresolved,page,size,rows.size()>size,latest.map(RuleAssessmentAttemptEntity::getId).orElse(null),max,available,issue,attempts.clock());
             reauthorize(a);return result;
@@ -304,6 +307,7 @@ public final class RuleAssessmentAttemptService {
                 var row=owned(a,id);
                 if(!"IN_PROGRESS".equals(row.getState()) || !attempts.clock().isBefore(row.getDeadlineAt()))
                     return finalizeAndRetain(a,row,"RULE_ANSWER",key,hash);
+                contexts.assertAccessible(a,row.getContextSnapshot());
                 if(row.getRevision()!=answer.expectedRevision())throw new Failure(409,"STALE_ATTEMPT_REVISION");
                 var item=attempts.paper(a.organizationId(),a.learnerId(),id).stream()
                         .filter(i->i.getPosition()==answer.position() && i.getItemVersionId().equals(answer.itemVersionId())).findFirst()
@@ -333,6 +337,7 @@ public final class RuleAssessmentAttemptService {
         return interactive(a,()->{
             var replay=receipt(a,"RULE_SUBMIT",id.toString(),key,hash);if(replay.isPresent())return replay.get();
             var row=owned(a,id);
+            if("IN_PROGRESS".equals(row.getState()) && attempts.clock().isBefore(row.getDeadlineAt()))contexts.assertAccessible(a,row.getContextSnapshot());
             if("IN_PROGRESS".equals(row.getState()) && attempts.clock().isBefore(row.getDeadlineAt()) && row.getRevision()!=revision)
                 throw new Failure(409,"STALE_ATTEMPT_REVISION");
             return finalizeAndRetain(a,row,"RULE_SUBMIT",key,hash);
@@ -344,6 +349,7 @@ public final class RuleAssessmentAttemptService {
     private View readLocked(RoleBaselineFlow.Actor a,UUID id) {
         var row=owned(a,id);
         if("IN_PROGRESS".equals(row.getState()) && !attempts.clock().isBefore(row.getDeadlineAt()))return finalizeNow(a,row);
+        if("IN_PROGRESS".equals(row.getState()))contexts.assertAccessible(a,row.getContextSnapshot());
         return view(a,row,saved(a,row));
     }
     private View view(RoleBaselineFlow.Actor a,RuleAssessmentAttemptEntity row,Saved saved) {

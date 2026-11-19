@@ -48,8 +48,11 @@ export function RequirementModuleEditor({ id, scope, detail, disabled, onCommand
   detail.candidates.forEach(candidate => modules.set(candidate.stepId + '\n' + optionKey(candidate.module), candidate.module))
   const steps = stepOrder.map(id => detail.plan.steps.find(step => step.id === id)!).map(step => ({ ...step, options: (chosen[step.id] ?? []).map(key => modules.get(step.id + '\n' + key)).filter((module): module is RuleModuleOption => Boolean(module)) }))
   const selections = steps.filter(editableStep).map(step => ({ stepId: step.id, options: step.options.map(({ moduleId, moduleRevision, contentVersion }) => ({ moduleId, moduleRevision, contentVersion })) }))
-  const validation = checked ?? detail.validation
-  const focusedStep = detail.plan.steps.find(step => step.id === focus)
+  const backendValidation = checked ?? detail.validation
+  const issues = [...(dirty && !checked ? [] : backendValidation.issues), ...steps.filter(step => editableStep(step) && step.options.length === 0).map(step => ({ stepId: step.id, reason: 'MODULE_OPTIONS_CHANGED', blocking: step.kind === 'REQUIRED' }))]
+  const validation: RuleValidation = { ...backendValidation, valid: backendValidation.valid && !issues.some(issue => issue.blocking), issues }
+  const stepIssues = (stepId: string) => issues.filter(issue => issue.stepId === stepId)
+  const focusedStep = steps.find(step => step.id === focus)
   const related = detail.related.length ? detail.related : detail.candidates.map(candidate => ({ skillId: detail.plan.steps.find(step => step.id === candidate.stepId)!.requirement.skillId, knowledgeLevel: detail.plan.steps.find(step => step.id === candidate.stepId)!.requirement.knowledgeLevel, module: candidate.module }))
   const candidates = related.map(item => {
     const eligible = detail.candidates.filter(candidate => optionKey(candidate.module) === optionKey(item.module))
@@ -96,7 +99,7 @@ export function RequirementModuleEditor({ id, scope, detail, disabled, onCommand
   function startDrag(event: PointerEvent<HTMLElement>, stepId: string, module: RuleModuleOption, from: DragModule['from']) {
     const step = detail.plan.steps.find(item => item.id === stepId), target = event.target as HTMLElement
     const handle = target.closest('[data-module-drag-handle]')
-    if (event.button !== 0 || blocked || !step || !editableStep(step) || (!handle && target.closest('button,a,input,select,textarea'))) return
+    if (event.button !== 0 || blocked || !step || !editableStep(step) || !handle) return
     if (from === 'catalog' && !detail.candidates.some(candidate => candidate.stepId === stepId && optionKey(candidate.module) === optionKey(module))) return
     event.preventDefault(); event.stopPropagation()
     const value: PointerDrag = { stepId, key: optionKey(module), from, hash: detail.status.contentHash, pointerId: event.pointerId, startX: event.clientX, startY: event.clientY, moved: false, element: event.currentTarget }
@@ -131,13 +134,13 @@ export function RequirementModuleEditor({ id, scope, detail, disabled, onCommand
     catch (cause) { setError(cause) } finally { setChecking(false); checkFlight.current = false }
   }
   return <div className="space-y-3">
-    <Card className="sticky top-[var(--workspace-header-height)] z-20 border-primary/20 bg-card p-3 shadow-sm">
+    <Card className="relative z-10 border-primary/20 bg-card p-3 shadow-sm">
       <div className="flex flex-wrap items-center justify-between gap-3"><div className="flex flex-wrap items-center gap-2"><Badge variant={dirty ? 'warning' : 'outline'}>{tr(dirty ? 'unsaved' : 'saved')}</Badge><Badge variant={validation.valid ? 'success' : 'warning'}>{t('initialPathway.state.' + (validation.valid ? 'VALID' : 'UNRESOLVED'))}</Badge></div>
         <div className="flex flex-wrap justify-end gap-2"><Button size="sm" variant="outline" className="border-border font-semibold shadow-xs" disabled={blocked || dirty} leftIcon={<RefreshCw size={14} />} onClick={() => onCommand(ruleReviewCommand(id, detail, 'refresh'))}>{t('rulePathway.refreshProviders')}</Button><Button size="sm" variant="secondary" className="border border-primary/30 font-semibold" disabled={blocked} leftIcon={<ListChecks size={14} />} onClick={() => void check()} isLoading={checking}>{tr('check')}</Button><Button size="sm" variant="primary" className="font-semibold" disabled={blocked || !dirty} leftIcon={<Save size={14} />} onClick={() => onCommand(moduleSelectionCommand(id, detail, selections, stepOrder))}>{tr('save')}</Button>{onReject && <Button size="sm" variant="destructive" disabled={blocked || dirty} onClick={onReject}>{tr('reject')}</Button>}<Button size="sm" disabled={blocked || dirty || !validation.valid} leftIcon={<CheckCircle2 size={14} />} onClick={onApprove}>{tr('approve')}</Button></div>
       </div>
       {dirty && <Text variant="caption" className="mt-2">{tr('saveBeforeApproval')}</Text>}
       {!editable && <Text variant="caption" className="mt-2">{tr('readOnly')}</Text>}
-      {(checked || validation.issues.length > 0) && <div ref={summaryRef} tabIndex={-1} aria-label={tr('check')} className="mt-2 rounded-lg border border-border bg-background p-3 text-body-sm">
+      {(checked || validation.issues.length > 0) && <div ref={summaryRef} tabIndex={-1} aria-label={tr('check')} className="mt-2 max-h-64 overflow-y-auto rounded-lg border border-border bg-background p-3 text-body-sm">
         {checked && <Text role="status" className="font-semibold">{validation.valid ? tr('checkPassed') : `${tr('issues')} (${validation.issues.length})`}</Text>}
         {validation.issues.length > 0 && <ol className="mt-2 space-y-2">{validation.issues.filter((issue, index, all) => all.findIndex(item => item.stepId === issue.stepId && item.reason === issue.reason && item.blocking === issue.blocking && item.moduleId === issue.moduleId && item.moduleRevision === issue.moduleRevision) === index).map(issue => {
           const step = steps.find(item => item.id === issue.stepId)
@@ -147,10 +150,10 @@ export function RequirementModuleEditor({ id, scope, detail, disabled, onCommand
     </Card>
     {Boolean(error) && <InitialPathwayFeedback error={error} busy={checking} onRetry={() => void check()} />}
     <div className="grid min-w-0 items-start gap-5 lg:grid-cols-2">
-      <Card className="flex h-[max(42rem,85dvh)] min-h-0 flex-col overflow-hidden border-primary/30 shadow-sm" data-module-drop-zone="graph"><div className="flex items-center justify-between gap-2 border-b border-primary/20 bg-secondary/50 px-4 py-4"><Heading level={2} size="card">{tr('graph')}</Heading><Badge variant="outline">{steps.length} {t('rulePathway.requirements')}</Badge></div>
-        <RequirementModuleGraph dragEvents={dragEvents} steps={steps} reorderableIds={reorderableIds} onMove={move} active={focus} disabled={blocked} onFocus={setFocus} onDetails={(stepId, module) => setSelected({ stepId, module })} onExclude={(stepId, module) => change(stepId, module, false)} onDrag={(event, stepId, module) => startDrag(event, stepId, module, 'graph')} canDrop={dragged?.from === 'catalog' && !blocked} />
+      <Card className="relative isolate flex h-[clamp(30rem,75dvh,52rem)] min-h-0 min-w-0 flex-col overflow-hidden border-primary/30 shadow-sm" data-module-drop-zone="graph"><div className="flex items-center justify-between gap-2 border-b border-primary/20 bg-secondary/50 px-4 py-4"><Heading level={2} size="card">{tr('graph')}</Heading><Badge variant="outline">{steps.length} {t('rulePathway.requirements')}</Badge></div>
+        <RequirementModuleGraph issues={validation.issues} dragEvents={dragEvents} steps={steps} reorderableIds={reorderableIds} onMove={move} active={focus} disabled={blocked} onFocus={setFocus} onDetails={(stepId, module) => setSelected({ stepId, module })} onExclude={(stepId, module) => change(stepId, module, false)} onDrag={(event, stepId, module) => startDrag(event, stepId, module, 'graph')} canDrop={dragged?.from === 'catalog' && !blocked} />
       </Card>
-      <Card className={`flex h-[max(42rem,85dvh)] min-h-0 flex-col overflow-hidden border-primary/25 shadow-sm ${dragged?.from === 'graph' ? 'ring-2 ring-primary' : ''}`} data-module-drop-zone="catalog">
+      <Card className={`relative isolate flex h-[clamp(30rem,75dvh,52rem)] min-h-0 min-w-0 flex-col overflow-hidden border-primary/25 shadow-sm ${dragged?.from === 'graph' ? 'ring-2 ring-primary' : ''}`} data-module-drop-zone="catalog">
         <div className="space-y-3 border-b border-primary/20 bg-secondary/40 p-4"><div className="flex items-center justify-between gap-2"><Heading level={2} size="card">{tr('catalog')}</Heading><Badge variant="outline">{candidates.length}</Badge></div><Text variant="caption" className="text-foreground">{tr(dragged?.from === 'graph' ? 'excludeHint' : 'includeHint')}</Text>
           <Input leftIcon={<Search size={14} />} value={search} onChange={event => setSearch(event.target.value)} placeholder={tr('search')} aria-label={tr('search')} className="h-9" />
           <select value={focus} onChange={event => setFocus(event.target.value)} aria-label={tr('skillFilter')} className="h-9 w-full rounded-md border border-input bg-background px-3 text-body-sm"><option value="">{tr('allSkills')}</option>{detail.plan.steps.map(step => <option key={step.id} value={step.id}>{step.requirement.skillName} · {t('knowledgeLevel.' + step.requirement.knowledgeLevel)}</option>)}</select>
@@ -158,6 +161,7 @@ export function RequirementModuleEditor({ id, scope, detail, disabled, onCommand
           {focusedStep && <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-primary/20 bg-card p-2"><div><Text variant="body-sm" className="font-semibold">{focusedStep.requirement.skillName}</Text><Text variant="caption">{tr('requiredLevel')}: {t('knowledgeLevel.' + focusedStep.requirement.knowledgeLevel)}</Text></div><div className="flex items-center gap-2">{detail.bypassableStepIds?.includes(focusedStep.id) && <Button size="sm" variant="secondary" className="border border-primary/40 font-semibold shadow-xs" disabled={blocked || dirty} onClick={() => onBypass(focusedStep)}>{t('rulePathway.bypass')}</Button>}<Button size="icon" variant="outline" className="size-8 border-primary/40 text-primary" aria-label={tr('bypassHelpTitle')} onClick={() => setBypassHelp(true)}><CircleHelp size={17} /></Button></div></div>}
         </div>
         <div className="min-h-0 flex-1 space-y-4 overflow-y-auto bg-background/40 p-4">
+          {focusedStep && stepIssues(focusedStep.id).length > 0 && <div role="alert" className="space-y-2 rounded-lg border border-destructive/40 bg-destructive/5 p-3"><Text className="font-semibold" tone="destructive">{focusedStep.requirement.skillName}</Text>{stepIssues(focusedStep.id).map((issue, index) => <Text key={index} variant="body-sm">{validationIssueText(issue.reason, focusedStep, language === 'vi')}</Text>)}</div>}
           {candidates.length === 0 && <Text variant="body-sm" className="rounded-lg border border-dashed border-border p-4">{tr('emptyAvailable')}</Text>}
           {candidates.map(candidate => { const module = candidate.module, included = candidate.stepId !== null && (chosen[candidate.stepId] ?? []).includes(optionKey(module)), step = detail.plan.steps.find(item => item.id === candidate.stepId), allowed = Boolean(step && editableStep(step))
             return <article key={candidate.skillId + ':' + optionKey(module)} data-module-drag-source draggable={false} {...dragEvents} onDragStart={event => event.preventDefault()} onPointerDown={event => { if (candidate.stepId && allowed) startDrag(event, candidate.stepId, module, 'catalog') }} className={`space-y-3 rounded-lg border p-3 ${allowed ? 'border-primary/40 bg-card shadow-sm' : 'border-border bg-muted/30'}`}>
