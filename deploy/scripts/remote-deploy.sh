@@ -38,7 +38,14 @@ log "Validating $(pwd)/.env"
 required=(PUBLIC_URL DB_PASSWORD NEO4J_PASSWORD LEARNING_ASSETS_ACCESS_KEY LEARNING_ASSETS_SECRET_KEY
   REGISTRATION_ENCRYPTION_KEY REGISTRATION_HMAC_KEY WORKSPACE_DEVELOPMENT_PASSWORD
   PLATFORM_ADMIN_SEED_EMAIL PLATFORM_ADMIN_SEED_PASSWORD SMTP_HOST SMTP_USERNAME SMTP_PASSWORD SMTP_FROM PAYOS_CLIENT_ID PAYOS_API_KEY PAYOS_CHECKSUM_KEY)
-required+=(RIASEC_MODEL RIASEC_OLLAMA_MEMORY RIASEC_OLLAMA_CPUS)
+# Older server .env files do not contain inference settings. Export resolved values
+# so capacity validation and every Compose invocation use the same configuration.
+export RIASEC_MODEL="$(env_get RIASEC_MODEL)"
+export RIASEC_OLLAMA_MEMORY="$(env_get RIASEC_OLLAMA_MEMORY)"
+export RIASEC_OLLAMA_CPUS="$(env_get RIASEC_OLLAMA_CPUS)"
+RIASEC_MODEL="${RIASEC_MODEL:-qwen3:4b-instruct-2507-q4_K_M}"
+RIASEC_OLLAMA_MEMORY="${RIASEC_OLLAMA_MEMORY:-5g}"
+RIASEC_OLLAMA_CPUS="${RIASEC_OLLAMA_CPUS:-2}"
 missing=()
 for key in "${required[@]}"; do [ -n "$(env_get "$key")" ] || missing+=("$key"); done
 [ ${#missing[@]} -eq 0 ] || fail "Empty/missing keys in .env: ${missing[*]}"
@@ -48,8 +55,8 @@ workspace_password="$(env_get WORKSPACE_DEVELOPMENT_PASSWORD)"
 unset workspace_password
 
 # Measure the actual deployment host before starting inference or changing the stack.
-riasec_memory="$(env_get RIASEC_OLLAMA_MEMORY)"
-riasec_cpus="$(env_get RIASEC_OLLAMA_CPUS)"
+riasec_memory="$RIASEC_OLLAMA_MEMORY"
+riasec_cpus="$RIASEC_OLLAMA_CPUS"
 [[ "$riasec_memory" =~ ^[1-9][0-9]*[mMgG]$ ]] || fail "RIASEC_OLLAMA_MEMORY must be whole MiB/GiB, for example 5120m or 5g."
 [[ "$riasec_cpus" =~ ^[0-9]+([.][0-9]+)?$ ]] || fail "RIASEC_OLLAMA_CPUS must be a positive CPU count."
 host_cpus="$(getconf _NPROCESSORS_ONLN)"

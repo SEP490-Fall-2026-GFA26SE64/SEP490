@@ -40,9 +40,9 @@ services:
       OLLAMA_KEEP_ALIVE: "5m"
       OLLAMA_MAX_QUEUE: "1"
       OLLAMA_VULKAN: "0"
-      RIASEC_MODEL: ${RIASEC_MODEL:?Set RIASEC_MODEL after server capacity review}
-    mem_limit: ${RIASEC_OLLAMA_MEMORY:?Set RIASEC_OLLAMA_MEMORY after server capacity review}
-    cpus: ${RIASEC_OLLAMA_CPUS:?Set RIASEC_OLLAMA_CPUS after server capacity review}
+      RIASEC_MODEL: ${RIASEC_MODEL:-qwen3:4b-instruct-2507-q4_K_M}
+    mem_limit: ${RIASEC_OLLAMA_MEMORY:-5g}
+    cpus: ${RIASEC_OLLAMA_CPUS:-2}
     volumes: [riasec_models:/root/.ollama]
     networks: [riasec_private]
     healthcheck:
@@ -60,11 +60,11 @@ services:
     entrypoint: [/bin/sh, -ec]
     environment:
       OLLAMA_NO_CLOUD: "true"
-      RIASEC_MODEL: ${RIASEC_MODEL:?Set RIASEC_MODEL after server capacity review}
+      RIASEC_MODEL: ${RIASEC_MODEL:-qwen3:4b-instruct-2507-q4_K_M}
     command:
       - 'ollama serve & server=$$!; trap "kill $$server" EXIT; until ollama list >/dev/null 2>&1; do sleep 1; done; ollama pull "$$RIASEC_MODEL"'
-    mem_limit: ${RIASEC_OLLAMA_MEMORY:?Set RIASEC_OLLAMA_MEMORY after server capacity review}
-    cpus: ${RIASEC_OLLAMA_CPUS:?Set RIASEC_OLLAMA_CPUS after server capacity review}
+    mem_limit: ${RIASEC_OLLAMA_MEMORY:-5g}
+    cpus: ${RIASEC_OLLAMA_CPUS:-2}
     volumes: [riasec_models:/root/.ollama]
     restart: "no"
 
@@ -195,7 +195,7 @@ services:
       SPRING_PROFILES_ACTIVE: local,workspace-baseline,workspace-development
       RIASEC_ENABLED: ${RIASEC_ENABLED:-true}
       RIASEC_OLLAMA_URL: http://riasec-ollama:11434
-      RIASEC_MODEL: ${RIASEC_MODEL:?Set RIASEC_MODEL after server capacity review}
+      RIASEC_MODEL: ${RIASEC_MODEL:-qwen3:4b-instruct-2507-q4_K_M}
       WORKSPACE_MIGRATION_LOCATION: classpath:db/workspace-migration
       WORKSPACE_DEVELOPMENT_FIXTURES_ENABLED: "true"
       ASSESSMENT_BASELINE_LOCALDEMO_ENABLED: "false"
