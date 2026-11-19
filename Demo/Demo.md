@@ -265,58 +265,42 @@ Mở lại `/reset` → toàn bộ Brightpath (workspace `brightpath`, admin và
 
 ---
 
-## 8. Phần demo tiếp theo: từ ngân hàng câu hỏi đến hoàn thành lộ trình
+## 8. Phần demo tiếp theo: từ import câu hỏi đến hoàn thành pathway
 
-Phần này làm tiếp sau bước 7. Các bước ở trên được giữ nguyên. Dùng bộ file trong thư mục `Demo` của bản source đang deploy, không dùng lại đường dẫn local 30088/30080 đã xóa.
+Làm tiếp sau bước 7 ở trên. Phần này gồm 7 bước, dùng cùng một kịch bản: **Docker/Foundation là Certificate**, Docker/Intermediate vẫn là Module.
 
-### 8.1. File cần dùng
+### Trước khi import câu hỏi
 
-| File | Cách dùng |
+Đăng nhập **David Thompson** và hoàn tất các thay đổi sau trước khi dùng file 05–06:
+
+1. Mở **Ontology → Micro-skills → MS-DOCKER → Edit Micro-skill**. Chọn **Foundation = Certificate**, giữ **Intermediate = Module and assessment**, **Advanced = Certificate**, rồi **Save Changes**. File 04 vẫn để Foundation là Module nên cần thao tác này.
+2. Trong **Roles → JAVA-BE → Middle**, đổi yêu cầu **MS-SQL-INDEX** từ Foundation trong bảng bước 7 thành **Intermediate**, rồi lưu.
+3. Trong **Explore Graph**, thêm **MS-SQL-INDEX/Foundation cần MS-SQL-QUERY/Intermediate**. Giữ cạnh SQL Indexing/Intermediate cần SQL Querying/Intermediate đã có; không tạo cạnh tự nối hai mức của SQL Indexing.
+4. Hoàn tất lưu cấu hình skill, prerequisite và role, gửi role cho L&D theo màn hình. Nếu đã gửi, sửa và gửi lại theo quy trình.
+
+Mở lại Edit để kiểm tra Docker/Foundation đã lưu Certificate; đóng bằng Cancel hoặc nút đóng nếu không sửa gì. **Không đổi loại hoặc lưu chỉnh skill sau khi import bank:** version mới của toàn skill có thể làm câu hỏi cũ không còn hợp lệ.
+
+| File | Nội dung |
 | --- | --- |
-| [05_Question_Bank_Java_Backend.xlsx](./05_Question_Bank_Java_Backend.xlsx) | Expert import ngân hàng 190 câu Java Backend |
-| [06_Learning_Modules_Java_Backend_Demo.zip](./06_Learning_Modules_Java_Backend_Demo.zip) | Expert import 5 module, tổng 10 bài đọc |
+| [05_Question_Bank_Java_Backend.xlsx](./05_Question_Bank_Java_Backend.xlsx) | 190 câu / 38 nhóm skill–mức, không có Docker/Foundation |
+| [06_Learning_Modules_Java_Backend_Demo.zip](./06_Learning_Modules_Java_Backend_Demo.zip) | 5 module / 10 bài đọc; upload nguyên ZIP |
 
-Upload nguyên file ZIP. Không giải nén để upload từng bài. Không cần gói `02-after-bypass.zip` cho phần demo chính này.
+Không cần ZIP bổ sung `02-after-bypass.zip`. Chuẩn bị link HTTPS hoặc PDF/ảnh bằng chứng Docker để Employee nộp ở bước 7 của phần này.
 
-**RIASEC trong file 01:** tab **Job positions** đã có thêm sáu cột `RIASEC R`, `RIASEC I`, `RIASEC A`, `RIASEC S`, `RIASEC E`, `RIASEC C`. R = Realistic, I = Investigative, A = Artistic, S = Social, E = Enterprising, C = Conventional. Mỗi ô là số nguyên từ 0 đến 40. Nhập đủ sáu ô của một vị trí, hoặc để trống cả sáu. File cũ không có các cột này vẫn import được.
+### Bước 1. Expert import câu hỏi
 
-| Job position | R | I | A | S | E | C |
-| --- | --- | --- | --- | --- | --- | --- |
-| Backend Engineer | 18 | 38 | 12 | 10 | 16 | 28 |
-| Frontend Engineer | 14 | 30 | 32 | 16 | 18 | 22 |
-| QA Engineer | 20 | 34 | 10 | 14 | 12 | 36 |
-| Data Engineer | 16 | 40 | 12 | 10 | 14 | 32 |
-| Learning & Development Specialist | 8 | 22 | 20 | 40 | 32 | 26 |
+1. Vào **Question Bank → Import Excel**, chọn `05_Question_Bank_Java_Backend.xlsx`.
+2. Kiểm tra preview: **190 câu / 38 nhóm skill–mức**, mỗi nhóm **4 câu thường + 1 mandatory**. Docker chỉ có **Intermediate**, không có Foundation.
+3. Nếu không có lỗi, xác nhận import **một lần**, rồi gửi các Draft đi duyệt theo màn hình.
+4. Nếu đã import thành công nhưng gửi duyệt lỗi, mở các Draft đã tạo và gửi lại; không import lại cả file để tránh trùng câu hỏi.
 
-Đây là **điểm mẫu tự đặt cho demo**, không phải điểm nghiên cứu nghề nghiệp. Chúng mô tả Job position để so với kết quả sở thích của Employee. Chúng không thay điểm bài RIASEC của Employee. Cấu trúc và điểm được lưu khi onboarding tạo workspace sau thanh toán; import preview chưa ghi chúng vào catalog của workspace. Với workspace đã tạo từ file cũ, cập nhật điểm ở màn hình quản lý Job position. Không đăng ký lại hoặc reset chỉ để đổi điểm.
+Không cần tự xóa dòng trong file 05. File đã chuẩn bị cho Docker/Foundation là Certificate.
 
-### 8.2. Expert chuẩn bị đúng các skill và mức
+### Bước 2. Expert import module và tạo certificate
 
-Đăng nhập **David Thompson**. Trước khi gửi role sang L&D, kiểm tra:
-
-1. Trong cấu hình skill, **MS-DOCKER / Foundation** dùng **Certificate**. Các nhóm có câu hỏi trong file 05 dùng **Module**. Một cặp skill/mức chỉ dùng một loại.
-2. Với **Middle**, đổi yêu cầu **MS-SQL-INDEX** từ Foundation ở bảng bước 7 thành **Intermediate** để diễn phần học bổ sung. Các yêu cầu khác giữ theo bảng.
-3. Trong Explore Graph, thêm tiên quyết **MS-SQL-INDEX / Foundation cần MS-SQL-QUERY / Intermediate**. Giữ cạnh **MS-SQL-INDEX / Intermediate cần MS-SQL-QUERY / Intermediate** đã có. Không vẽ cạnh tự nối hai mức của SQL Indexing.
-4. Lưu cấu hình skill và role theo màn hình hiện tại. Nếu đã gửi role, mở sửa theo quy trình rồi gửi lại để L&D duyệt phiên bản mới.
-
-Các lựa chọn này giúp phần SQL Indexing/Intermediate có cả mức Foundation của chính skill và SQL Querying/Intermediate là skill tiên quyết khác.
-
-### 8.3. Expert import question bank
-
-1. Vào **Question Bank → Import Excel**.
-2. Chọn `05_Question_Bank_Java_Backend.xlsx`.
-3. Xem preview: dự kiến **190 câu**, không có lỗi. Nếu có lỗi, sửa theo dòng được báo trước khi xác nhận.
-4. Xác nhận import **một lần**. Gửi duyệt nếu đang ở Draft.
-5. Đăng nhập **Sarah Mitchell (L&D)**, mở hàng đợi câu hỏi, kiểm tra rồi **Approve/Publish** theo thao tác được cung cấp. Bank phải ở **Published** mới dùng để ra đề.
-
-Bank có 38 nhóm skill/mức. Mỗi nhóm có **4 câu thường và 1 câu mandatory**. Docker/Foundation dùng chứng chỉ nên không nằm trong bank. Nếu import đã thành công nhưng gửi duyệt bị lỗi, gửi lại các bản Draft đã tạo; không import lại toàn bộ file.
-
-### 8.4. Expert import module và tạo certificate
-
-1. Quay lại tài khoản **David Thompson → Modules → Import**.
-2. Chọn `06_Learning_Modules_Java_Backend_Demo.zip`.
-3. Xem preview **5 module, 10 lesson**, không lỗi. Mỗi module có hai bài đọc mẫu.
-4. Chọn **Confirm & submit for review**. Nếu chỉ chọn **Confirm import**, mở các Draft vừa tạo rồi gửi duyệt.
+1. Vào **Modules → Import**, chọn nguyên file `06_Learning_Modules_Java_Backend_Demo.zip`; không giải nén để upload riêng từng bài.
+2. Kiểm tra preview **5 module, 10 lesson**, không lỗi.
+3. Chọn **Confirm & submit for review**. Nếu chọn **Confirm import**, mở các Draft vừa tạo rồi gửi duyệt.
 
 | Module | Skill / mức | Dùng để diễn |
 | --- | --- | --- |
@@ -326,24 +310,37 @@ Bank có 38 nhóm skill/mức. Mỗi nhóm có **4 câu thường và 1 câu man
 | SQL Indexing Foundation Guided Practice | MS-SQL-INDEX / Foundation | Học bổ sung mức thấp hơn |
 | SQL Querying Intermediate Guided Practice | MS-SQL-QUERY / Intermediate | Học bổ sung skill tiên quyết |
 
-5. Đăng nhập **Sarah Mitchell → quản lý module**, đọc nội dung, duyệt và publish năm module. Draft hoặc Submitted chưa phải nội dung học đã xuất bản.
-6. Quay lại **David Thompson → Certificates → Certificate catalog → Add**:
+#### Tạo certificate Docker/Foundation
 
-| Field | Nhập |
+Mở **Certificates → Certificate catalog → Add**, chọn và nhập:
+
+| Field | Giá trị |
 | --- | --- |
 | Skill | Containerizing Services with Docker / MS-DOCKER |
 | Knowledge level | Foundation |
 | Name | Docker Foundation — Demo Certificate |
 | Mô tả và năng lực được chứng nhận | Nắm khái niệm image, container và Dockerfile. Biết build image, chạy container và giải thích cách đóng gói một dịch vụ Java đơn giản. |
-| Reference URL | Link HTTPS tới tài liệu hoặc mẫu chứng chỉ bạn đã chuẩn bị |
+| Reference URL | Link HTTPS tới tài liệu hoặc mẫu chứng chỉ đã chuẩn bị |
 
-7. Bấm **Continue**, đọc lại ở bước **Confirm**, rồi lưu. Tạo certificate này chưa công nhận Employee đã đạt. Chuẩn bị riêng PDF/ảnh/link bằng chứng để Employee nộp sau.
+Bấm **Continue → Confirm** rồi lưu. Tạo certificate trong catalog chưa công nhận Employee đã đạt.
 
-### 8.5. Expert cấu hình Skill Assessment
+Nếu không thấy Docker/Foundation, kiểm tra lại phần chuẩn bị ở trên đã lưu thành công và mở lại màn Add. Không đổi Docker sang Module để xử lý lỗi thiếu câu hỏi.
 
-Mở cấu hình Skill Assessment cho bốn nhóm chính: **Java Collections/Intermediate**, **SQL Indexing/Intermediate**, **SQL Indexing/Foundation**, **SQL Querying/Intermediate**.
+### Bước 3. L&D duyệt và publish nội dung
 
-Với mỗi nhóm chính, mở bản nháp và điền theo các nhóm màn hình liệt kê:
+**Người làm:** Sarah Mitchell.
+
+1. Mở hàng đợi câu hỏi, kiểm tra các câu vừa gửi ở bước 1, rồi **Approve/Publish** theo màn hình.
+2. Mở quản lý module, xem nội dung của năm module, rồi duyệt và **Publish**.
+3. Kiểm tra câu hỏi và module đã ở **Published**. Draft hoặc Submitted chưa dùng được để ra đề hoặc học.
+
+**Kết quả:** bank và năm module đã xuất bản. Certificate catalog đã tạo ở bước 2; bằng chứng của Employee chỉ được nộp và duyệt ở bước 7.
+
+### Bước 4. Expert kích hoạt Skill Assessment
+
+Đăng nhập **David Thompson**. Mở cấu hình cho bốn nhóm chính: **Java Collections/Intermediate**, **SQL Indexing/Intermediate**, **SQL Indexing/Foundation**, **SQL Querying/Intermediate**.
+
+Với mỗi nhóm chính, nhập theo các nhóm mà màn hình liệt kê:
 
 | Thông số | Giá trị demo |
 | --- | --- |
@@ -362,34 +359,57 @@ Với SQL Indexing/Intermediate, kiểm tra có các nhóm **MAIN Intermediate**
 
 Quota mandatory bằng 0 dùng được khi đủ câu thường. Ví dụ tổng 5, bank 4 thường + 1 mandatory thì quota phải ít nhất 1; hoặc giảm tổng xuống 4. Checkbox chỉ chặn riêng trường hợp tiên quyết đúng **0 câu**. Dù bỏ checkbox, tiên quyết chưa đạt vẫn có thể làm yêu cầu học chưa hoàn thành.
 
-### 8.6. L&D kích hoạt baseline và xuất bản role
+### Bước 5. L&D kích hoạt baseline và publish role
 
-1. Đăng nhập **Sarah Mitchell → Baseline Assessments**.
-2. Chọn **Java Backend Developer**, mở cấu hình baseline của role.
-3. Đặt **3 câu/nhóm**, cần đúng **2**, thời gian **20 phút**, **3 lượt**, chờ làm lại **0 phút**. Cấu hình áp dụng các mức được màn hình liệt kê.
-4. Hoàn tất và **Activate**. Nếu thiếu bank, kiểm tra câu hỏi đã Published và đúng skill/mức.
-5. Vào **Roles**, mở role **JAVA-BE** đã được Expert gửi. Kiểm tra yêu cầu của Middle, duyệt và chuyển **Active/Publish** theo màn hình. Nếu còn báo thiếu cấu hình, xử lý mục được báo rồi xác nhận lại.
+1. Đăng nhập **Sarah Mitchell → Baseline Assessments → Java Backend Developer**.
+2. Trong **Questions**, nhập cho từng mức được liệt kê:
 
-Với cấu hình Middle nêu trên, dự kiến có **14 nhóm được thi**, tổng **42 câu baseline**. Docker/Foundation là yêu cầu chứng chỉ riêng, không nằm trong mẫu số 14.
+| Ô nhập | Giá trị |
+| --- | --- |
+| Questions per Skill | 3 |
+| Correct to pass | 2 |
 
-### 8.7. Employee làm RIASEC
+3. Trong **Time & retakes**, đặt thời gian **20 phút**, số lượt **3**, chờ thi lại **0 phút**.
+4. Sang **Review**, kiểm tra rồi **Activate**.
 
-1. Đăng nhập **James Wilson → Overview → RIASEC**.
-2. Trả lời đủ **60 hoạt động** theo mức độ yêu thích, rồi xác nhận nộp. Đây là sở thích, không có đậu/rớt.
-3. Xem sáu điểm và trạng thái gợi ý Job position. Nếu AI còn xử lý, chuyển sang phần role trong lúc chờ. Không nộp bài mới chỉ vì gợi ý chưa có ngay.
-4. Khi có gợi ý, xem Job position và lý do. Có thể quay lại danh sách kết quả để mở kết quả vừa làm.
+“Limiting Skills” là các skill có ít câu hỏi hợp lệ nhất, không phải số skill được thêm. Nếu ô bị khóa ở 0, kiểm tra bank đã Published và khớp đúng skill, mức, version. Docker/Foundation là Certificate nên không cần câu hỏi baseline; Docker/Intermediate vẫn cần bank. Không đổi loại skill qua lại để mở ô nhập.
 
-Muốn có gợi ý, Job position cần đủ sáu điểm, tính năng RIASEC được bật và dịch vụ mô hình hoạt động. Không cam kết AI trả cùng lời giải thích hoặc cùng thời gian mỗi lần. RIASEC không tự cộng điểm skill hoặc hoàn thành lộ trình.
+#### L&D duyệt và publish JAVA-BE
 
-### 8.8. Employee chọn role, làm baseline và yêu cầu pathway
+1. Mở **Roles → JAVA-BE** do David gửi.
+2. Kiểm tra Middle có SQL Indexing/Intermediate và Docker/Foundation.
+3. Duyệt, chuyển **Active/Publish** theo màn hình. Nếu thiếu cấu hình, xử lý thông báo trước khi xác nhận lại.
 
-1. Vào **Upskilling → Roles → Java Backend Developer → Middle**, xác nhận chọn.
-2. Mở baseline và bắt đầu. Với **đúng bank demo này**, chọn **A** cho mọi câu để tạo ba nhóm chưa đạt: Java Collections/Intermediate (đáp án B), SQL Indexing/Intermediate (đáp án C), API Security/Foundation (đáp án B). Đây là cách tạo tình huống demo, không phải hướng dẫn làm bài thật.
-3. Xác nhận nộp. Dự kiến kết quả **Baseline: đạt 11/14 · 3 nhóm chưa đạt**. Nếu khác, xem chi tiết từng nhóm và cấu hình; không sửa kết quả đã lưu cho khớp kịch bản.
-4. Docker/Foundation hiện riêng là **Yêu cầu chứng chỉ · không đánh giá trong baseline**. Như vậy còn ba gap học và một yêu cầu chứng chỉ.
-5. Bấm **Request pathway**, xác nhận một lần, chờ xử lý. Nếu đã có yêu cầu thì mở yêu cầu hiện tại, không gửi thêm.
+Với Middle theo bảng và chỉ chọn mức yêu cầu đã nêu, dự kiến baseline có **14 nhóm Module × 3 câu = 42 câu**; Docker/Foundation là yêu cầu chứng chỉ riêng. Đối chiếu phạm vi thực tế trước khi thi, không tự sửa dữ liệu kết quả để khớp con số dự kiến.
 
-### 8.9. Expert duyệt pathway
+### Bước 6. Employee làm RIASEC, baseline và yêu cầu pathway
+
+**Người làm:** James Wilson.
+
+#### 6.1. Làm RIASEC
+
+1. Mở **Overview → RIASEC**, trả lời đủ **60 hoạt động** theo mức độ yêu thích, rồi nộp.
+2. Xem sáu điểm và trạng thái gợi ý Job position. Nếu AI đang xử lý, tiếp tục phần role trong lúc chờ; không nộp bài mới chỉ vì chưa có gợi ý ngay.
+3. Khi có kết quả, xem vị trí và lý do gợi ý. RIASEC không tự cộng điểm skill hay hoàn thành pathway.
+
+Job position cần đủ sáu điểm tham chiếu; tính năng và dịch vụ mô hình phải hoạt động. Thời gian và lời giải thích AI có thể khác nhau giữa các lần.
+
+#### 6.2. Chọn mục tiêu Middle và làm baseline
+
+1. Vào **Upskilling → Roles → Java Backend Developer → Middle**, xác nhận chọn mục tiêu.
+2. Mở baseline. Với đúng bank demo này, chọn **A cho mọi câu** để tạo ba gap: Java Collections/Intermediate (đáp án B), SQL Indexing/Intermediate (C), API Security/Foundation (B).
+3. Nộp và xem chi tiết. Dự kiến **11/14 nhóm đạt, 3 nhóm chưa đạt**. Nếu khác, kiểm tra nhóm được thi và cấu hình thực tế.
+4. Docker/Foundation hiện riêng là **Yêu cầu chứng chỉ · không đánh giá trong baseline**. Tổng phần cần xử lý trong kịch bản là ba gap học và một chứng chỉ.
+
+Các đáp án trên chỉ dùng tạo tình huống demo, không phải hướng dẫn làm bài thật.
+
+#### 6.3. Yêu cầu pathway
+
+Bấm **Request pathway**, xác nhận một lần và chờ. Nếu đã có yêu cầu, mở yêu cầu hiện tại thay vì gửi thêm.
+
+### Bước 7. Duyệt pathway, học và hoàn thành
+
+#### 7.1. Expert duyệt pathway
 
 1. Đăng nhập **David Thompson → Pathway review**, mở yêu cầu của **James Wilson**.
 2. Chọn node Java Collections/Intermediate. Exclude cả hai module rồi **Check**. Node phải báo lỗi không còn module được chọn; chưa được Approve.
@@ -399,14 +419,14 @@ Muốn có gợi ý, Job position cần đủ sáu điểm, tính năng RIASEC �
 
 Bypass giữ lại gap và lịch sử duyệt, chưa công nhận đạt skill. Sau khi duyệt, Employee mở lại pathway để thấy trạng thái mới.
 
-### 8.10. Employee học Java Collections và thi đạt
+#### 7.2. Employee học Java Collections và thi đạt
 
 1. Mở **Adaptive Pathway → Java Collections/Intermediate → Guided Practice**.
 2. Học đủ hai bài, hoàn thành nội dung, rồi mở Skill Assessment.
 3. Với bank demo: nhóm Java Collections/Intermediate chọn **B**; nhóm Foundation nếu có chọn **A**. Đọc đúng tên nhóm, không chọn B cho cả bài.
 4. Nộp, đợi kết quả và quay lại pathway. Khi đủ điều kiện, yêu cầu được đánh dấu hoàn thành.
 
-### 8.11. Demo recalculate: MAIN đạt nhưng còn thiếu nền tảng
+#### 7.3. Demo recalculate: MAIN đạt nhưng còn thiếu nền tảng
 
 1. Mở **SQL Indexing/Intermediate**, học hết hai bài rồi làm Skill Assessment.
 2. Với bank demo: nhóm **Intermediate MAIN chọn C**. Nhóm **SQL Indexing/Foundation** và **SQL Querying/Intermediate chọn B** để cố ý sai nền tảng.
@@ -419,7 +439,7 @@ Bypass giữ lại gap và lịch sử duyệt, chưa công nhận đạt skill.
 
 Nếu hết lượt hoặc chưa đến giờ thi lại, xử lý theo thông báo và policy; không reset dữ liệu để bỏ khóa. Nếu phát sinh thêm nhóm ngoài bảng, kiểm tra đúng cấu hình đang được áp dụng.
 
-### 8.12. Employee nộp certificate, Expert duyệt và hoàn thành pathway
+#### 7.4. Employee nộp certificate, Expert duyệt và hoàn thành pathway
 
 1. Employee mở **Docker/Foundation**, đọc mô tả năng lực và tài liệu tham khảo.
 2. Chọn nộp **link HTTPS** hoặc **PDF/ảnh** bằng chứng đã chuẩn bị, rồi xác nhận.
@@ -429,7 +449,7 @@ Nếu hết lượt hoặc chưa đến giờ thi lại, xử lý theo thông b�
 6. Khi các yêu cầu bắt buộc đã hoàn thành hoặc có quyết định bypass hợp lệ, pathway hoàn thành và được giữ trong lịch sử. Việc bypass vẫn không trở thành năng lực đã đạt.
 7. Kiểm tra nút chọn/đổi role đã mở theo trạng thái hiện tại. Có thể chọn mục tiêu tiếp theo; không xóa pathway cũ để bắt đầu lại.
 
-### 8.13. Tình huống thêm nội dung sau bypass (tùy chọn)
+#### 7.5. Tình huống thêm nội dung sau bypass (tùy chọn)
 
 Phần demo chính không cần ZIP thứ hai. Nếu muốn diễn thêm, Expert có thể tự tạo module **API Security/Foundation** với bài học hợp lệ rồi gửi L&D duyệt và publish, hoặc tạo nguồn phù hợp theo cấu hình skill đang dùng.
 
@@ -437,9 +457,23 @@ Employee xem thông báo để biết **skill, mức và nội dung vừa thêm*
 
 Mở dropdown chuông để xem thông báo: chỉ mục thực sự hiện ra được đánh dấu đọc; cuộn để xem các mục còn lại. Nếu lưu trạng thái đọc lỗi, dùng **Retry**.
 
-### 8.14. Trước khi diễn trên bản deploy
+### Tham khảo: RIASEC trong file 01
 
-- Dùng URL của bản dev/deploy đang chạy thay cho localhost trong các bước cũ. Chỉ dùng `/reset` khi chủ môi trường xác nhận được phép xóa dữ liệu; không dùng nó cho luồng học lại thông thường.
-- Sau khi merge nhánh fix vào main, chờ workflow build/deploy hoàn tất rồi tải lại trang. Push nhánh fix chưa làm server đổi bản.
-- Source hiện có profile `workspace-baseline`, pathway worker, RIASEC và các cờ frontend tương ứng trong cấu hình dev/deploy. Máy deploy cần đủ biến môi trường, SMTP/storage, kết nối dữ liệu và mô hình RIASEC; cú pháp Compose hợp lệ chưa chứng minh các dịch vụ đã chạy trên server.
-- Các file 05/06 đã được người dùng xác nhận import được ở local trước đó. Sáu cột RIASEC mới đã được nối trong source và kiểm tra build; việc onboarding/lưu/đọc lại trên server sau deploy vẫn cần được kiểm tra trực tiếp.
+tab **Job positions** đã có thêm sáu cột `RIASEC R`, `RIASEC I`, `RIASEC A`, `RIASEC S`, `RIASEC E`, `RIASEC C`. R = Realistic, I = Investigative, A = Artistic, S = Social, E = Enterprising, C = Conventional. Mỗi ô là số nguyên từ 0 đến 40. Nhập đủ sáu ô của một vị trí, hoặc để trống cả sáu. File cũ không có các cột này vẫn import được.
+
+| Job position | R | I | A | S | E | C |
+| --- | --- | --- | --- | --- | --- | --- |
+| Backend Engineer | 18 | 38 | 12 | 10 | 16 | 28 |
+| Frontend Engineer | 14 | 30 | 32 | 16 | 18 | 22 |
+| QA Engineer | 20 | 34 | 10 | 14 | 12 | 36 |
+| Data Engineer | 16 | 40 | 12 | 10 | 14 | 32 |
+| Learning & Development Specialist | 8 | 22 | 20 | 40 | 32 | 26 |
+
+Đây là **điểm mẫu tự đặt cho demo**, không phải điểm nghiên cứu nghề nghiệp. Chúng mô tả Job position để so với kết quả sở thích của Employee. Chúng không thay điểm bài RIASEC của Employee. Cấu trúc và điểm được lưu khi onboarding tạo workspace sau thanh toán; import preview chưa ghi chúng vào catalog của workspace. Với workspace đã tạo từ file cũ, cập nhật điểm ở màn hình quản lý Job position. Không đăng ký lại hoặc reset chỉ để đổi điểm.
+
+### Lưu ý khi dùng trên deploy
+
+- Chỉnh file local không cập nhật bank trên server. Tài liệu này dành cho luồng nhập mới theo thứ tự trên; không tự import lại toàn bank vào workspace đã có câu hỏi.
+- Nếu đã sửa skill sau khi import bank, cần đối chiếu version và nội dung hiện có trước khi bổ sung; không sửa Excel hoặc đổi loại qua lại để che lỗi version.
+- Sau khi merge và workflow deploy hoàn tất, tải lại trang. Push nhánh fix chưa làm server đổi bản.
+- SMTP, storage, kết nối dữ liệu, worker và mô hình RIASEC phụ thuộc môi trường. Kiểm tra file tĩnh không chứng minh toàn bộ luồng đang chạy trên deploy.
