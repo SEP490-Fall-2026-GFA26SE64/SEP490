@@ -85,8 +85,12 @@ public final class ModuleAuthoringService {
         return list(search, status, review, type, skill, page, false);
     }
     public Page list(String search, String status, String review, String type, String skill, int page, boolean pendingOnly) {
+        return list(search, status, review, type, skill, page, pendingOnly, 10);
+    }
+    public Page list(String search, String status, String review, String type, String skill, int page, boolean pendingOnly, int pageSize) {
         Actor actor = staff();
         if (pendingOnly) manager(actor);
+        int size = Math.min(Math.max(1, pageSize), 200);
         String query = search == null ? "" : search.strip().toLowerCase(Locale.ROOT);
         List<Document> all = port.documents(actor.organizationId()).stream().filter(d -> visible(actor, d.jobPositionIds()))
                 .filter(d -> !pendingOnly || Set.of("SUBMITTED", "ARCHIVE_REQUESTED", "PUBLISH_PENDING", "ARCHIVE_PENDING").contains(d.current().state()))
@@ -96,8 +100,8 @@ public final class ModuleAuthoringService {
                 .filter(d -> type == null || type.isBlank() || d.current().payload().moduleType().equals(type))
                 .filter(d -> skill == null || skill.isBlank() || d.current().payload().teachings().stream().anyMatch(t -> t.skillId().equals(skill)))
                 .sorted(Comparator.comparing(Document::createdAt).reversed().thenComparing(Document::id)).toList();
-        int safe = Math.min(Math.max(1, page), Math.max(1, (all.size() + 9) / 10)), start = Math.min(all.size(), (safe - 1) * 10);
-        return new Page(all.subList(start, Math.min(all.size(), start + 10)), all.size(), safe, 10);
+        int safe = Math.min(Math.max(1, page), Math.max(1, (all.size() + size - 1) / size)), start = Math.min(all.size(), (safe - 1) * size);
+        return new Page(all.subList(start, Math.min(all.size(), start + size)), all.size(), safe, size);
     }
     public Document detail(String id) { Actor actor = staff(); return port.transaction(() -> require(actor, id)); }
     public CatalogPage catalogList(String search, String status, String review, String type, String skill, int page) {

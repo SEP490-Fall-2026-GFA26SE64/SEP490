@@ -72,7 +72,7 @@ public final class QuestionBankService implements QuestionBankUseCase {
     private String normalized(String s) { return s.strip().replaceAll("\\s+"," ").toLowerCase(Locale.ROOT); }
     private String signature(Content c) { return normalized(c.prompt())+"\u0000"+c.options().stream().map(this::normalized).toList(); }
     private List<String> duplicates(QuestionBank b,Content c,UUID except) {
-        return b.questions.stream().filter(q->!q.id.equals(except)).filter(q->q.versions.stream().anyMatch(v->signature(v.content).equals(signature(c)))).map(q->q.code).toList();
+        return b.questions.stream().filter(q->!q.retired&&!q.id.equals(except)).filter(q->q.versions.stream().anyMatch(v->signature(v.content).equals(signature(c)))).map(q->q.code).toList();
     }
     private void audit(QuestionBank b,Question q,Version v,Actor a,String action,String reason) {
         b.history.add(new Audit(UUID.randomUUID(),q.id,v==null?null:v.id,action,a.id(),clock.instant(),reason,v==null?null:v.content));
@@ -131,29 +131,47 @@ public final class QuestionBankService implements QuestionBankUseCase {
     @Override public View approve(Bulk input) {
         var a=actor();manager(a);require(input.questions()!=null&&!input.questions().isEmpty()&&input.questions().size()<=500,400,"Select 1–500 questions");
         require(input.questions().stream().map(Command::id).distinct().count()==input.questions().size(),400,"Duplicate selection");
-        return store.atomic(a,b->{var errors=new ArrayList<String>();for(var in:input.questions()) {try {var q=find(b,in.id());expected(q,in.expectedRevision());var v=latest(q);require(!q.retired&&q.owner!=null&&"SUBMITTED".equals(v.state)&&v.id.toString().equals(v.viewed.get(a.id())),409,"Open the current eligible submitted version");content(a,v.content,true);catalog.requireExpert(a,q.owner);}catch(Failure e){errors.add(in.id()+": "+e.getMessage());}}require(errors.isEmpty(),409,String.join("; ",errors));for(var in:input.questions()){var q=find(b,in.id());approveOne(b,a,q,latest(q));q.revision++;}return view(b);});
+        return store.atomic(a,b->{var errors=new ArrayList<String>();for(var in:input.questions()) {try {var q=find(b,in.id());expected(q,in.expectedRevision());var v=latest(q);if(input.markReviewed()&&"SUBMITTED".equals(v.state)){v.viewed.put(a.id(),v.id.toString());}require(!q.retired&&q.owner!=null&&"SUBMITTED".equals(v.state)&&v.id.toString().equals(v.viewed.get(a.id())),409,"Open the current eligible submitted version");content(a,v.content,true);catalog.requireExpert(a,q.owner);}catch(Failure e){errors.add(in.id()+": "+e.getMessage());}}require(errors.isEmpty(),409,String.join("; ",errors));for(var in:input.questions()){var q=find(b,in.id());approveOne(b,a,q,latest(q));q.revision++;}return view(b);});
     }
     @Override public ImportBatch preview(Preview input) {
         var a=actor();require(a.expert(),403,"Expert import required");require(input.rows()!=null&&!input.rows().isEmpty()&&input.rows().size()<=maxRows,400,"Import 1–"+maxRows+" rows");
-        return store.atomic(a,b->{var batch=new ImportBatch();batch.id=UUID.randomUUID();batch.actor=a.id();batch.generatedCodes=true;batch.expiresAt=clock.instant().plusSeconds(1800);var codes=new HashSet<String>();var signatures=new HashSet<String>();int row=0;
+        return store.atomic(a,b->{
+            if(input.fileHash()!=null&&!input.fileHash().isBlank()&&b.committedFileHashes.contains(input.fileHash())) {
+                throw new Failure(409,"This exact file was already imported / File này đã được import trước đó");
+            }
+            var batch=new ImportBatch();batch.id=UUID.randomUUID();batch.actor=a.id();batch.generatedCodes=true;batch.fileHash=input.fileHash();batch.expiresAt=clock.instant().plusSeconds(1800);var codes=new HashSet<String>();var signatures=new HashMap<String,Integer>();int row=0;
             for(var in:input.rows()) { row++; try {
                 automaticCode(in.code());
                 Content body=content(a,in.content(),false);
+                String sig=signature(body);
+                Integer firstRow=signatures.putIfAbsent(sig,row);
+                if(firstRow!=null) {
+                    batch.errors.add("Row "+row+": duplicate question in this file (matches row "+firstRow+") / Dòng "+row+": trùng câu hỏi trong cùng file (trùng dòng "+firstRow+")");
+                    continue;
+                }
                 String c; do { c=generatedCode(b); } while (!codes.add(c));
                 batch.expected.put(c,-1L);
                 var matches=duplicates(b,body,null);batch.matching.put(c,matches);
                 if(!matches.isEmpty())batch.warnings.add(c+": matching content exists: "+String.join(", ",matches));
-                if(!signatures.add(signature(body)))batch.warnings.add(c+": matching content in this file");
                 batch.rows.add(new Row(c,body));
             } catch(Failure e) { batch.errors.add("Row "+row+": "+e.getMessage()); } }
             b.imports.removeIf(x->x.expiresAt.isBefore(clock.instant()));require(b.imports.size()<100,429,"Too many pending imports; retry later");b.imports.add(batch);return batch;});
     }
     @Override public View confirm(Confirmation input) {
         var a=actor();require(a.expert(),403,"Expert import required");return store.atomic(a,b->{var batch=b.imports.stream().filter(x->x.id.equals(input.batch())&&x.actor.equals(a.id())).findFirst().orElseThrow(()->new Failure(404,"Import preview not found"));
-            require(batch.expiresAt.isAfter(clock.instant()),409,"Import preview expired");if(batch.committed)return view(b);require(batch.errors.isEmpty(),400,String.join("; ",batch.errors));require(batch.warnings.isEmpty()||input.acknowledgeWarnings(),409,"Acknowledge import warnings");require(batch.generatedCodes&&batch.expected.values().stream().allMatch(v->v==-1L)&&batch.rows.stream().allMatch(r->r.code().matches("Q-[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}")),409,"Import format changed. Upload the latest template again.");
+            require(batch.expiresAt.isAfter(clock.instant()),409,"Import preview expired");if(batch.committed)return view(b);require(batch.errors.isEmpty(),400,String.join("; ",batch.errors));
+            if(batch.fileHash!=null&&!batch.fileHash.isBlank()&&b.committedFileHashes.contains(batch.fileHash)) {
+                throw new Failure(409,"This exact file was already imported / File này đã được import trước đó");
+            }
+            require(input.skipDuplicates()||batch.warnings.isEmpty()||input.acknowledgeWarnings(),409,"Acknowledge import warnings");
+            require(batch.generatedCodes&&batch.expected.values().stream().allMatch(v->v==-1L)&&batch.rows.stream().allMatch(r->r.code().matches("Q-[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}")),409,"Import format changed. Upload the latest template again.");
             var batchCodes=batch.rows.stream().map(Row::code).collect(java.util.stream.Collectors.toSet());
-            for(var row:batch.rows){var existing=b.questions.stream().filter(x->x.code.equals(row.code())).findFirst().orElse(null);var nowMatches=duplicates(b,row.content(),existing==null?null:existing.id).stream().filter(c->!batchCodes.contains(c)).collect(java.util.stream.Collectors.toSet());var seenMatches=batch.matching.getOrDefault(row.code(),List.of()).stream().filter(c->!batchCodes.contains(c)).collect(java.util.stream.Collectors.toSet());require(nowMatches.equals(seenMatches),409,row.code()+": matching content changed since preview; upload again");}
-            for(var row:batch.rows) {
+            var rowsToImport=input.skipDuplicates()
+                ? batch.rows.stream().filter(r->batch.matching.getOrDefault(r.code(),List.of()).isEmpty()).toList()
+                : batch.rows;
+            require(!rowsToImport.isEmpty(),409,"No new questions to import (all rows already exist) / Không có câu hỏi mới nào để nhập (tất cả đã tồn tại)");
+            for(var row:rowsToImport){var existing=b.questions.stream().filter(x->x.code.equals(row.code())).findFirst().orElse(null);var nowMatches=duplicates(b,row.content(),existing==null?null:existing.id).stream().filter(c->!batchCodes.contains(c)).collect(java.util.stream.Collectors.toSet());var seenMatches=batch.matching.getOrDefault(row.code(),List.of()).stream().filter(c->!batchCodes.contains(c)).collect(java.util.stream.Collectors.toSet());require(nowMatches.equals(seenMatches),409,row.code()+": matching content changed since preview; upload again");}
+            for(var row:rowsToImport) {
                 require(!containsCode(b,row.code()),409,"Generated code conflict. Upload the file again.");
                 var created=create(b,a,row.code(),content(a,row.content(),false));
                 if(input.submitForReview()) {
@@ -167,7 +185,9 @@ public final class QuestionBankService implements QuestionBankUseCase {
                     notifyManagers(b,a,"Question awaiting review",created.code);
                     created.revision++;
                 }
-            }batch.committed=true;return view(b);});
+            }
+            if(batch.fileHash!=null&&!batch.fileHash.isBlank())b.committedFileHashes.add(batch.fileHash);
+            batch.committed=true;return view(b);});
     }
     @Override public List<Notice> notices() {var a=actor();return store.atomic(a,b->b.notices.stream().filter(n->a.id().equals(n.recipient)).toList());}
     @Override public void markRead(UUID id) {var a=actor();store.atomic(a,b->{var n=b.notices.stream().filter(x->x.id.equals(id)&&x.recipient.equals(a.id())).findFirst().orElseThrow(()->new Failure(404,"Notification not found"));n.readAt=clock.instant();return null;});}

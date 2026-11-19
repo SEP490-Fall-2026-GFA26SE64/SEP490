@@ -24,7 +24,11 @@ public final class QuestionBankDto {
 
     public record SaveRequest(UUID id, Long expectedRevision, String code, ContentDto content, boolean acknowledgeDuplicates) {}
 
-    public record PreviewRequest(List<RowDto> rows) {}
+    public record PreviewRequest(List<RowDto> rows, String fileHash) {
+        public PreviewRequest(List<RowDto> rows) {
+            this(rows, null);
+        }
+    }
 
     public record ActorResponse(UUID id, UUID organization, String role) {}
 

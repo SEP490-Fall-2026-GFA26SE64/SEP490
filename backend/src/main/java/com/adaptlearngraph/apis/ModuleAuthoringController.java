@@ -1,6 +1,8 @@
 package com.adaptlearngraph.apis;
 
 import com.adaptlearngraph.dtos.ModuleAuthoringDto.ActorResponse;
+import com.adaptlearngraph.dtos.ModuleAuthoringDto.BatchApproveInput;
+import com.adaptlearngraph.dtos.ModuleAuthoringDto.BatchApproveResponse;
 import com.adaptlearngraph.dtos.ModuleAuthoringDto.CatalogPageResponse;
 import com.adaptlearngraph.dtos.ModuleAuthoringDto.ChoiceResponse;
 import com.adaptlearngraph.dtos.ModuleAuthoringDto.ContentResponse;
@@ -47,7 +49,8 @@ public class ModuleAuthoringController {
     @GetMapping("/modules") public PageResponse list(@RequestParam(defaultValue="") String search,
             @RequestParam(defaultValue="") String status, @RequestParam(defaultValue="") String review,
             @RequestParam(defaultValue="") String type, @RequestParam(defaultValue="") String skill,
-            @RequestParam(defaultValue="1") int page, @RequestParam(defaultValue="false") boolean pendingOnly) { return service.list(search, status, review, type, skill, page, pendingOnly); }
+            @RequestParam(defaultValue="1") int page, @RequestParam(defaultValue="false") boolean pendingOnly,
+            @RequestParam(defaultValue="10") int pageSize) { return service.list(search, status, review, type, skill, page, pendingOnly, pageSize); }
     @GetMapping("/modules/{id}") public DocumentResponse detail(@PathVariable String id) { return service.detail(id); }
     @GetMapping("/module-list") public CatalogPageResponse catalogList(@RequestParam(defaultValue="") String search,
             @RequestParam(defaultValue="") String status, @RequestParam(defaultValue="") String review,
@@ -56,6 +59,9 @@ public class ModuleAuthoringController {
     @PostMapping("/modules") public ResponseEntity<DocumentResponse> create(@RequestBody ModuleInput input) { return ResponseEntity.status(201).body(service.create(input)); }
     @PutMapping("/modules/{id}") public DocumentResponse update(@PathVariable String id, @RequestBody UpdateInput input) { return service.update(id, input.expectedVersion(), input.value()); }
     @PostMapping("/modules/{id}/actions") public DocumentResponse action(@PathVariable String id, @RequestBody ActionInput input) { return service.action(id, input.expectedVersion(), input.action(), input.feedback()); }
+    @PostMapping("/modules/batch-approve") public BatchApproveResponse batchApprove(@RequestBody BatchApproveInput input) {
+        return service.batchApprove(input == null ? List.of() : input.items());
+    }
     public record ResponsibilityInput(long expectedVersion, String expertId) {}
     @PutMapping("/modules/{id}/responsible-expert")
     public DocumentResponse transferResponsibility(@PathVariable String id, @RequestBody ResponsibilityInput input) {

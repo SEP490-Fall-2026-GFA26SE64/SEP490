@@ -80,7 +80,7 @@ public class QuestionBankApplicationService {
     public ImportBatchResponse preview(PreviewRequest input) {
         var rows = input.rows() == null ? null : input.rows().stream()
                 .map(row -> row == null ? null : new Row(row.code(), content(row.content()))).toList();
-        return map(call(() -> bank.preview(new QuestionBankUseCase.Preview(rows))), ImportBatchResponse.class);
+        return map(call(() -> bank.preview(new QuestionBankUseCase.Preview(rows, input.fileHash()))), ImportBatchResponse.class);
     }
 
     public ViewResponse confirm(Confirmation input) {

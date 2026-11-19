@@ -8,11 +8,22 @@ public interface QuestionBankUseCase {
     record View(UUID id, String name, List<Question> questions, List<Audit> history) {}
     record Save(UUID id, Long expectedRevision, String code, Content content, boolean acknowledgeDuplicates) {}
     record Command(UUID id, long expectedRevision, String action, String reason, UUID owner) {}
-    record Bulk(List<Command> questions) {}
-    record Preview(List<Row> rows) {}
-    record Confirmation(UUID batch, boolean acknowledgeWarnings, boolean confirmSuccessors, boolean submitForReview) {
+    record Bulk(List<Command> questions, boolean markReviewed) {
+        public Bulk(List<Command> questions) {
+            this(questions, false);
+        }
+    }
+    record Preview(List<Row> rows, String fileHash) {
+        public Preview(List<Row> rows) {
+            this(rows, null);
+        }
+    }
+    record Confirmation(UUID batch, boolean acknowledgeWarnings, boolean confirmSuccessors, boolean submitForReview, boolean skipDuplicates) {
         public Confirmation(UUID batch, boolean acknowledgeWarnings, boolean confirmSuccessors) {
-            this(batch, acknowledgeWarnings, confirmSuccessors, false);
+            this(batch, acknowledgeWarnings, confirmSuccessors, false, false);
+        }
+        public Confirmation(UUID batch, boolean acknowledgeWarnings, boolean confirmSuccessors, boolean submitForReview) {
+            this(batch, acknowledgeWarnings, confirmSuccessors, submitForReview, false);
         }
     }
     Session session();

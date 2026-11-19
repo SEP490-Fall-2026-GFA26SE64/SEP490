@@ -22,6 +22,10 @@ public interface LearningImportJpaRepository extends Repository<LearningImportEn
             + " AND actor_id = :actor FOR UPDATE", nativeQuery = true)
     List<String> lockDocument(@Param("id") UUID id, @Param("organization") String organizationId, @Param("actor") String actorId);
 
+    @Query("select i.document from LearningImportEntity i"
+            + " where i.organizationId = :organization and i.state = 'COMMITTED'")
+    List<String> committedDocuments(@Param("organization") String organizationId);
+
     @Modifying(flushAutomatically = true, clearAutomatically = true)
     @Transactional(TransactionManagers.JPA)
     @Query("update LearningImportEntity i set i.state = 'COMMITTED', i.committedAt = current_timestamp, i.document = :document"

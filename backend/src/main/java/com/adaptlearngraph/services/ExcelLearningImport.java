@@ -195,11 +195,14 @@ public final class ExcelLearningImport implements LearningImportUseCase {
         try {
             root = Files.createTempDirectory("learning-import-");
             Path workbook = root.resolve("module.xlsx");
+            String fileHash;
             if (filename != null && filename.toLowerCase(Locale.ROOT).endsWith(".zip")) {
                 long total = 0;
                 int count = 0;
                 Set<Path> paths = new HashSet<>();
-                try (var zip = new ZipInputStream(input)) {
+                var digest = java.security.MessageDigest.getInstance("SHA-256");
+                var digestStream = new java.security.DigestInputStream(input, digest);
+                try (var zip = new ZipInputStream(digestStream)) {
                     ZipEntry entry;
                     byte[] buffer = new byte[65536];
                     while ((entry = zip.getNextEntry()) != null) {
@@ -221,6 +224,12 @@ public final class ExcelLearningImport implements LearningImportUseCase {
                             }
                         }
                     }
+                    byte[] tail = new byte[4096];
+                    while (digestStream.read(tail) != -1) {}
+                }
+                fileHash = HexFormat.of().formatHex(digest.digest());
+                if (isCommittedFileHash(a.organizationId(), fileHash)) {
+                    throw new Failure(409, "This exact file was already imported / File này đã được import trước đó");
                 }
             } else throw new Failure(400,
                     "Upload a ZIP containing module.xlsx, lesson/ DOCX and video/ MP4. Download the new template; RAR, standalone Excel and old Markdown/JSON templates are not accepted / Chỉ nhận ZIP theo mẫu mới, không nhận RAR hoặc Excel đơn lẻ.");
@@ -358,7 +367,7 @@ public final class ExcelLearningImport implements LearningImportUseCase {
                     errors.add(new Problem(id, Integer.parseInt(lesson.get("excelRow")), "Lessons: unknown module reference / Mã module của bài học không tồn tại"));
             if (rows.isEmpty()) errors.add(new Problem("", 0, "Include at least one module"));
             String id = UUID.randomUUID().toString();
-            Preview p = new Preview(id, rows, errors, List.of(), false);
+            Preview p = new Preview(id, rows, errors, List.of(), false, "DOCX_ZIP_V1", fileHash);
             imports.insert(
                     new LearningImportEntity(
                             UUID.fromString(id),
@@ -564,7 +573,19 @@ public final class ExcelLearningImport implements LearningImportUseCase {
                 available.put(c.code().toLowerCase(Locale.ROOT), c.id());
             }
         });
-        for (var row : p.modules())
+        List<LearningImportUseCase.Row> checkedRows = new ArrayList<>();
+        Map<String, String> existingBySignature = new HashMap<>();
+        for (var doc : docs) {
+            if (doc.archived() || doc.revisions().isEmpty()) continue;
+            var latestPayload = doc.revisions().getLast().payload();
+            if (latestPayload == null) continue;
+            String sig = moduleSignature(latestPayload.title(), latestPayload.teachings().isEmpty() ? "" : latestPayload.teachings().getFirst().skillId(), latestPayload.knowledgeLevel() == null ? "" : latestPayload.knowledgeLevel().name(), latestPayload.moduleType(), available);
+            existingBySignature.putIfAbsent(sig, doc.id());
+        }
+        Map<String, Integer> seenInFile = new HashMap<>();
+        for (var row : p.modules()) {
+            String rowStatus = "NEW";
+            String duplicateOf = null;
             try {
                 if (row.moduleRef() == null || row.moduleRef().isBlank() || row.expectedVersion() != null)
                     throw new Failure(409, "Import template changed. Upload the current moduleRef template again.");
@@ -595,10 +616,34 @@ public final class ExcelLearningImport implements LearningImportUseCase {
                             actualSkillId,
                             "");
                 }
+                String sig = moduleSignature(row.module().title(), skills.getFirst().skillId(), row.module().knowledgeLevel(), row.module().moduleType(), available);
+                Integer firstRow = seenInFile.putIfAbsent(sig, row.excelRow());
+                if (firstRow != null) {
+                    errors.add(new Problem(row.moduleRef(), row.excelRow(), "Duplicate module in this file (matches row " + firstRow + ") / Trùng module trong cùng file (trùng dòng " + firstRow + ")"));
+                } else if (existingBySignature.containsKey(sig)) {
+                    rowStatus = "DUPLICATE";
+                    duplicateOf = existingBySignature.get(sig);
+                }
             } catch (RuntimeException e) {
                 errors.add(new Problem(row.moduleRef() == null ? row.moduleId() : row.moduleRef(), row.excelRow(), e.getMessage()));
             }
-        return new Preview(p.id(), p.modules(), errors, owned, p.committed(), p.format());
+            checkedRows.add(new LearningImportUseCase.Row(row.moduleId(), row.excelRow(), row.module(), row.lessons(), row.expectedVersion(), row.moduleRef(), rowStatus, duplicateOf));
+        }
+        return new Preview(p.id(), checkedRows, errors, owned, p.committed(), p.format(), p.fileHash());
+    }
+
+    private boolean isCommittedFileHash(String organizationId, String fileHash) {
+        if (fileHash == null || fileHash.isBlank()) return false;
+        for (String doc : imports.committedDocuments(organizationId)) {
+            if (doc != null && doc.contains("\"fileHash\":\"" + fileHash + "\"")) return true;
+        }
+        return false;
+    }
+
+    private static String moduleSignature(String title, String skill, String level, String type, Map<String, String> available) {
+        String normTitle = title == null ? "" : title.strip().replaceAll("\\s+", " ").toLowerCase(Locale.ROOT);
+        String resolvedSkill = skill == null ? "" : available.getOrDefault(skill.toLowerCase(Locale.ROOT), skill);
+        return normTitle + "|" + resolvedSkill + "|" + (level == null ? "" : level) + "|" + (type == null ? "" : type);
     }
 
     @Override
@@ -609,12 +654,19 @@ public final class ExcelLearningImport implements LearningImportUseCase {
                     if (original.committed())
                         throw new Failure(409, "This import was already committed");
                     Preview p = checked(original);
+                    if (isCommittedFileHash(actor().organizationId(), p.fileHash()))
+                        throw new Failure(409, "This exact file was already imported / File này đã được import trước đó");
                     if (!p.errors().isEmpty())
                         throw new Failure(409, "Resolve all import errors first");
                     if (!p.ownedDuplicates().isEmpty() && !confirm)
                         throw new Failure(409, "Confirm importing new revisions of your modules");
+                    List<LearningImportUseCase.Row> rowsToImport = p.modules().stream()
+                            .filter(r -> !"DUPLICATE".equals(r.status()))
+                            .toList();
+                    if (rowsToImport.isEmpty())
+                        throw new Failure(409, "No new modules to import (all modules already exist) / Không có module mới nào để nhập (tất cả đã tồn tại)");
                     List<Document> result = new ArrayList<>();
-                    for (var row : p.modules()) {
+                    for (var row : rowsToImport) {
                         var c =
                                 modules.lessons(
                                         row.module().title(),

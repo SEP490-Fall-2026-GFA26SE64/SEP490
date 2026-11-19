@@ -116,6 +116,38 @@ function OwnedModuleManagementWorkspace({ mode, managerShell = false }: { mode: 
   const [confirm, setConfirm] = useState<{ doc: ModuleDocument; action: string } | null>(null)
   const [feedback, setFeedback] = useState('')
   const [learning, setLearning] = useState<ModuleRevision | null>(null)
+  const [batchApprovalOpen, setBatchApprovalOpen] = useState(false)
+  const [batchApprovalIds, setBatchApprovalIds] = useState<string[]>([])
+  const [batchPendingDocs, setBatchPendingDocs] = useState<ModuleDocument[]>([])
+  const [batchLoading, setBatchLoading] = useState(false)
+  const [batchExpertFilter, setBatchExpertFilter] = useState('')
+  const [batchSkillFilter, setBatchSkillFilter] = useState('')
+  const [batchFailures, setBatchFailures] = useState<Array<{ id: string; title: string; message: string }>>([])
+
+  async function openBatchApproval() {
+    setBatchExpertFilter('')
+    setBatchSkillFilter('')
+    setBatchFailures([])
+    const fallback = page.items.filter(d => latest(d).state === 'SUBMITTED')
+    setBatchPendingDocs(fallback)
+    setBatchApprovalIds(fallback.map(d => d.id))
+    setBatchApprovalOpen(true)
+    setBatchLoading(true)
+    try {
+      const params = new URLSearchParams({ pendingOnly: 'true', page: '1', pageSize: '200' })
+      if (search.trim()) params.set('search', search.trim())
+      if (filters.type) params.set('type', filters.type)
+      if (filters.skill) params.set('skill', filters.skill)
+      const allPending = await moduleRequest<ModulePage>(`/modules?${params.toString()}`)
+      const submitted = allPending.items.filter(d => latest(d).state === 'SUBMITTED')
+      setBatchPendingDocs(submitted)
+      setBatchApprovalIds(submitted.map(d => d.id))
+    } catch {
+      // Keep fallback from current page if full-queue fetch fails
+    } finally {
+      setBatchLoading(false)
+    }
+  }
   const manager = actor?.roles.includes('LD_MANAGER') ?? false
   const expert = actor?.roles.includes('EXPERT') ?? false
   const managerLearning = (manager || managerShell) && ['modules', 'approvals'].includes(mode)
@@ -470,7 +502,22 @@ function OwnedModuleManagementWorkspace({ mode, managerShell = false }: { mode: 
           {loading && managerLearning && <PageLoader label={copy('Loading learning content?', '?ang t?i n?i dung h?c t?p?')} />}
           {mode === 'approvals' ? (
             listItems.length > 0 ? (
-              <ModuleApprovalQueue documents={page.items} showHeading={true} total={page.total} loading={loading} busy={busy || contentBusy} vi={language === 'vi'} copy={copy} person={person} formatTime={formatTime} labels={stateLabels} onReview={doc => void run(async () => { setSelected(await moduleRequest<ModuleDocument>(`/modules/${doc.id}`)); setEditing(false) })} />
+              <div className="space-y-3">
+                {(() => {
+                  const pendingDocs = page.items.filter(d => latest(d).state === 'SUBMITTED')
+                  if (!pendingDocs.length) return null
+                  const totalPending = Math.max(pendingDocs.length, page.total)
+                  return (
+                    <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border bg-muted/30 px-3 py-2 text-xs">
+                      <span className="text-muted-foreground">{copy(`${totalPending} module(s) awaiting approval`, `${totalPending} module đang chờ duyệt`)}</span>
+                      <Button size="sm" disabled={busy || contentBusy} onClick={() => void openBatchApproval()}>
+                        {copy('Batch approve', 'Duyệt hàng loạt')} ({totalPending})
+                      </Button>
+                    </div>
+                  )
+                })()}
+                <ModuleApprovalQueue documents={page.items} showHeading={true} total={page.total} loading={loading} busy={busy || contentBusy} vi={language === 'vi'} copy={copy} person={person} formatTime={formatTime} labels={stateLabels} onReview={doc => void run(async () => { setSelected(await moduleRequest<ModuleDocument>(`/modules/${doc.id}`)); setEditing(false) })} />
+              </div>
             ) : (!loading && (!managerLearning || (catalogReady && !error))) ? (
               <Card>
                 <CardContent className="space-y-3 pt-6">
@@ -928,7 +975,98 @@ function OwnedModuleManagementWorkspace({ mode, managerShell = false }: { mode: 
         <Accordion>{[...selected.revisions].reverse().filter(revision => revision.number !== latest(selected).number).map(revision => <AccordionItem key={revision.number} value={String(revision.number)}><AccordionTrigger>{copy('Revision', 'Phiên bản')} {revision.number} · {stateLabels[revision.state] ?? revision.state}</AccordionTrigger><AccordionContent><div className="space-y-4 pt-2"><p className="text-xs text-muted-foreground">{copy('Edited by', 'Người sửa')}: {person(revision.editedBy)} · {formatTime(revision.editedAt)}</p>{revision.feedback && <p className="rounded-md bg-muted/40 p-3 text-sm">{revision.feedback}</p>}<CatalogModuleDetails module={revision.payload} content={revision.payload.content} review={{ by: revision.decidedBy, at: revision.decidedAt }} embedded hasHistory={true} onClose={() => {}} staff={staff} /></div></AccordionContent></AccordionItem>)}</Accordion>          </div>}
         />
       </DialogBody>}
-      <DialogFooter><div className="flex flex-1 flex-wrap gap-2">{selected && controls(selected, false)}</div><Button size="sm" variant="outline" onClick={() => setSelected(null)}>{copy('Close', 'Đóng')}</Button></DialogFooter>
+      <DialogFooter><div className="flex flex-1 flex-wrap gap-2">{selected && controls(selected, false)}{selected && mode === 'approvals' && latest(selected).state === 'SUBMITTED' && page.items.some(d => d.id !== selected.id && latest(d).state === 'SUBMITTED') && <Button size="sm" variant="secondary" disabled={busy || contentBusy} onClick={() => void run(async () => { const next = page.items.find(d => d.id !== selected.id && latest(d).state === 'SUBMITTED'); await moduleRequest<ModuleDocument>(`/modules/${encodeURIComponent(selected.id)}/actions`, 'POST', { expectedVersion: selected.lockVersion, action: 'approve', feedback: null }); await load(); if (next) { setSelected(await moduleRequest<ModuleDocument>(`/modules/${next.id}`)) } else { setSelected(null) } const msg = copy('Approved and moved to next module.', 'Đã duyệt và chuyển sang module tiếp theo.'); setNotice(msg); toast({ description: msg, variant: 'success', duration: 2500 }) })}>{copy('Approve & next', 'Duyệt & module tiếp')}</Button>}</div><Button size="sm" variant="outline" onClick={() => setSelected(null)}>{copy('Close', 'Đóng')}</Button></DialogFooter>
+    </Dialog>
+
+    <Dialog open={batchApprovalOpen} onOpenChange={open => { if (!open && !busy) setBatchApprovalOpen(false) }} size="wide" className="max-w-3xl max-h-[90dvh]" ariaLabel={copy('Batch approve modules', 'Duyệt hàng loạt module')}>
+      {(() => {
+        const filteredPending = batchPendingDocs.filter(doc => {
+          const rev = latest(doc)
+          const ownerId = doc.responsibleExpertId ?? doc.createdBy
+          if (batchExpertFilter && ownerId !== batchExpertFilter) return false
+          if (batchSkillFilter && !rev.payload.teachings.some(t => t.skillId === batchSkillFilter)) return false
+          return true
+        })
+        const selectedVisible = filteredPending.filter(d => batchApprovalIds.includes(d.id))
+        const expertOptions = Array.from(new Set(batchPendingDocs.map(d => d.responsibleExpertId ?? d.createdBy).filter((id): id is string => Boolean(id))))
+        const skillOptions = Array.from(new Map(batchPendingDocs.flatMap(d => latest(d).payload.teachings.map(t => [t.skillId, t.skillName] as const))).entries())
+        return <>
+          <DialogHeader>
+            <DialogTitle>{copy('Batch approve modules', 'Duyệt hàng loạt module')}</DialogTitle>
+            <p className="text-xs text-muted-foreground">{copy('Filter by expert or skill, review the list, and approve all selected modules in one request.', 'Lọc theo chuyên gia hoặc kỹ năng, kiểm tra danh sách và phê duyệt tất cả module đã chọn trong một lần.')}</p>
+          </DialogHeader>
+          <DialogBody className="space-y-3 py-3">
+            <div className="grid gap-2 sm:grid-cols-2">
+              <select aria-label={copy('Filter by expert', 'Lọc theo chuyên gia')} className="h-8 rounded-md border border-border bg-card px-2 text-xs" value={batchExpertFilter} disabled={busy || batchLoading} onChange={e => setBatchExpertFilter(e.target.value)}>
+                <option value="">{copy('All experts', 'Tất cả chuyên gia')}</option>
+                {expertOptions.map(id => <option key={id} value={id}>{person(id)}</option>)}
+              </select>
+              <select aria-label={copy('Filter by skill', 'Lọc theo kỹ năng')} className="h-8 rounded-md border border-border bg-card px-2 text-xs" value={batchSkillFilter} disabled={busy || batchLoading} onChange={e => setBatchSkillFilter(e.target.value)}>
+                <option value="">{copy('All skills', 'Tất cả kỹ năng')}</option>
+                {skillOptions.map(([id, name]) => <option key={id} value={id}>{name}</option>)}
+              </select>
+            </div>
+            <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border bg-muted/30 px-3 py-2 text-xs">
+              <span>{batchLoading ? copy('Loading full queue…', 'Đang tải toàn bộ hàng chờ…') : copy(`${selectedVisible.length} of ${filteredPending.length} shown selected (${batchPendingDocs.length} total pending)`, `Đã chọn ${selectedVisible.length}/${filteredPending.length} đang hiển thị (tổng ${batchPendingDocs.length} chờ duyệt)`)}</span>
+              <div className="flex gap-2">
+                <Button size="sm" variant="outline" disabled={busy || batchLoading} onClick={() => setBatchApprovalIds(prev => Array.from(new Set([...prev, ...filteredPending.map(d => d.id)])))}>{copy('Select filtered', 'Chọn tất cả đang lọc')}</Button>
+                <Button size="sm" variant="ghost" disabled={busy || batchLoading} onClick={() => setBatchApprovalIds(prev => prev.filter(id => !filteredPending.some(d => d.id === id)))}>{copy('Clear filtered', 'Bỏ chọn đang lọc')}</Button>
+              </div>
+            </div>
+            {batchFailures.length > 0 && (
+              <div role="alert" className="space-y-1 rounded-lg border border-destructive/40 bg-destructive/5 p-3 text-xs text-destructive">
+                <p className="font-semibold">{copy(`${batchFailures.length} module(s) could not be approved:`, `${batchFailures.length} module chưa thể duyệt:`)}</p>
+                <ul className="list-disc pl-4 space-y-0.5">
+                  {batchFailures.map(item => <li key={item.id}><span className="font-medium">{item.title}</span>: {item.message}</li>)}
+                </ul>
+              </div>
+            )}
+            <div className="space-y-2">
+              {filteredPending.map(doc => {
+                const rev = latest(doc)
+                const checked = batchApprovalIds.includes(doc.id)
+                return <label key={doc.id} className="flex items-start gap-3 rounded-lg border border-border p-3 cursor-pointer hover:bg-muted/20">
+                  <input type="checkbox" className="mt-1" checked={checked} disabled={busy} onChange={e => setBatchApprovalIds(prev => e.target.checked ? [...prev, doc.id] : prev.filter(id => id !== doc.id))} />
+                  <div className="min-w-0 flex-1 space-y-1 text-xs">
+                    <p className="text-sm font-medium break-words">{rev.payload.title}</p>
+                    <p className="text-muted-foreground">{rev.payload.teachings.map(t => t.skillName).join(', ')} · {rev.payload.knowledgeLevel ?? '—'} · {rev.payload.duration} {copy('min', 'phút')} · {person(doc.responsibleExpertId ?? doc.createdBy)}</p>
+                  </div>
+                </label>
+              })}
+            </div>
+          </DialogBody>
+          <DialogFooter>
+            <Button variant="outline" disabled={busy} onClick={() => setBatchApprovalOpen(false)}>{copy('Cancel', 'Huỷ')}</Button>
+            <Button disabled={busy || batchLoading || !selectedVisible.length} onClick={() => void run(async () => {
+              const chosen = filteredPending.filter(d => batchApprovalIds.includes(d.id))
+              if (!chosen.length) return
+              setBatchFailures([])
+              const result = await moduleRequest<{ approved: ModuleDocument[]; failed: Array<{ id: string; message: string }> }>('/modules/batch-approve', 'POST', {
+                items: chosen.map(doc => ({ id: doc.id, expectedVersion: doc.lockVersion })),
+              })
+              const approvedIds = new Set(result.approved.map(d => d.id))
+              await load()
+              if (result.failed.length > 0) {
+                setBatchPendingDocs(prev => prev.filter(d => !approvedIds.has(d.id)))
+                setBatchApprovalIds(result.failed.map(f => f.id))
+                setBatchFailures(result.failed.map(f => {
+                  const found = chosen.find(d => d.id === f.id)
+                  return { id: f.id, title: found ? latest(found).payload.title : f.id, message: f.message }
+                }))
+                const msg = copy(`Approved ${result.approved.length} module(s); ${result.failed.length} failed.`, `Đã duyệt ${result.approved.length} module; ${result.failed.length} module bị lỗi.`)
+                setNotice(msg)
+                toast({ description: msg, variant: 'destructive', duration: 4000 })
+              } else {
+                setBatchApprovalOpen(false)
+                setBatchApprovalIds([])
+                const msg = copy(`Approved and published ${result.approved.length} modules.`, `Đã duyệt và xuất bản ${result.approved.length} module.`)
+                setNotice(msg)
+                toast({ description: msg, variant: 'success', duration: 3000 })
+              }
+            })}>{busy ? copy('Approving…', 'Đang duyệt…') : `${copy('Approve selected', 'Duyệt đã chọn')} (${selectedVisible.length})`}</Button>
+          </DialogFooter>
+        </>
+      })()}
     </Dialog>
 
     <Dialog open={responsibilityDoc !== null} onOpenChange={open => { if (!open && !busy) setResponsibilityDoc(null) }} ariaLabel={copy('Change responsible person', 'Đổi người phụ trách')}>

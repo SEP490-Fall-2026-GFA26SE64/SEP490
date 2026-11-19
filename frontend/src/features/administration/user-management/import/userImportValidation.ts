@@ -149,13 +149,13 @@ export function validateImportRows(
     const hasTargetRole = Boolean(raw.targetRole.trim())
     const hasLevel = Boolean(raw.level.trim())
     if ((hasTargetRole || hasLevel) && role && role !== 'EMPLOYEE') {
-      add('targetRole', 'Target role and Level apply only to Employee rows. Leave them empty.', 'Vai trò mục tiêu và Cấp độ chỉ dùng cho Nhân viên. Hãy để trống.')
+      add('targetRole', 'Current role and Level apply only to Employee rows. Leave them empty.', 'Vai trò hiện tại và Cấp độ chỉ dùng cho Nhân viên. Hãy để trống.')
     } else if (hasLevel && !hasTargetRole) {
-      add('level', 'Level requires a Target role.', 'Cấp độ cần đi kèm Vai trò mục tiêu.')
+      add('level', 'Level requires a Current role.', 'Cấp độ cần đi kèm Vai trò hiện tại.')
     } else if (hasTargetRole && jobPosition) {
       targetRole = findTargetRole(jobPosition, raw.targetRole) ?? null
       if (!targetRole) {
-        add('targetRole', `Target role "${raw.targetRole.trim()}" is not published for job position ${jobPosition.label}.`, `Vai trò mục tiêu "${raw.targetRole.trim()}" chưa được xuất bản cho vị trí ${jobPosition.label}.`)
+        add('targetRole', `Current role "${raw.targetRole.trim()}" is not published or staged for job position ${jobPosition.label}.`, `Vai trò hiện tại "${raw.targetRole.trim()}" chưa được xuất bản hoặc staged cho vị trí ${jobPosition.label}.`)
       } else if (hasLevel) {
         const wanted = stripLevelRank(raw.level)
         level = targetRole.levels.find(item => normalizeKey(item) === normalizeKey(wanted)) ?? null

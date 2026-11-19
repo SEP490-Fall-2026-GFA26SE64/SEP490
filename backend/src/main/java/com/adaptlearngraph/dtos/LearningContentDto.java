@@ -42,9 +42,12 @@ public final class LearningContentDto {
                                        String readAt,String deepLink,String toastObservedAt) {}
 
     public record ImportRowResponse(String moduleId, int excelRow, ModuleInput module, List<LessonResponse> lessons,
-                                    Long expectedVersion, String moduleRef) {
+                                    Long expectedVersion, String moduleRef, String status, String duplicateOf) {
         public ImportRowResponse(String moduleId, int excelRow, ModuleInput module, List<LessonResponse> lessons, Long expectedVersion) {
-            this(moduleId, excelRow, module, lessons, expectedVersion, null);
+            this(moduleId, excelRow, module, lessons, expectedVersion, null, "NEW", null);
+        }
+        public ImportRowResponse(String moduleId, int excelRow, ModuleInput module, List<LessonResponse> lessons, Long expectedVersion, String moduleRef) {
+            this(moduleId, excelRow, module, lessons, expectedVersion, moduleRef, "NEW", null);
         }
     }
 

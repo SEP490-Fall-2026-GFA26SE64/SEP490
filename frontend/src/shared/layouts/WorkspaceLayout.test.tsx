@@ -27,7 +27,7 @@ it.each([
   expect(hrefs).not.toContain('/employee/overview')
   expect(hrefs).not.toContain('/employee/my-skills')
 })
-it.each(['/ld-manager/modules','/ld-manager/approvals'])('groups %s under Learning Content with Approvals as its entry', path => {
+it.each(['/ld-manager/modules','/ld-manager/approvals'])('groups %s under Learning Content with Modules as its entry', path => {
   vi.stubGlobal('fetch',vi.fn(async()=>new Response('{}',{status:404})))
   vi.stubGlobal('matchMedia',vi.fn(()=>({matches:false,addEventListener:vi.fn(),removeEventListener:vi.fn(),addListener:vi.fn(),removeListener:vi.fn()})))
   localStorage.setItem('app_language','en')
@@ -35,7 +35,7 @@ it.each(['/ld-manager/modules','/ld-manager/approvals'])('groups %s under Learni
     <WorkspaceLayout identity={{accountId:'manager',fullName:'Manager',email:'manager@example.test',organizationId:'org',organizationName:'Organization',roles:['LD_MANAGER']}}><p>content</p></WorkspaceLayout>
   </MemoryRouter></LanguageProvider></ToastProvider></QueryClientProvider>)
   const link=screen.getByRole('link',{name:'Learning Content'})
-  expect(link.getAttribute('href')).toMatch(/\/ld-manager\/approvals$/)
+  expect(link.getAttribute('href')).toMatch(/\/ld-manager\/modules$/)
   expect(link.getAttribute('aria-current')).toBe('page')
   expect(screen.queryByRole('link',{name:'Content Approvals'})).toBeNull()
 })

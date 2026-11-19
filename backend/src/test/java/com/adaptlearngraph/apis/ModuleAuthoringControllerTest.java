@@ -78,4 +78,19 @@ class ModuleAuthoringControllerTest {
                 .andExpect(status().isBadRequest());
         verify(service).lessons(anyString(), any(), anyList());
     }
+
+    @Test
+    void batchApproveCollectsApprovedAndFailedItems() throws Exception {
+        when(service.action("mod-1", 1L, "approve", null)).thenReturn(null);
+        when(service.action("mod-2", 2L, "approve", null))
+                .thenThrow(new ModuleAuthoringService.Failure(409, "Module changed"));
+
+        mvc.perform(post(PATH + "/modules/batch-approve").contentType("application/json")
+                        .content("{\"items\":[{\"id\":\"mod-1\",\"expectedVersion\":1},{\"id\":\"mod-2\",\"expectedVersion\":2}]}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.approved.length()").value(1))
+                .andExpect(jsonPath("$.failed.length()").value(1))
+                .andExpect(jsonPath("$.failed[0].id").value("mod-2"))
+                .andExpect(jsonPath("$.failed[0].message").value("Module changed"));
+    }
 }
