@@ -39,7 +39,7 @@ export async function readAssignedKnowledgeRole(organization: string, account: s
 }
 
 /** The server's actual current learning target; this never reconstructs older targets from browser storage. */
-export async function readCurrentKnowledgeTarget(signal?: AbortSignal): Promise<JourneyRole | null> {
+export async function readCurrentKnowledgeTarget(signal?: AbortSignal, options: { requirements?: boolean } = {}): Promise<JourneyRole | null> {
   const value = await read('/api/v1/employee/target-role-selection',signal)
   let current: JourneyRole
   try {
@@ -63,6 +63,8 @@ export async function readCurrentKnowledgeTarget(signal?: AbortSignal): Promise<
       levelId,levelName:level?text(level.name):null,rank:level&&typeof level.rank==='number'&&Number.isSafeInteger(level.rank)?level.rank:null,
       revision,selectedAt,current:true,source:'TARGET',requirementsSource:'CURRENT',skills }
   } catch { throw new RoleFlowError('INVALID_RESPONSE') }
+  // Pathway's empty-state header needs only the selected Role, not another full learning overview.
+  if (options.requirements === false) return current
   let summary: unknown
   try { summary=await read('/api/v1/employee/learning-overview',signal) }
   catch(error) {

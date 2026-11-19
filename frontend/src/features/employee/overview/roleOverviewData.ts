@@ -45,6 +45,14 @@ export async function readRoleOverview(signal?: AbortSignal) {
   const codes = new Map(selection.role.levels.flatMap(level=>level.skills).map(skill=>[skill.id, skill.code ?? undefined] as const))
   return { flow, ...composeRoleOverview({ selectionId: selection.selectionId, revision: selection.revision, roleName: selection.role.name, skillCode: id => codes.get(id) }, summary, pathway, histories) }
 }
+/** Keep active attempts responsive without reloading all module histories every five seconds while idle. */
+export function roleOverviewPollInterval(data: Awaited<ReturnType<typeof readRoleOverview>> | undefined): number | false {
+  if (!data) return false
+  if (data.flow.progress.state === 'RESUME') return 5000
+  if (!data.flow.selection) return false
+  if (data.pathway && (['PENDING', 'GENERATING', 'FAILED_RETRYABLE'].includes(data.pathway.generationStatus) || data.pathway.reviewStatus === 'AWAITING_EXPERT_REVIEW')) return 10_000
+  return 30_000
+}
 /** Pure requirement classification shared by the employee Overview and the L&D employee report. */
 export function composeRoleOverview(selection: OverviewSelection, summary: OverviewSummary, pathway: RulePathway | null, histories: Map<string, AttemptOutcomeLike[] | null>) {
   // Exact requirement identity; target scope never grows, extended scope follows the saved plan.

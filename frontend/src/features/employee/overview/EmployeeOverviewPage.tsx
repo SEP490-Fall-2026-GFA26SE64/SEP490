@@ -16,7 +16,7 @@ import { CompetencyProfile } from '../baseline-assessment/CompetencyProfile'
 import { RiasecExperience } from '../riasec/RiasecExperience'
 import { CompetencyStatusSummary } from './CompetencyStatusSummary'
 import './EmployeeOverviewPage.css'
-import { readRoleOverview,requirementMet,statusLabels } from './roleOverviewData'
+import { readRoleOverview,requirementMet,statusLabels,roleOverviewPollInterval } from './roleOverviewData'
 import { useOverviewSectionScroll } from './useOverviewSectionScroll'
 
 export function EmployeeOverviewPage() {
@@ -41,7 +41,7 @@ function OwnedEmployeeOverview() {
   const alignGraph=useOverviewSectionScroll(rootRef,tab==='overview')
   const [expanded, setExpanded] = useState<string | null>(null)
   const overview = useQuery({ queryKey: ['employee-role-overview', identity?.organizationId, identity?.accountId],
-    queryFn: ({ signal }) => readRoleOverview(signal), enabled, retry: false, staleTime: 0, refetchInterval: query => query.state.error ? false : 5000 })
+    queryFn: ({ signal }) => readRoleOverview(signal), enabled: enabled && tab === 'overview', retry: false, staleTime: 15_000, refetchOnWindowFocus: false, refetchInterval: query => query.state.error ? false : roleOverviewPollInterval(query.state.data) })
   const denied = Boolean(overview.error && 'status' in overview.error && [401,403].includes(Number(overview.error.status)))
   const real = enabled && !denied && !overview.isError ? overview.data : undefined
   const selected = real?.flow.selection

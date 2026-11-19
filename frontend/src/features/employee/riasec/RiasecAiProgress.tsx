@@ -1,22 +1,26 @@
-import { useEffect, useState } from 'react'
-import { Sparkles } from 'lucide-react'
+import { LoaderCircle } from 'lucide-react'
 import { useTranslation } from '../../../shared/i18n/LanguageContext'
 import { aiRunning, type Result } from './riasecApi'
 
 export function RiasecAiProgress({ result }: { result: Result }) {
   const { language } = useTranslation(), vi = language === 'vi'
+  const copy = (en: string, vn: string) => vi ? vn : en
   const running = aiRunning(result)
-  const [simulated, setSimulated] = useState(0)
-  useEffect(() => {
-    if (!running) return
-    const started = Date.now()
-    const timer = window.setInterval(() => setSimulated(Math.min(95, Math.floor(95 * (1 - Math.exp(-(Date.now() - started) / 90000))))), 1500)
-    return () => window.clearInterval(timer)
-  }, [running])
-  if (!running) return <p role="status" className={`text-caption ${result.aiStatus === 'SUCCEEDED' ? 'text-success' : 'text-muted-foreground'}`}>{result.aiStatus === 'SUCCEEDED' ? (vi ? 'AI đã hoàn tất gợi ý' : 'AI suggestions completed') : (vi ? 'AI chưa xử lý thành công. Điểm của bạn đã được lưu.' : 'AI processing was unsuccessful. Your scores are saved.')}</p>
-  return <div className="space-y-2 rounded-lg border border-primary/40 bg-secondary/40 px-3 py-2">
-    <div className="flex flex-wrap items-center justify-between gap-2 text-caption text-secondary-foreground"><span className="inline-flex items-center gap-1.5"><Sparkles className="h-3.5 w-3.5" aria-hidden="true" />{vi ? 'AI đang khám phá vị trí' : 'AI is exploring positions'}</span><span className="tabular-nums">{simulated}% · {vi ? 'mô phỏng' : 'simulated'}</span></div>
-    <div role="progressbar" aria-label={vi ? 'AI đang xử lý; thanh tiến trình mô phỏng' : 'AI processing; simulated progress'} className="h-1.5 overflow-hidden rounded-full bg-primary/10"><div className="h-full rounded-full bg-primary/70 transition-[width] duration-700 motion-reduce:transition-none" style={{ width: `${Math.max(3, simulated)}%` }} /></div>
-    <p className="text-caption text-muted-foreground">{vi ? 'Hiệu ứng chờ, không phải tiến độ thực. Kết quả xuất hiện khi AI hoàn tất.' : 'Waiting animation, not actual progress. Results appear when AI finishes.'}</p>
+  const reasons: Record<string, [string, string]> = {
+    NO_ELIGIBLE_POSITIONS: ['AI has not run: no active company positions have a complete RIASEC profile. Ask L&D to complete the profiles, then retry.', 'AI chưa chạy: chưa có vị trí hoạt động trong công ty với đủ hồ sơ RIASEC. Nhờ L&D bổ sung hồ sơ rồi thử lại.'],
+    AI_MODEL_NOT_FOUND: ['AI could not start because the configured model is not installed. Contact the administrator, then retry.', 'AI chưa khởi chạy vì model được cấu hình chưa được cài. Liên hệ quản trị viên rồi thử lại.'],
+    AI_ENDPOINT_UNAVAILABLE: ['The AI service endpoint is unavailable. Contact the administrator, then retry.', 'Endpoint dịch vụ AI chưa khả dụng. Liên hệ quản trị viên rồi thử lại.'],
+    AI_CATALOG_UNAVAILABLE: ['Position profiles could not be loaded. Retry when the catalog service is available.', 'Chưa tải được hồ sơ vị trí. Thử lại khi dịch vụ danh mục khả dụng.'],
+    AI_TIMEOUT: ['AI processing timed out. You can retry without answering again.', 'AI xử lý quá thời gian. Bạn có thể thử lại mà không cần làm lại bài.'],
+    AI_UNAVAILABLE: ['The AI service could not process this result. Check that the service and model are ready, then retry.', 'Dịch vụ AI chưa xử lý được kết quả. Kiểm tra dịch vụ và model đã sẵn sàng rồi thử lại.'],
+  }
+  const reason = reasons[result.failureCode ?? '']
+  const message = result.aiStatus === 'QUEUED' ? copy('Your scores are saved. AI suggestions are queued.', 'Điểm đã được lưu. Gợi ý AI đang chờ xử lý.')
+    : result.aiStatus === 'PROCESSING' ? copy('Your scores are saved. AI is processing position profiles. Results will appear automatically.', 'Điểm đã được lưu. AI đang xử lý hồ sơ vị trí. Kết quả sẽ tự cập nhật.')
+    : result.aiStatus === 'SUCCEEDED' ? result.recommendations?.length ? copy('AI suggestions completed.', 'AI đã hoàn tất gợi ý.') : copy('Your scores are saved, but this result has no saved AI suggestions.', 'Điểm đã được lưu nhưng kết quả này không có gợi ý AI được lưu.')
+    : copy('Your scores are saved. ', 'Điểm đã được lưu. ') + (reason ? copy(...reason) : copy('AI processing was unsuccessful. You can retry this result.', 'AI chưa xử lý thành công. Bạn có thể thử lại kết quả này.'))
+  return <div role="status" aria-live="polite" className={`flex items-start gap-2 text-caption ${running ? 'rounded-lg border border-primary/40 bg-secondary/40 px-3 py-2 text-secondary-foreground' : 'text-muted-foreground'}`}>
+    {running && <LoaderCircle aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0 animate-spin motion-reduce:animate-none" />}
+    <p>{message}</p>
   </div>
 }

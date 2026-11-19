@@ -12,6 +12,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 /** PostgreSQL owns personal drafts, receipts, jobs and retention. Every user query is owner scoped. */
 public final class RiasecStore {
+    private static final org.slf4j.Logger log=org.slf4j.LoggerFactory.getLogger(RiasecStore.class);
     public record Owner(UUID organizationId,UUID accountId) {}
     public record Workspace(UUID draftId,Map<String,Integer> answers,long revision,UUID editorId) {}
     public record Result(UUID id,Map<String,Integer> scores,Instant submittedAt,Instant deletedAt,String aiStatus,
@@ -62,13 +63,15 @@ public final class RiasecStore {
         });
     }
     public void complete(Job job,Object recommendations,String model) {
-        db.update("UPDATE platform.riasec_result SET ai_status='SUCCEEDED',recommendations=?::jsonb,model=?,prompt_version='riasec-match-v6-interests-only',failure_code=NULL WHERE result_id=? AND run_id=? AND ai_status='PROCESSING' AND ai_deadline>now() AND deleted_at IS NULL",encode(recommendations),model,job.id,job.runId);
+        int changed=db.update("UPDATE platform.riasec_result SET ai_status='SUCCEEDED',recommendations=?::jsonb,model=?,prompt_version='riasec-match-v6-interests-only',failure_code=NULL WHERE result_id=? AND run_id=? AND ai_status='PROCESSING' AND ai_deadline>now() AND deleted_at IS NULL",encode(recommendations),model,job.id,job.runId);
+        log.info("RIASEC result persistence: resultId={}, state={}",job.id,changed==1?"SUCCEEDED":"DISCARDED_STALE_RUN");
     }
     public void recordModel(Job job,String model) {
         db.update("UPDATE platform.riasec_result SET model=?,prompt_version='riasec-match-v6-interests-only' WHERE organization_id=? AND account_id=? AND result_id=? AND run_id=? AND ai_status='PROCESSING'",model,job.owner.organizationId,job.owner.accountId,job.id,job.runId);
     }
     public void fail(Job job,String code) {
-        db.update("UPDATE platform.riasec_result SET ai_status='FAILED',failure_code=? WHERE result_id=? AND run_id=? AND ai_status='PROCESSING'",code,job.id,job.runId);
+        int changed=db.update("UPDATE platform.riasec_result SET ai_status='FAILED',failure_code=? WHERE result_id=? AND run_id=? AND ai_status='PROCESSING'",code,job.id,job.runId);
+        log.warn("RIASEC job failed: resultId={}, runId={}, code={}, persisted={}",job.id,job.runId,code,changed==1);
     }
     public void maintenance() {
         db.update("UPDATE platform.riasec_result SET ai_status='FAILED',failure_code='AI_TIMEOUT' WHERE ai_status IN ('QUEUED','PROCESSING') AND ai_deadline<=now()");

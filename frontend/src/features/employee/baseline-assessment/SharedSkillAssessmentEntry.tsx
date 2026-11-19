@@ -28,7 +28,12 @@ function OwnedSharedEntry({ locator, getNewTarget, legacy, disabled, header, adm
   const allowed = Boolean(identity?.organizationId && identity.accountId && identity.roles?.includes('EMPLOYEE'))
   const query = useInfiniteQuery({ queryKey: ['skillAssessmentScope', identity?.organizationId, identity?.accountId, locator], initialPageParam: 0,
     queryFn: ({ pageParam, signal }) => readSkillScope(locator, signal, pageParam), getNextPageParam: last => last.hasMore && last.page < 10000 ? last.page + 1 : undefined,
-    enabled: allowed, retry: false, gcTime: 0, refetchInterval: q => q.state.error ? false : 5000 })
+    enabled: allowed, retry: false, gcTime: 60_000, staleTime: 15_000, refetchOnWindowFocus: false, refetchInterval: q => {
+      if (q.state.error) return false
+      const current = q.state.data?.pages[0]
+      if (!current) return false
+      return current.activeAttempts.length || current.unresolvedAttempts ? 5000 : current.policyIssue ? 15_000 : 30_000
+    } })
   useEffect(() => { onLockChange?.(busy || Boolean(pending)) }, [busy, pending, onLockChange])
   useEffect(() => {
     if (!pending) return

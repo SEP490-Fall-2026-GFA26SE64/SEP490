@@ -31,9 +31,9 @@ function OwnedCurrentRolePanel({ scope }: { scope: string }) {
   const jobPosition = params.get('jobPositionId') ?? ''
   const positionLabel = useQuery({ queryKey: ['jobPositionLabel', scope, jobPosition], queryFn: ({ signal }) => jobPositionLabel(jobPosition, signal), enabled: Boolean(jobPosition), retry: false })
   const roles = useQuery({ queryKey: ['currentRoleCatalog', scope, jobPosition], queryFn: ({ signal }) => currentRoles(signal, jobPosition), retry: false })
-  const view = useQuery({ queryKey: ['currentRoleFlow', scope], queryFn: ({ signal }) => readRoleFlow(signal), retry: false,
+  const view = useQuery({ queryKey: ['currentRoleFlow', scope], queryFn: ({ signal }) => readRoleFlow(signal), retry: false, staleTime: 15_000, refetchOnWindowFocus: false,
     // An administrator may activate the configuration while this selected target stays open.
-    refetchInterval: query => query.state.data?.selection?.available && query.state.data.progress.state === 'BASELINE_UNAVAILABLE' ? 5000 : false,
+    refetchInterval: query => !query.state.error && query.state.data?.selection?.available && query.state.data.progress.state === 'BASELINE_UNAVAILABLE' ? 15_000 : false,
   })
   const [selected, setSelected] = useState<CurrentRole | null>(null)
   const [levelId, setLevelId] = useState('')
@@ -80,6 +80,8 @@ function OwnedCurrentRolePanel({ scope }: { scope: string }) {
       if (!committed.current) { await chooseCurrentRole(next); committed.current = true }
       const result = await readRoleFlow()
       queryClient.setQueryData(['currentRoleFlow', scope], result)
+      void queryClient.invalidateQueries({ queryKey: ['initialPathway'] })
+      void queryClient.invalidateQueries({ queryKey: ['employee-role-overview'] })
       setCommand(null); setSelected(null)
     } catch (cause) {
       const failure = cause instanceof RoleFlowError ? cause : new RoleFlowError('NETWORK_ERROR')
@@ -131,12 +133,16 @@ function OwnedCurrentRolePanel({ scope }: { scope: string }) {
     {!roles.isPending && !roles.isError && filtered.length === 0 && <EmptyState icon={<Target size={24} />}
       title={t('upskillingUi.noResults')}
       description={jobPosition && roles.data?.length === 0 ? t('riasecUi.noPositionRoles') : roles.data?.length === 0 ? tr('catalogEmptyHint') : t('upskillingUi.noResultsHint')} />}
-    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">{visible.map(role => {
+    {visible.length > 0 && <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm"><div className="overflow-x-auto" role="region" aria-label={t('upskillingUi.roleCatalog')} tabIndex={0}><table className="w-full min-w-[760px] table-fixed text-left text-body-sm">
+      <caption className="sr-only">{t('upskillingUi.roleCatalog')}</caption>
+      <colgroup><col className="w-[25%]" /><col className="w-[23%]" /><col className="w-[13%]" /><col className="w-[10%]" /><col className="w-[29%]" /></colgroup>
+      <thead className="border-b border-border bg-muted/20 text-caption text-muted-foreground"><tr>{['scopedPolicy.role', 'baselineUi.jobPosition', 'upskillingUi.skillCount', 'upskillingUi.levels', 'scopedPolicy.actions'].map((label, index) => <th key={label} scope="col" className={`px-4 py-3 font-semibold ${index === 4 ? 'text-right' : ''}`}>{t(label)}</th>)}</tr></thead>
+      <tbody className="divide-y divide-border">{visible.map(role => {
       const active = Boolean(view.data?.selection?.available && view.data.selection.role.id === role.id)
-      return <CurrentRoleCard key={role.id} role={role} active={active}
+      return <CurrentRoleCard key={role.id} role={role} active={active} layout="row"
         disabled={blocked || assessmentActive || !view.data || view.isError}
         onDetails={() => setDetails({ role, selectedLevelId: active ? view.data?.selection?.levelId ?? undefined : undefined })} onChoose={() => choose(role)} />
-    })}</div>
+    })}</tbody></table></div></div>}
     {filtered.length > 0 && <Card className="overflow-hidden"><Pagination currentPage={currentPage} totalPages={pageCount} totalItems={filtered.length} pageSize={12} disabled={blocked} onPageChange={setPage} itemLabel={t('upskillingUi.roles')}
       labels={{ navigation: t('adaptiveBaseline.paging.navigation'), first: t('adaptiveBaseline.paging.first'), previous: t('adaptiveBaseline.paging.previous'), next: t('adaptiveBaseline.paging.next'), last: t('adaptiveBaseline.paging.last'), showing: t('adaptiveBaseline.paging.showing'), of: t('adaptiveBaseline.paging.of') }} /></Card>}
     <Dialog open={selected !== null} className="max-w-lg sm:max-w-xl" onOpenChange={open => { if (!open && !blocked) setSelected(null) }} ariaLabel={tr('confirmTitle')} closeLabel={tr('cancel')}>
