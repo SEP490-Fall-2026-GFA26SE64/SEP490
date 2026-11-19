@@ -38,6 +38,7 @@ log "Validating $(pwd)/.env"
 required=(PUBLIC_URL DB_PASSWORD NEO4J_PASSWORD LEARNING_ASSETS_ACCESS_KEY LEARNING_ASSETS_SECRET_KEY
   REGISTRATION_ENCRYPTION_KEY REGISTRATION_HMAC_KEY WORKSPACE_DEVELOPMENT_PASSWORD
   PLATFORM_ADMIN_SEED_EMAIL PLATFORM_ADMIN_SEED_PASSWORD SMTP_HOST SMTP_USERNAME SMTP_PASSWORD SMTP_FROM PAYOS_CLIENT_ID PAYOS_API_KEY PAYOS_CHECKSUM_KEY)
+required+=(RIASEC_MODEL RIASEC_OLLAMA_MEMORY RIASEC_OLLAMA_CPUS)
 missing=()
 for key in "${required[@]}"; do [ -n "$(env_get "$key")" ] || missing+=("$key"); done
 [ ${#missing[@]} -eq 0 ] || fail "Empty/missing keys in .env: ${missing[*]}"
@@ -45,6 +46,24 @@ for key in "${required[@]}"; do [ -n "$(env_get "$key")" ] || missing+=("$key");
 workspace_password="$(env_get WORKSPACE_DEVELOPMENT_PASSWORD)"
 [ "${#workspace_password}" -ge 12 ] || fail "WORKSPACE_DEVELOPMENT_PASSWORD must contain at least 12 characters (workspace-seed/se-seed requirement)."
 unset workspace_password
+
+# Measure the actual deployment host before starting inference or changing the stack.
+riasec_memory="$(env_get RIASEC_OLLAMA_MEMORY)"
+riasec_cpus="$(env_get RIASEC_OLLAMA_CPUS)"
+[[ "$riasec_memory" =~ ^[1-9][0-9]*[mMgG]$ ]] || fail "RIASEC_OLLAMA_MEMORY must be whole MiB/GiB, for example 5120m or 5g."
+[[ "$riasec_cpus" =~ ^[0-9]+([.][0-9]+)?$ ]] || fail "RIASEC_OLLAMA_CPUS must be a positive CPU count."
+host_cpus="$(getconf _NPROCESSORS_ONLN)"
+host_total_mb="$(awk '/^MemTotal:/ {print int($2/1024)}' /proc/meminfo)"
+host_available_mb="$(awk '/^MemAvailable:/ {print int($2/1024)}' /proc/meminfo)"
+riasec_memory_mb="${riasec_memory%?}"
+[[ "$riasec_memory" =~ [gG]$ ]] && riasec_memory_mb=$((riasec_memory_mb * 1024))
+log "RIASEC host capacity: ${host_available_mb} MiB available / ${host_total_mb} MiB total; ${host_cpus} logical CPUs. Requested inference: ${riasec_memory_mb} MiB / ${riasec_cpus} CPUs."
+awk -v requested="$riasec_cpus" -v available="$host_cpus" 'BEGIN {exit !(requested>0 && requested<=available)}' || fail "RIASEC CPU limit exceeds host capacity."
+[ "$riasec_memory_mb" -lt "$host_total_mb" ] || fail "RIASEC memory would consume the host; budget for the other services."
+existing_inference="$("${DOCKER[@]}" ps -q --filter label=com.docker.compose.project=adapt-learn-graph --filter label=com.docker.compose.service=riasec-ollama)"
+if [ -z "$existing_inference" ] && [ "$riasec_memory_mb" -gt "$host_available_mb" ]; then
+  fail "Insufficient currently available RAM for the selected RIASEC model budget. Review server capacity before rollout."
+fi
 
 PUBLIC_URL="$(env_get PUBLIC_URL)"; PUBLIC_URL="${PUBLIC_URL%/}"
 [[ "$PUBLIC_URL" == https://* ]] || fail "PUBLIC_URL must be https:// (PayOS callbacks and secure cookies require it)."
@@ -92,6 +111,9 @@ printf 'DOCKERHUB_USERNAME=%s\nIMAGE_TAG=%s\n' "$DOCKERHUB_USERNAME" "$IMAGE_TAG
 log "Pulling images (tag ${IMAGE_TAG})"
 "${COMPOSE[@]}" pull --quiet
 
+log "Preparing the configured RIASEC model in its persistent private-inference volume"
+"${COMPOSE[@]}" --profile riasec-setup run --rm --no-deps riasec-model-pull
+
 log "Starting stack (migrations and idempotent seed jobs run first; first boot can take several minutes)"
 rollout_log="$(mktemp)"
 trap 'rm -f "$rollout_log"' EXIT
@@ -128,7 +150,8 @@ echo "Local checks OK"
 # The SMTP preflight runs on the host network; the API runs on the stack's bridge, which a host
 # DOCKER-USER firewall can block independently (README: "Outbound firewall").
 log "Checking outbound SMTP and PayOS from the app network"
-app_net="$("${DOCKER[@]}" inspect -f '{{range $k, $v := .NetworkSettings.Networks}}{{$k}}{{end}}' "$("${COMPOSE[@]}" ps -q api)")"
+# Web has only the default app network. API also joins the private inference network.
+app_net="$("${DOCKER[@]}" inspect -f '{{range $k, $v := .NetworkSettings.Networks}}{{$k}}{{end}}' "$web_id")"
 curl_app() { "${DOCKER[@]}" run --rm -i --network "$app_net" "$CURL_IMAGE" "$@"; }
 if [ "${SKIP_SMTP_CHECK:-false}" != "true" ] && [ "$(env_get SKIP_SMTP_CHECK)" != "true" ] && [ "$(env_get SMTP_CHECK)" != "false" ]; then
   if ! printf '%s\n' "$smtp_cfg" | curl_app "${smtp_args[@]}" >/dev/null; then

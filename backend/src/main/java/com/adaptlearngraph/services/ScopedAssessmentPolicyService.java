@@ -33,7 +33,9 @@ public final class ScopedAssessmentPolicyService {
     }
     public record Create(UUID commandKey,long expectedActivationRevision) {}
     public record Save(UUID commandKey,UUID draftId,long expectedRevision,String expectedCatalogHash,Policy configuration) {}
-    public record SaveEditor(UUID commandKey,UUID draftId,long expectedRevision,String expectedCatalogHash,BaselinePolicyEditor.Progress editorState) {}
+    public record SaveEditor(UUID commandKey,UUID draftId,long expectedRevision,String expectedCatalogHash,BaselinePolicyEditor.Progress editorState,long expectedActivationRevision) {
+        public SaveEditor(UUID commandKey,UUID draftId,long expectedRevision,String expectedCatalogHash,BaselinePolicyEditor.Progress editorState) {this(commandKey,draftId,expectedRevision,expectedCatalogHash,editorState,0);}
+    }
     public record Activate(UUID commandKey,UUID draftId,long expectedRevision,long expectedActivationRevision,String expectedCatalogHash) {}
     public record Complete(UUID commandKey,UUID draftId,long expectedRevision,long expectedActivationRevision,String expectedCatalogHash,BaselinePolicyEditor.Progress editorState) {}
     public record Abandon(UUID commandKey,UUID draftId,long expectedRevision) {}
@@ -85,7 +87,7 @@ public final class ScopedAssessmentPolicyService {
     }
     public Directory directory(Purpose purpose,String search,String owner,String level,String filter,int page,int size) {
         var a=actor(purpose);bounds(page,size);
-        if(search.length()>200 || owner.length()>200 || level.length()>200 || !Set.of("","UNCONFIGURED","DRAFT","ACTIVE","HISTORY").contains(filter)
+        if(search.length()>200 || owner.length()>200 || level.length()>200 || !Set.of("","WORKLIST","UNCONFIGURED","DRAFT","ACTIVE","HISTORY").contains(filter)
                 || !level.isEmpty() && owner.isEmpty())throw new Failure(400,"INVALID_REQUEST");
         return locked(a,purpose,()->{
             var discovery=catalog.discoverForEditor(a.organizationId(),purpose,a.accountId());var all=discovery.scopes();var summaries=scopes.summaries(a.organizationId(),purpose.name());
@@ -96,10 +98,13 @@ public final class ScopedAssessmentPolicyService {
                 var s=states.get(scope.key());boolean draft=s!=null && s.getDraftId()!=null,active=s!=null && s.getActiveId()!=null;
                 long count=s==null?0:s.getVersionCount(),abandoned=s==null?0:s.getAbandonedCount();
                 long archived=count-(active?1:0)+abandoned;
+                boolean legacy=purpose==Purpose.BASELINE && !scope.sharedBaseline();
+                if(legacy) {if(!filter.equals("HISTORY") || s==null)continue;archived=count+abandoned+(draft?1:0);}
                 String state=active?"ACTIVE":draft?"DRAFT":count>0 || abandoned>0?"HISTORY":"UNCONFIGURED";
                 if(!scope.ownerName().toLowerCase(Locale.ROOT).contains(query) && !scope.ownerId().toLowerCase(Locale.ROOT).contains(query))continue;
                 if(!owner.isEmpty() && !scope.ownerId().equals(owner) || !level.isEmpty() && !scope.levelId().equals(level))continue;
                 if(filter.equals("HISTORY")) {if(archived==0)continue;}
+                else if(filter.equals("WORKLIST")) {if(state.equals("HISTORY") || active && !draft)continue;}
                 else if(filter.isEmpty() && state.equals("HISTORY"))continue;
                 else if(!filter.isEmpty() && !(filter.equals("DRAFT")?draft:filter.equals(state)))continue;
                 rows.add(new Row(choice(scope),filter.equals("HISTORY")?"HISTORY":state,
@@ -146,13 +151,21 @@ public final class ScopedAssessmentPolicyService {
     }
     public Workspace saveEditor(Purpose purpose,String key,SaveEditor command) {
         var a=actor(purpose);
-        if(purpose!=Purpose.BASELINE || command==null || command.draftId()==null || command.expectedRevision()<1 || command.editorState()==null)
+        if(purpose!=Purpose.BASELINE || command==null || command.expectedRevision()<0 || command.editorState()==null
+                || (command.draftId()==null)!=(command.expectedRevision()==0))
             throw new Failure(400,"INVALID_REQUEST");
         return mutate(a,purpose,key,"SAVE_BASELINE_EDITOR",command.commandKey(),command,scope->{
             current(scope,command.expectedCatalogHash());
+            locks.lock("question-bank:"+a.organizationId());
             var policy=editor.validate(a.organizationId(),scope,command.editorState());
             if(policy!=null)validate(scope,policy);
-            if(scopes.updateEditor(a.organizationId(),purpose.name(),key,command.draftId(),command.expectedRevision(),policy==null?null:write(policy),
+            UUID id=command.draftId();long expected=command.expectedRevision();
+            if(id==null) {
+                if(scopes.draft(a.organizationId(),purpose.name(),key).isPresent() || revision(a,purpose,key)!=command.expectedActivationRevision())throw new Failure(409,"STALE_POLICY_DRAFT");
+                id=UUID.randomUUID();expected=1;
+                if(scopes.create(a.organizationId(),purpose.name(),key,id,null,scope.catalogHash(),a.accountId())!=1)throw new Failure(409,"STALE_POLICY_DRAFT");
+            }
+            if(scopes.updateEditor(a.organizationId(),purpose.name(),key,id,expected,policy==null?null:write(policy),
                     write(command.editorState()),scope.catalogHash(),a.accountId())!=1)throw new Failure(409,"STALE_POLICY_DRAFT");
         });
     }
@@ -173,14 +186,15 @@ public final class ScopedAssessmentPolicyService {
         if(purpose!=Purpose.BASELINE || command==null || command.draftId()==null || command.expectedRevision()<1
                 || command.expectedActivationRevision()<0 || command.editorState()==null || !command.editorState().completed())
             throw new Failure(400,"INVALID_REQUEST");
-        return mutate(a,purpose,key,"COMPLETE_AND_ACTIVATE_BASELINE",command.commandKey(),command,scope->{
-            current(scope,command.expectedCatalogHash());
-            var draft=scopes.draft(a.organizationId(),purpose.name(),key).orElseThrow(()->new Failure(409,"STALE_POLICY_DRAFT"));
-            if(!draft.getId().equals(command.draftId()) || draft.getRevision()!=command.expectedRevision())throw new Failure(409,"STALE_POLICY_DRAFT");
-            if(revision(a,purpose,key)!=command.expectedActivationRevision())throw new Failure(409,"STALE_POLICY_ACTIVATION");
-            // Validate the submitted review snapshot and publish in the same transaction. Failure retains the original draft.
-            var config=editor.validate(a.organizationId(),scope,command.editorState());
-            publish(a,purpose,key,scope,config,draft.getId(),draft.getRevision());
+        if(command.commandKey()==null)throw new Failure(400,"INVALID_REQUEST");
+        return locked(a,purpose,()->{
+            require(a,purpose,key);
+            var receipt=policies.receipt(a.organizationId(),a.accountId(),"COMPLETE_AND_ACTIVATE_BASELINE",purpose+":"+key,command.commandKey());
+            if(receipt.isPresent()) {
+                if(!receipt.get().getHash().equals(RoleBaselineFlow.hash(write(command))))throw new Failure(409,"IDEMPOTENCY_CONFLICT");
+                return replayWorkspace(a,purpose,key,read(receipt.get().getOutcome(),Workspace.class));
+            }
+            throw new Failure(422,"SAVE_BEFORE_ACTIVATE_REQUIRED");
         });
     }
     public Workspace abandon(Purpose purpose,String key,Abandon command) {
@@ -210,6 +224,7 @@ public final class ScopedAssessmentPolicyService {
                 if(!receipt.get().getHash().equals(hash))throw new Failure(409,"IDEMPOTENCY_CONFLICT");
                 return replayWorkspace(a,purpose,key,read(receipt.get().getOutcome(),Workspace.class));
             }
+            if(purpose==Purpose.BASELINE && !scope.sharedBaseline())throw new Failure(409,"LEGACY_BASELINE_POLICY_READ_ONLY");
             work.accept(scope);current(require(a,purpose,key),scope.catalogHash());
             var result=workspace(a,purpose,scope,0,20);
             policies.retain(UUID.randomUUID(),a.organizationId(),a.accountId(),operation,resource,retry,hash,write(result));return result;
@@ -257,6 +272,7 @@ public final class ScopedAssessmentPolicyService {
         return new Version(row.getId(),row.getVersion(),config,row.getCatalogHash(),row.getCreatedAt());
     }
     private void validate(Scope scope,Policy policy) {
+        if(scope.purpose()==Purpose.SKILL_ASSESSMENT && policy.baselineTiming()!=null)throw new Failure(422,"INVALID_REQUEST");
         if(scope.groups().isEmpty())throw new Failure(422,"SCOPE_REQUIREMENTS_NOT_READY");
         var keys=scope.groups().stream().map(g->g.requirement().key()).collect(java.util.stream.Collectors.toSet());
         if(!keys.equals(policy.groups().stream().map(GroupRule::key).collect(java.util.stream.Collectors.toSet())))throw new Failure(422,"EXACT_SCOPE_GROUPS_REQUIRED");
@@ -267,6 +283,18 @@ public final class ScopedAssessmentPolicyService {
     private void readiness(SubscriptionAccessPolicy.Actor a,Scope scope,Policy policy) {
         locks.lock("question-bank:"+a.organizationId());
         if(!scope.ready())throw new Failure(422,"SCOPE_REQUIREMENTS_NOT_READY");
+        if(scope.sharedBaseline()) {
+            var missing=editor.missingBanks(a.organizationId(),scope);
+            if(!missing.isEmpty())throw new Failure(422,"REQUIRED_GROUP_BANK_EMPTY",missing);
+            editor.validatePolicy(a.organizationId(),scope,policy);
+            for(var member:scope.memberLevels()) {
+                int actual=0;
+                for(var group:member.groups())actual+=policy.require(group.requirement().assessmentRequirement()).totalCount();
+                if(actual>maximum)throw new Failure(422,"PAPER_CAPACITY_EXCEEDED");
+                if(actual>0)try{policy.durationSeconds(actual);}catch(ArithmeticException overflow){throw new Failure(422,"ASSESSMENT_DURATION_OUT_OF_RANGE");}
+            }
+            return;
+        }
         int total=0;
         for(var group:scope.groups()) {
             var rule=policy.require(group.requirement().assessmentRequirement());total+=rule.totalCount();if(total>maximum)throw new Failure(422,"PAPER_CAPACITY_EXCEEDED");

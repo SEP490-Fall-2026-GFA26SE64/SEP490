@@ -101,7 +101,7 @@ export function OntologyExcelImportModal({
   const [relationRows, setRelationRows] = React.useState<ParsedCompetencyRelationRow[]>([])
   const [prereqRows, setPrereqRows] = React.useState<ParsedPrerequisiteRow[]>([])
 
-  const resetState = () => {
+  const resetState = React.useCallback(() => {
     setFile(null)
     setParsing(false)
     setImporting(false)
@@ -110,13 +110,15 @@ export function OntologyExcelImportModal({
     setRelationRows([])
     setPrereqRows([])
     if (fileInputRef.current) fileInputRef.current.value = ''
-  }
+  }, [])
 
   React.useEffect(() => {
+    let active = true
     if (!open) {
-      resetState()
+      queueMicrotask(() => { if (active) resetState() })
     }
-  }, [open])
+    return () => { active = false }
+  }, [open, resetState])
 
   const handleDownloadTemplate = async () => {
     try {

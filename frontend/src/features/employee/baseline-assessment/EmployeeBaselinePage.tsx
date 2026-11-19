@@ -11,6 +11,7 @@ import { useTranslation } from '../../../shared/i18n/LanguageContext'
 import { WorkspaceLayout } from '../../../shared/layouts/WorkspaceLayout'
 import { employeeBaselineEnabled } from './baselineApi'
 import { BaselineAttemptPanel } from './BaselineAttemptPanel'
+import { AssessmentBankIssues } from '../../../shared/components/AssessmentBankIssues'
 import { BaselineHistory, BaselineResultPanel } from './BaselineResults'
 import { useBaselineAttempt } from './useBaselineAttempt'
 
@@ -42,6 +43,7 @@ function EmployeeBaselinePage({ attemptId }: { attemptId?: string }) {
     {state.busy && state.attempt?.state !== 'IN_PROGRESS' && <LoadingCard label={tr('loading')} />}
     {state.error && <div role="alert" className="space-y-2 rounded-md border border-border p-4">
       <Text variant="body-sm">{t(`employeeBaseline.errors.${state.error.code}`, tr('requestError'))}</Text>
+      <AssessmentBankIssues issues={state.error.bankIssues} />
       {state.pending ? <><Text variant="body-sm">{tr('retryNotice')}</Text><Button disabled={state.busy} onClick={() => void state.run(state.pending!)}>{tr('retry')}</Button></>
         : attemptId && <Button variant="outline" disabled={state.busy} onClick={() => void state.refresh()}>{tr('refresh')}</Button>}
     </div>}

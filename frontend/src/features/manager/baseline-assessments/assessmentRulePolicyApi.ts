@@ -2,7 +2,7 @@ import { adaptiveHttp } from './adaptiveBaselineApi'
 export type AssessmentPurpose = 'BASELINE' | 'SKILL_ASSESSMENT'
 export type KnowledgeLevel = 'FOUNDATION' | 'INTERMEDIATE' | 'ADVANCED'
 export interface RuleGroup { skillId: string; knowledgeLevel: KnowledgeLevel; totalCount: number; requiredCorrectCount: number; mandatoryRequired: boolean; allWrongVeto: boolean; mandatoryCount?: number | null }
-export interface RulePolicy { timeLimitSeconds: number; retakeWaitSeconds: number; maxAttempts: number; groups: RuleGroup[] }
+export interface RulePolicy { timeLimitSeconds: number | null; retakeWaitSeconds: number; maxAttempts: number; groups: RuleGroup[]; baselineTiming?: { secondsPerQuestion: number } }
 export interface RulePolicyVersion { id: string; purpose: AssessmentPurpose; version: number; configuration: RulePolicy; hash: string; createdBy: string; createdAt: string }
 export interface RulePolicyState { purpose: AssessmentPurpose; active: RulePolicyVersion | null; activationRevision: number }
 export type RulePolicyCommand = { purpose: AssessmentPurpose; kind: 'save'; commandKey: string; configuration: RulePolicy } |
@@ -30,7 +30,9 @@ export function rulePolicy(value: unknown): RulePolicy {
     return { skillId: text(g.skillId), knowledgeLevel: level, totalCount, requiredCorrectCount, mandatoryRequired: g.mandatoryRequired, allWrongVeto: g.allWrongVeto, ...(mandatoryCount === null ? {} : { mandatoryCount }) }
   })
   if (new Set(groups.map(g => `${g.skillId}:${g.knowledgeLevel}`)).size !== groups.length) throw new Error('Configure unique skill and knowledge groups')
-  return { timeLimitSeconds: integer(p.timeLimitSeconds, 1), retakeWaitSeconds: integer(p.retakeWaitSeconds, 0), maxAttempts: integer(p.maxAttempts, 1), groups }
+  const timing = p.baselineTiming == null ? undefined : { secondsPerQuestion: integer(object(p.baselineTiming).secondsPerQuestion, 1) }
+  if (timing && p.timeLimitSeconds !== null) throw new Error('Shared baseline must use time per question')
+  return { timeLimitSeconds: timing ? null : integer(p.timeLimitSeconds, 1), retakeWaitSeconds: integer(p.retakeWaitSeconds, 0), maxAttempts: integer(p.maxAttempts, 1), groups, ...(timing ? { baselineTiming: timing } : {}) }
 }
 function version(value: unknown, purpose: AssessmentPurpose): RulePolicyVersion {
   const v = object(value)

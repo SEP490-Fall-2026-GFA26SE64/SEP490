@@ -29,8 +29,8 @@ export function SkillPolicyWizard({ workspace, version, locked, onSave, onCancel
     })
   })
   const total = groups.reduce((sum, g) => sum + (positive(g.totalCount) ? Number(g.totalCount) : 0), 0)
-  const [minutes, setMinutes] = useState(initial ? String(initial.timeLimitSeconds / 60) : '')
-  const [rate, setRate] = useState(initial && total > 0 ? String(initial.timeLimitSeconds / 60 / total) : '1')
+  const [minutes, setMinutes] = useState(initial?.timeLimitSeconds != null ? String(initial.timeLimitSeconds / 60) : '')
+  const [rate, setRate] = useState(initial?.timeLimitSeconds != null && total > 0 ? String(initial.timeLimitSeconds / 60 / total) : '1')
   const [wait, setWait] = useState(initial ? String(initial.retakeWaitSeconds / 60) : '10')
   const [attempts, setAttempts] = useState(initial ? String(initial.maxAttempts) : '3')
   const main = (g: typeof groups[number]) => g.skillId === workspace.scope.ownerId && g.knowledgeLevel === workspace.scope.levelId

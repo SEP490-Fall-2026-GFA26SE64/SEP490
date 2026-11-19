@@ -102,8 +102,7 @@ import { TargetRoleGraphModal } from './components/TargetRoleGraphModal'
 import { TargetRoleVersionDiff } from './components/TargetRoleVersionDiff'
 import { formatRequiredKnowledge } from './roleKnowledgePresentation'
 import { missingRoleLevelRequirements,roleRequirements,validRequiredKnowledge } from './roleRequirements'
-import { getManagerEffectiveStatus, type ManagerRoleStatus } from './TargetRolesPage.helpers'
-export { getManagerEffectiveStatus, type ManagerRoleStatus }
+import { getManagerEffectiveStatus } from './TargetRolesPage.helpers'
 
 const ROLE_PRESETS: ImportPreset[] = []
 interface RoleMetadata {
@@ -1143,22 +1142,29 @@ export function TargetRolesPage() {
   const [isLoadingValidationContent, setIsLoadingValidationContent] =
     React.useState(false)
 
+  const validationRoleId = viewingDetailsRole?.id
   React.useEffect(() => {
-    if (viewingDetailsRole) {
-      setIsLoadingValidationContent(true)
-      Promise.all([
+    let active = true
+    if (validationRoleId) {
+      Promise.resolve().then(() => {
+        if (!active) return null
+        setIsLoadingValidationContent(true)
+        return Promise.all([
         fetchLearningModules(orgId).catch(() => [] as LearningModuleDto[]),
         bankRequest<BankView>('', undefined).catch(() => null),
-      ])
-        .then(([mods, bank]) => {
+        ])
+      }).then(result => {
+          if (!active || !result) return
+          const [mods, bank] = result
           setValidationModules(mods)
           setValidationBankQuestions(bank?.questions || [])
         })
         .finally(() => {
-          setIsLoadingValidationContent(false)
+          if (active) setIsLoadingValidationContent(false)
         })
     }
-  }, [viewingDetailsRole?.id, orgId])
+    return () => { active = false }
+  }, [validationRoleId, orgId])
   const [graphRole, setGraphRole] = React.useState<TargetRoleModel | null>(null)
   const [deletingRole, setDeletingRole] =
     React.useState<TargetRoleModel | null>(null)

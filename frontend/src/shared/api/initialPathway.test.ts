@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { checkReview, initialSession, PathwayError, prepareReviewCommand, readArchivedPathway, readInitialPathway, readReviewDetail, sendPathwayCommand } from './initialPathway'
 import { reviewFixture, target } from '../../features/expert/pathway-review/reviewTestFixtures'
+import { readRulePathway } from './requirementPathway'
 
 const fetcher = vi.fn()
 beforeEach(() => { vi.stubGlobal('fetch', fetcher); fetcher.mockReset() })
@@ -8,6 +9,16 @@ afterEach(() => vi.unstubAllGlobals())
 const respond = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } })
 function wire() { const d = reviewFixture(); return { ...d, revision: { ...d.revision, overrides: [['MOVE_UP', 'M-B', 'saved'], ['REMOVE', 'M-OLD', 'neutral']] } } }
 describe('REQ-019/020 API client and E01/E09 projection boundaries (mock HTTP only)', () => {
+  it('current requirement pathway accepts the real empty200 absence, while archive still requires a body', async () => {
+    fetcher.mockResolvedValueOnce(new Response('', { status: 200 }))
+    expect(await readRulePathway()).toBeNull()
+    fetcher.mockResolvedValueOnce(new Response('', { status: 200 }))
+    await expect(readRulePathway('saved-id')).rejects.toMatchObject({ status: 200, code: 'INVALID_RESPONSE' })
+  })
+  it.each([401, 403, 503])('empty %s never becomes a successful empty pathway', async status => {
+    fetcher.mockResolvedValueOnce(new Response('', { status }))
+    await expect(readRulePathway()).rejects.toMatchObject({ status })
+  })
   it.each(['inclusions', 'exclusions', 'removals', 'move-up', 'move-down', 'confirmation'] as const)('R03 prepares %s with exact tuple and no tenant/actor fields', action => {
     const command = prepareReviewCommand('path/19', reviewFixture(), action, 'M-A', 'reason')
     expect(command.path).toBe('expert/initial-pathways/path%2F19/' + (action.startsWith('move-') ? 'moves' : action))

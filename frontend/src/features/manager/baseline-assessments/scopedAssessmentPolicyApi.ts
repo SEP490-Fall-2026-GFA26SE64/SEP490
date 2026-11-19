@@ -3,10 +3,10 @@ import { rulePolicy, type AssessmentPurpose, type KnowledgeLevel, type RulePolic
 
 export interface ScopeChoice { key: string; ownerId: string; ownerName: string; levelId: string; levelName: string; rank: number; ready: boolean }
 export interface ScopeGroup { requirement: { skillId: string; knowledgeLevel: KnowledgeLevel; outcomeCodes: string[] }; skillName: string; skillVersion: string | null; provisionMode?: 'MODULE_ONLY' | 'CERTIFICATE_ONLY' | null; readinessIssues: string[] }
-export interface PolicyScope extends ScopeChoice { purpose: AssessmentPurpose; catalogHash: string; groups: ScopeGroup[]; readinessIssues: string[] }
+export interface PolicyScope extends ScopeChoice { purpose: AssessmentPurpose; catalogHash: string; groups: ScopeGroup[]; readinessIssues: string[]; memberLevels?: { id: string; name: string; rank: number; groups: ScopeGroup[]; readinessIssues: string[] }[] }
 export interface ScopedVersion { id: string; version: number; configuration: RulePolicy; catalogHash: string; createdAt: string }
 export interface BaselineLevelRule { knowledgeLevel: KnowledgeLevel; totalCount: number | null; requiredCorrectCount: number | null }
-export interface BaselineEditorState { step: number; completed: boolean; levels: BaselineLevelRule[]; timeLimitSeconds: number | null; retakeWaitSeconds: number | null; maxAttempts: number | null }
+export interface BaselineEditorState { step: number; completed: boolean; levels: BaselineLevelRule[]; timeLimitSeconds: number | null; retakeWaitSeconds: number | null; maxAttempts: number | null; timePerQuestionSeconds?: number | null }
 export interface LevelCapacity { knowledgeLevel: KnowledgeLevel; skillCount: number; maxQuestions: number; limitingSkills: string[] }
 export interface ScopedDraft { id: string; revision: number; configuration: RulePolicy | null; catalogHash: string; updatedAt: string; editorState: BaselineEditorState | null }
 export interface AbandonedDraft extends ScopedDraft { abandonedAt: string }
@@ -17,7 +17,7 @@ export interface PolicyDirectory { rows: { scope: ScopeChoice; status: ConfigSta
 export type ScopedCommand = { purpose: AssessmentPurpose; scopeKey: string; commandKey: string } & (
   { kind: 'create'; expectedActivationRevision: number } |
   { kind: 'save'; draftId: string; expectedRevision: number; expectedCatalogHash: string; configuration: RulePolicy } |
-  { kind: 'progress'; draftId: string; expectedRevision: number; expectedCatalogHash: string; editorState: BaselineEditorState } |
+  { kind: 'progress'; draftId: string | null; expectedRevision: number; expectedCatalogHash: string; editorState: BaselineEditorState; expectedActivationRevision?: number } |
   { kind: 'complete'; draftId: string; expectedRevision: number; expectedActivationRevision: number; expectedCatalogHash: string; editorState: BaselineEditorState } |
   { kind: 'abandon'; draftId: string; expectedRevision: number } |
   { kind: 'activate'; draftId: string; expectedRevision: number; expectedActivationRevision: number; expectedCatalogHash: string })
@@ -35,7 +35,7 @@ function editorState(value: unknown): BaselineEditorState | null {
   const v = obj(value), step = num(v.step, 1)
   if (step > 3) throw new Error('Invalid editor step')
   const optional = (n: unknown, min: number) => n === null ? null : num(n, min)
-  return { step, completed: bool(v.completed), levels: list(v.levels, raw => { const row = obj(raw); return { knowledgeLevel: knowledge(row.knowledgeLevel), totalCount: optional(row.totalCount, 1), requiredCorrectCount: optional(row.requiredCorrectCount, 1) } }), timeLimitSeconds: optional(v.timeLimitSeconds, 1), retakeWaitSeconds: optional(v.retakeWaitSeconds, 0), maxAttempts: optional(v.maxAttempts, 1) }
+  return { step, completed: bool(v.completed), levels: list(v.levels, raw => { const row = obj(raw); return { knowledgeLevel: knowledge(row.knowledgeLevel), totalCount: optional(row.totalCount, 1), requiredCorrectCount: optional(row.requiredCorrectCount, 1) } }), timeLimitSeconds: optional(v.timeLimitSeconds, 1), retakeWaitSeconds: optional(v.retakeWaitSeconds, 0), maxAttempts: optional(v.maxAttempts, 1), ...(v.timePerQuestionSeconds == null ? {} : { timePerQuestionSeconds: num(v.timePerQuestionSeconds, 1) }) }
 }
 function choice(value: unknown): ScopeChoice { const v = obj(value); return { key: hash(v.key), ownerId: str(v.ownerId), ownerName: str(v.ownerName), levelId: str(v.levelId), levelName: str(v.levelName), rank: num(v.rank), ready: bool(v.ready) } }
 function version(value: unknown): ScopedVersion { const v = obj(value); return { id: str(v.id), version: num(v.version, 1), configuration: rulePolicy(v.configuration), catalogHash: hash(v.catalogHash), createdAt: date(v.createdAt) } }
@@ -50,7 +50,8 @@ function workspace(value: unknown, purpose: AssessmentPurpose, key: string): Pol
     return { requirement: { skillId: str(r.skillId), knowledgeLevel: level as KnowledgeLevel, outcomeCodes: [] }, skillName: str(g.skillName), skillVersion: g.skillVersion === null ? null : str(g.skillVersion), provisionMode: mode, readinessIssues: g.readinessIssues === undefined ? [] : list(g.readinessIssues, str) }
   })
   const d = v.draft === null ? null : obj(v.draft)
-  return { scope: { ...scope, purpose, catalogHash: hash(s.catalogHash), groups, readinessIssues: s.readinessIssues === undefined ? [] : list(s.readinessIssues, str) },
+  const memberLevels = s.memberLevels == null ? [] : list(s.memberLevels, raw => { const m = obj(raw); return { id: str(m.id), name: str(m.name), rank: num(m.rank), readinessIssues: list(m.readinessIssues, str), groups: list<ScopeGroup>(m.groups, rawGroup => { const group = obj(rawGroup), r = obj(group.requirement); return { requirement: { skillId: str(r.skillId), knowledgeLevel: knowledge(r.knowledgeLevel), outcomeCodes: [] }, skillName: str(group.skillName), skillVersion: group.skillVersion == null ? null : str(group.skillVersion), readinessIssues: list(group.readinessIssues, str) } }) } })
+  return { scope: { ...scope, purpose, catalogHash: hash(s.catalogHash), groups, memberLevels, readinessIssues: s.readinessIssues === undefined ? [] : list(s.readinessIssues, str) },
     draft: d && { id: str(d.id), revision: num(d.revision, 1), configuration: d.configuration === null ? null : rulePolicy(d.configuration), catalogHash: hash(d.catalogHash), updatedAt: date(d.updatedAt), editorState: editorState(d.editorState) },
     active: v.active === null ? null : version(v.active), activationRevision: num(v.activationRevision), versions: list(v.versions, version), totalVersions: num(v.totalVersions),
     groupCapacities: v.groupCapacities == null ? [] : list(v.groupCapacities, raw => { const c = obj(raw); return { skillId: str(c.skillId), knowledgeLevel: knowledge(c.knowledgeLevel), minQuestions: num(c.minQuestions, 1), maxQuestions: num(c.maxQuestions), mandatoryQuestions: num(c.mandatoryQuestions), ordinaryQuestions: num(c.ordinaryQuestions) } }),

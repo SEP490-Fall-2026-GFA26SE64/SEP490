@@ -8,7 +8,7 @@ import { Text } from '../../../shared/components/typography/Text'
 import { useTranslation } from '../../../shared/i18n/LanguageContext'
 import { RiasecAttemptPanel } from './RiasecAttemptPanel'
 import { manifest } from './riasecInstrument'
-import { aiRunning, riasecRequest, type Draft, type View } from './riasecApi'
+import { aiRunning, riasecRequest, RiasecError, type Draft, type View } from './riasecApi'
 import { RiasecResultComparison } from './RiasecResultComparison'
 import { RiasecAiProgress } from './RiasecAiProgress'
 import { RiasecResultHistory, type HistoryAction } from './RiasecResultHistory'
@@ -23,6 +23,7 @@ function Assessment({ active }: { active: boolean }) {
   const ui = (key: string) => t(`riasecUi.${key}`)
   const copy = (en: string, vn: string) => vi ? vn : en
   const failureText = (code: string) => {
+    if (code === 'RIASEC_ENDPOINT_UNAVAILABLE') return copy('Career interests is not enabled at this server endpoint. Ask the workspace administrator to check the deployment configuration, then reload.', 'Endpoint Khám phá sở thích chưa khả dụng trên server. Nhờ quản trị viên kiểm tra cấu hình triển khai rồi tải lại.')
     if (['EDITING_ELSEWHERE', 'DRAFT_CHANGED'].includes(code)) return copy('The draft changed or editing moved to another tab. Continue here with the latest saved draft.', 'Nháp đã thay đổi hoặc quyền sửa đã chuyển sang tab khác. Tiếp tục tại đây với nháp đã lưu mới nhất.')
     if (code === 'AI_RUNNING') return copy('Wait for AI processing to finish before this action.', 'Chờ AI xử lý xong trước khi thực hiện thao tác này.')
     if (code === 'INCOMPLETE_ANSWERS') return copy('Answer all 60 activities before submitting.', 'Trả lời đủ 60 câu trước khi nộp.')
@@ -44,15 +45,23 @@ function Assessment({ active }: { active: boolean }) {
   const heading = useRef<HTMLDivElement>(null)
   const draft = useRef<Draft | null>(null), pending = useRef<Record<string, number> | null>(null)
   const flushing = useRef<Promise<boolean> | null>(null), mutating = useRef(false), epoch = useRef(0), mounted = useRef(true)
+  const readFailure = useRef<RiasecError | null>(null), loading = useRef(false)
   const syncDraft = (d: Draft) => { draft.current = d; if (pending.current === null) setAnswers(new Map(Object.entries(d.answers))) }
   const load = async () => {
-    if (flushing.current || pending.current || mutating.current) return
+    if (loading.current || readFailure.current && [401, 403, 404].includes(readFailure.current.status) || flushing.current || pending.current || mutating.current) return
+    loading.current = true
     const generation = epoch.current
     try {
       const v = await riasecRequest<View>()
       if (!mounted.current || generation !== epoch.current || flushing.current || pending.current) return
-      setView(v); syncDraft(v.draft); setError('')
-    } catch (e) { if (mounted.current) setError(e instanceof Error ? e.message : 'RIASEC_UNAVAILABLE') }
+      setView(v); syncDraft(v.draft); setError(''); readFailure.current = null
+    } catch (e) {
+      if (mounted.current && generation === epoch.current) {
+        readFailure.current = e instanceof RiasecError ? e : null
+        if (e instanceof RiasecError && [401, 403].includes(e.status)) setView(null)
+        setError(e instanceof RiasecError && e.status === 404 ? 'RIASEC_ENDPOINT_UNAVAILABLE' : e instanceof Error ? e.message : 'RIASEC_UNAVAILABLE')
+      }
+    } finally { loading.current = false }
   }
   useEffect(() => {
     mounted.current = true
@@ -148,7 +157,7 @@ function Assessment({ active }: { active: boolean }) {
 
       {running && <RiasecAiProgress key={view!.results.find(aiRunning)!.id} result={view!.results.find(aiRunning)!} />}
       {error && <div role="alert" className="space-y-2 text-destructive"><Text>{failureText(error)}</Text>
-        {saveError ? <><Text>{copy('Unsaved answers remain in this tab. Retry saving, or continue here with the latest saved draft.', 'Câu chưa lưu vẫn còn trong tab này. Thử lưu lại hoặc tiếp tục tại đây với nháp đã lưu mới nhất.')}</Text><Button variant="outline" onClick={() => void flush()} disabled={saving}>{copy('Retry save', 'Thử lưu lại')}</Button><Button variant="outline" disabled={saving || busy} onClick={() => void takeover()}>{copy('Continue with saved draft', 'Tiếp tục với nháp đã lưu')}</Button></> : <Button variant="outline" onClick={() => void load()}>{copy('Reload', 'Tải lại')}</Button>}
+        {saveError ? <><Text>{copy('Unsaved answers remain in this tab. Retry saving, or continue here with the latest saved draft.', 'Câu chưa lưu vẫn còn trong tab này. Thử lưu lại hoặc tiếp tục tại đây với nháp đã lưu mới nhất.')}</Text><Button variant="outline" onClick={() => void flush()} disabled={saving}>{copy('Retry save', 'Thử lưu lại')}</Button><Button variant="outline" disabled={saving || busy} onClick={() => void takeover()}>{copy('Continue with saved draft', 'Tiếp tục với nháp đã lưu')}</Button></> : <Button variant="outline" onClick={() => { readFailure.current = null; void load() }}>{copy('Reload', 'Tải lại')}</Button>}
       </div>}
     {view?.draft.draftId && <>
       <div role="status" className="flex flex-wrap items-center gap-3 text-body-sm">

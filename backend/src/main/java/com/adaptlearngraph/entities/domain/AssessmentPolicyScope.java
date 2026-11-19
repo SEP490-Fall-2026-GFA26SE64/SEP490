@@ -14,6 +14,15 @@ public final class AssessmentPolicyScope {
                     .digest(body.getBytes(java.nio.charset.StandardCharsets.UTF_8)));
         }catch(java.security.NoSuchAlgorithmException unavailable){throw new IllegalStateException(unavailable);}
     }
+    public static String roleKey(String roleId) {
+        if(roleId==null || roleId.isBlank())throw new IllegalArgumentException("Missing Role identity");
+        try {return java.util.HexFormat.of().formatHex(java.security.MessageDigest.getInstance("SHA-256").digest(
+                ("SHARED_ROLE_BASELINE\n"+roleId.length()+":"+roleId).getBytes(java.nio.charset.StandardCharsets.UTF_8)));}
+        catch(java.security.NoSuchAlgorithmException unavailable){throw new IllegalStateException(unavailable);}
+    }
+    public record MemberLevel(String id,String name,int rank,List<GroupSpec> groups,List<String> readinessIssues) {
+        public MemberLevel {groups=List.copyOf(groups);readinessIssues=List.copyOf(readinessIssues);}
+    }
     /** Configuration discovery may precede assessment outcome authoring. Frozen paper Requirements remain strict. */
     public record ConfigurationRequirement(String skillId,KnowledgeLevel knowledgeLevel,List<String> outcomeCodes) {
         public ConfigurationRequirement {
@@ -35,11 +44,16 @@ public final class AssessmentPolicyScope {
     }
     public record Scope(String key,Purpose purpose,String ownerId,String ownerName,String levelId,String levelName,String contextLevelId,
                         int rank,String catalogHash,List<GroupSpec> groups,boolean ready,List<String> readinessIssues,
-                        @com.fasterxml.jackson.annotation.JsonIgnore String legacyCatalogHash) {
+                        @com.fasterxml.jackson.annotation.JsonIgnore String legacyCatalogHash,
+                        @com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_EMPTY) List<MemberLevel> memberLevels) {
+        public Scope(String key,Purpose purpose,String ownerId,String ownerName,String levelId,String levelName,String contextLevelId,int rank,String catalogHash,List<GroupSpec> groups,boolean ready,List<String> readinessIssues,String legacyCatalogHash) {
+            this(key,purpose,ownerId,ownerName,levelId,levelName,contextLevelId,rank,catalogHash,groups,ready,readinessIssues,legacyCatalogHash,List.of());
+        }
         public Scope(String key,Purpose purpose,String ownerId,String ownerName,String levelId,String levelName,String contextLevelId,int rank,String catalogHash,List<GroupSpec> groups,boolean ready,List<String> readinessIssues) {
             this(key,purpose,ownerId,ownerName,levelId,levelName,contextLevelId,rank,catalogHash,groups,ready,readinessIssues,null);
         }
         public boolean matchesCatalog(String hash){return catalogHash.equals(hash) || legacyCatalogHash!=null && legacyCatalogHash.equals(hash);}
-        public Scope { groups=List.copyOf(groups);readinessIssues=readinessIssues==null?List.of():List.copyOf(readinessIssues); }
+        public boolean sharedBaseline(){return purpose==Purpose.BASELINE && key.equals(roleKey(ownerId));}
+        public Scope { groups=List.copyOf(groups);readinessIssues=readinessIssues==null?List.of():List.copyOf(readinessIssues);memberLevels=memberLevels==null?List.of():List.copyOf(memberLevels); }
     }
 }

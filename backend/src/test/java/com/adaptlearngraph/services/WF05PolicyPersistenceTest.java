@@ -35,6 +35,10 @@ class WF05PolicyPersistenceTest {
     }
     @AfterAll static void stop(){if(db!=null){db.close();db=null;}if(isolated!=null){isolated.stop();isolated=null;}}
     Scope scope(Purpose purpose,String owner,String level){var requirement=new ConfigurationRequirement("S-A",KnowledgeLevel.FOUNDATION,List.of("OUT-1"));
+        if(purpose==Purpose.BASELINE) {
+            var groups=List.of(new GroupSpec(requirement,"Skill A","v1",SkillProvisionMode.MODULE_ONLY,List.of()));
+            return new Scope(AssessmentPolicyScope.roleKey(owner),purpose,owner,owner,"ALL_ROLE_LEVELS","All Role levels","ALL_ROLE_LEVELS",0,"a".repeat(64),groups,true,List.of(),null,List.of(new MemberLevel(level,level,1,groups,List.of())));
+        }
         return new Scope(AssessmentPolicyScope.key(purpose,owner,level),purpose,owner,owner,level,level,level,1,"a".repeat(64),
             List.of(new GroupSpec(requirement,"Skill A","v1",SkillProvisionMode.MODULE_ONLY,List.of())),true,List.of());}
     SubscriptionAccessPolicy.Actor as(UUID id,SubscriptionAccessPolicy.Role role){return new SubscriptionAccessPolicy.Actor(id,org,true,true,Set.of(role),true);}
@@ -55,7 +59,7 @@ class WF05PolicyPersistenceTest {
             new PostgresAdvisoryLocks(db.bean(EntityManager.class)),new TransactionTemplate(db.transactionManager()),json,1000);
     }
     ScopedAssessmentPolicyService.Workspace draft(Scope scope){return service.create(scope.purpose(),scope.key(),new ScopedAssessmentPolicyService.Create(UUID.randomUUID(),0));}
-    Policy config(Purpose purpose){return new Policy(60,0,3,List.of(new GroupRule("S-A",KnowledgeLevel.FOUNDATION,2,2,false,false,purpose==Purpose.BASELINE?null:0)));}
+    Policy config(Purpose purpose){var groups=List.of(new GroupRule("S-A",KnowledgeLevel.FOUNDATION,2,2,false,false,purpose==Purpose.BASELINE?null:0));return purpose==Purpose.BASELINE?new Policy(null,0,3,groups,new BaselineTiming(30)):new Policy(60,0,3,groups);}
     ScopedAssessmentPolicyService.Workspace save(Scope scope,ScopedAssessmentPolicyService.Workspace w){return service.save(scope.purpose(),scope.key(),
         new ScopedAssessmentPolicyService.Save(UUID.randomUUID(),w.draft().id(),w.draft().revision(),scope.catalogHash(),config(scope.purpose())));}
     ScopedAssessmentPolicyService.Workspace publish(Scope scope,ScopedAssessmentPolicyService.Workspace w){return service.activate(scope.purpose(),scope.key(),
@@ -65,14 +69,26 @@ class WF05PolicyPersistenceTest {
         assertThat(reopened.active().id()).isEqualTo(published.active().id());assertThat(reopened.active().configuration()).isEqualTo(config(Purpose.BASELINE));
         assertThat(reopened.activationRevision()).isEqualTo(1);assertThat(service.read(Purpose.BASELINE,other.key(),0,20).active()).isNull();
         assertThat(sql.queryForObject("SELECT configuration_hash FROM platform.assessment_rule_policy_version WHERE id=?",String.class,published.active().id())).matches("[a-f0-9]{64}");}
+    @Test void activePoliciesHaveTheirOwnDirectoryAndAtomicSaveRejectsStaleDrafts() {
+        var state=new BaselinePolicyEditor.Progress(3,true,List.of(new BaselinePolicyEditor.LevelRule(KnowledgeLevel.FOUNDATION,10,7)),null,0,3,30);
+        var command=new ScopedAssessmentPolicyService.SaveEditor(UUID.randomUUID(),null,0,baseline.catalogHash(),state,0);
+        var saved=service.saveEditor(Purpose.BASELINE,baseline.key(),command);
+        assertThatThrownBy(()->service.complete(Purpose.BASELINE,baseline.key(),new ScopedAssessmentPolicyService.Complete(UUID.randomUUID(),saved.draft().id(),saved.draft().revision(),0,baseline.catalogHash(),state))).hasMessageContaining("SAVE_BEFORE_ACTIVATE_REQUIRED");
+        assertThat(service.saveEditor(Purpose.BASELINE,baseline.key(),command).draft().id()).isEqualTo(saved.draft().id());
+        assertThatThrownBy(()->service.saveEditor(Purpose.BASELINE,baseline.key(),new ScopedAssessmentPolicyService.SaveEditor(UUID.randomUUID(),null,0,baseline.catalogHash(),state,0))).hasMessageContaining("STALE_POLICY_DRAFT");
+        var active=publish(baseline,saved);
+        assertThat(service.directory(Purpose.BASELINE,"","","","ACTIVE",0,20).rows()).extracting(row->row.scope().key()).containsExactly(baseline.key());
+        assertThat(service.directory(Purpose.BASELINE,"","","","WORKLIST",0,20).rows()).extracting(row->row.scope().key()).doesNotContain(baseline.key());
+        assertThat(service.read(Purpose.BASELINE,baseline.key(),0,20).active().id()).isEqualTo(active.active().id());
+    }
     @Test @DisplayName("TC-WF05-S01 persistence: incomplete and insufficient-bank drafts cannot replace immutable active version")
     void invalidPublicationRetainsPrevious(){var first=publish(baseline,save(baseline,draft(baseline)));
         var second=service.create(Purpose.BASELINE,baseline.key(),new ScopedAssessmentPolicyService.Create(UUID.randomUUID(),first.activationRevision()));
         var partial=service.saveEditor(Purpose.BASELINE,baseline.key(),new ScopedAssessmentPolicyService.SaveEditor(UUID.randomUUID(),second.draft().id(),second.draft().revision(),baseline.catalogHash(),
             new BaselinePolicyEditor.Progress(1,false,List.of(new BaselinePolicyEditor.LevelRule(KnowledgeLevel.FOUNDATION,null,null)),null,null,null)));
         assertThat(partial.draft().configuration()).isNull();assertThatThrownBy(()->publish(baseline,partial)).hasMessageContaining("POLICY_CONFIGURATION_REQUIRED");
-        var ready=save(baseline,partial);when(bank.eligible(any(),anyString(),anyString(),anyString(),anyInt())).thenReturn(List.of());
-        assertThatThrownBy(()->publish(baseline,ready)).hasMessageContaining("INSUFFICIENT_APPROVED_GROUP_BANK");
+        var ready=save(baseline,partial);when(bank.availableCount(any(),anyString(),anyString(),anyString())).thenReturn(0);
+        assertThatThrownBy(()->publish(baseline,ready)).hasMessageContaining("REQUIRED_GROUP_BANK_EMPTY");
         var after=service.read(Purpose.BASELINE,baseline.key(),0,20);assertThat(after.active().id()).isEqualTo(first.active().id());assertThat(after.totalVersions()).isEqualTo(1);assertThat(after.draft()).isNotNull();}
     @Test @DisplayName("TC-WF05-F14 persistence: two authorized editors share one policy and drafts sort before unconfigured scopes")
     void sharedSkillScope(){current=as(actor,SubscriptionAccessPolicy.Role.DOMAIN_EXPERT);var d=draft(skill);

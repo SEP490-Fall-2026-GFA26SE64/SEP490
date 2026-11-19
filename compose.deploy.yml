@@ -30,6 +30,44 @@ x-seed-environment: &seed-environment
   SPRING_MAIN_WEB_APPLICATION_TYPE: none
 
 services:
+  riasec-ollama:
+    image: ollama/ollama@sha256:910d0d8107b538fb0894e63163eb195de0cc7aefcbc666dc62d3b18f71124592
+    environment:
+      OLLAMA_NO_CLOUD: "true"
+      OLLAMA_NUM_PARALLEL: "1"
+      OLLAMA_MAX_LOADED_MODELS: "1"
+      OLLAMA_CONTEXT_LENGTH: "8192"
+      OLLAMA_KEEP_ALIVE: "5m"
+      OLLAMA_MAX_QUEUE: "1"
+      OLLAMA_VULKAN: "0"
+      RIASEC_MODEL: ${RIASEC_MODEL:?Set RIASEC_MODEL after server capacity review}
+    mem_limit: ${RIASEC_OLLAMA_MEMORY:?Set RIASEC_OLLAMA_MEMORY after server capacity review}
+    cpus: ${RIASEC_OLLAMA_CPUS:?Set RIASEC_OLLAMA_CPUS after server capacity review}
+    volumes: [riasec_models:/root/.ollama]
+    networks: [riasec_private]
+    healthcheck:
+      test: ["CMD-SHELL", "ollama show \"$${RIASEC_MODEL}\" >/dev/null 2>&1"]
+      interval: 15s
+      timeout: 10s
+      retries: 12
+      start_period: 30s
+    restart: unless-stopped
+
+  # Explicit setup job has outbound access to obtain the configured model. Inference stays private.
+  riasec-model-pull:
+    image: ollama/ollama@sha256:910d0d8107b538fb0894e63163eb195de0cc7aefcbc666dc62d3b18f71124592
+    profiles: [riasec-setup]
+    entrypoint: [/bin/sh, -ec]
+    environment:
+      OLLAMA_NO_CLOUD: "true"
+      RIASEC_MODEL: ${RIASEC_MODEL:?Set RIASEC_MODEL after server capacity review}
+    command:
+      - 'ollama serve & server=$$!; trap "kill $$server" EXIT; until ollama list >/dev/null 2>&1; do sleep 1; done; ollama pull "$$RIASEC_MODEL"'
+    mem_limit: ${RIASEC_OLLAMA_MEMORY:?Set RIASEC_OLLAMA_MEMORY after server capacity review}
+    cpus: ${RIASEC_OLLAMA_CPUS:?Set RIASEC_OLLAMA_CPUS after server capacity review}
+    volumes: [riasec_models:/root/.ollama]
+    restart: "no"
+
   minio:
     # Built from official source by the deploy workflow (deploy/minio/Dockerfile); upstream images were withdrawn.
     image: ${MINIO_IMAGE:-${DOCKERHUB_USERNAME:?Set DOCKERHUB_USERNAME}/adapt-learn-graph-minio:RELEASE.2025-04-22T22-12-26Z}
@@ -151,9 +189,13 @@ services:
 
   api:
     image: *backend-image
+    networks: [default, riasec_private]
     environment:
       <<: *backend-environment
       SPRING_PROFILES_ACTIVE: local,workspace-baseline,workspace-development
+      RIASEC_ENABLED: ${RIASEC_ENABLED:-true}
+      RIASEC_OLLAMA_URL: http://riasec-ollama:11434
+      RIASEC_MODEL: ${RIASEC_MODEL:?Set RIASEC_MODEL after server capacity review}
       WORKSPACE_MIGRATION_LOCATION: classpath:db/workspace-migration
       WORKSPACE_DEVELOPMENT_FIXTURES_ENABLED: "true"
       ASSESSMENT_BASELINE_LOCALDEMO_ENABLED: "false"
@@ -292,11 +334,14 @@ services:
 # Fixed bridge name so host firewall rules can allow this stack's outbound traffic
 # (SMTP, PayOS) independent of the subnet Docker assigns. See deploy/README.md.
 networks:
+  riasec_private:
+    internal: true
   default:
     driver_opts:
       com.docker.network.bridge.name: br-adaptlearn
 
 volumes:
+  riasec_models:
   learning_assets:
   postgres_data:
   neo4j_data:

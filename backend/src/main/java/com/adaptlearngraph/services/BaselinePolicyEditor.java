@@ -11,10 +11,23 @@ import java.util.*;
 public final class BaselinePolicyEditor {
     public record LevelRule(KnowledgeLevel knowledgeLevel,Integer totalCount,Integer requiredCorrectCount) {}
     public record Progress(int step,boolean completed,List<LevelRule> levels,Integer timeLimitSeconds,
-                           Integer retakeWaitSeconds,Integer maxAttempts) {
+                           Integer retakeWaitSeconds,Integer maxAttempts,
+                           @com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL) Integer timePerQuestionSeconds) {
+        public Progress(int step,boolean completed,List<LevelRule> levels,Integer timeLimitSeconds,Integer retakeWaitSeconds,Integer maxAttempts) {
+            this(step,completed,levels,timeLimitSeconds,retakeWaitSeconds,maxAttempts,null);
+        }
         public Progress { levels=List.copyOf(levels);if(step<1 || step>3 || completed && step!=3)throw new IllegalArgumentException("Invalid editor step"); }
     }
     public record Capacity(KnowledgeLevel knowledgeLevel,int skillCount,int maxQuestions,List<String> limitingSkills) {}
+    public record BankIssue(String roleLevelId,String roleLevelName,String skillId,String skillName,KnowledgeLevel knowledgeLevel) {}
+    public List<BankIssue> missingBanks(UUID organization,Scope scope) {
+        var sizes=new HashMap<String,Integer>();var issues=new ArrayList<BankIssue>();
+        for(var member:scope.memberLevels())for(var group:member.groups()) {
+            int available=sizes.computeIfAbsent(group.requirement().key(),ignored->group.skillVersion()==null?0:bank.availableCount(organization,group.requirement().skillId(),group.requirement().knowledgeLevel().name(),group.skillVersion()));
+            if(available==0)issues.add(new BankIssue(member.id(),member.name(),group.requirement().skillId(),group.skillName(),group.requirement().knowledgeLevel()));
+        }
+        return List.copyOf(issues);
+    }
     private final AssessmentItemKnowledgeMappingJpaRepository bank;private final int maximum;
     public BaselinePolicyEditor(AssessmentItemKnowledgeMappingJpaRepository bank,int maximum){this.bank=bank;this.maximum=maximum;}
     public List<Capacity> capacities(UUID organization,Scope scope) {
@@ -51,16 +64,25 @@ public final class BaselinePolicyEditor {
                 throw new Failure(422,"INVALID_CORRECT_COUNT");
             if(progress.step()>1 && (row.totalCount()==null || row.requiredCorrectCount()==null))throw new Failure(422,"POLICY_CONFIGURATION_REQUIRED");
         }
-        if(total>maximum)throw new Failure(422,"PAPER_CAPACITY_EXCEEDED");
+        if(scope.sharedBaseline()) {
+            for(var member:scope.memberLevels()) {
+                long configured=member.groups().stream().mapToLong(group->{var row=rules.get(group.requirement().knowledgeLevel());return row==null || row.totalCount()==null?0:row.totalCount();}).sum();
+                if(configured>maximum)throw new Failure(422,"PAPER_CAPACITY_EXCEEDED");
+            }
+        } else if(total>maximum)throw new Failure(422,"PAPER_CAPACITY_EXCEEDED");
         if(progress.timeLimitSeconds()!=null && progress.timeLimitSeconds()<1 || progress.retakeWaitSeconds()!=null && progress.retakeWaitSeconds()<0
                 || progress.maxAttempts()!=null && progress.maxAttempts()<1)throw new Failure(422,"POLICY_CONFIGURATION_REQUIRED");
-        if(progress.step()==3 && (progress.timeLimitSeconds()==null || progress.retakeWaitSeconds()==null || progress.maxAttempts()==null))
+        if(progress.timePerQuestionSeconds()!=null && progress.timePerQuestionSeconds()<1 || scope.sharedBaseline() && progress.timeLimitSeconds()!=null)
+            throw new Failure(422,"POLICY_CONFIGURATION_REQUIRED");
+        if(progress.step()==3 && ((scope.sharedBaseline()?progress.timePerQuestionSeconds()==null:progress.timeLimitSeconds()==null) || progress.retakeWaitSeconds()==null || progress.maxAttempts()==null))
             throw new Failure(422,"POLICY_CONFIGURATION_REQUIRED");
         if(!progress.completed())return null;
-        return new Policy(progress.timeLimitSeconds(),progress.retakeWaitSeconds(),progress.maxAttempts(),scope.groups().stream().map(group->{
+        var expanded=scope.groups().stream().map(group->{
             var rule=rules.get(group.requirement().knowledgeLevel());
             return new GroupRule(group.requirement().skillId(),rule.knowledgeLevel(),rule.totalCount(),rule.requiredCorrectCount(),false,false);
-        }).toList());
+        }).toList();
+        return scope.sharedBaseline()?new Policy(null,progress.retakeWaitSeconds(),progress.maxAttempts(),expanded,new BaselineTiming(progress.timePerQuestionSeconds()))
+                :new Policy(progress.timeLimitSeconds(),progress.retakeWaitSeconds(),progress.maxAttempts(),expanded);
     }
     public void validatePolicy(UUID organization,Scope scope,Policy policy) {
         var common=new EnumMap<KnowledgeLevel,LevelRule>(KnowledgeLevel.class);
@@ -70,6 +92,7 @@ public final class BaselinePolicyEditor {
             var previous=common.putIfAbsent(rule.knowledgeLevel(),row);
             if(previous!=null && !previous.equals(row))throw new Failure(422,"UNIFORM_KNOWLEDGE_RULES_REQUIRED");
         }
-        validate(organization,scope,new Progress(3,true,List.copyOf(common.values()),policy.timeLimitSeconds(),policy.retakeWaitSeconds(),policy.maxAttempts()));
+        if(scope.sharedBaseline()!=(policy.baselineTiming()!=null))throw new Failure(422,"SHARED_ROLE_POLICY_REQUIRED");
+        validate(organization,scope,new Progress(3,true,List.copyOf(common.values()),policy.timeLimitSeconds(),policy.retakeWaitSeconds(),policy.maxAttempts(),policy.baselineTiming()==null?null:policy.baselineTiming().secondsPerQuestion()));
     }
 }

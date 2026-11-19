@@ -9,8 +9,9 @@ import java.util.UUID;
 /** Own-organization configuration independent of JobPosition/resource readiness. */
 public final class AssessmentPolicyService implements AssessmentPolicyUseCase {
     public static final class Failure extends RuntimeException {
-        public final int status;public final String code;
-        public Failure(int status,String code){super(code);this.status=status;this.code=code;}
+        public final int status;public final String code;public final java.util.List<?> details;
+        public Failure(int status,String code){this(status,code,java.util.List.of());}
+        public Failure(int status,String code,java.util.List<?> details){super(code);this.status=status;this.code=code;this.details=java.util.List.copyOf(details);}
     }
     public interface Encoding { String write(Object value);<T>T read(String json,Class<T> type); }
     private final AdaptiveBlueprintActorPort actors;

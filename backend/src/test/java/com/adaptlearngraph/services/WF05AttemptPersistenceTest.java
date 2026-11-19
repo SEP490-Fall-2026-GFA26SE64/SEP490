@@ -79,13 +79,64 @@ class WF05AttemptPersistenceTest {
         var active=f.service.read(Purpose.BASELINE,f.baseline.key(),0,20);
         var draft=f.service.create(Purpose.BASELINE,f.baseline.key(),new ScopedAssessmentPolicyService.Create(UUID.randomUUID(),active.activationRevision()));
         var saved=f.service.save(Purpose.BASELINE,f.baseline.key(),new ScopedAssessmentPolicyService.Save(UUID.randomUUID(),draft.draft().id(),draft.draft().revision(),f.baseline.catalogHash(),
-            new Policy(1,0,3,f.config(Purpose.BASELINE).groups())));f.publish(f.baseline,saved);
+            new Policy(null,0,3,f.config(Purpose.BASELINE).groups(),new BaselineTiming(1))));f.publish(f.baseline,saved);
         var a=service.start(command,UUID.randomUUID());var q=a.questions().getFirst();
-        Thread.sleep(1200);service.expireDue();var done=service.resume(a.attemptId());
+        Thread.sleep(2200);service.expireDue();var done=service.resume(a.attemptId());
         assertThat(done.state()).isEqualTo("FINALIZED");assertThat(done.finishReason()).isEqualTo("DEADLINE");assertThat(done.results().getFirst().correctCount()).isZero();
         var late=service.answer(a.attemptId(),new RuleAssessmentAttemptService.Answer(a.revision(),q.position(),q.itemVersionId(),"A"),UUID.randomUUID());
         assertThat(late.results()).isEqualTo(done.results());assertThat(late.deadlineAt()).isEqualTo(a.deadlineAt());service.expireDue();
         assertThat(WF05PolicyPersistenceTest.sql.queryForObject("SELECT count(*) FROM platform.rule_assessment_group_result WHERE attempt_id=?",Integer.class,a.attemptId())).isEqualTo(1);
         assertThat(WF05PolicyPersistenceTest.sql.queryForObject("SELECT count(*) FROM platform.skill_knowledge_evidence WHERE organization_id=? AND learner_id=?",Integer.class,f.org,f.actor)).isZero();
     }
+    @Test void positiveShortfallUsesAllDistinctItemsCeilingAndActualDuration() {
+        var active=f.service.read(Purpose.BASELINE,f.baseline.key(),0,20);
+        var draft=f.service.create(Purpose.BASELINE,f.baseline.key(),new ScopedAssessmentPolicyService.Create(UUID.randomUUID(),active.activationRevision()));
+        var config=new Policy(null,0,3,List.of(new GroupRule("S-A",KnowledgeLevel.FOUNDATION,10,7,false,false)),new BaselineTiming(17));
+        var saved=f.service.save(Purpose.BASELINE,f.baseline.key(),new ScopedAssessmentPolicyService.Save(UUID.randomUUID(),draft.draft().id(),draft.draft().revision(),f.baseline.catalogHash(),config));
+        f.publish(f.baseline,saved);
+        var attempt=service.start(command,UUID.randomUUID());
+        assertThat(attempt.questions()).hasSize(2);
+        assertThat(attempt.questions().stream().map(RuleAssessmentAttemptService.Question::itemVersionId).distinct().count()).isEqualTo(2);
+        assertThat(attempt.groups().getFirst().requiredCorrectCount()).isEqualTo(2);
+        assertThat(java.time.Duration.between(attempt.startedAt(),attempt.deadlineAt()).getSeconds()).isEqualTo(34);
+    }
+    @Test void bankBecomingEmptyAfterActivationBlocksWithoutCreatingAPartialAttempt() {
+        var sql=WF05PolicyPersistenceTest.sql;
+        sql.update("INSERT INTO platform.question_bank_identity(question_id,question_bank_id,code,retired) SELECT i.item_id,i.question_bank_id,upper(i.item_id::text),true FROM platform.item_version i JOIN platform.question_bank_scope s ON s.question_bank_id=i.question_bank_id WHERE s.organization_id=?",f.org);
+        var failure=org.junit.jupiter.api.Assertions.assertThrows(AssessmentPolicyService.Failure.class,()->service.start(command,UUID.randomUUID()));
+        assertThat(failure.code).isEqualTo("REQUIRED_GROUP_BANK_EMPTY");assertThat(failure.details).hasSize(1);
+        assertThat(sql.queryForObject("SELECT count(*) FROM platform.rule_assessment_attempt WHERE organization_id=?",Integer.class,f.org)).isZero();
+    }
+    @Test void oldRoleLevelPaperRemainsResumableWithOriginalPolicyDeadlineAndAnswers() throws Exception {
+        var original=service.start(command,UUID.randomUUID());service.submit(original.attemptId(),original.revision(),UUID.randomUUID());
+        var db=WF05PolicyPersistenceTest.db;var sql=WF05PolicyPersistenceTest.sql;
+        var attempts=db.bean(RuleAssessmentAttemptJpaRepository.class);var policies=db.bean(AssessmentRulePolicyJpaRepository.class);var scopes=db.bean(ScopedAssessmentPolicyJpaRepository.class);
+        String key=AssessmentPolicyScope.key(Purpose.BASELINE,"R1","L1"),body=f.json.writeValueAsString(new Policy(93,0,3,f.config(Purpose.BASELINE).groups()));
+        String hash=RoleBaselineFlow.hash(com.adaptlearngraph.entities.AssessmentRulePolicyEntity.HASH_DOMAIN+"\nBASELINE\n"+body);
+        UUID policy=UUID.randomUUID(),id=UUID.randomUUID();
+        new TransactionTemplate(db.transactionManager()).executeWithoutResult(status->{
+            var source=attempts.lock(f.org,f.actor,original.attemptId()).orElseThrow();
+            var snapshot=f.json.valueToTree(readTree(source.getContextSnapshot()));
+            ((com.fasterxml.jackson.databind.node.ObjectNode)snapshot.path("context")).put("policyScopeKey",key);
+            var now=attempts.clock();
+            policies.insert(new com.adaptlearngraph.entities.AssessmentRulePolicyEntity(policy,f.org,"BASELINE",1,body,hash,f.actor,now,key,f.baseline.catalogHash()));
+            scopes.activate(f.org,"BASELINE",key,policy,f.actor);
+            attempts.insert(new com.adaptlearngraph.entities.RuleAssessmentAttemptEntity(id,f.org,f.actor,"BASELINE",source.getContextKey(),selection.selectionId(),selection.revision(),policy,hash,snapshot.toString(),now,now.plusSeconds(93),null));
+            UUID group=UUID.randomUUID();var frozen=attempts.paper(f.org,f.actor,original.attemptId());var first=frozen.getFirst();
+            attempts.freezeGroup(id,group,f.org,f.actor,first.getSkillId(),first.getKnowledgeLevel(),first.getOutcomeCodes(),first.getRole(),first.getTotalCount(),first.getRequiredCorrectCount(),first.getMandatoryRequired(),first.getAllWrongVeto(),first.getMandatoryCount());
+            for(var item:frozen)attempts.freezeItem(id,group,item.getPosition(),f.org,item.getItemVersionId(),item.getFrozenItem(),item.getMandatory());
+        });
+        sql.update("DELETE FROM platform.assessment_rule_scoped_activation WHERE organization_id=? AND purpose='BASELINE' AND scope_key=?",f.org,f.baseline.key());
+        var resumed=service.resume(id);var question=resumed.questions().getFirst();
+        var answered=service.answer(id,new RuleAssessmentAttemptService.Answer(resumed.revision(),question.position(),question.itemVersionId(),"A"),UUID.randomUUID());
+        assertThat(service.resume(id).questions()).isEqualTo(answered.questions());assertThat(service.resume(id).deadlineAt()).isEqualTo(resumed.deadlineAt());assertThat(java.time.Duration.between(resumed.startedAt(),resumed.deadlineAt()).getSeconds()).isEqualTo(93);
+        assertThat(service.start(command,UUID.randomUUID()).attemptId()).isEqualTo(id);
+        assertThat(f.json.readTree(sql.queryForObject("SELECT configuration::text FROM platform.assessment_rule_policy_version WHERE id=?",String.class,policy))).isEqualTo(f.json.readTree(body));
+        assertThat(sql.queryForObject("SELECT policy_hash FROM platform.rule_assessment_attempt WHERE id=?",String.class,id)).isEqualTo(hash);
+        var finished=service.submit(id,answered.revision(),UUID.randomUUID());
+        var next=new RuleAssessmentAttemptService.Start(Purpose.BASELINE,selection.selectionId(),selection.revision(),finished.attemptId(),null,null,null);
+        assertThatThrownBy(()->service.start(next,UUID.randomUUID())).hasMessageContaining("ASSESSMENT_POLICY_REQUIRED");
+        current=new RoleBaselineFlow.Actor(UUID.randomUUID(),f.actor);assertThatThrownBy(()->service.resume(id)).hasMessageContaining("FORBIDDEN");
+    }
+    private com.fasterxml.jackson.databind.JsonNode readTree(String value) {try{return f.json.readTree(value);}catch(Exception invalid){throw new IllegalStateException(invalid);}}
 }

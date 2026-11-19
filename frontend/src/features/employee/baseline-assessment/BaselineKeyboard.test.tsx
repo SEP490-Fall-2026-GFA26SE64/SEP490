@@ -30,6 +30,8 @@ it.each(['BASELINE', 'SKILL_ASSESSMENT'] as const)('%s saves once, waits for acc
   expect(JSON.parse(run.mock.calls[0]![0]!.body)).toMatchObject({ position: 1, selectedOptionId: 'b', expectedRevision: 1 })
   expect(screen.getByText('Prompt 1')).toBeTruthy()
   expect((screen.getByRole('radio', { name: 'Option b' }) as HTMLInputElement).checked).toBe(true)
+  expect(document.activeElement).toBe(screen.getByRole('radio', { name: 'Option b' }))
+  expect(view.container.querySelectorAll('kbd')).toHaveLength(0)
   await act(async () => finish())
   expect(screen.getByText('Prompt 1')).toBeTruthy() // Resolving run alone is not acceptance.
   const accepted = { ...original, revision: 2, answeredCount: 1, items: original.items.map(i => i.position === 1 ? { ...i, selectedOptionId: 'b' } : i) }

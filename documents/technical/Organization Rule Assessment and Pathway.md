@@ -4,6 +4,26 @@ Source checkpoint: 2026-11-07, `61d334c307e0a6a604c13b9d265f3e9d3749722c`, branc
 
 Update checkpoint: 2026-11-09, working-tree changes based on HEAD `21ab1e4` on the same branch. Sections1.2–1.5 and the route/navigation notes include the subsequently approved implementation. The original checkpoint above describes the November7 review only. Later bounded local API/fixture actions are distinguished from source checks below; this document refresh itself makes no runtime changes and runs no executable tests. Working-tree updates are not a new commit or production acceptance.
 
+<a id="shared-role-baseline-2026-11-19"></a>
+
+## Shared Role baseline and review — source update, 2026-11-19
+
+This section supersedes older baseline Role-Level scope, fixed-duration and combined save/activation descriptions in the dated checkpoints below. It describes the working source, not applied remote configuration.
+
+`AssessmentPolicyScope.roleKey` uses a distinct SHA-256 namespace (`SHARED_ROLE_BASELINE` + Role ID), leaving existing Role-Level keys and policy IDs intact. `Neo4jAssessmentPolicyCatalog` retains those legacy scopes for history and adds a shared scope with `ALL_ROLE_LEVELS`, an exact catalog fingerprint and `memberLevels` containing each Level's own groups. Configuration expands common knowledge-level rules over the union; Employee admission continues to use only the selected Level's requirements after existing evidence/exemption rules. Legacy scopes are read-only for new mutations; historical accepted receipts may replay after current authorization checks.
+
+Existing scoped JSONB stores own drafts, immutable policy versions, active pointers and receipts; no DDL or data rewrite is required. New shared policy JSON adds `baselineTiming: { secondsPerQuestion }` with `timeLimitSeconds: null`. Old fixed-time payloads deserialize with absent `baselineTiming` and keep their original serialization/hash domain. Skill Assessment rejects baseline timing and retains fixed-duration/quota rules.
+
+`PUT /assessment-policies/BASELINE/scopes/{key}/draft/editor` explicitly saves local progress. On first Save, `draftId:null`, `expectedRevision:0` and `expectedActivationRevision` atomically create/update a draft; subsequent Saves require its exact ID/revision. Opening, changing fields and wizard navigation make no mutation. `POST .../activation` consumes only the saved revision with activation/catalog checks. New combined-completion commands return `SAVE_BEFORE_ACTIVATE_REQUIRED`; exact previously accepted combined receipts remain read-only replayable. No silent save occurs during activation.
+
+The per-knowledge-level configuration upper bound is the smallest eligible exact Skill/version bank across the shared Role scope, capped at 500. Draft progress may remain incomplete, but entered counts must fit this bound. Activation checks every applicable member-Level bank and returns `REQUIRED_GROUP_BANK_EMPTY` with Level ID/name, Skill ID/name and knowledge level for empty banks. Admission rechecks its own groups and rejects positive shortages with `INSUFFICIENT_APPROVED_GROUP_BANK`; it never reduces configured counts or passing thresholds. Sample distinct eligible item-version IDs and freeze the configured counts/thresholds and checked `secondsPerQuestion × selected total` into the new paper/deadline. Existing frozen papers are read/resumed without recomputation. New baseline admission requires the shared Role policy; no legacy fallback or automatic promotion exists. A future Expert/L&D bank-minimum request/approval workflow is outside this implementation.
+
+Baseline directory accepts `WORKLIST`, `ACTIVE` and `HISTORY`: worklist excludes active-only policies; current tabs use one Role row, while archived legacy scopes retain member-Level identity. Activation routes the UI to Active with the activated Role filter. Results group by Skill ID, retain per-level status and expand frozen score details; a unique Skill passes only if all its required groups pass. Learning gaps remain level-specific.
+
+Employee pathway empty/pending/failure states retain the target header and graph/timeline shell, using only real target identity and no fabricated nodes/progress. The nullable current-pathway read accepts Spring's HTTP200 empty body as actual absence; archive reads still require a valid body, and non-200 failures remain errors. Expert Include maps an exact module ID/revision/content version to the selected eligible requirement; it never substitutes another node based on labels. Version/provision/eligibility restrictions remain enforced. Check reveals actionable issues and node navigation; `MODULE_OPTIONS_CHANGED` optionally identifies `moduleId`/`moduleRevision`, retaining distinct affected options. Reject uses the existing confirmed reason/authorization lifecycle in the shared action area.
+
+RIASEC stops automatic polling after persistent401/403/404; explicit Reload remains available. A missing-route404 has deployment-specific feedback, distinct from asynchronous worker failures. [Deploy instructions](../../deploy/README.md#riasec-route-and-private-inference) cover enablement, workspace V74, private inference/model setup and resource review. Tenant/actor, session/CSRF, receipt and historical ownership boundaries are unchanged.
+
 ## 1. Scope and ownership
 
 | Owner | Current responsibility |
