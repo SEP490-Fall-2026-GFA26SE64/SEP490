@@ -17,9 +17,15 @@ public record OrganizationStructure(List<Department> departments) {
         }
     }
 
-    public record JobPosition(String code, String name, List<TargetRole> targetRoles) {
+    public record JobPosition(String code, String name, List<TargetRole> targetRoles, java.util.Map<String,Integer> interestProfile) {
+        public JobPosition(String code,String name,List<TargetRole> targetRoles){this(code,name,targetRoles,java.util.Map.of());}
         public JobPosition {
             targetRoles = List.copyOf(targetRoles);
+            interestProfile = interestProfile == null ? java.util.Map.of() : java.util.Map.copyOf(interestProfile);
+            var fields=java.util.Set.of("interestRealistic","interestInvestigative","interestArtistic","interestSocial","interestEnterprising","interestConventional");
+            if (!interestProfile.isEmpty() && (!interestProfile.keySet().equals(fields)
+                    || interestProfile.values().stream().anyMatch(v -> v < 0 || v > 40)))
+                throw new IllegalArgumentException("All six RIASEC scores must be whole numbers from 0 to 40");
         }
     }
 

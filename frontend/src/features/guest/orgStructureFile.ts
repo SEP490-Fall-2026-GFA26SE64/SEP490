@@ -3,7 +3,7 @@ import { EXCEL_COLOR as COLOR, columnLetter as letter, downloadWorkbook, excelFo
   type RangeValidations } from '../../shared/lib/excelTemplateStyle'
 
 export interface DepartmentRow { row: number; code: string; name: string; description: string }
-export interface JobPositionRow { row: number; departmentCode: string; code: string; name: string }
+export interface JobPositionRow { row: number; departmentCode: string; code: string; name: string; interestRealistic?: string; interestInvestigative?: string; interestArtistic?: string; interestSocial?: string; interestEnterprising?: string; interestConventional?: string }
 export interface TargetRoleRow { row: number; jobPositionCode: string; code: string; name: string; scope: string }
 export interface LevelRow { row: number; targetRoleCode: string; name: string; rank: string }
 /** The four data sheets of an organization structure workbook; the server validates them again. */
@@ -20,8 +20,8 @@ export const MAX_STRUCTURE_FILE_BYTES = 1024 * 1024
 export const STRUCTURE_TEMPLATE_FILE = 'organization-structure-template.xlsx'
 const LAST_ROW = MAX_STRUCTURE_ROWS + 1
 
-type Kind = 'code' | 'name' | 'text' | 'ref' | 'lookup' | 'rank'
-interface ColumnSpec { field: string; header: string; vi: string; kind: Kind; width: number; hint: string }
+type Kind = 'code' | 'name' | 'text' | 'ref' | 'lookup' | 'rank' | 'riasec'
+interface ColumnSpec { field: string; header: string; vi: string; kind: Kind; width: number; hint: string; optional?: boolean }
 interface SheetSpec { key: SheetKey; name: string; vi: string; purpose: [string, string]; columns: ColumnSpec[]; examples: (string | number)[][] }
 
 /** Sheet and header names are canonical: backend row errors use the same sheet and column names. */
@@ -39,6 +39,12 @@ export const STRUCTURE_SHEETS: SheetSpec[] = [
     { field: 'departmentName', header: 'Department name', vi: 'Tên phòng ban', kind: 'lookup', width: 30, hint: '' },
     { field: 'code', header: 'Job position code', vi: 'Mã vị trí công việc', kind: 'code', width: 22, hint: 'Unique short code, e.g. DEV. Letters, digits, . _ - only.' },
     { field: 'name', header: 'Job position name', vi: 'Tên vị trí công việc', kind: 'name', width: 32, hint: 'Full name, up to 120 characters.' },
+    { field: 'interestRealistic', header: 'RIASEC R', vi: 'RIASEC R', kind: 'riasec', width: 14, optional: true, hint: 'Optional profile: enter all six whole numbers 0-40, or leave all six blank.' },
+    { field: 'interestInvestigative', header: 'RIASEC I', vi: 'RIASEC I', kind: 'riasec', width: 14, optional: true, hint: 'Optional profile: enter all six whole numbers 0-40, or leave all six blank.' },
+    { field: 'interestArtistic', header: 'RIASEC A', vi: 'RIASEC A', kind: 'riasec', width: 14, optional: true, hint: 'Optional profile: enter all six whole numbers 0-40, or leave all six blank.' },
+    { field: 'interestSocial', header: 'RIASEC S', vi: 'RIASEC S', kind: 'riasec', width: 14, optional: true, hint: 'Optional profile: enter all six whole numbers 0-40, or leave all six blank.' },
+    { field: 'interestEnterprising', header: 'RIASEC E', vi: 'RIASEC E', kind: 'riasec', width: 14, optional: true, hint: 'Optional profile: enter all six whole numbers 0-40, or leave all six blank.' },
+    { field: 'interestConventional', header: 'RIASEC C', vi: 'RIASEC C', kind: 'riasec', width: 14, optional: true, hint: 'Optional profile: enter all six whole numbers 0-40, or leave all six blank.' },
   ], examples: [['ENG', '', 'DEV', 'Software Developer'], ['QA', '', 'QA-ENG', 'QA Engineer']] },
   { key: 'targetRoles', name: 'Roles', vi: 'Vai trò', purpose: ['One row per role, inside one job position.', 'Mỗi dòng là một vai trò thuộc một vị trí công việc.'], columns: [
     { field: 'jobPositionCode', header: 'Job position code', vi: 'Mã vị trí công việc', kind: 'ref', width: 22, hint: 'Pick a code from the Job positions sheet.' },
@@ -115,13 +121,13 @@ function readSheet(sheet: Worksheet, spec: SheetSpec): Record<string, string | n
     })
     if (columns.size > (header?.columns.size ?? 0)) header = { row: rowNumber, columns }
   }
-  const missing = inputs.filter(column => !header?.columns.has(column.field)).map(column => column.header)
+  const missing = inputs.filter(column => !column.optional && !header?.columns.has(column.field)).map(column => column.header)
   if (!header || missing.length) throw new StructureFileError({ code: 'missingColumns', sheet: spec.name, missing })
   const rows: Record<string, string | number>[] = []
   for (let rowNumber = header.row + 1; rowNumber <= sheet.rowCount; rowNumber++) {
     const row = sheet.getRow(rowNumber)
     const values: Record<string, string | number> = { row: rowNumber }
-    for (const column of inputs) values[column.field] = cellText(row.getCell(header.columns.get(column.field)!).value).trim()
+    for (const column of inputs) values[column.field] = header.columns.has(column.field) ? cellText(row.getCell(header.columns.get(column.field)!).value).trim() : ''
     if (inputs.some(column => values[column.field])) rows.push(values)
   }
   if (rows.length > MAX_STRUCTURE_ROWS) throw new StructureFileError({ code: 'tooManyRows', sheet: spec.name, count: rows.length })
@@ -169,6 +175,8 @@ function validationFor(spec: SheetSpec, column: ColumnSpec, col: string): DataVa
       return { ...base, type: 'textLength', operator: 'lessThanOrEqual', formulae: [120], error: 'Use at most 120 characters.' }
     case 'text':
       return { ...base, type: 'textLength', operator: 'lessThanOrEqual', formulae: [1000], error: 'Use at most 1000 characters.' }
+    case 'riasec':
+      return { ...base, type: 'whole', operator: 'between', formulae: [0, 40], error: 'Enter a whole number from 0 to 40. Fill all six RIASEC columns or leave all blank.' }
     case 'rank':
       return { ...base, type: 'custom',
         formulae: [`AND(ISNUMBER(${col}2),${col}2=INT(${col}2),${col}2>=1,${col}2<=99,COUNTIFS($A$2:$A$${LAST_ROW},$A2,${range},${col}2)=1)`],
@@ -252,7 +260,7 @@ function buildInstructions(workbook: Workbook) {
     spec.columns.map(column => column.kind === 'lookup' ? `${column.header} - filled automatically` : column.header).join('\n')],
   { fill: index % 2 ? COLOR.canvas : COLOR.white }))
   const rules = [
-    'Every cell in an orange column is required. Grey columns show the matching name automatically and cannot be edited.',
+    'Orange columns are required except RIASEC. RIASEC is optional: fill all six scores (whole numbers 0-40) or leave all six blank. Grey columns show names automatically.',
     'Codes use letters, digits, ".", "_" and "-" (max 64) and must be unique within their sheet; upper/lower case is ignored.',
     'Reference columns offer a dropdown of codes from the previous sheet. Add parents first, then pick them.',
     'Every department needs at least one job position, every job position at least one role, and every role at least one level.',
