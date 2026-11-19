@@ -526,6 +526,10 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
                     OR ($famCode IN ['CLOUD', 'DEVOPS', 'SYSTEMS', 'INFRASTRUCTURE', '15-1299.08'] AND jp.code = '15-1299.08')
                     OR ($famCode IN ['SECURITY', 'SEC', 'COMPLIANCE', '15-1212.00'] AND jp.code = '15-1212.00')
                   )
+                WITH r, jp
+                OPTIONAL MATCH (other:JobPosition)-[oldRel:HAS_ROLE]->(r)
+                WHERE elementId(other) <> elementId(jp)
+                DELETE oldRel
                 MERGE (jp)-[rel:HAS_ROLE]->(r)
                 SET rel.status = CASE WHEN $status IN ['PUBLISHED', 'ACTIVE'] THEN 'ACTIVE' ELSE 'INACTIVE' END,
                     rel.updatedAt = datetime($updatedAt)

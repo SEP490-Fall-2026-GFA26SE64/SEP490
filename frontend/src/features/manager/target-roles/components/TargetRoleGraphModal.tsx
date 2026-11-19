@@ -672,14 +672,14 @@ export function TargetRoleGraphModal({
     })
 
     // 5. Prerequisite edges: (:MicroSkill)-[:HAS_SKILL_PREREQUISITE]->(:MicroSkill)
-    prereqs.forEach((p, pIdx) => {
+    prereqs.forEach((p) => {
       if (seenNodeIds.has(p.sourceSkillId) && seenNodeIds.has(p.targetSkillId)) {
         addEdgeSafely({
-          id: `prereq-${p.sourceSkillId}-${p.targetSkillId}-${pIdx}`,
+          id: `prereq-${p.sourceSkillId}-${p.targetSkillId}`,
           from: p.sourceSkillId,
           to: p.targetSkillId,
-          label: `${p.dependentKnowledgeLevel ?? 'Unclassified'} → ${p.prerequisiteKnowledgeLevel ?? 'Unclassified'}`,
-          title: `HAS_SKILL_PREREQUISITE: ${p.dependentKnowledgeLevel ?? 'Unclassified'} requires ${p.prerequisiteKnowledgeLevel ?? 'Unclassified'}`,
+          label: 'PREREQUISITE',
+          title: `HAS_SKILL_PREREQUISITE: ${p.sourceSkillCode || p.sourceSkillId} requires ${p.targetSkillCode || p.targetSkillId}`,
           font: {
             size: 8,
             color: '#DC2626',
@@ -1075,7 +1075,7 @@ export function TargetRoleGraphModal({
           </div>
           <div className="flex items-center gap-1.5">
             <span className="h-0.5 w-3 bg-destructive border-dashed inline-block" />
-            <span className="text-destructive font-medium">Prerequisite (≥ %)</span>
+            <span className="text-destructive font-medium">Prerequisite</span>
           </div>
         </div>
 
@@ -1244,8 +1244,8 @@ export function TargetRoleGraphModal({
                               <span className="font-mono text-primary font-bold">
                                 {p.sourceSkillCode || p.sourceSkillId}
                               </span>
-                              <Badge variant="primary" className="text-[10px]">
-                                {p.dependentKnowledgeLevel ?? 'Unclassified'} → {p.prerequisiteKnowledgeLevel ?? 'Unclassified'}
+                              <Badge variant="outline" className="text-[10px]">
+                                Prerequisite
                               </Badge>
                             </div>
                           ))
