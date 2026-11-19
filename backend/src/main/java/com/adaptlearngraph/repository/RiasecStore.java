@@ -63,11 +63,11 @@ public final class RiasecStore {
         });
     }
     public void complete(Job job,Object recommendations,String model) {
-        int changed=db.update("UPDATE platform.riasec_result SET ai_status='SUCCEEDED',recommendations=?::jsonb,model=?,prompt_version='riasec-match-v6-interests-only',failure_code=NULL WHERE result_id=? AND run_id=? AND ai_status='PROCESSING' AND ai_deadline>now() AND deleted_at IS NULL",encode(recommendations),model,job.id,job.runId);
+        int changed=db.update("UPDATE platform.riasec_result SET ai_status='SUCCEEDED',recommendations=?::jsonb,model=?,prompt_version='riasec-match-v7-profile-only',failure_code=NULL WHERE result_id=? AND run_id=? AND ai_status='PROCESSING' AND ai_deadline>now() AND deleted_at IS NULL",encode(recommendations),model,job.id,job.runId);
         log.info("RIASEC result persistence: resultId={}, state={}",job.id,changed==1?"SUCCEEDED":"DISCARDED_STALE_RUN");
     }
     public void recordModel(Job job,String model) {
-        db.update("UPDATE platform.riasec_result SET model=?,prompt_version='riasec-match-v6-interests-only' WHERE organization_id=? AND account_id=? AND result_id=? AND run_id=? AND ai_status='PROCESSING'",model,job.owner.organizationId,job.owner.accountId,job.id,job.runId);
+        db.update("UPDATE platform.riasec_result SET model=?,prompt_version='riasec-match-v7-profile-only' WHERE organization_id=? AND account_id=? AND result_id=? AND run_id=? AND ai_status='PROCESSING'",model,job.owner.organizationId,job.owner.accountId,job.id,job.runId);
     }
     public void fail(Job job,String code) {
         int changed=db.update("UPDATE platform.riasec_result SET ai_status='FAILED',failure_code=? WHERE result_id=? AND run_id=? AND ai_status='PROCESSING'",code,job.id,job.runId);
