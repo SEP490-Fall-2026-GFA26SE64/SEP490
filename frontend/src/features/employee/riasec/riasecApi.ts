@@ -5,7 +5,7 @@ export type Scores = Record<Dimension, number>
 export type Draft = { draftId: string | null; answers: Record<string, number>; revision: number; editorId: string | null }
 export type Recommendation = { rank: number; position: { id: string; code: string; name: string; description: string; scores: Scores }; explanation: string; comparisons?: { dimension: Dimension; employeeScore: number; positionScore: number }[] }
 export type Result = { id: string; scores: Scores; submittedAt: string; deletedAt: string | null; aiStatus: string; recommendations: Recommendation[] | null; failureCode: string | null }
-export type View = { draft: Draft; results: Result[]; currentId: string | null; activePositionIds: string[] }
+export type View = { draft: Draft; results: Result[]; currentId: string | null; activePositionIds: string[]; catalogAvailable?: boolean }
 export class RiasecError extends Error {
   code: string
   status: number

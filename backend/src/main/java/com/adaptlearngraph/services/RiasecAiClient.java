@@ -17,7 +17,7 @@ public final class RiasecAiClient {
     }
     public String model(){return model;}
     public List<Map<String,Object>> recommend(Map<String,Integer> scores,List<Position> positions)throws Exception {
-        if(positions.isEmpty())return List.of();
+        if(positions.isEmpty())throw new IllegalStateException("NO_ELIGIBLE_POSITIONS");
         var data=json.writeValueAsString(Map.of("employeeScores",scores,"positions",positions));
         if(data.length()>12000)throw new IllegalArgumentException("CATALOG_TOO_LARGE");
         // Keep generation order causal: select an ID and dimensions before explaining that choice.
@@ -33,6 +33,11 @@ public final class RiasecAiClient {
         var body=Map.of("model",model,"stream",false,"think",false,"format",schema,"keep_alive","5m","options",Map.of("temperature",0,"num_ctx",8192,"num_predict",1200,"num_thread",2),"messages",List.of(Map.of("role","system","content",system),Map.of("role","user","content",data)));
         var request=HttpRequest.newBuilder(endpoint).timeout(Duration.ofMinutes(7)).header("Content-Type","application/json").POST(HttpRequest.BodyPublishers.ofString(json.writeValueAsString(body))).build();
         var response=http.send(request,HttpResponse.BodyHandlers.ofString());
+        if(response.statusCode()==404) {
+            String error="";
+            try {error=json.readTree(response.body()).path("error").asText().toLowerCase(Locale.ROOT);} catch(Exception ignored) { /* Never expose an upstream response. */ }
+            throw new IllegalStateException(error.contains("model") && error.contains("not found")?"AI_MODEL_NOT_FOUND":"AI_ENDPOINT_UNAVAILABLE");
+        }
         if(response.statusCode()!=200 || response.body().length()>100000)throw new IllegalStateException("AI_UNAVAILABLE");
         var envelope=json.readTree(response.body());
         if(!envelope.path("done").asBoolean() || "length".equals(envelope.path("done_reason").asText()))throw new IllegalStateException("AI_INCOMPLETE");

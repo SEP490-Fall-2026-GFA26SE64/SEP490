@@ -2,7 +2,7 @@ import { useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
 import { Link, useLocation } from 'react-router-dom'
 import { useSearchParams } from 'react-router-dom'
-import { readRoleOverview } from '../overview/roleOverviewData'
+import { readRoleOverview, roleOverviewPollInterval } from '../overview/roleOverviewData'
 import { knowledgeKey } from './masteryJourney'
 import { Info } from 'lucide-react'
 import { Heading } from '../../../shared/components/typography/Heading'
@@ -37,7 +37,7 @@ function OwnedKnowledgeProfile({onAssignedRoleClick}:{onAssignedRoleClick?:()=>v
   const [params] = useSearchParams()
   const location = useLocation()
   const sectionRef = useRef<HTMLElement>(null), anchored = useRef<string | null>(null)
-  const canonical = useQuery({queryKey:['employee-role-overview', identity?.organizationId, identity?.accountId], queryFn:({signal})=>readRoleOverview(signal), enabled:Boolean(employeeBaselineEnabled && identity?.organizationId && identity?.accountId && identity.roles?.includes('EMPLOYEE')),retry:false,staleTime:0,refetchInterval:query=>query.state.error?false:5000})
+  const canonical = useQuery({queryKey:['employee-role-overview', identity?.organizationId, identity?.accountId], queryFn:({signal})=>readRoleOverview(signal), enabled:Boolean(employeeBaselineEnabled && identity?.organizationId && identity?.accountId && identity.roles?.includes('EMPLOYEE')),retry:false,staleTime:15_000,refetchOnWindowFocus:false,refetchInterval:query=>query.state.error?false:roleOverviewPollInterval(query.state.data)})
   const [detailsOpen,setDetailsOpen]=useState(false)
   const scope = [identity?.organizationId, identity?.accountId]
   const profiles = useInfiniteQuery({ queryKey: ['knowledge-profile-map', ...scope],

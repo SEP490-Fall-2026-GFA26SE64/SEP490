@@ -15,8 +15,13 @@ import { PageLoader } from '../../../shared/components/ui/PageLoader'
 export function CompletedModuleAssessmentLink({ moduleId, revision, compact = false }: { moduleId: string; revision: number; compact?: boolean }) {
   const { t, language } = useTranslation(), identity = useContext(WorkspaceSessionContext)?.identity
   const scope = `${identity?.organizationId}:${identity?.accountId}:${identity?.roles?.join(',')}`
-  const query = useQuery({ queryKey: ['initialPathway', scope, 'moduleAssessmentEntry', moduleId, revision], queryFn: ({ signal }) => readRulePathway(null, signal), enabled: Boolean(identity?.organizationId && identity?.accountId), retry: false, gcTime: 0,
-    refetchInterval: current => !current.state.error && current.state.data && !current.state.data.archived ? 5000 : false })
+  const query = useQuery({ queryKey: ['initialPathway', scope, 'ruleEmployee', null], queryFn: ({ signal }) => readRulePathway(null, signal), enabled: Boolean(identity?.organizationId && identity?.accountId), retry: false, gcTime: 60_000, staleTime: 15_000, refetchOnWindowFocus: false,
+    refetchInterval: current => {
+      const value = current.state.data
+      if (current.state.error || !value || value.archived) return false
+      if (['PENDING', 'GENERATING', 'FAILED_RETRYABLE'].includes(value.generationStatus) || value.reviewStatus === 'AWAITING_EXPERT_REVIEW') return 10_000
+      return value.reviewStatus === 'APPROVED' && value.steps.some(step => !['FULFILLED', 'BYPASSED'].includes(step.state)) ? 30_000 : false
+    } })
   if (query.isPending) return <PageLoader size="sm" label={t('initialPathway.loading')} />
   if (query.error) return <IndependentSkillAssessmentEntry moduleId={moduleId} revision={revision} compact={compact} />
   const pathway = query.data

@@ -66,9 +66,18 @@ function Assessment({ active }: { active: boolean }) {
   useEffect(() => {
     mounted.current = true
     if (active) queueMicrotask(() => { if (mounted.current) void load() })
-    const timer = window.setInterval(() => { if (active) void load() }, 3000)
-    return () => { mounted.current = false; window.clearInterval(timer) }
+    const refresh = () => { if (active && document.visibilityState === 'visible') void load() }
+    window.addEventListener('focus', refresh)
+    window.addEventListener('online', refresh)
+    document.addEventListener('visibilitychange', refresh)
+    return () => { mounted.current = false; window.removeEventListener('focus', refresh); window.removeEventListener('online', refresh); document.removeEventListener('visibilitychange', refresh) }
   }, [active]) // Scope is an unmount boundary; answers never enter browser storage.
+  const shouldPoll = Boolean(view?.draft.draftId || view?.results.some(aiRunning))
+  useEffect(() => {
+    if (!active || !shouldPoll) return
+    const timer = window.setInterval(() => { if (document.visibilityState === 'visible') void load() }, 3000)
+    return () => window.clearInterval(timer)
+  }, [active, shouldPoll])
   useEffect(() => {
     if (!saving && !saveError) return
     const warn = (event: BeforeUnloadEvent) => { event.preventDefault(); event.returnValue = '' }
@@ -155,7 +164,7 @@ function Assessment({ active }: { active: boolean }) {
 
       {!view && !error && <Text role="status">{copy('Loading…', 'Đang tải…')}</Text>}
 
-      {running && <RiasecAiProgress key={view!.results.find(aiRunning)!.id} result={view!.results.find(aiRunning)!} />}
+      {running && view!.results.find(aiRunning)!.id !== result?.id && <RiasecAiProgress key={view!.results.find(aiRunning)!.id} result={view!.results.find(aiRunning)!} />}
       {error && <div role="alert" className="space-y-2 text-destructive"><Text>{failureText(error)}</Text>
         {saveError ? <><Text>{copy('Unsaved answers remain in this tab. Retry saving, or continue here with the latest saved draft.', 'Câu chưa lưu vẫn còn trong tab này. Thử lưu lại hoặc tiếp tục tại đây với nháp đã lưu mới nhất.')}</Text><Button variant="outline" onClick={() => void flush()} disabled={saving}>{copy('Retry save', 'Thử lưu lại')}</Button><Button variant="outline" disabled={saving || busy} onClick={() => void takeover()}>{copy('Continue with saved draft', 'Tiếp tục với nháp đã lưu')}</Button></> : <Button variant="outline" onClick={() => { readFailure.current = null; void load() }}>{copy('Reload', 'Tải lại')}</Button>}
       </div>}
@@ -172,7 +181,7 @@ function Assessment({ active }: { active: boolean }) {
     </>}
     {view && <div className="space-y-3">
       {result ? <RiasecResultComparison key={result.id} result={result} activeIds={view.activePositionIds}
-        navigation={navigation} footer={<div className="border-t border-border px-4 py-3">{!aiRunning(result) && <RiasecAiProgress key={`${result.id}:${result.aiStatus}`} result={result} />}</div>} /> : <div className="rounded-xl border border-border bg-card">{navigation}<div className="p-4"><Text variant="body-sm">{copy('No active result. Open result history to recover an inactive result or start a new assessment.', 'Chưa có kết quả hoạt động. Mở danh sách để khôi phục hoặc làm bài mới.')}</Text></div></div>}
+        navigation={navigation} footer={<div className="space-y-3 border-t border-border px-4 py-3"><RiasecAiProgress key={`${result.id}:${result.aiStatus}`} result={result} />{view.catalogAvailable === false && <Text variant="caption">{copy('The position catalog is currently unavailable. Saved scores and suggestions are retained.', 'Danh mục vị trí hiện chưa khả dụng. Điểm và gợi ý đã lưu vẫn được giữ.')}</Text>}{result.id === view.currentId && result.aiStatus === 'FAILED' && <Button variant="outline" size="sm" disabled={busy || running} onClick={() => void historyAction({ kind: 'retry', result })}>{copy('Retry AI suggestions', 'Thử lại gợi ý AI')}</Button>}</div>} /> : <div className="rounded-xl border border-border bg-card">{navigation}<div className="p-4"><Text variant="body-sm">{copy('No active result. Open result history to recover an inactive result or start a new assessment.', 'Chưa có kết quả hoạt động. Mở danh sách để khôi phục hoặc làm bài mới.')}</Text></div></div>}
 
     </div>}
 

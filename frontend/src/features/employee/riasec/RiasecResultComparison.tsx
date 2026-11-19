@@ -30,13 +30,13 @@ export function RiasecResultComparison({ result, activeIds, navigation, footer }
       </div>
       <div className="min-w-0 space-y-3 rounded-xl border border-border bg-card p-4 shadow-sm">
         <Heading level={3} size="card" className="text-secondary-foreground">{copy('Suggested Job Positions', 'Job Position được gợi ý')}</Heading>
-        <Text variant="caption">{copy('Hover or focus to compare. Select a card to pin.', 'Trỏ chuột hoặc dùng bàn phím để so sánh. Chọn thẻ để ghim.')}</Text>
+        {recommendations.length > 0 && <Text variant="caption">{copy('Hover or focus to compare. Select a card to pin.', 'Trỏ chuột hoặc dùng bàn phím để so sánh. Chọn thẻ để ghim.')}</Text>}
         {recommendations.map(r => {
           const id = r.position.id, isPinned = pinned === id, preview = comparison?.position.id === id
           return <RiasecRecommendationCard key={id} recommendation={r} isPinned={isPinned} preview={preview}
             onPreview={setHovered} onFocusPreview={setFocused} onToggle={() => setPinned(value => value === id ? null : id)} onDetails={() => setDetail(r)} />
         })}
-        {result.aiStatus === 'SUCCEEDED' && !recommendations.length && <Text variant="body-sm">{copy('No suitable positions were identified from the available catalog.', 'Chưa tìm thấy vị trí phù hợp từ danh sách hiện có.')}</Text>}
+        {!recommendations.length && <Text variant="body-sm">{result.aiStatus === 'QUEUED' || result.aiStatus === 'PROCESSING' ? copy('Suggestions will appear here when processing finishes.', 'Gợi ý sẽ xuất hiện ở đây khi xử lý xong.') : result.aiStatus === 'FAILED' ? copy('No suggestions are available. See the processing status below your scores.', 'Chưa có gợi ý. Xem trạng thái xử lý bên dưới biểu đồ điểm.') : copy('No suggestions were saved for this result.', 'Kết quả này chưa có gợi ý được lưu.')}</Text>}
       </div>
     </div>
     <Dialog open={!!detail} onOpenChange={open => { if (!open) setDetail(null) }} ariaLabel={detail?.position.name} closeLabel={copy('Close details', 'Đóng chi tiết')}
