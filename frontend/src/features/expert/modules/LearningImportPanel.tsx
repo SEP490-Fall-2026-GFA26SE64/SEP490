@@ -19,7 +19,9 @@ export function LearningImportPanel({ onImported, showHeading = true, onBusyChan
  const { language } = useTranslation(); const vi = language === 'vi'; const copy = (en: string, vn: string) => vi ? vn : en
  const localizeMessage = (raw: string) => {
   const parts = raw.split(' / ')
-  return parts.length === 2 ? (vi ? parts[1].trim() : parts[0].trim()) : raw
+  if (parts.length === 2) return vi ? parts[1].trim() : parts[0].trim()
+  if (vi && raw.trim() === 'This exact file was already imported') return 'File này đã được import trước đó'
+  return raw
  }
  const { toast } = useToast()
  const [importedModules, setImportedModules] = useState<ModuleDocument[] | null>(null)
