@@ -1141,7 +1141,7 @@ function OntologyGraphPlaygroundInner({
   // Helper to resolve the TargetRole associated with the currently selected node (role or level node)
   const selectedRole = React.useMemo(() => {
     if (!selectedNode) return null
-    const allRoles = targetRolesRef.current || targetRoles || []
+    const allRoles = targetRoles || []
     const activeComp = getActiveCompany()
     if (selectedNode.nodeType === 'targetRole') {
       return (
@@ -1164,7 +1164,7 @@ function OntologyGraphPlaygroundInner({
   const activeRoleForFilter = React.useMemo(() => {
     if (selectedRole) return selectedRole
     if (activeRoleLevelFilter?.roleId) {
-      const allRoles = targetRolesRef.current || targetRoles || []
+      const allRoles = targetRoles || []
       const activeComp = getActiveCompany()
       return (
         allRoles.find((r) => r.id === activeRoleLevelFilter.roleId) ||
@@ -1177,7 +1177,7 @@ function OntologyGraphPlaygroundInner({
 
   const activeRoleLevels = React.useMemo(() => {
     if (!activeRoleForFilter) return []
-    const allRoles = targetRolesRef.current || targetRoles || []
+    const allRoles = targetRoles || []
     const baseCode = (activeRoleForFilter.stableId || activeRoleForFilter.code || '').split('#')[0].trim().toUpperCase()
     const lineageRoleWithComps = allRoles.find((r: TargetRoleModel) => {
       const rBase = (r.stableId || r.code || '').split('#')[0].trim().toUpperCase()
