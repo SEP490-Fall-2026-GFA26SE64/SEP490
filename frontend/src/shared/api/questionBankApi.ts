@@ -9,7 +9,7 @@ export interface BankKnowledgeChoice { skillId: string; knowledgeLevel: string; 
 export interface BankSession { actor: { id: string; organization: string; role: 'DOMAIN_EXPERT' | 'LD_MANAGER' }; skills: BankChoice[]; experts: BankChoice[]; people: BankChoice[]; maxImportRows: number; maxImportBytes: number; knowledge?: BankKnowledgeChoice[] }
 export interface BankNotice { id: string; recipient: string; title: string; body: string; createdAt: string; readAt: string | null }
 export interface BankRow { code?: string; content: BankContent }
-export interface BankPreview { id: string; expiresAt: string; rows: BankRow[]; errors: string[]; warnings: string[]; committed: boolean; expected: Record<string,number> }
+export interface BankPreview { id: string; expiresAt: string; rows: BankRow[]; errors: string[]; warnings: string[]; committed: boolean; expected: Record<string,number>; matching?: Record<string, string[]> }
 export async function bankRequest<T>(path = '', data?: unknown, signal?: AbortSignal): Promise<T> {
   const controller = new AbortController()
   const abort = () => controller.abort()

@@ -12,6 +12,7 @@ public final class QuestionBank {
     public List<Audit> history = new ArrayList<>();
     public List<Notice> notices = new ArrayList<>();
     public List<ImportBatch> imports = new ArrayList<>();
+    public Set<String> committedFileHashes = new HashSet<>();
     public static final class Question {
         public UUID id;
         /** Source identity stays immutable when several owned banks share an authoring workspace. */
@@ -68,6 +69,7 @@ public final class QuestionBank {
         public Instant expiresAt;
         public boolean committed;
         public boolean generatedCodes;
+        public String fileHash;
         public List<Row> rows = new ArrayList<>();
         public List<String> errors = new ArrayList<>();
         public List<String> warnings = new ArrayList<>();

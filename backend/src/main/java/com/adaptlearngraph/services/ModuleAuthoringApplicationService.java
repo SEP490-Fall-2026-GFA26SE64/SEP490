@@ -61,7 +61,15 @@ public class ModuleAuthoringApplicationService {
 
     public PageResponse list(String search, String status, String review, String type, String skill, int page,
             boolean pendingOnly) {
-        return map(modules.list(search, status, review, type, skill, page, pendingOnly), PageResponse.class);
+        return list(search, status, review, type, skill, page, pendingOnly, 10);
+    }
+
+    public PageResponse list(String search, String status, String review, String type, String skill, int page,
+            boolean pendingOnly, int pageSize) {
+        var result = pageSize == 10
+                ? modules.list(search, status, review, type, skill, page, pendingOnly)
+                : modules.list(search, status, review, type, skill, page, pendingOnly, pageSize);
+        return map(result, PageResponse.class);
     }
 
     public DocumentResponse detail(String id) {
@@ -86,6 +94,25 @@ public class ModuleAuthoringApplicationService {
 
     public DocumentResponse action(String id, long expectedVersion, String action, String feedback) {
         return document(modules.action(id, expectedVersion, action, feedback));
+    }
+
+    public com.adaptlearngraph.dtos.ModuleAuthoringDto.BatchApproveResponse batchApprove(
+            List<com.adaptlearngraph.dtos.ModuleAuthoringDto.BatchApproveItem> items) {
+        List<DocumentResponse> approved = new java.util.ArrayList<>();
+        List<com.adaptlearngraph.dtos.ModuleAuthoringDto.BatchApproveFailure> failed = new java.util.ArrayList<>();
+        if (items == null || items.isEmpty()) {
+            return new com.adaptlearngraph.dtos.ModuleAuthoringDto.BatchApproveResponse(approved, failed);
+        }
+        for (var item : items) {
+            if (item == null || item.id() == null || item.id().isBlank()) continue;
+            try {
+                approved.add(action(item.id(), item.expectedVersion(), "approve", null));
+            } catch (RuntimeException error) {
+                String message = error.getMessage() == null ? "Unable to approve module" : error.getMessage();
+                failed.add(new com.adaptlearngraph.dtos.ModuleAuthoringDto.BatchApproveFailure(item.id(), message));
+            }
+        }
+        return new com.adaptlearngraph.dtos.ModuleAuthoringDto.BatchApproveResponse(approved, failed);
     }
 
     public void delete(String id, long expectedVersion) {

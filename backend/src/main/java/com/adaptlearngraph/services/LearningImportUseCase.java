@@ -13,9 +13,14 @@ public interface LearningImportUseCase {
             Save module,
             List<Lesson> lessons,
             Long expectedVersion,
-            String moduleRef) {
+            String moduleRef,
+            String status,
+            String duplicateOf) {
         public Row(String moduleId, int excelRow, Save module, List<Lesson> lessons, Long expectedVersion) {
-            this(moduleId, excelRow, module, lessons, expectedVersion, null);
+            this(moduleId, excelRow, module, lessons, expectedVersion, null, "NEW", null);
+        }
+        public Row(String moduleId, int excelRow, Save module, List<Lesson> lessons, Long expectedVersion, String moduleRef) {
+            this(moduleId, excelRow, module, lessons, expectedVersion, moduleRef, "NEW", null);
         }
     }
 
@@ -27,9 +32,13 @@ public interface LearningImportUseCase {
             List<Problem> errors,
             List<String> ownedDuplicates,
             boolean committed,
-            String format) {
+            String format,
+            String fileHash) {
         public Preview(String id, List<Row> modules, List<Problem> errors, List<String> ownedDuplicates, boolean committed) {
-            this(id, modules, errors, ownedDuplicates, committed, "DOCX_ZIP_V1");
+            this(id, modules, errors, ownedDuplicates, committed, "DOCX_ZIP_V1", null);
+        }
+        public Preview(String id, List<Row> modules, List<Problem> errors, List<String> ownedDuplicates, boolean committed, String format) {
+            this(id, modules, errors, ownedDuplicates, committed, format, null);
         }
     }
 

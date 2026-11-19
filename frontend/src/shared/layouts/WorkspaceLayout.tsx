@@ -280,7 +280,7 @@ export function WorkspaceLayout({ children, identity: suppliedIdentity, onSignOu
       },
       {
         label: t('nav.learningContent', 'Learning Content'),
-        href: '/ld-manager/approvals',
+        href: '/ld-manager/modules',
         icon: <CheckCircle2 size={15} />,
       },
       {
@@ -462,7 +462,7 @@ export function WorkspaceLayout({ children, identity: suppliedIdentity, onSignOu
     if (itemHref === '/ld-manager/job-positions') {
       return path === '/ld-manager/job-positions' || path === '/ld-manager/disciplines'
     }
-    if (itemHref === '/ld-manager/approvals') {
+    if (itemHref === '/ld-manager/modules') {
       return ['/ld-manager/approvals', '/ld-manager/modules', '/ld-manager/learning-content'].includes(path)
     }
     if (itemHref === '/ld-manager/roles' || itemHref === '/ld-manager/target-roles') {

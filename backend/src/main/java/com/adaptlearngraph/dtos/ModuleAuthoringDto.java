@@ -85,4 +85,12 @@ public final class ModuleAuthoringDto {
             this(title,type,content,duration,jobs,teachings,null,List.of());
         }
     }
+
+    public record BatchApproveItem(String id, long expectedVersion) {}
+
+    public record BatchApproveInput(List<BatchApproveItem> items) {}
+
+    public record BatchApproveFailure(String id, String message) {}
+
+    public record BatchApproveResponse(List<DocumentResponse> approved, List<BatchApproveFailure> failed) {}
 }
