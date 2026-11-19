@@ -7,6 +7,7 @@ import { Button, buttonVariants } from '../../../shared/components/ui/Button'
 import { Card, CardContent, CardHeader } from '../../../shared/components/ui/Card'
 import { EmptyState } from '../../../shared/components/ui/EmptyState'
 import { LoadingCard } from '../../../shared/components/ui/LoadingCard'
+import { StatCard } from '../../../shared/components/ui/StatCard'
 import { Heading } from '../../../shared/components/typography/Heading'
 import { Text } from '../../../shared/components/typography/Text'
 import { useTranslation } from '../../../shared/i18n/LanguageContext'
@@ -15,46 +16,42 @@ import { RolePathwayRequest } from '../target-roles/RolePathwayRequest'
 
 export function BaselineResultPanel({ result, locked, run, error }: { result: BaselineResult; error?: BaselineError | null; locked: boolean; run: (command: BaselineCommand) => Promise<void> }) {
   const { t, language } = useTranslation(), vi = language === 'vi', copy = (en: string, vn: string) => vi ? vn : en
-  const sufficient = result.results.every(g => g.passed && !g.vetoTriggered)
+  const skills = [...new Set(result.groups.map(group => group.requirement.skillId))].map(id => {
+    const groups = result.groups.filter(group => group.requirement.skillId === id).map(group => ({ group, score: result.results.find(score => score.groupId === group.id) }))
+    return { id, name: groups[0].group.skillName, groups, passed: groups.every(({ score }) => score?.passed && !score.vetoTriggered) }
+  })
+  const passedSkills = skills.filter(skill => skill.passed).length
+  const passedGroups = result.groups.filter(group => result.results.some(score => score.groupId === group.id && score.passed && !score.vetoTriggered)).length
+  const sufficient = skills.length > 0 && passedSkills === skills.length
   return <Card className={sufficient ? 'overflow-hidden border-success/40' : 'overflow-hidden border-warning/50'}>
     <CardHeader className={sufficient ? 'border-b border-success/20 bg-success/5 p-5' : 'border-b border-warning/30 bg-warning/5 p-5'}>
       <Text variant="eyebrow">{copy('Assessment result', 'Kết quả đánh giá')}</Text>
       <Heading level={2} size="subsection" className="break-words">{result.target.selectionId ? `${result.roleName} · ${result.levelName}` : result.groups.find(g => g.role === 'MAIN')?.skillName}</Heading>
       <div className="flex flex-wrap gap-2"><Badge variant="outline">{result.purpose === 'BASELINE' ? copy('Baseline', 'Đánh giá đầu vào') : copy('Skill Assessment', 'Đánh giá kỹ năng')}</Badge><Badge variant={sufficient ? 'success' : 'warning'}>{sufficient ? copy('All skills passed', 'Đạt tất cả kỹ năng') : copy('Not all skills passed', 'Chưa đạt tất cả kỹ năng')}</Badge></div>
     </CardHeader>
-    <CardContent className="space-y-6 p-5">
-      <section className="space-y-3 rounded-lg border border-border bg-muted/20 p-4">
-      <Heading level={3} size="card">{copy('Attempt details', 'Thông tin lượt làm')}</Heading>
-      <dl className="grid gap-4 text-body-sm sm:grid-cols-2">
-        <div><dt className="text-muted-foreground">{copy('Started', 'Bắt đầu')}</dt><dd className="mt-1 font-semibold"><time dateTime={result.startedAt}>{new Date(result.startedAt).toLocaleString(vi ? 'vi-VN' : 'en-GB')}</time></dd></div>
-        <div><dt className="text-muted-foreground">{copy('Finished', 'Kết thúc')}</dt><dd className="mt-1 font-semibold"><time dateTime={result.finishedAt}>{new Date(result.finishedAt).toLocaleString(vi ? 'vi-VN' : 'en-GB')}</time></dd></div>
-      </dl>
-      <Text variant="body-sm" className="border-t border-border pt-3">{result.finishReason === 'DEADLINE' ? copy('Time expired. Unanswered questions received no points.', 'Hết giờ. Câu chưa trả lời không được tính điểm.') : copy('Submitted by you.', 'Bạn đã nộp bài.')}</Text>
-      </section>
-      <section className="space-y-3">
-      <Heading level={3} size="card">{copy('Results by skill', 'Kết quả từng kỹ năng')}</Heading>
-      {result.groups.map(group => {
-        const score = result.results.find(r => r.groupId === group.id)!
-        const passed = score.passed && !score.vetoTriggered
-        return <section key={group.id} className="space-y-4 rounded-lg border border-border p-4">
-          <div className="flex flex-wrap items-start justify-between gap-3"><div className="space-y-1">
-            <Text variant="eyebrow">{group.role === 'PREREQUISITE' ? copy('Prerequisite skill', 'Kỹ năng tiên quyết') : copy('Assessed skill', 'Kỹ năng được đánh giá')}</Text>
-            <Heading level={4} size="card">{group.skillName}</Heading>
-            <Text variant="caption">{copy('Knowledge level: ', 'Mức kiến thức: ')}{t('knowledgeLevel.' + group.requirement.knowledgeLevel)}</Text>
-          </div><Badge variant={passed ? 'success' : 'warning'}>{passed ? copy('Passed', 'Đạt') : copy('Not passed', 'Chưa đạt')}</Badge></div>
-          <dl className="grid gap-4 rounded-lg bg-muted/30 p-3 text-body-sm sm:grid-cols-2">
-            <div><dt className="text-muted-foreground">{copy('Correct answers', 'Số câu trả lời đúng')}</dt><dd className="mt-1 font-semibold">{score.correctCount} / {score.totalCount}</dd></div>
-            <div><dt className="text-muted-foreground">{copy('Minimum correct answers', 'Số câu đúng tối thiểu')}</dt><dd className="mt-1 font-semibold">{group.requiredCorrectCount} / {score.totalCount}</dd></div>
-          </dl>
-          {(group.mandatoryRequired || !passed) && <div className="space-y-2 border-t border-border pt-3">
-            <Text variant="caption" className="font-semibold text-foreground">{copy('Passing conditions', 'Điều kiện đạt')}</Text>
-            {score.correctCount < group.requiredCorrectCount && <Text variant="body-sm">{copy('The number of correct answers is below the minimum.', 'Số câu trả lời đúng chưa đủ mức tối thiểu.')}</Text>}
-            {group.mandatoryRequired && <Text variant="body-sm">{score.mandatorySatisfied ? copy('Mandatory questions: all answered correctly.', 'Câu điểm liệt: đã trả lời đúng tất cả.') : copy('Mandatory questions: at least one was incorrect or unanswered. All must be correct, even if you meet the minimum score.', 'Câu điểm liệt: có ít nhất một câu sai hoặc chưa trả lời. Phải đúng tất cả câu điểm liệt, kể cả khi đã đủ số câu đúng tối thiểu.')}</Text>}
-            {score.vetoTriggered && <Text variant="body-sm" tone="destructive">{copy('No prerequisite answers were correct. This blocks the main skill result; retake the full assessment.', 'Không trả lời đúng câu tiên quyết nào. Điều này chặn kết quả kỹ năng chính; cần làm lại toàn bộ bài.')}</Text>}
-          </div>}
-        </section>
-      })}
-      </section>
+    <CardContent className="space-y-4 p-4 sm:p-5">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+        <StatCard className="[&>div]:p-3 sm:[&>div]:p-4" variant="gradient" title={copy('Skills passed', 'Kỹ năng đạt')} value={`${passedSkills} / ${skills.length}`} />
+        <StatCard title={copy('Skills not passed', 'Kỹ năng chưa đạt')} value={skills.length - passedSkills} />
+        <StatCard className="col-span-2 [&>div]:p-3 sm:col-span-1 sm:[&>div]:p-4" title={copy('Knowledge groups passed', 'Nhóm kiến thức đạt')} value={`${passedGroups} / ${result.groups.length}`} />
+      </div>
+      <div role="region" aria-label={copy('Results by skill', 'Kết quả từng kỹ năng')} tabIndex={0} className="overflow-x-auto rounded-lg border border-border">
+        <table className="w-full table-fixed text-left text-body-sm sm:table-auto"><caption className="sr-only">{copy('Results by skill and required knowledge level', 'Kết quả theo kỹ năng và mức kiến thức yêu cầu')}</caption>
+          <thead className="border-b border-border bg-muted/40"><tr>{[copy('Skill', 'Kỹ năng'), copy('Required levels', 'Mức kiến thức yêu cầu')].map(label => <th key={label} scope="col" className="px-3 py-3 font-semibold sm:px-4">{label}</th>)}</tr></thead>
+          <tbody className="divide-y divide-border">{skills.map(skill => <tr key={skill.id}>
+            <th scope="row" className="max-w-sm break-words px-3 py-3 align-top font-normal sm:px-4"><span className="font-semibold">{skill.name}</span><div className="mt-1"><Badge variant={skill.passed ? 'success' : 'warning'}>{skill.passed ? copy('Passed', 'Đạt') : copy('Not passed', 'Chưa đạt')}</Badge></div>
+              <details className="mt-2"><summary className="cursor-pointer text-caption text-primary">{copy('Score details', 'Chi tiết điểm')}</summary><div className="mt-2 space-y-3">{skill.groups.map(({ group, score }) => <div key={group.id} className="space-y-1 text-caption">
+                <Text variant="caption" className="font-semibold text-foreground">{t('knowledgeLevel.' + group.requirement.knowledgeLevel)}{group.role === 'PREREQUISITE' ? copy(' · Prerequisite', ' · Tiên quyết') : ''}</Text>
+                <Text variant="caption">{copy('Correct', 'Đúng')}: {score?.correctCount ?? '—'} / {score?.totalCount ?? group.totalCount} · {copy('Required', 'Cần đạt')}: {group.requiredCorrectCount} / {score?.totalCount ?? group.totalCount}</Text>
+                {group.mandatoryRequired && <Text variant="caption">{score?.mandatorySatisfied ? copy('All mandatory questions passed.', 'Đạt tất cả câu điểm liệt.') : copy('Mandatory questions not satisfied.', 'Chưa đạt điều kiện câu điểm liệt.')}</Text>}
+                {score?.vetoTriggered && <Text variant="caption" tone="destructive">{copy('Prerequisite veto: retake required.', 'Điều kiện chặn từ nhóm tiên quyết: cần làm lại bài.')}</Text>}
+              </div>)}</div></details>
+            </th>
+            <td className="px-3 py-3 align-top sm:px-4"><div className="flex flex-col items-start gap-2">{skill.groups.map(({ group, score }) => <Badge className="max-w-full whitespace-normal" key={group.id} variant={score?.passed && !score.vetoTriggered ? 'success' : 'warning'}>{t('knowledgeLevel.' + group.requirement.knowledgeLevel)} · {score?.passed && !score.vetoTriggered ? copy('Passed', 'Đạt') : copy('Not passed', 'Chưa đạt')}</Badge>)}</div></td>
+          </tr>)}</tbody>
+        </table>
+      </div>
+      <details className="rounded-lg bg-muted/20 px-3 py-2 text-caption"><summary className="cursor-pointer text-muted-foreground">{copy('Attempt details', 'Thông tin lượt làm')} · {new Date(result.finishedAt).toLocaleString(vi ? 'vi-VN' : 'en-GB')}</summary><dl className="mt-2 grid gap-2 sm:grid-cols-2"><div><dt>{copy('Started', 'Bắt đầu')}</dt><dd><time dateTime={result.startedAt}>{new Date(result.startedAt).toLocaleString(vi ? 'vi-VN' : 'en-GB')}</time></dd></div><div><dt>{copy('Finished', 'Kết thúc')}</dt><dd><time dateTime={result.finishedAt}>{new Date(result.finishedAt).toLocaleString(vi ? 'vi-VN' : 'en-GB')}</time></dd></div></dl><Text variant="caption" className="mt-2">{result.finishReason === 'DEADLINE' ? copy('Time expired. Unanswered questions received no points.', 'Hết giờ. Câu chưa trả lời không được tính điểm.') : copy('Submitted by you.', 'Bạn đã nộp bài.')}</Text></details>
       <section className="space-y-3 rounded-lg border border-border bg-muted/20 p-4">
       <Heading level={3} size="card">{copy('What this result means', 'Ý nghĩa kết quả')}</Heading>
       <Text variant="body-sm">{result.purpose === 'BASELINE'

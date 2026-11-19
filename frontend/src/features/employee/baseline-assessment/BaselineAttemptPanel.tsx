@@ -80,7 +80,7 @@ export function BaselineAttemptPanel({ attempt, seconds, locked, busy = false, r
     if (option) {
       event.preventDefault()
       setChoice(option.id)
-      questionRef.current?.focus({ preventScroll: true })
+      questionRef.current?.querySelector<HTMLInputElement>(`input[value="${CSS.escape(option.id)}"]`)?.focus({ preventScroll: true })
       return
     }
     if (event.key !== 'Enter' || (target instanceof Element && target.closest('button, a, summary'))) return
@@ -97,7 +97,7 @@ export function BaselineAttemptPanel({ attempt, seconds, locked, busy = false, r
     <div className="grid items-start gap-4 lg:grid-cols-4">
       <Card className="lg:col-span-1"><CardHeader className="border-b border-border p-5"><Heading level={2} size="card">{ui('navigation')}</Heading><Badge variant="outline" className="w-fit">{ui('answered')}: {attempt.answeredCount}</Badge></CardHeader>
         <CardContent className="space-y-4 p-5">
-          <nav ref={navigationRef} aria-label={ui('navigation')} className="relative grid max-h-64 grid-cols-5 gap-2 overflow-y-auto overscroll-contain p-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <nav ref={navigationRef} aria-label={ui('navigation')} className="relative grid max-h-[55dvh] grid-cols-5 gap-2 overflow-y-auto overscroll-contain p-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {attempt.items.map(value => <Button size="icon" key={value.position} variant={value.position === position ? 'primary' : 'outline'}
               ref={value.position === position ? currentQuestionRef : undefined}
               className={value.selectedOptionId !== null && value.position !== position ? 'h-9 w-full min-w-0 border-primary bg-secondary' : 'h-9 w-full min-w-0'}
@@ -105,17 +105,14 @@ export function BaselineAttemptPanel({ attempt, seconds, locked, busy = false, r
               aria-label={`${ui('question')} ${value.position}: ${ui(value.selectedOptionId === null ? 'unanswered' : 'answered')}${value.mandatory ? ', ' + tr('mandatoryQuestion') : ''}`}
               disabled={busy} onClick={() => changeQuestion(value.position)}>{value.position}{value.mandatory && <sup aria-hidden="true" className="font-bold">*</sup>}</Button>)}
           </nav>
-          <Text variant="body-sm">{ui('limit')}: {attempt.maxQuestions}</Text><Text variant="caption" className="text-muted-foreground">{ui('adaptiveHint')}</Text>
           {attempt.items.some(value => value.mandatory) && <Text variant="caption">{tr('mandatoryLegend')}</Text>}
-          <Text variant="caption">{tr('editAnswerHint')}</Text>
           <div className="space-y-3 border-t border-border pt-4"><Text variant="caption">{ui('savedHint')}</Text>
             {busy && <Text variant="caption" role="status">{tr('savingAnswer')}</Text>}
             <Button className="w-full" disabled={locked || expired} onClick={() => changeQuestion('submit')}>{tr('submit')}</Button></div>
         </CardContent></Card>
       <Card aria-busy={busy} className="min-w-0 lg:col-span-3"><CardHeader className="border-b border-border p-5"><div className="flex flex-wrap gap-2"><Badge variant="outline">{ui('question')} {item?.position ?? '—'}{item?.mandatory && <span aria-hidden="true" className="ml-1 font-bold">*</span>}</Badge>{changed ? <Badge variant="warning">{tr('unsavedChanges')}</Badge> : review && <Badge variant="secondary">{tr('savedAnswer')}</Badge>}</div></CardHeader>
     <CardContent className="p-5"><div ref={questionRef} tabIndex={-1} className="space-y-4 focus-visible:outline-none">
-      <Text variant="caption">{tr('timerNotice')}</Text>
-      {expired ? <p role="status">{tr('expired')}</p> : item ? <AssessmentQuestionContent mandatory={item.mandatory} mandatoryLabel={tr('mandatoryQuestion')} idPrefix="baseline" prompt={item.prompt} options={item.options} value={choice} onChange={setChoice} disabled={locked} answerLabel={tr('chooseAnswer')} showOptionShortcuts /> : <p role="status">{tr('refreshNeeded')}</p>}
+      {expired ? <p role="status">{tr('expired')}</p> : item ? <AssessmentQuestionContent mandatory={item.mandatory} mandatoryLabel={tr('mandatoryQuestion')} idPrefix="baseline" prompt={item.prompt} options={item.options} value={choice} onChange={setChoice} disabled={locked} answerLabel={tr('chooseAnswer')} /> : <p role="status">{tr('refreshNeeded')}</p>}
       {!expired && item && attempt.state === 'IN_PROGRESS' && <Text variant="caption">{tr(index === attempt.items.length - 1 ? 'keyboardLastHint' : 'keyboardHint')}</Text>}
     </div></CardContent>
       <div className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-t border-border bg-card p-5">

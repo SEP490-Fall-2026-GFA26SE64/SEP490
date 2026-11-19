@@ -1,4 +1,3 @@
-import { EmployeeAccessNotice } from '../components/EmployeeAccessNotice'
 import { useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
 import { Link, useLocation } from 'react-router-dom'
@@ -30,7 +29,7 @@ export function CompetencyProfile({onAssignedRoleClick}:{onAssignedRoleClick?:()
 function ProfileRequestNotice({ error, retrying, onRetry }: { error: Error | null; retrying: boolean; onRetry: () => void }) {
   const { language } = useTranslation(), copy = (en: string, vi: string) => language === 'vi' ? vi : en
   const denied = error instanceof RoleFlowError && (error.status === 401 || error.status === 403)
-  return <div className="space-y-2"><Text className="font-semibold">{denied ? copy('Access denied', 'Bị chặn') : copy('Load failed', 'Lỗi tải')}</Text><EmployeeAccessNotice error={error} message={copy('Could not load this part of your knowledge profile. Please try again.', 'Chưa tải được phần dữ liệu này của hồ sơ kiến thức. Vui lòng thử lại.')} retrying={retrying} onRetry={onRetry} /></div>
+  return <div role="alert" className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border bg-muted/30 p-3"><div className="min-w-0"><Text variant="body-sm" className="font-semibold">{denied ? copy('Access denied', 'Không có quyền truy cập') : copy('Part of your profile could not be loaded', 'Chưa tải được một phần hồ sơ')}</Text><Text variant="caption">{denied ? copy('Check your workspace access.', 'Kiểm tra quyền truy cập workspace.') : copy('Your target and assignment have not been confirmed by this request.', 'Yêu cầu này chưa xác nhận được mục tiêu và vị trí được giao.')}</Text></div><Button size="sm" variant="outline" disabled={retrying} isLoading={retrying} onClick={onRetry}>{copy('Retry', 'Thử lại')}</Button></div>
 }
 function OwnedKnowledgeProfile({onAssignedRoleClick}:{onAssignedRoleClick?:()=>void}) {
   const { language } = useTranslation(), copy = (en: string, vi: string) => language === 'vi' ? vi : en
@@ -84,6 +83,7 @@ function OwnedKnowledgeProfile({onAssignedRoleClick}:{onAssignedRoleClick?:()=>v
   const limitedAssignment = !journeyDenied && !journey.data && assignment.data!==undefined
   const graphAvailable=!accessError && Boolean(journey.data || limitedAssignment || current)
   const assignmentLoading = assignmentEnabled && assignment.isPending
+  const assignmentState = journey.data || assignment.isSuccess ? assigned ? 'ready' : 'empty' : journey.isPending || assignmentLoading ? 'loading' : 'unavailable'
   const historyIncomplete = profiles.data?.pages.at(-1)?.hasMore === true
   const moreRoles = journey.data?.pages.at(-1)?.hasMore === true
   const targetsState = current ? targets.length?'ready':'empty' : journey.data ? targets.length?'ready':'empty' : currentTarget.isPending?'loading':targets.length?'ready':currentTarget.isSuccess?'empty':'unavailable'
@@ -99,8 +99,9 @@ function OwnedKnowledgeProfile({onAssignedRoleClick}:{onAssignedRoleClick?:()=>v
     {!employeeBaselineEnabled ? <Text variant="body-sm">{copy('Unavailable', 'Chưa sẵn')}</Text> : <>
       {!graphAvailable&&(journey.isPending || assignmentLoading) && <LoadingCard label={copy('Loading', 'Đang tải')} />}
       {!graphAvailable&&(accessError||journey.isError&&!assignmentLoading) && <ProfileRequestNotice error={accessError??(assignmentAllowed && assignment.isError ? assignment.error : journey.error)} retrying={journey.isFetching || assignment.isFetching || currentTarget.isFetching || profiles.isFetching} onRetry={() => { void journey.refetch();void profiles.refetch(); if (assignmentEnabled) {void assignment.refetch();void currentTarget.refetch()} }} />}
-      {canonical.isError && <ProfileRequestNotice error={canonical.error} retrying={canonical.isFetching} onRetry={()=>void canonical.refetch()} />}
-      {graphAvailable && <MasteryJourneyGraph onAssignedRoleClick={onAssignedRoleClick} suppressAutoScroll scopeKey={JSON.stringify(scope)} assigned={assigned} targets={targets} targetsState={targetsState} records={nodes} incomplete={historyIncomplete} unavailable={!profiles.data || profiles.isError} pathway={current?.pathway} openSelectionId={params.get('target')} tools={<Button variant="outline" size="sm" aria-haspopup="dialog" onClick={()=>setDetailsOpen(true)}><Info size={15} aria-hidden="true" />{copy('Details','Chi tiết')}</Button>} />}
+      {canonical.isError && canonical.error !== accessError && (graphAvailable || !journey.isError) && <ProfileRequestNotice error={canonical.error} retrying={canonical.isFetching} onRetry={()=>void canonical.refetch()} />}
+      {graphAvailable && journey.isError && !journeyDenied && <ProfileRequestNotice error={journey.error} retrying={journey.isFetching} onRetry={() => void journey.refetch()} />}
+      {graphAvailable && <MasteryJourneyGraph onAssignedRoleClick={onAssignedRoleClick} suppressAutoScroll scopeKey={JSON.stringify(scope)} assigned={assigned} assignmentState={assignmentState} targets={targets} targetsState={targetsState} records={nodes} incomplete={historyIncomplete} unavailable={!profiles.data || profiles.isError} pathway={current?.pathway} openSelectionId={params.get('target')} tools={<Button variant="outline" size="sm" aria-haspopup="dialog" onClick={()=>setDetailsOpen(true)}><Info size={15} aria-hidden="true" />{copy('Details','Chi tiết')}</Button>} />}
       <Dialog open={detailsOpen&&!accessError} onOpenChange={setDetailsOpen} size="wide" className="max-w-3xl" ariaLabel={copy('Graph details','Chi tiết bản đồ')} closeLabel={copy('Close graph details','Đóng chi tiết bản đồ')}>
         <DialogHeader><DialogTitle>{copy('Graph details','Chi tiết bản đồ')}</DialogTitle></DialogHeader>
         <DialogBody className="space-y-5">

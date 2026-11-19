@@ -6,7 +6,21 @@
 
 **Source reconciliation:** 2026-10-28. **Source requirements in this domain:** 6.
 
-**Contract basis:** confirmed behavior plus the later L&D Role–Level / Expert Skill–knowledge configuration decisions. Historical evidence retains its original scope; it is not a fresh passing result.
+**Contract basis:** confirmed shared-Role baseline / Expert Skill–knowledge configuration decisions. Historical evidence retains its original scope; it is not a fresh passing result.
+
+## Shared Role baseline — current contract, 2026-11-19
+
+This section supersedes older Role–member-Level baseline configuration and combined save/activate descriptions below. L&D maintains one baseline policy per organization + Role. The Employee's selected member Level still determines the applicable Skill × knowledge-level requirements and exact compatible official-evidence exemptions; the union across member Levels is used for configuration/readiness only.
+
+- Counts and passing requirements are configured per knowledge level and applied independently to each required Skill × knowledge-level group. The upper bound is the smallest eligible exact Skill/version bank at that knowledge level across the Role, capped at 500. Every group must supply the configured count; shortages block activation and new attempts rather than reducing counts or passing thresholds. A zero-question required group blocks start and identifies its Skill/knowledge level. Existing attempts retain their frozen paper.
+- Drafts may be explicitly saved with incomplete banks. Activation requires at least one eligible question in every applicable group across the Role's member Levels, reporting missing Level/Skill/knowledge banks. Admission rechecks the selected Level's bank. Existing group/paper capacity guards remain.
+- One shared seconds-per-question setting determines `actual selected questions × seconds per question`; the server freezes the resulting deadline. Retake settings are shared across the Role. There are no new numeric defaults.
+- Opening/editing/Next/Back are local and read-only toward persistence. Save draft and Activate are separate explicit actions. Dirty close offers Save draft / Discard changes / Continue editing; save failure keeps the editor open. Activation requires the exact successfully saved revision and is disabled while edits are unsaved. Abandon saved draft is separate from discarding local edits.
+- Configurations lists one row per Role, with drafts before unconfigured Roles. Active holds policies used for new attempts. Successful activation opens Active, retains that Role in view and shows where to find History & details. Archived retains inactive versions, abandoned drafts and historical Role-Level policies.
+- Historical Role-Level policies are read-only; none is automatically promoted or merged. New baseline starts require an activated shared Role policy. Existing attempts retain IDs, frozen questions/rules, accepted answers, results and original deadlines, and remain resumable under ordinary expiry rules. Skill Assessment scope, quotas and timing semantics are unchanged.
+- Results summarize distinct Skills: a Skill passes only when all its required knowledge groups pass. Each level's result and frozen counts/threshold remain available; only failed required levels become initial learning gaps. Keyboard answer selection remains available without shortcut badges or a question-area outline.
+
+[Technical API/storage transition](../../technical/Organization%20Rule%20Assessment%20and%20Pathway.md#shared-role-baseline-2026-11-19) defines scope IDs, compatibility and command behavior. [Deployment configuration](../../../deploy/README.md#riasec-route-and-private-inference) distinguishes a missing RIASEC route from asynchronous AI failure. These source contracts do not establish remote deployment state.
 
 ## Baseline and Skill Assessment — source update, 2026-11-18
 
@@ -24,7 +38,7 @@ New question/module/evidence matching is Skill+knowledge+Skill version in the tr
 
 | Requirement | Classification | Current behavior and limit |
 | --- | --- | --- |
-| FR-04.05 | Implemented; runtime unverified here | L&D manages org+Role+member Level baseline directory, one draft, immutable scoped versions and one active pointer. Partial editor save is separate from complete-and-activate; abandoned drafts remain history. |
+| FR-04.05 | Implemented in source; remote state unverified | L&D manages org+Role baseline policies, local editor state, explicit saved drafts and separate activation. Legacy Role-Level policies remain read-only history. |
 | FR-05.06 | Partial | Responsible Expert authors exact Skill/knowledge/outcome/mandatory questions; L&D reviews immutable publication. Expert separately configures org+Skill+knowledge Skill Assessment shared by equivalent modules. Current catalog restricts policy editing to Skills required by assigned active Roles; no direct Skill assignment is required. |
 | FR-06.02 | Implemented; runtime unverified here | Selected Role–Level baseline freezes groups/questions/policy/deadline, resumes accepted answers and returns group diagnostics. Compatible official evidence exempts exact groups; certificate-only needs use evidence, not questions. |
 | FR-06.03 | Implemented local opt-in; source re-inspected 2026-11-18 | Overview owns 60 EN/VI activities, server autosave/takeover, raw 0–40 scores, current/history/inactive/recovery and durable AI. Latest history/permanent-delete UI has build/static evidence only. |
@@ -92,7 +106,7 @@ Canonical entry is `/employee/overview?tab=riasec`; standalone/learner and recog
 
 ### Shared engine, scope and policy
 
-The responsible Expert authors question content, key/explanation and exact Skill + knowledge + Skill version/mandatory mapping; L&D reviews question publication. L&D owns BASELINE configuration per organization + Role + actual member Level. Expert owns SKILL_ASSESSMENT per organization + Skill + knowledge level, shared across equivalent modules. The shared engine does not merge their drafts, activation pointers or version counters. No arbitrary policy scripting is accepted.
+The responsible Expert authors question content, key/explanation and exact Skill + knowledge + Skill version/mandatory mapping; L&D reviews question publication. L&D owns BASELINE configuration per organization + Role; selected member Level determines each Employee's requirements. Expert owns SKILL_ASSESSMENT per organization + Skill + knowledge level, shared across equivalent modules. The shared engine does not merge their drafts, activation pointers or version counters. No arbitrary policy scripting is accepted.
 
 Knowledge levels are FOUNDATION / INTERMEDIATE / ADVANCED, distinct from Role member Level and legacy EASY/MEDIUM/HARD difficulty. No level implies another. MAIN/PREREQUISITE is a group's role in a paper, not a fixed question type.
 
@@ -103,9 +117,9 @@ Knowledge levels are FOUNDATION / INTERMEDIATE / ADVANCED, distinct from Role me
 
 The shared engine validates coverage, samples, persists/resumes and scores. It does not approve certificates/bypasses or arbitrarily mutate pathways. RIASEC remains a separate interest workflow.
 
-L&D and Expert maintain their separately owned BASELINE and SKILL_ASSESSMENT scopes, active versions and time limits. Both automatically finalize at their server deadline. Baseline editor configures common count/pass settings per knowledge level across its target Skills plus timer/retake limits; baseline mandatory and veto flags are false. Expert configures Skill Assessment group counts/pass/mandatory and optional all-wrong prerequisite veto, plus its own timer/retake limits. Values come from the organization; 7/10 is an example, not a default. A group must meet its own threshold AND configured mandatory conditions. No aggregate score offsets another group's failure.
+L&D and Expert maintain their separately owned BASELINE and SKILL_ASSESSMENT scopes and active versions. Both automatically finalize at their frozen server deadline. Baseline editor configures common count/pass settings per knowledge level, seconds per actual question and Role retake limits; baseline mandatory and veto flags are false. Expert configures Skill Assessment group counts/pass/mandatory and optional all-wrong prerequisite veto, plus its own fixed timer/retake limits. Values come from the organization; 7/10 is an example, not a default. A group must meet its own threshold AND configured mandatory conditions. No aggregate score offsets another group's failure.
 
-Mandatory quota counts inside total: new Skill policies sample exactly mandatoryCount approved mandatory items and fill the remainder from ordinary items in the same Skill/knowledge/Skill-version bank, without duplicates. Quota0 means ordinary-only sampling. Legacy null-quota frozen papers keep their earlier selection semantics. Validate mandatory count fits the total, bank sufficiency and achievable conditions/thresholds. Missing/invalid policy or insufficient bank gives an explicit unavailable/configuration outcome, never a partial successful paper or questions borrowed from another group. Current validation bounds groups to 1–500 questions and up to 1,000 unique groups; the configured paper ceiling defaults to 1,000 items. Count, capacity, bank coverage and exact catalog hashes are rechecked before activation/start.
+Mandatory quota counts inside total: new Skill policies sample exactly mandatoryCount approved mandatory items and fill the remainder from ordinary items in the same Skill/knowledge/Skill-version bank, without duplicates. Quota0 means ordinary-only sampling. Legacy null-quota frozen papers keep their earlier selection semantics. Validate mandatory count fits the total, bank sufficiency and achievable conditions/thresholds. Skill Assessment requires its complete configured bank; baseline positive shortfalls follow the proportional allocation rule above, while a zero required bank blocks the entire start. No group borrows questions from another. Current validation bounds groups to 1–500 questions and up to 1,000 unique groups; the configured paper ceiling defaults to 1,000 items. Count, capacity, bank coverage and exact catalog hashes are rechecked before activation/start.
 
 Correct = 1; incorrect/unanswered = 0. Negative/partial credit, IRT ability/SE/confidence/calibration, BKT mastery updates and numeric target-gap subtraction are outside the new active flow. Scores describe the sampled paper, not a percentage of all workplace competence.
 
@@ -148,13 +162,13 @@ The current routed configuration/Question Bank/reader flows reuse the existing v
 | --- | --- |
 | 1. Requirement ID | FR-04.05 |
 | 2. Requirement Name | Manage baseline assessment configuration |
-| 3. Description | The L&D Manager shall configure baseline policies for each organization Role–member Level; Expert-owned Skill Assessment configuration is separate under FR-05.06. |
+| 3. Description | The L&D Manager shall configure one baseline policy per organization Role; selected member Level still determines Employee requirements. Expert-owned Skill Assessment configuration is separate under FR-05.06. |
 | 4. Actor | L&D Manager |
 | 5. Preconditions | Trusted entitled L&D membership; current policy revision and valid scope/bank references. |
-| 6. Main Flow | Select Role/member Level; create/resume draft; configure knowledge-level counts/pass and timer/retakes; save partial progress or complete and activate atomically after readiness checks. |
+| 6. Main Flow | Select Role; edit local knowledge-level counts/pass, seconds per question and retakes; explicitly Save draft; separately Activate that saved revision after all-Level readiness checks. |
 | 7. Alternative / Exception Flows | Reject stale/unauthorized/impossible configuration; expose insufficient bank; preserve frozen attempts. |
 | 8. Postconditions | New policy revision is available with prior history retained; no learner result is awarded. |
-| 9. Acceptance Criteria | One draft and active version per exact Role–Level scope, independent Skill policies, scope-local version numbers, no default pass threshold or cross-group compensation. |
+| 9. Acceptance Criteria | One draft and active version per Role scope, selected-Level requirements, proportional shortfall threshold rounded up, zero-bank blocking, frozen actual-count deadline, independent Skill policies and preserved historical papers. |
 
 <a id="fr-05-06"></a>
 

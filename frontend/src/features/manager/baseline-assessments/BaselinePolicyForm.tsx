@@ -1,146 +1,78 @@
 import { forwardRef, useEffect, useImperativeHandle, useState } from 'react'
-import { useTranslation } from '../../../shared/i18n/LanguageContext'
-import { Text } from '../../../shared/components/typography/Text'
-import { Heading } from '../../../shared/components/typography/Heading'
-import { Badge } from '../../../shared/components/ui/Badge'
-import { Check, CheckCircle2, Clock3, ListChecks } from 'lucide-react'
+import { DialogBody } from '../../../shared/components/ui/Dialog'
 import { Button } from '../../../shared/components/ui/Button'
 import { Input } from '../../../shared/components/ui/Input'
-import { DialogBody, DialogFooter } from '../../../shared/components/ui/Dialog'
+import { Heading } from '../../../shared/components/typography/Heading'
+import { Text } from '../../../shared/components/typography/Text'
+import { useTranslation } from '../../../shared/i18n/LanguageContext'
 import type { BaselineEditorState, PolicyWorkspace } from './scopedAssessmentPolicyApi'
 
-export interface BaselineFormHandle { saveAndClose: () => void }
-interface Props { workspace: PolicyWorkspace; editing: boolean; locked: boolean; onSave: (state: BaselineEditorState, close: boolean, activate?: boolean) => void; onDiscard: () => void }
-const display = (value: number | null | undefined) => value == null ? '' : String(value)
-const decimal = (value: number) => String(Number(value.toFixed(6)))
-export const BaselinePolicyForm = forwardRef<BaselineFormHandle, Props>(function BaselinePolicyForm({ workspace, editing, locked, onSave, onDiscard }, ref) {
-  const { t } = useTranslation(), draft = workspace.draft!, progress = draft.editorState, policy = draft.configuration
-  const [step] = useState(editing ? 0 : progress?.step ?? 1)
-  const [rows, setRows] = useState(() => workspace.capacities.map(capacity => {
-    const saved = progress?.levels.find(r => r.knowledgeLevel === capacity.knowledgeLevel)
-    const old = policy?.groups.filter(g => g.knowledgeLevel === capacity.knowledgeLevel) ?? []
-    const common = old.length > 0 && old.every(g => g.totalCount === old[0].totalCount && g.requiredCorrectCount === old[0].requiredCorrectCount) ? old[0] : null
-    return { ...capacity, count: display(saved?.totalCount ?? common?.totalCount), correct: display(saved?.requiredCorrectCount ?? common?.requiredCorrectCount) }
-  }))
-  const total = rows.reduce((sum, row) => sum + (Number(row.count) || 0) * row.skillCount, 0)
-  const initialSeconds = progress?.timeLimitSeconds ?? policy?.timeLimitSeconds
-  const [minutes, setMinutes] = useState(initialSeconds == null ? '' : decimal(initialSeconds / 60))
-  const [perQuestion, setPerQuestion] = useState(initialSeconds != null && total > 0 ? decimal(initialSeconds / 60 / total) : '1')
-  const [wait, setWait] = useState(decimal((progress?.retakeWaitSeconds ?? policy?.retakeWaitSeconds ?? 600) / 60))
-  const [attempts, setAttempts] = useState(display(progress?.maxAttempts ?? policy?.maxAttempts ?? 3))
-  const [invalid, setInvalid] = useState(false)
-  const mixed = !progress && workspace.capacities.some(c => {
-    const old = policy?.groups.filter(g => g.knowledgeLevel === c.knowledgeLevel) ?? []
-    return old.some(g => g.totalCount !== old[0].totalCount || g.requiredCorrectCount !== old[0].requiredCorrectCount)
-  })
+export interface BaselineFormHandle { save: (dismiss?: boolean) => void }
+export const BaselinePolicyForm = forwardRef<BaselineFormHandle, {
+  workspace: PolicyWorkspace; locked: boolean; onSave: (state: BaselineEditorState, dismiss: boolean) => void; onDirtyChange: (dirty: boolean) => void
+}>(function BaselinePolicyForm({ workspace, locked, onSave, onDirtyChange }, ref) {
+  const { language, t } = useTranslation(), copy = (en: string, vi: string) => language === 'vi' ? vi : en
+  const progress = workspace.draft?.editorState, policy = workspace.draft?.configuration ?? workspace.active?.configuration
+  const initial = {
+    levels: workspace.capacities.map(capacity => {
+      const row = progress?.levels.find(item => item.knowledgeLevel === capacity.knowledgeLevel)
+      const configured = policy?.groups.find(item => item.knowledgeLevel === capacity.knowledgeLevel)
+      return { knowledgeLevel: capacity.knowledgeLevel, count: String(row?.totalCount ?? configured?.totalCount ?? ''), correct: String(row?.requiredCorrectCount ?? configured?.requiredCorrectCount ?? '') }
+    }),
+    seconds: String(progress?.timePerQuestionSeconds ?? policy?.baselineTiming?.secondsPerQuestion ?? ''),
+    wait: String(progress?.retakeWaitSeconds ?? policy?.retakeWaitSeconds ?? ''), attempts: String(progress?.maxAttempts ?? policy?.maxAttempts ?? ''),
+  }
+  const [values, setValues] = useState(initial), [step, setStep] = useState(progress?.step ?? 1), [invalid, setInvalid] = useState(false)
+  const dirty = JSON.stringify(values) !== JSON.stringify(initial) || step === 3 && Boolean(workspace.draft) && !workspace.draft?.configuration
+  useEffect(() => { onDirtyChange(dirty) }, [dirty, onDirtyChange])
   useEffect(() => {
-    const warn = (event: BeforeUnloadEvent) => { event.preventDefault() }
+    if (!dirty) return
+    const warn = (event: BeforeUnloadEvent) => event.preventDefault()
     window.addEventListener('beforeunload', warn); return () => window.removeEventListener('beforeunload', warn)
-  }, [])
-  const integer = (value: string, minimum: number) => {
+  }, [dirty])
+  const integer = (value: string, min: number, max = 2147483647) => {
     if (!value.trim()) return null
-    const n = Number(value)
-    if (!Number.isSafeInteger(n) || n < minimum || n > 2147483647) throw new Error('Invalid integer')
-    return n
+    const parsed = Number(value)
+    if (!Number.isSafeInteger(parsed) || parsed < min || parsed > max) throw Error('Invalid configuration')
+    return parsed
   }
-  function snapshot(nextStep: number, completed: boolean): BaselineEditorState {
-    const levels = rows.map(row => {
-      const count = integer(row.count, 1), correct = integer(row.correct, 1)
-      if (count !== null && count > row.maxQuestions || correct !== null && count !== null && correct > count
-        || nextStep > 1 && (count === null || correct === null)) throw new Error('Invalid question count')
-      return { knowledgeLevel: row.knowledgeLevel, totalCount: count, requiredCorrectCount: correct }
+  function snapshot(next = step): BaselineEditorState {
+    const levels = values.levels.map(row => {
+      const capacity = workspace.capacities.find(item => item.knowledgeLevel === row.knowledgeLevel)
+      const totalCount = integer(row.count, 1, capacity?.maxQuestions ?? 0), requiredCorrectCount = integer(row.correct, 1, totalCount ?? capacity?.maxQuestions ?? 0)
+      if (totalCount !== null && requiredCorrectCount !== null && requiredCorrectCount > totalCount || next > 1 && (totalCount === null || requiredCorrectCount === null)) throw Error('Invalid count')
+      return { knowledgeLevel: row.knowledgeLevel, totalCount, requiredCorrectCount }
     })
-    if (total > workspace.maxPaperItems || nextStep > 1 && (!levels.length || total < 1)) throw new Error('Paper limit')
-    const seconds = (value: string, minimum: number) => {
-      if (!value.trim()) return null
-      const n = Number(value) * 60
-      if (!Number.isFinite(n) || Math.round(n) < minimum || n > 2147483647) throw new Error('Invalid time')
-      return Math.round(n)
+    const timePerQuestionSeconds = integer(values.seconds, 1), retakeWaitSeconds = integer(values.wait, 0), maxAttempts = integer(values.attempts, 1)
+    if (!levels.length || next === 3 && (timePerQuestionSeconds === null || retakeWaitSeconds === null || maxAttempts === null)) throw Error('Complete configuration')
+    for (const member of workspace.scope.memberLevels ?? []) {
+      const count = member.groups.reduce((sum, group) => sum + (levels.find(row => row.knowledgeLevel === group.requirement.knowledgeLevel)?.totalCount ?? 0), 0)
+      if (count > workspace.maxPaperItems || timePerQuestionSeconds !== null && count * timePerQuestionSeconds > 2147483647) throw Error('Paper limit')
     }
-    const timeLimitSeconds = minutes.trim() ? seconds(minutes, 1) : nextStep === 2 && step === 1 ? total * 60 : null
-    const retakeWaitSeconds = seconds(wait, 0), maxAttempts = integer(attempts, 1)
-    if (nextStep === 3 && (timeLimitSeconds === null || retakeWaitSeconds === null || maxAttempts === null)) throw new Error('Complete timing')
-    return { step: nextStep, completed, levels, timeLimitSeconds, retakeWaitSeconds, maxAttempts }
+    return { step: next, completed: next === 3, levels, timeLimitSeconds: null, timePerQuestionSeconds, retakeWaitSeconds, maxAttempts }
   }
-  function save(next: number, completed = false, close = false, activate = false) {
-    try { const state = snapshot(next, completed); setInvalid(false); onSave(state, close, activate) } catch { setInvalid(true) }
-  }
-  function saveAndClose() {
-    if (!rows.length) { onDiscard(); return }
-    // Closing Edit must not silently save unreviewed changes as a completed policy.
-    save(editing ? 3 : step, false, true)
-  }
-  useImperativeHandle(ref, () => ({ saveAndClose }))
-  const countsValid = rows.length > 0 && rows.every(r => Number.isSafeInteger(Number(r.count)) && Number(r.count) > 0 && Number(r.count) <= r.maxQuestions
-    && Number.isSafeInteger(Number(r.correct)) && Number(r.correct) > 0 && Number(r.correct) <= Number(r.count)) && total <= workspace.maxPaperItems
-  return <>
-    {!editing && <ol aria-label={t('baselineWizard.progress')} className="mb-5 grid grid-cols-3 gap-2">
-      {['questions', 'timing', 'review'].map((name, index) => <li key={name} aria-current={step === index + 1 ? 'step' : undefined}
-        className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-body-sm ${step === index + 1 ? 'border-primary bg-primary font-semibold text-primary-foreground shadow-xs' : 'border-border bg-background text-muted-foreground'}`}><span style={step === index + 1 ? { color: 'hsl(var(--primary-foreground))' } : undefined} className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-caption ${step === index + 1 ? 'border border-primary-foreground/40 bg-primary-hover text-primary-foreground' : 'border border-border bg-card'}`}>{step > index + 1 ? <Check size={14} aria-hidden="true" /> : index + 1}</span><span>{t(`baselineWizard.${name}`)}</span></li>)}
-    </ol>}
-    {invalid && <Text role="alert" tone="destructive" className="mb-4">{t('baselineWizard.invalid')}</Text>}
-    <DialogBody className="space-y-4 pr-1">
-      <div role="status" aria-live="polite" className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-primary/20 bg-secondary/40 px-4 py-3"><div><Text variant="caption">{t('baselineWizard.total')}</Text><Heading level={3} size="section" className={total > workspace.maxPaperItems ? 'text-destructive' : 'text-primary'}>{total} <span className="text-body-sm font-medium text-muted-foreground">{t('baselineUX.questionsUnit')}</span></Heading></div><Text variant="caption">{t('baselineWizard.paperLimit')}: {workspace.maxPaperItems}</Text></div>
-      {(step === 1 || editing) && <section className="space-y-4 rounded-xl border border-border bg-card p-4 sm:p-5" aria-label={t('baselineWizard.questions')}>
-        <Heading level={3} size="card" className="flex items-center gap-2"><ListChecks size={17} className="text-primary" aria-hidden="true" />{t('baselineUX.questionSection')}</Heading>
-        <Text variant="caption">{t('baselineWizard.commonHelp')}</Text>
-        {mixed && <Text role="status">{t('baselineWizard.mixed')}</Text>}
-        <Text variant="caption">{t('baselineWizard.bankChanged')}</Text>
-        {!rows.length && <Text role="status">{t('scopedPolicy.errors.SCOPE_REQUIREMENTS_NOT_READY')}</Text>}
-        {rows.map((row, index) => {
-          const patch = (key: 'count' | 'correct', value: string) => {
-            const next = rows.map((item, i) => i === index ? { ...item, [key]: value } : item)
-            setRows(next)
-            const nextTotal = next.reduce((sum, item) => sum + (Number(item.count) || 0) * item.skillCount, 0)
-            if (key === 'count' && minutes !== '' && nextTotal > 0) setPerQuestion(decimal(Number(minutes) / nextTotal))
-          }
-          const badCount = row.count !== '' && (!Number.isSafeInteger(Number(row.count)) || Number(row.count) < 1 || Number(row.count) > row.maxQuestions)
-          const badCorrect = row.correct !== '' && (!Number.isSafeInteger(Number(row.correct)) || Number(row.correct) < 1 || row.count !== '' && Number(row.correct) > Number(row.count))
-          return <div key={row.knowledgeLevel} className="space-y-3 rounded-lg border border-primary/20 bg-background/50 p-4">
-            <div className="flex flex-wrap items-center justify-between gap-2"><Text tone="foreground" className="font-semibold">{t(`knowledgeLevel.${row.knowledgeLevel}`)}</Text><Badge variant="outline" className="bg-card">{row.skillCount} {t('baselineWizard.skills')}</Badge></div>
-            <div className="grid gap-3 sm:grid-cols-2">
-              <label className="block space-y-2"><Text as="span" variant="body-sm" tone="foreground" className="font-semibold">{t('baselineWizard.questionsPerSkill')}</Text>
-                <Input type="number" min={1} max={row.maxQuestions} step={1} value={row.count} aria-invalid={badCount} disabled={locked || row.maxQuestions === 0} onChange={e => patch('count', e.target.value)} /></label>
-              <label className="block space-y-2"><Text as="span" variant="body-sm" tone="foreground" className="font-semibold">{t('scopedPolicy.requiredCorrect')}</Text>
-                <Input type="number" min={1} max={Number(row.count) || row.maxQuestions} step={1} value={row.correct} aria-invalid={badCorrect} disabled={locked || row.maxQuestions === 0} onChange={e => patch('correct', e.target.value)} /></label>
-            </div>
-            <Text variant="caption" role={badCount || badCorrect ? 'alert' : undefined} tone={badCount || badCorrect ? 'destructive' : undefined}>
-              {row.maxQuestions > 0 ? `${t('baselineWizard.allowed')}: 1–${row.maxQuestions}.` : t('baselineWizard.noQuestions')}
-              {' '}{t('baselineWizard.correctHelp')}
-            </Text>
-            {row.limitingSkills.length > 0 && <details><summary className="cursor-pointer text-body-sm text-muted-foreground">{t('baselineWizard.limitingSkills')}</summary><Text variant="caption" className="mt-2">{row.limitingSkills.join(', ')}</Text></details>}
-          </div>
-        })}
-      </section>}
-      {(step === 2 || editing) && <section className="space-y-4 rounded-xl border border-border bg-card p-4 sm:p-5" aria-label={t('baselineWizard.timing')}>
-        <Heading level={3} size="card" className="flex items-center gap-2"><Clock3 size={17} className="text-primary" aria-hidden="true" />{t('baselineUX.timingSection')}</Heading>
-        <Text variant="caption" className="rounded-lg bg-background p-3">{t('baselineWizard.recommendations')}</Text>
-        <div className="grid gap-3 sm:grid-cols-2">
-          <label className="block space-y-2"><Text as="span" variant="body-sm" tone="foreground" className="font-semibold">{t('baselineWizard.totalMinutes')}</Text>
-            <Input type="number" min={1 / 60} step="any" value={minutes} disabled={locked} onChange={e => { setMinutes(e.target.value); if (total > 0) setPerQuestion(e.target.value === '' ? '' : decimal(Number(e.target.value) / total)) }} /></label>
-          <label className="block space-y-2"><Text as="span" variant="body-sm" tone="foreground" className="font-semibold">{t('baselineWizard.minutesPerQuestion')}</Text>
-            <Input type="number" min={total > 0 ? 1 / 60 / total : 1 / 60} step="any" value={perQuestion} disabled={locked || total < 1} onChange={e => { setPerQuestion(e.target.value); setMinutes(e.target.value === '' ? '' : decimal(Number(e.target.value) * total)) }} /></label>
-          <label className="block space-y-2"><Text as="span" variant="body-sm" tone="foreground" className="font-semibold">{t('scopedPolicy.maxAttempts')}</Text><Input type="number" min={1} step={1} value={attempts} disabled={locked} onChange={e => setAttempts(e.target.value)} /></label>
-          <label className="block space-y-2"><Text as="span" variant="body-sm" tone="foreground" className="font-semibold">{t('baselineWizard.waitMinutes')}</Text><Input type="number" min={0} step="any" value={wait} disabled={locked} onChange={e => setWait(e.target.value)} /></label>
-        </div>
-      </section>}
-      {(step === 3 || editing) && <section className="space-y-4 rounded-xl border border-border bg-card p-4 sm:p-5" aria-label={t('baselineWizard.review')}>
-        <Heading level={3} size="card" className="flex items-center gap-2"><CheckCircle2 size={17} className="text-primary" aria-hidden="true" />{t('baselineUX.reviewSection')}</Heading>
-        <div className="overflow-x-auto rounded-lg border border-border"><table className="w-full text-left text-body-sm"><thead className="border-b border-border bg-muted/50"><tr>
-          {['knowledgeLevel', 'skills', 'questionsPerSkill', 'correct', 'subtotal'].map(key => <th key={key} className="p-3 font-semibold">{t(`baselineWizard.${key}`)}</th>)}
-        </tr></thead><tbody className="divide-y divide-border">{rows.map(r => <tr key={r.knowledgeLevel}><td className="p-3">{t(`knowledgeLevel.${r.knowledgeLevel}`)}</td><td className="p-3">{r.skillCount}</td><td className="p-3">{r.count || '—'}</td><td className="p-3">{r.correct || '—'}/{r.count || '—'}</td><td className="p-3">{(Number(r.count) || 0) * r.skillCount}</td></tr>)}</tbody></table></div>
-        <Text>{t('baselineWizard.totalMinutes')}: {minutes || '—'} · {t('scopedPolicy.maxAttempts')}: {attempts || '—'} · {t('baselineWizard.waitMinutes')}: {wait || '—'}</Text>
-        <Text variant="caption">{t('baselineUX.activationHelp')}</Text>
-        {!workspace.scope.ready && <div role="status" className="space-y-1 rounded-lg border border-warning/40 bg-warning/5 p-3"><Text variant="body-sm" tone="foreground">{t('baselineUX.activationBlocked')}</Text>{workspace.scope.readinessIssues.map(issue => <Text variant="caption" key={issue}>{t(`scopedPolicy.errors.${issue}`, t('scopedPolicy.notReady'))}</Text>)}</div>}
-      </section>}
-    </DialogBody>
-    <DialogFooter className="flex-wrap">
-      <Button variant="ghost" disabled={locked} onClick={onDiscard}>{t('baselineWizard.discard')}</Button>
-      {!(editing || step === 3) && <Button variant="outline" className="border-primary/30 text-primary hover:bg-secondary" disabled={locked} onClick={saveAndClose}>{t('baselineWizard.saveClose')}</Button>}
-      {!editing && step > 1 && <Button variant="outline" disabled={locked} onClick={() => save(step - 1)}>{t('baselineWizard.previous')}</Button>}
-      {!editing && step < 3 ? <Button disabled={locked || step === 1 && !countsValid} onClick={() => save(step + 1)}>{t('baselineWizard.next')}</Button>
-        : <><Button variant="outline" className="border-primary/30 text-primary hover:bg-secondary" disabled={locked || !countsValid} onClick={() => save(3, true, true)}>{t('baselineWizard.confirmSave')}</Button>
-          <Button leftIcon={<CheckCircle2 size={16} aria-hidden="true" />} disabled={locked || !countsValid || !workspace.scope.ready} onClick={() => save(3, true, true, true)}>{t('baselineUX.saveActivate')}</Button></>}
-    </DialogFooter>
-  </>
+  function move(next: number) { try { snapshot(next); setInvalid(false); setStep(next) } catch { setInvalid(true) } }
+  function save(dismiss = false) { try { const state = snapshot(); setInvalid(false); onSave(state, dismiss) } catch { setInvalid(true) } }
+  useImperativeHandle(ref, () => ({ save }))
+  return <DialogBody className="space-y-4">
+    <ol className="grid grid-cols-3 gap-2" aria-label={copy('Configuration steps', 'Các bước cấu hình')}>{[copy('Questions', 'Câu hỏi'), copy('Time & retakes', 'Thời gian và làm lại'), copy('Review', 'Kiểm tra')].map((label, index) => <li key={label} aria-current={step === index + 1 ? 'step' : undefined} className={`rounded-lg border px-3 py-2 text-caption ${step === index + 1 ? 'border-primary bg-secondary font-semibold' : 'border-border text-muted-foreground'}`}>{index + 1}. {label}</li>)}</ol>
+    {invalid && <Text role="alert" tone="destructive" variant="body-sm">{copy('Use whole numbers within each bank limit below. The passing count cannot exceed the question count. Keep each Role level within the paper and duration limits.', 'Nhập số nguyên trong giới hạn ngân hàng bên dưới. Số câu đúng không vượt số câu mỗi Skill. Mỗi Role Level phải trong giới hạn đề và thời gian.')}</Text>}
+    {(step === 1 || step === 3) && <section className="space-y-3"><Heading level={3} size="card">{copy('Question policy shared across this Role', 'Chính sách câu hỏi chung cho vị trí')}</Heading>
+      <div className="overflow-x-auto rounded-lg border border-border"><table className="w-full text-left text-body-sm"><thead className="bg-muted/30"><tr>{[copy('Knowledge level', 'Mức kiến thức'), copy('Questions per Skill', 'Số câu mỗi Skill'), copy('Correct to pass', 'Số câu đúng để đạt')].map(label => <th scope="col" key={label} className="p-3">{label}</th>)}</tr></thead><tbody>{values.levels.map((row, index) => {
+        const capacity = workspace.capacities.find(item => item.knowledgeLevel === row.knowledgeLevel)
+        const maximum = capacity?.maxQuestions ?? 0
+        return <tr key={row.knowledgeLevel} className="border-t border-border"><th scope="row" className="p-3 font-normal">{t('knowledgeLevel.' + row.knowledgeLevel)}</th>{(['count', 'correct'] as const).map(field => {
+          const limit = field === 'correct' && row.count.trim() ? Math.min(maximum, Number(row.count)) : maximum
+          const outOfRange = row[field] !== '' && (!Number.isInteger(Number(row[field])) || Number(row[field]) < 1 || Number(row[field]) > limit)
+          return <td key={field} className="p-3 align-top"><Input type="number" min={1} max={Math.max(0, limit)} step={1} aria-invalid={outOfRange} aria-describedby={`baseline-${row.knowledgeLevel}-${field}-limit`} aria-label={`${t('knowledgeLevel.' + row.knowledgeLevel)} ${copy(field === 'count' ? 'questions' : 'correct', field === 'count' ? 'số câu' : 'số câu đúng')}`} value={row[field]} disabled={locked || step === 3} onChange={event => setValues(previous => ({ ...previous, levels: previous.levels.map((item, position) => position === index ? { ...item, [field]: event.target.value } : item) }))} /><Text id={`baseline-${row.knowledgeLevel}-${field}-limit`} variant="caption" tone={outOfRange ? 'destructive' : undefined}>{limit >= 1 ? `1–${limit}` : copy('No eligible questions', 'Chưa có câu hợp lệ')}</Text>{field === 'count' && capacity && <Text variant="caption">{copy('Limited by: ', 'Giới hạn bởi: ')}{capacity.limitingSkills.join(', ')}</Text>}</td>
+        })}</tr>
+      })}</tbody></table></div>
+      <Text variant="caption">{copy('Each knowledge level is limited by its smallest eligible Skill bank across all covered Role levels (up to 500 questions per group). Every group must supply the configured count. Insufficient questions block activation and new attempts; existing attempts keep their frozen paper.', 'Mỗi mức kiến thức lấy giới hạn từ nhóm Skill có ít câu hợp lệ nhất trong tất cả Role Level áp dụng (tối đa 500 câu mỗi nhóm). Mọi nhóm phải đủ số câu đã cấu hình. Thiếu câu sẽ chặn kích hoạt và lượt làm mới; bài đang làm giữ nguyên đề đã chốt.')}</Text>
+    </section>}
+    {(step === 2 || step === 3) && <section className="space-y-3"><Heading level={3} size="card">{copy('Time & retakes', 'Thời gian và làm lại')}</Heading><div className="grid gap-3 sm:grid-cols-3">{([
+      ['seconds', copy('Seconds per question', 'Giây mỗi câu'), 1], ['wait', copy('Retake wait (seconds)', 'Chờ làm lại (giây)'), 0], ['attempts', copy('Maximum attempts', 'Số lượt tối đa'), 1],
+    ] as const).map(([field, label, min]) => <label key={field} className="space-y-2 text-body-sm">{label}<Input type="number" min={min} step={1} aria-label={label} value={values[field]} disabled={locked || step === 3} onChange={event => setValues(previous => ({ ...previous, [field]: event.target.value }))} /></label>)}</div><Text variant="caption">{copy('The server freezes the deadline using seconds per question × actual selected questions. Saving does not activate the policy.', 'Server chốt hạn làm bài bằng giây mỗi câu × số câu thực tế được chọn. Lưu không kích hoạt chính sách.')}</Text></section>}
+    {workspace.scope.memberLevels && <details className="rounded-lg border border-border p-3 text-caption"><summary className="cursor-pointer">{copy('Role levels covered', 'Các Role Level áp dụng')} ({workspace.scope.memberLevels.length})</summary><ul className="mt-2 space-y-1">{workspace.scope.memberLevels.map(member => <li key={member.id}>{member.name} · {member.groups.length} {copy('required Skill–knowledge groups', 'nhóm Skill–kiến thức yêu cầu')}</li>)}</ul></details>}
+    <div className="flex justify-between gap-3"><Button variant="outline" disabled={locked || step === 1} onClick={() => setStep(value => value - 1)}>{copy('Back', 'Quay lại')}</Button>{step < 3 && <Button variant="secondary" disabled={locked} onClick={() => move(step + 1)}>{copy('Next', 'Tiếp theo')}</Button>}</div>
+  </DialogBody>
 })

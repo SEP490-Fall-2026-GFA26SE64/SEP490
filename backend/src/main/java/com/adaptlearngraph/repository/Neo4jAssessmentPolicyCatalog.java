@@ -163,6 +163,26 @@ public final class Neo4jAssessmentPolicyCatalog implements AssessmentPolicyCatal
                 if(result.size()>10000)throw capacity();
             }
         }
+        if(purpose==Purpose.BASELINE) {
+            var byRole=new TreeMap<String,List<Scope>>();
+            for(var scope:List.copyOf(result))byRole.computeIfAbsent(scope.ownerId(),ignored->new ArrayList<>()).add(scope);
+            for(var entry:byRole.entrySet()) {
+                var members=entry.getValue().stream().sorted(Comparator.comparingInt(Scope::rank).thenComparing(Scope::levelId)).toList();
+                var first=members.getFirst();var union=new TreeMap<String,GroupSpec>();var problems=new TreeSet<String>();
+                var memberLevels=new ArrayList<com.adaptlearngraph.entities.domain.AssessmentPolicyScope.MemberLevel>();
+                for(var member:members) {
+                    member.groups().forEach(group->union.put(group.requirement().key(),group));
+                    problems.addAll(member.readinessIssues());
+                    memberLevels.add(new com.adaptlearngraph.entities.domain.AssessmentPolicyScope.MemberLevel(member.levelId(),member.levelName(),member.rank(),member.groups(),member.readinessIssues()));
+                }
+                issues.stream().filter(issue->issue.ownerId().equals(entry.getKey())).forEach(issue->problems.add(issue.code()));
+                String fingerprint;
+                try{fingerprint=RoleBaselineFlow.hash(json.writeValueAsString(List.of("SHARED_ROLE_BASELINE",first.ownerId(),members.stream().map(Scope::catalogHash).toList(),problems)));}
+                catch(Exception invalid){throw new Failure(503,"CATALOG_SNAPSHOT_INVALID");}
+                result.add(new Scope(AssessmentPolicyScope.roleKey(first.ownerId()),purpose,first.ownerId(),first.ownerName(),"ALL_ROLE_LEVELS","All Role levels","ALL_ROLE_LEVELS",0,
+                        fingerprint,List.copyOf(union.values()),problems.isEmpty(),List.copyOf(problems),null,memberLevels));
+            }
+        }
         if(result.size()>10000 || result.stream().map(Scope::key).distinct().count()!=result.size())throw capacity();
         return new Discovery(result,issues);
     }

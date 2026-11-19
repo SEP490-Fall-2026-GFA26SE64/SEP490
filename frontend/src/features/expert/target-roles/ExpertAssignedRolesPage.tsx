@@ -653,22 +653,30 @@ export function ExpertAssignedRolesPage() {
   const [validationBankQuestions, setValidationBankQuestions] = React.useState<BankQuestion[]>([])
   const [isLoadingValidationContent, setIsLoadingValidationContent] = React.useState(false)
 
+  const validationRoleId = viewingDetailsRole?.id
+  const authoringRoleId = authoringRole?.id
   React.useEffect(() => {
-    if (viewingDetailsRole || authoringRole) {
-      setIsLoadingValidationContent(true)
-      Promise.all([
+    let active = true
+    if (validationRoleId || authoringRoleId) {
+      Promise.resolve().then(() => {
+        if (!active) return null
+        setIsLoadingValidationContent(true)
+        return Promise.all([
         fetchLearningModules(orgId).catch(() => [] as LearningModuleDto[]),
         bankRequest<BankView>('', undefined).catch(() => null),
-      ])
-        .then(([mods, bank]) => {
+        ])
+      }).then(result => {
+          if (!active || !result) return
+          const [mods, bank] = result
           setValidationModules(mods)
           setValidationBankQuestions(bank?.questions || [])
         })
         .finally(() => {
-          setIsLoadingValidationContent(false)
+          if (active) setIsLoadingValidationContent(false)
         })
     }
-  }, [viewingDetailsRole?.id, authoringRole?.id, orgId])
+    return () => { active = false }
+  }, [validationRoleId, authoringRoleId, orgId])
   const [graphRole, setGraphRole] = React.useState<TargetRoleModel | null>(null)
   const [deletingRole, setDeletingRole] =
     React.useState<TargetRoleModel | null>(null)

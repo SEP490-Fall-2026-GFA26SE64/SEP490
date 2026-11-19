@@ -45,7 +45,10 @@ class PolicyCatalogSnapshotTest {
             String query=c.getArgument(0);return query.contains("AS skill ORDER BY")?List.of(skill("skill")):query.contains("AS requirement")?roles:List.of();
         });
         var discovery=new Neo4jAssessmentPolicyCatalog(graph,json).discover(organization,Purpose.BASELINE);
-        assertEquals(144,discovery.scopes().size());assertTrue(discovery.issues().isEmpty());
+        assertEquals(192,discovery.scopes().size());assertTrue(discovery.issues().isEmpty());
+        var shared=discovery.scopes().stream().filter(AssessmentPolicyScope.Scope::sharedBaseline).toList();
+        assertEquals(48,shared.size());
+        for(var scope:shared){assertEquals(3,scope.memberLevels().size());assertEquals(1,scope.groups().size());assertEquals(AssessmentPolicyScope.roleKey(scope.ownerId()),scope.key());}
         for(int i=0;i<144;i++) {
             var s=discovery.scopes().get(i);assertTrue(s.ready());assertEquals(1,s.groups().size());
             assertEquals(AssessmentPolicyScope.key(Purpose.BASELINE,"role-"+i/3,"level-"+i),s.key());

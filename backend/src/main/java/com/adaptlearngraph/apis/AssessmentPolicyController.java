@@ -59,12 +59,12 @@ public final class AssessmentPolicyController {
         }catch(java.io.IOException invalid){throw new Failure(400,"INVALID_REQUEST");}
     }
     private <T>ResponseEntity<T> response(T value){return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(value);}
-    @ExceptionHandler(Failure.class) ResponseEntity<Map<String,String>> failure(Failure f){return ResponseEntity.status(f.status).cacheControl(CacheControl.noStore()).body(Map.of("code",f.code));}
-    @ExceptionHandler({IllegalArgumentException.class,org.springframework.web.method.annotation.MethodArgumentTypeMismatchException.class}) ResponseEntity<Map<String,String>> invalid(Exception f){return failure(new Failure(400,"INVALID_REQUEST"));}
-    @ExceptionHandler({org.springframework.dao.DataAccessException.class,IllegalStateException.class}) ResponseEntity<Map<String,String>> unavailable(Exception f){
+    @ExceptionHandler(Failure.class) ResponseEntity<Map<String,Object>> failure(Failure f){return ResponseEntity.status(f.status).cacheControl(CacheControl.noStore()).body(Map.of("code",f.code,"details",f.details));}
+    @ExceptionHandler({IllegalArgumentException.class,org.springframework.web.method.annotation.MethodArgumentTypeMismatchException.class}) ResponseEntity<Map<String,Object>> invalid(Exception f){return failure(new Failure(400,"INVALID_REQUEST"));}
+    @ExceptionHandler({org.springframework.dao.DataAccessException.class,IllegalStateException.class}) ResponseEntity<Map<String,Object>> unavailable(Exception f){
         log.warn("Assessment configuration dependency failed",f);
         return failure(new Failure(503,"DEPENDENCY_UNAVAILABLE"));
     }
-    @ExceptionHandler(com.adaptlearngraph.exception.SubscriptionFailure.class) ResponseEntity<Map<String,String>> subscription(com.adaptlearngraph.exception.SubscriptionFailure f){boolean anonymous=f.code()==com.adaptlearngraph.exception.SubscriptionFailure.Code.UNAUTHENTICATED;return failure(new Failure(anonymous?401:403,anonymous?"UNAUTHENTICATED":"FORBIDDEN"));}
-    @ExceptionHandler(com.adaptlearngraph.exception.RegistrationFailure.class) ResponseEntity<Map<String,String>> identity(com.adaptlearngraph.exception.RegistrationFailure f){boolean anonymous=f.code()==com.adaptlearngraph.exception.RegistrationFailure.Code.UNAUTHENTICATED;return failure(new Failure(anonymous?401:403,anonymous?"UNAUTHENTICATED":"FORBIDDEN"));}
+    @ExceptionHandler(com.adaptlearngraph.exception.SubscriptionFailure.class) ResponseEntity<Map<String,Object>> subscription(com.adaptlearngraph.exception.SubscriptionFailure f){boolean anonymous=f.code()==com.adaptlearngraph.exception.SubscriptionFailure.Code.UNAUTHENTICATED;return failure(new Failure(anonymous?401:403,anonymous?"UNAUTHENTICATED":"FORBIDDEN"));}
+    @ExceptionHandler(com.adaptlearngraph.exception.RegistrationFailure.class) ResponseEntity<Map<String,Object>> identity(com.adaptlearngraph.exception.RegistrationFailure f){boolean anonymous=f.code()==com.adaptlearngraph.exception.RegistrationFailure.Code.UNAUTHENTICATED;return failure(new Failure(anonymous?401:403,anonymous?"UNAUTHENTICATED":"FORBIDDEN"));}
 }

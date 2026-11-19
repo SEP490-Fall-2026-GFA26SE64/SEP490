@@ -46,9 +46,16 @@ public final class RuleAssessment {
             return value.intValue();
         }
     }
-    public record Policy(int timeLimitSeconds,int retakeWaitSeconds,int maxAttempts,List<GroupRule> groups) {
+    public record BaselineTiming(int secondsPerQuestion) {
+        public BaselineTiming {if(secondsPerQuestion<1)throw new IllegalArgumentException("Configure seconds per question");}
+    }
+    public record Policy(Integer timeLimitSeconds,int retakeWaitSeconds,int maxAttempts,List<GroupRule> groups,
+                         @com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL) BaselineTiming baselineTiming) {
+        public Policy(int timeLimitSeconds,int retakeWaitSeconds,int maxAttempts,List<GroupRule> groups) {
+            this(timeLimitSeconds,retakeWaitSeconds,maxAttempts,groups,null);
+        }
         public Policy {
-            if(timeLimitSeconds<1 || retakeWaitSeconds<0 || maxAttempts<1)throw new IllegalArgumentException("Configure timer and retakes");
+            if((baselineTiming==null?(timeLimitSeconds==null || timeLimitSeconds<1):timeLimitSeconds!=null) || retakeWaitSeconds<0 || maxAttempts<1)throw new IllegalArgumentException("Configure timer and retakes");
             groups=List.copyOf(groups);
             if(groups.isEmpty() || groups.size()>1000 || groups.stream().map(GroupRule::key).distinct().count()!=groups.size())
                 throw new IllegalArgumentException("Configure unique exact group rules");
@@ -56,6 +63,32 @@ public final class RuleAssessment {
         public GroupRule require(Requirement r) {
             return groups.stream().filter(g->g.key().equals(r.key())).findFirst()
                     .orElseThrow(()->new IllegalArgumentException("Exact group policy is not configured"));
+        }
+        @com.fasterxml.jackson.annotation.JsonCreator(mode=com.fasterxml.jackson.annotation.JsonCreator.Mode.DELEGATING)
+        public static Policy decode(com.fasterxml.jackson.databind.JsonNode node) {
+            if(!node.isObject())throw new IllegalArgumentException("Policy object required");
+            var allowed=Set.of("timeLimitSeconds","retakeWaitSeconds","maxAttempts","groups","baselineTiming");
+            node.fieldNames().forEachRemaining(name->{if(!allowed.contains(name))throw new IllegalArgumentException("Unknown policy field");});
+            var timing=node.get("baselineTiming");BaselineTiming perQuestion=null;
+            if(timing!=null && !timing.isNull()) {
+                if(!timing.isObject() || timing.size()!=1 || !timing.has("secondsPerQuestion"))throw new IllegalArgumentException("Invalid baseline timing");
+                perQuestion=new BaselineTiming(GroupRule.integer(timing.get("secondsPerQuestion")));
+            }
+            if(!node.has("timeLimitSeconds") || !node.path("groups").isArray())throw new IllegalArgumentException("Complete policy required");
+            var groups=new ArrayList<GroupRule>();node.get("groups").forEach(group->groups.add(GroupRule.decode(group)));
+            return new Policy(node.get("timeLimitSeconds").isNull()?null:GroupRule.integer(node.get("timeLimitSeconds")),
+                    GroupRule.integer(node.path("retakeWaitSeconds")),GroupRule.integer(node.path("maxAttempts")),groups,perQuestion);
+        }
+        public int durationSeconds(int actualItems) {
+            if(actualItems<1)throw new IllegalArgumentException("Empty paper");
+            return baselineTiming==null?timeLimitSeconds:Math.multiplyExact(baselineTiming.secondsPerQuestion(),actualItems);
+        }
+        public GroupRule allocate(GroupRule configured,int available) {
+            if(baselineTiming==null)return configured;
+            if(available<1)throw new IllegalArgumentException("Empty required bank");
+            int actual=Math.min(configured.totalCount(),available);
+            int correct=Math.toIntExact(((long)actual*configured.requiredCorrectCount()+configured.totalCount()-1)/configured.totalCount());
+            return new GroupRule(configured.skillId(),configured.knowledgeLevel(),actual,correct,false,false);
         }
     }
     public record Option(String id,String text) {

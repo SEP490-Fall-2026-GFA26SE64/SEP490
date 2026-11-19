@@ -1,3 +1,4 @@
+import { parseAssessmentBankIssues, type AssessmentBankIssue } from '../../../shared/api/assessmentBankIssues'
 export interface AdaptiveBounds { maxQuestions: number; timeLimitSeconds: number }
 export interface AdaptiveCommonConfiguration { name: string; jobPositionBounds: AdaptiveBounds; exploration?: never; roles?: never }
 export interface AdaptiveLegacyConfiguration { name: string; exploration: AdaptiveBounds; roles: Record<string, AdaptiveBounds>; jobPositionBounds?: never }
@@ -43,12 +44,14 @@ export class AdaptiveBaselineApiError extends Error {
   readonly status: number
   readonly code: string
   readonly shortages: AdaptiveShortage[]
-  constructor(status: number, code: string, shortages: AdaptiveShortage[] = []) {
+  readonly bankIssues: AssessmentBankIssue[]
+  constructor(status: number, code: string, shortages: AdaptiveShortage[] = [], bankIssues: AssessmentBankIssue[] = []) {
     super(code)
     this.name = 'AdaptiveBaselineApiError'
     this.status = status
     this.code = code
     this.shortages = shortages
+    this.bankIssues = bankIssues
   }
 }
 
@@ -120,7 +123,7 @@ export async function adaptiveHttp<T>(url: string, init: RequestInit, read: (val
     const failure = payload && typeof payload === 'object' ? payload as Record<string, unknown> : {}
     let details: AdaptiveShortage[] = []
     try { details = array(failure.shortages, shortage) } catch { /* Invalid error details are not capacity data. */ }
-    throw new AdaptiveBaselineApiError(response.status, typeof failure.code === 'string' ? failure.code : 'REQUEST_FAILED', details)
+    throw new AdaptiveBaselineApiError(response.status, typeof failure.code === 'string' ? failure.code : 'REQUEST_FAILED', details, parseAssessmentBankIssues(failure.details))
   }
   try {
     const result = read(payload)

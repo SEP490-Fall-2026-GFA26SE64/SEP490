@@ -112,4 +112,17 @@ class WF05PathwayPersistenceTest {
         assertThatThrownBy(()->review.saveSelection(request,UUID.randomUUID().toString(),removeStarted)).hasMessageContaining("STARTED_MODULE_CANNOT_BE_EXCLUDED");
         assertThat(expected()).isEqualTo(before);assertThat(revisions.read(row()).steps().getFirst().options()).containsExactly(m1,m2);
     }
+    @Test @DisplayName("Check identifies every stale module by exact ID/revision without changing the saved proposal")
+    void checkIdentifiesStaleModules() throws Exception {
+        generated();var before=expected();var root=revisions.read(row()).steps().getFirst();
+        snapshot=new RulePathwayCatalog.Snapshot("catalog-v2",List.of(need),Map.of(need.key(),List.of()),Map.of());
+        var validation=new RequirementPathwayValidationService(admission,revisions,rules,catalog);
+        var checked=validation.check(row());
+        assertThat(checked.valid()).isFalse();
+        assertThat(checked.issues()).containsExactly(
+            new RequirementPathwayValidationService.Issue(root.id(),"MODULE_OPTIONS_CHANGED",true,m1.moduleId(),m1.moduleRevision()),
+            new RequirementPathwayValidationService.Issue(root.id(),"MODULE_OPTIONS_CHANGED",true,m2.moduleId(),m2.moduleRevision()));
+        assertThat(expected()).isEqualTo(before);
+        assertThat(revisions.read(row()).steps().getFirst().options()).containsExactly(m1,m2);
+    }
 }

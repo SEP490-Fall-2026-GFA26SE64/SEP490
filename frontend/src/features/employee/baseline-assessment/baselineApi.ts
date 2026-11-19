@@ -1,4 +1,5 @@
 import { workspaceFetch } from '../../../shared/api/workspaceFetch'
+import { parseAssessmentBankIssues, type AssessmentBankIssue } from '../../../shared/api/assessmentBankIssues'
 export type AssessmentPurpose = 'BASELINE' | 'SKILL_ASSESSMENT'
 export type AttemptState = 'IN_PROGRESS' | 'FINALIZED'
 export interface AssessmentTarget { selectionId: string | null; selectionRevision: number; stepId?: string | null; moduleId?: string | null; moduleRevision?: number | null }
@@ -16,7 +17,8 @@ export interface BaselineCommand { path: string; body: string; key: string }
 export class BaselineError extends Error {
   readonly code: string
   readonly status: number
-  constructor(code: string, status = 0) { super(code); this.code = code; this.status = status }
+  readonly bankIssues: AssessmentBankIssue[]
+  constructor(code: string, status = 0, bankIssues: AssessmentBankIssue[] = []) { super(code); this.code = code; this.status = status; this.bankIssues = bankIssues }
   get ambiguous() { return this.status === 0 || this.status >= 500 || this.code === 'INVALID_RESPONSE' }
 }
 const base = '/api/v1/employee/baseline-attempts'
@@ -59,7 +61,7 @@ async function request<T>(path: string, parse: (value: unknown) => T, init: Requ
   const payload: unknown = await response.json().catch(() => null)
   if (!response.ok) {
     const code = payload && typeof payload === 'object' && 'code' in payload && typeof payload.code === 'string' ? payload.code : 'REQUEST_FAILED'
-    throw new BaselineError(code, response.status)
+    throw new BaselineError(code, response.status, parseAssessmentBankIssues(payload && typeof payload === 'object' && 'details' in payload ? payload.details : null))
   }
   try { return parse(payload) } catch { throw new BaselineError('INVALID_RESPONSE', response.status) }
 }

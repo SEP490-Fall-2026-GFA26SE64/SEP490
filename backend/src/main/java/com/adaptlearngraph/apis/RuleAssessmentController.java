@@ -63,14 +63,14 @@ public final class RuleAssessmentController {
     }
     private <T>ResponseEntity<T> ok(T value){return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(value);}
     @ExceptionHandler(com.adaptlearngraph.services.ModuleAuthoringService.Failure.class)
-    ResponseEntity<Map<String,String>> moduleAccess(com.adaptlearngraph.services.ModuleAuthoringService.Failure f) {
+    ResponseEntity<Map<String,Object>> moduleAccess(com.adaptlearngraph.services.ModuleAuthoringService.Failure f) {
         return failure(new Failure(f.status(),f.status()==401?"UNAUTHENTICATED":f.status()==403?"FORBIDDEN":"MODULE_UNAVAILABLE"));
     }
-    @ExceptionHandler(Failure.class) ResponseEntity<Map<String,String>> failure(Failure f){return ResponseEntity.status(f.status).cacheControl(CacheControl.noStore()).body(Map.of("code",f.code));}
-    @ExceptionHandler(com.adaptlearngraph.services.RoleBaselineFlow.Failure.class) ResponseEntity<Map<String,String>> selection(com.adaptlearngraph.services.RoleBaselineFlow.Failure f){return failure(new Failure(f.status,f.code));}
-    @ExceptionHandler(com.adaptlearngraph.services.AdaptiveAttemptUseCase.Failure.class) ResponseEntity<Map<String,String>> identity(com.adaptlearngraph.services.AdaptiveAttemptUseCase.Failure f){return failure(new Failure(switch(f.code()){case UNAUTHENTICATED->401;case FORBIDDEN->403;default->503;},f.code().name()));}
-    @ExceptionHandler({org.springframework.dao.DataAccessException.class,IllegalStateException.class}) ResponseEntity<Map<String,String>> unavailable(Exception f){return failure(new Failure(503,"DEPENDENCY_UNAVAILABLE"));}
+    @ExceptionHandler(Failure.class) ResponseEntity<Map<String,Object>> failure(Failure f){return ResponseEntity.status(f.status).cacheControl(CacheControl.noStore()).body(Map.of("code",f.code,"details",f.details));}
+    @ExceptionHandler(com.adaptlearngraph.services.RoleBaselineFlow.Failure.class) ResponseEntity<Map<String,Object>> selection(com.adaptlearngraph.services.RoleBaselineFlow.Failure f){return failure(new Failure(f.status,f.code));}
+    @ExceptionHandler(com.adaptlearngraph.services.AdaptiveAttemptUseCase.Failure.class) ResponseEntity<Map<String,Object>> identity(com.adaptlearngraph.services.AdaptiveAttemptUseCase.Failure f){return failure(new Failure(switch(f.code()){case UNAUTHENTICATED->401;case FORBIDDEN->403;default->503;},f.code().name()));}
+    @ExceptionHandler({org.springframework.dao.DataAccessException.class,IllegalStateException.class}) ResponseEntity<Map<String,Object>> unavailable(Exception f){return failure(new Failure(503,"DEPENDENCY_UNAVAILABLE"));}
     @ExceptionHandler({IllegalArgumentException.class,org.springframework.web.bind.MissingRequestHeaderException.class,
             org.springframework.web.method.annotation.MethodArgumentTypeMismatchException.class,
-            org.springframework.http.converter.HttpMessageNotReadableException.class}) ResponseEntity<Map<String,String>> invalid(Exception f){return failure(new Failure(400,"INVALID_REQUEST"));}
+            org.springframework.http.converter.HttpMessageNotReadableException.class}) ResponseEntity<Map<String,Object>> invalid(Exception f){return failure(new Failure(400,"INVALID_REQUEST"));}
 }

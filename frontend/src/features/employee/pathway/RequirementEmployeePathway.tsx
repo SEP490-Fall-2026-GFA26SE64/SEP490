@@ -10,11 +10,12 @@ import { Text } from '../../../shared/components/typography/Text'
 import { Badge } from '../../../shared/components/ui/Badge'
 import { Button, buttonVariants } from '../../../shared/components/ui/Button'
 import { Card, CardContent } from '../../../shared/components/ui/Card'
-import { EmptyState } from '../../../shared/components/ui/EmptyState'
 import { LoadingCard } from '../../../shared/components/ui/LoadingCard'
 import { RequirementPathwayPresentation } from '../components/RequirementPathwayPresentation'
 import { PathwayTimingSummary } from './PathwayTimingSummary'
 import { CertificateSubmissionDialog } from './CertificateSubmissionDialog'
+import { readCurrentKnowledgeTarget } from '../baseline-assessment/assignedKnowledgeRoleApi'
+import { PathwayPlaceholder } from './PathwayPlaceholder'
 
 export function RequirementEmployeePathway({ scope }: { scope: string }) {
   const [params] = useSearchParams()
@@ -29,7 +30,9 @@ function OwnedRequirementEmployeePathway({ scope }: { scope: string }) {
   const graphStart=useRef<HTMLDivElement>(null),autoScrolled=useRef(false)
   const query = useQuery({ queryKey: ['initialPathway', scope, 'ruleEmployee', archive], queryFn: ({ signal }) => readRulePathway(archive, signal), retry: false, gcTime: 0,
     refetchInterval: current => !current.state.error && current.state.data && !current.state.data.archived ? 5000 : false })
-  const data = query.data, state = data?.reviewStatus === 'APPROVED' ? 'APPROVED' : data?.reviewStatus === 'REJECTED' ? 'REJECTED' : data?.reviewStatus === 'AWAITING_EXPERT_REVIEW' ? 'AWAITING_EXPERT_REVIEW' : data?.generationStatus
+  const target = useQuery({ queryKey: ['initialPathway', scope, 'currentTarget'], queryFn: ({ signal }) => readCurrentKnowledgeTarget(signal), enabled: !archive, retry: false, gcTime: 0 })
+  const denied = [query.error, target.error].some(failure => failure && 'status' in failure && [401, 403].includes(Number(failure.status)))
+  const data = denied ? undefined : query.data, state = data?.reviewStatus === 'APPROVED' ? 'APPROVED' : data?.reviewStatus === 'REJECTED' ? 'REJECTED' : data?.reviewStatus === 'AWAITING_EXPERT_REVIEW' ? 'AWAITING_EXPERT_REVIEW' : data?.generationStatus
   const scrollReady=Boolean(data&&!data.archived&&state==='APPROVED'&&data.steps.length>0&&!query.error&&!params.has('assessmentModule'))
   useEffect(()=>{
     if(!scrollReady||autoScrolled.current)return
@@ -50,14 +53,16 @@ function OwnedRequirementEmployeePathway({ scope }: { scope: string }) {
     finally { lock.current = false; setBusy(false) }
   }
   return <div className="min-w-0 space-y-5 pb-8"><h1 className="sr-only">{t('initialPathway.title')}</h1>
-    {query.isPending && <LoadingCard label={t('initialPathway.loading')} />}
-    {(query.error || error) && <InitialPathwayFeedback error={error ?? query.error} busy={busy || query.isFetching} onRetry={() => { if (pending) void retry(); else void query.refetch() }} />}
-    {!query.isPending && !query.error && !data && <EmptyState title={t('initialPathway.empty')} action={<Link className={buttonVariants({ variant: 'secondary' })} to="/employee/upskilling?tab=roles">{t('initialPathway.roles')}</Link>} />}
-    {data && !query.error && <div className="space-y-5"><Card><CardContent className="space-y-3 p-4"><div className="flex min-w-0 flex-wrap items-center justify-between gap-3"><div className="flex min-w-0 flex-wrap items-center gap-2"><Target className="size-4 shrink-0 text-primary" /><Text as="span" variant="caption">{t('initialPathway.targetRole')}</Text><span className="min-w-0 break-words text-body-sm font-semibold">{data.roleName} · {data.levelName}</span><Badge variant={data.archived ? 'outline' : state === 'APPROVED' ? 'success' : 'warning'}>{data.archived ? t('rulePathway.employeeLabels.archived') : t('initialPathway.state.' + state)}</Badge></div>
+    {!data && <><Card><CardContent className="flex flex-wrap items-center gap-2 p-4"><Target className="size-4 text-primary" /><Text variant="caption">{t('initialPathway.targetRole')}</Text>{target.data && !target.isError && !denied && <Text className="font-semibold">{target.data.roleName}{target.data.levelName ? ` · ${target.data.levelName}` : ''}</Text>}</CardContent></Card><PathwayPlaceholder target={!target.isError && !denied ? target.data : null}>
+      {query.isPending || !archive && target.isPending ? <LoadingCard label={t('initialPathway.loading')} /> : query.isError || target.isError ? <InitialPathwayFeedback error={query.error ?? target.error} busy={query.isFetching || target.isFetching} onRetry={() => { if (query.isError) void query.refetch(); if (target.isError) void target.refetch() }} /> : <><Text role="status" variant="body-sm">{t('initialPathway.empty')}</Text><Link className={buttonVariants({ variant: 'secondary', size: 'sm' })} to="/employee/upskilling?tab=roles">{t('initialPathway.roles')}</Link></>}
+    </PathwayPlaceholder></>}
+    {data && <div className="space-y-5"><Card><CardContent className="space-y-3 p-4"><div className="flex min-w-0 flex-wrap items-center justify-between gap-3"><div className="flex min-w-0 flex-wrap items-center gap-2"><Target className="size-4 shrink-0 text-primary" /><Text as="span" variant="caption">{t('initialPathway.targetRole')}</Text><span className="min-w-0 break-words text-body-sm font-semibold">{data.roleName} · {data.levelName}</span><Badge variant={data.archived ? 'outline' : state === 'APPROVED' ? 'success' : 'warning'}>{data.archived ? t('rulePathway.employeeLabels.archived') : t('initialPathway.state.' + state)}</Badge></div>
       <div className="flex max-w-full flex-wrap items-center gap-2"><Button variant="ghost" size="icon" aria-label={t('initialPathway.refresh')} disabled={query.isFetching || busy || graphLocked} onClick={() => void query.refetch()}><RefreshCw className="size-4" /></Button></div></div>
       <PathwayTimingSummary timing={data.timing} /></CardContent></Card>
-      {state !== 'APPROVED' && !data.archived && <Card><CardContent className="space-y-3 p-4"><Text role="status">{state === 'NO_LEARNING_REQUIRED' ? t('initialPathway.noLearningHelp') : t('rulePathway.pending')}</Text>{['BLOCKED', 'FAILED_RETRYABLE', 'STALE'].includes(data.generationStatus) && data.revision === null && <Button variant="outline" disabled={busy} onClick={() => void retry()}>{t('rulePathway.retryGeneration')}</Button>}</CardContent></Card>}
+      {(query.error || error) && <InitialPathwayFeedback error={error ?? query.error} busy={busy || query.isFetching} onRetry={() => { if (pending) void retry(); else void query.refetch() }} />}
+      {data.steps.length > 0 && state !== 'APPROVED' && !data.archived && <Card><CardContent className="space-y-3 p-4"><Text role="status">{state === 'NO_LEARNING_REQUIRED' ? t('initialPathway.noLearningHelp') : t('rulePathway.pending')}</Text>{['BLOCKED', 'FAILED_RETRYABLE', 'STALE'].includes(data.generationStatus) && data.revision === null && <Button variant="outline" disabled={busy} onClick={() => void retry()}>{t('rulePathway.retryGeneration')}</Button>}</CardContent></Card>}
       {data.steps.length > 0 && <div ref={graphStart} style={{scrollMarginTop:'calc(var(--workspace-header-height, 58px) + 24px)'}}><RequirementPathwayPresentation pathway={data} onCertificate={setCertificateStep} onInteractionLockChange={setGraphLocked} /></div>}
+      {data.steps.length === 0 && <PathwayPlaceholder target={data}><Text role="status" variant="body-sm">{t('initialPathway.state.' + state)}</Text>{!data.archived && ['BLOCKED', 'FAILED_RETRYABLE', 'STALE'].includes(data.generationStatus) && data.revision === null && <Button variant="outline" disabled={busy} onClick={() => void retry()}>{t('rulePathway.retryGeneration')}</Button>}</PathwayPlaceholder>}
     </div>}
     {data && certificateStep && data.steps.some(item => item.id === certificateStep.id) && <CertificateSubmissionDialog key={data.requestId + ':' + certificateStep.id} scope={scope} pathway={data} step={data.steps.find(item => item.id === certificateStep.id)!} onClose={() => setCertificateStep(null)} />}
   </div>

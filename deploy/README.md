@@ -5,9 +5,10 @@
 1. **Build** on a GitHub-hosted runner and push to Docker Hub: `adapt-learn-graph-backend` and `adapt-learn-graph-frontend` (`:latest` and `:<commit-sha>`), plus `adapt-learn-graph-minio:<release>` built once from MinIO's official tagged source ([minio/Dockerfile](minio/Dockerfile)). Upstream no longer publishes MinIO images or binaries.
 2. **Ship** a bundle over SSH to `$APP_DIR`: [compose.deploy.yml](../compose.deploy.yml), the Neo4j catalog scripts, the seed datasets, the Nginx site and [scripts/remote-deploy.sh](scripts/remote-deploy.sh). The server's `.env` and Docker volumes are never overwritten.
 3. **Roll out** with `remote-deploy.sh`:
-   - validate `.env` and the TLS certificate;
+   - validate `.env`, measured host capacity for inference and the TLS certificate;
    - check SMTP (STARTTLS + login) before changing anything;
-   - `docker compose pull` and `up -d`: migrations → idempotent seed jobs → API → web;
+   - pull images and prepare the configured RIASEC model in its persistent volume;
+   - `up -d`: migrations → idempotent seed jobs → API → web, plus private inference;
    - local smoke checks;
    - install and reload the Nginx site, then check HTTPS through it;
    - register and confirm the PayOS webhook.
@@ -20,7 +21,7 @@ The stack runs the full product composition (Spring profiles `local,workspace-ba
 
 ## One-time server setup
 
-Requirements: Ubuntu/Debian with ≥ 4 vCPU, ≥ 8 GB RAM and ≥ 30 GB of disk; DNS `A` records for `adaptlearn.id.vn` and `www.adaptlearn.id.vn` pointing at the server's public IP; inbound TCP 80/443 open (port-forwarded if the server is behind NAT); outbound 443 (Docker Hub, PayOS) and 587 (SMTP) open.
+Base requirements: Ubuntu/Debian with ≥ 4 vCPU, ≥ 8 GB RAM and ≥ 30 GB of disk; DNS `A` records for `adaptlearn.id.vn` and `www.adaptlearn.id.vn` pointing at the server's public IP; inbound TCP 80/443 open (port-forwarded if the server is behind NAT); outbound 443 (Docker Hub, model registry, PayOS) and 587 (SMTP) open. Budget additional RAM/CPU/disk for the selected inference model against actual host measurements; the base figures do not establish capacity for AI alongside PostgreSQL/Neo4j/API.
 
 ```bash
 # Docker Engine + Compose v2.24+ , Nginx, Certbot
@@ -43,6 +44,16 @@ sudo certbot renew --dry-run
 Create `/opt/adapt-learn-graph/.env` from [.env.example](.env.example), fill in every value, then run `chmod 600 .env`. Generate secrets with `openssl rand -base64 32` (registration keys must be exactly that). Back up `.env` **together with** the database volumes: replacing `REGISTRATION_*` keys breaks stored MFA secrets, and changing `DB_PASSWORD`/`NEO4J_PASSWORD` after the first start does not re-key existing volumes.
 
 If the Docker Hub repositories are private, run `docker login` once as the deploy user on the server.
+
+### RIASEC route and private inference
+
+Set `RIASEC_ENABLED=true`, `RIASEC_MODEL`, `RIASEC_OLLAMA_MEMORY` (whole `m`/`g`) and `RIASEC_OLLAMA_CPUS` in the server `.env`. Model and resource budgets are intentionally not selected by the deployment template. Review available host memory/CPU, other services and model storage before choosing them. The rollout measures host capacity and refuses an invalid/excessive CPU limit, a memory limit consuming the host, or a new inference service exceeding currently available RAM. This preflight is not a workload/load guarantee.
+
+The API explicitly receives enablement, model and private `http://riasec-ollama:11434`. The pinned Ollama image has no published port and joins an internal inference network; API also retains the default application network. An explicit `riasec-setup` model-pull job has registry access and shares only the persistent `riasec_models` volume. The rollout runs that setup before starting inference. Never delete assessment or model volumes to repair a missing route/model.
+
+Before accepting a deployed change, inspect the actual API image, effective `local,workspace-baseline,workspace-development` profiles and `riasec.enabled` property without printing secrets; check successful workspace Flyway `V74__riasec_personal_exploration.sql`. Existing assessment history must remain intact. Defining `RIASEC_ENABLED` only in a Compose interpolation file does not inject it unless wired into the API environment, as this composition does.
+
+Authenticated `GET /api/v1/employee/riasec` reads stored state/catalog and does not call inference. A404 indicates missing/disabled routing or a proxy/image mismatch, requiring inspection of effective deployment; Ollama alone cannot register that route. AI failures occur after submission in the asynchronous worker and retain their specific status/failure code. The API does not depend on inference health to serve saved drafts/history. Verify entitled GET200, save/reload/history, owner/tenant denial and a real model result or accurate AI-specific failure separately. Persistent404 stops UI polling until explicit Reload.
 
 ### Outbound firewall
 

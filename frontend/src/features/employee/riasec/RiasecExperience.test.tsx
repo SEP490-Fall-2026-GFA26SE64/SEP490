@@ -3,7 +3,7 @@ import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-libra
 import { MemoryRouter } from 'react-router-dom'
 import { RiasecExperience } from './RiasecExperience'
 import { RiasecScoreRadar } from './RiasecScoreRadar'
-import { riasecRequest, type Draft, type View } from './riasecApi'
+import { riasecRequest, RiasecError, type Draft, type View } from './riasecApi'
 import { manifest } from './riasecInstrument'
 vi.mock('../../../shared/i18n/LanguageContext', () => ({ useTranslation: () => ({ language: 'en', t: (key: string) => key.replace('riasecUi.', '') }) }))
 vi.mock('./riasecApi', async original => ({ ...await original<typeof import('./riasecApi')>(), riasecRequest: vi.fn() }))
@@ -23,6 +23,19 @@ beforeEach(() => {
 })
 afterEach(() => { cleanup(); vi.restoreAllMocks(); vi.clearAllMocks() })
 const show = () => render(<MemoryRouter><RiasecExperience scope="ORG:EMPLOYEE" active enabled /></MemoryRouter>)
+it('classifies a missing endpoint separately from AI and stops polling until an explicit reload', async () => {
+  vi.useFakeTimers()
+  try {
+    vi.mocked(riasecRequest).mockRejectedValue(new RiasecError('RIASEC_UNAVAILABLE', 404))
+    await act(async () => { show() })
+    expect(screen.getByRole('alert').textContent).toContain('not enabled at this server endpoint')
+    await act(async () => { await vi.advanceTimersByTimeAsync(15000) })
+    expect(riasecRequest).toHaveBeenCalledTimes(1)
+    await act(async () => { fireEvent.click(screen.getByRole('button', { name: 'Reload' })) })
+    expect(riasecRequest).toHaveBeenCalledTimes(2)
+    expect(vi.mocked(riasecRequest).mock.calls.every(call => !call[1] || call[1] === 'GET')).toBe(true)
+  } finally { vi.useRealTimers() }
+})
 it('serial autosave retains rapid edits and uses the accepted revision', async () => {
   show(); fireEvent.click(await screen.findByRole('button', { name: 'Start assessment' })); fireEvent.click(await screen.findByRole('button', { name: 'Confirm' })); await screen.findByText('Answer 3')
   let finish!: (d: Draft) => void

@@ -18,7 +18,9 @@ import { AdaptiveBaselineApiError } from './adaptiveBaselineApi'
 import { type AssessmentPurpose } from './assessmentRulePolicyApi'
 import { getPolicyDirectory, getPolicyWorkspace, runScopedCommand, type PolicyDirectory, type PolicyWorkspace, type ScopedCommand, type ScopedVersion } from './scopedAssessmentPolicyApi'
 import { BaselinePolicyDialog } from './BaselinePolicyDialog'
+import { AssessmentBankIssues } from '../../../shared/components/AssessmentBankIssues'
 import { SkillPolicyWizard as RulePolicyForm } from './SkillPolicyWizard'
+import { useToast } from '../../../shared/hooks/useToast'
 
 type Loaded<T> = { key: string; value?: T; error?: unknown }
 const pageNumber = (value: string | null) => value && /^\d{1,6}$/.test(value) ? Number(value) : 0
@@ -38,20 +40,22 @@ function ConfigError({ error }: { error: unknown }) {
   const code = error instanceof AdaptiveBaselineApiError
     ? error.code === 'REQUEST_FAILED' && error.status === 401 ? 'HTTP_UNAUTHORIZED' : error.code
     : 'GENERIC'
-  return <Text role="alert" tone="destructive">{t(`scopedPolicy.errors.${code}`, t('scopedPolicy.errors.GENERIC'))}</Text>
+  return <div role="alert" className="space-y-2"><Text tone="destructive">{t(`scopedPolicy.errors.${code}`, t('scopedPolicy.errors.GENERIC'))}</Text><AssessmentBankIssues issues={error instanceof AdaptiveBaselineApiError ? error.bankIssues : undefined} /></div>
 }
 function ScopeDirectory({ purpose }: { purpose: AssessmentPurpose }) {
   const { t, language } = useTranslation(), [params, setParams] = useSearchParams(), [reload, setReload] = useState(0)
+  const { toast } = useToast(), listRef = useRef<HTMLDivElement>(null)
   const [loaded, setLoaded] = useState<Loaded<PolicyDirectory> & { archived?: boolean }>({ key: '' })
   const [selectedScope, setSelectedScope] = useState<string | null>(() => params.get('scope'))
   const [initialAction, setInitialAction] = useState<'configure' | 'edit' | 'view'>('view')
   const [notice, setNotice] = useState(false)
-  const search = params.get('search') ?? '', owner = params.get('owner') ?? '', level = params.get('level') ?? '', status = params.get('status') ?? '', page = pageNumber(params.get('page'))
-  const archived = status === 'HISTORY'
+  const search = params.get('search') ?? '', owner = params.get('owner') ?? '', level = purpose === 'BASELINE' && params.get('status') !== 'HISTORY' ? '' : params.get('level') ?? '', status = params.get('status') ?? '', page = pageNumber(params.get('page'))
+  const archived = status === 'HISTORY', activeTab = purpose === 'BASELINE' && status === 'ACTIVE'
+  const showLevel = purpose === 'SKILL_ASSESSMENT' || archived
   const [searchDraft, setSearchDraft] = useState({ query: search, value: search })
   const searchInput = searchDraft.query === search ? searchDraft.value : search
-  const query = new URLSearchParams({ search, owner, level, status, page: String(page), size: '20' }), queryString = query.toString(), key = `${queryString}:${reload}`
-  const current = loaded.key === key ? loaded : undefined, data = loaded.archived === archived ? loaded.value : undefined
+  const query = new URLSearchParams({ search, owner, level, status: purpose === 'BASELINE' && !status ? 'WORKLIST' : status, page: String(page), size: '20' }), queryString = query.toString(), key = `${queryString}:${reload}`
+  const current = loaded.key === key ? loaded : undefined, data = current?.value
   useEffect(() => {
     if (searchInput === search) return
     const timer = window.setTimeout(() => setParams(previous => {
@@ -83,10 +87,17 @@ function ScopeDirectory({ purpose }: { purpose: AssessmentPurpose }) {
   const choices = loaded.value?.choices ?? [], owners = [...new Map(choices.map(c => [c.ownerId, { value: c.ownerId, label: c.ownerName }])).values()]
     .sort((a, b) => a.label.localeCompare(b.label, language) || a.value.localeCompare(b.value))
   const levels = choices.filter(c => c.ownerId === owner).sort((a, b) => a.rank - b.rank || a.levelId.localeCompare(b.levelId))
-  const levelLabel = (id: string, name: string) => purpose === 'BASELINE' ? name : t(`knowledgeLevel.${id}`)
+  const levelLabel = (id: string, name: string) => purpose === 'BASELINE' ? id === 'ALL_ROLE_LEVELS' ? t('baselineUX.sharedRole') : name : t(`knowledgeLevel.${id}`)
   return <>
     {notice && <Text role="status" tone="success">{t('baselineWizard.updated')}</Text>}
-    {selectedScope && purpose === 'BASELINE' && <BaselinePolicyDialog key={selectedScope} scopeKey={selectedScope} initialAction={initialAction} renderError={error => <ConfigError error={error} />} onClose={saved => {
+    {selectedScope && purpose === 'BASELINE' && <BaselinePolicyDialog key={selectedScope} scopeKey={selectedScope} initialAction={initialAction} renderError={error => <ConfigError error={error} />} onActivated={workspace => {
+      setSelectedScope(null); setNotice(false); setReload(value => value + 1)
+      // Keep the activated Role in view even when prior filters/pages would hide it.
+      setParams({ status: 'ACTIVE', owner: workspace.scope.ownerId }, { replace: true })
+      setSearchDraft({ query: '', value: '' })
+      toast({ variant: 'success', title: t('baselineUX.activatedTitle'), description: t('baselineUX.activatedLocation'), duration: 6000 })
+      requestAnimationFrame(() => { listRef.current?.scrollIntoView({ block: 'start' }); listRef.current?.focus({ preventScroll: true }) })
+    }} onClose={saved => {
       setSelectedScope(null); setNotice(saved); setReload(v => v + 1)
       if (params.has('scope')) { const next = new URLSearchParams(params); next.delete('scope'); next.delete('versionsPage'); setParams(next, { replace: true }) }
     }} />}
@@ -94,25 +105,25 @@ function ScopeDirectory({ purpose }: { purpose: AssessmentPurpose }) {
       setSelectedScope(null); setReload(v => v + 1)
       const next = new URLSearchParams(params); next.delete('scope'); next.delete('versionsPage'); setParams(next, { replace: true })
     }} />}
-    {<Tabs value={archived ? 'archive' : 'worklist'} onValueChange={value => filter({ status: value === 'archive' ? 'HISTORY' : '' })}>
-      <TabsList className="h-auto flex-wrap gap-1 border border-border p-1"><TabsTrigger value="worklist">{t('baselineUX.worklist')}</TabsTrigger><TabsTrigger value="archive">{t('baselineUX.archive')}</TabsTrigger></TabsList>
-    </Tabs>}
+    <div ref={listRef} tabIndex={-1} className="scroll-mt-24 focus-visible:outline-none">{<Tabs value={archived ? 'archive' : activeTab ? 'active' : 'worklist'} onValueChange={value => filter({ status: value === 'archive' ? 'HISTORY' : value === 'active' ? 'ACTIVE' : '', level: '' })}>
+      <TabsList className="h-auto flex-wrap gap-1 border border-border p-1"><TabsTrigger value="worklist">{t('baselineUX.worklist')}</TabsTrigger>{purpose === 'BASELINE' && <TabsTrigger value="active">{t('baselineUX.active')}</TabsTrigger>}<TabsTrigger value="archive">{t('baselineUX.archive')}</TabsTrigger></TabsList>
+    </Tabs>}</div>
     <Card><CardHeader className={purpose === 'SKILL_ASSESSMENT' ? 'space-y-0 px-5 pb-3 pt-4' : 'space-y-0'}>
       <div className={purpose === 'SKILL_ASSESSMENT' ? 'flex justify-end' : 'flex flex-wrap items-start justify-between gap-3'}>{purpose === 'BASELINE' && <div className="min-w-0 space-y-1">
         <Heading level={2} size="subsection" className="flex items-center gap-2"><SlidersHorizontal className="h-4 w-4 shrink-0 text-primary" aria-hidden="true" />{t('baselineUX.title')}</Heading>
-        <Text variant="body-sm">{t(archived ? 'baselineUX.archiveHelp' : 'baselineUX.worklistHelp')}</Text>
+        <Text variant="body-sm">{t(archived ? 'baselineUX.archiveHelp' : activeTab ? 'baselineUX.activeHelp' : 'baselineUX.worklistHelp')}</Text>
       </div>}<Button size="sm" variant="primary" isLoading={!current} leftIcon={<RefreshCw size={14} aria-hidden="true" />} onClick={() => setReload(v => v + 1)}>{t('scopedPolicy.refresh')}</Button></div>
-    </CardHeader><CardContent className="grid items-center gap-3 pt-0 sm:grid-cols-2 xl:grid-cols-4">
+    </CardHeader><CardContent className={`grid items-center gap-3 pt-0 sm:grid-cols-2 ${showLevel ? 'xl:grid-cols-4' : 'xl:grid-cols-3'}`}>
       <label className="min-w-0"><span className="sr-only">{t(purpose === 'BASELINE' ? 'scopedPolicy.searchRole' : 'scopedPolicy.searchSkill')}</span>
         <Input type="search" maxLength={200} className="h-8 bg-background text-body-sm" leftIcon={<Search size={15} aria-hidden="true" />} value={searchInput} placeholder={t(purpose === 'BASELINE' ? 'baselineUX.searchRole' : 'baselineUX.searchSkill')} onChange={e => setSearchDraft({ query: search, value: e.target.value })} /></label>
       <label className="min-w-0"><span className="sr-only">{t(purpose === 'BASELINE' ? 'scopedPolicy.role' : 'scopedPolicy.skill')}</span>
         <Combobox size="sm" value={owner} options={owners} className="bg-background" customTriggerLabel={`${t(purpose === 'BASELINE' ? 'scopedPolicy.role' : 'scopedPolicy.skill')}: ${owners.find(o => o.value === owner)?.label ?? t('scopedPolicy.allOwners')}`} placeholder={t('scopedPolicy.allOwners')} onChange={value => filter({ owner: value, level: '' })} /></label>
-      <label className="min-w-0"><span className="sr-only">{t(purpose === 'BASELINE' ? 'scopedPolicy.memberLevel' : 'scopedPolicy.knowledgeLevel')}</span>
-        <Combobox size="sm" value={level} disabled={!owner} options={levels.map(c => ({ value: c.levelId, label: levelLabel(c.levelId, c.levelName) }))} className="bg-background" customTriggerLabel={`${t('baselineUX.levelFilter')}: ${levels.some(c => c.levelId === level) ? levelLabel(level, levels.find(c => c.levelId === level)!.levelName) : t('scopedPolicy.allLevels')}`} placeholder={t('scopedPolicy.allLevels')} onChange={value => filter({ level: value })} /></label>
-      {!archived && <label className="min-w-0"><span className="sr-only">{t('scopedPolicy.status')}</span><Combobox size="sm" value={status} className="bg-background"
+      {(purpose === 'SKILL_ASSESSMENT' || archived) && <label className="min-w-0"><span className="sr-only">{t(purpose === 'BASELINE' ? 'scopedPolicy.memberLevel' : 'scopedPolicy.knowledgeLevel')}</span>
+        <Combobox size="sm" value={level} disabled={!owner} options={levels.map(c => ({ value: c.levelId, label: levelLabel(c.levelId, c.levelName) }))} className="bg-background" customTriggerLabel={`${t('baselineUX.levelFilter')}: ${levels.some(c => c.levelId === level) ? levelLabel(level, levels.find(c => c.levelId === level)!.levelName) : t('scopedPolicy.allLevels')}`} placeholder={t('scopedPolicy.allLevels')} onChange={value => filter({ level: value })} /></label>}
+      {!archived && !activeTab && <label className="min-w-0"><span className="sr-only">{t('scopedPolicy.status')}</span><Combobox size="sm" value={status} className="bg-background"
         customTriggerLabel={`${t('scopedPolicy.status')}: ${status ? t(`scopedPolicy.${status}`) : t('scopedPolicy.allStatuses')}`}
-        options={['UNCONFIGURED', 'DRAFT', 'ACTIVE'].map(value => ({ value, label: t(`scopedPolicy.${value}`) }))} placeholder={t('scopedPolicy.allStatuses')} onChange={value => filter({ status: value })} /></label>}
-      {(search || owner || level || status && !archived) && <Button variant="outline" size="sm" className="w-fit border-primary/30 text-primary hover:bg-secondary" onClick={() => { setSearchDraft({ query: '', value: '' }); setParams(archived ? { status: 'HISTORY' } : {}, { replace: true }) }}>{t('scopedPolicy.clear')}</Button>}
+        options={(purpose === 'BASELINE' ? ['UNCONFIGURED', 'DRAFT'] : ['UNCONFIGURED', 'DRAFT', 'ACTIVE']).map(value => ({ value, label: t(`scopedPolicy.${value}`) }))} placeholder={t('scopedPolicy.allStatuses')} onChange={value => filter({ status: value })} /></label>}
+      {(search || owner || level || status && !archived && !activeTab) && <Button variant="outline" size="sm" className="w-fit border-primary/30 text-primary hover:bg-secondary" onClick={() => { setSearchDraft({ query: '', value: '' }); setParams(archived ? { status: 'HISTORY' } : activeTab ? { status: 'ACTIVE' } : {}, { replace: true }) }}>{t('scopedPolicy.clear')}</Button>}
     </CardContent>
     {!current && <Text role="status" variant="caption">{t('scopedPolicy.loading')}</Text>}
     {current?.error != null && <Card><CardContent className="space-y-3 pt-5"><ConfigError error={current.error} /><Button variant="outline" onClick={() => setReload(v => v + 1)}>{t('scopedPolicy.retry')}</Button></CardContent></Card>}
@@ -121,9 +132,9 @@ function ScopeDirectory({ purpose }: { purpose: AssessmentPurpose }) {
     </CardContent></Card>}
     {data && (data.rows.length === 0 ? <Card><CardContent className="p-6"><Text role="status">{t(archived ? 'baselineUX.emptyArchive' : 'scopedPolicy.empty')}</Text></CardContent></Card> :
       <div aria-busy={!current} className={`overflow-hidden border-t border-border ${!current ? 'pointer-events-none opacity-60' : ''}`}><div className="overflow-x-auto"><table className="w-full text-left text-body-sm"><thead className="border-b border-border bg-background text-caption uppercase text-muted-foreground"><tr>
-        {[purpose === 'BASELINE' ? 'role' : 'skill', purpose === 'BASELINE' ? 'memberLevel' : 'knowledgeLevel', 'status', 'versions', 'actions'].map(label => <th key={label} scope="col" className="px-4 py-3 font-semibold">{t(`scopedPolicy.${label}`)}</th>)}
+        {[purpose === 'BASELINE' ? 'role' : 'skill', ...(showLevel ? [purpose === 'BASELINE' ? 'memberLevel' : 'knowledgeLevel'] : []), 'status', 'versions', 'actions'].map(label => <th key={label} scope="col" className="px-4 py-3 font-semibold">{t(`scopedPolicy.${label}`)}</th>)}
       </tr></thead><tbody className="divide-y divide-border">{data.rows.map(row => <tr key={row.scope.key} className="transition-colors even:bg-background/60 hover:bg-muted/40">
-        <td className="max-w-xs break-words px-4 py-3"><span className="font-semibold">{row.scope.ownerName}</span>{purpose === 'SKILL_ASSESSMENT' && <Text variant="caption" className="mt-0.5">{row.scope.ownerId}</Text>}</td><td className="px-4 py-3">{levelLabel(row.scope.levelId, row.scope.levelName)}</td>
+        <td className="max-w-xs break-words px-4 py-3"><span className="font-semibold">{row.scope.ownerName}</span>{purpose === 'SKILL_ASSESSMENT' && <Text variant="caption" className="mt-0.5">{row.scope.ownerId}</Text>}</td>{showLevel && <td className="px-4 py-3">{levelLabel(row.scope.levelId, row.scope.levelName)}</td>}
         <td className="px-4 py-3"><div className="flex flex-wrap gap-2"><Badge variant={row.status === 'ACTIVE' ? 'success' : row.status === 'DRAFT' || purpose === 'SKILL_ASSESSMENT' && row.status === 'UNCONFIGURED' ? 'secondary' : 'outline'}>{t(archived ? 'baselineUX.archivedStatus' : `scopedPolicy.${row.status}`)}</Badge>
           {!archived && row.hasDraft && row.status === 'ACTIVE' && <Badge variant="secondary">{t('scopedPolicy.DRAFT')}</Badge>}</div>
           {!archived && !row.scope.ready && <Text variant="caption" className="mt-1">{t('scopedPolicy.notReady')}</Text>}</td>

@@ -14,8 +14,8 @@ import type { RulePathway } from '../../../shared/api/requirementPathway'
 import './MasteryJourneyGraph.css'
 import { PageLoader } from '../../../shared/components/ui/PageLoader'
 
-export function MasteryJourneyGraph({ assigned, targets, records, incomplete, unavailable, targetsState, scopeKey, tools, pathway, openSelectionId, linear = false, suppressAutoScroll = false, onAssignedRoleClick }: {
-  assigned: JourneyRole | null; targets: JourneyRole[]; records: KnowledgeNode[]; incomplete: boolean; unavailable: boolean; targetsState: 'loading' | 'unavailable' | 'empty' | 'ready'
+export function MasteryJourneyGraph({ assigned, assignmentState, targets, records, incomplete, unavailable, targetsState, scopeKey, tools, pathway, openSelectionId, linear = false, suppressAutoScroll = false, onAssignedRoleClick }: {
+  assigned: JourneyRole | null; assignmentState?: 'loading' | 'unavailable' | 'empty' | 'ready'; targets: JourneyRole[]; records: KnowledgeNode[]; incomplete: boolean; unavailable: boolean; targetsState: 'loading' | 'unavailable' | 'empty' | 'ready'
   onAssignedRoleClick?:()=>void; suppressAutoScroll?: boolean; linear?: boolean; openSelectionId?: string | null; scopeKey: string; tools?: ReactNode; pathway?: RulePathway | null
 }) {
   const { t, language } = useTranslation(), copy = (en: string, vi: string) => language === 'vi' ? vi : en
@@ -169,7 +169,7 @@ export function MasteryJourneyGraph({ assigned, targets, records, incomplete, un
     <Text variant="body-sm" role="status">{!role ? targetsExpanded||!assigned ? copy('Choose a target Role to explore its skills.', 'Chọn vị trí mục tiêu để xem kỹ năng của mục tiêu đó.') : copy('Select your assigned Role to expand your chosen targets.', 'Bấm vị trí được giao để bung các mục tiêu đã chọn.') : !skill ? copy('Select a skill to explore its knowledge levels.', 'Chọn kỹ năng để xem các mức kiến thức.') : copy('Select a knowledge level for recognition, results and history.', 'Chọn mức kiến thức để xem công nhận, kết quả và lịch sử.')}</Text>
     {mode==='overview'&&(targetsExpanded||!assigned)&&targetsState==='loading'&&<PageLoader size="sm" label={copy('Loading targets…','Đang tải mục tiêu…')} />}
     {mode==='overview'&&(targetsExpanded||!assigned)&&targetsState!=='ready'&&targetsState!=='loading'&&<Text variant="body-sm" role="status">{targetsState==='unavailable'?copy('Target history could not be loaded. No target nodes have been inferred.', 'Chưa tải được lịch sử mục tiêu. Hệ thống không tự thêm node mục tiêu.'):copy('No targets have been selected yet.', 'Bạn chưa chọn mục tiêu nào.')}</Text>}
-    {!assigned && !linear && <Text variant="caption">{copy('No assigned Role is recorded in the Role data currently available.', 'Dữ liệu vị trí hiện có chưa ghi nhận vị trí được giao.')}</Text>}
+    {!assigned && !linear && <Text variant="caption">{assignmentState === 'unavailable' ? copy('Assigned Role could not be loaded.', 'Chưa tải được vị trí được giao.') : assignmentState === 'loading' ? copy('Loading assigned Role…', 'Đang tải vị trí được giao…') : copy('No assigned Role is recorded in the Role data currently available.', 'Dữ liệu vị trí hiện có chưa ghi nhận vị trí được giao.')}</Text>}
     <div ref={stage} className="journey-stage" data-mode={mode} style={{height:height*fitScale,overflowX:linear&&skill?'auto':undefined}} tabIndex={linear&&skill?0:undefined} role="region" aria-label={copy('Role and skill graph', 'Bản đồ vị trí và kỹ năng')} onKeyDown={e=>{if(e.key==='Escape'&&!detailKey&&role){e.preventDefault();back()}}}>
       <div style={{position:'absolute',width,height,left:(width-width*fitScale)/2,top:0,transform:`scale(${fitScale})`,transformOrigin:'top left'}}>
       <div className="journey-reveal" aria-hidden="true" />

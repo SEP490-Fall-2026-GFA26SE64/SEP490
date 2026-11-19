@@ -128,7 +128,7 @@ public final class RuleAssessmentAttemptService {
             String ownerId=command.purpose()==Purpose.BASELINE?policyContext.path("roleId").asText():context.groups().getFirst().requirement().skillId();
             String levelId=command.purpose()==Purpose.BASELINE?policyContext.path("levelId").asText():context.groups().getFirst().requirement().knowledgeLevel().name();
             var scope=policyCatalog.scopes(a.organizationId(),command.purpose()).stream()
-                    .filter(s->s.ownerId().equals(ownerId) && s.contextLevelId().equals(levelId))
+                    .filter(s->s.ownerId().equals(ownerId) && (command.purpose()==Purpose.BASELINE?s.sharedBaseline():s.contextLevelId().equals(levelId)))
                     .findFirst().orElseThrow(()->new Failure(422,"ASSESSMENT_POLICY_REQUIRED"));
             if(skill!=null && scope.groups().stream().noneMatch(g->g.requirement().skillId().equals(skill.skillId()) && g.requirement().knowledgeLevel()==skill.knowledgeLevel() && skill.skillVersion().equals(g.skillVersion())))
                 throw new Failure(409,"SKILL_VERSION_CHANGED");
@@ -136,6 +136,7 @@ public final class RuleAssessmentAttemptService {
             var policy=scopedPolicies.active(a.organizationId(),command.purpose().name(),scope.key()).orElseThrow(()->new Failure(422,"ASSESSMENT_POLICY_REQUIRED"));
             if(!scope.ready() || !scope.matchesCatalog(policy.getCatalogHash()))throw new Failure(422,"ASSESSMENT_POLICY_CATALOG_CHANGED");
             var config=read(policy.getConfiguration(),Policy.class);
+            if(command.purpose()==Purpose.BASELINE && config.baselineTiming()==null)throw new Failure(422,"ASSESSMENT_POLICY_REQUIRED");
             if(!RoleBaselineFlow.hash(policy.getHashDomain()+"\n"+command.purpose()+"\n"+write(config)).equals(policy.getConfigurationHash()))throw integrity();
             if((skill==null?attempts.contextCount(a.organizationId(),a.learnerId(),command.purpose().name(),context.contextKey()):skillCount(a,skill))>=config.maxAttempts())
                 throw new Failure(409,"RETAKE_LIMIT_REACHED");
@@ -146,9 +147,18 @@ public final class RuleAssessmentAttemptService {
             locks.lock("question-bank:"+a.organizationId());
             for(var need:context.groups()) {
                 GroupRule rule;try{rule=config.require(need.requirement());}catch(IllegalArgumentException missing){throw new Failure(422,"GROUP_POLICY_REQUIRED");}
-                if((count+=rule.totalCount())>maximum)throw new Failure(422,"PAPER_CAPACITY_EXCEEDED");
                 var pool=bank.eligible(a.organizationId(),need.requirement().skillId(),need.requirement().knowledgeLevel().name(),scope.groups().stream().filter(g->g.requirement().key().equals(need.requirement().key())).findFirst().orElseThrow(()->new Failure(422,"GROUP_POLICY_REQUIRED")).skillVersion(),maximum+1);
                 if(pool.size()>maximum)throw new Failure(422,"BANK_QUERY_LIMIT_EXCEEDED");
+                if(command.purpose()==Purpose.BASELINE) {
+                    var unique=new LinkedHashMap<UUID,AssessmentItemKnowledgeMappingJpaRepository.Candidate>();pool.forEach(candidate->unique.putIfAbsent(candidate.getItemVersionId(),candidate));pool=List.copyOf(unique.values());
+                    if(pool.isEmpty()) {
+                        var member=scope.memberLevels().stream().filter(value->value.id().equals(levelId)).findFirst();
+                        var group=scope.groups().stream().filter(value->value.requirement().key().equals(need.requirement().key())).findFirst().orElseThrow();
+                        throw new Failure(422,"REQUIRED_GROUP_BANK_EMPTY",List.of(new BaselinePolicyEditor.BankIssue(levelId,member.map(com.adaptlearngraph.entities.domain.AssessmentPolicyScope.MemberLevel::name).orElse(levelId),need.requirement().skillId(),group.skillName(),need.requirement().knowledgeLevel())));
+                    }
+                    if(pool.size()<rule.totalCount())throw new Failure(422,"INSUFFICIENT_APPROVED_GROUP_BANK");
+                }
+                if((count+=rule.totalCount())>maximum)throw new Failure(422,"PAPER_CAPACITY_EXCEEDED");
                 try {
                     var candidates=pool.stream().map(c->new Candidate(c.getItemVersionId(),need.requirement(),c.getOutcomeCode(),c.getMandatory(),
                             c.getPrompt(),options(c.getResponseSchema()),correct(c.getProtectedKey()),c.getContentHash(),c.getMappingHash())).toList();
@@ -156,7 +166,10 @@ public final class RuleAssessmentAttemptService {
                 }catch(IllegalArgumentException insufficient){throw new Failure(422,"INSUFFICIENT_APPROVED_GROUP_BANK");}
             }
             now=attempts.clock(); // Start the timer only after a complete paper is available.
-            var paper=new Paper(command.purpose(),groups,now,now.plusSeconds(config.timeLimitSeconds()));
+            int duration;
+            try{duration=config.durationSeconds(count);}catch(ArithmeticException overflow){throw new Failure(422,"ASSESSMENT_DURATION_OUT_OF_RANGE");}
+            var paper=new Paper(command.purpose(),groups,now,now.plusSeconds(duration));
+            if(config.baselineTiming()!=null)policyContext.put("timePerQuestionSeconds",config.baselineTiming().secondsPerQuestion());
             String snapshot;
             snapshot=write(Map.of("context",policyContext,"groupCount",groups.size(),"itemCount",count));
             UUID id=UUID.randomUUID();

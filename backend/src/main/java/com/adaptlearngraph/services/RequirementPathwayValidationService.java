@@ -6,7 +6,11 @@ import java.util.*;
 
 /** Fresh scoped validation of an immutable proposal. Parallel shortcomings remain visible without becoming target gates. */
 public final class RequirementPathwayValidationService {
-    public record Issue(UUID stepId,String reason,boolean blocking) {}
+    public record Issue(UUID stepId,String reason,boolean blocking,
+                        @com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL) String moduleId,
+                        @com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL) Integer moduleRevision) {
+        public Issue(UUID stepId,String reason,boolean blocking){this(stepId,reason,blocking,null,null);}
+    }
     public record Checked(long revision,String contentHash,boolean valid,List<Issue> issues) {public Checked {issues=List.copyOf(issues);}}
     private record Origin(Requirement requirement,Kind kind,UUID sourceBypassId,AssessedSource source) {}
     private final RequirementPathwayAdmissionService admission;private final RequirementPathwayRevisions revisions;
@@ -72,9 +76,12 @@ public final class RequirementPathwayValidationService {
             }
             if(step.state()==State.NEEDS_EXPERT_ACTION || step.requirement().provision()==Provision.UNCONFIGURED)
                 issues.add(new Issue(step.id(),"PROVISION_REQUIRES_EXPERT_ACTION",blocking));
-            if(step.requirement().provision()==Provision.MODULE_ONLY && (step.options().isEmpty()
-                    || !new HashSet<>(fresh.options().getOrDefault(step.requirement().key(),List.of())).containsAll(step.options())))
-                issues.add(new Issue(step.id(),"MODULE_OPTIONS_CHANGED",blocking));
+            if(step.requirement().provision()==Provision.MODULE_ONLY) {
+                if(step.options().isEmpty())issues.add(new Issue(step.id(),"MODULE_OPTIONS_CHANGED",blocking));
+                var eligible=new HashSet<>(fresh.options().getOrDefault(step.requirement().key(),List.of()));
+                for(var option:step.options())if(!eligible.contains(option))
+                    issues.add(new Issue(step.id(),"MODULE_OPTIONS_CHANGED",blocking,option.moduleId(),option.moduleRevision()));
+            }
             if(step.requirement().provision()==Provision.CERTIFICATE_ONLY) {
                 var certificate=fresh.certificates().get(step.requirement().key());
                 if(certificate==null || step.certificate()==null || !step.certificate().equals(new CertificateReference(certificate.id(),certificate.version(),certificate.name(),certificate.referenceUrl())))

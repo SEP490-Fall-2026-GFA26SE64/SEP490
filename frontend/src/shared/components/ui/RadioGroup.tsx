@@ -47,7 +47,7 @@ export function RadioGroupItem({ value, id, className, disabled: itemDisabled, .
         disabled={disabled}
         onChange={() => context.onChange(value)}
         className={cn(
-          'h-4 w-4 rounded-full border-border text-primary focus:ring-primary disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer accent-primary',
+          'h-4 w-4 rounded-full border-border text-primary focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer accent-primary',
           className,
         )}
         {...props}

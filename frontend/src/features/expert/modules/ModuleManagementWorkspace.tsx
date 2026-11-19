@@ -104,16 +104,12 @@ function OwnedModuleManagementWorkspace({ mode, managerShell = false }: { mode: 
   const [conflict, setConflict] = useState<ModuleDocument | null>(null)
   const [editing, setEditing] = useState(false)
   const [authoringSection, setAuthoringSection] = useState('details')
-  const [form, setForm] = useState<ModuleSave>(initialForm)
+  const [formState, setForm] = useState<ModuleSave>(initialForm)
   const [moduleLessons, setModuleLessons] = useState<LearningLesson[]>([newLesson('TEXT')])
 
-  useEffect(() => {
-    if (moduleLessons.length > 0) {
-      const totalSec = moduleLessons.reduce((acc, l) => acc + (l.durationSeconds || 0), 0)
-      const computedMin = Math.max(1, Math.ceil(totalSec / 60))
-      setForm(prev => prev.duration === computedMin ? prev : { ...prev, duration: computedMin })
-    }
-  }, [moduleLessons])
+  const form = { ...formState, duration: moduleLessons.length > 0
+    ? Math.max(1, Math.ceil(moduleLessons.reduce((total, lesson) => total + (lesson.durationSeconds || 0), 0) / 60))
+    : formState.duration }
   const [contentOpen, setContentOpen] = useState(false)
   const [contentForm, setContentForm] = useState({ title: '', markdown: '', lessons: [newLesson('TEXT')] as LearningLesson[] })
   const [preview, setPreview] = useState<ModuleContent | null>(null)
