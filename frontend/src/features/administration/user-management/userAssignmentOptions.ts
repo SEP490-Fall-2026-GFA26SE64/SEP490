@@ -2,6 +2,7 @@ import type { Reference } from '../../subscription/subscriptionApi'
 import { workspaceFetch } from '../../../shared/api/workspaceFetch'
 import { resolveJobPositionForRole, type TargetRoleModel } from '../../manager/data/ldManagerMockData'
 import { resolveWorkspaceOrgId } from '../../../shared/stores/companyStore'
+import { loadDepartments } from '../../../shared/stores/departmentStore'
 
 // Option-resolution helpers shared by the Create/Edit user form and the Excel bulk import,
 // so both flows resolve departments, job positions and Target Roles identically.
@@ -388,17 +389,35 @@ export function buildOrganizationTargetRoles(
       rawFamilyCode && (/^\d{2}-\d{4}/.test(rawFamilyCode) || knownJpCodes.has(familyNorm))
         ? rawFamilyCode
         : undefined
+    const explicitJobPositionCode =
+      (r.jobPositionCode ? String(r.jobPositionCode) : undefined) ||
+      meta?.jobPositionCode ||
+      localMatch?.jobPositionCode ||
+      familyAsJobPosCode
+    const occ = resolveJobPositionForRole(
+      {
+        code,
+        title: String(r.name || r.title || localMatch?.title || code),
+        familyCode: rawFamilyCode,
+        jobPositionCode: explicitJobPositionCode,
+      },
+      organization,
+    )
+    const occNorm = occ.code.replace(/\.00$/, '').toLowerCase().trim()
+    const localDepts = loadDepartments(organization)
+    const matchedDept = localDepts.find((d) =>
+      (d.linkedJobPositions || []).some(
+        (p) => p.replace(/\.00$/, '').toLowerCase().trim() === occNorm
+      )
+    )
+    const effectiveDept = String(r.department || meta?.department || localMatch?.department || matchedDept?.name || '')
     return {
       id: String(r.id || code),
       stableId: code,
       code,
       title: String(r.name || r.title || localMatch?.title || code),
-      department: String(r.department || meta?.department || localMatch?.department || ''),
-      jobPositionCode:
-        (r.jobPositionCode ? String(r.jobPositionCode) : undefined) ||
-        meta?.jobPositionCode ||
-        localMatch?.jobPositionCode ||
-        familyAsJobPosCode,
+      department: effectiveDept,
+      jobPositionCode: explicitJobPositionCode,
       familyCode: rawFamilyCode || localMatch?.familyCode,
       description: String(r.description || localMatch?.description || ''),
       version: String(r.version || localMatch?.version || '1.0'),
@@ -557,23 +576,49 @@ export function targetRolesForEmployee(
   const deptLinkedNorm = new Set(
     (selectedDeptObj?.linkedJobPositions || []).map((c) => normalizeOccCode(c)).filter(Boolean),
   )
-  const deptName = (selectedDeptObj?.name || '').toLowerCase().trim()
-  const deptCode = (selectedDeptObj?.code || '').toLowerCase().trim()
-  if (deptName.includes('cognitive') || deptName.includes('software') || deptCode === 'eng-cog' || deptCode === 'eng-swe') {
+  const deptName = (selectedDeptObj?.name || department || '').toLowerCase().trim()
+  const deptCode = (selectedDeptObj?.code || department || '').toLowerCase().trim()
+  const deptId = (selectedDeptObj?.id || department || '').toLowerCase().trim()
+
+  if (deptName.includes('cognitive') || deptName.includes('software') || deptName.includes('engineering') || deptCode === 'eng-cog' || deptCode === 'eng-swe' || deptCode === 'eng' || deptCode === 'swe') {
     deptLinkedNorm.add('15-1252')
-  } else if (deptName.includes('data') || deptName.includes('artificial') || deptCode === 'eng-data') {
+    deptLinkedNorm.add('BE-ENG')
+    deptLinkedNorm.add('FE-ENG')
+    deptLinkedNorm.add('DEV')
+    deptLinkedNorm.add('SWE')
+  }
+  if (deptName.includes('data') || deptName.includes('artificial') || deptName.includes('analytics') || deptCode === 'eng-data' || deptCode === 'data') {
     deptLinkedNorm.add('15-1243')
-  } else if (deptName.includes('quality') || deptName.includes('assurance') || deptCode === 'eng-qa') {
+    deptLinkedNorm.add('DATA-ENG')
+    deptLinkedNorm.add('DATA')
+  }
+  if (deptName.includes('quality') || deptName.includes('assurance') || deptName.includes('test') || deptCode === 'eng-qa' || deptCode === 'qa') {
     deptLinkedNorm.add('15-1253')
-  } else if (deptName.includes('cloud') || deptName.includes('infrastructure') || deptCode === 'eng-cloud') {
+    deptLinkedNorm.add('QA-ENG')
+    deptLinkedNorm.add('QA')
+  }
+  if (deptName.includes('cloud') || deptName.includes('infrastructure') || deptCode === 'eng-cloud' || deptCode === 'cloud') {
     deptLinkedNorm.add('15-1299.08')
-  } else if (deptName.includes('security') || deptName.includes('cyber') || deptCode === 'eng-sec') {
+    deptLinkedNorm.add('CLOUD')
+  }
+  if (deptName.includes('security') || deptName.includes('cyber') || deptCode === 'eng-sec' || deptCode === 'sec') {
     deptLinkedNorm.add('15-1212')
+    deptLinkedNorm.add('SEC')
+  }
+  if (deptName.includes('learning') || deptName.includes('people') || deptName.includes('hr') || deptCode === 'hr' || deptCode === 'ld') {
+    deptLinkedNorm.add('13-1151')
+    deptLinkedNorm.add('LD-SPEC')
+    deptLinkedNorm.add('HR')
+    deptLinkedNorm.add('LD')
   }
 
-  // Filter to eligible roles belonging to the selected job position (if it has roles) or selected department
+  // Filter to eligible roles belonging to the selected job position (if explicitly specified and matches exist)
   if (targetOccNorm) {
-    const jpMatched = eligibleRoles.filter((r) => normalizeOccCode(getRoleOccCode(r)) === targetOccNorm)
+    const jpMatched = eligibleRoles.filter((r) => {
+      const occNorm = normalizeOccCode(getRoleOccCode(r))
+      const rJp = normalizeOccCode(r.jobPositionCode)
+      return occNorm === targetOccNorm || rJp === targetOccNorm
+    })
     if (jpMatched.length > 0) {
       return jpMatched.sort((a, b) => a.title.localeCompare(b.title))
     }
@@ -582,10 +627,43 @@ export function targetRolesForEmployee(
   const deptMatched = eligibleRoles.filter((r) => {
     const occNorm = normalizeOccCode(getRoleOccCode(r))
     const rDept = (r.department || '').toLowerCase().trim()
-    return (
-      deptLinkedNorm.has(occNorm) ||
-      (deptName && rDept && (rDept === deptName || rDept.includes(deptName) || deptName.includes(rDept)))
-    )
+    const rDeptId = ((r as any).departmentId || '').toLowerCase().trim()
+    const rCode = (r.code || '').toUpperCase().trim()
+    const rTitle = (r.title || '').toLowerCase().trim()
+    const rJpCode = normalizeOccCode(r.jobPositionCode)
+    const rFam = normalizeOccCode(r.familyCode)
+
+    if (rDept && (rDept === deptName || rDept === deptCode || rDept === deptId || deptName.includes(rDept) || rDept.includes(deptName) || deptCode === rDept)) {
+      return true
+    }
+    if (rDeptId && (rDeptId === deptId || rDeptId === deptCode)) {
+      return true
+    }
+    if (deptLinkedNorm.has(occNorm) || (rJpCode && deptLinkedNorm.has(rJpCode)) || (rFam && deptLinkedNorm.has(rFam))) {
+      return true
+    }
+
+    const isEngDept = deptCode === 'eng' || deptCode === 'eng-swe' || deptCode === 'eng-cog' || deptCode === 'swe' || deptName.includes('software') || deptName.includes('engineering')
+    if (isEngDept && (rCode === 'JAVA-BE' || rCode === 'REACT-FE' || rCode.startsWith('JAVA') || rCode.startsWith('REACT') || rTitle.includes('backend') || rTitle.includes('frontend') || rTitle.includes('developer') || rTitle.includes('software'))) {
+      return true
+    }
+
+    const isQaDept = deptCode === 'qa' || deptCode === 'eng-qa' || deptName.includes('quality') || deptName.includes('assurance')
+    if (isQaDept && (rCode === 'QA-AUTO' || rCode.startsWith('QA') || rTitle.includes('quality') || rTitle.includes('test') || rTitle.includes('automation'))) {
+      return true
+    }
+
+    const isDataDept = deptCode === 'data' || deptCode === 'eng-data' || deptName.includes('data') || deptName.includes('analytics')
+    if (isDataDept && (rCode === 'DATA-PIPE' || rCode.startsWith('DATA') || rTitle.includes('data') || rTitle.includes('pipeline') || rTitle.includes('analytics'))) {
+      return true
+    }
+
+    const isHrDept = deptCode === 'hr' || deptCode === 'ld' || deptName.includes('people') || deptName.includes('learning')
+    if (isHrDept && (rCode === 'LD-COORD' || rCode.startsWith('LD') || rCode.startsWith('HR') || rTitle.includes('learning') || rTitle.includes('coordinator') || rTitle.includes('training'))) {
+      return true
+    }
+
+    return false
   })
 
   return (deptMatched.length > 0 ? deptMatched : eligibleRoles).sort((a, b) => a.title.localeCompare(b.title))

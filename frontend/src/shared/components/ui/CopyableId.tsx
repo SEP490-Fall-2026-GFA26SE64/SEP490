@@ -5,8 +5,22 @@ export function CopyableId({ code, short = false, compact = false, vi, entity = 
  const { toast } = useToast()
  const copy = (en: string, vn: string) => vi ? vn : en
  const copyCode = async () => {
-  try { await navigator.clipboard.writeText(code); toast({ description: copy('Copied to clipboard!', 'Đã sao chép vào bộ nhớ tạm!'), variant: 'success', duration: 2500 }) }
-  catch { toast({ description: copy('Unable to copy. Select the full ID and copy it manually.', 'Không thể sao chép. Hãy chọn mã đầy đủ và sao chép thủ công.'), variant: 'destructive', duration: 4000 }) }
+  try {
+   await navigator.clipboard.writeText(code)
+   toast({
+    title: copy('Copied to Clipboard', 'Đã sao chép'),
+    description: copy(`Copied ${entity} to clipboard.`, `Đã sao chép ${entity} vào bộ nhớ tạm.`),
+    variant: 'success',
+    duration: 2500,
+   })
+  } catch {
+   toast({
+    title: copy('Copy Failed', 'Sao chép thất bại'),
+    description: copy('Unable to copy. Select the full ID and copy it manually.', 'Không thể sao chép. Hãy chọn mã đầy đủ và sao chép thủ công.'),
+    variant: 'destructive',
+    duration: 4000,
+   })
+  }
  }
  return <div className="flex min-w-0 items-center gap-1"><span title={code} className={`${short || compact ? 'truncate text-xs' : 'break-all text-caption'} text-muted-foreground`}>{short && code.length > 12 ? code.slice(0, 9) : code}</span><Button variant="ghost" size="icon" className="size-7 shrink-0" title={`${copy('Copy', 'Sao chép')} ${entity}`} aria-label={`${copy('Copy ID', 'Sao chép mã')} ${code}`} onClick={() => void copyCode()}><Copy className="size-3.5" aria-hidden="true" /></Button></div>
 }

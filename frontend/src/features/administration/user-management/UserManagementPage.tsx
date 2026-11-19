@@ -830,7 +830,7 @@ function UserDirectory({ identity, organization, principal }: { identity: Identi
                 </div>
                 <div className="grid gap-3 sm:grid-cols-2">
                   <div>
-                    <span className="text-caption text-muted-foreground block">{c('Target Role Title', 'Chức danh mục tiêu')}</span>
+                    <span className="text-caption text-muted-foreground block">{c('Current Role Title', 'Chức danh vai trò hiện tại')}</span>
                     <span className="mt-1 font-semibold text-foreground text-xs block">
                       {detail.targetRoleName || c('Not assigned yet', 'Chưa phân công')}
                     </span>
@@ -1045,8 +1045,8 @@ function UserForm({
   }, [department, member, allDepartments])
 
   const availableTargetRolesForEmployee = useMemo(() => {
-    return targetRolesForEmployee(orgTargetRoles, department, selectedDeptObj, jobPosition, organization, jobPositions, references)
-  }, [orgTargetRoles, jobPosition, department, selectedDeptObj, organization, jobPositions, references])
+    return targetRolesForEmployee(orgTargetRoles, department, selectedDeptObj, '', organization, jobPositions, references)
+  }, [orgTargetRoles, department, selectedDeptObj, organization, jobPositions, references])
 
   const employeeTargetRoleOptions: ComboboxOption[] = useMemo(() => {
     return availableTargetRolesForEmployee.map((r) => ({
@@ -1659,7 +1659,7 @@ function UserForm({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <label className="text-[11px] font-semibold text-foreground block">
-                  {c('Select Target Role', 'Chọn Target Role')}
+                  {c('Select Current Role', 'Chọn vai trò hiện tại')}
                 </label>
                 <Combobox
                   size="sm"
@@ -1675,9 +1675,9 @@ function UserForm({
                       setTargetRoleLevel('Junior')
                     }
                   }}
-                  placeholder={c('Search & select target role for employee...', 'Tìm kiếm & chọn target role...')}
+                  placeholder={c('Search & select current role for employee...', 'Tìm kiếm & chọn vai trò hiện tại...')}
                   searchPlaceholder={c('Search by code or title...', 'Tìm theo mã hoặc tên...')}
-                  emptyMessage={c('No target roles available', 'Không có target role nào')}
+                  emptyMessage={c('No current roles available', 'Không có vai trò hiện tại nào')}
                 />
               </div>
 
@@ -1692,7 +1692,7 @@ function UserForm({
                   options={employeeLevelOptions}
                   value={targetRoleLevel}
                   onChange={(val) => setTargetRoleLevel(val)}
-                  placeholder={targetRoleId ? c('Select starting level...', 'Chọn cấp độ khởi điểm...') : c('Select target role first...', 'Chọn vị trí mục tiêu trước...')}
+                  placeholder={targetRoleId ? c('Select starting level...', 'Chọn cấp độ khởi điểm...') : c('Select current role first...', 'Chọn vai trò hiện tại trước...')}
                   searchPlaceholder={c('Search level...', 'Tìm cấp độ...')}
                   emptyMessage={c('No levels available', 'Không có cấp độ nào')}
                 />
