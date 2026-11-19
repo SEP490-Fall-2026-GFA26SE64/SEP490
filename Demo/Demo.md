@@ -4,8 +4,8 @@ Tài liệu này chứa dữ liệu để **copy/paste** khi demo và các file 
 
 | File | Dùng ở bước | Nội dung |
 | --- | --- | --- |
-| [01_Org_Structure_SaoMai.xlsx](./01_Org_Structure_SaoMai.xlsx) | 1. Onboarding (Your business → Import structure) | 4 department, 5 job position, 5 target role, 14 level |
-| [02_Users_SaoMai.xlsx](./02_Users_SaoMai.xlsx) | 2. Admin import users | 1 L&D Manager, 3 Domain Expert, 7 Employee |
+| [01_Org_Structure_Brightpath.xlsx](./01_Org_Structure_Brightpath.xlsx) | 1. Onboarding (Your business → Import structure) | 4 department, 5 job position, 5 target role, 14 level |
+| [02_Users_Brightpath.xlsx](./02_Users_Brightpath.xlsx) | 2. Admin import users | 1 L&D Manager, 1 Domain Expert, 1 Employee (có Current role + Level) |
 | [03_Competencies_JavaBackend.xlsx](./03_Competencies_JavaBackend.xlsx) | 4. Expert import competency | 5 competency cho role Java Backend |
 | [04_MicroSkills_JavaBackend.xlsx](./04_MicroSkills_JavaBackend.xlsx) | 5. Expert import micro-skill | 16 micro-skill, 17 liên kết competency, 15 prerequisite |
 
@@ -33,14 +33,15 @@ http://localhost:8088/reset
 
 ### 0.3. Email kích hoạt (quan trọng)
 
-User import sẽ nhận **email kích hoạt thật** qua SMTP. Địa chỉ `@example.com` trong file không nhận được thư. Trước khi demo, mở `02_Users_SaoMai.xlsx`, sheet **Users**, cột **Email** và thay `demo.inbox` bằng hộp thư Gmail của bạn (Gmail plus-addressing, mọi thư về cùng một inbox):
+User import sẽ gửi **email kích hoạt thật** qua SMTP tới 3 hộp thư Gmail có sẵn trong `02_Users_Brightpath.xlsx` (sheet **Users**, cột **Email**):
 
 ```text
-demo.inbox+ld@example.com         →  yourname+ld@gmail.com
-demo.inbox+expert.be@example.com  →  yourname+expert.be@gmail.com
+minhhoang10372@gmail.com  →  Sarah Mitchell (L&D Manager)
+kzvn10372@gmail.com       →  David Thompson (Domain Expert)
+proteccmee@gmail.com      →  James Wilson (Employee)
 ```
 
-Tối thiểu cần đổi email của **Phạm Thu Hà (L&D)** và **Lê Quốc Bảo (Expert)** vì hai người này phải đăng nhập trong kịch bản. Gửi lời mời chạy tuần tự (~10–15 giây/người), 11 người mất khoảng 2–3 phút.
+Cần truy cập được 3 hộp thư này để kích hoạt tài khoản. Gửi lời mời chạy tuần tự (~10–15 giây/người), 3 người mất dưới 1 phút.
 
 ---
 
@@ -52,22 +53,22 @@ Mở `http://localhost:8088/register`.
 
 | Field | Giá trị |
 | --- | --- |
-| Business name | `Sao Mai Software JSC` |
-| Country | `Vietnam` |
+| Business name | `Brightpath Technologies Inc.` |
+| Country | `United States` |
 | Industry | `Software & artificial intelligence` |
-| Workspace address | `saomai` |
+| Workspace address | `brightpath` |
 
-Bấm **Import structure** → chọn `01_Org_Structure_SaoMai.xlsx` → kiểm tra preview (Department: 4) → **Apply structure** → tiếp tục.
+Bấm **Import structure** → chọn `01_Org_Structure_Brightpath.xlsx` → kiểm tra preview (Department: 4) → **Apply structure** → tiếp tục.
 
 ### Bước 2 – Administrator
 
 | Field | Giá trị |
 | --- | --- |
-| Full name | `Trần Minh Quân` |
-| Login email | `demo.inbox+admin@example.com` (đổi thành Gmail của bạn nếu bật xác thực email) |
-| Phone number | `0901234567` |
-| Password | `SaoMai@Demo2026` |
-| Confirm Password | `SaoMai@Demo2026` |
+| Full name | `Michael Carter` |
+| Login email | `hoangsusp@gmail.com` |
+| Phone number | `+1 415 555 0123` |
+| Password | `Brightpath@Demo2026` |
+| Confirm Password | `Brightpath@Demo2026` |
 
 Tick ô đồng ý điều khoản → **Create account**.
 
@@ -85,62 +86,56 @@ Dev: hiện **Development payment bypass**, đơn tự xác nhận. payOS thật
 
 ### Bước 7 – Your workspace
 
-Bấm **Enter workspace** → vào `http://localhost:8088/workspace/saomai/admin/subscription`.
+Bấm **Enter workspace** → vào `http://localhost:8088/workspace/brightpath/admin/subscription`.
 
 ---
 
 ## 2. Admin import users (3 role)
 
-Admin `Trần Minh Quân` → **User Accounts** (`/workspace/saomai/admin/users`) → **Import Excel** → chọn `02_Users_SaoMai.xlsx` → preview báo **11 valid** → **Import 11 valid user(s)** → chờ kết quả `11 invitation(s) sent. 0 row(s) not imported.` → **Done**.
+Admin `Michael Carter` → **User Accounts** (`/workspace/brightpath/admin/users`) → **Import Excel** → chọn `02_Users_Brightpath.xlsx` → preview báo **3 valid** → **Import 3 valid user(s)** → chờ kết quả `3 invitation(s) sent. 0 row(s) not imported.` → **Done**.
 
-| Full name | Email | Role | Department | Job position |
-| --- | --- | --- | --- | --- |
-| Phạm Thu Hà | `demo.inbox+ld@example.com` | L&D Manager | HR | – (làm trưởng phòng HR) |
-| Lê Quốc Bảo | `demo.inbox+expert.be@example.com` | Domain Expert | ENG | Backend Engineer |
-| Võ Thanh Tâm | `demo.inbox+expert.qa@example.com` | Domain Expert | QA | QA Engineer |
-| Đặng Minh Khoa | `demo.inbox+expert.data@example.com` | Domain Expert | DATA | Data Engineer |
-| Nguyễn Hoàng Nam | `demo.inbox+nam@example.com` | Employee | ENG | Backend Engineer |
-| Trần Thị Mai Anh | `demo.inbox+maianh@example.com` | Employee | ENG | Backend Engineer |
-| Bùi Đức Huy | `demo.inbox+huy@example.com` | Employee | ENG | Frontend Engineer |
-| Hoàng Gia Linh | `demo.inbox+linh@example.com` | Employee | ENG | Frontend Engineer |
-| Ngô Thị Thanh Hương | `demo.inbox+huong@example.com` | Employee | QA | QA Engineer |
-| Đỗ Văn Phúc | `demo.inbox+phuc@example.com` | Employee | DATA | Data Engineer |
-| Lý Ngọc Trâm | `demo.inbox+tram@example.com` | Employee | HR | Learning & Development Specialist |
+| Full name | Email | Role | Department | Job position | Current role / Level |
+| --- | --- | --- | --- | --- | --- |
+| Sarah Mitchell | `minhhoang10372@gmail.com` | L&D Manager | HR | – (làm trưởng phòng HR) | – |
+| David Thompson | `kzvn10372@gmail.com` | Domain Expert | ENG | Backend Engineer | – |
+| James Wilson | `proteccmee@gmail.com` | Employee | ENG | Backend Engineer | `JAVA-BE - Java Backend Developer` / `Junior` |
+
+Role import từ file 01 ở bước onboarding đã ở trạng thái **staged** nên gán được làm Current role ngay khi import user.
 
 Mỗi người mở email → link `/activate` → đặt mật khẩu. Mật khẩu gợi ý cho mọi tài khoản demo (≥ 12 ký tự):
 
 ```text
-SaoMai@Demo2026
+Brightpath@Demo2026
 ```
 
 Thêm user lẻ bằng tay (tuỳ chọn) qua **Create User**:
 
 | Field | Giá trị |
 | --- | --- |
-| Full name | `Phan Anh Tuấn` |
-| Email | `demo.inbox+tuan@example.com` |
+| Full name | `Emily Clark` |
+| Email | `demo.inbox+emily@example.com` |
 | Role | Employee |
 | Department | `ENG - Software Engineering` |
 | Job position | `BE-ENG - Backend Engineer` |
-| Target role / Level | `JAVA-BE - Java Backend Developer` / `Junior` |
+| Current role / Level | `JAVA-BE - Java Backend Developer` / `Junior` |
 
 ---
 
 ## 3. L&D Manager giao Expert maintain role
 
-Đăng nhập `Phạm Thu Hà` → **Roles** (`/workspace/saomai/ld-manager/roles`) → role **JAVA-BE – Java Backend Developer** → **Edit Role & Assigned Expert**:
+Đăng nhập `Sarah Mitchell` → **Roles** (`/workspace/brightpath/ld-manager/roles`) → role **JAVA-BE – Java Backend Developer** → **Edit Role & Assigned Expert**:
 
 | Field | Giá trị |
 | --- | --- |
-| Assigned Expert | `Lê Quốc Bảo` |
+| Assigned Expert | `David Thompson` |
 
-→ **Save & Send to Expert**. (Tuỳ chọn: QA-AUTO → `Võ Thanh Tâm`, DATA-PIPE → `Đặng Minh Khoa`.)
+→ **Save & Send to Expert**.
 
 ---
 
 ## 4. Expert import competency
 
-Đăng nhập `Lê Quốc Bảo` → **Ontology** (`/workspace/saomai/expert/ontology`) → tab **Competencies** → **Import Excel** → chọn `03_Competencies_JavaBackend.xlsx` → xác nhận import.
+Đăng nhập `David Thompson` → **Ontology** (`/workspace/brightpath/expert/ontology`) → tab **Competencies** → **Import Excel** → chọn `03_Competencies_JavaBackend.xlsx` → xác nhận import.
 
 | Code | Name |
 | --- | --- |
@@ -218,7 +213,7 @@ MS-OBSERV      Intermediate ← MS-DOCKER Foundation
 
 ## 7. Expert cấu hình micro-skill cho target role
 
-**Roles** (`/workspace/saomai/expert/roles`) → role **JAVA-BE** → chọn từng level → **Add Competency** cho level → trong khối **Add Micro-skill Target** chọn **From Competency**, **Micro-skill**, tick **Required levels** → bấm assign. Mọi level phải có competency + micro-skill trước khi **Submit to L&D Manager** (có thể **Save Draft** giữa chừng).
+**Roles** (`/workspace/brightpath/expert/roles`) → role **JAVA-BE** → chọn từng level → **Add Competency** cho level → trong khối **Add Micro-skill Target** chọn **From Competency**, **Micro-skill**, tick **Required levels** → bấm assign. Mọi level phải có competency + micro-skill trước khi **Submit to L&D Manager** (có thể **Save Draft** giữa chừng).
 
 Bảng cấu hình (F = Foundation, I = Intermediate, A = Advanced; mức ghi là mức yêu cầu cao nhất):
 
@@ -247,7 +242,7 @@ Competency theo level: Junior = JAVA-CORE, SPRING, DATA, QUALITY-OPS; Middle và
 
 ## Cơ sở thực tế của dữ liệu
 
-`Sao Mai Software JSC` là công ty giả lập, mô phỏng cấu trúc phổ biến của các công ty phần mềm/outsourcing tại Việt Nam: khối Engineering (Backend/Frontend), QA độc lập, Data & Analytics và khối People & Learning (HR + L&D).
+`Brightpath Technologies Inc.` là công ty giả lập, mô phỏng cấu trúc phổ biến của một công ty phần mềm quy mô vừa tại Mỹ: khối Engineering (Backend/Frontend), QA độc lập, Data & Analytics và khối People & Learning (HR + L&D).
 
 | Dữ liệu demo | Tham chiếu bên ngoài |
 | --- | --- |
@@ -256,16 +251,16 @@ Competency theo level: Junior = JAVA-CORE, SPRING, DATA, QUALITY-OPS; Middle và
 | QA Engineer (QA-ENG) | O*NET 15-1253.00 Software Quality Assurance Analysts and Testers |
 | Data Engineer (DATA-ENG) | O*NET 15-1243.01 Data Warehousing Specialists |
 | L&D Specialist (LD-SPEC) | O*NET 13-1151.00 Training and Development Specialists |
-| Level Junior / Middle / Senior | Cách gọi cấp bậc trong ITviec IT Salary & Job Market Report 2025-2026; tương ứng SFIA 9 level 2 / 3 / 4 |
+| Level Junior / Middle / Senior | Thang cấp bậc kỹ sư phổ biến; tương ứng SFIA 9 level 2 / 3 / 4 |
 | Competency & micro-skill Java Backend | roadmap.sh Java và Spring Boot roadmap |
 
-Nguồn: <https://www.onetonline.org/>, <https://sfia-online.org/en/sfia-9>, <https://itviec.com/blog/it-salary-report/>, <https://roadmap.sh/java>, <https://roadmap.sh/spring-boot>.
+Nguồn: <https://www.onetonline.org/>, <https://sfia-online.org/en/sfia-9>, <https://roadmap.sh/java>, <https://roadmap.sh/spring-boot>.
 
 ---
 
 ## Lặp lại demo
 
-Mở lại `/reset` → toàn bộ Sao Mai (workspace `saomai`, admin và 11 user, competency/micro-skill/graph, file upload) bị xoá → chạy lại từ bước 1 với **cùng** workspace address và email.
+Mở lại `/reset` → toàn bộ Brightpath (workspace `brightpath`, admin và 3 user, competency/micro-skill/graph, file upload) bị xoá → chạy lại từ bước 1 với **cùng** workspace address và email.
 
 
 ---
@@ -297,7 +292,7 @@ Upload nguyên file ZIP. Không giải nén để upload từng bài. Không c�
 
 ### 8.2. Expert chuẩn bị đúng các skill và mức
 
-Đăng nhập **Lê Quốc Bảo**. Trước khi gửi role sang L&D, kiểm tra:
+Đăng nhập **David Thompson**. Trước khi gửi role sang L&D, kiểm tra:
 
 1. Trong cấu hình skill, **MS-DOCKER / Foundation** dùng **Certificate**. Các nhóm có câu hỏi trong file 05 dùng **Module**. Một cặp skill/mức chỉ dùng một loại.
 2. Với **Middle**, đổi yêu cầu **MS-SQL-INDEX** từ Foundation ở bảng bước 7 thành **Intermediate** để diễn phần học bổ sung. Các yêu cầu khác giữ theo bảng.
@@ -312,13 +307,13 @@ Các lựa chọn này giúp phần SQL Indexing/Intermediate có cả mức Fou
 2. Chọn `05_Question_Bank_Java_Backend.xlsx`.
 3. Xem preview: dự kiến **190 câu**, không có lỗi. Nếu có lỗi, sửa theo dòng được báo trước khi xác nhận.
 4. Xác nhận import **một lần**. Gửi duyệt nếu đang ở Draft.
-5. Đăng nhập **Phạm Thu Hà (L&D)**, mở hàng đợi câu hỏi, kiểm tra rồi **Approve/Publish** theo thao tác được cung cấp. Bank phải ở **Published** mới dùng để ra đề.
+5. Đăng nhập **Sarah Mitchell (L&D)**, mở hàng đợi câu hỏi, kiểm tra rồi **Approve/Publish** theo thao tác được cung cấp. Bank phải ở **Published** mới dùng để ra đề.
 
 Bank có 38 nhóm skill/mức. Mỗi nhóm có **4 câu thường và 1 câu mandatory**. Docker/Foundation dùng chứng chỉ nên không nằm trong bank. Nếu import đã thành công nhưng gửi duyệt bị lỗi, gửi lại các bản Draft đã tạo; không import lại toàn bộ file.
 
 ### 8.4. Expert import module và tạo certificate
 
-1. Quay lại tài khoản **Lê Quốc Bảo → Modules → Import**.
+1. Quay lại tài khoản **David Thompson → Modules → Import**.
 2. Chọn `06_Learning_Modules_Java_Backend_Demo.zip`.
 3. Xem preview **5 module, 10 lesson**, không lỗi. Mỗi module có hai bài đọc mẫu.
 4. Chọn **Confirm & submit for review**. Nếu chỉ chọn **Confirm import**, mở các Draft vừa tạo rồi gửi duyệt.
@@ -331,8 +326,8 @@ Bank có 38 nhóm skill/mức. Mỗi nhóm có **4 câu thường và 1 câu man
 | SQL Indexing Foundation Guided Practice | MS-SQL-INDEX / Foundation | Học bổ sung mức thấp hơn |
 | SQL Querying Intermediate Guided Practice | MS-SQL-QUERY / Intermediate | Học bổ sung skill tiên quyết |
 
-5. Đăng nhập **Phạm Thu Hà → quản lý module**, đọc nội dung, duyệt và publish năm module. Draft hoặc Submitted chưa phải nội dung học đã xuất bản.
-6. Quay lại **Lê Quốc Bảo → Certificates → Certificate catalog → Add**:
+5. Đăng nhập **Sarah Mitchell → quản lý module**, đọc nội dung, duyệt và publish năm module. Draft hoặc Submitted chưa phải nội dung học đã xuất bản.
+6. Quay lại **David Thompson → Certificates → Certificate catalog → Add**:
 
 | Field | Nhập |
 | --- | --- |
@@ -369,7 +364,7 @@ Quota mandatory bằng 0 dùng được khi đủ câu thường. Ví dụ tổn
 
 ### 8.6. L&D kích hoạt baseline và xuất bản role
 
-1. Đăng nhập **Phạm Thu Hà → Baseline Assessments**.
+1. Đăng nhập **Sarah Mitchell → Baseline Assessments**.
 2. Chọn **Java Backend Developer**, mở cấu hình baseline của role.
 3. Đặt **3 câu/nhóm**, cần đúng **2**, thời gian **20 phút**, **3 lượt**, chờ làm lại **0 phút**. Cấu hình áp dụng các mức được màn hình liệt kê.
 4. Hoàn tất và **Activate**. Nếu thiếu bank, kiểm tra câu hỏi đã Published và đúng skill/mức.
@@ -379,7 +374,7 @@ Với cấu hình Middle nêu trên, dự kiến có **14 nhóm được thi**, 
 
 ### 8.7. Employee làm RIASEC
 
-1. Đăng nhập **Nguyễn Hoàng Nam → Overview → RIASEC**.
+1. Đăng nhập **James Wilson → Overview → RIASEC**.
 2. Trả lời đủ **60 hoạt động** theo mức độ yêu thích, rồi xác nhận nộp. Đây là sở thích, không có đậu/rớt.
 3. Xem sáu điểm và trạng thái gợi ý Job position. Nếu AI còn xử lý, chuyển sang phần role trong lúc chờ. Không nộp bài mới chỉ vì gợi ý chưa có ngay.
 4. Khi có gợi ý, xem Job position và lý do. Có thể quay lại danh sách kết quả để mở kết quả vừa làm.
@@ -396,7 +391,7 @@ Muốn có gợi ý, Job position cần đủ sáu điểm, tính năng RIASEC �
 
 ### 8.9. Expert duyệt pathway
 
-1. Đăng nhập **Lê Quốc Bảo → Pathway review**, mở yêu cầu của **Nguyễn Hoàng Nam**.
+1. Đăng nhập **David Thompson → Pathway review**, mở yêu cầu của **James Wilson**.
 2. Chọn node Java Collections/Intermediate. Exclude cả hai module rồi **Check**. Node phải báo lỗi không còn module được chọn; chưa được Approve.
 3. Include lại **Guided Practice**. Có thể giữ exclude **Scenario Workshop** để minh họa hai module thay thế. Việc exclude hết không làm skill đủ điều kiện bypass nếu catalog vẫn có module phù hợp.
 4. Với API Security/Foundation, nếu thực sự chưa có module/chứng chỉ phù hợp, chọn **Bypass**, ghi: **Chưa có nội dung phù hợp; bổ sung khi có nội dung mới.**
@@ -429,7 +424,7 @@ Nếu hết lượt hoặc chưa đến giờ thi lại, xử lý theo thông b�
 1. Employee mở **Docker/Foundation**, đọc mô tả năng lực và tài liệu tham khảo.
 2. Chọn nộp **link HTTPS** hoặc **PDF/ảnh** bằng chứng đã chuẩn bị, rồi xác nhận.
 3. Bài nộp ở **Pending** thì yêu cầu vẫn chưa hoàn thành. Không bấm nộp lại chỉ vì danh sách chưa tải xong.
-4. Đăng nhập **Lê Quốc Bảo → Certificates → Evidence review**, mở bài nộp của Nguyễn Hoàng Nam, xem bằng chứng và ghi lý do khi duyệt.
+4. Đăng nhập **David Thompson → Certificates → Evidence review**, mở bài nộp của James Wilson, xem bằng chứng và ghi lý do khi duyệt.
 5. Nếu từ chối, Employee đọc lý do, sửa hồ sơ rồi nộp lại theo màn hình. Nếu duyệt đạt, Employee mở lại pathway để xem kết quả cập nhật.
 6. Khi các yêu cầu bắt buộc đã hoàn thành hoặc có quyết định bypass hợp lệ, pathway hoàn thành và được giữ trong lịch sử. Việc bypass vẫn không trở thành năng lực đã đạt.
 7. Kiểm tra nút chọn/đổi role đã mở theo trạng thái hiện tại. Có thể chọn mục tiêu tiếp theo; không xóa pathway cũ để bắt đầu lại.
