@@ -16,7 +16,7 @@ export function SkillPolicyWizard({ workspace, version, locked, onSave, onCancel
   workspace: PolicyWorkspace; version?: ScopedVersion; locked: boolean;
   onSave?: (policy: RulePolicy, activate: boolean) => void; onCancel: () => void;
 }) {
-  const { t } = useTranslation(), initial = version?.configuration ?? workspace.draft?.configuration
+  const { t, language } = useTranslation(), vi = language === 'vi', initial = version?.configuration ?? workspace.draft?.configuration
   const [step, setStep] = useState(version ? 3 : 1), [invalid, setInvalid] = useState(false)
   const [groups, setGroups] = useState(() => {
     const requirements = version ? version.configuration.groups : workspace.scope.groups.map(g => g.requirement)
@@ -41,6 +41,17 @@ export function SkillPolicyWizard({ workspace, version, locked, onSave, onCancel
     return Boolean(c && /^\d+$/.test(g.mandatoryCount) && Number.isSafeInteger(Number(g.mandatoryCount))
       && Number(g.mandatoryCount) <= Math.min(Number(g.totalCount), c.mandatoryQuestions)
       && Number(g.totalCount) - Number(g.mandatoryCount) <= c.ordinaryQuestions)
+  }
+  const quotaError = (g: typeof groups[number]) => {
+    const c = capacity(g), total = Number(g.totalCount), quota = Number(g.mandatoryCount)
+    if (!c) return vi ? 'Chưa tải được số câu trong ngân hàng.' : 'Question bank capacity is unavailable.'
+    if (!positive(g.totalCount)) return ''
+    if (total > c.ordinaryQuestions + c.mandatoryQuestions) return vi ? `Ngân hàng chỉ có ${c.ordinaryQuestions + c.mandatoryQuestions} câu. Giảm tổng số câu.` : `Only ${c.ordinaryQuestions + c.mandatoryQuestions} questions available. Reduce the total.`
+    const min = Math.max(0, total - c.ordinaryQuestions), max = Math.min(total, c.mandatoryQuestions)
+    if (!/^\d+$/.test(g.mandatoryCount) || !Number.isSafeInteger(quota)) return vi ? `Nhập số nguyên từ ${min} đến ${max}.` : `Enter a whole number from ${min} to ${max}.`
+    if (quota < min) return vi ? `Chỉ có ${c.ordinaryQuestions} câu thường. Chọn ít nhất ${min} câu mandatory hoặc giảm tổng xuống ${c.ordinaryQuestions}.` : `Only ${c.ordinaryQuestions} ordinary questions. Select at least ${min} mandatory questions or reduce the total to ${c.ordinaryQuestions}.`
+    if (quota > max) return vi ? `Chọn tối đa ${max} câu mandatory.` : `Select at most ${max} mandatory questions.`
+    return ''
   }
   const countsValid = groups.length > 0 && total <= workspace.maxPaperItems && groups.every(g => {
     const c = capacity(g)
@@ -75,14 +86,15 @@ export function SkillPolicyWizard({ workspace, version, locked, onSave, onCancel
       <Heading level={3} size="card" className="flex items-center gap-2"><ListChecks size={17} className="text-primary" />{t('skillWizard.counts')}</Heading>
       <Text variant="body-sm">{t('skillWizard.countsHelp')}</Text>
       {groups.map((group, index) => {
-        const c = capacity(group), patch = (value: Partial<typeof group>) => setGroups(all => all.map((g, i) => i === index ? { ...g, ...value } : g))
+        const c = capacity(group), quotaMessage = quotaError(group), quotaId = `quota-${index}`, patch = (value: Partial<typeof group>) => setGroups(all => all.map((g, i) => i === index ? { ...g, ...value } : g))
         return <div key={`${group.skillId}:${group.knowledgeLevel}`} className="space-y-3 rounded-lg border border-primary/25 bg-background/60 p-4">
           <div className="flex flex-wrap items-start justify-between gap-2"><Text tone="foreground" className="font-semibold">{name(group)} · {t(`knowledgeLevel.${group.knowledgeLevel}`)}</Text><Badge variant={main(group) ? 'secondary' : 'outline'}>{t(main(group) ? 'skillWizard.main' : 'skillWizard.prerequisite')}</Badge></div>
+          {c && <Text variant="caption">{vi ? `Ngân hàng: ${c.ordinaryQuestions} câu thường · ${c.mandatoryQuestions} câu mandatory` : `Bank: ${c.ordinaryQuestions} ordinary · ${c.mandatoryQuestions} mandatory questions`}</Text>}
           <div className="grid gap-4 sm:grid-cols-2"><label className="flex flex-col gap-2"><Text as="span" tone="foreground" variant="body-sm" className="font-semibold">{t('scopedPolicy.totalCount')}</Text><Input className={fieldClass} type="number" min={c?.minQuestions ?? 1} max={c?.maxQuestions ?? 0} step="1" required disabled={locked} value={group.totalCount} onChange={e => patch({ totalCount: e.target.value })} /></label>
             <label className="flex flex-col gap-2"><Text as="span" tone="foreground" variant="body-sm" className="font-semibold">{t('scopedPolicy.requiredCorrect')}</Text><Input className={fieldClass} type="number" min="1" max={Number(group.totalCount) || 0} step="1" required disabled={locked} value={group.requiredCorrectCount} onChange={e => patch({ requiredCorrectCount: e.target.value })} /></label></div>
           <Text variant="caption">{c && c.maxQuestions >= c.minQuestions ? `${t('baselineWizard.allowed')}: ${c.minQuestions}–${c.maxQuestions}. ${t('baselineWizard.correctHelp')}` : t('baselineWizard.noQuestions')}</Text>
-          <div className="space-y-2 rounded-md bg-card p-3"><label className="flex flex-col gap-2"><Text as="span" tone="foreground" variant="body-sm">{t('skillWizard.mandatoryQuota')}</Text><Input className={fieldClass} type="number" min="0" max={Math.min(Number(group.totalCount) || 0, c?.mandatoryQuestions ?? 0)} step="1" required disabled={locked} value={group.mandatoryCount} aria-invalid={!quotaValid(group)} onChange={e => patch({ mandatoryCount: e.target.value, legacyMandatory: false })} /></label><Text variant="caption">{t('skillWizard.mandatoryHelp')}{c ? ` ${t('skillWizard.mandatoryCount')}: ${c.mandatoryQuestions}. ${t('skillWizard.ordinaryCount')}: ${c.ordinaryQuestions}.` : ''}</Text></div>
-          {!quotaValid(group) && <Text role="alert" tone="destructive" variant="caption">{t('skillWizard.quotaInvalid')}</Text>}
+          <div className="space-y-2 rounded-md bg-card p-3"><label className="flex flex-col gap-2"><Text as="span" tone="foreground" variant="body-sm">{t('skillWizard.mandatoryQuota')}</Text><Input className={fieldClass} type="number" min={Math.max(0, (Number(group.totalCount) || 0) - (c?.ordinaryQuestions ?? 0))} max={Math.min(Number(group.totalCount) || 0, c?.mandatoryQuestions ?? 0)} step="1" required disabled={locked} value={group.mandatoryCount} aria-invalid={Boolean(quotaMessage)} aria-describedby={quotaMessage ? quotaId : undefined} onChange={e => patch({ mandatoryCount: e.target.value, legacyMandatory: false })} /></label><Text variant="caption">{t('skillWizard.mandatoryHelp')}{c ? ` ${t('skillWizard.mandatoryCount')}: ${c.mandatoryQuestions}. ${t('skillWizard.ordinaryCount')}: ${c.ordinaryQuestions}.` : ''}</Text></div>
+          {quotaMessage && <Text id={quotaId} role="alert" tone="destructive" variant="caption">{quotaMessage}</Text>}
           {!main(group) && <div className="space-y-1 rounded-md bg-card p-3"><label className="flex cursor-pointer items-start gap-2"><input type="checkbox" className="mt-0.5 size-4 shrink-0 accent-primary" disabled={locked} checked={group.allWrongVeto} onChange={e => patch({ allWrongVeto: e.target.checked })} /><Text as="span" tone="foreground" variant="body-sm">{t('scopedPolicy.veto')}</Text></label><Text variant="caption" className="pl-6">{t('skillWizard.vetoHelp')}</Text></div>}
         </div>
       })}

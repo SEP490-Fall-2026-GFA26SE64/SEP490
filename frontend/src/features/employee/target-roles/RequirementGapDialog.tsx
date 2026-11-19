@@ -23,6 +23,7 @@ export function RequirementGapDialog({ role, initialLevelId, scope, authorized, 
   const query = useQuery({ queryKey: ['initialPathway', scope, 'rulePreview', role.id, levelId], queryFn: ({ signal }) => readRulePreview(role.id, levelId, signal), enabled: authorized && selected, retry: false, gcTime: 0 })
   async function confirm() {
     if (lock.current || !query.data) return
+    if (query.data.currentRequestId) { onClose(); navigate('/employee/pathway?view=role'); return }
     const command = pending ?? ruleConfirmation(query.data); setPending(command); setBusy(true); setError(null); lock.current = true
     try {
       if (!committed.current) { await sendPathwayCommand(command); committed.current = true }
@@ -56,7 +57,7 @@ export function RequirementGapDialog({ role, initialLevelId, scope, authorized, 
       {pending && <Text role="status">{t('initialPathway.uncertain')}</Text>}
     </div></DialogBody><DialogFooter className="border-primary/20"><Button size="sm" variant="outline" disabled={blocked} onClick={onClose}>{t('initialPathway.cancel')}</Button>
       {authorized && levelId && (!selected || query.data?.baselineRequired) && <Button disabled={blocked} onClick={() => onBaseline(levelId)}>{t(selected ? 'initialPathway.chooseBaseline' : 'roleFlow.choose')}</Button>}
-      {query.data && !query.data.baselineRequired && <Button size="sm" className="font-semibold" leftIcon={<Send size={14} aria-hidden="true" />} isLoading={busy} disabled={!authorized || query.isFetching || Boolean(pending && !error)} onClick={() => void confirm()}>{t(pending ? 'initialPathway.retryExact' : fixedLevel ? query.data.required.length === 0 ? 'rulePathway.confirmNoLearning' : 'rulePathway.sendRequest' : 'initialPathway.confirm')}</Button>}
+      {query.data && !query.data.baselineRequired && <Button size="sm" className="font-semibold" leftIcon={<Send size={14} aria-hidden="true" />} isLoading={busy} disabled={!authorized || query.isFetching || Boolean(pending && !error)} onClick={() => void confirm()}>{t(query.data.currentRequestId ? 'roleFlow.viewPathway' : pending ? 'initialPathway.retryExact' : fixedLevel ? query.data.required.length === 0 ? 'rulePathway.confirmNoLearning' : 'rulePathway.sendRequest' : 'initialPathway.confirm')}</Button>}
     </DialogFooter>
   </Dialog>
 }

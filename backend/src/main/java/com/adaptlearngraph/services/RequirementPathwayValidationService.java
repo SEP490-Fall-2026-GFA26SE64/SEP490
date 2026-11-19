@@ -36,6 +36,13 @@ public final class RequirementPathwayValidationService {
         for(var requirement:input.required())if(plan.steps().stream().noneMatch(step->step.kind()==Kind.REQUIRED && step.requirement().key().equals(requirement.key())))
             issues.add(new Issue(null,"REQUIRED_STEP_MISSING",true));
         var carried=new HashMap<String,Requirement>();input.parallel().forEach(item->carried.put(item.bypassId()+"\n"+item.requirement().key(),item.requirement()));
+        var retained=rules.carried(row.getOrganizationId(),row.getLearnerId());
+        if(retained.size()>1000)throw new InitialPathwayPorts.Failure(503,"BYPASS_HISTORY_LIMIT");
+        for(var gap:retained) {
+            // The bypass belongs to this tenant/learner and an immutable approved pathway.
+            var need=revisions.requirement(gap.getRequirementSnapshot());
+            carried.put(gap.getBypassId()+"\n"+need.key(),need);
+        }
         var sources=new LinkedHashSet<Origin>();
         for(var step:plan.steps()) {
             var original=step.kind()==Kind.REQUIRED?initial.get(step.requirement().key()):carried.get(step.sourceBypassId()+"\n"+step.requirement().key());
@@ -53,8 +60,19 @@ public final class RequirementPathwayValidationService {
         }
         for(var dependency:plan.dependencies()) {
             var prerequisite=byId.get(dependency.prerequisiteStepId());
+            var source=prerequisite.assessedSources().stream().filter(item->item.attemptId().equals(dependency.attemptId()) && item.groupId().equals(dependency.groupId()))
+                    .findFirst().orElse(new AssessedSource(dependency.attemptId(),dependency.groupId(),dependency.dependentStepId()));
+            if(!source.dependentStepId().equals(dependency.dependentStepId())) {
+                var parent=byId.get(source.dependentStepId());var dependent=byId.get(dependency.dependentStepId());
+                boolean foundation=parent!=null && dependent.requirement().skillId().equals(parent.requirement().skillId())
+                        && dependent.requirement().knowledgeLevel().ordinal()<parent.requirement().knowledgeLevel().ordinal()
+                        && dependent.assessedSources().stream().anyMatch(item->item.dependentStepId().equals(parent.id()));
+                boolean earlier=parent!=null && (!prerequisite.requirement().skillId().equals(parent.requirement().skillId())
+                        || prerequisite.requirement().knowledgeLevel().ordinal()<dependent.requirement().knowledgeLevel().ordinal());
+                if(!foundation || !earlier)issues.add(new Issue(dependent.id(),"SUPPLEMENT_SOURCE_SCOPE_INVALID",true));
+            }
             sources.add(new Origin(prerequisite.requirement(),prerequisite.kind(),prerequisite.sourceBypassId(),
-                    new AssessedSource(dependency.attemptId(),dependency.groupId(),dependency.dependentStepId())));
+                    source));
         }
         if(!sources.isEmpty() && rules.validSources(row.getOrganizationId(),row.getLearnerId(),row.getRequestId(),revisions.encode(sources))!=sources.size())
             issues.add(new Issue(null,"ASSESSED_SUPPLEMENT_SOURCE_INVALID",true));
@@ -84,7 +102,7 @@ public final class RequirementPathwayValidationService {
             }
             if(step.requirement().provision()==Provision.CERTIFICATE_ONLY) {
                 var certificate=fresh.certificates().get(step.requirement().key());
-                if(certificate==null || step.certificate()==null || !step.certificate().equals(new CertificateReference(certificate.id(),certificate.version(),certificate.name(),certificate.referenceUrl())))
+                if(certificate==null || step.certificate()==null || !step.certificate().sameDefinition(new CertificateReference(certificate.id(),certificate.version(),certificate.name(),certificate.referenceUrl(),certificate.description())))
                     issues.add(new Issue(step.id(),"CERTIFICATE_PROVISION_CHANGED",blocking));
             }
         }

@@ -72,6 +72,7 @@ public final class RequirementPathwayGenerationService {
         for(var requirement:input.required())steps.add(step(request,requirement,Kind.REQUIRED,null,input.catalog(),null));
         for(var carried:input.parallel()) {
             var next=step(request,carried.requirement(),Kind.PARALLEL_SUPPLEMENT,carried.bypassId(),input.catalog(),input.official().get(carried.requirement().proofKey()));
+            if(next.state()==State.NEEDS_EXPERT_ACTION)continue; // The retained gap stays on the profile until real provision exists.
             steps.add(new Step(next.id(),next.requirement(),next.kind(),next.sourceBypassId(),next.state(),next.reason(),next.fulfilledEvidenceId(),next.options(),next.certificate(),carried.assessedSources()));
         }
         return new Plan(steps,List.of());
@@ -86,6 +87,6 @@ public final class RequirementPathwayGenerationService {
         State state=official!=null?State.FULFILLED:missing?State.NEEDS_EXPERT_ACTION:State.NEEDS_SUPPLEMENTATION;
         String reason=official!=null?"OFFICIAL_EVIDENCE_ACCEPTED":missing?"PROVISION_REQUIRES_EXPERT_ACTION":kind==Kind.PARALLEL_SUPPLEMENT?"CARRIED_BYPASS_SUPPLEMENT":"LEARNING_OR_CERTIFICATE_REQUIRED";
         return new Step(RequirementPathway.stepId(request,requirement,kind,bypass),requirement,kind,bypass,state,reason,official,options,
-                certificate==null?null:new CertificateReference(certificate.id(),certificate.version(),certificate.name(),certificate.referenceUrl()));
+                certificate==null?null:new CertificateReference(certificate.id(),certificate.version(),certificate.name(),certificate.referenceUrl(),certificate.description()));
     }
 }

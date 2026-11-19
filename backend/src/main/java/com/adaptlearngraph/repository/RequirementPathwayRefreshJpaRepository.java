@@ -12,6 +12,23 @@ import org.springframework.transaction.annotation.Transactional;
 public interface RequirementPathwayRefreshJpaRepository extends Repository<ProcessingJobEntity,UUID> {
     @Modifying @Transactional(TransactionManagers.JPA)
     @Query(value="""
+            UPDATE platform.processing_job j SET status='RETRY',next_retry_at=clock_timestamp(),failure_code=NULL
+            FROM platform.outbox_event e JOIN platform.initial_pathway_request r ON r.request_id=e.aggregate_id
+            WHERE j.event_id=e.event_id AND j.handler='RULE_PATHWAY_REFRESH' AND j.status='SUCCEEDED'
+                AND e.event_type='RULE_PATHWAY_REQUESTED' AND r.requirement_snapshot_id IS NOT NULL
+                AND EXISTS (SELECT 1 FROM platform.pathway_requirement_bypass b
+                    JOIN platform.pathway_requirement_step s ON s.request_id=b.request_id AND s.revision=b.revision AND s.step_id=b.step_id
+                        AND s.organization_id=b.organization_id AND s.learner_id=b.learner_id
+                    WHERE b.request_id=r.request_id
+                    AND b.organization_id=r.organization_id AND b.learner_id=r.learner_id
+                    AND NOT EXISTS (SELECT 1 FROM platform.skill_knowledge_evidence proof WHERE proof.organization_id=b.organization_id AND proof.learner_id=b.learner_id
+                        AND proof.skill_id=s.skill_id AND proof.knowledge_level=s.knowledge_level
+                        AND (s.requirement_snapshot->>'skillVersion' IS NULL OR proof.requirement_snapshot->>'skillVersion'=s.requirement_snapshot->>'skillVersion'))
+                    AND NOT EXISTS (SELECT 1 FROM platform.pathway_requirement_bypass newer WHERE newer.supersedes_id=b.id))
+            """,nativeQuery=true)
+    int resumeBypasses();
+    @Modifying @Transactional(TransactionManagers.JPA)
+    @Query(value="""
             INSERT INTO platform.processing_job(job_id,event_id,handler)
             SELECT gen_random_uuid(),e.event_id,'RULE_PATHWAY_REFRESH' FROM platform.outbox_event e
             JOIN platform.initial_pathway_request r ON r.request_id=e.aggregate_id AND r.requirement_snapshot_id IS NOT NULL

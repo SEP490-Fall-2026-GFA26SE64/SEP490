@@ -108,9 +108,7 @@ public final class RuleAssessmentOutcomeService {
             if(evidenceEvent!=null && !independent)pathways.apply(a,evidenceEvent,rows);
         }
         if(!independent)pathways.notify(a,work.getEventId(),pathwayBefore);
-        if(decision.state()==RuleAssessmentDecision.State.WAITING_SUPPLEMENT) {
-            effects.retry(work.getJobId(),"WAITING_REQUIRED_SUPPLEMENT");return;
-        }
+        // Missing foundations resolve through learning and a fresh assessment, never by replaying this score.
         if(effects.processed(a.getOrganizationId(),a.getLearnerId(),a.getId())!=1 || effects.done(work.getJobId())!=1)throw integrity();
         effects.receipt(work.getEventId(),work.getSourceRevision());
     }

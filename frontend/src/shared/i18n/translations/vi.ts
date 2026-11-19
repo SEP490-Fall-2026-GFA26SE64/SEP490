@@ -33,7 +33,7 @@ export const vi: TranslationKeys = {
     counts: 'Số câu và điều kiện đạt', countsHelp: 'Điền skill chính trước, sau đó đến từng skill tiên quyết. Mỗi nhóm có số câu và số câu đúng riêng.',
     main: 'Skill chính', prerequisite: 'Skill tiên quyết', next: 'Tiếp tục', saveActivate: 'Lưu & kích hoạt',
     mandatoryHelp: '0 là không lấy câu điểm liệt. Phải đúng mọi câu điểm liệt được chọn; phần còn lại chỉ lấy từ câu thường.', mandatoryCount: 'Số câu điểm liệt hiện có', mandatoryQuota: 'Số câu điểm liệt cần lấy', ordinaryCount: 'Số câu thường hiện có', legacyMandatory: 'Quy tắc điểm liệt lịch sử; chọn số lượng cụ thể trước khi lưu phiên bản mới',
-    vetoHelp: 'Nếu sai toàn bộ câu của nhóm tiên quyết này, phải làm lại cả bài dù skill chính đã đạt.',
+    vetoHelp: 'Chỉ áp dụng khi đúng 0 câu.',
     saveHelp: 'Lưu nháp để tiếp tục sau. Lưu & kích hoạt sẽ lưu trước rồi kiểm tra kích hoạt. Nếu kích hoạt không thành công, bản nháp đã lưu vẫn được giữ lại.',
   },
   moduleReview: {
@@ -111,6 +111,7 @@ export const vi: TranslationKeys = {
     bankChanged: 'Số câu khả dụng được kiểm tra lại khi lưu và kích hoạt. Hãy tải lại nếu ngân hàng câu hỏi đã thay đổi.',
   },
   scopedPolicy: {
+    savedActivationFailed: 'Đã lưu bản nháp. Chưa kích hoạt được; hãy kích hoạt lại từ bản đã lưu.',
     "baselineTitle": "Cấu hình đánh giá đầu vào",
     "skillTitle": "Cấu hình đánh giá kỹ năng",
     "role": "Vị trí",
@@ -160,7 +161,7 @@ export const vi: TranslationKeys = {
     "totalCount": "Tổng số câu",
     "requiredCorrect": "Số câu đúng bắt buộc",
     "mandatory": "Phải đúng tất cả câu bắt buộc",
-    "veto": "Chặn kết quả chính khi sai toàn bộ câu tiền đề",
+    "veto": "Phải thi lại phần chính nếu sai toàn bộ câu tiên quyết.",
     "invalid": "Điền đủ thời gian và số câu bằng số nguyên; số câu đúng bắt buộc không được vượt tổng số câu.",
     "errors": {
       "PREREQUISITE_LEVELS_NOT_CONFIGURED": "Thiếu cặp mức kiến thức tiền đề. Cần cấu hình mức phụ thuộc và mức tiên quyết trước khi kích hoạt.",
@@ -206,6 +207,7 @@ export const vi: TranslationKeys = {
     }
   },
   certificates: {
+    competencyDescription: 'Mô tả và năng lực được chứng nhận', baselineScope: 'Yêu cầu chứng chỉ · không đánh giá trong baseline',
     alreadyAssigned: 'Skill–mức này đã có chứng chỉ. Dùng Thay định nghĩa để cập nhật sau khi kiểm tra nội dung.',
     replace: 'Thay định nghĩa', replaceHelp: 'Minh chứng đã nộp giữ nguyên yêu cầu chứng chỉ tại thời điểm nộp.',
     title: 'Chứng chỉ', description: 'Quản lý một chứng chỉ cho mỗi skill–mức được cấu hình học bằng chứng chỉ.', add: 'Thêm chứng chỉ', skill: 'Skill', level: 'Mức kiến thức', name: 'Tên chứng chỉ', reference: 'URL tham khảo',
@@ -220,7 +222,7 @@ export const vi: TranslationKeys = {
     employeeLabels: {
       zoom: 'Thu phóng lộ trình', zoomOut: 'Thu nhỏ', zoomIn: 'Phóng to', resetZoom: 'Đặt lại mức phóng 100%',
       archived: 'Lộ trình đã lưu trữ', requirementsMet: 'Yêu cầu đã đạt', required: 'Bắt buộc', parallel: 'Học bổ sung', locked: 'Chờ đạt yêu cầu tiên quyết', partiallyPassed: 'Đạt một phần',
-      partiallyPassedHelp: 'Kỹ năng chính đã đạt. Cần xem kết quả các nhóm tiên đề.',
+      partiallyPassedHelp: 'Nhóm MAIN đạt nhưng tổng thể chưa được công nhận. Hoàn thành các yêu cầu nền tảng còn thiếu rồi thi lại. Giữ nguyên hoàn thành nội dung.',
       state: { NEEDS_SUPPLEMENTATION: 'Cần học', NEEDS_EXPERT_ACTION: 'Expert xem xét', IN_PROGRESS: 'Đang học', FULFILLED: 'Đã đạt yêu cầu', BYPASSED: 'Đã bypass' },
     },
     detail: {
@@ -238,11 +240,11 @@ export const vi: TranslationKeys = {
       certificateHelp: 'Mở phần nộp minh chứng hoặc lịch sử trong chi tiết node.',
     },
     request: 'Yêu cầu tạo lộ trình', sendRequest: 'Gửi yêu cầu', confirmNoLearning: 'Xác nhận không cần học thêm', requestHelp: 'Kiểm tra các kỹ năng và mức kiến thức cần học trước khi gửi yêu cầu tạo lộ trình.',
-    required: 'Yêu cầu học bắt buộc', parallel: 'Học bổ sung song song', parallelHelp: 'Được giữ lại từ quyết định bypass đã duyệt trước đó. Các yêu cầu này không khóa mục tiêu hiện tại.',
+    required: 'Yêu cầu học bắt buộc', parallel: 'Học bổ sung', parallelHelp: 'Được giữ lại từ quyết định bypass đã duyệt trước đó. Các yêu cầu này không khóa mục tiêu hiện tại.',
     alternatives: 'Chọn một phương án tương đương', official: 'Đã đạt chính thức', contentComplete: 'Đã hoàn thành nội dung học', started: 'Đang học', notStarted: 'Chưa bắt đầu',
     assessment: 'Mở đánh giá kỹ năng', certificate: 'Nộp minh chứng chứng chỉ', certificateReference: 'Tham khảo chứng chỉ', outcomes: 'Chuẩn đầu ra yêu cầu',
     completionHelp: 'Một phương án đạt chính thức đáp ứng yêu cầu này. Hoàn thành nội dung module chưa tạo thành tích chính thức.',
-    supplementHelp: 'Tiền đề đã bổ sung vào pathway vẫn phải học và đạt chính thức, kể cả khi câu hỏi tiền đề đạt trong bài làm lại. Bạn được tiếp tục yêu cầu đã bắt đầu học.',
+    supplementHelp: 'Mỗi yêu cầu tiên quyết cần evidence đạt trước khi tiếp tục học hoặc đánh giá yêu cầu phụ thuộc, kể cả module đã bắt đầu. Giữ nguyên hoàn thành nội dung và điểm từng nhóm.',
     previewHelp: 'Xem yêu cầu skill và mức kiến thức còn thiếu của Vị trí và mức công việc đã chọn.', noRequirements: 'Không còn yêu cầu mục tiêu chưa đáp ứng.',
     baselineRequired: 'Hoàn thành baseline của mục tiêu này trước khi xác nhận.', pending: 'Đang chờ tạo pathway hoặc Expert duyệt.', locked: 'Đang chờ hoàn thành yêu cầu bổ sung.',
     bypass: 'Bypass yêu cầu', bypassReason: 'Lý do bypass cho phạm vi này', bypassHelp: 'Chỉ bypass khi không có module hoặc chứng chỉ phù hợp. Bypass không tạo thành tích. Lý do và quyết định được giữ trong lịch sử.',
@@ -442,6 +444,8 @@ export const vi: TranslationKeys = {
     previousAttempt: 'Xem bài bị vô hiệu trước đó', replacement: 'Mở bài thay thế được liên kết', startReplacement: 'Bắt đầu hoặc tiếp tục bài thay thế cho nghề nghiệp này',
     errors: {
       ASSESSMENT_POLICY_REQUIRED: 'Đánh giá đầu vào cần chính sách chung theo vị trí được L&D kích hoạt tường minh. Đánh giá kỹ năng cần cấu hình kỹ năng–mức kiến thức đang áp dụng từ Expert.', GROUP_POLICY_REQUIRED: 'Cấu hình thiếu một nhóm bắt buộc. Liên hệ L&D với đánh giá đầu vào hoặc Expert với đánh giá kỹ năng.',
+      REQUIRED_SUPPLEMENT_NOT_READY: 'Khóa học và đánh giá đến khi tất cả yêu cầu nền tảng có evidence đạt hợp lệ. Mở lộ trình để xem kỹ năng và mức cần đạt. Nội dung đã hoàn thành và điểm cũ vẫn được giữ.',
+      ASSESSMENT_RESULT_PROCESSING: 'Kết quả đánh giá đang được cập nhật. Thao tác học và đánh giá sẽ cập nhật khi xử lý xong; giữ nguyên hoàn thành nội dung và điểm đã lưu.',
       ASSESSMENT_POLICY_CATALOG_CHANGED: 'Cấu hình không còn khớp danh mục hiện tại. Liên hệ người quản lý cấu hình để kiểm tra và kích hoạt lại. Lượt đang làm giữ nguyên cấu hình đã lưu.',
       CATALOG_MEMBER_LEVEL_IDENTITY_REQUIRED: 'Các Level của vị trí chưa sẵn sàng cho đánh giá. Liên hệ quản trị viên danh mục.',
       REQUIRED_GROUP_BANK_EMPTY: 'Một nhóm Skill và mức kiến thức yêu cầu chưa có câu hỏi đủ điều kiện. Bổ sung các nhóm được liệt kê trước khi kích hoạt hoặc bắt đầu bài.',

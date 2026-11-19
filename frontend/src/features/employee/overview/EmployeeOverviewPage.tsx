@@ -51,7 +51,7 @@ function OwnedEmployeeOverview() {
   const total = real?.allPairs.length ?? 0
   const recognized = real?.allPairs.filter(pair => requirementMet(pair.status)).length ?? 0
   const completeSkills = skills.filter(skill => skill.pairs.length > 0 && skill.pairs.every(pair => requirementMet(pair.status))).length
-  const requiredSteps = real?.pathway?.steps.filter(step => step.kind === 'REQUIRED') ?? []
+  const requiredSteps = real?.pathway?.steps.filter(step => step.kind === 'REQUIRED' && step.state !== 'BYPASSED') ?? []
   const fulfilled = requiredSteps.filter(step => step.state === 'FULFILLED').length
   const timing = real?.pathway?.timing
   const date = (value?: string | null) => value ? new Date(value).toLocaleDateString(vi ? 'vi-VN' : 'en-GB', { timeZone: 'UTC' }) : unknown

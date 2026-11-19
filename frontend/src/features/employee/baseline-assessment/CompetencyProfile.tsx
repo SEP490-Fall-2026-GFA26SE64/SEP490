@@ -3,6 +3,7 @@ import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
 import { Link, useLocation } from 'react-router-dom'
 import { useSearchParams } from 'react-router-dom'
 import { readRoleOverview, roleOverviewPollInterval } from '../overview/roleOverviewData'
+import { BypassedGapsPanel } from '../components/BypassedGapsPanel'
 import { knowledgeKey } from './masteryJourney'
 import { Info } from 'lucide-react'
 import { Heading } from '../../../shared/components/typography/Heading'
@@ -102,6 +103,7 @@ function OwnedKnowledgeProfile({onAssignedRoleClick}:{onAssignedRoleClick?:()=>v
       {canonical.isError && canonical.error !== accessError && (graphAvailable || !journey.isError) && <ProfileRequestNotice error={canonical.error} retrying={canonical.isFetching} onRetry={()=>void canonical.refetch()} />}
       {graphAvailable && journey.isError && !journeyDenied && <ProfileRequestNotice error={journey.error} retrying={journey.isFetching} onRetry={() => void journey.refetch()} />}
       {graphAvailable && <MasteryJourneyGraph onAssignedRoleClick={onAssignedRoleClick} suppressAutoScroll scopeKey={JSON.stringify(scope)} assigned={assigned} assignmentState={assignmentState} targets={targets} targetsState={targetsState} records={nodes} incomplete={historyIncomplete} unavailable={!profiles.data || profiles.isError} pathway={current?.pathway} openSelectionId={params.get('target')} tools={<Button variant="outline" size="sm" aria-haspopup="dialog" onClick={()=>setDetailsOpen(true)}><Info size={15} aria-hidden="true" />{copy('Details','Chi tiết')}</Button>} />}
+      {!accessError && <BypassedGapsPanel pathway={current?.pathway} />}
       <Dialog open={detailsOpen&&!accessError} onOpenChange={setDetailsOpen} size="wide" className="max-w-3xl" ariaLabel={copy('Graph details','Chi tiết bản đồ')} closeLabel={copy('Close graph details','Đóng chi tiết bản đồ')}>
         <DialogHeader><DialogTitle>{copy('Graph details','Chi tiết bản đồ')}</DialogTitle></DialogHeader>
         <DialogBody className="space-y-5">

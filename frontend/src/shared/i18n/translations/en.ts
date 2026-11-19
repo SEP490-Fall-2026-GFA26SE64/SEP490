@@ -31,7 +31,7 @@ export const en = {
     counts: 'Questions and passing rules', countsHelp: 'Configure the main skill first, followed by each prerequisite skill. Each group has its own question count and passing requirement.',
     main: 'Main skill', prerequisite: 'Prerequisite skill', next: 'Continue', saveActivate: 'Save & activate',
     mandatoryHelp: '0 disables mandatory selection. Every selected mandatory question must be correct. Remaining questions are drawn only from ordinary items.', mandatoryCount: 'Mandatory questions available', mandatoryQuota: 'Mandatory questions to include', ordinaryCount: 'Ordinary questions available', legacyMandatory: 'Historical mandatory rule; choose an explicit count before saving a new version',
-    vetoHelp: 'If every answer in this prerequisite group is wrong, a full retake is required even if the main skill passes.',
+    vetoHelp: 'Applies only when 0 answers are correct.',
     saveHelp: 'Save draft keeps this configuration for later. Save & activate saves it first, then activates it after validation. If activation fails, the saved draft is retained.',
   },
   moduleReview: {
@@ -109,6 +109,7 @@ export const en = {
     bankChanged: 'Question availability is checked again when saving and activating. Refresh if the bank has changed.',
   },
   scopedPolicy: {
+    savedActivationFailed: 'Draft saved. Activation failed; retry activation from the saved draft.',
     "baselineTitle": "Baseline configuration",
     "skillTitle": "Skill Assessment configuration",
     "role": "Role",
@@ -158,7 +159,7 @@ export const en = {
     "totalCount": "Total questions",
     "requiredCorrect": "Required correct answers",
     "mandatory": "Require all mandatory questions correct",
-    "veto": "Block the main result when every prerequisite answer is wrong",
+    "veto": "Require a MAIN retake if all prerequisite answers are wrong.",
     "invalid": "Complete the timing and counts. Use whole numbers; required correct answers cannot exceed total questions.",
     "errors": {
       "PREREQUISITE_LEVELS_NOT_CONFIGURED": "Prerequisite knowledge-level pairs are missing. Configure the dependent and prerequisite levels before activation.",
@@ -204,6 +205,7 @@ export const en = {
     }
   },
   certificates: {
+    competencyDescription: 'Description and certified competencies', baselineScope: 'Certificate requirement · not assessed in baseline',
     alreadyAssigned: 'This skill level already has a certificate. Replace its definition to make a reviewed change.',
     replace: 'Replace definition', replaceHelp: 'Previously submitted evidence retains its original certificate requirements.',
     title: 'Certificates', description: 'Manage the single certificate provision for each certificate-only skill level.', add: 'Add certificate', skill: 'Skill', level: 'Knowledge level', name: 'Certificate name', reference: 'Reference URL',
@@ -218,7 +220,7 @@ export const en = {
     employeeLabels: {
       zoom: 'Roadmap zoom', zoomOut: 'Zoom out', zoomIn: 'Zoom in', resetZoom: 'Reset zoom to 100%',
       archived: 'Archived pathway', requirementsMet: 'Requirements met', required: 'Required', parallel: 'Additional learning', locked: 'Prerequisites pending', partiallyPassed: 'Partially passed',
-      partiallyPassedHelp: 'Main skill passed. Check prerequisite results.',
+      partiallyPassedHelp: 'The MAIN group passed, but overall achievement is pending. Complete the missing foundation requirements, then retake the assessment. Content completion is retained.',
       state: { NEEDS_SUPPLEMENTATION: 'To learn', NEEDS_EXPERT_ACTION: 'Expert review', IN_PROGRESS: 'In progress', FULFILLED: 'Requirement met', BYPASSED: 'Bypassed' },
     },
     detail: {
@@ -236,11 +238,11 @@ export const en = {
       certificateHelp: 'Open evidence submission or history in node details.',
     },
     request: 'Request pathway', sendRequest: 'Send request', confirmNoLearning: 'Confirm no additional learning', requestHelp: 'Review the required skill levels before sending your pathway request.',
-    required: 'Required learning', parallel: 'Parallel supplementation', parallelHelp: 'Retained from an earlier approved bypass. These requirements do not lock your current target.',
+    required: 'Required learning', parallel: 'Supplementary learning', parallelHelp: 'Retained from an earlier approved bypass. These requirements do not lock your current target.',
     alternatives: 'Choose one equivalent option', official: 'Officially achieved', contentComplete: 'Learning completed', started: 'In progress', notStarted: 'Not started',
     assessment: 'Open Skill Assessment', certificate: 'Submit certificate evidence', certificateReference: 'Certificate reference', outcomes: 'Required outcomes',
     completionHelp: 'One officially successful option satisfies this requirement. Completing module content alone does not award achievement.',
-    supplementHelp: 'A prerequisite already added to this pathway still requires formal learning and achievement, even if its questions pass in a retake. You may continue a requirement you have already started.',
+    supplementHelp: 'Every prerequisite needs accepted achievement evidence before dependent learning or assessment can continue, including modules already started. Content completion and group scores are retained.',
     previewHelp: 'Review unmet skill and knowledge requirements for the selected Role and level.', noRequirements: 'No unmet target requirements.',
     baselineRequired: 'Complete the baseline for this target before confirming.', pending: 'Waiting for generation or Expert approval.', locked: 'Required supplementation is pending.',
     bypass: 'Bypass requirement', bypassReason: 'Reason for this scoped bypass', bypassHelp: 'Bypass is available only when no suitable module or certificate exists. It does not award achievement. The reason and decision remain in history.',
@@ -440,6 +442,8 @@ export const en = {
     previousAttempt: 'View previous invalidated attempt', replacement: 'Open linked replacement', startReplacement: 'Start or resume replacement for this Job Position',
     errors: {
       ASSESSMENT_POLICY_REQUIRED: 'Baseline needs an active Role–level configuration from L&D. Skill Assessment needs an active skill–knowledge level configuration from the Expert.', GROUP_POLICY_REQUIRED: 'A required group is missing from the configuration. Contact L&D for baseline or the Expert for Skill Assessment.',
+      REQUIRED_SUPPLEMENT_NOT_READY: 'Learning and assessment are locked until all foundation requirements have accepted achievement evidence. Open your pathway for the required skill levels. Completed content and previous scores are preserved.',
+      ASSESSMENT_RESULT_PROCESSING: 'Your assessment result is being applied. Learning and assessment actions will update after processing; existing content completion and scores are retained.',
       ASSESSMENT_POLICY_CATALOG_CHANGED: 'The configuration no longer matches the current catalog. Ask its owner to review and reactivate it. Existing attempts retain their saved policy.',
       CATALOG_MEMBER_LEVEL_IDENTITY_REQUIRED: 'Role member levels are not ready for assessment. Contact your catalog administrator.',
       REQUIRED_GROUP_BANK_EMPTY: 'A required Skill and knowledge group has no eligible questions. Complete the listed banks before activation or starting an assessment.',

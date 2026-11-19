@@ -79,4 +79,8 @@ public final class RequirementPathwayRevisions {
         notifications.event(row,revision,type,detail);
     }
     public String encode(Object value){try{return json.writeValueAsString(value);}catch(Exception invalid){throw new Failure(503,"PATHWAY_SNAPSHOT_INVALID");}}
+    public com.adaptlearngraph.entities.domain.RequirementPathway.Requirement requirement(String value) {
+        try{return json.readValue(value,com.adaptlearngraph.entities.domain.RequirementPathway.Requirement.class);}
+        catch(Exception invalid){throw new Failure(503,"BYPASS_SNAPSHOT_INVALID");}
+    }
 }

@@ -24,7 +24,9 @@ public final class RegistrationDto {
 
     /** One row of the Job positions sheet. */
     public record JobPositionSheetRow(Integer row, @Size(max = 2000) String departmentCode, @Size(max = 2000) String code,
-                                      @Size(max = 2000) String name) {}
+                                      @Size(max = 2000) String name, @Size(max = 2000) String interestRealistic, @Size(max = 2000) String interestInvestigative, @Size(max = 2000) String interestArtistic, @Size(max = 2000) String interestSocial, @Size(max = 2000) String interestEnterprising, @Size(max = 2000) String interestConventional) {
+        public JobPositionSheetRow(Integer row,String departmentCode,String code,String name){this(row,departmentCode,code,name,null,null,null,null,null,null);}
+    }
 
     /** One row of the Target roles sheet. */
     public record TargetRoleSheetRow(Integer row, @Size(max = 2000) String jobPositionCode, @Size(max = 2000) String code,
@@ -50,7 +52,7 @@ public final class RegistrationDto {
 
     public record StructureTargetRoleView(String code, String name, String scope, List<StructureLevelView> levels) {}
 
-    public record StructureJobPositionView(String code, String name, List<StructureTargetRoleView> targetRoles) {}
+    public record StructureJobPositionView(String code, String name, List<StructureTargetRoleView> targetRoles, java.util.Map<String,Integer> interestProfile) {}
 
     public record StructureDepartmentView(String code, String name, String description,
                                           List<StructureJobPositionView> jobPositions) {}

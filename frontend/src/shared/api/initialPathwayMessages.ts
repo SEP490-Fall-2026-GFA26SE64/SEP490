@@ -21,6 +21,7 @@ export function pathwayMessage(error: unknown, t: (key: string) => string): stri
   if (e?.code === 'PREREQUISITE_POSITION_LOCKED') return t('moduleReview.positionLocked')
   if (e?.code === 'INVALID_REQUIREMENT_ORDER') return t('initialPathway.stale')
   if (e?.code === 'ASSESSMENT_IN_PROGRESS') return t('roleFlow.errors.ASSESSMENT_IN_PROGRESS')
+  if (e?.code === 'REQUIRED_SUPPLEMENT_NOT_READY') return t('employeeBaseline.errors.REQUIRED_SUPPLEMENT_NOT_READY')
   if (e?.code === 'EXACTLY_ONE_CERTIFICATE_EVIDENCE_REQUIRED') return t('certificates.evidenceHelp')
   if (e && ['INVALID_CERTIFICATE_UPLOAD', 'FILE_HASH_MISMATCH', 'PRIVATE_UPLOAD_REJECTED', 'FILE_EXCEEDS_CURRENT_UPLOAD_LIMIT'].includes(e.code)) return t('certificates.invalidFile')
   if (e?.code === 'CERTIFICATE_REVIEW_PENDING') return t('certificates.pending')

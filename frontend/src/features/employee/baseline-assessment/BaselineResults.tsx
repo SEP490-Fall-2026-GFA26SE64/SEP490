@@ -23,6 +23,10 @@ export function BaselineResultPanel({ result, locked, run, error }: { result: Ba
   const passedSkills = skills.filter(skill => skill.passed).length
   const passedGroups = result.groups.filter(group => result.results.some(score => score.groupId === group.id && score.passed && !score.vetoTriggered)).length
   const sufficient = skills.length > 0 && passedSkills === skills.length
+  const mainGroup = result.groups.find(group => group.role === 'MAIN'), mainScore = result.results.find(score => score.groupId === mainGroup?.id)
+  const outcome = result.purpose === 'BASELINE' ? null : mainScore && !mainScore.passed ? copy('MAIN group not passed', 'Nhóm MAIN chưa đạt')
+    : result.results.some(score => score.vetoTriggered) ? copy('Prerequisite veto · retake required', 'Veto từ nhóm tiên quyết · cần thi lại')
+    : !sufficient ? copy('MAIN passed · foundation requirements not met', 'MAIN đạt · chưa đủ yêu cầu nền tảng') : copy('Assessment passed · achievement conditions are checked separately', 'Đánh giá đạt · xét riêng điều kiện công nhận')
   return <Card className={sufficient ? 'overflow-hidden border-success/40' : 'overflow-hidden border-warning/50'}>
     <CardHeader className={sufficient ? 'border-b border-success/20 bg-success/5 p-5' : 'border-b border-warning/30 bg-warning/5 p-5'}>
       <Text variant="eyebrow">{copy('Assessment result', 'Kết quả đánh giá')}</Text>
@@ -30,6 +34,8 @@ export function BaselineResultPanel({ result, locked, run, error }: { result: Ba
       <div className="flex flex-wrap gap-2"><Badge variant="outline">{result.purpose === 'BASELINE' ? copy('Baseline', 'Đánh giá đầu vào') : copy('Skill Assessment', 'Đánh giá kỹ năng')}</Badge><Badge variant={sufficient ? 'success' : 'warning'}>{sufficient ? copy('All skills passed', 'Đạt tất cả kỹ năng') : copy('Not all skills passed', 'Chưa đạt tất cả kỹ năng')}</Badge></div>
     </CardHeader>
     <CardContent className="space-y-4 p-4 sm:p-5">
+      {result.purpose === 'BASELINE' && <Text role="status" className="font-semibold">{copy(`Baseline: passed ${passedGroups}/${result.groups.length} · ${result.groups.length - passedGroups} groups not passed`, `Baseline: đạt ${passedGroups}/${result.groups.length} · ${result.groups.length - passedGroups} nhóm chưa đạt`)}</Text>}
+      {outcome && <div role="status" className="space-y-2 rounded-lg border border-border bg-muted/20 p-3"><Text tone="foreground" className="font-semibold">{outcome}</Text>{!sufficient && <Text variant="body-sm">{copy('Group scores and content completion are retained. Missing foundations require accepted evidence before a new assessment; this result does not award MAIN achievement.', 'Điểm từng nhóm và tiến độ học được giữ nguyên. Hoàn thành phần bổ sung rồi thi lại phần chính; điểm cũ không tự được công nhận.')}</Text>}</div>}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
         <StatCard className="[&>div]:p-3 sm:[&>div]:p-4" variant="gradient" title={copy('Skills passed', 'Kỹ năng đạt')} value={`${passedSkills} / ${skills.length}`} />
         <StatCard title={copy('Skills not passed', 'Kỹ năng chưa đạt')} value={skills.length - passedSkills} />
@@ -41,7 +47,7 @@ export function BaselineResultPanel({ result, locked, run, error }: { result: Ba
           <tbody className="divide-y divide-border">{skills.map(skill => <tr key={skill.id}>
             <th scope="row" className="max-w-sm break-words px-3 py-3 align-top font-normal sm:px-4"><span className="font-semibold">{skill.name}</span><div className="mt-1"><Badge variant={skill.passed ? 'success' : 'warning'}>{skill.passed ? copy('Passed', 'Đạt') : copy('Not passed', 'Chưa đạt')}</Badge></div>
               <details className="mt-2"><summary className="cursor-pointer text-caption text-primary">{copy('Score details', 'Chi tiết điểm')}</summary><div className="mt-2 space-y-3">{skill.groups.map(({ group, score }) => <div key={group.id} className="space-y-1 text-caption">
-                <Text variant="caption" className="font-semibold text-foreground">{t('knowledgeLevel.' + group.requirement.knowledgeLevel)}{group.role === 'PREREQUISITE' ? copy(' · Prerequisite', ' · Tiên quyết') : ''}</Text>
+                <Text variant="caption" className="font-semibold text-foreground">{t('knowledgeLevel.' + group.requirement.knowledgeLevel)}{group.role === 'PREREQUISITE' ? group.requirement.skillId === mainGroup?.requirement.skillId ? copy(' · Lower level of the same skill', ' · Mức thấp hơn cùng kỹ năng') : copy(' · Prerequisite skill', ' · Kỹ năng tiên quyết khác') : group.role === 'MAIN' ? ' · MAIN' : ''}</Text>
                 <Text variant="caption">{copy('Correct', 'Đúng')}: {score?.correctCount ?? '—'} / {score?.totalCount ?? group.totalCount} · {copy('Required', 'Cần đạt')}: {group.requiredCorrectCount} / {score?.totalCount ?? group.totalCount}</Text>
                 {group.mandatoryRequired && <Text variant="caption">{score?.mandatorySatisfied ? copy('All mandatory questions passed.', 'Đạt tất cả câu điểm liệt.') : copy('Mandatory questions not satisfied.', 'Chưa đạt điều kiện câu điểm liệt.')}</Text>}
                 {score?.vetoTriggered && <Text variant="caption" tone="destructive">{copy('Prerequisite veto: retake required.', 'Điều kiện chặn từ nhóm tiên quyết: cần làm lại bài.')}</Text>}
@@ -55,7 +61,7 @@ export function BaselineResultPanel({ result, locked, run, error }: { result: Ba
       <section className="space-y-3 rounded-lg border border-border bg-muted/20 p-4">
       <Heading level={3} size="card">{copy('What this result means', 'Ý nghĩa kết quả')}</Heading>
       <Text variant="body-sm">{result.purpose === 'BASELINE'
-        ? copy('This baseline shows your results for the skill levels assessed. It does not mark pathway requirements as met.', 'Đánh giá đầu vào cho biết kết quả ở các mức kỹ năng được hỏi; chưa công nhận hoàn thành yêu cầu lộ trình.')
+        ? copy('The total includes assessed groups only. Certificate requirements are separate and are not included.', 'Tổng số chỉ gồm các nhóm được thi. Yêu cầu chứng chỉ được xét riêng, không nằm trong tổng này.')
         : copy('Passing the assessment is one condition. To meet the pathway requirement, you must also complete the matching learning content and prerequisite requirements.', 'Đạt bài đánh giá là một điều kiện. Để hoàn thành yêu cầu lộ trình, bạn còn cần học xong nội dung phù hợp và đáp ứng các yêu cầu tiên quyết.')}</Text>
       {result.purpose === 'SKILL_ASSESSMENT' && <Text variant="body-sm">{copy('Prerequisite learning already added to your pathway remains required after a retake. You can continue learning a requirement you have already started.', 'Phần học tiên quyết đã được thêm vào lộ trình vẫn cần hoàn thành sau khi làm lại bài. Bạn có thể tiếp tục yêu cầu đã bắt đầu học.')}</Text>}
       </section>

@@ -22,7 +22,7 @@ export function OverviewPathwaySkills({pathway,pairs,scope}:{pathway:RulePathway
   const historyNodes=useMemo(()=>new Map(groupKnowledgeEntries(history.isError?[]:history.data?.pages.flatMap(page=>page.items)??[]).map(node=>[node.key,node])),[history.data,history.isError])
   const data=useMemo(()=>{
     if(!pathway)return null
-    const steps=[...orderByDependencies(pathway.steps.filter(step=>step.kind==='REQUIRED'),pathway.dependencies),...pathway.steps.filter(step=>step.kind==='PARALLEL_SUPPLEMENT')]
+    const steps=[...orderByDependencies(pathway.steps.filter(step=>step.kind==='REQUIRED'&&step.state!=='BYPASSED'),pathway.dependencies),...pathway.steps.filter(step=>step.kind==='PARALLEL_SUPPLEMENT')]
     const skills=new Map<string,JourneyRole['skills'][number]>(),records:KnowledgeNode[]=[]
     for(const step of steps){
       const r=step.requirement,key=knowledgeKey(r.skillId,r.skillVersion,r.knowledgeLevel)

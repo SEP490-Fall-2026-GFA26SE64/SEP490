@@ -52,13 +52,15 @@ public final class OrganizationStructureImporter {
     }
 
     public static RegistrationDto.OrganizationStructureView view(OrganizationStructure structure) {
-        return new RegistrationDto.OrganizationStructureView(structure.departmentCount(), structure.jobPositionCount(),
-                structure.targetRoleCount(), structure.levelCount(), structure.departments().stream().map(d ->
-                new RegistrationDto.StructureDepartmentView(d.code(), d.name(), d.description(), d.jobPositions().stream().map(j ->
-                        new RegistrationDto.StructureJobPositionView(j.code(), j.name(), j.targetRoles().stream().map(r ->
-                                new RegistrationDto.StructureTargetRoleView(r.code(), r.name(), r.scope(), r.levels().stream().map(l ->
-                                        new RegistrationDto.StructureLevelView(l.code(), l.name(), l.rank())).toList())).toList()))
-                        .toList())).toList());
+        var departments=structure.departments().stream().map(d -> {
+            var jobs=d.jobPositions().stream().map(j -> {
+                var roles=j.targetRoles().stream().map(r -> new RegistrationDto.StructureTargetRoleView(r.code(),r.name(),r.scope(),
+                    r.levels().stream().map(l -> new RegistrationDto.StructureLevelView(l.code(),l.name(),l.rank())).toList())).toList();
+                return new RegistrationDto.StructureJobPositionView(j.code(),j.name(),roles,j.interestProfile());
+            }).toList();
+            return new RegistrationDto.StructureDepartmentView(d.code(),d.name(),d.description(),jobs);
+        }).toList();
+        return new RegistrationDto.OrganizationStructureView(structure.departmentCount(),structure.jobPositionCount(),structure.targetRoleCount(),structure.levelCount(),departments);
     }
 
     public static OrganizationStructure validate(OrganizationStructureRequest input) {
@@ -101,6 +103,7 @@ public final class OrganizationStructureImporter {
             String parentCode = code(JOB_POSITIONS, row, DEPARTMENT_CODE, raw.departmentCode(), errors);
             String code = code(JOB_POSITIONS, row, JOB_POSITION_CODE, raw.code(), errors);
             String name = text(JOB_POSITIONS, row, JOB_POSITION_NAME, raw.name(), MAX_NAME, false, errors);
+            var profile = interestProfile(raw,row,errors);
             if (errors.size() > before) continue;
             var parent = departments.get(key(parentCode));
             if (parent == null) {
@@ -112,7 +115,7 @@ public final class OrganizationStructureImporter {
                 errors.add(JOB_POSITIONS, row, JOB_POSITION_CODE, "Job position code " + code + " is already used in row " + existing.row + ".");
                 continue;
             }
-            var job = new Job(row, code, name);
+            var job = new Job(row, code, name, profile);
             jobs.put(key(code), job);
             parent.jobs.add(job);
         }
@@ -189,7 +192,21 @@ public final class OrganizationStructureImporter {
                         j.roles.stream().map(r -> new OrganizationStructure.TargetRole(r.code, r.name, r.scope,
                                 r.levelsByRank.values().stream().sorted(Comparator.comparingInt(Lvl::rank))
                                         .map(l -> new OrganizationStructure.Level("L" + l.rank, l.name, l.rank)).toList()))
-                                .toList())).toList())).toList());
+                                .toList(),j.profile)).toList())).toList());
+    }
+
+    private static Map<String,Integer> interestProfile(RegistrationDto.JobPositionSheetRow raw,int row,Errors errors) {
+        var names=List.of("Realistic","Investigative","Artistic","Social","Enterprising","Conventional");
+        var values=java.util.Arrays.asList(raw.interestRealistic(),raw.interestInvestigative(),raw.interestArtistic(),raw.interestSocial(),raw.interestEnterprising(),raw.interestConventional());
+        if(values.stream().allMatch(v->v==null || v.isBlank()))return Map.of();
+        var profile=new LinkedHashMap<String,Integer>();
+        for(int i=0;i<names.size();i++) {
+            String value=values.get(i)==null?"":values.get(i).strip();
+            if(!value.matches("\\d{1,2}(\\.0+)?") || Double.parseDouble(value)>40) {
+                errors.add(JOB_POSITIONS,row,"RIASEC "+names.get(i).charAt(0),"Enter all six RIASEC scores as whole numbers from 0 to 40.");
+            } else profile.put("interest"+names.get(i),(int)Double.parseDouble(value));
+        }
+        return profile;
     }
 
     private static <T> List<T> orEmpty(List<T> rows) {
@@ -264,8 +281,9 @@ public final class OrganizationStructureImporter {
     private static final class Job {
         final int row; final String code; final String name;
         final List<Role> roles = new ArrayList<>();
-        Job(int row, String code, String name) {
-            this.row = row; this.code = code; this.name = name;
+        final Map<String,Integer> profile;
+        Job(int row, String code, String name, Map<String,Integer> profile) {
+            this.row = row; this.code = code; this.name = name; this.profile=profile;
         }
     }
 

@@ -46,7 +46,9 @@ public final class Neo4jWorkspaceCatalogWriter implements WorkspaceCatalogGraphW
             add(nodes, "Department", props);
             for (var job : department.jobPositions()) {
                 String jobId = importedId(organizationId, "JobPosition", job.code());
-                add(nodes, "JobPosition", base(organizationId, jobId, job.code(), job.name(), timestamp));
+                var jobProps=base(organizationId, jobId, job.code(), job.name(), timestamp);
+                jobProps.putAll(job.interestProfile());
+                add(nodes, "JobPosition", jobProps);
                 edge(edges, "HAS_JOB_POSITION", organizationId, departmentId, jobId);
                 for (var role : job.targetRoles()) {
                     String roleId = importedId(organizationId, "TargetRole", role.code());

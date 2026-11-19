@@ -211,6 +211,8 @@ public final class RequirementPathwayReviewService {
     public ReviewState nextReview(RequirementPathwayJpaRepository.Row row) {
         if(!"APPROVED".equals(row.getReviewStatus()))return new ReviewState(row.getReviewStatus(),null);
         long basis=row.getApprovalBasisRevision()==null?row.getCurrentRevision():row.getApprovalBasisRevision();
+        if(row.getTimingCompletedAt()!=null && rules.historicallyApproved(row.getOrganizationId(),row.getLearnerId(),row.getRequestId(),row.getCurrentRevision()))
+            return new ReviewState("APPROVED",basis);
         var original=data.revisions().content(row.getOrganizationId(),row.getLearnerId(),row.getRequestId(),basis);
         if(original.size()!=1)return new ReviewState("AWAITING_EXPERT_REVIEW",null);
         try {

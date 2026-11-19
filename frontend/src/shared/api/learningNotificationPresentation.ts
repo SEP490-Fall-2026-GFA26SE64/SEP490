@@ -37,7 +37,9 @@ export function learningNotificationPresentation(n: LearningNotification, langua
       : modules + certificates > 0
         ? vi ? `Thêm ${additions}.` : `Added ${additions}.`
         : vi ? 'Nội dung học đã được cập nhật.' : 'Learning content updated.'
-    description = [role, summary].filter(Boolean).join(' · ')
+    const requirement = value('Requirement / Yêu cầu: ') || lines.find(line => !line.includes(':') && line.includes(' · ')) || ''
+    const content = n.kind === 'BYPASS_PROVISION_ADDED' ? lines.filter(line => line.startsWith('Module: ') || line.startsWith('Certificate / Chứng chỉ: ')).map(line => line.replace(/^(Module: |Certificate \/ Chứng chỉ: )/, '')).join(', ') : ''
+    description = [requirement || role, content || summary].filter(Boolean).join(' · ')
   } else if (titles[n.kind]) {
     description = [n.kind.includes('REJECTED') ? reason : '', certificate || role].filter(Boolean).join(' · ')
   }
@@ -45,5 +47,5 @@ export function learningNotificationPresentation(n: LearningNotification, langua
     : n.kind.includes('APPROVED') || n.kind.includes('COMPLETED') ? 'success' : 'info'
   const accent = variant === 'destructive' ? 'border-destructive text-destructive'
     : variant === 'success' ? 'border-success text-success' : 'border-primary text-primary'
-  return { title, description: description.length > 160 ? description.slice(0, 157).trimEnd() + '…' : description, variant, accent }
+  return { title, description, variant, accent }
 }

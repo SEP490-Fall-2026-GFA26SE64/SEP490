@@ -4,7 +4,7 @@ import type { CatalogEdge, CatalogNode, PlatformCatalog } from './platformCatalo
 
 export interface StructureLevel { code: string; name: string; rank: number }
 export interface StructureTargetRole { code: string; name: string; scope: string; levels: StructureLevel[] }
-export interface StructureJobPosition { code: string; name: string; targetRoles: StructureTargetRole[] }
+export interface StructureJobPosition { code: string; name: string; targetRoles: StructureTargetRole[]; interestProfile?: Record<string, number> }
 export interface StructureDepartment { code: string; name: string; description: string; jobPositions: StructureJobPosition[] }
 export interface OrganizationStructure {
   departmentCount: number
@@ -52,7 +52,7 @@ export function parseOrganizationStructure(value: unknown): OrganizationStructur
     departments: list(v.departments, d => ({
       code: text(d.code), name: text(d.name), description: text(d.description),
       jobPositions: list(d.jobPositions, j => ({
-        code: text(j.code), name: text(j.name),
+        code: text(j.code), name: text(j.name), interestProfile: j.interestProfile == null ? {} : Object.fromEntries(Object.entries(record(j.interestProfile)).map(([key,value]) => [key,count(value)])),
         targetRoles: list(j.targetRoles, r => ({
           code: text(r.code), name: text(r.name), scope: text(r.scope),
           levels: list(r.levels, l => ({ code: text(l.code), name: text(l.name), rank: count(l.rank) })),

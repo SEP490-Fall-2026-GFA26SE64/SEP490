@@ -18,6 +18,10 @@ public final class CertificateReviewService {
     private final Receipts receipts;private final OutboxEventJpaRepository outbox;private final RuleAssessmentAttemptJpaRepository clock;
     private final RuleAssessmentOutcomeJpaRepository effects;
     private final AuditEventJpaRepository audit;
+    private RequirementPathwayPlanningService planning;private RequirementPathwayReviewService review;
+    public CertificateReviewService recalculateWith(RequirementPathwayPlanningService planning,RequirementPathwayReviewService review) {
+        this.planning=Objects.requireNonNull(planning);this.review=Objects.requireNonNull(review);return this;
+    }
     public CertificateReviewService(Actors actors,ReviewAssignments assignments,CurrentRoleSelectionStore selections,CertificateSubmissionJpaRepository submissions,
             CertificateSubmissionService views,RequirementPathwayJpaRepository rules,RequirementPathwayRevisions revisions,LearningContentPort content,LearningAssetPort files,
             Receipts receipts,OutboxEventJpaRepository outbox,RuleAssessmentAttemptJpaRepository clock,RuleAssessmentOutcomeJpaRepository effects,AuditEventJpaRepository audit) {
@@ -69,6 +73,7 @@ public final class CertificateReviewService {
             if(submissions.decide(actor.organizationId(),row.getLearnerId(),id,row.getRevision(),command.decision())!=1)throw new Failure(409,"STALE_SUBMISSION");
             UUID decision=UUID.randomUUID();submissions.decision(decision,actor.organizationId(),id,row.getRevision(),command.decision(),actor.accountId(),revisions.encode(assignment),command.reason().trim(),retry);
             if("APPROVED".equals(command.decision())) {
+                if(planning==null || review==null)throw new Failure(503,"PATHWAY_RECALCULATION_UNAVAILABLE");
                 UUID evidence=UUID.randomUUID();var snapshot=new LinkedHashMap<String,Object>();
                 snapshot.put("skillVersion",frozen.requirement().skillVersion());snapshot.put("skillName",frozen.requirement().skillName());
                 snapshot.put("requestId",frozen.requestId());snapshot.put("pathwayRevision",frozen.pathwayRevision());snapshot.put("stepId",frozen.stepId());
@@ -77,6 +82,15 @@ public final class CertificateReviewService {
                 outbox.insert(new OutboxEventEntity(UUID.randomUUID(),"KNOWLEDGE_EVIDENCE_ACCEPTED",evidence,1,Map.of("organizationId",actor.organizationId(),"learnerId",row.getLearnerId(),"evidenceId",evidence,"sourceKind","CERTIFICATE"),id,clock.clock()));
                 audit.insert(new com.adaptlearngraph.entities.AuditEventEntity(UUID.randomUUID(),actor.accountId(),"certificate","KNOWLEDGE_EVIDENCE_ACCEPTED",evidence,"1",clock.clock(),"ACCEPTED",id));
                 effects.resolveReviews(actor.organizationId(),row.getLearnerId(),evidence);
+                var current=rules.current(actor.organizationId(),row.getLearnerId());
+                if(current.size()>1)throw new Failure(503,"CURRENT_PATHWAY_INTEGRITY_FAILURE");
+                for(var pointer:current) {
+                    var pathway=rules.lock(actor.organizationId(),pointer.getRequestId()).orElseThrow();
+                    if(pathway.getCurrentRevision()==null)continue;
+                    var before=revisions.read(pathway);var next=planning.refresh(pathway,before);var state=review.nextReview(pathway);
+                    if(!before.equals(next) || !state.status().equals(pathway.getReviewStatus()))
+                        revisions.publish(pathway,next,pathway.getRunId(),"PROVISION",null,state.basis(),state.status(),null);
+                }
             }
             revisions.certificateEvent(request,frozen.pathwayRevision(),"CERTIFICATE_"+command.decision(),actor.accountId(),id,
                     Map.of("submissionId",id,"decisionId",decision,"reason",command.reason().trim(),"certificateName",frozen.certificate().name(),

@@ -93,7 +93,10 @@ public class WorkspaceBaselineConfiguration {
                 environment.getProperty("assessment.rule.max-groups",Integer.class,1000),step->{
                     try{pathways.getObject().requireAssessment(step);}
                     catch(com.adaptlearngraph.exception.InitialPathwayFailure denied){throw new com.adaptlearngraph.services.AssessmentPolicyService.Failure(denied.status(),denied.code());}
-                }).independent(modules,learning,admission);
+                }).independent(modules,learning,admission).scopeGuard(scope->{
+                    try{pathways.getObject().requireKnowledge(scope.skillId(),scope.knowledgeLevel(),scope.skillVersion());}
+                    catch(com.adaptlearngraph.exception.InitialPathwayFailure denied){throw new com.adaptlearngraph.services.AssessmentPolicyService.Failure(denied.status(),denied.code());}
+                });
     }
     @Bean com.adaptlearngraph.services.RuleAssessmentAttemptService workspaceRuleAttempts(
             RoleBaselineFlow.Identity identity,CurrentRoleSelectionStore selections,

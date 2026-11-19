@@ -7,11 +7,11 @@ import java.util.*;
 
 /** Expert's actual Add action authors and assigns the exact certificate provision in the owned catalog. */
 public final class CertificateCatalogService {
-    public record CreateInput(String skillId,String knowledgeLevel,String name,String referenceUrl,String expectedSkillVersion,String replacesDefinitionId) {}
+    public record CreateInput(String skillId,String knowledgeLevel,String name,String referenceUrl,String expectedSkillVersion,String replacesDefinitionId,String description) {}
     public Definition createHttp(UUID key,CreateInput input) {
         if(input==null)throw new Failure(400,"INVALID_REQUEST");
         return create(key,new Create(input.skillId(),input.knowledgeLevel()==null?null:com.adaptlearngraph.entities.domain.KnowledgeLevel.valueOf(input.knowledgeLevel()),
-                input.name(),input.referenceUrl(),input.expectedSkillVersion(),input.replacesDefinitionId()));
+                input.name(),input.referenceUrl(),input.expectedSkillVersion(),input.replacesDefinitionId(),input.description()));
     }
     private final Actors actors;private final CertificateCatalogRepository catalog;
     public CertificateCatalogService(Actors actors,CertificateCatalogRepository catalog){this.actors=actors;this.catalog=catalog;}

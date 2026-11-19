@@ -65,19 +65,19 @@ public final class CertificateCatalogRepository {
             }
             return definition(tx.single("""
                     MATCH (s:MicroSkill {id:$skill,organizationId:$org})
-                    CREATE (c:Certificate {id:$id,organizationId:$org,version:'1',name:$name,description:'',knowledgeLevel:$level,
+                    CREATE (c:Certificate {id:$id,organizationId:$org,version:'1',name:$name,description:$description,knowledgeLevel:$level,
                         skillVersion:$skillVersion,referenceUrl:$url,status:'ACTIVE',reviewStatus:'APPROVED',
                         authoredBy:$expert,authoredAt:toString(datetime()),approvedBy:$expert,approvedAt:toString(datetime()),commandHash:$hash})
                     CREATE (s)-[:REQUIRES_CERTIFICATE {organizationId:$org,status:'ACTIVE',createdBy:$expert,createdAt:toString(datetime())}]->(c)
                     RETURN s.id AS skillId,s.name AS skillName,properties(c) AS certificate
-                    """,Map.of("org",organization.toString(),"skill",command.skillId(),"id",id,"name",command.name(),"level",command.knowledgeLevel().name(),
-                    "skillVersion",command.expectedSkillVersion(),"url",command.referenceUrl(),"expert",expert.toString(),"hash",hash)));
+                    """,Map.ofEntries(Map.entry("org",organization.toString()),Map.entry("skill",command.skillId()),Map.entry("id",id),Map.entry("name",command.name()),Map.entry("level",command.knowledgeLevel().name()),
+                    Map.entry("skillVersion",command.expectedSkillVersion()),Map.entry("url",command.referenceUrl()),Map.entry("expert",expert.toString()),Map.entry("hash",hash),Map.entry("description",Objects.toString(command.description(),"")))));
         });
     }
     private Definition definition(org.neo4j.driver.Record row) {
         var c=row.get("certificate");return new Definition(c.get("id").asString(),c.get("version").asString(),row.get("skillId").asString(),row.get("skillName").asString(),
                 KnowledgeLevel.valueOf(c.get("knowledgeLevel").asString()),c.get("skillVersion").asString(),List.of(),c.get("name").asString(),c.get("referenceUrl").asString(),
-                c.get("status").asString(),c.get("authoredBy").asString(),c.get("authoredAt").asString());
+                c.get("status").asString(),c.get("authoredBy").asString(),c.get("authoredAt").asString(),c.get("description").asString(""));
     }
     private static List<String> strings(Value value,String field){return value.get(field).isNull()?List.of():value.get(field).asList(Value::asString);}
 }

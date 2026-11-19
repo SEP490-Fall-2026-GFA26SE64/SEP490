@@ -13,6 +13,10 @@ public final class RequirementPathwayAccess {
     private final RequirementPathwayRevisions revisions;private final RequirementPathwayAdmissionService admission;
     private final ReviewAssignments assignments;private final InitialPathwayRepositories data;private final RulePathwayCatalog catalog;
     private final ModuleAuthoringPort modules;private final ObjectMapper json;
+    private RuleAssessmentContextJpaRepository assessmentEvidence;
+    public RequirementPathwayAccess assessmentEvidence(RuleAssessmentContextJpaRepository evidence) {
+        this.assessmentEvidence=Objects.requireNonNull(evidence);return this;
+    }
     public RequirementPathwayAccess(Actors actors,CurrentRoleSelectionStore selections,RequirementPathwayJpaRepository rules,
             RequirementPathwayRevisions revisions,RequirementPathwayAdmissionService admission,ReviewAssignments assignments,
             InitialPathwayRepositories data,RulePathwayCatalog catalog,ModuleAuthoringPort modules,ObjectMapper json) {
@@ -47,6 +51,8 @@ public final class RequirementPathwayAccess {
         var pin=modules.pinned(actor.organizationId().toString(),actor.accountId().toString(),moduleId);
         int version=requestedRevision!=null?requestedRevision:pin.orElse(document.releasedRevision()==null?0:document.releasedRevision());
         var packageRevision=document.revisions().stream().filter(item->item.number()==version).findFirst().orElseThrow(()->new Failure(409,"LEARNING_PACKAGE_UNAVAILABLE"));
+        // Enforce newly discovered dependencies before accepting any historical content pin.
+        if(packageRevision.payload().teachings().size()==1)requireKnowledge(packageRevision.payload().teachings().getFirst().skillId(),packageRevision.payload().knowledgeLevel(),packageRevision.payload().skillVersion());
         // Continue an authentic, formerly accepted package even after target change or later supplementation/review.
         var started=rules.startedModules(actor.organizationId(),actor.accountId(),List.of(moduleId));
         if(started.size()>1000)throw new Failure(503,"LEARNING_ACCESS_HISTORY_LIMIT");
@@ -70,15 +76,7 @@ public final class RequirementPathwayAccess {
                     && fresh.options().getOrDefault(step.requirement().key(),List.of()).stream().anyMatch(option->option.moduleId().equals(moduleId)
                         && option.moduleRevision()==version && option.contentVersion().equals(packageRevision.payload().contentVersion()));
             if(!available)continue;
-            // A failed assessment may add B after A was started. Keep A content open; official completion still waits for B.
-            var ids=step.options().stream().map(Option::moduleId).distinct().toList();
-            var prior=rules.startedModules(actor.organizationId(),actor.accountId(),ids);
-            if(prior.size()>1000)throw new Failure(503,"LEARNING_ACCESS_HISTORY_LIMIT");
-            boolean ongoing=prior.stream().anyMatch(proof->requirement(proof.getRequirementSnapshot()).proofKey().equals(step.requirement().proofKey()));
-            boolean gated=plan.dependencies().stream().filter(edge->edge.dependentStepId().equals(step.id()))
-                    .map(edge->plan.steps().stream().filter(item->item.id().equals(edge.prerequisiteStepId())).findFirst().orElseThrow())
-                    .anyMatch(prerequisite->prerequisite.state()!=State.FULFILLED && prerequisite.state()!=State.BYPASSED);
-            if(gated && !ongoing)throw new Failure(423,"REQUIRED_SUPPLEMENT_NOT_READY");
+            requireDependencies(actor,plan,step);
             return null;
         }
         throw new Failure(409,"EXACT_REQUIREMENT_PROVIDER_UNAVAILABLE");
@@ -86,18 +84,50 @@ public final class RequirementPathwayAccess {
     public void requireAccepted(RequirementPathwayJpaRepository.Row row,Step step) {
         if(!acceptedSteps(row,new Plan(List.of(step),List.of())).contains(step.id()))throw new Failure(403,"PATHWAY_NOT_APPROVED");
     }
-    /** Retakes remain available after a completed module even while formal supplements are pending. */
+    public void requireReady(RequirementPathwayJpaRepository.Row row,Step step) {
+        var actor=actors.require();actor.require(Role.EMPLOYEE);
+        if(!actor.organizationId().equals(row.getOrganizationId()) || !actor.accountId().equals(row.getLearnerId()))throw new Failure(403,"FORBIDDEN");
+        requireAccepted(row,step);requireDependencies(actor,revisions.read(row),step);
+    }
+    /** Shared guard also covers alternative modules and independent-learning assessment entry. */
+    public void requireKnowledge(String skill,com.adaptlearngraph.entities.domain.KnowledgeLevel level,String version) {
+        var actor=actors.require();actor.require(Role.EMPLOYEE);
+        // Wait for the frozen result projection before admitting lower-level alternatives.
+        if(assessmentEvidence==null)throw new Failure(503,"ASSESSMENT_EVIDENCE_AUTHORIZATION_UNAVAILABLE");
+        if(assessmentEvidence.projectionPending(actor.organizationId(),actor.accountId(),skill,version))throw new Failure(423,"ASSESSMENT_RESULT_PROCESSING");
+        var rows=rules.current(actor.organizationId(),actor.accountId());
+        if(rows.size()>1)throw new Failure(503,"CURRENT_PATHWAY_INTEGRITY_FAILURE");
+        for(var row:rows) {
+            var plan=revisions.read(row);
+            for(var step:plan.steps())if(step.state()!=State.BYPASSED && step.requirement().skillId().equals(skill)
+                    && step.requirement().knowledgeLevel()==level && Objects.equals(step.requirement().skillVersion(),version))
+                requireDependencies(actor,plan,step);
+        }
+    }
+    private void requireDependencies(Actor actor,Plan plan,Step step) {
+        var needs=plan.dependencies().stream().filter(edge->edge.dependentStepId().equals(step.id()))
+                .map(edge->plan.steps().stream().filter(item->item.id().equals(edge.prerequisiteStepId())).findFirst().orElseThrow().requirement()).toList();
+        if(needs.isEmpty())return;
+        var official=new HashSet<String>();
+        for(var proof:rules.official(actor.organizationId(),actor.accountId(),revisions.encode(needs)))official.add(requirement(proof.getRequirementSnapshot()).proofKey());
+        if(needs.stream().anyMatch(need->!official.contains(need.proofKey())))throw new Failure(423,"REQUIRED_SUPPLEMENT_NOT_READY");
+    }
+    /** Content completion is retained, but a new assessment waits for all foundation evidence. */
     public void requireAssessment(UUID stepId) {
         var actor=actors.require();actor.require(Role.EMPLOYEE);var rows=rules.current(actor.organizationId(),actor.accountId());
         if(rows.size()!=1)throw new Failure(403,"PATHWAY_NOT_APPROVED");var row=rows.getFirst();
-        var step=revisions.read(row).steps().stream().filter(item->item.id().equals(stepId) && item.requirement().provision()==Provision.MODULE_ONLY)
+        var plan=revisions.read(row);
+        var step=plan.steps().stream().filter(item->item.id().equals(stepId) && item.requirement().provision()==Provision.MODULE_ONLY)
                 .findFirst().orElseThrow(()->new Failure(404,"REQUIREMENT_NOT_FOUND"));
         requireAccepted(row,step);
+        requireDependencies(actor,plan,step);
     }
     public Set<UUID> acceptedSteps(RequirementPathwayJpaRepository.Row row,Plan plan) {
+        // A completed/archived pathway retains its real immutable approval and readable history.
+        if((row.getArchivedAt()!=null || row.getTimingCompletedAt()!=null) && row.getCurrentRevision()!=null
+                && rules.historicallyApproved(row.getOrganizationId(),row.getLearnerId(),row.getRequestId(),row.getCurrentRevision()))
+            return plan.steps().stream().map(Step::id).collect(java.util.stream.Collectors.toUnmodifiableSet());
         if("APPROVED".equals(row.getReviewStatus())) {
-            if(row.getArchivedAt()!=null && rules.historicallyApproved(row.getOrganizationId(),row.getLearnerId(),row.getRequestId(),row.getCurrentRevision()))
-                return plan.steps().stream().map(Step::id).collect(java.util.stream.Collectors.toUnmodifiableSet());
             long basis=row.getApprovalBasisRevision()==null?row.getCurrentRevision():row.getApprovalBasisRevision();
             var original=data.revisions().content(row.getOrganizationId(),row.getLearnerId(),row.getRequestId(),basis);
             if(original.size()!=1)throw new Failure(403,"PATHWAY_APPROVAL_INVALID");
@@ -106,7 +136,7 @@ public final class RequirementPathwayAccess {
         }
         // No mandatory plan needs a new approval. The carried parallel root retains its original real bypass/approval provenance.
         if("NO_LEARNING_REQUIRED".equals(row.getGenerationStatus()) && "NONE".equals(row.getReviewStatus())) {
-            var carried=rules.carried(row.getOrganizationId(),row.getLearnerId(),row.getSelectionId());
+            var carried=rules.carried(row.getOrganizationId(),row.getLearnerId());
             if(carried.size()>1000)throw new Failure(503,"BYPASS_HISTORY_LIMIT");
             var anchors=carried.stream().map(RequirementPathwayJpaRepository.Carried::getBypassId).collect(java.util.stream.Collectors.toSet());
             return plan.steps().stream().filter(step->step.kind()==Kind.PARALLEL_SUPPLEMENT && anchors.contains(step.sourceBypassId()))

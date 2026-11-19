@@ -108,11 +108,11 @@ function ScopeDirectory({ purpose }: { purpose: AssessmentPurpose }) {
     <div ref={listRef} tabIndex={-1} className="scroll-mt-24 focus-visible:outline-none">{<Tabs value={archived ? 'archive' : activeTab ? 'active' : 'worklist'} onValueChange={value => filter({ status: value === 'archive' ? 'HISTORY' : value === 'active' ? 'ACTIVE' : '', level: '' })}>
       <TabsList className="h-auto flex-wrap gap-1 border border-border p-1"><TabsTrigger value="worklist">{t('baselineUX.worklist')}</TabsTrigger>{purpose === 'BASELINE' && <TabsTrigger value="active">{t('baselineUX.active')}</TabsTrigger>}<TabsTrigger value="archive">{t('baselineUX.archive')}</TabsTrigger></TabsList>
     </Tabs>}</div>
-    <Card><CardHeader className={purpose === 'SKILL_ASSESSMENT' ? 'space-y-0 px-5 pb-3 pt-4' : 'space-y-0'}>
+    <Card><CardHeader className={purpose === 'SKILL_ASSESSMENT' ? 'hidden' : 'space-y-0'}>
       <div className={purpose === 'SKILL_ASSESSMENT' ? 'flex justify-end' : 'flex flex-wrap items-start justify-between gap-3'}>{purpose === 'BASELINE' && <div className="min-w-0 space-y-1">
         <Heading level={2} size="subsection" className="flex items-center gap-2"><SlidersHorizontal className="h-4 w-4 shrink-0 text-primary" aria-hidden="true" />{t('baselineUX.title')}</Heading>
         <Text variant="body-sm">{t(archived ? 'baselineUX.archiveHelp' : activeTab ? 'baselineUX.activeHelp' : 'baselineUX.worklistHelp')}</Text>
-      </div>}<Button size="sm" variant="primary" isLoading={!current} leftIcon={<RefreshCw size={14} aria-hidden="true" />} onClick={() => setReload(v => v + 1)}>{t('scopedPolicy.refresh')}</Button></div>
+      </div>}{purpose === 'BASELINE' && <Button size="sm" variant="primary" isLoading={!current} leftIcon={<RefreshCw size={14} aria-hidden="true" />} onClick={() => setReload(v => v + 1)}>{t('scopedPolicy.refresh')}</Button>}</div>
     </CardHeader><CardContent className={`grid items-center gap-3 pt-0 sm:grid-cols-2 ${showLevel ? 'xl:grid-cols-4' : 'xl:grid-cols-3'}`}>
       <label className="min-w-0"><span className="sr-only">{t(purpose === 'BASELINE' ? 'scopedPolicy.searchRole' : 'scopedPolicy.searchSkill')}</span>
         <Input type="search" maxLength={200} className="h-8 bg-background text-body-sm" leftIcon={<Search size={15} aria-hidden="true" />} value={searchInput} placeholder={t(purpose === 'BASELINE' ? 'baselineUX.searchRole' : 'baselineUX.searchSkill')} onChange={e => setSearchDraft({ query: search, value: e.target.value })} /></label>
@@ -172,10 +172,12 @@ function ScopeWorkspace({ purpose, scopeKey, initialAction, onClose }: { purpose
   }, [locked])
   async function execute(command: ScopedCommand, activateAfterSave = false) {
     if (flight.current) return
+    let savedForActivation = false
     flight.current = true; activateOnSave.current = activateAfterSave; setBusy(true); setPending(command); setMutationError(null); setNotice(''); setConfirm(false)
     try {
       let result = await runScopedCommand(command)
       if (command.kind === 'save' && activateAfterSave && result.draft) {
+        savedForActivation = true
         setLoaded({ key, value: result }); setEditing(false)
         const activation: ScopedCommand = { purpose, scopeKey, kind: 'activate', commandKey: crypto.randomUUID(), draftId: result.draft.id, expectedRevision: result.draft.revision, expectedActivationRevision: result.activationRevision, expectedCatalogHash: result.scope.catalogHash }
         setPending(activation); result = await runScopedCommand(activation)
@@ -184,6 +186,7 @@ function ScopeWorkspace({ purpose, scopeKey, initialAction, onClose }: { purpose
       setNotice(command.kind === 'activate' || activateAfterSave ? 'activated' : command.kind === 'create' ? 'draftOpened' : 'saved')
     } catch (error) {
       setMutationError(error)
+      if (savedForActivation) setNotice('savedActivationFailed')
       if (error instanceof AdaptiveBaselineApiError && error.status >= 400 && error.status < 500) { setPending(null); setReload(v => v + 1) }
     } finally { flight.current = false; setBusy(false) }
   }
@@ -200,9 +203,7 @@ function ScopeWorkspace({ purpose, scopeKey, initialAction, onClose }: { purpose
   return <Dialog open size="wide" className="max-w-3xl border-primary/20" ariaLabel={t('scopedPolicy.skillTitle')} onOpenChange={open => { if (!open) back() }}>
     <DialogHeader className="mb-4 border-b border-border pb-4 pr-7"><DialogTitle><SlidersHorizontal className="h-5 w-5 text-primary" />{data ? `${data.scope.ownerName} \u00b7 ${t(`knowledgeLevel.${data.scope.levelId}`)}` : t('scopedPolicy.skillTitle')}</DialogTitle><DialogDescription>{t('scopedPolicy.skillTitle')}</DialogDescription></DialogHeader>
     <DialogBody className="space-y-4">
-    <div className="flex flex-wrap items-center justify-end gap-2">
-      <Button variant="secondary" className="min-w-24 border border-primary/30 font-semibold" disabled={locked || editing} leftIcon={<RefreshCw size={14} aria-hidden="true" />} onClick={() => { setViewing(null); setReload(v => v + 1) }}>{t('scopedPolicy.refresh')}</Button></div>
-    {notice && <Text role="status" tone="success">{t(`scopedPolicy.${notice}`)}</Text>}
+    {notice && <Text role="status" tone={notice === 'savedActivationFailed' ? 'foreground' : 'success'}>{t(`scopedPolicy.${notice}`)}</Text>}
     {mutationError != null && <ConfigError error={mutationError} />}
     {pending && !busy && <Card><CardContent className="space-y-3 pt-5"><Text role="status">{t('scopedPolicy.pending')}</Text><Button variant="outline" onClick={() => void execute(pending, pending.kind === 'save' && activateOnSave.current)}>{t('scopedPolicy.retry')}</Button></CardContent></Card>}
     {!current && <Text role="status">{t('scopedPolicy.loading')}</Text>}

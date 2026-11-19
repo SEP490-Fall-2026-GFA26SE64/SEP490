@@ -16,6 +16,7 @@ import { PathwayTimingSummary } from './PathwayTimingSummary'
 import { CertificateSubmissionDialog } from './CertificateSubmissionDialog'
 import { readCurrentKnowledgeTarget } from '../baseline-assessment/assignedKnowledgeRoleApi'
 import { PathwayPlaceholder } from './PathwayPlaceholder'
+import { BypassedGapsPanel } from '../components/BypassedGapsPanel'
 
 export function RequirementEmployeePathway({ scope }: { scope: string }) {
   const [params] = useSearchParams()
@@ -71,6 +72,7 @@ function OwnedRequirementEmployeePathway({ scope }: { scope: string }) {
       {data.steps.length > 0 && <div ref={graphStart} style={{scrollMarginTop:'calc(var(--workspace-header-height, 58px) + 24px)'}}><RequirementPathwayPresentation pathway={data} onCertificate={setCertificateStep} onInteractionLockChange={setGraphLocked} /></div>}
       {data.steps.length === 0 && <PathwayPlaceholder target={data}><Text role="status" variant="body-sm">{t('initialPathway.state.' + state)}</Text>{!data.archived && ['BLOCKED', 'FAILED_RETRYABLE', 'STALE'].includes(data.generationStatus) && data.revision === null && <Button variant="outline" disabled={busy} onClick={() => void retry()}>{t('rulePathway.retryGeneration')}</Button>}</PathwayPlaceholder>}
     </div>}
+    {!archive && !denied && <BypassedGapsPanel availableOnly pathway={data} />}
     {data && certificateStep && data.steps.some(item => item.id === certificateStep.id) && <CertificateSubmissionDialog key={data.requestId + ':' + certificateStep.id} scope={scope} pathway={data} step={data.steps.find(item => item.id === certificateStep.id)!} onClose={() => setCertificateStep(null)} />}
   </div>
 }

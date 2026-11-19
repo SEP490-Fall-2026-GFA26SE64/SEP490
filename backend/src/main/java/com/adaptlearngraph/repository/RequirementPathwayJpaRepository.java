@@ -179,15 +179,17 @@ public interface RequirementPathwayJpaRepository extends Repository<InitialPathw
     List<Official> official(@Param("org") UUID org,@Param("learner") UUID learner,@Param("requirements") String requirements);
     interface Official {String getRequirementSnapshot();UUID getEvidenceId();}
     @Query(value="""
-            SELECT b.id AS bypassId,s.requirement_snapshot::text AS requirementSnapshot,b.reason AS reason
+            SELECT b.id AS bypassId,s.requirement_snapshot::text AS requirementSnapshot,b.reason AS reason,
+                b.request_id AS sourceRequestId,b.step_id AS sourceStepId,b.expert_id AS expertId,b.decided_at AS decidedAt,
+                r.frozen_input#>>'{input,binding,roleName}' AS roleName,r.frozen_input#>>'{input,binding,levelName}' AS levelName
             FROM platform.initial_pathway_current c JOIN platform.initial_pathway_request r ON r.request_id=c.request_id
                 AND r.organization_id=c.organization_id AND r.learner_id=c.learner_id AND r.requirement_snapshot_id IS NOT NULL
             JOIN platform.initial_pathway_revision v ON v.request_id=c.request_id AND v.revision=c.current_revision AND v.format_version=3
-            JOIN platform.pathway_requirement_step s ON s.request_id=v.request_id AND s.revision=v.revision AND s.kind='REQUIRED' AND s.state='BYPASSED'
-                AND s.organization_id=r.organization_id AND s.learner_id=r.learner_id
-            JOIN platform.pathway_requirement_bypass b ON b.request_id=s.request_id AND b.step_id=s.step_id AND b.revision<=s.revision
-                AND b.organization_id=s.organization_id AND b.learner_id=s.learner_id
-            WHERE c.organization_id=:org AND c.learner_id=:learner AND c.archived_at IS NOT NULL AND r.selection_id<>:selection
+            JOIN platform.pathway_requirement_bypass b ON b.request_id=r.request_id AND b.revision<=v.revision
+                AND b.organization_id=r.organization_id AND b.learner_id=r.learner_id
+            JOIN platform.pathway_requirement_step s ON s.request_id=b.request_id AND s.revision=b.revision AND s.step_id=b.step_id AND s.kind='REQUIRED'
+                AND s.organization_id=b.organization_id AND s.learner_id=b.learner_id
+            WHERE c.organization_id=:org AND c.learner_id=:learner
                 AND NOT EXISTS (SELECT 1 FROM platform.pathway_requirement_bypass newer WHERE newer.supersedes_id=b.id)
                 AND EXISTS (SELECT 1 FROM platform.initial_pathway_approval approval JOIN platform.initial_pathway_revision basis
                     ON basis.request_id=approval.request_id AND basis.revision=approval.revision AND basis.content_hash=approval.content_hash
@@ -195,8 +197,9 @@ public interface RequirementPathwayJpaRepository extends Repository<InitialPathw
                         AND approval.organization_id=r.organization_id)
             ORDER BY b.decided_at,b.id LIMIT 1001
             """,nativeQuery=true)
-    List<Carried> carried(@Param("org") UUID org,@Param("learner") UUID learner,@Param("selection") UUID selection);
-    interface Carried {UUID getBypassId();String getRequirementSnapshot();String getReason();}
+    List<Carried> carried(@Param("org") UUID org,@Param("learner") UUID learner);
+    interface Carried {UUID getBypassId();String getRequirementSnapshot();String getReason();
+        UUID getSourceRequestId();UUID getSourceStepId();UUID getExpertId();Instant getDecidedAt();String getRoleName();String getLevelName();}
     /** Retain actual unresolved descendants of parallel work across further target changes, even if result projection was delayed. */
     @Query(value="""
             SELECT DISTINCT ON (b.id,g.skill_id,g.knowledge_level) b.id AS bypassId,

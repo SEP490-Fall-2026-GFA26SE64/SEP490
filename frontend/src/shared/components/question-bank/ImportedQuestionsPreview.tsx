@@ -4,16 +4,20 @@ import { useTranslation } from '../../i18n/LanguageContext'
 import { AssessmentQuestionContent } from '../ui/AssessmentQuestionContent'
 import { Button } from '../ui/Button'
 import { Dialog, DialogHeader, DialogTitle, DialogBody, DialogFooter } from '../ui/Dialog'
-import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '../ui/Accordion'
 import { Heading } from '../typography/Heading'
 
 function QuestionPreview({ content, vi }: { content: BankContent | undefined; vi: boolean }) {
   const [choice, setChoice] = useState('')
   if (!content) return <p role="status">{vi ? 'Chưa có nội dung câu hỏi.' : 'Question content is unavailable.'}</p>
+  const answer = typeof content.correctAnswer === 'number' && Number.isInteger(content.correctAnswer) && content.correctAnswer >= 0 && content.correctAnswer < content.options.length ? content.correctAnswer : null
   return <div className="min-w-0 space-y-5">
     <p className="text-caption text-muted-foreground">{content.knowledgeLevel ?? '—'} · {content.skillName ?? content.skillId}</p>
+    <section aria-label={vi ? 'Đáp án và giải thích dành cho người soạn / duyệt' : 'Staff answer key and explanation'} className="space-y-1 rounded-lg bg-success/5 p-3">
+      <p className="text-caption text-muted-foreground">{vi ? 'Chỉ dành cho người soạn / duyệt' : 'Staff only'}</p>
+      <p className="whitespace-pre-wrap [overflow-wrap:anywhere] text-body-sm font-semibold">{vi ? 'Đáp án đúng' : 'Correct answer'}: {answer === null ? (vi ? 'Chưa chọn' : 'Not selected') : `${String.fromCharCode(65 + answer)} — ${content.options[answer]}`}</p>
+      <p className="whitespace-pre-wrap [overflow-wrap:anywhere] text-body-sm">{vi ? 'Giải thích' : 'Explanation'}: {content.explanation?.trim() || (vi ? 'Chưa có giải thích.' : 'No explanation provided.')}</p>
+    </section>
     <AssessmentQuestionContent prompt={content.prompt || (vi ? 'Chưa nhập câu hỏi.' : 'Question prompt is empty.')} options={content.options.map((text, index) => ({ id: String(index), text: text || (vi ? 'Chưa nhập đáp án.' : 'Answer is empty.') }))} value={choice} onChange={setChoice} answerLabel={vi ? 'Chọn đáp án xem thử' : 'Preview answer choices'} />
-    <Accordion><AccordionItem value="answer"><AccordionTrigger>{vi ? 'Đáp án & giải thích — chỉ dành cho người soạn / duyệt' : 'Answer key & explanation — staff only'}</AccordionTrigger><AccordionContent><p className="mb-2 text-body-sm font-semibold">{vi ? 'Đáp án đúng' : 'Correct answer'}: {content.correctAnswer == null ? '—' : String.fromCharCode(65 + content.correctAnswer)}</p><p className="whitespace-pre-wrap [overflow-wrap:anywhere] text-body-sm">{content.explanation || (vi ? 'Chưa có giải thích.' : 'No explanation provided.')}</p></AccordionContent></AccordionItem></Accordion>
   </div>
 }
 
@@ -32,7 +36,7 @@ export function ImportedQuestionsPreview({ questions = [], reviewRows, initialIn
   return <>
     <Dialog open onOpenChange={open => { if (!open) onClose() }} size="wide" className="w-[96vw] max-w-7xl max-h-[94dvh]" ariaLabel={reviewRows ? (vi ? 'Xem thử câu hỏi đang import' : 'Review question preview') : (vi ? 'Câu hỏi vừa nhập' : 'Imported questions')}>
       <DialogHeader><DialogTitle>{reviewRows ? (vi ? `Xem trước khi import · ${items.length} câu hỏi` : `Review import · ${items.length} questions`) : (vi ? `Import thành công · ${items.length} câu hỏi nháp` : `Import completed · ${items.length} draft questions`)}</DialogTitle></DialogHeader>
-      <DialogBody><div className="grid min-w-0 gap-3 lg:grid-cols-[13rem_minmax(0,1fr)]">
+      <DialogBody style={{ outline: 'none' }}><div className="grid min-w-0 gap-3 lg:grid-cols-[13rem_minmax(0,1fr)]">
         <aside className="min-w-0 rounded-lg border border-border bg-background p-2">
           <select className="h-10 w-full min-w-0 rounded border border-border bg-card px-2 lg:hidden" aria-label={vi ? 'Chọn câu hỏi vừa nhập' : 'Select imported question'} value={index} onChange={event => setPosition(Number(event.target.value))}>{items.map((q, i) => <option key={q.id} value={i}>{i + 1}. {q.content?.prompt}</option>)}</select>
           <nav className="hidden max-h-[65dvh] space-y-1 overflow-y-auto lg:block" aria-label={vi ? 'Câu hỏi vừa nhập' : 'Imported questions'}>{items.map((q, i) => <Button key={q.id} variant={i === index ? 'secondary' : 'ghost'} aria-current={i === index ? 'step' : undefined} className="h-auto min-h-12 w-full justify-start whitespace-normal p-3 text-left [&>span]:min-w-0 [&>span]:whitespace-normal" onClick={() => setPosition(i)}><span className="line-clamp-3 [overflow-wrap:anywhere]">{i + 1}. {q.content?.prompt}</span></Button>)}</nav>
@@ -41,6 +45,6 @@ export function ImportedQuestionsPreview({ questions = [], reviewRows, initialIn
       </div></DialogBody>
       <DialogFooter><Button onClick={onClose}>{reviewRows ? (vi ? 'Quay lại kiểm tra file' : 'Back to import review') : (vi ? 'Về ngân hàng câu hỏi' : 'Back to question bank')}</Button></DialogFooter>
     </Dialog>
-    <Dialog open={expanded} onOpenChange={setExpanded} size="wide" className="h-[94dvh] max-h-[94dvh] max-w-[96vw]" ariaLabel={title}><DialogHeader><DialogTitle>{title}</DialogTitle></DialogHeader><DialogBody>{preview}</DialogBody></Dialog>
+    <Dialog open={expanded} onOpenChange={setExpanded} size="wide" className="h-[94dvh] max-h-[94dvh] max-w-[96vw]" ariaLabel={title}><DialogHeader><DialogTitle>{title}</DialogTitle></DialogHeader><DialogBody style={{ outline: 'none' }}>{preview}</DialogBody></Dialog>
   </>
 }

@@ -40,10 +40,15 @@ public class RequirementPathwayConfiguration {
     }
     @Bean CertificateReviewService certificateReviewService(Actors actors,ReviewAssignments assignments,CurrentRoleSelectionStore selections,
             CertificateSubmissionJpaRepository submissions,CertificateSubmissionService views,RequirementPathwayJpaRepository rules,RequirementPathwayRevisions revisions,
-            LearningContentPort content,LearningAssetPort files,Receipts receipts,OutboxEventJpaRepository outbox,RuleAssessmentAttemptJpaRepository clock,RuleAssessmentOutcomeJpaRepository effects,AuditEventJpaRepository audit){
-        return new CertificateReviewService(actors,assignments,selections,submissions,views,rules,revisions,content,files,receipts,outbox,clock,effects,audit);
+            LearningContentPort content,LearningAssetPort files,Receipts receipts,OutboxEventJpaRepository outbox,RuleAssessmentAttemptJpaRepository clock,RuleAssessmentOutcomeJpaRepository effects,AuditEventJpaRepository audit,
+            RequirementPathwayPlanningService planning,RequirementPathwayReviewService review){
+        return new CertificateReviewService(actors,assignments,selections,submissions,views,rules,revisions,content,files,receipts,outbox,clock,effects,audit).recalculateWith(planning,review);
     }
     @Bean PathwayNotifications pathwayNotifications(LearningNotificationJpaRepository notifications){return new PathwayNotifications(notifications);}
+    @Bean BypassedGapService bypassedGapService(Actors actors,RequirementPathwayJpaRepository rules,RequirementPathwayRevisions revisions,
+            RequirementPathwayAdmissionService admission,RulePathwayCatalog catalog,PathwayNotifications notifications) {
+        return new BypassedGapService(actors,rules,revisions,admission,catalog,notifications);
+    }
     @Bean RequirementPathwayRevisions requirementPathwayRevisions(InitialPathwayRepositories data,RequirementPathwayJpaRepository rules,
             RuleAssessmentAttemptJpaRepository clock,ObjectMapper json,PathwayNotifications notifications){return new RequirementPathwayRevisions(data,rules,clock,json,notifications);}
     @Bean RequirementPathwayAdmissionService requirementPathwayAdmission(Actors actors,RoleBaselineFlow.Catalog roles,CurrentRoleSelectionStore selections,
@@ -69,7 +74,7 @@ public class RequirementPathwayConfiguration {
     }
     @Bean RequirementPathwayAccess requirementPathwayAccess(Actors actors,CurrentRoleSelectionStore selections,RequirementPathwayJpaRepository rules,
             RequirementPathwayRevisions revisions,RequirementPathwayAdmissionService admission,ReviewAssignments assignments,InitialPathwayRepositories data,
-            RulePathwayCatalog catalog,ModuleAuthoringPort modules,ObjectMapper json){return new RequirementPathwayAccess(actors,selections,rules,revisions,admission,assignments,data,catalog,modules,json);}
+            RulePathwayCatalog catalog,ModuleAuthoringPort modules,ObjectMapper json,RuleAssessmentContextJpaRepository assessmentEvidence){return new RequirementPathwayAccess(actors,selections,rules,revisions,admission,assignments,data,catalog,modules,json).assessmentEvidence(assessmentEvidence);}
     @Bean RequirementPathwayView requirementPathwayView(Actors actors,RequirementPathwayJpaRepository rules,RequirementPathwayRevisions revisions,
             RequirementPathwayAdmissionService admission,RequirementPathwayAccess access){return new RequirementPathwayView(actors,rules,revisions,admission,access);}
     /** FR-04.07: the trusted, entitled L&D Manager session supplies the only organization the report may read. */
@@ -96,8 +101,8 @@ public class RequirementPathwayConfiguration {
             RequirementPathwayPlanningService planning,RequirementPathwayReviewService review,ObjectMapper json){return new RequirementPathwayRecalculationService(rules,revisions,planning,review,json);}
     @Bean RequirementPathwayRefreshService requirementPathwayRefresh(RequirementPathwayRefreshJpaRepository jobs,RequirementPathwayJpaRepository rules,
             RequirementPathwayRevisions revisions,RequirementPathwayPlanningService planning,RequirementPathwayReviewService review,CurrentRoleSelectionStore selections,
-            OutboxEventJpaRepository outbox,RuleAssessmentAttemptJpaRepository clock,@Qualifier(TransactionManagers.JPA) PlatformTransactionManager manager){
-        return new RequirementPathwayRefreshService(jobs,rules,revisions,planning,review,selections,outbox,clock,new TransactionTemplate(manager));
+            OutboxEventJpaRepository outbox,RuleAssessmentAttemptJpaRepository clock,@Qualifier(TransactionManagers.JPA) PlatformTransactionManager manager,BypassedGapService gaps){
+        return new RequirementPathwayRefreshService(jobs,rules,revisions,planning,review,selections,outbox,clock,new TransactionTemplate(manager)).watchBypassedGaps(gaps);
     }
     @Bean(name="requirementPathwayScheduler",destroyMethod="shutdown")
     @ConditionalOnProperty(name="pathway.initial.worker.enabled",havingValue="true")

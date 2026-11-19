@@ -17,7 +17,10 @@ export function NotificationDropdown() {
   const [items, setItems] = useState<LearningNotification[]>([])
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(true)
-  const root = useRef<HTMLDivElement>(null)
+  const root = useRef<HTMLDivElement>(null), list = useRef<HTMLDivElement>(null)
+  const readFlight = useRef(new Set<string>()), readFailed = useRef(new Set<string>()), confirmedReads = useRef(new Map<string, string>())
+  const loadRevision = useRef(0)
+  const [readError, setReadError] = useState(false), [readRetry, setReadRetry] = useState(0)
   const { toast } = useToast()
   const active = useRef(true), flight = useRef(false)
   const observe = useCallback(async (signal: AbortSignal) => {
@@ -39,21 +42,49 @@ export function NotificationDropdown() {
     } catch { /* Persisted events remain available; retry on reconnect/poll. */ }
     finally { flight.current = false }
   }, [toast, language])
-  const load = useCallback(
-    () =>
-      moduleRequest<LearningNotification[]>('/notifications')
-        .then((result) => {
-          setItems(result.filter(isVisibleLearningNotification))
-          setError('')
-        })
-        .catch((e: unknown) =>
-          setError(
-            e instanceof Error ? e.message : 'Cannot load notifications',
-          ),
-        )
-        .finally(() => setLoading(false)),
-    [],
-  )
+  const load = useCallback(async () => {
+    const revision = ++loadRevision.current
+    try {
+      const result = await moduleRequest<LearningNotification[]>('/notifications')
+      if (!active.current || revision !== loadRevision.current) return
+      setItems(result.filter(isVisibleLearningNotification).map(item => ({ ...item, readAt: item.readAt || confirmedReads.current.get(item.id) || null })))
+      setError('')
+    } catch (e) {
+      if (active.current && revision === loadRevision.current) setError(e instanceof Error ? e.message : 'Cannot load notifications')
+    } finally { if (active.current && revision === loadRevision.current) setLoading(false) }
+  }, [])
+  const markRead = useCallback(async (id: string) => {
+    if (readFlight.current.has(id) || confirmedReads.current.has(id)) return
+    readFlight.current.add(id)
+    try {
+      await moduleRequest(`/notifications/${encodeURIComponent(id)}/read`, 'PUT')
+      const readAt = new Date().toISOString()
+      confirmedReads.current.set(id, readAt); readFailed.current.delete(id)
+      if (active.current) {
+        setItems(current => current.map(item => item.id === id ? { ...item, readAt } : item))
+        setReadError(readFailed.current.size > 0)
+      }
+    } catch {
+      readFailed.current.add(id)
+      if (active.current) setReadError(true)
+    } finally { readFlight.current.delete(id) }
+  }, [])
+  useEffect(() => {
+    const scroller = list.current
+    if (!open || loading || error || !scroller) return
+    // Only entries actually visible in the open scrolling panel become read.
+    // Polling and toast observation never call this endpoint.
+    const observer = new IntersectionObserver(entries => {
+      for (const entry of entries) {
+        const id = (entry.target as HTMLElement).dataset.notificationId
+        if (entry.isIntersecting && entry.intersectionRatio > 0 && id && !readFailed.current.has(id)) void markRead(id)
+      }
+    }, { root: scroller, threshold: 0 })
+    scroller.querySelectorAll<HTMLElement>('[data-notification-id]').forEach(element => {
+      if (items.some(item => item.id === element.dataset.notificationId && !item.readAt)) observer.observe(element)
+    })
+    return () => observer.disconnect()
+  }, [open, loading, error, items, markRead, readRetry])
   useEffect(() => {
     active.current = true
     const controller = new AbortController()
@@ -96,6 +127,7 @@ export function NotificationDropdown() {
           setOpen((v) => !v)
           if (!open) {
             setLoading(true)
+            readFailed.current.clear(); setReadError(false)
             setError('')
             void load()
           }
@@ -109,7 +141,7 @@ export function NotificationDropdown() {
         )}
       </Button>
       {open && (
-        <div className="absolute right-0 z-50 mt-2 max-h-96 w-80 max-w-[90vw] overflow-y-auto rounded-lg border border-border bg-card p-3 shadow-lg">
+        <div ref={list} className="absolute right-0 z-50 mt-2 max-h-96 w-80 max-w-[90vw] overflow-y-auto rounded-lg border border-border bg-card p-3 shadow-lg">
           <h2 className="mb-3 font-semibold">
             {vi ? 'Thông báo' : 'Notifications'}
           </h2>
@@ -135,15 +167,17 @@ export function NotificationDropdown() {
               {vi ? 'Chưa có thông báo.' : 'No notifications yet.'}
             </p>
           )}
-          {items.map((n) => {
+          {readError && <div role="alert" className="mb-3 space-y-2"><p className="text-body-sm text-destructive">{vi ? 'Chưa lưu được trạng thái đã đọc.' : 'Could not save read status.'}</p><Button variant="outline" size="sm" onClick={() => { readFailed.current.clear(); setReadError(false); setReadRetry(value => value + 1) }}>{vi ? 'Thử lại' : 'Retry'}</Button></div>}
+          {!loading && items.map((n) => {
             const message = learningNotificationPresentation(n, language)
             return (
             <article
               key={n.id}
+              data-notification-id={n.id}
               className={`mb-2 space-y-2 rounded-lg border-l-4 p-3 ${message.accent} ${n.readAt ? 'bg-background' : 'bg-muted/40'}`}
             >
               <p className="break-words text-body-sm font-semibold">{message.title}</p>
-              <p className="line-clamp-2 break-words text-caption text-muted-foreground">
+              <p className="break-words text-caption text-muted-foreground">
                 {message.description}
               </p>
               <Link
@@ -154,15 +188,7 @@ export function NotificationDropdown() {
                     : `/employee/modules/${encodeURIComponent(n.moduleId ?? '')}`
                 }
                 onClick={() => {
-                  void moduleRequest(`/notifications/${n.id}/read`, 'PUT')
-                    .then(() => void load())
-                    .catch((e: unknown) =>
-                      setError(
-                        e instanceof Error
-                          ? e.message
-                          : 'Cannot mark notification read',
-                      ),
-                    )
+                  void markRead(n.id)
                   setOpen(false)
                 }}
               >

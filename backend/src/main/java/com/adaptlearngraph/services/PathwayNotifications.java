@@ -59,10 +59,19 @@ public final class PathwayNotifications {
             if(!parallel.isEmpty())body+="\nIncludes bypass-related provision / Có nội dung bổ sung liên quan bypass.";
             body+="\nSaved pathway provision remains subject to approval and prerequisites. / Nội dung đã lưu vẫn tuân theo phê duyệt và điều kiện tiên quyết.";
             send(row,"RECALCULATED:"+Objects.toString(event,Long.toString(revision)),"PATHWAY_RECALCULATED",title,body);
-        } else if(!parallel.isEmpty()) {
-            send(row,"BYPASS_PROVISION:"+revision,"BYPASS_PROVISION_ADDED",
-                    "Bypass-related content added / Bổ sung nội dung liên quan bypass",String.join("\n",parallel)
-                        +"\nSaved pathway provision remains subject to approval and prerequisites. / Nội dung đã lưu vẫn tuân theo phê duyệt và điều kiện tiên quyết.");
         }
+    }
+    public void bypassProvision(UUID org,UUID learner,BypassedGapService.Gap gap) {
+        InitialJpa.requireTransaction();
+        var providers=new LinkedHashMap<String,String>();
+        for(var option:gap.options())providers.put("MODULE:"+option.moduleId()+":"+option.moduleRevision()+":"+option.contentVersion(),"Module: "+option.title());
+        if(gap.certificate()!=null)providers.put("CERTIFICATE:"+gap.certificate().id()+":"+gap.certificate().version(),"Certificate / Chứng chỉ: "+gap.certificate().name());
+        for(var provider:providers.entrySet())notifications.pathway(UUID.randomUUID(),org.toString(),learner.toString(),
+                "V5:BYPASS:"+gap.bypassId()+":"+RoleBaselineFlow.hash(provider.getKey()+":"+gap.requirement().proofKey()),"BYPASS_PROVISION_ADDED",
+                "Supplementary learning available / Đã có nội dung học bổ sung",
+                provider.getValue()+"\nRequirement / Yêu cầu: "+gap.requirement().skillName()+" · "+gap.requirement().knowledgeLevel()
+                    +"\nOriginal gap / Gap gốc: "+gap.roleName()+" · "+gap.levelName()+" · "+gap.sourceRequestId()+" · bypass "+gap.bypassId()
+                    +"\nNonblocking supplementation; original completion is retained. / Học bổ sung không khóa mục tiêu; giữ nguyên hoàn thành cũ.",
+                "/employee/pathway?view=role");
     }
 }
