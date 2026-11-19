@@ -107,10 +107,13 @@ public final class QuestionBankService implements QuestionBankUseCase {
         });
     }
     private void approveOne(QuestionBank b,Actor a,Question q,Version v) {
+        approveOne(b,a,q,v,true);
+    }
+    private void approveOne(QuestionBank b,Actor a,Question q,Version v,boolean sendNotice) {
         manager(a);require(!q.retired&&q.owner!=null&&"SUBMITTED".equals(v.state),409,"Question is not eligible for approval");catalog.requireExpert(a,q.owner);
         require(v.id.toString().equals(v.viewed.get(a.id())),409,"Open this exact submitted version before approval");
         Content validated=content(a,v.content,true);require(validated.equals(v.content),409,"MicroSkill snapshot changed. Return the question for another review.");v.state="PUBLISHED";v.reviewedBy=a.id();v.reviewedAt=clock.instant();v.reason=null;v.publicationSource="STAFF_REVIEW";
-        audit(b,q,v,a,"APPROVED",null);notice(b,q.owner,"Question approved",q.code+" · v"+v.number);
+        audit(b,q,v,a,"APPROVED",null);if(sendNotice){notice(b,q.owner,"Question approved",q.code+" · v"+v.number);}
     }
     private void apply(QuestionBank b,Actor a,Command in) {
         var q=find(b,in.id());expected(q,in.expectedRevision());var v=latest(q);
@@ -131,13 +134,13 @@ public final class QuestionBankService implements QuestionBankUseCase {
     @Override public View approve(Bulk input) {
         var a=actor();manager(a);require(input.questions()!=null&&!input.questions().isEmpty()&&input.questions().size()<=500,400,"Select 1–500 questions");
         require(input.questions().stream().map(Command::id).distinct().count()==input.questions().size(),400,"Duplicate selection");
-        return store.atomic(a,b->{var errors=new ArrayList<String>();for(var in:input.questions()) {try {var q=find(b,in.id());expected(q,in.expectedRevision());var v=latest(q);if(input.markReviewed()&&"SUBMITTED".equals(v.state)){v.viewed.put(a.id(),v.id.toString());}require(!q.retired&&q.owner!=null&&"SUBMITTED".equals(v.state)&&v.id.toString().equals(v.viewed.get(a.id())),409,"Open the current eligible submitted version");content(a,v.content,true);catalog.requireExpert(a,q.owner);}catch(Failure e){errors.add(in.id()+": "+e.getMessage());}}require(errors.isEmpty(),409,String.join("; ",errors));for(var in:input.questions()){var q=find(b,in.id());approveOne(b,a,q,latest(q));q.revision++;}return view(b);});
+        return store.atomic(a,b->{var errors=new ArrayList<String>();for(var in:input.questions()) {try {var q=find(b,in.id());expected(q,in.expectedRevision());var v=latest(q);if(input.markReviewed()&&"SUBMITTED".equals(v.state)){v.viewed.put(a.id(),v.id.toString());}require(!q.retired&&q.owner!=null&&"SUBMITTED".equals(v.state)&&v.id.toString().equals(v.viewed.get(a.id())),409,"Open the current eligible submitted version");content(a,v.content,true);catalog.requireExpert(a,q.owner);}catch(Failure e){errors.add(in.id()+": "+e.getMessage());}}require(errors.isEmpty(),409,String.join("; ",errors));var byOwner=new LinkedHashMap<UUID,List<Question>>();for(var in:input.questions()){var q=find(b,in.id());approveOne(b,a,q,latest(q),false);q.revision++;byOwner.computeIfAbsent(q.owner,ignored->new ArrayList<>()).add(q);}for(var entry:byOwner.entrySet()){var list=entry.getValue();var first=list.getFirst();if(list.size()==1){notice(b,entry.getKey(),"Question approved",first.code+" · v"+latest(first).number);}else{notice(b,entry.getKey(),"Questions approved",list.size()+" questions approved ("+first.code+"…)");}}return view(b);});
     }
     @Override public ImportBatch preview(Preview input) {
         var a=actor();require(a.expert(),403,"Expert import required");require(input.rows()!=null&&!input.rows().isEmpty()&&input.rows().size()<=maxRows,400,"Import 1–"+maxRows+" rows");
         return store.atomic(a,b->{
             if(input.fileHash()!=null&&!input.fileHash().isBlank()&&b.committedFileHashes.contains(input.fileHash())) {
-                throw new Failure(409,"This exact file was already imported / File này đã được import trước đó");
+                throw new Failure(409,"This exact file was already imported");
             }
             var batch=new ImportBatch();batch.id=UUID.randomUUID();batch.actor=a.id();batch.generatedCodes=true;batch.fileHash=input.fileHash();batch.expiresAt=clock.instant().plusSeconds(1800);var codes=new HashSet<String>();var signatures=new HashMap<String,Integer>();int row=0;
             for(var in:input.rows()) { row++; try {
@@ -146,7 +149,7 @@ public final class QuestionBankService implements QuestionBankUseCase {
                 String sig=signature(body);
                 Integer firstRow=signatures.putIfAbsent(sig,row);
                 if(firstRow!=null) {
-                    batch.errors.add("Row "+row+": duplicate question in this file (matches row "+firstRow+") / Dòng "+row+": trùng câu hỏi trong cùng file (trùng dòng "+firstRow+")");
+                    batch.errors.add("Row "+row+": duplicate question in this file (matches row "+firstRow+")");
                     continue;
                 }
                 String c; do { c=generatedCode(b); } while (!codes.add(c));
@@ -161,7 +164,7 @@ public final class QuestionBankService implements QuestionBankUseCase {
         var a=actor();require(a.expert(),403,"Expert import required");return store.atomic(a,b->{var batch=b.imports.stream().filter(x->x.id.equals(input.batch())&&x.actor.equals(a.id())).findFirst().orElseThrow(()->new Failure(404,"Import preview not found"));
             require(batch.expiresAt.isAfter(clock.instant()),409,"Import preview expired");if(batch.committed)return view(b);require(batch.errors.isEmpty(),400,String.join("; ",batch.errors));
             if(batch.fileHash!=null&&!batch.fileHash.isBlank()&&b.committedFileHashes.contains(batch.fileHash)) {
-                throw new Failure(409,"This exact file was already imported / File này đã được import trước đó");
+                throw new Failure(409,"This exact file was already imported");
             }
             require(input.skipDuplicates()||batch.warnings.isEmpty()||input.acknowledgeWarnings(),409,"Acknowledge import warnings");
             require(batch.generatedCodes&&batch.expected.values().stream().allMatch(v->v==-1L)&&batch.rows.stream().allMatch(r->r.code().matches("Q-[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}")),409,"Import format changed. Upload the latest template again.");
@@ -169,8 +172,10 @@ public final class QuestionBankService implements QuestionBankUseCase {
             var rowsToImport=input.skipDuplicates()
                 ? batch.rows.stream().filter(r->batch.matching.getOrDefault(r.code(),List.of()).isEmpty()).toList()
                 : batch.rows;
-            require(!rowsToImport.isEmpty(),409,"No new questions to import (all rows already exist) / Không có câu hỏi mới nào để nhập (tất cả đã tồn tại)");
+            require(!rowsToImport.isEmpty(),409,"No new questions to import (all rows already exist)");
             for(var row:rowsToImport){var existing=b.questions.stream().filter(x->x.code.equals(row.code())).findFirst().orElse(null);var nowMatches=duplicates(b,row.content(),existing==null?null:existing.id).stream().filter(c->!batchCodes.contains(c)).collect(java.util.stream.Collectors.toSet());var seenMatches=batch.matching.getOrDefault(row.code(),List.of()).stream().filter(c->!batchCodes.contains(c)).collect(java.util.stream.Collectors.toSet());require(nowMatches.equals(seenMatches),409,row.code()+": matching content changed since preview; upload again");}
+            int submittedCount=0;
+            String firstSubmittedCode=null;
             for(var row:rowsToImport) {
                 require(!containsCode(b,row.code()),409,"Generated code conflict. Upload the file again.");
                 var created=create(b,a,row.code(),content(a,row.content(),false));
@@ -182,9 +187,15 @@ public final class QuestionBankService implements QuestionBankUseCase {
                     v.submittedAt=clock.instant();
                     v.viewed.clear();
                     audit(b,created,v,a,"SUBMITTED",null);
-                    notifyManagers(b,a,"Question awaiting review",created.code);
                     created.revision++;
+                    submittedCount++;
+                    if(firstSubmittedCode==null)firstSubmittedCode=created.code;
                 }
+            }
+            if(submittedCount==1) {
+                notifyManagers(b,a,"Question awaiting review",firstSubmittedCode);
+            } else if(submittedCount>1) {
+                notifyManagers(b,a,"Questions awaiting review",submittedCount+" questions submitted ("+firstSubmittedCode+"…)");
             }
             if(batch.fileHash!=null&&!batch.fileHash.isBlank())b.committedFileHashes.add(batch.fileHash);
             batch.committed=true;return view(b);});

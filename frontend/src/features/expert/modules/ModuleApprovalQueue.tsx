@@ -40,9 +40,9 @@ export function ModuleApprovalQueue({ documents, total, loading, showHeading = t
                   copy('Submitted by', 'Người gửi'),
                   copy('Requested at', 'Thời điểm gửi'),
                   copy('Status', 'Trạng thái'),
-                  copy('Action', 'Thao tác')
+                  copy('Actions', 'Thao tác')
                 ].map((label, index) => (
-                  <th key={label} className={`px-3 py-2.5 font-semibold ${['w-[27%]', 'w-[15%]', 'w-[8%]', 'w-[15%]', 'w-[15%]', 'w-[12%]', 'w-[8%]'][index]} ${index === 6 ? 'text-center' : ''}`}>
+                  <th key={label} className={`px-3 py-2.5 font-semibold ${['w-[27%]', 'w-[15%]', 'w-[8%]', 'w-[15%]', 'w-[15%]', 'w-[12%]', 'w-[8%]'][index]} ${index === 6 ? 'text-right' : 'text-left'}`}>
                     {label}
                   </th>
                 ))}

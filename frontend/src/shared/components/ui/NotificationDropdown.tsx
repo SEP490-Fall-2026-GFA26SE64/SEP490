@@ -1,20 +1,31 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useContext, useEffect, useRef, useState } from 'react'
 import { Bell } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import {
   moduleRequest,
   type LearningNotification,
 } from '../../api/moduleAuthoringApi'
+import { bankRequest, type BankNotice } from '../../api/questionBankApi'
+import { questionBankMessage } from '../../api/questionBankMessages'
+import { WorkspaceSessionContext } from '../../auth/workspaceSession'
 import { useTranslation } from '../../i18n/LanguageContext'
 import { Button } from './Button'
 import { useToast } from '../../hooks/useToast'
 import { isVisibleLearningNotification, learningNotificationPresentation } from '../../api/learningNotificationPresentation'
 import { PageLoader } from './PageLoader'
+
+type UnifiedNotification =
+  | { source: 'learning'; id: string; createdAt: string; readAt: string | null; item: LearningNotification }
+  | { source: 'questionBank'; id: string; createdAt: string; readAt: string | null; item: BankNotice }
+
 export function NotificationDropdown() {
   const { language } = useTranslation()
   const vi = language === 'vi'
+  const roles = useContext(WorkspaceSessionContext)?.identity?.roles ?? []
+  const isStaff = roles.includes('LD_MANAGER') || roles.includes('DOMAIN_EXPERT')
+  const isManager = roles.includes('LD_MANAGER')
   const [open, setOpen] = useState(false)
-  const [items, setItems] = useState<LearningNotification[]>([])
+  const [items, setItems] = useState<UnifiedNotification[]>([])
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(true)
   const root = useRef<HTMLDivElement>(null), list = useRef<HTMLDivElement>(null)
@@ -45,29 +56,61 @@ export function NotificationDropdown() {
   const load = useCallback(async () => {
     const revision = ++loadRevision.current
     try {
-      const result = await moduleRequest<LearningNotification[]>('/notifications')
+      const [learningRes, bankRes] = await Promise.allSettled([
+        moduleRequest<LearningNotification[]>('/notifications'),
+        isStaff ? bankRequest<BankNotice[]>('/notifications') : Promise.resolve([] as BankNotice[]),
+      ])
       if (!active.current || revision !== loadRevision.current) return
-      setItems(result.filter(isVisibleLearningNotification).map(item => ({ ...item, readAt: item.readAt || confirmedReads.current.get(item.id) || null })))
+      if (learningRes.status === 'rejected' && bankRes.status === 'rejected') {
+        const reason = learningRes.reason
+        setError(reason instanceof Error ? reason.message : 'Cannot load notifications')
+        return
+      }
+      const learningItems: UnifiedNotification[] = learningRes.status === 'fulfilled'
+        ? learningRes.value.filter(isVisibleLearningNotification).map(item => ({
+            source: 'learning',
+            id: `learning:${item.id}`,
+            createdAt: item.createdAt,
+            readAt: item.readAt || confirmedReads.current.get(`learning:${item.id}`) || null,
+            item,
+          }))
+        : []
+      const bankItems: UnifiedNotification[] = bankRes.status === 'fulfilled'
+        ? bankRes.value.map(item => ({
+            source: 'questionBank',
+            id: `qb:${item.id}`,
+            createdAt: item.createdAt,
+            readAt: item.readAt || confirmedReads.current.get(`qb:${item.id}`) || null,
+            item,
+          }))
+        : []
+      const merged = [...learningItems, ...bankItems].sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt))
+      setItems(merged)
       setError('')
     } catch (e) {
       if (active.current && revision === loadRevision.current) setError(e instanceof Error ? e.message : 'Cannot load notifications')
     } finally { if (active.current && revision === loadRevision.current) setLoading(false) }
-  }, [])
-  const markRead = useCallback(async (id: string) => {
-    if (readFlight.current.has(id) || confirmedReads.current.has(id)) return
-    readFlight.current.add(id)
+  }, [isStaff])
+  const markRead = useCallback(async (compositeId: string) => {
+    if (readFlight.current.has(compositeId) || confirmedReads.current.has(compositeId)) return
+    readFlight.current.add(compositeId)
     try {
-      await moduleRequest(`/notifications/${encodeURIComponent(id)}/read`, 'PUT')
+      if (compositeId.startsWith('qb:')) {
+        await bankRequest(`/notifications/${encodeURIComponent(compositeId.slice(3))}/read`, {})
+      } else {
+        const rawId = compositeId.startsWith('learning:') ? compositeId.slice(9) : compositeId
+        await moduleRequest(`/notifications/${encodeURIComponent(rawId)}/read`, 'PUT')
+      }
       const readAt = new Date().toISOString()
-      confirmedReads.current.set(id, readAt); readFailed.current.delete(id)
+      confirmedReads.current.set(compositeId, readAt); readFailed.current.delete(compositeId)
       if (active.current) {
-        setItems(current => current.map(item => item.id === id ? { ...item, readAt } : item))
+        setItems(current => current.map(item => item.id === compositeId ? { ...item, readAt } : item))
         setReadError(readFailed.current.size > 0)
       }
     } catch {
-      readFailed.current.add(id)
+      readFailed.current.add(compositeId)
       if (active.current) setReadError(true)
-    } finally { readFlight.current.delete(id) }
+    } finally { readFlight.current.delete(compositeId) }
   }, [])
   useEffect(() => {
     const scroller = list.current
@@ -168,13 +211,40 @@ export function NotificationDropdown() {
             </p>
           )}
           {readError && <div role="alert" className="mb-3 space-y-2"><p className="text-body-sm text-destructive">{vi ? 'Chưa lưu được trạng thái đã đọc.' : 'Could not save read status.'}</p><Button variant="outline" size="sm" onClick={() => { readFailed.current.clear(); setReadError(false); setReadRetry(value => value + 1) }}>{vi ? 'Thử lại' : 'Retry'}</Button></div>}
-          {!loading && items.map((n) => {
+          {!loading && items.map((entry) => {
+            if (entry.source === 'questionBank') {
+              const n = entry.item
+              const destination = isManager ? '/ld-manager/question-bank' : '/expert/assessment-bank'
+              return (
+                <article
+                  key={entry.id}
+                  data-notification-id={entry.id}
+                  className={`mb-2 space-y-2 rounded-lg border-l-4 border-l-primary p-3 ${entry.readAt ? 'bg-background' : 'bg-muted/40'}`}
+                >
+                  <p className="break-words text-body-sm font-semibold">{questionBankMessage(n.title, vi)}</p>
+                  <p className="break-words text-caption text-muted-foreground">
+                    {questionBankMessage(n.body, vi)}
+                  </p>
+                  <Link
+                    className="text-sm text-primary underline"
+                    to={destination}
+                    onClick={() => {
+                      void markRead(entry.id)
+                      setOpen(false)
+                    }}
+                  >
+                    {vi ? 'Mở Ngân hàng câu hỏi' : 'Open Assessment Bank'}
+                  </Link>
+                </article>
+              )
+            }
+            const n = entry.item
             const message = learningNotificationPresentation(n, language)
             return (
             <article
-              key={n.id}
-              data-notification-id={n.id}
-              className={`mb-2 space-y-2 rounded-lg border-l-4 p-3 ${message.accent} ${n.readAt ? 'bg-background' : 'bg-muted/40'}`}
+              key={entry.id}
+              data-notification-id={entry.id}
+              className={`mb-2 space-y-2 rounded-lg border-l-4 p-3 ${message.accent} ${entry.readAt ? 'bg-background' : 'bg-muted/40'}`}
             >
               <p className="break-words text-body-sm font-semibold">{message.title}</p>
               <p className="break-words text-caption text-muted-foreground">
@@ -188,7 +258,7 @@ export function NotificationDropdown() {
                     : `/employee/modules/${encodeURIComponent(n.moduleId ?? '')}`
                 }
                 onClick={() => {
-                  void markRead(n.id)
+                  void markRead(entry.id)
                   setOpen(false)
                 }}
               >

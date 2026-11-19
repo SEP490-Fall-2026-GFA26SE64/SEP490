@@ -229,7 +229,7 @@ public final class ExcelLearningImport implements LearningImportUseCase {
                 }
                 fileHash = HexFormat.of().formatHex(digest.digest());
                 if (isCommittedFileHash(a.organizationId(), fileHash)) {
-                    throw new Failure(409, "This exact file was already imported / File này đã được import trước đó");
+                    throw new Failure(409, "This exact file was already imported");
                 }
             } else throw new Failure(400,
                     "Upload a ZIP containing module.xlsx, lesson/ DOCX and video/ MP4. Download the new template; RAR, standalone Excel and old Markdown/JSON templates are not accepted / Chỉ nhận ZIP theo mẫu mới, không nhận RAR hoặc Excel đơn lẻ.");
@@ -655,7 +655,7 @@ public final class ExcelLearningImport implements LearningImportUseCase {
                         throw new Failure(409, "This import was already committed");
                     Preview p = checked(original);
                     if (isCommittedFileHash(actor().organizationId(), p.fileHash()))
-                        throw new Failure(409, "This exact file was already imported / File này đã được import trước đó");
+                        throw new Failure(409, "This exact file was already imported");
                     if (!p.errors().isEmpty())
                         throw new Failure(409, "Resolve all import errors first");
                     if (!p.ownedDuplicates().isEmpty() && !confirm)

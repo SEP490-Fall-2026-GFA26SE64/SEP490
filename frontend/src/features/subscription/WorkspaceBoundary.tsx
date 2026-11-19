@@ -88,7 +88,9 @@ function Protected({ path, slug, children }: { path: string; slug: string | null
       return getSummary(identity.data.organizationId)
     }, enabled: gated && users, staleTime: 0, refetchInterval: 5000 })
   const returnTo = slug !== null && isWorkspaceSlug(slug) ? `${workspaceUrl(slug, path)}${search}${hash}` : `${path}${search}${hash}`
-  useEffect(() => { if (signedOut) replaceLocation(loginPath(returnTo)) }, [signedOut, returnTo])
+  // An explicit sign-out must not leave a return target for whoever signs in next.
+  const [signingOut, setSigningOut] = useState(false)
+  useEffect(() => { if (signedOut) replaceLocation(signingOut ? '/login' : loginPath(returnTo)) }, [signedOut, signingOut, returnTo])
 
   if (signedOut) return <Loading fullscreen label={c('Redirecting to sign in…', 'Đang chuyển đến trang đăng nhập…')} />
   const pending = identity.isPending || (gated && !billing && !platform && (users ? memberAccess.isPending : access.isPending))
@@ -109,7 +111,11 @@ function Protected({ path, slug, children }: { path: string; slug: string | null
     return <WorkspaceSessionContext.Provider value={{
       identity: { accountId: identity.data.accountId ?? null, fullName: identity.data.fullName, email: identity.data.email, organizationId: identity.data.organizationId, roles,
         organizationName: memberAccess.data?.organizationName ?? null, workspaceSlug: identity.data.workspaceSlug },
-      onSignOut: async () => { await request('/api/v1/workspace-auth/sign-out', 'POST'); cache.clear() },
+      onSignOut: async () => {
+        setSigningOut(true)
+        try { await request('/api/v1/workspace-auth/sign-out', 'POST') } catch (error) { setSigningOut(false); throw error }
+        cache.clear()
+      },
     }}><WorkspaceQueryScope key={`${identity.data.accountId}:${identity.data.organizationId}:${roles.join(',')}`}>{children}</WorkspaceQueryScope></WorkspaceSessionContext.Provider>
   }
 

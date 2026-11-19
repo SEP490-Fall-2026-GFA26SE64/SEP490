@@ -57,8 +57,4 @@ public class QuestionBankConfiguration {
         return new com.adaptlearngraph.services.QuestionBankApplicationService(bank, modelMapper);
     }
     @Bean QuestionBankUseCase questionBankUseCase(Actors actors,Catalog catalog,Store store,@Value("${question-bank.import.max-rows:500}") int rows,@Value("${question-bank.import.max-bytes:10485760}") long bytes){return new QuestionBankService(actors,catalog,store,Clock.systemUTC(),rows,bytes);}
-    @Bean @org.springframework.boot.autoconfigure.condition.ConditionalOnProperty(name="workspace.runtime.background-workers-enabled",havingValue="true",matchIfMissing=true)
-    QuestionBankMailWorker questionBankMailWorker(com.adaptlearngraph.repository.QuestionBankJpaRepository notices,
-            @org.springframework.beans.factory.annotation.Qualifier(com.adaptlearngraph.constants.TransactionManagers.JPA) PlatformTransactionManager manager,TransactionalMailSender mail,
-            @Value("${registration.public-base-url:http://localhost:8088}") String url){return new QuestionBankMailWorker(notices,new TransactionTemplate(manager),mail,url);}
 }
