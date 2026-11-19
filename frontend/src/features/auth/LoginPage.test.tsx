@@ -210,6 +210,9 @@ describe('Workspace login appearance and authentication', () => {
     ['/admin/users', '/workspace/acme/admin/users'],
     ['/workspace/other-org/admin/users', '/workspace/acme/admin/dashboard'],
     ['https://evil.example/admin', '/workspace/acme/admin/dashboard'],
+    ['/workspace/acme/employee/overview', '/workspace/acme/admin/dashboard'],
+    ['/expert/roles', '/workspace/acme/admin/dashboard'],
+    ['/workspace/acme/profile', '/workspace/acme/admin/dashboard'],
   ])('continues from next=%s only into the member workspace (%s)', async (next, expected) => {
     vi.stubGlobal('fetch', vi.fn(async (path: string) => path.endsWith('/csrf') ? response(csrf) : response(signedIn)))
     const assign = vi.fn()

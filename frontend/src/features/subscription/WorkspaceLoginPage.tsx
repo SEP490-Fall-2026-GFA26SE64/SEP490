@@ -9,8 +9,8 @@ import { Button } from '../../shared/components/ui/Button'
 import { authenticate, completeTotp, getIdentity, setupTotp, request, type Identity } from './subscriptionApi'
 import { Failure, Loading } from "./SubscriptionFeedback";
 import { useCopy } from "./SubscriptionFeedback.helpers";
-import { ROLE_HOME, singleWorkspaceRole } from '../../shared/auth/workspaceRole'
-import { isWorkspaceSlug, safeReturnPath, workspaceUrl } from '../../shared/auth/workspacePaths'
+import { ROLE_HOME, roleOwnsPath, singleWorkspaceRole } from '../../shared/auth/workspaceRole'
+import { isWorkspaceSlug, safeReturnPath, workspaceBase, workspaceUrl } from '../../shared/auth/workspacePaths'
 import { setActiveCompanyId } from '../../shared/stores/companyStore'
 
 export function WorkspaceLoginPage() {
@@ -42,8 +42,12 @@ export function WorkspaceLoginPage() {
   const ready = session?.stage === 'COMPLETE'
   const role = singleWorkspaceRole(session?.roles ?? [])
   const slug = session?.workspaceSlug ?? null
+  const returnPath = safeReturnPath(next, slug)
+  // A return target left by another portal (e.g. the previous user's page) must not override the role's home.
+  const ownReturnPath = returnPath && role && roleOwnsPath(role, returnPath.slice(workspaceBase(returnPath)?.basename.length ?? 0) || '/')
+    ? returnPath : null
   const destination = !role ? null : role === 'PLATFORM_ADMINISTRATOR' ? ROLE_HOME[role]
-    : isWorkspaceSlug(slug) ? safeReturnPath(next, slug) ?? workspaceUrl(slug, ROLE_HOME[role]) : null
+    : isWorkspaceSlug(slug) ? ownReturnPath ?? workspaceUrl(slug, ROLE_HOME[role]) : null
   const enrolling = session?.stage === 'SETUP_MFA' || session?.stage === 'SETUP_MFA_RECOVERY'
   const errors = [current.error, signIn.error, verify.error, setup.error, confirm.error, restart.error].filter(Boolean)
   // Recovery codes must be acknowledged before leaving the page; they are shown only once.
