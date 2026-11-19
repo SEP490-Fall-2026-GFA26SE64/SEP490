@@ -111,7 +111,7 @@ describe('Workspace login appearance and authentication', () => {
     expect(fetcher).toHaveBeenCalledWith('/api/v1/workspace-auth/totp/verify', expect.objectContaining({
       method: 'POST', body: JSON.stringify({ code: '123456' }),
     }))
-    await waitFor(() => expect(assign).toHaveBeenCalledWith('/workspace/acme/admin/subscription'))
+    await waitFor(() => expect(assign).toHaveBeenCalledWith('/workspace/acme/admin/dashboard'))
     expect(localStorage.getItem('auth_user')).toBeNull()
     expect(localStorage.getItem('active_actor')).toBeNull()
   })
@@ -146,7 +146,7 @@ describe('Workspace login appearance and authentication', () => {
     expect(assign).not.toHaveBeenCalled()
     await user.click(screen.getByRole('button', { name: 'I saved the recovery codes' }))
     expect(container.querySelector('[data-sensitive]')).toBeNull()
-    await waitFor(() => expect(assign).toHaveBeenCalledWith('/workspace/acme/admin/subscription'))
+    await waitFor(() => expect(assign).toHaveBeenCalledWith('/workspace/acme/admin/dashboard'))
     expect(fetcher).toHaveBeenCalledWith('/api/v1/workspace-auth/recovery', expect.objectContaining({
       body: JSON.stringify({ code: '0'.repeat(32) }),
     }))
@@ -208,8 +208,8 @@ describe('Workspace login appearance and authentication', () => {
   it.each([
     ['/workspace/acme/admin/users?tab=invites', '/workspace/acme/admin/users?tab=invites'],
     ['/admin/users', '/workspace/acme/admin/users'],
-    ['/workspace/other-org/admin/users', '/workspace/acme/admin/subscription'],
-    ['https://evil.example/admin', '/workspace/acme/admin/subscription'],
+    ['/workspace/other-org/admin/users', '/workspace/acme/admin/dashboard'],
+    ['https://evil.example/admin', '/workspace/acme/admin/dashboard'],
   ])('continues from next=%s only into the member workspace (%s)', async (next, expected) => {
     vi.stubGlobal('fetch', vi.fn(async (path: string) => path.endsWith('/csrf') ? response(csrf) : response(signedIn)))
     const assign = vi.fn()

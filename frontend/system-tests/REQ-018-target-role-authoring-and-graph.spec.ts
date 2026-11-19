@@ -27,7 +27,7 @@ test.describe('Capstone Standard: REQ-017 & REQ-018 Target Roles & Competency On
     await expect(page.locator('nav[aria-label="Breadcrumb"]')).toHaveCount(0)
 
     // Verify catalog title and stat cards
-    await expect(page.getByText('Target Role Version Catalog')).toBeVisible()
+    await expect(page.getByText('Role catalog')).toBeVisible()
     await expect(page.getByText('TOTAL ROLE PROFILES')).toBeVisible()
     await expect(page.getByText('PUBLISHED VERSIONS')).toBeVisible()
     await expect(page.getByText('IN-FLIGHT PROFILES')).toBeVisible()
@@ -91,7 +91,7 @@ test.describe('Capstone Standard: REQ-017 & REQ-018 Target Roles & Competency On
     await expect(page.locator('nav[aria-label="Breadcrumb"]')).toHaveCount(0)
 
     // Verify catalog title and stat cards for Expert
-    await expect(page.getByText('Target Role Version Catalog')).toBeVisible()
+    await expect(page.getByText('Role catalog')).toBeVisible()
     await expect(page.getByText('TOTAL TARGET ROLES')).toBeVisible()
     await expect(page.getByText('SUBMITTED ROLES')).toBeVisible()
     await expect(page.getByText('PUBLISHED ROLES')).toBeVisible()

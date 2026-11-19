@@ -13,6 +13,8 @@ test.describe('Capstone Standard: Job Position Governance & Refactoring Verifica
     await waitForWorkspaceEntry(page)
 
     // 2. Arrive at Job Positions Management
+    await expect(page).toHaveURL(/.*\/ld-manager\/dashboard/)
+    await page.goto(page.url().replace(/\/ld-manager\/dashboard.*$/, '/ld-manager/job-positions'))
     await expect(page).toHaveURL(/.*\/ld-manager\/job-positions/)
     await expect(page.locator('main')).toBeVisible({ timeout: 15_000 })
 

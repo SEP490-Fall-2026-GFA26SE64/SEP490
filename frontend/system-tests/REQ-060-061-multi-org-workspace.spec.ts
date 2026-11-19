@@ -171,12 +171,12 @@ test('a signed-out deep link signs in and returns only to the same workspace pat
   await page.getByLabel('Password', { exact: true }).fill(TECHNOVA.password)
   await page.getByRole('button', { name: 'Sign in', exact: true }).click()
   await waitForWorkspaceEntry(page)
-  await expect(page).toHaveURL(`${BASE}/workspace/${slugA}/admin/subscription`)
+  await expect(page).toHaveURL(`${BASE}/workspace/${slugA}/admin/dashboard`)
   await context.close()
 })
 
-for (const [email, home] of [['admin@technova.com', '/admin/subscription'], ['expert@technova.com', '/expert/target-roles'],
-  ['manager@technova.com', '/ld-manager/job-positions'], ['employee@technova.com', '/employee/overview']] as const) {
+for (const [email, home] of [['admin@technova.com', '/admin/dashboard'], ['expert@technova.com', '/expert/target-roles'],
+  ['manager@technova.com', '/ld-manager/dashboard'], ['employee@technova.com', '/employee/overview']] as const) {
   test(`${email} signs in to its workspace home and every navigation link stays in the workspace`, async ({ browser }) => {
     expect(slugA, 'the isolation test resolves the seeded workspace slug').toBeTruthy()
     const context = await browser.newContext({ baseURL: BASE })

@@ -4,9 +4,9 @@ import { ROLE_HOME, singleWorkspaceRole } from './workspaceRole'
 describe('trusted single-role entry', () => {
   it.each([
     ['DOMAIN_EXPERT', '/expert/target-roles'],
-    ['LD_MANAGER', '/ld-manager/job-positions'],
+    ['LD_MANAGER', '/ld-manager/dashboard'],
     ['EMPLOYEE', '/employee/overview'],
-    ['ORGANIZATION_ADMINISTRATOR', '/admin/subscription'],
+    ['ORGANIZATION_ADMINISTRATOR', '/admin/dashboard'],
     ['PLATFORM_ADMINISTRATOR', '/platform-admin/organizations'],
   ])('routes %s to its own layout', (role, path) => {
     const selected = singleWorkspaceRole([role])

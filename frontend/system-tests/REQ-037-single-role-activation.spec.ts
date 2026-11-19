@@ -40,7 +40,7 @@ test('Seeded Platform Admin uses password only, real platform APIs and no organi
 
 for (const [role, label, destination] of [
   ['DOMAIN_EXPERT', 'Expert', '/expert/target-roles'],
-  ['LD_MANAGER', 'L&D Manager', '/ld-manager/job-positions'],
+  ['LD_MANAGER', 'L&D Manager', '/ld-manager/dashboard'],
   ['EMPLOYEE', 'Employee', '/employee/overview'],
 ] as const) {
   test(`${label} invitation activates one role and enters its existing layout without MFA`, async ({ page, browser }, testInfo) => {

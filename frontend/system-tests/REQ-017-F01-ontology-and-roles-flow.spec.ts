@@ -21,7 +21,7 @@ test.describe('REQ-017-F01 & REQ-018-F01 Target Roles & Competency Ontology Veri
     await expect(page.locator('main')).toBeVisible()
 
     // Title verification
-    await expect(page.getByText('Target Role Version Catalog')).toBeVisible()
+    await expect(page.getByText('Role catalog')).toBeVisible()
 
     // Verify search and filters exist
     const searchInput = page.getByPlaceholder('Search roles...')
