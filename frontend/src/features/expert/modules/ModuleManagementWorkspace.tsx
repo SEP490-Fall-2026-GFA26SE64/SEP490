@@ -7,9 +7,9 @@ import { LearningImportPanel } from './LearningImportPanel'
 import { LearningLessonsEditor } from '../../../shared/components/learning/LearningLessonsEditor'
 import { LearningLessonList } from '../../../shared/components/learning/LearningLessonList'
 import type { LearningLesson } from '../../../shared/api/moduleAuthoringApi'
-import { useCallback, useContext, useEffect, useRef, useState } from 'react'
+import { Fragment, useCallback, useContext, useEffect, useRef, useState } from 'react'
 import { WorkspaceSessionContext } from '../../../shared/auth/workspaceSession'
-import { BookOpen, CheckCheck, CheckCircle2, ClipboardCheck, Clock, Layers, Plus, Search, Upload, Zap } from 'lucide-react'
+import { BookOpen, CheckCheck, CheckCircle2, ChevronDown, ChevronRight, ClipboardCheck, Clock, CornerDownRight, Layers, Plus, Search, Upload, Zap } from 'lucide-react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { PageHeader } from '../../../shared/components/ui/PageHeader'
 import { StatCard } from '../../../shared/components/ui/StatCard'
@@ -129,6 +129,15 @@ function OwnedModuleManagementWorkspace({ mode, managerShell = false }: { mode: 
   const [batchExpertFilter, setBatchExpertFilter] = useState('')
   const [batchSkillFilter, setBatchSkillFilter] = useState('')
   const [batchFailures, setBatchFailures] = useState<Array<{ id: string; title: string; message: string }>>([])
+  const [expandedModuleIds, setExpandedModuleIds] = useState<Set<string>>(new Set())
+  const toggleModuleExpanded = (id: string) => {
+    setExpandedModuleIds(prev => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
 
   async function openBatchApproval() {
     setBatchExpertFilter('')
@@ -157,7 +166,7 @@ function OwnedModuleManagementWorkspace({ mode, managerShell = false }: { mode: 
   const manager = actor?.roles.includes('LD_MANAGER') ?? false
   const expert = actor?.roles.includes('EXPERT') ?? false
   const managerLearning = (manager || managerShell) && ['modules', 'approvals'].includes(mode)
-  const publishedOnly = false
+  const publishedOnly = manager && mode === 'modules' && !filters.status && !filters.review
   const canManage = (doc: ModuleDocument) => expert && (doc.responsibleExpertId ?? doc.createdBy) === actor?.id
   const formatTime = (value: string | null | undefined) => value && Number.isFinite(Date.parse(value)) ? new Intl.DateTimeFormat(language === 'vi' ? 'vi-VN' : 'en-GB', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value)) : '—'
   const person = (id: string | null | undefined) => id ? staff.find(p => p.id === id)?.name ?? (id === 'DEVELOPMENT_SEED' ? copy('System Curriculum', 'Hệ thống đào tạo') : copy('Person unavailable', 'Chưa có thông tin người dùng')) : '—'
@@ -671,59 +680,166 @@ function OwnedModuleManagementWorkspace({ mode, managerShell = false }: { mode: 
                       <tbody className="block divide-y divide-border md:table-row-group">
                         {listItems.map(item => {
                           const statusInfo = resolveItemStatus(item)
+                          const latestRev = item.authoring ? latest(item.authoring) : null
+                          const hasSuccessor = Boolean(
+                            item.authoring && latestRev && (
+                              item.authoring.revisions.length > 1 ||
+                              (item.authoring.releasedRevision != null && latestRev.number > item.authoring.releasedRevision) ||
+                              (item.authoring.releasedRevision != null && latestRev.state !== 'RELEASED')
+                            )
+                          )
+                          const isExpanded = expandedModuleIds.has(item.module.metadata.id)
+
                           return (
-                            <tr key={item.module.metadata.id} data-testid="module-row" className="grid grid-cols-2 items-start gap-3 p-3 hover:bg-muted/20 md:table-row md:p-0">
-                              <td className="col-span-2 min-w-0 md:px-2.5 md:py-3">
-                                <Heading level={2} size="card" style={{ fontSize: 'var(--text-sm)' }} className="line-clamp-2 break-words text-left">
-                                  {item.module.title?.trim() || copy('Untitled module', 'Module chưa có tên')}
-                                </Heading>
-                                <CopyableId code={item.module.metadata.id} compact vi={language === 'vi'} entity={copy('module ID', 'mã module')} />
-                                {item.authoring && latest(item.authoring).payload.title !== item.module.title && (
-                                  <p className="mt-1 text-xs text-muted-foreground">{copy('Working revision', 'Bản đang soạn')}: {latest(item.authoring).payload.title}</p>
+                            <Fragment key={item.module.metadata.id}>
+                              <tr
+                                data-testid="module-row"
+                                className={cn(
+                                  "grid grid-cols-2 items-start gap-3 p-3 transition-colors hover:bg-muted/20 md:table-row md:p-0",
+                                  isExpanded && hasSuccessor && "bg-muted/5"
                                 )}
-                              </td>
-                              <td className="col-span-2 min-w-0 break-words text-left md:px-2.5 md:py-3">
-                                <span className="mb-1 block text-muted-foreground md:hidden">{copy('Responsible person', 'Người phụ trách')}</span>
-                                {person(item.authoring?.responsibleExpertId ?? item.authoring?.createdBy)}
-                              </td>
-                              <td className="col-span-2 min-w-0 break-words md:px-2.5 md:py-3">
-                                <span className="mb-1 block text-muted-foreground md:hidden">{copy('Skill taught', 'Kỹ năng được dạy')}</span>
-                                {item.module.teachings.length ? item.module.teachings.map(teaching => teaching.skillName?.trim() || copy('Skill name unavailable', 'Chưa có tên kỹ năng')).join(', ') : '—'}
-                              </td>
-                              <td className="min-w-0 md:px-2.5 md:py-3">
-                                <span className="mb-1 block text-muted-foreground md:hidden">{copy('Knowledge level', 'Mức kiến thức')}</span>
-                                <span className="whitespace-nowrap">{stateLabels[item.module.knowledgeLevel ?? ''] ?? item.module.knowledgeLevel ?? '—'}</span>
-                              </td>
-                              <td className="md:px-2.5 md:py-3">
-                                <span className="mb-1 block text-muted-foreground md:hidden">{copy('Duration', 'Thời lượng')}</span>
-                                {item.module.duration == null ? '—' : `${item.module.duration} ${copy('min', 'phút')}`}
-                              </td>
-                              <td className="min-w-0 md:px-2.5 md:py-3" data-testid="module-status">
-                                <span className="mb-1 block text-muted-foreground md:hidden">{copy('Status', 'Trạng thái')}</span>
-                                <Badge className={cn('whitespace-normal', statusInfo.className)} variant={statusInfo.variant}>{statusInfo.label}</Badge>
-                                {statusInfo.note && <p className="mt-1 text-xs text-muted-foreground">{statusInfo.note}</p>}
-                                {statusInfo.needsContent && <p className="mt-1 text-xs text-muted-foreground">{copy('Needs content', 'Cần bổ sung nội dung')}</p>}
-                              </td>
-                              <td className="col-span-2 md:px-2.5 md:py-3">
-                                <div className="flex items-center justify-end gap-1.5 [&>button]:shrink-0">
-                                  <Button variant="outline" size="icon" className="size-8" title={copy('View module', 'Xem module')} aria-label={copy('View module', 'Xem module')} onClick={() => setCatalogSelection(item)}>
-                                    <Eye className="size-4 text-primary" aria-hidden="true" />
-                                  </Button>
-                                  {(item.authoring || (expert && item.module.knowledgeLevel)) && (
-                                    <RowActions label={`${copy('Actions for', 'Thao tác cho')} ${item.module.metadata.id}`} compact disabled={busy || contentBusy}>
-                                      <div className="flex flex-wrap gap-2">
-                                        {item.authoring && controls(item.authoring)}
-                                        {expert && item.module.knowledgeLevel && item.module.teachings.length === 1 && (
-                                          <Link to={'/expert/skill-assessment-config?' + new URLSearchParams({ owner: item.module.teachings[0].skillId, level: item.module.knowledgeLevel }).toString()} className={buttonVariants({ variant: 'secondary', size: 'sm' })}>
-                                            {t('scopedPolicy.skillTitle')}
-                                          </Link>
-                                        )}
-                                      </div>
-                                    </RowActions>
+                              >
+                                <td className="col-span-2 min-w-0 md:px-2.5 md:py-3">
+                                  <Heading level={2} size="card" style={{ fontSize: 'var(--text-sm)' }} className="line-clamp-2 break-words text-left">
+                                    {item.module.title?.trim() || copy('Untitled module', 'Module chưa có tên')}
+                                  </Heading>
+                                  <div className="mt-1 flex items-center gap-1.5 flex-wrap">
+                                    {hasSuccessor && (
+                                      <button
+                                        type="button"
+                                        onClick={() => toggleModuleExpanded(item.module.metadata.id)}
+                                        className="text-primary hover:text-primary-hover shrink-0 p-0.5 rounded hover:bg-primary/10 transition-colors"
+                                        aria-label={isExpanded ? copy('Collapse revisions', 'Thu gọn phiên bản') : copy('Expand revisions', 'Mở rộng phiên bản')}
+                                        title={isExpanded ? copy('Collapse revisions', 'Thu gọn phiên bản') : copy('Expand revisions', 'Mở rộng phiên bản')}
+                                      >
+                                        {isExpanded ? <ChevronDown className="size-3.5" /> : <ChevronRight className="size-3.5" />}
+                                      </button>
+                                    )}
+                                    <CopyableId code={item.module.metadata.id} compact vi={language === 'vi'} entity={copy('module ID', 'mã module')} />
+                                    <Badge variant="secondary" className="font-mono text-[10px] py-0 px-1 text-primary">
+                                      v{item.authoring?.releasedRevision ?? 1}.0
+                                    </Badge>
+                                  </div>
+                                  {item.authoring && latestRev && latestRev.payload.title !== item.module.title && (
+                                    <p className="mt-1 text-xs text-muted-foreground">{copy('Working revision', 'Bản đang soạn')}: {latestRev.payload.title}</p>
                                   )}
-                                </div>
-                              </td>
-                            </tr>
+                                </td>
+                                <td className="col-span-2 min-w-0 break-words text-left md:px-2.5 md:py-3">
+                                  <span className="mb-1 block text-muted-foreground md:hidden">{copy('Responsible person', 'Người phụ trách')}</span>
+                                  {person(item.authoring?.responsibleExpertId ?? item.authoring?.createdBy)}
+                                </td>
+                                <td className="col-span-2 min-w-0 break-words md:px-2.5 md:py-3">
+                                  <span className="mb-1 block text-muted-foreground md:hidden">{copy('Skill taught', 'Kỹ năng được dạy')}</span>
+                                  {item.module.teachings.length ? item.module.teachings.map(teaching => teaching.skillName?.trim() || copy('Skill name unavailable', 'Chưa có tên kỹ năng')).join(', ') : '—'}
+                                </td>
+                                <td className="min-w-0 md:px-2.5 md:py-3">
+                                  <span className="mb-1 block text-muted-foreground md:hidden">{copy('Knowledge level', 'Mức kiến thức')}</span>
+                                  <span className="whitespace-nowrap">{stateLabels[item.module.knowledgeLevel ?? ''] ?? item.module.knowledgeLevel ?? '—'}</span>
+                                </td>
+                                <td className="md:px-2.5 md:py-3">
+                                  <span className="mb-1 block text-muted-foreground md:hidden">{copy('Duration', 'Thời lượng')}</span>
+                                  {item.module.duration == null ? '—' : `${item.module.duration} ${copy('min', 'phút')}`}
+                                </td>
+                                <td className="min-w-0 md:px-2.5 md:py-3" data-testid="module-status">
+                                  <span className="mb-1 block text-muted-foreground md:hidden">{copy('Status', 'Trạng thái')}</span>
+                                  <Badge className={cn('whitespace-normal', statusInfo.className)} variant={statusInfo.variant}>{statusInfo.label}</Badge>
+                                  {statusInfo.note && <p className="mt-1 text-xs text-muted-foreground">{statusInfo.note}</p>}
+                                  {statusInfo.needsContent && <p className="mt-1 text-xs text-muted-foreground">{copy('Needs content', 'Cần bổ sung nội dung')}</p>}
+                                </td>
+                                <td className="col-span-2 md:px-2.5 md:py-3">
+                                  <div className="flex items-center justify-end gap-1.5 [&>button]:shrink-0">
+                                    <Button variant="outline" size="icon" className="size-8" title={copy('View module', 'Xem module')} aria-label={copy('View module', 'Xem module')} onClick={() => setCatalogSelection(item)}>
+                                      <Eye className="size-4 text-primary" aria-hidden="true" />
+                                    </Button>
+                                    {(item.authoring || (expert && item.module.knowledgeLevel)) && (
+                                      <RowActions label={`${copy('Actions for', 'Thao tác cho')} ${item.module.metadata.id}`} compact disabled={busy || contentBusy}>
+                                        <div className="flex flex-wrap gap-2">
+                                          {item.authoring && controls(item.authoring)}
+                                          {expert && item.module.knowledgeLevel && item.module.teachings.length === 1 && (
+                                            <Link to={'/expert/skill-assessment-config?' + new URLSearchParams({ owner: item.module.teachings[0].skillId, level: item.module.knowledgeLevel }).toString()} className={buttonVariants({ variant: 'secondary', size: 'sm' })}>
+                                              {t('scopedPolicy.skillTitle')}
+                                            </Link>
+                                          )}
+                                        </div>
+                                      </RowActions>
+                                    )}
+                                  </div>
+                                </td>
+                              </tr>
+
+                              {isExpanded && hasSuccessor && latestRev && (
+                                <tr
+                                  key={`${item.module.metadata.id}-successor`}
+                                  data-testid="module-child-row"
+                                  className="grid grid-cols-2 items-start gap-3 p-3 bg-muted/10 border-l-4 border-l-primary/70 hover:bg-muted/20 md:table-row md:p-0 transition-colors"
+                                >
+                                  <td className="col-span-2 min-w-0 md:px-2.5 md:py-3">
+                                    <div className="pl-3">
+                                      <Heading level={2} size="card" style={{ fontSize: 'var(--text-sm)' }} className="line-clamp-2 break-words text-left">
+                                        {latestRev.payload.title?.trim() || item.module.title || copy('Untitled module', 'Module chưa có tên')}
+                                      </Heading>
+                                      <div className="mt-1 flex items-center gap-1.5 flex-wrap">
+                                        <div className="flex items-center gap-1 text-primary">
+                                          <CornerDownRight className="size-3.5 shrink-0" />
+                                          <span className="font-mono text-xs font-semibold">{item.module.metadata.id}</span>
+                                        </div>
+                                        <Badge variant="secondary" className="font-mono text-[10px] py-0 px-1 text-primary">
+                                          v{latestRev.number}.0
+                                        </Badge>
+                                        <Badge variant="outline" className="text-[9px] py-0 px-1 font-mono text-muted-foreground border-border">
+                                          {latestRev.state === 'DRAFT' ? copy('Draft revision', 'Bản nháp kế tiếp') : copy('Pending revision', 'Bản chờ duyệt')}
+                                        </Badge>
+                                        <span className="text-[11px] text-muted-foreground">
+                                          {copy('Updated', 'Cập nhật')} {formatTime(latestRev.editedAt)}
+                                        </span>
+                                      </div>
+                                    </div>
+                                  </td>
+                                  <td className="col-span-2 min-w-0 break-words text-left md:px-2.5 md:py-3">
+                                    <span className="mb-1 block text-muted-foreground md:hidden">{copy('Responsible person', 'Người phụ trách')}</span>
+                                    {person(item.authoring?.responsibleExpertId ?? item.authoring?.createdBy)}
+                                  </td>
+                                  <td className="col-span-2 min-w-0 break-words md:px-2.5 md:py-3">
+                                    <span className="mb-1 block text-muted-foreground md:hidden">{copy('Skill taught', 'Kỹ năng được dạy')}</span>
+                                    {latestRev.payload.teachings.length ? latestRev.payload.teachings.map(teaching => teaching.skillName?.trim() || copy('Skill name unavailable', 'Chưa có tên kỹ năng')).join(', ') : '—'}
+                                  </td>
+                                  <td className="min-w-0 md:px-2.5 md:py-3">
+                                    <span className="mb-1 block text-muted-foreground md:hidden">{copy('Knowledge level', 'Mức kiến thức')}</span>
+                                    <span className="whitespace-nowrap">{stateLabels[latestRev.payload.knowledgeLevel ?? ''] ?? latestRev.payload.knowledgeLevel ?? '—'}</span>
+                                  </td>
+                                  <td className="md:px-2.5 md:py-3">
+                                    <span className="mb-1 block text-muted-foreground md:hidden">{copy('Duration', 'Thời lượng')}</span>
+                                    {latestRev.payload.duration == null ? '—' : `${latestRev.payload.duration} ${copy('min', 'phút')}`}
+                                  </td>
+                                  <td className="min-w-0 md:px-2.5 md:py-3" data-testid="module-child-status">
+                                    <span className="mb-1 block text-muted-foreground md:hidden">{copy('Status', 'Trạng thái')}</span>
+                                    {latestRev.state === 'RELEASED' ? (
+                                      <Badge variant="success" className="whitespace-normal">PUBLISHED</Badge>
+                                    ) : latestRev.state === 'SUBMITTED' ? (
+                                      <Badge variant="primary" className="bg-sky-500/10 text-sky-600 border-sky-500/20 font-bold dark:text-sky-400 whitespace-normal">SUBMITTED</Badge>
+                                    ) : latestRev.state === 'DRAFT' ? (
+                                      <Badge variant="warning" className="whitespace-normal">DRAFT</Badge>
+                                    ) : (
+                                      <Badge variant="destructive" className="whitespace-normal">CHANGES REQUESTED</Badge>
+                                    )}
+                                  </td>
+                                  <td className="col-span-2 md:px-2.5 md:py-3">
+                                    <div className="flex items-center justify-end gap-1.5 [&>button]:shrink-0">
+                                      <Button variant="outline" size="icon" className="size-8" title={copy('View working revisions & history', 'Xem bản soạn thảo và lịch sử')} aria-label={copy('View working revisions & history', 'Xem bản soạn thảo và lịch sử')} onClick={() => { if (item.authoring) { setSelected(item.authoring); setEditing(false) } }}>
+                                        <Eye className="size-4 text-primary" aria-hidden="true" />
+                                      </Button>
+                                      {item.authoring && (
+                                        <RowActions label={`${copy('Actions for', 'Thao tác cho')} ${item.module.metadata.id}`} compact disabled={busy || contentBusy}>
+                                          <div className="flex flex-wrap gap-2">
+                                            {controls(item.authoring)}
+                                          </div>
+                                        </RowActions>
+                                      )}
+                                    </div>
+                                  </td>
+                                </tr>
+                              )}
+                            </Fragment>
                           )
                         })}
                       </tbody>
