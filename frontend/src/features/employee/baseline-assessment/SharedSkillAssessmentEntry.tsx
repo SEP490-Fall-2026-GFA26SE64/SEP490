@@ -84,9 +84,11 @@ function OwnedSharedEntry({ locator, getNewTarget, legacy, disabled, header, adm
         {data.policyIssue && <p role="alert" className="text-body-sm text-muted-foreground">{t('employeeBaseline.errors.' + data.policyIssue, copy('Assessment configuration is currently unavailable.', 'Cấu hình đánh giá hiện chưa sẵn sàng.'))}</p>}
         {limit && <p className="text-body-sm text-muted-foreground">{t('employeeBaseline.errors.RETAKE_LIMIT_REACHED')}</p>}
         {cooldown && <p className="text-body-sm text-muted-foreground">{copy('Retake available after', 'Có thể thi lại sau')}: {new Date(data.retakeAvailableAt!).toLocaleString(vi ? 'vi-VN' : 'en-GB')}</p>}
-        <Button size="sm" disabled={busy || (!pending && blocked)} onClick={() => void start()}>{busy ? copy('Opening…', 'Đang mở…') : pending ? copy('Retry', 'Thử lại') : data.totalAttempts ? copy('Retake Skill Assessment', 'Thi lại Skill Assessment') : copy('Take Skill Assessment', 'Làm Skill Assessment')}</Button>
       </>}
-      <Button size="sm" variant="outline" disabled={busy || Boolean(pending)} onClick={() => setHistoryOpen(true)}>{copy('Assessment history', 'Lịch sử đánh giá')}</Button>
+      <div className="flex flex-wrap items-center gap-2">
+        {active.length === 0 && <Button size="sm" disabled={busy || (!pending && blocked)} onClick={() => void start()}>{busy ? copy('Opening…', 'Đang mở…') : pending ? copy('Retry', 'Thử lại') : data.totalAttempts ? copy('Retake Skill Assessment', 'Thi lại Skill Assessment') : copy('Take Skill Assessment', 'Làm Skill Assessment')}</Button>}
+        <Button size="sm" variant="outline" disabled={busy || Boolean(pending)} onClick={() => setHistoryOpen(true)}>{copy('Assessment history', 'Lịch sử đánh giá')}</Button>
+      </div>
     </>}
     {failure && <p role="alert" className="text-body-sm text-destructive">{t('employeeBaseline.errors.' + failure.code, copy('Could not open the assessment. Learning progress is preserved.', 'Chưa thể mở bài đánh giá. Tiến độ học vẫn được giữ.'))}</p>}
     {pending && <p role="status" className="text-caption text-muted-foreground">{copy('Retry reuses the same request to avoid creating a duplicate attempt.', 'Thử lại dùng đúng yêu cầu trước để tránh tạo trùng lượt thi.')}</p>}

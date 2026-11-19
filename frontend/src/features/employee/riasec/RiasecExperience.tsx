@@ -36,7 +36,8 @@ function Assessment({ active }: { active: boolean }) {
   const [historyIntent, setHistoryIntent] = useState<'start' | undefined>()
   const [historyOpen, setHistoryOpen] = useState(false)
   const historyTrigger = useRef<HTMLButtonElement>(null)
-  const changeHistoryOpen = (open: boolean) => { setHistoryOpen(open); if (!open) requestAnimationFrame(() => historyTrigger.current?.focus()) }
+  const startTrigger = useRef<HTMLButtonElement>(null)
+  const changeHistoryOpen = (open: boolean) => { setHistoryOpen(open); if (!open) requestAnimationFrame(() => (historyIntent === 'start' ? startTrigger.current ?? historyTrigger.current : historyTrigger.current)?.focus()) }
   const [editorId] = useState(() => crypto.randomUUID())
   const [view, setView] = useState<View | null>(null), [error, setError] = useState(''), [saveError, setSaveError] = useState(false)
   const [busy, setBusy] = useState(false), [saving, setSaving] = useState(false), [selected, setSelected] = useState<string | null>(null)
@@ -158,7 +159,7 @@ function Assessment({ active }: { active: boolean }) {
   </div>
   return <section className="space-y-5">
     {view && <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-      <Card className="border-primary/35 border-t-2 border-t-primary bg-gradient-to-br from-secondary/50 to-card"><CardContent className="space-y-2 p-4"><Text variant="eyebrow">{copy('RIASEC assessment', 'Bài RIASEC')}</Text><Heading level={2} size="card">{copy('Explore your interests', 'Khám phá sở thích')}</Heading><Text variant="caption">{view.draft.draftId ? copy('Your saved draft is below.', 'Bài nháp đã lưu ở bên dưới.') : copy('60 activities · No time limit', '60 hoạt động · Không giới hạn giờ')}</Text>{!view.draft.draftId && <Button size="sm" disabled={busy || running} onClick={() => { setHistoryIntent('start'); changeHistoryOpen(true) }}>{copy('Start assessment', 'Làm bài RIASEC')}</Button>}</CardContent></Card>
+      <Card className="border-primary/35 border-t-2 border-t-primary bg-gradient-to-br from-secondary/50 to-card"><CardContent className="space-y-2 p-4"><Text variant="eyebrow">{copy('RIASEC assessment', 'Bài RIASEC')}</Text><Heading level={2} size="card">{copy('Explore your interests', 'Khám phá sở thích')}</Heading><Text variant="caption">{view.draft.draftId ? copy('Your saved draft is below.', 'Bài nháp đã lưu ở bên dưới.') : copy('60 activities · No time limit', '60 hoạt động · Không giới hạn giờ')}</Text>{!view.draft.draftId && <Button ref={startTrigger} size="sm" disabled={busy || running} onClick={() => { setHistoryIntent('start'); changeHistoryOpen(true) }}>{copy('Start assessment', 'Làm bài RIASEC')}</Button>}</CardContent></Card>
       {[{label:copy('Current result','Kết quả hiện hành'), value:current ? '1' : '0', note:current ? new Date(current.submittedAt).toLocaleDateString(vi ? 'vi-VN' : 'en-GB') : copy('No active result','Chưa có kết quả')}, {label:copy('History','Lịch sử'),value:String(view.results.filter(r => !r.deletedAt && r.id !== view.currentId).length),note:copy('Previous active submissions','Các lần nộp trước còn hoạt động')}, {label:copy('Inactive','Không hoạt động'),value:String(view.results.filter(r => r.deletedAt).length),note:copy('Recover within 7 days','Khôi phục trong 7 ngày')}].map(item => <Card key={item.label} className="border-primary/35 border-t-2 border-t-primary"><CardContent className="space-y-2 p-4"><Text variant="eyebrow">{item.label}</Text><Heading level={2} size="section">{item.value}</Heading><Text variant="caption">{item.note}</Text></CardContent></Card>)}
     </div>}
 
