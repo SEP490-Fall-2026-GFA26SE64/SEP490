@@ -2,7 +2,6 @@ package com.adaptlearngraph.repository;
 
 import com.adaptlearngraph.constants.TransactionManagers;
 import com.adaptlearngraph.entities.QuestionBankEntity;
-import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -14,7 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Organization question bank. Every query is scoped by organization (the bank creator's organization or the workspace
- * document key). Locks, the jsonb document upsert and idempotent identity/notice writes stay native.
+ * document key). Locks, the jsonb document upsert and idempotent identity writes stay native.
  */
 public interface QuestionBankJpaRepository extends Repository<QuestionBankEntity, UUID>, InsertOnlyRepository<QuestionBankEntity> {
 

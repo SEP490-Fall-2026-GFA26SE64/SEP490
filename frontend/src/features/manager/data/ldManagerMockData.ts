@@ -133,8 +133,41 @@ export function resolveJobPositionForRole(
   const code = (role.code || '').toUpperCase()
   const title = (role.title || '').toLowerCase()
   const family = (role.familyCode || '').toUpperCase()
+  const jpCode = (role.jobPositionCode || '').toUpperCase()
 
   // Match by keyword in title, code, or family
+  if (
+    title.includes('learning') ||
+    title.includes('training') ||
+    title.includes('development specialist') ||
+    title.includes('coordinator') ||
+    title.includes('people') ||
+    code.includes('LD') ||
+    code.includes('HR') ||
+    family.includes('LD') ||
+    family.includes('HR') ||
+    jpCode.includes('LD') ||
+    jpCode.includes('13-1151')
+  ) {
+    const match = jobPositions.find(
+      (o) =>
+        o.code === '13-1151.00' ||
+        o.code === 'LD-SPEC' ||
+        o.code.replace(/\.00$/, '') === '13-1151' ||
+        o.code.toLowerCase().includes('ld') ||
+        o.name.toLowerCase().includes('learning') ||
+        o.name.toLowerCase().includes('training'),
+    )
+    if (match) return match
+    return {
+      code: '13-1151.00',
+      name: 'Training and Development Specialists',
+      description: 'Design and conduct training and development programs to improve individual and organizational performance.',
+      jobZone: 4,
+      profiles: ['LD'],
+      assignedExpertIds: [],
+    }
+  }
   if (title.includes('security') || title.includes('cyber') || title.includes('sec') || code.includes('SEC') || family.includes('SEC')) {
     const match = jobPositions.find((o) => o.code === '15-1212.00')
     if (match) return match
