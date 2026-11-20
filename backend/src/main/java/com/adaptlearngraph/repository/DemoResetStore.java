@@ -16,7 +16,7 @@ import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 
 /**
- * Deletes every organization except the retained seed tenants, plus all rows, graph nodes and private files that
+ * Deletes every organization except the retained seed tenant, plus all rows, graph nodes and private files that
  * belong to them. Postgres runs in one transaction with user triggers disabled (immutable/append-only guards) and
  * then removes rows whose foreign keys point at deleted parents until nothing changes.
  */
@@ -40,14 +40,14 @@ public class DemoResetStore {
         this.bucket = bucket;
     }
 
-    public PostgresResult resetPostgres(Set<UUID> retainedOrganizations) {
+    public PostgresResult resetPostgres(UUID retainedOrganization) {
         return transactions.execute(status -> {
             jdbc.execute("SET LOCAL session_replication_role = replica");
-            String keep = retainedOrganizations.stream().map(UUID::toString).sorted().collect(java.util.stream.Collectors.joining(",", "{", "}"));
-            int organizations = jdbc.update("DELETE FROM platform.organization WHERE organization_id::text <> ALL(?::text[])", keep);
+            String keep = retainedOrganization.toString();
+            int organizations = jdbc.update("DELETE FROM platform.organization WHERE organization_id::text <> ?", keep);
             int accounts = jdbc.update("""
                     DELETE FROM platform.account a
-                    WHERE (a.organization_id IS NOT NULL AND a.organization_id::text <> ALL(?::text[]))
+                    WHERE (a.organization_id IS NOT NULL AND a.organization_id::text <> ?)
                        OR (a.organization_id IS NULL AND NOT EXISTS (SELECT 1 FROM platform.account_role r WHERE r.account_id = a.account_id))
                     """, keep);
             int registrations = jdbc.update("""
@@ -62,7 +62,7 @@ public class DemoResetStore {
                       AND c.table_name NOT IN ('organization', 'account')
                     ORDER BY c.table_name
                     """, String.class, SCHEMA)) {
-                rows += jdbc.update("DELETE FROM " + qualified(table) + " WHERE organization_id IS NOT NULL AND organization_id::text <> ALL(?::text[])", keep);
+                rows += jdbc.update("DELETE FROM " + qualified(table) + " WHERE organization_id IS NOT NULL AND organization_id::text <> ?", keep);
             }
             for (String table : List.of("registration_session_attributes", "registration_session", "registration_rate_limit")) {
                 if (tableExists(table)) rows += jdbc.update("DELETE FROM " + qualified(table));

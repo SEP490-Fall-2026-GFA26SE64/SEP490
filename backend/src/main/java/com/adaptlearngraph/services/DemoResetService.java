@@ -4,25 +4,24 @@ import com.adaptlearngraph.dtos.DemoResetResultDto;
 import com.adaptlearngraph.repository.DemoResetStore;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** Recycles a demo environment: keeps the seed organizations and platform catalog, removes everything onboarded since. */
+/** Recycles a demo environment: keeps the seed organization and platform catalog, removes everything onboarded since. */
 public class DemoResetService {
     private static final Logger log = LoggerFactory.getLogger(DemoResetService.class);
 
     private final DemoResetStore store;
-    private final Set<UUID> retainedOrganizations;
+    private final UUID retainedOrganization;
 
-    public DemoResetService(DemoResetStore store, Set<UUID> retainedOrganizations) {
+    public DemoResetService(DemoResetStore store, UUID retainedOrganization) {
         this.store = store;
-        this.retainedOrganizations = Set.copyOf(retainedOrganizations);
+        this.retainedOrganization = retainedOrganization;
     }
 
     public synchronized DemoResetResultDto reset() {
-        var postgres = store.resetPostgres(retainedOrganizations);
+        var postgres = store.resetPostgres(retainedOrganization);
         List<String> warnings = new ArrayList<>();
         int nodes = 0;
         int files = 0;
