@@ -1045,7 +1045,15 @@ function UserForm({
   }, [department, member, allDepartments])
 
   const availableTargetRolesForEmployee = useMemo(() => {
-    return targetRolesForEmployee(orgTargetRoles, department, selectedDeptObj, jobPosition, organization, jobPositions, references)
+    return targetRolesForEmployee(
+      orgTargetRoles,
+      department,
+      selectedDeptObj,
+      jobPosition,
+      organization,
+      jobPositions,
+      references,
+    )
   }, [orgTargetRoles, department, selectedDeptObj, jobPosition, organization, jobPositions, references])
 
   const employeeTargetRoleOptions: ComboboxOption[] = useMemo(() => {

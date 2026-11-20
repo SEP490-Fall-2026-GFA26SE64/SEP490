@@ -410,14 +410,24 @@ export function buildOrganizationTargetRoles(
         (p) => p.replace(/\.00$/, '').toLowerCase().trim() === occNorm
       )
     )
-    const effectiveDept = String(r.department || meta?.department || localMatch?.department || matchedDept?.name || '')
+    const inferredDept =
+      familyNorm === 'BE-ENG' || familyNorm === 'FE-ENG' || codeUpper === 'JAVA-BE' || codeUpper === 'REACT-FE'
+        ? 'Software Engineering'
+        : familyNorm === 'QA-ENG' || codeUpper === 'QA-AUTO'
+          ? 'Quality Assurance'
+          : familyNorm === 'DATA-ENG' || codeUpper === 'DATA-PIPE'
+            ? 'Data & Analytics'
+            : familyNorm === 'LD-SPEC' || codeUpper === 'LD-COORD'
+              ? 'People & Learning'
+              : ''
+    const effectiveDept = String(r.department || meta?.department || localMatch?.department || matchedDept?.name || inferredDept || '')
     return {
       id: String(r.id || code),
       stableId: code,
       code,
       title: String(r.name || r.title || localMatch?.title || code),
       department: effectiveDept,
-      jobPositionCode: explicitJobPositionCode,
+      jobPositionCode: explicitJobPositionCode || (rawFamilyCode && rawFamilyCode !== 'SOFTWARE_ENGINEERING' ? rawFamilyCode : undefined),
       familyCode: rawFamilyCode || localMatch?.familyCode,
       description: String(r.description || localMatch?.description || ''),
       version: String(r.version || localMatch?.version || '1.0'),
@@ -618,7 +628,15 @@ export function targetRolesForEmployee(
       const occNorm = normalizeOccCode(getRoleOccCode(r))
       const rJp = normalizeOccCode(r.jobPositionCode)
       const rFam = normalizeOccCode(r.familyCode)
-      return occNorm === targetOccNorm || rJp === targetOccNorm || rFam === targetOccNorm
+      const matchesOcc = occNorm === targetOccNorm || rJp === targetOccNorm || rFam === targetOccNorm
+      if (!matchesOcc) return false
+
+      // Guard: if role has an explicit department that conflicts with the selected department, exclude it
+      const rDept = (r.department || '').toLowerCase().trim()
+      if (rDept && deptName && rDept !== deptName && !deptName.includes(rDept) && !rDept.includes(deptName)) {
+        return false
+      }
+      return true
     })
     if (jpMatched.length > 0) {
       return jpMatched.sort((a, b) => a.title.localeCompare(b.title))

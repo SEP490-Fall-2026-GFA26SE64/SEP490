@@ -686,12 +686,16 @@ export function TargetRolesPage() {
     if (isFetchingRef.current) return
     isFetchingRef.current = true
     try {
-      const res = await fetch(`/api/v1/organizations/${orgId}/target-roles`, {
-        credentials: 'same-origin',
-        headers: {
-          'X-User-Role': 'LD_MANAGER',
-        },
-      })
+      const [res, liveDepts, liveJobPositions] = await Promise.all([
+        fetch(`/api/v1/organizations/${orgId}/target-roles`, {
+          credentials: 'same-origin',
+          headers: {
+            'X-User-Role': 'LD_MANAGER',
+          },
+        }),
+        fetchDepartments(orgId).catch(() => []),
+        fetchJobPositions(orgId).catch(() => []),
+      ])
 
       if (res.ok) {
         const data = await res.json()
@@ -711,14 +715,17 @@ export function TargetRolesPage() {
               (tr.code?.toUpperCase() === rCode && tr.version === String(r.version || '1.0')),
           )
 
+          const rawFamilyCode =
+            typeof r.familyCode === 'string' && r.familyCode && r.familyCode !== 'SOFTWARE_ENGINEERING'
+              ? r.familyCode.trim()
+              : undefined
+
           const explicitJobPositionCode =
             meta?.jobPositionCode ||
             storeRole?.jobPositionCode ||
             (typeof r.jobPositionCode === 'string' && r.jobPositionCode
               ? r.jobPositionCode
-              : (typeof r.familyCode === 'string' && r.familyCode.match(/^\d{2}-\d{4}/)
-                  ? r.familyCode
-                  : undefined))
+              : rawFamilyCode)
 
           const occ = resolveJobPositionForRole(
             {
@@ -730,12 +737,30 @@ export function TargetRolesPage() {
             orgId,
           )
 
-          const localDepts = loadDepartments(orgId)
-          const matchedDept = localDepts.find((d) =>
-            (d.linkedJobPositions || []).some(
-              (p) => p.replace(/\.00$/, '').toLowerCase().trim() === occ.code.replace(/\.00$/, '').toLowerCase().trim()
-            )
+          const posCode = explicitJobPositionCode || String(r.familyCode || '').trim()
+          const matchedJp = (liveJobPositions || []).find(
+            (jp) => jp.code.toLowerCase().trim() === posCode.toLowerCase(),
           )
+
+          const matchedServerDept = (liveDepts || []).find((d) => {
+            const posCodes = (d.jobPositionCodes || []).map((c) => c.toLowerCase().trim())
+            const targetPos = posCode.toLowerCase().trim()
+            return (
+              (targetPos && posCodes.includes(targetPos)) ||
+              (d.code && posCode.toLowerCase().startsWith(d.code.toLowerCase())) ||
+              (d.id && String(r.departmentId || '') === d.id) ||
+              (d.name && String(r.department || '').toLowerCase() === d.name.toLowerCase())
+            )
+          })
+
+          const localDepts = loadDepartments(orgId)
+          const matchedDept = matchedServerDept
+            ? { id: matchedServerDept.id, name: matchedServerDept.name }
+            : localDepts.find((d) =>
+                (d.linkedJobPositions || []).some(
+                  (p) => p.replace(/\.00$/, '').toLowerCase().trim() === occ.code.replace(/\.00$/, '').toLowerCase().trim(),
+                ),
+              )
 
           const effectiveDept =
             meta?.department ||
@@ -752,7 +777,8 @@ export function TargetRolesPage() {
               : matchedDept?.id)
 
           const effectiveJobPositionCode = explicitJobPositionCode || meta?.jobPositionCode || occ.code
-          const effectiveJobPositionTitle = meta?.jobPositionTitle || storeRole?.jobPositionTitle || occ.name
+          const effectiveJobPositionTitle =
+            matchedJp?.name || meta?.jobPositionTitle || storeRole?.jobPositionTitle || occ.name
 
           const rawBackendExpertId = r.assignedExpertId ? String(r.assignedExpertId).trim() : ''
           const hasRealBackendExpert = Boolean(
@@ -1399,24 +1425,43 @@ export function TargetRolesPage() {
         return []
       }
       const allowedJobPositionCodes = new Set(
-        (managerDepartment.jobPositionCodes || []).map((c) => c.toLowerCase().trim())
+        (managerDepartment.jobPositionCodes || []).map((c) => c.toLowerCase().trim()),
       )
-      const deptName = managerDepartment.name?.toLowerCase().trim()
-      const deptId = managerDepartment.id?.toLowerCase().trim()
+      const deptName = (managerDepartment.name || '').toLowerCase().trim()
+      const deptId = (managerDepartment.id || '').toLowerCase().trim()
+      const deptCode = (managerDepartment.code || '').toLowerCase().trim()
 
       return roles.filter((r) => {
         const roleDept = (r.department || '').toLowerCase().trim()
         const roleDeptId = (r.departmentId || '').toLowerCase().trim()
-        const matchesDept = Boolean(
-          (deptName && (roleDept === deptName || roleDept.includes(deptName) || deptName.includes(roleDept))) ||
-          (deptId && (roleDeptId === deptId || roleDept === deptId || roleDeptId.includes(deptId)))
-        )
-
+        const roleFamilyCode = (r.familyCode || '').toLowerCase().trim()
         const occCode = (r.jobPositionCode || '').toLowerCase().trim()
         const baseOccCode = occCode.replace(/\.00$/, '')
+
+        // Explicit negative exclusion: If the role has a defined department that contradicts the manager's department, exclude it immediately
+        if (
+          roleDept &&
+          deptName &&
+          roleDept !== deptName &&
+          !deptName.includes(roleDept) &&
+          !roleDept.includes(deptName)
+        ) {
+          return false
+        }
+        if (roleDeptId && deptId && roleDeptId !== deptId) {
+          return false
+        }
+
+        const matchesDept = Boolean(
+          (deptName && (roleDept === deptName || roleDept.includes(deptName) || deptName.includes(roleDept))) ||
+          (deptCode && (roleDept === deptCode || roleDept.startsWith(deptCode))) ||
+          (deptId && (roleDeptId === deptId || roleDept === deptId || roleDeptId.includes(deptId))),
+        )
+
         const matchesJobPosition =
           allowedJobPositionCodes.size > 0 &&
           (allowedJobPositionCodes.has(occCode) ||
+            allowedJobPositionCodes.has(roleFamilyCode) ||
             Array.from(allowedJobPositionCodes).some((c) => c.replace(/\.00$/, '') === baseOccCode))
 
         return matchesJobPosition || matchesDept
