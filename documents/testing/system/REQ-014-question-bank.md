@@ -45,7 +45,7 @@ Run from repository root: `SYSTEM_TEST_BASE_URL=http://localhost:8098 PLAYWRIGHT
 
 Do not run the fixture suite against localhost8088. Do not use `down -v` or migrate the user's old learning-module-manage database with this lineage.
 
-After browser tests complete, run `python3 backend/src/test/question-bank-mail-acceptance.py` to repeat the real SMTP failure/recovery check. Do not overlap its Mailpit pause with a browser test expecting Mailpit availability. It restores Mailpit even if its business assertion fails. No real SMTP configuration or inbox credentials are required.
+The SMTP failure/recovery check (`question-bank-mail-acceptance.py`) was retired on 2026-11-20 when Question Bank email notification was removed; the historical result above is preserved only as a record.
 
 ## Manual test checklist
 
@@ -64,7 +64,7 @@ URL: http://127.0.0.1:8098/login (or localhost8098 in a separate private browser
 | Collision handling | Import peer-owned code, then own published code; test different-code matching content. | Foreign/active-candidate conflict blocks batch; own successor and similarity warnings require explicit confirmation. |
 | Bulk and stale data | View selected submitted versions; change one from another context, approve selected. | Entire stale batch rejected; reload/review required, no partial publication. |
 | Retire/reactivate | Owner requests with reason; L&D confirms each action. | Stable question unavailable for future selection when retired; historical references unchanged. |
-| Notifications | Open own notifications, mark read; inspect Mailpit http://localhost:28425. | Same-org targeted notifications; local email only, no answer keys. |
+| Notifications | Open own notifications, mark read. | Same-org targeted in-app notifications; no Question Bank email is sent. |
 | Error/cancel/mobile | Cancel dialogs; interrupt a request and reload; choose VI at390px width. | No mutation on cancel, clear retry, no page overflow, readable translated UI. |
 | Wrong actor/organization | Employee calls staff endpoint; org B looks up org A ID. |403/404 and no protected question/key disclosure. |
 

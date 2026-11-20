@@ -225,7 +225,7 @@ test('bulk approval rejects a stale batch atomically then publishes reviewed exa
   await ld.context.close(); await expert.context.close()
 })
 
-test('guided empty/error recovery, Vietnamese mobile layout and durable notifications', async ({ browser, baseURL, request }) => {
+test('guided empty/error recovery, Vietnamese mobile layout and durable notifications', async ({ browser, baseURL }) => {
   test.setTimeout(180000)
   const foreign = await login(browser, baseURL!, 'peer', 'b')
   await expect(foreign.page.getByText('No questions match this view', { exact: true })).toBeVisible()
@@ -258,7 +258,6 @@ test('guided empty/error recovery, Vietnamese mobile layout and durable notifica
   expect((await command(expert.page.request, '/notifications/' + notifications[0].id + '/read', {})).ok()).toBeTruthy()
   const after = await (await expert.page.request.get(root + '/notifications')).json() as { id: string; readAt: string | null }[]
   expect(after.find(n => n.id === notifications[0].id)?.readAt).toBeTruthy()
-  await expect.poll(async () => { const res = await request.get('http://127.0.0.1:28425/api/v1/messages'); const data = await res.json() as { total: number }; return data.total }, { timeout: 60000 }).toBeGreaterThan(0)
   await expert.page.screenshot({ path: '/tmp/question-bank-desktop.png', fullPage: true })
   await expert.context.close()
 })
