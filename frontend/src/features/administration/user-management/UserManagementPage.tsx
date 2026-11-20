@@ -1044,24 +1044,6 @@ function UserForm({
     return null
   }, [department, member, allDepartments])
 
-  const availableTargetRolesForEmployee = useMemo(() => {
-    return targetRolesForEmployee(
-      orgTargetRoles,
-      department,
-      selectedDeptObj,
-      jobPosition,
-      organization,
-      jobPositions,
-      references,
-    )
-  }, [orgTargetRoles, department, selectedDeptObj, jobPosition, organization, jobPositions, references])
-
-  const employeeTargetRoleOptions: ComboboxOption[] = useMemo(() => {
-    return availableTargetRolesForEmployee.map((r) => ({
-      value: r.id,
-      label: `${r.code} - ${r.title}`,
-    }))
-  }, [availableTargetRolesForEmployee])
 
   const selectedEmployeeTargetRole = useMemo(() => {
     if (!targetRoleId) return undefined
@@ -1180,6 +1162,26 @@ function UserForm({
     }
     return null
   }, [jobPosition, member, availableJobPositionsForDept, jobPositions, references])
+
+  const scopedJobPositionCode = selectedJobPositionObj?.code || selectedJobPositionObj?.jobPositionReferenceId || jobPosition
+  const availableTargetRolesForEmployee = useMemo(() => {
+    return targetRolesForEmployee(
+      orgTargetRoles,
+      department,
+      selectedDeptObj,
+      scopedJobPositionCode,
+      organization,
+      jobPositions,
+      references,
+    )
+  }, [orgTargetRoles, department, selectedDeptObj, scopedJobPositionCode, organization, jobPositions, references])
+
+  const employeeTargetRoleOptions: ComboboxOption[] = useMemo(() => {
+    return availableTargetRolesForEmployee.map((r) => ({
+      value: r.id,
+      label: `${r.code} - ${r.title}`,
+    }))
+  }, [availableTargetRolesForEmployee])
 
   const deptComboboxOptions: ComboboxOption[] = allDepartments.map(d => ({
     value: d.id,

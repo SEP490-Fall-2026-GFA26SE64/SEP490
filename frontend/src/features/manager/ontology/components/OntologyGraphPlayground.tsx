@@ -1804,7 +1804,7 @@ function OntologyGraphPlaygroundInner({
     if (item.type === 'targetRole') {
       const fullRole = (targetRolesRef.current || []).find((r) => r.id === item.id || r.code === item.code)
       const rawStatus = (fullRole?.status || (item as unknown as { status?: string }).status || 'DRAFT').trim().toUpperCase()
-      const isStaged = rawStatus === 'STAGED' || (Boolean(fullRole?.isStaffingEnabled) && rawStatus !== 'PUBLISHED' && rawStatus !== 'ACTIVE' && rawStatus !== 'REJECTED')
+      const isStaged = rawStatus === 'STAGED' || (Boolean(fullRole?.isStaffingEnabled) && rawStatus !== 'PUBLISHED' && rawStatus !== 'ACTIVE')
       if (fullRole) {
         newNode = buildTargetRoleNode(fullRole, pos)
       } else {
@@ -2567,7 +2567,7 @@ function OntologyGraphPlaygroundInner({
           return
         }
         const rawStatus = (r.status || 'DRAFT').trim().toUpperCase()
-        const isStaged = rawStatus === 'STAGED' || (Boolean(r.isStaffingEnabled) && rawStatus !== 'PUBLISHED' && rawStatus !== 'ACTIVE' && rawStatus !== 'REJECTED')
+        const isStaged = rawStatus === 'STAGED' || (Boolean(r.isStaffingEnabled) && rawStatus !== 'PUBLISHED' && rawStatus !== 'ACTIVE')
 
         const displayStatus = isStaged
           ? 'STAGED'

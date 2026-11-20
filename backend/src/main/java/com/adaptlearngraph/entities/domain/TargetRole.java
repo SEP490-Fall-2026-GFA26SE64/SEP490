@@ -67,7 +67,7 @@ public final class TargetRole {
         this.levelCompetencies = (levelCompetencies != null && !levelCompetencies.isBlank()) ? levelCompetencies.trim() : "{}";
         this.competencyIds = (competencyIds != null && !competencyIds.isEmpty()) ? List.copyOf(competencyIds) : List.of();
         this.levelDurations = (levelDurations != null && !levelDurations.isEmpty()) ? Map.copyOf(levelDurations) : Map.of();
-        this.isStaffingEnabled = this.status == RoleStatus.STAGED || (isStaffingEnabled && this.status != RoleStatus.ACTIVE && this.status != RoleStatus.PUBLISHED && this.status != RoleStatus.REJECTED);
+        this.isStaffingEnabled = this.status == RoleStatus.STAGED || (isStaffingEnabled && this.status != RoleStatus.ACTIVE && this.status != RoleStatus.PUBLISHED);
     }
 
     public TargetRole(
@@ -360,8 +360,8 @@ public final class TargetRole {
                 competencyIds != null ? competencyIds : this.competencyIds,
                 levelDurations != null && !levelDurations.isEmpty() ? levelDurations : this.levelDurations,
                 status != null
-                        ? (status == RoleStatus.STAGED || (this.isStaffingEnabled && status != RoleStatus.ACTIVE && status != RoleStatus.PUBLISHED && status != RoleStatus.REJECTED))
-                        : (this.status == RoleStatus.STAGED || (this.isStaffingEnabled && this.status != RoleStatus.ACTIVE && this.status != RoleStatus.PUBLISHED && this.status != RoleStatus.REJECTED)));
+                        ? (status == RoleStatus.STAGED || (this.isStaffingEnabled && status != RoleStatus.ACTIVE && status != RoleStatus.PUBLISHED))
+                        : (this.status == RoleStatus.STAGED || (this.isStaffingEnabled && this.status != RoleStatus.ACTIVE && this.status != RoleStatus.PUBLISHED)));
     }
 
     public TargetRole updateDetails(
@@ -664,6 +664,6 @@ public final class TargetRole {
     }
 
     public boolean isStaffingEnabled() {
-        return this.status == RoleStatus.STAGED || (this.isStaffingEnabled && this.status != RoleStatus.ACTIVE && this.status != RoleStatus.PUBLISHED && this.status != RoleStatus.REJECTED);
+        return this.status == RoleStatus.STAGED || (this.isStaffingEnabled && this.status != RoleStatus.ACTIVE && this.status != RoleStatus.PUBLISHED);
     }
 }

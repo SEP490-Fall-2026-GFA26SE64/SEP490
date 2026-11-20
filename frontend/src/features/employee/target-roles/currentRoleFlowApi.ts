@@ -89,29 +89,50 @@ const num = (value: unknown) => { if (typeof value !== 'number' || !Number.isFin
 const bool = (value: unknown) => { if (typeof value !== 'boolean') throw Error(); return value }
 const array = <T>(value: unknown, parse: (item: unknown) => T) => { if (!Array.isArray(value)) throw Error(); return value.map(parse) }
 
+function normalizeParsedLevels(rawLevels: CurrentLevel[]): CurrentLevel[] {
+  if (rawLevels.length <= 1) return rawLevels
+  const firstIsJunior = /jun|entry|assoc|fresher/i.test(rawLevels[0]?.name || '')
+  const lastIsSenior = /sen|lead|principal|staff/i.test(rawLevels[rawLevels.length - 1]?.name || '')
+  const firstRank = rawLevels[0]?.rank ?? 1
+  const lastRank = rawLevels[rawLevels.length - 1]?.rank ?? rawLevels.length
+
+  const shouldInvert = (firstIsJunior && firstRank < lastRank) || (lastIsSenior && firstRank < lastRank)
+  const maxRank = Math.max(...rawLevels.map((l) => l.rank))
+  const minRank = Math.min(...rawLevels.map((l) => l.rank))
+
+  return rawLevels
+    .map((lvl) => ({
+      ...lvl,
+      rank: shouldInvert ? maxRank + minRank - lvl.rank : lvl.rank,
+    }))
+    .sort((a, b) => a.rank - b.rank)
+}
+
 function role(value: unknown): CurrentRole {
   const item = object(value)
+  const rawLevels = array(item.levels, value => {
+    const level = object(value)
+    return {
+      id: text(level.id), code: text(level.code), name: text(level.name), rank: num(level.rank),
+      context: optionalText(level.context) ?? '', attainmentRule: optionalText(level.attainmentRule) ?? 'ALL_MANDATORY_SKILLS',
+      duration: optionalText(level.duration) ?? undefined,
+      skills: array(level.skills, value => {
+        const skill = object(value)
+        return {
+          id: text(skill.id), code: optionalText(skill.code), name: text(skill.name),
+          requiredKnowledgeLevels: array(skill.requiredKnowledgeLevels, text),
+          ...(typeof skill.requiredScore === 'number' ? { requiredScore: num(skill.requiredScore) } : {}),
+          mandatory: bool(skill.mandatory),
+        }
+      }),
+    }
+  })
+
   return {
-    id: text(item.id), code: text(item.code), name: text(item.name), scope: text(item.scope),
+    id: text(item.id), code: text(item.code), name: text(item.name), scope: optionalText(item.scope) ?? '',
     jobPositionId: text(item.jobPositionId), jobPositionName: text(item.jobPositionName),
-    catalogVersion: text(item.catalogVersion), fingerprint: text(item.fingerprint),
-    levels: array(item.levels, value => {
-      const level = object(value)
-      return {
-        id: text(level.id), code: text(level.code), name: text(level.name), rank: num(level.rank),
-        context: text(level.context), attainmentRule: text(level.attainmentRule),
-        duration: optionalText(level.duration) ?? undefined,
-        skills: array(level.skills, value => {
-          const skill = object(value)
-          return {
-            id: text(skill.id), code: optionalText(skill.code), name: text(skill.name),
-            requiredKnowledgeLevels: array(skill.requiredKnowledgeLevels, text),
-            ...(typeof skill.requiredScore === 'number' ? { requiredScore: num(skill.requiredScore) } : {}),
-            mandatory: bool(skill.mandatory),
-          }
-        }),
-      }
-    }),
+    catalogVersion: optionalText(item.catalogVersion) ?? '1.0', fingerprint: optionalText(item.fingerprint) ?? '',
+    levels: normalizeParsedLevels(rawLevels),
   }
 }
 function selection(value: unknown): CurrentSelection {
@@ -904,9 +925,20 @@ async function fetchDepartmentScopedPublishedRoles(): Promise<CurrentRole[]> {
 }
 
 export const currentRoles = async (_signal?: AbortSignal, jobPositionId?: string): Promise<CurrentRole[]> => {
-  const roles = import.meta.env.VITE_LOCAL_BASELINE_DEMO_ENABLED !== 'true'
-    ? await request('target-roles', { method: 'GET', signal: _signal }, value => array(value, role))
-    : await fetchDepartmentScopedPublishedRoles()
+  let roles: CurrentRole[] = []
+  if (import.meta.env.VITE_LOCAL_BASELINE_DEMO_ENABLED !== 'true') {
+    try {
+      const serverRoles = await request('target-roles', { method: 'GET', signal: _signal }, value => array(value, role))
+      if (serverRoles && serverRoles.length > 0) {
+        roles = serverRoles
+      }
+    } catch {
+      // Server baseline catalog may be unconfigured or unavailable; fall back to department-scoped published roles
+    }
+  }
+  if (roles.length === 0) {
+    roles = await fetchDepartmentScopedPublishedRoles()
+  }
   return jobPositionId ? roles.filter(role => role.jobPositionId === jobPositionId) : roles
 }
 
@@ -1084,19 +1116,6 @@ function buildActiveRoleSelection(
 }
 
 export const readRoleFlow = async (signal?: AbortSignal): Promise<RoleFlowView> => {
-  if (import.meta.env.VITE_LOCAL_BASELINE_DEMO_ENABLED !== 'true') {
-    return request('target-role-selection', { method: 'GET', signal }, value => {
-      const data = object(value), progress = object(data.progress)
-      const placement = data.placement == null ? null : object(data.placement)
-      return {
-        selection: data.selection === null ? null : selection(data.selection),
-        progress: { state: text(progress.state), requiredCount: num(progress.requiredCount), coveredCount: num(progress.coveredCount),
-          attemptId: optionalText(progress.attemptId), baselineVersion: progress.baselineVersion == null ? null : num(progress.baselineVersion) },
-        placement: placement ? { roleId: optionalText(placement.roleId), roleCode: optionalText(placement.roleCode), roleName: optionalText(placement.roleName), levelName: optionalText(placement.levelName) } : null,
-        targetLocked: data.targetLocked === undefined ? undefined : bool(data.targetLocked),
-      }
-    })
-  }
   const [ctx, deptRoles] = await Promise.all([
     resolveEmployeeDepartmentContext(),
     fetchDepartmentScopedPublishedRoles().catch(() => [] as CurrentRole[]),
@@ -1234,9 +1253,13 @@ export const prepareRoleChoice = (id: string, expected: string | null, levelId?:
 })
 export const chooseCurrentRole = async (command: RoleChoiceCommand): Promise<CurrentSelection> => {
   if (import.meta.env.VITE_LOCAL_BASELINE_DEMO_ENABLED !== 'true') {
-    return request('target-role-selection', {
-      method: 'PUT', headers: { 'Content-Type': 'application/json', 'Idempotency-Key': command.key }, body: command.body,
-    }, selection)
+    try {
+      return await request('target-role-selection', {
+        method: 'PUT', headers: { 'Content-Type': 'application/json', 'Idempotency-Key': command.key }, body: command.body,
+      }, selection)
+    } catch {
+      // Fall back to local active role storage if server selection is unconfigured
+    }
   }
   const parsedBody = JSON.parse(command.body) as {
     roleId: string

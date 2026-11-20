@@ -23,7 +23,6 @@ import {
   Palette,
   PanelLeftClose,
   PanelLeftOpen,
-  Server,
   Settings,
   Sliders,
   Target,
@@ -239,11 +238,6 @@ export function WorkspaceLayout({ children, identity: suppliedIdentity, onSignOu
           href: '/expert/skill-assessment-config',
           icon: <Sliders size={15} />,
         },
-      {
-        label: t('nav.serverStatus'),
-        href: '/system-status?portal=expert',
-        icon: <Activity size={15} />,
-      },
     ]
   } else if (isLdManager) {
     actorTabs = [
@@ -281,11 +275,7 @@ export function WorkspaceLayout({ children, identity: suppliedIdentity, onSignOu
         label: t('nav.modules'),
         href: '/ld-manager/modules',
         icon: <BookOpen size={15} />,
-      },
-      {
-        label: t('nav.serverStatus'),
-        href: '/system-status?portal=ld-manager',
-        icon: <Activity size={15} />,
+
       },
     ]
   } else if (isAdmin) {
@@ -345,19 +335,9 @@ export function WorkspaceLayout({ children, identity: suppliedIdentity, onSignOu
       },
       { label: t('nav.learningUploadLimits', 'Learning upload limits'), href: '/platform-admin/learning-upload-settings', icon: <Sliders size={15} /> },
       {
-        label: t('nav.platformActivity', 'Platform Activity'),
-        href: '/platform-admin/activity',
-        icon: <Activity size={15} />,
-      },
-      {
         label: t('nav.graphBenchmark', isVi ? 'Hiệu năng Đồ thị' : 'Graph Engine Benchmark'),
         href: '/platform-admin/graph-benchmark',
         icon: <Cpu size={15} />,
-      },
-      {
-        label: t('nav.serverStatus'),
-        href: '/system-status?portal=platform-admin',
-        icon: <Server size={15} />,
       },
     ]
   }
