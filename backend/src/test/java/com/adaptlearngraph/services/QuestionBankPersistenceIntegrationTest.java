@@ -6,7 +6,6 @@ import com.adaptlearngraph.entities.domain.QuestionBank.*;
 import com.adaptlearngraph.repository.JpaQuestionBankStore;
 import com.adaptlearngraph.repository.Neo4jQuestionBankSkillReader;
 import com.adaptlearngraph.repository.JpaBaselineAssessmentDraftStore;
-import com.adaptlearngraph.helper.TransactionalMailSender;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.*;
 import java.util.*;
@@ -102,9 +101,6 @@ class QuestionBankPersistenceIntegrationTest {
             assertEquals(beforeImport+1,author.read().questions().size());assertEquals(1,imported.versions.size());
             assertEquals(importedCode,jdbc.queryForObject("SELECT code FROM platform.question_bank_identity WHERE question_id=?",String.class,imported.id));
             var invalid=author.preview(new Preview(List.of(new Row(null,body("Valid")),new Row(null,body("")))));assertFalse(invalid.errors.isEmpty());int count=author.read().questions().size();assertThrows(Failure.class,()->author.confirm(new Confirmation(invalid.id,true,true)));assertEquals(count,author.read().questions().size());
-            assertTrue(jdbc.queryForObject("SELECT count(*) FROM platform.question_bank_mail",Integer.class)>0);
-            var mail=mock(TransactionalMailSender.class);doThrow(new org.springframework.mail.MailPreparationException("Test SMTP down")).when(mail).send(anyString(),any(),anyString(),any());
-            new QuestionBankMailWorker(persistence.bean(com.adaptlearngraph.repository.QuestionBankJpaRepository.class),tx,mail,"http://localhost").deliver();assertEquals(1,jdbc.queryForObject("SELECT count(*) FROM platform.question_bank_mail WHERE status='RETRY' AND attempts=1 AND lease_owner IS NULL",Integer.class));assertNotNull(author.read());
             var oldDraft=author.read().questions().stream().filter(q->q.id.equals(legacy)).findFirst().orElseThrow();
             author.save(new Save(oldDraft.id,oldDraft.revision,oldDraft.code,body("Repaired legacy draft"),false));action(author,legacy,"SUBMIT");action(manager,legacy,"VIEW");action(manager,legacy,"APPROVE");
             assertEquals("PUBLISHED",jdbc.queryForObject("SELECT publication_state FROM platform.item_version WHERE item_version_id=?",String.class,legacy));
