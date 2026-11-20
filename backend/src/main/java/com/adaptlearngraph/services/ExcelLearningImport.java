@@ -65,7 +65,15 @@ public final class ExcelLearningImport implements LearningImportUseCase {
         if (c == null) return "";
         if (c.getCellType() == CellType.FORMULA)
             throw new Failure(400, "Formula cells are not accepted");
-        return new DataFormatter(Locale.ROOT).formatCellValue(c).strip();
+        try {
+            return new DataFormatter(Locale.ROOT).formatCellValue(c).strip();
+        } catch (Exception e) {
+            if (c instanceof org.apache.poi.xssf.usermodel.XSSFCell xssfCell) {
+                String raw = xssfCell.getRawValue();
+                return raw != null ? raw.strip() : "";
+            }
+            return "";
+        }
     }
 
     private static Map<String, String> values(
@@ -75,16 +83,30 @@ public final class ExcelLearningImport implements LearningImportUseCase {
             String value = text(row, i);
             Cell cell = row.getCell(i);
             if (cell != null
-                    && cell.getCellType() == CellType.NUMERIC
                     && Set.of("durationMinutes", "order", "durationSeconds")
-                            .contains(columns.get(i)))
-                value =
-                        BigDecimal.valueOf(cell.getNumericCellValue())
+                            .contains(columns.get(i))) {
+                try {
+                    if (cell.getCellType() == CellType.NUMERIC) {
+                        value = BigDecimal.valueOf(cell.getNumericCellValue())
                                 .stripTrailingZeros()
                                 .toPlainString();
+                    } else if (!value.isBlank()) {
+                        value = new BigDecimal(value.replaceAll("[^0-9.]", ""))
+                                .stripTrailingZeros()
+                                .toPlainString();
+                    }
+                } catch (Exception ignored) {
+                }
+            }
             if (columns.get(i).equals("text")
-                    && cell != null
-                    && cell.getCellType() == CellType.STRING) value = cell.getStringCellValue();
+                    && cell != null) {
+                try {
+                    if (cell.getCellType() == CellType.STRING) {
+                        value = cell.getStringCellValue();
+                    }
+                } catch (Exception ignored) {
+                }
+            }
             result.put(columns.get(i), value);
         }
         return result;

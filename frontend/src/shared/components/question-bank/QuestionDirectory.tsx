@@ -16,7 +16,6 @@ export function QuestionDirectory({ questions, history, session, selected, onSel
  primaryActions: (q: BankQuestion) => ReactNode; hasActions: (q: BankQuestion) => boolean
  levelName: (value: string | null) => string; stateName: (value: BankVersion) => string; date: (value: string | null) => string
 }) {
-
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set())
   const toggleExpanded = (id: string) => {
     setExpandedIds(prev => {
@@ -245,5 +244,4 @@ export function QuestionDirectory({ questions, history, session, selected, onSel
       </table>
     </div>
   )
-
 }

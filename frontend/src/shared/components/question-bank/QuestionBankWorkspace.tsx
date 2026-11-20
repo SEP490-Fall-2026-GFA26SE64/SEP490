@@ -12,9 +12,7 @@ import { LinearStepper } from '../ui/LinearStepper'
 import { importIssueLocation } from './importIssueLocation'
 import { useCallback, useContext, useEffect, useId, useRef, useState } from 'react'
 import { WorkspaceSessionContext } from '../../auth/workspaceSession'
-
 import { CheckCheck, CheckCircle2, Clock, CornerUpLeft, UserCheck, Eye, Pencil, Power, FileQuestion, History, Layers, Plus, Search, Upload } from 'lucide-react'
-
 import * as XLSX from 'xlsx'
 import { bankRequest, type BankAudit, type BankChoice, type BankContent, type BankPreview, type BankQuestion, type BankRow, type BankSession, type BankVersion, type BankView } from '../../api/questionBankApi'
 import { questionBankMessage } from '../../api/questionBankMessages'
@@ -279,9 +277,7 @@ function OwnedQuestionBankWorkspace() {
   return <WorkspaceLayout><div className="space-y-6 pb-16 min-w-0">
     <PageHeader title={copy('Assessment Bank', 'Ngân hàng câu hỏi')} description={copy('Manage reviewed questions across your organization’s skills.', 'Quản lý câu hỏi theo kỹ năng và theo dõi quá trình duyệt trong tổ chức.')} actions={session && !manager ? <div className="flex flex-wrap items-center gap-2"><Button variant="outline" size="sm" leftIcon={<Upload className="h-4 w-4" aria-hidden="true" />} className="bg-secondary text-primary border border-primary/20 hover:bg-secondary/80 font-semibold shadow-2xs" disabled={busy || !session.skills.length} onClick={() => { setImportOpen(true); setPreview(null); setImportStep(0); setImportFile(null); setSourceRows([]); setError(''); setAckWarnings(false) }}>{copy('Import questions', 'Nhập câu hỏi')}</Button><Button variant="primary" size="sm" leftIcon={<Plus className="h-4 w-4" aria-hidden="true" />} className="font-semibold shadow-2xs" disabled={busy || !session.skills.length} onClick={() => edit()}>{copy('Create question', 'Tạo câu hỏi')}</Button></div> : undefined} />
     {error && <Card role="alert" className="border-destructive"><CardContent className="p-4 space-y-2"><Text>{questionBankMessage(error, vi)}</Text><Button variant="outline" disabled={busy} onClick={refresh}>{copy('Reload latest data', 'Tải lại dữ liệu mới nhất')}</Button></CardContent></Card>}
-
     {message && <Text role="status" className="text-success">{message}</Text>}
-
     {session && !session.skills.length && <Text role="status">{copy('No approved MicroSkills are available. Contact the catalog manager before authoring questions.', 'Chưa có MicroSkill đã duyệt. Liên hệ người quản lý danh mục trước khi biên soạn câu hỏi.')}</Text>}
     {loading ? <LoadingCard label={copy('Loading Question Bank…', 'Đang tải ngân hàng câu hỏi…')} /> : bank && session && <>
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
@@ -290,7 +286,6 @@ function OwnedQuestionBankWorkspace() {
         <StatCard variant="gradient" className="cursor-pointer transition-all hover:border-warning/60" onClick={() => { setStatus(s => s === 'SUBMITTED' ? 'all' : 'SUBMITTED'); setPage(1) }} icon={<Clock className="h-4 w-4 text-warning" aria-hidden="true" />} valueClassName="text-warning" description={copy('Click to filter pending review', 'Nhấn để lọc câu chờ duyệt')} title={copy('Pending review', 'Chờ duyệt')} value={questions.filter(q => current(q).state === 'SUBMITTED').length} />
         <StatCard variant="gradient" icon={<Layers className="h-4 w-4 text-primary" aria-hidden="true" />} valueClassName="text-primary" description={copy('Skills covered by your questions', 'Kỹ năng được bao phủ bởi câu hỏi')} title={copy('Micro-Skills Assessed', 'Kỹ năng được đánh giá')} value={new Set(questions.map(q => current(q).content.skillId).filter(Boolean)).size} />
       </div>
-
 
       <Card><CardHeader className="border-b border-border p-4"><div className="flex flex-col gap-3"><div><CardTitle className="flex items-center gap-2"><FileQuestion className="size-4 text-primary" />{copy('Question Bank Directory', 'Danh sách câu hỏi')}</CardTitle><CardDescription>{copy('Browse by MicroSkill, review versions and track responsibility.', 'Xem theo MicroSkill, theo dõi phiên bản và người phụ trách.')}</CardDescription></div><div className="flex flex-wrap items-end justify-between gap-2.5">
         <div className="grid flex-1 min-w-0 gap-2.5 sm:grid-cols-2 xl:grid-cols-5 items-end">
@@ -308,16 +303,9 @@ function OwnedQuestionBankWorkspace() {
             </Button>
           </div>
         )}
-
       </div></div></CardHeader><CardContent className="space-y-4 p-4">
           <div className="flex flex-wrap items-center justify-between gap-3"><Text variant="body-sm" className="text-muted-foreground">{copy(`Results: ${filtered.length} · ${Math.min((activePage - 1) * 20 + 1, filtered.length)}–${Math.min(activePage * 20, filtered.length)} shown`, `${filtered.length} câu hỏi · hiển thị ${Math.min((activePage - 1) * 20 + 1, filtered.length)}–${Math.min(activePage * 20, filtered.length)}`)}</Text>{(search || skill !== 'all' || levelFilter !== 'all' || status !== 'all' || owner !== 'all') && <Button variant="ghost" size="sm" onClick={() => { setSearch(''); setSkill('all'); setLevelFilter('all'); setStatus('all'); setOwner('all'); setPage(1) }}>{copy('Clear filters', 'Xoá bộ lọc')}</Button>}</div>
-          <div className="flex flex-wrap gap-2" aria-label={copy('Active filters', 'Bộ lọc đang áp dụng')}>{[
-            { label: search && `${copy('Search', 'Tìm kiếm')}: ${search}`, clear: () => setSearch('') },
-            { label: skill !== 'all' && session.skills.find(s => s.id === skill)?.name, clear: () => setSkill('all') },
-            { label: levelFilter !== 'all' && knowledgeLevel(levelFilter === 'UNCLASSIFIED' ? null : levelFilter), clear: () => setLevelFilter('all') },
-            { label: status !== 'all' && (status === 'DRAFT' ? copy('Draft', 'Bản nháp') : status === 'SUBMITTED' ? copy('Pending review', 'Chờ duyệt') : status === 'PUBLISHED' ? copy('Published', 'Đã xuất bản') : copy('Retired', 'Ngừng sử dụng')), clear: () => setStatus('all') },
-            { label: owner !== 'all' && (owner === 'unassigned' ? copy('Unassigned', 'Chưa phân công') : person(owner)), clear: () => setOwner('all') },
-          ].filter(filter => filter.label).map((filter, index) => <Button key={index} size="sm" variant="outline" className="h-auto max-w-full bg-muted py-1 text-caption" aria-label={`${copy('Remove filter', 'Bỏ bộ lọc')}: ${filter.label}`} onClick={() => { filter.clear(); setPage(1) }}><span className="truncate">{filter.label}</span><span aria-hidden="true">×</span></Button>)}</div>
+
           {manager && selected.length > 0 && <div role="toolbar" aria-label={copy('Selected question actions', 'Thao tác câu hỏi đã chọn')} className="flex flex-wrap items-center gap-3 rounded-lg border border-border bg-muted/40 px-3 py-2"><Text variant="body-sm">{copy(`${selected.length} selected`, `Đã chọn ${selected.length}`)}</Text><Button size="sm" disabled={busy} onClick={approveSelected}>{copy('Approve selected', 'Duyệt các câu đã chọn')} ({selected.length})</Button><Button variant="ghost" size="sm" disabled={busy} onClick={() => setSelected([])}>{copy('Clear selection', 'Bỏ chọn tất cả')}</Button></div>}
           {!filtered.length ? <EmptyState title={copy('No questions match this view', 'Chưa có câu hỏi phù hợp')} description={manager ? copy('Change the filters to find questions added by your Experts.', 'Điều chỉnh bộ lọc để tìm câu hỏi do các Expert biên soạn.') : copy('Change the filters, or create a new question.', 'Điều chỉnh bộ lọc hoặc tạo câu hỏi mới.')} /> : <QuestionDirectory questions={visible} history={bank.history} session={session} selected={selected} onSelect={(id, checked) => setSelected(prev => checked ? [...prev, id] : prev.filter(value => value !== id))} onView={openDetail} actions={q => actions(q, false)} hasActions={q => manager || own(q)} primaryActions={q => <>{own(q) && current(q).state === 'DRAFT' ? <Button variant="outline" size="icon" title={copy('Edit draft', 'Sửa nháp')} aria-label={`${copy('Edit draft', 'Sửa nháp')} ${q.code}`} disabled={busy} onClick={() => edit(q)}><Pencil className="size-4" aria-hidden="true" /></Button> : own(q) && !q.request && q.versions.some(version => version.state === 'PUBLISHED') ? <Button variant="outline" size="icon" className={q.retired ? 'text-success hover:bg-success/10' : 'text-destructive hover:bg-destructive/10'} title={q.retired ? copy('Request reactivation', 'Yêu cầu dùng lại') : copy('Request retirement', 'Yêu cầu ngừng dùng')} aria-label={`${q.retired ? copy('Request reactivation', 'Yêu cầu dùng lại') : copy('Request retirement', 'Yêu cầu ngừng dùng')} ${q.code}`} disabled={busy} onClick={() => ask(q, q.retired ? 'REQUEST_REACTIVATE' : 'REQUEST_RETIRE')}><Power className="size-4" aria-hidden="true" /></Button> : null}</>} busy={busy} vi={vi} levelName={knowledgeLevel} stateName={stateName} date={date} />}
 
@@ -345,9 +333,7 @@ function OwnedQuestionBankWorkspace() {
             <dl className="grid grid-cols-2 gap-x-5 gap-y-3 text-sm">
               <div className="col-span-2"><dt className="text-xs text-muted-foreground">{copy('Question ID', 'Mã câu hỏi')}</dt><dd><QuestionId code={detailQ.code} compact vi={vi} /></dd></div>
               <div><dt className="mb-1 text-xs text-muted-foreground">{detailV.id === current(detailQ).id ? copy('Current version', 'Phiên bản hiện tại') : copy('Historical version', 'Phiên bản lịch sử')}</dt><dd className="font-medium">v{detailV.number}</dd></div>
-
               <div><dt className="mb-1 text-xs text-muted-foreground">{copy('Status', 'Trạng thái')}</dt><dd>{detailQ.retired ? <Badge variant="outline" className="border-muted-foreground/40 text-muted-foreground font-bold">RETIRED</Badge> : detailV.state === 'PUBLISHED' ? <Badge variant="success">PUBLISHED</Badge> : detailV.state === 'SUBMITTED' ? <Badge variant="primary" className="bg-sky-500/10 text-sky-600 border-sky-500/20 font-bold dark:text-sky-400">SUBMITTED</Badge> : <Badge variant="warning">DRAFT</Badge>}</dd></div>
-
               <div><dt className="mb-1 text-xs text-muted-foreground">MicroSkill</dt><dd className="break-words font-medium">{detailV.content.skillName || session?.skills.find(skill => skill.id === detailV.content.skillId)?.name || copy('Skill unavailable', 'Chưa có tên kỹ năng')}</dd></div>
               <div><dt className="mb-1 text-xs text-muted-foreground">{copy('Knowledge level', 'Mức kiến thức')}</dt><dd className="break-words font-medium">{knowledgeLevel(detailV.content.knowledgeLevel)}</dd></div>
             </dl>
@@ -362,9 +348,7 @@ function OwnedQuestionBankWorkspace() {
         </TabsContent><TabsContent value="history" className="question-history space-y-4">
             <section aria-label={copy('Version information', 'Thông tin phiên bản')} className="space-y-3">
               <div className="flex flex-wrap items-center justify-between gap-2"><Heading level={3} size="card">{copy('Version information', 'Thông tin phiên bản')}</Heading><QuestionId code={detailQ.code} compact vi={vi} /></div>
-
               <div className="flex flex-wrap items-end gap-2"><div className="w-48"><FormField label={copy('Version', 'Phiên bản')}><Select size="sm" aria-label={copy('Version', 'Phiên bản')} value={detailV.id} onChange={value => { setVersionId(value); setError('') }} options={detailQ.versions.map(v => ({ value: v.id, label: `v${v.number}${v.id === current(detailQ).id ? copy(' · Latest', ' · Mới nhất') : copy(' · Historical', ' · Lịch sử')}` }))} /></FormField></div><div className="flex h-8 items-center">{detailV.state === 'PUBLISHED' ? <Badge variant="success">PUBLISHED</Badge> : detailV.state === 'SUBMITTED' ? <Badge variant="primary" className="bg-sky-500/10 text-sky-600 border-sky-500/20 font-bold dark:text-sky-400">SUBMITTED</Badge> : <Badge variant="warning">DRAFT</Badge>}</div></div>
-
               <dl className="grid grid-cols-2 gap-x-4 gap-y-3 border-t border-border pt-3 text-sm">{[
                 [copy('Creator', 'Người tạo'), detailQ.createdBy, detailQ.createdAt],
                 [copy('Last Editor', 'Người sửa gần nhất'), detailV.editedBy, detailV.editedAt],
