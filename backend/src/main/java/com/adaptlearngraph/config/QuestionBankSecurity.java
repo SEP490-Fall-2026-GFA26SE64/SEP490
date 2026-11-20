@@ -22,7 +22,8 @@ import org.springframework.web.filter.OncePerRequestFilter;
 @Profile("local & workspace-baseline & !prod & !local-baseline-demo")
 public class QuestionBankSecurity {
     @Bean @Order(-11) SecurityFilterChain questionBankFilterChain(HttpSecurity http,Actors actors,ObjectMapper json,@Value("${question-bank.import.max-bytes:10485760}") int maxBytes)throws Exception {
-        return http.securityMatcher("/api/v1/question-bank","/api/v1/question-bank/**")
+        return http.securityMatcher("/api/v1/question-bank","/api/v1/question-bank/**",
+                "/api/v1/baseline-question-requests","/api/v1/baseline-question-requests/**")
             .addFilterBefore(new OncePerRequestFilter(){
                 @Override protected void doFilterInternal(HttpServletRequest req,HttpServletResponse res,FilterChain chain)throws ServletException,IOException {
                     try{actors.require();if(req.getContentLengthLong()>maxBytes)throw new Failure(413,"Request exceeds the configured size limit");

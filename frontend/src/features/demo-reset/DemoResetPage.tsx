@@ -16,10 +16,12 @@ export function DemoResetPage() {
   const c = useCopy()
   const [state, setState] = useState<State>({ status: 'running' })
   const started = useRef(false)
+  const commandKey = useRef(crypto.randomUUID())
+  const checkpoint = import.meta.env.VITE_DEMO_CHECKPOINT_ENABLED === 'true'
 
   const run = useCallback(() => {
     setState({ status: 'running' })
-    resetDemoData()
+    resetDemoData(commandKey.current)
       .then(result => setState({ status: 'done', result }))
       .catch((error: unknown) => setState({ status: 'failed', message: error instanceof Error ? error.message : String(error) }))
   }, [])
@@ -38,7 +40,7 @@ export function DemoResetPage() {
           forceShowTitle
           icon={<RotateCcw aria-hidden="true" />}
           title={c('Reset demo data', 'Đặt lại dữ liệu demo')}
-          description={c(
+          description={checkpoint ? c('Restores Brightpath to the end of section 3. Sign in and continue from section 4.', 'Khôi phục Brightpath cuối mục 3. Đăng nhập và tiếp tục từ mục 4.') : c(
             'Removes every organization, account, graph node and file created after the initial seed, so the demo can start again from onboarding.',
             'Xoá mọi tổ chức, tài khoản, nút đồ thị và tệp được tạo sau dữ liệu seed ban đầu để có thể chạy lại demo từ bước onboarding.',
           )}
@@ -88,9 +90,9 @@ export function DemoResetPage() {
               <StatCard icon={<FileX2 size={14} />} title={c('Files removed', 'Tệp đã xoá')} value={state.result.filesRemoved} />
             </div>
             <div className="flex flex-wrap gap-3">
-              <Link className={buttonVariants({ variant: 'primary' })} to="/register">{c('Start onboarding', 'Bắt đầu onboarding')}</Link>
+              <Link className={buttonVariants({ variant: 'primary' })} to={state.result.continueUrl ?? '/register'}>{state.result.checkpoint ? c('Sign in · continue section 4', 'Đăng nhập · tiếp tục mục 4') : c('Start onboarding', 'Bắt đầu onboarding')}</Link>
               <Link className={buttonVariants({ variant: 'outline' })} to="/">{c('Back to home', 'Về trang chủ')}</Link>
-              <Button variant="ghost" onClick={run}>{c('Reset again', 'Đặt lại lần nữa')}</Button>
+              <Button variant="ghost" onClick={() => { commandKey.current = crypto.randomUUID(); run() }}>{c('Reset again', 'Đặt lại lần nữa')}</Button>
             </div>
           </>
         )}

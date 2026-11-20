@@ -39,7 +39,7 @@ function editorState(value: unknown): BaselineEditorState | null {
 }
 function choice(value: unknown): ScopeChoice { const v = obj(value); return { key: hash(v.key), ownerId: str(v.ownerId), ownerName: str(v.ownerName), levelId: str(v.levelId), levelName: str(v.levelName), rank: num(v.rank), ready: bool(v.ready) } }
 function version(value: unknown): ScopedVersion { const v = obj(value); return { id: str(v.id), version: num(v.version, 1), configuration: rulePolicy(v.configuration), catalogHash: hash(v.catalogHash), createdAt: date(v.createdAt) } }
-function workspace(value: unknown, purpose: AssessmentPurpose, key: string): PolicyWorkspace {
+export function workspace(value: unknown, purpose: AssessmentPurpose, key: string): PolicyWorkspace {
   const v = obj(value), s = obj(v.scope), scope = choice(s)
   if (s.purpose !== purpose || scope.key !== key) throw new Error('Configuration scope mismatch')
   const groups = list<ScopeGroup>(s.groups, raw => {
@@ -74,3 +74,10 @@ export function runScopedCommand(command: ScopedCommand) {
     method: kind === 'save' || kind === 'progress' ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
   }, raw => workspace(raw, purpose, scopeKey))
 }
+export interface BulkRule { totalCount: number; requiredCorrectCount: number; mandatoryCount: number; allWrongVeto: boolean }
+export interface BulkTemplate { main: BulkRule; foundations: BulkRule; prerequisites: BulkRule; secondsPerQuestion: number; maxAttempts: number; retakeWaitSeconds: number }
+export interface BulkRow { workspace: PolicyWorkspace; configuration: RulePolicy | null; issues: string[] }
+export interface BulkResult { key: string; status: string; error: string | null }
+export interface BulkSave { commandKey: string; activate: boolean; replaceExisting: boolean; entries: { key: string; catalogHash: string; activationRevision: number; draftId: string | null; draftRevision: number; configuration: RulePolicy }[] }
+export const previewBulk = (keys: string[], template: BulkTemplate, replaceExisting: boolean) => adaptiveHttp('/api/v1/assessment-policies/SKILL_ASSESSMENT/bulk/preview', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ keys, template, replaceExisting }) }, raw => list(raw, item => { const r = obj(item), w = obj(r.workspace), s = obj(w.scope); return { workspace: workspace(w, 'SKILL_ASSESSMENT', hash(s.key)), configuration: r.configuration == null ? null : rulePolicy(r.configuration), issues: list(r.issues, str) } satisfies BulkRow }))
+export const saveBulk = (body: BulkSave) => adaptiveHttp('/api/v1/assessment-policies/SKILL_ASSESSMENT/bulk', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }, raw => list(raw, item => { const r = obj(item); return { key: hash(r.key), status: str(r.status), error: r.error == null ? null : str(r.error) } satisfies BulkResult }))

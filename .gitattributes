@@ -31,3 +31,6 @@ documents/dataset/module-knowledge/development-release.json text eol=crlf
 
 documents/dataset/import/ontology_seed-prerequisite-knowledge.json text eol=lf
 documents/dataset/module-knowledge/development-complete-release.json text eol=lf
+
+# Keep the generated demo evidence PDF byte-stable across Git checkouts.
+Demo/Brightpath_Demo_Evidence.pdf binary

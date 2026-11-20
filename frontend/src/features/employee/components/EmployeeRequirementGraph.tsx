@@ -26,14 +26,14 @@ export function EmployeeRequirementGraph({ pathway, steps, preview, assessmentSt
   const current = steps.flatMap(step => step.options.map(option => ({ step, option })))
     .find(({ step, option }) => assessmentState(step, option) === 'inProgress')
     ?? steps.flatMap(step => step.options.map(option => ({ step, option })))
-      .find(({ step, option }) => step.state !== 'FULFILLED' && step.state !== 'BYPASSED' && option.startedAt && !option.completedAt)
+      .find(({ step, option }) => !['FULFILLED', 'ASSESSED_SATISFIED', 'BYPASSED'].includes(step.state) && option.startedAt && !option.completedAt)
     ?? steps.flatMap(step => step.options.map(option => ({ step, option })))
       .find(({ step, option }) => step.state === 'IN_PROGRESS' && option.startedAt)
   const [selection, setSelection] = useState<Selection>(() => {
     const deepLink = steps.flatMap(step => step.options.map(option => ({ step, option }))).find(({ step, option }) =>
       (!params.get('assessmentStep') || step.id === params.get('assessmentStep')) && option.moduleId === params.get('assessmentModule') && String(option.moduleRevision) === params.get('assessmentRevision'))
     const initial = deepLink ?? current
-    return initial ? { stepId: initial.step.id, optionKey: moduleKey(initial.option) } : { stepId: (steps.find(step => step.state !== 'FULFILLED' && step.state !== 'BYPASSED') ?? steps[0]).id }
+    return initial ? { stepId: initial.step.id, optionKey: moduleKey(initial.option) } : { stepId: (steps.find(step => !['FULFILLED', 'ASSESSED_SATISFIED', 'BYPASSED'].includes(step.state)) ?? steps[0]).id }
   })
   const [showAll, setShowAll] = useState(false), [detailsOpen, setDetailsOpen] = useState(() => steps.some(step => (!params.get('assessmentStep') || step.id === params.get('assessmentStep')) && step.options.some(option => option.moduleId === params.get('assessmentModule') && String(option.moduleRevision) === params.get('assessmentRevision')))), [locked, setLocked] = useState(false)
   const updateLock = useCallback((value: boolean) => { setLocked(value); onInteractionLockChange?.(value) }, [onInteractionLockChange])
@@ -182,7 +182,7 @@ export function EmployeeRequirementGraph({ pathway, steps, preview, assessmentSt
   const prerequisites = (step: RuleStep) => pathway.dependencies.filter(edge => edge.dependentStepId === step.id)
     .flatMap(edge => pathway.steps.filter(item => item.id === edge.prerequisiteStepId))
   const prerequisiteLabel = (step: RuleStep) => {
-    const needs = prerequisites(step).filter(item => item.state !== 'FULFILLED')
+    const needs = prerequisites(step).filter(item => !['FULFILLED', 'ASSESSED_SATISFIED', 'BYPASSED'].includes(item.state))
     return needs.length ? (vi ? 'Cần hoàn thành ' : 'Complete ') + needs.map(item => item.requirement.skillName + ' / ' + t('knowledgeLevel.' + item.requirement.knowledgeLevel)).join(', ') : ''
   }
   return <div className="employee-requirement-graph"><div className="employee-pathway-layout"><div className="employee-pathway-graph-pane space-y-3">

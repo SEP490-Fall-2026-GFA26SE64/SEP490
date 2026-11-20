@@ -3,13 +3,11 @@ package com.adaptlearngraph.config;
 import com.adaptlearngraph.repository.Neo4jQuestionBankSkillReader;
 import com.adaptlearngraph.repository.SubscriptionIdentity;
 import com.adaptlearngraph.repository.SubscriptionWorkspaceStore;
-import com.adaptlearngraph.services.QuestionBankMailWorker;
 import com.adaptlearngraph.services.QuestionBankService;
 import com.adaptlearngraph.services.QuestionBankUseCase;
 import com.adaptlearngraph.repository.QuestionBankPorts.*;
 import com.adaptlearngraph.entities.domain.QuestionBank.*;
 import com.adaptlearngraph.entities.domain.SubscriptionAccessPolicy;
-import com.adaptlearngraph.helper.TransactionalMailSender;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.Clock;
 import java.util.*;
@@ -57,4 +55,11 @@ public class QuestionBankConfiguration {
         return new com.adaptlearngraph.services.QuestionBankApplicationService(bank, modelMapper);
     }
     @Bean QuestionBankUseCase questionBankUseCase(Actors actors,Catalog catalog,Store store,@Value("${question-bank.import.max-rows:500}") int rows,@Value("${question-bank.import.max-bytes:10485760}") long bytes){return new QuestionBankService(actors,catalog,store,Clock.systemUTC(),rows,bytes);}
+    @Bean com.adaptlearngraph.services.BaselineQuestionRequestService baselineQuestionRequests(Actors actors,Catalog people,
+            com.adaptlearngraph.repository.AssessmentPolicyCatalog scopes,com.adaptlearngraph.repository.Neo4jCypher graph,
+            com.adaptlearngraph.repository.AssessmentItemKnowledgeMappingJpaRepository bank,org.springframework.jdbc.core.JdbcTemplate jdbc,
+            QuestionBankUseCase questions,ObjectMapper json) {
+        return new com.adaptlearngraph.services.BaselineQuestionRequestService(actors,people,scopes,graph,bank,
+                new com.adaptlearngraph.repository.BaselineQuestionRequestStore(jdbc),questions,json);
+    }
 }

@@ -41,7 +41,8 @@ public final class RulePathwayCatalog {
             throw new Failure(422,"ROLE_REQUIREMENTS_NOT_CONFIGURED");
         var selectedIds=level.skills().stream().map(RoleBaselineFlow.Skill::id).collect(java.util.stream.Collectors.toSet());
         var requested=new TreeMap<String,Set<KnowledgeLevel>>();
-        for(var skill:level.skills())for(var name:skill.requiredKnowledgeLevels())requested.computeIfAbsent(skill.id(),key->new TreeSet<>()).add(KnowledgeLevel.valueOf(name));
+        for(var skill:level.skills())for(var name:skill.requiredKnowledgeLevels())for(var knowledge:KnowledgeLevel.values())
+            if(knowledge.ordinal()<=KnowledgeLevel.valueOf(name).ordinal())requested.computeIfAbsent(skill.id(),key->new TreeSet<>()).add(knowledge);
         var strictKeys=new HashSet<String>();requested.forEach((id,levels)->levels.forEach(knowledge->strictKeys.add(id+"\n"+knowledge)));
         for(var requirement:additional)requested.computeIfAbsent(requirement.skillId(),key->new TreeSet<>()).add(requirement.knowledgeLevel());
         return lookup(actor,role,levelId,requested,selectedIds,strictKeys);

@@ -30,7 +30,7 @@ export function AssessmentStatus({ state, partialLabel }: { state: AssessmentSta
 
 type SkillEntryProps = { pathway: RulePathway; step: RuleStep; option: RuleModuleOption; onLockChange?: (locked: boolean) => void; disabled?: boolean; compact?: boolean }
 export function SkillAssessmentEntry(props: SkillEntryProps) {
-  const disabled = props.disabled || props.step.learningLocked || !props.option.completedAt
+  const disabled = props.disabled || (props.step.assessmentLocked ?? props.step.learningLocked) || !props.option.completedAt
   return <div className="space-y-2"><RequirementLockNotice pathway={props.pathway} step={props.step} /><SharedSkillAssessmentEntry locator={{ moduleId: props.option.moduleId, moduleRevision: props.option.moduleRevision }} getNewTarget={async () => targetFor(props.pathway, props.step, props.option)} disabled={disabled} onLockChange={props.onLockChange} legacy={<LegacySkillAssessmentEntry {...props} disabled={disabled} />} /></div>
 }
 

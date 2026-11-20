@@ -20,3 +20,8 @@ Command and consistent-run receipt: [unit evidence](../unit/REQ-014-question-ban
 ### Automatic codes / creation-only import — 2026-11-01
 
 Real PostgreSQL Testcontainers scenario passed267.2s as part of25 passing focused tests (`/tmp/qb-auto-backend-final.log`). New manually created and imported Q-UUID codes round-trip through JSON aggregate and question_bank_identity; repeated confirmation adds exactly one question, preview code matches persisted code, whole invalid batches roll back, and prior history/concurrency/isolation/retirement/deadline checks remain. Existing V1–V36 checksums/migration behavior unchanged. `generatedCodes` is an additive receipt marker in the existing JSON document; old missing marker defaults false and cannot authorize new import confirmation. No Neo4j graph schema/migration changes.
+
+
+### Question Bank email notification removed — 2026-11-20
+
+Windows dev machine, Testcontainers PostgreSQL. Command: `mvnw -o -Dtest=QuestionBank*Test,*Architecture*Test test` (temp copy of `backend` because the running dev API locks `target`). 34/35 passed; `QuestionBankPersistenceIntegrationTest` failed only at its pre-existing workspace-migration count (expected 38, actual 40, caused by the uncommitted V76/V77 seat-addon migrations). After raising that count to 40 in the temp copy only, the test **Passed**: Expert and L&D in-app notices are still produced and `platform.question_bank_mail` stays empty. The repository assertion still says 38 and is left to the seat-addon work. Not run: the REQ-014 Playwright browser suite (only a `--list` parse check passed) and the retired SMTP recovery script.

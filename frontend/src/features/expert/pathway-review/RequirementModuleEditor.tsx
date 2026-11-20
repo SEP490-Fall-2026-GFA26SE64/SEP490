@@ -20,7 +20,7 @@ import { ModuleAssessmentConfiguration } from './ModuleAssessmentConfiguration'
 import { validationIssueText } from './validationIssueText'
 
 const optionKey = (module: RuleModuleOption) => `${module.moduleId}\n${module.moduleRevision}\n${module.contentVersion}`
-const editableStep = (step: RuleStep) => step.requirement.provision === 'MODULE_ONLY' && !['FULFILLED', 'BYPASSED'].includes(step.state)
+const editableStep = (step: RuleStep) => step.requirement.provision === 'MODULE_ONLY' && !['FULFILLED', 'ASSESSED_SATISFIED', 'BYPASSED'].includes(step.state)
 type DragModule = { stepId: string; key: string; from: 'graph' | 'catalog'; hash: string | null }
 type PointerDrag = DragModule & { pointerId: number; startX: number; startY: number; moved: boolean; element: HTMLElement }
 

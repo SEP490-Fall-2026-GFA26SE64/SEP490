@@ -21,6 +21,7 @@ import { BaselinePolicyDialog } from './BaselinePolicyDialog'
 import { AssessmentBankIssues } from '../../../shared/components/AssessmentBankIssues'
 import { SkillPolicyWizard as RulePolicyForm } from './SkillPolicyWizard'
 import { useToast } from '../../../shared/hooks/useToast'
+import { BulkSkillPolicyDialog } from './BulkSkillPolicyDialog'
 
 type Loaded<T> = { key: string; value?: T; error?: unknown }
 const pageNumber = (value: string | null) => value && /^\d{1,6}$/.test(value) ? Number(value) : 0
@@ -43,6 +44,7 @@ function ConfigError({ error }: { error: unknown }) {
   return <div role="alert" className="space-y-2"><Text tone="destructive">{t(`scopedPolicy.errors.${code}`, t('scopedPolicy.errors.GENERIC'))}</Text><AssessmentBankIssues issues={error instanceof AdaptiveBaselineApiError ? error.bankIssues : undefined} /></div>
 }
 function ScopeDirectory({ purpose }: { purpose: AssessmentPurpose }) {
+  const [bulk, setBulk] = useState(false)
   const { t, language } = useTranslation(), [params, setParams] = useSearchParams(), [reload, setReload] = useState(0)
   const { toast } = useToast(), listRef = useRef<HTMLDivElement>(null)
   const [loaded, setLoaded] = useState<Loaded<PolicyDirectory> & { archived?: boolean }>({ key: '' })
@@ -89,6 +91,8 @@ function ScopeDirectory({ purpose }: { purpose: AssessmentPurpose }) {
   const levels = choices.filter(c => c.ownerId === owner).sort((a, b) => a.rank - b.rank || a.levelId.localeCompare(b.levelId))
   const levelLabel = (id: string, name: string) => purpose === 'BASELINE' ? id === 'ALL_ROLE_LEVELS' ? t('baselineUX.sharedRole') : name : t(`knowledgeLevel.${id}`)
   return <>
+    {purpose === 'SKILL_ASSESSMENT' && <Button variant="outline" onClick={() => setBulk(true)}>{language === 'vi' ? 'Cấu hình hàng loạt' : 'Bulk configuration'}</Button>}
+    {bulk && <BulkSkillPolicyDialog choices={choices} onClose={() => { setBulk(false); setReload(v => v + 1) }} />}
     {notice && <Text role="status" tone="success">{t('baselineWizard.updated')}</Text>}
     {selectedScope && purpose === 'BASELINE' && <BaselinePolicyDialog key={selectedScope} scopeKey={selectedScope} initialAction={initialAction} renderError={error => <ConfigError error={error} />} onActivated={workspace => {
       setSelectedScope(null); setNotice(false); setReload(value => value + 1)

@@ -39,6 +39,13 @@ public final class ScopedAssessmentPolicyService {
     public record Activate(UUID commandKey,UUID draftId,long expectedRevision,long expectedActivationRevision,String expectedCatalogHash) {}
     public record Complete(UUID commandKey,UUID draftId,long expectedRevision,long expectedActivationRevision,String expectedCatalogHash,BaselinePolicyEditor.Progress editorState) {}
     public record Abandon(UUID commandKey,UUID draftId,long expectedRevision) {}
+    public record BulkRule(int totalCount,int requiredCorrectCount,int mandatoryCount,boolean allWrongVeto) {}
+    public record BulkTemplate(BulkRule main,BulkRule foundations,BulkRule prerequisites,int secondsPerQuestion,int maxAttempts,int retakeWaitSeconds) {}
+    public record BulkPreview(List<String> keys,BulkTemplate template,boolean replaceExisting) {}
+    public record BulkRow(Workspace workspace,Policy configuration,List<String> issues) {}
+    public record BulkEntry(String key,String catalogHash,long activationRevision,UUID draftId,long draftRevision,Policy configuration) {}
+    public record BulkSave(UUID commandKey,boolean activate,boolean replaceExisting,List<BulkEntry> entries) {}
+    public record BulkResult(String key,String status,String error) {}
     private final SubscriptionIdentity identity;private final SubscriptionWorkspaceStore memberships;
     private final AssessmentPolicyCatalog catalog;private final ScopedAssessmentPolicyJpaRepository scopes;
     private final AssessmentRulePolicyJpaRepository policies;private final AssessmentItemKnowledgeMappingJpaRepository bank;
@@ -68,6 +75,70 @@ public final class ScopedAssessmentPolicyService {
     public Workspace completeHttp(String purpose,String key,Complete command){return complete(Purpose.valueOf(purpose),key,command);}
     public Workspace abandonHttp(String purpose,String key,Abandon command){return abandon(Purpose.valueOf(purpose),key,command);}
     public void authorize(Purpose purpose){actor(purpose);}
+    public List<BulkRow> previewBulk(BulkPreview command) {
+        var a=actor(Purpose.SKILL_ASSESSMENT);
+        if(command==null || command.keys()==null || command.keys().isEmpty() || command.keys().size()>300
+                || new HashSet<>(command.keys()).size()!=command.keys().size() || command.template()==null)throw new Failure(400,"INVALID_REQUEST");
+        var template=command.template();
+        if(template.secondsPerQuestion()<1 || template.maxAttempts()<1 || template.retakeWaitSeconds()<0)throw new Failure(422,"POLICY_CONFIGURATION_REQUIRED");
+        return locked(a,Purpose.SKILL_ASSESSMENT,()->{
+            var result=new ArrayList<BulkRow>();
+            for(var key:command.keys()) {
+                var scope=require(a,Purpose.SKILL_ASSESSMENT,key);var workspace=workspace(a,Purpose.SKILL_ASSESSMENT,scope,0,20);
+                var issues=new ArrayList<String>();Policy configuration=null;
+                if(!command.replaceExisting() && (workspace.active()!=null || workspace.draft()!=null))issues.add("EXISTING_POLICY_SKIPPED");
+                try {
+                    var groups=scope.groups().stream().map(group->{
+                        var need=group.requirement();var rule=need.skillId().equals(scope.ownerId())
+                                ?(need.knowledgeLevel().name().equals(scope.levelId())?template.main():template.foundations()):template.prerequisites();
+                        return new GroupRule(need.skillId(),need.knowledgeLevel(),rule.totalCount(),rule.requiredCorrectCount(),rule.mandatoryCount()>0,
+                                !need.skillId().equals(scope.ownerId()) && rule.allWrongVeto(),rule.mandatoryCount());
+                    }).toList();
+                    int total=groups.stream().mapToInt(GroupRule::totalCount).sum();
+                    configuration=new Policy(Math.multiplyExact(template.secondsPerQuestion(),total),template.retakeWaitSeconds(),template.maxAttempts(),groups);
+                    validate(scope,configuration);readiness(a,scope,configuration);
+                }catch(Failure failure){issues.add(failure.code);}catch(IllegalArgumentException|ArithmeticException invalid){issues.add("POLICY_CONFIGURATION_REQUIRED");}
+                result.add(new BulkRow(workspace,configuration,List.copyOf(issues)));
+            }
+            return List.copyOf(result);
+        });
+    }
+    /** Each scope has its own transaction and immutable command receipts. A retry reuses action keys. */
+    public List<BulkResult> saveBulk(BulkSave command) {
+        actor(Purpose.SKILL_ASSESSMENT);
+        if(command==null || command.commandKey()==null || command.entries()==null || command.entries().isEmpty() || command.entries().size()>300
+                || command.entries().stream().map(BulkEntry::key).distinct().count()!=command.entries().size())throw new Failure(400,"INVALID_REQUEST");
+        var result=new ArrayList<BulkResult>();
+        for(var entry:command.entries())try {
+            var a=actor(Purpose.SKILL_ASSESSMENT);
+            var saved=locked(a,Purpose.SKILL_ASSESSMENT,()->{
+                var scope=require(a,Purpose.SKILL_ASSESSMENT,entry.key());current(scope,entry.catalogHash());
+                String operation="BULK_SKILL_POLICY",resource=entry.key();
+                UUID retry=UUID.nameUUIDFromBytes((command.commandKey()+":"+resource).getBytes(java.nio.charset.StandardCharsets.UTF_8));
+                String hash=RoleBaselineFlow.hash(write(Arrays.asList(entry,command.activate(),command.replaceExisting())));
+                var receipt=policies.receipt(a.organizationId(),a.accountId(),operation,resource,retry);
+                if(receipt.isPresent()) {
+                    if(!receipt.get().getHash().equals(hash))throw new Failure(409,"IDEMPOTENCY_CONFLICT");
+                    return read(receipt.get().getOutcome(),BulkResult.class);
+                }
+                var w=workspace(a,Purpose.SKILL_ASSESSMENT,scope,0,20);
+                if(!command.replaceExisting() && (w.active()!=null || w.draft()!=null))throw new Failure(409,"EXISTING_POLICY_SKIPPED");
+                if(w.activationRevision()!=entry.activationRevision() || !Objects.equals(w.draft()==null?null:w.draft().id(),entry.draftId())
+                        || (w.draft()==null?0:w.draft().revision())!=entry.draftRevision())throw new Failure(409,"STALE_POLICY_DRAFT");
+                validate(scope,entry.configuration());readiness(a,scope,entry.configuration());
+                UUID draft=w.draft()==null?UUID.randomUUID():w.draft().id();long revision=w.draft()==null?1:w.draft().revision();
+                if(w.draft()==null && scopes.create(a.organizationId(),Purpose.SKILL_ASSESSMENT.name(),entry.key(),draft,null,scope.catalogHash(),a.accountId())!=1)throw new Failure(409,"STALE_POLICY_DRAFT");
+                if(scopes.update(a.organizationId(),Purpose.SKILL_ASSESSMENT.name(),entry.key(),draft,revision,write(entry.configuration()),scope.catalogHash(),a.accountId())!=1)throw new Failure(409,"STALE_POLICY_DRAFT");
+                if(command.activate())publish(a,Purpose.SKILL_ASSESSMENT,entry.key(),scope,entry.configuration(),draft,revision+1);
+                current(require(a,Purpose.SKILL_ASSESSMENT,entry.key()),scope.catalogHash());
+                var value=new BulkResult(entry.key(),command.activate()?"ACTIVE":"DRAFT",null);
+                policies.retain(UUID.randomUUID(),a.organizationId(),a.accountId(),operation,resource,retry,hash,write(value));return value;
+            });
+            result.add(saved);
+        }catch(Failure failure){result.add(new BulkResult(entry.key(),"FAILED",failure.code));}
+        catch(org.springframework.dao.DataAccessException|IllegalStateException failure){result.add(new BulkResult(entry.key(),"FAILED","DEPENDENCY_UNAVAILABLE"));}
+        return List.copyOf(result);
+    }
     private <T>T locked(SubscriptionAccessPolicy.Actor a,Purpose purpose,Supplier<T> work) {
         return tx.execute(status->{
             // Retain the purpose advisory lock: it serializes same-scope publication as well as legacy callers.

@@ -9,6 +9,8 @@ import java.util.*;
 public final class RequirementPathwayPlanningService {
     private final RulePathwayCatalog catalog;private final RequirementPathwayJpaRepository rules;
     private final RequirementPathwayAdmissionService admission;private final RequirementPathwayRevisions revisions;private final ObjectMapper json;
+    private RuleAssessmentContextJpaRepository history;
+    public RequirementPathwayPlanningService history(RuleAssessmentContextJpaRepository value){history=Objects.requireNonNull(value);return this;}
     public RequirementPathwayPlanningService(RulePathwayCatalog catalog,RequirementPathwayJpaRepository rules,RequirementPathwayAdmissionService admission,
             RequirementPathwayRevisions revisions,ObjectMapper json) {this.catalog=catalog;this.rules=rules;this.admission=admission;this.revisions=revisions;this.json=json;}
     public Plan refresh(RequirementPathwayJpaRepository.Row row,Plan plan) {
@@ -43,17 +45,26 @@ public final class RequirementPathwayPlanningService {
             var previous=plan.steps().get(i);if(previous.state()==State.FULFILLED){steps.add(previous);continue;}
             var bypass=carried.stream().filter(gap->gap.getSourceRequestId().equals(row.getRequestId()) && gap.getSourceStepId().equals(previous.id())).findFirst();
             if(previous.kind()==Kind.REQUIRED && bypass.isPresent()) {
-                // Earlier versions could reactivate this root when a provider appeared. Restore its retained bypass;
-                // the provider is carried separately and all original content progress remains in its own store.
                 var gap=bypass.get();
-                steps.add(previous.state()==State.BYPASSED?previous:new Step(previous.id(),requirement(gap.getRequirementSnapshot()),Kind.REQUIRED,null,
-                        State.BYPASSED,gap.getReason(),null,List.of(),null,previous.assessedSources()));
-                continue;
+                var replacement=RequirementPathwayGenerationService.step(row.getRequestId(),requirements.get(i),Kind.REQUIRED,null,fresh,official.get(requirements.get(i).proofKey()));
+                boolean active=row.getArchivedAt()==null && row.getTimingCompletedAt()==null;
+                if(!active || replacement.state()==State.NEEDS_EXPERT_ACTION) {
+                    steps.add(previous.state()==State.BYPASSED?previous:new Step(previous.id(),requirement(gap.getRequirementSnapshot()),Kind.REQUIRED,null,
+                            State.BYPASSED,gap.getReason(),null,List.of(),null,previous.assessedSources()));
+                    continue;
+                }
+                // Original bypass remains in immutable history. Real provision resumes this active dependency.
             }
             var requirement=requirements.get(i);
             var next=RequirementPathwayGenerationService.step(row.getRequestId(),requirement,previous.kind(),previous.sourceBypassId(),fresh,official.get(requirement.proofKey()));
+            if(!previous.assessedSources().isEmpty() && next.state()!=State.FULFILLED && history!=null
+                    && history.assessed(row.getOrganizationId(),row.getLearnerId(),requirement.skillId(),requirement.knowledgeLevel().name(),requirement.skillVersion()).orElse(false)) {
+                steps.add(new Step(previous.id(),requirement,previous.kind(),previous.sourceBypassId(),State.ASSESSED_SATISFIED,
+                        "COMPATIBLE_ASSESSMENT_NO_GAP",null,next.options(),next.certificate(),previous.assessedSources()));
+                continue;
+            }
             // A bypass is historical resolution, never achievement or renewed mandatory learning.
-            if(previous.state()==State.BYPASSED) {steps.add(previous);continue;}
+            if(previous.state()==State.BYPASSED && bypass.isEmpty()) {steps.add(previous);continue;}
             var state=previous.state()==State.IN_PROGRESS && next.state()==State.NEEDS_SUPPLEMENTATION?State.IN_PROGRESS:next.state();
             String reason=next.reason();
             // Retain original pins for continued reading when provision becomes stale; eligibility still requires fresh validation.
@@ -69,6 +80,8 @@ public final class RequirementPathwayPlanningService {
             var required=requirement(gap.getRequirementSnapshot());var current=byKey.get(required.key());
             if(required.provision()==Provision.UNCONFIGURED && current!=null)required=current;
             final var need=required;
+            if(row.getArchivedAt()==null && row.getTimingCompletedAt()==null && steps.stream().anyMatch(step->step.kind()==Kind.REQUIRED
+                    && step.requirement().key().equals(need.key()) && step.state()!=State.BYPASSED))continue;
             if(steps.stream().anyMatch(step->step.kind()==Kind.PARALLEL_SUPPLEMENT && gap.getBypassId().equals(step.sourceBypassId()) && step.requirement().key().equals(need.key())))continue;
             var next=RequirementPathwayGenerationService.step(row.getRequestId(),required,Kind.PARALLEL_SUPPLEMENT,gap.getBypassId(),fresh,official.get(required.proofKey()));
             if(next.state()!=State.NEEDS_EXPERT_ACTION)steps.add(next);

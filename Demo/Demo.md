@@ -281,218 +281,278 @@ Mở lại `/reset` → toàn bộ Brightpath (workspace `brightpath`, admin và
 
 ---
 
-## 8. Phần demo tiếp theo: từ import câu hỏi đến hoàn thành pathway
+## 8. Demo Senior trên runtime Brightpath riêng
 
-Làm tiếp sau bước 7 ở trên. Phần này gồm 7 bước, dùng cùng một kịch bản: giữ nguyên loại trong file 04: **Docker/Foundation và Intermediate là Module; Advanced là Certificate**. Không cần sửa loại skill sau import.
+Áp dụng cho `http://localhost:8099`. Checkpoint bàn giao ở **cuối mục 3**: Brightpath và bốn tài khoản đã kích hoạt; Sarah đã Save & Send JAVA-BE cho David. Đăng nhập David, làm tiếp **mục 4–7**, rồi phần này. Chưa import 03–06 ở checkpoint.
 
-### Trước khi import câu hỏi
-
-Đăng nhập **David Thompson**. Giữ nguyên loại Module/Certificate của tất cả skill từ file 04; không mở Edit để đổi Docker/Foundation.
-
-Để diễn tình huống recalculate bên dưới, hoàn tất cấu hình role và graph trước khi import nội dung:
-
-1. Trong **Roles → JAVA-BE → Middle**, đặt yêu cầu **MS-SQL-INDEX = Intermediate** thay cho Foundation trong bảng bước 7, rồi lưu. Đây là yêu cầu của role, không phải đổi loại skill trong file 04.
-2. Trong **Explore Graph**, kiểm tra các cạnh prerequisite đã được kết nối đúng giữa các micro-skill.
-3. Hoàn tất các thay đổi prerequisite ở bước 6 phía trên, lưu cấu hình role và gửi cho L&D theo màn hình.
-
-Sau khi import bank, không lưu chỉnh skill chỉ để mở ô baseline: version mới có thể làm câu hỏi theo version cũ không còn hợp lệ. Với luồng mới từ đầu, cứ dùng loại đã import từ 04 và bank 05 đi kèm.
-
-| File | Nội dung |
-| --- | --- |
-| [05_Question_Bank_Java_Backend.xlsx](./05_Question_Bank_Java_Backend.xlsx) | 195 câu / 39 nhóm skill–mức, gồm Docker/Foundation và Intermediate |
-| [06_Learning_Modules_Java_Backend_Demo.zip](./06_Learning_Modules_Java_Backend_Demo.zip) | 6 module / 12 bài đọc; upload nguyên ZIP |
-
-Không cần ZIP bổ sung `02-after-bypass.zip`. Pathway Middle dùng Docker/Foundation theo Module. Certificate Docker/Advanced là nội dung riêng, không phải điều kiện hoàn thành Middle.
-
-### Bước 1. Expert import câu hỏi
-
-1. Vào **Question Bank → Import Excel**, chọn `05_Question_Bank_Java_Backend.xlsx`.
-2. Kiểm tra preview: **195 câu / 39 nhóm skill–mức**, mỗi nhóm **4 câu thường + 1 mandatory**. Docker có cả **Foundation và Intermediate**, đúng hai mức Module trong file 04.
-3. Nếu không có lỗi, xác nhận import **một lần**, rồi gửi các Draft đi duyệt theo màn hình.
-4. Nếu đã import thành công nhưng gửi duyệt lỗi, mở các Draft đã tạo và gửi lại; không import lại cả file để tránh trùng câu hỏi.
-
-Import nguyên file 05; không xóa năm câu Docker/Foundation. Bank bao phủ đủ 39 nhóm Module của file 04; các mức Certificate không có câu hỏi.
-
-### Bước 2. Expert import module và tạo certificate
-
-1. Vào **Modules → Import**, chọn nguyên file `06_Learning_Modules_Java_Backend_Demo.zip`; không giải nén để upload riêng từng bài.
-2. Kiểm tra preview **6 module, 12 lesson**, không lỗi.
-3. Chọn **Confirm & submit for review**. Nếu chọn **Confirm import**, mở các Draft vừa tạo rồi gửi duyệt.
-
-| Module | Skill / mức | Dùng để diễn |
-| --- | --- | --- |
-| Java Collections Intermediate Guided Practice | MS-JAVA-COLL / Intermediate | Học và thi đạt |
-| Java Collections Intermediate Scenario Workshop | MS-JAVA-COLL / Intermediate | Phương án thay thế để Expert include/exclude |
-| SQL Indexing Intermediate Guided Practice | MS-SQL-INDEX / Intermediate | Thi sai nền tảng để sinh phần bổ sung |
-| SQL Indexing Foundation Guided Practice | MS-SQL-INDEX / Foundation | Học bổ sung mức thấp hơn |
-| SQL Querying Intermediate Guided Practice | MS-SQL-QUERY / Intermediate | Học bổ sung skill tiên quyết |
-| Docker Foundation Guided Practice | MS-DOCKER / Foundation | Học và đánh giá Docker nếu baseline chưa đạt |
-
-#### Tạo certificate Docker/Advanced (tùy chọn)
-
-Mở **Certificates → Certificate catalog → Add**, chọn và nhập:
+Prefix được giữ nguyên theo yêu cầu. Trên runtime8099, `/reset` khôi phục cuối mục3; không chạy lại onboarding hoặc mở email. Chọn level theo tên **Senior**, không theo nhãn thứ tự trong mục7: file01 đặt Senior rank1, Junior rank3.
 
 | Field | Giá trị |
 | --- | --- |
-| Skill | Containerizing Services with Docker / MS-DOCKER |
-| Knowledge level | Advanced |
-| Name | Docker Advanced — Demo Certificate |
-| Mô tả và năng lực được chứng nhận | Thiết kế image nhiều giai đoạn, giảm kích thước image, cấu hình Docker Compose và giải thích lựa chọn cấu hình container cho dịch vụ Java. |
-| Reference URL | Link HTTPS tới tài liệu hoặc mẫu chứng chỉ đã chuẩn bị |
+| Web | `http://localhost:8099` |
+| Workspace | `brightpath` |
+| Michael Carter / Administrator | `hoangsusp@gmail.com` |
+| Sarah Mitchell / L&D Manager | `minhhoang10372@gmail.com` |
+| David Thompson / Domain Expert | `kzvn10372@gmail.com` |
+| James Wilson / Employee | `proteccmee@gmail.com` |
+| Mật khẩu fixture demo đã chốt cho cả bốn tài khoản | `Brightpath@Demo2026` |
+| Current Role của James ở checkpoint | `JAVA-BE - Java Backend Developer` / `Junior` |
+| Target Role phần8 | `JAVA-BE - Java Backend Developer` / `Senior` |
 
-Bấm **Continue → Confirm** rồi lưu. Tạo certificate trong catalog chưa công nhận Employee đã đạt.
+Đây là thông tin đăng nhập fixture demo trong bàn giao đã duyệt, không phải secret hạ tầng.
 
-Docker/Foundation không xuất hiện trong Add Certificate là đúng, vì mức này dùng Module. Chỉ chọn Docker/Advanced vốn đã là Certificate trong file 04. Việc tạo catalog này không thêm yêu cầu chứng chỉ vào role Middle; không có bước nộp Docker/Foundation certificate trong luồng này.
+### 8.1. Đích học và graph
 
-### Bước 3. L&D duyệt và publish nội dung
+Không gán thêm API Security/Docker trong nhánh mở rộng mục7. Giữ bốn Skill Senior:
 
-**Người làm:** Sarah Mitchell.
-
-1. Mở hàng đợi câu hỏi, kiểm tra các câu vừa gửi ở bước 1, rồi **Approve/Publish** theo màn hình.
-2. Mở quản lý module, xem nội dung của sáu module, rồi duyệt và **Publish**.
-3. Kiểm tra câu hỏi và module đã ở **Published**. Draft hoặc Submitted chưa dùng được để ra đề hoặc học.
-
-**Kết quả:** bank và sáu module đã xuất bản. Nếu tạo catalog Docker/Advanced ở bước 2, đó là phần minh họa riêng; luồng Middle không yêu cầu Employee nộp chứng chỉ này.
-
-### Bước 4. Expert kích hoạt Skill Assessment
-
-Đăng nhập **David Thompson**. Mở cấu hình cho năm nhóm chính: **Java Collections/Intermediate**, **SQL Indexing/Intermediate**, **SQL Indexing/Foundation**, **SQL Querying/Intermediate**, **Docker/Foundation**.
-
-Với mỗi nhóm chính, nhập theo các nhóm mà màn hình liệt kê:
-
-| Thông số | Giá trị demo |
+| Field | Giá trị |
 | --- | --- |
-| Tổng câu mỗi nhóm | 3 |
-| Số câu cần đúng mỗi nhóm | 2 |
-| Mandatory của MAIN | 1 |
-| Mandatory của nhóm tiên quyết | 0 |
-| Thời gian | 10 phút |
-| Số lượt | 3 |
-| Chờ làm lại | 0 phút |
-| Checkbox sai toàn bộ tiên quyết thì phải thi lại MAIN | Bỏ chọn cho tình huống sinh phần học bổ sung |
+| Java Streams & Lambdas | `MS-JAVA-STREAM` / `Advanced` / `Module` |
+| Java Concurrency & CompletableFuture | `MS-JAVA-CONC` / `Advanced` / `Certificate` |
+| Spring Data JPA & Hibernate | `MS-SPRING-DATA` / `Advanced` / `Certificate` |
+| Transaction Management | `MS-SPRING-TX` / `Advanced` / `Module` |
 
-Bấm **Save & activate**. Nếu lưu được nhưng kích hoạt lỗi, mở bản nháp đã lưu để kích hoạt lại.
+Graph sau mục6: Streams phụ thuộc Collections và OOP; Transaction phụ thuộc Spring Data và Concurrency; qua Spring Data có Spring DI và SQL Querying; qua DI/Concurrency có OOP. Prerequisite khác Skill luôn là Advanced, OOP qua nhiều nhánh chỉ có một nhóm. Không có cạnh ontology tự nối F/I/A.
 
-Với SQL Indexing/Intermediate, kiểm tra có các nhóm **MAIN Intermediate**, **SQL Indexing/Foundation** và **SQL Querying/Intermediate**. Nếu thiếu, kiểm tra cấu hình mức và tiên quyết trước khi cho Employee thi. Với các MAIN khác, giữ đúng các nhóm do hệ thống liệt kê.
+Mỗi Skill luôn có cả ba mức. Ghi chú cũ “không có Advanced” ở mục5 chỉ mô tả thiếu provision; Collections, DB Migration, JUnit vẫn có Advanced trong bank mới. Baseline/nhóm phụ đạt cho biết no-gap, **không tạo achievement**. Không bắt nộp certificate khi nhóm tương thích đã cho thấy no-gap.
 
-Quota mandatory bằng 0 dùng được khi đủ câu thường. Ví dụ tổng 5, bank 4 thường + 1 mandatory thì quota phải ít nhất 1; hoặc giảm tổng xuống 4. Checkbox chỉ chặn riêng trường hợp tiên quyết đúng **0 câu**. Dù bỏ checkbox, tiên quyết chưa đạt vẫn có thể làm yêu cầu học chưa hoàn thành.
+### 8.2. Chốt provision và certificate trước bank
 
-### Bước 5. L&D kích hoạt baseline và publish role
+David mở **Micro-skills → Java Collections & Generics (MS-JAVA-COLL) → Edit**. Giữ Foundation/Intermediate `Module`, đặt riêng Advanced thành `Certificate`, lưu. File04 không thay đổi. Không đổi mode qua lại để né bank.
 
-1. Đăng nhập **Sarah Mitchell → Baseline Assessments → Java Backend Developer**.
-2. Trong **Questions**, nhập cho từng mức được liệt kê:
+Mở **Certificates → Certificate catalog → Add**, chọn Skill/mức, nhập rồi **Continue → Confirm** cho hai definition:
 
-| Ô nhập | Giá trị |
+| Field | Giá trị |
 | --- | --- |
-| Questions per Skill | 3 |
-| Correct to pass | 2 |
+| Skill thứ nhất | `Java Collections & Generics` / `MS-JAVA-COLL` |
+| Knowledge level | `Advanced` |
+| Name | `Brightpath Collections Advanced Demo Evidence` |
+| Description | `Demo fixture: explain collection invariants, generic variance, immutable snapshots and safe concurrent map updates. This is not a real credential.` |
+| Reference URL | `https://example.com/brightpath-demo/collections-advanced` |
+| Skill thứ hai | `Java OOP & SOLID Principles` / `MS-JAVA-OOP` |
+| Knowledge level | `Advanced` |
+| Name | `Brightpath OOP Advanced Demo Evidence` |
+| Description | `Demo fixture: explain substitutability, dependency inversion, composition and domain invariants. This is not a real credential.` |
+| Reference URL | `https://example.com/brightpath-demo/oop-advanced` |
 
-3. Trong **Time & retakes**, đặt thời gian **20 phút**, số lượt **3**, chờ thi lại **0 phút**.
-4. Sang **Review**, kiểm tra rồi **Activate**.
+OOP/Advanced đã là Certificate trong04; giữ mode. Collections/Advanced đang trống được provision thêm cho nhánh gap. Reference URL là định danh HTTPS của fixture, không phải dịch vụ cấp chứng chỉ. Bằng chứng upload là [Brightpath_Demo_Evidence.pdf](./Brightpath_Demo_Evidence.pdf), ghi rõ **DEMO ONLY**. Dùng file đó trong hai submission ở8.11–8.12.
 
-“Limiting Skills” là các skill có ít câu hỏi hợp lệ nhất, không phải số skill được thêm. Nếu ô bị khóa ở 0, kiểm tra bank đã Published và khớp đúng skill, mức, version. Docker/Foundation và Intermediate đều cần câu hỏi Published theo đúng version; năm câu Foundation mới đã có trong file 05. Không đổi loại skill qua lại để mở ô nhập.
+Chốt mọi Skill/provision/version tại đây trước05/06 và policy. Không lưu lại Skill trong lúc thi. Tạo definition chưa tạo evidence cho James.
 
-#### L&D duyệt và publish JAVA-BE
+### 8.3. David import05 và06
 
-1. Mở **Roles → JAVA-BE** do David gửi.
-2. Kiểm tra Middle có SQL Indexing/Intermediate và Docker/Foundation.
-3. Duyệt, chuyển **Active/Publish** theo màn hình. Nếu thiếu cấu hình, xử lý thông báo trước khi xác nhận lại.
+| Field | Giá trị |
+| --- | --- |
+| Assessment Bank → Import questions | [05_Question_Bank_Java_Backend.xlsx](./05_Question_Bank_Java_Backend.xlsx) |
+| Preview05 | `240 questions` / `48 Skill-level groups` |
+| Mỗi nhóm | `4 ordinary` + `1 mandatory` |
+| Modules → Import | [06_Learning_Modules_Java_Backend_Demo.zip](./06_Learning_Modules_Java_Backend_Demo.zip) |
+| Preview06 | `8 modules` / `16 reading lessons` |
 
-Với Middle theo bảng bước 7, đối chiếu phạm vi thực tế trước khi thi, không tự sửa dữ liệu kết quả để khớp con số dự kiến.
+05 bao phủ16 Skill ×3 mức, gồm Module, Certificate và chưa provision. Giữ schema cột, import toàn bộ workbook, Confirm một lần rồi Submit Draft cho L&D.
 
-### Bước 6. Employee làm RIASEC, baseline và yêu cầu pathway
+Upload nguyên ZIP06, không upload riêng DOCX. Chọn **Confirm & submit for review** nếu có; nếu đã Confirm import thì mở Draft vừa tạo và Submit. Nếu Submit lỗi sau import thành công: đọc lỗi, sửa Draft nếu cần rồi Submit lại **Draft đó**, không import trùng file.
 
-**Người làm:** James Wilson.
+| Field | Giá trị |
+| --- | --- |
+| Transaction Advanced phương án1 | `Transaction Advanced Guided Practice` |
+| Transaction Advanced phương án2 | `Transaction Advanced Scenario Workshop` |
+| Transaction Foundation | `Transaction Foundation Guided Practice` |
+| Transaction Intermediate | `Transaction Intermediate Guided Practice` |
+| Streams Advanced | `Java Streams Advanced Guided Practice` |
+| Spring DI Advanced | `Spring DI Advanced Guided Practice` |
+| Spring DI Foundation | `Spring DI Foundation Guided Practice` |
+| Spring DI Intermediate | `Spring DI Intermediate Guided Practice` |
 
-#### 6.1. Làm RIASEC
+Mỗi module có hai bài đọc Concepts/Guided Activity. Không thêm Module cho mức Certificate.
 
-1. Mở **Overview → RIASEC**, trả lời đủ **60 hoạt động** theo mức độ yêu thích, rồi nộp.
-2. Xem sáu điểm và trạng thái gợi ý Job position. Nếu AI đang xử lý, tiếp tục phần role trong lúc chờ; không nộp bài mới chỉ vì chưa có gợi ý ngay.
-3. Khi có kết quả, xem vị trí và lý do gợi ý. RIASEC không tự cộng điểm skill hay hoàn thành pathway.
+### 8.4. Sarah review và publish
 
-Job position cần đủ sáu điểm tham chiếu; tính năng và dịch vụ mô hình phải hoạt động. Thời gian và lời giải thích AI có thể khác nhau giữa các lần.
+Sarah mở **Assessment Bank → Batch review**, đọc từng nội dung, xác nhận đã xem đúng version rồi Approve/Publish. Cần đủ240 câu Published, không chỉ Submitted. Trong Modules, xem nội dung cả8 module, duyệt và publish. Draft, Submitted, retired hoặc sai Skill version không dùng được.
 
-#### 6.2. Chọn mục tiêu Middle và làm baseline
+Certificate definition ở8.2 là catalog; learner submission ở8.11 còn phải được David duyệt qua pathway.
 
-1. Vào **Upskilling → Roles → Java Backend Developer → Middle**, xác nhận chọn mục tiêu.
-2. Mở baseline. Với đúng bank demo này, chọn **A cho mọi câu** để tạo ba gap: Java Collections/Intermediate (đáp án B), SQL Indexing/Intermediate (C), API Security/Foundation (B).
-3. Nộp và xem chi tiết theo phạm vi thực tế của bài thi.
-4. Docker/Foundation nằm trong bài baseline và dùng đáp án **A**. Theo cách chọn trên, nhóm này đạt; còn ba gap học, không có yêu cầu chứng chỉ Docker/Foundation.
-5. Nếu muốn diễn thêm phần học Docker, riêng các câu Docker/Foundation chọn **B** để cố ý sai. Khi đó dự kiến module Docker ở bước 2 sẽ dùng cho gap thứ tư.
+### 8.5. David cấu hình hàng loạt Skill Assessment
 
-Các đáp án trên chỉ dùng tạo tình huống demo, không phải hướng dẫn làm bài thật.
+Mở **Skill Assessment configuration → Bulk configuration**. Chọn ba Skill và cả ba mức MAIN Foundation/Intermediate/Advanced:
 
-#### 6.3. Yêu cầu pathway
+| Field | Giá trị |
+| --- | --- |
+| Skill1 | `Java Streams & Lambdas` |
+| Skill2 | `Transaction Management` |
+| Skill3 | `Spring IoC & Dependency Injection` |
+| MAIN total / correct / mandatory | `3` / `2` / `1` |
+| MAIN foundations total / correct / mandatory | `3` / `2` / `1` |
+| Prerequisite Advanced total / correct / mandatory | `3` / `2` / `1` |
+| All-wrong veto của prerequisite khác Skill | `checked` |
+| Minutes per question | `1` |
+| Maximum attempts | `10` |
+| Retake wait (minutes) | `0` |
+| Explicitly replace existing policies | `unchecked` |
 
-Bấm **Request pathway**, xác nhận một lần và chờ. Nếu đã có yêu cầu, mở yêu cầu hiện tại thay vì gửi thêm.
+**Preview policies**:9 scope riêng. Dự kiến Transaction/Advanced8 nhóm/24 câu/24 phút, DI/Advanced4 nhóm/12 câu/12 phút, Streams/Advanced5 nhóm/15 câu/15 phút; đối chiếu preview thực tế. Mỗi scope giữ policy/version/history riêng.
 
-### Bước 7. Duyệt pathway, học và hoàn thành
+Đọc capacity ordinary/mandatory từng nhóm. **Edit exception** sửa từng dòng nếu cần. Lỗi quota phải được sửa/bổ sung bank; **Open Assessment Bank** dẫn tới bank. Không gửi request câu hỏi ở Skill Assessment.
 
-#### 7.1. Expert duyệt pathway
+**Save & activate**, đọc kết quả mỗi scope. `ACTIVE` là thành công; `FAILED` có nguyên nhân. **Retry same command** gửi đúng lệnh khi lỗi mạng/partial failure, tránh version trùng. Nếu chủ động sửa cấu hình, Preview lại. Scope có draft/active được bỏ qua mặc định; tick replace chỉ khi muốn thay. Template được lưu để dùng cho Skill thêm sau nhưng phải preview/validate lại.
 
-1. Đăng nhập **David Thompson → Pathway review**, mở yêu cầu của **James Wilson**.
-2. Chọn node Java Collections/Intermediate. Exclude cả hai module rồi **Check**. Node phải báo lỗi không còn module được chọn; chưa được Approve.
-3. Include lại **Guided Practice**. Có thể giữ exclude **Scenario Workshop** để minh họa hai module thay thế. Việc exclude hết không làm skill đủ điều kiện bypass nếu catalog vẫn có module phù hợp.
-4. Với API Security/Foundation, nếu thực sự chưa có module/chứng chỉ phù hợp, chọn **Bypass**, ghi: **Chưa có nội dung phù hợp; bổ sung khi có nội dung mới.**
-5. Kiểm tra lại, **Save** thay đổi, rồi **Approve** phiên bản hợp lệ. Nếu Check báo lỗi khác, chọn node đó và sửa theo thông báo trước khi duyệt.
+### 8.6. Sarah baseline và Requests
 
-Bypass giữ lại gap và lịch sử duyệt, chưa công nhận đạt skill. Sau khi duyệt, Employee mở lại pathway để thấy trạng thái mới.
+Mở **Baseline Assessment configuration → Java Backend Developer**. Đây là policy chung theo Role; đề phụ thuộc Role Level James chọn. Trước Activate, mở **Request more questions from the Role Expert**:
 
-#### 7.2. Employee học Java Collections và thi đạt
+| Field | Giá trị |
+| --- | --- |
+| Skill / level | `Transaction Management` / `Foundation` |
+| Required Published total | `6` |
+| Mandatory quota | `1` |
 
-1. Mở **Adaptive Pathway → Java Collections/Intermediate → Guided Practice**.
-2. Học đủ hai bài, hoàn thành nội dung, rồi mở Skill Assessment.
-3. Với bank demo: nhóm Java Collections/Intermediate chọn **B**; nhóm Foundation nếu có chọn **A**. Đọc đúng tên nhóm, không chọn B cho cả bài.
-4. Nộp, đợi kết quả và quay lại pathway. Khi đủ điều kiện, yêu cầu được đánh dấu hoàn thành.
+05 có4 ordinary+1 mandatory; nhu cầu này thiếu1 ordinary. **Send question request**. Backend lấy recipient từ Expert maintain JAVA-BE là David, không chọn người ngoài tenant. Gửi lại cùng nhu cầu cập nhật cùng request.
 
-#### 7.3. Demo recalculate: MAIN đạt nhưng còn thiếu nền tảng
+David mở **Assessment Bank → Requests**, chọn đúng JAVA-BE/Transaction/Foundation → **Create question for request**. Skill/mức đã điền sẵn. Nhập:
 
-1. Mở **SQL Indexing/Intermediate**, học hết hai bài rồi làm Skill Assessment.
-2. Với bank demo: nhóm **Intermediate MAIN chọn C**. Nhóm **SQL Indexing/Foundation** và **SQL Querying/Intermediate chọn B** để cố ý sai nền tảng.
-3. Nộp và đợi pathway cập nhật. Xem điểm MAIN riêng với trạng thái yêu cầu tổng. MAIN đạt chưa có nghĩa là yêu cầu đã hoàn thành.
-4. Quan sát hai phần học bổ sung: **SQL Querying/Intermediate** và **SQL Indexing/Foundation**. MAIN bị khóa chờ hoàn thành phần cần thiết; bấm node để xem cụ thể cần học gì.
-5. Học **SQL Querying/Intermediate** trước, hoàn thành nội dung và thi đạt. Với bank demo, nhóm này chọn **A**; các nhóm khác nếu có đọc đúng nhãn và đối chiếu bank.
-6. Sau đó học **SQL Indexing/Foundation**, hoàn thành nội dung và thi đạt. Hai nhóm Foundation và SQL Querying/Intermediate dùng đáp án **A** trong bank demo.
-7. Khi có đủ kết quả đạt cho các phần bổ sung, quay lại **SQL Indexing/Intermediate** và **thi lại MAIN**. Nội dung đã học được giữ. Điểm MAIN cũ không tự được công nhận sau khi học bổ sung.
-8. Lượt mới: MAIN Intermediate chọn **C**, Foundation và SQL Querying/Intermediate chọn **A**. Nộp và xem pathway cập nhật.
+| Field | Giá trị |
+| --- | --- |
+| Question prompt | `How should a credit operation handle a retried request with the same business idempotency key?` |
+| Option A | `Apply a new credit for every retry.` |
+| Option B | `Return the retained result of the original accepted operation.` |
+| Option C | `Skip ownership validation when the request is retried.` |
+| Option D | `Change the account balance outside the transaction.` |
+| Correct answer | `B` |
+| Mandatory | `unchecked` |
+| Explanation | `A retry with the same business idempotency key reuses the original accepted operation instead of crediting the account twice.` |
 
-Nếu hết lượt hoặc chưa đến giờ thi lại, xử lý theo thông báo và policy; không reset dữ liệu để bỏ khóa. Nếu phát sinh thêm nhóm ngoài bảng, kiểm tra đúng cấu hình đang được áp dụng.
+Save/Submit đi qua Sarah review/publish hiện có. Submitted chưa hoàn tất request. Sarah đọc đúng version, xác nhận review rồi publish; David **Requests → Refresh**: đủ5 ordinary+1 mandatory, `COMPLETED`. Bank lúc này241 câu; workbook05 vẫn240. Câu thêm đáp ánB giữ ma trận toànA ổn định.
 
-#### 7.4. Học Docker nếu chưa đạt và hoàn thành pathway
+Nếu Role chưa có Expert/Expert mất quyền maintain: Sarah sửa người maintain trong Role rồi gửi lại. Nếu Skill đổi version, gửi nhu cầu version mới và publish đúng version; không dùng câu cũ vượt capacity. Request hoàn tất không tự activate baseline.
 
-1. Nếu đã cố ý làm sai Docker/Foundation ở bước 6, Expert kiểm tra module **Docker Foundation Guided Practice** được chọn khi duyệt pathway. Employee mở module, học đủ hai bài rồi làm Skill Assessment.
-2. Với bank này, câu Docker/Foundation chọn **A**. Nếu có thêm nhóm do policy liệt kê, đọc đúng tên và dùng đáp án theo bank; không chọn A tùy tiện cho nhóm khác.
-3. Nếu Docker đã đạt ở baseline thì bỏ qua phần học này. Không nộp chứng chỉ để thay thế kết quả Module của Docker/Foundation.
-4. Khi các yêu cầu bắt buộc hoàn thành hoặc có quyết định bypass hợp lệ, xem trạng thái pathway và lịch sử. Bypass vẫn không trở thành năng lực đã đạt.
-5. Kiểm tra quyền chọn mục tiêu tiếp theo theo trạng thái hiện tại; giữ lại pathway cũ.
+Sarah tải lại capacity, nhập:
 
-Docker/Advanced Certificate chỉ được nộp và duyệt trong một pathway thực sự yêu cầu đúng skill/mức này. Role Middle ở kịch bản hiện tại không có yêu cầu đó, nên phần này không hướng dẫn nộp chứng chỉ Advanced để hoàn thành Middle.
+| Field | Giá trị |
+| --- | --- |
+| Foundation questions / correct | `3` / `2` |
+| Intermediate questions / correct | `3` / `2` |
+| Advanced questions / correct | `3` / `2` |
+| Minutes per question | `1` |
+| Maximum attempts | `10` |
+| Retake wait (minutes) | `0` |
 
-#### 7.5. Tình huống thêm nội dung sau bypass (tùy chọn)
+Baseline không dùng mandatory gate/veto. Nếu nhập số câu vượt bank: UI giới hạn, backend không lưu/activate vượt capacity. Giảm về giá trị hợp lệ trong bảng hoặc request, chờ Published rồi tải lại. **Save draft** thành công trước **Activate**.
 
-Phần demo chính không cần ZIP thứ hai. Nếu muốn diễn thêm, Expert có thể tự tạo module **API Security/Foundation** với bài học hợp lệ rồi gửi L&D duyệt và publish, hoặc tạo nguồn phù hợp theo cấu hình skill đang dùng.
+Sau khi baseline và9 Skill policies ACTIVE, Sarah mở Role JAVA-BE do David Submit ở mục7, đọc cấu hình Senior rồi **Approve/Publish**. Nếu lỗi điều kiện publish, đọc và hoàn tất điều kiện đó; không đổi yêu cầu Senior để né lỗi. James chỉ chọn target khi policy và Role sẵn sàng.
 
-Employee xem thông báo để biết **skill, mức và nội dung vừa thêm**. Nội dung xuất hiện dưới nhãn **Học bổ sung** ở cuối graph/timeline hiện có. Không có graph Role thứ hai, không mở lại hoàn thành của pathway cũ và không khóa đổi role. Nếu chưa có target/pathway mới, vẫn mở được nội dung từ phần gap cũ và liên kết Skill. Các điều kiện tiên quyết vẫn áp dụng; certificate vẫn nộp qua luồng pathway được duyệt hiện có.
+### 8.7. James Senior và baseline toànA
 
-Mở dropdown chuông để xem thông báo: chỉ mục thực sự hiện ra được đánh dấu đọc; cuộn để xem các mục còn lại. Nếu lưu trạng thái đọc lỗi, dùng **Retry**.
+Đăng nhập James. Kịch bản này không dùng RIASEC; không tạo điểm/gợi ý giả.
 
-### Tham khảo: RIASEC trong file 01
+| Field | Giá trị |
+| --- | --- |
+| Job position | `Backend Engineer` |
+| Role | `Java Backend Developer` / `JAVA-BE` |
+| Role Level | `Senior` |
+| Baseline answers | `A` cho mọi câu |
 
-tab **Job positions** đã có thêm sáu cột `RIASEC R`, `RIASEC I`, `RIASEC A`, `RIASEC S`, `RIASEC E`, `RIASEC C`. R = Realistic, I = Investigative, A = Artistic, S = Social, E = Enterprising, C = Conventional. Mỗi ô là số nguyên từ 0 đến 40. Nhập đủ sáu ô của một vị trí, hoặc để trống cả sáu. File cũ không có các cột này vẫn import được.
+James sạch ở checkpoint:12 nhóm (4 Skill đích×F/I/A),36 câu,36 phút. Baseline không mở rộng prerequisite khác Skill. Mức thấp có history tương thích thì không thi lại dù history trượt; vì vậy không reset có thể ra ít câu hơn.
 
-| Job position | R | I | A | S | E | C |
-| --- | --- | --- | --- | --- | --- | --- |
-| Backend Engineer | 18 | 38 | 12 | 10 | 16 | 28 |
-| Frontend Engineer | 14 | 30 | 32 | 16 | 18 | 22 |
-| QA Engineer | 20 | 34 | 10 | 14 | 12 | 36 |
-| Data Engineer | 16 | 40 | 12 | 10 | 14 | 32 |
-| Learning & Development Specialist | 8 | 22 | 20 | 40 | 32 | 26 |
+| Field | Giá trị |
+| --- | --- |
+| Gap toànA dự kiến | `Streams/Advanced`, `Transaction/Foundation`, `Transaction/Intermediate`, `Transaction/Advanced` |
+| No-gap dự kiến | `Streams/Foundation`, `Streams/Intermediate`, cả ba mức `Concurrency`, cả ba mức `Spring Data` |
+| Official achievement từ baseline | `Không có` |
 
-Đây là **điểm mẫu tự đặt cho demo**, không phải điểm nghiên cứu nghề nghiệp. Chúng mô tả Job position để so với kết quả sở thích của Employee. Chúng không thay điểm bài RIASEC của Employee. Cấu trúc và điểm được lưu khi onboarding tạo workspace sau thanh toán; import preview chưa ghi chúng vào catalog của workspace. Với workspace đã tạo từ file cũ, cập nhật điểm ở màn hình quản lý Job position. Không đăng ký lại hoặc reset chỉ để đổi điểm.
+Đối chiếu kết quả lưu thực tế trước khi giải thích. ConcurrencyA/Spring DataA no-gap không bị bắt nộp certificate chỉ để tạo evidence.
 
-### Lưu ý khi dùng trên deploy
+### 8.8. Pathway review include/exclude và Check
 
-- Chỉnh file local không cập nhật bank trên server. Tài liệu này dành cho luồng nhập mới theo thứ tự trên. Nếu deploy đã có 190 câu, chỉ bổ sung năm câu Docker/Foundation còn thiếu sau khi đối chiếu dữ liệu; không nhập trùng toàn bank.
-- Nếu đã sửa skill sau khi import bank, cần đối chiếu version và nội dung hiện có trước khi bổ sung; không sửa Excel hoặc đổi loại qua lại để che lỗi version.
-- Sau khi merge và workflow deploy hoàn tất, tải lại trang. Push nhánh fix chưa làm server đổi bản.
-- SMTP, storage, kết nối dữ liệu, worker và mô hình RIASEC phụ thuộc môi trường. Kiểm tra file tĩnh không chứng minh toàn bộ luồng đang chạy trên deploy.
+James **Request pathway**. David mở Pathway review đúng James/JAVA-BE/Senior. Ban đầu có bốn gap ở8.7; baseline chưa phát hiện cross-Skill prerequisite và MAIN lần đầu chưa bị khóa sớm.
+
+Trong Transaction/Advanced, Exclude cả `Transaction Advanced Guided Practice` và `Transaction Advanced Scenario Workshop` rồi **Check**. Dự kiến lỗi không còn provider/lựa chọn hợp lệ, vì đã loại hết alternatives. Không Approve/bypass để né lỗi. Include lại `Transaction Advanced Guided Practice`, có thể giữ Workshop excluded. Check lại hết lỗi đó, **Save → Approve** khi toàn plan hợp lệ. Recalculate giữ lựa chọn provider.
+
+### 8.9. MAIN Transaction lần đầu và recalculate
+
+James mở Transaction/Advanced trước, chọn `Transaction Advanced Guided Practice`, hoàn tất hai lesson rồi mở Skill Assessment:
+
+| Field | Giá trị |
+| --- | --- |
+| MAIN Transaction/Advanced lần1 | `B` cho mọi câu nhóm MAIN |
+| Các nhóm còn lại lần1 | `A` |
+
+MAIN đạt, nhưng TransactionF/I, Spring DI/Advanced và OOP/Advanced trượt. Veto chỉ xảy ra với prerequisite bật veto có0 đúng; tắt veto vẫn không tự hoàn tất gap. Chưa công nhận MAIN hoàn thành chỉ vì MAIN đạt.
+
+Chờ processing/recalculate:
+
+```text
+OOP/Advanced và Spring DI/Advanced
+  → Transaction/Foundation
+  → Transaction/Intermediate
+  → Transaction/Advanced thi lượt mới
+```
+
+Foundation khóa module/assessment/certificate theo dependency; Intermediate đợi Foundation. MAIN Transaction giữ module progress/quyền xem lại, chỉ khóa assessment/retake. Không ép học lại MAIN.
+
+### 8.10. Spring DI trở thành MAIN
+
+Mở `Spring DI Advanced Guided Practice`, hoàn tất hai lesson và thi lần đầu:
+
+| Field | Giá trị |
+| --- | --- |
+| MAIN DI/Advanced | `B` |
+| DI/Foundation, Intermediate | `A` |
+| OOP/Advanced chưa có evidence | `A` |
+
+DI có4 nhóm/12 câu. MAIN đạt nhưng F/I trượt nên chưa hoàn tất. Recalculate thêm OOP→DI/F→DI/I→DI/A thi lại. Học xong nền tảng không replay điểm MAIN cũ để trao achievement.
+
+### 8.11. Certificate OOP và hoàn tất DI → Transaction
+
+James mở OOP/Advanced trong pathway đã duyệt → **Submit certificate**:
+
+| Field | Giá trị |
+| --- | --- |
+| Evidence file | [Brightpath_Demo_Evidence.pdf](./Brightpath_Demo_Evidence.pdf) |
+| Note nếu có | `Brightpath demo fixture for James Wilson. Not a real credential.` |
+
+Upload, đọc preview, Submit. David **Certificates → Review submissions**, mở đúng James/OOP Advanced/`Brightpath OOP Advanced Demo Evidence`, xem attachment rồi Approve. Lúc này mới ghi certificate evidence. James tải lại pathway.
+
+Lần lượt hoàn tất hai lesson của mỗi module, thi mới, chờ processing:
+
+| Field | Giá trị |
+| --- | --- |
+| DI/Foundation | `Spring DI Foundation Guided Practice`; MAIN `B`, OOP/A `B` |
+| DI/Intermediate | `Spring DI Intermediate Guided Practice`; mọi nhóm `B` |
+| DI/Advanced retake | Giữ module completed; mọi nhóm `B` |
+| Transaction/Foundation | `Transaction Foundation Guided Practice`; Transaction/DI/OOP `B`, nhóm khác `A` |
+| Transaction/Intermediate | `Transaction Intermediate Guided Practice`; Transaction/DI/OOP `B`, nhóm khác `A` |
+| Transaction/Advanced retake | Giữ module completed; Transaction/DI/OOP `B`, nhóm khác `A` |
+
+Không sửa answer key khi demo. Nhóm phụ no-gap không tự nhận achievement; MAIN phải có lượt mới hợp lệ sau dependency. Lịch sử lần đầu giữ nguyên.
+
+### 8.12. Streams và Collections certificate
+
+James hoàn tất hai lesson của `Java Streams Advanced Guided Practice`, mở bài5 nhóm/15 câu:
+
+| Field | Giá trị |
+| --- | --- |
+| Streams/Advanced MAIN lần1 | `B` |
+| Streams/Foundation, Intermediate | `A` |
+| OOP/Advanced đã có evidence | `B` |
+| Collections/Advanced lần1 | `A` |
+
+MAIN đạt nhưng CollectionsA gap, chưa hoàn tất. Recalculate đưa Collections/Advanced Certificate vào pathway, giữ Advanced, không fallback Intermediate.
+
+James nộp [Brightpath_Demo_Evidence.pdf](./Brightpath_Demo_Evidence.pdf) cho đúng CollectionsA. David đọc và Approve theo definition `Brightpath Collections Advanced Demo Evidence`. James tải lại rồi thi **lượt Streams MAIN mới**: StreamsA/CollectionsA/OOPA chọnB, StreamsF/I chọnA. Không học lại module.
+
+### 8.13. Hoàn tất và reset
+
+Chờ xử lý kết quả cuối; xem pathway, history các lượt mới, certificate submission/decision/evidence. Baseline/no-gap vẫn riêng với official achievement. Khi mọi yêu cầu bắt buộc được giải quyết, pathway có thể hoàn tất và James chọn mục tiêu tiếp theo theo điều kiện hệ thống. Không suy ra mọi Skill profile đã có achievement vì baseline đạt.
+
+Không demo bypass trong kịch bản chính. Bypass không tạo evidence; provision xuất hiện ở pathway còn hoạt động phải được xử lý theo progress. Completed/archived không tự mở lại chỉ vì có nội dung mới.
+
+| Field | Giá trị |
+| --- | --- |
+| Reset riêng | `http://localhost:8099/reset` |
+| Checkpoint | `BRIGHTPATH_END_SECTION_3` |
+| Sau reset | Đăng nhập David, tiếp tục `mục4` |
+| Chưa có sau reset | `03–06`, certificate bổ sung, policies, attempts, pathway, progress/evidence của James |
+
+Chỉ coi reset hoàn tất khi PostgreSQL, graph, private storage restore thành công. Nếu báo chưa hoàn tất, **Try again** để phục hồi, không tiếp tục trên trạng thái dở dang. Reset đăng xuất phiên cũ. Dev8088 không thuộc reset8099.
+
+Các kết quả trên là hướng dẫn theo cấu hình dữ liệu. Build không chứng minh hành vi runtime; xem giới hạn kiểm chứng trong bàn giao lần chạy hiện tại.

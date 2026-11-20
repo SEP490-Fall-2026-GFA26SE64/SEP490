@@ -34,6 +34,8 @@ public final class RequirementPathwayAdmissionService {
     private final RulePathwayCatalog catalog;private final RequirementPathwayJpaRepository rules;private final InitialPathwayRepositories data;
     private final PathwayRequirementSnapshotJpaRepository snapshots;private final RuleAssessmentAttemptJpaRepository attempts;
     private final RuleAssessmentOutcomeJpaRepository groups;private final Receipts receipts;private final RequirementPathwayRevisions revisions;private final ObjectMapper json;
+    private RuleAssessmentContextJpaRepository history;
+    public RequirementPathwayAdmissionService history(RuleAssessmentContextJpaRepository value){history=Objects.requireNonNull(value);return this;}
     public RequirementPathwayAdmissionService(Actors actors,RoleBaselineFlow.Catalog roles,CurrentRoleSelectionStore selections,RulePathwayCatalog catalog,
             RequirementPathwayJpaRepository rules,InitialPathwayRepositories data,PathwayRequirementSnapshotJpaRepository snapshots,
             RuleAssessmentAttemptJpaRepository attempts,RuleAssessmentOutcomeJpaRepository groups,Receipts receipts,RequirementPathwayRevisions revisions,ObjectMapper json) {
@@ -197,11 +199,17 @@ public final class RequirementPathwayAdmissionService {
         boolean baselineRequired=false;var needs=new ArrayList<Requirement>();
         for(var requirement:selected) {
             if(official.containsKey(requirement.proofKey()))continue;
-            if(requirement.provision()==Provision.MODULE_ONLY) {
-                if(!passed.containsKey(requirement.key()))baselineRequired=true;
-                if(Boolean.TRUE.equals(passed.get(requirement.key())))continue;
-            }
+            if(!passed.containsKey(requirement.key()))baselineRequired=true;
+            if(Boolean.TRUE.equals(passed.get(requirement.key())))continue;
             needs.add(requirement);
+        }
+        // Reuse lower history only for the exact learner, tenant and Skill version.
+        if(history==null)throw new Failure(503,"ASSESSMENT_HISTORY_UNAVAILABLE");
+        for(var requirement:snapshot.requirements())if(!selectedKeys.contains(requirement.key()) && parallel.stream().noneMatch(p->p.requirement().key().equals(requirement.key()))) {
+            if(!history.official(actor.organizationId(),actor.accountId(),requirement.skillId(),requirement.knowledgeLevel().name(),requirement.skillVersion()).isEmpty())continue;
+            var result=history.assessed(actor.organizationId(),actor.accountId(),requirement.skillId(),requirement.knowledgeLevel().name(),requirement.skillVersion());
+            if(result.isEmpty())baselineRequired=true;
+            else if(!result.get() && history.official(actor.organizationId(),actor.accountId(),requirement.skillId(),requirement.knowledgeLevel().name(),requirement.skillVersion()).isEmpty())needs.add(requirement);
         }
         var input=new Input(new Binding(roleId,role.name(),levelId,level.name(),role.jobPositionId(),role.fingerprint()),role,snapshot,selected,needs,official,baseline,parallel);
         String hash=RoleBaselineFlow.hash(revisions.encode(Arrays.asList(selection.selectionId(),selection.revision(),input)));

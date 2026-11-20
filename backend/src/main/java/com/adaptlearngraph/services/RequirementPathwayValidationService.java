@@ -20,7 +20,7 @@ public final class RequirementPathwayValidationService {
     }
     public RulePathwayCatalog.Snapshot providers(RequirementPathwayJpaRepository.Row row,Plan plan) {
         var input=admission.decode(row).input();var needs=new ArrayList<Requirement>();var strict=new HashSet<String>();
-        for(var step:plan.steps())if(step.state()!=State.FULFILLED && step.state()!=State.BYPASSED) {
+        for(var step:plan.steps())if(!step.resolved()) {
             needs.add(step.requirement());if(step.kind()==Kind.REQUIRED)strict.add(step.requirement().key());
         }
         return catalog.providers(new RoleBaselineFlow.Actor(row.getOrganizationId(),row.getLearnerId()),input.roleSnapshot(),input.binding().levelId(),needs,strict);
@@ -84,9 +84,9 @@ public final class RequirementPathwayValidationService {
         RulePathwayCatalog.Snapshot fresh=null;
         try{fresh=providers(row,plan);}
         catch(com.adaptlearngraph.exception.InitialPathwayFailure unavailable) {
-            issues.add(new Issue(null,unavailable.code(),plan.steps().stream().anyMatch(step->step.kind()==Kind.REQUIRED && step.state()!=State.FULFILLED && step.state()!=State.BYPASSED)));
+            issues.add(new Issue(null,unavailable.code(),plan.steps().stream().anyMatch(step->step.kind()==Kind.REQUIRED && !step.resolved())));
         }
-        if(fresh!=null)for(var step:plan.steps())if(step.state()!=State.FULFILLED && step.state()!=State.BYPASSED) {
+        if(fresh!=null)for(var step:plan.steps())if(!step.resolved()) {
             boolean blocking=step.kind()==Kind.REQUIRED;
             var current=fresh.requirements().stream().filter(requirement->requirement.key().equals(step.requirement().key())).findFirst();
             if(current.isEmpty() || !current.get().proofKey().equals(step.requirement().proofKey()) || current.get().provision()!=step.requirement().provision()) {

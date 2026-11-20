@@ -27,12 +27,15 @@ public final class Neo4jAssessmentPolicyCatalog implements AssessmentPolicyCatal
         var owners=graph.read(5,tx->{
             var rows=tx.records("""
                     MATCH (r:TargetRole {organizationId:$org,assignedExpertId:$expert})-[h:HAS_LEVEL]->(l:Level)
-                    MATCH (l)-[q:REQUIRES_SKILL]->(s:MicroSkill {organizationId:$org})
-                    WHERE r.status IN ['ACTIVE','PUBLISHED'] AND h.status='ACTIVE' AND l.status='ACTIVE'
+                    MATCH (l)-[q:REQUIRES_SKILL|HAS_COMPETENCY]->(target)
+                    OPTIONAL MATCH (target)-[membership:HAS_SKILL]->(member:MicroSkill {organizationId:$org})
+                    WHERE membership.status='ACTIVE' AND (membership.organizationId IS NULL OR membership.organizationId=$org)
+                    WITH r,h,l,q,coalesce(member,target) AS s
+                    WHERE NOT r.status IN ['ARCHIVED','DELETED','INACTIVE','SUPERSEDED'] AND h.status='ACTIVE' AND l.status='ACTIVE'
                       AND (h.organizationId IS NULL OR h.organizationId=$org)
                       AND (l.organizationId IS NULL OR l.organizationId=$org)
                       AND q.status='ACTIVE' AND (q.organizationId IS NULL OR q.organizationId=$org)
-                      AND s.status='ACTIVE'
+                      AND s:MicroSkill AND s.organizationId=$org AND s.status='ACTIVE'
                     RETURN DISTINCT s.id AS id ORDER BY id LIMIT 10001
                     """,Map.of("org",organization.toString(),"expert",expert.toString()));
             if(rows.size()>10000)throw capacity();
@@ -129,16 +132,15 @@ public final class Neo4jAssessmentPolicyCatalog implements AssessmentPolicyCatal
             }
             for(var role:levels.values()) {
                 var groups=new LinkedHashMap<String,GroupSpec>();var problems=new TreeSet<>(role.problems());
-                if(!Set.of("ACTIVE","PUBLISHED").contains(role.status()))problems.add("CATALOG_NOT_PUBLISHED");
                 if(role.version().isBlank())problems.add("EXACT_KNOWLEDGE_CONFIGURATION_REQUIRED");
                 for(var need:role.needs()) {
                     var skill=skills.get(need.skill());
                     if(skill==null){problems.add("OWNED_SKILL_CONFIGURATION_REQUIRED");continue;}
                     var knowledge=KnowledgeLevel.valueOf(need.level());
-                    if(provision(skill,knowledge)==SkillProvisionMode.CERTIFICATE_ONLY)continue;
-                    add(skill,knowledge,groups);
+                    for(var candidate:KnowledgeLevel.values())if(candidate.ordinal()<=knowledge.ordinal())add(skill,candidate,groups);
                 }
-                result.add(scope(purpose,role.id(),role.name(),role.level(),role.levelName(),role.rank(),role.version()+":"+role.status(),groups,problems));
+                // Publication workflow metadata does not alter this exact requirement configuration.
+                result.add(scope(purpose,role.id(),role.name(),role.level(),role.levelName(),role.rank(),"ROLE_REQUIREMENTS_V2",groups,problems));
             }
         } else {
             var edges=snapshot.prerequisites();
@@ -163,12 +165,10 @@ public final class Neo4jAssessmentPolicyCatalog implements AssessmentPolicyCatal
             }
             // Resolve current common-mode and explicit historical per-level mappings alike.
             for(var skill:skills.values())for(var level:KnowledgeLevel.values()) {
-                if(provision(skill,level)!=SkillProvisionMode.MODULE_ONLY)continue;
                 String knowledge=level.name();var groups=new LinkedHashMap<String,GroupSpec>();var problems=new TreeSet<String>();
                 expand(skill.id(),level,skills,prerequisites,skillPrerequisites,invalidPrerequisites,groups,new HashSet<>(),new HashSet<>(),problems,true);
                 // MAIN's configured lower levels are knowledge scopes, never graph self-edges.
-                for(var lower:KnowledgeLevel.values())if(lower.ordinal()<level.ordinal() && provision(skill,lower)==SkillProvisionMode.MODULE_ONLY)
-                    expand(skill.id(),lower,skills,prerequisites,skillPrerequisites,invalidPrerequisites,groups,new HashSet<>(),new HashSet<>(),problems,false);
+                for(var lower:KnowledgeLevel.values())if(lower.ordinal()<level.ordinal())add(skill,lower,groups);
                 result.add(scope(purpose,skill.id(),skill.name(),knowledge,knowledge,level.ordinal(),skill.version(),groups,problems));
                 if(result.size()>10000)throw capacity();
             }
@@ -206,20 +206,12 @@ public final class Neo4jAssessmentPolicyCatalog implements AssessmentPolicyCatal
         if(invalidPrerequisites.contains(id))problems.add("PREREQUISITE_LEVELS_NOT_CONFIGURED");
         if(skill==null)problems.add("OWNED_SKILL_CONFIGURATION_REQUIRED");else add(skill,level,groups);
         for(var edge:edges.getOrDefault(key,List.of()))
-            expand(edge.prerequisite(),edge.prerequisiteLevel(),skills,edges,skillEdges,invalidPrerequisites,groups,visiting,visited,problems,true);
+            expand(edge.prerequisite(),KnowledgeLevel.ADVANCED,skills,edges,skillEdges,invalidPrerequisites,groups,visiting,visited,problems,true);
         if(includeSkillEdges)for(var targetId:skillEdges.getOrDefault(id,List.of())) {
-            var targetSkill=skills.get(targetId);
-            KnowledgeLevel targetLevel=resolveSkillPrerequisiteLevel(targetSkill,level);
+            KnowledgeLevel targetLevel=KnowledgeLevel.ADVANCED;
             expand(targetId,targetLevel,skills,edges,skillEdges,invalidPrerequisites,groups,visiting,visited,problems,true);
         }
         visiting.remove(key);visited.add(key);
-    }
-    private KnowledgeLevel resolveSkillPrerequisiteLevel(Skill targetSkill,KnowledgeLevel requested) {
-        if(targetSkill==null || provision(targetSkill,requested)==SkillProvisionMode.MODULE_ONLY)return requested;
-        var levels=KnowledgeLevel.values();
-        for(int i=requested.ordinal()-1;i>=0;i--)if(provision(targetSkill,levels[i])==SkillProvisionMode.MODULE_ONLY)return levels[i];
-        for(int i=levels.length-1;i>requested.ordinal();i--)if(provision(targetSkill,levels[i])==SkillProvisionMode.MODULE_ONLY)return levels[i];
-        return requested;
     }
     private SkillProvisionMode provision(Skill skill,KnowledgeLevel level) {
         boolean module=skill.mode()==SkillProvisionMode.MODULE_ONLY || skill.modules().contains(level.name());
@@ -229,7 +221,8 @@ public final class Neo4jAssessmentPolicyCatalog implements AssessmentPolicyCatal
     }
     private void add(Skill skill,KnowledgeLevel level,Map<String,GroupSpec> groups) {
         var problems=new TreeSet<String>();var mode=provision(skill,level);
-        if(mode!=SkillProvisionMode.MODULE_ONLY)problems.add("LEARNING_PROVISION_REQUIRED");
+        if((skill.mode()==SkillProvisionMode.MODULE_ONLY || skill.modules().contains(level.name()))
+                && (skill.mode()==SkillProvisionMode.CERTIFICATE_ONLY || skill.certificates().contains(level.name())))problems.add("CONFLICTING_PROVISION_MODES");
         if(skill.invalidMode())problems.add("INVALID_PROVISION_CONFIGURATION");
         if(!skill.approved())problems.add("CATALOG_REVIEW_REQUIRED");
         if(skill.version().isBlank())problems.add("EXACT_KNOWLEDGE_CONFIGURATION_REQUIRED");

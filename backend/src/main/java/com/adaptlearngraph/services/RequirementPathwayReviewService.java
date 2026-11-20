@@ -64,7 +64,7 @@ public final class RequirementPathwayReviewService {
                 providers==null?List.of():plan.steps().stream().filter(step->canBypass(step,providers)).map(Step::id).toList());
     }
     private static boolean canBypass(Step step,RulePathwayCatalog.Snapshot fresh) {
-        if(step.kind()!=Kind.REQUIRED || step.state()==State.FULFILLED || step.state()==State.BYPASSED)return false;
+        if(step.kind()!=Kind.REQUIRED || step.resolved())return false;
         var current=fresh.requirements().stream().filter(need->need.key().equals(step.requirement().key())).findFirst();
         if(current.isEmpty())return false; // Unavailable scope is not proof that provision is missing.
         var need=current.get();
@@ -75,7 +75,7 @@ public final class RequirementPathwayReviewService {
     private List<UUID> reorderableSteps(RequirementPathwayJpaRepository.Row row,Plan plan) {
         var fixed=new HashSet<UUID>();
         plan.dependencies().forEach(edge->{fixed.add(edge.prerequisiteStepId());fixed.add(edge.dependentStepId());});
-        plan.steps().stream().filter(step->step.state()==State.FULFILLED || step.state()==State.BYPASSED || step.state()==State.IN_PROGRESS)
+        plan.steps().stream().filter(step->step.resolved() || step.state()==State.IN_PROGRESS)
                 .forEach(step->fixed.add(step.id()));
         rules.progress(row.getOrganizationId(),row.getLearnerId(),revisions.encode(plan)).stream()
                 .filter(item->item.getStartedAt()!=null || item.getCompletedAt()!=null).forEach(item->fixed.add(item.getStepId()));
@@ -102,7 +102,7 @@ public final class RequirementPathwayReviewService {
                     || requested.put(selection.stepId(),selection.options())!=null)throw new Failure(400,"INVALID_MODULE_SELECTION");
         }
         var editable=original.steps().stream().filter(step->step.requirement().provision()==Provision.MODULE_ONLY
-                && step.state()!=State.FULFILLED && step.state()!=State.BYPASSED).map(Step::id).collect(java.util.stream.Collectors.toSet());
+                && !step.resolved()).map(Step::id).collect(java.util.stream.Collectors.toSet());
         if(!requested.keySet().equals(editable))throw new Failure(400,"REQUIRED_STEP_SELECTION_MISMATCH");
         var progress=rules.progress(row.getOrganizationId(),row.getLearnerId(),revisions.encode(original));
         var steps=new ArrayList<Step>();
@@ -246,7 +246,7 @@ public final class RequirementPathwayReviewService {
             var retained=replay(actor,"RULE_BYPASS",key,hash);if(retained.isPresent())return retained.get();
             var row=editable(actor,id,command.expected());var plan=revisions.read(row);
             var step=plan.steps().stream().filter(item->item.id().equals(command.stepId()) && item.kind()==Kind.REQUIRED).findFirst().orElseThrow(()->new Failure(404,"REQUIREMENT_NOT_FOUND"));
-            if(step.state()==State.FULFILLED || step.state()==State.BYPASSED)throw new Failure(409,"REQUIREMENT_ALREADY_RESOLVED_OR_BYPASSED");
+            if(step.resolved())throw new Failure(409,"REQUIREMENT_ALREADY_RESOLVED_OR_BYPASSED");
             if(!canBypass(step,validation.providers(row,plan)))throw new Failure(409,"REQUIREMENT_BYPASS_NOT_ALLOWED");
             var review=nextReview(row);reauthorize(actor,id,assignment);
             rules.bypass(UUID.randomUUID(),actor.organizationId(),row.getLearnerId(),id,row.getCurrentRevision(),step.id(),actor.accountId(),revisions.encode(assignment),command.reason().trim(),retry);

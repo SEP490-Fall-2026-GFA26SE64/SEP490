@@ -34,7 +34,7 @@ function OwnedRequirementEmployeePathway({ scope }: { scope: string }) {
       const value = current.state.data
       if (current.state.error || !value || value.archived) return false
       if (['PENDING', 'GENERATING', 'FAILED_RETRYABLE'].includes(value.generationStatus) || value.reviewStatus === 'AWAITING_EXPERT_REVIEW') return 10_000
-      return value.reviewStatus === 'APPROVED' && value.steps.some(step => !['FULFILLED', 'BYPASSED'].includes(step.state)) ? 30_000 : false
+      return value.reviewStatus === 'APPROVED' && value.steps.some(step => !['FULFILLED', 'ASSESSED_SATISFIED', 'BYPASSED'].includes(step.state)) ? 30_000 : false
     } })
   const targetEnabled = !archive && query.isSuccess && query.data === null
   const target = useQuery({ queryKey: ['initialPathway', scope, 'currentTargetLabel'], queryFn: ({ signal }) => readCurrentKnowledgeTarget(signal, { requirements: false }), enabled: targetEnabled, retry: false, gcTime: 60_000, staleTime: 15_000, refetchOnWindowFocus: false })
