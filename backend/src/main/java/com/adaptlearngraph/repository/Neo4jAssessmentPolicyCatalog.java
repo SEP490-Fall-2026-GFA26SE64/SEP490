@@ -142,9 +142,16 @@ public final class Neo4jAssessmentPolicyCatalog implements AssessmentPolicyCatal
             }
         } else {
             var edges=snapshot.prerequisites();
-            var prerequisites=new HashMap<String,List<Edge>>();var invalidPrerequisites=new HashSet<String>();
+            var prerequisites=new HashMap<String,List<Edge>>();
+            var skillPrerequisites=new HashMap<String,List<String>>();
+            var invalidPrerequisites=new HashSet<String>();
             for(var row:edges) {
-                String source=row.get("skill").asString();Edge edge;
+                String source=row.get("skill").asString();
+                if(row.get("level").isNull() && row.get("prerequisiteLevel").isNull()) {
+                    skillPrerequisites.computeIfAbsent(source,k->new ArrayList<>()).add(row.get("prerequisite").asString());
+                    continue;
+                }
+                Edge edge;
                 try {
                     edge=new Edge(source,KnowledgeLevel.valueOf(row.get("level").asString("")),row.get("prerequisite").asString(),KnowledgeLevel.valueOf(row.get("prerequisiteLevel").asString("")));
                 }catch(RuntimeException malformed) {
@@ -158,10 +165,10 @@ public final class Neo4jAssessmentPolicyCatalog implements AssessmentPolicyCatal
             for(var skill:skills.values())for(var level:KnowledgeLevel.values()) {
                 if(provision(skill,level)!=SkillProvisionMode.MODULE_ONLY)continue;
                 String knowledge=level.name();var groups=new LinkedHashMap<String,GroupSpec>();var problems=new TreeSet<String>();
-                expand(skill.id(),level,skills,prerequisites,invalidPrerequisites,groups,new HashSet<>(),new HashSet<>(),problems);
+                expand(skill.id(),level,skills,prerequisites,skillPrerequisites,invalidPrerequisites,groups,new HashSet<>(),new HashSet<>(),problems,true);
                 // MAIN's configured lower levels are knowledge scopes, never graph self-edges.
                 for(var lower:KnowledgeLevel.values())if(lower.ordinal()<level.ordinal() && provision(skill,lower)==SkillProvisionMode.MODULE_ONLY)
-                    expand(skill.id(),lower,skills,prerequisites,invalidPrerequisites,groups,new HashSet<>(),new HashSet<>(),problems);
+                    expand(skill.id(),lower,skills,prerequisites,skillPrerequisites,invalidPrerequisites,groups,new HashSet<>(),new HashSet<>(),problems,false);
                 result.add(scope(purpose,skill.id(),skill.name(),knowledge,knowledge,level.ordinal(),skill.version(),groups,problems));
                 if(result.size()>10000)throw capacity();
             }
@@ -189,8 +196,8 @@ public final class Neo4jAssessmentPolicyCatalog implements AssessmentPolicyCatal
         if(result.size()>10000 || result.stream().map(Scope::key).distinct().count()!=result.size())throw capacity();
         return new Discovery(result,issues);
     }
-    private void expand(String id,KnowledgeLevel level,Map<String,Skill> skills,Map<String,List<Edge>> edges,Set<String> invalidPrerequisites,
-                        Map<String,GroupSpec> groups,Set<String> visiting,Set<String> visited,Set<String> problems) {
+    private void expand(String id,KnowledgeLevel level,Map<String,Skill> skills,Map<String,List<Edge>> edges,Map<String,List<String>> skillEdges,Set<String> invalidPrerequisites,
+                        Map<String,GroupSpec> groups,Set<String> visiting,Set<String> visited,Set<String> problems,boolean includeSkillEdges) {
         String key=id+"\n"+level;
         if(!visiting.add(key)){problems.add("PREREQUISITE_CYCLE");return;}
         if(visited.contains(key)){visiting.remove(key);return;}
@@ -199,8 +206,20 @@ public final class Neo4jAssessmentPolicyCatalog implements AssessmentPolicyCatal
         if(invalidPrerequisites.contains(id))problems.add("PREREQUISITE_LEVELS_NOT_CONFIGURED");
         if(skill==null)problems.add("OWNED_SKILL_CONFIGURATION_REQUIRED");else add(skill,level,groups);
         for(var edge:edges.getOrDefault(key,List.of()))
-            expand(edge.prerequisite(),edge.prerequisiteLevel(),skills,edges,invalidPrerequisites,groups,visiting,visited,problems);
+            expand(edge.prerequisite(),edge.prerequisiteLevel(),skills,edges,skillEdges,invalidPrerequisites,groups,visiting,visited,problems,true);
+        if(includeSkillEdges)for(var targetId:skillEdges.getOrDefault(id,List.of())) {
+            var targetSkill=skills.get(targetId);
+            KnowledgeLevel targetLevel=resolveSkillPrerequisiteLevel(targetSkill,level);
+            expand(targetId,targetLevel,skills,edges,skillEdges,invalidPrerequisites,groups,visiting,visited,problems,true);
+        }
         visiting.remove(key);visited.add(key);
+    }
+    private KnowledgeLevel resolveSkillPrerequisiteLevel(Skill targetSkill,KnowledgeLevel requested) {
+        if(targetSkill==null || provision(targetSkill,requested)==SkillProvisionMode.MODULE_ONLY)return requested;
+        var levels=KnowledgeLevel.values();
+        for(int i=requested.ordinal()-1;i>=0;i--)if(provision(targetSkill,levels[i])==SkillProvisionMode.MODULE_ONLY)return levels[i];
+        for(int i=levels.length-1;i>requested.ordinal();i--)if(provision(targetSkill,levels[i])==SkillProvisionMode.MODULE_ONLY)return levels[i];
+        return requested;
     }
     private SkillProvisionMode provision(Skill skill,KnowledgeLevel level) {
         boolean module=skill.mode()==SkillProvisionMode.MODULE_ONLY || skill.modules().contains(level.name());

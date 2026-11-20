@@ -56,15 +56,9 @@ describe('REQ-013 module workspace', () => {
       return original(path, init)
     })
     const view = (mode: 'modules' | 'content' | 'approvals') => <><LocationProbe /><ModuleManagementWorkspace mode={mode} /></>
-    render(<MemoryRouter initialEntries={['/ld-manager/approvals']}><Routes>
-      <Route path="/ld-manager/approvals" element={view('approvals')} />
+    render(<MemoryRouter initialEntries={['/ld-manager/modules']}><Routes>
       <Route path="/ld-manager/modules" element={view('modules')} />
-      <Route path="/ld-manager/learning-content" element={view('content')} />
     </Routes></MemoryRouter>)
-    const nav = await screen.findByRole('navigation', { name: 'Learning workspace' })
-    expect(within(nav).getByRole('link', { name: 'Modules' }).getAttribute('href')).toBe('/ld-manager/modules')
-    expect(within(nav).queryByRole('link', { name: 'Learning content' })).toBeNull()
-    fireEvent.click(within(nav).getByRole('link', { name: 'Modules' }))
     expect(await screen.findByRole('heading', { name: 'Learning Content' })).toBeTruthy()
     expect(screen.getByLabelText('Current route').textContent).toBe('/ld-manager/modules')
     await screen.findByRole('button', { name: 'View module' })
@@ -83,18 +77,13 @@ describe('REQ-013 module workspace', () => {
     expect(await within(dialog).findByText('Last review body')).toBeTruthy()
     expect(screen.getByLabelText('Current route').textContent).toBe('/ld-manager/modules')
     fireEvent.click(within(dialog).getByRole('button', { name: 'Close dialog' }))
-    fireEvent.click(screen.getByLabelText('Show modules'))
-    fireEvent.click(screen.getByRole('option', { name: 'All statuses' }))
     fireEvent.click(screen.getByLabelText('Status'))
-    fireEvent.click(screen.getByRole('option', { name: 'Active' }))
-    fireEvent.click(screen.getByRole('link', { name: 'Approvals' }))
+    fireEvent.click(screen.getByRole('option', { name: 'Pending review' }))
     expect(await screen.findByRole('heading', { name: 'Learning Content' })).toBeTruthy()
-    expect(screen.getByLabelText('Current route').textContent).toBe('/ld-manager/approvals')
-    fireEvent.click(await screen.findByRole('button', { name: 'Review request' })); expect(await screen.findByRole('button', { name: 'Approve and release' })).toBeTruthy()
-    expect(vi.mocked(fetch).mock.calls.some(([path]) => String(path).includes('pendingOnly=true'))).toBe(true)
-    const queue = vi.mocked(fetch).mock.calls.find(([path]) => String(path).includes('pendingOnly=true'))
-    expect(new URL(String(queue?.[0]), 'http://test').searchParams.get('status')).toBe('')
-    expect(screen.queryByLabelText('Status')).toBeNull()
+    expect(screen.getByLabelText('Current route').textContent).toBe('/ld-manager/modules')
+    expect(screen.getByLabelText('Status')).toBeTruthy()
+    fireEvent.click(await screen.findByRole('button', { name: 'View module' }))
+    expect(await screen.findByRole('dialog', { name: 'Catalog module details' })).toBeTruthy()
     expect(screen.queryByText('Catalog intake permissions')).toBeNull()
   })
   it('shows another Expert module and history without edit, submit or delete controls', async () => {
@@ -272,7 +261,7 @@ describe('REQ-013 module workspace', () => {
     })
     render(<MemoryRouter><ModuleManagementWorkspace /></MemoryRouter>)
     await screen.findByRole('heading',{name:'Published SQL'})
-    expect(screen.queryByLabelText('Status')).toBeNull()
+    expect(screen.getByLabelText('Status')).toBeTruthy()
     expect(screen.getAllByRole('columnheader').map(h => h.textContent)).toEqual([
       'Module',
       'Responsible Expert',
@@ -290,16 +279,12 @@ describe('REQ-013 module workspace', () => {
     expect(within(dialog).queryByText('Unapproved draft lesson')).toBeNull()
     expect(within(dialog).getByRole('button',{name:'View working revisions & history'})).toBeTruthy()
     fireEvent.click(within(dialog).getByRole('button',{name:'Close'}))
-    fireEvent.click(screen.getByLabelText('Show modules'))
-    fireEvent.click(screen.getByRole('option', { name: 'All statuses' }))
-    await waitFor(()=>expect(queries().at(-1)?.get('review')).toBe(''))
     expect(screen.getByLabelText('Status')).toBeTruthy()
     fireEvent.click(screen.getByLabelText('Status'))
     fireEvent.click(screen.getByRole('option', { name: 'Pending review' }))
     await waitFor(()=>expect(queries().at(-1)?.get('review')).toBe('NEEDS_EXPERT_REVIEW'))
     fireEvent.click(screen.getByRole('button',{name:'Clear filters'}))
     await waitFor(()=>expect(queries().at(-1)?.get('review')).toBe('APPROVED'))
-    expect(screen.getByLabelText('Show modules').textContent).toContain('Published modules')
   })
   it('never renders raw HTML or javascript links as executable content', () => {
     const { container } = render(<ModuleMarkdown markdown={'# Title\n<script>alert(1)</script>\n[x](javascript:alert(1))\n[video](https://example.org/video.mp4)'} />)

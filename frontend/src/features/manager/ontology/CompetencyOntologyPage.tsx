@@ -443,20 +443,27 @@ function OwnedCompetencyOntologyPage() {
         }
 
         if (livePrereqs && livePrereqs.length > 0) {
-          const mappedPrereqs: PrerequisiteEdge[] = livePrereqs.map((p) => ({
-            id: `edge-${p.sourceSkillId}-${p.dependentKnowledgeLevel}-${p.targetSkillId}-${p.prerequisiteKnowledgeLevel}`,
-            sourceSkillId: p.sourceSkillId,
-            sourceSkillCode: p.sourceSkillCode,
-            sourceSkillName: p.sourceSkillName,
-            targetSkillId: p.targetSkillId,
-            targetSkillCode: p.targetSkillCode,
-            targetSkillName: p.targetSkillName,
-            dependentKnowledgeLevel: p.dependentKnowledgeLevel,
-            prerequisiteKnowledgeLevel: p.prerequisiteKnowledgeLevel,
-            status: p.status,
-            createdAt: p.createdAt || '2026-01-01T00:00:00.000Z',
-            updatedAt: p.updatedAt || p.createdAt || '2026-01-01T00:00:00.000Z',
-          }))
+          const seenSkillPairs = new Set<string>()
+          const mappedPrereqs: PrerequisiteEdge[] = []
+          for (const p of livePrereqs) {
+            const pairKey = `${p.sourceSkillId}::${p.targetSkillId}`
+            if (seenSkillPairs.has(pairKey)) continue
+            seenSkillPairs.add(pairKey)
+            mappedPrereqs.push({
+              id: `edge-${p.sourceSkillId}-${p.targetSkillId}`,
+              sourceSkillId: p.sourceSkillId,
+              sourceSkillCode: p.sourceSkillCode,
+              sourceSkillName: p.sourceSkillName,
+              targetSkillId: p.targetSkillId,
+              targetSkillCode: p.targetSkillCode,
+              targetSkillName: p.targetSkillName,
+              dependentKnowledgeLevel: p.dependentKnowledgeLevel,
+              prerequisiteKnowledgeLevel: p.prerequisiteKnowledgeLevel,
+              status: p.status,
+              createdAt: p.createdAt || '2026-01-01T00:00:00.000Z',
+              updatedAt: p.updatedAt || p.createdAt || '2026-01-01T00:00:00.000Z',
+            })
+          }
           setPrerequisites(mappedPrereqs)
         } else {
           setPrerequisites([])
@@ -676,13 +683,30 @@ function OwnedCompetencyOntologyPage() {
       }))
   }, [competencies, skillForm.competencyIds])
 
-  // Direction: dependent skill-level HAS_SKILL_PREREQUISITE prerequisite skill-level.
+  // Direction: dependent skill HAS_SKILL_PREREQUISITE prerequisite skill.
   const [prereqForm, setPrereqForm] = React.useState({
     sourceSkillId: '',
     targetSkillId: '',
-    dependentKnowledgeLevel: '',
-    prerequisiteKnowledgeLevel: '',
   })
+  const [editingPrerequisite, setEditingPrerequisite] = React.useState<PrerequisiteEdge | null>(null)
+
+  const handleOpenCreatePrerequisite = () => {
+    setEditingPrerequisite(null)
+    setPrereqForm({
+      sourceSkillId: '',
+      targetSkillId: '',
+    })
+    setIsPrereqModalOpen(true)
+  }
+
+  const handleOpenEditPrerequisite = (edge: PrerequisiteEdge) => {
+    setEditingPrerequisite(edge)
+    setPrereqForm({
+      sourceSkillId: edge.sourceSkillId,
+      targetSkillId: edge.targetSkillId,
+    })
+    setIsPrereqModalOpen(true)
+  }
 
   // Graph state
 
@@ -897,10 +921,10 @@ function OwnedCompetencyOntologyPage() {
   // Prerequisite Edge Handlers (REQ-018-F02: Self-edge & Cycle Detection)
   // ------------------------------------------------------------------
   const handleSavePrerequisite = async () => {
-    const { sourceSkillId, targetSkillId, dependentKnowledgeLevel, prerequisiteKnowledgeLevel } = prereqForm
+    const { sourceSkillId, targetSkillId } = prereqForm
 
     // 1. Reject self-edges
-    if (sourceSkillId === targetSkillId && dependentKnowledgeLevel === prerequisiteKnowledgeLevel) {
+    if (sourceSkillId === targetSkillId) {
       toast({
         title: 'Self-Edge Rejected',
         description: 'A micro-skill cannot be a prerequisite of itself.',
@@ -909,26 +933,36 @@ function OwnedCompetencyOntologyPage() {
       return
     }
 
-    if (!dependentKnowledgeLevel || !prerequisiteKnowledgeLevel) {
-      toast({
-        title: 'Select knowledge levels',
-        description: 'Both exact knowledge levels are required.',
-        variant: 'destructive',
-      })
-      return
-    }
-
     const orgId = effectiveOrgId
 
     try {
+      if (editingPrerequisite) {
+        if (
+          editingPrerequisite.sourceSkillId === sourceSkillId &&
+          editingPrerequisite.targetSkillId === targetSkillId &&
+          !editingPrerequisite.dependentKnowledgeLevel &&
+          !editingPrerequisite.prerequisiteKnowledgeLevel
+        ) {
+          setIsPrereqModalOpen(false)
+          setEditingPrerequisite(null)
+          return
+        }
+        await deletePrerequisite(
+          orgId,
+          editingPrerequisite.sourceSkillId,
+          editingPrerequisite.targetSkillId,
+          editingPrerequisite.dependentKnowledgeLevel,
+          editingPrerequisite.prerequisiteKnowledgeLevel
+        )
+      }
+
       const created = await createPrerequisite(orgId, {
         sourceSkillId,
         targetSkillId,
-        dependentKnowledgeLevel, prerequisiteKnowledgeLevel,
       })
 
       const newEdge: PrerequisiteEdge = {
-        id: `edge-${created.sourceSkillId}-${created.dependentKnowledgeLevel}-${created.targetSkillId}-${created.prerequisiteKnowledgeLevel}`,
+        id: `edge-${created.sourceSkillId}-${created.targetSkillId}`,
         sourceSkillId: created.sourceSkillId,
         sourceSkillCode: created.sourceSkillCode,
         sourceSkillName: created.sourceSkillName,
@@ -942,20 +976,30 @@ function OwnedCompetencyOntologyPage() {
         updatedAt: created.updatedAt,
       }
 
-      saveAndSetPrerequisites([...prerequisites, newEdge])
-      setPrereqCurrentPage(1)
+      if (editingPrerequisite) {
+        saveAndSetPrerequisites(
+          prerequisites.map((p) => (p.id === editingPrerequisite.id ? newEdge : p))
+        )
+      } else {
+        saveAndSetPrerequisites([
+          ...prerequisites.filter((p) => p.id !== newEdge.id),
+          newEdge,
+        ])
+        setPrereqCurrentPage(1)
+      }
       setIsPrereqModalOpen(false)
+      setEditingPrerequisite(null)
 
       const sourceSkill = microSkills.find((s) => s.id === sourceSkillId)
       const targetSkill = microSkills.find((s) => s.id === targetSkillId)
 
       toast({
-        title: 'Prerequisite Edge Created',
-        description: `${sourceSkill?.code || created.sourceSkillCode} (${dependentKnowledgeLevel}) requires ${targetSkill?.code || created.targetSkillCode} (${prerequisiteKnowledgeLevel}).`,
+        title: editingPrerequisite ? 'Prerequisite Edge Updated' : 'Prerequisite Edge Created',
+        description: `${sourceSkill?.code || created.sourceSkillCode} requires ${targetSkill?.code || created.targetSkillCode}.`,
         variant: 'success',
       })
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Failed to create prerequisite edge on server.'
+      const message = err instanceof Error ? err.message : 'Failed to save prerequisite edge on server.'
       toast({
         title: 'Prerequisite Rejected',
         description: message,
@@ -1426,7 +1470,7 @@ function OwnedCompetencyOntologyPage() {
                   variant="primary"
                   size="sm"
                   leftIcon={<Plus className="h-4 w-4" />}
-                  onClick={() => setIsPrereqModalOpen(true)}
+                  onClick={handleOpenCreatePrerequisite}
                   className="font-semibold shadow-2xs"
                 >
                   Create
@@ -1787,10 +1831,9 @@ function OwnedCompetencyOntologyPage() {
                       <table className="w-full text-left text-xs border-collapse">
                         <thead>
                           <tr className="border-b border-border bg-muted/40 text-muted-foreground uppercase text-[11px] font-semibold">
-                            <th className="py-2.5 px-3">Source Prerequisite Skill</th>
+                            <th className="py-2.5 px-3">Dependent Micro-skill</th>
                             <th className="py-2.5 px-3 text-center">Relationship</th>
-                            <th className="py-2.5 px-3">Target Dependent Skill</th>
-                            <th className="py-2.5 px-3 text-center">Minimum Mastery</th>
+                            <th className="py-2.5 px-3">Prerequisite Micro-skill</th>
                             <th className="py-2.5 px-3 text-center">Status</th>
                             <th className="py-2.5 px-3 text-right">Action</th>
                           </tr>
@@ -1808,20 +1851,12 @@ function OwnedCompetencyOntologyPage() {
                                 </td>
                                 <td className="py-3 px-3 text-center">
                                   <span className="inline-flex items-center gap-1 font-mono text-[10px] text-muted-foreground bg-muted px-2 py-0.5 rounded">
-                                    PREREQUISITE_OF <ArrowRight className="h-3 w-3 text-primary" />
+                                    REQUIRES <ArrowRight className="h-3 w-3 text-primary" />
                                   </span>
                                 </td>
                                 <td className="py-3 px-3 font-semibold text-foreground">
                                   <span className="font-mono text-primary font-bold mr-1.5">{target?.code || edge.targetSkillCode}</span>
                                   {target?.name || edge.targetSkillName}
-                                </td>
-                                <td className="py-3 px-3 text-center">
-                                  <Badge
-                                    variant="outline"
-                                    className="font-bold tracking-wider text-[10px] uppercase border-border/80 bg-background text-foreground shadow-2xs px-2.5 py-0.5"
-                                  >
-                                    {edge.dependentKnowledgeLevel ?? 'Unclassified'} → {edge.prerequisiteKnowledgeLevel ?? 'Unclassified'}
-                                  </Badge>
                                 </td>
                                 <td className="py-3 px-3 text-center">
                                   <Badge variant={edge.status === 'ACTIVE' ? 'success' : 'outline'} className="font-mono text-[10px]">
@@ -1839,6 +1874,16 @@ function OwnedCompetencyOntologyPage() {
                                       aria-label="View Details"
                                     >
                                       <Eye className="h-4 w-4 text-primary" />
+                                    </Button>
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      className="h-8 w-8 p-0"
+                                      onClick={() => handleOpenEditPrerequisite(edge)}
+                                      title="Edit Edge"
+                                      aria-label="Edit Edge"
+                                    >
+                                      <Edit3 className="h-4 w-4 text-primary" />
                                     </Button>
                                     <Button
                                       variant="destructive"
@@ -2349,17 +2394,20 @@ function OwnedCompetencyOntologyPage() {
           </DialogFooter>
       </Dialog>
 
-      {/* ADD PREREQUISITE EDGE MODAL (WITH CYCLE PREVENTION) */}
+      {/* ADD / EDIT PREREQUISITE EDGE MODAL (WITH CYCLE PREVENTION) */}
       <Dialog
         open={isPrereqModalOpen}
-        onOpenChange={setIsPrereqModalOpen}
-        className="max-w-3xl w-full p-6 sm:p-8 min-h-[660px] sm:min-h-[700px] max-h-[92vh] flex flex-col justify-between overflow-y-auto overflow-x-visible"
+        onOpenChange={(open) => {
+          setIsPrereqModalOpen(open)
+          if (!open) setEditingPrerequisite(null)
+        }}
+        className="max-w-2xl w-full p-6 sm:p-8 max-h-[92vh] flex flex-col justify-between overflow-y-auto overflow-x-visible"
       >
         {(() => {
           const selectedSourceSkill = microSkills.find((s) => s.id === prereqForm.sourceSkillId)
           const selectedTargetSkill = microSkills.find((s) => s.id === prereqForm.targetSkillId)
           const isSelfPrereq = Boolean(
-            prereqForm.sourceSkillId && prereqForm.sourceSkillId === prereqForm.targetSkillId && prereqForm.dependentKnowledgeLevel === prereqForm.prerequisiteKnowledgeLevel
+            prereqForm.sourceSkillId && prereqForm.sourceSkillId === prereqForm.targetSkillId
           )
 
           return (
@@ -2371,10 +2419,10 @@ function OwnedCompetencyOntologyPage() {
                   </div>
                   <div className="min-w-0">
                     <DialogTitle className="text-base font-bold text-foreground">
-                      Add Skill Prerequisite Edge
+                      {editingPrerequisite ? 'Edit Skill Prerequisite Edge' : 'Add Skill Prerequisite Edge'}
                     </DialogTitle>
                     <DialogDescription className="text-xs text-muted-foreground mt-0.5">
-                      Define the exact prerequisite assessed alongside a dependent skill level.
+                      Define a prerequisite dependency between two micro-skills.
                     </DialogDescription>
                   </div>
                 </div>
@@ -2472,14 +2520,6 @@ function OwnedCompetencyOntologyPage() {
                   </div>
                 </div>
 
-                {/* Minimum Required Mastery Threshold */}
-                <div className="space-y-3 rounded-xl border border-border bg-card p-4 shadow-2xs">
-                  {(['dependentKnowledgeLevel', 'prerequisiteKnowledgeLevel'] as const).map(field => <div key={field}>
-                    <label className="font-semibold text-foreground block mb-1.5">{field === 'dependentKnowledgeLevel' ? 'Dependent knowledge level' : 'Prerequisite knowledge level'}</label>
-                    <Combobox size="sm" clearable={false} value={prereqForm[field]} onChange={value => setPrereqForm(previous => ({ ...previous, [field]: value }))} placeholder="Select knowledge level" options={['FOUNDATION', 'INTERMEDIATE', 'ADVANCED'].map(level => ({ value: level, label: level }))} />
-                  </div>)}
-                </div>
-
                 {/* Automatic Graph Validation Banner */}
                 <div className="p-3.5 rounded-lg bg-primary/5 border border-primary/20 text-[11px] text-muted-foreground flex items-center gap-2.5">
                   <ShieldCheck className="h-4 w-4 text-primary shrink-0" />
@@ -2490,7 +2530,14 @@ function OwnedCompetencyOntologyPage() {
               </div>
 
               <DialogFooter className="pt-3 border-t border-border mt-6 flex items-center justify-end gap-2.5">
-                <Button variant="outline" size="sm" onClick={() => setIsPrereqModalOpen(false)}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setIsPrereqModalOpen(false)
+                    setEditingPrerequisite(null)
+                  }}
+                >
                   Cancel
                 </Button>
                 <Button
@@ -2499,14 +2546,13 @@ function OwnedCompetencyOntologyPage() {
                   disabled={
                     isSelfPrereq ||
                     !prereqForm.sourceSkillId ||
-                    !prereqForm.targetSkillId ||
-                    !prereqForm.dependentKnowledgeLevel || !prereqForm.prerequisiteKnowledgeLevel || isSelfPrereq
+                    !prereqForm.targetSkillId
                   }
                   onClick={handleSavePrerequisite}
                   className="gap-1.5 font-semibold shadow-2xs"
                 >
                   <Check size={14} />
-                  <span>Create Edge</span>
+                  <span>{editingPrerequisite ? 'Save Changes' : 'Create Edge'}</span>
                 </Button>
               </DialogFooter>
             </div>
@@ -2670,7 +2716,7 @@ function OwnedCompetencyOntologyPage() {
                           <thead className="bg-muted/50 border-b border-border text-[10px] uppercase font-bold text-muted-foreground">
                             <tr>
                               <th className="py-2 px-3 font-semibold">Prerequisite Skill</th>
-                              <th className="py-2 px-3 text-center font-semibold w-56">Knowledge Level Sequence</th>
+                              <th className="py-2 px-3 text-center font-semibold w-36">Relationship</th>
                             </tr>
                           </thead>
                           <tbody className="divide-y divide-border/60">
@@ -2690,7 +2736,7 @@ function OwnedCompetencyOntologyPage() {
                                   </td>
                                   <td className="py-2.5 px-3 text-center">
                                     <Badge variant="outline" className="font-mono text-xs font-bold text-primary border-primary/30 bg-primary/5">
-                                      {p.dependentKnowledgeLevel ?? 'Unclassified'} → {p.prerequisiteKnowledgeLevel ?? 'Unclassified'}
+                                      Prerequisite
                                     </Badge>
                                   </td>
                                 </tr>
@@ -2878,7 +2924,7 @@ function OwnedCompetencyOntologyPage() {
           const target = microSkills.find(
             (s) => s.id === viewingEdgeDetails.targetSkillId || s.code === viewingEdgeDetails.targetSkillId
           )
-          const pairLabel = `${viewingEdgeDetails.dependentKnowledgeLevel ?? 'Unclassified'} → ${viewingEdgeDetails.prerequisiteKnowledgeLevel ?? 'Unclassified'}`
+          const pairLabel = `${source?.code || viewingEdgeDetails.sourceSkillCode || viewingEdgeDetails.sourceSkillId} → ${target?.code || viewingEdgeDetails.targetSkillCode || viewingEdgeDetails.targetSkillId}`
 
           return (
             <div className="flex flex-col h-full overflow-hidden">
@@ -2929,11 +2975,8 @@ function OwnedCompetencyOntologyPage() {
                       </span>
                     </div>
 
-                    {/* Arrow Connector with Mastery Badge */}
+                    {/* Arrow Connector */}
                     <div className="flex sm:flex-col items-center justify-center shrink-0 px-2 gap-1 text-center">
-                      <span className="text-[10px] font-mono text-primary font-bold bg-primary/10 border border-primary/20 px-2.5 py-0.5 rounded-full shadow-2xs">
-                        {pairLabel}
-                      </span>
                       <ArrowRight className="h-4 w-4 text-primary hidden sm:block mt-0.5" />
                       <ArrowDown className="h-4 w-4 text-primary sm:hidden" />
                       <span className="text-[9.5px] text-muted-foreground uppercase font-bold tracking-wider">
@@ -2964,7 +3007,7 @@ function OwnedCompetencyOntologyPage() {
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
                     <div className="p-2.5 rounded-lg bg-muted/30 border border-border/60 text-center">
                       <div className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">
-                        Knowledge Level Pair
+                        Skill Sequence
                       </div>
                       <div className="text-xs font-mono font-bold text-primary mt-1">
                         {pairLabel}
@@ -3003,14 +3046,14 @@ function OwnedCompetencyOntologyPage() {
                     <div className="bg-muted/40 border-b border-border px-4 py-2.5 flex items-center justify-between">
                       <div className="flex items-center gap-1.5 font-bold text-foreground text-xs">
                         <BookOpen className="h-3.5 w-3.5 text-primary" />
-                        <span>Prerequisite Skill Scope:</span>
+                        <span>Dependent Skill Scope:</span>
                         <span className="font-mono text-primary">{source?.code || viewingEdgeDetails.sourceSkillCode}</span>
                         <span className="text-muted-foreground">— {source?.name || viewingEdgeDetails.sourceSkillName}</span>
                       </div>
-                      <Badge variant="secondary" className="font-mono text-[10px]">Prerequisite</Badge>
+                      <Badge variant="secondary" className="font-mono text-[10px]">Dependent Skill</Badge>
                     </div>
                     <div className="p-4 text-xs text-foreground leading-relaxed">
-                      {source?.description || 'Foundational prerequisite capability and knowledge scope.'}
+                      {source?.description || 'Dependent capability requiring verified mastery of its prerequisite skill.'}
                     </div>
                   </div>
 
@@ -3018,14 +3061,14 @@ function OwnedCompetencyOntologyPage() {
                     <div className="bg-muted/40 border-b border-border px-4 py-2.5 flex items-center justify-between">
                       <div className="flex items-center gap-1.5 font-bold text-foreground text-xs">
                         <BookOpen className="h-3.5 w-3.5 text-primary" />
-                        <span>Target Skill Scope:</span>
+                        <span>Prerequisite Skill Scope:</span>
                         <span className="font-mono text-primary">{target?.code || viewingEdgeDetails.targetSkillCode}</span>
                         <span className="text-muted-foreground">— {target?.name || viewingEdgeDetails.targetSkillName}</span>
                       </div>
-                      <Badge variant="secondary" className="font-mono text-[10px]">Target Requirement</Badge>
+                      <Badge variant="secondary" className="font-mono text-[10px]">Prerequisite Skill</Badge>
                     </div>
                     <div className="p-4 text-xs text-foreground leading-relaxed">
-                      {target?.description || 'Advanced competency requiring verified mastery of prerequisite skill.'}
+                      {target?.description || 'Foundational prerequisite capability and knowledge scope.'}
                     </div>
                   </div>
                 </div>
@@ -3044,9 +3087,23 @@ function OwnedCompetencyOntologyPage() {
                 >
                   Delete Edge
                 </Button>
-                <Button variant="outline" size="sm" onClick={() => setViewingEdgeDetails(null)}>
-                  Close
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Button variant="outline" size="sm" onClick={() => setViewingEdgeDetails(null)}>
+                    Close
+                  </Button>
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    leftIcon={<Edit3 className="h-3.5 w-3.5" />}
+                    onClick={() => {
+                      const edgeToEdit = viewingEdgeDetails
+                      setViewingEdgeDetails(null)
+                      handleOpenEditPrerequisite(edgeToEdit)
+                    }}
+                  >
+                    Edit Edge
+                  </Button>
+                </div>
               </DialogFooter>
             </div>
           )

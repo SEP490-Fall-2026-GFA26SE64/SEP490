@@ -25,12 +25,17 @@ public class PrerequisiteService implements ManagePrerequisiteUseCase, GetTarget
     @Override
     public PrerequisiteEdge createPrerequisite(CreatePrerequisiteCommand command) {
         Objects.requireNonNull(command, "command cannot be null");
-        var dependent=KnowledgeLevel.valueOf(command.dependentKnowledgeLevel());
-        var prerequisite=KnowledgeLevel.valueOf(command.prerequisiteKnowledgeLevel());
-        if (command.sourceSkillId().equals(command.targetSkillId()) && dependent==prerequisite) {
+        KnowledgeLevel dependent = (command.dependentKnowledgeLevel() != null && !command.dependentKnowledgeLevel().isBlank())
+                ? KnowledgeLevel.valueOf(command.dependentKnowledgeLevel()) : null;
+        KnowledgeLevel prerequisite = (command.prerequisiteKnowledgeLevel() != null && !command.prerequisiteKnowledgeLevel().isBlank())
+                ? KnowledgeLevel.valueOf(command.prerequisiteKnowledgeLevel()) : null;
+        if ((dependent == null) != (prerequisite == null)) {
+            throw new IllegalArgumentException("Both prerequisite knowledge levels must be omitted or provided together.");
+        }
+        if (command.sourceSkillId().equals(command.targetSkillId()) && Objects.equals(dependent, prerequisite)) {
             throw new IllegalArgumentException("Self-referencing prerequisite is not allowed: a micro-skill cannot be a prerequisite of itself.");
         }
-        // The repository serializes the scoped catalog and checks exact-pair cycles in the write transaction.
+        // The repository serializes the scoped catalog and checks cycles in the write transaction.
         return prerequisiteRepository.savePrerequisite(
                 command.organizationId(),
                 command.sourceSkillId(),
@@ -47,8 +52,12 @@ public class PrerequisiteService implements ManagePrerequisiteUseCase, GetTarget
         prerequisiteRepository.deletePrerequisite(organizationId, sourceSkillId, targetSkillId);
     }
     @Override public PrerequisiteEdge reversePrerequisite(CreatePrerequisiteCommand command) {
+        KnowledgeLevel dependent = (command.dependentKnowledgeLevel() != null && !command.dependentKnowledgeLevel().isBlank())
+                ? KnowledgeLevel.valueOf(command.dependentKnowledgeLevel()) : null;
+        KnowledgeLevel prerequisite = (command.prerequisiteKnowledgeLevel() != null && !command.prerequisiteKnowledgeLevel().isBlank())
+                ? KnowledgeLevel.valueOf(command.prerequisiteKnowledgeLevel()) : null;
         return prerequisiteRepository.reversePrerequisite(command.organizationId(),command.sourceSkillId(),command.targetSkillId(),
-                KnowledgeLevel.valueOf(command.dependentKnowledgeLevel()),KnowledgeLevel.valueOf(command.prerequisiteKnowledgeLevel()));
+                dependent,prerequisite);
     }
 
     @Override public void deletePrerequisite(String organizationId,String sourceSkillId,String targetSkillId,String dependentLevel,String prerequisiteLevel) {

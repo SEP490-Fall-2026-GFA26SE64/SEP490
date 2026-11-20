@@ -9,7 +9,11 @@ public record CreatePrerequisiteRequest(
         @NotBlank(message = "targetSkillId cannot be blank")
         String targetSkillId,
 
-        @NotBlank String dependentKnowledgeLevel,
-        @NotBlank String prerequisiteKnowledgeLevel,
+        String dependentKnowledgeLevel,
+        String prerequisiteKnowledgeLevel,
 
-        SkillStatusDto status) {}
+        SkillStatusDto status) {
+    public CreatePrerequisiteRequest(String sourceSkillId, String targetSkillId, SkillStatusDto status) {
+        this(sourceSkillId, targetSkillId, null, null, status);
+    }
+}

@@ -54,12 +54,10 @@ const relationSheet = (mode: OntologyTemplateMode): SheetSpec => ({ name: 'Compe
     : [['COMP-SYS-01', 'MS-SKILL01'], ['COMP-SYS-01', 'MS-SKILL02']] })
 
 const prerequisiteSheet: SheetSpec = { name: 'Prerequisites', required: false,
-  purpose: 'Optional. One row per prerequisite: a level of one skill requires a level of another.', columns: [
-    { header: 'Dependent_Skill_Code', kind: 'ref', refSheet: 'Micro_Skills', width: 24, required: true, hint: 'Skill that requires prior knowledge. Pick from Micro_Skills or type an existing code.' },
-    { header: 'Dependent_Knowledge_Level', kind: 'level', width: 28, required: true, hint: 'Foundation, Intermediate or Advanced.' },
-    { header: 'Prerequisite_Skill_Code', kind: 'ref', refSheet: 'Micro_Skills', width: 24, required: true, hint: 'Skill that must be mastered first. Must differ from the dependent skill.' },
-    { header: 'Prerequisite_Knowledge_Level', kind: 'level', width: 30, required: true, hint: 'Foundation, Intermediate or Advanced.' },
-  ], examples: [['MS-SKILL02', 'Intermediate', 'MS-SKILL01', 'Foundation'], ['MS-SKILL03', 'Advanced', 'MS-SKILL01', 'Intermediate']] }
+  purpose: 'Optional. One row per prerequisite: one micro-skill requires another micro-skill.', columns: [
+    { header: 'Dependent_Skill_Code', kind: 'ref', refSheet: 'Micro_Skills', width: 28, required: true, hint: 'Skill that requires prior knowledge. Pick from Micro_Skills or type an existing code.' },
+    { header: 'Prerequisite_Skill_Code', kind: 'ref', refSheet: 'Micro_Skills', width: 28, required: true, hint: 'Skill that must be mastered first. Must differ from the dependent skill.' },
+  ], examples: [['MS-SKILL02', 'MS-SKILL01'], ['MS-SKILL03', 'MS-SKILL01']] }
 
 export const ONTOLOGY_TEMPLATE_SHEETS: Record<OntologyTemplateMode, SheetSpec[]> = {
   competency: [competencySheet, relationSheet('competency')],
@@ -82,7 +80,7 @@ const RULES: Record<OntologyTemplateMode, string[]> = {
     'Codes have no spaces and must be unique in the Micro_Skills tab; they are trimmed and converted to upper case on import.',
     'Mode columns offer Module or Certificate. Leave a mode blank when that knowledge level is not offered.',
     'Skill code columns offer a dropdown of the codes in Micro_Skills; codes of existing micro-skills are also accepted.',
-    'Knowledge levels are Foundation, Intermediate or Advanced. A skill cannot be its own prerequisite.',
+    'A skill cannot be its own prerequisite.',
     'Names: up to 255 characters. Up to 500 rows per tab. Replace or delete the example rows before uploading.',
   ],
 }

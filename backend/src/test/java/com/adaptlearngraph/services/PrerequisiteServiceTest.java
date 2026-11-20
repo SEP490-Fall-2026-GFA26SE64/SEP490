@@ -82,6 +82,28 @@ class PrerequisiteServiceTest {
     }
 
     @Test
+    @DisplayName("REQ-018-F02: Creates prerequisite relationship without knowledge levels successfully")
+    void createsSkillToSkillPrerequisiteWithoutLevels() {
+        CreatePrerequisiteCommand cmd = new CreatePrerequisiteCommand("org-1", "skill-spring", "skill-java", null, null, SkillStatus.ACTIVE);
+
+        PrerequisiteEdge edge = service.createPrerequisite(cmd);
+        assertNotNull(edge);
+        assertEquals("skill-spring", edge.sourceSkillId());
+        assertEquals("skill-java", edge.targetSkillId());
+        assertEquals(null, edge.dependentKnowledgeLevel());
+        assertEquals(null, edge.prerequisiteKnowledgeLevel());
+        assertEquals(1, prerequisiteRepository.edges.size());
+    }
+
+    @Test
+    @DisplayName("REQ-018-F02: Rejects self-referencing skill-to-skill prerequisite without knowledge levels")
+    void rejectsSelfReferencingSkillToSkillPrerequisite() {
+        CreatePrerequisiteCommand cmd = new CreatePrerequisiteCommand("org-1", "skill-java", "skill-java", null, null, SkillStatus.ACTIVE);
+
+        assertThrows(IllegalArgumentException.class, () -> service.createPrerequisite(cmd));
+    }
+
+    @Test
     @DisplayName("REQ-018-F02: Deletes prerequisite relationship successfully")
     void deletesPrerequisiteSuccessfully() {
         service.createPrerequisite(new CreatePrerequisiteCommand("org-1", "skill-A", "skill-B", "FOUNDATION", "FOUNDATION", SkillStatus.ACTIVE));

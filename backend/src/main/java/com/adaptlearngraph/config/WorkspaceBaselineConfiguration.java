@@ -247,7 +247,8 @@ public class WorkspaceBaselineConfiguration {
             if(authored.jobPositions(scope.organizationId()).contains(scope.jobPositionId()))
                 return new AuthoredBaselineCatalog(authored,ignored->Optional.empty()).findAvailable(scope);
             return new Neo4jAdaptiveBaselineCatalogAdapter(graph, json, scope.organizationId(), jobPositions,
-                    catalog(enabled(environment),scope.organizationId(),scope.jobPositionId())
+                    enabled(environment)
+                    || catalog(enabled(environment),scope.organizationId(),scope.jobPositionId())
                     || enabled(environment) && com.adaptlearngraph.config.MainDevelopmentBankSeed.catalog(scope.organizationId(),scope.jobPositionId())
                     || fixture.permits(scope.organizationId(),scope.jobPositionId())).findAvailable(scope)
                     .map(snapshot -> {
@@ -355,7 +356,8 @@ public class WorkspaceBaselineConfiguration {
         return organization -> {
             var jobPositions = resources.configurableJobPositions(organization);
             if (jobPositions.isEmpty()) return List.of();
-            boolean development=enabled(environment) && (ORGANIZATION.equals(organization) && Set.of(JOB_POSITION,com.adaptlearngraph.config.SoftwareDevelopmentSeed.JOB_POSITION).containsAll(jobPositions)
+            boolean development=enabled(environment)
+                    || (ORGANIZATION.equals(organization) && Set.of(JOB_POSITION,com.adaptlearngraph.config.SoftwareDevelopmentSeed.JOB_POSITION).containsAll(jobPositions)
                     || com.adaptlearngraph.config.MainDevelopmentBankSeed.ORGANIZATION.equals(organization));
             var roles=new CurrentRoleCatalog(graph, json, organization, jobPositions, development || fixture.covers(organization,jobPositions),authored).roles(organization);
             if(fixture.covers(organization,jobPositions) && roles.stream().anyMatch(role->!fixture.matches(organization,role.jobPositionId(),role.fingerprint())))

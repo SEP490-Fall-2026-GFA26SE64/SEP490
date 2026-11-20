@@ -1368,6 +1368,16 @@ export function TargetRolesPage() {
     return editExpertOptions.filter((o) => Boolean(o.value)).length
   }, [editExpertOptions])
 
+  const editJobPositionOptions: ComboboxOption[] = React.useMemo(() => {
+    return availableJobPositions
+      .filter((occ) => occ.status !== 'inactive')
+      .map((occ) => ({
+        value: occ.code,
+        label: `${occ.code} — ${occ.name.replace(/\s*\((?:Department|dept)\)\s*/gi, '').trim()}`,
+        description: occ.description,
+      }))
+  }, [availableJobPositions])
+
   // Sort criteria: defaults to 'latest' so newly created or updated roles go to the top
 
   const [sortBy, setSortBy] = React.useState<'latest' | 'title'>('latest')
@@ -4309,7 +4319,7 @@ export function TargetRolesPage() {
 
                       disabled={isSubmittedRole || isPublishedRole}
 
-                      options={jobPositionOptions}
+                      options={editJobPositionOptions}
 
                       value={editRoleForm.jobPositionCode}
 
