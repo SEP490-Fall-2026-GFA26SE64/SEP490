@@ -617,7 +617,8 @@ export function targetRolesForEmployee(
     const jpMatched = eligibleRoles.filter((r) => {
       const occNorm = normalizeOccCode(getRoleOccCode(r))
       const rJp = normalizeOccCode(r.jobPositionCode)
-      return occNorm === targetOccNorm || rJp === targetOccNorm
+      const rFam = normalizeOccCode(r.familyCode)
+      return occNorm === targetOccNorm || rJp === targetOccNorm || rFam === targetOccNorm
     })
     if (jpMatched.length > 0) {
       return jpMatched.sort((a, b) => a.title.localeCompare(b.title))
@@ -666,7 +667,7 @@ export function targetRolesForEmployee(
     return false
   })
 
-  return (deptMatched.length > 0 ? deptMatched : eligibleRoles).sort((a, b) => a.title.localeCompare(b.title))
+  return deptMatched.sort((a, b) => a.title.localeCompare(b.title))
 }
 
 export function jobPositionsForDepartment(

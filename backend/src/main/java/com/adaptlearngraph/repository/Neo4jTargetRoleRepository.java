@@ -33,13 +33,14 @@ import org.springframework.transaction.support.TransactionTemplate;
 public class Neo4jTargetRoleRepository implements TargetRoleRepository {
     private static final Instant BASELINE = Instant.parse("2026-01-01T00:00:00Z");
     private static final String GRAPH_RELATIONS = """
+            OPTIONAL MATCH (jp:JobPosition)-[:HAS_ROLE]->(r)
             OPTIONAL MATCH (r)-[:HAS_LEVEL]->(l:Level)
-            WITH r, l ORDER BY coalesce(l.rank, 999) ASC, l.name ASC
-            WITH r, [x IN collect(DISTINCT CASE WHEN l IS NOT NULL THEN l.name END) WHERE x IS NOT NULL] AS graphLevels,
+            WITH r, collect(DISTINCT jp) AS jps, l ORDER BY coalesce(l.rank, 999) ASC, l.name ASC
+            WITH r, jps, [x IN collect(DISTINCT CASE WHEN l IS NOT NULL THEN l.name END) WHERE x IS NOT NULL] AS graphLevels,
                     [x IN collect(DISTINCT CASE WHEN l IS NOT NULL THEN { name: l.name, duration: coalesce(l.duration, '') } END) WHERE x IS NOT NULL] AS graphLevelDetails
             OPTIONAL MATCH (r)-[:HAS_LEVEL]->(clvl:Level)-[:HAS_COMPETENCY]->(comp:Competency)
             WHERE (comp.organizationId IS NULL OR comp.organizationId = r.organizationId) AND coalesce(comp.status, 'ACTIVE') = 'ACTIVE'
-            WITH r, graphLevels, graphLevelDetails,
+            WITH r, jps, graphLevels, graphLevelDetails,
                  [x IN collect(DISTINCT CASE WHEN comp IS NOT NULL THEN {
                      levelName: clvl.name,
                      competencyId: comp.id,
@@ -47,7 +48,7 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
                  } END) WHERE x IS NOT NULL] AS graphCompetencies
             OPTIONAL MATCH (r)-[req:REQUIRES_SKILL]->(s:MicroSkill)
             WHERE req.status='ACTIVE' AND (s.organizationId IS NULL OR s.organizationId=r.organizationId) AND s.status='ACTIVE'
-            WITH r, graphLevels, graphLevelDetails, graphCompetencies, [x IN collect(DISTINCT CASE WHEN s IS NOT NULL THEN {
+            WITH r, jps, graphLevels, graphLevelDetails, graphCompetencies, [x IN collect(DISTINCT CASE WHEN s IS NOT NULL THEN {
                 skillId: s.id,
                 skillCode: s.code,
                 skillName: s.name,
@@ -59,7 +60,7 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
             } END) WHERE x IS NOT NULL] AS directSkills
             OPTIONAL MATCH (r)-[:HAS_LEVEL]->(lvl:Level)-[:HAS_COMPETENCY]->(c:Competency)-[:HAS_SKILL]->(cs:MicroSkill)
             OPTIONAL MATCH (lvl)-[lreq:REQUIRES_SKILL]->(cs)
-            WITH r, graphLevels, graphLevelDetails, graphCompetencies, directSkills, [x IN collect(DISTINCT CASE WHEN cs IS NOT NULL THEN {
+            WITH r, jps, graphLevels, graphLevelDetails, graphCompetencies, directSkills, [x IN collect(DISTINCT CASE WHEN cs IS NOT NULL THEN {
                 skillId: cs.id,
                 skillCode: cs.code,
                 skillName: cs.name,
@@ -70,7 +71,8 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
                          ELSE ['FOUNDATION'] END),
                 level: coalesce(lreq.level, lvl.name, '')
             } END) WHERE x IS NOT NULL] AS levelSkills
-            WITH r, graphLevels, graphLevelDetails, graphCompetencies, CASE WHEN size(directSkills) > 0 THEN directSkills ELSE levelSkills END AS graphSkills
+            WITH r, coalesce(head([p IN jps WHERE p IS NOT NULL | coalesce(p.code, p.id, '')]), '') AS graphJobPositionCode,
+                 graphLevels, graphLevelDetails, graphCompetencies, CASE WHEN size(directSkills) > 0 THEN directSkills ELSE levelSkills END AS graphSkills
             """;
     // Neo4jClient: the role node is mapped by SDN; its HAS_LEVEL and REQUIRES_SKILL targets are collected.
     private static final String BY_ID = """
@@ -83,13 +85,13 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
                    OR (r.baseCode IS NOT NULL AND $id CONTAINS r.baseCode AND (r.version IS NOT NULL AND $id CONTAINS r.version)))
               AND coalesce(r.status, 'ACTIVE') <> 'SUPERSEDED'
             """ + GRAPH_RELATIONS + """
-            RETURN r, graphSkills, graphLevels, graphLevelDetails, graphCompetencies
+            RETURN r, graphSkills, graphLevels, graphLevelDetails, graphCompetencies, graphJobPositionCode
             """;
     private static final String BY_CODE = """
             MATCH (r:TargetRole)
             WHERE r.organizationId = $organizationId AND (r.code = $code OR r.baseCode = $code)
             """ + GRAPH_RELATIONS + """
-            RETURN r, graphSkills, graphLevels, graphLevelDetails, graphCompetencies
+            RETURN r, graphSkills, graphLevels, graphLevelDetails, graphCompetencies, graphJobPositionCode
             """;
 
     private final TargetRoleNodeRepository roles;
@@ -589,7 +591,7 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
         }
 
         cypher.append("\n").append(GRAPH_RELATIONS).append("""
-                 RETURN r, graphSkills, graphLevels, graphLevelDetails, graphCompetencies ORDER BY coalesce(r.updatedAt, r.createdAt) DESC, r.name ASC
+                 RETURN r, graphSkills, graphLevels, graphLevelDetails, graphCompetencies, graphJobPositionCode ORDER BY coalesce(r.updatedAt, r.createdAt) DESC, r.name ASC
                 """);
 
         return reads.execute(status -> new ArrayList<>(client.query(cypher.toString()).bindAll(params)
@@ -679,10 +681,13 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
                 }
             }
         }
-        return mapNodeToTargetRole(node, graphSkills, graphLevels, levelDurations, graphCompetencies);
+        String graphJobPositionCode = record.containsKey("graphJobPositionCode") && !record.get("graphJobPositionCode").isNull()
+                ? record.get("graphJobPositionCode").asString()
+                : "";
+        return mapNodeToTargetRole(node, graphSkills, graphLevels, levelDurations, graphCompetencies, graphJobPositionCode);
     }
 
-    private TargetRole mapNodeToTargetRole(TargetRoleNode node, List<Map<String, Object>> graphSkills, List<String> graphLevels, Map<String, String> levelDurations, List<Map<String, String>> graphCompetencies) {
+    private TargetRole mapNodeToTargetRole(TargetRoleNode node, List<Map<String, Object>> graphSkills, List<String> graphLevels, Map<String, String> levelDurations, List<Map<String, String>> graphCompetencies, String graphJobPositionCode) {
         String idStr = node.id() != null ? node.id()
                 : (node.code() != null ? node.code() : UUID.randomUUID().toString());
         String orgId = node.organizationId() != null ? node.organizationId() : "comp-technova";
@@ -693,7 +698,9 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
         }
 
         String name = node.name() != null ? node.name() : (node.title() != null ? node.title() : code);
-        String familyCode = node.familyCode() != null ? node.familyCode() : "SOFTWARE_ENGINEERING";
+        String familyCode = node.familyCode() != null && !node.familyCode().isBlank()
+                ? node.familyCode()
+                : (graphJobPositionCode != null && !graphJobPositionCode.isBlank() ? graphJobPositionCode : "SOFTWARE_ENGINEERING");
         String trackStr = node.track() != null ? node.track() : "PROFESSIONAL";
         String assignedExpertId = node.assignedExpertId() != null ? node.assignedExpertId() : "";
         String desc = node.description() != null ? node.description() : (node.scope() != null ? node.scope() : "");

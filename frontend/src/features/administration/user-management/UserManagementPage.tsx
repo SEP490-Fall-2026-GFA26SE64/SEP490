@@ -1045,8 +1045,8 @@ function UserForm({
   }, [department, member, allDepartments])
 
   const availableTargetRolesForEmployee = useMemo(() => {
-    return targetRolesForEmployee(orgTargetRoles, department, selectedDeptObj, '', organization, jobPositions, references)
-  }, [orgTargetRoles, department, selectedDeptObj, organization, jobPositions, references])
+    return targetRolesForEmployee(orgTargetRoles, department, selectedDeptObj, jobPosition, organization, jobPositions, references)
+  }, [orgTargetRoles, department, selectedDeptObj, jobPosition, organization, jobPositions, references])
 
   const employeeTargetRoleOptions: ComboboxOption[] = useMemo(() => {
     return availableTargetRolesForEmployee.map((r) => ({
@@ -1189,6 +1189,7 @@ function UserForm({
     if (!tempDeptId) return
     setDepartment(tempDeptId)
     setJobPosition('')
+    setTargetRoleId('')
     setTempDeptId('')
     setTempJobPositionId('')
   }
@@ -1196,6 +1197,7 @@ function UserForm({
   const handleRemoveDepartment = () => {
     setDepartment('')
     setJobPosition('')
+    setTargetRoleId('')
     setTempDeptId('')
     setTempJobPositionId('')
   }
@@ -1203,11 +1205,13 @@ function UserForm({
   const handleAssignJobPosition = () => {
     if (!tempJobPositionId) return
     setJobPosition(tempJobPositionId)
+    setTargetRoleId('')
     setTempJobPositionId('')
   }
 
   const handleRemoveJobPosition = () => {
     setJobPosition('')
+    setTargetRoleId('')
     setTempJobPositionId('')
   }
 
