@@ -14,6 +14,9 @@ public class DemoResetService {
 
     private final DemoResetStore store;
     private final UUID retainedOrganization;
+    private com.adaptlearngraph.repository.DemoCheckpointStore checkpoint;
+    public DemoResetService checkpoint(com.adaptlearngraph.repository.DemoCheckpointStore value){checkpoint=value;return this;}
+    public synchronized DemoResetResultDto reset(String commandKey){return checkpoint==null?reset():checkpoint.restore(commandKey);}
 
     public DemoResetService(DemoResetStore store, UUID retainedOrganization) {
         this.store = store;
@@ -21,6 +24,7 @@ public class DemoResetService {
     }
 
     public synchronized DemoResetResultDto reset() {
+        if(checkpoint!=null)return checkpoint.restore(UUID.randomUUID().toString());
         var postgres = store.resetPostgres(retainedOrganization);
         List<String> warnings = new ArrayList<>();
         int nodes = 0;

@@ -35,9 +35,15 @@ public final class CurrentRoleCatalog implements Catalog {
         if(!organization.equals(org)) throw new Failure(403,"FORBIDDEN");
         var authoredScopes=new HashSet<>(authored.jobPositions(org));
         if(allowedJobPositions!=null)authoredScopes.retainAll(allowedJobPositions);
+        var imported=new ImportedWorkspaceRoleCatalog(graph,mapper);
+        var importedScopes=new HashSet<>(imported.jobPositions(org));
+        if(allowedJobPositions!=null)importedScopes.retainAll(allowedJobPositions);
+        importedScopes.removeAll(authoredScopes);
+        var excluded=new HashSet<>(authoredScopes);excluded.addAll(importedScopes);
         Set<String> legacyScopes=null;
-        if(allowedJobPositions!=null){var scopes=new HashSet<>(allowedJobPositions);scopes.removeAll(authoredScopes);legacyScopes=Set.copyOf(scopes);}
-        var result=new ArrayList<>(legacyRoles(org,legacyScopes,authoredScopes,ownedOnly));
+        if(allowedJobPositions!=null){var scopes=new HashSet<>(allowedJobPositions);scopes.removeAll(excluded);legacyScopes=Set.copyOf(scopes);}
+        var result=new ArrayList<>(legacyRoles(org,legacyScopes,excluded,ownedOnly));
+        result.addAll(imported.roles(org,importedScopes));
         for(String jobPosition:new TreeSet<>(authoredScopes))result.addAll(com.adaptlearngraph.repository.AuthoredCatalogPort.scoped(authored.find(org,jobPosition)
                 .orElseThrow(()->new IllegalStateException("Explicit authored source unavailable")),org,jobPosition).roles());
         var ids=new HashSet<String>();for(var role:result)if(!ids.add(role.id()))throw new IllegalStateException("Ambiguous catalog Role");

@@ -8,7 +8,7 @@ public final class RequirementPathway {
     private RequirementPathway() {}
     public enum Provision { MODULE_ONLY, CERTIFICATE_ONLY, UNCONFIGURED }
     public enum Kind { REQUIRED, PARALLEL_SUPPLEMENT }
-    public enum State { NEEDS_SUPPLEMENTATION, NEEDS_EXPERT_ACTION, IN_PROGRESS, FULFILLED, BYPASSED }
+    public enum State { NEEDS_SUPPLEMENTATION, NEEDS_EXPERT_ACTION, IN_PROGRESS, FULFILLED, ASSESSED_SATISFIED, BYPASSED }
     public record Requirement(String skillId,String skillName,KnowledgeLevel knowledgeLevel,String skillVersion,List<String> outcomeCodes,Provision provision) {
         public Requirement {
             text(skillId);text(skillName);Objects.requireNonNull(knowledgeLevel);Objects.requireNonNull(provision);
@@ -55,12 +55,13 @@ public final class RequirementPathway {
             if(requirement.provision()!=Provision.MODULE_ONLY && !options.isEmpty()
                     || requirement.provision()!=Provision.CERTIFICATE_ONLY && certificate!=null)
                 throw new IllegalArgumentException("Module and certificate alternatives are exclusive");
-            if(state!=State.FULFILLED && state!=State.BYPASSED && state!=State.NEEDS_EXPERT_ACTION
+            if(state!=State.FULFILLED && state!=State.ASSESSED_SATISFIED && state!=State.BYPASSED && state!=State.NEEDS_EXPERT_ACTION
                     && (requirement.provision()==Provision.UNCONFIGURED || requirement.provision()==Provision.MODULE_ONLY && options.isEmpty()
                         || requirement.provision()==Provision.CERTIFICATE_ONLY && certificate==null))throw new IllegalArgumentException("Missing provision requires Expert action");
         }
         public String key(){return requirement.key()+"\n"+kind+"\n"+Objects.toString(sourceBypassId,"");}
-        public boolean blocking(){return kind==Kind.REQUIRED && state!=State.FULFILLED && state!=State.BYPASSED;}
+        public boolean resolved(){return state==State.FULFILLED || state==State.ASSESSED_SATISFIED || state==State.BYPASSED;}
+        public boolean blocking(){return kind==Kind.REQUIRED && !resolved();}
     }
     public record Dependency(UUID prerequisiteStepId,UUID dependentStepId,UUID attemptId,UUID groupId) {
         public Dependency {Objects.requireNonNull(prerequisiteStepId);Objects.requireNonNull(dependentStepId);Objects.requireNonNull(attemptId);Objects.requireNonNull(groupId);}
@@ -85,7 +86,7 @@ public final class RequirementPathway {
         public List<Step> unmetPrerequisites(UUID dependent) {
             return dependencies.stream().filter(edge->edge.dependentStepId().equals(dependent))
                     .map(edge->steps.stream().filter(step->step.id().equals(edge.prerequisiteStepId())).findFirst().orElseThrow())
-                    .filter(step->step.state()!=State.FULFILLED).toList();
+                    .filter(step->!step.resolved()).toList();
         }
         public boolean readyForInitialApproval(){return steps.stream().noneMatch(step->step.kind()==Kind.REQUIRED && step.state()==State.NEEDS_EXPERT_ACTION);}
     }

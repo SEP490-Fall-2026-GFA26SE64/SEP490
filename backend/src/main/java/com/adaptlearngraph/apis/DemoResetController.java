@@ -26,15 +26,15 @@ public class DemoResetController {
     }
 
     @PostMapping(PATH)
-    ResponseEntity<DemoResetResultDto> reset() {
-        return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(service.reset());
+    ResponseEntity<DemoResetResultDto> reset(@org.springframework.web.bind.annotation.RequestHeader(value="Idempotency-Key",required=false) String commandKey) {
+        return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(service.reset(commandKey==null?java.util.UUID.randomUUID().toString():commandKey));
     }
 
     @Configuration(proxyBeanMethods = false)
     @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
     static class Security {
         @Bean @Order(-2) SecurityFilterChain demoResetSecurity(HttpSecurity http) throws Exception {
-            return http.securityMatcher(PATH).authorizeHttpRequests(a -> a.anyRequest().permitAll())
+            return http.securityMatcher(PATH,"/api/v1/demo/checkpoint/**").authorizeHttpRequests(a -> a.anyRequest().permitAll())
                     .csrf(c -> c.disable()).build();
         }
     }

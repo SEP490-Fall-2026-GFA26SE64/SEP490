@@ -1,8 +1,7 @@
 import { useContext, useEffect, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { Search, RefreshCw, SlidersHorizontal, History, ArrowRight, Pencil } from 'lucide-react'
+import { Search, RefreshCw, SlidersHorizontal, History, Eye, Pencil } from 'lucide-react'
 import { WorkspaceSessionContext } from '../../../shared/auth/workspaceSession'
-import { WorkspaceLayout } from '../../../shared/layouts/WorkspaceLayout'
 import { useTranslation } from '../../../shared/i18n/LanguageContext'
 import { Heading } from '../../../shared/components/typography/Heading'
 import { Text } from '../../../shared/components/typography/Text'
@@ -13,7 +12,9 @@ import { Input } from '../../../shared/components/ui/Input'
 import { Combobox } from '../../../shared/components/ui/Combobox'
 import { Pagination } from '../../../shared/components/ui/Pagination'
 import { Tabs, TabsList, TabsTrigger } from '../../../shared/components/ui/Tabs'
-import { Dialog, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogBody } from '../../../shared/components/ui/Dialog'
+import { DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogBody } from '../../../shared/components/ui/Dialog'
+import { ManagementDialog as Dialog } from '../../../shared/components/ui/ManagementUi'
+import { SharedSkillAssessmentPage } from './SharedSkillAssessmentPage'
 import { AdaptiveBaselineApiError } from './adaptiveBaselineApi'
 import { type AssessmentPurpose } from './assessmentRulePolicyApi'
 import { getPolicyDirectory, getPolicyWorkspace, runScopedCommand, type PolicyDirectory, type PolicyWorkspace, type ScopedCommand, type ScopedVersion } from './scopedAssessmentPolicyApi'
@@ -21,12 +22,13 @@ import { BaselinePolicyDialog } from './BaselinePolicyDialog'
 import { AssessmentBankIssues } from '../../../shared/components/AssessmentBankIssues'
 import { SkillPolicyWizard as RulePolicyForm } from './SkillPolicyWizard'
 import { useToast } from '../../../shared/hooks/useToast'
+import { BulkSkillPolicyDialog } from './BulkSkillPolicyDialog'
 
 type Loaded<T> = { key: string; value?: T; error?: unknown }
 const pageNumber = (value: string | null) => value && /^\d{1,6}$/.test(value) ? Number(value) : 0
 
 export function SkillAssessmentConfigurationPage() {
-  return <WorkspaceLayout><AssessmentConfigurationWorkspace purpose="SKILL_ASSESSMENT" /></WorkspaceLayout>
+  return <SharedSkillAssessmentPage />
 }
 export function AssessmentConfigurationWorkspace({ purpose }: { purpose: AssessmentPurpose }) {
   const session = useContext(WorkspaceSessionContext), { t } = useTranslation()
@@ -43,6 +45,7 @@ function ConfigError({ error }: { error: unknown }) {
   return <div role="alert" className="space-y-2"><Text tone="destructive">{t(`scopedPolicy.errors.${code}`, t('scopedPolicy.errors.GENERIC'))}</Text><AssessmentBankIssues issues={error instanceof AdaptiveBaselineApiError ? error.bankIssues : undefined} /></div>
 }
 function ScopeDirectory({ purpose }: { purpose: AssessmentPurpose }) {
+  const [bulk, setBulk] = useState(false)
   const { t, language } = useTranslation(), [params, setParams] = useSearchParams(), [reload, setReload] = useState(0)
   const { toast } = useToast(), listRef = useRef<HTMLDivElement>(null)
   const [loaded, setLoaded] = useState<Loaded<PolicyDirectory> & { archived?: boolean }>({ key: '' })
@@ -54,7 +57,7 @@ function ScopeDirectory({ purpose }: { purpose: AssessmentPurpose }) {
   const showLevel = purpose === 'SKILL_ASSESSMENT' || archived
   const [searchDraft, setSearchDraft] = useState({ query: search, value: search })
   const searchInput = searchDraft.query === search ? searchDraft.value : search
-  const query = new URLSearchParams({ search, owner, level, status: purpose === 'BASELINE' && !status ? 'WORKLIST' : status, page: String(page), size: '20' }), queryString = query.toString(), key = `${queryString}:${reload}`
+  const query = new URLSearchParams({ search, owner, level, status: purpose === 'BASELINE' && !status ? 'WORKLIST' : status, page: String(page), size: '10' }), queryString = query.toString(), key = `${queryString}:${reload}`
   const current = loaded.key === key ? loaded : undefined, data = current?.value
   useEffect(() => {
     if (searchInput === search) return
@@ -70,8 +73,8 @@ function ScopeDirectory({ purpose }: { purpose: AssessmentPurpose }) {
     void getPolicyDirectory(purpose, new URLSearchParams(queryString), controller.signal)
       .then(value => {
         if (controller.signal.aborted) return
-        if (value.total > 0 && page * 20 >= value.total) {
-          setParams(previous => { const next = new URLSearchParams(previous); next.set('page', String(Math.floor((value.total - 1) / 20))); return next }, { replace: true })
+        if (value.total > 0 && page * 10 >= value.total) {
+          setParams(previous => { const next = new URLSearchParams(previous); next.set('page', String(Math.floor((value.total - 1) / 10))); return next }, { replace: true })
           return
         }
         setLoaded({ key, value, archived })
@@ -89,6 +92,8 @@ function ScopeDirectory({ purpose }: { purpose: AssessmentPurpose }) {
   const levels = choices.filter(c => c.ownerId === owner).sort((a, b) => a.rank - b.rank || a.levelId.localeCompare(b.levelId))
   const levelLabel = (id: string, name: string) => purpose === 'BASELINE' ? id === 'ALL_ROLE_LEVELS' ? t('baselineUX.sharedRole') : name : t(`knowledgeLevel.${id}`)
   return <>
+    {purpose === 'SKILL_ASSESSMENT' && <Button variant="outline" onClick={() => setBulk(true)}>{language === 'vi' ? 'Cấu hình hàng loạt' : 'Bulk configuration'}</Button>}
+    {bulk && <BulkSkillPolicyDialog choices={choices} onClose={() => { setBulk(false); setReload(v => v + 1) }} />}
     {notice && <Text role="status" tone="success">{t('baselineWizard.updated')}</Text>}
     {selectedScope && purpose === 'BASELINE' && <BaselinePolicyDialog key={selectedScope} scopeKey={selectedScope} initialAction={initialAction} renderError={error => <ConfigError error={error} />} onActivated={workspace => {
       setSelectedScope(null); setNotice(false); setReload(value => value + 1)
@@ -108,44 +113,46 @@ function ScopeDirectory({ purpose }: { purpose: AssessmentPurpose }) {
     <div ref={listRef} tabIndex={-1} className="scroll-mt-24 focus-visible:outline-none">{<Tabs value={archived ? 'archive' : activeTab ? 'active' : 'worklist'} onValueChange={value => filter({ status: value === 'archive' ? 'HISTORY' : value === 'active' ? 'ACTIVE' : '', level: '' })}>
       <TabsList className="h-auto flex-wrap gap-1 border border-border p-1"><TabsTrigger value="worklist">{t('baselineUX.worklist')}</TabsTrigger>{purpose === 'BASELINE' && <TabsTrigger value="active">{t('baselineUX.active')}</TabsTrigger>}<TabsTrigger value="archive">{t('baselineUX.archive')}</TabsTrigger></TabsList>
     </Tabs>}</div>
-    <Card><CardHeader className={purpose === 'SKILL_ASSESSMENT' ? 'hidden' : 'space-y-0'}>
-      <div className={purpose === 'SKILL_ASSESSMENT' ? 'flex justify-end' : 'flex flex-wrap items-start justify-between gap-3'}>{purpose === 'BASELINE' && <div className="min-w-0 space-y-1">
-        <Heading level={2} size="subsection" className="flex items-center gap-2"><SlidersHorizontal className="h-4 w-4 shrink-0 text-primary" aria-hidden="true" />{t('baselineUX.title')}</Heading>
-        <Text variant="body-sm">{t(archived ? 'baselineUX.archiveHelp' : activeTab ? 'baselineUX.activeHelp' : 'baselineUX.worklistHelp')}</Text>
-      </div>}{purpose === 'BASELINE' && <Button size="sm" variant="primary" isLoading={!current} leftIcon={<RefreshCw size={14} aria-hidden="true" />} onClick={() => setReload(v => v + 1)}>{t('scopedPolicy.refresh')}</Button>}</div>
-    </CardHeader><CardContent className={`grid items-center gap-3 pt-0 sm:grid-cols-2 ${showLevel ? 'xl:grid-cols-4' : 'xl:grid-cols-3'}`}>
-      <label className="min-w-0"><span className="sr-only">{t(purpose === 'BASELINE' ? 'scopedPolicy.searchRole' : 'scopedPolicy.searchSkill')}</span>
-        <Input type="search" maxLength={200} className="h-8 bg-background text-body-sm" leftIcon={<Search size={15} aria-hidden="true" />} value={searchInput} placeholder={t(purpose === 'BASELINE' ? 'baselineUX.searchRole' : 'baselineUX.searchSkill')} onChange={e => setSearchDraft({ query: search, value: e.target.value })} /></label>
-      <label className="min-w-0"><span className="sr-only">{t(purpose === 'BASELINE' ? 'scopedPolicy.role' : 'scopedPolicy.skill')}</span>
+    <Card className="overflow-hidden"><CardHeader>
+      <div className="flex flex-wrap items-center justify-between gap-4"><div className="min-w-0 space-y-1">
+        <Heading level={2} size="card" className="flex items-center gap-2"><SlidersHorizontal className="size-4 shrink-0 text-primary" aria-hidden="true" />{t('baselineUX.title')}</Heading>
+        <Text variant="caption">{t(archived ? 'baselineUX.archiveHelp' : activeTab ? 'baselineUX.activeHelp' : 'baselineUX.worklistHelp')}</Text>
+      </div><div className="flex flex-wrap items-center justify-end gap-2">
+      <label className="w-full min-w-0 sm:w-48"><span className="sr-only">{t(purpose === 'BASELINE' ? 'scopedPolicy.searchRole' : 'scopedPolicy.searchSkill')}</span>
+        <Input type="search" maxLength={200} className="h-8 bg-background text-caption" leftIcon={<Search size={15} aria-hidden="true" />} value={searchInput} placeholder={t(purpose === 'BASELINE' ? 'baselineUX.searchRole' : 'baselineUX.searchSkill')} onChange={e => setSearchDraft({ query: search, value: e.target.value })} /></label>
+      <label className="w-full min-w-0 sm:w-40"><span className="sr-only">{t(purpose === 'BASELINE' ? 'scopedPolicy.role' : 'scopedPolicy.skill')}</span>
         <Combobox size="sm" value={owner} options={owners} className="bg-background" customTriggerLabel={`${t(purpose === 'BASELINE' ? 'scopedPolicy.role' : 'scopedPolicy.skill')}: ${owners.find(o => o.value === owner)?.label ?? t('scopedPolicy.allOwners')}`} placeholder={t('scopedPolicy.allOwners')} onChange={value => filter({ owner: value, level: '' })} /></label>
-      {(purpose === 'SKILL_ASSESSMENT' || archived) && <label className="min-w-0"><span className="sr-only">{t(purpose === 'BASELINE' ? 'scopedPolicy.memberLevel' : 'scopedPolicy.knowledgeLevel')}</span>
+      {(purpose === 'SKILL_ASSESSMENT' || archived) && <label className="w-full min-w-0 sm:w-40"><span className="sr-only">{t(purpose === 'BASELINE' ? 'scopedPolicy.memberLevel' : 'scopedPolicy.knowledgeLevel')}</span>
         <Combobox size="sm" value={level} disabled={!owner} options={levels.map(c => ({ value: c.levelId, label: levelLabel(c.levelId, c.levelName) }))} className="bg-background" customTriggerLabel={`${t('baselineUX.levelFilter')}: ${levels.some(c => c.levelId === level) ? levelLabel(level, levels.find(c => c.levelId === level)!.levelName) : t('scopedPolicy.allLevels')}`} placeholder={t('scopedPolicy.allLevels')} onChange={value => filter({ level: value })} /></label>}
-      {!archived && !activeTab && <label className="min-w-0"><span className="sr-only">{t('scopedPolicy.status')}</span><Combobox size="sm" value={status} className="bg-background"
+      {!archived && !activeTab && <label className="w-full min-w-0 sm:w-40"><span className="sr-only">{t('scopedPolicy.status')}</span><Combobox size="sm" value={status} className="bg-background"
         customTriggerLabel={`${t('scopedPolicy.status')}: ${status ? t(`scopedPolicy.${status}`) : t('scopedPolicy.allStatuses')}`}
         options={(purpose === 'BASELINE' ? ['UNCONFIGURED', 'DRAFT'] : ['UNCONFIGURED', 'DRAFT', 'ACTIVE']).map(value => ({ value, label: t(`scopedPolicy.${value}`) }))} placeholder={t('scopedPolicy.allStatuses')} onChange={value => filter({ status: value })} /></label>}
       {(search || owner || level || status && !archived && !activeTab) && <Button variant="outline" size="sm" className="w-fit border-primary/30 text-primary hover:bg-secondary" onClick={() => { setSearchDraft({ query: '', value: '' }); setParams(archived ? { status: 'HISTORY' } : activeTab ? { status: 'ACTIVE' } : {}, { replace: true }) }}>{t('scopedPolicy.clear')}</Button>}
-    </CardContent>
+
+      <Button size="icon" variant="outline" className="size-8" disabled={!current} title={t('scopedPolicy.refresh')} aria-label={t('scopedPolicy.refresh')} onClick={() => setReload(v => v + 1)}><RefreshCw size={14} /></Button>
+      </div></div>
+    </CardHeader>
     {!current && <Text role="status" variant="caption">{t('scopedPolicy.loading')}</Text>}
     {current?.error != null && <Card><CardContent className="space-y-3 pt-5"><ConfigError error={current.error} /><Button variant="outline" onClick={() => setReload(v => v + 1)}>{t('scopedPolicy.retry')}</Button></CardContent></Card>}
     {data && data.issues.length > 0 && <Card><CardContent className="space-y-2 p-4"><Text role="status" tone="foreground">{t('scopedPolicy.catalogIssues')}</Text>
       {data.issues.map(issue => <Text variant="body-sm" key={`${issue.ownerId}:${issue.levelName}:${issue.code}`}>{issue.ownerName} · {issue.levelName}: {t(`scopedPolicy.errors.${issue.code}`, t('scopedPolicy.notReady'))}</Text>)}
     </CardContent></Card>}
     {data && (data.rows.length === 0 ? <Card><CardContent className="p-6"><Text role="status">{t(archived ? 'baselineUX.emptyArchive' : 'scopedPolicy.empty')}</Text></CardContent></Card> :
-      <div aria-busy={!current} className={`overflow-hidden border-t border-border ${!current ? 'pointer-events-none opacity-60' : ''}`}><div className="overflow-x-auto"><table className="w-full text-left text-body-sm"><thead className="border-b border-border bg-background text-caption uppercase text-muted-foreground"><tr>
-        {[purpose === 'BASELINE' ? 'role' : 'skill', ...(showLevel ? [purpose === 'BASELINE' ? 'memberLevel' : 'knowledgeLevel'] : []), 'status', 'versions', 'actions'].map(label => <th key={label} scope="col" className="px-4 py-3 font-semibold">{t(`scopedPolicy.${label}`)}</th>)}
+      <div aria-busy={!current} className={`overflow-hidden border-t border-border ${!current ? 'pointer-events-none opacity-60' : ''}`}><div className="overflow-x-auto"><table className="w-full text-left text-body-sm"><thead className="border-b border-border bg-background text-xs uppercase tracking-wide text-muted-foreground"><tr>
+        {[purpose === 'BASELINE' ? 'role' : 'skill', ...(showLevel ? [purpose === 'BASELINE' ? 'memberLevel' : 'knowledgeLevel'] : []), 'status', 'versions', 'actions'].map(label => <th key={label} scope="col" className="px-3 py-3 font-semibold last:text-right">{t(`scopedPolicy.${label}`)}</th>)}
       </tr></thead><tbody className="divide-y divide-border">{data.rows.map(row => <tr key={row.scope.key} className="transition-colors even:bg-background/60 hover:bg-muted/40">
-        <td className="max-w-xs break-words px-4 py-3"><span className="font-semibold">{row.scope.ownerName}</span>{purpose === 'SKILL_ASSESSMENT' && <Text variant="caption" className="mt-0.5">{row.scope.ownerId}</Text>}</td>{showLevel && <td className="px-4 py-3">{levelLabel(row.scope.levelId, row.scope.levelName)}</td>}
-        <td className="px-4 py-3"><div className="flex flex-wrap gap-2"><Badge variant={row.status === 'ACTIVE' ? 'success' : row.status === 'DRAFT' || purpose === 'SKILL_ASSESSMENT' && row.status === 'UNCONFIGURED' ? 'secondary' : 'outline'}>{t(archived ? 'baselineUX.archivedStatus' : `scopedPolicy.${row.status}`)}</Badge>
+        <td className="max-w-xs break-words px-3 py-3"><span className="font-semibold">{row.scope.ownerName}</span>{purpose === 'SKILL_ASSESSMENT' && <Text variant="caption" className="mt-0.5">{row.scope.ownerId}</Text>}</td>{showLevel && <td className="px-3 py-3">{levelLabel(row.scope.levelId, row.scope.levelName)}</td>}
+        <td className="px-3 py-3"><div className="flex flex-wrap gap-2"><Badge variant={row.status === 'ACTIVE' ? 'success' : row.status === 'DRAFT' || purpose === 'SKILL_ASSESSMENT' && row.status === 'UNCONFIGURED' ? 'secondary' : 'outline'}>{t(archived ? 'baselineUX.archivedStatus' : `scopedPolicy.${row.status}`)}</Badge>
           {!archived && row.hasDraft && row.status === 'ACTIVE' && <Badge variant="secondary">{t('scopedPolicy.DRAFT')}</Badge>}</div>
           {!archived && !row.scope.ready && <Text variant="caption" className="mt-1">{t('scopedPolicy.notReady')}</Text>}</td>
-        <td className="px-4 py-3"><Text variant="caption">{archived ? `${row.archivedCount} ${t('baselineUX.archivedItems')}` : row.activeVersion !== null ? `${t('scopedPolicy.ACTIVE')} · v${row.activeVersion}` : t(row.hasDraft ? 'baselineUX.draftVersion' : 'baselineUX.noVersion')}</Text></td>
-        <td className="px-4 py-3"><div className="flex flex-wrap gap-2"><Button size="sm" variant={archived ? 'outline' : 'primary'} className={archived ? 'border-primary/30 text-primary hover:bg-secondary' : undefined} leftIcon={archived ? <History size={14} /> : row.hasDraft ? <Pencil size={14} /> : <ArrowRight size={14} />} disabled={!current} onClick={() => {
+        <td className="px-3 py-3"><Text variant="caption">{archived ? `${row.archivedCount} ${t('baselineUX.archivedItems')}` : row.activeVersion !== null ? `${t('scopedPolicy.ACTIVE')} · v${row.activeVersion}` : t(row.hasDraft ? 'baselineUX.draftVersion' : 'baselineUX.noVersion')}</Text></td>
+        <td className="px-3 py-3"><div className="flex justify-end gap-1.5"><Button size="icon" variant="outline" className="size-8" title={t(archived ? 'baselineUX.viewHistory' : row.status === 'UNCONFIGURED' ? 'scopedPolicy.configure' : 'baselineWizard.edit')} aria-label={t(archived ? 'baselineUX.viewHistory' : row.status === 'UNCONFIGURED' ? 'scopedPolicy.configure' : 'baselineWizard.edit')} disabled={!current} onClick={() => {
           if (archived) { setNotice(false); setInitialAction('view'); setSelectedScope(row.scope.key); return }
           setNotice(false); setInitialAction(row.status === 'UNCONFIGURED' || row.draftIncomplete ? 'configure' : 'edit'); setSelectedScope(row.scope.key)
-        }}>{t(archived ? 'baselineUX.viewHistory' : row.draftIncomplete && purpose === 'BASELINE' ? 'baselineWizard.continue' : row.status === 'UNCONFIGURED' ? 'scopedPolicy.configure' : 'baselineWizard.edit')}</Button>
-          {!archived && (row.hasDraft || row.versionCount > 0) && <Button size="sm" variant="outline" className="border-primary/30 text-primary hover:bg-secondary" leftIcon={<History size={14} />} disabled={!current} onClick={() => { setNotice(false); setInitialAction('view'); setSelectedScope(row.scope.key) }}>{t('baselineUX.history')}</Button>}
+        }}>{archived ? <History size={14} /> : <Pencil size={14} />}</Button>
+          {!archived && (row.hasDraft || row.versionCount > 0) && <Button size="icon" variant="outline" className="size-8 text-primary" aria-label={t('baselineUX.history')} title={t('baselineUX.history')} disabled={!current} onClick={() => { setNotice(false); setInitialAction('view'); setSelectedScope(row.scope.key) }}><Eye size={14} /></Button>}
         </div></td>
-      </tr>)}</tbody></table></div><Pagination currentPage={page + 1} totalPages={Math.ceil(data.total / 20)} totalItems={data.total} pageSize={20} locale={language}
+      </tr>)}</tbody></table></div><Pagination currentPage={page + 1} totalPages={Math.ceil(data.total / 10)} totalItems={data.total} pageSize={10} locale={language}
         disabled={!current} onPageChange={value => { const next = new URLSearchParams(params); next.set('page', String(value - 1)); setParams(next) }} /></div>)}
     </Card>
   </>

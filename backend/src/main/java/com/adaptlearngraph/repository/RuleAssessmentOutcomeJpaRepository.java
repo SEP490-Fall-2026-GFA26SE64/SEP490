@@ -70,6 +70,13 @@ public interface RuleAssessmentOutcomeJpaRepository extends Repository<RuleAsses
                 JOIN LATERAL jsonb_array_elements(prior.context_snapshot->'context'->'requirements') definition
                     ON definition->'requirement'->>'skillId'=g.skill_id AND definition->'requirement'->>'knowledgeLevel'=g.knowledge_level
                 WHERE current_attempt.organization_id=:org AND current_attempt.learner_id=:learner AND current_attempt.id=:attempt
+                    AND NOT EXISTS (SELECT 1 FROM platform.initial_pathway_current c JOIN platform.pathway_requirement_step s
+                        ON s.request_id=c.request_id AND s.revision=c.current_revision AND s.organization_id=c.organization_id AND s.learner_id=c.learner_id
+                        WHERE c.organization_id=prior.organization_id AND c.learner_id=prior.learner_id AND c.archived_at IS NULL
+                            AND c.request_id::text=prior.context_snapshot #>> '{context,requestId}' AND s.state='BYPASSED'
+                            AND s.skill_id=g.skill_id AND s.knowledge_level=g.knowledge_level AND s.requirement_snapshot->>'skillVersion'=definition->>'skillVersion')
+                    AND NOT EXISTS (SELECT 1 FROM platform.latest_knowledge_assessment h WHERE h.organization_id=prior.organization_id AND h.learner_id=prior.learner_id
+                        AND h.skill_id=g.skill_id AND h.knowledge_level=g.knowledge_level AND h.skill_version=definition->>'skillVersion' AND h.passed AND h.finished_at>=prior.finished_at)
                     AND NOT EXISTS (SELECT 1 FROM platform.skill_knowledge_evidence e
                         WHERE e.organization_id=prior.organization_id AND e.learner_id=prior.learner_id AND e.skill_id=g.skill_id AND e.knowledge_level=g.knowledge_level
                             AND e.requirement_snapshot->>'skillVersion'=definition->>'skillVersion')
@@ -83,6 +90,9 @@ public interface RuleAssessmentOutcomeJpaRepository extends Repository<RuleAsses
                     AND prerequisite.step_id=dependency.prerequisite_step_id AND prerequisite.kind='REQUIRED'
                     AND prerequisite.organization_id=a.organization_id AND prerequisite.learner_id=a.learner_id
                 WHERE a.organization_id=:org AND a.learner_id=:learner AND a.id=:attempt
+                    AND prerequisite.state NOT IN ('BYPASSED','ASSESSED_SATISFIED')
+                    AND NOT EXISTS (SELECT 1 FROM platform.latest_knowledge_assessment h WHERE h.organization_id=a.organization_id AND h.learner_id=a.learner_id
+                        AND h.skill_id=prerequisite.skill_id AND h.knowledge_level=prerequisite.knowledge_level AND h.skill_version=prerequisite.requirement_snapshot->>'skillVersion' AND h.passed)
                     AND NOT EXISTS (SELECT 1 FROM platform.skill_knowledge_evidence e
                         WHERE e.organization_id=a.organization_id AND e.learner_id=a.learner_id AND e.skill_id=prerequisite.skill_id AND e.knowledge_level=prerequisite.knowledge_level
                             AND e.requirement_snapshot->>'skillVersion'=prerequisite.requirement_snapshot->>'skillVersion')

@@ -103,11 +103,17 @@ public final class CurrentRoleKnowledgeCatalog implements Contexts {
                     if(!"PROVISION_NOT_CONFIGURED".equals(missing.code))throw missing;
                     unresolved.add(Map.of("skillId",skill.id(),"knowledgeLevel",knowledge,"reason",missing.code));continue;
                 }
-                definitions.add(definition);
-                if(definitions.size()>maximum)throw new Failure(422,"GROUP_CAPACITY_EXCEEDED");
-                if(!definition.mode().equals("MODULE_ONLY"))continue;
-                var official=evidence.official(actor.organizationId(),actor.learnerId(),skill.id(),knowledge,definition.skillVersion());
-                if(official.isEmpty())needs.add(new Need(definition.requirement(),GroupRole.TARGET));else official.forEach(e->exempt.add(e.getId()));
+                for(var candidate:KnowledgeLevel.values())if(candidate.ordinal()<=definition.requirement().knowledgeLevel().ordinal()) {
+                    var group=definition(actor,skill.id(),candidate);
+                    if(definitions.stream().anyMatch(d->d.requirement().key().equals(group.requirement().key())))continue;
+                    definitions.add(group);
+                    if(definitions.size()>maximum)throw new Failure(422,"GROUP_CAPACITY_EXCEEDED");
+                    var official=evidence.official(actor.organizationId(),actor.learnerId(),skill.id(),candidate.name(),group.skillVersion());
+                    boolean priorLower=candidate.ordinal()<definition.requirement().knowledgeLevel().ordinal()
+                            && evidence.assessed(actor.organizationId(),actor.learnerId(),skill.id(),candidate.name(),group.skillVersion()).isPresent();
+                    if(official.isEmpty() && !priorLower)needs.add(new Need(group.requirement(),GroupRole.TARGET));
+                    else official.forEach(e->exempt.add(e.getId()));
+                }
             }
         } else {
             if(command.stepId()==null || command.moduleId()==null || command.moduleRevision()==null || command.moduleRevision()<1)throw new Failure(400,"INVALID_REQUEST");
@@ -184,12 +190,11 @@ public final class CurrentRoleKnowledgeCatalog implements Contexts {
             boolean module=modules.contains(level.name()) || mode==com.adaptlearngraph.entities.domain.SkillProvisionMode.MODULE_ONLY;
             boolean certificate=certificates.contains(level.name()) || mode==com.adaptlearngraph.entities.domain.SkillProvisionMode.CERTIFICATE_ONLY;
             if(module && certificate)throw new Failure(422,"CONFLICTING_PROVISION_MODES");
-            if(!module && !certificate)throw new Failure(422,"PROVISION_NOT_CONFIGURED");
             if(s.get("version").isNull())throw new Failure(422,"EXACT_KNOWLEDGE_CONFIGURATION_REQUIRED");
             String version=s.get("version").asString();
             if(version.isBlank())throw new Failure(422,"EXACT_KNOWLEDGE_CONFIGURATION_REQUIRED");
             String name=s.get("name").asString();if(name.isBlank())throw new Failure(422,"OWNED_SKILL_CONFIGURATION_REQUIRED");
-            return new Definition(new Requirement(skill,level,List.of()),name,version,module?"MODULE_ONLY":"CERTIFICATE_ONLY");
+            return new Definition(new Requirement(skill,level,List.of()),name,version,module?"MODULE_ONLY":certificate?"CERTIFICATE_ONLY":"UNCONFIGURED");
         });
     }
     private Set<String> levels(Value skill,String property) {
@@ -205,12 +210,10 @@ public final class CurrentRoleKnowledgeCatalog implements Contexts {
             Definition foundation;
             try{foundation=definition(actor,current.requirement().skillId(),lower);}
             catch(Failure missing){if("PROVISION_NOT_CONFIGURED".equals(missing.code))continue;throw missing;}
-            if(!"MODULE_ONLY".equals(foundation.mode()))continue;
             if(definitions.stream().noneMatch(d->d.requirement().key().equals(foundation.requirement().key()))) {
                 definitions.add(foundation);needs.add(new Need(foundation.requirement(),GroupRole.PREREQUISITE));
                 if(definitions.size()>maximum)throw new Failure(422,"GROUP_CAPACITY_EXCEEDED");
             }
-            expand(actor,foundation,visiting,visited,definitions,needs,false);
         }
     }
     private void expand(RoleBaselineFlow.Actor actor,Definition current,Set<String> visiting,Set<String> visited,List<Definition> definitions,List<Need> needs,boolean includeSkillEdges) {
@@ -230,17 +233,18 @@ public final class CurrentRoleKnowledgeCatalog implements Contexts {
                 Definition definition;
                 if(pair.get("dependent").isNull() && pair.get("prerequisite").isNull()) {
                     if(!includeSkillEdges)continue;
-                    definition=resolveSkillPrerequisiteDefinition(actor,skill,current.requirement().knowledgeLevel());
+                    definition=definition(actor,skill,KnowledgeLevel.ADVANCED);
                     prerequisite=definition.requirement().knowledgeLevel();
                 } else {
                     KnowledgeLevel dependent;
                     try{dependent=KnowledgeLevel.valueOf(pair.get("dependent").asString());prerequisite=KnowledgeLevel.valueOf(pair.get("prerequisite").asString());}
                     catch(RuntimeException invalid){throw new Failure(422,"EXACT_PREREQUISITE_CONFIGURATION_REQUIRED");}
                     if(dependent!=current.requirement().knowledgeLevel())continue;
+                    prerequisite=KnowledgeLevel.ADVANCED;
                     definition=definition(actor,skill,prerequisite);
                 }
                 String next=skill+"\n"+prerequisite;
-                if(!seen.add(next))throw new Failure(422,"DUPLICATE_PREREQUISITE_PAIR");
+                if(!seen.add(next))continue;
                 if(visiting.contains(next))throw new Failure(422,"PREREQUISITE_CYCLE");
                 if(!visited.contains(next)) {
                     if(definitions.stream().noneMatch(d->d.requirement().key().equals(next))) {
@@ -252,20 +256,6 @@ public final class CurrentRoleKnowledgeCatalog implements Contexts {
             }
         }
         visiting.remove(key);
-    }
-    private Definition resolveSkillPrerequisiteDefinition(RoleBaselineFlow.Actor actor,String skill,KnowledgeLevel requested) {
-        try {
-            var direct=definition(actor,skill,requested);
-            if("MODULE_ONLY".equals(direct.mode()))return direct;
-        } catch(Failure ignored) {}
-        var levels=KnowledgeLevel.values();
-        for(int i=requested.ordinal()-1;i>=0;i--) {
-            try { var d=definition(actor,skill,levels[i]); if("MODULE_ONLY".equals(d.mode()))return d; } catch(Failure ignored) {}
-        }
-        for(int i=levels.length-1;i>requested.ordinal();i--) {
-            try { var d=definition(actor,skill,levels[i]); if("MODULE_ONLY".equals(d.mode()))return d; } catch(Failure ignored) {}
-        }
-        return definition(actor,skill,requested);
     }
     private String write(Object value){try{return json.writeValueAsString(value);}catch(Exception invalid){throw new Failure(503,"CONTEXT_INTEGRITY_FAILURE");}}
 }

@@ -15,6 +15,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 public class DemoResetConfiguration {
     @Bean DemoResetService demoResetService(JdbcTemplate jdbc, ObjectProvider<Driver> neo4j,
+            ObjectProvider<com.adaptlearngraph.repository.DemoCheckpointStore> checkpoint,
             @Value("${learning.assets.endpoint:}") String endpoint,
             @Value("${learning.assets.access-key:unconfigured}") String access,
             @Value("${learning.assets.secret-key:unconfigured}") String secret,
@@ -22,6 +23,6 @@ public class DemoResetConfiguration {
         MinioClient files = endpoint.isBlank() || "unconfigured".equals(access) ? null
                 : MinioClient.builder().endpoint(endpoint).credentials(access, secret).build();
         return new DemoResetService(new DemoResetStore(jdbc, neo4j.getIfAvailable(), files, bucket),
-                DevelopmentWorkspaceAccountBootstrap.TECHNOVA_ORG_ID);
+                DevelopmentWorkspaceAccountBootstrap.TECHNOVA_ORG_ID).checkpoint(checkpoint.getIfAvailable());
     }
 }

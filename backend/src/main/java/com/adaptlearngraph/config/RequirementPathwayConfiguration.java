@@ -53,8 +53,8 @@ public class RequirementPathwayConfiguration {
             RuleAssessmentAttemptJpaRepository clock,ObjectMapper json,PathwayNotifications notifications){return new RequirementPathwayRevisions(data,rules,clock,json,notifications);}
     @Bean RequirementPathwayAdmissionService requirementPathwayAdmission(Actors actors,RoleBaselineFlow.Catalog roles,CurrentRoleSelectionStore selections,
             RulePathwayCatalog catalog,RequirementPathwayJpaRepository rules,InitialPathwayRepositories data,PathwayRequirementSnapshotJpaRepository snapshots,
-            RuleAssessmentAttemptJpaRepository attempts,RuleAssessmentOutcomeJpaRepository groups,Receipts receipts,RequirementPathwayRevisions revisions,ObjectMapper json){
-        return new RequirementPathwayAdmissionService(actors,roles,selections,catalog,rules,data,snapshots,attempts,groups,receipts,revisions,json);
+            RuleAssessmentAttemptJpaRepository attempts,RuleAssessmentOutcomeJpaRepository groups,Receipts receipts,RequirementPathwayRevisions revisions,ObjectMapper json,RuleAssessmentContextJpaRepository history){
+        return new RequirementPathwayAdmissionService(actors,roles,selections,catalog,rules,data,snapshots,attempts,groups,receipts,revisions,json).history(history);
     }
     @Bean RequirementPathwayGenerationService requirementPathwayGeneration(InitialPathwayRepositories data,RequirementPathwayJpaRepository rules,
             RequirementPathwayAdmissionService admission,RequirementPathwayRevisions revisions,CurrentRoleSelectionStore selections,RuleAssessmentAttemptJpaRepository clock,
@@ -66,7 +66,7 @@ public class RequirementPathwayConfiguration {
     @Bean RequirementPathwayValidationService requirementPathwayValidation(RequirementPathwayAdmissionService admission,RequirementPathwayRevisions revisions,
             RequirementPathwayJpaRepository rules,RulePathwayCatalog catalog){return new RequirementPathwayValidationService(admission,revisions,rules,catalog);}
     @Bean RequirementPathwayPlanningService requirementPathwayPlanning(RulePathwayCatalog catalog,RequirementPathwayJpaRepository rules,
-            RequirementPathwayAdmissionService admission,RequirementPathwayRevisions revisions,ObjectMapper json){return new RequirementPathwayPlanningService(catalog,rules,admission,revisions,json);}
+            RequirementPathwayAdmissionService admission,RequirementPathwayRevisions revisions,ObjectMapper json,RuleAssessmentContextJpaRepository history){return new RequirementPathwayPlanningService(catalog,rules,admission,revisions,json).history(history);}
     @Bean RequirementPathwayReviewService requirementPathwayReview(Actors actors,ReviewAssignments assignments,CurrentRoleSelectionStore selections,
             RequirementPathwayJpaRepository rules,InitialPathwayRepositories data,RequirementPathwayAdmissionService admission,RequirementPathwayRevisions revisions,
             RequirementPathwayValidationService validation,RulePathwayCatalog catalog,Receipts receipts,RuleAssessmentAttemptJpaRepository clock,RequirementPathwayPlanningService planning){

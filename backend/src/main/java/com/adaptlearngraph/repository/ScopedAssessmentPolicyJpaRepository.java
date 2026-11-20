@@ -67,6 +67,23 @@ public interface ScopedAssessmentPolicyJpaRepository extends Repository<Assessme
     Optional<Long> revision(@Param("org") UUID org,@Param("purpose") String purpose,@Param("scope") String scope);
     @Query("select p from AssessmentRulePolicyEntity p where p.organizationId=:org and p.purpose=:purpose and p.scopeKey=:scope order by p.version desc")
     List<AssessmentRulePolicyEntity> versions(@Param("org") UUID org,@Param("purpose") String purpose,@Param("scope") String scope,org.springframework.data.domain.Pageable page);
+    @Query(value="""
+            SELECT p.* FROM platform.assessment_rule_policy_version p
+            WHERE p.organization_id=:org AND p.purpose=:purpose AND p.scope_key=:scope
+              AND NOT EXISTS (SELECT 1 FROM platform.assessment_rule_scoped_activation a WHERE a.organization_id=:org AND a.purpose=:purpose AND a.scope_key=:scope AND a.current_policy_version_id=p.id)
+              AND position(lower(:search) in lower(coalesce(p.configuration->>'name','')))>0
+            ORDER BY CASE WHEN :sort='name' THEN lower(p.configuration->>'name') END,p.version DESC
+            LIMIT :#{#pageable.pageSize} OFFSET :#{#pageable.offset}
+            """,nativeQuery=true)
+    List<AssessmentRulePolicyEntity> sharedHistory(@Param("org") UUID org,@Param("purpose") String purpose,@Param("scope") String scope,
+            @Param("search") String search,@Param("sort") String sort,org.springframework.data.domain.Pageable pageable);
+    @Query(value="""
+            SELECT count(*) FROM platform.assessment_rule_policy_version p
+            WHERE p.organization_id=:org AND p.purpose=:purpose AND p.scope_key=:scope
+              AND NOT EXISTS (SELECT 1 FROM platform.assessment_rule_scoped_activation a WHERE a.organization_id=:org AND a.purpose=:purpose AND a.scope_key=:scope AND a.current_policy_version_id=p.id)
+              AND position(lower(:search) in lower(coalesce(p.configuration->>'name','')))>0
+            """,nativeQuery=true)
+    long sharedHistoryCount(@Param("org") UUID org,@Param("purpose") String purpose,@Param("scope") String scope,@Param("search") String search);
     @Query("select coalesce(max(p.version),0) from AssessmentRulePolicyEntity p where p.organizationId=:org and p.purpose=:purpose and p.scopeKey=:scope")
     long maxVersion(@Param("org") UUID org,@Param("purpose") String purpose,@Param("scope") String scope);
     @Query("select count(p) from AssessmentRulePolicyEntity p where p.organizationId=:org and p.purpose=:purpose and p.scopeKey=:scope")

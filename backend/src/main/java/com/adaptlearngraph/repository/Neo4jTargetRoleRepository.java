@@ -515,8 +515,8 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
     private void syncJobPositionRelationship(String organizationId, String roleId, String familyCode, String status, Instant updatedAt) {
         String famCode = familyCode != null ? familyCode.trim().toUpperCase() : "DEV";
         client.query("""
-                MATCH (r:TargetRole {id: $roleId})
-                MATCH (jp:JobPosition)
+                MATCH (r:TargetRole {id: $roleId, organizationId: $organizationId})
+                MATCH (jp:JobPosition {organizationId: $organizationId})
                 WHERE jp.status = 'ACTIVE'
                   AND (
                     jp.code = $famCode
@@ -530,13 +530,14 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
                   )
                 WITH r, jp
                 OPTIONAL MATCH (other:JobPosition)-[oldRel:HAS_ROLE]->(r)
-                WHERE elementId(other) <> elementId(jp)
+                WHERE other.organizationId=$organizationId AND elementId(other) <> elementId(jp)
                 DELETE oldRel
                 MERGE (jp)-[rel:HAS_ROLE]->(r)
                 SET rel.status = CASE WHEN $status IN ['PUBLISHED', 'ACTIVE'] THEN 'ACTIVE' ELSE 'INACTIVE' END,
                     rel.updatedAt = datetime($updatedAt)
                 """)
                 .bind(roleId).to("roleId")
+                .bind(organizationId).to("organizationId")
                 .bind(famCode).to("famCode")
                 .bind(status).to("status")
                 .bind(updatedAt.toString()).to("updatedAt")

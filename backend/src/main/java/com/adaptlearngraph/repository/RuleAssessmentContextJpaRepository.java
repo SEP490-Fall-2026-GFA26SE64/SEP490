@@ -9,6 +9,13 @@ import org.springframework.data.repository.query.Param;
 /** Accepted evidence and real completed module choices; diagnostic scores are never official exemptions. */
 public interface RuleAssessmentContextJpaRepository extends Repository<RuleAssessmentAttemptEntity,UUID> {
     @Query(value="""
+            SELECT passed FROM platform.latest_knowledge_assessment
+            WHERE organization_id=:org AND learner_id=:learner AND skill_id=:skill
+                AND knowledge_level=:level AND skill_version=:skillVersion
+            """,nativeQuery=true)
+    Optional<Boolean> assessed(@Param("org") UUID org,@Param("learner") UUID learner,@Param("skill") String skill,
+            @Param("level") String level,@Param("skillVersion") String skillVersion);
+    @Query(value="""
             SELECT EXISTS (SELECT 1 FROM platform.rule_assessment_attempt a
                 JOIN platform.rule_assessment_group main ON main.attempt_id=a.id AND main.group_role='MAIN'
                     AND main.organization_id=a.organization_id AND main.learner_id=a.learner_id
@@ -32,6 +39,14 @@ public interface RuleAssessmentContextJpaRepository extends Repository<RuleAsses
                     ON definition->'requirement'->>'skillId'=g.skill_id AND definition->'requirement'->>'knowledgeLevel'=g.knowledge_level
                 WHERE a.organization_id=:org AND a.learner_id=:learner AND a.purpose='SKILL_ASSESSMENT' AND a.state='FINALIZED'
                     AND main.skill_id=:skill AND main.knowledge_level=:level AND main_definition->>'skillVersion'=:skillVersion
+                    AND NOT EXISTS (SELECT 1 FROM platform.initial_pathway_current c JOIN platform.pathway_requirement_step s
+                        ON s.request_id=c.request_id AND s.revision=c.current_revision AND s.organization_id=c.organization_id AND s.learner_id=c.learner_id
+                        WHERE c.organization_id=a.organization_id AND c.learner_id=a.learner_id AND c.archived_at IS NULL
+                            AND c.request_id::text=a.context_snapshot #>> '{context,requestId}' AND s.state='BYPASSED'
+                            AND s.skill_id=g.skill_id AND s.knowledge_level=g.knowledge_level AND s.requirement_snapshot->>'skillVersion'=definition->>'skillVersion')
+                    AND NOT EXISTS (SELECT 1 FROM platform.latest_knowledge_assessment h WHERE h.organization_id=a.organization_id AND h.learner_id=a.learner_id
+                        AND h.skill_id=g.skill_id AND h.knowledge_level=g.knowledge_level AND h.skill_version=definition->>'skillVersion'
+                        AND h.passed AND h.finished_at>=a.finished_at)
                     AND NOT EXISTS (SELECT 1 FROM platform.skill_knowledge_evidence e WHERE e.organization_id=a.organization_id AND e.learner_id=a.learner_id
                         AND e.skill_id=g.skill_id AND e.knowledge_level=g.knowledge_level AND e.requirement_snapshot->>'skillVersion'=definition->>'skillVersion'))
             """,nativeQuery=true)

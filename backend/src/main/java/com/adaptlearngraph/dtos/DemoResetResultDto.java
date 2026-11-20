@@ -4,4 +4,8 @@ import java.util.List;
 
 /** Outcome of a demo data reset: what was removed and what was retained. */
 public record DemoResetResultDto(int organizationsRemoved, int accountsRemoved, int registrationsRemoved, int relatedRowsRemoved,
-        int graphNodesRemoved, int filesRemoved, int organizationsRetained, List<String> warnings) {}
+        int graphNodesRemoved, int filesRemoved, int organizationsRetained, List<String> warnings,String checkpoint,String continueUrl) {
+    public DemoResetResultDto(int organizationsRemoved,int accountsRemoved,int registrationsRemoved,int relatedRowsRemoved,int graphNodesRemoved,int filesRemoved,int organizationsRetained,List<String> warnings) {
+        this(organizationsRemoved,accountsRemoved,registrationsRemoved,relatedRowsRemoved,graphNodesRemoved,filesRemoved,organizationsRetained,warnings,null,null);
+    }
+}

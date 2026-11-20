@@ -45,8 +45,6 @@ public final class Neo4jQuestionBankSkillReader {
         return read("""
                 MATCH (s:MicroSkill {organizationId:$organization}) WHERE s.status='ACTIVE' AND s.reviewStatus='APPROVED'
                 UNWIND ['FOUNDATION','INTERMEDIATE','ADVANCED'] AS level
-                WITH s,level WHERE level IN coalesce(s.moduleOnlyKnowledgeLevels,[])+coalesce(s.certificateOnlyKnowledgeLevels,[])
-                    OR s.provisionMode IN ['MODULE_ONLY','CERTIFICATE_ONLY']
                 RETURN s.id AS skill,level ORDER BY skill,level LIMIT 10001
                 """,Map.of("organization",organization(organizationId)),row->new com.adaptlearngraph.entities.domain.QuestionBank.KnowledgeChoice(row.get("skill").asString(),row.get("level").asString(),List.of()));
     }
@@ -62,7 +60,7 @@ public final class Neo4jQuestionBankSkillReader {
         var modules=s.get("moduleOnlyKnowledgeLevels").isNull()?List.<String>of():s.get("moduleOnlyKnowledgeLevels").asList(v->v.asString());
         var certificates=s.get("certificateOnlyKnowledgeLevels").isNull()?List.<String>of():s.get("certificateOnlyKnowledgeLevels").asList(v->v.asString());
         var mode=com.adaptlearngraph.entities.domain.SkillProvisionMode.resolve(s.get("provisionMode").asString(null),modules,certificates,com.adaptlearngraph.entities.domain.KnowledgeLevel.valueOf(level));
-        if(mode==null || s.get("version").asString("").isBlank())throw new Failure(400,"Configure this Skill and knowledge level before publishing");
+        if(s.get("version").asString("").isBlank())throw new Failure(400,"Configure the exact Skill version before publishing");
         return s.get("version").asString();
     }
 

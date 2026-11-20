@@ -12,7 +12,7 @@ import { cn } from '../../lib/utils'
 
 export function QuestionDirectory({ questions, history, session, selected, onSelect, onView, actions, busy, vi, levelName, stateName, date, primaryActions, hasActions }: {
  questions: BankQuestion[]; history: BankAudit[]; session: BankSession; selected: string[]; onSelect: (id: string, checked: boolean) => void
- onView: (q: BankQuestion) => void; actions: (q: BankQuestion) => ReactNode; busy: boolean; vi: boolean
+ onView: (q: BankQuestion, versionId?: string) => void; actions: (q: BankQuestion) => ReactNode; busy: boolean; vi: boolean
  primaryActions: (q: BankQuestion) => ReactNode; hasActions: (q: BankQuestion) => boolean
  levelName: (value: string | null) => string; stateName: (value: BankVersion) => string; date: (value: string | null) => string
 }) {
@@ -44,8 +44,7 @@ export function QuestionDirectory({ questions, history, session, selected, onSel
         </thead>
         <tbody className="block divide-y divide-border xl:table-row-group">
           {questions.map(q => {
-            const publishedVersion = [...q.versions].reverse().find(v => v.state === 'PUBLISHED')
-            const primaryVersion = publishedVersion ?? q.versions.at(-1)!
+            const primaryVersion = q.versions.at(-1)!
             const childVersions = q.versions.filter(v => v.id !== primaryVersion.id)
             const isExpanded = expandedIds.has(q.id)
 
@@ -79,7 +78,7 @@ export function QuestionDirectory({ questions, history, session, selected, onSel
                           className="h-auto w-full justify-start whitespace-normal p-0 text-left font-semibold leading-snug text-foreground hover:text-primary [&>span]:line-clamp-2 [&>span]:whitespace-normal"
                           aria-label={`${copy('View question', 'Xem câu hỏi')} ${q.code}`}
                           disabled={busy}
-                          onClick={() => onView(q)}
+                          onClick={() => onView(q, primaryVersion.id)}
                         >
                           {primaryVersion.content.prompt || copy('Question prompt is empty', 'Chưa nhập nội dung câu hỏi')}
                         </Button>
@@ -134,7 +133,7 @@ export function QuestionDirectory({ questions, history, session, selected, onSel
                   </td>
                   <td className="col-span-2 text-right xl:px-3 xl:py-3">
                     <div className="flex items-center justify-end gap-2 [&>button]:shrink-0">
-                      <Button variant="outline" size="icon" title={copy('View Details & History', 'Xem chi tiết và lịch sử')} aria-label={`${copy('View details', 'Xem chi tiết')} ${q.code}`} disabled={busy} onClick={() => onView(q)}>
+                      <Button variant="outline" size="icon" title={copy('View Details & History', 'Xem chi tiết và lịch sử')} aria-label={`${copy('View details', 'Xem chi tiết')} ${q.code}`} disabled={busy} onClick={() => onView(q, primaryVersion.id)}>
                         <Eye className="size-4 text-primary" aria-hidden="true" />
                       </Button>
                       {primaryActions(q)}
@@ -174,7 +173,7 @@ export function QuestionDirectory({ questions, history, session, selected, onSel
                               className="h-auto w-full justify-start whitespace-normal p-0 text-left font-semibold leading-snug text-foreground hover:text-primary [&>span]:line-clamp-2 [&>span]:whitespace-normal"
                               aria-label={`${copy('View question', 'Xem câu hỏi')} ${q.code}`}
                               disabled={busy}
-                              onClick={() => onView(q)}
+                              onClick={() => onView(q, childV.id)}
                             >
                               {childV.content.prompt || copy('Question prompt is empty', 'Chưa nhập nội dung câu hỏi')}
                             </Button>
@@ -223,7 +222,7 @@ export function QuestionDirectory({ questions, history, session, selected, onSel
                       </td>
                       <td className="col-span-2 text-right xl:px-3 xl:py-3">
                         <div className="flex items-center justify-end gap-2 [&>button]:shrink-0">
-                          <Button variant="outline" size="icon" title={copy('View Details & History', 'Xem chi tiết và lịch sử')} aria-label={`${copy('View details', 'Xem chi tiết')} ${q.code}`} disabled={busy} onClick={() => onView(q)}>
+                          <Button variant="outline" size="icon" title={copy('View Details & History', 'Xem chi tiết và lịch sử')} aria-label={`${copy('View details', 'Xem chi tiết')} ${q.code}`} disabled={busy} onClick={() => onView(q, childV.id)}>
                             <Eye className="size-4 text-primary" aria-hidden="true" />
                           </Button>
                           {primaryActions(q)}

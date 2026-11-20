@@ -207,7 +207,7 @@ export const vi: TranslationKeys = {
     }
   },
   certificates: {
-    competencyDescription: 'Mô tả và năng lực được chứng nhận', baselineScope: 'Yêu cầu chứng chỉ · không đánh giá trong baseline',
+    competencyDescription: 'Mô tả và năng lực được chứng nhận', baselineScope: 'Chứng chỉ bổ sung evidence khi đánh giá phát hiện gap',
     alreadyAssigned: 'Skill–mức này đã có chứng chỉ. Dùng Thay định nghĩa để cập nhật sau khi kiểm tra nội dung.',
     replace: 'Thay định nghĩa', replaceHelp: 'Minh chứng đã nộp giữ nguyên yêu cầu chứng chỉ tại thời điểm nộp.',
     title: 'Chứng chỉ', description: 'Quản lý một chứng chỉ cho mỗi skill–mức được cấu hình học bằng chứng chỉ.', add: 'Thêm chứng chỉ', skill: 'Skill', level: 'Mức kiến thức', name: 'Tên chứng chỉ', reference: 'URL tham khảo',
@@ -223,7 +223,7 @@ export const vi: TranslationKeys = {
       zoom: 'Thu phóng lộ trình', zoomOut: 'Thu nhỏ', zoomIn: 'Phóng to', resetZoom: 'Đặt lại mức phóng 100%',
       archived: 'Lộ trình đã lưu trữ', requirementsMet: 'Yêu cầu đã đạt', required: 'Bắt buộc', parallel: 'Học bổ sung', locked: 'Chờ đạt yêu cầu tiên quyết', partiallyPassed: 'Đạt một phần',
       partiallyPassedHelp: 'Nhóm MAIN đạt nhưng tổng thể chưa được công nhận. Hoàn thành các yêu cầu nền tảng còn thiếu rồi thi lại. Giữ nguyên hoàn thành nội dung.',
-      state: { NEEDS_SUPPLEMENTATION: 'Cần học', NEEDS_EXPERT_ACTION: 'Expert xem xét', IN_PROGRESS: 'Đang học', FULFILLED: 'Đã đạt yêu cầu', BYPASSED: 'Đã bypass' },
+      state: { NEEDS_SUPPLEMENTATION: 'Cần học', NEEDS_EXPERT_ACTION: 'Expert xem xét', IN_PROGRESS: 'Đang học', ASSESSED_SATISFIED: 'Đánh giá: không có gap', FULFILLED: 'Đã đạt yêu cầu', BYPASSED: 'Đã bypass' },
     },
     detail: {
       module: 'Chi tiết module', certificate: 'Chi tiết chứng chỉ', requirement: 'Chi tiết yêu cầu kỹ năng', relatedRequirement: 'Yêu cầu kỹ năng liên quan',
@@ -249,7 +249,7 @@ export const vi: TranslationKeys = {
     baselineRequired: 'Hoàn thành baseline của mục tiêu này trước khi xác nhận.', pending: 'Đang chờ tạo pathway hoặc Expert duyệt.', locked: 'Đang chờ hoàn thành yêu cầu bổ sung.',
     bypass: 'Bypass yêu cầu', bypassReason: 'Lý do bypass cho phạm vi này', bypassHelp: 'Chỉ bypass khi không có module hoặc chứng chỉ phù hợp. Bypass không tạo thành tích. Lý do và quyết định được giữ trong lịch sử.',
     refreshProviders: 'Cập nhật phương án học', requirements: 'Yêu cầu', issue: 'Cần xử lý', retryGeneration: 'Thử tạo lại',
-    state: { NEEDS_SUPPLEMENTATION: 'Cần học bổ sung', NEEDS_EXPERT_ACTION: 'Cần Expert xử lý', IN_PROGRESS: 'Đang học', FULFILLED: 'Đã đạt chính thức', BYPASSED: 'Đã bypass' },
+    state: { NEEDS_SUPPLEMENTATION: 'Cần học bổ sung', NEEDS_EXPERT_ACTION: 'Cần Expert xử lý', IN_PROGRESS: 'Đang học', ASSESSED_SATISFIED: 'Đánh giá: không có gap', FULFILLED: 'Đã đạt chính thức', BYPASSED: 'Đã bypass' },
     reason: { EXPERT_MODULE_SELECTION: 'Expert đã chọn các module cho yêu cầu này.', MODULE_SELECTION_EMPTY: 'Chưa chọn module cho yêu cầu này. Hãy thêm module phù hợp. Chỉ bypass khi thực sự thiếu học liệu phù hợp.', OFFICIAL_EVIDENCE_ACCEPTED: 'Đã chấp nhận minh chứng chính thức phù hợp.', PROVISION_REQUIRES_EXPERT_ACTION: 'Yêu cầu cần Expert xử lý. Chọn học liệu phù hợp nếu có hoặc liên hệ Expert được phân công.', LEARNING_OR_CERTIFICATE_REQUIRED: 'Hoàn thành một phương án phù hợp cùng đánh giá hoặc duyệt chứng chỉ bắt buộc.', CARRIED_BYPASS_SUPPLEMENT: 'Yêu cầu chưa hoàn thành được giữ từ quyết định bypass trước.', PROVISION_AVAILABLE_AFTER_BYPASS: 'Đã có phương án học cho yêu cầu từng được bypass.', MODULE_COMPLETED_ASSESSMENT_RECORDED: 'Đã học xong module; kết quả đánh giá được giữ lại.', ASSESSED_PREREQUISITE_REQUIRES_LEARNING: 'Bài đánh giá phát hiện tiền đề cần học và đạt chính thức.' },
   },
   knowledgeAssessment: { baseline: 'Đánh giá đầu vào', skill: 'Đánh giá kỹ năng' },

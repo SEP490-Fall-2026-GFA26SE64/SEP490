@@ -52,12 +52,12 @@ public final class RequirementPathwayAccess {
         int version=requestedRevision!=null?requestedRevision:pin.orElse(document.releasedRevision()==null?0:document.releasedRevision());
         var packageRevision=document.revisions().stream().filter(item->item.number()==version).findFirst().orElseThrow(()->new Failure(409,"LEARNING_PACKAGE_UNAVAILABLE"));
         // Enforce newly discovered dependencies before accepting any historical content pin.
-        if(packageRevision.payload().teachings().size()==1)requireKnowledge(packageRevision.payload().teachings().getFirst().skillId(),packageRevision.payload().knowledgeLevel(),packageRevision.payload().skillVersion());
         // Continue an authentic, formerly accepted package even after target change or later supplementation/review.
         var started=rules.startedModules(actor.organizationId(),actor.accountId(),List.of(moduleId));
         if(started.size()>1000)throw new Failure(503,"LEARNING_ACCESS_HISTORY_LIMIT");
         if(pin.filter(number->number==version).isPresent() && started.stream().anyMatch(proof->proof.getModuleRevision()==version
                 && proof.getContentVersion().equals(packageRevision.payload().contentVersion()) && matches(packageRevision,requirement(proof.getRequirementSnapshot()))))return null;
+        if(packageRevision.payload().teachings().size()==1)requireKnowledge(packageRevision.payload().teachings().getFirst().skillId(),packageRevision.payload().knowledgeLevel(),packageRevision.payload().skillVersion());
         var current=rules.current(actor.organizationId(),actor.accountId());
         if(current.size()!=1)throw new Failure(403,"PATHWAY_NOT_APPROVED");var row=current.getFirst();
         var selected=selections.current(owner).orElseThrow(()->new Failure(403,"TARGET_SELECTION_REQUIRED"));
@@ -110,7 +110,10 @@ public final class RequirementPathwayAccess {
         if(needs.isEmpty())return;
         var official=new HashSet<String>();
         for(var proof:rules.official(actor.organizationId(),actor.accountId(),revisions.encode(needs)))official.add(requirement(proof.getRequirementSnapshot()).proofKey());
-        if(needs.stream().anyMatch(need->!official.contains(need.proofKey())))throw new Failure(423,"REQUIRED_SUPPLEMENT_NOT_READY");
+        for(var need:needs)if(!official.contains(need.proofKey())
+                && !(assessmentEvidence!=null && assessmentEvidence.assessed(actor.organizationId(),actor.accountId(),need.skillId(),need.knowledgeLevel().name(),need.skillVersion()).orElse(false))
+                && plan.steps().stream().noneMatch(s->s.requirement().proofKey().equals(need.proofKey()) && s.state()==State.BYPASSED))
+            throw new Failure(423,"REQUIRED_SUPPLEMENT_NOT_READY");
     }
     /** Content completion is retained, but a new assessment waits for all foundation evidence. */
     public void requireAssessment(UUID stepId) {

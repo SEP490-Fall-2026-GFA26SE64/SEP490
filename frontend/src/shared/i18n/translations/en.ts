@@ -205,7 +205,7 @@ export const en = {
     }
   },
   certificates: {
-    competencyDescription: 'Description and certified competencies', baselineScope: 'Certificate requirement · not assessed in baseline',
+    competencyDescription: 'Description and certified competencies', baselineScope: 'Certificate supplies evidence when assessment identifies a gap',
     alreadyAssigned: 'This skill level already has a certificate. Replace its definition to make a reviewed change.',
     replace: 'Replace definition', replaceHelp: 'Previously submitted evidence retains its original certificate requirements.',
     title: 'Certificates', description: 'Manage the single certificate provision for each certificate-only skill level.', add: 'Add certificate', skill: 'Skill', level: 'Knowledge level', name: 'Certificate name', reference: 'Reference URL',
@@ -221,7 +221,7 @@ export const en = {
       zoom: 'Roadmap zoom', zoomOut: 'Zoom out', zoomIn: 'Zoom in', resetZoom: 'Reset zoom to 100%',
       archived: 'Archived pathway', requirementsMet: 'Requirements met', required: 'Required', parallel: 'Additional learning', locked: 'Prerequisites pending', partiallyPassed: 'Partially passed',
       partiallyPassedHelp: 'The MAIN group passed, but overall achievement is pending. Complete the missing foundation requirements, then retake the assessment. Content completion is retained.',
-      state: { NEEDS_SUPPLEMENTATION: 'To learn', NEEDS_EXPERT_ACTION: 'Expert review', IN_PROGRESS: 'In progress', FULFILLED: 'Requirement met', BYPASSED: 'Bypassed' },
+      state: { NEEDS_SUPPLEMENTATION: 'To learn', NEEDS_EXPERT_ACTION: 'Expert review', IN_PROGRESS: 'In progress', ASSESSED_SATISFIED: 'Assessed: no gap', FULFILLED: 'Requirement met', BYPASSED: 'Bypassed' },
     },
     detail: {
       module: 'Module details', certificate: 'Certificate details', requirement: 'Skill requirement details', relatedRequirement: 'Related skill requirement',
@@ -247,7 +247,7 @@ export const en = {
     baselineRequired: 'Complete the baseline for this target before confirming.', pending: 'Waiting for generation or Expert approval.', locked: 'Required supplementation is pending.',
     bypass: 'Bypass requirement', bypassReason: 'Reason for this scoped bypass', bypassHelp: 'Bypass is available only when no suitable module or certificate exists. It does not award achievement. The reason and decision remain in history.',
     refreshProviders: 'Refresh provision', requirements: 'Requirements', issue: 'Needs attention', retryGeneration: 'Retry generation',
-    state: { NEEDS_SUPPLEMENTATION: 'Learning required', NEEDS_EXPERT_ACTION: 'Needs Expert action', IN_PROGRESS: 'In progress', FULFILLED: 'Officially achieved', BYPASSED: 'Bypassed' },
+    state: { NEEDS_SUPPLEMENTATION: 'Learning required', NEEDS_EXPERT_ACTION: 'Needs Expert action', IN_PROGRESS: 'In progress', ASSESSED_SATISFIED: 'Assessed: no gap', FULFILLED: 'Officially achieved', BYPASSED: 'Bypassed' },
     reason: { EXPERT_MODULE_SELECTION: 'The Expert selected these module alternatives.', MODULE_SELECTION_EMPTY: 'No module is selected for this requirement. Include an eligible module. Bypass requires missing suitable provision.', OFFICIAL_EVIDENCE_ACCEPTED: 'Compatible official evidence accepted.', PROVISION_REQUIRES_EXPERT_ACTION: 'The requirement needs Expert action. Select suitable provision where available, or contact the assigned Expert.', LEARNING_OR_CERTIFICATE_REQUIRED: 'Complete one eligible option and its required assessment or certificate review.', CARRIED_BYPASS_SUPPLEMENT: 'Unfinished learning retained from an earlier bypass.', PROVISION_AVAILABLE_AFTER_BYPASS: 'Provision is now available for this earlier bypass.', MODULE_COMPLETED_ASSESSMENT_RECORDED: 'Module learning is complete; the assessment result is retained.', ASSESSED_PREREQUISITE_REQUIRES_LEARNING: 'The assessment identified a prerequisite requiring formal learning.' },
   },
   knowledgeAssessment: { baseline: 'Baseline', skill: 'Skill Assessment' },

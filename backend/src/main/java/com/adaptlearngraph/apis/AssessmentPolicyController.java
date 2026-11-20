@@ -27,6 +27,12 @@ public final class AssessmentPolicyController {
             @RequestParam(defaultValue="") String status,@RequestParam(defaultValue="0") int page,@RequestParam(defaultValue="20") int size) {
         return response(rules.directoryHttp(purpose,search,owner,level,status,page,size));
     }
+    @PostMapping("/SKILL_ASSESSMENT/bulk/preview") public ResponseEntity<?> previewBulk(jakarta.servlet.http.HttpServletRequest request) {
+        return response(rules.previewBulk(decodeRules("SKILL_ASSESSMENT",request,ScopedAssessmentPolicyService.BulkPreview.class)));
+    }
+    @PostMapping("/SKILL_ASSESSMENT/bulk") public ResponseEntity<?> saveBulk(jakarta.servlet.http.HttpServletRequest request) {
+        return response(rules.saveBulk(decodeRules("SKILL_ASSESSMENT",request,ScopedAssessmentPolicyService.BulkSave.class)));
+    }
     @GetMapping("/{purpose}/scopes/{key}") public ResponseEntity<?> workspace(@PathVariable String purpose,@PathVariable String key,
             @RequestParam(defaultValue="0") int page,@RequestParam(defaultValue="20") int size){return response(rules.readHttp(purpose,key,page,size));}
     @PostMapping("/{purpose}/scopes/{key}/draft") public ResponseEntity<?> create(@PathVariable String purpose,@PathVariable String key,jakarta.servlet.http.HttpServletRequest request){

@@ -18,9 +18,10 @@ import { useTranslation } from '../../../shared/i18n/LanguageContext'
 import { RequirementModuleGraph, type ModuleDragEvents } from './RequirementModuleGraph'
 import { ModuleAssessmentConfiguration } from './ModuleAssessmentConfiguration'
 import { validationIssueText } from './validationIssueText'
+import { useToast } from '../../../shared/hooks/useToast'
 
 const optionKey = (module: RuleModuleOption) => `${module.moduleId}\n${module.moduleRevision}\n${module.contentVersion}`
-const editableStep = (step: RuleStep) => step.requirement.provision === 'MODULE_ONLY' && !['FULFILLED', 'BYPASSED'].includes(step.state)
+const editableStep = (step: RuleStep) => step.requirement.provision === 'MODULE_ONLY' && !['FULFILLED', 'ASSESSED_SATISFIED', 'BYPASSED'].includes(step.state)
 type DragModule = { stepId: string; key: string; from: 'graph' | 'catalog'; hash: string | null }
 type PointerDrag = DragModule & { pointerId: number; startX: number; startY: number; moved: boolean; element: HTMLElement }
 
@@ -29,7 +30,7 @@ export function RequirementModuleEditor({ id, scope, detail, disabled, onCommand
   onApprove: () => void; onReject?: () => void; onBypass: (step: RuleStep) => void; onDirtyChange: (dirty: boolean) => void;
 }) {
   const { t, language } = useTranslation(), tr = (key: string) => t('moduleReview.' + key)
-  const [notice, setNotice] = useState('')
+  const { toast } = useToast()
   const summaryRef = useRef<HTMLDivElement>(null)
   const reorderableIds = detail.reorderableStepIds ?? []
   const initial = Object.fromEntries(detail.plan.steps.map(step => [step.id, step.options.map(optionKey).sort()]))
@@ -43,6 +44,7 @@ export function RequirementModuleEditor({ id, scope, detail, disabled, onCommand
   const dirty = JSON.stringify(chosen) !== JSON.stringify(initial) || JSON.stringify(stepOrder) !== JSON.stringify(detail.plan.steps.map(step => step.id))
   const editable = !detail.archived && ['AWAITING_EXPERT_REVIEW', 'REJECTED'].includes(detail.status.reviewStatus) && Boolean(detail.status.revision)
   const blocked = disabled || checking || !editable
+  const canRefresh = !detail.archived && Boolean(detail.status.revision) && (editable || detail.plan.steps.some(step => step.state === 'NEEDS_EXPERT_ACTION'))
   const modules = new Map<string, RuleModuleOption>()
   detail.plan.steps.forEach(step => step.options.forEach(module => modules.set(step.id + '\n' + optionKey(module), module)))
   detail.candidates.forEach(candidate => modules.set(candidate.stepId + '\n' + optionKey(candidate.module), candidate.module))
@@ -77,11 +79,11 @@ export function RequirementModuleEditor({ id, scope, detail, disabled, onCommand
     const step = detail.plan.steps.find(item => item.id === stepId)
     if (blocked || !step || !editableStep(step)) return
     const key = optionKey(module)
-    if (include && !detail.candidates.some(candidate => candidate.stepId === stepId && optionKey(candidate.module) === key)) { setNotice(tr('notEligible')); return }
+    if (include && !detail.candidates.some(candidate => candidate.stepId === stepId && optionKey(candidate.module) === key)) { toast({ variant: 'warning', description: tr('notEligible') }); return }
     changeRevision.current++; setChecked(null); setError(null)
     setChosen(previous => ({ ...previous, [stepId]: (include ? [...new Set([...(previous[stepId] ?? []), key])] : (previous[stepId] ?? []).filter(value => value !== key)).sort() }))
     setFocus(stepId)
-    setNotice(`${module.title} · ${step.requirement.skillName} · ${t('knowledgeLevel.' + step.requirement.knowledgeLevel)}: ${tr(include ? 'includedNotice' : 'excludedNotice')}`)
+    toast({ variant: 'info', description: `${module.title} · ${step.requirement.skillName} · ${t('knowledgeLevel.' + step.requirement.knowledgeLevel)}: ${tr(include ? 'includedNotice' : 'excludedNotice')}` })
   }
   function move(stepId: string, direction: -1 | 1) {
     if (blocked || !reorderableIds.includes(stepId)) return
@@ -136,7 +138,7 @@ export function RequirementModuleEditor({ id, scope, detail, disabled, onCommand
   return <div className="space-y-3">
     <Card className="relative z-10 border-primary/20 bg-card p-3 shadow-sm">
       <div className="flex flex-wrap items-center justify-between gap-3"><div className="flex flex-wrap items-center gap-2"><Badge variant={dirty ? 'warning' : 'outline'}>{tr(dirty ? 'unsaved' : 'saved')}</Badge><Badge variant={validation.valid ? 'success' : 'warning'}>{t('initialPathway.state.' + (validation.valid ? 'VALID' : 'UNRESOLVED'))}</Badge></div>
-        <div className="flex flex-wrap justify-end gap-2"><Button size="sm" variant="outline" className="border-border font-semibold shadow-xs" disabled={blocked || dirty} leftIcon={<RefreshCw size={14} />} onClick={() => onCommand(ruleReviewCommand(id, detail, 'refresh'))}>{t('rulePathway.refreshProviders')}</Button><Button size="sm" variant="secondary" className="border border-primary/30 font-semibold" disabled={blocked} leftIcon={<ListChecks size={14} />} onClick={() => void check()} isLoading={checking}>{tr('check')}</Button><Button size="sm" variant="primary" className="font-semibold" disabled={blocked || !dirty} leftIcon={<Save size={14} />} onClick={() => onCommand(moduleSelectionCommand(id, detail, selections, stepOrder))}>{tr('save')}</Button>{onReject && <Button size="sm" variant="destructive" disabled={blocked || dirty} onClick={onReject}>{tr('reject')}</Button>}<Button size="sm" disabled={blocked || dirty || !validation.valid} leftIcon={<CheckCircle2 size={14} />} onClick={onApprove}>{tr('approve')}</Button></div>
+        <div className="flex flex-wrap justify-end gap-2"><Button size="sm" variant="outline" className="border-border font-semibold shadow-xs" disabled={disabled || checking || dirty || !canRefresh} leftIcon={<RefreshCw size={14} />} onClick={() => onCommand(ruleReviewCommand(id, detail, 'refresh'))}>{t('rulePathway.refreshProviders')}</Button><Button size="sm" variant="secondary" className="border border-primary/30 font-semibold" disabled={blocked} leftIcon={<ListChecks size={14} />} onClick={() => void check()} isLoading={checking}>{tr('check')}</Button><Button size="sm" variant="primary" className="font-semibold" disabled={blocked || !dirty} leftIcon={<Save size={14} />} onClick={() => onCommand(moduleSelectionCommand(id, detail, selections, stepOrder))}>{tr('save')}</Button>{onReject && <Button size="sm" variant="destructive" disabled={blocked || dirty} onClick={onReject}>{tr('reject')}</Button>}<Button size="sm" disabled={blocked || dirty || !validation.valid} leftIcon={<CheckCircle2 size={14} />} onClick={onApprove}>{tr('approve')}</Button></div>
       </div>
       {dirty && <Text variant="caption" className="mt-2">{tr('saveBeforeApproval')}</Text>}
       {!editable && <Text variant="caption" className="mt-2">{tr('readOnly')}</Text>}
@@ -149,7 +151,7 @@ export function RequirementModuleEditor({ id, scope, detail, disabled, onCommand
       </div>}
     </Card>
     {Boolean(error) && <InitialPathwayFeedback error={error} busy={checking} onRetry={() => void check()} />}
-    <div className="grid min-w-0 items-start gap-5 lg:grid-cols-2">
+    <div className="grid min-w-0 items-start gap-5 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
       <Card className="relative isolate flex h-[clamp(30rem,75dvh,52rem)] min-h-0 min-w-0 flex-col overflow-hidden border-primary/30 shadow-sm" data-module-drop-zone="graph"><div className="flex items-center justify-between gap-2 border-b border-primary/20 bg-secondary/50 px-4 py-4"><Heading level={2} size="card">{tr('graph')}</Heading><Badge variant="outline">{steps.length} {t('rulePathway.requirements')}</Badge></div>
         <RequirementModuleGraph issues={validation.issues} dragEvents={dragEvents} steps={steps} reorderableIds={reorderableIds} onMove={move} active={focus} disabled={blocked} onFocus={setFocus} onDetails={(stepId, module) => setSelected({ stepId, module })} onExclude={(stepId, module) => change(stepId, module, false)} onDrag={(event, stepId, module) => startDrag(event, stepId, module, 'graph')} canDrop={dragged?.from === 'catalog' && !blocked} />
       </Card>
@@ -157,7 +159,6 @@ export function RequirementModuleEditor({ id, scope, detail, disabled, onCommand
         <div className="space-y-3 border-b border-primary/20 bg-secondary/40 p-4"><div className="flex items-center justify-between gap-2"><Heading level={2} size="card">{tr('catalog')}</Heading><Badge variant="outline">{candidates.length}</Badge></div><Text variant="caption" className="text-foreground">{tr(dragged?.from === 'graph' ? 'excludeHint' : 'includeHint')}</Text>
           <Input leftIcon={<Search size={14} />} value={search} onChange={event => setSearch(event.target.value)} placeholder={tr('search')} aria-label={tr('search')} className="h-9" />
           <select value={focus} onChange={event => setFocus(event.target.value)} aria-label={tr('skillFilter')} className="h-9 w-full rounded-md border border-input bg-background px-3 text-body-sm"><option value="">{tr('allSkills')}</option>{detail.plan.steps.map(step => <option key={step.id} value={step.id}>{step.requirement.skillName} · {t('knowledgeLevel.' + step.requirement.knowledgeLevel)}</option>)}</select>
-          {notice && <Text variant="body-sm" role="status">{notice}</Text>}
           {focusedStep && <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-primary/20 bg-card p-2"><div><Text variant="body-sm" className="font-semibold">{focusedStep.requirement.skillName}</Text><Text variant="caption">{tr('requiredLevel')}: {t('knowledgeLevel.' + focusedStep.requirement.knowledgeLevel)}</Text></div><div className="flex items-center gap-2">{detail.bypassableStepIds?.includes(focusedStep.id) && <Button size="sm" variant="secondary" className="border border-primary/40 font-semibold shadow-xs" disabled={blocked || dirty} onClick={() => onBypass(focusedStep)}>{t('rulePathway.bypass')}</Button>}<Button size="icon" variant="outline" className="size-8 border-primary/40 text-primary" aria-label={tr('bypassHelpTitle')} onClick={() => setBypassHelp(true)}><CircleHelp size={17} /></Button></div></div>}
         </div>
         <div className="min-h-0 flex-1 space-y-4 overflow-y-auto bg-background/40 p-4">

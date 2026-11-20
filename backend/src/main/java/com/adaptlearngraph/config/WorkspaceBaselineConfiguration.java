@@ -108,9 +108,10 @@ public class WorkspaceBaselineConfiguration {
             com.adaptlearngraph.repository.OutboxEventJpaRepository outbox,com.adaptlearngraph.repository.PostgresAdvisoryLocks locks,
             com.adaptlearngraph.repository.ProcessingJobJpaRepository jobs,
             @org.springframework.beans.factory.annotation.Qualifier(com.adaptlearngraph.constants.TransactionManagers.JPA) PlatformTransactionManager manager,
-            ObjectMapper json,Environment environment,com.adaptlearngraph.repository.AuditEventJpaRepository audit) {
+            ObjectMapper json,Environment environment,com.adaptlearngraph.repository.AuditEventJpaRepository audit,
+            com.adaptlearngraph.services.SharedSkillAssessmentService sharedSkills) {
         return new com.adaptlearngraph.services.RuleAssessmentAttemptService(identity,selections,contexts,attempts,policies,scopedPolicies,policyCatalog,bank,outbox,jobs,locks,
-                new TransactionTemplate(manager),json,environment.getProperty("assessment.rule.max-paper-items",Integer.class,1000),audit);
+                new TransactionTemplate(manager),json,environment.getProperty("assessment.rule.max-paper-items",Integer.class,1000),audit).sharedSkills(sharedSkills);
     }
     @Bean com.adaptlearngraph.services.RuleAssessmentOutcomeService workspaceRuleOutcomes(
             com.adaptlearngraph.repository.RuleAssessmentOutcomeJpaRepository effects,com.adaptlearngraph.repository.RuleAssessmentAttemptJpaRepository attempts,
@@ -150,6 +151,13 @@ public class WorkspaceBaselineConfiguration {
             @org.springframework.beans.factory.annotation.Qualifier(com.adaptlearngraph.constants.TransactionManagers.JPA) PlatformTransactionManager manager) {
         return new com.adaptlearngraph.services.ScopedAssessmentPolicyService(identity,memberships,catalog,scopes,policies,bank,locks,new TransactionTemplate(manager),json,
                 environment.getProperty("assessment.rule.max-paper-items",Integer.class,1000));
+    }
+    @Bean com.adaptlearngraph.services.SharedSkillAssessmentService sharedSkillAssessmentService(
+            SubscriptionIdentity identity,SubscriptionWorkspaceStore memberships,com.adaptlearngraph.repository.AssessmentPolicyCatalog catalog,
+            com.adaptlearngraph.repository.ScopedAssessmentPolicyJpaRepository scopes,com.adaptlearngraph.repository.AssessmentRulePolicyJpaRepository policies,
+            com.adaptlearngraph.repository.AssessmentItemKnowledgeMappingJpaRepository bank,com.adaptlearngraph.repository.PostgresAdvisoryLocks locks,ObjectMapper json,Environment environment,
+            @org.springframework.beans.factory.annotation.Qualifier(com.adaptlearngraph.constants.TransactionManagers.JPA) PlatformTransactionManager manager) {
+        return new com.adaptlearngraph.services.SharedSkillAssessmentService(identity,memberships,catalog,scopes,policies,bank,locks,new TransactionTemplate(manager),json,environment.getProperty("assessment.rule.max-paper-items",Integer.class,1000));
     }
     // Retained legacy factories below are not registered in the rule-assessment workspace composition.
     com.adaptlearngraph.helper.ModelMapperRegistrar assessmentPolicyMappings() {
