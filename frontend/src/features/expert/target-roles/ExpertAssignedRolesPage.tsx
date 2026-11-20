@@ -1235,8 +1235,11 @@ export function ExpertAssignedRolesPage() {
     const map = new Map<string, { label: string; count: number }>()
     availableCompetencies.forEach((comp) => {
       const resolvedName = resolveCompDepartmentName(comp)
-      const key = comp.departmentId || resolvedName || 'unassigned'
-      const label = resolvedName || 'Unassigned Department'
+      if (!resolvedName || resolvedName.toLowerCase().trim() === 'unassigned' || resolvedName.toLowerCase().trim() === 'unassigned department') {
+        return
+      }
+      const key = comp.departmentId || resolvedName
+      const label = resolvedName
       const cur = map.get(key)
       if (cur) {
         cur.count += 1
@@ -1267,14 +1270,17 @@ export function ExpertAssignedRolesPage() {
       }
 
       const cleanTitle = resolveCompJobPositionTitle(comp)
-      const displayLabel = cleanTitle || 'Unassigned Position'
-      const normKey = cleanTitle ? cleanTitle.toLowerCase().trim() : 'unassigned'
+      if (!cleanTitle || cleanTitle.toLowerCase().trim() === 'unassigned' || cleanTitle.toLowerCase().trim() === 'unassigned position') {
+        return
+      }
+      const displayLabel = cleanTitle
+      const normKey = cleanTitle.toLowerCase().trim()
 
       const cur = map.get(normKey)
       if (cur) {
         cur.count += 1
       } else {
-        map.set(normKey, { key: cleanTitle || 'unassigned', label: displayLabel, count: 1 })
+        map.set(normKey, { key: cleanTitle, label: displayLabel, count: 1 })
       }
     })
 
@@ -1301,16 +1307,12 @@ export function ExpertAssignedRolesPage() {
       }
       if (compJobPosFilter !== 'all') {
         const cleanTitle = resolveCompJobPositionTitle(comp)
-        if (compJobPosFilter === 'unassigned') {
-          if (cleanTitle) return false
-        } else {
-          const filterLower = compJobPosFilter.toLowerCase().trim()
-          const matchesTitle = cleanTitle.toLowerCase().trim() === filterLower
-          const matchesCode = comp.jobPositionCode?.toLowerCase().trim() === filterLower
-          const matchesRaw = comp.jobPositionTitle?.toLowerCase().trim() === filterLower
-          if (!matchesTitle && !matchesCode && !matchesRaw) {
-            return false
-          }
+        const filterLower = compJobPosFilter.toLowerCase().trim()
+        const matchesTitle = cleanTitle.toLowerCase().trim() === filterLower
+        const matchesCode = comp.jobPositionCode?.toLowerCase().trim() === filterLower
+        const matchesRaw = comp.jobPositionTitle?.toLowerCase().trim() === filterLower
+        if (!matchesTitle && !matchesCode && !matchesRaw) {
+          return false
         }
       }
       return true
@@ -2288,13 +2290,22 @@ export function ExpertAssignedRolesPage() {
 
                             <td className="py-3 px-3">
                               {(() => {
-                                const hasPublishedPredecessor = assignedRoles.some(
+                                const roleCodeUpper = (role.code || '').toUpperCase().trim()
+                                const hasAnyPublishedVersion = assignedRoles.some(
                                   (r) =>
-                                    r.code?.toUpperCase() === role.code?.toUpperCase() &&
-                                    (r.status === 'published' || (r.status as string) === 'ACTIVE' || (r.status as string) === 'PUBLISHED') &&
-                                    r.id !== role.id
+                                    (r.code || '').toUpperCase().trim() === roleCodeUpper &&
+                                    (r.status === 'published' || (r.status as string) === 'ACTIVE' || (r.status as string) === 'PUBLISHED')
                                 )
-                                const showStagedPill = Boolean(role.isStaffingEnabled) && !hasPublishedPredecessor
+                                const isRoleStaffing = Boolean(
+                                  role.isStaffingEnabled ||
+                                  (role.status as string)?.toLowerCase() === 'staged' ||
+                                  assignedRoles.some(
+                                    (r) =>
+                                      (r.code || '').toUpperCase().trim() === roleCodeUpper &&
+                                      (Boolean(r.isStaffingEnabled) || (r.status as string)?.toLowerCase() === 'staged')
+                                  )
+                                )
+                                const showStagedPill = !hasAnyPublishedVersion && isRoleStaffing
 
                                 return (
                                   <>
@@ -2348,6 +2359,15 @@ export function ExpertAssignedRolesPage() {
                                     {(isFeedback || isRejected) && (
                                       <div className="flex items-center gap-1.5 flex-wrap">
                                         <Badge variant="destructive">REJECTED</Badge>
+                                        {showStagedPill && (
+                                          <Badge
+                                            variant="outline"
+                                            className="text-[9px] py-0 px-1 font-semibold text-indigo-700 dark:text-indigo-400 border-indigo-500/30 bg-indigo-500/10 whitespace-nowrap"
+                                            title="Staffing Enabled: Staged for employee assignment in organization administration"
+                                          >
+                                            STAGED FOR STAFFING
+                                          </Badge>
+                                        )}
                                       </div>
                                     )}
 
@@ -3647,6 +3667,33 @@ export function ExpertAssignedRolesPage() {
                     >
                       {viewEffStatus.toUpperCase()}
                     </Badge>
+                    {(() => {
+                      const viewingCodeUpper = (viewingDetailsRole.code || '').toUpperCase().trim()
+                      const hasAnyPublished = assignedRoles.some(
+                        (r) =>
+                          (r.code || '').toUpperCase().trim() === viewingCodeUpper &&
+                          (r.status === 'published' || (r.status as string) === 'ACTIVE' || (r.status as string) === 'PUBLISHED')
+                      )
+                      const isRoleStaffing = Boolean(
+                        viewingDetailsRole.isStaffingEnabled ||
+                        (viewingDetailsRole.status as string)?.toLowerCase() === 'staged' ||
+                        assignedRoles.some(
+                          (r) =>
+                            (r.code || '').toUpperCase().trim() === viewingCodeUpper &&
+                            (Boolean(r.isStaffingEnabled) || (r.status as string)?.toLowerCase() === 'staged')
+                        )
+                      )
+                      return (
+                        viewEffStatus !== 'published' && viewEffStatus !== 'unpublished' && !hasAnyPublished && isRoleStaffing && (
+                          <Badge
+                            variant="outline"
+                            className="bg-indigo-500/10 text-indigo-700 border-indigo-500/30 font-bold dark:text-indigo-400 text-xs"
+                          >
+                            STAGED FOR STAFFING
+                          </Badge>
+                        )
+                      )
+                    })()}
                   </div>
                 )
               })()}

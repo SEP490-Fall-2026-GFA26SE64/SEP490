@@ -1395,14 +1395,33 @@ export function TargetRolesPage() {
   }, [editExpertOptions])
 
   const editJobPositionOptions: ComboboxOption[] = React.useMemo(() => {
-    return availableJobPositions
-      .filter((occ) => occ.status !== 'inactive')
-      .map((occ) => ({
-        value: occ.code,
-        label: `${occ.code} — ${occ.name.replace(/\s*\((?:Department|dept)\)\s*/gi, '').trim()}`,
-        description: occ.description,
-      }))
-  }, [availableJobPositions])
+    const allowedCodes = new Set(
+      (managerDepartment?.jobPositionCodes || []).map((c) => c.toLowerCase().trim()),
+    )
+    const currentCode = (editRoleForm.jobPositionCode || '').toLowerCase().trim()
+    const currentBase = currentCode.replace(/\.00$/, '')
+
+    const activePositions = availableJobPositions.filter((occ) => occ.status !== 'inactive')
+    const filteredPositions =
+      isLdManager && managerDepartment && allowedCodes.size > 0
+        ? activePositions.filter((occ) => {
+            const code = (occ.code || '').toLowerCase().trim()
+            const baseCode = code.replace(/\.00$/, '')
+            if (currentCode && (code === currentCode || baseCode === currentBase)) return true
+            return (
+              allowedCodes.has(code) ||
+              allowedCodes.has(baseCode) ||
+              Array.from(allowedCodes).some((c) => c.replace(/\.00$/, '') === baseCode)
+            )
+          })
+        : activePositions
+
+    return filteredPositions.map((occ) => ({
+      value: occ.code,
+      label: `${occ.code} — ${occ.name.replace(/\s*\((?:Department|dept)\)\s*/gi, '').trim()}`,
+      description: occ.description,
+    }))
+  }, [availableJobPositions, isLdManager, managerDepartment, editRoleForm.jobPositionCode])
 
   // Sort criteria: defaults to 'latest' so newly created or updated roles go to the top
 
@@ -3071,13 +3090,22 @@ export function TargetRolesPage() {
 
                               <td className="py-3 px-3">
                                 {(() => {
-                                  const hasPublishedPredecessor = managerVisibleRoles.some(
+                                  const roleCodeUpper = (role.code || '').toUpperCase().trim()
+                                  const hasAnyPublishedVersion = managerVisibleRoles.some(
                                     (r) =>
-                                      r.code?.toUpperCase() === role.code?.toUpperCase() &&
-                                      (r.status === 'published' || (r.status as string) === 'ACTIVE' || (r.status as string) === 'PUBLISHED') &&
-                                      r.id !== role.id
+                                      (r.code || '').toUpperCase().trim() === roleCodeUpper &&
+                                      (r.status === 'published' || (r.status as string) === 'ACTIVE' || (r.status as string) === 'PUBLISHED')
                                   )
-                                  const showStagedPill = Boolean(role.isStaffingEnabled) && !hasPublishedPredecessor
+                                  const isRoleStaffing = Boolean(
+                                    role.isStaffingEnabled ||
+                                    (role.status as string)?.toLowerCase() === 'staged' ||
+                                    managerVisibleRoles.some(
+                                      (r) =>
+                                        (r.code || '').toUpperCase().trim() === roleCodeUpper &&
+                                        (Boolean(r.isStaffingEnabled) || (r.status as string)?.toLowerCase() === 'staged')
+                                    )
+                                  )
+                                  const showStagedPill = !hasAnyPublishedVersion && isRoleStaffing
 
                                   return (
                                     <>
@@ -3160,6 +3188,15 @@ export function TargetRolesPage() {
                                       {isRejected && (
                                         <div className="flex items-center gap-1.5 flex-wrap">
                                           <Badge variant="destructive">REJECTED</Badge>
+                                          {showStagedPill && (
+                                            <Badge
+                                              variant="outline"
+                                              className="text-[9px] py-0 px-1 font-semibold text-indigo-700 dark:text-indigo-400 border-indigo-500/30 bg-indigo-500/10 whitespace-nowrap"
+                                              title="Staffing Enabled: Staged for employee assignment in organization administration"
+                                            >
+                                              STAGED FOR STAFFING
+                                            </Badge>
+                                          )}
                                         </div>
                                       )}
 
@@ -5174,14 +5211,33 @@ export function TargetRolesPage() {
                     >
                       {viewEffStatus.toUpperCase()}
                     </Badge>
-                    {viewEffStatus === 'sent' && viewingDetailsRole.isStaffingEnabled && !managerVisibleRoles.some(r => r.code?.toUpperCase() === viewingDetailsRole.code?.toUpperCase() && (r.status === 'published' || (r.status as string) === 'ACTIVE') && r.id !== viewingDetailsRole.id) && (
-                      <Badge
-                        variant="outline"
-                        className="bg-indigo-500/10 text-indigo-700 border-indigo-500/30 font-bold dark:text-indigo-400 text-xs"
-                      >
-                        STAGED FOR STAFFING
-                      </Badge>
-                    )}
+                    {(() => {
+                      const viewingCodeUpper = (viewingDetailsRole.code || '').toUpperCase().trim()
+                      const hasAnyPublished = managerVisibleRoles.some(
+                        (r) =>
+                          (r.code || '').toUpperCase().trim() === viewingCodeUpper &&
+                          (r.status === 'published' || (r.status as string) === 'ACTIVE' || (r.status as string) === 'PUBLISHED')
+                      )
+                      const isRoleStaffing = Boolean(
+                        viewingDetailsRole.isStaffingEnabled ||
+                        (viewingDetailsRole.status as string)?.toLowerCase() === 'staged' ||
+                        managerVisibleRoles.some(
+                          (r) =>
+                            (r.code || '').toUpperCase().trim() === viewingCodeUpper &&
+                            (Boolean(r.isStaffingEnabled) || (r.status as string)?.toLowerCase() === 'staged')
+                        )
+                      )
+                      return (
+                        viewEffStatus !== 'published' && viewEffStatus !== 'unpublished' && !hasAnyPublished && isRoleStaffing && (
+                          <Badge
+                            variant="outline"
+                            className="bg-indigo-500/10 text-indigo-700 border-indigo-500/30 font-bold dark:text-indigo-400 text-xs"
+                          >
+                            STAGED FOR STAFFING
+                          </Badge>
+                        )
+                      )
+                    })()}
                   </div>
                 )
               })()}
