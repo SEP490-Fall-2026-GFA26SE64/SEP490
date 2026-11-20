@@ -1,0 +1,132 @@
+name: brightpath-demo-8099
+x-database: &database
+  DB_URL: jdbc:postgresql://postgres:5432/brightpath_demo
+  DB_USER: brightpath_demo
+  DB_PASSWORD: ${BRIGHTPATH_DB_PASSWORD:?Dedicated demo password required}
+  NEO4J_URI: bolt://neo4j:7687
+  NEO4J_USER: neo4j
+  NEO4J_PASSWORD: ${BRIGHTPATH_GRAPH_PASSWORD:?Dedicated graph password required}
+  SPRING_FLYWAY_LOCATIONS: classpath:db/workspace-migration
+  CATALOG_SEED_ENABLED: "false"
+services:
+  postgres:
+    image: postgres:17.6-alpine
+    pull_policy: never
+    environment:
+      POSTGRES_DB: brightpath_demo
+      POSTGRES_USER: brightpath_demo
+      POSTGRES_PASSWORD: ${BRIGHTPATH_DB_PASSWORD}
+    volumes: [brightpath_postgres:/var/lib/postgresql/data]
+    healthcheck:
+      test: [CMD-SHELL, "pg_isready -U brightpath_demo -d brightpath_demo"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+  neo4j:
+    image: neo4j:5.26-community
+    pull_policy: never
+    environment:
+      NEO4J_AUTH: neo4j/${BRIGHTPATH_GRAPH_PASSWORD}
+      NEO4J_server_memory_heap_initial__size: 256m
+      NEO4J_server_memory_heap_max__size: 512m
+      NEO4J_server_memory_pagecache_size: 256m
+    volumes: [brightpath_graph:/data]
+    healthcheck:
+      test: [CMD-SHELL, "cypher-shell -u neo4j -p \"$${NEO4J_AUTH#*/}\" 'RETURN 1' >/dev/null 2>&1"]
+      interval: 10s
+      timeout: 10s
+      retries: 20
+  minio:
+    image: ${BRIGHTPATH_MINIO_IMAGE:-adapt-learn-graph-minio:r3-local-20261106}
+    pull_policy: never
+    command: [server, /data]
+    environment:
+      MINIO_ROOT_USER: brightpath-demo
+      MINIO_ROOT_PASSWORD: ${BRIGHTPATH_STORAGE_PASSWORD:?Dedicated storage password required}
+      MINIO_BROWSER: "off"
+    volumes: [brightpath_storage:/data]
+    healthcheck:
+      test: [CMD-SHELL, "curl -fsS http://localhost:9000/minio/health/live >/dev/null"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+  migrate:
+    image: brightpath-demo-backend:local
+    pull_policy: never
+    build:
+      context: .
+      dockerfile: docker/demo/Dockerfile.backend
+      network: none
+    environment:
+      <<: *database
+      SPRING_PROFILES_ACTIVE: local,migrate
+    depends_on:
+      postgres: {condition: service_healthy}
+      neo4j: {condition: service_healthy}
+    restart: "no"
+  api:
+    image: brightpath-demo-backend:local
+    pull_policy: never
+    build:
+      context: .
+      dockerfile: docker/demo/Dockerfile.backend
+      network: none
+    environment:
+      <<: *database
+      SPRING_PROFILES_ACTIVE: local,workspace-baseline
+      WORKSPACE_MIGRATION_LOCATION: classpath:db/workspace-migration
+      WORKSPACE_DEVELOPMENT_FIXTURES_ENABLED: "false"
+      WORKSPACE_DEV_SEED_ENABLED: "false"
+      CATALOG_LOCAL_ACTOR_ENABLED: "false"
+      PATHWAY_LOCAL_AUTH_BYPASS_ENABLED: "false"
+      PAYOS_ENABLED: "false"
+      EMAIL_VERIFICATION_ENABLED: "false"
+      MFA_ENABLED: "false"
+      REGISTRATION_MAIL_WORKER_ENABLED: "false"
+      SMTP_HOST: 127.0.0.1
+      SMTP_PORT: "1"
+      SMTP_FROM: brightpath-demo@example.invalid
+      SMTP_AUTH: "false"
+      SMTP_STARTTLS: "false"
+      LEARNING_MAIL_ENABLED: "false"
+      SUBSCRIPTION_WORKER_ENABLED: "false"
+      MANAGEMENT_HEALTH_MAIL_ENABLED: "false"
+      REGISTRATION_COOKIE_SECURE: "false"
+      REGISTRATION_ENCRYPTION_KEY: ${BRIGHTPATH_ENCRYPTION_KEY:?Dedicated key required}
+      REGISTRATION_HMAC_KEY: ${BRIGHTPATH_HMAC_KEY:?Dedicated key required}
+      SUBSCRIPTION_PUBLIC_URL: http://localhost:8099
+      LEARNING_ASSETS_ENDPOINT: http://minio:9000
+      LEARNING_ASSETS_ACCESS_KEY: brightpath-demo
+      LEARNING_ASSETS_SECRET_KEY: ${BRIGHTPATH_STORAGE_PASSWORD}
+      LEARNING_ASSETS_BUCKET: brightpath-demo-private
+      PATHWAY_INITIAL_ENABLED: "true"
+      PATHWAY_INITIAL_CATALOG_ALLOW_REVIEW_SEED: "true"
+      PATHWAY_INITIAL_WORKER_ENABLED: "true"
+      PATHWAY_INITIAL_WORKER_VERSION: brightpath-demo-v1
+      PATHWAY_INITIAL_WORKER_LEASE_MS: "300000"
+      PATHWAY_INITIAL_WORKER_MAX_ATTEMPTS: "3"
+      PATHWAY_INITIAL_WORKER_MINIMUM_BACKOFF_MS: "2000"
+      PATHWAY_INITIAL_WORKER_MAXIMUM_BACKOFF_MS: "30000"
+      PATHWAY_INITIAL_WORKER_POLL_INTERVAL_MS: "2000"
+      RIASEC_ENABLED: "false"
+      DEMO_CHECKPOINT_ENABLED: "true"
+      DEMO_CHECKPOINT_ISOLATION_ID: brightpath-8099
+      DEMO_CHECKPOINT_DIRECTORY: /checkpoint
+      DEMO_CHECKPOINT_CAPTURE_TOKEN: ${BRIGHTPATH_CAPTURE_TOKEN:?Dedicated capture token required}
+      DEMO_CHECKPOINT_MEMBER_PASSWORD: ${BRIGHTPATH_MEMBER_PASSWORD:?Agreed demo fixture password required}
+    volumes: [../checkpoint:/checkpoint]
+    ports: ["127.0.0.1:18099:8080"]
+    depends_on:
+      migrate: {condition: service_completed_successfully}
+      minio: {condition: service_healthy}
+    healthcheck:
+      test: [CMD-SHELL, "wget -q -O /dev/null http://localhost:8080/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 40s
+    restart: unless-stopped
+volumes:
+  brightpath_postgres:
+  brightpath_graph:
+  brightpath_storage:

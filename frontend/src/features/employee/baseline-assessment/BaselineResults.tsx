@@ -31,6 +31,7 @@ export function BaselineResultPanel({ result, locked, run, error }: { result: Ba
     <CardHeader className={sufficient ? 'border-b border-success/20 bg-success/5 p-5' : 'border-b border-warning/30 bg-warning/5 p-5'}>
       <Text variant="eyebrow">{copy('Assessment result', 'Kết quả đánh giá')}</Text>
       <Heading level={2} size="subsection" className="break-words">{result.target.selectionId ? `${result.roleName} · ${result.levelName}` : result.groups.find(g => g.role === 'MAIN')?.skillName}</Heading>
+      {mainGroup && <Text variant="body-sm" className="font-semibold text-foreground">{copy('Assessed skill', 'Kỹ năng đang đánh giá')}: {mainGroup.skillName} · {t('knowledgeLevel.' + mainGroup.requirement.knowledgeLevel)}</Text>}
       <div className="flex flex-wrap gap-2"><Badge variant="outline">{result.purpose === 'BASELINE' ? copy('Baseline', 'Đánh giá đầu vào') : copy('Skill Assessment', 'Đánh giá kỹ năng')}</Badge><Badge variant={sufficient ? 'success' : 'warning'}>{sufficient ? copy('All skills passed', 'Đạt tất cả kỹ năng') : copy('Not all skills passed', 'Chưa đạt tất cả kỹ năng')}</Badge></div>
     </CardHeader>
     <CardContent className="space-y-4 p-4 sm:p-5">

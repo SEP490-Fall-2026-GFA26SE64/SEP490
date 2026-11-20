@@ -1,4 +1,3 @@
-import { BaselineRequestForm } from '../../../shared/components/question-bank/BaselineQuestionRequests'
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { SlidersHorizontal, Trash2 } from 'lucide-react'
 import { useTranslation } from '../../../shared/i18n/LanguageContext'
@@ -6,7 +5,8 @@ import { Text } from '../../../shared/components/typography/Text'
 import { Button } from '../../../shared/components/ui/Button'
 import { Badge } from '../../../shared/components/ui/Badge'
 import { Pagination } from '../../../shared/components/ui/Pagination'
-import { Dialog, DialogHeader, DialogTitle, DialogDescription, DialogBody, DialogFooter } from '../../../shared/components/ui/Dialog'
+import { DialogHeader, DialogTitle, DialogDescription, DialogBody, DialogFooter } from '../../../shared/components/ui/Dialog'
+import { ManagementDialog as Dialog } from '../../../shared/components/ui/ManagementUi'
 import { AdaptiveBaselineApiError } from './adaptiveBaselineApi'
 import { BaselinePolicyForm, type BaselineFormHandle } from './BaselinePolicyForm'
 import { getPolicyWorkspace, runScopedCommand, type BaselineEditorState, type PolicyWorkspace, type ScopedCommand } from './scopedAssessmentPolicyApi'
@@ -58,7 +58,6 @@ export function BaselinePolicyDialog({ scopeKey, initialAction, onClose, onActiv
     <DialogHeader><DialogTitle><SlidersHorizontal className="size-5 text-primary" />{workspace?.scope.ownerName ?? t('scopedPolicy.baselineTitle')}</DialogTitle><DialogDescription>{legacy ? copy('Historical Role level policy · read only', 'Chính sách Role Level cũ · chỉ xem') : copy('One policy for this Role. The selected Role level determines each employee’s required Skills.', 'Một chính sách chung cho vị trí. Role Level đã chọn quyết định Skill cần đánh giá của từng nhân viên.')}</DialogDescription>
       <div className="flex flex-wrap gap-2">{workspace?.active && <Badge variant="success">{t('scopedPolicy.ACTIVE')} · v{workspace.active.version}</Badge>}{draft && <Badge variant="secondary">{t('scopedPolicy.DRAFT')}</Badge>}{dirty && <Badge variant="warning">{copy('Unsaved changes', 'Thay đổi chưa lưu')}</Badge>}</div>
     </DialogHeader>
-    {workspace && !legacy && <BaselineRequestForm workspace={workspace} />}
     {error != null && <div className="mb-3">{renderError(error)}</div>}
     {notice && <Text role="status" variant="body-sm" tone="success" className="mb-3">{notice}</Text>}
     {pending && !busy && <div className="mb-3 space-y-2"><Text role="status" variant="body-sm">{t('scopedPolicy.pending')}</Text><Button variant="outline" onClick={() => void execute(pending.command, pending.dismiss)}>{t('scopedPolicy.retry')}</Button></div>}

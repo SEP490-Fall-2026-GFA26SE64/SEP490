@@ -1,0 +1,4 @@
+**
+!backend/
+!backend/target/
+!backend/target/adapt-learn-graph.jar

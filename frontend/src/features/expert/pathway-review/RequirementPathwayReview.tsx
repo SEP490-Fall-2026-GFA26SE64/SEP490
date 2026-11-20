@@ -18,6 +18,7 @@ import { LoadingCard } from '../../../shared/components/ui/LoadingCard'
 import { StatCard } from '../../../shared/components/ui/StatCard'
 import { WorkspaceLayout } from '../../../shared/layouts/WorkspaceLayout'
 import { RequirementModuleEditor } from './RequirementModuleEditor'
+import { useToast } from '../../../shared/hooks/useToast'
 
 export function RequirementPathwayReviewQueue() {
   const { t } = useTranslation(), session = useInitialPathwaySession(), authorized = session.data?.role === 'DOMAIN_EXPERT'
@@ -42,26 +43,25 @@ export function RequirementPathwayReviewQueue() {
 }
 export function RequirementPathwayReviewDetail({ scope, id }: { scope: string; id: string }) {
   const { t, language } = useTranslation(), client = useQueryClient(), [editorDirty, setEditorDirty] = useState(false)
-  const [notice, setNotice] = useState('')
+  const { toast } = useToast()
   const query = useQuery({ refetchOnWindowFocus: false, refetchOnReconnect: false, queryKey: ['initialPathway', scope, 'ruleReview', id], queryFn: ({ signal }) => readRuleReview(id, signal), retry: false, gcTime: 0 })
   const [pending, setPending] = useState<PendingPathwayCommand | null>(null), [busy, setBusy] = useState(false), [error, setError] = useState<PathwayError | null>(null)
   const [bypass, setBypass] = useState<RuleStep | null>(null), [reason, setReason] = useState(''), [rejecting, setRejecting] = useState(false), [approval, setApproval] = useState<PendingPathwayCommand | null>(null)
   const lock = useRef(false), committed = useRef(false), d = query.data
   async function send(command: PendingPathwayCommand) {
     if (lock.current) return
-    lock.current = true; setBusy(true); setError(null); setNotice(''); setPending(command)
+    lock.current = true; setBusy(true); setError(null); setPending(command)
     try {
       if (!committed.current) { await sendPathwayCommand(command); committed.current = true }
       const latest = await readRuleReview(id); client.setQueryData(['initialPathway', scope, 'ruleReview', id], latest)
       await client.invalidateQueries({ queryKey: ['initialPathway', scope, 'ruleReviewQueue'] })
-      setPending(null); setBypass(null); setRejecting(false); setApproval(null); setReason(''); committed.current = false; setNotice(language === 'vi' ? 'Đã cập nhật lộ trình.' : 'Pathway updated.')
-    } catch (cause) { const failure = cause instanceof PathwayError ? cause : new PathwayError('NETWORK_ERROR'); setError(failure); if (committed.current) setNotice(language === 'vi' ? 'Đã lưu thay đổi. Thử lại để tải trạng thái mới.' : 'Changes saved. Retry to load the updated status.'); if (!failure.ambiguous && !committed.current) { setPending(null); setApproval(null); if (!command.path.endsWith('/module-selection')) void query.refetch() } }
+      setPending(null); setBypass(null); setRejecting(false); setApproval(null); setReason(''); committed.current = false; toast({ variant: 'success', description: language === 'vi' ? 'Đã cập nhật lộ trình.' : 'Pathway updated.' })
+    } catch (cause) { const failure = cause instanceof PathwayError ? cause : new PathwayError('NETWORK_ERROR'); setError(failure); if (committed.current) toast({ variant: 'warning', description: language === 'vi' ? 'Đã lưu thay đổi. Thử lại để tải trạng thái mới.' : 'Changes saved. Retry to load the updated status.' }); if (!failure.ambiguous && !committed.current) { setPending(null); setApproval(null); if (!command.path.endsWith('/module-selection')) void query.refetch() } }
     finally { lock.current = false; setBusy(false) }
   }
   const blocked = busy || Boolean(pending)
-  return <div className="min-w-0 space-y-5 pb-8"><h1 className="sr-only">{t('initialPathway.reviewTitle')}</h1><Link className={buttonVariants({ variant: 'ghost', size: 'sm' })} to="/expert/pathway-review" onClick={event => { if (blocked || editorDirty && !window.confirm(t("moduleReview.discardConfirm"))) event.preventDefault() }}><ArrowLeft className="mr-2 size-4" />{t('initialPathway.reviewTitle')}</Link>
+  return <div className="min-w-0 space-y-5 pb-8"><h1 className="sr-only">{t('initialPathway.reviewTitle')}</h1><div className="flex items-center"><Link className={buttonVariants({ variant: 'outline', size: 'sm', className: 'gap-2 border-border bg-card shadow-xs' })} to="/expert/pathway-review" onClick={event => { if (blocked || editorDirty && !window.confirm(t("moduleReview.discardConfirm"))) event.preventDefault() }}><ArrowLeft className="size-4" />{language === 'vi' ? 'Về danh sách lộ trình' : 'Back to pathway reviews'}</Link></div>
     {query.isPending && <LoadingCard label={t('initialPathway.loading')} />}{(error || query.error) && <InitialPathwayFeedback error={error ?? query.error} busy={busy} onRetry={() => { if (pending) void send(pending); else if (!editorDirty || window.confirm(t("moduleReview.discardConfirm"))) void query.refetch() }} />}
-    {notice && <Text role="status">{notice}</Text>}
     {pending && <Text role="status">{t('initialPathway.uncertain')}</Text>}
     {d && !query.isError && <><Card><CardContent className="grid gap-4 p-4 sm:grid-cols-2 lg:grid-cols-4"><div className="flex items-center gap-3"><User className="size-5 text-primary" /><div><Text variant="caption">{t('initialPathway.reviewUi.employee')}</Text><Text className="font-semibold">{d.status.learnerName}</Text></div></div><div><Text variant="caption">{t('initialPathway.targetRole')}</Text><Text className="font-semibold">{d.status.roleName}</Text></div><div><Text variant="caption">{t('initialPathway.level')}</Text><Badge variant="outline">{d.status.levelName}</Badge></div><div><Text variant="caption">{t('initialPathway.reviewRevision')}</Text><Text>{d.status.revision ?? '—'}</Text></div></CardContent></Card>
       <RequirementModuleEditor key={id + ":" + d.status.revision + ":" + d.status.contentHash} id={id} scope={scope} detail={d} disabled={blocked} onDirtyChange={setEditorDirty} onCommand={command => void send(command)} onApprove={() => setApproval(ruleReviewCommand(id, d, "confirmation"))} onReject={!d.archived && d.status.reviewStatus === 'AWAITING_EXPERT_REVIEW' ? () => { setRejecting(true); setReason('') } : undefined} onBypass={step => { setBypass(step); setReason("") }} />

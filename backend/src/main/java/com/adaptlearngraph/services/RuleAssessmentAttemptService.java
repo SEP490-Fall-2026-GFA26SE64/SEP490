@@ -60,6 +60,12 @@ public final class RuleAssessmentAttemptService {
     private final ObjectMapper json;
     private final int maximum;
     private final AuditEventJpaRepository audit;
+    private SharedSkillAssessmentService sharedSkills;
+    public RuleAssessmentAttemptService sharedSkills(SharedSkillAssessmentService value){sharedSkills=value;return this;}
+    private com.adaptlearngraph.entities.AssessmentRulePolicyEntity activePolicy(UUID org,com.adaptlearngraph.entities.domain.AssessmentPolicyScope.Scope scope,Purpose purpose,boolean persist) {
+        var shared=purpose==Purpose.SKILL_ASSESSMENT&&sharedSkills!=null?sharedSkills.resolve(org,scope,persist):Optional.<com.adaptlearngraph.entities.AssessmentRulePolicyEntity>empty();
+        return shared.or(()->scopedPolicies.active(org,purpose.name(),scope.key())).orElseThrow(()->new Failure(422,"ASSESSMENT_POLICY_REQUIRED"));
+    }
     public RuleAssessmentAttemptService(RoleBaselineFlow.Identity identity,CurrentRoleSelectionStore selections,Contexts contexts,
             RuleAssessmentAttemptJpaRepository attempts,AssessmentRulePolicyJpaRepository policies,ScopedAssessmentPolicyJpaRepository scopedPolicies,AssessmentPolicyCatalog policyCatalog,
             AssessmentItemKnowledgeMappingJpaRepository bank,OutboxEventJpaRepository outbox,ProcessingJobJpaRepository jobs,PostgresAdvisoryLocks locks,
@@ -135,7 +141,7 @@ public final class RuleAssessmentAttemptService {
             if(skill!=null && scope.groups().stream().noneMatch(g->g.requirement().skillId().equals(skill.skillId()) && g.requirement().knowledgeLevel()==skill.knowledgeLevel() && skill.skillVersion().equals(g.skillVersion())))
                 throw new Failure(409,"SKILL_VERSION_CHANGED");
             policyContext.put("policyScopeKey",scope.key());
-            var policy=scopedPolicies.active(a.organizationId(),command.purpose().name(),scope.key()).orElseThrow(()->new Failure(422,"ASSESSMENT_POLICY_REQUIRED"));
+            var policy=activePolicy(a.organizationId(),scope,command.purpose(),true);
             if(!scope.ready() || !scope.matchesCatalog(policy.getCatalogHash()))throw new Failure(422,"ASSESSMENT_POLICY_CATALOG_CHANGED");
             var config=read(policy.getConfiguration(),Policy.class);
             if(command.purpose()==Purpose.BASELINE && config.baselineTiming()==null)throw new Failure(422,"ASSESSMENT_POLICY_REQUIRED");
@@ -249,7 +255,7 @@ public final class RuleAssessmentAttemptService {
                     .orElseThrow(()->new Failure(422,"ASSESSMENT_POLICY_REQUIRED"));
                 if(catalog.groups().stream().noneMatch(g->g.requirement().skillId().equals(scope.skillId()) && g.requirement().knowledgeLevel()==scope.knowledgeLevel() && scope.skillVersion().equals(g.skillVersion())))
                     throw new Failure(409,"SKILL_VERSION_CHANGED");
-                var policy=scopedPolicies.active(a.organizationId(),Purpose.SKILL_ASSESSMENT.name(),catalog.key()).orElseThrow(()->new Failure(422,"ASSESSMENT_POLICY_REQUIRED"));
+                var policy=activePolicy(a.organizationId(),catalog,Purpose.SKILL_ASSESSMENT,false);
                 if(!catalog.ready() || !catalog.matchesCatalog(policy.getCatalogHash()))throw new Failure(422,"ASSESSMENT_POLICY_CATALOG_CHANGED");
                 var config=read(policy.getConfiguration(),Policy.class);
                 if(!RoleBaselineFlow.hash(policy.getHashDomain()+"\n"+Purpose.SKILL_ASSESSMENT+"\n"+write(config)).equals(policy.getConfigurationHash()))throw integrity();

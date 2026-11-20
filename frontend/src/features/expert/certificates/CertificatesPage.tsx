@@ -10,7 +10,7 @@ export function CertificatesPage() {
   return <WorkspaceLayout><div className="space-y-6 pb-12">
     <h1 className="sr-only">{vi ? 'Chứng chỉ' : 'Certificates'}</h1>
     <Tabs value={tab} onValueChange={value => setParams({ tab: value })} className="space-y-5">
-      <TabsList className="w-auto border border-primary/20 bg-secondary/40 gap-1 [&_button[data-state=active]]:bg-primary [&_button[data-state=active]]:text-primary-foreground"><TabsTrigger value="manage">{vi ? 'Quản lý certificate' : 'Certificate catalog'}</TabsTrigger><TabsTrigger value="review">{vi ? 'Review bài nộp' : 'Evidence review'}</TabsTrigger></TabsList>
+      <TabsList className="h-auto flex-wrap gap-1 border border-border p-1"><TabsTrigger value="manage">{vi ? 'Danh mục chứng chỉ' : 'Certificate catalog'}</TabsTrigger><TabsTrigger value="review">{vi ? 'Duyệt minh chứng' : 'Evidence review'}</TabsTrigger></TabsList>
       <TabsContent value="manage"><CertificatesTab /></TabsContent>
       <TabsContent value="review"><CertificatesTab mode="review" /></TabsContent>
     </Tabs>

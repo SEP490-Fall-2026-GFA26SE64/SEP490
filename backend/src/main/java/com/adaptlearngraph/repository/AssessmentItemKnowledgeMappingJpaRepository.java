@@ -46,6 +46,20 @@ public interface AssessmentItemKnowledgeMappingJpaRepository
             ) available
             """,nativeQuery=true)
     int availableCount(@Param("org") UUID org,@Param("skill") String skill,@Param("level") String level,@Param("skillVersion") String skillVersion);
+    interface PoolCounts { long getTotal();long getMandatory(); }
+    @Query(value="""
+            WITH latest AS (
+                SELECT DISTINCT ON (i.item_id) i.* FROM platform.item_version i
+                JOIN platform.question_bank_scope w ON w.question_bank_id=i.question_bank_id
+                WHERE w.organization_id=:org ORDER BY i.item_id,i.version DESC,i.item_version_id
+            ) SELECT count(*) AS total,count(*) FILTER (WHERE m.mandatory) AS mandatory
+            FROM latest d JOIN platform.assessment_item_knowledge_mapping m ON m.item_version_id=d.item_version_id
+                AND m.question_bank_id=d.question_bank_id AND m.organization_id=:org
+            JOIN platform.assessment_item_skill_scope scope ON scope.item_version_id=m.item_version_id AND scope.skill_version=:skillVersion
+            WHERE d.publication_state='PUBLISHED' AND d.micro_skill_id=m.skill_id AND m.skill_id=:skill AND m.knowledge_level=:level
+                AND NOT EXISTS (SELECT 1 FROM platform.question_bank_identity q WHERE q.question_id=d.item_id AND q.retired)
+            """,nativeQuery=true)
+    PoolCounts poolCounts(@Param("org") UUID org,@Param("skill") String skill,@Param("level") String level,@Param("skillVersion") String skillVersion);
     @org.springframework.data.jpa.repository.Modifying
     @Query(value="INSERT INTO platform.assessment_item_skill_scope(item_version_id,skill_version,source) VALUES(:item,:version,'PUBLICATION')",nativeQuery=true)
     int bindScope(@Param("item") UUID item,@Param("version") String version);

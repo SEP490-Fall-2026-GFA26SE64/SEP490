@@ -1,8 +1,9 @@
 import { forwardRef, useEffect, useImperativeHandle, useState } from 'react'
 import { DialogBody } from '../../../shared/components/ui/Dialog'
+import { ManagementSection, ManagementSteps } from '../../../shared/components/ui/ManagementUi'
+import { BaselineRequestForm } from '../../../shared/components/question-bank/BaselineQuestionRequests'
 import { Button } from '../../../shared/components/ui/Button'
 import { Input } from '../../../shared/components/ui/Input'
-import { Heading } from '../../../shared/components/typography/Heading'
 import { Text } from '../../../shared/components/typography/Text'
 import { useTranslation } from '../../../shared/i18n/LanguageContext'
 import type { BaselineEditorState, PolicyWorkspace } from './scopedAssessmentPolicyApi'
@@ -57,9 +58,10 @@ export const BaselinePolicyForm = forwardRef<BaselineFormHandle, {
   function save(dismiss = false) { try { const state = snapshot(); setInvalid(false); onSave(state, dismiss) } catch { setInvalid(true) } }
   useImperativeHandle(ref, () => ({ save }))
   return <DialogBody className="space-y-4">
-    <ol className="grid grid-cols-3 gap-2" aria-label={copy('Configuration steps', 'Các bước cấu hình')}>{[copy('Questions', 'Câu hỏi'), copy('Time & retakes', 'Thời gian và làm lại'), copy('Review', 'Kiểm tra')].map((label, index) => <li key={label} aria-current={step === index + 1 ? 'step' : undefined} className={`rounded-lg border px-3 py-2 text-caption ${step === index + 1 ? 'border-primary bg-secondary font-semibold' : 'border-border text-muted-foreground'}`}>{index + 1}. {label}</li>)}</ol>
+    <ManagementSteps current={step - 1} steps={[copy('Questions', 'Câu hỏi'), copy('Time & retakes', 'Thời gian và làm lại'), copy('Review', 'Kiểm tra')]} />
+    <ManagementSection title={copy('Role', 'Vị trí')} aside={<span className="rounded-full border border-primary/25 bg-secondary px-2 py-0.5 text-xs font-semibold text-primary">{copy('All Role levels', 'Mọi Role Level')}</span>}><Text variant="body-sm" className="font-semibold">{workspace.scope.ownerName}</Text></ManagementSection>
     {invalid && <Text role="alert" tone="destructive" variant="body-sm">{copy('Use whole numbers within each bank limit below. The passing count cannot exceed the question count. Keep each Role level within the paper and duration limits.', 'Nhập số nguyên trong giới hạn ngân hàng bên dưới. Số câu đúng không vượt số câu mỗi Skill. Mỗi Role Level phải trong giới hạn đề và thời gian.')}</Text>}
-    {(step === 1 || step === 3) && <section className="space-y-3"><Heading level={3} size="card">{copy('Question policy shared across this Role', 'Chính sách câu hỏi chung cho vị trí')}</Heading>
+    {(step === 1 || step === 3) && <ManagementSection title={copy('Questions per knowledge level', 'Câu hỏi theo mức kiến thức')}>
       {!values.levels.length ? <Text role="status" variant="body-sm">{copy('No eligible questions. Add and publish questions for this Role’s required Skills first.', 'Chưa có câu hỏi hợp lệ. Thêm và xuất bản câu hỏi cho Skill của vị trí trước.')}</Text> : <div className="overflow-x-auto rounded-lg border border-border"><table className="w-full table-fixed text-left text-body-sm"><thead className="bg-muted/30"><tr>{[copy('Knowledge level', 'Mức kiến thức'), copy('Questions per Skill', 'Số câu mỗi Skill'), copy('Correct to pass', 'Số câu đúng để đạt')].map(label => <th scope="col" key={label} className="p-3">{label}</th>)}</tr></thead><tbody>{values.levels.map((row, index) => {
         const capacity = workspace.capacities.find(item => item.knowledgeLevel === row.knowledgeLevel)
         const maximum = capacity?.maxQuestions ?? 0
@@ -70,10 +72,11 @@ export const BaselinePolicyForm = forwardRef<BaselineFormHandle, {
         })}</tr>
       })}</tbody></table></div>}
       {values.levels.length > 0 && <Text variant="caption">{copy('All required Skills must have enough published questions.', 'Mọi Skill yêu cầu phải có đủ câu hỏi đã xuất bản.')}</Text>}
-    </section>}
-    {(step === 2 || step === 3) && <section className="space-y-3"><Heading level={3} size="card">{copy('Time & retakes', 'Thời gian và làm lại')}</Heading><div className="grid gap-3 sm:grid-cols-3">{([
+    </ManagementSection>}
+    {step === 1 && <BaselineRequestForm workspace={workspace} />}
+    {(step === 2 || step === 3) && <ManagementSection title={copy('Time & retakes', 'Thời gian và làm lại')}><div className="grid gap-3 sm:grid-cols-3">{([
       ['seconds', copy('Seconds per question', 'Giây mỗi câu'), 1, '60'], ['wait', copy('Retake wait (minutes)', 'Chờ làm lại (phút)'), 0, '1'], ['attempts', copy('Maximum attempts', 'Số lượt tối đa'), 1, '3'],
-    ] as const).map(([field, label, min, example]) => <label key={field} className="flex flex-col gap-2 text-body-sm"><span>{label} *</span><Input type="number" required min={min} step={field === 'wait' ? 'any' : 1} placeholder={copy(`e.g. ${example}`, `VD: ${example}`)} aria-label={label} value={values[field]} disabled={locked || step === 3} onChange={event => setValues(previous => ({ ...previous, [field]: event.target.value }))} /></label>)}</div><Text variant="caption">{copy('Required fields. Duration = seconds per question × question count.', 'Các ô đều bắt buộc. Thời lượng = giây mỗi câu × số câu.')}</Text></section>}
+    ] as const).map(([field, label, min, example]) => <label key={field} className="flex flex-col gap-2 text-body-sm"><span>{label} *</span><Input type="number" required min={min} step={field === 'wait' ? 'any' : 1} placeholder={copy(`e.g. ${example}`, `VD: ${example}`)} aria-label={label} value={values[field]} disabled={locked || step === 3} onChange={event => setValues(previous => ({ ...previous, [field]: event.target.value }))} /></label>)}</div><Text variant="caption">{copy('Required fields. Duration = seconds per question × question count.', 'Các ô đều bắt buộc. Thời lượng = giây mỗi câu × số câu.')}</Text></ManagementSection>}
     {workspace.scope.memberLevels && <details className="rounded-lg border border-border p-3 text-caption"><summary className="cursor-pointer">{copy('Role levels covered', 'Các Role Level áp dụng')} ({workspace.scope.memberLevels.length})</summary><ul className="mt-2 space-y-1">{workspace.scope.memberLevels.map(member => <li key={member.id}>{member.name} · {member.groups.length} {copy('required Skill–knowledge groups', 'nhóm Skill–kiến thức yêu cầu')}</li>)}</ul></details>}
     <div className="flex justify-between gap-3"><Button variant="outline" disabled={locked || step === 1} onClick={() => setStep(value => value - 1)}>{copy('Back', 'Quay lại')}</Button>{step < 3 && <Button variant="secondary" disabled={locked || !values.levels.length || workspace.capacities.some(item => item.maxQuestions < 1)} onClick={() => move(step + 1)}>{copy('Next', 'Tiếp theo')}</Button>}</div>
   </DialogBody>
